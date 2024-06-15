@@ -1,68 +1,70 @@
 {
   "meta": {
-    "title": "Luna Landing your perfect landing page",
-    "description": "Landing page template",
-    "lang": "en",
+    "title": "Celebra-me.com: Invitaciones Digitales Personalizadas",
+    "description": "Diseña invitaciones digitales personalizadas para cualquier evento.",
+    "lang": "es",
     "charset": "UTF-8",
     "ldJson": {
       "@context": "http://schema.org",
       "@type": "Organization",
-      "name": "Luna Landing",
-      "description": "Fictitious company that seeks to elevate and simplify the lives of web developers.",
-      "url": "https://luna-landing-rust.vercel.app/",
-      "logo": "./public/favicon.svg",
+      "name": "Celebra-me.com",
+      "description": "",
+      "url": "https://celebra-me.com",
+      "logo": "celebrameIcon",
       "contactPoint": {
         "@type": "ContactPoint",
-        "email": "luna-landing@luna.com",
+        "email": "contact@celebra-me.com",
         "contactType": "Client Service"
       },
       "sameAs": [
-        "https://www.twitter.com/yourpage",
-        "https://www.instagram.com/yourpage",
-        "https://www.linkedin.com/company/yourpage"
+        "https://www.facebook.com/celebra-me",
+        "https://www.instagram.com/celebra-me"
       ]
     }
   },
   "headerData": {
-    "logo": "Luna Landing",
+    "logo": "celebra-me.com",
     "links": [
-      { "label": "About", "href": "#" },
-      { "label": "Services", "href": "#" },
-      { "label": "Prices", "href": "#" },
-      { "label": "FAQs", "href": "#" },
-      { "label": "Blog", "href": "#" }
+	  { "label": "Inicio", "href": "/" },
+      { "label": "Sobre Nosotros", "href": "/sobre-nosotros" },
+      { "label": "Servicios", "href": "/servicios" },
+      { "label": "Demos", "href": "/demos" },
+      { "label": "FAQ", "href": "/faq" },
+      { "label": "Contacto", "href": "/contacto" }
     ]
   },
   "heroData": {
-    "title": "Open Your Mind to the Universe: Welcome to",
-    "subTitle": "Discover the Beauty of the Cosmos: Explore the Infinite Wonders of Space with Us",
-    "primaryCta": "Github Repo",
-    "secondaryCta": "See our pricing",
-    "highlightedTitle": "Luna Landing"
+	"title": "Invitaciones digitales",
+    "highlightedTitle": "celebra-me",
+    "highlightedTitleSmall": ".com",
+    "subTitle": "Tus eventos serán únicos",
+    "primaryCta": "Elegir mi invitación",
+    "secondaryCta": "Ver Ejemplos",
+    "backgroundImage": "path/to/hero/background.jpg"
   },
   "servicesData": {
-    "title": "Everything you need to build a website",
+    "title": "Explora Nuestros Servicios",
     "services": [
-      {
-        "title": "Professional Templates",
-        "icon": "DevIcon",
-        "description": "Our templates are crafted by experienced web designers, ensuring a modern and polished look for your site. From typography to element design, every detail is carefully considered to convey a professional image."
-      },
-      {
-        "title": "Integrated Accessibility",
-        "icon": "PlanetIcon",
-        "description": "We care about web accessibility and have integrated features to ensure your site is accessible to all users, including those with visual or motor disabilities. Our templates comply with WCAG accessibility standards to provide an inclusive experience for everyone."
-      },
-      {
-        "title": "SEO-Optimized",
-        "icon": "FileIcon",
-        "description": "We understand the importance of your site being visible in search engines. That's why our templates are optimized for SEO, meaning they are structured and coded to be easily indexed by Google and other search engines, helping to improve your ranking in search results."
-      },
-      {
-        "title": "Easy Set up",
-        "icon": "ConfigIcon",
-        "description": "With our templates, you don't need to be a web development expert to have an impressive site. They are easy to set up and customize, with intuitive options that allow you to change colors, fonts, page layout, and more with just a few clicks. Make your site stand out hassle-free!"
-      }
+    	{
+			"title": "Bodas",
+			"description": "Invitaciones elegantes y personalizables para tu día especial.",
+			"icon": "WeddingIcon"
+		},
+		{
+			"title": "XV Años",
+			"description": "Diseños únicos para celebrar una transición importante en la vida.",
+			"icon": "CrownIcon"
+		},
+		{
+			"title": "Cumpleaños",
+			"description": "Invitaciones creativas y divertidas para todas las edades.",
+			"icon": "CakeIcon"
+		},
+		{
+			"title": "Aniversarios",
+			"description": "Invitaciones especiales para conmemorar hitos importantes.",
+			"icon": "AnniversaryIcon"
+		}
     ]
   },
   "adventajesData": {

@@ -1,10 +1,17 @@
 ---
 import type { Icon } from "@/config/landing.interface";
+import CelebrameIcon from "@/icons/commons/CelebrameIcon.astro";
 import CheckIcon from "@/icons/commons/CheckIcon.astro";
 import ConfigIcon from "@/icons/commons/ConfigIcon.astro";
 import DevIcon from "@/icons/commons/DevIcon.astro";
 import FileIcon from "@/icons/commons/FileIcon.astro";
 import PlanetIcon from "@/icons/commons/PlanetIcon.astro";
+import AnniversaryIcon from "@/icons/invitationServices/AnniversaryIcon.astro";
+import BriefcaseIcon from "@/icons/invitationServices/BriefcaseIcon.astro";
+import CakeIcon from "@/icons/invitationServices/CakeIcon.astro";
+import CrownIcon from "@/icons/invitationServices/CrownIcon.astro";
+import GraduationCapIcon from "@/icons/invitationServices/GraduationCapIcon.astro";
+import WeddingIcon from "@/icons/invitationServices/WeddingIcon.astro";
 import FacebookIcon from "@/icons/socials/FacebookIcon.astro";
 import GithubIcon from "@/icons/socials/GithubIcon.astro";
 import InstagramIcon from "@/icons/socials/InstagramIcon.astro";
@@ -39,6 +46,14 @@ const icons = [
   NetlifyIcon,
   SolidIcon,
   VercelIcon,
+  WeddingIcon,
+  CakeIcon,
+  BriefcaseIcon,
+  GraduationCapIcon,
+  CrownIcon,
+  AnniversaryIcon,
+  CelebrameIcon
+
 ];
 
 let figures: Record<string, (_props: Record<string, unknown>) => unknown> = {};
