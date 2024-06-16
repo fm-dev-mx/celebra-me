@@ -29,7 +29,7 @@ export default {
 		fontFamily: {
 			sans: ['Open Sans', 'Poppins', 'Montserrat', 'sans-serif'],
 			serif: ['Lora', 'Playfair Display', 'Merriweather', 'serif'],
-			cursive: ['Great Vibes', 'cursive'],
+			cursive: ['Satisfy', 'Great Vibes', 'cursive'],
 			handwriting: ['Indie Flower', 'cursive'],
 		},
 		textShadow: {

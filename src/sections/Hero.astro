@@ -1,5 +1,6 @@
 ---
-import Action from "@/components/Action.astro";
+import Action from '@/components/Action.astro';
+
 
 interface Props {
   data: {
@@ -17,57 +18,61 @@ const { data } = Astro.props;
 
 <section id="hero-section" class="flex justify-center mt-48 h-screen">
   <div class="md:w-2/3">
-	<icon class="w-24 h-auto text-primary" icon="CelebrameIcon" />
-    <h1 class="text-secondary-dark text-xl text-center md:text-2xl lg:text-3xl font-thin tracking-widest">
-      {data.title}
-      <br>
-      <span class="text-primary-dark text-5xl md:text-6xl lg:text-8xl shadow-text font-thin"> {data.highlightedTitle}</span>
-      <span class="text-primary-dark text-2xl md:text-2xl lg:text-4xl shadow-text font-mono">{data.highlightedTitleSmall} </span>
+    <h1 class="text-center">
+	  	<span class="text-secondary-dark text-2xl md:text-2xl mb-3 lg:text-3xl block font-light">
+      		{data.title}
+		</span>
+		<span class="text-primary-dark font-semibold text-5xl md:text-5xl lg:text-7xl shadow-text">
+			{data.highlightedTitle}
+		</span>
+		<span class="text-primary-dark text-2xl font-semibold md:text-2xl lg:text-3xl">
+			{data.highlightedTitleSmall}
+		</span>
     </h1>
-    <h2 class="text-primary-light opacity-70 mt-8 text-lg text-center md:text-4xl font-thin tracking-wideste">
+    <h2 class="text-gray opacity-60 mt-10 text-lg text-center font-thin md:text-2xl mb-20">
       {data.subTitle}
     </h2>
-    <div class="flex justify-evenly mt-20">
+    <div class="flex justify-evenly mt-10">
+
       <Action
-        as="a"
-        type="button"
-        class="bg-secondary-dark text-white2"
-        href="https://github.com/JimmyCamus/luna-landing"
-        target="_blank"
-      >
+		as="a"
+		type="button"
+		class="bg-secondary-dark text-white2 py-2 px-3 rounded-xl"
+		href=""/
+		>
         {data.primaryCta}
-      </Action>
+	  </Action>
       <Action
-        as="a"
-        class="bg-transparent text-secondary-dark border border-secondary-dark"
-        type="button"
-        href="https://github.com/JimmyCamus/luna-landing"
-        target="_blank"
-      >
+	  	as="a"
+		type="button"
+		class="bg-transparent text-secondary-dark border border-secondary-dark py-2 px-3 rounded-xl"
+		href=""
+		>
         {data.secondaryCta}
-      </Action>
+      </>
     </div>
-    <div class="flex justify-center">
-      <Action
-        as="a"
-        class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-14 h-14 mt-32 hover:bg-white hover:text-primary hover:border-primary transition"
-        href="#services-section"
-        title="arrow down icon"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-8 h-8"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"></path>
-        </svg>
-      </Action>
+    <div class="flex justify-center mt-40">
+		<Action
+			as="a"
+			class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-12 h-12 hover:bg-white hover:text-primary hover:border-primary transition"
+			href="#services-section"
+			title="arrow down icon"
+		>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="w-7 h-7"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3">
+					</path>
+				</svg>
+		</Action>
     </div>
   </div>
 </section>
