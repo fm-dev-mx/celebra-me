@@ -40,10 +40,10 @@
     "subTitle": "Tus eventos serán únicos",
     "primaryCta": "Elegir mi invitación",
     "secondaryCta": "Ver Ejemplos",
-    "backgroundImage": "path/to/hero/background.jpg"
+    "backgroundImage": "hero_section/backgroundImage.jpg"
   },
   "servicesData": {
-    "title": "Explora Nuestros Servicios",
+    "title": "Invitaciones digitales para Cada Ocasión",
     "services": [
     	{
 			"title": "Bodas",
@@ -67,21 +67,21 @@
 		}
     ]
   },
-  "adventajesData": {
+  "advantagesData": {
     "title": "    Unlock the Power of Luna Landing: Discover the Key Benefits",
-    "adventajes": [
+    "advantages": [
       {
         "title": "Take Your Website to Perfection",
         "description": "Our intuitive customization options empower you to create a website that stands out and resonates with your audience like never before. Say goodbye to cookie-cutter designs and hello to a website that truly reflects your vision and personality.",
         "img": "template.webp",
-        "imageAlt": "this is an image about the template service adventajes",
+        "imageAlt": "this is an image about the template service advantages",
         "checks": ["Colors", "Fonts", "Layout"]
       },
       {
         "title": "Reach the Top of Search Rankings",
         "description": "Elevate your online visibility with our SEO-optimized template. Built with search engine algorithms in mind, our template is designed to help your website climb to the top of search engine results pages (SERPs). From optimized meta tags and clean HTML structure to mobile responsiveness and fast loading times, every aspect of our template is geared towards maximizing your website's search engine performance. Increase your organic traffic, attract more visitors, and grow your online presence with ease.",
         "img": "seo.webp",
-        "imageAlt": "this is an image about the SEO adventajes",
+        "imageAlt": "this is an image about the SEO advantages",
         "checks": ["Search Visibility", "Organic Traffic", "Online Credibility"]
       }
     ]

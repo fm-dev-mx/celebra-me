@@ -33,8 +33,4 @@
 "prettier.documentSelectors": [
 	"**/*.astro"
 ],
-"cSpell.words": [
-	"Champán",
-	"copas"
-]
 }

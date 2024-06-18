@@ -3,7 +3,7 @@ export interface LandingPageData {
   headerData: HeaderData;
   heroData: HeroData;
   servicesData: ServicesData;
-  adventajesData: AdventajesData;
+  advantagesData: advantagesData;
   brandsData: BrandsData;
   pricingData: PricingData;
   footerData: FooterData;
@@ -20,6 +20,7 @@ export interface HeroData {
   primaryCta: string;
   secondaryCta: string;
   highlightedTitle: string;
+  backgroundImage?: string;
 }
 
 export interface ServicesData {
@@ -33,12 +34,12 @@ export interface Service {
   description: string;
 }
 
-export interface AdventajesData {
+export interface advantagesData {
   title: string;
-  adventajes: Adventaje[];
+  advantages: advantage[];
 }
 
-export interface Adventaje {
+export interface advantage {
   title: string;
   description: string;
   img: string;

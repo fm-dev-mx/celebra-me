@@ -8,6 +8,7 @@ interface Props {
     subTitle: string;
     primaryCta: string;
     secondaryCta: string;
+	backgroundImage?: string;
     highlightedTitle?: string;
     highlightedTitleSmall?: string;
   };
@@ -16,65 +17,38 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<section id="hero-section" class="flex justify-center mt-48 h-screen">
-  <div class="md:w-2/3">
-    <h1 class="text-center">
-	  	<span class="text-secondary-dark text-2xl md:text-2xl mb-3 lg:text-3xl block font-light">
-      		{data.title}
-		</span>
-		<span class="text-primary-dark font-semibold text-5xl md:text-5xl lg:text-7xl shadow-text">
-			{data.highlightedTitle}
-		</span>
-		<span class="text-primary-dark text-2xl font-semibold md:text-2xl lg:text-3xl">
-			{data.highlightedTitleSmall}
-		</span>
-    </h1>
-    <h2 class="text-gray opacity-60 mt-10 text-lg text-center font-thin md:text-2xl mb-20">
-      {data.subTitle}
-    </h2>
-    <div class="flex justify-evenly mt-10">
-
-      <Action
-		as="a"
-		type="button"
-		class="bg-secondary-dark text-white2 py-2 px-3 rounded-xl"
-		href=""/
-		>
-        {data.primaryCta}
-	  </Action>
-      <Action
-	  	as="a"
-		type="button"
-		class="bg-transparent text-secondary-dark border border-secondary-dark py-2 px-3 rounded-xl"
-		href=""
-		>
-        {data.secondaryCta}
-      </>
-    </div>
-    <div class="flex justify-center mt-40">
-		<Action
-			as="a"
-			class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-12 h-12 hover:bg-white hover:text-primary hover:border-primary transition"
-			href="#services-section"
-			title="arrow down icon"
-		>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="currentColor"
-					class="w-7 h-7"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3">
-					</path>
+<section id="hero-section" class="flex justify-center h-screen" >
+	<div class="md:w-2/3 mt-60">
+		<h1 class="text-center">
+			<span class="text-secondary-dark mb-4 block font-light text-2xl md:text-3xl xl:text-4xl 2xl:text-4xl">
+				{data.title}
+			</span>
+			<span class="text-primary-dark font-bold shadow-text text-5xl md:text-6xl xl:text-7xl 2xl:text-7xl">
+				{data.highlightedTitle}
+			</span>
+			<span class="text-primary-dark font-bold shadow-text text-xl md:text-2xl xl:text-3xl 2xl:text-4xl">
+				{data.highlightedTitleSmall}
+			</span>
+		</h1>
+		<h2 class="text-gray opacity-60 mt-8 text-center font-thin text-lg md:text-3xl mb-20">
+			{data.subTitle}
+		</h2>
+		<div class="flex flex-col sm:flex-row justify-center gap-10 mt-10 px-6">
+			<Action as="a" type="button1" href="#">{data.primaryCta}</Action>
+			<Action as="a" type="button2" href="#">{data.secondaryCta}</Action>
+		</div>
+		<div class="flex justify-center mt-40">
+			<Action	as="a"
+				class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-12 h-12 hover:bg-white hover:text-primary-dark hover:border-primary-dark transition"
+				href="#services-title"
+				title="Click para ir a la sección de Servicios"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"></path>
 				</svg>
-		</Action>
-    </div>
-  </div>
+			</Action>
+		</div>
+	</div>
 </section>
 
 <style>

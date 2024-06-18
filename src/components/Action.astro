@@ -7,10 +7,12 @@ type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
 
 const { as: Tag, class: className, type, ...props } = Astro.props;
 
+const baseButtonStyle = "text-sm text-center px-3 py-2 md:text-base md:px-6 md:py-2 px-3 py-1 rounded-xl transition inline-block hover:scale-110 hover:opacity-85";
+
 const defaultStyles = {
-  button:
-    "px-3 py-1 text-sm md:text-base md:px-6 md:py-2 rounded-lg text-center hover:scale-110 hover:opacity-85 transition inline-block",
-  text: "hover:opacity-50 hover:scale-105",
+  button1: `${baseButtonStyle} bg-secondary-dark text-white2`,
+  button2: `${baseButtonStyle} bg-transparent text-secondary-dark border border-secondary-dark`,
+  text: "hover:opacity-50 hover:scale-105 items-center",
   icon: "text-white hover:opacity-50 hover:scale-105",
   default: "",
 };
