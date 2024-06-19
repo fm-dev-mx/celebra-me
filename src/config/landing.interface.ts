@@ -1,142 +1,150 @@
 export interface LandingPageData {
-  meta: Meta;
-  headerData: HeaderData;
-  heroData: HeroData;
-  servicesData: ServicesData;
-  advantagesData: advantagesData;
-  brandsData: BrandsData;
-  pricingData: PricingData;
-  footerData: FooterData;
+	meta: Meta;
+	headerData: HeaderData;
+	heroData: HeroData;
+	servicesData: ServicesData;
+	advantagesData: advantagesData;
+	aboutData: AboutData;
+	pricingData: PricingData;
+	footerData: FooterData;
 }
 
 export interface HeaderData {
-  logo: string;
-  links: Link[];
+	logo: string;
+	links: Link[];
 }
 
 export interface HeroData {
-  title: string;
-  subTitle: string;
-  primaryCta: string;
-  secondaryCta: string;
-  highlightedTitle: string;
-  backgroundImage?: string;
+	title: string;
+	subTitle: string;
+	primaryCta: string;
+	secondaryCta: string;
+	highlightedTitle: string;
+	backgroundImage?: string;
 }
 
 export interface ServicesData {
-  title: string;
-  services: Service[];
+	title: string;
+	services: Service[];
 }
 
 export interface Service {
-  title: string;
-  icon: string;
-  description: string;
+	title: string;
+	icon: string;
+	description: string;
 }
 
 export interface advantagesData {
-  title: string;
-  advantages: advantage[];
+	title: string;
+	advantages: advantage[];
 }
 
 export interface advantage {
-  title: string;
-  description: string;
-  img: string;
-  imageAlt: string;
-  checks: string[];
+	title: string;
+	description: string;
+	img: string;
+	imageAlt: string;
+	checks: string[];
 }
 
 export interface FooterData {
-  logo: string;
-  description: string;
-  links: Link[];
-  socials: Social[];
+	logo: string;
+	description: string;
+	links: Link[];
+	socials: Social[];
 }
 
 export interface Link {
-  label: string;
-  href: string;
+	label: string;
+	href: string;
 }
 
 export interface Social {
-  icon: string;
-  href: string;
+	icon: string;
+	href: string;
 }
 
-export interface BrandsData {
-  title: string;
-  description: string;
-  brands: Brand[];
+export interface AboutData {
+	values: Value[];
+	testimonials: Testimonial[];
+	title: string;
+	description: string;
+	image: string;
+	imageAlt: string;
+	cta: Cta;
 }
 
-export interface Brand {
-  label: string;
-  icon: string;
-  href: string;
+export interface Value {
+	icon: Icon;
+	name: string;
+	description: string;
+}
+
+export interface Testimonial {
+	image: string;
+	content: string;
+	author: string;
+}
+
+export interface Cta {
+	label: string;
+	href: string;
 }
 
 export interface PricingData {
-  title: string;
-  tiers: Tier[];
+	title: string;
+	tiers: Tier[];
 }
 
 export interface Tier {
-  title: string;
-  description: string;
-  price: Price;
-  features: string[];
-  cta: string;
+	title: string;
+	description: string;
+	price: Price;
+	features: string[];
+	cta: string;
 }
 
 export interface Price {
-  amount: string;
-  period?: string;
+	amount: string;
+	period?: string;
 }
 
 export interface Meta {
-  title: string;
-  description: string;
-  lang: string;
-  charset: string;
-  ldJson: LdJson;
+	title: string;
+	description: string;
+	lang: string;
+	charset: string;
+	ldJson: LdJson;
 }
 
 export interface LdJson {
-  "@context": string;
-  "@type": string;
-  name: string;
-  description: string;
-  url: string;
-  logo: string;
-  contactPoint: {
-    "@type": string;
-    email: string;
-    contactType: string;
-  };
-  sameAs: string[];
+	"@context": string;
+	"@type": string;
+	name: string;
+	description: string;
+	url: string;
+	logo: string;
+	contactPoint: {
+		"@type": string;
+		email: string;
+		contactType: string;
+	};
+	sameAs: string[];
 }
 
 export type Icon =
-  | "DevIcon"
-  | "FileIcon"
-  | "PlanetIcon"
-  | "ConfigIcon"
-  | "CheckIcon"
-  | "InstagramIcon"
-  | "GithubIcon"
-  | "TwitterIcon"
-  | "FacebookIcon"
-  | "ReactIcon"
-  | "SvelteIcon"
-  | "SolidIcon"
-  | "VueIcon"
-  | "VercelIcon"
-  | "NetlifyIcon"
-  | "WeddingIcon"
-  | "CrownIcon"
-  | "CakeIcon"
-  | "AnniversaryIcon"
-  | "GraduationIcon"
-  | "BriefcaseIcon"
-  | "CelebrameIcon";
+	| "CheckIcon"
+	| "InstagramIcon"
+	| "GithubIcon"
+	| "TwitterIcon"
+	| "FacebookIcon"
+	| "WeddingIcon"
+	| "CrownIcon"
+	| "CakeIcon"
+	| "AnniversaryIcon"
+	| "GraduationIcon"
+	| "BriefcaseIcon"
+	| "CelebrameIcon"
+	| "ExclusiveIcon"
+	| "EasyUseIcon"
+	| "CommitmentIcon";

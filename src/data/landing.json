@@ -1,186 +1,199 @@
 {
-  "meta": {
-    "title": "Celebra-me.com: Invitaciones Digitales Personalizadas",
-    "description": "Diseña invitaciones digitales personalizadas para cualquier evento.",
-    "lang": "es",
-    "charset": "UTF-8",
-    "ldJson": {
-      "@context": "http://schema.org",
-      "@type": "Organization",
-      "name": "Celebra-me.com",
-      "description": "",
-      "url": "https://celebra-me.com",
-      "logo": "celebrameIcon",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "contact@celebra-me.com",
-        "contactType": "Client Service"
-      },
-      "sameAs": [
-        "https://www.facebook.com/celebra-me",
-        "https://www.instagram.com/celebra-me"
-      ]
-    }
-  },
-  "headerData": {
-    "logo": "celebra-me.com",
-    "links": [
-	  { "label": "Inicio", "href": "/" },
-      { "label": "Sobre Nosotros", "href": "/sobre-nosotros" },
-      { "label": "Servicios", "href": "/servicios" },
-      { "label": "Demos", "href": "/demos" },
-      { "label": "FAQ", "href": "/faq" },
-      { "label": "Contacto", "href": "/contacto" }
-    ]
-  },
-  "heroData": {
-	"title": "Invitaciones digitales",
-    "highlightedTitle": "celebra-me",
-    "highlightedTitleSmall": ".com",
-    "subTitle": "Tus eventos serán únicos",
-    "primaryCta": "Elegir mi invitación",
-    "secondaryCta": "Ver Ejemplos",
-    "backgroundImage": "hero_section/backgroundImage.jpg"
-  },
-  "servicesData": {
-    "title": "Invitaciones digitales para Cada Ocasión",
-    "services": [
-    	{
-			"title": "Bodas",
-			"description": "Invitaciones elegantes y personalizables para tu día especial.",
-			"icon": "WeddingIcon"
-		},
-		{
-			"title": "XV Años",
-			"description": "Diseños únicos para celebrar una transición importante en la vida.",
-			"icon": "CrownIcon"
-		},
-		{
-			"title": "Cumpleaños",
-			"description": "Invitaciones creativas y divertidas para todas las edades.",
-			"icon": "CakeIcon"
-		},
-		{
-			"title": "Aniversarios",
-			"description": "Invitaciones especiales para conmemorar hitos importantes.",
-			"icon": "AnniversaryIcon"
+	"meta": {
+		"title": "Celebra-me.com: Invitaciones Digitales Personalizadas",
+		"description": "Diseña invitaciones digitales personalizadas para cualquier evento.",
+		"lang": "es",
+		"charset": "UTF-8",
+		"ldJson": {
+			"@context": "http://schema.org",
+			"@type": "Organization",
+			"name": "Celebra-me.com",
+			"description": "",
+			"url": "https://celebra-me.com",
+			"logo": "celebrameIcon",
+			"contactPoint": {
+				"@type": "ContactPoint",
+				"email": "contact@celebra-me.com",
+				"contactType": "Client Service"
+			},
+			"sameAs": [
+				"https://www.facebook.com/celebra-me",
+				"https://www.instagram.com/celebra-me"
+			]
 		}
-    ]
-  },
-  "advantagesData": {
-    "title": "    Unlock the Power of Luna Landing: Discover the Key Benefits",
-    "advantages": [
-      {
-        "title": "Take Your Website to Perfection",
-        "description": "Our intuitive customization options empower you to create a website that stands out and resonates with your audience like never before. Say goodbye to cookie-cutter designs and hello to a website that truly reflects your vision and personality.",
-        "img": "template.webp",
-        "imageAlt": "this is an image about the template service advantages",
-        "checks": ["Colors", "Fonts", "Layout"]
-      },
-      {
-        "title": "Reach the Top of Search Rankings",
-        "description": "Elevate your online visibility with our SEO-optimized template. Built with search engine algorithms in mind, our template is designed to help your website climb to the top of search engine results pages (SERPs). From optimized meta tags and clean HTML structure to mobile responsiveness and fast loading times, every aspect of our template is geared towards maximizing your website's search engine performance. Increase your organic traffic, attract more visitors, and grow your online presence with ease.",
-        "img": "seo.webp",
-        "imageAlt": "this is an image about the SEO advantages",
-        "checks": ["Search Visibility", "Organic Traffic", "Online Credibility"]
-      }
-    ]
-  },
-  "brandsData": {
-    "title": "Integration with Leading Technologies",
-    "description": "Effortlessly integrate with leading technologies. Our platform seamlessly supports industry-standard tools and frameworks, enabling you to stay ahead of the curve and maximize productivity. Explore endless possibilities with our comprehensive compatibility features",
-    "brands": [
-      { "label": "React", "icon": "ReactIcon", "href": "https://react.dev/" },
-      { "label": "Vue", "icon": "VueIcon", "href": "https://vuejs.org/" },
-      {
-        "label": "Svelte",
-        "icon": "SvelteIcon",
-        "href": "https://svelte.dev/"
-      },
-      {
-        "label": "Solid",
-        "icon": "SolidIcon",
-        "href": "https://www.solidjs.com/"
-      },
-      {
-        "label": "Vercel",
-        "icon": "VercelIcon",
-        "href": "https://vercel.com/"
-      },
-      {
-        "label": "Netlify",
-        "icon": "NetlifyIcon",
-        "href": "https://www.netlify.com/"
-      }
-    ]
-  },
-  "pricingData": {
-    "title": "Our Pricing",
-    "tiers": [
-      {
-        "title": "Starter",
-        "description": "Best option for personal use & for your next project.",
-        "price": {
-          "amount": "Free"
-        },
-        "features": [
-          "feature 1",
-          "feature 2",
-          "feature 3",
-          "feature 4",
-          "feature 5"
-        ],
-        "cta": "Get started"
-      },
-      {
-        "title": "Professional",
-        "description": "Relevant for multiple users, extended & premium support.",
-        "price": {
-          "amount": "$29",
-          "period": "/month"
-        },
-        "features": [
-          "feature 1",
-          "feature 2",
-          "feature 3",
-          "feature 4",
-          "feature 5"
-        ],
-        "cta": "Get started"
-      },
-      {
-        "title": "Enterprise",
-        "description": "Best for large scale uses and extended redistribution rights.",
-        "price": {
-          "amount": "$59",
-          "period": "/month"
-        },
-        "features": [
-          "feature 1",
-          "feature 2",
-          "feature 3",
-          "feature 4",
-          "feature 5"
-        ],
-        "cta": "Get started"
-      }
-    ]
-  },
-  "footerData": {
-    "logo": "Luna Landing",
-    "description": "Discover the Beauty of the Cosmos: Explore the Infinite Wonders of Space with Us",
-    "links": [
-      { "label": "About", "href": "/" },
-      { "label": "Services", "href": "/" },
-      { "label": "Blog", "href": "/" },
-      { "label": "FAQs", "href": "/" },
-      { "label": "Contact", "href": "/" }
-    ],
-    "socials": [
-      { "icon": "FacebookIcon", "href": "/" },
-      { "icon": "InstagramIcon", "href": "/" },
-      { "icon": "TwitterIcon", "href": "/" },
-      { "icon": "GithubIcon", "href": "/" }
-    ]
-  }
+	},
+	"headerData": {
+		"logo": "celebra-me.com",
+		"links": [
+			{ "label": "Inicio", "href": "/" },
+			{ "label": "Sobre Nosotros", "href": "/sobre-nosotros" },
+			{ "label": "Servicios", "href": "/servicios" },
+			{ "label": "Demos", "href": "/demos" },
+			{ "label": "FAQ", "href": "/faq" },
+			{ "label": "Contacto", "href": "/contacto" }
+		]
+	},
+	"heroData": {
+		"title": "Invitaciones digitales",
+		"highlightedTitle": "celebra-me",
+		"highlightedTitleSmall": ".com",
+		"subTitle": "Tus eventos serán únicos",
+		"primaryCta": "Elegir mi invitación",
+		"secondaryCta": "Ver Ejemplos",
+		"backgroundImage": "hero_section/backgroundImage.jpg"
+	},
+	"servicesData": {
+		"title": "Invitaciones digitales para Cada Ocasión",
+		"services": [
+			{
+				"title": "Bodas",
+				"description": "Invitaciones elegantes y personalizables para tu día especial.",
+				"icon": "WeddingIcon"
+			},
+			{
+				"title": "XV Años",
+				"description": "Diseños únicos para celebrar una transición importante en la vida.",
+				"icon": "CrownIcon"
+			},
+			{
+				"title": "Cumpleaños",
+				"description": "Invitaciones creativas y divertidas para todas las edades.",
+				"icon": "CakeIcon"
+			},
+			{
+				"title": "Aniversarios",
+				"description": "Invitaciones especiales para conmemorar hitos importantes.",
+				"icon": "AnniversaryIcon"
+			}
+		]
+	},
+	"advantagesData": {
+		"title": "    Unlock the Power of Luna Landing: Discover the Key Benefits",
+		"advantages": [
+			{
+				"title": "Take Your Website to Perfection",
+				"description": "Our intuitive customization options empower you to create a website that stands out and resonates with your audience like never before. Say goodbye to cookie-cutter designs and hello to a website that truly reflects your vision and personality.",
+				"img": "template.webp",
+				"imageAlt": "this is an image about the template service advantages",
+				"checks": ["Colors", "Fonts", "Layout"]
+			},
+			{
+				"title": "Reach the Top of Search Rankings",
+				"description": "Elevate your online visibility with our SEO-optimized template. Built with search engine algorithms in mind, our template is designed to help your website climb to the top of search engine results pages (SERPs). From optimized meta tags and clean HTML structure to mobile responsiveness and fast loading times, every aspect of our template is geared towards maximizing your website's search engine performance. Increase your organic traffic, attract more visitors, and grow your online presence with ease.",
+				"img": "seo.webp",
+				"imageAlt": "this is an image about the SEO advantages",
+				"checks": [
+					"Search Visibility",
+					"Organic Traffic",
+					"Online Credibility"
+				]
+			}
+		]
+	},
+	"aboutData": {
+		"title": "Sobre Nosotros",
+		"description": "En Celebra-me.com, sabemos que deseas que tu evento sea inolvidable. Nuestras invitaciones, destacadas por su elegancia y originalidad, capturan la atención de tus invitados, asegurando que no puedan resistirse a asistir y disfrutar contigo de este momento especial.",
+		"values": [
+			{
+				"name": "Exclusividad",
+				"icon": "ExclusiveIcon",
+				"description": "Innovamos constantemente para ofrecer diseños únicos."
+			},
+			{
+				"name": "Facilidad de Uso",
+				"icon": "EasyUseIcon",
+				"description": "Elegantes e intuitivas, desde cualquier dispositivo."
+			},
+			{
+				"name": "Compromiso",
+				"icon": "CommitmentIcon",
+				"description": "Nos dedicamos a brindar un servicio excepcional."
+			}
+		],
+		"testimonials": [
+			{
+				"image": "/testimonials/1.jpg",
+				"content": "Las invitaciones fueron increíbles, recibimos muchos elogios.",
+				"author": "Esteban y Marlene"
+			},
+			{
+				"image": "/testimonials/2.jpg",
+				"content": "Un servicio excelente, muy profesionales.",
+				"author": "Ana y Fernando"
+			}
+		],
+		"cta": {
+			"label": "Contáctanos",
+			"href": "/contacto"
+		}
+	},
+	"pricingData": {
+		"title": "Our Pricing",
+		"tiers": [
+			{
+				"title": "Starter",
+				"description": "Best option for personal use & for your next project.",
+				"price": {
+					"amount": "Free"
+				},
+				"features": [
+					"feature 1",
+					"feature 2",
+					"feature 3",
+					"feature 4",
+					"feature 5"
+				],
+				"cta": "Get started"
+			},
+			{
+				"title": "Professional",
+				"description": "Relevant for multiple users, extended & premium support.",
+				"price": {
+					"amount": "$29",
+					"period": "/month"
+				},
+				"features": [
+					"feature 1",
+					"feature 2",
+					"feature 3",
+					"feature 4",
+					"feature 5"
+				],
+				"cta": "Get started"
+			},
+			{
+				"title": "Enterprise",
+				"description": "Best for large scale uses and extended redistribution rights.",
+				"price": {
+					"amount": "$59",
+					"period": "/month"
+				},
+				"features": [
+					"feature 1",
+					"feature 2",
+					"feature 3",
+					"feature 4",
+					"feature 5"
+				],
+				"cta": "Get started"
+			}
+		]
+	},
+	"footerData": {
+		"logo": "Luna Landing",
+		"description": "Discover the Beauty of the Cosmos: Explore the Infinite Wonders of Space with Us",
+		"links": [
+			{ "label": "About", "href": "/" },
+			{ "label": "Services", "href": "/" },
+			{ "label": "Blog", "href": "/" },
+			{ "label": "FAQs", "href": "/" },
+			{ "label": "Contact", "href": "/" }
+		],
+		"socials": [
+			{ "icon": "FacebookIcon", "href": "/" },
+			{ "icon": "InstagramIcon", "href": "/" },
+			{ "icon": "TwitterIcon", "href": "/" },
+			{ "icon": "GithubIcon", "href": "/" }
+		]
+	}
 }

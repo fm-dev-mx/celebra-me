@@ -1,20 +1,28 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 
-type actionTypes = "button" | "text" | "icon" | "default";
+type actionTypes =
+	| "button1"
+	| "button2"
+	| "button3"
+	| "text"
+	| "icon"
+	| "default";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
 
 const { as: Tag, class: className, type, ...props } = Astro.props;
 
-const baseButtonStyle = "text-sm text-center px-3 py-2 md:text-base md:px-6 md:py-2 px-3 py-1 rounded-xl transition inline-block hover:scale-110 hover:opacity-85";
+const baseButtonStyle =
+	"text-sm text-center px-3 py-2 md:text-base md:px-6 md:py-2 px-3 py-1 rounded-xl transition inline-block hover:scale-110 hover:opacity-85";
 
 const defaultStyles = {
-  button1: `${baseButtonStyle} bg-secondary-dark text-white2`,
-  button2: `${baseButtonStyle} bg-transparent text-secondary-dark border border-secondary-dark`,
-  text: "hover:opacity-50 hover:scale-105 items-center",
-  icon: "text-white hover:opacity-50 hover:scale-105",
-  default: "",
+	button1: `${baseButtonStyle} bg-secondary-dark text-white2`,
+	button2: `${baseButtonStyle} bg-transparent text-secondary-dark border border-secondary-dark`,
+	button3: `${baseButtonStyle} text-lg px-6 py-3 md:px-8 md:py-3 bg-transparent text-primary border border-primary border-2`,
+	text: "hover:opacity-50 hover:scale-105 items-center",
+	icon: "text-white hover:opacity-50 hover:scale-105",
+	default: "",
 };
 
 const baseClass = defaultStyles[type as actionTypes] ?? "";

@@ -1,11 +1,10 @@
 ---
 import type { Icon } from "@/config/landing.interface";
+import CommitmentIcon from "@/icons/aboutUs/CommitmentIcon.astro";
+import EasyUseIcon from "@/icons/aboutUs/EasyUseIcon.astro";
+import ExclusiveIcon from "@/icons/aboutUs/ExclusiveIcon.astro";
 import CelebrameIcon from "@/icons/commons/CelebrameIcon.astro";
 import CheckIcon from "@/icons/commons/CheckIcon.astro";
-import ConfigIcon from "@/icons/commons/ConfigIcon.astro";
-import DevIcon from "@/icons/commons/DevIcon.astro";
-import FileIcon from "@/icons/commons/FileIcon.astro";
-import PlanetIcon from "@/icons/commons/PlanetIcon.astro";
 import AnniversaryIcon from "@/icons/invitationServices/AnniversaryIcon.astro";
 import BriefcaseIcon from "@/icons/invitationServices/BriefcaseIcon.astro";
 import CakeIcon from "@/icons/invitationServices/CakeIcon.astro";
@@ -16,50 +15,36 @@ import FacebookIcon from "@/icons/socials/FacebookIcon.astro";
 import GithubIcon from "@/icons/socials/GithubIcon.astro";
 import InstagramIcon from "@/icons/socials/InstagramIcon.astro";
 import TwitterIcon from "@/icons/socials/TwitterIcon.astro";
-import NetlifyIcon from "@/icons/techs/NetlifyIcon.astro";
-import ReactIcon from "@/icons/techs/ReactIcon.astro";
-import SolidIcon from "@/icons/techs/SolidIcon.astro";
-import SvelteIcon from "@/icons/techs/SvelteIcon.astro";
-import VercelIcon from "@/icons/techs/VercelIcon.astro";
-import VueIcon from "@/icons/techs/VueIcon.astro";
 
 interface Props {
-  icon: Icon;
-  class?: string;
+	icon: Icon;
+	class?: string;
 }
 
 const { icon, class: className } = Astro.props;
 
 const icons = [
-  ConfigIcon,
-  DevIcon,
-  FileIcon,
-  PlanetIcon,
-  CheckIcon,
-  FacebookIcon,
-  GithubIcon,
-  InstagramIcon,
-  TwitterIcon,
-  ReactIcon,
-  SvelteIcon,
-  VueIcon,
-  NetlifyIcon,
-  SolidIcon,
-  VercelIcon,
-  WeddingIcon,
-  CakeIcon,
-  BriefcaseIcon,
-  GraduationCapIcon,
-  CrownIcon,
-  AnniversaryIcon,
-  CelebrameIcon
-
+	CheckIcon,
+	FacebookIcon,
+	GithubIcon,
+	InstagramIcon,
+	TwitterIcon,
+	WeddingIcon,
+	CakeIcon,
+	BriefcaseIcon,
+	GraduationCapIcon,
+	CrownIcon,
+	AnniversaryIcon,
+	CelebrameIcon,
+	ExclusiveIcon,
+	EasyUseIcon,
+	CommitmentIcon,
 ];
 
 let figures: Record<string, (_props: Record<string, unknown>) => unknown> = {};
 
 icons.map((item) => {
-  figures[item.name] = item;
+	figures[item.name] = item;
 });
 
 const Figure = figures[icon];

@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import Brands from "@/sections/Brands.astro";
+import AboutUs from "@/sections/About-us.astro";
 import Footer from "@/sections/Footer.astro";
 import Header from "@/sections/Header.astro";
 import Hero from "@/sections/Hero.astro";
@@ -12,22 +12,30 @@ const data = await getLandingData();
 ---
 
 <Layout meta={data.meta}>
-<Header data={data.headerData} />
-  <main>
-    <section class="relative h-screen flex items-center justify-center w-full">
-		<div class="absolute inset-0 w-full h-full bg-cover bg-center" style={`background-image: url('${data.heroData.backgroundImage}');`}></div>
+	<Header data={data.headerData} />
+	<main>
+		<section
+			class="relative h-screen flex items-center justify-center w-full"
+		>
+			<div
+				class="absolute inset-0 w-full h-full bg-cover bg-center"
+				style={`background-image: url('${data.heroData.backgroundImage}');`}
+			>
+			</div>
 			<div class="relative w-full flex justify-center">
-				<div class="w-3/4 relative bg-white bg-opacity-70 px-6 rounded-2xl shadow-sm">
+				<div
+					class="w-3/4 relative bg-white bg-opacity-70 px-6 rounded-2xl shadow-sm"
+				>
 					<div class="relative z-10">
-						<Hero data={data.heroData}/>
+						<Hero data={data.heroData} />
 					</div>
 				</div>
 			</div>
 		</section>
 		<div class="w-3/4 mx-auto">
 			<Services data={data.servicesData} />
-			<advantages data={data.advantagesData} />
-			<Brands data={data.brandsData} />
+			<advantages data={data.advantagesData}></advantages>
+			<AboutUs data={data.aboutData} />
 			<Pricing data={data.pricingData} />
 		</div>
 		<Footer data={data.footerData} />
