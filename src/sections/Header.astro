@@ -3,44 +3,52 @@ import Action from "@/components/Action.astro";
 import type { HeaderData } from "@/config/landing.interface";
 
 interface Props {
-  data: HeaderData;
+	data: HeaderData;
 }
 
 const { data } = Astro.props;
 ---
+
 <header
-  id="navbar"
-  class="w-full fixed top-0 z-50 hidden md:flex items-center justify-center transition duration-300 h-20 opacity-90 hover:opacity-100"
+	id="navbar"
+	class="w-full fixed top-0 z-50 hidden md:flex items-center justify-center transition duration-300 h-20 opacity-90 hover:opacity-100"
 >
-  <nav aria-label="Main Navigation" class="flex items-center w-3/4 mx-auto">
-    <ul class="flex items-center w-full justify-center gap-x-8 md:gap-x-10">
-      <li class="flex items-center">
-        <Action as="a" class="md:text-xs lg:text-sm font-semibold mr-10 hover:scale-110" href="#">{data.logo}</Action>
-      </li>
-      {data.links.map((item) => (
-        <li class="text-secondary-dark font-light text-lg md:text-xs lg:text-sm flex items-center hover:scale-110 hover:opacity-80">
-          <Action as="a" href={item.href}>
-            {item.label}
-          </Action>
-        </li>
-      ))}
-    </ul>
-  </nav>
+	<nav aria-label="Main Navigation" class="flex items-center w-3/4 mx-auto">
+		<ul class="flex items-center w-full justify-center gap-x-8 md:gap-x-10">
+			<li class="flex items-center">
+				<Action
+					as="a"
+					class="md:text-xs lg:text-sm font-semibold mr-10 hover:scale-110"
+					href="#">{data.logo}</Action
+				>
+			</li>
+			{
+				data.links.map((item) => (
+					<li class="text-secondary-dark font-light text-lg md:text-xs lg:text-sm flex items-center hover:scale-110 hover:opacity-80">
+						<Action as="a" href={item.href}>
+							{item.label}
+						</Action>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
 </header>
 <script>
-  window.addEventListener("scroll", function () {
-    const navbar = document.getElementById("navbar");
-    if (!navbar) return;
+	window.addEventListener("scroll", function () {
+		// eslint-disable-next-line prettier/prettier
+		const navbar = document.getElementById("navbar");
+		if (!navbar) return;
 
-    const classesToAdd = ["border-b", "border-b-slate-300", "bg-white"];
-    const classesToRemove = ["border-b-transparent", "bg-transparent"];
+		const classesToAdd = ["border-b", "border-b-slate-300", "bg-white"];
+		const classesToRemove = ["border-b-transparent", "bg-transparent"];
 
-    if (window.scrollY >= 20) {
-      navbar.classList.remove(...classesToRemove);
-      navbar.classList.add(...classesToAdd);
-    } else {
-      navbar.classList.remove(...classesToAdd);
-      navbar.classList.add(...classesToRemove);
-    }
-  });
+		if (window.scrollY >= 20) {
+			navbar.classList.remove(...classesToRemove);
+			navbar.classList.add(...classesToAdd);
+		} else {
+			navbar.classList.remove(...classesToAdd);
+			navbar.classList.add(...classesToRemove);
+		}
+	});
 </script>

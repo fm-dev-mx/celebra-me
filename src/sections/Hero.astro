@@ -1,36 +1,43 @@
 ---
-import Action from '@/components/Action.astro';
-
+import Action from "@/components/Action.astro";
 
 interface Props {
-  data: {
-    title: string;
-    subTitle: string;
-    primaryCta: string;
-    secondaryCta: string;
-	backgroundImage?: string;
-    highlightedTitle?: string;
-    highlightedTitleSmall?: string;
-  };
+	data: {
+		title: string;
+		subTitle: string;
+		primaryCta: string;
+		secondaryCta: string;
+		backgroundImage?: string;
+		highlightedTitle?: string;
+		highlightedTitleSmall?: string;
+	};
 }
 
 const { data } = Astro.props;
 ---
 
-<section id="hero-section" class="flex justify-center h-screen" >
+<section id="hero-section" class="flex justify-center h-screen">
 	<div class="md:w-2/3 mt-60">
 		<h1 class="text-center">
-			<span class="text-secondary-dark mb-4 block font-light text-2xl md:text-3xl xl:text-4xl 2xl:text-4xl">
+			<span
+				class="text-secondary-dark mb-4 block font-light text-2xl md:text-3xl xl:text-4xl 2xl:text-4xl"
+			>
 				{data.title}
 			</span>
-			<span class="text-primary-dark font-bold shadow-text text-5xl md:text-6xl xl:text-7xl 2xl:text-7xl">
+			<span
+				class="text-primary-dark font-bold shadow-text text-5xl md:text-6xl xl:text-7xl 2xl:text-7xl"
+			>
 				{data.highlightedTitle}
 			</span>
-			<span class="text-primary-dark font-bold shadow-text text-xl md:text-2xl xl:text-3xl 2xl:text-4xl">
+			<span
+				class="text-primary-dark font-bold shadow-text text-xl md:text-2xl xl:text-3xl 2xl:text-4xl"
+			>
 				{data.highlightedTitleSmall}
 			</span>
 		</h1>
-		<h2 class="text-gray opacity-60 mt-8 text-center font-thin text-lg md:text-3xl mb-20">
+		<h2
+			class="text-gray opacity-60 mt-8 text-center font-thin text-lg md:text-3xl mb-20"
+		>
 			{data.subTitle}
 		</h2>
 		<div class="flex flex-col sm:flex-row justify-center gap-10 mt-10 px-6">
@@ -38,13 +45,24 @@ const { data } = Astro.props;
 			<Action as="a" type="button2" href="#">{data.secondaryCta}</Action>
 		</div>
 		<div class="flex justify-center mt-40">
-			<Action	as="a"
+			<Action
+				as="a"
 				class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-12 h-12 hover:bg-white hover:text-primary-dark hover:border-primary-dark transition"
 				href="#services-title"
 				title="Click para ir a la sección de Servicios"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"></path>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="w-7 h-7"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"></path>
 				</svg>
 			</Action>
 		</div>
@@ -52,17 +70,17 @@ const { data } = Astro.props;
 </section>
 
 <style>
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
 
-  #hero-section {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-in-out forwards;
-  }
+	#hero-section {
+		opacity: 0;
+		animation: fadeIn 0.8s ease-in-out forwards;
+	}
 </style>

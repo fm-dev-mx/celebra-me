@@ -3,41 +3,46 @@ import Icon from "@/components/Icon.astro";
 import IconWrapper from "@/components/IconWrapper.astro";
 import SectionTitle from "@/components/SectionTitle.astro";
 import type {
-Icon as IconType,
-ServicesData,
+	Icon as IconType,
+	ServicesData,
 } from "@/config/landing.interface";
 
 interface Props {
-  data: ServicesData;
+	data: ServicesData;
 }
 
 const { data } = Astro.props;
 ---
 
-<section id="services-section" class="flex flex-col mb-60 gap-y-28 mt-80 px-4 md:px-0 w-full">
-  <div id="services-title" class="pt-20 md:pt-0"></div>
+<section
+	id="services-section"
+	class="flex flex-col mb-60 gap-y-28 mt-80 px-4 md:px-0 w-full"
+>
+	<div id="services-title" class="pt-20 md:pt-0"></div>
 	<SectionTitle>
 		{data.title}
 	</SectionTitle>
-	<div class="w-full lg:w-3/4 grid md:grid-cols-2 gap-10 justify-items-center mx-auto">
-    {
-		data.services.map((service) => (
-			<article class="flex flex-col md:flex-row gap-x-3">
-				<div class="flex justify-center mr-4">
-					<IconWrapper>
-						<Icon icon={service.icon as IconType} />
-					</IconWrapper>
-				</div>
-				<section class="mt-4 md:mt-0 text-center md:text-left">
-					<h3 class="text-xl font-thin md:text-4xl">
-						{service.title}
-					</h3>
-					<p class="text-pretty font-thin opacity-90 md:text-lg">
-						{service.description}
-					</p>
-				</section>
-			</article>
-		))
-	}
+	<div
+		class="w-full lg:w-3/4 grid md:grid-cols-2 gap-10 justify-items-center mx-auto"
+	>
+		{
+			data.services.map((service) => (
+				<article class="flex flex-col md:flex-row gap-x-3">
+					<div class="flex justify-center mr-4">
+						<IconWrapper>
+							<Icon icon={service.icon as IconType} />
+						</IconWrapper>
+					</div>
+					<section class="mt-4 md:mt-0 text-center md:text-left">
+						<h3 class="text-xl font-thin md:text-4xl">
+							{service.title}
+						</h3>
+						<p class="text-pretty font-thin opacity-90 md:text-lg">
+							{service.description}
+						</p>
+					</section>
+				</article>
+			))
+		}
 	</div>
 </section>
