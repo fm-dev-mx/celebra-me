@@ -3,18 +3,20 @@ import type { Icon } from "@/config/landing.interface";
 import CommitmentIcon from "@/icons/aboutUs/CommitmentIcon.astro";
 import EasyUseIcon from "@/icons/aboutUs/EasyUseIcon.astro";
 import ExclusiveIcon from "@/icons/aboutUs/ExclusiveIcon.astro";
+import ArrowDownIcon from "@/icons/commons/ArrowDownIcon.astro";
 import CelebrameIcon from "@/icons/commons/CelebrameIcon.astro";
 import CheckIcon from "@/icons/commons/CheckIcon.astro";
-import AnniversaryIcon from "@/icons/invitationServices/AnniversaryIcon.astro";
-import BriefcaseIcon from "@/icons/invitationServices/BriefcaseIcon.astro";
-import CakeIcon from "@/icons/invitationServices/CakeIcon.astro";
-import CrownIcon from "@/icons/invitationServices/CrownIcon.astro";
-import GraduationCapIcon from "@/icons/invitationServices/GraduationCapIcon.astro";
-import WeddingIcon from "@/icons/invitationServices/WeddingIcon.astro";
+import ToastIcon from "@/icons/commons/ToastIcon.astro";
+import AnniversaryIcon from "@/icons/services/AnniversaryIcon.astro";
+import BriefcaseIcon from "@/icons/services/BriefcaseIcon.astro";
+import CakeIcon from "@/icons/services/CakeIcon.astro";
+import CrownIcon from "@/icons/services/CrownIcon.astro";
+import GraduationCapIcon from "@/icons/services/GraduationCapIcon.astro";
+import WeddingIcon from "@/icons/services/WeddingIcon.astro";
 import FacebookIcon from "@/icons/socials/FacebookIcon.astro";
 import GithubIcon from "@/icons/socials/GithubIcon.astro";
 import InstagramIcon from "@/icons/socials/InstagramIcon.astro";
-import TwitterIcon from "@/icons/socials/TwitterIcon.astro";
+import LinkedInIcon from "@/icons/socials/LinkedInIcon.astro";
 
 interface Props {
 	icon: Icon;
@@ -28,7 +30,7 @@ const icons = [
 	FacebookIcon,
 	GithubIcon,
 	InstagramIcon,
-	TwitterIcon,
+	LinkedInIcon,
 	WeddingIcon,
 	CakeIcon,
 	BriefcaseIcon,
@@ -39,6 +41,8 @@ const icons = [
 	ExclusiveIcon,
 	EasyUseIcon,
 	CommitmentIcon,
+	ToastIcon,
+	ArrowDownIcon
 ];
 
 let figures: Record<string, (_props: Record<string, unknown>) => unknown> = {};
