@@ -5,25 +5,25 @@ export default {
 		extend: {
 			colors: {
 				primary: {
-					light: "#F5C1D0", // Rosa Claro
-					DEFAULT: "#E9B5C7", // Rosa Suave (Champán)
-					dark: "#FFACC0", // Versión más oscura del rosa
+					light: "#fda4af", // Rose-300
+					DEFAULT: "#fb7185", // Rose-400
+					dark: "#e11d48", // Rose-600
 				},
 				secondary: {
-					light: "#A1B3C1", // Versión más clara del azul grisáceo
-					DEFAULT: "#8FA0AF", // Azul Grisáceo
-					dark: "#626870", // Versión más oscura del azul grisáceo
+					light: "#38bdf8", // Sky-400
+					DEFAULT: "#0284c7", // Sky-600
+					dark: "#082f49", // Sky-950
 				},
-				white2: "#FFFFFF",
-				white: "#fef9f5",
-				black: "#161925",
-				gray: "#4e5b6e",
+				white2: "#fdf2f8", // Fuchsia-50
+				white: "#fdf4ff", // Pink-50
+				black: "#0f172a", // Slate-900
+				gray: "#64748b", // Slate-500
 				background: {
 					DEFAULT: "#F4F4F4", // Gris Claro
 				},
 				text: {
-					DEFAULT: "#4A4A4A", // Gris Oscuro
-					light: "#FFFFFF", // Blanco
+					DEFAULT: "#4a044e", // Fuchsia-950
+					light: "#f9a8d4", // Pink-300
 				},
 			},
 			fontFamily: {

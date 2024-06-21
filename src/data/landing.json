@@ -34,13 +34,15 @@
 		]
 	},
 	"heroData": {
+		"icon": "FavIcon",
 		"title": "Invitaciones digitales",
 		"highlightedTitle": "celebra-me",
 		"highlightedTitleSmall": ".com",
 		"subTitle": "Tus eventos serán únicos",
-		"primaryCta": "Elegir mi invitación",
-		"secondaryCta": "Ver Ejemplos",
-		"backgroundImage": "hero_section/backgroundImage.jpg"
+		"primaryCta": "WhatsApp 💬",
+		"secondaryCta": "Elegir invitación",
+		"backgroundImage": "hero_section/backgroundImage.jpg",
+		"backgroundImageMobile": "hero_section/backgroundImageMobile.jpg"
 	},
 	"servicesData": {
 		"title": "Invitaciones digitales para Cada Ocasión",
@@ -92,7 +94,7 @@
 	},
 	"aboutData": {
 		"title": "Sobre Nosotros",
-		"description": "En Celebra-me.com, sabemos que deseas que tu evento sea inolvidable. Nuestras invitaciones, destacadas por su elegancia y originalidad, capturan la atención de tus invitados, asegurando que no puedan resistirse a asistir y disfrutar contigo de este momento especial.",
+		"description": "Sabemos que deseas que tu evento sea inolvidable. Nuestras invitaciones, que destacan por su elegancia y originalidad, aseguraran que tus invitados no puedan resistirse a asistir y disfrutar contigo de este momento especial.",
 		"values": [
 			{
 				"name": "Exclusividad",
@@ -192,7 +194,7 @@
 		"socials": [
 			{ "icon": "FacebookIcon", "href": "/" },
 			{ "icon": "InstagramIcon", "href": "/" },
-			{ "icon": "TwitterIcon", "href": "/" },
+			{ "icon": "LinkedInIcon", "href": "/" },
 			{ "icon": "GithubIcon", "href": "/" }
 		]
 	}

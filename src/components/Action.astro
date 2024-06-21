@@ -1,10 +1,12 @@
 ---
 import type { HTMLTag, Polymorphic } from "astro/types";
 
-type actionTypes =
+type ActionTypes =
+	| "logo"
 	| "button1"
 	| "button2"
 	| "button3"
+	| "downButton"
 	| "text"
 	| "icon"
 	| "default";
@@ -14,18 +16,21 @@ type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }>;
 const { as: Tag, class: className, type, ...props } = Astro.props;
 
 const baseButtonStyle =
-	"text-sm text-center px-3 py-2 md:text-base md:px-6 md:py-2 px-3 py-1 rounded-xl transition inline-block hover:scale-110 hover:opacity-85";
+	"py-2.5 text-sm text-center rounded-lg my-0 transition hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-dark opacity-85 hover:opacity-100";
 
-const defaultStyles = {
-	button1: `${baseButtonStyle} bg-secondary-dark text-white2`,
-	button2: `${baseButtonStyle} bg-transparent text-secondary-dark border border-secondary-dark`,
+const defaultStyles: Record<ActionTypes, string> = {
+	button1: `${baseButtonStyle} bg-secondary text-white2 px-6`,
+	button2: `${baseButtonStyle} bg-transparent text-secondary border border-secondary px-3.5`,
 	button3: `${baseButtonStyle} text-lg px-6 py-3 md:px-8 md:py-3 bg-transparent text-primary border border-primary border-2`,
-	text: "hover:opacity-50 hover:scale-105 items-center",
-	icon: "text-white hover:opacity-50 hover:scale-105",
 	default: "",
+	downButton:
+		"flex justify-center items-center animate-bounce border-2 border-primary-light bg-primary-light text-white rounded-full w-12 h-12 hover:bg-transparent hover:text-primary-light transition",
+	icon: "text-white hover:opacity-50 hover:scale-105",
+	logo: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-60 md:text-xs lg:text-sm font-semibold mr-4",
+	text: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-90 items-center font-light md:text-xs lg:text-sm flex items-center",
 };
 
-const baseClass = defaultStyles[type as actionTypes] ?? "";
+const baseClass = defaultStyles[type as ActionTypes] ?? "";
 ---
 
 <Tag class:list={[baseClass, className]} {...props}><slot /></Tag>

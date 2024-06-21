@@ -1,5 +1,36 @@
+---
+interface Props {
+	size?: string;
+	color?: string;
+	fill?: string;
+	padding?: string;
+	className?: string;
+	background?: string;
+}
+
+const props = Astro.props as Props;
+
+const {
+	background = "bg-primary",
+	padding = "p-2",
+	size = "h-11 w-12",
+	color = "text-primary",
+	className = "",
+} = props;
+---
+
 <div
-	class="bg-primary h-10 md:h-12 md:p-3 md:w-12 p-2 rounded-full text-white w-10 flex justify-center items-center"
+	class:list={[
+		background,
+		padding,
+		"rounded-full",
+		"flex",
+		"justify-center",
+		"items-center",
+		size,
+		color,
+		className,
+	]}
 >
 	<slot />
 </div>

@@ -1,69 +1,79 @@
 ---
 import Action from "@/components/Action.astro";
+import Icon from "@/components/Icon.astro";
+import IconWrapper from "@/components/IconWrapper.astro";
+import type { Icon as IconType } from "@/config/landing.interface";
 
 interface Props {
 	data: {
+		icon: string;
 		title: string;
 		subTitle: string;
 		primaryCta: string;
 		secondaryCta: string;
-		backgroundImage?: string;
 		highlightedTitle?: string;
 		highlightedTitleSmall?: string;
 	};
 }
 
 const { data } = Astro.props;
+
+const heroSectionClass = "md:w-2/3 mt-20 md:mt-60";
+const titleClass =
+	"text-center text-xl md:text-2xl xl:text-4xl 2xl:text-4xl shadow-text";
+const highlightedTitleClass =
+	"text-primary font-semibold text-4xl md:text-5xl xl:text-7xl 2xl:text-7xl ml-4";
+const highlightedTitleSmallClass =
+	"text-primary font-normal text-sm md:text-2xl xl:text:3xl 2xl:text-4xl ml-3";
+const subTitleClass =
+	"text-primary opacity-80 mt-4 text-center font-thin text-xl md:text-2xl mb-20";
 ---
 
 <section id="hero-section" class="flex justify-center h-screen">
-	<div class="md:w-2/3 mt-60">
-		<h1 class="text-center">
+	<div class={heroSectionClass}>
+		<h1 class={titleClass}>
 			<span
-				class="text-secondary-dark mb-4 block font-light text-2xl md:text-3xl xl:text-4xl 2xl:text-4xl"
+				class="text-primary opacity-80 mb-10 lg:mb-4 block font-light"
 			>
 				{data.title}
 			</span>
-			<span
-				class="text-primary-dark font-bold shadow-text text-5xl md:text-6xl xl:text-7xl 2xl:text-7xl"
-			>
-				{data.highlightedTitle}
-			</span>
-			<span
-				class="text-primary-dark font-bold shadow-text text-xl md:text-2xl xl:text-3xl 2xl:text-4xl"
-			>
-				{data.highlightedTitleSmall}
+			<span class="flex flex-col lg:flex-row items-center justify-center">
+				<IconWrapper
+					background="bg-transparent"
+					size="h-8 w-9"
+					padding="p-0"
+					className="mr-0 lg:mr-4 scale-110 md:scale-150 mb-2 lg:mb-0"
+				>
+					<Icon icon={data.icon as IconType} />
+				</IconWrapper>
+				<div class="flex flex-row">
+					<span class=`${highlightedTitleClass}`>
+						{data.highlightedTitle}
+					</span>
+				</div>
+				<div class="flex flex-row items-end mt-0 lg:mt-8">
+					<span class={highlightedTitleSmallClass}>
+						{data.highlightedTitleSmall}
+					</span>
+				</div>
 			</span>
 		</h1>
-		<h2
-			class="text-gray opacity-60 mt-8 text-center font-thin text-lg md:text-3xl mb-20"
+		<h2 class={subTitleClass}>{data.subTitle}</h2>
+		<div
+			class="mt-10 flex flex-row justify-center gap-y-10 gap-x-6 md:gap-x-12"
 		>
-			{data.subTitle}
-		</h2>
-		<div class="flex flex-col sm:flex-row justify-center gap-10 mt-10 px-6">
 			<Action as="a" type="button1" href="#">{data.primaryCta}</Action>
 			<Action as="a" type="button2" href="#">{data.secondaryCta}</Action>
 		</div>
+
 		<div class="flex justify-center mt-40">
 			<Action
 				as="a"
-				class="flex justify-center items-center animate-bounce border-2 border-transparent bg-primary-dark text-white opacity-50 rounded-full w-12 h-12 hover:bg-white hover:text-primary-dark hover:border-primary-dark transition"
+				type={"downButton"}
 				href="#services-title"
 				title="Click para ir a la sección de Servicios"
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="currentColor"
-					class="w-7 h-7"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"></path>
-				</svg>
+				<Icon icon="ArrowDownIcon" />
 			</Action>
 		</div>
 	</div>

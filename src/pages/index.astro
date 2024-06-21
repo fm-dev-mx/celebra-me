@@ -17,10 +17,11 @@ const data = await getLandingData();
 		<section
 			class="relative h-screen flex items-center justify-center w-full"
 		>
-			<div
-				class="absolute inset-0 w-full h-full bg-cover bg-center"
-				style={`background-image: url('${data.heroData.backgroundImage}');`}
-			>
+			<div class="absolute inset-0 w-full h-full bg-cover bg-center hidden sm:block"
+				style={`background-image: url('${data.heroData.backgroundImage}');`}>
+			</div>
+			<div class="absolute inset-0 w-full h-full bg-cover bg-center sm:hidden"
+				style={`background-image: url('${data.heroData.backgroundImageMobile}');`}>
 			</div>
 			<div class="relative w-full flex justify-center">
 				<div

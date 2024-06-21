@@ -21,6 +21,7 @@ export interface HeroData {
 	secondaryCta: string;
 	highlightedTitle: string;
 	backgroundImage?: string;
+	backgroundImageMobile?: string;
 }
 
 export interface ServicesData {
@@ -136,7 +137,7 @@ export type Icon =
 	| "CheckIcon"
 	| "InstagramIcon"
 	| "GithubIcon"
-	| "TwitterIcon"
+	| "LinkedInIcon"
 	| "FacebookIcon"
 	| "WeddingIcon"
 	| "CrownIcon"
@@ -147,4 +148,5 @@ export type Icon =
 	| "CelebrameIcon"
 	| "ExclusiveIcon"
 	| "EasyUseIcon"
-	| "CommitmentIcon";
+	| "CommitmentIcon"
+	| "ArrowDownIcon";
