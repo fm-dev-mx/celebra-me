@@ -27,8 +27,20 @@
 	"typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
+	"prettier.documentSelectors": ["**/*.astro"],
+	"editor.formatOnSave": true, // Formatea el documento al guardar
+	"prettier.requireConfig": true, // Requiere un archivo de configuración de Prettier en el proyecto
+	"prettier.tabWidth": 4, // Número de espacios por tabulación
+	"prettier.useTabs": true, // Usa tabulaciones en lugar de espacios
+	"prettier.semi": true, // Añadir punto y coma al final de las declaraciones
+	"prettier.singleQuote": false, // Usar comillas dobles en lugar de comillas simples
+	"prettier.trailingComma": "all", // Añadir coma al final de los elementos en objetos y arrays
+	"prettier.printWidth": 100, // Ajustar el ancho máximo de línea
+	"prettier.bracketSpacing": true, // Añadir espacios dentro de los corchetes de los objetos
+	"prettier.arrowParens": "always", // Incluir paréntesis alrededor de argumentos únicos en funciones de flecha
+	"prettier.bracketSameLine": false, // Añadir saltos de línea entre paréntesis de JSX
 	"[astro]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"prettier.documentSelectors": ["**/*.astro"]
+		"editor.defaultFormatter": "esbenp.prettier-vscode", // Utilizar Prettier como formateador predeterminado para archivos Astro
+		"editor.formatOnSave": true // Formatea al guardar archivos Astro,
+	}
 }
