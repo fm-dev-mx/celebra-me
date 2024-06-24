@@ -1,0 +1,26 @@
+---
+interface Props {
+	padding?: string;
+	margin?: string;
+	width?: string;
+	backgroundColor?: string;
+	shadow?: string;
+	relative?: string;
+}
+
+const props = Astro.props as Props;
+const {
+	padding = "py-6",
+	width = "w-3/4",
+	margin = "mb-8",
+	backgroundColor = "bg-white/95",
+	shadow = "shadow-2xl",
+	relative = "",
+} = props;
+---
+
+<div
+	class=`flex flex-col items-center h-full ${padding} ${width} ${margin} rounded-2xl ${shadow} mx-auto ${backgroundColor} ${relative} ${backgroundColor}`
+>
+	<slot />
+</div>

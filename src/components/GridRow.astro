@@ -1,0 +1,14 @@
+---
+interface GridRowProps {
+	columns?: number;
+	gap?: string;
+	justify?: string;
+}
+
+const props = Astro.props as GridRowProps;
+const { columns = 3, gap = "gap-y-8 gap-x-8", justify = "justify-items-center" } = props;
+---
+
+<div class=`grid grid-cols-1 xl:grid-cols-${columns} ${gap} ${justify}`>
+	<slot />
+</div>

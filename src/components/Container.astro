@@ -1,0 +1,17 @@
+---
+interface Props {
+	padding?: string;
+	margin?: string;
+	width?: string;
+	backgroundColor?: string;
+	shadow?: string;
+	relative?: string;
+}
+
+const props = Astro.props as Props;
+const { width = "w-3/4", relative = "" } = props;
+---
+
+<div class=`flex flex-col items-center justify-center ${width}  mx-auto ${relative} `>
+	<slot />
+</div>

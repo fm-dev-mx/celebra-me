@@ -1,0 +1,26 @@
+---
+interface Props {
+	id?: string;
+	className?: string;
+	backgroundImage?: string;
+	width?: string;
+	relative?: string;
+}
+
+const props = Astro.props as Props;
+const {
+	id = "default-section",
+	className = "",
+	width = "w-full lg:w-3/4",
+	backgroundImage = "",
+	relative = "",
+} = props;
+---
+
+<section
+	id={id}
+	class={`flex flex-col items-center mx-auto ${width} relative px-4 py-10 pt-40 ${className} ${relative}`}
+	style={`background-image: url('${backgroundImage}'); background-repeat: no-repeat; background-size: cover;`}
+>
+	<slot />
+</section>

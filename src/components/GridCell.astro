@@ -1,0 +1,13 @@
+---
+interface GridCellProps {
+	flex?: string;
+	align?: string;
+}
+
+const props = Astro.props as GridCellProps;
+const { flex = "flex-col", align = "align-center justify-center" } = props;
+---
+
+<div class=`flex ${flex} ${align} `>
+	<slot />
+</div>
