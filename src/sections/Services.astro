@@ -1,11 +1,12 @@
 ---
-import Icon from "@/components/Icon.astro";
-import IconWrapper from "@/components/IconWrapper.astro";
+import Action from "@/components/Action.astro";
+import ButtonWrapper from "@/components/ButtonWrapper.astro";
+import Grid from "@/components/Grid.astro";
+import Image from "@/components/Image.astro";
+import ImageWrapper from "@/components/ImageWrapper.astro";
 import SectionTitle from "@/components/SectionTitle.astro";
-import type {
-	Icon as IconType,
-	ServicesData,
-} from "@/config/landing.interface";
+import ServiceItem from "@/components/ServiceItem.astro";
+import type { ServicesData } from "@/config/landing.interface";
 
 interface Props {
 	data: ServicesData;
@@ -16,33 +17,58 @@ const { data } = Astro.props;
 
 <section
 	id="services-section"
-	class="flex flex-col mb-60 gap-y-28 mt-80 px-4 md:px-0 w-full"
+	class="flex flex-col items-center mx-auto w-full lg:w-3/4 mt-40 relative px-4"
 >
-	<div id="services-title" class="pt-20 md:pt-0"></div>
+	<div id="services-title" class="pt-20"></div>
 	<SectionTitle>
 		{data.title}
 	</SectionTitle>
-	<div
-		class="w-full lg:w-3/4 grid md:grid-cols-2 gap-10 justify-items-center mx-auto"
-	>
-		{
-			data.services.map((service) => (
-				<article class="flex flex-col md:flex-row gap-x-3">
-					<div class="flex justify-center mr-4">
-						<IconWrapper>
-							<Icon icon={service.icon as IconType} />
-						</IconWrapper>
-					</div>
-					<section class="mt-4 md:mt-0 text-center md:text-left">
-						<h3 class="text-xl font-thin md:text-4xl">
-							{service.title}
-						</h3>
-						<p class="text-pretty font-thin opacity-90 md:text-lg">
-							{service.description}
-						</p>
-					</section>
-				</article>
-			))
-		}
+	<div class="w-full lg:w-3/4 mx-auto py-6 mb-8">
+		<Grid columns="md:grid-cols-2" gap="gap-0 md:gap-8">
+			<div class="flex flex-col items-center md:row-span-2 space-y-0 md:space-y-8">
+				<!-- Added space-y-4 class -->
+				<ImageWrapper>
+					<Image
+						src="/services/xv.jpg"
+						alt="Quinceañera"
+						height="h-auto"
+						width="w-full"
+					/>
+				</ImageWrapper>
+				{
+					data.services
+						.slice(0, 2)
+						.map((service, index) => <ServiceItem service={service} key={index} />)
+				}
+			</div>
+			<div class="flex flex-col items-center md:row-span-2 space-y-0 md:space-y-8">
+				<!-- Added space-y-4 class -->
+				{
+					data.services
+						.slice(2, 4)
+						.map((service, index) => <ServiceItem service={service} key={index} />)
+				}
+				<ImageWrapper>
+					<Image
+						src="/services/weddingParty.jpg"
+						alt="Personas bailando en una fiesta"
+						height="h-auto"
+						width="w-full"
+					/>
+				</ImageWrapper>
+			</div>
+		</Grid>
 	</div>
 </section>
+<ButtonWrapper margin="mt-0">
+	<Action as="a" type="largeButton" href="#"> Elegir mi invitación </Action>
+</ButtonWrapper>
+<ButtonWrapper margin="mt-24">
+	<Action
+		as="a"
+		type={"downButtonBlue"}
+		href="#about-section"
+		title="Click para ir a la sección de Acerca de Nosotros"
+		iconName="ArrowDownIcon"
+	/>
+</ButtonWrapper>

@@ -1,11 +1,24 @@
 ---
 interface Props {
-	class?: string;
+	flex?: string;
+	margin?: string;
+	size?: string;
+	align?: string;
+	color?: string;
+	weight?: string;
+	className?: string;
 }
 
-const baseClass = "text-2xl text-center md:text-5xl font-thin";
-
-const { class: className = baseClass } = Astro.props;
+const props = Astro.props as Props;
+const {
+	flex = "justify-center",
+	margin = "mb-10",
+	align = "text-center",
+	size = "text-3xl md:text-4xl",
+	color = "",
+	weight = "font-light",
+	className = "",
+} = props;
 ---
 
-<h2 class={className}><slot /></h2>
+<h2 class:list={[flex, margin, align, size, color, weight, className]}><slot /></h2>

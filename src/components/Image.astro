@@ -1,0 +1,22 @@
+---
+interface Props {
+	src: string;
+	alt: string;
+	width?: string;
+	height?: string;
+	efect?: string;
+	className?: string;
+}
+
+const props = Astro.props as Props;
+const {
+	src,
+	alt = "Alt not defined for this image",
+	width = "w-auto",
+	height = "h-auto",
+	efect = "hover:brightness-110", // Can be opacity-90, contrast-125, saturate-150, brightness-110
+	className = "rounded-lg shadow-md transition-transform transform hover:shadow-xl",
+} = props;
+---
+
+<img src={src} alt={alt} class:list={[width, height, className, efect]} />

@@ -1,0 +1,37 @@
+---
+import Icon from "@/components/Icon.astro";
+import IconWrapper from "@/components/IconWrapper.astro";
+import type { Icon as IconType, Service } from "@/config/landing.interface";
+import Paragraph from "./Paragraph.astro";
+import SectionSubtitle from "./SectionSubtitle.astro";
+
+interface Props {
+	service: Service;
+	key: number;
+}
+
+const { service } = Astro.props;
+
+const serviceItemClass =
+	"flex flex-col md:flex-row items-center justify-content transition-transform transform hover:scale-105";
+const serviceTextClass = "text-secondary-dark text-center";
+---
+
+<article class={serviceItemClass}>
+	<div class="grid justify-items-center max-w-80">
+		<div>
+			<IconWrapper background="bg-secondary">
+				<Icon icon={service.icon as IconType} />
+			</IconWrapper>
+		</div>
+		<div class={serviceTextClass}>
+			<SectionSubtitle>
+				{service.title}
+			</SectionSubtitle>
+			<p class="text-xl"></p>
+			<Paragraph>
+				{service.description}
+			</Paragraph>
+		</div>
+	</div>
+</article>

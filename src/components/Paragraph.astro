@@ -1,0 +1,26 @@
+---
+interface Props {
+	size?: string;
+	lineHeight?: string;
+	align?: string;
+	wrap?: string;
+	color?: string;
+	weight?: string;
+	maxWidth?: string;
+	className?: string;
+}
+
+const props = Astro.props as Props;
+const {
+	size = "text-base md:text-lg",
+	lineHeight = "leading-relaxed",
+	align = "",
+	wrap = "",
+	color = "text-secondary-dark",
+	weight = "font-thin",
+	maxWidth = "max-w-max",
+	className = "opacity-90",
+} = props;
+---
+
+<p class:list={[size, lineHeight, align, wrap, color, weight, maxWidth, className]}><slot /></p>
