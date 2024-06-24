@@ -1,5 +1,34 @@
+---
+interface Props {
+	flex?: string;
+	align?: string;
+	border?: string;
+	borderColor?: string;
+	maxWidth?: string;
+	rounded?: string;
+	shadow?: string;
+	padding?: string;
+	margin?: string;
+	gap?: string;
+}
+
+const props = Astro.props as Props;
+const {
+	flex = "flex flex-col",
+	align = "justify-center",
+	border = "border-2",
+	borderColor = "border-primary",
+	maxWidth = "max-w-xs xl:max-w-sm",
+	rounded = "rounded-lg",
+	shadow = "shadow-lg",
+	padding = "py-5",
+	margin = "",
+	gap = "gap-5",
+} = props;
+---
+
 <article
-	class="flex flex-col border max-w-xs xl:max-w-sm rounded-lg shadow px-5 py-5 gap-y-10"
+	class:list={[flex, align, border, borderColor, maxWidth, rounded, shadow, padding, margin, gap]}
 >
 	<slot />
 </article>

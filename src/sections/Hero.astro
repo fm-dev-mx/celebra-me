@@ -1,12 +1,13 @@
 ---
 import Action from "@/components/Action.astro";
+import ButtonWrapper from "@/components/ButtonWrapper.astro";
 import Icon from "@/components/Icon.astro";
 import IconWrapper from "@/components/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 
 interface Props {
 	data: {
-		icon: string;
+		icon?: string;
 		title: string;
 		subTitle: string;
 		primaryCta: string;
@@ -18,23 +19,20 @@ interface Props {
 
 const { data } = Astro.props;
 
-const heroSectionClass = "md:w-2/3 mt-20 md:mt-60";
-const titleClass =
-	"text-center text-xl md:text-2xl xl:text-4xl 2xl:text-4xl shadow-text";
+const heroSectionClass = "md:w-2/3 mt-20 mt-40 md:mt-60";
+const titleClass = "text-center text-2xl lg:text-3xl xl:text-4xl 2xl:text-4xl shadow-text";
 const highlightedTitleClass =
-	"text-primary font-semibold text-4xl md:text-5xl xl:text-7xl 2xl:text-7xl ml-4";
+	"text-primary font-semibold text-5xl lg:text-6xl xl:text-7xl 2xl:text-7xl ml-4";
 const highlightedTitleSmallClass =
-	"text-primary font-normal text-sm md:text-2xl xl:text:3xl 2xl:text-4xl ml-3";
+	"text-primary font-normal text-lg lg:text-2xl xl:text:3xl 2xl:text-4xl ml-3";
 const subTitleClass =
 	"text-primary opacity-80 mt-4 text-center font-thin text-xl md:text-2xl mb-20";
 ---
 
 <section id="hero-section" class="flex justify-center h-screen">
-	<div class={heroSectionClass}>
+	<section class={heroSectionClass}>
 		<h1 class={titleClass}>
-			<span
-				class="text-primary opacity-80 mb-10 lg:mb-4 block font-light"
-			>
+			<span class="text-primary opacity-80 mb-10 lg:mb-4 block font-light">
 				{data.title}
 			</span>
 			<span class="flex flex-col lg:flex-row items-center justify-center">
@@ -59,38 +57,35 @@ const subTitleClass =
 			</span>
 		</h1>
 		<h2 class={subTitleClass}>{data.subTitle}</h2>
-		<div
-			class="mt-10 flex flex-row justify-center gap-y-10 gap-x-6 md:gap-x-12"
-		>
+		<ButtonWrapper>
 			<Action as="a" type="button1" href="#">{data.primaryCta}</Action>
 			<Action as="a" type="button2" href="#">{data.secondaryCta}</Action>
-		</div>
+		</ButtonWrapper>
 
-		<div class="flex justify-center mt-40">
+		<ButtonWrapper margin="mt-60">
 			<Action
 				as="a"
 				type={"downButton"}
 				href="#services-title"
 				title="Click para ir a la sección de Servicios"
-			>
-				<Icon icon="ArrowDownIcon" />
-			</Action>
-		</div>
-	</div>
-</section>
+				iconName="ArrowDownIcon"
+			/>
+		</ButtonWrapper>
+	</section>
 
-<style>
-	@keyframes fadeIn {
-		from {
+	<style>
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+
+		#hero-section {
 			opacity: 0;
+			animation: fadeIn 0.8s ease-in-out forwards;
 		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	#hero-section {
-		opacity: 0;
-		animation: fadeIn 0.8s ease-in-out forwards;
-	}
-</style>
+	</style>
+</section>

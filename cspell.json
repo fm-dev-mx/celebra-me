@@ -1,7 +1,10 @@
 {
 	"version": "0.2",
 	"language": "en",
-	"dictionaries": ["en_us", "es_es"],
+	"dictionaries": [
+		"en_us",
+		"es_es"
+	],
 	"dictionaryDefinitions": [
 		{
 			"name": "en_us",
@@ -12,5 +15,7 @@
 			"path": "./node_modules/cspell-dict-es-es/es_ES.trie.gz"
 		}
 	],
-	"words": []
+	"words": [
+		"Celebrame"
+	]
 }

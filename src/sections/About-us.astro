@@ -1,51 +1,93 @@
 ---
 import Action from "@/components/Action.astro";
+import ButtonWrapper from "@/components/ButtonWrapper.astro";
+import Card from "@/components/Card.astro";
+import Grid from "@/components/Grid.astro";
 import Icon from "@/components/Icon.astro";
 import IconWrapper from "@/components/IconWrapper.astro";
+import Image from "@/components/Image.astro";
+import ImageWrapper from "@/components/ImageWrapper.astro";
+import Paragraph from "@/components/Paragraph.astro";
 import SectionTitle from "@/components/SectionTitle.astro";
 import type { AboutData } from "@/config/landing.interface";
 
 interface Props {
 	data: AboutData;
-	testimonials: {
-		image: string;
-		content: string;
-		author: string;
-	};
 }
 
 const { data } = Astro.props;
 ---
 
 <section
-	id="about-us"
-	class="flex flex-col mb-60 gap-y-28 mt-80 px-4 w-3/4 mx-auto"
+	id="about-section"
+	class="flex flex-col items-center w-full mx-auto py-10 pt-40"
+	style="background-image: url('/background/pinkStripes.jpg');"
 >
-	<div id="about-title" class="pt-20"></div>
-	<SectionTitle>
-		{data.title}
-	</SectionTitle>
-	<p class="text-lg text-center mb-8">{data.description}</p>
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-		{
-			data.values.map((value) => (
-				<article class="flex flex-col max-w-xs xl:max-w-sm rounded-lg shadow px-5 py-5 gap-y-10 hover:opacity-80">
-					<div class="flex flex-col items-center text-center">
-						<IconWrapper>
-							<Icon icon={value.icon} class="mb-4" />
-						</IconWrapper>
-						<h3 class="text-2xl font-semibold mb-2">
-							{value.name}
-						</h3>
-						<p>{value.description}</p>
+	<div
+		class="relative bg-white bg-opacity-90 rounded-lg shadow-md flex flex-col justify-between h-full gap-y-10 items-center w-full md:w-3/4 mx-auto"
+	>
+		<div id="about-title" class="pt-20"></div>
+		<div class="w-3/4 items-center justify-center">
+			<Grid columns="grid grid-rows-2" gap="gap-4" justify="justify-items-center">
+				<div
+					class="grid grid-cols-1 md:grid-cols-2 gap-4 m-5 md:m-24 max-h-60 align-items-end"
+				>
+					<div>
+						<SectionTitle
+							color="text-primary-dark"
+							weight="font-bold"
+							align="text-left md:text-right"
+						>
+							{data.title}
+						</SectionTitle>
+						<Paragraph
+							size="text-xl"
+							align="text-left md:text-right"
+							color="text-primary-dark"
+							weight="font-normal"
+						>
+							{data.description}
+						</Paragraph>
 					</div>
-				</article>
-			))
-		}
-	</div>
-	<div class="text-center">
-		<Action as="a" type="button3" href={data.cta.href}>
-			{data.cta.label}
-		</Action>
+					<ImageWrapper>
+						<Image
+							src="about/partyToast.jpg"
+							alt="Personas brindando por el festejo"
+							height="h-80"
+							width="w-80"
+						/>
+					</ImageWrapper>
+				</div>
+				<div class="grid grid-cols-1 xl:grid-cols-3 gap-4 m-3 md:m-24 justify-items-center">
+					{
+						data.values.map((value) => (
+							<Card>
+								<div class="flex flex-col items-center text-center">
+									<IconWrapper background="bg-primary-dark">
+										<Icon icon={value.icon} class="mb-4" />
+									</IconWrapper>
+									<h3 class="text-2xl font-semibold mb-2 text-primary-dark">
+										{value.name}
+									</h3>
+									<Paragraph color="text-primary">{value.description}</Paragraph>
+								</div>
+							</Card>
+						))
+					}
+				</div>
+			</Grid>
+		</div>
+		<ButtonWrapper gap="gap-x-6 md:gap-x-12">
+			<Action as="a" type="button3" href="#">{data.cta.label}</Action>
+		</ButtonWrapper>
+		<ButtonWrapper>
+			<Action
+				as="a"
+				type="downButton"
+				href="#pricing-section"
+				title="Click para ir a la sección de precios"
+				iconName="ArrowDownIcon"
+			/>
+		</ButtonWrapper>
 	</div>
 </section>
