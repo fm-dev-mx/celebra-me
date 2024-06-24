@@ -11,20 +11,18 @@ interface Props {
 }
 
 const { service } = Astro.props;
-
-const serviceItemClass =
-	"flex flex-col md:flex-row items-center justify-content transition-transform transform hover:scale-105";
-const serviceTextClass = "text-secondary-dark text-center";
 ---
 
-<article class={serviceItemClass}>
+<article
+	class="flex flex-col items-center justify-content transition-transform transform hover:scale-105"
+>
 	<div class="grid justify-items-center max-w-80">
-		<div>
+		<div class="mt-6">
 			<IconWrapper background="bg-secondary">
 				<Icon icon={service.icon as IconType} />
 			</IconWrapper>
 		</div>
-		<div class={serviceTextClass}>
+		<div class="text-secondary-dark text-center">
 			<SectionSubtitle>
 				{service.title}
 			</SectionSubtitle>

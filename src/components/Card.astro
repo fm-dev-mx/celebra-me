@@ -1,34 +1,37 @@
 ---
 interface Props {
-	flex?: string;
-	align?: string;
-	border?: string;
+	bgColor?: string;
 	borderColor?: string;
-	maxWidth?: string;
-	rounded?: string;
-	shadow?: string;
-	padding?: string;
-	margin?: string;
-	gap?: string;
+	textColor?: string;
+	hover?: string;
 }
 
 const props = Astro.props as Props;
 const {
-	flex = "flex flex-col",
-	align = "justify-center",
-	border = "border-2",
+	bgColor = "bg-white",
 	borderColor = "border-primary",
-	maxWidth = "max-w-xs xl:max-w-sm",
-	rounded = "rounded-lg",
-	shadow = "shadow-lg",
-	padding = "py-5",
-	margin = "",
-	gap = "gap-5",
+	textColor = "text-primary-light",
+	hover = "hover:brightness-105",
 } = props;
 ---
 
 <article
-	class:list={[flex, align, border, borderColor, maxWidth, rounded, shadow, padding, margin, gap]}
+	class:list={[
+		bgColor,
+		"border-2",
+		borderColor,
+		textColor,
+		"rounded-lg",
+		"shadow-2xl",
+		"p-5",
+		"min-w-xs",
+		"max-w-xs",
+		"min-h-sm",
+		"max-h-sm",
+		hover,
+	]}
 >
-	<slot />
+	<div class="flex basis-1 flex-col content-center items-center text-center">
+		<slot />
+	</div>
 </article>

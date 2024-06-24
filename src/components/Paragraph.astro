@@ -4,23 +4,25 @@ interface Props {
 	lineHeight?: string;
 	align?: string;
 	wrap?: string;
-	color?: string;
+	textColor?: string;
 	weight?: string;
+	padding?: string;
 	maxWidth?: string;
-	className?: string;
 }
 
 const props = Astro.props as Props;
 const {
-	size = "text-base md:text-lg",
+	size = "text-base",
 	lineHeight = "leading-relaxed",
-	align = "",
+	align = "text-center",
 	wrap = "",
-	color = "text-secondary-dark",
+	textColor = "text-secondary-dark",
 	weight = "font-thin",
+	padding = "px-2",
 	maxWidth = "max-w-max",
-	className = "opacity-90",
 } = props;
 ---
 
-<p class:list={[size, lineHeight, align, wrap, color, weight, maxWidth, className]}><slot /></p>
+<p class:list={[size, lineHeight, align, wrap, textColor, weight, padding, maxWidth]}>
+	<slot />
+</p>

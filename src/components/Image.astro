@@ -2,6 +2,10 @@
 interface Props {
 	src: string;
 	alt: string;
+	minWidth?: string;
+	maxWidth?: string;
+	minHeight?: string;
+	maxHeight?: string;
 	width?: string;
 	height?: string;
 	efect?: string;
@@ -12,6 +16,10 @@ const props = Astro.props as Props;
 const {
 	src,
 	alt = "Alt not defined for this image",
+	minWidth = "",
+	maxWidth = "",
+	minHeight = "",
+	maxHeight = "",
 	width = "w-auto",
 	height = "h-auto",
 	efect = "hover:brightness-110", // Can be opacity-90, contrast-125, saturate-150, brightness-110
@@ -19,4 +27,8 @@ const {
 } = props;
 ---
 
-<img src={src} alt={alt} class:list={[width, height, className, efect]} />
+<img
+	src={src}
+	alt={alt}
+	class:list={[width, height, minWidth, maxWidth, minHeight, maxHeight, className, efect]}
+/>

@@ -1,26 +1,28 @@
 ---
 interface Props {
-	columns?: string;
+	columns?: number;
 	gap?: string;
 	padding?: string;
-	margin?: string;
 	align?: string;
-	justify?: string;
 	width?: string;
+	maxWidth?: string;
 }
 
 const props = Astro.props as Props;
 const {
-	columns = "",
-	gap = "gap-x-20",
-	padding = "px-0",
-	margin = "mx-auto",
+	columns = 2,
+	gap = "lg:gap-20",
+	padding = "",
 	align = "items-center",
-	justify = "justify-center",
-	width = "w-full",
+	width = "w-full lg:w-3/4",
+	maxWidth = "sm:max-w-80 lg:max-w-fit",
 } = props;
 ---
 
-<div class={`grid ${columns} ${gap} ${padding} ${margin} ${align} ${justify} ${width}`}>
-	<slot />
+<div class="flex flex-col items-center justify-center w-full">
+	<div
+		class={`flex flex-col align-center lg:grid lg:grid-rows-${columns} ${gap} ${padding} ${align} ${width} ${maxWidth}`}
+	>
+		<slot />
+	</div>
 </div>

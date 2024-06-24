@@ -3,20 +3,22 @@ interface Props {
 	width?: string; // Optional width, Tailwind classes for width
 	height?: string; // Optional height, Tailwind classes for height
 	padding?: string; // Optional padding, Tailwind classes for padding
+	justify?: string;
+	align?: string;
 	margin?: string; // Optional margin, Tailwind classes for margin
-	className?: string; // Additional optional classes
 }
 
 const props = Astro.props as Props;
 const {
-	width = "w-full md:w-auto",
+	width = "w-full",
 	height = "h-auto",
-	padding = "p-0",
-	margin = "m-0",
-	className = "flex justify-center items-center",
+	padding = "",
+	justify = "justify-center",
+	align = "items-center",
+	margin = "",
 } = props;
 ---
 
-<div class:list={[width, height, padding, margin, className]}>
+<div class:list={["flex", width, height, padding, justify, align, margin]}>
 	<slot />
 </div>
