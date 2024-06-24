@@ -1,9 +1,13 @@
 ---
 import Action from "@/components/Action.astro";
 import ButtonWrapper from "@/components/ButtonWrapper.astro";
+import Container from "@/components/Container.astro";
 import Grid from "@/components/Grid.astro";
+import GridCell from "@/components/GridCell.astro";
+import GridRow from "@/components/GridRow.astro";
 import Image from "@/components/Image.astro";
 import ImageWrapper from "@/components/ImageWrapper.astro";
+import Section from "@/components/Section.astro";
 import SectionTitle from "@/components/SectionTitle.astro";
 import ServiceItem from "@/components/ServiceItem.astro";
 import type { ServicesData } from "@/config/landing.interface";
@@ -15,52 +19,55 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<section
-	id="services-section"
-	class="flex flex-col items-center mx-auto w-full lg:w-3/4 mt-40 relative px-4"
->
+<Section id="services-section" relative="relative">
 	<div id="services-title" class="pt-20"></div>
 	<SectionTitle>
 		{data.title}
 	</SectionTitle>
-	<div class="w-full lg:w-3/4 mx-auto py-6 mb-8">
-		<Grid columns="md:grid-cols-2" gap="gap-0 md:gap-8">
-			<div class="flex flex-col items-center md:row-span-2 space-y-0 md:space-y-8">
-				<!-- Added space-y-4 class -->
-				<ImageWrapper>
-					<Image
-						src="/services/xv.jpg"
-						alt="Quinceañera"
-						height="h-auto"
-						width="w-full"
-					/>
-				</ImageWrapper>
-				{
-					data.services
-						.slice(0, 2)
-						.map((service, index) => <ServiceItem service={service} key={index} />)
-				}
-			</div>
-			<div class="flex flex-col items-center md:row-span-2 space-y-0 md:space-y-8">
-				<!-- Added space-y-4 class -->
-				{
-					data.services
-						.slice(2, 4)
-						.map((service, index) => <ServiceItem service={service} key={index} />)
-				}
-				<ImageWrapper>
-					<Image
-						src="/services/weddingParty.jpg"
-						alt="Personas bailando en una fiesta"
-						height="h-auto"
-						width="w-full"
-					/>
-				</ImageWrapper>
-			</div>
+	<Container>
+		<Grid gap="xl:gap-8">
+			<GridRow columns={2} gap="gap-x-24">
+				<GridCell>
+					<ImageWrapper>
+						<Image
+							src="/services/xv.jpg"
+							alt="Quinceañera"
+							height="h-auto"
+							width="w-full"
+						/>
+					</ImageWrapper>
+				</GridCell>
+				<GridCell>
+					{
+						data.services
+							.slice(0, 2)
+							.map((service, index) => <ServiceItem service={service} key={index} />)
+					}
+				</GridCell>
+			</GridRow>
+			<GridRow columns="2" gap="gap-24">
+				<GridCell>
+					{
+						data.services
+							.slice(2, 4)
+							.map((service, index) => <ServiceItem service={service} key={index} />)
+					}
+				</GridCell>
+				<GridCell>
+					<ImageWrapper>
+						<Image
+							src="/services/weddingParty.jpg"
+							alt="Personas bailando en una fiesta"
+							width="w-full"
+						/>
+					</ImageWrapper>
+				</GridCell>
+			</GridRow>
 		</Grid>
-	</div>
-</section>
-<ButtonWrapper margin="mt-0">
+	</Container>
+</Section>
+
+<ButtonWrapper margin="mt-0 xl:mt-8">
 	<Action as="a" type="largeButton" href="#"> Elegir mi invitación </Action>
 </ButtonWrapper>
 <ButtonWrapper margin="mt-24">
