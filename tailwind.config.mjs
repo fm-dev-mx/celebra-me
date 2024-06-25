@@ -19,7 +19,7 @@ export default {
 				black: "#0f172a", // Slate-900
 				gray: "#64748b", // Slate-500
 				background: {
-					DEFAULT: "#F4F4F4", // Gris Claro
+					DEFAULT: "#F4F4F4", // Light Gray
 				},
 				text: {
 					DEFAULT: "#4a044e", // Fuchsia-950
@@ -46,5 +46,26 @@ export default {
 			};
 			addUtilities(newUtilities, ["responsive", "hover"]);
 		},
+	],
+	// The safelist below ensures that certain dynamic class names are available for use in production builds,
+	// preventing Tailwind from purging them during build optimization. This is particularly useful for classes
+	// that are generated or used dynamically in the code (e.g., through concatenation) and might not be directly
+	// scanned by Tailwind's purge process.
+	safelist: [
+		...Array(10)
+			.fill(0)
+			.map((_, i) => `grid-cols-${i + 1}`), // Generates grid classes from 'grid-cols-1' to 'grid-cols-10'
+		...Array(10)
+			.fill(0)
+			.map((_, i) => `xl:grid-cols-${i + 1}`), // Generates corresponding classes for xl breakpoints
+		...Array(10)
+			.fill(0)
+			.map((_, i) => `lg:grid-cols-${i + 1}`), // Generates corresponding classes for lg breakpoints
+		...Array(10)
+			.fill(0)
+			.map((_, i) => `md:grid-cols-${i + 1}`), // Generates corresponding classes for md breakpoints
+		...Array(10)
+			.fill(0)
+			.map((_, i) => `sm:grid-cols-${i + 1}`), // Generates corresponding classes for sm breakpoints
 	],
 };
