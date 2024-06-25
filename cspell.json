@@ -1,21 +1,46 @@
 {
+	"$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
 	"version": "0.2",
-	"language": "en",
-	"dictionaries": [
-		"en_us",
-		"es_es"
+	"language": "es,en,es-ES,lorem,en-US",
+	"import": [
+		"@cspell/dict-software-terms/cspell-ext.json",
+		"@cspell/dict-en_us/cspell-ext.json",
+		"@cspell/dict-filetypes/cspell-ext.json",
+		"@cspell/dict-fonts/cspell-ext.json",
+		"@cspell/dict-css/cspell-ext.json",
+		"@cspell/dict-node/cspell-ext.json",
+		"@cspell/dict-typescript/cspell-ext.json",
+		"@cspell/dict-companies/cspell-ext.json"
 	],
-	"dictionaryDefinitions": [
+	"dictionaries": [
+		"softwareTerms",
+		"companies",
+		"typescript",
+		"node",
+		"html",
+		"css",
+		"fonts",
+		"filetypes"
+	],
+	"ignoreWords": [],
+	"ignorePaths": [
+		"**/settings.json",
+		"**/package.json",
+		"**/package-lock.json",
+		"**/pnpm-lock.yaml",
+		"node_modules/**"
+	],
+	"overrides": [
 		{
-			"name": "en_us",
-			"path": "./node_modules/@cSpell/dict-en_us/en_US.trie.gz"
+			"filename": "**/*.md",
+			"language": "en"
 		},
 		{
-			"name": "es_es",
-			"path": "./node_modules/cspell-dict-es-es/es_ES.trie.gz"
+			"filename": "**/*.es.md",
+			"language": "es"
 		}
 	],
 	"words": [
-		"Celebrame"
+		"celebrame"
 	]
 }

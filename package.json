@@ -18,6 +18,7 @@
 		"@fontsource-variable/rubik": "^5.0.21",
 		"astro": "^4.4.4",
 		"astro-robots-txt": "^1.0.0",
+		"cspell": "^8.9.1",
 		"tailwindcss": "^3.4.1"
 	},
 	"devDependencies": {
