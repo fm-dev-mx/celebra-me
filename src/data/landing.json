@@ -25,9 +25,9 @@
 	"headerData": {
 		"logo": "celebra-me.com",
 		"links": [
-			{ "label": "Inicio", "href": "/" },
-			{ "label": "Sobre Nosotros", "href": "/sobre-nosotros" },
-			{ "label": "Servicios", "href": "/servicios" },
+			{ "label": "Inicio", "href": "#" },
+			{ "label": "Sobre Nosotros", "href": "#about-section" },
+			{ "label": "Servicios", "href": "#services" },
 			{ "label": "Demos", "href": "/demos" },
 			{ "label": "FAQ", "href": "/faq" },
 			{ "label": "Contacto", "href": "/contacto" }
@@ -84,11 +84,7 @@
 				"description": "Elevate your online visibility with our SEO-optimized template. Built with search engine algorithms in mind, our template is designed to help your website climb to the top of search engine results pages (SERPs). From optimized meta tags and clean HTML structure to mobile responsiveness and fast loading times, every aspect of our template is geared towards maximizing your website's search engine performance. Increase your organic traffic, attract more visitors, and grow your online presence with ease.",
 				"img": "seo.webp",
 				"imageAlt": "this is an image about the SEO advantages",
-				"checks": [
-					"Search Visibility",
-					"Organic Traffic",
-					"Online Credibility"
-				]
+				"checks": ["Search Visibility", "Organic Traffic", "Online Credibility"]
 			}
 		]
 	},
@@ -130,72 +126,88 @@
 		}
 	},
 	"pricingData": {
-		"title": "Our Pricing",
+		"title": "Nuestras Ofertas Exclusivas",
 		"tiers": [
 			{
-				"title": "Starter",
-				"description": "Best option for personal use & for your next project.",
+				"title": "Invita con Estilo",
+				"title2": "Elegancia Digital",
+				"description": "Refleja tu buen gusto.",
+				"description2": "Tu evento, tan único como tú, merece una invitación que lo refleje.",
 				"price": {
-					"amount": "Free"
+					"amount": "$699",
+					"currency": "MXN",
+					"period": " x evento"
 				},
 				"features": [
-					"feature 1",
-					"feature 2",
-					"feature 3",
-					"feature 4",
-					"feature 5"
+					"Confirmación con un clic",
+					"Galería de fotos pre-evento",
+					"Cuenta regresiva",
+					"Itinerario del evento",
+					"Agregar evento a calendario personal",
+					"Recordatorios personalizados",
+					"Ubicación con Google Maps",
+					"Integración con redes sociales",
+					"Vigencia por 6 meses"
 				],
-				"cta": "Get started"
+				"href": "#",
+				"cta": "Elegir ahora"
 			},
 			{
-				"title": "Professional",
-				"description": "Relevant for multiple users, extended & premium support.",
+				"title": "Celebración Premium",
+				"title2": "Experiencia Exclusiva",
+				"description": "Para eventos extraordinarios.",
+				"description2": "Eleva tu celebración con detalles que sorprenderán a tus invitados.",
 				"price": {
-					"amount": "$29",
-					"period": "/month"
+					"amount": "$1,299",
+					"currency": "MXN",
+					"period": " x evento"
 				},
 				"features": [
-					"feature 1",
-					"feature 2",
-					"feature 3",
-					"feature 4",
-					"feature 5"
+					"Todo lo incluido en \"Invita con Estilo\"",
+					"Página de evento personalizada y exclusiva",
+					"Sección de 'Nuestra Historia' o 'Mi Trayectoria' para XVs",
+					"Playlist colaborativa",
+					"Álbum digital post-evento",
+					"Dress code con sugerencias visuales",
+					"Mesa de regalos digital"
 				],
-				"cta": "Get started"
+				"href": "#",
+				"cta": "Elevar mi Celebración"
 			},
 			{
-				"title": "Enterprise",
-				"description": "Best for large scale uses and extended redistribution rights.",
+				"title": "Lujo Total",
+				"description": "La cúspide de la sofisticación.",
+				"description2": "Crea recuerdos inolvidables desde el primer momento.",
 				"price": {
-					"amount": "$59",
-					"period": "/month"
+					"amount": "$1,999",
+					"currency": "MXN",
+					"period": " x evento"
 				},
 				"features": [
-					"feature 1",
-					"feature 2",
-					"feature 3",
-					"feature 4",
-					"feature 5"
+					"Todo lo incluido en \"Celebración Premium\"",
+					"Encuesta de preferencias para invitados (música, comida, etc.)",
+					"Galería interactiva donde los invitados pueden subir sus fotos",
+					"Video-invitación personalizada"
 				],
-				"cta": "Get started"
+				"href": "#",
+				"cta": "Experimentar el Lujo Total"
 			}
 		]
 	},
+
 	"footerData": {
-		"logo": "Luna Landing",
-		"description": "Discover the Beauty of the Cosmos: Explore the Infinite Wonders of Space with Us",
+		"logo": "celebra-me.com",
+		"description": "Tus Eventos Serán Únicos.",
 		"links": [
-			{ "label": "About", "href": "/" },
-			{ "label": "Services", "href": "/" },
-			{ "label": "Blog", "href": "/" },
-			{ "label": "FAQs", "href": "/" },
-			{ "label": "Contact", "href": "/" }
+			{ "label": "Nosotros", "href": "#about-section" },
+			{ "label": "Servicios", "href": "#services-section" },
+			{ "label": "Blog", "href": "/blog" },
+			{ "label": "Preguntas Frecuentes", "href": "/faq" },
+			{ "label": "Contacto", "href": "/contacto" }
 		],
 		"socials": [
-			{ "icon": "FacebookIcon", "href": "/" },
-			{ "icon": "InstagramIcon", "href": "/" },
-			{ "icon": "LinkedInIcon", "href": "/" },
-			{ "icon": "GithubIcon", "href": "/" }
+			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/tu_pagina" },
+			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/tu_pagina" }
 		]
 	}
 }

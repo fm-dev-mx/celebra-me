@@ -2,34 +2,22 @@
 interface Props {
 	size?: string;
 	color?: string;
-	fill?: string;
+	align?: string;
 	padding?: string;
-	className?: string;
 	background?: string;
 }
 
 const props = Astro.props as Props;
 
 const {
-	background = "bg-secondary",
-	padding = "p-2",
 	size = "h-11 w-12",
 	color = "text-primary",
-	className = "",
+	align = "items-center",
+	padding = "p-2",
+	background = "bg-secondary",
 } = props;
 ---
 
-<div
-	class:list={[
-		background,
-		padding,
-		"rounded-full",
-		"flex",
-		"items-center",
-		size,
-		color,
-		className,
-	]}
->
+<div class:list={[background, padding, "rounded-full", "flex", align, size, color]}>
 	<slot />
 </div>

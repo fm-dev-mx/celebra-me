@@ -4,6 +4,7 @@ interface Props {
 	borderColor?: string;
 	textColor?: string;
 	hover?: string;
+	extraClass?: string;
 }
 
 const props = Astro.props as Props;
@@ -12,6 +13,7 @@ const {
 	borderColor = "border-primary",
 	textColor = "text-primary-light",
 	hover = "hover:brightness-105",
+	extraClass = "",
 } = props;
 ---
 
@@ -29,9 +31,29 @@ const {
 		"min-h-sm",
 		"max-h-sm",
 		hover,
+		extraClass,
 	]}
 >
-	<div class="flex basis-1 flex-col content-center items-center text-center">
+	<div class="flex flex-col content-center items-center text-center">
 		<slot />
 	</div>
 </article>
+
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// eslint-disable-next-line prettier/prettier
+		const cards = document.querySelectorAll(".bg-button-hover");
+
+		cards.forEach((card) => {
+			const action = card.querySelector(".card-action");
+
+			card.addEventListener("mouseenter", function () {
+				action?.classList.add("action-hovered");
+			});
+
+			card.addEventListener("mouseleave", function () {
+				action?.classList.remove("action-hovered");
+			});
+		});
+	});
+</script>

@@ -1,11 +1,19 @@
 ---
 interface Props {
-	class?: string;
+	size?: string;
+	fontFamily?: string;
+	weight?: string;
+	color?: string;
 }
 
-const baseClass = "text-2xl font-thin md:text-3xl";
+const props = Astro.props as Props;
 
-const { class: className = baseClass } = Astro.props;
+const {
+	size = "text-2xl md:text-3xl",
+	weight = "font-thin",
+	color = "",
+	fontFamily = "sans-serif",
+} = props;
 ---
 
-<h3 class={className}><slot /></h3>
+<h3 class={`text-center ${size} ${weight} ${color} ${fontFamily}`}><slot /></h3>

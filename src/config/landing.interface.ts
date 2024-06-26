@@ -102,6 +102,7 @@ export interface Tier {
 	description: string;
 	price: Price;
 	features: string[];
+	href: string;
 	cta: string;
 }
 

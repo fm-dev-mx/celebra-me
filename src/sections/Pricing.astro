@@ -1,9 +1,16 @@
 ---
+import Container from "@/components/layout/Container.astro";
+import Grid from "@/components/layout/Grid.astro";
+import GridCell from "@/components/layout/GridCell.astro";
+import GridRow from "@/components/layout/GridRow.astro";
+import Section from "@/components/layout/Section.astro";
 import Action from "@/components/ui/Action.astro";
+import Bullet from "@/components/ui/Bullet.astro";
+import BulletWrapper from "@/components/ui/BulletWrapper.astro";
 import Card from "@/components/ui/Card.astro";
-import Icon from "@/components/ui/Icon.astro";
+import SectionSubtitle from "@/components/ui/SectionSubtitle.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
-import type { PricingData } from "@/config/landing.interface";
+import type { Icon as IconType, PricingData } from "@/config/landing.interface";
 
 interface Props {
 	data: PricingData;
@@ -12,47 +19,66 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<section id="pricing-section" class="flex flex-col mt-20">
-	<SectionTitle>
-		{data.title}
-	</SectionTitle>
-	<div class="my-20 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-10 place-items-center">
-		{
-			data.tiers.map((tier) => (
-				<Card>
-					<header class="flex flex-col justify-center gap-y-3">
-						<h3 class="text-4xl text-center font-semibold">{tier.title}</h3>
-						<p class="text-xl text-center opacity-90">{tier.description}</p>
-					</header>
-					<section class="flex justify-center">
-						<h4 class="text-6xl font-semibold">
-							{tier.price.amount}
-							{tier.price.period && (
-								<span class="font-normal text-xl opacity-85">
-									{tier.price.period}
-								</span>
-							)}
-						</h4>
-					</section>
-					<section class="flex justify-start">
-						<ul class="flex flex-col gap-y-4 text-lg">
-							{tier.features.map((feature) => (
-								<li class="flex flex-row px-7 gap-x-1">
-									<span>
-										<Icon class="w-6 h-auto text-primary" icon="CheckIcon" />
-									</span>
-									<p class="text-center">{feature}</p>
-								</li>
-							))}
-						</ul>
-					</section>
-					<footer class="flex justify-center">
-						<Action as="a" class="bg-primary text-white w-72" type="button" href="#">
-							{tier.cta}
-						</Action>
-					</footer>
-				</Card>
-			))
-		}
-	</div>
-</section>
+<Section id="pricing-section" relative="relative">
+	<Container>
+		<SectionTitle weight="font-semibold" color="text-primary-dark/80">
+			{data.title}
+		</SectionTitle>
+		<Grid>
+			<GridRow columns={3} gap="gap-y-8 gap-x-60">
+				{
+					data.tiers.map((tier) => (
+						<GridCell>
+							<a href={tier.href}>
+								<Card
+									hover="hover:brightness-105 hover:scale-105"
+									borderColor="border-primary hover:border-secondary"
+									extraClass="bg-button-hover"
+								>
+									<SectionTitle
+										size="text-2xl"
+										margin="mt-4"
+										color="text-primary-dark"
+										weight="font-semibold"
+									>
+										{tier.title}
+									</SectionTitle>
+									<SectionSubtitle color="text-primary" size="text-md">
+										{tier.description}
+									</SectionSubtitle>
+									<SectionSubtitle
+										color="text-secondary"
+										size="text-xl"
+										weight="font-normal"
+									>
+										{tier.price.amount}
+										<span class="text-sm font-thin">{tier.price.period}</span>
+									</SectionSubtitle>
+									<BulletWrapper>
+										{tier.features.map((feature) => (
+											<Bullet icon={"CheckIcon" as IconType}>
+												{feature}
+											</Bullet>
+										))}
+									</BulletWrapper>
+									<Action as="a" type="cardButton" href={tier.href}>
+										{tier.cta}
+									</Action>
+								</Card>
+							</a>
+						</GridCell>
+					))
+				}
+			</GridRow>
+		</Grid>
+	</Container>
+</Section>
+
+<style>
+	:root {
+		--primary-dark: #0284c7;
+	}
+	.action-hovered {
+		background-color: var(--primary-dark) !important; /* Asegurar la prioridad */
+	}
+</style>
