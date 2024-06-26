@@ -33,7 +33,7 @@ const { data } = Astro.props;
 	<section class="mb-5 flex flex-row flex-wrap justify-center gap-x-3">
 		{
 			data.socials.map((social) => (
-				<Action as="a" type="icon" href={social.href} title={social.icon}>
+				<Action as="a" type="icon" href={social.href} title={social.icon as IconType}>
 					<Icon icon={social.icon as IconType} />
 				</Action>
 			))

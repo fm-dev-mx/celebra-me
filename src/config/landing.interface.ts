@@ -3,7 +3,6 @@ export interface LandingPageData {
 	headerData: HeaderData;
 	heroData: HeroData;
 	servicesData: ServicesData;
-	advantagesData: advantagesData;
 	aboutData: AboutData;
 	pricingData: PricingData;
 	footerData: FooterData;
@@ -31,21 +30,8 @@ export interface ServicesData {
 
 export interface Service {
 	title: string;
-	icon: string;
 	description: string;
-}
-
-export interface advantagesData {
-	title: string;
-	advantages: advantage[];
-}
-
-export interface advantage {
-	title: string;
-	description: string;
-	img: string;
-	imageAlt: string;
-	checks: string[];
+	icon: Icon;
 }
 
 export interface FooterData {
@@ -61,17 +47,14 @@ export interface Link {
 }
 
 export interface Social {
-	icon: string;
+	icon: Icon;
 	href: string;
 }
 
 export interface AboutData {
-	values: Value[];
-	testimonials: Testimonial[];
 	title: string;
 	description: string;
-	image: string;
-	imageAlt: string;
+	values: Value[];
 	cta: Cta;
 }
 
@@ -145,9 +128,9 @@ export type Icon =
 	| "CakeIcon"
 	| "AnniversaryIcon"
 	| "GraduationIcon"
-	| "BriefcaseIcon"
 	| "CelebrameIcon"
 	| "ExclusiveIcon"
 	| "EasyUseIcon"
 	| "CommitmentIcon"
-	| "ArrowDownIcon";
+	| "ArrowDownIcon"
+	| "FavIcon";

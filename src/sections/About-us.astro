@@ -13,7 +13,7 @@ import ImageWrapper from "@/components/ui/ImageWrapper.astro";
 import Paragraph from "@/components/ui/Paragraph.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
 import StyledContainer from "@/components/utilities/StyledContainer.astro";
-import type { AboutData } from "@/config/landing.interface";
+import type { AboutData, Icon as IconType } from "@/config/landing.interface";
 
 interface Props {
 	data: AboutData;
@@ -66,7 +66,7 @@ const { data } = Astro.props;
 						data.values.map((value) => (
 							<Card>
 								<IconWrapper background="bg-primary-dark">
-									<Icon icon={value.icon} class="mb-4" />
+									<Icon icon={value.icon as IconType} class="mb-4" />
 								</IconWrapper>
 								<h3 class="text-xl font-semibold mb-2 text-primary-dark">
 									{value.name}
