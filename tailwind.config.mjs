@@ -38,13 +38,33 @@ export default {
 		},
 	},
 	plugins: [
-		function ({ addUtilities }) {
+		function ({ addUtilities, addBase }) {
 			const newUtilities = {
 				".shadow-text": {
 					textShadow: "2px 2px 4px rgba(0, 0, 0, 0.1)",
 				},
 			};
 			addUtilities(newUtilities, ["responsive", "hover"]);
+
+			// Add custom properties (CSS variables) to the :root
+			const newBase = {
+				":root": {
+					"--primary-light": "#fda4af",
+					"--primary-default": "#fb7185",
+					"--primary-dark": "#e11d48",
+					"--secondary-light": "#38bdf8",
+					"--secondary-default": "#0284c7",
+					"--secondary-dark": "#082f49",
+					"--white2": "#fdf2f8",
+					"--white": "#fdf4ff",
+					"--black": "#0f172a",
+					"--gray": "#64748b",
+					"--background-default": "#F4F4F4",
+					"--text-default": "#4a044e",
+					"--text-light": "#f9a8d4",
+				},
+			};
+			addBase(newBase);
 		},
 	],
 	// The safelist below ensures that certain dynamic class names are available for use in production builds,

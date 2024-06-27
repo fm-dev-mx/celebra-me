@@ -30,12 +30,13 @@ const classList = [
 	"max-h-sm",
 	hover,
 	extraClass,
-	"transition-all duration-300", // Added smooth transition
+	"transition-all duration-300",
 ].join(" ");
 ---
 
 <article class={classList}>
 	<div class="flex flex-col content-center items-center text-center">
+		<div class="mb-6"></div>
 		<slot />
 	</div>
 </article>

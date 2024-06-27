@@ -8,10 +8,11 @@ interface Props {
 	color?: string;
 	weight?: string;
 	icon?: IconType;
+	extraClass?: string;
 }
 
 const props = Astro.props as Props;
-const { size = "text-sm", color = "", weight = "font-light", icon } = props;
+const { size = "text-sm", color = "", weight = "font-light", icon, extraClass } = props;
 ---
 
 <li class={`flex ${size}`}>
@@ -22,5 +23,7 @@ const { size = "text-sm", color = "", weight = "font-light", icon } = props;
 			</IconWrapper>
 		)
 	}
-	<div class={`flex items-center ${color} ${weight} hover:font-normal`}><slot /></div>
+	<div class={`flex items-center ${color} ${weight} hover:font-normal ${extraClass}`}>
+		<slot />
+	</div>
 </li>

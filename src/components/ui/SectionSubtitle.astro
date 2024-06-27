@@ -4,6 +4,7 @@ interface Props {
 	fontFamily?: string;
 	weight?: string;
 	color?: string;
+	extraClass?: string;
 }
 
 const props = Astro.props as Props;
@@ -13,7 +14,8 @@ const {
 	weight = "font-thin",
 	color = "",
 	fontFamily = "sans-serif",
+	extraClass = "",
 } = props;
 ---
 
-<h3 class={`text-center ${size} ${weight} ${color} ${fontFamily}`}><slot /></h3>
+<h3 class={`text-center ${size} ${weight} ${color} ${fontFamily} ${extraClass}`}><slot /></h3>

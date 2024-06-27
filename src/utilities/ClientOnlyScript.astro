@@ -1,49 +1,15 @@
-<script>
-	// eslint-disable-next-line prettier/prettier
+<script type="module">
+ import { initializeCardHoverEffects } from "/src/utilities/cardHoverEffects.ts"
+  import { initializeCardIntersectionObserver } from '/src/utilities/cardIntersectionObserver.ts';
 
-	// Here goes your JavaScript code that will run only on the client
-	document.addEventListener("DOMContentLoaded", function () {
-		const cards = document.querySelectorAll(".bg-button-hover");
+  document.addEventListener("DOMContentLoaded", function () {
+    const isMobile = window.innerWidth < 768;
 
-		cards.forEach((card) => {
-			const action = card.querySelector(".card-action");
-
-			// Hover effect for desktop
-			card.addEventListener("mouseenter", function () {
-				card.classList.add("action-hovered");
-				if (action) action.classList.add("action-hovered");
-			});
-
-			card.addEventListener("mouseleave", function () {
-				card.classList.remove("action-hovered");
-				if (action) action.classList.remove("action-hovered");
-			});
-
-			// Intersection Observer for mobile
-			// eslint-disable-next-line no-undef
-			const observerOptions: IntersectionObserverInit = {
-				root: null,
-				rootMargin: "0px",
-				threshold: 0.5,
-			};
-
-			// eslint-disable-next-line no-undef
-			const observerCallback: IntersectionObserverCallback = (
-				entries: IntersectionObserverEntry[],
-			) => {
-				entries.forEach((entry: IntersectionObserverEntry) => {
-					if (entry.isIntersecting) {
-						card.classList.add("action-hovered");
-						if (action) action.classList.add("action-hovered");
-					} else {
-						card.classList.remove("action-hovered");
-						if (action) action.classList.remove("action-hovered");
-					}
-				});
-			};
-
-			const observer = new IntersectionObserver(observerCallback, observerOptions);
-			observer.observe(card);
-		});
-	});
+    if (isMobile) {
+		console.log("mobile: " + isMobile);
+      initializeCardIntersectionObserver();
+    } else {
+      initializeCardHoverEffects();
+    }
+  });
 </script>

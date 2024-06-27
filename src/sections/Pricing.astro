@@ -12,10 +12,13 @@ import SectionSubtitle from "@/components/ui/SectionSubtitle.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
 import type { Icon as IconType, PricingData } from "@/config/landing.interface";
 import ClientOnlyScript from "@/utilities/ClientOnlyScript.astro";
+
+// Define the properties interface for the component
 interface Props {
 	data: PricingData;
 }
 
+// Destructure the data property from Astro.props
 const { data } = Astro.props;
 ---
 
@@ -27,23 +30,29 @@ const { data } = Astro.props;
 		<Grid>
 			<GridRow columns={3} gap="gap-y-8 gap-x-60">
 				{
+					// Map through the tiers data to create GridCell for each tier
 					data.tiers.map((tier) => (
 						<GridCell>
 							<a href={tier.href}>
 								<Card
 									hover="hover:brightness-105 hover:scale-105"
 									borderColor="border-primary hover:border-secondary"
-									extraClass="action-hovered bg-button-hover"
+									extraClass="card-effect"
 								>
 									<SectionTitle
 										size="text-2xl"
 										margin="mt-4"
 										color="text-primary-dark"
 										weight="font-semibold"
+										extraClass="card-title-effect"
 									>
 										{tier.title}
 									</SectionTitle>
-									<SectionSubtitle color="text-primary" size="text-md">
+									<SectionSubtitle
+										color="text-primary"
+										size="text-md"
+										extraClass="card-subtitle-effect"
+									>
 										{tier.description}
 									</SectionSubtitle>
 									<SectionSubtitle
@@ -56,7 +65,10 @@ const { data } = Astro.props;
 									</SectionSubtitle>
 									<BulletWrapper>
 										{tier.features.map((feature) => (
-											<Bullet icon={"CheckIcon" as IconType}>
+											<Bullet
+												icon={"CheckIcon" as IconType}
+												extraClass="card-text-effect"
+											>
 												{feature}
 											</Bullet>
 										))}

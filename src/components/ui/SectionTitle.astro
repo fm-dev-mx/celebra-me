@@ -6,6 +6,7 @@ interface Props {
 	color?: string;
 	weight?: string;
 	textDecoration?: string;
+	extraClass?: string;
 }
 
 const props = Astro.props as Props;
@@ -16,7 +17,8 @@ const {
 	color = "",
 	weight = "font-light",
 	textDecoration = "",
+	extraClass = "",
 } = props;
 ---
 
-<h2 class:list={[margin, align, size, color, weight, textDecoration]}><slot /></h2>
+<h2 class:list={[margin, align, size, color, weight, textDecoration, extraClass]}><slot /></h2>
