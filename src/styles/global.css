@@ -1,0 +1,16 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+	--primary-dark: #0284c7;
+}
+.action-hovered {
+	border-color: var(--primary-dark) !important;
+	transition:
+		background-color 0.3s ease,
+		border-color 0.3s ease;
+}
+.card-action.action-hovered {
+	background-color: var(--primary-dark);
+}

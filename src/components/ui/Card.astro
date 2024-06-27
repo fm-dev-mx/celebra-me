@@ -15,45 +15,27 @@ const {
 	hover = "hover:brightness-105",
 	extraClass = "",
 } = props;
+
+const classList = [
+	bgColor,
+	"border-2",
+	borderColor,
+	textColor,
+	"rounded-lg",
+	"shadow-2xl",
+	"p-5",
+	"min-w-xs",
+	"max-w-xs",
+	"min-h-sm",
+	"max-h-sm",
+	hover,
+	extraClass,
+	"transition-all duration-300", // Added smooth transition
+].join(" ");
 ---
 
-<article
-	class:list={[
-		bgColor,
-		"border-2",
-		borderColor,
-		textColor,
-		"rounded-lg",
-		"shadow-2xl",
-		"p-5",
-		"min-w-xs",
-		"max-w-xs",
-		"min-h-sm",
-		"max-h-sm",
-		hover,
-		extraClass,
-	]}
->
+<article class={classList}>
 	<div class="flex flex-col content-center items-center text-center">
 		<slot />
 	</div>
 </article>
-
-<script>
-	document.addEventListener("DOMContentLoaded", function () {
-		// eslint-disable-next-line prettier/prettier
-		const cards = document.querySelectorAll(".bg-button-hover");
-
-		cards.forEach((card) => {
-			const action = card.querySelector(".card-action");
-
-			card.addEventListener("mouseenter", function () {
-				action?.classList.add("action-hovered");
-			});
-
-			card.addEventListener("mouseleave", function () {
-				action?.classList.remove("action-hovered");
-			});
-		});
-	});
-</script>

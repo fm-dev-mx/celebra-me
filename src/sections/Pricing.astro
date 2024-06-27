@@ -11,7 +11,7 @@ import Card from "@/components/ui/Card.astro";
 import SectionSubtitle from "@/components/ui/SectionSubtitle.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
 import type { Icon as IconType, PricingData } from "@/config/landing.interface";
-
+import ClientOnlyScript from "@/utilities/ClientOnlyScript.astro";
 interface Props {
 	data: PricingData;
 }
@@ -33,7 +33,7 @@ const { data } = Astro.props;
 								<Card
 									hover="hover:brightness-105 hover:scale-105"
 									borderColor="border-primary hover:border-secondary"
-									extraClass="bg-button-hover"
+									extraClass="action-hovered bg-button-hover"
 								>
 									<SectionTitle
 										size="text-2xl"
@@ -72,13 +72,5 @@ const { data } = Astro.props;
 			</GridRow>
 		</Grid>
 	</Container>
+	<ClientOnlyScript />
 </Section>
-
-<style>
-	:root {
-		--primary-dark: #0284c7;
-	}
-	.action-hovered {
-		background-color: var(--primary-dark) !important; /* Asegurar la prioridad */
-	}
-</style>

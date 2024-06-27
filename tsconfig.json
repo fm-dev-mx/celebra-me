@@ -5,7 +5,8 @@
 		"paths": {
 			"@/*": ["src/*"]
 		},
-		"jsx": "preserve"
+		"jsx": "preserve",
+		"lib": ["dom", "dom.iterable", "esnext"]
 	},
 	"include": ["src/**/*", "astro/types.d.ts"],
 	"exclude": ["node_modules", "dist"]
