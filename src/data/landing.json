@@ -1,7 +1,7 @@
 {
 	"meta": {
-		"title": "Celebra-me.com: Invitaciones Digitales Personalizadas",
-		"description": "Diseña invitaciones digitales personalizadas para cualquier evento.",
+		"title": "Celebra-me.com: Dale un Toque de Glamour a Tu Evento",
+		"description": "Enciende tu fiesta desde la invitación",
 		"lang": "es",
 		"charset": "UTF-8",
 		"ldJson": {
@@ -45,7 +45,7 @@
 		"backgroundImageMobile": "hero_section/backgroundImageMobile.jpg"
 	},
 	"servicesData": {
-		"title": "Invitaciones digitales para Cada Ocasión",
+		"title": "Tu Historia, Contada en Invitaciones Digitales",
 		"services": [
 			{
 				"title": "Bodas",
