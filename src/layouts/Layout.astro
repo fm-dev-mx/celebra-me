@@ -2,8 +2,8 @@
 import Background from "@/components/utilities/Background.astro";
 import type { Meta } from "@/config/landing.interface";
 import "@fontsource-variable/rubik";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
-
 interface Props {
 	meta: Meta;
 }
@@ -26,24 +26,24 @@ const ldJson = JSON.stringify(meta.ldJson);
 		<link rel="icon" type="image/svg+xml" href="/FavIcon.svg" />
 		<link rel="canonical" href={import.meta.env.SITE} />
 		<script type="application/ld+json" set:html={ldJson} />
+		<SpeedInsights />
 	</head>
 	<body class="bg-white">
 		<Background />
 		<slot />
+		<style is:global>
+			body {
+				font-family:
+					"Rubik Variable",
+					Menlo,
+					Monaco,
+					Lucida Console,
+					Liberation Mono,
+					DejaVu Sans Mono,
+					Bitstream Vera Sans Mono,
+					Courier New,
+					monospace;
+			}
+		</style>
 	</body>
 </html>
-
-<style is:global>
-	body {
-		font-family:
-			"Rubik Variable",
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
-</style>
