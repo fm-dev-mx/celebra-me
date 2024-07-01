@@ -2,13 +2,21 @@
 interface GridRowProps {
 	columns?: number;
 	gap?: string;
+	margin?: string;
+	align?: string;
 	justify?: string;
 }
 
 const props = Astro.props as GridRowProps;
-const { columns = 3, gap = "gap-y-8 gap-x-8", justify = "justify-items-center" } = props;
+const {
+	columns = 3,
+	gap = "gap-y-8 gap-x-8",
+	align = "",
+	justify = "justify-items-center",
+	margin = "",
+} = props;
 ---
 
-<div class=`grid grid-cols-1 xl:grid-cols-${columns} ${gap} ${justify}`>
+<div class=`grid grid-cols-1 xl:grid-cols-${columns} ${gap} ${align} ${justify} ${margin}`>
 	<slot />
 </div>

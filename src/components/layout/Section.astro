@@ -4,6 +4,7 @@ interface Props {
 	className?: string;
 	backgroundImage?: string;
 	width?: string;
+	margin?: string;
 	relative?: string;
 }
 
@@ -13,13 +14,14 @@ const {
 	className = "",
 	width = "w-full lg:w-3/4",
 	backgroundImage = "",
+	margin = "mx-auto",
 	relative = "",
 } = props;
 ---
 
 <section
 	id={id}
-	class={`flex flex-col items-center mx-auto ${width} relative px-4 py-10 pt-40 ${className} ${relative}`}
+	class={`flex flex-col items-center ${margin} ${width} relative px-4 py-10 pt-40 ${className} ${relative}`}
 	style={`background-image: url('${backgroundImage}'); background-repeat: no-repeat; background-size: cover;`}
 >
 	<slot />
