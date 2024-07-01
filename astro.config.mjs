@@ -33,6 +33,11 @@ export default defineConfig({
 			},
 		},
 	},
+	// Output configuration for server-side rendering
 	output: "server",
-	adapter: vercel(),
+	// Vercel adapter configuration with web analytics enabled
+	adapter: vercel({
+		webAnalytics: { enabled: true },
+		maxDuration: 8,
+	}),
 });
