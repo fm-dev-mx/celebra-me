@@ -20,8 +20,11 @@ export function initializeCardHoverEffects() {
 			card.classList.add("pricing-card-hovered");
 			if (action) action.classList.add("pricing-card-cta-hovered");
 			if (title) title.classList.add("pricing-card-title-hovered");
-			if (subtitle) subtitle.classList.add("pricing-card-subtitle-hovered");
-			texts.forEach((text) => text.classList.add("pricing-card-text-hovered")); // Add hover effect to all text elements
+			if (subtitle)
+				subtitle.classList.add("pricing-card-subtitle-hovered");
+			texts.forEach((text) =>
+				text.classList.add("pricing-card-text-hovered"),
+			); // Add hover effect to all text elements
 		});
 
 		// Remove hover effects when mouse leaves the card.
@@ -30,8 +33,11 @@ export function initializeCardHoverEffects() {
 			card.classList.remove("pricing-card-hovered");
 			if (action) action.classList.remove("pricing-card-cta-hovered");
 			if (title) title.classList.remove("pricing-card-title-hovered");
-			if (subtitle) subtitle.classList.remove("pricing-card-subtitle-hovered");
-			texts.forEach((text) => text.classList.remove("pricing-card-text-hovered")); // Remove hover effect from all text elements
+			if (subtitle)
+				subtitle.classList.remove("pricing-card-subtitle-hovered");
+			texts.forEach((text) =>
+				text.classList.remove("pricing-card-text-hovered"),
+			); // Remove hover effect from all text elements
 		});
 	});
 }
