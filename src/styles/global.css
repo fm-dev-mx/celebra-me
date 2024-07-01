@@ -3,29 +3,84 @@
 @import "tailwindcss/utilities";
 
 
-.card-effect-hovered {
-    border-color: var(--secondary-light) !important;
-	transition:
-		border-color 0.3s ease;
+/* Call-to-action button styles */
+.pricing-card-cta {
+    background-color: var(--primary-light);
+    color: var(--white);
+    font-size: 0.875rem; /* text-sm */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for all properties */
+    width: 18rem; /* w-72 */
+    line-height: 1.25rem; /* text-sm */
 }
 
-.card-action-effect-hovered {
+/* Hover effects for card and its elements */
+.pricing-card-hovered {
+    border-color: var(--secondary-light);
+}
+
+.pricing-card-cta-hovered {
     background-color: var(--secondary-light);
     color: var(--white);
-	transition: all 0.3s ease;
+	transform: scale(1.11); /* hover:scale-110 */
+	filter: brightness(1.10); /* hover:brightness-110 */
+	outline: 2px solid transparent; /* hover:outline */
+	outline-width: 2px; /* hover:outline-2 */
+	outline-offset: 2px; /* hover:outline-offset-2 */
+	outline-color: var(--secondary-light); /* hover:outline-secondary-dark */
 }
 
-.card-title-effect-hovered {
-    color: var(--secondary-dark) !important;
-	transition: all 0.3s ease;
+.pricing-card-title-hovered,
+.pricing-card-text-hovered {
+    color: var(--secondary-dark);
 }
 
-.card-subtitle-effect-hovered {
-	color: var(--secondary-light) !important;
-	transition: all 0.3s ease;
+.pricing-card-subtitle-hovered {
+    color: var(--secondary-light);
 }
 
-.card-text-effect-hovered {
-	color: var(--secondary-dark) !important;
-	transition: all 0.3s ease;
+/* Card styles */
+.pricing-card {
+    border-radius: 0.5rem; /* rounded */
+    border-width: 1px; /* border */
+    border-style: solid; /* border */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: auto;
+
+    min-width: 20rem; /* 320px */
+    max-width: 20rem; /* 320px */
+    max-height: 42rem; /* 640px */
+
+    align-self: center;
+    margin-top: 2rem; /* mt-8 */
+}
+
+/* Responsive styles for cards */
+@media (min-width: 40em) { /* 640px */
+    /* Add styles if needed */
+}
+
+@media (min-width: 48em) { /* 768px */
+    .pricing-card {
+        width: calc(50% - 1rem); /* Adjust width for larger screens */
+    }
+    .pricing-card-cta {
+        font-size: 1rem; /* md:text-base */
+		line-height: 1.5rem; /* md:text-base */
+    }
+    .pricing-grid {
+        flex-direction: row !important; /* Ensure row layout on larger screens */
+    }
+}
+
+@media (min-width: 64em) { /* 1024px */
+    .pricing-card {
+        width: calc(33.333% - 1rem); /* Adjust width for even larger screens */
+    }
+}
+
+@media (min-width: 80em) { /* 1280px */
+    .pricing-card {
+        max-width: 25rem; /* 400px */
+    }
 }

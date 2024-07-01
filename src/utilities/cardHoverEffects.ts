@@ -1,32 +1,37 @@
-// src/utilities/cardHoverEffects.ts
+// src/utilities/CardHoverEffects.ts
 export function initializeCardHoverEffects() {
+	let x = 0,
+		y = 0;
 	// Select all elements with the class '.card-effect'.
-	const cards = document.querySelectorAll(".card-effect");
-
+	const cards = document.querySelectorAll(".pricing-card");
+	console.log("card hover effect: " + x++);
 	// Iterate over each card.
 	cards.forEach((card) => {
+		console.log("card: " + y++);
 		// Find specific child elements for hover effects.
-		const action = card.querySelector(".card-action-effect");
-		const title = card.querySelector(".card-title-effect");
-		const subtitle = card.querySelector(".card-subtitle-effect");
-		const texts = card.querySelectorAll(".card-text-effect"); // Use querySelectorAll to get a NodeList
+		const action = card.querySelector(".pricing-card-cta");
+		const title = card.querySelector(".pricing-card-title");
+		const subtitle = card.querySelector(".pricing-card-subtitle");
+		const texts = card.querySelectorAll(".pricing-card-text"); // Use querySelectorAll to get a NodeList
 
 		// Add hover effects when mouse enters the card.
 		card.addEventListener("mouseenter", function () {
-			card.classList.add("card-effect-hovered");
-			if (action) action.classList.add("card-action-effect-hovered");
-			if (title) title.classList.add("card-title-effect-hovered");
-			if (subtitle) subtitle.classList.add("card-subtitle-effect-hovered");
-			texts.forEach((text) => text.classList.add("card-text-effect-hovered")); // Add hover effect to all text elements
+			console.log("si se activa el hover de la tarjeta");
+			card.classList.add("pricing-card-hovered");
+			if (action) action.classList.add("pricing-card-cta-hovered");
+			if (title) title.classList.add("pricing-card-title-hovered");
+			if (subtitle) subtitle.classList.add("pricing-card-subtitle-hovered");
+			texts.forEach((text) => text.classList.add("pricing-card-text-hovered")); // Add hover effect to all text elements
 		});
 
 		// Remove hover effects when mouse leaves the card.
 		card.addEventListener("mouseleave", function () {
-			card.classList.remove("card-effect-hovered");
-			if (action) action.classList.remove("card-action-effect-hovered");
-			if (title) title.classList.remove("card-title-effect-hovered");
-			if (subtitle) subtitle.classList.remove("card-subtitle-effect-hovered");
-			texts.forEach((text) => text.classList.remove("card-text-effect-hovered")); // Remove hover effect from all text elements
+			console.log("si se desactiva el hover de la tarjeta");
+			card.classList.remove("pricing-card-hovered");
+			if (action) action.classList.remove("pricing-card-cta-hovered");
+			if (title) title.classList.remove("pricing-card-title-hovered");
+			if (subtitle) subtitle.classList.remove("pricing-card-subtitle-hovered");
+			texts.forEach((text) => text.classList.remove("pricing-card-text-hovered")); // Remove hover effect from all text elements
 		});
 	});
 }

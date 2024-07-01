@@ -4,14 +4,12 @@ import Grid from "@/components/layout/Grid.astro";
 import GridCell from "@/components/layout/GridCell.astro";
 import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
-import Action from "@/components/ui/Action.astro";
 import Bullet from "@/components/ui/Bullet.astro";
 import BulletWrapper from "@/components/ui/BulletWrapper.astro";
-import Card from "@/components/ui/Card.astro";
+import Card from "@/components/ui/Card.tsx";
 import SectionSubtitle from "@/components/ui/SectionSubtitle.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
 import type { Icon as IconType, PricingData } from "@/config/landing.interface";
-import ClientOnlyScript from "@/utilities/ClientOnlyScript.astro";
 
 // Define the properties interface for the component
 interface Props {
@@ -23,66 +21,75 @@ const { data } = Astro.props;
 ---
 
 <Section id="pricing-section" relative="relative">
-	<Container>
-		<SectionTitle weight="font-semibold" color="text-primary-dark/80">
+	<Container width="w-full" margin="mx-auto mb-20">
+		<SectionTitle
+			margin="mb-10"
+			weight="font-semibold"
+			color="text-primary-dark/90"
+			extraClass="pricing-card-title"
+		>
 			{data.title}
 		</SectionTitle>
-		<Grid>
-			<GridRow columns={3} gap="gap-y-8 gap-x-60">
+		<Grid extraClass="pricing-grid" width="w-full">
+			<GridRow
+				columns={3}
+				gap="gap-x-12 xl:gap-x-0 gap-y-2"
+				width="w-full"
+				align="items-center"
+				margin="mb-20"
+			>
 				{
 					// Map through the tiers data to create GridCell for each tier
 					data.tiers.map((tier) => (
 						<GridCell>
-							<a href={tier.href}>
-								<Card
-									hover="hover:brightness-105 hover:scale-105"
-									borderColor="border-primary hover:border-secondary"
-									extraClass="card-effect"
+							<Card
+								href={tier.href}
+								hover="hover:brightness-105 hover:scale-105"
+								borderColor="border-primary hover:border-secondary"
+								extraClass="pricing-card"
+								client:visible
+							>
+								<SectionTitle
+									size="text-2xl"
+									margin="mt-4"
+									color="text-primary-dark"
+									weight="font-semibold"
+									extraClass="pricing-card-title"
 								>
-									<SectionTitle
-										size="text-2xl"
-										margin="mt-4"
-										color="text-primary-dark"
-										weight="font-semibold"
-										extraClass="card-title-effect"
-									>
-										{tier.title}
-									</SectionTitle>
-									<SectionSubtitle
-										color="text-primary"
-										size="text-md"
-										extraClass="card-subtitle-effect"
-									>
-										{tier.description}
-									</SectionSubtitle>
-									<SectionSubtitle
-										color="text-secondary"
-										size="text-xl"
-										weight="font-normal"
-									>
-										{tier.price.amount}
-										<span class="text-sm font-thin">{tier.price.period}</span>
-									</SectionSubtitle>
-									<BulletWrapper>
-										{tier.features.map((feature) => (
-											<Bullet
-												icon={"CheckIcon" as IconType}
-												extraClass="card-text-effect"
-											>
-												{feature}
-											</Bullet>
-										))}
-									</BulletWrapper>
-									<Action as="a" type="cardButton" href={tier.href}>
-										{tier.cta}
-									</Action>
-								</Card>
-							</a>
+									{tier.title}
+								</SectionTitle>
+								<SectionSubtitle
+									color="text-primary"
+									size="text-md"
+									extraClass="pricing-card-subtitle"
+								>
+									{tier.description}
+								</SectionSubtitle>
+								<SectionSubtitle
+									color="text-secondary"
+									size="text-xl"
+									weight="font-normal"
+									extraClass=""
+								>
+									{tier.price.amount}
+									<span class="text-sm font-thin">{tier.price.period}</span>
+								</SectionSubtitle>
+								<BulletWrapper>
+									{tier.features.map((feature) => (
+										<Bullet
+											icon={"CheckIcon" as IconType}
+											extraClass="pricing-card-text"
+										>
+											{feature}
+										</Bullet>
+									))}
+								</BulletWrapper>
+								<div class="pricing-card-cta">{tier.cta}</div>
+							</Card>
 						</GridCell>
 					))
 				}
 			</GridRow>
 		</Grid>
 	</Container>
-	<ClientOnlyScript />
 </Section>
