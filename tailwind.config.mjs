@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-	content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
+	content: ["./src/**/*.{astro,html,js,jsx,md,ts,tsx}"],
 	theme: {
 		extend: {
 			colors: {
@@ -41,7 +41,7 @@ export default {
 		function ({ addUtilities, addBase }) {
 			const newUtilities = {
 				".shadow-text": {
-					textShadow: "2px 2px 4px rgba(0, 0, 0, 0.1)",
+					textShadow: "2px 2px 4px rgba(1, 0, 0, .4)",
 				},
 			};
 			addUtilities(newUtilities, ["responsive", "hover"]);
@@ -67,25 +67,13 @@ export default {
 			addBase(newBase);
 		},
 	],
-	// The safelist below ensures that certain dynamic class names are available for use in production builds,
-	// preventing Tailwind from purging them during build optimization. This is particularly useful for classes
-	// that are generated or used dynamically in the code (e.g., through concatenation) and might not be directly
-	// scanned by Tailwind's purge process.
-	safelist: [
-		...Array(10)
-			.fill(0)
-			.map((_, i) => `grid-cols-${i + 1}`), // Generates grid classes from 'grid-cols-1' to 'grid-cols-10'
-		...Array(10)
-			.fill(0)
-			.map((_, i) => `xl:grid-cols-${i + 1}`), // Generates corresponding classes for xl breakpoints
-		...Array(10)
-			.fill(0)
-			.map((_, i) => `lg:grid-cols-${i + 1}`), // Generates corresponding classes for lg breakpoints
-		...Array(10)
-			.fill(0)
-			.map((_, i) => `md:grid-cols-${i + 1}`), // Generates corresponding classes for md breakpoints
-		...Array(10)
-			.fill(0)
-			.map((_, i) => `sm:grid-cols-${i + 1}`), // Generates corresponding classes for sm breakpoints
-	],
+	// Ensures dynamic class names are preserved in production builds, preventing Tailwind from purging them.
+	safelist: (() => {
+		const classes = [];
+		const breakpoints = ["", "sm:", "md:", "lg:", "xl:"];
+		for (let i = 1; i <= 10; i++) {
+			breakpoints.forEach((bp) => classes.push(`${bp}grid-cols-${i}`));
+		}
+		return classes;
+	})(),
 };
