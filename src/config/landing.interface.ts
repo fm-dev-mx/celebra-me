@@ -5,6 +5,7 @@ export interface LandingPageData {
 	servicesData: ServicesData;
 	aboutData: AboutData;
 	pricingData: PricingData;
+	testimonialsData: TestimonialsData;
 	footerData: FooterData;
 }
 
@@ -62,6 +63,11 @@ export interface Value {
 	icon: Icon;
 	name: string;
 	description: string;
+}
+
+export interface TestimonialsData {
+	title: string;
+	testimonials: Testimonial[];
 }
 
 export interface Testimonial {

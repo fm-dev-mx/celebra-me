@@ -89,18 +89,6 @@
 				"description": "Nos dedicamos a brindar un servicio excepcional."
 			}
 		],
-		"testimonials": [
-			{
-				"image": "/testimonials/1.jpg",
-				"content": "Las invitaciones fueron increíbles, recibimos muchos elogios.",
-				"author": "Esteban y Marlene"
-			},
-			{
-				"image": "/testimonials/2.jpg",
-				"content": "Un servicio excelente, muy profesionales.",
-				"author": "Ana y Fernando"
-			}
-		],
 		"cta": {
 			"label": "Contáctanos",
 			"href": "/contacto"
@@ -175,7 +163,35 @@
 			}
 		]
 	},
-
+	"testimonialsData": {
+		"title": "¿Qué opinan nuestros clientes?",
+		"testimonials": [
+			{
+				"id": 1,
+				"image": "/testimonials/boda_esteban_marlene.jpg",
+				"author": "Esteban y Marlene",
+				"content": "Excelente servicio, muy profesionales."
+			},
+			{
+				"id": 2,
+				"image": "/testimonials/boda_ana_fernando.jpg",
+				"author": "Ana y Fernando",
+				"content": "Me encantó. La atención fue increíble. Gracias por el apoyo."
+			},
+			{
+				"id": 3,
+				"image": "/testimonials/xv_sandra.jpg",
+				"author": "Sandra",
+				"content": "Las invitaciones fueron increíbles, todos las elogiaron."
+			},
+			{
+				"id": 4,
+				"image": "/testimonials/boda_marcella_jesus.jpg",
+				"author": "Marcella y Jesús",
+				"content": "Ya habíamos usado sus servicios. ¡Gracias de nuevo!"
+			}
+		]
+	},
 	"footerData": {
 		"logo": "celebra-me.com",
 		"description": "Tus Eventos Serán Únicos.",
