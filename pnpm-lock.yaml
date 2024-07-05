@@ -14,6 +14,12 @@ importers:
       '@fontsource-variable/rubik':
         specifier: ^5.0.22
         version: 5.0.22
+      '@glidejs/glide':
+        specifier: ^3.6.2
+        version: 3.6.2
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.0
       '@vercel/analytics':
         specifier: ^1.3.1
         version: 1.3.1(react@18.3.1)
@@ -685,6 +691,14 @@ packages:
 
   '@fontsource-variable/rubik@5.0.22':
     resolution: {integrity: sha512-QwMlj57+k5+IsShA8q6FECU6zlR4CIm4TAy49GIIiMxxpmRwDXbMynrTp2kBNZmlN4b/myXzSRBnI2DXmnWBJA==}
+
+  '@glidejs/glide@3.6.2':
+    resolution: {integrity: sha512-oXw7In0IZV69PC0PChQakY+yh+UnqIb5+zfVuEIzub6Kkfl1foo7TAhr2PZXPzihOG9YS57t8wvdzBFEZ0aPVA==}
+
+  '@humanwhocodes/config-array@0.11.14':
+    resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}
+    engines: {node: '>=10.10.0'}
+    deprecated: Use @eslint/config-array instead
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -4360,6 +4374,16 @@ snapshots:
   '@eslint/object-schema@2.1.4': {}
 
   '@fontsource-variable/rubik@5.0.22': {}
+
+  '@glidejs/glide@3.6.2': {}
+
+  '@humanwhocodes/config-array@0.11.14':
+    dependencies:
+      '@humanwhocodes/object-schema': 2.0.3
+      debug: 4.3.5
+      minimatch: 3.1.2
+    transitivePeerDependencies:
+      - supports-color
 
   '@humanwhocodes/module-importer@1.0.1': {}
 

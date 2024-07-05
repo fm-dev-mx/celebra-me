@@ -1,0 +1,22 @@
+---
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import SectionTitle from "@/components/ui/SectionTitle.astro";
+import TestimonialsCarousel from "@/components/ui/TestimonialsCarousel";
+import type { TestimonialsData } from "@/config/landing.interface";
+
+interface Props {
+	data: TestimonialsData;
+}
+
+const { data } = Astro.props;
+---
+
+<Section id="testimonials-section">
+	<Container>
+		<SectionTitle>
+			{data.title}
+		</SectionTitle>
+		<TestimonialsCarousel {...data} client:load />
+	</Container>
+</Section>
