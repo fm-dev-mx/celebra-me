@@ -35,7 +35,7 @@ module.exports = {
 		parser: "@typescript-eslint/parser",
 		sourceType: "module",
 	},
-	plugins: ["@typescript-eslint"],
+	plugins: ["@typescript-eslint", "prettier"],
 	rules: {
 		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"@typescript-eslint/no-explicit-any": "warn",
