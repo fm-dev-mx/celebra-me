@@ -1,7 +1,7 @@
 ---
-import Background from "@/components/utilities/Background.astro";
-import type { Meta } from "@/config/landing.interface";
 import "@fontsource-variable/rubik";
+// eslint-disable-next-line prettier/prettier
+import type { Meta } from "@/config/landing.interface";
 import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
 interface Props {
@@ -29,7 +29,6 @@ const ldJson = JSON.stringify(meta.ldJson);
 		<SpeedInsights />
 	</head>
 	<body class="bg-white">
-		<Background />
 		<slot />
 		<style is:global>
 			body {

@@ -26,12 +26,6 @@ export default {
 					light: "#f9a8d4", // Pink-300
 				},
 			},
-			fontFamily: {
-				sans: ["Open Sans", "Poppins", "Montserrat", "sans-serif"],
-				serif: ["Lora", "Playfair Display", "Merriweather", "serif"],
-				cursive: ["Satisfy", "Great Vibes", "cursive"],
-				handwriting: ["Indie Flower", "cursive"],
-			},
 			textShadow: {
 				lg: "2px 2px 4px rgba(0, 0, 0, 0.1)",
 			},
