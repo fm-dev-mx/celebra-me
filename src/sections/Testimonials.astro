@@ -17,6 +17,6 @@ const { data } = Astro.props;
 		<SectionTitle>
 			{data.title}
 		</SectionTitle>
-		<TestimonialsCarousel {...data} client:load />
+		<TestimonialsCarousel {...data} client:visible />
 	</Container>
 </Section>

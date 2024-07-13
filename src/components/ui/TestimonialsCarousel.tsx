@@ -21,7 +21,7 @@ const TestimonialSlide: React.FC<{ testimonial: Testimonial }> = ({ testimonial 
 	</div>
 );
 
-const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
+const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials: testimonials }) => {
 	const glideRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -53,7 +53,7 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 		<div ref={glideRef} className="glide w-full max-w-6xl mx-auto my-12 h-80 place-content-center">
 			<div className="glide__track h-52" data-glide-el="track">
 				<ul className="glide__slides h-80">
-					{testimonials.map((testimonial, index) => (
+					{testimonials.map((testimonial: Testimonial, index: number) => (
 						<li key={index} className="h-40 py-2">
 							<TestimonialSlide testimonial={testimonial} />
 						</li>
