@@ -71,6 +71,7 @@ export interface TestimonialsData {
 }
 
 export interface Testimonial {
+	id: number;
 	image: string;
 	content: string;
 	author: string;
