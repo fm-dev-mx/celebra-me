@@ -27,8 +27,6 @@
 		"@astrojs/renderer-react": "^0.5.0",
 		"@astrojs/sitemap": "^3.1.6",
 		"@astrojs/tailwind": "^5.1.0",
-		"@glidejs/glide": "^3.6.2",
-		"@types/glidejs__glide": "^3.6.5",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
 		"@typescript-eslint/eslint-plugin": "^7.16.0",
