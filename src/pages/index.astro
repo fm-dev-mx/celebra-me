@@ -8,6 +8,7 @@ import Hero from "@/sections/Hero.astro";
 import Pricing from "@/sections/Pricing.astro";
 import Services from "@/sections/Services.astro";
 import Testimonials from "@/sections/Testimonials.astro";
+import FAQ from "@/sections/FAQ.astro";
 
 const data = await getLandingData();
 ---
@@ -41,6 +42,7 @@ const data = await getLandingData();
             <AboutUs data={data.aboutData} />
             <Testimonials data={data.testimonialsData} />
             <Pricing data={data.pricingData} />
+			<FAQ data={data.faqData} />
         </div>
         <Footer data={data.footerData} />
     </main>

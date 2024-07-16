@@ -6,6 +6,7 @@ export interface LandingPageData {
 	aboutData: AboutData;
 	pricingData: PricingData;
 	testimonialsData: TestimonialsData;
+	faqData: FAQData;
 	footerData: FooterData;
 }
 
@@ -122,6 +123,16 @@ export interface LdJson {
 		contactType: string;
 	};
 	sameAs: string[];
+}
+
+export interface FAQData {
+	title: string;
+	questions: Question[];
+}
+
+export interface Question {
+	question: string;
+	answer: string;
 }
 
 export type Icon =
