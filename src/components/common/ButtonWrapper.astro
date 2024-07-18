@@ -4,7 +4,6 @@ interface Props {
 	margin?: string;
 	align?: string;
 	gap?: string;
-	className?: string;
 }
 
 const props = Astro.props as Props;
@@ -13,11 +12,9 @@ const {
 	margin = "mt-16",
 	align = "justify-center",
 	gap = "gap-x-6 md:gap-x-12",
-	className = "",
 } = props;
 ---
 
-<div class=""></div>
-<div class:list={["flex", flex, margin, align, gap, className]}>
+<div class:list={["flex", flex, margin, align, gap]}>
 	<slot />
 </div>

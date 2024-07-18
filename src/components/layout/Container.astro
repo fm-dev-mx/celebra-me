@@ -1,17 +1,29 @@
 ---
-interface Props {
-	padding?: string;
-	margin?: string;
+import { twMerge } from 'tailwind-merge';
+
+interface ContainerProps {
 	width?: string;
-	backgroundColor?: string;
-	shadow?: string;
+	margin?: string;
+	padding?: string;
 	relative?: string;
 }
 
-const props = Astro.props as Props;
-const { width = "w-5/6 md:w-3/4", relative = "", margin = "mx-auto" } = props;
+const {
+	width = "w-5/6 md:w-3/4",
+	margin = "mx-auto",
+	padding = "",
+	relative = "",
+} = Astro.props as ContainerProps;
+
+const containerClasses = twMerge(
+	"flex flex-col items-center justify-center",
+	width,
+	margin,
+	padding,
+	relative
+);
 ---
 
-<div class=`flex flex-col items-center justify-center ${width} ${margin} ${relative} `>
+<div class={containerClasses}>
 	<slot />
 </div>

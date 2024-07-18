@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
-// Import the hover and intersection observer effects
+// Import utility functions for card interactivity
 import { initializeCardHoverEffects } from "@utilities/CardHoverEffects";
 import { initializeCardIntersectionObserver } from "@utilities/CardIntersectionObserver";
 
+// Define the props interface for the Card component
 interface CardProps {
 	href?: string;
 	bgColor?: string;
@@ -20,6 +21,7 @@ interface CardProps {
 	children: React.ReactNode;
 }
 
+// Card component definition with default prop values
 const Card: React.FC<CardProps> = ({
 	href = "#",
 	bgColor = "bg-white",
@@ -35,18 +37,22 @@ const Card: React.FC<CardProps> = ({
 	transition = "transition-all duration-300",
 	children,
 }) => {
-	const cardRef = useRef<HTMLDivElement>(null);
-
 	useEffect(() => {
+		// Check if the device has touch capabilities
 		const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
 		console.log("isTouchDevice: " + isTouchDevice);
+
+		// Initialize different effects based on device type
 		if (isTouchDevice) {
+			// For touch devices, use intersection observer for effects
 			initializeCardIntersectionObserver();
 		} else {
+			// For non-touch devices, use hover effects
 			initializeCardHoverEffects();
 		}
-	}, []);
+	}, []); // Empty dependency array ensures this effect runs once on mount
 
+	// Combine all CSS classes into a single string
 	const classList = [
 		bgColor,
 		borderWidth,
@@ -61,9 +67,11 @@ const Card: React.FC<CardProps> = ({
 		transition,
 	].join(" ");
 
+	// Render the card component
 	return (
 		<a href={href} className="block w-full h-full no-underline">
-			<div ref={cardRef} className={classList}>
+			<div className={classList}>
+				{/* Inner container for centering content */}
 				<div className="flex flex-col content-center items-center text-center">
 					{children}
 				</div>
