@@ -89,18 +89,6 @@
 				"description": "Nos dedicamos a brindar un servicio excepcional."
 			}
 		],
-		"testimonials": [
-			{
-				"image": "/testimonials/1.jpg",
-				"content": "Las invitaciones fueron increíbles, recibimos muchos elogios.",
-				"author": "Esteban y Marlene"
-			},
-			{
-				"image": "/testimonials/2.jpg",
-				"content": "Un servicio excelente, muy profesionales.",
-				"author": "Ana y Fernando"
-			}
-		],
 		"cta": {
 			"label": "Contáctanos",
 			"href": "/contacto"
@@ -175,7 +163,276 @@
 			}
 		]
 	},
-
+	"testimonialsData": {
+		"title": "¿Qué opinan nuestros clientes?",
+		"testimonials": [
+			{
+				"id": 1,
+				"image": "/testimonials/boda_esteban_marlene.jpg",
+				"author": "Esteban y Marlene",
+				"content": "Nos encantaron las invitaciones."
+			},
+			{
+				"id": 2,
+				"image": "/testimonials/boda_ana_fernando.jpg",
+				"author": "Ana y Fernando",
+				"content": "Muy buen servicio. Se nota que les importa lo que hacen."
+			},
+			{
+				"id": 3,
+				"image": "/testimonials/xv_sandra.jpg",
+				"author": "Sandra",
+				"content": "Las invitaciones de mis XV quedaron geniales. Todos me preguntaron dónde las había mandado hacer."
+			},
+			{
+				"id": 4,
+				"image": "/testimonials/boda_marcella_jesus.jpg",
+				"author": "Marcella y Jesús",
+				"content": "Un servicio de primera, superaron todas nuestras expectativas."
+			},
+			{
+				"id": 5,
+				"image": "/testimonials/xv_maria.jpg",
+				"author": "María",
+				"content": "Todo salió muy bien. Los recomendaremos a nuestros amigos."
+			},
+			{
+				"id": 6,
+				"image": "/testimonials/boda_carlos_sofia.jpg",
+				"author": "Carlos y Sofía",
+				"content": "Muy buen diseño. Quedamos muy satisfechos con el resultado."
+			},
+			{
+				"id": 7,
+				"image": "/testimonials/xv_valeria.jpg",
+				"author": "Valeria",
+				"content": "Mis invitaciones quedaron padrisímas."
+			},
+			{
+				"id": 8,
+				"image": "/testimonials/boda_roberto_paula.jpg",
+				"author": "Roberto y Paula",
+				"content": "Nos gustó mucho el diseño. Se nota que le echaron ganas."
+			},
+			{
+				"id": 9,
+				"image": "/testimonials/boda_jorge_lucia.jpg",
+				"author": "Jorge y Lucía",
+				"content": "Muy atentos a lo que queríamos. El resultado nos encantó."
+			},
+			{
+				"id": 10,
+				"image": "/testimonials/xv_karla.jpg",
+				"author": "Karla",
+				"content": "Las invitaciones de mis XV quedaron muy bonitas. Gracias por su trabajo."
+			},
+			{
+				"id": 11,
+				"image": "/testimonials/boda_andres_camila.jpg",
+				"author": "Andrés y Camila",
+				"content": "Excelente servicio. Se ve que saben lo que hacen."
+			},
+			{
+				"id": 12,
+				"image": "/testimonials/boda_diego_monica.jpg",
+				"author": "Diego y Mónica",
+				"content": "Las invitaciones quedaron muy bonitas."
+			},
+			{
+				"id": 13,
+				"image": "/testimonials/xv_alejandra.jpg",
+				"author": "Alejandra",
+				"content": "Me encantaron mis invitaciones. Mis amigas me dijeron que les gustaron mucho."
+			},
+			{
+				"id": 14,
+				"image": "/testimonials/boda_fernando_isabel.jpg",
+				"author": "Fernando e Isabel",
+				"content": "Muy pacientes con nosotros. El resultado final nos gustó mucho."
+			},
+			{
+				"id": 15,
+				"image": "/testimonials/xv_ana.jpg",
+				"author": "Ana Luisa",
+				"content": "Me encantaron, sencillas pero elegantes, tal como lo pedimos."
+			},
+			{
+				"id": 16,
+				"image": "/testimonials/xv_patricia.jpg",
+				"author": "Patricia",
+				"content": "Mis invitaciones de XV años estuvieron geniales. Gracias por su trabajo."
+			},
+			{
+				"id": 17,
+				"image": "/testimonials/boda_josefa_eduardo.jpg",
+				"author": "Josefa y Eduardo",
+				"content": "Buen trabajo. Las invitaciones quedaron muy bonitas y estuvieron a tiempo."
+			},
+			{
+				"id": 18,
+				"image": "/testimonials/boda_daniel_alejandra.jpg",
+				"author": "Daniel y Alejandra",
+				"content": "Lograron captar muy bien lo que queríamos. El resultado nos encantó."
+			},
+			{
+				"id": 19,
+				"image": "/testimonials/xv_mariana.jpg",
+				"author": "Mariana",
+				"content": "Quedaron increíbles. Todos me preguntaron dónde las había mandado hacer."
+			},
+			{
+				"id": 20,
+				"image": "/testimonials/boda_luis_claudia.jpg",
+				"author": "Luis y Claudia",
+				"content": "Muy buen servicio. Se nota que les gusta su trabajo."
+			},
+			{
+				"id": 21,
+				"image": "/testimonials/boda_javier_andrea.jpg",
+				"author": "Javier y Andrea",
+				"content": "Lograron combinar nuestros gustos diferentes en un diseño que nos encantó a los dos."
+			},
+			{
+				"id": 22,
+				"image": "/testimonials/xv_victoria.jpg",
+				"author": "Victoria",
+				"content": "Mis invitaciones quedaron bien padres. Justo lo que quería."
+			},
+			{
+				"id": 23,
+				"image": "/testimonials/boda_pablo_maria.jpg",
+				"author": "Pablo y María",
+				"content": "Muy buena atención. Siempre estuvieron al pendiente de lo que necesitábamos."
+			},
+			{
+				"id": 24,
+				"image": "/testimonials/boda_jorge_paula.jpg",
+				"author": "Jorge y Paula",
+				"content": "Las invitaciones quedaron perfectas para nuestra boda en la playa. Todos nos dijeron que estaban muy bonitas."
+			},
+			{
+				"id": 25,
+				"image": "/testimonials/xv_fernanda.jpg",
+				"author": "Fernanda",
+				"content": "Me encantó trabajar con ustedes. El resultado final superó mis expectativas."
+			},
+			{
+				"id": 26,
+				"image": "/testimonials/boda_raul_ana.jpg",
+				"author": "Raúl y Ana",
+				"content": "Muy creativos. Lograron meter nuestro tema de viajes en el diseño y quedó genial."
+			},
+			{
+				"id": 27,
+				"image": "/testimonials/boda_david_lucia.jpg",
+				"author": "David y Lucía",
+				"content": "Fue divertido trabajar con ustedes en el diseño. El resultado final nos encantó."
+			},
+			{
+				"id": 28,
+				"image": "/testimonials/xv_olivia.jpg",
+				"author": "Olivia",
+				"content": "Gracias por su trabajo."
+			},
+			{
+				"id": 29,
+				"image": "/testimonials/boda_mario_carmen.jpg",
+				"author": "Mario y Carmen",
+				"content": "Excelente servicio de principio a fin. Las invitaciones quedaron hermosas."
+			},
+			{
+				"id": 30,
+				"image": "/testimonials/boda_alfredo_clara.jpg",
+				"author": "Alfredo y Clara",
+				"content": "Las invitaciones fueron un éxito. Todos nos dijeron que estaban bien padres."
+			},
+			{
+				"id": 31,
+				"image": "/testimonials/xv_juana.jpg",
+				"author": "Juana",
+				"content": "Mis invitaciones de XV quedaron muy bonitas. A todos les gustaron mucho."
+			},
+			{
+				"id": 32,
+				"image": "/testimonials/boda_martin_rosa.jpg",
+				"author": "Martín y Rosa",
+				"content": "Gracias por aguantar nuestros cambios de último momento. El resultado final valió la pena."
+			},
+			{
+				"id": 33,
+				"image": "/testimonials/boda_fernando_daniela.jpg",
+				"author": "Fernando y Daniela",
+				"content": "Las invitaciones quedaron perfectas para nuestra boda al aire libre. Gracias por su trabajo."
+			},
+			{
+				"id": 34,
+				"image": "/testimonials/xv_lorena.jpg",
+				"author": "Lorena",
+				"content": "Me encantaron mis invitaciones."
+			},
+			{
+				"id": 35,
+				"image": "/testimonials/boda_pedro_ana.jpg",
+				"author": "Pedro y Ana",
+				"content": "Muy atentos a los detalles. Las invitaciones quedaron justo como las imaginábamos."
+			},
+			{
+				"id": 36,
+				"image": "/testimonials/boda_josefina_jose.jpg",
+				"author": "Josefina y José",
+				"content": "Buen servicio y buen trabajo. Quedamos muy contentos con el resultado."
+			},
+			{
+				"id": 37,
+				"image": "/testimonials/xv_claudia.jpg",
+				"author": "Claudia",
+				"content": "Mis invitaciones quedaron padrísimas. Todos me preguntaron dónde las había mandado hacer."
+			},
+			{
+				"id": 38,
+				"image": "/testimonials/boda_martin_ana.jpg",
+				"author": "Martín y Ana",
+				"content": "Todo salió muy bien."
+			},
+			{
+				"id": 39,
+				"image": "/testimonials/boda_luis_carmen.jpg",
+				"author": "Luis y Carmen",
+				"content": "Muy buen servicio. Se nota que le ponen amor a su trabajo."
+			},
+			{
+				"id": 40,
+				"image": "/testimonials/xv_paulina.jpg",
+				"author": "Paulina",
+				"content": "Gracias por su creatividad."
+			}
+		]
+	},
+	"faqData": {
+        "title": "Preguntas Frecuentes",
+        "questions": [
+            {
+                "question": "¿Cómo funciona el proceso de creación de invitaciones digitales?",
+                "answer": "Nuestro proceso es simple y personalizado. Primero, eliges un diseño base. Luego, nos proporcionas los detalles de tu evento. Nuestro equipo de diseño creará tu invitación y te la enviará para tu aprobación. Una vez aprobada, te proporcionamos un enlace único para compartir con tus invitados."
+            },
+            {
+                "question": "¿Puedo personalizar completamente mi invitación?",
+                "answer": "¡Absolutamente! Ofrecemos un alto grado de personalización. Puedes elegir colores, fuentes, imágenes y más. Si tienes una idea específica en mente, nuestro equipo de diseño trabajará contigo para hacerla realidad."
+            },
+            {
+                "question": "¿Cuánto tiempo toma recibir mi invitación digital?",
+                "answer": "Generalmente, el proceso toma entre 3 a 5 días hábiles desde la aprobación del diseño. Para pedidos urgentes, ofrecemos opciones de entrega acelerada por un costo adicional."
+            },
+            {
+                "question": "¿Cómo comparten mis invitados su confirmación de asistencia?",
+                "answer": "Cada invitación incluye una opción fácil de usar para que los invitados confirmen su asistencia. Pueden hacerlo con un simple clic, y tú recibirás una notificación al instante."
+            },
+            {
+                "question": "¿Qué pasa si necesito hacer cambios después de que la invitación ha sido enviada?",
+                "answer": "No hay problema. Puedes solicitar cambios en cualquier momento y actualizaremos la invitación en tiempo real. Todos los invitados verán la versión más reciente cuando accedan al enlace."
+            }
+        ]
+    },
 	"footerData": {
 		"logo": "celebra-me.com",
 		"description": "Tus Eventos Serán Únicos.",

@@ -1,0 +1,22 @@
+---
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import SectionTitle from "@/components/typography/SectionTitle.astro";
+import FAQList from "@/components/ui/FAQList";
+import type { FAQData } from "@/config/landing.interface";
+
+interface Props {
+    data: FAQData;
+}
+
+const { data } = Astro.props;
+---
+
+<Section id="faq-section">
+    <Container>
+        <SectionTitle>
+            {data.title}
+        </SectionTitle>
+        <FAQList client:visible {...data} />
+    </Container>
+</Section>
