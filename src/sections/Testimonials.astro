@@ -9,7 +9,7 @@ import type { TestimonialsData } from "@/config/landing.interface";
 
 // Define the props interface for this component
 interface Props {
-	data: TestimonialsData;
+    data: TestimonialsData;
 }
 
 // Destructure the data prop
@@ -18,23 +18,23 @@ const { data } = Astro.props;
 
 <!-- Testimonials section wrapper -->
 <Section id="testimonials-section" fullHeight={true} fullWidth={true}>
-	<div id="testimonials"></div>
+    <div id="testimonials"></div>
 	<!-- Container wrapper -->
-	<Container class="overflow-hidden max-w-full">
+	<Container class="overflow-hidden w-full max-w-xl">
 		<!-- Section title -->
-		<SectionTitle extraClass="mb-20">
-			{data.title}
-		</SectionTitle>
+		<SectionTitle extraClass="mb-10">
+            {data.title}
+        </SectionTitle>
 		<!-- React TestimonialsCarousel component with client:visible directive for lazy loading -->
-		<TestimonialsCarousel {...data} client:visible />
-	</Container>
-	<ButtonWrapper>
-		<Action
-			variant="scroll"
-			href="#pricing-section"
-			title="Click para ir a la sección de precios"
-			icon="ArrowDownIcon"
-			class="border-secondary-light bg-secondary hover:text-secondary-light"
-			/>
-	</ButtonWrapper>
+        <TestimonialsCarousel {...data} client:visible />
+    </Container>
+    <ButtonWrapper>
+        <Action
+            variant="scroll"
+            href="#pricing-section"
+            title="Click para ir a la sección de precios"
+            icon="ArrowDownIcon"
+            class="border-secondary-light bg-secondary hover:text-secondary-light"
+        />
+    </ButtonWrapper>
 </Section>

@@ -82,47 +82,52 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 	const visibleTestimonials = getVisibleTestimonials();
 
 	return (
-
-		<div className="relative w-full mx-auto my-12 px-4">
-				<div className="flex justify-center transition-transform duration-500 ease-in-out gap-x-0">
-					{visibleTestimonials.map((index) => (
-						<div
-							key={randomizedTestimonials[index].id}
-							className="transition-all duration-300 min-h-80 max-h-80"
-							style={{ transform: `scale(${index === currentIndex ? 1 : 0.9})` }}
-						>
-							<TestimonialCard
-								testimonial={randomizedTestimonials[index]}
-								isActive={index === currentIndex}
-							/>
-						</div>
-					))}
-				</div>
-			{/* Navigation buttons */}
-			<button
-				onClick={prevSlide}
-				className="absolute -left-10 top-1/2 transform bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-10"
-				aria-label="Previous testimonial"
-			>
-				&#8249;
-			</button>
-			<button
-				onClick={nextSlide}
-				className="absolute -right-10 top-1/2 transform bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-10"
-				aria-label="Next testimonial"
-			>
-				&#8250;
-			</button>
-			{/* Autoplay toggle button */}
-			<button
-				onClick={() => setIsAutoPlaying((prev) => !prev)}
-				className="absolute bottom-10 right-2 bg-white p-2 rounded-full shadow-md hover:bg-primary-light transition-colors duration-200"
-				aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
-			>
-				{isAutoPlaying ? "⏸" : "▶"}
-			</button>
-		</div>
-	);
+        <div className="relative w-full mx-auto my-12 px-4 overflow-hidden">
+			<div className="flex justify-center items-center h-96">
+                {visibleTestimonials.map((index, arrayIndex) => (
+                    <div
+                        key={randomizedTestimonials[index].id}
+						className="absolute transition-all duration-300 max-w-[280px]"
+                        style={{
+							transform: `translateX(${(arrayIndex - 1) * 110}%) scale(${index === currentIndex ? 1 : 0.8})`,
+                            opacity: index === currentIndex ? 1 : 0.5,
+                            zIndex: index === currentIndex ? 10 : 0,
+							left: '50%',
+                            marginLeft: '-110px',
+                        }}
+                    >
+                        <TestimonialCard
+                            testimonial={randomizedTestimonials[index]}
+                            isActive={index === currentIndex}
+                        />
+                    </div>
+                ))}
+            </div>
+            {/* Navigation buttons */}
+            <button
+                onClick={prevSlide}
+				className="absolute left-1 md:left-4 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                aria-label="Previous testimonial"
+            >
+                &#8249;
+            </button>
+            <button
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                aria-label="Next testimonial"
+            >
+                &#8250;
+            </button>
+            {/* Autoplay toggle button */}
+            <button
+                onClick={() => setIsAutoPlaying((prev) => !prev)}
+				className="absolute right-2 md:right-40  -translate-y-20 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
+            >
+                {isAutoPlaying ? "⏸" : "▶"}
+            </button>
+        </div>
+    );
 };
 
 export default TestimonialsCarousel;
