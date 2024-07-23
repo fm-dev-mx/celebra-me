@@ -25,12 +25,12 @@
 	"headerData": {
 		"logo": "celebra-me.com",
 		"links": [
-			{ "label": "Inicio", "href": "#" },
+			{ "label": "Servicios", "href": "#services-section" },
 			{ "label": "Sobre Nosotros", "href": "#about-section" },
-			{ "label": "Servicios", "href": "#services" },
-			{ "label": "Demos", "href": "/demos" },
-			{ "label": "FAQ", "href": "/faq" },
-			{ "label": "Contacto", "href": "/contacto" }
+			{ "label": "Testimonios", "href": "#testimonials-section" },
+			{ "label": "Demos", "href": "#" },
+			{ "label": "FAQ", "href": "#faq-section" },
+			{ "label": "Contacto", "href": "#" }
 		]
 	},
 	"heroData": {
@@ -435,6 +435,7 @@
     },
 	"footerData": {
 		"logo": "celebra-me.com",
+		"icon": "FavIcon",
 		"description": "Tus Eventos Serán Únicos.",
 		"links": [
 			{ "label": "Nosotros", "href": "#about-section" },

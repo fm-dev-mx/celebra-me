@@ -38,6 +38,7 @@ export interface Service {
 
 export interface FooterData {
 	logo: string;
+	icon: Icon;
 	description: string;
 	links: Link[];
 	socials: Social[];
@@ -150,5 +151,10 @@ export type Icon =
 	| "ExclusiveIcon"
 	| "EasyUseIcon"
 	| "CommitmentIcon"
+
 	| "ArrowDownIcon"
+
+	| "ArrowRightIcon"
+
 	| "FavIcon";
+

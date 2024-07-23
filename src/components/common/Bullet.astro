@@ -18,12 +18,15 @@ const { size = "text-sm", color = "", weight = "font-light", icon, extraClass } 
 <li class={`flex ${size}`}>
 	{
 		icon && (
-			<IconWrapper background="bg-transparent" size="h-8 w-8" padding="p-2" align="">
+			<IconWrapper background="bg-transparent" size="h-8 w-8" padding="p-2" align="items-center">
 				<Icon icon={icon} />
 			</IconWrapper>
 		)
 	}
-	<div class={`flex items-center ${color} ${weight} hover:font-normal ${extraClass}`}>
-		<slot />
+
+	<div class={`flex items-center ${color} ${weight} hover:font-normal ${extraClass}  transition-all`}>
+		<div class="whitespace-pre-line overflow-hidden min-w-56">
+			<slot />
+		</div>
 	</div>
 </li>

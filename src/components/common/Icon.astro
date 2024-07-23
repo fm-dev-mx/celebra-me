@@ -4,6 +4,7 @@ import CommitmentIcon from "@/icons/aboutUs/CommitmentIcon.astro";
 import EasyUseIcon from "@/icons/aboutUs/EasyUseIcon.astro";
 import ExclusiveIcon from "@/icons/aboutUs/ExclusiveIcon.astro";
 import ArrowDownIcon from "@/icons/commons/ArrowDownIcon.astro";
+import ArrowUpIcon from "@/icons/commons/ArrowUpIcon.astro";
 import CelebrameIcon from "@/icons/commons/CelebrameIcon.astro";
 import CheckIcon from "@/icons/commons/CheckIcon.astro";
 import FavIcon from "@/icons/commons/FavIcon.astro";
@@ -19,10 +20,15 @@ import LinkedInIcon from "@/icons/socials/LinkedInIcon.astro";
 
 interface Props {
 	icon: Icon;
+	height?: string;
 	class?: string;
 }
 
-const { icon, class: className } = Astro.props;
+const {
+	icon,
+	height = "h-full",
+	class: className
+} = Astro.props;
 
 const icons = [
 	CheckIcon,
@@ -41,6 +47,7 @@ const icons = [
 	CommitmentIcon,
 	FavIcon,
 	ArrowDownIcon,
+	ArrowUpIcon
 ];
 
 let figures: Record<string, (_props: Record<string, unknown>) => unknown> = {};
@@ -52,4 +59,4 @@ icons.map((item) => {
 const Figure = figures[icon];
 ---
 
-{Figure ? <Figure class:list={[className]} /> : <p>Icon not found</p>}
+{Figure ? <Figure class:list={[height, className]} /> : <p>Icon not found</p>}

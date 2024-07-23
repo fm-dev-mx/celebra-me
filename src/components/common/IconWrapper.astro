@@ -1,6 +1,8 @@
 ---
 interface Props {
 	size?: string;
+	minWidth?: string;
+	margin?: string;
 	color?: string;
 	align?: string;
 	padding?: string;
@@ -11,6 +13,8 @@ const props = Astro.props as Props;
 
 const {
 	size = "h-11 w-12",
+	minWidth = "min-w-[32px]",
+	margin = "mr-2",
 	color = "text-primary",
 	align = "items-center",
 	padding = "p-2",
@@ -18,6 +22,6 @@ const {
 } = props;
 ---
 
-<div class:list={[background, padding, "rounded-full", "flex", align, size, color]}>
+<div class:list={[background, padding, minWidth, margin, "rounded-full", "flex", align, size, color]}>
 	<slot />
 </div>
