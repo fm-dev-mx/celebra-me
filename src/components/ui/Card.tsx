@@ -18,6 +18,10 @@ interface CardProps {
 	hover?: string;
 	extraClass?: string;
 	transition?: string;
+	minWidth?: string;
+	maxWidth?: string;
+	minHeight?: string;
+	opacity?: string;
 	children: React.ReactNode;
 }
 
@@ -31,10 +35,14 @@ const Card: React.FC<CardProps> = ({
 	rounded = "rounded-lg",
 	boxShadow = "shadow-2xl",
 	padding = "p-5",
-	width = "w-full",
+	width = "",
 	hover = "hover:brightness-105",
 	extraClass = "",
 	transition = "transition-all duration-300",
+	minWidth = "min-w-56",
+	maxWidth = "max-w-56",
+	minHeight = "min-h-60",
+	opacity = "opacity-100",
 	children,
 }) => {
 	useEffect(() => {
@@ -65,6 +73,10 @@ const Card: React.FC<CardProps> = ({
 		hover,
 		extraClass,
 		transition,
+		minWidth,
+		maxWidth,
+		minHeight,
+		opacity,
 	].join(" ");
 
 	// Render the card component

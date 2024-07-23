@@ -29,7 +29,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
       </button>
       {isOpen && (
         <div className="pb-5">
-          <p className="text-base text-secondary-dark">{answer}</p>
+          <p className="text-base text-secondary-dark leading-relaxed letter-spacing-widest w-5/6 ml-4">{answer}</p>
         </div>
       )}
     </div>

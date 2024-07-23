@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { TestimonialsData, Testimonial } from "@/config/landing.interface";
+import Card from "./Card";
 
 // Helper function to shuffle an array randomly
 const shuffleArray = (array: any[]) => {
@@ -13,24 +14,27 @@ const shuffleArray = (array: any[]) => {
 
 // Individual testimonial card component
 const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }> = React.memo(({ testimonial, isActive }) => (
-  <div
-    className={`bg-white px-6 py-6 rounded-xl shadow-lg border-2 border-primary-light flex flex-col transition-all duration-300 hover:shadow-xl ${isActive ? 'opacity-100' : 'opacity-70'}`}
-    style={{ width: '250px', height: '220px' }}
-  >
-    <div className="flex flex-col h-full">
-      <div className="flex-grow flex items-center justify-center">
-        <p className="text-primary-dark/80 italic text-md text-center line-clamp-4">"{testimonial.content}"</p>
-      </div>
-      <div className="mt-4 flex items-center justify-center">
-        <img
-          src={testimonial.image}
-          alt={`Photo of ${testimonial.author}`}
-          className="w-12 h-12 rounded-full mr-4 object-cover"
-        />
-        <p className="font-semibold text-primary-dark">{testimonial.author}</p>
-      </div>
-    </div>
-  </div>
+		<Card
+			href="#"
+			padding="p-8"
+			hover="hover:brightness-105 hover:shadow-xl"
+			borderColor="border-primary hover:border-primary-dark"
+			opacity={`${isActive ? 'opacity-100' : 'opacity-70'}`}
+			extraClass="content-center"
+		>
+			<div className="flex-grow flex items-center justify-center">
+				<p className="text-primary-dark/80 italic text-md text-center line-clamp-4">"{testimonial.content}"</p>
+			</div>
+			<div className="mt-8 flex items-center justify-center">
+				<img
+				src={testimonial.image}
+				alt={`${testimonial.author}`}
+				className="w-12 h-12 rounded-full mr-4 object-cover"
+				/>
+				<p className="font-semibold text-primary-dark">{testimonial.author}</p>
+			</div>
+	</Card>
+
 ));
 
 TestimonialCard.displayName = "TestimonialCard";
@@ -78,13 +82,13 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 	const visibleTestimonials = getVisibleTestimonials();
 
 	return (
-		<div className="relative w-full max-w-7xl mx-auto my-12 px-4">
-			<div className="overflow-hidden">
-				<div className="flex justify-center transition-transform duration-500 ease-in-out">
+
+		<div className="relative w-full mx-auto my-12 px-4">
+				<div className="flex justify-center transition-transform duration-500 ease-in-out gap-x-0">
 					{visibleTestimonials.map((index) => (
 						<div
 							key={randomizedTestimonials[index].id}
-							className="flex-shrink-0 px-2 transition-all duration-300"
+							className="transition-all duration-300 min-h-80 max-h-80"
 							style={{ transform: `scale(${index === currentIndex ? 1 : 0.9})` }}
 						>
 							<TestimonialCard
@@ -94,18 +98,17 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 						</div>
 					))}
 				</div>
-			</div>
 			{/* Navigation buttons */}
 			<button
 				onClick={prevSlide}
-				className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-primary-light transition-colors duration-200 z-10"
+				className="absolute -left-10 top-1/2 transform bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-10"
 				aria-label="Previous testimonial"
 			>
 				&#8249;
 			</button>
 			<button
 				onClick={nextSlide}
-				className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-primary-light transition-colors duration-200 z-10"
+				className="absolute -right-10 top-1/2 transform bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-10"
 				aria-label="Next testimonial"
 			>
 				&#8250;
@@ -113,7 +116,7 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 			{/* Autoplay toggle button */}
 			<button
 				onClick={() => setIsAutoPlaying((prev) => !prev)}
-				className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md hover:bg-primary-light transition-colors duration-200"
+				className="absolute bottom-10 right-2 bg-white p-2 rounded-full shadow-md hover:bg-primary-light transition-colors duration-200"
 				aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
 			>
 				{isAutoPlaying ? "⏸" : "▶"}
