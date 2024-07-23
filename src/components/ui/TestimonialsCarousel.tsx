@@ -82,7 +82,7 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 	const visibleTestimonials = getVisibleTestimonials();
 
 	return (
-        <div className="relative w-full mx-auto my-12 px-4 overflow-hidden">
+        <div className="relative w-full mx-auto my-12 px-4">
 			<div className="flex justify-center items-center h-96">
                 {visibleTestimonials.map((index, arrayIndex) => (
                     <div

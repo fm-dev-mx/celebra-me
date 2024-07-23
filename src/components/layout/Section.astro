@@ -1,4 +1,5 @@
 ---
+// Define the props interface for the Section component
 interface Props {
   id?: string;
   backgroundImageMobile?: string;
@@ -10,9 +11,10 @@ interface Props {
   relative?: string;
   fullHeight?: boolean;
   fullWidth?: boolean;
+  overflow?: string;
 }
 
-const props = Astro.props as Props;
+// Destructure props with default values
 const {
   id = "",
   backgroundImageMobile = "",
@@ -23,32 +25,51 @@ const {
   relative = "relative",
   fullHeight = false,
   fullWidth = false,
-} = props;
+  overflow = "overflow-hidden",
+} = Astro.props as Props;
 
+// Define constant classes
+const LAYOUT_CLASSES = "flex flex-col items-center";
+const BACKGROUND_CLASSES = "bg-center bg-no-repeat";
+
+// Determine height and width based on fullHeight and fullWidth props
 const height = fullHeight ? "min-h-screen" : "h-auto";
 const width = fullWidth ? "w-full" : "w-5/6 md:w-3/4";
+
+// Combine all classes
+const sectionClasses = [
+  LAYOUT_CLASSES,
+  BACKGROUND_CLASSES,
+  margin,
+  width,
+  padding,
+  relative,
+  height,
+  backgroundColor,
+  overflow,
+];
 ---
 
 <section
   id={id}
-  class:list={[
-    'flex flex-col items-center',
-    margin,
-    width,
-    padding,
-    relative,
-    height,
-    backgroundColor,
-    'bg-center bg-no-repeat',
-  ]}
+  class:list={sectionClasses}
 >
-  <div
-    class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover"
-    style={`background-image: url('${backgroundImageMobile}');`}
-  ></div>
-  <div
-    class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
-    style={`background-image: url('${backgroundImageDesktop}');`}
-  ></div>
+  {/* Mobile background image */}
+  {backgroundImageMobile && (
+    <div
+      class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover"
+      style={`background-image: url('${backgroundImageMobile}');`}
+    ></div>
+  )}
+
+  {/* Desktop background image (hidden on mobile) */}
+  {backgroundImageDesktop && (
+    <div
+      class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
+      style={`background-image: url('${backgroundImageDesktop}');`}
+    ></div>
+  )}
+
+  {/* Section content */}
   <slot />
 </section>
