@@ -1,0 +1,78 @@
+---
+import type { Icon as IconType } from "@/config/landing.interface";
+import Icon from "./Icon.astro";
+import IconWrapper from "./IconWrapper.astro";
+
+interface BulletItem {
+    text: string;
+    icon?: IconType;
+}
+
+interface Props {
+    // Array of BulletItems to display in the list
+    items: BulletItem[];
+    // Additional CSS classes for the list container
+    listClass?: string;
+    // Additional CSS classes for each list item
+    itemClass?: string;
+    // Vertical gap between list items
+    gap?: "gap-y-2" | "gap-y-4" | "gap-y-6";
+    // Font size for list items
+    size?: "text-sm" | "text-base" | "text-lg";
+    // Text color for list items
+    color?: string;
+    // Font weight for list items
+    weight?: "font-light" | "font-normal" | "font-medium" | "font-semibold";
+    // Vertical alignment of list items
+    align?: "items-start" | "items-center" | "items-end";
+    // Background color for icons
+    iconBackground?: string;
+    // Size of the icon
+    iconSize?: string;
+    // Padding around the icon
+    iconPadding?: string;
+}
+
+// Destructure props with default values
+const {
+    items,
+    listClass = "",
+    itemClass = "",
+    gap = "gap-y-4",
+    size = "text-lg",
+    color = "text-primary-dark/90",
+    weight = "font-light",
+    align = "items-center",
+    iconBackground = "bg-transparent",
+    iconSize = "h-8 w-8",
+    iconPadding = "p-2",
+} = Astro.props;
+
+// Compose classes for the list and list items
+const ulClass = `flex flex-col ${gap} ${size} ${color} ${weight} ${align} ${listClass}`;
+const liClass = `flex items-center hover:font-normal transition-all ${itemClass}`;
+---
+
+<div class="m-4 my-8">
+    <ul class={ulClass}>
+        {items.map((item) => (
+            <li class={liClass}>
+                {/* Render icon if present */}
+                {item.icon && (
+                    <IconWrapper
+                        background={iconBackground}
+                        size={iconSize}
+                        padding={iconPadding}
+                        align="items-center"
+                    >
+                        <Icon icon={item.icon} />
+                    </IconWrapper>
+                )}
+                {/* Render item text */}
+                <div class="whitespace-pre-line overflow-hidden min-w-56">
+                    {item.text}
+                </div>
+            </li>
+        ))}
+    </ul>
+</div>
