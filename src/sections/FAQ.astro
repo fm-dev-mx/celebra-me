@@ -1,4 +1,6 @@
 ---
+import Action from "@/components/common/Action.astro";
+import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
@@ -12,11 +14,20 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<Section id="faq-section">
+<Section id="faq-section" fullHeight={true}>
     <Container>
         <SectionTitle>
             {data.title}
         </SectionTitle>
         <FAQList client:visible {...data} />
-    </Container>
+		<ButtonWrapper>
+			<Action
+			variant="scroll"
+			href="#pricing-section"
+			title="Regresar a la sección de planes"
+			icon="ArrowUpIcon"
+			class="border-secondary-light bg-secondary hover:text-secondary-light"
+			/>
+		</ButtonWrapper>
+	</Container>
 </Section>

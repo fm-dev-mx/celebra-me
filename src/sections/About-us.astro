@@ -24,9 +24,11 @@ const { data } = Astro.props;
 
 <Section
 	id="about-section"
-	backgroundImage="/background/pinkStripes.jpg"
-	width="w-full"
+	backgroundImageDesktop="/background/pinkStripesDesktop.jpg"
+	backgroundImageMobile="/background/pinkStripesMobile.jpg"
 	relative="relative"
+	fullWidth={true}
+	fullHeight={true}
 >
 	<div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
 	<StyledContainer relative="relative">
