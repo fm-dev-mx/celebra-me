@@ -10,6 +10,9 @@ import Card from "@/components/ui/Card.tsx";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import type { Icon as IconType, PricingData } from "@/config/landing.interface";
+import Action from "@/components/common/Action.astro";
+import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import StyledContainer from "@/components/layout/StyledContainer.astro";
 
 // Define the properties interface for the component
 interface Props {
@@ -20,9 +23,22 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<Section id="pricing-section" relative="relative">
-	<Container width="w-full" margin="mx-auto mb-20">
-		<SectionTitle
+<Section
+	id="pricing-section"
+	relative="relative"
+	padding="px-16 py-10 pt-40"
+	fullWidth={true}
+	fullHeight={true}
+	backgroundImageMobile="/background/lightsMobile.jpg"
+    backgroundImageDesktop="/background/lightsDesktop.jpg"
+>
+
+	<div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+	<StyledContainer relative="relative" width = "w-full" margin="m-8">
+
+		<Container>
+			<div id="about-title" class="pt-20"></div>
+			<SectionTitle
 			margin="mb-10"
 			weight="font-semibold"
 			color="text-primary-dark/90"
@@ -32,8 +48,8 @@ const { data } = Astro.props;
 		</SectionTitle>
 		<Grid extraClass="pricing-grid" width="w-full">
 			<GridRow
-				columns={3}
-				gap="gap-x-12 xl:gap-x-0 gap-y-2"
+			columns={3}
+			gap="gap-x-12 xl:gap-x-0 gap-y-2"
 				width="w-full"
 				align="items-center"
 				margin="mb-20"
@@ -48,7 +64,7 @@ const { data } = Astro.props;
 								borderColor="border-primary hover:border-secondary"
 								extraClass="pricing-card"
 								client:visible
-							>
+								>
 								<SectionTitle
 									size="text-2xl"
 									margin="mt-4"
@@ -101,4 +117,6 @@ const { data } = Astro.props;
 				/>
 		</ButtonWrapper>
 	</Container>
+</StyledContainer>
 </Section>
+<div class="bg-primary-dark w-full h-0.5 opacity-50 mt-0 shadow-xl"></div>

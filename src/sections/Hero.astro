@@ -5,61 +5,74 @@ import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 
+// Define the expected data structure for the Hero component
+interface HeroData {
+  icon?: string;
+  title: string;
+  subTitle: string;
+  primaryCta: string;
+  secondaryCta: string;
+  highlightedTitle?: string;
+  highlightedTitleSmall?: string;
+}
+
 interface Props {
-	data: {
-		icon?: string;
-		title: string;
-		subTitle: string;
-		primaryCta: string;
-		secondaryCta: string;
-		highlightedTitle?: string;
-		highlightedTitleSmall?: string;
-	};
+  data: HeroData;
 }
 
 const { data } = Astro.props;
 
-const heroSectionClass = "md:w-2/3 mt-20 mt-40 md:mt-60";
-const titleClass = "text-center text-2xl lg:text-3xl xl:text-4xl 2xl:text-4xl";
-const highlightedTitleClass =
-	"text-primary font-semibold text-5xl lg:text-6xl xl:text-7xl 2xl:text-7xl ml-4 shadow-text";
-const highlightedTitleSmallClass =
-	"text-primary font-normal text-lg lg:text-2xl xl:text:3xl 2xl:text-4xl ml-3 shadow-text";
-const subTitleClass =
-	"text-primary opacity-80 mt-4 text-center font-thin text-xl md:text-2xl mb-20";
+// Reusable styles to improve consistency and maintainability
+const styles = {
+  heroSection: "relative flex flex-col items-center justify-center min-h-screen px-4",
+  contentWrapper: "w-full md:w-2/3 text-center",
+  title: "text-2xl lg:text-3xl xl:text-4xl mb-4",
+  highlightedTitle: "text-primary font-semibold text-5xl lg:text-6xl xl:text-7xl shadow-text text-nowrap",
+  highlightedTitleSmall: "text-primary font-normal text-lg lg:text-2xl xl:text-3xl 2xl:text-4xl shadow-text lg:mt-6 place-content-end mr-0",
+  subTitle: "text-primary opacity-80 mt-6 font-light text-xl md:text-2xl mb-12",
+};
 ---
 
-<section id="hero-section" class="flex justify-center h-screen">
-	<section class={heroSectionClass}>
-		<h1 class={titleClass}>
-			<span class="text-primary opacity-80 mb-10 lg:mb-4 block font-light">
-				{data.title}
-			</span>
-			<span class="flex flex-col lg:flex-row items-center justify-center">
-				<IconWrapper background="bg-transparent" size="h-8 w-9" padding="p-0">
-					<Icon icon={data.icon as IconType} />
-				</IconWrapper>
-				<div class="flex flex-row">
-					<span class=`${highlightedTitleClass}`>
-						{data.highlightedTitle}
-					</span>
-				</div>
-				<div class="flex flex-row items-end mt-0 lg:mt-8">
-					<span class={highlightedTitleSmallClass}>
-						{data.highlightedTitleSmall}
-					</span>
-				</div>
-			</span>
-		</h1>
-		<h2 class={subTitleClass}>{data.subTitle}</h2>
-		<ButtonWrapper>
+<section id="hero-section" class={styles.heroSection}>
+  <div class={styles.contentWrapper}>
+    <!-- Main title with icon and highlighted text -->
+    <h1 class={styles.title}>
+      <span class="text-primary opacity-80 block font-light mb-4">
+        {data.title}
+      </span>
+	  <!-- Subtitle -->
+      <span class="flex flex-col lg:flex-row items-center justify-center">
+        {data.icon && (
+          <IconWrapper background="bg-transparent" size="h-20 w-20" padding="p-0">
+            <Icon icon={data.icon as IconType} />
+          </IconWrapper>
+        )}
+        <div class={styles.highlightedTitle}>
+          {data.highlightedTitle}
+        </div>
+        <div class={styles.highlightedTitleSmall}>
+          {data.highlightedTitleSmall}
+        </div>
+      </span>
+    </h1>
+
+
+
+</span>
+
+    <!-- Subtitle -->
+    <h2 class={styles.subTitle}>{data.subTitle}</h2>
+
+    <!-- Call-to-action buttons -->
+    <ButtonWrapper>
       <Action variant="primary" href="#">{data.primaryCta}</Action>
       <Action variant="secondary" href="#">{data.secondaryCta}</Action>
-		</ButtonWrapper>
+    </ButtonWrapper>
+  </div>
 
   <!-- Scroll button -->
   <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-			<Action
+	<Action
       variant="scroll"
       href="#services-section"
       title="Ir a sección de Servicios"
@@ -68,21 +81,21 @@ const subTitleClass =
       <Icon icon="ArrowDownIcon" class="w-6 h-6" />
     </Action>
   </div>
-	</section>
-
-	<style>
-		@keyframes fadeIn {
-			from {
-				opacity: 0;
-			}
-			to {
-				opacity: 1;
-			}
-		}
-
-		#hero-section {
-			opacity: 0;
-			animation: fadeIn 0.8s ease-in-out forwards;
-		}
-	</style>
 </section>
+
+<style>
+  /* Fade-in animation for the hero section */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  #hero-section {
+    animation: fadeIn 0.8s ease-in-out forwards;
+  }
+
+  /* Enhance text shadow for better readability */
+  .shadow-text {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+</style>

@@ -35,7 +35,7 @@ export default {
 		function ({ addUtilities, addBase }) {
 			const newUtilities = {
 				".shadow-text": {
-					textShadow: "2px 2px 4px rgba(1, 0, 0, .4)",
+					textShadow: "2px 2px 4px rgba(1, 0, 0, .4) !important",
 				},
 			};
 			addUtilities(newUtilities, ["responsive", "hover"]);

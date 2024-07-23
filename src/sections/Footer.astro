@@ -1,42 +1,54 @@
 ---
 import Action from "@/components/common/Action.astro";
 import Icon from "@/components/common/Icon.astro";
-import type { FooterData, Icon as IconType } from "@/config/landing.interface";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import type { FooterData } from "@/config/landing.interface";
+import IconWrapper from "@/components/common/IconWrapper.astro";
+import type { Icon as IconType } from "@/config/landing.interface";
 
 interface Props {
-	data: FooterData;
+    data: FooterData;
 }
 
 const { data } = Astro.props;
 ---
 
-<footer class="flex flex-col justify-center text-center gap-y-8 pt-8 bg-black text-white w-full">
-	<section>
-		<Action as="a" type="text" class="text-xl md:text-2xl" href="/">
-			{data.logo}
-		</Action>
-	</section>
-	<section>
-		<p class="md:text-lg">
-			{data.description}
-		</p>
-	</section>
-	<section class="flex flex-row flex-wrap justify-center gap-x-3 px-4 md:px-0 md:text-xl">
-		{
-			data.links.map((link) => (
-				<Action as="a" type="text" href={link.href}>
-					{link.label}
+<footer class="bg-black text-white w-full py-8">
+    <Container>
+        <Section padding="pt-0">
+            <div class="flex flex-col items-center">
+				<!-- Logo -->
+				<Action variant="text" class="text-white mb-4" href="#hero-section">
+					<IconWrapper background="bg-transparent" size="h-8 w-8" padding="p-0">
+						<Icon icon={data.icon as IconType} class="text-white h-full w-full" />
+					</IconWrapper>
+					<span class="text-md font-normal">
+						{data.logo}
+					</span>
 				</Action>
-			))
-		}
-	</section>
-	<section class="mb-5 flex flex-row flex-wrap justify-center gap-x-3">
-		{
-			data.socials.map((social) => (
-				<Action as="a" type="icon" href={social.href} title={social.icon as IconType}>
-					<Icon icon={social.icon as IconType} />
-				</Action>
-			))
-		}
-	</section>
+
+                <p class="md:text-lg max-w-2xl text-center text-primary">
+                    {data.description}
+                </p>
+
+                <ButtonWrapper gap="gap-x-6 md:gap-x-8" margin="mt-4">
+                    {data.links.map((link) => (
+                        <Action variant="text" href={link.href} class="md:text-lg">
+                            {link.label}
+                        </Action>
+                    ))}
+                </ButtonWrapper>
+
+                <ButtonWrapper margin="mt-4">
+                    {data.socials.map((social) => (
+                        <Action variant="icon" href={social.href} title={social.icon}>
+                            <Icon icon={social.icon} height="h-[4px]" />
+                        </Action>
+                    ))}
+                </ButtonWrapper>
+            </div>
+        </Section>
+    </Container>
 </footer>
