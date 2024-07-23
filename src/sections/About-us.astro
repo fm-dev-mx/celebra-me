@@ -77,16 +77,17 @@ const { data } = Astro.props;
 					}
 				</GridRow>
 			</Grid>
-			<ButtonWrapper gap="gap-x-6 md:gap-x-12" margin="my-16">
-				<Action as="a" type="button3" href="#">{data.cta.label}</Action>
+			<ButtonWrapper margin="my-16">
+				<Action variant="tertiary" href="#">{data.cta.label}</Action>
+
 			</ButtonWrapper>
 			<ButtonWrapper>
 				<Action
-					as="a"
-					type="downButton"
-					href="#pricing-section"
-					title="Click para ir a la sección de precios"
-					iconName="ArrowDownIcon"
+					variant="scroll"
+					href="#testimonials-section"
+					title="Click para ir a la sección de testimonios"
+					icon="ArrowDownIcon"
+					class:list={["hover:text-primary"]}
 				/>
 			</ButtonWrapper>
 		</Container>

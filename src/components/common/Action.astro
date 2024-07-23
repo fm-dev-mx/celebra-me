@@ -1,51 +1,42 @@
 ---
 import Icon from "@/components/common/Icon.astro";
-import type { HTMLTag, Polymorphic } from "astro/types";
+import { twMerge } from 'tailwind-merge';
+import type { HTMLAttributes } from 'astro/types';
+import type { Icon as IconType } from "@/config/landing.interface";
 
-// Define the types for different action buttons
-type ActionTypes =
-	| "logo"
-	| "button1"
-	| "button2"
-	| "button3"
-	| "cardButton"
-	| "largeButton"
-	| "downButton"
-	| "downButtonBlue"
-	| "text"
-	| "icon"
-	| "default";
+// Define the possible variants for the Action component
+type ActionVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'icon' | 'scroll' | 'logo' | 'large';
 
-// Define the props with polymorphic types
-type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag; iconName?: string }>;
+// Extend HTML anchor attributes with our custom props
+interface Props extends HTMLAttributes<'a'> {
+  variant?: ActionVariant;
+  icon?: string;
+}
 
-const { as: Tag, class: className, type, iconName, ...props } = Astro.props;
+const { variant = 'primary', icon, class: className, ...rest } = Astro.props;
 
-// Define base button styles
-const baseButtonStyle =
-	"text-sm md:text-base text-center my-0 transition hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-dark opacity-85 hover:brightness-110";
+// Base styles applied to all Action variants
+const baseStyles = "inline-flex items-center justify-center transition-all duration-600 text-sm md:text-base hover:shadow-2xl text-nowrap";
 
-// Define specific styles for each action type
-const defaultStyles: Record<ActionTypes, string> = {
-	button1: `${baseButtonStyle} py-2.5  px-6 rounded-lg bg-secondary text-white2`,
-	button2: `${baseButtonStyle} py-2.5  px-3 rounded-lg bg-transparent text-secondary border border-secondary`,
-	button3: `${baseButtonStyle} text-lg px-20 py-3 md:py-3 bg-primary-dark text-white shadow-2xl`,
-	cardButton: `${baseButtonStyle} bg-primary text-white w-72 transition-colors duration-300 pricing-card-cta`,
-	largeButton: `${baseButtonStyle} py-2.5 bg-secondary border-2 border-dashed border-secondary-light text-white2 px-20 md:px-40`,
-	default: "",
-	downButton: `${baseButtonStyle} flex justify-center items-center animate-bounce border-2 border-primary-light bg-primary-light text-white rounded-full w-12 h-12 hover:bg-transparent hover:text-primary-light bottom-0 absolute`,
-	downButtonBlue: `${baseButtonStyle} flex justify-center items-center animate-bounce border-2 border-dotted hover:border-double border-secondary-light bg-secondary text-white rounded-full w-12 h-12 hover:bg-transparent hover:text-secondary-light opacity-60 bottom-0`,
-	icon: "text-white hover:opacity-50 hover:scale-105",
-	logo: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-60 md:text-xs lg:text-sm font-semibold mr-4",
-	text: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-90 items-center font-light md:text-xs lg:text-sm flex items-center",
+// Styles specific to each Action variant
+const variantStyles: Record<ActionVariant, string> = {
+  primary: "py-2.5 px-6 rounded-lg bg-secondary text-white2 hover:scale-110 hover:brightness-110",
+  secondary: "py-2.5 px-3 rounded-lg bg-transparent text-secondary border border-secondary hover:scale-110 hover:brightness-110",
+  tertiary: "text-lg px-14 py-3 bg-primary-dark text-white shadow-2xl hover:scale-110 hover:brightness-110",
+  text: "opacity-80 hover:scale-110 hover:opacity-90 font-light md:text-xs lg:text-sm flex items-center",
+  icon: "text-white hover:opacity-50 hover:scale-105",
+  scroll: "flex justify-center items-center animate-bounce border-2 border-primary bg-primary-light text-white rounded-full w-12 h-12 hover:bg-primary opacity-50 hover:opacity-100 hover:bg-inherit bottom-0 absolute",
+  logo: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-60 md:text-xs lg:text-sm font-semibold mr-4",
+  large: "py-2.5 bg-secondary border-2 border-dashed border-secondary-light text-white2 px-20 md:px-40 hover:scale-110 hover:brightness-110",
 };
 
-// Determine the base class for the action type
-const baseClass = defaultStyles[type as ActionTypes] ?? "";
+// Merge base styles, variant styles, and any custom classes
+// tailwind-merge ensures no conflicts between Tailwind classes
+const classes = twMerge(baseStyles, variantStyles[variant], className);
 ---
 
-<!-- Render the Tag component with the appropriate class list and props -->
-<Tag class:list={[baseClass, className]} {...props}>
-	{iconName && <Icon icon={iconName} class="mr-2" />}
-	<slot />
-</Tag>
+<!-- Render the Action component -->
+<a class={classes} {...rest}>
+  {icon && <Icon icon={icon as IconType} class="mr-2" />}
+  <slot />
+</a>

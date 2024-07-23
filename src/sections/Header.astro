@@ -14,15 +14,15 @@ const { data } = Astro.props;
 	class="w-full fixed top-0 z-50 hidden md:flex items-center justify-center transition duration-300 h-20 opacity-90 hover:opacity-100"
 >
 	<nav aria-label="Main Navigation" class="flex items-center w-3/4 px-12">
-		<ul class="flex items-center w-full justify-center gap-x-8 md:gap-x-6">
+		<ul class="flex items-center w-full justify-center gap-x-2 md:gap-x-4 xl:gap-x-8 2xl:gap-16">
 			<li class="flex items-center">
-				<Action as="a" type="logo" href="#">{data.logo}</Action>
+				<Action variant="text" class="font-semibold" href="#hero-section" class:list={["hover:text-primary-dark", "text-nowrap"]}>{data.logo}</Action>
 			</li>
 			{
 				data.links.map((item) => (
 					<li>
-						<Action as="a" href={item.href} type="text">
-							{item.label}
+						<Action variant="text" href={item.href} class:list={["hover:text-primary-dark", "text-nowrap"]}>
+  							{item.label}
 						</Action>
 					</li>
 				))

@@ -53,19 +53,21 @@ const subTitleClass =
 		</h1>
 		<h2 class={subTitleClass}>{data.subTitle}</h2>
 		<ButtonWrapper>
-			<Action as="a" type="button1" href="#">{data.primaryCta}</Action>
-			<Action as="a" type="button2" href="#">{data.secondaryCta}</Action>
+      <Action variant="primary" href="#">{data.primaryCta}</Action>
+      <Action variant="secondary" href="#">{data.secondaryCta}</Action>
 		</ButtonWrapper>
 
-		<ButtonWrapper margin="mt-60">
+  <!-- Scroll button -->
+  <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2">
 			<Action
-				as="a"
-				type={"downButton"}
-				href="#services"
-				title="Click para ir a la sección de Servicios"
-				iconName="ArrowDownIcon"
-			/>
-		</ButtonWrapper>
+      variant="scroll"
+      href="#services-section"
+      title="Ir a sección de Servicios"
+	  class:list={["opacity-80", "hover:opacity-100", "hover:text-primary-light"]}
+    >
+      <Icon icon="ArrowDownIcon" class="w-6 h-6" />
+    </Action>
+  </div>
 	</section>
 
 	<style>

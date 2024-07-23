@@ -3,6 +3,8 @@ import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import TestimonialsCarousel from "@/components/ui/TestimonialsCarousel";
+import Action from "@/components/common/Action.astro";
+import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
 import type { TestimonialsData } from "@/config/landing.interface";
 
 // Define the props interface for this component
@@ -24,4 +26,13 @@ const { data } = Astro.props;
 		<!-- React TestimonialsCarousel component with client:visible directive for lazy loading -->
 		<TestimonialsCarousel {...data} client:visible />
 	</Container>
+	<ButtonWrapper>
+		<Action
+			variant="scroll"
+			href="#pricing-section"
+			title="Click para ir a la sección de precios"
+			icon="ArrowDownIcon"
+			class="border-secondary-light bg-secondary hover:text-secondary-light"
+			/>
+	</ButtonWrapper>
 </Section>
