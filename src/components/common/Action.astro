@@ -35,7 +35,7 @@ const createVariantStyles = (): Record<ActionVariant, string> => ({
 		"text-lg px-14 py-3 bg-primary-dark text-white shadow-2xl hover:scale-110 hover:brightness-110",
 	text: "opacity-80 hover:scale-110 hover:opacity-90 font-light md:text-xs lg:text-sm flex items-center",
 	icon: "text-white hover:opacity-50 hover:scale-105",
-	scroll: "flex justify-center items-center animate-bounce border-2 border-primary bg-primary-light text-white rounded-full w-12 h-12 hover:bg-primary opacity-50 hover:opacity-100 hover:bg-inherit absolute bottom-0 transform",
+	scroll: "flex justify-center items-center animate-bounce border-2 border-primary bg-primary-light text-white rounded-full w-12 h-12 hover:bg-primary opacity-50 hover:opacity-100 hover:bg-inherit absolute bottom-0",
 	logo: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-60 md:text-xs lg:text-sm font-semibold",
 	large: "py-2.5 bg-secondary border-2 border-dashed border-secondary-light text-white2 px-20 md:px-40 hover:scale-110 hover:brightness-110",
 });
@@ -58,6 +58,6 @@ const buttonClasses = twMerge(baseStyles, variantStyles[variant], className);
   This allows for polymorphic components (e.g., rendering as a button or link)
 -->
 <Element class={buttonClasses} {...rest as any}>
-	{icon && <Icon icon={icon} class="mr-2" class:list={"color-inherit"} />}
+	{icon && <Icon icon={icon} class:list={"color-inherit"} />}
 	<slot />
 </Element>
