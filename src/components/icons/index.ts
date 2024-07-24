@@ -17,14 +17,11 @@ export { default as FavIcon } from './commons/FavIcon.astro';
 export { default as AnniversaryIcon } from './services/AnniversaryIcon.astro';
 export { default as CakeIcon } from './services/CakeIcon.astro';
 export { default as CrownIcon } from './services/CrownIcon.astro';
-export { default as GraduationCapIcon } from './services/GraduationCapIcon.astro';
 export { default as WeddingIcon } from './services/WeddingIcon.astro';
 
 // Social Media Icons
 export { default as FacebookIcon } from './socials/FacebookIcon.astro';
-export { default as GithubIcon } from './socials/GithubIcon.astro';
 export { default as InstagramIcon } from './socials/InstagramIcon.astro';
-export { default as LinkedInIcon } from './socials/LinkedInIcon.astro';
 
 // Note: If you add new icons to the project, make sure to export them here as well.
 // This will ensure they are available when importing from '@/icons'.

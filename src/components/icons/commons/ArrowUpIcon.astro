@@ -1,3 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21V3m0 0-7.5 7.5M12 3l7.5 7.5" />
+---
+import type { HTMLAttributes } from "astro/types";
+
+// Define the props interface extending SVG HTML attributes
+type Props = HTMLAttributes<"svg">;
+
+// Destructure className and rest of the props
+const { class: className, ...rest } = Astro.props;
+---
+
+<!-- src\components\icons\commons\ArrowUpIcon.astro -->
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	viewBox="0 0 24 24"
+	class={className}
+	aria-hidden="true"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="1"
+	{...rest}
+>
+	{
+		/*
+    SVG Properties Explanation:
+
+    1. xmlns="http://www.w3.org/2000/svg":
+       - Specifies the XML namespace for SVG.
+       - This is always "http://www.w3.org/2000/svg" for SVG content.
+       - Critical for proper rendering and validation of the SVG.
+
+    2. viewBox="0 0 24 24":
+       - Defines the position and dimension of an SVG viewport.
+	   - Common values: "0 0 24 24", "0 0 48 48", "0 0 100 100"
+       - Format: "x y width height"
+
+    3. class={className}:
+       - Allows for custom CSS styling.
+       - Example usage: class="w-6 h-6 text-blue-500 hover:text-blue-700"
+       - Tailwind classes are commonly used for quick styling.
+
+    4. aria-hidden="true":
+       - Hides the icon from assistive technology.
+       - Values: "true" or "false"
+       - Use "false" if the icon conveys important information.
+
+    5. fill="none":
+       - Specifies the color inside the object.
+       - Common values: "none", "currentColor", "#000000", "rgb(0,0,0)", "blue"
+       - "none" is often used for outlined icons.
+
+    6. stroke="currentColor":
+       - Specifies the color of the object's outline.
+       - Common values: "currentColor", "#000000", "rgb(0,0,0)", "blue"
+       - "currentColor" allows the icon to inherit color from its parent.
+
+    7. stroke-width="1.5":
+       - Specifies the width of the outline.
+       - Common values: "1", "1.5", "2", "3"
+       - Adjust based on the desired thickness and icon size.
+
+    8. {...rest}:
+       - Spreads additional attributes onto the SVG.
+       - Allows for further customization, e.g., adding event listeners.
+
+    Path Properties:
+
+    9. stroke-linecap="round":
+       - Defines the shape of the end points of open subpaths.
+       - Values: "butt" (default), "round", "square"
+       - "round" and "square" extend beyond the end of the line.
+
+    10. stroke-linejoin="round":
+        - Specifies how path corners are rendered.
+        - Values: "miter" (default), "round", "bevel"
+        - "round" creates smoother corner transitions.
+
+    11. d="M12 21V3m0 0-7.5 7.5M12 3l7.5 7.5":
+        - Defines the path to be drawn.
+        - M = Move to, V = Vertical line to, L = Line to
+        - Lowercase letters (m, l) indicate relative positioning.
+        - This specific path creates an arrow pointing upwards.
+
+    Note on SVG Optimization:
+    - Always consider using an SVG optimizer to reduce file size.
+    - Remove unnecessary attributes and precision in path data.
+    - Tools like SVGO can automate this process.
+  */
+	}
+	<path stroke-linecap="square" stroke-linejoin="bevel" d="M12 21V3m0 0-7.5 7.5M12 3l7.5 7.5"
+	></path>
 </svg>

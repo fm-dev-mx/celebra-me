@@ -1,23 +1,17 @@
 ---
-import type { HTMLAttributes } from 'astro/types';
+import type { HTMLAttributes } from "astro/types";
 import type { Icon as IconType } from "@/config/landing.interface";
-import * as Icons from '@components/icons';
+import * as Icons from "@components/icons";
 
 // Define the props interface, extending SVG attributes for flexibility
-interface Props extends HTMLAttributes<'svg'> {
-    icon: IconType;
-    size?: string;
-    color?: string;
+interface Props extends HTMLAttributes<"svg"> {
+	icon: IconType;
+	size?: string;
+	color?: string;
 }
 
 // Destructure props with default values
-const {
-    icon,
-    size = "h-6 w-6",
-    color = "currentColor",
-    class: className,
-    ...rest
-} = Astro.props;
+const { icon, size = "h-6 w-6", color = "currentColor", class: className, ...rest } = Astro.props;
 
 // Create a type-safe mapping of icon names to their components
 const iconComponents: Record<IconType, any> = {
@@ -34,24 +28,25 @@ const iconComponents: Record<IconType, any> = {
 	CrownIcon: Icons.CrownIcon,
 	WeddingIcon: Icons.WeddingIcon,
 	FacebookIcon: Icons.FacebookIcon,
-	GithubIcon: Icons.GithubIcon,
 	InstagramIcon: Icons.InstagramIcon,
-	LinkedInIcon: Icons.LinkedInIcon,
-	GraduationIcon: Icons.GraduationCapIcon,
 };
 
 // Get the correct icon component
 const IconComponent = iconComponents[icon];
 
 // Combine classes for the icon
-const iconClasses = `${size} ${color} ${className || ''}`.trim();
+const iconClasses = `${size} ${color} ${className || ""}`.trim();
 
 // Error message for missing icons
 const errorMessage = `Icon not found: ${icon}`;
 ---
 
-{IconComponent ? (
-    <IconComponent class={iconClasses} {...rest} />
-) : (
-    <span class="text-red-500" title={errorMessage}>⚠️</span>
-)}
+{
+	IconComponent ? (
+		<IconComponent class={iconClasses} {...rest} />
+	) : (
+		<span class="text-red-500" title={errorMessage}>
+			⚠️
+		</span>
+	)
+}
