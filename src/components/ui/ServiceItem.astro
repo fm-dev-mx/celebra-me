@@ -5,31 +5,49 @@ import type { Icon as IconType, Service } from "@/config/landing.interface";
 import Paragraph from "../common/Paragraph.astro";
 import SectionSubtitle from "../typography/SectionSubtitle.astro";
 
+// Define the props interface for type safety
 interface Props {
-	service: Service;
-	key: number;
+    service: Service;
+    key: number;
 }
 
-const { service } = Astro.props;
+// Destructure the service prop
+const { service, key } = Astro.props;
+
+// Define reusable styles
+const styles = {
+    article: "flex flex-col items-center justify-content transition-transform transform hover:scale-105",
+    container: "grid justify-items-center max-w-80",
+    iconContainer: "mt-6 mb-4",
+    textContainer: "text-secondary-dark text-center",
+};
 ---
 
-<article
-	class="flex flex-col items-center justify-content transition-transform transform hover:scale-105"
->
-	<div class="grid justify-items-center max-w-80">
-		<div class="mt-6">
-			<IconWrapper background="bg-secondary">
-				<Icon icon={service.icon as IconType} />
-			</IconWrapper>
-		</div>
-		<div class="text-secondary-dark text-center">
-			<SectionSubtitle>
-				{service.title}
-			</SectionSubtitle>
-			<p class="text-xl"></p>
-			<Paragraph>
-				{service.description}
-			</Paragraph>
-		</div>
-	</div>
+<article class={styles.article}>
+    <div class={styles.container}>
+        <!-- Service Icon -->
+        <div class={styles.iconContainer}>
+            <IconWrapper
+                background="bg-secondary"
+                size="h-12 w-12"
+                padding="p-3"
+            >
+                <Icon
+                    icon={service.icon as IconType}
+                    size="h-full w-full"
+                    color="text-white"
+                />
+            </IconWrapper>
+        </div>
+
+        <!-- Service Details -->
+        <div class={styles.textContainer}>
+            <SectionSubtitle>
+                {service.title}
+            </SectionSubtitle>
+            <Paragraph>
+                {service.description}
+            </Paragraph>
+        </div>
+    </div>
 </article>

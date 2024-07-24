@@ -153,8 +153,5 @@ export type Icon =
 	| "CommitmentIcon"
 	| "ArrowUpIcon"
 	| "ArrowDownIcon"
-
-	| "ArrowRightIcon"
-
 	| "FavIcon";
 

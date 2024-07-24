@@ -1,62 +1,57 @@
 ---
-import type { Icon } from "@/config/landing.interface";
-import CommitmentIcon from "@/icons/aboutUs/CommitmentIcon.astro";
-import EasyUseIcon from "@/icons/aboutUs/EasyUseIcon.astro";
-import ExclusiveIcon from "@/icons/aboutUs/ExclusiveIcon.astro";
-import ArrowDownIcon from "@/icons/commons/ArrowDownIcon.astro";
-import ArrowUpIcon from "@/icons/commons/ArrowUpIcon.astro";
-import CelebrameIcon from "@/icons/commons/CelebrameIcon.astro";
-import CheckIcon from "@/icons/commons/CheckIcon.astro";
-import FavIcon from "@/icons/commons/FavIcon.astro";
-import AnniversaryIcon from "@/icons/services/AnniversaryIcon.astro";
-import CakeIcon from "@/icons/services/CakeIcon.astro";
-import CrownIcon from "@/icons/services/CrownIcon.astro";
-import GraduationCapIcon from "@/icons/services/GraduationCapIcon.astro";
-import WeddingIcon from "@/icons/services/WeddingIcon.astro";
-import FacebookIcon from "@/icons/socials/FacebookIcon.astro";
-import GithubIcon from "@/icons/socials/GithubIcon.astro";
-import InstagramIcon from "@/icons/socials/InstagramIcon.astro";
-import LinkedInIcon from "@/icons/socials/LinkedInIcon.astro";
+import type { HTMLAttributes } from 'astro/types';
+import type { Icon as IconType } from "@/config/landing.interface";
+import * as Icons from '@components/icons';
 
-interface Props {
-	icon: Icon;
-	height?: string;
-	class?: string;
+// Define the props interface, extending SVG attributes for flexibility
+interface Props extends HTMLAttributes<'svg'> {
+    icon: IconType;
+    size?: string;
+    color?: string;
 }
 
+// Destructure props with default values
 const {
-	icon,
-	height = "h-full",
-	class: className
+    icon,
+    size = "h-6 w-6",
+    color = "currentColor",
+    class: className,
+    ...rest
 } = Astro.props;
 
-const icons = [
-	CheckIcon,
-	FacebookIcon,
-	GithubIcon,
-	InstagramIcon,
-	LinkedInIcon,
-	WeddingIcon,
-	CakeIcon,
-	GraduationCapIcon,
-	CrownIcon,
-	AnniversaryIcon,
-	CelebrameIcon,
-	ExclusiveIcon,
-	EasyUseIcon,
-	CommitmentIcon,
-	FavIcon,
-	ArrowDownIcon,
-	ArrowUpIcon
-];
+// Create a type-safe mapping of icon names to their components
+const iconComponents: Record<IconType, any> = {
+	CommitmentIcon: Icons.CommitmentIcon,
+	EasyUseIcon: Icons.EasyUseIcon,
+	ExclusiveIcon: Icons.ExclusiveIcon,
+	ArrowDownIcon: Icons.ArrowDownIcon,
+	ArrowUpIcon: Icons.ArrowUpIcon,
+	CelebrameIcon: Icons.CelebrameIcon,
+	CheckIcon: Icons.CheckIcon,
+	FavIcon: Icons.FavIcon,
+	AnniversaryIcon: Icons.AnniversaryIcon,
+	CakeIcon: Icons.CakeIcon,
+	CrownIcon: Icons.CrownIcon,
+	WeddingIcon: Icons.WeddingIcon,
+	FacebookIcon: Icons.FacebookIcon,
+	GithubIcon: Icons.GithubIcon,
+	InstagramIcon: Icons.InstagramIcon,
+	LinkedInIcon: Icons.LinkedInIcon,
+	GraduationIcon: Icons.GraduationCapIcon,
+};
 
-let figures: Record<string, (_props: Record<string, unknown>) => unknown> = {};
+// Get the correct icon component
+const IconComponent = iconComponents[icon];
 
-icons.map((item) => {
-	figures[item.name] = item;
-});
+// Combine classes for the icon
+const iconClasses = `${size} ${color} ${className || ''}`.trim();
 
-const Figure = figures[icon];
+// Error message for missing icons
+const errorMessage = `Icon not found: ${icon}`;
 ---
 
-{Figure ? <Figure class:list={[height, className]} /> : <p>Icon not found</p>}
+{IconComponent ? (
+    <IconComponent class={iconClasses} {...rest} />
+) : (
+    <span class="text-red-500" title={errorMessage}>⚠️</span>
+)}

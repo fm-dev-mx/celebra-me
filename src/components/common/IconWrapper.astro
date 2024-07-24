@@ -1,27 +1,45 @@
 ---
-interface Props {
-	size?: string;
-	minWidth?: string;
-	margin?: string;
-	color?: string;
-	align?: string;
-	padding?: string;
-	background?: string;
+import { twMerge } from 'tailwind-merge';
+import type { HTMLAttributes } from 'astro/types';
+
+// Define the props interface, extending HTMLAttributes for div
+interface Props extends HTMLAttributes<'div'> {
+    size?: string;
+    minWidth?: string;
+    margin?: string;
+    color?: string;
+    align?: string;
+    padding?: string;
+    background?: string;
 }
 
-const props = Astro.props as Props;
-
+// Destructure props with default values
 const {
-	size = "h-11 w-12",
-	minWidth = "min-w-[32px]",
-	margin = "mr-2",
-	color = "text-primary",
-	align = "items-center",
-	padding = "p-2",
-	background = "bg-secondary",
-} = props;
+    size = "h-11 w-12",
+    minWidth = "min-w-[32px]",
+    margin = "mr-2",
+    color = "text-primary",
+    align = "items-center",
+    padding = "p-2",
+    background = "bg-secondary",
+    class: className,
+    ...rest
+} = Astro.props;
+
+// Combine classes using tailwind-merge to avoid conflicts
+const wrapperClasses = twMerge(
+    "rounded-full flex",
+    background,
+    padding,
+    minWidth,
+    margin,
+    align,
+    size,
+    color,
+    className
+);
 ---
 
-<div class:list={[background, padding, minWidth, margin, "rounded-full", "flex", align, size, color]}>
-	<slot />
+<div class={wrapperClasses} {...rest}>
+    <slot />
 </div>
