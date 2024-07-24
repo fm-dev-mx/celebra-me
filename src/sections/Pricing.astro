@@ -8,10 +8,10 @@ import BulletList from "@/components/common/BulletList.astro";
 import Card from "@/components/ui/Card.tsx";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
-import type { Icon as IconType, PricingData } from "@/config/landing.interface";
 import Action from "@/components/common/Action.astro";
-import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
+import type { Icon as IconType, PricingData } from "@/config/landing.interface";
 
 // Define the properties interface for the component
 interface Props {
@@ -112,7 +112,8 @@ const { data } = Astro.props;
                                 />
 
                                 {/* Plan call-to-action */}
-                                <div class="pricing-card-cta">{tier.cta}</div>
+								<!-- TODO: Implement CTA functionality -->
+								<div class="pricing-card-cta">{tier.cta}</div>
                             </Card>
                         </GridCell>
                     ))}
@@ -120,15 +121,17 @@ const { data } = Astro.props;
             </Grid>
 
             {/* Button to navigate to FAQ section */}
-            <ButtonWrapper>
+            <ActionWrapper
+                flex="flex-row"
+            >
                 <Action
                     variant="scroll"
                     href="#faq-section"
-                    title="Click to go to FAQ section"
+                    title="Go to FAQ section"
                     icon="ArrowDownIcon"
-                    class:list={["hover:text-primary"]}
+                    class="hover:text-primary"
                 />
-            </ButtonWrapper>
+            </ActionWrapper>
         </Container>
     </StyledContainer>
 </Section>

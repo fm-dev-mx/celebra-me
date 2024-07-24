@@ -1,33 +1,44 @@
 ---
 import Action from "@/components/common/Action.astro";
-import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import FAQList from "@/components/ui/FAQList";
 import type { FAQData } from "@/config/landing.interface";
 
+// Define the props interface for type safety
 interface Props {
     data: FAQData;
 }
 
+// Destructure the data prop
 const { data } = Astro.props;
 ---
 
+<!-- FAQ Section -->
 <Section id="faq-section" fullHeight={true}>
     <Container>
+        <!-- Section Title -->
         <SectionTitle>
             {data.title}
         </SectionTitle>
+
+        <!-- FAQ List Component (React component with client-side rendering) -->
         <FAQList client:visible {...data} />
-		<ButtonWrapper>
-			<Action
-			variant="scroll"
-			href="#pricing-section"
-			title="Regresar a la sección de planes"
-			icon="ArrowUpIcon"
-			class="border-secondary-light bg-secondary hover:text-secondary-light"
-			/>
-		</ButtonWrapper>
-	</Container>
+
+        <!-- Action Wrapper for the scroll button -->
+        <ActionWrapper
+            margin="mt-12"
+        >
+            <!-- Scroll Action to return to pricing section -->
+            <Action
+                variant="scroll"
+                href="#pricing-section"
+				title="Regresar a la sección de planes"
+                icon="ArrowUpIcon"
+                class="border-secondary-light bg-secondary hover:text-secondary-light"
+            />
+        </ActionWrapper>
+    </Container>
 </Section>

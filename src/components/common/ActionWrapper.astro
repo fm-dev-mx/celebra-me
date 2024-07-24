@@ -1,0 +1,44 @@
+---
+import { twMerge } from 'tailwind-merge';
+import type { HTMLAttributes } from 'astro/types';
+
+// Define the props for our component
+interface Props extends HTMLAttributes<'div'> {
+  flex?: 'flex-row' | 'flex-col';  // Flex direction
+  align?: 'justify-start' | 'justify-center' | 'justify-end' | 'justify-between' | 'justify-around' | 'justify-evenly';  // Horizontal alignment
+  gap?: string;  // Gap between items
+  margin?: string;  // Margin for the wrapper
+  wrap?: boolean;  // Whether to wrap items
+}
+
+// Destructure props with default values
+const {
+  flex = "flex-row",
+  align = "justify-center",
+  gap = "gap-4",
+  margin = "mt-4",
+  wrap = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+// Combine base classes with custom classes and props
+const wrapperClasses = twMerge(
+  "flex",
+  flex,
+  align,
+  gap,
+  margin,
+  wrap ? "flex-wrap" : "flex-nowrap",
+  className
+);
+
+---
+
+<!--
+  Render the ActionWrapper component
+  This div will contain and style a group of Action components
+-->
+<div class={wrapperClasses} {...rest}>
+  <slot />
+</div>

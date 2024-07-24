@@ -4,7 +4,7 @@ import Grid from "@/components/layout/Grid.astro";
 import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
 import Action from "@/components/common/Action.astro";
-import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Card from "@/components/ui/Card.astro";
 import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
@@ -15,57 +15,75 @@ import SectionTitle from "@/components/typography/SectionTitle.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
 import type { AboutData, Icon as IconType } from "@/config/landing.interface";
 
-interface Props {
-	data: AboutData;
+// Define more specific types for better type checking
+interface Value {
+    icon: IconType;
+    name: string;
+    description: string;
 }
 
-const { data } = Astro.props;
+interface Props {
+    data: AboutData & {
+        values: Value[];
+        cta: {
+            label: string;
+        };
+    };
+}
+
+// Destructure props for easier access
+const { data: { title, description, values, cta } } = Astro.props;
+
+// Extract reusable styles
+const sectionStyles = {
+    backgroundImageDesktop: "/background/pinkStripesDesktop.jpg",
+    backgroundImageMobile: "/background/pinkStripesMobile.jpg",
+    relative: "relative",
+    fullWidth: true,
+    fullHeight: true,
+};
+
+const titleStyles = {
+    color: "text-primary-dark",
+    weight: "font-bold",
+    align: "text-center xl:text-right",
+    margin: "mb-8",
+};
+
 ---
 
-<Section
-	id="about-section"
-	backgroundImageDesktop="/background/pinkStripesDesktop.jpg"
-	backgroundImageMobile="/background/pinkStripesMobile.jpg"
-	relative="relative"
-	fullWidth={true}
-	fullHeight={true}
->
-	<div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
-	<StyledContainer relative="relative">
-		<Container>
-			<div id="about-title" class="pt-20"></div>
-			<Grid gap="gap-12">
-				<GridRow columns={2}>
-					<div class="flex flex-col justify-content-center max-w-sm">
-						<SectionTitle
-							color="text-primary-dark"
-							weight="font-bold"
-							align="text-center xl:text-right"
-							margin="mb-8"
-						>
-							{data.title}
-						</SectionTitle>
-						<Paragraph
-							size="text-xl"
-							align="text-center xl:text-right"
-							textColor="text-primary-dark"
-							weight="font-normal"
-						>
-							{data.description}
-						</Paragraph>
-					</div>
-					<div class="lg:flex lg:justify-center xl:items-end">
-						<ImageWrapper>
-							<Image
-								src="about/partyToast.jpg"
+<Section id="about-section" {...sectionStyles}>
+    <div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
+    <StyledContainer relative="relative">
+        <Container>
+            <div id="about-title" class="pt-20"></div>
+            <Grid gap="gap-12">
+                <GridRow columns={2}>
+                    <div class="flex flex-col justify-content-center max-w-sm">
+                        <SectionTitle {...titleStyles}>
+                            {title}
+                        </SectionTitle>
+                        <Paragraph
+                            size="text-xl"
+                            align="text-center xl:text-right"
+                            textColor="text-primary-dark"
+                            weight="font-normal"
+                        >
+                            {description}
+                        </Paragraph>
+                    </div>
+                    <div class="lg:flex lg:justify-center xl:items-end">
+                        <ImageWrapper>
+                            <Image
+                                src="about/partyToast.jpg"
 								alt="Personas brindando por el festejo"
-							/>
-						</ImageWrapper>
-					</div>
-				</GridRow>
-				<GridRow columns={3}>
+                            />
+                        </ImageWrapper>
+                    </div>
+                </GridRow>
+                <GridRow columns={3}>
 					{
-						data.values.map((value) => (
+						values.map((value) => (
 							<Card>
 								<IconWrapper background="bg-primary-dark">
 									<Icon icon={value.icon as IconType} class="mb-4" />
@@ -77,22 +95,27 @@ const { data } = Astro.props;
 							</Card>
 						))
 					}
-				</GridRow>
-			</Grid>
-			<ButtonWrapper margin="my-16">
-				<Action variant="tertiary" href="#">{data.cta.label}</Action>
+                </GridRow>
+            </Grid>
 
-			</ButtonWrapper>
-			<ButtonWrapper>
-				<Action
-					variant="scroll"
-					href="#testimonials-section"
-					title="Click para ir a la sección de testimonios"
-					icon="ArrowDownIcon"
-					class:list={["hover:text-primary"]}
-				/>
-			</ButtonWrapper>
-		</Container>
-	</StyledContainer>
+            <!-- Use ActionWrapper to group the Actions -->
+            <ActionWrapper
+                flex="flex-col"
+                align="justify-center"
+                gap="gap-8"
+                margin="my-16"
+            >
+                <Action variant="tertiary" href="#">{cta.label}</Action>
+
+                <Action
+                    variant="scroll"
+                    href="#testimonials-section"
+                    title="Click to go to testimonials section"
+                    icon="ArrowDownIcon"
+                    class="hover:text-primary"
+                />
+            </ActionWrapper>
+        </Container>
+    </StyledContainer>
 </Section>
 <div class="bg-primary-dark w-full h-1 opacity-50"></div>

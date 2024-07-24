@@ -151,7 +151,7 @@ export type Icon =
 	| "ExclusiveIcon"
 	| "EasyUseIcon"
 	| "CommitmentIcon"
-
+	| "ArrowUpIcon"
 	| "ArrowDownIcon"
 
 	| "ArrowRightIcon"

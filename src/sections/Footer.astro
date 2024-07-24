@@ -1,57 +1,78 @@
 ---
 import Action from "@/components/common/Action.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Icon from "@/components/common/Icon.astro";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
-import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
 import type { FooterData } from "@/config/landing.interface";
-import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 
+// Define the props interface for type safety
 interface Props {
     data: FooterData;
 }
 
+// Destructure the data prop
 const { data } = Astro.props;
 ---
 
 <!-- Footer component -->
 <footer class="bg-black text-white w-full py-8">
-        <!-- Use Section component for consistent padding and overflow handling -->
-        <Section padding="pt-0">
+    <!-- Use Section component for consistent padding and overflow handling -->
+    <Section padding="pt-0">
+        <Container>
             <div class="flex flex-col items-center">
                 <!-- Logo and brand name -->
-				<Action variant="text" class="text-white mb-4" href="#hero-section">
-					<IconWrapper background="bg-transparent" size="h-8 w-8" padding="p-0">
-						<Icon icon={data.icon as IconType} class="text-white h-full w-full" />
-					</IconWrapper>
-					<span class="text-md font-normal">
-						{data.logo}
-					</span>
-				</Action>
+                <Action
+                    variant="text"
+                    href="#hero-section"
+                    class="text-white mb-4 flex items-center"
+                >
+                    <Icon icon={data.icon as IconType} class="text-white h-8 w-8 mr-2" />
+                    <span class="text-md font-normal">{data.logo}</span>
+                </Action>
 
                 <!-- Footer description -->
-                <p class="text-center text-primary">
+                <p class="text-center text-primary mb-6">
                     {data.description}
                 </p>
 
                 <!-- Footer navigation links -->
-                <ButtonWrapper gap="gap-x-2 md:gap-x-8" margin="mt-4">
+                <ActionWrapper
+                    flex="flex-row"
+                    align="justify-center"
+                    gap="gap-x-2 md:gap-x-8"
+                    margin="mb-6"
+                    wrap={true}
+                >
                     {data.links.map((link) => (
-                        <Action variant="text" href={link.href} class="text-[10px] md:text-lg">
+                        <Action
+                            variant="text"
+                            href={link.href}
+                            class="text-[10px] md:text-lg text-white"
+                        >
                             {link.label}
                         </Action>
                     ))}
-                </ButtonWrapper>
+                </ActionWrapper>
 
                 <!-- Social media icons -->
-                <ButtonWrapper margin="mt-4">
+                <ActionWrapper
+                    flex="flex-row"
+                    align="justify-center"
+                    gap="gap-x-4"
+                >
                     {data.socials.map((social) => (
-                        <Action variant="icon" href={social.href} title={social.icon}>
-                            <Icon icon={social.icon} height="h-[4px]" />
-                        </Action>
+                        <Action
+                            variant="icon"
+                            href={social.href}
+                            title={social.icon}
+                            icon={social.icon as IconType}
+                            class="text-white"
+                        />
                     ))}
-                </ButtonWrapper>
+                </ActionWrapper>
             </div>
-        </Section>
+        </Container>
+    </Section>
 </footer>

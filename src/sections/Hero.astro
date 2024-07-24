@@ -1,13 +1,12 @@
 ---
 import Action from "@/components/common/Action.astro";
-import ButtonWrapper from "@/components/common/ButtonWrapper.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Icon from "@/components/common/Icon.astro";
-import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 
 // Define the expected data structure for the Hero component
 interface HeroData {
-  icon?: string;
+  icon?: IconType;
   title: string;
   subTitle: string;
   primaryCta: string;
@@ -40,12 +39,9 @@ const styles = {
       <span class="text-primary opacity-80 block font-light mb-4">
         {data.title}
       </span>
-	  <!-- Subtitle -->
       <span class="flex flex-col lg:flex-row items-center justify-center">
         {data.icon && (
-          <IconWrapper background="bg-transparent" size="h-20 w-20" padding="p-0">
-            <Icon icon={data.icon as IconType} />
-          </IconWrapper>
+          <Icon icon={data.icon} class="h-20 w-20" />
         )}
         <div class={styles.highlightedTitle}>
           {data.highlightedTitle}
@@ -56,30 +52,27 @@ const styles = {
       </span>
     </h1>
 
-
-
-</span>
-
     <!-- Subtitle -->
     <h2 class={styles.subTitle}>{data.subTitle}</h2>
 
     <!-- Call-to-action buttons -->
-    <ButtonWrapper>
+    <ActionWrapper
+      margin="mb-12"
+    >
       <Action variant="primary" href="#">{data.primaryCta}</Action>
       <Action variant="secondary" href="#">{data.secondaryCta}</Action>
-    </ButtonWrapper>
+    </ActionWrapper>
   </div>
 
   <!-- Scroll button -->
-  <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-	<Action
-      variant="scroll"
-      href="#services-section"
-      title="Ir a sección de Servicios"
-	  class:list={["opacity-80", "hover:opacity-100", "hover:text-primary-light"]}
-    >
-      <Icon icon="ArrowDownIcon" class="w-6 h-6" />
-    </Action>
+  <div class="absolute bottom-0 transform -translate-x-1/2">
+  <Action
+    variant="scroll"
+    href="#services-section"
+    title="Ir a sección de Servicios"
+    icon="ArrowDownIcon"
+    class="absolute bottom-0 transform -translate-x-1/2 opacity-80 hover:opacity-100 hover:text-primary-light"
+  />
   </div>
 </section>
 
