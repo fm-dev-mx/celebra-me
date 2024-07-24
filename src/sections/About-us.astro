@@ -17,71 +17,72 @@ import type { AboutData, Icon as IconType } from "@/config/landing.interface";
 
 // Define more specific types for better type checking
 interface Value {
-    icon: IconType;
-    name: string;
-    description: string;
+	icon: IconType;
+	name: string;
+	description: string;
 }
 
 interface Props {
-    data: AboutData & {
-        values: Value[];
-        cta: {
-            label: string;
-        };
-    };
+	data: AboutData & {
+		values: Value[];
+		cta: {
+			label: string;
+		};
+	};
 }
 
 // Destructure props for easier access
-const { data: { title, description, values, cta } } = Astro.props;
+const {
+	data: { title, description, values, cta },
+} = Astro.props;
 
 // Extract reusable styles
 const sectionStyles = {
-    backgroundImageDesktop: "/background/pinkStripesDesktop.jpg",
-    backgroundImageMobile: "/background/pinkStripesMobile.jpg",
-    relative: "relative",
-    fullWidth: true,
-    fullHeight: true,
+	backgroundImageDesktop: "/background/pinkStripesDesktop.jpg",
+	backgroundImageMobile: "/background/pinkStripesMobile.jpg",
+	relative: "relative",
+	fullWidth: true,
+	fullHeight: true,
 };
 
 const titleStyles = {
-    color: "text-primary-dark",
-    weight: "font-bold",
-    align: "text-center xl:text-right",
-    margin: "mb-8",
+	color: "text-primary-dark",
+	weight: "font-bold",
+	align: "text-center xl:text-right",
+	margin: "mb-8",
 };
-
 ---
 
 <Section id="about-section" {...sectionStyles}>
-    <div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
-    <StyledContainer relative="relative">
-        <Container>
-            <div id="about-title" class="pt-20"></div>
-            <Grid gap="gap-12">
-                <GridRow columns={2}>
-                    <div class="flex flex-col justify-content-center max-w-sm">
-                        <SectionTitle {...titleStyles}>
-                            {title}
-                        </SectionTitle>
-                        <Paragraph
-                            size="text-xl"
-                            align="text-center xl:text-right"
-                            textColor="text-primary-dark"
-                            weight="font-normal"
-                        >
-                            {description}
-                        </Paragraph>
-                    </div>
-                    <div class="lg:flex lg:justify-center xl:items-end">
-                        <ImageWrapper>
-                            <Image
-                                src="about/partyToast.jpg"
+	<div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
+	<StyledContainer relative="relative">
+		<Container>
+			<div id="about-title" class="pt-20"></div>
+			<Grid gap="gap-12">
+				<GridRow columns={2}>
+					<div class="flex flex-col justify-content-center max-w-sm">
+						<SectionTitle {...titleStyles}>
+							{title}
+						</SectionTitle>
+						<Paragraph
+							size="text-xl"
+							align="text-center xl:text-right"
+							textColor="text-primary-dark"
+							weight="font-normal"
+						>
+							{description}
+						</Paragraph>
+					</div>
+					<div class="lg:flex lg:justify-center xl:items-end">
+						<ImageWrapper>
+							<Image
+								src="about/partyToast.jpg"
 								alt="Personas brindando por el festejo"
-                            />
-                        </ImageWrapper>
-                    </div>
-                </GridRow>
-                <GridRow columns={3}>
+							/>
+						</ImageWrapper>
+					</div>
+				</GridRow>
+				<GridRow columns={3}>
 					{
 						values.map((value) => (
 							<Card>
@@ -95,27 +96,25 @@ const titleStyles = {
 							</Card>
 						))
 					}
-                </GridRow>
-            </Grid>
+				</GridRow>
+			</Grid>
 
-            <!-- Use ActionWrapper to group the Actions -->
-            <ActionWrapper
-                flex="flex-col"
-                align="justify-center"
-                gap="gap-8"
-                margin="my-16"
-            >
-                <Action variant="tertiary" href="#">{cta.label}</Action>
+			<!-- Use ActionWrapper to group the Actions -->
+			<ActionWrapper margin="my-16">
+				<Action variant="tertiary" href="#">{cta.label}</Action>
+			</ActionWrapper>
 
-                <Action
-                    variant="scroll"
-                    href="#testimonials-section"
-                    title="Click to go to testimonials section"
-                    icon="ArrowDownIcon"
-                    class="hover:text-primary"
-                />
-            </ActionWrapper>
-        </Container>
-    </StyledContainer>
+			{/* Button to navigate to testimonials section */}
+			<ActionWrapper margin="mt-12">
+				<Action
+					variant="scroll"
+					href="#testimonials-section"
+					title="Click to go to testimonials section"
+					icon="ArrowDownIcon"
+					class="hover:text-primary"
+				/>
+			</ActionWrapper>
+		</Container>
+	</StyledContainer>
 </Section>
 <div class="bg-primary-dark w-full h-1 opacity-50"></div>
