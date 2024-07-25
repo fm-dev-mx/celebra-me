@@ -19,11 +19,22 @@ type ActionVariant =
 interface Props extends HTMLAttributes<"a"> {
 	variant?: ActionVariant; // The style variant of the button
 	icon?: IconType; // Optional icon to display
+	iconSize?: string; // New prop for icon size
+	target?: "_blank" | "_self" | "_parent" | "_top";
+	alt?: string;
 	as?: "a" | "button" | "div"; // Allows changing the rendered element type
 }
 
 // Destructure props with default values
-const { variant = "primary", icon, as: Element = "a", class: className, ...rest } = Astro.props;
+const {
+	variant = "primary",
+	icon,
+	iconSize = "w-6 h-6", // Default icon size
+	as: Element = "a",
+	class: className,
+	target = "_self",
+	...rest
+} = Astro.props;
 
 // Factory function to generate variant styles
 // This approach allows for easy maintenance and extension of variants
@@ -50,6 +61,13 @@ const variantStyles = createVariantStyles();
 // Merge base styles, variant styles, and any custom classes
 // twMerge ensures no conflicts between Tailwind classes
 const buttonClasses = twMerge(baseStyles, variantStyles[variant], className);
+
+// Determine icon classes
+const iconClasses = twMerge("color-inherit", iconSize);
+
+// Determine target and rel attributes
+const targetAttr = target || (variant === "icon" ? "_blank" : "_self");
+const relAttr = targetAttr === "_blank" ? "noopener noreferrer" : undefined;
 ---
 
 <!--
@@ -57,7 +75,7 @@ const buttonClasses = twMerge(baseStyles, variantStyles[variant], className);
   We use the 'Element' variable to determine which HTML element to render
   This allows for polymorphic components (e.g., rendering as a button or link)
 -->
-<Element class={buttonClasses} {...rest as any}>
-	{icon && <Icon icon={icon} class:list={"color-inherit"} />}
+<Element class={buttonClasses} target={targetAttr} rel={relAttr} {...rest as any}>
+	{icon && <Icon icon={icon} class={iconClasses} />}
 	<slot />
 </Element>

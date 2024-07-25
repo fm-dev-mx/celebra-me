@@ -52,6 +52,7 @@ export interface Link {
 export interface Social {
 	icon: Icon;
 	href: string;
+	title?: string;
 }
 
 export interface AboutData {

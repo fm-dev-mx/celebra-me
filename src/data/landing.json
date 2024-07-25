@@ -445,8 +445,8 @@
 			{ "label": "Contacto", "href": "/contacto" }
 		],
 		"socials": [
-			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/tu_pagina" },
-			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/tu_pagina" }
+			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/celebra-me", "title": "Ir a mi Facebook" },
+			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/celebra-me", "title": "Ir a mi Instagram" }
 		]
 	}
 }

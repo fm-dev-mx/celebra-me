@@ -27,7 +27,7 @@ interface CardProps {
 
 // Card component definition with default prop values
 const Card: React.FC<CardProps> = ({
-	href = "#",
+	href,
 	bgColor = "bg-white",
 	borderWidth = "border-2",
 	borderColor = "border-primary",
@@ -79,17 +79,26 @@ const Card: React.FC<CardProps> = ({
 		opacity,
 	].join(" ");
 
-	// Render the card component
-	return (
-		<a href={href} className="block w-full h-full no-underline">
-			<div className={classList}>
-				{/* Inner container for centering content */}
-				<div className="flex flex-col content-center items-center text-center">
-					{children}
-				</div>
+	// Inner content of the card
+	const cardContent = (
+		<div className={classList}>
+			{/* Inner container for centering content */}
+			<div className="flex flex-col content-center items-center text-center">
+				{children}
 			</div>
-		</a>
+		</div>
 	);
+
+	// Render the card component
+	if (href) {
+		return (
+			<a href={href} className="block w-full h-full no-underline">
+				{cardContent}
+			</a>
+		);
+	} else {
+		return cardContent;
+	}
 };
 
 export default Card;

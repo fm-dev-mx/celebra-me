@@ -15,7 +15,6 @@ const shuffleArray = (array: any[]) => {
 // Individual testimonial card component
 const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }> = React.memo(({ testimonial, isActive }) => (
 		<Card
-			href="#"
 			padding="p-8"
 			hover="hover:brightness-105 hover:shadow-xl"
 			borderColor="border-primary hover:border-primary-dark"
