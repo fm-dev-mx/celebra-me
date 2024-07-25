@@ -1,4 +1,7 @@
 ---
+// Services.astro
+// This component displays the services offered, including images and descriptions.
+
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
 import GridCell from "@/components/layout/GridCell.astro";
@@ -6,17 +9,30 @@ import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
-import Image from "@/components/common/Image.astro";
+import OptimizedImage from "@/components/common/OptimizedImage.astro";
 import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import ServiceItem from "@/components/ui/ServiceItem.astro";
 import type { ServicesData } from "@/config/landing.interface";
+
+// Import local images
+import xvImage from "@/images/services/xv.jpg";
+import weddingPartyImage from "@/images/services/weddingParty.jpg";
 
 interface Props {
 	data: ServicesData;
 }
 
 const { data } = Astro.props;
+
+// Helper function to chunk array into groups
+const chunkArray = (arr: any[], size: number) =>
+	Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+		arr.slice(i * size, i * size + size),
+	);
+
+// Split services into two groups
+const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 ---
 
 <Section id="services-section" relative="relative">
@@ -28,36 +44,39 @@ const { data } = Astro.props;
 			<GridRow columns={2} gap="gap-x-24">
 				<GridCell>
 					<ImageWrapper>
-						<Image
-							src="/services/xv.jpg"
-							alt="Quinceañera"
-							height="h-auto"
-							width="w-full"
+						<OptimizedImage
+							src={xvImage}
+							alt="Fiesta de Quinceañera"
+							width={800}
+							height={600}
+							class="rounded-lg shadow-md"
 						/>
 					</ImageWrapper>
 				</GridCell>
 				<GridCell>
 					{
-						data.services
-							.slice(0, 2)
-							.map((service, index) => <ServiceItem service={service} key={index} />)
+						firstServiceGroup.map((service, index) => (
+							<ServiceItem service={service} key={index} />
+						))
 					}
 				</GridCell>
 			</GridRow>
-			<GridRow columns="2" gap="gap-24">
+			<GridRow columns={2} gap="gap-x-24">
 				<GridCell>
 					{
-						data.services
-							.slice(2, 4)
-							.map((service, index) => <ServiceItem service={service} key={index} />)
+						secondServiceGroup.map((service, index) => (
+							<ServiceItem service={service} key={index} />
+						))
 					}
 				</GridCell>
 				<GridCell>
 					<ImageWrapper>
-						<Image
-							src="/services/weddingParty.jpg"
+						<OptimizedImage
+							src={weddingPartyImage}
 							alt="Personas bailando en una fiesta"
-							width="w-full"
+							width={800}
+							height={600}
+							class="rounded-lg shadow-md"
 						/>
 					</ImageWrapper>
 				</GridCell>
@@ -65,25 +84,24 @@ const { data } = Astro.props;
 		</Grid>
 	</Container>
 
-	<!-- CTA Button -->
+	{/* CTA Button */}
 	<ActionWrapper margin="mt-24">
 		<Action
 			variant="tertiary"
 			href="#"
 			class="w-full md:w-auto bg-secondary border-2 border-secondary-light border-dashed hover:border-opacity-50"
-			href="#"
-			title="Ver demos"
+			title="Ver demos de invitaciones"
 		>
 			Elegir mi invitación
 		</Action>
 	</ActionWrapper>
 
-	<!-- Scroll to About Section Button -->
+	{/* Scroll to About Section Button */}
 	<ActionWrapper margin="mt-24">
 		<Action
 			variant="scroll"
 			href="#about-section"
-			title="Click para conocernos mas"
+			title="Click to learn more about us"
 			icon="ArrowDownIcon"
 			class="border-secondary-light bg-secondary hover:text-secondary-light"
 		/>

@@ -1,14 +1,17 @@
 ---
+// ImageWrapper.astro
+// This component provides a flexible container for images with customizable layout options.
+
 interface Props {
-	width?: string; // Optional width, Tailwind classes for width
-	height?: string; // Optional height, Tailwind classes for height
-	padding?: string; // Optional padding, Tailwind classes for padding
-	justify?: string;
-	align?: string;
-	margin?: string; // Optional margin, Tailwind classes for margin
+	width?: string; // Optional width, using Tailwind classes
+	height?: string; // Optional height, using Tailwind classes
+	padding?: string; // Optional padding, using Tailwind classes
+	justify?: string; // Horizontal alignment
+	align?: string; // Vertical alignment
+	margin?: string; // Optional margin, using Tailwind classes
+	class?: string; // Additional custom classes
 }
 
-const props = Astro.props as Props;
 const {
 	width = "w-full",
 	height = "h-auto",
@@ -16,9 +19,15 @@ const {
 	justify = "justify-center",
 	align = "items-center",
 	margin = "",
-} = props;
+	class: customClass = "",
+} = Astro.props;
+
+// Combine all classes, filtering out any empty strings
+const classes = ["flex", width, height, padding, justify, align, margin, customClass]
+	.filter(Boolean)
+	.join(" ");
 ---
 
-<div class:list={["flex", width, height, padding, justify, align, margin]}>
+<div class={classes}>
 	<slot />
 </div>

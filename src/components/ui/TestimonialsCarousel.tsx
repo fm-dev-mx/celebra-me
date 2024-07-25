@@ -26,7 +26,7 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
 			</div>
 			<div className="mt-8 flex items-center justify-center">
 				<img
-				src={testimonial.image}
+				src={"/src/images/testimonials/"+testimonial.image}
 				alt={`${testimonial.author}`}
 				className="w-12 h-12 rounded-full mr-4 object-cover"
 				/>

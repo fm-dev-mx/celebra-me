@@ -1,0 +1,65 @@
+---
+import { Image } from "astro:assets";
+
+// Define the props interface for the component
+interface Props {
+	src: ImageMetadata | string; // Allow for both local images and remote URLs
+	alt: string;
+	width?: number | string;
+	height?: number | string;
+	format?: "webp" | "avif" | "png" | "jpg";
+	quality?: number;
+	class?: string;
+}
+
+// Destructure props with default values
+const {
+	src,
+	alt,
+	width,
+	height,
+	format = "webp",
+	quality = 80,
+	class: className = "",
+} = Astro.props;
+
+// Determine if src is a string (remote URL) or ImageMetadata (local image)
+const isRemote = typeof src === "string";
+
+// Helper function to convert width/height to a number or undefined
+function convertToImageDimension(value: number | string | undefined): number | undefined {
+	if (typeof value === "number") return value;
+	if (typeof value === "string" && value.endsWith("px")) {
+		return parseInt(value, 10);
+	}
+	return undefined;
+}
+
+// Convert width and height to the format expected by the Image component
+const imageDimensions = {
+	width: convertToImageDimension(width),
+	height: convertToImageDimension(height),
+};
+---
+
+{
+	isRemote ? (
+		<img
+			src={src}
+			alt={alt}
+			width={imageDimensions.width}
+			height={imageDimensions.height}
+			class={className}
+		/>
+	) : (
+		<Image
+			src={src}
+			alt={alt}
+			width={imageDimensions.width}
+			height={imageDimensions.height}
+			format={format}
+			quality={quality}
+			class={className}
+		/>
+	)
+}
