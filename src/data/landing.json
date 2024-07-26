@@ -41,8 +41,8 @@
 		"subTitle": "Tus eventos serán únicos",
 		"primaryCta": "WhatsApp 💬",
 		"secondaryCta": "Elegir invitación",
-		"backgroundImage": "src/images/hero/backgroundImage.jpg",
-		"backgroundImageMobile": "src/images/hero/backgroundImageMobile.jpg"
+		"backgroundImage": "backgroundImage.jpg",
+		"backgroundImageMobile": "backgroundImageMobile.jpg"
 	},
 	"servicesData": {
 		"title": "Tu Historia, Contada en Invitaciones Digitales",

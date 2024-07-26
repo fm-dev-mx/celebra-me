@@ -20,10 +20,11 @@
 		"astro": "^4.12.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"sharp": "^0.33.4"
+		"sharp": "^0.33.4",
+		"vercel": "^35.2.1"
 	},
 	"devDependencies": {
-		"@astrojs/check": "^0.8.2",
+		"@astrojs/check": "^0.8.3",
 		"@astrojs/react": "^3.6.0",
 		"@astrojs/renderer-react": "^0.5.0",
 		"@astrojs/sitemap": "^3.1.6",
@@ -46,8 +47,8 @@
 		"prettier-plugin-astro": "^0.14.1",
 		"tailwind-merge": "^2.4.0",
 		"tailwind-scrollbar": "^3.1.0",
-		"tailwindcss": "^3.4.6",
+		"tailwindcss": "^3.4.7",
 		"typescript": "^5.5.4",
-		"vite": "^5.3.4"
+		"vite": "^5.3.5"
 	}
 }

@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { getImage } from "astro:assets";
 
 // Define the props interface for the component
 interface Props {
@@ -40,6 +40,17 @@ const imageDimensions = {
 	width: convertToImageDimension(width),
 	height: convertToImageDimension(height),
 };
+
+let imageProps = {};
+if (!isRemote) {
+	imageProps = await getImage({
+		src,
+		width: imageDimensions.width,
+		height: imageDimensions.height,
+		format,
+		quality,
+	});
+}
 ---
 
 {
@@ -52,14 +63,6 @@ const imageDimensions = {
 			class={className}
 		/>
 	) : (
-		<Image
-			src={src}
-			alt={alt}
-			width={imageDimensions.width}
-			height={imageDimensions.height}
-			format={format}
-			quality={quality}
-			class={className}
-		/>
+		<img {...imageProps} alt={alt} class={className} />
 	)
 }

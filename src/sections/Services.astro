@@ -43,13 +43,16 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 		<Grid gap="xl:gap-8">
 			<GridRow columns={2} gap="gap-x-24">
 				<GridCell>
-					<ImageWrapper>
+					{/* Image wrapper with hover effect classes */}
+					<ImageWrapper
+						class="overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-lg rounded-lg"
+					>
 						<OptimizedImage
 							src={xvImage}
 							alt="Fiesta de Quinceañera"
 							width={800}
 							height={600}
-							class="rounded-lg shadow-md"
+							class="rounded-lg shadow-md transition-transform duration-300 ease-in-out transform hover:scale-105"
 						/>
 					</ImageWrapper>
 				</GridCell>
@@ -70,13 +73,16 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 					}
 				</GridCell>
 				<GridCell>
-					<ImageWrapper>
+					{/* Image wrapper with hover effect classes */}
+					<ImageWrapper
+						class="overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-lg rounded-lg"
+					>
 						<OptimizedImage
 							src={weddingPartyImage}
 							alt="Personas bailando en una fiesta"
 							width={800}
 							height={600}
-							class="rounded-lg shadow-md"
+							class="rounded-lg shadow-md transition-transform duration-300 ease-in-out transform hover:scale-105"
 						/>
 					</ImageWrapper>
 				</GridCell>
