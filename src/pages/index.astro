@@ -16,8 +16,9 @@ import OptimizedImage from "@/components/common/OptimizedImage.astro";
 const data = await getLandingData();
 
 // Import images statically
-import heroImageSrc from "../images/hero/backgroundImage.jpg";
-import heroImageMobileSrc from "../images/hero/backgroundImageMobile.jpg";
+import heroImageSrc from "@/images/hero/backgroundImage.jpg";
+import heroImageMobileSrc from "@/images/hero/backgroundImageMobile.jpg";
+import ImageWrapper from "@/components/common/ImageWrapper.astro";
 ---
 
 <Layout meta={data.meta}>
@@ -26,17 +27,29 @@ import heroImageMobileSrc from "../images/hero/backgroundImageMobile.jpg";
 		{/* Hero Section */}
 		<section class="relative h-screen flex items-center justify-center w-full">
 			{/* Desktop Background Image */}
-			<OptimizedImage
-				src={heroImageSrc}
-				alt="Desktop Hero Background"
-				class="absolute inset-0 w-full h-full object-cover hidden sm:block"
-			/>
-			{/* Mobile Background Image */}
-			<OptimizedImage
-				src={heroImageMobileSrc}
-				alt="Mobile Hero Background"
+			<ImageWrapper
+				width="w-full"
+				height="h-full"
+				padding=""
+				justify=""
+				align=""
+				margin=""
+				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
+			>
+				<OptimizedImage imagePath={heroImageSrc} alt="Desktop Hero Background" />
+			</ImageWrapper>
+			<ImageWrapper
+				width="w-full"
+				height="h-full"
+				padding=""
+				justify=""
+				align=""
+				margin=""
 				class="absolute inset-0 w-full h-full object-cover sm:hidden"
-			/>
+			>
+				{/* Mobile Background Image */}
+				<OptimizedImage imagePath={heroImageMobileSrc} alt="Mobile Hero Background" />
+			</ImageWrapper>
 			{/* Hero Content Container */}
 			<div class="relative w-full flex justify-center">
 				<div

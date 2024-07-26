@@ -3,15 +3,16 @@
 // This component provides a flexible container for images with customizable layout options.
 
 interface Props {
-	width?: string; // Optional width, using Tailwind classes
-	height?: string; // Optional height, using Tailwind classes
-	padding?: string; // Optional padding, using Tailwind classes
-	justify?: string; // Horizontal alignment
-	align?: string; // Vertical alignment
-	margin?: string; // Optional margin, using Tailwind classes
-	class?: string; // Additional custom classes
+	width?: string; // Optional width, Tailwind classes for width
+	height?: string; // Optional height, Tailwind classes for height
+	padding?: string; // Optional padding, Tailwind classes for padding
+	justify?: string; // Horizontal alignment, Tailwind classes for justification
+	align?: string; // Vertical alignment, Tailwind classes for alignment
+	margin?: string; // Optional margin, Tailwind classes for margin
+	class?: string; // Optional custom class
 }
 
+// Destructure props with default values
 const {
 	width = "w-full",
 	height = "h-auto",
@@ -22,12 +23,13 @@ const {
 	class: customClass = "",
 } = Astro.props;
 
-// Combine all classes, filtering out any empty strings
-const classes = ["flex", width, height, padding, justify, align, margin, customClass]
-	.filter(Boolean)
-	.join(" ");
+// Combine all classes into a single array
+const classes = ["flex", width, height, padding, justify, align, margin, customClass].filter(
+	Boolean,
+);
 ---
 
-<div class={classes}>
+{/* Render the wrapper div with combined classes */}
+<div class:list={classes}>
 	<slot />
 </div>
