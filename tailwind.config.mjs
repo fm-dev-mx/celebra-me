@@ -1,73 +1,110 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-	content: ["./src/**/*.{astro,html,js,jsx,md,ts,tsx}"],
-	theme: {
-		extend: {
-			colors: {
-				primary: {
-					light: "#fda4af", // Rose-300
-					DEFAULT: "#fb7185", // Rose-400
-					dark: "#e11d48", // Rose-600
-				},
-				secondary: {
-					light: "#38bdf8", // Sky-400
-					DEFAULT: "#0284c7", // Sky-600
-					dark: "#082f49", // Sky-950
-				},
-				white2: "#fdf2f8", // Fuchsia-50
-				white: "#fdf4ff", // Pink-50
-				black: "#0f172a", // Slate-900
-				gray: "#64748b", // Slate-500
-				background: {
-					DEFAULT: "#F4F4F4", // Light Gray
-				},
-				text: {
-					DEFAULT: "#4a044e", // Fuchsia-950
-					light: "#f9a8d4", // Pink-300
-				},
-			},
-			textShadow: {
-				lg: "2px 2px 4px rgba(0, 0, 0, 0.1)",
-			},
+  content: ["./src/**/*.{astro,html,js,jsx,md,ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          light: "#FED7AA", // Light Peach
+          DEFAULT: "#FB923C", // Peach
+          dark: "#EA580C", // Burnt Orange
+        },
+        secondary: {
+			light: "#A7C7E7", // Light Blue
+			DEFAULT: "#0288D1", // Blue
+			dark: "#1D70B7", // Dark Blue
 		},
-	},
-	plugins: [
-		function ({ addUtilities, addBase }) {
-			const newUtilities = {
-				".shadow-text": {
-					textShadow: "2px 2px 4px rgba(1, 0, 0, .4) !important",
-				},
-			};
-			addUtilities(newUtilities, ["responsive", "hover"]);
+        accent: {
+			light: "#FFC1CC", // Rosado Claro
+			DEFAULT: "#FF6F61", // Coral
+			dark: "#D97706", // Dorado oscuro
+        },
+        white: {
+          DEFAULT: "#FFFFFF", // White
+          light: "#F8F9FA", // Off-White
+          dark: "#CED4DA", // Light Gray
+        },
+        background: {
+          DEFAULT: "#FFF9F5", // Cream
+          alt: "#F1F3F5", // Light Gray
+        },
+        text: {
+          DEFAULT: "#212529", // Near Black
+          light: "#495057", // Dark Gray
+        },
+      },
+      textShadow: {
+        lg: "2px 2px 4px rgba(0, 0, 0, 0.1)",
+      },
+    },
+  },
+  plugins: [
+    function ({ addUtilities, addBase }) {
+      // Add custom text shadow utility
+      const newUtilities = {
+        ".shadow-text-light": {
+          textShadow: "2px 2px 4px rgba(1, 0, 0, .3) !important",
+        },
+		".shadow-text": {
+          textShadow: "2px 2px 4px rgba(1, 0, 0, .5) !important",
+        },
+		".shadow-text-dark": {
+          textShadow: "2px 2px 4px rgba(1, 0, 0, .8) !important",
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
 
-			// Add custom properties (CSS variables) to the :root
-			const newBase = {
-				":root": {
-					"--primary-light": "#fda4af",
-					"--primary-default": "#fb7185",
-					"--primary-dark": "#e11d48",
-					"--secondary-light": "#38bdf8",
-					"--secondary-default": "#0284c7",
-					"--secondary-dark": "#082f49",
-					"--white2": "#fdf2f8",
-					"--white": "#fdf4ff",
-					"--black": "#0f172a",
-					"--gray": "#64748b",
-					"--background-default": "#F4F4F4",
-					"--text-default": "#4a044e",
-					"--text-light": "#f9a8d4",
-				},
-			};
-			addBase(newBase);
-		},
-	],
-	// Ensures dynamic class names are preserved in production builds, preventing Tailwind from purging them.
-	safelist: (() => {
-		const classes = [];
-		const breakpoints = ["", "sm:", "md:", "lg:", "xl:"];
-		for (let i = 1; i <= 10; i++) {
-			breakpoints.forEach((bp) => classes.push(`${bp}grid-cols-${i}`));
-		}
-		return classes;
-	})(),
+      // Add custom CSS variables
+      const newBase = {
+        ":root": {
+          "--primary-light": "#FED7AA",
+          "--primary-default": "#FB923C",
+          "--primary-dark": "#EA580C",
+          "--secondary-light": "#93C5FD",
+          "--secondary-default": "#3B82F6",
+          "--secondary-dark": "#0369A1",
+          "--accent-light": "#FFD6A5",
+          "--accent-default": "#FFAB6E",
+          "--accent-dark": "#FF8C42",
+          "--neutral-lightest": "#FFFFFF",
+          "--neutral-light": "#F8F9FA",
+          "--neutral-medium": "#CED4DA",
+          "--neutral-dark": "#495057",
+          "--neutral-darkest": "#212529",
+          "--background-default": "#FFF9F5",
+          "--background-alt": "#F1F3F5",
+          "--text-default": "#212529",
+          "--text-light": "#495057",
+        },
+      };
+      addBase(newBase);
+    },
+  ],
+  safelist: (() => {
+    // Generate safelist for color utilities
+    const generateColorSafelist = () => {
+      const colors = ['primary', 'secondary', 'accent', 'neutral', 'background', 'text', 'white'];
+      const variants = ['', 'light', 'dark', 'lightest', 'medium', 'darkest', 'alt'];
+      const elements = ['bg', 'text', 'border', 'hover:bg', 'hover:text', 'hover:border'];
+
+      return colors.flatMap(color =>
+        variants.flatMap(variant =>
+          elements.map(element =>
+            variant ? `${element}-${color}-${variant}` : `${element}-${color}`
+          )
+        )
+      );
+    };
+
+    // Generate safelist for grid columns
+    const generateGridSafelist = () => {
+      const breakpoints = ['', 'sm:', 'md:', 'lg:', 'xl:'];
+      return breakpoints.flatMap(bp =>
+        Array.from({ length: 10 }, (_, i) => `${bp}grid-cols-${i + 1}`)
+      );
+    };
+
+    // Combine color and grid safelists
+    return [...generateColorSafelist(), ...generateGridSafelist()];
+  })(),
 };

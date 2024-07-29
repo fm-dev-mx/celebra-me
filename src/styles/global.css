@@ -1,86 +1,123 @@
+/* Import Tailwind CSS base styles */
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-
-/* Call-to-action button styles */
-.pricing-card-cta {
-    background-color: var(--primary-light);
-    color: var(--white);
-    font-size: 0.875rem; /* text-sm */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for all properties */
-    width: 18rem; /* w-72 */
-    line-height: 1.25rem; /* text-sm */
+/* Custom styles for the pricing cards */
+.pricing-card {
+    @apply rounded border border-solid overflow-hidden text-ellipsis mx-auto min-w-[20rem] max-w-[20rem] max-h-[42rem] self-center mt-8;
 }
 
-/* Hover effects for card and its elements */
+.pricing-card-cta {
+    @apply bg-primary-light text-white text-sm transition-all duration-300 ease-in-out w-72 leading-5;
+}
+
+/* Hover effects for pricing cards */
 .pricing-card-hovered {
-    border-color: var(--secondary-light);
+    @apply border-secondary-light;
 }
 
 .pricing-card-cta-hovered {
-    background-color: var(--secondary-light);
-    color: var(--white);
-	transform: scale(1.11); /* hover:scale-110 */
-	filter: brightness(1.10); /* hover:brightness-110 */
-	outline: 2px solid transparent; /* hover:outline */
-	outline-width: 2px; /* hover:outline-2 */
-	outline-offset: 2px; /* hover:outline-offset-2 */
-	outline-color: var(--secondary-light); /* hover:outline-secondary-dark */
+    @apply bg-secondary-light text-white scale-110 brightness-110 outline-2 outline-offset-2 outline-secondary-dark;
 }
 
 .pricing-card-title-hovered,
 .pricing-card-text-hovered {
-    color: var(--secondary-dark);
+    @apply text-secondary-dark;
 }
 
 .pricing-card-subtitle-hovered {
-    color: var(--secondary-light);
+    @apply text-secondary-light;
 }
 
-/* Card styles */
-.pricing-card {
-    border-radius: 0.5rem; /* rounded */
-    border-width: 1px; /* border */
-    border-style: solid; /* border */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: auto;
-
-    min-width: 20rem; /* 320px */
-    max-width: 20rem; /* 320px */
-    max-height: 42rem; /* 640px */
-
-    align-self: center;
-    margin-top: 2rem; /* mt-8 */
-}
-
-/* Responsive styles for cards */
-@media (min-width: 40em) { /* 640px */
-    /* Add styles if needed */
-}
-
-@media (min-width: 48em) { /* 768px */
+/* Responsive styles for pricing cards */
+@screen md {
     .pricing-card {
-        width: calc(50% - 1rem); /* Adjust width for larger screens */
+        @apply w-[calc(50%-1rem)];
     }
     .pricing-card-cta {
-        font-size: 1rem; /* md:text-base */
-		line-height: 1.5rem; /* md:text-base */
+        @apply text-base leading-6;
     }
     .pricing-grid {
-        flex-direction: row !important; /* Ensure row layout on larger screens */
+        @apply flex-row;
     }
 }
 
-@media (min-width: 64em) { /* 1024px */
+@screen lg {
     .pricing-card {
-        width: calc(33.333% - 1rem); /* Adjust width for even larger screens */
+        @apply w-[calc(33.333%-1rem)];
     }
 }
 
-@media (min-width: 80em) { /* 1280px */
+@screen xl {
     .pricing-card {
-        max-width: 25rem; /* 400px */
+        @apply max-w-[25rem];
     }
+}
+
+/* Animation classes */
+.animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+.animate-slide-in-left { animation: slideInLeft 0.5s ease-in-out; }
+.animate-slide-in-right { animation: slideInRight 0.5s ease-in-out; }
+.animate-subtle-bounce { animation: subtleBounce 0.5s ease-in-out; }
+.animate-subtle-pulse { animation: subtlePulse 2s linear 1 , fadeOut 0.5s ;}
+.animate-rotate { animation: rotate 0.5s ease-in-out; }
+
+/* Keyframe animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInLeft { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes subtleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes subtlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Shimmer animation for logo */
+.animate-shimmer {
+  @apply relative overflow-hidden;
+}
+
+.animate-shimmer > * {
+  @apply relative overflow-hidden;
+}
+
+.animate-shimmer > *::before,
+.animate-shimmer::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent bg-[length:200%_100%];
+  animation: shimmer 2s linear 1, fadeOut 0.5s ease-out 1.5s forwards;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+/* Staggered animation utility */
+.stagger-delay > * {
+    @apply opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards];
+}
+
+.stagger-delay > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-delay > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-delay > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-delay > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-delay > *:nth-child(5) { animation-delay: 0.5s; }
+
+/* Hover and focus effects */
+.hover-lift { @apply transition-transform duration-300 ease-in-out hover:-translate-y-0.5; }
+.focus-outline:focus { @apply outline-2 outline-offset-2 outline-primary-light; }
+
+/* Responsive animation adjustments */
+@media (prefers-reduced-motion: reduce) {
+    .animate-fade-in, .animate-slide-in-left, .animate-slide-in-right,
+    .animate-subtle-bounce, .animate-subtle-pulse, .animate-rotate,
+    .animate-shimmer, .stagger-delay > * {
+        @apply animate-none;
+    }
+    .hover-lift:hover { @apply transform-none; }
 }
