@@ -4,38 +4,49 @@ import type { HTMLAttributes } from "astro/types";
 
 // Define the props interface, extending HTMLAttributes for div
 interface Props extends HTMLAttributes<"div"> {
+	flex?: string;
 	size?: string;
+	width?: string;
 	minWidth?: string;
+	maxWidth?: string;
 	margin?: string;
 	color?: string;
 	align?: string;
 	padding?: string;
+	rounded?: string;
 	background?: string;
 }
 
 // Destructure props with default values
 const {
+	flex = "flex-row",
 	size = "h-11 w-12",
+	width = "",
 	minWidth = "min-w-[32px]",
+	maxWidth = "",
 	margin = "",
 	color = "text-primary",
 	align = "items-center justify-center",
 	padding = "p-2",
 	background = "bg-secondary",
+	rounded = "rounded-full",
 	class: className,
 	...rest
 } = Astro.props;
 
 // Combine classes using tailwind-merge to avoid conflicts
 const wrapperClasses = twMerge(
-	"rounded-full flex",
+	flex,
+	width,
 	background,
 	padding,
 	minWidth,
+	maxWidth,
 	margin,
 	align,
 	size,
 	color,
+	rounded,
 	className,
 );
 ---

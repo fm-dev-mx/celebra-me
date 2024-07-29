@@ -1,4 +1,8 @@
 ---
+// Action.astro
+// This component creates flexible, styled interactive elements (buttons, links, etc.)
+// with various visual variants and optional icons.
+
 import { twMerge } from "tailwind-merge";
 import Icon from "@/components/common/Icon.astro";
 import type { HTMLAttributes } from "astro/types";
@@ -19,9 +23,8 @@ type ActionVariant =
 interface Props extends HTMLAttributes<"a"> {
 	variant?: ActionVariant; // The style variant of the button
 	icon?: IconType; // Optional icon to display
-	iconSize?: string; // New prop for icon size
-	target?: "_blank" | "_self" | "_parent" | "_top";
-	alt?: string;
+	iconSize?: string; // Optional icon size
+	color?: "primary" | "secondary" | "accent" | "neutral" | "text";
 	as?: "a" | "button" | "div"; // Allows changing the rendered element type
 }
 
@@ -29,52 +32,62 @@ interface Props extends HTMLAttributes<"a"> {
 const {
 	variant = "primary",
 	icon,
-	iconSize = "w-6 h-6", // Default icon size
+	iconSize = "w-6 h-6",
+	color,
 	as: Element = "a",
 	class: className,
 	target = "_self",
 	...rest
 } = Astro.props;
 
-// Factory function to generate variant styles
-// This approach allows for easy maintenance and extension of variants
-const createVariantStyles = (): Record<ActionVariant, string> => ({
-	primary: "py-2.5 px-6 rounded-lg bg-secondary text-white2 hover:scale-110 hover:brightness-110",
-	secondary:
-		"py-2.5 px-3 rounded-lg bg-transparent text-secondary border border-secondary hover:scale-110 hover:brightness-110",
-	tertiary:
-		"text-lg px-14 py-3 bg-primary-dark text-white shadow-2xl hover:scale-110 hover:brightness-110",
-	text: "opacity-80 hover:scale-110 hover:opacity-90 font-light md:text-xs lg:text-sm flex items-center",
-	icon: "text-white hover:opacity-50 hover:scale-105",
-	scroll: "flex justify-center items-center animate-bounce border-2 border-primary bg-primary-light text-white rounded-full w-12 h-12 hover:bg-primary opacity-50 hover:opacity-100 hover:bg-inherit absolute bottom-0",
-	logo: "text-secondary-dark opacity-80 hover:scale-110 hover:opacity-60 md:text-xs lg:text-sm font-semibold",
-	large: "py-2.5 bg-secondary border-2 border-dashed border-secondary-light text-white2 px-20 md:px-40 hover:scale-110 hover:brightness-110",
-});
-
 // Base styles applied to all Action variants
 const baseStyles =
-	"inline-flex items-center justify-center transition-all duration-600 text-sm md:text-base hover:shadow-2xl text-nowrap";
+	"inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base hover:shadow-2xl text-nowrap font-light hover:font-normal hover:brightness-200";
 
-// Generate the variant styles
-const variantStyles = createVariantStyles();
+// Define styles for each variant
+const variantStyles = {
+	primary: `py-2 px-6 rounded-3xl text-white`,
+	secondary: `py-2 px-3 rounded-3xl bg-transparent border-2`,
+	tertiary: `text-lg px-14 py-3 shadow-2xl`,
+	text: `opacity-80 md:text-xs lg:text-sm flex items-center`,
+	icon: `hover:opacity-50`,
+	scroll: `flex justify-center items-center animate-bounce border-2 rounded-full w-12 h-12 hover:opacity-100 hover:bg-inherit absolute bottom-0`,
+	logo: `opacity-80 md:text-xs lg:text-sm font-semibold`,
+	large: `py-2.5 border-2 border-dashed px-20 md:px-40`,
+};
 
-// Merge base styles, variant styles, and any custom classes
-// twMerge ensures no conflicts between Tailwind classes
-const buttonClasses = twMerge(baseStyles, variantStyles[variant], className);
+// Define color styles based on the color prop
+const colorStyles = color
+	? {
+			primary: `bg-${color} border-2 border-${color}`,
+			secondary: `text-${color} border-${color} hover:border-opacity-90`,
+			tertiary: `bg-${color}-dark text-white`,
+			text: `text-${color}`,
+			icon: `text-${color}`,
+			scroll: `border-${color} bg-${color}-light text-white`,
+			logo: `text-${color}-dark`,
+			large: `bg-${color} text-white border-${color}-light`,
+		}
+	: {};
+
+// Combine all styles using twMerge to handle conflicts
+const buttonClasses = twMerge(
+	baseStyles,
+	variantStyles[variant],
+	colorStyles[variant] || "",
+	`hover:scale-105 hover:brightness-110`, // Add hover effects
+	className,
+);
 
 // Determine icon classes
 const iconClasses = twMerge("color-inherit", iconSize);
 
-// Determine target and rel attributes
-const targetAttr = target || (variant === "icon" ? "_blank" : "_self");
+// Determine target and rel attributes for links
+const targetAttr = target === "_blank" ? "_blank" : target;
 const relAttr = targetAttr === "_blank" ? "noopener noreferrer" : undefined;
 ---
 
-<!--
-  Render the Action component
-  We use the 'Element' variable to determine which HTML element to render
-  This allows for polymorphic components (e.g., rendering as a button or link)
--->
+<!-- Render the Action component -->
 <Element class={buttonClasses} target={targetAttr} rel={relAttr} {...rest as any}>
 	{icon && <Icon icon={icon} class={iconClasses} />}
 	<slot />

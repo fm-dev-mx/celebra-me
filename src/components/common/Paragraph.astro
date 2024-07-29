@@ -1,4 +1,7 @@
 ---
+import { twMerge } from "tailwind-merge";
+
+// Define the props interface for type safety
 interface Props {
 	size?: string;
 	lineHeight?: string;
@@ -10,19 +13,35 @@ interface Props {
 	maxWidth?: string;
 }
 
+// Extract the props passed to the component
 const props = Astro.props as Props;
+
+// Destructure the props with default values
 const {
-	size = "text-base",
-	lineHeight = "leading-relaxed",
-	align = "text-center",
-	wrap = "",
-	textColor = "text-secondary-dark",
-	weight = "font-thin",
-	padding = "px-2",
-	maxWidth = "max-w-max",
+	size = "text-base", // Default text size
+	lineHeight = "leading-relaxed", // Default line height
+	align = "text-center", // Default text alignment
+	wrap = "", // Default text wrapping
+	textColor = "text-secondary-dark", // Default text color
+	weight = "font-thin", // Default font weight
+	padding = "px-2", // Default padding
+	maxWidth = "max-w-max", // Default max-width
 } = props;
+
+// Merge the class names using Tailwind's twMerge function
+const paragraphStyles = twMerge(
+	size,
+	lineHeight,
+	align,
+	wrap,
+	textColor,
+	weight,
+	padding,
+	maxWidth,
+);
 ---
 
-<p class:list={[size, lineHeight, align, wrap, textColor, weight, padding, maxWidth]}>
+<!-- Render a p element with dynamic class names based on the props -->
+<p class={paragraphStyles}>
 	<slot />
 </p>

@@ -1,75 +1,80 @@
 ---
+// Section.astro
+// This component serves as a flexible container for various sections of the website.
+// It provides customizable background, layout, and sizing options.
+
 // Define the props interface for the Section component
 interface Props {
-  id?: string;
-  backgroundImageMobile?: string;
-  backgroundImageDesktop?: string;
-  backgroundColor?: string;
-  width?: string;
-  padding?: string;
-  margin?: string;
-  relative?: string;
-  fullHeight?: boolean;
-  fullWidth?: boolean;
-  overflow?: string;
+	id?: string;
+	backgroundImageMobile?: string;
+	backgroundImageDesktop?: string;
+	backgroundColor?: string;
+	width?: string;
+	padding?: string;
+	margin?: string;
+	relative?: string;
+	fullHeight?: boolean;
+	fullWidth?: boolean;
+	overflow?: string;
 }
 
-// Destructure props with default values
+// Destructure props with default values for flexibility
 const {
-  id = "",
-  backgroundImageMobile = "",
-  backgroundImageDesktop = "",
-  backgroundColor = "",
-  padding = "px-4 py-10 pt-40",
-  margin = "mx-auto",
-  relative = "relative",
-  fullHeight = false,
-  fullWidth = false,
-  overflow = "overflow-hidden",
-} = Astro.props as Props;
+	id = "",
+	backgroundImageMobile = "",
+	backgroundImageDesktop = "",
+	backgroundColor = "",
+	padding = "px-4 py-10 pt-40",
+	margin = "mx-auto",
+	relative = "relative",
+	fullHeight = false,
+	fullWidth = false,
+	overflow = "overflow-hidden",
+} = Astro.props;
 
-// Define constant classes
-const LAYOUT_CLASSES = "flex flex-col items-center";
+// Define constant classes for consistent layout
+const LAYOUT_CLASSES = "flex flex-col items-center place-content-center";
 const BACKGROUND_CLASSES = "bg-center bg-no-repeat";
 
 // Determine height and width based on fullHeight and fullWidth props
 const height = fullHeight ? "min-h-screen" : "h-auto";
 const width = fullWidth ? "w-full" : "w-5/6 md:w-3/4";
 
-// Combine all classes
+// Combine all classes for the section
 const sectionClasses = [
-  LAYOUT_CLASSES,
-  BACKGROUND_CLASSES,
-  margin,
-  width,
-  padding,
-  relative,
-  height,
-  backgroundColor,
-  overflow,
+	LAYOUT_CLASSES,
+	BACKGROUND_CLASSES,
+	margin,
+	width,
+	padding,
+	relative,
+	height,
+	backgroundColor,
+	overflow,
 ];
 ---
 
-<section
-  id={id}
-  class:list={sectionClasses}
->
-  {/* Mobile background image */}
-  {backgroundImageMobile && (
-    <div
-      class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover"
-      style={`background-image: url('${backgroundImageMobile}');`}
-    ></div>
-  )}
+<section id={id} class:list={sectionClasses}>
+	{/* Mobile background image */}
+	{
+		backgroundImageMobile && (
+			<div
+				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover"
+				style={`background-image: url('${backgroundImageMobile}');`}
+			/>
+		)
+	}
 
-  {/* Desktop background image (hidden on mobile) */}
-  {backgroundImageDesktop && (
-    <div
-      class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
-      style={`background-image: url('${backgroundImageDesktop}');`}
-    ></div>
-  )}
+	{/* Desktop background image (hidden on mobile) */}
+	{
+		backgroundImageDesktop && (
+			<div
+				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
+				style={`background-image: url('${backgroundImageDesktop}');`}
+			/>
+		)
+	}
 
-  {/* Section content */}
-  <slot />
+	{/* Section content */}
+	<slot />
 </section>

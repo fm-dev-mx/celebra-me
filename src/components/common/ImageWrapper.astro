@@ -3,30 +3,64 @@
 // This component provides a flexible container for images with customizable layout options.
 
 interface Props {
-	width?: string; // Optional width, Tailwind classes for width
-	height?: string; // Optional height, Tailwind classes for height
-	padding?: string; // Optional padding, Tailwind classes for padding
-	justify?: string; // Horizontal alignment, Tailwind classes for justification
-	align?: string; // Vertical alignment, Tailwind classes for alignment
-	margin?: string; // Optional margin, Tailwind classes for margin
-	class?: string; // Optional custom class
+	flex?: string; // Tailwind classes for flex
+	overflow?: string; // Tailwind classes for overflow
+	transition?: string; // Tailwind classes for transition
+	hover?: string; // Tailwind classes for hover
+	relative?: string; // Tailwind classes for relative
+	rounded?: string; // Tailwind classes for rounded
+	width?: string; // Tailwind classes for width
+	height?: string; // Tailwind classes for height
+	minWidth?: string; // Tailwind classes for minimum width
+	maxWidth?: string; // Tailwind classes for maximum width
+	minHeight?: string; // Tailwind classes for minimum height
+	maxHeight?: string; // Tailwind classes for maximum height
+	padding?: string; // Tailwind classes for padding
+	justify?: string; // Tailwind classes for horizontal alignment
+	align?: string; // Tailwind classes for vertical alignment
+	margin?: string; // Tailwind classes for margin
+	class?: string; // Custom class
 }
 
 // Destructure props with default values
 const {
+	flex = "flex-col",
+	overflow = "overflow-hidden",
+	transition = "transition-all duration-300 ease-in-out",
+	hover = "hover:scale-102 hover:shadow-lg",
+	rounded = "rounded-lg",
 	width = "w-full",
 	height = "h-auto",
+	minWidth = "min-w-0",
+	maxWidth = "max-w-full",
+	minHeight = "min-h-0",
+	maxHeight = "max-h-full",
 	padding = "",
 	justify = "justify-center",
 	align = "items-center",
 	margin = "",
 	class: customClass = "",
-} = Astro.props;
+} = Astro.props as Props;
 
-// Combine all classes into a single array
-const classes = ["flex", width, height, padding, justify, align, margin, customClass].filter(
-	Boolean,
-);
+// Combine all classes into a single array and filter out any empty strings
+const classes = [
+	flex,
+	overflow,
+	transition,
+	hover,
+	rounded,
+	width,
+	height,
+	minWidth,
+	maxWidth,
+	minHeight,
+	maxHeight,
+	padding,
+	justify,
+	align,
+	margin,
+	customClass,
+].filter(Boolean);
 ---
 
 {/* Render the wrapper div with combined classes */}

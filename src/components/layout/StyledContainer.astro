@@ -1,26 +1,71 @@
 ---
+// StyledContainer.astro
+// This component provides a flexible, styled container for content with customizable properties.
+// It's designed to maintain consistent styling across different sections of the website.
+
+import { twMerge } from "tailwind-merge";
+
+// Define the props interface for the StyledContainer component
 interface Props {
+	flex?: string;
 	padding?: string;
 	margin?: string;
 	width?: string;
+	minWidth?: string;
+	maxWidth?: string;
+	height?: string;
+	maxHeight?: string;
+	verticalAlign?: string;
+	horizontalAlign?: string;
 	backgroundColor?: string;
 	shadow?: string;
+	opacity?: string;
 	relative?: string;
+	rounded?: string;
+	extraClasses?: string;
 }
 
-const props = Astro.props as Props;
+// Destructure props with default values for flexibility
 const {
+	flex = "flex-col",
 	padding = "py-6",
-	width = "5/6 md:w-3/4",
-	margin = "mb-8",
-	backgroundColor = "bg-white/95",
+	margin = "mx-auto",
+	width = "w-5/6 md:w-3/4",
+	minWidth = "min-w-fit",
+	maxWidth = "max-w-5xl",
+	height = "h-full",
+	maxHeight = "max-h-full",
+	verticalAlign = "items-center",
+	horizontalAlign = "justify-center",
+	backgroundColor = "bg-white",
 	shadow = "shadow-2xl",
+	opacity = "opacity-90",
 	relative = "",
-} = props;
+	rounded = "rounded-2xl",
+	extraClasses = "",
+} = Astro.props;
+
+// Combine classes using tailwind-merge to avoid conflicts
+const containerClasses = twMerge(
+	flex,
+	padding,
+	margin,
+	width,
+	minWidth,
+	maxWidth,
+	height,
+	maxHeight,
+	verticalAlign,
+	horizontalAlign,
+	backgroundColor,
+	shadow,
+	opacity,
+	relative,
+	rounded,
+	extraClasses,
+);
 ---
 
-<div
-	class=`flex flex-col items-center h-full ${padding} ${width} ${margin} rounded-2xl ${shadow} mx-auto ${backgroundColor} ${relative} ${backgroundColor}`
->
+<div class={containerClasses}>
 	<slot />
 </div>
