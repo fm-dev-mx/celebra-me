@@ -1,21 +1,58 @@
 ---
+// Import the twMerge function from Tailwind utilities
+import { twMerge } from "tailwind-merge";
+
+// Interface defining the expected props for the SectionSubtitle component.
+// Optional properties allow flexibility in styling the component.
 interface Props {
-	size?: string;
 	fontFamily?: string;
-	weight?: string;
+	margin?: string;
+	size?: string;
+	align?: string;
 	color?: string;
+	weight?: string;
+	letterSpacing?: string;
+	textDecoration?: string;
+	animation?: string;
+	maxWidth?: string;
 	extraClass?: string;
 }
 
+// Extract the props passed to the component
 const props = Astro.props as Props;
 
+// Destructure the props with default values
 const {
-	size = "text-2xl md:text-3xl",
-	weight = "font-thin",
-	color = "",
-	fontFamily = "sans-serif",
-	extraClass = "",
+	size = "text-2xl md:text-3xl", // Default text size
+	align = "text-center", // Default alignment
+	color = "", // Default color (no color)
+	weight = "font-thin", // Default font weight
+	letterSpacing = "tracking-wider", // Default letter spacing
+	fontFamily = "sans-serif", // Default font family
+	margin = "mb-16", // Default margin
+	animation = "", // Default animation
+	textDecoration = "", // Default text decoration
+	maxWidth = "max-w-max", // Default max-width
+	extraClass: className = "", // Additional classes
 } = props;
+
+// Merge the class names using Tailwind's twMerge function
+const subtitleStyles = twMerge(
+	margin,
+	align,
+	size,
+	color,
+	weight,
+	letterSpacing,
+	fontFamily,
+	textDecoration,
+	animation,
+	maxWidth,
+	className,
+);
 ---
 
-<h3 class={`text-center ${size} ${weight} ${color} ${fontFamily} ${extraClass}`}><slot /></h3>
+<!-- Render an h3 element with dynamic class names based on the props -->
+<h3 class={subtitleStyles}>
+	<slot />
+</h3>

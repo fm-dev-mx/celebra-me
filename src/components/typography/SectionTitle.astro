@@ -1,24 +1,45 @@
 ---
+import { twMerge } from "tailwind-merge";
+
 interface Props {
 	margin?: string;
 	size?: string;
 	align?: string;
 	color?: string;
 	weight?: string;
+	letterSpacing?: string;
 	textDecoration?: string;
+	animation?: string;
 	extraClass?: string;
 }
 
 const props = Astro.props as Props;
+
 const {
 	margin = "mb-24",
 	align = "text-center",
-	size = "text-3xl md:text-4xl",
+	size = "text-2xl md:text-3xl",
 	color = "",
 	weight = "font-light",
+	letterSpacing = "tracking-wider",
 	textDecoration = "",
-	extraClass = "",
+	animation = "",
+	extraClass: className = "",
 } = props;
+
+const titleStyles = twMerge(
+	margin,
+	align,
+	size,
+	color,
+	weight,
+	letterSpacing,
+	textDecoration,
+	animation,
+	className,
+);
 ---
 
-<h2 class:list={[margin, align, size, color, weight, textDecoration, extraClass]}><slot /></h2>
+<h2 class={titleStyles}>
+	<slot />
+</h2>

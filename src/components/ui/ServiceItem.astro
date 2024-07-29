@@ -7,8 +7,8 @@ import SectionSubtitle from "../typography/SectionSubtitle.astro";
 
 // Define the props interface for type safety
 interface Props {
-    service: Service;
-    key: number;
+	service: Service;
+	key: number;
 }
 
 // Destructure the service prop
@@ -16,38 +16,42 @@ const { service, key } = Astro.props;
 
 // Define reusable styles
 const styles = {
-    article: "flex flex-col items-center justify-content transition-transform transform hover:scale-105",
-    container: "grid justify-items-center max-w-80",
-    iconContainer: "mt-6 mb-4",
-    textContainer: "text-secondary-dark text-center",
+	article:
+		"flex flex-col items-center justify-center transition-transform transform hover:scale-105 w-92",
+	container: "flex flex-col items-center max-w-80",
+	iconContainer: "mt-6 mb-4",
+	textContainer: "flex flex-col items-center text-center",
 };
 ---
 
 <article class={styles.article}>
-    <div class={styles.container}>
-        <!-- Service Icon -->
-        <div class={styles.iconContainer}>
-            <IconWrapper
-                background="bg-secondary"
-                size="h-12 w-12"
-                padding="p-3"
-            >
-                <Icon
-                    icon={service.icon as IconType}
-                    size="h-full w-full"
-                    color="text-white"
-                />
-            </IconWrapper>
-        </div>
+	<div class={styles.container}>
+		<!-- Service Icon -->
+		<div class={styles.iconContainer}>
+			<IconWrapper background="bg-secondary-dark" size="h-12 w-12" padding="p-3">
+				<Icon icon={service.icon as IconType} size="h-full w-full" color="text-white" />
+			</IconWrapper>
+		</div>
 
-        <!-- Service Details -->
-        <div class={styles.textContainer}>
-            <SectionSubtitle>
-                {service.title}
-            </SectionSubtitle>
-            <Paragraph>
-                {service.description}
-            </Paragraph>
-        </div>
-    </div>
+		<!-- Service Details -->
+		<div class={styles.textContainer}>
+			<SectionSubtitle
+				size="text-2xl md:text-3xl"
+				color="text-secondary-dark"
+				letterSpacing="tracking-wide"
+				margin="mb-2"
+			>
+				{service.title}
+			</SectionSubtitle>
+			<Paragraph
+				size="text-base"
+				textColor="text-secondary-dark"
+				weight="font-thin"
+				padding="px-2 md:px-4"
+				maxWidth="max-w-max"
+			>
+				{service.description}
+			</Paragraph>
+		</div>
+	</div>
 </article>
