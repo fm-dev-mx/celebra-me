@@ -1,19 +1,26 @@
 ---
+// Hero.astro
+// This component represents the hero section of the website with enhanced UI/UX and performance optimizations
+
+import { Image } from "astro:assets";
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
-import Icon from "@/components/common/Icon.astro";
-import IconWrapper from "@/components/common/IconWrapper.astro";
+import Section from "@/components/layout/Section.astro";
+import StyledContainer from "@/components/layout/StyledContainer.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
+import bgHeroDesktop from "@/images/hero/bgHeroDesktop.jpg";
+import bgHeroMobile from "@/images/hero/bgHeroMobile.jpg";
+import Logo from "@/components/typography/logo.astro";
+import SectionTitle from "@/components/typography/SectionTitle.astro";
+import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 
 // Define the expected data structure for the Hero component
 interface HeroData {
 	icon?: IconType;
 	title: string;
-	subTitle: string;
+	subtitle: string;
 	primaryCta: string;
 	secondaryCta: string;
-	highlightedTitle?: string;
-	highlightedTitleSmall?: string;
 }
 
 interface Props {
@@ -22,85 +29,122 @@ interface Props {
 
 const { data } = Astro.props;
 
-// Reusable styles to improve consistency and maintainability
-const styles = {
-	heroSection: "relative flex flex-col items-center justify-center min-h-screen px-4",
-	contentWrapper: "w-full md:w-2/3 text-center",
-	title: "text-2xl lg:text-3xl xl:text-4xl mb-4",
-	highlightedTitle:
-		"text-primary font-semibold text-5xl lg:text-6xl xl:text-7xl shadow-text text-nowrap",
-	highlightedTitleSmall:
-		"text-primary font-normal text-lg lg:text-2xl xl:text-3xl 2xl:text-4xl shadow-text lg:mt-6 place-content-end mr-0",
-	subTitle: "text-primary opacity-80 mt-6 font-light text-xl md:text-2xl mb-12",
+// Extract reusable styles for better maintainability and performance
+const sectionStyles = {
+	backgroundImageDesktop: bgHeroDesktop.src,
+	backgroundImageMobile: bgHeroMobile.src,
+	padding: "py-20",
+	relative: "relative",
+	fullWidth: true,
+	fullHeight: true,
 };
+
+// Preload critical assets for performance
+const preloadAssets = [
+	{ href: bgHeroDesktop.src, as: "image" },
+	{ href: bgHeroMobile.src, as: "image" },
+];
 ---
 
-<section id="hero-section" class={styles.heroSection}>
-	<div class={styles.contentWrapper}>
-		<!-- Main title with icon and highlighted text -->
-		<h1 class={styles.title}>
-			<span class="text-primary opacity-80 block font-light mb-4">
-				{data.title}
-			</span>
-			<span class="flex flex-col lg:flex-row items-center justify-center">
-				{
-					data.icon && (
-						<IconWrapper
-							size="h-20 w-20"
-							background="bg-transparent"
-							margin="mb-4 lg:mb-0 lg:mr-4"
-						>
-							<Icon icon={data.icon} size="h-full w-full" color="text-primary" />
-						</IconWrapper>
-					)
-				}
-				<div class={styles.highlightedTitle}>
-					{data.highlightedTitle}
-				</div>
-				<div class={styles.highlightedTitleSmall}>
-					{data.highlightedTitleSmall}
-				</div>
-			</span>
-		</h1>
+{/* Preload critical assets */}
+{preloadAssets.map((asset) => <link rel="preload" href={asset.href} as={asset.as} />)}
 
-		<!-- Subtitle -->
-		<h2 class={styles.subTitle}>{data.subTitle}</h2>
+<Section id="hero-section" {...sectionStyles}>
+	{/* Semi-transparent overlay with improved accessibility */}
+	<StyledContainer
+		flex="flex-row md:flex-col"
+		padding="py-24"
+		width="w-5/6 md:w-5xl"
+		maxWidth="max-w-5xl"
+		height="h-full"
+		maxHeight="max-h-full"
+		margin="m-auto"
+		verticalAlign="items-center"
+		horizontalAlign="justify-center"
+		backgroundColor="bg-white"
+		shadow="shadow-2xl"
+		opacity="opacity-80"
+		relative=""
+		rounded="rounded-2xl"
+		extraClasses="text-center"
+	>
+		<SectionTitle
+			margin="mb-0"
+			align="text-center"
+			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
+			color="text-primary"
+			weight="font-light"
+			letterSpacing="tracking-widest"
+			animation="animate-slide-in-right"
+			extraClass="shadow-text-light"
+		>
+			{data.title}
+		</SectionTitle>
 
-		<!-- Call-to-action buttons -->
-		<ActionWrapper margin="mb-12">
-			<Action variant="primary" title="Chatea con nosotros" href="#">{data.primaryCta}</Action
-			>
-			<Action variant="secondary" title="Ver demos" href="#">{data.secondaryCta}</Action>
+		{/* Logo with enhanced typography and animation */}
+		<Logo
+			as="h1"
+			size="text-3xl sm:text-4xl md:text-5xl lg:text-5xl"
+			fontWeight="font-semibold"
+			margin="mx-auto mb-6"
+			color="text-accent"
+			padding="px-0"
+			horizontalAlign="justify-center"
+			verticalAlign="items-center"
+		/>
+
+		{/* Subtitle with improved visibility and responsiveness */}
+		<SectionSubtitle
+			size="text-lg sm:text-xl md:text-2xl lg:text-[1.75rem]"
+			align="text-center"
+			weight="font-light"
+			color="text-primary"
+			fontFamily="font-sans"
+			margin="mb-12 mx-auto"
+			letterSpacing="tracking-widest"
+			animation="animate-fade-in"
+			maxWidth="max-w-3xl"
+		>
+			{data.subtitle}
+		</SectionSubtitle>
+
+		{/* Call-to-Action buttons with enhanced styling and accessibility */}
+		<ActionWrapper margin="mt-24" gap="gap-4 sm:gap-6">
+			<Action variant="primary" color="secondary" href="#" class="">
+				{data.primaryCta}
+			</Action>
+			<Action variant="secondary" color="secondary" href="#">
+				{data.secondaryCta}
+			</Action>
 		</ActionWrapper>
-	</div>
+	</StyledContainer>
 
-	<!-- Scroll button -->
-	<Action
-		variant="scroll"
-		href="#services-section"
-		title="Ir a sección de Servicios"
-		icon="ArrowDownIcon"
-		class="opacity-80 hover:opacity-100 hover:text-primary-light"
-	/>
-</section>
+	{/* Decorative elements with improved performance */}
+	<div class="absolute inset-0 overflow-hidden pointer-events-none">
+		<div class="absolute top-0 left-0 w-full h-full bg-confetti opacity-20"></div>
+		<div
+			class="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-primary-100 to-transparent"
+		>
+		</div>
+	</div>
+</Section>
 
 <style>
-	/* Fade-in animation for the hero section */
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
+	/* Optimize background image loading */
 	#hero-section {
-		animation: fadeIn 0.8s ease-in-out forwards;
+		background-image: url("/images/hero/bgHeroMobile.jpg");
+		background-size: cover;
+		background-position: center;
 	}
 
-	/* Enhance text shadow for better readability */
-	.shadow-text {
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+	@media (min-width: 768px) {
+		#hero-section {
+			background-image: url("/images/hero/bgHeroDesktop.jpg");
+		}
+	}
+
+	/* Add smooth scrolling for better UX */
+	html {
+		scroll-behavior: smooth;
 	}
 </style>
