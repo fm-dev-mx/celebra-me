@@ -34,15 +34,10 @@
 		]
 	},
 	"heroData": {
-		"icon": "FavIcon",
 		"title": "Invitaciones digitales",
-		"highlightedTitle": "celebra-me",
-		"highlightedTitleSmall": ".com",
-		"subTitle": "Tus eventos serán únicos",
+		"subtitle": "Tus eventos serán únicos",
 		"primaryCta": "WhatsApp 💬",
-		"secondaryCta": "Elegir invitación",
-		"backgroundImage": "backgroundImage.jpg",
-		"backgroundImageMobile": "backgroundImageMobile.jpg"
+		"secondaryCta": "Elegir invitación"
 	},
 	"servicesData": {
 		"title": "Tu Historia, Contada en Invitaciones Digitales",

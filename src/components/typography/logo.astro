@@ -1,0 +1,109 @@
+---
+/*
+Interface defining the expected props for the Logo component.
+Optional properties allow flexibility in styling the component.
+*/
+import type { HTMLAttributes } from "astro/types";
+import Icon from "@/components/common/Icon.astro";
+import IconWrapper from "@/components/common/IconWrapper.astro";
+import type { Icon as IconType } from "@/config/landing.interface";
+import { twMerge } from "tailwind-merge";
+interface Props extends HTMLAttributes<"div"> {
+	as?: "h1" | "div";
+	flex?: string;
+	size?: string;
+	iconSize?: string;
+	fontWeight?: string;
+	gap?: string;
+	margin?: string;
+	color?: string;
+	padding?: string;
+	horizontalAlign?: string;
+	verticalAlign?: string;
+	animation?: string;
+	extraClasses?: string;
+	icon?: IconType;
+}
+
+// Extract the props passed to the component
+const props = Astro.props as Props;
+
+// Define the props with default values
+const {
+	as = "div",
+	flex = "flex-col sm:flex-row",
+	size = "text-2xl md:text-4xl lg:text-5xl",
+	iconSize = "w-8 md:w-12 lg:w-16",
+	fontWeight = " font-bold",
+	gap = "gap-0",
+	margin = "mx-auto mb-4",
+	color = " text-primary",
+	padding = "px-16",
+	horizontalAlign = "justify-center",
+	verticalAlign = " items-center",
+	animation = "",
+	extraClasses: className = " shadow-text",
+	...rest
+} = Astro.props;
+
+// Combine classes using twMerge to avoid conflicts
+const textStyles = twMerge(
+	"flex",
+	flex,
+	size,
+	fontWeight,
+	gap,
+	margin,
+	color,
+	padding,
+	horizontalAlign,
+	verticalAlign,
+	className,
+);
+
+// Destructure the props with default values
+const { as: Element = "div" } = props;
+---
+
+<!--
+Render an h3 element with dynamic class names based on the props.
+Use template literals for class names to maintain flexibility.
+-->
+<Element class={textStyles} {...rest}>
+	{/* Conditional rendering of the icon based on the data */}
+	<div class="animate-shimmer flex-row sm:flex-col">
+		{
+			(
+				<IconWrapper
+					flex=""
+					size={iconSize}
+					width="w-16 md:w-16 lg:w-20"
+					minWidth=""
+					maxWidth=""
+					margin="mr-0 md:mr-4 md:mt-2 lg:mr-8"
+					color={color}
+					align="items-center justify-center"
+					padding="p-0"
+					background="bg-transparent"
+					rounded=""
+				>
+					<Icon icon="FavIcon" size="" />
+				</IconWrapper>
+			)
+		}
+	</div>
+	<div class=`sm:flex items-center  gap-0 sm:pl-2 text-2xl md:text-4xl lg:text-5xl xl:text-6xl`>
+		<div class=`
+		flex-row
+		sm:flex-col
+		shrink
+		text-nowrap
+		scale-125
+		mx-0 sm:mx-4`>celebra-me</div>
+		<div
+			class="flex-row sm:flex-col scale-[70%] md:scale-50 pt-0 sm:pt-4 md:pt-10 lg:pt-12 xl:pt-16 font-normal"
+		>
+			.com
+		</div>
+	</div>
+</Element>

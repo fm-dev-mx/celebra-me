@@ -10,68 +10,20 @@ import Testimonials from "@/sections/Testimonials.astro";
 import Pricing from "@/sections/Pricing.astro";
 import FAQ from "@/sections/FAQ.astro";
 import Footer from "@/sections/Footer.astro";
-import OptimizedImage from "@/components/common/OptimizedImage.astro";
 
 // Fetch landing page data
 const data = await getLandingData();
-
-// Import images statically
-import heroImageSrc from "@/images/hero/backgroundImage.jpg";
-import heroImageMobileSrc from "@/images/hero/backgroundImageMobile.jpg";
-import ImageWrapper from "@/components/common/ImageWrapper.astro";
 ---
 
 <Layout meta={data.meta}>
 	<Header data={data.headerData} />
 	<main>
-		{/* Hero Section */}
-		<section class="relative h-screen flex items-center justify-center w-full">
-			{/* Desktop Background Image */}
-			<ImageWrapper
-				width="w-full"
-				height="h-full"
-				padding=""
-				justify=""
-				align=""
-				margin=""
-				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
-			>
-				<OptimizedImage imagePath={heroImageSrc} alt="Desktop Hero Background" />
-			</ImageWrapper>
-			<ImageWrapper
-				width="w-full"
-				height="h-full"
-				padding=""
-				justify=""
-				align=""
-				margin=""
-				class="absolute inset-0 w-full h-full object-cover sm:hidden"
-			>
-				{/* Mobile Background Image */}
-				<OptimizedImage imagePath={heroImageMobileSrc} alt="Mobile Hero Background" />
-			</ImageWrapper>
-			{/* Hero Content Container */}
-			<div class="relative w-full flex justify-center">
-				<div
-					class="w-6/7 md:w-3/4 relative bg-white bg-opacity-70 px-6 rounded-2xl shadow-sm"
-				>
-					<div class="relative z-10">
-						<Hero data={data.heroData} />
-					</div>
-				</div>
-			</div>
-		</section>
-
-		{/* Other Sections */}
-		<div>
-			<Services data={data.servicesData} />
-			<AboutUs data={data.aboutData} />
-			<Testimonials data={data.testimonialsData} />
-			<Pricing data={data.pricingData} />
-			<FAQ data={data.faqData} />
-		</div>
-
-		{/* Footer */}
+		<Hero data={data.heroData} />
+		<Services data={data.servicesData} />
+		<AboutUs data={data.aboutData} />
+		<Testimonials data={data.testimonialsData} />
+		<Pricing data={data.pricingData} />
+		<FAQ data={data.faqData} />
 		<Footer data={data.footerData} />
 	</main>
 </Layout>

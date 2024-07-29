@@ -20,9 +20,6 @@ export interface HeroData {
 	subTitle: string;
 	primaryCta: string;
 	secondaryCta: string;
-	highlightedTitle: string;
-	backgroundImage?: string;
-	backgroundImageMobile?: string;
 }
 
 export interface ServicesData {
