@@ -21,6 +21,7 @@ type ActionVariant =
 
 // Define the props for our component
 interface Props extends HTMLAttributes<"a"> {
+	flex?: string;
 	variant?: ActionVariant; // The style variant of the button
 	icon?: IconType; // Optional icon to display
 	iconSize?: string; // Optional icon size
@@ -30,6 +31,7 @@ interface Props extends HTMLAttributes<"a"> {
 
 // Destructure props with default values
 const {
+	flex = "flex-col",
 	variant = "primary",
 	icon,
 	iconSize = "w-6 h-6",
@@ -41,8 +43,7 @@ const {
 } = Astro.props;
 
 // Base styles applied to all Action variants
-const baseStyles =
-	"inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base hover:shadow-2xl text-nowrap font-light hover:font-normal hover:brightness-200";
+const baseStyles = `  flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base  hover:shadow-2xl text-nowrap h-[40px] md:h-[48px]`;
 
 // Define styles for each variant
 const variantStyles = {
@@ -51,7 +52,7 @@ const variantStyles = {
 	tertiary: `text-lg px-14 py-3 shadow-2xl`,
 	text: `opacity-80 md:text-xs lg:text-sm flex items-center`,
 	icon: `hover:opacity-50`,
-	scroll: `flex justify-center items-center animate-bounce border-2 rounded-full w-12 h-12 hover:opacity-100 hover:bg-inherit absolute bottom-0`,
+	scroll: `flex justify-center items-center animate-bounce border-2 rounded-full w-10 h-10 hover:opacity-100 hover:bg-inherit absolute bottom-0`,
 	logo: `opacity-80 md:text-xs lg:text-sm font-semibold`,
 	large: `py-2.5 border-2 border-dashed px-20 md:px-40`,
 };
@@ -64,7 +65,7 @@ const colorStyles = color
 			tertiary: `bg-${color}-dark text-white`,
 			text: `text-${color}`,
 			icon: `text-${color}`,
-			scroll: `border-${color} bg-${color}-light text-white`,
+			scroll: `border-${color}-light bg-${color}-light text-${color}-dark brightness-125 hover:text-${color} hover:bg-${color}-light hover:border-${color}`,
 			logo: `text-${color}-dark`,
 			large: `bg-${color} text-white border-${color}-light`,
 		}
@@ -80,7 +81,7 @@ const buttonClasses = twMerge(
 );
 
 // Determine icon classes
-const iconClasses = twMerge("color-inherit", iconSize);
+const iconClasses = twMerge("color-inherit stroke-2", iconSize);
 
 // Determine target and rel attributes for links
 const targetAttr = target === "_blank" ? "_blank" : target;
