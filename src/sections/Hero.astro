@@ -52,10 +52,10 @@ const preloadAssets = [
 <Section id="hero-section" {...sectionStyles}>
 	{/* Semi-transparent overlay with improved accessibility */}
 	<StyledContainer
-		flex="flex-row md:flex-col"
 		padding="py-24"
 		width="w-5/6 md:w-5xl"
-		maxWidth="max-w-5xl"
+		minWidth="min-w-[300px]"
+		maxWidth="max-w-[850px]"
 		height="h-full"
 		maxHeight="max-h-full"
 		margin="m-auto"
@@ -72,7 +72,7 @@ const preloadAssets = [
 			margin="mb-0"
 			align="text-center"
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
-			color="text-primary"
+			color="text-primary/60"
 			weight="font-light"
 			letterSpacing="tracking-widest"
 			animation="animate-slide-in-right"
@@ -86,8 +86,8 @@ const preloadAssets = [
 			as="h1"
 			size="text-3xl sm:text-4xl md:text-5xl lg:text-5xl"
 			fontWeight="font-semibold"
-			margin="mx-auto mb-6"
-			color="text-accent"
+			margin="mx-auto mb-0 sm:mb-6 mt-4"
+			color="text-primary"
 			padding="px-0"
 			horizontalAlign="justify-center"
 			verticalAlign="items-center"
@@ -117,16 +117,15 @@ const preloadAssets = [
 				{data.secondaryCta}
 			</Action>
 		</ActionWrapper>
+		<!-- Scroll button -->
+		<Action
+			variant="scroll"
+			href="#services-section"
+			title="Ir a sección de Servicios"
+			icon="ArrowDownIcon"
+			color="primary"
+		/>
 	</StyledContainer>
-
-	{/* Decorative elements with improved performance */}
-	<div class="absolute inset-0 overflow-hidden pointer-events-none">
-		<div class="absolute top-0 left-0 w-full h-full bg-confetti opacity-20"></div>
-		<div
-			class="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-primary-100 to-transparent"
-		>
-		</div>
-	</div>
 </Section>
 
 <style>
