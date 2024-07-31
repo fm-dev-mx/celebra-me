@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 // Interface defining the expected props for the SectionSubtitle component.
 // Optional properties allow flexibility in styling the component.
 interface Props {
+	flex?: string;
 	fontFamily?: string;
 	margin?: string;
 	size?: string;
@@ -23,6 +24,7 @@ const props = Astro.props as Props;
 
 // Destructure the props with default values
 const {
+	flex = "flex-row sm:flex-col",
 	size = "text-2xl md:text-3xl", // Default text size
 	align = "text-center", // Default alignment
 	color = "", // Default color (no color)
@@ -38,6 +40,7 @@ const {
 
 // Merge the class names using Tailwind's twMerge function
 const subtitleStyles = twMerge(
+	"flex",
 	margin,
 	align,
 	size,

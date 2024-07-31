@@ -1,109 +1,113 @@
 ---
-/*
-Interface defining the expected props for the Logo component.
-Optional properties allow flexibility in styling the component.
-*/
+/** src\components\typography\logo.astro */
 import type { HTMLAttributes } from "astro/types";
 import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 import { twMerge } from "tailwind-merge";
+
 interface Props extends HTMLAttributes<"div"> {
+	// Container properties
 	as?: "h1" | "div";
-	flex?: string;
-	size?: string;
-	iconSize?: string;
+	flex?: string; // Consider renaming to 'containerFlex' for clarity
+	gap?: string; // Consider renaming to 'containerGap' for clarity
+	margin?: string; // Consider renaming to 'containerMargin' for clarity
+	padding?: string; // Consider renaming to 'containerPadding' for clarity
+	horizontalAlign?: string; // Consider combining with verticalAlign into 'containerAlign'
+	verticalAlign?: string; // Consider combining with horizontalAlign into 'containerAlign'
+	animation?: string; // Consider renaming to 'containerAnimation' for clarity
+
+	// Text properties
+	size?: string; // Consider renaming to 'textSize' for clarity
 	fontWeight?: string;
-	gap?: string;
-	margin?: string;
 	color?: string;
-	padding?: string;
-	horizontalAlign?: string;
-	verticalAlign?: string;
-	animation?: string;
 	extraClasses?: string;
+
+	// Icon properties
+	iconSize?: string;
 	icon?: IconType;
+	iconMargin?: string;
+	iconAlign?: string;
+	iconBackground?: string;
+	iconColor?: string;
+
+	// Consider adding these properties for more granular control:
+	// logoContainerStyles?: string;
+	// logoTextStyles?: string;
+	// domainTextStyles?: string;
 }
 
-// Extract the props passed to the component
-const props = Astro.props as Props;
-
-// Define the props with default values
 const {
-	as = "div",
-	flex = "flex-col sm:flex-row",
-	size = "text-2xl md:text-4xl lg:text-5xl",
-	iconSize = "w-8 md:w-12 lg:w-16",
-	fontWeight = " font-bold",
-	gap = "gap-0",
-	margin = "mx-auto mb-4",
-	color = " text-primary",
-	padding = "px-16",
-	horizontalAlign = "justify-center",
-	verticalAlign = " items-center",
-	animation = "",
-	extraClasses: className = " shadow-text",
+	// Container properties
+	as: Element = "div",
+	flex = "flex-col sm:flex-row", // containerFlex
+	gap = "gap-0 sm:gap-4", // containerGap
+	margin = "mx-auto mb-4", // containerMargin
+	padding = "px-4 sm:px-8", // containerPadding
+	horizontalAlign = "justify-center", // Part of containerAlign
+	verticalAlign = "items-center", // Part of containerAlign
+	animation = "", // containerAnimation
+
+	// Text properties
+	size = "text-2xl md:text-4xl lg:text-5xl", // textSize
+	fontWeight = "font-bold",
+	color = "text-primary",
+	extraClasses = "shadow-text",
+
+	// Icon wrapper properties
+	iconMargin = "mx-auto mr-0 sm:mr-4 sm:mb-4 md:mt-0 lg:mt-0 xl:mt-2",
+	iconAlign = "items-center",
+	iconBackground = "bg-transparent",
+	iconColor = "var(--secondary-dark)",
+
+	// Logo properties
+	icon = "FavIcon",
+	iconSize = "w-12 h-12 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12",
+
 	...rest
 } = Astro.props;
 
-// Combine classes using twMerge to avoid conflicts
-const textStyles = twMerge(
+const containerStyles = twMerge(
 	"flex",
 	flex,
-	size,
-	fontWeight,
 	gap,
 	margin,
-	color,
 	padding,
 	horizontalAlign,
 	verticalAlign,
-	className,
+	animation,
 );
 
-// Destructure the props with default values
-const { as: Element = "div" } = props;
+const iconWrapperStyles = twMerge("flex", iconAlign, iconMargin, iconBackground);
+const iconStyles = twMerge(iconBackground, iconSize);
+
+const textStyles = twMerge(size, fontWeight, color, extraClasses);
+
+const logoTextStyles = twMerge(
+	"flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8",
+	textStyles,
+);
+
+const comStyles = twMerge(
+	"flex-row sm:flex-col scale-75 sm:scale-[70%] pt-0 sm:pt-5 md:pt-6 lg:pt-7 xl:pt-8 font-normal",
+	textStyles,
+);
+
+const shimmerClass = "animate-shimmer";
+const staggerShimmerClass = "stagger-shimmer";
 ---
 
-<!--
-Render an h3 element with dynamic class names based on the props.
-Use template literals for class names to maintain flexibility.
--->
-<Element class={textStyles} {...rest}>
-	{/* Conditional rendering of the icon based on the data */}
-	<div class="animate-shimmer flex-row sm:flex-col">
-		{
-			(
-				<IconWrapper
-					flex=""
-					size={iconSize}
-					width="w-16 md:w-16 lg:w-20"
-					minWidth=""
-					maxWidth=""
-					margin="mr-0 md:mr-4 md:mt-2 lg:mr-8"
-					color={color}
-					align="items-center justify-center"
-					padding="p-0"
-					background="bg-transparent"
-					rounded=""
-				>
-					<Icon icon="FavIcon" size="" />
-				</IconWrapper>
-			)
-		}
-	</div>
-	<div class=`sm:flex items-center  gap-0 sm:pl-2 text-2xl md:text-4xl lg:text-5xl xl:text-6xl`>
-		<div class=`
-		flex-row
-		sm:flex-col
-		shrink
-		text-nowrap
-		scale-125
-		mx-0 sm:mx-4`>celebra-me</div>
-		<div
-			class="flex-row sm:flex-col scale-[70%] md:scale-50 pt-0 sm:pt-4 md:pt-10 lg:pt-12 xl:pt-16 font-normal"
-		>
-			.com
+<Element class={containerStyles} {...rest}>
+	<div class={`flex ${flex} ${iconAlign} ${staggerShimmerClass} ${gap}`}>
+		<div class={`${shimmerClass} flex-shrink-0`}>
+			<IconWrapper class={iconWrapperStyles}>
+				<Icon class={iconStyles} icon={icon} color={iconColor} />
+			</IconWrapper>
+		</div>
+
+		<div class={`flex flex-col sm:flex-row items-center ${size}`}>
+			<div class={`${logoTextStyles} ${shimmerClass}`}>celebra-me</div>
+			<div class={comStyles}>.com</div>
 		</div>
 	</div>
 </Element>

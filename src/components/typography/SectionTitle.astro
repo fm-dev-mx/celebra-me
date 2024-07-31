@@ -2,9 +2,11 @@
 import { twMerge } from "tailwind-merge";
 
 interface Props {
+	flex?: string;
 	margin?: string;
 	size?: string;
 	align?: string;
+	textAlign?: string;
 	color?: string;
 	weight?: string;
 	letterSpacing?: string;
@@ -16,8 +18,10 @@ interface Props {
 const props = Astro.props as Props;
 
 const {
+	flex = "flex flex-row sm:flex-col",
 	margin = "mb-24",
-	align = "text-center",
+	align = "justify-content-center place-items-center place-content-center",
+	textAlign = "text-center",
 	size = "text-2xl md:text-3xl",
 	color = "",
 	weight = "font-light",
@@ -28,8 +32,10 @@ const {
 } = props;
 
 const titleStyles = twMerge(
+	flex,
 	margin,
 	align,
+	textAlign,
 	size,
 	color,
 	weight,
