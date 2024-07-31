@@ -1,0 +1,72 @@
+/* src/styles/utilities/animations.css */
+
+/* Animation classes */
+/* Fade In: Gradually increases opacity from 0 to 1 */
+.animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+/* Slide In Left: Moves element from left to right while fading in */
+.animate-slide-in-left { animation: slideInLeft 0.5s ease-in-out; }
+/* Slide In Right: Moves element from right to left while fading in */
+.animate-slide-in-right { animation: slideInRight 0.5s ease-in-out; }
+/* Subtle Bounce: Creates a small bouncing effect */
+.animate-subtle-bounce { animation: subtleBounce 0.5s ease-in-out; }
+/* Subtle Pulse: Slightly scales the element up and down */
+.animate-subtle-pulse { animation: subtlePulse 2s linear 1 , fadeOut 0.5s ;}
+/* Infinite Pulse: Scales the element up and down infinitely */
+.animate-infinite-pulse { animation: subtlePulse 2s linear infinite; }
+/* Rotate: Spins the element 360 degrees */
+.animate-rotate { animation: rotate 0.5s ease-in-out; }
+
+/* Keyframe animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInLeft { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes subtleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes subtlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Shimmer animation for logo */
+@keyframes shimmer {
+    0% { background-position: -100% 0; opacity: 1; }
+    100% { background-position: 200% 0; opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; visibility: hidden; }
+}
+
+.animate-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.animate-shimmer::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent bg-[length:50%_100%];
+  animation: shimmer 2s linear 1, fadeOut 0.5s ease-out 1.5s forwards;
+}
+
+/* Staggered shimmer animation for multiple elements */
+
+.stagger-shimmer > *:nth-child(1) .animate-shimmer::before {
+    animation-delay: 0s, 2s;
+}
+
+.stagger-shimmer > *:nth-child(2) .animate-shimmer::before {
+    animation-delay: 0.5s, 2.5s;
+}
+
+/* Responsive Animation Adjustments */
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-in-left,
+    .animate-slide-in-right,
+    .animate-subtle-bounce,
+    .animate-subtle-pulse,
+    .animate-rotate,
+    .animate-shimmer,
+    .animate-shimmer::before {
+        content: none;
+    }
+}

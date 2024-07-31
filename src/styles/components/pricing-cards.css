@@ -1,0 +1,58 @@
+/* src/styles/components/pricing-cards.css */
+
+/* Styles for pricing cards */
+
+/* Base styles for pricing cards */
+.pricing-card {
+    @apply rounded border border-solid overflow-hidden text-ellipsis mx-auto min-w-[20rem] max-w-[20rem] max-h-[42rem] self-center mt-8;
+}
+
+/* Call-to-action button styles for pricing cards */
+.pricing-card-cta {
+    @apply bg-primary-light text-white text-sm transition-all duration-300 ease-in-out w-72 leading-5;
+}
+
+/* Hover effects for pricing cards */
+.pricing-card-hovered {
+    @apply border-secondary-light;
+}
+
+.pricing-card-cta-hovered {
+    @apply bg-secondary-light text-white scale-110 brightness-110 outline-2 outline-offset-2 outline-secondary-dark;
+}
+
+.pricing-card-title-hovered,
+.pricing-card-text-hovered {
+    @apply text-secondary-dark;
+}
+
+.pricing-card-subtitle-hovered {
+    @apply text-secondary-light;
+}
+
+/* Responsive styles for pricing cards */
+@screen md {
+    .pricing-card {
+        @apply w-[calc(50%-1rem)];
+    }
+    .pricing-card-cta {
+        @apply text-base leading-6;
+    }
+    .pricing-grid {
+        @apply flex-row;
+    }
+}
+
+@screen lg {
+    .pricing-card {
+        @apply w-[calc(33.333%-1rem)];
+    }
+}
+
+@screen xl {
+    .pricing-card {
+        @apply max-w-[25rem];
+    }
+}
+
+/* You can add more specific styles for pricing cards here if needed */

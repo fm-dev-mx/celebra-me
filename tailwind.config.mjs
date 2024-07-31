@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./src/**/*.{astro,html,js,jsx,md,ts,tsx}"],
+  content: ["./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -10,26 +10,28 @@ export default {
           dark: "#EA580C", // Burnt Orange
         },
         secondary: {
-			light: "#A7C7E7", // Light Blue
-			DEFAULT: "#0288D1", // Blue
-			dark: "#1D70B7", // Dark Blue
-		},
+          light: "#93C5FD", // Light Sky Blue
+          DEFAULT: "#3B82F6", // Sky Blue
+          dark: "#0369A1", // Dark Sky Blue
+        },
         accent: {
-			light: "#FFC1CC", // Rosado Claro
-			DEFAULT: "#FF6F61", // Coral
-			dark: "#D97706", // Dorado oscuro
+          light: "#FFD6A5", // Light Yellow
+          DEFAULT: "#FFAB6E", // Yellow
+          dark: "#FF8C42", // Dark Yellow
         },
-        white: {
-          DEFAULT: "#FFFFFF", // White
-          light: "#F8F9FA", // Off-White
-          dark: "#CED4DA", // Light Gray
-        },
+		neutral: {
+		  lightest: "#FFFFFF", // White
+		  light: "#F8F9FA", // Light Gray
+		  medium: "#CED4DA", // Medium Gray
+		  dark: "#495057", // Dark Gray
+		  darkest: "#212529", // Black
+		},
         background: {
-          DEFAULT: "#FFF9F5", // Cream
+          DEFAULT: "#FFF9F5", // Light Peach
           alt: "#F1F3F5", // Light Gray
         },
         text: {
-          DEFAULT: "#212529", // Near Black
+          DEFAULT: "#212529", // Black
           light: "#495057", // Dark Gray
         },
       },
@@ -39,58 +41,58 @@ export default {
     },
   },
   plugins: [
-    function ({ addUtilities, addBase }) {
-      // Add custom text shadow utility
-      const newUtilities = {
+    function ({ addBase, theme }) {
+      // Add custom text shadow utilities
+      const textShadowUtilities = {
         ".shadow-text-light": {
-          textShadow: "2px 2px 4px rgba(1, 0, 0, .3) !important",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
         },
-		".shadow-text": {
-          textShadow: "2px 2px 4px rgba(1, 0, 0, .5) !important",
+        ".shadow-text": {
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
         },
-		".shadow-text-dark": {
-          textShadow: "2px 2px 4px rgba(1, 0, 0, .8) !important",
+        ".shadow-text-dark": {
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
         },
       };
-      addUtilities(newUtilities, ["responsive", "hover"]);
+      addBase(textShadowUtilities);
 
       // Add custom CSS variables
-      const newBase = {
+      const cssVariables = {
         ":root": {
-          "--primary-light": "#FED7AA",
-          "--primary-default": "#FB923C",
-          "--primary-dark": "#EA580C",
-          "--secondary-light": "#93C5FD",
-          "--secondary-default": "#3B82F6",
-          "--secondary-dark": "#0369A1",
-          "--accent-light": "#FFD6A5",
-          "--accent-default": "#FFAB6E",
-          "--accent-dark": "#FF8C42",
-          "--neutral-lightest": "#FFFFFF",
-          "--neutral-light": "#F8F9FA",
-          "--neutral-medium": "#CED4DA",
-          "--neutral-dark": "#495057",
-          "--neutral-darkest": "#212529",
-          "--background-default": "#FFF9F5",
-          "--background-alt": "#F1F3F5",
-          "--text-default": "#212529",
-          "--text-light": "#495057",
+          "--primary-light": theme("colors.primary.light"),
+          "--primary-default": theme("colors.primary.DEFAULT"),
+          "--primary-dark": theme("colors.primary.dark"),
+          "--secondary-light": theme("colors.secondary.light"),
+          "--secondary-default": theme("colors.secondary.DEFAULT"),
+          "--secondary-dark": theme("colors.secondary.dark"),
+          "--accent-light": theme("colors.accent.light"),
+          "--accent-default": theme("colors.accent.DEFAULT"),
+          "--accent-dark": theme("colors.accent.dark"),
+          "--neutral-lightest": theme("colors.neutral.lightest"),
+          "--neutral-light": theme("colors.neutral.light"),
+          "--neutral-medium": theme("colors.neutral.medium"),
+          "--neutral-dark": theme("colors.neutral.dark"),
+          "--neutral-darkest": theme("colors.neutral.darkest"),
+          "--background-default": theme("colors.background.DEFAULT"),
+          "--background-alt": theme("colors.background.alt"),
+          "--text-default": theme("colors.text.DEFAULT"),
+          "--text-light": theme("colors.text.light"),
         },
       };
-      addBase(newBase);
+      addBase(cssVariables);
     },
   ],
   safelist: (() => {
     // Generate safelist for color utilities
     const generateColorSafelist = () => {
-      const colors = ['primary', 'secondary', 'accent', 'neutral', 'background', 'text', 'white'];
-      const variants = ['', 'light', 'dark', 'lightest', 'medium', 'darkest', 'alt'];
-      const elements = ['bg', 'text', 'border', 'hover:bg', 'hover:text', 'hover:border'];
+      const colors = ['primary', 'secondary', 'accent', 'neutral', 'background', 'text'];
+      const shades = ['', 'light', 'dark', 'lightest', 'medium', 'darkest', 'alt'];
+      const utilities = ['bg', 'text', 'border', 'hover:bg', 'hover:text', 'hover:border'];
 
       return colors.flatMap(color =>
-        variants.flatMap(variant =>
-          elements.map(element =>
-            variant ? `${element}-${color}-${variant}` : `${element}-${color}`
+        shades.flatMap(shade =>
+          utilities.map(utility =>
+            shade ? `${utility}-${color}-${shade}` : `${utility}-${color}`
           )
         )
       );
@@ -100,7 +102,7 @@ export default {
     const generateGridSafelist = () => {
       const breakpoints = ['', 'sm:', 'md:', 'lg:', 'xl:'];
       return breakpoints.flatMap(bp =>
-        Array.from({ length: 10 }, (_, i) => `${bp}grid-cols-${i + 1}`)
+        Array.from({ length: 12 }, (_, i) => `${bp}grid-cols-${i + 1}`)
       );
     };
 
