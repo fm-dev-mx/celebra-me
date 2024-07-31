@@ -2,7 +2,6 @@
 // Hero.astro
 // This component represents the hero section of the website with enhanced UI/UX and performance optimizations
 
-import { Image } from "astro:assets";
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Section from "@/components/layout/Section.astro";
@@ -81,21 +80,17 @@ const preloadAssets = [
 			{data.title}
 		</SectionTitle>
 
-		{/* Logo with enhanced typography and animation */}
+		{/* Logo */}
 		<Logo
 			as="h1"
-			size="text-3xl sm:text-4xl md:text-5xl lg:text-5xl"
-			fontWeight="font-semibold"
-			margin="mx-auto mb-0 sm:mb-6 mt-4"
-			color="text-primary"
-			padding="px-0"
-			horizontalAlign="justify-center"
-			verticalAlign="items-center"
+			iconSize="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 xl:w-11 xl:h-11"
+			iconPrimaryColor="var(--accent-dark)"
+			iconSecondaryColor="var(--secondary-light)"
 		/>
 
 		{/* Subtitle with improved visibility and responsiveness */}
 		<SectionSubtitle
-			size="text-lg sm:text-xl md:text-2xl lg:text-[1.75rem]"
+			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
 			align="text-center"
 			weight="font-light"
 			color="text-primary"
@@ -108,7 +103,7 @@ const preloadAssets = [
 			{data.subtitle}
 		</SectionSubtitle>
 
-		{/* Call-to-Action buttons with enhanced styling and accessibility */}
+		{/* Call-to-Action buttons */}
 		<ActionWrapper margin="mt-24" gap="gap-4 sm:gap-6">
 			<Action variant="primary" color="secondary" href="#" class="">
 				{data.primaryCta}

@@ -8,19 +8,17 @@ interface Props extends HTMLAttributes<"svg"> {
 	icon: IconType;
 	size?: string;
 	color?: string;
-	glassesColor?: string;
-	circleColor?: string;
-	circleStrokeColor?: string;
+	primaryColor?: string;
+	secondaryColor?: string;
 }
 
 // Destructure props with default values
 const {
 	icon,
-	size = "h-6 w-6",
+	size = "w-6 h-6", // Default size using Tailwind classes
 	color = "currentColor",
-	glassesColor,
-	circleColor,
-	circleStrokeColor,
+	primaryColor,
+	secondaryColor,
 	class: className,
 	...rest
 } = Astro.props;
@@ -54,9 +52,9 @@ const iconProps = {
 	class: iconClasses,
 	color,
 	...(icon === "FavIcon" && {
-		glassesColor,
-		circleColor,
-		circleStrokeColor,
+		primaryColor,
+		secondaryColor,
+		size,
 	}),
 	...rest,
 };
