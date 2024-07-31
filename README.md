@@ -1,74 +1,60 @@
-# Celebra-me.com: Digital Invitations Made Easy
+# Celebra-me
 
 ![Celebra-me Logo](public/icons/favicon.svg)
 
-This is a personal project where I, Francisco Mendoza, specialize in creating
-and offering personalized digital invitations for various events.
-Leveraging modern web technologies like Astro, TypeScript, and TailwindCSS,
-I provide a seamless experience to ensure your events are unforgettable.
+Celebra-me is a high-performance web application for creating and managing digital invitations, leveraging modern web technologies and best practices.
 
-## Key Features
+## Table of Contents
 
-- **Elegant and Original Designs**:
-Unique, professionally crafted designs tailored for various events.
-- **Ease of Use**:
-Designed with user-friendliness in mind, our invitations are simple to interact with,
-even for non-tech-savvy guests.
-- **Responsiveness**:
-Optimized for all devices, ensuring a seamless experience on
-smartphones, tablets, and desktops.
+- [Tech Stack](#tech-stack)
+- [Project Architecture](#project-architecture)
+- [Getting Started](#getting-started)
+- [License](#license)
+- [Contact](#contact)
 
-## Technologies Used
+## Tech Stack
 
-- **Astro**: A modern, fast, and efficient web framework for building static websites.
-- **TypeScript**: Ensuring type safety and robust code quality.
-- **TailwindCSS**: For rapid UI development with a focus on customizability and responsiveness.
-- **ESLint & Prettier**: Maintaining code quality and consistency across the project.
-- **CSpell**: For spell checking and ensuring textual accuracy.
+- **Framework**: [Astro](https://astro.build/) (v4.12) - Static site generator with component islands
+- **Language**: [TypeScript](https://www.typescriptlang.org/) (v5.x) - Typed superset of JavaScript
+- **Styling**: [TailwindCSS](https://tailwindcss.com/) (v3.x) - Utility-first CSS framework
+- **State Management**: [Nanostores](https://github.com/nanostores/nanostores) - Lightweight state management
+- **Package Manager**: [pnpm](https://pnpm.io/) - Fast, disk space efficient package manager
+- **Linting**: [ESLint](https://eslint.org/) with custom configuration
+- **Formatting**: [Prettier](https://prettier.io/) for consistent code style
+- **Spell Checking**: [CSpell](https://cspell.org/) for catching typos in code and comments
+- **Deployment**: [Vercel](https://vercel.com/) - Platform for serverless deployment
 
-## Project Structure
+## Project Architecture
 
 ```plaintext
 celebra-me
-├── public      # Public assets accessible directly by the browser
-│   ├── hero_section            # Images and assets for the hero section
-│   └── testimonials            # Images for testimonials
-├── src                       # Source code of the project
-│   ├── components             # Reusable UI components
-│   │   ├── Action.astro        # Action button component
-│   │   ├── Icon.astro          # Icon component
-│   │   ├── IconWrapper.astro   # Icon wrapper component
-│   │   └── SectionTitle.astro   # Section title component
-│   ├── config                 # Configuration files
-│   │   └── landing.interface.ts   # TypeScript interface for landing data
-│   ├── data                   # Data files in JSON format
-│   │   └── landing.json        # Landing page data
-│   ├── icons                  # Icon components categorized by use
-│   │   ├── aboutUs             # Icons for the About Us section
-│   │   ├── commons            # Commonly used icons across the site
-│   │   ├── pricing             # Icons for the pricing section
-│   │   └── services   # Icons for invitation services
-│   ├── pages                  # Page components for the site
-│   │   └── index.astro         # Index page component
-│   └── sections               # Section components for the landing page
-│       ├── About-us.astro      # About Us section component
-│       ├── Header.astro        # Header component
-│       ├── Hero.astro          # Hero section component
-│       ├── Pricing.astro       # Pricing section component
-│       ├── Services.astro      # Services section component
-│       └── Footer.astro        # Footer component
-├── .editorconfig              # Editor configuration for consistent coding styles
-├── .eslintrc.cjs              # ESLint configuration
-├── .prettierrc.mjs            # Prettier configuration for code formatting
-└── README.md                  # Project documentation
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── common/         # Shared components (buttons, inputs, etc.)
+│   │   ├── icons/          # SVG icons as components
+│   │   ├── layout/         # Layout components (grids, containers)
+│   │   ├── typography/     # Text-related components
+│   │   └── ui/             # Complex UI components (cards, modals)
+│   ├── config/             # Configuration files and constants
+│   ├── data/               # JSON data files and data fetching utilities
+│   ├── layouts/            # Astro layout templates
+│   ├── pages/              # Astro page components (file-based routing)
+│   ├── sections/           # Page section components
+│   ├── services/           # API services and business logic
+│   ├── styles/             # Global styles and Tailwind utilities
+│   └── utilities/              # Utility functions and helpers
+├── public/                 # Static assets (fonts, images, etc.)
+├── .astro/                 # Astro build output (gitignored)
+├── .vscode/                # VS Code settings for consistent developer experience (gitignored)
+└── [Config Files]          # Root configuration files (.eslintrc, tsconfig.json, etc.)
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Node.js**: Ensure you have the latest LTS version installed.
-- **pnpm**: Preferred package manager for this project.
+- Node.js (v18.x or later)
+- pnpm (v7.x or later)
 
 ### Installation
 
@@ -85,29 +71,56 @@ celebra-me
    pnpm install
    ```
 
-3. Run the development server:
+3. Set up environment variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edit `.env.local` with your specific configuration.
+
+4. Start the development server:
 
    ```bash
    pnpm dev
    ```
 
-### Building for Production
+   The site will be available at `http://localhost:3000`.
+
+### Local Production Build
+
+To create a production build locally:
 
 ```bash
 pnpm build
 ```
 
-## Contribution Guidelines
+This generates static files in the `.astro` directory.
 
-I welcome contributions to help improve this project!
-Please read the [Contributing Guide](/CONTRIBUTING.md)
-to learn about the development process, how to propose bug fixes and improvements,
-and how to build and test your changes.
+### Deployment
 
-## Connect with Me
+We use Vercel for deployment. The `vercel.json` file in the root configures the deployment settings.
 
-[![LinkedIn](public/icons/linkedInIcon.svg)](https://www.linkedin.com/in/francisco-mendoza-ordn/)
-[linkedin.com/in/francisco-mendoza-ordn](https://www.linkedin.com/in/francisco-mendoza-ordn/)
+To deploy manually:
 
-[![GitHub](public/icons/githubIcon.svg)](https://github.com/fm-dev-mx)
-[github.com/fm-dev-mx](https://github.com/fm-dev-mx/)
+1. Install Vercel CLI: `pnpm add -g vercel`
+2. Run: `vercel --prod`
+
+## Code Quality and Best Practices
+
+- Run linting: `pnpm lint`
+- Format code: `pnpm format`
+- Type checking: `pnpm type-check`
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Contact
+
+For technical queries or contributions, please open an issue on this repository.
+
+Maintainer: Francisco Mendoza
+
+- GitHub: [fm-dev-mx](https://github.com/fm-dev-mx)
+- LinkedIn: [francisco-mendoza-ordn](https://www.linkedin.com/in/francisco-mendoza-ordn/)
