@@ -1,27 +1,26 @@
 ---
-/** src\components\typography\logo.astro */
+/** src\components\typography\Logo.astro */
+import { twMerge } from "tailwind-merge";
 import type { HTMLAttributes } from "astro/types";
 import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
-import { twMerge } from "tailwind-merge";
 
 interface Props extends HTMLAttributes<"div"> {
 	// Container properties
-	as?: "h1" | "div";
-	flex?: string; // Consider renaming to 'containerFlex' for clarity
-	gap?: string; // Consider renaming to 'containerGap' for clarity
-	margin?: string; // Consider renaming to 'containerMargin' for clarity
-	padding?: string; // Consider renaming to 'containerPadding' for clarity
-	horizontalAlign?: string; // Consider combining with verticalAlign into 'containerAlign'
-	verticalAlign?: string; // Consider combining with horizontalAlign into 'containerAlign'
-	animation?: string; // Consider renaming to 'containerAnimation' for clarity
+	as?: keyof HTMLElementTagNameMap;
+	containerFlex?: string;
+	containerGap?: string;
+	containerMargin?: string;
+	containerPadding?: string;
+	containerAlign?: string;
+	containerAnimation?: string;
 
 	// Text properties
-	size?: string; // Consider renaming to 'textSize' for clarity
+	textSize?: string;
 	fontWeight?: string;
-	color?: string;
-	extraClasses?: string;
+	textColor?: string;
+	textClasses?: string;
 
 	// Icon properties
 	iconSize?: string;
@@ -30,82 +29,89 @@ interface Props extends HTMLAttributes<"div"> {
 	iconAlign?: string;
 	iconBackground?: string;
 	iconColor?: string;
+	glassesColor?: string;
+	circleColor?: string;
+	circleStrokeColor?: string;
 
-	// Consider adding these properties for more granular control:
-	// logoContainerStyles?: string;
-	// logoTextStyles?: string;
-	// domainTextStyles?: string;
+	// Domain text properties
+	domainTextStyles?: string;
 }
 
 const {
 	// Container properties
 	as: Element = "div",
-	flex = "flex-col sm:flex-row", // containerFlex
-	gap = "gap-0 sm:gap-4", // containerGap
-	margin = "mx-auto mb-4", // containerMargin
-	padding = "px-4 sm:px-8", // containerPadding
-	horizontalAlign = "justify-center", // Part of containerAlign
-	verticalAlign = "items-center", // Part of containerAlign
-	animation = "", // containerAnimation
+	containerFlex = "flex-col sm:flex-row",
+	containerGap = "gap-0 sm:gap-4",
+	containerMargin = "mx-auto mb-4",
+	containerPadding = "px-4 sm:px-8",
+	containerAlign = "items-center justify-center",
+	containerAnimation = "",
 
 	// Text properties
-	size = "text-2xl md:text-4xl lg:text-5xl", // textSize
+	textSize = "text-2xl md:text-4xl lg:text-5xl",
 	fontWeight = "font-bold",
-	color = "text-primary",
-	extraClasses = "shadow-text",
+	textColor = "text-accent-dark",
+	textClasses = "shadow-text-dark",
 
-	// Icon wrapper properties
+	// Icon properties
 	iconMargin = "mx-auto mr-0 sm:mr-4 sm:mb-4 md:mt-0 lg:mt-0 xl:mt-2",
 	iconAlign = "items-center",
 	iconBackground = "bg-transparent",
-	iconColor = "var(--secondary-dark)",
-
-	// Logo properties
+	iconColor = "var(--accent-light)",
 	icon = "FavIcon",
 	iconSize = "w-12 h-12 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12",
+	glassesColor = "var(--accent-dark)",
+	circleColor = "var(--secondary-dark)",
+	circleStrokeColor = "var(--secondary-light)",
 
+	// Domain text properties
+	domainTextStyles = "flex-row sm:flex-col scale-75 sm:scale-[70%] pt-0 sm:pt-5 md:pt-6 lg:pt-7 xl:pt-8 font-normal",
+
+	class: className,
 	...rest
 } = Astro.props;
 
 const containerStyles = twMerge(
 	"flex",
-	flex,
-	gap,
-	margin,
-	padding,
-	horizontalAlign,
-	verticalAlign,
-	animation,
+	containerFlex,
+	containerGap,
+	containerMargin,
+	containerPadding,
+	containerAlign,
+	containerAnimation,
+	className,
 );
 
 const iconWrapperStyles = twMerge("flex", iconAlign, iconMargin, iconBackground);
-const iconStyles = twMerge(iconBackground, iconSize);
-
-const textStyles = twMerge(size, fontWeight, color, extraClasses);
+const textStyles = twMerge(textSize, fontWeight, textColor, textClasses);
 
 const logoTextStyles = twMerge(
 	"flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8",
 	textStyles,
 );
 
-const comStyles = twMerge(
-	"flex-row sm:flex-col scale-75 sm:scale-[70%] pt-0 sm:pt-5 md:pt-6 lg:pt-7 xl:pt-8 font-normal",
-	textStyles,
-);
+const comStyles = twMerge(domainTextStyles, textStyles);
 
 const shimmerClass = "animate-shimmer";
 const staggerShimmerClass = "stagger-shimmer";
 ---
 
 <Element class={containerStyles} {...rest}>
-	<div class={`flex ${flex} ${iconAlign} ${staggerShimmerClass} ${gap}`}>
+	<div class={`flex ${containerFlex} ${containerAlign} ${staggerShimmerClass} ${containerGap}`}>
 		<div class={`${shimmerClass} flex-shrink-0`}>
 			<IconWrapper class={iconWrapperStyles}>
-				<Icon class={iconStyles} icon={icon} color={iconColor} />
+				<Icon
+					icon={icon}
+					class={iconSize}
+					color={iconColor}
+					glassesColor={glassesColor}
+					circleColor={circleColor}
+					circleStrokeColor={circleStrokeColor}
+				/>
 			</IconWrapper>
 		</div>
 
-		<div class={`flex flex-col sm:flex-row items-center ${size}`}>
+		<div class={`flex flex-col sm:flex-row items-center ${textSize}`}>
 			<div class={`${logoTextStyles} ${shimmerClass}`}>celebra-me</div>
 			<div class={comStyles}>.com</div>
 		</div>

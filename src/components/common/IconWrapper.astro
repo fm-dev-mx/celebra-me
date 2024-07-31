@@ -7,6 +7,7 @@ interface Props extends HTMLAttributes<"div"> {
 	flex?: string;
 	size?: string;
 	width?: string;
+	height?: string;
 	minWidth?: string;
 	maxWidth?: string;
 	margin?: string;
@@ -15,13 +16,17 @@ interface Props extends HTMLAttributes<"div"> {
 	padding?: string;
 	rounded?: string;
 	background?: string;
+	shadow?: string;
+	hover?: string;
+	transition?: string;
 }
 
 // Destructure props with default values
 const {
-	flex = "flex flex-row",
-	size = "h-11 w-12",
-	width = "",
+	flex = "flex",
+	size,
+	width = "w-12",
+	height = "h-11",
 	minWidth = "min-w-[32px]",
 	maxWidth = "",
 	margin = "",
@@ -30,6 +35,9 @@ const {
 	padding = "p-2",
 	background = "bg-secondary",
 	rounded = "rounded-full",
+	shadow = "",
+	hover = "",
+	transition = "transition-all duration-300",
 	class: className,
 	...rest
 } = Astro.props;
@@ -37,16 +45,20 @@ const {
 // Combine classes using tailwind-merge to avoid conflicts
 const wrapperClasses = twMerge(
 	flex,
+	size,
 	width,
-	background,
-	padding,
+	height,
 	minWidth,
 	maxWidth,
 	margin,
-	align,
-	size,
 	color,
+	align,
+	padding,
+	background,
 	rounded,
+	shadow,
+	hover,
+	transition,
 	className,
 );
 ---
