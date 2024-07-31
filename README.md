@@ -1,6 +1,6 @@
 # Celebra-me.com: Digital Invitations Made Easy
 
-![Celebra-me Logo](public/favicon.svg)
+![Celebra-me Logo](public/icons/favicon.svg)
 
 This is a personal project where I, Francisco Mendoza, specialize in creating
 and offering personalized digital invitations for various events.
@@ -106,8 +106,8 @@ and how to build and test your changes.
 
 ## Connect with Me
 
-[![LinkedIn](public/socials/linkedInIcon.svg)](https://www.linkedin.com/in/francisco-mendoza-ordn/)
+[![LinkedIn](public/icons/linkedInIcon.svg)](https://www.linkedin.com/in/francisco-mendoza-ordn/)
 [linkedin.com/in/francisco-mendoza-ordn](https://www.linkedin.com/in/francisco-mendoza-ordn/)
 
-[![GitHub](public/socials/githubIcon.svg)](https://github.com/fm-dev-mx)
+[![GitHub](public/icons/githubIcon.svg)](https://github.com/fm-dev-mx)
 [github.com/fm-dev-mx](https://github.com/fm-dev-mx/)

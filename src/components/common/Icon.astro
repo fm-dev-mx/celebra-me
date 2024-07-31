@@ -8,11 +8,22 @@ interface Props extends HTMLAttributes<"svg"> {
 	icon: IconType;
 	size?: string;
 	color?: string;
-	class?: string;
+	glassesColor?: string;
+	circleColor?: string;
+	circleStrokeColor?: string;
 }
 
 // Destructure props with default values
-const { icon, size = "h-6 w-6", color = "currentColor", class: className, ...rest } = Astro.props;
+const {
+	icon,
+	size = "h-6 w-6",
+	color = "currentColor",
+	glassesColor,
+	circleColor,
+	circleStrokeColor,
+	class: className,
+	...rest
+} = Astro.props;
 
 // Create a type-safe mapping of icon names to their components
 const iconComponents: Record<IconType, any> = {
@@ -36,7 +47,19 @@ const iconComponents: Record<IconType, any> = {
 const IconComponent = iconComponents[icon];
 
 // Combine classes for the icon
-const iconClasses = `${size} ${color} ${className || ""}`.trim();
+const iconClasses = `${size} ${className || ""}`.trim();
+
+// Prepare icon-specific props
+const iconProps = {
+	class: iconClasses,
+	color,
+	...(icon === "FavIcon" && {
+		glassesColor,
+		circleColor,
+		circleStrokeColor,
+	}),
+	...rest,
+};
 
 // Error message for missing icons
 const errorMessage = `Icon not found: ${icon}`;
@@ -44,7 +67,7 @@ const errorMessage = `Icon not found: ${icon}`;
 
 {
 	IconComponent ? (
-		<IconComponent class={iconClasses} {...rest} />
+		<IconComponent {...iconProps} />
 	) : (
 		<span class="text-red-500" title={errorMessage}>
 			⚠️
