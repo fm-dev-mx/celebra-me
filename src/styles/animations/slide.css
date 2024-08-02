@@ -1,0 +1,141 @@
+/* src/styles/animations/slide-animations.css */
+
+/**
+ * Revised Slide Animations
+ *
+ * This file contains predefined styles and keyframes for various slide effects.
+ * These animations are designed to work out of the box without requiring additional property values.
+ *
+ * Usage:
+ * 1. Import this CSS file into your Astro component or global styles
+ * 2. Apply the desired animation class to the element you want to animate
+ *    Example: <div class="slide-in-left">Sliding content</div>
+ *
+ * Available Classes:
+ * - slide-in-left
+ * - slide-in-right
+ * - slide-in-up
+ * - slide-in-down
+ * - slide-out-left
+ * - slide-out-right
+ * - slide-out-up
+ * - slide-out-down
+ *
+ * Modifier Classes:
+ * - slide-fast: Faster animation duration
+ * - slide-slow: Slower animation duration
+ */
+
+/* Base slide animation properties */
+.slide-in-left,
+.slide-in-right,
+.slide-in-up,
+.slide-in-down,
+.slide-out-left,
+.slide-out-right,
+.slide-out-up,
+.slide-out-down {
+    animation-duration: 3s;
+    animation-fill-mode: both;
+    animation-timing-function: ease-out;
+}
+
+/* Slide In Animations */
+.slide-in-left {
+    animation-name: slideInLeft;
+}
+
+.slide-in-right {
+    animation-name: slideInRight;
+}
+
+.slide-in-up {
+    animation-name: slideInUp;
+}
+
+.slide-in-down {
+    animation-name: slideInDown;
+}
+
+/* Slide Out Animations */
+.slide-out-left {
+    animation-name: slideOutLeft;
+}
+
+.slide-out-right {
+    animation-name: slideOutRight;
+}
+
+.slide-out-up {
+    animation-name: slideOutUp;
+}
+
+.slide-out-down {
+    animation-name: slideOutDown;
+}
+
+/* Keyframes for slide animations */
+@keyframes slideInLeft {
+    from { transform: translateX(-30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideOutLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-30px); opacity: 0; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(30px); opacity: 0; }
+}
+
+@keyframes slideOutUp {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-30px); opacity: 0; }
+}
+
+@keyframes slideOutDown {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(30px); opacity: 0; }
+}
+
+/* Duration variations */
+.slide-fast {
+    animation-duration: 0.3s;
+}
+
+.slide-slow {
+    animation-duration: 0.8s;
+}
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .slide-in-left,
+    .slide-in-right,
+    .slide-in-up,
+    .slide-in-down,
+    .slide-out-left,
+    .slide-out-right,
+    .slide-out-up,
+    .slide-out-down {
+        animation: none;
+        transform: none;
+        opacity: 1;
+    }
+}

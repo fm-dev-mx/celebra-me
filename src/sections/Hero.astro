@@ -51,10 +51,10 @@ const preloadAssets = [
 <Section id="hero-section" {...sectionStyles}>
 	{/* Semi-transparent overlay with improved accessibility */}
 	<StyledContainer
-		padding="py-24"
+		padding="py-14"
 		width="w-5/6 md:w-5xl"
 		minWidth="min-w-[300px]"
-		maxWidth="max-w-[850px]"
+		maxWidth="max-w-[700px]"
 		height="h-full"
 		maxHeight="max-h-full"
 		margin="m-auto"
@@ -68,13 +68,13 @@ const preloadAssets = [
 		extraClasses="text-center"
 	>
 		<SectionTitle
-			margin="mb-0"
+			margin="mb-10"
 			align="text-center"
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
 			color="text-primary/60"
 			weight="font-light"
 			letterSpacing="tracking-widest"
-			animation="animate-slide-in-right"
+			animation="slide-in-left"
 			extraClass="shadow-text-light"
 		>
 			{data.title}
@@ -86,6 +86,9 @@ const preloadAssets = [
 			iconSize="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 xl:w-11 xl:h-11"
 			iconPrimaryColor="var(--accent-dark)"
 			iconSecondaryColor="var(--secondary-light)"
+			textAnimation="shimmer permanent-glow"
+			data-text="celebra-me"
+			iconAnimation="permanent-glow-favicon"
 		/>
 
 		{/* Subtitle with improved visibility and responsiveness */}
@@ -95,9 +98,9 @@ const preloadAssets = [
 			weight="font-light"
 			color="text-primary"
 			fontFamily="font-sans"
-			margin="mb-12 mx-auto"
+			margin="mx-12 mx-auto"
 			letterSpacing="tracking-widest"
-			animation="animate-fade-in"
+			animation="fade-in fade-slow"
 			maxWidth="max-w-3xl"
 		>
 			{data.subtitle}

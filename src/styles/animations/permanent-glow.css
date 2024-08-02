@@ -1,0 +1,101 @@
+/* src/styles/animations/glow-animation.css */
+
+/**
+ * Permanent Glow and Favicon Glow Animations
+ *
+ * This file contains styles and keyframes for creating subtle, constantly moving glow effects.
+ * The glow effects are separated for standard elements (.permanent-glow) and favicons (.permanent-glow-favicon),
+ * allowing for different delays, directions, and speeds.
+ *
+ * Usage:
+ * 1. Apply .permanent-glow or .permanent-glow-favicon class to the element you want to glow.
+ * 2. Customize the glow color using the --glow-color CSS variable.
+ * 3. For .permanent-glow-favicon, you can also customize the glow shape using the --mask-image CSS variable.
+ * 4. Adjust the animation properties (delay, duration, timing-function) as needed.
+ *
+ * Example:
+ * <div class="permanent-glow" style="--glow-color: rgba(255, 215, 0, 0.2);">Glowing content</div>
+ * <div class="permanent-glow-favicon" style="--glow-color: rgba(0, 123, 255, 0.3);">Favicon glow</div>
+ */
+
+/* Base styles for both glow classes */
+.permanent-glow-favicon,
+.permanent-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Styles for standard glow effect */
+.permanent-glow::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: -200%;
+    width: 400%;
+    height: 120%;
+    background: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0) 0%,
+        var(--glow-color, rgba(255, 255, 255, 0.1)) 25%,
+        var(--glow-color, rgba(255, 255, 255, 0.3)) 50%,
+        var(--glow-color, rgba(255, 255, 255, 0.1)) 75%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    opacity: 0;
+    animation:
+        fadeInGlow 3s ease-in 0.5s forwards,
+        moveGradient 6s ease-in-out infinite 3s;
+    pointer-events: none;
+}
+
+/* Styles for favicon glow effect */
+.permanent-glow-favicon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        30deg,
+        rgba(255, 255, 255, 0) 0%,
+        var(--glow-color, rgba(255, 255, 255, 0.1)) 25%,
+        var(--glow-color, rgba(255, 255, 255, 0.4)) 50%,
+        var(--glow-color, rgba(255, 255, 255, 0.1)) 75%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    opacity: 0;
+    animation:
+        fadeInGlow .5s ease-in 0s forwards;
+    pointer-events: none;
+    mask-image: var(--mask-image, none);
+    -webkit-mask-image: var(--mask-image, none);
+    mask-size: 30% 30%;
+    -webkit-mask-size: 30% 30%;
+    mask-position: center;
+    -webkit-mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    --mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cpath d='M41.493 41.12c-.25-1.295-3.41-1.802-7.339-1.269l-1.276-6.594c2.324-1.097 3.806-3.596 3.52-6.244l-1.791-16.505a3.416 3.416 0 0 0-1.361-2.37 3.425 3.425 0 0 0-2.665-.602l-4.931.954a3.437 3.437 0 0 0-.389-.864 3.414 3.414 0 0 0-2.263-1.527l-8.125-1.484a3.415 3.415 0 0 0-2.658.63 3.407 3.407 0 0 0-1.336 2.383L9.265 24.152c-.26 2.652 1.249 5.131 3.586 6.199l-1.208 6.615c-3.935-.49-7.088.049-7.325 1.346-.266 1.457 3.245 3.318 7.842 4.158 4.597.84 8.54.34 8.806-1.117.237-1.299-2.522-2.918-6.376-3.85l1.209-6.621a6.16 6.16 0 0 0 5.545-4.533l1.057-3.912 1.944 6.908a6.177 6.177 0 0 0 5.596 4.482l1.274 6.591c-3.844.972-6.586 2.62-6.335 3.915.281 1.454 4.229 1.914 8.817 1.025 4.586-.885 8.077-2.785 7.796-4.238zM19.905 20.195l-7.324.809L13.86 7.921a.405.405 0 0 1 .159-.284.42.42 0 0 1 .274-.077l.043.001 8.125 1.484a.383.383 0 0 1 .115.04l-.104.021a3.408 3.408 0 0 0-2.249 1.553 3.408 3.408 0 0 0-.379 2.706l.972 3.453-.911 3.377zm2.823-7.644a.403.403 0 0 1 .313-.506l8.186-1.577a.402.402 0 0 1 .402.361l1.418 13.069-7.332-.731-2.987-10.616z'/%3E%3Ccircle cx='17.599' cy='17.104' r='1.451'/%3E%3Ccircle cx='16.871' cy='10.999' r='1.157'/%3E%3Ccircle cx='21.434' cy='3.337' r='1.311'/%3E%3Ccircle cx='25.944' cy='1.311' r='1.311'/%3E%3Ccircle cx='26.841' cy='5.883' r='1.235'/%3E%3Ccircle cx='26.229' cy='15.535' r='1.283'/%3E%3Ccircle cx='29.566' cy='20.916' r='1.490'/%3E%3C/svg%3E");
+}
+
+/* Keyframes for fading in the glow effect */
+@keyframes fadeInGlow {
+    to { opacity: .5; }
+}
+
+/* Keyframes for moving the gradient to create the standard glow effect */
+@keyframes moveGradient {
+    0%, 100% { transform: translate(-30%, -30%) rotate(0deg); }
+    50% { transform: translate(30%, 30%) rotate(180deg); }
+}
+
+
+/* Accessibility: Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+    .permanent-glow::after,
+    .permanent-glow-favicon::after {
+        animation: none !important;
+        opacity: 0.5;
+    }
+}

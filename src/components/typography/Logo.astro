@@ -1,12 +1,10 @@
 ---
-/** src/components/typography/Logo.astro */
 import { twMerge } from "tailwind-merge";
 import type { HTMLAttributes } from "astro/types";
 import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 
-// Define the props interface for the Logo component
 interface Props extends HTMLAttributes<"div"> {
 	// Container properties
 	as?: keyof HTMLElementTagNameMap;
@@ -22,6 +20,7 @@ interface Props extends HTMLAttributes<"div"> {
 	fontWeight?: string;
 	textColor?: string;
 	textClasses?: string;
+	textAnimation?: string;
 
 	// Icon properties
 	iconSize?: string;
@@ -29,10 +28,9 @@ interface Props extends HTMLAttributes<"div"> {
 	iconMargin?: string;
 	iconAlign?: string;
 	iconBackground?: string;
-	iconColor?: string;
-	glassesColor?: string;
 	iconPrimaryColor?: string;
 	iconSecondaryColor?: string;
+	iconAnimation?: string;
 
 	// Domain text properties
 	domainTextStyles?: string;
@@ -46,13 +44,13 @@ const {
 	containerMargin = "mx-auto mb-4",
 	containerPadding = "px-4 sm:px-8",
 	containerAlign = "items-center justify-center",
-	containerAnimation = "",
 
 	// Text properties
 	textSize = "text-3xl sm:text-4xl md:text-5xl lg:text-5xl",
 	fontWeight = "font-semibold",
 	textColor = "text-accent-dark",
 	textClasses = "shadow-text-dark",
+	textAnimation = "shimmer",
 
 	// Icon properties
 	iconMargin = "mx-auto mr-0 sm:mr-4 sm:mb-4 md:mt-0 lg:mt-0 xl:mt-2",
@@ -62,6 +60,7 @@ const {
 	iconSize = "w-full",
 	iconPrimaryColor = "var(--accent-default)",
 	iconSecondaryColor = "var(--secondary-light)",
+	iconAnimation = "permanent-glow-favicon",
 
 	// Domain text properties
 	domainTextStyles = "flex-row sm:flex-col scale-75 sm:scale-[70%] pt-0 sm:pt-5 md:pt-6 lg:pt-7 xl:pt-8 font-normal",
@@ -77,15 +76,20 @@ const containerStyles = twMerge(
 	containerMargin,
 	containerPadding,
 	containerAlign,
-	containerAnimation,
 	className,
 );
 
-const iconWrapperStyles = twMerge("flex w-full", iconAlign, iconMargin, iconBackground);
+const iconWrapperStyles = twMerge(
+	"flex w-full",
+	iconAlign,
+	iconMargin,
+	iconBackground,
+	iconAnimation,
+);
 const textStyles = twMerge(textSize, fontWeight, textColor, textClasses);
 
 const logoTextStyles = twMerge(
-	"flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8 permanent-glow",
+	"flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8",
 	textStyles,
 );
 
@@ -93,21 +97,19 @@ const comStyles = twMerge(domainTextStyles, textStyles);
 ---
 
 <Element class={containerStyles} {...rest}>
-	<div class={`flex ${containerFlex} ${containerAlign} stagger-shimmer ${containerGap}`}>
-		<div class="shimmer-item">
-			<IconWrapper class={iconWrapperStyles}>
-				<Icon
-					icon={icon}
-					size={iconSize}
-					primaryColor={iconPrimaryColor}
-					secondaryColor={iconSecondaryColor}
-				/>
-			</IconWrapper>
-		</div>
+	<div class={`flex ${containerFlex} ${containerAlign} ${containerGap}`}>
+		<IconWrapper class={iconWrapperStyles}>
+			<Icon
+				icon={icon}
+				size={iconSize}
+				primaryColor={iconPrimaryColor}
+				secondaryColor={iconSecondaryColor}
+			/>
+		</IconWrapper>
 
 		<div class={`flex flex-col sm:flex-row items-center ${textSize}`}>
-			<div class={`${logoTextStyles} shimmer-item`}>celebra-me</div>
-			<div class={`${comStyles} shimmer-item`}>.com</div>
+			<div class={`${logoTextStyles} ${textAnimation} celebra-me`}>celebra-me</div>
+			<div class={`${comStyles}`}>.com</div>
 		</div>
 	</div>
 </Element>

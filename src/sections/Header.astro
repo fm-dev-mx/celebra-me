@@ -1,61 +1,160 @@
 ---
+import { twMerge } from "tailwind-merge";
 import Action from "@/components/common/Action.astro";
-import type { HeaderData } from "@/config/landing.interface";
+import Icon from "@/components/common/Icon.astro";
+import Logo from "@/components/typography/Logo.astro";
+import type { HeaderData, Icon as IconType } from "@/config/landing.interface";
 
 interface Props {
 	data: HeaderData;
 }
 
 const { data } = Astro.props;
+
+// Define base styles for the header
+const baseHeaderStyles = "w-full fixed top-0 z-50 transition-all duration-300 py-4";
+const baseNavStyles = "container mx-auto px-4 flex items-center justify-between";
+const baseLinkStyles = "text-sm font-medium transition-colors duration-200";
+const baseButtonStyles = "px-4 py-2 rounded-full transition-all duration-200";
+
+// Function to determine if the current page matches the link
+const isCurrentPage = (href: string) => Astro.url.pathname === href;
 ---
 
-<header
-	id="navbar"
-	class="w-full fixed top-0 z-50 hidden md:flex items-center justify-center transition duration-300 h-20 opacity-90 hover:opacity-100"
->
-	<nav aria-label="Main Navigation" class="flex items-center w-3/4 px-12">
-		<ul
-			class="flex items-center w-full justify-center gap-x-2 md:gap-x-4 xl:gap-x-8 2xl:gap-16"
-		>
-			<li class="flex items-center">
+<header id="main-header" class={baseHeaderStyles}>
+	<nav class={baseNavStyles}>
+		<!-- Logo section -->
+		<div class="flex items-center mx-auto">
+			<div>
+				<a href="/" class="flex items-center space-x-2" aria-label="Go to homepage">
+					<Logo
+						as="div"
+						containerFlex="flex-row"
+						containerGap="gap-0"
+						containerMargin="mr-0"
+						containerPadding="px-4"
+						containerAlign="items-left"
+						containerAnimation=""
+						textSize="text-sm"
+						textAnimation=""
+						fontWeight="font-semibold"
+						textColor="text-accent-dark"
+						textClasses="shadow-text-dark"
+						textAnimation=""
+						iconMargin="mr-0"
+						iconAlign="items-center"
+						iconAnimation="permanent-glow-favicon"
+						iconBackground="bg-transparent"
+						icon="FavIcon"
+						iconSize="w-7 h-7"
+						iconPrimaryColor="var(--primary-default)"
+						iconSecondaryColor="var(--secondary-light)"
+						domainTextStyles="flex-row"
+					/>
+				</a>
+			</div>
+
+			<!-- Desktop navigation -->
+			<ul class="hidden md:flex space-x-8">
+				{
+					data.links.map((item) => (
+						<li>
+							<a
+								href={item.href}
+								class={twMerge(
+									baseLinkStyles,
+									isCurrentPage(item.href)
+										? "text-primary-dark"
+										: "text-gray-600 hover:text-primary",
+								)}
+							>
+								{item.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+
+			<!-- CTA Button -->
+			<div class="hidden md:block">
 				<Action
-					variant="text"
-					class="font-semibold"
-					href="#hero-section"
-					class:list={["hover:text-primary-dark", "text-nowrap"]}>{data.logo}</Action
+					variant="primary"
+					href="/get-started"
+					class={twMerge(baseButtonStyles, "bg-primary text-white hover:bg-primary-dark")}
 				>
-			</li>
-			{
-				data.links.map((item) => (
-					<li>
-						<Action
-							variant="text"
-							href={item.href}
-							class:list={["hover:text-primary-dark", "text-nowrap"]}
-						>
-							{item.label}
-						</Action>
-					</li>
-				))
-			}
-		</ul>
+					Get Started
+				</Action>
+			</div>
+
+			<!-- Mobile menu button -->
+			<button id="mobile-menu-button" class="md:hidden" aria-label="Toggle mobile menu">
+				<Icon icon="FavIcon" class="h-6 w-6 text-gray-600" />
+			</button>
+		</div>
 	</nav>
+
+	<!-- Mobile navigation (hidden by default) -->
+	<div id="mobile-menu" class="hidden md:hidden">
+		<nav class="container mx-auto px-4 py-4 bg-white shadow-lg rounded-b-lg">
+			<ul class="space-y-4">
+				{
+					data.links.map((item) => (
+						<li>
+							<a
+								href={item.href}
+								class={twMerge(
+									baseLinkStyles,
+									"block py-2",
+									isCurrentPage(item.href)
+										? "text-primary-dark"
+										: "text-gray-600 hover:text-primary",
+								)}
+							>
+								{item.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			<div class="mt-6">
+				<Action
+					variant="primary"
+					href="/get-started"
+					class={twMerge(
+						baseButtonStyles,
+						"w-full text-center bg-primary text-white hover:bg-primary-dark",
+					)}
+				>
+					Get Started
+				</Action>
+			</div>
+		</nav>
+	</div>
 </header>
+
 <script>
-	window.addEventListener("scroll", function () {
-		// eslint-disable-next-line prettier/prettier
-		const navbar = document.getElementById("navbar");
-		if (!navbar) return;
+	// Function to toggle the mobile menu
+	function toggleMobileMenu() {
+		const mobileMenu = document.getElementById("mobile-menu");
+		mobileMenu?.classList.toggle("hidden");
+	}
 
-		const classesToAdd = ["border-b", "border-b-slate-300", "bg-white"];
-		const classesToRemove = ["border-b-transparent", "bg-transparent"];
-
-		if (window.scrollY >= 20) {
-			navbar.classList.remove(...classesToRemove);
-			navbar.classList.add(...classesToAdd);
+	// Function to handle header appearance on scroll
+	function handleHeaderScroll() {
+		const header = document.getElementById("main-header");
+		if (window.scrollY > 50) {
+			header?.classList.add("bg-white", "shadow-md");
 		} else {
-			navbar.classList.remove(...classesToAdd);
-			navbar.classList.add(...classesToRemove);
+			header?.classList.remove("bg-white", "shadow-md");
 		}
+	}
+
+	// Add event listeners
+	document.addEventListener("DOMContentLoaded", () => {
+		const mobileMenuButton = document.getElementById("mobile-menu-button");
+		mobileMenuButton?.addEventListener("click", toggleMobileMenu);
+
+		window.addEventListener("scroll", handleHeaderScroll);
+		handleHeaderScroll(); // Initial call to set correct state
 	});
 </script>

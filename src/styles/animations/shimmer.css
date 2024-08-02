@@ -1,0 +1,71 @@
+/* src/styles/animations/shimmer-animation.css */
+
+/**
+ *
+ * This CSS defines an attractive, subtle shimmering effect that can be applied to any element.
+ * The effect creates a smooth, diagonal shine that moves across the element, giving it a polished look.
+ * It applies twice before fading out.
+ *
+ * Usage:
+ * Simply add the 'shimmer' class to any element you want to animate:
+ * <div class="shimmer">Your content here</div>
+ *
+ * Best Practices:
+ * 1. Use on elements where you want to draw attention or indicate a loading state.
+ * 2. Ensure the parent element has a background color for the effect to be visible.
+ * 3. Consider the contrast with the element's content to maintain readability.
+ */
+
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 250%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 255, 0) 70%
+    );
+    animation: shimmer 3s ease-in-out 2;
+    animation-fill-mode: forwards;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-150%);
+    }
+    100% {
+        transform: translateX(150%);
+    }
+}
+
+
+
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .shimmer::before{
+        animation: none;
+    }
+}
+
+/* Responsive adjustments for .celebra-me class */
+.celebra-me {
+    min-width: 106%;
+}
+
+@media screen and (min-width: 640px) {
+    .celebra-me { min-width: 60%; }
+}
+
+@media screen and (min-width: 768px) {
+    .celebra-me { min-width: 62%; }
+}

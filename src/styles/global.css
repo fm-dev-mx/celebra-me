@@ -9,5 +9,6 @@
 @import './components/pricing-cards.css';
 
 /* Import Custom Tailwind CSS utility styles */
-@import './utilities/animations.css';
 @import './utilities/custom-utilities.css';
+@import './animations/index.css';
+
