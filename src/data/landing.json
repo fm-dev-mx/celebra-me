@@ -28,7 +28,6 @@
 			{ "label": "Servicios", "href": "#services-section" },
 			{ "label": "Sobre Nosotros", "href": "#about-section" },
 			{ "label": "Testimonios", "href": "#testimonials-section" },
-			{ "label": "Demos", "href": "#" },
 			{ "label": "FAQ", "href": "#faq-section" },
 			{ "label": "Contacto", "href": "#" }
 		]

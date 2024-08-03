@@ -31,9 +31,9 @@ const viewBoxSize = parseInt(size) || 50;
 		<!-- Shadow filter -->
 		<defs>
 			<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-				<feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"></feGaussianBlur>
-				<feOffset in="blur" dx="4" dy="4" result="offsetBlur"></feOffset>
-				<feFlood flood-color="rgba(0,0,0,0.5)" result="shadowColor"></feFlood>
+				<feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"></feGaussianBlur>
+				<feOffset in="blur" dx="3" dy="3" result="offsetBlur"></feOffset>
+				<feFlood flood-color="rgba(0,0,0,0.3)" result="shadowColor"></feFlood>
 				<feComposite in="shadowColor" in2="offsetBlur" operator="in" result="dropShadow"
 				></feComposite>
 				<feMerge>

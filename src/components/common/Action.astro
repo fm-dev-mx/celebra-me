@@ -43,7 +43,7 @@ const {
 } = Astro.props;
 
 // Base styles applied to all Action variants
-const baseStyles = `  flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base  hover:shadow-2xl text-nowrap h-[40px] md:h-[48px]`;
+const baseStyles = `  flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base  ${variant !== "text" && "hover:shadow-2xl"} text-nowrap h-[40px] md:h-[48px]`;
 
 // Define styles for each variant
 const variantStyles = {
@@ -76,7 +76,7 @@ const buttonClasses = twMerge(
 	baseStyles,
 	variantStyles[variant],
 	colorStyles[variant] || "",
-	`hover:scale-105 hover:brightness-110`, // Add hover effects
+	variant !== "text" && `hover:scale-105 hover:brightness-110`, // Add hover effects
 	className,
 );
 

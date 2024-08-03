@@ -66,6 +66,14 @@
     }
 }
 
+.fade-up-hover {
+    transition: transform 0.3s ease-in-out;
+}
+
+.fade-up-hover:hover {
+    transform: translateY(-2px);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .fade-in,
     .fade-out,

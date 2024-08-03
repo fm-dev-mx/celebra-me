@@ -31,6 +31,7 @@ interface Props extends HTMLAttributes<"div"> {
 	iconPrimaryColor?: string;
 	iconSecondaryColor?: string;
 	iconAnimation?: string;
+	iconClasses?: string;
 
 	// Domain text properties
 	domainTextStyles?: string;
@@ -44,13 +45,14 @@ const {
 	containerMargin = "mx-auto mb-4",
 	containerPadding = "px-4 sm:px-8",
 	containerAlign = "items-center justify-center",
+	containerAnimation = "",
 
 	// Text properties
 	textSize = "text-3xl sm:text-4xl md:text-5xl lg:text-5xl",
 	fontWeight = "font-semibold",
 	textColor = "text-accent-dark",
 	textClasses = "shadow-text-dark",
-	textAnimation = "shimmer",
+	textAnimation = "",
 
 	// Icon properties
 	iconMargin = "mx-auto mr-0 sm:mr-4 sm:mb-4 md:mt-0 lg:mt-0 xl:mt-2",
@@ -61,11 +63,11 @@ const {
 	iconPrimaryColor = "var(--accent-default)",
 	iconSecondaryColor = "var(--secondary-light)",
 	iconAnimation = "permanent-glow-favicon",
+	iconClasses = "",
 
 	// Domain text properties
 	domainTextStyles = "flex-row sm:flex-col scale-75 sm:scale-[70%] pt-0 sm:pt-5 md:pt-6 lg:pt-7 xl:pt-8 font-normal",
 
-	class: className,
 	...rest
 } = Astro.props;
 
@@ -76,7 +78,7 @@ const containerStyles = twMerge(
 	containerMargin,
 	containerPadding,
 	containerAlign,
-	className,
+	containerAnimation,
 );
 
 const iconWrapperStyles = twMerge(
@@ -85,6 +87,7 @@ const iconWrapperStyles = twMerge(
 	iconMargin,
 	iconBackground,
 	iconAnimation,
+	iconClasses,
 );
 const textStyles = twMerge(textSize, fontWeight, textColor, textClasses);
 
@@ -107,7 +110,7 @@ const comStyles = twMerge(domainTextStyles, textStyles);
 			/>
 		</IconWrapper>
 
-		<div class={`flex flex-col sm:flex-row items-center ${textSize}`}>
+		<div class={`flex flex-nowrap items-center ${textSize}`}>
 			<div class={`${logoTextStyles} ${textAnimation} celebra-me`}>celebra-me</div>
 			<div class={`${comStyles}`}>.com</div>
 		</div>

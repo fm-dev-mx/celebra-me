@@ -58,14 +58,14 @@
 }
 
 /* Responsive adjustments for .celebra-me class */
-.celebra-me {
+.celebra-me.shimmer {
     min-width: 106%;
 }
 
 @media screen and (min-width: 640px) {
-    .celebra-me { min-width: 60%; }
+    .celebra-me.shimmer { min-width: 60%; }
 }
 
 @media screen and (min-width: 768px) {
-    .celebra-me { min-width: 62%; }
+    .celebra-me.shimmer { min-width: 62%; }
 }

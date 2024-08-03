@@ -12,6 +12,7 @@ export { default as ArrowUpIcon } from './commons/ArrowUpIcon.astro';
 export { default as CelebrameIcon } from './commons/CelebrameIcon.astro';
 export { default as CheckIcon } from './commons/CheckIcon.astro';
 export { default as FavIcon } from './commons/FavIcon.astro';
+export { default as MenuIcon } from './commons/MenuIcon.astro';
 
 // Service Icons
 export { default as AnniversaryIcon } from './services/AnniversaryIcon.astro';

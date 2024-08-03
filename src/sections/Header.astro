@@ -1,9 +1,12 @@
 ---
+// src/sections/Header.astro
 import { twMerge } from "tailwind-merge";
 import Action from "@/components/common/Action.astro";
 import Icon from "@/components/common/Icon.astro";
 import Logo from "@/components/typography/Logo.astro";
-import type { HeaderData, Icon as IconType } from "@/config/landing.interface";
+import type { HeaderData } from "@/config/landing.interface";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
+import StyledContainer from "@/components/layout/StyledContainer.astro";
 
 interface Props {
 	data: HeaderData;
@@ -12,44 +15,48 @@ interface Props {
 const { data } = Astro.props;
 
 // Define base styles for the header
-const baseHeaderStyles = "w-full fixed top-0 z-50 transition-all duration-300 py-4";
-const baseNavStyles = "container mx-auto px-4 flex items-center justify-between";
-const baseLinkStyles = "text-sm font-medium transition-colors duration-200";
-const baseButtonStyles = "px-4 py-2 rounded-full transition-all duration-200";
+const baseHeaderStyles =
+	"w-full fixed top-0 z-50 transition-all duration-500 ease-in-out mx-auto justify-content-center p-1";
+const baseNavStyles = "container mx-auto px-4 flex items-center justify-between h-full";
+const baseLinkStyles = "text-sm font-medium transition-all duration-500 ease-in-out";
 
 // Function to determine if the current page matches the link
 const isCurrentPage = (href: string) => Astro.url.pathname === href;
 ---
 
 <header id="main-header" class={baseHeaderStyles}>
-	<nav class={baseNavStyles}>
-		<!-- Logo section -->
-		<div class="flex items-center mx-auto">
-			<div>
+	<StyledContainer
+		relative="relative"
+		width="w-full"
+		height="h-10 sm:h-14 md:h-20"
+		margin="m-0"
+		flex="flex-col"
+		padding=""
+		minWidth="min-w-full"
+		verticalAlign="items-center"
+		horizontalAlign="justify-center"
+		backgroundColor="bg-white/80"
+		shadow="shadow-lg"
+		opacity="opacity-0"
+		rounded="rounded-2xl"
+		extraClasses="backdrop-blur-sm transform -translate-y-full transition-all duration-500 ease-in-out"
+	>
+		<nav class={baseNavStyles}>
+			<!-- Logo section -->
+			<div class="flex items-center">
 				<a href="/" class="flex items-center space-x-2" aria-label="Go to homepage">
 					<Logo
 						as="div"
-						containerFlex="flex-row"
+						containerFlex="flex flex-nowrap place-items-end relative hidden xl:block"
 						containerGap="gap-0"
-						containerMargin="mr-0"
-						containerPadding="px-4"
-						containerAlign="items-left"
-						containerAnimation=""
+						containerMargin=""
+						containerPadding=""
+						containerAlign=""
+						containerAnimation="fade-up-hover"
 						textSize="text-sm"
-						textAnimation=""
-						fontWeight="font-semibold"
-						textColor="text-accent-dark"
-						textClasses="shadow-text-dark"
-						textAnimation=""
-						iconMargin="mr-0"
-						iconAlign="items-center"
-						iconAnimation="permanent-glow-favicon"
-						iconBackground="bg-transparent"
-						icon="FavIcon"
-						iconSize="w-7 h-7"
-						iconPrimaryColor="var(--primary-default)"
-						iconSecondaryColor="var(--secondary-light)"
-						domainTextStyles="flex-row"
+						textClasses="shadow-text"
+						iconClasses="hidden"
+						domainTextStyles="relative top-0.5 right-4"
 					/>
 				</a>
 			</div>
@@ -76,27 +83,35 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 			</ul>
 
 			<!-- CTA Button -->
-			<div class="hidden md:block">
+			<ActionWrapper gap="gap-4" margin="ml-4" class="hidden md:block">
 				<Action
 					variant="primary"
-					href="/get-started"
-					class={twMerge(baseButtonStyles, "bg-primary text-white hover:bg-primary-dark")}
+					href="#"
+					color="primary"
+					class="font-semibold px-5 rounded-full transition-all duration-300 py-0"
 				>
-					Get Started
+					Ver demos
 				</Action>
-			</div>
+			</ActionWrapper>
 
 			<!-- Mobile menu button -->
 			<button id="mobile-menu-button" class="md:hidden" aria-label="Toggle mobile menu">
-				<Icon icon="FavIcon" class="h-6 w-6 text-gray-600" />
+				<Icon
+					icon="MenuIcon"
+					primaryColor="var(--accent-dark)"
+					secondaryColor="var(--accent-light)"
+				/>
 			</button>
-		</div>
-	</nav>
+		</nav>
+	</StyledContainer>
 
 	<!-- Mobile navigation (hidden by default) -->
-	<div id="mobile-menu" class="hidden md:hidden">
-		<nav class="container mx-auto px-4 py-4 bg-white shadow-lg rounded-b-lg">
-			<ul class="space-y-4">
+	<div
+		id="mobile-menu"
+		class="hidden md:hidden top-full w-full p-5 mx-auto mt-1 bg-white/90 shadow-lg rounded-2xl transition-all duration-300 ease-in-out"
+	>
+		<nav class="container mx-auto px-4 py-4">
+			<ul class="space-y-6">
 				{
 					data.links.map((item) => (
 						<li>
@@ -119,13 +134,10 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 			<div class="mt-6">
 				<Action
 					variant="primary"
-					href="/get-started"
-					class={twMerge(
-						baseButtonStyles,
-						"w-full text-center bg-primary text-white hover:bg-primary-dark",
-					)}
+					href="#"
+					class="w-full text-center bg-primary text-white hover:bg-primary-dark transition-all duration-300"
 				>
-					Get Started
+					Ver demos
 				</Action>
 			</div>
 		</nav>
@@ -133,28 +145,66 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 </header>
 
 <script>
-	// Function to toggle the mobile menu
+	let lastScrollTop = 0;
+	let isHeaderVisible = true;
+	const header = document.getElementById("main-header");
+	const headerContainer = header?.querySelector(".relative");
+
+	function handleScroll() {
+		if (!header || !headerContainer) return;
+
+		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		const scrollDelta = scrollTop - lastScrollTop;
+
+		// Scrolling down
+		if (scrollDelta > 0 && isHeaderVisible) {
+			headerContainer.classList.remove("opacity-100", "translate-y-0");
+			headerContainer.classList.add("opacity-0", "-translate-y-full");
+			isHeaderVisible = false;
+		}
+		// Scrolling up
+		else if (scrollDelta < 0 && !isHeaderVisible) {
+			headerContainer.classList.remove("opacity-0", "-translate-y-full");
+			headerContainer.classList.add("opacity-100", "translate-y-0");
+			isHeaderVisible = true;
+		}
+
+		// At the top of the page
+		if (scrollTop === 0) {
+			headerContainer.classList.remove("bg-white/80", "shadow-lg", "backdrop-blur-sm");
+			headerContainer.classList.add("bg-transparent");
+		} else {
+			headerContainer.classList.add("bg-white/80", "shadow-lg", "backdrop-blur-sm");
+			headerContainer.classList.remove("bg-transparent");
+		}
+
+		lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+	}
+
+	// Throttle function to limit scroll event firing
+	function throttle(callback: any, limit: any) {
+		let waiting = false;
+		return (...args: any[]): void => {
+			if (!waiting) {
+				callback(...args);
+				waiting = true;
+				setTimeout(() => {
+					waiting = false;
+				}, limit);
+			}
+		};
+	}
+
+	// Toggle mobile menu
 	function toggleMobileMenu() {
 		const mobileMenu = document.getElementById("mobile-menu");
 		mobileMenu?.classList.toggle("hidden");
 	}
 
-	// Function to handle header appearance on scroll
-	function handleHeaderScroll() {
-		const header = document.getElementById("main-header");
-		if (window.scrollY > 50) {
-			header?.classList.add("bg-white", "shadow-md");
-		} else {
-			header?.classList.remove("bg-white", "shadow-md");
-		}
-	}
-
 	// Add event listeners
-	document.addEventListener("DOMContentLoaded", () => {
-		const mobileMenuButton = document.getElementById("mobile-menu-button");
-		mobileMenuButton?.addEventListener("click", toggleMobileMenu);
+	window.addEventListener("scroll", throttle(handleScroll, 100));
+	document.getElementById("mobile-menu-button")?.addEventListener("click", toggleMobileMenu);
 
-		window.addEventListener("scroll", handleHeaderScroll);
-		handleHeaderScroll(); // Initial call to set correct state
-	});
+	// Initialize header state
+	handleScroll();
 </script>

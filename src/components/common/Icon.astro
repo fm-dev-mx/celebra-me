@@ -32,6 +32,7 @@ const iconComponents: Record<IconType, any> = {
 	ArrowUpIcon: Icons.ArrowUpIcon,
 	CelebrameIcon: Icons.CelebrameIcon,
 	CheckIcon: Icons.CheckIcon,
+	MenuIcon: Icons.MenuIcon,
 	FavIcon: Icons.FavIcon,
 	AnniversaryIcon: Icons.AnniversaryIcon,
 	CakeIcon: Icons.CakeIcon,
@@ -51,11 +52,9 @@ const iconClasses = `${size} ${className || ""}`.trim();
 const iconProps = {
 	class: iconClasses,
 	color,
-	...(icon === "FavIcon" && {
-		primaryColor,
-		secondaryColor,
-		size,
-	}),
+	primaryColor,
+	secondaryColor,
+	size,
 	...rest,
 };
 
