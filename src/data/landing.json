@@ -23,13 +23,15 @@
 		}
 	},
 	"headerData": {
-		"logo": "celebra-me.com",
 		"links": [
 			{ "label": "Servicios", "href": "#services-section" },
 			{ "label": "Sobre Nosotros", "href": "#about-section" },
 			{ "label": "Testimonios", "href": "#testimonials-section" },
 			{ "label": "FAQ", "href": "#faq-section" },
 			{ "label": "Contacto", "href": "#" }
+		],
+		"cta": [
+			{ "label": "Ver Demos", "href": "#" }
 		]
 	},
 	"heroData": {
