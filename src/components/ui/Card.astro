@@ -3,6 +3,8 @@ interface Props {
 	bgColor?: string;
 	borderColor?: string;
 	textColor?: string;
+	maxWidth?: string;
+	minHeight?: string;
 	hover?: string;
 	extraClass?: string;
 }
@@ -12,6 +14,8 @@ const {
 	bgColor = "bg-white",
 	borderColor = "border-primary",
 	textColor = "text-primary-light",
+	maxWidth = "max-w-xs", // Define a max width to ensure consistency
+	minHeight = "min-h-[200px]", // Ensures all cards have a minimum height
 	hover = "hover:brightness-105",
 	extraClass = "",
 } = props;
@@ -27,11 +31,20 @@ const classList = [
 	hover,
 	extraClass,
 	"transition-all duration-300",
+	"flex", // Make the card a flex container
+	"flex-col", // Arrange children vertically
+	"justify-between", // Space elements evenly within the card
+	"items-center", // Center elements horizontally
+	minHeight, // Apply minimum height
+	maxWidth, // Apply maximum width
+	"w-full", // Ensure the card takes the full width available in the grid
+	"flex-grow", // Allow the card to grow to fill available space
+	"flex-shrink-0", // Prevent the card from shrinking below its defined size
 ].join(" ");
 ---
 
 <article class={classList}>
-	<div class="flex flex-col content-center items-center text-center">
+	<div class="flex flex-col w-full h-full items-center text-center">
 		<div class="mb-6"></div>
 		<slot />
 	</div>

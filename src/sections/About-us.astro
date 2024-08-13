@@ -38,33 +38,32 @@ interface Props {
 const {
 	data: { title, description, values, cta },
 } = Astro.props;
-
-// Extract reusable styles
-const sectionStyles = {
-	backgroundImageDesktop: "src/images/about/pinkStripesDesktop.jpg",
-	backgroundImageMobile: "src/images/about/pinkStripesMobile.jpg",
-	relative: "relative",
-	fullWidth: true,
-	fullHeight: true,
-};
-
-const titleStyles = {
-	color: "text-primary-dark",
-	weight: "font-bold",
-	align: "text-center xl:text-right",
-	margin: "mb-8",
-};
 ---
 
-<Section id="about-section" {...sectionStyles}>
-	<div class="bg-primary-dark w-full h-1 absolute inset-0 opacity-50"></div>
+<Section
+	id="about-section"
+	backgroundImageDesktop="src/images/about/orangeStripesDesktopBg.jpg"
+	backgroundImageMobile="src/images/about/orangeStripesMobileBg.jpg"
+	relative="relative"
+	fullWidth={true}
+	fullHeight={true}
+>
+	<!-- Overlay to provide a consistent dark background -->
+	<div class="bg-accent-dark w-full h-1 absolute inset-0 opacity-80"></div>
+
+	<!-- Container with relative positioning for absolute elements -->
 	<StyledContainer relative="relative">
 		<Container>
 			<div id="about-title" class="pt-20"></div>
 			<Grid gap="gap-12">
 				<GridRow columns={2}>
 					<div class="flex flex-col justify-content-center max-w-sm">
-						<SectionTitle {...titleStyles}>
+						<SectionTitle
+							color="text-primary"
+							weight="font-bold"
+							align="place-self-center xl:place-self-end"
+							margin="mb-8 xl:mr-2"
+						>
 							{title}
 						</SectionTitle>
 						<Paragraph
@@ -76,47 +75,58 @@ const titleStyles = {
 							{description}
 						</Paragraph>
 					</div>
-					<ImageWrapper
-						width="w-full"
-						height="h-auto"
-						justify="justify-center"
-						align="items-end"
-						class="overflow-hidden transition-all duration-300 ease-in-out transform hover:scale-102 hover:shadow-lg rounded-lg"
-					>
-						<OptimizedImage
-							imagePath={partyToastImage}
-							alt="Personas brindando en una celebración"
-							width={600}
-							height={400}
-						/>
-					</ImageWrapper>
+
+					<!-- Image section with responsive design and hover effects for larger screens -->
+					<div class="overflow-hidden rounded-3xl">
+						<ImageWrapper
+							width="w-full"
+							height="h-auto"
+							justify="justify-center"
+							align="items-end"
+							class="transition-all duration-300 ease-in-out transform hover:scale-105"
+						>
+							<OptimizedImage
+								imagePath={partyToastImage}
+								alt="Personas brindando en una celebración"
+								rounded="rounded-3xl"
+								width={350}
+								height={350}
+							/>
+						</ImageWrapper>
+					</div>
 				</GridRow>
 				<GridRow columns={3}>
 					{
 						values.map((value) => (
-							<Card>
+							<Card maxWidth="min-w-sm max-w-sm">
 								<IconWrapper background="bg-primary-dark" color="text-white">
 									<Icon icon={value.icon} size="h-9 w-9" />
 								</IconWrapper>
-								<h3 class="text-xl font-semibold mb-2 text-primary-dark">
+								<h3 class="text-lg sm:text-xl font-semibold mb-2 text-primary-dark text-center">
 									{value.name}
 								</h3>
-								<Paragraph textColor="text-primary">{value.description}</Paragraph>
+								<Paragraph
+									textColor="text-primary"
+									align="text-center"
+									size="text-sm sm:text-base"
+								>
+									{value.description}
+								</Paragraph>
 							</Card>
 						))
 					}
 				</GridRow>
 			</Grid>
 
-			<!-- Use ActionWrapper to group the Actions -->
+			<!-- Call-to-action button with margin adjustments for different screens -->
 			<ActionWrapper margin="my-16">
-				<Action variant="tertiary" href="#" title="Cuéntanos sobre tu evento"
-					>{cta.label}</Action
-				>
+				<Action variant="tertiary" href="#" title="Cuéntanos sobre tu evento">
+					{cta.label}
+				</Action>
 			</ActionWrapper>
 
-			{/* Button to navigate to testimonials section */}
-			<ActionWrapper margin="mt-12">
+			<!-- Scroll down button to navigate to testimonials section -->
+			<ActionWrapper margin="mt-24">
 				<Action
 					variant="scroll"
 					href="#testimonials-section"
@@ -128,4 +138,6 @@ const titleStyles = {
 		</Container>
 	</StyledContainer>
 </Section>
-<div class="bg-primary-dark w-full h-1 opacity-50"></div>
+
+<!-- Bottom line for visual separation -->
+<div class="bg-accent-dark w-full h-1 opacity-80"></div>

@@ -1,5 +1,5 @@
 ---
-// Hero.astro
+// src/sections/Hero.astro
 // This component represents the hero section of the website with enhanced UI/UX and performance optimizations
 
 import Action from "@/components/common/Action.astro";
@@ -71,7 +71,7 @@ const preloadAssets = [
 			margin="mb-10"
 			align="text-center"
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
-			color="text-primary/60"
+			color="text-primary-dark/80"
 			weight="font-light"
 			letterSpacing="tracking-widest"
 			animation="slide-in-left"
@@ -84,10 +84,10 @@ const preloadAssets = [
 		<Logo
 			as="h1"
 			iconSize="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 xl:w-11 xl:h-11"
-			iconPrimaryColor="var(--accent-dark)"
-			iconSecondaryColor="var(--secondary-light)"
+			iconPrimaryColor="var(--primary-default)"
+			iconSecondaryColor="var(--secondary-dark)"
 			textAnimation="shimmer permanent-glow"
-			data-text="celebra-me"
+			textColor="text-primary/90"
 			iconAnimation="permanent-glow-favicon"
 		/>
 
@@ -95,10 +95,11 @@ const preloadAssets = [
 		<SectionSubtitle
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
 			align="text-center"
-			weight="font-light"
-			color="text-primary"
+			weight="font-normal"
+			color="text-accent-dark"
 			fontFamily="font-sans"
 			margin="mx-12 mx-auto"
+			textDecoration="shadow-text-light"
 			letterSpacing="tracking-widest"
 			animation="fade-in fade-slow"
 			maxWidth="max-w-3xl"

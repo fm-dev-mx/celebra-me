@@ -9,11 +9,28 @@ interface Props {
 	width?: number;
 	height?: number;
 	format?: "webp" | "avif" | "png" | "jpg";
+	rounded?: string;
 	quality?: number;
 }
 
 // Destructure props with default values
-const { imagePath, alt, width, height, format = "webp", quality = 80 } = Astro.props as Props;
+const {
+	imagePath,
+	alt,
+	width,
+	height,
+	format = "webp",
+	quality = 80,
+	rounded,
+} = Astro.props as Props;
 ---
 
-<Image src={imagePath} alt={alt} width={width} height={height} format={format} quality={quality} />
+<Image
+	src={imagePath}
+	alt={alt}
+	width={width}
+	height={height}
+	format={format}
+	quality={quality}
+	class={rounded}
+/>

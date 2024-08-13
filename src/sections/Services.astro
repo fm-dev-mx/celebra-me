@@ -37,11 +37,10 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 
 <Section id="services-section" relative="relative">
 	<SectionTitle
-		color="text-secondary-light"
+		color="text-secondary-dark/90"
 		weight="font-thin"
 		letterSpacing="tracking-wider"
 		textDecoration=""
-		animation="animate-shimmer"
 	>
 		{data.title}
 	</SectionTitle>
@@ -50,21 +49,22 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 			<GridRow columns={2} gap="gap-x-24">
 				<GridCell>
 					{/* Image wrapper with hover effect classes */}
-					<ImageWrapper
-						flex="flex-col"
-						overflow="overflow-hidden"
-						transition="transition-all duration-300 ease-in-out"
-						hover="hover:scale-102 hover:shadow-lg"
-						rounded="rounded-3xl"
-						width="w-64 sm:w-80 lg:w-92"
-					>
-						<OptimizedImage
-							imagePath={xvImage}
-							alt="Fiesta de Quinceañera"
-							width={350}
-							height={350}
-						/>
-					</ImageWrapper>
+					<div class="overflow-hidden rounded-3xl">
+						<ImageWrapper
+							flex="flex-col"
+							transition="transition-transform duration-800 ease-in-out"
+							hover="hover:scale-105"
+							rounded="rounded-3xl"
+							width="w-64 sm:w-80 lg:w-92"
+						>
+							<OptimizedImage
+								imagePath={xvImage}
+								alt="Fiesta de Quinceañera"
+								width={350}
+								height={350}
+							/>
+						</ImageWrapper>
+					</div>
 				</GridCell>
 				<GridCell>
 					{
@@ -84,22 +84,23 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 				</GridCell>
 				<GridCell>
 					{/* Image wrapper with hover effect classes */}
-					<ImageWrapper
-						flex="flex-col"
-						overflow="overflow-hidden"
-						transition="transition-all duration-300 ease-in-out"
-						hover="hover:scale-102 hover:shadow-lg"
-						rounded="rounded-3xl"
-						width="w-64 sm:w-80 lg:w-92"
-						margin="mt-8"
-					>
-						<OptimizedImage
-							imagePath={weddingPartyImage}
-							alt="Personas bailando en una fiesta"
-							width={350}
-							height={350}
-						/>
-					</ImageWrapper>
+					<div class="overflow-hidden rounded-3xl mt-8">
+						<ImageWrapper
+							flex="flex-col"
+							overflow="overflow-hidden"
+							transition="transition-transform duration-500 ease-in-out"
+							hover="hover:scale-105"
+							rounded="rounded-3xl"
+							width="w-64 sm:w-80 lg:w-92"
+						>
+							<OptimizedImage
+								imagePath={weddingPartyImage}
+								alt="Personas bailando en una fiesta"
+								width={350}
+								height={350}
+							/>
+						</ImageWrapper>
+					</div>
 				</GridCell>
 			</GridRow>
 		</Grid>

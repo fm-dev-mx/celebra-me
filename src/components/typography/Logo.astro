@@ -92,7 +92,7 @@ const iconWrapperStyles = twMerge(
 const textStyles = twMerge(textSize, fontWeight, textColor, textClasses);
 
 const logoTextStyles = twMerge(
-	"flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8",
+	"flex flex-row sm:flex-col shrink text-nowrap scale-125 mx-0 sm:mx-8",
 	textStyles,
 );
 
@@ -107,10 +107,11 @@ const comStyles = twMerge(domainTextStyles, textStyles);
 				size={iconSize}
 				primaryColor={iconPrimaryColor}
 				secondaryColor={iconSecondaryColor}
+				class="opacity-90"
 			/>
 		</IconWrapper>
 
-		<div class={`flex flex-nowrap items-center ${textSize}`}>
+		<div class={`flex flex-col sm:flex-row items-center ${textSize}`}>
 			<div class={`${logoTextStyles} ${textAnimation} celebra-me`}>celebra-me</div>
 			<div class={`${comStyles}`}>.com</div>
 		</div>

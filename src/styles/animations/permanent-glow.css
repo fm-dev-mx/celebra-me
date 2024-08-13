@@ -37,7 +37,7 @@
         45deg,
         rgba(255, 255, 255, 0) 0%,
         var(--glow-color, rgba(255, 255, 255, 0.1)) 25%,
-        var(--glow-color, rgba(255, 255, 255, 0.3)) 50%,
+        var(--glow-color, rgba(255, 255, 255, 0.9)) 50%,
         var(--glow-color, rgba(255, 255, 255, 0.1)) 75%,
         rgba(255, 255, 255, 0) 100%
     );
@@ -60,7 +60,7 @@
         30deg,
         rgba(255, 255, 255, 0) 0%,
         var(--glow-color, rgba(255, 255, 255, 0.1)) 25%,
-        var(--glow-color, rgba(255, 255, 255, 0.4)) 50%,
+        var(--glow-color, rgba(255, 255, 255, 0.5)) 50%,
         var(--glow-color, rgba(255, 255, 255, 0.1)) 75%,
         rgba(255, 255, 255, 0) 100%
     );
@@ -96,6 +96,5 @@
     .permanent-glow::after,
     .permanent-glow-favicon::after {
         animation: none !important;
-        opacity: 0.5;
     }
 }
