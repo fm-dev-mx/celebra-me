@@ -52,7 +52,7 @@ const variantStyles = {
 	tertiary: `text-lg px-14 py-3 shadow-2xl`,
 	text: `opacity-80 md:text-xs lg:text-sm flex items-center`,
 	icon: `hover:opacity-50`,
-	scroll: `flex justify-center items-center subtle-bounce border-2 rounded-full w-10 h-10 hover:opacity-100 hover:bg-inherit absolute bottom-0`,
+	scroll: `flex justify-center items-center subtle-bounce border-2 rounded-3xl w-10 h-12 hover:opacity-100 hover:bg-inherit absolute bottom-0`,
 	logo: `opacity-80 md:text-xs lg:text-sm font-semibold`,
 	large: `py-2.5 border-2 border-dashed px-20 md:px-40`,
 };
@@ -65,7 +65,7 @@ const colorStyles = color
 			tertiary: `bg-${color}-dark text-white`,
 			text: `text-${color}`,
 			icon: `text-${color}`,
-			scroll: `border-${color}-light bg-${color}-light text-${color}-dark brightness-125 hover:text-${color} hover:bg-${color}-light hover:border-${color}`,
+			scroll: `border-${color}-light bg-${color}-light text-${color} brightness-125 hover:text-${color}-dark hover:bg-${color}-light hover:border-${color} transition-all duration-500 ease-in`,
 			logo: `text-${color}-dark`,
 			large: `bg-${color} text-white border-${color}-light`,
 		}

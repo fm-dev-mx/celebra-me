@@ -21,7 +21,7 @@ const { data } = Astro.props;
 	<!-- Container wrapper -->
 	<Container class="w-full">
 		<!-- Section title -->
-		<SectionTitle>
+		<SectionTitle color="text-secondary-dark">
 			{data.title}
 		</SectionTitle>
 		<!-- React TestimonialsCarousel component with client:visible directive for lazy loading -->
@@ -33,7 +33,7 @@ const { data } = Astro.props;
 		variant="scroll"
 		href="#pricing-section"
 		title="Ir a la sección de Precios"
+		color="secondary"
 		icon="ArrowDownIcon"
-		class="border-secondary-light bg-secondary hover:text-secondary-light"
 	/>
 </Section>

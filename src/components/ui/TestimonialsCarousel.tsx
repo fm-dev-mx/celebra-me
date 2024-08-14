@@ -12,14 +12,14 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
     ({ testimonial, isActive }) => (
         <Card
             padding="p-8"
-            hover="hover:brightness-105 hover:shadow-xl"
-            borderColor="border-primary hover:border-primary-dark"
+            hover="hover:brightness-105 hover:shadow-2xl"
+            borderColor="border-secondary-dark/60 hover:brightness-110"
             opacity={isActive ? 'opacity-100' : 'opacity-70'}
-            extraClass="content-center"
+            extraClass="content-center transition-all duration-300"
         >
             {/* Testimonial content */}
             <div className="flex-grow flex items-center justify-center">
-                <p className="text-primary-dark/80 italic text-md text-center line-clamp-4">
+                <p className="text-secondary-dark/90 italic text-md text-center line-clamp-4">
                     "{testimonial.content}"
                 </p>
             </div>
@@ -32,7 +32,7 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
                         className="rounded-full object-cover w-full h-full"
                     />
                 </div>
-                <p className="font-semibold text-primary-dark">{testimonial.author}</p>
+                <p className="font-semibold text-secondary-dark">{testimonial.author}</p>
             </div>
         </Card>
     )
@@ -111,14 +111,14 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
             {/* Navigation buttons */}
             <button
                 onClick={prevSlide}
-                className="absolute left-1 md:left-4 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                className="absolute left-1 md:left-4 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-secondary hover:bg-secondary-light hover:text-secondary-dark transition-colors duration-200 z-20"
                 aria-label="Previous testimonial"
             >
                 &#8249;
             </button>
             <button
                 onClick={nextSlide}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-secondary hover:bg-secondary-light hover:text-secondary-dark transition-colors duration-200 z-20"
                 aria-label="Next testimonial"
             >
                 &#8250;
@@ -126,7 +126,7 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
             {/* Autoplay toggle button */}
             <button
                 onClick={() => setIsAutoPlaying((prev) => !prev)}
-                className="absolute right-2 md:right-40 -translate-y-20 bg-white p-2 rounded-full shadow-md text-primary hover:bg-primary-light hover:text-primary-dark transition-colors duration-200 z-20"
+                className="absolute right-2 md:right-40 -translate-y-20 bg-white p-2 rounded-full shadow-md text-secondary hover:bg-secondary-light hover:text-secondary-dark transition-colors duration-200 z-20"
                 aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
             >
                 {isAutoPlaying ? "⏸" : "▶"}

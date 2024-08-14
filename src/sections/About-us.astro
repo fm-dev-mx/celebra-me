@@ -59,7 +59,7 @@ const {
 				<GridRow columns={2}>
 					<div class="flex flex-col justify-content-center max-w-sm">
 						<SectionTitle
-							color="text-primary"
+							color="text-primary-dark"
 							weight="font-bold"
 							align="place-self-center xl:place-self-end"
 							margin="mb-8 xl:mr-2"
@@ -120,7 +120,12 @@ const {
 
 			<!-- Call-to-action button with margin adjustments for different screens -->
 			<ActionWrapper margin="my-16">
-				<Action variant="tertiary" href="#" title="Cuéntanos sobre tu evento">
+				<Action
+					variant="tertiary"
+					color="accent"
+					href="#"
+					title="Cuéntanos sobre tu evento"
+				>
 					{cta.label}
 				</Action>
 			</ActionWrapper>
@@ -132,6 +137,7 @@ const {
 					href="#testimonials-section"
 					title="Ver algunos de los clientes que confiaron en nosotras"
 					icon="ArrowDownIcon"
+					color="primary"
 					class="hover:text-primary"
 				/>
 			</ActionWrapper>
