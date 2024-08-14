@@ -24,6 +24,7 @@ export function initializeCardIntersectionObserver() {
 			const title = card.querySelector(".pricing-card-title");
 			const subtitle = card.querySelector(".pricing-card-subtitle");
 			const texts = card.querySelectorAll(".pricing-card-text"); // Use querySelectorAll to get a NodeList
+			const bulletText = card.querySelectorAll(".pricing-card-bullet-text");
 
 			// Add or remove hover effects based on element visibility.
 			if (entry.isIntersecting) {
@@ -33,6 +34,7 @@ export function initializeCardIntersectionObserver() {
 				if (title) title.classList.add("pricing-card-title-hovered");
 				if (subtitle) subtitle.classList.add("pricing-card-subtitle-hovered");
 				texts.forEach((text) => text.classList.add("pricing-card-text-hovered")); // Add hover effect to all text elements
+				bulletText.forEach((text) => text.classList.add("pricing-card-bullet-text-hovered"));
 			} else {
 				console.log("si se desactiva el observador de la tarjeta");
 				card.classList.remove("pricing-card-hovered");
@@ -40,6 +42,7 @@ export function initializeCardIntersectionObserver() {
 				if (title) title.classList.remove("pricing-card-title-hovered");
 				if (subtitle) subtitle.classList.remove("pricing-card-subtitle-hovered");
 				texts.forEach((text) => text.classList.remove("pricing-card-text-hovered")); // Remove hover effect from all text elements
+				bulletText.forEach((text) => text.classList.remove("pricing-card-bullet-text-hovered"));
 			}
 		});
 	};

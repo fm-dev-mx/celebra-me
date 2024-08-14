@@ -9,16 +9,16 @@
 
 /* Call-to-action button styles for pricing cards */
 .pricing-card-cta {
-    @apply bg-primary-light text-white text-sm transition-all duration-300 ease-in-out w-72 leading-5;
+    @apply bg-primary text-white text-sm transition-all duration-300 ease-in-out w-72 leading-5;
 }
 
 /* Hover effects for pricing cards */
 .pricing-card-hovered {
-    @apply border-secondary-light;
+    @apply border-secondary-dark;
 }
 
 .pricing-card-cta-hovered {
-    @apply bg-secondary-light text-white scale-110 brightness-110 outline-2 outline-offset-2 outline-secondary-dark;
+    @apply bg-secondary text-white scale-110 brightness-110 outline-2 outline-offset-2 outline-secondary-dark;
 }
 
 .pricing-card-title-hovered,
@@ -27,16 +27,16 @@
 }
 
 .pricing-card-subtitle-hovered {
-    @apply text-secondary-light;
+    @apply text-secondary/90;
 }
 
+.pricing-card-bullet-text-hovered {
+	@apply text-secondary-dark;
+}
 /* Responsive styles for pricing cards */
 @screen md {
     .pricing-card {
         @apply w-[calc(50%-1rem)];
-    }
-    .pricing-card-cta {
-        @apply text-base leading-6;
     }
     .pricing-grid {
         @apply flex-row;
@@ -51,7 +51,7 @@
 
 @screen xl {
     .pricing-card {
-        @apply max-w-[25rem];
+        @apply max-w-[26rem];
     }
 }
 

@@ -3,80 +3,73 @@ import type { Icon as IconType } from "@/config/landing.interface";
 import Icon from "./Icon.astro";
 import IconWrapper from "./IconWrapper.astro";
 
+// Interface defining the structure of each bullet item
 interface BulletItem {
-	text: string;
-	icon?: IconType;
+    text: string; // Text to display in the list item
+    icon?: IconType; // Optional icon to display with the list item
 }
 
+// Interface defining the props accepted by the BulletList component
 interface Props {
-	// Array of BulletItems to display in the list
-	items: BulletItem[];
-	// Additional CSS classes for the list container
-	listClass?: string;
-	// Additional CSS classes for each list item
-	itemClass?: string;
-	// Vertical gap between list items
-	gap?: "gap-y-2" | "gap-y-4" | "gap-y-6";
-	// Font size for list items
-	size?: "text-sm" | "text-base" | "text-lg";
-	// Text color for list items
-	color?: string;
-	// Font weight for list items
-	weight?: "font-light" | "font-normal" | "font-medium" | "font-semibold";
-	// Vertical alignment of list items
-	align?: "items-start" | "items-center" | "items-end";
-	// Background color for icons
-	iconBackground?: string;
-	// Color of the icon
-	iconColor?: string;
-	// Size of the icon
-	iconSize?: string;
-	// Padding around the icon
-	iconPadding?: string;
+    items: BulletItem[]; // Array of bullet items to display in the list
+    listClass?: string; // Additional CSS classes for the list container
+    itemClass?: string; // Additional CSS classes for each list item
+    gap?: "gap-y-0" | "gap-y-2" | "gap-y-4" | "gap-y-6"; // Vertical gap between list items
+    size?: "text-sm" | "text-base" | "text-lg"; // Font size for list items
+    color?: string; // Text color for list items
+    weight?: "font-light" | "font-thin" |"font-normal" | "font-medium" | "font-semibold"; // Font weight for list items
+    align?: "items-start" | "items-center" | "items-end"; // Vertical alignment of list items
+    iconBackground?: string; // Background color for icons
+    iconColor?: string; // Color of the icon
+    iconSize?: string; // Size of the icon
+    iconPadding?: string; // Padding around the icon
 }
 
 // Destructure props with default values
 const {
-	items,
-	listClass = "",
-	itemClass = "",
-	gap = "gap-y-4",
-	size = "text-lg",
-	color = "text-primary-dark/90",
-	weight = "font-light",
-	align = "items-center",
-	iconColor = "text-secondary",
-	iconBackground = "bg-transparent",
-	iconSize = "h-8 w-8",
-	iconPadding = "p-2",
+    items,
+    listClass = "",
+    itemClass = "",
+    gap = "gap-y-4",
+    size = "text-lg",
+    color = "text-primary-dark/90",
+    weight = "font-light",
+    align = "items-center",
+    iconColor = "text-secondary",
+    iconBackground = "bg-transparent",
+    iconSize = "h-8 w-8",
+    iconPadding = "p-2",
 } = Astro.props;
 
 // Compose classes for the list and list items
 const ulClass = `flex flex-col ${gap} ${size} ${color} ${weight} ${align} ${listClass}`;
-const liClass = `flex items-center hover:font-normal transition-all ${itemClass}`;
+const liClass = `flex items-center hover:font-normal transition-all ${itemClass} min-h-12`;
 ---
 
-<div class="m-4 my-8">
-	<ul class={ulClass}>
-		{
-			items.map((item) => (
-				<li class={liClass}>
-					{/* Render icon if present */}
-					{item.icon && (
-						<IconWrapper
-							background={iconBackground}
-							color={iconColor}
-							size={iconSize}
-							padding={iconPadding}
-							align="items-center"
-						>
-							<Icon icon={item.icon} />
-						</IconWrapper>
-					)}
-					{/* Render item text */}
-					<div class="whitespace-pre-line overflow-hidden min-w-56">{item.text}</div>
-				</li>
-			))
-		}
-	</ul>
+<!-- Bullet list container -->
+<div class="m-4">
+    <!-- Unordered list with dynamic classes -->
+    <ul class={ulClass}>
+        <!-- Loop through the items and render each one -->
+        {items.map((item) => (
+            <li class={liClass}>
+                <!-- Render the icon if provided -->
+                {item.icon && (
+                    <IconWrapper
+                        background={iconBackground}
+                        color={iconColor}
+                        size={iconSize}
+                        padding={iconPadding}
+                        align="items-center"
+						class="ml-4"
+                    >
+                        <Icon icon={item.icon} />
+                    </IconWrapper>
+                )}
+                <!-- Render the text of the list item -->
+                <div class="w-60 mr-8 hover:scale-105 pricing-card-bullet-text">{item.text}</div>
+
+            </li>
+        ))}
+    </ul>
 </div>

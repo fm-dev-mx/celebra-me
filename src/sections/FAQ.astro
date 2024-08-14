@@ -20,12 +20,12 @@ const { data } = Astro.props;
 <Section id="faq-section" fullHeight={true}>
 	<Container>
 		<!-- Section Title -->
-		<SectionTitle>
+		<SectionTitle color="text-secondary-dark">
 			{data.title}
 		</SectionTitle>
 
 		<!-- FAQ List Component (React component with client-side rendering) -->
-		<FAQList client:visible {...data} />
+		<FAQList client:visible {...data} color="secondary" />
 
 		<!-- Action Wrapper for the scroll button -->
 		<ActionWrapper>
@@ -33,9 +33,9 @@ const { data } = Astro.props;
 			<Action
 				variant="scroll"
 				href="#pricing-section"
+				color="secondary"
 				title="Regresar a la sección de planes"
 				icon="ArrowUpIcon"
-				class="border-secondary-light bg-secondary hover:text-secondary-light"
 			/>
 		</ActionWrapper>
 	</Container>

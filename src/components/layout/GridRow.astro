@@ -1,10 +1,10 @@
 ---
 interface GridRowProps {
-	columns?: number;
-	gap?: string;
-	margin?: string;
-	align?: string;
-	justify?: string;
+	columns?: number; // Number of columns in the row
+	gap?: string; // Gap between columns
+	margin?: string; // Margin around the row
+	align?: string; // Alignment of content within the row
+	justify?: string; // Justification of content within the row
 }
 
 const props = Astro.props as GridRowProps;
@@ -17,6 +17,8 @@ const {
 } = props;
 ---
 
-<div class=`grid grid-cols-1 xl:grid-cols-${columns} ${gap} ${align} ${justify} ${margin}`>
+<!-- GridRow container with dynamic columns and styling based on provided props -->
+<div class={`grid grid-cols-1 xl:grid-cols-${columns} ${gap} ${align} ${justify} ${margin}`}>
 	<slot />
+	<!-- Slot to insert row items/content -->
 </div>

@@ -1,12 +1,12 @@
 ---
 interface Props {
-	rows?: number;
-	gap?: string;
-	padding?: string;
-	align?: string;
-	width?: string;
-	maxWidth?: string;
-	extraClass?: string;
+	rows?: number; // Number of rows in the grid (default: 2)
+	gap?: string; // Gap between grid items (default: "lg:gap-20")
+	padding?: string; // Padding inside the grid container
+	align?: string; // Alignment of grid items (default: "items-center")
+	width?: string; // Width of the grid container (default: "w-6/7 md:w-full xl:w-3/4")
+	maxWidth?: string; // Maximum width of the grid container (default: "sm:max-w-80 lg:max-w-fit")
+	extraClass?: string; // Additional CSS classes for customization
 }
 
 const props = Astro.props as Props;
@@ -21,10 +21,13 @@ const {
 } = props;
 ---
 
+<!-- Main container for the grid -->
 <div class="flex flex-col items-center justify-center w-full">
+	<!-- Grid layout with dynamic rows and styling based on provided props -->
 	<div
 		class={`grid xl:grid-rows-${rows} ${gap} ${padding} ${align} ${width} ${maxWidth} ${extraClass}`}
 	>
 		<slot />
+		<!-- Slot to insert grid items/content -->
 	</div>
 </div>

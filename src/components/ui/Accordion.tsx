@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface AccordionItemProps {
   question: string;
   answer: string;
+  color?: string;
 }
 
-const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
+const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer, color}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -14,14 +15,14 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
         className="flex justify-between items-center w-full py-5 text-left"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-lg font-medium text-primary-dark">{question}</span>
+        <span className={`text-lg font-medium text-${color}-dark`}>{question}</span>
         <span className="ml-6 flex-shrink-0">
           {isOpen ? (
-            <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`h-6 w-6 text-${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
             </svg>
           ) : (
-            <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`h-6 w-6 text-${color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           )}
@@ -29,7 +30,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
       </button>
       {isOpen && (
         <div className="pb-5">
-          <p className="text-base text-secondary-dark leading-relaxed letter-spacing-widest w-5/6 ml-4">{answer}</p>
+          <p className={`text-base font-light text-${color} leading-relaxed letter-spacing-widest w-5/6 ml-4`}>{answer}</p>
         </div>
       )}
     </div>
@@ -38,6 +39,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ question, answer }) => {
 
 interface AccordionProps {
   items: AccordionItemProps[];
+  color?: string;
 }
 
 export const Accordion: React.FC<AccordionProps> = ({ items }) => {

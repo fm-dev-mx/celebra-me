@@ -41,7 +41,7 @@ const { data } = Astro.props;
             <SectionTitle
                 margin="mb-10"
                 weight="font-semibold"
-                color="text-primary-dark/90"
+                color="text-secondary-dark"
                 extraClass="pricing-card-title"
             >
                 {data.title}
@@ -51,7 +51,7 @@ const { data } = Astro.props;
             <Grid extraClass="pricing-grid" width="w-full">
                 <GridRow
                     columns={3}
-                    gap="gap-x-12 xl:gap-x-0 gap-y-2"
+                    gap="gap-x-0 lg:gap-x-24 gap-y-2"
                     width="w-full"
                     align="items-center"
                     margin="mb-20"
@@ -81,6 +81,7 @@ const { data } = Astro.props;
                                 <SectionSubtitle
                                     color="text-primary"
                                     size="text-md"
+									margin="mb-4"
                                     extraClass="pricing-card-subtitle"
                                 >
                                     {tier.description}
@@ -88,13 +89,14 @@ const { data } = Astro.props;
 
                                 {/* Plan price */}
                                 <SectionSubtitle
-                                    color="text-secondary"
+                                    color="text-secondary-dark"
                                     size="text-xl"
                                     weight="font-normal"
+									margin="mb-0"
                                     extraClass=""
                                 >
                                     {tier.price.amount}
-                                    <span class="text-sm font-thin">{tier.price.period}</span>
+                                    <span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
                                 </SectionSubtitle>
 
                                 {/* List of plan features */}
@@ -105,10 +107,11 @@ const { data } = Astro.props;
                                     }))}
                                     color="text-primary-dark/90"
                                     size="text-sm"
-                                    weight="font-light"
+                                    weight="font-thin"
                                     iconSize="h-6 w-6"
-                                    iconPadding="p-2"
-                                    gap="gap-y-2"
+									iconColor="text-secondary-light"
+                                    iconPadding="p-4"
+                                    gap="gap-y-0"
                                 />
 
                                 {/* Plan call-to-action */}
@@ -126,9 +129,9 @@ const { data } = Astro.props;
                 <Action
                     variant="scroll"
                     href="#faq-section"
+					color="secondary"
                     title="Responde tus dudas sobre nuestros servicios"
                     icon="ArrowDownIcon"
-                    class="hover:text-primary"
                 />
             </ActionWrapper>
         </Container>
