@@ -7,18 +7,22 @@
     @apply rounded border border-solid overflow-hidden text-ellipsis mx-auto min-w-[20rem] max-w-[20rem] max-h-[42rem] self-center mt-8;
 }
 
-/* Call-to-action button styles for pricing cards */
-.pricing-card-cta {
-    @apply bg-primary text-white text-sm transition-all duration-300 ease-in-out w-72 leading-5;
-}
-
 /* Hover effects for pricing cards */
 .pricing-card-hovered {
-    @apply border-secondary-dark;
+	@apply border-secondary-dark;
+}
+
+/* Call-to-action button styles for pricing cards */
+.pricing-card-cta {
+    @apply bg-primary text-white text-sm transition-all duration-300 ease-in-out w-80 py-0.5;
 }
 
 .pricing-card-cta-hovered {
-    @apply bg-secondary text-white scale-110 brightness-110 outline-2 outline-offset-2 outline-secondary-dark;
+    @apply bg-secondary-light text-secondary-dark scale-110 brightness-125 border border-secondary-dark;
+}
+
+.pricing-card-cta-intersected {
+    @apply font-bold py-1;
 }
 
 .pricing-card-title-hovered,
