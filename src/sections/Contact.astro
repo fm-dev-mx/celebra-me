@@ -1,0 +1,60 @@
+---
+import Container from "@/components/layout/Container.astro";
+import StyledContainer from "@/components/layout/StyledContainer.astro";
+import Section from "@/components/layout/Section.astro";
+import SectionTitle from "@/components/typography/SectionTitle.astro";
+import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
+import Action from "@/components/common/Action.astro";
+import ContactForm from "@/components/ui/ContactForm.astro";
+import type { ContactData } from "@/config/landing.interface";
+
+// Define the props interface for type safety
+interface Props {
+	data: ContactData;
+}
+
+// Destructure the data prop
+const { data } = Astro.props;
+---
+
+<!-- Contact Section -->
+<Section
+	id="contact-section"
+	fullHeight={true}
+	fullWidth={true}
+	backgroundImageMobile="/images/contact/bgMobile.jpg"
+	backgroundImageDesktop="/images/contact/bgDesktop.jpg"
+	backgroundEffect="absolute inset-0 bg-gradient-to-t from-black to-transparent"
+>
+	<!-- Top decorative line  -->
+	<div class="bg-secondary-dark w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+	<StyledContainer relative="relative" width="w-full" margin="m-8">
+		<Container>
+			<!-- Section Title -->
+			<SectionTitle color="text-primary-dark" margin="mt-16">
+				{data.title}
+			</SectionTitle>
+
+			<!-- Section Subtitle -->
+			<SectionSubtitle color="text-primary" size="text-sm md:text-lg" margin="my-8">
+				{data.subtitle}
+			</SectionSubtitle>
+
+			<!-- Contact Form Component -->
+			<ContactForm />
+		</Container>
+	</StyledContainer>
+
+	<!-- Action Wrapper for the scroll button -->
+	<ActionWrapper margin="mt-12">
+		<!-- Scroll Action to return to pricing section -->
+		<Action
+			variant="scroll"
+			href="#pricing-section"
+			color="secondary"
+			title="Regresar a ver nuestras ofertas"
+			icon="ArrowUpIcon"
+		/>
+	</ActionWrapper>
+</Section>

@@ -29,7 +29,7 @@
 			{ "label": "Testimonios", "href": "#testimonials-section" },
 			{ "label": "Precios", "href": "#pricing-section" },
 			{ "label": "FAQ", "href": "#faq-section" },
-			{ "label": "Contacto", "href": "#" }
+			{ "label": "Contacto", "href": "#contact-section" }
 		],
 		"cta": [
 			{ "label": "Ver Demos", "href": "#" }
@@ -445,5 +445,11 @@
 			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/celebra-me", "title": "Ir a mi Facebook" },
 			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/celebra-me", "title": "Ir a mi Instagram" }
 		]
+	},
+	"contactData": {
+	"title": "Contáctanos",
+	"subtitle": "¿Tienes alguna pregunta? ¡Nos encantaría saber de ti!",
+	"cta": "Enviar Mensaje",
+	"emailTo": "contact@celebra-me.com"
 	}
 }

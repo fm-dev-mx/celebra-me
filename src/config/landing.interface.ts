@@ -7,6 +7,7 @@ export interface LandingPageData {
 	pricingData: PricingData;
 	testimonialsData: TestimonialsData;
 	faqData: FAQData;
+	contactData: ContactData;
 	footerData: FooterData;
 }
 
@@ -132,6 +133,13 @@ export interface FAQData {
 export interface Question {
 	question: string;
 	answer: string;
+}
+
+export interface ContactData { // Added ContactData interface
+	title: string;
+	subtitle: string;
+	cta: string;
+	emailTo: string; // Email to which the form will be submitted
 }
 
 export type Icon =

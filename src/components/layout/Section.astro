@@ -9,6 +9,7 @@ interface Props {
 	backgroundImageMobile?: string;
 	backgroundImageDesktop?: string;
 	backgroundColor?: string;
+	backgroundEffect?: string;
 	width?: string;
 	padding?: string;
 	margin?: string;
@@ -24,6 +25,7 @@ const {
 	backgroundImageMobile = "",
 	backgroundImageDesktop = "",
 	backgroundColor = "",
+	backgroundEffect = "",
 	padding = "px-4 py-10 pt-40",
 	margin = "mx-auto",
 	relative = "relative",
@@ -59,9 +61,12 @@ const sectionClasses = [
 	{
 		backgroundImageMobile && (
 			<div
-				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover"
+				class={`absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover lg:hidden`}
 				style={`background-image: url('${backgroundImageMobile}');`}
-			/>
+			>
+				<!-- Gradient overlay effect applied specifically for the contact section -->
+				<div class={`${backgroundEffect}`}></div>
+			</div>
 		)
 	}
 
@@ -69,9 +74,12 @@ const sectionClasses = [
 	{
 		backgroundImageDesktop && (
 			<div
-				class="absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block"
+				class={`absolute inset-0 z-[-1] bg-center bg-no-repeat bg-cover hidden lg:block`}
 				style={`background-image: url('${backgroundImageDesktop}');`}
-			/>
+			>
+				<!-- Gradient overlay effect applied specifically for the contact section -->
+				<div class={`${backgroundEffect}`}></div>
+			</div>
 		)
 	}
 

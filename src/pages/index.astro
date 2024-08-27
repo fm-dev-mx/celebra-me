@@ -9,6 +9,7 @@ import AboutUs from "@/sections/About-us.astro";
 import Testimonials from "@/sections/Testimonials.astro";
 import Pricing from "@/sections/Pricing.astro";
 import FAQ from "@/sections/FAQ.astro";
+import Contact from "@/sections/Contact.astro";
 import Footer from "@/sections/Footer.astro";
 
 // Fetch landing page data
@@ -24,6 +25,7 @@ const data = await getLandingData();
 		<Testimonials data={data.testimonialsData} />
 		<Pricing data={data.pricingData} />
 		<FAQ data={data.faqData} />
+		<Contact data={data.contactData} />
 		<Footer data={data.footerData} />
 	</main>
 </Layout>

@@ -1,0 +1,76 @@
+---
+import Input from "@/components/form/Input.astro";
+import TextArea from "@/components/form/TextArea.astro";
+import Button from "@/components/common/Button.astro";
+import Action from "../common/Action.astro";
+import ActionWrapper from "../common/ActionWrapper.astro";
+
+// Define the interface for the form data to ensure type safety
+interface ContactFormData {
+	name: string;
+	email: string;
+	message: string;
+}
+
+// Initialize the form data with empty values
+let formData: ContactFormData = {
+	name: "",
+	email: "",
+	message: "",
+};
+
+// Function to handle form submission
+function handleSubmit(event: Event) {
+	event.preventDefault();
+
+	// Perform form validation or data processing here
+	console.log("Form submitted:", formData);
+
+	// Reset the form data after submission
+	formData = {
+		name: "",
+		email: "",
+		message: "",
+	};
+}
+---
+
+<!-- Contact Form Component -->
+<form on:submit="handleSubmit" class="flex flex-col space-y-6">
+	<!-- Name Input Field -->
+	<Input
+		label="Nombre"
+		type="text"
+		placeholder="Ingresa tu primer nombre"
+		required={true}
+		value={formData.name}
+		on:input={(event) => (formData.name = event.target.value)}
+	/>
+
+	<!-- Email Input Field -->
+	<Input
+		label="Email"
+		type="email"
+		placeholder="Ingresa tu correo"
+		required={true}
+		value={formData.email}
+		on:input={(event) => (formData.email = event.target.value)}
+	/>
+
+	<!-- Message TextArea -->
+	<TextArea
+		label="Mensaje"
+		placeholder="Escribe aquí como te podemos ayudar"
+		required={true}
+		rows={5}
+		value={formData.message}
+		on:input={(event) => (formData.message = event.target.value)}
+	/>
+
+	<!-- Submit Button -->
+	<ActionWrapper margin="my-16">
+		<Action variant="tertiary" color="accent" href="#" title="Cuéntanos sobre tu evento">
+			Enviar Mensaje
+		</Action>
+	</ActionWrapper>
+</form>
