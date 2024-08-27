@@ -7,6 +7,8 @@ import Logo from "@/components/typography/Logo.astro";
 import type { HeaderData } from "@/config/landing.interface";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
+import HeaderScroll from "@/components/ui/HeaderScroll";
+import ToggleMobileMenu from "@/components/ui/ToggleMobileMenu";
 
 interface Props {
 	data: HeaderData;
@@ -41,6 +43,8 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 		rounded="rounded-2xl"
 		extraClasses="backdrop-blur-sm transform -translate-y-full transition-all duration-500 ease-in-out"
 	>
+		<HeaderScroll client:load />
+		<ToggleMobileMenu client:load />
 		<nav class={baseNavStyles}>
 			<!-- Logo section -->
 			<div class="flex items-center">
@@ -143,68 +147,3 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 		</nav>
 	</div>
 </header>
-
-<script>
-	let lastScrollTop = 0;
-	let isHeaderVisible = true;
-	const header = document.getElementById("main-header");
-	const headerContainer = header?.querySelector(".relative");
-
-	function handleScroll() {
-		if (!header || !headerContainer) return;
-
-		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-		const scrollDelta = scrollTop - lastScrollTop;
-
-		// Scrolling down
-		if (scrollDelta > 0 && isHeaderVisible) {
-			headerContainer.classList.remove("opacity-100", "translate-y-0");
-			headerContainer.classList.add("opacity-0", "-translate-y-full");
-			isHeaderVisible = false;
-		}
-		// Scrolling up
-		else if (scrollDelta < 0 && !isHeaderVisible) {
-			headerContainer.classList.remove("opacity-0", "-translate-y-full");
-			headerContainer.classList.add("opacity-100", "translate-y-0");
-			isHeaderVisible = true;
-		}
-
-		// At the top of the page
-		if (scrollTop === 0) {
-			headerContainer.classList.remove("bg-white/80", "shadow-lg", "backdrop-blur-sm");
-			headerContainer.classList.add("bg-transparent");
-		} else {
-			headerContainer.classList.add("bg-white/80", "shadow-lg", "backdrop-blur-sm");
-			headerContainer.classList.remove("bg-transparent");
-		}
-
-		lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-	}
-
-	// Throttle function to limit scroll event firing
-	function throttle(callback: any, limit: any) {
-		let waiting = false;
-		return (...args: any[]): void => {
-			if (!waiting) {
-				callback(...args);
-				waiting = true;
-				setTimeout(() => {
-					waiting = false;
-				}, limit);
-			}
-		};
-	}
-
-	// Toggle mobile menu
-	function toggleMobileMenu() {
-		const mobileMenu = document.getElementById("mobile-menu");
-		mobileMenu?.classList.toggle("hidden");
-	}
-
-	// Add event listeners
-	window.addEventListener("scroll", throttle(handleScroll, 100));
-	document.getElementById("mobile-menu-button")?.addEventListener("click", toggleMobileMenu);
-
-	// Initialize header state
-	handleScroll();
-</script>
