@@ -6,7 +6,7 @@ import SectionTitle from "@/components/typography/SectionTitle.astro";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Action from "@/components/common/Action.astro";
-import ContactForm from "@/components/ui/ContactForm.astro";
+import ContactForm from "@/components/ui/ContactForm";
 import type { ContactData } from "@/config/landing.interface";
 
 // Define the props interface for type safety
@@ -42,7 +42,7 @@ const { data } = Astro.props;
 			</SectionSubtitle>
 
 			<!-- Contact Form Component -->
-			<ContactForm />
+			<ContactForm client:visible />
 		</Container>
 	</StyledContainer>
 

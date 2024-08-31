@@ -31,13 +31,13 @@ export default defineConfig({
         "@components": "/src/components",
         "@utilities": "/src/utilities",
         "@layout": "/src/layout",
-		"@images": "/src/images",
+        "@images": "/src/images",
       },
     },
   },
 
-  // Set output mode to hybrid for both static and server-side rendering capabilities
-  output: "hybrid",
+  // Set output mode to "server for Vercel serverless function
+  output: "server",
 
   // Configure Vercel adapter for deployment
   adapter: vercel({
