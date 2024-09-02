@@ -2,108 +2,126 @@ import React, { useState } from "react";
 import Input from "@/components/form/Input";
 import TextArea from "@/components/form/TextArea";
 
-// Define the interface for the form data
+// Define the interface for the form data structure
 interface ContactFormData {
   name: string;
   email: string;
+  mobile: string;
   message: string;
 }
 
 const ContactForm: React.FC = () => {
-  // Initialize the form data with empty values
+  // State to manage the form data, initialized with empty values
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
+	mobile: "",
     message: "",
   });
 
-  // State to store response messages for the user
+  // State to store response messages from the server for user feedback
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
 
-  // Function to handle form submission
+  // Handles form submission when the user clicks the submit button
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Log the data to verify correct values are being sent
+    console.log("Data sent:", formData);
 
     try {
-      // Send a POST request to the serverless function with the form data
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
+      // Send a POST request to the serverless function endpoint
+      const response = await fetch("/api/send-email", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json", // Ensures the server understands the request is JSON
+          "Accept": "application/json", // Ensures the client expects a JSON response
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // Convert form data to JSON format
       });
 
+      // Check if the response from the server was successful
       if (response.ok) {
-        // If the request was successful, set a success message
-        setResponseMessage('Message sent successfully');
+        setResponseMessage("Hemos recibido tu mensaje, te responderemos muy pronto."); // Display success message to the user
       } else {
-        // If the request failed, set an error message
-        setResponseMessage('Failed to send message');
+        // If the server response indicates an error, parse and log the error details
+        const errorData = await response.json();
+        console.error("Error data from server:", errorData);
+        setResponseMessage("Ha ocurrido un error al enviar el mensaje"); // Display failure message to the user
       }
     } catch (error) {
-      // Catch any network errors and set an error message
-      setResponseMessage('An error occurred while sending the message');
+      // Handle network errors and log the error details
+      console.error("Network error:", error);
+      setResponseMessage("An error occurred while sending the message"); // Display a generic error message
     }
 
-    // Reset the form data after submission
+    // Reset the form data after submission to clear the input fields
     setFormData({
       name: "",
       email: "",
+	  mobile: "",
       message: "",
     });
   };
 
-  // Function to handle input changes
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = event.target;
+  // Handles changes to input fields and updates the form data state
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target; // Extract the name and value from the event target
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value, // Update the corresponding field in the form data
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
-      {/* Name Input Field */}
+      {/* Input for Name */}
       <Input
         label="Nombre"
         type="text"
         placeholder="Ingresa tu primer nombre"
-        required={true}
+        required
         value={formData.name}
         onInput={handleInputChange}
         name="name"
       />
 
-      {/* Email Input Field */}
+      {/* Input for Email */}
       <Input
         label="Email"
         type="email"
         placeholder="Ingresa tu correo"
-        required={true}
+        required
         value={formData.email}
         onInput={handleInputChange}
         name="email"
       />
 
-      {/* Message TextArea */}
+	  {/* Input for Mobile */}
+      <Input
+        label="Teléfono"
+        type="text"
+        placeholder="Ingresa tu teléfono"
+        required
+        value={formData.mobile}
+        onInput={handleInputChange}
+        name="mobile"
+      />
+
+      {/* Text Area for Message */}
       <TextArea
         label="Mensaje"
-        placeholder="Escribe aquí como te podemos ayudar"
-        required={true}
-        rows={5}
+        placeholder="Menciona la fecha, tipo de evento y cualquier detalle importante"
+        required
+        rows={8}
         value={formData.message}
         onInput={handleInputChange}
         name="message"
       />
 
       {/* Submit Button */}
-			{/* <ActionWrapper margin="my-16">
-				<Action variant="tertiary" color="accent" href="#" title="Cuéntanos sobre tu evento">
-					Enviar Mensaje
-				</Action>
-			</ActionWrapper> */}
       <div className="my-16 flex justify-center items-center">
         <button
           type="submit"
@@ -113,7 +131,7 @@ const ContactForm: React.FC = () => {
         </button>
       </div>
 
-      {/* Display response message */}
+      {/* Display the response message to the user if available */}
       {responseMessage && <p className="text-center mt-4">{responseMessage}</p>}
     </form>
   );

@@ -1,7 +1,9 @@
+// send-email.ts
+import type { APIRoute } from 'astro'; // Importa APIRoute desde Astro
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
-// Cargar las variables de entorno desde el archivo .env
+// Load environment variables from the .env file
 dotenv.config();
 
 /**
@@ -11,53 +13,106 @@ dotenv.config();
  * @param request - The incoming HTTP request object from Astro
  * @returns {Response} A JSON response indicating success or failure.
  */
-export async function POST({ request }: { request: Request }) {
-	try {
-		// Leer el cuerpo de la solicitud para obtener los datos enviados por el formulario.
-		const { name, email, message } = await request.json();
+export const POST: APIRoute = async ({ request }) => { // Define la ruta como APIRoute
+	// console.log('Environment Variables:', process.env.ZOHO_USER, process.env.ZOHO_PASS ? 'Loaded' : 'Not Loaded');
 
-		// Verificar que los campos requeridos no estén vacíos.
-		if (!name || !email || !message) {
-			return new Response(JSON.stringify({ error: 'All fields are required.' }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' },
-			});
+	try {
+		// Check if the Content-Type of the request is JSON
+		const contentType = request.headers.get('Content-Type');
+		console.log('Received Content-Type:', contentType); // Log the content type received
+
+		if (contentType !== 'application/json') {
+			console.error('Invalid Content-Type:', contentType);
+			return new Response(
+				JSON.stringify({ error: 'Invalid Content-Type' }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
 		}
 
-		// Configurar el transportador de correo utilizando nodemailer para Zoho Mail.
+		// Read the request body as text for manual parsing
+		const requestBody = await request.text();
+		console.log('Received request body:', requestBody); // Log the raw request body
+		let parsedData;
+
+		try {
+			// Attempt to parse the request body as JSON
+			parsedData = JSON.parse(requestBody);
+			console.log('Parsed data:', parsedData); // Log the parsed data
+		} catch (parseError) {
+			console.error('Error parsing JSON:', parseError);
+			return new Response(
+				JSON.stringify({ error: 'Invalid JSON format' }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		// Destructure the parsed data to extract form fields
+		const { name, email, mobile, message } = parsedData;
+		console.log('Form data:', { name, email, mobile, message }); // Log the form data
+
+		// Check if required fields are missing
+		if (!name || !email || !mobile || !message) {
+			console.log('Missing fields:', { name, email, mobile, message }); // Log missing fields
+			return new Response(
+				JSON.stringify({ error: 'All fields are required.' }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		// Configure the mail transporter using Nodemailer with Zoho Mail settings
 		const transporter = nodemailer.createTransport({
-			host: 'smtp.zoho.com',
-			port: 465,
-			secure: true,
+			host: 'smtp.zoho.com', // Zoho SMTP server
+			port: 465, // Port for secure connections
+			secure: true, // Use SSL/TLS
 			auth: {
-				user: import.meta.env.ZOHO_USER,
-				pass: import.meta.env.ZOHO_PASS,
+				user: import.meta.env.ZOHO_USER, // Zoho user email from environment variables
+				pass: import.meta.env.ZOHO_PASS, // Zoho user password from environment variables
 			},
 		});
 
-		// Definir las opciones del correo, incluyendo el remitente, destinatario, asunto y cuerpo del mensaje.
+		// Define the email options including sender, recipient, subject, and body
 		const mailOptions = {
-			from: import.meta.env.ZOHO_USER, // Tu correo de Zoho
-			replyTo: email, // Permitir al destinatario responder al remitente del formulario
-			to: import.meta.env.RECIPIENT_EMAIL, // El destinatario del correo (tu correo)
-			subject: `Nuevo mensaje de ${name}`, // Asunto del correo
-			text: `Nombre: ${name}\nEmail: ${email}\nMensaje: ${message}`, // Cuerpo del correo con los datos del formulario
+			from: import.meta.env.ZOHO_USER, // Sender's email address (Zoho)
+			replyTo: email, // Set reply-to as the user's email from the form
+			to: import.meta.env.RECIPIENT_EMAIL, // Recipient's email address (your email)
+			subject: `Nuevo mensaje de ${name} via Celebra-me`, // Email subject with the sender's name
+			text: `Nombre: ${name}\n\nEmail: ${email}\n\nCelular: ${mobile}\n\nMensaje: ${message}`, // Email body containing the form data
 		};
+		console.log('Mail options:', mailOptions); // Log the email options
 
-		// Enviar el correo
+		// Send the email using the transporter
 		await transporter.sendMail(mailOptions);
+		console.log('Email sent successfully'); // Log successful email sending
 
-		// Responder con éxito
-		return new Response(JSON.stringify({ message: 'Email sent successfully' }), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' },
-		});
-	} catch (error) {
-		// Log del error para depuración y respuesta de fallo
+		// Return a success response after the email is sent
+		return new Response(
+			JSON.stringify({ message: 'Email sent successfully' }),
+			{
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
+	} catch (error: any) {
+		// Log any unexpected errors and return a failure response
 		console.error('Error:', error);
-		return new Response(JSON.stringify({ error: 'Failed to send email' }), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' },
-		});
+		return new Response(
+			JSON.stringify({ error: 'Failed to send e-mail!!', details: error.message }), // Include error details in response
+			{
+				status: 500,
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
 	}
-}
+};
+
+// Opt-out of pre-rendering for this serverless function
+export const prerender = false;

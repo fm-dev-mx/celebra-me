@@ -12,10 +12,6 @@
       },
       "continue": true
     },
-    { "handle": "filesystem" },
-    {
-      "src": "/(.*)",
-      "dest": "/functions/entry.mjs"
-    }
+    { "handle": "filesystem" }
   ]
 }
