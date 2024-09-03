@@ -5,38 +5,38 @@ export default {
     extend: {
       colors: {
         primary: {
-          light: "#FED7AA", // Light Peach
-          DEFAULT: "#FB923C", // Peach
-          dark: "#EA580C", // Burnt Orange
+          light: "#FDE2E2", // Soft Blush Pink
+          DEFAULT: "#F8AFAF", // Rose Pink
+          dark: "#E47676", // Deep Rose
         },
         secondary: {
-          light: "#93C5FD", // Light Sky Blue
-          DEFAULT: "#3B82F6", // Sky Blue
-          dark: "#0369A1", // Dark Sky Blue
+          light: "#FFF4CC", // Pale Gold
+          DEFAULT: "#F0B76D", // Rich Gold (warmer and elegant)
+          dark: "#B8893A", // Deep Golden Brown
         },
         accent: {
-          light: "#FFD6A5", // Light Yellow
-          DEFAULT: "#FFAB6E", // Yellow
-          dark: "#FF8C42", // Dark Yellow
+          light: "#FDE8C5", // Light Peach Beige
+          DEFAULT: "#F6B99E", // Soft Peach
+          dark: "#DE8976", // Muted Coral
         },
-		neutral: {
-		  lightest: "#FFFFFF", // White
-		  light: "#F8F9FA", // Light Gray
-		  medium: "#CED4DA", // Medium Gray
-		  dark: "#495057", // Dark Gray
-		  darkest: "#212529", // Black
-		},
+        neutral: {
+          lightest: "#FFFFFF", // White
+          light: "#F5F5F5", // Light Gray
+          medium: "#E1E1E1", // Medium Gray
+          dark: "#7A7A7A", // Charcoal Gray
+          darkest: "#404040", // Dark Gray
+        },
         background: {
-          DEFAULT: "#FFF9F5", // Light Peach
-          alt: "#F1F3F5", // Light Gray
+          DEFAULT: "#FFF5F2", // Warm Off-White
+          alt: "#F9EFEA", // Blush Cream
         },
         text: {
-          DEFAULT: "#212529", // Black
-          light: "#495057", // Dark Gray
+          DEFAULT: "#2D2D2D", // Almost Black
+          light: "#5A5A5A", // Soft Dark Gray
         },
       },
       textShadow: {
-        lg: "2px 2px 4px rgba(0, 0, 0, 0.1)",
+        lg: "2px 2px 4px rgba(0, 0, 0, 0.1)", // Large subtle shadow
       },
     },
   },
@@ -45,18 +45,18 @@ export default {
       // Add custom text shadow utilities
       const textShadowUtilities = {
         ".shadow-text-light": {
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)", // Light shadow for subtle effect
         },
         ".shadow-text": {
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)", // Standard shadow for balanced contrast
         },
         ".shadow-text-dark": {
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)",
+          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)", // Dark shadow for strong emphasis
         },
       };
       addBase(textShadowUtilities);
 
-      // Add custom CSS variables
+      // Add custom CSS variables to enhance theme control
       const cssVariables = {
         ":root": {
           "--primary-light": theme("colors.primary.light"),
@@ -83,30 +83,28 @@ export default {
     },
   ],
   safelist: (() => {
-    // Generate safelist for color utilities
+    // Generate safelist for color utilities to prevent purging
     const generateColorSafelist = () => {
-      const colors = ['primary', 'secondary', 'accent', 'neutral', 'background', 'text'];
-      const shades = ['', 'light', 'dark', 'lightest', 'medium', 'darkest', 'alt'];
-      const utilities = ['bg', 'text', 'border', 'hover:bg', 'hover:text', 'hover:border'];
+      const colors = ["primary", "secondary", "accent", "neutral", "background", "text"];
+      const shades = ["", "light", "dark", "lightest", "medium", "darkest", "alt"];
+      const utilities = ["bg", "text", "border", "hover:bg", "hover:text", "hover:border"];
 
-      return colors.flatMap(color =>
-        shades.flatMap(shade =>
-          utilities.map(utility =>
-            shade ? `${utility}-${color}-${shade}` : `${utility}-${color}`
-          )
+      return colors.flatMap((color) =>
+        shades.flatMap((shade) =>
+          utilities.map((utility) => (shade ? `${utility}-${color}-${shade}` : `${utility}-${color}`))
         )
       );
     };
 
-    // Generate safelist for grid columns
+    // Generate safelist for responsive grid columns
     const generateGridSafelist = () => {
-      const breakpoints = ['', 'sm:', 'md:', 'lg:', 'xl:'];
-      return breakpoints.flatMap(bp =>
+      const breakpoints = ["", "sm:", "md:", "lg:", "xl:"];
+      return breakpoints.flatMap((bp) =>
         Array.from({ length: 12 }, (_, i) => `${bp}grid-cols-${i + 1}`)
       );
     };
 
-    // Combine color and grid safelists
+    // Combine and return the generated safelists
     return [...generateColorSafelist(), ...generateGridSafelist()];
   })(),
 };

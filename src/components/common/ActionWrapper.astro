@@ -1,4 +1,6 @@
 ---
+// src/components/common/ActionWrapper.astro
+// This component creates a wrapper for Action components.
 import { twMerge } from "tailwind-merge";
 import type { HTMLAttributes } from "astro/types";
 
@@ -28,6 +30,7 @@ interface Props extends HTMLAttributes<"div"> {
 	gap?: "gap-4" | "gap-6" | "gap-8" | "gap-x-2 md:gap-x-8" | "gap-4 sm:gap-6";
 	/** Margin applied to the wrapper */
 	margin?:
+		| ""
 		| "ml-4"
 		| "mb-8"
 		| "mt-4"
@@ -60,7 +63,7 @@ const {
 	...rest
 } = Astro.props;
 
-// Combine classes using twMerge to avoid conflicts
+// Combine classes using twMerge to avoid conflicts and keep classes clean
 const wrapperClasses = twMerge(
 	"flex",
 	flex,
@@ -69,33 +72,12 @@ const wrapperClasses = twMerge(
 	gap,
 	margin,
 	wrap ? "flex-wrap" : "flex-nowrap",
-	fullWidth && "w-full",
+	fullWidth ? "w-full" : "",
 	position,
 	className,
 );
 ---
 
-<!--
-  ActionWrapper Component
-
-  This component serves as a flexible container for grouping Action components.
-  It provides various layout options through props, allowing for easy customization.
-
-  Usage:
-  <ActionWrapper
-    flex="flex-col"
-    align="justify-center"
-    verticalAlign="items-center"
-    gap="gap-6"
-    margin="my-8"
-    wrap
-    fullWidth
-    position="relative"
-  >
-    <Action ... />
-    <Action ... />
-  </ActionWrapper>
--->
 <div class={wrapperClasses} {...rest}>
 	<slot />
 </div>

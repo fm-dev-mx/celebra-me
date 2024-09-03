@@ -1,9 +1,9 @@
 ---
 // src/sections/Header.astro
+// This component represents the header section of the website, displaying the navigation and logo.
 import { twMerge } from "tailwind-merge";
 import Action from "@/components/common/Action.astro";
 import Icon from "@/components/common/Icon.astro";
-import Logo from "@/components/typography/Logo.astro";
 import type { HeaderData } from "@/config/landing.interface";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
@@ -16,13 +16,13 @@ interface Props {
 
 const { data } = Astro.props;
 
-// Define base styles for the header
+// Define base styles for the header and navigation elements
 const baseHeaderStyles =
-	"w-full fixed top-0 z-50 transition-all duration-500 ease-in-out mx-auto justify-content-center p-1";
-const baseNavStyles = "container mx-auto px-4 flex items-center justify-between h-full";
+	"w-full fixed top-0 z-50 transition-all duration-500 ease-in-out mx-auto p-1";
+const baseNavStyles = "container mx-auto flex items-center justify-between px-4 h-full";
 const baseLinkStyles = "text-sm font-medium transition-all duration-500 ease-in-out";
 
-// Function to determine if the current page matches the link
+// Function to check if the current page matches the link
 const isCurrentPage = (href: string) => Astro.url.pathname === href;
 ---
 
@@ -36,37 +36,38 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 		padding=""
 		minWidth="min-w-full"
 		verticalAlign="items-center"
-		horizontalAlign="justify-center"
+		horizontalAlign="justify-between"
 		backgroundColor="bg-white/80"
 		shadow="shadow-lg"
-		opacity="opacity-0"
 		rounded="rounded-2xl"
 		extraClasses="backdrop-blur-sm transform -translate-y-full transition-all duration-500 ease-in-out"
 	>
+		<!-- Components that handle scroll and mobile menu toggle -->
 		<HeaderScroll client:load />
 		<ToggleMobileMenu client:load />
+
 		<nav class={baseNavStyles}>
 			<!-- Logo section -->
-			<div class="flex items-center">
-				<a href="/" class="flex items-center space-x-2" aria-label="Go to homepage">
-					<Logo
-						as="div"
-						containerFlex="flex flex-nowrap place-items-end relative hidden xl:block"
-						containerGap="gap-0"
-						containerMargin=""
-						containerPadding=""
-						containerAlign=""
-						containerAnimation="fade-up-hover"
-						textSize="text-sm"
-						textClasses="shadow-text"
-						iconClasses="hidden"
-						domainTextStyles="relative top-0.5 right-4"
+			<div class="flex items-center mt-1">
+				<a
+					href="/"
+					class="flex items-center space-x-2"
+					aria-label="Ir a la página principal"
+				>
+					<img
+						src="/images/header/horizontalLogo100x38.png"
+						srcset="/images/header/horizontalLogo125x47.png 125w,
+								/images/header/horizontalLogo150x56.png 150w"
+						sizes="	(max-width: 480px) 100px,
+							   	(max-width: 640px) 125px,
+					150px"
+						alt="celebra-me.com"
 					/>
 				</a>
 			</div>
 
 			<!-- Desktop navigation -->
-			<ul class="hidden md:flex space-x-8">
+			<ul class="hidden lg:flex space-x-8">
 				{
 					data.links.map((item) => (
 						<li>
@@ -86,22 +87,23 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 				}
 			</ul>
 
-			<!-- CTA Button -->
-			<ActionWrapper gap="gap-4" margin="ml-4" class="hidden md:block">
+			<!-- CTA Button for desktop view -->
+			<ActionWrapper gap="gap-4" class="hidden lg:flex" margin="">
 				<Action
 					variant="primary"
 					href="#"
 					color="primary"
-					class="font-semibold px-5 rounded-full transition-all duration-300 py-0"
+					class="font-semibold px-5 py-2 rounded-full transition-all duration-300"
 				>
 					Ver demos
 				</Action>
 			</ActionWrapper>
 
 			<!-- Mobile menu button -->
-			<button id="mobile-menu-button" class="md:hidden" aria-label="Toggle mobile menu">
+			<button id="mobile-menu-button" class="lg:hidden" aria-label="Toggle mobile menu">
 				<Icon
 					icon="MenuIcon"
+					size="w-6 h-6 md:w-8 md:h-8"
 					primaryColor="var(--accent-dark)"
 					secondaryColor="var(--accent-light)"
 				/>
@@ -109,10 +111,10 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 		</nav>
 	</StyledContainer>
 
-	<!-- Mobile navigation (hidden by default) -->
+	<!-- Mobile navigation (hidden by default, shown when mobile menu button is clicked) -->
 	<div
 		id="mobile-menu"
-		class="hidden md:hidden top-full w-full p-5 mx-auto mt-1 bg-white/90 shadow-lg rounded-2xl transition-all duration-300 ease-in-out"
+		class="hidden lg:hidden top-full w-full p-5 mx-auto mt-1 bg-white/90 shadow-lg rounded-2xl transition-all duration-300 ease-in-out"
 	>
 		<nav class="container mx-auto px-4 py-4">
 			<ul class="space-y-6">
@@ -135,6 +137,7 @@ const isCurrentPage = (href: string) => Astro.url.pathname === href;
 					))
 				}
 			</ul>
+			<!-- Mobile CTA Button -->
 			<div class="mt-6">
 				<Action
 					variant="primary"
