@@ -57,9 +57,7 @@ const { data } = Astro.props;
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
 			color="text-primary-dark/80"
 			weight="font-light"
-			letterSpacing="tracking-widest"
-			animation="slide-in-left"
-			extraClass="shadow-text-light"
+			extraClass="slide-in-left shadow-text-light tracking-widest"
 		>
 			{data.title}
 		</SectionTitle>
@@ -88,22 +86,28 @@ const { data } = Astro.props;
 			align="text-center"
 			weight="font-normal"
 			color="text-accent-dark"
-			fontFamily="font-sans"
 			margin="mx-12 mx-auto"
-			textDecoration="shadow-text-light"
-			letterSpacing="tracking-widest"
-			animation="fade-in fade-slow"
-			maxWidth="max-w-3xl"
+			extraClass="font-sans shadow-text-light tracking-widest fade-in fade-slow"
 		>
 			{data.subtitle}
 		</SectionSubtitle>
 
 		<!-- CTA Buttons for main actions -->
 		<ActionWrapper margin="mt-24" gap="gap-4 sm:gap-6">
-			<Action variant="primary" color="secondary" href="#">
+			<Action
+				minWidth="min-w-[180px] sm:min-w-[140px]"
+				variant="primary"
+				color="secondary"
+				href="#"
+			>
 				{data.primaryCta}
 			</Action>
-			<Action variant="secondary" color="secondary" href="#">
+			<Action
+				minWidth="min-w-[180px] sm:min-w-[140px]"
+				variant="secondary"
+				color="secondary"
+				href="#"
+			>
 				{data.secondaryCta}
 			</Action>
 		</ActionWrapper>

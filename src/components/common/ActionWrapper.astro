@@ -51,12 +51,12 @@ interface Props extends HTMLAttributes<"div"> {
 
 // Destructure props with default values
 const {
-	flex = "flex-row",
+	flex = "flex-col sm:flex-row",
 	align = "justify-center",
 	verticalAlign = "items-center",
 	gap = "gap-4",
 	margin = "mt-4",
-	wrap = false,
+	wrap = true,
 	fullWidth = false,
 	position,
 	class: className,
@@ -66,18 +66,19 @@ const {
 // Combine classes using twMerge to avoid conflicts and keep classes clean
 const wrapperClasses = twMerge(
 	"flex",
+	wrap ? "flex-wrap" : "flex-nowrap",
 	flex,
 	align,
 	verticalAlign,
 	gap,
 	margin,
-	wrap ? "flex-wrap" : "flex-nowrap",
 	fullWidth ? "w-full" : "",
 	position,
 	className,
 );
 ---
 
-<div class={wrapperClasses} {...rest}>
+<!-- Main wrapper with responsive flex layout -->
+<div class={`${wrapperClasses} `} {...rest}>
 	<slot />
 </div>

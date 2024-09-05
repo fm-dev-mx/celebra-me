@@ -25,6 +25,7 @@ interface Props extends HTMLAttributes<"a"> {
 	variant?: ActionVariant; // The style variant of the button
 	icon?: IconType; // Optional icon to display
 	iconSize?: string; // Optional icon size
+	minWidth?: string;
 	color?: "primary" | "secondary" | "accent" | "neutral" | "text";
 	as?: "a" | "button" | "div"; // Allows changing the rendered element type
 }
@@ -35,6 +36,7 @@ const {
 	variant = "primary",
 	icon,
 	iconSize = "w-6 h-6",
+	minWidth,
 	color,
 	as: Element = "a",
 	class: className,
@@ -43,7 +45,7 @@ const {
 } = Astro.props;
 
 // Base styles applied to all Action variants
-const baseStyles = `  flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base  ${variant !== "text" && "hover:shadow-2xl"} text-nowrap h-[40px] md:h-[48px]`;
+const baseStyles = `flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base ${minWidth} ${variant !== "text" && "hover:shadow-2xl"} text-nowrap h-[40px] md:h-[48px]`;
 
 // Define styles for each variant
 const variantStyles = {

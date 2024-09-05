@@ -1,51 +1,31 @@
 ---
 import { twMerge } from "tailwind-merge";
 
+// Interface defining the expected props for the SectionTitle component.
 interface Props {
-	flex?: string;
-	margin?: string;
-	size?: string;
-	align?: string;
-	textAlign?: string;
-	color?: string;
-	weight?: string;
-	letterSpacing?: string;
-	textDecoration?: string;
-	animation?: string;
-	extraClass?: string;
+	margin?: string; // Margin around the title (default: "mb-24")
+	size?: string; // Font size of the title (default: "text-2xl md:text-3xl")
+	color?: string; // Text color (default: "")
+	weight?: string; // Font weight (default: "font-light")
+	align?: string; // Text alignment (default: "text-center")
+	extraClass?: string; // Additional CSS classes for customization
 }
 
-const props = Astro.props as Props;
-
+// Destructure props with default values
 const {
-	flex = "flex flex-row sm:flex-col",
 	margin = "mb-24",
-	align = "justify-content-center place-items-center place-content-center",
-	textAlign = "text-center",
 	size = "text-2xl md:text-3xl",
 	color = "",
 	weight = "font-light",
-	letterSpacing = "tracking-wider",
-	textDecoration = "",
-	animation = "",
-	extraClass: className = "",
-} = props;
+	align = "text-center",
+	extraClass = "",
+} = Astro.props as Props;
 
-const titleStyles = twMerge(
-	flex,
-	margin,
-	align,
-	textAlign,
-	size,
-	color,
-	weight,
-	letterSpacing,
-	textDecoration,
-	animation,
-	className,
-);
+// Merge classes using Tailwind's twMerge function to avoid conflicts
+const titleStyles = twMerge(margin, size, color, weight, align, extraClass);
 ---
 
+<!-- Render the title with dynamic classes based on the props -->
 <h2 class={titleStyles}>
 	<slot />
 </h2>

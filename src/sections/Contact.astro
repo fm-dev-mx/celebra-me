@@ -30,14 +30,14 @@ const { data } = Astro.props;
 	<!-- Top decorative line  -->
 	<div class="bg-secondary-dark w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
 	<StyledContainer relative="relative" width="w-full" margin="m-8">
-		<Container>
+		<Container padding="px-8">
 			<!-- Section Title -->
 			<SectionTitle color="text-primary-dark" margin="mt-16">
 				{data.title}
 			</SectionTitle>
 
 			<!-- Section Subtitle -->
-			<SectionSubtitle color="text-primary" size="text-sm md:text-lg" margin="my-8">
+			<SectionSubtitle color="text-accent-dark" size="text-sm md:text-lg" margin="my-8">
 				{data.subtitle}
 			</SectionSubtitle>
 
@@ -47,7 +47,7 @@ const { data } = Astro.props;
 	</StyledContainer>
 
 	<!-- Action Wrapper for the scroll button -->
-	<ActionWrapper margin="mt-12">
+	<ActionWrapper margin="mt-24">
 		<!-- Scroll Action to return to pricing section -->
 		<Action
 			variant="scroll"
