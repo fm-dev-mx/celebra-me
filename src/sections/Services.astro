@@ -4,8 +4,6 @@
 
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
-import GridCell from "@/components/layout/GridCell.astro";
-import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
@@ -35,74 +33,70 @@ const chunkArray = (arr: any[], size: number) =>
 const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 ---
 
-<Section id="services-section" relative="relative">
-	<SectionTitle
-		color="text-secondary-dark/90"
-		weight="font-thin"
-		letterSpacing="tracking-wider"
-		textDecoration=""
-	>
+<Section id="services-section">
+	<SectionTitle color="text-secondary-dark/90" weight="font-thin" extraClass="tracking-wider">
 		{data.title}
 	</SectionTitle>
 	<Container>
-		<Grid gap="xl:gap-8">
-			<GridRow columns={2} gap="gap-x-24">
-				<GridCell>
-					{/* Image wrapper with hover effect classes */}
-					<div class="overflow-hidden rounded-3xl">
-						<ImageWrapper
-							flex="flex-col"
-							transition="transition-transform duration-800 ease-in-out"
-							hover="hover:scale-105"
-							rounded="rounded-3xl"
-							width="w-64 sm:w-80 lg:w-92"
-						>
-							<OptimizedImage
-								imagePath={xvImage}
-								alt="Fiesta de Quinceañera"
-								width={350}
-								height={350}
-							/>
-						</ImageWrapper>
-					</div>
-				</GridCell>
-				<GridCell>
-					{
-						firstServiceGroup.map((service, index) => (
-							<ServiceItem service={service} key={index} />
-						))
-					}
-				</GridCell>
-			</GridRow>
-			<GridRow columns={2} gap="gap-x-24">
-				<GridCell>
-					{
-						secondServiceGroup.map((service, index) => (
-							<ServiceItem service={service} key={index} />
-						))
-					}
-				</GridCell>
-				<GridCell>
-					{/* Image wrapper with hover effect classes */}
-					<div class="overflow-hidden rounded-3xl mt-8">
-						<ImageWrapper
-							flex="flex-col"
-							overflow="overflow-hidden"
-							transition="transition-transform duration-500 ease-in-out"
-							hover="hover:scale-105"
-							rounded="rounded-3xl"
-							width="w-64 sm:w-80 lg:w-92"
-						>
-							<OptimizedImage
-								imagePath={weddingPartyImage}
-								alt="Personas bailando en una fiesta"
-								width={350}
-								height={350}
-							/>
-						</ImageWrapper>
-					</div>
-				</GridCell>
-			</GridRow>
+		{/* Updated to use the new Grid component */}
+		<Grid columns={2} gap="gap-x-24 xl:gap-8">
+			{/* First group: Image and Services */}
+			<div class="flex flex-col items-center justify-center">
+				{/* Image wrapper with hover effect classes */}
+				<div class="overflow-hidden rounded-3xl">
+					<ImageWrapper
+						flex="flex-col"
+						transition="transition-transform duration-500 ease-in-out"
+						hover="hover:scale-105"
+						rounded="rounded-3xl"
+						width="w-64 sm:w-80 lg:w-92"
+					>
+						<OptimizedImage
+							imagePath={xvImage}
+							alt="Fiesta de Quinceañera"
+							width={350}
+							height={350}
+						/>
+					</ImageWrapper>
+				</div>
+			</div>
+
+			{/* Services description for first group */}
+			<div class="flex flex-col items-center justify-center">
+				{
+					firstServiceGroup.map((service, index) => (
+						<ServiceItem service={service} key={index} />
+					))
+				}
+			</div>
+
+			{/* Second group: Services and Image */}
+			<div class="flex flex-col items-center justify-center">
+				{
+					secondServiceGroup.map((service, index) => (
+						<ServiceItem service={service} key={index} />
+					))
+				}
+			</div>
+
+			{/* Image wrapper with hover effect classes */}
+			<div class="overflow-hidden rounded-3xl mt-8 flex flex-col items-center justify-center">
+				<ImageWrapper
+					flex="flex-col"
+					overflow="overflow-hidden"
+					transition="transition-transform duration-500 ease-in-out"
+					hover="hover:scale-105"
+					rounded="rounded-3xl"
+					width="w-64 sm:w-80 lg:w-92"
+				>
+					<OptimizedImage
+						imagePath={weddingPartyImage}
+						alt="Personas bailando en una fiesta"
+						width={350}
+						height={350}
+					/>
+				</ImageWrapper>
+			</div>
 		</Grid>
 	</Container>
 

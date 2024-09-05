@@ -1,33 +1,41 @@
 ---
-interface Props {
-	rows?: number; // Number of rows in the grid (default: 2)
-	gap?: string; // Gap between grid items (default: "lg:gap-20")
+import { twMerge } from "tailwind-merge";
+
+interface GridProps {
+	columns?: number; // Number of columns in the grid
+	gap?: string; // Gap between grid items
 	padding?: string; // Padding inside the grid container
-	align?: string; // Alignment of grid items (default: "items-center")
-	width?: string; // Width of the grid container (default: "w-6/7 md:w-full xl:w-3/4")
-	maxWidth?: string; // Maximum width of the grid container (default: "sm:max-w-80 lg:max-w-fit")
+	margin?: string; // Margin around the grid container
+	align?: string; // Alignment of grid items
+	maxWidth?: string; // Maximum width of the grid container
 	extraClass?: string; // Additional CSS classes for customization
 }
 
-const props = Astro.props as Props;
 const {
-	rows = 2,
-	gap = "lg:gap-20",
+	columns = 3,
+	gap = "gap-x-0 lg:gap-x-12",
 	padding = "",
-	align = "items-center",
-	width = "w-6/7 md:w-full xl:w-3/4",
+	margin = "mx-auto",
+	align = "justify-items-center",
 	maxWidth = "sm:max-w-80 lg:max-w-fit",
 	extraClass = "",
-} = props;
+} = Astro.props as GridProps;
+
+const gridClasses = twMerge(
+	`grid grid-cols-1 xl:grid-cols-${columns}`,
+	gap,
+	padding,
+	align,
+	margin,
+	maxWidth,
+	extraClass,
+);
 ---
 
-<!-- Main container for the grid -->
-<div class="flex flex-col items-center justify-center w-full">
-	<!-- Grid layout with dynamic rows and styling based on provided props -->
-	<div
-		class={`grid xl:grid-rows-${rows} ${gap} ${padding} ${align} ${width} ${maxWidth} ${extraClass}`}
-	>
+<!-- Main container ensuring items are centered -->
+<div class="flex w-full justify-center items-center">
+	<!-- Grid layout with dynamic columns and proper centering -->
+	<div class={gridClasses}>
 		<slot />
-		<!-- Slot to insert grid items/content -->
 	</div>
 </div>

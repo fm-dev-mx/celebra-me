@@ -4,7 +4,6 @@
 
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
-import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
@@ -44,82 +43,89 @@ const {
 	id="about-section"
 	backgroundImageDesktop="/images/about/bgAboutDesktop.jpg"
 	backgroundImageMobile="/images/about/bgAboutMobile.jpg"
-	padding="px-4 py-10 pt-10"
+	padding="px-4 py-10"
 	relative="relative"
 	fullWidth={true}
 	fullHeight={true}
 >
 	<!-- Overlay to provide a consistent dark background -->
 	<div class="bg-accent-dark w-full h-1 absolute inset-0 opacity-80"></div>
-
 	<!-- Container with relative positioning for absolute elements -->
-	<StyledContainer relative="relative">
-		<Container>
+	<StyledContainer relative="relative" padding="px-10">
+		<Container width=" w-full">
 			<div id="about-title" class="pt-20"></div>
-			<Grid gap="gap-12">
-				<GridRow columns={2}>
-					<div class="flex flex-col justify-content-center max-w-sm">
-						<SectionTitle
-							color="text-primary-dark"
-							weight="font-bold"
-							align="place-self-center xl:place-self-end"
-							margin="mb-8 xl:mr-2"
-						>
-							{title}
-						</SectionTitle>
-						<Paragraph
-							size="text-xl"
-							align="text-center xl:text-right"
-							textColor="text-primary-dark"
-							weight="font-normal"
-						>
-							{description}
-						</Paragraph>
-					</div>
 
-					<!-- Image section with responsive design and hover effects for larger screens -->
-					<div class="overflow-hidden rounded-3xl">
-						<ImageWrapper
-							width="w-full"
-							height="h-auto"
-							justify="justify-center"
-							align="items-end"
-							class="transition-all duration-300 ease-in-out transform hover:scale-105"
-						>
-							<OptimizedImage
-								imagePath={partyToastImage}
-								alt="Personas brindando en una celebración"
-								rounded="rounded-3xl"
-								width={350}
-								height={350}
-							/>
-						</ImageWrapper>
-					</div>
-				</GridRow>
-				<GridRow columns={3}>
-					{
-						values.map((value) => (
-							<Card maxWidth="min-w-sm max-w-sm">
-								<IconWrapper background="bg-primary-dark" color="text-white">
-									<Icon icon={value.icon} size="h-9 w-9" />
-								</IconWrapper>
-								<h3 class="text-lg sm:text-xl font-semibold mb-2 text-primary-dark text-center">
-									{value.name}
-								</h3>
-								<Paragraph
-									textColor="text-primary"
-									align="text-center"
-									size="text-sm sm:text-base"
-								>
-									{value.description}
-								</Paragraph>
-							</Card>
-						))
-					}
-				</GridRow>
+			<Grid columns={2} gap="gap-12">
+				{/* Section with title and description */}
+				<div class="flex flex-col justify-content-center max-w-sm">
+					<SectionTitle
+						color="text-primary-dark"
+						weight="font-bold"
+						align="place-self-center xl:place-self-end"
+						margin="mb-8 xl:mr-2"
+					>
+						{title}
+					</SectionTitle>
+					<Paragraph
+						size="text-xl"
+						align="text-center xl:text-right"
+						textColor="text-primary-dark"
+						weight="font-normal"
+					>
+						{description}
+					</Paragraph>
+				</div>
+
+				{/* Image with responsive design and hover effects */}
+				<div class="flex overflow-hidden rounded-3xl mx-auto">
+					<ImageWrapper
+						width="w-full"
+						height="h-auto"
+						minWidth="min-w-[250px]"
+						justify="justify-center"
+						margin="mx-auto"
+						align="items-end"
+						hover="hover:scale-105"
+						transition="transition-transform duration-500 ease-in-out"
+					>
+						<OptimizedImage
+							imagePath={partyToastImage}
+							alt="Personas brindando en una celebración"
+							rounded="rounded-3xl"
+							width={350}
+							height={350}
+						/>
+					</ImageWrapper>
+				</div>
 			</Grid>
 
-			<!-- Call-to-action button with margin adjustments for different screens -->
+			{/* Grid for displaying company values */}
+			<Grid columns={3} gap="gap-8" padding="pt-12">
+				{
+					values.map((value) => (
+						<Card
+							minWidth="min-w-[250px] max-w-[350px] xl:min-w-[230px] xl:max-w-[230px]"
+							minHeight="min-h-[200px] max-h-[200px] xl:min-h-[230px] xl:max-h-[230px]"
+						>
+							<IconWrapper background="bg-primary-dark" color="text-white">
+								<Icon icon={value.icon} size="h-9 w-9" />
+							</IconWrapper>
+							<h3 class="text-lg sm:text-xl font-semibold mb-2 text-primary-dark text-center">
+								{value.name}
+							</h3>
+							<Paragraph
+								textColor="text-primary"
+								align="text-center"
+								size="text-sm sm:text-base"
+							>
+								{value.description}
+							</Paragraph>
+						</Card>
+					))
+				}
+			</Grid>
+
+			{/* Call-to-action button with margin adjustments for different screens */}
 			<ActionWrapper margin="my-16">
 				<Action
 					variant="tertiary"
@@ -131,7 +137,7 @@ const {
 				</Action>
 			</ActionWrapper>
 
-			<!-- Scroll down button to navigate to testimonials section -->
+			{/* Scroll down button to navigate to testimonials section */}
 			<ActionWrapper margin="mt-24">
 				<Action
 					variant="scroll"
@@ -145,6 +151,5 @@ const {
 		</Container>
 	</StyledContainer>
 </Section>
-
 <!-- Bottom line for visual separation -->
 <div class="bg-accent-dark w-full h-1 opacity-80"></div>
