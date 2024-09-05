@@ -19,10 +19,10 @@ const Input: React.FC<InputProps> = ({
   required = false,
   onInput,
 }) => (
-  <div className="flex flex-col">
-    <label className="mb-2 font-medium text-gray-700">{label}</label>
+  <div className="flex flex-col ">
+    <label className="mb-2 font-medium text-gray-700 w-full">{label}</label>
     <input
-      className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500"
+      className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500 w-full"
       type={type}
       placeholder={placeholder}
       value={value}

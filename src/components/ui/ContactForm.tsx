@@ -76,7 +76,7 @@ const ContactForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
+    <form onSubmit={handleSubmit} className="flex flex-col space-y-6 w-5/6 sm:w-3/4 md:w-2/3 lg:w-7/12 xl:w-1/2">
       {/* Input for Name */}
       <Input
         label="Nombre"
@@ -122,10 +122,10 @@ const ContactForm: React.FC = () => {
       />
 
       {/* Submit Button */}
-      <div className="my-16 flex justify-center items-center">
+      <div className="flex justify-center items-center">
         <button
           type="submit"
-          className="inline-flex items-center justify-center text-lg px-14 py-2 shadow-2xl bg-accent text-white hover:bg-accent-dark transition-all duration-300"
+          className="w-5/6 md:w-2/3 lg:w-3/4 xl:w-1/2 inline-flex items-center justify-center text-nowrap text-base px-14 py-2 shadow-2xl bg-accent text-white hover:bg-accent-dark transition-all duration-500 ease-in-out rounded-sm"
         >
           Enviar Mensaje
         </button>

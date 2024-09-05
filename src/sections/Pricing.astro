@@ -1,8 +1,6 @@
 ---
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
-import GridCell from "@/components/layout/GridCell.astro";
-import GridRow from "@/components/layout/GridRow.astro";
 import Section from "@/components/layout/Section.astro";
 import BulletList from "@/components/common/BulletList.astro";
 import Card from "@/components/ui/Card.tsx";
@@ -15,7 +13,7 @@ import type { Icon as IconType, PricingData } from "@/config/landing.interface";
 
 // Define the properties interface for the component
 interface Props {
-    data: PricingData;
+	data: PricingData;
 }
 
 // Destructure the data property from Astro.props
@@ -23,119 +21,108 @@ const { data } = Astro.props;
 ---
 
 <Section
-    id="pricing-section"
-    relative="relative"
-    padding="px-16 py-10 pt-40"
-    fullWidth={true}
-    fullHeight={true}
-    backgroundImageMobile="/images/pricing/bgPricingMobile.jpg"
-    backgroundImageDesktop="/images/pricing/bgPricingDesktop.jpg"
+	id="pricing-section"
+	padding="px-2 sm:px-14 py-10 pt-40"
+	fullWidth={true}
+	fullHeight={true}
+	backgroundImageMobile="/images/pricing/bgPricingMobile.jpg"
+	backgroundImageDesktop="/images/pricing/bgPricingDesktop.jpg"
 >
-    {/* Top decorative line */}
-    <div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+	{/* Top decorative line */}
+	<div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
 
-    <StyledContainer relative="relative" width="w-full" margin="m-8">
-        <Container>
-            <div id="about-title" class="pt-20"></div>
-            {/* Pricing section title */}
-            <SectionTitle
-                margin="mb-10"
-                weight="font-semibold"
-                color="text-secondary-dark"
-                extraClass="pricing-card-title"
-            >
-                {data.title}
-            </SectionTitle>
+	<StyledContainer relative="relative" margin="" extraClasses="" maxWidth="max-w-7xl">
+		<Container width="w-full xl:w-11/12 2xl:w-4/5" padding="px-0 xl:px-10 pt-20">
+			{/* Pricing section title */}
+			<SectionTitle
+				margin="mb-10"
+				weight="font-semibold"
+				color="text-secondary-dark"
+				extraClass="pricing-card-title"
+			>
+				{data.title}
+			</SectionTitle>
 
-            {/* Grid to display pricing plans */}
-            <Grid extraClass="pricing-grid" width="w-full">
-                <GridRow
-                    columns={3}
-                    gap="gap-x-0 lg:gap-x-24 gap-y-2"
-                    width="w-full"
-                    align="items-center"
-                    margin="mb-20"
-                >
-                    {/* Map through the tier data to create a card for each plan */}
-                    {data.tiers.map((tier) => (
-                        <GridCell>
-                            <Card
-                                href={tier.href}
-                                hover="hover:brightness-105 hover:scale-105"
-                                borderColor="border-primary hover:border-secondary"
-                                extraClass="pricing-card"
-                                client:visible
-                            >
-                                {/* Plan title */}
-                                <SectionTitle
-                                    size="text-2xl"
-                                    margin="mt-4"
-                                    color="text-primary-dark"
-                                    weight="font-semibold"
-                                    extraClass="pricing-card-title"
-                                >
-                                    {tier.title}
-                                </SectionTitle>
+			{/* Grid to display pricing plans */}
+			<Grid extraClass="pricing-grid" columns={3} align="items-center" margin="mb-20">
+				{/* Map through the tier data to create a card for each plan */}
+				{
+					data.tiers.map((tier) => (
+						<Card
+							href={tier.href}
+							hover="hover:brightness-105 hover:scale-105"
+							borderColor="border-primary hover:border-secondary"
+							extraClass="pricing-card"
+							client:visible
+						>
+							{/* Plan title */}
+							<SectionTitle
+								size="text-2xl"
+								margin="mt-4"
+								color="text-primary-dark"
+								weight="font-semibold"
+								extraClass="pricing-card-title"
+							>
+								{tier.title}
+							</SectionTitle>
 
-                                {/* Plan description */}
-                                <SectionSubtitle
-                                    color="text-primary"
-                                    size="text-md"
-									margin="mb-4"
-                                    extraClass="pricing-card-subtitle"
-                                >
-                                    {tier.description}
-                                </SectionSubtitle>
+							{/* Plan description */}
+							<SectionSubtitle
+								color="text-primary"
+								size="text-md"
+								margin="mb-4"
+								extraClass="pricing-card-subtitle"
+							>
+								{tier.description}
+							</SectionSubtitle>
 
-                                {/* Plan price */}
-                                <SectionSubtitle
-                                    color="text-secondary-dark"
-                                    size="text-xl"
-                                    weight="font-normal"
-									margin="mb-0"
-                                    extraClass=""
-                                >
-                                    {tier.price.amount}
-                                    <span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
-                                </SectionSubtitle>
+							{/* Plan price */}
+							<SectionSubtitle
+								color="text-secondary-dark"
+								size="text-xl"
+								weight="font-normal"
+								margin="mb-0"
+								extraClass="pricing-card-price"
+							>
+								{tier.price.amount}
+								<span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
+							</SectionSubtitle>
 
-                                {/* List of plan features */}
-                                <BulletList
-                                    items={tier.features.map(feature => ({
-                                        text: feature,
-                                        icon: "CheckIcon" as IconType
-                                    }))}
-                                    color="text-primary-dark/90"
-                                    size="text-sm"
-                                    weight="font-thin"
-                                    iconSize="h-6 w-6"
-									iconColor="text-secondary-light"
-                                    iconPadding="p-4"
-                                    gap="gap-y-0"
-                                />
+							{/* List of plan features */}
+							<BulletList
+								items={tier.features.map((feature) => ({
+									text: feature,
+									icon: "CheckIcon" as IconType,
+								}))}
+								color="text-primary-dark/90"
+								size="text-sm"
+								weight="font-thin"
+								iconSize="h-6 w-6"
+								iconColor="text-secondary"
+								iconPadding="p-4"
+								gap="gap-y-0"
+								listClass="pricing-card-bullet-text"
+								iconClass="pricing-card-bullet-icon"
+							/>
 
-                                {/* Plan call-to-action */}
-								<!-- TODO: Implement CTA functionality -->
-								<div class="pricing-card-cta hover:font-semibold brightness-110">{tier.cta}</div>
-                            </Card>
-                        </GridCell>
-                    ))}
-                </GridRow>
-            </Grid>
+							{/* Plan call-to-action */}
+							<div class="pricing-card-cta hover:scale-125">{tier.cta}</div>
+						</Card>
+					))
+				}
+			</Grid>
 
-            {/* Button to navigate to FAQ section */}
-            <ActionWrapper margin="mt-24"
-            >
-                <Action
-                    variant="scroll"
-                    href="#faq-section"
+			<ActionWrapper margin="mt-24">
+				<Action
+					variant="scroll"
+					href="#faq-section"
 					color="secondary"
-                    title="Responde tus dudas sobre nuestros servicios"
-                    icon="ArrowDownIcon"
-                />
-            </ActionWrapper>
-        </Container>
-    </StyledContainer>
+					title="Responde tus dudas sobre nuestros servicios"
+					icon="ArrowDownIcon"
+				/>
+			</ActionWrapper>
+		</Container>
+	</StyledContainer>
 </Section>
 
 {/* Bottom decorative line */}

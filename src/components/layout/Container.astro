@@ -6,24 +6,30 @@ interface ContainerProps {
 	margin?: string;
 	padding?: string;
 	relative?: string;
+	extraClasses?: string;
 }
 
+// Default values adjusted for better layout and centering
 const {
-	width = "w-5/6 xl:w-3/4",
+	width = "w-5/6",
 	margin = "mx-auto",
 	padding = "",
 	relative = "",
+	extraClasses = "",
 } = Astro.props as ContainerProps;
 
+// Combine classes with twMerge to ensure clean, conflict-free styling
 const containerClasses = twMerge(
 	"flex flex-col items-center justify-center",
 	width,
 	margin,
 	padding,
 	relative,
+	extraClasses,
 );
 ---
 
+<!-- Main container to center its content with improved spacing -->
 <div class={containerClasses}>
 	<slot />
 </div>

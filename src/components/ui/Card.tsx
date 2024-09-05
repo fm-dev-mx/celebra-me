@@ -45,18 +45,13 @@ const Card: React.FC<CardProps> = ({
     opacity = "opacity-100",
     children,
 }) => {
-    // Apply effects based on device type
+    // Handle hover and intersection effects based on device type
     useEffect(() => {
         const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
 
-        // If it's a touch device, use intersection observer for effects
-        if (isTouchDevice) {
-            initializeCardIntersectionObserver();
-        } else {
-            // Otherwise, use hover effects for non-touch devices
-            initializeCardHoverEffects();
-        }
-    }, []); // Empty dependency array ensures this effect runs only once when the component mounts
+        // Initialize relevant effects based on device type
+        isTouchDevice ? initializeCardIntersectionObserver() : initializeCardHoverEffects();
+    }, []); // Runs only once when the component mounts
 
     // Combine all provided classes into a single string for the card element
     const classList = [
@@ -77,7 +72,7 @@ const Card: React.FC<CardProps> = ({
         opacity,
     ].join(" ");
 
-    // Content to be rendered inside the card
+    // Renders the content of the card
     const cardContent = (
         <div className={classList}>
             <div className="flex flex-col content-center items-center text-center">
@@ -86,16 +81,14 @@ const Card: React.FC<CardProps> = ({
         </div>
     );
 
-    // If an href is provided, wrap the card in a link element
-    if (href) {
-        return (
-            <a href={href} className="block w-full h-full no-underline">
-                {cardContent}
-            </a>
-        );
-    } else {
-        return cardContent;
-    }
+    // Wrap the card in a link if href is provided
+    return href ? (
+        <a href={href} className="block w-full h-full no-underline">
+            {cardContent}
+        </a>
+    ) : (
+        cardContent
+    );
 };
 
 export default Card;
