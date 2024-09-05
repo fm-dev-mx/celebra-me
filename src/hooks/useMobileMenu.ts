@@ -1,35 +1,53 @@
+// src/hooks/useMobileMenu.ts
 import { useEffect } from "react";
 
 /**
- * Hook to manage the mobile menu toggle behavior.
- * Attaches an event listener to the mobile menu button to toggle the menu visibility.
+ * Hook to manage the mobile menu toggle behavior with smooth transitions.
+ * Adds or removes the "fade-in" and "fade-out" classes for entry and exit effects.
  */
 export function useMobileMenu() {
 	useEffect(() => {
-		// Get the mobile menu button and menu elements by their IDs.
+		// Select the mobile menu button and menu elements by their IDs.
 		const menuButton = document.getElementById("mobile-menu-button");
 		const mobileMenu = document.getElementById("mobile-menu");
 
 		/**
-		 * Function to toggle the visibility of the mobile menu.
-		 * Adds or removes the "hidden" class from the mobile menu element.
+		 * Toggles the visibility of the mobile menu with transition effects.
+		 * Uses the "fade-in" class for showing and "fade-out" for hiding.
 		 */
 		function toggleMobileMenu() {
 			if (mobileMenu) {
-				mobileMenu.classList.toggle("hidden");
+				// Check if the menu is hidden and apply appropriate classes.
+				const isHidden = mobileMenu.classList.contains("hidden");
+				if (isHidden) {
+					mobileMenu.classList.remove("hidden");
+					requestAnimationFrame(() => {
+						mobileMenu.classList.add("fade-in");
+						mobileMenu.classList.remove("fade-out");
+					});
+				} else {
+					mobileMenu.classList.add("fade-out");
+					mobileMenu.classList.remove("fade-in");
+
+					// Delay hiding the menu to match the transition duration.
+					setTimeout(() => {
+						mobileMenu.classList.add("hidden");
+						mobileMenu.classList.remove("fade-out");
+					}, 300); // Ensure this matches the CSS transition duration.
+				}
 			}
 		}
 
-		// Attach the event listener to the mobile menu button.
+		// Attach the click event listener to toggle the mobile menu.
 		if (menuButton) {
 			menuButton.addEventListener("click", toggleMobileMenu);
 		}
 
-		// Clean up the event listener when the component is unmounted.
+		// Clean up the event listener on component unmount to prevent memory leaks.
 		return () => {
 			if (menuButton) {
 				menuButton.removeEventListener("click", toggleMobileMenu);
 			}
 		};
-	}, []); // Empty dependency array ensures this effect runs only once on mount.
+	}, []); // Runs only once when the component is mounted.
 }

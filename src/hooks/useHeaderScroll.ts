@@ -1,110 +1,155 @@
+// src/hooks/useHeaderScroll.ts
 import { useEffect } from "react";
 
 /**
- * Hook that handles the scroll behavior of the header.
- * The header will hide when scrolling down and show when scrolling up.
- * The background and shadow are adjusted based on scroll position.
- * The mobile menu will also be closed if it is open after a slight scroll.
+ * Hook that manages the scroll, hover behavior of the header,
+ * and highlights the menu link based on the section currently in view.
  */
 export function useHeaderScroll() {
-	// useEffect ensures that the scroll handling logic is only run on the client
-	// after the component has been mounted.
 	useEffect(() => {
-		// Variables to keep track of the last scroll position, scroll distance, and header visibility.
+		// Track the last scroll position, header visibility state, and hover-triggered state.
 		let lastScrollTop = 0;
 		let isHeaderVisible = true;
-		const scrollThreshold = 10;  // Minimum scroll distance in pixels to trigger the menu close.
+		let appearedByMouse = false;
 
-		// Retrieve the header element by its ID, the container within the header, and the mobile menu.
+		// Retrieve the main header, its inner container, the mobile menu elements, and all sections.
 		const header = document.getElementById("main-header");
 		const headerContainer = header?.querySelector(".relative");
 		const mobileMenu = document.getElementById("mobile-menu");
+		const mobileMenuLinks = document.querySelectorAll("#mobile-menu a");
+		const sections = document.querySelectorAll("section");
+
+		// Early return if header elements are not found.
+		if (!header || !headerContainer) return;
 
 		/**
-		 * Handles the scroll event. This function toggles the visibility of the header
-		 * based on the scroll direction and adjusts the header's background and shadow
-		 * depending on the scroll position. It also closes the mobile menu if it is open
-		 * after the user scrolls past a certain threshold.
+		 * Function to handle the scroll event.
+		 * Toggles the visibility of the header based on the scroll direction
+		 * and smoothly hides the mobile menu if it is open.
 		 */
 		function handleScroll() {
-			// If the header or container is not found, exit the function early.
-			if (!header || !headerContainer) return;
-
-			// Get the current scroll position.
+			// Obtain the current vertical scroll position.
 			const scrollTop = window.scrollY || document.documentElement.scrollTop;
-			// Calculate the difference between the current and last scroll positions.
+			// Calculate the scroll distance since the last event.
 			const scrollDelta = scrollTop - lastScrollTop;
 
-			// Hide the header when scrolling down, and it's currently visible.
+			// Hide the header when scrolling down and it's currently visible.
 			if (scrollDelta > 0 && isHeaderVisible) {
-				headerContainer.classList.remove("opacity-100", "translate-y-0");
-				headerContainer.classList.add("opacity-0", "-translate-y-full");
+				headerContainer?.classList.remove("opacity-100", "translate-y-0");
+				headerContainer?.classList.add("opacity-0", "-translate-y-full");
 				isHeaderVisible = false;
-			}
-			// Show the header when scrolling up, and it's currently hidden.
-			else if (scrollDelta < 0 && !isHeaderVisible) {
-				headerContainer.classList.remove("opacity-0", "-translate-y-full");
-				headerContainer.classList.add("opacity-100", "translate-y-0");
-				isHeaderVisible = true;
-			}
+				appearedByMouse = false;
 
-			// When at the top of the page, make the header transparent.
-			if (scrollTop === 0) {
-				headerContainer.classList.remove("bg-white/80", "shadow-lg", "backdrop-blur-sm");
-				headerContainer.classList.add("bg-transparent");
-			}
-			// Otherwise, apply a background and shadow to the header.
-			else {
-				headerContainer.classList.add("bg-white/80", "shadow-lg", "backdrop-blur-sm");
-				headerContainer.classList.remove("bg-transparent");
-			}
-
-			// Close the mobile menu if it's open and the scroll exceeds the threshold.
-			if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
-				// If the user scrolls down by more than the threshold, close the mobile menu.
-				if (Math.abs(scrollDelta) > scrollThreshold) {
-					mobileMenu.classList.add("opacity-0", "transform", "scale-95"); // Add smooth transition classes
+				// Close the mobile menu with fade-out effect if open while scrolling down.
+				if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
+					mobileMenu.classList.add("fade-out");
 					setTimeout(() => {
-						mobileMenu.classList.add("hidden"); // Hide after the transition
-						mobileMenu.classList.remove("opacity-0", "transform", "scale-95"); // Clean up transition classes
-					}, 300); // Match with the transition duration
+						mobileMenu.classList.add("hidden");
+						mobileMenu.classList.remove("fade-out");
+					}, 300); // Match transition duration for smooth effect.
 				}
+			} else if (scrollDelta < 0 && !isHeaderVisible) {
+				// Show the header when scrolling up and it's currently hidden.
+				headerContainer?.classList.remove("opacity-0", "-translate-y-full");
+				headerContainer?.classList.add("opacity-100", "translate-y-0");
+				isHeaderVisible = true;
+				appearedByMouse = false;
 			}
 
-			// Update the last scroll position for the next scroll event.
+			// Update the last scroll position to the current scroll position.
 			lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
 		}
 
 		/**
-		 * Throttle function to limit the rate at which the handleScroll function is called.
-		 * This helps improve performance by reducing the number of times the function is executed
-		 * during continuous scrolling.
-		 *
-		 * @param callback - The function to be throttled.
-		 * @param limit - The time limit (in milliseconds) to throttle the function.
+		 * Function to handle mouseover events, making the header visible when the mouse hovers over it.
 		 */
-		function throttle(callback: Function, limit: number) {
-			let waiting = false;
-			return (...args: any[]): void => {
-				if (!waiting) {
-					callback(...args);
-					waiting = true;
-					setTimeout(() => {
-						waiting = false;
-					}, limit);
-				}
-			};
+		function handleMouseOver() {
+			if (!isHeaderVisible) {
+				headerContainer?.classList.remove("opacity-0", "-translate-y-full");
+				headerContainer?.classList.add("opacity-100", "translate-y-0");
+				isHeaderVisible = true;
+				appearedByMouse = true;
+			}
 		}
 
-		// Create a throttled version of the handleScroll function to improve performance.
-		const throttledScroll = throttle(handleScroll, 100);
+		/**
+		 * Function to handle mouseleave events, hiding the header only if it appeared due to mouse hover.
+		 */
+		function handleMouseLeave() {
+			if (isHeaderVisible && appearedByMouse) {
+				headerContainer?.classList.remove("opacity-100", "translate-y-0");
+				headerContainer?.classList.add("opacity-0", "-translate-y-full");
+				isHeaderVisible = false;
+				appearedByMouse = false;
+			}
+		}
 
-		// Attach the throttled scroll event listener to the window.
-		window.addEventListener("scroll", throttledScroll);
+		/**
+		 * Function to observe sections and highlight the corresponding menu link.
+		 * Uses Intersection Observer API to detect which section is currently visible.
+		 */
+		function highlightMenuLink(entries: IntersectionObserverEntry[]) {
+			entries.forEach((entry) => {
+				const link = document.querySelector(
+					`#main-header nav a[href="#${entry.target.id}"]`
+				);
+				const mobileLink = document.querySelector(
+					`#mobile-menu a[href="#${entry.target.id}"]`
+				);
 
-		// Clean up the event listener when the component is unmounted to prevent memory leaks.
+				if (entry.isIntersecting) {
+					if (link) link.classList.add("text-primary-dark");
+					if (mobileLink) mobileLink.classList.add("text-primary-dark");
+				} else {
+					if (link) link.classList.remove("text-primary-dark");
+					if (mobileLink) mobileLink.classList.remove("text-primary-dark");
+				}
+			});
+		}
+
+		// Create an Intersection Observer to track visibility of each section.
+		const observer = new IntersectionObserver(highlightMenuLink, {
+			root: null,
+			rootMargin: "-10% 0px -10% 0px",
+			threshold: 0.2,
+		});
+
+		// Attach observer to each section.
+		sections.forEach((section) => {
+			observer.observe(section);
+		});
+
+		// Attach event listeners for scroll, mouseover, and mouseleave to control header visibility.
+		window.addEventListener("scroll", handleScroll);
+		header.addEventListener("mouseover", handleMouseOver);
+		header.addEventListener("mouseleave", handleMouseLeave);
+
+		// Attach event listeners to mobile menu links to hide the menu on click.
+		mobileMenuLinks.forEach((link) => {
+			link.addEventListener("click", () => {
+				mobileMenu?.classList.add("fade-out");
+				setTimeout(() => {
+					mobileMenu?.classList.add("hidden");
+					mobileMenu?.classList.remove("fade-out");
+				}, 300);
+			});
+		});
+
+		// Cleanup to avoid memory leaks.
 		return () => {
-			window.removeEventListener("scroll", throttledScroll);
+			window.removeEventListener("scroll", handleScroll);
+			header.removeEventListener("mouseover", handleMouseOver);
+			header.removeEventListener("mouseleave", handleMouseLeave);
+			sections.forEach((section) => observer.unobserve(section));
+			mobileMenuLinks.forEach((link) => {
+				link.removeEventListener("click", () => {
+					mobileMenu?.classList.add("fade-out");
+					setTimeout(() => {
+						mobileMenu?.classList.add("hidden");
+						mobileMenu?.classList.remove("fade-out");
+					}, 300);
+				});
+			});
 		};
-	}, []); // Empty dependency array ensures this effect runs only once on mount.
+	}, []); // Runs only once when the component is mounted.
 }
