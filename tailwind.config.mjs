@@ -34,6 +34,10 @@ export default {
           DEFAULT: "#2D2D2D", // Almost Black
           light: "#5A5A5A", // Soft Dark Gray
         },
+		whatsapp: {
+          DEFAULT: "#25D366", // WhatsApp Green
+          hover: "#20b157", // Darker WhatsApp Green for hover
+        },
       },
       textShadow: {
         lg: "2px 2px 4px rgba(0, 0, 0, 0.1)", // Large subtle shadow
@@ -85,7 +89,7 @@ export default {
   safelist: (() => {
     // Generate safelist for color utilities to prevent purging
     const generateColorSafelist = () => {
-      const colors = ["primary", "secondary", "accent", "neutral", "background", "text"];
+      const colors = ["primary", "secondary", "accent", "neutral", "background", "text", "whatsapp"];
       const shades = ["", "light", "dark", "lightest", "medium", "darkest", "alt"];
       const utilities = ["bg", "text", "border", "hover:bg", "hover:text", "hover:border"];
 

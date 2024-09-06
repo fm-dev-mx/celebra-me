@@ -45,11 +45,11 @@ const {
 } = Astro.props;
 
 // Base styles applied to all Action variants
-const baseStyles = `flex ${flex} inline-flex items-center justify-center transition-all duration-300 text-sm md:text-base ${minWidth} ${variant !== "text" && "hover:shadow-2xl"} text-nowrap h-[40px] md:h-[48px]`;
+const baseStyles = `flex ${flex} inline-flex items-center justify-center transition-all duration-300 ease-in text-sm md:text-base ${minWidth} ${variant !== "text" && "hover:shadow-2xl"} text-nowrap h-[40px] md:h-[48px]`;
 
 // Define styles for each variant
 const variantStyles = {
-	primary: `py-2 px-6 rounded-3xl text-white`,
+	primary: `py-2 px-6 rounded-3xl`,
 	secondary: `py-2 px-3 rounded-3xl bg-transparent border-2`,
 	tertiary: `text-lg px-14 py-3 shadow-2xl`,
 	text: `opacity-80 md:text-xs lg:text-sm flex items-center`,
@@ -62,7 +62,7 @@ const variantStyles = {
 // Define color styles based on the color prop
 const colorStyles = color
 	? {
-			primary: `bg-${color} border-2 border-${color}`,
+			primary: `bg-${color}-light border border-${color}-dark text-accent-dark hover:text-${color}-light hover:bg-${color}-dark hover:border-${color}-light`,
 			secondary: `text-${color} border-${color} hover:border-opacity-90`,
 			tertiary: `bg-${color}-dark text-white`,
 			text: `text-${color}`,

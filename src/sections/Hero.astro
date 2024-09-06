@@ -1,6 +1,6 @@
 ---
 // src/sections/Hero.astro
-// This component represents the Hero section of the website, displaying the logo, slogan and  a call-to-action.
+// This component represents the Hero section of the website, displaying the logo, slogan and a call-to-action.
 
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
@@ -9,6 +9,7 @@ import StyledContainer from "@/components/layout/StyledContainer.astro";
 import type { Icon as IconType } from "@/config/landing.interface";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
+import WhatsAppButton from "@/components/ui/WhatsAppButton";
 
 // Define the expected data structure for the Hero component
 interface HeroData {
@@ -67,15 +68,15 @@ const { data } = Astro.props;
 			<img
 				src="/images/hero/rectangleLogo400x200.png"
 				srcset="/images/hero/rectangleLogo200x100.png 200w,
-			 /images/hero/rectangleLogo250x125.png 250w,
-			 /images/hero/rectangleLogo300x150.png 300w,
-			 /images/hero/rectangleLogo350x175.png 360w,
-			 /images/hero/rectangleLogo400x200.png 400w"
+                 /images/hero/rectangleLogo250x125.png 250w,
+                 /images/hero/rectangleLogo300x150.png 300w,
+                 /images/hero/rectangleLogo350x175.png 360w,
+                 /images/hero/rectangleLogo400x200.png 400w"
 				sizes="(max-width: 480px) 200px,
-             (max-width: 640px) 250px,
-             (max-width: 768px) 300px,
-             (max-width: 1024px) 360px,
-             400px"
+               (max-width: 640px) 250px,
+               (max-width: 768px) 300px,
+               (max-width: 1024px) 360px,
+               400px"
 				alt="Logo celebra-me.com"
 				class="mx-auto mb-2"
 			/>
@@ -94,18 +95,11 @@ const { data } = Astro.props;
 
 		<!-- CTA Buttons for main actions -->
 		<ActionWrapper margin="mt-24" gap="gap-4 sm:gap-6">
+			<WhatsAppButton client:idle />
 			<Action
 				minWidth="min-w-[180px] sm:min-w-[140px]"
 				variant="primary"
-				color="secondary"
-				href="#"
-			>
-				{data.primaryCta}
-			</Action>
-			<Action
-				minWidth="min-w-[180px] sm:min-w-[140px]"
-				variant="secondary"
-				color="secondary"
+				color="primary"
 				href="#"
 			>
 				{data.secondaryCta}
