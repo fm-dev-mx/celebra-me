@@ -50,7 +50,7 @@ const baseStyles = `flex ${flex} inline-flex items-center justify-center transit
 // Define styles for each variant
 const variantStyles = {
 	primary: `py-2 px-6 rounded-3xl`,
-	secondary: `py-2 px-3 rounded-3xl bg-transparent border-2`,
+	secondary: `py-2 px-3 rounded-3xl border-2`,
 	tertiary: `text-lg px-14 py-3 shadow-2xl`,
 	text: `opacity-80 md:text-xs lg:text-sm flex items-center`,
 	icon: `hover:opacity-50`,
@@ -62,8 +62,8 @@ const variantStyles = {
 // Define color styles based on the color prop
 const colorStyles = color
 	? {
-			primary: `bg-${color}-light border border-${color}-dark text-accent-dark hover:text-${color}-light hover:bg-${color}-dark hover:border-${color}-light`,
-			secondary: `text-${color} border-${color} hover:border-opacity-90`,
+			primary: `bg-${color}-light border border-${color}-dark text-secondary-dark hover:text-${color}-light hover:bg-${color}-dark hover:border-${color}-light`,
+			secondary: `text-neutral-light border-${color} bg-${color} hover:border-opacity-90`,
 			tertiary: `bg-${color}-dark text-white`,
 			text: `text-${color}`,
 			icon: `text-${color}`,

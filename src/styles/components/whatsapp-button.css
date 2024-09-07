@@ -2,7 +2,7 @@
 
 /* Base styles for the WhatsApp button */
 .whatsapp-hero-button {
-  @apply flex items-center justify-center bg-accent-light border border-accent-dark text-neutral-dark rounded-3xl px-9 transition duration-300 ease-in shadow-lg h-[40px] md:h-[48px] relative overflow-hidden;
+  @apply flex items-center justify-center bg-primary-light border border-accent-dark text-neutral-dark rounded-3xl px-9 transition duration-300 ease-in shadow-lg h-[40px] md:h-[48px] relative overflow-hidden min-w-[180px] sm:min-w-[140px];
 }
 
 /* Hover effect for the button */
