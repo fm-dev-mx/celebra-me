@@ -16,6 +16,7 @@ import type { ServicesData } from "@/config/landing.interface";
 // Import local images
 import xvImage from "@/images/services/xv.jpg";
 import weddingPartyImage from "@/images/services/weddingParty.jpg";
+import ActionBase from "@/components/common/actions/ActionBase";
 
 interface Props {
 	data: ServicesData;
@@ -102,15 +103,15 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 
 	{/* CTA Button */}
 	<ActionWrapper margin="mt-24">
-		<Action
+		<ActionBase
 			variant="tertiary"
 			href="#"
 			color="secondary"
-			class="w-full md:w-auto border-2 border-secondary-light border-dashed bg-opacity-70 hover:border-opacity-50"
+			className=""
 			title="Ver demos de invitaciones"
 		>
 			Elegir mi invitación
-		</Action>
+		</ActionBase>
 	</ActionWrapper>
 
 	{/* Scroll to About Section Button */}

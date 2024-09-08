@@ -1,25 +1,23 @@
 ---
-// About-us.astro
-// This component represents the About section of the website, showcasing company values and a call-to-action.
-
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
 import Section from "@/components/layout/Section.astro";
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import Card from "@/components/ui/Card.astro";
-import Icon from "@/components/common/Icon.astro";
 import IconWrapper from "@/components/common/IconWrapper.astro";
 import OptimizedImage from "@/components/common/OptimizedImage.astro";
 import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import Paragraph from "@/components/common/Paragraph.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
-import type { AboutData, Icon as IconType } from "@/config/landing.interface";
+import ActionBase from "@/components/common/actions/ActionBase";
+import ActionIcon from "@/components/common/actions/ActionIcon";
+import type { AboutData, IconNames } from "@/config/landing.interface";
 import partyToastImage from "@/images/about/partyToast.jpg";
+import Icon from "@/components/common/Icon";
+import ActionWrapper from "@/components/common/ActionWrapper.astro";
 
 interface Value {
-	icon: IconType;
+	icon: IconNames;
 	name: string;
 	description: string;
 }
@@ -127,29 +125,29 @@ const {
 
 			{/* Call-to-action button with margin adjustments for different screens */}
 			<ActionWrapper margin="my-16">
-				<Action
+				<ActionBase
 					variant="tertiary"
 					color="accent"
+					as="a"
 					href="#"
 					title="Cuéntanos sobre tu evento"
 				>
 					{cta.label}
-				</Action>
+				</ActionBase>
 			</ActionWrapper>
 
-			{/* Scroll down button to navigate to testimonials section */}
 			<ActionWrapper margin="mt-24">
-				<Action
-					variant="scroll"
-					href="#testimonials-section"
-					title="Ver algunos de los clientes que confiaron en nosotras"
+				<ActionIcon
 					icon="ArrowDownIcon"
+					variant="scroll"
 					color="primary"
-					class="hover:text-primary"
+					as="a"
+					href="#testimonials-section"
+					title="Ver clientes que confiaron en nosotros"
 				/>
 			</ActionWrapper>
 		</Container>
 	</StyledContainer>
 </Section>
-<!-- Bottom line for visual separation -->
+
 <div class="bg-accent-dark w-full h-1 opacity-80"></div>

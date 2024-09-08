@@ -31,12 +31,12 @@ export interface ServicesData {
 export interface Service {
 	title: string;
 	description: string;
-	icon: Icon;
+	icon: IconNames;
 }
 
 export interface FooterData {
 	logo: string;
-	icon: Icon;
+	icon: IconNames;
 	description: string;
 	links: Link[];
 	socials: Social[];
@@ -48,7 +48,7 @@ export interface Link {
 }
 
 export interface Social {
-	icon: Icon;
+	icon: IconNames;
 	href: string;
 	title?: string;
 }
@@ -61,7 +61,7 @@ export interface AboutData {
 }
 
 export interface Value {
-	icon: Icon;
+	icon: IconNames;
 	name: string;
 	description: string;
 }
@@ -142,20 +142,24 @@ export interface ContactData { // Added ContactData interface
 	emailTo: string; // Email to which the form will be submitted
 }
 
-export type Icon =
-	| "CheckIcon"
-	| "InstagramIcon"
-	| "FacebookIcon"
-	| "WeddingIcon"
-	| "CrownIcon"
-	| "CakeIcon"
+// Added Icon interface to support custom icons
+export type IconNames =
 	| "AnniversaryIcon"
-	| "CelebrameIcon"
-	| "ExclusiveIcon"
-	| "EasyUseIcon"
-	| "CommitmentIcon"
-	| "ArrowUpIcon"
 	| "ArrowDownIcon"
+	| "ArrowUpIcon"
+	| "CakeIcon"
+	| "CelebrameIcon"
+	| "CheckIcon"
+	| "CommitmentIcon"
+	| "CrownIcon"
+	| "EasyUseIcon"
+	| "ExclusiveIcon"
+	| "FacebookIcon"
 	| "FavIcon"
-	| "MenuIcon";
+	| "InstagramIcon"
+	| "MenuIcon"
+	| "TikTokIcon"
+	| "WeddingIcon"
+	| "WhatsAppIcon";
+
 

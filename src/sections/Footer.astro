@@ -1,11 +1,11 @@
 ---
 import Action from "@/components/common/Action.astro";
 import ActionWrapper from "@/components/common/ActionWrapper.astro";
-import Icon from "@/components/common/Icon.astro";
+import Icon from "@/components/common/Icon";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import type { FooterData } from "@/config/landing.interface";
-import type { Icon as IconType } from "@/config/landing.interface";
+import type { IconNames } from "@/config/landing.interface";
 
 // Define the props interface for type safety
 interface Props {
@@ -29,7 +29,7 @@ const { data } = Astro.props;
 					class="text-white mb-4 flex items-center"
 					title="Volver arriba"
 				>
-					<Icon icon={data.icon as IconType} class="h-8 w-8 mr-2" />
+					<Icon icon={data.icon as IconNames} className="h-8 w-8 mr-2" />
 					<span class="text-md font-normal">{data.logo}</span>
 				</Action>
 
@@ -68,7 +68,7 @@ const { data } = Astro.props;
 								title={social.icon}
 								iconSize="w-7 h-7 md:w-8 md:h-8"
 								target="_blank"
-								icon={social.icon as IconType}
+								icon={social.icon as IconNames}
 								title={social.title}
 							/>
 						))

@@ -1,12 +1,12 @@
 ---
-import type { Icon as IconType } from "@/config/landing.interface";
-import Icon from "./Icon.astro";
+import type { IconNames } from "@/config/landing.interface";
+import Icon from "./Icon";
 import IconWrapper from "./IconWrapper.astro";
 
 // Interface defining the structure of each bullet item
 interface BulletItem {
     text: string; // Text to display in the list item
-    icon?: IconType; // Optional icon to display with the list item
+    icon?: IconNames; // Optional icon to display with the list item
 }
 
 // Interface defining the props accepted by the BulletList component

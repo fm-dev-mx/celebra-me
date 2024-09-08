@@ -17,8 +17,9 @@
 				"contactType": "Client Service"
 			},
 			"sameAs": [
-				"https://www.facebook.com/celebra-me",
-				"https://www.instagram.com/celebra-me"
+				"https://www.facebook.com/invitaciones.celebrame/",
+				"https://www.instagram.com/celebra_me_com/",
+				"https://www.tiktok.com/@celebra_me"
 			]
 		}
 	},
@@ -442,8 +443,10 @@
 			{ "label": "Contacto", "href": "/contacto" }
 		],
 		"socials": [
-			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/celebra-me", "title": "Ir a mi Facebook" },
-			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/celebra-me", "title": "Ir a mi Instagram" }
+			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/invitaciones.celebrame/", "title": "Ir a mi Facebook" },
+			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/celebra_me_com/", "title": "Ir a mi Instagram" },
+			{ "icon": "TikTokIcon", "href": "https://www.tiktok.com/@celebra_me", "title": "Ir a mi TikTok" },
+			{ "icon": "WhatsAppIcon", "href": "https://wa.me/526681167477"}
 		]
 	},
 	"contactData": {

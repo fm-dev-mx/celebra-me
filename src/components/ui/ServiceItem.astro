@@ -1,7 +1,7 @@
 ---
-import Icon from "@/components/common/Icon.astro";
+import Icon from "@/components/common/Icon";
 import IconWrapper from "@/components/common/IconWrapper.astro";
-import type { Icon as IconType, Service } from "@/config/landing.interface";
+import type { IconNames, Service } from "@/config/landing.interface";
 import Paragraph from "../common/Paragraph.astro";
 import SectionSubtitle from "../typography/SectionSubtitle.astro";
 
@@ -35,10 +35,11 @@ const styles = {
 				padding="p-3"
 			>
 				<Icon
-					icon={service.icon as IconType}
+					icon={service.icon as IconNames}
 					size="h-full w-full"
-					color="text-white"
-					class={styles.icon}
+					stroke="#fff"
+					fill="none"
+					className={styles.icon}
 				/>
 			</IconWrapper>
 		</div>
@@ -48,8 +49,8 @@ const styles = {
 			<SectionSubtitle
 				size="text-2xl md:text-3xl"
 				color="text-secondary-dark"
-				letterSpacing="tracking-wide"
 				margin="mb-2"
+				extraClass="tracking-wide"
 			>
 				{service.title}
 			</SectionSubtitle>
