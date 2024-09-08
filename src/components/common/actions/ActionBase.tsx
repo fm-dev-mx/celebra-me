@@ -1,8 +1,15 @@
 // ActionBase.tsx
 import React from 'react';
 
+// Define the base variants
+export type BaseActionVariants = 'primary' | 'secondary' | 'tertiary' | 'text' | 'icon' | 'scroll' | 'logo' | 'large' | 'whatsapp';
+
+// Define the external and icon variants
+export type ExternalVariants = `external-${BaseActionVariants}`;
+export type IconVariants = `icon-${BaseActionVariants}`;
+
 // Define the possible variants for the Action component.
-export type ActionVariants = 'primary' | 'secondary' | 'tertiary' | 'text' | 'icon' | 'scroll' | 'logo' | 'large';
+export type ActionVariants = BaseActionVariants | ExternalVariants | IconVariants;
 
 // Define the possible colors for the Action component.
 export type ActionColors = 'primary' | 'secondary' | 'accent' | 'neutral' | 'text';
@@ -28,29 +35,31 @@ type ActionBasePropsType<T extends ElementType = 'button'> = ElementProps<T> & {
 
 // ActionBase component provides a flexible structure for different types of actions.
 const ActionBase = <T extends ElementType = 'button'>({
-  variant = 'primary', // Default to 'primary' variant if none is provided.
-  color = 'primary', // Default to 'primary' color if none is provided.
-  as, // Determines the type of element to render.
-  className, // Allows passing additional class names.
-  onClick, // Allows passing an onClick event.
-  children, // Slot equivalent for React components.
-  ...rest // Spread any other attributes to the rendered element.
+  variant = 'primary',
+  color = 'primary',
+  as,		// Define the element type (a, button, div)
+  className,
+  onClick, 	// Allow custom onClick event handler
+  children, // Slot equivalent for React components
+  ...rest 	// Allow other props
 }: ActionBasePropsType<T>) => {
-  // Determine the correct element type to render, defaulting to button if not specified.
+  // Compute the correct variant, ensuring it matches the defined types in ActionVariants.
   const Element = as || ('button' as React.ElementType);
+  // Generate the classes based on the variant and color
+  const variantClass = `action-${variant}`;
+  const colorClass = `color-${color}`;
 
-  // Generate class names based on variant and color.
-  const variantClass = `action-${variant}`; // Example: action-primary, action-secondary, etc.
-  const colorClass = `color-${color}`; // Example: color-primary, color-accent, etc.
-
-  // Combine the base class with dynamic classes for styling.
+  // Generate the combined classes
   const buttonClasses = `action-base ${variantClass} ${colorClass} ${className || ''}`.trim();
 
   return (
-    // Render the component with the specified element type (a, button, or div).
-    <Element className={buttonClasses} onClick={onClick} {...rest}>
-      {children} {/* Allows content to be passed into the component, keeping it flexible. */}
-    </Element>
+	// Render the element
+		  <div className="action-base-wrapper">
+
+			<Element className={buttonClasses} onClick={onClick} {...rest}>
+				{children}
+			</Element>
+		  </div>
   );
 };
 
