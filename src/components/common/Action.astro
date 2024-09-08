@@ -4,9 +4,9 @@
 // with various visual variants and optional icons.
 
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/common/Icon.astro";
+import Icon from "@/components/common/Icon";
 import type { HTMLAttributes } from "astro/types";
-import type { Icon as IconType } from "@/config/landing.interface";
+import type { IconNames } from "@/config/landing.interface";
 
 // Define all possible variants for the Action component
 type ActionVariant =
@@ -23,7 +23,7 @@ type ActionVariant =
 interface Props extends HTMLAttributes<"a"> {
 	flex?: string;
 	variant?: ActionVariant; // The style variant of the button
-	icon?: IconType; // Optional icon to display
+	icon?: IconNames; // Optional icon to display
 	iconSize?: string; // Optional icon size
 	minWidth?: string;
 	color?: "primary" | "secondary" | "accent" | "neutral" | "text";
@@ -92,6 +92,6 @@ const relAttr = targetAttr === "_blank" ? "noopener noreferrer" : undefined;
 
 <!-- Render the Action component -->
 <Element class={buttonClasses} target={targetAttr} rel={relAttr} {...rest as any}>
-	{icon && <Icon icon={icon} class={iconClasses} />}
+	{icon && <Icon icon={icon} className={iconClasses} />}
 	<slot />
 </Element>
