@@ -1,0 +1,59 @@
+/* Styles for ActionExternalLink component */
+.action-link {
+  cursor: pointer; /* Change cursor to pointer for interactivity */
+  text-decoration: none; /* Remove underline from links */
+  transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out; /* Smooth transition for color and border */
+}
+
+/* Hover effects for the action link */
+.action-link:hover {
+  color: #0077b6; /* Change color on hover */
+  border-color: #0077b6; /* Change border color on hover */
+}
+
+/* Additional styles for modal confirmation */
+.confirm-modal {
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  border-radius: 0.5rem; /* Rounded corners for modal */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  padding: 1.5rem; /* Padding inside the modal */
+  transition: all 0.3s ease-in-out; /* Smooth transition for modal appearance */
+}
+
+/* Modal title styles */
+.confirm-modal-title {
+  font-size: 1.25rem; /* Font size for title */
+  font-weight: bold; /* Bold font weight for emphasis */
+}
+
+/* Modal message styles */
+.confirm-modal-message {
+  margin: 1rem 0; /* Margin around the message */
+  font-size: 1rem; /* Font size for message */
+}
+
+/* Button styles within the modal */
+.confirm-modal-button {
+  padding: 0.5rem 1rem; /* Padding for buttons */
+  border: none; /* Remove default border */
+  border-radius: 0.25rem; /* Rounded corners for buttons */
+  cursor: pointer; /* Change cursor to pointer */
+  transition: background-color 0.2s ease-in-out; /* Smooth transition for background color */
+}
+
+/* Confirm button styles */
+.confirm-modal-button.confirm {
+  background-color: #005f73; /* Confirm button background color */
+  color: white; /* Confirm button text color */
+}
+
+/* Cancel button styles */
+.confirm-modal-button.cancel {
+  background-color: #f0f0f0; /* Cancel button background color */
+  color: #333; /* Cancel button text color */
+}
+
+/* Hover effects for buttons in the modal */
+.confirm-modal-button:hover {
+  background-color: #0077b6; /* Change background color on hover */
+}

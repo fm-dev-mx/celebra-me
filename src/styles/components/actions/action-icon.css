@@ -1,0 +1,27 @@
+/* Styles for ActionIcon component */
+.action-icon {
+	@apply flex-col inline-flex items-center justify-center transition-all text-sm md:text-base hover:shadow-xl p-2 rounded-full;
+}
+
+/* Scroll button styles */
+.action-icon-scroll {
+	@apply flex justify-center items-center subtle-bounce ease-in-out rounded-3xl transition-all duration-300 transform hover:scale-105 hover:opacity-90 absolute bottom-0 min-w-[1.6rem] min-h-[3.6rem];
+}
+
+/* Primary color variant */
+.action-icon-scroll.color-primary {
+	@apply border-0 bg-primary-light/50 text-primary;
+}
+
+/* Hover color variant */
+.action-icon-scroll.color-primary:hover {
+	@apply duration-300 ease-in-out transform scale-105 border-[1px] border-primary border-opacity-50 bg-primary-light text-primary-dark shadow-lg;
+}
+
+
+/* Add smooth transitions for hover and focus states */
+.action-icon-scroll:focus,
+.action-icon-scroll:hover {
+	outline: none;
+	@apply ring-2 ring-offset-2 ring-primary-dark;
+}

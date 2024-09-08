@@ -1,0 +1,115 @@
+/* Base styles for Action components */
+.action-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+  font-size: 14px;
+  height: 40px;
+  min-width: 100px;
+  text-nowrap: nowrap;
+}
+
+/* Variant styles */
+.action-base.primary {
+  padding: 0.5rem 1.5rem;
+  border-radius: 1.5rem;
+}
+
+.action-base.action-secondary {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid;
+  border-radius: 1.5rem;
+}
+
+.action-base.action-tertiary {
+  padding: 1rem 3rem;
+  font-size: 1.125rem; /* text-lg */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* Similar to shadow-2xl */
+  border-radius: .2rem; /* rounded-3xl */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.action-base.text {
+  opacity: 0.8;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Color styles based on variants defined in Action.astro */
+.action-base.primary.primary {
+  background-color: var(--primary-light, #005f73);
+  border: 1px solid var(--primary-dark, #004b5c);
+  color: var(--secondary-dark, #fff);
+}
+
+.action-base.primary.secondary {
+  background-color: var(--secondary, #94d2bd);
+  color: var(--primary, #005f73);
+}
+
+.action-base.primary.accent {
+  background-color: var(--accent, #ffb703);
+  color: var(--neutral-light, #fff);
+}
+
+.action-base.primary.neutral {
+  background-color: var(--neutral-light, #f5f5f5);
+  color: var(--neutral-dark, #333);
+}
+
+.action-base.secondary.primary {
+  border-color: var(--primary-dark, #005f73);
+  color: var(--primary, #005f73);
+}
+
+.action-base.secondary.secondary {
+  border-color: var(--secondary, #94d2bd);
+  color: var(--secondary, #94d2bd);
+}
+
+.action-base.secondary.accent {
+  border-color: var(--accent, #ffb703);
+  color: var(--accent, #ffb703);
+}
+
+.action-base.secondary.neutral {
+  border-color: var(--neutral-dark, #333);
+  color: var(--neutral-dark, #333);
+}
+
+.action-base.tertiary.primary {
+  background-color: var(--primary-dark, #005f73);
+  color: var(--neutral-light, #fff);
+}
+
+.action-base.action-tertiary.color-secondary {
+  background-color: var(--secondary-dark);
+  color: var(--secondary-light, #fff);
+}
+
+.action-base.action-tertiary.color-accent {
+  background-color: var(--accent-dark);
+  color: #fff;
+}
+
+/* Additional hover effects */
+.action-base:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Disabled state styles */
+.action-base:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .action-base {
+    font-size: 16px;
+    height: 48px;
+  }
+}

@@ -10,6 +10,10 @@
 @import './components/whatsapp-button.css';
 @import './components/confirm-modal.css';
 
+@import './components/actions/action-base.css';
+@import './components/actions/action-external-link.css';
+@import './components/actions/action-icon.css';
+
 /* Import Custom Tailwind CSS utility styles */
 @import './utilities/custom-utilities.css';
 @import './animations/index.css';
