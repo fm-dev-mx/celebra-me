@@ -29,11 +29,21 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     if (show) {
       const modal = document.getElementById('confirm-modal');
       modal?.focus();
+
+	  // Select all buttons with the class ".confirm-button"
+      document.querySelectorAll(".confirm-button").forEach((button) => {
+		// Verify if the button text includes "WhatsApp"
+        if (button.textContent?.includes("WhatsApp")) {
+		  // Add the specific class for WhatsApp buttons
+          button.classList.add("confirm-button-whatsapp");
+        }
+      });
     }
   }, [show]);
 
   // Close modal on Escape key press for better usability
   useEffect(() => {
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onCancel();

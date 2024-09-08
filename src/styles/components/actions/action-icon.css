@@ -1,11 +1,13 @@
 /* Styles for ActionIcon component */
+
 .action-icon {
 	@apply flex-col inline-flex items-center justify-center transition-all text-sm md:text-base hover:shadow-xl p-2 rounded-full;
 }
 
 /* Scroll button styles */
 .action-icon-scroll {
-	@apply flex justify-center items-center subtle-bounce ease-in-out rounded-3xl transition-all duration-300 transform hover:scale-105 hover:opacity-90 absolute bottom-0 min-w-[1.6rem] min-h-[3.6rem];
+  @apply flex justify-center items-center subtle-bounce ease-in-out rounded-3xl transition-all duration-300 transform hover:scale-105 hover:opacity-90 absolute bottom-0 min-w-[2.5rem] min-h-[3.5rem];
+  transform: translateX(-50%);
 }
 
 /* Primary color variant */

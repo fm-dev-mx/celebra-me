@@ -7,9 +7,9 @@
 
 /* Import Custom Tailwind CSS component styles */
 @import './components/pricing-cards.css';
-@import './components/whatsapp-button.css';
 @import './components/confirm-modal.css';
 
+/* Import Custom Tailwind CSS action styles */
 @import './components/actions/action-base.css';
 @import './components/actions/action-external-link.css';
 @import './components/actions/action-icon.css';

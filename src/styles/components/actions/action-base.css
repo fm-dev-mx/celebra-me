@@ -1,98 +1,111 @@
+/* Base wrapper styles */
+.action-base-wrapper {
+	min-width: 200px; /* to prevent affecting the next component when scaled */
+	width: 200px;
+	display: flex;
+	place-content: center;
+}
+
 /* Base styles for Action components */
 .action-base {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   transition: all 0.3s ease-in-out;
-  font-size: 14px;
+  font-size: 14px; /* sm:text-sm */
   height: 40px;
-  min-width: 100px;
-  text-nowrap: nowrap;
+  min-width: 170px;
+  max-width: 170px;
+  white-space: nowrap;
 }
 
 /* Variant styles */
-.action-base.primary {
-  padding: 0.5rem 1.5rem;
-  border-radius: 1.5rem;
+.action-base.action-primary {
+  padding: 0.5rem 1.5rem; /* py-2 px-6 */
+  border-radius: 1.5rem; /* rounded-3xl */
 }
 
 .action-base.action-secondary {
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 1.5rem; /* py-2 px-6 */
   border: 2px solid;
-  border-radius: 1.5rem;
+  border-radius: 1.5rem; /* rounded-3xl */
 }
-
 .action-base.action-tertiary {
-  padding: 1rem 3rem;
+  justify-content: center;
+  min-width: 300px;
+  max-width: 400px;
+  padding: 1rem 3rem; /* py-4 px-12 */
   font-size: 1.125rem; /* text-lg */
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* Similar to shadow-2xl */
-  border-radius: .2rem; /* rounded-3xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Similar to shadow-2xl */
+  border-radius: 0.5rem; /* rounded */
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
+
 .action-base.text {
   opacity: 0.8;
-  font-size: 0.875rem;
+  font-size: 0.875rem; /* text-sm */
   display: flex;
   align-items: center;
 }
 
-/* Color styles based on variants defined in Action.astro */
-.action-base.primary.primary {
-  background-color: var(--primary-light, #005f73);
-  border: 1px solid var(--primary-dark, #004b5c);
-  color: var(--secondary-dark, #fff);
+/* Color styles based on variants defined in ActionBase */
+.action-base.action-primary.color-primary {
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-dark);
+  color: var(--neutral-lightest);
 }
 
-.action-base.primary.secondary {
-  background-color: var(--secondary, #94d2bd);
-  color: var(--primary, #005f73);
+.action-base.action-primary.color-secondary {
+  background-color: var(--accent-light);
+  border: 1px solid var(--secondary-dark);
+  color: var(--secondary-dark);
 }
 
-.action-base.primary.accent {
-  background-color: var(--accent, #ffb703);
-  color: var(--neutral-light, #fff);
+.action-base.action-primary.color-accent {
+  background-color: var(--accent.DEFAULT);
+  color: var(--neutral-lightest);
 }
 
-.action-base.primary.neutral {
-  background-color: var(--neutral-light, #f5f5f5);
-  color: var(--neutral-dark, #333);
+.action-base.action-primary.color-neutral {
+  background-color: var(--neutral-light);
+  color: var(--neutral-dark);
 }
 
-.action-base.secondary.primary {
-  border-color: var(--primary-dark, #005f73);
-  color: var(--primary, #005f73);
+.action-base.action-secondary.color-primary {
+  border-color: var(--primary-dark);
+  color: var(--primary.DEFAULT);
 }
 
-.action-base.secondary.secondary {
-  border-color: var(--secondary, #94d2bd);
-  color: var(--secondary, #94d2bd);
+.action-base.action-secondary.color-secondary {
+  border-color: var(--secondary.DEFAULT);
+  color: var(--secondary.DEFAULT);
 }
 
-.action-base.secondary.accent {
-  border-color: var(--accent, #ffb703);
-  color: var(--accent, #ffb703);
+.action-base.action-secondary.color-accent {
+  border-color: var(--accent.DEFAULT);
+  color: var(--accent.DEFAULT);
 }
 
-.action-base.secondary.neutral {
-  border-color: var(--neutral-dark, #333);
-  color: var(--neutral-dark, #333);
+.action-base.action-secondary.color-neutral {
+  border-color: var(--neutral-dark);
+  color: var(--neutral-dark);
 }
 
-.action-base.tertiary.primary {
-  background-color: var(--primary-dark, #005f73);
-  color: var(--neutral-light, #fff);
+.action-base.action-tertiary.color-primary {
+  background-color: var(--primary-dark);
+  color: var(--neutral-lightest);
 }
 
 .action-base.action-tertiary.color-secondary {
   background-color: var(--secondary-dark);
-  color: var(--secondary-light, #fff);
+  color: #fff;
 }
 
 .action-base.action-tertiary.color-accent {
   background-color: var(--accent-dark);
-  color: #fff;
+  color: var(--neutral-lightest);
 }
+
 
 /* Additional hover effects */
 .action-base:hover {
@@ -109,7 +122,7 @@
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .action-base {
-    font-size: 16px;
+    font-size: 16px; /* text-base */
     height: 48px;
   }
 }

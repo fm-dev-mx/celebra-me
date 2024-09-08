@@ -1,59 +1,77 @@
-/* Styles for ActionExternalLink component */
-.action-link {
-  cursor: pointer; /* Change cursor to pointer for interactivity */
-  text-decoration: none; /* Remove underline from links */
-  transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out; /* Smooth transition for color and border */
+/* Base styles for the WhatsApp button */
+.action-base.action-external-whatsapp {
+  @apply relative flex items-center justify-center bg-primary-light border border-accent-dark text-neutral-dark rounded-3xl;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  overflow: hidden; /* Ensures the inner scaling does not affect the surrounding layout */
 }
 
-/* Hover effects for the action link */
-.action-link:hover {
-  color: #0077b6; /* Change color on hover */
-  border-color: #0077b6; /* Change border color on hover */
+/* Hover effect for the action-external-whatsapp */
+.action-base.action-external-whatsapp:hover {
+  @apply text-white border-primary-dark bg-accent-dark shadow-2xl;
+  transform: scale(1.1); /* Scaling only affects the visual size, not the layout */
 }
 
-/* Additional styles for modal confirmation */
-.confirm-modal {
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  border-radius: 0.5rem; /* Rounded corners for modal */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-  padding: 1.5rem; /* Padding inside the modal */
-  transition: all 0.3s ease-in-out; /* Smooth transition for modal appearance */
+/* Ajusta el comportamiento de escalado del botón */
+.action-base.action-external-whatsapp {
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  will-change: transform; /* Mejora el rendimiento */
+  transform-origin: center; /* Controla hacia dónde se expande */
 }
 
-/* Modal title styles */
-.confirm-modal-title {
-  font-size: 1.25rem; /* Font size for title */
-  font-weight: bold; /* Bold font weight for emphasis */
+.action-base.action-external-whatsapp:hover {
+  transform: scale(1.1);
 }
 
-/* Modal message styles */
-.confirm-modal-message {
-  margin: 1rem 0; /* Margin around the message */
-  font-size: 1rem; /* Font size for message */
+
+/* Icon style using mask */
+.action-base.action-external-whatsapp .whatsapp-icon {
+  @apply inline-block w-5 h-4 mr-3 transition-all duration-300 ease-in-out;
+  background-color: theme('colors.whatsapp.DEFAULT'); /* WhatsApp icon color */
+  mask: url('/icons/whatsappIcon.svg') no-repeat center;
+  mask-size: contain;
 }
 
-/* Button styles within the modal */
-.confirm-modal-button {
-  padding: 0.5rem 1rem; /* Padding for buttons */
-  border: none; /* Remove default border */
-  border-radius: 0.25rem; /* Rounded corners for buttons */
-  cursor: pointer; /* Change cursor to pointer */
-  transition: background-color 0.2s ease-in-out; /* Smooth transition for background color */
+/* Icon hides with a fade and a subtle move effect */
+.action-base.action-external-whatsapp:hover .whatsapp-icon {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.8); /* Adds a scale-down effect for smoothness */
 }
 
-/* Confirm button styles */
-.confirm-modal-button.confirm {
-  background-color: #005f73; /* Confirm button background color */
-  color: white; /* Confirm button text color */
+/* Initial text styles */
+.action-base.action-external-whatsapp .whatsapp-text {
+  @apply text-sm transition-all duration-300 ease-in-out;
 }
 
-/* Cancel button styles */
-.confirm-modal-button.cancel {
-  background-color: #f0f0f0; /* Cancel button background color */
-  color: #333; /* Cancel button text color */
+/* Text transition on hover */
+.action-base.action-external-whatsapp:hover .whatsapp-text {
+  @apply font-semibold opacity-0 transform -translate-y-2 scale-90; /* Scales text slightly for better visual flow */
 }
 
-/* Hover effects for buttons in the modal */
-.confirm-modal-button:hover {
-  background-color: #0077b6; /* Change background color on hover */
+/* After pseudo-element used to show new text on hover */
+.action-base.action-external-whatsapp::after {
+  content: "Chatea con nosotros";
+  @apply absolute left-1/2 top-1/2 opacity-0 transform translate-x-[-50%] translate-y-4 transition-all duration-300 ease-in-out;
+  white-space: nowrap;
+  font-size: 0.875rem; /* Adjust font size for better readability */
+  color: var(--colors.primary.light); /* Ensures consistency in color */
 }
+
+/* Final state on hover */
+.action-base.action-external-whatsapp:hover::after {
+  @apply opacity-100 transform translate-x-[-50%] translate-y-[-50%] scale-105; /* Adds a slight scale-up for emphasis */
+}
+
+/* Adding a subtle glowing effect for more modernity */
+.action-base.action-external-whatsapp::before {
+  content: '';
+  @apply absolute inset-0 rounded-3xl bg-accent-dark opacity-0 transition-all duration-500 ease-in-out;
+  filter: blur(15px); /* Creates a soft glow effect */
+  z-index: -1; /* Ensures it stays behind the button */
+}
+
+/* Activating glow on hover */
+.action-base.action-external-whatsapp:hover::before {
+  opacity: 0.75; /* Glow becomes visible */
+}
+
+
