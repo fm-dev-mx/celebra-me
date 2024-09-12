@@ -6,5 +6,5 @@ import { useMobileMenu } from "@/hooks/useMobileMenu";
 
 export default function HeaderScroll() {
 	useMobileMenu();
-    return null;
+	return null;
 }

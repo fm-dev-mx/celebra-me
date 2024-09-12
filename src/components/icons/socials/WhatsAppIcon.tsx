@@ -3,8 +3,6 @@ import React from 'react';
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: string | number; // Update size to match SVGProps
   color?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
 }
 
 const WhatsAppIcon: React.FC<IconProps> = ({

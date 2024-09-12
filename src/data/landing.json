@@ -432,8 +432,6 @@
         ]
     },
 	"footerData": {
-		"logo": "celebra-me.com",
-		"icon": "FavIcon",
 		"description": "Tus Eventos Serán Únicos.",
 		"links": [
 			{ "label": "Nosotros", "href": "#about-section" },
