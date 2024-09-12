@@ -20,10 +20,10 @@ interface ActionIconProps extends React.HTMLAttributes<HTMLButtonElement | HTMLA
 const ActionIcon: React.FC<ActionIconProps> = ({
   icon,
   iconSize = 'w-6 h-6',
-  variant = 'primary',
+  variant,
   iconVariant,
   color = 'primary',
-  as = 'button',
+  as = variant === 'scroll' ? 'a' : 'button',
   href,
   target = '_self',
   className,

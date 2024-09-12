@@ -10,6 +10,8 @@
 .action-base {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+
   transition: all 0.3s ease-in-out;
   font-size: 14px; /* sm:text-sm */
   height: 40px;
@@ -25,11 +27,10 @@
 }
 
 .action-base.action-secondary {
-  padding: 0.5rem 1.5rem; /* py-2 px-6 */
   border: 2px solid;
   border-radius: 1.5rem; /* rounded-3xl */
 }
-.action-base.action-tertiary {
+.action-base.action-large {
   justify-content: center;
   min-width: 300px;
   max-width: 400px;
@@ -38,8 +39,19 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Similar to shadow-2xl */
   border-radius: 0.5rem; /* rounded */
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+  @apply mt-16 mb-32 xl:my-32;
 }
 
+.action-base.action-large.color-primary {
+	background-color: var(--primary-dark);
+  color: #fff;
+}
+
+.action-base.action-large.color-secondary {
+	background-color: var(--secondary-dark);
+  color: #fff;
+}
 
 .action-base.text {
   opacity: 0.8;
@@ -61,16 +73,6 @@
   color: var(--secondary-dark);
 }
 
-.action-base.action-primary.color-accent {
-  background-color: var(--accent.DEFAULT);
-  color: var(--neutral-lightest);
-}
-
-.action-base.action-primary.color-neutral {
-  background-color: var(--neutral-light);
-  color: var(--neutral-dark);
-}
-
 .action-base.action-secondary.color-primary {
   border-color: var(--primary-dark);
   color: var(--primary.DEFAULT);
@@ -81,31 +83,14 @@
   color: var(--secondary.DEFAULT);
 }
 
-.action-base.action-secondary.color-accent {
-  border-color: var(--accent.DEFAULT);
-  color: var(--accent.DEFAULT);
-}
-
-.action-base.action-secondary.color-neutral {
-  border-color: var(--neutral-dark);
-  color: var(--neutral-dark);
-}
-
 .action-base.action-tertiary.color-primary {
   background-color: var(--primary-dark);
   color: var(--neutral-lightest);
 }
 
 .action-base.action-tertiary.color-secondary {
-  background-color: var(--secondary-dark);
-  color: #fff;
-}
 
-.action-base.action-tertiary.color-accent {
-  background-color: var(--accent-dark);
-  color: var(--neutral-lightest);
 }
-
 
 /* Additional hover effects */
 .action-base:hover {
@@ -113,10 +98,17 @@
   filter: brightness(1.1);
 }
 
-/* Disabled state styles */
-.action-base:disabled {
-  opacity: 0.5;
-  pointer-events: none;
+/* Base styles for Action components */
+.action-text.footer-menu-item{
+  display: inline-flex;
+  align-items: center;
+
+  transition: all 0.3s ease-in-out;
+  font-size: 12px; /* sm:text-sm */
+  height: 40px;
+  min-width: 20px;
+  max-width: 20px;
+  white-space: nowrap;
 }
 
 /* Responsive adjustments */
@@ -126,3 +118,4 @@
     height: 48px;
   }
 }
+

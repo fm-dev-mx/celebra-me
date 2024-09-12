@@ -1,29 +1,86 @@
-/* Styles for ActionIcon component */
+/* src/styles/animations/subtle-bounce-animation.css */
 
+/* Action Icon Component Styles */
 .action-icon {
-	@apply flex-col inline-flex items-center justify-center transition-all text-sm md:text-base hover:shadow-xl p-2 rounded-full;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem; /* text-sm */
+    padding: 0.5rem; /* p-2 */
+    border-radius: 9999px; /* fully rounded */
+}
+
+/* Adjust font size for larger screens */
+@media (min-width: 768px) {
+    .action-icon {
+        font-size: 1rem; /* md:text-base */
+    }
 }
 
 /* Scroll button styles */
 .action-icon-scroll {
-  @apply flex justify-center items-center subtle-bounce ease-in-out rounded-3xl transition-all duration-300 transform hover:scale-105 hover:opacity-90 absolute bottom-0 min-w-[2.5rem] min-h-[3.5rem];
-  transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1.5rem; /* rounded-3xl */
+    position: absolute;
+    bottom: 0;
+    min-width: 2.5rem;
+    min-height: 3rem;
+    margin-top: 8rem;
+    filter: brightness(125%); /* Enhances brightness slightly */
+    transform: translateX(-50%); /* Centers the button horizontally */
+    @apply subtle-bounce transition-transform duration-300 ease-in-out; /* Apply only the valid Tailwind classes */
+    transition: filter 0.3s ease-in-out; /* Manually define transition for filter */
 }
+
+/* Color variants */
 
 /* Primary color variant */
 .action-icon-scroll.color-primary {
-	@apply border-0 bg-primary-light/50 text-primary;
+    background-color: var(--primary-light);
+    border: 2px solid var(--primary-light);
+    color: var(--primary-default);
+    transition: color 0.3s ease-in-out, border 0.3s ease-in-out; /* Smooth transition for color and border */
 }
 
-/* Hover color variant */
+/* Secondary color variant */
+.action-icon-scroll.color-secondary {
+    background-color: var(--secondary-light);
+    border: 2px solid var(--secondary-light);
+    color: var(--secondary-default);
+    filter: brightness(105%); /* Slight brightness increase */
+    transition: color 0.3s ease-in-out, border 0.3s ease-in-out, filter 0.3s ease-in-out; /* Include transition for filter */
+}
+
+/* Accent color variant */
+.action-icon-scroll.color-accent {
+    background-color: var(--neutral-lightest);
+    border: 1px solid var(--accent-default);
+    color: var(--accent-default);
+    filter: brightness(100%);
+    transition: color 0.3s ease-in-out, border 0.3s ease-in-out; /* Smooth transition for color and border */
+}
+
+/* Hover states */
+
+/* Primary hover state */
 .action-icon-scroll.color-primary:hover {
-	@apply duration-300 ease-in-out transform scale-105 border-[1px] border-primary border-opacity-50 bg-primary-light text-primary-dark shadow-lg;
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    border: 2px solid var(--primary-default);
 }
 
+/* Secondary hover state */
+.action-icon-scroll.color-secondary:hover {
+    background-color: var(--secondary-light);
+    color: var(--secondary-dark);
+    border: 2px solid var(--secondary-default);
+}
 
-/* Add smooth transitions for hover and focus states */
-.action-icon-scroll:focus,
-.action-icon-scroll:hover {
-	outline: none;
-	@apply ring-2 ring-offset-2 ring-primary-dark;
+/* Accent hover state */
+.action-icon-scroll.color-accent:hover {
+    color: var(--accent-dark);
+    border: 2px solid var(--accent-default);
 }

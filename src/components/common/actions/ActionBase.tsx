@@ -2,7 +2,7 @@
 import React from 'react';
 
 // Define the base variants
-export type BaseActionVariants = 'primary' | 'secondary' | 'tertiary' | 'text' | 'icon' | 'scroll' | 'logo' | 'large' | 'whatsapp';
+export type BaseActionVariants = 'primary' | 'secondary' | 'text' | 'scroll' | 'large' | 'whatsapp';
 
 // Define the external and icon variants
 export type ExternalVariants = `external-${BaseActionVariants}`;
@@ -12,7 +12,7 @@ export type IconVariants = `icon-${BaseActionVariants}`;
 export type ActionVariants = BaseActionVariants | ExternalVariants | IconVariants;
 
 // Define the possible colors for the Action component.
-export type ActionColors = 'primary' | 'secondary' | 'accent' | 'neutral' | 'text';
+export type ActionColors = 'primary' | 'secondary' | 'accent' | 'neutral';
 
 // Define the types of elements the component can render.
 type ElementType = 'a' | 'button' | 'div';

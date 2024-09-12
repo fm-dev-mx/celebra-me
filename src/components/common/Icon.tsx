@@ -21,7 +21,7 @@ const iconComponents: Record<IconNames, React.FC<React.SVGProps<SVGSVGElement>>>
   CelebrameIcon: Icons.CelebrameIcon,
   CheckIcon: Icons.CheckIcon,
   MenuIcon: Icons.MenuIcon,
-  FavIcon: Icons.FavIcon,
+  CloseIcon: Icons.CloseIcon,
   AnniversaryIcon: Icons.AnniversaryIcon,
   CakeIcon: Icons.CakeIcon,
   CrownIcon: Icons.CrownIcon,
@@ -38,8 +38,6 @@ const Icon: React.FC<IconProps> = ({
   icon,
   size = 'w-6 h-6', // Default size using Tailwind classes
   color = 'currentColor',
-  primaryColor,
-  secondaryColor,
   className,
   ...rest
 }) => {
@@ -49,18 +47,15 @@ const Icon: React.FC<IconProps> = ({
   // Combine classes for the icon
   const iconClasses = `${size} ${className || ''}`.trim();
 
-  // Prepare icon-specific props
-  const iconProps = {
-    className: iconClasses,
-    color,
-    primaryColor,
-    secondaryColor,
-    ...rest,
-  };
+  // Filter out custom props to avoid passing them to the DOM elements
+  const svgProps = { className: iconClasses, fill: color, ...rest };
 
-  // Render the icon if found, otherwise show a fallback error
+  // Render the icon component with the required props
   return IconComponent ? (
-    <IconComponent {...iconProps} />
+    <IconComponent
+      {...svgProps}
+      // Pass primaryColor and secondaryColor as inline styles or internal props to IconComponent if needed
+    />
   ) : (
     <span className="text-red-500" title={`Icon not found: ${icon}`}>
       ⚠️
