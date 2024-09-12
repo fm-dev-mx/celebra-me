@@ -5,8 +5,6 @@
 import Container from "@/components/layout/Container.astro";
 import Grid from "@/components/layout/Grid.astro";
 import Section from "@/components/layout/Section.astro";
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import OptimizedImage from "@/components/common/OptimizedImage.astro";
 import ImageWrapper from "@/components/common/ImageWrapper.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
@@ -17,6 +15,7 @@ import type { ServicesData } from "@/config/landing.interface";
 import xvImage from "@/images/services/xv.jpg";
 import weddingPartyImage from "@/images/services/weddingParty.jpg";
 import ActionBase from "@/components/common/actions/ActionBase";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 
 interface Props {
 	data: ServicesData;
@@ -40,7 +39,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 	</SectionTitle>
 	<Container>
 		{/* Updated to use the new Grid component */}
-		<Grid columns={2} gap="gap-x-24 xl:gap-8">
+		<Grid columns={2} gap="gap-x-24 xl:gap-x-40">
 			{/* First group: Image and Services */}
 			<div class="flex flex-col items-center justify-center">
 				{/* Image wrapper with hover effect classes */}
@@ -102,26 +101,23 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 	</Container>
 
 	{/* CTA Button */}
-	<ActionWrapper margin="mt-24">
-		<ActionBase
-			variant="tertiary"
-			href="#"
-			color="secondary"
-			className=""
-			title="Ver demos de invitaciones"
-		>
-			Elegir mi invitación
-		</ActionBase>
-	</ActionWrapper>
+	<ActionBase
+		variant="large"
+		as="a"
+		href="#about-section"
+		color="secondary"
+		className=""
+		title="Ver demos de invitaciones"
+	>
+		Elegir mi invitación
+	</ActionBase>
 
 	{/* Scroll to About Section Button */}
-	<ActionWrapper margin="mt-24">
-		<Action
-			variant="scroll"
-			href="#about-section"
-			title="Click to learn more about us"
-			color="secondary"
-			icon="ArrowDownIcon"
-		/>
-	</ActionWrapper>
+	<ActionIcon
+		variant="scroll"
+		href="#about-section"
+		title="Click to learn more about us"
+		color="secondary"
+		icon="ArrowDownIcon"
+	/>
 </Section>

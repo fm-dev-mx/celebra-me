@@ -1,6 +1,5 @@
 ---
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
@@ -27,16 +26,13 @@ const { data } = Astro.props;
 		<!-- FAQ List Component (React component with client-side rendering) -->
 		<FAQList client:visible {...data} color="secondary" />
 
-		<!-- Action Wrapper for the scroll button -->
-		<ActionWrapper margin="mt-24">
-			<!-- Scroll Action to return to pricing section -->
-			<Action
-				variant="scroll"
-				href="#contact-section"
-				color="secondary"
-				title="Ir a sección de Contacto"
-				icon="ArrowDownIcon"
-			/>
-		</ActionWrapper>
+		<!-- Scroll Action to return to pricing section -->
+		<ActionIcon
+			icon="ArrowDownIcon"
+			variant="scroll"
+			href="#contact-section"
+			color="secondary"
+			title="Ir a sección de Contacto"
+		/>
 	</Container>
 </Section>

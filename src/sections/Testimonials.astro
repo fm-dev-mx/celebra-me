@@ -3,8 +3,8 @@ import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import TestimonialsCarousel from "@/components/ui/TestimonialsCarousel";
-import Action from "@/components/common/Action.astro";
 import type { TestimonialsData } from "@/config/landing.interface";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 
 // Define the props interface for this component
 interface Props {
@@ -29,11 +29,11 @@ const { data } = Astro.props;
 	</Container>
 
 	<!-- Scroll to Pricing Section Button -->
-	<Action
+	<ActionIcon
 		variant="scroll"
 		href="#pricing-section"
 		title="Ir a la sección de Precios"
-		color="secondary"
+		color="accent"
 		icon="ArrowDownIcon"
 	/>
 </Section>

@@ -1,19 +1,19 @@
 ---
 // src/sections/Hero.astro
-// This component represents the Hero section of the website, displaying the logo, slogan and a call-to-action.
-
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
+// This component is used to render the hero section of the landing page, including the logo, slogan and cta buttons.
+import ActionBase from "@/components/common/actions/ActionBase";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 import Section from "@/components/layout/Section.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
-import type { Icon as IconType } from "@/config/landing.interface";
+import type { IconNames } from "@/config/landing.interface";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import ActionWrapper from "@/components/common/actions/ActionWrapper";
 
 // Define the expected data structure for the Hero component
 interface HeroData {
-	icon?: IconType;
+	icon?: IconNames;
 	title: string;
 	subtitle: string;
 	primaryCta: string;
@@ -81,6 +81,7 @@ const { data } = Astro.props;
 				class="mx-auto mb-2"
 			/>
 		</div>
+
 		<!-- Subtitle for additional context with animation and styles -->
 		<SectionSubtitle
 			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
@@ -94,50 +95,22 @@ const { data } = Astro.props;
 		</SectionSubtitle>
 
 		<!-- CTA Buttons for main actions -->
-		<ActionWrapper margin="mt-24" gap="gap-4 sm:gap-6">
+		<ActionWrapper>
 			<WhatsAppButton client:idle />
-			<Action
-				minWidth="min-w-[180px] sm:min-w-[140px]"
-				variant="primary"
-				color="secondary"
-				href="#"
-			>
+			<!-- Internal link action using ActionBase -->
+			<ActionBase as="a" href="#" variant="primary" color="secondary">
 				{data.secondaryCta}
-			</Action>
+			</ActionBase>
 		</ActionWrapper>
-
-		<!-- Scroll button directing users to the next section -->
-		<Action
-			variant="scroll"
-			href="#services-section"
-			title="Ir a sección de Servicios"
-			icon="ArrowDownIcon"
-			color="primary"
-		/>
 	</StyledContainer>
+
+	<!-- Scroll button directing users to the next section -->
+	<ActionIcon
+		icon="ArrowDownIcon"
+		variant="scroll"
+		color="primary"
+		as="a"
+		href="#services-section"
+		title="Conoce más acerca de nuestros servicios"
+	/>
 </Section>
-
-<style>
-	/* Background settings to ensure optimal loading and display */
-	#hero-section {
-		background-size: cover;
-		background-position: center;
-	}
-
-	@media (min-width: 768px) {
-		#hero-section {
-			background-image: url("/images/hero/bgHeroDesktop.jpg");
-		}
-	}
-
-	@media (max-width: 767px) {
-		#hero-section {
-			background-image: url("/images/hero/bgHeroMobile.jpg");
-		}
-	}
-
-	/* Enhance user experience with smooth scrolling */
-	html {
-		scroll-behavior: smooth;
-	}
-</style>

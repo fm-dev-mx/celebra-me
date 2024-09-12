@@ -4,10 +4,9 @@ import StyledContainer from "@/components/layout/StyledContainer.astro";
 import Section from "@/components/layout/Section.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
-import Action from "@/components/common/Action.astro";
 import ContactForm from "@/components/ui/ContactForm";
 import type { ContactData } from "@/config/landing.interface";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 
 // Define the props interface for type safety
 interface Props {
@@ -29,7 +28,7 @@ const { data } = Astro.props;
 >
 	<!-- Top decorative line  -->
 	<div class="bg-secondary-dark w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
-	<StyledContainer relative="relative" width="w-full" margin="m-8">
+	<StyledContainer relative="relative" width="w-full" margin="m-8 mb-32">
 		<Container padding="px-8">
 			<!-- Section Title -->
 			<SectionTitle color="text-primary-dark" margin="mt-16">
@@ -46,15 +45,14 @@ const { data } = Astro.props;
 		</Container>
 	</StyledContainer>
 
-	<!-- Action Wrapper for the scroll button -->
-	<ActionWrapper margin="mt-24">
-		<!-- Scroll Action to return to pricing section -->
-		<Action
-			variant="scroll"
-			href="#pricing-section"
-			color="secondary"
-			title="Regresar a ver nuestras ofertas"
-			icon="ArrowUpIcon"
-		/>
-	</ActionWrapper>
+	<!-- Scroll Action to return to pricing section -->
+	<ActionIcon
+		icon="ArrowUpIcon"
+		variant="scroll"
+		href="#pricing-section"
+		color="secondary"
+		title="Regresar a ver nuestras ofertas"
+		icon="ArrowUpIcon"
+		className="contact-section__scroll-action"
+	/>
 </Section>

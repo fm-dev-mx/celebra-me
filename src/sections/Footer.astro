@@ -1,9 +1,10 @@
 ---
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
-import Icon from "@/components/common/Icon";
+import ActionBase from "@/components/common/actions/ActionBase";
+import ActionIcon from "@/components/common/actions/ActionIcon";
+import ActionWrapper from "@/components/common/actions/ActionWrapper";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
+import Logo from "@/components/ui/Logo";
 import type { FooterData } from "@/config/landing.interface";
 import type { IconNames } from "@/config/landing.interface";
 
@@ -22,47 +23,34 @@ const { data } = Astro.props;
 	<Section padding="pt-8">
 		<Container>
 			<div class="flex flex-col items-center">
-				<!-- Logo and brand name -->
-				<Action
-					variant="text"
-					href="#hero-section"
-					class="text-white mb-4 flex items-center"
-					title="Volver arriba"
-				>
-					<Icon icon={data.icon as IconNames} className="h-8 w-8 mr-2" />
-					<span class="text-md font-normal">{data.logo}</span>
-				</Action>
+				<Logo />
 
 				<!-- Footer description -->
-				<p class="text-center text-primary mb-6">
+				<p class="text-center text-primary my-6 font-thin">
 					{data.description}
 				</p>
 
 				<!-- Footer navigation links -->
-				<ActionWrapper
-					flex="flex-row"
-					align="justify-center"
-					gap="gap-x-2 md:gap-x-8"
-					margin="mb-6"
-				>
+				<ActionWrapper className="footer-menu">
 					{
 						data.links.map((link) => (
-							<Action
+							<ActionBase
 								variant="text"
+								as="a"
 								href={link.href}
-								class="text-[10px] md:text-lg text-white"
+								className="footer-menu-item"
 							>
 								{link.label}
-							</Action>
+							</ActionBase>
 						))
 					}
 				</ActionWrapper>
 
 				<!-- Social media icons -->
-				<ActionWrapper gap="gap-x-2 md:gap-x-8" flex="flex-row">
+				<ActionWrapper className="footer-socials">
 					{
 						data.socials.map((social) => (
-							<Action
+							<ActionIcon
 								variant="icon"
 								href={social.href}
 								title={social.icon}

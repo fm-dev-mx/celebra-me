@@ -6,10 +6,9 @@ import BulletList from "@/components/common/BulletList.astro";
 import Card from "@/components/ui/Card.tsx";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import SectionTitle from "@/components/typography/SectionTitle.astro";
-import Action from "@/components/common/Action.astro";
-import ActionWrapper from "@/components/common/ActionWrapper.astro";
 import StyledContainer from "@/components/layout/StyledContainer.astro";
-import type { Icon as IconType, PricingData } from "@/config/landing.interface";
+import type { IconNames, PricingData } from "@/config/landing.interface";
+import ActionIcon from "@/components/common/actions/ActionIcon";
 
 // Define the properties interface for the component
 interface Props {
@@ -92,7 +91,7 @@ const { data } = Astro.props;
 							<BulletList
 								items={tier.features.map((feature) => ({
 									text: feature,
-									icon: "CheckIcon" as IconType,
+									icon: "CheckIcon" as IconNames,
 								}))}
 								color="text-primary-dark/90"
 								size="text-sm"
@@ -112,15 +111,13 @@ const { data } = Astro.props;
 				}
 			</Grid>
 
-			<ActionWrapper margin="mt-24">
-				<Action
-					variant="scroll"
-					href="#faq-section"
-					color="secondary"
-					title="Responde tus dudas sobre nuestros servicios"
-					icon="ArrowDownIcon"
-				/>
-			</ActionWrapper>
+			<ActionIcon
+				variant="scroll"
+				href="#faq-section"
+				color="primary"
+				title="Responde tus dudas sobre nuestros servicios"
+				icon="ArrowDownIcon"
+			/>
 		</Container>
 	</StyledContainer>
 </Section>
