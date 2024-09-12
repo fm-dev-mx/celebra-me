@@ -11,8 +11,8 @@ export { default as ArrowDownIcon } from './commons/ArrowDownIcon';
 export { default as ArrowUpIcon } from './commons/ArrowUpIcon';
 export { default as CelebrameIcon } from './commons/CelebrameIcon';
 export { default as CheckIcon } from './commons/CheckIcon';
-export { default as FavIcon } from './commons/FavIcon';
 export { default as MenuIcon } from './commons/MenuIcon';
+export { default as CloseIcon } from './commons/CloseIcon';
 
 // Service Icons
 export { default as AnniversaryIcon } from './services/AnniversaryIcon';

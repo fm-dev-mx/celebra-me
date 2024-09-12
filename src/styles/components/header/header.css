@@ -1,0 +1,47 @@
+/* src/styles/components/header/header.css */
+/* General styles for the main header component to ensure consistency and visual appeal across the site */
+
+.main-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 50;
+  transition: background-color 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  height: fit-content;
+}
+
+.header-container {
+	position: relative;
+	margin: 0.5rem 1rem;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: max-content;
+  align-items: center;
+  justify-content: space-between;
+	min-width: 98%;
+	background-color: white;
+	opacity: 0.8;
+  border-radius: 1rem;
+}
+
+.main-menu-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+/* Responsive behavior */
+@media (max-width: 1023px) {
+  .main-menu-container {
+    justify-content: flex-end;
+  }
+}

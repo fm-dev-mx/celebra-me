@@ -1,0 +1,164 @@
+/* src/styles/components/header/navbar-mobile.css */
+/* Optimized styles for the NavBarMobile component to ensure a modern and attractive mobile navigation */
+
+.navbar-mobile {
+  position: relative;
+  width: 100%;
+}
+
+.navbar-mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0rem 1rem;
+  z-index: 1001; /* Ensure it's above the mobile menu */
+  position: relative;
+}
+
+.menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1002; /* Ensure it's always clickable */
+}
+
+
+.menu-button:hover {
+  transform: scale(1.2);
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--primary-dark); /* Dark background for modern look */
+  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.9); /* Deep shadow for elevation effect */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.4s ease-out, transform 0.4s ease-in-out;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px); /* Slight initial offset */
+  z-index: 1000;
+  border-radius: 0; /* No border-radius for a clean look */
+}
+
+.mobile-menu-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); /* Smooth slide-in effect */
+  pointer-events: auto; /* Enable interaction */
+}
+
+.mobile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobile-menu-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  padding: 0;
+}
+
+.mobile-menu-item {
+  list-style: none;
+  width: 100%;
+  text-align: center;
+  opacity: 0; /* Start invisible for animation */
+}
+
+.mobile-menu-link {
+  font-size: 1.5rem;
+  color: var(--neutral-lightest); /* Light text for better contrast */
+  text-decoration: none;
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+  display: inline-block;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link.active {
+  color: var(--primary-light); /* Highlight color on hover */
+  text-decoration: underline var(--primary-light);
+  transform: translateY(-2px); /* Subtle lift effect */
+}
+
+.mobile-menu-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3rem;
+  color: var(--primary-dark);
+}
+
+.navbar-desktop-cta {
+  border-radius: 9999px;
+  transition: background-color 0.3s ease-in-out, transform 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.cta-button-mobile {
+  display: inline-block;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-lightest);
+  background-color: var(--primary-default);
+  border: none;
+  border-radius: 9999px; /* Fully rounded button */
+  transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Elevated shadow */
+}
+
+.cta-button-mobile:hover {
+  background-color: var(--primary-dark); /* Darker background on hover */
+  transform: translateY(-2px); /* Lift effect on hover */
+}
+
+/* Animation for menu items */
+.mobile-menu-open .mobile-menu-item {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Delay animation for each menu item */
+.mobile-menu-open .mobile-menu-item:nth-child(1) { animation-delay: 0.1s; }
+.mobile-menu-open .mobile-menu-item:nth-child(2) { animation-delay: 0.2s; }
+.mobile-menu-open .mobile-menu-item:nth-child(3) { animation-delay: 0.3s; }
+.mobile-menu-open .mobile-menu-item:nth-child(4) { animation-delay: 0.4s; }
+.mobile-menu-open .mobile-menu-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Responsive behavior */
+@media (min-width: 1024px) {
+  .navbar-mobile {
+    display: none; /* Hide mobile navigation on larger screens */
+  }
+}

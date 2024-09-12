@@ -1,0 +1,40 @@
+/* src/styles/components/header/logo.css */
+/* Styles specific to the Logo component to ensure clear branding and responsive behavior */
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem; /* Slightly adjusts the vertical alignment */
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Adds spacing between the logo and any other elements if present */
+  transition: transform 0.3s ease-in-out;
+}
+
+.logo-link img {
+  display: block;
+  height: auto;
+  max-width: 150px; /* Ensures the logo does not exceed a specific size */
+  transition: transform 0.3s ease-in-out; /* Adds a subtle hover effect */
+}
+
+/* Logo hover effect for enhanced interactivity */
+.logo-link img:hover {
+  transform: scale(1.05); /* Slightly enlarges the logo on hover for emphasis */
+}
+
+/* Adjust logo size responsively */
+@media (max-width: 640px) {
+  .logo-link img {
+    max-width: 125px; /* Scales down on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-link img {
+    max-width: 100px; /* Further scales down on very small screens */
+  }
+}

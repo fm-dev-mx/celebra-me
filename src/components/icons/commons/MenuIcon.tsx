@@ -5,8 +5,8 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   secondaryColor?: string;
 }
 const MenuIcon: React.FC<IconProps> = ({
-  primaryColor = 'currentColor',
-  secondaryColor = 'currentColor',
+  primaryColor = 'var(--primary-dark)',
+  secondaryColor = 'var(--primary-default)',
   className,
   ...rest
 }) => (
@@ -15,15 +15,20 @@ const MenuIcon: React.FC<IconProps> = ({
     viewBox="0 0 24 24"
     className={className}
     aria-hidden="true"
-    fill="none"
     strokeWidth={2}
     {...rest}
   >
-    <path
-      stroke={primaryColor}
-      d="M9 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
-    />
-    <path stroke={secondaryColor} d="M7 3.34A10 10 0 1 1 3.34 7" />
+   <path
+  stroke={primaryColor} // Aplica el color del contorno
+  fill="none" // Asegúrate de que no haya relleno no deseado
+  d="M9 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
+/>
+<path
+  stroke={secondaryColor}
+  fill="none" // Asegura que el relleno no se vea negro
+  d="M7 3.34A10 10 0 1 1 3.34 7"
+/>
+
   </svg>
 );
 

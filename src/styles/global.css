@@ -13,8 +13,14 @@
 @import './components/actions/action-base.css';
 @import './components/actions/action-external-link.css';
 @import './components/actions/action-icon.css';
+@import './components/actions/action-wrapper.css';
+
+/* Import Custom Tailwind CSS header styles */
+@import './components/header/header.css';
+@import './components/header/navbar-mobile.css';
+@import './components/header/navbar-desktop.css';
+@import './components/header/logo.css';
 
 /* Import Custom Tailwind CSS utility styles */
-@import './utilities/custom-utilities.css';
 @import './animations/index.css';
 

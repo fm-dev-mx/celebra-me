@@ -155,9 +155,9 @@ export type IconNames =
 	| "EasyUseIcon"
 	| "ExclusiveIcon"
 	| "FacebookIcon"
-	| "FavIcon"
 	| "InstagramIcon"
 	| "MenuIcon"
+	| "CloseIcon"
 	| "TikTokIcon"
 	| "WeddingIcon"
 	| "WhatsAppIcon";
