@@ -1,69 +1,69 @@
 // src/components/ui/header/NavBarMobile.tsx
-// NavBarMobile component handles the mobile navigation menu, toggle button, and renders links dynamically.
-
-import React, { useState, useEffect } from 'react';
+// NavBarMobile component handles the mobile navigation menu and renders navigation links dynamically.
+import React, { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import Icon from '@/components/common/Icon';
 import ActionBase from '@/components/common/actions/ActionBase';
 import type { HeaderData } from '@/config/landing.interface';
 import Logo from '../Logo';
+import { useToggleMobileMenu } from '@/hooks/header/useToggleMobileMenu';
 
+// Props interface for NavBarMobile component
 interface NavBarMobileProps {
-  data: HeaderData;
+  data: HeaderData; // Contains the data for rendering the navigation links
 }
 
+// Functional component for mobile navigation bar
 const NavBarMobile: React.FC<NavBarMobileProps> = ({ data }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Destructure state and toggle function from custom hook
+  const { isMobileMenuOpen, toggleMobileMenu } = useToggleMobileMenu();
+
+  // State to keep track of the current path for active link highlighting
   const [currentPath, setCurrentPath] = useState<string>('');
 
   useEffect(() => {
-    // Set the current path to highlight the active link
+    // Update currentPath when the component mounts
+    // Ensure window is defined (client-side rendering check)
     if (typeof window !== 'undefined') {
       setCurrentPath(window.location.pathname);
     }
   }, []);
 
-  // Toggle the mobile menu visibility
-  const toggleMenu = () => {
-    setMenuOpen((prev) => !prev);
-    // Prevent scrolling when menu is open
-    document.body.style.overflow = menuOpen ? 'auto' : 'hidden';
-  };
-
   return (
     <div className="navbar-mobile">
+      {/* Mobile menu header with logo and toggle button */}
       <div className="navbar-mobile-header">
         <Logo />
-        {/* Mobile menu button */}
         <button
           id="mobile-menu-button"
           className="menu-button"
-          aria-label="Toggle mobile menu"
-          onClick={toggleMenu}
+          aria-label="Toggle mobile menu" // Accessibility label
+          onClick={toggleMobileMenu} // Toggle the mobile menu visibility
         >
-          <Icon icon={menuOpen ? "CloseIcon" : "MenuIcon"} />
+          <Icon icon={isMobileMenuOpen ? "CloseIcon" : "MenuIcon"} />
         </button>
       </div>
 
-      {/* Mobile navigation menu */}
+      {/* Mobile menu content */}
       <div
         id="mobile-menu"
         className={twMerge(
           'mobile-menu',
-          menuOpen ? 'mobile-menu-open' : ''
+          isMobileMenuOpen ? 'mobile-menu-open' : 'hidden' // Show/hide menu based on state
         )}
       >
         <nav className="mobile-menu-nav">
           <ul className="mobile-menu-list">
+            {/* Render list items based on data.links */}
             {data.links.map((item) => (
               <li key={item.href} className="mobile-menu-item">
                 <a
                   href={item.href}
                   className={twMerge(
                     'mobile-menu-link',
-                    currentPath === item.href ? 'active' : ''
+                    currentPath === item.href ? 'active' : '' // Highlight active link
                   )}
-                  onClick={toggleMenu}
+                  onClick={toggleMobileMenu} // Close menu on link click
                 >
                   {item.label}
                 </a>
@@ -71,7 +71,7 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ data }) => {
             ))}
           </ul>
 
-          {/* Mobile CTA Button */}
+          {/* Call-to-action button */}
           <div className="mobile-menu-cta">
             <ActionBase
               variant="primary"
@@ -79,7 +79,7 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ data }) => {
               as="a"
               href="#"
               className="cta-button-mobile"
-              onClick={toggleMenu}
+              onClick={toggleMobileMenu} // Close menu on button click
             >
               Ver demos
             </ActionBase>

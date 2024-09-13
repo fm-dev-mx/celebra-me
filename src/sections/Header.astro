@@ -1,36 +1,32 @@
 ---
 /* src/sections/Header.astro */
-/* This component represents the header section of the website, displaying the navigation and logo. */
+/* This component represents the header section of the website, responsible for displaying the logo,
+   navigation menus, and handling responsive behavior for desktop and mobile views. */
 
-import type { HeaderData } from "@/config/landing.interface";
-import HeaderScroll from "@/components/ui/header/HeaderScroll";
-import ToggleMobileMenu from "@/components/ui/header/ToggleMobileMenu";
-import HeaderContainer from "@/components/layout/HeaderContainer.astro";
-import NavBarDesktop from "@/components/ui/header/NavBarDesktop";
-import NavBarMobile from "@/components/ui/header/NavBarMobile";
+import type { HeaderData } from "@/config/landing.interface"; // Import type definition for header data
+import HeaderBehavior from "@/components/ui/header/HeaderBehavior"; // Manages header behavior and interactions
+import NavBarDesktop from "@/components/ui/header/NavBarDesktop"; // Component for desktop navigation
+import NavBarMobile from "@/components/ui/header/NavBarMobile"; // Component for mobile navigation
 
 interface Props {
-	data: HeaderData;
+	data: HeaderData; // Interface for the props, expecting data for header links and other configurations
 }
 
-const { data } = Astro.props;
+const { data } = Astro.props; // Destructure data from Astro props
 ---
 
 <header id="main-header" class="main-header">
 	<div class="header-container">
-		<!-- Handles header scroll behavior and mobile menu toggle button -->
-		<HeaderScroll client:load />
-		<ToggleMobileMenu client:load />
+		<!-- Initialize header behaviors such as scrolling and menu toggling -->
+		<HeaderBehavior client:load />
 
-		<!-- Main menu container wrapping desktop and mobile navigation -->
+		<!-- Main navigation menu container that manages desktop and mobile visibility -->
 		<nav class="main-menu-container">
-			<!-- Desktop navigation (hidden on small screens) -->
+			<!-- Desktop navigation menu, visible on larger screens -->
 			<NavBarDesktop data={data} client:load />
 
-			<!-- Mobile navigation (hidden on large screens) -->
+			<!-- Mobile navigation menu, visible on smaller screens -->
 			<NavBarMobile data={data} client:load />
 		</nav>
 	</div>
 </header>
-
-<!-- Styles for responsive behavior will be handled in the CSS files -->

@@ -1,88 +1,101 @@
 /* src/styles/components/header/navbar-desktop.css */
-/* Styles for the NavBarDesktop component ensuring modern, clean, and responsive navigation */
+/* Styles for the NavBarDesktop component ensuring a modern and elegant navigation */
 
+/* Desktop navbar hidden by default on smaller screens */
 .navbar-desktop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background-color: transparent;
+  display: none;
 }
 
-.navbar-desktop-links-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-  gap: 2rem;
-  overflow: hidden;
-  max-width: 70%;
-  transition: gap 0.3s ease-in-out;
-}
-
-.navbar-desktop-list {
-  display: flex;
-  gap: 1.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.navbar-desktop-link {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-light);
-  text-decoration: none;
-  padding: 0.25rem 0;
-  border-bottom: 2px solid transparent;
-  transition: color 0.3s ease-in-out, border-bottom 0.3s ease-in-out;
-}
-
-.navbar-desktop-link:hover,
-.navbar-desktop-link:focus,
-.navbar-desktop-link.active {
-  color: var(--primary-dark);
-  border-bottom: 2px solid var(--primary-dark);
-}
-
-.navbar-desktop-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--neutral-lightest);
-  background-color: var(--primary-default);
-  border: none;
-  border-radius: 9999px;
-  transition: background-color 0.3s ease-in-out, transform 0.2s ease;
-  cursor: pointer;
-  white-space: nowrap;
-  margin-left: auto;
-}
-
-.navbar-desktop-cta:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-/* Responsive behavior */
-@media (max-width: 1023px) {
-  .navbar-desktop {
-    display: none;
-  }
-}
-
+/* Display the navbar only on screens 1024px and up */
 @media (min-width: 1024px) {
-  .navbar-desktop-links-wrapper {
-    gap: 2.5rem;
+  .navbar-desktop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
   }
+
+  /* Logo wrapper */
+  .navbar-desktop-logo-wrapper {
+    flex-shrink: 0;
+  }
+
+  /* Links wrapper centered between logo and CTA button */
+  .navbar-desktop-links-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 2rem;
+  }
+
+  /* Navigation list styles */
+  .navbar-desktop-list {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Individual navigation item */
+  .navbar-desktop-item {
+    position: relative;
+  }
+
+  /* Link styles with color transition */
+  .navbar-desktop-link {
+    color: var(--text-default); /* Using the text color variable */
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+
+  /* Link underline effect on hover */
+  .navbar-desktop-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-default); /* Primary color variable */
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Active and hover states for links */
+.navbar-desktop-link.active,
+.mobile-menu-link.active {
+  color: var(--primary-dark);
+  font-weight: 700;
 }
 
-@media (min-width: 1280px) {
-  .navbar-desktop-links-wrapper {
-    gap: 3rem;
+
+  .navbar-desktop-link:hover::after,
+  .navbar-desktop-link.active::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+
+  /* Call to action button styles */
+  .navbar-desktop-cta-wrapper {
+    flex-shrink: 0;
+  }
+
+  .navbar-desktop-cta {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-default); /* Primary button background */
+    color: var(--neutral-lightest); /* White text */
+    border-radius: 2rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+
+  .navbar-desktop-cta:hover {
+    background-color: var(--primary-dark); /* Darker shade on hover */
+    transform: translateY(-3px); /* Slightly higher lift effect */
   }
 }
