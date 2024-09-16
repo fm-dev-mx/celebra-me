@@ -50,7 +50,6 @@
     background-color: var(--secondary-light);
     border: 2px solid var(--secondary-light);
     color: var(--secondary-default);
-    filter: brightness(105%); /* Slight brightness increase */
     transition: color 0.3s ease-in-out, border 0.3s ease-in-out, filter 0.3s ease-in-out; /* Include transition for filter */
 }
 
@@ -59,8 +58,12 @@
     background-color: var(--neutral-lightest);
     border: 1px solid var(--accent-default);
     color: var(--accent-default);
-    filter: brightness(100%);
-    transition: color 0.3s ease-in-out, border 0.3s ease-in-out; /* Smooth transition for color and border */
+    filter: brightness(105%);
+    will-change: color, border, filter; /* Sugerencia al navegador para optimizar las transiciones */
+    transition:
+        color 0.3s ease-in-out,
+        border 0.3s ease-in-out,
+        filter 0.3s ease-in-out;
 }
 
 /* Hover states */
@@ -82,5 +85,5 @@
 /* Accent hover state */
 .action-icon-scroll.color-accent:hover {
     color: var(--accent-dark);
-    border: 2px solid var(--accent-default);
+    border: 0.25rem solid var(--accent-default);
 }

@@ -27,8 +27,8 @@
 }
 
 .action-base.action-secondary {
-  border: 2px solid;
-  border-radius: 1.5rem; /* rounded-3xl */
+  border-radius: 2rem; /* rounded-3xl */
+  box-shadow: 5px 5px 10px -3px rgba(0, 0, 0, 0.3); /* Similar to shadow-2xl */
 }
 .action-base.action-large {
   justify-content: center;
@@ -74,13 +74,15 @@
 }
 
 .action-base.action-secondary.color-primary {
-  border-color: var(--primary-dark);
-  color: var(--primary.DEFAULT);
+	font-weight: 500;
+	background-color: var(--secondary-dark);
+  color: var(--neutral-lightest);
 }
 
 .action-base.action-secondary.color-secondary {
+	 background-color: var(--primary-light);
   border-color: var(--secondary.DEFAULT);
-  color: var(--secondary.DEFAULT);
+  color: var(--primary-dark);
 }
 
 .action-base.action-tertiary.color-primary {

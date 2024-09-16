@@ -30,9 +30,9 @@
     height: 100%;
     background: linear-gradient(
         120deg,
-        rgba(255, 255, 255, 0) 30%,
-        rgba(255, 255, 255, 0.8) 50%,
-        rgba(255, 255, 255, 0) 70%
+        rgba(var(--background-default-rgb), 0.1) 30%,
+        rgba(var(--background-default-rgb), 0.8) 50%,
+        rgba(var(--background-default-rgb), 0.2) 70%
     );
     animation: shimmer 3s ease-in-out 2;
     animation-fill-mode: forwards;

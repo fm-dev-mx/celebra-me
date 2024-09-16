@@ -27,14 +27,14 @@ export default {
           darkest: "#404040", // Dark Gray
         },
         background: {
-          DEFAULT: "#FFF5F2", // Warm Off-White
-          alt: "#F9EFEA", // Blush Cream
+          DEFAULT: "#FFFFFf", // Warm off-white
+          alt: "#FFFFFF", // Creamy Peach
         },
         text: {
           DEFAULT: "#2D2D2D", // Almost Black
           light: "#5A5A5A", // Soft Dark Gray
         },
-		whatsapp: {
+        whatsapp: {
           DEFAULT: "#25D366", // WhatsApp Green
           hover: "#20b157", // Darker WhatsApp Green for hover
         },
@@ -42,10 +42,17 @@ export default {
       textShadow: {
         lg: "2px 2px 4px rgba(0, 0, 0, 0.1)", // Large subtle shadow
       },
+      backdropBlur: {
+        xs: "2px",
+        sm: "4px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+      },
     },
   },
   plugins: [
-    function ({ addBase, theme }) {
+    function ({ addBase, addUtilities, theme }) {
       // Add custom text shadow utilities
       const textShadowUtilities = {
         ".shadow-text-light": {
@@ -58,7 +65,25 @@ export default {
           textShadow: "2px 2px 4px rgba(0, 0, 0, 0.8)", // Dark shadow for strong emphasis
         },
       };
+
+      // Add custom blur background utilities
+      const backgroundBlurUtilities = {
+        ".bg-blur-overlay": {
+          backgroundColor: theme("colors.background.alt"),
+          backdropFilter: "blur(8px)", // Soft glass-like blur for backgrounds
+        },
+        ".bg-blur-soft": {
+          backgroundColor: theme("colors.background.alt"),
+          backdropFilter: "blur(4px)", // Light blur for subtle background effects
+        },
+        ".bg-blur-intense": {
+          backgroundColor: theme("colors.background.alt"),
+          backdropFilter: "blur(16px)", // More pronounced blur for strong focus separation
+        },
+      };
+
       addBase(textShadowUtilities);
+      addUtilities(backgroundBlurUtilities);
 
       // Add custom CSS variables to enhance theme control
       const cssVariables = {
@@ -78,6 +103,8 @@ export default {
           "--neutral-dark": theme("colors.neutral.dark"),
           "--neutral-darkest": theme("colors.neutral.darkest"),
           "--background-default": theme("colors.background.DEFAULT"),
+          "--background-default-rgb": "255, 255, 255",
+          "--background-primary-rgb": "228, 118, 118",
           "--background-alt": theme("colors.background.alt"),
           "--text-default": theme("colors.text.DEFAULT"),
           "--text-light": theme("colors.text.light"),
@@ -90,7 +117,7 @@ export default {
     // Generate safelist for color utilities to prevent purging
     const generateColorSafelist = () => {
       const colors = ["primary", "secondary", "accent", "neutral", "background", "text", "whatsapp"];
-      const shades = ["", "light", "dark", "lightest", "medium", "darkest", "alt"];
+      const shades = ["", "light", "dark", "lightest", "medium", "darkest", "alt", "DEFAULT"];
       const utilities = ["bg", "text", "border", "hover:bg", "hover:text", "hover:border"];
 
       return colors.flatMap((color) =>
@@ -108,7 +135,14 @@ export default {
       );
     };
 
+    // Safelist for custom blur utilities
+    const customUtilitiesSafelist = [
+      "bg-blur-overlay",
+      "bg-blur-soft",
+      "bg-blur-intense",
+    ];
+
     // Combine and return the generated safelists
-    return [...generateColorSafelist(), ...generateGridSafelist()];
+    return [...generateColorSafelist(), ...generateGridSafelist(), ...customUtilitiesSafelist];
   })(),
 };

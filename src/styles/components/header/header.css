@@ -5,25 +5,25 @@
 .main-header {
   width: 100%;
   position: fixed;
+  place-content: center;
+  justify-content: center;
+  padding: 1rem 0;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Header content container with backdrop effect */
 .header-container {
-  max-width: 1200px;
+  max-width: 98%;
   margin: 0 auto;
-  padding: 1rem 2rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-  background-color: var(--background-default); /* Using Tailwind's background variable */
+  background-color: rgb(var(--background-default-rgb), 0.6);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 1rem 1rem;
+  border-radius: 1rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -31,6 +31,12 @@
 .main-menu-container {
   display: flex;
   align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  min-width: 100%;
+  padding: 0;
+  margin: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for max-height changes */
 }
 
 /* Scroll behavior for hiding the header */
@@ -38,15 +44,40 @@
   transform: translateY(-100%);
 }
 
-/* Responsive adjustments for padding */
-@media (max-width: 1023px) {
-  .header-container {
-    padding: 0.75rem 1rem;
+
+/* Responsive max-height adjustments for the main menu container */
+@media (max-width: 639px) { /* Small screens */
+  .main-menu-container {
+    min-height: 1rem;
+    max-height: 1rem;
   }
 }
 
-@media (min-width: 1024px) {
-  .header-container {
+@media (max-width: 767px) { /* Medium screens */
+  .main-menu-container {
+    min-height: 2rem;
+    max-height: 2rem;
+  }
+}
+
+@media (max-width: 1023px) { /* Large screens */
+  .main-menu-container {
+    min-height: 3rem;
+    max-height: 3rem;
+  }
+
+   .header-container {
+      padding: 0.75rem 1rem;
+	}
+}
+
+@media (min-width: 1024px) { /* Extra large screens */
+  .main-menu-container {
+    min-height: 4rem;
+    max-height: 4rem;
+  }
+
+   .header-container {
     padding: 1rem 2rem;
   }
 }

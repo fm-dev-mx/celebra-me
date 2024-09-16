@@ -6,10 +6,10 @@
   display: none;
 }
 
-/* Display the navbar only on screens 1024px and up */
 @media (min-width: 1024px) {
   .navbar-desktop {
     display: flex;
+	flex: 1 auto 1;
     align-items: center;
     justify-content: space-between;
     width: 100%;
@@ -18,6 +18,7 @@
   /* Logo wrapper */
   .navbar-desktop-logo-wrapper {
     flex-shrink: 0;
+
   }
 
   /* Links wrapper centered between logo and CTA button */
@@ -44,10 +45,11 @@
 
   /* Link styles with color transition */
   .navbar-desktop-link {
-    color: var(--text-default); /* Using the text color variable */
+    color: var(--neutral-dark); /* Using the text color variable */
     text-decoration: none;
+	text-wrap: nowrap;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.85rem;
     padding: 0.5rem 0;
     transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
   }
@@ -82,20 +84,33 @@
 
   /* Call to action button styles */
   .navbar-desktop-cta-wrapper {
-    flex-shrink: 0;
   }
 
   .navbar-desktop-cta {
-    padding: 0.75rem 1.5rem;
     background-color: var(--primary-default); /* Primary button background */
+	padding: 1.5rem 5rem;
     color: var(--neutral-lightest); /* White text */
-    border-radius: 2rem;
     font-weight: 600;
     transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
   }
 
   .navbar-desktop-cta:hover {
     background-color: var(--primary-dark); /* Darker shade on hover */
-    transform: translateY(-3px); /* Slightly higher lift effect */
   }
+}
+
+/* Display the navbar only on screens 1024px and up */
+@media (min-width: 1224px) {
+  .navbar-desktop {
+	padding: 0 3rem;
+  }
+
+  .navbar-desktop-item {
+	margin: 0 0.5rem;
+  }
+
+  .navbar-desktop-link {
+    font-size: 1rem;
+  }
+
 }

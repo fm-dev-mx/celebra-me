@@ -4,6 +4,7 @@
 /* Mobile navbar visible by default */
 .navbar-mobile {
   display: block;
+  width: 100%;
 }
 
 /* Header for the mobile navbar with logo and menu button */
@@ -36,9 +37,10 @@
   position: fixed;
   top: 0;
   left: 0;
+  padding: 0;
+  margin: 0;
   width: 100%;
-  height: 100vh;
-  background-color: var(--primary-dark); /* Updated background color to better match the brand */
+  min-height: 98vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -53,6 +55,9 @@
 .mobile-menu.mobile-menu-open {
   opacity: 1;
   visibility: visible;
+  background-color: rgb(var(--background-primary-rgb), 0.9); /* Updated background color to better match the brand */
+  border-radius: 1rem;
+  box-shadow: 10px 20px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Navigation within the mobile menu */
@@ -65,12 +70,12 @@
 .mobile-menu-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem 0;
+  margin: 0 0 6rem 0;
 }
 
 /* Individual item within the mobile menu */
 .mobile-menu-item {
-  margin: 1.5rem 0;
+  margin: 3rem 0;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
@@ -89,34 +94,41 @@
   font-size: 1.5rem;
   font-weight: 600;
   transition: color 0.3s ease-in-out;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Hover and active states for links */
-.mobile-menu-link:hover,
 .mobile-menu-link.active {
-  color: var(--primary-default); /* Primary color on hover and active */
+  color: var(--accent-light); /* Primary color on hover and active */
+}
+.mobile-menu-link:hover {
+  color: var(--secondary-default); /* Primary color on hover and active */
+  transform: translateY(-5px); /* Slight uplift effect */
+  animation: none; /* Prevent conflicts with other animations */
+
 }
 
 /* Call to action button within mobile menu */
 .mobile-menu-cta {
-  margin-top: 2rem;
 }
 
-/* Mobile CTA button with hover effects */
+/* Call to action button within mobile menu */
 .cta-button-mobile {
-  padding: 1rem 2rem;
-  background-color: var(--primary-default); /* Primary color for the button */
-  color: var(--neutral-lightest); /* White text */
-  border-radius: 2rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
-  display: inline-block;
+  margin: 3rem 0;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .cta-button-mobile:hover {
-  background-color: var(--primary-dark); /* Darker shade on hover */
-  transform: translateY(-3px); /* Slightly higher lift effect */
+	font-weight: 500;
+	transition: transform 0.5s ease-in-out;
+}
+
+/* Mobile menu open state CTA animation */
+.mobile-menu-open .cta-button-mobile {
+  opacity: 0;
+  animation: fadeInOpacity 0.5s ease-out forwards;
+  animation-delay: 0.7s; /* Ajusta el retraso para que siga al último link */
 }
 
 /* Hide mobile navigation on larger screens */
@@ -138,6 +150,15 @@
   }
 }
 
+/* Animation for CTA button */
+@keyframes fadeInOpacity {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 /* Delayed animations for menu items to create a cascading effect */
 .mobile-menu-open .mobile-menu-item {
   animation: fadeInUp 0.5s ease-out forwards;
@@ -160,4 +181,9 @@
 }
 .mobile-menu-open .mobile-menu-item:nth-child(6) {
   animation-delay: 0.6s;
+}
+
+/* Ensure the CTA button follows the last item's delay */
+.mobile-menu-open .cta-button-mobile {
+  animation-delay: 0.7s; /* Consistent delay for cascading effect */
 }

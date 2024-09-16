@@ -30,7 +30,7 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ data }) => {
   }, []);
 
   return (
-    <div className="navbar-mobile">
+		<div className={`navbar-mobile ${isMobileMenuOpen ? 'hidden' : 'block'}`}>
       {/* Mobile menu header with logo and toggle button */}
       <div className="navbar-mobile-header">
         <Logo />
@@ -74,8 +74,8 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ data }) => {
           {/* Call-to-action button */}
           <div className="mobile-menu-cta">
             <ActionBase
-              variant="primary"
-              color="primary"
+              variant="secondary"
+              color="secondary"
               as="a"
               href="#"
               className="cta-button-mobile"
