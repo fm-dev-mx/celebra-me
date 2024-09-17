@@ -108,6 +108,7 @@ export default {
           "--background-alt": theme("colors.background.alt"),
           "--text-default": theme("colors.text.DEFAULT"),
           "--text-light": theme("colors.text.light"),
+		  "--whatsapp": theme("colors.whatsapp.DEFAULT"),
         },
       };
       addBase(cssVariables);

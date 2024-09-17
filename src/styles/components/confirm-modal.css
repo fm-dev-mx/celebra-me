@@ -2,7 +2,13 @@
 
 /* Modal backdrop with smooth fade-in and subtle blur effect */
 #confirm-modal {
-  @apply fixed inset-0 flex items-center justify-center bg-neutral-darkest bg-opacity-50 z-50;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5); /* Neutral darkest with opacity */
+  z-index: 50;
   backdrop-filter: blur(8px); /* Soft blur effect for the background */
   opacity: 0;
   transition: opacity 0.5s ease-in-out; /* Smooth fade-in effect */
@@ -14,7 +20,13 @@
 
 /* Modal container with a smooth scale-up effect and subtle shadow */
 .modal-container {
-  @apply bg-background-alt p-8 rounded-3xl shadow-lg max-w-lg w-full mx-4;
+  background-color: var(--background-alt); /* Custom background color */
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  max-width: 32rem;
+  width: 100%;
+  margin: 1rem;
   border: 1px solid rgba(0, 0, 0, 0.05); /* Soft border for depth */
   opacity: 0;
   transform: scale(0.9); /* Initial shrink for the modal */
@@ -28,7 +40,7 @@
 
 /* Header with slide-down and fade-in for a dynamic entrance */
 .modal-header {
-  @apply mb-6;
+  margin-bottom: 1.5rem;
   opacity: 0;
   transform: translateY(-20px); /* Initial position slightly above */
   transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Smoother and quicker entrance */
@@ -41,13 +53,17 @@
 
 /* Title styling for a modern and clean appearance */
 .modal-title {
-  @apply text-2xl font-semibold text-neutral-darkest;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--neutral-darkest);
   letter-spacing: -0.5px; /* Tighter spacing for a polished look */
 }
 
 /* Content with a soft slide-in effect for readability and engagement */
 .modal-content {
-  @apply text-neutral-dark font-light leading-relaxed;
+  color: var(--neutral-dark);
+  font-weight: 300;
+  line-height: 1.75;
   opacity: 0;
   transform: translateY(10px); /* Slide-in effect from below */
   transition: opacity 0.3s ease-out 0.1s, transform 0.3s ease-out 0.1s; /* Slight delay to create a sequential feel */
@@ -60,7 +76,10 @@
 
 /* Actions container with staggered fade-in for buttons */
 .modal-actions {
-  @apply flex justify-center space-x-6 mt-6;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
   opacity: 0;
   transition: opacity 0.3s ease-out 0.2s; /* Staggered timing to enhance the flow */
 }
@@ -71,34 +90,55 @@
 
 /* Common button styles */
 .modal-button {
-  @apply px-6 py-3 text-xs text-nowrap font-medium rounded-full transition transform scale-100;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  background-color: var(--primary-dark);
+  font-weight: 500;
+  border-radius: 9999px;
   transition: transform 0.2s ease-in-out, background-color 0.2s ease;
 }
 
 /* Cancel button with hover scale effect and responsive touch */
 .cancel-button {
-  @apply bg-neutral-medium text-neutral-dark hover:bg-neutral-light focus:outline-none focus:ring focus:ring-neutral-light;
+  background-color: var(--neutral-medium);
+  color: var(--neutral-dark);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Light shadow for depth */
+  transition: background-color 0.2s ease, transform 0.2s ease-in-out;
 }
 
 .cancel-button:hover {
+  background-color: var(--neutral-light);
   transform: scale(1.05); /* Subtle scale-up on hover */
 }
 
 /* Confirm button with enhanced hover effect for better feedback */
 .confirm-button {
-  @apply bg-primary-dark text-white hover:bg-secondary-dark focus:outline-none focus:ring focus:ring-primary-light;
+  background-color: var(--primary-dark);
+  color: #ffffff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Stronger shadow for emphasis */
+  transition: background-color 0.2s ease, transform 0.2s ease-in-out;
 }
 
 .confirm-button:hover {
+  background-color: var(--secondary-dark);
   transform: scale(1.05); /* Subtle scale-up for an engaging hover effect */
 }
 
 /* Special styles for confirm buttons with WhatsApp text */
-.confirm-button-whatsapp:hover {
-  @apply bg-whatsapp text-white focus:outline-none focus:ring focus:ring-green-300;
+.action-base.confirm-button-whatsapp {
+  background-color: var(--primary-default) !important;
+  color: var(--neutral-lightest);
+  border: 0 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Emphasized shadow for WhatsApp button */
+}
+
+.action-base.confirm-button-whatsapp:hover {
+  background-color: var(--whatsapp) !important;
+  color: #ffffff;
   box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3); /* Emphasized shadow for WhatsApp button */
+  outline: none;
+  ring: 0;
 }
 
 .confirm-button-whatsapp:hover {

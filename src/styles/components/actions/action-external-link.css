@@ -1,32 +1,41 @@
 /* Base styles for the WhatsApp button */
 .action-base.action-external-whatsapp {
-  @apply relative flex items-center justify-center bg-primary-light border border-accent-dark text-neutral-dark rounded-3xl;
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-default);
+  border: 0px solid var(--accent-dark);
+  color: var(--neutral-darkest);
+  border-radius: 1.5rem;
   overflow: hidden; /* Ensures the inner scaling does not affect the surrounding layout */
+      box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9); /* Similar to shadow-2xl */
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 /* Hover effect for the action-external-whatsapp */
 .action-base.action-external-whatsapp:hover {
-  @apply text-white border-primary-dark bg-accent-dark shadow-2xl;
-  transform: scale(1.1); /* Scaling only affects the visual size, not the layout */
-}
-
-/* Ajusta el comportamiento de escalado del botón */
-.action-base.action-external-whatsapp {
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
-  will-change: transform; /* Mejora el rendimiento */
-  transform-origin: center; /* Controla hacia dónde se expande */
-}
-
-.action-base.action-external-whatsapp:hover {
+  color: white;
+  border-color: var(--primary-dark);
+  background-color: var(--accent-dark);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* Similar to shadow-2xl */
   transform: scale(1.1);
 }
 
+/* Adjust the scaling behavior of the button */
+.action-base.action-external-whatsapp {
+  transform-origin: center; /* Control where the button expands */
+  will-change: transform; /* Optimize for performance */
+}
 
 /* Icon style using mask */
 .action-base.action-external-whatsapp .whatsapp-icon {
-  @apply inline-block w-5 h-4 mr-3 transition-all duration-300 ease-in-out;
-  background-color: theme('colors.whatsapp.DEFAULT'); /* WhatsApp icon color */
+  display: inline-block;
+  width: 1.25rem; /* 5 units */
+  height: 1rem; /* 4 units */
+  margin-right: 0.75rem; /* Right margin to separate icon from text */
+  transition: all 0.3s ease-in-out;
+  background-color: var(--whatsapp); /* WhatsApp icon color */
   mask: url('/icons/whatsappIcon.svg') no-repeat center;
   mask-size: contain;
 }
@@ -39,33 +48,47 @@
 
 /* Initial text styles */
 .action-base.action-external-whatsapp .whatsapp-text {
-  @apply text-sm transition-all duration-300 ease-in-out;
+  font-size: 0.875rem;
+  transition: all 0.3s ease-in-out;
 }
 
 /* Text transition on hover */
 .action-base.action-external-whatsapp:hover .whatsapp-text {
-  @apply font-semibold opacity-0 transform -translate-y-2 scale-90; /* Scales text slightly for better visual flow */
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.9); /* Slight transformation for visual flow */
 }
 
 /* After pseudo-element used to show new text on hover */
 .action-base.action-external-whatsapp::after {
   content: "Chatea con nosotros";
-  @apply absolute left-1/2 top-1/2 opacity-0 transform translate-x-[-50%] translate-y-4 transition-all duration-300 ease-in-out;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  opacity: 0;
+  transform: translate(-50%, 16px); /* Center and offset slightly for animation effect */
+  transition: all 0.3s ease-in-out;
   white-space: nowrap;
   font-size: 0.875rem; /* Adjust font size for better readability */
-  color: var(--colors.primary.light); /* Ensures consistency in color */
+  color: var(--neutral-lightest); /* Ensures consistency in color */
 }
 
 /* Final state on hover */
 .action-base.action-external-whatsapp:hover::after {
-  @apply opacity-100 transform translate-x-[-50%] translate-y-[-50%] scale-105; /* Adds a slight scale-up for emphasis */
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.05); /* Adds a slight scale-up for emphasis */
 }
 
 /* Adding a subtle glowing effect for more modernity */
 .action-base.action-external-whatsapp::before {
   content: '';
-  @apply absolute inset-0 rounded-3xl bg-accent-dark opacity-0 transition-all duration-500 ease-in-out;
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background-color: var(--accent-dark);
+  opacity: 0;
   filter: blur(15px); /* Creates a soft glow effect */
+  transition: all 0.5s ease-in-out;
   z-index: -1; /* Ensures it stays behind the button */
 }
 
@@ -73,5 +96,3 @@
 .action-base.action-external-whatsapp:hover::before {
   opacity: 0.75; /* Glow becomes visible */
 }
-
-
