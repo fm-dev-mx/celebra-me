@@ -1,7 +1,7 @@
 /* src/styles/components/header/logo.css */
 /* Styles specific to the Logo component to ensure clear branding and responsive behavior */
 
-.logo-container {
+.logo-wrapper {
   display: flex;
   align-items: center;
   margin-top: 0.25rem; /* Slightly adjusts the vertical alignment */
