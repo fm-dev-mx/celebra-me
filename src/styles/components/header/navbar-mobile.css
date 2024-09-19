@@ -88,41 +88,24 @@
 }
 
 /* Mobile menu link styles */
-.mobile-menu-link {
+.mobile-menu-item .mobile-menu-link {
   color: var(--neutral-lightest); /* White color for text */
   text-decoration: none;
   font-size: 1.5rem;
   font-weight: 600;
-  transition: color 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out !important;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Hover and active states for links */
-.mobile-menu-link.active {
+.mobile-menu-item .mobile-menu-link.active {
   color: var(--accent-light); /* Primary color on hover and active */
 }
-.mobile-menu-link:hover {
-  color: var(--secondary-default); /* Primary color on hover and active */
-  transform: translateY(-5px); /* Slight uplift effect */
-  animation: none; /* Prevent conflicts with other animations */
 
+.mobile-menu-item .mobile-menu-link:hover {
+  color: var(--accent-default);
 }
 
-/* Call to action button within mobile menu */
-.mobile-menu-cta {
-}
-
-/* Call to action button within mobile menu */
-.cta-button-mobile {
-  margin: 3rem 0;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
-.cta-button-mobile:hover {
-	font-weight: 500;
-	transition: transform 0.5s ease-in-out;
-}
 
 /* Mobile menu open state CTA animation */
 .mobile-menu-open .cta-button-mobile {

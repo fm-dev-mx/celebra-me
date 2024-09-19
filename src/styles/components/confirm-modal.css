@@ -9,9 +9,9 @@
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5); /* Neutral darkest with opacity */
   z-index: 50;
-  backdrop-filter: blur(8px); /* Soft blur effect for the background */
   opacity: 0;
   transition: opacity 0.5s ease-in-out; /* Smooth fade-in effect */
+  @apply bg-blur-overlay;
 }
 
 #confirm-modal.show {

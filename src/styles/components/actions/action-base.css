@@ -20,17 +20,39 @@
   white-space: nowrap;
 }
 
-/* Variant styles */
+/* base styles for Action components on hover */
+.action-base:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .action-base {
+    font-size: 16px; /* text-base */
+    height: 48px;
+  }
+}
+
+/* action-base variants styles */
+
+/* base styles for action-primary variant */
 .action-base.action-primary {
   padding: 0.5rem 1.5rem; /* py-2 px-6 */
   border-radius: 1.5rem; /* rounded-3xl */
-      box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9); /* Similar to shadow-2xl */
+  box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9); /* Similar to shadow-2xl */
 }
 
+/* base styles for action-secondary variant */
 .action-base.action-secondary {
   border-radius: 2rem; /* rounded-3xl */
+  min-width: 0.5rem;
+  max-width: 4rem;
+  padding: 0.5rem 4.5rem; /* py-2 px-6 */
   box-shadow: 5px 5px 10px -3px rgba(0, 0, 0, 0.3); /* Similar to shadow-2xl */
 }
+
+/* base styles for action-tertiary variant */
 .action-base.action-large {
   justify-content: center;
   min-width: 300px;
@@ -44,69 +66,7 @@
   @apply mt-16 mb-32 xl:my-32;
 }
 
-.action-base.action-large.color-primary {
-	background-color: var(--primary-dark);
-  color: #fff;
-}
-
-.action-base.action-large.color-secondary {
-	background-color: var(--secondary-dark);
-  color: #fff;
-}
-
-.action-base.action-text {
-  opacity: 0.8;
-  font-size: 0.875rem; /* text-sm */
-  display: flex;
-  align-items: center;
-}
-
-/* Color styles based on variants defined in ActionBase */
-.action-base.action-primary.color-primary {
-  background-color: var(--primary-light);
-  border: 1px solid var(--primary-dark);
-  color: var(--neutral-lightest);
-}
-
-.action-base.action-primary.color-secondary {
-  background-color: var(--accent-light);
-  color: var(--secondary-dark);
-}
-
-.action-base.action-primary.color-secondary:hover {
-  background-color: var(--secondary-default);
-  color: var(--neutral-lightest);
-  filter: brightness(1);
-}
-
-.action-base.action-secondary.color-primary {
-	font-weight: 500;
-	background-color: var(--secondary-dark);
-  color: var(--neutral-lightest);
-}
-
-.action-base.action-secondary.color-secondary {
-	 background-color: var(--primary-light);
-  border-color: var(--secondary.DEFAULT);
-  color: var(--primary-dark);
-}
-
-.action-base.action-tertiary.color-primary {
-  background-color: var(--primary-dark);
-  color: var(--neutral-lightest);
-}
-
-.action-base.action-tertiary.color-secondary {
-
-}
-
-/* Additional hover effects */
-.action-base:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
-}
-
-/* Base styles for Action components */
+/* Base styles for Footer Action components */
 .action-text.footer-menu-item{
   display: inline-flex;
   align-items: center;
@@ -119,11 +79,74 @@
   white-space: nowrap;
 }
 
-/* Responsive adjustments */
-@media (min-width: 768px) {
-  .action-base {
-    font-size: 16px; /* text-base */
-    height: 48px;
-  }
+/* Color styles for -- action-primary color-primary -- variant */
+.action-base.action-primary.color-primary {
+	background-color: var(--primary-light);
+	border: 1px solid var(--primary-dark);
+	color: var(--neutral-lightest);
+}
+
+/* Color styles for action-primary color-secondary variant */
+
+.action-base.action-primary.color-secondary {
+  background-color: var(--accent-light);
+  border: 10px solid var(--accent-light);
+  color: var(--secondary-dark);
+}
+
+.action-base.action-primary.color-secondary:hover {
+  background-color: var(--secondary-default);
+  color: var(--neutral-lightest);
+  filter: brightness(1);
+}
+
+/* Color styles for action-secondary color-primary variant */
+.action-base.action-secondary.color-primary {
+	font-weight: 500;
+	background-color: var(--primary-dark);
+  color: var(--neutral-lightest);
+}
+
+/* Color styles for action-secondary color-secondary variant */
+.action-base.action-secondary.color-secondary {
+	 background-color: var(--primary-light);
+  border-color: var(--secondary.DEFAULT);
+  color: var(--primary-dark);
+}
+
+/* Color styles for action-tertiary color-primary variant */
+.action-base.action-tertiary.color-primary {
+  background-color: var(--primary-dark);
+  color: var(--neutral-lightest);
+}
+
+/* Color styles for action-tertiary color-secondary variant */
+.action-base.action-tertiary.color-secondary {
+
+}
+
+/* Color styles for -- action-large color-primary -- variant */
+.action-base.action-large.color-primary {
+	background-color: var(--primary-dark);
+  color: #fff;
+}
+
+/* Color styles for -- action-large color-secondary -- variant */
+.action-base.action-large.color-secondary {
+	background-color: var(--secondary-dark);
+  color: #fff;
+}
+
+/* Call to action button within mobile menu */
+.action-base.action-secondary.color-secondary.cta-button-mobile {
+    opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  padding: 1.5rem 5rem;
+  font-weight: 500;
+}
+
+.action-base.action-secondary.color-secondary.cta-button-mobile:hover {
+	font-weight: 600;
+	transition: transform 0.5s ease-in-out;
 }
 

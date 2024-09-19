@@ -69,15 +69,12 @@ export default {
       // Add custom blur background utilities
       const backgroundBlurUtilities = {
         ".bg-blur-overlay": {
-          backgroundColor: theme("colors.background.alt"),
           backdropFilter: "blur(8px)", // Soft glass-like blur for backgrounds
         },
         ".bg-blur-soft": {
-          backgroundColor: theme("colors.background.alt"),
           backdropFilter: "blur(4px)", // Light blur for subtle background effects
         },
         ".bg-blur-intense": {
-          backgroundColor: theme("colors.background.alt"),
           backdropFilter: "blur(16px)", // More pronounced blur for strong focus separation
         },
       };
@@ -109,6 +106,7 @@ export default {
           "--text-default": theme("colors.text.DEFAULT"),
           "--text-light": theme("colors.text.light"),
 		  "--whatsapp": theme("colors.whatsapp.DEFAULT"),
+		  "--whatsapp-hover": theme("colors.whatsapp.hover"),
         },
       };
       addBase(cssVariables);

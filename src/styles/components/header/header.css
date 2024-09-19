@@ -21,10 +21,10 @@
   justify-content: space-around;
   align-items: center;
   background-color: rgb(var(--background-default-rgb), 0.6);
-  backdrop-filter: blur(10px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 1rem;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  @apply bg-blur-intense;
 }
 
 /* Main menu container to handle both desktop and mobile navigation */

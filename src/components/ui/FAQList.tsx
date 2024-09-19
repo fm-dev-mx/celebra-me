@@ -13,7 +13,7 @@ interface FAQListProps {
 
 export const FAQList: React.FC<FAQListProps> = ({ questions, color }) => {
     return (
-        <div className={`w-full max-w-3xl mx-auto text-${color}-dark`}>
+        <div className={`w-full max-w-3xl mx-auto text-${color}-dark mb-10`}>
             <Accordion items={questions} color={color} />
         </div>
     );
