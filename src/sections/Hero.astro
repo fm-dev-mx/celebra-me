@@ -10,6 +10,7 @@ import SectionTitle from "@/components/typography/SectionTitle.astro";
 import SectionSubtitle from "@/components/typography/SectionSubtitle.astro";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import ActionWrapper from "@/components/common/actions/ActionWrapper";
+import Logo from "@/components/ui/Logo";
 
 // Define the expected data structure for the Hero component
 interface HeroData {
@@ -65,21 +66,7 @@ const { data } = Astro.props;
 
 		<!-- Responsive logo with accessibility enhancements -->
 		<div class="shimmer permanent-glow">
-			<img
-				src="/images/hero/rectangleLogo400x200.png"
-				srcset="/images/hero/rectangleLogo200x100.png 200w,
-                 /images/hero/rectangleLogo250x125.png 250w,
-                 /images/hero/rectangleLogo300x150.png 300w,
-                 /images/hero/rectangleLogo350x175.png 360w,
-                 /images/hero/rectangleLogo400x200.png 400w"
-				sizes="(max-width: 480px) 200px,
-               (max-width: 640px) 250px,
-               (max-width: 768px) 300px,
-               (max-width: 1024px) 360px,
-               400px"
-				alt="Logo celebra-me.com"
-				class="mx-auto mb-2"
-			/>
+			<Logo variant="hero" />
 		</div>
 
 		<!-- Subtitle for additional context with animation and styles -->

@@ -1,7 +1,7 @@
 /* src/styles/animations/subtle-bounce-animation.css */
 
 /* Action Icon Component Styles */
-.action-icon {
+.action-base.action-icon {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -13,13 +13,13 @@
 
 /* Adjust font size for larger screens */
 @media (min-width: 768px) {
-    .action-icon {
+    .action-base.action-icon {
         font-size: 1rem; /* md:text-base */
     }
 }
 
 /* Scroll button styles */
-.action-icon-scroll {
+.action-base.action-icon-scroll {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -38,7 +38,7 @@
 /* Color variants */
 
 /* Primary color variant */
-.action-icon-scroll.color-primary {
+.action-base.action-icon-scroll.color-primary {
     background-color: var(--primary-light);
     border: 2px solid var(--primary-light);
     color: var(--primary-default);
@@ -46,7 +46,7 @@
 }
 
 /* Secondary color variant */
-.action-icon-scroll.color-secondary {
+.action-base.action-icon-scroll.color-secondary {
     background-color: var(--secondary-light);
     border: 2px solid var(--secondary-light);
     color: var(--secondary-default);
@@ -54,7 +54,7 @@
 }
 
 /* Accent color variant */
-.action-icon-scroll.color-accent {
+.action-base.action-icon-scroll.color-accent {
     background-color: var(--neutral-lightest);
     border: 1px solid var(--accent-default);
     color: var(--accent-default);
@@ -69,21 +69,36 @@
 /* Hover states */
 
 /* Primary hover state */
-.action-icon-scroll.color-primary:hover {
+.action-base.action-icon-scroll.color-primary:hover {
     background-color: var(--primary-light);
     color: var(--primary-dark);
     border: 2px solid var(--primary-default);
 }
 
 /* Secondary hover state */
-.action-icon-scroll.color-secondary:hover {
+.action-base.action-icon-scroll.color-secondary:hover {
     background-color: var(--secondary-light);
     color: var(--secondary-dark);
     border: 2px solid var(--secondary-default);
 }
 
 /* Accent hover state */
-.action-icon-scroll.color-accent:hover {
+.action-base.action-icon-scroll.color-accent:hover {
     color: var(--accent-dark);
     border: 0.25rem solid var(--accent-default);
 }
+
+
+
+/* Secondary button styles */
+.action-base.action-icon-secondary {
+    display: flex;
+	flex: shrink;
+	color: var(--primary-light);
+    justify-content: center;
+    align-items: center;
+    bottom: 0;
+    @apply transition-transform duration-300 ease-in-out; /* Apply only the valid Tailwind classes */
+    transition: filter 0.3s ease-in-out; /* Manually define transition for filter */
+}
+

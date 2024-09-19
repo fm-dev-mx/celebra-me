@@ -50,11 +50,18 @@
 
 /* Footer social media section */
 .action-wrapper.footer-socials {
-  flex-direction: row; /* Display items in a row */
-  justify-content: space-evenly; /* Distribute space evenly between items */
-  gap: 0.1rem; /* Minimal gap for social icons */
-  width: fit-content;
-  flex-wrap: nowrap; /* Prevent wrapping */
+    display: flex;
+    align-items: center;
+  	flex-direction: row; /* Display items in a row */
+  	justify-content: center;
+	flex-wrap: nowrap; /* Prevent wrapping */
+	margin-bottom: 3rem;
+}
+
+/* Footer social media section */
+.action-wrapper.footer-socials > .action-base-wrapper {
+	min-width: 4rem;
+	max-width: 4rem;
 }
 
 /* Responsive styles */
@@ -62,5 +69,12 @@
   .action-wrapper,
   .action-wrapper.footer-menu {
     flex-direction: row; /* Ensures the layout remains in a row on larger screens */
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 639px) {
+  .action-wrapper.footer-menu {
+    flex-direction: column; /* Ensures the layout remains in a row on larger screens */
   }
 }

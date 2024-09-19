@@ -110,7 +110,7 @@
 .action-text.footer-menu-item{
   display: inline-flex;
   align-items: center;
-
+  color: var(--primary-light);
   transition: all 0.3s ease-in-out;
   font-size: 12px; /* sm:text-sm */
   height: 40px;
