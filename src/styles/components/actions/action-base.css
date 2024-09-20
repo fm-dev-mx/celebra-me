@@ -90,12 +90,13 @@
 
 .action-base.action-primary.color-secondary {
   background-color: var(--accent-light);
-  border: 10px solid var(--accent-light);
+  border: 5px solid var(--accent-light);
   color: var(--secondary-dark);
 }
 
 .action-base.action-primary.color-secondary:hover {
   background-color: var(--secondary-default);
+  border: 5px solid var(--secondary-default);
   color: var(--neutral-lightest);
   filter: brightness(1);
 }

@@ -30,3 +30,6 @@
   transform: scale(1.05); /* Slightly enlarges the logo on hover for emphasis */
 }
 
+.logo-link.logo-hero img:hover {
+  transform: scale(1);
+}

@@ -8,25 +8,27 @@
 
 /* Styles for standard glow effect */
 .permanent-glow::after {
-    content: '';
+	content: '';
     position: absolute;
     top: 100%;
     left: -200%;
     width: 400%;
     height: 120%;
-    background: linear-gradient(
+     background: linear-gradient(
         45deg,
         rgba(var(--background-default-rgb), 0) 0%,
-        var(--glow-color, rgba(var(--background-default-rgb), 0.1)) 25%,
-        var(--glow-color, rgba(var(--background-default-rgb), 0.9)) 50%,
-        var(--glow-color, rgba(var(--background-default-rgb), 0.1)) 75%,
+        rgba(var(--background-default-rgb), 0.1) 25%,
+        rgba(var(--background-default-rgb), 0.7) 50%,
+        rgba(var(--background-default-rgb), 0.1) 75%,
         rgba(var(--background-default-rgb), 0) 100%
     );
     opacity: 0;
     animation:
         fadeInGlow 3s ease-in 0.5s forwards,
         moveGradient 6s ease-in-out infinite 3s;
-    pointer-events: none;
+		pointer-events: none;
+
+		mix-blend-mode: overlay;
 }
 
 
@@ -38,14 +40,14 @@
 
 /* Keyframes for moving the gradient to create the standard glow effect */
 @keyframes moveGradient {
-    0%, 100% { transform: translate(-30%, -30%) rotate(0deg); }
+	0%, 100% { transform: translate(-30%, -30%) rotate(0deg); }
     50% { transform: translate(30%, 30%) rotate(180deg); }
 }
 
 
 /* Accessibility: Reduce Motion */
 @media (prefers-reduced-motion: reduce) {
-    .permanent-glow::after {
-        animation: none !important;
+	.permanent-glow::after {
+		animation: none !important;
     }
 }

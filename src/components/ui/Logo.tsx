@@ -38,7 +38,7 @@ const Logo: React.FC<LogoProps> = ({ variant = 'default' }) => {
 
   return (
     <div className={`logo-wrapper logo-wrapper-${variant}`}>
-      <a href="/" className="logo-link" aria-label="Go to the homepage">
+      <a href="/" className={`logo-link logo-${variant}`} aria-label="Go to the homepage">
         <img
           src={src} // Main image source based on variant
           srcSet={srcSet} // Responsive image set based on variant

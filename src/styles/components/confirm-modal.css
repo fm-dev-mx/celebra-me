@@ -96,6 +96,7 @@
   background-color: var(--primary-dark);
   font-weight: 500;
   border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Light shadow for depth */
   transition: transform 0.2s ease-in-out, background-color 0.2s ease;
 }
 
@@ -103,7 +104,6 @@
 .cancel-button {
   background-color: var(--neutral-medium);
   color: var(--neutral-dark);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Light shadow for depth */
   transition: background-color 0.2s ease, transform 0.2s ease-in-out;
 }
 
@@ -116,7 +116,6 @@
 .confirm-button {
   background-color: var(--primary-dark);
   color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Stronger shadow for emphasis */
   transition: background-color 0.2s ease, transform 0.2s ease-in-out;
 }
 
@@ -130,13 +129,11 @@
   background-color: var(--primary-default) !important;
   color: var(--neutral-lightest);
   border: 0 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Emphasized shadow for WhatsApp button */
 }
 
 .action-base.confirm-button-whatsapp:hover {
   background-color: var(--whatsapp) !important;
   color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3); /* Emphasized shadow for WhatsApp button */
   outline: none;
   ring: 0;
 }
