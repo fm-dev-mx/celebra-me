@@ -8,6 +8,7 @@
 /* Import Custom Tailwind CSS component styles */
 @import './components/pricing-cards.css';
 @import './components/confirm-modal.css';
+@import './components/styled-container.css';
 
 /* Import Custom Tailwind CSS action styles */
 @import './components/actions/action-base.css';

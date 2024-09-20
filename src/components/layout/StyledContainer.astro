@@ -2,70 +2,19 @@
 // StyledContainer.astro
 // A flexible, styled container designed to maintain consistent styling across different sections of the website.
 
-import { twMerge } from "tailwind-merge";
-
 // Define the props interface for the StyledContainer component
 interface Props {
-	flex?: string;
-	padding?: string;
-	margin?: string;
-	width?: string;
-	minWidth?: string;
-	maxWidth?: string;
-	height?: string;
-	maxHeight?: string;
-	verticalAlign?: string;
-	horizontalAlign?: string;
-	backgroundColor?: string;
-	shadow?: string;
-	opacity?: string;
-	relative?: string;
-	rounded?: string;
-	extraClasses?: string;
+	variant?: "hero-section" | "about-section" | "contact-section";
 }
 
 // Destructure props with default values for flexibility
-const {
-	flex = "flex-col",
-	padding = "py-6",
-	margin = "mx-auto",
-	width = "w-full",
-	minWidth = "min-w-fit",
-	maxWidth = "max-w-5xl",
-	height = "h-full",
-	maxHeight = "max-h-full",
-	verticalAlign = "items-center",
-	horizontalAlign = "justify-center",
-	backgroundColor = "bg-white/90",
-	shadow = "shadow-2xl",
-	opacity = "",
-	relative = "",
-	rounded = "rounded-2xl",
-	extraClasses = "",
-} = Astro.props;
+const { variant: variantProp = "" } = Astro.props;
 
-// Combine classes using tailwind-merge to avoid conflicts
-const containerClasses = twMerge(
-	"flex",
-	flex,
-	padding,
-	margin,
-	width,
-	minWidth,
-	maxWidth,
-	height,
-	maxHeight,
-	verticalAlign,
-	horizontalAlign,
-	backgroundColor,
-	shadow,
-	opacity,
-	relative,
-	rounded,
-	extraClasses,
-);
+// Set the variant class based on the variant prop
+const variantClass = variantProp ? `styled-container-${variantProp}` : "";
+const containerClass = `styled-container ${variantClass}`;
 ---
 
-<div class={containerClasses}>
+<div class={containerClass}>
 	<slot />
 </div>
