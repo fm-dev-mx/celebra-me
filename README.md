@@ -1,6 +1,6 @@
 # Celebra-me
 
-![Celebra-me Logo](public/icons/favicon.svg)
+![Celebra-me Logo](public\images\footer\darkModeRectangularLogo200x100.png)
 
 Celebra-me is a high-performance web application for creating and managing digital invitations, leveraging modern web technologies and best practices.
 
