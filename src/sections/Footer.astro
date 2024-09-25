@@ -1,66 +1,64 @@
 ---
+// src/sections/Footer.astro
+
 import ActionBase from "@/components/common/actions/ActionBase";
-import ActionIcon from "@/components/common/actions/ActionIcon";
 import ActionWrapper from "@/components/common/actions/ActionWrapper";
 import Container from "@/components/layout/Container.astro";
 import Section from "@/components/layout/Section.astro";
 import Logo from "@/components/ui/Logo";
-import type { FooterData } from "@/config/landing.interface";
-import type { IconNames } from "@/config/landing.interface";
+import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks.tsx";
+import type { SiteData, MenuData, SocialLink } from "@/config/landing.interface";
 
-// Define the props interface for type safety
-interface Props {
-	data: FooterData;
+// Define the interface for social data
+interface SocialData {
+	socialLinks: SocialLink[];
 }
 
-// Destructure the data prop
-const { data } = Astro.props;
+// Define props for type safety
+interface Props {
+	siteData: SiteData;
+	menuData: MenuData;
+	socialData: SocialData;
+}
+
+// Get the props from Astro
+const { siteData, menuData, socialData } = Astro.props;
 ---
 
-<!-- Footer component -->
+<!-- Footer Component -->
 <footer class="bg-black text-white w-full py-8">
-	<!-- Use Section component for consistent padding and overflow handling -->
+	<!-- Use the Section component for padding and overflow management -->
 	<Section padding="pt-8">
 		<Container>
 			<div class="flex flex-col items-center">
 				<Logo variant="footer" />
 
 				<!-- Footer description -->
-				<p class="text-center text-primary/40 my-6 font-thin">
-					{data.description}
-				</p>
+				{
+					siteData?.slogan && (
+						<p class="text-center text-primary/40 my-6 font-thin">{siteData.slogan}</p>
+					)
+				}
 
 				<!-- Footer navigation links -->
 				<ActionWrapper className="footer-menu">
 					{
-						data.links.map((link) => (
-							<ActionBase
-								variant="text"
-								as="a"
-								href={link.href}
-								className="footer-menu-item"
-							>
-								{link.label}
-							</ActionBase>
-						))
+						menuData?.links?.length > 0 &&
+							menuData.links.map((link) => (
+								<ActionBase
+									variant="text"
+									as="a"
+									href={link.href}
+									className="footer-menu-item"
+								>
+									{link.label}
+								</ActionBase>
+							))
 					}
 				</ActionWrapper>
 
-				<!-- Social media icons -->
-				<ActionWrapper className="footer-socials">
-					{
-						data.socials.map((social) => (
-							<ActionIcon
-								as="a"
-								variant="secondary"
-								href={social.href}
-								title={social.icon}
-								icon={social.icon as IconNames}
-								title={social.title}
-							/>
-						))
-					}
-				</ActionWrapper>
+				<!-- Social media icons using the reusable component -->
+				<SocialMediaLinks links={socialData.socialLinks} variant="social-footer" />
 			</div>
 		</Container>
 	</Section>

@@ -16,7 +16,7 @@ import Logo from "@/components/ui/Logo";
 interface HeroData {
 	icon?: IconNames;
 	title: string;
-	subtitle: string;
+	slogan: string;
 	primaryCta: string;
 	secondaryCta: string;
 }
@@ -48,7 +48,7 @@ const { data } = Astro.props;
 			weight="font-light"
 			extraClass="slide-in-left shadow-text-light tracking-widest"
 		>
-			{data.title}
+			Invitaciones digitales
 		</SectionTitle>
 
 		<!-- Responsive logo with accessibility enhancements -->
@@ -65,7 +65,7 @@ const { data } = Astro.props;
 			margin="mx-12 mx-auto"
 			extraClass="font-sans shadow-text-light tracking-widest fade-in fade-slow"
 		>
-			{data.subtitle}
+			{data.slogan}
 		</SectionSubtitle>
 
 		<!-- CTA Buttons for main actions -->

@@ -3,16 +3,12 @@
 /* This component represents the header section of the website, responsible for displaying the logo,
    navigation menus, and handling responsive behavior for desktop and mobile views. */
 
-import type { HeaderData } from "@/config/landing.interface"; // Import type definition for header data
 import HeaderBehavior from "@/components/ui/header/HeaderBehavior"; // Manages header behavior and interactions
 import NavBarDesktop from "@/components/ui/header/NavBarDesktop"; // Component for desktop navigation
 import NavBarMobile from "@/components/ui/header/NavBarMobile"; // Component for mobile navigation
 
-interface Props {
-	data: HeaderData; // Interface for the props, expecting data for header links and other configurations
-}
-
-const { data } = Astro.props; // Destructure data from Astro props
+const { menuData, socialData } = Astro.props; // Destructure data from Astro props
+console.log(menuData, socialData);
 ---
 
 <header id="main-header" class="main-header">
@@ -23,10 +19,10 @@ const { data } = Astro.props; // Destructure data from Astro props
 		<!-- Main navigation menu container that manages desktop and mobile visibility -->
 		<nav class="main-menu-container">
 			<!-- Desktop navigation menu, visible on larger screens -->
-			<NavBarDesktop data={data} client:load />
+			<NavBarDesktop menuData={menuData} socialData={socialData} client:load />
 
 			<!-- Mobile navigation menu, visible on smaller screens -->
-			<NavBarMobile data={data} client:load />
+			<NavBarMobile menuData={menuData} socialData={socialData} client:load />
 		</nav>
 	</div>
 </header>

@@ -3,114 +3,138 @@
 
 /* Desktop navbar hidden by default on smaller screens */
 .navbar-desktop {
-  display: none;
+	display: none;
 }
 
 @media (min-width: 1024px) {
-  .navbar-desktop {
-    display: flex;
-	flex: 1 auto 1;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
+	.navbar-desktop {
+		display: flex;
+		flex: 0 1 auto;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
 
-  /* Logo wrapper */
-  .navbar-desktop-logo-wrapper {
-    flex-shrink: 0;
+	/* Logo wrapper */
+	.navbar-desktop-logo-wrapper {
+		flex-shrink: 0;
+		margin-left: 2rem;
+	}
 
-  }
+	/* Menu links */
+	.navbar-desktop-links-wrapper {
+		flex-grow: 1;
+		display: flex;
+		align-self: flex-end;
+		justify-content: center;
+		margin: 0 3rem 0.5rem;
+		column-gap: 3rem;
+	}
 
-  /* Links wrapper centered between logo and CTA button */
-  .navbar-desktop-links-wrapper {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    margin: 0 2rem;
-  }
+	.navbar-desktop-list {
+		display: flex;
+		justify-content: space-evenly;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		gap: 1.6rem; /* Default gap */
+	}
 
-  /* Navigation list styles */
-  .navbar-desktop-list {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
+	.navbar-desktop-item {
+		margin: 0 0.1rem; /* Default margin */
+	}
 
-  /* Individual navigation item */
-  .navbar-desktop-item {
-    position: relative;
-  }
+	.navbar-desktop-link {
+		color: var(--neutral-dark);
+		text-decoration: none;
+		font-weight: 500;
+		padding: 0.5rem 0;
+		text-wrap: nowrap;
+		position: relative;
+		transition:
+			color 0.3s ease-in-out,
+			transform 0.3s ease-in-out;
+		font-size: 0.9rem; /* Default font size */
+	}
 
-  /* Link styles with color transition */
-  .navbar-desktop-link {
-    color: var(--neutral-dark); /* Using the text color variable */
-    text-decoration: none;
-	text-wrap: nowrap;
-    font-weight: 500;
-    font-size: 0.85rem;
-    padding: 0.5rem 0;
-    transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
-  }
+	.navbar-desktop-link::after {
+		content: "";
+		position: absolute;
+		width: 100%;
+		height: 2px;
+		bottom: 0;
+		left: 0;
+		background-color: var(--primary-default);
+		transform: scaleX(0);
+		transform-origin: bottom right;
+		transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
 
-  /* Link underline effect on hover */
-  .navbar-desktop-link::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-default); /* Primary color variable */
-    transform: scaleX(0);
-    transform-origin: bottom right;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+	/* Active and hover states for links */
+	.navbar-desktop-link.active,
+	.navbar-desktop-link:hover::after,
+	.navbar-desktop-link.active::after {
+		transform: scaleX(1);
+		transform-origin: bottom left;
+	}
 
-  /* Active and hover states for links */
-.navbar-desktop-link.active,
-.mobile-menu-link.active {
-  color: var(--primary-dark);
-  font-weight: 700;
+	.navbar-desktop-link.active {
+		color: var(--primary-dark);
+		font-weight: 700;
+	}
+
+	/* CTA button */
+	.navbar-desktop-cta-wrapper {
+		/* No redundant styling here */
+	}
+
+	.navbar-desktop-cta {
+		background-color: var(--primary-default);
+		padding: 1.5rem 5rem;
+		color: var(--neutral-lightest);
+		font-weight: 600;
+		transition:
+			background-color 0.3s ease-in-out,
+			transform 0.3s ease-in-out;
+		font-size: 0.8rem; /* Default CTA font size */
+		min-width: 5rem;
+		max-width: 5rem;
+		min-height: 3rem;
+		max-height: 3rem;
+	}
+
+	.navbar-desktop-cta:hover {
+		background-color: var(--primary-dark);
+	}
 }
 
+/* Media Queries for larger screens */
+@media (min-width: 1200px) {
+	.navbar-desktop-list {
+		gap: 0.5rem; /* Updated gap for larger screens */
+	}
 
-  .navbar-desktop-link:hover::after,
-  .navbar-desktop-link.active::after {
-    transform: scaleX(1);
-    transform-origin: bottom left;
-  }
+	.navbar-desktop-item {
+		flex-shrink: 1;
+		margin: 0 0.5rem; /* Updated margin for larger screens */
+	}
 
-  /* Call to action button styles */
-  .navbar-desktop-cta-wrapper {
-  }
-
-  .navbar-desktop-cta {
-    background-color: var(--primary-default); /* Primary button background */
-	padding: 1.5rem 5rem;
-    color: var(--neutral-lightest); /* White text */
-    font-weight: 600;
-    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
-  }
-
-  .navbar-desktop-cta:hover {
-    background-color: var(--primary-dark); /* Darker shade on hover */
-  }
+	.navbar-desktop-link {
+		font-size: 0.8rem; /* Updated font size for larger screens */
+	}
 }
 
-/* Display the navbar only on screens 1024px and up */
-@media (min-width: 1224px) {
-  .navbar-desktop {
-	padding: 0 3rem;
-  }
+/* Media Queries for larger screens */
+@media (min-width: 1440px) {
+	.navbar-desktop-list {
+		gap: 1.3rem;
+		margin: 0 5rem;
+	}
 
-  .navbar-desktop-item {
-	margin: 0 0.5rem;
-  }
+	.navbar-desktop-item {
+	}
 
-  .navbar-desktop-link {
-    font-size: 1rem;
-  }
-
+	.navbar-desktop-link {
+		font-size: 0.9rem; /* Updated font size for larger screens */
+	}
 }

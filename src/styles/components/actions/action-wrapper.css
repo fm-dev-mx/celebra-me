@@ -2,79 +2,50 @@
 
 /* General wrapper styles */
 .action-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 4rem;
-  flex-wrap: wrap;
-  width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 4rem;
+	flex-wrap: wrap;
+	width: 100%;
 }
 
 /* Footer menu wrapper */
 .action-wrapper.footer-menu {
-  display: flex; /* Display items in a flex container */
-  flex-direction: row; /* Align items in a single row */
-  justify-content: center; /* Center items horizontally */
-  align-items: center; /* Center items vertically */
-  gap: 0.5rem; /* Adjust spacing between items */
-  margin: 0 auto;
-  max-width: 80%; /* Set a max width for the menu */
-  flex-wrap: nowrap; /* Prevent wrapping to keep items in one line */
-  padding: 0; /* Remove padding for better alignment */
+	display: flex; /* Display items in a flex container */
+	flex-direction: column; /* Align items in a single row */
+	justify-content: center; /* Center items horizontally */
+	align-items: center; /* Center items vertically */
+	gap: 0.5rem; /* Adjust spacing between items */
+	margin: 2rem auto;
+	max-width: 80%; /* Set a max width for the menu */
+	flex-wrap: nowrap; /* Prevent wrapping to keep items in one line */
+	padding: 0; /* Remove padding for better alignment */
 }
 
 /* Footer menu items container */
 .action-wrapper.footer-menu > .action-base-wrapper {
-  display: flex;
-  flex: 0 1 auto; /* Allows items to grow and shrink within limits */
-  min-width: fit-content; /* Prevents items from being too small */
-  padding: 0;
-  margin: 0; /* Remove any extra margins */
-  width: auto; /* Keep natural width */
+	display: flex;
+	flex: 0 1 auto; /* Allows items to grow and shrink within limits */
+	min-width: fit-content; /* Prevents items from being too small */
+	padding: 0;
+	margin: 0; /* Remove any extra margins */
+	max-width: fit-content;
+	column-gap: 3rem;
 }
 
 /* Footer menu action base items */
 .action-wrapper.footer-menu .action-base {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease-in-out;
-  font-size: 14px; /* Adjust font size for better fit */
-  height: 40px;
-  min-width: 80px; /* Set a reasonable min-width for footer items */
-  max-width: 100%; /* Ensure items do not exceed the available space */
-  white-space: nowrap; /* Prevents text from wrapping */
-}
-
-/* Footer social media section */
-.action-wrapper.footer-socials {
-    display: flex;
-    align-items: center;
-  	flex-direction: row; /* Display items in a row */
-  	justify-content: center;
-	flex-wrap: nowrap; /* Prevent wrapping */
-	margin-bottom: 3rem;
-}
-
-/* Footer social media section */
-.action-wrapper.footer-socials > .action-base-wrapper {
-	min-width: 4rem;
-	max-width: 4rem;
+	font-size: 14px; /* Adjust font size for better fit */
+	margin: 0 1rem;
 }
 
 /* Responsive styles */
 @media (min-width: 640px) {
-  .action-wrapper,
-  .action-wrapper.footer-menu {
-    flex-direction: row; /* Ensures the layout remains in a row on larger screens */
-  }
-}
-
-/* Responsive styles */
-@media (max-width: 639px) {
-  .action-wrapper.footer-menu {
-    flex-direction: column; /* Ensures the layout remains in a row on larger screens */
-  }
+	.action-wrapper,
+	.action-wrapper.footer-menu {
+		flex-direction: row; /* Ensures the layout remains in a row on larger screens */
+	}
 }

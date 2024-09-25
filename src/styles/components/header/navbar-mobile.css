@@ -3,170 +3,187 @@
 
 /* Mobile navbar visible by default */
 .navbar-mobile {
-  display: block;
-  width: 100%;
+	display: block;
+	width: 100%;
 }
 
 /* Header for the mobile navbar with logo and menu button */
 .navbar-mobile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  z-index: 1100; /* Ensure it's above the mobile menu */
-  position: relative; /* Ensures positioning context for child elements */
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem;
+	z-index: 1100; /* Ensure it's above the mobile menu */
+	position: relative; /* Ensures positioning context for child elements */
 }
 
 /* Menu button with smooth hover scale effect */
 .menu-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-default); /* Ensure button icon is visible */
-  transition: transform 0.3s ease-in-out;
-  z-index: 1200; /* Ensure it's above the mobile menu */
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: var(--text-default); /* Ensure button icon is visible */
+	transition: transform 0.3s ease-in-out;
+	z-index: 1200; /* Ensure it's above the mobile menu */
 }
 
 .menu-button:hover {
-  transform: scale(1.15);
+	transform: scale(1.15);
 }
 
 /* Mobile menu container with smooth fade and visibility transitions */
 .mobile-menu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  min-height: 98vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
-  opacity: 0;
-  visibility: hidden;
-  z-index: 1000;
+	position: fixed;
+	top: 0;
+	left: 0;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	min-height: 98vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	transition:
+		opacity 0.4s ease-in-out,
+		visibility 0.4s ease-in-out;
+	opacity: 0;
+	visibility: hidden;
+	z-index: 1000;
 }
 
 /* Mobile menu open state */
 .mobile-menu.mobile-menu-open {
-  opacity: 1;
-  visibility: visible;
-  background-color: rgb(var(--background-primary-rgb), 0.9); /* Updated background color to better match the brand */
-  border-radius: 1rem;
-  box-shadow: 10px 20px 10px rgba(0, 0, 0, 0.5);
+	opacity: 1;
+	visibility: visible;
+	background-color: rgb(
+		var(--background-primary-rgb),
+		0.9
+	); /* Updated background color to better match the brand */
+	border-radius: 1rem;
+	box-shadow: 10px 20px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Navigation within the mobile menu */
 .mobile-menu-nav {
-  text-align: center;
-  z-index: 1100; /* Ensures content is visible above the background */
+	text-align: center;
+	z-index: 1100; /* Ensures content is visible above the background */
 }
 
 /* Mobile menu list items */
 .mobile-menu-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 6rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	margin: 6rem 0;
 }
 
 /* Individual item within the mobile menu */
 .mobile-menu-item {
-  margin: 3rem 0;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+	opacity: 0;
+	transform: translateY(20px);
+	transition:
+		opacity 0.3s ease-in-out,
+		transform 0.3s ease-in-out;
 }
 
 /* Animation effect for showing menu items with staggered delays */
 .mobile-menu-open .mobile-menu-item {
-  opacity: 1;
-  transform: translateY(0);
+	opacity: 1;
+	transform: translateY(0);
 }
 
 /* Mobile menu link styles */
 .mobile-menu-item .mobile-menu-link {
-  color: var(--neutral-lightest); /* White color for text */
-  text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: 600;
-  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out !important;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+	color: var(--neutral-lightest); /* White color for text */
+	text-decoration: none;
+	font-size: 1.5rem;
+	font-weight: 600;
+	transition:
+		color 0.3s ease-in-out,
+		transform 0.3s ease-in-out !important;
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Hover and active states for links */
 .mobile-menu-item .mobile-menu-link.active {
-  color: var(--accent-light); /* Primary color on hover and active */
+	color: var(--accent-light); /* Primary color on hover and active */
 }
 
 .mobile-menu-item .mobile-menu-link:hover {
-  color: var(--accent-default);
+	color: var(--accent-default);
 }
-
 
 /* Mobile menu open state CTA animation */
 .mobile-menu-open .cta-button-mobile {
-  opacity: 0;
-  animation: fadeInOpacity 0.5s ease-out forwards;
-  animation-delay: 0.7s; /* Ajusta el retraso para que siga al último link */
+	opacity: 0;
+	animation: fadeInOpacity 0.5s ease-out forwards;
+	animation-delay: 0.7s; /* Ajusta el retraso para que siga al último link */
+	margin-bottom: 5rem;
 }
 
 /* Hide mobile navigation on larger screens */
 @media (min-width: 1024px) {
-  .navbar-mobile {
-    display: none;
-  }
+	.navbar-mobile {
+		display: none;
+	}
+}
+
+@media (max-width: 400px) {
+	.mobile-menu-list {
+	}
+	.mobile-menu-item .mobile-menu-link {
+		font-size: 1rem;
+	}
 }
 
 /* Animation for menu items */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 /* Animation for CTA button */
 @keyframes fadeInOpacity {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 /* Delayed animations for menu items to create a cascading effect */
 .mobile-menu-open .mobile-menu-item {
-  animation: fadeInUp 0.5s ease-out forwards;
+	animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .mobile-menu-open .mobile-menu-item:nth-child(1) {
-  animation-delay: 0.1s;
+	animation-delay: 0.1s;
 }
 .mobile-menu-open .mobile-menu-item:nth-child(2) {
-  animation-delay: 0.2s;
+	animation-delay: 0.2s;
 }
 .mobile-menu-open .mobile-menu-item:nth-child(3) {
-  animation-delay: 0.3s;
+	animation-delay: 0.3s;
 }
 .mobile-menu-open .mobile-menu-item:nth-child(4) {
-  animation-delay: 0.4s;
+	animation-delay: 0.4s;
 }
 .mobile-menu-open .mobile-menu-item:nth-child(5) {
-  animation-delay: 0.5s;
+	animation-delay: 0.5s;
 }
 .mobile-menu-open .mobile-menu-item:nth-child(6) {
-  animation-delay: 0.6s;
+	animation-delay: 0.6s;
 }
 
 /* Ensure the CTA button follows the last item's delay */
 .mobile-menu-open .cta-button-mobile {
-  animation-delay: 0.7s; /* Consistent delay for cascading effect */
+	animation-delay: 0.7s; /* Consistent delay for cascading effect */
 }

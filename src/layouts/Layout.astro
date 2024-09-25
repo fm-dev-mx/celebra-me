@@ -10,7 +10,7 @@ interface Props {
 
 const { meta } = Astro.props;
 
-const ldJson = JSON.stringify(meta.ldJson);
+const seoData = JSON.stringify(meta.seoData);
 ---
 
 <!doctype html>
@@ -25,7 +25,7 @@ const ldJson = JSON.stringify(meta.ldJson);
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
 		<link rel="canonical" href={import.meta.env.SITE} />
-		<script type="application/ld+json" set:html={ldJson} is:inline />
+		<script type="application/ld+json" set:html={seoData} is:inline />
 		<SpeedInsights />
 	</head>
 	<body class="bg-white">

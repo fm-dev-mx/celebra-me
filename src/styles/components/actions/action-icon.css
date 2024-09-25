@@ -1,104 +1,188 @@
-/* src/styles/animations/subtle-bounce-animation.css */
+/* src/styles/components/actions/action-icon.css */
 
-/* Action Icon Component Styles */
+/* Base Styles for Action Icon */
 .action-base.action-icon {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem; /* text-sm */
-    padding: 0.5rem; /* p-2 */
-    border-radius: 9999px; /* fully rounded */
-}
-
-/* Adjust font size for larger screens */
-@media (min-width: 768px) {
-    .action-base.action-icon {
-        font-size: 1rem; /* md:text-base */
-    }
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.875rem; /* text-sm */
+	padding: 0.5rem; /* p-2 */
+	border-radius: 9999px; /* fully rounded */
+	transition:
+		filter 0.3s ease-in-out,
+		transform 0.3s ease-in-out;
 }
 
 /* Scroll button styles */
 .action-base.action-icon-scroll {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 1.5rem; /* rounded-3xl */
-    position: absolute;
-    bottom: 0;
-    min-width: 2.5rem;
-    min-height: 3rem;
-    margin-top: 8rem;
-    filter: brightness(125%); /* Enhances brightness slightly */
-    transform: translateX(-50%); /* Centers the button horizontally */
-    @apply subtle-bounce transition-transform duration-300 ease-in-out; /* Apply only the valid Tailwind classes */
-    transition: filter 0.3s ease-in-out; /* Manually define transition for filter */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	bottom: 0;
+	min-width: 2.5rem;
+	min-height: 3rem;
+	border-radius: 1.5rem; /* rounded-3xl */
+	filter: brightness(125%);
+	transition: filter 0.3s ease-in-out;
+	@apply subtle-bounce;
 }
 
-/* Color variants */
+/* Social media links */
+.social-media-links {
+	display: flex; /**/
+	gap: 0.5rem; /**/
 
-/* Primary color variant */
+	justify-content: space-evenly;
+	color: var(--accent-light);
+}
+
+.action-base.action-icon-social-footer:hover,
+.action-base.action-icon-social-mobile-header:hover,
+.action-base.action-icon-social-desktop-header:hover {
+	transform: scale(1.2);
+}
+
+/* Social Icons Footer */
+.action-base-wrapper:has(.action-icon-social-footer) {
+	min-width: 30px;
+	max-width: 30px;
+}
+
+.action-base.action-icon-social-footer {
+	min-width: 30px;
+	max-width: 30px;
+}
+
+/* Social Icons Mobile Header */
+.action-base.action-icon-social-mobile-header {
+	min-width: 30px !important;
+	max-width: 30px !important;
+	color: var(--accent-default);
+}
+.social-media-links:has(.action-icon-social-mobile-header) {
+	display: flex;
+	gap: 2rem;
+	margin: 3rem 1rem 1rem;
+	position: absolute;
+	inset: 0;
+}
+
+.action-base-wrapper:has(.action-icon-social-mobile-header) {
+	min-width: 40px;
+	max-width: 40px;
+	align-items: end;
+}
+
+/* Scroll Color Variants */
 .action-base.action-icon-scroll.color-primary {
-    background-color: var(--primary-light);
-    border: 2px solid var(--primary-light);
-    color: var(--primary-default);
-    transition: color 0.3s ease-in-out, border 0.3s ease-in-out; /* Smooth transition for color and border */
+	background-color: var(--primary-light);
+	border: 2px solid var(--primary-light);
+	color: var(--primary-default);
+	transition:
+		color 0.3s ease-in-out,
+		border 0.3s ease-in-out;
 }
 
-/* Secondary color variant */
 .action-base.action-icon-scroll.color-secondary {
-    background-color: var(--secondary-light);
-    border: 2px solid var(--secondary-light);
-    color: var(--secondary-default);
-    transition: color 0.3s ease-in-out, border 0.3s ease-in-out, filter 0.3s ease-in-out; /* Include transition for filter */
+	background-color: var(--secondary-light);
+	border: 2px solid var(--secondary-light);
+	color: var(--secondary-default);
+	transition:
+		color 0.3s ease-in-out,
+		border 0.3s ease-in-out;
 }
 
-/* Accent color variant */
 .action-base.action-icon-scroll.color-accent {
-    background-color: var(--neutral-lightest);
-    border: 1px solid var(--accent-default);
-    color: var(--accent-default);
-    filter: brightness(105%);
-    will-change: color, border, filter; /* Sugerencia al navegador para optimizar las transiciones */
-    transition:
-        color 0.3s ease-in-out,
-        border 0.3s ease-in-out,
-        filter 0.3s ease-in-out;
+	background-color: var(--neutral-lightest);
+	border: 1px solid var(--accent-default);
+	color: var(--accent-default);
+	filter: brightness(105%);
+	will-change: color, border, filter; /* Optimize transitions */
+	transition:
+		color 0.3s ease-in-out,
+		border 0.3s ease-in-out,
+		filter 0.3s ease-in-out;
 }
 
-/* Hover states */
-
-/* Primary hover state */
+/* Hover States */
 .action-base.action-icon-scroll.color-primary:hover {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-    border: 2px solid var(--primary-default);
+	background-color: var(--primary-light);
+	color: var(--primary-dark);
+	border: 2px solid var(--primary-default);
 }
 
-/* Secondary hover state */
 .action-base.action-icon-scroll.color-secondary:hover {
-    background-color: var(--secondary-light);
-    color: var(--secondary-dark);
-    border: 2px solid var(--secondary-default);
+	background-color: var(--secondary-light);
+	color: var(--secondary-dark);
+	border: 2px solid var(--secondary-default);
 }
 
-/* Accent hover state */
 .action-base.action-icon-scroll.color-accent:hover {
-    color: var(--accent-dark);
-    border: 0.25rem solid var(--accent-default);
+	color: var(--accent-dark);
+	border: 0.25rem solid var(--accent-default);
 }
 
+/* Media Queries */
+/* Social media link styles for screens 1024px and up */
+@media (min-width: 1024px) {
+	.social-media-links {
+		display: flex;
+		flex: 0 1 auto;
+		gap: 0.5rem;
+	}
 
-
-/* Secondary button styles */
-.action-base.action-icon-secondary {
-    display: flex;
-	flex: shrink;
-	color: var(--primary-light);
-    justify-content: center;
-    align-items: center;
-    bottom: 0;
-    @apply transition-transform duration-300 ease-in-out; /* Apply only the valid Tailwind classes */
-    transition: filter 0.3s ease-in-out; /* Manually define transition for filter */
+	/* Desktop header */
+	.social-media-links:has(.action-icon-social-desktop-header) {
+		display: none;
+	}
 }
 
+/* Media query for screens 1200px and up */
+@media (min-width: 1200px) {
+	/* Desktop header */
+	.social-media-links:has(.action-icon-social-desktop-header) {
+		display: flex;
+		gap: 0.1rem;
+	}
+
+	.action-base-wrapper:has(.action-icon-social-desktop-header) {
+		min-width: 40px;
+		max-width: 40px;
+		height: 60px;
+		align-items: end;
+	}
+
+	.action-base.action-icon-social-desktop-header {
+		min-width: 20px;
+		max-width: 20px;
+		color: var(--accent-default);
+		justify-content: center;
+		align-items: center;
+	}
+}
+
+/* Media query for screens 1440px and up */
+@media (min-width: 1440px) {
+	/* Desktop header */
+	.social-media-links:has(.action-icon-social-desktop-header) {
+		display: flex;
+		gap: 0.1rem;
+	}
+
+	.action-base-wrapper:has(.action-icon-social-desktop-header) {
+		min-width: 40px;
+		max-width: 40px;
+		height: 60px;
+		align-items: end;
+	}
+
+	.action-base.action-icon-social-desktop-header {
+		min-width: 30px;
+		max-width: 30px;
+		color: var(--accent-default);
+		justify-content: center;
+		align-items: center;
+	}
+}

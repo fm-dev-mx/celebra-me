@@ -1,24 +1,41 @@
 export interface LandingPageData {
 	meta: Meta;
-	headerData: HeaderData;
+	menuData: MenuData;
+	siteData: SiteData;
 	heroData: HeroData;
+	socialData: SocialData;
 	servicesData: ServicesData;
 	aboutData: AboutData;
 	pricingData: PricingData;
 	testimonialsData: TestimonialsData;
 	faqData: FAQData;
 	contactData: ContactData;
-	footerData: FooterData;
 }
 
-export interface HeaderData {
+export interface SiteData {
+	title: string;
+	slogan: string;
+	description: string;
+	lang: string;
+	charset: string;
+}
+
+export interface MenuData {
 	links: Link[];
-	cta: Cta;
+}
+
+export interface SocialData {
+	socialLinks: SocialLink[];
+}
+export interface SocialLink {
+	icon: IconNames;
+	href: string;
+	title?: string;
 }
 
 export interface HeroData {
 	title: string;
-	subTitle: string;
+	slogan: string;
 	primaryCta: string;
 	secondaryCta: string;
 }
@@ -32,14 +49,6 @@ export interface Service {
 	title: string;
 	description: string;
 	icon: IconNames;
-}
-
-export interface FooterData {
-	logo: string;
-	icon: IconNames;
-	description: string;
-	links: Link[];
-	socials: Social[];
 }
 
 export interface Link {
@@ -107,10 +116,10 @@ export interface Meta {
 	description: string;
 	lang: string;
 	charset: string;
-	ldJson: LdJson;
+	seoData: SeoData;
 }
 
-export interface LdJson {
+export interface SeoData {
 	"@context": string;
 	"@type": string;
 	name: string;

@@ -17,7 +17,7 @@ const data = await getLandingData();
 ---
 
 <Layout meta={data.meta}>
-	<Header data={data.headerData} />
+	<Header menuData={data.menuData} socialData={data.socialData} />
 	<main>
 		<Hero data={data.heroData} />
 		<Services data={data.servicesData} />
@@ -26,6 +26,6 @@ const data = await getLandingData();
 		<Pricing data={data.pricingData} />
 		<FAQ data={data.faqData} />
 		<Contact data={data.contactData} />
-		<Footer data={data.footerData} />
+		<Footer siteData={data.siteData} menuData={data.menuData} socialData={data.socialData} />
 	</main>
 </Layout>

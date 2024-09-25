@@ -1,52 +1,69 @@
-// ActionIcon.tsx
-import React from 'react';
-import ActionBase from './ActionBase';
-import type { ActionVariants, ActionColors, BaseActionVariants, IconVariants } from './ActionBase';
-import Icon from '@/components/common/Icon';
-import type { IconNames } from '@/config/landing.interface';
+// src/components/common/actions/ActionIcon.tsx
 
-interface ActionIconProps extends React.HTMLAttributes<HTMLButtonElement | HTMLAnchorElement> {
-  icon: IconNames;
-  iconSize?: string;
-  variant?: BaseActionVariants;
-  iconVariant?: IconVariants;
-  color?: ActionColors;
-  as?: 'button' | 'a';
-  href?: string;
-  target?: '_self' | '_blank';
-  className?: string;
-}
+import React from "react";
+import ActionBase from "./ActionBase";
+import type { ActionVariants, ActionColors, BaseActionVariants, IconVariants } from "./ActionBase";
+import Icon from "@/components/common/Icon";
+import type { IconNames, Social } from "@/config/landing.interface";
+import type { SocialVariants } from "./SocialMediaLinks";
 
-const ActionIcon: React.FC<ActionIconProps> = ({
-  icon,
-  iconSize = 'w-6 h-6',
-  variant,
-  iconVariant,
-  color = 'primary',
-  as = variant === 'scroll' ? 'a' : 'button',
-  href,
-  target = '_self',
-  className,
-  children,
-  ...rest
+// Define the props interface for the ActionIcon component
+type ActionIconProps<T extends "a" | "button"> = {
+	[P in keyof React.ComponentPropsWithoutRef<T>]: React.ComponentPropsWithoutRef<T>[P];
+} & {
+	icon: IconNames;
+	iconSize?: string;
+	variant?: BaseActionVariants | SocialVariants;
+	iconVariant?: IconVariants;
+	color?: ActionColors;
+	as?: T;
+	href?: string | undefined;
+	title?: string;
+	target?: string;
+	className?: string;
+	children?: React.ReactNode;
+};
+
+/**
+ * ActionIcon component renders an icon within an action button or link.
+ * It uses the ActionBase component for consistent styling and behavior.
+ */
+const ActionIcon: React.FC<ActionIconProps<"a" | "button">> = ({
+	icon,
+	iconSize = "w-6 h-6",
+	variant,
+	iconVariant,
+	color = "primary",
+	as = variant === "scroll" ? "a" : "button",
+	href,
+	title = "Icon Action",
+	target = as === "a" && href ? "_self" : undefined,
+	className,
+	children,
+	...rest
 }) => {
-  // Manejar variantes separadas para evitar conflictos de tipo
-  const computedVariant: ActionVariants = iconVariant ?? (`icon-${variant}` as ActionVariants);
+	// Compute the correct variant
+	const computedVariant: ActionVariants = iconVariant ?? (`icon-${variant}` as ActionVariants);
 
-  return (
-    <ActionBase
-      as={as}
-      href={as === 'a' ? href : undefined}
-      variant={computedVariant}
-      color={color}
-      target={as === 'a' ? target : undefined}
-      className={className}
-      {...rest}
-    >
-      <Icon icon={icon} size={iconSize} />
-      {children}
-    </ActionBase>
-  );
+	// Add noopener noreferrer for security when using target="_blank"
+	const rel = target === "_blank" ? "noopener noreferrer" : undefined;
+
+	return (
+		<ActionBase
+			as={as}
+			variant={computedVariant}
+			href={as === "a" && href ? href : undefined} // Apply href only if it's an <a>
+			title={title}
+			color={color}
+			target={as === "a" && target ? target : undefined} // Apply target only if it's an <a>
+			rel={as === "a" && target === "_blank" ? rel : undefined} // Apply rel for security if it's an external link
+			className={className}
+			{...rest}
+		>
+			<Icon icon={icon} size={iconSize} />
+			{children}
+		</ActionBase>
+	);
 };
 
 export default ActionIcon;

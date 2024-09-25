@@ -1,29 +1,49 @@
 {
 	"meta": {
-		"title": "Celebra-me.com: Dale un Toque de Glamour a Tu Evento",
-		"description": "Enciende tu fiesta desde la invitación",
+		"title": "Celebra-me.com: Tus Eventos Serán Únicos.",
+		"description": "En Celebra-me.com, llevamos tus eventos más importantes al siguiente nivel con invitaciones digitales únicas y elegantes.",
 		"lang": "es",
 		"charset": "UTF-8",
-		"ldJson": {
+		"seoData": {
 			"@context": "http://schema.org",
 			"@type": "Organization",
 			"name": "Celebra-me.com",
-			"description": "",
+			"description": "Celebra-me.com ofrece invitaciones digitales personalizadas para eventos especiales como bodas, XV años y más.",
 			"url": "https://celebra-me.com",
-			"logo": "celebrameIcon",
+			"logo": "https://celebra-me.com/images/hero/rectangleLogo400x200.png",
 			"contactPoint": {
 				"@type": "ContactPoint",
 				"email": "contact@celebra-me.com",
-				"contactType": "Client Service"
+				"contactType": "Client Service",
+				"telephone": "+52 668 116 7477",
+				"areaServed": "MX",
+				"availableLanguage": ["es"]
+			},
+			"foundingDate": "2024-05-05",
+			"address": {
+				"@type": "PostalAddress",
+				"addressLocality": "Los Mochis",
+				"addressRegion": "SIN",
+				"postalCode": "81200",
+				"addressCountry": "MX"
 			},
 			"sameAs": [
 				"https://www.facebook.com/invitaciones.celebrame/",
 				"https://www.instagram.com/celebra_me_com/",
-				"https://www.tiktok.com/@celebra_me"
+				"https://www.tiktok.com/@celebra_me",
+				"https://wa.me/526681167477",
+				"https://www.youtube.com/@celebra-me"
 			]
 		}
 	},
-	"headerData": {
+	"siteData": {
+		"title": "Celebra-me.com",
+		"slogan": "Tus Eventos Serán Únicos",
+		"description": "En Celebra-me.com, llevamos tus eventos más importantes al siguiente nivel con invitaciones digitales únicas y elegantes.",
+		"lang": "es",
+		"charset": "UTF-8"
+	},
+	"menuData": {
 		"links": [
 			{ "label": "Servicios", "href": "#services-section" },
 			{ "label": "Sobre Nosotros", "href": "#about-section" },
@@ -31,14 +51,35 @@
 			{ "label": "Precios", "href": "#pricing-section" },
 			{ "label": "FAQ", "href": "#faq-section" },
 			{ "label": "Contacto", "href": "#contact-section" }
-		],
-		"cta": [
-			{ "label": "Ver Demos", "href": "#" }
+		]
+	},
+	"socialData": {
+		"socialLinks": [
+			{
+				"icon": "FacebookIcon",
+				"href": "https://www.facebook.com/invitaciones.celebrame/",
+				"title": "Síguenos en nuestra página de Facebook"
+			},
+			{
+				"icon": "InstagramIcon",
+				"href": "https://www.instagram.com/celebra_me_com/",
+				"title": "Síguenos en Instagram para ver nuestro trabajo"
+			},
+			{
+				"icon": "TikTokIcon",
+				"href": "https://www.tiktok.com/@celebra_me",
+				"title": "Mira nuestros videos en TikTok"
+			},
+			{
+				"icon": "WhatsAppIcon",
+				"href": "https://wa.me/526681167477",
+				"title": "Contáctanos directamente por WhatsApp"
+			}
 		]
 	},
 	"heroData": {
 		"title": "Invitaciones digitales",
-		"subtitle": "Tus eventos serán únicos",
+		"slogan": "Tus eventos serán únicos",
 		"primaryCta": "WhatsApp 💬",
 		"secondaryCta": "Elegir invitación"
 	},
@@ -89,7 +130,7 @@
 		],
 		"cta": {
 			"label": "Contáctanos",
-			"href": "/contacto"
+			"href": "#contact-section"
 		}
 	},
 	"pricingData": {
@@ -407,50 +448,34 @@
 		]
 	},
 	"faqData": {
-        "title": "Preguntas Frecuentes",
-        "questions": [
-            {
-                "question": "¿Cómo funciona el proceso de creación de invitaciones digitales?",
-                "answer": "Nuestro proceso es simple y personalizado. Primero, eliges un diseño base. Luego, nos proporcionas los detalles de tu evento. Nuestro equipo de diseño creará tu invitación y te la enviará para tu aprobación. Una vez aprobada, te proporcionamos un enlace único para compartir con tus invitados."
-            },
-            {
-                "question": "¿Puedo personalizar completamente mi invitación?",
-                "answer": "¡Absolutamente! Ofrecemos un alto grado de personalización. Puedes elegir colores, fuentes, imágenes y más. Si tienes una idea específica en mente, nuestro equipo de diseño trabajará contigo para hacerla realidad."
-            },
-            {
-                "question": "¿Cuánto tiempo toma recibir mi invitación digital?",
-                "answer": "Generalmente, el proceso toma entre 3 a 5 días hábiles desde la aprobación del diseño. Para pedidos urgentes, ofrecemos opciones de entrega acelerada por un costo adicional."
-            },
-            {
-                "question": "¿Cómo comparten mis invitados su confirmación de asistencia?",
-                "answer": "Cada invitación incluye una opción fácil de usar para que los invitados confirmen su asistencia. Pueden hacerlo con un simple clic, y tú recibirás una notificación al instante."
-            },
-            {
-                "question": "¿Qué pasa si necesito hacer cambios después de que la invitación ha sido enviada?",
-                "answer": "No hay problema. Puedes solicitar cambios en cualquier momento y actualizaremos la invitación en tiempo real. Todos los invitados verán la versión más reciente cuando accedan al enlace."
-            }
-        ]
-    },
-	"footerData": {
-		"description": "Tus Eventos Serán Únicos.",
-		"links": [
-			{ "label": "Nosotros", "href": "#about-section" },
-			{ "label": "Servicios", "href": "#services-section" },
-			{ "label": "Blog", "href": "/blog" },
-			{ "label": "Preguntas Frecuentes", "href": "/faq" },
-			{ "label": "Contacto", "href": "/contacto" }
-		],
-		"socials": [
-			{ "icon": "FacebookIcon", "href": "https://www.facebook.com/invitaciones.celebrame/", "title": "Ir a mi Facebook" },
-			{ "icon": "InstagramIcon", "href": "https://www.instagram.com/celebra_me_com/", "title": "Ir a mi Instagram" },
-			{ "icon": "TikTokIcon", "href": "https://www.tiktok.com/@celebra_me", "title": "Ir a mi TikTok" },
-			{ "icon": "WhatsAppIcon", "href": "https://wa.me/526681167477"}
+		"title": "Preguntas Frecuentes",
+		"questions": [
+			{
+				"question": "¿Cómo funciona el proceso de creación de invitaciones digitales?",
+				"answer": "Nuestro proceso es simple y personalizado. Primero, eliges un diseño base. Luego, nos proporcionas los detalles de tu evento. Nuestro equipo de diseño creará tu invitación y te la enviará para tu aprobación. Una vez aprobada, te proporcionamos un enlace único para compartir con tus invitados."
+			},
+			{
+				"question": "¿Puedo personalizar completamente mi invitación?",
+				"answer": "¡Absolutamente! Ofrecemos un alto grado de personalización. Puedes elegir colores, fuentes, imágenes y más. Si tienes una idea específica en mente, nuestro equipo de diseño trabajará contigo para hacerla realidad."
+			},
+			{
+				"question": "¿Cuánto tiempo toma recibir mi invitación digital?",
+				"answer": "Generalmente, el proceso toma entre 3 a 5 días hábiles desde la aprobación del diseño. Para pedidos urgentes, ofrecemos opciones de entrega acelerada por un costo adicional."
+			},
+			{
+				"question": "¿Cómo comparten mis invitados su confirmación de asistencia?",
+				"answer": "Cada invitación incluye una opción fácil de usar para que los invitados confirmen su asistencia. Pueden hacerlo con un simple clic, y tú recibirás una notificación al instante."
+			},
+			{
+				"question": "¿Qué pasa si necesito hacer cambios después de que la invitación ha sido enviada?",
+				"answer": "No hay problema. Puedes solicitar cambios en cualquier momento y actualizaremos la invitación en tiempo real. Todos los invitados verán la versión más reciente cuando accedan al enlace."
+			}
 		]
 	},
 	"contactData": {
-	"title": "Contáctanos",
-	"subtitle": "¿Tienes alguna pregunta? ¡Nos encantaría saber de ti!",
-	"cta": "Enviar Mensaje",
-	"emailTo": "contact@celebra-me.com"
+		"title": "Contáctanos",
+		"subtitle": "¿Tienes alguna pregunta? ¡Nos encantaría saber de ti!",
+		"cta": "Enviar Mensaje",
+		"emailTo": "contact@celebra-me.com"
 	}
 }
