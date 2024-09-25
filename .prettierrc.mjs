@@ -9,13 +9,13 @@ export default {
 			},
 		},
 	],
-	tabWidth: 4,
-	useTabs: true,
-	semi: true, // Añadir punto y coma al final de las declaraciones
-	singleQuote: false, // Usar comillas dobles en lugar de comillas simples
-	trailingComma: "all", // Añadir coma al final de los elementos en objetos y arrays
-	printWidth: 100, // Ajustar el ancho máximo de línea
-	bracketSpacing: true, // Añadir espacios dentro de los corchetes de los objetos
-	arrowParens: "always", // Incluir paréntesis alrededor de argumentos únicos en funciones de flecha
-	bracketSameLine: false, // Añadir saltos de línea entre parentesis
+	tabWidth: 4, // default: 2
+	useTabs: true, // default: false
+	semi: true, // add semicolon at the end of statements
+	singleQuote: false, // use single quote instead of double quote
+	trailingComma: "all", // comma at the end of objects and arrays
+	printWidth: 100, // Adjust the print width of the code
+	bracketSpacing: true, // Add spaces after opening and before closing brackets
+	arrowParens: "always", // Add parentheses around a sole arrow function parameter
+	bracketSameLine: false, // Add line breaks after opening and before closing brackets
 };
