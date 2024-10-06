@@ -1,7 +1,12 @@
+// src/config/landing.interface.ts
+
+import type { SocialData, IconNames } from './site-data.interface'; // Reusing shared interfaces
+
+/**
+ * Interface representing the data structure for the landing page.
+ */
 export interface LandingPageData {
-	meta: Meta;
 	menuData: MenuData;
-	siteData: SiteData;
 	heroData: HeroData;
 	socialData: SocialData;
 	servicesData: ServicesData;
@@ -12,27 +17,24 @@ export interface LandingPageData {
 	contactData: ContactData;
 }
 
-export interface SiteData {
-	title: string;
-	slogan: string;
-	description: string;
-	lang: string;
-	charset: string;
-}
-
+/**
+ * Interface for menu data.
+ */
 export interface MenuData {
 	links: Link[];
 }
 
-export interface SocialData {
-	socialLinks: SocialLink[];
-}
-export interface SocialLink {
-	icon: IconNames;
+/**
+ * Interface for individual link in the menu.
+ */
+export interface Link {
+	label: string;
 	href: string;
-	title?: string;
 }
 
+/**
+ * Interface for hero section data.
+ */
 export interface HeroData {
 	title: string;
 	slogan: string;
@@ -40,28 +42,26 @@ export interface HeroData {
 	secondaryCta: string;
 }
 
+/**
+ * Interface for services section data.
+ */
 export interface ServicesData {
 	title: string;
 	services: Service[];
 }
 
+/**
+ * Interface for individual service.
+ */
 export interface Service {
 	title: string;
 	description: string;
 	icon: IconNames;
 }
 
-export interface Link {
-	label: string;
-	href: string;
-}
-
-export interface Social {
-	icon: IconNames;
-	href: string;
-	title?: string;
-}
-
+/**
+ * Interface for about us section data.
+ */
 export interface AboutData {
 	title: string;
 	description: string;
@@ -69,17 +69,65 @@ export interface AboutData {
 	cta: Cta;
 }
 
+/**
+ * Interface for individual value in about us section.
+ */
 export interface Value {
 	icon: IconNames;
 	name: string;
 	description: string;
 }
 
+/**
+ * Interface for call-to-action link.
+ */
+export interface Cta {
+	label: string;
+	href: string;
+}
+
+/**
+ * Interface for pricing section data.
+ */
+export interface PricingData {
+	title: string;
+	tiers: Tier[];
+}
+
+/**
+ * Interface for individual pricing tier.
+ */
+export interface Tier {
+	title: string;
+	title2?: string; // Optional second title
+	description: string;
+	description2?: string; // Optional second description
+	price: Price;
+	features: string[];
+	href: string;
+	cta: string;
+}
+
+/**
+ * Interface for price information.
+ */
+export interface Price {
+	amount: string;
+	currency?: string;
+	period?: string;
+}
+
+/**
+ * Interface for testimonials section data.
+ */
 export interface TestimonialsData {
 	title: string;
 	testimonials: Testimonial[];
 }
 
+/**
+ * Interface for individual testimonial.
+ */
 export interface Testimonial {
 	id: number;
 	image: string;
@@ -87,88 +135,28 @@ export interface Testimonial {
 	author: string;
 }
 
-export interface Cta {
-	label: string;
-	href: string;
-}
-
-export interface PricingData {
-	title: string;
-	tiers: Tier[];
-}
-
-export interface Tier {
-	title: string;
-	description: string;
-	price: Price;
-	features: string[];
-	href: string;
-	cta: string;
-}
-
-export interface Price {
-	amount: string;
-	period?: string;
-}
-
-export interface Meta {
-	title: string;
-	description: string;
-	lang: string;
-	charset: string;
-	seoData: SeoData;
-}
-
-export interface SeoData {
-	"@context": string;
-	"@type": string;
-	name: string;
-	description: string;
-	url: string;
-	logo: string;
-	contactPoint: {
-		"@type": string;
-		email: string;
-		contactType: string;
-	};
-	sameAs: string[];
-}
-
+/**
+ * Interface for FAQ section data.
+ */
 export interface FAQData {
 	title: string;
 	questions: Question[];
 }
 
+/**
+ * Interface for individual question in FAQ.
+ */
 export interface Question {
 	question: string;
 	answer: string;
 }
 
-export interface ContactData { // Added ContactData interface
+/**
+ * Interface for contact section data.
+ */
+export interface ContactData {
 	title: string;
 	subtitle: string;
 	cta: string;
-	emailTo: string; // Email to which the form will be submitted
+	emailTo: string;
 }
-
-// Added Icon interface to support custom icons
-export type IconNames =
-	| "AnniversaryIcon"
-	| "ArrowDownIcon"
-	| "ArrowUpIcon"
-	| "CakeIcon"
-	| "CelebrameIcon"
-	| "CheckIcon"
-	| "CommitmentIcon"
-	| "CrownIcon"
-	| "EasyUseIcon"
-	| "ExclusiveIcon"
-	| "FacebookIcon"
-	| "InstagramIcon"
-	| "MenuIcon"
-	| "CloseIcon"
-	| "TikTokIcon"
-	| "WeddingIcon"
-	| "WhatsAppIcon";
-
-

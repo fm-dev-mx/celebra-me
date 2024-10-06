@@ -1,0 +1,122 @@
+---
+import { getBasicDemoData } from "@/services/data.service";
+import { getSiteData } from "@/services/data.service";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/sections/Header.astro";
+import Footer from "@/sections/Footer.astro";
+import WhatsAppButton from "@/components/ui/WhatsAppButton.tsx";
+import basicDemoData from "@/data/basic-demo.json";
+
+const demoData = await getBasicDemoData();
+const siteData = await getSiteData();
+---
+
+<Layout meta={demoData.meta}>
+	<Header menuData={demoData.menuData} socialData={demoData.socialData} />
+
+	<main class="bg-gray-50 text-gray-800 py-10 px-6 sm:px-12">
+		<!-- Título y descripción del evento -->
+		<div class="text-center mb-10">
+			<h1 class="text-4xl font-bold text-indigo-600">{demoData.eventDetails.title}</h1>
+			<p class="mt-4 text-lg">{demoData.eventDetails.description}</p>
+		</div>
+
+		<!-- Galería de fotos pre-evento -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Galería de fotos pre-evento</h2>
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+				{
+					demoData.eventDetails.images.map((image, index) => (
+						<img
+							src={image}
+							alt={`Foto ${index + 1} del evento`}
+							class="w-full h-auto rounded-lg shadow-lg"
+						/>
+					))
+				}
+			</div>
+		</div>
+
+		<!-- Cuenta regresiva para el evento -->
+		<div class="mb-10 text-center">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">
+				Cuenta regresiva para el evento
+			</h2>
+			<p class="text-xl font-bold">{demoData.eventDetails.countdown}</p>
+		</div>
+
+		<!-- Itinerario del evento -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Itinerario del Evento</h2>
+			<ul class="list-disc pl-6 space-y-2">
+				{demoData.eventDetails.itinerary.map((item, index) => <li>{item}</li>)}
+			</ul>
+		</div>
+
+		<!-- Confirmación de asistencia -->
+		<div class="mb-10 text-center">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Confirmación de Asistencia</h2>
+			<button
+				class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-300"
+			>
+				Confirmar Asistencia
+			</button>
+		</div>
+
+		<!-- Agregar evento al calendario personal -->
+		<div class="mb-10 text-center">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Agregar al Calendario</h2>
+			<button
+				class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all duration-300"
+			>
+				Agregar al Calendario
+			</button>
+		</div>
+
+		<!-- Recordatorios personalizados -->
+		<div class="mb-10 text-center">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">
+				Recordatorios Personalizados
+			</h2>
+			<p class="text-lg">
+				Recibirás recordatorios a medida que se acerque la fecha del evento.
+			</p>
+		</div>
+
+		<!-- Ubicación con Google Maps -->
+		<div class="mb-10">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Ubicación del Evento</h2>
+			<div class="w-full h-96 rounded-lg overflow-hidden">
+				<iframe
+					src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3169.774852698187!2d-122.08385188442624!3d37.3874749798318!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808fb732b13fbb11%3A0x5c65ce5c8df5dff5!2sGoogleplex!5e0!3m2!1sen!2sus!4v1609932457194!5m2!1sen!2sus"
+					width="100%"
+					height="100%"
+					allowfullscreen=""
+					loading="lazy"
+					referrerpolicy="no-referrer-when-downgrade"
+				>
+				</iframe>
+			</div>
+		</div>
+
+		<!-- Integración con redes sociales -->
+		{
+			demoData.eventDetails.socialMedia.whatsapp && (
+				<div class="mb-10 text-center">
+					<h2 class="text-2xl font-semibold mb-4 text-indigo-600">
+						Comparte en Redes Sociales
+					</h2>
+					<WhatsAppButton />
+				</div>
+			)
+		}
+
+		<!-- Vigencia del evento -->
+		<div class="text-center">
+			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Vigencia del Evento</h2>
+			<p class="text-lg">Esta invitación es válida por {demoData.eventDetails.validity}.</p>
+		</div>
+	</main>
+
+	<Footer siteData={siteData} menuData={demoData.menuData} socialData={demoData.socialData} />
+</Layout>

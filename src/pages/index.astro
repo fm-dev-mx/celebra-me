@@ -1,6 +1,5 @@
 ---
-// Import necessary components and services
-import { getLandingData } from "@/services/data.service";
+import { getLandingData, getSiteData } from "@/services/data.service";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/sections/Header.astro";
 import Hero from "@/sections/Hero.astro";
@@ -12,20 +11,31 @@ import FAQ from "@/sections/FAQ.astro";
 import Contact from "@/sections/Contact.astro";
 import Footer from "@/sections/Footer.astro";
 
-// Fetch landing page data
-const data = await getLandingData();
+// Fetch landing page data synchronously
+const landingData = getLandingData();
+const siteData = getSiteData();
 ---
 
-<Layout meta={data.meta}>
-	<Header menuData={data.menuData} socialData={data.socialData} />
-	<main>
-		<Hero data={data.heroData} />
-		<Services data={data.servicesData} />
-		<AboutUs data={data.aboutData} />
-		<Testimonials data={data.testimonialsData} />
-		<Pricing data={data.pricingData} />
-		<FAQ data={data.faqData} />
-		<Contact data={data.contactData} />
-		<Footer siteData={data.siteData} menuData={data.menuData} socialData={data.socialData} />
-	</main>
-</Layout>
+<!-- Render the layout with site metadata -->
+<Layout meta={siteData.meta} />
+
+<!-- Render the header with menu and social data -->
+<Header menuData={landingData.menuData} socialData={landingData.socialData} />
+
+<main>
+	<!-- Render main sections with respective data -->
+	<Hero data={landingData.heroData} />
+	<Services data={landingData.servicesData} />
+	<AboutUs data={landingData.aboutData} />
+	<Testimonials data={landingData.testimonialsData} />
+	<Pricing data={landingData.pricingData} />
+	<FAQ data={landingData.faqData} />
+	<Contact data={landingData.contactData} />
+
+	<!-- Render the footer with site info, menu, and social links -->
+	<Footer
+		siteData={siteData}
+		menuData={landingData.menuData}
+		socialData={landingData.socialData}
+	/>
+</main>

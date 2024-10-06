@@ -1,7 +1,7 @@
 ---
 import "@fontsource-variable/rubik";
 // eslint-disable-next-line prettier/prettier
-import type { Meta } from "@/config/landing.interface";
+import type { Meta } from "@/config/site-data.interface";
 import SpeedInsights from "@vercel/speed-insights/astro";
 import "../styles/global.css";
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 
 const { meta } = Astro.props;
 
-const seoData = JSON.stringify(meta.seoData);
+const seoData = meta.seoData ? JSON.stringify(meta.seoData) : null;
 ---
 
 <!doctype html>

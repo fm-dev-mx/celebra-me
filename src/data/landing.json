@@ -1,48 +1,4 @@
 {
-	"meta": {
-		"title": "Celebra-me.com: Tus Eventos Serán Únicos.",
-		"description": "En Celebra-me.com, llevamos tus eventos más importantes al siguiente nivel con invitaciones digitales únicas y elegantes.",
-		"lang": "es",
-		"charset": "UTF-8",
-		"seoData": {
-			"@context": "http://schema.org",
-			"@type": "Organization",
-			"name": "Celebra-me.com",
-			"description": "Celebra-me.com ofrece invitaciones digitales personalizadas para eventos especiales como bodas, XV años y más.",
-			"url": "https://celebra-me.com",
-			"logo": "https://celebra-me.com/images/hero/rectangleLogo400x200.png",
-			"contactPoint": {
-				"@type": "ContactPoint",
-				"email": "contact@celebra-me.com",
-				"contactType": "Client Service",
-				"telephone": "+52 668 116 7477",
-				"areaServed": "MX",
-				"availableLanguage": ["es"]
-			},
-			"foundingDate": "2024-05-05",
-			"address": {
-				"@type": "PostalAddress",
-				"addressLocality": "Los Mochis",
-				"addressRegion": "SIN",
-				"postalCode": "81200",
-				"addressCountry": "MX"
-			},
-			"sameAs": [
-				"https://www.facebook.com/invitaciones.celebrame/",
-				"https://www.instagram.com/celebra_me_com/",
-				"https://www.tiktok.com/@celebra_me",
-				"https://wa.me/526681167477",
-				"https://www.youtube.com/@celebra-me"
-			]
-		}
-	},
-	"siteData": {
-		"title": "Celebra-me.com",
-		"slogan": "Tus Eventos Serán Únicos",
-		"description": "En Celebra-me.com, llevamos tus eventos más importantes al siguiente nivel con invitaciones digitales únicas y elegantes.",
-		"lang": "es",
-		"charset": "UTF-8"
-	},
 	"menuData": {
 		"links": [
 			{ "label": "Servicios", "href": "#services-section" },
