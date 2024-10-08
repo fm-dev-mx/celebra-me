@@ -2,9 +2,32 @@
 import type { APIRoute } from 'astro'; // Importa APIRoute desde Astro
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import type { APIContext } from 'astro';
 
 // Load environment variables from the .env file
 dotenv.config();
+
+// Simple in-memory store for rate limiting
+const rateLimit = new Map();
+
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_REQUESTS = 3; // Limit each IP to 5 requests per windowMs
+
+function isRateLimited(ip: string): boolean {
+	const now = Date.now();
+	const windowStart = now - WINDOW_MS;
+
+	if (!rateLimit.has(ip)) {
+		rateLimit.set(ip, [now]);
+		return false;
+	}
+
+	const requests = rateLimit.get(ip).filter((time: number) => time > windowStart);
+	requests.push(now);
+	rateLimit.set(ip, requests);
+
+	return requests.length > MAX_REQUESTS;
+}
 
 /**
  * Serverless function that handles incoming POST requests
@@ -13,10 +36,20 @@ dotenv.config();
  * @param request - The incoming HTTP request object from Astro
  * @returns {Response} A JSON response indicating success or failure.
  */
-export const POST: APIRoute = async ({ request }) => { // Define la ruta como APIRoute
+export const POST: APIRoute = async ({ request }: APIContext) => { // Define la ruta como APIRoute
 	// console.log('Environment Variables:', process.env.ZOHO_USER, process.env.ZOHO_PASS ? 'Loaded' : 'Not Loaded');
 
 	try {
+		const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+
+		if (isRateLimited(clientIP)) {
+			console.log(`Rate limit exceeded for IP: ${clientIP}`);
+			return new Response(JSON.stringify({ error: 'Too many requests, please try again later.' }), {
+				status: 429,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
 		// Check if the Content-Type of the request is JSON
 		const contentType = request.headers.get('Content-Type');
 		console.log('Received Content-Type:', contentType); // Log the content type received
