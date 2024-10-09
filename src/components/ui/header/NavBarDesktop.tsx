@@ -25,50 +25,46 @@ const NavBarDesktop: React.FC<NavBarDesktopProps> = ({ menuData, socialData }) =
 	}, []);
 
 	return (
-		console.log("menuData: ", menuData),
-		console.log("socialData: ", socialData),
-		(
-			<nav className="navbar-desktop">
-				<div className="navbar-desktop-logo-wrapper">
-					<Logo />
-				</div>
-				<div className="navbar-desktop-links-wrapper">
-					<ul className="navbar-desktop-list">
-						{menuData?.links?.length > 0 ? (
-							menuData.links.map((item) => (
-								<li key={item.href} className="navbar-desktop-item">
-									<a
-										href={item.href}
-										className={twMerge(
-											"navbar-desktop-link",
-											currentPath === item.href ? "active" : "",
-										)}
-									>
-										{item.label}
-									</a>
-								</li>
-							))
-						) : (
-							<li>No links available</li>
-						)}
-					</ul>
-				</div>
+		<nav className="navbar-desktop">
+			<div className="navbar-desktop-logo-wrapper">
+				<Logo />
+			</div>
+			<div className="navbar-desktop-links-wrapper">
+				<ul className="navbar-desktop-list">
+					{menuData?.links?.length > 0 ? (
+						menuData.links.map((item) => (
+							<li key={item.href} className="navbar-desktop-item">
+								<a
+									href={item.href}
+									className={twMerge(
+										"navbar-desktop-link",
+										currentPath === item.href ? "active" : "",
+									)}
+								>
+									{item.label}
+								</a>
+							</li>
+						))
+					) : (
+						<li>No links available</li>
+					)}
+				</ul>
+			</div>
 
-				<SocialMediaLinks links={socialData.socialLinks} variant="social-desktop-header" />
+			<SocialMediaLinks links={socialData.socialLinks} variant="social-desktop-header" />
 
-				<div className="navbar-desktop-cta-wrapper">
-					<ActionBase
-						variant="secondary"
-						as="a"
-						href="#"
-						color="primary"
-						className="navbar-desktop-cta"
-					>
-						Ver demos
-					</ActionBase>
-				</div>
-			</nav>
-		)
+			<div className="navbar-desktop-cta-wrapper">
+				<ActionBase
+					variant="secondary"
+					as="a"
+					href="#"
+					color="primary"
+					className="navbar-desktop-cta"
+				>
+					Ver demos
+				</ActionBase>
+			</div>
+		</nav>
 	);
 };
 

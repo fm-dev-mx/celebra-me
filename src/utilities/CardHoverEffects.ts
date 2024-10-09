@@ -15,7 +15,6 @@ export function initializeCardHoverEffects() {
 
 		// Add hover effects when mouse enters the card.
 		card.addEventListener("mouseenter", function () {
-			console.log("si se activa el hover de la tarjeta");
 			card.classList.add("pricing-card-hovered");
 			if (action) action.classList.add("pricing-card-cta-hovered");
 			if (title) title.classList.add("pricing-card-title-hovered");
@@ -28,7 +27,6 @@ export function initializeCardHoverEffects() {
 
 		// Remove hover effects when mouse leaves the card.
 		card.addEventListener("mouseleave", function () {
-			console.log("si se desactiva el hover de la tarjeta");
 			card.classList.remove("pricing-card-hovered");
 			if (action) action.classList.remove("pricing-card-cta-hovered");
 			if (title) title.classList.remove("pricing-card-title-hovered");

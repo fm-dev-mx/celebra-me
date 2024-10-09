@@ -26,7 +26,6 @@ export function initializeCardIntersectionObserver() {
 
 			// Add or remove hover effects based on element visibility.
 			if (entry.isIntersecting) {
-				console.log("si se activa el observador de la tarjeta");
 				card.classList.add("pricing-card-hovered");
 				if (action) action.classList.add("pricing-card-cta-hovered");
 				if (title) title.classList.add("pricing-card-title-hovered");
@@ -37,7 +36,6 @@ export function initializeCardIntersectionObserver() {
 				bulletIcon.forEach((icon) => icon.classList.add("pricing-card-bullet-icon-hovered"));
 				if (cta) cta.classList.add("pricing-card-cta-intersected");
 			} else {
-				console.log("si se desactiva el observador de la tarjeta");
 				card.classList.remove("pricing-card-hovered");
 				if (action) action.classList.remove("pricing-card-cta-hovered");
 				if (title) title.classList.remove("pricing-card-title-hovered");
