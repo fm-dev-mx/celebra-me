@@ -1,5 +1,6 @@
 // src/services/email-service.ts
 import nodemailer from 'nodemailer';
+import type { SendMailOptions } from 'nodemailer';
 
 // Retrieve environment variables
 const { ZOHO_USER, ZOHO_PASS, RECIPIENT_EMAIL } = import.meta.env;
@@ -40,19 +41,19 @@ export async function sendEmail(data: {
 	const { name, email, mobile, message } = data;
 
 	// Mail options containing email metadata and message
-	const mailOptions = {
+	const mailOptions: SendMailOptions = {
 		from: ZOHO_USER, // Sender email (Zoho account)
 		replyTo: email, // The reply-to email is the one provided in the form
 		to: RECIPIENT_EMAIL, // Recipient email (typically your email)
-		subject: `New message from ${name} via Celebra-me`, // Subject of the email
-		text: `Name: ${name}\nEmail: ${email}\nMobile: ${mobile}\nMessage: ${message}`, // Email body content
+		subject: `Nuevo mensaje de ${name} vía Celebra-me`, // Subject of the email
+		text: `Nombre: ${name}\nEmail: ${email}\nTeléfono: ${mobile}\nMensaje: ${message}`, // Email body content
 	};
 
 	try {
 		// Send the email using Nodemailer transporter
 		await transporter.sendMail(mailOptions);
 		console.log('Email sent successfully');
-	} catch (error: any) {
+	} catch (error: unknown) {
 		// Log the error for debugging purposes
 		console.error('Failed to send email:', error);
 		throw new Error('Error al enviar el correo electrónico');

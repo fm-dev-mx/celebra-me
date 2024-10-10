@@ -24,8 +24,8 @@ export function validateInput(data: ContactFormData): Partial<ContactFormData> {
 		errors.email = 'Ingresa un correo electrónico válido.';
 	}
 
-	// Validate the mobile field (Mexico-specific validation)
-	if (!validator.isMobilePhone(mobile, ['es-MX', 'en-US'])) {
+	// Validate the mobile field (more general validation)
+	if (!validator.isMobilePhone(mobile, undefined, { strictMode: false })) {
 		errors.mobile = 'Ingresa un número de teléfono válido.';
 	}
 

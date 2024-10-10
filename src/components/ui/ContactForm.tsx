@@ -43,7 +43,7 @@ const ContactForm: React.FC = () => {
 	/**
 	 * Handle form submission when the user clicks the submit button.
 	 * Sends a POST request to the serverless function to process the form data.
-	 * @param {React.FormEvent<HTMLFormElement>} event - Form submit event.
+	 * @param event - Form submit event.
 	 */
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -72,16 +72,14 @@ const ContactForm: React.FC = () => {
 
 			// Handle rate limit response or successful email sending response
 			if (response.status === 429) {
-				const result = await response.json();
 				// Rate limit response
 				setIsRateLimited(true); // Activates rate-limiting state
 				setResponseMessage(
 					"Has enviado demasiados mensajes. Por favor, intenta de nuevo más tarde.",
 				);
 			} else if (response.ok) {
-				const result = await response.json();
-				setIsRateLimited(false); // Reset rate-limiting state on success
 				// Successful email sending
+				setIsRateLimited(false); // Reset rate-limiting state on success
 				setResponseMessage("Hemos recibido tu mensaje, te responderemos muy pronto.");
 				setFormData({
 					name: "",
@@ -97,8 +95,13 @@ const ContactForm: React.FC = () => {
 				// Display an error message to the user
 				setResponseMessage("Ha ocurrido un error al enviar el mensaje.");
 			}
-		} catch (error) {
-			console.error("Network error:", error);
+		} catch (error: unknown) {
+			// Properly handle the error typed as 'unknown'
+			if (error instanceof Error) {
+				console.error("Network error:", error.message);
+			} else {
+				console.error("An unknown error occurred.");
+			}
 			setResponseMessage("Ha ocurrido un error al enviar el mensaje.");
 		} finally {
 			setIsSubmitting(false);
@@ -107,7 +110,7 @@ const ContactForm: React.FC = () => {
 
 	/**
 	 * Handle form input change that occurs when the user types in the input fields.
-	 * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} event - Input change event
+	 * @param event - Input change event
 	 */
 	const handleInputChange = (
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -115,19 +118,17 @@ const ContactForm: React.FC = () => {
 		// Get the name and value of the input
 		const { name, value } = event.target;
 
-		// Update the form data state safely ensuring it is a valid key
-		if (name in formData) {
-			setFormData((prevFormData) => ({
-				...prevFormData,
-				[name]: value || "",
-			}));
-		}
+		// Update the form data state
+		setFormData((prevFormData) => ({
+			...prevFormData,
+			[name]: value,
+		}));
 	};
 
 	/**
 	 * Handles the blur event of the input fields.
 	 * Validates the input and updates the error state.
-	 * @param {React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>} event - Input blur event
+	 * @param event - Input blur event
 	 */
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = event.target;
@@ -135,16 +136,14 @@ const ContactForm: React.FC = () => {
 		// Validate only the field that just lost focus
 		const fieldErrors = validateInput({
 			...formData,
-			[name]: value || "", // Ensure value is a string
+			[name]: value,
 		});
 
 		// Update the error state with any validation errors
-		if (name in formData) {
-			setErrors((prevErrors) => ({
-				...prevErrors,
-				[name]: fieldErrors[name as keyof ContactFormData],
-			}));
-		}
+		setErrors((prevErrors) => ({
+			...prevErrors,
+			[name]: fieldErrors[name as keyof ContactFormData],
+		}));
 	};
 
 	// Determine the button text based on the current state

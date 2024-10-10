@@ -1,10 +1,10 @@
 // src/pages/api/send-email.ts
 import type { APIRoute, APIContext } from 'astro';
-import { createRateLimiter, isRateLimited } from '@/utilities/rate-limiter';
 import { sendEmail } from '@/services/email-service';
 import { validateInput } from '@/utilities/validate-input';
 import { getClientIP } from '@/utilities/get-client-ip';
 import validator from 'validator';
+import { isRateLimited } from '@/utilities/rate-limiter';
 
 const jsonResponse = (data: object, status = 200) => {
 	return new Response(JSON.stringify(data), {
@@ -13,41 +13,27 @@ const jsonResponse = (data: object, status = 200) => {
 	});
 };
 
-// Create a rate limiter specifically for email sending
-const emailRateLimiter = createRateLimiter({
-	points: 5, // Maximum number of email requests
-	duration: 15 * 60, // Per 15 minutes
-	keyPrefix: 'emailRateLimiter',
-});
-
 export const POST: APIRoute = async ({ request }: APIContext) => {
 	try {
 		const clientIP = getClientIP(request);
-		const { isRateLimited: rateLimited, remainingPoints } = await isRateLimited(
-			clientIP,
-			emailRateLimiter
-		);
 
-		// Calculate the number of attempts already made (based on total points - remaining points)
-		const totalAttempts = emailRateLimiter.points - remainingPoints;
-		console.log(`Total attempts: ${totalAttempts}`);
+		// Check if the client is rate limited
+		const rateLimited = await isRateLimited(clientIP);
 
 		if (rateLimited) {
 			console.warn(`Rate limit exceeded for IP: ${clientIP}`);
 			return jsonResponse(
 				{
-					error: 'Too many requests, please try again later.',
-					remainingPoints,  // Remaining points to show how many attempts are left
-					totalAttempts,     // Total attempts made by the user
+					error: 'Has enviado demasiadas solicitudes. Por favor, intenta de nuevo más tarde.',
 				},
 				429
 			);
 		}
 
-		// Validate the Content-Type header
-		const contentType = request.headers.get('Content-Type');
-		if (contentType !== 'application/json') {
-			return jsonResponse({ error: 'Invalid Content-Type' }, 400);
+		// Validate the Content-Type header more flexibly
+		const contentType = request.headers.get('Content-Type') || '';
+		if (!contentType.includes('application/json')) {
+			return jsonResponse({ error: 'Content-Type inválido. Se espera application/json' }, 400);
 		}
 
 		// Parse the request body
@@ -79,13 +65,11 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 		// Send the email
 		await sendEmail(sanitizedData);
 
-		// Return a successful response with total attempts and remaining points
+		// Return a successful response
 		return jsonResponse({
 			message: 'Email enviado exitosamente',
-			totalAttempts,      // Total attempts made by the user
-			remainingPoints,    // Remaining points (how many more emails can be sent)
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error('Error en el envío de correo:', error);
 		return jsonResponse({ error: 'Falló el envío de correo' }, 500);
 	}
