@@ -1,11 +1,11 @@
 ---
+// src/pages/demos/BasicDemo.astro
 import { getBasicDemoData } from "@/services/data.service";
 import { getSiteData } from "@/services/data.service";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/sections/Header.astro";
 import Footer from "@/sections/Footer.astro";
 import WhatsAppButton from "@/components/ui/WhatsAppButton.tsx";
-import basicDemoData from "@/data/basic-demo.json";
 
 const demoData = await getBasicDemoData();
 const siteData = await getSiteData();

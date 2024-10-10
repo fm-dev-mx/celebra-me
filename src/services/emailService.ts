@@ -1,4 +1,4 @@
-// src/services/email-service.ts
+// src/services/emailService.ts
 import nodemailer from 'nodemailer';
 import type { SendMailOptions } from 'nodemailer';
 

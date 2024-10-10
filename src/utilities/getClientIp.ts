@@ -1,4 +1,4 @@
-// src/utilities/get-client-ip.ts
+// src/utilities/getClientIp.ts
 import validator from 'validator';
 import { randomUUID } from 'crypto';
 

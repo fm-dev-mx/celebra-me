@@ -1,4 +1,4 @@
-// src/config/site-data.interface.ts
+// src/config/siteData.interface.ts
 
 /**
  * Interface representing the entire site data including metadata and site information.

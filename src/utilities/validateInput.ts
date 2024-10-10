@@ -1,4 +1,4 @@
-// src/utilities/validate-input.ts
+// src/utilities/validateInput.ts
 import validator from 'validator';
 import type { ContactFormData } from '@/components/ui/ContactForm';
 

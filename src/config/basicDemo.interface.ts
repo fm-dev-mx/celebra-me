@@ -1,7 +1,7 @@
-// src/config/basic-demo.interface.ts
+// src/config/basicDemo.interface.ts
 
-import type { Meta, SocialData } from './site-data.interface';
-import type { MenuData } from './landing.interface';
+import type { Meta, SocialData } from './siteData.interface';
+import type { MenuData } from './landingPage.interface';
 
 /**
  * Interface representing the data structure for the basic demo page.

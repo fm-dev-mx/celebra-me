@@ -1,10 +1,10 @@
-// src/pages/api/send-email.ts
+// src/pages/api/sendEmail.ts
 import type { APIRoute, APIContext } from 'astro';
-import { sendEmail } from '@/services/email-service';
-import { validateInput } from '@/utilities/validate-input';
-import { getClientIP } from '@/utilities/get-client-ip';
+import { sendEmail } from '@/services/emailService';
+import { validateInput } from '@/utilities/validateInput';
+import { getClientIP } from '@/utilities/getClientIP';
 import validator from 'validator';
-import { isRateLimited } from '@/utilities/rate-limiter';
+import { isRateLimited } from '@/utilities/rateLimiter';
 
 const jsonResponse = (data: object, status = 200) => {
 	return new Response(JSON.stringify(data), {

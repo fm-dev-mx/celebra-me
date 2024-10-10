@@ -2,8 +2,7 @@
 
 import React from "react";
 import ActionIcon from "@/components/common/actions/ActionIcon";
-import type { SocialLink } from "@/config/landing.interface";
-import type { IconNames } from "@/config/landing.interface";
+import type { SocialLink, IconNames } from "@/config/siteData.interface";
 
 export type SocialVariants = "social-desktop-header" | "social-mobile-header" | "social-footer";
 

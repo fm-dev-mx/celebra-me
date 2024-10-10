@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Input from "@/components/form/Input";
 import TextArea from "@/components/form/TextArea";
-import { validateInput } from "@/utilities/validate-input";
+import { validateInput } from "@/utilities/validateInput";
 
 /**
  * Contact form data interface.
@@ -61,7 +61,7 @@ const ContactForm: React.FC = () => {
 
 		try {
 			// Send a POST request to the serverless function endpoint
-			const response = await fetch("/api/send-email", {
+			const response = await fetch("/api/sendEmail", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json", // Ensures the server understands the request is JSON

@@ -1,4 +1,4 @@
-// src/utilities/rate-limiter.ts
+// src/utilities/rateLimiter.ts
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
