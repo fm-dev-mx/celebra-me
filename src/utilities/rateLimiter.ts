@@ -3,11 +3,21 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
 /**
+ * Validate the required environment variables before proceeding.
+ * Throws an error if any of the variables are missing.
+ */
+const { REDIS_URL, REDIS_TOKEN } = import.meta.env;
+
+if (!REDIS_URL || !REDIS_TOKEN) {
+	throw new Error('Missing environment variables REDIS_URL or REDIS_TOKEN');
+}
+
+/**
  * Initialize Upstash Redis client with environment variables.
  */
 const redis = new Redis({
-	url: import.meta.env.REDIS_URL,    // Your Upstash Redis URL
-	token: import.meta.env.REDIS_TOKEN // Your Upstash Redis token
+	url: REDIS_URL,    // Your Upstash Redis URL
+	token: REDIS_TOKEN // Your Upstash Redis token
 });
 
 /**
@@ -26,10 +36,22 @@ const rateLimiter = new Ratelimit({
  * @returns {Promise<boolean>} - Returns true if rate limited, false otherwise.
  */
 export async function isRateLimited(key: string): Promise<boolean> {
-	const { success } = await rateLimiter.limit(key);
-	if (!success) {
-		console.warn(`Rate limit exceeded for key: ${key}.`);
+	try {
+		const { success } = await rateLimiter.limit(key);
+		if (!success) {
+			console.warn(`Rate limit exceeded for key: ${key}. Please try again later.`);
+			return true;
+		}
+		return false;
+	}
+	catch (error: unknown) {
+		// Log the error for debugging purposes
+		if (error instanceof Error) {
+			console.error(`Rate limiting failed for key: ${key}. Error: ${error.message}`);
+		} else {
+			console.error(`Rate limiting failed for key: ${key}. Unknown error: ${error}`);
+		}
+		// Block access by default to prevent abuse if Redis is unavailable
 		return true;
 	}
-	return false;
 }

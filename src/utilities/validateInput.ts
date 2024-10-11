@@ -16,7 +16,7 @@ export function validateInput(data: ContactFormData): Partial<ContactFormData> {
 	if (validator.isEmpty(name)) {
 		errors.name = 'El campo de nombre no puede estar vacío.';
 	} else if (!validator.isLength(name.trim(), { min: 2, max: 50 })) {
-		errors.name = 'El nombre debe tener entre 2 y 50 caracteres.';
+		errors.name = 'El nombre debe tener entre 3 y 50 caracteres.';
 	}
 
 	// Validate the email field
@@ -24,10 +24,11 @@ export function validateInput(data: ContactFormData): Partial<ContactFormData> {
 		errors.email = 'Ingresa un correo electrónico válido.';
 	}
 
-	// Validate the mobile field (more general validation)
-	if (!validator.isMobilePhone(mobile, undefined, { strictMode: false })) {
-		errors.mobile = 'Ingresa un número de teléfono válido.';
+	// Validate the mobile field with specified locales
+	if (!validator.isMobilePhone(mobile, ['es-MX', 'en-US'], { strictMode: true }) && !/^\d{10}$/.test(mobile)) {
+		errors.mobile = 'Ingresa un número de telefónico válido.';
 	}
+
 
 	// Validate the message field
 	if (validator.isEmpty(message)) {

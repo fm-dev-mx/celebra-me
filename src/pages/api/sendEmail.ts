@@ -2,11 +2,11 @@
 import type { APIRoute, APIContext } from 'astro';
 import { sendEmail } from '@/services/emailService';
 import { validateInput } from '@/utilities/validateInput';
-import { getClientIP } from '@/utilities/getClientIP';
+import { getClientIp } from '@/utilities/getClientIp';
 import validator from 'validator';
 import { isRateLimited } from '@/utilities/rateLimiter';
 
-const jsonResponse = (data: object, status = 200) => {
+const jsonResponse = (data: Record<string, unknown>, status = 200) => {
 	return new Response(JSON.stringify(data), {
 		status,
 		headers: { 'Content-Type': 'application/json' },
@@ -15,7 +15,7 @@ const jsonResponse = (data: object, status = 200) => {
 
 export const POST: APIRoute = async ({ request }: APIContext) => {
 	try {
-		const clientIP = getClientIP(request);
+		const clientIP = getClientIp(request);
 
 		// Check if the client is rate limited
 		const rateLimited = await isRateLimited(clientIP);
@@ -24,16 +24,16 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 			console.warn(`Rate limit exceeded for IP: ${clientIP}`);
 			return jsonResponse(
 				{
-					error: 'Has enviado demasiadas solicitudes. Por favor, intenta de nuevo más tarde.',
+					error: 'You have sent too many requests. Please try again later.',
 				},
 				429
 			);
 		}
 
-		// Validate the Content-Type header more flexibly
+		// Validate the Content-Type header
 		const contentType = request.headers.get('Content-Type') || '';
 		if (!contentType.includes('application/json')) {
-			return jsonResponse({ error: 'Content-Type inválido. Se espera application/json' }, 400);
+			return jsonResponse({ error: 'Invalid Content-Type. Expected application/json' }, 400);
 		}
 
 		// Parse the request body
@@ -43,10 +43,16 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 			parsedData = JSON.parse(requestBody);
 		} catch (error) {
 			console.error('Invalid JSON format:', error);
-			return jsonResponse({ error: 'Formato JSON inválido' }, 400);
+			return jsonResponse({ error: 'Invalid JSON format' }, 400);
 		}
 
 		const { name, email, mobile, message } = parsedData;
+
+		// Validate the raw data before sanitization
+		const validationError = validateInput({ name, email, mobile, message });
+		if (Object.keys(validationError).length > 0) {
+			return jsonResponse({ error: 'Validation errors', fieldErrors: validationError }, 400);
+		}
 
 		// Sanitize the form data
 		const sanitizedData = {
@@ -56,12 +62,6 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 			message: validator.escape(message),
 		};
 
-		// Validate the sanitized data
-		const validationError = validateInput(sanitizedData);
-		if (Object.keys(validationError).length > 0) {
-			return jsonResponse({ error: validationError }, 400);
-		}
-
 		// Send the email
 		await sendEmail(sanitizedData);
 
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 			message: 'Email enviado exitosamente',
 		});
 	} catch (error: unknown) {
-		console.error('Error en el envío de correo:', error);
+		console.error('Error sending email:', error);
 		return jsonResponse({ error: 'Falló el envío de correo' }, 500);
 	}
 };

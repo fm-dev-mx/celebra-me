@@ -6,11 +6,6 @@ import { validateInput } from "@/utilities/validateInput";
 
 /**
  * Contact form data interface.
- * @interface ContactFormData
- * @property {string} name - The name of the contact form.
- * @property {string} email - The email address of the contact form.
- * @property {string} mobile - The mobile number of the contact form.
- * @property {string} message - The message entered by the user.
  */
 export interface ContactFormData {
 	name: string;
@@ -19,8 +14,8 @@ export interface ContactFormData {
 	message: string;
 }
 
-const ContactForm: React.FC = () => {
-	// State to manage the form data, initially empty
+const ContactForm = () => {
+	// State to manage the form data
 	const [formData, setFormData] = useState<ContactFormData>({
 		name: "",
 		email: "",
@@ -40,11 +35,7 @@ const ContactForm: React.FC = () => {
 	// State to store client-side validation errors
 	const [errors, setErrors] = useState<Partial<ContactFormData>>({});
 
-	/**
-	 * Handle form submission when the user clicks the submit button.
-	 * Sends a POST request to the serverless function to process the form data.
-	 * @param event - Form submit event.
-	 */
+	// Handle form submission when the user clicks the submit button
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		setIsSubmitting(true);
@@ -60,6 +51,14 @@ const ContactForm: React.FC = () => {
 		}
 
 		try {
+			// Sanitize the form data before sending
+			const sanitizedData = {
+				name: formData.name.trim(),
+				email: formData.email.trim(),
+				mobile: formData.mobile.trim(),
+				message: formData.message.trim(),
+			};
+
 			// Send a POST request to the serverless function endpoint
 			const response = await fetch("/api/sendEmail", {
 				method: "POST",
@@ -67,7 +66,7 @@ const ContactForm: React.FC = () => {
 					"Content-Type": "application/json", // Ensures the server understands the request is JSON
 					Accept: "application/json", // Ensures the client expects a JSON response
 				},
-				body: JSON.stringify(formData), // Converts the form data to JSON
+				body: JSON.stringify(sanitizedData), // Converts the sanitized form data to JSON
 			});
 
 			// Handle rate limit response or successful email sending response
@@ -90,15 +89,13 @@ const ContactForm: React.FC = () => {
 			} else {
 				// If the server response indicates an error, parse and log the error details
 				const errorData = await response.json();
-				// Display an error message on console
-				console.error("Error data from server:", errorData);
-				// Display an error message to the user
+				console.error("Error data from server:", errorData.fieldErrors);
 				setResponseMessage("Ha ocurrido un error al enviar el mensaje.");
 			}
 		} catch (error: unknown) {
-			// Properly handle the error typed as 'unknown'
+			// Handle network errors or unexpected exceptions
 			if (error instanceof Error) {
-				console.error("Network error:", error.message);
+				console.error("Network or unexpected error:", error.message);
 			} else {
 				console.error("An unknown error occurred.");
 			}
@@ -108,14 +105,10 @@ const ContactForm: React.FC = () => {
 		}
 	};
 
-	/**
-	 * Handle form input change that occurs when the user types in the input fields.
-	 * @param event - Input change event
-	 */
+	// Handle form input change when the user types in the input fields
 	const handleInputChange = (
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
-		// Get the name and value of the input
 		const { name, value } = event.target;
 
 		// Update the form data state
@@ -125,11 +118,7 @@ const ContactForm: React.FC = () => {
 		}));
 	};
 
-	/**
-	 * Handles the blur event of the input fields.
-	 * Validates the input and updates the error state.
-	 * @param event - Input blur event
-	 */
+	// Handle the blur event of the input fields
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = event.target;
 
@@ -170,6 +159,7 @@ const ContactForm: React.FC = () => {
 				onBlur={handleBlur}
 				name="name"
 				error={errors.name}
+				id="name" // Added id for accessibility
 			/>
 
 			{/* Input for Email */}
@@ -183,6 +173,7 @@ const ContactForm: React.FC = () => {
 				onBlur={handleBlur}
 				name="email"
 				error={errors.email}
+				id="email" // Added id for accessibility
 			/>
 
 			{/* Input for Mobile */}
@@ -196,6 +187,7 @@ const ContactForm: React.FC = () => {
 				onBlur={handleBlur}
 				name="mobile"
 				error={errors.mobile}
+				id="mobile" // Added id for accessibility
 			/>
 
 			{/* Text Area for Message */}
@@ -209,6 +201,7 @@ const ContactForm: React.FC = () => {
 				onBlur={handleBlur}
 				name="message"
 				error={errors.message}
+				id="message" // Added id for accessibility
 			/>
 
 			{/* Submit Button */}
