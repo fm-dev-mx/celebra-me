@@ -1,52 +1,16 @@
 // src/services/emailService.ts
-import nodemailer from 'nodemailer';
-import type { SendMailOptions } from 'nodemailer';
 
-// Retrieve environment variables
-const {
-	ZOHO_USER,
-	ZOHO_PASS,
-	RECIPIENT_EMAIL,
-	SMTP_HOST,
-	SMTP_PORT,
-	SMTP_SECURE,
-} = import.meta.env;
+import sgMail from '@sendgrid/mail';
+import { EMAIL_CONFIG } from '@/config';
+import logger from '@/utilities/logger';
 
 /**
- * Validate the required environment variables before proceeding.
- * Throws an error if any of the variables are missing.
+ * Initialize SendGrid API client with the API key.
  */
-if (
-	!ZOHO_USER ||
-	!ZOHO_PASS ||
-	!RECIPIENT_EMAIL ||
-	!SMTP_HOST ||
-	!SMTP_PORT ||
-	typeof SMTP_SECURE === 'undefined'
-) {
-	throw new Error(
-		'One or more environment variables are missing: ZOHO_USER, ZOHO_PASS, RECIPIENT_EMAIL, SMTP_HOST, SMTP_PORT, SMTP_SECURE'
-	);
-}
+sgMail.setApiKey(EMAIL_CONFIG.sendgridApiKey);
 
 /**
- * Create a reusable transporter object using the SMTP transport.
- * This transporter is used to send emails via the specified SMTP service.
- */
-const transporter = nodemailer.createTransport({
-	host: SMTP_HOST,
-	port: parseInt(SMTP_PORT, 10),
-	secure: SMTP_SECURE === 'true',
-	auth: {
-		user: ZOHO_USER,
-		pass: ZOHO_PASS,
-	},
-});
-
-/**
- * Sends an email using the specified form data.
- * @param data - Object containing name, email, mobile, and message.
- * @returns {Promise<void>} - Promise indicating success or failure of the email sending.
+ * Sends an email using the specified form data via SendGrid.
  */
 export async function sendEmail(data: {
 	name: string;
@@ -57,26 +21,25 @@ export async function sendEmail(data: {
 	const { name, email, mobile, message } = data;
 
 	// Mail options containing email metadata and message
-	const mailOptions: SendMailOptions = {
-		from: ZOHO_USER, // Sender email (Zoho account)
+	const msg = {
+		to: EMAIL_CONFIG.recipient, // Recipient email
+		from: EMAIL_CONFIG.sender, // Verified sender email in SendGrid
 		replyTo: email, // The reply-to email is the one provided in the form
-		to: RECIPIENT_EMAIL, // Recipient email (typically your email)
-		subject: `New message from ${name} via Celebra-me`, // Subject of the email
-		text: `Name: ${name}\nEmail: ${email}\nPhone: ${mobile}\nMessage: ${message}`, // Email body content
+		subject: `Nuevo mensaje de ${name} vía Celebra-me`,
+		text: `Nombre: ${name}\nEmail: ${email}\nTeléfono: ${mobile}\nMensaje: ${message}`,
 	};
 
 	try {
-		// Send the email using Nodemailer transporter
-		await transporter.sendMail(mailOptions);
-		console.log('Email sent successfully');
+		// Send the email using SendGrid
+		await sgMail.send(msg);
+		logger.info('Email sent successfully via SendGrid');
 	} catch (error: unknown) {
-		// Log the error for debugging purposes without exposing sensitive details
 		if (error instanceof Error) {
-			console.error('Failed to send email:', error.message);
+			logger.error('Failed to send email via SendGrid:', error.message);
+			throw new Error(`Error al enviar el correo electrónico: ${error.message}`);
 		} else {
-			console.error('An unknown error occurred while sending email.');
+			logger.error('An unknown error occurred while sending email via SendGrid.');
+			throw new Error('Error desconocido al enviar el correo electrónico.');
 		}
-		// Throw a generic error to avoid exposing sensitive information
-		throw new Error('Failed to send email.');
 	}
 }

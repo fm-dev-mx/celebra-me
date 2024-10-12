@@ -1,55 +1,44 @@
 // src/utilities/rateLimiter.ts
+
 import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import type { Duration } from '@upstash/ratelimit';
+import redis from '@/utilities/redisClient';
+import logger from '@/utilities/logger';
 
 /**
- * Validate the required environment variables before proceeding.
- * Throws an error if any of the variables are missing.
+ * Factory function to create a rate limiter instance.
+ * @param limit - Number of allowed requests.
+ * @param duration - Duration in which the requests are counted (e.g., '15 m').
+ * @param prefix - Prefix for Redis keys.
+ * @returns {Ratelimit} - A new rate limiter instance.
  */
-const { REDIS_URL, REDIS_TOKEN } = import.meta.env;
-
-if (!REDIS_URL || !REDIS_TOKEN) {
-	throw new Error('Missing environment variables REDIS_URL or REDIS_TOKEN');
+export function createRateLimiter(limit: number, duration: Duration, prefix: string): Ratelimit {
+	return new Ratelimit({
+		redis,
+		limiter: Ratelimit.slidingWindow(limit, duration),
+		prefix,
+	});
 }
 
 /**
- * Initialize Upstash Redis client with environment variables.
- */
-const redis = new Redis({
-	url: REDIS_URL,    // Your Upstash Redis URL
-	token: REDIS_TOKEN // Your Upstash Redis token
-});
-
-/**
- * Create a rate limiter instance.
- * Example: Limit to 5 requests per 15 minutes per unique key.
- */
-const rateLimiter = new Ratelimit({
-	redis,
-	limiter: Ratelimit.slidingWindow(5, '15 m'), // 5 requests per 15 minutes
-	prefix: 'emailRateLimiter' // Prefix for Redis keys
-});
-
-/**
- * Checks if a key has exceeded the rate limit.
+ * Checks if a key has exceeded the rate limit using the provided rate limiter.
+ * @param rateLimiter - The rate limiter instance.
  * @param key - The unique key to identify the client (e.g., IP address).
  * @returns {Promise<boolean>} - Returns true if rate limited, false otherwise.
  */
-export async function isRateLimited(key: string): Promise<boolean> {
+export async function isRateLimited(rateLimiter: Ratelimit, key: string): Promise<boolean> {
 	try {
 		const { success } = await rateLimiter.limit(key);
 		if (!success) {
-			console.warn(`Rate limit exceeded for key: ${key}. Please try again later.`);
+			logger.warn(`Rate limit exceeded for key: ${key}.`);
 			return true;
 		}
 		return false;
-	}
-	catch (error: unknown) {
-		// Log the error for debugging purposes
+	} catch (error: unknown) {
 		if (error instanceof Error) {
-			console.error(`Rate limiting failed for key: ${key}. Error: ${error.message}`);
+			logger.error(`Rate limiting failed for key: ${key}. Error: ${error.message}`);
 		} else {
-			console.error(`Rate limiting failed for key: ${key}. Unknown error: ${error}`);
+			logger.error(`Rate limiting failed for key: ${key}. Unknown error.`);
 		}
 		// Block access by default to prevent abuse if Redis is unavailable
 		return true;

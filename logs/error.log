@@ -1,0 +1,21 @@
+{
+  level: 'error',
+  message: 'Failed to send email via SendGrid:',
+  timestamp: '2024-10-11T21:30:20.146Z'
+}
+{
+  stack: 'Error: Error al enviar el correo electrónico: Forbidden\n' +
+    '    at Module.sendEmail (C:/code/celebra-me/src/services/emailService.ts:31:13)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async Module.POST (C:/code/celebra-me/src/pages/api/sendEmail.ts:69:5)\n' +
+    '    at async renderEndpoint (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/runtime/server/endpoint.js:34:18)\n' +
+    '    at async lastNext (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/core/render-context.js:133:23)\n' +
+    '    at async callMiddleware (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/core/middleware/callMiddleware.js:11:10)\n' +
+    '    at async RenderContext.render (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/core/render-context.js:172:22)\n' +
+    '    at async handleRoute (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/vite-plugin-astro-server/route.js:146:16)\n' +
+    '    at async run (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/vite-plugin-astro-server/request.js:40:14)\n' +
+    '    at async runWithErrorHandling (file:///C:/code/celebra-me/node_modules/.pnpm/astro@4.16.0_@types+node@16.18.11_rollup@4.24.0_typescript@5.6.3/node_modules/astro/dist/vite-plugin-astro-server/controller.js:64:5)',
+  level: 'error',
+  message: 'Error sending email: Error al enviar el correo electrónico: Forbidden',
+  timestamp: '2024-10-11T21:30:20.151Z'
+}

@@ -1,40 +1,37 @@
 // src/utilities/validateInput.ts
-import validator from 'validator';
-import type { ContactFormData } from '@/components/ui/ContactForm';
 
 /**
- * Validates input data for the contact form.
- * Provides specific error messages if any fields are invalid.
- * @param data - Object containing name, email, mobile, and message.
- * @returns {Partial<ContactFormData>} - An object containing validation errors for each field or an empty object if valid.
+ * Interface for individual validation rules.
  */
-export function validateInput(data: ContactFormData): Partial<ContactFormData> {
-	const { name, email, mobile, message } = data;
-	const errors: Partial<ContactFormData> = {};
+interface ValidationRule {
+	validator: (value: string) => boolean;
+	message: string;
+}
 
-	// Validate the name field
-	if (validator.isEmpty(name)) {
-		errors.name = 'El campo de nombre no puede estar vacío.';
-	} else if (!validator.isLength(name.trim(), { min: 2, max: 50 })) {
-		errors.name = 'El nombre debe tener entre 3 y 50 caracteres.';
-	}
+/**
+ * Type for the collection of validation rules.
+ */
+export type ValidationRules = Record<string, ValidationRule[]>;
 
-	// Validate the email field
-	if (!validator.isEmail(email)) {
-		errors.email = 'Ingresa un correo electrónico válido.';
-	}
+/**
+ * Validates input data based on provided rules.
+ */
+export function validateInput(
+	data: Record<string, string>,
+	rules: ValidationRules
+): Record<string, string> {
+	const errors: Record<string, string> = {};
 
-	// Validate the mobile field with specified locales
-	if (!validator.isMobilePhone(mobile, ['es-MX', 'en-US'], { strictMode: true }) && !/^\d{10}$/.test(mobile)) {
-		errors.mobile = 'Ingresa un número de telefónico válido.';
-	}
+	for (const fieldName in rules) {
+		const fieldRules = rules[fieldName];
+		const fieldValue = data[fieldName];
 
-
-	// Validate the message field
-	if (validator.isEmpty(message)) {
-		errors.message = 'El mensaje no puede estar vacío.';
-	} else if (!validator.isLength(message.trim(), { min: 10, max: 500 })) {
-		errors.message = 'El mensaje debe tener entre 10 y 500 caracteres.';
+		for (const rule of fieldRules) {
+			if (!rule.validator(fieldValue)) {
+				errors[fieldName] = rule.message;
+				break; // Stop at the first validation error for this field
+			}
+		}
 	}
 
 	return errors;
