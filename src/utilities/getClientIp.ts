@@ -1,7 +1,7 @@
 // src/utilities/getClientIp.ts
 
 import logger from '@/utilities/logger';
-import { ENVIRONMENT } from '@/config';
+import Config from '@/config/configSingleton';
 
 /**
  * Retrieves the client's IP address from the request headers.
@@ -25,7 +25,7 @@ export function getClientIp(request: Request): string {
 	}
 
 	// In development mode, use a fixed key
-	if (ENVIRONMENT === 'development') {
+	if (Config.ENVIRONMENT === 'development') {
 		logger.warn('Development mode: using fixed key for rate limiting.');
 		return 'development-key';
 	}

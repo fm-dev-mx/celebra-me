@@ -56,3 +56,8 @@ pnpm-debug.log*
 # Ignore any local backup files
 *.bak
 *.backup
+
+# Ignore log files to prevent temporary or sensitive data from being tracked
+# These files can grow large and are not necessary for the repository.
+logs/
+*.log

@@ -1,13 +1,13 @@
 // src/services/emailService.ts
 
 import sgMail from '@sendgrid/mail';
-import { EMAIL_CONFIG } from '@/config';
+import Config from '@/config/configSingleton';
 import logger from '@/utilities/logger';
 
 /**
- * Initialize SendGrid API client with the API key.
+ * Initialize SendGrid API client with the API key from the Singleton Config.
  */
-sgMail.setApiKey(EMAIL_CONFIG.sendgridApiKey);
+sgMail.setApiKey(Config.EMAIL_CONFIG.sendgridApiKey);
 
 /**
  * Sends an email using the specified form data via SendGrid.
@@ -22,8 +22,8 @@ export async function sendEmail(data: {
 
 	// Mail options containing email metadata and message
 	const msg = {
-		to: EMAIL_CONFIG.recipient, // Recipient email
-		from: EMAIL_CONFIG.sender, // Verified sender email in SendGrid
+		to: Config.EMAIL_CONFIG.recipient, // Recipient email from the Singleton
+		from: Config.EMAIL_CONFIG.sender, // Verified sender email from the Singleton
 		replyTo: email, // The reply-to email is the one provided in the form
 		subject: `Nuevo mensaje de ${name} vía Celebra-me`,
 		text: `Nombre: ${name}\nEmail: ${email}\nTeléfono: ${mobile}\nMensaje: ${message}`,

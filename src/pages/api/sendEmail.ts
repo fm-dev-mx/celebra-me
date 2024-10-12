@@ -82,9 +82,18 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 		};
 
 		// Send the email using SendGrid API
-		await sendEmail(sanitizedData);
-
-		logger.info(`Email sent successfully for IP: ${clientIP}`);
+		try {
+			await sendEmail(sanitizedData);
+			logger.info(`Email sent successfully for IP: ${clientIP}`);
+		} catch (sendError: unknown) {
+			if (sendError instanceof Error) {
+				logger.error(`Error sending email: ${sendError.message}`, { stack: sendError.stack });
+				return jsonResponse({ error: 'Error sending email.' }, 500);
+			} else {
+				logger.error('An unknown error occurred while sending email.');
+				return jsonResponse({ error: 'An unknown error occurred.' }, 500);
+			}
+		}
 
 		// Return a successful response
 		return jsonResponse({
