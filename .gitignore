@@ -59,5 +59,4 @@ pnpm-debug.log*
 
 # Ignore log files to prevent temporary or sensitive data from being tracked
 # These files can grow large and are not necessary for the repository.
-logs/
 *.log
