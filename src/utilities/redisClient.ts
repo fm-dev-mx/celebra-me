@@ -1,17 +1,19 @@
 // src/utilities/redisClient.ts
+
 import { Redis } from '@upstash/redis';
 import logger from '@/utilities/logger';
-import Config from '@/config/configSingleton';  // Configuración centralizada con las variables
+import config from '@/config';
 
-// Inicializa el cliente de Redis
-if (!Config.REDIS_CONFIG.url || !Config.REDIS_CONFIG.token) {
-	logger.error('Missing environment variables REDIS_URL or REDIS_TOKEN');
-	throw new Error('Missing environment variables REDIS_URL or REDIS_TOKEN');
+// Initialize the Redis client
+if (!config.REDIS_CONFIG.url || !config.REDIS_CONFIG.token) {
+	const errorMessage = 'Missing environment variables REDIS_URL or REDIS_TOKEN';
+	logger.error(errorMessage);
+	throw new Error(errorMessage);
 }
 
 const redis = new Redis({
-	url: Config.REDIS_CONFIG.url,
-	token: Config.REDIS_CONFIG.token,
+	url: config.REDIS_CONFIG.url,
+	token: config.REDIS_CONFIG.token,
 });
 
 export default redis;

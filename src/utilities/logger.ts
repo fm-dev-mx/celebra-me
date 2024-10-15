@@ -1,40 +1,71 @@
 // src/utilities/logger.ts
 
 import { createLogger, format, transports } from 'winston';
-import path from 'path';
+import TransportStream from 'winston-transport';
+import config from '@/config';
+import redis from '@/utilities/redisClient';
 
 /**
- * Configure Winston logger to write logs to console.
- * This is suitable for serverless environments where writing to filesystem is not supported.
+ * Custom Winston transport to send logs to Redis.
+ */
+class RedisTransportStream extends TransportStream {
+	private redisClient = redis;
+
+	/**
+	 * Initializes the Redis transport.
+	 * @param opts - Transport options.
+	 */
+	constructor(opts: any) {
+		super(opts);
+	}
+
+	/**
+	 * Logs the information to Redis.
+	 * @param info - Log information.
+	 * @param callback - Callback function.
+	 */
+	log(info: any, callback: () => void): void {
+		setImmediate(() => {
+			this.emit('logged', info);
+		});
+
+		// Convert the log to JSON and push it to the 'app-logs' list in Redis
+		this.redisClient
+			.rpush('app-logs', JSON.stringify(info))
+			.catch((err) => {
+				console.error('Failed to write log to Redis:', err);
+			});
+
+		callback();
+	}
+}
+
+/**
+ * Winston logger configuration
+ * Logs to the console and Redis in production.
  */
 const logger = createLogger({
-	level: process.env.NODE_ENV === 'production' ? 'warn' : 'info', // Set log level based on environment
+	level: config.ENVIRONMENT === 'production' ? 'info' : 'debug',
 	format: format.combine(
 		format.timestamp(),
-		format.json(),
-		format.prettyPrint()
+		format.errors({ stack: true }),
+		format.splat(),
+		format.json()
 	),
 	transports: [
-		new transports.File({
-			filename: path.join(process.cwd(), 'logs', 'error.log'),
-			level: 'error', // Only log errors in production
-		}),
-		new transports.File({
-			filename: path.join(process.cwd(), 'logs', 'combined.log'),
-		}),
-	],
-});
-
-// Log in console in development
-if (process.env.NODE_ENV !== 'production') {
-	logger.add(
+		// Console transport for both development and production
 		new transports.Console({
 			format: format.combine(
-				format.colorize(),
+				config.ENVIRONMENT !== 'production' ? format.colorize() : format.uncolorize(),
 				format.simple()
 			),
 		}),
-	);
-}
+		// Redis transport only in production
+		...(config.ENVIRONMENT === 'production'
+			? [new RedisTransportStream({})]
+			: []),
+	],
+});
 
 export default logger;
+

@@ -1,21 +1,30 @@
 // src/utilities/getClientIp.ts
 
 import logger from '@/utilities/logger';
-import Config from '@/config/configSingleton';
+import config from '@/config';
 
 /**
  * Retrieves the client's IP address from the request headers.
- * If no valid IP is found, returns a fixed key in development or throws an error in production.
+ * If no valid IP is found, returns null and allows the caller to handle it.
  *
  * @param request - The incoming Fetch API request from Astro.
- * @returns {string} - The client's IP address or a fixed key if not found in development.
+ * @returns {string | null} - The client's IP address or null if not found.
  */
-export function getClientIp(request: Request): string {
+export function getClientIp(request: Request): string | null {
 	// Try to extract the IP from the 'x-forwarded-for' header
 	const forwardedFor = request.headers.get('x-forwarded-for');
 	if (forwardedFor) {
 		const ips = forwardedFor.split(',').map((ip) => ip.trim());
 		return ips[0];
+	}
+
+	// Try to extract the IP from the 'forwarded' header
+	const forwarded = request.headers.get('forwarded');
+	if (forwarded) {
+		const match = forwarded.match(/for="\[?(.*?)\]?"/);
+		if (match) {
+			return match[1];
+		}
 	}
 
 	// Fallback to 'x-real-ip' if available
@@ -25,12 +34,12 @@ export function getClientIp(request: Request): string {
 	}
 
 	// In development mode, use a fixed key
-	if (Config.ENVIRONMENT === 'development') {
+	if (config.ENVIRONMENT === 'development') {
 		logger.warn('Development mode: using fixed key for rate limiting.');
 		return 'development-key';
 	}
 
-	// In production, log the error and throw
-	logger.error('Unable to determine client IP address.');
-	throw new Error('Unable to determine client IP address.');
+	// In production, log a warning and return null
+	logger.warn('Unable to determine client IP address.');
+	return null;
 }

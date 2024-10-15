@@ -1,31 +1,26 @@
 {
-  "extends": "./node_modules/astro/tsconfigs/strict",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-	  "@utilities/*": ["src/utilities/*"],
-	  "@components/*": ["src/components/*"],
-      "@layouts/*": ["src/layouts/*"]
-    },
-    "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "jsxImportSource": "react"
-  },
-  "include": [
-	"src/**/*",
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-	"src/**/*.tsx",
-    "src/**/*.astro",
-    "astro/types.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+	"extends": "./node_modules/astro/tsconfigs/strict",
+	"compilerOptions": {
+		"types": ["vite/client", "astro/client", "react"],
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@utilities/*": ["src/utilities/*"],
+			"@components/*": ["src/components/*"],
+			"@layouts/*": ["src/layouts/*"]
+		},
+		"jsx": "react-jsx",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"jsxImportSource": "react"
+	},
+	"include": [
+		"src/**/*",
+		"src/**/*.d.ts",
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"src/**/*.astro",
+		"astro/types.d.ts",
+		"env.d.ts"
+	],
+	"exclude": ["node_modules", "dist"]
 }
