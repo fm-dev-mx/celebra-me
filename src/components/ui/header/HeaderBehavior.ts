@@ -19,7 +19,7 @@ import { useMenuLinkHighlighter } from '@/hooks/header/useMenuLinkHighlighter';
 const HeaderBehavior: React.FC = () => {
 	const { isHeaderVisible, handleScroll } = useHeaderScroll();
 	const { handleMouseEnter, handleMouseLeave } = useHeaderHover(isHeaderVisible);
-	const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useToggleMobileMenu();
+	const { isMobileMenuOpen, closeMobileMenu } = useToggleMobileMenu();
 	const { highlightMenuLink } = useMenuLinkHighlighter();
 
 	useEffect(() => {

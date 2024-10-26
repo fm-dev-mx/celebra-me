@@ -7,8 +7,8 @@ import Header from "@/sections/Header.astro";
 import Footer from "@/sections/Footer.astro";
 import WhatsAppButton from "@/components/ui/WhatsAppButton.tsx";
 
-const demoData = await getBasicDemoData();
-const siteData = await getSiteData();
+const demoData = getBasicDemoData();
+const siteData = getSiteData();
 ---
 
 <Layout meta={demoData.meta}>
@@ -49,7 +49,7 @@ const siteData = await getSiteData();
 		<div class="mb-10">
 			<h2 class="text-2xl font-semibold mb-4 text-indigo-600">Itinerario del Evento</h2>
 			<ul class="list-disc pl-6 space-y-2">
-				{demoData.eventDetails.itinerary.map((item, index) => <li>{item}</li>)}
+				{demoData.eventDetails.itinerary.map((item) => <li>{item}</li>)}
 			</ul>
 		</div>
 

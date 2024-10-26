@@ -18,7 +18,7 @@ interface SocialMediaLinksProps {
  * @param {SocialMediaLinksProps} props - The props for the component
  * @returns {JSX.Element | null} The rendered component or null if no links
  */
-const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ links, variant }) => {
+const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ links, variant }: SocialMediaLinksProps): JSX.Element | null => {
 	// If there are no links provided, render nothing
 	if (!links || links.length === 0) return null;
 

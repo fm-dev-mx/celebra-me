@@ -4,11 +4,8 @@ import { useCallback, useEffect } from 'react';
 
 /**
  * Custom hook to manage menu link highlighting based on visible sections
- *
- * @returns {Object} An object containing:
- *   - highlightMenuLink: function to be used as a callback for Intersection Observer
  */
-export const useMenuLinkHighlighter = () => {
+export const useMenuLinkHighlighter = (): { highlightMenuLink: (entries: IntersectionObserverEntry[]) => void } => {
 	/**
 	 * Highlight the corresponding menu link for the visible section
 	 */

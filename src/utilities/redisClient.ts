@@ -8,7 +8,6 @@ import config from '@/config';
 if (!config.REDIS_CONFIG.url || !config.REDIS_CONFIG.token) {
 	const errorMessage = 'Missing environment variables REDIS_URL or REDIS_TOKEN';
 	logger.error(errorMessage);
-	throw new Error(errorMessage);
 }
 
 const redis = new Redis({

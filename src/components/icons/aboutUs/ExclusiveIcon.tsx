@@ -6,10 +6,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 const ExclusiveIcon: React.FC<IconProps> = ({
-  className,
-  size = 28,
-  color = 'currentColor',
-  ...props
+  className
 }) => (
 <svg
 	xmlns="http://www.w3.org/2000/svg"

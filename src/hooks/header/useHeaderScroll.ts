@@ -9,7 +9,7 @@ import { useState, useCallback, useRef } from 'react';
  *   - isHeaderVisible: boolean indicating if the header is currently visible
  *   - handleScroll: function to be called on scroll events
  */
-export const useHeaderScroll = () => {
+export const useHeaderScroll = (): { isHeaderVisible: boolean; handleScroll: () => void } => {
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 	const lastScrollTop = useRef(0);
 	const headerContainer = useRef<HTMLElement | null>(null);
@@ -23,7 +23,7 @@ export const useHeaderScroll = () => {
 			headerContainer.current = document.querySelector('.header-container');
 		}
 
-		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		const scrollTop = window.scrollY || document.documentElement.scrollTop;
 
 		// Determine scroll direction
 		if (scrollTop > lastScrollTop.current) {

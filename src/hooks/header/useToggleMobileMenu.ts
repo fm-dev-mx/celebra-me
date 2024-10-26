@@ -10,7 +10,14 @@ import { useState, useCallback, useRef, useEffect } from 'react';
  *   - toggleMobileMenu: function to toggle the mobile menu
  *   - closeMobileMenu: function to close the mobile menu
  */
-export const useToggleMobileMenu = () => {
+
+export type MobileMenuState = {
+	isMobileMenuOpen: boolean;
+	toggleMobileMenu: () => void;
+	closeMobileMenu: () => void;
+};
+
+export const useToggleMobileMenu = (): MobileMenuState => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const mobileMenu = useRef<HTMLElement | null>(null);
 
