@@ -7,7 +7,7 @@ import ActionBase from "@/components/common/actions/ActionBase";
 import type { MenuData } from "@/core/interfaces/landingPage.interface";
 import type { SocialData } from "@/core/interfaces/siteData.interface";
 import Logo from "../Logo";
-import { useToggleMobileMenu } from "@/hooks/header/useToggleMobileMenu";
+import { useToggleMobileMenu } from "@/frontend/hooks/header/useToggleMobileMenu";
 import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";
 
 // Props interface for NavBarMobile component

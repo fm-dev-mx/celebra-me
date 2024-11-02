@@ -3,7 +3,7 @@
 import React from "react"; // Import React for JSX transformation
 import Input from "@/components/form/Input";
 import TextArea from "@/components/form/TextArea";
-import { useContactForm } from "@/hooks/contact/useContactForm";
+import { useContactForm } from "@/frontend/hooks/contact/useContactForm";
 
 /**
  * ContactForm component renders the contact form.

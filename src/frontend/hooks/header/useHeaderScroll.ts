@@ -1,4 +1,4 @@
-// src/hooks/useHeaderScroll.ts
+// src/frontend/hooks/useHeaderScroll.ts
 
 import { useState, useCallback, useRef } from 'react';
 

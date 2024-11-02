@@ -1,4 +1,4 @@
-// src/hooks/useMenuLinkHighlighter.ts
+// src/frontend/hooks/useMenuLinkHighlighter.ts
 
 import { useCallback, useEffect } from 'react';
 

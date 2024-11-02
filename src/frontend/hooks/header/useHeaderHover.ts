@@ -1,4 +1,4 @@
-// src/hooks/useHeaderHover.ts
+// src/frontend/hooks/useHeaderHover.ts
 
 import { useCallback, useRef } from 'react';
 

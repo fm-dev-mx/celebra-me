@@ -1,10 +1,10 @@
 // src/components/ui/header/HeaderBehavior.ts
 
 import React, { useEffect } from 'react';
-import { useHeaderScroll } from '@/hooks/header/useHeaderScroll';
-import { useHeaderHover } from '@/hooks/header/useHeaderHover';
-import { useToggleMobileMenu } from '@/hooks/header/useToggleMobileMenu';
-import { useMenuLinkHighlighter } from '@/hooks/header/useMenuLinkHighlighter';
+import { useHeaderScroll } from '@/frontend/hooks/header/useHeaderScroll';
+import { useHeaderHover } from '@/frontend/hooks/header/useHeaderHover';
+import { useToggleMobileMenu } from '@/frontend/hooks/header/useToggleMobileMenu';
+import { useMenuLinkHighlighter } from '@/frontend/hooks/header/useMenuLinkHighlighter';
 
 /**
  * HeaderBehavior Component

@@ -1,4 +1,4 @@
-// src/hooks/useToggleMobileMenu.ts
+// src/frontend/hooks/useToggleMobileMenu.ts
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 
