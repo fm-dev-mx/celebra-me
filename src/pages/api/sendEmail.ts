@@ -1,7 +1,7 @@
 // src/pages/api/sendEmail.ts
 
 import type { APIRoute, APIContext } from 'astro';
-import { sendEmail } from '@/services/emailService';
+import { sendEmail } from '@/backend/services/emailService';
 import { validateInput } from '@/utilities/validateInput';
 import { getClientIp } from '@/utilities/getClientIp';
 import { getRateLimiter, isRateLimited } from '@/utilities/rateLimiter';
