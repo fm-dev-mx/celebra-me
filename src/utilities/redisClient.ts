@@ -2,7 +2,7 @@
 
 import { Redis } from '@upstash/redis';
 import logger from '@/utilities/logger';
-import config from '@/config';
+import config from '@/core/interfaces/config';
 
 // Initialize the Redis client
 if (!config.REDIS_CONFIG.url || !config.REDIS_CONFIG.token) {

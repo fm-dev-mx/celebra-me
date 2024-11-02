@@ -1,7 +1,7 @@
 // src/services/emailService.ts
 
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
-import Config from '@/config';
+import Config from '@/core/interfaces/config';
 import logger from '@/utilities/logger';
 
 /**

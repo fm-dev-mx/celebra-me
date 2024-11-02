@@ -1,7 +1,7 @@
 // src/utilities/getClientIp.ts
 
 import logger from '@/utilities/logger';
-import config from '@/config';
+import config from '@/core/interfaces/config';
 
 /**
  * Retrieves the client's IP address from the request headers.

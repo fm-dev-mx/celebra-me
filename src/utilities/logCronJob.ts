@@ -1,7 +1,7 @@
 // src/utilities/logCronJob.ts
 
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
-import config from '@/config';
+import config from '@/core/interfaces/config';
 import redis from '@/utilities/redisClient';
 import logger from '@/utilities/logger';
 
