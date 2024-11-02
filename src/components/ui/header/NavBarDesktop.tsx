@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import ActionBase from "@/components/common/actions/ActionBase";
 import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";
-import type { MenuData } from "@/config/landingPage.interface";
+import type { MenuData } from "@/core/interfaces/landingPage.interface";
 import type { SocialData } from "@/config/siteData.interface";
 import Logo from "../Logo";
 

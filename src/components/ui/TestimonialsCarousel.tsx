@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import type { TestimonialsData, Testimonial } from "@/config/landingPage.interface";
+import type { TestimonialsData, Testimonial } from "@/core/interfaces/landingPage.interface";
 import Card from "./Card";
 
 // Helper function to shuffle an array randomly

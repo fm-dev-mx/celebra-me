@@ -1,6 +1,6 @@
 // src/services/data.service.ts
 
-import type { LandingPageData } from "@/config/landingPage.interface";
+import type { LandingPageData } from "@/core/interfaces/landingPage.interface";
 import type { BasicDemoData } from "@/config/basicDemo.interface";
 import type { SiteData } from "@/config/siteData.interface";
 import landingData from "@/data/landingPage.json";
