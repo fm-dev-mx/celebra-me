@@ -2,7 +2,7 @@
 
 import React from "react";
 import ActionIcon from "@/components/common/actions/ActionIcon";
-import type { SocialLink, IconNames } from "@/config/siteData.interface";
+import type { SocialLink, IconNames } from "@/core/interfaces/siteData.interface";
 
 export type SocialVariants = "social-desktop-header" | "social-mobile-header" | "social-footer";
 
@@ -18,7 +18,10 @@ interface SocialMediaLinksProps {
  * @param {SocialMediaLinksProps} props - The props for the component
  * @returns {JSX.Element | null} The rendered component or null if no links
  */
-const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ links, variant }: SocialMediaLinksProps): JSX.Element | null => {
+const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({
+	links,
+	variant,
+}: SocialMediaLinksProps): JSX.Element | null => {
 	// If there are no links provided, render nothing
 	if (!links || links.length === 0) return null;
 

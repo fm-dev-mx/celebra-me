@@ -4,7 +4,7 @@ import React from "react";
 import ActionBase from "./ActionBase";
 import type { ActionVariants, ActionColors, BaseActionVariants, IconVariants } from "./ActionBase";
 import Icon from "@/components/common/Icon";
-import type { IconNames } from "@/config/siteData.interface";
+import type { IconNames } from "@/core/interfaces/siteData.interface";
 import type { SocialVariants } from "./SocialMediaLinks";
 
 // Define the props interface for the ActionIcon component

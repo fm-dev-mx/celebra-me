@@ -1,6 +1,6 @@
 // src/components/common/Icon.tsx
 import React from "react";
-import type { IconNames } from "@/config/siteData.interface";
+import type { IconNames } from "@/core/interfaces/siteData.interface";
 import * as Icons from "@/components/icons"; // Import all icons from the icons directory
 
 // Define the props interface, extending SVG attributes for flexibility

@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 import Icon from "@/components/common/Icon";
 import ActionBase from "@/components/common/actions/ActionBase";
 import type { MenuData } from "@/core/interfaces/landingPage.interface";
-import type { SocialData } from "@/config/siteData.interface";
+import type { SocialData } from "@/core/interfaces/siteData.interface";
 import Logo from "../Logo";
 import { useToggleMobileMenu } from "@/hooks/header/useToggleMobileMenu";
 import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";

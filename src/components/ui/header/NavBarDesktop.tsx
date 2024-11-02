@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 import ActionBase from "@/components/common/actions/ActionBase";
 import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";
 import type { MenuData } from "@/core/interfaces/landingPage.interface";
-import type { SocialData } from "@/config/siteData.interface";
+import type { SocialData } from "@/core/interfaces/siteData.interface";
 import Logo from "../Logo";
 
 interface NavBarDesktopProps {
