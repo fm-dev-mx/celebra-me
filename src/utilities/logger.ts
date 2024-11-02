@@ -2,7 +2,7 @@
 
 import { createLogger, format, transports } from 'winston';
 import TransportStream from 'winston-transport';
-import config from '@/core/interfaces/config';
+import config from '@/core/config';
 import redis from '@/utilities/redisClient';
 
 /**

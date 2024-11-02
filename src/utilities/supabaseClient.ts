@@ -1,7 +1,7 @@
 // src/utilities/supabaseClient.ts
 
 import { createClient } from '@supabase/supabase-js';
-import config from '@/core/interfaces/config';
+import config from '@/core/config';
 import logger from '@/utilities/logger';
 
 if (!config.SUPABASE_CONFIG?.url || !config.SUPABASE_CONFIG?.anonKey) {
