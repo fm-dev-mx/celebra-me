@@ -3,9 +3,9 @@
 import type { LandingPageData } from "@/core/interfaces/landingPage.interface";
 import type { BasicDemoData } from "@/core/interfaces/basicDemo.interface";
 import type { SiteData } from "@/core/interfaces/siteData.interface";
-import landingData from "@/data/landingPage.json";
-import basicDemoData from "@/data/basicDemo.json";
-import siteData from "@/data/siteData.json";
+import landingData from "@/core/data/landingPage.json";
+import basicDemoData from "@/core/data/basicDemo.json";
+import siteData from "@/core/data/siteData.json";
 
 /**
  * Retrieves landing page data synchronously.
