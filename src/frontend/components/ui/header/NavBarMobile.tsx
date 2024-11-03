@@ -2,13 +2,13 @@
 // NavBarMobile component handles the mobile navigation menu and renders navigation links dynamically.
 import React, { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import Icon from "@/components/common/Icon";
-import ActionBase from "@/components/common/actions/ActionBase";
+import Icon from "@/frontend/components/common/Icon";
+import ActionBase from "@/frontend/components/common/actions/ActionBase";
 import type { MenuData } from "@/core/interfaces/landingPage.interface";
 import type { SocialData } from "@/core/interfaces/siteData.interface";
 import Logo from "../Logo";
 import { useToggleMobileMenu } from "@/frontend/hooks/header/useToggleMobileMenu";
-import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";
+import SocialMediaLinks from "@/frontend/components/common/actions/SocialMediaLinks";
 
 // Props interface for NavBarMobile component
 interface NavBarMobileProps {

@@ -6,7 +6,7 @@
 		"paths": {
 			"@/*": ["src/*"],
 			"@utilities/*": ["src/utilities/*"],
-			"@components/*": ["src/components/*"],
+			"@components/*": ["src/frontend/components/*"],
 			"@layouts/*": ["src/layouts/*"]
 		},
 		"jsx": "react-jsx",

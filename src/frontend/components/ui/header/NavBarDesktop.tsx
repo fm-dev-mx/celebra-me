@@ -3,8 +3,8 @@
 
 import React, { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import ActionBase from "@/components/common/actions/ActionBase";
-import SocialMediaLinks from "@/components/common/actions/SocialMediaLinks";
+import ActionBase from "@/frontend/components/common/actions/ActionBase";
+import SocialMediaLinks from "@/frontend/components/common/actions/SocialMediaLinks";
 import type { MenuData } from "@/core/interfaces/landingPage.interface";
 import type { SocialData } from "@/core/interfaces/siteData.interface";
 import Logo from "../Logo";

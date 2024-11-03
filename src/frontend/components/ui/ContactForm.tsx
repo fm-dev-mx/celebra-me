@@ -1,8 +1,8 @@
 // src/components/ui/ContactForm.tsx
 
 import React from "react"; // Import React for JSX transformation
-import Input from "@/components/form/Input";
-import TextArea from "@/components/form/TextArea";
+import Input from "@/frontend/components/form/Input";
+import TextArea from "@/frontend/components/form/TextArea";
 import { useContactForm } from "@/frontend/hooks/contact/useContactForm";
 
 /**

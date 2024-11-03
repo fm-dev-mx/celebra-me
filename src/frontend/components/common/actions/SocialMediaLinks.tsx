@@ -1,7 +1,7 @@
 // src/components/common/SocialMediaLinks.tsx
 
 import React from "react";
-import ActionIcon from "@/components/common/actions/ActionIcon";
+import ActionIcon from "@/frontend/components/common/actions/ActionIcon";
 import type { SocialLink, IconNames } from "@/core/interfaces/siteData.interface";
 
 export type SocialVariants = "social-desktop-header" | "social-mobile-header" | "social-footer";
