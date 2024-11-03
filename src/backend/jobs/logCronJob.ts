@@ -1,4 +1,4 @@
-// src/utilities/logCronJob.ts
+// src/backend/jobs/logCronJob.ts
 
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
 import config from '@/core/config';
