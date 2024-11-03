@@ -2,7 +2,7 @@
 
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
 import config from '@/core/config';
-import redis from '@/utilities/redisClient';
+import redis from '@/infrastructure/redisClient';
 import logger from '@/backend/utilities/logger';
 
 /**

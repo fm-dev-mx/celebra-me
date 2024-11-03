@@ -1,4 +1,4 @@
-// src/utilities/redisClient.ts
+// src/infrastructure/redisClient.ts
 
 import { Redis } from '@upstash/redis';
 import logger from '@/backend/utilities/logger';

@@ -1,9 +1,9 @@
-// src/utilities/logger.ts
+// src/backend/utilities/logger.ts
 
 import { createLogger, format, transports } from 'winston';
 import TransportStream from 'winston-transport';
 import config from '@/core/config';
-import redis from '@/utilities/redisClient';
+import redis from '@/infrastructure/redisClient';
 
 /**
  * Custom Winston transport to send logs to Redis.

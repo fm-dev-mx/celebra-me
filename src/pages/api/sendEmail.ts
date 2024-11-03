@@ -9,7 +9,7 @@ import logger from '@/backend/utilities/logger';
 import { validationRules } from '@/utilities/validationRules';
 import validator from 'validator';
 const { trim, normalizeEmail } = validator;
-import supabase from '@/utilities/supabaseClient';
+import supabase from '@/infrastructure/supabaseClient';
 
 const emailRateLimiter = getRateLimiter(5, '15 m', 'emailRateLimiter');
 
