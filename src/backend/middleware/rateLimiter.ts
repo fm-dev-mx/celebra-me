@@ -1,4 +1,4 @@
-// src/utilities/rateLimiter.ts
+// src/backend/middleware/rateLimiter.ts
 
 import { Ratelimit } from '@upstash/ratelimit';
 import type { Duration } from '@upstash/ratelimit';
