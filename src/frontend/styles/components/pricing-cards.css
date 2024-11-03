@@ -1,0 +1,78 @@
+/* src/frontend/styles/components/pricing-cards.css */
+
+/* Styles for pricing cards */
+/* Base styles for pricing cards */
+.pricing-card {
+	@apply rounded border border-solid overflow-hidden mx-auto min-w-[20rem] max-w-[20rem] max-h-[42rem] self-center mt-8 transition-all duration-300 ease-in-out relative z-10; /* Añadido 'relative' y z-index base */
+}
+
+/* Hover effects for pricing cards */
+.pricing-card-hovered {
+	@apply border-accent-light z-20; /* Elevar z-index al hacer hover */
+}
+
+/* Hover effects for pricing cards */
+.pricing-card:not(:hover) {
+	@apply z-10; /* Mantener un z-index más bajo cuando no está en hover */
+}
+
+/* Call-to-action button styles for pricing cards */
+.pricing-card-cta {
+	@apply bg-primary text-white text-sm transition-all duration-300 ease-in-out w-80 py-0.5 cursor-pointer; /* Added cursor for better UX */
+}
+
+.pricing-card-cta-hovered {
+	@apply bg-primary-dark text-accent-light scale-110 brightness-125 border border-accent; /* Enhanced hover effect */
+}
+
+.pricing-card-cta-intersected {
+	@apply font-normal py-1; /* Style for intersection observer effect */
+}
+
+/* Hover effects for title and text elements */
+.pricing-card-title-hovered,
+.pricing-card-text-hovered {
+	@apply text-secondary-dark;
+}
+
+.pricing-card-subtitle-hovered {
+	@apply text-secondary-dark/80;
+}
+
+.pricing-card-price-hovered {
+	@apply text-primary-dark;
+	@apply font-semibold;
+	@apply transition-all duration-500 ease-in-out;
+}
+
+.pricing-card-bullet-text-hovered {
+	@apply text-secondary-dark;
+}
+
+.pricing-card-bullet-icon-hovered {
+	@apply text-accent-dark;
+}
+
+/* Responsive styles for pricing cards */
+@screen md {
+	.pricing-card {
+		@apply w-[calc(50%-1rem)]; /* Adjust width for medium screens */
+	}
+	.pricing-grid {
+		@apply flex-row; /* Ensure grid is displayed in rows */
+	}
+}
+
+@screen lg {
+	.pricing-card {
+		@apply w-[calc(33.333%-1rem)]; /* Adjust width for large screens */
+	}
+}
+
+@screen xl {
+	.pricing-card {
+		@apply max-w-[26rem]; /* Slightly wider cards for extra-large screens */
+	}
+}
+
+/* Additional styles can be added as needed for further customization */

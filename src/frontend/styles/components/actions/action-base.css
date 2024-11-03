@@ -1,3 +1,4 @@
+/* src/frontend/styles/components/actions/action-base.css */
 /* Base wrapper styles */
 .action-base-wrapper {
 	min-width: 200px; /* to prevent affecting the next component when scaled */

@@ -1,4 +1,4 @@
-/* src/styles/animations/slide-animations.css */
+/* src/frontend/styles/animations/slide.css */
 
 /**
  * Revised Slide Animations
@@ -35,107 +35,155 @@
 .slide-out-right,
 .slide-out-up,
 .slide-out-down {
-    animation-duration: 3s;
-    animation-fill-mode: both;
-    animation-timing-function: ease-out;
+	animation-duration: 3s;
+	animation-fill-mode: both;
+	animation-timing-function: ease-out;
 }
 
 /* Slide In Animations */
 .slide-in-left {
-    animation-name: slideInLeft;
+	animation-name: slideInLeft;
 }
 
 .slide-in-right {
-    animation-name: slideInRight;
+	animation-name: slideInRight;
 }
 
 .slide-in-up {
-    animation-name: slideInUp;
+	animation-name: slideInUp;
 }
 
 .slide-in-down {
-    animation-name: slideInDown;
+	animation-name: slideInDown;
 }
 
 /* Slide Out Animations */
 .slide-out-left {
-    animation-name: slideOutLeft;
+	animation-name: slideOutLeft;
 }
 
 .slide-out-right {
-    animation-name: slideOutRight;
+	animation-name: slideOutRight;
 }
 
 .slide-out-up {
-    animation-name: slideOutUp;
+	animation-name: slideOutUp;
 }
 
 .slide-out-down {
-    animation-name: slideOutDown;
+	animation-name: slideOutDown;
 }
 
 /* Keyframes for slide animations */
 @keyframes slideInLeft {
-    from { transform: translateX(-30px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+	from {
+		transform: translateX(-30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(30px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+	from {
+		transform: translateX(30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
 @keyframes slideInUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+	from {
+		transform: translateY(30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }
 
 @keyframes slideInDown {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+	from {
+		transform: translateY(-30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }
 
 @keyframes slideOutLeft {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-30px); opacity: 0; }
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(-30px);
+		opacity: 0;
+	}
 }
 
 @keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(30px); opacity: 0; }
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(30px);
+		opacity: 0;
+	}
 }
 
 @keyframes slideOutUp {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(-30px); opacity: 0; }
+	from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateY(-30px);
+		opacity: 0;
+	}
 }
 
 @keyframes slideOutDown {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(30px); opacity: 0; }
+	from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateY(30px);
+		opacity: 0;
+	}
 }
 
 /* Duration variations */
 .slide-fast {
-    animation-duration: 0.3s;
+	animation-duration: 0.3s;
 }
 
 .slide-slow {
-    animation-duration: 0.8s;
+	animation-duration: 0.8s;
 }
 
 /* Accessibility: Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
-    .slide-in-left,
-    .slide-in-right,
-    .slide-in-up,
-    .slide-in-down,
-    .slide-out-left,
-    .slide-out-right,
-    .slide-out-up,
-    .slide-out-down {
-        animation: none;
-        transform: none;
-        opacity: 1;
-    }
+	.slide-in-left,
+	.slide-in-right,
+	.slide-in-up,
+	.slide-in-down,
+	.slide-out-left,
+	.slide-out-right,
+	.slide-out-up,
+	.slide-out-down {
+		animation: none;
+		transform: none;
+		opacity: 1;
+	}
 }

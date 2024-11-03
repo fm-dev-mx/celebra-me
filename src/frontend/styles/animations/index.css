@@ -1,0 +1,7 @@
+/* src/frontend/styles/animations/index.css */
+@import "fade.css";
+@import "permanent-glow.css";
+@import "shimmer.css";
+@import "slide.css";
+@import "subtle-bounce.css";
+@import "hover-lift.css";

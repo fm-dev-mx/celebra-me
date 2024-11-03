@@ -1,3 +1,5 @@
+/* src/frontend/styles/components/styled-container.css */
+
 .styled-container {
 	position: relative;
 	display: flex;
@@ -22,8 +24,6 @@
 	min-width: 300px;
 	max-width: 700px;
 	margin: auto;
-
-
 }
 
 .styled-container.styled-container-about-section {
@@ -43,5 +43,4 @@
 	.styled-container.styled-container-about-section {
 		max-width: 90%;
 	}
-
 }
