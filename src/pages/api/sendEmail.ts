@@ -2,11 +2,11 @@
 
 import type { APIRoute, APIContext } from 'astro';
 import { sendEmail } from '@/backend/services/emailService';
-import { validateInput } from '@/utilities/validateInput';
+import { validateInput } from '@/core/utilities/validateInput';
 import { getClientIp } from '@/backend/utilities/getClientIp';
 import { getRateLimiter, isRateLimited } from '@/backend/middleware/rateLimiter';
 import logger from '@/backend/utilities/logger';
-import { validationRules } from '@/utilities/validationRules';
+import { validationRules } from '@/core/utilities/validationRules';
 import validator from 'validator';
 const { trim, normalizeEmail } = validator;
 import supabase from '@/infrastructure/supabaseClient';

@@ -1,8 +1,8 @@
 // src/frontend/hooks/contact/useContactForm.tsx
 
 import { useState } from "react";
-import { validateInput } from "@/utilities/validateInput";
-import { validationRules } from "@/utilities/validationRules";
+import { validateInput } from "@/core/utilities/validateInput";
+import { validationRules } from "@/core/utilities/validationRules";
 
 /**
  * Contact form data interface.

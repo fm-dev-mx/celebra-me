@@ -5,7 +5,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"],
-			"@utilities/*": ["src/utilities/*"],
+			"@utilities/*": ["src/core/utilities/*"],
 			"@components/*": ["src/frontend/components/*"],
 			"@layouts/*": ["src/layouts/*"]
 		},
