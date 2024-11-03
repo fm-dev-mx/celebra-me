@@ -1,7 +1,7 @@
 // src/utilities/redisClient.ts
 
 import { Redis } from '@upstash/redis';
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 import config from '@/core/config';
 
 // Initialize the Redis client

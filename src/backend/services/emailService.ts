@@ -2,7 +2,7 @@
 
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
 import Config from '@/core/config';
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 
 /**
  * Initialize SendGrid API client with the API key from the Config.

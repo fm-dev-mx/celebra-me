@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import config from '@/core/config';
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 
 if (!config.SUPABASE_CONFIG?.url || !config.SUPABASE_CONFIG?.anonKey) {
 	const errorMessage = 'Missing environment variables SUPABASE_CONFIG.url or SUPABASE_CONFIG.anonKey';

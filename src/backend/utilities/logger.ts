@@ -15,7 +15,7 @@ class RedisTransportStream extends TransportStream {
 	 * Initializes the Redis transport.
 	 * @param opts - Transport options.
 	 */
-	constructor(opts: any) {
+	constructor(opts: TransportStream.TransportStreamOptions) {
 		super(opts);
 	}
 

@@ -3,7 +3,7 @@
 import sgMail, { type MailDataRequired } from '@sendgrid/mail';
 import config from '@/core/config';
 import redis from '@/utilities/redisClient';
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 
 /**
  * Sends the accumulated logs to administrators via email.

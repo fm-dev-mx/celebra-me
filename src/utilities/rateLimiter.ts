@@ -3,7 +3,7 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import type { Duration } from '@upstash/ratelimit';
 import redis from '@/utilities/redisClient';
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 
 interface RateLimiterConfig {
 	limit: number;

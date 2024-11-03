@@ -1,6 +1,6 @@
 // src/utilities/getClientIp.ts
 
-import logger from '@/utilities/logger';
+import logger from '@/backend/utilities/logger';
 import config from '@/core/config';
 
 /**
