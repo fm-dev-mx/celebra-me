@@ -1,4 +1,4 @@
-// src/config/constants.ts
+// src/core/config/constants.ts
 
 /**
  * Prefix for asset paths.

@@ -1,20 +1,23 @@
-// src/utilities/validateInput.ts
+// src/core/utilities/validation/validateInput.ts
 
-/**
- * Interface for individual validation rules.
- */
-interface ValidationRule {
-	validator: (value: string) => boolean;
-	message: string;
-}
-
-/**
- * Type for the collection of validation rules.
- */
-export type ValidationRules = Record<string, ValidationRule[]>;
+import { type ValidationRules } from '@/core/interfaces/validationRules.interface';
 
 /**
  * Validates input data based on provided rules.
+ *
+ * @param data - An object where keys are field names and values are the field values.
+ * @param rules - Validation rules for each field.
+ * @returns An object containing error messages for fields that failed validation.
+ *
+ * **Example Usage:**
+ * ```typescript
+ * const data = { name: 'John', email: 'invalid-email' };
+ * const errors = validateInput(data, validationRules);
+ * // errors = { email: 'Ingresa un correo electrónico válido.' }
+ * ```
+ *
+ * **Adding New Validation Rules:**
+ * - Update `validationRules` in `rules.ts` with new field validations.
  */
 export function validateInput(
 	data: Record<string, string>,
@@ -24,7 +27,7 @@ export function validateInput(
 
 	for (const fieldName in rules) {
 		const fieldRules = rules[fieldName];
-		const fieldValue = data[fieldName];
+		const fieldValue = data[fieldName] || '';
 
 		for (const rule of fieldRules) {
 			if (!rule.validator(fieldValue)) {

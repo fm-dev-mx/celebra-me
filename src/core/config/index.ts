@@ -1,77 +1,57 @@
-// src/config/index.ts
+// src/core/config/index.ts
 
-interface RedisConfig {
-	url: string;
-	token: string;
-}
-
-interface EmailConfig {
-	sendgridApiKey: string;
-	recipient: string;
-	sender: string;
-}
-
-interface SupabaseConfig {
-	url: string;
-	anonKey: string;
-}
-
-interface Config {
-	ENVIRONMENT: string;
-	REDIS_CONFIG: RedisConfig;
-	EMAIL_CONFIG: EmailConfig;
-	SUPABASE_CONFIG: SupabaseConfig;
-	ADMIN_EMAIL: string;
-}
+import type { RedisConfig, EmailConfig, SupabaseConfig, Config } from '../interfaces/coreConfig.interface';
+import { getEnvVariable } from './getEnvVariable';
 
 /**
- * The environment in which the application is running.
+ * Application configuration module.
+ * Provides configuration objects for different parts of the application.
+ *
+ * **Setup Instructions:**
+ * - **Development Environment:**
+ *   - Ensure environment variables are set in a `.env` file at the root of the project.
+ *   - Use tools like `dotenv` to load environment variables.
+ * - **Production Environment:**
+ *   - Set environment variables in the hosting environment or deployment platform.
  */
-const ENVIRONMENT = process.env.NODE_ENV || 'development';
 
 /**
- * Helper function to retrieve environment variables.
- * Throws an error if a variable is missing.
- * @param key - The name of the environment variable.
- * @returns The value of the environment variable.
+ * Retrieves the Redis configuration.
+ * @returns RedisConfig object.
  */
-const getEnvVariable = (key: string): string => {
-	const value =
-		ENVIRONMENT === 'production'
-			? process.env[key]
-			: import.meta.env[key];
-
-	if (!value) {
-		const errorMessage = `Environment variable ${key} is missing.`;
-		if (ENVIRONMENT !== 'production') {
-			console.warn(errorMessage);
-		} else {
-			throw new Error(errorMessage);
-		}
-	}
-	return value!;
-};
+const getRedisConfig = (): RedisConfig => ({
+	url: getEnvVariable('REDIS_URL'),
+	token: getEnvVariable('REDIS_TOKEN'),
+});
 
 /**
- * Configuration object containing required environment variables.
+ * Retrieves the Email configuration.
+ * @returns EmailConfig object.
+ */
+const getEmailConfig = (): EmailConfig => ({
+	sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
+	recipient: getEnvVariable('RECIPIENT_EMAIL'),
+	sender: getEnvVariable('SENDER_EMAIL'),
+});
+
+/**
+ * Retrieves the Supabase configuration.
+ * @returns SupabaseConfig object.
+ */
+const getSupabaseConfig = (): SupabaseConfig => ({
+	url: getEnvVariable('SUPABASE_URL'),
+	anonKey: getEnvVariable('SUPABASE_ANON_KEY'),
+});
+
+/**
+ * Main configuration object.
  */
 const config: Config = {
-	ENVIRONMENT,
-	REDIS_CONFIG: {
-		url: getEnvVariable('REDIS_URL'),
-		token: getEnvVariable('REDIS_TOKEN'),
-	},
-	EMAIL_CONFIG: {
-		sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
-		recipient: getEnvVariable('RECIPIENT_EMAIL'),
-		sender: getEnvVariable('SENDER_EMAIL'),
-	},
-	SUPABASE_CONFIG: {
-		url: getEnvVariable('SUPABASE_URL'),
-		anonKey: getEnvVariable('SUPABASE_ANON_KEY'),
-	},
-	ADMIN_EMAIL: getEnvVariable('ADMIN_EMAIL'),
+	environment: process.env.NODE_ENV || 'development',
+	redisConfig: getRedisConfig(),
+	emailConfig: getEmailConfig(),
+	supabaseConfig: getSupabaseConfig(),
+	adminEmail: getEnvVariable('ADMIN_EMAIL'),
 };
 
 export default config;
-
