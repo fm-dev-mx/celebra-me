@@ -1,6 +1,6 @@
-// src/core/utilities/validation/validateInput.ts
+// src/core/utilities/validateInput.ts
 
-import { type ValidationRules } from '@/core/interfaces/validationRules.interface';
+import { ValidationRules } from '@/core/interfaces/validationRules.interface';
 
 /**
  * Validates input data based on provided rules.
@@ -20,17 +20,17 @@ import { type ValidationRules } from '@/core/interfaces/validationRules.interfac
  * - Update `validationRules` in `rules.ts` with new field validations.
  */
 export function validateInput(
-	data: Record<string, string>,
+	data: Partial<Record<string, string>>,
 	rules: ValidationRules
 ): Record<string, string> {
 	const errors: Record<string, string> = {};
 
 	for (const fieldName in rules) {
 		const fieldRules = rules[fieldName];
-		const fieldValue = data[fieldName] || '';
+		const fieldValue = data[fieldName];
 
 		for (const rule of fieldRules) {
-			if (!rule.validator(fieldValue)) {
+			if (!rule.validator(fieldValue ?? '')) {
 				errors[fieldName] = rule.message;
 				break; // Stop at the first validation error for this field
 			}
