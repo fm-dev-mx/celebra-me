@@ -41,17 +41,20 @@ class RedisClient {
 		const maxRetries = 3;
 		let attempt = 0;
 
-		if (!url || !token) {
-			const errorMessage = 'Missing Redis configuration: REDIS_URL or REDIS_TOKEN';
-			logger.error(errorMessage);
-			throw new Error(errorMessage);
-		}
-
 		while (attempt < maxRetries) {
+			if (!url || !token) {
+				const errorMessage = 'Missing Redis configuration: REDIS_URL or REDIS_TOKEN';
+				logger.error(errorMessage);
+				throw new Error(errorMessage);
+			}
+
 			try {
-				const redis = new Redis({ url, token });
+				const client = new Redis({
+					url,
+					token,
+				});
 				logger.info('Redis client initialized successfully.');
-				return redis;
+				return client;
 			} catch (error) {
 				attempt++;
 				logger.error(`Error initializing Redis client (Attempt ${attempt}/${maxRetries}):`, error);

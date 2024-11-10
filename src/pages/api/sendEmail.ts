@@ -1,48 +1,80 @@
 // src/pages/api/sendEmail.ts
 
 import type { APIRoute, APIContext } from 'astro';
-import { sendEmail } from '@/backend/services/emailService';
-import { validateInput } from '@/core/utilities/validateInput';
+import { EmailService } from '@/backend/services/emailService';
+import { SendGridProvider } from '@/backend/services/sendGridProvider';
 import { getClientIp } from '@/backend/utilities/getClientIp';
-import { getRateLimiter, isRateLimited } from '@/backend/middleware/rateLimiter';
-import logger from '@/backend/utilities/logger';
-import { validationRules } from '@/core/utilities/validationRules';
+import { rateLimiterManager, isRateLimited } from '@/backend/utilities/rateLimiterUtils';
 import validator from 'validator';
-const { trim, normalizeEmail } = validator;
-import supabase from '@/infrastructure/supabaseClient';
+import SupabaseClientManager from '@/infrastructure/supabaseClient';
+import { jsonResponse } from '@/core/config/constants';
 
-const emailRateLimiter = getRateLimiter(5, '15 m', 'emailRateLimiter');
+const { trim, normalizeEmail } = validator;
+const logger = await import('@/backend/utilities/logger').then((module) => module.default);
 
 /**
- * Helper function to create a JSON response.
+ * Initialize the rate limiter with the desired configuration.
+ *
+ * This ensures that the rate limiter is set up once and reused across requests.
  */
-const jsonResponse = (data: Record<string, unknown>, status = 200): Response => {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { 'Content-Type': 'application/json' },
+const initializeRateLimiter = async () => {
+	return await rateLimiterManager.getRateLimiter({
+		limit: 5,         // Maximum number of requests
+		duration: '15 m', // Time window for the rate limit
+		prefix: 'emailRateLimiter',
 	});
 };
 
+/**
+ * Helper function to create a JSON response.
+ *
+ * @param data - The data to include in the JSON response.
+ * @param status - The HTTP status code for the response.
+ * @returns {Response} - The constructed JSON response.
+ */
+
+
+/**
+ * Handler for POST requests to send an email.
+ *
+ * @param {APIContext} context - The API context containing the request object.
+ * @returns {Promise<Response>} - The response after processing the request.
+ */
 export const POST: APIRoute = async ({ request }: APIContext) => {
 	let clientIP: string | null = null;
+
 	try {
+		// Retrieve the client's IP address from the request
 		clientIP = getClientIp(request);
-		logger.info(`Received request from IP: ${clientIP}`);
+		logger.info(`Received request from IP: ${clientIP || 'Unknown'}`);
 
-		// Set the rate limit key based on the environment
-		const rateLimitKey = process.env.NODE_ENV === 'production' ? clientIP : 'development-key';
+		// Determine the rate limit key based on the environment and availability of clientIP
+		let rateLimitKey: string;
 
-		if (!rateLimitKey) {
-			logger.warn('Rate limiting failed: key is undefined or empty.');
-			return jsonResponse({ error: 'Internal Server Error' }, 500);
+		if (process.env.NODE_ENV === 'production') {
+			if (clientIP) {
+				rateLimitKey = clientIP;
+			} else {
+				// Fallback: Generate a unique key based on headers to avoid a shared key
+				const userAgent = request.headers.get('user-agent') || 'unknown';
+				const acceptLanguage = request.headers.get('accept-language') || 'unknown';
+				rateLimitKey = `no-ip-${userAgent}-${acceptLanguage}`;
+				logger.warn('Client IP not detected in production; using fallback rate limit key.');
+			}
+		} else {
+			// In development, use a static key to simplify testing without rate limiting per IP
+			rateLimitKey = 'development-key';
 		}
 
+		// Apply rate limiting
+		const emailRateLimiter = await initializeRateLimiter();
 		const rateLimited = await isRateLimited(emailRateLimiter, rateLimitKey);
+
 		if (rateLimited) {
-			logger.warn(`Rate limit exceeded for IP: ${clientIP}`);
+			logger.warn(`Rate limit exceeded for key: ${rateLimitKey}`);
 			return jsonResponse(
 				{
-					error: 'Has enviado demasiados mensajes. Por favor, intenta de nuevo más tarde.',
+					error: 'You have sent too many messages. Please try again later.',
 				},
 				429
 			);
@@ -55,36 +87,27 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 			return jsonResponse({ error: 'Invalid Content-Type. Expected application/json' }, 400);
 		}
 
-		// Analyze the request body
+		// Parse and sanitize the request body
 		const parsedData = await request.json();
 		const { name, email, mobile, message } = parsedData;
 
-		// Validate the data before sanitization using shared validation rules
-		const validationError = validateInput(
-			{ name, email, mobile, message },
-			validationRules
-		);
-		if (Object.keys(validationError).length > 0) {
-			logger.warn(`Validation errors for IP: ${clientIP}`, validationError);
-			return jsonResponse(
-				{ error: 'Validation errors', fieldErrors: validationError },
-				400
-			);
-		}
-
-		// Sanitize the data before sending
 		const sanitizedData = {
 			name: trim(name),
 			email: normalizeEmail(email) || '',
-			mobile: trim(mobile),
+			mobile: trim(mobile || ''),
 			message: trim(message),
 		};
 
-		// Send the email using SendGrid
-		await sendEmail(sanitizedData);
-		logger.info(`Email sent successfully for IP: ${clientIP}`);
+		// Initialize the EmailService with SendGridProvider
+		const emailProvider = new SendGridProvider();
+		const emailService = new EmailService(emailProvider);
+
+		// Send the email using EmailService
+		await emailService.sendEmail(sanitizedData);
+		logger.info(`Email sent successfully for IP: ${clientIP || 'Unknown'}`);
 
 		// Store the submission details in Supabase
+		const supabase = await SupabaseClientManager.getInstance();
 		const { error: insertError } = await supabase
 			.from('contact_submissions')
 			.insert([
@@ -93,35 +116,38 @@ export const POST: APIRoute = async ({ request }: APIContext) => {
 					email: sanitizedData.email,
 					mobile: sanitizedData.mobile,
 					message: sanitizedData.message,
-					ip_address: clientIP,
+					ip_address: clientIP || 'Unknown',
 					created_at: new Date().toISOString(),
 				},
 			]);
 
 		if (insertError) {
-			logger.error(`Error storing submission data for IP: ${clientIP}`, { error: insertError.message });
+			logger.error(`Error storing submission data for IP: ${clientIP || 'Unknown'}`, { error: insertError.message });
 			return jsonResponse({ error: 'Failed to store submission data.' }, 500);
 		} else {
-			logger.info(`Submission data stored successfully for IP: ${clientIP}`);
+			logger.info(`Submission data stored successfully for IP: ${clientIP || 'Unknown'}`);
 		}
 
-		// return a success response
+		// Return a success response
 		return jsonResponse({
-			message: 'Hemos recibido tu mensaje, te responderemos muy pronto.',
+			message: 'We have received your message and will respond shortly.',
 		});
 	} catch (error: unknown) {
 		let errorMessage = 'Unknown error';
 		if (error instanceof Error) {
 			errorMessage = error.message;
-			logger.error(`Error processing request for IP: ${clientIP}`, {
+			logger.error(`Error processing request for IP: ${clientIP || 'Unknown'}`, {
 				error: errorMessage,
 				stack: error.stack,
 			});
 		} else {
-			logger.error(`Error processing request for IP: ${clientIP}`, { error });
+			logger.error(`Error processing request for IP: ${clientIP || 'Unknown'}`, { error });
 		}
-		return jsonResponse({ error: 'Ha ocurrido un error al enviar el mensaje.' }, 500);
+		return jsonResponse({ error: 'An error occurred while sending your message.' }, 500);
 	}
 };
 
+/**
+ * Disable prerendering for this API route.
+ */
 export const prerender = false;

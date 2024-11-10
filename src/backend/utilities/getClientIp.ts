@@ -1,32 +1,38 @@
 // src/backend/utilities/getClientIp.ts
 
-import type { Request } from 'express';
-
 /**
- * Retrieves the client's IP address from the request, respecting 'trust proxy' settings.
+ * Retrieves the client's IP address from the Astro request object.
+ * In development mode, returns '127.0.0.1' as a fallback if no IP is detected.
  *
- * @param req - The Express request object.
- * @returns {string | undefined} - The client's IP address, or undefined if not determinable.
- *
- * @example
- * app.set('trust proxy', true);
- * const clientIp = getClientIp(req);
+ * @param req - The Fetch API Request object.
+ * @returns {string | null} - The client's IP address, or '127.0.0.1' in development if not determinable.
  */
-export function getClientIp(req: Request): string | undefined {
-	// Express populates req.ip when 'trust proxy' is enabled
-	const ip = req.ip;
-
-	if (!ip) {
-		// Return undefined if IP is not available
-		return undefined;
+export function getClientIp(req: Request): string | null {
+	// Attempt to retrieve the IP from the 'x-forwarded-for' header, which is standard in proxy setups
+	const xForwardedFor = req.headers.get('x-forwarded-for');
+	if (xForwardedFor) {
+		// 'x-forwarded-for' can contain multiple IPs; the first one is the client's IP
+		const ip = xForwardedFor.split(',')[0].trim();
+		return ip;
 	}
 
-	// Normalize IP address format (remove common IPv6 prefixes)
-	if (ip.startsWith('::ffff:')) {
-		return ip.substring(7);
-	} else if (ip === '::1') {
+	// Fallback: Check for 'cf-connecting-ip' header if using Cloudflare
+	const cfConnectingIp = req.headers.get('cf-connecting-ip');
+	if (cfConnectingIp) {
+		return cfConnectingIp;
+	}
+
+	// Fallback: Check for 'x-real-ip' header, if using a reverse proxy
+	const xRealIp = req.headers.get('x-real-ip');
+	if (xRealIp) {
+		return xRealIp;
+	}
+
+	// In development mode, return '127.0.0.1' as a default IP
+	if (process.env.NODE_ENV === 'development') {
 		return '127.0.0.1';
 	}
 
-	return ip;
+	// No IP found in headers
+	return null;
 }
