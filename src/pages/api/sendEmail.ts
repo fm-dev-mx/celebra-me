@@ -1,153 +1,115 @@
 // src/pages/api/sendEmail.ts
 
-import type { APIRoute, APIContext } from 'astro';
+import type { APIRoute } from 'astro';
+import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
 import { EmailService } from '@/backend/services/emailService';
 import { SendGridProvider } from '@/backend/services/sendGridProvider';
-import { getClientIp } from '@/backend/utilities/getClientIp';
-import { rateLimiterManager, isRateLimited } from '@/backend/utilities/rateLimiterUtils';
-import validator from 'validator';
 import SupabaseClientManager from '@/infrastructure/supabaseClient';
+import { loggerMiddleware } from '@/backend/middlewares/loggerMiddleware';
+import { rateLimiterMiddleware } from '@/backend/middlewares/rateLimiterMiddleware';
+import { validationMiddleware } from '@/backend/middlewares/validationMiddleware';
+import { errorHandlerMiddleware } from '@/backend/middlewares/errorHandlerMiddleware';
+import { validationRules } from '@/core/utilities/validationRules';
+import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { jsonResponse } from '@/core/config/constants';
 
-const { trim, normalizeEmail } = validator;
-const logger = await import('@/backend/utilities/logger').then((module) => module.default);
+/**
+ * Initializes the EmailService with a SendGridProvider.
+ * This setup allows sending emails through SendGrid.
+ */
+const emailProvider = new SendGridProvider();
+const emailService = new EmailService(emailProvider);
 
 /**
- * Initialize the rate limiter with the desired configuration.
+ * Handles POST requests to the /api/sendEmail endpoint.
+ * This endpoint processes contact form submissions by validating input,
+ * sending an email, and storing the submission details in Supabase.
  *
- * This ensures that the rate limiter is set up once and reused across requests.
- */
-const initializeRateLimiter = async () => {
-	return await rateLimiterManager.getRateLimiter({
-		limit: 5,         // Maximum number of requests
-		duration: '15 m', // Time window for the rate limit
-		prefix: 'emailRateLimiter',
-	});
-};
-
-/**
- * Helper function to create a JSON response.
+ * The request is processed through a composed middleware stack that includes:
+ * - Error handling
+ * - Logging
+ * - Rate limiting
+ * - Validation
  *
- * @param data - The data to include in the JSON response.
- * @param status - The HTTP status code for the response.
- * @returns {Response} - The constructed JSON response.
+ * @type {APIRoute}
  */
+export const POST: APIRoute = composeMiddlewares(
+	/**
+	 * Main handler function for processing the email sending logic.
+	 *
+	 * @param {ContactFormAPIContext} context - The API context containing validated data and client IP.
+	 * @returns {Promise<Response>} - The HTTP response after processing the request.
+	 */
+	async (context: ContactFormAPIContext) => {
+		const { validatedData, clientIp } = context;
 
-
-/**
- * Handler for POST requests to send an email.
- *
- * @param {APIContext} context - The API context containing the request object.
- * @returns {Promise<Response>} - The response after processing the request.
- */
-export const POST: APIRoute = async ({ request }: APIContext) => {
-	let clientIP: string | null = null;
-
-	try {
-		// Retrieve the client's IP address from the request
-		clientIP = getClientIp(request);
-		logger.info(`Received request from IP: ${clientIP || 'Unknown'}`);
-
-		// Determine the rate limit key based on the environment and availability of clientIP
-		let rateLimitKey: string;
-
-		if (process.env.NODE_ENV === 'production') {
-			if (clientIP) {
-				rateLimitKey = clientIP;
-			} else {
-				// Fallback: Generate a unique key based on headers to avoid a shared key
-				const userAgent = request.headers.get('user-agent') || 'unknown';
-				const acceptLanguage = request.headers.get('accept-language') || 'unknown';
-				rateLimitKey = `no-ip-${userAgent}-${acceptLanguage}`;
-				logger.warn('Client IP not detected in production; using fallback rate limit key.');
-			}
-		} else {
-			// In development, use a static key to simplify testing without rate limiting per IP
-			rateLimitKey = 'development-key';
+		// Check if validation passed
+		if (!validatedData) {
+			return jsonResponse({ error: 'Validation failed.' }, 400);
 		}
 
-		// Apply rate limiting
-		const emailRateLimiter = await initializeRateLimiter();
-		const rateLimited = await isRateLimited(emailRateLimiter, rateLimitKey);
+		// Send the email using the EmailService
+		await emailService.sendEmail(validatedData);
 
-		if (rateLimited) {
-			logger.warn(`Rate limit exceeded for key: ${rateLimitKey}`);
-			return jsonResponse(
-				{
-					error: 'You have sent too many messages. Please try again later.',
-				},
-				429
-			);
-		}
-
-		// Validate that the Content-Type is application/json
-		const contentType = request.headers.get('Content-Type') || '';
-		if (!contentType.includes('application/json')) {
-			logger.error(`Invalid Content-Type: ${contentType}`);
-			return jsonResponse({ error: 'Invalid Content-Type. Expected application/json' }, 400);
-		}
-
-		// Parse and sanitize the request body
-		const parsedData = await request.json();
-		const { name, email, mobile, message } = parsedData;
-
-		const sanitizedData = {
-			name: trim(name),
-			email: normalizeEmail(email) || '',
-			mobile: trim(mobile || ''),
-			message: trim(message),
-		};
-
-		// Initialize the EmailService with SendGridProvider
-		const emailProvider = new SendGridProvider();
-		const emailService = new EmailService(emailProvider);
-
-		// Send the email using EmailService
-		await emailService.sendEmail(sanitizedData);
-		logger.info(`Email sent successfully for IP: ${clientIP || 'Unknown'}`);
-
-		// Store the submission details in Supabase
+		// Initialize Supabase client to store submission details
 		const supabase = await SupabaseClientManager.getInstance();
-		const { error: insertError } = await supabase
-			.from('contact_submissions')
-			.insert([
-				{
-					name: sanitizedData.name,
-					email: sanitizedData.email,
-					mobile: sanitizedData.mobile,
-					message: sanitizedData.message,
-					ip_address: clientIP || 'Unknown',
-					created_at: new Date().toISOString(),
-				},
-			]);
+		const { error: insertError } = await supabase.from('contact_submissions').insert([
+			{
+				...validatedData,
+				ip_address: clientIp || 'Unknown',
+				created_at: new Date().toISOString(),
+			},
+		]);
 
+		// Handle potential errors during data storage
 		if (insertError) {
-			logger.error(`Error storing submission data for IP: ${clientIP || 'Unknown'}`, { error: insertError.message });
-			return jsonResponse({ error: 'Failed to store submission data.' }, 500);
-		} else {
-			logger.info(`Submission data stored successfully for IP: ${clientIP || 'Unknown'}`);
+			throw new Error('Failed to store submission data.');
 		}
 
-		// Return a success response
-		return jsonResponse({
-			message: 'We have received your message and will respond shortly.',
-		});
-	} catch (error: unknown) {
-		let errorMessage = 'Unknown error';
-		if (error instanceof Error) {
-			errorMessage = error.message;
-			logger.error(`Error processing request for IP: ${clientIP || 'Unknown'}`, {
-				error: errorMessage,
-				stack: error.stack,
-			});
-		} else {
-			logger.error(`Error processing request for IP: ${clientIP || 'Unknown'}`, { error });
-		}
-		return jsonResponse({ error: 'An error occurred while sending your message.' }, 500);
-	}
-};
+		// Respond with a success message
+		return jsonResponse(
+			{ message: 'We have received your message and will respond shortly.' },
+			200
+		);
+	},
+	[
+		/**
+		 * Middleware to handle any unhandled errors in the request processing.
+		 * It ensures that errors are logged and a standardized error response is sent.
+		 */
+		errorHandlerMiddleware,
+
+		/**
+		 * Middleware to log incoming requests with details such as method, URL, and client IP.
+		 * This aids in monitoring and debugging API usage.
+		 */
+		loggerMiddleware,
+
+		/**
+		 * Middleware to enforce rate limiting on incoming requests.
+		 * Limits the number of requests a client can make within a specified time window.
+		 *
+		 * Configuration:
+		 * - limit: Maximum of 5 requests
+		 * - duration: 15 minutes
+		 * - prefix: Identifier for the rate limiter
+		 */
+		rateLimiterMiddleware({
+			limit: 5,
+			duration: '15 m',
+			prefix: 'emailRateLimiter',
+		}),
+
+		/**
+		 * Middleware to validate incoming request data against predefined rules.
+		 * Ensures that the data conforms to expected formats and constraints.
+		 */
+		validationMiddleware(validationRules),
+	]
+);
 
 /**
- * Disable prerendering for this API route.
+ * Disables prerendering for this API route.
+ * Ensures that the route is only accessible via API requests and not during static site generation.
  */
 export const prerender = false;
