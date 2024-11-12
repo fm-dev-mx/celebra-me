@@ -6,8 +6,6 @@ import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
 import RedisClient from '@/infrastructure/redisClient';
 import logger from '@/backend/utilities/logger';
 
-
-
 const rateLimiterCache = new Map<string, Ratelimit>();
 let redisClient: Redis | null = null;
 
@@ -82,7 +80,10 @@ export async function isRateLimited(rateLimiter: Ratelimit, key: string): Promis
 		return false;
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-		logger.error(`Rate limiting failed for key: ${key}. Error: ${errorMessage}`);
+		const errorStack = error instanceof Error ? error.stack : undefined;
+		logger.error(`Rate limiting failed for key: ${key}. Error: ${errorMessage}`, {
+			stack: errorStack,
+		});
 		// Allow access by default to prevent blocking legitimate requests if Redis is unavailable
 		return false;
 	}

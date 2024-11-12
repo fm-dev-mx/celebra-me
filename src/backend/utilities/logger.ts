@@ -8,11 +8,14 @@ const logLevel = process.env.LOG_LEVEL || (config.environment === 'production' ?
 const logger: Logger = createLogger({
 	level: logLevel,
 	format: format.combine(
+		format.errors({ stack: true }), // Include stack traces in error logs
+		format.splat(), // Enable string interpolation in log messages
 		config.environment !== 'production' ? format.colorize() : format.uncolorize(),
 		format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-		format.printf(({ timestamp, level, message, ...meta }) => {
+		format.printf(({ timestamp, level, message, stack, ...meta }) => {
 			const metaString = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-			return `[${timestamp}] ${level}: ${message} ${metaString}`;
+			const stackTrace = stack ? `\n${stack}` : '';
+			return `[${timestamp}] ${level}: ${message} ${metaString}${stackTrace}`;
 		})
 	),
 	transports: [

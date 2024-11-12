@@ -3,6 +3,7 @@
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
 import { getClientIp } from '../utilities/getClientIp';
 import logger from '../utilities/logger';
+import { Handler } from '@/core/types/handlers';
 
 /**
  * Logger middleware.
@@ -13,11 +14,11 @@ import logger from '../utilities/logger';
  * @returns A new handler function with logging applied.
  *
  * @example
- * export const POST: APIRoute = loggerMiddleware(async (context) => {
+ * export const POST: Handler = loggerMiddleware(async (context) => {
  *   // Handler code
  * });
  */
-export function loggerMiddleware(handler: (context: ContactFormAPIContext) => Promise<Response> | Response) {
+export function loggerMiddleware(handler: Handler): Handler {
 	return async (context: ContactFormAPIContext) => {
 		const { request } = context;
 		const method = request.method;

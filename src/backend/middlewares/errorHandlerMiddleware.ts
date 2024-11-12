@@ -1,8 +1,9 @@
 // src/backend/middlewares/errorHandlerMiddleware.ts
 
-import { APIContext, APIRoute } from 'astro';
+import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
 import logger from '@/backend/utilities/logger';
 import { jsonResponse } from '@/core/config/constants';
+import { Handler } from '@/core/types/handlers';
 
 /**
  * Error handling middleware.
@@ -13,12 +14,12 @@ import { jsonResponse } from '@/core/config/constants';
  * @returns A new handler function with error handling applied.
  *
  * @example
- * export const POST: APIRoute = errorHandlerMiddleware(async (context) => {
+ * export const POST: Handler = errorHandlerMiddleware(async (context) => {
  *   // Handler code
  * });
  */
-export function errorHandlerMiddleware(handler: APIRoute): APIRoute {
-	return async (context: APIContext) => {
+export function errorHandlerMiddleware(handler: Handler): Handler {
+	return async (context: ContactFormAPIContext) => {
 		try {
 			return await handler(context);
 		} catch (error: unknown) {

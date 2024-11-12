@@ -1,10 +1,12 @@
 // src/backend/middlewares/validationMiddleware.ts
 
-import { APIContext, APIRoute } from 'astro';
+import { Handler } from '@/core/types/handlers';
 import { validateInput } from '@/core/utilities/validateInput';
 import { ValidationRules } from '@/core/interfaces/validationRules.interface';
 import { jsonResponse } from '@/core/config/constants';
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+import { EmailData } from '@/core/interfaces/emailData.interface';
+
 /**
  * Validation middleware factory.
  *
@@ -14,12 +16,12 @@ import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.i
  * @returns A middleware function that validates the request and proceeds or responds with errors.
  *
  * @example
- * export const POST: APIRoute = validationMiddleware(validationRules)(async (context) => {
+ * export const POST: Handler = validationMiddleware(validationRules)(async (context) => {
  *   // Handler code
  * });
  */
 export function validationMiddleware(rules: ValidationRules) {
-	return (handler: (context: ContactFormAPIContext) => Promise<Response> | Response) => {
+	return (handler: Handler): Handler => {
 		return async (context: ContactFormAPIContext) => {
 			const { request } = context;
 
@@ -30,7 +32,7 @@ export function validationMiddleware(rules: ValidationRules) {
 			}
 
 			// Parse and sanitize the request body
-			let data;
+			let data: EmailData;
 			try {
 				data = await request.json();
 			} catch (e) {

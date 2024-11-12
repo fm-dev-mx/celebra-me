@@ -6,4 +6,5 @@ import { type EmailData } from './emailData.interface';
 export interface ContactFormAPIContext extends APIContext {
 	validatedData?: EmailData;
 	clientIp?: string;
+	// authToken?: string; // Optionally include authentication token if needed in future
 }
