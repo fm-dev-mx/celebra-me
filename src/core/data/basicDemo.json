@@ -88,7 +88,7 @@
 			"confirmText": "Confirmar Asistencia"
 		},
 		"socialMedia": {
-			"whatsapp": true,
+			"whatsapp": "https://whatsapp.com/evento",
 			"facebook": "https://facebook.com/evento",
 			"instagram": "https://instagram.com/evento",
 			"twitter": "https://twitter.com/evento"

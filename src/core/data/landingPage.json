@@ -94,9 +94,7 @@
 		"tiers": [
 			{
 				"title": "Invita con Estilo",
-				"title2": "Elegancia Digital",
 				"description": "Refleja tu buen gusto.",
-				"description2": "Tu evento, tan único como tú, merece una invitación que lo refleje.",
 				"price": {
 					"amount": "$699",
 					"currency": "MXN",
@@ -118,9 +116,7 @@
 			},
 			{
 				"title": "Celebración Premium",
-				"title2": "Experiencia Exclusiva",
 				"description": "Para eventos extraordinarios.",
-				"description2": "Eleva tu celebración con detalles que sorprenderán a tus invitados.",
 				"price": {
 					"amount": "$1,299",
 					"currency": "MXN",
@@ -141,7 +137,6 @@
 			{
 				"title": "Lujo Total",
 				"description": "La cúspide de la sofisticación.",
-				"description2": "Crea recuerdos inolvidables desde el primer momento.",
 				"price": {
 					"amount": "$1,999",
 					"currency": "MXN",

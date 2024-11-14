@@ -99,9 +99,7 @@ export interface PricingData {
  */
 export interface Tier {
 	title: string;
-	title2?: string; // Optional second title
 	description: string;
-	description2?: string; // Optional second description
 	price: Price;
 	features: string[];
 	href: string;
@@ -112,7 +110,7 @@ export interface Tier {
  * Interface for price information.
  */
 export interface Price {
-	amount: string;
+	amount: number;
 	currency?: string;
 	period?: string;
 }

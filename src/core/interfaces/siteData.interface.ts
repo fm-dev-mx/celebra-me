@@ -1,4 +1,22 @@
-// src/config/siteData.interface.ts
+// src/core/interfaces/siteData.interface.ts
+
+/**
+ * Interface for general site information.
+ */
+export interface SiteInfo {
+	title: string;
+	slogan?: string;
+	description: string;
+	lang: string;
+	charset: string;
+}
+
+/**
+ * Interface for meta tags and SEO-related information.
+ */
+export interface Meta extends SiteInfo {
+	seoData: SeoData;
+}
 
 /**
  * Interface representing the entire site data including metadata and site information.
@@ -6,28 +24,6 @@
 export interface SiteData {
 	meta: Meta;
 	siteInfo: SiteInfo;
-}
-
-/**
- * Interface for meta tags and SEO-related information.
- */
-export interface Meta {
-	title: string;
-	description: string;
-	lang: string;
-	charset: string;
-	seoData: SeoData;
-}
-
-/**
- * Interface for general site information.
- */
-export interface SiteInfo {
-	title: string;
-	slogan: string;
-	description: string;
-	lang: string;
-	charset: string;
 }
 
 /**
