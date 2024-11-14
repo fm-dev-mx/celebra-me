@@ -1,4 +1,4 @@
-// src/components/form/Input.tsx
+// src/frontend/components/form/Input.tsx
 import React from "react";
 
 /**
@@ -22,26 +22,15 @@ export type InputType =
 
 /**
  * Input component props interface.
- * @property {string} label - The text to display as the input label.
- * @property {string} [id] - The unique identifier for the input element.
- * @property {string} [className] - The class name to apply to the input element.
- * @property {InputType} type - The type of input to render (e.g., text, email, password).
- * @property {string} placeholder - The text to display as the input placeholder.
- * @property {boolean} [required] - Whether the input is required or not.
- * @property {string} value - The current value of the input.
- * @property {(event: React.ChangeEvent<HTMLInputElement>) => void} onChange - The function to call when the input value changes.
- * @property {(event: React.FocusEvent<HTMLInputElement>) => void} [onBlur] - The function to call when the input loses focus.
- * @property {string} name - The name of the input element.
- * @property {string} [error] - The error message to display if the input is invalid.
  */
 interface InputProps {
 	label: string;
-	id?: string;
+	id: string; // Made 'id' required
 	className?: string;
 	type: InputType;
 	placeholder: string;
 	required?: boolean;
-	value: string;
+	value: string | undefined;
 	onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 	onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 	name: string;
@@ -52,7 +41,6 @@ interface InputProps {
  * Input component.
  * It renders an input element with a label and an error message if the input is invalid.
  */
-
 const Input: React.FC<InputProps> = ({
 	id,
 	label,

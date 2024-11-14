@@ -12,7 +12,6 @@ import SupabaseClientManager from '@/infrastructure/supabaseClient';
  */
 export class EmailController {
 	private emailService: EmailService;
-	private supabase = SupabaseClientManager.getInstance();
 
 	/**
 	 * Constructs an EmailController with the given EmailService.
@@ -40,8 +39,10 @@ export class EmailController {
 			// Send the email using EmailService
 			await this.emailService.sendEmail(validatedData);
 
+			// Get the Supabase client instance directly
+			const supabase = await SupabaseClientManager.getInstance();
+
 			// Store the submission details in Supabase
-			const supabase = await this.supabase;
 			const { error: insertError } = await supabase
 				.from('contact_submissions')
 				.insert([
@@ -59,7 +60,7 @@ export class EmailController {
 
 			// Return a success response
 			return jsonResponse(
-				{ message: 'We have received your message and will respond shortly.' },
+				{ message: 'Hemos recibido tu mensaje, te respondemos muy pronto.' },
 				200
 			);
 		} catch (error) {
