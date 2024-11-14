@@ -1,5 +1,7 @@
 // src/core/config/constants.ts
 
+import { ContactFormData } from "../interfaces/contactFormData.interface";
+
 /**
  * Prefix for asset paths.
  */
@@ -13,5 +15,14 @@ export const jsonResponse = (data: Record<string, unknown>, status = 200): Respo
 		headers: { 'Content-Type': 'application/json' },
 	});
 };
+
+export const jsonPost = (data: ContactFormData) => ({
+	method: "POST",
+	headers: {
+		"Content-Type": "application/json",
+		Accept: "application/json",
+	},
+	body: JSON.stringify(data),
+});
 
 export const ASSET_PREFIX = "/";

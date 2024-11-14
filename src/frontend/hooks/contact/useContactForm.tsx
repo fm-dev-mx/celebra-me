@@ -3,28 +3,22 @@
 import { useState } from "react";
 import { validateInput } from "@/core/utilities/validateInput";
 import { validationRules } from "@/core/utilities/validationRules";
-
-/**
- * Contact form data interface.
- */
-interface ContactFormData {
-	name: string;
-	email: string;
-	mobile: string;
-	message: string;
-}
+import { ContactFormData } from "@/core/interfaces/contactFormData.interface";
+import { apiService } from "@/frontend/services/apiService";
+import { ApiResponse, ApiErrorResponse } from "@/core/interfaces/apiResponse.interface";
 
 /**
  * Custom hook to manage contact form state and handlers.
  */
 export const useContactForm = () => {
-	// State to manage the form data
-	const [formData, setFormData] = useState<ContactFormData>({
+	const initialFormData: ContactFormData = {
 		name: "",
 		email: "",
 		mobile: "",
 		message: "",
-	});
+	};
+	// State to manage the form data with optional fields
+	const [formData, setFormData] = useState<Partial<ContactFormData>>(initialFormData);
 
 	// State to store response messages from the server for user feedback
 	const [responseMessage, setResponseMessage] = useState<string | null>(null);
@@ -36,86 +30,74 @@ export const useContactForm = () => {
 	const [isRateLimited, setIsRateLimited] = useState(false);
 
 	// State to store client-side validation errors
-	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
 
-	// Handle form submission when the user clicks the submit button
+	/**
+	 * Sets response message and handles rate limiting based on the error message.
+	 * @param error - The API error response.
+	 */
+	const handleErrorResponse = (error: ApiErrorResponse) => {
+		if (error.error === "Too Many Requests") {
+			setIsRateLimited(true);
+			setResponseMessage("Has enviado demasiados mensajes. Intenta más tarde.");
+		} else {
+			setResponseMessage(error.error || "Hubo un error. Inténtalo de nuevo.");
+		}
+
+		if (error.errors) {
+			setErrors(error.errors);
+		}
+	};
+
+	/**
+	 * Handles form submission.
+	 * @param event - The form submission event.
+	 */
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		setIsSubmitting(true);
+		setIsRateLimited(false); // Reset rate limit state on new submission
+		setResponseMessage(null); // Clear previous response message
 
-		// Client-side validation using shared validation rules
-		const validationError = validateInput(
-			formData as unknown as Record<string, string>,
-			validationRules,
-		);
-		if (Object.keys(validationError).length > 0) {
-			setErrors(validationError);
+		// Client-side validation
+		const validationErrors = validateInput(formData, validationRules);
+		if (Object.keys(validationErrors).length > 0) {
+			setErrors(validationErrors);
 			setIsSubmitting(false);
 			return;
-		} else {
-			setErrors({});
 		}
+		setErrors({});
 
 		try {
-			// Sanitize the form data before sending
-			const sanitizedData = {
-				name: formData.name.trim(),
-				email: formData.email.trim(),
-				mobile: formData.mobile.trim(),
-				message: formData.message.trim(),
-			};
+			// Send the form data using the ApiService
+			const response: ApiResponse = await apiService.sendContactForm(
+				formData as ContactFormData,
+			);
 
-			// Send a POST request to the serverless function endpoint
-			const response = await fetch("/api/sendEmail", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json", // Ensures the server understands the request is JSON
-					Accept: "application/json", // Ensures the client expects a JSON response
-				},
-				body: JSON.stringify(sanitizedData), // Converts the sanitized form data to JSON
-			});
-
-			// Handle rate limit response or successful email sending response
-			if (response.status === 429) {
-				// Rate limit response
-				setIsRateLimited(true); // Activates rate-limiting state
-				setResponseMessage(
-					"Has enviado demasiados mensajes. Por favor, intenta de nuevo más tarde.",
-				);
-			} else if (response.ok) {
-				// Successful email sending
-				setIsRateLimited(false); // Reset rate-limiting state on success
-				setResponseMessage("Hemos recibido tu mensaje, te responderemos muy pronto.");
-				setFormData({
-					name: "",
-					email: "",
-					mobile: "",
-					message: "",
-				});
+			if ("message" in response) {
+				// Success response
+				setResponseMessage(response.message);
+				setFormData(initialFormData); // Reset the form fields
 			} else {
-				// If the server response indicates an error, parse and log the error details
-				const errorData = await response.json();
-				console.error("Error data from server:", errorData.fieldErrors);
-				setResponseMessage("Ha ocurrido un error al enviar el mensaje.");
+				// Handle error response
+				handleErrorResponse(response as ApiErrorResponse);
 			}
-		} catch (error: unknown) {
-			// Handle network errors or unexpected exceptions
-			if (error instanceof Error) {
-				console.error("Network or unexpected error:", error.message);
-			} else {
-				console.error("An unknown error occurred.");
-			}
-			setResponseMessage("Ha ocurrido un error al enviar el mensaje.");
+		} catch (error) {
+			// Handle network or unexpected errors
+			handleErrorResponse(error as ApiErrorResponse);
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	// Handle form input change when the user types in the input fields
+	/**
+	 * Handles form input changes.
+	 * @param event - The input change event.
+	 */
 	const handleInputChange = (
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
-		const { name, value } = event.target;
+		const { name, value } = event.target as { name: keyof ContactFormData; value: string };
 
 		// Update the form data state
 		setFormData((prevFormData) => ({
@@ -124,24 +106,31 @@ export const useContactForm = () => {
 		}));
 	};
 
-	// Handle the blur event of the input fields
+	/**
+	 * Handles input field blur event for validation.
+	 * @param event - The blur event.
+	 */
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		const { name, value } = event.target;
+		const { name, value } = event.target as { name: keyof ContactFormData; value: string };
 
 		// Validate only the field that just lost focus using shared validation rules
-		const fieldErrors = validateInput(
-			{ [name]: value },
-			{ [name]: validationRules[name as keyof typeof validationRules] },
-		);
+		const fieldErrors = validateInput({ [name]: value }, { [name]: validationRules[name] });
 
 		// Update the error state with any validation errors
-		setErrors((prevErrors) => ({
-			...prevErrors,
-			[name]: fieldErrors[name],
-		}));
+		setErrors((prevErrors) => {
+			const newErrors = { ...prevErrors };
+			if (fieldErrors[name]) {
+				newErrors[name] = fieldErrors[name];
+			} else {
+				delete newErrors[name]; // Remove error if field is valid
+			}
+			return newErrors;
+		});
 	};
 
-	// Determine the button text based on the current state
+	/**
+	 * Determines the submit button text based on the current state.
+	 */
 	const getButtonText = () => {
 		if (isSubmitting) return "Enviando...";
 		if (isRateLimited) return "Demasiados intentos";

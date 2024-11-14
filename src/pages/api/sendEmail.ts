@@ -28,14 +28,14 @@ export const POST: APIRoute = composeMiddlewares(
 	},
 	[
 		// Middlewares are applied in the order they appear in the array
-		errorHandlerMiddleware,
-		loggerMiddleware,
+		validationMiddleware(validationRules),
 		rateLimiterMiddleware({
 			limit: 5,
 			duration: '15 m',
 			prefix: 'emailRateLimiter',
 		}),
-		validationMiddleware(validationRules),
+		loggerMiddleware,
+		errorHandlerMiddleware,
 	]
 );
 
