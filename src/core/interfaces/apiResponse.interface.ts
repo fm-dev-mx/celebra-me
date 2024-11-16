@@ -12,7 +12,7 @@ export interface ValidationErrors {
  * Interface representing a successful API response.
  */
 export interface ApiSuccessResponse {
-	success: true; // Added discriminant property
+	success: true;
 	message: string;
 }
 
@@ -20,8 +20,8 @@ export interface ApiSuccessResponse {
  * Interface representing an error API response.
  */
 export interface ApiErrorResponse {
-	success: false; // Added discriminant property
-	error: string;
+	success: false;
+	message: string;
 	errors?: ValidationErrors;
 }
 

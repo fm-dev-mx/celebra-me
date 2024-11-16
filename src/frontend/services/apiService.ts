@@ -1,7 +1,7 @@
 // src/frontend/services/apiService.ts
 
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { ApiErrorResponse, ApiResponse } from '@/core/interfaces/apiResponse.interface';
+import { ApiResponse } from '@/core/interfaces/apiResponse.interface';
 import { jsonPost } from '@/core/config/constants';
 
 /**
@@ -24,7 +24,7 @@ class ApiService {
 				responseData = await response.json();
 			} catch (parseError) {
 				// If parsing fails, throw a generic error
-				throw { error: 'Invalid response from server.' };
+				throw { success: false, message: 'Invalid response from server.' };
 			}
 
 			if (!response.ok) {
@@ -37,16 +37,15 @@ class ApiService {
 			// Handle network or unexpected errors
 			if (error instanceof TypeError) {
 				// Network error or similar
-				throw { error: 'Network error. Please try again later.' };
+				throw { success: false, message: 'Network error. Please try again later.' };
 			}
 
-			// If error has 'error' property, assume it's an ApiErrorResponse
-			if ((error as ApiErrorResponse).error) {
-				// Return or throw a standardized error object
+			// If error is already in ApiErrorResponse format, rethrow it
+			if ((error as ApiResponse).success === false) {
 				throw error;
 			} else {
 				// Return a generic error message in the expected format
-				throw { error: 'Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.' };
+				throw { success: false, message: 'Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.' };
 			}
 		}
 	}

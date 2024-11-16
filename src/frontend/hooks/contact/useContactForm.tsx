@@ -5,7 +5,7 @@ import { validateInput } from "@/core/utilities/validateInput";
 import { validationRules } from "@/core/utilities/validationRules";
 import { ContactFormData } from "@/core/interfaces/contactFormData.interface";
 import { apiService } from "@/frontend/services/apiService";
-import { ApiResponse, ApiErrorResponse } from "@/core/interfaces/apiResponse.interface";
+import { ApiResponse } from "@/core/interfaces/apiResponse.interface";
 
 /**
  * Custom hook to manage contact form state and handlers.
@@ -36,15 +36,15 @@ export const useContactForm = () => {
 	 * Sets response message and handles rate limiting based on the error message.
 	 * @param error - The API error response.
 	 */
-	const handleErrorResponse = (error: ApiErrorResponse) => {
-		if (error.error === "Too Many Requests") {
+	const handleErrorResponse = (error: ApiResponse) => {
+		if (!error.success && error.message === "Too Many Requests") {
 			setIsRateLimited(true);
 			setResponseMessage("Has enviado demasiados mensajes. Intenta más tarde.");
 		} else {
-			setResponseMessage(error.error || "Hubo un error. Inténtalo de nuevo.");
+			setResponseMessage(error.message || "Hubo un error. Inténtalo de nuevo.");
 		}
 
-		if (error.errors) {
+		if (!error.success && error.errors) {
 			setErrors(error.errors);
 		}
 	};
@@ -74,17 +74,17 @@ export const useContactForm = () => {
 				formData as ContactFormData,
 			);
 
-			if ("message" in response) {
+			if (response.success) {
 				// Success response
 				setResponseMessage(response.message);
 				setFormData(initialFormData); // Reset the form fields
 			} else {
 				// Handle error response
-				handleErrorResponse(response as ApiErrorResponse);
+				handleErrorResponse(response);
 			}
 		} catch (error) {
 			// Handle network or unexpected errors
-			handleErrorResponse(error as ApiErrorResponse);
+			handleErrorResponse(error as ApiResponse);
 		} finally {
 			setIsSubmitting(false);
 		}
