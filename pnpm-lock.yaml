@@ -125,7 +125,7 @@ importers:
         version: 9.1.0(eslint@9.12.0(jiti@1.21.6))
       eslint-config-standard:
         specifier: 17.1.0
-        version: 17.1.0(eslint-plugin-import@2.31.0)(eslint-plugin-n@16.6.2(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-promise@6.6.0(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6))
+        version: 17.1.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-n@16.6.2(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-promise@6.6.0(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6))
       eslint-import-resolver-typescript:
         specifier: ^3.6.3
         version: 3.6.3(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@9.12.0(jiti@1.21.6))
@@ -1978,8 +1978,8 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  cross-spawn@7.0.3:
-    resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
+  cross-spawn@7.0.5:
+    resolution: {integrity: sha512-ZVJrKKYunU38/76t0RMOulHOnUcbU9GbpWKAOZ0mhjr7CX6FVrH+4FrAapSOekrgFQ3f/8gwMEuIft0aKq6Hug==}
     engines: {node: '>= 8'}
 
   crypto-js@4.2.0:
@@ -7322,7 +7322,7 @@ snapshots:
 
   create-require@1.1.1: {}
 
-  cross-spawn@7.0.3:
+  cross-spawn@7.0.5:
     dependencies:
       path-key: 3.1.1
       shebang-command: 2.0.0
@@ -7888,7 +7888,7 @@ snapshots:
     dependencies:
       eslint: 9.12.0(jiti@1.21.6)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.31.0)(eslint-plugin-n@16.6.2(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-promise@6.6.0(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6)):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-n@16.6.2(eslint@9.12.0(jiti@1.21.6)))(eslint-plugin-promise@6.6.0(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6)):
     dependencies:
       eslint: 9.12.0(jiti@1.21.6)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6))
@@ -7909,7 +7909,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 9.12.0(jiti@1.21.6)
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6))
       fast-glob: 3.3.2
       get-tsconfig: 4.8.1
       is-bun-module: 1.2.1
@@ -7922,7 +7922,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6)):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -7966,7 +7966,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.12.0(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.12.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.9.0(eslint@9.12.0(jiti@1.21.6))(typescript@5.6.3))(eslint-plugin-import@2.31.0)(eslint@9.12.0(jiti@1.21.6)))(eslint@9.12.0(jiti@1.21.6))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -8063,7 +8063,7 @@ snapshots:
       '@types/json-schema': 7.0.15
       ajv: 6.12.6
       chalk: 4.1.2
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.5
       debug: 4.3.7
       escape-string-regexp: 4.0.0
       eslint-scope: 8.1.0
@@ -8127,7 +8127,7 @@ snapshots:
 
   execa@3.2.0:
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.5
       get-stream: 5.2.0
       human-signals: 1.1.1
       is-stream: 2.0.1
@@ -8300,7 +8300,7 @@ snapshots:
 
   foreground-child@3.3.0:
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.5
       signal-exit: 4.1.0
 
   form-data@4.0.1:
