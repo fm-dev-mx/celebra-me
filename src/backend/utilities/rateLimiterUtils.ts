@@ -64,13 +64,25 @@ export async function getRateLimiter(config: RateLimiterConfig): Promise<Ratelim
 export async function isRateLimited(rateLimiter: Ratelimit, key: string): Promise<boolean> {
 	if (!key) {
 		logger.warn('Rate limiting failed: key is undefined or empty.');
-		return false; // Allow the request if the key is invalid
+		return true;
 	}
 
 	try {
 		const { success, limit, remaining, reset } = await rateLimiter.limit(key);
 
-		const resetDate = reset > 0 ? new Date(reset * 1000).toISOString() : 'Unknown';
+		// Convert reset timestamp to formatted string
+		const resetDate = reset > 0
+			? new Date(reset).toLocaleString('es-MX', {
+				timeZone: 'America/Mazatlan', // Cambia si necesitas otra zona horaria
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+			})
+			: 'Unknown';
+
 		if (!success) {
 			logger.warn(
 				`Rate limit exceeded for key: ${key}. Limit: ${limit}, Remaining: ${remaining}, Reset: ${resetDate}`
