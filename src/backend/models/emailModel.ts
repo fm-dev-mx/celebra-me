@@ -12,7 +12,7 @@ export class EmailModel {
 	 * Creates an instance of EmailModel.
 	 * @param emailData - The email data to initialize the model with.
 	 */
-	constructor(private emailData: EmailData) { }
+	constructor(private emailData: Partial<EmailData>) { }
 
 	/**
 	 * Validates the email data using the defined validation rules.
@@ -27,11 +27,10 @@ export class EmailModel {
 	 * Retrieves the email data.
 	 * @returns The email data.
 	 */
-	public getData(): EmailData {
+	public getData(): Partial<EmailData> {
 		return this.emailData;
 	}
 }
-
 /**
  * Example Usage:
  *

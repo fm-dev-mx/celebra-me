@@ -32,7 +32,7 @@ export function validationMiddleware(rules: ValidationRules) {
 			}
 
 			// Parse and sanitize the request body
-			let data: EmailData;
+			let data: Partial<EmailData>;
 			try {
 				data = await request.json();
 			} catch (e) {

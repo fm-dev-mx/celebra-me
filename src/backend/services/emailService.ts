@@ -24,7 +24,7 @@ export class EmailService {
 	 * @param data - The email data to send.
 	 * @throws Will throw an error if email sending fails.
 	 */
-	async sendEmail(data: EmailData): Promise<void> {
+	async sendEmail(data: Partial<EmailData>): Promise<void> {
 		try {
 			await this.emailProvider.sendEmail(data);
 		} catch (error: unknown) {

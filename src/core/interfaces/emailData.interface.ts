@@ -5,12 +5,6 @@
  */
 export interface EmailData {
 	/**
-	 * The key-value pairs of the email data.
-	 * - Required field.
-	 * - Must be between 2 and 50 characters.
-	 */
-	[key: string]: string | undefined;
-	/**
 	 * The name of the sender.
 	 * - Required field.
 	 * - Must be between 2 and 50 characters.
