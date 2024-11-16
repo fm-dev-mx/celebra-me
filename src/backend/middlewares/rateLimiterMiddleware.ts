@@ -7,7 +7,6 @@ import logger from '@/backend/utilities/logger';
 import { jsonResponse } from '@/core/config/constants';
 import { Handler } from '@/core/types/handlers';
 import { getClientIp } from '../utilities/getClientIp';
-import { ApiResponse } from '@/core/interfaces/apiResponse.interface';
 
 /**
  * Rate limiter middleware factory.
@@ -39,7 +38,7 @@ export function rateLimiterMiddleware(config: RateLimiterConfig) {
 				const limited = await isRateLimited(rateLimiter, context.clientIp);
 
 				if (limited) {
-					return jsonResponse({ error: 'Too Many Requests' }, 429);
+					return jsonResponse({ success: false, message: 'Too Many Requests' }, 429);
 				}
 
 				return await handler(context);

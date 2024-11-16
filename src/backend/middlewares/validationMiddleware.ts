@@ -28,7 +28,7 @@ export function validationMiddleware(rules: ValidationRules) {
 			// Ensure the Content-Type is application/json
 			const contentType = request.headers.get('Content-Type') || '';
 			if (!contentType.includes('application/json')) {
-				return jsonResponse({ error: 'Invalid Content-Type. Expected application/json' }, 400);
+				return jsonResponse({ success: false, message: 'Invalid Content-Type. Expected application/json' }, 400);
 			}
 
 			// Parse and sanitize the request body
@@ -36,7 +36,7 @@ export function validationMiddleware(rules: ValidationRules) {
 			try {
 				data = await request.json();
 			} catch (e) {
-				return jsonResponse({ error: 'Invalid JSON payload' }, 400);
+				return jsonResponse({ success: false, message: 'Invalid JSON payload' }, 400);
 			}
 
 			// Perform validation
@@ -44,7 +44,7 @@ export function validationMiddleware(rules: ValidationRules) {
 
 			if (Object.keys(validationErrors).length > 0) {
 				// Return validation errors to the client
-				return jsonResponse({ errors: validationErrors }, 400);
+				return jsonResponse({ success: false, errors: validationErrors }, 400);
 			}
 
 			// Assign validated data directly to context

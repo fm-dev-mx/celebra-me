@@ -74,14 +74,8 @@ export const useContactForm = () => {
 				formData as ContactFormData,
 			);
 
-			if (response.success) {
-				// Success response
-				setResponseMessage(response.message);
-				setFormData(initialFormData); // Reset the form fields
-			} else {
-				// Handle error response
-				handleErrorResponse(response);
-			}
+			setResponseMessage(response.message);
+			setFormData(initialFormData); // Reset the form fields
 		} catch (error) {
 			// Handle network or unexpected errors
 			handleErrorResponse(error as ApiResponse);

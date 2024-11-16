@@ -32,7 +32,7 @@ export class EmailController {
 		if (!validatedData) {
 			// This should not happen if validation middleware is working correctly
 			logger.error('Validated data is missing in the context.');
-			return jsonResponse({ error: 'Validation failed.' }, 400);
+			return jsonResponse({ success: false, message: 'Validation failed.' }, 400);
 		}
 
 		try {
@@ -60,7 +60,7 @@ export class EmailController {
 
 			// Return a success response
 			return jsonResponse(
-				{ message: 'Hemos recibido tu mensaje, te respondemos muy pronto.' },
+				{ success: true, message: 'Hemos recibido tu mensaje, te respondemos muy pronto.' },
 				200
 			);
 		} catch (error) {

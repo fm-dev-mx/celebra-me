@@ -41,7 +41,7 @@ export function errorHandlerMiddleware(handler: Handler): Handler {
 
 			// Send a generic error response without exposing sensitive details
 			return jsonResponse(
-				{ error: 'An internal server error occurred. Please try again later.' },
+				{ success: false, message: 'An internal server error occurred. Please try again later.' },
 				500
 			);
 		}
