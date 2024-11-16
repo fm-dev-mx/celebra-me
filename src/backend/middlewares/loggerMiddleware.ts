@@ -1,7 +1,6 @@
 // src/backend/middlewares/loggerMiddleware.ts
 
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
-import { getClientIp } from '../utilities/getClientIp';
 import logger from '../utilities/logger';
 import { Handler } from '@/core/types/handlers';
 
@@ -23,12 +22,9 @@ export function loggerMiddleware(handler: Handler): Handler {
 		const { request } = context;
 		const method = request.method;
 		const url = request.url;
-		const clientIp = getClientIp(request) || 'Unknown IP';
 
-		logger.info(`Incoming request: ${method} ${url} from ${clientIp}`);
+		logger.info(`Incoming request: ${method} ${url} from ${context.clientIp}`);
 
-		// Assign client IP directly to context
-		context.clientIp = clientIp;
 
 		return handler(context);
 	};
