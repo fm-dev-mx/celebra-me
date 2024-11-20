@@ -22,22 +22,18 @@ export const useContactForm = () => {
 
 	// State to store response messages from the server for user feedback
 	const [responseMessage, setResponseMessage] = useState<string | null>(null);
-
-	// State to track submission status
 	const [isSubmitting, setIsSubmitting] = useState(false);
-
-	// State to handle rate limiting
 	const [isRateLimited, setIsRateLimited] = useState(false);
-
-	// State to store client-side validation errors
-	const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
+	const [errors, setErrors] = useState<Record<keyof ContactFormData, string>>(
+		{} as Record<keyof ContactFormData, string>,
+	);
 
 	/**
-	 * Sets response message and handles rate limiting based on the error message.
+	 * Sets response message and handles rate limiting based on the error status code.
 	 * @param error - The API error response.
 	 */
 	const handleErrorResponse = (error: ApiResponse) => {
-		if (!error.success && error.message === "Too Many Requests") {
+		if (!error.success && error.statusCode === 429) {
 			setIsRateLimited(true);
 			setResponseMessage("Has enviado demasiados mensajes. Intenta más tarde.");
 		} else {
@@ -45,10 +41,9 @@ export const useContactForm = () => {
 		}
 
 		if (!error.success && error.errors) {
-			setErrors(error.errors);
+			setErrors(error.errors as Record<keyof ContactFormData, string>);
 		}
 	};
-
 	/**
 	 * Handles form submission.
 	 * @param event - The form submission event.
@@ -66,7 +61,7 @@ export const useContactForm = () => {
 			setIsSubmitting(false);
 			return;
 		}
-		setErrors({});
+		setErrors({} as Record<keyof ContactFormData, string>); // Reset validation errors
 
 		try {
 			// Send the form data using the ApiService

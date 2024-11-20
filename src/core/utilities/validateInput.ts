@@ -1,6 +1,7 @@
 // src/core/utilities/validateInput.ts
 
 import { ValidationRules } from '@/core/interfaces/validationRules.interface';
+import { ContactFormData } from '../interfaces/contactFormData.interface';
 
 /**
  * Validates input data against the provided validation rules.
@@ -9,14 +10,14 @@ import { ValidationRules } from '@/core/interfaces/validationRules.interface';
  * @returns An object containing validation errors, if any.
  */
 export const validateInput = (
-	data: Partial<Record<string, string>>,
+	data: ContactFormData | Partial<ContactFormData>,
 	rules: ValidationRules,
 ): Record<string, string> => {
 	const errors: Record<string, string> = {};
 
 	for (const fieldName in rules) {
 		const fieldRules = rules[fieldName];
-		const value = data[fieldName] || '';
+		const value = data[fieldName as keyof ContactFormData] || '';
 
 		for (const rule of fieldRules) {
 			if (!rule.validator(value)) {

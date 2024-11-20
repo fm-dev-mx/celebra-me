@@ -13,5 +13,5 @@ export interface EmailProvider {
 	 * @param data - The email data to send.
 	 * @throws Will throw an error if the email fails to send.
 	 */
-	sendEmail(data: Partial<EmailData>): Promise<void>;
+	sendEmail(data: EmailData): Promise<void>;
 }

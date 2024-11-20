@@ -1,10 +1,10 @@
 // src/core/interfaces/contactFormAPIContext.interface.ts
 
 import { APIContext } from 'astro';
-import { type EmailData } from './emailData.interface';
+import { ContactFormData } from './contactFormData.interface';
 
 export interface ContactFormAPIContext extends APIContext {
-	validatedData?: Partial<EmailData>;
+	validatedData?: ContactFormData;
 	clientIp?: string;
 	// authToken?: string; // Optionally include authentication token if needed in future
 }
