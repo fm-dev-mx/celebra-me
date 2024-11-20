@@ -2,10 +2,9 @@
 
 /**
  * Interface representing validation errors for form fields.
- * Allows multiple error messages per field.
  */
 export interface ValidationErrors {
-	[field: string]: string[];
+	[field: string]: string;
 }
 
 /**
@@ -23,6 +22,7 @@ export interface ApiErrorResponse {
 	success: false;
 	message: string;
 	errors?: ValidationErrors;
+	statusCode?: number;
 }
 
 /**

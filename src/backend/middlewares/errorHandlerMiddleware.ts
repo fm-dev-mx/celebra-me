@@ -4,6 +4,8 @@ import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.i
 import logger from '@/backend/utilities/logger';
 import { jsonResponse } from '@/core/config/constants';
 import { Handler } from '@/core/types/handlers';
+import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
+import { isApiErrorResponse } from '@/core/guards/isApiResponse';
 
 /**
  * Error handling middleware.
@@ -12,38 +14,35 @@ import { Handler } from '@/core/types/handlers';
  *
  * @param handler - The next handler function to call.
  * @returns A new handler function with error handling applied.
- *
- * @example
- * export const POST: Handler = errorHandlerMiddleware(async (context) => {
- *   // Handler code
- * });
  */
 export function errorHandlerMiddleware(handler: Handler): Handler {
 	return async (context: ContactFormAPIContext) => {
 		try {
 			return await handler(context);
-		} catch (error: unknown) {
-			let errorMessage = 'Unknown error';
-			let errorStack: string | undefined;
+		} catch (error) {
+			// Default error response
+			let statusCode = 500;
+			let errorMessage = 'An internal server error occurred. Please try again later.';
+			let errorDetails: string | undefined;
 
-			if (error instanceof Error) {
-				errorMessage = error.message;
-				errorStack = error.stack;
-			} else if (typeof error === 'string') {
-				errorMessage = error;
+			// Check if the error is of type ApiErrorResponse
+			if (isApiErrorResponse(error)) {
+				const apiError = error as ApiErrorResponse;
+				statusCode = apiError.statusCode || 400;
+				errorMessage = apiError.message;
+			} else if (error instanceof Error) {
+				// For other Error instances, log the stack trace
+				errorDetails = error.stack;
 			}
 
 			// Log the error uniformly
 			logger.error('Unhandled error occurred', {
-				error: errorMessage,
-				stack: errorStack,
+				error: error instanceof Error ? error.message : String(error),
+				stack: errorDetails,
 			});
 
-			// Send a generic error response without exposing sensitive details
-			return jsonResponse(
-				{ success: false, message: 'An internal server error occurred. Please try again later.' },
-				500
-			);
+			// Send a standardized error response
+			return jsonResponse({ success: false, message: errorMessage }, statusCode);
 		}
 	};
 }
