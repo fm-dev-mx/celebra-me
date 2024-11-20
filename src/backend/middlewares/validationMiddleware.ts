@@ -5,7 +5,6 @@ import { validateInput } from '@/core/utilities/validateInput';
 import { ValidationRules } from '@/core/interfaces/validationRules.interface';
 import { jsonResponse } from '@/core/config/constants';
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
-import { EmailData } from '@/core/interfaces/emailData.interface';
 
 /**
  * Validation middleware factory.
@@ -14,15 +13,10 @@ import { EmailData } from '@/core/interfaces/emailData.interface';
  *
  * @param rules - Validation rules to apply to the request data.
  * @returns A middleware function that validates the request and proceeds or responds with errors.
- *
- * @example
- * export const POST: Handler = validationMiddleware(validationRules)(async (context) => {
- *   // Handler code
- * });
  */
 export function validationMiddleware(rules: ValidationRules) {
-	return (handler: Handler): Handler => {
-		return async (context: ContactFormAPIContext) => {
+	return (handler: (context: ContactFormAPIContext) => Promise<Response> | Response): Handler => {
+		return async (context) => {
 			const { request } = context;
 
 			// Ensure the Content-Type is application/json
@@ -32,24 +26,20 @@ export function validationMiddleware(rules: ValidationRules) {
 			}
 
 			// Parse and sanitize the request body
-			let data: Partial<EmailData>;
 			try {
-				data = await request.json();
+				context.validatedData = await request.json();
 			} catch (e) {
 				return jsonResponse({ success: false, message: 'Invalid JSON payload' }, 400);
 			}
 
-			// Perform validation
-			const validationErrors = validateInput(data, rules);
+			const validationErrors = context.validatedData ? validateInput(context.validatedData, rules) : {};
 
 			if (Object.keys(validationErrors).length > 0) {
-				// Return validation errors to the client
+				// Return validation errors as a JSON response
 				return jsonResponse({ success: false, errors: validationErrors }, 400);
 			}
 
-			// Assign validated data directly to context
-			context.validatedData = data;
-
+			// Pass validatedData to handler
 			return handler(context);
 		};
 	};

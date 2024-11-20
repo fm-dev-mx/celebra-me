@@ -1,34 +1,41 @@
-// src/core/interfaces/emailData.interface.ts
-
-/**
- * Interface representing the structure of email data.
- */
 export interface EmailData {
 	/**
-	 * The name of the sender.
-	 * - Required field.
-	 * - Must be between 2 and 50 characters.
+	 * The email address of the recipient(s).
 	 */
-	name: string;
+	to: string | string[];
 
 	/**
 	 * The email address of the sender.
-	 * - Required field.
-	 * - Must be a valid email format.
 	 */
-	email: string;
+	from: string;
 
 	/**
-	 * The mobile phone number of the sender.
-	 * - Optional field.
-	 * - If provided, must be a valid phone number.
+	 * The subject of the email.
 	 */
-	mobile?: string;
+	subject: string;
 
 	/**
-	 * The message content.
-	 * - Required field.
-	 * - Must be between 10 and 500 characters.
+	 * The body of the email, as plain text or HTML.
 	 */
-	message: string;
+	text?: string;
+
+	/**
+	 * The HTML content of the email.
+	 */
+	html?: string;
+
+	/**
+	 * Optional list of email addresses to CC.
+	 */
+	cc?: string | string[];
+
+	/**
+	 * Optional list of email addresses to BCC.
+	 */
+	bcc?: string | string[];
+
+	/**
+	 * Optional email address for replies.
+	 */
+	replyTo?: string | string[];
 }
