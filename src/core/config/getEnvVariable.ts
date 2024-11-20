@@ -1,4 +1,3 @@
-// src/core/config/getEnvVariable.ts
 /**
  * Helper function to retrieve environment variables.
  * Throws an error if a variable is missing.
@@ -8,14 +7,16 @@
 
 export const getEnvVariable = (key: string): string => {
 	const ENVIRONMENT = process.env.NODE_ENV || 'development';
+	const isVercel = process.env.VERCEL === '1';
+
 	const value =
-		ENVIRONMENT === 'production'
+		ENVIRONMENT === 'production' || isVercel
 			? process.env[key]
 			: import.meta.env[key];
 
 	if (!value) {
 		const errorMessage = `Environment variable ${key} is missing.`;
-		if (ENVIRONMENT !== 'production') {
+		if (ENVIRONMENT !== 'production' && !isVercel) {
 			console.warn(errorMessage);
 		} else {
 			throw new Error(errorMessage);
@@ -23,4 +24,3 @@ export const getEnvVariable = (key: string): string => {
 	}
 	return value!;
 };
-
