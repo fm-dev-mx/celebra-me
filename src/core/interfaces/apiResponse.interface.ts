@@ -13,6 +13,7 @@ export interface ValidationErrors {
 export interface ApiSuccessResponse {
 	success: true;
 	message: string;
+	statusCode: number;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface ApiErrorResponse {
 	success: false;
 	message: string;
 	errors?: ValidationErrors;
-	statusCode?: number;
+	statusCode: number;
 }
 
 /**

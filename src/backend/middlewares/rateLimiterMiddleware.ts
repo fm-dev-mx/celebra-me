@@ -2,10 +2,8 @@
 
 import { isRateLimited, getRateLimiter } from '@/backend/utilities/rateLimiterUtils';
 import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
-import logger from '@/backend/utilities/logger';
-import { jsonResponse } from '@/core/config/constants';
 import { Handler } from '@/core/types/handlers';
-import { getClientIp } from '../utilities/getClientIp';
+import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
 
 /**
  * Rate limiter middleware factory.
@@ -17,28 +15,28 @@ import { getClientIp } from '../utilities/getClientIp';
 export function rateLimiterMiddleware(config: RateLimiterConfig) {
 	return (handler: Handler): Handler => {
 		return async (context) => {
-			context.clientIp = getClientIp(context.request) || 'Unknown IP';
+			const clientIp = context.clientIp;
 
-			if (context.clientIp === 'Unknown IP') {
-				logger.warn('Client IP not detected; denying request.');
-				return jsonResponse({ success: false, message: 'Unable to determine client IP' }, 400);
+			if (!clientIp) {
+				throw {
+					success: false,
+					statusCode: 400,
+					message: 'Unable to determine client IP',
+				} as ApiErrorResponse;
 			}
 
-			try {
-				const rateLimiter = await getRateLimiter(config);
-				const limited = await isRateLimited(rateLimiter, context.clientIp);
+			const rateLimiter = await getRateLimiter(config);
+			const limited = await isRateLimited(rateLimiter, clientIp);
 
-				if (limited) {
-					return jsonResponse({ success: false, message: 'Has enviado demasiados mensajes. Intenta más tarde.' }, 429);
-				}
-
-				return await handler(context);
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-				logger.error(`Error in rate limiter middleware for IP: ${context.clientIp}`, { error: errorMessage });
-				// Fail securely: deny the request if rate limiting fails
-				return jsonResponse({ success: false, message: 'Service Unavailable' }, 503);
+			if (limited) {
+				throw {
+					success: false,
+					statusCode: 429,
+					message: 'Too many requests. Please try again later.',
+				} as ApiErrorResponse;
 			}
+
+			return handler(context);
 		};
 	};
 }

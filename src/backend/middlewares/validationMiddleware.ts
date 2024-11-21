@@ -3,8 +3,8 @@
 import { Handler } from '@/core/types/handlers';
 import { validateInput } from '@/core/utilities/validateInput';
 import { ValidationRules } from '@/core/interfaces/validationRules.interface';
-import { jsonResponse } from '@/core/config/constants';
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
+import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
 
 /**
  * Validation middleware factory.
@@ -15,31 +15,46 @@ import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.i
  * @returns A middleware function that validates the request and proceeds or responds with errors.
  */
 export function validationMiddleware(rules: ValidationRules) {
-	return (handler: (context: ContactFormAPIContext) => Promise<Response> | Response): Handler => {
+	return (handler: Handler): Handler => {
 		return async (context) => {
 			const { request } = context;
 
 			// Ensure the Content-Type is application/json
 			const contentType = request.headers.get('Content-Type') || '';
 			if (!contentType.includes('application/json')) {
-				return jsonResponse({ success: false, message: 'Invalid Content-Type. Expected application/json' }, 400);
+				throw {
+					success: false,
+					statusCode: 400,
+					message: 'Invalid Content-Type. Expected application/json',
+				} as ApiErrorResponse;
 			}
 
 			// Parse and sanitize the request body
+			let data: ContactFormData;
 			try {
-				context.validatedData = await request.json();
+				data = await request.json();
 			} catch (e) {
-				return jsonResponse({ success: false, message: 'Invalid JSON payload' }, 400);
+				throw {
+					success: false,
+					statusCode: 400,
+					message: 'Invalid JSON payload',
+				} as ApiErrorResponse;
 			}
 
-			const validationErrors = context.validatedData ? validateInput(context.validatedData, rules) : {};
+			const validationErrors = validateInput(data, rules);
 
 			if (Object.keys(validationErrors).length > 0) {
-				// Return validation errors as a JSON response
-				return jsonResponse({ success: false, errors: validationErrors }, 400);
+				// Throw validation errors
+				throw {
+					success: false,
+					statusCode: 400,
+					message: 'Validation failed',
+					errors: validationErrors,
+				} as ApiErrorResponse;
 			}
 
 			// Pass validatedData to handler
+			context.validatedData = data;
 			return handler(context);
 		};
 	};
