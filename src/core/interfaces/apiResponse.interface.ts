@@ -10,10 +10,11 @@ export interface ValidationErrors {
 /**
  * Interface representing a successful API response.
  */
-export interface ApiSuccessResponse {
+export interface ApiSuccessResponse<T = unknown> {
 	success: true;
-	message: string;
 	statusCode: number;
+	message: string;
+	data?: T; // Optional data field for success responses
 }
 
 /**
@@ -21,12 +22,21 @@ export interface ApiSuccessResponse {
  */
 export interface ApiErrorResponse {
 	success: false;
-	message: string;
-	errors?: ValidationErrors;
 	statusCode: number;
+	message: string;
+	errors?: ValidationErrors; // Optional field for validation errors
+	code?: string; // Optional field for a custom error code
+}
+
+/**
+ * Interface representing a rate limit exceeded error.
+ */
+export interface RateLimitExceededError extends ApiErrorResponse {
+	limit: number;
+	duration: string;
 }
 
 /**
  * Union type representing either a success or error API response.
  */
-export type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse | RateLimitExceededError;

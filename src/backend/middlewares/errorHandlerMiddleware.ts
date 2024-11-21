@@ -1,46 +1,48 @@
 // src/backend/middlewares/errorHandlerMiddleware.ts
 
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
-import logger from '@/backend/utilities/logger';
-import { jsonResponse } from '@/core/config/constants';
 import { Handler } from '@/core/types/handlers';
-import { isApiErrorResponse } from '@/core/guards/isApiResponse';
+import { ApiErrorResponse, RateLimitExceededError } from '@/core/interfaces/apiResponse.interface';
+import { createErrorResponse, jsonResponse } from '@/core/utilities/apiResponseUtils';
 
 /**
- * Error handling middleware.
+ * Middleware to handle errors thrown by other middleware or handlers.
  *
- * Catches unhandled errors in requests and sends standardized error responses.
- *
- * @param handler - The next handler function to call.
- * @returns A new handler function with error handling applied.
+ * @param handler - The next handler function to invoke.
+ * @returns A handler function that catches and handles errors.
  */
 export function errorHandlerMiddleware(handler: Handler): Handler {
-	return async (context: ContactFormAPIContext) => {
+	return async (context): Promise<Response> => {
 		try {
+			// Attempt to execute the handler
 			return await handler(context);
 		} catch (error) {
-			let statusCode = 500;
-			let errorMessage = 'An internal server error occurred. Please try again later.';
-			let errors: any;
+			// Verify if the error is an ApiErrorResponse
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				(error as ApiErrorResponse).success === false &&
+				typeof (error as ApiErrorResponse).statusCode === 'number'
+			) {
+				const apiError = error as ApiErrorResponse;
 
-			if (isApiErrorResponse(error)) {
-				// Custom application error
-				statusCode = error.statusCode || 400;
-				errorMessage = error.message;
-				errors = error.errors;
-			} else if (error instanceof Error) {
-				// Unhandled error, log it
-				logger.error('Unhandled error:', {
-					message: error.message,
-					stack: error.stack,
-				});
-			} else {
-				// Unknown error type
-				logger.error('Unknown error type', { error });
+				// Log the error based on its status code
+				if (apiError.statusCode === 429) {
+					const rateLimitError = error as RateLimitExceededError;
+					console.warn(`Rate limit exceeded for IP: ${context.clientIp}. Limit: ${rateLimitError.limit}, Duration: ${rateLimitError.duration}`);
+				} else {
+					console.error('API Error:', apiError);
+				}
+
+				// Retornar la respuesta de error estandarizada
+				return jsonResponse(apiError, apiError.statusCode);
 			}
 
-			// Send standardized error response
-			return jsonResponse({ success: false, message: errorMessage, errors }, statusCode);
+			// Log unexpected errors as "Unhandled error"
+			console.error('Unhandled error:', error);
+
+			// For unexpected errors, return a generic 500 response
+			const responseBody = createErrorResponse(500, 'Internal server error');
+			return jsonResponse(responseBody, 500);
 		}
 	};
 }

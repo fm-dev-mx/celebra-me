@@ -1,4 +1,4 @@
-// src/pages/api/contact-form-submission.ts
+// src/pages/api/contact-form-submissions.ts
 
 import type { APIRoute } from 'astro';
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
@@ -13,31 +13,30 @@ import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { ContactFormController } from '@/backend/controllers/contactFormController';
 import { clientIpMiddleware } from '@/backend/middlewares/clientIpMiddleware';
+import { createSuccessResponse } from '@/core/utilities/apiResponseUtils';
+import { jsonResponse } from '@/core/utilities/apiResponseUtils';
 
-// Initialize services and controllers
+/**
+ * Initialize services and controllers
+ */
 const emailProvider = new SendGridProvider();
 const emailService = new EmailService(emailProvider);
 const contactFormRepository = new ContactFormRepository();
 const contactFormController = new ContactFormController(emailService, contactFormRepository);
 
 /**
- * API endpoint to handle contact messages.
+ * API endpoint to handle contact form submissions.
  * Utilizes middleware for error handling, logging, rate limiting, and validation.
  */
 export const POST: APIRoute = errorHandlerMiddleware(
 	composeMiddlewares(
-		async (context: ContactFormAPIContext) => {
+		async (context: ContactFormAPIContext): Promise<Response> => {
 			// Process the contact form submission using the controller
-			await contactFormController.processContactFormSubmission(context.validatedData!);
+			await contactFormController.processContactSubmission(context.validatedData!);
 
 			// Return a success response
-			return new Response(
-				JSON.stringify({
-					success: true,
-					message: 'We have received your message and will respond shortly.',
-				}),
-				{ status: 200, headers: { 'Content-Type': 'application/json' } }
-			);
+			const responseBody = createSuccessResponse(200, 'We have received your message and will respond shortly.');
+			return jsonResponse(responseBody, 200);
 		},
 		[
 			clientIpMiddleware,

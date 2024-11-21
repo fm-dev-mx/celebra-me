@@ -1,11 +1,11 @@
-// src/core/guards/isApiResponse.ts
+// src/core/utilities/guards/isApiResponse.ts
 
 /**
  * Type Guards for custom types in the project.
  * These functions help ensure runtime type checking where needed.
  */
 
-import { ApiErrorResponse, ApiSuccessResponse } from '../interfaces/apiResponse.interface';
+import { ApiErrorResponse, ApiSuccessResponse } from '../../interfaces/apiResponse.interface';
 
 /**
  * Checks if the given object is of type ApiErrorResponse.

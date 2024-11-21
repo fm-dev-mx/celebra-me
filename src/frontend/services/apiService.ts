@@ -2,7 +2,7 @@
 
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 import { ApiResponse } from '@/core/interfaces/apiResponse.interface';
-import { jsonPost } from '@/core/config/constants';
+import { jsonPost } from '@/frontend/utilities/apiClientUtils';
 
 /**
  * ApiService class handles API interactions.
@@ -17,13 +17,23 @@ class ApiService {
 		try {
 			const response = await fetch('/api/contact-form-submissions', jsonPost(data));
 
-			if (!response.ok) {
-				// Handle HTTP errors
-				const errorData = await response.json();
-				throw new Error(errorData.message || 'Failed to send contact form');
+			let responseData: ApiResponse;
+
+			try {
+				// Attempt to parse the response as JSON
+				responseData = await response.json();
+			} catch (parseError) {
+				// If parsing fails, create a generic error response
+				throw new Error('Invalid response from server');
 			}
 
-			return response.json();
+			if (!response.ok) {
+				// Handle HTTP errors
+				const errorMessage = responseData.message || `Error ${response.status}: ${response.statusText}`;
+				throw new Error(errorMessage);
+			}
+
+			return responseData;
 		} catch (error) {
 			// Handle network errors or parsing errors
 			throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
