@@ -1,10 +1,13 @@
 // src/core/interfaces/contactFormAPIContext.interface.ts
 
-import { APIContext } from 'astro';
-import { ContactFormData } from './contactFormData.interface';
+import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 
-export interface ContactFormAPIContext extends APIContext {
+/**
+ * Interface representing the context for the Contact Form API.
+ */
+export interface ContactFormAPIContext {
+	request: Request;
+	clientIp?: string;
 	validatedData?: ContactFormData;
-	clientIp?: string | null;
-	// authToken?: string; // Optionally include authentication token if needed in future
+	// Add other properties as needed
 }

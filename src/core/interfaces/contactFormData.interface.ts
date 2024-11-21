@@ -1,11 +1,11 @@
 // src/core/interfaces/contactFormData.interface.ts
 
 /**
- * Interface representing the contact form data.
+ * Interface representing the contact form data submitted by users.
  */
 export interface ContactFormData {
 	name: string;
 	email: string;
-	mobile?: string; // Optional mobile field for contact number
+	mobile?: string;
 	message: string;
 }

@@ -1,6 +1,13 @@
 // src/core/types/handlers.d.ts
 
-import type { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+/**
+ * Generic Handler type for API routes.
+ * @template ContextType - The type of the context object.
+ */
+export type Handler<ContextType = any> = (context: ContextType) => Promise<Response> | Response;
 
-export type Handler = (context: ContactFormAPIContext) => Promise<Response> | Response;
-export type Middleware = (handler: Handler) => Handler;
+/**
+ * Generic Middleware type.
+ * @template ContextType - The type of the context object.
+ */
+export type Middleware<ContextType = any> = (handler: Handler<ContextType>) => Handler<ContextType>;
