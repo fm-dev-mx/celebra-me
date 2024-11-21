@@ -1,4 +1,4 @@
-// src/pages/api/sendContactForm.ts
+// src/pages/api/contact-form-submission.ts
 
 import type { APIRoute } from 'astro';
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
@@ -12,31 +12,44 @@ import { validationRules } from '@/core/utilities/validationRules';
 import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { ContactFormController } from '@/backend/controllers/contactFormController';
+import { clientIpMiddleware } from '@/backend/middlewares/clientIpMiddleware';
 
-// Initialize the EmailService and EmailController
+// Initialize services and controllers
 const emailProvider = new SendGridProvider();
 const emailService = new EmailService(emailProvider);
-const contactFormController = new ContactFormController(emailService, new ContactFormRepository());
+const contactFormRepository = new ContactFormRepository();
+const contactFormController = new ContactFormController(emailService, contactFormRepository);
+
 /**
- * API endpoint to send an email.
+ * API endpoint to handle contact messages.
  * Utilizes middleware for error handling, logging, rate limiting, and validation.
  */
-export const POST: APIRoute = composeMiddlewares(
-	async (context: ContactFormAPIContext) => {
-		// Delegate the request handling to the EmailController
-		return await contactFormController.sendEmail(context);
-	},
-	[
-		// Middlewares are applied in the order they appear in the array
-		validationMiddleware(validationRules),
-		rateLimiterMiddleware({
-			limit: 5,
-			duration: '15 m',
-			prefix: 'emailRateLimiter',
-		}),
-		loggerMiddleware,
-		errorHandlerMiddleware,
-	]
+export const POST: APIRoute = errorHandlerMiddleware(
+	composeMiddlewares(
+		async (context: ContactFormAPIContext) => {
+			// Process the contact form submission using the controller
+			await contactFormController.processContactFormSubmission(context.validatedData!);
+
+			// Return a success response
+			return new Response(
+				JSON.stringify({
+					success: true,
+					message: 'We have received your message and will respond shortly.',
+				}),
+				{ status: 200, headers: { 'Content-Type': 'application/json' } }
+			);
+		},
+		[
+			clientIpMiddleware,
+			loggerMiddleware,
+			rateLimiterMiddleware({
+				limit: 5,
+				duration: '15 m',
+				prefix: 'emailRateLimiter',
+			}),
+			validationMiddleware(validationRules),
+		]
+	)
 );
 
 export const prerender = false;

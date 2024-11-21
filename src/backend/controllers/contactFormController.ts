@@ -4,12 +4,12 @@ import { EmailService } from '@/backend/services/emailService';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { EmailData } from '@/core/interfaces/emailData.interface';
 import config from '@/core/config';
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
-import logger from '../utilities/logger';
-import { jsonResponse } from '@/core/config/constants';
+import logger from '@/backend/utilities/logger';
+import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 
 /**
- * Controlador para manejar solicitudes del formulario de contacto.
+ * Controller for handling contact form submissions.
+ * Now focused solely on business logic without handling HTTP responses.
  */
 export class ContactFormController {
 	private emailService: EmailService;
@@ -21,40 +21,37 @@ export class ContactFormController {
 	}
 
 	/**
-	 * Maneja el procesamiento de una solicitud del formulario de contacto.
-	 * @param contactFormData - Datos recibidos del formulario de contacto.
+	 * Processes a contact form submission.
+	 * @param validatedData - The validated contact form data.
+	 * @throws Will throw an error if processing fails.
 	 */
-	async sendEmail(context: ContactFormAPIContext): Promise<Response> {
-
-		if (context.validatedData) {
-			// Guardar los datos en la base de datos
-			await this.contactFormRepository.saveSubmission(context.validatedData);
-
-		}
-
-		// Preparar los datos del correo electrónico
-		const emailData: EmailData = {
-			to: config.emailConfig.recipient,
-			from: config.emailConfig.sender,
-			replyTo: context.validatedData!.email,
-			subject: `Nuevo mensaje de ${context.validatedData!.name} desde el formulario de contacto`,
-			html: `<p><strong>Nombre:</strong> ${context.validatedData!.name}</p>
-                    <p><strong>Email:</strong> ${context.validatedData!.email}</p>
-                    <p><strong>Teléfono:</strong> ${context.validatedData!.mobile}</p>
-                    <p><strong>Mensaje:</strong> ${context.validatedData!.message}</p>`,
-		};
-
-		// Enviar el correo electrónico
+	async processContactFormSubmission(validatedData: ContactFormData): Promise<void> {
 		try {
+			// Save the data in the database
+			await this.contactFormRepository.saveSubmission(validatedData);
+
+			// Prepare the email data
+			const emailData: EmailData = {
+				to: config.emailConfig.recipient,
+				from: config.emailConfig.sender,
+				replyTo: validatedData.email,
+				subject: `New message from ${validatedData.name} via contact form`,
+				html: `<p><strong>Name:</strong> ${validatedData.name}</p>
+               <p><strong>Email:</strong> ${validatedData.email}</p>
+               <p><strong>Phone:</strong> ${validatedData.mobile}</p>
+               <p><strong>Message:</strong> ${validatedData.message}</p>`,
+			};
+
+			// Send the email
 			await this.emailService.sendEmail(emailData);
-			return jsonResponse({ success: true, message: 'Hemos recibido tu mensaje, te respondemos muy pronto.' }, 200);
 		} catch (error) {
+			// Log the error and rethrow it for the middleware or route handler to catch
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			logger.error('Error sending email', {
+			logger.error('Error processing contact form submission', {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
 			});
-			return jsonResponse({ success: false, message: 'Error al enviar el correo.' }, 500);
+			throw error; // Rethrow the error for higher-level handling
 		}
 	}
 }
