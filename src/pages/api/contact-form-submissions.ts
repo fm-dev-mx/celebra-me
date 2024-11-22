@@ -35,7 +35,7 @@ export const POST: APIRoute = errorHandlerMiddleware(
 			await contactFormController.processContactSubmission(context.validatedData!);
 
 			// Return a success response
-			const responseBody = createSuccessResponse(200, 'We have received your message and will respond shortly.');
+			const responseBody = createSuccessResponse(200, 'Hemos recibido tu mensaje. Te responderemos muy pronto.');
 			return jsonResponse(responseBody, 200);
 		},
 		[

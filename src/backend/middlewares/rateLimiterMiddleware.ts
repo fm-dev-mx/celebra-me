@@ -4,6 +4,7 @@ import { isRateLimited, getRateLimiter } from '@/backend/utilities/rateLimiterUt
 import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
 import { Handler } from '@/core/types/handlers';
 import { createErrorResponse } from '@/core/utilities/apiResponseUtils';
+import logger from '@/backend/utilities/logger';
 
 /**
  * Rate limiter middleware factory.
@@ -19,6 +20,15 @@ export function rateLimiterMiddleware(config: RateLimiterConfig) {
 			const clientIp = context.clientIp;
 
 			if (!clientIp) {
+				// Log the error before throwing an error
+				logger.error('Unable to determine client IP for rate limiting.', {
+					event: 'RateLimiter',
+					route: context.request.url, // Asumiendo que context tiene acceso a la URL
+					method: context.request.method,
+					timestamp: new Date().toISOString(),
+				});
+
+				// Throw an error to the client
 				throw createErrorResponse(400, 'Unable to determine client IP');
 			}
 
@@ -30,7 +40,7 @@ export function rateLimiterMiddleware(config: RateLimiterConfig) {
 				if (await isRateLimited(rateLimiter, clientIp)) {
 					throw createErrorResponse(
 						429,
-						'Too many requests. Please try again later.',
+						'Has enviado demasiados mensajes. Intenta más tarde.',
 						undefined,
 						'RATE_LIMIT_EXCEEDED',
 						config.limit,
@@ -47,8 +57,12 @@ export function rateLimiterMiddleware(config: RateLimiterConfig) {
 					throw error; // Preserve the original rate limit error
 				}
 
-				// Handle unexpected errors gracefully
-				console.error('Unexpected error in rateLimiterMiddleware:', error);
+				// Log unexpected errors gracefully
+				logger.error('Unexpected error in rateLimiterMiddleware:', {
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+					event: 'RateLimiter',
+				});
 				throw createErrorResponse(500, 'Internal server error during rate limiting');
 			}
 

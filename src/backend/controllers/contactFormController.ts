@@ -36,13 +36,30 @@ export class ContactFormController {
 
 			// Send the email
 			await this.emailService.sendEmail(emailData);
+
+			// Log the successful processing of the contact form at INFO level with context
+			logger.info('Contact form submission processed successfully', {
+				user: {
+					name: validatedData.name,
+					email: validatedData.email,
+					// Do not log sensitive data like message content or phone number
+				},
+				event: 'ContactFormSubmission',
+			});
 		} catch (error) {
-			// Log the error and rethrow it for the middleware or route handler to catch
+			// Log the error with additional context, avoiding sensitive information
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			logger.error('Error processing contact form submission', {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
+				user: {
+					name: validatedData.name,
+					email: validatedData.email,
+					// Do not log sensitive data
+				},
+				event: 'ContactFormSubmission',
 			});
+			// Throw an error response with appropriate status code and message
 			throw createErrorResponse(500, 'Failed to process contact form submission', undefined, 'PROCESSING_ERROR');
 		}
 	}
@@ -69,10 +86,10 @@ export class ContactFormController {
 	 */
 	private buildEmailHtml(validatedData: ContactFormData): string {
 		return `
-      <p><strong>Name:</strong> ${validatedData.name}</p>
-      <p><strong>Email:</strong> ${validatedData.email}</p>
-      <p><strong>Phone:</strong> ${validatedData.mobile}</p>
-      <p><strong>Message:</strong> ${validatedData.message}</p>
-    `;
+		  <p><strong>Name:</strong> ${validatedData.name}</p>
+		  <p><strong>Email:</strong> ${validatedData.email}</p>
+		  <p><strong>Phone:</strong> ${validatedData.mobile}</p>
+		  <p><strong>Message:</strong> ${validatedData.message}</p>
+		`;
 	}
 }

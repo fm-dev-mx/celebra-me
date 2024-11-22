@@ -1,9 +1,11 @@
+// Modified code with comments explaining the changes.
+
 // src/backend/repositories/contactFormRepository.ts
 
 import SupabaseClientManager from '@/infrastructure/supabaseClient';
 import logger from '@/backend/utilities/logger';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
+import { createErrorResponse } from '@/core/utilities/apiResponseUtils';
 
 /**
  * Repository class for handling contact submission data storage.
@@ -20,12 +22,27 @@ export class ContactFormRepository {
 		const { error: insertError } = await supabase.from('contact_submissions').insert([submission]);
 
 		if (insertError) {
-			logger.error('Failed to store submission data.', { error: insertError.message });
-			throw {
-				success: false,
-				statusCode: 500,
-				message: 'Failed to store submission data.',
-			} as ApiErrorResponse;
+			// Log the error with additional context, avoiding sensitive information
+			logger.error('Failed to store submission data.', {
+				error: insertError.message,
+				user: {
+					name: submission.name,
+					email: submission.email,
+					// Do not log message content or phone number
+				},
+				event: 'ContactFormSave',
+			});
+			throw createErrorResponse(500, 'Failed to store submission data.');
+		} else {
+			// Log successful storage at INFO level
+			logger.info('Contact form submission saved successfully.', {
+				user: {
+					name: submission.name,
+					email: submission.email,
+					// Do not log sensitive data
+				},
+				event: 'ContactFormSave',
+			});
 		}
 	}
 }
