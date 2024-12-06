@@ -1,10 +1,12 @@
 // src/backend/middlewares/rateLimiterMiddleware.ts
 
-import { isRateLimited, getRateLimiter } from '@/backend/utilities/rateLimiterUtils';
+import rateLimiterFactory from '@/backend/utilities/rateLimiterUtils';
 import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
-import { Handler } from '@/core/types/handlers';
-import { createErrorResponse } from '@/core/utilities/apiResponseUtils';
-import logger from '@/backend/utilities/logger';
+import { Handler, Middleware } from '@/core/types/handlers';
+import { RateLimitExceededError } from '@/core/errors/rateLimitExceededError';
+import { BadRequestError } from '@/core/errors/badRequestError';
+
+const MODULE_NAME = 'RateLimiterMiddleware';
 
 /**
  * Rate limiter middleware factory.
@@ -14,56 +16,39 @@ import logger from '@/backend/utilities/logger';
  * @param config - Configuration for the rate limiter.
  * @returns A middleware function that applies rate limiting logic.
  */
-export function rateLimiterMiddleware(config: RateLimiterConfig) {
+export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 	return (handler: Handler): Handler => {
 		return async (context): Promise<Response> => {
 			const clientIp = context.clientIp;
 
 			if (!clientIp) {
-				// Log the error before throwing an error
-				logger.error('Unable to determine client IP for rate limiting.', {
-					event: 'RateLimiter',
-					route: context.request.url, // Asumiendo que context tiene acceso a la URL
-					method: context.request.method,
-					timestamp: new Date().toISOString(),
-				});
-
-				// Throw an error to the client
-				throw createErrorResponse(400, 'Unable to determine client IP');
+				// Throw a bad request error with a specific message
+				throw new BadRequestError('Client IP address is missing, unable to apply rate limiting.', MODULE_NAME);
 			}
 
 			try {
-				// Initialize the rate limiter
-				const rateLimiter = await getRateLimiter(config);
+				// Check if the client is rate limited
+				const isLimited = await rateLimiterFactory.isRateLimited(config, clientIp, {
+					route: context.request.url,
+					method: context.request.method,
+				});
 
-				// Check if the client IP is rate-limited
-				if (await isRateLimited(rateLimiter, clientIp)) {
-					throw createErrorResponse(
-						429,
-						'Has enviado demasiados mensajes. Intenta más tarde.',
-						undefined,
-						'RATE_LIMIT_EXCEEDED',
+				if (isLimited) {
+					// Throw a custom rate limit exceeded error
+					throw new RateLimitExceededError(
+						'You have sent too many requests. Please try again later.',
 						config.limit,
-						config.duration
+						config.duration,
+						MODULE_NAME
 					);
 				}
-			} catch (error) {
-				// Re-throw expected errors (e.g., 429 Too Many Requests)
-				if (
-					typeof error === 'object' &&
-					error !== null &&
-					(error as any).statusCode === 429
-				) {
-					throw error; // Preserve the original rate limit error
+			} catch (error: unknown) {
+				// Rethrow known errors, wrap unknown errors
+				if (error instanceof RateLimitExceededError || error instanceof BadRequestError) {
+					throw error;
+				} else {
+					throw new RateLimitExceededError('An error occurred while applying rate limiting.', config.limit, config.duration, MODULE_NAME);
 				}
-
-				// Log unexpected errors gracefully
-				logger.error('Unexpected error in rateLimiterMiddleware:', {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					event: 'RateLimiter',
-				});
-				throw createErrorResponse(500, 'Internal server error during rate limiting');
 			}
 
 			// Proceed to the next handler if not rate-limited
