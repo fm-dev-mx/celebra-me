@@ -2,7 +2,9 @@
 
 import { ValidationRules } from '@/core/interfaces/validationRules.interface';
 import { ContactFormData } from '../interfaces/contactFormData.interface';
+import { EmailData } from '../interfaces/emailData.interface';
 
+type admittedInputType = ContactFormData | Partial<ContactFormData> | EmailData | Partial<EmailData>;
 /**
  * Validates input data against the provided validation rules.
  * @param data - The data to validate.
@@ -10,14 +12,14 @@ import { ContactFormData } from '../interfaces/contactFormData.interface';
  * @returns An object containing validation errors, if any.
  */
 export const validateInput = (
-	data: ContactFormData | Partial<ContactFormData>,
+	data: admittedInputType,
 	rules: ValidationRules,
 ): Record<string, string> => {
 	const errors: Record<string, string> = {};
 
 	for (const fieldName in rules) {
 		const fieldRules = rules[fieldName];
-		const value = data[fieldName as keyof ContactFormData] || '';
+		const value = data[fieldName as keyof admittedInputType] || '';
 
 		for (const rule of fieldRules) {
 			if (!rule.validator(value)) {
