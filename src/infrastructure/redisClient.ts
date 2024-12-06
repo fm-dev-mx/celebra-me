@@ -3,71 +3,70 @@
 import { Redis } from '@upstash/redis';
 import config from '@/core/config';
 import logger from '@/backend/utilities/logger';
+import { ClientFactory } from '@/infrastructure/clientFactory'
+import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
 
-/**
- * RedisClient class implementing the Singleton pattern.
- * Manages a single instance of the Redis client for use throughout the application.
- */
-class RedisClient {
-	private static instance: Redis | null = null;
+export class RedisClientFactory extends ClientFactory<Redis> {
+	protected static readonly MODULE_NAME = 'RedisClientFactory';
 
-	/**
-	 * Private constructor to prevent direct instantiation.
-	 */
-	private constructor() {
-		// Private to prevent direct instantiation
-	}
-
-	/**
-	 * Retrieves the singleton instance of the Redis client.
-	 * @returns {Redis} The Redis client instance.
-	 */
-	public static async getInstance(): Promise<Redis> {
-		if (!RedisClient.instance) {
-			RedisClient.instance = await RedisClient.initializeClient();
-		}
-		return RedisClient.instance;
-	}
-
-	/**
-	 * Initializes the Redis client with configurations.
-	 * Includes error handling for missing configurations
-	 * and a simple retry mechanism for connection issues.
-	 * @returns {Redis} The initialized Redis client.
-	 */
-	private static async initializeClient(): Promise<Redis> {
-
+	protected static async initializeClient(): Promise<Redis> {
 		const { url, token } = config.redisConfig;
-		const maxRetries = 3;
-		let attempt = 0;
 
-		while (attempt < maxRetries) {
-			if (!url || !token) {
-				const errorMessage = 'Missing Redis configuration: REDIS_URL or REDIS_TOKEN';
-				logger.error(errorMessage);
-				throw new Error(errorMessage);
-			}
+		// Validate configuration
+		if (!url || !token) {
+			const errorMessage = 'Missing Redis configuration: REDIS_URL or REDIS_TOKEN';
+			logger.error({
+				message: errorMessage,
+				meta: { event: 'RedisClientInitialization', missingConfig: { url } },
+				module: this.MODULE_NAME,
+			});
+			throw new Error(errorMessage);
+		}
 
+		for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
 			try {
-				const client = new Redis({
-					url,
-					token,
+				const client = new Redis({ url, token });
+
+				logger.info({
+					message: 'Redis client initialized successfully.',
+					meta: { event: 'RedisClientInitialization' },
+					module: this.MODULE_NAME,
 				});
-				logger.info('Redis client initialized successfully.');
+
 				return client;
 			} catch (error) {
-				attempt++;
-				logger.error(`Error initializing Redis client (Attempt ${attempt}/${maxRetries}):`, error);
-				if (attempt >= maxRetries) {
-					throw error;
+				logger.error({
+					message: `Error initializing Redis client (Attempt ${attempt}/${this.MAX_RETRIES}): ${error instanceof Error ? error.message : String(error)}`,
+					meta: {
+						event: 'RedisClientInitialization',
+						stack: error instanceof Error ? error.stack : undefined,
+					},
+					module: this.MODULE_NAME,
+				});
+
+				if (attempt === this.MAX_RETRIES) {
+					logger.log({
+						level: 'critical',
+						message: 'Failed to initialize Redis client after multiple attempts.',
+						meta: {
+							event: 'RedisClientInitialization',
+							attempts: attempt,
+							error: error instanceof Error ? error.message : String(error),
+						},
+						module: this.MODULE_NAME,
+					});
+					// Do not throw to prevent application crash; return null or handle accordingly
+					return Promise.reject(new Error('RedisClient Initialization failed'));
 				}
-				await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+
+				// Exponential backoff with jitter
+				const backoff = getExponentialBackoffDelay(attempt, 1000);
+				await delay(backoff);
 			}
 		}
 
-		// Should not reach here
-		throw new Error('Failed to initialize Redis client after multiple attempts.');
+		return Promise.reject(new Error('RedisClient Initialization failed'));
 	}
 }
 
-export default RedisClient;
+export default RedisClientFactory;
