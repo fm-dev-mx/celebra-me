@@ -19,7 +19,8 @@ export interface SupabaseConfig {
 export interface Config {
 	environment: string;
 	redisConfig: RedisConfig;
-	emailConfig: EmailConfig;
+	alertEmailConfig: EmailConfig;
+	contactFormEmailConfig: EmailConfig;
 	supabaseConfig: SupabaseConfig;
 	adminEmail: string;
 }

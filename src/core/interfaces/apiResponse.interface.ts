@@ -24,19 +24,15 @@ export interface ApiErrorResponse {
 	success: false;
 	statusCode: number;
 	message: string;
-	errors?: ValidationErrors; // Optional field for validation errors
-	code?: string; // Optional field for a custom error code
-}
-
-/**
- * Interface representing a rate limit exceeded error.
- */
-export interface RateLimitExceededError extends ApiErrorResponse {
-	limit: number;
-	duration: string;
+	code?: string;
+	errors?: ValidationErrors;
+	limit?: number;
+	duration?: string;
+	// In development mode, include error details
+	error?: string;
 }
 
 /**
  * Union type representing either a success or error API response.
  */
-export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse | RateLimitExceededError;
+export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
