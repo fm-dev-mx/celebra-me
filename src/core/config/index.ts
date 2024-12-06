@@ -25,13 +25,23 @@ const getRedisConfig = (): RedisConfig => ({
 });
 
 /**
- * Retrieves the Email configuration.
+ * Retrieves the Email configuration for the contact form.
  * @returns EmailConfig object.
  */
-const getEmailConfig = (): EmailConfig => ({
+const getContactFormEmailConfig = (): EmailConfig => ({
 	sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
-	recipient: getEnvVariable('RECIPIENT_EMAIL'),
-	sender: getEnvVariable('SENDER_EMAIL'),
+	recipient: getEnvVariable('CONTACT_FORM_RECIPIENT_EMAIL'),
+	sender: getEnvVariable('CONTACT_FORM_SENDER_EMAIL'),
+});
+
+/**
+ * Retrieves the Email configuration for alerts.
+ * @returns EmailConfig object.
+ */
+const getAlertEmailConfig = (): EmailConfig => ({
+	sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
+	recipient: getEnvVariable('ALERT_RECIPIENT_EMAIL'),
+	sender: getEnvVariable('ALERT_SENDER_EMAIL'),
 });
 
 /**
@@ -49,7 +59,8 @@ const getSupabaseConfig = (): SupabaseConfig => ({
 const config: Config = {
 	environment: process.env.NODE_ENV || 'development',
 	redisConfig: getRedisConfig(),
-	emailConfig: getEmailConfig(),
+	contactFormEmailConfig: getContactFormEmailConfig(),
+	alertEmailConfig: getAlertEmailConfig(),
 	supabaseConfig: getSupabaseConfig(),
 	adminEmail: getEnvVariable('ADMIN_EMAIL'),
 };

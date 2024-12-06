@@ -1,3 +1,8 @@
+// src/core/interfaces/emailData.interface.ts
+
+/**
+ * Interface representing the data required to send an email.
+ */
 export interface EmailData {
 	/**
 	 * The email address of the recipient(s).
@@ -15,7 +20,7 @@ export interface EmailData {
 	subject: string;
 
 	/**
-	 * The body of the email, as plain text or HTML.
+	 * The body of the email, as plain text.
 	 */
 	text?: string;
 
