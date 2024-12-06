@@ -6,90 +6,99 @@ import { EmailData } from '@/core/interfaces/emailData.interface';
 import config from '@/core/config';
 import logger from '@/backend/utilities/logger';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { createErrorResponse } from '@/core/utilities/apiResponseUtils';
+import { escapeHtml } from '@/backend/utilities/dataSanitization';
+
+const MODULE_NAME = 'ContactFormController';
 
 /**
  * Controller for handling contact form submissions.
- * Focused on coordinating between services.
+ * Prioritizes email delivery and logs any database or Redis errors silently.
  */
 export class ContactFormController {
-	private emailService: EmailService;
-	private contactFormRepository: ContactFormRepository;
-
-	constructor(emailService: EmailService, contactFormRepository: ContactFormRepository) {
-		this.emailService = emailService;
-		this.contactFormRepository = contactFormRepository;
-	}
+	constructor(
+		private readonly emailService: EmailService,
+		private readonly contactFormRepository: ContactFormRepository
+	) { }
 
 	/**
 	 * Processes a contact form submission.
-	 * @param validatedData - The validated contact form data.
-	 * @throws Will throw an error if processing fails.
+	 * @param data - The validated contact form data.
 	 */
-	async processContactSubmission(validatedData: ContactFormData): Promise<void> {
+	async processContactSubmission(data: ContactFormData): Promise<void> {
 		try {
-			// Save the data in the database
-			await this.contactFormRepository.saveSubmission(validatedData);
+			// Save the submission to the repository asynchronously without blocking email sending
+			this.contactFormRepository.saveSubmission(data).catch((error) =>
+				logger.error({
+					message: 'Failed to save contact form submission to the repository.',
+					meta: { error: error instanceof Error ? error.message : String(error) },
+					module: MODULE_NAME,
+				})
+			);
 
-			// Prepare the email data
-			const emailData = this.prepareEmailData(validatedData);
-
-			// Send the email
+			// Prepare email data and send the email
+			const emailData = this.prepareEmailData(data);
 			await this.emailService.sendEmail(emailData);
 
-			// Log the successful processing of the contact form at INFO level with context
-			logger.info('Contact form submission processed successfully', {
-				user: {
-					name: validatedData.name,
-					email: validatedData.email,
-					// Do not log sensitive data like message content or phone number
-				},
-				event: 'ContactFormSubmission',
-			});
+			// Log success after email delivery
+			this.logSuccess(data);
 		} catch (error) {
-			// Log the error with additional context, avoiding sensitive information
-			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			logger.error('Error processing contact form submission', {
-				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-				user: {
-					name: validatedData.name,
-					email: validatedData.email,
-					// Do not log sensitive data
-				},
-				event: 'ContactFormSubmission',
+			logger.error({
+				message: 'Failed to process contact form submission.',
+				meta: { error: error instanceof Error ? error.message : String(error) },
+				module: MODULE_NAME,
 			});
-			// Throw an error response with appropriate status code and message
-			throw createErrorResponse(500, 'Failed to process contact form submission', undefined, 'PROCESSING_ERROR');
+			throw new Error('Hubo un error al procesar el formulario de contacto. Inténtalo de nuevo.');
 		}
 	}
 
 	/**
 	 * Prepares the email data from the contact form submission.
-	 * @param validatedData - The validated contact form data.
+	 * @param data - The validated contact form data.
 	 * @returns The email data ready to be sent.
 	 */
-	private prepareEmailData(validatedData: ContactFormData): EmailData {
+	private prepareEmailData(data: ContactFormData): EmailData {
+		const { name, email, mobile, message } = data;
+		const { recipient, sender } = config.contactFormEmailConfig; // Unified email configuration
+
 		return {
-			to: config.emailConfig.recipient,
-			from: config.emailConfig.sender,
-			replyTo: validatedData.email,
-			subject: `New message from ${validatedData.name} via contact form`,
-			html: this.buildEmailHtml(validatedData),
+			to: recipient,
+			from: sender,
+			replyTo: email,
+			subject: `Nuevo mensaje de ${name} a través del formulario de contacto`,
+			html: this.buildEmailHtml({ name, email, mobile, message }),
 		};
 	}
 
 	/**
 	 * Builds the HTML content for the email.
-	 * @param validatedData - The validated contact form data.
+	 * @param data - The validated contact form data.
 	 * @returns The HTML string for the email content.
 	 */
-	private buildEmailHtml(validatedData: ContactFormData): string {
+	private buildEmailHtml(data: ContactFormData): string {
+		const { name, email, mobile = 'N/A', message } = data;
 		return `
-		  <p><strong>Name:</strong> ${validatedData.name}</p>
-		  <p><strong>Email:</strong> ${validatedData.email}</p>
-		  <p><strong>Phone:</strong> ${validatedData.mobile}</p>
-		  <p><strong>Message:</strong> ${validatedData.message}</p>
-		`;
+      <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(mobile)}</p>
+      <p><strong>Message:</strong> ${escapeHtml(message)}</p>
+    `;
+	}
+
+	/**
+	 * Logs a successful contact form submission.
+	 * @param data - The validated contact form data.
+	 */
+	private logSuccess(data: ContactFormData): void {
+		logger.info({
+			message: 'Contact form submission processed successfully.',
+			meta: {
+				event: 'ContactFormSubmission',
+				user: {
+					name: data.name,
+					email: data.email,
+				},
+			},
+			module: MODULE_NAME,
+		});
 	}
 }

@@ -1,39 +1,32 @@
 // src/backend/services/emailService.ts
-
 import { EmailProvider } from '@/core/interfaces/emailProvider.interface';
 import { EmailData } from '@/core/interfaces/emailData.interface';
-import logger from '@/backend/utilities/logger';
+import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
+import { EmailServiceError } from '@/core/errors/emailServiceError';
+// IMPORTANT: Do NOT import logger here to prevent circular dependencies.
 
-/**
- * EmailService class responsible for coordinating the email sending process.
- * It uses an injected EmailProvider to send emails.
- */
 export class EmailService {
-	private emailProvider: EmailProvider;
+	constructor(
+		private emailProvider: EmailProvider,
+		private maxRetries = 3,
+		private initialDelayMs = 1000
+	) { }
 
-	/**
-	 * Constructs an EmailService with the given EmailProvider.
-	 * @param emailProvider - An instance of a class that implements EmailProvider.
-	 */
-	constructor(emailProvider: EmailProvider) {
-		this.emailProvider = emailProvider;
-	}
-
-	/**
-	 * Sends an email using the provided data.
-	 * @param data - The email data to send.
-	 * @throws Will throw an error if email sending fails.
-	 */
 	async sendEmail(data: EmailData): Promise<void> {
-		try {
-			await this.emailProvider.sendEmail(data);
-		} catch (error: unknown) {
-			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			logger.error('Failed to send email', {
-				error: errorMessage,
-				stack: error instanceof Error ? error.stack : undefined,
-			});
-			throw new Error(`Failed to send email: ${errorMessage}`);
+		for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+			try {
+				await this.emailProvider.sendEmail(data);
+				return; // If successful, just return.
+			} catch (error) {
+				if (attempt === this.maxRetries) {
+					throw new EmailServiceError(
+						`Failed to send email after ${this.maxRetries} attempts.`,
+						'EmailService'
+					);
+				}
+				const delayMs = getExponentialBackoffDelay(attempt, this.initialDelayMs);
+				await delay(delayMs);
+			}
 		}
 	}
 }

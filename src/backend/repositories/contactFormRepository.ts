@@ -1,47 +1,49 @@
-// Modified code with comments explaining the changes.
-
 // src/backend/repositories/contactFormRepository.ts
 
-import SupabaseClientManager from '@/infrastructure/supabaseClient';
-import logger from '@/backend/utilities/logger';
+import { SupabaseClientFactory } from '@/infrastructure/supabaseClient';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { createErrorResponse } from '@/core/utilities/apiResponseUtils';
+import logger from '@/backend/utilities/logger';
+
+const MODULE_NAME = 'ContactFormRepository';
 
 /**
  * Repository class for handling contact submission data storage.
+ * Logs errors silently if data cannot be saved to the database.
  */
 export class ContactFormRepository {
 	/**
 	 * Saves a contact submission to the database.
+	 * Logs errors but does not throw them to ensure smooth user experience.
 	 * @param submission - The contact submission data.
-	 * @throws Will throw an error if data insertion fails.
 	 */
 	async saveSubmission(submission: ContactFormData): Promise<void> {
-		const supabase = await SupabaseClientManager.getInstance();
+		try {
+			const supabase = await SupabaseClientFactory.getClient();
+			const { error: insertError } = await supabase
+				.from('contact_submissions')
+				.insert([submission]);
 
-		const { error: insertError } = await supabase.from('contact_submissions').insert([submission]);
-
-		if (insertError) {
-			// Log the error with additional context, avoiding sensitive information
-			logger.error('Failed to store submission data.', {
-				error: insertError.message,
-				user: {
-					name: submission.name,
-					email: submission.email,
-					// Do not log message content or phone number
-				},
-				event: 'ContactFormSave',
-			});
-			throw createErrorResponse(500, 'Failed to store submission data.');
-		} else {
-			// Log successful storage at INFO level
-			logger.info('Contact form submission saved successfully.', {
-				user: {
-					name: submission.name,
-					email: submission.email,
-					// Do not log sensitive data
-				},
-				event: 'ContactFormSave',
+			if (insertError) {
+				logger.error({
+					message: 'Failed to save contact form submission to the database.',
+					meta: { error: insertError.message, submission },
+					module: MODULE_NAME,
+				});
+			} else {
+				logger.info({
+					message: 'Contact form submission saved successfully.',
+					meta: {
+						event: 'ContactFormSave',
+						user: { name: submission.name, email: submission.email, mobile: submission.mobile },
+					},
+					module: MODULE_NAME,
+				});
+			}
+		} catch (error) {
+			logger.error({
+				message: 'Unexpected error while saving contact form submission.',
+				meta: { error: error instanceof Error ? error.message : String(error), submission },
+				module: MODULE_NAME,
 			});
 		}
 	}

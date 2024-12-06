@@ -13,20 +13,18 @@ import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { ContactFormController } from '@/backend/controllers/contactFormController';
 import { clientIpMiddleware } from '@/backend/middlewares/clientIpMiddleware';
-import { createSuccessResponse } from '@/core/utilities/apiResponseUtils';
-import { jsonResponse } from '@/core/utilities/apiResponseUtils';
+import { createSuccessResponse, jsonResponse } from '@/core/utilities/apiResponseUtils';
+import config from '@/core/config';
 
-/**
- * Initialize services and controllers
- */
-const emailProvider = new SendGridProvider();
+// Initialize email-related instances once (outside the handler)
+const { sendgridApiKey } = config.contactFormEmailConfig;
+const emailProvider = new SendGridProvider(sendgridApiKey);
 const emailService = new EmailService(emailProvider);
 const contactFormRepository = new ContactFormRepository();
 const contactFormController = new ContactFormController(emailService, contactFormRepository);
 
 /**
  * API endpoint to handle contact form submissions.
- * Utilizes middleware for error handling, logging, rate limiting, and validation.
  */
 export const POST: APIRoute = errorHandlerMiddleware(
 	composeMiddlewares(
@@ -35,7 +33,10 @@ export const POST: APIRoute = errorHandlerMiddleware(
 			await contactFormController.processContactSubmission(context.validatedData!);
 
 			// Return a success response
-			const responseBody = createSuccessResponse(200, 'Hemos recibido tu mensaje. Te responderemos muy pronto.');
+			const responseBody = createSuccessResponse(
+				200,
+				'Hemos recibido tu mensaje. Te responderemos muy pronto.'
+			);
 			return jsonResponse(responseBody, 200);
 		},
 		[

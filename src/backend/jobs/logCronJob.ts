@@ -1,89 +1,122 @@
 // src/backend/jobs/logCronJob.ts
 
-import sgMail, { type MailDataRequired } from '@sendgrid/mail';
 import config from '@/core/config';
-import RedisClient from '@/infrastructure/redisClient';
+import RedisClientFactory from '@/infrastructure/redisClient';
 import logger from '@/backend/utilities/logger';
 import { LogEntry } from '@/core/interfaces/logEntry.interface';
+import { EmailService } from '@/backend/services/emailService';
+import { SendGridProvider } from '@/backend/services/sendGridProvider';
+import { EmailData } from '@/core/interfaces/emailData.interface';
+import { escapeHtml } from '@/backend/utilities/dataSanitization';
 
-import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+const MODULE_NAME = 'LogCronJob';
 
-// Inicializar DOMPurify una vez utilizando JSDOM
-const window = new JSDOM('').window;
-const purify = DOMPurify(window);
+// Extract email configuration
+const { sendgridApiKey, recipient, sender } = config.alertEmailConfig;
+// Initialize email instances once
+const emailProvider = new SendGridProvider(sendgridApiKey);
+const emailService = new EmailService(emailProvider);
 
 /**
  * Sends the accumulated logs to administrators via email.
- * This function is intended to be run as a cron job.
+ * Intended to be run as a cron job.
  */
 export async function sendLogs(): Promise<void> {
-	sgMail.setApiKey(config.emailConfig.sendgridApiKey);
-
 	try {
 		// Obtain the Redis client instance
-		const redis = await RedisClient.getInstance();
+		const redis = await RedisClientFactory.getClient();
 
 		// Retrieve all log entries from Redis
 		const logEntriesRaw: string[] = await redis.lrange('app-logs', 0, -1);
 
 		if (logEntriesRaw.length === 0) {
-			logger.info('No logs available to send.');
+			logger.info({
+				message: 'No logs available to send.',
+				meta: { event: 'SendLogs' },
+				module: MODULE_NAME,
+			});
 			return;
 		}
 
 		// Parse log entries into objects with proper typing
-		const parsedLogs: LogEntry[] = logEntriesRaw.map((entry) => JSON.parse(entry));
+		const parsedLogs: LogEntry[] = parseLogEntries(logEntriesRaw);
 
-		// Build email content with actionable insights
+		if (parsedLogs.length === 0) {
+			logger.warn({
+				message: 'All log entries failed to parse.',
+				meta: { event: 'SendLogs' },
+				module: MODULE_NAME,
+			});
+			return;
+		}
+
+		// Build email content with actionable insights for periodic logs
 		const emailContent = buildEmailContent(parsedLogs);
 
-		// Prepare the email message with the logs in the body
-		const msg: MailDataRequired = {
-			to: config.emailConfig.recipient, // Administrator's email
-			from: config.emailConfig.sender, // Verified sender email in SendGrid
+		// Prepare the email message
+		const emailData: EmailData = {
+			to: recipient,
+			from: sender,
 			subject: `Log Report - ${new Date().toLocaleString()}`,
 			html: emailContent,
 		};
 
-		// Implement retry mechanism for sending emails with exponential backoff
-		const maxRetries = 3;
-		let attempt = 0;
-		let emailSent = false;
+		// Send the email using EmailService (which handles retry logic)
+		await emailService.sendEmail(emailData);
 
-		while (attempt < maxRetries && !emailSent) {
-			try {
-				// Send the email with the log content
-				await sgMail.send(msg);
-				emailSent = true;
-				logger.info('Logs successfully sent to the administrator.');
-			} catch (error) {
-				attempt++;
-				logger.error(`Failed to send logs email (Attempt ${attempt}/${maxRetries}):`, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					event: 'SendLogsEmail',
-				});
-				if (attempt >= maxRetries) {
-					throw new Error('Failed to send logs email after multiple attempts.');
-				}
-				// Wait before retrying (exponential backoff)
-				const delay = Math.pow(2, attempt) * 1000; // 2^attempt * 1000ms
-				await new Promise((resolve) => setTimeout(resolve, delay));
-			}
-		}
+		logger.info({
+			message: 'Logs successfully sent to the administrator.',
+			meta: { event: 'SendLogs' },
+			module: MODULE_NAME,
+		});
 
 		// Clear the logs from Redis after sending
 		await redis.del('app-logs');
-		logger.info('Logs cleared from Redis after sending.');
-	} catch (error: unknown) {
-		logger.error('Error while sending logs:', {
-			error: error instanceof Error ? error.message : String(error),
-			stack: error instanceof Error ? error.stack : undefined,
-			event: 'SendLogs',
+
+		logger.info({
+			message: 'Logs cleared from Redis after sending.',
+			meta: { event: 'SendLogs' },
+			module: MODULE_NAME,
 		});
-		// Optionally rethrow or handle the error further
+
+	} catch (error: unknown) {
+		logger.error({
+			message: 'Error while sending logs.',
+			meta: {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+				event: 'SendLogs',
+			},
+			module: MODULE_NAME,
+		});
 	}
+}
+
+/**
+ * Parses raw log entries from Redis into LogEntry objects.
+ * Logs any parsing errors encountered.
+ * @param logEntriesRaw - Array of raw log entry strings.
+ * @returns Array of successfully parsed LogEntry objects.
+ */
+function parseLogEntries(logEntriesRaw: string[]): LogEntry[] {
+	return logEntriesRaw
+		.map((entry) => {
+			try {
+				return JSON.parse(entry) as LogEntry;
+			} catch (error) {
+				logger.error({
+					message: 'Failed to parse log entry.',
+					meta: {
+						rawEntry: entry,
+						event: 'ParseLogEntry',
+						error: error instanceof Error ? error.message : String(error),
+					},
+					module: MODULE_NAME,
+				});
+				return null;
+			}
+		})
+		.filter((log): log is LogEntry => log !== null);
 }
 
 /**
@@ -93,31 +126,71 @@ export async function sendLogs(): Promise<void> {
  */
 function buildEmailContent(parsedLogs: LogEntry[]): string {
 	// Group logs by severity level
-	const logsByLevel = parsedLogs.reduce((acc: Record<string, LogEntry[]>, log: LogEntry) => {
+	const logsByLevel = parsedLogs.reduce<Record<string, LogEntry[]>>((acc, log) => {
 		acc[log.level] = acc[log.level] || [];
 		acc[log.level].push(log);
 		return acc;
 	}, {});
 
+	// Define the order of log levels for display
+	const logLevels = ['critical', 'error', 'warn', 'info', 'debug'];
+
 	// Build email content with actionable insights
 	let emailContent = `<h1>Accumulated Logs Report</h1>`;
-	for (const level of ['error', 'warn', 'info', 'debug']) {
-		if (logsByLevel[level] && logsByLevel[level].length > 0) {
-			emailContent += `<h2>${level.toUpperCase()} Logs</h2><ul>`;
-			for (const log of logsByLevel[level]) {
-				// Sanitize log messages and details to prevent XSS
-				const sanitizedMessage = purify.sanitize(log.message);
-				const sanitizedMeta = log.meta ? purify.sanitize(JSON.stringify(log.meta)) : '';
-				emailContent += `<li><strong>Timestamp:</strong> ${log.timestamp} - <strong>Message:</strong> ${sanitizedMessage}`;
-				if (sanitizedMeta) {
-					emailContent += ` - <strong>Details:</strong> ${sanitizedMeta}`;
+	for (const level of logLevels) {
+		const logs = logsByLevel[level];
+		if (logs && logs.length > 0) {
+			emailContent += `<h2>${escapeHtml(level.toUpperCase())} Logs (${logs.length})</h2><ul>`;
+			for (const log of logs) {
+				try {
+					const sanitizedMessage = escapeHtml(String(log.message));
+					const sanitizedMeta = log.meta ? escapeHtml(JSON.stringify(log.meta, null, 2)) : '';
+					const sanitizedModule = escapeHtml(log.module || 'N/A');
+					emailContent += `<li>
+              <strong>Timestamp:</strong> ${escapeHtml(log.timestamp || 'N/A')}<br>
+              <strong>Message:</strong> ${sanitizedMessage}<br>
+              <strong>Module:</strong> ${sanitizedModule}<br>
+              <strong>Suggested Action:</strong> ${escapeHtml(getSuggestedAction(log))}<br>
+              <strong>Details:</strong> <pre>${sanitizedMeta}</pre>
+            </li>`;
+				} catch (error: unknown) {
+					logger.error({
+						message: 'Error while building email content for a log entry.',
+						meta: {
+							error: error instanceof Error ? error.message : String(error),
+							event: 'BuildEmailContent',
+						},
+						module: MODULE_NAME,
+					});
+					continue; // Skip this log entry and continue with others
 				}
-				emailContent += `</li>`;
 			}
 			emailContent += `</ul>`;
 		}
 	}
 	return emailContent;
+}
+
+/**
+ * Provides a suggested action based on the log entry.
+ * @param log - The log entry.
+ * @returns A string with suggested action.
+ */
+function getSuggestedAction(log: LogEntry): string {
+	switch (log.level) {
+		case 'critical':
+			return 'Immediate attention required. Please investigate the issue as soon as possible.';
+		case 'error':
+			return 'Check the error and resolve it promptly.';
+		case 'warn':
+			return 'Monitor the situation and consider taking action if it persists.';
+		case 'info':
+			return 'No action needed.';
+		case 'debug':
+			return 'For your information.';
+		default:
+			return 'No action suggested.';
+	}
 }
 
 export default sendLogs;
