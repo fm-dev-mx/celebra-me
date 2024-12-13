@@ -2,6 +2,9 @@
 
 import { Handler } from '@/core/types/handlers';
 import { getClientIp } from '../utilities/getClientIp';
+import { ClientIpError } from '@/core/errors/clientIpError';
+
+const MODULE_NAME = 'ClientIpMiddleware';
 
 /**
  * Extends the base context with a clientIp property.
@@ -26,14 +29,14 @@ export function clientIpMiddleware(handler: Handler): Handler {
 
 			if (!clientIp) {
 				// Handle cases where IP extraction fails
-				throw new Error('Unable to determine client IP address.');
+				throw new ClientIpError('Unable to determine client IP address.', MODULE_NAME);
 			}
 
 			// Set the extracted IP in the context
 			context.clientIp = clientIp;
 		} catch (error) {
 			// Log the error and proceed
-			console.error('Error extracting client IP:', error);
+			console.error('Error getting client IP:', error);
 			// Optionally handle the error or rethrow it
 		}
 
