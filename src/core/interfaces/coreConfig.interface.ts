@@ -15,6 +15,13 @@ export interface SupabaseConfig {
 	url: string;
 	anonKey: string;
 }
+export interface RateLimiterConfig {
+	rateLimit: {
+		limit: number;
+		duration: string;
+		prefix: string;
+	};
+}
 
 export interface Config {
 	environment: string;
@@ -23,4 +30,5 @@ export interface Config {
 	contactFormEmailConfig: EmailConfig;
 	supabaseConfig: SupabaseConfig;
 	adminEmail: string;
+	rateLimiterConfig: RateLimiterConfig;
 }

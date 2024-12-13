@@ -4,16 +4,10 @@ import type { RedisConfig, EmailConfig, SupabaseConfig, Config } from '../interf
 import { getEnvVariable } from './getEnvVariable';
 
 /**
- * Application configuration module.
- * Provides configuration objects for different parts of the application.
- *
- * **Setup Instructions:**
- * - **Development Environment:**
- *   - Ensure environment variables are set in a `.env` file at the root of the project.
- *   - Use tools like `dotenv` to load environment variables.
- * - **Production Environment:**
- *   - Set environment variables in the hosting environment or deployment platform.
+ * Load environment variables from a `.env` file in development.
+ * In production, environment variables should be set in the hosting environment.
  */
+const isProduction: boolean = getEnvVariable('NODE_ENV') === 'production';
 
 /**
  * Retrieves the Redis configuration.
@@ -52,16 +46,28 @@ const getSupabaseConfig = (): SupabaseConfig => ({
 	url: getEnvVariable('SUPABASE_URL'),
 	anonKey: getEnvVariable('SUPABASE_ANON_KEY'),
 });
+/**
+ * Retrieve rate limiter configuration.
+ */
+const getRateLimiterConfig = () => ({
+	rateLimit: {
+		limit: parseInt(getEnvVariable('RATE_LIMIT') || '100', 10),
+		duration: getEnvVariable('RATE_LIMIT_DURATION') || '15m',
+		prefix: getEnvVariable('RATE_LIMIT_PREFIX') || 'rateLimiter',
+	},
+});
 
 /**
  * Main configuration object.
  */
 const config: Config = {
 	environment: process.env.NODE_ENV || 'development',
+	isProduction,
 	redisConfig: getRedisConfig(),
 	contactFormEmailConfig: getContactFormEmailConfig(),
 	alertEmailConfig: getAlertEmailConfig(),
 	supabaseConfig: getSupabaseConfig(),
+	rateLimiterConfig: getRateLimiterConfig(),
 	adminEmail: getEnvVariable('ADMIN_EMAIL'),
 };
 

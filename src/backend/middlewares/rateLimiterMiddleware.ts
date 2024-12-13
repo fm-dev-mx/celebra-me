@@ -1,9 +1,9 @@
 // src/backend/middlewares/rateLimiterMiddleware.ts
 
-import rateLimiterFactory from '@/backend/utilities/rateLimiterUtils';
+import rateLimiterFactory from '@/backend/services/rateLimiterFactory';
 import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
 import { Handler, Middleware } from '@/core/types/handlers';
-import { RateLimitExceededError } from '@/core/errors/rateLimitExceededError';
+import { RateLimiterError } from '@/core/errors/rateLimiterError';
 import { BadRequestError } from '@/core/errors/badRequestError';
 
 const MODULE_NAME = 'RateLimiterMiddleware';
@@ -35,7 +35,7 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 
 				if (isLimited) {
 					// Throw a custom rate limit exceeded error
-					throw new RateLimitExceededError(
+					throw new RateLimiterError(
 						'You have sent too many requests. Please try again later.',
 						config.limit,
 						config.duration,
@@ -44,10 +44,10 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 				}
 			} catch (error: unknown) {
 				// Rethrow known errors, wrap unknown errors
-				if (error instanceof RateLimitExceededError || error instanceof BadRequestError) {
+				if (error instanceof RateLimiterError || error instanceof BadRequestError) {
 					throw error;
 				} else {
-					throw new RateLimitExceededError('An error occurred while applying rate limiting.', config.limit, config.duration, MODULE_NAME);
+					throw new RateLimiterError('An error occurred while applying rate limiting.', config.limit, config.duration, MODULE_NAME);
 				}
 			}
 
