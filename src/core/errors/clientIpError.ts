@@ -1,18 +1,19 @@
-// src/core/errors/repositoryError.ts
+// src/core/errors/clientIpError.ts
+
 import { BaseError } from './baseError';
 import { ErrorCodes } from './errorCodes';
 
 /**
- * RepositoryError class for handling errors in data repositories.
+ * ClientIpExtractionError class for handling failures in extracting client IP.
  */
-export class RepositoryError extends BaseError {
+export class ClientIpError extends BaseError {
 	/**
-	 * Creates a new RepositoryError instance.
+	 * Creates a new ClientIpExtractionError instance.
 	 * @param message - The error message.
 	 * @param module - The module name where this error originated.
 	 * @param originalError - The original error object, if any.
 	 */
 	constructor(message: string, module: string, originalError?: unknown) {
-		super(message, 500, ErrorCodes.REPOSITORY_ERROR, module, originalError);
+		super(message, 400, ErrorCodes.CLIENT_IP_ERROR, module, originalError);
 	}
 }

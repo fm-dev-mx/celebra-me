@@ -1,18 +1,19 @@
-// src/core/errors/repositoryError.ts
+// src/core/errors/dataSanitizationError.ts
+
 import { BaseError } from './baseError';
 import { ErrorCodes } from './errorCodes';
 
 /**
- * RepositoryError class for handling errors in data repositories.
+ * DataSanitizationError class for handling data sanitization failures.
  */
-export class RepositoryError extends BaseError {
+export class DataSanitizationError extends BaseError {
 	/**
-	 * Creates a new RepositoryError instance.
+	 * Creates a new DataSanitizationError instance.
 	 * @param message - The error message.
 	 * @param module - The module name where this error originated.
 	 * @param originalError - The original error object, if any.
 	 */
 	constructor(message: string, module: string, originalError?: unknown) {
-		super(message, 500, ErrorCodes.REPOSITORY_ERROR, module, originalError);
+		super(message, 400, ErrorCodes.DATA_SANITIZATION_ERROR, module, originalError);
 	}
 }
