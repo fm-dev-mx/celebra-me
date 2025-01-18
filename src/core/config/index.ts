@@ -1,7 +1,14 @@
 // src/core/config/index.ts
 
-import type { RedisConfig, EmailConfig, SupabaseConfig, Config } from '../interfaces/coreConfig.interface';
+import type {
+	RedisConfig,
+	EmailConfig,
+	SupabaseConfig,
+	Config,
+	LoggingConfig,
+} from '../interfaces/coreConfig.interface';
 import { getEnvVariable } from './getEnvVariable';
+import { LogLevel } from '../interfaces/loggerInput.interface';
 
 /**
  * Load environment variables from a `.env` file in development.
@@ -10,8 +17,7 @@ import { getEnvVariable } from './getEnvVariable';
 const isProduction: boolean = getEnvVariable('NODE_ENV') === 'production';
 
 /**
- * Retrieves the Redis configuration.
- * @returns RedisConfig object.
+ * Retrieve Redis configuration.
  */
 const getRedisConfig = (): RedisConfig => ({
 	url: getEnvVariable('REDIS_URL'),
@@ -19,8 +25,7 @@ const getRedisConfig = (): RedisConfig => ({
 });
 
 /**
- * Retrieves the Email configuration for the contact form.
- * @returns EmailConfig object.
+ * Retrieve Email configuration for the contact form.
  */
 const getContactFormEmailConfig = (): EmailConfig => ({
 	sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
@@ -29,8 +34,7 @@ const getContactFormEmailConfig = (): EmailConfig => ({
 });
 
 /**
- * Retrieves the Email configuration for alerts.
- * @returns EmailConfig object.
+ * Retrieve Email configuration for alerts.
  */
 const getAlertEmailConfig = (): EmailConfig => ({
 	sendgridApiKey: getEnvVariable('SENDGRID_API_KEY'),
@@ -39,13 +43,48 @@ const getAlertEmailConfig = (): EmailConfig => ({
 });
 
 /**
- * Retrieves the Supabase configuration.
- * @returns SupabaseConfig object.
+ * Retrieve Supabase configuration.
  */
 const getSupabaseConfig = (): SupabaseConfig => ({
 	url: getEnvVariable('SUPABASE_URL'),
 	anonKey: getEnvVariable('SUPABASE_ANON_KEY'),
 });
+
+/**
+ * Retrieve Datadog configuration.
+ */
+const getDatadogConfig = (): { apiKey: string; hostname: string; serviceName: string } => ({
+	apiKey: getEnvVariable('DATADOG_API_KEY'),
+	hostname: getEnvVariable('HOSTNAME') || 'unknown-host',
+	serviceName: getEnvVariable('DATADOG_SERVICE_NAME') || 'default-service',
+});
+
+/**
+ * Retrieve Logging configuration.
+ * "critical" is no longer a valid Winston log level but may
+ * still appear in IMMEDIATE_LEVELS for metadata-based triggers.
+ */
+const validWinstonLogLevels = ['debug', 'info', 'warn', 'error'];
+
+const getLoggingConfig = (): LoggingConfig => {
+	const logLevel = getEnvVariable('LOG_LEVEL') || (isProduction ? 'info' : 'debug');
+
+	// Validate the logLevel against Winston defaults
+	if (!validWinstonLogLevels.includes(logLevel as LogLevel)) {
+		throw new Error(`Invalid log level: ${logLevel}. Valid levels: ${validWinstonLogLevels.join(', ')}`);
+	}
+
+	return {
+		// The cast is safe after validation
+		logLevel: logLevel as LoggingConfig['logLevel'],
+
+		scheduledFrequency: (getEnvVariable('SCHEDULED_FREQUENCY') as 'daily' | 'weekly' | 'monthly') || 'daily',
+		maxEmailsPerMinute: parseInt(getEnvVariable('MAX_EMAILS_PER_MINUTE') || '5', 10),
+		deduplicateCritical: getEnvVariable('DEDUPLICATE_CRITICAL') === 'true',
+		notificationInterval: parseInt(getEnvVariable('NOTIFICATION_INTERVAL') || '60', 10),
+	};
+};
+
 /**
  * Retrieve rate limiter configuration.
  */
@@ -67,6 +106,8 @@ const config: Config = {
 	contactFormEmailConfig: getContactFormEmailConfig(),
 	alertEmailConfig: getAlertEmailConfig(),
 	supabaseConfig: getSupabaseConfig(),
+	datadogConfig: getDatadogConfig(),
+	logging: getLoggingConfig(),
 	rateLimiterConfig: getRateLimiterConfig(),
 	adminEmail: getEnvVariable('ADMIN_EMAIL'),
 };
