@@ -108,9 +108,9 @@ export class EmailNotificationManager {
 		try {
 			await this.emailService.sendEmail(emailData);
 			logInfo({
+				level: LogLevel.INFO,
 				message: 'Critical alert email sent successfully.',
 				module: MODULE_NAME,
-				level: LogLevel.INFO,
 				meta: {
 					event: 'immediate_notification_sent',
 					immediateNotification: false,
@@ -216,7 +216,7 @@ export class EmailNotificationManager {
 			level: LogLevel.WARN,
 			meta: {
 				event: 'email_rate_limit',
-				immediateNotification: false,
+				immediateNotification: true,
 				rateLimit: {
 					rateLimiterKey: 'emailRateLimiter',
 					rateLimiterConfig: {
