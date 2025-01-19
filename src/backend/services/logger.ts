@@ -157,6 +157,10 @@ export function logWarn(data: Omit<LogData<BaseLogMeta>, 'level'>): void {
 	log({ ...data, level: LogLevel.WARN });
 }
 
+export function logBatch(data: LogData<BatchLogMeta>): void {
+	log({ ...data, level: LogLevel.INFO || LogLevel.WARN });
+}
+
 /**
  * Sends an immediate notification for logs that carry 'immediateNotification === true'.
  * Throttles notifications to avoid spamming.

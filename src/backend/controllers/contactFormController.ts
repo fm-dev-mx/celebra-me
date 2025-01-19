@@ -87,7 +87,6 @@ export class ContactFormController {
 					userName: data.name,
 					userEmail: data.email,
 				}),
-				immediateNotification: false
 			},
 		});
 	}

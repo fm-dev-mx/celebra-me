@@ -45,6 +45,20 @@ export interface BaseLogMeta {
 }
 
 /**
+ * Metadata for batch processing logs.
+ */
+export interface BatchLogMeta extends BaseLogMeta {
+	/** Total logs processed in a batch */
+	count: number;
+
+	/** Number of successfully parsed logs */
+	validCount: number;
+
+	/** Number of failed logs during parsing */
+	failedCount?: number;
+}
+
+/**
  * Extended meta interface for error-related logs.
  */
 export interface ErrorLogMeta extends BaseLogMeta {
@@ -53,6 +67,9 @@ export interface ErrorLogMeta extends BaseLogMeta {
 
 	/** Error code */
 	code?: string;
+
+	/** Index of the log in the batch (if applicable) */
+	index?: number;
 }
 
 /**
