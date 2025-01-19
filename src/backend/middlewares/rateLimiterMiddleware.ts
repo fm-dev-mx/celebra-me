@@ -20,6 +20,8 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 	return (handler: Handler): Handler => {
 		return async (context): Promise<Response> => {
 			const clientIp = context.clientIp;
+			const requestUrl = context.request.url;
+			const requestMethod = context.request.method;
 
 			if (!clientIp) {
 				// Throw a bad request error with a specific message
@@ -28,10 +30,7 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 
 			try {
 				// Check if the client is rate limited
-				const isLimited = await rateLimiterFactory.isRateLimited(config, clientIp, {
-					route: context.request.url,
-					method: context.request.method,
-				});
+				const isLimited = await rateLimiterFactory.isRateLimited(config, clientIp, requestUrl, requestMethod);
 
 				if (isLimited) {
 					// Throw a custom rate limit exceeded error
