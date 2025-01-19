@@ -12,9 +12,13 @@
 			"@images/*": ["src/frontend/assets/images/*"]
 		},
 		"jsx": "react-jsx",
-		"lib": ["dom", "dom.iterable", "esnext"],
 		"jsxImportSource": "react",
-		"moduleResolution": "node"
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	},
 	"include": ["src", "astro/types.d.ts", "env.d.ts"],
 	"exclude": ["node_modules", "dist"]
