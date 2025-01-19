@@ -3,8 +3,17 @@
 import type { RequestMeta } from './requestMeta.interface';
 import type { RawData } from './rawData.interface';
 import type { RateLimiterMeta } from './rateLimiter.interface';
-import { LogLevel } from './loggerInput.interface';
-import { EmailData } from './emailData.interface';
+import type { EmailData } from './emailData.interface';
+
+/**
+ * Standard Winston log levels
+ */
+export enum LogLevel {
+	INFO = 'info',
+	DEBUG = 'debug',
+	WARN = 'warn',
+	ERROR = 'error',
+}
 
 /**
  * Base metadata shared across all log types.
@@ -19,7 +28,7 @@ export interface BaseLogMeta {
 	/** Session ID, if applicable */
 	sessionId?: string;
 
-	/** Email notification flag (e.g., urgentNotification / notifyByEmail) */
+	/** Flag to trigger immediate notifications */
 	immediateNotification?: boolean;
 
 	/** HTTP request/response details */
@@ -47,37 +56,29 @@ export interface ErrorLogMeta extends BaseLogMeta {
 }
 
 /**
- * Generic log entry, allowing specialized meta objects (e.g., ErrorLogMeta).
+ * Generic shape for log data (no timestamp), used as input to the logger.
  */
-export interface LogEntry<M = BaseLogMeta> {
+export interface LogData<M = BaseLogMeta> {
 	/** The Winston log level */
 	level: LogLevel;
 
-	/** The main text message describing the event or action */
+	/** Main text message describing the event or action */
 	message: string;
 
 	/** The system or module from which this log originates */
 	module: string;
 
-	/** Additional data providing context for the log */
-	meta?: M; // [Changed: generic to allow specific meta types if needed]
+	/** Additional context for the log (metadata) */
+	meta?: M;
+}
 
+/**
+ * Generic log entry, extending the base LogData with a timestamp
+ * to represent how the log is ultimately recorded/stored.
+ */
+export interface LogEntry<M = BaseLogMeta> extends LogData<M> {
 	/**
-	 * Timestamp of the log entry.
 	 * Must be an ISO 8601 string (e.g., '2025-01-16T12:34:56.000Z').
 	 */
-	timestamp: string; // [Changed: unified to string for consistency]
-}
-
-// Specialized log entries extend the generic with exact meta:
-export interface ErrorLogEntry extends LogEntry<ErrorLogMeta> {
-	level: LogLevel.ERROR;
-}
-
-export interface WarnLogEntry extends LogEntry<BaseLogMeta> {
-	level: LogLevel.WARN;
-}
-
-export interface InfoLogEntry extends LogEntry<BaseLogMeta> {
-	level: LogLevel.INFO | LogLevel.DEBUG;
+	timestamp: string;
 }

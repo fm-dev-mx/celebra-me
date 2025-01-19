@@ -3,7 +3,6 @@
 import SupabaseClientFactory from '@/infrastructure/clients/supabaseClientFactory';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 import { logError, logInfo } from '@/backend/services/logger';
-import { LogLevel, ErrorLoggerInput, InfoLoggerInput } from '@/core/interfaces/loggerInput.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 
 const MODULE_NAME = 'ContactFormRepository';
@@ -27,42 +26,36 @@ export class ContactFormRepository {
 				.insert([submission]);
 
 			if (insertError) {
-				const errorLog: ErrorLoggerInput = {
+				logError({
 					message: 'Failed to save contact form submission',
 					module: MODULE_NAME,
-					level: LogLevel.ERROR, // Set level to ERROR
 					meta: {
 						event: 'DB_SAVE_FAILURE',
 						error: getErrorMessage(insertError),
 						immediateNotification: true,
 					},
-				};
-				logError(errorLog);
+				});
 				return;
 			}
 
-			const infoLog: InfoLoggerInput = {
+			logInfo({
 				message: 'Contact form submission saved successfully.',
 				module: MODULE_NAME,
-				level: LogLevel.INFO, // Set level to INFO
 				meta: {
 					event: 'DB_SAVE_SUCCESS',
 					immediateNotification: true,
 				},
-			};
-			logInfo(infoLog);
+			});
 		} catch (error: unknown) {
-			const errorLog: ErrorLoggerInput = {
+			logError({
 				message: 'Unexpected error while saving contact form submission.',
 				module: MODULE_NAME,
-				level: LogLevel.ERROR, // Set level to ERROR
 				meta: {
 					event: 'DB_SAVE_UNEXPECTED_ERROR',
 					error: getErrorMessage(error),
 					immediateNotification: true,
 				},
-			};
-			logError(errorLog);
+			});
 		}
 	}
 }

@@ -5,7 +5,6 @@ import { InitializationError } from '@/core/errors/initializationError';
 // Changed from "logger" to "logInfo" and "logError" for clarity/consistency
 import { logInfo, logError } from '@/backend/services/logger';
 import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
-import { ErrorLoggerInput, InfoLoggerInput, LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 
 export abstract class ClientFactory<T> {
@@ -26,12 +25,10 @@ export abstract class ClientFactory<T> {
 			try {
 				const client = await this.initializeClient();
 				// Changed logger.info to logInfo
-				const infoLog: InfoLoggerInput = {
+				logInfo({
 					message: `${this.MODULE_NAME} client initialized successfully`,
 					module: this.MODULE_NAME,
-					level: LogLevel.INFO
-				}
-				logInfo(infoLog);
+				});
 				return client;
 			} catch (error) {
 
@@ -40,17 +37,15 @@ export abstract class ClientFactory<T> {
 					await delay(backoffTime);
 				} else {
 					// Final attempt
-					const errorLog: ErrorLoggerInput = {
+					logError({
 						message: `Failed to initialize ${this.MODULE_NAME} after ${this.MAX_RETRIES} attempts.`,
 						module: this.MODULE_NAME,
-						level: LogLevel.ERROR,
 						meta: {
 							event: 'ClientInitialization',
 							error: getErrorMessage(error),
 							immediateNotification: true,
 						},
-					};
-					logError(errorLog);
+					});
 					throw new InitializationError(
 						`Failed to initialize ${this.MODULE_NAME} after ${this.MAX_RETRIES} attempts.`,
 						this.MODULE_NAME,

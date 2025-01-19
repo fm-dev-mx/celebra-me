@@ -8,7 +8,7 @@ import type {
 	LoggingConfig,
 } from '../interfaces/coreConfig.interface';
 import { getEnvVariable } from './getEnvVariable';
-import { LogLevel } from '../interfaces/loggerInput.interface';
+import { LogLevel } from '../interfaces/logEntry.interface';
 
 /**
  * Load environment variables from a `.env` file in development.

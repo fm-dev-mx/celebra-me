@@ -3,7 +3,6 @@
 import { EmailService } from '@/backend/services/emailService';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { logInfo, logError } from '@/backend/services/logger';
-import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
@@ -60,7 +59,6 @@ export class ContactFormController {
 			await this.emailService.sendEmail(emailData);
 		} catch (error) {
 			logError({
-				level: LogLevel.ERROR,
 				message: 'Error sending notification email',
 				module: MODULE_NAME,
 				meta: {
@@ -81,7 +79,6 @@ export class ContactFormController {
 	 */
 	private logSuccess(data: ContactFormData): void {
 		logInfo({
-			level: LogLevel.INFO,
 			message: 'Contact form submission processed successfully.',
 			module: MODULE_NAME,
 			meta: {

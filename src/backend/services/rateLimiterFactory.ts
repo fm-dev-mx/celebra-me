@@ -5,12 +5,6 @@ import { Redis } from '@upstash/redis';
 import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
 import RedisClientFactory from '@/infrastructure/clients/redisClientFactory';
 import { logError, logInfo, logWarn } from '@/backend/services/logger';
-import {
-	LogLevel,
-	ErrorLoggerInput,
-	InfoLoggerInput,
-	WarnLoggerInput,
-} from '@/core/interfaces/loggerInput.interface';
 import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
 import {
 	extractErrorDetails,
@@ -83,10 +77,9 @@ class RateLimiterFactory {
 		const cachedLimiter = this.rateLimiterCache.get(cacheKey);
 
 		if (cachedLimiter) {
-			const infoLog: InfoLoggerInput = {
+			logInfo({
 				message: `Using cached RateLimiter: ${cacheKey}`,
 				module: RateLimiterFactory.MODULE_NAME,
-				level: LogLevel.INFO, // Set to INFO
 				meta: {
 					event: 'rateLimiter_cached',
 					immediateNotification: false, // No immediate notification for cached usage
@@ -99,8 +92,7 @@ class RateLimiterFactory {
 						},
 					},
 				},
-			}
-			logInfo(infoLog);
+			});
 			return cachedLimiter;
 		}
 
@@ -116,10 +108,9 @@ class RateLimiterFactory {
 
 				this.rateLimiterCache.set(cacheKey, rateLimiter);
 
-				const infoLog: InfoLoggerInput = {
+				logInfo({
 					message: `RateLimiter created successfully: ${cacheKey}`,
 					module: RateLimiterFactory.MODULE_NAME,
-					level: LogLevel.INFO, // Set to INFO
 					meta: {
 						event: 'rateLimiter_created',
 						immediateNotification: false, // No immediate notification for successful creation
@@ -132,8 +123,7 @@ class RateLimiterFactory {
 							},
 						},
 					},
-				}
-				logInfo(infoLog);
+				});
 
 				return rateLimiter;
 			} catch (error) {
@@ -145,10 +135,9 @@ class RateLimiterFactory {
 					await delay(backoff);
 				} else {
 					// Log an error and throw a RateLimiterError if we've exhausted retries
-					const errorLog: ErrorLoggerInput = {
+					logError({
 						message: `Failed to create RateLimiter after ${RateLimiterFactory.MAX_RETRIES} attempts: ${cacheKey}`,
 						module: RateLimiterFactory.MODULE_NAME,
-						level: LogLevel.ERROR, // Set to ERROR
 						meta: {
 							event: 'rateLimiter_creation_failed',
 							error: message,
@@ -159,8 +148,7 @@ class RateLimiterFactory {
 								// Optional: rateLimitStatus can be included if relevant
 							},
 						},
-					};
-					logError(errorLog);
+					});
 
 					throw new RateLimiterError(
 						`Failed to create RateLimiter after ${RateLimiterFactory.MAX_RETRIES} attempts`,
@@ -174,10 +162,9 @@ class RateLimiterFactory {
 		}
 
 		// Log and throw an UnexpectedError if we somehow reach here
-		const unexpectedErrorLog: ErrorLoggerInput = {
+		logError({
 			message: 'Unexpected error in getRateLimiter.',
 			module: RateLimiterFactory.MODULE_NAME,
-			level: LogLevel.ERROR, // Set to ERROR
 			meta: {
 				event: 'rateLimiter_unexpected_error',
 				error: 'Unexpected error in getRateLimiter.',
@@ -187,8 +174,7 @@ class RateLimiterFactory {
 					rateLimiterConfig: config,
 				},
 			},
-		}
-		logError(unexpectedErrorLog);
+		});
 
 		throw new UnexpectedError(
 			'Unexpected error in getRateLimiter.',
@@ -214,10 +200,9 @@ class RateLimiterFactory {
 	): Promise<boolean> {
 		// If no key is provided, consider it rate-limited and log a warning
 		if (!key) {
-			const warnLog: WarnLoggerInput = {
+			logWarn({
 				message: 'Rate limit check called without a valid key.',
 				module: RateLimiterFactory.MODULE_NAME,
-				level: LogLevel.WARN, // Set to WARN
 				meta: {
 					event: 'RateLimiterCheck_invalid_key',
 					request: {
@@ -227,8 +212,7 @@ class RateLimiterFactory {
 					},
 					immediateNotification: false, // No immediate notification for warnings
 				},
-			};
-			logWarn(warnLog);
+			});
 			return true;
 		}
 
@@ -242,10 +226,9 @@ class RateLimiterFactory {
 		} catch (error) {
 			// Log any errors that occur during rate limit check
 			const message = getErrorMessage(error);
-			const errorLog: ErrorLoggerInput = {
+			logError({
 				message: `Error during rate limit check. Key: ${key}`,
 				module: RateLimiterFactory.MODULE_NAME,
-				level: LogLevel.ERROR, // Set to ERROR
 				meta: {
 					event: 'RateLimiterError',
 					error: message,
@@ -261,8 +244,7 @@ class RateLimiterFactory {
 						// Optional: rateLimitStatus can be included if relevant
 					},
 				},
-			};
-			logError(errorLog);
+			});
 
 			// If an error occurs, treat it as rate-limited to be safe
 			return true;

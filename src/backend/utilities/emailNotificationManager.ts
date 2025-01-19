@@ -5,7 +5,6 @@ import { EmailService } from '@/backend/services/emailService';
 import { buildLogEmailContent } from './emailContentBuilder';
 import config from '@/core/config';
 import { logError, logInfo, logWarn } from '@/backend/services/logger';
-import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 import { EmailData } from '@/core/interfaces/emailData.interface';
 
@@ -64,7 +63,6 @@ export class EmailNotificationManager {
 			logError({
 				message: 'Invalid log entry provided for immediate notification.',
 				module: MODULE_NAME,
-				level: LogLevel.ERROR,
 				meta: {
 					event: 'invalid_log_entry',
 					error: 'Missing required log entry properties',
@@ -79,7 +77,6 @@ export class EmailNotificationManager {
 			logWarn({
 				message: `Skipped duplicate critical notification. Hash: ${eventHash}`,
 				module: MODULE_NAME,
-				level: LogLevel.WARN,
 				meta: {
 					event: 'duplicate_critical_notification',
 					immediateNotification: false,
@@ -108,7 +105,6 @@ export class EmailNotificationManager {
 		try {
 			await this.emailService.sendEmail(emailData);
 			logInfo({
-				level: LogLevel.INFO,
 				message: 'Critical alert email sent successfully.',
 				module: MODULE_NAME,
 				meta: {
@@ -142,7 +138,6 @@ export class EmailNotificationManager {
 			logInfo({
 				message: 'Scheduled log summary sent successfully.',
 				module: MODULE_NAME,
-				level: LogLevel.INFO,
 				meta: {
 					event: 'scheduled_summary_sent',
 					immediateNotification: false,
@@ -213,7 +208,6 @@ export class EmailNotificationManager {
 		logWarn({
 			message: 'Email rate limit reached.',
 			module: MODULE_NAME,
-			level: LogLevel.WARN,
 			meta: {
 				event: 'email_rate_limit',
 				immediateNotification: true,
@@ -246,7 +240,6 @@ export class EmailNotificationManager {
 		logError({
 			message: 'Failed to send email notification.3',
 			module: MODULE_NAME,
-			level: LogLevel.ERROR,
 			meta: {
 				event,
 				error: getErrorMessage(error),

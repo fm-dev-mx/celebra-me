@@ -4,7 +4,6 @@ import { Handler } from '@/core/types/handlers';
 import { logError, logInfo } from '@/backend/services/logger';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
-import { LogLevel, InfoLoggerInput, ErrorLoggerInput } from '@/core/interfaces/loggerInput.interface';
 
 const MODULE_NAME = 'LoggerMiddleware';
 
@@ -21,10 +20,9 @@ export function loggerMiddleware(handler: Handler): Handler {
 		const maskedClientIp = maskIpAddress(clientIp || '');
 
 		try {
-			const infoLog: InfoLoggerInput = {
+			logInfo({
 				message: `Request: ${method} ${url}`,
 				module: MODULE_NAME,
-				level: LogLevel.INFO, // Set level to INFO
 				meta: {
 					event: 'request_received',
 					request: {
@@ -34,14 +32,11 @@ export function loggerMiddleware(handler: Handler): Handler {
 						clientIp: maskedClientIp,
 					},
 				},
-			};
-
-			logInfo(infoLog);
+			});
 		} catch (error: unknown) {
-			const errorLog: ErrorLoggerInput = {
+			logError({
 				message: 'LoggerMiddleware error',
 				module: MODULE_NAME,
-				level: LogLevel.ERROR, // Set level to ERROR
 				meta: {
 					event: 'request_received_error',
 					error: getErrorMessage(error),
@@ -53,9 +48,7 @@ export function loggerMiddleware(handler: Handler): Handler {
 					},
 					immediateNotification: true,
 				},
-			};
-
-			logError(errorLog);
+			});
 		}
 
 		return handler(context);

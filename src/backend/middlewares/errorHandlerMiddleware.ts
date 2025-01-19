@@ -4,8 +4,6 @@ import { Handler } from '@/core/types/handlers';
 import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
 import { jsonResponse } from '@/core/utilities/apiResponseUtils';
 import { logError, logWarn } from '@/backend/services/logger';
-import { ErrorLogEntry, WarnLogEntry } from '@/core/interfaces/logEntry.interface';
-import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { RequestMeta } from '@/core/interfaces/requestMeta.interface';
 import { BaseError } from '@/core/errors/baseError';
 import { ValidationError } from '@/core/errors/validationError';
@@ -82,7 +80,6 @@ const logApiError = (
 	error: unknown
 ): void => {
 	const clientIp = maskIpAddress(context.clientIp || '');
-	const timestamp = new Date().toISOString();
 
 	const isCritical =
 		apiError.statusCode >= 500 || error instanceof RateLimiterError;
@@ -99,11 +96,9 @@ const logApiError = (
 	const immediateNotification = isCritical;
 
 	if (isCritical) {
-		const errorLog: ErrorLogEntry = {
+		logError({
 			message: apiError.message,
 			module: MODULE_NAME,
-			timestamp,
-			level: LogLevel.ERROR, // Set level to ERROR
 			meta: {
 				event: apiError.event,
 				error: getErrorMessage(error),
@@ -111,23 +106,17 @@ const logApiError = (
 				request: requestMeta, // Use separated RequestMeta
 				immediateNotification, // Use immediateNotification
 			},
-		};
-
-		logError(errorLog);
+		});
 	} else {
-		const warnLog: WarnLogEntry = {
+		logWarn({
 			message: apiError.message,
 			module: MODULE_NAME,
-			timestamp,
-			level: LogLevel.WARN, // Set level to WARN
 			meta: {
 				event: apiError.code || 'UNKNOWN_ERROR_CODE',
 				request: requestMeta, // Use separated RequestMeta
 				immediateNotification, // Use immediateNotification
 				...(context.user && { userId: context.user.id }),
 			},
-		};
-
-		logWarn(warnLog);
+		});
 	}
 }

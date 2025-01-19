@@ -5,7 +5,7 @@ import { escapeHtml } from './dataSanitization';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 import { EmailData } from '@/core/interfaces/emailData.interface';
 import config from '@/core/config';
-import { LogLevel } from '@/core/interfaces/loggerInput.interface';
+import { LogLevel } from '@/core/interfaces/logEntry.interface';
 
 /**
  * Builds the email content for log entries.

@@ -3,7 +3,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import config from '@/core/config';
 import { logError } from '@/backend/services/logger';
-import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { ClientFactory } from './clientFactory';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 import { ConfigurationError } from '@/core/errors/configurationError';
@@ -20,7 +19,6 @@ export class SupabaseClientFactory extends ClientFactory<SupabaseClient> {
 		if (!url || !anonKey) {
 			const errorMessage = 'Missing Supabase configuration (URL or ANON_KEY)';
 			logError({
-				level: LogLevel.ERROR,
 				message: errorMessage,
 				meta: { event: 'SupabaseClientInitialization', error: 'Missing URL or ANON_KEY' },
 				module: this.MODULE_NAME,

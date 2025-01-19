@@ -5,21 +5,22 @@ import DatadogWinston from 'datadog-winston';
 import config from '@/core/config';
 import { sanitizeObject } from '@/backend/utilities/dataSanitization';
 import { getNotificationManager } from '@/backend/services/notificationManager';
-import { LogEntry } from '@/core/interfaces/logEntry.interface';
-import { ErrorLoggerInput, WarnLoggerInput, InfoLoggerInput, LogLevel } from '@/core/interfaces/loggerInput.interface';
+import {
+	LogLevel,
+	LogData,
+	ErrorLogMeta,
+	BaseLogMeta,
+	BatchLogMeta,
+	LogEntry,
+} from '@/core/interfaces/logEntry.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
-
-// Module identifier for logging
-const MODULE_NAME = 'Logger';
 
 // Initialize notification manager
 const notificationManager = getNotificationManager();
 const isProduction = config.isProduction;
 
 /**
- * Winston custom format for sanitizing sensitive data.
- * It iterates over 'message' and 'meta' fields, removing
- * or masking sensitive information as needed.
+ * Winston custom format to sanitize sensitive data in 'message' or 'meta' fields.
  */
 const sanitizeSensitiveData = format((info) => {
 	['message', 'meta'].forEach((key) => {
@@ -31,29 +32,25 @@ const sanitizeSensitiveData = format((info) => {
 });
 
 /**
- * Custom format to detect 'meta.immediateNotification === true' and send immediate notifications
- * without overriding the native logger.log() method.
+ * Format to detect 'meta.immediateNotification === true' and trigger
+ * an immediate notification without overriding the native logger.log().
  */
 const criticalNotificationFormat = format((info: any) => {
 	if (info.meta?.immediateNotification) {
-		// Trigger immediate notification if no throttle issues
-		sendImmediateNotification(info).catch((error) => {
-			// Handle errors silently to avoid infinite loops
+		sendImmediateNotification(info).catch(() => {
+			// Silently ignore to avoid infinite loops
 		});
 	}
 	return info;
 });
 
 /**
- * Configure the transports for Winston. This includes:
- * - Console transport for all logs.
- * - File transports for development (one for errors, one for combined logs).
- * - Datadog transport for production if API key is set.
+ * Define the logger transports based on environment configuration.
  */
 function configureTransports() {
 	const transportList = [];
 
-	// Console transport (always on)
+	// Console transport (always active)
 	transportList.push(new transports.Console());
 
 	// File transports in non-production
@@ -81,13 +78,13 @@ function configureTransports() {
 }
 
 /**
- * Configure the formatting pipeline:
- * 1. Include error stack traces if present.
- * 2. Splat format to allow string interpolation.
- * 3. Timestamp each log entry.
- * 4. Sanitize any sensitive data (sanitizeSensitiveData()).
- * 5. Check for immediate notifications (criticalNotificationFormat()).
- * 6. Choose between JSON (production) or a colored/pretty format (development).
+ * Configure the logger's format pipeline:
+ *  - Include stack traces (format.errors).
+ *  - Splat for printf interpolation.
+ *  - Timestamps for each log entry.
+ *  - Sanitize data to remove sensitive fields.
+ *  - Detect immediate notifications.
+ *  - JSON in production, colored/pretty in development.
  */
 function configureFormat() {
 	const baseFormats = [
@@ -118,70 +115,70 @@ function configureFormat() {
 }
 
 /**
- * Create the Winston logger instance with the given transports and format.
- * Note: logLevel must be one of Winston’s default levels: debug, info, warn, error.
+ * Create the Winston logger instance.
  */
-const logger: Logger = createLogger({
-	level: config.logging.logLevel || LogLevel.INFO, // Default to 'info' if not set
+const loggerInstance: Logger = createLogger({
+	level: config.logging.logLevel || LogLevel.INFO,
 	format: configureFormat(),
 	transports: configureTransports(),
 	exitOnError: false, // Do not exit on handled exceptions
 });
 
 /**
- * Wrapper function to ensure type safety for 'info' logs.
- * Usage: logInfo({ message, module, meta? })
+ * Generic log function that accepts any LogData (without timestamp).
+ * Winston will add the timestamp internally.
  */
-export function logInfo(logData: InfoLoggerInput): void {
-	logger.log(LogLevel.INFO, logData.message, {
-		module: logData.module,
-		meta: logData.meta,
+export function log(data: LogData): void {
+	loggerInstance.log(data.level, data.message, {
+		module: data.module,
+		meta: data.meta,
 	});
 }
 
 /**
- * Wrapper function to ensure type safety for 'error' logs.
+ * Wrapper for info-level logs
+ * (without the need to specify the log level).
  */
-export function logError(logData: ErrorLoggerInput): void {
-	logger.log(LogLevel.ERROR, logData.message, {
-		module: logData.module,
-		meta: logData.meta,
-	});
+export function logInfo(data: Omit<LogData<BaseLogMeta>, 'level'>): void {
+	log({ ...data, level: LogLevel.INFO });
 }
 
 /**
- * Wrapper function to ensure type safety for 'warn' logs.
+ * Wrapper for error-level logs
  */
-export function logWarn(logData: WarnLoggerInput): void {
-	logger.log(LogLevel.WARN, logData.message, {
-		module: logData.module,
-		meta: logData.meta,
-	});
+export function logError(data: Omit<LogData<ErrorLogMeta>, 'level'>): void {
+	log({ ...data, level: LogLevel.ERROR });
+}
+
+/**
+ * Wrapper for warn-level logs
+ */
+export function logWarn(data: Omit<LogData<BaseLogMeta>, 'level'>): void {
+	log({ ...data, level: LogLevel.WARN });
 }
 
 /**
  * Sends an immediate notification for logs that carry 'immediateNotification === true'.
  * Throttles notifications to avoid spamming.
  *
- * @param logInfo - The log entry triggering the notification
+ * @param notificationData - The log entry triggering the notification
  */
-async function sendImmediateNotification(logInfo: LogEntry): Promise<void> {
+async function sendImmediateNotification(notificationData: LogEntry): Promise<void> {
 	try {
 		await notificationManager.sendImmediateNotification({
-			level: logInfo.level,
-			message: logInfo.message || 'UndefinedMessage',
-			module: logInfo.module || 'UnknownModule',
-			meta: logInfo.meta || { event: 'UndefinedEvent' },
-			timestamp: logInfo.timestamp || new Date().toISOString(),
+			level: notificationData.level,
+			message: notificationData.message || 'UndefinedMessage',
+			module: notificationData.module || 'UnknownModule',
+			meta: notificationData.meta || { event: 'UndefinedEvent' },
+			timestamp: notificationData.timestamp || new Date().toISOString(),
 		});
 	} catch (notifyError) {
-		// If notification fails, log the failure without triggering another notification to avoid loops
+		// If notification fails, log the failure without re-triggering
 		logError({
 			message: 'Failed to send immediate notification.',
-			module: logInfo.module,
-			level: LogLevel.ERROR,
+			module: notificationData.module,
 			meta: {
-				event: logInfo.meta?.event || 'notification_failure',
+				event: notificationData.meta?.event || 'notification_failure',
 				error: getErrorMessage(notifyError),
 				immediateNotification: false,
 			},
@@ -189,4 +186,4 @@ async function sendImmediateNotification(logInfo: LogEntry): Promise<void> {
 	}
 }
 
-export default logger;
+export default loggerInstance;
