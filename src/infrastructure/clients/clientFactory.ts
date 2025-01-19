@@ -1,8 +1,12 @@
 // src/infrastructure/clients/clientFactory.ts
 
 import { InitializationError } from '@/core/errors/initializationError';
-import logger from '@/backend/services/logger';
+// Use consistent logging approach
+// Changed from "logger" to "logInfo" and "logError" for clarity/consistency
+import { logInfo, logError } from '@/backend/services/logger';
 import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
+import { ErrorLoggerInput, InfoLoggerInput, LogLevel } from '@/core/interfaces/loggerInput.interface';
+import { getErrorMessage } from '@/core/utilities/errorUtils';
 
 export abstract class ClientFactory<T> {
 	protected clientPromise: Promise<T> | null = null;
@@ -21,33 +25,32 @@ export abstract class ClientFactory<T> {
 		for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
 			try {
 				const client = await this.initializeClient();
-				logger.info({
+				// Changed logger.info to logInfo
+				const infoLog: InfoLoggerInput = {
 					message: `${this.MODULE_NAME} client initialized successfully`,
 					module: this.MODULE_NAME,
-					event: 'ClientInitialization',
-				});
+					level: LogLevel.INFO
+				}
+				logInfo(infoLog);
 				return client;
 			} catch (error) {
-				const errMsg = error instanceof Error ? error.message : String(error);
 
 				if (attempt < this.MAX_RETRIES) {
-					// Lower severity for intermediate attempts
-					logger.warn({
-						message: `Attempt ${attempt} to initialize ${this.MODULE_NAME} failed. Retrying...`,
-						meta: { error: errMsg },
-						module: this.MODULE_NAME,
-						event: 'ClientInitialization',
-					});
 					const backoffTime = getExponentialBackoffDelay(attempt, 1000);
 					await delay(backoffTime);
 				} else {
 					// Final attempt
-					logger.error({
+					const errorLog: ErrorLoggerInput = {
 						message: `Failed to initialize ${this.MODULE_NAME} after ${this.MAX_RETRIES} attempts.`,
-						meta: { error: errMsg },
 						module: this.MODULE_NAME,
-						event: 'ClientInitialization',
-					});
+						level: LogLevel.ERROR,
+						meta: {
+							event: 'ClientInitialization',
+							error: getErrorMessage(error),
+							immediateNotification: true,
+						},
+					};
+					logError(errorLog);
 					throw new InitializationError(
 						`Failed to initialize ${this.MODULE_NAME} after ${this.MAX_RETRIES} attempts.`,
 						this.MODULE_NAME,

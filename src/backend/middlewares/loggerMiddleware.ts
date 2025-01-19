@@ -1,61 +1,63 @@
 // src/backend/middlewares/loggerMiddleware.ts
 
 import { Handler } from '@/core/types/handlers';
-import logger from '@/backend/utilities/logger';
-import { LogEntry } from '@/core/interfaces/logEntry.interface';
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+import { logError, logInfo } from '@/backend/services/logger';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization';
+import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { LogLevel, InfoLoggerInput, ErrorLoggerInput } from '@/core/interfaces/loggerInput.interface';
 
 const MODULE_NAME = 'LoggerMiddleware';
 
 /**
- * Logger middleware.
- *
  * Logs the HTTP method, URL, and masked client IP for incoming requests.
- *
  * @param handler - The next handler function to call after logging the request details.
  * @returns A new handler function with logging applied.
  */
 export function loggerMiddleware(handler: Handler): Handler {
-	return async (context: ContactFormAPIContext): Promise<Response> => {
+	return async (context): Promise<Response> => {
+		const { request, clientIp, requestId } = context;
+		const method = request.method;
+		const url = request.url;
+		const maskedClientIp = maskIpAddress(clientIp || '');
+
 		try {
-			// Extract necessary details from the context
-			const { request, clientIp } = context;
-			const method = request.method;
-			const url = request.url;
-
-			// Mask the client IP address
-			const maskedClientIp = maskIpAddress(clientIp || '');
-
-			// Prepare the log entry
-			const logEntry: LogEntry = {
-				timestamp: new Date().toISOString(),
-				level: 'info',
-				message: `Request: ${method} ${url} | Client IP: ${maskedClientIp}`,
-				meta: {
-					event: 'IncomingRequest',
-					method,
-					url,
-					clientIp: maskedClientIp,
-				},
+			const infoLog: InfoLoggerInput = {
+				message: `Request: ${method} ${url}`,
 				module: MODULE_NAME,
+				level: LogLevel.INFO, // Set level to INFO
+				meta: {
+					event: 'request_received',
+					request: {
+						requestId: requestId || 'N/A',
+						method,
+						url,
+						clientIp: maskedClientIp,
+					},
+				},
 			};
 
-			// Log the request details
-			logger.info(logEntry);
+			logInfo(infoLog);
 		} catch (error: unknown) {
-			// Log the error and proceed
-			logger.error({
-				message: 'Error in loggerMiddleware',
-				meta: {
-					error: error instanceof Error ? error.message : String(error),
-					event: 'LoggerMiddlewareError',
-				},
+			const errorLog: ErrorLoggerInput = {
+				message: 'LoggerMiddleware error',
 				module: MODULE_NAME,
-			});
+				level: LogLevel.ERROR, // Set level to ERROR
+				meta: {
+					event: 'request_received_error',
+					error: getErrorMessage(error),
+					request: {
+						requestId: requestId || 'N/A',
+						method,
+						url,
+						clientIp: maskedClientIp,
+					},
+					immediateNotification: true,
+				},
+			};
+
+			logError(errorLog);
 		}
 
-		// Call the next handler in the chain
 		return handler(context);
 	};
 }

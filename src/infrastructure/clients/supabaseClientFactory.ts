@@ -2,7 +2,8 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import config from '@/core/config';
-import logger from '@/backend/services/logger';
+import { logError } from '@/backend/services/logger';
+import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { ClientFactory } from './clientFactory';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 import { ConfigurationError } from '@/core/errors/configurationError';
@@ -12,43 +13,32 @@ export class SupabaseClientFactory extends ClientFactory<SupabaseClient> {
 		return 'SupabaseClientFactory';
 	}
 
+	// InitializeClient abstract method implementation
 	protected async initializeClient(): Promise<SupabaseClient> {
 		const { url, anonKey } = config.supabaseConfig;
 
 		if (!url || !anonKey) {
 			const errorMessage = 'Missing Supabase configuration (URL or ANON_KEY)';
-			logger.error({
+			logError({
+				level: LogLevel.ERROR,
 				message: errorMessage,
-				meta: { event: 'SupabaseClientInitialization' },
+				meta: { event: 'SupabaseClientInitialization', error: 'Missing URL or ANON_KEY' },
 				module: this.MODULE_NAME,
 			});
 			throw new ConfigurationError(errorMessage, this.MODULE_NAME);
 		}
 
-		const supabase = createClient(url, anonKey);
-
 		try {
-			// Optional connectivity check
-			const { error } = await supabase.rpc('ping');
-			if (error) {
-				throw new ConfigurationError(`Connectivity check failed: ${error.message}`, this.MODULE_NAME, error);
-			}
-
-			logger.info({
-				message: 'Supabase connectivity verified.',
-				meta: { event: 'SupabaseClientInitialization' },
-				module: this.MODULE_NAME,
-			});
+			const supabase = createClient(url, anonKey);
 
 			return supabase;
 		} catch (error) {
 			const errorMsg = getErrorMessage(error);
-			logger.error({
-				message: `Error verifying Supabase connectivity`,
-				meta: { event: 'SupabaseConnectivityCheck', error: errorMsg },
-				module: this.MODULE_NAME,
-			});
-			throw new ConfigurationError(`SupabaseClient Initialization failed: ${errorMsg}`, this.MODULE_NAME, error);
+			throw new ConfigurationError(
+				`SupabaseClient Initialization failed: ${errorMsg}`,
+				this.MODULE_NAME,
+				error
+			);
 		}
 	}
 }

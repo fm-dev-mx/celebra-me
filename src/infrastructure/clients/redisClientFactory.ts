@@ -2,7 +2,8 @@
 
 import { Redis } from '@upstash/redis';
 import config from '@/core/config';
-import logger from '@/backend/services/logger';
+import { LogLevel } from '@/core/interfaces/loggerInput.interface';
+import { logError } from '@/backend/services/logger';
 import { ConfigurationError } from '@/core/errors/configurationError';
 import { ClientFactory } from './clientFactory';
 
@@ -16,9 +17,10 @@ export class RedisClientFactory extends ClientFactory<Redis> {
 
 		if (!url || !token) {
 			const errorMessage = 'Missing Redis configuration (URL or TOKEN)';
-			logger.error({
+			logError({
+				level: LogLevel.ERROR,
 				message: errorMessage,
-				meta: { event: 'RedisClientInitialization' },
+				meta: { event: 'RedisClientInitialization', error: 'Missing URL or TOKEN' },
 				module: this.MODULE_NAME,
 			});
 			throw new ConfigurationError(errorMessage, this.MODULE_NAME);

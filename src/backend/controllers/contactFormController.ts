@@ -2,14 +2,14 @@
 
 import { EmailService } from '@/backend/services/emailService';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
-import { EmailData } from '@/core/interfaces/emailData.interface';
-import config from '@/core/config';
-import logger from '@/backend/utilities/logger';
+import { logInfo, logError } from '@/backend/services/logger';
+import { LogLevel } from '@/core/interfaces/loggerInput.interface';
 import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
 import { getErrorMessage } from '@/core/utilities/errorUtils';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
 import { ControllerError } from '@/core/errors/controllerError';
 import { prepareEmailData } from '@/backend/utilities/emailContentBuilder';
+import { sanitizeObject } from '@/backend/utilities/dataSanitization';
 
 const MODULE_NAME = 'ContactFormController';
 
@@ -21,61 +21,77 @@ export class ContactFormController {
 
 	/**
 	 * Processes a contact form submission.
-	 * Logs repository errors but continues to send the email,
-	 * ensuring that database failures do not block email notifications.
 	 */
 	async processContactSubmission(data: ContactFormData): Promise<void> {
 		try {
-			// Attempt to save the submission to the database
-			try {
-				await this.contactFormRepository.saveSubmission(data);
-			} catch (error) {
-				logger.error({
-					message: 'Database save failed; continuing with email notification.',
-					meta: {
-						error: getErrorMessage(error),
-						event: 'ContactFormSubmission',
-					},
-					module: MODULE_NAME,
-				});
-				// Proceed with sending the email even if DB fails
-			}
-
-			const emailData = prepareEmailData(data);
-			await this.emailService.sendEmail(emailData);
-
+			await Promise.all([
+				this.saveSubmission(data),
+				this.sendNotificationEmail(data),
+			]);
 			this.logSuccess(data);
-
 		} catch (error) {
-			let userFriendlyMessage = 'There was an error processing the contact form. Please try again later.';
-			if (error instanceof EmailServiceError) {
-				userFriendlyMessage = 'We encountered an issue sending the notification email. Please try again later.';
-			}
-
-			logger.error({
-				message: 'Failed to process contact form submission.',
-				meta: {
-					error: getErrorMessage(error),
-					event: 'ContactFormSubmission',
-				},
-				module: MODULE_NAME,
-			});
-
-			throw new ControllerError(userFriendlyMessage, MODULE_NAME, error);
+			throw new ControllerError(
+				'There was an error processing the contact form. Please try again later.',
+				MODULE_NAME,
+				error
+			);
 		}
 	}
 
-	private logSuccess(data: ContactFormData): void {
-		logger.info({
-			message: 'Contact form submission processed successfully.',
-			meta: {
-				event: 'ContactFormSubmission',
-				user: {
-					name: data.name,
-					email: data.email,
+	/**
+	 * Saves the contact form submission to the database.
+	 */
+	private async saveSubmission(data: ContactFormData): Promise<void> {
+		try {
+			await this.contactFormRepository.saveSubmission(data);
+		} catch (error) {
+			// Instead of logging again here, just rethrow a contextual error
+			// so that the global middleware logs it once.
+			throw new ControllerError('Error saving contact form submission', MODULE_NAME, error);
+		}
+	}
+
+	/**
+	 * Sends the notification email for the contact form submission.
+	 */
+	private async sendNotificationEmail(data: ContactFormData): Promise<void> {
+		try {
+			const emailData = prepareEmailData(data);
+			await this.emailService.sendEmail(emailData);
+		} catch (error) {
+			logError({
+				level: LogLevel.ERROR, // Add 'level' field
+				message: 'Error sending notification email',
+				module: MODULE_NAME,
+				meta: {
+					event: 'email_send_failure',
+					error: getErrorMessage(error),
+					rawData: sanitizeObject({
+						userName: data.name,
+						userEmail: data.email,
+					}),
 				},
-			},
+			});
+			throw new EmailServiceError('Error sending email notification', MODULE_NAME, error);
+		}
+	}
+
+	/**
+	 * Logs the successful processing of the contact form submission.
+	 */
+	private logSuccess(data: ContactFormData): void {
+		logInfo({
+			level: LogLevel.INFO, // Add 'level' field
+			message: 'Contact form submission processed successfully.',
 			module: MODULE_NAME,
+			meta: {
+				event: 'contact_form_success',
+				rawData: sanitizeObject({
+					userName: data.name,
+					userEmail: data.email,
+				}),
+				immediateNotification: false
+			},
 		});
 	}
 }

@@ -3,16 +3,20 @@
 import { Handler } from '@/core/types/handlers';
 import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
 import { jsonResponse } from '@/core/utilities/apiResponseUtils';
-import logger from '@/backend/utilities/logger';
+import { logError, logWarn } from '@/backend/services/logger';
+import { ErrorLogEntry, WarnLogEntry } from '@/core/interfaces/logEntry.interface';
+import { LogLevel } from '@/core/interfaces/loggerInput.interface';
+import { RequestMeta } from '@/core/interfaces/requestMeta.interface';
 import { BaseError } from '@/core/errors/baseError';
 import { ValidationError } from '@/core/errors/validationError';
-import { RateLimitExceededError } from '@/core/errors/rateLimitExceededError';
+import { RateLimiterError } from '@/core/errors/rateLimiterError';
 import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
 import config from '@/core/config';
-import { maskIpAddress, sanitizeError } from '@/backend/utilities/dataSanitization';
+import { maskIpAddress } from '@/backend/utilities/dataSanitization'; // Removed sanitizeError
+import { getErrorMessage } from '@/core/utilities/errorUtils';
 
 const MODULE_NAME = 'ErrorHandlerMiddleware';
-const isProduction: boolean = config.environment === 'production';
+const isProduction = config.environment === 'production';
 
 /**
  * Middleware to handle errors thrown by other middleware or handlers.
@@ -25,12 +29,12 @@ export function errorHandlerMiddleware(handler: Handler): Handler {
 		try {
 			// Attempt to execute the handler
 			return await handler(context);
-		} catch (error: unknown) {
+		} catch (error) {
 			// Map the error to an API response
 			const apiError = mapErrorToApiResponse(error);
 
 			// Handle the error (logging, notifications)
-			await handleApiError(apiError, context, error);
+			logApiError(apiError, context, error);
 
 			// Return the standardized error response
 			return jsonResponse(apiError, apiError.statusCode);
@@ -39,82 +43,91 @@ export function errorHandlerMiddleware(handler: Handler): Handler {
 }
 
 /**
- * Maps an error object to an ApiErrorResponse.
- *
- * @param error - The error object.
- * @returns The corresponding ApiErrorResponse.
+ * Maps an error to a standardized API response.
  */
-function mapErrorToApiResponse(error: unknown): ApiErrorResponse {
+const mapErrorToApiResponse = (error: unknown): ApiErrorResponse => {
 	if (error instanceof BaseError) {
 		return {
 			success: false,
+			event: error.name,
 			statusCode: error.statusCode,
 			message: error.message,
 			code: error.code,
 			...(error instanceof ValidationError && { errors: error.errors }),
-			...(error instanceof RateLimitExceededError && {
+			...(error instanceof RateLimiterError && {
 				limit: error.limit,
 				duration: error.duration,
 			}),
-			...(!isProduction && { error: error.message }),
-		};
-	} else {
-		// For unknown errors
-		return {
-			success: false,
-			statusCode: 500,
-			message: 'Internal server error',
-			code: 'INTERNAL_SERVER_ERROR',
-			...(!isProduction && {
-				error: error instanceof Error ? error.message : String(error),
-			}),
+			...(!isProduction && { debug: { message: error.message, stack: error.stack } }),
 		};
 	}
-}
+
+	// Fallback to a generic error response for unhandled errors
+	return {
+		success: false,
+		event: 'UNKNOWN_ERROR_EVENT',
+		statusCode: 500,
+		message: 'Internal server error',
+		code: 'UNKNOWN_ERROR_CODE',
+		...(!isProduction && { debug: { message: getErrorMessage(error) } }),
+	};
+};
 
 /**
- * Handles the registration and notifications for API errors.
- *
- * @param apiError - The API error response.
- * @param context - The request context.
- * @param error - The original error object.
+ * Logs API errors with contextual information.
  */
-async function handleApiError(
+const logApiError = (
 	apiError: ApiErrorResponse,
 	context: ContactFormAPIContext,
 	error: unknown
-): Promise<void> {
-	logError(apiError, context, error);
+): void => {
+	const clientIp = maskIpAddress(context.clientIp || '');
+	const timestamp = new Date().toISOString();
 
-}
+	const isCritical =
+		apiError.statusCode >= 500 || error instanceof RateLimiterError;
 
-/**
- * Logs errors based on their severity.
- *
- * @param apiError - The API error response.
- * @param context - The request context.
- * @param error - The original error object.
- */
-function logError(
-	apiError: ApiErrorResponse,
-	context: ContactFormAPIContext,
-	error: unknown
-): void {
-	const logLevel = apiError.statusCode >= 500 ? 'error' : 'warn';
+	// Build the RequestMeta object
+	const requestMeta: RequestMeta = {
+		requestId: context.request.headers.get('x-request-id') || 'unknown',
+		url: context.request.url,
+		method: context.request.method,
+		clientIp,
+	};
 
-	logger.log({
-		level: logLevel,
-		message: apiError.message,
-		meta: {
-			event: apiError.code,
-			error: sanitizeError(error),
-			request: {
-				method: context.request.method,
-				url: context.request.url,
-				clientIp: maskIpAddress(context.clientIp || ''),
+	// Determine if immediate notification is needed
+	const immediateNotification = isCritical;
+
+	if (isCritical) {
+		const errorLog: ErrorLogEntry = {
+			message: apiError.message,
+			module: MODULE_NAME,
+			timestamp,
+			level: LogLevel.ERROR, // Set level to ERROR
+			meta: {
+				event: apiError.event,
+				error: getErrorMessage(error),
+				code: apiError.code, // Assign error code
+				request: requestMeta, // Use separated RequestMeta
+				immediateNotification, // Use immediateNotification
 			},
-		},
-		module: MODULE_NAME,
-	});
-}
+		};
 
+		logError(errorLog);
+	} else {
+		const warnLog: WarnLogEntry = {
+			message: apiError.message,
+			module: MODULE_NAME,
+			timestamp,
+			level: LogLevel.WARN, // Set level to WARN
+			meta: {
+				event: apiError.code || 'UNKNOWN_ERROR_CODE',
+				request: requestMeta, // Use separated RequestMeta
+				immediateNotification, // Use immediateNotification
+				...(context.user && { userId: context.user.id }),
+			},
+		};
+
+		logWarn(warnLog);
+	}
+}
