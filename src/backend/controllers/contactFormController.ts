@@ -60,7 +60,7 @@ export class ContactFormController {
 			await this.emailService.sendEmail(emailData);
 		} catch (error) {
 			logError({
-				level: LogLevel.ERROR, // Add 'level' field
+				level: LogLevel.ERROR,
 				message: 'Error sending notification email',
 				module: MODULE_NAME,
 				meta: {
@@ -81,7 +81,7 @@ export class ContactFormController {
 	 */
 	private logSuccess(data: ContactFormData): void {
 		logInfo({
-			level: LogLevel.INFO, // Add 'level' field
+			level: LogLevel.INFO,
 			message: 'Contact form submission processed successfully.',
 			module: MODULE_NAME,
 			meta: {

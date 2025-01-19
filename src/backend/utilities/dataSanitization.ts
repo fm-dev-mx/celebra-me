@@ -193,6 +193,12 @@ function categorizeSensitiveFields(): Record<string, string> {
 		'credential': 'generic',
 		'session': 'generic',
 		'email': 'email',
+		'useremail': 'email',
+		'to': 'email',
+		'from': 'email',
+		'cc': 'email',
+		'bcc': 'email',
+		'replyto': 'email',
 		'phone': 'phone',
 		'mobile': 'phone',
 		'address': 'generic',
@@ -211,6 +217,7 @@ export function sanitizeError(error: unknown): Partial<ApiErrorResponse> {
 	if (error instanceof Error) {
 		return {
 			message: escapeHtml(error.message),
+			event: error.name,
 			code: (error as any).code,
 		};
 	}
