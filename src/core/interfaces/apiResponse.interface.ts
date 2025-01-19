@@ -22,6 +22,7 @@ export interface ApiSuccessResponse<T = unknown> {
  */
 export interface ApiErrorResponse {
 	success: false;
+	event: string;
 	statusCode: number;
 	message: string;
 	code?: string;

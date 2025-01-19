@@ -9,5 +9,8 @@ export interface ContactFormAPIContext {
 	request: Request;
 	clientIp?: string;
 	validatedData?: ContactFormData;
+	user?: {
+		id: string;
+	};
 	// Add other properties as needed
 }
