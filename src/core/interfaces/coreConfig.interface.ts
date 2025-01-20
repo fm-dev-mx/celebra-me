@@ -16,10 +16,9 @@ export interface SupabaseConfig {
 	anonKey: string;
 }
 
-export interface DatadogConfig {
-	apiKey: string;
-	hostname: string;
-	serviceName: string;
+export interface LogglyConfig {
+	token: string;
+	subdomain: string;
 }
 
 /**
@@ -48,7 +47,7 @@ export interface Config {
 	contactFormEmailConfig: EmailConfig;
 	alertEmailConfig: EmailConfig;
 	supabaseConfig: SupabaseConfig;
-	datadogConfig: DatadogConfig;
+	logglyConfig: LogglyConfig;
 	adminEmail: string;
 	isProduction: boolean;
 	logging: LoggingConfig;

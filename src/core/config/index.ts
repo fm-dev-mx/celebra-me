@@ -51,12 +51,11 @@ const getSupabaseConfig = (): SupabaseConfig => ({
 });
 
 /**
- * Retrieve Datadog configuration.
+ * Retrieve Loggly configuration.
  */
-const getDatadogConfig = (): { apiKey: string; hostname: string; serviceName: string } => ({
-	apiKey: getEnvVariable('DATADOG_API_KEY'),
-	hostname: getEnvVariable('HOSTNAME') || 'unknown-host',
-	serviceName: getEnvVariable('DATADOG_SERVICE_NAME') || 'default-service',
+const getLogglyConfig = (): { token: string; subdomain: string; } => ({
+	token: getEnvVariable('LOGGLY_TOKEN'),
+	subdomain: getEnvVariable('LOGGLY_SUBDOMAIN') || 'unknown-host'
 });
 
 /**
@@ -106,7 +105,7 @@ const config: Config = {
 	contactFormEmailConfig: getContactFormEmailConfig(),
 	alertEmailConfig: getAlertEmailConfig(),
 	supabaseConfig: getSupabaseConfig(),
-	datadogConfig: getDatadogConfig(),
+	logglyConfig: getLogglyConfig(),
 	logging: getLoggingConfig(),
 	rateLimiterConfig: getRateLimiterConfig(),
 	adminEmail: getEnvVariable('ADMIN_EMAIL'),

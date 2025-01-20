@@ -1,7 +1,7 @@
 // src/backend/services/logger.ts
 
 import { createLogger, format, transports, Logger } from 'winston';
-import DatadogWinston from 'datadog-winston';
+import { Loggly } from 'winston-loggly-bulk'; // Loggly integration
 import config from '@/core/config';
 import { sanitizeObject } from '@/backend/utilities/dataSanitization';
 import { getNotificationManager } from '@/backend/services/notificationManager';
@@ -45,31 +45,40 @@ const criticalNotificationFormat = format((info: any) => {
 });
 
 /**
- * Define the logger transports based on environment configuration.
+ * Defines the logger transports based on environment configuration.
+ * This function handles different destinations (console, files, Loggly).
  */
 function configureTransports() {
 	const transportList = [];
 
-	// Console transport (always active)
-	transportList.push(new transports.Console());
+	// Console transport: Includes colors for local development
+	transportList.push(
+		new transports.Console({
+			format: format.combine(
+				format.colorize(), // Enable colors for console output
+				format.printf(({ timestamp, level, message, meta }) => {
+					let log = `[${timestamp}] ${level}: ${message}`;
+					if (meta && typeof meta === 'object') {
+						const metaKeys = Object.keys(meta);
+						if (metaKeys.length > 0) {
+							log += ` ${JSON.stringify(meta, null, 2)}`;
+						}
+					}
+					return log;
+				})
+			),
+		})
+	);
 
-	// File transports in non-production
-	if (!isProduction) {
+	// Loggly transport: Sends JSON logs to Loggly for centralized storage
+	if (config.logglyConfig?.token && config.logglyConfig?.subdomain) {
+		console.log('Loggly transport enabled ++++++++++++++++++++++++++++++');
 		transportList.push(
-			new transports.File({ filename: 'logs/error.log', level: LogLevel.ERROR }),
-			new transports.File({ filename: 'logs/combined.log' })
-		);
-	}
-
-	// Datadog transport in production
-	if (isProduction && config.datadogConfig.apiKey) {
-		transportList.push(
-			new DatadogWinston({
-				apiKey: config.datadogConfig.apiKey,
-				hostname: config.datadogConfig.hostname,
-				service: config.datadogConfig.serviceName,
-				ddsource: 'nodejs',
-				ddtags: `env:${config.environment}`,
+			new Loggly({
+				token: config.logglyConfig.token,
+				subdomain: config.logglyConfig.subdomain,
+				tags: ['celebra-me', config.environment],
+				json: true, // Use pure JSON format
 			})
 		);
 	}
@@ -78,36 +87,43 @@ function configureTransports() {
 }
 
 /**
- * Configure the logger's format pipeline:
- *  - Include stack traces (format.errors).
- *  - Splat for printf interpolation.
- *  - Timestamps for each log entry.
- *  - Sanitize data to remove sensitive fields.
- *  - Detect immediate notifications.
- *  - JSON in production, colored/pretty in development.
+ * Configures the logger's format pipeline:
+ * - Includes stack traces for errors (format.errors).
+ * - Enriches log metadata with context (environment, app name, etc.).
+ * - Sanitizes sensitive fields in logs.
+ * - Detects and triggers immediate notifications if required.
+ * - Uses JSON format for production, and colored/pretty format for development.
  */
 function configureFormat() {
 	const baseFormats = [
-		format.errors({ stack: true }),
+		format((info) => {
+			if (info.level === LogLevel.ERROR && info.stack) {
+				info.message += `\nStack: ${info.stack}`;
+			}
+			return info;
+		})(),
 		format.splat(),
 		format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
 		sanitizeSensitiveData(),
 		criticalNotificationFormat(),
 	];
 
+	// JSON format for production environments
 	if (isProduction) {
 		return format.combine(...baseFormats, format.json());
 	}
 
+	// Pretty format for local development
 	return format.combine(
 		...baseFormats,
-		format.colorize(),
-		format.printf(({ timestamp, level, message, ...meta }) => {
+		format.printf(({ timestamp, level, message, meta }) => {
 			let log = `[${timestamp}] ${level}: ${message}`;
-			const metaKeys = Object.keys(meta);
-			if (metaKeys.length > 0) {
-				// Pretty-print meta for easier development readability
-				log += ` ${JSON.stringify(meta, null, 2)}`;
+			if (meta && typeof meta === 'object') {
+				const metaKeys = Object.keys(meta);
+				if (metaKeys.length > 0) {
+					// Pretty-print meta for easier development readability
+					log += ` ${JSON.stringify(meta, null, 2)}`;
+				}
 			}
 			return log;
 		})
@@ -115,7 +131,7 @@ function configureFormat() {
 }
 
 /**
- * Create the Winston logger instance.
+ * Create the Winston logger instance with specified transports and formats.
  */
 const loggerInstance: Logger = createLogger({
 	level: config.logging.logLevel || LogLevel.INFO,
@@ -126,7 +142,7 @@ const loggerInstance: Logger = createLogger({
 
 /**
  * Generic log function that accepts any LogData (without timestamp).
- * Winston will add the timestamp internally.
+ * Winston automatically appends the timestamp.
  */
 export function log(data: LogData): void {
 	loggerInstance.log(data.level, data.message, {
@@ -137,7 +153,6 @@ export function log(data: LogData): void {
 
 /**
  * Wrapper for info-level logs
- * (without the need to specify the log level).
  */
 export function logInfo(data: Omit<LogData<BaseLogMeta>, 'level'>): void {
 	log({ ...data, level: LogLevel.INFO });
@@ -157,13 +172,16 @@ export function logWarn(data: Omit<LogData<BaseLogMeta>, 'level'>): void {
 	log({ ...data, level: LogLevel.WARN });
 }
 
+/**
+ * Wrapper for batch logs (used for bulk processing logs).
+ */
 export function logBatch(data: LogData<BatchLogMeta>): void {
-	log({ ...data, level: LogLevel.INFO || LogLevel.WARN });
+	log({ ...data, level: LogLevel.INFO });
 }
 
 /**
- * Sends an immediate notification for logs that carry 'immediateNotification === true'.
- * Throttles notifications to avoid spamming.
+ * Sends an immediate notification for logs with 'immediateNotification === true'.
+ * Prevents spamming by throttling notifications.
  *
  * @param notificationData - The log entry triggering the notification
  */
@@ -177,7 +195,7 @@ async function sendImmediateNotification(notificationData: LogEntry): Promise<vo
 			timestamp: notificationData.timestamp || new Date().toISOString(),
 		});
 	} catch (notifyError) {
-		// If notification fails, log the failure without re-triggering
+		// Log the failure without re-triggering an alert
 		logError({
 			message: 'Failed to send immediate notification.',
 			module: notificationData.module,
