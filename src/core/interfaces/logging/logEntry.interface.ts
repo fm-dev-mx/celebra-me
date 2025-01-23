@@ -1,9 +1,9 @@
-// src/core/interfaces/logEntry.interface.ts
+// src/core/interfaces/logging/logEntry.interface.ts
 
 import type { RequestMeta } from './requestMeta.interface';
 import type { RawData } from './rawData.interface';
-import type { RateLimiterMeta } from './rateLimiter.interface';
-import type { EmailData } from './emailData.interface';
+import type { RateLimiterMeta } from '../shared/rateLimiter.interface';
+import type { EmailData } from '@interfaces/email/emailData.interface';
 
 /**
  * Standard Winston log levels

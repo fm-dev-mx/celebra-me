@@ -1,6 +1,6 @@
-// src/core/interfaces/contactFormAPIContext.interface.ts
+// src/core/interfaces/forms/contactFormAPIContext.interface.ts
 
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
 
 /**
  * Interface representing the context for the Contact Form API.

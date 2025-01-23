@@ -6,9 +6,9 @@ import type {
 	SupabaseConfig,
 	Config,
 	LoggingConfig,
-} from '../interfaces/coreConfig.interface';
+} from '@interfaces/config/coreConfig.interface';
 import { getEnvVariable } from './getEnvVariable';
-import { LogLevel } from '../interfaces/logEntry.interface';
+import { LogLevel } from '@interfaces/logging/logEntry.interface';
 
 /**
  * Load environment variables from a `.env` file in development.
@@ -53,9 +53,9 @@ const getSupabaseConfig = (): SupabaseConfig => ({
 /**
  * Retrieve Loggly configuration.
  */
-const getLogglyConfig = (): { token: string; subdomain: string; } => ({
+const getLogglyConfig = (): { token: string; subdomain: string } => ({
 	token: getEnvVariable('LOGGLY_TOKEN'),
-	subdomain: getEnvVariable('LOGGLY_SUBDOMAIN') || 'unknown-host'
+	subdomain: getEnvVariable('LOGGLY_SUBDOMAIN') || 'unknown-host',
 });
 
 /**
@@ -70,14 +70,17 @@ const getLoggingConfig = (): LoggingConfig => {
 
 	// Validate the logLevel against Winston defaults
 	if (!validWinstonLogLevels.includes(logLevel as LogLevel)) {
-		throw new Error(`Invalid log level: ${logLevel}. Valid levels: ${validWinstonLogLevels.join(', ')}`);
+		throw new Error(
+			`Invalid log level: ${logLevel}. Valid levels: ${validWinstonLogLevels.join(', ')}`,
+		);
 	}
 
 	return {
 		// The cast is safe after validation
 		logLevel: logLevel as LoggingConfig['logLevel'],
 
-		scheduledFrequency: (getEnvVariable('SCHEDULED_FREQUENCY') as 'daily' | 'weekly' | 'monthly') || 'daily',
+		scheduledFrequency:
+			(getEnvVariable('SCHEDULED_FREQUENCY') as 'daily' | 'weekly' | 'monthly') || 'daily',
 		maxEmailsPerMinute: parseInt(getEnvVariable('MAX_EMAILS_PER_MINUTE') || '5', 10),
 		deduplicateCritical: getEnvVariable('DEDUPLICATE_CRITICAL') === 'true',
 		notificationInterval: parseInt(getEnvVariable('NOTIFICATION_INTERVAL') || '60', 10),

@@ -1,4 +1,4 @@
-// src/core/interfaces/siteData.interface.ts
+// src/core/interfaces/data/siteData.interface.ts
 
 /**
  * Interface for general site information.
@@ -30,8 +30,8 @@ export interface SiteData {
  * Interface for structured SEO data.
  */
 export interface SeoData {
-	"@context": string;
-	"@type": string;
+	'@context': string;
+	'@type': string;
 	name: string;
 	description: string;
 	url: string;
@@ -50,7 +50,7 @@ export interface SeoData {
  * Interface for author information.
  */
 export interface Author {
-	"@type": string;
+	'@type': string;
 	name: string;
 }
 
@@ -58,7 +58,7 @@ export interface Author {
  * Interface for contact point information.
  */
 export interface ContactPoint {
-	"@type": string;
+	'@type': string;
 	email: string;
 	contactType: string;
 	telephone?: string;
@@ -70,7 +70,7 @@ export interface ContactPoint {
  * Interface for address information.
  */
 export interface Address {
-	"@type": string;
+	'@type': string;
 	addressLocality: string;
 	addressRegion: string;
 	postalCode: string;
@@ -120,20 +120,20 @@ export interface SocialLink {
  * Type representing allowed icon names.
  */
 export type IconNames =
-	| "AnniversaryIcon"
-	| "ArrowDownIcon"
-	| "ArrowUpIcon"
-	| "CakeIcon"
-	| "CelebrameIcon"
-	| "CheckIcon"
-	| "CommitmentIcon"
-	| "CrownIcon"
-	| "EasyUseIcon"
-	| "ExclusiveIcon"
-	| "FacebookIcon"
-	| "InstagramIcon"
-	| "MenuIcon"
-	| "CloseIcon"
-	| "TikTokIcon"
-	| "WeddingIcon"
-	| "WhatsAppIcon";
+	| 'AnniversaryIcon'
+	| 'ArrowDownIcon'
+	| 'ArrowUpIcon'
+	| 'CakeIcon'
+	| 'CelebrameIcon'
+	| 'CheckIcon'
+	| 'CommitmentIcon'
+	| 'CrownIcon'
+	| 'EasyUseIcon'
+	| 'ExclusiveIcon'
+	| 'FacebookIcon'
+	| 'InstagramIcon'
+	| 'MenuIcon'
+	| 'CloseIcon'
+	| 'TikTokIcon'
+	| 'WeddingIcon'
+	| 'WhatsAppIcon';

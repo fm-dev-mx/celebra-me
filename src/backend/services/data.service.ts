@@ -1,11 +1,11 @@
 // src/services/data.service.ts
 
-import type { LandingPageData } from "@/core/interfaces/landingPage.interface";
-import type { BasicDemoData } from "@/core/interfaces/basicDemo.interface";
-import type { SiteData } from "@/core/interfaces/siteData.interface";
-import landingData from "@/core/data/landingPage.json";
-import basicDemoData from "@/core/data/basicDemo.json";
-import siteData from "@/core/data/siteData.json";
+import type { LandingPageData } from '@interfaces/data/landingPage.interface';
+import type { BasicDemoData } from '@interfaces/data/basicDemo.interface';
+import type { SiteData } from '@interfaces/data/siteData.interface';
+import landingData from '@/core/data/landingPage.json';
+import basicDemoData from '@/core/data/basicDemo.json';
+import siteData from '@/core/data/siteData.json';
 
 /**
  * Retrieves landing page data synchronously.

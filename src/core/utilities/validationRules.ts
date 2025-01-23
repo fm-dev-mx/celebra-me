@@ -1,7 +1,7 @@
 // src/core/utilities/validationRules.ts
 
 import ValidationHelper from './validationHelper';
-import type { ValidationRules } from '../interfaces/validationRules.interface';
+import type { ValidationRules } from '../interfaces/shared/validationRules.interface';
 
 /**
  * Shared validation rules for form fields.
@@ -15,9 +15,7 @@ export const validationRules: ValidationRules = {
 		ValidationHelper.isRequired('Ingresa tu correo electrónico.'),
 		ValidationHelper.isValidEmail('Ingresa un correo electrónico válido.'),
 	],
-	mobile: [
-		ValidationHelper.isOptionalPhone('Ingresa un número telefónico válido.'),
-	],
+	mobile: [ValidationHelper.isOptionalPhone('Ingresa un número telefónico válido.')],
 	message: [
 		ValidationHelper.isRequired('Ingresa la información de tu evento.'),
 		ValidationHelper.lengthInRange(10, 500, 'El mensaje debe tener entre 10 y 500 caracteres.'),

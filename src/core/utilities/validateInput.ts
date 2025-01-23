@@ -1,10 +1,14 @@
 // src/core/utilities/validateInput.ts
 
-import { ValidationRules } from '@/core/interfaces/validationRules.interface';
-import { ContactFormData } from '../interfaces/contactFormData.interface';
-import { EmailData } from '../interfaces/emailData.interface';
+import { ValidationRules } from '@interfaces/shared/validationRules.interface';
+import { ContactFormData } from '../interfaces/forms/contactFormData.interface';
+import { EmailData } from '../interfaces/email/emailData.interface';
 
-type admittedInputType = ContactFormData | Partial<ContactFormData> | EmailData | Partial<EmailData>;
+type admittedInputType =
+	| ContactFormData
+	| Partial<ContactFormData>
+	| EmailData
+	| Partial<EmailData>;
 /**
  * Validates input data against the provided validation rules.
  * @param data - The data to validate.

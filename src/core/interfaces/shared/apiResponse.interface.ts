@@ -1,4 +1,4 @@
-// src/core/interfaces/apiResponse.interface.ts
+// src/core/interfaces/shared/apiResponse.interface.ts
 
 /**
  * Interface representing validation errors for form fields.

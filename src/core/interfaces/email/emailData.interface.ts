@@ -1,4 +1,4 @@
-// src/core/interfaces/emailData.interface.ts
+// src/core/interfaces/email/emailData.interface.ts
 
 /**
  * Interface representing the data required to send an email.

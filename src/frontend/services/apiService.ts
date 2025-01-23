@@ -1,13 +1,12 @@
 // src/frontend/services/apiService.ts
 
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { ApiResponse } from '@/core/interfaces/apiResponse.interface';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ApiResponse } from '@interfaces/shared/apiResponse.interface';
 import { jsonPost } from '@/frontend/utilities/apiClientUtils';
 import { ClientApiError } from '@/core/errors/clientApiError';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 class ApiService {
-
 	static readonly MODULE_NAME = 'ApiService';
 	public async sendContactForm(data: ContactFormData): Promise<ApiResponse> {
 		try {
@@ -17,11 +16,16 @@ class ApiService {
 			try {
 				responseData = await response.json();
 			} catch (parseError) {
-				throw new ClientApiError('Invalid response from server', ApiService.MODULE_NAME, parseError);
+				throw new ClientApiError(
+					'Invalid response from server',
+					ApiService.MODULE_NAME,
+					parseError,
+				);
 			}
 
 			if (!response.ok) {
-				const errorMessage = responseData.message || `Error ${response.status}: ${response.statusText}`;
+				const errorMessage =
+					responseData.message || `Error ${response.status}: ${response.statusText}`;
 				throw new ClientApiError(errorMessage, ApiService.MODULE_NAME);
 			}
 

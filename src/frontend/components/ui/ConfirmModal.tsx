@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import ActionBase from "@/frontend/components/common/actions/ActionBase"; // Import ActionBase for general button styles.
+import React, { useEffect } from 'react';
+import ActionBase from '@components/common/actions/ActionBase'; // Import ActionBase for general button styles.
 
 // Props interface to define the expected properties for the ConfirmModal component
 interface ConfirmModalProps {
@@ -18,24 +18,24 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	show,
 	onCancel,
 	onConfirm,
-	title = "Confirmación", // Default title if not provided
-	message = "¿Estás seguro de realizar esta acción?", // Default message if not provided
-	confirmButtonText = "Confirmar", // Default text for confirm button
-	cancelButtonText = "Cancelar", // Default text for cancel button
+	title = 'Confirmación', // Default title if not provided
+	message = '¿Estás seguro de realizar esta acción?', // Default message if not provided
+	confirmButtonText = 'Confirmar', // Default text for confirm button
+	cancelButtonText = 'Cancelar', // Default text for cancel button
 	children, // Allows adding custom content inside the modal
 }) => {
 	// Focus on the modal when it opens for better accessibility
 	useEffect(() => {
 		if (show) {
-			const modal = document.getElementById("confirm-modal");
+			const modal = document.getElementById('confirm-modal');
 			modal?.focus();
 
 			// Select all buttons with the class ".confirm-button"
-			document.querySelectorAll(".confirm-button").forEach((button) => {
+			document.querySelectorAll('.confirm-button').forEach((button) => {
 				// Verify if the button text includes "WhatsApp"
-				if (button.textContent?.includes("WhatsApp")) {
+				if (button.textContent?.includes('WhatsApp')) {
 					// Add the specific class for WhatsApp buttons
-					button.classList.add("confirm-button-whatsapp");
+					button.classList.add('confirm-button-whatsapp');
 				}
 			});
 		}
@@ -44,19 +44,19 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	// Close modal on Escape key press for better usability
 	useEffect(() => {
 		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
+			if (event.key === 'Escape') {
 				onCancel();
 			}
 		};
 
 		if (show) {
-			window.addEventListener("keydown", handleEscape);
+			window.addEventListener('keydown', handleEscape);
 		} else {
-			window.removeEventListener("keydown", handleEscape);
+			window.removeEventListener('keydown', handleEscape);
 		}
 
 		return () => {
-			window.removeEventListener("keydown", handleEscape);
+			window.removeEventListener('keydown', handleEscape);
 		};
 	}, [show, onCancel]);
 
@@ -66,7 +66,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 	return (
 		<div
 			id="confirm-modal"
-			className={`confirm-modal ${show ? "show" : ""}`}
+			className={`confirm-modal ${show ? 'show' : ''}`}
 			role="dialog"
 			aria-labelledby="modal-title"
 			aria-modal="true"

@@ -1,4 +1,4 @@
-// src/core/interfaces/emailProvider.interface.ts
+// src/core/interfaces/email/emailProvider.interface.ts
 
 import { EmailData } from './emailData.interface';
 

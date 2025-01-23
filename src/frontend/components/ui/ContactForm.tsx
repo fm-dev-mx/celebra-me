@@ -1,8 +1,8 @@
 // src/components/ui/ContactForm.tsx
 
-import Input from "@/frontend/components/form/Input";
-import TextArea from "@/frontend/components/form/TextArea";
-import { useContactForm } from "@/frontend/hooks/contact/useContactForm";
+import Input from '@components/form/Input';
+import TextArea from '@components/form/TextArea';
+import { useContactForm } from '@/frontend/hooks/contact/useContactForm';
 
 /**
  * ContactForm component renders the contact form.

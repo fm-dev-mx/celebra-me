@@ -4,7 +4,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import config from '@/core/config';
 import { logError } from '@/backend/services/logger';
 import { ClientFactory } from './clientFactory';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 import { ConfigurationError } from '@/core/errors/configurationError';
 
 export class SupabaseClientFactory extends ClientFactory<SupabaseClient> {
@@ -35,7 +35,7 @@ export class SupabaseClientFactory extends ClientFactory<SupabaseClient> {
 			throw new ConfigurationError(
 				`SupabaseClient Initialization failed: ${errorMsg}`,
 				this.MODULE_NAME,
-				error
+				error,
 			);
 		}
 	}

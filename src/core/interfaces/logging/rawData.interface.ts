@@ -1,6 +1,6 @@
-// src/core/interfaces/rawData.interface.ts
+// src/core/interfaces/logging/rawData.interface.ts
 
-import type { OrderDetails } from './orderDetails.interface';
+import type { OrderDetails } from '../data/orderDetails.interface';
 
 export interface RawData {
 	/** User's name */

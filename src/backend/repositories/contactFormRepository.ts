@@ -1,9 +1,9 @@
 // src/backend/repositories/contactFormRepository.ts
 
 import SupabaseClientFactory from '@/infrastructure/clients/supabaseClientFactory';
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
 import { logError, logInfo } from '@/backend/services/logger';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 const MODULE_NAME = 'ContactFormRepository';
 

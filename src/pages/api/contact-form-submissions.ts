@@ -1,19 +1,19 @@
 // src/pages/api/contact-form-submissions.ts
 
 import type { APIRoute } from 'astro';
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+import { ContactFormAPIContext } from '@interfaces/forms/contactFormAPIContext.interface';
 import { EmailService } from '@/backend/services/emailService';
 import { SendGridProvider } from '@/backend/services/sendGridProvider';
 import { loggerMiddleware } from '@/backend/middlewares/loggerMiddleware';
 import { rateLimiterMiddleware } from '@/backend/middlewares/rateLimiterMiddleware';
 import { validationMiddleware } from '@/backend/middlewares/validationMiddleware';
 import { errorHandlerMiddleware } from '@/backend/middlewares/errorHandlerMiddleware';
-import { validationRules } from '@/core/utilities/validationRules';
+import { validationRules } from '@utilities/validationRules';
 import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { ContactFormController } from '@/backend/controllers/contactFormController';
 import { clientIpMiddleware } from '@/backend/middlewares/clientIpMiddleware';
-import { createSuccessResponse, jsonResponse } from '@/core/utilities/apiResponseUtils';
+import { createSuccessResponse, jsonResponse } from '@utilities/apiResponseUtils';
 import config from '@/core/config';
 
 // Initialize email-related instances once (outside the handler)
@@ -35,7 +35,7 @@ export const POST: APIRoute = errorHandlerMiddleware(
 			// Return a success response
 			const responseBody = createSuccessResponse(
 				200,
-				'Hemos recibido tu mensaje. Te responderemos muy pronto.'
+				'Hemos recibido tu mensaje. Te responderemos muy pronto.',
 			);
 			return jsonResponse(responseBody, 200);
 		},
@@ -48,8 +48,8 @@ export const POST: APIRoute = errorHandlerMiddleware(
 				prefix: 'emailRateLimiter',
 			}),
 			validationMiddleware(validationRules),
-		]
-	)
+		],
+	),
 );
 
 export const prerender = false;

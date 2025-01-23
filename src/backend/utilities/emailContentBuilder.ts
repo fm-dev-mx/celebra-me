@@ -1,11 +1,11 @@
 // src/backend/utilities/emailContentBuilder.ts
 
-import { LogEntry } from '@/core/interfaces/logEntry.interface';
+import { LogEntry } from '@interfaces/logging/logEntry.interface';
 import { escapeHtml } from './dataSanitization';
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { EmailData } from '@/core/interfaces/emailData.interface';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { EmailData } from '@interfaces/email/emailData.interface';
 import config from '@/core/config';
-import { LogLevel } from '@/core/interfaces/logEntry.interface';
+import { LogLevel } from '@interfaces/logging/logEntry.interface';
 
 /**
  * Builds the email content for log entries.
@@ -18,16 +18,14 @@ import { LogLevel } from '@/core/interfaces/logEntry.interface';
  */
 export function buildLogEmailContent(
 	logEntries: LogEntry[],
-	options: { immediate?: boolean } = {}
+	options: { immediate?: boolean } = {},
 ): string {
 	// If this is an immediate notification and there's exactly one log entry,
 	// it's likely a critical notification scenario.
 	if (options.immediate && logEntries.length === 1) {
 		const info = logEntries[0];
 		const sanitizedMessage = escapeHtml(info.message);
-		const sanitizedMeta = info.meta
-			? escapeHtml(JSON.stringify(info.meta, null, 2))
-			: '';
+		const sanitizedMeta = info.meta ? escapeHtml(JSON.stringify(info.meta, null, 2)) : '';
 		const sanitizedModule = escapeHtml(info.module || 'N/A');
 		const timestamp = escapeHtml(info.timestamp || new Date().toISOString());
 		const level = escapeHtml(info.level || 'N/A');
@@ -43,14 +41,11 @@ export function buildLogEmailContent(
 	} else {
 		// Consolidated report for multiple logs.
 		// We group logs by their Winston level.
-		const logsByLevel = logEntries.reduce<Record<string, LogEntry[]>>(
-			(acc, log) => {
-				acc[log.level] = acc[log.level] || [];
-				acc[log.level].push(log);
-				return acc;
-			},
-			{}
-		);
+		const logsByLevel = logEntries.reduce<Record<string, LogEntry[]>>((acc, log) => {
+			acc[log.level] = acc[log.level] || [];
+			acc[log.level].push(log);
+			return acc;
+		}, {});
 		let content = `<h1>Accumulated Logs Report</h1>`;
 
 		for (const level of Object.values(LogLevel)) {

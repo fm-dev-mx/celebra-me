@@ -1,6 +1,6 @@
 // src/core/utilities/apiResponseUtils.ts
 
-import { ApiSuccessResponse } from '@/core/interfaces/apiResponse.interface';
+import { ApiSuccessResponse } from '@interfaces/shared/apiResponse.interface';
 
 /**
  * Creates a standardized success response object.
@@ -13,7 +13,7 @@ import { ApiSuccessResponse } from '@/core/interfaces/apiResponse.interface';
 export function createSuccessResponse<T>(
 	statusCode: number,
 	message: string,
-	data?: T
+	data?: T,
 ): ApiSuccessResponse<T> {
 	return {
 		success: true,

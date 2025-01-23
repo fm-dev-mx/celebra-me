@@ -1,10 +1,10 @@
 // src/backend/services/sendGridProvider.ts
 
 import sgMail, { MailDataRequired } from '@sendgrid/mail';
-import { EmailProvider } from '@/core/interfaces/emailProvider.interface';
-import { EmailData } from '@/core/interfaces/emailData.interface';
+import { EmailProvider } from '@interfaces/email/emailProvider.interface';
+import { EmailData } from '@interfaces/email/emailData.interface';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 const MODULE_NAME = 'SendGridProvider';
 
@@ -55,7 +55,7 @@ export class SendGridProvider implements EmailProvider {
 			throw new EmailServiceError(
 				`Failed to send email via SendGrid. Error: ${message}`,
 				MODULE_NAME,
-				error
+				error,
 			);
 		}
 	}
@@ -70,7 +70,7 @@ export class SendGridProvider implements EmailProvider {
 		if (!to || !from || !subject) {
 			throw new EmailServiceError(
 				'Email data is missing required fields (to, from, subject).',
-				MODULE_NAME
+				MODULE_NAME,
 			);
 		}
 		// Additional validations could be added here if needed

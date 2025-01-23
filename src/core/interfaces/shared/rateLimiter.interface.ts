@@ -1,4 +1,5 @@
-// src/core/interfaces/rateLimiter.interface.ts
+// src/core/interfaces/shared/rateLimiter.interface.ts
+
 import { Duration } from '@upstash/ratelimit';
 
 export interface RateLimiterConfig {

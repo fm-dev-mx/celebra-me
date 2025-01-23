@@ -1,17 +1,17 @@
 // src/backend/middlewares/errorHandlerMiddleware.ts
 
 import { Handler } from '@/core/types/handlers';
-import { ApiErrorResponse } from '@/core/interfaces/apiResponse.interface';
-import { jsonResponse } from '@/core/utilities/apiResponseUtils';
+import { ApiErrorResponse } from '@interfaces/shared/apiResponse.interface';
+import { jsonResponse } from '@utilities/apiResponseUtils';
 import { logError, logWarn } from '@/backend/services/logger';
-import { RequestMeta } from '@/core/interfaces/requestMeta.interface';
+import { RequestMeta } from '@interfaces/logging/requestMeta.interface';
 import { BaseError } from '@/core/errors/baseError';
 import { ValidationError } from '@/core/errors/validationError';
 import { RateLimiterError } from '@/core/errors/rateLimiterError';
-import { ContactFormAPIContext } from '@/core/interfaces/contactFormAPIContext.interface';
+import { ContactFormAPIContext } from '@interfaces/forms/contactFormAPIContext.interface';
 import config from '@/core/config';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization'; // Removed sanitizeError
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 const MODULE_NAME = 'ErrorHandlerMiddleware';
 const isProduction = config.environment === 'production';
@@ -77,12 +77,11 @@ const mapErrorToApiResponse = (error: unknown): ApiErrorResponse => {
 const logApiError = (
 	apiError: ApiErrorResponse,
 	context: ContactFormAPIContext,
-	error: unknown
+	error: unknown,
 ): void => {
 	const clientIp = maskIpAddress(context.clientIp || '');
 
-	const isCritical =
-		apiError.statusCode >= 500 || error instanceof RateLimiterError;
+	const isCritical = apiError.statusCode >= 500 || error instanceof RateLimiterError;
 
 	// Build the RequestMeta object
 	const requestMeta: RequestMeta = {
@@ -119,4 +118,4 @@ const logApiError = (
 			},
 		});
 	}
-}
+};

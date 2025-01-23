@@ -1,12 +1,12 @@
 // src/backend/utilities/emailNotificationManager.ts
 
-import { LogEntry } from '@/core/interfaces/logEntry.interface';
+import { LogEntry } from '@interfaces/logging/logEntry.interface';
 import { EmailService } from '@/backend/services/emailService';
 import { buildLogEmailContent } from './emailContentBuilder';
 import config from '@/core/config';
 import { logError, logInfo, logWarn } from '@/backend/services/logger';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
-import { EmailData } from '@/core/interfaces/emailData.interface';
+import { getErrorMessage } from '@utilities/errorUtils';
+import { EmailData } from '@interfaces/email/emailData.interface';
 
 const MODULE_NAME = 'EmailNotificationManager';
 
@@ -37,7 +37,10 @@ export class EmailNotificationManager {
 	private emailCount = 0;
 	private rateLimitInterval: NodeJS.Timeout;
 
-	constructor(private emailService: EmailService, options: Partial<NotificationManagerOptions>) {
+	constructor(
+		private emailService: EmailService,
+		options: Partial<NotificationManagerOptions>,
+	) {
 		// Set default options. "critical" is handled via meta.immediateNotification.
 		this.options = {
 			scheduledFrequency: options.scheduledFrequency || 'daily',
@@ -118,7 +121,13 @@ export class EmailNotificationManager {
 				},
 			});
 		} catch (error) {
-			this.logEmailError(error, Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to, emailData.from, emailData.subject, 'immediate_notification_error');
+			this.logEmailError(
+				error,
+				Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to,
+				emailData.from,
+				emailData.subject,
+				'immediate_notification_error',
+			);
 		}
 	}
 
@@ -145,12 +154,17 @@ export class EmailNotificationManager {
 						to: emailData.to,
 						from: emailData.from,
 						subject: emailData.subject,
-
-					}
+					},
 				},
 			});
 		} catch (error) {
-			this.logEmailError(error, Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to, emailData.from, emailData.subject, 'scheduled_summary_error');
+			this.logEmailError(
+				error,
+				Array.isArray(emailData.to) ? emailData.to.join(', ') : emailData.to,
+				emailData.from,
+				emailData.subject,
+				'scheduled_summary_error',
+			);
 		}
 	}
 
@@ -180,10 +194,7 @@ export class EmailNotificationManager {
 	 * @param isImmediate - Indicates if the email is for an immediate notification.
 	 * @returns An object containing email details ready to be sent.
 	 */
-	private buildEmailData(
-		logData: LogEntry | LogEntry[],
-		isImmediate: boolean
-	): EmailData {
+	private buildEmailData(logData: LogEntry | LogEntry[], isImmediate: boolean): EmailData {
 		const logsArray = Array.isArray(logData) ? logData : [logData];
 		const htmlContent = buildLogEmailContent(logsArray, {
 			immediate: isImmediate,
@@ -223,8 +234,7 @@ export class EmailNotificationManager {
 						currentCount: this.emailCount,
 						remaining: 0,
 					},
-
-				}
+				},
 			},
 		});
 	}
@@ -236,7 +246,13 @@ export class EmailNotificationManager {
 	 * @param recipient - The email recipient.
 	 * @param event - The specific event identifier for the error.
 	 */
-	private logEmailError(error: unknown, recipient: string, sender: string, subject: string, event: string): void {
+	private logEmailError(
+		error: unknown,
+		recipient: string,
+		sender: string,
+		subject: string,
+		event: string,
+	): void {
 		logError({
 			message: 'Failed to send email notification.3',
 			module: MODULE_NAME,
@@ -248,7 +264,7 @@ export class EmailNotificationManager {
 					to: recipient,
 					from: sender,
 					subject: subject,
-				}
+				},
 			},
 		});
 	}

@@ -1,4 +1,4 @@
-// src/core/interfaces/contactFormData.interface.ts
+// src/core/interfaces/forms/contactFormData.interface.ts
 
 /**
  * Interface representing the contact form data submitted by users.

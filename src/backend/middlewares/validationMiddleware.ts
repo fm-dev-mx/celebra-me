@@ -1,9 +1,9 @@
 // src/backend/middlewares/validationMiddleware.ts
 
 import { Handler } from '@/core/types/handlers';
-import { validateInput } from '@/core/utilities/validateInput';
-import { ValidationRules } from '@/core/interfaces/validationRules.interface';
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
+import { validateInput } from '@utilities/validateInput';
+import { ValidationRules } from '@interfaces/shared/validationRules.interface';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
 import { ValidationError } from '@/core/errors/validationError';
 
 const MODULE_NAME = 'validationMiddleware';
@@ -25,7 +25,10 @@ export function validationMiddleware(rules: ValidationRules) {
 			// Check if the request Content-Type is application/json
 			const contentType = request.headers.get('Content-Type') || '';
 			if (!/^application\/json\b/.test(contentType)) {
-				throw new ValidationError('Invalid Content-Type. Expected application/json', MODULE_NAME);
+				throw new ValidationError(
+					'Invalid Content-Type. Expected application/json',
+					MODULE_NAME,
+				);
 			}
 
 			// Parse and sanitize the JSON body
@@ -36,7 +39,10 @@ export function validationMiddleware(rules: ValidationRules) {
 				if (error instanceof SyntaxError) {
 					throw new ValidationError('Invalid JSON payload', MODULE_NAME);
 				} else {
-					throw new ValidationError('An error occurred while parsing the request body', MODULE_NAME);
+					throw new ValidationError(
+						'An error occurred while parsing the request body',
+						MODULE_NAME,
+					);
 				}
 			}
 

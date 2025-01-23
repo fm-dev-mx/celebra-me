@@ -2,10 +2,10 @@
 
 import RedisClientFactory from '@/infrastructure/clients/redisClientFactory';
 import { logBatch, logError } from '@/backend/services/logger';
-import { LogEntry } from '@/core/interfaces/logEntry.interface';
+import { LogEntry } from '@interfaces/logging/logEntry.interface';
 import { getNotificationManager } from '@/backend/services/notificationManager';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
-import { LogLevel } from '@/core/interfaces/logEntry.interface';
+import { getErrorMessage } from '@utilities/errorUtils';
+import { LogLevel } from '@interfaces/logging/logEntry.interface';
 
 const MODULE_NAME = 'LogCronJob';
 const EVENT_SEND_LOGS = 'send_logs';
@@ -115,7 +115,6 @@ export async function sendLogs(): Promise<void> {
 				failedCount: 0,
 			},
 		});
-
 	} catch (error: unknown) {
 		logError({
 			message: 'Error while sending logs.',

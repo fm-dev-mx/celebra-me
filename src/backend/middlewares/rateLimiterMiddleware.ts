@@ -1,7 +1,7 @@
 // src/backend/middlewares/rateLimiterMiddleware.ts
 
 import rateLimiterFactory from '@/backend/services/rateLimiterFactory';
-import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
+import { RateLimiterConfig } from '@interfaces/shared/rateLimiter.interface';
 import { Handler, Middleware } from '@/core/types/handlers';
 import { RateLimiterError } from '@/core/errors/rateLimiterError';
 import { BadRequestError } from '@/core/errors/badRequestError';
@@ -25,12 +25,20 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 
 			if (!clientIp) {
 				// Throw a bad request error with a specific message
-				throw new BadRequestError('Client IP address is missing, unable to apply rate limiting.', MODULE_NAME);
+				throw new BadRequestError(
+					'Client IP address is missing, unable to apply rate limiting.',
+					MODULE_NAME,
+				);
 			}
 
 			try {
 				// Check if the client is rate limited
-				const isLimited = await rateLimiterFactory.isRateLimited(config, clientIp, requestUrl, requestMethod);
+				const isLimited = await rateLimiterFactory.isRateLimited(
+					config,
+					clientIp,
+					requestUrl,
+					requestMethod,
+				);
 
 				if (isLimited) {
 					// Throw a custom rate limit exceeded error
@@ -38,7 +46,7 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 						'You have sent too many requests. Please try again later.',
 						config.limit,
 						config.duration,
-						MODULE_NAME
+						MODULE_NAME,
 					);
 				}
 			} catch (error: unknown) {
@@ -46,7 +54,12 @@ export function rateLimiterMiddleware(config: RateLimiterConfig): Middleware {
 				if (error instanceof RateLimiterError || error instanceof BadRequestError) {
 					throw error;
 				} else {
-					throw new RateLimiterError('An error occurred while applying rate limiting.', config.limit, config.duration, MODULE_NAME);
+					throw new RateLimiterError(
+						'An error occurred while applying rate limiting.',
+						config.limit,
+						config.duration,
+						MODULE_NAME,
+					);
 				}
 			}
 

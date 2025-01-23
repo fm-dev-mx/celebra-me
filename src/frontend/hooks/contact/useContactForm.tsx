@@ -1,21 +1,21 @@
 // src/frontend/hooks/contact/useContactForm.tsx
 
-import { useState } from "react";
-import { validateInput } from "@/core/utilities/validateInput";
-import { validationRules } from "@/core/utilities/validationRules";
-import { ContactFormData } from "@/core/interfaces/contactFormData.interface";
-import { apiService } from "@/frontend/services/apiService";
-import { ApiResponse } from "@/core/interfaces/apiResponse.interface";
+import { useState } from 'react';
+import { validateInput } from '@utilities/validateInput';
+import { validationRules } from '@utilities/validationRules';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { apiService } from '@/frontend/services/apiService';
+import { ApiResponse } from '@interfaces/shared/apiResponse.interface';
 
 /**
  * Custom hook to manage contact form state and handlers.
  */
 export const useContactForm = () => {
 	const initialFormData: ContactFormData = {
-		name: "",
-		email: "",
-		mobile: "",
-		message: "",
+		name: '',
+		email: '',
+		mobile: '',
+		message: '',
 	};
 	// State to manage the form data with optional fields
 	const [formData, setFormData] = useState<Partial<ContactFormData>>(initialFormData);
@@ -35,9 +35,9 @@ export const useContactForm = () => {
 	const handleErrorResponse = (error: ApiResponse) => {
 		if (!error.success && error.statusCode === 429) {
 			setIsRateLimited(true);
-			setResponseMessage("Has enviado demasiados mensajes. Intenta más tarde.");
+			setResponseMessage('Has enviado demasiados mensajes. Intenta más tarde.');
 		} else {
-			setResponseMessage(error.message || "Hubo un error. Inténtalo de nuevo.");
+			setResponseMessage(error.message || 'Hubo un error. Inténtalo de nuevo.');
 		}
 
 		if (!error.success && error.errors) {
@@ -121,9 +121,9 @@ export const useContactForm = () => {
 	 * Determines the submit button text based on the current state.
 	 */
 	const getButtonText = () => {
-		if (isSubmitting) return "Enviando...";
-		if (isRateLimited) return "Demasiados intentos";
-		return "Enviar Mensaje";
+		if (isSubmitting) return 'Enviando...';
+		if (isRateLimited) return 'Demasiados intentos';
+		return 'Enviar Mensaje';
 	};
 
 	return {

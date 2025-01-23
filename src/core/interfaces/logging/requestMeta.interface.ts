@@ -1,4 +1,4 @@
-// src/core/interfaces/requestMeta.interface.ts
+// src/core/interfaces/logging/requestMeta.interface.ts
 
 export interface RequestMeta {
 	/** Request ID */

@@ -1,4 +1,4 @@
-// src/core/interfaces/coreConfig.interface.ts
+// src/core/interfaces/config/coreConfig.interface.ts
 
 export interface RedisConfig {
 	url: string;

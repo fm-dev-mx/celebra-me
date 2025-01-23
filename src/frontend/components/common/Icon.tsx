@@ -1,7 +1,7 @@
 // src/components/common/Icon.tsx
-import React from "react";
-import type { IconNames } from "@/core/interfaces/siteData.interface";
-import * as Icons from "@/frontend/components/icons"; // Import all icons from the icons directory
+import React from 'react';
+import type { IconNames } from '@interfaces/data/siteData.interface';
+import * as Icons from '@components/icons'; // Import all icons from the icons directory
 
 // Define the props interface, extending SVG attributes for flexibility
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -37,8 +37,8 @@ const iconComponents: Record<IconNames, React.FC<React.SVGProps<SVGSVGElement>>>
 // Functional component for rendering icons
 const Icon: React.FC<IconProps> = ({
 	icon,
-	size = "w-6 h-6", // Default size using Tailwind classes
-	color = "currentColor",
+	size = 'w-6 h-6', // Default size using Tailwind classes
+	color = 'currentColor',
 	className,
 	...rest
 }) => {
@@ -46,7 +46,7 @@ const Icon: React.FC<IconProps> = ({
 	const IconComponent = iconComponents[icon];
 
 	// Combine classes for the icon
-	const iconClasses = `${size} ${className || ""}`.trim();
+	const iconClasses = `${size} ${className || ''}`.trim();
 
 	// Filter out custom props to avoid passing them to the DOM elements
 	const svgProps = { className: iconClasses, fill: color, ...rest };

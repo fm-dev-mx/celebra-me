@@ -2,14 +2,11 @@
 
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { RateLimiterConfig } from '@/core/interfaces/rateLimiter.interface';
+import { RateLimiterConfig } from '@interfaces/shared/rateLimiter.interface';
 import RedisClientFactory from '@/infrastructure/clients/redisClientFactory';
 import { logError, logInfo, logWarn } from '@/backend/services/logger';
-import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
-import {
-	extractErrorDetails,
-	getErrorMessage,
-} from '@/core/utilities/errorUtils';
+import { delay, getExponentialBackoffDelay } from '@utilities/retryUtils';
+import { extractErrorDetails, getErrorMessage } from '@utilities/errorUtils';
 import { ConfigurationError } from '@/core/errors/configurationError';
 import { RateLimiterError } from '@/core/errors/rateLimiterError';
 import { UnexpectedError } from '@/core/errors/unexpectedError';
@@ -37,7 +34,7 @@ class RateLimiterFactory {
 				throw new ConfigurationError(
 					'Failed to initialize Redis client.',
 					RateLimiterFactory.MODULE_NAME,
-					error
+					error,
 				);
 			}
 		}
@@ -67,10 +64,7 @@ class RateLimiterFactory {
 	public async getRateLimiter(config: RateLimiterConfig): Promise<Ratelimit> {
 		if (!config.prefix || config.limit <= 0 || !config.duration) {
 			const errorMessage = 'Invalid RateLimiter configuration.';
-			throw new ConfigurationError(
-				errorMessage,
-				RateLimiterFactory.MODULE_NAME
-			);
+			throw new ConfigurationError(errorMessage, RateLimiterFactory.MODULE_NAME);
 		}
 
 		const cacheKey = this.generateCacheKey(config);
@@ -104,7 +98,7 @@ class RateLimiterFactory {
 					redis: this.redisClient!,
 					limiter: Ratelimit.slidingWindow(config.limit, config.duration),
 					prefix: config.prefix,
-				})
+				});
 
 				this.rateLimiterCache.set(cacheKey, rateLimiter);
 
@@ -155,7 +149,7 @@ class RateLimiterFactory {
 						config.limit,
 						config.duration,
 						RateLimiterFactory.MODULE_NAME,
-						error
+						error,
 					);
 				}
 			}
@@ -178,8 +172,8 @@ class RateLimiterFactory {
 
 		throw new UnexpectedError(
 			'Unexpected error in getRateLimiter.',
-			RateLimiterFactory.MODULE_NAME
-		)
+			RateLimiterFactory.MODULE_NAME,
+		);
 	}
 
 	/**
@@ -196,7 +190,7 @@ class RateLimiterFactory {
 		config: RateLimiterConfig,
 		key: string,
 		url: string,
-		method: string
+		method: string,
 	): Promise<boolean> {
 		// If no key is provided, consider it rate-limited and log a warning
 		if (!key) {

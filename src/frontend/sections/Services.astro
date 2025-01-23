@@ -2,20 +2,20 @@
 // /src/sections/Services.astro
 // This component displays the services offered, including images and descriptions.
 
-import Container from "@/frontend/components/layout/Container.astro";
-import Grid from "@/frontend/components/layout/Grid.astro";
-import Section from "@/frontend/components/layout/Section.astro";
-import OptimizedImage from "@/frontend/components/common/OptimizedImage.astro";
-import ImageWrapper from "@/frontend/components/common/ImageWrapper.astro";
-import SectionTitle from "@/frontend/components/typography/SectionTitle.astro";
-import ServiceItem from "@/frontend/components/ui/ServiceItem.astro";
-import type { ServicesData } from "@/core/interfaces/landingPage.interface";
+import Container from '@components/layout/Container.astro';
+import Grid from '@components/layout/Grid.astro';
+import Section from '@components/layout/Section.astro';
+import OptimizedImage from '@components/common/OptimizedImage.astro';
+import ImageWrapper from '@components/common/ImageWrapper.astro';
+import SectionTitle from '@components/typography/SectionTitle.astro';
+import ServiceItem from '@components/ui/ServiceItem.astro';
+import type { ServicesData } from '@interfaces/data/landingPage.interface';
 
 // Import local images
-import xvImage from "@/frontend/assets/images/services/xv.jpg";
-import weddingPartyImage from "@/frontend/assets/images/services/weddingParty.jpg";
-import ActionBase from "@/frontend/components/common/actions/ActionBase";
-import ActionIcon from "@/frontend/components/common/actions/ActionIcon";
+import xvImage from '@images/services/xv.jpg';
+import weddingPartyImage from '@images/services/weddingParty.jpg';
+import ActionBase from '@components/common/actions/ActionBase';
+import ActionIcon from '@components/common/actions/ActionIcon';
 
 interface Props {
 	data: ServicesData;

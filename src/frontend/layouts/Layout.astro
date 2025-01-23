@@ -1,10 +1,10 @@
 ---
 // src/frontend/layouts/Layout.astro
-import "@fontsource-variable/rubik";
+import '@fontsource-variable/rubik';
 // eslint-disable-next-line prettier/prettier
-import type { Meta } from "@/core/interfaces/siteData.interface";
-import SpeedInsights from "@vercel/speed-insights/astro";
-import "@/frontend/styles/global.css";
+import type { Meta } from '@interfaces/data/siteData.interface';
+import SpeedInsights from '@vercel/speed-insights/astro';
+import '@/frontend/styles/global.css';
 interface Props {
 	meta: Meta;
 }
@@ -17,10 +17,10 @@ const seoData = meta.seoData ? JSON.stringify(meta.seoData) : null;
 <!doctype html>
 <html
 	class="scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent scroll-smooth"
-	lang={meta.lang ?? "en"}
+	lang={meta.lang ?? 'en'}
 >
 	<head>
-		<meta charset={meta.charset ?? "UTF-8"} />
+		<meta charset={meta.charset ?? 'UTF-8'} />
 		<title>{meta.title}</title>
 		<meta name="description" content={meta.description} />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,7 +34,7 @@ const seoData = meta.seoData ? JSON.stringify(meta.seoData) : null;
 		<style is:global>
 			body {
 				font-family:
-					"Rubik Variable",
+					'Rubik Variable',
 					Menlo,
 					Monaco,
 					Lucida Console,

@@ -1,4 +1,4 @@
-// src/config/landingPage.interface.ts
+// src/core/interfaces/data/landingPage.interface.ts
 
 import type { SocialData, IconNames } from './siteData.interface'; // Reusing shared interfaces
 

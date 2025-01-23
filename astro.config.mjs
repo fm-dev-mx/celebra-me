@@ -25,6 +25,7 @@ export default defineConfig({
 				'@components': fileURLToPath(new URL('./src/frontend/components', import.meta.url)),
 				'@utilities': fileURLToPath(new URL('./src/core/utilities', import.meta.url)),
 				'@layouts': fileURLToPath(new URL('./src/frontend/layouts', import.meta.url)),
+				'@images': fileURLToPath(new URL('./src/frontend/assets/images', import.meta.url)),
 				'@interfaces': fileURLToPath(new URL('./src/core/interfaces', import.meta.url)),
 			},
 		},

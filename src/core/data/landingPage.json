@@ -96,7 +96,7 @@
 				"title": "Invita con Estilo",
 				"description": "Refleja tu buen gusto.",
 				"price": {
-					"amount": "$699",
+					"amount": 699,
 					"currency": "MXN",
 					"period": " x evento"
 				},

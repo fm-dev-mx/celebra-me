@@ -1,10 +1,10 @@
 // src/components/common/SocialMediaLinks.tsx
 
-import React from "react";
-import ActionIcon from "@/frontend/components/common/actions/ActionIcon";
-import type { SocialLink, IconNames } from "@/core/interfaces/siteData.interface";
+import React from 'react';
+import ActionIcon from '@components/common/actions/ActionIcon';
+import type { SocialLink, IconNames } from '@interfaces/data/siteData.interface';
 
-export type SocialVariants = "social-desktop-header" | "social-mobile-header" | "social-footer";
+export type SocialVariants = 'social-desktop-header' | 'social-mobile-header' | 'social-footer';
 
 interface SocialMediaLinksProps {
 	links: SocialLink[];
@@ -27,7 +27,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({
 
 	return (
 		// Use ActionWrapper to wrap the list of icons with optional custom classes
-		<div className={"social-media-links"}>
+		<div className={'social-media-links'}>
 			{/* Map over each social link and render an ActionIcon */}
 			{links.map((social, index) => (
 				<ActionIcon
@@ -36,7 +36,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({
 					variant={variant} // Use appropriate variant
 					icon={social.icon as IconNames} // Icon to display
 					href={social.href} // URL to link to
-					title={social.title || "Social Media"} // Tooltip or accessible label
+					title={social.title || 'Social Media'} // Tooltip or accessible label
 					target="_blank"
 				/>
 			))}

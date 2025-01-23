@@ -1,4 +1,4 @@
-// src/core/interfaces/basicDemo.interface.ts
+// src/core/interfaces/data/basicDemo.interface.ts
 
 import type { Meta, SocialData } from './siteData.interface';
 import type { MenuData } from './landingPage.interface';
@@ -20,7 +20,7 @@ export interface EventDetails {
 	title: string;
 	description: string;
 	images: string[];
-	countdown: Date; // Changed from string to Date for better type safety
+	countdown: string;
 	itinerary: string[];
 	rsvp: Rsvp;
 	socialMedia: SocialMedia;
@@ -50,5 +50,5 @@ export interface SocialMedia {
  */
 export interface Validity {
 	duration: string;
-	expiryDate: Date; // Changed from string to Date for better type safety
+	expiryDate: string;
 }

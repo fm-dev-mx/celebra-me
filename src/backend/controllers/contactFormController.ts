@@ -3,8 +3,8 @@
 import { EmailService } from '@/backend/services/emailService';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { logInfo, logError } from '@/backend/services/logger';
-import { ContactFormData } from '@/core/interfaces/contactFormData.interface';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { getErrorMessage } from '@utilities/errorUtils';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
 import { ControllerError } from '@/core/errors/controllerError';
 import { prepareEmailData } from '@/backend/utilities/emailContentBuilder';
@@ -15,24 +15,21 @@ const MODULE_NAME = 'ContactFormController';
 export class ContactFormController {
 	constructor(
 		private readonly emailService: EmailService,
-		private readonly contactFormRepository: ContactFormRepository
-	) { }
+		private readonly contactFormRepository: ContactFormRepository,
+	) {}
 
 	/**
 	 * Processes a contact form submission.
 	 */
 	async processContactSubmission(data: ContactFormData): Promise<void> {
 		try {
-			await Promise.all([
-				this.saveSubmission(data),
-				this.sendNotificationEmail(data),
-			]);
+			await Promise.all([this.saveSubmission(data), this.sendNotificationEmail(data)]);
 			this.logSuccess(data);
 		} catch (error) {
 			throw new ControllerError(
 				'There was an error processing the contact form. Please try again later.',
 				MODULE_NAME,
-				error
+				error,
 			);
 		}
 	}

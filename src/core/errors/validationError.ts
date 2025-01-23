@@ -1,6 +1,6 @@
 // src/core/errors/validationError.ts
 import { BaseError } from './baseError';
-import { ValidationErrors } from '@/core/interfaces/apiResponse.interface';
+import { ValidationErrors } from '@interfaces/shared/apiResponse.interface';
 import { ErrorCodes } from './errorCodes';
 
 /**
@@ -16,7 +16,12 @@ export class ValidationError extends BaseError {
 	 * @param errors - Detailed validation errors.
 	 * @param originalError - The original error object, if any.
 	 */
-	constructor(message: string, module: string, errors?: ValidationErrors, originalError?: unknown) {
+	constructor(
+		message: string,
+		module: string,
+		errors?: ValidationErrors,
+		originalError?: unknown,
+	) {
 		super(message, 400, ErrorCodes.VALIDATION_ERROR, module, originalError);
 		this.errors = errors;
 	}

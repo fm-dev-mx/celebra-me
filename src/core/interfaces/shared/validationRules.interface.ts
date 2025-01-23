@@ -1,4 +1,4 @@
-// src/core/interfaces/validationRules.interface.ts
+// src/core/interfaces/shared/validationRules.interface.ts
 
 /**
  * Interface for an individual validation rule.

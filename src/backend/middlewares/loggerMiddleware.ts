@@ -3,7 +3,7 @@
 import { Handler } from '@/core/types/handlers';
 import { logError, logInfo } from '@/backend/services/logger';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 const MODULE_NAME = 'LoggerMiddleware';
 

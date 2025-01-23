@@ -1,8 +1,8 @@
 // src/backend/services/emailService.ts
 
-import { EmailProvider } from '@/core/interfaces/emailProvider.interface';
-import { EmailData } from '@/core/interfaces/emailData.interface';
-import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
+import { EmailProvider } from '@interfaces/email/emailProvider.interface';
+import { EmailData } from '@interfaces/email/emailData.interface';
+import { delay, getExponentialBackoffDelay } from '@utilities/retryUtils';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
 // IMPORTANT: Do NOT import logger here to prevent circular dependencies.
 
@@ -23,8 +23,8 @@ export class EmailService {
 
 	constructor(
 		private emailProvider: EmailProvider,
-		private options: EmailServiceOptions = {}
-	) { }
+		private options: EmailServiceOptions = {},
+	) {}
 
 	/**
 	 * Sends an email with retry and backoff logic.
@@ -49,7 +49,7 @@ export class EmailService {
 					throw new EmailServiceError(
 						`Failed to send email after ${maxRetries} attempts.`,
 						MODULE_NAME,
-						error
+						error,
 					);
 				}
 

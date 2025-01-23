@@ -1,16 +1,16 @@
 ---
 // src/sections/Hero.astro
 // This component is used to render the hero section of the landing page, including the logo, slogan and cta buttons.
-import ActionBase from "@/frontend/components/common/actions/ActionBase";
-import ActionIcon from "@/frontend/components/common/actions/ActionIcon";
-import Section from "@/frontend/components/layout/Section.astro";
-import StyledContainer from "@/frontend/components/layout/StyledContainer.astro";
-import type { IconNames } from "@/core/interfaces/siteData.interface";
-import SectionTitle from "@/frontend/components/typography/SectionTitle.astro";
-import SectionSubtitle from "@/frontend/components/typography/SectionSubtitle.astro";
-import WhatsAppButton from "@/frontend/components/ui/WhatsAppButton";
-import ActionWrapper from "@/frontend/components/common/actions/ActionWrapper";
-import Logo from "@/frontend/components/ui/Logo";
+import ActionBase from '@components/common/actions/ActionBase';
+import ActionIcon from '@components/common/actions/ActionIcon';
+import Section from '@components/layout/Section.astro';
+import StyledContainer from '@components/layout/StyledContainer.astro';
+import type { IconNames } from '@interfaces/data/siteData.interface';
+import SectionTitle from '@components/typography/SectionTitle.astro';
+import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton';
+import ActionWrapper from '@components/common/actions/ActionWrapper';
+import Logo from '@components/ui/Logo';
 
 // Define the expected data structure for the Hero component
 interface HeroData {

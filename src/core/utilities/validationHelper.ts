@@ -1,7 +1,7 @@
 // src/core/utilities/validationHelper.ts
 
 import validator from 'validator';
-import { ValidationRule } from '../interfaces/validationRules.interface';
+import { ValidationRule } from '@interfaces/shared/validationRules.interface';
 
 /**
  * Helper to validate form fields.

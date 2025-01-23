@@ -1,16 +1,16 @@
 ---
 // src/sections/Pricing.astro
-import Container from "@/frontend/components/layout/Container.astro";
-import Grid from "@/frontend/components/layout/Grid.astro";
-import Section from "@/frontend/components/layout/Section.astro";
-import BulletList from "@/frontend/components/common/BulletList.astro";
-import Card from "@/frontend/components/ui/Card";
-import SectionSubtitle from "@/frontend/components/typography/SectionSubtitle.astro";
-import SectionTitle from "@/frontend/components/typography/SectionTitle.astro";
-import StyledContainer from "@/frontend/components/layout/StyledContainer.astro";
-import type { PricingData } from "@/core/interfaces/landingPage.interface";
-import type { IconNames } from "@/core/interfaces/siteData.interface";
-import ActionIcon from "@/frontend/components/common/actions/ActionIcon";
+import Container from '@components/layout/Container.astro';
+import Grid from '@components/layout/Grid.astro';
+import Section from '@components/layout/Section.astro';
+import BulletList from '@components/common/BulletList.astro';
+import Card from '@components/ui/Card';
+import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
+import SectionTitle from '@components/typography/SectionTitle.astro';
+import StyledContainer from '@components/layout/StyledContainer.astro';
+import type { PricingData } from '@interfaces/data/landingPage.interface';
+import type { IconNames } from '@interfaces/data/siteData.interface';
+import ActionIcon from '@components/common/actions/ActionIcon';
 
 // Define the properties interface for the component
 interface Props {
@@ -85,7 +85,7 @@ const { data } = Astro.props;
 								margin="mb-0"
 								extraClass="pricing-card-price"
 							>
-								{tier.price.amount}
+								{'$ ' + tier.price.amount + tier.price.currency}
 								<span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
 							</SectionSubtitle>
 
@@ -93,7 +93,7 @@ const { data } = Astro.props;
 							<BulletList
 								items={tier.features.map((feature) => ({
 									text: feature,
-									icon: "CheckIcon" as IconNames,
+									icon: 'CheckIcon' as IconNames,
 								}))}
 								color="text-primary-dark/90"
 								size="text-sm"

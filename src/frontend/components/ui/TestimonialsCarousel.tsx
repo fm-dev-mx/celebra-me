@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import type { TestimonialsData, Testimonial } from "@/core/interfaces/landingPage.interface";
-import Card from "./Card";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import type { TestimonialsData, Testimonial } from '@interfaces/data/landingPage.interface';
+import Card from './Card';
 
 // Helper function to shuffle an array randomly
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -14,7 +14,7 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
 			padding="p-8"
 			hover="hover:brightness-105 hover:shadow-2xl"
 			borderColor="border-secondary-dark/60 hover:brightness-110"
-			opacity={isActive ? "opacity-100" : "opacity-70"}
+			opacity={isActive ? 'opacity-100' : 'opacity-70'}
 			extraClass="content-center transition-all duration-300"
 		>
 			{/* Testimonial content */}
@@ -39,7 +39,7 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
 );
 
 // Set display name for debugging purposes
-TestimonialCard.displayName = "TestimonialCard";
+TestimonialCard.displayName = 'TestimonialCard';
 
 // Main TestimonialsCarousel component
 const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
@@ -97,8 +97,8 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 							})`,
 							opacity: index === currentIndex ? 1 : 0.5,
 							zIndex: index === currentIndex ? 10 : 0,
-							left: "50%",
-							marginLeft: "-110px",
+							left: '50%',
+							marginLeft: '-110px',
 						}}
 					>
 						<TestimonialCard
@@ -127,9 +127,9 @@ const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
 			<button
 				onClick={() => setIsAutoPlaying((prev) => !prev)}
 				className="absolute right-2 md:right-40 -translate-y-20 bg-white p-2 rounded-full shadow-md text-secondary hover:bg-secondary-light hover:text-secondary-dark transition-colors duration-200 z-20"
-				aria-label={isAutoPlaying ? "Pause autoplay" : "Start autoplay"}
+				aria-label={isAutoPlaying ? 'Pause autoplay' : 'Start autoplay'}
 			>
-				{isAutoPlaying ? "⏸" : "▶"}
+				{isAutoPlaying ? '⏸' : '▶'}
 			</button>
 		</div>
 	);

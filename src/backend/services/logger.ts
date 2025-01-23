@@ -12,8 +12,8 @@ import {
 	BaseLogMeta,
 	BatchLogMeta,
 	LogEntry,
-} from '@/core/interfaces/logEntry.interface';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+} from '@interfaces/logging/logEntry.interface';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 // Initialize notification manager
 const notificationManager = getNotificationManager();
@@ -65,9 +65,9 @@ function configureTransports() {
 						}
 					}
 					return log;
-				})
+				}),
 			),
-		})
+		}),
 	);
 
 	// Loggly transport: Sends JSON logs to Loggly for centralized storage
@@ -79,7 +79,7 @@ function configureTransports() {
 				subdomain: config.logglyConfig.subdomain,
 				tags: ['celebra-me', config.environment],
 				json: true, // Use pure JSON format
-			})
+			}),
 		);
 	}
 
@@ -126,7 +126,7 @@ function configureFormat() {
 				}
 			}
 			return log;
-		})
+		}),
 	);
 }
 

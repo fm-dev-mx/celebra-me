@@ -1,10 +1,10 @@
 ---
-import Icon from "@/frontend/components/common/Icon";
-import IconWrapper from "@/frontend/components/common/IconWrapper.astro";
-import type { Service } from "@/core/interfaces/landingPage.interface";
-import type { IconNames } from "@/core/interfaces/siteData.interface";
-import Paragraph from "../common/Paragraph.astro";
-import SectionSubtitle from "../typography/SectionSubtitle.astro";
+import Icon from '@components/common/Icon';
+import IconWrapper from '@components/common/IconWrapper.astro';
+import type { Service } from '@interfaces/data/landingPage.interface';
+import type { IconNames } from '@interfaces/data/siteData.interface';
+import Paragraph from '../common/Paragraph.astro';
+import SectionSubtitle from '../typography/SectionSubtitle.astro';
 
 // Define the props interface for type safety
 interface Props {
@@ -17,11 +17,11 @@ const { service } = Astro.props;
 
 // Define reusable styles
 const styles = {
-	article: "group flex flex-col items-center justify-center transition-transform transform w-92",
-	container: "flex flex-col items-center max-w-80",
-	iconContainer: "mt-6 mb-4",
-	textContainer: "flex flex-col items-center text-center",
-	icon: "h-full w-full text-white transition-transform transform group-hover:scale-150 group-hover:rotate-6 group-hover:shadow-lg group-hover:shadow-secondary-dark duration-500 ease-in-out",
+	article: 'group flex flex-col items-center justify-center transition-transform transform w-92',
+	container: 'flex flex-col items-center max-w-80',
+	iconContainer: 'mt-6 mb-4',
+	textContainer: 'flex flex-col items-center text-center',
+	icon: 'h-full w-full text-white transition-transform transform group-hover:scale-150 group-hover:rotate-6 group-hover:shadow-lg group-hover:shadow-secondary-dark duration-500 ease-in-out',
 };
 ---
 

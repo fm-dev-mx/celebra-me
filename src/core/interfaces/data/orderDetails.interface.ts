@@ -1,4 +1,4 @@
-// src/core/interfaces/orderDetails.interface.ts
+// src/core/interfaces/data/orderDetails.interface.ts
 
 export interface OrderDetails {
 	/** Order ID */

@@ -1,15 +1,15 @@
 // ActionExternalLink.tsx
-import React, { useState, useCallback } from "react";
-import ActionBase from "./ActionBase"; // Import the base component for actions.
-import ConfirmModal from "@/frontend/components/ui/ConfirmModal"; // Import the confirmation modal component.
-import type { HTMLAttributes } from "react";
+import React, { useState, useCallback } from 'react';
+import ActionBase from './ActionBase'; // Import the base component for actions.
+import ConfirmModal from '@components/ui/ConfirmModal'; // Import the confirmation modal component.
+import type { HTMLAttributes } from 'react';
 import type {
 	ActionVariants,
 	ActionColors,
 	BaseActionVariants,
 	ExternalVariants,
-} from "./ActionBase";
-import type { MouseEvent as ReactMouseEvent } from "react";
+} from './ActionBase';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 
 // Define the props interface for the ActionExternalLink component.
 interface ActionLinkProps extends HTMLAttributes<HTMLAnchorElement> {
@@ -26,13 +26,13 @@ interface ActionLinkProps extends HTMLAttributes<HTMLAnchorElement> {
 
 const ActionExternalLink: React.FC<ActionLinkProps> = ({
 	href,
-	variant = "primary", // Default variant is 'primary' if none is provided.
+	variant = 'primary', // Default variant is 'primary' if none is provided.
 	externalVariant,
-	color = "primary", // Default color is 'primary' if none is specified.
-	confirmMessage = "Are you sure you want to proceed?", // Default confirmation message.
-	confirmTitle = "Confirmation", // Default title for the confirmation modal.
-	confirmButtonText = "Confirm", // Default text for the confirmation button.
-	cancelButtonText = "Cancel", // Default text for the cancel button.
+	color = 'primary', // Default color is 'primary' if none is specified.
+	confirmMessage = 'Are you sure you want to proceed?', // Default confirmation message.
+	confirmTitle = 'Confirmation', // Default title for the confirmation modal.
+	confirmButtonText = 'Confirm', // Default text for the confirmation button.
+	cancelButtonText = 'Cancel', // Default text for the cancel button.
 	className,
 	children,
 	...rest // Spread any additional props to the underlying component.
@@ -58,7 +58,7 @@ const ActionExternalLink: React.FC<ActionLinkProps> = ({
 	// Handle confirm action to proceed with the external link navigation.
 	const handleConfirm = useCallback(() => {
 		setIsModalVisible(false); // Hide the modal.
-		window.open(href, "_blank"); // Open the link in a new tab.
+		window.open(href, '_blank'); // Open the link in a new tab.
 	}, [href]);
 
 	return (

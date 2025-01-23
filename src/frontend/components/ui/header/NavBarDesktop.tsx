@@ -1,13 +1,13 @@
 // src/components/ui/header/NavBarDesktop.tsx
 // NavBarDesktop component handles the desktop navigation menu and renders navigation links dynamically.
 
-import React, { useEffect, useState } from "react";
-import { twMerge } from "tailwind-merge";
-import ActionBase from "@/frontend/components/common/actions/ActionBase";
-import SocialMediaLinks from "@/frontend/components/common/actions/SocialMediaLinks";
-import type { MenuData } from "@/core/interfaces/landingPage.interface";
-import type { SocialData } from "@/core/interfaces/siteData.interface";
-import Logo from "../Logo";
+import React, { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
+import ActionBase from '@components/common/actions/ActionBase';
+import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
+import type { MenuData } from '@interfaces/data/landingPage.interface';
+import type { SocialData } from '@interfaces/data/siteData.interface';
+import Logo from '../Logo';
 
 interface NavBarDesktopProps {
 	menuData: MenuData;
@@ -15,11 +15,11 @@ interface NavBarDesktopProps {
 }
 
 const NavBarDesktop: React.FC<NavBarDesktopProps> = ({ menuData, socialData }) => {
-	const [currentPath, setCurrentPath] = useState<string>("");
+	const [currentPath, setCurrentPath] = useState<string>('');
 
 	useEffect(() => {
 		// Set the current path to highlight the active link based on the current location
-		if (typeof window !== "undefined") {
+		if (typeof window !== 'undefined') {
 			setCurrentPath(window.location.pathname);
 		}
 	}, []);
@@ -37,8 +37,8 @@ const NavBarDesktop: React.FC<NavBarDesktopProps> = ({ menuData, socialData }) =
 								<a
 									href={item.href}
 									className={twMerge(
-										"navbar-desktop-link",
-										currentPath === item.href ? "active" : "",
+										'navbar-desktop-link',
+										currentPath === item.href ? 'active' : '',
 									)}
 								>
 									{item.label}

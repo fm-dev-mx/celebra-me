@@ -1,7 +1,7 @@
 // src/backend/utilities/dataSanitization.ts
 
-import { ApiErrorResponse } from "@/core/interfaces/apiResponse.interface";
-import { DataSanitizationError } from "@/core/errors/dataSanitizationError";
+import { ApiErrorResponse } from '@interfaces/shared/apiResponse.interface';
+import { DataSanitizationError } from '@/core/errors/dataSanitizationError';
 
 const MODULE_NAME = 'DataSanitization';
 
@@ -13,16 +13,21 @@ const MODULE_NAME = 'DataSanitization';
  */
 export function escapeHtml(unsafe: string): string {
 	if (typeof unsafe !== 'string') {
-		throw new DataSanitizationError('Invalid input type for escapeHtml; expected a string.', MODULE_NAME);
+		throw new DataSanitizationError(
+			'Invalid input type for escapeHtml; expected a string.',
+			MODULE_NAME,
+		);
 	}
-	return unsafe.replace(/[&<>"']/g, (char) =>
-	({
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;',
-	}[char] ?? char)
+	return unsafe.replace(
+		/[&<>"']/g,
+		(char) =>
+			({
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#039;',
+			})[char] ?? char,
 	);
 }
 
@@ -35,7 +40,10 @@ export function escapeHtml(unsafe: string): string {
  */
 export function maskEmailAddress(email: string): string {
 	if (typeof email !== 'string') {
-		throw new DataSanitizationError('Invalid input type for maskEmailAddress; expected a string.', MODULE_NAME);
+		throw new DataSanitizationError(
+			'Invalid input type for maskEmailAddress; expected a string.',
+			MODULE_NAME,
+		);
 	}
 
 	const [localPart, domain] = email.split('@');
@@ -56,7 +64,10 @@ export function maskEmailAddress(email: string): string {
  */
 export function maskIpAddress(ipAddress: string): string {
 	if (typeof ipAddress !== 'string') {
-		throw new DataSanitizationError('Invalid input type for maskIpAddress; expected a string.', MODULE_NAME);
+		throw new DataSanitizationError(
+			'Invalid input type for maskIpAddress; expected a string.',
+			MODULE_NAME,
+		);
 	}
 
 	// Supports both IPv4 and IPv6
@@ -79,7 +90,10 @@ export function maskIpAddress(ipAddress: string): string {
  */
 export function maskPhoneNumber(phoneNumber: string): string {
 	if (typeof phoneNumber !== 'string') {
-		throw new DataSanitizationError('Invalid input type for maskPhoneNumber; expected a string.', MODULE_NAME);
+		throw new DataSanitizationError(
+			'Invalid input type for maskPhoneNumber; expected a string.',
+			MODULE_NAME,
+		);
 	}
 
 	// Simple regex to match phone numbers (this can be enhanced)
@@ -123,7 +137,10 @@ export function maskValue(value: unknown): string {
  */
 export function sanitizeObject<T extends Record<string, any>>(data: T): T {
 	if (typeof data !== 'object' || data === null) {
-		throw new DataSanitizationError('Invalid input type for sanitizeObject; expected an object.', MODULE_NAME);
+		throw new DataSanitizationError(
+			'Invalid input type for sanitizeObject; expected an object.',
+			MODULE_NAME,
+		);
 	}
 
 	const sensitiveFields = categorizeSensitiveFields();
@@ -141,34 +158,37 @@ export function sanitizeObject<T extends Record<string, any>>(data: T): T {
 		seen.add(obj);
 
 		if (Array.isArray(obj)) {
-			return obj.map(item => sanitize(item));
+			return obj.map((item) => sanitize(item));
 		}
 
-		return Object.keys(obj).reduce((acc, key) => {
-			const value = obj[key];
-			const fieldCategory = sensitiveFields[key.toLowerCase()];
+		return Object.keys(obj).reduce(
+			(acc, key) => {
+				const value = obj[key];
+				const fieldCategory = sensitiveFields[key.toLowerCase()];
 
-			if (fieldCategory) {
-				switch (fieldCategory) {
-					case 'email':
-						acc[key] = maskEmailAddress(value);
-						break;
-					case 'ip':
-						acc[key] = maskIpAddress(value);
-						break;
-					case 'phone':
-						acc[key] = maskPhoneNumber(value);
-						break;
-					default:
-						acc[key] = maskValue(value);
+				if (fieldCategory) {
+					switch (fieldCategory) {
+						case 'email':
+							acc[key] = maskEmailAddress(value);
+							break;
+						case 'ip':
+							acc[key] = maskIpAddress(value);
+							break;
+						case 'phone':
+							acc[key] = maskPhoneNumber(value);
+							break;
+						default:
+							acc[key] = maskValue(value);
+					}
+				} else if (typeof value === 'object' && value !== null) {
+					acc[key] = sanitize(value);
+				} else {
+					acc[key] = value;
 				}
-			} else if (typeof value === 'object' && value !== null) {
-				acc[key] = sanitize(value);
-			} else {
-				acc[key] = value;
-			}
-			return acc;
-		}, {} as Record<string, unknown>);
+				return acc;
+			},
+			{} as Record<string, unknown>,
+		);
 	}
 
 	return sanitize(data);
@@ -180,30 +200,30 @@ export function sanitizeObject<T extends Record<string, any>>(data: T): T {
  */
 function categorizeSensitiveFields(): Record<string, string> {
 	return {
-		'password': 'generic',
-		'token': 'generic',
-		'secret': 'generic',
-		'apikey': 'generic',
-		'authorization': 'generic',
-		'creditcard': 'generic',
-		'ssn': 'generic',
-		'accesstoken': 'generic',
-		'refreshtoken': 'generic',
-		'pin': 'generic',
-		'credential': 'generic',
-		'session': 'generic',
-		'email': 'email',
-		'useremail': 'email',
-		'to': 'email',
-		'from': 'email',
-		'cc': 'email',
-		'bcc': 'email',
-		'replyto': 'email',
-		'phone': 'phone',
-		'mobile': 'phone',
-		'address': 'generic',
-		'name': 'generic',
-		'ip': 'ip',
+		password: 'generic',
+		token: 'generic',
+		secret: 'generic',
+		apikey: 'generic',
+		authorization: 'generic',
+		creditcard: 'generic',
+		ssn: 'generic',
+		accesstoken: 'generic',
+		refreshtoken: 'generic',
+		pin: 'generic',
+		credential: 'generic',
+		session: 'generic',
+		email: 'email',
+		useremail: 'email',
+		to: 'email',
+		from: 'email',
+		cc: 'email',
+		bcc: 'email',
+		replyto: 'email',
+		phone: 'phone',
+		mobile: 'phone',
+		address: 'generic',
+		name: 'generic',
+		ip: 'ip',
 	};
 }
 

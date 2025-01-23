@@ -4,8 +4,8 @@ import { InitializationError } from '@/core/errors/initializationError';
 // Use consistent logging approach
 // Changed from "logger" to "logInfo" and "logError" for clarity/consistency
 import { logInfo, logError } from '@/backend/services/logger';
-import { delay, getExponentialBackoffDelay } from '@/core/utilities/retryUtils';
-import { getErrorMessage } from '@/core/utilities/errorUtils';
+import { delay, getExponentialBackoffDelay } from '@utilities/retryUtils';
+import { getErrorMessage } from '@utilities/errorUtils';
 
 export abstract class ClientFactory<T> {
 	protected clientPromise: Promise<T> | null = null;
@@ -31,7 +31,6 @@ export abstract class ClientFactory<T> {
 				});
 				return client;
 			} catch (error) {
-
 				if (attempt < this.MAX_RETRIES) {
 					const backoffTime = getExponentialBackoffDelay(attempt, 1000);
 					await delay(backoffTime);
@@ -49,7 +48,7 @@ export abstract class ClientFactory<T> {
 					throw new InitializationError(
 						`Failed to initialize ${this.MODULE_NAME} after ${this.MAX_RETRIES} attempts.`,
 						this.MODULE_NAME,
-						error
+						error,
 					);
 				}
 			}
@@ -57,7 +56,7 @@ export abstract class ClientFactory<T> {
 
 		throw new InitializationError(
 			`Unexpected error initializing ${this.MODULE_NAME}.`,
-			this.MODULE_NAME
+			this.MODULE_NAME,
 		);
 	}
 
