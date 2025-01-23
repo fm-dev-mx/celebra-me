@@ -1,26 +1,34 @@
 # Editor configuration, see https://editorconfig.org
 # This comment indicates that this file follows the EditorConfig standard and provides a link for more information.
-
-root = true
-# Indicates that this is the root EditorConfig file and no other .editorconfig files should be used beyond this directory.
+root = true                      # Indicates that this is the root EditorConfig file and no other .editorconfig files should be used beyond this directory.
 
 [*]
-# The section that applies to all files.
+charset = utf-8                  # Character encoding for all files
+indent_style = tab               # Use tabs for indentation
+indent_size = 4                  # Tab width equivalent to 4 spaces
+end_of_line = lf                 # Line endings set to LF (Unix style)
+insert_final_newline = true      # Ensure a final newline in all files
+trim_trailing_whitespace = true  # Remove trailing whitespace
 
-charset = utf-8
-# Sets the character encoding to UTF-8 for all files.
+[*.md]
+trim_trailing_whitespace = false # Allow trailing whitespace in Markdown (for visual alignment)
 
-indent_style = tab
-# Uses tabs for indentation in all files.
+[*.{yml,yaml}]
+indent_style = space             # Use spaces for YAML files
+indent_size = 2                  # YAML convention: 2 spaces
 
+[*.json]
+indent_style = space             # Use spaces for JSON files
+indent_size = 2                  # JSON convention: 2 spaces
+
+[*.{html,css,scss,astro}]
+indent_style = tab               # Tabs for HTML, CSS, SCSS, and Astro
+indent_size = 4                  # Consistent tab width
+
+[*.ts]
+indent_style = tab               # Tabs for TypeScript
 indent_size = 4
-# Sets the size of a tab to 4 spaces. This is relevant if you use tab indentation.
 
-end_of_line = lf
-# Sets the line endings to LF (Unix style) for all files.
-
-insert_final_newline = true
-# Ensures that a newline character is inserted at the end of each file.
-
-trim_trailing_whitespace = true
-# Removes any trailing whitespace at the end of each line in all files.
+[*.js]
+indent_style = tab               # Tabs for JavaScript
+indent_size = 4

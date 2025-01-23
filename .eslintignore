@@ -1,4 +1,4 @@
-# Ignore build output
+# Exclude build output
 dist/
 .vercel/
 .build/
@@ -6,29 +6,26 @@ dist/
 # Node modules
 node_modules/
 
+# Configuration files
+*.config.js
+*.config.cjs
+*.config.mjs
+
 # Logs and temporary files
 *.log
 *.tmp
 
-# Test coverage
-coverage/
-
-# Ignore environment files
+# Environment files
 .env
 .env.local
 .env.*.local
 
+# Test coverage
+coverage/
+
 # Ignore minified files
 *.min.js
 *.min.css
-
-# Ignore assets
-*.png
-*.jpg
-*.jpeg
-*.svg
-*.gif
-*.webp
 
 # Ignore generated files
 astro/types.d.ts

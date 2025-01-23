@@ -1,46 +1,26 @@
 {
 	"$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
 	"version": "0.2",
-	"language": "es,en,es-ES,lorem,en-US",
-	"import": [
-		"@cspell/dict-software-terms/cspell-ext.json",
-		"@cspell/dict-en_us/cspell-ext.json",
-		"@cspell/dict-filetypes/cspell-ext.json",
-		"@cspell/dict-fonts/cspell-ext.json",
-		"@cspell/dict-css/cspell-ext.json",
-		"@cspell/dict-node/cspell-ext.json",
-		"@cspell/dict-typescript/cspell-ext.json",
-		"@cspell/dict-companies/cspell-ext.json"
-	],
+	"language": "en,es",
+	"dictionaryDefinitions": [],
 	"dictionaries": [
-		"softwareTerms",
+		"en_US",
+		"es",
 		"companies",
+		"softwareTerms",
+		"misc",
 		"typescript",
-		"node",
-		"html",
 		"css",
-		"fonts",
-		"filetypes"
+		"html"
 	],
-	"ignoreWords": [],
-	"ignorePaths": [
-		"**/settings.json",
-		"**/package.json",
-		"**/package-lock.json",
-		"**/pnpm-lock.yaml",
-		"node_modules/**"
-	],
-	"overrides": [
+	"ignorePaths": ["node_modules/**", "dist/**", "build/**", ".git/**", ".cache/**"],
+	"allowCompoundWords": true,
+	"words": ["celebra-me", "astrojs", "tailwindcss", "supabase", "vercel"],
+	"enabledLanguageIds": ["javascript", "typescript", "json", "markdown", "astro"],
+	"languageSettings": [
 		{
-			"filename": "**/*.md",
-			"language": "en"
-		},
-		{
-			"filename": "**/*.es.md",
-			"language": "es"
+			"languageId": "markdown",
+			"allowCompoundWords": true
 		}
-	],
-	"words": [
-		"celebrame"
 	]
 }

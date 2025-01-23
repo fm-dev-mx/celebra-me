@@ -1,25 +1,28 @@
 {
-	"extends": "astro/tsconfigs/strict",
+	"extends": "astro/tsconfigs/strict", // Base config for strict type checking in Astro
 	"compilerOptions": {
-		"verbatimModuleSyntax": false,
+		"verbatimModuleSyntax": false, // Simplifies import/export handling
 		"types": ["astro/client", "jest"],
-		"baseUrl": ".",
+		"baseUrl": ".", // Enables absolute imports
 		"paths": {
+			// General alias
 			"@/*": ["src/*"],
 			"@components/*": ["src/frontend/components/*"],
 			"@utilities/*": ["src/core/utilities/*"],
 			"@layouts/*": ["src/frontend/layouts/*"],
-			"@images/*": ["src/frontend/assets/images/*"]
+			"@images/*": ["src/frontend/assets/images/*"],
+			"@interfaces/*": ["src/core/interfaces/*"]
 		},
-		"jsx": "react-jsx",
-		"jsxImportSource": "react",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"module": "ESNext",
-		"moduleResolution": "node",
-		"allowSyntheticDefaultImports": true,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true
+		"jsx": "react-jsx", // Enables React JSX support
+		"jsxImportSource": "react", // Configures React for JSX transform
+		"lib": ["dom", "dom.iterable", "esnext"], // Latest DOM and ES features
+		"module": "ESNext", // Uses ES Modules
+		"moduleResolution": "node", // Resolves modules like Node.js
+		"allowSyntheticDefaultImports": true, // Allows default imports for compatibility
+		"experimentalDecorators": true, // Enables experimental decorator syntax
+		"emitDecoratorMetadata": true, // Emits metadata for decorators
+		"skipLibCheck": true // Improves performance by skipping type checking for libraries
 	},
-	"include": ["src", "astro/types.d.ts", "env.d.ts"],
-	"exclude": ["node_modules", "dist"]
+	"include": ["src", "astro/types.d.ts", "env.d.ts"], // Includes source and type definitions
+	"exclude": ["node_modules", "dist"] // Excludes dependencies and build outputs
 }

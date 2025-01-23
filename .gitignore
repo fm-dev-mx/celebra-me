@@ -1,10 +1,6 @@
 # Build output
 dist/
-
-# Generated types by Astro
 .astro/
-
-# Vercel
 .vercel/
 
 # Dependencies
@@ -15,49 +11,55 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
+logs/*
 
 # Environment variables
 .env
 .env.production
+.env.local
+.env.*.local
 
 # macOS-specific files
-# .DS_Store
+.DS_Store
+Thumbs.db
 
-# VS Code settings (optional, if you don't want to share workspace settings)
-.vscode/
-# Alternatively, if you want to ignore only specific VS Code files:
-# .vscode/settings.json
-# .vscode/tasks.json
-# .vscode/launch.json
-# .vscode/extensions.json
+# VS Code settings
+# .vscode/
 
-# EditorConfig settings (optional, if you prefer individual settings)
+# EditorConfig settings
 # .editorconfig
 
-# ESLint configuration (optional, if you prefer individual linting rules)
-.eslintrc.js
+# ESLint configuration
+# .eslintrc.js
+# .eslintrc.cjs
 
-# Prettier configuration (optional, if you prefer individual formatting)
-.prettierrc.mjs
+# Prettier configuration
+# .prettierrc.mjs
+.prettierignore
 
-# Prettier ignore file (optional, goes along with .prettierrc.mjs)
-# .prettierignore
+# Cache directories
+.cache/
+.jest/
+.npm/
+.pnpm-store/
 
-# Optionally, you might want to ignore cache directories
-# .cache/
+# Generated types by Astro
+astro/types.d.ts
+.astro/settings.json
 
-# If you use TypeScript, you might want to ignore compiled JavaScript files
-# *.js
-# *.js.map
+# Compiled files
+*.js.map
+*.css.map
 
-# If you use a CSS preprocessor, you might want to ignore compiled CSS files
-# *.css
-
-# Ignore any local backup files
+# Local backup files
 *.bak
 *.backup
 
-# Ignore log files to prevent temporary or sensitive data from being tracked
-# These files can grow large and are not necessary for the repository.
-*.log
-logs/*
+# Static assets
+# *.png
+# *.jpg
+# *.jpeg
+# *.svg
+# *.gif
+# *.webp
