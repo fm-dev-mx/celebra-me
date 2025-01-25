@@ -1,6 +1,6 @@
 // src/core/errors/validationError.ts
 import { BaseError } from './baseError';
-import { ValidationErrors } from '@interfaces/shared/apiResponse.interface';
+import { ValidationErrors } from '@/core/types/validation/validationErrors.type';
 import { ErrorCodes } from './errorCodes';
 
 /**

@@ -2,7 +2,7 @@
 
 import rateLimiterFactory from '@/backend/services/rateLimiterFactory';
 import { RateLimiterConfig } from '@interfaces/shared/rateLimiter.interface';
-import { Handler, Middleware } from '@/core/types/handlers';
+import { Handler, Middleware } from '@/core/types/api/handlers.type';
 import { RateLimiterError } from '@/core/errors/rateLimiterError';
 import { BadRequestError } from '@/core/errors/badRequestError';
 

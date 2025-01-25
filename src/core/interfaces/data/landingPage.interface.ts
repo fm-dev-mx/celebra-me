@@ -1,6 +1,7 @@
 // src/core/interfaces/data/landingPage.interface.ts
 
-import type { SocialData, IconNames } from './siteData.interface'; // Reusing shared interfaces
+import type { SocialData } from './siteData.interface';
+import type { IconNames } from '@/core/types/ui/iconNames.type';
 
 /**
  * Interface representing the data structure for the landing page.

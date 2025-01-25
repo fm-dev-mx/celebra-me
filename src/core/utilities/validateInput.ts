@@ -1,14 +1,8 @@
 // src/core/utilities/validateInput.ts
 
-import { ValidationRules } from '@interfaces/shared/validationRules.interface';
-import { ContactFormData } from '../interfaces/forms/contactFormData.interface';
-import { EmailData } from '../interfaces/email/emailData.interface';
+import { ValidationRules } from '@/core/types/validation/validationRules.type';
+import { AdmittedValidationInput } from '@/core/types/validation/admittedValidationInput.type';
 
-type admittedInputType =
-	| ContactFormData
-	| Partial<ContactFormData>
-	| EmailData
-	| Partial<EmailData>;
 /**
  * Validates input data against the provided validation rules.
  * @param data - The data to validate.
@@ -16,14 +10,14 @@ type admittedInputType =
  * @returns An object containing validation errors, if any.
  */
 export const validateInput = (
-	data: admittedInputType,
+	data: AdmittedValidationInput,
 	rules: ValidationRules,
 ): Record<string, string> => {
 	const errors: Record<string, string> = {};
 
 	for (const fieldName in rules) {
 		const fieldRules = rules[fieldName];
-		const value = data[fieldName as keyof admittedInputType] || '';
+		const value = data[fieldName as keyof AdmittedValidationInput] || '';
 
 		for (const rule of fieldRules) {
 			if (!rule.validator(value)) {

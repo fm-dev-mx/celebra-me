@@ -1,6 +1,6 @@
 // src/backend/middlewares/clientIpMiddleware.ts
 
-import { Handler } from '@/core/types/handlers';
+import { Handler } from '@/core/types/api/handlers.type';
 import { getClientIp } from '../utilities/getClientIp';
 import { ClientIpError } from '@/core/errors/clientIpError';
 

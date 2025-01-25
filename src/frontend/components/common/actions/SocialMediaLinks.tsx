@@ -2,13 +2,13 @@
 
 import React from 'react';
 import ActionIcon from '@components/common/actions/ActionIcon';
-import type { SocialLink, IconNames } from '@interfaces/data/siteData.interface';
-
-export type SocialVariants = 'social-desktop-header' | 'social-mobile-header' | 'social-footer';
+import type { SocialLink } from '@interfaces/data/siteData.interface';
+import type { IconNames } from '@/core/types/ui/iconNames.type';
+import type { SocialLinkVariants } from '@/core/types/ui/socialLinkVariants.type';
 
 interface SocialMediaLinksProps {
 	links: SocialLink[];
-	variant?: SocialVariants;
+	variant?: SocialLinkVariants;
 }
 
 /**

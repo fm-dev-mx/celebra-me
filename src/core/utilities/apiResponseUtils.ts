@@ -1,6 +1,6 @@
 // src/core/utilities/apiResponseUtils.ts
 
-import { ApiSuccessResponse } from '@interfaces/shared/apiResponse.interface';
+import { ApiSuccessResponse } from '@/core/interfaces/api/apiResponse.interface';
 
 /**
  * Creates a standardized success response object.

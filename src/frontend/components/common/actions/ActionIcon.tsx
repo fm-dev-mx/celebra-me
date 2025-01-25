@@ -4,8 +4,8 @@ import React from 'react';
 import ActionBase from './ActionBase';
 import type { ActionVariants, ActionColors, BaseActionVariants, IconVariants } from './ActionBase';
 import Icon from '@components/common/Icon';
-import type { IconNames } from '@interfaces/data/siteData.interface';
-import type { SocialVariants } from './SocialMediaLinks';
+import type { IconNames } from '@/core/types/ui/iconNames.type';
+import type { SocialLinkVariants } from '@/core/types/ui/socialLinkVariants.type';
 
 // Define the props interface for the ActionIcon component
 type ActionIconProps<T extends 'a' | 'button'> = {
@@ -13,7 +13,7 @@ type ActionIconProps<T extends 'a' | 'button'> = {
 } & {
 	icon: IconNames;
 	iconSize?: string;
-	variant?: BaseActionVariants | SocialVariants;
+	variant?: BaseActionVariants | SocialLinkVariants;
 	iconVariant?: IconVariants;
 	color?: ActionColors;
 	as?: T;

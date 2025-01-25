@@ -1,6 +1,6 @@
 // src/backend/utilities/dataSanitization.ts
 
-import { ApiErrorResponse } from '@interfaces/shared/apiResponse.interface';
+import { ApiErrorResponse } from '@/core/interfaces/api/apiResponse.interface';
 import { DataSanitizationError } from '@/core/errors/dataSanitizationError';
 
 const MODULE_NAME = 'DataSanitization';

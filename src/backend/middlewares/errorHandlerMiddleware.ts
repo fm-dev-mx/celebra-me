@@ -1,14 +1,14 @@
 // src/backend/middlewares/errorHandlerMiddleware.ts
 
-import { Handler } from '@/core/types/handlers';
-import { ApiErrorResponse } from '@interfaces/shared/apiResponse.interface';
+import { Handler } from '@/core/types/api/handlers.type';
+import { ApiErrorResponse } from '@/core/interfaces/api/apiResponse.interface';
 import { jsonResponse } from '@utilities/apiResponseUtils';
 import { logError, logWarn } from '@/backend/services/logger';
 import { RequestMeta } from '@interfaces/logging/requestMeta.interface';
 import { BaseError } from '@/core/errors/baseError';
 import { ValidationError } from '@/core/errors/validationError';
 import { RateLimiterError } from '@/core/errors/rateLimiterError';
-import { ContactFormAPIContext } from '@interfaces/forms/contactFormAPIContext.interface';
+import { ContactFormAPIContext } from '@interfaces/api/contactFormAPIContext.interface';
 import config from '@/core/config';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization'; // Removed sanitizeError
 import { getErrorMessage } from '@utilities/errorUtils';

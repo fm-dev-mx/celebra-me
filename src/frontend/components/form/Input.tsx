@@ -1,41 +1,6 @@
 // src/frontend/components/form/Input.tsx
-import React from "react";
-
-/**
- * Valid input types for the Input component.
- * @type {InputType}
- */
-export type InputType =
-	| "text"
-	| "email"
-	| "password"
-	| "tel"
-	| "number"
-	| "url"
-	| "search"
-	| "date"
-	| "datetime-local"
-	| "month"
-	| "week"
-	| "time"
-	| "color";
-
-/**
- * Input component props interface.
- */
-interface InputProps {
-	label: string;
-	id: string; // Made 'id' required
-	className?: string;
-	type: InputType;
-	placeholder: string;
-	required?: boolean;
-	value: string | undefined;
-	onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-	onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
-	name: string;
-	error?: string;
-}
+import React from 'react';
+import { InputProps } from '@/core/interfaces/ui/components/input.interface';
 
 /**
  * Input component.
@@ -44,7 +9,7 @@ interface InputProps {
 const Input: React.FC<InputProps> = ({
 	id,
 	label,
-	className = "border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500",
+	className = 'border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500',
 	type,
 	placeholder,
 	required = false,

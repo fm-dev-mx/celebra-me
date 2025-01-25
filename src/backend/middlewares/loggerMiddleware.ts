@@ -1,6 +1,6 @@
 // src/backend/middlewares/loggerMiddleware.ts
 
-import { Handler } from '@/core/types/handlers';
+import { Handler } from '@/core/types/api/handlers.type';
 import { logError, logInfo } from '@/backend/services/logger';
 import { maskIpAddress } from '@/backend/utilities/dataSanitization';
 import { getErrorMessage } from '@utilities/errorUtils';

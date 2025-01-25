@@ -1,5 +1,5 @@
 // src/core/interfaces/data/siteData.interface.ts
-
+import { IconNames } from '@/core/types/ui/iconNames.type';
 /**
  * Interface for general site information.
  */
@@ -115,25 +115,3 @@ export interface SocialLink {
 	href: string;
 	title?: string;
 }
-
-/**
- * Type representing allowed icon names.
- */
-export type IconNames =
-	| 'AnniversaryIcon'
-	| 'ArrowDownIcon'
-	| 'ArrowUpIcon'
-	| 'CakeIcon'
-	| 'CelebrameIcon'
-	| 'CheckIcon'
-	| 'CommitmentIcon'
-	| 'CrownIcon'
-	| 'EasyUseIcon'
-	| 'ExclusiveIcon'
-	| 'FacebookIcon'
-	| 'InstagramIcon'
-	| 'MenuIcon'
-	| 'CloseIcon'
-	| 'TikTokIcon'
-	| 'WeddingIcon'
-	| 'WhatsAppIcon';

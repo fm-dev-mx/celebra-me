@@ -1,8 +1,8 @@
 // src/backend/middlewares/validationMiddleware.ts
 
-import { Handler } from '@/core/types/handlers';
+import { Handler } from '@/core/types/api/handlers.type';
 import { validateInput } from '@utilities/validateInput';
-import { ValidationRules } from '@interfaces/shared/validationRules.interface';
+import { ValidationRules } from '@/core/types/validation/validationRules.type';
 import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
 import { ValidationError } from '@/core/errors/validationError';
 
@@ -47,9 +47,9 @@ export function validationMiddleware(rules: ValidationRules) {
 			}
 
 			// Validate the parsed data against the provided rules
-			const validationErrors = validateInput(data, rules);
-			if (Object.keys(validationErrors).length > 0) {
-				throw new ValidationError('Validation failed', MODULE_NAME, validationErrors);
+			const validationErrorList = validateInput(data, rules);
+			if (Object.keys(validationErrorList).length > 0) {
+				throw new ValidationError('Validation failed', MODULE_NAME, validationErrorList);
 			}
 
 			// Add validated data to the context for downstream handlers
