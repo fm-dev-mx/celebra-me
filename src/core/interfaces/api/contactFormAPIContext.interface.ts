@@ -1,6 +1,6 @@
-// src/core/interfaces/forms/contactFormAPIContext.interface.ts
+// src/core/interfaces/api/contactFormAPIContext.interface.ts
 
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 
 /**
  * Interface representing the context for the Contact Form API.
@@ -8,7 +8,7 @@ import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
 export interface ContactFormAPIContext {
 	request: Request;
 	clientIp?: string;
-	validatedData?: ContactFormData;
+	validatedData?: ContactFormFields;
 	user?: {
 		id: string;
 	};

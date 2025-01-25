@@ -1,11 +1,6 @@
-// src/core/interfaces/shared/apiResponse.interface.ts
+// src/core/interfaces/api/apiResponse.interface.ts
 
-/**
- * Interface representing validation errors for form fields.
- */
-export interface ValidationErrors {
-	[field: string]: string;
-}
+import { ValidationErrors } from '@/core/types/validation/validationErrors.type';
 
 /**
  * Interface representing a successful API response.
@@ -32,8 +27,3 @@ export interface ApiErrorResponse {
 	// In development mode, include error details
 	error?: string;
 }
-
-/**
- * Union type representing either a success or error API response.
- */
-export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
