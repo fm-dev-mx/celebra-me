@@ -20,16 +20,46 @@ export default defineConfig({
 	vite: {
 		resolve: {
 			alias: {
-				// Used 'fileURLToPath' for cross-platform compatibility
+				// Core aliases
 				'@': fileURLToPath(new URL('./src', import.meta.url)),
-				'@components': fileURLToPath(new URL('./src/frontend/components', import.meta.url)),
-				'@utilities': fileURLToPath(new URL('./src/core/utilities', import.meta.url)),
-				'@layouts': fileURLToPath(new URL('./src/frontend/layouts', import.meta.url)),
-				'@images': fileURLToPath(new URL('./src/frontend/assets/images', import.meta.url)),
+				'@core': fileURLToPath(new URL('./src/core', import.meta.url)),
+				'@config': fileURLToPath(new URL('./src/core/config', import.meta.url)),
+				'@customTypes': fileURLToPath(new URL('./src/core/types', import.meta.url)),
 				'@interfaces': fileURLToPath(new URL('./src/core/interfaces', import.meta.url)),
+				'@utilities': fileURLToPath(new URL('./src/core/utilities', import.meta.url)),
+				'@helpers': fileURLToPath(new URL('./src/core/helpers', import.meta.url)),
+				'@data': fileURLToPath(new URL('./src/core/data', import.meta.url)),
+
+				// Frontend aliases
+				'@frontend': fileURLToPath(new URL('./src/frontend', import.meta.url)),
+				'@components': fileURLToPath(new URL('./src/frontend/components', import.meta.url)),
+				'@layouts': fileURLToPath(new URL('./src/frontend/layouts', import.meta.url)),
+				'@hooks': fileURLToPath(new URL('./src/frontend/hooks', import.meta.url)),
+				'@styles': fileURLToPath(new URL('./src/frontend/styles', import.meta.url)),
+				'@assets': fileURLToPath(new URL('./src/frontend/assets', import.meta.url)),
+				'@images': fileURLToPath(new URL('./src/frontend/assets/images', import.meta.url)),
+				'@icons': fileURLToPath(new URL('./src/frontend/assets/icons', import.meta.url)),
+				'@fonts': fileURLToPath(new URL('./src/frontend/assets/fonts', import.meta.url)),
+
+				// Backend aliases
+				'@backend': fileURLToPath(new URL('./src/backend', import.meta.url)),
+				'@api': fileURLToPath(new URL('./src/pages/api', import.meta.url)),
+				'@services': fileURLToPath(new URL('./src/backend/services', import.meta.url)),
+				'@controllers': fileURLToPath(
+					new URL('./src/backend/controllers', import.meta.url),
+				),
+				'@repositories': fileURLToPath(
+					new URL('./src/backend/repositories', import.meta.url),
+				),
+				'@middlewares': fileURLToPath(
+					new URL('./src/backend/middlewares', import.meta.url),
+				),
+				'@models': fileURLToPath(new URL('./src/backend/models', import.meta.url)),
+				'@db': fileURLToPath(new URL('./src/backend/database', import.meta.url)),
 			},
 		},
 	},
+
 	output: 'server',
 	adapter: vercel({
 		webAnalytics: { enabled: true },

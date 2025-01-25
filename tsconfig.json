@@ -5,13 +5,36 @@
 		"types": ["astro/client", "jest"],
 		"baseUrl": ".", // Enables absolute imports
 		"paths": {
-			// General alias
+			// Core aliases
 			"@/*": ["src/*"],
-			"@components/*": ["src/frontend/components/*"],
+			"@core/*": ["src/core/*"],
+			"@config/*": ["src/core/config/*"],
+			"@customTypes/*": ["src/core/types/*"],
+			"@interfaces/*": ["src/core/interfaces/*"],
 			"@utilities/*": ["src/core/utilities/*"],
+			"@helpers/*": ["src/core/helpers/*"],
+			"@data/*": ["src/core/data/*"],
+
+			// Frontend aliases
+			"@frontend/*": ["src/frontend/*"],
+			"@components/*": ["src/frontend/components/*"],
 			"@layouts/*": ["src/frontend/layouts/*"],
+			"@hooks/*": ["src/frontend/hooks/*"],
+			"@styles/*": ["src/frontend/styles/*"],
+			"@assets/*": ["src/frontend/assets/*"],
 			"@images/*": ["src/frontend/assets/images/*"],
-			"@interfaces/*": ["src/core/interfaces/*"]
+			"@icons/*": ["src/frontend/assets/icons/*"],
+			"@fonts/*": ["src/frontend/assets/fonts/*"],
+
+			// Backend aliases
+			"@backend/*": ["src/backend/*"],
+			"@api/*": ["src/pages/api/*"],
+			"@services/*": ["src/backend/services/*"],
+			"@controllers/*": ["src/backend/controllers/*"],
+			"@repositories/*": ["src/backend/repositories/*"],
+			"@middlewares/*": ["src/backend/middlewares/*"],
+			"@models/*": ["src/backend/models/*"],
+			"@db/*": ["src/backend/database/*"]
 		},
 		"jsx": "react-jsx", // Enables React JSX support
 		"jsxImportSource": "react", // Configures React for JSX transform
