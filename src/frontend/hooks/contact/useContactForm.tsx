@@ -2,30 +2,30 @@
 
 import { useState } from 'react';
 import { validateInput } from '@utilities/validateInput';
-import { validationRules } from '@utilities/validationRules';
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { contactFormValidationRules } from '@/core/utilities/contactFormValidationRules';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 import { apiService } from '@/frontend/services/apiService';
-import { ApiResponse } from '@interfaces/shared/apiResponse.interface';
+import { ApiResponse } from '@/core/types/api/apiResponse.type';
 
 /**
  * Custom hook to manage contact form state and handlers.
  */
 export const useContactForm = () => {
-	const initialFormData: ContactFormData = {
+	const initialFormData: ContactFormFields = {
 		name: '',
 		email: '',
 		mobile: '',
 		message: '',
 	};
 	// State to manage the form data with optional fields
-	const [formData, setFormData] = useState<Partial<ContactFormData>>(initialFormData);
+	const [formData, setFormData] = useState<Partial<ContactFormFields>>(initialFormData);
 
 	// State to store response messages from the server for user feedback
 	const [responseMessage, setResponseMessage] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isRateLimited, setIsRateLimited] = useState(false);
-	const [errors, setErrors] = useState<Record<keyof ContactFormData, string>>(
-		{} as Record<keyof ContactFormData, string>,
+	const [errors, setErrors] = useState<Record<keyof ContactFormFields, string>>(
+		{} as Record<keyof ContactFormFields, string>,
 	);
 
 	/**
@@ -41,7 +41,7 @@ export const useContactForm = () => {
 		}
 
 		if (!error.success && error.errors) {
-			setErrors(error.errors as Record<keyof ContactFormData, string>);
+			setErrors(error.errors as Record<keyof ContactFormFields, string>);
 		}
 	};
 	/**
@@ -55,18 +55,18 @@ export const useContactForm = () => {
 		setResponseMessage(null); // Clear previous response message
 
 		// Client-side validation
-		const validationErrors = validateInput(formData, validationRules);
+		const validationErrors = validateInput(formData, contactFormValidationRules);
 		if (Object.keys(validationErrors).length > 0) {
 			setErrors(validationErrors);
 			setIsSubmitting(false);
 			return;
 		}
-		setErrors({} as Record<keyof ContactFormData, string>); // Reset validation errors
+		setErrors({} as Record<keyof ContactFormFields, string>); // Reset validation errors
 
 		try {
 			// Send the form data using the ApiService
 			const response: ApiResponse = await apiService.sendContactForm(
-				formData as ContactFormData,
+				formData as ContactFormFields,
 			);
 
 			setResponseMessage(response.message);
@@ -86,7 +86,7 @@ export const useContactForm = () => {
 	const handleInputChange = (
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
-		const { name, value } = event.target as { name: keyof ContactFormData; value: string };
+		const { name, value } = event.target as { name: keyof ContactFormFields; value: string };
 
 		// Update the form data state
 		setFormData((prevFormData) => ({
@@ -100,10 +100,13 @@ export const useContactForm = () => {
 	 * @param event - The blur event.
 	 */
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		const { name, value } = event.target as { name: keyof ContactFormData; value: string };
+		const { name, value } = event.target as { name: keyof ContactFormFields; value: string };
 
 		// Validate only the field that just lost focus using shared validation rules
-		const fieldErrors = validateInput({ [name]: value }, { [name]: validationRules[name] });
+		const fieldErrors = validateInput(
+			{ [name]: value },
+			{ [name]: contactFormValidationRules[name] },
+		);
 
 		// Update the error state with any validation errors
 		setErrors((prevErrors) => {

@@ -1,12 +1,12 @@
-// src/core/utilities/validationHelper.ts
+// src/core/utilities/formValidationHelper.ts
 
 import validator from 'validator';
-import { ValidationRule } from '@interfaces/shared/validationRules.interface';
+import { ValidationRule } from '@/core/interfaces/validation/validationRules.interface';
 
 /**
  * Helper to validate form fields.
  */
-class ValidationHelper {
+class FormValidationHelper {
 	/**
 	 * Validates that a field is not empty.
 	 * @param message - The error message to display if validation fails.
@@ -56,4 +56,4 @@ class ValidationHelper {
 	}
 }
 
-export default ValidationHelper;
+export default FormValidationHelper;

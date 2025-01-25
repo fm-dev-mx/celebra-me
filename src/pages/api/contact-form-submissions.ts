@@ -1,14 +1,14 @@
 // src/pages/api/contact-form-submissions.ts
 
 import type { APIRoute } from 'astro';
-import { ContactFormAPIContext } from '@interfaces/forms/contactFormAPIContext.interface';
+import { ContactFormAPIContext } from '@/core/interfaces/api/contactFormAPIContext.interface';
 import { EmailService } from '@/backend/services/emailService';
 import { SendGridProvider } from '@/backend/services/sendGridProvider';
 import { loggerMiddleware } from '@/backend/middlewares/loggerMiddleware';
 import { rateLimiterMiddleware } from '@/backend/middlewares/rateLimiterMiddleware';
 import { validationMiddleware } from '@/backend/middlewares/validationMiddleware';
 import { errorHandlerMiddleware } from '@/backend/middlewares/errorHandlerMiddleware';
-import { validationRules } from '@utilities/validationRules';
+import { contactFormValidationRules } from '@/core/utilities/contactFormValidationRules';
 import { composeMiddlewares } from '@/backend/utilities/composeMiddlewares';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { ContactFormController } from '@/backend/controllers/contactFormController';
@@ -47,7 +47,7 @@ export const POST: APIRoute = errorHandlerMiddleware(
 				duration: '15 m',
 				prefix: 'emailRateLimiter',
 			}),
-			validationMiddleware(validationRules),
+			validationMiddleware(contactFormValidationRules),
 		],
 	),
 );
