@@ -1,7 +1,7 @@
 // src/backend/repositories/contactFormRepository.ts
 
 import SupabaseClientFactory from '@/infrastructure/clients/supabaseClientFactory';
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 import { logError, logInfo } from '@/backend/services/logger';
 import { getErrorMessage } from '@utilities/errorUtils';
 
@@ -18,7 +18,7 @@ export class ContactFormRepository {
 	 * Saves a contact form submission to the database.
 	 * Logs success or error messages based on the result.
 	 */
-	async saveSubmission(submission: ContactFormData): Promise<void> {
+	async saveSubmission(submission: ContactFormFields): Promise<void> {
 		try {
 			const supabase = await this.supabaseFactory.getClient();
 			const { error: insertError } = await supabase

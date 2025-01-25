@@ -3,7 +3,7 @@
 import { EmailService } from '@/backend/services/emailService';
 import { ContactFormRepository } from '@/backend/repositories/contactFormRepository';
 import { logInfo, logError } from '@/backend/services/logger';
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 import { getErrorMessage } from '@utilities/errorUtils';
 import { EmailServiceError } from '@/core/errors/emailServiceError';
 import { ControllerError } from '@/core/errors/controllerError';
@@ -21,7 +21,7 @@ export class ContactFormController {
 	/**
 	 * Processes a contact form submission.
 	 */
-	async processContactSubmission(data: ContactFormData): Promise<void> {
+	async processContactSubmission(data: ContactFormFields): Promise<void> {
 		try {
 			await Promise.all([this.saveSubmission(data), this.sendNotificationEmail(data)]);
 			this.logSuccess(data);
@@ -37,7 +37,7 @@ export class ContactFormController {
 	/**
 	 * Saves the contact form submission to the database.
 	 */
-	private async saveSubmission(data: ContactFormData): Promise<void> {
+	private async saveSubmission(data: ContactFormFields): Promise<void> {
 		try {
 			await this.contactFormRepository.saveSubmission(data);
 		} catch (error) {
@@ -50,7 +50,7 @@ export class ContactFormController {
 	/**
 	 * Sends the notification email for the contact form submission.
 	 */
-	private async sendNotificationEmail(data: ContactFormData): Promise<void> {
+	private async sendNotificationEmail(data: ContactFormFields): Promise<void> {
 		try {
 			const emailData = prepareEmailData(data);
 			await this.emailService.sendEmail(emailData);
@@ -74,7 +74,7 @@ export class ContactFormController {
 	/**
 	 * Logs the successful processing of the contact form submission.
 	 */
-	private logSuccess(data: ContactFormData): void {
+	private logSuccess(data: ContactFormFields): void {
 		logInfo({
 			message: 'Contact form submission processed successfully.',
 			module: MODULE_NAME,

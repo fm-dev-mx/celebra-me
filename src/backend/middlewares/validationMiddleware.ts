@@ -3,7 +3,7 @@
 import { Handler } from '@/core/types/api/handlers.type';
 import { validateInput } from '@utilities/validateInput';
 import { ValidationRules } from '@/core/types/validation/validationRules.type';
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 import { ValidationError } from '@/core/errors/validationError';
 
 const MODULE_NAME = 'validationMiddleware';
@@ -32,7 +32,7 @@ export function validationMiddleware(rules: ValidationRules) {
 			}
 
 			// Parse and sanitize the JSON body
-			let data: ContactFormData;
+			let data: ContactFormFields;
 			try {
 				data = await request.json();
 			} catch (error: unknown) {

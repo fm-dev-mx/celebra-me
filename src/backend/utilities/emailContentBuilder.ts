@@ -2,7 +2,7 @@
 
 import { LogEntry } from '@interfaces/logging/logEntry.interface';
 import { escapeHtml } from './dataSanitization';
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
 import { EmailData } from '@interfaces/email/emailData.interface';
 import config from '@/core/config';
 import { LogLevel } from '@interfaces/logging/logEntry.interface';
@@ -79,7 +79,7 @@ export function buildLogEmailContent(
  * @param data - The contact form data submitted by the user.
  * @returns A string containing the HTML content for the contact form email.
  */
-export function buildContactFormEmailContent(data: ContactFormData): string {
+export function buildContactFormEmailContent(data: ContactFormFields): string {
 	const { name, email, mobile = 'N/A', message } = data;
 	return `
     <h1>New Contact Form Submission</h1>
@@ -97,7 +97,7 @@ export function buildContactFormEmailContent(data: ContactFormData): string {
  * @param data - The validated contact form data.
  * @returns The email data ready to be sent.
  */
-export function prepareEmailData(data: ContactFormData): EmailData {
+export function prepareEmailData(data: ContactFormFields): EmailData {
 	const { name, email, message } = data;
 	const { recipient, sender } = config.contactFormEmailConfig;
 
@@ -108,7 +108,7 @@ export function prepareEmailData(data: ContactFormData): EmailData {
 	const safeMobile = escapeHtml(data.mobile || 'N/A');
 
 	// Construct sanitized data object
-	const sanitizedData: ContactFormData = {
+	const sanitizedData: ContactFormFields = {
 		name: safeName,
 		email: safeEmail,
 		mobile: safeMobile,

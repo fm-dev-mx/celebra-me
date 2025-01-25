@@ -1,14 +1,14 @@
 // src/frontend/services/apiService.ts
 
-import { ContactFormData } from '@interfaces/forms/contactFormData.interface';
-import { ApiResponse } from '@interfaces/shared/apiResponse.interface';
+import { ContactFormFields } from '@/core/interfaces/forms/contactFormFields.interface';
+import { ApiResponse } from '@/core/types/api/apiResponse.type';
 import { jsonPost } from '@/frontend/utilities/apiClientUtils';
 import { ClientApiError } from '@/core/errors/clientApiError';
 import { getErrorMessage } from '@utilities/errorUtils';
 
 class ApiService {
 	static readonly MODULE_NAME = 'ApiService';
-	public async sendContactForm(data: ContactFormData): Promise<ApiResponse> {
+	public async sendContactForm(data: ContactFormFields): Promise<ApiResponse> {
 		try {
 			const response = await fetch('/api/contact-form-submissions', jsonPost(data));
 			let responseData: ApiResponse;
