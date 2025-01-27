@@ -1,0 +1,44 @@
+{
+	"linkGroups": [
+		{
+			"title": "Recursos",
+			"links": [
+				{
+					"label": "Blog",
+					"href": "/blog",
+					"isExternal": false,
+					"target": "_self"
+				},
+				{
+					"label": "FAQs",
+					"href": "/faqs",
+					"isExternal": false,
+					"target": "_self"
+				},
+				{
+					"label": "Políticas de Privacidad",
+					"href": "/privacy-policy",
+					"isExternal": false,
+					"target": "_self"
+				}
+			]
+		},
+		{
+			"title": "Legales",
+			"links": [
+				{
+					"label": "Términos y Condiciones",
+					"href": "/terms-and-conditions",
+					"isExternal": false,
+					"target": "_self"
+				},
+				{
+					"label": "Cookies",
+					"href": "/cookies-policy",
+					"isExternal": false,
+					"target": "_self"
+				}
+			]
+		}
+	]
+}

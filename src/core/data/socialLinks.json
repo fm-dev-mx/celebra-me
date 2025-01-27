@@ -1,0 +1,34 @@
+{
+	"socialLinks": [
+		{
+			"platform": "Facebook",
+			"url": "https://www.facebook.com/invitaciones.celebrame/",
+			"icon": "FacebookIcon",
+			"title": "Síguenos en nuestra página de Facebook"
+		},
+		{
+			"platform": "Instagram",
+			"url": "https://www.instagram.com/celebra_me_com/",
+			"icon": "InstagramIcon",
+			"title": "Síguenos en Instagram para ver nuestro trabajo"
+		},
+		{
+			"platform": "TikTok",
+			"url": "https://www.tiktok.com/@celebra_me",
+			"icon": "TikTokIcon",
+			"title": "Mira nuestros videos en TikTok"
+		},
+		{
+			"platform": "YouTube",
+			"url": "https://www.youtube.com/@celebra-me",
+			"icon": "YouTubeIcon",
+			"title": "Mira nuestros videos en YouTube"
+		},
+		{
+			"platform": "WhatsApp",
+			"url": "https://wa.me/526681167477",
+			"icon": "WhatsAppIcon",
+			"title": "Contáctanos directamente por WhatsApp"
+		}
+	]
+}

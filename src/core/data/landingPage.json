@@ -1,5 +1,5 @@
 {
-	"menuData": {
+	"navBarData": {
 		"links": [
 			{ "label": "Servicios", "href": "#services-section" },
 			{ "label": "Sobre Nosotros", "href": "#about-section" },
@@ -7,37 +7,20 @@
 			{ "label": "Precios", "href": "#pricing-section" },
 			{ "label": "FAQ", "href": "#faq-section" },
 			{ "label": "Contacto", "href": "#contact-section" }
-		]
-	},
-	"socialData": {
-		"socialLinks": [
-			{
-				"icon": "FacebookIcon",
-				"href": "https://www.facebook.com/invitaciones.celebrame/",
-				"title": "Síguenos en nuestra página de Facebook"
-			},
-			{
-				"icon": "InstagramIcon",
-				"href": "https://www.instagram.com/celebra_me_com/",
-				"title": "Síguenos en Instagram para ver nuestro trabajo"
-			},
-			{
-				"icon": "TikTokIcon",
-				"href": "https://www.tiktok.com/@celebra_me",
-				"title": "Mira nuestros videos en TikTok"
-			},
-			{
-				"icon": "WhatsAppIcon",
-				"href": "https://wa.me/526681167477",
-				"title": "Contáctanos directamente por WhatsApp"
-			}
-		]
+		],
+		"ctaLabel": "Ver demos"
 	},
 	"heroData": {
 		"title": "Invitaciones digitales",
-		"slogan": "Tus eventos serán únicos",
+		"subtitle": "Tus eventos serán únicos",
 		"primaryCta": "WhatsApp 💬",
-		"secondaryCta": "Elegir invitación"
+		"secondaryCta": "Elegir invitación",
+		"backgroundImage": {
+			"desktopUrl": "/images/hero/bgHeroDesktop.jpg",
+			"desktopAlt": "Fondo de pantalla de la Hero Section en la versión de escritorio",
+			"mobileUrl": "/images/hero/bgHeroMobile.jpg",
+			"mobileAlt": "Fondo de pantalla de la Hero Section en la versión móvil"
+		}
 	},
 	"servicesData": {
 		"title": "Tu Historia, Contada en Invitaciones Digitales",
@@ -196,7 +179,7 @@
 				"id": 7,
 				"image": "xv_valeria.jpg",
 				"author": "Valeria",
-				"content": "Mis invitaciones quedaron padrisímas."
+				"content": "Mis invitaciones quedaron padrísimas."
 			},
 			{
 				"id": 8,

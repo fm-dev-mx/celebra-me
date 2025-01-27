@@ -2,10 +2,10 @@
 
 import type { LandingPageData } from '@interfaces/data/landingPage.interface';
 import type { BasicDemoData } from '@interfaces/data/basicDemo.interface';
-import type { SiteData } from '@interfaces/data/siteData.interface';
+import { SiteInfo } from '@interfaces/data/siteInfo.interface';
 import landingData from '@/core/data/landingPage.json';
 import basicDemoData from '@/core/data/basicDemo.json';
-import siteData from '@/core/data/siteData.json';
+import siteInfo from '@/core/data/siteInfo.json';
 
 /**
  * Retrieves landing page data synchronously.
@@ -24,9 +24,9 @@ export const getBasicDemoData = (): BasicDemoData => {
 };
 
 /**
- * Retrieves site metadata synchronously.
- * @returns SiteData object containing meta tags and SEO data.
+ * Retrieves site data synchronously.
+ * @returns SiteInfo object containing site information.
  */
-export const getSiteData = (): SiteData => {
-	return siteData as SiteData;
+export const getSiteInfo = (): SiteInfo => {
+	return siteInfo as SiteInfo;
 };

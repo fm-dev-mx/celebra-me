@@ -1,0 +1,63 @@
+{
+	"@context": "http://schema.org",
+	"@type": "Organization",
+	"name": "Celebra-me.com",
+	"description": "Celebra-me.com ofrece invitaciones digitales personalizadas para eventos especiales.",
+	"url": "https://celebra-me.com",
+	"logo": "https://celebra-me.com/images/hero/rectangleLogo400x200.png",
+	"keywords": [
+		"invitaciones digitales",
+		"invitaciones personalizadas",
+		"invitaciones bodas",
+		"invitaciones XV años",
+		"invitaciones digitales para bodas",
+		"eventos especiales",
+		"celebra-me",
+		"celebrame",
+		"invitaciones online",
+		"invitaciones digitales México",
+		"invitaciones personalizadas México"
+	],
+	"author": {
+		"@type": "Organization",
+		"name": "Celebra-me.com"
+	},
+	"contactPoint": {
+		"@type": "ContactPoint",
+		"email": "contact@celebra-me.com",
+		"contactType": "Client Service",
+		"telephone": "+52 668 116 7477",
+		"areaServed": "MX",
+		"availableLanguage": ["es"]
+	},
+	"foundingDate": "2024-05-05",
+	"address": {
+		"@type": "PostalAddress",
+		"addressLocality": "Los Mochis",
+		"addressRegion": "SIN",
+		"postalCode": "81200",
+		"addressCountry": "MX"
+	},
+	"sameAs": [
+		"https://www.facebook.com/invitaciones.celebrame/",
+		"https://www.instagram.com/celebra_me_com/",
+		"https://www.tiktok.com/@celebra_me",
+		"https://wa.me/526681167477",
+		"https://www.youtube.com/@celebra-me"
+	],
+	"openGraph": {
+		"title": "Celebra-me.com: Tus Eventos Serán Únicos.",
+		"description": "Explora nuestras invitaciones digitales personalizadas y elegantes para bodas, XV años y otros eventos especiales.",
+		"image": "https://celebra-me.com/images/hero/bgHeroDesktop.jpg",
+		"url": "https://celebra-me.com",
+		"type": "website"
+	},
+	"twitter": {
+		"card": "summary_large_image",
+		"title": "Celebra-me.com: Invitaciones Digitales Personalizadas",
+		"description": "Transforma tus eventos con nuestras invitaciones digitales únicas para bodas y XV años.",
+		"image": "https://celebra-me.com/images/hero/bgHeroDesktop.jpg",
+		"url": "https://celebra-me.com",
+		"type": "website"
+	}
+}
