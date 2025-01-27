@@ -1,30 +1,4 @@
-// src/core/interfaces/data/siteData.interface.ts
-import { IconNames } from '@/core/types/ui/iconNames.type';
-/**
- * Interface for general site information.
- */
-export interface SiteInfo {
-	title: string;
-	slogan?: string;
-	description: string;
-	lang: string;
-	charset: string;
-}
-
-/**
- * Interface for meta tags and SEO-related information.
- */
-export interface Meta extends SiteInfo {
-	seoData: SeoData;
-}
-
-/**
- * Interface representing the entire site data including metadata and site information.
- */
-export interface SiteData {
-	meta: Meta;
-	siteInfo: SiteInfo;
-}
+// src/core/interfaces/data/seoData.interface.ts
 
 /**
  * Interface for structured SEO data.
@@ -41,7 +15,7 @@ export interface SeoData {
 	contactPoint?: ContactPoint;
 	foundingDate?: string;
 	address?: Address;
-	sameAs?: string[];
+	sameAs?: string[]; // Social links for SEO
 	openGraph?: OpenGraph;
 	twitter?: Twitter;
 }
@@ -98,20 +72,4 @@ export interface Twitter {
 	image: string;
 	url: string;
 	type?: string;
-}
-
-/**
- * Interface for social data including social links.
- */
-export interface SocialData {
-	socialLinks: SocialLink[];
-}
-
-/**
- * Interface for individual social link.
- */
-export interface SocialLink {
-	icon: IconNames;
-	href: string;
-	title?: string;
 }

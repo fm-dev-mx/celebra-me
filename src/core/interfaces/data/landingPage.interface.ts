@@ -1,46 +1,21 @@
 // src/core/interfaces/data/landingPage.interface.ts
 
-import type { SocialData } from './siteData.interface';
+import { HeroProps } from '../ui/sections/hero.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
+import { NavBarProps } from '../ui/components/navBar.interface';
 
 /**
  * Interface representing the data structure for the landing page.
  */
 export interface LandingPageData {
-	menuData: MenuData;
-	heroData: HeroData;
-	socialData: SocialData;
+	navBarData: NavBarProps;
+	heroData: HeroProps;
 	servicesData: ServicesData;
 	aboutData: AboutData;
 	pricingData: PricingData;
 	testimonialsData: TestimonialsData;
 	faqData: FAQData;
 	contactData: ContactData;
-}
-
-/**
- * Interface for menu data.
- */
-export interface MenuData {
-	links: Link[];
-}
-
-/**
- * Interface for individual link in the menu.
- */
-export interface Link {
-	label: string;
-	href: string;
-}
-
-/**
- * Interface for hero section data.
- */
-export interface HeroData {
-	title: string;
-	slogan: string;
-	primaryCta: string;
-	secondaryCta: string;
 }
 
 /**

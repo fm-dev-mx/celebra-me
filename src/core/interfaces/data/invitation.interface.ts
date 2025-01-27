@@ -1,29 +1,15 @@
 // src/core/interfaces/data/invitation.interface.ts
 
-import type { Meta, SocialData } from './siteData.interface';
-import type { MenuData } from './landingPage.interface';
+import { NavBarProps } from '../ui/components/navBar.interface';
+import { HeroProps } from '../ui/sections/hero.interface';
 
 /**
  * Interface representing the data structure for the basic demo page.
  */
 export interface InvitationData {
-	heroSection: HeroSection;
-	meta: Meta;
-	menuData: MenuData;
-	socialData: SocialData;
+	heroSection: HeroProps;
+	navBarData: NavBarProps;
 	eventDetails: EventDetails;
-}
-
-/**
- * Interface for hero section in the demo.
- */
-export interface HeroSection {
-	title: string;
-	subtitle: string;
-	image: string;
-	altText: string;
-	primaryButton: Button;
-	secondaryButton: Button;
 }
 
 /**
