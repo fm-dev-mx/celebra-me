@@ -1,5 +1,5 @@
 ---
-// src/sections/Footer.astro
+// src/frontend/sections/Footer.astro
 
 import ActionBase from '@components/common/actions/ActionBase';
 import ActionWrapper from '@components/common/actions/ActionWrapper';
@@ -7,61 +7,65 @@ import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import Logo from '@components/ui/Logo';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
-import type { MenuData } from '@interfaces/data/landingPage.interface';
-import type { SiteData, SocialLink } from '@interfaces/data/siteData.interface';
-
-// Define the interface for social data
-interface SocialData {
-	socialLinks: SocialLink[];
-}
+import { FooterProps } from '@interfaces/ui/sections/footer.interface';
 
 // Define props for type safety
 interface Props {
-	siteData: SiteData;
-	menuData: MenuData;
-	socialData: SocialData;
+	data: FooterProps;
 }
 
 // Get the props from Astro
-const { siteData, menuData, socialData } = Astro.props;
+const { data } = Astro.props;
+
+// Ensure socialLinks exist and contain valid data
+const socialLinks =
+	data.socialLinks && data.socialLinks.links && data.socialLinks.links.length > 0
+		? data.socialLinks
+		: null;
 ---
 
-<!-- Footer Component -->
 <footer class="bg-black text-white w-full py-8">
-	<!-- Use the Section component for padding and overflow management -->
 	<Section padding="pt-8">
 		<Container>
 			<div class="flex flex-col items-center">
 				<Logo variant="footer" />
 
-				<!-- Footer description -->
 				{
-					siteData?.siteInfo?.slogan && (
+					data.siteInfo?.slogan && (
 						<p class="text-center text-primary/40 my-6 font-thin">
-							{siteData?.siteInfo?.slogan}
+							{data.siteInfo.slogan}
 						</p>
 					)
 				}
 
-				<!-- Footer navigation links -->
 				<ActionWrapper className="footer-menu">
 					{
-						menuData?.links?.length > 0 &&
-							menuData.links.map((link) => (
-								<ActionBase
-									variant="text"
-									as="a"
-									href={link.href}
-									className="footer-menu-item"
-								>
-									{link.label}
-								</ActionBase>
-							))
+						data.linkGroups.map((group) => (
+							<div class="footer-link-group">
+								<h4 class="font-semibold">{group.title}</h4>
+								{group.links.map((link) => (
+									<ActionBase
+										key={link.label}
+										variant="text"
+										as="a"
+										href={link.href}
+										className="footer-menu-item"
+										target={link.isExternal ? '_blank' : '_self'}
+									>
+										{link.label}
+									</ActionBase>
+								))}
+							</div>
+						))
 					}
 				</ActionWrapper>
-
-				<!-- Social media icons using the reusable component -->
-				<SocialMediaLinks links={socialData.socialLinks} variant="social-footer" />
+				{
+					socialLinks?.links.map((link) => {
+						console.log('Footer data: ' + link.icon);
+						return null;
+					})
+				}
+				{socialLinks && <SocialMediaLinks {...socialLinks} />}
 			</div>
 		</Container>
 	</Section>

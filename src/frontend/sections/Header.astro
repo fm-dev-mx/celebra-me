@@ -1,27 +1,33 @@
 ---
 /* src/sections/Header.astro */
-/* This component represents the header section of the website, responsible for displaying the logo,
-   navigation menus, and handling responsive behavior for desktop and mobile views. */
+import HeaderBehavior from '@components/ui/header/HeaderBehavior';
+import NavBarDesktop from '@components/ui/header/NavBarDesktop';
+import NavBarMobile from '@components/ui/header/NavBarMobile';
+import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 
-import HeaderBehavior from '@components/ui/header/HeaderBehavior'; // Manages header behavior and interactions
-import NavBarDesktop from '@components/ui/header/NavBarDesktop'; // Component for desktop navigation
-import NavBarMobile from '@components/ui/header/NavBarMobile'; // Component for mobile navigation
-
-const { menuData, socialData } = Astro.props; // Destructure data from Astro props
+interface Props {
+	data: NavBarProps;
+}
+const { data } = Astro.props;
 ---
 
-<header id="main-header" class="main-header">
+<header id={data.headerId} class={data.headerId}>
 	<div class="header-container">
-		<!-- Initialize header behaviors such as scrolling and menu toggling -->
 		<HeaderBehavior client:load />
-
-		<!-- Main navigation menu container that manages desktop and mobile visibility -->
 		<nav class="main-menu-container">
-			<!-- Desktop navigation menu, visible on larger screens -->
-			<NavBarDesktop menuData={menuData} socialData={socialData} client:load />
+			<NavBarDesktop
+				links={data.links}
+				socialLinkList={data.socialLinkList}
+				ctaLabel={data.ctaLabel}
+				client:load
+			/>
 
-			<!-- Mobile navigation menu, visible on smaller screens -->
-			<NavBarMobile menuData={menuData} socialData={socialData} client:load />
+			<NavBarMobile
+				links={data.links}
+				socialLinkList={data.socialLinkList}
+				ctaLabel={data.ctaLabel}
+				client:load
+			/>
 		</nav>
 	</div>
 </header>

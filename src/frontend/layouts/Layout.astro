@@ -1,28 +1,28 @@
 ---
 // src/frontend/layouts/Layout.astro
-import '@fontsource-variable/rubik';
-// eslint-disable-next-line prettier/prettier
-import type { Meta } from '@interfaces/data/siteData.interface';
+import '@fontsource-variable/rubik/index.css';
 import SpeedInsights from '@vercel/speed-insights/astro';
 import '@/frontend/styles/global.css';
+import { SiteInfo } from '@interfaces/data/siteInfo.interface';
+import { SeoData } from '@interfaces/data/seoData.interface';
+
 interface Props {
-	meta: Meta;
+	siteInfo: SiteInfo;
+	seoData: SeoData;
 }
 
-const { meta } = Astro.props;
-
-const seoData = meta.seoData ? JSON.stringify(meta.seoData) : null;
+const { siteInfo, seoData } = Astro.props;
 ---
 
 <!doctype html>
 <html
 	class="scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent scroll-smooth"
-	lang={meta.lang ?? 'en'}
+	lang={siteInfo.lang ?? 'en'}
 >
 	<head>
-		<meta charset={meta.charset ?? 'UTF-8'} />
-		<title>{meta.title}</title>
-		<meta name="description" content={meta.description} />
+		<meta charset={siteInfo.charset ?? 'UTF-8'} />
+		<title>{siteInfo.title}</title>
+		<meta name="description" content={siteInfo.description} />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
 		<link rel="canonical" href={import.meta.env.SITE} />
@@ -35,14 +35,18 @@ const seoData = meta.seoData ? JSON.stringify(meta.seoData) : null;
 			body {
 				font-family:
 					'Rubik Variable',
-					Menlo,
-					Monaco,
-					Lucida Console,
-					Liberation Mono,
-					DejaVu Sans Mono,
-					Bitstream Vera Sans Mono,
-					Courier New,
-					monospace;
+					-apple-system,
+					/* iOS and macOS */ BlinkMacSystemFont,
+					/* Chrome on macOS */ 'Segoe UI',
+					/* Windows */ Roboto,
+					/* Android and Chrome OS */ 'Helvetica Neue',
+					/* Older macOS */ Arial,
+					/* Common fallback */ 'Noto Sans',
+					/* Comprehensive Unicode support */ sans-serif,
+					/* Generic sans-serif */ 'Apple Color Emoji',
+					/* Emoji support on Apple devices */ 'Segoe UI Emoji',
+					/* Emoji support on Windows */ 'Segoe UI Symbol',
+					/* Symbol support on Windows */ 'Noto Color Emoji'; /* Emoji support on Android and other platforms */
 			}
 		</style>
 	</body>

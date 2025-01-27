@@ -5,24 +5,15 @@ import ActionBase from '@components/common/actions/ActionBase';
 import ActionIcon from '@components/common/actions/ActionIcon';
 import Section from '@components/layout/Section.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
-import type { IconNames } from '@interfaces/data/siteData.interface';
+import { HeroProps } from '@/core/interfaces/ui/sections/hero.interface';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton';
 import ActionWrapper from '@components/common/actions/ActionWrapper';
 import Logo from '@components/ui/Logo';
 
-// Define the expected data structure for the Hero component
-interface HeroData {
-	icon?: IconNames;
-	title: string;
-	slogan: string;
-	primaryCta: string;
-	secondaryCta: string;
-}
-
 interface Props {
-	data: HeroData;
+	data: HeroProps;
 }
 
 const { data } = Astro.props;
@@ -30,8 +21,8 @@ const { data } = Astro.props;
 
 <Section
 	id="hero-section"
-	backgroundImageDesktop="/images/hero/bgHeroDesktop.jpg"
-	backgroundImageMobile="/images/hero/bgHeroMobile.jpg"
+	backgroundImageDesktop={data.backgroundImage.desktopUrl}
+	backgroundImageMobile={data.backgroundImage.mobileUrl}
 	padding="py-20"
 	relative="relative"
 	fullWidth
@@ -48,7 +39,7 @@ const { data } = Astro.props;
 			weight="font-light"
 			extraClass="slide-in-left shadow-text-light tracking-widest"
 		>
-			Invitaciones digitales
+			{data.title}
 		</SectionTitle>
 
 		<!-- Responsive logo with accessibility enhancements -->
@@ -65,7 +56,7 @@ const { data } = Astro.props;
 			margin="mx-12 mx-auto"
 			extraClass="font-sans shadow-text-light tracking-widest fade-in fade-slow"
 		>
-			{data.slogan}
+			{data.subtitle}
 		</SectionSubtitle>
 
 		<!-- CTA Buttons for main actions -->

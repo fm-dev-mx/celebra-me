@@ -1,6 +1,11 @@
 ---
-// src/pages/index.astro
-import { getLandingData, getSiteData } from '@/backend/services/data.service';
+import { getLandingData } from '@/backend/services/data.service';
+import siteInfo from '@/core/data/siteInfo.json';
+import seoData from '@/core/data/seoData.json';
+import footerLinks from '@/core/data/footerLinks.json';
+import config from '@/core/config';
+import socialLinks from '@/core/data/socialLinks.json';
+
 import Layout from '@layouts/Layout.astro';
 import Header from '@/frontend/sections/Header.astro';
 import Hero from '@/frontend/sections/Hero.astro';
@@ -11,17 +16,39 @@ import Pricing from '@/frontend/sections/Pricing.astro';
 import FAQ from '@/frontend/sections/FAQ.astro';
 import Contact from '@/frontend/sections/Contact.astro';
 import Footer from '@/frontend/sections/Footer.astro';
+import { FooterProps } from '../core/interfaces/ui/sections/footer.interface';
+import { FooterLinkGroup } from '../core/interfaces/ui/sections/footer.interface';
+import { SocialLinkList } from '../core/interfaces/ui/components/socialLink.interface';
+import { NavBarProps } from '../core/interfaces/ui/components/navBar.interface';
 
 // Fetch landing page data synchronously
 const landingData = getLandingData();
-const siteData = getSiteData();
+
+// Combine footer data from modular JSON files
+const footerData: FooterProps = {
+	siteInfo,
+	contactData: config.contactData,
+	linkGroups: footerLinks.linkGroups as FooterLinkGroup[],
+	socialLinks: { links: socialLinks.socialLinks, variant: 'social-footer' } as SocialLinkList,
+};
+
+const headerData: NavBarProps = {
+	links: landingData.navBarData.links,
+	socialLinkList: {
+		links: socialLinks.socialLinks,
+		variant: 'social-desktop-header',
+	} as SocialLinkList,
+	ctaLabel: landingData.navBarData.ctaLabel,
+	headerId: 'main-header',
+};
+console.log(headerData.socialLinkList);
 ---
 
 <!-- Render the layout with site metadata -->
-<Layout meta={siteData.meta} />
+<Layout siteInfo={siteInfo} seoData={seoData} />
 
 <!-- Render the header with menu and social data -->
-<Header menuData={landingData.menuData} socialData={landingData.socialData} />
+<Header data={headerData} />
 
 <main>
 	<!-- Render main sections with respective data -->
@@ -33,10 +60,6 @@ const siteData = getSiteData();
 	<FAQ data={landingData.faqData} />
 	<Contact data={landingData.contactData} />
 
-	<!-- Render the footer with site info, menu, and social links -->
-	<Footer
-		siteData={siteData}
-		menuData={landingData.menuData}
-		socialData={landingData.socialData}
-	/>
+	<!-- Render the footer with modular data -->
+	<Footer data={footerData} />
 </main>

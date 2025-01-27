@@ -1,5 +1,7 @@
 // src/core/interfaces/config/coreConfig.interface.ts
 
+import { ContactData } from '../data/contactData.interface';
+
 export interface RedisConfig {
 	url: string;
 	token: string;
@@ -52,4 +54,5 @@ export interface Config {
 	isProduction: boolean;
 	logging: LoggingConfig;
 	rateLimiterConfig: RateLimiterConfig;
+	contactData: ContactData;
 }

@@ -9,6 +9,7 @@ import type {
 } from '@interfaces/config/coreConfig.interface';
 import { getEnvVariable } from './getEnvVariable';
 import { LogLevel } from '@interfaces/logging/logEntry.interface';
+import { ContactData } from '../interfaces/data/contactData.interface';
 
 /**
  * Load environment variables from a `.env` file in development.
@@ -99,6 +100,21 @@ const getRateLimiterConfig = () => ({
 });
 
 /**
+ * Retrieve the contact data for clients
+ */
+const getContactData = (): ContactData => ({
+	email: getEnvVariable('CONTACT_EMAIL'),
+	contactType: getEnvVariable('CONTACT_TYPE'),
+	phoneNumber: getEnvVariable('CONTACT_PHONE'),
+	address: {
+		city: getEnvVariable('CONTACT_CITY'),
+		state: getEnvVariable('CONTACT_STATE'),
+		zipCode: getEnvVariable('CONTACT_ZIP'),
+		country: getEnvVariable('CONTACT_COUNTRY'),
+	},
+});
+
+/**
  * Main configuration object.
  */
 const config: Config = {
@@ -112,6 +128,7 @@ const config: Config = {
 	logging: getLoggingConfig(),
 	rateLimiterConfig: getRateLimiterConfig(),
 	adminEmail: getEnvVariable('ADMIN_EMAIL'),
+	contactData: getContactData(),
 };
 
 export default config;

@@ -1,10 +1,8 @@
 // src/services/data.service.ts
 
 import type { LandingPageData } from '@interfaces/data/landingPage.interface';
-import type { BasicDemoData } from '@interfaces/data/basicDemo.interface';
 import { SiteInfo } from '@interfaces/data/siteInfo.interface';
 import landingData from '@/core/data/landingPage.json';
-import basicDemoData from '@/core/data/basicDemo.json';
 import siteInfo from '@/core/data/siteInfo.json';
 
 /**
@@ -13,14 +11,6 @@ import siteInfo from '@/core/data/siteInfo.json';
  */
 export const getLandingData = (): LandingPageData => {
 	return landingData as LandingPageData;
-};
-
-/**
- * Retrieves basic demo data synchronously.
- * @returns BasicDemoData object containing demo invitation details.
- */
-export const getBasicDemoData = (): BasicDemoData => {
-	return basicDemoData as BasicDemoData;
 };
 
 /**
