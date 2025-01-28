@@ -1,5 +1,8 @@
-// src/frontend/components/ui/header/NavBarMobile.tsx
-
+/**
+ * src/frontend/components/ui/header/NavBarMobile.tsx
+ * NavBarMobile manages a full-screen mobile menu when isMobileMenuOpen is true.
+ * It includes the site logo, navigation links, CTA, and social media links.
+ */
 import React, { useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import Icon from '@components/common/Icon';
@@ -7,12 +10,9 @@ import ActionBase from '@components/common/actions/ActionBase';
 import Logo from '../Logo';
 import { useToggleMobileMenu } from '@/frontend/hooks/header/useToggleMobileMenu';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
-import { NavBarProps } from '../../../../core/interfaces/ui/components/navBar.interface';
+import { NavBarProps } from '@/core/interfaces/ui/components/navBar.interface';
 import useActivePath from '@hooks/header/useActivePath';
 
-/**
- * NavBarMobile manages a full-screen mobile menu when isMobileMenuOpen is true.
- */
 const NavBarMobile: React.FC<NavBarProps> = ({
 	links = [],
 	socialLinkList: socialData,
@@ -31,7 +31,9 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 	return (
 		<div className="navbar-mobile w-full">
 			<div className="navbar-mobile-header">
-				<Logo />
+				{/* Mobile version of the logo */}
+				<Logo altText="Celebra-me Mobile Logo" />
+
 				<button
 					id={`${headerId}-button`}
 					className="menu-button"
@@ -60,7 +62,7 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 											'mobile-menu-link',
 											currentPath === href && 'active',
 										)}
-										// You can close the menu on link click if you like
+										/* Close the menu on link click */
 										onClick={closeMobileMenu}
 										target={isExternal ? target || '_blank' : '_self'}
 										rel={isExternal ? 'noopener noreferrer' : undefined}
@@ -81,13 +83,14 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 							as="a"
 							href="#"
 							className="cta-button-mobile"
-							// Close menu on CTA click
+							/* Close the menu on CTA click */
 							onClick={closeMobileMenu}
 						>
 							{ctaLabel}
 						</ActionBase>
 					</div>
 
+					{/* Social media links in the mobile menu */}
 					<SocialMediaLinks
 						links={socialData?.links ?? []}
 						variant="social-mobile-header"

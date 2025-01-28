@@ -1,5 +1,8 @@
-// src/frontend/components/ui/header/NavBarDesktop.tsx
-
+/**
+ * src/frontend/components/ui/header/NavBarDesktop.tsx
+ * NavBarDesktop component handles the desktop navigation menu
+ * and renders navigation links, social media links, and a CTA button.
+ */
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import Logo from '../Logo';
@@ -8,11 +11,6 @@ import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
 import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 import useActivePath from '@hooks/header/useActivePath';
 
-/**
- * NavBarDesktop component handles the desktop navigation menu and renders navigation links dynamically.
- *
- * @param {NavBarProps} props - Contains links, socialLinkList, and ctaLabel.
- */
 const NavBarDesktop: React.FC<NavBarProps> = ({
 	links = [],
 	socialLinkList,
@@ -24,7 +22,7 @@ const NavBarDesktop: React.FC<NavBarProps> = ({
 	return (
 		<nav className="navbar-desktop" role="navigation" aria-label="Desktop Navigation">
 			<div className="navbar-desktop-logo-wrapper">
-				<Logo />
+				<Logo altText="Celebra-me Desktop Logo" />
 			</div>
 
 			{/* Desktop navigation links */}

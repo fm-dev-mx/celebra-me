@@ -1,11 +1,11 @@
 /* src/frontend/styles/components/header/navbar-desktop.css */
-/* Styles for the NavBarDesktop component ensuring a modern and elegant navigation */
 
-/* Desktop navbar hidden by default on smaller screens */
+/* Hidden on mobile and tablet */
 .navbar-desktop {
 	display: none;
 }
 
+/* Base desktop styles: visible from 1024px */
 @media (min-width: 1024px) {
 	.navbar-desktop {
 		display: flex;
@@ -15,13 +15,13 @@
 		width: 100%;
 	}
 
-	/* Logo wrapper */
+	/* Spacing for the logo in the navbar context */
 	.navbar-desktop-logo-wrapper {
 		flex-shrink: 0;
-		margin-left: 2rem;
+		margin-left: 2rem; /* Specific margin for the navbar layout */
 	}
 
-	/* Menu links */
+	/* Wrapping and positioning the main links */
 	.navbar-desktop-links-wrapper {
 		flex-grow: 1;
 		display: flex;
@@ -37,11 +37,12 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		gap: 1.6rem; /* Default gap */
+		gap: 1.6rem; /* Default gap for desktop */
 	}
 
+	/* Default margin between nav items */
 	.navbar-desktop-item {
-		margin: 0 0.1rem; /* Default margin */
+		margin: 0 0.1rem; /* Minimal margin between items */
 	}
 
 	.navbar-desktop-link {
@@ -49,16 +50,17 @@
 		text-decoration: none;
 		font-weight: 500;
 		padding: 0.5rem 0;
-		text-wrap: nowrap;
 		position: relative;
+		text-wrap: nowrap;
+		font-size: 0.9rem; /* Default font size on desktop */
 		transition:
 			color 0.3s ease-in-out,
 			transform 0.3s ease-in-out;
-		font-size: 0.9rem; /* Default font size */
 	}
 
+	/* Animated underline effect for links */
 	.navbar-desktop-link::after {
-		content: "";
+		content: '';
 		position: absolute;
 		width: 100%;
 		height: 2px;
@@ -70,8 +72,7 @@
 		transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
-	/* Active and hover states for links */
-	.navbar-desktop-link.active,
+	/* Hover & active states */
 	.navbar-desktop-link:hover::after,
 	.navbar-desktop-link.active::after {
 		transform: scaleX(1);
@@ -83,24 +84,24 @@
 		font-weight: 700;
 	}
 
-	/* CTA button */
+	/* CTA area */
 	.navbar-desktop-cta-wrapper {
-		/* No redundant styling here */
+		/* Additional spacing or positioning for the CTA can be defined here */
 	}
 
 	.navbar-desktop-cta {
 		background-color: var(--primary-default);
-		padding: 1.5rem 5rem;
 		color: var(--neutral-lightest);
 		font-weight: 600;
-		transition:
-			background-color 0.3s ease-in-out,
-			transform 0.3s ease-in-out;
-		font-size: 0.8rem; /* Default CTA font size */
+		font-size: 0.8rem;
 		min-width: 5rem;
 		max-width: 5rem;
 		min-height: 3rem;
 		max-height: 3rem;
+		padding: 1.5rem 5rem;
+		transition:
+			background-color 0.3s ease-in-out,
+			transform 0.3s ease-in-out;
 	}
 
 	.navbar-desktop-cta:hover {
@@ -108,23 +109,22 @@
 	}
 }
 
-/* Media Queries for larger screens */
+/* Responsive adjustments for larger screens (>=1200px) */
 @media (min-width: 1200px) {
 	.navbar-desktop-list {
-		gap: 0.5rem; /* Updated gap for larger screens */
+		gap: 0.5rem; /* Adjusted gap for slightly larger screens */
 	}
 
 	.navbar-desktop-item {
-		flex-shrink: 1;
-		margin: 0 0.5rem; /* Updated margin for larger screens */
+		margin: 0 0.5rem; /* Adjusted margins */
 	}
 
 	.navbar-desktop-link {
-		font-size: 0.8rem; /* Updated font size for larger screens */
+		font-size: 0.8rem; /* Updated font size */
 	}
 }
 
-/* Media Queries for larger screens */
+/* Additional adjustments for even larger screens (>=1440px) */
 @media (min-width: 1440px) {
 	.navbar-desktop-list {
 		gap: 1.3rem;
@@ -132,9 +132,10 @@
 	}
 
 	.navbar-desktop-item {
+		/* Additional overrides or expansions if needed */
 	}
 
 	.navbar-desktop-link {
-		font-size: 0.9rem; /* Updated font size for larger screens */
+		font-size: 0.9rem; /* Potentially revert or increase font size for 1440px+ */
 	}
 }
