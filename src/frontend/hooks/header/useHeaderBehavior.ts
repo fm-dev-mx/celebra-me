@@ -1,6 +1,6 @@
 // src/frontend/hooks/header/useHeaderBehavior.ts
 import { useEffect, useCallback } from 'react';
-import throttle from 'lodash/throttle';
+import throttle from 'lodash.throttle';
 import { useHeaderScroll } from './useHeaderScroll';
 import { useHeaderHover } from './useHeaderHover';
 import { useMenuLinkHighlighter } from './useMenuLinkHighlighter';
