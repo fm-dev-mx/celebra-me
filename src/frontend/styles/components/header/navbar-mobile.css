@@ -13,8 +13,9 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	z-index: 1100; /* Ensure it's above the mobile menu */
-	position: relative; /* Ensures positioning context for child elements */
+	position: relative;
+	/* If you need the header to be above other page content (but below the mobile menu): */
+	z-index: 10;
 }
 
 /* Menu button with smooth hover scale effect */
@@ -25,7 +26,8 @@
 	cursor: pointer;
 	color: var(--text-default); /* Ensure button icon is visible */
 	transition: transform 0.3s ease-in-out;
-	z-index: 1200; /* Ensure it's above the mobile menu */
+	/* If you need the button above the header content (but still below the menu): */
+	z-index: 11;
 }
 
 .menu-button:hover {
@@ -48,19 +50,16 @@
 	transition:
 		opacity 0.4s ease-in-out,
 		visibility 0.4s ease-in-out;
+
 	opacity: 0;
 	visibility: hidden;
-	z-index: 1000;
 }
 
 /* Mobile menu open state */
 .mobile-menu.mobile-menu-open {
 	opacity: 1;
 	visibility: visible;
-	background-color: rgb(
-		var(--background-primary-rgb),
-		0.9
-	); /* Updated background color to better match the brand */
+	background-color: rgba(var(--background-primary-rgb), 0.9);
 	border-radius: 1rem;
 	box-shadow: 10px 20px 10px rgba(0, 0, 0, 0.5);
 }
@@ -68,7 +67,8 @@
 /* Navigation within the mobile menu */
 .mobile-menu-nav {
 	text-align: center;
-	z-index: 1100; /* Ensures content is visible above the background */
+	/* Generally, child elements do not need their own z-index if they are
+     within a parent that already has a higher stacking context. */
 }
 
 /* Mobile menu list items */
@@ -86,6 +86,7 @@
 	transition:
 		opacity 0.3s ease-in-out,
 		transform 0.3s ease-in-out;
+	z-index: 12;
 }
 
 /* Animation effect for showing menu items with staggered delays */
@@ -121,6 +122,7 @@
 	animation: fadeInOpacity 0.5s ease-out forwards;
 	animation-delay: 0.7s; /* Ajusta el retraso para que siga al último link */
 	margin-bottom: 5rem;
+	z-index: 12;
 }
 
 /* Hide mobile navigation on larger screens */
@@ -131,8 +133,6 @@
 }
 
 @media (max-width: 400px) {
-	.mobile-menu-list {
-	}
 	.mobile-menu-item .mobile-menu-link {
 		font-size: 1rem;
 	}
@@ -159,6 +159,7 @@
 		opacity: 1;
 	}
 }
+
 /* Delayed animations for menu items to create a cascading effect */
 .mobile-menu-open .mobile-menu-item {
 	animation: fadeInUp 0.5s ease-out forwards;

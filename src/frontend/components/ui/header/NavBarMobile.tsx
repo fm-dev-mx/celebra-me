@@ -1,76 +1,71 @@
-// src/components/ui/header/NavBarMobile.tsx
-// NavBarMobile component handles the mobile navigation menu and renders navigation links dynamically.
-import React, { useEffect, useState } from 'react';
+// src/frontend/components/ui/header/NavBarMobile.tsx
+
+import React, { useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import Icon from '@components/common/Icon';
 import ActionBase from '@components/common/actions/ActionBase';
-import type { MenuData } from '@interfaces/data/landingPage.interface';
-import type { SocialData } from '@interfaces/data/siteData.interface';
 import Logo from '../Logo';
 import { useToggleMobileMenu } from '@/frontend/hooks/header/useToggleMobileMenu';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
+import { NavBarProps } from '../../../../core/interfaces/ui/components/navBar.interface';
+import useActivePath from '@hooks/header/useActivePath';
 
-// Props interface for NavBarMobile component
-interface NavBarMobileProps {
-	menuData: MenuData; // Contains the data for rendering the navigation links
-	socialData: SocialData; // Contains the data for rendering the social media links
-}
+/**
+ * NavBarMobile manages a full-screen mobile menu when isMobileMenuOpen is true.
+ */
+const NavBarMobile: React.FC<NavBarProps> = ({
+	links = [],
+	socialLinkList: socialData,
+	ctaLabel = 'Ver demos',
+	headerId = 'mobile-menu',
+}) => {
+	// Reference to the mobile menu container
+	const menuRef = useRef<HTMLDivElement>(null);
 
-// Functional component for mobile navigation bar
-const NavBarMobile: React.FC<NavBarMobileProps> = ({ menuData, socialData }) => {
-	// Destructure state and toggle function from custom hook
-	const { isMobileMenuOpen, toggleMobileMenu } = useToggleMobileMenu();
+	// Hook for controlling open/close
+	const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useToggleMobileMenu(menuRef);
 
-	// State to keep track of the current path for active link highlighting
-	const [currentPath, setCurrentPath] = useState<string>('');
+	// Track the current path to highlight links (if needed)
+	const currentPath = useActivePath();
 
-	useEffect(() => {
-		// Update currentPath when the component mounts
-		// Ensure window is defined (client-side rendering check)
-		if (typeof window !== 'undefined') {
-			setCurrentPath(window.location.pathname);
-		}
-	}, []);
-
-	useEffect(() => {}, [menuData]);
 	return (
-		<div className={`navbar-mobile ${isMobileMenuOpen ? 'hidden' : 'block'}`}>
-			{/* Mobile menu header with logo and toggle button */}
+		<div className="navbar-mobile w-full">
 			<div className="navbar-mobile-header">
 				<Logo />
 				<button
-					id="mobile-menu-button"
+					id={`${headerId}-button`}
 					className="menu-button"
-					aria-label="Toggle mobile menu" // Accessibility label
-					onClick={toggleMobileMenu} // Toggle the mobile menu visibility
+					aria-label="Open or close mobile menu"
+					aria-expanded={isMobileMenuOpen}
+					aria-controls={headerId}
+					onClick={toggleMobileMenu}
 				>
 					<Icon icon={isMobileMenuOpen ? 'CloseIcon' : 'MenuIcon'} />
 				</button>
 			</div>
 
-			{/* Mobile menu content */}
 			<div
-				id="mobile-menu"
-				className={twMerge(
-					'mobile-menu',
-					isMobileMenuOpen ? 'mobile-menu-open' : 'hidden', // Show/hide menu based on state
-				)}
+				id={headerId}
+				ref={menuRef}
+				className={twMerge('mobile-menu', isMobileMenuOpen && 'mobile-menu-open')}
 			>
 				<nav className="mobile-menu-nav">
 					<ul className="mobile-menu-list">
-						{/* Render list items based on data.links */}
-						{menuData?.links?.length > 0 ? (
-							menuData.links.map((item) => (
-								<li key={item.href} className="mobile-menu-item">
+						{links.length > 0 ? (
+							links.map(({ label, href, isExternal, target }) => (
+								<li key={href} className="mobile-menu-item">
 									<a
-										href={item.href}
+										href={href}
 										className={twMerge(
 											'mobile-menu-link',
-											currentPath === item.href ? 'active' : '', // Highlight active link
+											currentPath === href && 'active',
 										)}
-										onClick={toggleMobileMenu} // Close menu on link click
+										// You can close the menu on link click if you like
+										onClick={closeMobileMenu}
+										target={isExternal ? target || '_blank' : '_self'}
+										rel={isExternal ? 'noopener noreferrer' : undefined}
 									>
-										{item.label}
+										{label}
 									</a>
 								</li>
 							))
@@ -79,7 +74,6 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ menuData, socialData }) => 
 						)}
 					</ul>
 
-					{/* Call-to-action button */}
 					<div className="mobile-menu-cta">
 						<ActionBase
 							variant="secondary"
@@ -87,13 +81,15 @@ const NavBarMobile: React.FC<NavBarMobileProps> = ({ menuData, socialData }) => 
 							as="a"
 							href="#"
 							className="cta-button-mobile"
-							onClick={toggleMobileMenu} // Close menu on button click
+							// Close menu on CTA click
+							onClick={closeMobileMenu}
 						>
-							Ver demos
+							{ctaLabel}
 						</ActionBase>
 					</div>
+
 					<SocialMediaLinks
-						links={socialData.socialLinks}
+						links={socialData?.links ?? []}
 						variant="social-mobile-header"
 					/>
 				</nav>

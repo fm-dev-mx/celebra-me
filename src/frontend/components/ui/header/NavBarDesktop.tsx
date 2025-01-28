@@ -1,67 +1,66 @@
-// src/components/ui/header/NavBarDesktop.tsx
-// NavBarDesktop component handles the desktop navigation menu and renders navigation links dynamically.
+// src/frontend/components/ui/header/NavBarDesktop.tsx
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { twMerge } from 'tailwind-merge';
+import Logo from '../Logo';
 import ActionBase from '@components/common/actions/ActionBase';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
-import type { MenuData } from '@interfaces/data/landingPage.interface';
-import type { SocialData } from '@interfaces/data/siteData.interface';
-import Logo from '../Logo';
+import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
+import useActivePath from '@hooks/header/useActivePath';
 
-interface NavBarDesktopProps {
-	menuData: MenuData;
-	socialData: SocialData;
-}
-
-const NavBarDesktop: React.FC<NavBarDesktopProps> = ({ menuData, socialData }) => {
-	const [currentPath, setCurrentPath] = useState<string>('');
-
-	useEffect(() => {
-		// Set the current path to highlight the active link based on the current location
-		if (typeof window !== 'undefined') {
-			setCurrentPath(window.location.pathname);
-		}
-	}, []);
+/**
+ * NavBarDesktop component handles the desktop navigation menu and renders navigation links dynamically.
+ *
+ * @param {NavBarProps} props - Contains links, socialLinkList, and ctaLabel.
+ */
+const NavBarDesktop: React.FC<NavBarProps> = ({
+	links = [],
+	socialLinkList,
+	ctaLabel = 'Ver demos',
+}) => {
+	// Track the current path to highlight the active link
+	const currentPath = useActivePath();
 
 	return (
-		<nav className="navbar-desktop">
+		<nav className="navbar-desktop" role="navigation" aria-label="Desktop Navigation">
 			<div className="navbar-desktop-logo-wrapper">
 				<Logo />
 			</div>
+
+			{/* Desktop navigation links */}
 			<div className="navbar-desktop-links-wrapper">
-				<ul className="navbar-desktop-list">
-					{menuData?.links?.length > 0 ? (
-						menuData.links.map((item) => (
-							<li key={item.href} className="navbar-desktop-item">
+				{links.length > 0 && (
+					<ul className="navbar-desktop-list">
+						{links.map(({ label, href, isExternal, target }) => (
+							<li key={href} className="navbar-desktop-item">
 								<a
-									href={item.href}
+									href={href}
 									className={twMerge(
 										'navbar-desktop-link',
-										currentPath === item.href ? 'active' : '',
+										currentPath === href && 'active',
 									)}
+									target={isExternal ? target || '_blank' : '_self'}
+									rel={isExternal ? 'noopener noreferrer' : undefined}
 								>
-									{item.label}
+									{label}
 								</a>
 							</li>
-						))
-					) : (
-						<li>No links available</li>
-					)}
-				</ul>
+						))}
+					</ul>
+				)}
 			</div>
 
-			<SocialMediaLinks links={socialData.socialLinks} variant="social-desktop-header" />
-
+			{/* Social media links + Call-to-action button */}
+			<SocialMediaLinks links={socialLinkList?.links ?? []} variant="social-desktop-header" />
 			<div className="navbar-desktop-cta-wrapper">
 				<ActionBase
-					variant="secondary"
 					as="a"
 					href="#"
+					variant="secondary"
 					color="primary"
 					className="navbar-desktop-cta"
 				>
-					Ver demos
+					{ctaLabel}
 				</ActionBase>
 			</div>
 		</nav>
