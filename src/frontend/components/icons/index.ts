@@ -25,6 +25,7 @@ export { default as FacebookIcon } from './socials/FacebookIcon';
 export { default as InstagramIcon } from './socials/InstagramIcon';
 export { default as TikTokIcon } from './socials/TikTokIcon';
 export { default as WhatsAppIcon } from './socials/WhatsAppIcon';
+export { default as YouTubeIcon } from './socials/YouTubeIcon';
 
 // Note: If you add new icons to the project, make sure to export them here as well.
 // This will ensure they are available when importing from '@/icons'.

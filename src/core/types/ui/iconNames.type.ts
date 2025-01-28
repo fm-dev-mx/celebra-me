@@ -20,5 +20,6 @@ export type IconNames =
 	| 'MenuIcon'
 	| 'CloseIcon'
 	| 'TikTokIcon'
+	| 'YouTubeIcon'
 	| 'WeddingIcon'
 	| 'WhatsAppIcon';

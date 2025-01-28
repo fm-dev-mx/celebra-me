@@ -1,7 +1,7 @@
 /* src/frontend/styles/components/actions/action-base.css */
 /* Base wrapper styles */
 .action-base-wrapper {
-	min-width: 200px; /* to prevent affecting the next component when scaled */
+	min-width: 200px; /* To prevent affecting next component when scaling */
 	width: 200px;
 	display: flex;
 	place-content: center;
@@ -21,7 +21,7 @@
 	white-space: nowrap;
 }
 
-/* base styles for Action components on hover */
+/* Base styles for Action components on hover */
 .action-base:hover {
 	transform: scale(1.05);
 	filter: brightness(1.1);
@@ -35,16 +35,16 @@
 	}
 }
 
-/* action-base variants styles */
+/* Action-base variant styles */
 
-/* base styles for action-primary variant */
+/* Base styles for action-primary variant */
 .action-base.action-primary {
 	padding: 0.5rem 1.5rem; /* py-2 px-6 */
 	border-radius: 1.5rem; /* rounded-3xl */
 	box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9); /* Similar to shadow-2xl */
 }
 
-/* base styles for action-secondary variant */
+/* Base styles for action-secondary variant */
 .action-base.action-secondary {
 	border-radius: 2rem; /* rounded-3xl */
 	min-width: 0.5rem;
@@ -53,7 +53,7 @@
 	box-shadow: 5px 5px 10px -3px rgba(0, 0, 0, 0.3); /* Similar to shadow-2xl */
 }
 
-/* base styles for action-tertiary variant */
+/* Base styles for action-large variant */
 .action-base.action-large {
 	justify-content: center;
 	min-width: 300px;
@@ -66,10 +66,18 @@
 		transform 0.3s ease-in-out,
 		box-shadow 0.3s ease-in-out;
 
-	@apply mt-16 mb-32 xl:my-32;
+	margin-top: 4rem;
+	margin-bottom: 8rem;
 }
 
-/* Base styles for Footer Action components */
+@media (min-width: 1280px) {
+	.action-base.action-large {
+		margin-top: 8rem;
+		margin-bottom: 8rem;
+	}
+}
+
+/* Base styles for Action components in Footer */
 .action-text.footer-menu-item {
 	display: inline-flex;
 	align-items: center;
@@ -82,7 +90,7 @@
 	white-space: nowrap;
 }
 
-/* Color styles for -- action-primary color-primary -- variant */
+/* Color styles for action-primary color-primary variant */
 .action-base.action-primary.color-primary {
 	background-color: var(--primary-light);
 	border: 1px solid var(--primary-dark);
@@ -90,7 +98,6 @@
 }
 
 /* Color styles for action-primary color-secondary variant */
-
 .action-base.action-primary.color-secondary {
 	background-color: var(--accent-light);
 	border: 5px solid var(--accent-light);
@@ -114,7 +121,7 @@
 /* Color styles for action-secondary color-secondary variant */
 .action-base.action-secondary.color-secondary {
 	background-color: var(--primary-light);
-	border-color: var(--secondary.DEFAULT);
+	border-color: var(--secondary-default);
 	color: var(--primary-dark);
 }
 
@@ -124,17 +131,13 @@
 	color: var(--neutral-lightest);
 }
 
-/* Color styles for action-tertiary color-secondary variant */
-.action-base.action-tertiary.color-secondary {
-}
-
-/* Color styles for -- action-large color-primary -- variant */
+/* Color styles for action-large color-primary variant */
 .action-base.action-large.color-primary {
 	background-color: var(--primary-dark);
 	color: #fff;
 }
 
-/* Color styles for -- action-large color-secondary -- variant */
+/* Color styles for action-large color-secondary variant */
 .action-base.action-large.color-secondary {
 	background-color: var(--secondary-dark);
 	color: #fff;
@@ -145,6 +148,7 @@
 	display: flex;
 	justify-content: center;
 }
+
 .action-base.action-secondary.color-secondary.cta-button-mobile {
 	opacity: 0;
 	transition:

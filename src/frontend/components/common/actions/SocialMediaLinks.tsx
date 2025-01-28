@@ -1,47 +1,41 @@
-// src/components/common/SocialMediaLinks.tsx
-
+// src/frontend/components/common/actions/SocialMediaLinks.tsx
 import React from 'react';
 import ActionIcon from '@components/common/actions/ActionIcon';
-import type { SocialLink } from '@interfaces/data/siteData.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
-import type { SocialLinkVariants } from '@/core/types/ui/socialLinkVariants.type';
+import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
 
-interface SocialMediaLinksProps {
-	links: SocialLink[];
-	variant?: SocialLinkVariants;
-}
-
-/**
- * SocialMediaLinks component renders a list of social media icons as links.
- * It uses the ActionWrapper and ActionIcon components to display each icon.
- *
- * @param {SocialMediaLinksProps} props - The props for the component
- * @returns {JSX.Element | null} The rendered component or null if no links
- */
-const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({
-	links,
+const SocialMediaLinks: React.FC<SocialLinkList> = ({
+	links = [],
 	variant,
-}: SocialMediaLinksProps): JSX.Element | null => {
-	// If there are no links provided, render nothing
+}): JSX.Element | null => {
+	// Return null if there are no links
 	if (!links || links.length === 0) return null;
 
-	return (
-		// Use ActionWrapper to wrap the list of icons with optional custom classes
-		<div className={'social-media-links'}>
-			{/* Map over each social link and render an ActionIcon */}
-			{links.map((social, index) => (
+	// Function to validate URLs
+	const isValidUrl = (url: string) => /^https?:\/\/.+$/.test(url);
+
+	// Filter valid links
+	const validatedLinks = links.filter(
+		(social) => isValidUrl(social.url) && social.icon && social.title,
+	);
+
+	// Render links if there are valid links
+	return validatedLinks.length > 0 ? (
+		<div className="social-media-links">
+			{validatedLinks.map((social) => (
 				<ActionIcon
-					key={index}
-					as="a" // Render as an anchor element
-					variant={variant} // Use appropriate variant
-					icon={social.icon as IconNames} // Icon to display
-					href={social.href} // URL to link to
-					title={social.title || 'Social Media'} // Tooltip or accessible label
+					key={social.url} // Use 'url' as unique key
+					as="a"
+					variant={variant}
+					icon={social.icon as IconNames}
+					href={social.url}
+					title={social.title}
 					target="_blank"
+					rel="noopener noreferrer" // Improve security
 				/>
 			))}
 		</div>
-	);
+	) : null;
 };
 
 export default SocialMediaLinks;

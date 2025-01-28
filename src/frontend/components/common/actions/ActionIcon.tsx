@@ -2,7 +2,12 @@
 
 import React from 'react';
 import ActionBase from './ActionBase';
-import type { ActionVariants, ActionColors, BaseActionVariants, IconVariants } from './ActionBase';
+import {
+	ActionVariants,
+	ActionColors,
+	BaseActionVariants,
+	IconVariants,
+} from '@customTypes/ui/action.types';
 import Icon from '@components/common/Icon';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import type { SocialLinkVariants } from '@/core/types/ui/socialLinkVariants.type';
