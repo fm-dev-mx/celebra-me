@@ -32,12 +32,18 @@
 		"alejandra",
 		"alfredo",
 		"andrea",
+		"antonio",
 		"astrojs",
+		"beatriz",
 		"camila",
+		"carlos",
+		"carmen",
 		"celebra-me",
+		"clsx",
 		"daniel",
 		"daniela",
 		"eduardo",
+		"faqs",
 		"fernanda",
 		"Fernanda",
 		"fernando",
@@ -47,48 +53,54 @@
 		"josefa",
 		"juana",
 		"lorena",
+		"lucia",
 		"mario",
+		"miguel",
 		"monica",
+		"nextjs",
+		"nums",
 		"olivia",
 		"pablo",
 		"padrísimas",
 		"paulina",
+		"pnpm",
+		"preact",
 		"raul",
 		"replyto",
+		"ricardo",
 		"roberto",
 		"sandra",
+		"serif",
+		"sofia",
 		"Sofía",
 		"supabase",
+		"svelte",
 		"tailwindcss",
 		"vercel",
-		"ricardo",
-		"lucia",
-		"beatriz",
-		"carlos",
-		"miguel",
-		"sofia",
-		"antonio",
-		"carmen",
-		"nextjs",
-		"preact",
-		"svelte",
-		"nums",
-		"clsx",
-		"pnpm",
 		"vite",
-		"webp",
-		"serif"
+		"webp"
 	],
-	"enabledLanguageIds": ["javascript", "typescript", "json", "markdown", "astro"],
+	"enabledLanguageIds": [
+		"javascript",
+		"typescript",
+		"json",
+		"markdown",
+		"astro"
+	],
 	"languageSettings": [
 		{
 			"languageId": "markdown",
 			"allowCompoundWords": true,
-			"dictionaries": ["markdown"]
+			"dictionaries": [
+				"markdown"
+			]
 		},
 		{
 			"languageId": "typescript",
-			"dictionaries": ["typescript", "node"]
+			"dictionaries": [
+				"typescript",
+				"node"
+			]
 		}
 	]
 }
