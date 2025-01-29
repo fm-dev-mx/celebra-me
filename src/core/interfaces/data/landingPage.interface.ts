@@ -3,6 +3,7 @@
 import { HeroProps } from '../ui/sections/hero.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import { NavBarProps } from '../ui/components/navBar.interface';
+import { LinkProps } from '../ui/components/link.interface';
 
 /**
  * Interface representing the data structure for the landing page.
@@ -42,7 +43,7 @@ export interface AboutData {
 	title: string;
 	description: string;
 	values: Value[];
-	cta: Cta;
+	cta: LinkProps;
 }
 
 /**
@@ -52,14 +53,6 @@ export interface Value {
 	icon: IconNames;
 	name: string;
 	description: string;
-}
-
-/**
- * Interface for call-to-action link.
- */
-export interface Cta {
-	label: string;
-	href: string;
 }
 
 /**

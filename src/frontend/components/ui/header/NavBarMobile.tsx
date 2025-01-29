@@ -1,8 +1,10 @@
 /**
  * src/frontend/components/ui/header/NavBarMobile.tsx
+ *
  * NavBarMobile manages a full-screen mobile menu when isMobileMenuOpen is true.
  * It includes the site logo, navigation links, CTA, and social media links.
  */
+
 import React, { useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import Icon from '@components/common/Icon';
@@ -10,7 +12,7 @@ import ActionBase from '@components/common/actions/ActionBase';
 import Logo from '../Logo';
 import { useToggleMobileMenu } from '@/frontend/hooks/header/useToggleMobileMenu';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
-import { NavBarProps } from '@/core/interfaces/ui/components/navBar.interface';
+import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 import useActivePath from '@hooks/header/useActivePath';
 
 const NavBarMobile: React.FC<NavBarProps> = ({
@@ -22,10 +24,10 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 	// Reference to the mobile menu container
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	// Hook for controlling open/close
+	// Hook for controlling open/close state of the mobile menu
 	const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useToggleMobileMenu(menuRef);
 
-	// Track the current path to highlight links (if needed)
+	// Track the current path to highlight the active link (if needed)
 	const currentPath = useActivePath();
 
 	return (
@@ -34,6 +36,7 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 				{/* Mobile version of the logo */}
 				<Logo altText="Celebra-me Mobile Logo" />
 
+				{/* Button to toggle mobile menu */}
 				<button
 					id={`${headerId}-button`}
 					className="menu-button"
@@ -46,6 +49,7 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 				</button>
 			</div>
 
+			{/* Mobile menu overlay */}
 			<div
 				id={headerId}
 				ref={menuRef}
@@ -72,10 +76,11 @@ const NavBarMobile: React.FC<NavBarProps> = ({
 								</li>
 							))
 						) : (
-							<li>No links available</li>
+							<li className="mobile-menu-item">No links available</li>
 						)}
 					</ul>
 
+					{/* Call-to-action button */}
 					<div className="mobile-menu-cta">
 						<ActionBase
 							variant="secondary"

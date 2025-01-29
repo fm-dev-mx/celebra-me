@@ -8,34 +8,28 @@ const SocialMediaLinks: React.FC<SocialLinkList> = ({
 	links = [],
 	variant,
 }): JSX.Element | null => {
-	// Return null if there are no links
-	if (!links || links.length === 0) return null;
-
-	// Function to validate URLs
 	const isValidUrl = (url: string) => /^https?:\/\/.+$/.test(url);
 
-	// Filter valid links
-	const validatedLinks = links.filter(
-		(social) => isValidUrl(social.url) && social.icon && social.title,
-	);
+	const validatedLinks = links.filter((social) => isValidUrl(social.href) && social.platform);
 
-	// Render links if there are valid links
-	return validatedLinks.length > 0 ? (
+	if (!validatedLinks.length) return null;
+
+	return (
 		<div className="social-media-links">
 			{validatedLinks.map((social) => (
 				<ActionIcon
-					key={social.url} // Use 'url' as unique key
+					key={social.href} // Use 'url' as unique key
 					as="a"
 					variant={variant}
-					icon={social.icon as IconNames}
-					href={social.url}
-					title={social.title}
+					icon={(social.platform + 'Icon') as IconNames}
+					href={social.href}
+					title={social.platform}
 					target="_blank"
 					rel="noopener noreferrer" // Improve security
 				/>
 			))}
 		</div>
-	) : null;
+	);
 };
 
 export default SocialMediaLinks;

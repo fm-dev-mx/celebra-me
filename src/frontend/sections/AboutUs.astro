@@ -16,19 +16,8 @@ import type { IconNames } from '@/core/types/ui/iconNames.type';
 import partyToastImage from '@images/about/partyToast.jpg';
 import Icon from '@components/common/Icon';
 
-interface Value {
-	icon: IconNames;
-	name: string;
-	description: string;
-}
-
 interface Props {
-	data: AboutData & {
-		values: Value[];
-		cta: {
-			label: string;
-		};
-	};
+	data: AboutData;
 }
 
 // Destructure props for easier access

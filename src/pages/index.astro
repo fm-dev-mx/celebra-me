@@ -1,10 +1,10 @@
 ---
-import { getLandingData } from '@/backend/services/data.service';
 import siteInfo from '@/core/data/siteInfo.json';
+import landingData from '@/core/data/landingPage.json';
 import seoData from '@/core/data/seoData.json';
 import footerLinks from '@/core/data/footerLinks.json';
 import config from '@/core/config';
-import socialLinks from '@/core/data/socialLinks.json';
+import { socialLinks } from '@/core/data/socialLinks.json';
 
 import Layout from '@layouts/Layout.astro';
 import Header from '@/frontend/sections/Header.astro';
@@ -16,32 +16,53 @@ import Pricing from '@/frontend/sections/Pricing.astro';
 import FAQ from '@/frontend/sections/FAQ.astro';
 import Contact from '@/frontend/sections/Contact.astro';
 import Footer from '@/frontend/sections/Footer.astro';
-import { FooterProps } from '../core/interfaces/ui/sections/footer.interface';
-import { FooterLinkGroup } from '../core/interfaces/ui/sections/footer.interface';
-import { SocialLinkList } from '../core/interfaces/ui/components/socialLink.interface';
-import { NavBarProps } from '../core/interfaces/ui/components/navBar.interface';
+import { FooterProps } from '@interfaces/ui/sections/footer.interface';
+import { LinkGroup } from '@interfaces/ui/components/link.interface';
+import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
+import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
+import {
+	AboutData,
+	PricingData,
+	ServicesData,
+} from '../core/interfaces/data/landingPage.interface';
 
 // Fetch landing page data synchronously
-const landingData = getLandingData();
+const {
+	navBarData,
+	heroData,
+	servicesData,
+	aboutData,
+	testimonialsData,
+	pricingData,
+	faqData,
+	contactData,
+} = landingData;
+
+const socialLinkList = socialLinks.map(({ platform, url }) => ({
+	platform,
+	href: url,
+}));
 
 // Combine footer data from modular JSON files
 const footerData: FooterProps = {
 	siteInfo,
 	contactData: config.contactData,
-	linkGroups: footerLinks.linkGroups as FooterLinkGroup[],
-	socialLinks: { links: socialLinks.socialLinks, variant: 'social-footer' } as SocialLinkList,
+	linkGroups: footerLinks.linkGroups as LinkGroup[],
+	socialLinks: {
+		links: socialLinkList,
+		variant: 'social-footer',
+	} as SocialLinkList,
 };
 
 const headerData: NavBarProps = {
-	links: landingData.navBarData.links,
+	links: navBarData.links,
 	socialLinkList: {
-		links: socialLinks.socialLinks,
+		links: socialLinkList,
 		variant: 'social-desktop-header',
 	} as SocialLinkList,
-	ctaLabel: landingData.navBarData.ctaLabel,
+	ctaLabel: navBarData.ctaLabel,
 	headerId: 'main-header',
 };
-console.log(headerData.socialLinkList);
 ---
 
 <!-- Render the layout with site metadata -->
@@ -52,13 +73,13 @@ console.log(headerData.socialLinkList);
 
 <main>
 	<!-- Render main sections with respective data -->
-	<Hero data={landingData.heroData} />
-	<Services data={landingData.servicesData} />
-	<AboutUs data={landingData.aboutData} />
-	<Testimonials data={landingData.testimonialsData} />
-	<Pricing data={landingData.pricingData} />
-	<FAQ data={landingData.faqData} />
-	<Contact data={landingData.contactData} />
+	<Hero data={heroData} />
+	<Services data={servicesData as ServicesData} />
+	<AboutUs data={aboutData as AboutData} />
+	<Testimonials data={testimonialsData} />
+	<Pricing data={pricingData as PricingData} />
+	<FAQ data={faqData} />
+	<Contact data={contactData} />
 
 	<!-- Render the footer with modular data -->
 	<Footer data={footerData} />

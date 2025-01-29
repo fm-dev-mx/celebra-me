@@ -22,10 +22,7 @@ interface Props {
 const { data } = Astro.props;
 
 // Ensure socialLinks exist and contain valid data
-const socialLinks =
-	data.socialLinks && data.socialLinks.links && data.socialLinks.links.length > 0
-		? data.socialLinks
-		: null;
+const socialLinks = data?.socialLinks?.links?.length ? data.socialLinks : null;
 ---
 
 <footer class="bg-black text-white w-full py-8">

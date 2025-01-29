@@ -2,39 +2,27 @@
 /**
  * src/sections/Header.astro
  *
- * Example of how to pass a header selector from Astro to a React component.
- * We cannot pass a React ref directly from .astro, so we rely on a string-based selector.
+ * This Astro component renders the header section, including desktop and mobile navigation bars.
  */
+
 import HeaderBehavior from '@components/ui/header/HeaderBehavior';
 import NavBarDesktop from '@components/ui/header/NavBarDesktop';
 import NavBarMobile from '@components/ui/header/NavBarMobile';
 import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 
-interface Props {
-	data: NavBarProps;
-}
-
-const { data } = Astro.props;
+// Assign the entire 'data' object from Astro.props
+const data: NavBarProps = Astro.props.data;
 ---
 
 <header id={data.headerId} class={data.headerId}>
 	<div class="header-container">
-		<!-- Pass the #id as a "selector" prop -->
+		<!-- Pass the #id as a "selector" prop to HeaderBehavior -->
 		<HeaderBehavior client:load selector={`#${data.headerId}`} />
 
 		<nav class="main-menu-container">
-			<NavBarDesktop
-				links={data.links}
-				socialLinkList={data.socialLinkList}
-				ctaLabel={data.ctaLabel}
-				client:load
-			/>
-			<NavBarMobile
-				links={data.links}
-				socialLinkList={data.socialLinkList}
-				ctaLabel={data.ctaLabel}
-				client:load
-			/>
+			<!-- Pass all properties of 'data' to NavBarDesktop and NavBarMobile using the spread operator -->
+			<NavBarDesktop {...data} client:load />
+			<NavBarMobile {...data} client:load />
 		</nav>
 	</div>
 </header>
