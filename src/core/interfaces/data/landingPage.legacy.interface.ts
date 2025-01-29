@@ -1,6 +1,6 @@
 // src/core/interfaces/data/landingPage.interface.ts
 
-import { HeroProps } from '../ui/sections/hero.interface';
+import { LegacyHeroProps } from '../ui/sections/hero.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import { NavBarProps } from '../ui/components/navBar.interface';
 import { LinkProps } from '../ui/components/link.interface';
@@ -8,29 +8,29 @@ import { LinkProps } from '../ui/components/link.interface';
 /**
  * Interface representing the data structure for the landing page.
  */
-export interface LandingPageData {
+export interface LegacyLandingPageData {
 	navBarData: NavBarProps;
-	heroData: HeroProps;
-	servicesData: ServicesData;
-	aboutData: AboutData;
-	pricingData: PricingData;
-	testimonialsData: TestimonialsData;
-	faqData: FAQData;
-	contactData: ContactData;
+	heroData: LegacyHeroProps;
+	servicesData: LegacyServicesData;
+	aboutData: LegacyAboutData;
+	pricingData: LegacyPricingData;
+	testimonialsData: LegacyTestimonialsData;
+	faqData: LegacyFAQData;
+	contactData: LegacyContactData;
 }
 
 /**
  * Interface for services section data.
  */
-export interface ServicesData {
+export interface LegacyServicesData {
 	title: string;
-	services: Service[];
+	services: LegacyService[];
 }
 
 /**
  * Interface for individual service.
  */
-export interface Service {
+export interface LegacyService {
 	title: string;
 	description: string;
 	icon: IconNames;
@@ -39,17 +39,17 @@ export interface Service {
 /**
  * Interface for about us section data.
  */
-export interface AboutData {
+export interface LegacyAboutData {
 	title: string;
 	description: string;
-	values: Value[];
+	values: LegacyValue[];
 	cta: LinkProps;
 }
 
 /**
  * Interface for individual value in about us section.
  */
-export interface Value {
+export interface LegacyValue {
 	icon: IconNames;
 	name: string;
 	description: string;
@@ -58,18 +58,18 @@ export interface Value {
 /**
  * Interface for pricing section data.
  */
-export interface PricingData {
+export interface LegacyPricingData {
 	title: string;
-	tiers: Tier[];
+	tiers: LegacyTier[];
 }
 
 /**
  * Interface for individual pricing tier.
  */
-export interface Tier {
+export interface LegacyTier {
 	title: string;
 	description: string;
-	price: Price;
+	price: LegacyPrice;
 	features: string[];
 	href: string;
 	cta: string;
@@ -78,7 +78,7 @@ export interface Tier {
 /**
  * Interface for price information.
  */
-export interface Price {
+export interface LegacyPrice {
 	amount: number;
 	currency?: string;
 	period?: string;
@@ -87,15 +87,15 @@ export interface Price {
 /**
  * Interface for testimonials section data.
  */
-export interface TestimonialsData {
+export interface LegacyTestimonialsData {
 	title: string;
-	testimonials: Testimonial[];
+	testimonials: LegacyTestimonial[];
 }
 
 /**
  * Interface for individual testimonial.
  */
-export interface Testimonial {
+export interface LegacyTestimonial {
 	id: number;
 	image: string;
 	content: string;
@@ -105,15 +105,15 @@ export interface Testimonial {
 /**
  * Interface for FAQ section data.
  */
-export interface FAQData {
+export interface LegacyFAQData {
 	title: string;
-	questions: Question[];
+	questions: LegacyQuestion[];
 }
 
 /**
  * Interface for individual question in FAQ.
  */
-export interface Question {
+export interface LegacyQuestion {
 	question: string;
 	answer: string;
 }
@@ -121,7 +121,7 @@ export interface Question {
 /**
  * Interface for contact section data.
  */
-export interface ContactData {
+export interface LegacyContactData {
 	title: string;
 	subtitle: string;
 	cta: string;

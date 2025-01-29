@@ -8,13 +8,13 @@ import Card from '@components/ui/Card';
 import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
-import type { PricingData } from '@interfaces/data/landingPage.interface';
+import type { LegacyPricingData } from '@/core/interfaces/data/landingPage.legacy.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import ActionIcon from '@components/common/actions/ActionIcon';
 
 // Define the properties interface for the component
 interface Props {
-	data: PricingData;
+	data: LegacyPricingData;
 }
 
 // Destructure the data property from Astro.props

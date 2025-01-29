@@ -1,14 +1,14 @@
 ---
 import Icon from '@components/common/Icon';
 import IconWrapper from '@components/common/IconWrapper.astro';
-import type { Service } from '@interfaces/data/landingPage.interface';
+import type { LegacyService } from '@/core/interfaces/data/landingPage.legacy.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import Paragraph from '../common/Paragraph.astro';
 import SectionSubtitle from '../typography/SectionSubtitle.astro';
 
 // Define the props interface for type safety
 interface Props {
-	service: Service;
+	service: LegacyService;
 	key: number;
 }
 

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import type { TestimonialsData, Testimonial } from '@interfaces/data/landingPage.interface';
+import type {
+	LegacyTestimonialsData,
+	LegacyTestimonial,
+} from '@/core/interfaces/data/landingPage.legacy.interface';
 import Card from './Card';
 
 // Helper function to shuffle an array randomly
@@ -8,7 +11,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 // Individual testimonial card component
-const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }> = React.memo(
+const TestimonialCard: React.FC<{ testimonial: LegacyTestimonial; isActive: boolean }> = React.memo(
 	({ testimonial, isActive }) => (
 		<Card
 			padding="p-8"
@@ -42,7 +45,7 @@ const TestimonialCard: React.FC<{ testimonial: Testimonial; isActive: boolean }>
 TestimonialCard.displayName = 'TestimonialCard';
 
 // Main TestimonialsCarousel component
-const TestimonialsCarousel: React.FC<TestimonialsData> = ({ testimonials }) => {
+const TestimonialsCarousel: React.FC<LegacyTestimonialsData> = ({ testimonials }) => {
 	// Randomize testimonials on component mount or when data changes
 	const randomizedTestimonials = useMemo(() => shuffleArray(testimonials), [testimonials]);
 

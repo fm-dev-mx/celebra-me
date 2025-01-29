@@ -1,13 +1,13 @@
 // src/core/interfaces/data/invitation.interface.ts
 
 import { NavBarProps } from '../ui/components/navBar.interface';
-import { HeroProps } from '../ui/sections/hero.interface';
+import { LegacyHeroProps } from '../ui/sections/hero.interface';
 
 /**
  * Interface representing the data structure for the basic demo page.
  */
 export interface InvitationData {
-	heroSection: HeroProps;
+	heroSection: LegacyHeroProps;
 	navBarData: NavBarProps;
 	eventDetails: EventDetails;
 }

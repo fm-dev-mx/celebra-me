@@ -21,10 +21,10 @@ import { LinkGroup } from '@interfaces/ui/components/link.interface';
 import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
 import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 import {
-	AboutData,
-	PricingData,
-	ServicesData,
-} from '../core/interfaces/data/landingPage.interface';
+	LegacyAboutData,
+	LegacyPricingData,
+	LegacyServicesData,
+} from '../core/interfaces/data/landingPage.legacy.interface';
 
 // Fetch landing page data synchronously
 const {
@@ -74,10 +74,10 @@ const headerData: NavBarProps = {
 <main>
 	<!-- Render main sections with respective data -->
 	<Hero data={heroData} />
-	<Services data={servicesData as ServicesData} />
-	<AboutUs data={aboutData as AboutData} />
+	<Services data={servicesData as LegacyServicesData} />
+	<AboutUs data={aboutData as LegacyAboutData} />
 	<Testimonials data={testimonialsData} />
-	<Pricing data={pricingData as PricingData} />
+	<Pricing data={pricingData as LegacyPricingData} />
 	<FAQ data={faqData} />
 	<Contact data={contactData} />
 

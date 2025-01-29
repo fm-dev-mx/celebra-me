@@ -6,7 +6,7 @@ import ActionBase from '@components/common/actions/ActionBase';
 import ActionIcon from '@components/common/actions/ActionIcon';
 import Section from '@components/layout/Section.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
-import { HeroProps } from '@/core/interfaces/ui/sections/hero.interface';
+import { LegacyHeroProps } from '@/core/interfaces/ui/sections/hero.interface';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton';
@@ -14,7 +14,7 @@ import ActionWrapper from '@components/common/actions/ActionWrapper';
 import Logo from '@components/ui/Logo';
 
 interface Props {
-	data: HeroProps;
+	data: LegacyHeroProps;
 }
 
 const { data } = Astro.props;

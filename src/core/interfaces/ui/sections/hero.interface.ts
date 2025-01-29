@@ -2,7 +2,7 @@
 
 import { BgImageSection } from '../assets/bgImageSection.interface';
 
-export interface HeroProps {
+export interface LegacyHeroProps {
 	title: string;
 	subtitle: string;
 	primaryCta: string;

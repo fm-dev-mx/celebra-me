@@ -4,11 +4,11 @@ import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import FAQList from '@components/ui/FAQList';
-import type { FAQData } from '@interfaces/data/landingPage.interface';
+import type { LegacyFAQData } from '@/core/interfaces/data/landingPage.legacy.interface';
 
 // Define the props interface for type safety
 interface Props {
-	data: FAQData;
+	data: LegacyFAQData;
 }
 
 // Destructure the data prop
