@@ -1,6 +1,6 @@
 // src/frontend/components/common/actions/SocialMediaLinks.tsx
 import React from 'react';
-import ActionIcon from '@components/common/actions/ActionIcon';
+import ActionIcon from '@/frontend/components/common/actions/ActionIcon.legacy';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
 

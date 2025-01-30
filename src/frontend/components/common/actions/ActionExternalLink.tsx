@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import ActionBase from './ActionBase';
+import ActionBase from './ActionBase.legacy';
 import ConfirmModal from '@components/ui/ConfirmModal';
 import type {
 	ActionVariants,

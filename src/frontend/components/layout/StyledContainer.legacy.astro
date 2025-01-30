@@ -1,17 +1,17 @@
 ---
-// StyledContainer.astro
+// StyledContainer.legacy.astro
 // A flexible, styled container designed to maintain consistent styling across different sections of the website.
 
 // Define the props interface for the StyledContainer component
 interface Props {
-	variant?: "hero-section" | "about-section" | "contact-section";
+	variant?: 'hero-section' | 'about-section' | 'contact-section';
 }
 
 // Destructure props with default values for flexibility
-const { variant: variantProp = "" } = Astro.props;
+const { variant: variantProp = '' } = Astro.props;
 
 // Set the variant class based on the variant prop
-const variantClass = variantProp ? `styled-container-${variantProp}` : "";
+const variantClass = variantProp ? `styled-container-${variantProp}` : '';
 const containerClass = `styled-container ${variantClass}`;
 ---
 

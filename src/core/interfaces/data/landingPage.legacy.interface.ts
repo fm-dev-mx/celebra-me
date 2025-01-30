@@ -1,6 +1,6 @@
 // src/core/interfaces/data/landingPage.interface.ts
 
-import { LegacyHeroProps } from '../ui/sections/hero.interface';
+import { LegacyHeroProps } from '../ui/sections/hero.legacy.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import { NavBarProps } from '../ui/components/navBar.interface';
 import { LinkProps } from '../ui/components/link.interface';

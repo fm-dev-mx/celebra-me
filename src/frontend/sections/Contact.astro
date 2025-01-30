@@ -1,13 +1,13 @@
 ---
 // src/sections/Contact.astro
 import Container from '@components/layout/Container.astro';
-import StyledContainer from '@components/layout/StyledContainer.astro';
-import Section from '@components/layout/Section.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
+import StyledContainer from '@components/layout/StyledContainer.legacy.astro';
+import Section from '@components/layout/Section.legacy.astro';
+import SectionTitle from '@components/typography/SectionTitle.legacy.astro';
+import SectionSubtitle from '@components/typography/SectionSubtitle.legacy.astro';
 import ContactForm from '@components/ui/ContactForm';
 import type { LegacyContactData } from '@/core/interfaces/data/landingPage.legacy.interface';
-import ActionIcon from '@components/common/actions/ActionIcon';
+import ActionIcon from '@/frontend/components/common/actions/ActionIcon.legacy';
 
 // Define the props interface for type safety
 interface Props {

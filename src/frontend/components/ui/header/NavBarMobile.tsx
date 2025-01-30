@@ -8,7 +8,7 @@
 import React, { useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import Icon from '@components/common/Icon';
-import ActionBase from '@components/common/actions/ActionBase';
+import ActionBase from '@/frontend/components/common/actions/ActionBase.legacy';
 import Logo from '../Logo';
 import { useToggleMobileMenu } from '@/frontend/hooks/header/useToggleMobileMenu';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';

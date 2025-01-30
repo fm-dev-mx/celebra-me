@@ -1,7 +1,7 @@
 // src/components/common/actions/ActionIcon.tsx
 
 import React from 'react';
-import ActionBase from './ActionBase';
+import ActionBase from './ActionBase.legacy';
 import {
 	ActionVariants,
 	ActionColors,

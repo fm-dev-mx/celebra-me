@@ -8,7 +8,7 @@
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import Logo from '../Logo';
-import ActionBase from '@components/common/actions/ActionBase';
+import ActionBase from '@/frontend/components/common/actions/ActionBase.legacy';
 import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
 import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 import useActivePath from '@hooks/header/useActivePath';

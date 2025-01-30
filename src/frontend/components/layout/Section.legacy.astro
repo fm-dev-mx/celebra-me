@@ -1,5 +1,5 @@
 ---
-import { twMerge } from "tailwind-merge";
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Section.astro
@@ -23,26 +23,26 @@ interface Props {
 
 // Destructure props with default values for flexibility
 const {
-	id = "",
-	backgroundImageMobile = "",
-	backgroundImageDesktop = "",
-	backgroundColor = "",
-	backgroundEffect = "",
-	padding = "px-4 py-10 pt-40",
-	margin = "mx-auto",
-	relative = "relative",
+	id = '',
+	backgroundImageMobile = '',
+	backgroundImageDesktop = '',
+	backgroundColor = '',
+	backgroundEffect = '',
+	padding = 'px-4 py-10 pt-40',
+	margin = 'mx-auto',
+	relative = 'relative',
 	fullHeight = false,
 	fullWidth = false,
-	overflow = "overflow-hidden",
+	overflow = 'overflow-hidden',
 } = Astro.props;
 
 // Define constant classes for consistent layout
-const LAYOUT_CLASSES = "flex flex-col items-center justify-center"; // Changed 'place-content-center' to 'justify-center' for consistency
-const BACKGROUND_CLASSES = "bg-center bg-no-repeat";
+const LAYOUT_CLASSES = 'flex flex-col items-center justify-center'; // Changed 'place-content-center' to 'justify-center' for consistency
+const BACKGROUND_CLASSES = 'bg-center bg-no-repeat';
 
 // Determine height and width based on fullHeight and fullWidth props
-const height = fullHeight ? "min-h-screen" : "h-auto";
-const width = fullWidth ? "w-full" : "w-5/6 md:w-3/4";
+const height = fullHeight ? 'min-h-screen' : 'h-auto';
+const width = fullWidth ? 'w-full' : 'w-5/6 md:w-3/4';
 
 // Combine all classes for the section
 const sectionClasses = twMerge(

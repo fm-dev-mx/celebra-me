@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import ActionBase from '@components/common/actions/ActionBase'; // Import ActionBase for general button styles.
+import ActionBase from '@/frontend/components/common/actions/ActionBase.legacy'; // Import ActionBase for general button styles.
 
 // Props interface to define the expected properties for the ConfirmModal component
 interface ConfirmModalProps {

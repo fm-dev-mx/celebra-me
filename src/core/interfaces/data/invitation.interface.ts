@@ -1,7 +1,7 @@
 // src/core/interfaces/data/invitation.interface.ts
 
 import { NavBarProps } from '../ui/components/navBar.interface';
-import { LegacyHeroProps } from '../ui/sections/hero.interface';
+import { LegacyHeroProps } from '../ui/sections/hero.legacy.interface';
 
 /**
  * Interface representing the data structure for the basic demo page.
