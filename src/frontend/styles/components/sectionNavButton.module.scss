@@ -1,0 +1,73 @@
+/**
+ * src/frontend/styles/components/sectionNavButton.module.scss
+ * ----------------------------------------------------------
+ * The button has an oval shape and displays an arrow icon for navigation.
+ *
+ * A subtle bounce animation is applied to attract attention.
+ */
+
+.section-nav-button {
+	// Scale variable; default value is 1 (no scaling)
+	--scale: 1;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 50px;
+	border-radius: 9999px;
+	text-decoration: none;
+
+	// Background and border styles
+	background-color: #fff;
+	border: 2px solid #000;
+
+	// Subtle bounce animation using the scale variable
+	animation: subtleBounce 2s ease-out infinite;
+}
+
+.section-nav-button.hero__nav-button {
+	background-color: var(--neutral-lightest);
+	border: 1px solid var(--accent-default);
+	color: var(--accent-default);
+	filter: brightness(120%);
+	will-change: color, border, transform, filter; // Optimize transitions
+	transition:
+		color 0.3s ease-in-out,
+		border 0.3s ease-in-out,
+		transform 0.3s ease-in-out,
+		filter 0.3s ease-in-out;
+
+	&:hover {
+		// Hover state: change color, border and reduce brightness with scale effect
+		color: var(--accent-dark);
+		border: 1px solid var(--accent-dark);
+		filter: brightness(100%);
+		transform: translateY(0) scale(1.05);
+	}
+}
+
+.section-nav-button__icon {
+	color: var(--primary-default);
+	transition:
+		color 0.3s ease-in-out,
+		border 0.3s ease-in-out;
+}
+
+// Definition of the subtle bounce animation
+@keyframes subtleBounce {
+	0%,
+	100% {
+		transform: translateY(0) scale(var(--scale));
+	}
+	50% {
+		transform: translateY(-30px) scale(var(--scale));
+	}
+}
+
+// Accessibility: Reduce motion on devices that require it
+@media (prefers-reduced-motion: reduce) {
+	.section-nav-button {
+		animation: none;
+	}
+}

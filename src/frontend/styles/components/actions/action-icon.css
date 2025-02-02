@@ -26,7 +26,6 @@
 	border-radius: 1.5rem; /* rounded-3xl */
 	filter: brightness(125%);
 	transition: filter 0.3s ease-in-out;
-	@apply subtle-bounce;
 }
 
 /* Social media links */
