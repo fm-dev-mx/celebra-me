@@ -6,7 +6,7 @@
 import React from 'react';
 
 interface LogoProps {
-	variant?: 'default' | 'footer' | 'hero'; // Defines possible logo variants
+	variant?: 'default' | 'footer' | 'hero-section'; // Defines possible logo variants
 	altText?: string; // Optional alt text for accessibility
 }
 
@@ -18,7 +18,7 @@ const Logo: React.FC<LogoProps> = ({ variant = 'default', altText }) => {
 				return {
 					src: '/images/footer/darkModeRectangularLogo200x100.png',
 				};
-			case 'hero':
+			case 'hero-section':
 				return {
 					src: '/images/hero/rectangleLogo400x200.png',
 					srcSet:
@@ -51,7 +51,7 @@ const Logo: React.FC<LogoProps> = ({ variant = 'default', altText }) => {
 		<div className={`logo-wrapper logo-wrapper--${variant}`}>
 			<a
 				href="/"
-				className={variant === 'hero' ? 'logo-link logo-link--hero' : 'logo-link'}
+				className={variant === 'hero-section' ? 'logo-link logo-link--hero' : 'logo-link'}
 				aria-label={altText || 'Go to the homepage'}
 			>
 				<img src={src} srcSet={srcSet} sizes={sizes} alt={altText || 'celebra-me.com'} />

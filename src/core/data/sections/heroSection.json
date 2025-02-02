@@ -1,0 +1,21 @@
+{
+	"heroData": {
+		"id": "hero-section",
+		"title": "Invitaciones digitales",
+		"subtitle": "Tus eventos serán únicos",
+		"backgroundDesktop": {
+			"src": "/images/hero/bgHeroDesktop.jpg",
+			"alt": "Fondo de pantalla de la Hero Section en la versión de escritorio"
+		},
+		"backgroundMobile": {
+			"src": "/images/hero/bgHeroMobile.jpg",
+			"alt": "Fondo de pantalla de la Hero Section en la versión móvil"
+		},
+		"primaryCta": {
+			"label": "WhatsApp 💬"
+		},
+		"secondaryCta": {
+			"label": "Elegir invitación"
+		}
+	}
+}

@@ -1,11 +1,13 @@
 ---
+// src/pages/index.astro
+
 import siteInfo from '@/core/data/siteInfo.json';
 import landingData from '@/core/data/landingPage.json';
 import seoData from '@/core/data/seoData.json';
 import footerLinks from '@/core/data/footerLinks.json';
 import config from '@/core/config';
 import { socialLinks } from '@/core/data/socialLinks.json';
-
+import { heroData } from '@/core/data/sections/heroSection.json';
 import Layout from '@layouts/Layout.astro';
 import Header from '@/frontend/sections/Header.astro';
 import Hero from '@/frontend/sections/Hero.astro';
@@ -25,18 +27,11 @@ import {
 	LegacyPricingData,
 	LegacyServicesData,
 } from '../core/interfaces/data/landingPage.legacy.interface';
+import { HeroProps } from '../core/interfaces/ui/sections/hero.interface';
 
 // Fetch landing page data synchronously
-const {
-	navBarData,
-	heroData,
-	servicesData,
-	aboutData,
-	testimonialsData,
-	pricingData,
-	faqData,
-	contactData,
-} = landingData;
+const { navBarData, servicesData, aboutData, testimonialsData, pricingData, faqData, contactData } =
+	landingData;
 
 const socialLinkList = socialLinks.map(({ platform, url }) => ({
 	platform,
@@ -73,7 +68,7 @@ const headerData: NavBarProps = {
 
 <main>
 	<!-- Render main sections with respective data -->
-	<Hero data={heroData} />
+	<Hero data={heroData as HeroProps} />
 	<Services data={servicesData as LegacyServicesData} />
 	<AboutUs data={aboutData as LegacyAboutData} />
 	<Testimonials data={testimonialsData} />

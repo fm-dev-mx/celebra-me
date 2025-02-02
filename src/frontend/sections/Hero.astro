@@ -1,83 +1,65 @@
 ---
-/**
- * src/sections/Hero.astro
- */
-import ActionBase from '@/frontend/components/common/actions/ActionBase.legacy';
-import ActionIcon from '@/frontend/components/common/actions/ActionIcon.legacy';
-import Section from '@components/layout/Section.legacy.astro';
-import StyledContainer from '@components/layout/StyledContainer.legacy.astro';
-import { LegacyHeroProps } from '@/core/interfaces/ui/sections/hero.legacy.interface';
-import SectionTitle from '@components/typography/SectionTitle.legacy.astro';
-import SectionSubtitle from '@components/typography/SectionSubtitle.legacy.astro';
+// src/frontend/sections/Hero.astro
+
 import WhatsAppButton from '@/frontend/components/ui/WhatsAppButton.legacy';
-import ActionWrapper from '@/frontend/components/common/actions/ActionWrapper.legacy';
+import SectionNavButton from '@components/ui/SectionNavButton';
 import Logo from '@components/ui/Logo';
 
-interface Props {
-	data: LegacyHeroProps;
-}
+import type { HeroProps } from '@/core/interfaces/ui/sections/hero.interface';
 
-const { data } = Astro.props;
+// Import CSS modules
+import containerStyles from '@styles/components/container.module.scss';
+import typographyStyles from '@styles/components/typography.module.scss';
+import buttonStyles from '@styles/components/button.module.scss';
+import sectionStyles from '@styles/components/section.module.scss';
+
+const { data: HeroProps } = Astro.props;
 ---
 
-<Section
-	id="hero-section"
-	backgroundImageDesktop={data.backgroundImage.desktopUrl}
-	backgroundImageMobile={data.backgroundImage.mobileUrl}
-	padding="py-20"
-	relative="relative"
-	fullWidth
-	fullHeight
+<!-- The hero section uses the .hero class from hero.module.css -->
+<section
+	class={`${sectionStyles['hero__section']}`}
+	style={`
+    --background-desktop: url(${HeroProps.backgroundDesktop?.src});
+    --background-mobile: url(${HeroProps.backgroundMobile?.src});
+  `}
 >
-	<!-- Overlay for styling and layout adjustments -->
-	<StyledContainer variant="hero-section">
-		<!-- Title with responsive settings and animation -->
-		<SectionTitle
-			margin="mb-0"
-			align="text-center"
-			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
-			color="text-primary-dark/80"
-			weight="font-light"
-			extraClass="slide-in-left shadow-text-light tracking-widest"
-		>
-			{data.title}
-		</SectionTitle>
+	<!-- Use the hero-specific container from container.module.css -->
+	<div class={`${containerStyles['hero__container']} fade-in fade-slow`}>
+		<!-- Hero Title -->
+		<h1 class={`${typographyStyles['hero__title']} slide-in-left`}>
+			{HeroProps.title}
+		</h1>
 
-		<!-- Responsive logo with accessibility enhancements -->
-		<div class="shimmer permanent-glow">
-			<!-- Using hero variant to handle different styling or images if needed -->
-			<Logo variant="hero" altText="Celebra-me Hero Logo" />
+		<!-- Hero Logo -->
+		<div class="shimmer permanent-glow fade-in fade-slow">
+			<Logo variant="hero-section" altText="Celebra-me Hero Logo" />
 		</div>
 
-		<!-- Subtitle for additional context with animation and styles -->
-		<SectionSubtitle
-			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
-			align="text-center"
-			weight="font-normal"
-			color="text-accent-dark"
-			margin="mx-12 mx-auto"
-			extraClass="font-sans shadow-text-light tracking-widest fade-in fade-slow"
-		>
-			{data.subtitle}
-		</SectionSubtitle>
+		<!-- Hero Subtitle -->
+		{
+			HeroProps.subtitle && (
+				<h2 class={`${typographyStyles['hero__subtitle']} fade-in fade-slow`}>
+					{HeroProps.subtitle}
+				</h2>
+			)
+		}
 
-		<!-- CTA Buttons for main actions -->
-		<ActionWrapper>
+		<!-- CTA Buttons -->
+		<div class={`${buttonStyles['button__wrapper']}`}>
 			<WhatsAppButton client:idle />
-			<!-- Internal link action using ActionBase -->
-			<ActionBase as="a" href="#" variant="primary" color="secondary">
-				{data.secondaryCta}
-			</ActionBase>
-		</ActionWrapper>
-	</StyledContainer>
-
+			{
+				HeroProps.secondaryCta && (
+					<a
+						href={HeroProps.secondaryCta.href || '#'}
+						class={`${buttonStyles['button--primary']} ${buttonStyles['button--color-secondary']}`}
+					>
+						{HeroProps.secondaryCta.label}
+					</a>
+				)
+			}
+		</div>
+	</div>
 	<!-- Scroll button directing users to the next section -->
-	<ActionIcon
-		icon="ArrowDownIcon"
-		variant="scroll"
-		color="primary"
-		as="a"
-		href="#services-section"
-		title="Conoce más acerca de nuestros servicios"
-	/>
-</Section>
+	<SectionNavButton href="#services-section" section="hero" client:only />
+</section>
