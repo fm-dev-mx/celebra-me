@@ -30,7 +30,7 @@ export default {
 					darkest: '#404040', // Dark Gray
 				},
 				background: {
-					DEFAULT: '#FFFFFf', // Warm off-white
+					DEFAULT: '#FFFFFF', // Warm off-white
 					alt: '#FFFFFF', // Creamy Peach
 				},
 				text: {
@@ -78,7 +78,7 @@ export default {
 				},
 			};
 
-			// Custom CSS variables
+			// Custom CSS variables with RGB for transparency support
 			const cssVariables = {
 				':root': {
 					'--primary-light': theme('colors.primary.light'),
@@ -96,13 +96,22 @@ export default {
 					'--neutral-dark': theme('colors.neutral.dark'),
 					'--neutral-darkest': theme('colors.neutral.darkest'),
 					'--background-default': theme('colors.background.DEFAULT'),
-					'--background-default-rgb': '255, 255, 255',
-					'--background-primary-rgb': '228, 118, 118',
 					'--background-alt': theme('colors.background.alt'),
 					'--text-default': theme('colors.text.DEFAULT'),
 					'--text-light': theme('colors.text.light'),
 					'--whatsapp': theme('colors.whatsapp.DEFAULT'),
 					'--whatsapp-hover': theme('colors.whatsapp.hover'),
+
+					// RGB Values for transparency support
+					'--background-default-rgb': '255, 255, 255',
+					'--background-primary-rgb': '253, 226, 226',
+					'--primary-light-rgb': '253, 226, 226',
+					'--primary-default-rgb': '248, 175, 175',
+					'--primary-dark-rgb': '228, 118, 118',
+					'--secondary-light-rgb': '255, 244, 204',
+					'--secondary-default-rgb': '240, 183, 109',
+					'--secondary-dark-rgb': '184, 137, 58',
+					'--accent-dark-rgb': '222, 137, 118',
 				},
 			};
 
@@ -126,7 +135,15 @@ export default {
 				'whatsapp',
 			];
 			const shades = ['light', 'dark', 'DEFAULT', 'alt', 'lightest', 'medium', 'darkest'];
-			const utilities = ['bg', 'text', 'border', 'hover:bg', 'hover:text', 'hover:border'];
+			const utilities = [
+				'bg',
+				'text',
+				'border',
+				'hover:bg',
+				'hover:text',
+				'hover:border',
+				'rgb',
+			];
 			return colors.flatMap((color) =>
 				shades.flatMap((shade) =>
 					utilities.map((utility) =>
