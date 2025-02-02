@@ -3,7 +3,7 @@
 import { LegacyHeroProps } from '../ui/sections/hero.legacy.interface';
 import type { IconNames } from '@/core/types/ui/iconNames.type';
 import { NavBarProps } from '../ui/components/navBar.interface';
-import { LinkProps } from '../ui/components/link.interface';
+import { BaseLink } from '../ui/components/link.interface';
 
 /**
  * Interface representing the data structure for the landing page.
@@ -43,7 +43,7 @@ export interface LegacyAboutData {
 	title: string;
 	description: string;
 	values: LegacyValue[];
-	cta: LinkProps;
+	cta: BaseLink;
 }
 
 /**

@@ -1,6 +1,6 @@
 // src/core/interfaces/ui/socialLink.interface.ts
 import { SocialLinkVariants } from '@customTypes/ui/socialLinkVariants.type';
-import { LinkProps } from './link.interface';
+import { BaseLink } from './link.interface';
 
 export type SocialPlatform =
 	| 'Facebook'
@@ -11,7 +11,7 @@ export type SocialPlatform =
 	| 'TikTok'
 	| 'YouTube';
 
-export interface SocialLinkProps extends LinkProps {
+export interface SocialLinkProps extends BaseLink {
 	platform: SocialPlatform; // Made mandatory for consistency
 	variant?: SocialLinkVariants; // Optional: style variant
 }

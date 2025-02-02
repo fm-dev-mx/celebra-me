@@ -1,60 +1,27 @@
 // src/core/interfaces/ui/components/button.interface.ts
 
-import type { IconNames } from '@/core/types/ui/iconNames.type';
+import { IconNames } from '@customTypes/ui/iconNames.type';
 
-export interface ButtonProps {
-	/**
-	 * Text displayed on the button.
-	 */
+/**
+ * BaseButton: interface to represent a button or CTA with
+ * potential link, icon, and modal configuration.
+ */
+export interface BaseButton {
+	/** Text displayed on the button */
 	label: string;
 
-	/**
-	 * The type of the button (e.g., button, submit, reset).
-	 */
-	type?: 'button' | 'submit' | 'reset';
-
-	/**
-	 * Determines if the button is disabled.
-	 */
-	disabled?: boolean;
-
-	/**
-	 * The variant of the button (e.g., primary, secondary, outline).
-	 */
-	variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'icon';
-
-	/**
-	 * Optional size of the button (e.g., small, medium, large).
-	 */
-	size?: 'small' | 'medium' | 'large';
-
-	/**
-	 * Determines if the button has a full width layout.
-	 */
-	fullWidth?: boolean;
-
-	/**
-	 * The name of the icon to display in the button (optional).
-	 */
-	icon?: IconNames;
-
-	/**
-	 * Position of the icon relative to the label.
-	 */
-	iconPosition?: 'left' | 'right' | 'top';
-
-	/**
-	 * The URL to navigate to if the button is rendered as a link.
-	 */
+	/** Optional URL if the button acts as a link */
 	href?: string;
 
-	/**
-	 * Additional CSS classes for custom styling.
-	 */
-	extraClass?: string;
+	/** Optional function executed on click */
+	onClick?: () => void;
 
-	/**
-	 * Function to handle click events.
-	 */
-	onClick?: (event: MouseEvent) => void;
+	/** Style variants (you can add as needed) */
+	variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'whatsapp';
+
+	/** Optional icon for the button */
+	icon?: IconNames;
+
+	/** Optional flag to disable the button */
+	disabled?: boolean;
 }
