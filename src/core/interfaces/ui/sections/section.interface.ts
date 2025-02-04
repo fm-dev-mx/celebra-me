@@ -1,34 +1,26 @@
-// src/core/interfaces/ui/sections/section.interface.ts
-
+/*
+ * src/core/interfaces/ui/sections/section.interface.ts
+ * -------------------------------------------------
+ * Section Component Interface.
+ * -------------------------------------------------
+ */
 import { BaseImage } from '../components/image.interface';
 
-/**
- * BaseSection: Generic interface for any section of the page.
- */
 export interface BaseSection {
-	/** Unique identifier for the section */
+	/** Unique section identifier */
 	id: string;
-
-	/** Main title of the section */
+	/** Main title */
 	title: string;
-
 	/** Optional subtitle */
 	subtitle?: string;
-
 	/** Optional description */
 	description?: string;
-
-	/** Optional background color (CSS-compatible values) */
+	/** Optional background color */
 	backgroundColor?: string;
-
-	/** Optional background image URL */
+	/** Optional desktop background image */
 	backgroundDesktop?: BaseImage;
-
-	/** Optional background image URL for mobile */
+	/** Optional mobile background image */
 	backgroundMobile?: BaseImage;
-
-	/**
-	 * Optional CSS class(es) for custom styles or Tailwind utilities.
-	 */
+	/** Additional CSS class(es) */
 	className?: string;
 }
