@@ -1,0 +1,35 @@
+/** src/frontend/styles/main.scss
+ * --------------------------------------------------
+ *  Main SCSS Entry Point for Celebra-me Project
+ * --------------------------------------------------
+ */
+/* Import global modules */
+@use './global/variables' as vars;
+@use './global/functions' as funcs;
+@use './global/mixins' as mixins;
+
+/* Global Base Styles */
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	font-family: vars.$font-stack;
+	margin: 0;
+	padding: 0;
+	background-color: funcs.color('background', 'default');
+	color: funcs.color('text', 'default');
+}
+
+/* -------------------------------------------------------------------
+	 Temporary Tailwind component imports (to be migrated to SCSS modules)
+-------------------------------------------------------------------	*/
+@import './components/styled-container.css';
+@import './components/actions/action-base.css';
+@import './components/actions/action-external-link.css';
+@import './components/actions/action-icon.css';
+@import './components/actions/action-wrapper.css';
+@import './components/header/navbar-mobile.css';
+@import './components/header/navbar-desktop.css';
+@import './components/header/logo.css';
+@import './animations/index.css';
