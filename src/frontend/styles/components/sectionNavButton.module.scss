@@ -1,13 +1,14 @@
-/**
+/*
  * src/frontend/styles/components/sectionNavButton.module.scss
- * ----------------------------------------------------------
- * The button has an oval shape and displays an arrow icon for navigation.
- *
- * A subtle bounce animation is applied to attract attention.
+ * --------------------------------------------------
+ * Section Navigation Button Component Styles
+ * --------------------------------------------------
  */
+@use 'sass:color';
+@use '../global/functions' as funcs;
+@use '../global/mixins' as mixins;
 
 .section-nav-button {
-	// Scale variable; default value is 1 (no scaling)
 	--scale: 1;
 
 	display: flex;
@@ -15,46 +16,57 @@
 	justify-content: center;
 	width: 40px;
 	height: 50px;
-	border-radius: 9999px;
+	border-radius: funcs.border-radius(oval);
 	text-decoration: none;
-
-	// Background and border styles
+	margin-top: 5rem;
 	background-color: #fff;
 	border: 2px solid #000;
-
-	// Subtle bounce animation using the scale variable
+	z-index: 1;
 	animation: subtleBounce 2s ease-out infinite;
-}
+	@include mixins.transition('section-nav-button');
 
-.section-nav-button.hero__nav-button {
-	background-color: var(--neutral-lightest);
-	border: 1px solid var(--accent-default);
-	color: var(--accent-default);
-	filter: brightness(120%);
-	will-change: color, border, transform, filter; // Optimize transitions
-	transition:
-		color 0.3s ease-in-out,
-		border 0.3s ease-in-out,
-		transform 0.3s ease-in-out,
-		filter 0.3s ease-in-out;
-
-	&:hover {
-		// Hover state: change color, border and reduce brightness with scale effect
-		color: var(--accent-dark);
-		border: 1px solid var(--accent-dark);
-		filter: brightness(100%);
-		transform: translateY(0) scale(1.05);
+	&__icon {
+		color: funcs.color('primary', 'default');
 	}
 }
 
-.section-nav-button__icon {
-	color: var(--primary-default);
-	transition:
-		color 0.3s ease-in-out,
-		border 0.3s ease-in-out;
+.section-nav-button--hero {
+	background-color: funcs.color('neutral', 'lightest');
+	border: 1px solid funcs.color('accent', 'default');
+	color: funcs.color('primary', 'dark');
+	filter: brightness(120%);
+
+	&:hover {
+		color: funcs.color('accent', 'dark');
+		border-color: funcs.color('accent', 'dark');
+		filter: brightness(100%);
+		transform: translateY(0) scale(1.05);
+	}
+
+	.section-nav-button__icon {
+		color: funcs.color('primary', 'dark');
+		filter: brightness(150%);
+	}
 }
 
-// Definition of the subtle bounce animation
+.section-nav-button--pricing {
+	background-color: funcs.color('primary', 'default');
+	border: 1px solid funcs.color('primary', 'dark');
+	color: funcs.color('primary', 'dark');
+	filter: brightness(110%);
+
+	&:hover {
+		color: funcs.color('primary', 'light');
+		border-color: funcs.color('primary', 'light');
+		filter: brightness(100%);
+		transform: translateY(0) scale(1.05);
+	}
+
+	.section-nav-button__icon {
+		color: funcs.color('primary', 'dark');
+	}
+}
+
 @keyframes subtleBounce {
 	0%,
 	100% {
@@ -65,7 +77,6 @@
 	}
 }
 
-// Accessibility: Reduce motion on devices that require it
 @media (prefers-reduced-motion: reduce) {
 	.section-nav-button {
 		animation: none;

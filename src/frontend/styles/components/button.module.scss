@@ -1,38 +1,17 @@
-/**
+/*
  * src/frontend/styles/components/button.module.scss
- * --------------------
- * This file defines the styles for action buttons and their wrappers using BEM conventions.
- *
- * Original class mappings:
- *   - action-base                 → .button (base styles)
- *   - action-primary              → .button--primary
- *   - action-secondary            → .button--secondary
- *   - action-large                → .button--large
- *   - action-tertiary             → .button--tertiary (if needed)
- *   - action-text.footer-menu-item→ .button__footer-menu-item
- *   - action-base-wrapper         → .button__base-wrapper
- *   - action-wrapper              → .button__wrapper
- *   - action-wrapper.footer-menu  → .button__wrapper--footer-menu
- *   - Mobile CTA (modifier)       → .button--secondary-mobile (combines secondary variant, secondary color, and mobile-specific styles)
- *
- * Usage Example:
- *   <div class="button__wrapper">
- *     <div class="button__base-wrapper">
- *       <a class="button button--secondary-mobile">Mobile CTA</a>
- *     </div>
- *   </div>
+ * --------------------------------------------------
+ * Button Component Styles
+ * --------------------------------------------------
  */
+@use '../global/functions' as funcs;
+@use '../global/mixins' as mixins;
 
-// --------------------------------------------------------------------------
-// Mixins
-// --------------------------------------------------------------------------
-
-/* Base button properties common to all buttons */
 @mixin base-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	transition: all 0.3s ease;
+	@include mixins.transition('button');
 	font-size: 14px;
 	height: 40px;
 	min-width: 170px;
@@ -49,24 +28,13 @@
 		filter: brightness(1.1);
 	}
 
-	@media (min-width: 768px) {
+	@include mixins.respond-to(md) {
 		font-size: 16px;
 		height: 48px;
 	}
 }
 
-/* Mixin for variant-specific properties */
-@mixin variant-button($padding, $border-radius, $box-shadow) {
-	padding: $padding;
-	border-radius: $border-radius;
-	box-shadow: $box-shadow;
-}
-
-// --------------------------------------------------------------------------
-// Wrapper Styles
-// --------------------------------------------------------------------------
-
-/* Base wrapper for grouping buttons */
+/* Wrapper for grouping buttons */
 .button__wrapper {
 	display: flex;
 	flex-direction: column;
@@ -77,117 +45,22 @@
 	width: 100%;
 	flex-wrap: wrap;
 
-	@media (min-width: 640px) {
+	@include mixins.respond-to(sm) {
 		flex-direction: row;
 	}
 }
 
-/* Wrapper for an individual button to prevent layout shifts */
-.button__base-wrapper {
-	min-width: 200px;
-	width: 200px;
-	display: flex;
-	justify-content: center;
-}
-
-/* Footer menu wrapper (modifier) */
-.button__wrapper--footer-menu {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.5rem;
-	margin: 2rem auto;
-	max-width: 80%;
-	flex-wrap: nowrap;
-	padding: 0;
-
-	> .button__base-wrapper {
-		display: flex;
-		flex: 0 1 auto;
-		min-width: fit-content;
-		margin: 0;
-		column-gap: 3rem;
-	}
-
-	.button {
-		font-size: 14px;
-		margin: 0 1rem;
-	}
-
-	@media (min-width: 640px) {
-		flex-direction: row;
-	}
-}
-
-/* Footer menu item text */
-.button__footer-menu-item {
-	display: inline-flex;
-	align-items: center;
-	color: var(--primary-light);
-	transition: all 0.3s ease;
-	font-size: 1rem !important;
-	height: 40px;
-	min-width: fit-content;
-	white-space: nowrap;
-}
-
-// --------------------------------------------------------------------------
-// Base Button Styles
-// --------------------------------------------------------------------------
-
-.button {
-	@include base-button;
-}
-
-// --------------------------------------------------------------------------
-// Variant Styles
-// --------------------------------------------------------------------------
-
-/* Primary Variant */
+/* Primary Button Variant */
 .button--primary {
-	@extend .button;
-	@include variant-button(0.5rem 1.5rem, 1.5rem, 2px 2px 10px -5px rgba(0, 0, 0, 0.9));
-}
-
-/* Secondary Variant */
-.button--secondary {
-	@extend .button;
-	@include variant-button(0.5rem 4.5rem, 2rem, 5px 5px 10px -3px rgba(0, 0, 0, 0.3));
-	/* Additional size constraints specific to the secondary variant */
-	min-width: 0.5rem;
-	max-width: 4rem;
-}
-
-/* Large Variant */
-.button--large {
-	@extend .button;
-	justify-content: center;
-	min-width: 300px;
-	max-width: 400px;
-	@include variant-button(1rem 3rem, 0.5rem, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
-	font-size: 1.125rem;
-	margin: 4rem 0 8rem;
-	transition:
-		transform 0.3s ease,
-		box-shadow 0.3s ease;
-
-	@media (min-width: 1280px) {
-		margin-top: 8rem;
-		margin-bottom: 8rem;
+	@include base-button;
+	& {
+		padding: 0.5rem 1.5rem;
+		border-radius: funcs.border-radius(button);
+		box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9);
 	}
 }
 
-// --------------------------------------------------------------------------
-// Color Modifier Styles
-// --------------------------------------------------------------------------
-
-/* Primary Variant Colors */
-.button--primary.button--color-primary {
-	background-color: var(--primary-light);
-	border: 1px solid var(--primary-dark);
-	color: var(--neutral-lightest);
-}
-
+/* Color Modifier: Secondary Color */
 .button--primary.button--color-secondary {
 	background-color: var(--accent-light);
 	border: 5px solid var(--accent-light);
@@ -198,68 +71,5 @@
 		border: 5px solid var(--secondary-default);
 		color: var(--neutral-lightest);
 		filter: brightness(1);
-	}
-}
-
-/* Secondary Variant Colors */
-.button--secondary.button--color-primary {
-	font-weight: 500;
-	background-color: var(--primary-dark);
-	color: var(--neutral-lightest);
-}
-
-.button--secondary.button--color-secondary {
-	background-color: var(--primary-light);
-	border-color: var(--secondary-default);
-	color: var(--primary-dark);
-}
-
-/* Tertiary Variant Colors (if needed) */
-.button--tertiary.button--color-primary {
-	background-color: var(--primary-dark);
-	color: var(--neutral-lightest);
-}
-
-/* Large Variant Colors */
-.button--large.button--color-primary {
-	background-color: var(--primary-dark);
-	color: #fff;
-}
-
-.button--large.button--color-secondary {
-	background-color: var(--secondary-dark);
-	color: #fff;
-}
-
-// --------------------------------------------------------------------------
-// Mobile Specific Styles
-// --------------------------------------------------------------------------
-
-.mobile-menu-cta {
-	display: flex;
-	justify-content: center;
-}
-
-/* New Mobile CTA Modifier:
-   Combines secondary variant, secondary color, and mobile-specific styles */
-.button--secondary-mobile {
-	@extend .button--secondary;
-	@extend .button--color-secondary;
-	opacity: 0;
-	transition:
-		opacity 0.3s ease,
-		transform 0.3s ease;
-	padding: 1.5rem 5rem;
-	font-weight: 500;
-
-	&:hover {
-		font-weight: 600;
-		transition: transform 0.5s ease;
-	}
-}
-
-@media (max-width: 850px) {
-	.button__footer-menu-item {
-		font-size: 0.75rem !important;
 	}
 }

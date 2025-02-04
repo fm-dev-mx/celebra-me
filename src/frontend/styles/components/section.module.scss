@@ -1,78 +1,24 @@
-/**
- * src/frontend/styles/components/section.module.scss
- * -----------------------
- * This file defines the styles for various <section> components used throughout the website.
- *
- * It provides a base layout and a mixin for flexible background settings that can be reused
- * in different sections by passing in mobile and (optionally) desktop background values.
- *
- * Usage Example:
- * <section class="section hero__section custom-padding">
- *   <slot />
- * </section>
- *
- * To set a mobile background image and a desktop background image:
- *   @include sectionBackground(var(--bg-mobile), var(--bg-desktop));
- *
- * To set a background color or gradient (only for mobile):
- *   @include sectionBackground(var(--bg-color));
- */
-
-/* Base styles for all sections */
-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-/**
- * Mixin: sectionBackground
- * --------------------------
- * Applies background styling to a section element.
- *
- * @param {String} $mobile-bg  - Background value for mobile view (required).
- * @param {String|null} $desktop-bg - Background value for desktop view (optional).
- *
- * The background is applied with:
- * - A fallback background color defined by the CSS variable (--section-bg) with a default of #ffffff.
- * - No-repeat, centered, and cover sizing.
- */
-@mixin sectionBackground($mobile-bg, $desktop-bg: null) {
-  background: var(--section-bg, #ffffff) $mobile-bg no-repeat center/cover;
-
-  // If a desktop background is provided, apply it within a media query.
-  @if $desktop-bg != null {
-    @media screen and (min-width: 768px) {
-      background: var(--section-bg, #ffffff) $desktop-bg no-repeat center/cover;
-    }
-  }
-}
-
-/* Example: Hero Section */
-section.hero__section {
-  width: 100%;
-  height: 100vh;
-  padding: 2rem 1rem;
-  // Apply background for mobile and desktop
-  @include sectionBackground(var(--background-mobile), var(--background-desktop));
-
-  @media screen and (min-width: 768px) {
-    padding: 4rem 1rem 0;
-  }
-}
-
-/* Example: Info Section */
-section.info__section {
-  width: 100%;
-  padding: 3rem 1rem;
-  // Apply a background color or gradient (desktop inherits mobile if not provided)
-  @include sectionBackground(var(--info-bg));
-}
-
 /*
-  Additional section classes can be added below using the same mixin.
-  For example, you might have a "gallery" section or a "contact" section, each with its own background settings.
-*/
+ * src/frontend/styles/components/section.module.scss
+ * --------------------------------------------------
+ * Section Component Styles
+ * --------------------------------------------------
+ */
+@use '../global/mixins' as mixins;
+
+section {
+	height: 100vh;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	padding: 2rem 1rem 0;
+
+	@include mixins.sectionBackground(var(--background-mobile), var(--background-desktop));
+
+	@include mixins.respond-to(md) {
+		padding: 4rem 1rem 0;
+	}
+}

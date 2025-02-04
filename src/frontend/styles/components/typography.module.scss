@@ -1,25 +1,24 @@
 /**
  * src/frontend/styles/components/typography.module.scss
- * -----------------
- * This file defines the typography for both general sections and the hero section.
- *
- * For the Hero Section, semantic classes are used:
- *   - .hero__title for the hero title.
- *   - .hero__subtitle for the hero subtitle.
- *
- * For other sections, default heading tags (h2 and h3) are styled.
+ * --------------------------------------------------
+ * Typography Components Styles
+ * --------------------------------------------------
  */
 
-/* Base styles for non-hero titles and subtitles */
+@use '../global/mixins' as mixins;
 h2 {
 	margin-bottom: 1.5rem;
 	font-size: 1.5rem;
 	font-weight: 300;
 	text-align: center;
 
-	@media (min-width: 768px) {
+	@include mixins.respond-to(md) {
 		margin-bottom: 6rem;
 		font-size: 1.875rem;
+	}
+
+	@include mixins.respond-to(lg) {
+		font-size: 2.25rem;
 	}
 }
 
@@ -29,9 +28,13 @@ h3 {
 	font-weight: 200;
 	text-align: center;
 
-	@media (min-width: 768px) {
+	@include mixins.respond-to(md) {
 		margin-bottom: 4rem;
 		font-size: 1.5rem;
+	}
+
+	@include mixins.respond-to(lg) {
+		font-size: 1.75rem;
 	}
 }
 
@@ -46,13 +49,15 @@ h3 {
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 	letter-spacing: 0.1em;
 
-	@media (min-width: 640px) {
+	@include mixins.respond-to(md) {
 		font-size: 1.25rem;
 	}
-	@media (min-width: 768px) {
+
+	@include mixins.respond-to(lg) {
 		font-size: 1.5rem;
 	}
-	@media (min-width: 1024px) {
+
+	@include mixins.respond-to(xl) {
 		font-size: 1.875rem;
 	}
 }
@@ -68,13 +73,11 @@ h3 {
 	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 	letter-spacing: 0.125em;
 
-	@media (min-width: 640px) {
-		font-size: 1.25rem;
-	}
-	@media (min-width: 768px) {
+	@include mixins.respond-to(lg) {
 		font-size: 1.3rem;
 	}
-	@media (min-width: 1024px) {
+
+	@include mixins.respond-to(xl) {
 		font-size: 1.4rem;
 	}
 }

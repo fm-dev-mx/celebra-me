@@ -1,0 +1,180 @@
+/*
+ * src/frontend/styles/components/pricing.module.scss
+ * --------------------------------------------------
+ * Pricing Section Styles
+ * --------------------------------------------------
+ */
+@use 'sass:color';
+@use '../global/variables' as vars;
+@use '../global/functions' as funcs;
+@use '../global/mixins' as mixins;
+
+.pricing-section {
+	height: 100%;
+	position: relative;
+	font-family: vars.$font-stack;
+
+	&__decorative-line {
+		width: 100%;
+		height: 20px;
+		opacity: 0.5;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+		&--top {
+			position: absolute;
+			top: 0;
+			left: 0;
+			background-color: funcs.color('primary', 'default');
+		}
+		&--bottom {
+			background-color: color.adjust(funcs.color('primary', 'default'), $lightness: -10%);
+		}
+	}
+
+	&__container {
+		max-width: 1200px;
+		margin: 0 auto;
+		position: relative;
+		z-index: 1;
+	}
+
+	&__title {
+		font-size: 2.5rem;
+		font-weight: 600;
+		color: funcs.color('secondary', 'light');
+		margin: 5rem 0 10rem;
+		text-align: center;
+		letter-spacing: 0.5px;
+		text-shadow:
+			0px 0px 20px rgba(funcs.color('accent', 'light'), 0.8),
+			2px 2px 4px rgba(0, 0, 0, 0.15);
+	}
+
+	&__grid {
+		display: grid;
+		gap: 2rem;
+		margin-bottom: 3rem;
+		justify-items: center;
+		grid-template-columns: 1fr;
+
+		@include mixins.respond-to(md) {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		@include mixins.respond-to(lg) {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+}
+
+.pricing-card {
+	background: linear-gradient(
+		135deg,
+		rgba(funcs.color('accent', 'light'), 0.8),
+		rgba(funcs.color('primary', 'light'), 0.6)
+	);
+	border: 1px solid rgba(funcs.color('accent', 'dark'), 0.5);
+	width: 90%;
+	max-width: 26rem;
+	height: fit-content;
+	border-radius: funcs.border-radius(card);
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-decoration: none;
+	color: funcs.color('text', 'default');
+	box-shadow: 8px 8px 9px rgba(0, 0, 0, 0.2);
+	@include mixins.transition('card');
+
+	&:hover {
+		transform: translateY(-5px);
+		filter: brightness(1.05);
+		border-color: funcs.color('secondary', 'default');
+	}
+
+	&__title {
+		font-size: 1.75rem;
+		font-weight: 600;
+		color: rgba(funcs.color('primary', 'dark'), 1);
+		margin: 1rem 0 0.5rem;
+		text-align: center;
+	}
+
+	&__subtitle {
+		font-size: 1rem;
+		color: funcs.color('primary', 'light');
+		margin-bottom: 1rem;
+		text-align: center;
+		text-shadow: 1px 1px 8px rgba(funcs.color('primary', 'dark'), 0.9);
+	}
+
+	&__price {
+		font-size: 1.5rem;
+		font-weight: 500;
+		color: funcs.color('accent', 'dark');
+		margin-bottom: 1rem;
+		text-align: center;
+
+		&-currency {
+			font-size: 0.875rem;
+			font-weight: 300;
+			margin-left: 0.25rem;
+		}
+
+		&-period {
+			font-size: 0.875rem;
+			font-weight: 300;
+			margin-left: 0.5rem;
+		}
+	}
+
+	&__features {
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0;
+		width: 100%;
+
+		&-item {
+			display: flex;
+			align-items: center;
+			padding: 0.5rem 0;
+			@include mixins.transition('card-item');
+
+			&:hover {
+				transform: translateX(5px);
+			}
+
+			&-icon {
+				margin-right: 0.5rem;
+				color: funcs.color('accent', 'dark');
+			}
+
+			&-text {
+				font-size: 0.95rem;
+				color: funcs.color('neutral', 'dark');
+			}
+		}
+	}
+
+	&__cta {
+		margin-top: auto;
+		font-size: 1rem;
+		font-weight: 500;
+		color: rgba(funcs.color('primary', 'dark'), 0.8);
+		padding: 1rem 0;
+		text-align: center;
+		width: 100%;
+		border: 1px dashed rgba(funcs.color('primary', 'dark'), 0.2);
+		@include mixins.transition('button');
+		text-shadow: 1px 1px 8px rgba(funcs.color('primary', 'dark'), 0.5);
+
+		&:hover {
+			border: 0;
+			color: funcs.color('secondary', 'light');
+			font-weight: 400;
+			background-color: rgba(funcs.color('primary', 'dark'), 0.5);
+			border-radius: funcs.border-radius(small);
+		}
+	}
+}

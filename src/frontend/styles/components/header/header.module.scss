@@ -1,0 +1,67 @@
+/*
+ * src/frontend/styles/components/header/header.module.scss
+ * --------------------------------------------------
+ * Header Component Styles
+ * --------------------------------------------------
+ */
+@use 'sass:map';
+@use 'sass:color';
+@use '@styles/global/variables' as vars;
+@use '@styles/global/functions' as funcs;
+@use '@styles/global/mixins' as mixins;
+
+.header {
+	width: 100%;
+	position: fixed;
+	top: 0;
+	z-index: funcs.z-index('header');
+	padding: 1rem 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	@include mixins.transition('header');
+
+	&--hidden {
+		transform: translateY(-100%);
+	}
+
+	&__container {
+		max-width: 98%;
+		margin: 0 auto;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		background-color: rgba(funcs.color('background', 'default'), 0.6);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		border-radius: funcs.border-radius('default');
+		padding: 0.75rem 1rem;
+		backdrop-filter: funcs.blur(md);
+		-webkit-backdrop-filter: funcs.blur(md);
+
+		@include mixins.respond-to(lg) {
+			padding: 1rem 2rem;
+		}
+	}
+
+	&__menu {
+		display: flex;
+		align-items: center;
+		justify-content: space-around;
+		width: 80vw;
+		padding: 0;
+		margin: 0;
+		@include mixins.set-menu-height(2.5rem);
+
+		@include mixins.respond-to(sm) {
+			@include mixins.set-menu-height(3rem);
+		}
+
+		@include mixins.respond-to(md) {
+			@include mixins.set-menu-height(3.5rem);
+		}
+
+		@include mixins.respond-to(lg) {
+			@include mixins.set-menu-height(4rem);
+		}
+	}
+}

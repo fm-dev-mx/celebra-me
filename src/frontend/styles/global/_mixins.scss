@@ -31,3 +31,17 @@
 		@error "Breakpoint `#{$breakpoint}` does not exist in \$breakpoints.";
 	}
 }
+
+@mixin sectionBackground($mobile-bg, $desktop-bg: null) {
+	background:
+		var(--section-bg, #ffffff)
+		#{$mobile-bg} no-repeat center/cover;
+
+	@if $desktop-bg != null {
+		@include respond-to(md) {
+			background:
+				var(--section-bg, #ffffff)
+				#{$desktop-bg} no-repeat center/cover;
+		}
+	}
+}

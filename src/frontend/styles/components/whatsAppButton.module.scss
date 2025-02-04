@@ -1,0 +1,78 @@
+/* src/frontend/styles/components/whatsAppButton.module.scss
+ * --------------------------------------------------
+ * WhatsApp Button Component Styles
+ * --------------------------------------------------
+ */
+
+/* Local transition variable for animations */
+@use '../global/functions' as funcs;
+@use '../global/mixins' as mixins;
+
+.whatsapp-button {
+	width: 170px;
+	height: 43px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--primary-light);
+	border: 1px solid var(--accent-dark);
+	color: var(--neutral-dark);
+	border-radius: funcs.border-radius(button);
+	overflow: hidden;
+	box-shadow: 2px 2px 10px -5px rgba(0, 0, 0, 0.9);
+	@include mixins.transition('whatsapp-button');
+	text-decoration: none;
+
+	@include mixins.respond-to(md) {
+		font-size: 16px;
+		height: 48px;
+	}
+
+	&:hover {
+		color: white;
+		background-color: var(--accent-dark);
+		box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+		transform: scale(1.1);
+
+		.whatsapp-button__icon {
+			opacity: 0;
+			transform: translateY(-10px) scale(0.8);
+		}
+
+		.whatsapp-button__text {
+			opacity: 0;
+		}
+	}
+
+	&::after {
+		content: 'Chatea con nosotros';
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		opacity: 0;
+		white-space: nowrap;
+		font-size: 0.875rem;
+		transform: translate(-50%, 16px);
+		@include mixins.transition('whatsapp-button-after');
+	}
+
+	&:hover::after {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1.05);
+	}
+}
+
+.whatsapp-button__icon {
+	display: inline-block;
+	width: 1.25rem;
+	height: 1rem;
+	margin-right: 0.75rem;
+	background-color: var(--whatsapp-hover);
+	mask: url('/icons/whatsappIcon.svg') no-repeat center;
+	mask-size: contain;
+}
+
+.whatsapp-button__text {
+	font-size: 0.975rem;
+}
