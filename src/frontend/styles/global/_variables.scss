@@ -160,6 +160,14 @@ $transitions-by-component: (
   whatsapp-button-after: (
 	duration: 0.3s,
 	timing: map.get($transition-timing, overshoot)
+  ),
+  text: (
+	duration: 0.2s,
+	timing: map.get($transition-timing, smooth)
+  ),
+  icon: (
+	duration: 0.3s,
+	timing: map.get($transition-timing, smooth)
   )
 );
 

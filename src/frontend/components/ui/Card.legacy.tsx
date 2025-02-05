@@ -1,8 +1,4 @@
-import React, { useEffect } from "react";
-
 // Utility functions for handling interactivity
-import { initializeCardHoverEffects } from "@/frontend/effects/CardHoverEffects";
-import { initializeCardIntersectionObserver } from "@/frontend/effects/CardIntersectionObserver";
 
 // Interface defining the props accepted by the Card component
 interface CardProps {
@@ -28,31 +24,23 @@ interface CardProps {
 // Card component definition with default values for props
 const Card: React.FC<CardProps> = ({
 	href,
-	bgColor = "bg-white",
-	borderWidth = "border-2",
-	borderColor = "border-primary",
-	textColor = "text-primary-light",
-	rounded = "rounded-lg",
-	boxShadow = "shadow-2xl",
-	padding = "p-5",
-	width = "",
-	hover = "hover:brightness-105",
-	extraClass = "",
-	transition = "transition-all duration-300",
-	minWidth = "min-w-56",
-	maxWidth = "max-w-56",
-	minHeight = "min-h-60",
-	opacity = "opacity-100",
+	bgColor = 'bg-white',
+	borderWidth = 'border-2',
+	borderColor = 'border-primary',
+	textColor = 'text-primary-light',
+	rounded = 'rounded-lg',
+	boxShadow = 'shadow-2xl',
+	padding = 'p-5',
+	width = '',
+	hover = 'hover:brightness-105',
+	extraClass = '',
+	transition = 'transition-all duration-300',
+	minWidth = 'min-w-56',
+	maxWidth = 'max-w-56',
+	minHeight = 'min-h-60',
+	opacity = 'opacity-100',
 	children,
 }) => {
-	// Handle hover and intersection effects based on device type
-	useEffect(() => {
-		const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-
-		// Initialize relevant effects based on device type
-		isTouchDevice ? initializeCardIntersectionObserver() : initializeCardHoverEffects();
-	}, []); // Runs only once when the component mounts
-
 	// Combine all provided classes into a single string for the card element
 	const classList = [
 		bgColor,
@@ -70,7 +58,7 @@ const Card: React.FC<CardProps> = ({
 		maxWidth,
 		minHeight,
 		opacity,
-	].join(" ");
+	].join(' ');
 
 	// Renders the content of the card
 	const cardContent = (

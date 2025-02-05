@@ -3,7 +3,7 @@ import type {
 	LegacyTestimonialsData,
 	LegacyTestimonial,
 } from '@/core/interfaces/data/landingPage.legacy.interface';
-import Card from './Card';
+import Card from './Card.legacy';
 
 // Helper function to shuffle an array randomly
 const shuffleArray = <T,>(array: T[]): T[] => {

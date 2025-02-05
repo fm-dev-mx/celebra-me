@@ -1,128 +1,73 @@
 ---
-// src/sections/Pricing.astro
-import Container from '@components/layout/Container.astro';
-import Grid from '@components/layout/Grid.astro';
-import Section from '@components/layout/Section.legacy.astro';
-import BulletList from '@components/common/BulletList.astro';
-import Card from '@components/ui/Card';
-import SectionSubtitle from '@components/typography/SectionSubtitle.legacy.astro';
-import SectionTitle from '@components/typography/SectionTitle.legacy.astro';
-import StyledContainer from '@components/layout/StyledContainer.legacy.astro';
-import type { LegacyPricingData } from '@/core/interfaces/data/landingPage.legacy.interface';
-import type { IconNames } from '@/core/types/ui/iconNames.type';
-import ActionIcon from '@/frontend/components/common/actions/ActionIcon.legacy';
+/**
+ * src/frontend/sections/Pricing.astro
+ * -----------------------------------
+ * Astro component for the Pricing section.
+ * -----------------------------------
+ */
+import PricingStyles from '@styles/components/pricing.module.scss';
+import SectionNavButton from '@components/ui/SectionNavButton';
+import { pricingData } from '@data/sections/pricingSection.json';
+import type { PricingProps } from '@interfaces/ui/sections/pricing.interface';
 
-// Define the properties interface for the component
-interface Props {
-	data: LegacyPricingData;
-}
+const PricingProps = pricingData;
 
-// Destructure the data property from Astro.props
-const { data } = Astro.props;
+// Format numbers with thousand separators
+const formatNumber = (amount: number): string =>
+	new Intl.NumberFormat('es-MX', {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0,
+	}).format(amount);
 ---
 
-<Section
+<section
 	id="pricing-section"
-	padding="px-2 sm:px-14 py-10 pt-40"
-	fullWidth={true}
-	fullHeight={true}
-	backgroundImageMobile="/images/pricing/bgPricingMobile.jpg"
-	backgroundImageDesktop="/images/pricing/bgPricingDesktop.jpg"
+	class={PricingStyles['pricing-section']}
+	style="
+    --background-desktop: url('/images/pricing/bgPricingDesktop.jpg');
+    --background-mobile: url('/images/pricing/bgPricingMobile.jpg');
+  "
 >
-	{/* Top decorative line */}
-	<div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+	<div class={PricingStyles['pricing-section__decorative-line--top']}></div>
 
-	<StyledContainer>
-		<Container width="w-full xl:w-11/12 2xl:w-4/5" padding="px-0 xl:px-10 pt-20">
-			{/* Pricing section title */}
-			<SectionTitle
-				margin="mb-10"
-				weight="font-semibold"
-				color="text-secondary-dark"
-				extraClass="pricing-card-title"
-			>
-				{data.title}
-			</SectionTitle>
+	<div class={PricingStyles['pricing-section__container']}>
+		<h2 class={PricingStyles['pricing-section__title']}>{PricingProps.title}</h2>
 
-			{/* Grid to display pricing plans */}
-			<Grid extraClass="pricing-grid" columns={3} align="items-center" margin="mb-20">
-				{/* Map through the tier data to create a card for each plan */}
-				{
-					data.tiers.map((tier) => (
-						<Card
-							href={tier.href}
-							hover="hover:brightness-105 hover:scale-105"
-							borderColor="border-primary hover:border-secondary"
-							extraClass="pricing-card"
-							client:visible
-						>
-							{/* Plan title */}
-							<SectionTitle
-								size="text-2xl"
-								margin="mt-4"
-								color="text-primary-dark"
-								weight="font-semibold"
-								extraClass="pricing-card-title"
-							>
-								{tier.title}
-							</SectionTitle>
+		<div class={PricingStyles['pricing-section__grid']}>
+			{
+				PricingProps.tiers.map((tier) => (
+					<a href={tier.href} class={PricingStyles['pricing-card']}>
+						<h3 class={PricingStyles['pricing-card__title']}>{tier.title}</h3>
+						<h4 class={PricingStyles['pricing-card__subtitle']}>{tier.subtitle}</h4>
+						<p class={PricingStyles['pricing-card__price']}>
+							{'$ ' + formatNumber(tier.price.amount)}
+							<small class={PricingStyles['pricing-card__price-currency']}>
+								{tier.price.currency}
+							</small>
+							<span class={PricingStyles['pricing-card__price-period']}>
+								/{tier.price.period}
+							</span>
+						</p>
+						<ul class={PricingStyles['pricing-card__features']}>
+							{tier.features.map((feature) => (
+								<li class={PricingStyles['pricing-card__features-item']}>
+									<span class={PricingStyles['pricing-card__features-item-icon']}>
+										✓
+									</span>
+									<span class={PricingStyles['pricing-card__features-item-text']}>
+										{feature}
+									</span>
+								</li>
+							))}
+						</ul>
+						<div class={PricingStyles['pricing-card__cta']}>{tier.cta}</div>
+					</a>
+				))
+			}
+		</div>
+	</div>
 
-							{/* Plan description */}
-							<SectionSubtitle
-								color="text-primary"
-								size="text-md"
-								margin="mb-4"
-								extraClass="pricing-card-subtitle"
-							>
-								{tier.description}
-							</SectionSubtitle>
+	<div class={PricingStyles['pricing-section__decorative-line--bottom']}></div>
 
-							{/* Plan price */}
-							<SectionSubtitle
-								color="text-secondary-dark"
-								size="text-xl"
-								weight="font-normal"
-								margin="mb-0"
-								extraClass="pricing-card-price"
-							>
-								{'$ ' + tier.price.amount + tier.price.currency}
-								<span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
-							</SectionSubtitle>
-
-							{/* List of plan features */}
-							<BulletList
-								items={tier.features.map((feature) => ({
-									text: feature,
-									icon: 'CheckIcon' as IconNames,
-								}))}
-								color="text-primary-dark/90"
-								size="text-sm"
-								weight="font-thin"
-								iconSize="h-6 w-6"
-								iconColor="text-secondary"
-								iconPadding="p-4"
-								gap="gap-y-0"
-								listClass="pricing-card-bullet-text"
-								iconClass="pricing-card-bullet-icon"
-							/>
-
-							{/* Plan call-to-action */}
-							<div class="pricing-card-cta hover:scale-125">{tier.cta}</div>
-						</Card>
-					))
-				}
-			</Grid>
-
-			<ActionIcon
-				variant="scroll"
-				href="#faq-section"
-				color="primary"
-				title="Responde tus dudas sobre nuestros servicios"
-				icon="ArrowDownIcon"
-			/>
-		</Container>
-	</StyledContainer>
-</Section>
-
-{/* Bottom decorative line */}
-<div class="bg-primary-dark w-full h-0.5 opacity-50 mt-0 shadow-xl"></div>
+	<SectionNavButton href="#faq-section" section="pricing" />
+</section>
