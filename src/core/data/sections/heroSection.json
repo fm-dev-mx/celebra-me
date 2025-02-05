@@ -15,7 +15,8 @@
 			"label": "WhatsApp 💬"
 		},
 		"secondaryCta": {
-			"label": "Elegir invitación"
+			"label": "Elegir invitación",
+			"href": "#pricing-section"
 		}
 	}
 }
