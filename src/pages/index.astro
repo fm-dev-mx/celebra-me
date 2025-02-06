@@ -24,14 +24,12 @@ import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
 import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
 import {
 	LegacyAboutData,
-	LegacyPricingData,
 	LegacyServicesData,
 } from '../core/interfaces/data/landingPage.legacy.interface';
 import { HeroProps } from '../core/interfaces/ui/sections/hero.interface';
 
 // Fetch landing page data synchronously
-const { navBarData, servicesData, aboutData, testimonialsData, pricingData, faqData, contactData } =
-	landingData;
+const { navBarData, servicesData, aboutData, testimonialsData, faqData, contactData } = landingData;
 
 const socialLinkList = socialLinks.map(({ platform, url }) => ({
 	platform,
@@ -72,7 +70,7 @@ const headerData: NavBarProps = {
 	<Services data={servicesData as LegacyServicesData} />
 	<AboutUs data={aboutData as LegacyAboutData} />
 	<Testimonials data={testimonialsData} />
-	<Pricing data={pricingData as LegacyPricingData} />
+	<Pricing />
 	<FAQ data={faqData} />
 	<Contact data={contactData} />
 

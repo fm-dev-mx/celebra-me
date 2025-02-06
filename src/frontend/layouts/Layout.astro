@@ -2,7 +2,8 @@
 // src/frontend/layouts/Layout.astro
 import '@fontsource-variable/rubik/index.css';
 import SpeedInsights from '@vercel/speed-insights/astro';
-import '@/frontend/styles/global.css';
+// Import the compiled CSS from our SCSS (make sure your build process generates this file)
+import '@/frontend/styles/main.scss';
 import { SiteInfo } from '@interfaces/data/siteInfo.interface';
 import { SeoData } from '@interfaces/data/seoData.interface';
 
@@ -15,10 +16,7 @@ const { siteInfo, seoData } = Astro.props;
 ---
 
 <!doctype html>
-<html
-	class="scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent scroll-smooth"
-	lang={siteInfo.lang ?? 'en'}
->
+<html lang={siteInfo.lang ?? 'en'}>
 	<head>
 		<meta charset={siteInfo.charset ?? 'UTF-8'} />
 		<title>{siteInfo.title}</title>
@@ -29,25 +27,8 @@ const { siteInfo, seoData } = Astro.props;
 		<script type="application/ld+json" set:html={seoData} is:inline />
 		<SpeedInsights />
 	</head>
-	<body class="bg-white">
+	<body>
+		<!-- Content injected here will inherit global styles from main.css -->
 		<slot />
-		<style is:global>
-			body {
-				font-family:
-					'Rubik Variable',
-					-apple-system,
-					/* iOS and macOS */ BlinkMacSystemFont,
-					/* Chrome on macOS */ 'Segoe UI',
-					/* Windows */ Roboto,
-					/* Android and Chrome OS */ 'Helvetica Neue',
-					/* Older macOS */ Arial,
-					/* Common fallback */ 'Noto Sans',
-					/* Comprehensive Unicode support */ sans-serif,
-					/* Generic sans-serif */ 'Apple Color Emoji',
-					/* Emoji support on Apple devices */ 'Segoe UI Emoji',
-					/* Emoji support on Windows */ 'Segoe UI Symbol',
-					/* Symbol support on Windows */ 'Noto Color Emoji'; /* Emoji support on Android and other platforms */
-			}
-		</style>
 	</body>
 </html>

@@ -1,65 +1,44 @@
 ---
 // src/frontend/sections/Hero.astro
-
-import WhatsAppButton from '@/frontend/components/ui/WhatsAppButton.legacy';
+import WhatsAppButton from '@/frontend/components/ui/WhatsAppButton';
 import SectionNavButton from '@components/ui/SectionNavButton';
 import Logo from '@components/ui/Logo';
+import { heroData } from '@/core/data/sections/heroSection.json';
+import type { HeroProps } from '@interfaces/ui/sections/hero.interface';
 
-import type { HeroProps } from '@/core/interfaces/ui/sections/hero.interface';
-
-// Import CSS modules
+// CSS modules
 import containerStyles from '@styles/components/container.module.scss';
 import typographyStyles from '@styles/components/typography.module.scss';
 import buttonStyles from '@styles/components/button.module.scss';
 import sectionStyles from '@styles/components/section.module.scss';
 
-const { data: HeroProps } = Astro.props;
+const hero = heroData as HeroProps;
 ---
 
-<!-- The hero section uses the .hero class from hero.module.css -->
 <section
-	class={`${sectionStyles['hero__section']}`}
-	style={`
-    --background-desktop: url(${HeroProps.backgroundDesktop?.src});
-    --background-mobile: url(${HeroProps.backgroundMobile?.src});
-  `}
+	id={hero.id}
+	class={sectionStyles['hero__section']}
+	style={`--background-desktop: url(${hero.backgroundDesktop?.src}); --background-mobile: url(${hero.backgroundMobile?.src});`}
 >
-	<!-- Use the hero-specific container from container.module.css -->
 	<div class={`${containerStyles['hero__container']} fade-in fade-slow`}>
-		<!-- Hero Title -->
-		<h1 class={`${typographyStyles['hero__title']} slide-in-left`}>
-			{HeroProps.title}
-		</h1>
-
-		<!-- Hero Logo -->
+		<h1 class={`${typographyStyles['hero__title']} slide-in-left`}>{hero.title}</h1>
 		<div class="shimmer permanent-glow fade-in fade-slow">
 			<Logo variant="hero-section" altText="Celebra-me Hero Logo" />
 		</div>
-
-		<!-- Hero Subtitle -->
-		{
-			HeroProps.subtitle && (
-				<h2 class={`${typographyStyles['hero__subtitle']} fade-in fade-slow`}>
-					{HeroProps.subtitle}
-				</h2>
-			)
-		}
-
-		<!-- CTA Buttons -->
-		<div class={`${buttonStyles['button__wrapper']}`}>
+		{hero.subtitle && <h2 class={typographyStyles['hero__subtitle']}>{hero.subtitle}</h2>}
+		<div class={buttonStyles['button__wrapper']}>
 			<WhatsAppButton client:idle />
 			{
-				HeroProps.secondaryCta && (
+				hero.secondaryCta && (
 					<a
-						href={HeroProps.secondaryCta.href || '#'}
+						href={hero.secondaryCta.href || '#'}
 						class={`${buttonStyles['button--primary']} ${buttonStyles['button--color-secondary']}`}
 					>
-						{HeroProps.secondaryCta.label}
+						{hero.secondaryCta.label}
 					</a>
 				)
 			}
 		</div>
 	</div>
-	<!-- Scroll button directing users to the next section -->
 	<SectionNavButton href="#services-section" section="hero" client:only />
 </section>
