@@ -17,7 +17,7 @@ const { siteInfo, seoData } = Astro.props;
 <!doctype html>
 <html
 	class="scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent scroll-smooth"
-	lang={siteInfo.lang ?? 'en'}
+	lang={siteInfo.lang ?? 'es'}
 >
 	<head>
 		<meta charset={siteInfo.charset ?? 'UTF-8'} />
@@ -29,7 +29,7 @@ const { siteInfo, seoData } = Astro.props;
 		<script type="application/ld+json" set:html={seoData} is:inline />
 		<SpeedInsights />
 	</head>
-	<body class="bg-white">
+	<body>
 		<slot />
 		<style is:global>
 			body {

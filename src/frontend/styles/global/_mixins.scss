@@ -1,0 +1,33 @@
+/** src/frontend/styles/global/_mixins.scss
+ * --------------------------------------------------
+ *  Global Mixins
+ * --------------------------------------------------
+ */
+@use 'sass:map';
+@use 'sass:list';
+@use 'functions' as funcs;
+@use 'variables' as vars;
+
+@mixin transition($component) {
+	$settings: map.get(vars.$transitions-by-component, $component);
+	@if $settings {
+		transition: all map.get($settings, duration) map.get($settings, timing);
+	} @else {
+		@warn "No transition settings found for `#{$component}`. Using default transition.";
+		transition: all $default-transition-duration $default-transition-timing;
+	}
+}
+@mixin set-menu-height($height) {
+	min-height: $height;
+	max-height: $height;
+}
+
+@mixin respond-to($breakpoint) {
+	@if map.has-key(vars.$breakpoints, $breakpoint) {
+		@media (min-width: #{map.get(vars.$breakpoints, $breakpoint)}) {
+			@content;
+		}
+	} @else {
+		@error "Breakpoint `#{$breakpoint}` does not exist in \$breakpoints.";
+	}
+}

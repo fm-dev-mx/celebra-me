@@ -1,0 +1,28 @@
+/* src/frontend/styles/global/_functions.scss
+ * --------------------------------------------------
+ * Global Helper Functions for Celebra-me Project
+ * --------------------------------------------------
+ */
+@use 'sass:map';
+@use 'sass:color';
+@use 'variables' as vars;
+
+@function color($group, $shade: 'default') {
+	@return map.get(map.get(vars.$colors, $group), $shade);
+}
+
+@function blur($size) {
+	@return map.get(vars.$backdrop-blurs, $size);
+}
+
+@function breakpoint($size) {
+	@return map.get(vars.$breakpoints, $size);
+}
+
+@function z-index($layer) {
+	@return map.get(vars.$z-index, $layer);
+}
+
+@function border-radius($component) {
+	@return map.get(vars.$border-radius, $component);
+}

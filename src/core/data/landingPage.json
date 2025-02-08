@@ -79,7 +79,7 @@
 				"title": "Invita con Estilo",
 				"description": "Refleja tu buen gusto.",
 				"price": {
-					"amount": 699,
+					"amount": "699",
 					"currency": "MXN",
 					"period": " x evento"
 				},
@@ -101,7 +101,7 @@
 				"title": "Celebración Premium",
 				"description": "Para eventos extraordinarios.",
 				"price": {
-					"amount": "$1,299",
+					"amount": "1,299",
 					"currency": "MXN",
 					"period": " x evento"
 				},
@@ -121,7 +121,7 @@
 				"title": "Lujo Total",
 				"description": "La cúspide de la sofisticación.",
 				"price": {
-					"amount": "$1,999",
+					"amount": "1,999",
 					"currency": "MXN",
 					"period": " x evento"
 				},

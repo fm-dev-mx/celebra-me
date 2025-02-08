@@ -1,0 +1,62 @@
+// src/frontend/styles/XV/_animations.scss
+// ----------------------------------------------------
+//  Animations
+// ----------------------------------------------------
+
+// Keyframes para el efecto de Fade In/Out en imágenes
+@keyframes fadeInOut {
+	0% {
+		opacity: 0;
+	}
+	8% {
+		opacity: 1;
+	}
+	33% {
+		opacity: 1;
+	}
+	41% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+// Keyframes para el Fade In del contenido sin afectar el centrado
+@keyframes contentFadeIn {
+	from {
+		opacity: 0;
+		/* En lugar de usar translate(-50%, -40%), usamos solo un pequeño desplazamiento vertical */
+		transform: translateY(10%);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+// ----------------------------------------------------
+// Keyframes para la animación de pulsación de la Chevron
+// ----------------------------------------------------
+@keyframes pulseChevron {
+	0%,
+	100% {
+		opacity: 0.8;
+		transform: translateY(0);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(0.5rem); /* Pequeño rebote hacia abajo */
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(100px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
