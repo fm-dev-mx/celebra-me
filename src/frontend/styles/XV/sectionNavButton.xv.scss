@@ -1,0 +1,46 @@
+@use '../XV/variables.xv' as vars;
+
+.nav-button-container {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 2rem; /* Ajusta el valor según el espacio que quieras desde abajo */
+	z-index: 2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+// Styles for the section navigation button (from the SectionNavButton component)
+.section-nav-button {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: vars.$color-white;
+	transition: transform 0.3s ease;
+	animation: pulseChevron 1.5s infinite;
+
+	svg {
+		width: 2.5rem;
+		transition: fill 0.3s ease;
+	}
+
+	&:hover {
+		transform: scale(1.2);
+		color: vars.$color-accent-light;
+	}
+
+	&:active {
+		transform: scale(0.9);
+		color: vars.$color-accent;
+	}
+
+	&__event-location {
+		color: vars.$color-accent;
+		transition: all 0.3s ease-in-out;
+
+		&:hover {
+			color: vars.$color-primary-light;
+		}
+	}
+}

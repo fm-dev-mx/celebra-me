@@ -1,0 +1,212 @@
+/* src/frontend/styles/XV/hero.xv.scss
+ * ----------------------------------------------------
+ * Hero Section for XV Invitations
+ * ----------------------------------------------------
+ */
+
+@use '../XV/variables.xv' as vars;
+@use '../global/mixins' as mixins;
+@use '../global/animations' as animations;
+
+/* Import fonts for component specificity */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+
+/* ----------------------------------------------------
+   Hero Section Styles
+---------------------------------------------------- */
+.hero {
+	position: relative;
+	overflow: hidden;
+	text-align: center;
+	background-color: vars.$color-primary-light;
+	min-height: 100vh; // Using min-height prevents issues on mobile browsers
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
+
+	// Background Images Container
+	&__images {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		z-index: 1;
+
+		picture {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+
+			.hero__image {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				opacity: 0;
+				animation: fadeInOut 12s infinite;
+				transition: opacity 0.5s ease-in-out;
+			}
+		}
+
+		// Stagger animation delays for each image (assumes three images)
+		@for $i from 1 through 3 {
+			picture:nth-of-type(#{$i}) .hero__image {
+				animation-delay: ($i - 1) * 4s;
+			}
+		}
+	}
+
+	// Main content container (above background images)
+	&__body {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+	}
+
+	// Content overlay styling
+	&__content {
+		position: relative;
+
+		z-index: 2;
+		color: vars.$color-white;
+		opacity: 0;
+		animation: contentFadeIn 3s forwards 0.5s;
+		padding: 2rem 0;
+		width: 90%;
+		max-width: 250px;
+		margin: 0 auto 8rem;
+		text-align: center;
+
+		@include mixins.respond-to(md) {
+			max-width: 400px;
+		}
+
+		.hero__title {
+			font-family: vars.$font-heading-elegant;
+			font-size: 4rem;
+			letter-spacing: 10px;
+			font-weight: 700;
+			/* Gradient text effect */
+			background: linear-gradient(
+				45deg,
+				vars.$color-primary-light,
+				vars.$color-secondary-light
+			);
+			-webkit-background-clip: text;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			text-shadow: 1px 1px 10px rgba(vars.$color-white, 0.9);
+
+			.hero__title-xv {
+			}
+
+			.hero__title-line {
+				display: block; // Forces a new line
+				font-size: 1rem;
+				margin-top: 0.5rem;
+				letter-spacing: 1px;
+				font-weight: 100;
+				text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.9);
+
+				@include mixins.respond-to(md) {
+					font-size: 1.35rem;
+				}
+			}
+
+			@include mixins.respond-to(md) {
+				font-size: 6rem;
+				letter-spacing: 2px;
+			}
+		}
+
+		.hero__subtitle {
+			font-family: vars.$font-body;
+			font-size: 2rem;
+			margin-top: 1.25rem;
+			font-weight: 600;
+			color: vars.$color-white;
+			border-top: 2px solid rgba(vars.$color-secondary-light, 1);
+			padding-top: 2rem;
+			text-shadow: 0 1px 1px rgba(vars.$color-white, 0.9);
+
+			@include mixins.respond-to(md) {
+				font-size: 2rem;
+			}
+		}
+
+		.hero__date {
+			font-family: vars.$font-body;
+			font-size: 1.2rem;
+			margin-top: 10rem;
+			font-weight: 400;
+			color: vars.$color-white;
+			opacity: 0; // For smooth fade-in
+			animation: contentFadeIn 3s forwards;
+			animation-delay: 1s;
+			text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.7);
+
+			@include mixins.respond-to(md) {
+				font-size: 1.3rem;
+			}
+		}
+	}
+
+	// Gradient overlay to enhance text legibility over images
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: radial-gradient(circle, transparent, rgba(vars.$color-primary-dark, 0.8));
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	&__nav-button-container {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 2rem; /* Ajusta el valor según el espacio que quieras desde abajo */
+		z-index: 2;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	// Styles for the section navigation button (from the SectionNavButton component)
+	.section-nav-button {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: vars.$color-white;
+		transition: transform 0.3s ease;
+		animation: pulseChevron 1.5s infinite;
+
+		svg {
+			width: 2.5rem;
+			transition: fill 0.3s ease;
+		}
+
+		&:hover {
+			transform: scale(1.2);
+			color: vars.$color-accent-light;
+		}
+
+		&:active {
+			transform: scale(0.9);
+			color: vars.$color-accent;
+		}
+	}
+}
