@@ -1,5 +1,5 @@
 // src/frontend/components/XV/components/OnboardTooltips.xv.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '@styles/XV/onboarding-tooltips.scss';
 
 interface TooltipPosition {
@@ -25,86 +25,93 @@ const steps: TooltipStep[] = [
 ];
 
 const OnboardingTooltips: React.FC = () => {
-	// Start at step 1. Set to 0 to hide.
 	const [step, setStep] = useState<number>(1);
 	const [position, setPosition] = useState<TooltipPosition | null>(null);
+	const observerRef = useRef<MutationObserver | null>(null);
 
 	// Compute the tooltip’s position based on its target element’s bounding rectangle.
 	const updateTooltipPosition = (targetId: string) => {
 		const target = document.getElementById(targetId);
 		if (target) {
 			const rect = target.getBoundingClientRect();
-			// Choose placement: if there’s enough space above, place tooltip on top; otherwise below.
 			const placement: 'top' | 'bottom' = rect.top > 60 ? 'top' : 'bottom';
-			// For simplicity, we position the tooltip at the horizontal center of the target.
 			const left = rect.left + rect.width / 2;
-			// For vertical positioning, use the target’s top or bottom.
 			const top = placement === 'top' ? rect.top : rect.bottom;
 			setPosition({ top, left, placement });
 		}
 	};
 
-	// When the current step changes, update the tooltip’s position.
+	// Handle step changes and position updates.
 	useEffect(() => {
 		if (step > 0 && step <= steps.length) {
-			// Use requestAnimationFrame to defer position update until next repaint
-			requestAnimationFrame(() => {
-				updateTooltipPosition(steps[step - 1].targetId);
-			});
+			const targetId = steps[step - 1].targetId;
+			const target = document.getElementById(targetId);
+
+			if (target) {
+				updateTooltipPosition(targetId);
+			} else {
+				// Use MutationObserver to wait for the target element to appear in the DOM.
+				const observer = new MutationObserver(() => {
+					const newTarget = document.getElementById(targetId);
+					if (newTarget) {
+						updateTooltipPosition(targetId);
+						observer.disconnect(); // Stop observing once the target is found.
+					}
+				});
+
+				observer.observe(document.body, { childList: true, subtree: true });
+				observerRef.current = observer;
+			}
 		} else {
 			setPosition(null);
 		}
-	}, [step]);
 
-	// Update position on window resize. (Keep this for responsiveness)
-	useEffect(() => {
-		const handleResize = () => {
-			if (step > 0 && step <= steps.length) {
-				updateTooltipPosition(steps[step - 1].targetId);
+		return () => {
+			if (observerRef.current) {
+				observerRef.current.disconnect();
 			}
 		};
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
 	}, [step]);
 
-	// Listen for the custom event dispatched from the play button.
+	// Hide tooltip on scroll.
+	useEffect(() => {
+		const handleScroll = () => {
+			setStep(0); // Hide the tooltip when the user scrolls.
+		};
+
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
+
+	// Listen for custom events to advance steps.
 	useEffect(() => {
 		const handlePlayClick = () => {
 			if (step === 1) {
 				setStep(2);
 			}
 		};
-		window.addEventListener('onboarding-play-click', handlePlayClick);
-		return () => window.removeEventListener('onboarding-play-click', handlePlayClick);
-	}, [step]);
 
-	// **Nuevo:** Escucha el evento disparado al hacer click en SectionNavButton.
-	useEffect(() => {
 		const handleSectionClick = () => {
 			if (step === 2) {
 				setStep(0);
 			}
 		};
+
+		window.addEventListener('onboarding-play-click', handlePlayClick);
 		window.addEventListener('onboarding-section-click', handleSectionClick);
-		return () => window.removeEventListener('onboarding-section-click', handleSectionClick);
+
+		return () => {
+			window.removeEventListener('onboarding-play-click', handlePlayClick);
+			window.removeEventListener('onboarding-section-click', handleSectionClick);
+		};
 	}, [step]);
 
-	// Haciendo click en el tooltip mismo también lo oculta.
+	// Handle tooltip click to hide it.
 	const handleTooltipClick = () => {
 		setStep(0);
 	};
 
-	// **New: Handle scroll event to hide tooltip**
-	useEffect(() => {
-		const handleScroll = () => {
-			setStep(0); // Hide the tooltip on scroll
-		};
-
-		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
-	}, []); // Empty dependency array ensures this effect runs only on mount and unmount
-
-	// If step is 0 or we have no position, render nothing.
+	// Render nothing if the tooltip is hidden or position is not set.
 	if (step === 0 || !position) return null;
 
 	return (
@@ -114,10 +121,6 @@ const OnboardingTooltips: React.FC = () => {
 				position: 'fixed',
 				top: position.top,
 				left: position.left,
-				/**
-				 * When placed on top, translate upward (with extra offset for the arrow);
-				 * when placed on bottom, translate downward.
-				 */
 				transform:
 					position.placement === 'top'
 						? 'translate(-50%, -110%)'
