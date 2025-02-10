@@ -1,9 +1,14 @@
 ---
+// src/pages/XV-Estefania-Anguamea.astro
 import Hero from '@/frontend/components/XV/Hero.xv.astro';
 import EventDetails from '@frontend/components/XV/EventLocation.xv.astro';
+import BackgroundMusic from '@frontend/components/XV/components/BackgroundMusic';
 import '@frontend/styles/XV/invitation.xv.scss';
+import OnboardingTooltips from '@components/XV/components/OnboardTooltips.xv';
 ---
 
+<BackgroundMusic client:only />
+<OnboardingTooltips client:load />
 <div class="invitation">
 	<Hero />
 	<EventDetails />

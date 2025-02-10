@@ -1,0 +1,90 @@
+// src/frontend/styles/XV/background-music.scss
+@use '@styles/global/_functions' as functions;
+@use '@styles/xv/variables.xv' as vars;
+
+.background-music {
+	position: absolute;
+	bottom: 1rem;
+	right: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	z-index: functions.z-index('music');
+
+	.music-toggle {
+		background-color: vars.$color-white;
+		border: none;
+		border-radius: 50%;
+		width: 3rem;
+		height: 3rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.5rem;
+		color: #333;
+		cursor: pointer;
+		transition:
+			transform 0.3s ease,
+			margin 0.3s ease,
+			box-shadow 0.3s ease;
+		outline: none;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+
+		&.pulsing {
+			margin-right: 2rem;
+			margin-bottom: 2rem;
+			animation: pulseButton 2s infinite;
+			box-shadow: 0 0 10px rgba(255, 215, 0, 0.8); // Glow effect
+		}
+
+		&.compact {
+			margin-right: 1rem;
+			margin-bottom: 1rem;
+			transform: scale(0.9);
+			background-color: rgba(vars.$color-secondary-light, 0.5);
+			color: rgba(vars.$color-dark, 0.7);
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+		}
+
+		&:hover,
+		&:focus {
+			transform: scale(1.1);
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	.music-prompt {
+		margin-bottom: 0.5rem;
+		font-size: 0.875rem;
+		color: #555;
+		background-color: rgba(255, 255, 255, 0.8);
+		padding: 0.4rem 0.8rem;
+		border-radius: 0.5rem;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+		animation: fadeIn 0.5s ease-in-out;
+		text-align: center;
+	}
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+	.background-music {
+		.music-toggle {
+			width: 2.5rem;
+			height: 2.5rem;
+			font-size: 1.2rem;
+
+			&.pulsing {
+				margin-right: 1.5rem;
+				margin-bottom: 1.5rem;
+			}
+			&.compact {
+				margin-right: 1rem;
+				margin-bottom: 1rem;
+			}
+		}
+		.music-prompt {
+			font-size: 0.75rem;
+		}
+	}
+}
