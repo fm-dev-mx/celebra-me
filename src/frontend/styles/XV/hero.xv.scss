@@ -9,9 +9,6 @@
 @use '../global/animations' as animations;
 @use '../global/functions' as functions;
 
-// Import fonts (if not already included globally)
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@700&display=swap');
-
 .hero {
 	// Base hero styling
 	position: relative;
