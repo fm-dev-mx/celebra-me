@@ -123,7 +123,7 @@ $default-transition-timing: map.get($transition-timing, smooth);
 
 // Breakpoints for responsive design
 $breakpoints: (
-	xs: 0,
+	xs: 375px,
 	sm: 640px,
 	md: 768px,
 	lg: 1024px,

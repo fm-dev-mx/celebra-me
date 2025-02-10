@@ -88,11 +88,21 @@
 		// Main hero title styling
 		.hero__title {
 			font-family: vars.$font-heading-elegant;
-			font-size: 5rem;
+			font-size: 3rem;
 			letter-spacing: 10px;
 			font-weight: 600;
 			color: vars.$color-white;
 			text-shadow: 2px 2px 2px rgba(vars.$color-dark, 0.9);
+
+			@include mixins.respond-to(xs) {
+				font-size: 4rem;
+				letter-spacing: 8px;
+			}
+
+			@include mixins.respond-to(sm) {
+				font-size: 6rem;
+				letter-spacing: 5px;
+			}
 
 			@include mixins.respond-to(md) {
 				font-size: 7rem;
@@ -103,7 +113,7 @@
 		// Hero subtitle styling
 		.hero__subtitle {
 			font-family: vars.$font-body;
-			font-size: 2rem;
+			font-size: 1rem;
 			margin-top: 1.25rem;
 			font-weight: 600;
 			color: vars.$color-white;
@@ -111,8 +121,16 @@
 			border-top: 2px solid rgba(vars.$color-secondary-light, 1);
 			padding-top: 2rem;
 
-			@include mixins.respond-to(md) {
+			@include mixins.respond-to(xs) {
+				font-size: 1.5rem;
+			}
+
+			@include mixins.respond-to(sm) {
 				font-size: 2rem;
+			}
+
+			@include mixins.respond-to(md) {
+				font-size: 2.5rem;
 			}
 		}
 

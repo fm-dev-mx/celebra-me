@@ -48,8 +48,16 @@
 		padding: 2rem 0 4rem;
 		margin: 0; // Remove default margin
 
-		@include mixins.respond-to(md) {
+		@include mixins.respond-to(xs) {
 			font-size: 2.5rem;
+		}
+
+		@include mixins.respond-to(sm) {
+			font-size: 3rem;
+		}
+
+		@include mixins.respond-to(md) {
+			font-size: 3.5rem;
 		}
 	}
 
@@ -73,7 +81,7 @@
 		will-change: transform;
 		opacity: 0;
 		animation: fadeIn 0.8s ease-out forwards;
-		width: 370px;
+		width: 260px;
 		height: 490px;
 		margin: 0 auto; // Center the card within its container
 
@@ -85,6 +93,12 @@
 			animation-delay: 0.5s;
 		}
 
+		@include mixins.respond-to(xs) {
+			width: 300px;
+		}
+		@include mixins.respond-to(sm) {
+			width: 350px;
+		}
 		@include mixins.respond-to(md) {
 			width: 380px;
 		}
@@ -107,10 +121,22 @@
 		// Content container inside the card (includes headers, lists, and buttons)
 		&-content {
 			display: flex;
-			padding: 1rem 2.5rem;
+			padding: 1rem 0;
+			width: 90%;
 			flex-direction: column;
 			margin: 0 auto; // Center content horizontally within the card
 
+			@include mixins.respond-to(xs) {
+				padding: 1rem 1rem;
+			}
+
+			@include mixins.respond-to(sm) {
+				padding: 1rem 1.5rem;
+			}
+
+			@include mixins.respond-to(md) {
+				padding: 1rem 2.5rem;
+			}
 			// Header for the card content
 			&-header {
 				font-family: vars.$font-heading-formal;
@@ -163,7 +189,7 @@
 				text-decoration: none;
 				cursor: pointer;
 				margin: 1rem auto 0; // Auto horizontal margins center the button
-				width: 250px;
+				width: 90%;
 				transition:
 					background-color 0.3s ease,
 					transform 0.3s ease;

@@ -76,12 +76,17 @@ const OnboardingTooltips: React.FC = () => {
 	// Hide tooltip on scroll.
 	useEffect(() => {
 		const handleScroll = () => {
-			setStep(0); // Hide the tooltip when the user scrolls.
+			if (step === 1) {
+				// Automatically advance to the next step when the first tooltip is closed by scrolling.
+				setStep(2);
+			} else {
+				setStep(0); // Hide the tooltip for other steps.
+			}
 		};
 
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
-	}, []);
+	}, [step]);
 
 	// Listen for custom events to advance steps.
 	useEffect(() => {
@@ -106,9 +111,13 @@ const OnboardingTooltips: React.FC = () => {
 		};
 	}, [step]);
 
-	// Handle tooltip click to hide it.
+	// Handle tooltip click to hide it and advance to the next step.
 	const handleTooltipClick = () => {
-		setStep(0);
+		if (step === 1) {
+			setStep(2); // Advance to the second tooltip.
+		} else {
+			setStep(0); // Hide the tooltip for other steps.
+		}
 	};
 
 	// Render nothing if the tooltip is hidden or position is not set.
