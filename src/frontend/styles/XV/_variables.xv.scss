@@ -1,51 +1,40 @@
 // src/frontend/styles/XV/_variables.scss
 // ----------------------------------------------------
-//  Variables
+// XV Variables & Font Imports
 // ----------------------------------------------------
 
-/* Fonts */
-/* Import Google Fonts */
+// Import Google Fonts (consider moving this to your HTML <head> for production)
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&family=Cinzel:wght@400;700&family=Lora:wght@400;600&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@400;700&family=Dancing+Script:wght@400;600&family=Pinyon+Script&family=Abril+Fatface&family=Merriweather:wght@400;700&family=EB+Garamond:wght@400;600&family=Source+Serif+Pro:wght@400;700&family=Spectral:wght@400;600&family=Noto+Serif:wght@400;700&family=Cardo:wght@400;700&display=swap');
 
-/* -----------------------------------------------------------------------------
-   Headings (Primary Titles)
------------------------------------------------------------------------------ */
-$font-heading-elegant: 'Playfair Display', serif; // Elegant serif for main headings
-$font-heading-formal: 'Cinzel', serif; // Majestic and formal
-$font-heading-modern: 'Montserrat', sans-serif; // Modern and clean
+// Headings (Primary Titles)
+$font-heading-elegant: 'Playfair Display', serif;
+$font-heading-formal: 'Cinzel', serif;
+$font-heading-modern: 'Montserrat', sans-serif;
 
-/* -----------------------------------------------------------------------------
-   Subtitles & Formal Text
------------------------------------------------------------------------------ */
-$font-subtitle-refined: 'Cormorant Garamond', serif; // Refined and artistic
-$font-subtitle-classic: 'Lora', serif; // Classic and versatile
+// Subtitles & Formal Text
+$font-subtitle-refined: 'Cormorant Garamond', serif;
+$font-subtitle-classic: 'Lora', serif;
 
-$font-body: 'EB Garamond', serif; // Option 2: EB Garamond – Classic and refined
-/* -----------------------------------------------------------------------------
-   Decorative Fonts (For names and special details)
------------------------------------------------------------------------------ */
-$font-decorative-cursive: 'Great Vibes', cursive; // Calligraphic and elegant
-$font-decorative-dancing: 'Dancing Script', cursive; // Fluid and festive
-$font-decorative-calligraphy: 'Pinyon Script', cursive; // Ornamental and luxurious
-$font-decorative-display: 'Abril Fatface', serif; // Bold and attention-grabbing
+// Body copy
+$font-body: 'EB Garamond', serif;
 
-/* -----------------------------------------------------------------------------
-   Document Default Fonts
------------------------------------------------------------------------------ */
-$font-default: $font-body; // Default font for the document
-$font-special-title: 'Pinyon Script', serif; // Special title font (for unique headings)
+// Decorative Fonts
+$font-decorative-cursive: 'Great Vibes', cursive;
+$font-decorative-dancing: 'Dancing Script', cursive;
+$font-decorative-calligraphy: 'Pinyon Script', cursive;
+$font-decorative-display: 'Abril Fatface', serif;
 
-/* -----------------------------------------------------------------------------
-   Additional Texts (Buttons, Captions, Footer, etc.)
------------------------------------------------------------------------------ */
-$font-button: $font-heading-modern; // Button text: modern and clear
-$font-caption: $font-body; // Captions and small print: excellent readability
-$font-footer: $font-body; // Footer text: consistent with body text
-$font-emphasis: $font-decorative-display; // Emphasis/Highlight text: bold and eye-catching
+// Document Default Fonts
+$font-default: $font-body;
+$font-special-title: 'Pinyon Script', serif;
 
-/* -----------------------------------------------------------------------------
-   Color Palette
------------------------------------------------------------------------------ */
+// Additional Texts (buttons, captions, footer)
+$font-button: $font-heading-modern;
+$font-caption: $font-body;
+$font-footer: $font-body;
+$font-emphasis: $font-decorative-display;
+
+// Color Palette
 $color-primary-light: #a77ddb;
 $color-primary: #6a0dad;
 $color-primary-dark: #4e0085;
@@ -64,8 +53,3 @@ $color-darkest: #111111;
 $color-white: #f9f9f9;
 $color-whiter: #f0f0f0;
 $color-whitest: #ffffff;
-
-/* -----------------------------------------------------------------------------
-   Breakpoints
------------------------------------------------------------------------------ */
-$breakpoint-md: 768px;

@@ -4,7 +4,11 @@
  -------------------------------------------------- */
 
 @use 'sass:map';
-// Color Palette: Warm Minimalism
+
+// ----------------------------------------------------
+// Global Design Tokens & Color Palette
+// ----------------------------------------------------
+
 $colors: (
 	primary: (
 		light: #f9ece3,
@@ -42,99 +46,6 @@ $colors: (
 	),
 );
 
-/* RGB Color Values for Transparency */
-$rgb-colors: (
-	background: (
-		default: (
-			255,
-			255,
-			255,
-		),
-		primary: (
-			253,
-			226,
-			226,
-		),
-	),
-	primary: (
-		light: (
-			253,
-			226,
-			226,
-		),
-		default: (
-			232,
-			175,
-			175,
-		),
-		dark: (
-			228,
-			118,
-			118,
-		),
-	),
-	secondary: (
-		light: (
-			255,
-			244,
-			204,
-		),
-		default: (
-			240,
-			183,
-			109,
-		),
-		dark: (
-			184,
-			137,
-			58,
-		),
-	),
-	accent: (
-		light: (
-			255,
-			230,
-			230,
-		),
-		default: (
-			255,
-			201,
-			201,
-		),
-		dark: (
-			222,
-			137,
-			118,
-		),
-	),
-);
-
-/**
- * Shadows Map
- */
-$shadows: (
-	text: (
-		sm: 1px 1px 2px rgba(0, 0, 0, 0.1),
-		md: 2px 2px 4px rgba(0, 0, 0, 0.1),
-		lg: 2px 2px 8px rgba(0, 0, 0, 0.15),
-	),
-	card: (
-		sm: 0 1px 2px rgba(0, 0, 0, 0.1),
-		md: 0 2px 4px rgba(0, 0, 0, 0.1),
-		lg: 0 4px 8px rgba(0, 0, 0, 0.15),
-	),
-	button: (
-		sm: 0 1px 3px rgba(0, 0, 0, 0.2),
-		md: 0 2px 6px rgba(0, 0, 0, 0.2),
-		lg: 0 4px 12px rgba(0, 0, 0, 0.3),
-	),
-	header: (
-		sm: 0 1px 3px rgba(0, 0, 0, 0.1),
-		md: 0 2px 6px rgba(0, 0, 0, 0.15),
-		lg: 0 4px 8px rgba(0, 0, 0, 0.2),
-	),
-);
-
 $backdrop-blurs: (
 	xs: blur(2px),
 	sm: blur(4px),
@@ -143,7 +54,7 @@ $backdrop-blurs: (
 	xl: blur(16px),
 );
 
-/* Typography */
+// Typography
 $font-stack: (
 	'Rubik Variable',
 	-apple-system,
@@ -160,6 +71,7 @@ $font-stack: (
 	'Noto Color Emoji'
 );
 
+// Transition timing functions and component-specific settings
 $transition-timing: (
 	smooth: cubic-bezier(0.4, 0, 0.2, 1),
 	snappy: cubic-bezier(0.25, 1, 0.5, 1),
@@ -209,6 +121,7 @@ $transitions-by-component: (
 $default-transition-duration: 0.4s;
 $default-transition-timing: map.get($transition-timing, smooth);
 
+// Breakpoints for responsive design
 $breakpoints: (
 	xs: 0,
 	sm: 640px,
@@ -218,6 +131,7 @@ $breakpoints: (
 	xxl: 1536px,
 );
 
+// Border radii for various components
 $border-radius: (
 	small: 0.25rem,
 	modal-button: 0.25rem,
@@ -228,13 +142,14 @@ $border-radius: (
 	oval: 9999px,
 );
 
+// z-index layers
 $z-index: (
 	behind: -1,
 	default: 1,
 	header: 10,
-	dropdown: 1000,
-	overlay: 1100,
-	modal: 1200,
-	tooltip: 1300,
-	highest: 1400,
+	navButton: 15,
+	modal: 12,
+	tooltip: 10,
+	highest: 14,
+	music: 10,
 );

@@ -8,20 +8,24 @@
 @use 'functions' as funcs;
 @use 'variables' as vars;
 
+/// Applies a transition based on component settings.
 @mixin transition($component) {
 	$settings: map.get(vars.$transitions-by-component, $component);
 	@if $settings {
 		transition: all map.get($settings, duration) map.get($settings, timing);
 	} @else {
 		@warn "No transition settings found for `#{$component}`. Using default transition.";
-		transition: all $default-transition-duration $default-transition-timing;
+		transition: all vars.$default-transition-duration vars.$default-transition-timing;
 	}
 }
+
+/// Sets both min and max height.
 @mixin set-menu-height($height) {
 	min-height: $height;
 	max-height: $height;
 }
 
+/// Media query mixin for a given breakpoint key.
 @mixin respond-to($breakpoint) {
 	@if map.has-key(vars.$breakpoints, $breakpoint) {
 		@media (min-width: #{map.get(vars.$breakpoints, $breakpoint)}) {
