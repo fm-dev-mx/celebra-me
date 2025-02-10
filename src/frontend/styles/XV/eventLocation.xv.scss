@@ -9,12 +9,14 @@
 @use '../global/animations' as animations;
 
 .event-location {
+	height: 100%;
 	padding: 0 2rem;
-	padding-bottom: 4rem;
+	padding-bottom: 6rem; // Space for the button
+	position: relative; // For absolute child positioning
+
 	background-color: vars.$color-secondary-light;
 	background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970803/1080x1920bg_purple_w9jxh7.jpg');
 	text-align: center; // Center inline content (e.g., headings, paragraphs)
-	height: 100%;
 
 	// Adjust background and height for medium screens and up
 	@include mixins.respond-to(md) {
@@ -210,6 +212,7 @@
 		font-weight: 600;
 		color: rgba(vars.$color-primary-light, 0.9);
 		margin: 2rem 0 6rem;
+		padding-bottom: 4rem;
 		opacity: 0;
 		transform: translateY(20px);
 		animation: fadeIn 0.8s ease-out forwards;

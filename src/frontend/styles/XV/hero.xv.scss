@@ -31,7 +31,7 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: 100%;
+		height: 100vh;
 		overflow: hidden;
 
 		picture {
@@ -40,12 +40,12 @@
 			top: 0;
 			left: 0;
 			width: 100%;
-			height: 100%;
+			height: 100vh;
 			overflow: hidden;
 
 			.hero__image {
 				width: 100%;
-				height: 100%;
+				height: 100vh;
 				object-fit: cover;
 				opacity: 0;
 				animation: fadeInOut 12s infinite;
@@ -68,7 +68,6 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 2rem;
 	}
 
 	&__content {
@@ -159,7 +158,7 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: 100%;
+		height: 100vh;
 		background: radial-gradient(circle, transparent, rgba(vars.$color-primary, 0.3));
 		pointer-events: none;
 	}
