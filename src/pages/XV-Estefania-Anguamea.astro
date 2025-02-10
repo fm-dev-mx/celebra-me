@@ -5,8 +5,12 @@ import EventDetails from '@frontend/components/XV/EventLocation.xv.astro';
 import BackgroundMusic from '@frontend/components/XV/components/BackgroundMusic';
 import '@frontend/styles/XV/invitation.xv.scss';
 import OnboardingTooltips from '@components/XV/components/OnboardTooltips.xv';
+import Layout from '../frontend/layouts/Layout.astro';
+import seoData from '@/core/data/seoData.json';
+import siteInfo from '@/core/data/clients/siteInfo.XVEstefania.json';
 ---
 
+<Layout siteInfo={siteInfo} seoData={seoData} />
 <BackgroundMusic client:only />
 <OnboardingTooltips client:load />
 <div class="invitation">

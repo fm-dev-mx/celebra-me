@@ -4,9 +4,6 @@
 */
 import '@styles/XV/hero.xv.scss';
 import '@styles/XV/sectionNavButton.xv.scss';
-import Layout from '@layouts/Layout.astro';
-import seoData from '@/core/data/seoData.json';
-import siteInfo from '@/core/data/clients/siteInfo.XVEstefania.json';
 import SectionNavButton from '@components/XV/components/SectionNavButton.xv.astro';
 
 // Define images data to simplify markup
@@ -31,8 +28,6 @@ const images = [
 // Event Date (static for now)
 const eventDate = 'Sábado, 08 de Marzo 2025';
 ---
-
-<Layout siteInfo={siteInfo} seoData={seoData} />
 
 <section class="hero">
 	<div class="hero__container">
