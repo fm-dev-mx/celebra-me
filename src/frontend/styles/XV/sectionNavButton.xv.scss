@@ -1,43 +1,60 @@
 @use '../XV/variables.xv' as vars;
+@use '../global/functions' as functions;
+@use '../global/mixins' as mixins;
+@use '../global/animations' as animations;
 
+// Container for the navigation button, using flex to center its content
 .nav-button-container {
-	position: absolute;
+	position: relative;
+	width: 100%; // Ensure the container spans full width
 	left: 0;
 	right: 0;
-	bottom: 2rem; /* Ajusta el valor según el espacio que quieras desde abajo */
-	z-index: 2;
+	bottom: 2rem; // Adjust this value to control the distance from the bottom
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	justify-content: center; // Center content horizontally
+	align-items: center; // Center content vertically
+	z-index: functions.z-index('navButton');
 }
 
-// Styles for the section navigation button (from the SectionNavButton component)
+// Section Navigation Button Styles
 .section-nav-button {
+	position: absolute;
+	left: 50%; // Start at the center of the container
+	bottom: 50px; // Distance from the bottom of the container
+	transform: translateX(-50%); // Initial horizontal centering
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	color: vars.$color-white;
+	z-index: functions.z-index('navButton');
 	transition: transform 0.3s ease;
 	animation: pulseChevron 1.5s infinite;
 
 	svg {
-		width: 2.5rem;
-		transition: fill 0.3s ease;
+		width: 3rem;
+		@include mixins.transition(section-nav-button);
 	}
 
 	&:hover {
-		transform: scale(1.2);
 		color: vars.$color-accent-light;
 	}
 
 	&:active {
-		transform: scale(0.9);
+		transform: translateX(-50%) scale(0.9);
 		color: vars.$color-accent;
 	}
 
+	// Additional modifier styles for specific sections (BEM-like elements)
+	&__hero-section {
+		color: vars.$color-accent;
+
+		&:hover {
+			color: vars.$color-primary-light;
+		}
+	}
 	&__event-location {
 		color: vars.$color-accent;
-		transition: all 0.3s ease-in-out;
+		bottom: 0px;
 
 		&:hover {
 			color: vars.$color-primary-light;

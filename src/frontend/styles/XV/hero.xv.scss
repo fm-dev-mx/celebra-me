@@ -7,26 +7,24 @@
 @use '../XV/variables.xv' as vars;
 @use '../global/mixins' as mixins;
 @use '../global/animations' as animations;
+@use '../global/functions' as functions;
 
-/* Import fonts for component specificity */
+// Import fonts (if not already included globally)
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@700&display=swap');
 
-/* ----------------------------------------------------
-   Hero Section Styles
----------------------------------------------------- */
 .hero {
 	position: relative;
 	overflow: hidden;
-	text-align: center;
+	text-align: center; // Center inline text elements
 	background-color: vars.$color-primary-light;
-	min-height: 100vh; // Using min-height prevents issues on mobile browsers
+	min-height: 100vh; // Ensure full viewport height
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 2rem;
+	align-items: center; // Horizontally center child elements
+	justify-content: center; // Vertically center child elements
+	gap: 2rem; // Space between flex items
 
-	// Background Images Container
+	// Background images container
 	&__images {
 		position: absolute;
 		top: 0;
@@ -34,7 +32,6 @@
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
-		z-index: 1;
 
 		picture {
 			position: absolute;
@@ -47,14 +44,14 @@
 			.hero__image {
 				width: 100%;
 				height: 100%;
-				object-fit: cover;
-				opacity: 0;
-				animation: fadeInOut 12s infinite;
+				object-fit: cover; // Ensure the image covers the container
+				opacity: 0; // Start hidden until animation shows it
+				animation: fadeInOut 12s infinite; // Global keyframe animation
 				transition: opacity 0.5s ease-in-out;
 			}
 		}
 
-		// Stagger animation delays for each image (assumes three images)
+		// Stagger animation delays for multiple images (assumes 3 images)
 		@for $i from 1 through 3 {
 			picture:nth-of-type(#{$i}) .hero__image {
 				animation-delay: ($i - 1) * 4s;
@@ -62,10 +59,9 @@
 		}
 	}
 
-	// Main content container (above background images)
+	// Container for additional hero content (e.g., text and buttons)
 	&__body {
 		position: relative;
-		z-index: 2;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -73,85 +69,62 @@
 		gap: 2rem;
 	}
 
-	// Content overlay styling
+	// Main content container over the background images
 	&__content {
 		position: relative;
-
-		z-index: 2;
 		color: vars.$color-white;
 		opacity: 0;
-		animation: contentFadeIn 3s forwards 0.5s;
+		animation: contentFadeIn 3s forwards 0.5s; // Fade-in animation with delay
 		padding: 2rem 0;
 		width: 90%;
 		max-width: 250px;
-		margin: 0 auto 8rem;
+		margin: 0 auto 8rem; // Center content horizontally and add bottom margin
 		text-align: center;
 
 		@include mixins.respond-to(md) {
 			max-width: 400px;
 		}
 
+		// Main hero title styling
 		.hero__title {
 			font-family: vars.$font-heading-elegant;
-			font-size: 4rem;
+			font-size: 5rem;
 			letter-spacing: 10px;
-			font-weight: 700;
-			/* Gradient text effect */
-			background: linear-gradient(
-				45deg,
-				vars.$color-primary-light,
-				vars.$color-secondary-light
-			);
-			-webkit-background-clip: text;
-			background-clip: text;
-			-webkit-text-fill-color: transparent;
-			text-shadow: 1px 1px 10px rgba(vars.$color-white, 0.9);
-
-			.hero__title-xv {
-			}
-
-			.hero__title-line {
-				display: block; // Forces a new line
-				font-size: 1rem;
-				margin-top: 0.5rem;
-				letter-spacing: 1px;
-				font-weight: 100;
-				text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.9);
-
-				@include mixins.respond-to(md) {
-					font-size: 1.35rem;
-				}
-			}
+			font-weight: 600;
+			color: vars.$color-white;
+			text-shadow: 2px 2px 2px rgba(vars.$color-dark, 0.9);
 
 			@include mixins.respond-to(md) {
-				font-size: 6rem;
+				font-size: 7rem;
 				letter-spacing: 2px;
 			}
 		}
 
+		// Hero subtitle styling
 		.hero__subtitle {
 			font-family: vars.$font-body;
 			font-size: 2rem;
 			margin-top: 1.25rem;
 			font-weight: 600;
 			color: vars.$color-white;
+			text-shadow: 0 1px 10px rgba(vars.$color-dark, 0.9);
 			border-top: 2px solid rgba(vars.$color-secondary-light, 1);
 			padding-top: 2rem;
-			text-shadow: 0 1px 1px rgba(vars.$color-white, 0.9);
 
 			@include mixins.respond-to(md) {
 				font-size: 2rem;
 			}
 		}
 
+		// Date or additional information styling
 		.hero__date {
 			font-family: vars.$font-body;
 			font-size: 1.2rem;
 			margin-top: 10rem;
 			font-weight: 400;
 			color: vars.$color-white;
-			opacity: 0; // For smooth fade-in
-			animation: contentFadeIn 3s forwards;
+			opacity: 0;
+			animation: contentFadeIn 3s forwards; // Fade-in animation
 			animation-delay: 1s;
 			text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.7);
 
@@ -161,7 +134,7 @@
 		}
 	}
 
-	// Gradient overlay to enhance text legibility over images
+	// Gradient overlay to enhance text legibility over background images
 	&::after {
 		content: '';
 		position: absolute;
@@ -169,44 +142,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: radial-gradient(circle, transparent, rgba(vars.$color-primary-dark, 0.8));
-		z-index: 1;
-		pointer-events: none;
-	}
-
-	&__nav-button-container {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 2rem; /* Ajusta el valor según el espacio que quieras desde abajo */
-		z-index: 2;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	// Styles for the section navigation button (from the SectionNavButton component)
-	.section-nav-button {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		color: vars.$color-white;
-		transition: transform 0.3s ease;
-		animation: pulseChevron 1.5s infinite;
-
-		svg {
-			width: 2.5rem;
-			transition: fill 0.3s ease;
-		}
-
-		&:hover {
-			transform: scale(1.2);
-			color: vars.$color-accent-light;
-		}
-
-		&:active {
-			transform: scale(0.9);
-			color: vars.$color-accent;
-		}
+		background: radial-gradient(circle, transparent, rgba(vars.$color-primary, 0.3));
+		pointer-events: none; // Allow clicks to pass through
 	}
 }

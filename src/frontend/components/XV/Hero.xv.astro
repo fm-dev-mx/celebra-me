@@ -1,7 +1,6 @@
 ---
 /*
-  This component displays a modern hero section with responsive images,
-  refined typography, and smooth animations.
+  src/frontend/components/XV/Hero.xv.astro
 */
 import '@styles/XV/hero.xv.scss';
 import '@styles/XV/sectionNavButton.xv.scss';
@@ -36,32 +35,33 @@ const eventDate = 'Sábado, 08 de Marzo 2025';
 <Layout siteInfo={siteInfo} seoData={seoData} />
 
 <section class="hero">
-	<div class="hero__images">
-		{
-			images.map((img) => (
-				<picture>
-					<source media="(max-width: 768px)" srcset={img.mobile} />
-					<img class="hero__image" src={img.desktop} alt={img.alt} />
-				</picture>
-			))
-		}
-	</div>
-
-	<div class="hero__body">
-		<div class="hero__content">
-			<h1 class="hero__title">
-				<span class="hero__title-xv">Mis XV</span>
-				<span class="hero__title-line">Una Fiesta para Recordar</span>
-			</h1>
-			<p class="hero__subtitle">Estefanía Anguamea</p>
-			<p class="hero__date">{eventDate}</p>
+	<div class="hero__container">
+		<div class="hero__images">
+			{
+				images.map((img) => (
+					<picture>
+						<source media="(max-width: 768px)" srcset={img.mobile} />
+						<img class="hero__image" src={img.desktop} alt={img.alt} />
+					</picture>
+				))
+			}
 		</div>
-	</div>
-	<div class="hero__nav-button-container">
-		<SectionNavButton
-			href="#event-location"
-			class="hero-section"
-			section="Ubicación del evento"
-		/>
+
+		<div class="hero__body">
+			<div class="hero__content">
+				<h1 class="hero__title">
+					<span class="hero__title-xv">Mis XV</span>
+				</h1>
+				<p class="hero__subtitle">Estefanía Anguamea</p>
+				<p class="hero__date">{eventDate}</p>
+			</div>
+		</div>
+		<div class="hero__nav-button-container">
+			<SectionNavButton
+				href="#event-location"
+				class="hero-section"
+				section="Ubicación del evento"
+			/>
+		</div>
 	</div>
 </section>

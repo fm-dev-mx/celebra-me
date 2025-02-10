@@ -1,5 +1,5 @@
 ---
-// src/components/ui/SectionNavButton.xv.astro
+// src/frontend/components/XV/components/SectionNavButton.xv.astro
 interface Props {
 	href: string;
 	section: string;
@@ -10,8 +10,10 @@ const { href, section, class: className } = Astro.props;
 ---
 
 <a
+	id="section-nav-button"
+	onclick="window.dispatchEvent(new CustomEvent('onboarding-section-click'))"
 	href={href}
-	class={'section-nav-button ' + className}
+	class={'section-nav-button ' + 'section-nav-button__' + className}
 	aria-label={`Ir a la sección ${section}`}
 	title={`Ir a la sección ${section}`}
 >

@@ -8,14 +8,15 @@
 @use '../global/mixins' as mixins;
 @use '../global/animations' as animations;
 
-// Base styles
 .event-location {
-	padding: 2rem;
-	background-color: vars.$color-secondary-light; // Use a light background for contrast
+	padding: 0 2rem;
+	padding-bottom: 4rem;
+	background-color: vars.$color-secondary-light;
 	background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970803/1080x1920bg_purple_w9jxh7.jpg');
-	text-align: center;
+	text-align: center; // Center inline content (e.g., headings, paragraphs)
 	height: 100%;
 
+	// Adjust background and height for medium screens and up
 	@include mixins.respond-to(md) {
 		height: 100vh;
 		background-image: linear-gradient(
@@ -25,39 +26,36 @@
 			url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971171/1920x1080bg_purple_s9eabu.jpg');
 	}
 
-	// Container
+	// Container that holds the cards; centered horizontally
 	&__container {
 		max-width: 800px;
-		margin: 0 auto;
+		margin: 0 auto; // Center the container horizontally
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 
-		// On larger screens, show the two cards side by side
 		@include mixins.respond-to(md) {
-			flex-direction: row;
+			flex-direction: row; // Display cards in a row on larger screens
 		}
 	}
 
-	// Title
+	// Title styles for the event location section
 	&__title {
 		font-family: vars.$font-special-title;
 		font-size: 2rem;
 		color: vars.$color-primary-light;
 		letter-spacing: 1px;
 		padding: 2rem 0 4rem;
-		margin: 0;
+		margin: 0; // Remove default margin
 
 		@include mixins.respond-to(md) {
 			font-size: 2.5rem;
-			padding: 2rem 0 4rem;
 		}
 	}
 
-	// Card styles
+	// Styles for each card representing a location (e.g., ceremony, reception)
 	&__card {
 		background-color: rgba(vars.$color-white, 0.95);
-		// Se invierte el orden de las capas para que la superposición transparente quede sobre la imagen
 		background-image: linear-gradient(
 				rgba(vars.$color-white, 0.1),
 				rgba(vars.$color-white, 0.9)
@@ -77,8 +75,9 @@
 		animation: fadeIn 0.8s ease-out forwards;
 		width: 370px;
 		height: 490px;
-		margin: 0 auto;
-		// Stagger animation delays for each card (modify as needed)
+		margin: 0 auto; // Center the card within its container
+
+		// Apply staggered animation delays for each card type
 		&--ceremony {
 			animation-delay: 0.3s;
 		}
@@ -95,36 +94,37 @@
 			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 		}
 
-		// Image section (will show the location's photo)
+		// Image container for the card (displays the location photo)
 		&-image {
 			width: 100%;
 			min-height: 180px;
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
-			/* Optional overlay for better text contrast */
 			position: relative;
 		}
 
-		// Content section (venue name, details, and button)
+		// Content container inside the card (includes headers, lists, and buttons)
 		&-content {
 			display: flex;
 			padding: 1rem 2.5rem;
 			flex-direction: column;
-			margin: 0 auto;
+			margin: 0 auto; // Center content horizontally within the card
 
+			// Header for the card content
 			&-header {
 				font-family: vars.$font-heading-formal;
 				font-size: 1.2rem;
 				color: vars.$color-primary-light;
 				letter-spacing: 1px;
-				margin: 0 0 0.5rem 0;
+				margin-bottom: 0.5rem;
 
 				@include mixins.respond-to(md) {
 					font-size: 1rem;
 				}
 			}
 
+			// List styles for details within the card
 			&-list {
 				list-style: none;
 				text-align: left;
@@ -141,6 +141,7 @@
 					}
 				}
 
+				// Specific styling for the place element within the list
 				&__place {
 					color: rgba(vars.$color-primary-dark, 0.9) !important;
 					text-align: center;
@@ -149,8 +150,9 @@
 				}
 			}
 
+			// Button styles within the card content
 			&-button {
-				align-self: flex-start;
+				align-self: flex-start; // Align button to the start (left) of its container
 				padding: 0.7rem 1.4rem;
 				font-size: 1rem;
 				font-family: vars.$font-caption;
@@ -160,7 +162,7 @@
 				border-radius: 0.2rem;
 				text-decoration: none;
 				cursor: pointer;
-				margin: 1rem auto 0;
+				margin: 1rem auto 0; // Auto horizontal margins center the button
 				width: 250px;
 				transition:
 					background-color 0.3s ease,
@@ -175,20 +177,19 @@
 		}
 	}
 
+	// Styles for the indications section (e.g., instructions or notes)
 	&__indications {
 		font-family: vars.$font-caption;
-		font-size: 0.9rem;
-		color: rgba(vars.$color-primary-light, 0.8);
+		font-size: 1rem;
+		font-weight: 600;
+		color: rgba(vars.$color-primary-light, 0.9);
 		margin: 2rem 0 6rem;
-
-		// Initial state (hidden) then fade in
 		opacity: 0;
 		transform: translateY(20px);
-
 		animation: fadeIn 0.8s ease-out forwards;
 		animation-delay: 0.7s;
 
-		& p {
+		p {
 			margin-bottom: 0.7rem;
 		}
 
