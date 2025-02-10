@@ -46,10 +46,11 @@
 
 	// Additional modifier styles for specific sections (BEM-like elements)
 	&__hero-section {
-		color: vars.$color-accent;
+		color: vars.$color-accent-light;
+		filter: brightness(1.2);
 
 		&:hover {
-			color: vars.$color-primary-light;
+			color: vars.$color-accent;
 		}
 	}
 	&__event-location {

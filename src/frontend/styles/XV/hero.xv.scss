@@ -13,19 +13,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@700&display=swap');
 
 .hero {
+	// Base hero styling
 	position: relative;
 	overflow: hidden;
-	text-align: center; // Center inline text elements
+	text-align: center;
 	background-color: vars.$color-primary-light;
-	min-height: 100vh; // Ensure full viewport height
+	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
-	align-items: center; // Horizontally center child elements
-	justify-content: center; // Vertically center child elements
-	gap: 2rem; // Space between flex items
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
 
-	// Background images container
 	&__images {
+		// Background images container
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -34,6 +35,7 @@
 		overflow: hidden;
 
 		picture {
+			// Picture container with image reset
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -44,14 +46,14 @@
 			.hero__image {
 				width: 100%;
 				height: 100%;
-				object-fit: cover; // Ensure the image covers the container
-				opacity: 0; // Start hidden until animation shows it
-				animation: fadeInOut 12s infinite; // Global keyframe animation
+				object-fit: cover;
+				opacity: 0;
+				animation: fadeInOut 12s infinite;
 				transition: opacity 0.5s ease-in-out;
 			}
 		}
 
-		// Stagger animation delays for multiple images (assumes 3 images)
+		// Stagger animation delays for images
 		@for $i from 1 through 3 {
 			picture:nth-of-type(#{$i}) .hero__image {
 				animation-delay: ($i - 1) * 4s;
@@ -59,8 +61,8 @@
 		}
 	}
 
-	// Container for additional hero content (e.g., text and buttons)
 	&__body {
+		// Additional hero content container
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -69,23 +71,22 @@
 		gap: 2rem;
 	}
 
-	// Main content container over the background images
 	&__content {
+		// Main content container
 		position: relative;
 		color: vars.$color-white;
 		opacity: 0;
-		animation: contentFadeIn 3s forwards 0.5s; // Fade-in animation with delay
+		animation: contentFadeIn 3s forwards 0.5s;
 		padding: 2rem 0;
 		width: 90%;
 		max-width: 250px;
-		margin: 0 auto 8rem; // Center content horizontally and add bottom margin
+		margin: 0 auto 8rem;
 		text-align: center;
 
 		@include mixins.respond-to(md) {
 			max-width: 400px;
 		}
 
-		// Main hero title styling
 		.hero__title {
 			font-family: vars.$font-heading-elegant;
 			font-size: 3rem;
@@ -98,19 +99,16 @@
 				font-size: 4rem;
 				letter-spacing: 8px;
 			}
-
 			@include mixins.respond-to(sm) {
 				font-size: 6rem;
 				letter-spacing: 5px;
 			}
-
 			@include mixins.respond-to(md) {
 				font-size: 7rem;
 				letter-spacing: 2px;
 			}
 		}
 
-		// Hero subtitle styling
 		.hero__subtitle {
 			font-family: vars.$font-body;
 			font-size: 1rem;
@@ -124,36 +122,38 @@
 			@include mixins.respond-to(xs) {
 				font-size: 1.5rem;
 			}
-
 			@include mixins.respond-to(sm) {
 				font-size: 2rem;
 			}
-
 			@include mixins.respond-to(md) {
 				font-size: 2.5rem;
 			}
 		}
 
-		// Date or additional information styling
 		.hero__date {
 			font-family: vars.$font-body;
-			font-size: 1.2rem;
-			margin-top: 10rem;
+			font-size: 1rem;
+			margin-top: 4rem;
 			font-weight: 400;
 			color: vars.$color-white;
 			opacity: 0;
-			animation: contentFadeIn 3s forwards; // Fade-in animation
+			animation: contentFadeIn 3s forwards;
 			animation-delay: 1s;
 			text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.7);
-
+			@include mixins.respond-to(xs) {
+				font-size: 1.2rem;
+			}
+			@include mixins.respond-to(sm) {
+				font-size: 1.4rem;
+			}
 			@include mixins.respond-to(md) {
-				font-size: 1.3rem;
+				font-size: 1.6rem;
 			}
 		}
 	}
 
-	// Gradient overlay to enhance text legibility over background images
 	&::after {
+		// Gradient overlay for enhanced legibility over background images
 		content: '';
 		position: absolute;
 		top: 0;
@@ -161,6 +161,6 @@
 		width: 100%;
 		height: 100%;
 		background: radial-gradient(circle, transparent, rgba(vars.$color-primary, 0.3));
-		pointer-events: none; // Allow clicks to pass through
+		pointer-events: none;
 	}
 }
