@@ -5,8 +5,8 @@
   - Ceremony (Church)
   - Reception (Party Hall)
 
-  A visual divider has been added between the cards and the indications section
-  to enhance layout clarity.
+  Itinerary is now integrated into the Reception card for a seamless design.
+  Improved layout, spacing, and readability for a better user experience.
 */
 import '@styles/XV/eventLocation.xv.scss';
 import '@styles/XV/sectionNavButton.xv.scss';
@@ -14,12 +14,14 @@ import SectionNavButton from './components/SectionNavButton.xv.astro';
 import CrownIcon from '@components/XV/components/CrownIcon.xv';
 import EnvelopedIcon from './components/EnvelopedIcon.xv';
 import ForbiddenIcon from './components/ForbiddenIcon.xv';
+import WaltzIcon from './components/WaltzIcon.xv';
+import DinnerIcon from './components/DinnerIcon';
+import ToastIcon from './components/ToastIcon.xv';
 ---
 
 <section class="event-location" id="event-location">
 	<div class="event-location__container">
-		<!-- Ceremony Card -->
-		<div>
+		<div class="event-location__card-wrapper">
 			<h3 class="event-location__card-title">Ceremonia</h3>
 			<article class="event-location__card event-location__card--ceremony">
 				<div
@@ -32,11 +34,12 @@ import ForbiddenIcon from './components/ForbiddenIcon.xv';
 						<li class="event-location__card-content-list__place">
 							Parroquia de la Sagrada Familia
 						</li>
-						<li><strong>Fecha:</strong> 08 - mar - 25</li>
-						<li><strong>Hora:</strong> 6:00 PM</li>
-						<li>
-							<strong>Dirección:</strong> Avenida Ayuntamiento s/n, Jardines de Guadalupe,
-							Los Mochis, Sin.
+						<li class="event-location__card-content-list__date">
+							08 de marzo del 2025
+						</li>
+						<li class="event-location__card-content-list__hour">6:00 PM</li>
+						<li class="event-location__card-content-list__address">
+							Avenida Ayuntamiento s/n, Jardines de Guadalupe, Los Mochis, Sin.
 						</li>
 					</ul>
 					<a
@@ -52,8 +55,7 @@ import ForbiddenIcon from './components/ForbiddenIcon.xv';
 			</article>
 		</div>
 
-		<!-- Reception Card -->
-		<div>
+		<div class="event-location__card-wrapper">
 			<h3 class="event-location__card-title">Recepción</h3>
 			<article class="event-location__card event-location__card--reception">
 				<div
@@ -66,13 +68,53 @@ import ForbiddenIcon from './components/ForbiddenIcon.xv';
 						<li class="event-location__card-content-list__place">
 							Jardín Piedra Bonita
 						</li>
-						<li><strong>Fecha:</strong> 08 - mar - 25</li>
-						<li><strong>Hora:</strong> 8:00 PM</li>
-						<li>
-							<strong>Dirección:</strong> Calle 21 de marzo 1777 Ote., Colonia Mar de Cortez,
-							Los Mochis.
+						<li class="event-location__card-content-list__date">
+							08 de marzo del 2025
+						</li>
+						<li class="event-location__card-content-list__hour">8:00 PM</li>
+						<li class="event-location__card-content-list__address">
+							Calle 21 de marzo 1777 Ote., Colonia Mar de Cortez, Los Mochis.
 						</li>
 					</ul>
+
+					<div class="event-location__card-content-itinerary">
+						<ul class="event-location__card-content-itinerary-list">
+							<li class="event-location__card-content-itinerary-list-item">
+								<span class="event-location__card-content-itinerary-icon">
+									<WaltzIcon />
+								</span>
+								<span class="event-location__card-content-itinerary-label"
+									>Vals y baile de honor</span
+								>
+								<span class="event-location__card-content-itinerary-time"
+									>8:30 PM</span
+								>
+							</li>
+							<li class="event-location__card-content-itinerary-list-item">
+								<span class="event-location__card-content-itinerary-icon">
+									<DinnerIcon />
+								</span>
+								<span class="event-location__card-content-itinerary-label"
+									>Cena</span
+								>
+								<span class="event-location__card-content-itinerary-time"
+									>9:30 PM</span
+								>
+							</li>
+							<li class="event-location__card-content-itinerary-list-item">
+								<span class="event-location__card-content-itinerary-icon">
+									<ToastIcon />
+								</span>
+								<span class="event-location__card-content-itinerary-label"
+									>Brindis</span
+								>
+								<span class="event-location__card-content-itinerary-time"
+									>11:00 PM</span
+								>
+							</li>
+						</ul>
+					</div>
+
 					<a
 						href="https://maps.google.com/?q=Salón+Piedra+Bonita,+Los+Mochis"
 						class="event-location__card-content-button"
@@ -87,14 +129,11 @@ import ForbiddenIcon from './components/ForbiddenIcon.xv';
 		</div>
 	</div>
 	<div class="event-location__indications-container">
-		<!-- Divider between Cards and Indications Section -->
 		<div class="event-location__divider" aria-hidden="true"></div>
 
-		<!-- Indications Section -->
 		<div class="event-location__indications">
 			<div class="indication-item">
 				<div class="indication-icon">
-					<!-- Minimalist Crown Icon to highlight the honoree -->
 					<CrownIcon />
 				</div>
 				<p>El color púrpura está reservado para la festejada.</p>
@@ -118,7 +157,6 @@ import ForbiddenIcon from './components/ForbiddenIcon.xv';
 			</div>
 		</div>
 	</div>
-	<!-- Navigation Button -->
 	<div class="nav-button-container">
 		<SectionNavButton href="#" class="event-location" section="Padres y Padrinos" />
 	</div>

@@ -1,7 +1,7 @@
 /* src/frontend/styles/XV/eventLocation.xv.scss
  * ----------------------------------------------------
- * Event Location Section Styles for XV Invitations
- * Modern, elegant cards for Ceremony and Reception with clear layout separation
+ * Optimized Event Location Section Styles for XV Invitations
+ * Modern, elegant cards with integrated itinerary and improved readability
  * ----------------------------------------------------
  */
 @use './variables.xv' as vars;
@@ -19,7 +19,7 @@
 	text-align: center;
 	background-size: cover;
 
-	// Adjust background and height for medium screens and up
+	// Adjust background for medium screens and up
 	@include mixins.respond-to(md) {
 		background-image: linear-gradient(
 				rgba(vars.$color-white, 0.1),
@@ -35,10 +35,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
-		place-content: center;
+		align-items: center; // Center items horizontally in the container
 
 		@include mixins.respond-to(md) {
 			flex-direction: row;
+			justify-content: center; // Distribute cards evenly in row layout
 			gap: 2rem;
 		}
 		@include mixins.respond-to(lg) {
@@ -49,7 +50,7 @@
 		}
 	}
 
-	// Divider element for visual separation between cards and indications section
+	// Divider element for visual separation
 	&__divider {
 		width: 80%;
 		height: 2px;
@@ -61,13 +62,13 @@
 	// Card Title styles
 	&__card-title {
 		font-family: vars.$font-heading-formal;
-		font-size: 1.2rem;
+		font-size: 1.3rem; // Slightly increased font size for better prominence
 		color: vars.$color-primary-light;
 		letter-spacing: 1px;
-		margin: 3rem 0 1rem;
+		margin: 3rem 0 1.5rem; // Adjusted margin for better spacing
 
 		@include mixins.respond-to(md) {
-			font-size: 1.5rem;
+			font-size: 1.6rem;
 		}
 	}
 
@@ -82,7 +83,7 @@
 		background-size: cover;
 		border-radius: 12px;
 		overflow: hidden;
-		box-shadow: 0 6px 12px rgba(vars.$color-primary-dark, 0.2);
+		box-shadow: 0 8px 16px rgba(vars.$color-primary-dark, 0.2); // Increased shadow for depth
 		transition:
 			transform 0.3s ease,
 			box-shadow 0.3s ease;
@@ -91,11 +92,12 @@
 		will-change: transform;
 		opacity: 0;
 		animation: fadeIn 0.8s ease-out forwards;
-		width: 260px;
-		height: 490px;
+		width: 100%; // Make cards take full width of their container by default
+		max-width: 340px; // Maximum width for cards
+		height: auto;
 		margin: 0 auto;
 
-		// Staggered animation delays for each card type
+		// Staggered animation delays
 		&--ceremony {
 			animation-delay: 0.3s;
 		}
@@ -103,35 +105,32 @@
 			animation-delay: 0.5s;
 		}
 
-		@include mixins.respond-to(xs) {
-			width: 300px;
-		}
 		@include mixins.respond-to(sm) {
-			width: 340px;
+			max-width: 380px;
 		}
 		@include mixins.respond-to(md) {
-			width: 340px;
+			max-width: 340px; // Maintain width on medium screens for better row layout
 		}
 		@include mixins.respond-to(lg) {
-			width: 380px;
+			max-width: 380px;
 		}
 
 		&:hover {
 			transform: translateY(-5px);
-			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); // Further enhanced hover effect
 		}
 
 		// Card image container
 		&-image {
 			width: 100%;
-			min-height: 220px;
+			min-height: 240px; // Increased image height for visual impact
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
 			position: relative;
 
 			@include mixins.respond-to(sm) {
-				min-height: 230px;
+				min-height: 250px;
 			}
 
 			&::before {
@@ -141,7 +140,7 @@
 				left: 8px;
 				right: 8px;
 				bottom: 8px;
-				border: 2px solid rgba(vars.$color-white, 0.2);
+				border: 2px solid rgba(vars.$color-white, 0.3); // Slightly stronger border
 				border-radius: 2px;
 				pointer-events: none;
 			}
@@ -152,32 +151,33 @@
 			display: flex;
 			flex-direction: column;
 			width: 90%;
-			padding: 1rem 0;
+			padding: 1.5rem 0; // Increased padding for better spacing
 			margin: 0 auto;
 
 			@include mixins.respond-to(xs) {
-				padding: 1rem 0.7rem;
+				padding: 1.5rem 0.7rem;
 			}
 			@include mixins.respond-to(sm) {
-				padding: 1rem 1rem;
+				padding: 1.5rem 1rem;
 			}
 			@include mixins.respond-to(md) {
-				padding: 1rem 1.5rem;
+				padding: 1.5rem 1.5rem;
 			}
 			@include mixins.respond-to(lg) {
-				padding: 1rem 2.5rem;
+				padding: 1.5rem 2.5rem;
 			}
 
-			// List styles for card details
+			// List styles for card details (Place, Date, Time, Address)
 			&-list {
 				list-style: none;
-				text-align: left;
+				text-align: center;
+				margin-bottom: 1rem; // Added margin to separate from itinerary/button
 
 				li {
 					font-family: vars.$font-caption;
-					font-size: 1rem;
+					font-size: 1.05rem; // Slightly increased font size for readability
 					color: vars.$color-primary-dark;
-					margin-bottom: 0.5rem;
+					margin-bottom: 0.6rem; // Adjusted margin
 
 					strong {
 						font-weight: 600;
@@ -185,29 +185,111 @@
 					}
 				}
 
-				// Specific style for the place element
 				&__place {
-					color: rgba(vars.$color-primary-dark, 0.9) !important;
+					color: vars.$color-primary-dark !important; // Kept important for emphasis
 					text-align: center;
-					font-weight: 600;
+					font-weight: 500; // Reduced font weight slightly
+					font-size: 1.4rem !important; // Increased place font size
 					text-decoration: underline;
+					margin-bottom: 0.8rem; // Added margin below place
+					letter-spacing: 0.5px; // Added letter spacing for better readability
 				}
+
+				&__date {
+					font-size: 1.25rem !important; // Increased date font size
+					font-family: vars.$font-decorative-dancing !important;
+					color: vars.$color-primary-dark;
+					margin-bottom: 0.4rem; // Adjusted margin
+				}
+
+				&__hour {
+					font-size: 1.15rem !important; // Increased hour font size
+					font-weight: 600;
+				}
+
+				&__address {
+					font-size: 1rem !important;
+					font-family: vars.$font-subtitle-refined !important;
+					line-height: 1.5; // Improved line height for address readability
+				}
+			}
+
+			// Itinerary Section within card content
+			&-itinerary {
+				margin-top: 1rem;
+				margin-bottom: 1rem;
+				padding-top: 1rem;
+				border-top: 1px solid rgba(vars.$color-primary-light, 0.2); // Subtle top border for separation
+			}
+
+			// Itinerary List Styles
+			&-itinerary-list {
+				list-style: none;
+				padding: 0;
+
+				&-item {
+					display: flex;
+					align-items: center;
+					gap: 0.8rem; // Spacing between icon and text
+					margin-bottom: 0.7rem; // Spacing between itinerary items
+				}
+			}
+
+			// Itinerary Icon Styles
+			&-itinerary-icon {
+				width: 30px; // Reduced icon size
+				height: 30px; // Reduced icon size
+				background-color: rgba(
+					vars.$color-primary-light,
+					0.15
+				); // Slightly darker background
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+
+				svg {
+					width: 16px; // Reduced svg icon size
+					height: 16px; // Reduced svg icon size
+					stroke: vars.$color-primary-light;
+					color: rgba(vars.$color-primary-dark, 0.8); // Slightly less opaque color
+				}
+			}
+
+			// Itinerary Label Styles
+			&-itinerary-label {
+				font-family: vars.$font-caption;
+				font-size: 1rem;
+				font-weight: 600;
+				color: rgba(vars.$color-primary-dark, 0.9);
+			}
+
+			// Itinerary Time Styles
+			&-itinerary-time {
+				font-family: vars.$font-caption;
+				font-size: 0.9rem; // Slightly smaller time font
+				color: rgba(vars.$color-primary-dark, 0.7); // Less prominent time color
+				margin-left: auto; // Push time to the right
 			}
 
 			// Button styles for card action
 			&-button {
-				align-self: flex-start;
-				padding: 0.7rem 1.4rem;
-				font-size: 1rem;
+				align-self: center; // Center button below itinerary
+				padding: 0.8rem 1.6rem; // Slightly increased button padding
+				font-size: 1.05rem; // Slightly larger button font
 				font-family: vars.$font-caption;
 				color: vars.$color-white;
-				background-color: rgba(vars.$color-primary-light, 0.6);
+				background-color: rgba(
+					vars.$color-primary-light,
+					0.7
+				); // Slightly brighter button background
 				border: none;
 				border-radius: 0.2rem;
 				text-decoration: none;
 				cursor: pointer;
-				margin: 1rem auto 0;
-				width: 90%;
+				margin: 1.5rem auto 0; // Increased top margin, centered below itinerary
+				width: auto; // Adjust width to content
 				transition:
 					background-color 0.3s ease,
 					transform 0.3s ease;
@@ -221,6 +303,7 @@
 		}
 	}
 
+	// Indications Section styles
 	&__indications-container {
 		display: flex;
 		flex-direction: column;
@@ -228,32 +311,33 @@
 		align-items: center;
 		margin: 0 auto;
 		gap: 2rem;
-		width: 255px;
+		width: 100%; // Take full width in container
+		max-width: 375px; // Set max width for indications container
 		@include mixins.respond-to(xs) {
-			width: 295px;
+			max-width: 415px;
 		}
 		@include mixins.respond-to(sm) {
-			width: 335px;
+			max-width: 455px;
 		}
 		@include mixins.respond-to(md) {
-			width: 335px;
+			max-width: 455px;
 		}
 		@include mixins.respond-to(lg) {
-			width: 375px;
+			max-width: 495px;
 		}
 	}
-	// Indications Section styles
+
 	&__indications {
 		display: flex;
 		flex-direction: column;
 		place-content: center;
 		justify-content: center;
 		gap: 1.5rem;
-		padding: 2rem;
+		padding: 2.5rem; // Increased padding for indications
 		margin-bottom: 8rem;
-		background-color: #fff;
-		border-radius: 10px;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		background-color: rgba(vars.$color-white, 0.98); // Slightly less opaque white
+		border-radius: 12px; // More rounded corners
+		box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12); // Slightly stronger shadow
 		opacity: 0;
 		transform: translateY(20px);
 		animation: fadeIn 0.8s ease-out forwards;
@@ -262,16 +346,20 @@
 		@include mixins.respond-to(md) {
 			justify-content: center;
 			gap: 2rem;
+			padding: 3rem; // Increased padding for larger screens
 		}
 		.indication-item {
 			display: flex;
 			align-items: center;
-			gap: 1rem;
+			gap: 1.2rem; // Increased gap
 
 			.indication-icon {
-				width: 40px;
-				height: 40px;
-				background-color: rgba(vars.$color-primary-light, 0.1);
+				width: 45px; // Increased icon size
+				height: 45px; // Increased icon size
+				background-color: rgba(
+					vars.$color-primary-light,
+					0.15
+				); // Slightly darker background
 				border-radius: 50%;
 				display: flex;
 				align-items: center;
@@ -279,8 +367,8 @@
 				flex-shrink: 0;
 
 				svg {
-					width: 20px;
-					height: 20px;
+					width: 22px; // Increased svg icon size
+					height: 22px; // Increased svg icon size
 					stroke: vars.$color-primary-light;
 					color: rgba(vars.$color-primary-dark, 0.9);
 				}
@@ -288,17 +376,17 @@
 
 			p {
 				font-family: vars.$font-caption;
-				font-size: 1rem;
+				font-size: 1.05rem; // Slightly increased font size for indications
 				text-align: left;
-				font-weight: 600;
+				font-weight: 500; // Slightly reduced font weight
 				color: rgba(vars.$color-primary-light, 0.9);
 				margin: 0;
-				line-height: 1.4;
+				line-height: 1.5; // Improved line height for indication text
 			}
 		}
 
 		@include mixins.respond-to(md) {
-			padding: 2.5rem;
+			padding: 3.5rem;
 		}
 	}
 }

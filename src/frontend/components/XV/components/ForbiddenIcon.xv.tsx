@@ -1,4 +1,4 @@
-// src/frontend/components/XV/components/Forbidden.xv.tsx
+// src/frontend/components/XV/components/ForbiddenIcon.xv.tsx
 
 import React from 'react';
 
