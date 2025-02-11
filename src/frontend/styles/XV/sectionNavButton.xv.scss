@@ -62,4 +62,12 @@
 			color: vars.$color-primary-light;
 		}
 	}
+
+	&__family-section {
+		color: vars.$color-secondary-dark;
+
+		&:hover {
+			color: vars.$color-secondary;
+		}
+	}
 }
