@@ -2,12 +2,16 @@
 // src/pages/XV-Estefania-Anguamea.astro
 import Hero from '@/frontend/components/XV/Hero.xv.astro';
 import EventDetails from '@frontend/components/XV/EventLocation.xv.astro';
+import Countdown from '@components/XV/Countdown.xv.astro'; // Import the Countdown component
 import BackgroundMusic from '@frontend/components/XV/components/BackgroundMusic';
 import '@frontend/styles/XV/invitation.xv.scss';
 import OnboardingTooltips from '@components/XV/components/OnboardTooltips.xv';
 import Layout from '../frontend/layouts/Layout.astro';
 import seoData from '@/core/data/seoData.json';
 import siteInfo from '@/core/data/clients/siteInfo.XVEstefania.json';
+import Family from '../frontend/components/XV/Family.xv.astro';
+
+const eventDate = '2025-03-08T18:00:00'; // Event date in ISO format (YYYY-MM-DDTHH:mm:ss)
 ---
 
 <Layout siteInfo={siteInfo} seoData={seoData} />
@@ -16,4 +20,5 @@ import siteInfo from '@/core/data/clients/siteInfo.XVEstefania.json';
 <div class="invitation">
 	<Hero />
 	<EventDetails />
+	<Countdown eventDate={eventDate} />
 </div>
