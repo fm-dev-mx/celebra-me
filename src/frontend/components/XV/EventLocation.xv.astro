@@ -4,85 +4,121 @@
   Displays two modern, interactive cards for the event venues:
   - Ceremony (Church)
   - Reception (Party Hall)
+
+  A visual divider has been added between the cards and the indications section
+  to enhance layout clarity.
 */
 import '@styles/XV/eventLocation.xv.scss';
 import '@styles/XV/sectionNavButton.xv.scss';
-import SectionNavButton from '@components/XV/components/SectionNavButton.xv.astro';
+import SectionNavButton from './components/SectionNavButton.xv.astro';
+import CrownIcon from '@components/XV/components/CrownIcon.xv';
+import EnvelopedIcon from './components/EnvelopedIcon.xv';
+import ForbiddenIcon from './components/ForbiddenIcon.xv';
 ---
 
 <section class="event-location" id="event-location">
-	<h2 class="event-location__title">Ubicación del Evento</h2>
 	<div class="event-location__container">
 		<!-- Ceremony Card -->
-		<article class="event-location__card event-location__card--ceremony">
-			<div
-				class="event-location__card-image"
-				style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg');"
-			>
-			</div>
-			<div class="event-location__card-content">
-				<h3 class="event-location__card-content-header">Ceremonia Religiosa</h3>
-				<ul class="event-location__card-content-list">
-					<li class="event-location__card-content-list__place">
-						Parroquia de la Sagrada Familia
-					</li>
-					<li><strong>Fecha:</strong> 08 - mar - 25</li>
-					<li><strong>Hora:</strong> 6:00 PM</li>
-					<li>
-						<strong>Dirección:</strong> Avenida Ayuntamiento s/n, Jardines de Guadalupe,
-						Los Mochis, Sin.
-					</li>
-				</ul>
-				<a
-					href="https://maps.google.com/?q=Parroquia+de+la+Sagrada+Familia,+Los+Mochis"
-					class="event-location__card-content-button"
-					target="_blank"
-					rel="noopener noreferrer"
-					title="Clic para ver la ubicación en Google Maps"
+		<div>
+			<h3 class="event-location__card-title">Ceremonia</h3>
+			<article class="event-location__card event-location__card--ceremony">
+				<div
+					class="event-location__card-image"
+					style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg');"
 				>
-					Cómo llegar
-				</a>
-			</div>
-		</article>
+				</div>
+				<div class="event-location__card-content">
+					<ul class="event-location__card-content-list">
+						<li class="event-location__card-content-list__place">
+							Parroquia de la Sagrada Familia
+						</li>
+						<li><strong>Fecha:</strong> 08 - mar - 25</li>
+						<li><strong>Hora:</strong> 6:00 PM</li>
+						<li>
+							<strong>Dirección:</strong> Avenida Ayuntamiento s/n, Jardines de Guadalupe,
+							Los Mochis, Sin.
+						</li>
+					</ul>
+					<a
+						href="https://maps.google.com/?q=Parroquia+de+la+Sagrada+Familia,+Los+Mochis"
+						class="event-location__card-content-button"
+						target="_blank"
+						rel="noopener noreferrer"
+						title="Click to view location on Google Maps"
+					>
+						Cómo llegar
+					</a>
+				</div>
+			</article>
+		</div>
 
 		<!-- Reception Card -->
-		<article class="event-location__card event-location__card--reception">
-			<div
-				class="event-location__card-image"
-				style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg');"
-			>
-			</div>
-			<div class="event-location__card-content">
-				<h3 class="event-location__card-content-header">Recepción</h3>
-				<ul class="event-location__card-content-list">
-					<li class="event-location__card-content-list__place">Jardín Piedra Bonita</li>
-					<li><strong>Fecha:</strong> 08 - mar - 25</li>
-					<li><strong>Hora:</strong> 8:00 PM</li>
-					<li>
-						<strong>Dirección:</strong> Calle 21 de marzo 1777 Ote., Colonia Mar de Cortez,
-						Los Mochis.
-					</li>
-				</ul>
-				<a
-					href="https://maps.google.com/?q=Salón+Piedra+Bonita,+Los+Mochis"
-					class="event-location__card-content-button"
-					target="_blank"
-					rel="noopener noreferrer"
-					title="Clic para ver la ubicación en Google Maps"
+		<div>
+			<h3 class="event-location__card-title">Recepción</h3>
+			<article class="event-location__card event-location__card--reception">
+				<div
+					class="event-location__card-image"
+					style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg');"
 				>
-					Cómo llegar
-				</a>
+				</div>
+				<div class="event-location__card-content">
+					<ul class="event-location__card-content-list">
+						<li class="event-location__card-content-list__place">
+							Jardín Piedra Bonita
+						</li>
+						<li><strong>Fecha:</strong> 08 - mar - 25</li>
+						<li><strong>Hora:</strong> 8:00 PM</li>
+						<li>
+							<strong>Dirección:</strong> Calle 21 de marzo 1777 Ote., Colonia Mar de Cortez,
+							Los Mochis.
+						</li>
+					</ul>
+					<a
+						href="https://maps.google.com/?q=Salón+Piedra+Bonita,+Los+Mochis"
+						class="event-location__card-content-button"
+						target="_blank"
+						rel="noopener noreferrer"
+						title="Click to view location on Google Maps"
+					>
+						Cómo llegar
+					</a>
+				</div>
+			</article>
+		</div>
+	</div>
+	<div class="event-location__indications-container">
+		<!-- Divider between Cards and Indications Section -->
+		<div class="event-location__divider" aria-hidden="true"></div>
+
+		<!-- Indications Section -->
+		<div class="event-location__indications">
+			<div class="indication-item">
+				<div class="indication-icon">
+					<!-- Minimalist Crown Icon to highlight the honoree -->
+					<CrownIcon />
+				</div>
+				<p>El color púrpura está reservado para la festejada.</p>
 			</div>
-		</article>
+
+			<div class="indication-item">
+				<div class="indication-icon">
+					<EnvelopedIcon />
+				</div>
+				<p>
+					Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será
+					bien recibido.
+				</p>
+			</div>
+
+			<div class="indication-item">
+				<div class="indication-icon">
+					<ForbiddenIcon />
+				</div>
+				<p>Celebración sin niños.</p>
+			</div>
+		</div>
 	</div>
-	<div class="event-location__indications">
-		<p>🔹 El color púrpura está reservado para la festejada.</p>
-		<p>
-			🔹 Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será bien
-			recibido.
-		</p>
-		<p>🔹 Celebración sin niños.</p>
-	</div>
+	<!-- Navigation Button -->
 	<div class="nav-button-container">
 		<SectionNavButton href="#countdown" class="event-location" section="Padres y Padrinos" />
 	</div>

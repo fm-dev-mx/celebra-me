@@ -1,7 +1,7 @@
 /* src/frontend/styles/XV/eventLocation.xv.scss
  * ----------------------------------------------------
  * Event Location Section Styles for XV Invitations
- * Modern, elegant cards for Ceremony and Reception
+ * Modern, elegant cards for Ceremony and Reception with clear layout separation
  * ----------------------------------------------------
  */
 @use './variables.xv' as vars;
@@ -9,18 +9,16 @@
 @use '../global/animations' as animations;
 
 .event-location {
+	// Base container styles
 	height: 100%;
-	padding: 0 2rem;
-	padding-bottom: 6rem; // Space for the button
-	position: relative; // For absolute child positioning
-
+	padding: 0 2rem 6rem;
+	position: relative;
 	background-color: vars.$color-secondary-light;
 	background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970803/1080x1920bg_purple_w9jxh7.jpg');
-	text-align: center; // Center inline content (e.g., headings, paragraphs)
+	text-align: center;
 
 	// Adjust background and height for medium screens and up
 	@include mixins.respond-to(md) {
-		height: 100vh;
 		background-image: linear-gradient(
 				rgba(vars.$color-white, 0.1),
 				rgba(vars.$color-white, 0.9)
@@ -28,42 +26,50 @@
 			url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971171/1920x1080bg_purple_s9eabu.jpg');
 	}
 
-	// Container that holds the cards; centered horizontally
+	// Container for event location cards
 	&__container {
 		max-width: 800px;
-		margin: 0 auto; // Center the container horizontally
+		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
+		place-content: center;
 
 		@include mixins.respond-to(md) {
-			flex-direction: row; // Display cards in a row on larger screens
+			flex-direction: row;
+			gap: 2rem;
+		}
+		@include mixins.respond-to(lg) {
+			gap: 4rem;
+		}
+		@include mixins.respond-to(xl) {
+			gap: 6rem;
 		}
 	}
 
-	// Title styles for the event location section
-	&__title {
-		font-family: vars.$font-special-title;
-		font-size: 2rem;
+	// Divider element for visual separation between cards and indications section
+	&__divider {
+		width: 80%;
+		height: 2px;
+		margin: 3rem auto;
+		background-color: vars.$color-primary-light;
+		opacity: 0.2;
+	}
+
+	// Card Title styles
+	&__card-title {
+		font-family: vars.$font-heading-formal;
+		font-size: 1.2rem;
 		color: vars.$color-primary-light;
 		letter-spacing: 1px;
-		padding: 2rem 0 4rem;
-		margin: 0; // Remove default margin
-
-		@include mixins.respond-to(xs) {
-			font-size: 2.5rem;
-		}
-
-		@include mixins.respond-to(sm) {
-			font-size: 3rem;
-		}
+		margin: 3rem 0 1rem;
 
 		@include mixins.respond-to(md) {
-			font-size: 3.5rem;
+			font-size: 1.5rem;
 		}
 	}
 
-	// Styles for each card representing a location (e.g., ceremony, reception)
+	// Card styles for location information
 	&__card {
 		background-color: rgba(vars.$color-white, 0.95);
 		background-image: linear-gradient(
@@ -85,9 +91,9 @@
 		animation: fadeIn 0.8s ease-out forwards;
 		width: 260px;
 		height: 490px;
-		margin: 0 auto; // Center the card within its container
+		margin: 0 auto;
 
-		// Apply staggered animation delays for each card type
+		// Staggered animation delays for each card type
 		&--ceremony {
 			animation-delay: 0.3s;
 		}
@@ -99,9 +105,12 @@
 			width: 300px;
 		}
 		@include mixins.respond-to(sm) {
-			width: 350px;
+			width: 340px;
 		}
 		@include mixins.respond-to(md) {
+			width: 340px;
+		}
+		@include mixins.respond-to(lg) {
 			width: 380px;
 		}
 
@@ -110,49 +119,54 @@
 			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 		}
 
-		// Image container for the card (displays the location photo)
+		// Card image container
 		&-image {
 			width: 100%;
-			min-height: 180px;
+			min-height: 220px;
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
 			position: relative;
-		}
-
-		// Content container inside the card (includes headers, lists, and buttons)
-		&-content {
-			display: flex;
-			padding: 1rem 0;
-			width: 90%;
-			flex-direction: column;
-			margin: 0 auto; // Center content horizontally within the card
-
-			@include mixins.respond-to(xs) {
-				padding: 1rem 1rem;
-			}
 
 			@include mixins.respond-to(sm) {
+				min-height: 230px;
+			}
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 8px;
+				left: 8px;
+				right: 8px;
+				bottom: 8px;
+				border: 2px solid rgba(vars.$color-white, 0.2);
+				border-radius: 2px;
+				pointer-events: none;
+			}
+		}
+
+		// Card content container
+		&-content {
+			display: flex;
+			flex-direction: column;
+			width: 90%;
+			padding: 1rem 0;
+			margin: 0 auto;
+
+			@include mixins.respond-to(xs) {
+				padding: 1rem 0.7rem;
+			}
+			@include mixins.respond-to(sm) {
+				padding: 1rem 1rem;
+			}
+			@include mixins.respond-to(md) {
 				padding: 1rem 1.5rem;
 			}
-
-			@include mixins.respond-to(md) {
+			@include mixins.respond-to(lg) {
 				padding: 1rem 2.5rem;
 			}
-			// Header for the card content
-			&-header {
-				font-family: vars.$font-heading-formal;
-				font-size: 1.2rem;
-				color: vars.$color-primary-light;
-				letter-spacing: 1px;
-				margin-bottom: 0.5rem;
 
-				@include mixins.respond-to(md) {
-					font-size: 1rem;
-				}
-			}
-
-			// List styles for details within the card
+			// List styles for card details
 			&-list {
 				list-style: none;
 				text-align: left;
@@ -169,7 +183,7 @@
 					}
 				}
 
-				// Specific styling for the place element within the list
+				// Specific style for the place element
 				&__place {
 					color: rgba(vars.$color-primary-dark, 0.9) !important;
 					text-align: center;
@@ -178,9 +192,9 @@
 				}
 			}
 
-			// Button styles within the card content
+			// Button styles for card action
 			&-button {
-				align-self: flex-start; // Align button to the start (left) of its container
+				align-self: flex-start;
 				padding: 0.7rem 1.4rem;
 				font-size: 1rem;
 				font-family: vars.$font-caption;
@@ -190,7 +204,7 @@
 				border-radius: 0.2rem;
 				text-decoration: none;
 				cursor: pointer;
-				margin: 1rem auto 0; // Auto horizontal margins center the button
+				margin: 1rem auto 0;
 				width: 90%;
 				transition:
 					background-color 0.3s ease,
@@ -205,25 +219,84 @@
 		}
 	}
 
-	// Styles for the indications section (e.g., instructions or notes)
+	&__indications-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		margin: 0 auto;
+		gap: 2rem;
+		width: 255px;
+		@include mixins.respond-to(xs) {
+			width: 295px;
+		}
+		@include mixins.respond-to(sm) {
+			width: 335px;
+		}
+		@include mixins.respond-to(md) {
+			width: 335px;
+		}
+		@include mixins.respond-to(lg) {
+			width: 375px;
+		}
+	}
+	// Indications Section styles
 	&__indications {
-		font-family: vars.$font-caption;
-		font-size: 1rem;
-		font-weight: 600;
-		color: rgba(vars.$color-primary-light, 0.9);
-		margin: 2rem 0 6rem;
-		padding-bottom: 4rem;
+		display: flex;
+		flex-direction: column;
+		place-content: center;
+		justify-content: center;
+		gap: 1.5rem;
+		padding: 2rem;
+		margin-bottom: 8rem;
+		background-color: #fff;
+		border-radius: 10px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		opacity: 0;
 		transform: translateY(20px);
 		animation: fadeIn 0.8s ease-out forwards;
 		animation-delay: 0.7s;
 
-		p {
-			margin-bottom: 0.7rem;
+		@include mixins.respond-to(md) {
+			justify-content: center;
+			gap: 2rem;
+		}
+		.indication-item {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+
+			.indication-icon {
+				width: 40px;
+				height: 40px;
+				background-color: rgba(vars.$color-primary-light, 0.1);
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+
+				svg {
+					width: 20px;
+					height: 20px;
+					stroke: vars.$color-primary-light;
+					color: rgba(vars.$color-primary-dark, 0.9);
+				}
+			}
+
+			p {
+				font-family: vars.$font-caption;
+				font-size: 1rem;
+				text-align: left;
+				font-weight: 600;
+				color: rgba(vars.$color-primary-light, 0.9);
+				margin: 0;
+				line-height: 1.4;
+			}
 		}
 
 		@include mixins.respond-to(md) {
-			margin-top: 5rem;
+			padding: 2.5rem;
 		}
 	}
 }
