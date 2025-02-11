@@ -14,8 +14,10 @@
 	padding: 0 2rem 6rem;
 	position: relative;
 	background-color: vars.$color-secondary-light;
-	background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970803/1080x1920bg_purple_w9jxh7.jpg');
+	background-image: linear-gradient(rgba(vars.$color-white, 0), rgba(vars.$color-white, 0.9)),
+		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970806/1080x1920bg_purple_flower_c0mg3h.jpg');
 	text-align: center;
+	background-size: cover;
 
 	// Adjust background and height for medium screens and up
 	@include mixins.respond-to(md) {
@@ -23,7 +25,7 @@
 				rgba(vars.$color-white, 0.1),
 				rgba(vars.$color-white, 0.9)
 			),
-			url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971171/1920x1080bg_purple_s9eabu.jpg');
+			url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971071/1080x1920bg_purple_flower_jhl1ld.jpg');
 	}
 
 	// Container for event location cards
