@@ -1,0 +1,31 @@
+---
+/*
+  src/frontend/components/XV/ThankYouSection.xv.astro
+  ----------------------------------------------------
+  This component renders a refined thank-you section for the invitation.
+  It displays a warm thank-you message and includes a photo frame (200×200 px)
+  for the quinceañera's photo. The design is responsive and incorporates smooth
+  animations and a subtle background overlay.
+*/
+// Import the corresponding SCSS styles
+import '@frontend/styles/XV/thank-you.xv.scss';
+---
+
+<section class="thank-you-section" aria-label="Thank You Section">
+	<div class="thank-you-content">
+		<!-- Photo frame for the quinceañera (replace '/path/to/photo.jpg' with the actual image path) -->
+		<div class="photo-frame">
+			<img
+				src="https://res.cloudinary.com/dusxvauvj/image/upload/v1737591024/4_qnp9lv.webp"
+				alt="Quinceañera Photo"
+			/>
+		</div>
+		<!-- Thank-you message container -->
+		<div class="message-container">
+			<p class="thank-you-message">
+				Esperamos contar con su asistencia y compartir juntos este día tan especial.
+			</p>
+			<p class="name">- Estefanía Anguamea -</p>
+		</div>
+	</div>
+</section>
