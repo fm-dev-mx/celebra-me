@@ -15,7 +15,7 @@ const ForbiddenIcon: React.FC<Props> = ({ className = '' }) => {
 				height="20"
 				fill="none"
 				stroke="currentColor"
-				stroke-width="2"
+				strokeWidth="2"
 				viewBox="0 0 24 24"
 			>
 				<circle cx="12" cy="12" r="10"></circle>

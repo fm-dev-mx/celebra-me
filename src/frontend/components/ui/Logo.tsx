@@ -6,7 +6,7 @@
 import React from 'react';
 
 interface LogoProps {
-	variant?: 'default' | 'footer' | 'hero'; // Defines possible logo variants
+	variant?: 'default' | 'footer' | 'hero' | 'xv'; // Defines possible logo variants
 	altText?: string; // Optional alt text for accessibility
 }
 
@@ -33,6 +33,10 @@ const Logo: React.FC<LogoProps> = ({ variant = 'default', altText }) => {
 						'(max-width: 768px) 300px, ' +
 						'(max-width: 1024px) 360px, ' +
 						'400px',
+				};
+			case 'xv':
+				return {
+					src: '/images/header/horizontalLogo100x38.png',
 				};
 			default:
 				return {
