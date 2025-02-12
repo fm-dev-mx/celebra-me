@@ -10,6 +10,7 @@ import Layout from '../frontend/layouts/Layout.astro';
 import seoData from '@/core/data/seoData.json';
 import siteInfo from '@/core/data/clients/siteInfo.XVEstefania.json';
 import Family from '../frontend/components/XV/Family.xv.astro';
+import Rsvp from '../frontend/components/XV/Rsvp.xv.astro';
 
 const eventDate = '2025-03-08T18:00:00'; // Event date in ISO format (YYYY-MM-DDTHH:mm:ss)
 ---
@@ -22,4 +23,5 @@ const eventDate = '2025-03-08T18:00:00'; // Event date in ISO format (YYYY-MM-DD
 	<Family />
 	<Countdown eventDate={eventDate} />
 	<EventDetails />
+	<Rsvp />
 </div>
