@@ -1,16 +1,11 @@
 /* src/frontend/styles/XV/rsvp.xv.scss
  * ----------------------------------------------------
- * RSVP Confirmation Section Styles for XV Invitations
- *
- * This file defines the styles for the RSVP form and its
- * feedback message. The design is responsive, accessible,
- * and harmonizes with the overall invitation theme.
+ * RSVP Confirmation Form Styles
  * ----------------------------------------------------
  */
 
 @use '../XV/variables.xv' as vars;
 @use '../global/mixins' as mixins;
-@use '../global/animations' as animations;
 
 .rsvp {
 	background-image: linear-gradient(
@@ -27,22 +22,17 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
-	transition: transform 0.3s ease;
+	transition: transform 0.2s ease;
 
 	@include mixins.respond-to(md) {
 		max-width: 500px;
 	}
 
-	&:hover {
-		transform: scale(1.02);
-	}
-
-	&__title {
-		font-family: vars.$font-heading-elegant;
-		font-size: 2rem;
-		color: vars.$color-primary-light;
-		text-align: center;
-		margin-bottom: 1rem;
+	// Apply hover effect only on devices that support hover
+	@media (hover: hover) {
+		&:hover {
+			transform: scale(1.01);
+		}
 	}
 
 	&__form {
@@ -71,8 +61,8 @@
 		border: 1px solid rgba(vars.$color-primary, 0.3);
 		border-radius: 4px;
 		transition:
-			border-color 0.3s ease,
-			box-shadow 0.3s ease;
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
 
 		&:focus {
 			border-color: vars.$color-primary;
@@ -88,61 +78,117 @@
 	}
 
 	&__button {
-		background-color: rgba(vars.$color-primary-light, 0.6);
-		color: vars.$color-white;
+		background-color: rgba(vars.$color-primary-light, 0.5);
+		border: 2px solid rgba(vars.$color-primary-light, 0.9);
+		color: rgba(vars.$color-primary-dark, 0.6);
 		font-family: vars.$font-heading-elegant;
 		font-size: 1.1rem;
-		padding: 0.75rem;
-		border: none;
+		font-weight: 600;
+		padding: 0.5rem;
 		border-radius: 4px;
 		cursor: pointer;
 		transition:
-			background-color 0.3s ease,
-			transform 0.3s ease;
+			background-color 0.2s ease,
+			transform 0.2s ease;
 
 		&:hover,
 		&:focus {
 			background-color: rgba(vars.$color-primary, 0.5);
+			transform: translateY(-1px);
+			font-weight: 400;
+			color: rgba(vars.$color-white, 0.9);
 		}
 	}
 }
 
-/* Feedback container styles (shown after a successful RSVP) */
-.rsvp__feedback {
+.rsvp__radio-group {
+	display: flex;
+	flex-direction: column;
+
+	@include mixins.respond-to(md) {
+		flex-direction: row;
+		gap: 1rem;
+	}
+	label {
+		font-family: vars.$font-body;
+		font-size: 1rem;
+		color: vars.$color-primary-dark;
+		cursor: pointer;
+
+		input {
+			margin-right: 0.5rem;
+		}
+	}
+}
+
+.rsvp__message-not-attending {
+	font-family: vars.$font-body;
+	font-size: 1rem;
+	color: vars.$color-primary-dark;
+	padding: 0.75rem;
+	border: 1px solid rgba(vars.$color-primary, 0.3);
+	border-radius: 4px;
+	background-color: rgba(vars.$color-white, 0.8);
+	text-align: center;
+}
+
+.rsvp__greeting {
 	width: 80vw;
 	margin: 2rem auto;
-	padding: 2rem 6rem;
+	padding: 2rem 1.5rem;
 	background-image: linear-gradient(
 			rgba(vars.$color-primary-light, 0.1),
 			rgba(vars.$color-secondary, 0.6)
 		),
 		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318462/1920x1080bg-white_flowers_glcgzd.jpg');
 	background-size: cover;
-	border-radius: 4px;
+	border-radius: 20px;
+	border: 2px solid rgba(vars.$color-dark, 0.2);
 	box-shadow: 0 4px 12px rgba(vars.$color-dark, 0.5);
 	text-align: center;
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
-	@include mixins.respond-to(md) {
+	gap: 3rem;
+
+	@include mixins.respond-to(xs) {
+		padding: 2rem 2rem;
 		max-width: 500px;
 	}
-	.rsvp__success-message {
-		font-family: vars.$font-body;
-		font-size: 1.2rem;
-		color: rgba(vars.$color-primary-dark, 0.6);
+
+	@include mixins.respond-to(sm) {
+		padding: 2rem 3rem;
 	}
 
-	/* Container for the new contact buttons */
-	.rsvp__contact-buttons {
+	@include mixins.respond-to(md) {
+		padding: 2rem 4rem;
+	}
+
+	@include mixins.respond-to(md) {
+		padding: 2rem 5rem;
+	}
+
+	&-message {
+		font-family: vars.$font-subtitle-refined;
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: rgba(vars.$color-dark, 0.6);
+		text-shadow: 1px 1px 10px rgba(vars.$color-dark, 0.5);
+
+		&__underline {
+			font-size: 1.3rem;
+			color: rgba(vars.$color-dark, 0.7);
+			text-decoration: underline;
+		}
+	}
+
+	.rsvp__instagram-wrapper {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
 		align-items: center;
 	}
 
-	/* Base styles for contact buttons */
-	.rsvp__contact-button {
+	.rsvp__instagram-button {
 		font-family: vars.$font-body;
 		font-size: 1rem;
 		color: vars.$color-white;
@@ -151,19 +197,94 @@
 		text-decoration: none;
 		cursor: pointer;
 		transition:
-			background-color 0.3s ease,
-			transform 0.3s ease;
+			background-color 0.2s ease,
+			transform 0.2s ease;
 		display: inline-block;
 		text-align: center;
-	}
-
-	/* Instagram button styles */
-	.rsvp__instagram-button {
 		background: linear-gradient(45deg, #833ab4, #fd1d1d);
-	}
 
-	.rsvp__instagram-button:hover,
-	.rsvp__instagram-button:focus {
-		transform: translateY(-2px);
+		&:hover,
+		&:focus {
+			transform: translateY(-1px);
+		}
 	}
+}
+
+/* Modal Styles
+ * Note: The modal is rendered via a portal so it won’t be nested within a transformed parent.
+ */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+
+	&.active {
+		opacity: 1;
+		pointer-events: all;
+	}
+}
+
+.modal__content {
+	background-color: vars.$color-white;
+	padding: 2rem;
+	border-radius: 8px;
+	max-width: 90vw;
+	width: 400px;
+	text-align: center;
+	box-shadow: 0 4px 12px rgba(vars.$color-dark, 0.3);
+}
+
+.modal__header {
+	font-size: 1.5rem;
+	margin-bottom: 1rem;
+	color: vars.$color-primary-dark;
+}
+
+.modal__body {
+	margin-bottom: 1.5rem;
+	font-size: 1rem;
+	color: vars.$color-dark;
+}
+
+.modal__footer {
+	display: flex;
+	justify-content: space-around;
+	gap: 1rem;
+}
+
+.modal__button {
+	padding: 0.75rem 1rem;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: vars.$font-heading-elegant;
+	font-size: 1rem;
+	transition:
+		background-color 0.2s ease,
+		transform 0.2s ease;
+
+	&:hover,
+	&:focus {
+		transform: scale(1.01);
+	}
+}
+
+.modal__button--confirm {
+	background-color: vars.$color-primary;
+	color: vars.$color-white;
+}
+
+.modal__button--cancel {
+	background-color: rgba(vars.$color-primary-light, 0.2);
+	color: vars.$color-dark;
 }

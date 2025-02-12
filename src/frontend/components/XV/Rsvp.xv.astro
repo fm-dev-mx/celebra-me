@@ -1,115 +1,31 @@
 ---
 /*
-  RSVP Confirmation Component for XV Invitations
-
-  This component renders an interactive RSVP form with the following features:
-    - Fields for guest’s name (required), number of attendees (optional), and additional comments.
-    - A visually distinct confirmation button with smooth transitions and subtle animations.
-    - Immediate feedback upon confirmation (a success message) along with direct contact options.
-    - Direct contact via WhatsApp (to chat with the quinceañera's mother) and Instagram.
-    - Client-side form validation with user-friendly visual feedback.
-
-  Note:
-    - The form uses vanilla JavaScript for interactivity.
-    - Ensure that the component is hydrated on the client (e.g. using `client:load` when imported).
-*/
+ * src/frontend/components/XV/Rsvp.xv.astro
+ * ------------------------------------------------
+ * RSVP Confirmation Section Astro Component
+ */
 import '@styles/XV/rsvp.xv.scss';
+import RsvpConfirmation from './components/RsvpConfirmation.xv';
 ---
 
 <section class="rsvp-section" id="rsvp-section">
-	<!-- RSVP Form -->
-	<form class="rsvp" id="rsvpForm" novalidate>
-		<div class="rsvp__form">
-			<h2 class="rsvp__title">Confirma tu asistencia</h2>
+	<RsvpConfirmation client:load />
 
-			<!-- Guest Name Field (required) -->
-			<div class="rsvp__field">
-				<label for="guestName">Nombre Completo <span aria-hidden="true">*</span></label>
-				<input
-					type="text"
-					id="guestName"
-					name="guestName"
-					placeholder="Tu nombre"
-					required
-					aria-required="true"
-				/>
-				<span class="rsvp__error" id="errorGuestName" aria-live="polite"></span>
-			</div>
-
-			<!-- Number of Attendees Field (optional) -->
-			<div class="rsvp__field">
-				<label for="attendees">Número de acompañantes</label>
-				<input type="number" id="attendees" name="attendees" min="1" placeholder="1" />
-				<span class="rsvp__error" id="errorAttendees" aria-live="polite"></span>
-			</div>
-
-			<!-- Additional Comments Field (optional) -->
-			<div class="rsvp__field">
-				<label for="comments">Comentarios y Felicitaciones: </label>
-				<textarea
-					id="comments"
-					name="comments"
-					rows="3"
-					placeholder="Escribe tus comentarios"></textarea>
-				<span class="rsvp__error" id="errorComments" aria-live="polite"></span>
-			</div>
-
-			<!-- Confirmation Button -->
-			<button type="submit" class="rsvp__button">Confirmar Asistencia</button>
-		</div>
-	</form>
-
-	<!-- Feedback Message with contact options -->
-	<div class="rsvp__feedback" id="rsvpFeedback" hidden>
-		<p class="rsvp__success-message">
-			¡Nos vemos pronto! Gracias por confirmar antes del 01 de marzo.
+	<!-- Success Greeting (shown after a successful RSVP) -->
+	<div class="rsvp__greeting" hidden>
+		<p class="rsvp__greeting-message">
+			¡Nos vemos pronto! Gracias por confirmar antes del
+			<span class="rsvp__greeting-message__underline">02 de marzo.</span>
 		</p>
-		<!-- Direct contact buttons -->
-		<div class="rsvp__contact-buttons">
-			<!-- Instagram button linking to the quinceañera's profile -->
+		<div class="rsvp__instagram-wrapper">
 			<a
-				href="https://www.instagram.com/quinceanera"
+				href="https://www.instagram.com/estfmna/"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="rsvp__contact-button rsvp__instagram-button"
+				class="rsvp__instagram-button"
 			>
 				¡Sígueme en Instagram!
 			</a>
 		</div>
 	</div>
 </section>
-
-<!-- Client-side Script for form interactivity and validation -->
-<script type="module">
-	// Wait until the DOM is fully loaded
-	document.addEventListener('DOMContentLoaded', () => {
-		const form = document.getElementById('rsvpForm');
-		const feedback = document.getElementById('rsvpFeedback');
-		const guestNameInput = document.getElementById('guestName');
-		const errorGuestName = document.getElementById('errorGuestName');
-
-		// Validate the form fields (currently only the guest name is required)
-		function validateForm() {
-			let valid = true;
-			// Clear any previous error message
-			errorGuestName.textContent = '';
-
-			if (guestNameInput.value.trim() === '') {
-				errorGuestName.textContent = 'El nombre es obligatorio.';
-				valid = false;
-			}
-			return valid;
-		}
-
-		// Handle form submission
-		form.addEventListener('submit', (event) => {
-			event.preventDefault();
-			if (validateForm()) {
-				// Optionally, perform an asynchronous submission here
-				// Hide the form and show the confirmation feedback
-				form.hidden = true;
-				feedback.hidden = false;
-			}
-		});
-	});
-</script>
