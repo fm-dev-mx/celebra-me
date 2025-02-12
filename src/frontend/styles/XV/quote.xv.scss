@@ -3,7 +3,7 @@
 // Elegant Quote Section Styles
 // ----------------------------------------------------
 
-@import '../XV/variables.xv';
+@use '../XV/variables.xv' as *;
 
 .quote-section {
 	position: relative;

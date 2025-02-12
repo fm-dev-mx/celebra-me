@@ -86,6 +86,16 @@
 		fill: rgba($color-whatsapp, 0.6);
 	}
 
+	@include mixins.respond-to(md) {
+		font-size: 0.8rem;
+
+		svg {
+			width: 1rem;
+			height: 1rem;
+			fill: rgba($color-whatsapp, 0.6);
+		}
+	}
+
 	// Hover effect: subtle background change and slight scale-up
 	&:hover {
 		transform: scale(1.05);

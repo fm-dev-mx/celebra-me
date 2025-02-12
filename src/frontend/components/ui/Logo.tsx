@@ -37,6 +37,10 @@ const Logo: React.FC<LogoProps> = ({ variant = 'default', altText }) => {
 			case 'xv':
 				return {
 					src: '/images/header/horizontalLogo100x38.png',
+					srcSet:
+						'/images/header/horizontalLogo125x47.png 125w, ' +
+						'/images/header/horizontalLogo150x56.png 150w',
+					sizes: '(max-width: 480px) 100px, ' + '(max-width: 640px) 125px, ' + '150px',
 				};
 			default:
 				return {

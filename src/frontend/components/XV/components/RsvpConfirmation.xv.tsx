@@ -4,15 +4,33 @@
  * RsvpConfirmation TypeScript Component (XV)
  * -------------------------------------------------------------
  */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 // WhatsApp configuration (replace with your actual phone number)
-const WHATSAPP_PHONE = '526681095162';
-const WHATSAPP_API_URL = 'https://api.whatsapp.com/send';
+// Phone number should be in international format without the '+' sign.
+const WHATSAPP_PHONE = '526681095162'; // e.g., "52" for Mexico
 
 // Default maximum number of guests; this value can be adjusted later.
 const DEFAULT_MAX_GUESTS = 4;
+
+/**
+ * Helper function to generate the proper WhatsApp URL.
+ * Previously, the code selected the endpoint based on device type,
+ * using 'https://web.whatsapp.com/send' on desktops. However, WhatsApp
+ * Web often strips the pre-filled message. To ensure consistency,
+ * we now use the universal API endpoint on all devices.
+ *
+ * @param message - The message to be sent via WhatsApp.
+ * @returns The full WhatsApp URL with correct URL encoding.
+ */
+const getWhatsAppUrl = (message: string): string => {
+	const encodedMessage = encodeURIComponent(message);
+	// Use the universal API endpoint to guarantee the pre-filled message appears
+	const baseUrl = 'https://api.whatsapp.com/send';
+	return `${baseUrl}?phone=${WHATSAPP_PHONE}&text=${encodedMessage}`;
+};
 
 /**
  * RsvpConfirmation Component
@@ -118,8 +136,7 @@ const RsvpConfirmation: React.FC = () => {
 	 */
 	const handleConfirmSend = useCallback(() => {
 		const message = generateWhatsAppMessage();
-		const encodedMessage = encodeURIComponent(message);
-		const whatsappUrl = `${WHATSAPP_API_URL}?phone=${WHATSAPP_PHONE}&text=${encodedMessage}`;
+		const whatsappUrl = getWhatsAppUrl(message);
 		setShowModal(false);
 		setFormSubmitted(true);
 		window.open(whatsappUrl, '_blank');
