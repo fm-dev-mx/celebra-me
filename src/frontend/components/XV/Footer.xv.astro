@@ -1,0 +1,48 @@
+---
+/*
+  src/frontend/components/XV/Footer.xv.astro
+  ----------------------------------------------------
+  This component renders a minimal and refined footer that
+  remains on a single, centered line on all screen sizes.
+  It displays the "Powered by" label, a logo, a contact number,
+  and a WhatsApp button with a pre-filled message.
+
+  Future modifications:
+    - Update `contactNumber` with your actual number if needed.
+    - Adjust the `whatsappMessage` to suit your communication style.
+*/
+import '@frontend/styles/XV/footer.xv.scss';
+import Logo from '../ui/Logo';
+import WhatsAppIcon from '../icons/socials/WhatsAppIcon';
+
+// Define contact details (update contactNumber if necessary)
+const contactNumber = '526681167477';
+const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
+
+// Construct the WhatsApp link with a pre-filled message (ensure correct phone format)
+const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
+---
+
+<footer class="invitation-footer">
+	<div class="footer-content">
+		<div class="footer-info">
+			<!-- "Powered by" label -->
+			<p class="powered-by">Powered by</p>
+			<!-- Logo component -->
+			<Logo variant="xv" />
+			<!-- Display contact number -->
+		</div>
+		<div class="footer-contact">
+			<!-- WhatsApp contact button -->
+			<a
+				class="whatsapp-button"
+				href={whatsappLink}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<WhatsAppIcon />
+				Contáctanos
+			</a>
+		</div>
+	</div>
+</footer>

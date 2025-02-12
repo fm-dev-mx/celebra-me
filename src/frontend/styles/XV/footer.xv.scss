@@ -1,0 +1,99 @@
+/*
+  src/frontend/styles/XV/footer.xv.scss
+  ----------------------------------------------------
+  Footer Styles for XV Invitation
+  ----------------------------------------------------
+*/
+
+@use '../XV/_variables.xv' as *;
+@use '../global/mixins' as mixins; // Se mantiene si se requiere en otros lugares
+
+// Main footer container with a clean, minimalist design
+.invitation-footer {
+	background-color: $color-white; // Fondo neutro
+	padding: 0 1rem; // Padding horizontal
+	font-family: $font-footer;
+	color: $color-dark;
+	font-size: 0.9rem;
+	border-top: 1px solid rgba($color-dark, 0.1);
+	height: 3rem; // Altura fija para el footer
+
+	// Usamos flex para centrar verticalmente y posicionar a la derecha
+	display: flex;
+	align-items: center; // Centrado vertical
+	justify-content: space-around;
+
+	@include mixins.respond-to(xs) {
+		justify-content: flex-end; // Alineación a la derecha en pantallas pequeñas
+		padding-right: 10%;
+		height: 7vh;
+	}
+}
+
+// Flex container to group the footer content with slight separation
+.footer-content {
+	display: flex;
+	align-items: center;
+	gap: 3rem; // Ligera separación entre elementos
+	white-space: nowrap; // Evita el salto de línea
+}
+
+// Group containing "Powered by", Logo y contact number
+.footer-info {
+	display: flex;
+	align-items: center;
+	gap: 1rem; // Espaciado interno
+	p {
+		margin: 0;
+	}
+}
+
+// Styling for the "Powered by" label with subtle emphasis
+.powered-by {
+	display: none; // Oculta "Powered by" en pantallas pequeñas
+	font-size: 0.8rem;
+	opacity: 0.8;
+
+	// Mostrar en pantallas medianas en adelante
+	@include mixins.respond-to(xs) {
+		display: block;
+	}
+}
+
+// Styling for the contact number
+.contact-number {
+	opacity: 0.8;
+}
+
+// WhatsApp button styling with subtle hover effects
+.whatsapp-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	background-color: rgba($color-secondary, 0.5);
+	color: rgba($color-dark, 0.7);
+	padding: 0.5rem 1rem;
+	border-radius: 99px;
+	transition:
+		background-color 0.3s ease,
+		transform 0.3s ease;
+	font-family: $font-button;
+	font-size: 0.6rem;
+
+	svg {
+		width: 0.8rem;
+		height: 0.8rem;
+		fill: rgba($color-whatsapp, 0.6);
+	}
+
+	// Hover effect: subtle background change and slight scale-up
+	&:hover {
+		transform: scale(1.05);
+		filter: brightness(1.05);
+	}
+
+	// Active state: remove extra scaling
+	&:active {
+		transform: scale(1);
+	}
+}
