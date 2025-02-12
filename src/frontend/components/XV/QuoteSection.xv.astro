@@ -1,0 +1,17 @@
+---
+// src/frontend/components/XV/QuoteSection.xv.astro
+// Elegant quote section with gradient background and fade-in animation
+
+import '@frontend/styles/XV/quote.xv.scss';
+
+const quote =
+	'Encuentra tu propia voz y úsala. Encuentra tu propio camino y síguelo. Encuentra tu propio ritmo y báilalo. Encuentra tu propia verdad y exprésala. Sé tú mismo; brilla.';
+const author = 'Anónimo';
+---
+
+<section class="quote-section" aria-label="Inspirational Quote">
+	<div class="quote-container">
+		<blockquote class="quote-text">"{quote}"</blockquote>
+		<p class="quote-author">— {author}</p>
+	</div>
+</section>

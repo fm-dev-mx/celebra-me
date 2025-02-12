@@ -1,0 +1,79 @@
+// src/frontend/styles/XV/quote.xv.scss
+// ----------------------------------------------------
+// Elegant Quote Section Styles
+// ----------------------------------------------------
+
+@import '../XV/variables.xv';
+
+.quote-section {
+	position: relative;
+	height: 30vh;
+	min-height: 400px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	border-top: 2px solid rgba($color-secondary-dark, 0.6);
+	border-bottom: 2px solid rgba($color-secondary-dark, 0.6);
+	background: linear-gradient(
+		135deg,
+		rgba($color-primary-dark, 0.95) 0%,
+		rgba($color-secondary-dark, 0.95) 100%
+	);
+
+	// Subtle floral pattern overlay
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0.15;
+		background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971069/1080x1920bg_purple_dust_oft0lz.jpg');
+		background-size: 120px;
+	}
+}
+
+.quote-container {
+	position: relative;
+	max-width: 80%;
+	padding: 2rem;
+	text-align: center;
+	animation: fadeInUp 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.quote-text {
+	font-family: $font-decorative-cursive;
+	font-size: clamp(1.5rem, 4vw, 2rem);
+	line-height: 1.4;
+	color: rgba($color-white, 0.8);
+	margin-bottom: 1.5rem;
+	text-shadow: 0 2px 8px rgba($color-darkest, 0.8);
+
+	@media (min-width: 768px) {
+		line-height: 1.6;
+		margin-bottom: 2rem;
+	}
+}
+
+.quote-author {
+	font-family: $font-body;
+	font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+	font-style: italic;
+	color: $color-secondary-light;
+	opacity: 0.9;
+	letter-spacing: 0.05em;
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
