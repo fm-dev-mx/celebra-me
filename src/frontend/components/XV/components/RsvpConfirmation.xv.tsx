@@ -5,29 +5,34 @@
  * -------------------------------------------------------------
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-// WhatsApp configuration (replace with your actual phone number)
-// Phone number should be in international format without the '+' sign.
-const WHATSAPP_PHONE = '526681095162'; // e.g., "52" for Mexico
+// WhatsApp configuration: Replace with your actual phone number in international format (omit '+' sign).
+const WHATSAPP_PHONE = '526681095162';
 
-// Default maximum number of guests; this value can be adjusted later.
-const DEFAULT_MAX_GUESTS = 4;
+// Default guest cap if the URL parameter is absent or invalid.
+const DEFAULT_GUEST_CAP = 4;
+
+// URL parameter name for setting the guest cap subtly.
+const GUEST_CAP_PARAM = 'cap';
+
+// Type definition for form errors.
+interface FormErrors {
+	name?: string;
+	phone?: string;
+	guests?: string;
+}
 
 /**
- * Helper function to generate the proper WhatsApp URL.
- * Previously, the code selected the endpoint based on device type,
- * using 'https://web.whatsapp.com/send' on desktops. However, WhatsApp
- * Web often strips the pre-filled message. To ensure consistency,
- * we now use the universal API endpoint on all devices.
+ * Generates a properly encoded WhatsApp URL with a pre-filled message.
+ * Uses the universal API endpoint for consistent behavior across devices.
  *
  * @param message - The message to be sent via WhatsApp.
- * @returns The full WhatsApp URL with correct URL encoding.
+ * @returns The full WhatsApp URL.
  */
 const getWhatsAppUrl = (message: string): string => {
 	const encodedMessage = encodeURIComponent(message);
-	// Use the universal API endpoint to guarantee the pre-filled message appears
 	const baseUrl = 'https://api.whatsapp.com/send';
 	return `${baseUrl}?phone=${WHATSAPP_PHONE}&text=${encodedMessage}`;
 };
@@ -35,38 +40,46 @@ const getWhatsAppUrl = (message: string): string => {
 /**
  * RsvpConfirmation Component
  *
- * Renders the RSVP confirmation form for guests to confirm attendance.
+ * Renders the RSVP confirmation form, allowing guests to confirm attendance.
+ * The guest cap can be configured via the URL using a subtle parameter (e.g., ?cap=5).
  * Includes form validation, a confirmation modal, and WhatsApp integration.
- *
- * Future Expansion:
- * - Integration with backend APIs to persist RSVP data.
- * - Additional configuration options.
  */
 const RsvpConfirmation: React.FC = () => {
-	// Form state variables
+	// Form field states.
 	const [name, setName] = useState<string>('');
 	const [phone, setPhone] = useState<string>('');
 	const [attendance, setAttendance] = useState<'attending' | 'not-attending'>('attending');
 	const [guests, setGuests] = useState<string>('');
-	const [errors, setErrors] = useState<{ name?: string; phone?: string; guests?: string }>({});
+	const [errors, setErrors] = useState<FormErrors>({});
 	const [showModal, setShowModal] = useState<boolean>(false);
-	const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
-	const [maxGuests, setMaxGuests] = useState<number>(DEFAULT_MAX_GUESTS);
 
-	// Update maximum guest count from URL parameters if available.
+	// Guest cap state, updated on the client side.
+	const [guestCap, setGuestCap] = useState<number>(DEFAULT_GUEST_CAP);
+
+	/**
+	 * Updates guest cap from the URL parameter once the component is mounted on the client.
+	 */
 	useEffect(() => {
-		const params = new URLSearchParams(window.location.search);
-		const maxParam = params.get('max');
-		if (maxParam && !isNaN(Number(maxParam))) {
-			setMaxGuests(Number(maxParam));
+		if (typeof window !== 'undefined') {
+			const params = new URLSearchParams(window.location.search);
+			const capParam = params.get(GUEST_CAP_PARAM);
+			const parsed = Number(capParam);
+			if (!isNaN(parsed) && parsed > 0) {
+				setGuestCap(parsed);
+			}
 		}
 	}, []);
 
-	// Allow the guest to close the modal via the Escape key for accessibility.
+	/**
+	 * Closes the confirmation modal.
+	 */
 	const handleGoBack = useCallback(() => {
 		setShowModal(false);
 	}, []);
 
+	/**
+	 * Closes the modal when the Escape key is pressed.
+	 */
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape' && showModal) {
@@ -79,11 +92,12 @@ const RsvpConfirmation: React.FC = () => {
 
 	/**
 	 * Validates form fields and sets error messages.
-	 * Returns true if all required fields are valid.
+	 *
+	 * @returns True if the form is valid, false otherwise.
 	 */
 	const validateForm = (): boolean => {
 		let valid = true;
-		const newErrors: { name?: string; phone?: string; guests?: string } = {};
+		const newErrors: FormErrors = {};
 
 		if (name.trim() === '') {
 			newErrors.name = 'El nombre es obligatorio.';
@@ -93,11 +107,11 @@ const RsvpConfirmation: React.FC = () => {
 			newErrors.phone = 'El teléfono es obligatorio.';
 			valid = false;
 		}
-		// Validate guest count only when confirming attendance and if input is provided.
+		// Validate guest count only when attendance is confirmed.
 		if (attendance === 'attending' && guests.trim() !== '') {
 			const numGuests = Number(guests);
-			if (isNaN(numGuests) || numGuests < 1 || numGuests > maxGuests) {
-				newErrors.guests = 'La invitación es para máximo ' + maxGuests + ' personas.';
+			if (isNaN(numGuests) || numGuests < 1 || numGuests > guestCap) {
+				newErrors.guests = `La invitación es para un máximo de ${guestCap} personas.`;
 				valid = false;
 			}
 		}
@@ -106,19 +120,22 @@ const RsvpConfirmation: React.FC = () => {
 	};
 
 	/**
-	 * Generates the WhatsApp message confirming the guest's attendance.
-	 * Clarifies that the guest is confirming their own attendance.
+	 * Generates the WhatsApp message based on guest details.
+	 *
+	 * @returns The formatted WhatsApp message.
 	 */
-	const generateWhatsAppMessage = (): string => {
+	const generateWhatsAppMessage = useCallback((): string => {
 		if (attendance === 'attending') {
 			const totalAttendees = guests.trim() === '' ? 1 : Number(guests.trim());
 			return `¡Hola! Confirmo mi asistencia. Soy ${name} (tel: ${phone}). En total, seremos ${totalAttendees} ${totalAttendees > 1 ? 'personas' : 'persona'}.`;
 		}
 		return `¡Hola! Soy ${name} y, lamentablemente, no podré asistir. Les deseo un evento maravilloso y mucho éxito.`;
-	};
+	}, [name, phone, guests, attendance]);
 
 	/**
-	 * Handles form submission by validating inputs and displaying the confirmation modal.
+	 * Handles form submission by validating inputs and showing the confirmation modal.
+	 *
+	 * @param e - The form submission event.
 	 */
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -128,19 +145,15 @@ const RsvpConfirmation: React.FC = () => {
 	};
 
 	/**
-	 * Handles confirmation from the modal:
-	 * Constructs the WhatsApp URL and opens it in a new tab.
-	 *
-	 * Future Expansion:
-	 * - Persist RSVP details via an API before redirecting.
+	 * Handles final confirmation to send the RSVP via WhatsApp.
+	 * Opens WhatsApp in a new tab with the pre-filled message.
 	 */
 	const handleConfirmSend = useCallback(() => {
 		const message = generateWhatsAppMessage();
 		const whatsappUrl = getWhatsAppUrl(message);
 		setShowModal(false);
-		setFormSubmitted(true);
 		window.open(whatsappUrl, '_blank');
-	}, [name, phone, guests, attendance, maxGuests]);
+	}, [generateWhatsAppMessage]);
 
 	return (
 		<section className="rsvp">
@@ -177,7 +190,7 @@ const RsvpConfirmation: React.FC = () => {
 					{errors.phone && <span className="rsvp__error">{errors.phone}</span>}
 				</div>
 
-				{/* Attendance Option */}
+				{/* Attendance Options */}
 				<div className="rsvp__field">
 					<div className="rsvp__radio-group">
 						<label>
@@ -203,7 +216,7 @@ const RsvpConfirmation: React.FC = () => {
 					</div>
 				</div>
 
-				{/* Guest Count Field or "Not Attending" Message */}
+				{/* Guest Count Field or Not-Attending Message */}
 				<div className="rsvp__field">
 					{attendance === 'attending' ? (
 						<>
@@ -215,6 +228,8 @@ const RsvpConfirmation: React.FC = () => {
 								placeholder="Número de invitados"
 								value={guests}
 								onChange={(e) => setGuests(e.target.value)}
+								min="1"
+								max={guestCap}
 							/>
 							{errors.guests && <span className="rsvp__error">{errors.guests}</span>}
 						</>
@@ -231,7 +246,7 @@ const RsvpConfirmation: React.FC = () => {
 				</button>
 			</form>
 
-			{/* Confirmation Modal rendered via Portal for proper layering */}
+			{/* Confirmation Modal rendered via Portal */}
 			{showModal &&
 				createPortal(
 					<div
