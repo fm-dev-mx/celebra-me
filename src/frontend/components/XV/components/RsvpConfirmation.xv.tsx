@@ -12,7 +12,7 @@ import { createPortal } from 'react-dom';
 const WHATSAPP_PHONE = '526681095162';
 
 // Default guest cap if the URL parameter is absent or invalid.
-const DEFAULT_GUEST_CAP = 4;
+const DEFAULT_GUEST_CAP = 2;
 
 // URL parameter name for setting the guest cap subtly.
 const GUEST_CAP_PARAM = 'cap';
