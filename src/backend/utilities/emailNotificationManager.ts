@@ -253,8 +253,8 @@ export class EmailNotificationManager {
 		subject: string,
 		event: string,
 	): void {
-		logError({
-			message: 'Failed to send email notification.3',
+                logError({
+                        message: 'Failed to send email notification.',
 			module: MODULE_NAME,
 			meta: {
 				event,
