@@ -42,11 +42,11 @@ export const POST: APIRoute = errorHandlerMiddleware(
 		[
 			clientIpMiddleware,
 			loggerMiddleware,
-			rateLimiterMiddleware({
-				limit: 5,
-				duration: '15 m',
-				prefix: 'emailRateLimiter',
-			}),
+                        rateLimiterMiddleware({
+                                limit: 5,
+                                duration: '15m',
+                                prefix: 'emailRateLimiter',
+                        }),
 			validationMiddleware(contactFormValidationRules),
 		],
 	),
