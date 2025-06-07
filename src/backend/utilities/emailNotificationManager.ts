@@ -239,18 +239,20 @@ export class EmailNotificationManager {
 		});
 	}
 
-	/**
-	 * Logs errors related to email sending.
-	 *
-	 * @param error - The error that occurred while sending the email.
-	 * @param recipient - The email recipient.
-	 * @param event - The specific event identifier for the error.
-	 */
-	private logEmailError(
-		error: unknown,
-		recipient: string,
-		sender: string,
-		subject: string,
+        /**
+         * Logs errors that occur when attempting to send an email notification.
+         *
+         * @param error - The caught error or exception.
+         * @param recipient - Address of the intended recipient.
+         * @param sender - Address that attempted to send the email.
+         * @param subject - Subject line of the attempted email.
+         * @param event - Identifier for the originating event.
+         */
+        private logEmailError(
+                error: unknown,
+                recipient: string,
+                sender: string,
+                subject: string,
 		event: string,
 	): void {
                 logError({
