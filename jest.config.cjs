@@ -10,7 +10,6 @@ module.exports = {
 				useESM: true,
 			},
 		],
-		'^.+\\.astro$': 'astro-jest', // Support for Astro files (optional)
 	},
 	moduleNameMapper: {
 		// Core aliases
