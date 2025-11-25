@@ -1,0 +1,48 @@
+---
+// src/pages/xv/estefania-anguamea.astro
+
+/* Renamed from: src/pages/XV-Estefania-Anguamea.astro
+   Standardized to lowercase URL friendly path.
+*/
+import Layout from '@/layouts/Layout.astro';
+// Importing directly from the new flattened components structure
+import Hero from '@/components/xv/Hero.astro';
+import Countdown from '@/components/xv/Countdown.astro';
+import EventLocation from '@/components/xv/EventLocation.astro';
+import FooterXV from '@/components/xv/FooterXV.astro';
+
+// Mock data (Previously imported from src/core/data/...)
+// Ideally this comes from a Content Collection in the future steps.
+const eventData = {
+  name: "Estefanía Anguamea",
+  date: "2024-12-15T18:00:00",
+  location: "Salón de Eventos Royal",
+  address: "Av. Principal 123, Ciudad",
+  themeColor: "#d4af37"
+};
+---
+
+<Layout title={`XV Años - ${eventData.name}`}>
+  <article class="xv-theme">
+    <style define:vars={{ primaryColor: eventData.themeColor }}>
+      .xv-theme {
+        --color-primary: var(--primaryColor);
+        --color-accent: #111;
+      }
+    </style>
+
+    <Hero
+      name={eventData.name}
+      date={eventData.date}
+    />
+
+    <Countdown targetDate={eventData.date} />
+
+    <EventLocation
+      venue={eventData.location}
+      address={eventData.address}
+    />
+
+    <FooterXV name={eventData.name} />
+  </article>
+</Layout>

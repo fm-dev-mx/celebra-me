@@ -1,0 +1,33 @@
+---
+// src/components/xv/Hero.astro
+/* Moved from src/frontend/components/XV/Hero.xv.astro */
+interface Props {
+  name: string;
+  date: string;
+}
+
+const { name, date } = Astro.props;
+const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<section class="relative h-screen flex items-center justify-center overflow-hidden bg-black/40">
+  <div class="absolute inset-0 -z-10">
+    <img
+      src="/images/hero/bgHeroDesktop.jpg"
+      alt="Fiesta de XV años"
+      class="w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 bg-black/40"></div>
+  </div>
+
+  <div class="text-center text-white p-4 animate-fade-in">
+    <span class="block text-xl md:text-2xl tracking-widest uppercase mb-4">Mis XV Años</span>
+    <h1 class="text-5xl md:text-8xl font-serif mb-6">{name}</h1>
+    <div class="w-24 h-1 bg-primary mx-auto mb-8"></div>
+    <p class="text-xl md:text-2xl font-light">{formattedDate}</p>
+  </div>
+</section>

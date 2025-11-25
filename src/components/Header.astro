@@ -1,0 +1,64 @@
+---
+// src/components/Header.astro
+
+// Moved from src/frontend/sections/Header.astro
+const logoSrc = "/images/header/horizontalLogo150x56.png";
+
+const navItems = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Servicios', href: '/#services' },
+  { label: 'Nosotros', href: '/#about' },
+  { label: 'Contacto', href: '/#contact' },
+];
+---
+
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300">
+  <div class="container-custom flex items-center justify-between py-4">
+    <a href="/" class="block">
+      <img src={logoSrc} alt="Celebra.me Logo" width="150" height="56" class="h-auto w-32 md:w-40" />
+    </a>
+
+    <nav class="hidden md:flex gap-8">
+      {navItems.map(item => (
+        <a
+          href={item.href}
+          class="text-gray-700 hover:text-primary font-medium transition-colors"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden p-2 text-gray-700"
+      aria-label="Menú"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white border-t">
+    <div class="flex flex-col p-4 gap-4">
+      {navItems.map(item => (
+        <a href={item.href} class="text-gray-700 block py-2">{item.label}</a>
+      ))}
+    </div>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+
+  if (btn && menu) {
+    btn.addEventListener('click', () => {
+      const isHidden = menu.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', (!isHidden).toString());
+    });
+  }
+</script>

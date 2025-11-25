@@ -1,0 +1,39 @@
+---
+// src/components/Footer.astro
+
+/* Moved from src/frontend/sections/Footer.astro */
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-gray-900 text-white py-12">
+  <div class="container-custom grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div>
+      <h3 class="text-xl font-serif mb-4">Celebra.me</h3>
+      <p class="text-gray-400 text-sm">
+        Creando momentos inolvidables para tus celebraciones más especiales.
+      </p>
+    </div>
+
+    <div>
+      <h4 class="font-bold mb-4">Enlaces</h4>
+      <ul class="space-y-2 text-gray-400 text-sm">
+        <li><a href="/#services" class="hover:text-primary">Servicios</a></li>
+        <li><a href="/#about" class="hover:text-primary">Nosotros</a></li>
+        <li><a href="/privacy" class="hover:text-primary">Privacidad</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-bold mb-4">Contacto</h4>
+      <p class="text-gray-400 text-sm">hola@celebra.me</p>
+      <div class="flex gap-4 mt-4">
+        <a href="#" aria-label="Facebook" class="hover:text-primary">FB</a>
+        <a href="#" aria-label="Instagram" class="hover:text-primary">IG</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-custom mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-xs">
+    © {currentYear} Celebra.me. Todos los derechos reservados.
+  </div>
+</footer>

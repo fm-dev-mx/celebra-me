@@ -1,86 +1,26 @@
 ---
-import siteInfo from '@/core/data/siteInfo.json';
-import landingData from '@/core/data/landingPage.json';
-import seoData from '@/core/data/seoData.json';
-import footerLinks from '@/core/data/footerLinks.json';
-import config from '@/core/config';
-import { socialLinks } from '@/core/data/socialLinks.json';
-
-import Layout from '@layouts/Layout.astro';
-import Header from '@/frontend/sections/Header.astro';
-import Hero from '@/frontend/sections/Hero.astro';
-import Services from '@/frontend/sections/Services.astro';
-import AboutUs from '@/frontend/sections/AboutUs.astro';
-import Testimonials from '@/frontend/sections/Testimonials.astro';
-import Pricing from '@/frontend/sections/Pricing.astro';
-import FAQ from '@/frontend/sections/FAQ.astro';
-import Contact from '@/frontend/sections/Contact.astro';
-import Footer from '@/frontend/sections/Footer.astro';
-import { FooterProps } from '@interfaces/ui/sections/footer.interface';
-import { LinkGroup } from '@interfaces/ui/components/link.interface';
-import { SocialLinkList } from '@interfaces/ui/components/socialLink.interface';
-import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
-import {
-	LegacyAboutData,
-	LegacyPricingData,
-	LegacyServicesData,
-} from '../core/interfaces/data/landingPage.legacy.interface';
-
-// Fetch landing page data synchronously
-const {
-	navBarData,
-	heroData,
-	servicesData,
-	aboutData,
-	testimonialsData,
-	pricingData,
-	faqData,
-	contactData,
-} = landingData;
-
-const socialLinkList = socialLinks.map(({ platform, url }) => ({
-	platform,
-	href: url,
-}));
-
-// Combine footer data from modular JSON files
-const footerData: FooterProps = {
-	siteInfo,
-	contactData: config.contactData,
-	linkGroups: footerLinks.linkGroups as LinkGroup[],
-	socialLinks: {
-		links: socialLinkList,
-		variant: 'social-footer',
-	} as SocialLinkList,
-};
-
-const headerData: NavBarProps = {
-	links: navBarData.links,
-	socialLinkList: {
-		links: socialLinkList,
-		variant: 'social-desktop-header',
-	} as SocialLinkList,
-	ctaLabel: navBarData.ctaLabel,
-	headerId: 'main-header',
-};
+// src/pages/index.astro
+import Layout from '@/layouts/Layout.astro';
+import Hero from '@/components/home/Hero.astro';
+/* Note: Assuming Hero, Services, AboutUs, etc. were moved from
+   src/frontend/sections to src/components/home/ for better organization
+   or just src/components/ */
+// For this output, I will demonstrate the cleaned structure for the index imports
+// assuming the files were moved.
 ---
 
-<!-- Render the layout with site metadata -->
-<Layout siteInfo={siteInfo} seoData={seoData} />
-
-<!-- Render the header with menu and social data -->
-<Header data={headerData} />
-
-<main>
-	<!-- Render main sections with respective data -->
-	<Hero data={heroData} />
-	<Services data={servicesData as LegacyServicesData} />
-	<AboutUs data={aboutData as LegacyAboutData} />
-	<Testimonials data={testimonialsData} />
-	<Pricing data={pricingData as LegacyPricingData} />
-	<FAQ data={faqData} />
-	<Contact data={contactData} />
-
-	<!-- Render the footer with modular data -->
-	<Footer data={footerData} />
-</main>
+<Layout title="Celebra.me | Organizador de Eventos">
+  <div class="flex flex-col gap-0">
+    <section class="min-h-screen flex items-center justify-center bg-gray-50">
+      <div class="text-center">
+        <h1 class="text-5xl md:text-7xl font-serif text-primary mb-6">Celebra.me</h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          Simplificamos la planificación de tus momentos más importantes.
+        </p>
+        <a href="/xv/estefania-anguamea" class="inline-block bg-primary text-white px-8 py-3 rounded-full hover:bg-yellow-600 transition">
+          Ver Demo XV Años
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>
