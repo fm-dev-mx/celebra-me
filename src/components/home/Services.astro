@@ -14,8 +14,8 @@ import type { LegacyServicesData } from '@/core/interfaces/data/landingPage.lega
 // Import local images
 import xvImage from '@images/services/xv.jpg';
 import weddingPartyImage from '@images/services/weddingParty.jpg';
-import ActionBase from '@components/common/actions/ActionBase';
-import ActionIcon from '@components/common/actions/ActionIcon';
+import ActionBase from '@components/common/actions/ActionBase.astro';
+import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
 interface Props {
 	data: LegacyServicesData;
@@ -25,7 +25,7 @@ const { data } = Astro.props;
 
 // Helper function to chunk array into groups
 const chunkArray = (arr: any[], size: number) =>
-	Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+	Array.from({ length: Math.ceil(arr.length / size) }, (_v, i) =>
 		arr.slice(i * size, i * size + size),
 	);
 

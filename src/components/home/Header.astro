@@ -5,10 +5,10 @@
  * This Astro component renders the header section, including desktop and mobile navigation bars.
  */
 
-import HeaderBehavior from '@components/ui/header/HeaderBehavior';
-import NavBarDesktop from '@components/ui/header/NavBarDesktop';
-import NavBarMobile from '@components/ui/header/NavBarMobile';
-import { NavBarProps } from '@interfaces/ui/components/navBar.interface';
+import HeaderBehavior from '@components/ui/header/HeaderBehavior.tsx';
+import NavBarDesktop from '@components/ui/header/NavBarDesktop.tsx';
+import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
+import type { NavBarProps } from '@interfaces/ui/components/navBar.interface.ts';
 
 // Assign the entire 'data' object from Astro.props
 const data: NavBarProps = Astro.props.data;

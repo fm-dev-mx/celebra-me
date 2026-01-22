@@ -7,13 +7,13 @@
  * - Link groups
  * - Social media links
  */
-import ActionBase from '@components/common/actions/ActionBase';
-import ActionWrapper from '@components/common/actions/ActionWrapper';
+import ActionBase from '@components/common/actions/ActionBase.astro';
+import ActionWrapper from '@components/common/actions/ActionWrapper.astro';
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import Logo from '@components/ui/Logo';
-import SocialMediaLinks from '@components/common/actions/SocialMediaLinks';
-import { FooterProps } from '@interfaces/ui/sections/footer.interface';
+import Logo from '@components/ui/Logo.astro';
+import SocialMediaLinks from '@components/common/actions/SocialMediaLinks.astro';
+import type { FooterProps } from '@interfaces/ui/sections/footer.interface.ts';
 
 interface Props {
 	data: FooterProps;
@@ -43,10 +43,10 @@ const socialLinks = data?.socialLinks?.links?.length ? data.socialLinks : null;
 				<!-- Navigation and link groups in the footer -->
 				<ActionWrapper className="footer-menu">
 					{
-						data.linkGroups.map((group) => (
+						data.linkGroups.map((group: any) => (
 							<div class="footer-link-group">
 								<h4 class="font-semibold">{group.title}</h4>
-								{group.links.map((link) => (
+								{group.links.map((link: any) => (
 									<ActionBase
 										key={link.label}
 										variant="text"

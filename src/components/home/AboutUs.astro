@@ -9,12 +9,12 @@ import ImageWrapper from '@components/common/ImageWrapper.astro';
 import Paragraph from '@components/common/Paragraph.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
-import ActionBase from '@components/common/actions/ActionBase';
-import ActionIcon from '@components/common/actions/ActionIcon';
+import ActionBase from '@components/common/actions/ActionBase.astro';
+import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import type { LegacyAboutData } from '@/core/interfaces/data/landingPage.legacy.interface';
-import type { IconNames } from '@/core/types/ui/iconNames.type';
+// import type { IconNames } from '@/core/types/ui/iconNames.type';
 import partyToastImage from '@images/about/partyToast.jpg';
-import Icon from '@components/common/Icon';
+import Icon from '@components/common/Icon.astro';
 
 interface Props {
 	data: LegacyAboutData;
@@ -88,7 +88,7 @@ const {
 			{/* Grid for displaying company values */}
 			<Grid columns={3} gap="gap-8" padding="pt-12">
 				{
-					values.map((value) => (
+					values.map((value: any) => (
 						<Card
 							minWidth="min-w-[250px] max-w-[350px] xl:min-w-[230px] xl:max-w-[230px]"
 							minHeight="min-h-[200px] max-h-[200px] xl:min-h-[230px] xl:max-h-[230px]"
