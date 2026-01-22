@@ -1,4 +1,3 @@
-
 # Gatekeeper Rules — Celebra-me
 
 This document defines the **operational contract** for the Gatekeeper agent.
@@ -132,6 +131,35 @@ Mixed or English UI text introduced by staged changes must be corrected.
 
 ---
 
+### 2.8 Type Safety (No New `any`)
+
+Type safety is enforced to prevent silent runtime risk and type drift.
+
+Rules:
+
+- Do not introduce new `any` (including `as any`).
+- Prefer `unknown` + narrowing when types are not known at compile time.
+- For untrusted object inputs (e.g., parsed JSON), prefer:
+  - `unknown`, or
+  - `Record<string, unknown>` with explicit narrowing.
+
+`@ts-ignore` policy:
+
+- Avoid `@ts-ignore`.
+- If it is truly unavoidable, it must include a brief reason comment on the line above:
+  - `// @ts-ignore -- <why this is safe/necessary>`
+
+Legacy `any` handling:
+
+- Existing `any` is allowed to remain unless touched.
+- If the staged changes touch code where `any` is used, the agent should replace it **only when trivial** (e.g., `any` → `unknown` + safe narrowing), and must avoid large typing refactors.
+
+Large Change Mode note:
+
+- In Large Change Mode, the agent must **still block new `any`**, but should avoid non-trivial typing refactors.
+
+---
+
 ## 3) Allowed Actions
 
 ### 3.1 Auto-Fixes
@@ -140,6 +168,7 @@ The agent may automatically fix:
 
 - broken or unused imports,
 - obvious typing issues,
+- **new `any` introduced by staged changes** (replace with `unknown` + narrowing when safe),
 - incorrect casing,
 - UI strings violating language rules,
 - Tailwind removal with SCSS replacement (within limits),
@@ -172,7 +201,8 @@ The agent must switch to **Large Change Mode** when any of the following apply:
 
 - Fix only:
   - build or deploy breakers,
-  - hard guard violations (artifacts, casing, boundary leaks).
+  - hard guard violations (artifacts, casing, boundary leaks),
+  - **new `any` introduced by staged changes** (block/must-fix), avoiding non-trivial typing refactors.
 - Report all other findings without applying changes.
 
 ---
@@ -223,11 +253,9 @@ If fixes were applied:
 - For each file: violation + fix (brief).
 - End with **one** Conventional Commit message:
 
-``` bash
-
+```bash
 type(scope): summary
-
-```
+````
 
 Prefer `fix` or `refactor` when acting as Gatekeeper.
 
