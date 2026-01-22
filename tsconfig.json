@@ -5,7 +5,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@core/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@styles/*": ["src/styles/*"],
+      "@utils/*": ["src/utils/*"],
+      "@images/*": ["public/images/*"],
+      "@interfaces/*": ["src/interfaces/*"]
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react",
