@@ -72,8 +72,8 @@ importers:
         specifier: ^0.33.5
         version: 0.33.5
       validator:
-        specifier: ^13.12.0
-        version: 13.12.0
+        specifier: ^13.15.20
+        version: 13.15.26
       vercel:
         specifier: ^39.4.2
         version: 39.4.2(rollup@4.34.6)
@@ -6040,8 +6040,8 @@ packages:
     resolution: {integrity: sha512-VEYTpTVPMgO799f2wI7zWf0x2C54bPX6NAfbZ2Z8kZn76p+3rEYCTYVYzMUcVSMvakxMQTriBf24s3+WeXJtEg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  validator@13.12.0:
-    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
+  validator@13.15.26:
+    resolution: {integrity: sha512-spH26xU080ydGggxRyR1Yhcbgx+j3y5jbNXk/8L+iRvdIEQ4uTRH2Sgf2dokud6Q4oAtsbNvJ1Ft+9xmm6IZcA==}
     engines: {node: '>= 0.10'}
 
   varint@6.0.0:
@@ -13355,7 +13355,7 @@ snapshots:
     dependencies:
       filename-reserved-regex: 3.0.0
 
-  validator@13.12.0: {}
+  validator@13.15.26: {}
 
   varint@6.0.0: {}
 
