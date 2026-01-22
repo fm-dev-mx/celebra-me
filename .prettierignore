@@ -32,3 +32,6 @@ coverage/
 
 # Ignore generated files
 astro/types.d.ts
+
+# Ignore Astro files as they cause parsing errors in some environments
+**/*.astro
