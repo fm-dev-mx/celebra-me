@@ -2,183 +2,183 @@
 
 ![Celebra-me Logo](public/icons/favicon.svg)
 
-**Celebra-me** is a high-performance web application designed for the **creation and sale of custom digital invitations**. While users can easily order invitations for their special events—like weddings, quinceañeras, and more—the actual design and customization are handled by **Celebra-me**, ensuring a seamless and professional process from start to finish.
+**Celebra-me** is a web platform for the **creation and sale of custom digital invitations**.
+It provides a **fully managed service**: clients share their event details, and Celebra-me handles the design, customization, and delivery of a polished digital invitation.
 
-Our platform leverages modern web technologies to deliver visually stunning, responsive invitations directly to clients, enabling them to effortlessly share them with their guests via digital channels.
+The platform is built to deliver **high-performance, responsive invitations** that can be easily shared across digital channels.
 
-## Table of Contents
-
--   [About Celebra-me](#about-celebra-me)
--   [Features](#features)
--   [Tech Stack](#tech-stack)
--   [Project Structure](#project-structure)
--   [Getting Started](#getting-started)
--   [Code Quality](#code-quality)
--   [License](#license)
--   [Contact](#contact)
+---
 
 ## About Celebra-me
 
-Celebra-me.com is not just another "DIY" invitation platform. Instead, it offers a **fully managed service** where we create **custom digital invitations** tailored to each client's event. From initial inquiry to final delivery, we handle all aspects of design and customization. Clients simply provide details about their event, and we create the invitations for them, ensuring they receive a polished, professional product.
+Celebra-me is not a DIY invitation builder.
+
+Instead, it operates as a **design-led, curated service** where each invitation is created and customized by the Celebra-me team. This approach ensures consistent quality, visual coherence, and a professional result for every event.
+
+---
 
 ## Features
 
--   **Custom Digital Invitations**: We design personalized invitations for a variety of events (e.g., weddings, quinceañeras, birthdays).
--   **Full-Service Approach**: The Celebra-me team handles all aspects of design, ensuring consistency, quality, and brand alignment.
--   **Responsive Design**: All invitations are optimized for viewing on any device, including mobile, tablet, and desktop.
--   **Easy Sharing**: Invitations are delivered digitally and can be shared easily via social media, email, or messaging apps.
--   **Event Analytics**: Track invitation views and RSVPs through a custom dashboard (coming soon).
+- **Custom Digital Invitations**
+  Personalized invitations for events such as weddings, quinceañeras, birthdays, and more.
+
+- **Fully Managed Process**
+  Design and customization are handled by Celebra-me, not end users.
+
+- **Responsive by Default**
+  Invitations are optimized for mobile, tablet, and desktop.
+
+- **Digital Delivery**
+  Invitations are shared easily via messaging apps, email, or social platforms.
+
+---
 
 ## Tech Stack
 
-Celebra-me is built with a modern tech stack to ensure performance, scalability, and maintainability:
+The project uses a modern, performance-oriented stack:
 
--   **Framework**: [Astro](https://astro.build/) (v4.x) - Static site generator leveraging component islands architecture for optimized performance.
--   **Language**: [TypeScript](https://www.typescriptlang.org/) (v5.x) - Strongly typed JavaScript for better maintainability.
--   **Styling**: [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) - Used for core styles, allowing precise control over the look and feel of the application.
--   **Utility Styling**: [TailwindCSS](https://tailwindcss.com/) (v3.x) - Utility-first CSS framework for fast, responsive UI design.
--   **Package Manager**: [pnpm](https://pnpm.io/) - Fast, efficient package manager designed to save disk space.
--   **Linting**: [ESLint](https://eslint.org/) - Configured to enforce code quality and catch potential issues.
--   **Formatting**: [Prettier](https://prettier.io/) - Automatic code formatting to maintain consistent style.
--   **Deployment**: [Vercel](https://vercel.com/) - Serverless deployment platform optimized for static and dynamic sites.
+- **Framework**: [Astro](https://astro.build/) — component-based, island architecture.
+- **Language**: [TypeScript](https://www.typescriptlang.org/) — static typing for reliability.
+- **Styling**: **SCSS** — the only supported styling system (no Tailwind).
+- **Package Manager**: [pnpm](https://pnpm.io/)
+- **Linting**: ESLint
+- **Formatting**: Prettier
+- **Deployment**: Vercel
+
+---
 
 ## Project Structure
+
+The repository follows standard Astro conventions:
 
 ```plaintext
 celebra-me/
 ├── public/
-│   ├── icons/               # Favicon and icons used across the platform.
-│   └── images/              # Static images for marketing and design.
+│   ├── icons/                # Favicons and shared icons
+│   └── images/               # Static images
 ├── src/
-│   ├── components/          # Reusable UI components such as buttons, modals, and forms.
-│   ├── config/              # Configuration files and constants.
-│   ├── data/                # Static data or fetch utilities.
-│   ├── hooks/               # Custom React hooks for various logic (state management, side effects).
-│   ├── layouts/             # Layout components used to structure pages.
-│   ├── pages/               # Astro pages with file-based routing.
-│   ├── sections/            # Reusable sections of the site (e.g., headers, footers).
-│   ├── services/            # Business logic and API service handlers.
-│   ├── styles/              # Global styles and Tailwind configurations.
-│   ├── types/               # TypeScript types and interfaces.
-│   └── utilities/           # Utility functions shared across the application.
-├── .editorconfig            # Configures consistent editor behavior for contributors.
-├── .env                     # Environment variables for API keys, credentials, and runtime settings.
-├── .eslintrc.cjs            # ESLint configuration to enforce code quality.
-├── .gitignore               # Defines files and directories to ignore in version control.
-├── .prettierignore          # Files to be ignored by Prettier when formatting.
-├── .prettierrc.mjs          # Configuration for Prettier to enforce consistent formatting.
-├── astro.config.mjs         # Astro configuration file defining project-specific settings.
-├── CONTRIBUTING.md          # Contribution guidelines for developers.
-├── cspell.json              # CSpell configuration for spell checking.
-├── env.d.ts                 # TypeScript type definitions for environment variables.
-├── LICENSE                  # License information for the project.
-├── package.json             # Project metadata and dependencies.
-├── pnpm-lock.yaml           # Lockfile for consistent package installations.
-├── README.md                # Project overview and documentation (this file).
-├── tailwind.config.mjs      # Tailwind CSS configuration file.
-├── tsconfig.json            # TypeScript configuration for the project.
-└── vercel.json              # Vercel deployment configuration.
-```
+│   ├── components/           # Reusable UI components (presentation-only)
+│   ├── layouts/              # Page layouts
+│   ├── pages/                # File-based routing and API endpoints
+│   ├── content/              # Astro content collections
+│   ├── styles/               # SCSS styles (global, tokens, feature-level)
+│   ├── utils/                # Shared utilities
+│   └── env.d.ts              # Environment variable typings
+├── .agent/                   # Agent rules and conventions
+├── docs/                     # Architecture and technical documentation
+├── astro.config.mjs
+├── package.json
+├── tsconfig.json
+├── vercel.json
+└── README.md
+````
 
-This structure is designed to maintain a **clear separation of concerns** and make the codebase easy to navigate and extend. Each section has a specific responsibility, from components to business logic, ensuring scalability as the platform evolves.
+The structure prioritizes **clarity, simplicity, and deploy safety**, avoiding unnecessary architectural layers.
+
+---
+
+## Automation & Agents
+
+This project uses **automated agents** (e.g. a Gatekeeper) as part of the development workflow.
+
+- Operational rules and conventions live in `.agent/`.
+- These documents are **versioned and authoritative** for agent behavior.
+- Agents are expected to follow existing conventions and apply **safe, pragmatic fixes**.
+
+Start here if you are using agents:
+
+- `.agent/README.md`
+- `.agent/GATEKEEPER_RULES.md`
+- `.agent/PROJECT_CONVENTIONS.md`
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-To work on Celebra-me, you'll need:
-
--   **Node.js** (v18.x or later)
--   **pnpm** (v7.x or later)
+- **Node.js** v18+
+- **pnpm**
 
 ### Installation
 
-1. **Clone the repository**:
+```bash
+git clone https://github.com/fm-dev-mx/celebra-me.git
+cd celebra-me
+pnpm install
+```
 
-    ```bash
-    git clone https://github.com/fm-dev-mx/celebra-me.git
-    cd celebra-me
-    ```
+### Environment Variables
 
-2. **Install dependencies**:
+```bash
+cp .env.example .env.local
+```
 
-    ```bash
-    pnpm install
-    ```
+Update `.env.local` with the required values.
+All environment variables must be typed in `src/env.d.ts`.
 
-3. **Set up environment variables**:
+### Development
 
-    ```bash
-    cp .env.example .env.local
-    ```
+```bash
+pnpm dev
+```
 
-    Edit `.env.local` with your specific configuration (e.g., API keys, Vercel tokens).
+The app will be available at `http://localhost:3000`.
 
-4. **Start the development server**:
+---
 
-    ```bash
-    pnpm dev
-    ```
-
-    The site will be available at [`http://localhost:3000`](http://localhost:3000).
+## Build & Deployment
 
 ### Production Build
-
-To create a production build locally:
 
 ```bash
 pnpm build
 ```
 
-This generates static files in the `.astro` directory, ready for deployment.
-
 ### Deployment
 
-We deploy the platform to **Vercel**. The `vercel.json` file configures deployment settings.
+The project is deployed on **Vercel**.
+Configuration lives in `vercel.json`.
 
 For manual deployment:
 
-1. Install Vercel CLI:
+```bash
+pnpm add -g vercel
+vercel --prod
+```
 
-    ```bash
-    pnpm add -g vercel
-    ```
-
-2. Run:
-
-    ```bash
-    vercel --prod
-    ```
+---
 
 ## Code Quality
 
--   **Linting**: Ensure the code adheres to defined quality standards.
+Run checks locally before committing:
 
-    ```bash
-    pnpm lint
-    ```
+```bash
+pnpm lint
+pnpm format
+pnpm type-check
+```
 
--   **Formatting**: Automatically format the codebase.
+---
 
-    ```bash
-    pnpm format
-    ```
+## Documentation
 
--   **Type Checking**: Run TypeScript type checks.
+- **Architecture**: `docs/ARCHITECTURE.md`
+- **Agent Rules**: `.agent/`
 
-    ```bash
-    pnpm type-check
-    ```
+Documentation is expected to evolve alongside the codebase.
+
+---
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
-## Contact
+---
 
-For inquiries or contributions, please open an issue on this repository.
+## Maintainer
 
-Maintainer: Francisco Mendoza
+Francisco Mendoza
 
--   **GitHub**: [fm-dev-mx](https://github.com/fm-dev-mx)
--   **LinkedIn**: [francisco-mendoza-ordn](https://www.linkedin.com/in/francisco-mendoza-ordn/)
+- GitHub: [https://github.com/fm-dev-mx](https://github.com/fm-dev-mx)
+- LinkedIn: [https://www.linkedin.com/in/francisco-mendoza-ordn/](https://www.linkedin.com/in/francisco-mendoza-ordn/)
