@@ -1,9 +1,11 @@
-@use '../XV/variables.xv' as vars;
-@use '../global/functions' as functions;
-@use '../global/mixins' as mixins;
-@use '../global/animations' as animations;
+/* Section Navigation Button Styles */
+// Renamed from sectionNavButton.xv.scss
 
-// Container for the navigation button using flexbox to center its content
+@use '@/styles/XV/variables.xv' as vars;
+@use '@/styles/global/functions' as functions;
+@use '@/styles/global/mixins' as mixins;
+@use '@/styles/global/animations' as animations;
+
 .nav-button-container {
 	position: absolute;
 	width: 100%;
@@ -16,7 +18,6 @@
 	z-index: functions.z-index('navButton');
 }
 
-// Section Navigation Button Styles
 .section-nav-button {
 	position: absolute;
 	left: 50%;
@@ -29,45 +30,30 @@
 	z-index: functions.z-index('navButton');
 	transition: transform 0.3s ease;
 	animation: pulseChevron 1.5s infinite;
-	@include mixins.respond-to(md) {
-		bottom: 4rem;
-	}
+
+	@include mixins.respond-to(md) { bottom: 4rem; }
+
 	svg {
 		width: 3rem;
 		@include mixins.transition(section-nav-button);
 	}
 
-	&:hover {
-		color: vars.$color-accent-light;
-	}
+	&:hover { color: vars.$color-accent-light; }
+	&:active { transform: translateX(-50%) scale(0.9); color: vars.$color-accent; }
 
-	&:active {
-		transform: translateX(-50%) scale(0.9);
-		color: vars.$color-accent;
-	}
-
-	// Modifier styles for specific sections (BEM elements)
 	&__hero-section {
 		color: vars.$color-accent-light;
 		filter: brightness(1.2);
-
-		&:hover {
-			color: vars.$color-accent;
-		}
+		&:hover { color: vars.$color-accent; }
 	}
+
 	&__event-location {
 		color: vars.$color-accent;
-
-		&:hover {
-			color: vars.$color-primary-light;
-		}
+		&:hover { color: vars.$color-primary-light; }
 	}
 
 	&__family-section {
 		color: vars.$color-secondary-dark;
-
-		&:hover {
-			color: vars.$color-secondary;
-		}
+		&:hover { color: vars.$color-secondary; }
 	}
 }

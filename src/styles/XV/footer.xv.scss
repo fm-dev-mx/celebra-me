@@ -1,71 +1,53 @@
-/*
-  src/frontend/styles/XV/footer.xv.scss
-  ----------------------------------------------------
-  Footer Styles for XV Invitation
-  ----------------------------------------------------
-*/
+/* Footer Styles for XV Invitation */
+// Renamed from footer.xv.scss
 
-@use '../XV/_variables.xv' as *;
-@use '../global/mixins' as mixins; // Se mantiene si se requiere en otros lugares
+@use '@/styles/XV/variables.xv' as *;
+@use '../global/mixins' as mixins;
 
-// Main footer container with a clean, minimalist design
 .invitation-footer {
-	background-color: $color-white; // Fondo neutro
-	padding: 0 1rem; // Padding horizontal
+	background-color: $color-white;
+	padding: 0 1rem;
 	font-family: $font-footer;
 	color: $color-dark;
 	font-size: 0.9rem;
 	border-top: 1px solid rgba($color-dark, 0.1);
-	height: 3rem; // Altura fija para el footer
+	height: 3rem;
 
-	// Usamos flex para centrar verticalmente y posicionar a la derecha
 	display: flex;
-	align-items: center; // Centrado vertical
+	align-items: center;
 	justify-content: space-around;
 
 	@include mixins.respond-to(xs) {
-		justify-content: flex-end; // Alineación a la derecha en pantallas pequeñas
+		justify-content: flex-end;
 		padding-right: 10%;
 		height: 7vh;
 	}
 }
 
-// Flex container to group the footer content with slight separation
 .footer-content {
 	display: flex;
 	align-items: center;
-	gap: 3rem; // Ligera separación entre elementos
-	white-space: nowrap; // Evita el salto de línea
+	gap: 3rem;
+	white-space: nowrap;
 }
 
-// Group containing "Powered by", Logo y contact number
 .footer-info {
 	display: flex;
 	align-items: center;
-	gap: 1rem; // Espaciado interno
-	p {
-		margin: 0;
-	}
+	gap: 1rem;
+	p { margin: 0; }
 }
 
-// Styling for the "Powered by" label with subtle emphasis
 .powered-by {
-	display: none; // Oculta "Powered by" en pantallas pequeñas
+	display: none;
 	font-size: 0.8rem;
 	opacity: 0.8;
 
-	// Mostrar en pantallas medianas en adelante
-	@include mixins.respond-to(xs) {
-		display: block;
-	}
+	@include mixins.respond-to(xs) { display: block; }
 }
 
-// Styling for the contact number
-.contact-number {
-	opacity: 0.8;
-}
+.contact-number { opacity: 0.8; }
 
-// WhatsApp button styling with subtle hover effects
 .whatsapp-button {
 	display: inline-flex;
 	align-items: center;
@@ -74,9 +56,7 @@
 	color: rgba($color-dark, 0.7);
 	padding: 0.5rem 1rem;
 	border-radius: 99px;
-	transition:
-		background-color 0.3s ease,
-		transform 0.3s ease;
+	transition: background-color 0.3s ease, transform 0.3s ease;
 	font-family: $font-button;
 	font-size: 0.6rem;
 
@@ -88,22 +68,13 @@
 
 	@include mixins.respond-to(md) {
 		font-size: 0.8rem;
-
-		svg {
-			width: 1rem;
-			height: 1rem;
-			fill: rgba($color-whatsapp, 0.6);
-		}
+		svg { width: 1rem; height: 1rem; fill: rgba($color-whatsapp, 0.6); }
 	}
 
-	// Hover effect: subtle background change and slight scale-up
 	&:hover {
 		transform: scale(1.05);
 		filter: brightness(1.05);
 	}
 
-	// Active state: remove extra scaling
-	&:active {
-		transform: scale(1);
-	}
+	&:active { transform: scale(1); }
 }

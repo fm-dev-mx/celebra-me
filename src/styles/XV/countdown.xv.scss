@@ -1,73 +1,47 @@
 /* Countdown Section Styles */
+// Renamed from countdown.xv.scss to countdown.scss
+// Updated path to variables
 
-@use './variables.xv' as vars;
-@use '../global/mixins' as mixins;
+@use '@/styles/XV/variables.xv' as vars;
+@use '@/styles/global/mixins' as mixins;
 
 .countdown {
-	position: relative; // Required for ::before pseudo-element
+	position: relative;
 	padding: 2rem;
 	border-radius: 10px;
 	border-top: 2px solid rgba(vars.$color-primary-dark, 0.2);
 	border-bottom: 2px solid rgba(vars.$color-secondary-dark, 0.6);
-	margin: 0 auto; // Centered with extra margin for fade effects
+	margin: 0 auto;
 	text-align: center;
-	overflow: hidden; // Hide gradient overflow
+	overflow: hidden;
 
-	// Main gradient with fade effects
 	background-color: rgba(vars.$color-white, 0.8);
 	color: rgba(vars.$color-dark, 0.8);
 
-	// Responsive container adjustments
-	@include mixins.respond-to(xs) {
-		padding: 3rem;
-	}
-
-	@include mixins.respond-to(sm) {
-		padding: 3.5rem;
-	}
-
-	@include mixins.respond-to(md) {
-		padding: 4rem;
-	}
+	@include mixins.respond-to(xs) { padding: 3rem; }
+	@include mixins.respond-to(sm) { padding: 3.5rem; }
+	@include mixins.respond-to(md) { padding: 4rem; }
 
 	&__title {
 		font-family: vars.$font-decorative-dancing;
-		color: rgba(vars.$color-dark, 0.7); // Responsive timer layout spacing
+		color: rgba(vars.$color-dark, 0.7);
 		font-size: 1.5rem;
 		margin-bottom: 1rem;
 
-		// Responsive title typography
-		@include mixins.respond-to(xs) {
-			font-size: 1.7rem;
-		}
-
-		@include mixins.respond-to(sm) {
-			font-size: 1.9rem;
-		}
-
-		@include mixins.respond-to(md) {
-			font-size: 2.1rem;
-		}
+		@include mixins.respond-to(xs) { font-size: 1.7rem; }
+		@include mixins.respond-to(sm) { font-size: 1.9rem; }
+		@include mixins.respond-to(md) { font-size: 2.1rem; }
 	}
 
 	&__event-date {
 		font-family: vars.$font-body;
-		color: rgba(vars.$color-dark, 0.6); // Responsive timer layout spacing
+		color: rgba(vars.$color-dark, 0.6);
 		font-size: 1.2rem;
 		margin-bottom: 2rem;
 
-		// Responsive event date adjustments
-		@include mixins.respond-to(xs) {
-			font-size: 1.3rem;
-		}
-
-		@include mixins.respond-to(sm) {
-			font-size: 1.4rem;
-		}
-
-		@include mixins.respond-to(md) {
-			font-size: 1.6rem;
-		}
+		@include mixins.respond-to(xs) { font-size: 1.3rem; }
+		@include mixins.respond-to(sm) { font-size: 1.4rem; }
+		@include mixins.respond-to(md) { font-size: 1.6rem; }
 	}
 
 	&__timer {
@@ -77,17 +51,10 @@
 		flex-wrap: wrap;
 		font-family: vars.$font-body;
 		color: vars.$color-dark;
-		@include mixins.respond-to(xs) {
-			gap: 1.5rem;
-		}
 
-		@include mixins.respond-to(sm) {
-			gap: 1.7rem;
-		}
-
-		@include mixins.respond-to(md) {
-			gap: 1.9rem;
-		}
+		@include mixins.respond-to(xs) { gap: 1.5rem; }
+		@include mixins.respond-to(sm) { gap: 1.7rem; }
+		@include mixins.respond-to(md) { gap: 1.9rem; }
 	}
 
 	&__time-segment {
@@ -101,36 +68,18 @@
 		font-weight: 600;
 		margin-bottom: 0.5rem;
 
-		// Responsive timer value adjustments
-		@include mixins.respond-to(xs) {
-			font-size: 2rem;
-		}
-
-		@include mixins.respond-to(sm) {
-			font-size: 2.2rem;
-		}
-
-		@include mixins.respond-to(md) {
-			font-size: 2.4rem;
-		}
+		@include mixins.respond-to(xs) { font-size: 2rem; }
+		@include mixins.respond-to(sm) { font-size: 2.2rem; }
+		@include mixins.respond-to(md) { font-size: 2.4rem; }
 	}
 
 	&__label {
 		font-size: 1rem;
 		text-transform: uppercase;
-		color: rgba(vars.$color-dark, 0.4); // Responsive timer layout spacing
+		color: rgba(vars.$color-dark, 0.4);
 
-		// Responsive label adjustments
-		@include mixins.respond-to(xs) {
-			font-size: 0.8rem;
-		}
-
-		@include mixins.respond-to(sm) {
-			font-size: 1rem;
-		}
-
-		@include mixins.respond-to(md) {
-			font-size: 1.1rem;
-		}
+		@include mixins.respond-to(xs) { font-size: 0.8rem; }
+		@include mixins.respond-to(sm) { font-size: 1rem; }
+		@include mixins.respond-to(md) { font-size: 1.1rem; }
 	}
 }
