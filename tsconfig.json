@@ -1,26 +1,26 @@
 // tsconfig.json
 
 {
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@core/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@styles/*": ["src/styles/*"],
-      "@utils/*": ["src/utils/*"],
-      "@images/*": ["public/images/*"],
-      "@interfaces/*": ["src/interfaces/*"]
+    "extends": "astro/tsconfigs/strict",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "@core/*": ["src/*"],
+            "@components/*": ["src/components/*"],
+            "@layouts/*": ["src/layouts/*"],
+            "@styles/*": ["src/styles/*"],
+            "@utils/*": ["src/utils/*"],
+            "@images/*": ["public/images/*"],
+            "@interfaces/*": ["src/interfaces/*"]
+        },
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
     },
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*", "env.d.ts"]
+    "include": ["src/**/*", "env.d.ts"]
 }

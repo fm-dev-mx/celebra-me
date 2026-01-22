@@ -2,10 +2,12 @@
 
 ![Celebra-me Logo](public/icons/favicon.svg)
 
-**Celebra-me** is a web platform for the **creation and sale of custom digital invitations**.
-It provides a **fully managed service**: clients share their event details, and Celebra-me handles the design, customization, and delivery of a polished digital invitation.
+**Celebra-me** is a web platform for the **creation and sale of custom digital invitations**. It
+provides a **fully managed service**: clients share their event details, and Celebra-me handles the
+design, customization, and delivery of a polished digital invitation.
 
-The platform is built to deliver **high-performance, responsive invitations** that can be easily shared across digital channels.
+The platform is built to deliver **high-performance, responsive invitations** that can be easily
+shared across digital channels.
 
 ---
 
@@ -13,23 +15,22 @@ The platform is built to deliver **high-performance, responsive invitations** th
 
 Celebra-me is not a DIY invitation builder.
 
-Instead, it operates as a **design-led, curated service** where each invitation is created and customized by the Celebra-me team. This approach ensures consistent quality, visual coherence, and a professional result for every event.
+Instead, it operates as a **design-led, curated service** where each invitation is created and
+customized by the Celebra-me team. This approach ensures consistent quality, visual coherence, and a
+professional result for every event.
 
 ---
 
 ## Features
 
-- **Custom Digital Invitations**
-  Personalized invitations for events such as weddings, quinceañeras, birthdays, and more.
+- **Custom Digital Invitations** Personalized invitations for events such as weddings, quinceañeras,
+  birthdays, and more.
 
-- **Fully Managed Process**
-  Design and customization are handled by Celebra-me, not end users.
+- **Fully Managed Process** Design and customization are handled by Celebra-me, not end users.
 
-- **Responsive by Default**
-  Invitations are optimized for mobile, tablet, and desktop.
+- **Responsive by Default** Invitations are optimized for mobile, tablet, and desktop.
 
-- **Digital Delivery**
-  Invitations are shared easily via messaging apps, email, or social platforms.
+- **Digital Delivery** Invitations are shared easily via messaging apps, email, or social platforms.
 
 ---
 
@@ -71,9 +72,10 @@ celebra-me/
 ├── tsconfig.json
 ├── vercel.json
 └── README.md
-````
+```
 
-The structure prioritizes **clarity, simplicity, and deploy safety**, avoiding unnecessary architectural layers.
+The structure prioritizes **clarity, simplicity, and deploy safety**, avoiding unnecessary
+architectural layers.
 
 ---
 
@@ -114,8 +116,8 @@ pnpm install
 cp .env.example .env.local
 ```
 
-Update `.env.local` with the required values.
-All environment variables must be typed in `src/env.d.ts`.
+Update `.env.local` with the required values. All environment variables must be typed in
+`src/env.d.ts`.
 
 ### Development
 
@@ -137,8 +139,7 @@ pnpm build
 
 ### Deployment
 
-The project is deployed on **Vercel**.
-Configuration lives in `vercel.json`.
+The project is deployed on **Vercel**. Configuration lives in `vercel.json`.
 
 For manual deployment:
 
@@ -181,4 +182,5 @@ This project is licensed under the [MIT License](LICENSE).
 Francisco Mendoza
 
 - GitHub: [https://github.com/fm-dev-mx](https://github.com/fm-dev-mx)
-- LinkedIn: [https://www.linkedin.com/in/francisco-mendoza-ordn/](https://www.linkedin.com/in/francisco-mendoza-ordn/)
+- LinkedIn:
+  [https://www.linkedin.com/in/francisco-mendoza-ordn/](https://www.linkedin.com/in/francisco-mendoza-ordn/)
