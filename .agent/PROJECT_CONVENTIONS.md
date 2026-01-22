@@ -2,7 +2,9 @@
 
 This document defines the **project-wide conventions** for the Celebra-me repository.
 
-Its purpose is to describe **how the codebase should look and feel when healthy**, following commonly accepted practices in Astro.js projects. These conventions are used by automated agents and humans to maintain consistency over time.
+Its purpose is to describe **how the codebase should look and feel when healthy**, following
+commonly accepted practices in Astro.js projects. These conventions are used by automated agents and
+humans to maintain consistency over time.
 
 They are not architectural mandates; they are **shared agreements**.
 
@@ -20,7 +22,8 @@ Astro promotes the following conventional folders, though you may extend them if
 - `src/utils/` — Shared utilities (pure logic, browser-safe).
 - `public/` — Static assets (images, icons, fonts).
 
-These conventions help align the repo with widely used Astro layouts without enforcing unnecessary rigidity.
+These conventions help align the repo with widely used Astro layouts without enforcing unnecessary
+rigidity.
 
 ---
 
@@ -31,8 +34,8 @@ These conventions help align the repo with widely used Astro layouts without enf
 - Follow conventional Astro practice: **lowercase** folder names.
 - Use hyphens (kebab-case) when helpful for readability.
 
-This minimizes risk in case-sensitive environments (like Vercel).
-(`/src/pages` and `/src/components` are conventional according to Astro docs).
+This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` and
+`/src/components` are conventional according to Astro docs).
 
 ### 2.2 Files
 
@@ -42,7 +45,8 @@ This minimizes risk in case-sensitive environments (like Vercel).
 
 ### 2.3 Routes & URLs
 
-- Use **kebab-case** for route segments and dynamic routes, as this matches URL conventions and Astro's file-based routing.
+- Use **kebab-case** for route segments and dynamic routes, as this matches URL conventions and
+  Astro's file-based routing.
 
 ---
 
@@ -108,9 +112,9 @@ This minimizes risk in case-sensitive environments (like Vercel).
 
 - Use semantic HTML (`<main>`, `<header>`, `<footer>`).
 - Always provide:
-  - `alt` attributes for images
-  - associated `label` for form controls
-  - explicit `type` on `<button>`
+    - `alt` attributes for images
+    - associated `label` for form controls
+    - explicit `type` on `<button>`
 
 ---
 

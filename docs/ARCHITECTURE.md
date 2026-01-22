@@ -2,8 +2,9 @@
 
 This document describes the **current architectural model** of Celebra-me.
 
-It defines **clear boundaries and decision criteria** aligned with Astro.js best practices and Vercel deployment constraints.
-It is intentionally pragmatic and expected to evolve with the project.
+It defines **clear boundaries and decision criteria** aligned with Astro.js best practices and
+Vercel deployment constraints. It is intentionally pragmatic and expected to evolve with the
+project.
 
 ---
 
@@ -11,17 +12,15 @@ It is intentionally pragmatic and expected to evolve with the project.
 
 Celebra-me follows these guiding principles:
 
-- **Hybrid by default**
-  Static generation (SSG) is preferred. Server-side rendering (SSR) is used only when required by the feature.
+- **Hybrid by default** Static generation (SSG) is preferred. Server-side rendering (SSR) is used
+  only when required by the feature.
 
-- **Pragmatism over theory**
-  Design patterns are tools, not goals. They are applied only when they reduce real complexity.
+- **Pragmatism over theory** Design patterns are tools, not goals. They are applied only when they
+  reduce real complexity.
 
-- **Explicit boundaries**
-  Especially between server-only logic and UI/client code.
+- **Explicit boundaries** Especially between server-only logic and UI/client code.
 
-- **Deploy safety first**
-  All decisions must remain compatible with Astro and Vercel constraints.
+- **Deploy safety first** All decisions must remain compatible with Astro and Vercel constraints.
 
 ---
 
@@ -31,10 +30,10 @@ Celebra-me follows these guiding principles:
 
 - Pages are rendered at **build time** whenever possible.
 - Runtime server execution is reserved for:
-  - user input,
-  - side effects,
-  - protected operations,
-  - integrations requiring secrets.
+    - user input,
+    - side effects,
+    - protected operations,
+    - integrations requiring secrets.
 
 This aligns with Astro’s recommended hybrid model.
 
@@ -92,7 +91,8 @@ They act as the boundary between client and server concerns.
 
 ### 5.2 Server-Only Modules
 
-External integrations (e.g., databases, email services, queues) must live in **server-only modules** used by API routes.
+External integrations (e.g., databases, email services, queues) must live in **server-only modules**
+used by API routes.
 
 Recommended locations:
 
@@ -111,8 +111,7 @@ Astro-recommended mechanisms are preferred:
 - Progressive enhancement using native HTML forms:
 
 ```html
-  <form action="/api/endpoint" method="post">
-
+<form action="/api/endpoint" method="post"></form>
 ```
 
 These approaches preserve accessibility and minimize client-side JavaScript.
