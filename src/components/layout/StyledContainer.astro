@@ -1,0 +1,11 @@
+---
+interface Props {
+  variant?: string;
+  class?: string;
+}
+
+const { variant = 'default', class: className } = Astro.props;
+---
+<div class:list={['container mx-auto px-4', variant, className]}>
+  <slot />
+</div>

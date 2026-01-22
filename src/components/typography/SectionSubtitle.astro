@@ -1,0 +1,22 @@
+---
+interface Props {
+  color?: string;
+  size?: string;
+  weight?: string;
+  margin?: string;
+  align?: string;
+  extraClass?: string;
+}
+
+const {
+  color = 'text-gray-600',
+  size = 'text-lg',
+  weight = 'font-medium',
+  margin = 'mb-6',
+  align = 'text-left',
+  extraClass = ''
+} = Astro.props;
+---
+<p class:list={[color, size, weight, margin, align, extraClass]}>
+  <slot />
+</p>
