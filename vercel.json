@@ -1,17 +1,17 @@
 {
-  "version": 2,
-  "framework": "astro",
-  "buildCommand": "astro build",
-  "devCommand": "astro dev",
-  "installCommand": "pnpm install",
-  "routes": [
-    {
-      "src": "^/_astro/(.*)$",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      },
-      "continue": true
-    },
-    { "handle": "filesystem" }
-  ]
+    "version": 2,
+    "framework": "astro",
+    "buildCommand": "astro build",
+    "devCommand": "astro dev",
+    "installCommand": "pnpm install",
+    "routes": [
+        {
+            "src": "^/_astro/(.*)$",
+            "headers": {
+                "cache-control": "public, max-age=31536000, immutable"
+            },
+            "continue": true
+        },
+        { "handle": "filesystem" }
+    ]
 }
