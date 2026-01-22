@@ -34,7 +34,7 @@
 	margin-right: 0.75rem; /* Right margin to separate icon from text */
 	transition: all 0.3s ease-in-out;
 	background-color: var(--whatsapp-hover); /* WhatsApp icon color */
-	mask: url("/icons/whatsappIcon.svg") no-repeat center;
+	mask: url('/icons/whatsappIcon.svg') no-repeat center;
 	mask-size: contain;
 }
 
@@ -57,7 +57,7 @@
 
 /* After pseudo-element used to show new text on hover */
 .action-base.action-external-whatsapp::after {
-	content: "Chatea con nosotros";
+	content: 'Chatea con nosotros';
 	position: absolute;
 	left: 50%;
 	top: 50%;

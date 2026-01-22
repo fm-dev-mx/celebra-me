@@ -54,43 +54,33 @@ const formattedEventDate = getFormattedDate(eventDate);
 
 <script>
 	// Client-side countdown logic
-	// Converted to TypeScript for better safety
 	document.addEventListener('DOMContentLoaded', () => {
 		const countdownEl = document.querySelector('.countdown');
-		if (!countdownEl) {
-			console.error('Countdown element not found.');
-			return;
-		}
+		if (!countdownEl) return;
 
 		const eventDateStr = countdownEl.getAttribute('data-event-date');
-		if (!eventDateStr) {
-			console.error('Event date not provided.');
-			return;
-		}
+		if (!eventDateStr) return;
 
 		const daysEl = document.getElementById('days');
 		const hoursEl = document.getElementById('hours');
 		const minutesEl = document.getElementById('minutes');
 		const secondsEl = document.getElementById('seconds');
 
-		if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-			console.error('One or more timer elements not found.');
-			return;
-		}
+		if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
 
-		let intervalId: number;
+		const intervalId = window.setInterval(updateCountdown, 1000);
 
 		function updateCountdown() {
-			if (!eventDateStr) return;
+			if (!eventDateStr || !daysEl || !hoursEl || !minutesEl || !secondsEl) return;
 			const eventDate = new Date(eventDateStr);
 			const now = new Date();
 			const diff = eventDate.getTime() - now.getTime();
 
 			if (diff <= 0) {
-				daysEl!.innerText = '00';
-				hoursEl!.innerText = '00';
-				minutesEl!.innerText = '00';
-				secondsEl!.innerText = '00';
+				daysEl.innerText = '00';
+				hoursEl.innerText = '00';
+				minutesEl.innerText = '00';
+				secondsEl.innerText = '00';
 				clearInterval(intervalId);
 				return;
 			}
@@ -100,13 +90,13 @@ const formattedEventDate = getFormattedDate(eventDate);
 			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 			const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-			daysEl!.innerText = days < 10 ? '0' + days : days.toString();
-			hoursEl!.innerText = hours < 10 ? '0' + hours : hours.toString();
-			minutesEl!.innerText = minutes < 10 ? '0' + minutes : minutes.toString();
-			secondsEl!.innerText = seconds < 10 ? '0' + seconds : seconds.toString();
+			daysEl.innerText = days < 10 ? '0' + days : days.toString();
+			hoursEl.innerText = hours < 10 ? '0' + hours : hours.toString();
+			minutesEl.innerText = minutes < 10 ? '0' + minutes : minutes.toString();
+			secondsEl.innerText = seconds < 10 ? '0' + seconds : seconds.toString();
 		}
 
 		updateCountdown();
-		intervalId = window.setInterval(updateCountdown, 1000);
 	});
 </script>
+

@@ -1,16 +1,17 @@
 ---
 interface Props {
-  service: {
-    title: string;
-    description: string;
-    icon?: string;
-  };
-  key?: number | string;
+	service: {
+		title: string;
+		description: string;
+		icon?: string;
+	};
+	key?: number | string;
 }
 
 const { service } = Astro.props;
 ---
+
 <div class="mb-8 text-center md:text-left">
-  <h3 class="text-xl font-semibold mb-2 text-primary-dark">{service.title}</h3>
-  <p class="text-gray-600">{service.description}</p>
+	<h3 class="text-xl font-semibold mb-2 text-primary-dark">{service.title}</h3>
+	<p class="text-gray-600">{service.description}</p>
 </div>

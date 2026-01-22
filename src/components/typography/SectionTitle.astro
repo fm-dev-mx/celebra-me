@@ -1,22 +1,23 @@
 ---
 interface Props {
-  color?: string;
-  weight?: string;
-  align?: string;
-  margin?: string;
-  size?: string;
-  extraClass?: string;
+	color?: string;
+	weight?: string;
+	align?: string;
+	margin?: string;
+	size?: string;
+	extraClass?: string;
 }
 
 const {
-  color = 'text-gray-900',
-  weight = 'font-bold',
-  align = 'text-left',
-  margin = 'mb-4',
-  size = 'text-3xl md:text-4xl',
-  extraClass = ''
+	color = 'text-gray-900',
+	weight = 'font-bold',
+	align = 'text-left',
+	margin = 'mb-4',
+	size = 'text-3xl md:text-4xl',
+	extraClass = '',
 } = Astro.props;
 ---
+
 <h2 class:list={[color, weight, align, margin, size, extraClass]}>
-  <slot />
+	<slot />
 </h2>

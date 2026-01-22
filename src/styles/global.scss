@@ -5,47 +5,53 @@
 */
 
 :root {
-  --color-primary: #d4af37; /* Gold default */
-  --color-secondary: #f8f9fa;
-  --color-accent: #333333;
-  --color-background: #ffffff;
-  --color-text: #1a1a1a;
+	--color-primary: #d4af37; /* Gold default */
+	--color-secondary: #f8f9fa;
+	--color-accent: #333333;
+	--color-background: #ffffff;
+	--color-text: #1a1a1a;
 }
 
 html {
-  font-family: 'Inter', system-ui, sans-serif;
-  scroll-behavior: smooth;
-  background-color: var(--color-background);
-  color: var(--color-text);
+	font-family: 'Inter', system-ui, sans-serif;
+	scroll-behavior: smooth;
+	background-color: var(--color-background);
+	color: var(--color-text);
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  overflow-x: hidden;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	overflow-x: hidden;
 }
 
 /* Utility classes to replace repetitive CSS */
 .container-custom {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 1rem;
 }
 
 .section-padding {
-  padding: 4rem 0;
-  @media (min-width: 768px) {
-    padding: 6rem 0;
-  }
+	padding: 4rem 0;
+	@media (min-width: 768px) {
+		padding: 6rem 0;
+	}
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+	animation: fadeIn 0.8s ease-out forwards;
 }

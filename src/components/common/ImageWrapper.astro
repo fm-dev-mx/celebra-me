@@ -1,34 +1,50 @@
 ---
 interface Props {
-  width?: string;
-  height?: string;
-  minWidth?: string;
-  justify?: string;
-  margin?: string;
-  align?: string;
-  hover?: string;
-  transition?: string;
-  flex?: string;
-  rounded?: string;
-  overflow?: string;
-  class?: string;
+	width?: string;
+	height?: string;
+	minWidth?: string;
+	justify?: string;
+	margin?: string;
+	align?: string;
+	hover?: string;
+	transition?: string;
+	flex?: string;
+	rounded?: string;
+	overflow?: string;
+	class?: string;
 }
 
 const {
-  width = 'w-full',
-  height = 'h-auto',
-  minWidth = '',
-  justify = '',
-  margin = '',
-  align = '',
-  hover = '',
-  transition = '',
-  flex = '',
-  rounded = '',
-  overflow = '',
-  class: className
+	width = 'w-full',
+	height = 'h-auto',
+	minWidth = '',
+	justify = '',
+	margin = '',
+	align = '',
+	hover = '',
+	transition = '',
+	flex = '',
+	rounded = '',
+	overflow = '',
+	class: className,
 } = Astro.props;
 ---
-<div class:list={[width, height, minWidth, justify, margin, align, hover, transition, flex, rounded, overflow, className]}>
-  <slot />
+
+<div
+	class:list={[
+		width,
+		height,
+		minWidth,
+		justify,
+		margin,
+		align,
+		hover,
+		transition,
+		flex,
+		rounded,
+		overflow,
+		className,
+	]}
+>
+	<slot />
 </div>

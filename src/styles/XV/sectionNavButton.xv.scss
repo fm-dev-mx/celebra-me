@@ -31,29 +31,42 @@
 	transition: transform 0.3s ease;
 	animation: pulseChevron 1.5s infinite;
 
-	@include mixins.respond-to(md) { bottom: 4rem; }
+	@include mixins.respond-to(md) {
+		bottom: 4rem;
+	}
 
 	svg {
 		width: 3rem;
 		@include mixins.transition(section-nav-button);
 	}
 
-	&:hover { color: vars.$color-accent-light; }
-	&:active { transform: translateX(-50%) scale(0.9); color: vars.$color-accent; }
+	&:hover {
+		color: vars.$color-accent-light;
+	}
+	&:active {
+		transform: translateX(-50%) scale(0.9);
+		color: vars.$color-accent;
+	}
 
 	&__hero-section {
 		color: vars.$color-accent-light;
 		filter: brightness(1.2);
-		&:hover { color: vars.$color-accent; }
+		&:hover {
+			color: vars.$color-accent;
+		}
 	}
 
 	&__event-location {
 		color: vars.$color-accent;
-		&:hover { color: vars.$color-primary-light; }
+		&:hover {
+			color: vars.$color-primary-light;
+		}
 	}
 
 	&__family-section {
 		color: vars.$color-secondary-dark;
-		&:hover { color: vars.$color-secondary; }
+		&:hover {
+			color: vars.$color-secondary;
+		}
 	}
 }

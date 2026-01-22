@@ -1,20 +1,20 @@
 ---
 interface Props {
-  variant?: 'default' | 'xv' | 'footer' | 'hero';
-  class?: string;
-  altText?: string;
+	variant?: 'default' | 'xv' | 'footer' | 'hero';
+	class?: string;
+	altText?: string;
 }
 
-const { variant: _variant = 'default', class: className } = Astro.props;
+const { class: className } = Astro.props;
 
 // Currently using the same logo for both variants, can be customized later
-const logoSrc = "/images/header/horizontalLogo150x56.png";
+const logoSrc = '/images/header/horizontalLogo150x56.png';
 ---
 
 <img
-  src={logoSrc}
-  alt="Celebra.me Logo"
-  width="150"
-  height="56"
-  class:list={["h-auto w-32 md:w-40", className]}
+	src={logoSrc}
+	alt="Celebra.me Logo"
+	width="150"
+	height="56"
+	class:list={['h-auto w-32 md:w-40', className]}
 />
