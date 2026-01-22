@@ -1,69 +1,29 @@
-// src/frontend/styles/global/_animations.scss
-// ----------------------------------------------------
-// Global Animations
-// ----------------------------------------------------
+// Moved from src/frontend/styles/global/_animations.scss
 
 @keyframes fadeInOut {
-	0% {
-		opacity: 0;
-	}
-	8% {
-		opacity: 1;
-	}
-	33% {
-		opacity: 1;
-	}
-	41% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 0;
-	}
+	0% { opacity: 0; }
+	8% { opacity: 1; }
+	33% { opacity: 1; }
+	41% { opacity: 0; }
+	100% { opacity: 0; }
 }
 
 @keyframes contentFadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10%);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+	from { opacity: 0; transform: translateY(10%); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulseChevron {
-	0%,
-	100% {
-		opacity: 0.8;
-		transform: translate(-50%, 0); // Preserve horizontal centering
-	}
-	50% {
-		opacity: 1;
-		transform: translate(
-			-50%,
-			0.5rem
-		); // Animate vertical bounce while keeping horizontal centering
-	}
+	0%, 100% { opacity: 0.8; transform: translate(-50%, 0); }
+	50% { opacity: 1; transform: translate(-50%, 0.5rem); }
 }
 
 @keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(100px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+	from { opacity: 0; transform: translateY(100px); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulseButton {
-	0%,
-	100% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.05);
-	}
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.05); }
 }
