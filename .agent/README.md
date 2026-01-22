@@ -1,9 +1,10 @@
 # Agent Entry Point — Celebra-me
 
-This folder defines the **operational rules and conventions** used by automated agents (and humans) working on the Celebra-me repository.
+This folder defines the **operational rules and conventions** used by automated agents (and humans)
+working on the Celebra-me repository.
 
-The documents in `.agent/` are **versioned, authoritative, and executable in intent**.
-They exist to keep the project consistent, safe, and aligned with its current architecture.
+The documents in `.agent/` are **versioned, authoritative, and executable in intent**. They exist to
+keep the project consistent, safe, and aligned with its current architecture.
 
 ---
 
@@ -25,7 +26,8 @@ Agents may encounter branches or states where one or more referenced documents a
 
 In such cases, agents must:
 
-- **Continue execution** using **conservative defaults** aligned with widely accepted Astro.js best practices.
+- **Continue execution** using **conservative defaults** aligned with widely accepted Astro.js best
+  practices.
 - **Avoid making irreversible or large changes**.
 - **Explicitly report** which document was missing and what assumptions were applied.
 - Prefer **suggestions over actions** when uncertainty is high.
@@ -113,9 +115,9 @@ Agent output should be:
 
 - **Concise by default**
 - More detailed only when:
-  - fixing critical issues,
-  - explaining non-obvious decisions,
-  - reporting ambiguity or fallback behavior.
+    - fixing critical issues,
+    - explaining non-obvious decisions,
+    - reporting ambiguity or fallback behavior.
 
 Clarity is preferred over verbosity.
 
@@ -123,8 +125,8 @@ Clarity is preferred over verbosity.
 
 ## Use of External Knowledge
 
-Agents may rely on **official documentation and well-established best practices**
-(e.g., Astro.js or Vercel docs) **only if** they do not conflict with local rules.
+Agents may rely on **official documentation and well-established best practices** (e.g., Astro.js or
+Vercel docs) **only if** they do not conflict with local rules.
 
 Local documentation always takes precedence.
 

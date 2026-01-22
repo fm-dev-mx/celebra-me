@@ -23,7 +23,8 @@ These rules are **authoritative** unless explicitly overridden by the repository
 
 ### Exception — Repository Hygiene
 
-The agent is allowed to touch files **outside of staged changes** when strictly required for repository hygiene, including:
+The agent is allowed to touch files **outside of staged changes** when strictly required for
+repository hygiene, including:
 
 - removing forbidden artifacts,
 - updating `.gitignore` to prevent repeated artifacts.
@@ -63,7 +64,8 @@ Forbidden examples (non-exhaustive):
 ### 2.2 Staged Diff Handling
 
 - Writing a diff file is allowed **only** at `.git/staged.diff`.
-- Any `staged.diff` located in the repository root or tracked paths is considered an artifact and must be removed.
+- Any `staged.diff` located in the repository root or tracked paths is considered an artifact and
+  must be removed.
 
 ---
 
@@ -74,7 +76,8 @@ Casing inconsistencies are treated as bugs.
 Rules:
 
 - Block path changes that differ only by casing.
-- Enforce consistent lowercase naming for folders unless a different convention is clearly established.
+- Enforce consistent lowercase naming for folders unless a different convention is clearly
+  established.
 
 ---
 
@@ -111,8 +114,8 @@ Files under `public/**` must not be imported as modules.
 
 - Tailwind must not be introduced.
 - If Tailwind usage is found in staged changes:
-  - Remove it.
-  - Replace it with an equivalent SCSS implementation.
+    - Remove it.
+    - Replace it with an equivalent SCSS implementation.
 
 **Constraints:**
 
@@ -140,23 +143,25 @@ Rules:
 - Do not introduce new `any` (including `as any`).
 - Prefer `unknown` + narrowing when types are not known at compile time.
 - For untrusted object inputs (e.g., parsed JSON), prefer:
-  - `unknown`, or
-  - `Record<string, unknown>` with explicit narrowing.
+    - `unknown`, or
+    - `Record<string, unknown>` with explicit narrowing.
 
 `@ts-ignore` policy:
 
 - Avoid `@ts-ignore`.
 - If it is truly unavoidable, it must include a brief reason comment on the line above:
-  - `// @ts-ignore -- <why this is safe/necessary>`
+    - `// @ts-ignore -- <why this is safe/necessary>`
 
 Legacy `any` handling:
 
 - Existing `any` is allowed to remain unless touched.
-- If the staged changes touch code where `any` is used, the agent should replace it **only when trivial** (e.g., `any` → `unknown` + safe narrowing), and must avoid large typing refactors.
+- If the staged changes touch code where `any` is used, the agent should replace it **only when
+  trivial** (e.g., `any` → `unknown` + safe narrowing), and must avoid large typing refactors.
 
 Large Change Mode note:
 
-- In Large Change Mode, the agent must **still block new `any`**, but should avoid non-trivial typing refactors.
+- In Large Change Mode, the agent must **still block new `any`**, but should avoid non-trivial
+  typing refactors.
 
 ---
 
@@ -195,14 +200,16 @@ The agent must switch to **Large Change Mode** when any of the following apply:
 
 - **≥ 25 files** are staged, or
 - **≥ 800 total lines** are changed (additions + deletions), or
-- changes affect structural configuration or core folders (e.g. `src/pages`, `src/styles`, `tsconfig`, `astro.config`, `package.json`).
+- changes affect structural configuration or core folders (e.g. `src/pages`, `src/styles`,
+  `tsconfig`, `astro.config`, `package.json`).
 
 ### Behavior in Large Change Mode
 
 - Fix only:
-  - build or deploy breakers,
-  - hard guard violations (artifacts, casing, boundary leaks),
-  - **new `any` introduced by staged changes** (block/must-fix), avoiding non-trivial typing refactors.
+    - build or deploy breakers,
+    - hard guard violations (artifacts, casing, boundary leaks),
+    - **new `any` introduced by staged changes** (block/must-fix), avoiding non-trivial typing
+      refactors.
 - Report all other findings without applying changes.
 
 ---
@@ -239,8 +246,7 @@ If unrelated:
 
 If no issues are found:
 
-- Reply with:
-  `✅ **LGTM** — <one short reason>`
+- Reply with: `✅ **LGTM** — <one short reason>`
 - Output **one** Conventional Commit message (English, present tense).
 
 ---
@@ -255,7 +261,7 @@ If fixes were applied:
 
 ```bash
 type(scope): summary
-````
+```
 
 Prefer `fix` or `refactor` when acting as Gatekeeper.
 
