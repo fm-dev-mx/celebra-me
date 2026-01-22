@@ -1,0 +1,87 @@
+---
+// src/pages/[eventType]/[slug].astro
+
+// 1. Add this line to enable getStaticPaths in 'server' mode
+export const prerender = true;
+
+import { type CollectionEntry, getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import Countdown from '@/components/xv/Countdown.astro';
+import EventLocation from '@/components/xv/EventLocation.astro';
+import FooterXV from '@/components/xv/Footer.astro';
+import HeroXV from '@/components/xv/Hero.astro';
+
+// Placeholder for future Wedding components
+// import HeroWedding from '@/components/wedding/Hero.astro';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map(event => ({
+    params: {
+      eventType: event.data.eventType,
+      slug: event.id
+    },
+    props: { event },
+  }));
+}
+
+interface Props {
+  event: CollectionEntry<'events'>;
+}
+
+const { event } = Astro.props;
+
+// 2. Add a safety check (Optional, but good for debugging)
+if (!event) {
+  return Astro.redirect('/404');
+}
+
+const { data } = event;
+
+const isXV = data.eventType === 'xv';
+const isWedding = data.eventType === 'boda';
+---
+
+<Layout title={data.title} description={data.description || ''}>
+  <style define:vars={{
+    primaryColor: data.theme.primaryColor,
+    accentColor: data.theme.accentColor || '#333'
+  }}>
+    .event-theme-wrapper {
+      --color-primary: var(--primaryColor);
+      --color-accent: var(--accentColor);
+    }
+  </style>
+  <main class="event-theme-wrapper">
+    {isXV && (
+      <>
+        <HeroXV
+          name={data.hero.name}
+          date={data.hero.date}
+        />
+        {data.sections?.countdown && (
+          <Countdown eventDate={data.hero.date} />
+        )}
+        <EventLocation
+          venue={data.location.venueName}
+          address={data.location.address}
+          mapUrl={data.location.mapUrl}
+        />
+        <FooterXV />
+      </>
+    )}
+
+    {isWedding && (
+      <div class="container-custom py-20 text-center">
+        <h1>Wedding Template Under Construction</h1>
+        <p>Values: {data.hero.name}</p>
+      </div>
+    )}
+
+    {!isXV && !isWedding && (
+      <div class="text-red-500 text-center py-20">
+        Unknown Event Type: {data.eventType}
+      </div>
+    )}
+  </main>
+</Layout>

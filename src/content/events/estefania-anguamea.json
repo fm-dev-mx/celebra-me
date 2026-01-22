@@ -1,0 +1,23 @@
+{
+  "eventType": "xv",
+  "title": "XV Años - Estefanía Anguamea",
+  "description": "Acompáñame a celebrar mis XV años.",
+  "theme": {
+    "primaryColor": "#d4af37",
+    "accentColor": "#111111",
+    "fontFamily": "serif"
+  },
+  "hero": {
+    "name": "Estefanía Anguamea",
+    "date": "2024-12-15T18:00:00.000Z",
+    "backgroundImage": "/images/hero/bgHeroDesktop.jpg"
+  },
+  "location": {
+    "venueName": "Salón de Eventos Royal",
+    "address": "Av. Principal 123, Ciudad"
+  },
+  "sections": {
+    "countdown": true,
+    "rsvp": true
+  }
+}
