@@ -1,0 +1,12 @@
+---
+interface Props {
+  icon: string;
+  size?: string;
+  class?: string;
+}
+
+const { icon, size = 'h-6 w-6', class: className } = Astro.props;
+---
+<div class:list={[size, 'flex items-center justify-center border border-current rounded', className]} title={icon}>
+  <span class="text-[8px] uppercase">{icon.substring(0, 3)}</span>
+</div>

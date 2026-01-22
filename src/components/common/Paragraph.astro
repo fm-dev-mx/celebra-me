@@ -1,0 +1,20 @@
+---
+interface Props {
+  size?: string;
+  align?: string;
+  textColor?: string;
+  weight?: string;
+  class?: string;
+}
+
+const {
+  size = 'text-base',
+  align = 'text-left',
+  textColor = 'text-gray-800',
+  weight = 'font-normal',
+  class: className
+} = Astro.props;
+---
+<p class:list={[size, align, textColor, weight, className]}>
+  <slot />
+</p>

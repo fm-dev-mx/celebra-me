@@ -1,0 +1,36 @@
+---
+interface Props {
+  items: Array<{ text: string; icon?: string }>;
+  color?: string;
+  size?: string;
+  weight?: string;
+  iconSize?: string;
+  iconColor?: string;
+  iconPadding?: string;
+  gap?: string;
+  listClass?: string;
+  iconClass?: string;
+}
+
+const {
+  items = [],
+  color = 'text-gray-700',
+  size = 'text-base',
+  weight = 'font-normal',
+  iconSize = 'h-5 w-5',
+  iconColor = 'text-primary',
+  gap = 'gap-y-2',
+  listClass = '',
+  iconClass = ''
+} = Astro.props;
+---
+<ul class:list={['flex flex-col', gap, listClass]}>
+  {items.map((item) => (
+    <li class:list={['flex items-start gap-3', color, size, weight]}>
+      <div class:list={[iconSize, iconColor, 'flex-shrink-0 flex items-center justify-center', iconClass]}>
+        ✓
+      </div>
+      <span>{item.text}</span>
+    </li>
+  ))}
+</ul>

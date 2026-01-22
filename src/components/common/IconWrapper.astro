@@ -1,0 +1,16 @@
+---
+interface Props {
+  background?: string;
+  color?: string;
+  class?: string;
+}
+
+const {
+  background = 'bg-gray-200',
+  color = 'text-gray-700',
+  class: className
+} = Astro.props;
+---
+<div class:list={['p-2 rounded-full flex items-center justify-center', background, color, className]}>
+  <slot />
+</div>

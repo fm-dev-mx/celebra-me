@@ -1,0 +1,41 @@
+---
+interface _Props {
+  variant?: string;
+  color?: string;
+  as?: 'a' | 'button';
+  href?: string;
+  title?: string;
+  class?: string;
+  className?: string; // Support both
+  target?: string;
+}
+
+const {
+  variant = 'default',
+  color = 'primary',
+  as: Tag = 'a',
+  href,
+  title,
+  class: classNameAttr,
+  className: classNameProp,
+  target
+} = Astro.props as _Props;
+
+const finalClassName = classNameAttr || classNameProp;
+---
+<Tag
+  href={href}
+  title={title}
+  target={target}
+  class:list={[
+    'inline-block px-6 py-2 rounded-full transition-colors',
+    {
+      'bg-primary-dark text-white hover:bg-primary': color === 'primary' && variant !== 'text',
+      'bg-secondary text-white hover:bg-secondary-dark': color === 'secondary' && variant !== 'text',
+      'text-primary hover:underline': variant === 'text',
+    },
+    finalClassName
+  ]}
+>
+  <slot />
+</Tag>

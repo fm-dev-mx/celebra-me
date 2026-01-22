@@ -1,0 +1,28 @@
+---
+import { Image } from 'astro:assets';
+
+interface Props {
+  // @ts-ignore -- imagePath can be a string, ImageMetadata, or Promise; union is complex to satisfy
+  imagePath: any;
+  alt: string;
+  rounded?: string;
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const { imagePath, alt, rounded = '', width = 350, height = 350, class: className } = Astro.props;
+---
+{imagePath ? (
+  <Image
+    src={imagePath}
+    alt={alt}
+    width={width}
+    height={height}
+    class:list={[rounded, className]}
+  />
+) : (
+  <div class:list={['bg-gray-300 flex items-center justify-center', rounded, className]} style={`width: ${width}px; height: ${height}px;`}>
+    <span class="text-xs text-gray-500">{alt}</span>
+  </div>
+)}

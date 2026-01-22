@@ -1,0 +1,39 @@
+---
+interface _Props {
+  icon: string;
+  variant?: string;
+  color?: string;
+  as?: 'a' | 'button';
+  href?: string;
+  title?: string;
+  class?: string;
+}
+
+const {
+  icon,
+  variant = 'default',
+  color = 'primary',
+  as: Tag = 'a',
+  href,
+  title,
+  class: className
+} = Astro.props as _Props;
+---
+<Tag
+  href={href}
+  title={title}
+  class:list={[
+    'flex items-center justify-center p-2 rounded-full transition-all',
+    {
+      'fixed bottom-8 right-8 bg-primary text-white shadow-lg': variant === 'scroll',
+      'text-primary': color === 'primary',
+      'text-secondary': color === 'secondary',
+    },
+    className
+  ]}
+>
+  <span class="sr-only">{title}</span>
+  <div class="w-6 h-6 border-2 border-current rounded-full flex items-center justify-center">
+    <span class="text-[10px]">{icon.charAt(0)}</span>
+  </div>
+</Tag>
