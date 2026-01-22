@@ -1,48 +1,46 @@
 ---
 interface Props {
-  id?: string;
-  backgroundImageDesktop?: string;
-  backgroundImageMobile?: string;
-  padding?: string;
-  relative?: string;
-  fullWidth?: boolean;
-  fullHeight?: boolean;
-  backgroundEffect?: string;
-  class?: string;
+	id?: string;
+	backgroundImageDesktop?: string;
+	backgroundImageMobile?: string;
+	padding?: string;
+	relative?: string;
+	fullWidth?: boolean;
+	fullHeight?: boolean;
+	backgroundEffect?: string;
+	class?: string;
 }
 
 const {
-  id,
-  backgroundImageDesktop,
-  backgroundImageMobile,
-  padding = 'py-10',
-  relative = '',
-  fullWidth = false,
-  fullHeight = false,
-  backgroundEffect,
-  class: className
+	id,
+	backgroundImageDesktop,
+	backgroundImageMobile,
+	padding = 'py-10',
+	relative = '',
+	fullWidth = false,
+	fullHeight = false,
+	backgroundEffect,
+	class: className,
 } = Astro.props;
 
 const bgStyle = backgroundImageDesktop ? `background-image: url(${backgroundImageDesktop})` : '';
-const mobileBgStyle = backgroundImageMobile ? `background-image: url(${backgroundImageMobile})` : '';
+const mobileBgStyle = backgroundImageMobile
+	? `background-image: url(${backgroundImageMobile})`
+	: '';
 ---
+
 <section
-  id={id}
-  class:list={[
-    padding,
-    relative,
-    { 'w-full': fullWidth, 'h-full': fullHeight },
-    className
-  ]}
-  style={bgStyle}
+	id={id}
+	class:list={[padding, relative, { 'w-full': fullWidth, 'h-full': fullHeight }, className]}
+	style={bgStyle}
 >
-  {backgroundEffect && <div class={backgroundEffect} />}
-  <style define:vars={{ mobileBgStyle }}>
-    @media (max-width: 640px) {
-      section {
-        background-image: var(--mobileBgStyle) !important;
-      }
-    }
-  </style>
-  <slot />
+	{backgroundEffect && <div class={backgroundEffect} />}
+	<style define:vars={{ mobileBgStyle }}>
+		@media (max-width: 640px) {
+			section {
+				background-image: var(--mobileBgStyle) !important;
+			}
+		}
+	</style>
+	<slot />
 </section>

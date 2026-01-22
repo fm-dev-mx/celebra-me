@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
 
 interface Props {
-  selector: string;
+	selector: string;
 }
 
 export const HeaderBehavior: React.FC<Props> = ({ selector }) => {
-  useEffect(() => {
-    // Client-side behavior placeholder
-    console.log('HeaderBehavior initialized with selector:', selector);
-  }, [selector]);
+	useEffect(() => {
+		// Client-side behavior placeholder
+		console.log('HeaderBehavior initialized with selector:', selector);
+	}, [selector]);
 
-  return null;
+	return null;
 };
 
 export default HeaderBehavior;

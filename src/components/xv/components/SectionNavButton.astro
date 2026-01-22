@@ -1,12 +1,13 @@
 ---
 import '@/styles/XV/sectionNavButton.xv.scss';
 interface Props {
-  href: string;
-  class?: string;
-  section: string;
+	href: string;
+	class?: string;
+	section: string;
 }
 const { href, class: className, section } = Astro.props;
 ---
+
 <a href={href} class={`section-nav-button ${className}`}>
-  {section}
+	{section}
 </a>

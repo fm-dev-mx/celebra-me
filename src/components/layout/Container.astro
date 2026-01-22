@@ -1,12 +1,13 @@
 ---
 interface Props {
-  width?: string;
-  padding?: string;
-  class?: string;
+	width?: string;
+	padding?: string;
+	class?: string;
 }
 
 const { width = 'w-full', padding = '', class: className } = Astro.props;
 ---
+
 <div class:list={[width, padding, className]}>
-  <slot />
+	<slot />
 </div>

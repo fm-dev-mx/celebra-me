@@ -1,10 +1,11 @@
 ---
 interface Props {
-  className?: string;
+	className?: string;
 }
 
 const { className = '' } = Astro.props;
 ---
+
 <div class:list={['flex flex-wrap gap-4 justify-center', className]}>
-  <slot />
+	<slot />
 </div>

@@ -1,16 +1,23 @@
 ---
 interface Props {
-  links: Array<{ label: string; href: string; icon?: string }>;
+	links: Array<{ label: string; href: string; icon?: string }>;
 }
 
 const { links = [] } = Astro.props;
 ---
+
 <div class="flex gap-4 mt-6">
-  {links.map((link) => (
-    <a href={link.href} title={link.label} class="text-white hover:text-primary transition-colors">
-      <div class="w-6 h-6 border border-current rounded-full flex items-center justify-center">
-        <span class="text-[10px]">{link.label.charAt(0)}</span>
-      </div>
-    </a>
-  ))}
+	{
+		links.map((link) => (
+			<a
+				href={link.href}
+				title={link.label}
+				class="text-white hover:text-primary transition-colors"
+			>
+				<div class="w-6 h-6 border border-current rounded-full flex items-center justify-center">
+					<span class="text-[10px]">{link.label.charAt(0)}</span>
+				</div>
+			</a>
+		))
+	}
 </div>

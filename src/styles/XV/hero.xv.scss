@@ -70,7 +70,9 @@
 		margin: 0 auto 8rem;
 		text-align: center;
 
-		@include mixins.respond-to(md) { max-width: 400px; }
+		@include mixins.respond-to(md) {
+			max-width: 400px;
+		}
 
 		.hero__title {
 			font-family: vars.$font-heading-elegant;
@@ -80,9 +82,18 @@
 			color: vars.$color-white;
 			text-shadow: 2px 2px 2px rgba(vars.$color-dark, 0.9);
 
-			@include mixins.respond-to(xs) { font-size: 4rem; letter-spacing: 8px; }
-			@include mixins.respond-to(sm) { font-size: 6rem; letter-spacing: 5px; }
-			@include mixins.respond-to(md) { font-size: 7rem; letter-spacing: 2px; }
+			@include mixins.respond-to(xs) {
+				font-size: 4rem;
+				letter-spacing: 8px;
+			}
+			@include mixins.respond-to(sm) {
+				font-size: 6rem;
+				letter-spacing: 5px;
+			}
+			@include mixins.respond-to(md) {
+				font-size: 7rem;
+				letter-spacing: 2px;
+			}
 		}
 
 		.hero__subtitle {
@@ -95,9 +106,15 @@
 			border-top: 2px solid rgba(vars.$color-secondary-light, 1);
 			padding-top: 2rem;
 
-			@include mixins.respond-to(xs) { font-size: 1.5rem; }
-			@include mixins.respond-to(sm) { font-size: 2rem; }
-			@include mixins.respond-to(md) { font-size: 2.5rem; }
+			@include mixins.respond-to(xs) {
+				font-size: 1.5rem;
+			}
+			@include mixins.respond-to(sm) {
+				font-size: 2rem;
+			}
+			@include mixins.respond-to(md) {
+				font-size: 2.5rem;
+			}
 		}
 
 		.hero__date {
@@ -111,9 +128,15 @@
 			animation-delay: 1s;
 			text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.7);
 
-			@include mixins.respond-to(xs) { font-size: 1.2rem; }
-			@include mixins.respond-to(sm) { font-size: 1.4rem; }
-			@include mixins.respond-to(md) { font-size: 1.6rem; }
+			@include mixins.respond-to(xs) {
+				font-size: 1.2rem;
+			}
+			@include mixins.respond-to(sm) {
+				font-size: 1.4rem;
+			}
+			@include mixins.respond-to(md) {
+				font-size: 1.6rem;
+			}
 		}
 	}
 

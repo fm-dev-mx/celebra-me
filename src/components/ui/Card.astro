@@ -1,37 +1,38 @@
 ---
 interface Props {
-  minWidth?: string;
-  minHeight?: string;
-  class?: string;
-  extraClass?: string;
-  hover?: string;
-  borderColor?: string;
-  href?: string;
+	minWidth?: string;
+	minHeight?: string;
+	class?: string;
+	extraClass?: string;
+	hover?: string;
+	borderColor?: string;
+	href?: string;
 }
 
 const {
-  minWidth = '',
-  minHeight = '',
-  class: className,
-  extraClass = '',
-  hover = '',
-  borderColor = '',
-  href
+	minWidth = '',
+	minHeight = '',
+	class: className,
+	extraClass = '',
+	hover = '',
+	borderColor = '',
+	href,
 } = Astro.props;
 
 const Tag = href ? 'a' : 'div';
 ---
+
 <Tag
-  href={href}
-  class:list={[
-    'bg-white rounded-lg shadow-md p-6 flex flex-col items-center',
-    minWidth,
-    minHeight,
-    hover,
-    borderColor,
-    className,
-    extraClass
-  ]}
+	href={href}
+	class:list={[
+		'bg-white rounded-lg shadow-md p-6 flex flex-col items-center',
+		minWidth,
+		minHeight,
+		hover,
+		borderColor,
+		className,
+		extraClass,
+	]}
 >
-  <slot />
+	<slot />
 </Tag>
