@@ -9,7 +9,6 @@ import OptimizedImage from '@components/common/OptimizedImage.astro';
 import ImageWrapper from '@components/common/ImageWrapper.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import ServiceItem from '@components/ui/ServiceItem.astro';
-import type { LegacyServicesData } from '@/core/interfaces/data/landingPage.legacy.interface';
 
 // Import local images
 import xvImage from '@images/services/xv.jpg';
@@ -17,8 +16,10 @@ import weddingPartyImage from '@images/services/weddingParty.jpg';
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
+import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
+
 interface Props {
-	data: LegacyServicesData;
+	data: ServicesData;
 }
 
 const { data } = Astro.props;
@@ -116,7 +117,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 	<ActionIcon
 		variant="scroll"
 		href="#about-section"
-		title="Click to learn more about us"
+		title="Conoce más sobre nosotros"
 		color="secondary"
 		icon="ArrowDownIcon"
 	/>

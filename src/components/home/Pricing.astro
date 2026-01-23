@@ -8,16 +8,15 @@ import Card from '@components/ui/Card.astro';
 import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
-import type { LegacyPricingData } from '@/core/interfaces/data/landingPage.legacy.interface';
-// import type { IconNames } from '@/core/types/ui/iconNames.type';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
-// Define the properties interface for the component
-interface Props {
-	data: LegacyPricingData;
-}
+import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
 
 // Destructure the data property from Astro.props
+interface Props {
+	data: PricingData;
+}
+
 const { data } = Astro.props;
 ---
 

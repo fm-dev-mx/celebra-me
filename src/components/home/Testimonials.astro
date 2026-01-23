@@ -4,12 +4,12 @@ import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import TestimonialsCarousel from '@components/ui/TestimonialsCarousel.tsx';
-import type { LegacyTestimonialsData } from '@/core/interfaces/data/landingPage.legacy.interface';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
-// Define the props interface for this component
+import type { TestimonialsData } from '@/interfaces/ui/sections/landing-page.interface';
+
 interface Props {
-	data: LegacyTestimonialsData;
+	data: TestimonialsData;
 }
 
 // Destructure the data prop

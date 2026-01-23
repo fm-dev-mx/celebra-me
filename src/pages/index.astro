@@ -1,23 +1,138 @@
 ---
 // src/pages/index.astro
 import Layout from '@/layouts/Layout.astro';
+import Hero from '@/components/home/Hero.astro';
+import Services from '@/components/home/Services.astro';
+import AboutUs from '@/components/home/AboutUs.astro';
+import Testimonials from '@/components/home/Testimonials.astro';
+import Pricing from '@/components/home/Pricing.astro';
+import FAQ from '@/components/home/FAQ.astro';
+import Contact from '@/components/home/Contact.astro';
+import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
+
+const landingData: LandingPageData = {
+	hero: {
+		title: 'Momentos que se quedan en el corazón',
+		subtitle: 'Crea invitaciones digitales elegantes y personalizadas para tus eventos más especiales.',
+		backgroundImage: {
+			desktopUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+			mobileUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+		},
+		primaryCtaLabel: 'Crear Invitación',
+		primaryCtaUrl: '/crear',
+		secondaryCtaLabel: 'Ver Demo',
+		secondaryCtaUrl: '/xv/estefania-anguamea',
+		socialProofText: 'Más de 500 eventos inolvidables',
+	},
+	services: {
+		title: 'Nuestros Servicios',
+		services: [
+			{
+				title: 'XV Años',
+				description: 'Invitaciones mágicas para una noche inolvidable.',
+				icon: 'StarIcon',
+			},
+			{
+				title: 'Bodas',
+				description: 'Elegancia y distinción para el día más importante.',
+				icon: 'HeartIcon',
+			},
+			{
+				title: 'Bautizos',
+				description: 'Detalles tiernos para celebrar la vida.',
+				icon: 'BabyIcon',
+			},
+		],
+	},
+	about: {
+		title: 'Sobre Nosotros',
+		description: 'En Celebra-me, nos apasiona convertir tus celebraciones en experiencias digitales únicas.',
+		values: [
+			{
+				name: 'Innovación',
+				description: 'Diseños modernos y funcionales.',
+				icon: 'LightbulbIcon',
+			},
+			{
+				name: 'Calidad',
+				description: 'Atención al detalle en cada píxel.',
+				icon: 'ShieldCheckIcon',
+			},
+			{
+				name: 'Compromiso',
+				description: 'Estamos contigo en cada paso.',
+				icon: 'UserGroupIcon',
+			},
+		],
+		cta: {
+			label: 'Conoce más',
+			href: '/nosotros',
+		},
+	},
+	testimonials: {
+		title: 'Lo que dicen de nosotros',
+		testimonials: [
+			{
+				name: 'María García',
+				text: 'La invitación de mis XV quedó hermosa, a todos mis invitados les encantó.',
+				role: 'Quinceañera',
+			},
+			{
+				name: 'Juan Pérez',
+				text: 'Excelente servicio y atención, muy fácil de personalizar.',
+				role: 'Padre de familia',
+			},
+		],
+	},
+	pricing: {
+		title: 'Planes a tu medida',
+		tiers: [
+			{
+				title: 'Básico',
+				description: 'Lo esencial para tu evento.',
+				price: { amount: '499', currency: 'MXN', period: 'pago único' },
+				features: ['Invitación Digital', 'Confirmación RSVP', 'Ubicación Maps'],
+				cta: 'Elegir Básico',
+				href: '/registro?plan=basico',
+			},
+			{
+				title: 'Premium',
+				description: 'La mejor experiencia para tus invitados.',
+				price: { amount: '899', currency: 'MXN', period: 'pago único' },
+				features: ['Todo lo del Básico', 'Galería de Fotos', 'Mesa de Regalos'],
+				cta: 'Elegir Premium',
+				href: '/registro?plan=premium',
+			},
+		],
+	},
+	faq: {
+		title: 'Preguntas Frecuentes',
+		faqs: [
+			{
+				question: '¿Cómo recibo mi invitación?',
+				answer: 'Recibirás un enlace personalizado que podrás compartir por WhatsApp o redes sociales.',
+			},
+			{
+				question: '¿Puedo hacer cambios?',
+				answer: 'Sí, puedes editar la información de tu evento en cualquier momento desde tu panel.',
+			},
+		],
+	},
+	contact: {
+		title: 'Contáctanos',
+		subtitle: '¿Tienes alguna duda? Estamos para ayudarte a que tu evento sea perfecto.',
+	},
+};
 ---
 
-<Layout title="Celebra.me | Organizador de Eventos">
+<Layout title="Celebra.me | Invitaciones Digitales Premium">
 	<div class="flex flex-col gap-0">
-		<section class="min-h-screen flex items-center justify-center bg-gray-50">
-			<div class="text-center">
-				<h1 class="text-5xl md:text-7xl font-serif text-primary mb-6">Celebra.me</h1>
-				<p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-					Simplificamos la planificación de tus momentos más importantes.
-				</p>
-				<a
-					href="/xv/estefania-anguamea"
-					class="inline-block bg-primary text-white px-8 py-3 rounded-full hover:bg-yellow-600 transition"
-				>
-					Ver Demo XV Años
-				</a>
-			</div>
-		</section>
+		<Hero data={landingData.hero} />
+		<Services data={landingData.services} />
+		<AboutUs data={landingData.about} />
+		<Testimonials data={landingData.testimonials} />
+		<Pricing data={landingData.pricing} />
+		<FAQ data={landingData.faq} />
+		<Contact data={landingData.contact} />
 	</div>
 </Layout>

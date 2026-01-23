@@ -1,8 +1,8 @@
-// src/styles/global.scss
-
-/* Unifying global styles.
-  Removed specific "XV" prefixes to allow reuse.
-*/
+@use 'global/variables';
+@use 'global/mixins';
+@use 'global/functions';
+@use 'global/animations';
+@use './components/hero';
 
 :root {
 	--color-primary: #d4af37; /* Gold default */

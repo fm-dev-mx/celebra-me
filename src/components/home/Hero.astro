@@ -5,16 +5,14 @@
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Section from '@components/layout/Section.astro';
-import StyledContainer from '@components/layout/StyledContainer.astro';
-import type { LegacyHeroProps } from '@/core/interfaces/data/landingPage.legacy.interface.ts';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
-import ActionWrapper from '@components/common/actions/ActionWrapper.astro';
 import Logo from '@components/ui/Logo.astro';
+import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 
 interface Props {
-	data: LegacyHeroProps;
+	data: HeroData;
 }
 
 const { data } = Astro.props;
@@ -24,60 +22,61 @@ const { data } = Astro.props;
 	id="hero-section"
 	backgroundImageDesktop={data.backgroundImage.desktopUrl}
 	backgroundImageMobile={data.backgroundImage.mobileUrl}
-	padding="py-20"
-	relative="relative"
 	fullWidth
 	fullHeight
+	class="hero-section"
 >
-	<!-- Overlay for styling and layout adjustments -->
-	<StyledContainer variant="hero-section">
-		<!-- Title with responsive settings and animation -->
+	<div class="hero-content">
+		<!-- Title with premium styling -->
 		<SectionTitle
 			margin="mb-0"
 			align="text-center"
-			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
-			color="text-primary-dark/80"
-			weight="font-light"
-			extraClass="slide-in-left shadow-text-light tracking-widest"
+			size="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
+			color="text-white"
+			extraClass="hero-title"
 		>
 			{data.title}
 		</SectionTitle>
 
-		<!-- Responsive logo with accessibility enhancements -->
-		<div class="shimmer permanent-glow">
-			<!-- Using hero variant to handle different styling or images if needed -->
-			<Logo variant="hero" altText="Celebra-me Hero Logo" />
+		<!-- Responsive logo -->
+		<div class="hero-logo-container">
+			<Logo variant="hero" altText="Celebra-me" class="hero-logo" />
 		</div>
 
-		<!-- Subtitle for additional context with animation and styles -->
+		<!-- Subtitle -->
 		<SectionSubtitle
-			size="text-lg sm:text-xl md:text-2xl lg:text-3xl"
+			size="text-lg sm:text-xl md:text-2xl"
 			align="text-center"
-			weight="font-normal"
-			color="text-accent-dark"
-			margin="mx-12 mx-auto"
-			extraClass="font-sans shadow-text-light tracking-widest fade-in fade-slow"
+			color="text-gray-100"
+			margin="mb-0"
+			extraClass="hero-subtitle"
 		>
 			{data.subtitle}
 		</SectionSubtitle>
 
-		<!-- CTA Buttons for main actions -->
-		<ActionWrapper>
+		<!-- CTA Buttons -->
+		<div class="hero-cta-wrapper">
 			<WhatsAppButton client:idle />
-			<!-- Internal link action using ActionBase -->
-			<ActionBase as="a" href="#" variant="primary" color="secondary">
-				{data.secondaryCta}
+			<ActionBase as="a" href={data.secondaryCtaUrl || '#'} variant="primary" color="secondary">
+				{data.secondaryCtaLabel}
 			</ActionBase>
-		</ActionWrapper>
-	</StyledContainer>
+		</div>
 
-	<!-- Scroll button directing users to the next section -->
+		<!-- Social Proof -->
+		{data.socialProofText && (
+			<div class="hero-social-proof">
+				<span>{data.socialProofText}</span>
+			</div>
+		)}
+	</div>
+
+	<!-- Scroll button -->
 	<ActionIcon
 		icon="ArrowDownIcon"
 		variant="scroll"
 		color="primary"
 		as="a"
 		href="#services-section"
-		title="Conoce más acerca de nuestros servicios"
+		title="Conoce más"
 	/>
 </Section>
