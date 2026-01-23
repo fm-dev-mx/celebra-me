@@ -1,0 +1,34 @@
+{
+    "eventType": "xv",
+    "title": "XV Años - Demo Invitación",
+    "description": "Acompáñanos a celebrar estos XV años de ensueño.",
+    "theme": {
+        "primaryColor": "#d4af37",
+        "accentColor": "#111111",
+        "fontFamily": "serif"
+    },
+    "hero": {
+        "name": "Lucía García",
+        "date": "2025-10-25T18:00:00.000Z",
+        "backgroundImage": "/images/hero/bgHeroDesktop.jpg"
+    },
+    "location": {
+        "venueName": "Salón de Eventos 'El Jardín'",
+        "address": "Av. de las Rosas #100, Col. Centro, Ciudad"
+    },
+    "family": {
+        "parents": {
+            "father": "Sr. Roberto Pérez",
+            "mother": "Sra. Esthela de Pérez"
+        },
+        "godparents": [
+            { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
+            { "name": "Sra. Ana María", "role": "Madrina de Honor" }
+        ],
+        "featuredImage": "/images/about/partyToast.jpg"
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true
+    }
+}

@@ -23,6 +23,23 @@ const eventsCollection = defineCollection({
 			address: z.string(),
 			mapUrl: z.string().url().optional(),
 		}),
+		family: z
+			.object({
+				parents: z.object({
+					father: z.string().optional(),
+					mother: z.string().optional(),
+				}),
+				godparents: z
+					.array(
+						z.object({
+							name: z.string(),
+							role: z.string().optional(),
+						}),
+					)
+					.optional(),
+				featuredImage: z.string().optional(),
+			})
+			.optional(),
 		// Flexible object for optional sections (RSVP, etc.)
 		sections: z
 			.object({

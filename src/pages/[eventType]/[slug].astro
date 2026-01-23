@@ -10,6 +10,7 @@ import Countdown from '@/components/xv/Countdown.astro';
 import EventLocation from '@/components/xv/EventLocation.astro';
 import FooterXV from '@/components/xv/Footer.astro';
 import HeroXV from '@/components/xv/Hero.astro';
+import FamilyXV from '@/components/xv/Family.astro';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -60,6 +61,16 @@ const isWedding = data.eventType === 'boda';
 				<>
 					<HeroXV name={data.hero.name} date={data.hero.date} />
 					{data.sections?.countdown && <Countdown eventDate={data.hero.date} />}
+					{
+						data.family && (
+							<FamilyXV
+								parents={data.family.parents}
+								godparents={data.family.godparents}
+								featuredImage={data.family.featuredImage}
+								celebrantName={data.hero.name}
+							/>
+						)
+					}
 					<EventLocation
 						venue={data.location.venueName}
 						address={data.location.address}
