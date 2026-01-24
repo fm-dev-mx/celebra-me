@@ -64,6 +64,14 @@ const eventsCollection = defineCollection({
 				image: z.string().optional(),
 			})
 			.optional(),
+		// Background music / ambient audio
+		music: z
+			.object({
+				url: z.string(),
+				autoPlay: z.boolean().default(false),
+				title: z.string().optional(), // For accessibility (aria-label)
+			})
+			.optional(),
 		// Flexible object for optional sections (RSVP, etc.)
 		sections: z
 			.object({

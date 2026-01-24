@@ -14,6 +14,7 @@ import FamilyXV from '@/components/xv/Family.astro';
 import QuoteXV from '@/components/xv/Quote.astro';
 import ThankYouXV from '@/components/xv/ThankYou.astro';
 import RSVP from '@/components/invitation/RSVP';
+import MusicPlayer from '@/components/invitation/MusicPlayer';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -103,6 +104,14 @@ const isWedding = data.eventType === 'boda';
 						/>
 					)}
 					<FooterXV />
+					{data.music && (
+						<MusicPlayer
+							client:idle
+							url={data.music.url}
+							autoPlay={data.music.autoPlay}
+							title={data.music.title}
+						/>
+					)}
 				</>
 			)
 		}
