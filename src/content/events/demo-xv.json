@@ -30,5 +30,10 @@
     "sections": {
         "countdown": true,
         "rsvp": true
+    },
+    "rsvp": {
+        "title": "¿Vienes a celebrar conmigo?",
+        "guestCap": 2,
+        "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción."
     }
 }

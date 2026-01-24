@@ -11,6 +11,7 @@ import EventLocation from '@/components/xv/EventLocation.astro';
 import FooterXV from '@/components/xv/Footer.astro';
 import HeroXV from '@/components/xv/Hero.astro';
 import FamilyXV from '@/components/xv/Family.astro';
+import RSVP from '@/components/invitation/RSVP';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -76,6 +77,16 @@ const isWedding = data.eventType === 'boda';
 						address={data.location.address}
 						mapUrl={data.location.mapUrl}
 					/>
+					{
+						data.sections?.rsvp && data.rsvp && (
+							<RSVP
+								client:visible
+								title={data.rsvp.title}
+								guestCap={data.rsvp.guestCap}
+								confirmationMessage={data.rsvp.confirmationMessage}
+							/>
+						)
+					}
 					<FooterXV />
 				</>
 			)

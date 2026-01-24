@@ -40,6 +40,15 @@ const eventsCollection = defineCollection({
 				featuredImage: z.string().optional(),
 			})
 			.optional(),
+		rsvp: z
+			.object({
+				title: z.string().default('¿Vienes a celebrar conmigo?'),
+				guestCap: z.number().int().positive().default(1),
+				confirmationMessage: z
+					.string()
+					.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
+			})
+			.optional(),
 		// Flexible object for optional sections (RSVP, etc.)
 		sections: z
 			.object({
