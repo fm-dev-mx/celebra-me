@@ -1,0 +1,113 @@
+---
+// src/components/xv/Quote.astro
+// Elegant quote/dedication section for XV Años invitations
+
+interface Props {
+	text: string;
+	author?: string;
+}
+
+const { text, author } = Astro.props;
+---
+
+<section id="quote-section" class="quote-section">
+	<div class="quote-container">
+		<span class="quote-mark" aria-hidden="true">"</span>
+		<blockquote class="quote-text">
+			{text}
+		</blockquote>
+		{author && (
+			<cite class="quote-author">— {author}</cite>
+		)}
+	</div>
+</section>
+
+<style lang="scss">
+	@use '../../styles/xv/variables.xv' as *;
+
+	.quote-section {
+		position: relative;
+		min-height: 50vh;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		overflow: hidden;
+		padding: 4rem 1rem;
+		border-top: 2px solid rgba($color-secondary-dark, 0.3);
+		border-bottom: 2px solid rgba($color-secondary-dark, 0.3);
+		background: linear-gradient(
+			135deg,
+			rgba($color-primary-dark, 0.95) 0%,
+			rgba($color-secondary-dark, 0.85) 100%
+		);
+
+		// Subtle pattern overlay
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0.1;
+			background: radial-gradient(circle at 20% 50%, rgba($color-white, 0.15) 0%, transparent 50%),
+						radial-gradient(circle at 80% 80%, rgba($color-secondary-light, 0.1) 0%, transparent 40%);
+			pointer-events: none;
+		}
+	}
+
+	.quote-container {
+		position: relative;
+		max-width: 700px;
+		padding: 2rem;
+		text-align: center;
+		opacity: 0;
+		transform: translateY(20px);
+		animation: fadeInUp 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s forwards;
+	}
+
+	.quote-mark {
+		display: block;
+		font-family: $font-decorative-cursive;
+		font-size: clamp(4rem, 10vw, 6rem);
+		color: rgba($color-secondary-light, 0.4);
+		line-height: 0.5;
+		margin-bottom: 1rem;
+	}
+
+	.quote-text {
+		font-family: $font-decorative-cursive;
+		font-size: clamp(1.4rem, 4vw, 2rem);
+		line-height: 1.6;
+		color: rgba($color-white, 0.9);
+		margin: 0 0 1.5rem 0;
+		text-shadow: 0 2px 8px rgba($color-darkest, 0.5);
+		font-style: normal;
+
+		@media (min-width: 768px) {
+			line-height: 1.8;
+			margin-bottom: 2rem;
+		}
+	}
+
+	.quote-author {
+		display: block;
+		font-family: $font-body;
+		font-size: clamp(1rem, 2.5vw, 1.3rem);
+		font-style: italic;
+		color: $color-secondary-light;
+		opacity: 0.85;
+		letter-spacing: 0.05em;
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>

@@ -11,6 +11,8 @@ import EventLocation from '@/components/xv/EventLocation.astro';
 import FooterXV from '@/components/xv/Footer.astro';
 import HeroXV from '@/components/xv/Hero.astro';
 import FamilyXV from '@/components/xv/Family.astro';
+import QuoteXV from '@/components/xv/Quote.astro';
+import ThankYouXV from '@/components/xv/ThankYou.astro';
 import RSVP from '@/components/invitation/RSVP';
 
 // Placeholder for future Wedding components
@@ -87,6 +89,19 @@ const isWedding = data.eventType === 'boda';
 							/>
 						)
 					}
+					{data.quote && (
+						<QuoteXV
+							text={data.quote.text}
+							author={data.quote.author}
+						/>
+					)}
+					{data.thankYou && (
+						<ThankYouXV
+							message={data.thankYou.message}
+							closingName={data.thankYou.closingName}
+							image={data.thankYou.image}
+						/>
+					)}
 					<FooterXV />
 				</>
 			)

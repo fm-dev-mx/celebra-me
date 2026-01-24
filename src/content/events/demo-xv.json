@@ -35,5 +35,14 @@
         "title": "¿Vienes a celebrar conmigo?",
         "guestCap": 2,
         "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción."
+    },
+    "quote": {
+        "text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
+        "author": "Lucía García"
+    },
+    "thankYou": {
+        "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
+        "closingName": "Lucía",
+        "image": "/images/about/partyToast.jpg"
     }
 }

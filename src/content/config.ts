@@ -49,6 +49,21 @@ const eventsCollection = defineCollection({
 					.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
 			})
 			.optional(),
+		// Quote section for inspirational/personalized phrases
+		quote: z
+			.object({
+				text: z.string(),
+				author: z.string().optional(),
+			})
+			.optional(),
+		// Thank you / closing section
+		thankYou: z
+			.object({
+				message: z.string(),
+				closingName: z.string(),
+				image: z.string().optional(),
+			})
+			.optional(),
 		// Flexible object for optional sections (RSVP, etc.)
 		sections: z
 			.object({
