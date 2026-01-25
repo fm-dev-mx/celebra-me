@@ -1,0 +1,223 @@
+---
+/**
+ * src/components/common/HeaderBase.astro
+ *
+ * Foundation component for all headers (Landing & Invitation).
+ * Handles:
+ * - Scroll detection (Shrink effect, Glassmorphism transparency)
+ * - Mobile Menu state & animations
+ * - Auto-Hide on landscape mobile
+ */
+
+import '@styles/layout/_header-base.scss';
+
+export interface Props {
+    transparentOnHero?: boolean;
+    headerId?: string;
+    logoVariant?: 'adaptive' | 'static';
+}
+
+const {
+    transparentOnHero = true,
+    headerId = 'main-header',
+    logoVariant = 'adaptive',
+} = Astro.props;
+---
+
+<header
+    id={headerId}
+    class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''} ${
+        logoVariant === 'static' ? 'header-base--logo-static' : 'header-base--logo-adaptive'
+    }`}
+>
+    <div class="header-base__container">
+        <!-- Slot: Logo (Adaptive logic lives in parent) -->
+        <div class="header-base__logo">
+            <slot name="logo" />
+        </div>
+
+        <!-- Slot: Desktop Navigation -->
+        <nav class="header-base__desktop-nav" aria-label="Navegacion principal">
+            <slot name="desktop-nav" />
+        </nav>
+
+        <!-- Mobile Menu Toggle -->
+        <button
+            id={`${headerId}-toggle`}
+            class="mobile-menu-btn"
+            type="button"
+            aria-label="Alternar navegacion"
+            aria-controls={`${headerId}-overlay`}
+            aria-expanded="false"
+        >
+            <span class="mobile-menu-btn__line"></span>
+            <span class="mobile-menu-btn__line"></span>
+            <span class="mobile-menu-btn__line"></span>
+        </button>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div id={`${headerId}-overlay`} class="mobile-overlay" aria-hidden="true">
+        <nav class="mobile-overlay__content" aria-label="Navegacion movil">
+            <slot name="mobile-nav-content" />
+        </nav>
+    </div>
+</header>
+
+<script is:inline define:vars={{ headerId, transparentOnHero }}>
+    document.addEventListener('DOMContentLoaded', () => {
+        const header = document.getElementById(headerId);
+        const toggleBtn = document.getElementById(`${headerId}-toggle`);
+        const overlay = document.getElementById(`${headerId}-overlay`);
+        const body = document.body;
+
+        if (
+            !(header instanceof HTMLElement) ||
+            !(toggleBtn instanceof HTMLButtonElement) ||
+            !(overlay instanceof HTMLElement)
+        ) {
+            return;
+        }
+
+        let lastScrollY = window.scrollY;
+        let isMenuOpen = false;
+        let allowAutoHide = false;
+        let lastFocusedElement = null;
+        const SCROLL_THRESHOLD = 50;
+        const HIDE_THRESHOLD = 100;
+        const updateAutoHide = () => {
+            // Enable auto-hide for all devices to maximize screen real estate
+            // and provide a more immersive experience (Headroom pattern)
+            allowAutoHide = true;
+
+            if (!allowAutoHide) {
+                header.classList.remove('header-base--hidden');
+            }
+        };
+
+        const setScrolledState = (isScrolledPastHero) => {
+            header.classList.toggle('header-base--scrolled', isScrolledPastHero);
+
+            if (transparentOnHero) {
+                header.classList.toggle('header-base--transparent', !isScrolledPastHero);
+            } else {
+                header.classList.remove('header-base--transparent');
+            }
+        };
+
+        const handleScroll = () => {
+            // If menu is open, don't do hide/shrink logic
+            if (isMenuOpen) return;
+
+            const currentScrollY = window.scrollY;
+            const isScrollingDown = currentScrollY > lastScrollY;
+            const isScrolledPastHero = currentScrollY > SCROLL_THRESHOLD;
+
+            // 1. Transparency / Glassmorphism
+            setScrolledState(isScrolledPastHero);
+
+            // 2. Auto-Hide (Landscape Mobile preferred, but often good for all mobile)
+            // Headroom style: Hide on scroll down, show on scroll up
+            // Check if we have scrolled enough to warrant hiding
+            if (allowAutoHide && currentScrollY > HIDE_THRESHOLD && isScrollingDown) {
+                header.classList.add('header-base--hidden');
+            } else {
+                header.classList.remove('header-base--hidden');
+            }
+
+            lastScrollY = currentScrollY;
+        };
+
+        const openMenu = () => {
+            isMenuOpen = true;
+            toggleBtn.classList.add('mobile-menu-btn--active');
+            overlay.classList.add('mobile-overlay--open');
+            header.classList.add('header-base--menu-open');
+            header.classList.remove('header-base--hidden');
+            toggleBtn.setAttribute('aria-expanded', 'true');
+            overlay.setAttribute('aria-hidden', 'false');
+            body.style.overflow = 'hidden';
+
+            lastFocusedElement = document.activeElement;
+            const focusable = overlay.querySelectorAll(
+                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length > 0) {
+                focusable[0].focus();
+            }
+        };
+
+        const closeMenu = () => {
+            isMenuOpen = false;
+            toggleBtn.classList.remove('mobile-menu-btn--active');
+            overlay.classList.remove('mobile-overlay--open');
+            header.classList.remove('header-base--menu-open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            overlay.setAttribute('aria-hidden', 'true');
+            body.style.overflow = '';
+            handleScroll();
+
+            if (lastFocusedElement instanceof HTMLElement) {
+                lastFocusedElement.focus();
+            }
+        };
+
+        // Throttle scroll event for performance
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // --- Mobile Menu Toggle ---
+        toggleBtn.addEventListener('click', () => {
+            if (isMenuOpen) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay && isMenuOpen) {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!isMenuOpen) return;
+
+            if (event.key === 'Escape') {
+                closeMenu();
+                return;
+            }
+
+            if (event.key !== 'Tab') return;
+
+            const focusable = overlay.querySelectorAll(
+                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            const isShift = event.shiftKey;
+
+            if (isShift && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!isShift && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+
+        updateAutoHide();
+        handleScroll();
+    });
+</script>

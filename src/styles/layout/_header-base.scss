@@ -1,0 +1,225 @@
+@use '../global/variables' as *;
+@use '../global/mixins' as *;
+
+/*
+ * Block: .header-base
+ * Core container for the navigation bar
+ */
+.header-base {
+    --header-height: 90px;
+    --header-height-scrolled: 65px;
+    --header-transition: 0.4s;
+    --header-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    z-index: 1000;
+    transition:
+        height var(--header-transition) var(--header-ease),
+        background-color var(--header-transition) var(--header-ease),
+        backdrop-filter var(--header-transition) var(--header-ease),
+        transform var(--header-transition) var(--header-ease);
+
+    border-bottom: 1px solid transparent;
+    background-color: transparent;
+
+    /* Gradient Overlay for contrast */
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 150%; // Extend slightly deeper so the fadeout is natural
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+        z-index: -1;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--header-transition) var(--header-ease);
+    }
+
+    &--transparent {
+        background-color: transparent;
+        backdrop-filter: blur(0);
+        -webkit-backdrop-filter: blur(0);
+
+        &::before {
+            opacity: 1;
+        }
+    }
+
+    /* State: Scrolled
+     * Reduces height and applies glassmorphism
+     */
+    &--scrolled {
+        height: var(--header-height-scrolled);
+        background-color: rgba(255, 255, 255, 0.85); // Fallback / Light mode
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        // Dark mode adaptation could be handled here or via CSS variables
+        @media (prefers-color-scheme: dark) {
+             background-color: rgba(30, 30, 30, 0.85);
+             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &--menu-open {
+        background-color: var(--color-background);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* State: Hidden (Auto-Hide on Scroll Down)
+     * Translates header out of view
+     */
+    &--hidden {
+        transform: translateY(-100%);
+    }
+
+    /* Element: Container
+     * Centers content and handles flex layout
+     */
+    &__container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-md);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &__logo {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        filter: invert(1);
+        opacity: 0.8;
+        scale: 1.5;
+    }
+
+    &__desktop-nav {
+        display: none;
+
+        @media (min-width: 1024px) {
+            display: block;
+        }
+    }
+}
+
+/*
+ * Block: .mobile-menu-btn
+ * Hamburger / Close button interactions
+ */
+.mobile-menu-btn {
+    display: none; // Hidden on desktop by default
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1002; // Above overlay
+
+    @media (max-width: 1023px) {
+        display: block;
+    }
+
+    // Lines for hamburger
+    &__line {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background-color: var(--color-text);
+        margin: 5px 0;
+        transition: transform 0.3s var(--header-ease), opacity 0.3s var(--header-ease), background-color 0.3s var(--header-ease);
+    }
+
+    // Active state (Close X)
+    &--active {
+        .mobile-menu-btn__line:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+        .mobile-menu-btn__line:nth-child(2) {
+            opacity: 0;
+        }
+        .mobile-menu-btn__line:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 4px;
+    }
+}
+
+/*
+ * Block: .mobile-overlay
+ * Full screen menu overlay
+ */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--color-background);
+    z-index: 1001; // Below button, above content
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    // Animation states
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s var(--header-ease), visibility 0.4s step-end; // step-end ensures visibility toggles at end
+
+    &--open {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.4s var(--header-ease), visibility 0s step-start;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-lg);
+
+        // Staggered animation setup would be done via JS adding classes or basic nth-child delays
+        // Here we can default to hidden/translated for children
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.4s var(--header-ease), transform 0.4s var(--header-ease);
+    }
+
+    &--open &__content {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0.2s; // Wait for overlay to appear
+    }
+}
+
+.header-base--transparent .mobile-menu-btn__line {
+    background-color: #ffffff;
+}
+
+.header-base--scrolled .mobile-menu-btn__line,
+.header-base--menu-open .mobile-menu-btn__line {
+    background-color: var(--color-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-base,
+    .mobile-menu-btn__line,
+    .mobile-overlay,
+    .mobile-overlay__content {
+        transition: none;
+    }
+}

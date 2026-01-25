@@ -12,7 +12,7 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 
 ### 🚀 A. Landing Page (User/Client Experience)
 
-- [ ] **Header (The Jewelry Box):** Minimalist glassmorphism navigation with subtle action buttons.
+- [x] **Header (The Jewelry Box):** Minimalist glassmorphism navigation with subtle action buttons.
 - [x] **Hero "Prime":** The first visual impact. Subtle background video or high-res imagery with elegant serif typography.
 - [ ] **Services Showcase:** Interactive cards representing "XV Años" (Quinceañeras), "Bodas" (Weddings), and "Bautizos" (Christenings).
 - [ ] **Storytelling (About):** Values section with micro-animations on vector icons.
@@ -22,6 +22,7 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 
 ### 📜 B. Digital Invitation (Guest Experience)
 
+- [ ] **Header:** Invitation header with subtle action buttons.
 - [ ] **Cover/Preludio:** Elegant loading screen with music control (`MusicPlayer`).
 - [ ] **Hero (Signature):** Cover with names, date, and main image. "Reveal" type entrance effect.
 - [ ] **Quote (Sentiment):** Poem or phrase with real invitation typography.

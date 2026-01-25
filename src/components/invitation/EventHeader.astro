@@ -1,0 +1,76 @@
+---
+/**
+ * src/components/invitation/EventHeader.astro
+ *
+ * Invitation Page implementation of the Header.
+ * Context-aware: Uses event theme and guest-specific links.
+ */
+
+import HeaderBase from '@components/common/HeaderBase.astro';
+import '@styles/invitation/_event-header.scss';
+
+export interface Props {
+    eventName?: string;
+    sections?: {
+        rsvp?: boolean;
+        location?: boolean;
+        gifts?: boolean;
+        bg_music?: boolean;
+    };
+    theme?: {
+        primaryColor: string;
+        accentColor?: string;
+        fontDisplay?: string;
+    };
+}
+
+const {
+    eventName = 'Boda de Ale & Fer',
+    sections = { rsvp: true, location: true, gifts: true },
+    theme = { primaryColor: '#C5A059', accentColor: '#E8DCC2' } // Default Gold
+} = Astro.props;
+
+
+// Prepare CSS variables for inline style or scope
+const themeStyles = `
+    --theme-color-primary: ${theme.primaryColor};
+    --theme-color-primary-dark: ${theme.primaryColor}CC;
+    --theme-color-accent: ${theme.accentColor || theme.primaryColor};
+`;
+// Note: We might want a helper to darken the color for primary-dark
+---
+
+<HeaderBase transparentOnHero={true} headerId="event-header">
+    <div slot="logo" style={themeStyles}>
+        <a href="#" class="event-header__title">
+            {eventName}
+        </a>
+    </div>
+
+    <div slot="desktop-nav" class="event-header__actions" style={themeStyles}>
+        <a href="#inicio" class="event-header__action-btn">Inicio</a>
+        <a href="#historia" class="event-header__action-btn">Historia</a>
+
+        {sections.location && (
+            <a href="#ubicacion" class="event-header__action-btn">Ubicación</a>
+        )}
+
+        {sections.gifts && (
+             <a href="#regalos" class="event-header__action-btn">Regalos</a>
+        )}
+
+        {sections.rsvp && (
+            <a href="#rsvp" class="event-header__action-btn event-header__action-btn--cta">
+                Confirmar
+            </a>
+        )}
+    </div>
+
+    <div slot="mobile-nav-content" class="event-mobile-nav" style={themeStyles}>
+         <a href="#inicio">Inicio</a>
+         <a href="#historia">Nuestra Historia</a>
+         {sections.location && <a href="#ubicacion">Ubicación</a>}
+         {sections.gifts && <a href="#regalos">Mesa de Regalos</a>}
+         {sections.rsvp && <a href="#rsvp" style="font-weight: bold; color: var(--theme-color-primary);">Confirmar Asistencia</a>}
+    </div>
+</HeaderBase>
