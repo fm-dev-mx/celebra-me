@@ -1,5 +1,4 @@
-/* src/styles/xv/family.xv.scss */
-@use '../global/variables' as vars;
+@use './variables.xv' as vars;
 @use '../global/mixins' as mixins;
 @use '../global/animations' as animations;
 
@@ -51,7 +50,7 @@
 	}
 
 	&__title {
-		font-family: vars.$font-heading-serif;
+		font-family: vars.$font-heading-elegant;
 		font-size: 1.5rem;
 		margin-bottom: 1.5rem;
 		color: vars.$color-accent;
@@ -69,13 +68,13 @@
 
 		p {
 			font-size: 1.125rem;
-			color: vars.$color-text-body;
+			color: vars.$color-dark;
 		}
 
 		&--role {
 			font-size: 0.875rem;
 			font-style: italic;
-			color: vars.$color-text-muted;
+			color: rgba(vars.$color-dark, 0.6);
 		}
 
 		&::after {
@@ -126,7 +125,7 @@
 		overflow: hidden;
 		border-radius: 9999px;
 		border: 8px solid rgba(vars.$color-secondary, 0.2);
-		box-shadow: vars.$shadow-xl;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
 		img {
 			height: 100%;
