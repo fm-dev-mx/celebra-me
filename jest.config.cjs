@@ -1,8 +1,9 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
 	preset: 'ts-jest/presets/default-esm', // Use ESM preset
-	testEnvironment: 'node', // Adjust to "jsdom" if DOM testing is needed
+	testEnvironment: 'jsdom', // DOM environment for React component testing
 	extensionsToTreatAsEsm: ['.ts', '.tsx'],
+	setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'], // RTL + custom mocks
 	transform: {
 		'^.+\\.[tj]sx?$': [
 			'ts-jest',
@@ -12,6 +13,9 @@ module.exports = {
 		],
 	},
 	moduleNameMapper: {
+		// SCSS files - mock with identity-obj-proxy
+		'\\.scss$': 'identity-obj-proxy',
+
 		// Root aliases
 		'^@/(.*)$': '<rootDir>/src/$1',
 
@@ -21,10 +25,6 @@ module.exports = {
 
 		// Assets & Styles
 		'^@styles/(.*)$': '<rootDir>/src/styles/$1',
-		// Assuming assets are directly in public or src/assets if it existed, removing likely invalid frontend/assets paths for now unless confirmed.
-		// Keeping generic mapping if compatible or removing specific invalid ones.
-		// Given listing didn't show 'assets' in src, but maybe they are deeper?
-		// Safest is to map known dirs.
 
 		// Utils & Helpers
 		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
@@ -39,7 +39,10 @@ module.exports = {
 		'src/**/*.{ts,tsx}',
 		'!src/**/index.ts', // Exclude barrel files
 		'!src/**/*.d.ts', // Exclude type definitions
+		'!src/**/*.astro', // Astro components tested via E2E
 	],
 	coverageDirectory: '<rootDir>/coverage', // Directory for coverage reports
 	coverageReporters: ['text', 'lcov'], // Output formats
+	// Ignore patterns
+	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.vercel/'],
 };

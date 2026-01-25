@@ -82,6 +82,36 @@ To set up the development environment:
     pnpm dev
     ```
 
+### Testing Requirements
+
+Before submitting a pull request, ensure:
+
+1. **All tests pass**:
+
+    ```bash
+    pnpm test
+    ```
+
+2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to verify:
+
+    ```bash
+    pnpm test -- --coverage
+    ```
+
+3. **Linting passes**:
+
+    ```bash
+    pnpm lint
+    ```
+
+4. **Types are valid**:
+
+    ```bash
+    pnpm type-check
+    ```
+
+For detailed testing guidelines, see [`docs/TESTING.md`](docs/TESTING.md).
+
 ## Thank You
 
 Thank you for considering contributing to Celebra-me.com! Your contributions help make it an even

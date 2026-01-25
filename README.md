@@ -162,6 +162,31 @@ pnpm type-check
 
 ---
 
+## Testing
+
+Run the test suite:
+
+```bash
+pnpm test
+```
+
+### Coverage Report
+
+```bash
+pnpm test -- --coverage
+```
+
+### Smoke Test (post-build)
+
+```bash
+pnpm build
+node scripts/smoke-test.js
+```
+
+For detailed testing documentation, see [`docs/TESTING.md`](docs/TESTING.md).
+
+---
+
 ## Documentation
 
 - **Architecture**: `docs/ARCHITECTURE.md`
