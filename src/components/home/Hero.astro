@@ -1,15 +1,15 @@
 ---
 /**
- * src/sections/Hero.astro
+ * src/components/home/Hero.astro
+ * Hero "Prime" Component
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import Section from '@components/layout/Section.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
-import Logo from '@components/ui/Logo.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
+
+// Import consolidated Premium styles
+import '@/styles/components/_hero.scss';
 
 interface Props {
 	data: HeroData;
@@ -18,65 +18,108 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<Section
-	id="hero-section"
-	backgroundImageDesktop={data.backgroundImage.desktopUrl}
-	backgroundImageMobile={data.backgroundImage.mobileUrl}
-	fullWidth
-	fullHeight
-	class="hero-section"
->
-	<div class="hero-content">
-		<!-- Title with premium styling -->
-		<SectionTitle
-			margin="mb-0"
-			align="text-center"
-			size="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
-			color="text-white"
-			extraClass="hero-title"
-		>
+<section class="hero-prime" id="hero-prime" role="region" aria-labelledby="hero-title">
+	<!-- 1. Background Layer -->
+	<div class="hero-prime__bg parallax-bg">
+		<!-- Priority Image (Lazy load off for LCP) -->
+		<img
+			src={data.backgroundImage.desktopUrl}
+			alt="Fondo elegante de celebración"
+			class="hero-bg-img"
+			fetchpriority="high"
+		/>
+
+		{data.backgroundImage.videoUrl && (
+			<video
+				autoplay
+				loop
+				muted
+				playsinline
+				poster={data.backgroundImage.desktopUrl}
+				class="hero-bg-video"
+			>
+				<source src={data.backgroundImage.videoUrl} type="video/webm" />
+				<source src={data.backgroundImage.videoUrl.replace('.webm', '.mp4')} type="video/mp4" />
+			</video>
+		)}
+	</div>
+
+	<!-- 2. Overlay Layer -->
+	<div class="hero-prime__overlay"></div>
+
+	<!-- 3. Content Layer -->
+	<div class="hero-prime__content">
+		<!-- Title (Stagger 1) -->
+		<h1 class="hero-prime__title stagger-1" id="hero-title">
 			{data.title}
-		</SectionTitle>
+		</h1>
 
-		<!-- Responsive logo -->
-		<div class="hero-logo-container">
-			<Logo variant="hero" altText="Celebra-me" class="hero-logo" />
-		</div>
-
-		<!-- Subtitle -->
-		<SectionSubtitle
-			size="text-lg sm:text-xl md:text-2xl"
-			align="text-center"
-			color="text-gray-100"
-			margin="mb-0"
-			extraClass="hero-subtitle"
-		>
+		<!-- Subtitle (Stagger 2) -->
+		<p class="hero-prime__subtitle stagger-2">
 			{data.subtitle}
-		</SectionSubtitle>
+		</p>
 
-		<!-- CTA Buttons -->
-		<div class="hero-cta-wrapper">
-			<WhatsAppButton client:idle />
-			<ActionBase as="a" href={data.secondaryCtaUrl || '#'} variant="primary" color="secondary">
+		<!-- Actions (Stagger 3) -->
+		<div class="hero-prime__actions stagger-3">
+			<WhatsAppButton client:idle className="shine-effect" />
+			<ActionBase as="a" href={data.secondaryCtaUrl || '#'} variant="outline" color="white" class="shine-effect">
 				{data.secondaryCtaLabel}
 			</ActionBase>
 		</div>
 
-		<!-- Social Proof -->
+		<!-- Social Proof (Optional) -->
 		{data.socialProofText && (
-			<div class="hero-social-proof">
+			<div class="hero-prime__social-proof stagger-3">
+				<div class="avatars">
+					<img src="https://i.pravatar.cc/100?img=6" alt="User" />
+					<img src="https://i.pravatar.cc/100?img=5" alt="User" />
+					<img src="https://i.pravatar.cc/100?img=9" alt="User" />
+				</div>
 				<span>{data.socialProofText}</span>
 			</div>
 		)}
 	</div>
 
-	<!-- Scroll button -->
-	<ActionIcon
-		icon="ArrowDownIcon"
-		variant="scroll"
-		color="primary"
-		as="a"
-		href="#services-section"
-		title="Conoce más"
-	/>
-</Section>
+	<!-- Scroll Indicator -->
+	<div class="hero-prime__scroll-indicator">
+		<ActionIcon
+			icon="ArrowDownIcon"
+			variant="scroll"
+			color="white"
+			as="a"
+			href="#services-section"
+			title="Descubre más"
+		/>
+	</div>
+</section>
+
+<script>
+	// 1. Mouse Move Parallax Effect
+	const hero = document.getElementById('hero-prime');
+	const bg = hero?.querySelector('.parallax-bg');
+
+	if (hero && bg) {
+		hero.addEventListener('mousemove', (e) => {
+			const { clientX, clientY } = e;
+			const { innerWidth, innerHeight } = window;
+
+			// Calculate movement (subtle)
+			const moveX = (clientX - innerWidth / 2) / 50;
+			const moveY = (clientY - innerHeight / 2) / 50;
+
+			// Apply transform to the image/video within the bg div
+			const media = bg.querySelectorAll('img, video');
+			media.forEach((el) => {
+				(el as HTMLElement).style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+			});
+		});
+
+		// Reset on mouse leave
+		hero.addEventListener('mouseleave', () => {
+			const media = bg.querySelectorAll('img, video');
+			media.forEach((el) => {
+				(el as HTMLElement).style.transform = `scale(1.1) translate(0, 0)`;
+			});
+		});
+	}
+</script>

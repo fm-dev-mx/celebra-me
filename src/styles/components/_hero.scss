@@ -1,123 +1,221 @@
-// src/styles/components/_hero.scss
+@use '../global/variables' as *;
+@use './actions/whatsapp-button';
 
-.hero-section {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 80vh;
-	position: relative;
-	background-size: cover;
-	background-position: center;
-	padding: 4rem 1rem;
-	text-align: center;
-	overflow: hidden;
+.hero-prime {
+  position: relative;
+  width: 100%;
+  height: 100dvh; // Full viewport height
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff; // Default text color
 
-	@media (min-width: 768px) {
-		min-height: 90vh;
-		padding: 6rem 2rem;
-	}
+  // 1. Background Layer (Image/Video)
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
 
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: linear-gradient(
-			180deg,
-			rgba(0, 0, 0, 0.4) 0%,
-			rgba(0, 0, 0, 0.2) 50%,
-			rgba(0, 0, 0, 0.6) 100%
-		);
-		z-index: 1;
-	}
+    img, video {
+      width: 100%;
+      height: 110%; // Extra height for parallax
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.1s ease-out;
+    }
 
-	.hero-content {
-		position: relative;
-		z-index: 2;
-		max-width: 800px;
-		margin: 0 auto;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2rem;
-	}
+    &.parallax-bg {
+      will-change: transform;
+    }
+  }
 
-	.hero-title {
-		color: #ffffff;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-		animation: slideDown 0.8s ease-out;
-	}
+  // 2. Overlay Layer (Readability) / Mesh Gradient
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.45) 0%, transparent 70%),
+                radial-gradient(circle at 80% 70%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.7) 100%);
+    background-color: rgba(0, 0, 0, 0.2);
+  }
 
-	.hero-logo {
-		max-width: 300px;
-		height: auto;
-		filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
-		animation: fadeIn 1.2s ease-out;
+  // 3. Content Layer
+  &__content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 800px;
+    padding: var(--spacing-xl) var(--spacing-xl);
+    padding-top: calc(var(--spacing-xl) * 2); // Extra space for header
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+  }
 
-		@media (min-width: 768px) {
-			max-width: 450px;
-		}
-	}
+  // Typography
+  &__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.1;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
 
-	.hero-subtitle {
-		color: #f8f9fa;
-		font-weight: 300;
-		letter-spacing: 0.05em;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-		animation: slideUp 0.8s ease-out 0.2s both;
-	}
+  &__subtitle {
+    font-family: var(--font-body);
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 600px;
+    line-height: 1.6;
+  }
 
-	.hero-cta-wrapper {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 1rem;
-		margin-top: 1rem;
-		animation: fadeIn 1s ease-out 0.5s both;
-	}
+  // Interaction
+  &__actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
 
-	.hero-social-proof {
-		margin-top: 2rem;
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 0.875rem;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		animation: fadeIn 1.5s ease-out 0.8s both;
+    // Ensure all buttons in the hero have consistent minimum presence
+    .whatsapp-button,
+    :global(.inline-block) { // ActionBase uses inline-block px-6 py-2
+      min-width: 200px;
+      justify-content: center;
+      text-align: center;
+    }
+  }
 
-		&::before,
-		&::after {
-			content: '';
-			display: block;
-			width: 20px;
-			height: 1px;
-			background-color: rgba(255, 255, 255, 0.3);
-		}
-	}
+  &__social-proof {
+    margin-top: var(--spacing-xl);
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+
+    span {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+
+  // Avatar pile styling could go here
+    .avatars {
+        display: flex;
+        margin-right: 0.5rem;
+
+        img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-left: -8px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            &:first-child { margin-left: 0; }
+            &:hover {
+              transform: scale(1.1);
+              z-index: 10;
+              border-color: var(--color-primary);
+            }
+        }
+    }
+
+  &__scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    animation: heroBounce 2s infinite;
+
+    @keyframes heroBounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+      40% { transform: translateX(-50%) translateY(-10px); }
+      60% { transform: translateX(-50%) translateY(-5px); }
+    }
+  }
+
+  // Animations (Stagger Fade Up)
+  .stagger-1, .stagger-2, .stagger-3, .stagger-4 {
+    opacity: 0;
+    animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .stagger-1 { animation-delay: 0.2s; }
+  .stagger-2 { animation-delay: 0.4s; }
+  .stagger-3 { animation-delay: 0.6s; }
+  .stagger-4 { animation-delay: 0.8s; }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
-@keyframes slideDown {
-	from {
-		opacity: 0;
-		transform: translateY(-20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+// Mobile Adjustments
+@media (max-width: 768px) {
+  .hero-prime {
+    &__title {
+      font-size: 2.2rem;
+    }
+
+    &__actions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+
+        .whatsapp-button,
+        :global(.inline-block) {
+          width: 100%;
+          max-width: 320px;
+        }
+    }
+  }
 }
 
-@keyframes slideUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+// Global/Shared Shine Animation
+@keyframes shineSweep {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.shine-effect {
+  position: relative !important;
+  overflow: hidden !important;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shineSweep 3s infinite;
+    pointer-events: none;
+  }
 }

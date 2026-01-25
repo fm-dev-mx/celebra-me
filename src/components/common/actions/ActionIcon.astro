@@ -1,8 +1,10 @@
 ---
+import AppIcon from '../icons/AppIcon.astro';
+
 interface _Props {
 	icon: string;
-	variant?: string;
-	color?: string;
+	variant?: 'default' | 'scroll' | 'fixed-bottom-right';
+	color?: 'primary' | 'secondary' | 'white';
 	as?: 'a' | 'button';
 	href?: string;
 	title?: string;
@@ -24,17 +26,18 @@ const {
 	href={href}
 	title={title}
 	class:list={[
-		'flex items-center justify-center p-2 rounded-full transition-all',
+		'flex items-center justify-center p-3 rounded-full transition-all duration-300',
 		{
-			'fixed bottom-8 right-8 bg-primary text-white shadow-lg': variant === 'scroll',
+			'fixed bottom-8 right-8 bg-primary text-white shadow-lg z-50 hover:bg-primary-dark':
+				variant === 'fixed-bottom-right',
+			'border border-white/30 backdrop-blur-sm hover:bg-white/10': variant === 'scroll',
 			'text-primary': color === 'primary',
 			'text-secondary': color === 'secondary',
+			'text-white': color === 'white',
 		},
 		className,
 	]}
 >
 	<span class="sr-only">{title}</span>
-	<div class="w-6 h-6 border-2 border-current rounded-full flex items-center justify-center">
-		<span class="text-[10px]">{icon.charAt(0)}</span>
-	</div>
+	<AppIcon name={icon} class="w-6 h-6" />
 </Tag>

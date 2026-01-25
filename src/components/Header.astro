@@ -87,6 +87,20 @@ const navItems = [
 				btn.setAttribute('aria-expanded', (!isHidden).toString());
 			});
 		}
+
+		// Header scroll behavior
+		const header = document.querySelector('.header');
+		const hasHero = document.querySelector('.hero-prime');
+
+		if (header && hasHero) {
+			window.addEventListener('scroll', () => {
+				if (window.scrollY > 50) {
+					header.classList.add('header--scrolled');
+				} else {
+					header.classList.remove('header--scrolled');
+				}
+			}, { passive: true });
+		}
 	})();
 </script>
 

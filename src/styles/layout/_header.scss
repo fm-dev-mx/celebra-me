@@ -11,6 +11,41 @@
 	backdrop-filter: map.get(vars.$backdrop-blurs, sm);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	@include mixins.transition(header);
+	width: 100%;
+
+	// Smart Header: Automatic transparency if Hero is present
+	body:has(.hero-prime) & {
+		position: absolute;
+		background-color: transparent;
+		box-shadow: none;
+		border-bottom: none;
+
+		.header__nav-link {
+			color: #fff;
+			&:hover {
+				color: var(--color-primary);
+			}
+		}
+
+		.header__mobile-btn {
+			color: #fff;
+		}
+	}
+
+	&--scrolled {
+		background-color: rgba(map.get(vars.$colors, neutral, lightest), 0.98);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+
+		.header__nav-link {
+			color: map.get(vars.$colors, text, default);
+		}
+
+		.header__mobile-btn {
+			color: map.get(vars.$colors, text, default);
+		}
+	}
 
 	&__container {
 		display: flex;

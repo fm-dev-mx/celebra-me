@@ -4,6 +4,7 @@ export interface HeroData {
 	backgroundImage: {
 		desktopUrl: string;
 		mobileUrl: string;
+		videoUrl?: string;
 	};
 	primaryCtaLabel: string;
 	primaryCtaUrl: string;
