@@ -11,7 +11,7 @@
             "@layouts/*": ["src/layouts/*"],
             "@styles/*": ["src/styles/*"],
             "@utils/*": ["src/utils/*"],
-            "@images/*": ["public/images/*"],
+            "@images/*": ["src/assets/images/*"],
             "@interfaces/*": ["src/interfaces/*"]
         },
         "jsx": "react-jsx",

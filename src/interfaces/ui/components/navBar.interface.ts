@@ -4,4 +4,6 @@ export interface NavBarProps {
 		label: string;
 		href: string;
 	}>;
+	logoSrc?: string | ImageMetadata;
 }
+import type { ImageMetadata } from 'astro';

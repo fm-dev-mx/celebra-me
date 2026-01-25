@@ -7,43 +7,43 @@
         "accentColor": "#111111",
         "fontFamily": "serif"
     },
-    "hero": {
-        "name": "Lucía García",
-        "date": "2025-10-25T18:00:00.000Z",
-        "backgroundImage": "/images/hero/bgHeroDesktop.jpg"
-    },
-    "location": {
-        "venueName": "Salón de Eventos 'El Jardín'",
-        "address": "Av. de las Rosas #100, Col. Centro, Ciudad"
-    },
-    "family": {
-        "parents": {
-            "father": "Sr. Roberto Pérez",
-            "mother": "Sra. Esthela de Pérez"
-        },
-        "godparents": [
-            { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
-            { "name": "Sra. Ana María", "role": "Madrina de Honor" }
-        ],
-        "featuredImage": "/images/about/partyToast.jpg"
-    },
-    "sections": {
-        "countdown": true,
-        "rsvp": true
-    },
-    "rsvp": {
-        "title": "¿Vienes a celebrar conmigo?",
-        "guestCap": 2,
-        "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción."
-    },
-    "quote": {
-        "text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
-        "author": "Lucía García"
-    },
-    "thankYou": {
-        "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
-        "closingName": "Lucía",
-        "image": "/images/about/partyToast.jpg"
+	"hero": {
+		"name": "Lucía García",
+		"date": "2025-10-25T18:00:00.000Z",
+		"backgroundImage": "../../assets/images/hero/bgHeroDesktop.jpg"
+	},
+	"location": {
+		"venueName": "Salón de Eventos 'El Jardín'",
+		"address": "Av. de las Rosas #100, Col. Centro, Ciudad"
+	},
+	"family": {
+		"parents": {
+			"father": "Sr. Roberto Pérez",
+			"mother": "Sra. Esthela de Pérez"
+		},
+		"godparents": [
+			{ "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
+			{ "name": "Sra. Ana María", "role": "Madrina de Honor" }
+		],
+		"featuredImage": "../../assets/images/about/partyToast.jpg"
+	},
+	"sections": {
+		"countdown": true,
+		"rsvp": true
+	},
+	"rsvp": {
+		"title": "¿Vienes a celebrar conmigo?",
+		"guestCap": 2,
+		"confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción."
+	},
+	"quote": {
+		"text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
+		"author": "Lucía García"
+	},
+	"thankYou": {
+		"message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
+		"closingName": "Lucía",
+		"image": "../../assets/images/about/partyToast.jpg"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",

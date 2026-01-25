@@ -8,6 +8,8 @@ import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import ContactForm from '@components/ui/ContactForm.tsx';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
+import bgDesktop from '@images/contact/bgContactDesktop.jpg';
+import bgMobile from '@images/contact/bgContactMobile.jpg';
 
 interface Props {
 	data: ContactData;
@@ -22,8 +24,8 @@ const { data } = Astro.props;
 	id="contact-section"
 	fullHeight={true}
 	fullWidth={true}
-	backgroundImageMobile="/images/contact/bgContactMobile.jpg"
-	backgroundImageDesktop="/images/contact/bgContactDesktop.jpg"
+	backgroundImageMobile={bgMobile}
+	backgroundImageDesktop={bgDesktop}
 	backgroundEffect="absolute inset-0 bg-gradient-to-t from-black to-transparent"
 >
 	<!-- Top decorative line  -->

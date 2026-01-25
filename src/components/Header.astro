@@ -2,7 +2,7 @@
 // src/components/Header.astro
 
 // Moved from src/frontend/sections/Header.astro
-const logoSrc = '/images/header/horizontalLogo150x56.png';
+import logoSrc from '@images/header/horizontalLogo150x56.png';
 
 // Import stylesheet
 import '@/styles/layout/_header.scss';
@@ -19,7 +19,7 @@ const navItems = [
 	<div class="header__container container-custom">
 		<a href="/" class="header__logo">
 			<img
-				src={logoSrc}
+				src={logoSrc.src}
 				alt="Celebra.me Logo"
 				width="150"
 				height="56"

@@ -1,8 +1,9 @@
 ---
+import type { ImageMetadata } from 'astro';
 interface Props {
 	id?: string;
-	backgroundImageDesktop?: string;
-	backgroundImageMobile?: string;
+	backgroundImageDesktop?: string | ImageMetadata;
+	backgroundImageMobile?: string | ImageMetadata;
 	padding?: string;
 	relative?: string;
 	fullWidth?: boolean;
@@ -23,10 +24,15 @@ const {
 	class: className,
 } = Astro.props;
 
-const bgStyle = backgroundImageDesktop ? `background-image: url(${backgroundImageDesktop})` : '';
-const mobileBgStyle = backgroundImageMobile
-	? `background-image: url(${backgroundImageMobile})`
-	: '';
+// Helper to get URL from string or ImageMetadata
+const getBgUrl = (bg?: string | ImageMetadata) => {
+	if (!bg) return '';
+	if (typeof bg === 'string') return `url(${bg})`;
+	return `url(${bg.src})`;
+};
+
+const bgStyle = backgroundImageDesktop ? `background-image: ${getBgUrl(backgroundImageDesktop)}` : '';
+const mobileBgStyle = backgroundImageMobile ? `background-image: ${getBgUrl(backgroundImageMobile)}` : '';
 ---
 
 <section

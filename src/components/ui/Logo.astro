@@ -8,11 +8,12 @@ interface Props {
 const { class: className } = Astro.props;
 
 // Currently using the same logo for both variants, can be customized later
-const logoSrc = '/images/header/horizontalLogo150x56.png';
+// Currently using the same logo for both variants, can be customized later
+import logoSrc from '@images/header/horizontalLogo150x56.png';
 ---
 
 <img
-	src={logoSrc}
+	src={logoSrc.src}
 	alt="Celebra.me Logo"
 	width="150"
 	height="56"

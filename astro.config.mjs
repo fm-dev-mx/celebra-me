@@ -36,7 +36,7 @@ export default defineConfig({
 				'@layouts': fileURLToPath(new URL('./src/layouts', import.meta.url)),
 				'@styles': fileURLToPath(new URL('./src/styles', import.meta.url)),
 				'@assets': fileURLToPath(new URL('./public', import.meta.url)),
-				'@images': fileURLToPath(new URL('./public/images', import.meta.url)),
+				'@images': fileURLToPath(new URL('./src/assets/images', import.meta.url)),
 				'@icons': fileURLToPath(new URL('./public/icons', import.meta.url)),
 				'@fonts': fileURLToPath(new URL('./public/fonts', import.meta.url)),
 

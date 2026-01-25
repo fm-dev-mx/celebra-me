@@ -14,6 +14,8 @@ import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 // import type { IconNames } from '@/core/types/ui/iconNames.type';
 import partyToastImage from '@images/about/partyToast.jpg';
+import bgDesktop from '@images/about/bgAboutDesktop.jpg';
+import bgMobile from '@images/about/bgAboutMobile.jpg';
 import Icon from '@components/common/Icon.astro';
 import type { AboutData } from '@/interfaces/ui/sections/landing-page.interface';
 
@@ -32,8 +34,8 @@ const {
 
 <Section
 	id="about-section"
-	backgroundImageDesktop="/images/about/bgAboutDesktop.jpg"
-	backgroundImageMobile="/images/about/bgAboutMobile.jpg"
+	backgroundImageDesktop={bgDesktop}
+	backgroundImageMobile={bgMobile}
 	class="about-us"
 	relative="relative"
 	fullWidth={true}

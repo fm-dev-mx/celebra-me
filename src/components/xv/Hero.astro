@@ -12,12 +12,14 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	month: 'long',
 	day: 'numeric',
 });
+
+import bgHero from '@images/hero/bgHeroDesktop.jpg';
 ---
 
 <section class="relative h-screen flex items-center justify-center overflow-hidden bg-black/40">
 	<div class="absolute inset-0 -z-10">
 		<img
-			src="/images/hero/bgHeroDesktop.jpg"
+			src={bgHero.src}
 			alt="Fiesta de XV años"
 			class="w-full h-full object-cover"
 		/>

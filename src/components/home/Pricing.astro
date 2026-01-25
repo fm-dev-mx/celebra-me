@@ -11,6 +11,8 @@ import StyledContainer from '@components/layout/StyledContainer.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
+import bgDesktop from '@images/pricing/bgPricingDesktop.jpg';
+import bgMobile from '@images/pricing/bgPricingMobile.jpg';
 
 // Destructure the data property from Astro.props
 interface Props {
@@ -25,8 +27,8 @@ const { data } = Astro.props;
 	padding="px-2 sm:px-14 py-10 pt-40"
 	fullWidth={true}
 	fullHeight={true}
-	backgroundImageMobile="/images/pricing/bgPricingMobile.jpg"
-	backgroundImageDesktop="/images/pricing/bgPricingDesktop.jpg"
+	backgroundImageMobile={bgMobile}
+	backgroundImageDesktop={bgDesktop}
 >
 	{/* Top decorative line */}
 	<div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
