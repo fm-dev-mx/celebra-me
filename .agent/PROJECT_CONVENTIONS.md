@@ -21,6 +21,7 @@ Astro promotes the following conventional folders, though you may extend them if
 - `src/content/` — Astro content collections and structured content.
 - `src/utils/` — Shared utilities (pure logic, browser-safe).
 - `public/` — Static assets (images, icons, fonts).
+- `docs/plan/` — Modular implementation plans and detailed specifications for each section/feature.
 
 These conventions help align the repo with widely used Astro layouts without enforcing unnecessary
 rigidity.
