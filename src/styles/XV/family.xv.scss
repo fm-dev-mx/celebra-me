@@ -1,206 +1,144 @@
-/* src/frontend/styles/XV/family.xv.scss
- * ----------------------------------------------------
-* Family Section Styles
- * ----------------------------------------------------
- */
-
-@use '../XV/variables.xv' as vars;
+/* src/styles/xv/family.xv.scss */
+@use '../global/variables' as vars;
 @use '../global/mixins' as mixins;
 @use '../global/animations' as animations;
 
-.family::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738970797/1080x1920bg_blue_gold_hv6wzj.jpg')
-		center/cover no-repeat;
-	filter: blur(4px);
-	z-index: -1;
-
-	@include mixins.respond-to(md) {
-		background: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971163/1920x1080bg_blue_gold_ickkyj.jpg')
-			center/cover no-repeat;
-		filter: blur(10px);
-	}
-}
-
 .family {
 	position: relative;
-	padding: 18rem 2rem;
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	border-top: 2px solid rgba(vars.$color-secondary, 0.5);
-	gap: 2rem;
-	overflow: hidden;
+	background-color: vars.$color-white;
+	padding: 5rem 0;
 
-	@include mixins.respond-to(xs) {
-		padding: 15rem 3rem;
-	}
-	@include mixins.respond-to(sm) {
-		padding: 16rem 10rem;
-	}
-	@include mixins.respond-to(md) {
-		padding: 10rem 10rem;
+	@include mixins.respond-to(lg) {
+		padding: 8rem 0;
 	}
 
-	&__content {
-		max-width: 800px;
-		margin: 0 auto;
+	&__grid {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		animation: fadeIn 1s ease-out forwards;
-	}
-
-	&__intro {
-		font-family: vars.$font-decorative-cursive;
-		font-size: 1.5rem;
-		color: rgba(vars.$color-secondary-dark, 0.9);
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-		margin: 3rem 0;
-		opacity: 0;
-		animation: fadeIn 1s ease-out forwards 0.3s;
-
-		@include mixins.respond-to(xs) {
-			font-size: 1.8rem;
-		}
-		@include mixins.respond-to(sm) {
-			font-size: 2rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 2.2rem;
-		}
-	}
-
-	&__picture {
-		position: relative;
-		width: 300px;
-		height: 300px;
-		margin-bottom: 2rem;
-		border-radius: 50%;
-		border: 5px solid rgba(vars.$color-secondary, 0.7);
-		overflow: hidden;
-		display: grid;
-		place-items: center;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-		img {
-			width: 110%;
-			height: 110%;
-			object-fit: cover;
-			transition: transform 0.3s ease;
-		}
-
-		&:hover img {
-			transform: scale(1.05);
-			filter: brightness(1.1);
-		}
-	}
-
-	&__groups {
-		display: flex;
-		flex-direction: column;
 		gap: 3rem;
-		width: 100%;
-		align-items: center;
-		margin-bottom: 8rem;
+		margin-top: 4rem;
+		opacity: 0;
+		transform: translateY(20px);
+		animation: fadeInUp 1s ease-out forwards;
 
-		/* En pantallas grandes, se muestra en fila */
-		@include mixins.respond-to(xl) {
+		@include mixins.respond-to(lg) {
 			flex-direction: row;
-			justify-content: center;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 0;
 		}
 	}
 
-	&__group {
-		padding: 1rem;
-		border-radius: 2rem;
-		transition:
-			transform 0.3s ease,
-			box-shadow 0.3s ease;
+	&__column {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		text-align: center;
+		flex: 1;
 
-		&-header {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			margin-bottom: 1rem;
-			justify-content: center; // Esta línea centra horizontalmente el contenido
-			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+		@include mixins.respond-to(lg) {
+			&--left {
+				align-items: flex-end;
+				text-align: right;
+			}
 
-			@include mixins.respond-to(md) {
-				flex-direction: row;
-				gap: 0.5rem;
+			&--right {
+				align-items: flex-start;
+				text-align: left;
 			}
 		}
 	}
 
-	/* Estilos para el separador con SVG */
-	&__separator {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		/* Opcional: ajustar márgenes para separarlo de los grupos */
-
-		svg {
-			width: 40px;
-			height: 40px;
-			fill: vars.$color-secondary;
-			opacity: 0.8;
-		}
-	}
-
-	&__group-title {
-		font-family: vars.$font-heading-elegant;
+	&__title {
+		font-family: vars.$font-heading-serif;
 		font-size: 1.5rem;
-		margin: 0;
-		color: rgba(vars.$color-dark, 0.8);
-		opacity: 0;
-		animation: fadeIn 0.8s ease-out forwards 0.3s;
-
-		@include mixins.respond-to(xs) {
-			font-size: 1.7rem;
-		}
-		@include mixins.respond-to(sm) {
-			font-size: 1.9rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 2rem;
-		}
+		margin-bottom: 1.5rem;
+		color: vars.$color-accent;
 	}
 
-	&__names {
-		list-style: none;
-		padding: 0;
-		margin-top: 1rem;
+	&__list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		opacity: 0;
-		animation: fadeIn 0.8s ease-out forwards 0.5s;
+		gap: 1rem;
 	}
 
-	&__name {
-		font-family: vars.$font-body, serif;
-		font-size: 1.2rem;
-		color: rgba(vars.$color-dark, 0.7);
-		/* Sombreado sutil para dar un toque estético */
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+	&__item {
+		position: relative;
+		padding-bottom: 0.5rem;
 
-		@include mixins.respond-to(xs) {
-			font-size: 1.3rem;
+		p {
+			font-size: 1.125rem;
+			color: vars.$color-text-body;
 		}
-		@include mixins.respond-to(sm) {
-			font-size: 1.4rem;
+
+		&--role {
+			font-size: 0.875rem;
+			font-style: italic;
+			color: vars.$color-text-muted;
 		}
-		@include mixins.respond-to(md) {
-			font-size: 1.5rem;
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 30px;
+			height: 1px;
+			background: vars.$color-primary;
+			opacity: 0.3;
 		}
+
+		@include mixins.respond-to(lg) {
+			/* Left column items align underline to right */
+			.family__column--left &::after {
+				left: auto;
+				right: 0;
+				transform: none;
+			}
+
+			/* Right column items align underline to left */
+			.family__column--right &::after {
+				right: auto;
+				left: 0;
+				transform: none;
+			}
+		}
+	}
+
+	&__image-wrapper {
+		position: relative;
+		width: 100%;
+		max-width: 24rem;
+		padding: 0 1rem;
+		margin: 0 auto;
+		order: -1; /* Image first on mobile if needed, or keeping current order */
+
+		@include mixins.respond-to(lg) {
+			width: 33.333%;
+			order: 0;
+		}
+	}
+
+	&__image-frame {
+		aspect-ratio: 3 / 4;
+		overflow: hidden;
+		border-radius: 9999px;
+		border: 8px solid rgba(vars.$color-secondary, 0.2);
+		box-shadow: vars.$shadow-xl;
+
+		img {
+			height: 100%;
+			width: 100%;
+			object-fit: cover;
+		}
+	}
+}
+
+@keyframes fadeInUp {
+	to {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }

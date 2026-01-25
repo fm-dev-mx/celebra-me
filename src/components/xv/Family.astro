@@ -5,6 +5,9 @@ import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 
+// Import stylesheet
+import '@/styles/xv/family.xv.scss';
+
 interface Props {
 	parents: {
 		father?: string;
@@ -21,26 +24,28 @@ interface Props {
 const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 ---
 
-<Section id="family-section" class="bg-white py-20">
+<Section id="family-section" class="family">
 	<Container>
-		<SectionTitle color="text-secondary-dark" weight="font-light">
-			Con la bendición de nuestros padres y padrinos
-		</SectionTitle>
+		<div class="family__title-wrapper">
+			<SectionTitle color="text-secondary-dark" weight="font-light">
+				Con la bendición de nuestros padres y padrinos
+			</SectionTitle>
+		</div>
 
-		<div class="family-grid mt-16 flex flex-col items-center gap-12 lg:flex-row lg:items-start lg:justify-between">
+		<div class="family__grid">
 
 			{/* Parents Column */}
-			<div class="family-column flex flex-col items-center text-center lg:items-end lg:text-right">
-				<h3 class="font-serif text-2xl mb-6 text-accent">Padres de {celebrantName}</h3>
-				<div class="space-y-4">
+			<div class="family__column family__column--left">
+				<h3 class="family__title">Padres de {celebrantName}</h3>
+				<div class="family__list">
 					{parents.mother && (
-						<div class="parent-item">
-							<p class="text-lg text-gray-700">{parents.mother}</p>
+						<div class="family__item">
+							<p>{parents.mother}</p>
 						</div>
 					)}
 					{parents.father && (
-						<div class="parent-item">
-							<p class="text-lg text-gray-700">{parents.father}</p>
+						<div class="family__item">
+							<p>{parents.father}</p>
 						</div>
 					)}
 				</div>
@@ -48,14 +53,13 @@ const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 
 			{/* Featured Image (Middle) */}
 			{featuredImage && (
-				<div class="featured-image-wrapper relative w-full max-w-sm px-4 lg:w-1/3">
-					<div class="aspect-[3/4] overflow-hidden rounded-full border-8 border-secondary/20 shadow-xl">
+				<div class="family__image-wrapper">
+					<div class="family__image-frame">
 						<OptimizedImage
 							imagePath={featuredImage}
 							alt={celebrantName}
 							width={400}
 							height={533}
-              class="h-full w-full object-cover"
 						/>
 					</div>
 				</div>
@@ -63,14 +67,14 @@ const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 
 			{/* Godparents Column */}
 			{godparents && godparents.length > 0 && (
-				<div class="family-column flex flex-col items-center text-center lg:items-start lg:text-left">
-					<h3 class="font-serif text-2xl mb-6 text-accent">Nuestros Padrinos</h3>
-					<div class="space-y-4">
+				<div class="family__column family__column--right">
+					<h3 class="family__title">Nuestros Padrinos</h3>
+					<div class="family__list">
 						{godparents.map((godparent) => (
-							<div class="godparent-item">
-								<p class="text-lg text-gray-700 font-medium">{godparent.name}</p>
+							<div class="family__item">
+								<p class="family__item-name">{godparent.name}</p>
 								{godparent.role && (
-									<p class="text-sm text-gray-500 italic">{godparent.role}</p>
+									<p class="family__item--role">{godparent.role}</p>
 								)}
 							</div>
 						))}
@@ -80,52 +84,3 @@ const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 		</div>
 	</Container>
 </Section>
-
-<style lang="scss">
-	.family-grid {
-		opacity: 0;
-		transform: translateY(20px);
-		animation: fadeInUp 1s ease-out forwards;
-	}
-
-	@keyframes fadeInUp {
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.parent-item, .godparent-item {
-		position: relative;
-    padding-bottom: 0.5rem;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 30px;
-      height: 1px;
-      background: var(--color-primary, #d4af37);
-      opacity: 0.3;
-    }
-
-    @media (min-width: 1024px) {
-      &::after {
-        left: auto;
-        right: 0;
-        transform: none;
-      }
-    }
-	}
-
-  .lg\:text-left {
-    .godparent-item::after {
-      @media (min-width: 1024px) {
-        right: auto;
-        left: 0;
-      }
-    }
-  }
-</style>

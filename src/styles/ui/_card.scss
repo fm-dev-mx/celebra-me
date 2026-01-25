@@ -1,0 +1,13 @@
+/* src/styles/ui/_card.scss */
+@use '../global/variables' as vars;
+@use 'sass:map';
+
+.card-base {
+	background-color: map.get(vars.$colors, neutral, lightest);
+	border-radius: 0.5rem;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}

@@ -55,3 +55,24 @@ body {
 .animate-fade-in {
 	animation: fadeIn 0.8s ease-out forwards;
 }
+
+/* Landing page sections wrapper */
+.landing-sections-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+/* Error/fallback states */
+.error-message {
+	color: #ef4444;
+	text-align: center;
+	padding: 5rem 0;
+}
+
+/* Placeholder sections */
+.wedding-placeholder {
+	@extend .container-custom;
+	padding: 5rem 0;
+	text-align: center;
+}

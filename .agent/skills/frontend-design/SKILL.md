@@ -101,6 +101,7 @@ Before coding, commit to a **BOLD aesthetic direction**:
 - ❌ Cookie-cutter card layouts
 - ❌ Stock photo placeholders
 - ❌ Overused font families (Inter, Roboto, Arial)
+- ❌ **Internal `<style>` blocks (ALWAYS externalize to `src/styles/`)**
 - ❌ Inline styles in Astro components
 - ❌ Tailwind classes (project uses SCSS only)
 - ❌ Hard-coded colors (use variables)
@@ -109,6 +110,9 @@ Before coding, commit to a **BOLD aesthetic direction**:
 
 ```astro
 ---
+// Import external styles FIRST
+import '@/styles/components/section.scss';
+
 // Props interface first
 interface Props {
   title: string;
@@ -123,24 +127,6 @@ const { title, variant = 'default' } = Astro.props;
   <h2 class="section__title">{title}</h2>
   <slot />
 </section>
-
-<style lang="scss">
-  @use '@/styles/variables' as *;
-
-  .section {
-    padding: $spacing-xl 0;
-
-    &__title {
-      font-family: $font-display;
-      text-align: center;
-    }
-
-    &--highlight {
-      background: $color-primary;
-      color: $color-text-inverse;
-    }
-  }
-</style>
 ```
 
 ## Quality Checklist

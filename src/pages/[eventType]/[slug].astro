@@ -118,7 +118,7 @@ const isWedding = data.eventType === 'boda';
 
 		{
 			isWedding && (
-				<div class="container-custom py-20 text-center">
+				<div class="wedding-placeholder">
 					<h1>Wedding Template Under Construction</h1>
 					<p>Values: {data.hero.name}</p>
 				</div>
@@ -127,7 +127,7 @@ const isWedding = data.eventType === 'boda';
 
 		{
 			!isXV && !isWedding && (
-				<div class="text-red-500 text-center py-20">
+				<div class="error-message">
 					Unknown Event Type: {data.eventType}
 				</div>
 			)

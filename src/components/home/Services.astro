@@ -18,6 +18,9 @@ import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
 
+// Import stylesheet
+import '@/styles/home/_services.scss';
+
 interface Props {
 	data: ServicesData;
 }
@@ -34,7 +37,7 @@ const chunkArray = (arr: any[], size: number) =>
 const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 ---
 
-<Section id="services-section">
+<Section id="services-section" class="services">
 	<SectionTitle color="text-secondary-dark/90" weight="font-thin" extraClass="tracking-wider">
 		{data.title}
 	</SectionTitle>
@@ -42,9 +45,9 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 		{/* Updated to use the new Grid component */}
 		<Grid columns={2} gap="gap-x-24 xl:gap-x-40">
 			{/* First group: Image and Services */}
-			<div class="flex flex-col items-center justify-center">
+			<div class="services__column">
 				{/* Image wrapper with hover effect classes */}
-				<div class="overflow-hidden rounded-3xl">
+				<div class="services__image-container">
 					<ImageWrapper
 						flex="flex-col"
 						transition="transition-transform duration-500 ease-in-out"
@@ -63,7 +66,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 			</div>
 
 			{/* Services description for first group */}
-			<div class="flex flex-col items-center justify-center">
+			<div class="services__column">
 				{
 					firstServiceGroup.map((service, index) => (
 						<ServiceItem service={service} key={index} />
@@ -72,7 +75,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 			</div>
 
 			{/* Second group: Services and Image */}
-			<div class="flex flex-col items-center justify-center">
+			<div class="services__column">
 				{
 					secondServiceGroup.map((service, index) => (
 						<ServiceItem service={service} key={index} />
@@ -81,7 +84,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 			</div>
 
 			{/* Image wrapper with hover effect classes */}
-			<div class="overflow-hidden rounded-3xl mt-8 flex flex-col items-center justify-center">
+			<div class="services__column services__image-wrapper">
 				<ImageWrapper
 					flex="flex-col"
 					overflow="overflow-hidden"

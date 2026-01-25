@@ -1,22 +1,21 @@
 ---
+// src/components/ui/Card.astro
+import '@/styles/ui/_card.scss';
+
 interface Props {
-	minWidth?: string;
-	minHeight?: string;
 	class?: string;
 	extraClass?: string;
-	hover?: string;
-	borderColor?: string;
 	href?: string;
+	// Minimal props passed through to class list if needed,
+	// but strictly we prefer using `class` for styling.
+	[key: string]: any;
 }
 
 const {
-	minWidth = '',
-	minHeight = '',
 	class: className,
 	extraClass = '',
-	hover = '',
-	borderColor = '',
 	href,
+	...rest
 } = Astro.props;
 
 const Tag = href ? 'a' : 'div';
@@ -25,14 +24,11 @@ const Tag = href ? 'a' : 'div';
 <Tag
 	href={href}
 	class:list={[
-		'bg-white rounded-lg shadow-md p-6 flex flex-col items-center',
-		minWidth,
-		minHeight,
-		hover,
-		borderColor,
+		'card-base',
 		className,
 		extraClass,
 	]}
+	{...rest}
 >
 	<slot />
 </Tag>

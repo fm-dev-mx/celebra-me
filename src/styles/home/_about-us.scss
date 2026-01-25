@@ -1,0 +1,106 @@
+/* src/styles/home/_about-us.scss */
+@use '../global/variables' as vars;
+@use '../global/mixins' as mixins;
+@use 'sass:map';
+
+.about-us {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding: 2.5rem 1rem; // px-4 py-10
+
+	&__overlay {
+		background-color: map.get(vars.$colors, accent, dark);
+		width: 100%;
+		height: 0.25rem;
+		position: absolute;
+		inset: 0;
+		opacity: 0.8;
+	}
+
+	&__title-spacer {
+		padding-top: 5rem;
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		max-width: 24rem;
+
+		@include mixins.respond-to(xl) {
+			align-self: flex-end;
+			text-align: right;
+			margin-right: 0.5rem;
+		}
+	}
+
+	&__title {
+		// Handled by SectionTitle component but alignment needs handling
+		align-self: center;
+		margin-bottom: 2rem;
+
+		@include mixins.respond-to(xl) {
+			align-self: flex-end;
+			margin-right: 0.5rem;
+		}
+	}
+
+	&__description {
+		text-align: center;
+		color: map.get(vars.$colors, primary, dark);
+		font-weight: 400; // font-normal
+
+		@include mixins.respond-to(xl) {
+			text-align: right;
+		}
+	}
+
+	&__image-container {
+		display: flex;
+		overflow: hidden;
+		border-radius: 1.5rem;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	&__values-grid {
+		padding-top: 3rem;
+	}
+
+	&__value-card {
+		// Replacement for minWidth/matches in AboutUs
+		min-width: 250px;
+		max-width: 350px;
+		min-height: 200px;
+		max-height: 200px;
+
+		@include mixins.respond-to(xl) {
+			min-width: 230px;
+			max-width: 230px;
+			min-height: 230px;
+			max-height: 230px;
+		}
+	}
+
+	&__value-title {
+		font-size: 1.125rem;
+		line-height: 1.75rem;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+		color: map.get(vars.$colors, primary, dark);
+		text-align: center;
+
+		@include mixins.respond-to(sm) {
+			font-size: 1.25rem;
+			line-height: 1.75rem;
+		}
+	}
+
+	&__divider {
+		background-color: map.get(vars.$colors, accent, default); // fallback #333
+		width: 100%;
+		height: 0.25rem;
+		opacity: 0.8;
+	}
+}

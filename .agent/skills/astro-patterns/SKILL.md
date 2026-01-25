@@ -166,15 +166,23 @@ import '@/styles/global.scss';
 ---
 ```
 
-### Component Scoped Styles
-```astro
-<style lang="scss">
-  @use '@/styles/variables' as *;
+### External Component Styles
+**STRICT RULE**: Internal `<style>` blocks are **FORBIDDEN** in `.astro` files. All styles must be externalized.
 
-  .component {
-    color: $text-primary;
-    padding: $spacing-md;
-  }
+import the SCSS file in the frontmatter:
+```astro
+---
+import '@/styles/components/my-component.scss';
+---
+
+<div class="my-component">...</div>
+```
+
+**Do NOT do this (Forbidden):**
+```astro
+<!-- ❌ INTERNAL STYLES ARE BANNED -->
+<style lang="scss">
+  .component { ... }
 </style>
 ```
 
@@ -190,6 +198,11 @@ src/styles/
 └── components/
     └── _buttons.scss  # Component styles
 ```
+
+### Naming Conventions
+1. **Case**: All SCSS files must use `kebab-case`.
+2. **Partials**: All styles intended for import (variables, mixins, component styles) **MUST** start with an underscore `_` (e.g., `_header.scss`, `_service-card.scss`).
+3. **Entry Points**: Only top-level entry points (e.g., `global.scss`) should lack the underscore.
 
 ## Dynamic Routes
 

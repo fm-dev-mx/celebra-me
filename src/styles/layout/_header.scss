@@ -1,0 +1,106 @@
+/* src/styles/layout/_header.scss */
+@use '../global/variables' as vars;
+@use '../global/mixins' as mixins;
+@use 'sass:map';
+
+.header {
+	position: sticky;
+	top: 0;
+	z-index: map.get(vars.$z-index, header);
+	background-color: rgba(map.get(vars.$colors, neutral, lightest), 0.95);
+	backdrop-filter: map.get(vars.$backdrop-blurs, sm);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	@include mixins.transition(header);
+
+	&__container {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+	}
+
+	&__logo {
+		display: block;
+
+		&-img {
+			height: auto;
+			width: 8rem;
+
+			@include mixins.respond-to(md) {
+				width: 10rem;
+			}
+		}
+	}
+
+	&__nav {
+		display: none;
+		gap: 2rem;
+
+		@include mixins.respond-to(md) {
+			display: flex;
+		}
+
+		&-link {
+			color: map.get(vars.$colors, text, default);
+			font-weight: 500;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: map.get(vars.$colors, primary, default);
+			}
+		}
+	}
+
+	&__mobile-btn {
+		display: block;
+		padding: 0.5rem;
+		color: map.get(vars.$colors, text, default);
+		background: none;
+		border: none;
+		cursor: pointer;
+
+		@include mixins.respond-to(md) {
+			display: none;
+		}
+	}
+
+	&__menu-icon {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	&__mobile-menu {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		width: 100%;
+		background-color: map.get(vars.$colors, neutral, lightest);
+		border-top: 1px solid map.get(vars.$colors, neutral, medium);
+
+		@include mixins.respond-to(md) {
+			display: none;
+		}
+
+		&.hidden {
+			display: none;
+		}
+
+		&-items {
+			display: flex;
+			flex-direction: column;
+			padding: 1rem;
+			gap: 1rem;
+		}
+	}
+
+	&__mobile-link {
+		color: map.get(vars.$colors, text, default);
+		display: block;
+		padding: 0.5rem 0;
+
+		&:hover {
+			color: map.get(vars.$colors, primary, default);
+		}
+	}
+}

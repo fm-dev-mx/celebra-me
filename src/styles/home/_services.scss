@@ -1,0 +1,27 @@
+/* src/styles/home/_services.scss */
+@use '../global/variables' as vars;
+@use '../global/mixins' as mixins;
+@use 'sass:map';
+
+.services {
+	// Section styles handled by layout
+
+
+	&__column {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__image-container {
+		overflow: hidden;
+		border-radius: 1.5rem;
+	}
+
+	&__image-wrapper {
+		overflow: hidden;
+		border-radius: 1.5rem;
+		margin-top: 2rem;
+	}
+}

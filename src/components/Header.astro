@@ -4,6 +4,9 @@
 // Moved from src/frontend/sections/Header.astro
 const logoSrc = '/images/header/horizontalLogo150x56.png';
 
+// Import stylesheet
+import '@/styles/layout/_header.scss';
+
 const navItems = [
 	{ label: 'Inicio', href: '/' },
 	{ label: 'Servicios', href: '/#services' },
@@ -12,27 +15,22 @@ const navItems = [
 ];
 ---
 
-<header
-	class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300"
->
-	<div class="container-custom flex items-center justify-between py-4">
-		<a href="/" class="block">
+<header class="header">
+	<div class="header__container container-custom">
+		<a href="/" class="header__logo">
 			<img
 				src={logoSrc}
 				alt="Celebra.me Logo"
 				width="150"
 				height="56"
-				class="h-auto w-32 md:w-40"
+				class="header__logo-img"
 			/>
 		</a>
 
-		<nav class="hidden md:flex gap-8">
+		<nav class="header__nav">
 			{
 				navItems.map((item) => (
-					<a
-						href={item.href}
-						class="text-gray-700 hover:text-primary font-medium transition-colors"
-					>
+					<a href={item.href} class="header__nav-link">
 						{item.label}
 					</a>
 				))
@@ -41,14 +39,14 @@ const navItems = [
 
 		<button
 			id="mobile-menu-btn"
-			class="md:hidden p-2 text-gray-700"
+			class="header__mobile-btn"
 			aria-label="Menú"
 			aria-expanded="false"
 			aria-controls="mobile-menu"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-6 w-6"
+				class="header__menu-icon"
 				fill="none"
 				viewBox="0 0 24 24"
 				stroke="currentColor"
@@ -64,12 +62,12 @@ const navItems = [
 
 	<div
 		id="mobile-menu"
-		class="hidden md:hidden absolute top-full left-0 w-full bg-white border-t"
+		class="header__mobile-menu hidden"
 	>
-		<div class="flex flex-col p-4 gap-4">
+		<div class="header__mobile-menu-items">
 			{
 				navItems.map((item) => (
-					<a href={item.href} class="text-gray-700 block py-2">
+					<a href={item.href} class="header__mobile-link">
 						{item.label}
 					</a>
 				))

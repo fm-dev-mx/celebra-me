@@ -1,4 +1,5 @@
 ---
+// src/components/home/AboutUs.astro
 import Container from '@components/layout/Container.astro';
 import Grid from '@components/layout/Grid.astro';
 import Section from '@components/layout/Section.astro';
@@ -16,6 +17,9 @@ import partyToastImage from '@images/about/partyToast.jpg';
 import Icon from '@components/common/Icon.astro';
 import type { AboutData } from '@/interfaces/ui/sections/landing-page.interface';
 
+// Import stylesheet
+import '@/styles/home/_about-us.scss';
+
 interface Props {
 	data: AboutData;
 }
@@ -30,20 +34,20 @@ const {
 	id="about-section"
 	backgroundImageDesktop="/images/about/bgAboutDesktop.jpg"
 	backgroundImageMobile="/images/about/bgAboutMobile.jpg"
-	padding="px-4 py-10"
+	class="about-us"
 	relative="relative"
 	fullWidth={true}
 	fullHeight={true}
 >
-	<div class="bg-accent-dark w-full h-1 absolute inset-0 opacity-80"></div>
+	<div class="about-us__overlay"></div>
 	<!-- Container with relative positioning for absolute elements -->
 	<StyledContainer variant="about-section">
 		<Container width=" w-full">
-			<div id="about-title" class="pt-20"></div>
+			<div id="about-title" class="about-us__title-spacer"></div>
 
 			<Grid columns={2} gap="gap-12">
 				{/* Section with title and description */}
-				<div class="flex flex-col justify-content-center max-w-sm">
+				<div class="about-us__content">
 					<SectionTitle
 						color="text-primary-dark"
 						weight="font-bold"
@@ -52,18 +56,20 @@ const {
 					>
 						{title}
 					</SectionTitle>
-					<Paragraph
-						size="text-xl"
-						align="text-center xl:text-right"
-						textColor="text-primary-dark"
-						weight="font-normal"
-					>
-						{description}
-					</Paragraph>
+					<div class="about-us__description-wrapper">
+						<Paragraph
+							size="text-xl"
+							align="text-center xl:text-right"
+							textColor="text-primary-dark"
+							weight="font-normal"
+						>
+							{description}
+						</Paragraph>
+					</div>
 				</div>
 
 				{/* Image with responsive design and hover effects */}
-				<div class="flex overflow-hidden rounded-3xl mx-auto">
+				<div class="about-us__image-container">
 					<ImageWrapper
 						width="w-full"
 						height="h-auto"
@@ -86,17 +92,15 @@ const {
 			</Grid>
 
 			{/* Grid for displaying company values */}
-			<Grid columns={3} gap="gap-8" padding="pt-12">
+			<div class="about-us__values-grid">
+				<Grid columns={3} gap="gap-8">
 				{
 					values.map((value: any) => (
-						<Card
-							minWidth="min-w-[250px] max-w-[350px] xl:min-w-[230px] xl:max-w-[230px]"
-							minHeight="min-h-[200px] max-h-[200px] xl:min-h-[230px] xl:max-h-[230px]"
-						>
+						<Card class="about-us__value-card">
 							<IconWrapper background="bg-primary-dark" color="text-white">
 								<Icon icon={value.icon} size="h-9 w-9" />
 							</IconWrapper>
-							<h3 class="text-lg sm:text-xl font-semibold mb-2 text-primary-dark text-center">
+							<h3 class="about-us__value-title">
 								{value.name}
 							</h3>
 							<Paragraph
@@ -109,7 +113,8 @@ const {
 						</Card>
 					))
 				}
-			</Grid>
+				</Grid>
+			</div>
 
 			{/* Call-to-action button with margin adjustments for different screens */}
 			<ActionBase
@@ -134,4 +139,4 @@ const {
 	</StyledContainer>
 </Section>
 
-<div class="bg-accent-dark w-full h-1 opacity-80"></div>
+<div class="about-us__divider"></div>
