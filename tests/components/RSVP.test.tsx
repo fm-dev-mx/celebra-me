@@ -80,26 +80,22 @@ describe('RSVP Component', () => {
 	});
 
 	describe('Guest Cap Validation', () => {
-		// TODO: This test has issues with number input state updates in jsdom
-		// The fireEvent.change sets the DOM value, but React state may not update correctly
-		// This is a known issue with controlled number inputs in testing-library
-		// The actual functionality works in the browser - needs further investigation
-		it.skip('should show error when guest count exceeds cap', async () => {
+		it('should show error when guest count exceeds cap', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
 			// Select "Yes"
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			// Set guest count above cap using fireEvent.change (more reliable than type for number inputs)
+			// Set guest count above cap
 			const guestInput = screen.getByLabelText(/Número de acompañantes/i);
 			fireEvent.change(guestInput, { target: { value: '5' } });
 
 			// Submit
-			const submitButton = screen.getByRole('button', { name: /Confirmar/i });
-			fireEvent.click(submitButton);
+			const form = screen.getByRole('form');
+			fireEvent.submit(form);
 
-			// Should show error (use waitFor for async state update)
+			// Should show error
 			await waitFor(() => {
 				expect(screen.getByText(/El límite de invitados/i)).toBeInTheDocument();
 			});

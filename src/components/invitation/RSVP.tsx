@@ -9,14 +9,14 @@ interface RSVPProps {
 
 const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => {
 	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
-	const [guestCount, setGuestCount] = useState(1);
+	const [guestCount, setGuestCount] = useState<number | ''>(1);
 	const [notes, setNotes] = useState('');
 	const [submitted, setSubmitted] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (attendance === 'yes' && guestCount > guestCap) {
+		if (attendance === 'yes' && Number(guestCount) > guestCap) {
 			setError(`El límite de invitados es de ${guestCap}.`);
 			return;
 		}
@@ -41,7 +41,11 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 	return (
 		<section className="rsvp">
 			<h2 className="rsvp__title">{title}</h2>
-			<form onSubmit={handleSubmit} className="rsvp__form">
+			<form
+				onSubmit={handleSubmit}
+				className="rsvp__form"
+				aria-label="Confirmación de asistencia"
+			>
 				<div className="rsvp__field">
 					<label>¿Podrás asistir?</label>
 					<div className="rsvp__radio-group">
@@ -80,7 +84,10 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 								min="1"
 								max={guestCap}
 								value={guestCount}
-								onChange={(e) => setGuestCount(parseInt(e.target.value))}
+								onChange={(e) => {
+									const val = e.target.value;
+									setGuestCount(val === '' ? '' : parseInt(val));
+								}}
 								required
 							/>
 							{error && <span className="rsvp__error">{error}</span>}

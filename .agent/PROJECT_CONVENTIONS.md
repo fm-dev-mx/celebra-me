@@ -112,9 +112,9 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 
 - Use semantic HTML (`<main>`, `<header>`, `<footer>`).
 - Always provide:
-    - `alt` attributes for images
-    - associated `label` for form controls
-    - explicit `type` on `<button>`
+  - `alt` attributes for images
+  - associated `label` for form controls
+  - explicit `type` on `<button>`
 
 ---
 
@@ -131,5 +131,13 @@ Not all situations fit the conventions. If a change requires deviating:
 
 - Document the reason in code or PR.
 - Avoid pattern repetition without discussion.
+
+---
+
+## 11) Logging and Test Outputs
+
+- All transient logs and test output files (e.g., `test_output.txt`) MUST be placed in the `logs/` directory.
+- This directory is ignored by git to keep the repository clean.
+- When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.
