@@ -47,13 +47,12 @@ const { data } = Astro.props;
 			<Grid extraClass="pricing-grid" columns={3} align="items-center" margin="mb-20">
 				{/* Map through the tier data to create a card for each plan */}
 				{
-					data.tiers.map((tier: any) => (
+					data.tiers.map((tier) => (
 						<Card
 							href={tier.href}
 							hover="hover:brightness-105 hover:scale-105"
 							borderColor="border-primary hover:border-secondary"
 							extraClass="pricing-card"
-							client:visible
 						>
 							{/* Plan title */}
 							<SectionTitle
@@ -90,9 +89,9 @@ const { data } = Astro.props;
 
 							{/* List of plan features */}
 							<BulletList
-								items={tier.features.map((feature: any) => ({
+								items={tier.features.map((feature: string) => ({
 									text: feature,
-									icon: 'CheckIcon' as any,
+									icon: 'CheckIcon',
 								}))}
 								variant="compact"
 								listClass="pricing-card-bullet-text"
