@@ -43,10 +43,10 @@ const socialLinks = data?.socialLinks?.links?.length ? data.socialLinks : null;
 				<!-- Navigation and link groups in the footer -->
 				<ActionWrapper className="footer-menu">
 					{
-						data.linkGroups.map((group: any) => (
+						data.linkGroups.map((group) => (
 							<div class="footer-link-group">
 								<h4 class="font-semibold">{group.title}</h4>
-								{group.links.map((link: any) => (
+								{group.links.map((link) => (
 									<ActionBase
 										key={link.label}
 										variant="text"
