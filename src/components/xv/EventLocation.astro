@@ -18,6 +18,10 @@ import ForbiddenIcon from '@/components/xv/icons/ForbiddenIcon.astro';
 import WaltzIcon from '@/components/xv/icons/WaltzIcon.astro';
 import DinnerIcon from '@/components/xv/icons/DinnerIcon.astro';
 import ToastIcon from '@/components/xv/icons/ToastIcon.astro';
+
+// Event Images
+const CEREMONY_IMAGE = 'https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg';
+const RECEPTION_IMAGE = 'https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg';
 ---
 
 <section class="event-location" id="event-location">
@@ -25,10 +29,12 @@ import ToastIcon from '@/components/xv/icons/ToastIcon.astro';
 		<div class="event-location__card-wrapper">
 			<h3 class="event-location__card-title">Ceremonia</h3>
 			<article class="event-location__card event-location__card--ceremony">
-				<div
-					class="event-location__card-image"
-					style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg');"
-				>
+				<div class="event-location__card-image-container">
+					<img
+						src={CEREMONY_IMAGE}
+						alt="Parroquia de la Sagrada Familia"
+						class="event-location__card-image"
+					/>
 				</div>
 				<div class="event-location__card-content">
 					<ul class="event-location__card-content-list">
@@ -59,10 +65,12 @@ import ToastIcon from '@/components/xv/icons/ToastIcon.astro';
 		<div class="event-location__card-wrapper">
 			<h3 class="event-location__card-title">Recepción</h3>
 			<article class="event-location__card event-location__card--reception">
-				<div
-					class="event-location__card-image"
-					style="background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg');"
-				>
+				<div class="event-location__card-image-container">
+					<img
+						src={RECEPTION_IMAGE}
+						alt="Jardín Piedra Bonita"
+						class="event-location__card-image"
+					/>
 				</div>
 				<div class="event-location__card-content">
 					<ul class="event-location__card-content-list">

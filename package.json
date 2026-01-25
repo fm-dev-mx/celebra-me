@@ -15,6 +15,8 @@
     },
     "dependencies": {
         "@astrojs/vercel": "9.0.4",
+        "@fontsource/lato": "^5.2.7",
+        "@fontsource/playfair-display": "^5.2.8",
         "@sendgrid/mail": "^8.1.6",
         "@types/jsdom": "^21.1.7",
         "@types/react-dom": "^19.2.3",

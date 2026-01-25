@@ -1,6 +1,7 @@
 ---
-// src/components/xv/Hero.astro
-/* Moved from src/frontend/components/XV/Hero.xv.astro */
+import '@/styles/xv/hero.xv.scss';
+import bgHero from '@images/hero/bgHeroDesktop.jpg';
+
 interface Props {
 	name: string;
 	date: string;
@@ -12,24 +13,22 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	month: 'long',
 	day: 'numeric',
 });
-
-import bgHero from '@images/hero/bgHeroDesktop.jpg';
 ---
 
-<section class="relative h-screen flex items-center justify-center overflow-hidden bg-black/40">
-	<div class="absolute inset-0 -z-10">
+<section class="xv-hero">
+	<div class="xv-hero__background">
 		<img
 			src={bgHero.src}
 			alt="Fiesta de XV años"
-			class="w-full h-full object-cover"
+			class="xv-hero__background-image"
 		/>
-		<div class="absolute inset-0 bg-black/40"></div>
+		<div class="xv-hero__background-overlay"></div>
 	</div>
 
-	<div class="text-center text-white p-4 animate-fade-in">
-		<span class="block text-xl md:text-2xl tracking-widest uppercase mb-4">Mis XV Años</span>
-		<h1 class="text-5xl md:text-8xl font-serif mb-6">{name}</h1>
-		<div class="w-24 h-1 bg-primary mx-auto mb-8"></div>
-		<p class="text-xl md:text-2xl font-light">{formattedDate}</p>
+	<div class="xv-hero__content">
+		<span class="xv-hero__label">Mis XV Años</span>
+		<h1 class="xv-hero__title">{name}</h1>
+		<div class="xv-hero__divider"></div>
+		<p class="xv-hero__date">{formattedDate}</p>
 	</div>
 </section>

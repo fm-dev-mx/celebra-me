@@ -28,7 +28,9 @@ interface Props {
 const { data } = Astro.props;
 
 // Helper function to chunk array into groups
-const chunkArray = (arr: any[], size: number) =>
+// Derived type from data.services
+type ServiceType = ServicesData['services'][number];
+const chunkArray = (arr: ServiceType[], size: number) =>
 	Array.from({ length: Math.ceil(arr.length / size) }, (_v, i) =>
 		arr.slice(i * size, i * size + size),
 	);
@@ -43,7 +45,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 	</SectionTitle>
 	<Container>
 		{/* Updated to use the new Grid component */}
-		<Grid columns={2} gap="gap-x-24 xl:gap-x-40">
+		<Grid columns={2} gap="services__grid-gap">
 			{/* First group: Image and Services */}
 			<div class="services__column">
 				{/* Image wrapper with hover effect classes */}
@@ -51,7 +53,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 					<ImageWrapper
 						flex="flex-col"
 						transition="transition-transform duration-500 ease-in-out"
-						hover="hover:scale-105"
+						hover="services__image-hover"
 						rounded="rounded-3xl"
 						width="w-64 sm:w-80 lg:w-92"
 					>
@@ -89,7 +91,7 @@ const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
 					flex="flex-col"
 					overflow="overflow-hidden"
 					transition="transition-transform duration-500 ease-in-out"
-					hover="hover:scale-105"
+					hover="services__image-hover"
 					rounded="rounded-3xl"
 					width="w-64 sm:w-80 lg:w-92"
 				>

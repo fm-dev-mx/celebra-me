@@ -11,6 +11,12 @@ importers:
       '@astrojs/vercel':
         specifier: 9.0.4
         version: 9.0.4(astro@5.16.14(@types/node@25.0.10)(@upstash/redis@1.36.1)(@vercel/functions@2.2.13)(jiti@1.21.7)(lightningcss@1.29.1)(rollup@4.56.0)(sass-embedded@1.97.3)(sass@1.97.3)(typescript@5.9.3)(yaml@2.8.2))(react@19.2.3)(rollup@4.56.0)
+      '@fontsource/lato':
+        specifier: ^5.2.7
+        version: 5.2.7
+      '@fontsource/playfair-display':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@sendgrid/mail':
         specifier: ^8.1.6
         version: 8.1.6
@@ -673,6 +679,12 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@fontsource/lato@5.2.7':
+    resolution: {integrity: sha512-k5mum1ADbDW5cTw1Ett1eQVWeoZ6gq0ct6SFBibEhB4LRxhniChJZTBgd6ph5yBxLkN1fcnsnmicBNA4S/3nbw==}
+
+  '@fontsource/playfair-display@5.2.8':
+    resolution: {integrity: sha512-fUEhib70SszNhQVsGbUMSsWJhr7Je0rdeuZdtGpDNu0GKF1xJM8QhpI/y0pckU25GcChXm9TLOmeZupkvvZo2g==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -6015,6 +6027,10 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@fontsource/lato@5.2.7': {}
+
+  '@fontsource/playfair-display@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 

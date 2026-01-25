@@ -6,6 +6,14 @@ import Footer from '@/components/Footer.astro';
 import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
 
+// ... existing imports
+// Load Fonts
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/700.css';
+import '@fontsource/lato/300.css';
+import '@fontsource/lato/400.css';
+import '@fontsource/lato/700.css';
+
 interface Props {
 	title: string;
 	description?: string;
@@ -29,14 +37,14 @@ const { title, description = 'Celebra.me - Eventos inolvidables' } = Astro.props
 		<meta property="og:url" content={Astro.url} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<!-- <meta property="og:image" content="/images/og-image.jpg" /> -->
+		<meta property="og:image" content="/images/og-image.jpg" />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content={Astro.url} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
-		<!-- <meta property="twitter:image" content="/images/og-image.jpg" /> -->
+		<meta property="twitter:image" content="/images/og-image.jpg" />
 	</head>
 	<body>
 		<Header />

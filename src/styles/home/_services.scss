@@ -24,4 +24,19 @@
 		border-radius: 1.5rem;
 		margin-top: 2rem;
 	}
+
+	// Custom utilities to replace Tailwind
+	&__grid-gap {
+		column-gap: 6rem; // gap-x-24 is 6rem
+
+		@include mixins.respond-to(xl) {
+			column-gap: 10rem; // gap-x-40 is 10rem
+		}
+	}
+
+	&__image-hover {
+		&:hover {
+			transform: scale(1.05);
+		}
+	}
 }

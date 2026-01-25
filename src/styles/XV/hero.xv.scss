@@ -1,153 +1,84 @@
-/* Hero Section for XV Invitations */
-// Renamed from hero.xv.scss
+@use 'src/styles/global/variables' as *;
+@use 'src/styles/global/mixins' as *;
 
-@use '@/styles/XV/variables.xv' as vars;
-@use '@/styles/global/mixins' as mixins;
-@use '@/styles/global/animations' as animations;
-@use '@/styles/global/functions' as functions;
+.xv-hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.4);
 
-.hero {
-	position: relative;
-	overflow: hidden;
-	text-align: center;
-	background-color: vars.$color-primary-light;
-	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 2rem;
+  &__background {
+    position: absolute;
+    inset: 0;
+    z-index: -10;
 
-	&__images {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		overflow: hidden;
+    &-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-		picture {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100vh;
-			overflow: hidden;
+    &-overlay {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
 
-			.hero__image {
-				width: 100%;
-				height: 100vh;
-				object-fit: cover;
-				opacity: 0;
-				animation: fadeInOut 12s infinite;
-				transition: opacity 0.5s ease-in-out;
-			}
-		}
+  &__content {
+    text-align: center;
+    color: #fff; // Always white on dark hero
+    padding: var(--spacing-md);
+    animation: fadeIn 1s ease-out;
+  }
 
-		@for $i from 1 through 3 {
-			picture:nth-of-type(#{$i}) .hero__image {
-				animation-delay: ($i - 1) * 4s;
-			}
-		}
-	}
+  &__label {
+    display: block;
+    font-size: 1.25rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-md);
+    font-family: var(--font-body);
 
-	&__body {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-	}
+    @media (min-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
 
-	&__content {
-		position: relative;
-		color: vars.$color-white;
-		opacity: 0;
-		animation: contentFadeIn 3s forwards 0.5s;
-		padding: 2rem 0;
-		width: 90%;
-		max-width: 250px;
-		margin: 0 auto 8rem;
-		text-align: center;
+  &__title {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.1;
 
-		@include mixins.respond-to(md) {
-			max-width: 400px;
-		}
+    @media (min-width: 768px) {
+      font-size: 6rem;
+    }
+  }
 
-		.hero__title {
-			font-family: vars.$font-heading-elegant;
-			font-size: 3rem;
-			letter-spacing: 10px;
-			font-weight: 600;
-			color: vars.$color-white;
-			text-shadow: 2px 2px 2px rgba(vars.$color-dark, 0.9);
+  &__divider {
+    width: 6rem;
+    height: 4px;
+    background-color: var(--color-primary);
+    margin: 0 auto var(--spacing-lg);
+    border-radius: 2px;
+  }
 
-			@include mixins.respond-to(xs) {
-				font-size: 4rem;
-				letter-spacing: 8px;
-			}
-			@include mixins.respond-to(sm) {
-				font-size: 6rem;
-				letter-spacing: 5px;
-			}
-			@include mixins.respond-to(md) {
-				font-size: 7rem;
-				letter-spacing: 2px;
-			}
-		}
+  &__date {
+    font-size: 1.25rem;
+    font-weight: 300;
+    font-family: var(--font-body);
 
-		.hero__subtitle {
-			font-family: vars.$font-body;
-			font-size: 1rem;
-			margin-top: 1.25rem;
-			font-weight: 600;
-			color: vars.$color-white;
-			text-shadow: 0 1px 10px rgba(vars.$color-dark, 0.9);
-			border-top: 2px solid rgba(vars.$color-secondary-light, 1);
-			padding-top: 2rem;
+    @media (min-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+}
 
-			@include mixins.respond-to(xs) {
-				font-size: 1.5rem;
-			}
-			@include mixins.respond-to(sm) {
-				font-size: 2rem;
-			}
-			@include mixins.respond-to(md) {
-				font-size: 2.5rem;
-			}
-		}
-
-		.hero__date {
-			font-family: vars.$font-body;
-			font-size: 1rem;
-			margin-top: 4rem;
-			font-weight: 400;
-			color: vars.$color-white;
-			opacity: 0;
-			animation: contentFadeIn 3s forwards;
-			animation-delay: 1s;
-			text-shadow: 0.5px 0.5px 1px rgba(vars.$color-white, 0.7);
-
-			@include mixins.respond-to(xs) {
-				font-size: 1.2rem;
-			}
-			@include mixins.respond-to(sm) {
-				font-size: 1.4rem;
-			}
-			@include mixins.respond-to(md) {
-				font-size: 1.6rem;
-			}
-		}
-	}
-
-	&::after {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		background: radial-gradient(circle, transparent, rgba(vars.$color-primary, 0.3));
-		pointer-events: none;
-	}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
