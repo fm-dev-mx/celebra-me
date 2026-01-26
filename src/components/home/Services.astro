@@ -1,20 +1,17 @@
 ---
 // /src/sections/Services.astro
-// This component displays the services offered, including images and descriptions.
+// This component displays the services offered, utilizing the Prime design system.
 
 import Container from '@components/layout/Container.astro';
-import Grid from '@components/layout/Grid.astro';
 import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
-import ImageWrapper from '@components/common/ImageWrapper.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import ServiceItem from '@components/ui/ServiceItem.astro';
+// Import the robust Icon component that uses SVG paths
+import Icon from '@components/common/icons/AppIcon.astro';
 
 // Import local images
 import xvImage from '@images/services/xv.jpg';
-import weddingPartyImage from '@images/services/weddingParty.jpg';
-import ActionBase from '@components/common/actions/ActionBase.astro';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
+import weddingImage from '@images/services/weddingParty.jpg';
+import baptismImage from '@images/services/baptism.png';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
 
@@ -27,103 +24,88 @@ interface Props {
 
 const { data } = Astro.props;
 
-// Helper function to chunk array into groups
-// Derived type from data.services
-type ServiceType = ServicesData['services'][number];
-const chunkArray = (arr: ServiceType[], size: number) =>
-	Array.from({ length: Math.ceil(arr.length / size) }, (_v, i) =>
-		arr.slice(i * size, i * size + size),
-	);
+// Map images to services order
+// Assumes order: XV Años, Bodas, Bautizos based on data in index.astro
+const serviceImages = [xvImage, weddingImage, baptismImage];
 
-// Split services into two groups
-const [firstServiceGroup, secondServiceGroup] = chunkArray(data.services, 2);
+// Helper to generate slug for links
+const getServiceLink = (title: string) => {
+	const slug = title.toLowerCase()
+		.replace(/ñ/g, 'n')
+		.replace(/\s+/g, '-')
+		.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove accents
+	return `/${slug}`;
+};
 ---
 
-<Section id="services-section" class="services">
-	<SectionTitle color="text-secondary-dark/90" weight="font-thin" extraClass="tracking-wider">
-		{data.title}
-	</SectionTitle>
-	<Container>
-		{/* Updated to use the new Grid component */}
-		<Grid columns={2} gap="services__grid-gap">
-			{/* First group: Image and Services */}
-			<div class="services__column">
-				{/* Image wrapper with hover effect classes */}
-				<div class="services__image-container">
-					<ImageWrapper
-						flex="flex-col"
-						transition="transition-transform duration-500 ease-in-out"
-						hover="services__image-hover"
-						rounded="rounded-3xl"
-						width="w-64 sm:w-80 lg:w-92"
-					>
-						<OptimizedImage
-							imagePath={xvImage}
-							alt="Fiesta de Quinceañera"
-							width={350}
-							height={350}
-						/>
-					</ImageWrapper>
-				</div>
-			</div>
+<Section id="services" class="services section-padding">
+	<Container class="services__container">
+		<header class="services__header">
+			<h2 class="services__heading">{data.title}</h2>
+		</header>
 
-			{/* Services description for first group */}
-			<div class="services__column">
-				{
-					firstServiceGroup.map((service, index) => (
-						<ServiceItem service={service} key={index} />
-					))
-				}
-			</div>
+		<div class="services__grid">
+			{
+				data.services.map((service, index) => {
+                    const image = serviceImages[index] || serviceImages[0];
+                    const href = getServiceLink(service.title);
+					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
+					const delay = `${index * 200}ms`;
 
-			{/* Second group: Services and Image */}
-			<div class="services__column">
-				{
-					secondServiceGroup.map((service, index) => (
-						<ServiceItem service={service} key={index} />
-					))
-				}
-			</div>
+                    return (
+					<a href={href} class="services__card" style={`--animation-delay: ${delay}`}>
+						<div class="services__card-visual">
+							<div class="services__image-wrapper">
+								<OptimizedImage
+									imagePath={image}
+									alt={`Servicio de ${service.title}`}
+									width={600}
+									height={800}
+									class="services__image"
+								/>
+							</div>
+							<div class="services__overlay"></div>
+						</div>
 
-			{/* Image wrapper with hover effect classes */}
-			<div class="services__column services__image-wrapper">
-				<ImageWrapper
-					flex="flex-col"
-					overflow="overflow-hidden"
-					transition="transition-transform duration-500 ease-in-out"
-					hover="services__image-hover"
-					rounded="rounded-3xl"
-					width="w-64 sm:w-80 lg:w-92"
-				>
-					<OptimizedImage
-						imagePath={weddingPartyImage}
-						alt="Personas bailando en una fiesta"
-						width={350}
-						height={350}
-					/>
-				</ImageWrapper>
-			</div>
-		</Grid>
+						<div class="services__content">
+							<div class="services__icon-wrapper">
+								<Icon name={service.icon || 'StarIcon'} class="services__icon" />
+							</div>
+
+							<h3 class="services__title">{service.title}</h3>
+							<p class="services__description">{service.description}</p>
+
+							<span class="services__cta">
+								Ver Ejemplos
+								<Icon name="ArrowRight" class="services__cta-icon" />
+							</span>
+						</div>
+					</a>
+				)})
+			}
+		</div>
 	</Container>
-
-	{/* CTA Button */}
-	<ActionBase
-		variant="large"
-		as="a"
-		href="#about-section"
-		color="secondary"
-		className=""
-		title="Ver demos de invitaciones"
-	>
-		Elegir mi invitación
-	</ActionBase>
-
-	{/* Scroll to About Section Button */}
-	<ActionIcon
-		variant="scroll"
-		href="#about-section"
-		title="Conoce más sobre nosotros"
-		color="secondary"
-		icon="ArrowDownIcon"
-	/>
 </Section>
+
+<script>
+	// IntersectionObserver for staggered entrance animations
+	const observerOptions = {
+		root: null,
+		rootMargin: '0px',
+		threshold: 0.15
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		});
+	}, observerOptions);
+
+	const cards = document.querySelectorAll('.services__card');
+	cards.forEach((card) => {
+		observer.observe(card);
+	});
+</script>
