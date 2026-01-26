@@ -8,6 +8,11 @@ import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 
+// Import local avatars
+import avatar1 from '@images/hero/avatar1.png';
+import avatar2 from '@images/hero/avatar2.png';
+import avatar3 from '@images/hero/avatar3.png';
+
 // Import consolidated Premium styles
 import '@/styles/components/_hero.scss';
 
@@ -24,7 +29,7 @@ const { data } = Astro.props;
 		<!-- Priority Image (Lazy load off for LCP) -->
 		<img
 			src={data.backgroundImage.desktopUrl}
-			alt="Fondo elegante de celebración"
+			alt="Experiencia de lujo en invitaciones digitales para eventos exclusivos"
 			class="hero-bg-img"
 			fetchpriority="high"
 		/>
@@ -71,9 +76,9 @@ const { data } = Astro.props;
 		{data.socialProofText && (
 			<div class="hero-prime__social-proof stagger-3">
 				<div class="avatars">
-					<img src="https://i.pravatar.cc/100?img=6" alt="User" />
-					<img src="https://i.pravatar.cc/100?img=5" alt="User" />
-					<img src="https://i.pravatar.cc/100?img=9" alt="User" />
+					<img src={avatar1.src} alt="Usuario de Celebra-me" />
+					<img src={avatar2.src} alt="Usuario de Celebra-me" />
+					<img src={avatar3.src} alt="Usuario de Celebra-me" />
 				</div>
 				<span>{data.socialProofText}</span>
 			</div>

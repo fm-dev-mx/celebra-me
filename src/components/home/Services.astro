@@ -9,8 +9,8 @@ import OptimizedImage from '@components/common/OptimizedImage.astro';
 import Icon from '@components/common/icons/AppIcon.astro';
 
 // Import local images
-import xvImage from '@images/services/xv.jpg';
-import weddingImage from '@images/services/weddingParty.jpg';
+import xvImage from '@images/services/xv.png';
+import weddingImage from '@images/services/wedding.png';
 import baptismImage from '@images/services/baptism.png';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
@@ -53,7 +53,7 @@ const getServiceLink = (title: string) => {
 					const delay = `${index * 200}ms`;
 
                     return (
-					<a href={href} class="services__card" style={`--animation-delay: ${delay}`}>
+					<a href={href} class="services__card" style={`--animation-delay: ${delay}`} aria-label={`Ver detalles del servicio ${service.title}`}>
 						<div class="services__card-visual">
 							<div class="services__image-wrapper">
 								<OptimizedImage

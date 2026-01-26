@@ -27,8 +27,8 @@
     &__logo {
         &--white {
             display: block; // Default visible on transparent
-            // Restore white filter for maximum contrast on dark hero backgrounds
-            filter: brightness(0) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            // Make logo white for maximum contrast on dark hero backgrounds
+            filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,.5));
         }
         &--gold {
             display: none; // Default hidden on transparent
