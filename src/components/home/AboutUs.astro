@@ -1,22 +1,13 @@
 ---
 // src/components/home/AboutUs.astro
 import Container from '@components/layout/Container.astro';
-import Grid from '@components/layout/Grid.astro';
 import Section from '@components/layout/Section.astro';
-import Card from '@components/ui/Card.astro';
-import IconWrapper from '@components/common/IconWrapper.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
-import ImageWrapper from '@components/common/ImageWrapper.astro';
-import Paragraph from '@components/common/Paragraph.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import StyledContainer from '@components/layout/StyledContainer.astro';
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 // import type { IconNames } from '@/core/types/ui/iconNames.type';
-import partyToastImage from '@images/about/partyToast.jpg';
-import bgDesktop from '@images/about/bgAboutDesktop.jpg';
-import bgMobile from '@images/about/bgAboutMobile.jpg';
-import Icon from '@components/common/Icon.astro';
+import Icon from '@components/common/icons/AppIcon.astro';
+import partyToastImage from '@images/about/partyToastPremium.png';
 import type { AboutData } from '@/interfaces/ui/sections/landing-page.interface';
 
 // Import stylesheet
@@ -26,119 +17,128 @@ interface Props {
 	data: AboutData;
 }
 
-// Destructure props for easier access
-const {
-	data: { title, description, values, cta },
-} = Astro.props;
+const { data } = Astro.props;
 ---
 
-<Section
-	id="about-section"
-	backgroundImageDesktop={bgDesktop}
-	backgroundImageMobile={bgMobile}
-	class="about-us"
-	relative="relative"
-	fullWidth={true}
-	fullHeight={true}
->
-	<div class="about-us__overlay"></div>
-	<!-- Container with relative positioning for absolute elements -->
-	<StyledContainer variant="about-section">
-		<Container width=" w-full">
-			<div id="about-title" class="about-us__title-spacer"></div>
+<Section id="nosotros" class="about-us">
+	<div class="about-us__bg-overlay"></div>
 
-			<Grid columns={2} gap="gap-12">
-				{/* Section with title and description */}
-				<div class="about-us__content">
-					<SectionTitle
-						color="text-primary-dark"
-						weight="font-bold"
-						align="place-self-center xl:place-self-end"
-						margin="mb-8 xl:mr-2"
+	<Container class="about-us__container">
+		<div class="about-us__grid">
+			{/* Content Side */}
+			<div class="about-us__content">
+				<header
+					class="about-us__header animate-on-scroll"
+					style="--animation-delay: 100ms"
+				>
+					<h2 class="about-us__title">{data.title}</h2>
+					<div class="about-us__underline"></div>
+				</header>
+
+				<p
+					class="about-us__description animate-on-scroll"
+					style="--animation-delay: 300ms"
+				>
+					{data.description}
+				</p>
+
+				<div
+					class="about-us__actions animate-on-scroll"
+					style="--animation-delay: 500ms"
+				>
+					<ActionBase
+						variant="outline"
+						color="primary"
+						as="a"
+						href={data.cta.href}
+						class="about-us__cta"
 					>
-						{title}
-					</SectionTitle>
-					<div class="about-us__description-wrapper">
-						<Paragraph
-							size="text-xl"
-							align="text-center xl:text-right"
-							textColor="text-primary-dark"
-							weight="font-normal"
-						>
-							{description}
-						</Paragraph>
-					</div>
+						{data.cta.label}
+						<Icon name="ArrowRight" class="about-us__cta-icon" />
+					</ActionBase>
 				</div>
-
-				{/* Image with responsive design and hover effects */}
-				<div class="about-us__image-container">
-					<ImageWrapper
-						width="w-full"
-						height="h-auto"
-						minWidth="min-w-[250px]"
-						justify="justify-center"
-						margin="mx-auto"
-						align="items-end"
-						hover="hover:scale-105"
-						transition="transition-transform duration-500 ease-in-out"
-					>
-						<OptimizedImage
-							imagePath={partyToastImage}
-							alt="Personas brindando en una celebración"
-							rounded="rounded-3xl"
-							width={350}
-							height={350}
-						/>
-					</ImageWrapper>
-				</div>
-			</Grid>
-
-			{/* Grid for displaying company values */}
-			<div class="about-us__values-grid">
-				<Grid columns={3} gap="gap-8">
-				{
-					values.map((value) => (
-						<Card class="about-us__value-card">
-							<IconWrapper background="bg-primary-dark" color="text-white">
-								<Icon icon={value.icon} size="h-9 w-9" />
-							</IconWrapper>
-							<h3 class="about-us__value-title">
-								{value.name}
-							</h3>
-							<Paragraph
-								textColor="text-primary"
-								align="text-center"
-								size="text-sm sm:text-base"
-							>
-								{value.description}
-							</Paragraph>
-						</Card>
-					))
-				}
-				</Grid>
 			</div>
 
-			{/* Call-to-action button with margin adjustments for different screens */}
-			<ActionBase
-				variant="large"
-				color="primary"
-				as="a"
-				href={cta.href}
-				title="Cuéntanos sobre tu evento"
+			<div
+				class="about-us__visual animate-on-scroll"
+				style="--animation-delay: 200ms"
 			>
-				{cta.label}
-			</ActionBase>
+				<div class="about-us__image-wrapper">
+					<div class="about-us__image-frame"></div>
+					<OptimizedImage
+						imagePath={partyToastImage}
+						alt="Celebración elegante con brindis"
+						width={800}
+						height={1000}
+						class="about-us__image"
+					/>
+					<div class="about-us__image-glow"></div>
+					<div class="about-us__image-decoration"></div>
+				</div>
+			</div>
+		</div>
 
-			<ActionIcon
-				icon="ArrowDownIcon"
-				variant="scroll"
-				color="primary"
-				as="a"
-				href="#testimonials-section"
-				title="Ver clientes que confiaron en nosotros"
-			/>
-		</Container>
-	</StyledContainer>
+		{/* Values Grid */}
+		<div class="about-us__values">
+			{data.values.map((value, index) => (
+				<div
+					class="about-us__value-card animate-on-scroll"
+					style={`--animation-delay: ${(index + 4) * 150}ms`}
+				>
+					<div class="about-us__value-icon-wrapper">
+						<Icon name={value.icon} class="about-us__value-icon" />
+					</div>
+					<h3 class="about-us__value-title">{value.name}</h3>
+					<p class="about-us__value-description">{value.description}</p>
+				</div>
+			))}
+		</div>
+	</Container>
+
+	{/* Scroll Indicator */}
+	<div class="about-us__scroll-indicator">
+		<ActionIcon
+			icon="ArrowDownIcon"
+			variant="scroll"
+			color="primary"
+			as="a"
+			href="#servicios"
+			title="Explorar servicios"
+		/>
+	</div>
 </Section>
 
-<div class="about-us__divider"></div>
+<script>
+	const observerOptions = {
+		root: null,
+		rootMargin: '-5% 0px',
+		threshold: 0.15
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				const target = entry.target;
+				target.classList.add('is-visible');
+
+				// Optional: add performance hint
+				if (target instanceof HTMLElement) {
+					target.style.willChange = 'opacity, transform, filter';
+				}
+
+				// stop observing once visible for better performance
+				observer.unobserve(target);
+
+				// Clean up performance hint after animation ends
+				setTimeout(() => {
+					if (target instanceof HTMLElement) {
+						target.style.willChange = 'auto';
+					}
+				}, 2000);
+			}
+		});
+	}, observerOptions);
+
+	const animatedElements = document.querySelectorAll('.animate-on-scroll');
+	animatedElements.forEach((el) => observer.observe(el));
+</script>

@@ -48,6 +48,18 @@ $typography-scale: (
 		font-weight: 600,
 		line-height: 1.25,
 	),
+	h4: (
+		font-family: var(--font-display),
+		font-size: 1.25rem,
+		font-weight: 600,
+		line-height: 1.3,
+	),
+	body-large: (
+		font-family: var(--font-body),
+		font-size: 1.15rem,
+		font-weight: 400,
+		line-height: 1.6,
+	),
 	body-small: (
 		font-family: var(--font-body),
 		font-size: 0.95rem,

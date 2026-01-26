@@ -1,0 +1,96 @@
+/* src/styles/common/_action-icon.scss */
+@use 'sass:map';
+@use '../global/variables' as vars;
+@use '../global/mixins' as mixins;
+
+.action-icon {
+	--icon-size: 3rem;
+	--icon-transition: cubic-bezier(0.4, 0, 0.2, 1);
+
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-size);
+	height: var(--icon-size);
+	border-radius: 50%;
+	transition: all 0.4s var(--icon-transition);
+	overflow: hidden;
+
+	&__inner {
+		position: relative;
+		z-index: 2;
+		transition: transform 0.4s var(--icon-transition);
+	}
+
+	// Variant: Scroll
+	&--scroll {
+		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(8px);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		color: var(--color-primary);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.2), rgba(var(--color-accent-rgb), 0.1));
+			opacity: 0;
+			transition: opacity 0.4s var(--icon-transition);
+			z-index: 1;
+		}
+
+		&:hover {
+			border-color: rgba(var(--color-primary-rgb), 0.4);
+			transform: translateY(4px);
+			box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+
+			&::before {
+				opacity: 1;
+			}
+
+			.action-icon__inner {
+				transform: translateY(2px);
+			}
+		}
+
+		// Subtle bounce animation for scroll indicators
+		animation: scroll-bounce 2s infinite ease-in-out;
+	}
+
+	// Colors
+	&--white {
+		color: white;
+		border-color: rgba(255, 255, 255, 0.3);
+
+		&.action-icon--scroll {
+			background: rgba(255, 255, 255, 0.1);
+			&:hover {
+				background: rgba(255, 255, 255, 0.2);
+				border-color: white;
+			}
+		}
+	}
+
+	// Variant: Fixed
+	&--fixed-bottom-right {
+		position: fixed;
+		bottom: 2rem;
+		right: 2rem;
+		background: var(--color-primary);
+		color: white;
+		box-shadow: 0 10px 30px -10px rgba(var(--color-primary-rgb), 0.5);
+		z-index: map.get(vars.$z-index, 'header');
+
+		&:hover {
+			transform: scale(1.1) translateY(-4px);
+			background: var(--color-primary-dark);
+			box-shadow: 0 15px 40px -10px rgba(var(--color-primary-rgb), 0.6);
+		}
+	}
+}
+
+@keyframes scroll-bounce {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(8px); }
+}

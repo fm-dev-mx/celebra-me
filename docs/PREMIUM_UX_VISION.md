@@ -15,7 +15,7 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 - [x] **Header (The Jewelry Box):** Minimalist glassmorphism navigation with subtle action buttons.
 - [x] **Hero "Prime":** The first visual impact. Subtle background video or high-res imagery with elegant serif typography.
 - [x] **Services Showcase:** Interactive cards representing "XV Años" (Quinceañeras), "Bodas" (Weddings), and "Bautizos" (Christenings).
-- [ ] **Storytelling (About):** Values section with micro-animations on vector icons.
+- [x] **Storytelling (About):** Values section with micro-animations on vector icons.
 - [ ] **Pricing (Plans):** Comparative pricing table with clean design and premium "hover effects".
 - [ ] **FAQ (Inquiry):** Accordions with natural easing transitions.
 - [ ] **Footer (Closing):** Contact info and social media with cohesive aesthetics.

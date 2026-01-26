@@ -1,4 +1,5 @@
 ---
+import '@/styles/common/_action-icon.scss';
 import AppIcon from '../icons/AppIcon.astro';
 
 interface _Props {
@@ -26,18 +27,14 @@ const {
 	href={href}
 	title={title}
 	class:list={[
-		'flex items-center justify-center p-3 rounded-full transition-all duration-300',
-		{
-			'fixed bottom-8 right-8 bg-primary text-white shadow-lg z-50 hover:bg-primary-dark':
-				variant === 'fixed-bottom-right',
-			'border border-white/30 backdrop-blur-sm hover:bg-white/10': variant === 'scroll',
-			'text-primary': color === 'primary',
-			'text-secondary': color === 'secondary',
-			'text-white': color === 'white',
-		},
+		'action-icon',
+		`action-icon--${variant}`,
+		`action-icon--${color}`,
 		className,
 	]}
 >
 	<span class="sr-only">{title}</span>
-	<AppIcon name={icon} class="w-6 h-6" />
+	<div class="action-icon__inner">
+		<AppIcon name={icon} class="w-6 h-6" />
+	</div>
 </Tag>
