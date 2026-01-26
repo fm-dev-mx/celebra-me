@@ -1,7 +1,7 @@
 /* Footer Styles for XV Invitation */
 // Renamed from footer.xv.scss
 
-@use '@/styles/XV/variables.xv' as *;
+@use 'variables' as *;
 @use '../global/mixins' as mixins;
 
 .invitation-footer {

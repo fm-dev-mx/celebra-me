@@ -1,9 +1,9 @@
-// src/frontend/styles/XV/quote.xv.scss
+// src/frontend/styles/xv/_quote.scss
 // ----------------------------------------------------
 // Elegant Quote Section Styles
 // ----------------------------------------------------
 
-@use '../XV/variables.xv' as *;
+@use 'variables' as *;
 
 .quote-section {
 	position: relative;

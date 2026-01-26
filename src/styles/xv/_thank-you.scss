@@ -5,7 +5,7 @@
 
 // Import variables and fonts from our shared variables file
 @use '../global/mixins' as mixins;
-@use '../XV/variables.xv' as *;
+@use 'variables' as *;
 
 .thank-you-section {
 	position: relative;

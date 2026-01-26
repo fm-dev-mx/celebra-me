@@ -1,10 +1,10 @@
-/* src/frontend/styles/XV/rsvp.xv.scss
+/* src/frontend/styles/xv/_rsvp.scss
  * ----------------------------------------------------
  * RSVP Confirmation Form Styles
  * ----------------------------------------------------
  */
 
-@use '../XV/variables.xv' as vars;
+@use 'variables' as vars;
 @use '../global/mixins' as mixins;
 
 .rsvp {

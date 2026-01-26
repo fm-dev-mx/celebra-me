@@ -1,7 +1,7 @@
 // src/styles/xv/background-music.scss
 // Premium floating music player with glassmorphism effect
 
-@use './variables.xv' as *;
+@use 'variables' as *;
 
 .music-player {
 	position: fixed;

@@ -2,7 +2,7 @@
 // Renamed from countdown.xv.scss to countdown.scss
 // Updated path to variables
 
-@use '@/styles/XV/variables.xv' as vars;
+@use 'variables' as vars;
 @use '@/styles/global/mixins' as mixins;
 
 .countdown {

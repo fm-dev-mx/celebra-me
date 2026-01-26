@@ -1,5 +1,0 @@
-/* src/frontend/styles/animations/hover-lift.css */
-/* Subtle lift effect on hover */
-.hover-lift {
-	@apply transition-transform duration-300 ease-in-out hover:-translate-y-0.5;
-}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '@/styles/xv/rsvp.xv.scss';
+import '@/styles/xv/_rsvp.scss';
 
 interface RSVPProps {
 	title: string;

@@ -1,7 +1,7 @@
 /* Section Navigation Button Styles */
 // Renamed from sectionNavButton.xv.scss
 
-@use '@/styles/XV/variables.xv' as vars;
+@use 'variables' as vars;
 @use '@/styles/global/functions' as functions;
 @use '@/styles/global/mixins' as mixins;
 @use '@/styles/global/animations' as animations;
