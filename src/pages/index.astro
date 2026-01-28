@@ -8,6 +8,7 @@ import Testimonials from '@/components/home/Testimonials.astro';
 import Pricing from '@/components/home/Pricing.astro';
 import FAQ from '@/components/home/FAQ.astro';
 import Contact from '@/components/home/Contact.astro';
+import Footer from '@/components/home/Footer.astro';
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
 const landingData: LandingPageData = {
@@ -103,6 +104,20 @@ const landingData: LandingPageData = {
 				cta: 'Elegir Premium',
 				href: '/registro?plan=premium',
 			},
+			{
+				title: 'Personalizado',
+				description: 'Para eventos únicos que requieren atención a medida.',
+				price: { amount: 'Consultar', currency: '', period: '' },
+				features: [
+					'Todo lo del Premium',
+					'Diseño desde cero',
+					'Asistente personal 24/7',
+					'Hosting ilimitado',
+				],
+				cta: 'Contactar',
+				href: '/contacto',
+				isElite: true,
+			},
 		],
 	},
 	faq: {
@@ -123,6 +138,35 @@ const landingData: LandingPageData = {
 		subtitle: '¿Tienes alguna duda? Estamos para ayudarte a que tu evento sea perfecto.',
 	},
 };
+
+const footerData = {
+	siteInfo: {
+		slogan: 'Celebra cada momento, diseña cada recuerdo.',
+	},
+	linkGroups: [
+		{
+			title: 'Compañía',
+			links: [
+				{ label: 'Sobre Nosotros', href: '/nosotros' },
+				{ label: 'Servicios', href: '#services' },
+				{ label: 'Planes', href: '#pricing' },
+			],
+		},
+		{
+			title: 'Legal',
+			links: [
+				{ label: 'Términos', href: '/terminos' },
+				{ label: 'Privacidad', href: '/privacidad' },
+			],
+		},
+	],
+	socialLinks: {
+		links: [
+			{ label: 'Instagram', href: 'https://instagram.com/celebrame', icon: 'InstagramIcon' },
+			{ label: 'Facebook', href: 'https://facebook.com/celebrame', icon: 'FacebookIcon' },
+		],
+	},
+};
 ---
 
 <Layout title="Celebra.me | Invitaciones Digitales Premium">
@@ -134,5 +178,6 @@ const landingData: LandingPageData = {
 		<Pricing data={landingData.pricing} />
 		<FAQ data={landingData.faq} />
 		<Contact data={landingData.contact} />
+		<Footer data={footerData} />
 	</div>
 </Layout>

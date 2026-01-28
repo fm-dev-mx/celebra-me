@@ -1,71 +1,71 @@
 ---
-/**
- * src/frontend/sections/Footer.astro
- * Footer component for the site, displaying:
- * - Main logo (footer variant)
- * - Slogan (if present)
- * - Link groups
- * - Social media links
- */
-import ActionBase from '@components/common/actions/ActionBase.astro';
-import ActionWrapper from '@components/common/actions/ActionWrapper.astro';
-import Container from '@components/layout/Container.astro';
-import Section from '@components/layout/Section.astro';
+// src/components/home/Footer.astro
 import Logo from '@components/ui/Logo.astro';
-import SocialMediaLinks from '@components/common/actions/SocialMediaLinks.astro';
-import type { FooterProps } from '@interfaces/ui/sections/footer.interface.ts';
+import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
 
 interface Props {
 	data: FooterProps;
 }
 
 const { data } = Astro.props;
-
-// Ensure socialLinks exist and contain valid data
-const socialLinks = data?.socialLinks?.links?.length ? data.socialLinks : null;
+const currentYear = new Date().getFullYear();
 ---
 
-<footer class="bg-black text-white w-full py-8">
-	<Section padding="pt-8">
-		<Container>
-			<div class="flex flex-col items-center">
-				<!-- Footer variant of the logo -->
-				<Logo variant="footer" altText="Celebra-me Footer Logo" />
+<footer class="footer-section">
+	<div class="container">
+		<!-- Brand Column -->
+		<div class="footer-brand">
+			<Logo variant="footer" altText="Celebra-me" />
+			{data.siteInfo?.slogan && <p class="footer-slogan">{data.siteInfo.slogan}</p>}
+		</div>
 
-				{
-					data.siteInfo?.slogan && (
-						<p class="text-center text-primary/40 my-6 font-thin">
-							{data.siteInfo.slogan}
-						</p>
-					)
-				}
+		<!-- Link Groups -->
+		{
+			data.linkGroups.map((group) => (
+				<div class="footer-group">
+					<h4 class="group-title">{group.title}</h4>
+					{group.links.map((link) => (
+						<a href={link.href} class="footer-link" target={link.isExternal ? '_blank' : '_self'}>
+							{link.label}
+						</a>
+					))}
+				</div>
+			))
+		}
 
-				<!-- Navigation and link groups in the footer -->
-				<ActionWrapper className="footer-menu">
-					{
-						data.linkGroups.map((group) => (
-							<div class="footer-link-group">
-								<h4 class="font-semibold">{group.title}</h4>
-								{group.links.map((link) => (
-									<ActionBase
-										key={link.label}
-										variant="text"
-										as="a"
-										href={link.href}
-										className="footer-menu-item"
-										target={link.isExternal ? '_blank' : '_self'}
-									>
-										{link.label}
-									</ActionBase>
-								))}
-							</div>
-						))
-					}
-				</ActionWrapper>
+		<!-- Social Column -->
+		{
+			data.socialLinks && (
+				<div class="footer-socials footer-group">
+					<h4 class="group-title">Síguenos</h4>
+					<div class="social-links-grid">
+						{data.socialLinks.links.map((social) => (
+							<a href={social.href} class="social-link" aria-label={social.label} target="_blank">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									{social.label === 'Instagram' && (
+										<>
+											<rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+											<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+											<line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+										</>
+									)}
+									{social.label === 'Facebook' && <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />}
+								</svg>
+							</a>
+						))}
+					</div>
+				</div>
+			)
+		}
+	</div>
 
-				<!-- Social media links (conditionally rendered) -->
-				{socialLinks && <SocialMediaLinks {...socialLinks} />}
+	<div class="container">
+		<div class="footer-bottom">
+			<p class="copyright">&copy; {currentYear} Celebra-me. Todos los derechos reservados.</p>
+			<div class="legal-links">
+				<a href="/privacidad">Privacidad</a>
+				<a href="/terminos">Términos</a>
 			</div>
-		</Container>
-	</Section>
+		</div>
+	</div>
 </footer>

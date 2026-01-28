@@ -1,20 +1,7 @@
 ---
-// src/sections/Pricing.astro
-import Container from '@components/layout/Container.astro';
-import Grid from '@components/layout/Grid.astro';
-import Section from '@components/layout/Section.astro';
-import BulletList from '@components/common/BulletList.astro';
-import Card from '@components/ui/Card.astro';
-import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import StyledContainer from '@components/layout/StyledContainer.astro';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
-
+// src/components/home/Pricing.astro
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
-import bgDesktop from '@images/pricing/bgPricingDesktop.jpg';
-import bgMobile from '@images/pricing/bgPricingMobile.jpg';
 
-// Destructure the data property from Astro.props
 interface Props {
 	data: PricingData;
 }
@@ -22,100 +9,111 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<Section
-	id="pricing-section"
-	padding="px-2 sm:px-14 py-10 pt-40"
-	fullWidth={true}
-	fullHeight={true}
-	backgroundImageMobile={bgMobile}
-	backgroundImageDesktop={bgDesktop}
->
-	{/* Top decorative line */}
-	<div class="bg-primary w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+<section id="pricing" class="pricing-section">
+	<div class="pricing-noise"></div>
 
-	<StyledContainer>
-		<Container width="w-full xl:w-11/12 2xl:w-4/5" padding="px-0 xl:px-10 pt-20">
-			{/* Pricing section title */}
-			<SectionTitle
-				margin="mb-10"
-				weight="font-semibold"
-				color="text-secondary-dark"
-				extraClass="pricing-card-title"
-			>
-				{data.title}
-			</SectionTitle>
+	<div class="container">
+		<header class="pricing-header">
+			<span class="pricing-pretitle">Inversión para tu gran día</span>
+			<h2 class="pricing-title">{data.title}</h2>
+			<p class="pricing-subtitle">
+				Selecciona la experiencia que mejor se adapte a tu celebración.
+			</p>
+		</header>
 
-			{/* Grid to display pricing plans */}
-			<Grid extraClass="pricing-grid" columns={3} align="items-center" margin="mb-20">
-				{/* Map through the tier data to create a card for each plan */}
-				{
-					data.tiers.map((tier) => (
-						<Card
-							href={tier.href}
-							hover="hover:brightness-105 hover:scale-105"
-							borderColor="border-primary hover:border-secondary"
-							extraClass="pricing-card"
+		<div class="pricing-grid">
+			{
+				data.tiers.map((tier, index) => {
+					const isPremium = tier.title === 'Premium';
+					const isElite = tier.isElite;
+
+					return (
+						<article
+							class:list={[
+								'pricing-card',
+								{ 'is-premium': isPremium },
+								{ 'is-elite': isElite }
+							]}
+							style={`--delay: ${index * 0.2}s`}
 						>
-							{/* Plan title */}
-							<SectionTitle
-								size="text-2xl"
-								margin="mt-4"
-								color="text-primary-dark"
-								weight="font-semibold"
-								extraClass="pricing-card-title"
-							>
-								{tier.title}
-							</SectionTitle>
+							{isPremium && <div class="premium-badge">MÁS ELEGIDO</div>}
 
-							{/* Plan description */}
-							<SectionSubtitle
-								color="text-primary"
-								size="text-md"
-								margin="mb-4"
-								extraClass="pricing-card-subtitle"
-							>
-								{tier.description}
-							</SectionSubtitle>
+							<div class="card-content">
+								<h3 class="tier-name">{tier.title}</h3>
+								<p class="tier-desc">{tier.description}</p>
 
-							{/* Plan price */}
-							<SectionSubtitle
-								color="text-secondary-dark"
-								size="text-xl"
-								weight="font-normal"
-								margin="mb-0"
-								extraClass="pricing-card-price"
-							>
-								{'$ ' + tier.price.amount + tier.price.currency}
-								<span class="text-sm font-thin mt-2 ml-2">{tier.price.period}</span>
-							</SectionSubtitle>
+								<div class="tier-price">
+									{tier.price.amount !== 'Consultar' && <span class="currency-symbol">$</span>}
+									<span class="amount">{tier.price.amount}</span>
+									{tier.price.currency && <span class="currency-code">{tier.price.currency}</span>}
+									{tier.price.period && <span class="period">/ {tier.price.period}</span>}
+								</div>
 
-							{/* List of plan features */}
-							<BulletList
-								items={tier.features.map((feature: string) => ({
-									text: feature,
-									icon: 'CheckIcon',
-								}))}
-								variant="compact"
-								listClass="pricing-card-bullet-text"
-							/>
+								<ul class="feature-list">
+									{tier.features.map((feature) => (
+										<li class="feature-item" data-feature={feature.toLowerCase().replace(/\s+/g, '-')}>
+											<svg viewBox="0 0 20 20" fill="currentColor" class="check-icon" aria-hidden="true">
+												<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+											</svg>
+											<span>{feature}</span>
+										</li>
+									))}
+								</ul>
 
-							{/* Plan call-to-action */}
-							<div class="pricing-card-cta hover:scale-125">{tier.cta}</div>
-						</Card>
-					))
-				}
-			</Grid>
+								<a href={tier.href} class="cta-button" aria-label={`Elegir plan ${tier.title}`}>
+									<span>{tier.cta}</span>
+									<div class="glint" aria-hidden="true"></div>
+								</a>
+							</div>
 
-			<ActionIcon
-				variant="scroll"
-				href="#faq-section"
-				color="primary"
-				title="Responde tus dudas sobre nuestros servicios"
-				icon="ArrowDownIcon"
-			/>
-		</Container>
-	</StyledContainer>
-</Section>
+							<div class="card-border"></div>
+						</article>
+					);
+				})
+			}
+		</div>
+	</div>
+</section>
 
-{/* Bottom decorative line */}
-<div class="bg-primary-dark w-full h-0.5 opacity-50 mt-0 shadow-xl"></div>
+<script>
+	const observerOptions = {
+		threshold: 0.1,
+		rootMargin: '0px 0px -100px 0px'
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		});
+	}, observerOptions);
+
+	document.querySelectorAll('.pricing-card').forEach(card => {
+		observer.observe(card);
+	});
+
+	// Feature row highlighting logic
+	const featureItems = document.querySelectorAll('.feature-item');
+
+	featureItems.forEach(item => {
+		item.addEventListener('mouseenter', () => {
+			const feature = (item as HTMLElement).dataset.feature;
+			if (feature) {
+				document.querySelectorAll(`.feature-item[data-feature="${feature}"]`).forEach(el => {
+					el.classList.add('is-highlighted');
+				});
+			}
+		});
+
+		item.addEventListener('mouseleave', () => {
+			const feature = (item as HTMLElement).dataset.feature;
+			if (feature) {
+				document.querySelectorAll(`.feature-item[data-feature="${feature}"]`).forEach(el => {
+					el.classList.remove('is-highlighted');
+				});
+			}
+		});
+	});
+</script>

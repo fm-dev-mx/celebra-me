@@ -16,9 +16,9 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 - [x] **Hero "Prime":** The first visual impact. Subtle background video or high-res imagery with elegant serif typography.
 - [x] **Services Showcase:** Interactive cards representing "XV Años" (Quinceañeras), "Bodas" (Weddings), and "Bautizos" (Christenings).
 - [x] **Storytelling (About):** Values section with micro-animations on vector icons. ✅ *Stroke drawing animations & premium motion implemented.*
-- [ ] **Pricing (Plans):** Comparative pricing table with clean design and premium "hover effects".
-- [ ] **FAQ (Inquiry):** Accordions with natural easing transitions.
-- [ ] **Footer (Closing):** Contact info and social media with cohesive aesthetics.
+- [x] Pricing (Plans): Comparative pricing table with clean design, premium "hover effects", and specific "Elite" tier styling.
+- [x] FAQ (Inquiry): Accordions with natural easing transitions and accessible ARIA states.
+- [x] Footer (Closing): Contact info and social media with cohesive aesthetics and premium glassmorphism.
 
 ### 📜 B. Digital Invitation (Guest Experience)
 

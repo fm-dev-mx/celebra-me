@@ -49,6 +49,7 @@ export interface PricingData {
 		features: string[];
 		cta: string;
 		href: string;
+		isElite?: boolean;
 	}>;
 }
 
