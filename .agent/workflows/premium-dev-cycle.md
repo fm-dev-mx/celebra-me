@@ -21,7 +21,8 @@ This workflow governs the development process for Celebra-me, ensuring every sec
 
 1. **Vision & Specification:** Analyze `docs/PREMIUM_UX_VISION.md` and the corresponding `docs/plan/[section].md`.
 2. **Gap & Data Detection:** Stop if gaps are found or if real client data is being used (data must be 100% anonymized).
-3. **Optimization First:**
+3. **Luxury Remediation Audit:** Identify and replace "low-quality" signals (placeholders, default easing, broken layout shifts).
+4. **Optimization First:**
     - Use Astro's `<Image />` component for all assets (avoid raw `<img>`).
     - Minimize "Client Islands" (only use `client:*` if interactivity cannot be achieved with CSS/Astro).
     - Update `src/content/config.ts` if Content Collection schemas change.

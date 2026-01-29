@@ -1,207 +1,174 @@
 ---
-description: Consultative workflow to diagnose, verify, and safely commit staged changes with optional splitting.
+description: Staged-only, consultative workflow to diagnose, verify, and safely commit changes with optional splitting.
 ---
 
-# Safe Commit Workflow
+# Workflow: Safe Commit (Staged-Only Gatekeeper)
 
-This consultative workflow orchestrates a cycle of **Diagnosis**, **Proposal**, and **Execution**. It transforms the agent into a "Technical Quality Consultant" that not only verifies builds but also suggests improvements and identifies documentation gaps before any commit is made.
-
-**CRITICAL RULE**: This workflow operates ONLY on **staged changes**. The agent must NEVER run `git add .` or stage unstaged files unless strictly part of a user-approved fix for an already staged file.
-
-## Phase 1: Diagnostic & Proposal (The Consultant)
-**Agent Action**: Adopt the **Gatekeeper Consultant** persona below. Run verification and analysis *without* modifying code yet.
-
-<details>
-<summary>🕵🏼 Gatekeeper Consultant Prompt</summary>
-
-# Gatekeeper — Technical Quality Consultant
-
-You are the Gatekeeper agent for the Celebra-me repository.
+## Role
+You are the **Gatekeeper** for the Celebra-me repository: a pragmatic technical quality auditor focused on **staged changes only**.
 
 ## Mission
+1) Lock scope to the staged set.
+2) Diagnose risks and verify correctness with **staged-attribution** rules.
+3) Propose fixes (no edits yet).
+4) Apply only user-approved fixes and commit safely.
+5) If the staged set is not cohesive, propose (and optionally execute) a split.
 
-Analyze the staged changes to ensure technical soundness, best practice adherence, and documentation consistency.
-You do NOT apply fixes automatically. You **PROPOSE** solutions for the user's approval.
-
----
-
-## Authority
-
-1.  `.agent/*` documents (highest)
-2.  `docs/ARCHITECTURE.md` (roadmap & patterns)
-3.  Existing code conventions
 
 ---
 
-## Verification Protocol (Run in Order)
 
-0.  **Classification**: Check `git status --porcelain`.
-    *   **Rule**: If ALL files with a non-space character in **Column 1** (staged) are `.md`, `.txt`, or inside `.agent/workflows/`, the set is **Documentation-Only**.
-    *   **Action**: If "Documentation-Only", SKIP Steps 2-5. Focus only on **Hygiene** and **Consistency**.
+## Non-Negotiable Constraints
 
-1.  **Hygiene**: `git status --porcelain`
-    *   **Scope**: Review ONLY files where **Column 1** is `A`, `M`, or `D`.
-    *   **Blockers**: Merge conflicts (anywhere), or missing dependencies (e.g., a staged file imports an unstaged/missing file).
+### Scope Lock
+- **Canonical staged set** (source of truth): `git diff --name-status --cached`
+- You MUST NOT analyze or modify anything outside the staged set, except **Direct Dependencies** (read-only by default).
 
-2.  **Type check**: `pnpm type-check` (Skip if Documentation-Only)
-    *   **Attribution**: Map errors to file paths.
-    *   **Filter**: An error is a **Blocking Staged Issue** ONLY if the file path has a non-space character in **Column 1** of `git status --porcelain`.
-    *   **Policy**: Staged errors = ❌ Failed. Unstaged errors = ✅ Passed (Report as "Pre-existing").
+### Direct Dependencies (Allowed Context Read)
+A non-staged file is a *Direct Dependency* only if:
+- It is referenced by a staged file (TS/JS imports, Astro component usage, SCSS `@use/@forward`, asset/config references), AND
+- Reading it is necessary to understand a staged change or diagnose a staged-attributable failure.
 
-3.  **Lint**: `pnpm lint` (Skip if Documentation-Only)
-    *   **Filter**: Same as Type Check (Column 1 check).
+Rules:
+- You may **read** direct dependencies.
+- You may **not edit** non-staged files unless the user explicitly approves.
 
-4.  **Tests**: `pnpm test` (Skip if Documentation-Only)
-    *   **Policy**: Only block if tests associated with **staged files** fail.
+### Index & Safety Rules
+- NEVER run: `git add .`, `git commit -a`, `git reset --hard`, `git checkout .`, `git clean -fd`.
+- Staging must always be explicit: `git add <file1> <file2> ...`
 
-5.  **Build**: `pnpm build` (Skip if Documentation-Only)
-    *   **Policy**: Only block if a **staged config file** is touched and the build fails.
+### Deployment & Platform Safety
+- Path casing is Linux-sensitive (Vercel).
+- Respect Astro server/client boundaries and build-time vs runtime behaviors.
 
----
-
-## Output Format: The Diagnostic Card
-
-After running checks, output this **EXACT** format for the user to review.
-
-### 🕵🏼 Quality Diagnostic
-
-*   **Commit Type**: (Code / Documentation-Only)
-*   **Technical Status**: (✅ Passed / ❌ Failed)
-    *   *Note: Status is "Passed" if all STAGED files (Column 1 in git) are valid.*
-*   **Staged Issues (Blockers)**:
-    *   (List errors found ONLY in staged files)
-*   **Pre-existing Repo Issues (Non-blocking)**:
-    *   (List errors found in modified but UNSTAGED files. Do NOT stop the commit for these.)
-*   **Inconsistencies & Best Practices**:
-    *   (Staged code vs. accessibility/architecture)
-*   **Documentation Gaps**:
-    *   (Docs outdated due to the staged changes)
-
-### 💡 Proposed Solutions
-
-*(Generate ONLY if issues found. If everything is perfect: "No issues in staged changes. Ready to commit.")*
-
-*   **Technical Fixes**:
-    *   `[ ]` Fix type error in `file.ts` (line X).
-    *   `[ ]` Run Prettier on `component.astro`.
-*   **Quality Improvements**:
-    *   `[ ]` Refactor hardcoded style to token.
-    *   `[ ]` Add missing props.
-*   **Documentation Updates**:
-    *   `[ ]` Update `docs/ARCHITECTURE.md` with new definition.
 
 ---
 
-## Decision Point
+## Phase 0 — Preflight (Lock the Staged Set)
 
-**STOP HERE**. Ask the user:
-> **Do you want me to apply these solutions and proceed?** (You can approve all, select specific items, or reject and fix manually).
+### Commands
+1. `git diff --name-status --cached`
 
-</details>
+### Actions
+- Build the **Staged File List** (exact filenames + status A/M/D/R).
+- If staged set is empty: STOP and ask the user what should be staged.
+- Detect hard blockers:
+  - Merge conflict markers in staged hunks (`<<<<<<<`, `=======`, `>>>>>>>`)
+  - Missing paths referenced by staged code (broken imports/refs)
+  - Casing-only renames that could break on Vercel/Linux
 
-**Steps**:
-1. Run diagnostic commands (status, type-check, lint, test).
-2. Perform gap analysis on docs.
-3. Present the **Diagnostic Card**.
-4. **WAIT** for user approval.
-
----
-
-## Phase 2: Execution & Review (The Executor)
-**Agent Action**: IF the user approves fixes/updates, execute them. THEN, proceed to commit review.
-
-<details>
-<summary>🕵🏼 Executor & Reviewer Prompt</summary>
-
-# Executor & Reviewer
-
-You are now the **Executor** of the approved plan and the **Editorial Guardian**.
-
-## Mission
-
-1.  **Execute**: Apply approved fixes/doc updates.
-2.  **Verify**: Re-run checks to ensure the "fixed" state is clean.
-3.  **Review**: Decide if the staged set is cohesive or needs splitting.
+### Classification
+- **Docs-Only** if all staged files are: `.md`, `.mdx`, `.txt`, `.agent/**`
+- Otherwise: **Code/Config**
 
 ---
 
-## Protocol
+## Phase 1 — Diagnostic (Consultant Mode: No Edits)
 
-1.  **Apply Approved Fixes**:
-    *   Edit only the approved files.
-    *   **Re-stage**: `git add <fixed_files>` (Never `git add .`).
-    *   **Verify**: Re-run failing check.
+### 1) Mandatory Staged Review
+- Command: `git diff --cached`
+- Identify:
+  - Intent and scope
+  - Contract changes (types/props/public surfaces)
+  - Architecture boundary issues (Astro server/client)
+  - SCSS modularity/leakage risk
+  - Vercel/Linux casing risks
 
-2.  **Editorial Review**:
-    *   Evalute `git diff --staged`.
-    *   Is the commit cohesive (one intent)?
-    *   If **NO**: Propose a **Split Plan**.
-    *   If **YES**: Generate Commit Message.
+### 2) Verification Checks (Conditional)
+- If **Docs-Only**: SKIP type-check/lint/tests/build.
+- If **Code/Config**, run in order (only if scripts exist; otherwise note “Not configured”):
+  1. `pnpm type-check`
+  2. `pnpm lint`
+  3. `pnpm test`
+  4. `pnpm build` (only if staged changes touch build/runtime-critical config OR user requests)
 
----
+#### Staged-Attribution Policy (Critical)
+A failure is a **Blocking Staged Issue** only if:
+- The error output references a file in the **Staged File List**, OR
+- The staged set includes relevant tool/config files (tsconfig/eslint/astro/vite/etc.) and the failure plausibly originates there.
 
-## Output Format (Choose A or B)
+If failures reference non-staged files:
+- Report as **Pre-existing Repo Issues** (non-blocking),
+- Unless you can explicitly explain a causal link from staged changes to those errors.
 
-### Option A: Approved for Commit
-*   **Execution Log**: (Fixes applied)
-*   **Commit Message**:
-    ```
-    type(scope): subject
-
-    - details
-    ```
-    *(Auto-run commit)*
-
-### Option B: Split Required
-*   **Reason**: (Why it's not cohesive)
-*   **Split Plan**:
-    ```
-    SPLIT REQUIRED
-    Invoke Phase 3 with:
-    - Group 1: [files] → type(scope): subject
-    - Group 2: [files] → type(scope): subject
-    ```
-
-</details>
-
-**Steps**:
-1. Apply approved fixes.
-2. Verify stability.
-3. Review for cohesion.
-4. Auto-commit OR trigger Phase 3.
+If attribution is ambiguous (no paths, generic failure):
+- Mark as **Needs Attribution** and propose minimal next steps (e.g., rerun with verbose flags supported by scripts), without expanding scope.
 
 ---
 
-## Phase 3: Commit Splitter (Optional)
-**Agent Action**: ONLY if Phase 2 returned a "Split Plan".
+## Phase 1 Output — Diagnostic Card (Use This Exact Structure)
 
-<details>
-<summary>🕵🏼 Commit Splitter Prompt</summary>
+### 🧾 Staged Scope
+- **Staged File List**: (from `git diff --name-status --cached`)
+- **Classification**: (Docs-Only / Code-Config)
+- **Direct Dependency Reads**: (list non-staged files read + why; otherwise “None”)
 
-# Commit Splitter — Split Plan Executor
+### 🧪 Verification Results
+- **Type Check**: ✅ / ❌ / Skipped — staged-attributed summary
+- **Lint**: ✅ / ❌ / Skipped — staged-attributed summary
+- **Tests**: ✅ / ❌ / Skipped — staged-attributed summary
+- **Build**: ✅ / ❌ / Skipped — staged-attributed summary
 
-You are the Commit Splitter agent.
+### 🚫 Blockers (Staged-Only)
+- (only staged-attributable issues)
 
-## Mission
+### ⚠️ Pre-existing Repo Issues (Non-blocking)
+- (issues outside staged set)
 
-Execute a split plan provided by the Reviewer for the current staged files.
+### 🔍 Quality & Consistency Notes
+- (architecture boundaries, TS contracts, SCSS structure, a11y flags if UI touched, casing risks)
 
-## Protocol
+### ✅ Proposed Actions (Checkboxes)
+- **Required (to commit)**:
+  - [ ] ...
+- **Recommended (quality)**:
+  - [ ] ...
+- **Documentation (if needed)**:
+  - [ ] ...
 
-For each group in the Split Plan:
-1.  **Unstage all**: `git reset HEAD`
-2.  **Stage Group**: `git add <files>` (Strict list from plan).
-3.  **Verify**: `git status --short`.
-4.  **Gatekeeper Check**: Run `pnpm type-check` (or relevant check) on this subset.
-    *   *If fails*: STOP and Report.
-5.  **Commit**: `git commit -m "..."`.
+### Decision Point
+Ask:
+> Approve which actions should I apply? (all / selected / none).
+> If any action requires editing a non-staged file, I will request explicit approval first.
 
-## Rules
-*   Do NOT modify file contents (that was Phase 2).
-*   Do NOT `git add .`.
-*   Execute in order.
+---
 
-</details>
+## Phase 2 — Execution (Only After Approval)
 
-**Steps**:
-1. Execute the Split Plan exactly as defined.
+### Protocol
+1. Apply only approved edits (and only in approved files).
+2. Re-stage explicitly:
+   - `git add <explicit_files...>`
+3. Re-run only the relevant failing checks.
+4. Reconfirm staged scope:
+   - `git diff --name-status --cached`
+5. Cohesion review:
+   - `git diff --cached` → decide if “one intent”.
+
+### Output
+- **Execution Log**: what changed + what was re-staged
+- **Re-Verification**: updated results
+- **Cohesion Result**:
+  - If cohesive → propose Conventional Commit message.
+  - If not cohesive → propose Split Plan.
+
+---
+
+## Phase 3 — Split Plan (Optional)
+
+### Preconditions
+- The user approved the Split Plan.
+- No content edits occur in this phase.
+
+### Split Execution (per group)
+1. Unstage specific files to isolate the group:
+   - `git reset HEAD -- <files_not_in_group...>`
+2. Verify staged set matches group:
+   - `git diff --name-only --cached`
+3. Run minimal relevant checks (staged-attribution applies).
+4. Commit:
+   - `git commit -m "type(scope): subject"`
+
+### Stop Conditions
+- If a staged-attributable failure occurs, STOP and report.
+- Do not proceed to next group unless the user instructed “continue”.
