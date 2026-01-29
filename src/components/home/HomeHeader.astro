@@ -7,36 +7,34 @@
  */
 
 import HeaderBase from '@components/common/HeaderBase.astro';
+import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
 import '@styles/home/_home-header.scss';
 
 // Import assets
-// Assuming we have logos. If we only found horizontalLogo150x56.png, we might need a white version.
-// For now, I will assume we can use the same logo but ideally we have variants.
-// If 'horizontalLogo150x56.png' is the gold/dark one, we need a white one.
-// I'll try to use a filter for the white version if a specific file doesn't exist,
-// OR simpler: use the one logo and rely on CSS filters in the 'transparent' state if it's black.
-// But the plan says "Adaptive Logo: High-Contrast White ... vs Brand Gold".
-// I'll assume we have two source paths or use CSS filter to make a single logo white.
-// Let's import the known logo.
 import logoSrc from '@images/header/horizontalLogo150x56.png';
 
-// For the 'white' version, if it doesn't exist, I will apply a CSS filter class.
-// But if the user provides it, even better. I'll stick to the plan: "Logic to switch".
+const navLinks = [
+    { label: 'Inicio', href: '#inicio' },
+    { label: 'Servicios', href: '#servicios' },
+    { label: 'Planes', href: '#pricing' },
+    { label: 'Nosotros', href: '#nosotros' },
+];
 ---
 
-<HeaderBase transparentOnHero={true} headerId="home-header" logoVariant="adaptive">
+<HeaderBase
+    transparentOnHero={true}
+    headerId="home-header"
+    logoVariant="adaptive"
+    hideMobileToggle={true}
+>
 
     <!-- SLOT: Logo -->
     <a href="/" slot="logo" class="home-header__logo-container" aria-label="Celebra-me Inicio">
-        <!-- White Logo (Hero) - Using CSS filter brightness(0) invert(1) if it is a black logo, or just specific asset -->
-        <!-- Since we only saw one logo file, I'll use the same img with a modifier class that applies a filter -->
         <img
             src={logoSrc.src}
             alt="Celebra-me Logo"
             class="home-header__logo--white"
         />
-
-        <!-- Gold/Original Logo (Scrolled) -->
         <img
             src={logoSrc.src}
             alt="Celebra-me Logo"
@@ -47,37 +45,24 @@ import logoSrc from '@images/header/horizontalLogo150x56.png';
     <!-- SLOT: Desktop Nav -->
     <div slot="desktop-nav" class="home-header__desktop">
         <div class="home-nav">
-            <a href="#inicio" class="home-nav__link">Inicio</a>
-            <a href="#servicios" class="home-nav__link">Servicios</a>
-            <a href="#planes" class="home-nav__link">Planes</a>
-            <a href="#nosotros" class="home-nav__link">Nosotros</a>
+            {navLinks.map(link => (
+                <a href={link.href} class="home-nav__link">{link.label}</a>
+            ))}
         </div>
 
         <div class="home-nav-actions">
-            <!-- Login / My Events -->
             <a href="/login" class="home-nav-actions__login">
                 Mis Eventos
             </a>
-            <!-- CTA -->
             <a href="/crear" class="home-nav-actions__cta">
                 Crear Invitación
             </a>
         </div>
     </div>
 
-    <!-- SLOT: Mobile Nav Content -->
-    <div slot="mobile-nav-content" class="home-header__mobile-nav">
-        <a href="#inicio" class="home-header__mobile-link">Inicio</a>
-        <a href="#servicios" class="home-header__mobile-link">Servicios</a>
-        <a href="#planes" class="home-header__mobile-link">Planes</a>
-        <a href="#nosotros" class="home-header__mobile-link">Nosotros</a>
-        <hr class="home-header__mobile-divider" />
-        <a href="/login" class="home-header__mobile-link home-header__mobile-link--secondary">
-            Mis Eventos
-        </a>
-        <a href="/crear" class="home-header__mobile-link home-header__mobile-link--cta">
-            Crear Invitación
-        </a>
+    <!-- SLOT: Premium Mobile Nav (React) -->
+    <div slot="mobile-nav-premium">
+        <NavBarMobile client:load links={navLinks} headerId="home-header" />
     </div>
 
 </HeaderBase>

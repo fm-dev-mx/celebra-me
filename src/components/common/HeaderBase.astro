@@ -15,12 +15,14 @@ export interface Props {
     transparentOnHero?: boolean;
     headerId?: string;
     logoVariant?: 'adaptive' | 'static';
+    hideMobileToggle?: boolean;
 }
 
 const {
     transparentOnHero = true,
     headerId = 'main-header',
     logoVariant = 'adaptive',
+    hideMobileToggle = false,
 } = Astro.props;
 ---
 
@@ -42,49 +44,46 @@ const {
         </nav>
 
         <!-- Mobile Menu Toggle -->
-        <button
-            id={`${headerId}-toggle`}
-            class="mobile-menu-btn"
-            type="button"
-            aria-label="Alternar navegacion"
-            aria-controls={`${headerId}-overlay`}
-            aria-expanded="false"
-        >
-            <span class="mobile-menu-btn__line"></span>
-            <span class="mobile-menu-btn__line"></span>
-            <span class="mobile-menu-btn__line"></span>
-        </button>
+        {!hideMobileToggle && (
+            <button
+                id={`${headerId}-toggle`}
+                class="mobile-menu-btn"
+                type="button"
+                aria-label="Alternar navegacion"
+                aria-controls={`${headerId}-overlay`}
+                aria-expanded="false"
+            >
+                <span class="mobile-menu-btn__line"></span>
+                <span class="mobile-menu-btn__line"></span>
+                <span class="mobile-menu-btn__line"></span>
+            </button>
+        )}
+
+        <!-- Slot for Premium Mobile Nav (React/etc) -->
+        <slot name="mobile-nav-premium" />
     </div>
 
     <!-- Mobile Overlay -->
-    <div id={`${headerId}-overlay`} class="mobile-overlay" aria-hidden="true">
-        <nav class="mobile-overlay__content" aria-label="Navegacion movil">
-            <slot name="mobile-nav-content" />
-        </nav>
-    </div>
+    {!hideMobileToggle && (
+        <div id={`${headerId}-overlay`} class="mobile-overlay" aria-hidden="true">
+            <nav class="mobile-overlay__content" aria-label="Navegacion movil">
+                <slot name="mobile-nav-content" />
+            </nav>
+        </div>
+    )}
 </header>
 
 <script is:inline define:vars={{ headerId, transparentOnHero }}>
     document.addEventListener('DOMContentLoaded', () => {
         const header = document.getElementById(headerId);
-        const toggleBtn = document.getElementById(`${headerId}-toggle`);
-        const overlay = document.getElementById(`${headerId}-overlay`);
-        const body = document.body;
-
-        if (
-            !(header instanceof HTMLElement) ||
-            !(toggleBtn instanceof HTMLButtonElement) ||
-            !(overlay instanceof HTMLElement)
-        ) {
-            return;
-        }
+        if (!(header instanceof HTMLElement)) return;
 
         let lastScrollY = window.scrollY;
-        let isMenuOpen = false;
+        const isMenuOpen = false; // Handled primarily by React component or external classes now
         let allowAutoHide = false;
-        let lastFocusedElement = null;
         const SCROLL_THRESHOLD = 50;
         const HIDE_THRESHOLD = 100;
+
         const updateAutoHide = () => {
             // Enable auto-hide for all devices to maximize screen real estate
             // and provide a more immersive experience (Headroom pattern)
@@ -98,7 +97,9 @@ const {
         const setScrolledState = (isScrolledPastHero) => {
             header.classList.toggle('header-base--scrolled', isScrolledPastHero);
 
-            if (transparentOnHero) {
+            const isMenuOpenNow = header.classList.contains('header-base--menu-open');
+
+            if (transparentOnHero && !isMenuOpenNow) {
                 header.classList.toggle('header-base--transparent', !isScrolledPastHero);
             } else {
                 header.classList.remove('header-base--transparent');
@@ -106,19 +107,23 @@ const {
         };
 
         const handleScroll = () => {
-            // If menu is open, don't do hide/shrink logic
-            if (isMenuOpen) return;
-
             const currentScrollY = window.scrollY;
-            const isScrollingDown = currentScrollY > lastScrollY;
             const isScrolledPastHero = currentScrollY > SCROLL_THRESHOLD;
 
             // 1. Transparency / Glassmorphism
             setScrolledState(isScrolledPastHero);
 
-            // 2. Auto-Hide (Landscape Mobile preferred, but often good for all mobile)
-            // Headroom style: Hide on scroll down, show on scroll up
-            // Check if we have scrolled enough to warrant hiding
+            // 2. Auto-Hide logic
+            // If menu is open (externally controlled or via class), don't do hide logic
+            const isExternallyMenuOpen = header.classList.contains('header-base--menu-open');
+            if (isMenuOpen || isExternallyMenuOpen) {
+                header.classList.remove('header-base--hidden');
+                lastScrollY = currentScrollY;
+                return;
+            }
+
+            const isScrollingDown = currentScrollY > lastScrollY;
+
             if (allowAutoHide && currentScrollY > HIDE_THRESHOLD && isScrollingDown) {
                 header.classList.add('header-base--hidden');
             } else {
@@ -128,39 +133,9 @@ const {
             lastScrollY = currentScrollY;
         };
 
-        const openMenu = () => {
-            isMenuOpen = true;
-            toggleBtn.classList.add('mobile-menu-btn--active');
-            overlay.classList.add('mobile-overlay--open');
-            header.classList.add('header-base--menu-open');
-            header.classList.remove('header-base--hidden');
-            toggleBtn.setAttribute('aria-expanded', 'true');
-            overlay.setAttribute('aria-hidden', 'false');
-            body.style.overflow = 'hidden';
-
-            lastFocusedElement = document.activeElement;
-            const focusable = overlay.querySelectorAll(
-                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length > 0) {
-                focusable[0].focus();
-            }
-        };
-
-        const closeMenu = () => {
-            isMenuOpen = false;
-            toggleBtn.classList.remove('mobile-menu-btn--active');
-            overlay.classList.remove('mobile-overlay--open');
-            header.classList.remove('header-base--menu-open');
-            toggleBtn.setAttribute('aria-expanded', 'false');
-            overlay.setAttribute('aria-hidden', 'true');
-            body.style.overflow = '';
-            handleScroll();
-
-            if (lastFocusedElement instanceof HTMLElement) {
-                lastFocusedElement.focus();
-            }
-        };
+        // --- DEPRECATED/CLEANUP: The mobile menu is now handled by NavBarMobile.tsx (React) ---
+        // We keep isMenuOpen logic for backward compatibility or if no React component is used,
+        // but we prioritize checking for the global class 'header-base--menu-open'
 
         // Throttle scroll event for performance
         let ticking = false;
@@ -171,49 +146,6 @@ const {
                     ticking = false;
                 });
                 ticking = true;
-            }
-        });
-
-        // --- Mobile Menu Toggle ---
-        toggleBtn.addEventListener('click', () => {
-            if (isMenuOpen) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
-        });
-
-        overlay.addEventListener('click', (event) => {
-            if (event.target === overlay && isMenuOpen) {
-                closeMenu();
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (!isMenuOpen) return;
-
-            if (event.key === 'Escape') {
-                closeMenu();
-                return;
-            }
-
-            if (event.key !== 'Tab') return;
-
-            const focusable = overlay.querySelectorAll(
-                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length === 0) return;
-
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-            const isShift = event.shiftKey;
-
-            if (isShift && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!isShift && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
             }
         });
 
