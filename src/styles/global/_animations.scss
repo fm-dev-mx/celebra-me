@@ -61,3 +61,21 @@
 		transform: scale(1.05);
 	}
 }
+
+@keyframes drawStroke {
+	from {
+		stroke-dashoffset: 100;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.app-icon--draw {
+	path {
+		stroke-dasharray: 100;
+		stroke-dashoffset: 100;
+		animation: drawStroke 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation-delay: var(--icon-delay, 0ms);
+	}
+}
