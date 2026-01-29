@@ -3,13 +3,14 @@
 import Container from '@components/layout/Container.astro';
 import StyledContainer from '@components/layout/StyledContainer.astro';
 import Section from '@components/layout/Section.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
-import SectionSubtitle from '@components/typography/SectionSubtitle.astro';
 import ContactForm from '@components/ui/ContactForm.tsx';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
 import bgDesktop from '@images/contact/bgContactDesktop.jpg';
 import bgMobile from '@images/contact/bgContactMobile.jpg';
+
+// Import stylesheet
+import '@/styles/home/_contact.scss';
 
 interface Props {
 	data: ContactData;
@@ -26,21 +27,25 @@ const { data } = Astro.props;
 	fullWidth={true}
 	backgroundImageMobile={bgMobile}
 	backgroundImageDesktop={bgDesktop}
-	backgroundEffect="absolute inset-0 bg-gradient-to-t from-black to-transparent"
+    class="contact-section"
 >
-	<!-- Top decorative line  -->
-	<div class="bg-secondary-dark w-full h-0.5 absolute inset-0 opacity-50 shadow-md"></div>
+    <!-- Background overlay handled in SCSS -->
+    <div class="contact-section__bg-overlay"></div>
+
+	<!-- Top decorative line -->
+	<div class="contact-section__top-line"></div>
+
 	<StyledContainer variant="contact-section">
-		<Container padding="px-8">
+		<Container>
 			<!-- Section Title -->
-			<SectionTitle color="text-secondary-dark" margin="mt-16">
+			<h2 class="contact-section__title">
 				{data.title}
-			</SectionTitle>
+			</h2>
 
 			<!-- Section Subtitle -->
-			<SectionSubtitle color="text-accent-dark" size="text-sm md:text-lg" margin="my-8">
+			<h3 class="contact-section__subtitle">
 				{data.subtitle}
-			</SectionSubtitle>
+			</h3>
 
 			<!-- Contact Form Component -->
 			<ContactForm client:visible />
@@ -51,10 +56,9 @@ const { data } = Astro.props;
 	<ActionIcon
 		icon="ArrowUpIcon"
 		variant="scroll"
-		href="#pricing-section"
+		href="#pricing"
 		color="secondary"
 		title="Regresar a ver nuestras ofertas"
-		icon="ArrowUpIcon"
 		className="contact-section__scroll-action"
 	/>
 </Section>

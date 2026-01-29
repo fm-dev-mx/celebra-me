@@ -5,11 +5,11 @@ describe('ContactForm Component', () => {
 	it('should render all form fields', () => {
 		render(<ContactForm />);
 
-		expect(screen.getByText('Nombre')).toBeInTheDocument();
-		expect(screen.getByText('Email')).toBeInTheDocument();
-		expect(screen.getByText('Mensaje')).toBeInTheDocument();
+		expect(screen.getByText('Nombre Completo')).toBeInTheDocument();
+		expect(screen.getByText('Correo Electrónico')).toBeInTheDocument();
+		expect(screen.getByText('Detalles de su Evento')).toBeInTheDocument();
 
-		expect(screen.getByRole('button', { name: /Enviar/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Solicitar Asesoría/i })).toBeInTheDocument();
 	});
 
 	it('should render inputs with correct types', () => {
