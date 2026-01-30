@@ -2,170 +2,259 @@
 @use '../global/mixins' as *;
 
 .contact-section {
-    padding: 6rem 0;
-    position: relative;
-    overflow: hidden;
+	position: relative;
+	padding: var(--spacing-xl) 0;
+	background-color: #fdfcfb; // Premium Paper White
+	overflow: hidden;
+	color: var(--color-secondary);
 
-    &__bg-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, black, transparent);
-        pointer-events: none;
-    }
+	.contact-texture {
+		position: absolute;
+		inset: 0;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+		opacity: 0.03;
+		pointer-events: none;
+		z-index: 1;
+	}
 
-    &__top-line {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 2px;
-        background-color: var(--color-secondary-dark, #1a1a1a);
-        opacity: 0.5;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    &__title {
-        color: var(--color-accent-light);
-        margin-bottom: 1rem;
-        font-size: 2rem;
-        font-weight: 700;
-        text-align: center;
-
-        @include respond-to('md') {
-            font-size: 2.5rem;
-        }
-    }
-
-    &__subtitle {
-        color: var(--color-accent-dark);
-        font-size: 0.875rem;
-        margin: 2rem 0;
-        text-align: center;
-        max-width: 600px;
-        margin: 0 auto;
-        line-height: 1.5;
-        text-align: justify;
-        @include respond-to('md') {
-            font-size: 1.125rem;
-        }
-    }
+	.container {
+		position: relative;
+		z-index: 2;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 var(--spacing-md);
+	}
 }
 
-.contact-card {
-    max-width: 700px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 2px; // Sharp, architectural feel
-    padding: 3.5rem;
-    position: relative;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+.contact-header {
+	text-align: center;
+	margin-bottom: var(--spacing-xl);
 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--color-primary, #c5a059), transparent);
-    }
+	.contact-pretitle {
+		display: block;
+		font-family: var(--font-body);
+		text-transform: uppercase;
+		letter-spacing: 0.3em;
+		font-size: 0.75rem;
+		color: var(--color-primary);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.contact-title {
+		font-family: var(--font-display);
+		font-size: clamp(2.5rem, 6vw, 3.5rem);
+		color: var(--color-secondary);
+		margin-bottom: var(--spacing-md);
+		font-weight: 500;
+	}
+
+	.contact-divider {
+		width: 60px;
+		height: 2px;
+		background: var(--color-primary);
+		margin: 0 auto;
+	}
+}
+
+.contact-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4rem;
+	align-items: center;
+
+	@include respond-to('lg') {
+		grid-template-columns: 0.8fr 1.2fr;
+		gap: 8rem;
+	}
+}
+
+.contact-info {
+	&__title {
+		font-family: var(--font-display);
+		font-size: 2rem;
+		color: var(--color-secondary);
+		margin-bottom: 1.5rem;
+	}
+
+	&__description {
+		font-family: var(--font-body);
+		font-size: 1.1rem;
+		color: rgba(44, 62, 80, 0.7);
+		line-height: 1.8;
+		margin-bottom: 3rem;
+	}
+
+	&__footer {
+		margin-top: 3rem;
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: rgba(44, 62, 80, 0.4);
+	}
+}
+
+.contact-channels {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.channel-link {
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+	padding: 1.25rem;
+	background: white;
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 4px;
+	text-decoration: none;
+	transition: all 0.4s ease;
+	box-shadow: 0 4px 15px rgba(197, 160, 89, 0.05);
+
+	.channel-icon {
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #fdfaf4;
+		color: var(--color-primary);
+		border-radius: 50%;
+		transition: all 0.4s ease;
+	}
+
+	.channel-text {
+		.channel-label {
+			display: block;
+			font-family: var(--font-body);
+			font-size: 0.7rem;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			color: rgba(44, 62, 80, 0.5);
+			margin-bottom: 0.2rem;
+		}
+		.channel-value {
+			font-family: var(--font-display);
+			font-size: 1.05rem;
+			color: var(--color-secondary);
+			font-weight: 500;
+		}
+	}
+
+	&:hover {
+		border-color: var(--color-primary);
+		transform: translateY(-3px);
+		box-shadow: 0 10px 25px rgba(197, 160, 89, 0.15);
+
+		.channel-icon {
+			background: var(--color-primary);
+			color: white;
+		}
+	}
+}
+
+.contact-form-wrapper {
+	background: white;
+	padding: 4rem;
+	border-radius: 4px;
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08);
+	border: 1px solid rgba(197, 160, 89, 0.1);
+	position: relative;
+
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 3px;
+		background: var(--color-primary);
+	}
+}
+
+/* FIXING THE FORM ELEMENTS FOR LIGHT THEME */
+.contact-card {
+	background: transparent !important;
+	padding: 0 !important;
+	border: none !important;
+	box-shadow: none !important;
+	backdrop-filter: none !important;
+	&::before { display: none !important; }
 }
 
 .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
 }
 
 .input-group {
-    position: relative;
-    width: 100%;
+	position: relative;
 
-    &__input {
-        width: 100%;
-        padding: 1rem 0;
-        background: transparent;
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        font-family: var(--font-body, sans-serif);
-        font-size: 1.1rem;
-        transition: border-color 0.4s ease;
+	&__input {
+		width: 100%;
+		padding: 1rem 0;
+		background: transparent;
+		border: none;
+		border-bottom: 1px solid rgba(44, 62, 80, 0.15);
+		color: var(--color-secondary);
+		font-family: var(--font-body);
+		font-size: 1.05rem;
+		transition: border-color 0.4s ease;
 
-        &:focus {
-            outline: none;
-            border-color: var(--color-primary, #c5a059);
-        }
+		&:focus {
+			outline: none;
+			border-color: var(--color-primary);
+		}
+		&::placeholder { color: transparent; }
+		&--textarea { min-height: 80px; resize: none; }
+	}
 
-        &::placeholder {
-            color: transparent;
-        }
+	&__label {
+		position: absolute;
+		top: 1rem;
+		left: 0;
+		color: rgba(44, 62, 80, 0.45);
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		pointer-events: none;
+		transition: all 0.4s ease;
+	}
 
-        // Handle textarea
-        &--textarea {
-            min-height: 100px;
-            resize: none;
-        }
-    }
-
-    &__label {
-        position: absolute;
-        top: 1rem;
-        left: 0;
-        color: rgba(255, 255, 255, 0.5);
-        font-family: var(--font-display, serif);
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        pointer-events: none;
-        transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    // Floating animation
-    &__input:focus + &__label,
-    &__input:not(:placeholder-shown) + &__label {
-        top: -1.25rem;
-        font-size: 0.75rem;
-        color: var(--color-primary, #c5a059);
-        opacity: 0.8;
-    }
+	&__input:focus + &__label,
+	&__input:not(:placeholder-shown) + &__label {
+		top: -1.2rem;
+		font-size: 0.7rem;
+		color: var(--color-primary);
+		font-weight: 600;
+	}
 }
 
 .submit-btn {
-    align-self: flex-start;
-    background: transparent;
-    border: 1px solid var(--color-primary, #c5a059);
-    color: var(--color-primary, #c5a059);
-    padding: 1.25rem 3.5rem;
-    font-family: var(--font-display, serif);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    font-size: 0.9rem;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s ease;
+	background: var(--color-secondary);
+	color: white;
+	border: none;
+	padding: 1.25rem 3rem;
+	font-family: var(--font-display);
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	font-size: 0.9rem;
+	cursor: pointer;
+	transition: all 0.4s ease;
+	border-radius: 2px;
 
-    &:hover {
-        background: var(--color-primary, #c5a059);
-        color: black;
-        box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.4);
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+	&:hover {
+		background: var(--color-primary);
+		transform: translateY(-2px);
+		box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3);
+	}
 }
 
-.form-feedback {
-    margin-top: 1.5rem;
-    font-family: var(--font-body, sans-serif);
-    font-size: 0.9rem;
-    letter-spacing: 0.05em;
-
-    &--success { color: var(--color-primary, #c5a059); }
-    &--error { color: #ff6b6b; }
+.contact-footer {
+	margin-top: 4rem;
+	display: flex;
+	justify-content: center;
 }

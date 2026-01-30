@@ -1,143 +1,82 @@
-// tests/utils/email.test.ts
-// Unit tests for the email utility patterns
-// Note: The actual email.ts uses import.meta.env which is not available in Jest
-// These tests validate the mocking patterns and expected behavior
+import { sendEmail } from '@/utils/email';
+import nodemailer from 'nodemailer';
 
-import sgMail from '@sendgrid/mail';
+// Mock nodemailer
+jest.mock('nodemailer');
 
-// Mock the SendGrid module
-jest.mock('@sendgrid/mail', () => ({
-	setApiKey: jest.fn(),
-	send: jest.fn(),
-}));
+const mockedNodemailer = nodemailer as jest.Mocked<typeof nodemailer>;
 
-const mockedSgMail = sgMail as jest.Mocked<typeof sgMail>;
+describe('Email Service (Gmail/Nodemailer)', () => {
+    const samplePayload = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        message: 'Hello!',
+        type: 'contact' as const,
+    };
 
-describe('Email Service Mocking Patterns', () => {
-	beforeEach(() => {
-		jest.clearAllMocks();
-		jest.spyOn(console, 'error').mockImplementation(() => {});
-	});
+    const mockSendMail = jest.fn();
 
-	afterEach(() => {
-		jest.restoreAllMocks();
-	});
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.spyOn(console, 'error').mockImplementation(() => {});
 
-	describe('SendGrid Mock', () => {
-		it('should mock setApiKey correctly', () => {
-			sgMail.setApiKey('test-api-key');
-			expect(mockedSgMail.setApiKey).toHaveBeenCalledWith('test-api-key');
-		});
+        // Mock transporter creation
+        (mockedNodemailer.createTransport as jest.Mock).mockReturnValue({
+            sendMail: mockSendMail,
+        });
 
-		it('should mock successful send', async () => {
-			mockedSgMail.send.mockResolvedValue([{ statusCode: 202, headers: {}, body: {} }, {}]);
+        // Set process.env mock values
+        process.env.GMAIL_USER = 'test@gmail.com';
+        process.env.GMAIL_PASS = 'app-password';
+        process.env.CONTACT_FORM_RECIPIENT_EMAIL = 'recipient@test.com';
+    });
 
-			const result = await sgMail.send({
-				to: 'test@example.com',
-				from: 'noreply@celebra-me.com',
-				subject: 'Test',
-				text: 'Test message',
-			});
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
 
-			expect(result[0].statusCode).toBe(202);
-		});
+    describe('sendEmail utility', () => {
+        it('should create transporter and send mail with correct params', async () => {
+            mockSendMail.mockResolvedValue({ messageId: '123' });
 
-		it('should mock send failure', async () => {
-			const mockError = new Error('SendGrid API error');
-			mockedSgMail.send.mockRejectedValue(mockError);
+            const result = await sendEmail(samplePayload);
 
-			await expect(
-				sgMail.send({
-					to: 'test@example.com',
-					from: 'noreply@celebra-me.com',
-					subject: 'Test',
-					text: 'Test message',
-				}),
-			).rejects.toThrow('SendGrid API error');
-		});
-	});
+            expect(mockedNodemailer.createTransport).toHaveBeenCalledWith({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: 'test@gmail.com',
+                    pass: 'app-password',
+                },
+            });
 
-	describe('Email Payload Structure', () => {
-		interface EmailPayload {
-			name: string;
-			email: string;
-			phone?: string;
-			message: string;
-			type?: 'contact' | 'rsvp';
-		}
+            expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+                from: expect.stringContaining('test@gmail.com'),
+                to: 'recipient@test.com',
+                subject: expect.stringContaining('John Doe'),
+                text: expect.stringContaining('Hello!'),
+            }));
 
-		it('should validate required fields', () => {
-			const validPayload: EmailPayload = {
-				name: 'Test User',
-				email: 'test@example.com',
-				message: 'This is a test message',
-			};
+            expect(result).toBe(true);
+        });
 
-			expect(validPayload.name).toBeDefined();
-			expect(validPayload.email).toBeDefined();
-			expect(validPayload.message).toBeDefined();
-		});
+        it('should return false if credentials are missing', async () => {
+            process.env.GMAIL_USER = '';
 
-		it('should allow optional fields', () => {
-			const payloadWithOptionals: EmailPayload = {
-				name: 'Test User',
-				email: 'test@example.com',
-				phone: '555-1234',
-				message: 'Test',
-				type: 'contact',
-			};
+            const result = await sendEmail(samplePayload);
 
-			expect(payloadWithOptionals.phone).toBe('555-1234');
-			expect(payloadWithOptionals.type).toBe('contact');
-		});
+            expect(result).toBe(false);
+            expect(mockSendMail).not.toHaveBeenCalled();
+        });
 
-		it('should format email content correctly', () => {
-			const payload: EmailPayload = {
-				name: 'John Doe',
-				email: 'john@example.com',
-				phone: '555-1234',
-				message: 'Hello world',
-				type: 'contact',
-			};
+        it('should handle nodemailer failure gracefully', async () => {
+            mockSendMail.mockRejectedValue(new Error('Auth failed'));
 
-			const content = `
-				New Message from Celebra.me:
-				Name: ${payload.name}
-				Email: ${payload.email}
-				Phone: ${payload.phone || 'N/A'}
-				Type: ${payload.type || 'General'}
+            const result = await sendEmail(samplePayload);
 
-				Message:
-				${payload.message}
-			`;
-
-			expect(content).toContain('John Doe');
-			expect(content).toContain('john@example.com');
-			expect(content).toContain('555-1234');
-			expect(content).toContain('contact');
-			expect(content).toContain('Hello world');
-		});
-
-		it('should handle missing optional phone', () => {
-			const payload: EmailPayload = {
-				name: 'Jane Doe',
-				email: 'jane@example.com',
-				message: 'Test',
-			};
-
-			const phone = payload.phone || 'N/A';
-			expect(phone).toBe('N/A');
-		});
-
-		it('should handle missing optional type', () => {
-			const payload: EmailPayload = {
-				name: 'Jane Doe',
-				email: 'jane@example.com',
-				message: 'Test',
-			};
-
-			const type = payload.type || 'General';
-			expect(type).toBe('General');
-		});
-	});
+            expect(result).toBe(false);
+            expect(console.error).toHaveBeenCalled();
+        });
+    });
 });

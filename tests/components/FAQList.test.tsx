@@ -52,14 +52,15 @@ describe('FAQList Component (Accordion)', () => {
 			expect(button).toHaveAttribute('aria-expanded', 'false');
 		});
 
-		it('should allow multiple items to be open at once', () => {
+		it('should only allow one item to be open at once', () => {
 			render(<FAQList faqs={sampleFaqs} />);
 			const buttons = screen.getAllByRole('button');
 
 			fireEvent.click(buttons[0]);
-			fireEvent.click(buttons[1]);
-
 			expect(buttons[0]).toHaveAttribute('aria-expanded', 'true');
+
+			fireEvent.click(buttons[1]);
+			expect(buttons[0]).toHaveAttribute('aria-expanded', 'false');
 			expect(buttons[1]).toHaveAttribute('aria-expanded', 'true');
 		});
 	});

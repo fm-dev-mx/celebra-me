@@ -8,9 +8,26 @@ const ContactForm: React.FC = () => {
 		e.preventDefault();
 		setStatus('submitting');
 
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 2000));
-		setStatus('success');
+		try {
+			const formData = new FormData(e.currentTarget);
+			const data = Object.fromEntries(formData.entries());
+
+			const response = await fetch('/api/contact', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(data),
+			});
+
+			if (response.ok) {
+				setStatus('success');
+				(e.target as HTMLFormElement).reset();
+			} else {
+				setStatus('error');
+			}
+		} catch (error) {
+			console.error('Submission error:', error);
+			setStatus('error');
+		}
 	};
 
 	return (
@@ -20,6 +37,7 @@ const ContactForm: React.FC = () => {
 					<input
 						type="text"
 						id="name"
+						name="name"
 						className="input-group__input"
 						required
 						placeholder=" "
@@ -33,6 +51,7 @@ const ContactForm: React.FC = () => {
 					<input
 						type="email"
 						id="email"
+						name="email"
 						className="input-group__input"
 						required
 						placeholder=" "
@@ -45,6 +64,7 @@ const ContactForm: React.FC = () => {
 				<div className="input-group">
 					<textarea
 						id="message"
+						name="message"
 						className="input-group__input input-group__input--textarea"
 						required
 						placeholder=" "

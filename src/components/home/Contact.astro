@@ -1,13 +1,9 @@
 ---
 // src/sections/Contact.astro
-import Container from '@components/layout/Container.astro';
-import StyledContainer from '@components/layout/StyledContainer.astro';
-import Section from '@components/layout/Section.astro';
 import ContactForm from '@components/ui/ContactForm.tsx';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
+import AppIcon from '@components/common/icons/AppIcon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
-import bgDesktop from '@images/contact/bgContactDesktop.jpg';
-import bgMobile from '@images/contact/bgContactMobile.jpg';
 
 // Import stylesheet
 import '@/styles/home/_contact.scss';
@@ -21,44 +17,68 @@ const { data } = Astro.props;
 ---
 
 <!-- Contact Section -->
-<Section
-	id="contact-section"
-	fullHeight={true}
-	fullWidth={true}
-	backgroundImageMobile={bgMobile}
-	backgroundImageDesktop={bgDesktop}
-    class="contact-section"
->
-    <!-- Background overlay handled in SCSS -->
-    <div class="contact-section__bg-overlay"></div>
+<section id="contact-section" class="contact-section">
+	<div class="contact-texture"></div>
 
-	<!-- Top decorative line -->
-	<div class="contact-section__top-line"></div>
+	<div class="container">
+		<header class="contact-header">
+			<span class="contact-pretitle">Concierge Service</span>
+			<h2 class="contact-title">{data.title}</h2>
+			<div class="contact-divider"></div>
+		</header>
 
-	<StyledContainer variant="contact-section">
-		<Container>
-			<!-- Section Title -->
-			<h2 class="contact-section__title">
-				{data.title}
-			</h2>
+		<div class="contact-grid">
+			<!-- Contact Information -->
+			<div class="contact-info">
+				<div class="contact-info__content">
+					<h3 class="contact-info__title">Atención Personalizada</h3>
+					<p class="contact-info__description">
+						Transformamos su evento en una experiencia digital única. Inicie su solicitud de diseño con nuestro equipo.
+					</p>
 
-			<!-- Section Subtitle -->
-			<h3 class="contact-section__subtitle">
-				{data.subtitle}
-			</h3>
+					<div class="contact-channels">
+						<a href="https://wa.me/5216681167477?text=Hola%2C%20me%20gustar%C3%ADa%20conocer%20m%C3%A1s%20sobre%20sus%20invitaciones%20digitales%20para%20eventos." target="_blank" class="channel-link">
+							<div class="channel-icon">
+								<AppIcon name="WhatsAppIcon" size="w-6 h-6" />
+							</div>
+							<div class="channel-text">
+								<span class="channel-label">Asesoría Inmediata</span>
+								<span class="channel-value">Contáctanos por WhatsApp</span>
+							</div>
+						</a>
+
+						<a href="mailto:contacto@celebra-me.com" target="_blank" class="channel-link">
+							<div class="channel-icon">
+								<AppIcon name="MessageIcon" size="w-6 h-6" />
+							</div>
+							<div class="channel-text">
+								<span class="channel-label">Vía Correo</span>
+								<span class="channel-value">contacto@celebra-me.com</span>
+							</div>
+						</a>
+					</div>
+				</div>
+
+				<div class="contact-info__footer">
+					<p>Excelencia en cada detalle • Celebra-me © 2026</p>
+				</div>
+			</div>
 
 			<!-- Contact Form Component -->
-			<ContactForm client:visible />
-		</Container>
-	</StyledContainer>
+			<div class="contact-form-wrapper">
+				<ContactForm client:visible />
+			</div>
+		</div>
 
-	<!-- Scroll Action to return to pricing section -->
-	<ActionIcon
-		icon="ArrowUpIcon"
-		variant="scroll"
-		href="#pricing"
-		color="secondary"
-		title="Regresar a ver nuestras ofertas"
-		className="contact-section__scroll-action"
-	/>
-</Section>
+		<!-- Scroll Action -->
+		<div class="contact-footer">
+			<ActionIcon
+				icon="ArrowUpIcon"
+				variant="scroll"
+				href="#pricing"
+				color="secondary"
+				title="Regresar a los planes"
+			/>
+		</div>
+	</div>
+</section>

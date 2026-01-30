@@ -29,9 +29,9 @@ Object.defineProperty(global, 'import', {
 	value: {
 		meta: {
 			env: {
-				SENDGRID_API_KEY: 'test-api-key',
-				EMAIL_TO: 'test@example.com',
-				EMAIL_FROM: 'noreply@celebra-me.com',
+				GMAIL_USER: 'test@gmail.com',
+				GMAIL_PASS: 'test-pass',
+				CONTACT_FORM_RECIPIENT_EMAIL: 'recipient@test.com',
 			},
 		},
 	},

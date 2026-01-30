@@ -120,19 +120,22 @@ describe('MyComponent', () => {
 
 ## Mocking Patterns
 
-### Mocking SendGrid (Email Tests)
+### Mocking Nodemailer (Email Tests)
 
 ```typescript
-jest.mock('@sendgrid/mail', () => ({
-  setApiKey: jest.fn(),
-  send: jest.fn(),
-}));
+jest.mock('nodemailer');
+import nodemailer from 'nodemailer';
 
-import sgMail from '@sendgrid/mail';
-const mockedSgMail = sgMail as jest.Mocked<typeof sgMail>;
+const mockedNodemailer = nodemailer as jest.Mocked<typeof nodemailer>;
+const mockSendMail = jest.fn();
+
+// In beforeEach
+(mockedNodemailer.createTransport as jest.Mock).mockReturnValue({
+    sendMail: mockSendMail,
+});
 
 // In test
-mockedSgMail.send.mockResolvedValue([{ statusCode: 202, headers: {}, body: '' }, {}]);
+mockSendMail.mockResolvedValue({ messageId: '123' });
 ```
 
 ### Mocking Audio API (MusicPlayer Tests)
@@ -163,7 +166,7 @@ Object.defineProperty(global, 'import', {
   value: {
     meta: {
       env: {
-        SENDGRID_API_KEY: 'test-api-key',
+        GMAIL_USER: 'test@gmail.com',
         // ... other env vars
       },
     },
