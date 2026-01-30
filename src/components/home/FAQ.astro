@@ -1,8 +1,5 @@
 ---
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import Container from '@components/layout/Container.astro';
-import Section from '@components/layout/Section.astro';
-import SectionTitle from '@components/typography/SectionTitle.astro';
 import FAQList from '@components/ui/FAQList.tsx';
 
 import type { FAQData } from '@/interfaces/ui/sections/landing-page.interface';
@@ -16,23 +13,30 @@ const { data } = Astro.props;
 ---
 
 <!-- FAQ Section -->
-<Section id="faq-section" fullHeight={true}>
-	<Container>
-		<!-- Section Title -->
-		<SectionTitle color="text-secondary-dark">
-			{data.title}
-		</SectionTitle>
+<section id="faq-section" class="faq-section">
+	<div class="faq-noise"></div>
+
+	<div class="container">
+		<header class="faq-header">
+			<span class="faq-pretitle">Claridad en cada detalle</span>
+			<h2 class="faq-title">{data.title}</h2>
+			<p class="faq-subtitle">
+				Resolvemos sus dudas para que pueda concentrarse en lo más importante: su celebración.
+			</p>
+		</header>
 
 		<!-- FAQ List Component (React component with client-side rendering) -->
-		<FAQList client:visible {...data} color="secondary" />
+		<FAQList client:visible faqs={data.faqs} />
 
-		<!-- Scroll Action to return to pricing section -->
-		<ActionIcon
-			icon="ArrowDownIcon"
-			variant="scroll"
-			href="#contact-section"
-			color="secondary"
-			title="Ir a sección de Contacto"
-		/>
-	</Container>
-</Section>
+		<!-- Scroll Action to return to contact section -->
+		<div class="faq-footer">
+			<ActionIcon
+				icon="ArrowDownIcon"
+				variant="scroll"
+				href="#contact-section"
+				color="primary"
+				title="Ir a sección de Contacto"
+			/>
+		</div>
+	</div>
+</section>
