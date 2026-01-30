@@ -4,9 +4,11 @@ import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
 import TestimonialsCarousel from '@components/ui/TestimonialsCarousel.tsx';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
 
 import type { TestimonialsData } from '@/interfaces/ui/sections/landing-page.interface';
+
+// Import stylesheet
+import '@/styles/home/_testimonials.scss';
 
 interface Props {
 	data: TestimonialsData;
@@ -21,19 +23,10 @@ const { data } = Astro.props;
 	<!-- Container wrapper -->
 	<Container class="w-full">
 		<!-- Section title -->
-		<SectionTitle color="text-secondary-dark">
+		<SectionTitle color="text-secondary-dark" extraClass="testimonials__title-text">
 			{data.title}
 		</SectionTitle>
 		<!-- React TestimonialsCarousel component with client:visible directive for lazy loading -->
 		<TestimonialsCarousel {...data} client:visible />
 	</Container>
-
-	<!-- Scroll to Pricing Section Button -->
-	<ActionIcon
-		variant="scroll"
-		href="#pricing-section"
-		title="Ir a la sección de Precios"
-		color="accent"
-		icon="ArrowDownIcon"
-	/>
 </Section>
