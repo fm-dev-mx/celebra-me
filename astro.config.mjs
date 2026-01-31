@@ -63,6 +63,10 @@ export default defineConfig({
 	adapter: vercel({
 		webAnalytics: { enabled: true },
 		maxDuration: 8, // Max duration for serverless functions in seconds
-		// 'devMode' option is not necessary; Vercel adapter handles it internally
+		imageService: true, // Enable Vercel's image optimization for local images
+		imagesConfig: {
+			sizes: [320, 640, 960, 1200, 1800],
+			domains: ['images.unsplash.com'], // Allow external images from Unsplash
+		},
 	}),
 });
