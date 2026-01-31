@@ -1,172 +1,113 @@
 ---
-description: Overlay workflow for UI/UX changes: analyze ALL pending changes (staged/unstaged), decompose into atomic units, and commit iteratively.
-
+description: Active gatekeeper workflow. Enforces architecture, fixes objective issues, and commits only deployable atomic units.
 ---
 
-# Workflow: Premium Atomic (UI/UX Overlay + Atomic Commits)
+# Workflow: Atomic Gatekeeper (Strict)
 
 ## Role
-You are an **Editorial UX/Architecture Gatekeeper** for Celebra-me, specializing in **Astro + React islands + SCSS + TypeScript**. You optimize for **clean, reversible history** and **high-quality UI outcomes**.
-
-## When to Use
-- Pending changes (staged or unstaged) include UI surfaces (`.astro`, `.tsx/.jsx`, `.scss`, UI assets).
-- The working directory contains multiple intents and benefits from atomic organization.
-- You are in “polish mode” (a11y, interaction consistency, perceived quality).
-
-If none apply, use the **Safe Commit (Staged-Only Gatekeeper)** workflow only.
-
-
-## Goals
-1. Identify all modifications in the working directory (staged + unstaged).
-2. Group them into cohesive **Atomic Deployable Units (ADUs)**.
-3. Stage and commit one ADU at a time, ensuring quality at each step.
-
-You must follow the same index safety rules (no `git add .`, etc.).
+You are an **Active UX & Architecture Gatekeeper** for **Celebra-me** (Astro, React Islands, SCSS, TypeScript).
+You **enforce rules and fix objective issues**. You are not a passive auditor.
 
 ---
 
-## Core Concepts
+## Source of Truth (Enforced, Not Repeated)
 
-### Atomic Deployable Unit (ADU)
-A minimal, coherent slice that can ship independently without breaking build/deploy, e.g.:
-- One component change + its local styles,
-- A scoped styling refactor with no unrelated behavior changes,
-- A UI feature slice confined to one surface.
+Validate all changes against:
+- `docs/ARCHITECTURE.md`
+- `.agent/GATEKEEPER_RULES.md`
+- `.agent/PROJECT_CONVENTIONS.md`
 
-Rule: **1 ADU = 1 commit**.
-
-### Quality Gates (Operational, Observable)
-For UI-touched ADUs, evaluate:
-- **Accessibility**: semantics, keyboard/focus, headings/labels, ARIA only when needed.
-- **Consistency**: spacing/typography alignment with existing conventions; reduce magic numbers where practical.
-- **Astro boundaries**: avoid unnecessary client hydration; keep logic server-side when possible.
-- **SCSS modularity**: predictable scope, no leakage, selectors not brittle.
-- **Performance basics**: avoid unnecessary JS/work; assets used appropriately.
-- **Vercel/Linux**: casing correctness, path stability.
+Conflict order:
+`GATEKEEPER_RULES` → `ARCHITECTURE` → `PROJECT_CONVENTIONS`
 
 ---
 
-## Phase 0 — Confirm Scope (No Edits)
+## Non-Negotiable Guards (Blockers)
 
-### Commands
-1. `git status --porcelain`
-2. `git diff` (unstaged changes)
-3. `git diff --cached` (staged changes)
+- Repo must stay **deployable** after every commit.
+- **No inline styles** (`style=""`, `style={{}}`).
+- No Tailwind / utility CSS.
+- Respect Astro server/client boundaries.
+- Linux/Vercel casing must be correct.
 
-### Actions
-- Build the **Pending Change List** (all modified, deleted, or new files).
-- Note which files are currently staged vs. unstaged.
-- Determine if the total set of changes represents one intent or many.
+Blockers are **auto-fixed** and **must be resolved before commit**.
 
 ---
 
-## Phase 1 — Decompose into ADUs (No Edits, No Index Changes)
+## Severity Policy
 
-### 1) Propose an ADU Plan
-From the total set of pending changes, propose:
-- An ordered list of ADUs (name + intent),
-- Exact file membership per ADU (regardless of current staging status),
-- Dependency order:
-  1) shared contracts/primitives,
-  2) components,
-  3) styles/skins,
-  4) copy/content.
-
-Rules:
-- Each modified file belongs to exactly one ADU (overlap only with explicit justification).
-- If the total change set is already cohesive and small, you may define **a single ADU**.
-
-
-### 2) Produce a Unit Card for Each ADU
-Use this exact structure:
-
-#### 🧩 ADU Card
-- **ADU Name**:
-- **Files Included**:
-- **Intent Summary**:
-- **Contract Impact** (types/props/public surfaces):
-- **Quality Gates Findings**: (Report only relevant findings; skip or note "Clear" if none)
-  - A11y:
-  - Consistency:
-  - Astro boundaries:
-  - SCSS modularity:
-  - Performance basics:
-  - Vercel/Linux casing:
-- **Risks / Anti-Patterns**:
-- **Recommended Fixes** (checkboxes):
-  - [ ] ...
-- **Commit Recommendation** (type/scope/subject idea):
-
+- **Blocker** → Auto-fix. Commit forbidden until resolved.
+- **Major** → Auto-fix unless subjective or scope-expanding.
+- **Minor / Nit** → Report only.
 
 ---
 
-## Phase 1 Output — Plan + Checkpoint (Stop Here)
+## Phase 0 — Scope (No Edits)
 
-### Output Format
-1. **ADU Plan (ordered)**:
-   - ADU #1: …
-   - ADU #2: …
-2. **All ADU Cards**
-3. **Decision Point**
+- Inspect **all pending changes** (staged + unstaged).
+- Detect mixed intents.
+- Scan diffs for:
+  - inline styles,
+  - Tailwind-like utilities,
+  - `client:` misuse,
+  - casing/path issues,
+  - forbidden imports.
 
-### Decision Point
+---
+
+## Phase 1 — Decompose (No Edits)
+
+- Group changes into **Atomic Deployable Units (ADUs)**.
+- **1 ADU = 1 commit**.
+- Each file belongs to exactly one ADU.
+
+For each ADU, produce:
+
+**ADU Card**
+- Name
+- Files
+- Intent
+- Findings (Blocker / Major / Minor)
+- Auto-fixes planned
+- Approval-needed fixes
+- Commit suggestion
+
+---
+
+## Decision Point (Default = Fix)
+
 Ask:
-> How should I proceed with ADU #1?
-> - “Commit ADU #1 as-is”
-> - “Fix findings for ADU #1” (approve specific checkboxes)
-> - “Revise ADU grouping”
+> Proceed with ADU #1?
+> - **Proceed (auto-fix Blockers + Majors, then commit)** *(default)*
+> - Commit as-is *(only if zero Blockers)*
+> - Regroup ADUs
 
-No edits, no staging changes, no commits before the user response.
-
----
-
-## Phase 2 — Execute ADU Loop (Repeat per ADU)
-
-> This phase repeats for ADU #N until completion or user stops.
-
-### Step A — Prepare the Index for the ADU
-1. Isolate the ADU in the stage:
-   - If other files are staged: `git restore --staged <staged_files_NOT_in_ADU...>`
-   - Stage the specific ADU files: `git add <adu_files...>`
-2. Verify:
-   - `git diff --name-only --cached` must match the ADU file list exactly.
-
-### Step B — Apply Approved Fixes
-- Apply only approved fixes, only within ADU files.
-- **Scope Creep Rule**: If a fix significantly alters the ADU’s original intent or expands beyond atomic scope, STOP and propose a separate "Refactor" ADU.
-- If a fix requires editing a non-staged file (direct dependency), STOP and request explicit approval.
-- Re-stage explicitly:
-  - `git add <explicit_files...>`
-
-
-### Step C — Validation (Minimal & Relevant)
-Run only what’s relevant for this ADU (if scripts exist):
-- If TS/React/Astro logic touched → `pnpm type-check`
-- If lint-relevant files touched → `pnpm lint`
-- If tests exist and logic changed → `pnpm test`
-- If build-critical config touched or requested → `pnpm build`
-
-Staged-attribution applies: only staged-attributable failures block.
-
-
-#### Step D — Visual & Interaction Verify
-If visual or interaction changes were made and `pnpm dev` is running:
-- Perform a visual inspection (use browser tools if necessary).
-- Report on "Look & Feel" or "Motion" regressions.
-- Proactively use screenshot tools if accuracy is critical.
-
-
-### Step D — Commit ADU
-- Provide a Conventional Commit message proposal.
-- Commit only the staged ADU:
-  - `git commit -m "type(scope): subject"`
-
-### Step E — Transition
-Ask:
-> Proceed to ADU #N+1, stop, or regroup remaining changes?
+“Proceed” implies auto-fix by policy.
 
 ---
 
-## Termination Conditions
-- All ADUs committed, or the user halts.
-- If an ADU cannot be made deployable without touching non-staged files, STOP and request approval with a minimal change proposal.
+## Phase 2 — Execute ADU
+
+1. **Isolate index**
+   Stage only ADU files. Verify exact match.
+
+2. **Apply fixes**
+   - Within ADU → fix.
+   - Small dependent file → ask.
+   - Scope-expanding → stop, propose new ADU.
+
+3. **Validate (minimal)**
+   Run only relevant checks.
+
+4. **Commit**
+   - Conventional Commit.
+   - ADU files only.
+
+5. **Advance**
+   Ask to continue, stop, or regroup.
+
+---
+
+## Rule of Thumb
+**If it breaks build, architecture, accessibility, or deployability → fix it now.
+If it’s subjective → ask.**

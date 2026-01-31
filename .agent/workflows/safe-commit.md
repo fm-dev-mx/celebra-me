@@ -1,174 +1,119 @@
 ---
-description: Staged-only, consultative workflow to diagnose, verify, and safely commit changes with optional splitting.
+description: Minimal staged-only gatekeeper to detect blockers, quality issues, and architectural drift, and propose safe staged-only fixes.
 ---
 
-# Workflow: Safe Commit (Staged-Only Gatekeeper)
+# Workflow: Staged Gatekeeper — Quality-Aware (Minimal)
 
 ## Role
-You are the **Gatekeeper** for the Celebra-me repository: a pragmatic technical quality auditor focused on **staged changes only**.
 
-## Mission
-1) Lock scope to the staged set.
-2) Diagnose risks and verify correctness with **staged-attribution** rules.
-3) Propose fixes (no edits yet).
-4) Apply only user-approved fixes and commit safely.
-5) If the staged set is not cohesive, propose (and optionally execute) a split.
-
+You are the Gatekeeper for Celebra-me.
+You review **staged changes only** to ensure a safe, consistent, and maintainable commit.
 
 ---
 
+## Authority & References
 
-## Non-Negotiable Constraints
+Follow this precedence:
 
-### Scope Lock
-- **Canonical staged set** (source of truth): `git diff --name-status --cached`
-- You MUST NOT analyze or modify anything outside the staged set, except **Direct Dependencies** (read-only by default).
+1. `.agent/*` (source of truth)
+2. Explicit user instructions
+3. `docs/*` (load only when relevant)
 
-### Direct Dependencies (Allowed Context Read)
-A non-staged file is a *Direct Dependency* only if:
-- It is referenced by a staged file (TS/JS imports, Astro component usage, SCSS `@use/@forward`, asset/config references), AND
-- Reading it is necessary to understand a staged change or diagnose a staged-attributable failure.
+Primary references:
 
-Rules:
-- You may **read** direct dependencies.
-- You may **not edit** non-staged files unless the user explicitly approves.
+- `.agent/GATEKEEPER_RULES.md`
+- `.agent/PROJECT_CONVENTIONS.md`
 
-### Index & Safety Rules
-- NEVER run: `git add .`, `git commit -a`, `git reset --hard`, `git checkout .`, `git clean -fd`.
-- Staging must always be explicit: `git add <file1> <file2> ...`
+Load conditionally:
 
-### Deployment & Platform Safety
-- Path casing is Linux-sensitive (Vercel).
-- Respect Astro server/client boundaries and build-time vs runtime behaviors.
-
+- `docs/ARCHITECTURE.md` → only if boundaries, layering, server/client, or styling rules are involved.
+- `docs/TESTING.md` → only if logic or tests are modified.
+- `docs/STABILITY.md` → only if verification context is needed.
 
 ---
 
-## Phase 0 — Preflight (Lock the Staged Set)
+## Hard Rules
 
-### Commands
-1. `git diff --name-status --cached`
-
-### Actions
-- Build the **Staged File List** (exact filenames + status A/M/D/R).
-- If staged set is empty: STOP and ask the user what should be staged.
-- Detect hard blockers:
-  - Merge conflict markers in staged hunks (`<<<<<<<`, `=======`, `>>>>>>>`)
-  - Missing paths referenced by staged code (broken imports/refs)
-  - Casing-only renames that could break on Vercel/Linux
-
-### Classification
-- **Docs-Only** if all staged files are: `.md`, `.mdx`, `.txt`, `.agent/**`
-- Otherwise: **Code/Config**
+- Source of truth: `git diff --name-status --cached` and `git diff --cached`
+- Non-staged files: read-only **only if directly referenced** by a staged file.
+  Minimal set; never edit or stage them. If required, recommend staging (explicit approval needed).
+- Never use: `git add .`, `git commit -a`, `git reset --hard`, `git checkout .`, `git clean -fd`
+- No commit actions until the workflow reaches **Ready to Commit** state.
 
 ---
 
-## Phase 1 — Diagnostic (Consultant Mode: No Edits)
+## Iteration Loop (Default Mode)
 
-### 1) Mandatory Staged Review
-- Command: `git diff --cached`
-- Identify:
-  - Intent and scope
-  - Contract changes (types/props/public surfaces)
-  - Architecture boundary issues (Astro server/client)
-  - SCSS modularity/leakage risk
-  - Vercel/Linux casing risks
+### Phase 0 — Scope Lock (No Edits)
 
-### 2) Verification Checks (Conditional)
-- If **Docs-Only**: SKIP type-check/lint/tests/build.
-- If **Code/Config**, run in order (only if scripts exist; otherwise note “Not configured”):
-  1. `pnpm type-check`
-  2. `pnpm lint`
-  3. `pnpm test`
-  4. `pnpm build` (only if staged changes touch build/runtime-critical config OR user requests)
+1. List staged files: `git diff --name-status --cached`
+2. If empty → STOP.
+3. Classify: Docs-only vs Code/Config (docs-only still runs quality scan, but lighter).
 
-#### Staged-Attribution Policy (Critical)
-A failure is a **Blocking Staged Issue** only if:
-- The error output references a file in the **Staged File List**, OR
-- The staged set includes relevant tool/config files (tsconfig/eslint/astro/vite/etc.) and the failure plausibly originates there.
+### Phase 1 — Diagnose & Suggest (No Edits)
 
-If failures reference non-staged files:
-- Report as **Pre-existing Repo Issues** (non-blocking),
-- Unless you can explicitly explain a causal link from staged changes to those errors.
+Review `git diff --cached` and produce **Findings** (max 7), prioritized:
 
-If attribution is ambiguous (no paths, generic failure):
-- Mark as **Needs Attribution** and propose minimal next steps (e.g., rerun with verbose flags supported by scripts), without expanding scope.
+- Blocker: must fix to commit safely
+- Should: strongly recommended to avoid drift/tech debt
+- FYI: optional notes
 
----
+Findings focus (using `.agent/PROJECT_CONVENTIONS.md` and `docs/ARCHITECTURE.md` only if applicable):
 
-## Phase 1 Output — Diagnostic Card (Use This Exact Structure)
+- inline styles / forbidden patterns
+- inconsistent conventions, casing, structure
+- dead/obsolete code, unused exports/selectors
+- Astro server/client boundary violations
+- broken refs/imports, contract/schema drift
+- SCSS anti-patterns (only if SCSS touched)
 
-### 🧾 Staged Scope
-- **Staged File List**: (from `git diff --name-status --cached`)
-- **Classification**: (Docs-Only / Code-Config)
-- **Direct Dependency Reads**: (list non-staged files read + why; otherwise “None”)
+For each finding include:
 
-### 🧪 Verification Results
-- **Type Check**: ✅ / ❌ / Skipped — staged-attributed summary
-- **Lint**: ✅ / ❌ / Skipped — staged-attributed summary
-- **Tests**: ✅ / ❌ / Skipped — staged-attributed summary
-- **Build**: ✅ / ❌ / Skipped — staged-attributed summary
+- file (+ line/range if clear)
+- evidence from staged diff
+- minimal staged-only fix proposal (describe, don’t apply)
 
-### 🚫 Blockers (Staged-Only)
-- (only staged-attributable issues)
+### Phase 1 Output — Suggested Changes (Always)
 
-### ⚠️ Pre-existing Repo Issues (Non-blocking)
-- (issues outside staged set)
+Return a **Suggested Changes List**:
 
-### 🔍 Quality & Consistency Notes
-- (architecture boundaries, TS contracts, SCSS structure, a11y flags if UI touched, casing risks)
+- Required (Blockers): [ ]
+- Recommended (Should): [ ]
+- Optional (FYI): [ ]
 
-### ✅ Proposed Actions (Checkboxes)
-- **Required (to commit)**:
-  - [ ] ...
-- **Recommended (quality)**:
-  - [ ] ...
-- **Documentation (if needed)**:
-  - [ ] ...
-
-### Decision Point
 Ask:
-> Approve which actions should I apply? (all / selected / none).
-> If any action requires editing a non-staged file, I will request explicit approval first.
+> Apply which suggestions? (required only / required+selected / none)
+
+No edits until the user answers.
+
+### Phase 2 — Apply Approved Fixes (After Approval)
+
+1. Apply only approved fixes, only in approved files.
+2. Re-stage explicitly: `git add <files>`
+3. Reconfirm staged scope: `git diff --name-status --cached`
+
+### Phase 3 — Re-scan (No Edits)
+
+Re-run Phase 1 on the new staged diff.
+Repeat loop until:
+
+- 0 Blockers, and
+- no remaining Should items **if the user requested full cleanup**
+(else Should may remain with explicit user acceptance)
 
 ---
 
-## Phase 2 — Execution (Only After Approval)
+## Ready to Commit — Commit Message Draft (No Commit Execution)
 
-### Protocol
-1. Apply only approved edits (and only in approved files).
-2. Re-stage explicitly:
-   - `git add <explicit_files...>`
-3. Re-run only the relevant failing checks.
-4. Reconfirm staged scope:
-   - `git diff --name-status --cached`
-5. Cohesion review:
-   - `git diff --cached` → decide if “one intent”.
+When Ready:
 
-### Output
-- **Execution Log**: what changed + what was re-staged
-- **Re-Verification**: updated results
-- **Cohesion Result**:
-  - If cohesive → propose Conventional Commit message.
-  - If not cohesive → propose Split Plan.
+1. Summarize **each staged file** (A/M/D/R) in 1 bullet per file:
+   - what changed and why (not implementation trivia)
+2. Propose **one** Conventional Commit message:
+   - `type(scope): subject`
+   - body bullets: per-file summary (or grouped by intent)
+3. If multiple intents detected:
+   - propose a split plan (no execution) and ask which path to take.
 
----
-
-## Phase 3 — Split Plan (Optional)
-
-### Preconditions
-- The user approved the Split Plan.
-- No content edits occur in this phase.
-
-### Split Execution (per group)
-1. Unstage specific files to isolate the group:
-   - `git reset HEAD -- <files_not_in_group...>`
-2. Verify staged set matches group:
-   - `git diff --name-only --cached`
-3. Run minimal relevant checks (staged-attribution applies).
-4. Commit:
-   - `git commit -m "type(scope): subject"`
-
-### Stop Conditions
-- If a staged-attributable failure occurs, STOP and report.
-- Do not proceed to next group unless the user instructed “continue”.
+Final question:
+> Confirm the message, or adjust type/scope/wording?

@@ -14,6 +14,7 @@ import weddingImage from '@images/services/wedding.png';
 import baptismImage from '@images/services/baptism.png';
 
 import type { ServicesData } from '@/interfaces/ui/sections/landing-page.interface';
+import type { ImageMetadata } from 'astro';
 
 // Import stylesheet
 import '@/styles/home/_services.scss';
@@ -24,9 +25,12 @@ interface Props {
 
 const { data } = Astro.props;
 
-// Map images to services order
-// Assumes order: XV Años, Bodas, Bautizos based on data in index.astro
-const serviceImages = [xvImage, weddingImage, baptismImage];
+// Map images to services by title
+const serviceImages: Record<string, ImageMetadata> = {
+    'XV Años': xvImage,
+    'Bodas': weddingImage,
+    'Bautizos': baptismImage
+};
 
 // Helper to generate slug for links
 const getServiceLink = (title: string) => {
@@ -47,7 +51,7 @@ const getServiceLink = (title: string) => {
 		<div class="services__grid">
 			{
 				data.services.map((service, index) => {
-                    const image = serviceImages[index] || serviceImages[0];
+                    const image = serviceImages[service.title] || serviceImages['XV Años'];
                     const href = getServiceLink(service.title);
 					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
 					const delay = `${index * 200}ms`;

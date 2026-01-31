@@ -45,6 +45,30 @@ const path = paths[name];
 		>
 			<Fragment set:html={path} />
 		</svg>
+
+        <style is:global>
+            .app-icon {
+                /* Default state: visible */
+                path {
+                    stroke-dasharray: 100;
+                    stroke-dashoffset: 0;
+                    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                /* Animation state: only if explicitly marked or in specific sections */
+                &.app-icon--animate,
+                .animate-icons & {
+                    path {
+                        stroke-dashoffset: 100;
+                    }
+
+                    &.is-visible path,
+                    .is-visible & path {
+                        stroke-dashoffset: 0;
+                    }
+                }
+            }
+        </style>
 	) : (
 		<div
 			class:list={[

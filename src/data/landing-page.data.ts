@@ -1,0 +1,184 @@
+import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
+
+export const landingData: LandingPageData = {
+	hero: {
+		title: 'Momentos que se quedan en el corazón',
+		subtitle:
+			'Crea invitaciones digitales elegantes y personalizadas para tus eventos más especiales.',
+		backgroundImage: {
+			desktopUrl:
+				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+			mobileUrl:
+				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+		},
+		primaryCtaLabel: 'Crear Invitación',
+		primaryCtaUrl: '/crear',
+		secondaryCtaLabel: 'Ver Demo',
+		secondaryCtaUrl: '/xv/demo-xv',
+		socialProofText: 'Más de 500 eventos inolvidables',
+	},
+	services: {
+		title: 'Nuestros Servicios',
+		services: [
+			{
+				title: 'XV Años',
+				description: 'Invitaciones mágicas para una noche inolvidable.',
+				icon: 'CrownIcon',
+			},
+			{
+				title: 'Bodas',
+				description: 'Elegancia y distinción para el día más importante.',
+				icon: 'RingsIcon',
+			},
+			{
+				title: 'Bautizos',
+				description: 'Detalles tiernos para celebrar la vida.',
+				icon: 'DoveIcon',
+			},
+		],
+	},
+	about: {
+		title: 'Nuestra Esencia',
+		description:
+			'En Celebra-me, nos apasiona diseñar los momentos más significativos de tu vida, fusionando arte digital con calidez humana para crear invitaciones que trascienden el tiempo.',
+		values: [
+			{
+				name: 'Vanguardia Digital',
+				description: 'Experiencias interactivas que sorprenden y deleitan.',
+				icon: 'DiamondIcon',
+			},
+			{
+				name: 'Detalle Impecable',
+				description: 'Atención absoluta en cada trazo, color y tipografía.',
+				icon: 'SparklesIcon',
+			},
+			{
+				name: 'Cercanía y Calidez',
+				description: 'Acompañamiento personal para que todo sea perfecto.',
+				icon: 'UserGroupIcon',
+			},
+		],
+		cta: {
+			label: 'Lee nuestra historia',
+			href: '/nosotros',
+		},
+	},
+	testimonials: {
+		title: 'Experiencias que trascienden',
+		testimonials: [
+			{
+				name: 'Sofía & Alejandro',
+				text: 'Nuestra boda fue un sueño hecho realidad. La invitación digital fue el primer detalle que dejó a todos sin palabras, capturando perfectamente la elegancia de nuestro gran día.',
+				role: 'Boda en Hacienda del Mar',
+			},
+			{
+				name: 'Isabella Martínez',
+				text: 'Mis XV años fueron mágicos. Quería algo diferente y sofisticado; Celebra-me logró que mi invitación fuera tan especial como mi fiesta.',
+				role: 'XV Años - Gala de Invierno',
+			},
+			{
+				name: 'Familia Villarreal',
+				text: 'Buscábamos excelencia y atención personalizada para el bautizo de nuestro hijo. Superaron nuestras expectativas con un diseño impecable y un servicio de acompañamiento único.',
+				role: 'Bautizo',
+			},
+		],
+	},
+	pricing: {
+		title: 'Planes a tu medida',
+		tiers: [
+			{
+				title: 'Básico',
+				description: 'Lo esencial para tu evento.',
+				price: { amount: '499', currency: 'MXN', period: 'pago único' },
+				features: ['Invitación Digital', 'Confirmación RSVP', 'Ubicación Maps'],
+				cta: 'Elegir Básico',
+				href: '/registro?plan=basico',
+			},
+			{
+				title: 'Premium',
+				description: 'La mejor experiencia para tus invitados.',
+				price: { amount: '899', currency: 'MXN', period: 'pago único' },
+				features: ['Todo lo del Básico', 'Galería de Fotos', 'Mesa de Regalos'],
+				cta: 'Elegir Premium',
+				href: '/registro?plan=premium',
+			},
+			{
+				title: 'Personalizado',
+				description: 'Para eventos únicos que requieren atención a medida.',
+				price: { amount: 'Consultar', currency: '', period: '' },
+				features: [
+					'Todo lo del Premium',
+					'Diseño desde cero',
+					'Asistente personal 24/7',
+					'Hosting ilimitado',
+				],
+				cta: 'Contactar',
+				href: '/contacto',
+				isElite: true,
+			},
+		],
+	},
+	faq: {
+		title: 'Preguntas Frecuentes',
+		faqs: [
+			{
+				question: '¿Cómo recibo mi invitación?',
+				answer: 'Una vez finalizado el diseño, recibirás un enlace personalizado (`celebra-me.com/tu-evento`) que podrás compartir instantáneamente vía WhatsApp, redes sociales o correo electrónico.',
+			},
+			{
+				question: '¿Puedo realizar cambios después de publicar?',
+				answer: 'Por supuesto. Nuestra plataforma permite ediciones ilimitadas en tiempo real. Si cambias de opinión sobre una foto o actualizas la mesa de regalos, el enlace reflejará los cambios al instante sin necesidad de reenviarlo.',
+			},
+			{
+				question: '¿Cómo funciona la confirmación de asistencia?',
+				answer: 'Tus invitados confirman su asistencia directamente en la invitación. Tú recibes una notificación y puedes consultar la lista actualizada de asistentes, alergias alimentarias y mensajes especiales en tu panel privado.',
+			},
+			{
+				question: '¿Es compatible con todos los dispositivos?',
+				answer: 'Sí, cada invitación está optimizada para ofrecer una experiencia fluida y elegante tanto en teléfonos inteligentes de última generación como en tabletas y computadoras de escritorio.',
+			},
+			{
+				question: '¿Tienen servicios de diseño personalizado?',
+				answer: 'Para el plan Élite, asignamos un diseñador experto que trabajará mano a mano contigo para crear una pieza digital única desde cero, alineada al concepto artístico de tu evento.',
+			},
+			{
+				question: '¿Mi invitación caduca después del evento?',
+				answer: 'No. Tu invitación permanece activa y accesible para que tú y tus invitados puedan revivir los momentos y ver la galería de fotos incluso después de la celebración.',
+			},
+		],
+	},
+	contact: {
+		title: 'Su Asesor Personal',
+		subtitle:
+			'Comience su viaje hacia una celebración inolvidable. Permita que nuestro equipo de expertos le asista en cada detalle de su invitación digital.',
+	},
+};
+
+export const footerData = {
+	siteInfo: {
+		slogan: 'Celebra cada momento, diseña cada recuerdo.',
+	},
+	linkGroups: [
+		{
+			title: 'Compañía',
+			links: [
+				{ label: 'Sobre Nosotros', href: '/nosotros' },
+				{ label: 'Servicios', href: '#services' },
+				{ label: 'Planes', href: '#pricing' },
+			],
+		},
+		{
+			title: 'Legal',
+			links: [
+				{ label: 'Términos', href: '/terminos' },
+				{ label: 'Privacidad', href: '/privacidad' },
+			],
+		},
+	],
+	socialLinks: {
+		links: [
+			{ label: 'Instagram', href: 'https://instagram.com/celebrame', icon: 'InstagramIcon' },
+			{ label: 'Facebook', href: 'https://facebook.com/celebrame', icon: 'FacebookIcon' },
+		],
+	},
+};

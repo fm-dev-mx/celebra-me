@@ -155,10 +155,13 @@
 }
 
 .contact-form-wrapper {
-	background: white;
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(20px);
 	padding: 4rem;
 	border-radius: 4px;
-	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08);
+	box-shadow:
+		0 30px 80px rgba(0, 0, 0, 0.08),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 	border: 1px solid rgba(197, 160, 89, 0.1);
 	position: relative;
 

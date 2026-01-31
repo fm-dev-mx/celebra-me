@@ -464,6 +464,26 @@
 	}
 }
 
+@keyframes sparkle-animation {
+	0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+	50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+}
+
+.sparkle {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+	background: var(--color-accent);
+	clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+	pointer-events: none;
+	opacity: 0;
+	z-index: 5;
+
+	&--1 { top: 10%; left: 10%; animation: sparkle-animation 3s infinite; }
+	&--2 { bottom: 15%; right: 12%; animation: sparkle-animation 3.5s infinite 1s; }
+	&--3 { top: 20%; right: 20%; animation: sparkle-animation 4s infinite 0.5s; width: 8px; height: 8px; }
+}
+
 @media (min-width: 992px) {
 	// Optimization for desktop height to fit in viewport
 	.about-us {
