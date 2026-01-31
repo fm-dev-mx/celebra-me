@@ -1,0 +1,127 @@
+---
+/**
+ * src/pages/terminos.astro
+ * Terms and Conditions legal page
+ */
+import Layout from '@/layouts/Layout.astro';
+import Footer from '@/components/home/Footer.astro';
+import { footerData } from '@/data/landing-page.data';
+---
+
+<Layout title="Términos y Condiciones | Celebra-me" description="Términos y condiciones de uso de la plataforma Celebra-me">
+	<article class="legal-page">
+		<div class="legal-page__container">
+			<header class="legal-page__header">
+				<h1>Términos y Condiciones</h1>
+				<p class="legal-page__updated">Última actualización: Enero 2026</p>
+			</header>
+
+			<section class="legal-page__content">
+				<h2>1. Aceptación de los Términos</h2>
+				<p>
+					Al acceder y utilizar los servicios de Celebra-me, usted acepta estos términos y condiciones en su totalidad. Si no está de acuerdo con alguna parte de estos términos, le rogamos que no utilice nuestros servicios.
+				</p>
+
+				<h2>2. Descripción del Servicio</h2>
+				<p>
+					Celebra-me ofrece servicios de diseño y creación de invitaciones digitales personalizadas para eventos especiales, incluyendo pero no limitado a: XV años, bodas, bautizos y celebraciones similares.
+				</p>
+
+				<h2>3. Uso Aceptable</h2>
+				<p>
+					Usted se compromete a utilizar nuestros servicios únicamente para fines legales y de acuerdo con estos términos. Queda prohibido utilizar el servicio para difundir contenido ofensivo, ilegal o que infrinja derechos de terceros.
+				</p>
+
+				<h2>4. Propiedad Intelectual</h2>
+				<p>
+					Todo el contenido, diseños, logos y elementos visuales proporcionados por Celebra-me son propiedad exclusiva de la empresa. El cliente recibe una licencia de uso personal y no comercial para sus invitaciones digitales.
+				</p>
+
+				<h2>5. Pagos y Reembolsos</h2>
+				<p>
+					Los precios de nuestros servicios se muestran en pesos mexicanos (MXN). Los pagos son procesados de forma segura. En caso de solicitar un reembolso, este será evaluado caso por caso según el estado del proyecto.
+				</p>
+
+				<h2>6. Limitación de Responsabilidad</h2>
+				<p>
+					Celebra-me no será responsable por daños indirectos, incidentales o consecuentes que surjan del uso de nuestros servicios. Nuestra responsabilidad máxima se limita al monto pagado por el servicio.
+				</p>
+
+				<h2>7. Modificaciones</h2>
+				<p>
+					Nos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación en esta página.
+				</p>
+
+				<h2>8. Contacto</h2>
+				<p>
+					Para cualquier consulta sobre estos términos, puede contactarnos a través de nuestro formulario de contacto o vía WhatsApp.
+				</p>
+			</section>
+
+			<div class="legal-page__back">
+				<a href="/" class="legal-page__back-link">← Volver al inicio</a>
+			</div>
+		</div>
+	</article>
+
+	<Footer data={footerData} />
+</Layout>
+
+<style lang="scss">
+	.legal-page {
+		padding: 8rem 1.5rem 4rem;
+		min-height: 100vh;
+		background: linear-gradient(180deg, var(--color-background) 0%, var(--color-surface) 100%);
+	}
+
+	.legal-page__container {
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.legal-page__header {
+		margin-bottom: 3rem;
+		text-align: center;
+	}
+
+	.legal-page__header h1 {
+		font-family: var(--ff-heading);
+		font-size: clamp(2rem, 5vw, 3rem);
+		color: var(--color-text-primary);
+		margin-bottom: 0.5rem;
+	}
+
+	.legal-page__updated {
+		color: var(--color-text-muted);
+		font-size: 0.9rem;
+	}
+
+	.legal-page__content h2 {
+		font-family: var(--ff-heading);
+		font-size: 1.25rem;
+		color: var(--color-primary);
+		margin: 2rem 0 1rem;
+	}
+
+	.legal-page__content p {
+		color: var(--color-text-secondary);
+		line-height: 1.8;
+		margin-bottom: 1rem;
+	}
+
+	.legal-page__back {
+		margin-top: 3rem;
+		text-align: center;
+	}
+
+	.legal-page__back-link {
+		color: var(--color-primary);
+		text-decoration: none;
+		font-weight: 500;
+		transition: opacity 0.2s ease;
+	}
+
+	.legal-page__back-link:hover {
+		opacity: 0.8;
+	}
+</style>

@@ -10,6 +10,8 @@ export interface HeroData {
 	primaryCtaUrl: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;
+	whatsappPhone?: string;
+	whatsappMessage?: string;
 	socialProofText?: string;
 }
 

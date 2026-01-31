@@ -23,7 +23,7 @@ interface Props {
 const { data } = Astro.props;
 ---
 
-<section class="hero-prime" id="hero-prime" role="region" aria-labelledby="hero-title">
+<section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title">
 	<!-- 1. Background Layer -->
 	<div class="hero-prime__bg parallax-bg">
 		<!-- Priority Image (Lazy load off for LCP) -->
@@ -66,8 +66,14 @@ const { data } = Astro.props;
 
 		<!-- Actions (Stagger 3) -->
 		<div class="hero-prime__actions stagger-3">
-			<WhatsAppButton client:idle className="shine-effect" />
-			<ActionBase as="a" href={data.secondaryCtaUrl || '#'} variant="outline" color="white" class="shine-effect">
+			<WhatsAppButton
+				client:idle
+				className="shine-effect"
+				phone={data.whatsappPhone}
+				message={data.whatsappMessage}
+				label={data.primaryCtaLabel}
+			/>
+			<ActionBase as="a" href={data.secondaryCtaUrl || '#servicios'} variant="outline" color="white" class="shine-effect">
 				{data.secondaryCtaLabel}
 			</ActionBase>
 		</div>
@@ -100,7 +106,7 @@ const { data } = Astro.props;
 
 <script>
 	// 1. Mouse Move Parallax Effect
-	const hero = document.getElementById('hero-prime');
+	const hero = document.getElementById('inicio');
 	const bg = hero?.querySelector('.parallax-bg');
 
 	if (hero && bg) {

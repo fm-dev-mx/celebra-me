@@ -11,10 +11,13 @@ export const landingData: LandingPageData = {
 			mobileUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 		},
-		primaryCtaLabel: 'Crear Invitación',
-		primaryCtaUrl: '/crear',
-		secondaryCtaLabel: 'Ver Demo',
-		secondaryCtaUrl: '/xv/demo-xv',
+		primaryCtaLabel: 'Crea tu Invitación',
+		primaryCtaUrl: '#contacto',
+		secondaryCtaLabel: 'Ver Catálogo',
+		secondaryCtaUrl: '#servicios',
+		whatsappPhone: '5216681167477',
+		whatsappMessage:
+			'¡Hola! Me gustaría crear una invitación digital premium para mi próximo evento. ¿Podrían asesorarme?',
 		socialProofText: 'Más de 500 eventos inolvidables',
 	},
 	services: {
@@ -59,8 +62,8 @@ export const landingData: LandingPageData = {
 			},
 		],
 		cta: {
-			label: 'Lee nuestra historia',
-			href: '/nosotros',
+			label: 'Agenda una consulta',
+			href: '#contacto',
 		},
 	},
 	testimonials: {
@@ -92,7 +95,7 @@ export const landingData: LandingPageData = {
 				price: { amount: '499', currency: 'MXN', period: 'pago único' },
 				features: ['Invitación Digital', 'Confirmación RSVP', 'Ubicación Maps'],
 				cta: 'Elegir Básico',
-				href: '/registro?plan=basico',
+				href: '#contacto',
 			},
 			{
 				title: 'Premium',
@@ -100,7 +103,7 @@ export const landingData: LandingPageData = {
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
 				features: ['Todo lo del Básico', 'Galería de Fotos', 'Mesa de Regalos'],
 				cta: 'Elegir Premium',
-				href: '/registro?plan=premium',
+				href: '#contacto',
 			},
 			{
 				title: 'Personalizado',
@@ -113,7 +116,7 @@ export const landingData: LandingPageData = {
 					'Hosting ilimitado',
 				],
 				cta: 'Contactar',
-				href: '/contacto',
+				href: '#contacto',
 				isElite: true,
 			},
 		],
@@ -162,8 +165,8 @@ export const footerData = {
 		{
 			title: 'Compañía',
 			links: [
-				{ label: 'Sobre Nosotros', href: '/nosotros' },
-				{ label: 'Servicios', href: '#services' },
+				{ label: 'Sobre Nosotros', href: '#nosotros' },
+				{ label: 'Servicios', href: '#servicios' },
 				{ label: 'Planes', href: '#pricing' },
 			],
 		},

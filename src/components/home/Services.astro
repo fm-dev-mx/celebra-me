@@ -32,14 +32,7 @@ const serviceImages: Record<string, ImageMetadata> = {
     'Bautizos': baptismImage
 };
 
-// Helper to generate slug for links
-const getServiceLink = (title: string) => {
-	const slug = title.toLowerCase()
-		.replace(/ñ/g, 'n')
-		.replace(/\s+/g, '-')
-		.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove accents
-	return `/${slug}`;
-};
+// All services link to contact section for inquiry
 ---
 
 <Section id="servicios" class="services section-padding">
@@ -52,12 +45,11 @@ const getServiceLink = (title: string) => {
 			{
 				data.services.map((service, index) => {
                     const image = serviceImages[service.title] || serviceImages['XV Años'];
-                    const href = getServiceLink(service.title);
 					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
 					const delay = `${index * 200}ms`;
 
                     return (
-					<a href={href} class="services__card" style={`--animation-delay: ${delay}`} aria-label={`Ver detalles del servicio ${service.title}`}>
+					<a href="#contacto" class="services__card" style={`--animation-delay: ${delay}`} aria-label={`Ver detalles del servicio ${service.title}`}>
 						<div class="services__card-visual">
 							<div class="services__image-wrapper">
 								<OptimizedImage

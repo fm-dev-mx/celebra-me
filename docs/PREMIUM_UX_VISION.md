@@ -12,14 +12,17 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 
 ### 🚀 A. Landing Page (User/Client Experience)
 
-- [x] **Header (The Jewelry Box):** Minimalist glassmorphism navigation with subtle action buttons. ✅ *Mobile experience elevated.*
-- [x] **Hero "Prime":** High-res imagery with elegant serif typography and subtle entrance orchestrations.
-- [x] **Services Showcase:** Interactive cards with bespoke stroke-drawing icons and boutique labeling. ✅ *Remediated Block D.*
-- [x] **Storytelling (About):** Values section with diamond/sparkle micro-animations and luxury CTA. ✅ *Remediated Block D.*
-- [x] **Testimonials (Elite Social Proof):** "High-Society Feed" grid using Framer Motion (Staggered layout, elegant hover-states). ✅ *Remediated Block A.*
-- [x] **Pricing (Plans):** Comparative table with elite styling and high-contrast typography.
-- [x] **FAQ (The Inquiry Experience):** "Premium Accordion System" with natural easing and SEO-friendly motion. ✅ *Remediated Block B.*
-- [x] **Contact (Concierge Request):** Redesigned as a high-end concierge experience with glassmorphism and motion feedback. ✅ *Remediated Block C.*
+| Section | Visual Status | Link QA | Notes |
+|---------|---------------|---------|-------|
+| **Header (The Jewelry Box)** | ✅ Complete | ✅ Fixed | Navigation links to internal anchors |
+| **Hero "Prime"** | ✅ Complete | ✅ Fixed | WhatsApp + internal anchors for zero broken links |
+| **Services Showcase** | ✅ Complete | ✅ Fixed | Cards redirect to `#contacto` for inquiry |
+| **Storytelling (About)** | ✅ Complete | ✅ Fixed | CTA redirects to `#contacto` |
+| **Testimonials** | ✅ Complete | ✅ N/A | No external links |
+| **Pricing (Plans)** | ✅ Complete | ✅ Fixed | CTAs redirect to `#contacto` |
+| **FAQ** | ✅ Complete | ✅ N/A | No external links |
+| **Contact (Concierge)** | ✅ Complete | ✅ Fixed | Integrated WhatsApp + Form functional |
+| **Footer** | ✅ Complete | ✅ Fixed | Legal pages created and linked |
 
 ### 📜 B. Digital Invitation (Guest Experience) - [UPCOMING]
 
@@ -48,11 +51,46 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 
 ## 💎 4. Jewelry Box Remediation Status
 
-The targeted remediation of the landing page to eliminate "low-quality" signals is **Complete**.
+The targeted remediation of the landing page to eliminate "low-quality" signals is **Visually complete**.
 
-### Completed Targets:
+### ✅ Completed Visual Targets
 - [x] **Testimonials:** "High-Society Feed" grid (Framer Motion).
 - [x] **FAQ:** "Premium Accordion System" with `AnimatePresence`.
 - [x] **Contact:** "Concierge Request" redesign (Glassmorphism + Motion feedback).
 - [x] **Iconography:** Bespoke stroke-drawing SVGs across all sections.
 - [x] **Experience:** Refined header and mobile navigation for zero layout shift and premium transitions.
+
+### ⚠️ Pending: Production Readiness (Link Integrity QA)
+
+> **Plan:** [docs/plan/landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/landing-page-completion.md)
+
+**Pending Items:**
+
+| Item | Action Required | Priority |
+|------|-----------------|----------|
+| Services card links | Change to `#contacto` | High |
+| AboutUs CTA | Change to `#contacto` | High |
+| Pricing CTAs | Change to `#contacto` | High |
+| Footer "Compañía" links | Change to internal anchors | Medium |
+| `/terminos` page | Create legal page | High |
+| `/privacidad` page | Create legal page | High |
+| Footer social links | Verify URLs | Low |
+
+---
+
+## 📁 5. Related Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/landing-page-completion.md) | Step-by-step plan to production |
+| [invitation-master-plan.md](file:///c:/Code/celebra-me/docs/plan/invitation-master-plan.md) | Digital invitation roadmap |
+
+---
+
+## 📅 6. Changelog
+
+| Date | Change |
+|------|--------|
+| 2026-01-31 | Created `landing-page-completion.md` plan for link integrity QA |
+| 2026-01-31 | Restructured document with table-based status tracking |
+| 2026-01-30 | Visual remediation completed (Blocks A-D) |
