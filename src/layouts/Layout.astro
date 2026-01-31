@@ -16,11 +16,13 @@ import '@fontsource/lato/700.css';
 interface Props {
 	title: string;
 	description?: string;
+	hideHeader?: boolean;
 }
 
 const {
 	title,
 	description = 'Celebra.me - Eventos inolvidables',
+	hideHeader = false,
 } = Astro.props;
 ---
 
@@ -49,7 +51,7 @@ const {
 		<meta property="twitter:image" content="/images/og-image.jpg" />
 	</head>
 	<body>
-		<Header />
+		{!hideHeader && <Header />}
 		<main>
 			<slot />
 		</main>

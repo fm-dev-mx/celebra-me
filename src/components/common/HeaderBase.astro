@@ -47,15 +47,17 @@ const {
         {!hideMobileToggle && (
             <button
                 id={`${headerId}-toggle`}
-                class="mobile-menu-btn"
+                class="header-base__mobile-toggle"
                 type="button"
                 aria-label="Alternar navegacion"
                 aria-controls={`${headerId}-overlay`}
                 aria-expanded="false"
             >
-                <span class="mobile-menu-btn__line"></span>
-                <span class="mobile-menu-btn__line"></span>
-                <span class="mobile-menu-btn__line"></span>
+                <div class="hamburger">
+                    <span class="hamburger__line"></span>
+                    <span class="hamburger__line"></span>
+                    <span class="hamburger__line"></span>
+                </div>
             </button>
         )}
 
@@ -65,8 +67,8 @@ const {
 
     <!-- Mobile Overlay -->
     {!hideMobileToggle && (
-        <div id={`${headerId}-overlay`} class="mobile-overlay" aria-hidden="true">
-            <nav class="mobile-overlay__content" aria-label="Navegacion movil">
+        <div id={`${headerId}-overlay`} class="header-base__mobile-overlay" aria-hidden="true">
+            <nav class="header-base__mobile-menu" aria-label="Navegacion movil">
                 <slot name="mobile-nav-content" />
             </nav>
         </div>

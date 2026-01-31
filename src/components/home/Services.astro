@@ -47,9 +47,9 @@ const serviceImages: Record<string, ImageMetadata> = {
                     const image = serviceImages[service.title] || serviceImages['XV Años'];
 					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
 					const delay = `${index * 200}ms`;
-
+					const href = service.href || '#contacto';
                     return (
-					<a href="#contacto" class="services__card" style={`--animation-delay: ${delay}`} aria-label={`Ver detalles del servicio ${service.title}`}>
+					<a href={href} class="services__card" style={`--animation-delay: ${delay}`} aria-label={`Ver detalles del servicio ${service.title}`}>
 						<div class="services__card-visual">
 							<div class="services__image-wrapper">
 								<OptimizedImage

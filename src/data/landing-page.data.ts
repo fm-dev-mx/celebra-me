@@ -24,16 +24,19 @@ export const landingData: LandingPageData = {
 		title: 'Nuestros Servicios',
 		services: [
 			{
+				href: '/xv/demo-xv',
 				title: 'XV Años',
 				description: 'Invitaciones mágicas para una noche inolvidable.',
 				icon: 'CrownIcon',
 			},
 			{
+				href: '/bodas/demo-bodas',
 				title: 'Bodas',
 				description: 'Elegancia y distinción para el día más importante.',
 				icon: 'RingsIcon',
 			},
 			{
+				href: '/bautizos/demo-bautizos',
 				title: 'Bautizos',
 				description: 'Detalles tiernos para celebrar la vida.',
 				icon: 'DoveIcon',

@@ -15,6 +15,7 @@ import QuoteXV from '@/components/xv/Quote.astro';
 import ThankYouXV from '@/components/xv/ThankYou.astro';
 import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
+import EventHeader from '@/components/invitation/EventHeader.astro';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -47,7 +48,7 @@ const isXV = data.eventType === 'xv';
 const isWedding = data.eventType === 'boda';
 ---
 
-<Layout title={data.title} description={data.description || ''}>
+<Layout title={data.title} description={data.description || ''} hideHeader={true}>
 	<style
 		define:vars={{
 			primaryColor: data.theme.primaryColor,
@@ -63,6 +64,15 @@ const isWedding = data.eventType === 'boda';
 		{
 			isXV && (
 				<>
+					<EventHeader
+						eventName={data.hero.name}
+						theme={data.theme}
+						sections={{
+							rsvp: data.sections?.rsvp ?? false,
+							location: true,
+							gifts: false,
+						}}
+					/>
 					<HeroXV name={data.hero.name} date={data.hero.date} />
 					{data.sections?.countdown && <Countdown eventDate={data.hero.date} />}
 					{

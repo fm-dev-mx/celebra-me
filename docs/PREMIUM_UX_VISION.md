@@ -54,27 +54,39 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 The targeted remediation of the landing page to eliminate "low-quality" signals is **Visually complete**.
 
 ### ✅ Completed Visual Targets
+
 - [x] **Testimonials:** "High-Society Feed" grid (Framer Motion).
 - [x] **FAQ:** "Premium Accordion System" with `AnimatePresence`.
 - [x] **Contact:** "Concierge Request" redesign (Glassmorphism + Motion feedback).
 - [x] **Iconography:** Bespoke stroke-drawing SVGs across all sections.
 - [x] **Experience:** Refined header and mobile navigation for zero layout shift and premium transitions.
 
-### ⚠️ Pending: Production Readiness (Link Integrity QA)
+---
 
-> **Plan:** [docs/plan/landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/landing-page-completion.md)
+## ✅ 5. Resolved Integration Issues
 
-**Pending Items:**
+> All issues identified during the Digital Invitation phase transition have been resolved (2026-01-31):
 
-| Item | Action Required | Priority |
-|------|-----------------|----------|
-| Services card links | Change to `#contacto` | High |
-| AboutUs CTA | Change to `#contacto` | High |
-| Pricing CTAs | Change to `#contacto` | High |
-| Footer "Compañía" links | Change to internal anchors | Medium |
-| `/terminos` page | Create legal page | High |
-| `/privacidad` page | Create legal page | High |
-| Footer social links | Verify URLs | Low |
+1. ~~**Header Duality**~~ → `Layout.astro` now has `hideHeader` prop; invitation pages opt-out of landing header.
+2. ~~**BEM Inconsistency**~~ → `HeaderBase.astro` classes aligned with `_header-base.scss` spec.
+3. ~~**Responsive Breakage**~~ → Mobile toggle now correctly hidden on desktop via BEM-compliant CSS.
+4. ~~**UX Inconsistency**~~ → `EventHeader.astro` now uses `NavBarMobile.tsx` with Framer Motion.
+
+---
+
+### ✅ Complete: Production Readiness (Link Integrity QA)
+
+> **Archived Plan:** [docs/plan/archive/landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/archive/landing-page-completion.md)
+
+**All items resolved as of 2026-01-31:**
+
+- [x] Services card links → `#contacto`
+- [x] AboutUs CTA → `#contacto`
+- [x] Pricing CTAs → `#contacto`
+- [x] Footer "Compañía" links → internal anchors
+- [x] `/terminos` page created
+- [x] `/privacidad` page created
+- [x] Footer social links verified
 
 ---
 
@@ -91,6 +103,8 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 
 | Date | Change |
 |------|--------|
+| 2026-01-31 | **PHASE CLOSURE**: Landing Page marked production-ready. All pending items resolved. |
+| 2026-01-31 | Archived `landing-page-completion.md` to `docs/plan/archive/` |
 | 2026-01-31 | Created `landing-page-completion.md` plan for link integrity QA |
 | 2026-01-31 | Restructured document with table-based status tracking |
 | 2026-01-30 | Visual remediation completed (Blocks A-D) |

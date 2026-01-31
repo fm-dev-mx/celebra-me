@@ -32,6 +32,7 @@ export interface AboutData {
 export interface ServicesData {
 	title: string;
 	services: Array<{
+		href: string;
 		title: string;
 		description: string;
 		icon?: string;
