@@ -1,121 +1,166 @@
-/* Countdown Section Styles */
-// Renamed from countdown.xv.scss to countdown.scss
-// Updated path to variables
+// src/styles/xv/_countdown.scss
+// ----------------------------------------------------
+// Premium Countdown Styles - Jewelry Box Aesthetic
+// ----------------------------------------------------
 
 @use 'variables' as vars;
 @use '@/styles/global/mixins' as mixins;
 
-.countdown {
+.countdown-section {
 	position: relative;
-	padding: 2rem;
-	border-radius: 10px;
-	border-top: 2px solid rgba(vars.$color-primary-dark, 0.2);
-	border-bottom: 2px solid rgba(vars.$color-secondary-dark, 0.6);
-	margin: 0 auto;
-	text-align: center;
+	padding: 8rem 0.5rem;
+	background-color: vars.$color-white;
 	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 50vh;
+}
 
-	background-color: rgba(vars.$color-white, 0.8);
-	color: rgba(vars.$color-dark, 0.8);
+.countdown-texture {
+	position: absolute;
+	inset: 0;
+	opacity: 0.03;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
 
-	@include mixins.respond-to(xs) {
-		padding: 3rem;
-	}
-	@include mixins.respond-to(sm) {
-		padding: 3.5rem;
-	}
-	@include mixins.respond-to(md) {
-		padding: 4rem;
-	}
+.countdown-container {
+	position: relative;
+	z-index: 1;
+	max-width: 900px;
+	width: 100%;
+	text-align: center;
+}
 
-	&__title {
-		font-family: vars.$font-decorative-dancing;
-		color: rgba(vars.$color-dark, 0.7);
-		font-size: 1.5rem;
-		margin-bottom: 1rem;
+.countdown-header {
+	margin-bottom: 4rem;
+}
 
-		@include mixins.respond-to(xs) {
-			font-size: 1.7rem;
-		}
+.countdown-title {
+	font-family: vars.$font-heading-elegant;
+	font-size: clamp(2rem, 6vw, 3.5rem);
+	color: vars.$color-primary-dark;
+	margin-bottom: 1.5rem;
+	letter-spacing: -0.02em;
+}
+
+.countdown-subtitle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	opacity: 0.7;
+
+	.subtitle-line {
+		height: 1px;
+		width: 40px;
+		background-color: vars.$color-primary;
+		display: none;
+
 		@include mixins.respond-to(sm) {
-			font-size: 1.9rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 2.1rem;
+			display: block;
 		}
 	}
 
-	&__event-date {
-		font-family: vars.$font-body;
-		color: rgba(vars.$color-dark, 0.6);
-		font-size: 1.2rem;
-		margin-bottom: 2rem;
-
-		@include mixins.respond-to(xs) {
-			font-size: 1.3rem;
-		}
-		@include mixins.respond-to(sm) {
-			font-size: 1.4rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 1.6rem;
-		}
-	}
-
-	&__timer {
-		display: flex;
-		justify-content: center;
-		gap: 1.3rem;
-		flex-wrap: wrap;
-		font-family: vars.$font-body;
-		color: vars.$color-dark;
-
-		@include mixins.respond-to(xs) {
-			gap: 1.5rem;
-		}
-		@include mixins.respond-to(sm) {
-			gap: 1.7rem;
-		}
-		@include mixins.respond-to(md) {
-			gap: 1.9rem;
-		}
-	}
-
-	&__time-segment {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	&__value {
-		font-size: 1.8rem;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-
-		@include mixins.respond-to(xs) {
-			font-size: 2rem;
-		}
-		@include mixins.respond-to(sm) {
-			font-size: 2.2rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 2.4rem;
-		}
-	}
-
-	&__label {
-		font-size: 1rem;
+	.event-date {
+		font-family: vars.$font-heading-formal;
+		font-size: 0.9rem;
 		text-transform: uppercase;
-		color: rgba(vars.$color-dark, 0.4);
-
-		@include mixins.respond-to(xs) {
-			font-size: 0.8rem;
-		}
-		@include mixins.respond-to(sm) {
-			font-size: 1rem;
-		}
-		@include mixins.respond-to(md) {
-			font-size: 1.1rem;
-		}
+		letter-spacing: 0.2em;
+		color: vars.$color-dark;
 	}
 }
+
+.countdown-timer-wrapper {
+	margin: 3rem 0;
+}
+
+.countdown__timer {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.2rem;
+}
+
+.countdown__segment {
+	background: rgba(vars.$color-whitest, 0.4);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(vars.$color-primary, 0.1);
+	padding: 2rem 1rem;
+	border-radius: 4px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	box-shadow: 0 10px 30px -10px rgba(vars.$color-primary-dark, 0.05);
+	transition: transform 0.3s ease;
+
+	&:hover {
+		transform: translateY(-5px);
+		border-color: rgba(vars.$color-primary, 0.2);
+	}
+
+	@include mixins.respond-to(sm) {
+		padding: 2.5rem 1.5rem;
+	}
+}
+
+.countdown__value-wrapper {
+	height: 3.5rem;
+	width: 2.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	margin-bottom: 0.5rem;
+
+	@include mixins.respond-to(sm) {
+		width: 5rem;
+	}
+}
+
+.countdown__value {
+	font-family: vars.$font-heading-elegant;
+	font-size: clamp(1.5rem, 5vw, 2.2rem);
+	color: vars.$color-primary;
+	font-weight: 400;
+	line-height: 1;
+
+	@include mixins.respond-to(sm) {
+		font-size: clamp(2.5rem, 5vw, 3.2rem);
+	}
+}
+
+.countdown__label {
+	font-family: vars.$font-heading-formal;
+	font-size: 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	color: vars.$color-dark;
+	opacity: 0.6;
+
+	@include mixins.respond-to(sm) {
+		font-size: 0.75rem;
+	}
+}
+
+.countdown-footer {
+	margin-top: 4rem;
+}
+
+.countdown-invitation-text {
+	font-family: vars.$font-subtitle-refined;
+	font-size: 1.25rem;
+	font-style: italic;
+	color: vars.$color-dark;
+	opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.countdown__segment:hover {
+		transform: none;
+	}
+	.countdown__value {
+		transition: none !important;
+	}
+}
+

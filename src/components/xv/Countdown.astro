@@ -1,8 +1,8 @@
 ---
-/* Moved from src/frontend/components/XV/Countdown.xv.astro
-  Updated imports to use aliases and removed .xv extensions where appropriate
-*/
+// src/components/xv/Countdown.astro
+// Premium countdown section for XV Años invitations
 import '@/styles/xv/_countdown.scss';
+import CountdownTimer from '@/components/invitation/CountdownTimer';
 
 interface Props {
 	eventDate: string; // ISO Date string
@@ -10,7 +10,7 @@ interface Props {
 
 const { eventDate } = Astro.props;
 
-// Function to format the date in Spanish using Intl
+// Function to format the date in Spanish for the subtitle
 function getFormattedDate(dateString: string): string {
 	try {
 		const date = new Date(dateString);
@@ -29,74 +29,26 @@ function getFormattedDate(dateString: string): string {
 const formattedEventDate = getFormattedDate(eventDate);
 ---
 
-<section class="countdown" id="countdown" data-event-date={eventDate}>
-	<h2 class="countdown__title">¡Falta poco para la Gran Fiesta!</h2>
-	<p class="countdown__event-date">El {formattedEventDate}</p>
-	<div class="countdown__timer" id="timer">
-		<div class="countdown__time-segment">
-			<span class="countdown__value" id="days">00</span>
-			<span class="countdown__label">Días</span>
+<section class="countdown-section" id="countdown">
+	<div class="countdown-texture" aria-hidden="true"></div>
+	<div class="countdown-container">
+		<header class="countdown-header">
+			<h2 class="countdown-title">¡Falta muy poco!</h2>
+			<div class="countdown-subtitle">
+				<div class="subtitle-line"></div>
+				<p class="event-date">El {formattedEventDate}</p>
+				<div class="subtitle-line"></div>
+			</div>
+		</header>
+
+		<div class="countdown-timer-wrapper">
+			<CountdownTimer client:visible eventDate={eventDate} />
 		</div>
-		<div class="countdown__time-segment">
-			<span class="countdown__value" id="hours">00</span>
-			<span class="countdown__label">Horas</span>
-		</div>
-		<div class="countdown__time-segment">
-			<span class="countdown__value" id="minutes">00</span>
-			<span class="countdown__label">Minutos</span>
-		</div>
-		<div class="countdown__time-segment">
-			<span class="countdown__value" id="seconds">00</span>
-			<span class="countdown__label">Segundos</span>
-		</div>
+
+		<footer class="countdown-footer">
+			<p class="countdown-invitation-text">Prepárate para una noche inolvidable</p>
+		</footer>
 	</div>
 </section>
 
-<script>
-	// Client-side countdown logic
-	document.addEventListener('DOMContentLoaded', () => {
-		const countdownEl = document.querySelector('.countdown');
-		if (!countdownEl) return;
-
-		const eventDateStr = countdownEl.getAttribute('data-event-date');
-		if (!eventDateStr) return;
-
-		const daysEl = document.getElementById('days');
-		const hoursEl = document.getElementById('hours');
-		const minutesEl = document.getElementById('minutes');
-		const secondsEl = document.getElementById('seconds');
-
-		if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
-
-		const intervalId = window.setInterval(updateCountdown, 1000);
-
-		function updateCountdown() {
-			if (!eventDateStr || !daysEl || !hoursEl || !minutesEl || !secondsEl) return;
-			const eventDate = new Date(eventDateStr);
-			const now = new Date();
-			const diff = eventDate.getTime() - now.getTime();
-
-			if (diff <= 0) {
-				daysEl.innerText = '00';
-				hoursEl.innerText = '00';
-				minutesEl.innerText = '00';
-				secondsEl.innerText = '00';
-				clearInterval(intervalId);
-				return;
-			}
-
-			const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-			const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-			const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-			const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-			daysEl.innerText = days < 10 ? '0' + days : days.toString();
-			hoursEl.innerText = hours < 10 ? '0' + hours : hours.toString();
-			minutesEl.innerText = minutes < 10 ? '0' + minutes : minutes.toString();
-			secondsEl.innerText = seconds < 10 ? '0' + seconds : seconds.toString();
-		}
-
-		updateCountdown();
-	});
-</script>
 
