@@ -1,4 +1,4 @@
-// src/frontend/styles/xv/_quote.scss
+// src/styles/xv/_quote.scss
 // ----------------------------------------------------
 // Elegant Quote Section Styles
 // ----------------------------------------------------
@@ -7,73 +7,109 @@
 
 .quote-section {
 	position: relative;
-	height: 30vh;
-	min-height: 400px;
+	min-height: 60vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
-	border-top: 2px solid rgba($color-secondary-dark, 0.6);
-	border-bottom: 2px solid rgba($color-secondary-dark, 0.6);
-	background: linear-gradient(
-		135deg,
-		rgba($color-primary-dark, 0.95) 0%,
-		rgba($color-secondary-dark, 0.95) 100%
-	);
+	padding: 6rem 1.5rem;
+	background-color: var(--color-primary-dark, $color-primary-dark);
+	color: $color-secondary-light;
+	text-align: center;
+}
 
-	// Subtle floral pattern overlay
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		opacity: 0.15;
-		background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1738971069/1080x1920bg_purple_dust_oft0lz.jpg');
-		background-size: 120px;
-	}
+.quote-texture {
+	position: absolute;
+	inset: 0;
+	opacity: 0.08;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	filter: contrast(120%) brightness(100%);
 }
 
 .quote-container {
 	position: relative;
-	max-width: 80%;
-	padding: 2rem;
-	text-align: center;
-	animation: fadeInUp 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+	z-index: 1;
+	max-width: 800px;
+	width: 100%;
 }
 
-.quote-text {
-	font-family: $font-decorative-cursive;
-	font-size: clamp(1.5rem, 4vw, 2rem);
-	line-height: 1.4;
-	color: rgba($color-white, 0.8);
-	margin-bottom: 1.5rem;
-	text-shadow: 0 2px 8px rgba($color-darkest, 0.8);
+.quote-divider-top,
+.quote-divider-bottom {
+	width: 150px;
+	margin: 0 auto;
+	color: rgba($color-secondary-light, 0.4);
 
-	@media (min-width: 768px) {
-		line-height: 1.6;
-		margin-bottom: 2rem;
+	svg {
+		width: 100%;
+		height: 20px;
 	}
+}
+
+.quote-divider-top {
+	margin-bottom: 3rem;
+}
+
+.quote-divider-bottom {
+	margin-top: 3rem;
+}
+
+.quote-content {
+	margin: 0;
+	padding: 0;
+	font-family: $font-subtitle-refined;
+	font-size: clamp(1.5rem, 5vw, 2.2rem);
+	line-height: 1.6;
+	font-style: italic;
+	perspective: 1000px;
+}
+
+.quote-line {
+	margin-bottom: 0.5rem;
+	opacity: 0;
+	transform: translateY(20px);
+	transition:
+		opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	&.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.quote-author-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 2rem;
+	opacity: 0.8;
+}
+
+.quote-ornament {
+	width: 40px;
+	height: 1px;
+	background: currentColor;
+	opacity: 0.3;
 }
 
 .quote-author {
-	font-family: $font-body;
-	font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-	font-style: italic;
-	color: $color-secondary-light;
-	opacity: 0.9;
-	letter-spacing: 0.05em;
+	font-family: $font-heading-formal;
+	font-size: clamp(0.9rem, 3vw, 1.1rem);
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	font-style: normal;
 }
 
-// Animation keyframes
-@keyframes fadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
+@media (prefers-reduced-motion: reduce) {
+	.quote-line {
 		opacity: 1;
-		transform: translateY(0);
+		transform: none !important;
+		transition: none !important;
 	}
 }

@@ -94,6 +94,11 @@ const isWedding = data.eventType === 'boda';
 						backgroundImage={data.hero.backgroundImage}
 						eventType={data.eventType}
 					/>
+					{
+						data.quote && (
+							<QuoteXV text={data.quote.text} author={data.quote.author} />
+						)
+					}
 					{data.sections?.countdown && <Countdown eventDate={data.hero.date} />}
 					{
 						data.family && (
@@ -120,12 +125,6 @@ const isWedding = data.eventType === 'boda';
 							/>
 						)
 					}
-					{data.quote && (
-						<QuoteXV
-							text={data.quote.text}
-							author={data.quote.author}
-						/>
-					)}
 					{data.thankYou && (
 						<ThankYouXV
 							message={data.thankYou.message}
