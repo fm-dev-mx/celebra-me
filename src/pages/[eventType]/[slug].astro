@@ -16,6 +16,7 @@ import ThankYouXV from '@/components/xv/ThankYou.astro';
 import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
+import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -61,6 +62,19 @@ const isWedding = data.eventType === 'boda';
 		}
 	</style>
 	<main class="event-theme-wrapper">
+		{
+			data.envelope && (
+				<EnvelopeReveal
+					client:load
+					name={data.hero.name}
+					date={data.hero.date}
+					city={data.location.city}
+					sealStyle={data.envelope.sealStyle}
+					microcopy={data.envelope.microcopy}
+					palette={data.envelope.closedPalette}
+				/>
+			)
+		}
 		{
 			isXV && (
 				<>

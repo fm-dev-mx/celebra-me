@@ -18,7 +18,7 @@ export const getEnv = (key: string): string => {
 		if (env && env[key]) {
 			return env[key];
 		}
-	} catch (e) {
+	} catch {
 		// Fallback for environments where import.meta is not supported
 	}
 

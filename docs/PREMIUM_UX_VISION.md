@@ -1,16 +1,16 @@
-# 🎨 Master Prompt: Premium "Celebra-me" Ecosystem
+# 🎨 Premium UX Vision — Celebra-me Ecosystem
 
-## 🌟 1. The Vision
+## 1. The Vision
 
 Transform **Celebra-me** from a standard invitation website into a **digital luxury** platform. Both the landing page and the invitations must emulate the tactile and visual experience of a high-end physical invitation (textured paper, embossed effects, curated typography, subtle transitions).
 
-**UX Core:** We want a "static per section" design (one section at a time in the viewport) where navigation is subtle and information flows through elegant transitions, avoiding generic infinite scrolling.
+**UX Core:** A "static per section" experience (one section at a time in the viewport) where navigation is subtle and information flows through elegant transitions, avoiding generic infinite scrolling.
 
 ---
 
-## 🗺️ 2. Section & Component Map
+## 2. Section & Component Map
 
-### 🚀 A. Landing Page (User/Client Experience)
+### A. Landing Page (User/Client Experience)
 
 | Section | Visual Status | Link QA | Notes |
 |---------|---------------|---------|-------|
@@ -24,36 +24,33 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 | **Contact (Concierge)** | ✅ Complete | ✅ Fixed | Integrated WhatsApp + Form functional |
 | **Footer** | ✅ Complete | ✅ Fixed | Legal pages created and linked |
 
-### 📜 B. Digital Invitation (Guest Experience) - [UPCOMING]
+---
 
-- [ ] **Header:** Invitation header with subtle action buttons.
-- [ ] **Cover/Preludio:** Elegant loading screen with music control (`MusicPlayer`).
-- [ ] **Hero (Signature):** Cover with names, date, and main image. "Reveal" type entrance effect.
-- [ ] **Quote (Sentiment):** Poem or phrase with real invitation typography.
-- [ ] **Countdown (Anticipation):** Minimalist counter generating urgency and emotion.
-- [ ] **Family (Protocol):** Section dedicated to parents and godparents with a subtle family tree design.
-- [ ] **Location (Map):** Aesthetic Google Maps integration with stylized "Get Directions" buttons.
-- [ ] **RSVP (Confirmation):** High-fidelity reactive form for attendance confirmation.
-- [ ] **Gift Registry:** Elegant icons for bank transfers or external links.
-- [ ] **Itinerary (Timeline):** Visual timeline of event moments.
-- [ ] **Gallery (Memories):** Photo slider with "fade-in" transition effect.
-- [ ] **Final Thank You:** Closing appreciation message.
+## 3. Digital Invitation (Guest Experience)
+
+**Execution status and next steps are tracked in:**
+- [docs/plan/invitation-master-plan.md](./plan/invitation-master-plan.md)
+
+This document defines the **qualitative UX bar** (premium signals, pacing, motion, restraint). The master plan defines the **deterministic execution order** and completion status.
+
+High-level invitation components (for orientation):
+- Ceremonial Envelope Opening → Signature Hero → Quote → Countdown → Family → Location → RSVP → Registry → Itinerary → Gallery → Final Thank You
 
 ---
 
-## 🛠️ 3. Technical & Aesthetic Specifications
+## 4. Technical & Aesthetic Specifications
 
 - **Tech Stack:** Astro (Framework), SCSS (Styles), React/TypeScript (Interactivity), Framer Motion (Motion Design).
-- **Visual Design:** "Jewelry Box" Aesthetic: Glassmorphism, Silver/Gold accents, Serif headings (Outfit/Inter).
+- **Visual Design:** "Jewelry Box" Aesthetic: Glassmorphism, Silver/Gold accents, Serif headings + clean sans details.
 - **Navigation:** Adaptive headers that switch between transparent/glass and solid luxury states.
 
 ---
 
-## 💎 4. Jewelry Box Remediation Status
+## 5. Jewelry Box Remediation Status (Landing Page)
 
-The targeted remediation of the landing page to eliminate "low-quality" signals is **Visually complete**.
+The targeted remediation of the landing page to eliminate "low-quality" signals is **visually complete**.
 
-### ✅ Completed Visual Targets
+### Completed Visual Targets
 
 - [x] **Testimonials:** "High-Society Feed" grid (Framer Motion).
 - [x] **FAQ:** "Premium Accordion System" with `AnimatePresence`.
@@ -63,7 +60,7 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 
 ---
 
-## ✅ 5. Resolved Integration Issues
+## 6. Resolved Integration Issues
 
 > All issues identified during the Digital Invitation phase transition have been resolved (2026-01-31):
 
@@ -72,11 +69,9 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 3. ~~**Responsive Breakage**~~ → Mobile toggle now correctly hidden on desktop via BEM-compliant CSS.
 4. ~~**UX Inconsistency**~~ → `EventHeader.astro` now uses `NavBarMobile.tsx` with Framer Motion.
 
----
+### Production Readiness (Link Integrity QA)
 
-### ✅ Complete: Production Readiness (Link Integrity QA)
-
-> **Archived Plan:** [docs/plan/archive/landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/archive/landing-page-completion.md)
+> **Archived Plan:** [docs/plan/archive/landing-page-completion.md](./plan/archive/landing-page-completion.md)
 
 **All items resolved as of 2026-01-31:**
 
@@ -90,21 +85,19 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 
 ---
 
-## 📁 5. Related Documentation
+## 7. Related Documentation
 
 | Document | Purpose |
 |----------|---------|
-| [landing-page-completion.md](file:///c:/Code/celebra-me/docs/plan/landing-page-completion.md) | Step-by-step plan to production |
-| [invitation-master-plan.md](file:///c:/Code/celebra-me/docs/plan/invitation-master-plan.md) | Digital invitation roadmap |
+| [docs/plan/archive/landing-page-completion.md](./plan/archive/landing-page-completion.md) | Landing page step-by-step plan (archived) |
+| [docs/plan/invitation-master-plan.md](./plan/invitation-master-plan.md) | Digital invitation roadmap + canonical progress |
 
 ---
 
-## 📅 6. Changelog
+## 8. Changelog
 
 | Date | Change |
 |------|--------|
-| 2026-01-31 | **PHASE CLOSURE**: Landing Page marked production-ready. All pending items resolved. |
-| 2026-01-31 | Archived `landing-page-completion.md` to `docs/plan/archive/` |
-| 2026-01-31 | Created `landing-page-completion.md` plan for link integrity QA |
-| 2026-01-31 | Restructured document with table-based status tracking |
-| 2026-01-30 | Visual remediation completed (Blocks A-D) |
+| 2026-01-31 | Landing Page marked production-ready. All pending items resolved. |
+| 2026-01-31 | Archived landing-page-completion.md to docs/plan/archive/ |
+| 2026-01-31 | Restructured document for clearer status mapping |

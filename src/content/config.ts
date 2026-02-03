@@ -23,6 +23,7 @@ const eventsCollection = defineCollection({
 			location: z.object({
 				venueName: z.string(),
 				address: z.string(),
+				city: z.string(),
 				mapUrl: z.string().url().optional(),
 			}),
 			family: z
@@ -80,6 +81,18 @@ const eventsCollection = defineCollection({
 					countdown: z.boolean().default(true),
 					rsvp: z.boolean().default(true),
 					gifts: z.boolean().default(false),
+					gallery: z.boolean().default(false),
+				})
+				.optional(),
+			envelope: z
+				.object({
+					sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
+					microcopy: z.string().default('Toca para abrir mi invitación'),
+					closedPalette: z.object({
+						primary: z.string().regex(/^#/, 'Must be a hex color'),
+						accent: z.string().regex(/^#/, 'Must be a hex color'),
+						background: z.string().regex(/^#/, 'Must be a hex color'),
+					}),
 				})
 				.optional(),
 		}),
