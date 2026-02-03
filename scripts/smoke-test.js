@@ -40,6 +40,9 @@ requiredFiles.forEach((file) => {
 	const filePath = path.join(distDir, file);
 	if (fs.existsSync(filePath)) {
 		console.log(`  ✅ Found: ${file}`);
+	} else if (file === 'index.html') {
+		console.warn(`  ⚠️ Missing: ${file} (Expected if the Home page is Server-Rendered/SSR)`);
+		warnings++;
 	} else {
 		console.error(`  ❌ Missing: ${file}`);
 		hasErrors = true;
@@ -132,7 +135,7 @@ seoFiles.forEach((file) => {
 });
 
 // ============================================================
-// 5. Check for optimized images (WebP)
+// Checking for optimized images (WebP)
 // ============================================================
 console.log('\n🖼️ Checking for optimized images...');
 if (fs.existsSync(astroDir)) {
@@ -143,7 +146,9 @@ if (fs.existsSync(astroDir)) {
 	if (webpFiles.length > 0 || avifFiles.length > 0) {
 		console.log(`  ✅ Optimized images: ${webpFiles.length} WebP, ${avifFiles.length} AVIF`);
 	} else {
-		console.warn(`  ⚠️ No WebP/AVIF images found (check image optimization)`);
+		console.warn(
+			`  ⚠️ No WebP/AVIF images found in _astro/ (check image optimization or Vercel handling)`,
+		);
 		warnings++;
 	}
 }

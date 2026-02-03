@@ -1,0 +1,62 @@
+---
+// src/components/invitation/Hero.astro
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import '@/styles/invitation/_hero.scss';
+
+interface Props {
+	name: string;
+	date: string;
+	time?: string;
+	venueName: string;
+	backgroundImage: ImageMetadata; // Get from content collection
+	eventType: string;
+}
+
+const { name, date, time, venueName, backgroundImage, eventType } = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+});
+
+const label = eventType === 'xv' ? 'Mis XV Años' : 'Nuestra Boda';
+---
+
+<section class="invitation-hero">
+	<div class="invitation-hero__background">
+		<Image
+			src={backgroundImage}
+			alt={name}
+			width={1920}
+			height={1080}
+			format="webp"
+			quality={80}
+			loading="eager"
+			fetchpriority="high"
+		/>
+	</div>
+
+	<div class="invitation-hero__content">
+		<span class="invitation-hero__label">{label}</span>
+		<h1 class="invitation-hero__title">{name}</h1>
+
+		<div class="invitation-hero__divider"></div>
+
+		<div class="invitation-hero__details">
+			<p class="invitation-hero__date">{formattedDate}</p>
+			{time && <p class="invitation-hero__time">{time}</p>}
+			<p class="invitation-hero__venue">{venueName}</p>
+		</div>
+	</div>
+
+	<div class="invitation-hero__scroll-indicator">
+		<span class="invitation-hero__scroll-text">Desliza</span>
+		<div class="invitation-hero__scroll-chevron">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="m6 9 6 6 6-6"/>
+			</svg>
+		</div>
+	</div>
+</section>

@@ -33,6 +33,7 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 		setTimeout(() => {
 			setPhase('exit');
 			document.body.style.overflow = 'auto';
+			document.body.classList.add('invitation-revealed');
 		}, 3000);
 	};
 

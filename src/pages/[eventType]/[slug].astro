@@ -9,7 +9,7 @@ import Layout from '@/layouts/Layout.astro';
 import Countdown from '@/components/xv/Countdown.astro';
 import EventLocation from '@/components/xv/EventLocation.astro';
 import FooterXV from '@/components/xv/Footer.astro';
-import HeroXV from '@/components/xv/Hero.astro';
+import Hero from '@/components/invitation/Hero.astro';
 import FamilyXV from '@/components/xv/Family.astro';
 import QuoteXV from '@/components/xv/Quote.astro';
 import ThankYouXV from '@/components/xv/ThankYou.astro';
@@ -87,7 +87,13 @@ const isWedding = data.eventType === 'boda';
 							gifts: false,
 						}}
 					/>
-					<HeroXV name={data.hero.name} date={data.hero.date} />
+					<Hero
+						name={data.hero.name}
+						date={data.hero.date}
+						venueName={data.location.venueName}
+						backgroundImage={data.hero.backgroundImage}
+						eventType={data.eventType}
+					/>
 					{data.sections?.countdown && <Countdown eventDate={data.hero.date} />}
 					{
 						data.family && (
