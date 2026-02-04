@@ -27,7 +27,7 @@
             { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
             { "name": "Sra. Ana María", "role": "Madrina de Honor" }
         ],
-        "featuredImage": "../../assets/images/about/partyToast.jpg"
+        "featuredImage": "../../assets/images/about/lucia-family.png"
     },
     "sections": {
         "countdown": true,
@@ -53,6 +53,7 @@
         "title": "Música de fondo"
     },
     "envelope": {
+        "disabled": true,
         "sealStyle": "wax",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
