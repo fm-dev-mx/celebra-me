@@ -21,10 +21,54 @@ const eventsCollection = defineCollection({
 				backgroundImage: image(),
 			}),
 			location: z.object({
+				// Base venue info (backward compatible)
 				venueName: z.string(),
 				address: z.string(),
 				city: z.string(),
 				mapUrl: z.string().url().optional(),
+
+				// Extended: Ceremony venue (optional, for XV/wedding with church)
+				ceremony: z
+					.object({
+						venueName: z.string(),
+						address: z.string(),
+						date: z.string(),
+						time: z.string(),
+						mapUrl: z.string().url().optional(),
+						image: z.string().optional(),
+					})
+					.optional(),
+
+				// Extended: Reception venue with itinerary
+				reception: z
+					.object({
+						venueName: z.string(),
+						address: z.string(),
+						date: z.string(),
+						time: z.string(),
+						mapUrl: z.string().url().optional(),
+						image: z.string().optional(),
+						itinerary: z
+							.array(
+								z.object({
+									icon: z.enum(['waltz', 'dinner', 'toast', 'cake', 'party']),
+									label: z.string(),
+									time: z.string(),
+								}),
+							)
+							.optional(),
+					})
+					.optional(),
+
+				// Event indications (dress code, gifts policy, etc.)
+				indications: z
+					.array(
+						z.object({
+							icon: z.enum(['crown', 'envelope', 'forbidden', 'dress', 'gift']),
+							text: z.string(),
+						}),
+					)
+					.optional(),
 			}),
 			family: z
 				.object({

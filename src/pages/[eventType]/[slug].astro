@@ -111,9 +111,9 @@ const isWedding = data.eventType === 'boda';
 						)
 					}
 					<EventLocation
-						venue={data.location.venueName}
-						address={data.location.address}
-						mapUrl={data.location.mapUrl}
+						ceremony={data.location.ceremony}
+						reception={data.location.reception}
+						indications={data.location.indications}
 					/>
 					{
 						data.sections?.rsvp && data.rsvp && (

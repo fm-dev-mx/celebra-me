@@ -16,7 +16,33 @@
         "venueName": "Quinta Las Flores",
         "address": "Av. Real de Catorce 123, Col. Valle Alto, Monterrey, N.L.",
         "city": "Monterrey",
-        "mapUrl": "https://maps.app.goo.gl/example"
+        "mapUrl": "https://maps.app.goo.gl/example",
+        "ceremony": {
+            "venueName": "Parroquia de la Sagrada Familia",
+            "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
+            "date": "25 de abril de 2026",
+            "time": "6:00 PM",
+            "mapUrl": "https://maps.google.com/?q=Parroquia+Sagrada+Familia",
+            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg"
+        },
+        "reception": {
+            "venueName": "Quinta Las Flores",
+            "address": "Av. Real de Catorce 123, Col. Valle Alto",
+            "date": "25 de abril de 2026",
+            "time": "8:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/example",
+            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg",
+            "itinerary": [
+                { "icon": "waltz", "label": "Vals y baile de honor", "time": "8:30 PM" },
+                { "icon": "dinner", "label": "Cena", "time": "9:30 PM" },
+                { "icon": "toast", "label": "Brindis", "time": "11:00 PM" }
+            ]
+        },
+        "indications": [
+            { "icon": "crown", "text": "El color púrpura está reservado para la festejada." },
+            { "icon": "envelope", "text": "Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será bien recibido." },
+            { "icon": "forbidden", "text": "Celebración sin niños." }
+        ]
     },
     "family": {
         "parents": {
