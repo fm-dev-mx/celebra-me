@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import '@/styles/xv/_background-music.scss';
+import '@/styles/invitation/_background-music.scss';
 
 interface MusicPlayerProps {
 	url: string;

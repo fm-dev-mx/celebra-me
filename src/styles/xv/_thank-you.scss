@@ -1,24 +1,22 @@
-// src/frontend/styles/XV/thankyou.xv.scss
-// ----------------------------------------------------
-// Thank You Section Styles
-// ----------------------------------------------------
-
-// Import variables and fonts from our shared variables file
+// src/styles/xv/_thank-you.scss
 @use '../global/mixins' as mixins;
 @use 'variables' as *;
 
 .thank-you-section {
 	position: relative;
-	padding: 3rem 1rem;
-	height: 60vh;
+	padding: 4rem 1rem;
+	min-height: 60vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	/* Subtle gradient background for a refined look */
-	background: linear-gradient(135deg, rgba($color-white, 0.4), transparent);
+	background: linear-gradient(
+		180deg,
+		rgba($color-white, 0.95) 0%,
+		rgba($color-secondary-light, 0.3) 100%
+	);
 	overflow: hidden;
 
-	// Optional textured overlay for extra elegance
+	// Subtle decorative overlay
 	&::before {
 		content: '';
 		position: absolute;
@@ -26,81 +24,91 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		/* Using an external image for a subtle pattern; adjust URL as needed */
-		background-image: url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318437/1080x1920bg_blue_flowers_w_zcm1de.jpg');
-		background-size: cover;
-		opacity: 0.15;
+		background: radial-gradient(
+			ellipse at center,
+			rgba($color-secondary, 0.1) 0%,
+			transparent 70%
+		);
 		pointer-events: none;
 	}
 }
 
 .thank-you-content {
 	position: relative;
-	z-index: 1; // Ensure content appears above the overlay
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 2rem;
-	max-width: 800px;
+	max-width: 700px;
 	margin: 0 auto;
-
-	/* Smooth fade-in effect */
+	padding: 0 1rem;
 	opacity: 0;
 	transform: translateY(20px);
-	animation: fadeInUp 1s forwards ease-out;
+	animation: fadeInUp 1s ease-out 0.3s forwards;
 }
 
 .photo-frame {
-	width: 200px;
-	height: 200px;
-	border: 2px solid rgba($color-dark, 0.1);
-	border-radius: 10px;
+	width: 180px;
+	height: 180px;
+	border: 3px solid rgba($color-secondary-dark, 0.3);
+	border-radius: 50%;
 	overflow: hidden;
-	box-shadow: 0 4px 12px rgba($color-secondary, 1);
+	box-shadow:
+		0 4px 20px rgba($color-secondary-dark, 0.2),
+		0 0 0 6px rgba($color-secondary-light, 0.5);
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-	/* Ensure the image covers the frame properly */
-	img {
+	@include mixins.respond-to(sm) {
+		width: 220px;
+		height: 220px;
+	}
+
+	&:hover {
+		transform: scale(1.03);
+		box-shadow:
+			0 8px 30px rgba($color-secondary-dark, 0.3),
+			0 0 0 8px rgba($color-secondary-light, 0.6);
+	}
+
+	:global(.photo-image) {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		transition: transform 0.3s ease;
 	}
 
-	/* Subtle zoom on hover */
-	&:hover img {
-		transform: scale(1.05);
+	&:hover :global(.photo-image) {
+		transform: scale(1.08);
 	}
 }
 
 .message-container {
 	text-align: center;
-	max-width: 350px;
+	max-width: 550px;
+}
+
+.thank-you-message {
+	font-family: $font-heading-formal;
+	font-size: clamp(1rem, 2.5vw, 1.2rem);
+	line-height: 1.8;
+	color: $color-dark;
+	margin: 0 0 1.5rem 0;
+	letter-spacing: 0.02em;
 
 	@include mixins.respond-to(sm) {
-		max-width: 700px;
-	}
-
-	.thank-you-message {
-		font-family: $font-heading-formal;
-		font-size: 1rem;
-		line-height: 1.5;
-		color: $color-dark;
-		padding: 0 1rem;
-
-		@include mixins.respond-to(sm) {
-			font-size: 1.2rem;
-		}
-	}
-
-	.name {
-		font-family: $font-decorative-cursive;
-		font-size: 1.5rem;
-		color: rgba($color-secondary-dark, 0.9);
-		margin-top: 1rem;
+		font-size: 1.15rem;
 	}
 }
 
-/* FadeInUp animation keyframes for smooth entrance */
+.closing-name {
+	font-family: $font-decorative-cursive;
+	font-size: clamp(1.8rem, 4vw, 2.5rem);
+	color: $color-secondary-dark;
+	margin: 0;
+	opacity: 0.9;
+}
+
 @keyframes fadeInUp {
 	from {
 		opacity: 0;
