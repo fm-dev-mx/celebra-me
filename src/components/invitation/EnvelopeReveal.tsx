@@ -16,7 +16,15 @@ interface Props {
 }
 
 const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcopy, palette }) => {
-	const [phase, setPhase] = useState<'closed' | 'opening' | 'rising' | 'exit'>('closed');
+	const [phase, setPhase] = useState<'closed' | 'opening' | 'rising' | 'exit'>(() => {
+		if (typeof window !== 'undefined') {
+			const params = new URLSearchParams(window.location.search);
+			if (params.get('skipEnvelope') === 'true') {
+				return 'exit';
+			}
+		}
+		return 'closed';
+	});
 	const controls = useAnimation();
 
 	const handleOpen = () => {
@@ -56,6 +64,9 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 				window.removeEventListener('wheel', handleScrollAttempt);
 				window.removeEventListener('touchmove', handleScrollAttempt);
 			};
+		} else if (phase === 'exit') {
+			document.body.style.overflow = 'auto';
+			document.body.classList.add('invitation-revealed');
 		} else {
 			document.body.style.overflow = 'auto';
 		}

@@ -86,6 +86,7 @@ const eventsCollection = defineCollection({
 				.optional(),
 			envelope: z
 				.object({
+					disabled: z.boolean().optional().default(false),
 					sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
 					microcopy: z.string().default('Toca para abrir mi invitación'),
 					closedPalette: z.object({

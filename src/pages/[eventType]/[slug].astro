@@ -63,7 +63,7 @@ const isWedding = data.eventType === 'boda';
 	</style>
 	<main class="event-theme-wrapper">
 		{
-			data.envelope && (
+			data.envelope && !data.envelope.disabled && (
 				<EnvelopeReveal
 					client:load
 					name={data.hero.name}
