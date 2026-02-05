@@ -45,8 +45,12 @@ const CountdownTimer: React.FC<Props> = ({ eventDate }) => {
 
 	return (
 		<div className="countdown__timer">
-			{segments.map((segment) => (
-				<div key={segment.label} className="countdown__segment">
+			{segments.map((segment, index) => (
+				<div
+					key={segment.label}
+					className="countdown__segment"
+					style={{ '--index': index } as React.CSSProperties}
+				>
 					<div className="countdown__value-wrapper">
 						<AnimatePresence mode="popLayout" initial={false}>
 							<motion.span

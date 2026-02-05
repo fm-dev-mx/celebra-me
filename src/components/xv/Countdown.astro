@@ -51,4 +51,24 @@ const formattedEventDate = getFormattedDate(eventDate);
 	</div>
 </section>
 
+<script>
+	const observerOptions = {
+		threshold: 0.15,
+		rootMargin: '0px 0px -50px 0px'
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		});
+	}, observerOptions);
+
+	const countdownSection = document.querySelector('.countdown-section');
+	if (countdownSection) {
+		observer.observe(countdownSection);
+	}
+</script>
 

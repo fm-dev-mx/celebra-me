@@ -3,7 +3,7 @@
 // Elegant Quote Section Styles
 // ----------------------------------------------------
 
-@use 'variables' as *;
+@use 'variables' as vars;
 
 .quote-section {
 	position: relative;
@@ -13,8 +13,8 @@
 	align-items: center;
 	overflow: hidden;
 	padding: 6rem 1.5rem;
-	background-color: var(--color-primary-dark, $color-primary-dark);
-	color: $color-secondary-light;
+	background-color: var(--color-primary-dark);
+	color: var(--color-secondary-light);
 	text-align: center;
 }
 
@@ -38,7 +38,7 @@
 .quote-divider-bottom {
 	width: 150px;
 	margin: 0 auto;
-	color: rgba($color-secondary-light, 0.4);
+	color: rgba(var(--color-secondary-light-rgb), 0.4);
 
 	svg {
 		width: 100%;
@@ -57,7 +57,7 @@
 .quote-content {
 	margin: 0;
 	padding: 0;
-	font-family: $font-subtitle-refined;
+	font-family: vars.$font-subtitle-refined;
 	font-size: clamp(1.5rem, 5vw, 2.2rem);
 	line-height: 1.6;
 	font-style: italic;
@@ -99,7 +99,7 @@
 }
 
 .quote-author {
-	font-family: $font-heading-formal;
+	font-family: vars.$font-heading-formal;
 	font-size: clamp(0.9rem, 3vw, 1.1rem);
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
