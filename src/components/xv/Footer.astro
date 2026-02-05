@@ -7,6 +7,7 @@
 */
 import '@/styles/xv/_footer.scss';
 import Logo from '@/components/ui/Logo.astro';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
 
 // Define contact details
 const contactNumber = '526681167477';
@@ -27,7 +28,13 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				<img src="/icons/whatsappIcon.svg" alt="WhatsApp" class="w-6 h-6" />
+				<OptimizedImage
+					imagePath="/icons/whatsappIcon.svg"
+					alt="WhatsApp"
+					width={24}
+					height={24}
+					class="w-6 h-6"
+				/>
 				Contáctanos
 			</a>
 		</div>

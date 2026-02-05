@@ -10,6 +10,7 @@
 */
 import '@/styles/xv/_event-location.scss';
 import '@/styles/xv/_section-nav-button.scss';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import SectionNavButton from '@/components/xv/components/SectionNavButton.astro';
 import CrownIcon from '@/components/xv/icons/CrownIcon.astro';
 import EnvelopedIcon from '@/components/xv/icons/EnvelopedIcon.astro';
@@ -68,8 +69,8 @@ const iconMap = {
 				<h3 class="event-location__card-title">Ceremonia</h3>
 				<article class="event-location__card event-location__card--ceremony">
 					<div class="event-location__card-image-container">
-						<img
-							src={ceremony.image || ''}
+						<OptimizedImage
+							imagePath={ceremony.image}
 							alt={ceremony.venueName}
 							class="event-location__card-image"
 						/>
@@ -108,8 +109,8 @@ const iconMap = {
 				<h3 class="event-location__card-title">Recepción</h3>
 				<article class="event-location__card event-location__card--reception">
 					<div class="event-location__card-image-container">
-						<img
-							src={reception.image || ''}
+						<OptimizedImage
+							imagePath={reception.image}
 							alt={reception.venueName}
 							class="event-location__card-image"
 						/>

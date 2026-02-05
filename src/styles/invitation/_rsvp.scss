@@ -4,13 +4,13 @@
  * ----------------------------------------------------
  */
 
-@use 'variables' as vars;
+// Simplified: Using CSS variables instead of SCSS bridge
 @use '../global/mixins' as mixins;
 
 .rsvp {
 	background-image: linear-gradient(
-			rgba(vars.$color-white, 0.9),
-			rgba(vars.$color-primary-light, 0.4)
+			rgba(var(--color-white-rgb), 0.9),
+			rgba(var(--color-primary-light-rgb), 0.4)
 		),
 		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318437/1080x1920bg-white_flowers_fpxl97.jpg');
 	background-size: cover;
@@ -18,7 +18,7 @@
 	padding: 2rem;
 	width: 80vw;
 	margin: 2rem auto;
-	box-shadow: 1px 1px 12px rgba(vars.$color-dark, 0.4);
+	box-shadow: 1px 1px 12px rgba(var(--color-dark-rgb), 0.4);
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
@@ -38,8 +38,8 @@
 	&__title {
 		text-align: center;
 		margin-bottom: 1.5rem;
-		font-family: vars.$font-heading-elegant;
-		color: vars.$color-primary-dark;
+		font-family: var(--font-display);
+		color: var(--color-primary-dark);
 	}
 
 	&__form {
@@ -54,26 +54,26 @@
 	}
 
 	label {
-		font-family: vars.$font-body;
+		font-family: var(--font-body);
 		font-size: 1rem;
-		color: vars.$color-primary-dark;
+		color: var(--color-primary-dark);
 		margin-bottom: 0.5rem;
 	}
 
 	input,
 	textarea {
-		font-family: vars.$font-body;
+		font-family: var(--font-body);
 		font-size: 1rem;
 		padding: 0.75rem;
-		border: 1px solid rgba(vars.$color-primary, 0.3);
+		border: 1px solid rgba(var(--color-primary-rgb), 0.3);
 		border-radius: 4px;
 		transition:
 			border-color 0.2s ease,
 			box-shadow 0.2s ease;
 
 		&:focus {
-			border-color: vars.$color-primary;
-			box-shadow: 0 0 4px rgba(vars.$color-primary, 0.5);
+			border-color: var(--color-primary);
+			box-shadow: 0 0 4px rgba(var(--color-primary-rgb), 0.5);
 			outline: none;
 		}
 	}
@@ -85,10 +85,10 @@
 	}
 
 	&__button {
-		background-color: rgba(vars.$color-primary-light, 0.5);
-		border: 2px solid rgba(vars.$color-primary-light, 0.9);
-		color: rgba(vars.$color-primary-dark, 0.6);
-		font-family: vars.$font-heading-elegant;
+		background-color: rgba(var(--color-primary-light-rgb), 0.5);
+		border: 2px solid rgba(var(--color-primary-light-rgb), 0.9);
+		color: rgba(var(--color-primary-dark-rgb), 0.6);
+		font-family: var(--font-display);
 		font-size: 1.1rem;
 		font-weight: 600;
 		padding: 0.5rem;
@@ -100,10 +100,10 @@
 
 		&:hover,
 		&:focus {
-			background-color: rgba(vars.$color-primary, 0.5);
+			background-color: rgba(var(--color-primary-rgb), 0.5);
 			transform: translateY(-1px);
 			font-weight: 400;
-			color: rgba(vars.$color-white, 0.9);
+			color: rgba(var(--color-white-rgb), 0.9);
 		}
 	}
 }
@@ -117,9 +117,9 @@
 		gap: 1rem;
 	}
 	label {
-		font-family: vars.$font-body;
+		font-family: var(--font-body);
 		font-size: 1rem;
-		color: vars.$color-primary-dark;
+		color: var(--color-primary-dark);
 		cursor: pointer;
 
 		input {
@@ -129,13 +129,13 @@
 }
 
 .rsvp__message-not-attending {
-	font-family: vars.$font-body;
+	font-family: var(--font-body);
 	font-size: 1rem;
-	color: vars.$color-primary-dark;
+	color: var(--color-primary-dark);
 	padding: 0.75rem;
-	border: 1px solid rgba(vars.$color-primary, 0.3);
+	border: 1px solid rgba(var(--color-primary-rgb), 0.3);
 	border-radius: 4px;
-	background-color: rgba(vars.$color-white, 0.8);
+	background-color: rgba(var(--color-white-rgb), 0.8);
 	text-align: center;
 }
 
@@ -144,14 +144,14 @@
 	margin: 2rem auto;
 	padding: 2rem 1.5rem;
 	background-image: linear-gradient(
-			rgba(vars.$color-primary-light, 0.1),
-			rgba(vars.$color-secondary, 0.6)
+			rgba(var(--color-primary-light-rgb), 0.1),
+			rgba(var(--color-secondary-rgb), 0.6)
 		),
 		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318462/1920x1080bg-white_flowers_glcgzd.jpg');
 	background-size: cover;
 	border-radius: 20px;
-	border: 2px solid rgba(vars.$color-dark, 0.2);
-	box-shadow: 0 4px 12px rgba(vars.$color-dark, 0.5);
+	border: 2px solid rgba(var(--color-dark-rgb), 0.2);
+	box-shadow: 0 4px 12px rgba(var(--color-dark-rgb), 0.5);
 	text-align: center;
 	display: flex;
 	flex-direction: column;
@@ -175,15 +175,15 @@
 	}
 
 	&-message {
-		font-family: vars.$font-subtitle-refined;
+		font-family: var(--font-display);
 		font-size: 1.2rem;
 		font-weight: 600;
-		color: rgba(vars.$color-dark, 0.6);
-		text-shadow: 1px 1px 10px rgba(vars.$color-dark, 0.5);
+		color: rgba(var(--color-dark-rgb), 0.6);
+		text-shadow: 1px 1px 10px rgba(var(--color-dark-rgb), 0.5);
 
 		&__underline {
 			font-size: 1.3rem;
-			color: rgba(vars.$color-dark, 0.7);
+			color: rgba(var(--color-dark-rgb), 0.7);
 			text-decoration: underline;
 		}
 	}
@@ -196,9 +196,9 @@
 	}
 
 	.rsvp__instagram-button {
-		font-family: vars.$font-body;
+		font-family: var(--font-body);
 		font-size: 1rem;
-		color: vars.$color-white;
+		color: var(--color-white);
 		padding: 0.5rem 1rem;
 		border-radius: 4px;
 		text-decoration: none;
@@ -242,25 +242,25 @@
 }
 
 .modal__content {
-	background-color: vars.$color-white;
+	background-color: var(--color-white);
 	padding: 2rem;
 	border-radius: 8px;
 	max-width: 90vw;
 	width: 400px;
 	text-align: center;
-	box-shadow: 0 4px 12px rgba(vars.$color-dark, 0.3);
+	box-shadow: 0 4px 12px rgba(var(--color-dark-rgb), 0.3);
 }
 
 .modal__header {
 	font-size: 1.5rem;
 	margin-bottom: 1rem;
-	color: vars.$color-primary-dark;
+	color: var(--color-primary-dark);
 }
 
 .modal__body {
 	margin-bottom: 1.5rem;
 	font-size: 1rem;
-	color: vars.$color-dark;
+	color: var(--color-dark);
 }
 
 .modal__footer {
@@ -274,7 +274,7 @@
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	font-family: vars.$font-heading-elegant;
+	font-family: var(--font-display);
 	font-size: 1rem;
 	transition:
 		background-color 0.2s ease,
@@ -287,11 +287,11 @@
 }
 
 .modal__button--confirm {
-	background-color: vars.$color-primary;
-	color: vars.$color-white;
+	background-color: var(--color-primary);
+	color: var(--color-white);
 }
 
 .modal__button--cancel {
-	background-color: rgba(vars.$color-primary-light, 0.2);
-	color: vars.$color-dark;
+	background-color: rgba(var(--color-primary-light-rgb), 0.2);
+	color: var(--color-dark);
 }

@@ -12,21 +12,31 @@
 	--color-primary: #c5a059; /* Muted Gold */
 	--color-primary-rgb: 197, 160, 89;
 	--color-primary-dark: #9e7d3d; /* Darker Gold */
+	--color-primary-dark-rgb: 158, 125, 61;
 	--color-primary-light: #e8dcc2; /* Cream/Champagne */
+	--color-primary-light-rgb: 232, 220, 194;
 	--color-secondary: #2c3e50; /* Deep Slate */
 	--color-secondary-rgb: 44, 62, 80;
+	--color-secondary-light: #f4f4f4;
+	--color-secondary-light-rgb: 244, 244, 244;
 	--color-accent: #e8dcc2; /* Cream/Champagne */
 	--color-accent-rgb: 232, 220, 194;
 	--color-accent-dark: #c5a059; /* Muted Gold */
 	--color-accent-light: #e8dcc2; /* Cream/Champagne */
 	--color-background: #fafafa; /* Soft White */
 	--color-text: #333333; /* Dark Grey for readability */
+	--color-white: #ffffff;
+	--color-white-rgb: 255, 255, 255;
+	--color-dark: #333333;
+	--color-dark-rgb: 51, 51, 51;
+	--color-darkest: #111111;
+	--color-darkest-rgb: 17, 17, 17;
 
 	/* Typography */
 	--font-display: 'Playfair Display', serif;
-	--font-body: 'Lato', sans-serif;
+	--font-body: 'Rubik Variable', sans-serif;
 
-	/* Spacing */
+	/* Spacing & Utilities */
 	--spacing-sm: 0.5rem;
 	--spacing-md: 1rem;
 	--spacing-lg: 2rem;
