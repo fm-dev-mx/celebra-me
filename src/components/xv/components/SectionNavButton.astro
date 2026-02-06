@@ -1,13 +1,23 @@
 ---
 import '@/styles/xv/_section-nav-button.scss';
+import ChevronDownIcon from '@/components/xv/icons/ChevronDownIcon.astro';
+
 interface Props {
 	href: string;
 	class?: string;
-	section: string;
+	section?: string;
 }
+
 const { href, class: className, section } = Astro.props;
+
+// Ensure we don't accidentally use the same class as the section itself
+// If className is 'event-location', we convert it to 'section-nav-button--event-location'
+const modifierClass = className ? `section-nav-button--${className}` : '';
 ---
 
-<a href={href} class={`section-nav-button ${className}`}>
-	{section}
+<a href={href} class={`section-nav-button ${modifierClass}`}>
+	{section && <span class="section-nav-button__text">{section}</span>}
+	<div class="section-nav-button__icon">
+		<ChevronDownIcon />
+	</div>
 </a>
