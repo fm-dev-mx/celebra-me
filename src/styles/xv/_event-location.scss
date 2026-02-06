@@ -27,36 +27,32 @@
 
 		@include mixins.respond-to(md) {
 			flex-direction: row;
-			align-items: stretch;
+			align-items: flex-start; /* Natural heights based on content */
 			justify-content: center;
-			gap: clamp(1.5rem, 3vw, 2.5rem);
+			gap: clamp(2rem, 5vw, 4rem);
 		}
 	}
 
 	&__card-wrapper {
 		width: 100%;
-		max-width: 400px;
+		max-width: 420px; /* Standardized width */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		flex: 1; /* Allow wrappers to grow equally */
-
-		@include mixins.respond-to(md) {
-			align-self: stretch; /* Force wrappers to fill container height */
-		}
+		flex: 1;
 	}
 
 	&__card-title {
-		font-family: vars.$font-subtitle-refined; /* Cormorant Garamond */
-		font-size: 1.6rem;
-		color: hsla(43, 55%, 45%, 1); /* Rich gold */
+		font-family: vars.$font-heading-modern; /* Montserrat for a clean secondary label */
+		font-size: 0.5rem;
+		color: hsla(43, 30%, 45%, 0.7);
 		letter-spacing: 5px;
 		text-transform: uppercase;
 		margin-bottom: 0.5rem;
 		font-weight: 600;
 
 		@include mixins.respond-to(md) {
-			font-size: 1.9rem;
+			font-size: 0.85rem;
 		}
 	}
 
@@ -108,19 +104,7 @@
 		overflow: hidden;
 
 		&--ceremony {
-			animation-delay: 0.1s;
-
-			/* Decorative divider to balance shorter card */
-			.event-location__card-content::after {
-				content: '';
-				display: block;
-				width: 60px;
-				height: 1px;
-				background: linear-gradient(90deg, transparent, hsla(43, 55%, 55%, 0.35), transparent);
-				margin: auto auto 0;
-				padding-top: 2rem;
-			}
-		}
+			animation-delay: 0.1s;		}
 		&--reception { animation-delay: 0.25s; }
 
 		/* Subtle Hover Effect */
@@ -134,16 +118,18 @@
 		/* Premium Jewelry Photo Frame */
 		&-image-outer-frame {
 			width: 100%;
-			border-radius: 4px;
+			border-radius: 2px;
 			background: linear-gradient(135deg,
-				hsla(43, 55%, 65%, 1) 0%,
-				hsla(43, 40%, 85%, 1) 50%,
-				hsla(43, 55%, 55%, 1) 100%);
-			padding: 3px;
+				#c5a059 0%,
+				#f1e1b9 45%,
+				#d4af37 55%,
+				#a67c37 100%
+			); /* Realistic gold foil gradient */
+			padding: 2px;
 			box-shadow:
-				0 8px 24px rgba(0, 0, 0, 0.08),
-				inset 0 1px 2px rgba(255, 255, 255, 0.4);
-			margin-bottom: clamp(1rem, 2vh, 2rem);
+				0 10px 30px -10px rgba(0,0,0,0.3),
+				inset 0 0 1px rgba(255,255,255,0.5);
+			margin-bottom: 2rem;
 		}
 
 		&-image-inner-frame {
@@ -179,27 +165,31 @@
 				margin: 0 0 2rem;
 
 				&__place {
-					font-size: 1.6rem;
+					font-family: vars.$font-heading-elegant; /* Playfair Display */
+					font-size: 1.9rem;
 					color: #1a1a1a;
-					margin-bottom: 0.8rem;
-					line-height: 1.2;
-					letter-spacing: 1px;
+					margin-bottom: 1.5rem;
+					line-height: 1.1;
+					letter-spacing: -0.5px;
 				}
 
 				&__date {
-					font-size: 2.2rem; /* Make it pop */
+					font-family: vars.$font-decorative-calligraphy; /* Pinyon Script */
+					font-size: clamp(1rem, 6vw, 1.3rem);
 					color: var(--color-primary, #d4af37);
-					margin-bottom: 0.2rem;
+					margin-bottom: 0.5rem;
+					white-space: nowrap; /* Ensure single line */
+					display: block;
 				}
 
 				&__hour {
-					font-family: vars.$font-heading-modern; /* Montserrat */
-					font-size: 0.75rem;
-					letter-spacing: 4px; /* Increased tracking */
+					font-family: vars.$font-heading-modern;
+					font-size: clamp(0.7rem, 2vw, 1rem);
+					letter-spacing: 6px;
 					font-weight: 500;
 					text-transform: uppercase;
-					color: hsla(0, 0%, 45%, 1);
-					margin-bottom: 2rem;
+					color: hsla(0, 0%, 55%, 1);
+					margin-bottom: 2.5rem;
 					display: block;
 				}
 

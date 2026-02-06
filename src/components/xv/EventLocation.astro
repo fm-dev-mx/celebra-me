@@ -112,6 +112,8 @@ const iconMap = {
 									class="nav-button nav-button--apple"
 									target="_blank"
 									rel="noopener noreferrer"
+									data-apple-link
+									style="display: none;"
 								>
 									Apple Maps
 								</a>
@@ -207,6 +209,8 @@ const iconMap = {
 									class="nav-button nav-button--apple"
 									target="_blank"
 									rel="noopener noreferrer"
+									data-apple-link
+									style="display: none;"
 								>
 									Apple Maps
 								</a>
@@ -290,4 +294,17 @@ const iconMap = {
 			}
 		});
 	});
+</script>
+
+<script>
+	// Show Apple Maps only on iOS/macOS devices
+	const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+				 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+	if (isIOS) {
+		const appleLinks = document.querySelectorAll('[data-apple-link]');
+		appleLinks.forEach(link => {
+			(link as HTMLElement).style.display = 'flex';
+		});
+	}
 </script>
