@@ -22,7 +22,9 @@
             "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
             "date": "25 de abril de 2026",
             "time": "6:00 PM",
-            "mapUrl": "https://maps.google.com/?q=Parroquia+Sagrada+Familia",
+            "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
+            "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
+            "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
             "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg"
         },
         "reception": {
@@ -31,6 +33,8 @@
             "date": "25 de abril de 2026",
             "time": "8:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example",
+            "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
+            "googleMapsUrl": "https://maps.app.goo.gl/example",
             "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg",
             "itinerary": [
                 { "icon": "waltz", "label": "Vals y baile de honor", "time": "8:30 PM" },

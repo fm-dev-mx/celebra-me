@@ -16,7 +16,14 @@ export default defineConfig({
 			: 'https://celebra-me.vercel.app',
 
 	integrations: [react(), tailwind(), sitemap(), robotsTxt()],
-
+	image: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'res.cloudinary.com',
+			},
+		],
+	},
 	vite: {
 		resolve: {
 			alias: {
@@ -66,7 +73,7 @@ export default defineConfig({
 		imageService: true, // Enable Vercel's image optimization for local images
 		imagesConfig: {
 			sizes: [320, 640, 960, 1200, 1800],
-			domains: ['images.unsplash.com'], // Allow external images from Unsplash
+			domains: ['images.unsplash.com', 'res.cloudinary.com'], // Allow external images
 		},
 	}),
 });

@@ -35,6 +35,7 @@ const eventsCollection = defineCollection({
 						date: z.string(),
 						time: z.string(),
 						mapUrl: z.string().url().optional(),
+						googleMapsUrl: z.string().url().optional(),
 						image: z.string().optional(),
 					})
 					.optional(),
@@ -47,6 +48,7 @@ const eventsCollection = defineCollection({
 						date: z.string(),
 						time: z.string(),
 						mapUrl: z.string().url().optional(),
+						googleMapsUrl: z.string().url().optional(),
 						image: z.string().optional(),
 						itinerary: z
 							.array(

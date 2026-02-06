@@ -18,6 +18,8 @@ import ForbiddenIcon from '@/components/xv/icons/ForbiddenIcon.astro';
 import WaltzIcon from '@/components/xv/icons/WaltzIcon.astro';
 import DinnerIcon from '@/components/xv/icons/DinnerIcon.astro';
 import ToastIcon from '@/components/xv/icons/ToastIcon.astro';
+import MapIcon from '@/components/xv/icons/MapIcon.astro';
+import CopyIcon from '@/components/xv/icons/CopyIcon.astro';
 
 interface VenueData {
 	venueName: string;
@@ -25,6 +27,8 @@ interface VenueData {
 	date: string;
 	time: string;
 	mapUrl?: string;
+	appleMapsUrl?: string;
+	googleMapsUrl?: string;
 	image?: string;
 }
 
@@ -66,39 +70,74 @@ const iconMap = {
 	<div class="event-location__container">
 		{ceremony && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">Ceremonia</h3>
+				<h3 class="event-location__card-title font-heading-formal">Ceremonia</h3>
+				<div class="event-location__card-flourish" aria-hidden="true">
+					<span class="flourish-line"></span>
+					<span class="flourish-diamond"></span>
+					<span class="flourish-line"></span>
+				</div>
 				<article class="event-location__card event-location__card--ceremony">
-					<div class="event-location__card-image-container">
-						<OptimizedImage
-							imagePath={ceremony.image}
-							alt={ceremony.venueName}
-							class="event-location__card-image"
-						/>
+					<div class="event-location__card-image-outer-frame">
+						<div class="event-location__card-image-inner-frame">
+							<div class="event-location__card-image-container">
+								<OptimizedImage
+									imagePath={ceremony.image}
+									alt={ceremony.venueName}
+									class="event-location__card-image"
+								/>
+							</div>
+						</div>
 					</div>
 					<div class="event-location__card-content">
 						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place">
+							<li class="event-location__card-content-list__place font-heading-formal">
 								{ceremony.venueName}
 							</li>
-							<li class="event-location__card-content-list__date">
+							<li class="event-location__card-content-list__date font-decorative-dancing">
 								{ceremony.date}
 							</li>
 							<li class="event-location__card-content-list__hour">{ceremony.time}</li>
-							<li class="event-location__card-content-list__address">
-								{ceremony.address}
+							<li class="event-location__card-content-list__address font-body">
+								<span class="address-text">{ceremony.address}</span>
+								<button class="copy-button" data-address={ceremony.address} aria-label="Copiar dirección" title="Copiar dirección">
+									<CopyIcon />
+								</button>
 							</li>
 						</ul>
-						{ceremony.mapUrl && (
-							<a
-								href={ceremony.mapUrl}
-								class="event-location__card-content-button"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="Click to view location on Google Maps"
-							>
-								Cómo llegar
-							</a>
-						)}
+
+						<div class="event-location__navigation-buttons">
+							{ceremony.appleMapsUrl && (
+								<a
+									href={ceremony.appleMapsUrl}
+									class="nav-button nav-button--apple"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Apple Maps
+								</a>
+							)}
+							{ceremony.googleMapsUrl && (
+								<a
+									href={ceremony.googleMapsUrl}
+									class="nav-button nav-button--maps"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Google Maps
+								</a>
+							)}
+							{!ceremony.appleMapsUrl && !ceremony.googleMapsUrl && ceremony.mapUrl && (
+								<a
+									href={ceremony.mapUrl}
+									class="nav-button nav-button--primary"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<MapIcon />
+									Cómo llegar
+								</a>
+							)}
+						</div>
 					</div>
 				</article>
 			</div>
@@ -106,26 +145,38 @@ const iconMap = {
 
 		{reception && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">Recepción</h3>
+				<h3 class="event-location__card-title font-heading-formal">Recepción</h3>
+				<div class="event-location__card-flourish" aria-hidden="true">
+					<span class="flourish-line"></span>
+					<span class="flourish-diamond"></span>
+					<span class="flourish-line"></span>
+				</div>
 				<article class="event-location__card event-location__card--reception">
-					<div class="event-location__card-image-container">
-						<OptimizedImage
-							imagePath={reception.image}
-							alt={reception.venueName}
-							class="event-location__card-image"
-						/>
+					<div class="event-location__card-image-outer-frame">
+						<div class="event-location__card-image-inner-frame">
+							<div class="event-location__card-image-container">
+								<OptimizedImage
+									imagePath={reception.image}
+									alt={reception.venueName}
+									class="event-location__card-image"
+								/>
+							</div>
+						</div>
 					</div>
 					<div class="event-location__card-content">
 						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place">
+							<li class="event-location__card-content-list__place font-heading-formal">
 								{reception.venueName}
 							</li>
-							<li class="event-location__card-content-list__date">
+							<li class="event-location__card-content-list__date font-decorative-dancing">
 								{reception.date}
 							</li>
 							<li class="event-location__card-content-list__hour">{reception.time}</li>
-							<li class="event-location__card-content-list__address">
-								{reception.address}
+							<li class="event-location__card-content-list__address font-body">
+								<span class="address-text">{reception.address}</span>
+								<button class="copy-button" data-address={reception.address} aria-label="Copiar dirección" title="Copiar dirección">
+									<CopyIcon />
+								</button>
 							</li>
 						</ul>
 
@@ -133,16 +184,13 @@ const iconMap = {
 							<div class="event-location__card-content-itinerary">
 								<ul class="event-location__card-content-itinerary-list">
 									{reception.itinerary.map((item) => {
-										const IconComponent = iconMap[item.icon] || WaltzIcon;
 										return (
 											<li class="event-location__card-content-itinerary-list-item">
-												<span class="event-location__card-content-itinerary-icon">
-													<IconComponent />
-												</span>
-												<span class="event-location__card-content-itinerary-label">
+												<span class="event-location__card-content-itinerary-dot" aria-hidden="true"></span>
+												<span class="event-location__card-content-itinerary-label font-body">
 													{item.label}
 												</span>
-												<span class="event-location__card-content-itinerary-time">
+												<span class="event-location__card-content-itinerary-time font-body">
 													{item.time}
 												</span>
 											</li>
@@ -152,17 +200,39 @@ const iconMap = {
 							</div>
 						)}
 
-						{reception.mapUrl && (
-							<a
-								href={reception.mapUrl}
-								class="event-location__card-content-button"
-								target="_blank"
-								rel="noopener noreferrer"
-								title="Click to view location on Google Maps"
-							>
-								Cómo llegar
-							</a>
-						)}
+						<div class="event-location__navigation-buttons">
+							{reception.appleMapsUrl && (
+								<a
+									href={reception.appleMapsUrl}
+									class="nav-button nav-button--apple"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Apple Maps
+								</a>
+							)}
+							{reception.googleMapsUrl && (
+								<a
+									href={reception.googleMapsUrl}
+									class="nav-button nav-button--maps"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Google Maps
+								</a>
+							)}
+							{!reception.appleMapsUrl && !reception.googleMapsUrl && reception.mapUrl && (
+								<a
+									href={reception.mapUrl}
+									class="nav-button nav-button--primary"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<MapIcon />
+									Cómo llegar
+								</a>
+							)}
+						</div>
 					</div>
 				</article>
 			</div>
@@ -181,15 +251,48 @@ const iconMap = {
 							<div class="indication-icon">
 								<IconComponent />
 							</div>
-							<p>{indication.text}</p>
+							<p class="font-body">{indication.text}</p>
 						</div>
 					);
 				})}
+			</div>
+			<div class="event-location__signature-divider" aria-hidden="true">
+				<span class="signature-line"></span>
+				<span class="signature-text font-decorative-calligraphy">Lucía</span>
+				<span class="signature-line"></span>
 			</div>
 		</div>
 	)}
 
 	<div class="nav-button-container">
-		<SectionNavButton href="#rsvp-section" class="event-location" section="Padres y Padrinos" />
+		<SectionNavButton href="#rsvp-section" class="event-location" section="Pases y Confirmación" />
 	</div>
+
 </section>
+
+<script>
+	// Copy to clipboard logic
+	const copyButtons = document.querySelectorAll('.copy-button');
+	copyButtons.forEach(button => {
+		button.addEventListener('click', async () => {
+			const address = button.getAttribute('data-address');
+			if (address) {
+				try {
+					await navigator.clipboard.writeText(address);
+
+					// Visual feedback
+					const originalContent = button.innerHTML;
+					button.innerHTML = '<span class="copy-success">✓</span>';
+					button.classList.add('copy-success');
+
+					setTimeout(() => {
+						button.innerHTML = originalContent;
+						button.classList.remove('copy-success');
+					}, 2000);
+				} catch (err) {
+					console.error('Failed to copy: ', err);
+				}
+			}
+		});
+	});
+</script>
