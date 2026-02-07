@@ -18,6 +18,7 @@ import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
+import Itinerary from '@/components/invitation/Itinerary.astro';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -116,6 +117,11 @@ const isWedding = data.eventType === 'boda';
 						reception={data.location.reception}
 						indications={data.location.indications}
 					/>
+					{
+						data.itinerary && (
+							<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
+						)
+					}
 					{
 						data.sections?.gifts && data.gifts && (
 							<Gifts gifts={data.gifts} />

@@ -115,7 +115,6 @@ const eventsCollection = defineCollection({
 					image: image().optional(),
 				})
 				.optional(),
-			// Background music / ambient audio
 			music: z
 				.object({
 					url: z.string(),
@@ -123,7 +122,6 @@ const eventsCollection = defineCollection({
 					title: z.string().optional(), // For accessibility (aria-label)
 				})
 				.optional(),
-			// Flexible object for optional sections (RSVP, etc.)
 			sections: z
 				.object({
 					countdown: z.boolean().default(true),
@@ -142,6 +140,29 @@ const eventsCollection = defineCollection({
 						accent: z.string().regex(/^#/, 'Must be a hex color'),
 						background: z.string().regex(/^#/, 'Must be a hex color'),
 					}),
+				})
+				.optional(),
+			itinerary: z
+				.object({
+					title: z.string().default('Itinerario'),
+					items: z.array(
+						z.object({
+							icon: z.enum([
+								'waltz',
+								'dinner',
+								'toast',
+								'cake',
+								'party',
+								'church',
+								'reception',
+								'music',
+								'photo',
+							]),
+							label: z.string(),
+							description: z.string().optional(),
+							time: z.string(),
+						}),
+					),
 				})
 				.optional(),
 			gifts: z

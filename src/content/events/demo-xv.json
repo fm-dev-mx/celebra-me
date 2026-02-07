@@ -35,12 +35,7 @@
             "mapUrl": "https://maps.app.goo.gl/example",
             "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
             "googleMapsUrl": "https://maps.app.goo.gl/example",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg",
-            "itinerary": [
-                { "icon": "waltz", "label": "Vals y baile de honor", "time": "8:30 PM" },
-                { "icon": "dinner", "label": "Cena", "time": "9:30 PM" },
-                { "icon": "toast", "label": "Brindis", "time": "11:00 PM" }
-            ]
+            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg"
         },
         "indications": [
             { "icon": "crown", "text": "El color púrpura está reservado para la festejada." },
@@ -105,6 +100,17 @@
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
         "autoPlay": false,
         "title": "Música de fondo"
+    },
+    "itinerary": {
+        "title": "Nuestra Celebración",
+        "items": [
+            { "icon": "church", "label": "Ceremonia Religiosa", "time": "6:00 PM", "description": "Parroquia de la Sagrada Familia" },
+            { "icon": "reception", "label": "Recepción", "time": "8:00 PM", "description": "Quinta Las Flores" },
+            { "icon": "waltz", "label": "Vals de Honor", "time": "9:00 PM" },
+            { "icon": "dinner", "label": "Cena de Gala", "time": "10:00 PM" },
+            { "icon": "toast", "label": "Brindis", "time": "11:30 PM" },
+            { "icon": "party", "label": "Tornafiesta", "time": "12:30 AM" }
+        ]
     },
     "envelope": {
         "disabled": true,

@@ -5,7 +5,7 @@
   - Ceremony (Church)
   - Reception (Party Hall)
 
-  Itinerary is now integrated into the Reception card for a seamless design.
+  Itinerary section is now a separate component.
   Data-driven: All content comes from props (Content Collection JSON).
 */
 import '@/styles/xv/_event-location.scss';
@@ -15,9 +15,6 @@ import SectionNavButton from '@/components/xv/components/SectionNavButton.astro'
 import CrownIcon from '@/components/xv/icons/CrownIcon.astro';
 import EnvelopedIcon from '@/components/xv/icons/EnvelopedIcon.astro';
 import ForbiddenIcon from '@/components/xv/icons/ForbiddenIcon.astro';
-import WaltzIcon from '@/components/xv/icons/WaltzIcon.astro';
-import DinnerIcon from '@/components/xv/icons/DinnerIcon.astro';
-import ToastIcon from '@/components/xv/icons/ToastIcon.astro';
 import MapIcon from '@/components/xv/icons/MapIcon.astro';
 import CopyIcon from '@/components/xv/icons/CopyIcon.astro';
 
@@ -32,11 +29,6 @@ interface VenueData {
 	image?: string;
 }
 
-interface ItineraryItem {
-	icon: 'waltz' | 'dinner' | 'toast' | 'cake' | 'party';
-	label: string;
-	time: string;
-}
 
 interface Indication {
 	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'gift';
@@ -45,7 +37,7 @@ interface Indication {
 
 interface Props {
 	ceremony?: VenueData;
-	reception?: VenueData & { itinerary?: ItineraryItem[] };
+	reception?: VenueData;
 	indications?: Indication[];
 }
 
@@ -53,11 +45,6 @@ const { ceremony, reception, indications } = Astro.props;
 
 // Map icon names to components
 const iconMap = {
-	waltz: WaltzIcon,
-	dinner: DinnerIcon,
-	toast: ToastIcon,
-	cake: DinnerIcon, // Fallback
-	party: ToastIcon, // Fallback
 	crown: CrownIcon,
 	envelope: EnvelopedIcon,
 	forbidden: ForbiddenIcon,
@@ -182,25 +169,6 @@ const iconMap = {
 							</li>
 						</ul>
 
-						{reception.itinerary && reception.itinerary.length > 0 && (
-							<div class="event-location__card-content-itinerary">
-								<ul class="event-location__card-content-itinerary-list">
-									{reception.itinerary.map((item) => {
-										return (
-											<li class="event-location__card-content-itinerary-list-item">
-												<span class="event-location__card-content-itinerary-dot" aria-hidden="true"></span>
-												<span class="event-location__card-content-itinerary-label font-body">
-													{item.label}
-												</span>
-												<span class="event-location__card-content-itinerary-time font-body">
-													{item.time}
-												</span>
-											</li>
-										);
-									})}
-								</ul>
-							</div>
-						)}
 
 						<div class="event-location__navigation-buttons">
 							{reception.appleMapsUrl && (
