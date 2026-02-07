@@ -1,7 +1,7 @@
 ---
 // src/components/invitation/Itinerary.astro
 import '@/styles/xv/_itinerary.scss';
-import TimelineItem from './TimelineItem';
+import TimelineList from './TimelineList';
 
 interface ItineraryItemData {
 	icon: 'waltz' | 'dinner' | 'toast' | 'cake' | 'party' | 'church' | 'reception' | 'music' | 'photo';
@@ -34,19 +34,7 @@ const { title = "Itinerario", items } = Astro.props;
 		<div class="itinerary__timeline">
 			<div class="itinerary__line" aria-hidden="true"></div>
 
-			<div class="itinerary__items">
-				{items.map((item, index) => (
-					<TimelineItem
-						client:visible
-						index={index}
-						label={item.label}
-						time={item.time}
-						description={item.description}
-						icon={item.icon}
-						align={index % 2 === 0 ? 'left' : 'right'}
-					/>
-				))}
-			</div>
+			<TimelineList client:visible items={items} />
 
 			<div class="itinerary__line-end" aria-hidden="true"></div>
 		</div>

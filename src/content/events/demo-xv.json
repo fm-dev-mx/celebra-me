@@ -131,6 +131,19 @@
             { "icon": "party", "label": "Tornafiesta", "time": "12:30 AM" }
         ]
     },
+    "countdown": {
+        "title": "¡Falta muy poco!",
+        "subtitlePrefix": "El",
+        "footerText": "Prepárate para una noche inolvidable"
+    },
+    "navigation": [
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Historia", "href": "#family-section" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Regalos", "href": "#regalos" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",

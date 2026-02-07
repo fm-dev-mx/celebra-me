@@ -12,6 +12,7 @@
             "@styles/*": ["src/styles/*"],
             "@utils/*": ["src/utils/*"],
             "@images/*": ["src/assets/images/*"],
+            "@content/*": ["src/content/*"],
             "@interfaces/*": ["src/interfaces/*"]
         },
         "jsx": "react-jsx",
@@ -20,6 +21,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "esModuleInterop": true,
+        "resolveJsonModule": true,
         "skipLibCheck": true
     },
     "include": ["src/**/*", "tests/**/*", "env.d.ts"]

@@ -204,6 +204,21 @@ const eventsCollection = defineCollection({
 					]),
 				)
 				.optional(),
+			countdown: z
+				.object({
+					title: z.string().default('¡Falta muy poco!'),
+					subtitlePrefix: z.string().default('El'),
+					footerText: z.string().default('Prepárate para una noche inolvidable'),
+				})
+				.optional(),
+			navigation: z
+				.array(
+					z.object({
+						label: z.string(),
+						href: z.string(),
+					}),
+				)
+				.optional(),
 		}),
 });
 

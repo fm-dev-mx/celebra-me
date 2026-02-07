@@ -50,18 +50,42 @@ const { data } = event;
 
 const isXV = data.eventType === 'xv';
 const isWedding = data.eventType === 'boda';
+
+function hexToRgb(hex: string): string {
+	hex = hex.replace(/^#/, '');
+	if (hex.length === 3) {
+		hex = hex.split('').map(char => char + char).join('');
+	}
+	const bigint = parseInt(hex, 16);
+	const r = (bigint >> 16) & 255;
+	const g = (bigint >> 8) & 255;
+	const b = bigint & 255;
+	return `${r}, ${g}, ${b}`;
+}
+
+const primaryColorRgb = hexToRgb(data.theme.primaryColor);
+const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 ---
 
-<Layout title={data.title} description={data.description || ''} hideHeader={true}>
+<Layout
+	title={data.title}
+	description={data.description || ''}
+	image={data.hero.backgroundImage.src}
+	hideHeader={true}
+>
 	<style
 		define:vars={{
 			primaryColor: data.theme.primaryColor,
+			primaryColorRgb: primaryColorRgb,
 			accentColor: data.theme.accentColor || '#333',
+			accentColorRgb: accentColorRgb,
 		}}
 	>
 		.event-theme-wrapper {
 			--color-primary: var(--primaryColor);
+			--color-primary-rgb: var(--primaryColorRgb);
 			--color-accent: var(--accentColor);
+			--color-accent-rgb: var(--accentColorRgb);
 		}
 	</style>
 	<main class="event-theme-wrapper">
@@ -84,12 +108,7 @@ const isWedding = data.eventType === 'boda';
 					<EventHeader
 						eventName={data.hero.name}
 						theme={data.theme}
-						sections={{
-							rsvp: data.sections?.rsvp ?? false,
-							location: true,
-							gifts: data.sections?.gifts ?? false,
-							gallery: data.sections?.gallery ?? false,
-						}}
+						links={data.navigation}
 					/>
 					<Hero
 						name={data.hero.name}
@@ -103,7 +122,14 @@ const isWedding = data.eventType === 'boda';
 							<QuoteXV text={data.quote.text} author={data.quote.author} />
 						)
 					}
-					{data.sections?.countdown && <Countdown eventDate={data.hero.date} />}
+					{data.sections?.countdown && (
+						<Countdown
+							eventDate={data.hero.date}
+							title={data.countdown?.title}
+							subtitlePrefix={data.countdown?.subtitlePrefix}
+							footerText={data.countdown?.footerText}
+						/>
+					)}
 					{
 						data.family && (
 							<FamilyXV

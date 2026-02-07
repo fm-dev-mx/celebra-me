@@ -21,14 +21,19 @@ import '@fontsource/great-vibes/400.css';
 interface Props {
 	title: string;
 	description?: string;
+	image?: string;
 	hideHeader?: boolean;
 }
 
 const {
 	title,
 	description = 'Celebra.me - Eventos inolvidables',
+	image = '/images/og-image.jpg',
 	hideHeader = false,
 } = Astro.props;
+
+// Ensure full URL for social sharing
+const ogImage = new URL(image, Astro.url);
 ---
 
 <!doctype html>
@@ -46,14 +51,14 @@ const {
 		<meta property="og:url" content={Astro.url} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content="/images/og-image.jpg" />
+		<meta property="og:image" content={ogImage} />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
 		<meta property="twitter:url" content={Astro.url} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
-		<meta property="twitter:image" content="/images/og-image.jpg" />
+		<meta property="twitter:image" content={ogImage} />
 	</head>
 	<body>
 		{!hideHeader && <Header />}

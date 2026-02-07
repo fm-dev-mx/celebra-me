@@ -9,28 +9,26 @@
 
 import HeaderBase from '@components/common/HeaderBase.astro';
 import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
+import {navigation} from '@content/events/demo-xv.json';
 import '@styles/invitation/_event-header.scss';
 
 export interface Props {
     eventName?: string;
-    sections?: {
-        rsvp?: boolean;
-        location?: boolean;
-        gifts?: boolean;
-        gallery?: boolean;
-        bg_music?: boolean;
-    };
     theme?: {
         primaryColor: string;
         accentColor?: string;
         fontDisplay?: string;
     };
+    links?: {
+        label: string;
+        href: string
+    }[];
 }
 
 const {
     eventName = 'Boda de Ale & Fer',
-    sections = { rsvp: true, location: true, gifts: true },
-    theme = { primaryColor: '#C5A059', accentColor: '#E8DCC2' } // Default Gold
+    theme = { primaryColor: '#C5A059', accentColor: '#E8DCC2' }, // Default Gold
+    links = navigation
 } = Astro.props;
 
 
@@ -40,16 +38,6 @@ const themeStyles = `
     --theme-color-primary-dark: ${theme.primaryColor}CC;
     --theme-color-accent: ${theme.accentColor || theme.primaryColor};
 `;
-
-// Build navigation links dynamically from sections
-const navLinks = [
-    { label: 'Inicio', href: '#inicio' },
-    { label: 'Historia', href: '#family-section' },
-    ...(sections.location ? [{ label: 'Ubicación', href: '#event-location' }] : []),
-    ...(sections.gallery ? [{ label: 'Galería', href: '#galeria' }] : []),
-    ...(sections.gifts ? [{ label: 'Regalos', href: '#regalos' }] : []),
-    ...(sections.rsvp ? [{ label: 'Confirmar', href: '#rsvp' }] : []),
-];
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" hideMobileToggle={true}>
@@ -60,30 +48,15 @@ const navLinks = [
     </div>
 
     <div slot="desktop-nav" class="event-header__actions" style={themeStyles}>
-        <a href="#inicio" class="event-header__action-btn">Inicio</a>
-        <a href="#family-section" class="event-header__action-btn">Historia</a>
-
-        {sections.location && (
-            <a href="#event-location" class="event-header__action-btn">Ubicación</a>
-        )}
-
-        {sections.gallery && (
-             <a href="#galeria" class="event-header__action-btn">Galería</a>
-        )}
-
-        {sections.gifts && (
-             <a href="#regalos" class="event-header__action-btn">Regalos</a>
-        )}
-
-        {sections.rsvp && (
-            <a href="#rsvp" class="event-header__action-btn event-header__action-btn--cta">
-                Confirmar
+        {links.map((link) => (
+            <a href={link.href} class={`event-header__action-btn ${link.href === '#rsvp' ? 'event-header__action-btn--cta' : ''}`}>
+                {link.label}
             </a>
-        )}
+        ))}
     </div>
 
     <!-- SLOT: Premium Mobile Nav (React) -->
     <div slot="mobile-nav-premium">
-        <NavBarMobile client:load links={navLinks} headerId="event-header" />
+        <NavBarMobile client:load links={links} headerId="event-header" />
     </div>
 </HeaderBase>

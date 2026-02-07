@@ -6,9 +6,17 @@ import CountdownTimer from '@/components/invitation/CountdownTimer';
 
 interface Props {
 	eventDate: string; // ISO Date string
+	title?: string;
+	subtitlePrefix?: string;
+	footerText?: string;
 }
 
-const { eventDate } = Astro.props;
+const {
+	eventDate,
+	title = "¡Falta muy poco!",
+	subtitlePrefix = "El",
+	footerText = "Prepárate para una noche inolvidable"
+} = Astro.props;
 
 // Function to format the date in Spanish for the subtitle
 function getFormattedDate(dateString: string): string {
@@ -33,10 +41,10 @@ const formattedEventDate = getFormattedDate(eventDate);
 	<div class="countdown-texture" aria-hidden="true"></div>
 	<div class="countdown-container">
 		<header class="countdown-header">
-			<h2 class="countdown-title">¡Falta muy poco!</h2>
+			<h2 class="countdown-title">{title}</h2>
 			<div class="countdown-subtitle">
 				<div class="subtitle-line"></div>
-				<p class="event-date">El {formattedEventDate}</p>
+				<p class="event-date">{subtitlePrefix} {formattedEventDate}</p>
 				<div class="subtitle-line"></div>
 			</div>
 		</header>
@@ -46,7 +54,7 @@ const formattedEventDate = getFormattedDate(eventDate);
 		</div>
 
 		<footer class="countdown-footer">
-			<p class="countdown-invitation-text">Prepárate para una noche inolvidable</p>
+			<p class="countdown-invitation-text">{footerText}</p>
 		</footer>
 	</div>
 </section>

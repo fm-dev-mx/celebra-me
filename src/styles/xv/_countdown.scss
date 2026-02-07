@@ -33,7 +33,7 @@
 		height: 60%;
 		background: radial-gradient(
 			ellipse at center,
-			rgba(212, 175, 55, 0.06) 0%,  // Gold glow center
+			rgba(var(--color-primary-rgb), 0.06) 0%,  // Dynamic glow center
 			transparent 70%
 		);
 		pointer-events: none;
