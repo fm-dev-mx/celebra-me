@@ -1,40 +1,56 @@
 /* Footer Styles for XV Invitation */
-// Renamed from footer.xv.scss
+// Premium minimal footer - maintains Jewelry Box immersion
 
 @use 'variables' as *;
 @use '../global/mixins' as mixins;
 
 .invitation-footer {
-	background-color: $color-white;
-	padding: 0 1rem;
+	// Subtle fade from transparent to barely visible
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgba($color-white, 0.3) 100%
+	);
+	backdrop-filter: blur(4px);
+	padding: 0.75rem 1rem;
 	font-family: $font-footer;
-	color: $color-dark;
-	font-size: 0.9rem;
-	border-top: 1px solid rgba($color-dark, 0.1);
-	height: 3rem;
+	color: rgba($color-dark, 0.4); // Very subtle text
+	font-size: 0.75rem;
+	border-top: 1px solid rgba($color-dark, 0.05);
 
 	display: flex;
 	align-items: center;
-	justify-content: space-around;
+	justify-content: center;
 
 	@include mixins.respond-to(xs) {
-		justify-content: flex-end;
-		padding-right: 10%;
-		height: 7vh;
+		padding: 0.75rem 1.5rem;
 	}
 }
 
 .footer-content {
 	display: flex;
 	align-items: center;
-	gap: 3rem;
+	gap: 1.5rem;
 	white-space: nowrap;
+	opacity: 0.6;
+	transition: opacity 0.3s ease;
+
+	&:hover {
+		opacity: 1;
+	}
 }
 
 .footer-info {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
+	gap: 0.5rem;
+
+	// Scale down the logo
+	:global(.logo) {
+		transform: scale(0.7);
+		transform-origin: center;
+	}
+
 	p {
 		margin: 0;
 	}
@@ -42,8 +58,11 @@
 
 .powered-by {
 	display: none;
-	font-size: 0.8rem;
-	opacity: 0.8;
+	font-size: 0.65rem;
+	opacity: 0.6;
+	font-weight: 300;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
 
 	@include mixins.respond-to(xs) {
 		display: block;
@@ -51,44 +70,47 @@
 }
 
 .contact-number {
-	opacity: 0.8;
+	opacity: 0.5;
 }
 
 .whatsapp-button {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.5rem;
-	background-color: rgba($color-secondary, 0.5);
-	color: rgba($color-dark, 0.7);
-	padding: 0.5rem 1rem;
+	gap: 0.35rem;
+	background-color: transparent;
+	color: rgba($color-dark, 0.5);
+	padding: 0.35rem 0.75rem;
 	border-radius: 99px;
-	transition:
-		background-color 0.3s ease,
-		transform 0.3s ease;
+	border: 1px solid rgba($color-dark, 0.1);
+	transition: all 0.3s ease;
 	font-family: $font-button;
-	font-size: 0.6rem;
+	font-size: 0.55rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 
-	svg {
-		width: 0.8rem;
-		height: 0.8rem;
-		fill: rgba($color-whatsapp, 0.6);
+	svg, img {
+		width: 0.7rem;
+		height: 0.7rem;
+		opacity: 0.6;
 	}
 
 	@include mixins.respond-to(md) {
-		font-size: 0.8rem;
-		svg {
-			width: 1rem;
-			height: 1rem;
-			fill: rgba($color-whatsapp, 0.6);
+		font-size: 0.65rem;
+		svg, img {
+			width: 0.8rem;
+			height: 0.8rem;
 		}
 	}
 
 	&:hover {
-		transform: scale(1.05);
-		filter: brightness(1.05);
+		background-color: rgba($color-whatsapp, 0.1);
+		border-color: rgba($color-whatsapp, 0.3);
+		color: rgba($color-dark, 0.8);
+		transform: scale(1.02);
 	}
 
 	&:active {
 		transform: scale(1);
 	}
 }
+
