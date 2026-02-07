@@ -61,8 +61,32 @@
     },
     "sections": {
         "countdown": true,
-        "rsvp": true
+        "rsvp": true,
+        "gifts": true
     },
+    "gifts": [
+        {
+            "type": "store",
+            "name": "Liverpool",
+            "url": "https://mesaderegalos.liverpool.com.mx/",
+            "logo": "liverpool"
+        },
+        {
+            "type": "bank",
+            "bankName": "BBVA México",
+            "accountHolder": "Roberto Pérez García",
+            "clabe": "0121 8001 2345 6789 01",
+            "accountNumber": "1234567890"
+        },
+        {
+            "type": "paypal",
+            "url": "https://paypal.me/lucia-xv"
+        },
+        {
+            "type": "cash",
+            "text": "Contaremos con una tómbola para sobres el día del evento."
+        }
+    ],
     "rsvp": {
         "title": "¿Vienes a celebrar conmigo?",
         "guestCap": 2,

@@ -144,6 +144,33 @@ const eventsCollection = defineCollection({
 					}),
 				})
 				.optional(),
+			gifts: z
+				.array(
+					z.discriminatedUnion('type', [
+						z.object({
+							type: z.literal('store'),
+							name: z.string(),
+							url: z.string().url(),
+							logo: z.string().optional(),
+						}),
+						z.object({
+							type: z.literal('bank'),
+							bankName: z.string(),
+							accountHolder: z.string(),
+							clabe: z.string(),
+							accountNumber: z.string().optional(),
+						}),
+						z.object({
+							type: z.literal('paypal'),
+							url: z.string().url(),
+						}),
+						z.object({
+							type: z.literal('cash'),
+							text: z.string().optional(),
+						}),
+					]),
+				)
+				.optional(),
 		}),
 });
 

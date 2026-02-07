@@ -1,0 +1,140 @@
+---
+// src/components/invitation/Gifts.astro
+import '@/styles/invitation/_gifts.scss';
+
+interface GiftStore {
+	type: 'store';
+	name: string;
+	url: string;
+	logo?: string;
+}
+
+interface GiftBank {
+	type: 'bank';
+	bankName: string;
+	accountHolder: string;
+	clabe: string;
+	accountNumber?: string;
+}
+
+interface GiftPaypal {
+	type: 'paypal';
+	url: string;
+}
+
+interface GiftCash {
+	type: 'cash';
+	text?: string;
+}
+
+type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
+
+interface Props {
+	gifts: Gift[];
+}
+
+const { gifts } = Astro.props;
+---
+
+<section id="regalos" class="gifts-section">
+	<div class="gifts-section__container">
+		<header class="gifts-section__header">
+			<h2 class="gifts-section__title">Mesa de Regalos</h2>
+			<p class="gifts-section__subtitle">
+				Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.
+			</p>
+		</header>
+
+		<div class="gifts-grid">
+			{
+				gifts.map((gift) => (
+					<div class={`gift-card gift-card--${gift.type}`}>
+						<div class="gift-card__inner">
+							{gift.type === 'store' && (
+								<>
+									<div class="gift-card__icon">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+									</div>
+									<h3 class="gift-card__title">{gift.name}</h3>
+									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
+										Ver Mesa de Regalos
+									</a>
+								</>
+							)}
+
+							{gift.type === 'bank' && (
+								<>
+									<div class="gift-card__icon">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+									</div>
+									<h3 class="gift-card__title">Transferencia</h3>
+									<div class="bank-details">
+										<p class="bank-details__item">
+											<strong>Banco:</strong> {gift.bankName}
+										</p>
+										<p class="bank-details__item">
+											<strong>Titular:</strong> {gift.accountHolder}
+										</p>
+										<div class="bank-details__clabe-wrapper">
+											<p class="bank-details__item">
+												<strong>CLABE:</strong> <span class="clabe-number">{gift.clabe}</span>
+											</p>
+											<button class="copy-button" data-clabe={gift.clabe} aria-label="Copiar número CLABE">
+												Copiar
+											</button>
+										</div>
+									</div>
+								</>
+							)}
+
+							{gift.type === 'paypal' && (
+								<>
+									<div class="gift-card__icon">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15 5.8 5.9A1.1 1.1 0 0 1 6.9 4.7h7a4.9 4.9 0 0 1 0 9.8H10l-1.2 5.1a1.1 1.1 0 0 1-1.1.9H3.1a1.1 1.1 0 0 1-1-1.3l.8-3.1Z"/><path d="M16 17c1.3 0 2.4-1.1 2.2-2.5l-.8-3.5"/></svg>
+									</div>
+									<h3 class="gift-card__title">PayPal</h3>
+									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
+										Enviar Regalo
+									</a>
+								</>
+							)}
+
+							{gift.type === 'cash' && (
+								<>
+									<div class="gift-card__icon">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><path d="M12 12c-2 0-3-1-3-3s1-3 3-3 3 1 3 3-1 3-3 3Z"/><path d="M3 7l9 6 9-6"/></svg>
+									</div>
+									<h3 class="gift-card__title">Lluvia de Sobres</h3>
+									<p class="gift-card__description">
+										{gift.text || "Su presencia es nuestro mayor regalo, pero si desean tener un detalle, tendremos un buzón para sobres en la recepción."}
+									</p>
+								</>
+							)}
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script>
+	const copyButtons = document.querySelectorAll('.copy-button');
+	copyButtons.forEach(button => {
+		button.addEventListener('click', () => {
+			const clabe = button.getAttribute('data-clabe');
+			if (clabe) {
+				const normalizedClabe = clabe.replace(/\s+/g, '');
+				navigator.clipboard.writeText(normalizedClabe).then(() => {
+					const originalText = button.textContent;
+					button.textContent = '¡Copiado!';
+					button.classList.add('copy-button--success');
+					setTimeout(() => {
+						button.textContent = originalText;
+						button.classList.remove('copy-button--success');
+					}, 2000);
+				});
+			}
+		});
+	});
+</script>

@@ -13,6 +13,7 @@ import Hero from '@/components/invitation/Hero.astro';
 import FamilyXV from '@/components/xv/Family.astro';
 import QuoteXV from '@/components/xv/Quote.astro';
 import ThankYouXV from '@/components/xv/ThankYou.astro';
+import Gifts from '@/components/invitation/Gifts.astro';
 import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
@@ -84,7 +85,7 @@ const isWedding = data.eventType === 'boda';
 						sections={{
 							rsvp: data.sections?.rsvp ?? false,
 							location: true,
-							gifts: false,
+							gifts: data.sections?.gifts ?? false,
 						}}
 					/>
 					<Hero
@@ -115,6 +116,11 @@ const isWedding = data.eventType === 'boda';
 						reception={data.location.reception}
 						indications={data.location.indications}
 					/>
+					{
+						data.sections?.gifts && data.gifts && (
+							<Gifts gifts={data.gifts} />
+						)
+					}
 					{
 						data.sections?.rsvp && data.rsvp && (
 							<RSVP
