@@ -132,7 +132,7 @@
         ]
     },
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
