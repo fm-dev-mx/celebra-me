@@ -130,6 +130,18 @@ const eventsCollection = defineCollection({
 					gallery: z.boolean().default(false),
 				})
 				.optional(),
+			gallery: z
+				.object({
+					title: z.string().default('Galería'),
+					subtitle: z.string().optional(),
+					items: z.array(
+						z.object({
+							image: image(),
+							caption: z.string().optional(),
+						})
+					),
+				})
+				.optional(),
 			envelope: z
 				.object({
 					disabled: z.boolean().optional().default(false),

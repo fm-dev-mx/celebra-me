@@ -1,0 +1,32 @@
+---
+// src/components/invitation/Gallery.astro
+import type { ImageMetadata } from 'astro';
+import PhotoGallery from './PhotoGallery';
+import '@/styles/invitation/_gallery.scss';
+
+interface GalleryItem {
+	image: ImageMetadata;
+	caption?: string;
+}
+
+interface Props {
+	title?: string;
+	subtitle?: string;
+	items: GalleryItem[];
+}
+
+const { title = 'Galería', subtitle, items } = Astro.props;
+
+if (!items || items.length === 0) return null;
+---
+
+<section id="galeria" class="gallery-section">
+	<div class="gallery-section__container">
+		<header class="gallery-section__header">
+			<h2 class="gallery-section__title">{title}</h2>
+			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
+		</header>
+
+		<PhotoGallery client:visible items={items} />
+	</div>
+</section>

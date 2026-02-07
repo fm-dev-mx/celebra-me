@@ -90,7 +90,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 	}
 
 	return (
-		<section className="rsvp">
+		<section id="rsvp" className="rsvp">
 			<h2 className="rsvp__title">{title}</h2>
 
 			<form onSubmit={handleSubmit} className="rsvp__form">

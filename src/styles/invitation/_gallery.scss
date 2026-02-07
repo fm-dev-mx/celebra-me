@@ -1,0 +1,170 @@
+// src/styles/invitation/_gallery.scss
+
+@use '../global/variables' as g;
+@use '../global/mixins' as m;
+@use '../xv/variables' as xv;
+
+// Luxury "Jewelry Box" Tokens
+$color-gold: #d4af37;
+$color-ivory: #fffff0;
+$color-white: #ffffff;
+
+.gallery-section {
+	padding: 8rem 2rem;
+	position: relative;
+	overflow: hidden;
+	background: linear-gradient(to bottom, transparent, rgba($color-ivory, 0.3));
+
+	&__container {
+		max-width: 1200px;
+		margin: 0 auto;
+		position: relative;
+		z-index: 1;
+	}
+
+	&__header {
+		text-align: center;
+		margin-bottom: 4rem;
+	}
+
+	&__title {
+		font-family: xv.$font-heading-formal; // Cinzel
+		font-size: clamp(2.5rem, 5vw, 3.5rem);
+		color: $color-gold;
+		margin-bottom: 1rem;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+	}
+
+	&__subtitle {
+		font-family: xv.$font-decorative-cursive; // Great Vibes
+		font-size: clamp(1.5rem, 3vw, 2rem);
+		color: $color-gold;
+		opacity: 0.8;
+	}
+}
+
+.gallery-grid {
+	columns: 1;
+	column-gap: 1.5rem;
+
+	@include m.respond-to(md) {
+		columns: 2;
+	}
+
+	@include m.respond-to(lg) {
+		columns: 3;
+	}
+
+	&__item {
+		break-inside: avoid;
+		margin-bottom: 1.5rem;
+		position: relative;
+		border-radius: 12px;
+		overflow: hidden;
+		cursor: pointer;
+		aspect-ratio: auto;
+
+		// Jewelry Box Frame
+		border: 1px solid rgba($color-gold, 0.2);
+		background: rgba($color-white, 0.05);
+		backdrop-filter: blur(5px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+		&:hover {
+			transform: scale(1.02);
+			border-color: rgba($color-gold, 0.5);
+			box-shadow: 0 8px 30px rgba($color-gold, 0.15);
+
+			.gallery-grid__overlay {
+				opacity: 1;
+			}
+		}
+
+		img {
+			width: 100%;
+			height: auto;
+			display: block;
+			object-fit: cover;
+		}
+	}
+
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+		display: flex;
+		align-items: flex-end;
+		padding: 1.5rem;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	&__caption {
+		color: $color-ivory;
+		font-family: xv.$font-body; // EB Garamond
+		font-size: 1.1rem;
+		font-style: italic;
+	}
+}
+
+// Lightbox Styles
+.gallery-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	background: rgba(0, 0, 0, 0.9);
+	backdrop-filter: blur(10px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+
+	&__close {
+		position: absolute;
+		top: 2rem;
+		right: 2rem;
+		background: transparent;
+		border: none;
+		color: $color-gold;
+		cursor: pointer;
+		padding: 0.5rem;
+		transition: transform 0.3s ease;
+
+		&:hover {
+			transform: rotate(90deg);
+		}
+
+		svg {
+			width: 32px;
+			height: 32px;
+		}
+	}
+
+	&__content {
+		max-width: 90%;
+		max-height: 85vh;
+		position: relative;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			border: 2px solid rgba($color-gold, 0.3);
+			border-radius: 4px;
+		}
+	}
+
+	&__footer {
+		position: absolute;
+		bottom: -3rem;
+		left: 0;
+		right: 0;
+		text-align: center;
+		color: $color-ivory;
+		font-family: xv.$font-body;
+		font-size: 1.2rem;
+		font-style: italic;
+	}
+}

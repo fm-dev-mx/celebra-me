@@ -57,7 +57,20 @@
     "sections": {
         "countdown": true,
         "rsvp": true,
-        "gifts": true
+        "gifts": true,
+        "gallery": true
+    },
+    "gallery": {
+        "title": "Galería",
+        "subtitle": "Recuerdos antes del gran día",
+        "items": [
+            { "image": "../../assets/images/testimonials/xv_sandra.jpg", "caption": "Momentos inolvidables" },
+            { "image": "../../assets/images/testimonials/xv_alejandra.jpg", "caption": "Risas y alegría" },
+            { "image": "../../assets/images/testimonials/xv_ana.jpg", "caption": "Nuestra felicidad" },
+            { "image": "../../assets/images/testimonials/xv_fernanda.jpg", "caption": "Amigas por siempre" },
+            { "image": "../../assets/images/testimonials/xv_karla.jpg", "caption": "Elegancia y brillo" },
+            { "image": "../../assets/images/testimonials/xv_victoria.jpg", "caption": "Sueños cumplidos" }
+        ]
     },
     "gifts": [
         {

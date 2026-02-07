@@ -17,6 +17,7 @@ export interface Props {
         rsvp?: boolean;
         location?: boolean;
         gifts?: boolean;
+        gallery?: boolean;
         bg_music?: boolean;
     };
     theme?: {
@@ -43,8 +44,9 @@ const themeStyles = `
 // Build navigation links dynamically from sections
 const navLinks = [
     { label: 'Inicio', href: '#inicio' },
-    { label: 'Historia', href: '#historia' },
-    ...(sections.location ? [{ label: 'Ubicación', href: '#ubicacion' }] : []),
+    { label: 'Historia', href: '#family-section' },
+    ...(sections.location ? [{ label: 'Ubicación', href: '#event-location' }] : []),
+    ...(sections.gallery ? [{ label: 'Galería', href: '#galeria' }] : []),
     ...(sections.gifts ? [{ label: 'Regalos', href: '#regalos' }] : []),
     ...(sections.rsvp ? [{ label: 'Confirmar', href: '#rsvp' }] : []),
 ];
@@ -59,10 +61,14 @@ const navLinks = [
 
     <div slot="desktop-nav" class="event-header__actions" style={themeStyles}>
         <a href="#inicio" class="event-header__action-btn">Inicio</a>
-        <a href="#historia" class="event-header__action-btn">Historia</a>
+        <a href="#family-section" class="event-header__action-btn">Historia</a>
 
         {sections.location && (
-            <a href="#ubicacion" class="event-header__action-btn">Ubicación</a>
+            <a href="#event-location" class="event-header__action-btn">Ubicación</a>
+        )}
+
+        {sections.gallery && (
+             <a href="#galeria" class="event-header__action-btn">Galería</a>
         )}
 
         {sections.gifts && (

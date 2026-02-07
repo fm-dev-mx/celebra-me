@@ -19,6 +19,7 @@ import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
+import Gallery from '@/components/invitation/Gallery.astro';
 
 // Placeholder for future Wedding components
 // import HeroWedding from '@/components/wedding/Hero.astro';
@@ -87,6 +88,7 @@ const isWedding = data.eventType === 'boda';
 							rsvp: data.sections?.rsvp ?? false,
 							location: true,
 							gifts: data.sections?.gifts ?? false,
+							gallery: data.sections?.gallery ?? false,
 						}}
 					/>
 					<Hero
@@ -125,6 +127,15 @@ const isWedding = data.eventType === 'boda';
 					{
 						data.sections?.gifts && data.gifts && (
 							<Gifts gifts={data.gifts} />
+						)
+					}
+					{
+						data.sections?.gallery && data.gallery && (
+							<Gallery
+								title={data.gallery.title}
+								subtitle={data.gallery.subtitle}
+								items={data.gallery.items}
+							/>
 						)
 					}
 					{
