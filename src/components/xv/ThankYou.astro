@@ -16,25 +16,34 @@ const { message, closingName, image } = Astro.props;
 
 <section id="thank-you-section" class="thank-you-section">
 	<div class="thank-you-content">
-		{image && (
-			<div class="photo-frame">
-				<OptimizedImage
-					imagePath={image}
-					alt={closingName}
-					width={200}
-					height={200}
-					class="photo-image"
-				/>
-			</div>
-		)}
+		{
+			image && (
+				<div class="photo-frame">
+					<div class="glimmer-effect" />
+					<OptimizedImage
+						imagePath={image}
+						alt={closingName}
+						width={400}
+						height={400}
+						class="photo-image"
+					/>
+				</div>
+			)
+		}
 
 		<div class="message-container">
 			<p class="thank-you-message">
-				{message}
+				<span class="drop-cap">{message.charAt(0)}</span>{message.slice(1)}
 			</p>
-			<p class="closing-name">
-				{closingName}
-			</p>
+			<div class="signature-block">
+				<p class="closing-name">
+					{closingName}
+				</p>
+			</div>
 		</div>
+
+		<footer class="thank-you-footer">
+			<p>Digital concierge by Celebra-me</p>
+		</footer>
 	</div>
 </section>

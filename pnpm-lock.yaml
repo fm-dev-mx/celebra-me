@@ -17,6 +17,9 @@ importers:
       '@fontsource/eb-garamond':
         specifier: ^5.2.7
         version: 5.2.7
+      '@fontsource/great-vibes':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource/lato':
         specifier: ^5.2.7
         version: 5.2.7
@@ -697,6 +700,9 @@ packages:
 
   '@fontsource/eb-garamond@5.2.7':
     resolution: {integrity: sha512-V42tTlHDbnDo0+lENnXKWMx63Llq6Gfl2l7ozkoeRQN60S0jm6hEgCLlOT/5YyKAN9QZ0e2ofpy0rGKlz9jBrw==}
+
+  '@fontsource/great-vibes@5.2.8':
+    resolution: {integrity: sha512-/PATz436NGixjNaigierUpv50wfNv2UhAAijcCPkn4ynvl41x66TCLbXVSVfp4pth9gjWnGqgoj0lVIhHapAuw==}
 
   '@fontsource/lato@5.2.7':
     resolution: {integrity: sha512-k5mum1ADbDW5cTw1Ett1eQVWeoZ6gq0ct6SFBibEhB4LRxhniChJZTBgd6ph5yBxLkN1fcnsnmicBNA4S/3nbw==}
@@ -6026,6 +6032,8 @@ snapshots:
   '@fontsource/cinzel@5.2.8': {}
 
   '@fontsource/eb-garamond@5.2.7': {}
+
+  '@fontsource/great-vibes@5.2.8': {}
 
   '@fontsource/lato@5.2.7': {}
 

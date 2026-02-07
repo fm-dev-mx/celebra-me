@@ -64,12 +64,18 @@
         "title": "Galería",
         "subtitle": "Recuerdos antes del gran día",
         "items": [
-            { "image": "../../assets/images/testimonials/xv_sandra.jpg", "caption": "Momentos inolvidables" },
-            { "image": "../../assets/images/testimonials/xv_alejandra.jpg", "caption": "Risas y alegría" },
-            { "image": "../../assets/images/testimonials/xv_ana.jpg", "caption": "Nuestra felicidad" },
-            { "image": "../../assets/images/testimonials/xv_fernanda.jpg", "caption": "Amigas por siempre" },
-            { "image": "../../assets/images/testimonials/xv_karla.jpg", "caption": "Elegancia y brillo" },
-            { "image": "../../assets/images/testimonials/xv_victoria.jpg", "caption": "Sueños cumplidos" }
+            { "image": "../../assets/images/gallery/lucia-gallery-1.png", "caption": "Momentos de ilusión" },
+            { "image": "../../assets/images/gallery/lucia-gallery-2.png", "caption": "Sonrisas que iluminan" },
+            { "image": "../../assets/images/gallery/lucia-gallery-3.png", "caption": "Elegancia y gracia" },
+            { "image": "../../assets/images/gallery/lucia-gallery-4.png", "caption": "Un sueño hecho realidad" },
+            { "image": "../../assets/images/gallery/lucia-gallery-5.png", "caption": "Esperando el gran día" },
+            { "image": "../../assets/images/gallery/lucia-gallery-6.png", "caption": "Brillo propio" },
+            { "image": "../../assets/images/gallery/lucia-gallery-7.png", "caption": "Naturalidad" },
+            { "image": "../../assets/images/gallery/lucia-gallery-8.png", "caption": "Retratos inolvidables" },
+            { "image": "../../assets/images/gallery/lucia-gallery-9.png", "caption": "Dulce transición" },
+            { "image": "../../assets/images/gallery/lucia-gallery-10.png", "caption": "Cada detalle cuenta" },
+            { "image": "../../assets/images/gallery/lucia-gallery-11.png", "caption": "En el jardín" },
+            { "image": "../../assets/images/gallery/lucia-gallery-12.png", "caption": "Felicidad pura" }
         ]
     },
     "gifts": [
@@ -107,7 +113,7 @@
     "thankYou": {
         "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
         "closingName": "Lucía",
-        "image": "../../assets/images/about/partyToast.jpg"
+        "image": "../../assets/images/gallery/lucia-thank-you.png"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",

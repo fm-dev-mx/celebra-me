@@ -17,6 +17,7 @@
         "@astrojs/vercel": "9.0.4",
         "@fontsource/cinzel": "^5.2.8",
         "@fontsource/eb-garamond": "^5.2.7",
+        "@fontsource/great-vibes": "^5.2.8",
         "@fontsource/lato": "^5.2.7",
         "@fontsource/playfair-display": "^5.2.8",
         "@types/jsdom": "^21.1.7",
