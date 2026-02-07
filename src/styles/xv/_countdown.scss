@@ -9,12 +9,35 @@
 .countdown-section {
 	position: relative;
 	padding: 8rem 0.5rem;
-	background-color: var(--color-background);
+	// Warm ivory/champagne gradient background matching Jewelry Box palette
+	background: linear-gradient(
+		180deg,
+		rgba(253, 249, 242, 1) 0%,       // Warm ivory top
+		rgba(247, 231, 206, 0.3) 50%,    // Champagne tint middle
+		rgba(253, 249, 242, 1) 100%      // Warm ivory bottom
+	);
 	overflow: hidden;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	min-height: 50vh;
+
+	// Subtle radial glow for depth
+	&::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 80%;
+		height: 60%;
+		background: radial-gradient(
+			ellipse at center,
+			rgba(212, 175, 55, 0.06) 0%,  // Gold glow center
+			transparent 70%
+		);
+		pointer-events: none;
+	}
 
 	// Entrance animation
 	opacity: 0;
@@ -32,9 +55,10 @@
 .countdown-texture {
 	position: absolute;
 	inset: 0;
-	opacity: 0.03;
+	opacity: 0.06; // Increased from 0.03 for more visible texture
 	pointer-events: none;
 	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	filter: contrast(140%) brightness(100%); // Enhanced contrast for tactile feel
 }
 
 .countdown-container {
