@@ -1,297 +1,249 @@
 /* src/styles/invitation/_rsvp.scss
  * ----------------------------------------------------
- * RSVP Confirmation Form Styles
+ * RSVP Confirmation Form Styles - Jewelry Box Aesthetic
  * ----------------------------------------------------
  */
 
-// Simplified: Using CSS variables instead of SCSS bridge
 @use '../global/mixins' as mixins;
 
 .rsvp {
-	background-image: linear-gradient(
-			rgba(var(--color-white-rgb), 0.9),
-			rgba(var(--color-primary-light-rgb), 0.4)
-		),
-		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318437/1080x1920bg-white_flowers_fpxl97.jpg');
-	background-size: cover;
-	border-radius: 4px;
-	padding: 2rem;
-	width: 80vw;
-	margin: 2rem auto;
-	box-shadow: 1px 1px 12px rgba(var(--color-dark-rgb), 0.4);
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
-	transition: transform 0.2s ease;
+	position: relative;
+	width: 90vw;
+	max-width: 550px;
+	margin: 4rem auto;
+	padding: 2.5rem 1.5rem;
+	border-radius: 24px;
+	overflow: hidden;
+
+	// Glassmorphism Base
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow:
+		0 8px 32px rgba(0, 0, 0, 0.1),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 
 	@include mixins.respond-to(md) {
-		max-width: 500px;
+		padding: 3.5rem 3rem;
 	}
 
-	// Apply hover effect only on devices that support hover
-	@media (hover: hover) {
-		&:hover {
-			transform: scale(1.01);
-		}
+	// Decorative light glint
+	&::before {
+		content: '';
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: radial-gradient(
+			circle at center,
+			rgba(212, 175, 55, 0.05) 0%,
+			transparent 70%
+		);
+		pointer-events: none;
 	}
 
 	&__title {
 		text-align: center;
-		margin-bottom: 1.5rem;
+		margin-bottom: 2rem;
 		font-family: var(--font-display);
+		font-size: 2rem;
 		color: var(--color-primary-dark);
+		letter-spacing: 1px;
+
+		&::after {
+			content: '';
+			display: block;
+			width: 60px;
+			height: 1px;
+			background: var(--color-primary);
+			margin: 0.75rem auto 0;
+			opacity: 0.6;
+		}
 	}
 
 	&__form {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 1.5rem;
+		position: relative;
+		z-index: 1;
 	}
 
 	&__field {
 		display: flex;
 		flex-direction: column;
+		gap: 0.5rem;
+
+		label {
+			font-family: var(--font-body);
+			font-size: 0.9rem;
+			font-weight: 500;
+			color: var(--color-primary-dark);
+			opacity: 0.8;
+			margin-left: 4px;
+		}
+
+		input[type="text"],
+		input[type="number"],
+		textarea {
+			background: rgba(255, 255, 255, 0.5);
+			border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+			border-radius: 12px;
+			padding: 0.875rem 1rem;
+			font-family: var(--font-body);
+			font-size: 1rem;
+			color: var(--color-dark);
+			transition: all 0.3s ease;
+
+			&:focus {
+				outline: none;
+				background: rgba(255, 255, 255, 0.8);
+				border-color: var(--color-primary);
+				box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.1);
+			}
+
+			&::placeholder {
+				color: rgba(0, 0, 0, 0.3);
+			}
+		}
 	}
 
-	label {
-		font-family: var(--font-body);
-		font-size: 1rem;
-		color: var(--color-primary-dark);
-		margin-bottom: 0.5rem;
-	}
+	&__radio-group {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		margin: 0.5rem 0;
 
-	input,
-	textarea {
-		font-family: var(--font-body);
-		font-size: 1rem;
-		padding: 0.75rem;
-		border: 1px solid rgba(var(--color-primary-rgb), 0.3);
-		border-radius: 4px;
-		transition:
-			border-color 0.2s ease,
-			box-shadow 0.2s ease;
+		label {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.5rem;
+			padding: 0.75rem;
+			background: rgba(255, 255, 255, 0.3);
+			border: 1px solid rgba(255, 255, 255, 0.4);
+			border-radius: 12px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			font-family: var(--font-body);
+			font-size: 0.95rem;
 
-		&:focus {
-			border-color: var(--color-primary);
-			box-shadow: 0 0 4px rgba(var(--color-primary-rgb), 0.5);
-			outline: none;
+			input {
+				cursor: pointer;
+				accent-color: var(--color-primary);
+			}
+
+			&:has(input:checked) {
+				background: rgba(var(--color-primary-rgb), 0.1);
+				border-color: var(--color-primary);
+				color: var(--color-primary-dark);
+			}
+
+			&:hover:not(:has(input:checked)) {
+				background: rgba(255, 255, 255, 0.5);
+			}
 		}
 	}
 
 	&__error {
-		font-size: 0.875rem;
-		color: red;
-		margin-top: 0.25rem;
+		font-size: 0.8rem;
+		color: var(--color-error);
+		margin-top: 2px;
+		margin-left: 4px;
+	}
+
+	&__extra-fields {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		overflow: hidden;
 	}
 
 	&__button {
-		background-color: rgba(var(--color-primary-light-rgb), 0.5);
-		border: 2px solid rgba(var(--color-primary-light-rgb), 0.9);
-		color: rgba(var(--color-primary-dark-rgb), 0.6);
+		margin-top: 1rem;
+		background: var(--color-primary);
+		color: white;
+		border: none;
+		border-radius: 12px;
+		padding: 1rem;
 		font-family: var(--font-display);
 		font-size: 1.1rem;
-		font-weight: 600;
-		padding: 0.5rem;
-		border-radius: 4px;
+		font-weight: 500;
+		letter-spacing: 1px;
 		cursor: pointer;
-		transition:
-			background-color 0.2s ease,
-			transform 0.2s ease;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.3);
 
-		&:hover,
-		&:focus {
-			background-color: rgba(var(--color-primary-rgb), 0.5);
-			transform: translateY(-1px);
-			font-weight: 400;
-			color: rgba(var(--color-white-rgb), 0.9);
+		&:hover:not(:disabled) {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(var(--color-primary-rgb), 0.4);
+			filter: brightness(1.1);
 		}
-	}
-}
 
-.rsvp__radio-group {
-	display: flex;
-	flex-direction: column;
-
-	@include mixins.respond-to(md) {
-		flex-direction: row;
-		gap: 1rem;
-	}
-	label {
-		font-family: var(--font-body);
-		font-size: 1rem;
-		color: var(--color-primary-dark);
-		cursor: pointer;
-
-		input {
-			margin-right: 0.5rem;
+		&:active:not(:disabled) {
+			transform: translateY(0);
 		}
-	}
-}
 
-.rsvp__message-not-attending {
-	font-family: var(--font-body);
-	font-size: 1rem;
-	color: var(--color-primary-dark);
-	padding: 0.75rem;
-	border: 1px solid rgba(var(--color-primary-rgb), 0.3);
-	border-radius: 4px;
-	background-color: rgba(var(--color-white-rgb), 0.8);
-	text-align: center;
-}
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
 
-.rsvp__greeting {
-	width: 80vw;
-	margin: 2rem auto;
-	padding: 2rem 1.5rem;
-	background-image: linear-gradient(
-			rgba(var(--color-primary-light-rgb), 0.1),
-			rgba(var(--color-secondary-rgb), 0.6)
-		),
-		url('https://res.cloudinary.com/dusxvauvj/image/upload/v1739318462/1920x1080bg-white_flowers_glcgzd.jpg');
-	background-size: cover;
-	border-radius: 20px;
-	border: 2px solid rgba(var(--color-dark-rgb), 0.2);
-	box-shadow: 0 4px 12px rgba(var(--color-dark-rgb), 0.5);
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	gap: 3rem;
+		&--loading {
+			position: relative;
+			color: transparent;
 
-	@include mixins.respond-to(xs) {
-		padding: 2rem 2rem;
-		max-width: 500px;
-	}
-
-	@include mixins.respond-to(sm) {
-		padding: 2rem 3rem;
-	}
-
-	@include mixins.respond-to(md) {
-		padding: 2rem 4rem;
-	}
-
-	@include mixins.respond-to(md) {
-		padding: 2rem 5rem;
-	}
-
-	&-message {
-		font-family: var(--font-display);
-		font-size: 1.2rem;
-		font-weight: 600;
-		color: rgba(var(--color-dark-rgb), 0.6);
-		text-shadow: 1px 1px 10px rgba(var(--color-dark-rgb), 0.5);
-
-		&__underline {
-			font-size: 1.3rem;
-			color: rgba(var(--color-dark-rgb), 0.7);
-			text-decoration: underline;
+			&::after {
+				content: '';
+				position: absolute;
+				width: 20px;
+				height: 20px;
+				top: calc(50% - 10px);
+				left: calc(50% - 10px);
+				border: 2px solid rgba(255, 255, 255, 0.3);
+				border-top-color: white;
+				border-radius: 50%;
+				animation: rsvp-spin 0.8s linear infinite;
+			}
 		}
 	}
 
-	.rsvp__instagram-wrapper {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		align-items: center;
-	}
-
-	.rsvp__instagram-button {
-		font-family: var(--font-body);
-		font-size: 1rem;
-		color: var(--color-white);
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		text-decoration: none;
-		cursor: pointer;
-		transition:
-			background-color 0.2s ease,
-			transform 0.2s ease;
-		display: inline-block;
+	&__greeting {
 		text-align: center;
-		background: linear-gradient(45deg, #833ab4, #fd1d1d);
+		padding: 2rem 0;
+		animation: rsvp-fade-in 0.6s ease-out;
 
-		&:hover,
-		&:focus {
-			transform: translateY(-1px);
+		&-icon {
+			font-size: 3rem;
+			margin-bottom: 1rem;
+			display: block;
+		}
+
+		&-message {
+			font-family: var(--font-display);
+			font-size: 1.5rem;
+			color: var(--color-primary-dark);
+			line-height: 1.4;
+			margin-bottom: 1.5rem;
+		}
+
+		&-submessage {
+			font-family: var(--font-body);
+			font-size: 1rem;
+			color: var(--color-dark);
+			opacity: 0.7;
 		}
 	}
 }
 
-/* Modal Styles
- * Note: The modal is rendered via a portal so it won’t be nested within a transformed parent.
- */
-.modal {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.2s ease;
-
-	&.active {
-		opacity: 1;
-		pointer-events: all;
-	}
+@keyframes rsvp-spin {
+	to { transform: rotate(360deg); }
 }
 
-.modal__content {
-	background-color: var(--color-white);
-	padding: 2rem;
-	border-radius: 8px;
-	max-width: 90vw;
-	width: 400px;
-	text-align: center;
-	box-shadow: 0 4px 12px rgba(var(--color-dark-rgb), 0.3);
-}
-
-.modal__header {
-	font-size: 1.5rem;
-	margin-bottom: 1rem;
-	color: var(--color-primary-dark);
-}
-
-.modal__body {
-	margin-bottom: 1.5rem;
-	font-size: 1rem;
-	color: var(--color-dark);
-}
-
-.modal__footer {
-	display: flex;
-	justify-content: space-around;
-	gap: 1rem;
-}
-
-.modal__button {
-	padding: 0.75rem 1rem;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-family: var(--font-display);
-	font-size: 1rem;
-	transition:
-		background-color 0.2s ease,
-		transform 0.2s ease;
-
-	&:hover,
-	&:focus {
-		transform: scale(1.01);
-	}
-}
-
-.modal__button--confirm {
-	background-color: var(--color-primary);
-	color: var(--color-white);
-}
-
-.modal__button--cancel {
-	background-color: rgba(var(--color-primary-light-rgb), 0.2);
-	color: var(--color-dark);
+@keyframes rsvp-fade-in {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
 }
