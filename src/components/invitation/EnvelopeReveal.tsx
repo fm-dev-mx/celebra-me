@@ -46,9 +46,10 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 	};
 
 	useEffect(() => {
-		if (phase === 'closed') {
-			document.body.style.overflow = 'hidden';
+		const isLocked = phase === 'closed' || phase === 'opening' || phase === 'rising';
+		document.body.style.overflow = isLocked ? 'hidden' : 'auto';
 
+		if (phase === 'closed') {
 			const handleScrollAttempt = () => {
 				if (phase === 'closed') {
 					controls.start({
@@ -60,16 +61,19 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 
 			window.addEventListener('wheel', handleScrollAttempt);
 			window.addEventListener('touchmove', handleScrollAttempt);
+
 			return () => {
 				window.removeEventListener('wheel', handleScrollAttempt);
 				window.removeEventListener('touchmove', handleScrollAttempt);
+				document.body.style.overflow = 'auto';
 			};
 		} else if (phase === 'exit') {
-			document.body.style.overflow = 'auto';
 			document.body.classList.add('invitation-revealed');
-		} else {
-			document.body.style.overflow = 'auto';
 		}
+
+		return () => {
+			document.body.style.overflow = 'auto';
+		};
 	}, [phase, controls]);
 
 	const formattedDate = new Date(date).toLocaleDateString('es-MX', {

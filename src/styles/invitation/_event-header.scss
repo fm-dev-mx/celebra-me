@@ -114,3 +114,18 @@
         text-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 }
+
+// Hide header until the envelope reveal completes (when enabled)
+:global(.event-theme-wrapper--sealed) #event-header {
+	transition: opacity 0.6s ease;
+}
+
+:global(body:not(.invitation-revealed)) .event-theme-wrapper--sealed #event-header {
+	opacity: 0;
+	pointer-events: none;
+}
+
+:global(body.invitation-revealed) .event-theme-wrapper--sealed #event-header {
+	opacity: 1;
+	pointer-events: auto;
+}

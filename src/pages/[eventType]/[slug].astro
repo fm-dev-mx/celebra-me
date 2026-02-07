@@ -50,6 +50,7 @@ const { data } = event;
 
 const isXV = data.eventType === 'xv';
 const isWedding = data.eventType === 'boda';
+const showEnvelope = !!(data.envelope && !data.envelope.disabled);
 
 function hexToRgb(hex: string): string {
 	hex = hex.replace(/^#/, '');
@@ -88,9 +89,9 @@ const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 			--color-accent-rgb: var(--accentColorRgb);
 		}
 	</style>
-	<main class="event-theme-wrapper">
+	<main class={`event-theme-wrapper ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
 		{
-			data.envelope && !data.envelope.disabled && (
+			showEnvelope && (
 				<EnvelopeReveal
 					client:load
 					name={data.hero.name}
