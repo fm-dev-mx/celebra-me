@@ -1,0 +1,35 @@
+@use 'variables' as vars;
+
+/* Global Calligraphy Flourishes (Premium Brand Elements) */
+
+@mixin calligraphy-base {
+    font-family: 'Pinyon Script', cursive;
+    font-style: normal;
+    text-transform: lowercase;
+    display: inline-block;
+    padding: 0 0.4em;
+    vertical-align: middle;
+    line-height: 0;
+    color: var(--color-primary, #6a0dad);
+}
+
+.calligraphy-accent {
+    @include calligraphy-base;
+    font-size: 1.4em;
+}
+
+.calligraphy-ampersand {
+    @include calligraphy-base;
+    font-size: 1.8em;
+    opacity: 0.9;
+}
+
+/* Font helpers for XV and other invitations */
+.font-heading-elegant { font-family: 'Playfair Display', serif; }
+.font-heading-formal { font-family: 'Cinzel', serif; }
+.font-heading-modern { font-family: 'Montserrat', sans-serif; }
+.font-body { font-family: 'EB Garamond', serif; }
+.font-decorative-cursive { font-family: 'Great Vibes', cursive; }
+.font-decorative-dancing { font-family: 'Dancing Script', cursive; }
+.font-decorative-calligraphy { font-family: 'Pinyon Script', cursive; }
+.font-decorative-display { font-family: 'Abril Fatface', serif; }

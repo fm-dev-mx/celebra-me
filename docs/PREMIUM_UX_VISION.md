@@ -13,7 +13,7 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 ### A. Landing Page (User/Client Experience)
 
 | Section | Visual Status | Link QA | Notes |
-|---------|---------------|---------|-------|
+| --- | --- | --- | --- |
 | **Header (The Jewelry Box)** | ✅ Complete | ✅ Fixed | Navigation links to internal anchors |
 | **Hero "Prime"** | ✅ Complete | ✅ Fixed | WhatsApp + internal anchors for zero broken links |
 | **Services Showcase** | ✅ Complete | ✅ Fixed | Cards redirect to `#contacto` for inquiry |
@@ -26,15 +26,28 @@ Transform **Celebra-me** from a standard invitation website into a **digital lux
 
 ---
 
+| Section | Status | Visual Aesthetic | Data-Driven |
+| --- | --- | --- | --- |
+| **Ceremonial Opening** | ✅ Production | Glass + Wax Seal | ✅ Yes |
+| **Signature Hero** | ✅ Production | High-society Portrait | ✅ Yes |
+| **Countdown & Quote** | ✅ Production | Gold-rimmed Glass | ✅ Yes |
+| **Family & Protcol** | ✅ Production | Editorial Pill Layout | ✅ Yes |
+| **Location & Maps** | ✅ Production | Dual-Nav (iOS/Google) | ✅ Yes |
+| **RSVP & Logic** | ✅ Production | Seamless Form + Cap | ✅ Yes |
+| **Registry & Gifts** | ✅ Production | Multi-channel Cards | ✅ Yes |
+| **Itinerary & Gallery** | ✅ Production | Staggered Motion | ✅ Yes |
+|
+---
+
 ## 3. Digital Invitation (Guest Experience)
 
-**Execution status and next steps are tracked in:**
-- [docs/plan/invitation-master-plan.md](./plan/invitation-master-plan.md)
+**The Digital Invitation Engine is now Production Ready.**
 
-This document defines the **qualitative UX bar** (premium signals, pacing, motion, restraint). The master plan defines the **deterministic execution order** and completion status.
+The XV Años Demo serves as the "Ground Truth" for the premium guest experience, featuring the full "Jewelry Box" aesthetic and end-to-end data integration.
 
-High-level invitation components (for orientation):
-- Ceremonial Envelope Opening → Signature Hero → Quote → Countdown → Family → Location → RSVP → Registry → Itinerary → Gallery → Final Thank You
+- **Status:** Production Ready (2026-02-07)
+- **Active Refinement:** [docs/plan/technical-debt.md](./plan/technical-debt.md)
+- **Archive:** [docs/plan/archive/invitation-master-plan.md](./plan/archive/invitation-master-plan.md)
 
 ---
 
@@ -57,6 +70,14 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 - [x] **Contact:** "Concierge Request" redesign (Glassmorphism + Motion feedback).
 - [x] **Iconography:** Bespoke stroke-drawing SVGs across all sections.
 - [x] **Experience:** Refined header and mobile navigation for zero layout shift and premium transitions.
+
+### Invitation Visual Targets (XV Demo)
+
+- [x] **Envelope:** 3D opening choreography with "Ceremonial" metaphor.
+- [x] **Countdown:** "Rolodex" motion with glassmorphism tiles.
+- [x] **Family Section:** Circular editorial layouts with floating cards.
+- [x] **Itinerary:** Multi-step timeline with bespoke jewelry icons.
+- [x] **RSVP:** Conversational form with capacity logic and success transitions.
 
 ---
 
@@ -90,14 +111,17 @@ The targeted remediation of the landing page to eliminate "low-quality" signals 
 | Document | Purpose |
 |----------|---------|
 | [docs/plan/archive/landing-page-completion.md](./plan/archive/landing-page-completion.md) | Landing page step-by-step plan (archived) |
-| [docs/plan/invitation-master-plan.md](./plan/invitation-master-plan.md) | Digital invitation roadmap + canonical progress |
+| [docs/plan/archive/invitation-master-plan.md](./plan/archive/invitation-master-plan.md) | Digital invitation roadmap (archived) |
+| [docs/plan/technical-debt.md](./plan/technical-debt.md) | Active aesthetic and functional debt |
 
 ---
 
 ## 8. Changelog
 
 | Date | Change |
-|------|--------|
+| --- | --- |
 | 2026-01-31 | Landing Page marked production-ready. All pending items resolved. |
 | 2026-01-31 | Archived landing-page-completion.md to docs/plan/archive/ |
 | 2026-01-31 | Restructured document for clearer status mapping |
+| 2026-02-07 | Digital Invitation marked production-ready. Archived master-plan. |
+| 2026-02-07 | Consolidated technical-debt.md and archived component plans. |
