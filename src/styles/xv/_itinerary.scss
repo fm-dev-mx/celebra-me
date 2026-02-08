@@ -6,6 +6,25 @@
 	position: relative;
 	overflow: hidden;
 
+	&__items-wrapper {
+		position: relative;
+	}
+
+	&__animated-line-container {
+		position: absolute;
+		left: 50%;
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		transform: translateX(-50%);
+		z-index: 1;
+
+		svg {
+			height: 100%;
+			width: 2px;
+		}
+	}
+
 	&__container {
 		max-width: 1000px;
 		margin: 0 auto;
@@ -65,6 +84,7 @@
 	}
 
 	&__line {
+		display: none; // Handled by TimelineList SVG
 		position: absolute;
 		left: 50%;
 		top: 0;
