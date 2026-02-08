@@ -1,0 +1,16 @@
+// src/styles/birthday/_variables.scss
+
+// Luxury Hacienda Design Tokens
+$birthday-primary: #4B3621 !default; // Deep Cognac / Leather
+$birthday-accent: #D4AF37 !default;  // Aged Gold
+$birthday-bg: #F5F5DC !default;      // Parchment / Textured Paper
+$birthday-bg-dark: #3E2B1A !default; // Dark Leather Overlay
+
+// Typography
+$birthday-font-heading: 'EB Garamond', serif !default;
+$birthday-font-sub: 'Montserrat', sans-serif !default;
+
+// Utilities
+$birthday-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+$birthday-glass-bg: rgba(75, 54, 33, 0.35); // Sturdier glassmorphism
+$birthday-glass-border: rgba(212, 175, 55, 0.4);

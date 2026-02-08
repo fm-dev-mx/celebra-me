@@ -1,0 +1,9 @@
+@use '../../invitation/_xv-variables' as *;
+
+.theme-preset--jewelry-box {
+    // Variables can be overridden here if needed or just use the ones from xv/variables
+    --color-primary: #{$color-gold-metallic};
+    --color-accent: #{$color-darkest};
+
+    // We can move more specific overrides here later if they are currently in component files
+}
