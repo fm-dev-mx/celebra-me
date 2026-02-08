@@ -18,7 +18,7 @@ scrolling.
 | :----------------- | :----------------- | :---------------- | :------------------------------------------------------- |
 | **Landing Page**   | ✅ **Live**        | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
 | **XV Años Engine** | ✅ **Live**        | "The Jewelry Box" | Full data integration, interactive maps, reduced motion. |
-| **60th Birthday**  | 🚧 **In Planning** | "Luxury Hacienda" | Adapting XV engine for rustic/elegant adult events.      |
+| **60th Birthday**  | 🚧 **Implementing**| "Luxury Hacienda" | Bespoke spec finalized. Transitioning to styling & logic. |
 
 ---
 
