@@ -5,7 +5,8 @@
     "theme": {
         "primaryColor": "#4B3621",
         "accentColor": "#D4AF37",
-        "fontFamily": "serif"
+        "fontFamily": "serif",
+        "preset": "luxury-hacienda"
     },
     "hero": {
         "name": "Gerardo García",
@@ -135,7 +136,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "microcopy": "Pase a la Hacienda del Jefe Botas",
         "closedPalette": {

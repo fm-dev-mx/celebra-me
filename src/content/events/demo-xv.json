@@ -6,7 +6,8 @@
     "theme": {
         "primaryColor": "#d4af37",
         "accentColor": "#111111",
-        "fontFamily": "serif"
+        "fontFamily": "serif",
+        "preset": "jewelry-box"
     },
     "hero": {
         "name": "Lucía García",

@@ -15,6 +15,7 @@ const eventsCollection = defineCollection({
 				primaryColor: z.string().regex(/^#/, 'Must be a hex color'),
 				accentColor: z.string().regex(/^#/, 'Must be a hex color').optional(),
 				fontFamily: z.enum(['serif', 'sans']).default('serif'),
+				preset: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
 			}),
 			hero: z.object({
 				name: z.string(),
