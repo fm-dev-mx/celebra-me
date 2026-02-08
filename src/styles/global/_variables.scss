@@ -68,6 +68,19 @@ $font-stack: (
 	'Noto Color Emoji'
 );
 
+// Typography Tokens — Core 5 System
+$font-display-formal: 'Cinzel', serif;
+$font-display-elegant: 'Playfair Display', serif;
+$font-calligraphy: 'Pinyon Script', cursive;
+$font-body: 'EB Garamond', Georgia, serif;
+$font-ui: 'Montserrat', system-ui, sans-serif;
+
+// Fluid Type Scale (clamp-based for responsive sizing)
+$text-h1-fluid: clamp(2.5rem, 8vw, 5rem);
+$text-h2-fluid: clamp(1.8rem, 5vw, 3rem);
+$text-h3-fluid: clamp(1.4rem, 3vw, 2rem);
+$text-body-fluid: clamp(1rem, 1.2vw, 1.25rem);
+
 // Transition timing functions and component-specific settings
 $transition-timing: (
 	smooth: cubic-bezier(0.4, 0, 0.2, 1),

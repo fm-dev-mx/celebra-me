@@ -24,12 +24,9 @@
     opacity: 0.9;
 }
 
-/* Font helpers for XV and other invitations */
-.font-heading-elegant { font-family: 'Playfair Display', serif; }
-.font-heading-formal { font-family: 'Cinzel', serif; }
-.font-heading-modern { font-family: 'Montserrat', sans-serif; }
-.font-body { font-family: 'EB Garamond', serif; }
-.font-decorative-cursive { font-family: 'Great Vibes', cursive; }
-.font-decorative-dancing { font-family: 'Dancing Script', cursive; }
-.font-decorative-calligraphy { font-family: 'Pinyon Script', cursive; }
-.font-decorative-display { font-family: 'Abril Fatface', serif; }
+/* Font Utility Classes — Core 5 System */
+.font-heading-elegant { font-family: vars.$font-display-elegant; }
+.font-heading-formal { font-family: vars.$font-display-formal; }
+.font-ui { font-family: vars.$font-ui; }
+.font-body { font-family: vars.$font-body; }
+.font-calligraphy { font-family: vars.$font-calligraphy; }
