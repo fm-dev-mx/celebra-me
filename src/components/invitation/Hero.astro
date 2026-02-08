@@ -47,7 +47,9 @@ const label = eventType === 'xv' ? 'Mis XV Años' : 'Nuestra Boda';
 		<div class="invitation-hero__details">
 			<p class="invitation-hero__date">{formattedDate}</p>
 			{time && <p class="invitation-hero__time">{time}</p>}
-			<p class="invitation-hero__venue">{venueName}</p>
+			<p class="invitation-hero__venue">
+				<span class="calligraphy-accent">en</span> {venueName}
+			</p>
 		</div>
 	</div>
 

@@ -1,6 +1,6 @@
 // src/components/invitation/EnvelopeReveal.tsx
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation, useReducedMotion } from 'framer-motion';
 
 interface Props {
 	name: string;
@@ -16,6 +16,7 @@ interface Props {
 }
 
 const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcopy, palette }) => {
+	const shouldReduceMotion = useReducedMotion();
 	const [phase, setPhase] = useState<'closed' | 'opening' | 'rising' | 'exit'>(() => {
 		if (typeof window !== 'undefined') {
 			const params = new URLSearchParams(window.location.search);
@@ -29,6 +30,13 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 
 	const handleOpen = () => {
 		if (phase !== 'closed') return;
+
+		if (shouldReduceMotion) {
+			setPhase('exit');
+			document.body.style.overflow = 'auto';
+			document.body.classList.add('invitation-revealed');
+			return;
+		}
 
 		setPhase('opening');
 
