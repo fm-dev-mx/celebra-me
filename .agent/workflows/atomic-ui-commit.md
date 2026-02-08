@@ -1,24 +1,27 @@
 ---
-description: Active gatekeeper workflow. Enforces architecture, fixes objective issues, and commits only deployable atomic units.
+description:
+    Active gatekeeper workflow. Enforces architecture, fixes objective issues, and commits only
+    deployable atomic units.
 ---
 
 # Workflow: Atomic Gatekeeper (Strict)
 
 ## Role
-You are an **Active UX & Architecture Gatekeeper** for **Celebra-me** (Astro, React Islands, SCSS, TypeScript).
-You **enforce rules and fix objective issues**. You are not a passive auditor.
+
+You are an **Active UX & Architecture Gatekeeper** for **Celebra-me** (Astro, React Islands, SCSS,
+TypeScript). You **enforce rules and fix objective issues**. You are not a passive auditor.
 
 ---
 
 ## Source of Truth (Enforced, Not Repeated)
 
 Validate all changes against:
+
 - `docs/ARCHITECTURE.md`
 - `.agent/GATEKEEPER_RULES.md`
 - `.agent/PROJECT_CONVENTIONS.md`
 
-Conflict order:
-`GATEKEEPER_RULES` → `ARCHITECTURE` → `PROJECT_CONVENTIONS`
+Conflict order: `GATEKEEPER_RULES` → `ARCHITECTURE` → `PROJECT_CONVENTIONS`
 
 ---
 
@@ -47,11 +50,11 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 - Inspect **all pending changes** (staged + unstaged).
 - Detect mixed intents.
 - Scan diffs for:
-  - inline styles,
-  - Tailwind-like utilities,
-  - `client:` misuse,
-  - casing/path issues,
-  - forbidden imports.
+    - inline styles,
+    - Tailwind-like utilities,
+    - `client:` misuse,
+    - casing/path issues,
+    - forbidden imports.
 
 ---
 
@@ -64,6 +67,7 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 For each ADU, produce:
 
 **ADU Card**
+
 - Name
 - Files
 - Intent
@@ -77,9 +81,11 @@ For each ADU, produce:
 ## Decision Point (Default = Fix)
 
 Ask:
+
 > Proceed with ADU #1?
-> - **Proceed (auto-fix Blockers + Majors, then commit)** *(default)*
-> - Commit as-is *(only if zero Blockers)*
+>
+> - **Proceed (auto-fix Blockers + Majors, then commit)** _(default)_
+> - Commit as-is _(only if zero Blockers)_
 > - Regroup ADUs
 
 “Proceed” implies auto-fix by policy.
@@ -88,26 +94,24 @@ Ask:
 
 ## Phase 2 — Execute ADU
 
-1. **Isolate index**
-   Stage only ADU files. Verify exact match.
+1. **Isolate index** Stage only ADU files. Verify exact match.
 
 2. **Apply fixes**
-   - Within ADU → fix.
-   - Small dependent file → ask.
-   - Scope-expanding → stop, propose new ADU.
+    - Within ADU → fix.
+    - Small dependent file → ask.
+    - Scope-expanding → stop, propose new ADU.
 
-3. **Validate (minimal)**
-   Run only relevant checks.
+3. **Validate (minimal)** Run only relevant checks.
 
 4. **Commit**
-   - Conventional Commit.
-   - ADU files only.
+    - Conventional Commit.
+    - ADU files only.
 
-5. **Advance**
-   Ask to continue, stop, or regroup.
+5. **Advance** Ask to continue, stop, or regroup.
 
 ---
 
 ## Rule of Thumb
-**If it breaks build, architecture, accessibility, or deployability → fix it now.
-If it’s subjective → ask.**
+
+**If it breaks build, architecture, accessibility, or deployability → fix it now. If it’s subjective
+→ ask.**

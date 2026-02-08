@@ -62,7 +62,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 				const data = await response.json();
 				setError(data.message || 'Ocurrió un error al enviar tu confirmación.');
 			}
-		} catch (err) {
+		} catch {
 			setError('No se pudo conectar con el servidor.');
 		} finally {
 			setIsSubmitting(false);
@@ -78,9 +78,14 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 					</span>
 					<h2 className="rsvp__greeting-message">
 						{attendance === 'yes' ? (
-							<>¡Gracias, <strong>{name}</strong>!<br />{confirmationMessage}</>
+							<>
+								¡Gracias, <strong>{name}</strong>!<br />
+								{confirmationMessage}
+							</>
 						) : (
-							<>Gracias por avisarnos, <strong>{name}</strong>. Te extrañaremos.</>
+							<>
+								Gracias por avisarnos, <strong>{name}</strong>. Te extrañaremos.
+							</>
 						)}
 					</h2>
 					<p className="rsvp__greeting-submessage">Tu respuesta ha sido registrada.</p>
@@ -152,7 +157,9 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 							className="rsvp__extra-fields"
 						>
 							<div className="rsvp__field">
-								<label htmlFor="guestCount">Número de acompañantes (Máx. {guestCap})</label>
+								<label htmlFor="guestCount">
+									Número de acompañantes (Máx. {guestCap})
+								</label>
 								<input
 									type="number"
 									id="guestCount"
@@ -165,7 +172,9 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 							</div>
 
 							<div className="rsvp__field">
-								<label htmlFor="dietary">Alergias o restricciones alimentarias</label>
+								<label htmlFor="dietary">
+									Alergias o restricciones alimentarias
+								</label>
 								<textarea
 									id="dietary"
 									placeholder="Ej. Vegetariano, alergia al maní..."

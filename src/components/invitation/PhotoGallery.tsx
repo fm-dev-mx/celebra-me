@@ -58,7 +58,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 			y: 0,
 			transition: {
 				duration: 0.8,
-				ease: "easeOut",
+				ease: 'easeOut',
 			},
 		},
 	};
@@ -70,7 +70,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 				variants={containerVariants}
 				initial="hidden"
 				whileInView="visible"
-				viewport={{ once: true, margin: "-100px" }}
+				viewport={{ once: true, margin: '-100px' }}
 			>
 				{items.map((item, index) => (
 					<motion.div
@@ -88,7 +88,11 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 						role="button"
 						aria-label={item.caption || `Ver imagen ${index + 1}`}
 					>
-						<img src={item.image.src} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
+						<img
+							src={item.image.src}
+							alt={item.caption || `Galería ${index + 1}`}
+							loading="lazy"
+						/>
 						{item.caption && (
 							<div className="gallery-grid__overlay">
 								<p className="gallery-grid__caption">{item.caption}</p>
@@ -115,7 +119,15 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 							onClick={() => setSelectedImage(null)}
 							aria-label="Cerrar galería"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
 								<line x1="18" y1="6" x2="6" y2="18"></line>
 								<line x1="6" y1="6" x2="18" y2="18"></line>
 							</svg>
@@ -126,7 +138,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 							initial={{ scale: 0.9, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							exit={{ scale: 0.9, opacity: 0 }}
-							transition={{ type: "spring", damping: 25, stiffness: 200 }}
+							transition={{ type: 'spring', damping: 25, stiffness: 200 }}
 							onClick={(e) => e.stopPropagation()}
 						>
 							<img

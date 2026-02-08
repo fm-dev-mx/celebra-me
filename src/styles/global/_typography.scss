@@ -3,30 +3,40 @@
 /* Global Calligraphy Flourishes (Premium Brand Elements) */
 
 @mixin calligraphy-base {
-    font-family: 'Pinyon Script', cursive;
-    font-style: normal;
-    text-transform: lowercase;
-    display: inline-block;
-    padding: 0 0.4em;
-    vertical-align: middle;
-    line-height: 0;
-    color: var(--color-primary, #6a0dad);
+	font-family: 'Pinyon Script', cursive;
+	font-style: normal;
+	text-transform: lowercase;
+	display: inline-block;
+	padding: 0 0.4em;
+	vertical-align: middle;
+	line-height: 0;
+	color: var(--color-primary, #6a0dad);
 }
 
 .calligraphy-accent {
-    @include calligraphy-base;
-    font-size: 1.4em;
+	@include calligraphy-base;
+	font-size: 1.4em;
 }
 
 .calligraphy-ampersand {
-    @include calligraphy-base;
-    font-size: 1.8em;
-    opacity: 0.9;
+	@include calligraphy-base;
+	font-size: 1.8em;
+	opacity: 0.9;
 }
 
 /* Font Utility Classes — Core 5 System */
-.font-heading-elegant { font-family: vars.$font-display-elegant; }
-.font-heading-formal { font-family: vars.$font-display-formal; }
-.font-ui { font-family: vars.$font-ui; }
-.font-body { font-family: vars.$font-body; }
-.font-calligraphy { font-family: vars.$font-calligraphy; }
+.font-heading-elegant {
+	font-family: vars.$font-display-elegant;
+}
+.font-heading-formal {
+	font-family: vars.$font-display-formal;
+}
+.font-ui {
+	font-family: vars.$font-ui;
+}
+.font-body {
+	font-family: vars.$font-body;
+}
+.font-calligraphy {
+	font-family: vars.$font-calligraphy;
+}

@@ -12,7 +12,6 @@ export const getEnv = (key: string): string => {
 	try {
 		// We use a safe check to avoid SyntaxErrors in environments that don't support import.meta
 		// during parsing/transpilation (like some Jest configurations)
-		/* eslint-disable no-new-func */
 		const getMetadata = new Function('return import.meta.env');
 		const env = getMetadata();
 		if (env && env[key]) {

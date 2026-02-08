@@ -204,7 +204,8 @@ $gold-dark: #9e7d3d;
 }
 
 @keyframes elegantPulse {
-	0%, 100% {
+	0%,
+	100% {
 		box-shadow:
 			0 4px 24px rgba($gold-base, 0.2),
 			0 2px 8px rgba(0, 0, 0, 0.08),
@@ -220,7 +221,8 @@ $gold-dark: #9e7d3d;
 }
 
 @keyframes ringPulse {
-	0%, 100% {
+	0%,
+	100% {
 		transform: scale(1);
 		opacity: 0.5;
 	}
@@ -229,4 +231,3 @@ $gold-dark: #9e7d3d;
 		opacity: 0;
 	}
 }
-

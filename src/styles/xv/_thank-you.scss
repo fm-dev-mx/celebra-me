@@ -9,11 +9,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background: linear-gradient(
-		180deg,
-		rgba($color-white, 0.95) 0%,
-		$color-champagne-light 100%
-	);
+	background: linear-gradient(180deg, rgba($color-white, 0.95) 0%, $color-champagne-light 100%);
 	overflow: hidden;
 
 	// Subtle decorative overlay

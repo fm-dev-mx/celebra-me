@@ -7,105 +7,104 @@
  */
 
 .home-header {
-    // Logo styling
-    &__logo-container {
-        margin-left: var(--spacing-lg);
-        display: block; // Link wrapper
-        height: 45px; // Constrain height
+	// Logo styling
+	&__logo-container {
+		margin-left: var(--spacing-lg);
+		display: block; // Link wrapper
+		height: 45px; // Constrain height
 
-        img {
-            height: 100%;
-            width: auto;
-            transition: opacity 0.3s ease;
-        }
-    }
+		img {
+			height: 100%;
+			width: auto;
+			transition: opacity 0.3s ease;
+		}
+	}
 
-
-    /* Adaptive Logo Logic
+	/* Adaptive Logo Logic
      * Uses the parent .header-base--scrolled class to toggle visibility
      */
-    &__logo {
-        &--white {
-            display: block; // Default visible on transparent
-            // Make logo white for maximum contrast on dark hero backgrounds
-            filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,.5));
-        }
-        &--gold {
-            display: none; // Default hidden on transparent
-        }
-    }
+	&__logo {
+		&--white {
+			display: block; // Default visible on transparent
+			// Make logo white for maximum contrast on dark hero backgrounds
+			filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+		}
+		&--gold {
+			display: none; // Default hidden on transparent
+		}
+	}
 
-    // When scrolled (Parent modifier)
-    // Note: We need to reference the global scope for the parent class if not nested inside it,
-    // but since this SCSS will be imported/used where .header-base exists or processed globally...
-    // Actually, usually easier to use strict BEM: .header-base--scrolled .home-header__logo--white
-    // IF this file is imported globally. If scoped, we might need :global().
-    // Assuming global import or usage in .astro without scope for these selectors.
+	// When scrolled (Parent modifier)
+	// Note: We need to reference the global scope for the parent class if not nested inside it,
+	// but since this SCSS will be imported/used where .header-base exists or processed globally...
+	// Actually, usually easier to use strict BEM: .header-base--scrolled .home-header__logo--white
+	// IF this file is imported globally. If scoped, we might need :global().
+	// Assuming global import or usage in .astro without scope for these selectors.
 }
 
 .home-header__desktop {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-    text-wrap: nowrap;
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-lg);
+	text-wrap: nowrap;
 }
 
 // Global overrides/interactions matching HeaderBase state
 // We nest this outside .home-header if we want to hook into .header-base states
 :global(.header-base--logo-adaptive.header-base--scrolled) {
-    .home-header__logo--white {
-        display: none;
-    }
+	.home-header__logo--white {
+		display: none;
+	}
 
-    .home-header__logo--gold {
-        display: block;
-    }
+	.home-header__logo--gold {
+		display: block;
+	}
 }
 
 :global(.header-base--logo-static) {
-    .home-header__logo--white {
-        display: none;
-    }
+	.home-header__logo--white {
+		display: none;
+	}
 
-    .home-header__logo--gold {
-        display: block;
-    }
+	.home-header__logo--gold {
+		display: block;
+	}
 }
 
 :global(.header-base--scrolled) {
-    .home-nav__link {
-        color: var(--color-text); // Switch to dark text on scroll (if background is white)
+	.home-nav__link {
+		color: var(--color-text); // Switch to dark text on scroll (if background is white)
 
-        &::after {
-            background-color: var(--color-primary); // Gold underline
-        }
-    }
+		&::after {
+			background-color: var(--color-primary); // Gold underline
+		}
+	}
 
-    .home-nav-actions__login {
-        color: var(--color-primary-dark);
-    }
+	.home-nav-actions__login {
+		color: var(--color-primary-dark);
+	}
 }
 
 :global(.header-base--transparent) {
-    .home-nav__link {
-        color: #FFFFFF; // Force White text on transparent hero
-        font-weight: 600;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.5); // Soft shadow for legibility
+	.home-nav__link {
+		color: #ffffff; // Force White text on transparent hero
+		font-weight: 600;
+		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); // Soft shadow for legibility
 
-        &::after {
-            background-color: #FFFFFF; // White underline matches text
-        }
+		&::after {
+			background-color: #ffffff; // White underline matches text
+		}
 
-        &:hover {
-            color: #FFFFFF; // Keep white on hover
-            opacity: 0.9;
-        }
-    }
+		&:hover {
+			color: #ffffff; // Keep white on hover
+			opacity: 0.9;
+		}
+	}
 
-    .home-nav-actions__login {
-         color: #FFFFFF;
-         text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    }
+	.home-nav-actions__login {
+		color: #ffffff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+	}
 }
 
 /*
@@ -113,44 +112,44 @@
  * Desktop Navigation Links
  */
 .home-nav {
-    display: flex;
-    gap: var(--spacing-lg);
-    align-items: center;
+	display: flex;
+	gap: var(--spacing-lg);
+	align-items: center;
 
-    &__link {
-        text-decoration: none;
-        color: var(--color-primary-dark);
-        opacity: 0.8;
-        font-family: var(--font-body);
-        font-weight: 500;
-        font-size: 0.95rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        position: relative;
-        padding: 5px 0;
-        transition: color 0.3s ease;
+	&__link {
+		text-decoration: none;
+		color: var(--color-primary-dark);
+		opacity: 0.8;
+		font-family: var(--font-body);
+		font-weight: 500;
+		font-size: 0.95rem;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		position: relative;
+		padding: 5px 0;
+		transition: color 0.3s ease;
 
-        // Growing underline effect
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            transform: translateX(-50%);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+		// Growing underline effect
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			width: 0;
+			height: 2px;
+			transform: translateX(-50%);
+			transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
 
-        &:hover::after {
-            width: 100%;
-        }
+		&:hover::after {
+			width: 100%;
+		}
 
-        &:focus-visible {
-            outline: 2px solid var(--color-primary);
-            outline-offset: 4px;
-        }
-    }
+		&:focus-visible {
+			outline: 2px solid var(--color-primary);
+			outline-offset: 4px;
+		}
+	}
 }
 
 /*
@@ -158,52 +157,54 @@
  * Login and CTA
  */
 .home-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-md);
 
-    &__login {
-        color: var(--color-accent-dark);
-        opacity: 0.5;
-        text-decoration: underline;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        font-weight: 400;
-        transition: color 0.3s ease;
-        padding: 0.5rem;
+	&__login {
+		color: var(--color-accent-dark);
+		opacity: 0.5;
+		text-decoration: underline;
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		font-weight: 400;
+		transition: color 0.3s ease;
+		padding: 0.5rem;
 
-        &:hover {
-            opacity: 0.8;
-        }
+		&:hover {
+			opacity: 0.8;
+		}
 
-        &:focus-visible {
-            outline: 2px solid var(--color-primary);
-            outline-offset: 4px;
-        }
-    }
+		&:focus-visible {
+			outline: 2px solid var(--color-primary);
+			outline-offset: 4px;
+		}
+	}
 
-    &__cta {
-        background-color: var(--color-primary);
-        color: #FFFFFF;
-        opacity: 0.8;
-        padding: 0.6rem 1.5rem;
-        border-radius: 50px; // Pill shape
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 4px 6px rgba(197, 160, 89, 0.2);
+	&__cta {
+		background-color: var(--color-primary);
+		color: #ffffff;
+		opacity: 0.8;
+		padding: 0.6rem 1.5rem;
+		border-radius: 50px; // Pill shape
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.9rem;
+		transition:
+			transform 0.2s ease,
+			background-color 0.2s ease,
+			box-shadow 0.2s ease;
+		box-shadow: 0 4px 6px rgba(197, 160, 89, 0.2);
 
-        &:hover {
-            transform: translateY(-2px);
-            background-color: var(--color-primary-dark);
-            box-shadow: 0 6px 12px rgba(197, 160, 89, 0.3);
-        }
+		&:hover {
+			transform: translateY(-2px);
+			background-color: var(--color-primary-dark);
+			box-shadow: 0 6px 12px rgba(197, 160, 89, 0.3);
+		}
 
-        &:focus-visible {
-            outline: 2px solid var(--color-primary);
-            outline-offset: 4px;
-        }
-    }
+		&:focus-visible {
+			outline: 2px solid var(--color-primary);
+			outline-offset: 4px;
+		}
+	}
 }
-

@@ -6,11 +6,7 @@
 
 .invitation-footer {
 	// Subtle fade from transparent to barely visible
-	background: linear-gradient(
-		to bottom,
-		transparent 0%,
-		rgba($color-white, 0.3) 100%
-	);
+	background: linear-gradient(to bottom, transparent 0%, rgba($color-white, 0.3) 100%);
 	backdrop-filter: blur(4px);
 	padding: 0.75rem 1rem;
 	font-family: $font-footer;
@@ -88,7 +84,8 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 
-	svg, img {
+	svg,
+	img {
 		width: 0.7rem;
 		height: 0.7rem;
 		opacity: 0.6;
@@ -96,7 +93,8 @@
 
 	@include mixins.respond-to(md) {
 		font-size: 0.65rem;
-		svg, img {
+		svg,
+		img {
 			width: 0.8rem;
 			height: 0.8rem;
 		}
@@ -113,4 +111,3 @@
 		transform: scale(1);
 	}
 }
-

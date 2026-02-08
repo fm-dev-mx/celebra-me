@@ -104,8 +104,11 @@
 		overflow: hidden;
 
 		&--ceremony {
-			animation-delay: 0.1s;		}
-		&--reception { animation-delay: 0.25s; }
+			animation-delay: 0.1s;
+		}
+		&--reception {
+			animation-delay: 0.25s;
+		}
 
 		/* Subtle Hover Effect */
 		&:hover {
@@ -119,7 +122,8 @@
 		&-image-outer-frame {
 			width: 100%;
 			border-radius: 2px;
-			background: linear-gradient(135deg,
+			background: linear-gradient(
+				135deg,
 				#c5a059 0%,
 				#f1e1b9 45%,
 				#d4af37 55%,
@@ -127,8 +131,8 @@
 			); /* Realistic gold foil gradient */
 			padding: 2px;
 			box-shadow:
-				0 10px 30px -10px rgba(0,0,0,0.3),
-				inset 0 0 1px rgba(255,255,255,0.5);
+				0 10px 30px -10px rgba(0, 0, 0, 0.3),
+				inset 0 0 1px rgba(255, 255, 255, 0.5);
 			margin-bottom: 2rem;
 		}
 
@@ -312,8 +316,16 @@
 			&::before {
 				content: '';
 				position: absolute;
-				top: 0; left: -100%; width: 100%; height: 100%;
-				background: linear-gradient(90deg, transparent, hsla(43, 55%, 55%, 0.15), transparent);
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					hsla(43, 55%, 55%, 0.15),
+					transparent
+				);
 				transition: 0s;
 				pointer-events: none;
 			}
@@ -321,7 +333,10 @@
 			&::after {
 				content: '';
 				position: absolute;
-				bottom: 0; left: 50%; width: 0; height: 1px;
+				bottom: 0;
+				left: 50%;
+				width: 0;
+				height: 1px;
 				background: currentColor;
 				transition: all 0.4s ease;
 			}
@@ -342,7 +357,8 @@
 				}
 			}
 
-			&--maps, &--waze {
+			&--maps,
+			&--waze {
 				background: hsla(43, 55%, 55%, 0.1);
 				color: hsla(43, 50%, 40%, 1);
 				border-color: hsla(43, 55%, 55%, 0.4);
@@ -420,7 +436,10 @@
 		&::before {
 			content: '';
 			position: absolute;
-			top: 6px; left: 6px; right: 6px; bottom: 6px;
+			top: 6px;
+			left: 6px;
+			right: 6px;
+			bottom: 6px;
 			border: 1px solid rgba(212, 175, 55, 0.1);
 			pointer-events: none;
 		}
@@ -478,7 +497,12 @@
 		.signature-line {
 			width: 60px;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, var(--color-primary, #d4af37), transparent);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-primary, #d4af37),
+				transparent
+			);
 		}
 	}
 }

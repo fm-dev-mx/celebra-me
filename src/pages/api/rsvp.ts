@@ -15,8 +15,6 @@ export const POST: APIRoute = async ({ request }) => {
 			);
 		}
 
-
-
 		// In a real scenario, this would save to a database (Astro DB, Supabase, etc.)
 		// For now, we simulate a successful submission
 		await new Promise((resolve) => setTimeout(resolve, 1000));

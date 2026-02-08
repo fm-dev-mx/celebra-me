@@ -1,6 +1,9 @@
 ---
-description: Verification workflow for digital invitations. Ensures aesthetic consistency and technical health after each ADU.
+description:
+    Verification workflow for digital invitations. Ensures aesthetic consistency and technical
+    health after each ADU.
 ---
+
 # 🔍 Workflow: Invitation Verification
 
 Use this workflow immediately after an ADU has been implemented to ensure zero-defect delivery.
@@ -17,7 +20,8 @@ Use this workflow immediately after an ADU has been implemented to ensure zero-d
     - **Spacing**: Verify one-section-per-viewport behavior.
 
 3.  **Thematic Verification**:
-    - Is the "Cowboy/Western" theme presented as "Premium" (e.g., subtle textures, elegant icons) vs "Generic"?
+    - Is the "Cowboy/Western" theme presented as "Premium" (e.g., subtle textures, elegant icons) vs
+      "Generic"?
     - Is the Dress Code (Boots & Hat) clearly visible?
 
 4.  **Accessibility Check**:
@@ -28,6 +32,6 @@ Use this workflow immediately after an ADU has been implemented to ensure zero-d
     - If passed, update the Implementation Log in the Master Plan to `Verified` and add the date.
     - If failed, revert or fix before marking as complete.
 
-// turbo
-6. **Screenshot/Recording**:
-   - If UI changed, use the browser tool to capture progress.
+// turbo 6. **Screenshot/Recording**:
+
+- If UI changed, use the browser tool to capture progress.

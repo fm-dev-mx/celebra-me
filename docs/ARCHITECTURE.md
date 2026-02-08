@@ -138,14 +138,17 @@ This aligns with Astro’s content-first model.
 ## 8) Styling Architecture
 
 - **SCSS only**: All style files MUST be `.scss`. Remaining legacy `.css` files have been removed.
-- **BEM methodology**: Strict enforcement of Block-Element-Modifier for class names. Avoid nesting beyond three levels.
-- **Naming Convention**: Use kebab-case for all style files. Prefix partials with an underscore (e.g., `_button.scss`).
+- **BEM methodology**: Strict enforcement of Block-Element-Modifier for class names. Avoid nesting
+  beyond three levels.
+- **Naming Convention**: Use kebab-case for all style files. Prefix partials with an underscore
+  (e.g., `_button.scss`).
 - **Module-based imports**: Use `@use` for variables, mixins, and functions. Avoid legacy `@import`.
 - **Logic-Based structure**:
-  - `src/styles/global/`: Design tokens, mixins, functions.
-  - `src/styles/components/`: Shared/reusable UI component styles.
-  - `src/styles/[domain]/`: Feature-specific styles (e.g., `home/`, `xv/`).
-- **No Tailwind**: Inline styles and Tailwind CSS are prohibited to maintain the premium custom aesthetic.
+    - `src/styles/global/`: Design tokens, mixins, functions.
+    - `src/styles/components/`: Shared/reusable UI component styles.
+    - `src/styles/[domain]/`: Feature-specific styles (e.g., `home/`, `xv/`).
+- **No Tailwind**: Inline styles and Tailwind CSS are prohibited to maintain the premium custom
+  aesthetic.
 
 ---
 

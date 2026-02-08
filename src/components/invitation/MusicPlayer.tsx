@@ -103,8 +103,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
 		}
 	};
 
-
-
 	return (
 		<div className="music-player">
 			<audio ref={audioRef} src={url} loop preload="auto" />

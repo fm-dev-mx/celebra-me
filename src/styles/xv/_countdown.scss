@@ -12,9 +12,11 @@
 	// Warm ivory/champagne gradient background matching Jewelry Box palette
 	background: linear-gradient(
 		180deg,
-		rgba(253, 249, 242, 1) 0%,       // Warm ivory top
-		rgba(247, 231, 206, 0.3) 50%,    // Champagne tint middle
-		rgba(253, 249, 242, 1) 100%      // Warm ivory bottom
+		rgba(253, 249, 242, 1) 0%,
+		// Warm ivory top
+		rgba(247, 231, 206, 0.3) 50%,
+		// Champagne tint middle
+		rgba(253, 249, 242, 1) 100% // Warm ivory bottom
 	);
 	overflow: hidden;
 	display: flex;
@@ -33,7 +35,8 @@
 		height: 60%;
 		background: radial-gradient(
 			ellipse at center,
-			rgba(var(--color-primary-rgb), 0.06) 0%,  // Dynamic glow center
+			rgba(var(--color-primary-rgb), 0.06) 0%,
+			// Dynamic glow center
 			transparent 70%
 		);
 		pointer-events: none;

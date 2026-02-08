@@ -92,7 +92,8 @@ Before submitting a pull request, ensure:
     pnpm test
     ```
 
-2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to verify:
+2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to
+   verify:
 
     ```bash
     pnpm test -- --coverage

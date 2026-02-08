@@ -8,111 +8,111 @@
  */
 
 .event-header {
-    // Branding / Breadcrumbs
-    &__title {
-        font-family: var(--font-display);
-        font-size: 1.25rem;
-        font-weight: 700;
-        text-decoration: none;
-        color: var(--theme-color-primary, #333); // Fallback
-        transition: color 0.3s ease;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 200px;
+	// Branding / Breadcrumbs
+	&__title {
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		font-weight: 700;
+		text-decoration: none;
+		color: var(--theme-color-primary, #333); // Fallback
+		transition: color 0.3s ease;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 200px;
 
-        @media (min-width: 768px) {
-            max-width: 400px;
-            font-size: 1.5rem;
-        }
+		@media (min-width: 768px) {
+			max-width: 400px;
+			font-size: 1.5rem;
+		}
 
-        &:hover {
-           opacity: 0.8;
-        }
-    }
+		&:hover {
+			opacity: 0.8;
+		}
+	}
 
-    // Guest Actions (RSVP, Map, etc.)
-    &__actions {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
+	// Guest Actions (RSVP, Map, etc.)
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-sm);
 
-        @media (min-width: 768px) {
-            gap: var(--spacing-md);
-        }
-    }
+		@media (min-width: 768px) {
+			gap: var(--spacing-md);
+		}
+	}
 
-    &__action-btn {
-        text-decoration: none;
-        font-family: var(--font-body);
-        font-size: 0.85rem;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        transition: all 0.3s ease;
-        color: var(--color-text);
+	&__action-btn {
+		text-decoration: none;
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		font-weight: 600;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		transition: all 0.3s ease;
+		color: var(--color-text);
 
-        &:hover {
-            color: var(--theme-color-primary);
-            background-color: rgba(255, 255, 255, 0.5);
-        }
+		&:hover {
+			color: var(--theme-color-primary);
+			background-color: rgba(255, 255, 255, 0.5);
+		}
 
-        &--cta {
-            background-color: var(--theme-color-primary);
-            color: #FFFFFF; // Assuming contrast is handled in theme generation or we force light text
-            border-radius: 50px;
+		&--cta {
+			background-color: var(--theme-color-primary);
+			color: #ffffff; // Assuming contrast is handled in theme generation or we force light text
+			border-radius: 50px;
 
-            &:hover {
-                background-color: var(--theme-color-primary-dark, var(--theme-color-primary));
-                transform: translateY(-1px);
-                color: #FFFFFF;
-            }
-        }
-    }
+			&:hover {
+				background-color: var(--theme-color-primary-dark, var(--theme-color-primary));
+				transform: translateY(-1px);
+				color: #ffffff;
+			}
+		}
+	}
 }
 
 // Mobile Menu Content for Event
 .event-mobile-nav {
-    text-align: center;
-    width: 100%;
+	text-align: center;
+	width: 100%;
 
-    a {
-         font-family: var(--font-display);
-         font-size: 1.8rem;
-         color: var(--color-text);
-         text-decoration: none;
-         display: block;
-         padding: 15px 0;
-         border-bottom: 1px solid rgba(0,0,0,0.05);
-         transition: color 0.3s ease;
+	a {
+		font-family: var(--font-display);
+		font-size: 1.8rem;
+		color: var(--color-text);
+		text-decoration: none;
+		display: block;
+		padding: 15px 0;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+		transition: color 0.3s ease;
 
-         &:last-child {
-             border-bottom: none;
-         }
+		&:last-child {
+			border-bottom: none;
+		}
 
-         &:hover {
-             color: var(--theme-color-primary);
-         }
-    }
+		&:hover {
+			color: var(--theme-color-primary);
+		}
+	}
 }
 
 // Scrolled overrides
 :global(.header-base--scrolled) {
-    .event-header__title {
-        // Ensure visibility on scrolled background (white/glass)
-        // If theme color is light, this might be an issue, but usually primary is dark enough.
-        // We can enforce a dark variant if provided.
-    }
+	.event-header__title {
+		// Ensure visibility on scrolled background (white/glass)
+		// If theme color is light, this might be an issue, but usually primary is dark enough.
+		// We can enforce a dark variant if provided.
+	}
 }
 
 :global(.header-base--transparent) {
-    .event-header__title,
-    .event-header__action-btn:not(.event-header__action-btn--cta) {
-        // On hero, usually we want white if hero is dark, or dark if hero is light.
-        // Assuming Hero is image/video -> Text should be White or have text-shadow.
-        color: #FFFFFF;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
+	.event-header__title,
+	.event-header__action-btn:not(.event-header__action-btn--cta) {
+		// On hero, usually we want white if hero is dark, or dark if hero is light.
+		// Assuming Hero is image/video -> Text should be White or have text-shadow.
+		color: #ffffff;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	}
 }
 
 // Hide header until the envelope reveal completes (when enabled)

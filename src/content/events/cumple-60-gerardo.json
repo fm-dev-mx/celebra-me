@@ -28,8 +28,14 @@
             "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/hacienda-sample.jpg"
         },
         "indications": [
-            { "icon": "dress", "text": "Temática Vaquera: Se recomienda asistir con botas y sombrero." },
-            { "icon": "envelope", "text": "Su presencia es el mejor regalo. Si desean obsequiar, un sobre será bien recibido." }
+            {
+                "icon": "dress",
+                "text": "Temática Vaquera: Se recomienda asistir con botas y sombrero."
+            },
+            {
+                "icon": "envelope",
+                "text": "Su presencia es el mejor regalo. Si desean obsequiar, un sobre será bien recibido."
+            }
         ]
     },
     "sections": {
@@ -42,12 +48,30 @@
         "title": "Momentos del Jefe",
         "subtitle": "60 años de historias",
         "items": [
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png", "caption": "Los primeros pasos" },
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png", "caption": "Jefe Botas en acción" },
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png", "caption": "Familia y raíces" },
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png", "caption": "Amigos de toda la vida" },
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png", "caption": "Celebrando juntos" },
-            { "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png", "caption": "El legado continúa" }
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png",
+                "caption": "Los primeros pasos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png",
+                "caption": "Jefe Botas en acción"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png",
+                "caption": "Familia y raíces"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png",
+                "caption": "Amigos de toda la vida"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png",
+                "caption": "Celebrando juntos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png",
+                "caption": "El legado continúa"
+            }
         ]
     },
     "rsvp": {
@@ -72,10 +96,30 @@
     "itinerary": {
         "title": "Orden del Día",
         "items": [
-            { "icon": "reception", "label": "Bienvenida en la Hacienda", "time": "7:00 PM", "description": "Coctel de recepción" },
-            { "icon": "dinner", "label": "Cena Campestre", "time": "9:00 PM", "description": "Cena tradicional" },
-            { "icon": "toast", "label": "Brindis por el Jefe", "time": "10:00 PM", "description": "Palabras y felicitaciones" },
-            { "icon": "music", "label": "Música de Banda", "time": "10:30 PM", "description": "Celebración y baile" },
+            {
+                "icon": "reception",
+                "label": "Bienvenida en la Hacienda",
+                "time": "7:00 PM",
+                "description": "Coctel de recepción"
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena Campestre",
+                "time": "9:00 PM",
+                "description": "Cena tradicional"
+            },
+            {
+                "icon": "toast",
+                "label": "Brindis por el Jefe",
+                "time": "10:00 PM",
+                "description": "Palabras y felicitaciones"
+            },
+            {
+                "icon": "music",
+                "label": "Música de Banda",
+                "time": "10:30 PM",
+                "description": "Celebración y baile"
+            },
             { "icon": "party", "label": "Tornafiesta", "time": "1:00 AM" }
         ]
     },

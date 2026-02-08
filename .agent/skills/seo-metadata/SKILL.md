@@ -1,6 +1,8 @@
 ---
 name: seo-metadata
-description: Implement SEO and Open Graph metadata for digital invitations. Ensure attractive social media previews when invitations are shared on WhatsApp, Facebook, and Instagram.
+description:
+    Implement SEO and Open Graph metadata for digital invitations. Ensure attractive social media
+    previews when invitations are shared on WhatsApp, Facebook, and Instagram.
 ---
 
 # SEO & Open Graph Metadata
@@ -17,11 +19,11 @@ Every invitation page **must** include these meta tags in `<head>`:
 ---
 // BaseLayout.astro
 interface Props {
-  title: string;           // "XV Años de María Elena"
-  description: string;     // "Te invitamos a celebrar • 15 de marzo, 2026 • Salón Los Arcos"
-  image: string;           // Absolute URL to OG image
-  url: string;             // Canonical URL
-  type?: 'website' | 'event';
+	title: string; // "XV Años de María Elena"
+	description: string; // "Te invitamos a celebrar • 15 de marzo, 2026 • Salón Los Arcos"
+	image: string; // Absolute URL to OG image
+	url: string; // Canonical URL
+	type?: 'website' | 'event';
 }
 
 const { title, description, image, url, type = 'website' } = Astro.props;
@@ -41,10 +43,10 @@ const absoluteImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
 ### Content Guidelines
 
-| Tag | Max Length | Example |
-|-----|------------|---------|
-| `og:title` | 60 chars | "XV Años de María Elena" |
-| `og:description` | 155 chars | "15 de marzo, 2026 • Salón Los Arcos, Guadalajara" |
+| Tag              | Max Length | Example                                            |
+| ---------------- | ---------- | -------------------------------------------------- |
+| `og:title`       | 60 chars   | "XV Años de María Elena"                           |
+| `og:description` | 155 chars  | "15 de marzo, 2026 • Salón Los Arcos, Guadalajara" |
 
 ---
 
@@ -73,14 +75,14 @@ Complete `BaseLayout.astro` integration:
 import { getImage } from 'astro:assets';
 
 interface Props {
-  event: {
-    title: string;
-    eventType: string;
-    date: string;
-    venue: { name: string; city: string };
-    heroImage: ImageMetadata;
-  };
-  slug: string;
+	event: {
+		title: string;
+		eventType: string;
+		date: string;
+		venue: { name: string; city: string };
+		heroImage: ImageMetadata;
+	};
+	slug: string;
 }
 
 const { event, slug } = Astro.props;
@@ -89,10 +91,10 @@ const canonicalUrl = `${siteUrl}/${event.eventType}/${slug}`;
 
 // Generate optimized OG image
 const ogImage = await getImage({
-  src: event.heroImage,
-  width: 1200,
-  height: 630,
-  format: 'jpg',
+	src: event.heroImage,
+	width: 1200,
+	height: 630,
+	format: 'jpg',
 });
 
 const metaTitle = `${event.title} | Celebra-me`;
@@ -100,28 +102,29 @@ const metaDescription = `${event.date} • ${event.venue.name}, ${event.venue.ci
 ---
 
 <html lang="es-MX">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{metaTitle}</title>
-  <meta name="description" content={metaDescription} />
-  <link rel="canonical" href={canonicalUrl} />
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{metaTitle}</title>
+		<meta name="description" content={metaDescription} />
+		<link rel="canonical" href={canonicalUrl} />
 
-  <!-- OG + Twitter tags here -->
-</head>
+		<!-- OG + Twitter tags here -->
+	</head>
+</html>
 ```
 
 ---
 
 ## 4. Image Requirements
 
-| Property | Requirement |
-|----------|-------------|
-| **Dimensions** | 1200×630 px (1.91:1 ratio) |
-| **Format** | JPG or PNG, prefer WebP with JPG fallback |
-| **File size** | < 300 KB for fast loading |
-| **Alt text** | Descriptive, include event type |
-| **Safe zone** | Keep text within center 80% |
+| Property       | Requirement                               |
+| -------------- | ----------------------------------------- |
+| **Dimensions** | 1200×630 px (1.91:1 ratio)                |
+| **Format**     | JPG or PNG, prefer WebP with JPG fallback |
+| **File size**  | < 300 KB for fast loading                 |
+| **Alt text**   | Descriptive, include event type           |
+| **Safe zone**  | Keep text within center 80%               |
 
 ### OG Image Generation
 
@@ -132,13 +135,14 @@ import { getImage } from 'astro:assets';
 import heroSrc from '../assets/hero.jpg';
 
 const ogImage = await getImage({
-  src: heroSrc,
-  width: 1200,
-  height: 630,
-  format: 'jpg',
-  quality: 80,
+	src: heroSrc,
+	width: 1200,
+	height: 630,
+	format: 'jpg',
+	quality: 80,
 });
 ---
+
 <meta property="og:image" content={`${Astro.site}${ogImage.src}`} />
 ```
 
@@ -151,28 +155,28 @@ Add Schema.org Event markup for rich search results:
 ```astro
 ---
 const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Event",
-  "name": event.title,
-  "startDate": event.isoDate, // "2026-03-15T18:00:00-06:00"
-  "endDate": event.isoEndDate,
-  "eventStatus": "https://schema.org/EventScheduled",
-  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-  "location": {
-    "@type": "Place",
-    "name": event.venue.name,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": event.venue.city,
-      "addressCountry": "MX"
-    }
-  },
-  "image": absoluteImage,
-  "description": metaDescription,
-  "organizer": {
-    "@type": "Person",
-    "name": event.hosts?.[0] ?? event.title
-  }
+	'@context': 'https://schema.org',
+	'@type': 'Event',
+	name: event.title,
+	startDate: event.isoDate, // "2026-03-15T18:00:00-06:00"
+	endDate: event.isoEndDate,
+	eventStatus: 'https://schema.org/EventScheduled',
+	eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+	location: {
+		'@type': 'Place',
+		name: event.venue.name,
+		address: {
+			'@type': 'PostalAddress',
+			addressLocality: event.venue.city,
+			addressCountry: 'MX',
+		},
+	},
+	image: absoluteImage,
+	description: metaDescription,
+	organizer: {
+		'@type': 'Person',
+		name: event.hosts?.[0] ?? event.title,
+	},
 };
 ---
 
@@ -184,18 +188,22 @@ const jsonLd = {
 ## 6. Platform-Specific Tips
 
 ### WhatsApp
+
 - Caches previews aggressively; append `?v=2` to image URL after updates
 - Test with `https://wa.me/?text=URL` before sharing
 
 ### Facebook
+
 - Use [Sharing Debugger](https://developers.facebook.com/tools/debug/) to clear cache
 - Scrape URL after any metadata changes
 
 ### Instagram
+
 - Only shows previews in bio links and stories, not DMs
 - Ensure image has high contrast for small thumbnails
 
 ### iMessage
+
 - Uses `og:image` with proper aspect ratio
 - Falls back to page screenshot if image fails
 
@@ -203,15 +211,15 @@ const jsonLd = {
 
 ## 7. Anti-patterns
 
-| ❌ Don't | ✅ Do |
-|----------|-------|
-| Images < 600px wide | Use 1200×630 minimum |
-| Generic descriptions | Include date + venue |
-| Relative image URLs | Always use absolute URLs |
-| Descriptions > 200 chars | Keep under 155 chars |
-| Missing `og:url` | Always include canonical |
+| ❌ Don't                  | ✅ Do                      |
+| ------------------------- | -------------------------- |
+| Images < 600px wide       | Use 1200×630 minimum       |
+| Generic descriptions      | Include date + venue       |
+| Relative image URLs       | Always use absolute URLs   |
+| Descriptions > 200 chars  | Keep under 155 chars       |
+| Missing `og:url`          | Always include canonical   |
 | Same image for all events | Unique hero per invitation |
-| Text outside safe zone | Center important content |
+| Text outside safe zone    | Center important content   |
 
 ---
 

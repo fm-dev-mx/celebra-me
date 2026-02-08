@@ -183,7 +183,9 @@
 	border: none !important;
 	box-shadow: none !important;
 	backdrop-filter: none !important;
-	&::before { display: none !important; }
+	&::before {
+		display: none !important;
+	}
 }
 
 .contact-form {
@@ -210,8 +212,13 @@
 			outline: none;
 			border-color: var(--color-primary);
 		}
-		&::placeholder { color: transparent; }
-		&--textarea { min-height: 80px; resize: none; }
+		&::placeholder {
+			color: transparent;
+		}
+		&--textarea {
+			min-height: 80px;
+			resize: none;
+		}
 	}
 
 	&__label {

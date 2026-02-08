@@ -3,206 +3,210 @@
 @use '../global/mixins' as mixins;
 
 .services {
-    position: relative;
-    overflow: hidden;
+	position: relative;
+	overflow: hidden;
 
-    // Header Styling
-    &__header {
-        text-align: center;
-        margin-bottom: 2rem;
+	// Header Styling
+	&__header {
+		text-align: center;
+		margin-bottom: 2rem;
 
-        @include mixins.respond-to(md) {
-            margin-bottom: 3rem;
-        }
-    }
+		@include mixins.respond-to(md) {
+			margin-bottom: 3rem;
+		}
+	}
 
-    &__heading {
-        @include mixins.typography(display-2);
-        font-size: clamp(2.25rem, 4vw, 3rem);
-        color: var(--color-text-primary);
-        position: relative;
-        display: inline-block;
+	&__heading {
+		@include mixins.typography(display-2);
+		font-size: clamp(2.25rem, 4vw, 3rem);
+		color: var(--color-text-primary);
+		position: relative;
+		display: inline-block;
 
-        // Optional accent underline
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background-color: var(--color-accent);
-        }
-    }
+		// Optional accent underline
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: -1rem;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 60px;
+			height: 3px;
+			background-color: var(--color-accent);
+		}
+	}
 
-    // Grid Layout
-    &__grid {
-        display: flex;
-        flex-direction: column; // Vertical stack on mobile
-        gap: 2rem;
+	// Grid Layout
+	&__grid {
+		display: flex;
+		flex-direction: column; // Vertical stack on mobile
+		gap: 2rem;
 
-        // Mobile: No horizontal scroll, full visibility
-        overflow: visible;
-        padding-bottom: 0;
-        padding-inline: 1rem; // Add side margins requested by user
+		// Mobile: No horizontal scroll, full visibility
+		overflow: visible;
+		padding-bottom: 0;
+		padding-inline: 1rem; // Add side margins requested by user
 
-        @include mixins.respond-to(md) {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); // 3 Cols Desktop
-            gap: 2.5rem;
-            overflow-x: visible;
-            padding-bottom: 0;
-            padding-inline: 0; // Layout container handles desktop padding
-        }
-    }
+		@include mixins.respond-to(md) {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr); // 3 Cols Desktop
+			gap: 2.5rem;
+			overflow-x: visible;
+			padding-bottom: 0;
+			padding-inline: 0; // Layout container handles desktop padding
+		}
+	}
 
-    // Card Component
-    &__card {
-        text-decoration: none;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        width: 100%; // Full width relative to container
-        border-radius: 1.5rem;
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px); // Glassmorphism
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
+	// Card Component
+	&__card {
+		text-decoration: none;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		width: 100%; // Full width relative to container
+		border-radius: 1.5rem;
+		overflow: hidden;
+		background: rgba(255, 255, 255, 0.7);
+		backdrop-filter: blur(10px); // Glassmorphism
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		transition:
+			transform 0.4s ease,
+			box-shadow 0.4s ease;
 
-        // Initial Animation State
-        opacity: 0;
-        transform: translateY(30px);
+		// Initial Animation State
+		opacity: 0;
+		transform: translateY(30px);
 
-        @include mixins.respond-to(md) {
-            // flex: auto; // Reset flex for grid - Removed as width: 100% handles it
-        }
+		@include mixins.respond-to(md) {
+			// flex: auto; // Reset flex for grid - Removed as width: 100% handles it
+		}
 
-        // Hover Effects (Desktop mainly)
-        &:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15); // Deep shadow
+		// Hover Effects (Desktop mainly)
+		&:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15); // Deep shadow
 
-            .services__image {
-                filter: grayscale(0%);
-                transform: scale(1.05);
-            }
+			.services__image {
+				filter: grayscale(0%);
+				transform: scale(1.05);
+			}
 
-            .services__overlay {
-                opacity: 0; // Revealing full brightness
-            }
+			.services__overlay {
+				opacity: 0; // Revealing full brightness
+			}
 
-            .services__cta-icon {
-                transform: translateX(4px);
-            }
+			.services__cta-icon {
+				transform: translateX(4px);
+			}
 
-            .services__icon {
-                transform: scale(1.1);
-            }
-        }
+			.services__icon {
+				transform: scale(1.1);
+			}
+		}
 
-        &.is-visible {
-            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            animation-delay: var(--animation-delay, 0ms);
-        }
-    }
+		&.is-visible {
+			animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+			animation-delay: var(--animation-delay, 0ms);
+		}
+	}
 
-    &__card-visual {
-        position: relative;
-        aspect-ratio: 16/9; // Mobile: Shorter
-        overflow: hidden;
+	&__card-visual {
+		position: relative;
+		aspect-ratio: 16/9; // Mobile: Shorter
+		overflow: hidden;
 
-        @include mixins.respond-to(md) {
-            aspect-ratio: 16/10; // Desktop: Compact elegance
-        }
-    }
+		@include mixins.respond-to(md) {
+			aspect-ratio: 16/10; // Desktop: Compact elegance
+		}
+	}
 
-    &__image-wrapper {
-        width: 100%;
-        height: 100%;
-        background-color: var(--color-bg-secondary); // Placeholder
-    }
+	&__image-wrapper {
+		width: 100%;
+		height: 100%;
+		background-color: var(--color-bg-secondary); // Placeholder
+	}
 
-    &__image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: filter 0.5s ease, transform 0.7s ease;
-        filter: grayscale(100%); // Default desaturated
-    }
+	&__image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition:
+			filter 0.5s ease,
+			transform 0.7s ease;
+		filter: grayscale(100%); // Default desaturated
+	}
 
-    &__overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-        opacity: 0.6;
-        transition: opacity 0.4s ease;
-    }
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+		opacity: 0.6;
+		transition: opacity 0.4s ease;
+	}
 
-    &__content {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        flex-grow: 1;
-        gap: 0.75rem;
-    }
+	&__content {
+		padding: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		flex-grow: 1;
+		gap: 0.75rem;
+	}
 
-    &__icon-wrapper {
-        width: 3rem;
-        height: 3rem;
-        padding: 0.6rem;
-        border-radius: 50%;
-        background-color: var(--color-bg-primary);
-        color: var(--color-accent);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        margin-top: -3rem; // Overlap effect
-        position: relative;
-        z-index: 2;
-    }
+	&__icon-wrapper {
+		width: 3rem;
+		height: 3rem;
+		padding: 0.6rem;
+		border-radius: 50%;
+		background-color: var(--color-bg-primary);
+		color: var(--color-accent);
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+		margin-top: -3rem; // Overlap effect
+		position: relative;
+		z-index: 2;
+	}
 
-    &__icon {
-        width: 100%;
-        height: 100%;
-        transition: transform 0.3s ease;
-    }
+	&__icon {
+		width: 100%;
+		height: 100%;
+		transition: transform 0.3s ease;
+	}
 
-    &__title {
-        @include mixins.typography(h3);
-        margin: 0;
-        color: var(--color-text-primary);
-    }
+	&__title {
+		@include mixins.typography(h3);
+		margin: 0;
+		color: var(--color-text-primary);
+	}
 
-    &__description {
-        @include mixins.typography(body-small);
-        color: var(--color-text-secondary);
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
-    }
+	&__description {
+		@include mixins.typography(body-small);
+		color: var(--color-text-secondary);
+		margin-bottom: 1.5rem;
+		line-height: 1.6;
+	}
 
-    &__cta {
-        margin-top: auto;
-        @include mixins.typography(button);
-        color: var(--color-accent);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: color 0.3s ease;
-    }
+	&__cta {
+		margin-top: auto;
+		@include mixins.typography(button);
+		color: var(--color-accent);
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		transition: color 0.3s ease;
+	}
 
-    &__cta-icon {
-        width: 1.25rem;
-        height: 1.25rem;
-        transition: transform 0.3s ease;
-    }
+	&__cta-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		transition: transform 0.3s ease;
+	}
 }
 
 // Keyframes
 @keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }

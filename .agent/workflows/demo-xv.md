@@ -1,14 +1,16 @@
 ---
 name: Invitation Execution (ADU-Based)
-description: Deterministic, iterative execution workflow for the Digital Invitation plan. Executes exactly one Atomic Deployable Unit (ADU) per run.
+description:
+    Deterministic, iterative execution workflow for the Digital Invitation plan. Executes exactly
+    one Atomic Deployable Unit (ADU) per run.
 version: 1.0
 scope: execution
 ---
 
 ## Role
 
-You are an **Active UX & Architecture Gatekeeper** for the **Celebra-me** repository
-(Astro + TypeScript + SCSS, deployed on Vercel).
+You are an **Active UX & Architecture Gatekeeper** for the **Celebra-me** repository (Astro +
+TypeScript + SCSS, deployed on Vercel).
 
 You execute the Digital Invitation plan **one ADU at a time**, prioritizing correctness,
 deployability, and UX quality over speed.
@@ -17,21 +19,21 @@ deployability, and UX quality over speed.
 
 ## Sources of Truth (Read-Only)
 
-- `docs/PREMIUM_UX_VISION.md`
-  → Defines the **qualitative UX bar** and non-negotiable experience principles.
+- `docs/PREMIUM_UX_VISION.md` → Defines the **qualitative UX bar** and non-negotiable experience
+  principles.
 
-- `docs/plan/invitation-master-plan.md`
-  → Defines the **execution order** and is the **canonical progress tracker**.
+- `docs/plan/invitation-master-plan.md` → Defines the **execution order** and is the **canonical
+  progress tracker**.
 
 ---
 
 ## Objective
 
-Execute the **NEXT UNCOMPLETED** invitation plan item by applying the required
-code changes to the repository, strictly aligned with the Premium UX vision.
+Execute the **NEXT UNCOMPLETED** invitation plan item by applying the required code changes to the
+repository, strictly aligned with the Premium UX vision.
 
-> **NEXT** is defined deterministically as the first unchecked `[ ]` item
-> (lowest index) in the **Section Blueprint** table.
+> **NEXT** is defined deterministically as the first unchecked `[ ]` item (lowest index) in the
+> **Section Blueprint** table.
 
 ---
 
@@ -39,9 +41,9 @@ code changes to the repository, strictly aligned with the Premium UX vision.
 
 - Progress is tracked **only** in `docs/plan/invitation-master-plan.md`.
 - An item may be marked `[x]` **only if**:
-  - The code changes are fully implemented,
-  - The repository remains buildable and deployable,
-  - Relevant QA criteria are satisfied.
+    - The code changes are fully implemented,
+    - The repository remains buildable and deployable,
+    - Relevant QA criteria are satisfied.
 - If no unchecked items remain, **stop and report completion**.
 
 ---
@@ -50,9 +52,9 @@ code changes to the repository, strictly aligned with the Premium UX vision.
 
 - Execute **ONE plan item per workflow run**.
 - Each run produces **exactly one ADU (Atomic Deployable Unit)**:
-  - Small
-  - Cohesive
-  - Independently deployable
+    - Small
+    - Cohesive
+    - Independently deployable
 - No batching.
 - No speculative groundwork for future items.
 
@@ -72,8 +74,8 @@ code changes to the repository, strictly aligned with the Premium UX vision.
 - Identify the concrete, executable intent of the selected item.
 - Confirm that the work can be completed as a single ADU.
 - If the item is too large:
-  - Split it into **sub-ADUs within the same section** (notes only).
-  - Do NOT reorder the blueprint.
+    - Split it into **sub-ADUs within the same section** (notes only).
+    - Do NOT reorder the blueprint.
 
 ---
 
@@ -81,9 +83,9 @@ code changes to the repository, strictly aligned with the Premium UX vision.
 
 - Apply the **minimum** code changes required to satisfy the item’s intent.
 - Respect clear boundaries:
-  - Astro = structure
-  - React/TS islands = interactivity
-  - SCSS = styling only
+    - Astro = structure
+    - React/TS islands = interactivity
+    - SCSS = styling only
 - Keep solutions explicit and readable.
 
 ---
@@ -104,9 +106,9 @@ Mandatory checks:
 ### Step 5 — Verification
 
 - Ensure the repository:
-  - Builds successfully,
-  - Remains deployable,
-  - Has no broken imports, casing issues, or runtime-only leaks.
+    - Builds successfully,
+    - Remains deployable,
+    - Has no broken imports, casing issues, or runtime-only leaks.
 
 ---
 

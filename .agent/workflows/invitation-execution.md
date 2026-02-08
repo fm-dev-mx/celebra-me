@@ -1,9 +1,13 @@
 ---
-description: Deterministic, iterative execution workflow for the Digital Invitation plan. Executes exactly one Atomic Deployable Unit (ADU) per run.
+description:
+    Deterministic, iterative execution workflow for the Digital Invitation plan. Executes exactly
+    one Atomic Deployable Unit (ADU) per run.
 ---
+
 # 🚀 Workflow: Invitation Execution (ADU-Based)
 
-Use this workflow to implement the sections of the digital invitation in a strictly sequential and documented manner.
+Use this workflow to implement the sections of the digital invitation in a strictly sequential and
+documented manner.
 
 ## 📋 Pre-requisites
 
@@ -30,7 +34,6 @@ Use this workflow to implement the sections of the digital invitation in a stric
     - Do NOT proceed to the next ADU.
     - Stop and wait for the `/Invitation Verification` workflow or user confirmation.
 
-// turbo
-5. **Commit Progress** (Optional):
+// turbo 5. **Commit Progress** (Optional):
 
 - Suggest a safe commit for the finished unit.

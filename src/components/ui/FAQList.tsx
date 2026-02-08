@@ -37,7 +37,7 @@ const FAQList: React.FC<Props> = ({ faqs = [] }) => {
 								className="chevron-icon"
 								animate={{
 									rotate: isOpen ? 180 : 0,
-									scale: isOpen ? 1.2 : 1
+									scale: isOpen ? 1.2 : 1,
 								}}
 								transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
 							>
@@ -63,8 +63,8 @@ const FAQList: React.FC<Props> = ({ faqs = [] }) => {
 									marginTop: 0,
 									transition: {
 										height: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-										opacity: { duration: 0.3, delay: 0.1 }
-									}
+										opacity: { duration: 0.3, delay: 0.1 },
+									},
 								},
 								collapsed: {
 									opacity: 0,
@@ -72,8 +72,8 @@ const FAQList: React.FC<Props> = ({ faqs = [] }) => {
 									marginTop: 0,
 									transition: {
 										height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
-										opacity: { duration: 0.2 }
-									}
+										opacity: { duration: 0.2 },
+									},
 								},
 							}}
 							className="faq-answer-wrapper"

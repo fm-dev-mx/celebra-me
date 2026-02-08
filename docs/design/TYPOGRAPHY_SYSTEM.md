@@ -1,7 +1,8 @@
 # Typography System — Celebra-me (Core Elegant)
 
-This document defines the **Default Base Typography** for the Celebra-me platform.
-These tokens serve as the foundation for the "Elegant/Classic" aesthetic used in the XV Años Demo and the Landing Page.
+This document defines the **Default Base Typography** for the Celebra-me platform. These tokens
+serve as the foundation for the "Elegant/Classic" aesthetic used in the XV Años Demo and the Landing
+Page.
 
 > **Note:** Future themes (e.g., Neon, Modern) will extend or override this system.
 
@@ -13,13 +14,13 @@ A curated font system optimized for premium digital invitations with high perfor
 
 ### Font Families
 
-| Role | Family | Weights | Use Case |
-|------|--------|---------|----------|
-| **Display Formal** | Cinzel | 400, 700 | Monumental headers, XV/Wedding titles |
+| Role                | Family           | Weights  | Use Case                              |
+| ------------------- | ---------------- | -------- | ------------------------------------- |
+| **Display Formal**  | Cinzel           | 400, 700 | Monumental headers, XV/Wedding titles |
 | **Display Elegant** | Playfair Display | 400, 700 | Editorial-style titles, Hero sections |
-| **Calligraphy** | Pinyon Script | 400 | Accents, signatures, "y" separators |
-| **Body Narrative** | EB Garamond | 400, 500 | Paragraphs, stories, descriptions |
-| **UI/Functional** | Montserrat | 400, 600 | Buttons, navigation, metadata |
+| **Calligraphy**     | Pinyon Script    | 400      | Accents, signatures, "y" separators   |
+| **Body Narrative**  | EB Garamond      | 400, 500 | Paragraphs, stories, descriptions     |
+| **UI/Functional**   | Montserrat       | 400, 600 | Buttons, navigation, metadata         |
 
 ### SCSS Tokens
 
