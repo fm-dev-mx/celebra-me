@@ -1,5 +1,6 @@
 {
     "eventType": "xv",
+    "isDemo": true,
     "title": "XV Años - Demo Invitación",
     "description": "Acompáñanos a celebrar estos XV años de ensueño.",
     "theme": {
@@ -25,6 +26,7 @@
             "mapUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
             "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
             "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
+            "wazeUrl": "https://waze.com/ul?q=Parroquia+de+la+Sagrada+Familia",
             "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg"
         },
         "reception": {
@@ -35,6 +37,7 @@
             "mapUrl": "https://maps.app.goo.gl/example",
             "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
             "googleMapsUrl": "https://maps.app.goo.gl/example",
+            "wazeUrl": "https://waze.com/ul?q=Quinta+Las+Flores+Monterrey",
             "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg"
         },
         "indications": [

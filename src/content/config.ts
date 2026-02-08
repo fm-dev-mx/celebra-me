@@ -8,6 +8,7 @@ const eventsCollection = defineCollection({
 	schema: ({ image }) =>
 		z.object({
 			eventType: z.enum(['xv', 'boda', 'bautizo']),
+			isDemo: z.boolean().optional(),
 			title: z.string(),
 			description: z.string().optional(),
 			theme: z.object({

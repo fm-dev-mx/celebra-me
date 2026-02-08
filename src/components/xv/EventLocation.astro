@@ -26,6 +26,7 @@ interface VenueData {
 	mapUrl?: string;
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;
+	wazeUrl?: string;
 	image?: string;
 }
 
@@ -96,11 +97,10 @@ const iconMap = {
 							{ceremony.appleMapsUrl && (
 								<a
 									href={ceremony.appleMapsUrl}
-									class="nav-button nav-button--apple"
+									class="nav-button nav-button--apple u-hidden-initially"
 									target="_blank"
 									rel="noopener noreferrer"
 									data-apple-link
-									style="display: none;"
 								>
 									Apple Maps
 								</a>
@@ -113,6 +113,16 @@ const iconMap = {
 									rel="noopener noreferrer"
 								>
 									Google Maps
+								</a>
+							)}
+							{ceremony.wazeUrl && (
+								<a
+									href={ceremony.wazeUrl}
+									class="nav-button nav-button--waze"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Waze
 								</a>
 							)}
 							{!ceremony.appleMapsUrl && !ceremony.googleMapsUrl && ceremony.mapUrl && (
@@ -174,11 +184,10 @@ const iconMap = {
 							{reception.appleMapsUrl && (
 								<a
 									href={reception.appleMapsUrl}
-									class="nav-button nav-button--apple"
+									class="nav-button nav-button--apple u-hidden-initially"
 									target="_blank"
 									rel="noopener noreferrer"
 									data-apple-link
-									style="display: none;"
 								>
 									Apple Maps
 								</a>
@@ -191,6 +200,16 @@ const iconMap = {
 									rel="noopener noreferrer"
 								>
 									Google Maps
+								</a>
+							)}
+							{reception.wazeUrl && (
+								<a
+									href={reception.wazeUrl}
+									class="nav-button nav-button--waze"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Waze
 								</a>
 							)}
 							{!reception.appleMapsUrl && !reception.googleMapsUrl && reception.mapUrl && (
@@ -272,7 +291,8 @@ const iconMap = {
 	if (isIOS) {
 		const appleLinks = document.querySelectorAll('[data-apple-link]');
 		appleLinks.forEach(link => {
-			(link as HTMLElement).style.display = 'flex';
+			(link as HTMLElement).classList.remove('u-hidden-initially');
+			(link as HTMLElement).style.display = 'flex'; // Keep flex for layout but class handles the initial 'none'
 		});
 	}
 </script>

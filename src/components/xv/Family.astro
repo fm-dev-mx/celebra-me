@@ -42,6 +42,11 @@ const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 								<p class="family__name">{parents.mother}</p>
 							</div>
 						)}
+						{parents.mother && parents.father && (
+							<div class="family__ampersand-divider" aria-hidden="true">
+								<span class="calligraphy-ampersand">y</span>
+							</div>
+						)}
 						{parents.father && (
 							<div class="family__name-item" style="--index: 1">
 								<p class="family__name">{parents.father}</p>
