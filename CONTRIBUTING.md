@@ -48,7 +48,7 @@ Please follow these coding standards:
 - **Code Formatting**: Use Prettier for code formatting. The configuration is already set up in
   `.prettierrc.mjs`.
 - **Linting**: Use ESLint for identifying and reporting on patterns in JavaScript. The configuration
-  is already set up in `.eslintrc.cjs`.
+  is already set up in `eslint.config.js` (ESLint flat config).
 - **Type Safety**: Ensure type safety with TypeScript.
 - **Commit Messages**: Follow conventional commits for your commit messages.
 
