@@ -37,5 +37,7 @@ documented manner.
 
 // turbo
 
-1. **Commit Progress** (Optional):
-    - Suggest a safe commit for the finished unit following Conventional Commits.
+## Agent Instruction
+
+Execute the next pending ADU from the active implementation plan. Follow the aesthetic guidelines
+and update the progress log. Suggest a safe commit upon completion.

@@ -120,9 +120,6 @@ Ask:
 
 5. **Advance** Ask to continue, stop, or regroup.
 
----
+// turbo
 
-## Rule of Thumb
-
-**If it breaks build, architecture, accessibility, or deployability → fix it now. If it’s subjective
-→ ask.**
+## Agent Instruction

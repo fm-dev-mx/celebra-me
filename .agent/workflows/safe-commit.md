@@ -122,4 +122,8 @@ When Ready:
 
 Final question:
 
-> Confirm the message, or adjust type/scope/wording?
+// turbo
+
+## Agent Instruction
+
+Execute the staged-only quality scan. Do not commit. Report findings and suggest fixes.
