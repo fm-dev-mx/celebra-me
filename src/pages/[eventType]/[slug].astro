@@ -6,13 +6,13 @@ export const prerender = true;
 
 import { type CollectionEntry, getCollection } from 'astro:content';
 import Layout from '@/layouts/Layout.astro';
-import Countdown from '@/components/xv/Countdown.astro';
-import EventLocation from '@/components/xv/EventLocation.astro';
-import FooterXV from '@/components/xv/Footer.astro';
+import Countdown from '@/components/invitation/Countdown.astro';
+import EventLocation from '@/components/invitation/EventLocation.astro';
+import Footer from '@/components/invitation/Footer.astro';
 import Hero from '@/components/invitation/Hero.astro';
-import FamilyXV from '@/components/xv/Family.astro';
-import QuoteXV from '@/components/xv/Quote.astro';
-import ThankYouXV from '@/components/xv/ThankYou.astro';
+import Family from '@/components/invitation/Family.astro';
+import Quote from '@/components/invitation/Quote.astro';
+import ThankYou from '@/components/invitation/ThankYou.astro';
 import Gifts from '@/components/invitation/Gifts.astro';
 import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
@@ -20,9 +20,6 @@ import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
-
-// Placeholder for future Wedding components
-// import HeroWedding from '@/components/wedding/Hero.astro';
 
 export async function getStaticPaths() {
 	const events = await getCollection('events');
@@ -41,24 +38,18 @@ interface Props {
 
 const { event } = Astro.props;
 
-// 2. Add a safety check (Optional, but good for debugging)
 if (!event) {
 	return Astro.redirect('/404');
 }
 
 const { data } = event;
 
-const isXV = data.eventType === 'xv';
-const isWedding = data.eventType === 'boda';
-const isBirthday = data.eventType === 'cumple';
 const showEnvelope = !!(data.envelope && !data.envelope.disabled);
-
-
 
 function hexToRgb(hex: string): string {
 	hex = hex.replace(/^#/, '');
 	if (hex.length === 3) {
-		hex = hex.split('').map(char => char + char).join('');
+		hex = hex.split('').map((char) => char + char).join('');
 	}
 	const bigint = parseInt(hex, 16);
 	const r = (bigint >> 16) & 255;
@@ -69,6 +60,18 @@ function hexToRgb(hex: string): string {
 
 const primaryColorRgb = hexToRgb(data.theme.primaryColor);
 const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
+
+// Preset handle
+const preset = data.theme.preset;
+const themeClass = preset ? `theme-preset--${preset}` : '';
+
+// Generic Labels
+const labels: Record<string, string> = {
+	xv: 'Mis XV Años',
+	boda: 'Nuestra Boda',
+	cumple: 'Sesenta Años',
+};
+const heroLabel = labels[data.eventType] || 'Invitación Especial';
 ---
 
 <Layout
@@ -77,6 +80,10 @@ const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 	image={data.hero.backgroundImage.src}
 	hideHeader={true}
 >
+	<style is:global>
+		@import '@/styles/themes/presets/_jewelry-box.scss';
+		@import '@/styles/themes/presets/_luxury-hacienda.scss';
+	</style>
 	<style
 		define:vars={{
 			primaryColor: data.theme.primaryColor,
@@ -92,7 +99,8 @@ const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 			--color-accent-rgb: var(--accentColorRgb);
 		}
 	</style>
-	<main class={`event-theme-wrapper ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
+
+	<main class={`event-theme-wrapper ${themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
 		{
 			showEnvelope && (
 				<EnvelopeReveal
@@ -106,194 +114,108 @@ const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 				/>
 			)
 		}
+
+		<EventHeader
+			eventName={data.hero.name}
+			theme={data.theme}
+			links={data.navigation}
+		/>
+
+		<Hero
+			name={data.hero.name}
+			label={heroLabel}
+			nickname={data.hero.nickname}
+			date={data.hero.date}
+			venueName={data.location.venueName}
+			backgroundImage={data.hero.backgroundImage}
+		/>
+
+		{data.quote && <Quote text={data.quote.text} author={data.quote.author} />}
+
 		{
-			isXV && (
-				<>
-					<EventHeader
-						eventName={data.hero.name}
-						theme={data.theme}
-						links={data.navigation}
-					/>
-					<Hero
-						name={data.hero.name}
-						date={data.hero.date}
-						venueName={data.location.venueName}
-						backgroundImage={data.hero.backgroundImage}
-						eventType={data.eventType}
-					/>
-					{
-						data.quote && (
-							<QuoteXV text={data.quote.text} author={data.quote.author} />
-						)
-					}
-					{data.sections?.countdown && (
-						<Countdown
-							eventDate={data.hero.date}
-							title={data.countdown?.title}
-							subtitlePrefix={data.countdown?.subtitlePrefix}
-							footerText={data.countdown?.footerText}
-						/>
-					)}
-					{
-						data.family && (
-							<FamilyXV
-								parents={data.family.parents}
-								godparents={data.family.godparents}
-								featuredImage={data.family.featuredImage}
-								celebrantName={data.hero.name}
-							/>
-						)
-					}
-					<EventLocation
-						ceremony={data.location.ceremony}
-						reception={data.location.reception}
-						indications={data.location.indications}
-					/>
-					{
-						data.itinerary && (
-							<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
-						)
-					}
-					{
-						data.sections?.gifts && data.gifts && (
-							<Gifts gifts={data.gifts} />
-						)
-					}
-					{
-						data.sections?.gallery && data.gallery && (
-							<Gallery
-								title={data.gallery.title}
-								subtitle={data.gallery.subtitle}
-								items={data.gallery.items}
-							/>
-						)
-					}
-					{
-						data.sections?.rsvp && data.rsvp && (
-							<RSVP
-								client:visible
-								title={data.rsvp.title}
-								guestCap={data.rsvp.guestCap}
-								confirmationMessage={data.rsvp.confirmationMessage}
-							/>
-						)
-					}
-					{data.thankYou && (
-						<ThankYouXV
-							message={data.thankYou.message}
-							closingName={data.thankYou.closingName}
-							image={data.thankYou.image}
-						/>
-					)}
-					<FooterXV />
-					{data.music && (
-						<MusicPlayer
-							client:idle
-							url={data.music.url}
-							autoPlay={data.music.autoPlay}
-							title={data.music.title}
-						/>
-					)}
-				</>
+			data.sections?.countdown && (
+				<Countdown
+					eventDate={data.hero.date}
+					title={data.countdown?.title}
+					subtitlePrefix={data.countdown?.subtitlePrefix}
+					footerText={data.countdown?.footerText}
+				/>
 			)
 		}
 
 		{
-			isWedding && (
-				<div class="wedding-placeholder">
-					<h1>Wedding Template Under Construction</h1>
-					<p>Values: {data.hero.name}</p>
-				</div>
+			data.family && (
+				<Family
+					parents={data.family.parents}
+					godparents={data.family.godparents}
+					featuredImage={data.family.featuredImage}
+					celebrantName={data.hero.name}
+				/>
+			)
+		}
+
+		<EventLocation
+			ceremony={data.location.ceremony}
+			reception={data.location.reception}
+			indications={data.location.indications}
+		/>
+
+		{
+			data.itinerary && (
+				<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
+			)
+		}
+
+		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} />}
+
+		{
+			data.sections?.gallery && data.gallery && (
+				<Gallery
+					title={data.gallery.title}
+					subtitle={data.gallery.subtitle}
+					items={data.gallery.items}
+				/>
 			)
 		}
 
 		{
-			isBirthday && (
-				<>
-					<EventHeader
-						eventName={data.hero.name}
-						theme={data.theme}
-						links={data.navigation}
-					/>
-					<Hero
-						name={data.hero.name}
-						date={data.hero.date}
-						venueName={data.location.venueName}
-						backgroundImage={data.hero.backgroundImage}
-						eventType={data.eventType}
-					/>
-					{
-						data.quote && (
-							<QuoteXV text={data.quote.text} author={data.quote.author} />
-						)
-					}
-					{data.sections?.countdown && (
-						<Countdown
-							eventDate={data.hero.date}
-							title={data.countdown?.title}
-							subtitlePrefix={data.countdown?.subtitlePrefix}
-							footerText={data.countdown?.footerText}
-						/>
-					)}
-					{
-						data.sections?.gifts && data.gifts && (
-							<Gifts gifts={data.gifts} />
-						)
-					}
-					{
-						data.sections?.gallery && data.gallery && (
-							<Gallery
-								title={data.gallery.title}
-								subtitle={data.gallery.subtitle}
-								items={data.gallery.items}
-							/>
-						)
-					}
-					<EventLocation
-						ceremony={data.location.ceremony}
-						reception={data.location.reception}
-						indications={data.location.indications}
-					/>
-					{
-						data.itinerary && (
-							<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
-						)
-					}
-					{
-						data.sections?.rsvp && data.rsvp && (
-							<RSVP
-								client:visible
-								title={data.rsvp.title}
-								guestCap={data.rsvp.guestCap}
-								confirmationMessage={data.rsvp.confirmationMessage}
-							/>
-						)
-					}
-					{data.thankYou && (
-						<ThankYouXV
-							message={data.thankYou.message}
-							closingName={data.thankYou.closingName}
-							image={data.thankYou.image}
-						/>
-					)}
-					<FooterXV />
-					{data.music && (
-						<MusicPlayer
-							client:idle
-							url={data.music.url}
-							autoPlay={data.music.autoPlay}
-							title={data.music.title}
-						/>
-					)}
-				</>
+			data.sections?.rsvp && data.rsvp && (
+				<RSVP
+					client:visible
+					title={data.rsvp.title}
+					guestCap={data.rsvp.guestCap}
+					confirmationMessage={data.rsvp.confirmationMessage}
+					{...(data.eventType === 'cumple'
+						? {
+								nameLabel: 'Nombre de los invitados *',
+								guestCountLabel: 'Lugares reservados',
+								buttonLabel: 'Confirmar lugar',
+							}
+						: {})}
+				/>
 			)
 		}
 
 		{
-			!isXV && !isWedding && !isBirthday && (
-				<div class="error-message">
-					Unknown Event Type: {data.eventType}
-				</div>
+			data.thankYou && (
+				<ThankYou
+					message={data.thankYou.message}
+					closingName={data.thankYou.closingName}
+					image={data.thankYou.image}
+				/>
+			)
+		}
+
+		<Footer />
+
+		{
+			data.music && (
+				<MusicPlayer
+					client:idle
+					url={data.music.url}
+					autoPlay={data.music.autoPlay}
+					title={data.music.title}
+				/>
 			)
 		}
 	</main>
