@@ -39,6 +39,7 @@ const eventsCollection = defineCollection({
 						appleMapsUrl: z.string().url().optional(),
 						googleMapsUrl: z.string().url().optional(),
 						image: z.string().optional(),
+						coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 					})
 					.optional(),
 
@@ -53,6 +54,7 @@ const eventsCollection = defineCollection({
 						appleMapsUrl: z.string().url().optional(),
 						googleMapsUrl: z.string().url().optional(),
 						image: z.string().optional(),
+						coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 						itinerary: z
 							.array(
 								z.object({
@@ -139,7 +141,7 @@ const eventsCollection = defineCollection({
 						z.object({
 							image: image(),
 							caption: z.string().optional(),
-						})
+						}),
 					),
 				})
 				.optional(),

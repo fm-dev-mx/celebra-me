@@ -27,7 +27,11 @@
             "appleMapsUrl": "https://maps.apple.com/?address=Avenida+Ayuntamiento,+Jardines+de+Guadalupe",
             "googleMapsUrl": "https://maps.app.goo.gl/9R6K2vS7J5X2",
             "wazeUrl": "https://waze.com/ul?q=Parroquia+de+la+Sagrada+Familia",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg"
+            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985217/parroquia_sagrada_familia1920x1080_tgodqa.jpg",
+            "coordinates": {
+                "lat": 25.6816,
+                "lng": -100.252
+            }
         },
         "reception": {
             "venueName": "Quinta Las Flores",
@@ -38,11 +42,18 @@
             "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
             "googleMapsUrl": "https://maps.app.goo.gl/example",
             "wazeUrl": "https://waze.com/ul?q=Quinta+Las+Flores+Monterrey",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg"
+            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg",
+            "coordinates": {
+                "lat": 25.5687,
+                "lng": -100.2488
+            }
         },
         "indications": [
             { "icon": "crown", "text": "El color púrpura está reservado para la festejada." },
-            { "icon": "envelope", "text": "Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será bien recibido." },
+            {
+                "icon": "envelope",
+                "text": "Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será bien recibido."
+            },
             { "icon": "forbidden", "text": "Celebración sin niños." }
         ]
     },
@@ -67,18 +78,54 @@
         "title": "Galería",
         "subtitle": "Recuerdos antes del gran día",
         "items": [
-            { "image": "../../assets/images/gallery/lucia-gallery-1.png", "caption": "Momentos de ilusión" },
-            { "image": "../../assets/images/gallery/lucia-gallery-2.png", "caption": "Sonrisas que iluminan" },
-            { "image": "../../assets/images/gallery/lucia-gallery-3.png", "caption": "Elegancia y gracia" },
-            { "image": "../../assets/images/gallery/lucia-gallery-4.png", "caption": "Un sueño hecho realidad" },
-            { "image": "../../assets/images/gallery/lucia-gallery-5.png", "caption": "Esperando el gran día" },
-            { "image": "../../assets/images/gallery/lucia-gallery-6.png", "caption": "Brillo propio" },
-            { "image": "../../assets/images/gallery/lucia-gallery-7.png", "caption": "Naturalidad" },
-            { "image": "../../assets/images/gallery/lucia-gallery-8.png", "caption": "Retratos inolvidables" },
-            { "image": "../../assets/images/gallery/lucia-gallery-9.png", "caption": "Dulce transición" },
-            { "image": "../../assets/images/gallery/lucia-gallery-10.png", "caption": "Cada detalle cuenta" },
-            { "image": "../../assets/images/gallery/lucia-gallery-11.png", "caption": "En el jardín" },
-            { "image": "../../assets/images/gallery/lucia-gallery-12.png", "caption": "Felicidad pura" }
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-1.png",
+                "caption": "Momentos de ilusión"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-2.png",
+                "caption": "Sonrisas que iluminan"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-3.png",
+                "caption": "Elegancia y gracia"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-4.png",
+                "caption": "Un sueño hecho realidad"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-5.png",
+                "caption": "Esperando el gran día"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-6.png",
+                "caption": "Brillo propio"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-7.png",
+                "caption": "Naturalidad"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-8.png",
+                "caption": "Retratos inolvidables"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-9.png",
+                "caption": "Dulce transición"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-10.png",
+                "caption": "Cada detalle cuenta"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-11.png",
+                "caption": "En el jardín"
+            },
+            {
+                "image": "../../assets/images/gallery/lucia-gallery-12.png",
+                "caption": "Felicidad pura"
+            }
         ]
     },
     "gifts": [
@@ -126,8 +173,18 @@
     "itinerary": {
         "title": "Nuestra Celebración",
         "items": [
-            { "icon": "church", "label": "Ceremonia Religiosa", "time": "6:00 PM", "description": "Parroquia de la Sagrada Familia" },
-            { "icon": "reception", "label": "Recepción", "time": "8:00 PM", "description": "Quinta Las Flores" },
+            {
+                "icon": "church",
+                "label": "Ceremonia Religiosa",
+                "time": "6:00 PM",
+                "description": "Parroquia de la Sagrada Familia"
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "8:00 PM",
+                "description": "Quinta Las Flores"
+            },
             { "icon": "waltz", "label": "Vals de Honor", "time": "9:00 PM" },
             { "icon": "dinner", "label": "Cena de Gala", "time": "10:00 PM" },
             { "icon": "toast", "label": "Brindis", "time": "11:30 PM" },
