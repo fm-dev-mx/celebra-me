@@ -1,5 +1,5 @@
 {
-    "eventType": "boda",
+    "eventType": "cumple",
     "title": "Gerardo - 60 Años",
     "description": "Estás invitado a celebrar los 60 años del Jefe Botas.",
     "theme": {
@@ -9,6 +9,7 @@
     },
     "hero": {
         "name": "Gerardo García",
+        "nickname": "Jefe Botas",
         "date": "2026-05-16T19:00:00.000Z",
         "backgroundImage": "../../assets/images/events/cumple-60-gerardo/hero.png"
     },
@@ -34,7 +35,7 @@
     "sections": {
         "countdown": true,
         "rsvp": true,
-        "gifts": false,
+        "gifts": true,
         "gallery": true
     },
     "gallery": {

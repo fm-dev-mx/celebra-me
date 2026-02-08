@@ -7,7 +7,7 @@ const eventsCollection = defineCollection({
 	type: 'data',
 	schema: ({ image }) =>
 		z.object({
-			eventType: z.enum(['xv', 'boda', 'bautizo']),
+			eventType: z.enum(['xv', 'boda', 'bautizo', 'cumple']),
 			isDemo: z.boolean().optional(),
 			title: z.string(),
 			description: z.string().optional(),
@@ -18,6 +18,7 @@ const eventsCollection = defineCollection({
 			}),
 			hero: z.object({
 				name: z.string(),
+				nickname: z.string().optional(),
 				date: z.string().datetime(), // ISO 8601
 				backgroundImage: image(),
 			}),

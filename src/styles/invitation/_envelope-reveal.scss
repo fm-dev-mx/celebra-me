@@ -19,7 +19,7 @@ $gold-light: #f1d592;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+	background: var(--env-bg, radial-gradient(circle at center, #1b2735 0%, #090a0f 100%));
 	perspective: 2500px;
 }
 

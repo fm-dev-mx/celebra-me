@@ -21,7 +21,12 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	year: 'numeric',
 });
 
-const label = eventType === 'xv' ? 'Mis XV Años' : 'Nuestra Boda';
+const label =
+	eventType === 'xv'
+		? 'Mis XV Años'
+		: eventType === 'cumple'
+			? 'Cumpleaños'
+			: 'Nuestra Boda';
 ---
 
 <section id="inicio" class="invitation-hero">
