@@ -11,29 +11,31 @@ documented manner.
 
 ## 📋 Pre-requisites
 
-- An active Master Plan in `docs/plan/`.
+- An active Master Plan or Specification in `docs/plan/`.
 - `Planning Mode` or `Execution Mode` active in the assistant.
 
 ## 🛠️ Execution Steps
 
 1. **State Synchronization**:
-    - Read the **Implementation Log** in `docs/plan/invitation-60-birthday-gerardo.md`.
+    - Identify and read the **Active Implementation Log** (e.g., `docs/plan/invitation-*.md`).
     - Identify the first ADU marked as `Pending`.
 
 2. **Targeted Coding**:
     - Implement ONLY the components and data specified in that ADU.
     - **Rule**: Do not add features or sections not explicitly mentioned in the current ADU.
-    - Follow the "Luxury Hacienda" aesthetic specification (Colors, Fonts).
+    - **Aesthetic Alignment**: Follow the specific aesthetic style defined in the plan (e.g.,
+      "Jewelry Box", "Vaquero", "Luxury Hacienda") using established design tokens.
 
 3. **Documentation Update**:
-    - Update the Implementation Log in the Master Plan:
+    - Update the Implementation Log in the active plan file:
         - Change Status to `Implemented`.
-        - Add any relevant technical notes.
+        - Add any relevant technical notes (in English).
 
 4. **Halt & Verify**:
     - Do NOT proceed to the next ADU.
-    - Stop and wait for the `/Invitation Verification` workflow or user confirmation.
+    - Stop and wait for the `/invitation-verification` workflow or user confirmation.
 
-// turbo 5. **Commit Progress** (Optional):
+// turbo
 
-- Suggest a safe commit for the finished unit.
+1. **Commit Progress** (Optional):
+    - Suggest a safe commit for the finished unit following Conventional Commits.

@@ -34,7 +34,7 @@ compliance.
       CSS/Astro).
     - Update `src/content/config.ts` if Content Collection schemas change.
 5. **Premium Build:** Execute using: `astro-patterns`, `frontend-design`, `animation-motion`,
-   `copywriting-es`, and `seo-metadata`.
+   `copywriting-es`, `seo-metadata`, and `accessibility`.
 
 ## ⚖️ PHASE 2: Verification (The Curator)
 

@@ -66,6 +66,7 @@ applicable):
 
 - inline styles / forbidden patterns
 - inconsistent conventions, casing, structure
+- **Documentation**: Missing JSDoc/TSDoc in English for complex logic.
 - dead/obsolete code, unused exports/selectors
 - Astro server/client boundary violations
 - broken refs/imports, contract/schema drift
