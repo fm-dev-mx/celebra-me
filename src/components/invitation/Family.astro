@@ -1,0 +1,115 @@
+---
+// src/components/invitation/Family.astro
+import '@/styles/invitation/_family.scss';
+import Container from '@/components/layout/Container.astro';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+
+interface Props {
+	parents: {
+		father?: string;
+		mother?: string;
+	};
+	godparents?: Array<{
+		name: string;
+		role?: string;
+	}>;
+	featuredImage?: string;
+	celebrantName: string;
+}
+
+const { parents, godparents, featuredImage, celebrantName } = Astro.props;
+---
+
+<section id="family-section" class="family">
+	<div class="family-bg-texture" aria-hidden="true"></div>
+
+	<Container>
+		<div class="family__header">
+			<span class="family__suptitle">Con la bendición de</span>
+			<h2 class="family__title-main">Mis Padres y Padrinos</h2>
+		</div>
+
+		<div class="family__grid">
+			{/* Parents Card */}
+			<div class="family__card family__card--left">
+				<div class="family__card-inner">
+					<h3 class="family__card-subtitle">Padres de {celebrantName}</h3>
+					<div class="family__names-list">
+						{parents.mother && (
+							<div class="family__name-item" style="--index: 0">
+								<p class="family__name">{parents.mother}</p>
+							</div>
+						)}
+						{parents.mother && parents.father && (
+							<div class="family__ampersand-divider" aria-hidden="true">
+								<span class="calligraphy-ampersand">y</span>
+							</div>
+						)}
+						{parents.father && (
+							<div class="family__name-item" style="--index: 1">
+								<p class="family__name">{parents.father}</p>
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+
+			{/* Featured Image (Middle) */}
+			{featuredImage && (
+				<div class="family__image-column">
+					<div class="family__image-container">
+						<div class="family__image-frame">
+							<OptimizedImage
+								imagePath={featuredImage}
+								alt={celebrantName}
+								width={600}
+								height={800}
+							/>
+						</div>
+						<div class="family__image-decoration" aria-hidden="true"></div>
+					</div>
+				</div>
+			)}
+
+			{/* Godparents Card */}
+			{godparents && godparents.length > 0 && (
+				<div class="family__card family__card--right">
+					<div class="family__card-inner">
+						<h3 class="family__card-subtitle">Mis Padrinos</h3>
+						<div class="family__names-list">
+							{godparents.map((godparent, index) => (
+								<div class="family__name-item" style={`--index: ${index}`}>
+									<p class="family__name">{godparent.name}</p>
+									{godparent.role && (
+										<span class="family__role">{godparent.role}</span>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			)}
+		</div>
+	</Container>
+</section>
+
+<script>
+	const observerOptions = {
+		threshold: 0.1,
+		rootMargin: '0px 0px -50px 0px'
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		});
+	}, observerOptions);
+
+	const familySection = document.querySelector('.family');
+	if (familySection) {
+		observer.observe(familySection);
+	}
+</script>

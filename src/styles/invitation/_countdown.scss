@@ -1,0 +1,237 @@
+// src/styles/xv/_countdown.scss
+// ----------------------------------------------------
+// Premium Countdown Styles - Jewelry Box Aesthetic
+// ----------------------------------------------------
+
+@use 'xv-variables' as vars;
+@use '@/styles/global/mixins' as mixins;
+
+.countdown-section {
+	position: relative;
+	padding: 8rem 0.5rem;
+	// Warm ivory/champagne gradient background matching Jewelry Box palette
+	background: linear-gradient(
+		180deg,
+		rgba(253, 249, 242, 1) 0%,
+		// Warm ivory top
+		rgba(247, 231, 206, 0.3) 50%,
+		// Champagne tint middle
+		rgba(253, 249, 242, 1) 100% // Warm ivory bottom
+	);
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 50vh;
+
+	// Subtle radial glow for depth
+	&::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 80%;
+		height: 60%;
+		background: radial-gradient(
+			ellipse at center,
+			rgba(var(--color-primary-rgb), 0.06) 0%,
+			// Dynamic glow center
+			transparent 70%
+		);
+		pointer-events: none;
+	}
+
+	// Entrance animation
+	opacity: 0;
+	transform: translateY(20px);
+	transition:
+		opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+
+	&.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.countdown-texture {
+	position: absolute;
+	inset: 0;
+	opacity: 0.06; // Increased from 0.03 for more visible texture
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	filter: contrast(140%) brightness(100%); // Enhanced contrast for tactile feel
+}
+
+.countdown-container {
+	position: relative;
+	z-index: 1;
+	max-width: 900px;
+	width: 100%;
+	text-align: center;
+}
+
+.countdown-header {
+	margin-bottom: 4rem;
+}
+
+.countdown-title {
+	font-family: vars.$font-heading-elegant;
+	font-size: clamp(2rem, 6vw, 3.5rem);
+	color: var(--color-primary-dark);
+	margin-bottom: 1.5rem;
+	letter-spacing: -0.02em;
+}
+
+.countdown-subtitle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	opacity: 0.7;
+
+	.subtitle-line {
+		height: 1px;
+		width: 40px;
+		background-color: var(--color-primary);
+		display: none;
+
+		@include mixins.respond-to(sm) {
+			display: block;
+		}
+	}
+
+	.event-date {
+		font-family: vars.$font-heading-formal;
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: var(--color-text);
+	}
+}
+
+.countdown-timer-wrapper {
+	margin: 3rem 0;
+}
+
+.countdown__timer {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.5rem;
+
+	@include mixins.respond-to(sm) {
+		gap: 0.75rem;
+	}
+}
+
+.countdown__segment {
+	background: rgba(var(--color-white-rgb), 0.5);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+	padding: 2rem 1rem;
+	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	box-shadow:
+		0 15px 50px -15px rgba(var(--color-primary-dark-rgb), 0.08),
+		inset 0 0 20px rgba(var(--color-primary-rgb), 0.05);
+	transition:
+		transform 0.3s ease,
+		border-color 0.3s ease;
+
+	// Staggered entrance animation
+	opacity: 0;
+	transform: translateY(15px);
+	transition:
+		opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+		border-color 0.3s ease;
+	transition-delay: calc(0.2s + (var(--index, 0) * 0.1s));
+
+	.countdown-section.is-visible & {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	&:hover {
+		transform: translateY(-5px);
+		border-color: rgba(var(--color-primary-rgb), 0.35);
+	}
+
+	@include mixins.respond-to(sm) {
+		padding: 2.5rem 1.5rem;
+		border-radius: 16px;
+	}
+}
+
+.countdown__value-wrapper {
+	height: 3.5rem;
+	width: 2.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	margin-bottom: 0.5rem;
+
+	@include mixins.respond-to(sm) {
+		width: 5rem;
+	}
+}
+
+.countdown__value {
+	font-family: vars.$font-heading-elegant;
+	font-size: clamp(1.5rem, 5vw, 2.2rem);
+	color: var(--color-primary);
+	font-weight: 400;
+	line-height: 1;
+
+	@include mixins.respond-to(sm) {
+		font-size: clamp(2.5rem, 5vw, 3.2rem);
+	}
+}
+
+.countdown__label {
+	font-family: vars.$font-heading-formal;
+	font-size: 0.65rem;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	color: var(--color-text);
+	opacity: 0.6;
+
+	@include mixins.respond-to(sm) {
+		font-size: 0.75rem;
+	}
+}
+
+.countdown-footer {
+	margin-top: 4rem;
+}
+
+.countdown-invitation-text {
+	font-family: vars.$font-subtitle-refined;
+	font-size: 1.25rem;
+	font-style: italic;
+	color: var(--color-text);
+	opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.countdown-section {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	.countdown__segment {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	.countdown__segment:hover {
+		transform: none;
+	}
+	.countdown__value {
+		transition: none !important;
+	}
+}

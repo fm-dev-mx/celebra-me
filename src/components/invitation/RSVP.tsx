@@ -6,9 +6,21 @@ interface RSVPProps {
 	title: string;
 	guestCap: number;
 	confirmationMessage: string;
+	nameLabel?: string;
+	attendanceLabel?: string;
+	guestCountLabel?: string;
+	buttonLabel?: string;
 }
 
-const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => {
+const RSVP: React.FC<RSVPProps> = ({
+	title,
+	guestCap,
+	confirmationMessage,
+	nameLabel = 'Tu nombre completo *',
+	attendanceLabel = '¿Asistirás al evento? *',
+	guestCountLabel = 'Número de acompañantes',
+	buttonLabel = 'Confirmar Asistencia',
+}) => {
 	const [name, setName] = useState('');
 	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
 	const [guestCount, setGuestCount] = useState<number>(1);
@@ -105,7 +117,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 				>
-					<label htmlFor="name">Tu nombre completo *</label>
+					<label htmlFor="name">{nameLabel}</label>
 					<input
 						type="text"
 						id="name"
@@ -123,7 +135,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 					viewport={{ once: true }}
 					transition={{ delay: 0.1 }}
 				>
-					<label>¿Asistirás al evento? *</label>
+					<label>{attendanceLabel}</label>
 					<div className="rsvp__radio-group">
 						<label>
 							<input
@@ -158,7 +170,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 						>
 							<div className="rsvp__field">
 								<label htmlFor="guestCount">
-									Número de acompañantes (Máx. {guestCap})
+									{guestCountLabel} (Máx. {guestCap})
 								</label>
 								<input
 									type="number"
@@ -209,7 +221,7 @@ const RSVP: React.FC<RSVPProps> = ({ title, guestCap, confirmationMessage }) => 
 					viewport={{ once: true }}
 					transition={{ delay: 0.2 }}
 				>
-					{isSubmitting ? 'Enviando...' : 'Confirmar Asistencia'}
+					{isSubmitting ? 'Enviando...' : buttonLabel}
 				</motion.button>
 			</form>
 		</section>

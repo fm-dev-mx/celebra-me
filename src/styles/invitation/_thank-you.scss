@@ -1,0 +1,164 @@
+// src/styles/xv/_thank-you.scss
+@use '../global/mixins' as mixins;
+@use 'xv-variables' as *;
+
+.thank-you-section {
+	position: relative;
+	padding: 8rem 1rem;
+	min-height: 80vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: linear-gradient(180deg, rgba($color-white, 0.95) 0%, $color-champagne-light 100%);
+	overflow: hidden;
+
+	// Subtle decorative overlay
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: radial-gradient(
+			ellipse at center,
+			rgba($color-gold-metallic, 0.05) 0%,
+			transparent 70%
+		);
+		pointer-events: none;
+	}
+}
+
+.thank-you-content {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3rem;
+	max-width: 700px;
+	margin: 0 auto;
+	padding: 0 1rem;
+	text-align: center;
+}
+
+.photo-frame {
+	position: relative;
+	width: 220px;
+	height: 220px;
+	border: 2px solid $color-gold-dust; // Gold-dust border
+	border-radius: 50%;
+	padding: 8px;
+	background: rgba(255, 255, 255, 0.5);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+
+	@include mixins.respond-to(sm) {
+		width: 280px;
+		height: 280px;
+	}
+
+	.glimmer-effect {
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: linear-gradient(
+			45deg,
+			transparent 45%,
+			rgba(255, 255, 255, 0.8) 50%,
+			transparent 55%
+		);
+		animation: glimmer 4s infinite linear;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	:global(.photo-image) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 50%;
+		transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	&:hover :global(.photo-image) {
+		transform: scale(1.05);
+	}
+}
+
+.message-container {
+	max-width: 550px;
+	perspective: 1000px;
+}
+
+.thank-you-message {
+	font-family: $font-body;
+	font-size: clamp(1.1rem, 3vw, 1.4rem);
+	line-height: 2;
+	color: $color-dark;
+	margin: 0 0 2rem 0;
+	letter-spacing: 0.01em;
+
+	.drop-cap {
+		font-family: $font-heading-formal;
+		font-size: 3.5em;
+		float: left;
+		line-height: 0.8;
+		padding-right: 0.1em;
+		color: $color-gold-metallic;
+		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.signature-block {
+	opacity: 0;
+	transform: translateY(10px);
+	animation: signatureReveal 2s ease-out 1.2s forwards;
+}
+
+.closing-name {
+	font-family: $font-decorative-cursive;
+	font-size: clamp(2.5rem, 6vw, 4rem);
+	color: $color-darker;
+	margin: 0;
+	background: linear-gradient(135deg, $color-gold-metallic 0%, $color-gold-deep 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.thank-you-footer {
+	margin-top: 2rem;
+	padding-top: 2rem;
+	border-top: 1px solid rgba($color-dark, 0.1);
+	opacity: 0.4;
+	font-family: $font-heading-modern;
+	font-size: 0.75rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+@keyframes glimmer {
+	from {
+		transform: rotate(0deg) translate(-50%, -50%);
+	}
+	to {
+		transform: rotate(360deg) translate(-50%, -50%);
+	}
+}
+
+@keyframes signatureReveal {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+		filter: blur(5px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+}

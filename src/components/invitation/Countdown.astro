@@ -1,0 +1,82 @@
+---
+// src/components/invitation/Countdown.astro
+// Premium countdown section
+import '@/styles/invitation/_countdown.scss';
+import CountdownTimer from '@/components/invitation/CountdownTimer';
+
+interface Props {
+	eventDate: string; // ISO Date string
+	title?: string;
+	subtitlePrefix?: string;
+	footerText?: string;
+}
+
+const {
+	eventDate,
+	title = "¡Falta muy poco!",
+	subtitlePrefix = "El",
+	footerText = "Prepárate para una noche inolvidable"
+} = Astro.props;
+
+// Function to format the date in Spanish for the subtitle
+function getFormattedDate(dateString: string): string {
+	try {
+		const date = new Date(dateString);
+		return new Intl.DateTimeFormat('es-MX', {
+			weekday: 'long',
+			day: '2-digit',
+			month: 'long',
+			year: 'numeric',
+		}).format(date);
+	} catch (error) {
+		console.error('Error formatting date:', error);
+		return 'Fecha no válida';
+	}
+}
+
+const formattedEventDate = getFormattedDate(eventDate);
+---
+
+<section class="countdown-section" id="countdown">
+	<div class="countdown-texture" aria-hidden="true"></div>
+	<div class="countdown-container">
+		<header class="countdown-header">
+			<h2 class="countdown-title">{title}</h2>
+			<div class="countdown-subtitle">
+				<div class="subtitle-line"></div>
+				<p class="event-date">{subtitlePrefix} {formattedEventDate}</p>
+				<div class="subtitle-line"></div>
+			</div>
+		</header>
+
+		<div class="countdown-timer-wrapper">
+			<CountdownTimer client:visible eventDate={eventDate} />
+		</div>
+
+		<footer class="countdown-footer">
+			<p class="countdown-invitation-text">{footerText}</p>
+		</footer>
+	</div>
+</section>
+
+<script>
+	const observerOptions = {
+		threshold: 0.15,
+		rootMargin: '0px 0px -50px 0px'
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		});
+	}, observerOptions);
+
+	const countdownSection = document.querySelector('.countdown-section');
+	if (countdownSection) {
+		observer.observe(countdownSection);
+	}
+</script>
+

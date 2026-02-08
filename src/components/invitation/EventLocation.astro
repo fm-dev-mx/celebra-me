@@ -1,0 +1,316 @@
+---
+/*
+  EventLocation Component
+  Displays modern, interactive cards for the event venues.
+*/
+import '@/styles/invitation/_event-location.scss';
+import '@/styles/invitation/_section-nav-button.scss';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import GoogleMap from '@/components/common/GoogleMap.astro';
+import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
+import CrownIcon from '@/components/invitation/icons/CrownIcon.astro';
+import EnvelopedIcon from '@/components/invitation/icons/EnvelopedIcon.astro';
+import ForbiddenIcon from '@/components/invitation/icons/ForbiddenIcon.astro';
+import MapIcon from '@/components/invitation/icons/MapIcon.astro';
+import CopyIcon from '@/components/invitation/icons/CopyIcon.astro';
+
+interface VenueData {
+	venueName: string;
+	address: string;
+	date: string;
+	time: string;
+	mapUrl?: string;
+	appleMapsUrl?: string;
+	googleMapsUrl?: string;
+	wazeUrl?: string;
+	image?: string;
+	coordinates?: {
+		lat: number;
+		lng: number;
+	};
+}
+
+
+interface Indication {
+	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'gift';
+	text: string;
+}
+
+interface Props {
+	ceremony?: VenueData;
+	reception?: VenueData;
+	indications?: Indication[];
+}
+
+const { ceremony, reception, indications } = Astro.props;
+
+const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
+
+// Map icon names to components
+const iconMap = {
+	crown: CrownIcon,
+	envelope: EnvelopedIcon,
+	forbidden: ForbiddenIcon,
+	dress: CrownIcon, // Fallback
+	gift: EnvelopedIcon, // Fallback
+};
+---
+
+<section class="event-location" id="event-location">
+	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
+		{ceremony && (
+			<div class="event-location__card-wrapper">
+				<h3 class="event-location__card-title font-heading-formal">Ceremonia</h3>
+				<div class="event-location__card-flourish" aria-hidden="true">
+					<span class="flourish-line"></span>
+					<span class="flourish-diamond"></span>
+					<span class="flourish-line"></span>
+				</div>
+				<article class="event-location__card event-location__card--ceremony">
+					<div class="event-location__card-image-outer-frame">
+						<div class="event-location__card-image-inner-frame">
+							<div class="event-location__card-image-container">
+								{ceremony.coordinates ? (
+									<GoogleMap
+										lat={ceremony.coordinates.lat}
+										lng={ceremony.coordinates.lng}
+										title={ceremony.venueName}
+									/>
+								) : (
+									<OptimizedImage
+										imagePath={ceremony.image}
+										alt={ceremony.venueName}
+										class="event-location__card-image"
+									/>
+								)}
+							</div>
+						</div>
+					</div>
+					<div class="event-location__card-content">
+						<ul class="event-location__card-content-list">
+							<li class="event-location__card-content-list__place font-heading-formal">
+								{ceremony.venueName}
+							</li>
+							<li class="event-location__card-content-list__date font-decorative-dancing">
+								{ceremony.date}
+							</li>
+							<li class="event-location__card-content-list__hour">{ceremony.time}</li>
+							<li class="event-location__card-content-list__address font-body">
+								<span class="address-text">{ceremony.address}</span>
+								<button class="copy-button" data-address={ceremony.address} aria-label="Copiar dirección" title="Copiar dirección">
+									<CopyIcon />
+								</button>
+							</li>
+						</ul>
+
+						<div class="event-location__navigation-buttons">
+							{ceremony.appleMapsUrl && (
+								<a
+									href={ceremony.appleMapsUrl}
+									class="nav-button nav-button--apple u-hidden-initially"
+									target="_blank"
+									rel="noopener noreferrer"
+									data-apple-link
+								>
+									Apple Maps
+								</a>
+							)}
+							{ceremony.googleMapsUrl && (
+								<a
+									href={ceremony.googleMapsUrl}
+									class="nav-button nav-button--maps"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Google Maps
+								</a>
+							)}
+							{ceremony.wazeUrl && (
+								<a
+									href={ceremony.wazeUrl}
+									class="nav-button nav-button--waze"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Waze
+								</a>
+							)}
+							{!ceremony.appleMapsUrl && !ceremony.googleMapsUrl && ceremony.mapUrl && (
+								<a
+									href={ceremony.mapUrl}
+									class="nav-button nav-button--primary"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<MapIcon />
+									Cómo llegar
+								</a>
+							)}
+						</div>
+					</div>
+				</article>
+			</div>
+		)}
+
+		{reception && (
+			<div class="event-location__card-wrapper">
+				<h3 class="event-location__card-title font-heading-formal">Recepción</h3>
+				<div class="event-location__card-flourish" aria-hidden="true">
+					<span class="flourish-line"></span>
+					<span class="flourish-diamond"></span>
+					<span class="flourish-line"></span>
+				</div>
+				<article class="event-location__card event-location__card--reception">
+					<div class="event-location__card-image-outer-frame">
+						<div class="event-location__card-image-inner-frame">
+							<div class="event-location__card-image-container">
+								{reception.coordinates ? (
+									<GoogleMap
+										lat={reception.coordinates.lat}
+										lng={reception.coordinates.lng}
+										title={reception.venueName}
+									/>
+								) : (
+									<OptimizedImage
+										imagePath={reception.image}
+										alt={reception.venueName}
+										class="event-location__card-image"
+									/>
+								)}
+							</div>
+						</div>
+					</div>
+					<div class="event-location__card-content">
+						<ul class="event-location__card-content-list">
+							<li class="event-location__card-content-list__place font-heading-formal">
+								{reception.venueName}
+							</li>
+							<li class="event-location__card-content-list__date font-decorative-dancing">
+								{reception.date}
+							</li>
+							<li class="event-location__card-content-list__hour">{reception.time}</li>
+							<li class="event-location__card-content-list__address font-body">
+								<span class="address-text">{reception.address}</span>
+								<button class="copy-button" data-address={reception.address} aria-label="Copiar dirección" title="Copiar dirección">
+									<CopyIcon />
+								</button>
+							</li>
+						</ul>
+
+
+						<div class="event-location__navigation-buttons">
+							{reception.appleMapsUrl && (
+								<a
+									href={reception.appleMapsUrl}
+									class="nav-button nav-button--apple u-hidden-initially"
+									target="_blank"
+									rel="noopener noreferrer"
+									data-apple-link
+								>
+									Apple Maps
+								</a>
+							)}
+							{reception.googleMapsUrl && (
+								<a
+									href={reception.googleMapsUrl}
+									class="nav-button nav-button--maps"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Google Maps
+								</a>
+							)}
+							{reception.wazeUrl && (
+								<a
+									href={reception.wazeUrl}
+									class="nav-button nav-button--waze"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									Waze
+								</a>
+							)}
+							{!reception.appleMapsUrl && !reception.googleMapsUrl && reception.mapUrl && (
+								<a
+									href={reception.mapUrl}
+									class="nav-button nav-button--primary"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<MapIcon />
+									Cómo llegar
+								</a>
+							)}
+						</div>
+					</div>
+				</article>
+			</div>
+		)}
+	</div>
+
+	{indications && indications.length > 0 && (
+		<div class="event-location__indications-container">
+			<div class="event-location__divider" aria-hidden="true"></div>
+
+			<div class="event-location__indications">
+				{indications.map((indication) => {
+					const IconComponent = iconMap[indication.icon] || CrownIcon;
+					return (
+						<div class="indication-item">
+							<div class="indication-icon">
+								<IconComponent />
+							</div>
+							<p class="font-body">{indication.text}</p>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	)}
+
+	<div class="nav-button-container">
+		<SectionNavButton href="#rsvp" class="event-location" section="Pases y Confirmación" />
+	</div>
+
+</section>
+
+<script>
+	// Copy to clipboard logic
+	const copyButtons = document.querySelectorAll('.copy-button');
+	copyButtons.forEach(button => {
+		button.addEventListener('click', async () => {
+			const address = button.getAttribute('data-address');
+			if (address) {
+				try {
+					await navigator.clipboard.writeText(address);
+
+					// Visual feedback
+					const originalContent = button.innerHTML;
+					button.innerHTML = '<span class="copy-success">✓</span>';
+					button.classList.add('copy-success');
+
+					setTimeout(() => {
+						button.innerHTML = originalContent;
+						button.classList.remove('copy-success');
+					}, 2000);
+				} catch (err) {
+					console.error('Failed to copy: ', err);
+				}
+			}
+		});
+	});
+</script>
+
+<script>
+	// Show Apple Maps only on iOS/macOS devices
+	const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+				 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+	if (isIOS) {
+		const appleLinks = document.querySelectorAll('[data-apple-link]');
+		appleLinks.forEach(link => {
+			(link as HTMLElement).classList.remove('u-hidden-initially');
+			(link as HTMLElement).style.display = 'flex'; // Keep flex for layout but class handles the initial 'none'
+		});
+	}
+</script>

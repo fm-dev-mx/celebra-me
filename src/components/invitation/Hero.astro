@@ -6,27 +6,21 @@ import '@/styles/invitation/_hero.scss';
 
 interface Props {
 	name: string;
+	label?: string; // New prop for generic label
+	nickname?: string;
 	date: string;
 	time?: string;
 	venueName: string;
-	backgroundImage: ImageMetadata; // Get from content collection
-	eventType: string;
+	backgroundImage: ImageMetadata;
 }
 
-const { name, date, time, venueName, backgroundImage, eventType } = Astro.props;
+const { name, label, nickname, date, time, venueName, backgroundImage } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
 });
-
-const label =
-	eventType === 'xv'
-		? 'Mis XV Años'
-		: eventType === 'cumple'
-			? 'Cumpleaños'
-			: 'Nuestra Boda';
 ---
 
 <section id="inicio" class="invitation-hero">
@@ -44,8 +38,14 @@ const label =
 	</div>
 
 	<div class="invitation-hero__content">
-		<span class="invitation-hero__label">{label}</span>
+		{label && <span class="invitation-hero__label">{label}</span>}
 		<h1 class="invitation-hero__title">{name}</h1>
+
+		{nickname && (
+			<div class="invitation-hero__nickname-badge">
+				<span>{nickname}</span>
+			</div>
+		)}
 
 		<div class="invitation-hero__divider"></div>
 
