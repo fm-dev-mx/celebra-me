@@ -2,126 +2,72 @@
 
 ## 1. The Vision
 
-Transform **Celebra-me** from a standard invitation website into a **digital luxury** platform. Both the landing page and the invitations must emulate the tactile and visual experience of a high-end physical invitation (textured paper, embossed effects, curated typography, subtle transitions).
+Transform **Celebra-me** from a standard invitation website into a **digital luxury** platform. Both
+the landing page and the invitations must emulate the tactile and visual experience of a high-end
+physical invitation (textured paper, embossed effects, curated typography, subtle transitions).
 
-**UX Core:** A "static per section" experience (one section at a time in the viewport) where navigation is subtle and information flows through elegant transitions, avoiding generic infinite scrolling.
-
----
-
-## 2. Section & Component Map
-
-### A. Landing Page (User/Client Experience)
-
-| Section | Visual Status | Link QA | Notes |
-| --- | --- | --- | --- |
-| **Header (The Jewelry Box)** | ✅ Complete | ✅ Fixed | Navigation links to internal anchors |
-| **Hero "Prime"** | ✅ Complete | ✅ Fixed | WhatsApp + internal anchors for zero broken links |
-| **Services Showcase** | ✅ Complete | ✅ Fixed | Cards redirect to `#contacto` for inquiry |
-| **Storytelling (About)** | ✅ Complete | ✅ Fixed | CTA redirects to `#contacto` |
-| **Testimonials** | ✅ Complete | ✅ N/A | No external links |
-| **Pricing (Plans)** | ✅ Complete | ✅ Fixed | CTAs redirect to `#contacto` |
-| **FAQ** | ✅ Complete | ✅ N/A | No external links |
-| **Contact (Concierge)** | ✅ Complete | ✅ Fixed | Integrated WhatsApp + Form functional |
-| **Footer** | ✅ Complete | ✅ Fixed | Legal pages created and linked |
+**UX Core:** A "static per section" experience (one section at a time in the viewport) where
+navigation is subtle and information flows through elegant transitions, avoiding generic infinite
+scrolling.
 
 ---
 
-| Section | Status | Visual Aesthetic | Data-Driven |
-| --- | --- | --- | --- |
-| **Ceremonial Opening** | ✅ Production | Glass + Wax Seal | ✅ Yes |
-| **Signature Hero** | ✅ Production | High-society Portrait | ✅ Yes |
-| **Countdown & Quote** | ✅ Production | Gold-rimmed Glass | ✅ Yes |
-| **Family & Protcol** | ✅ Production | Editorial Pill Layout | ✅ Yes |
-| **Location & Maps** | ✅ Production | Dual-Nav (iOS/Google) | ✅ Yes |
-| **RSVP & Logic** | ✅ Production | Seamless Form + Cap | ✅ Yes |
-| **Registry & Gifts** | ✅ Production | Multi-channel Cards | ✅ Yes |
-| **Itinerary & Gallery** | ✅ Production | Staggered Motion | ✅ Yes |
-|
----
+## 2. Global Status (Production Ready)
 
-## 3. Digital Invitation (Guest Experience)
-
-**The Digital Invitation Engine is now Production Ready.**
-
-The XV Años Demo serves as the "Ground Truth" for the premium guest experience, featuring the full "Jewelry Box" aesthetic and end-to-end data integration.
-
-- **Status:** Production Ready (2026-02-07)
-- **Active Refinement:** [docs/plan/technical-debt.md](./plan/technical-debt.md)
-- **Archive:** [docs/plan/archive/invitation-master-plan.md](./plan/archive/invitation-master-plan.md)
+| Module             | Status             | Visual Aesthetic  | Implementation Notes                                     |
+| :----------------- | :----------------- | :---------------- | :------------------------------------------------------- |
+| **Landing Page**   | ✅ **Live**        | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
+| **XV Años Engine** | ✅ **Live**        | "The Jewelry Box" | Full data integration, interactive maps, reduced motion. |
+| **60th Birthday**  | 🚧 **In Planning** | "Luxury Hacienda" | Adapting XV engine for rustic/elegant adult events.      |
 
 ---
 
-## 4. Technical & Aesthetic Specifications
+## 3. Product Architecture
 
-- **Tech Stack:** Astro (Framework), SCSS (Styles), React/TypeScript (Interactivity), Framer Motion (Motion Design).
-- **Visual Design:** "Jewelry Box" Aesthetic: Glassmorphism, Silver/Gold accents, Serif headings + clean sans details.
-- **Navigation:** Adaptive headers that switch between transparent/glass and solid luxury states.
+### A. Core Technology
 
----
+- **Stack:** Astro (Static + ISR), React (Interactive Islands), SCSS (Design System), Framer Motion
+  (Orchestration).
+- **Design System:** Token-based "Jewelry Box" aesthetic (Glassmorphism, Gold/Silver accents, Serif
+  typography).
 
-## 5. Jewelry Box Remediation Status (Landing Page)
+### B. Standard Component Library (The "Engine")
 
-The targeted remediation of the landing page to eliminate "low-quality" signals is **visually complete**.
+All invitations share this core library, adapted via CSS variables and JSON configuration:
 
-### Completed Visual Targets
-
-- [x] **Testimonials:** "High-Society Feed" grid (Framer Motion).
-- [x] **FAQ:** "Premium Accordion System" with `AnimatePresence`.
-- [x] **Contact:** "Concierge Request" redesign (Glassmorphism + Motion feedback).
-- [x] **Iconography:** Bespoke stroke-drawing SVGs across all sections.
-- [x] **Experience:** Refined header and mobile navigation for zero layout shift and premium transitions.
-
-### Invitation Visual Targets (XV Demo)
-
-- [x] **Envelope:** 3D opening choreography with "Ceremonial" metaphor.
-- [x] **Countdown:** "Rolodex" motion with glassmorphism tiles.
-- [x] **Family Section:** Circular editorial layouts with floating cards.
-- [x] **Itinerary:** Multi-step timeline with bespoke jewelry icons.
-- [x] **RSVP:** Conversational form with capacity logic and success transitions.
+1.  **Ceremonial Opening:** 3D Envelope reveal.
+2.  **Hero:** High-impact portrait + typography.
+3.  **Countdown:** Dynamic urgency feedback.
+4.  **Protocol:** Family/Godparents editorial layout.
+5.  **Location:** Interactive styled maps (Google Maps custom styles).
+6.  **Itinerary:** Vertical timeline with scroll-triggered animations.
+7.  **RSVP:** Conversational form with capacity logic.
+8.  **Gifts:** Multi-channel registry (Store, Bank, PayPal, Cash).
 
 ---
 
-## 6. Resolved Integration Issues
+## 4. Active Roadmap
 
-> All issues identified during the Digital Invitation phase transition have been resolved (2026-01-31):
+### Phase 1: Foundation (Completed)
 
-1. ~~**Header Duality**~~ → `Layout.astro` now has `hideHeader` prop; invitation pages opt-out of landing header.
-2. ~~**BEM Inconsistency**~~ → `HeaderBase.astro` classes aligned with `_header-base.scss` spec.
-3. ~~**Responsive Breakage**~~ → Mobile toggle now correctly hidden on desktop via BEM-compliant CSS.
-4. ~~**UX Inconsistency**~~ → `EventHeader.astro` now uses `NavBarMobile.tsx` with Framer Motion.
+- [x] Landing Page Remaster (Jewelry Box Aesthetic)
+- [x] XV Años Demo (Proof of Concept)
+- [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
 
-### Production Readiness (Link Integrity QA)
+### Phase 2: Expansion (Current Focus)
 
-> **Archived Plan:** [docs/plan/archive/landing-page-completion.md](./plan/archive/landing-page-completion.md)
-
-**All items resolved as of 2026-01-31:**
-
-- [x] Services card links → `#contacto`
-- [x] AboutUs CTA → `#contacto`
-- [x] Pricing CTAs → `#contacto`
-- [x] Footer "Compañía" links → internal anchors
-- [x] `/terminos` page created
-- [x] `/privacidad` page created
-- [x] Footer social links verified
+- [ ] **60th Birthday Invitation (Gerardo "Jefe Botas")**
+    - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
+    - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
+- [ ] **Multi-Event Support**
+    - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
 
 ---
 
-## 7. Related Documentation
+## 5. Changelog
 
-| Document | Purpose |
-|----------|---------|
-| [docs/plan/archive/landing-page-completion.md](./plan/archive/landing-page-completion.md) | Landing page step-by-step plan (archived) |
-| [docs/plan/archive/invitation-master-plan.md](./plan/archive/invitation-master-plan.md) | Digital invitation roadmap (archived) |
-| [docs/plan/technical-debt.md](./plan/technical-debt.md) | Active aesthetic and functional debt |
-
----
-
-## 8. Changelog
-
-| Date | Change |
-| --- | --- |
-| 2026-01-31 | Landing Page marked production-ready. All pending items resolved. |
-| 2026-01-31 | Archived landing-page-completion.md to docs/plan/archive/ |
-| 2026-01-31 | Restructured document for clearer status mapping |
-| 2026-02-07 | Digital Invitation marked production-ready. Archived master-plan. |
-| 2026-02-07 | Consolidated technical-debt.md and archived component plans. |
+| Date       | Change                                                                 |
+| :--------- | :--------------------------------------------------------------------- |
+| 2026-01-31 | **Landing Page** marked production-ready.                              |
+| 2026-02-07 | **XV Demo** marked production-ready. Embedded Styled Maps implemented. |
+| 2026-02-07 | Consolidated documentation to focus on Phase 2 (Expansion).            |
