@@ -12,9 +12,10 @@ interface Props {
 	time?: string;
 	venueName: string;
 	backgroundImage: ImageMetadata;
+	portrait?: ImageMetadata; // ADU-8: Optional celebrant portrait
 }
 
-const { name, label, nickname, date, time, venueName, backgroundImage } = Astro.props;
+const { name, label, nickname, date, time, venueName, backgroundImage, portrait } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -44,6 +45,19 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 		{nickname && (
 			<div class="invitation-hero__nickname-badge">
 				<span>{nickname}</span>
+			</div>
+		)}
+
+		{portrait && (
+			<div class="invitation-hero__portrait">
+				<Image
+					src={portrait}
+					alt={`Retrato de ${name}`}
+					width={200}
+					height={200}
+					format="webp"
+					quality={85}
+				/>
 			</div>
 		)}
 

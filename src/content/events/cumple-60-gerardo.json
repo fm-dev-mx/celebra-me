@@ -78,10 +78,10 @@
     "rsvp": {
         "title": "¿Nos acompañas a celebrar al Jefe?",
         "guestCap": 2,
-        "confirmationMessage": "¡Excelente! Te esperamos con las botas puestas."
+        "confirmationMessage": "¡Excelente! Te esperamos para celebrar juntos."
     },
     "quote": {
-        "text": "60 años cabalgando la vida. Gracias por ser parte del camino.",
+        "text": "60 años de tradición, familia y legado. Gracias por ser parte del camino.",
         "author": "Jefe Botas"
     },
     "thankYou": {
@@ -99,35 +99,35 @@
         "items": [
             {
                 "icon": "reception",
-                "label": "Bienvenida en la Hacienda",
+                "label": "Bienvenida",
                 "time": "7:00 PM",
                 "description": "Coctel de recepción"
             },
             {
                 "icon": "dinner",
-                "label": "Cena Campestre",
+                "label": "Cena",
                 "time": "9:00 PM",
                 "description": "Cena tradicional"
             },
             {
                 "icon": "toast",
-                "label": "Brindis por el Jefe",
+                "label": "Brindis",
                 "time": "10:00 PM",
                 "description": "Palabras y felicitaciones"
             },
             {
                 "icon": "music",
-                "label": "Música de Banda",
+                "label": "Banda y Norteño",
                 "time": "10:30 PM",
-                "description": "Celebración y baile"
+                "description": "Música en vivo"
             },
-            { "icon": "party", "label": "Tornafiesta", "time": "1:00 AM" }
+            { "icon": "party", "label": "Fiesta", "time": "12:00 AM" }
         ]
     },
     "countdown": {
-        "title": "¡Casi es hora de ensillar!",
+        "title": "¡El momento ha llegado!",
         "subtitlePrefix": "El",
-        "footerText": "Prepárate para celebrar al Jefe Botas"
+        "footerText": "Un homenaje a 60 años de historia"
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },
@@ -136,7 +136,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "microcopy": "Pase a la Hacienda del Jefe Botas",
         "closedPalette": {
