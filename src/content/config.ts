@@ -22,6 +22,7 @@ const eventsCollection = defineCollection({
 				nickname: z.string().optional(),
 				date: z.string().datetime(), // ISO 8601
 				backgroundImage: image(),
+				portrait: image().optional(), // ADU-8: Optional celebrant portrait
 			}),
 			location: z.object({
 				// Base venue info (backward compatible)
