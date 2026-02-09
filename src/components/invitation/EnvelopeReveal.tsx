@@ -110,7 +110,7 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 					}
 				>
 					<motion.div className="envelope-container" animate={controls}>
-						{/* 1. Base Layer */}
+						{/* 1. Base Layer (The Paper) */}
 						<div className="envelope-base" />
 
 						{/* 2. Rising Card (Depth 2) */}
@@ -124,7 +124,18 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 
 						{/* 5. The Content/Info Layer (Floating on Top) */}
 						<div className="envelope-tease">
-							<h2 className="envelope-name">{name}</h2>
+							{/* Official Stamp / Tax Marker Area (Asymmetric) */}
+							<div className="envelope-stamp-area">
+								<div className="envelope-stamp">
+									<span>TAX PAID</span>
+									<small>1866</small>
+								</div>
+							</div>
+
+							<div className="tease-header">
+								<span className="envelope-manifest-label">MANIFEST / WANTED</span>
+								<h2 className="envelope-name">{name}</h2>
+							</div>
 
 							{/* Seal as layout participant (middle zone) */}
 							<div className="envelope-seal-zone">
@@ -155,7 +166,8 @@ const EnvelopeReveal: React.FC<Props> = ({ name, date, city, sealStyle, microcop
 														viewBox="0 0 24 24"
 														fill="currentColor"
 													>
-														<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+														{/* Cowboy Boot Silhouette */}
+														<path d="M20,21H4a1,1,0,0,1-1-1V18a3,3,0,0,1,3-3h4V12a2,2,0,0,1,2-2h1V6a3.5,3.5,0,0,1,3.5-3.5A3.5,3.5,0,0,1,20,6V20A1,1,0,0,1,20,21ZM5,19H18V6a1.5,1.5,0,0,0-3,0v5a1,1,0,0,1-1,1H12v3a1,1,0,0,1-1,1H6a1,1,0,0,0-1,1Z" />
 													</svg>
 												) : (
 													<svg

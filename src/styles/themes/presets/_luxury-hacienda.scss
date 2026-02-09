@@ -54,6 +54,125 @@
         }
     }
 
+    // ==========================================================================
+    // ADU-8: Hero Portrait Photo
+    // ==========================================================================
+
+    .invitation-hero__portrait {
+        width: 160px;
+        height: 160px;
+        margin: 1.5rem auto;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid $birthday-accent;
+        box-shadow:
+            0 0 0 3px $birthday-primary,
+            0 8px 24px rgba(0, 0, 0, 0.5);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (min-width: 768px) {
+            width: 200px;
+            height: 200px;
+        }
+    }
+
+    // Hero title leather/gold shimmer
+    .invitation-hero__title {
+        font-family: $birthday-font-heading;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .invitation-hero__label {
+        font-family: $birthday-font-sub;
+        color: $birthday-accent;
+    }
+
+    .invitation-hero__divider {
+        background: $birthday-accent;
+        height: 2px;
+    }
+
+    // ==========================================================================
+    // ADU-9: Countdown Section
+    // ==========================================================================
+
+    .countdown {
+        background: linear-gradient(
+            135deg,
+            rgba($birthday-primary, 0.95) 0%,
+            rgba($birthday-bg-dark, 0.98) 100%
+        );
+
+        &__title {
+            font-family: $birthday-font-heading;
+            color: $birthday-accent;
+            text-transform: uppercase;
+        }
+    }
+
+    // ==========================================================================
+    // ADU-9: Quote Section
+    // ==========================================================================
+
+    .invitation-quote__text {
+        font-family: $birthday-font-heading;
+        color: $birthday-primary;
+        font-style: italic;
+    }
+
+    .invitation-quote__author {
+        font-family: $birthday-font-sub;
+        color: $birthday-accent;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+    }
+
+    // ==========================================================================
+    // ADU-9: RSVP Form
+    // ==========================================================================
+
+    .rsvp__title {
+        font-family: $birthday-font-heading;
+        color: $birthday-primary;
+    }
+
+    .rsvp__button {
+        background: $birthday-primary;
+        color: $birthday-accent;
+        border: 2px solid $birthday-accent;
+        font-family: $birthday-font-sub;
+        text-transform: uppercase;
+        border-radius: 4px;
+
+        &:hover:not(:disabled) {
+            background: $birthday-bg-dark;
+            box-shadow: 0 0 20px rgba($birthday-accent, 0.4);
+        }
+    }
+
+    // ==========================================================================
+    // ADU-9: Gallery Frames
+    // ==========================================================================
+
+    .gallery__title {
+        font-family: $birthday-font-heading;
+        color: $birthday-primary;
+    }
+
+    .gallery__item {
+        border: 3px solid rgba($birthday-primary, 0.3);
+        border-radius: 4px;
+
+        &:hover {
+            border-color: $birthday-accent;
+        }
+    }
 
     .event-location__container--single {
         display: flex;
@@ -113,5 +232,216 @@
     &::-webkit-scrollbar-thumb {
         background: $birthday-primary;
         border: 1px solid $birthday-accent;
+    }
+
+    // ==========================================================================
+    // ADU-7: Radical Old West Document (Boceto de Carta)
+    // Breaking the "Envelope" mold: Tri-fold geometry, torn edges, asymmetric.
+    // ==========================================================================
+
+    .envelope-wrapper {
+        background:
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
+            radial-gradient(ellipse at center, #{$birthday-leather-dark} 0%, #{darken($birthday-leather-dark, 15%)} 100%);
+        background-blend-mode: soft-light, normal;
+    }
+
+    .envelope-container {
+        width: 100%;
+        max-width: 500px;
+        aspect-ratio: 4 / 3;
+        transform: rotate(-1deg); // Slight amateur tilt
+    }
+
+    .envelope-base,
+    .envelope-pocket,
+    .envelope-flap {
+        // Aggressive Aged Parchment with Heavy Staining
+        background-color: $birthday-parchment !important;
+        background-image:
+            // Heavy coffee/tobacco stains in corners
+            radial-gradient(circle at 10% 10%, rgba($birthday-sepia, 0.4), transparent 40%),
+            radial-gradient(circle at 90% 85%, rgba($birthday-sepia, 0.5), transparent 30%),
+            // Moisture rings
+            radial-gradient(circle at 70% 20%, transparent 20%, rgba($birthday-sepia, 0.1) 21%, transparent 23%),
+            // Paper fiber texture
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
+        background-blend-mode: multiply, multiply, multiply, normal;
+        border: none !important;
+
+        // TORN EDGES EFFECT via mask
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='rough'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.2' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect x='2' y='2' width='96' height='96' filter='url(%23rough)' fill='black'/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='rough'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.2' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect x='2' y='2' width='96' height='96' filter='url(%23rough)' fill='black'/%3E%3C/svg%3E");
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+
+        box-shadow: 2px 4px 15px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    // Geometry Shift: Remove triangular flap, use horizontal fold
+    .envelope-flap {
+        clip-path: none !important;
+        height: 40% !important;
+        width: 100% !important;
+        border-bottom: 3px solid rgba($birthday-sepia, 0.2) !important;
+        box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2) !important;
+        z-index: 10;
+
+        &.is-open {
+            transform: rotateX(160deg) translateY(-20%) !important;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: rgba($birthday-aged-gold, 0.3);
+        }
+    }
+
+    .envelope-pocket {
+        clip-path: none !important;
+        top: 35% !important;
+        height: 65% !important;
+        z-index: 5;
+        border-top: 2px solid rgba($birthday-sepia, 0.1) !important;
+    }
+
+    // Asymmetric Content Layout
+    .envelope-tease {
+        padding: 2.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        height: 100%;
+    }
+
+    .envelope-stamp-area {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        transform: rotate(12deg);
+        z-index: 20;
+
+        .envelope-stamp {
+            border: 2px double $birthday-wax-red;
+            padding: 4px 8px;
+            color: $birthday-wax-red;
+            font-family: 'Special Elite', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.8;
+            filter: contrast(1.5) sepia(0.5);
+
+            span { font-weight: 700; font-size: 0.8rem; }
+            small { font-size: 0.6rem; letter-spacing: 0.2em; }
+        }
+    }
+
+    .tease-header {
+        margin-top: 1rem;
+        width: 100%;
+
+        .envelope-manifest-label {
+            display: block;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.7rem;
+            color: rgba($birthday-sepia, 0.6);
+            letter-spacing: 0.3em;
+            margin-bottom: 0.5rem;
+        }
+
+        .envelope-name {
+            font-size: 2.5rem !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            background: none !important;
+            -webkit-text-fill-color: #2B2B2B !important; // Iron Gall Ink (charcoal black)
+            color: #2B2B2B !important;
+            font-family: 'EB Garamond', serif !important;
+            font-weight: 800 !important;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -5px;
+                left: 0;
+                width: 60%;
+                height: 2px;
+                background: rgba($birthday-sepia, 0.2);
+            }
+        }
+    }
+
+    .envelope-seal-zone {
+        position: absolute !important;
+        bottom: 40px !important;
+        right: 40px !important;
+        margin: 0 !important;
+    }
+
+    .tease-content-bottom {
+        margin-top: auto;
+        width: 70%;
+
+        .tease-divider { display: none; }
+
+        .envelope-details {
+            font-family: 'Special Elite', monospace;
+            font-size: 0.9rem !important;
+            color: #2B2B2B !important;
+            opacity: 0.9;
+        }
+
+        .envelope-microcopy {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            color: rgba($birthday-sepia, 0.7);
+            margin-top: 0.5rem;
+        }
+    }
+
+    // Larger, more irregular Red Wax Seal
+    .envelope-seal-button .seal-visual {
+        width: 62px !important;
+        height: 62px !important;
+        background: radial-gradient(
+            circle at 35% 35%,
+            #{lighten($birthday-wax-red, 10%)},
+            #{$birthday-wax-red},
+            #{darken($birthday-wax-red, 15%)}
+        ) !important;
+        border: none !important;
+        box-shadow:
+            inset 2px 2px 6px rgba(255, 255, 255, 0.1),
+            inset -3px -3px 8px rgba(0, 0, 0, 0.5),
+            3px 6px 15px rgba(0, 0, 0, 0.6) !important;
+
+        // Irregular Wax Drip via clip-path
+        clip-path: polygon(
+            15% 5%, 85% 2%, 98% 30%, 92% 80%, 70% 98%, 20% 95%, 2% 70%, 5% 30%
+        ) !important;
+
+        &::before { display: none !important; }
+
+        .seal-icon {
+            width: 44px !important;
+            height: 44px !important;
+            color: rgba(0, 0, 0, 0.4) !important;
+            filter: drop-shadow(1px 1px 0 rgba(255, 255, 255, 0.1)) brightness(0.5) !important;
+        }
+    }
+
+    .envelope-seal-button .seal-pulse {
+        width: 75px !important;
+        height: 75px !important;
+        border-color: rgba($birthday-wax-red, 0.4) !important;
     }
 }
