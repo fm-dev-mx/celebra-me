@@ -109,7 +109,12 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 					date={data.hero.date}
 					city={data.location.city}
 					sealStyle={data.envelope.sealStyle}
+					sealIcon={data.envelope.sealIcon}
 					microcopy={data.envelope.microcopy}
+					documentLabel={data.envelope.documentLabel}
+					stampText={data.envelope.stampText}
+					stampYear={data.envelope.stampYear}
+					eventSlug={event.id}
 					palette={data.envelope.closedPalette}
 				/>
 			)

@@ -208,6 +208,7 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
+        "sealIcon": "heart",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
             "primary": "#d4af37",

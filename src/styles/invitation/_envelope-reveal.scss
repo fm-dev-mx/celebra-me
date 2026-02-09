@@ -251,6 +251,25 @@ $gold-light: #f1d592;
 	}
 }
 
+// Tooltip - appears after 1.5s delay
+.envelope-tooltip {
+	position: absolute;
+	bottom: -2.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	font-family: 'EB Garamond', serif;
+	font-size: 0.85rem;
+	font-style: italic;
+	color: rgba(255, 255, 255, 0.95);
+	background: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(6px);
+	padding: 0.4rem 1rem;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 @keyframes sealPulse {
 	0% {
 		transform: scale(0.8);

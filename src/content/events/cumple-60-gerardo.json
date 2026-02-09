@@ -138,7 +138,11 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "microcopy": "Pase a la Hacienda del Jefe Botas",
+        "sealIcon": "boot",
+        "documentLabel": "MANIFEST / WANTED",
+        "stampText": "TAX PAID",
+        "stampYear": "1866",
+        "microcopy": "Toca para abrir el sobre",
         "closedPalette": {
             "primary": "#4B3621",
             "accent": "#D4AF37",
