@@ -1,6 +1,6 @@
 ---
 import '@/styles/invitation/_section-nav-button.scss';
-import ChevronDownIcon from '@/components/invitation/icons/ChevronDownIcon.astro';
+import Icon from '@/components/common/icons/Icon.astro';
 
 interface Props {
 	href: string;
@@ -18,6 +18,6 @@ const modifierClass = className ? `section-nav-button--${className}` : '';
 <a href={href} class={`section-nav-button ${modifierClass}`}>
 	{section && <span class="section-nav-button__text">{section}</span>}
 	<div class="section-nav-button__icon">
-		<ChevronDownIcon />
+		<Icon name="ChevronDown" size={24} />
 	</div>
 </a>

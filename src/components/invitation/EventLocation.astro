@@ -8,11 +8,7 @@ import '@/styles/invitation/_section-nav-button.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import GoogleMap from '@/components/common/GoogleMap.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
-import CrownIcon from '@/components/invitation/icons/CrownIcon.astro';
-import EnvelopedIcon from '@/components/invitation/icons/EnvelopedIcon.astro';
-import ForbiddenIcon from '@/components/invitation/icons/ForbiddenIcon.astro';
-import MapIcon from '@/components/invitation/icons/MapIcon.astro';
-import CopyIcon from '@/components/invitation/icons/CopyIcon.astro';
+import Icon from '@/components/common/icons/Icon.astro';
 
 interface VenueData {
 	venueName: string;
@@ -48,11 +44,11 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 
 // Map icon names to components
 const iconMap = {
-	crown: CrownIcon,
-	envelope: EnvelopedIcon,
-	forbidden: ForbiddenIcon,
-	dress: CrownIcon, // Fallback
-	gift: EnvelopedIcon, // Fallback
+	crown: 'Crown',
+	envelope: 'Envelope',
+	forbidden: 'Forbidden',
+	dress: 'Crown',
+	gift: 'Envelope',
 };
 ---
 
@@ -98,7 +94,7 @@ const iconMap = {
 							<li class="event-location__card-content-list__address font-body">
 								<span class="address-text">{ceremony.address}</span>
 								<button class="copy-button" data-address={ceremony.address} aria-label="Copiar dirección" title="Copiar dirección">
-									<CopyIcon />
+									<Icon name="Copy" size={20} />
 								</button>
 							</li>
 						</ul>
@@ -142,7 +138,7 @@ const iconMap = {
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<MapIcon />
+									<Icon name="Map" size={20} />
 									Cómo llegar
 								</a>
 							)}
@@ -192,7 +188,7 @@ const iconMap = {
 							<li class="event-location__card-content-list__address font-body">
 								<span class="address-text">{reception.address}</span>
 								<button class="copy-button" data-address={reception.address} aria-label="Copiar dirección" title="Copiar dirección">
-									<CopyIcon />
+									<Icon name="Copy" size={20} />
 								</button>
 							</li>
 						</ul>
@@ -237,7 +233,7 @@ const iconMap = {
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<MapIcon />
+									<Icon name="Map" size={20} />
 									Cómo llegar
 								</a>
 							)}
@@ -253,17 +249,14 @@ const iconMap = {
 			<div class="event-location__divider" aria-hidden="true"></div>
 
 			<div class="event-location__indications">
-				{indications.map((indication) => {
-					const IconComponent = iconMap[indication.icon] || CrownIcon;
-					return (
-						<div class="indication-item">
-							<div class="indication-icon">
-								<IconComponent />
-							</div>
-							<p class="font-body">{indication.text}</p>
+				{indications.map((indication) => (
+					<div class="indication-item">
+						<div class="indication-icon">
+							<Icon name={iconMap[indication.icon] || 'Crown'} size={24} />
 						</div>
-					);
-				})}
+						<p class="font-body">{indication.text}</p>
+					</div>
+				))}
 			</div>
 		</div>
 	)}

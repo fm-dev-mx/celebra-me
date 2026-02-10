@@ -38,27 +38,34 @@ import {
     ForbiddenIcon,
     EnvelopedIcon
 } from './invitation';
+import type React from 'react';
 
 interface Props {
 	name: string;
 	size?: number | string;
 	class?: string;
-    style?: string;
 }
 
-const { name, size, class: className, style } = Astro.props;
+const { name, size, class: className } = Astro.props;
 
-const icons: Record<string, any> = {
+/**
+ * Universal Icon Registry
+ * Maps string-based icon names to the new React-based atomic icons.
+ */
+const icons: Record<
+	string,
+	React.FC<{ size?: number | string; className?: string; style?: React.CSSProperties }>
+> = {
     // UI
-	ArrowDownIcon,
+    ArrowDownIcon,
     ArrowDown: ArrowDownIcon,
-	ArrowRightIcon,
+    ArrowRightIcon,
     ArrowRight: ArrowRightIcon,
     ArrowUpIcon,
     ArrowUp: ArrowUpIcon,
-	StarIcon,
+    StarIcon,
     Star: StarIcon,
-	HeartIcon,
+    HeartIcon,
     Heart: HeartIcon,
     SparklesIcon,
     Sparkles: SparklesIcon,
@@ -78,9 +85,9 @@ const icons: Record<string, any> = {
     Cash: CashIcon,
 
     // Social
-	WhatsAppIcon,
+    WhatsAppIcon,
     WhatsApp: WhatsAppIcon,
-	PayPalIcon,
+    PayPalIcon,
     PayPal: PayPalIcon,
 
     // Invitation
@@ -121,18 +128,21 @@ const icons: Record<string, any> = {
 };
 
 const SelectedIcon = icons[name];
+
+// Combine classes: 'universal-icon' is always required
+const combinedClass = ['universal-icon', className].filter(Boolean).join(' ');
 ---
 
 {
 	SelectedIcon ? (
-		<SelectedIcon size={size} className:list={['universal-icon', className]} style={style} />
+		<SelectedIcon size={size} className={combinedClass} />
 	) : (
 		<div
 			class:list={[
 				'universal-icon--fallback',
 				className,
 			]}
-            style={{ width: size, height: size, ...((style as any) || {}) }}
+			style={{ width: size, height: size }}
 		>
 			{name?.charAt(0) || '?'}
 		</div>

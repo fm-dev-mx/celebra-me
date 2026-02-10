@@ -14,11 +14,11 @@ scrolling.
 
 ## 2. Global Status (Production Ready)
 
-| Module             | Status             | Visual Aesthetic  | Implementation Notes                                     |
-| :----------------- | :----------------- | :---------------- | :------------------------------------------------------- |
-| **Landing Page**   | ✅ **Live**        | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
-| **XV Años Engine** | ✅ **Live**        | "The Jewelry Box" | Full data integration, interactive maps, reduced motion. |
-| **60th Birthday**  | 🚧 **Implementing**| "Luxury Hacienda" | Bespoke spec finalized. Transitioning to styling & logic. |
+| Module             | Status              | Visual Aesthetic  | Implementation Notes                                      |
+| :----------------- | :------------------ | :---------------- | :-------------------------------------------------------- |
+| **Landing Page**   | ✅ **Live**         | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                  |
+| **XV Años Engine** | ✅ **Live**         | "The Jewelry Box" | Full data integration, interactive maps, reduced motion.  |
+| **60th Birthday**  | 🚧 **Implementing** | "Luxury Hacienda" | Bespoke spec finalized. Transitioning to styling & logic. |
 
 ---
 
@@ -38,8 +38,8 @@ duplication:
 - **Presets Directory:** `src/styles/themes/presets/` contains entry points for each aesthetic.
 - **Scoping:** Each preset wraps styles in a `.theme-preset--{name}` class.
 - **Available Presets:**
-  - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
-  - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
+    - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
+    - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** The `preset` field in content collections (`src/content/config.ts`) drives the
   theme application in `[slug].astro`.
 
@@ -47,13 +47,13 @@ duplication:
 
 A curated font system optimized for premium digital invitations:
 
-| Role             | Family           | Use Case                             |
-| :--------------- | :--------------- | :----------------------------------- |
-| Display Formal   | Cinzel           | Monumental headers, XV/Wedding       |
-| Display Elegant  | Playfair Display | Editorial titles, Hero sections      |
-| Calligraphy      | Pinyon Script    | Accents, signatures, "y" separators  |
-| Body Narrative   | EB Garamond      | Paragraphs, descriptions             |
-| UI/Functional    | Montserrat       | Buttons, navigation, metadata        |
+| Role            | Family           | Use Case                            |
+| :-------------- | :--------------- | :---------------------------------- |
+| Display Formal  | Cinzel           | Monumental headers, XV/Wedding      |
+| Display Elegant | Playfair Display | Editorial titles, Hero sections     |
+| Calligraphy     | Pinyon Script    | Accents, signatures, "y" separators |
+| Body Narrative  | EB Garamond      | Paragraphs, descriptions            |
+| UI/Functional   | Montserrat       | Buttons, navigation, metadata       |
 
 Tokens defined in `src/styles/global/_variables.scss`. Utility classes in `_typography.scss`.
 
@@ -93,10 +93,10 @@ JSON configuration:
 
 ## 5. Changelog
 
-| Date       | Change                                                                      |
-| :--------- | :-------------------------------------------------------------------------- |
-| 2026-01-31 | **Landing Page** marked production-ready.                                   |
-| 2026-02-07 | **XV Demo** marked production-ready. Embedded Styled Maps implemented.      |
-| 2026-02-07 | Consolidated documentation to focus on Phase 2 (Expansion).                 |
-| 2026-02-08 | **Aesthetic Presets Architecture** implemented. Components generalized.     |
-| 2026-02-08 | **Typography System** documentation added. Documentation audit completed.   |
+| Date       | Change                                                                    |
+| :--------- | :------------------------------------------------------------------------ |
+| 2026-01-31 | **Landing Page** marked production-ready.                                 |
+| 2026-02-07 | **XV Demo** marked production-ready. Embedded Styled Maps implemented.    |
+| 2026-02-07 | Consolidated documentation to focus on Phase 2 (Expansion).               |
+| 2026-02-08 | **Aesthetic Presets Architecture** implemented. Components generalized.   |
+| 2026-02-08 | **Typography System** documentation added. Documentation audit completed. |

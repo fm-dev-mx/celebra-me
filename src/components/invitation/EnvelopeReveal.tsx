@@ -1,6 +1,12 @@
 // src/components/invitation/EnvelopeReveal.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation, useReducedMotion } from 'framer-motion';
+import {
+	BootSealIcon,
+	HeartSealIcon,
+	MonogramSealIcon,
+	FlowerSealIcon,
+} from '@/components/common/icons/invitation';
 
 interface Props {
 	name: string;
@@ -20,50 +26,11 @@ interface Props {
 	};
 }
 
-// Premium Boot SVG - Clean cowboy boot silhouette with spur detail
-const BootIcon: React.FC<{ className?: string }> = ({ className }) => (
-	<svg className={className} viewBox="0 0 24 24" fill="currentColor">
-		<path d="M19.5,21H4.5a1,1,0,0,1-1-1V18a3,3,0,0,1,3-3h3.5v-2.5a2,2,0,0,1,2-2h1V7a3,3,0,0,1,3-3h.5a2,2,0,0,1,2,2V20A1,1,0,0,1,19.5,21ZM5.5,19H17.5V6a.5.5,0,0,0-.5-.5h-.5a1.5,1.5,0,0,0-1.5,1.5v4a1,1,0,0,1-1,1h-2v2.5a1,1,0,0,1-1,1h-4a1.5,1.5,0,0,0-1.5,1.5Z" />
-		{/* Spur detail */}
-		<ellipse cx="16.5" cy="18" rx="1" ry="0.5" opacity="0.6" />
-		<line x1="17.5" y1="18" x2="19" y2="18.5" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-	</svg>
-);
-
-// Elegant Heart SVG for XV Años
-const HeartIcon: React.FC<{ className?: string }> = ({ className }) => (
-	<svg className={className} viewBox="0 0 24 24" fill="currentColor">
-		<path d="M12,21.35l-1.45-1.32C5.4,15.36,2,12.28,2,8.5A5.447,5.447,0,0,1,7.5,3,5.988,5.988,0,0,1,12,5.09,5.988,5.988,0,0,1,16.5,3,5.447,5.447,0,0,1,22,8.5c0,3.78-3.4,6.86-8.55,11.54Z" />
-	</svg>
-);
-
-// Monogram/Circle SVG for generic use
-const MonogramIcon: React.FC<{ className?: string }> = ({ className }) => (
-	<svg className={className} viewBox="0 0 24 24" fill="currentColor">
-		<path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity="0.3" />
-		<path d="M12,6a6,6,0,1,0,6,6A6,6,0,0,0,12,6Zm0,10a4,4,0,1,1,4-4A4,4,0,0,1,12,16Z" />
-	</svg>
-);
-
-// Flower SVG
-const FlowerIcon: React.FC<{ className?: string }> = ({ className }) => (
-	<svg className={className} viewBox="0 0 24 24" fill="currentColor">
-		<circle cx="12" cy="12" r="3" />
-		<ellipse cx="12" cy="6" rx="2" ry="3" />
-		<ellipse cx="12" cy="18" rx="2" ry="3" />
-		<ellipse cx="6" cy="12" rx="3" ry="2" />
-		<ellipse cx="18" cy="12" rx="3" ry="2" />
-		<ellipse cx="7.5" cy="7.5" rx="2" ry="2.5" transform="rotate(-45 7.5 7.5)" />
-		<ellipse cx="16.5" cy="7.5" rx="2" ry="2.5" transform="rotate(45 16.5 7.5)" />
-		<ellipse cx="7.5" cy="16.5" rx="2" ry="2.5" transform="rotate(45 7.5 16.5)" />
-		<ellipse cx="16.5" cy="16.5" rx="2" ry="2.5" transform="rotate(-45 16.5 16.5)" />
-	</svg>
-);
-
 const EnvelopeReveal: React.FC<Props> = ({
 	name,
 	date,
 	city,
+	sealStyle,
 	sealIcon,
 	microcopy,
 	documentLabel,
@@ -89,7 +56,10 @@ const EnvelopeReveal: React.FC<Props> = ({
 			// Check localStorage for "opened" flag
 			const storageKey = `envelope-opened-${eventSlug}`;
 			const wasOpened = localStorage.getItem(storageKey) === 'true';
-			if (wasOpened) {
+
+			// In DEV mode, we always want to see the envelope unless skip is present
+			const isDev = import.meta.env.DEV;
+			if (wasOpened && !isDev) {
 				return 'exit';
 			}
 		}
@@ -182,14 +152,14 @@ const EnvelopeReveal: React.FC<Props> = ({
 		const iconClass = `seal-icon seal-icon--${sealIcon || 'monogram'}`;
 		switch (sealIcon) {
 			case 'boot':
-				return <BootIcon className={iconClass} />;
+				return <BootSealIcon className={iconClass} />;
 			case 'heart':
-				return <HeartIcon className={iconClass} />;
+				return <HeartSealIcon className={iconClass} />;
 			case 'flower':
-				return <FlowerIcon className={iconClass} />;
+				return <FlowerSealIcon className={iconClass} />;
 			case 'monogram':
 			default:
-				return <MonogramIcon className={iconClass} />;
+				return <MonogramSealIcon className={iconClass} />;
 		}
 	};
 
@@ -250,7 +220,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 								<AnimatePresence>
 									{phase === 'closed' && (
 										<motion.button
-											className="envelope-seal-button"
+											className={`envelope-seal-button envelope-seal-button--${sealStyle}`}
 											onClick={handleOpen}
 											initial={{ scale: 0, opacity: 0 }}
 											animate={{

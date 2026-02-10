@@ -184,21 +184,25 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 		}
 
 		{
-			data.sections?.rsvp && data.rsvp && (
-				<RSVP
-					client:visible
-					title={data.rsvp.title}
-					guestCap={data.rsvp.guestCap}
-					confirmationMessage={data.rsvp.confirmationMessage}
-					{...(data.eventType === 'cumple'
-						? {
-								nameLabel: 'Nombre de los invitados *',
-								guestCountLabel: 'Lugares reservados',
-								buttonLabel: 'Confirmar lugar',
-							}
-						: {})}
-				/>
-			)
+			data.sections?.rsvp && data.rsvp && (() => {
+				const rsvpProps = data.eventType === 'cumple'
+					? {
+							nameLabel: 'Nombre de los invitados *',
+							guestCountLabel: 'Lugares reservados',
+							buttonLabel: 'Confirmar lugar',
+						}
+					: {};
+
+				return (
+					<RSVP
+						client:visible
+						title={data.rsvp.title}
+						guestCap={data.rsvp.guestCap}
+						confirmationMessage={data.rsvp.confirmationMessage}
+						{...rsvpProps}
+					/>
+				);
+			})()
 		}
 
 		{

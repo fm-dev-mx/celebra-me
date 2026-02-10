@@ -2,7 +2,7 @@
 // src/sections/Contact.astro
 import ContactForm from '@components/ui/ContactForm.tsx';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import AppIcon from '@components/common/icons/AppIcon.astro';
+import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
 
 // Import stylesheet
@@ -38,9 +38,7 @@ const { data } = Astro.props;
 
 					<div class="contact-channels">
 						<a href="https://wa.me/5216681167477?text=Hola%2C%20me%20gustar%C3%ADa%20conocer%20m%C3%A1s%20sobre%20sus%20invitaciones%20digitales%20para%20eventos." target="_blank" class="channel-link">
-							<div class="channel-icon">
-								<AppIcon name="WhatsAppIcon" size="w-6 h-6" />
-							</div>
+								<Icon name="WhatsApp" size={24} />
 							<div class="channel-text">
 								<span class="channel-label">Asesoría Inmediata</span>
 								<span class="channel-value">Contáctanos por WhatsApp</span>
@@ -48,9 +46,7 @@ const { data } = Astro.props;
 						</a>
 
 						<a href="mailto:contacto@celebra-me.com" target="_blank" class="channel-link">
-							<div class="channel-icon">
-								<AppIcon name="MessageIcon" size="w-6 h-6" />
-							</div>
+								<Icon name="Message" size={24} />
 							<div class="channel-text">
 								<span class="channel-label">Vía Correo</span>
 								<span class="channel-value">contacto@celebra-me.com</span>

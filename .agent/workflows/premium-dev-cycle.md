@@ -67,5 +67,5 @@ compliance.
 
 ## Agent Instruction
 
-Follow this development cycle strictly. Prioritize data anonymization, architectural boundaries,
-and premium UX standards. Synchronize documentation and commit after each complete cycle.
+Follow this development cycle strictly. Prioritize data anonymization, architectural boundaries, and
+premium UX standards. Synchronize documentation and commit after each complete cycle.

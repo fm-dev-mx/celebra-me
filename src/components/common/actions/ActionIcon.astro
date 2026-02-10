@@ -1,6 +1,6 @@
 ---
 import '@/styles/common/_action-icon.scss';
-import AppIcon from '../icons/AppIcon.astro';
+import Icon from '../icons/Icon.astro';
 
 interface _Props {
 	icon: string;
@@ -35,6 +35,6 @@ const {
 >
 	<span class="sr-only">{title}</span>
 	<div class="action-icon__inner">
-		<AppIcon name={icon} class="w-6 h-6" />
+		<Icon name={icon} class="w-6 h-6" />
 	</div>
 </Tag>

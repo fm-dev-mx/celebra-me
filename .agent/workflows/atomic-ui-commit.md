@@ -41,7 +41,7 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 
 - **Logic Documentation**: Mandatory **JSDoc/TSDoc in English** for all new or modified functions
   with complex logic (e.g., calculations, data transformations, conditional orchestration).
-- **Commit Messages**: Must follow Conventional Commits and accurately summarize the *why* of each
+- **Commit Messages**: Must follow Conventional Commits and accurately summarize the _why_ of each
   change (in English).
 - **Anti-Noise**: Do not add comments to trivial code (plain HTML/Astro structure, basic prop
   definitions).

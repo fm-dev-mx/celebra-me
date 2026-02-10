@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronDownIcon } from '@/components/common/icons/ui';
 
 interface FAQ {
 	question: string;
@@ -41,16 +42,7 @@ const FAQList: React.FC<Props> = ({ faqs = [] }) => {
 								}}
 								transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
 							>
-								<svg
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								>
-									<polyline points="6 9 12 15 18 9"></polyline>
-								</svg>
+								<ChevronDownIcon size={24} />
 							</motion.span>
 						</button>
 						<motion.div

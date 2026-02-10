@@ -152,15 +152,16 @@ This aligns with Astro’s content-first model.
 
 ### 8.1 Aesthetic Presets Architecture
 
-Celebra-me uses a **Preset-based** styling architecture to support multiple aesthetic themes (e.g., "Jewelry Box", "Luxury Hacienda") without code duplication.
+Celebra-me uses a **Preset-based** styling architecture to support multiple aesthetic themes (e.g.,
+"Jewelry Box", "Luxury Hacienda") without code duplication.
 
 - **Presets Directory**: `src/styles/themes/presets/` contains the entry points for each aesthetic.
 - **Scoping**: Each preset file wraps its styles in a `.theme-preset--{name}` class.
 - **Integration**:
     - The `preset` is defined in the content collection (`src/content/config.ts`).
     - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
-    - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active preset.
-
+    - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
+      preset.
 
 ---
 
