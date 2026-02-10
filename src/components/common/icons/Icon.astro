@@ -1,0 +1,140 @@
+---
+/**
+ * Universal Icon Component
+ * Maps string-based icon names to the new React-based atomic icons.
+ * Use this for dynamic icons (CMS, JSON data) or legacy migrations.
+ */
+import {
+    ArrowDownIcon,
+    ArrowRightIcon,
+    ArrowUpIcon,
+    StarIcon,
+    HeartIcon,
+    SparklesIcon,
+    UserGroupIcon,
+    MessageIcon,
+    AppLogoIcon,
+    ChevronDownIcon,
+    CopyIcon,
+    BankCardIcon,
+    CashIcon
+} from './ui';
+import { WhatsAppIcon, PayPalIcon } from './social';
+import {
+    CrownIcon,
+    RingsIcon,
+    DoveIcon,
+    DiamondIcon,
+    GiftIcon,
+    ChurchIcon,
+    ReceptionIcon,
+    PartyIcon,
+    CakeIcon,
+    PhotoIcon,
+    WaltzIcon,
+    DinnerIcon,
+    ToastIcon,
+    MapLocationIcon,
+    ForbiddenIcon,
+    EnvelopedIcon
+} from './invitation';
+
+interface Props {
+	name: string;
+	size?: number | string;
+	class?: string;
+    style?: string;
+}
+
+const { name, size, class: className, style } = Astro.props;
+
+const icons: Record<string, any> = {
+    // UI
+	ArrowDownIcon,
+    ArrowDown: ArrowDownIcon,
+	ArrowRightIcon,
+    ArrowRight: ArrowRightIcon,
+    ArrowUpIcon,
+    ArrowUp: ArrowUpIcon,
+	StarIcon,
+    Star: StarIcon,
+	HeartIcon,
+    Heart: HeartIcon,
+    SparklesIcon,
+    Sparkles: SparklesIcon,
+    UserGroupIcon,
+    UserGroup: UserGroupIcon,
+    MessageIcon,
+    Message: MessageIcon,
+    AppLogoIcon,
+    AppLogo: AppLogoIcon,
+    ChevronDownIcon,
+    ChevronDown: ChevronDownIcon,
+    CopyIcon,
+    Copy: CopyIcon,
+    BankCardIcon,
+    BankCard: BankCardIcon,
+    CashIcon,
+    Cash: CashIcon,
+
+    // Social
+	WhatsAppIcon,
+    WhatsApp: WhatsAppIcon,
+	PayPalIcon,
+    PayPal: PayPalIcon,
+
+    // Invitation
+    CrownIcon,
+    Crown: CrownIcon,
+    RingsIcon,
+    Rings: RingsIcon,
+    DoveIcon,
+    Dove: DoveIcon,
+    DiamondIcon,
+    Diamond: DiamondIcon,
+    GiftIcon,
+    Gift: GiftIcon,
+    ChurchIcon,
+    Church: ChurchIcon,
+    ReceptionIcon,
+    Reception: ReceptionIcon,
+    PartyIcon,
+    Party: PartyIcon,
+    CakeIcon,
+    Cake: CakeIcon,
+    PhotoIcon,
+    Photo: PhotoIcon,
+    WaltzIcon,
+    Waltz: WaltzIcon,
+    DinnerIcon,
+    Dinner: DinnerIcon,
+    ToastIcon,
+    Toast: ToastIcon,
+    MapLocationIcon,
+    MapLocation: MapLocationIcon,
+    Map: MapLocationIcon,
+    ForbiddenIcon,
+    Forbidden: ForbiddenIcon,
+    EnvelopedIcon,
+    Enveloped: EnvelopedIcon,
+    Envelope: EnvelopedIcon
+};
+
+const SelectedIcon = icons[name];
+---
+
+{
+	SelectedIcon ? (
+		<SelectedIcon size={size} className:list={['universal-icon', className]} style={style} />
+	) : (
+		<div
+			class:list={[
+				'universal-icon--fallback',
+				className,
+			]}
+            style={{ width: size, height: size, ...((style as any) || {}) }}
+		>
+			{name?.charAt(0) || '?'}
+		</div>
+	)
+}
