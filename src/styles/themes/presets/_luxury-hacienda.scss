@@ -296,7 +296,7 @@
 	// Geometry Shift: Remove triangular flap, use horizontal fold
 	.envelope-flap {
 		clip-path: none !important;
-		height: 40% !important;
+		height: 49% !important; // Increased to nearly half (49%)
 		width: 100% !important;
 		border-bottom: 3px solid rgba($birthday-sepia, 0.2) !important;
 		box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2) !important;
@@ -304,24 +304,35 @@
 
 		&.is-open {
 			transform: rotateX(160deg) translateY(-20%) !important;
+			z-index: 0;
 		}
 
+	// Tooltip Override: Loop to the LEFT of the seal
+	.envelope-tooltip {
+		right: 140% !important; // Push further left
+		left: auto !important;
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+		margin: 0 !important;
+
+		// Arrow points RIGHT (towards seal)
 		&::after {
-			content: '';
-			position: absolute;
-			bottom: 5px;
-			left: 10%;
-			right: 10%;
-			height: 1px;
-			background: rgba($birthday-aged-gold, 0.3);
+			top: 50% !important;
+			right: -6px !important;
+			left: auto !important;
+			transform: translateY(-50%) !important;
+			border-width: 6px 0 6px 6px !important;
+			border-color: transparent transparent transparent rgba(0, 0, 0, 0.5) !important;
 		}
+	}
+
 	}
 
 	.envelope-pocket {
 		clip-path: none !important;
-		top: 35% !important;
-		height: 65% !important;
-		z-index: 5;
+		top: 40% !important; // Adjusted to overlap slightly or meet new flap height
+		height: 60% !important;
+		z-index: 2; // Should be visually below flap (5) but above base
 		border-top: 2px solid rgba($birthday-sepia, 0.1) !important;
 	}
 
@@ -379,7 +390,7 @@
 		}
 
 		.envelope-name {
-			font-size: 2.5rem !important;
+			font-size: clamp(1.6rem, 6vw, 2.6rem) !important; // Bigger base size
 			line-height: 1 !important;
 			margin: 0 !important;
 			background: none !important;
@@ -409,7 +420,7 @@
 	// z-index 15 ensures it sits ABOVE both flap (10) and pocket (5).
 	.envelope-tease .envelope-seal-zone {
 		position: absolute !important;
-		inset: 38% auto auto 50% !important;
+		inset: 47% auto auto 50% !important; // Adjusted to new fold line (almost halfway)
 		left: 85% !important;
 		transform: translate(-50%, -50%) !important;
 		margin: 0 !important;
