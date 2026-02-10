@@ -70,6 +70,7 @@ applicable):
 - dead/obsolete code, unused exports/selectors
 - Astro server/client boundary violations
 - broken refs/imports, contract/schema drift
+- **Logging Hygiene**: Staged changes must not include raw log files or test outputs outside `logs/`.
 - SCSS anti-patterns (only if SCSS touched)
 
 For each finding include:

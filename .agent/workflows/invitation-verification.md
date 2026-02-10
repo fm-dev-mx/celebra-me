@@ -21,10 +21,10 @@ Use this workflow immediately after an ADU has been implemented to ensure zero-d
 
 3. **Thematic Verification**:
     - Is the specific theme (Cowboy, XV Años, etc.) presented as "Premium" (e.g., subtle textures,
-      elegant icons) vs "Generic"?
+      elegant icons) vs "Generic"? (Skill: `animation-motion`)
     - Is the core theme element (e.g., Dress Code, Iconography) clearly visible?
 
-4. **Accessibility Check**:
+4. **Accessibility Check**: (Skill: `accessibility`)
     - Verify `ReducedMotion` support if animations were added/modified.
     - Check contrast ratios for background/text.
 

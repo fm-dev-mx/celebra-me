@@ -27,8 +27,7 @@ synchronized with the project's evolution, avoiding "instruction drift" and obso
     - **Audit**: `docs-audit`, `workflow-sync`.
     - **Meta**: `prompt-refiner`, `invitation-verification`.
 - **Pruning**: Propose the deletion of workflows referencing archived plans or obsolete engines.
-- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, and
-  **Hacienda**. Harmonize terminology to avoid agent confusion.
+- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, and **Hacienda**. Harmonize terminology to avoid agent confusion.
 
 ### 3. Skill & Ability Integration
 

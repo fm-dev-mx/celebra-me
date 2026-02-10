@@ -32,6 +32,7 @@ Conflict order: `GATEKEEPER_RULES` → `ARCHITECTURE` → `PROJECT_CONVENTIONS`
 - No Tailwind / utility CSS.
 - Respect Astro server/client boundaries.
 - Linux/Vercel casing must be correct.
+- **Logging Hygiene**: All transient logs and test outputs MUST be in the `logs/` directory.
 
 Blockers are **auto-fixed** and **must be resolved before commit**.
 
@@ -77,7 +78,7 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 
 For each ADU, produce:
 
-**ADU Card**
+### ADU Card
 
 - Name
 - Files
