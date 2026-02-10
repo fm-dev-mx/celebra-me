@@ -1,3 +1,4 @@
+@use "sass:color";
 @use '../../birthday/variables' as *;
 
 .theme-preset--luxury-hacienda {
@@ -250,7 +251,7 @@
 			radial-gradient(
 				ellipse at center,
 				#{$birthday-leather-dark} 0%,
-				#{darken($birthday-leather-dark, 15%)} 100%
+				#{color.adjust($birthday-leather-dark, $lightness: -15%)} 100%
 			);
 		background-blend-mode: soft-light, normal;
 	}
@@ -400,11 +401,22 @@
 		}
 	}
 
-	.envelope-seal-zone {
+	// ── Seal at the fold line ──
+	// Must be nested inside .envelope-tease to match base specificity
+	// from _envelope-reveal.scss (.envelope-tease .envelope-seal-zone).
+	// Positioned at the junction where flap meets pocket (~38% from top),
+	// centered horizontally. Simulates the seal holding the carta closed.
+	// z-index 15 ensures it sits ABOVE both flap (10) and pocket (5).
+	.envelope-tease .envelope-seal-zone {
 		position: absolute !important;
-		bottom: 40px !important;
-		right: 40px !important;
+		inset: 38% auto auto 50% !important;
+		left: 85% !important;
+		transform: translate(-50%, -50%) !important;
 		margin: 0 !important;
+		z-index: 15 !important;
+		flex: none !important;
+		padding: 0 !important;
+		min-height: auto !important;
 	}
 
 	.tease-content-bottom {
@@ -430,49 +442,141 @@
 		}
 	}
 
-	// Larger, more irregular Red Wax Seal
+	// ==========================================================================
+	// PREMIUM ARTISANAL WAX SEAL
+	// Simulates a hand-pressed oxide-red wax seal sitting on textured parchment.
+	// Architecture: 3-layer system (Contact Shadow → Wax Body → Stamp Recess)
+	// ==========================================================================
+
+	.envelope-seal-button {
+		// ── Layered Contact Shadow ──
+		// Three graduated layers simulate physical contact with parchment.
+		// Avoids the "floating object" artifact of a single drop-shadow.
+		filter:
+			drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45))
+			drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))
+			drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2)) !important;
+		transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+
+		&:hover {
+			transform: scale(1.08) rotate(2deg) !important;
+			// Lift the contact shadow slightly on hover for "just pressed" feel
+			filter:
+				drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5))
+				drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3))
+				drop-shadow(0 14px 28px rgba(0, 0, 0, 0.15)) !important;
+		}
+	}
+
 	.envelope-seal-button .seal-visual {
-		width: 62px !important;
-		height: 62px !important;
+		width: 84px !important;
+		height: 84px !important;
+
+		// ── Oxide Red Wax with Specular Highlight ──
+		// 4-stop radial: specular at 20%, warm body, dark rim, charred edge
 		background: radial-gradient(
-			circle at 35% 35%,
-			#{lighten($birthday-wax-red, 10%)},
-			#{$birthday-wax-red},
-			#{darken($birthday-wax-red, 15%)}
+			circle at 35% 30%,
+			#{color.adjust($birthday-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
+			#{color.adjust($birthday-wax-red, $lightness: 8%)} 20%,
+			#{$birthday-wax-red} 55%,
+			#{color.adjust($birthday-wax-red, $lightness: -20%)} 100%
 		) !important;
 		border: none !important;
+
+		// ── Directional Internal Lighting ──
+		// Top-left: warm inner glow (light catching the wax rim)
+		// Bottom-right: deep shadow (underside of wax curvature)
+		// Overall: subtle depth ring
 		box-shadow:
-			inset 2px 2px 6px rgba(255, 255, 255, 0.1),
-			inset -3px -3px 8px rgba(0, 0, 0, 0.5),
-			3px 6px 15px rgba(0, 0, 0, 0.6) !important;
+			inset -3px -4px 8px rgba(0, 0, 0, 0.4),
+			inset 3px 4px 8px rgba(255, 255, 255, 0.08),
+			inset 0 0 20px rgba(0, 0, 0, 0.15) !important;
 
-		// Irregular Wax Drip via clip-path
-		clip-path: polygon(
-			15% 5%,
-			85% 2%,
-			98% 30%,
-			92% 80%,
-			70% 98%,
-			20% 95%,
-			2% 70%,
-			5% 30%
-		) !important;
+		// ── Hand-Pressed Asymmetric Blob ──
+		// Specific radius values simulate an organic, manual pressure "wax blob"
+		// rather than a perfect geometric circle.
+		border-radius: 48% 52% 45% 95% / 53% 44% 56% 47% !important;
 
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		position: relative !important;
+
+		// ── The Stamp Recess (::after) ──
+		// Simulates the debossed hexagonal cavity left by a metal stamp.
+		// Uses a three-point lighting system for physical authenticity.
+		&::after {
+			content: '' !important;
+			position: absolute !important;
+			inset: 11px !important;
+
+			// Directional fill: lighter where light enters (TL), darker in shadow (BR)
+			background: linear-gradient(
+				140deg,
+				#{color.adjust($birthday-wax-red, $lightness: -8%)} 0%,
+				#{color.adjust($birthday-wax-red, $lightness: -16%)} 50%,
+				#{color.adjust($birthday-wax-red, $lightness: -6%)} 100%
+			) !important;
+
+			// ── Irregular Hexagonal Stamp ──
+			// Vertices offset 1-3% from a perfect hexagon to simulate hand-forged die
+			clip-path: polygon(
+				48% 2%, 98% 24%, 100% 73%,
+				52% 98%, 2% 77%, 0% 27%
+			) !important;
+
+			// ── Three-Point Lighting System ──
+			// 1. Top-left depth shadow (primary light source casts this)
+			// 2. Bottom-right lip highlight (light catches the edge)
+			// 3. Center diffusion (prevents dead-black in the recess)
+			box-shadow:
+				inset 2px 2px 4px rgba(0, 0, 0, 0.5),
+				inset -1px -1px 3px rgba(255, 255, 255, 0.1),
+				inset 0 0 8px rgba(0, 0, 0, 0.2) !important;
+
+			z-index: 1 !important;
+		}
+
+		// Hide the base theme ::before glow/melted ring
 		&::before {
 			display: none !important;
 		}
 
+		// ── Icon (Boot Silhouette) ──
+		// Sits inside the stamp recess, styled as an engraved impression.
 		.seal-icon {
-			width: 44px !important;
-			height: 44px !important;
-			color: rgba(0, 0, 0, 0.4) !important;
-			filter: drop-shadow(1px 1px 0 rgba(255, 255, 255, 0.1)) brightness(0.5) !important;
+			width: 40px !important;
+			height: 40px !important;
+			z-index: 2 !important;
+
+			// Deep engraved color: very dark, not pure black
+			color: rgba(0, 0, 0, 0.7) !important;
+			mix-blend-mode: multiply;
+
+			// Rotación orgánica — slight tilt for hand-stamped feel
+			transform: rotate(-10deg);
+
+			// ── Debossed Lighting ──
+			// Top-left shadow (depth) + Bottom-right highlight (rim light)
+			filter:
+				drop-shadow(-1px -1px 0.5px rgba(0, 0, 0, 0.85))
+				drop-shadow(0.75px 0.75px 0.3px rgba(255, 255, 255, 0.12));
+
+			opacity: 0.9;
+			// GPU compositing for smooth animation without repaints
+			will-change: transform;
+			transition: opacity 0.4s ease;
+
+			// No hover transform on the icon itself to prevent clip-path clipping.
+			// Hover animation is handled at the .envelope-seal-button level.
 		}
 	}
 
 	.envelope-seal-button .seal-pulse {
-		width: 75px !important;
-		height: 75px !important;
-		border-color: rgba($birthday-wax-red, 0.4) !important;
+		width: 92px !important;
+		height: 92px !important;
+		border-color: rgba($birthday-wax-red, 0.35) !important;
+		// Match the asymmetric blob shape
+		border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
 	}
 }

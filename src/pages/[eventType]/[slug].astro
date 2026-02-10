@@ -80,8 +80,8 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 	image={data.hero.backgroundImage.src}
 	hideHeader={true}
 >
-	<style is:global>
-		@import '@/styles/themes/presets/_all.scss';
+	<style is:global lang="scss">
+		@use '@/styles/themes/presets/_all';
 	</style>
 	<style
 		define:vars={{

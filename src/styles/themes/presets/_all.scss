@@ -1,3 +1,3 @@
 // src/styles/themes/presets/_all.scss
-@import './_jewelry-box.scss';
-@import './_luxury-hacienda.scss';
+@use './_jewelry-box';
+@use './_luxury-hacienda';
