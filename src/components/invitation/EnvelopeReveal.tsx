@@ -19,6 +19,7 @@ interface Props {
 	stampText?: string;
 	stampYear?: string;
 	eventSlug: string;
+	tooltipText?: string;
 	palette: {
 		primary: string;
 		accent: string;
@@ -32,11 +33,11 @@ const EnvelopeReveal: React.FC<Props> = ({
 	city,
 	sealStyle,
 	sealIcon,
-	microcopy,
 	documentLabel,
 	stampText,
 	stampYear,
 	eventSlug,
+	tooltipText,
 	palette,
 }) => {
 	const shouldReduceMotion = useReducedMotion();
@@ -235,7 +236,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 												filter: 'blur(12px)',
 												transition: { duration: 0.5 },
 											}}
-											aria-label="Abrir invitación"
+											aria-label="Abrir sobre de la invitación"
 										>
 											<div className="seal-visual">{renderSealIcon()}</div>
 											<div className="seal-pulse" />
@@ -245,12 +246,12 @@ const EnvelopeReveal: React.FC<Props> = ({
 												{showTooltip && (
 													<motion.span
 														className="envelope-tooltip"
-														initial={{ opacity: 0, y: 10 }}
-														animate={{ opacity: 1, y: 0 }}
-														exit={{ opacity: 0 }}
+														initial={{ opacity: 0, x: 10 }}
+														animate={{ opacity: 1, x: 0 }}
+														exit={{ opacity: 0, x: 5 }}
 														transition={{ duration: 0.3 }}
 													>
-														Toca el sello
+														{tooltipText || 'Abre el sobre'}
 													</motion.span>
 												)}
 											</AnimatePresence>
@@ -264,7 +265,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 								<p className="envelope-details">
 									{formattedDate} • {city}
 								</p>
-								<p className="envelope-microcopy">{microcopy}</p>
+
 							</div>
 						</div>
 					</motion.div>
