@@ -1,0 +1,2 @@
+echo "🧪 Ejecutando validación completa antes del push..."
+pnpm type-check && pnpm test

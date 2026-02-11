@@ -36,10 +36,19 @@ Please follow these steps to have your contribution considered by the maintainer
 
 1. Fork the repository.
 2. Create a branch from the `main` branch for your feature (`git checkout -b feature-name`).
+    > [!IMPORTANT] Direct commits to the `main` branch are blocked by a Git hook. Always use a
+    > feature branch.
 3. Make your changes, ensuring that you follow the coding style guidelines (below).
-4. Commit your changes (`git commit -m 'Add some feature'`).
+4. Commit your changes (`git commit -m 'feat: add some feature'`).
+    > [!NOTE] We use **Conventional Commits** (e.g., `feat:`, `fix:`, `chore:`). Commits are
+    > validated using **Commitlint**.
 5. Push to the branch (`git push origin feature-name`).
+    > [!TIP] A `pre-push` hook will run type-checking and tests to ensure stability before
+    > uploading.
 6. Create a new pull request, following the pull request template provided.
+
+> [!NOTE] This project uses **Husky** and **lint-staged** to ensure code quality. A pre-commit hook
+> will automatically run linting and formatting on your staged files.
 
 ### Coding Style
 

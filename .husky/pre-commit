@@ -1,1 +1,8 @@
-npm test
+# Prevent direct commits to main
+ERROR_MSG="❌ No puedes hacer commit directamente en la rama 'main'. Usa una rama de feature."
+if [[ "$(git branch --show-current)" == "main" ]]; then
+  echo "$ERROR_MSG"
+  exit 1
+fi
+
+npx lint-staged

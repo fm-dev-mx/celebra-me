@@ -4,13 +4,16 @@ This document describes the testing strategy and practices for the Celebra-me pr
 
 ## Overview
 
-| Layer | Framework | Purpose |
-| ----- | ----------- | --------- |
-| Unit Tests | Jest | Pure functions, utilities |
-| Component Tests | Jest + React Testing Library | React components |
-| Schema Tests | Jest + Zod | Content collection validation |
-| Smoke Tests | Node.js script | Build artifact verification |
-| E2E Tests | Playwright (future) | Full user flows |
+To maintain high quality and developer velocity, this project leverages **Husky** and
+**lint-staged** for automated local gatekeeping.
+
+| Layer           | Framework                    | Purpose                       |
+| --------------- | ---------------------------- | ----------------------------- |
+| Unit Tests      | Jest                         | Pure functions, utilities     |
+| Component Tests | Jest + React Testing Library | React components              |
+| Schema Tests    | Jest + Zod                   | Content collection validation |
+| Smoke Tests     | Node.js script               | Build artifact verification   |
+| E2E Tests       | Playwright (future)          | Full user flows               |
 
 ## Running Tests
 
@@ -81,14 +84,14 @@ tests/
 import { myFunction } from '@/utils/myUtil';
 
 describe('myFunction', () => {
-  it('should return expected value', () => {
-    const result = myFunction(input);
-    expect(result).toBe(expectedOutput);
-  });
+	it('should return expected value', () => {
+		const result = myFunction(input);
+		expect(result).toBe(expectedOutput);
+	});
 
-  it('should handle edge case', () => {
-    expect(() => myFunction(null)).toThrow();
-  });
+	it('should handle edge case', () => {
+		expect(() => myFunction(null)).toThrow();
+	});
 });
 ```
 
@@ -131,7 +134,7 @@ const mockSendMail = jest.fn();
 
 // In beforeEach
 (mockedNodemailer.createTransport as jest.Mock).mockReturnValue({
-    sendMail: mockSendMail,
+	sendMail: mockSendMail,
 });
 
 // In test
@@ -163,34 +166,34 @@ Already configured in `tests/setup.ts`:
 
 ```typescript
 Object.defineProperty(global, 'import', {
-  value: {
-    meta: {
-      env: {
-        GMAIL_USER: 'test@gmail.com',
-        // ... other env vars
-      },
-    },
-  },
+	value: {
+		meta: {
+			env: {
+				GMAIL_USER: 'test@gmail.com',
+				// ... other env vars
+			},
+		},
+	},
 });
 ```
 
 ## What NOT to Test with Jest
 
-| Component Type | Why | Alternative |
-| --------------- | ----- | ----------- |
+| Component Type              | Why                            | Alternative       |
+| --------------------------- | ------------------------------ | ----------------- |
 | Astro components (`.astro`) | Server-rendered, no runtime JS | Smoke test or E2E |
-| SCSS visual output | Can't verify visual rendering | Visual regression |
-| Full page layouts | Complex hydration | E2E tests |
-| API routes | Need server context | Integration tests |
+| SCSS visual output          | Can't verify visual rendering  | Visual regression |
+| Full page layouts           | Complex hydration              | E2E tests         |
+| API routes                  | Need server context            | Integration tests |
 
 ## Coverage Goals
 
-| Metric | Target | Current |
-| -------- | -------- | --------- |
-| Critical utilities | 80%+ | — |
-| React components with state | 70%+ | — |
-| Content schemas | 90%+ | — |
-| Static components | Optional | — |
+| Metric                      | Target   | Current |
+| --------------------------- | -------- | ------- |
+| Critical utilities          | 80%+     | —       |
+| React components with state | 70%+     | —       |
+| Content schemas             | 90%+     | —       |
+| Static components           | Optional | —       |
 
 ## Smoke Test Checks
 
