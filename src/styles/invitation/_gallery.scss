@@ -1,8 +1,6 @@
 // src/styles/invitation/_gallery.scss
 
-@use '../global/variables' as g;
 @use '../global/mixins' as m;
-@use 'variables' as xv;
 @use '../tokens' as tokens;
 
 // Luxury "Jewelry Box" Tokens
@@ -13,7 +11,11 @@ $color-white: tokens.$base-neutral-0;
 	padding: 8rem 2rem;
 	position: relative;
 	overflow: hidden;
-	background: linear-gradient(to bottom, transparent, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.3));
+	background: linear-gradient(
+		to bottom,
+		transparent,
+		rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.3)
+	);
 
 	&__container {
 		max-width: 1200px;
@@ -28,7 +30,7 @@ $color-white: tokens.$base-neutral-0;
 	}
 
 	&__title {
-		font-family: xv.$font-heading-formal; // Cinzel
+		font-family: tokens.$font-display-elegant; // Cinzel
 		font-size: clamp(2.5rem, 5vw, 3.5rem);
 		color: $color-gold;
 		margin-bottom: 1rem;
@@ -37,7 +39,7 @@ $color-white: tokens.$base-neutral-0;
 	}
 
 	&__subtitle {
-		font-family: xv.$font-decorative-cursive; // Great Vibes
+		font-family: tokens.$font-calligraphy; // Great Vibes
 		font-size: clamp(1.5rem, 3vw, 2rem);
 		color: $color-gold;
 		opacity: 0.8;
@@ -103,7 +105,7 @@ $color-white: tokens.$base-neutral-0;
 
 	&__caption {
 		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
-		font-family: xv.$font-body; // EB Garamond
+		font-family: tokens.$font-body; // EB Garamond
 		font-size: 1.1rem;
 		font-style: italic;
 	}
@@ -163,7 +165,7 @@ $color-white: tokens.$base-neutral-0;
 		right: 0;
 		text-align: center;
 		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
-		font-family: xv.$font-body;
+		font-family: tokens.$font-body;
 		font-size: 1.2rem;
 		font-style: italic;
 	}

@@ -1,4 +1,3 @@
-@use 'variables' as vars;
 @use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
 
@@ -26,12 +25,7 @@
 		left: 0;
 		right: 0;
 		height: 1px;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			tokens.$color-border-subtle,
-			transparent
-		);
+		background: linear-gradient(90deg, transparent, tokens.$color-border-subtle, transparent);
 	}
 
 	&-bg-texture {
@@ -145,7 +139,12 @@
 			left: 0;
 			right: 0;
 			height: 3px;
-			background: linear-gradient(90deg, transparent, tokens.$color-action-primary, transparent);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				tokens.$color-action-primary,
+				transparent
+			);
 			opacity: 0.3;
 		}
 	}
@@ -174,11 +173,7 @@
 			justify-content: flex-end;
 			&::after {
 				order: -1;
-				background: linear-gradient(
-					to left,
-					tokens.$color-border-subtle,
-					transparent
-				);
+				background: linear-gradient(to left, tokens.$color-border-subtle, transparent);
 			}
 		}
 	}

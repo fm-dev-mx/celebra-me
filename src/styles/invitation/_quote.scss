@@ -3,7 +3,6 @@
 // Elegant Quote Section Styles
 // ----------------------------------------------------
 
-@use 'variables' as vars;
 @use '../tokens' as tokens;
 
 .quote-section {
@@ -95,7 +94,7 @@
 }
 
 .quote-author {
-	font-family: vars.$font-heading-formal;
+	font-family: tokens.$font-display-elegant;
 	font-size: clamp(0.9rem, 3vw, 1.1rem);
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
