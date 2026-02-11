@@ -8,44 +8,37 @@
 @use 'home/footer';
 @use 'components/icons';
 @use 'invitation/envelope-reveal';
+@use 'tokens' as tokens;
 @use 'themes/presets/all';
 
 :root {
-	/* Premium Color Palette */
-	--color-primary: #c5a059; /* Muted Gold */
-	--color-primary-rgb: 197, 160, 89;
-	--color-primary-dark: #9e7d3d; /* Darker Gold */
-	--color-primary-dark-rgb: 158, 125, 61;
-	--color-primary-light: #e8dcc2; /* Cream/Champagne */
-	--color-primary-light-rgb: 232, 220, 194;
-	--color-secondary: #2c3e50; /* Deep Slate */
-	--color-secondary-rgb: 44, 62, 80;
-	--color-secondary-light: #f4f4f4;
-	--color-secondary-light-rgb: 244, 244, 244;
-	--color-accent: #e8dcc2; /* Cream/Champagne */
-	--color-accent-rgb: 232, 220, 194;
-	--color-accent-dark: #c5a059; /* Muted Gold */
-	--color-accent-light: #e8dcc2; /* Cream/Champagne */
-	--color-background: #fafafa; /* Soft White */
-	--color-text: #333333; /* Dark Grey for readability */
-	--color-white: #ffffff;
+	/* Premium Color Palette - Mapped to tokens */
+	--color-primary: #{tokens.$color-action-accent};
+	--color-primary-rgb: #{tokens.$color-action-accent-rgb};
+	--color-primary-dark: #{tokens.$color-action-primary};
+	--color-primary-light: #{tokens.$color-surface-secondary};
+	--color-secondary: #{tokens.$color-surface-dark};
+	--color-secondary-rgb: #{tokens.$color-surface-dark-rgb};
+	--color-background: #{tokens.$color-surface-primary};
+	--color-text: #{tokens.$color-text-primary};
+	--color-white: #{tokens.$base-neutral-0};
 	--color-white-rgb: 255, 255, 255;
-	--color-dark: #333333;
-	--color-dark-rgb: 51, 51, 51;
-	--color-darkest: #111111;
-	--color-darkest-rgb: 17, 17, 17;
-	--color-error: #d93025;
-	--color-error-rgb: 217, 48, 37;
+	--color-dark: #{tokens.$color-surface-dark};
+	--color-error: #{tokens.$base-error};
 
-	/* Typography */
-	--font-display: 'Playfair Display', serif;
-	--font-body: 'Rubik Variable', sans-serif;
+	/* Typography - Mapped to tokens */
+	--font-display: #{tokens.$font-display-elegant};
+	--font-body: #{tokens.$font-ui};
 
 	/* Spacing & Utilities */
 	--spacing-sm: 0.5rem;
 	--spacing-md: 1rem;
 	--spacing-lg: 2rem;
 	--spacing-xl: 4rem;
+
+	/* Motion - Mapped to tokens */
+	--duration-standard: #{tokens.$duration-standard};
+	--ease-premium: #{tokens.$ease-premium};
 }
 
 html {
@@ -85,7 +78,7 @@ body {
 	}
 }
 
-/* Animations */
+/* General Animations - Using Motion Tokens */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -98,7 +91,7 @@ body {
 }
 
 .animate-fade-in {
-	animation: fadeIn 0.8s ease-out forwards;
+	animation: fadeIn var(--duration-standard) var(--ease-premium) forwards;
 }
 
 /* Landing page sections wrapper */
@@ -110,7 +103,7 @@ body {
 
 /* Error/fallback states */
 .error-message {
-	color: #ef4444;
+	color: var(--color-error);
 	text-align: center;
 	padding: 5rem 0;
 }

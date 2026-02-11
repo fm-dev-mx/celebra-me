@@ -1,6 +1,5 @@
-// src/styles/global/_variables.scss
-
 @use 'sass:map';
+@use '../tokens' as tokens;
 
 // ----------------------------------------------------
 // Global Design Tokens & Color Palette
@@ -8,38 +7,38 @@
 
 $colors: (
 	primary: (
-		light: #f9ece3,
-		default: #e8cfc6,
-		dark: #9f697b,
+		light: tokens.$color-surface-secondary,
+		default: tokens.$color-action-accent,
+		dark: tokens.$color-surface-dark,
 	),
 	secondary: (
-		light: #f4f4f4,
-		default: #d4d4d4,
-		dark: #a6a6a6,
+		light: tokens.$color-surface-primary,
+		default: tokens.$color-surface-dark,
+		dark: tokens.$color-surface-dark,
 	),
 	accent: (
-		light: #ffe6e6,
-		default: #ffc9c9,
-		dark: #dc9e73,
+		light: tokens.$color-surface-secondary,
+		default: tokens.$color-action-accent,
+		dark: tokens.$color-action-accent,
 	),
 	neutral: (
-		lightest: #ffffff,
-		light: #fafafa,
-		medium: #e5e5e5,
-		dark: #757575,
-		darkest: #424242,
+		lightest: tokens.$base-neutral-0,
+		light: tokens.$color-neutral-subtle,
+		medium: tokens.$color-neutral-muted,
+		dark: tokens.$color-neutral-base,
+		darkest: tokens.$color-neutral-emphasis,
 	),
 	background: (
-		default: #ffffff,
-		alt: #fafafa,
+		default: tokens.$color-surface-primary,
+		alt: tokens.$color-surface-secondary,
 	),
 	text: (
-		default: #333333,
-		light: #757575,
+		default: tokens.$color-text-primary,
+		light: tokens.$color-text-secondary,
 	),
 	whatsapp: (
-		default: #25d366,
-		hover: #20b157,
+		default: tokens.$color-whatsapp,
+		hover: tokens.$color-whatsapp,
 	),
 );
 
@@ -51,7 +50,7 @@ $backdrop-blurs: (
 	xl: blur(16px),
 );
 
-// Typography
+// Typography (Fallback / System Stacks)
 $font-stack: (
 	'Rubik Variable',
 	-apple-system,
@@ -61,75 +60,71 @@ $font-stack: (
 	'Helvetica Neue',
 	Arial,
 	'Noto Sans',
-	sans-serif,
-	'Apple Color Emoji',
-	'Segoe UI Emoji',
-	'Segoe UI Symbol',
-	'Noto Color Emoji'
+	sans-serif
 );
 
-// Typography Tokens — Core 5 System
-$font-display-formal: 'Cinzel', serif;
-$font-display-elegant: 'Playfair Display', serif;
-$font-calligraphy: 'Pinyon Script', cursive;
-$font-body: 'EB Garamond', Georgia, serif;
-$font-ui: 'Montserrat', system-ui, sans-serif;
+// Typography Tokens — Bridged to Universal Tokens
+$font-display-formal: tokens.$font-display-formal;
+$font-display-elegant: tokens.$font-display-elegant;
+$font-calligraphy: tokens.$font-calligraphy;
+$font-body: tokens.$font-body;
+$font-ui: tokens.$font-ui;
 
-// Fluid Type Scale (clamp-based for responsive sizing)
-$text-h1-fluid: clamp(2.5rem, 8vw, 5rem);
-$text-h2-fluid: clamp(1.8rem, 5vw, 3rem);
-$text-h3-fluid: clamp(1.4rem, 3vw, 2rem);
-$text-body-fluid: clamp(1rem, 1.2vw, 1.25rem);
+// Fluid Type Scale (Bridged)
+$text-h1-fluid: tokens.$font-size-h1;
+$text-h2-fluid: tokens.$font-size-h2;
+$text-h3-fluid: tokens.$font-size-h3;
+$text-body-fluid: tokens.$font-size-body;
 
-// Transition timing functions and component-specific settings
+// Motion (Bridged)
 $transition-timing: (
-	smooth: cubic-bezier(0.4, 0, 0.2, 1),
-	snappy: cubic-bezier(0.25, 1, 0.5, 1),
-	overshoot: cubic-bezier(0.3, 1.5, 0.7, 1),
-	bouncy: cubic-bezier(0.68, -0.55, 0.27, 1.55),
+	smooth: tokens.$ease-in-out,
+	snappy: tokens.$ease-snappy,
+	overshoot: tokens.$ease-overshoot,
+	bouncy: tokens.$ease-bouncy,
 );
 
 $transitions-by-component: (
 	button: (
-		duration: 0.2s,
-		timing: map.get($transition-timing, smooth),
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-in-out,
 	),
 	card: (
-		duration: 0.3s,
-		timing: map.get($transition-timing, snappy),
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-snappy,
 	),
 	card-item: (
-		duration: 0.3s,
-		timing: map.get($transition-timing, overshoot),
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-overshoot,
 	),
 	header: (
-		duration: 1s,
-		timing: map.get($transition-timing, smooth),
+		duration: tokens.$duration-premium,
+		timing: tokens.$ease-in-out,
 	),
 	menu: (
-		duration: 0.25s,
-		timing: map.get($transition-timing, snappy),
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-snappy,
 	),
 	modal: (
-		duration: 0.25s,
-		timing: map.get($transition-timing, bouncy),
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-bouncy,
 	),
 	section-nav-button: (
-		duration: 0.3s,
+		duration: tokens.$duration-standard,
 		timing: ease-in-out,
 	),
 	whatsapp-button: (
-		duration: 0.4s,
+		duration: tokens.$duration-standard,
 		timing: ease-in-out,
 	),
 	whatsapp-button-after: (
-		duration: 0.3s,
-		timing: map.get($transition-timing, overshoot),
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-overshoot,
 	),
 );
 
-$default-transition-duration: 0.4s;
-$default-transition-timing: map.get($transition-timing, smooth);
+$default-transition-duration: tokens.$duration-standard;
+$default-transition-timing: tokens.$ease-in-out;
 
 // Breakpoints for responsive design
 $breakpoints: (

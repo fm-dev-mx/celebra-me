@@ -1,4 +1,4 @@
-// src/styles/invitation/_xv-variables.scss
+// src/styles/invitation/_typography.scss
 
 // Headings (Primary Titles)
 $font-heading-elegant: 'Playfair Display', serif !default;
@@ -27,32 +27,3 @@ $font-button: $font-heading-modern !default;
 $font-caption: $font-body !default;
 $font-footer: $font-body !default;
 $font-emphasis: $font-decorative-display !default;
-
-// Color Palette
-$color-primary-light: #a77ddb !default;
-$color-primary: #6a0dad !default;
-$color-primary-dark: #4e0085 !default;
-
-$color-secondary-light: #ffe3e8 !default;
-$color-secondary: #ffb6c1 !default;
-$color-secondary-dark: #ff8ca3 !default;
-
-$color-accent-light: #b3e5fc !default;
-$color-accent: #81d4fa !default;
-$color-accent-dark: #4fc3f7 !default;
-
-$color-dark: #333333 !default;
-$color-darker: #222222 !default;
-$color-darkest: #111111 !default;
-$color-white: #f9f9f9 !default;
-$color-whiter: #f0f0f0 !default;
-$color-whitest: #ffffff !default;
-
-$color-whatsapp: #25d366 !default;
-$color-whatsapp-hover: #20b157 !default;
-
-// Digital Jewelry Box / Premium Palette
-$color-gold-metallic: #d4af37 !default;
-$color-gold-deep: #a67c00 !default;
-$color-gold-dust: rgba(212, 175, 55, 0.4) !default;
-$color-champagne-light: rgba(247, 231, 206, 0.4) !default;
