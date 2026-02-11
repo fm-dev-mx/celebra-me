@@ -5,15 +5,17 @@ interface Props {
 	altText?: string;
 }
 
+import { getCommonAsset } from '@/lib/assets/AssetRegistry';
+
 const { class: className } = Astro.props;
 
 // Currently using the same logo for both variants, can be customized later
-// Currently using the same logo for both variants, can be customized later
-import logoSrc from '@images/header/horizontalLogo150x56.png';
+const logoAsset = getCommonAsset('headerLogo');
+const logoSrc = typeof logoAsset.src === 'string' ? logoAsset.src : logoAsset.src.src;
 ---
 
 <img
-	src={logoSrc.src}
+	src={logoSrc}
 	alt="Celebra.me Logo"
 	width="150"
 	height="56"

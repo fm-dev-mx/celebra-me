@@ -7,11 +7,7 @@ import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
-
-// Import local avatars
-import avatar1 from '@images/hero/avatar1.png';
-import avatar2 from '@images/hero/avatar2.png';
-import avatar3 from '@images/hero/avatar3.png';
+import { getCommonAsset } from '@/lib/assets/AssetRegistry';
 
 // Import consolidated Premium styles
 import '@/styles/components/_hero.scss';
@@ -21,6 +17,10 @@ interface Props {
 }
 
 const { data } = Astro.props;
+
+const avatar1 = getCommonAsset('avatar1');
+const avatar2 = getCommonAsset('avatar2');
+const avatar3 = getCommonAsset('avatar3');
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title">
@@ -82,9 +82,9 @@ const { data } = Astro.props;
 		{data.socialProofText && (
 			<div class="hero-prime__social-proof stagger-3">
 				<div class="avatars">
-					<img src={avatar1.src} alt="Usuario de Celebra-me" />
-					<img src={avatar2.src} alt="Usuario de Celebra-me" />
-					<img src={avatar3.src} alt="Usuario de Celebra-me" />
+					<img src={typeof avatar1.src === 'string' ? avatar1.src : avatar1.src.src} alt="Usuario de Celebra-me" />
+					<img src={typeof avatar2.src === 'string' ? avatar2.src : avatar2.src.src} alt="Usuario de Celebra-me" />
+					<img src={typeof avatar3.src === 'string' ? avatar3.src : avatar3.src.src} alt="Usuario de Celebra-me" />
 				</div>
 				<span>{data.socialProofText}</span>
 			</div>

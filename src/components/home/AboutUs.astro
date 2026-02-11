@@ -7,7 +7,8 @@ import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 // import type { IconNames } from '@/core/types/ui/iconNames.type';
 import Icon from '@components/common/icons/Icon.astro';
-import partyToastImage from '@images/about/partyToastPremium.png';
+import { getCommonAsset } from '@/lib/assets/AssetRegistry';
+
 import type { AboutData } from '@/interfaces/ui/sections/landing-page.interface';
 
 // Import stylesheet
@@ -18,6 +19,7 @@ interface Props {
 }
 
 const { data } = Astro.props;
+const aboutToast = getCommonAsset('aboutToast');
 ---
 
 <Section id="nosotros" class="about-us">
@@ -29,7 +31,7 @@ const { data } = Astro.props;
 			<div class="about-us__content">
 				<header
 					class="about-us__header animate-on-scroll"
-					style="--animation-delay: 100ms"
+					data-delay="100ms"
 				>
 					<h2 class="about-us__title">{data.title}</h2>
 					<div class="about-us__underline"></div>
@@ -37,14 +39,14 @@ const { data } = Astro.props;
 
 				<p
 					class="about-us__description animate-on-scroll"
-					style="--animation-delay: 300ms"
+					data-delay="300ms"
 				>
 					{data.description}
 				</p>
 
 				<div
 					class="about-us__actions animate-on-scroll"
-					style="--animation-delay: 500ms"
+					data-delay="500ms"
 				>
 					<ActionBase
 						variant="outline"
@@ -61,12 +63,12 @@ const { data } = Astro.props;
 
 			<div
 				class="about-us__visual animate-on-scroll"
-				style="--animation-delay: 200ms"
+				data-delay="200ms"
 			>
 				<div class="about-us__image-wrapper">
 					<div class="about-us__image-frame"></div>
 					<OptimizedImage
-						imagePath={partyToastImage}
+						imagePath={aboutToast}
 						alt="Celebración elegante con brindis"
 						width={800}
 						height={1000}
@@ -83,7 +85,7 @@ const { data } = Astro.props;
 			{data.values.map((value, index) => (
 				<div
 					class="about-us__value-card animate-on-scroll"
-					style={`--animation-delay: ${(index + 4) * 150}ms`}
+					data-delay={`${(index + 4) * 150}ms`}
 				>
 					<div class="sparkle sparkle--1"></div>
 					<div class="sparkle sparkle--2"></div>
@@ -143,5 +145,14 @@ const { data } = Astro.props;
 	}, observerOptions);
 
 	const animatedElements = document.querySelectorAll('.animate-on-scroll');
-	animatedElements.forEach((el) => observer.observe(el));
+	animatedElements.forEach((el) => {
+		if (el instanceof HTMLElement) {
+			const delay = el.dataset.delay;
+			if (delay) {
+				el.style.setProperty('--animation-delay', delay);
+			}
+		}
+
+		observer.observe(el);
+	});
 </script>
