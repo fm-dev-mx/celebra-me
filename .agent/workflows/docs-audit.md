@@ -7,18 +7,17 @@ description:
 # 📚 Workflow: Holistic Documentation Audit & Synchronization
 
 Use this workflow to govern the entire project documentation ecosystem. It safeguards against
-"documentation drift" in critical entry points like `README.md`, `CONTRIBUTING.md`, and recursively
-audits `docs/` to ensure the documentation reflects the actual state of the code.
+"documentation drift" in critical entry points like `README.md` and recursively audits `docs/` to
+ensure the documentation reflects the actual state of the code.
 
 ## Execution Steps
 
 1. **Pre-Audit & Vision Alignment (Gatekeeper)**:
     - **Vision Check**: Ensure `docs/PREMIUM_UX_VISION.md` reflects recent architectural shifts
       (e.g., "Aesthetic Presets", "Typography System"). If missing, update it first.
-    - **Changelog**: If `CHANGELOG.md` is missing, propose its creation based on git history.
 
 2. **Status Mapping (Holistic Scope)**:
-    - **Root Files**: Audit `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md` (if exists).
+    - **Root Files**: Audit `README.md`.
     - **Full Docs Tree**: Recursively audit `docs/**/*.md` (expanding beyond `plan/`).
     - **Cross-Reference**: For each document, verify its claims against the current source code
       (`src/`) and configuration.
@@ -58,7 +57,7 @@ Execute a holistic audit of the project documentation.
 
 1. **Gatekeeper**: Check `docs/PREMIUM_UX_VISION.md` for major architectural gaps (Presets,
    Typography). Update if needed.
-2. **Scan**: Audit Root files (`README.md`, `CONTRIBUTING.md`) and the full `docs/` tree.
+2. **Scan**: Audit Root files (`README.md`) and the full `docs/` tree.
 3. **Drift Detection**: Verify against `src/`.
 4. **Update**: Update Root files in place and Archive completed plans.
 5. **Report**: Report findings using the 🔴/🟡/🟢 status indicators in a new audit log.
