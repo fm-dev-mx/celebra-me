@@ -22,13 +22,15 @@ synchronized with the project's evolution, avoiding "instruction drift" and obso
 ### 2. Taxonomy, Desuetude & Language Consistency
 
 - **Categorize**: Classify workflows by role:
-  - **Execution**: `invitation-execution`, `premium-dev-cycle`, `hero-refinement`.
+  - **Execution**: `invitation-execution`, `premium-dev-cycle`.
   - **Gatekeeper**: `atomic-ui-commit`, `safe-commit`.
   - **Audit**: `docs-audit`, `workflow-sync`.
   - **Asset/Design**: `universal-asset-system`, `color-architecture`, `asset-management`.
   - **Meta/Support**: `prompt-refiner`, `invitation-verification`.
+- **Archive**: `archive/hero-refinement`, `archive/icon-refactor`, `archive/refactor-architecture`.
 - **Pruning**: Propose the deletion of workflows referencing archived plans or obsolete engines.
-- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, **Hacienda**, and **Atomic Asset Architecture**. Harmonize terminology to avoid agent confusion.
+- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, **Hacienda**, and **Universal Asset Registry/System**. Harmonize terminology to avoid agent confusion.
+- **Link Hygiene**: Replace any file-scheme references (e.g., `file://...`) with repo-relative links (e.g., `./workflow-name.md`) for portability.
 
 ### 3. Skill & Ability Integration
 

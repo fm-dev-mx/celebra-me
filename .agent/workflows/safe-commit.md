@@ -122,6 +122,7 @@ When Ready:
     - propose a split plan (no execution) and ask which path to take.
 
 Final question:
+> Ready to apply the approved suggestions and restage? If not, specify what to skip or adjust.
 
 // turbo
 

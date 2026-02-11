@@ -6,10 +6,10 @@ description: Universal Asset System Orchestration & Maintenance Workflow
 
 This workflow serves as the **Master Orchestrator** for the Celebra-me design system. It enforces a deterministic architecture where Colors, Typography, Motion, Icons, and Images are managed as unified atomic units.
 
-## �️ Architectural Invariants (Non-Negotiable)
+## 🛡️ Architectural Invariants (Non-Negotiable)
 
 1.  **Zero Hex/HSL Policy**: Component SCSS MUST NEVER contain raw color values. Use `tokens.$[role]`.
-2.  **No Direct Imports**: Images MUST NEVER be imported directly via relative paths in components. Use `AssetRegistry.ts`.
+2.  **No Direct Imports**: Images MUST NEVER be imported directly via relative paths in components. Use `src/lib/assets/AssetRegistry.ts` as the canonical registry.
 3.  **Atomic Icons Only**: All SVGs MUST be consumed via the `<Icon />` registry component to ensure decoupling.
 4.  **Duality Principle**: Technical infrastructure (code, tokens, workflows) stays in English; UI content and strings stay in Spanish.
 
@@ -59,5 +59,5 @@ To add new icons or images:
 3.  **Chain Verification**: Verify that changing a token in `_semantic.scss` correctly propagates to both the Landing Page and individual Invitations.
 
 ## 📝 Related Workflows
-- [/color-architecture](file:///c:/Code/celebra-me/.agent/workflows/color-architecture.md): Specialized color management.
-- [/asset-management](file:///c:/Code/celebra-me/.agent/workflows/asset-management.md): Low-level optimization and curation.
+- [/color-architecture](./color-architecture.md): Specialized color management.
+- [/asset-management](./asset-management.md): Low-level optimization and curation.

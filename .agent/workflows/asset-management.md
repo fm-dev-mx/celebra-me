@@ -4,7 +4,7 @@ description: Asset Management & Optimization Workflow
 
 # Asset Management Workflow
 
-This workflow guides the transition of event image infrastructure to a structured **Atomic Asset Architecture**. It handles curation, semantic renaming, registry updates, and verification of event assets.
+This workflow guides the transition of event image infrastructure to a structured **Universal Asset Registry/System**. It handles curation, semantic renaming, registry updates, and verification of event assets.
 
 ## 1. Context & Discovery
 
@@ -44,6 +44,8 @@ Create or update the TypeScript registry to allow strict, typed imports of asset
 2. **Global Registry** (`src/assets/images/events/index.ts`)
    - Re-export the event module.
    - Example: `export * as Cumple60Gerardo from './cumple-60-gerardo';`
+3. **Universal Asset Registry** (`src/lib/assets/AssetRegistry.ts`)
+   - Register the event assets via the canonical registry so app-level imports stay consistent.
 
 ## 4. Content Integration
 
@@ -69,4 +71,4 @@ Update the Event Content Collection (`src/content/events/[event-slug].json`) to 
 
 ## 📝 Related Workflows
 
-- [/universal-asset-system](file:///c:/Code/celebra-me/.agent/workflows/universal-asset-system.md): The overarching orchestration for all assets.
+- [/universal-asset-system](./universal-asset-system.md): The overarching orchestration for all assets.

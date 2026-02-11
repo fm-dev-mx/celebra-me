@@ -21,7 +21,7 @@ Validate all changes against:
 - `.agent/GATEKEEPER_RULES.md`
 - `.agent/PROJECT_CONVENTIONS.md`
 
-Conflict order: `GATEKEEPER_RULES` → `ARCHITECTURE` → `PROJECT_CONVENTIONS`
+Conflict order: `GATEKEEPER_RULES` → `PROJECT_CONVENTIONS` → `docs/ARCHITECTURE` (when needed)
 
 ---
 
@@ -124,3 +124,5 @@ Ask:
 // turbo
 
 ## Agent Instruction
+Execute a strict staged-scope gatekeeping pass, propose ADUs, auto-fix blockers/majors on approval,
+and keep commits deployable and minimal.
