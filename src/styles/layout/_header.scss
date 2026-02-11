@@ -1,14 +1,14 @@
 /* src/styles/layout/_header.scss */
-@use '../global/variables' as vars;
 @use '../global/mixins' as mixins;
+@use '../tokens' as tokens;
 @use 'sass:map';
 
 .header {
 	position: sticky;
 	top: 0;
-	z-index: map.get(vars.$z-index, header);
-	background-color: rgba(map.get(vars.$colors, neutral, lightest), 0.95);
-	backdrop-filter: map.get(vars.$backdrop-blurs, sm);
+	z-index: 10;
+	background-color: rgba(tokens.$base-neutral-0, 0.95);
+	backdrop-filter: blur(4px);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	@include mixins.transition(header);
 	width: 100%;
@@ -33,17 +33,17 @@
 	}
 
 	&--scrolled {
-		background-color: rgba(map.get(vars.$colors, neutral, lightest), 0.98);
+		background-color: rgba(tokens.$base-neutral-0, 0.98);
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		padding-top: 0.5rem;
 		padding-bottom: 0.5rem;
 
 		.header__nav-link {
-			color: map.get(vars.$colors, text, default);
+			color: tokens.$color-text-primary;
 		}
 
 		.header__mobile-btn {
-			color: map.get(vars.$colors, text, default);
+			color: tokens.$color-text-primary;
 		}
 	}
 
@@ -77,12 +77,12 @@
 		}
 
 		&-link {
-			color: map.get(vars.$colors, text, default);
+			color: tokens.$color-text-primary;
 			font-weight: 500;
 			transition: color 0.2s ease;
 
 			&:hover {
-				color: map.get(vars.$colors, primary, default);
+				color: tokens.$color-action-accent;
 			}
 		}
 	}
@@ -90,7 +90,7 @@
 	&__mobile-btn {
 		display: block;
 		padding: 0.5rem;
-		color: map.get(vars.$colors, text, default);
+		color: tokens.$color-text-primary;
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -110,8 +110,8 @@
 		top: 100%;
 		left: 0;
 		width: 100%;
-		background-color: map.get(vars.$colors, neutral, lightest);
-		border-top: 1px solid map.get(vars.$colors, neutral, medium);
+		background-color: tokens.$base-neutral-0;
+		border-top: 1px solid tokens.$color-neutral-muted;
 
 		@include mixins.respond-to(md) {
 			display: none;
@@ -130,12 +130,12 @@
 	}
 
 	&__mobile-link {
-		color: map.get(vars.$colors, text, default);
+		color: tokens.$color-text-primary;
 		display: block;
 		padding: 0.5rem 0;
 
 		&:hover {
-			color: map.get(vars.$colors, primary, default);
+			color: tokens.$color-action-accent;
 		}
 	}
 }

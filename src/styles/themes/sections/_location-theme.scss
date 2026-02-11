@@ -3,7 +3,6 @@
 // Supports: structured (default), organic, minimal, luxury
 
 @use '../../tokens' as tokens;
-@use '../../invitation/variables' as vars;
 @use '@/styles/global/mixins' as mixins;
 
 // ==========================================================================
@@ -54,7 +53,7 @@
 
 	// Clean modern card title
 	.event-location__card-title {
-		font-family: vars.$font-heading-modern;
+		font-family: tokens.$font-ui;
 		font-size: 0.85rem;
 		color: hsla(43, 30%, 45%, 0.7);
 		letter-spacing: 5px;
@@ -139,7 +138,7 @@
 	// Styled content list
 	.event-location__card-content-list {
 		&__place {
-			font-family: vars.$font-heading-elegant;
+			font-family: tokens.$font-display-elegant;
 			font-size: 1.9rem;
 			color: tokens.$color-text-primary;
 			margin-bottom: 1.5rem;
@@ -148,7 +147,7 @@
 		}
 
 		&__date {
-			font-family: vars.$font-decorative-calligraphy;
+			font-family: tokens.$font-calligraphy;
 			font-size: clamp(1rem, 6vw, 1.3rem);
 			color: tokens.$color-action-accent;
 			margin-bottom: 0.5rem;
@@ -156,7 +155,7 @@
 		}
 
 		&__hour {
-			font-family: vars.$font-heading-modern;
+			font-family: tokens.$font-ui;
 			font-size: clamp(0.7rem, 2vw, 1rem);
 			letter-spacing: 6px;
 			font-weight: 500;
@@ -179,7 +178,7 @@
 		background: var(--color-action-accent, tokens.$color-action-accent);
 		border: 1px solid rgba(var(--color-action-accent-rgb), 0.3);
 		border-radius: 4px;
-		font-family: vars.$font-heading-modern;
+		font-family: tokens.$font-ui;
 		font-size: 0.75rem;
 		font-weight: 600;
 		letter-spacing: 2px;

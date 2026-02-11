@@ -3,7 +3,6 @@
 // Supports: minimal (default), vibrant, classic, modern
 
 @use '../../tokens' as tokens;
-@use '../../invitation/variables' as vars;
 @use '@/styles/global/mixins' as mixins;
 
 // ==========================================================================
@@ -285,12 +284,7 @@
 // ==========================================================================
 
 .countdown-section[data-variant='jewelry-box'] {
-	background: linear-gradient(
-		180deg,
-		#fffaf5 0%,
-		#fdf8f0 50%,
-		#fffaf5 100%
-	);
+	background: linear-gradient(180deg, #fffaf5 0%, #fdf8f0 50%, #fffaf5 100%);
 	position: relative;
 	overflow: hidden;
 
@@ -303,11 +297,7 @@
 		transform: translate(-50%, -50%);
 		width: 100%;
 		height: 100%;
-		background: radial-gradient(
-			circle at center,
-			rgba(212, 175, 55, 0.08) 0%,
-			transparent 70%
-		);
+		background: radial-gradient(circle at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
 		pointer-events: none;
 	}
 

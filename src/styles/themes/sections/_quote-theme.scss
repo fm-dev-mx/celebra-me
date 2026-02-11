@@ -3,7 +3,6 @@
 // Supports: elegant (default), modern, minimal, floral
 
 @use '../../tokens' as tokens;
-@use '../../invitation/variables' as vars;
 
 // ==========================================================================
 // ELEGANT VARIANT (Default - Classic/Formal Style)
@@ -52,7 +51,7 @@
 
 	// Elegant serif typography
 	.quote-content {
-		font-family: vars.$font-body; // EB Garamond
+		font-family: tokens.$font-body; // EB Garamond
 		font-weight: 500;
 		font-size: clamp(1.6rem, 5.5vw, 2.4rem);
 		line-height: 1.5;
@@ -69,7 +68,7 @@
 	}
 
 	.quote-author {
-		font-family: vars.$font-heading-formal;
+		font-family: tokens.$font-display-formal;
 		font-size: clamp(0.9rem, 3vw, 1.1rem);
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
@@ -241,12 +240,7 @@
 // ==========================================================================
 
 .quote-section[data-variant='jewelry-box'] {
-	background: linear-gradient(
-		180deg,
-		#fffaf5 0%,
-		#fdf8f0 50%,
-		#fffaf5 100%
-	);
+	background: linear-gradient(180deg, #fffaf5 0%, #fdf8f0 50%, #fffaf5 100%);
 	position: relative;
 	overflow: hidden;
 

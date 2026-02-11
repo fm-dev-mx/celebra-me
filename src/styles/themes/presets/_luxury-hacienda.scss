@@ -1,39 +1,39 @@
-@use "sass:color";
-@use '../../birthday/variables' as *;
+@use 'sass:color';
+@use '../../tokens' as tokens;
+@use '../../tokens/primitives' as primitives;
 
 .theme-preset--luxury-hacienda {
 	// Color Architecture: CSS Variable Injection
-	--color-text-primary: #{$birthday-primary};
+	--color-text-primary: #{primitives.$base-coffee-900};
 	--color-text-primary-rgb: #{75, 54, 33}; // #4B3621
-	--color-text-secondary: #{color.adjust($birthday-primary, $lightness: 15%)};
-	--color-text-emphasis: #{$birthday-accent};
+	--color-text-secondary: #{color.adjust(primitives.$base-coffee-900, $lightness: 15%)};
+	--color-text-emphasis: #{primitives.$base-gold-500};
 
-	--color-surface-primary: #{$birthday-bg};
+	--color-surface-primary: #{primitives.$base-parchment-100};
 	--color-surface-primary-rgb: #{245, 245, 220}; // #F5F5DC
-	--color-surface-dark: #{$birthday-bg-dark};
+	--color-surface-dark: #{primitives.$base-coffee-900};
 	--color-surface-dark-rgb: #{62, 43, 26}; // #3E2B1A
 
-	--color-action-primary: #{$birthday-primary};
-	--color-action-accent: #{$birthday-accent};
+	--color-action-primary: #{primitives.$base-coffee-900};
+	--color-action-accent: #{primitives.$base-gold-500};
 	--color-action-accent-rgb: #{212, 175, 55}; // #D4AF37
 
 	--color-border-subtle: rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.1);
 	--color-border-emphasis: var(--color-action-accent);
 
 	// Base Theme Styles
-	background-color: var(--color-surface-primary, $birthday-bg);
-	color: var(--color-text-primary, $birthday-primary);
+	background-color: var(--color-surface-primary, primitives.$base-parchment-100);
+	color: var(--color-text-primary, primitives.$base-coffee-900);
 	min-height: 100vh;
-	font-family: $birthday-font-heading;
-
+	font-family: tokens.$font-display-elegant;
 
 	h1,
 	h2,
 	h3,
 	h4,
 	.font-heading {
-		font-family: $birthday-font-heading;
-		color: $birthday-primary;
+		font-family: tokens.$font-display-elegant;
+		color: primitives.$base-coffee-900;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
@@ -42,11 +42,11 @@
 		display: inline-block;
 		margin-top: 1rem;
 		padding: 0.5rem 1.5rem;
-		background-color: $birthday-primary;
-		color: $birthday-accent;
-		border: 2px solid $birthday-accent;
+		background-color: primitives.$base-coffee-900;
+		color: primitives.$base-gold-500;
+		border: 2px solid primitives.$base-gold-500;
 		border-radius: 50px;
-		font-family: $birthday-font-sub;
+		font-family: tokens.$font-ui;
 		font-size: 1.2rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -59,7 +59,7 @@
 			content: '';
 			position: absolute;
 			inset: -4px;
-			border: 1px solid $birthday-accent;
+			border: 1px solid primitives.$base-gold-500;
 			border-radius: 50px;
 			opacity: 0.5;
 		}
@@ -69,11 +69,9 @@
 	// ADU-8: Hero Portrait Photo
 	// ==========================================================================
 
-
-
 	// Hero title leather/gold shimmer
 	.invitation-hero__title {
-		font-family: $birthday-font-heading;
+		font-family: tokens.$font-display-elegant;
 		font-weight: 500;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -81,8 +79,8 @@
 	}
 
 	.invitation-hero__label {
-		font-family: $birthday-font-sub;
-		color: $birthday-accent;
+		font-family: tokens.$font-ui;
+		color: primitives.$base-gold-500;
 		letter-spacing: 0.4em;
 	}
 
@@ -101,7 +99,7 @@
 	}
 
 	.invitation-hero__date {
-		font-family: $birthday-font-sub;
+		font-family: tokens.$font-ui;
 		letter-spacing: 0.15em;
 	}
 
@@ -109,8 +107,8 @@
 		letter-spacing: 0.05em;
 
 		.calligraphy-accent {
-			color: $birthday-parchment;
-			font-family: $birthday-font-sub;
+			color: primitives.$base-parchment-100;
+			font-family: tokens.$font-ui;
 			font-weight: 300;
 			font-size: 0.8em;
 		}
@@ -121,12 +119,11 @@
 	// ==========================================================================
 
 	.invitation-hero__content {
-		background: $birthday-glass-bg;
-		border: 1px solid $birthday-glass-border;
+		background: tokens.$color-glass-bg;
+		border: 1px solid tokens.$color-glass-border;
 		border-radius: 4px; // Masculine square-ish
 		position: relative;
 		overflow: hidden;
-
 
 		// Leather-like noise texture
 		&::before {
@@ -174,8 +171,8 @@
 		);
 
 		&__title {
-			font-family: $birthday-font-heading;
-			color: $birthday-accent;
+			font-family: tokens.$font-display-elegant;
+			color: primitives.$base-gold-500;
 			text-transform: uppercase;
 		}
 	}
@@ -185,14 +182,14 @@
 	// ==========================================================================
 
 	.invitation-quote__text {
-		font-family: $birthday-font-heading;
-		color: $birthday-primary;
+		font-family: tokens.$font-display-elegant;
+		color: primitives.$base-coffee-900;
 		font-style: italic;
 	}
 
 	.invitation-quote__author {
-		font-family: $birthday-font-sub;
-		color: $birthday-accent;
+		font-family: tokens.$font-ui;
+		color: primitives.$base-gold-500;
 		text-transform: uppercase;
 		letter-spacing: 0.15em;
 	}
@@ -202,21 +199,21 @@
 	// ==========================================================================
 
 	.rsvp__title {
-		font-family: $birthday-font-heading;
-		color: $birthday-primary;
+		font-family: tokens.$font-display-elegant;
+		color: primitives.$base-coffee-900;
 	}
 
 	.rsvp__button {
-		background: $birthday-primary;
-		color: $birthday-accent;
-		border: 2px solid $birthday-accent;
-		font-family: $birthday-font-sub;
+		background: primitives.$base-coffee-900;
+		color: primitives.$base-gold-500;
+		border: 2px solid primitives.$base-gold-500;
+		font-family: tokens.$font-ui;
 		text-transform: uppercase;
 		border-radius: 4px;
 
 		&:hover:not(:disabled) {
-			background: $birthday-bg-dark;
-			box-shadow: 0 0 20px rgba($birthday-accent, 0.4);
+			background: color.adjust(primitives.$base-coffee-900, $lightness: -10%);
+			box-shadow: 0 0 20px rgba(primitives.$base-gold-500, 0.4);
 		}
 	}
 
@@ -225,16 +222,16 @@
 	// ==========================================================================
 
 	.gallery__title {
-		font-family: $birthday-font-heading;
-		color: $birthday-primary;
+		font-family: tokens.$font-display-elegant;
+		color: primitives.$base-coffee-900;
 	}
 
 	.gallery__item {
-		border: 3px solid rgba($birthday-primary, 0.3);
+		border: 3px solid rgba(primitives.$base-coffee-900, 0.3);
 		border-radius: 4px;
 
 		&:hover {
-			border-color: $birthday-accent;
+			border-color: primitives.$base-gold-500;
 		}
 	}
 
@@ -255,35 +252,35 @@
 		}
 		.flourish-line {
 			width: 100px;
-			background: $birthday-accent;
+			background: primitives.$base-gold-500;
 		}
 	}
 
 	// Global Component Overrides
 	.card,
 	.glass-panel {
-		background: $birthday-glass-bg;
-		border: 1px solid $birthday-glass-border;
+		background: tokens.$color-glass-bg;
+		border: 1px solid tokens.$color-glass-border;
 		backdrop-filter: blur(8px);
 		border-radius: 4px;
-		box-shadow: $birthday-shadow;
+		box-shadow: tokens.$shadow-emphasis;
 	}
 
 	.btn-primary {
-		background-color: $birthday-primary;
-		color: $birthday-accent;
-		border: 1px solid $birthday-accent;
-		font-family: $birthday-font-sub;
+		background-color: primitives.$base-coffee-900;
+		color: primitives.$base-gold-500;
+		border: 1px solid primitives.$base-gold-500;
+		font-family: tokens.$font-ui;
 		font-weight: 600;
 		text-transform: uppercase;
 
 		&:hover {
-			background-color: $birthday-bg-dark;
+			background-color: color.adjust(primitives.$base-coffee-900, $lightness: -10%);
 			box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 		}
 	}
 
-	--timeline-line-color: #{$birthday-primary};
+	--timeline-line-color: #{primitives.$base-coffee-900};
 
 	// Scrollbar styling
 	&::-webkit-scrollbar {
@@ -291,12 +288,12 @@
 	}
 
 	&::-webkit-scrollbar-track {
-		background: $birthday-bg;
+		background: primitives.$base-parchment-100;
 	}
 
 	&::-webkit-scrollbar-thumb {
-		background: $birthday-primary;
-		border: 1px solid $birthday-accent;
+		background: primitives.$base-coffee-900;
+		border: 1px solid primitives.$base-gold-500;
 	}
 
 	// ==========================================================================
@@ -309,8 +306,8 @@
 			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
 			radial-gradient(
 				ellipse at center,
-				#{$birthday-leather-dark} 0%,
-				#{color.adjust($birthday-leather-dark, $lightness: -15%)} 100%
+				#{primitives.$base-coffee-900} 0%,
+				#{color.adjust(primitives.$base-coffee-900, $lightness: -15%)} 100%
 			);
 		background-blend-mode: soft-light, normal;
 	}
@@ -326,16 +323,24 @@
 	.envelope-pocket,
 	.envelope-flap {
 		// Aggressive Aged Parchment with Heavy Staining
-		background-color: $birthday-parchment !important;
+		background-color: primitives.$base-parchment-100 !important;
 		background-image:
             // Heavy coffee/tobacco stains in corners
-			radial-gradient(circle at 10% 10%, rgba($birthday-sepia, 0.4), transparent 40%),
-			radial-gradient(circle at 90% 85%, rgba($birthday-sepia, 0.5), transparent 30%),
+			radial-gradient(
+				circle at 10% 10%,
+				rgba(primitives.$base-coffee-700, 0.4),
+				transparent 40%
+			),
+			radial-gradient(
+				circle at 90% 85%,
+				rgba(primitives.$base-coffee-700, 0.5),
+				transparent 30%
+			),
 			// Moisture rings
 			radial-gradient(
 					circle at 70% 20%,
 					transparent 20%,
-					rgba($birthday-sepia, 0.1) 21%,
+					rgba(primitives.$base-coffee-700, 0.1) 21%,
 					transparent 23%
 				),
 			// Paper fiber texture
@@ -357,7 +362,7 @@
 		clip-path: none !important;
 		height: 49% !important; // Increased to nearly half (49%)
 		width: 100% !important;
-		border-bottom: 3px solid rgba($birthday-sepia, 0.2) !important;
+		border-bottom: 3px solid rgba(primitives.$base-coffee-700, 0.2) !important;
 		box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.2) !important;
 		z-index: 10;
 
@@ -366,25 +371,24 @@
 			z-index: 0;
 		}
 
-	// Tooltip Override: Loop to the LEFT of the seal
-	.envelope-tooltip {
-		right: 140% !important; // Push further left
-		left: auto !important;
-		top: 50% !important;
-		transform: translateY(-50%) !important;
-		margin: 0 !important;
-
-		// Arrow points RIGHT (towards seal)
-		&::after {
-			top: 50% !important;
-			right: -6px !important;
+		// Tooltip Override: Loop to the LEFT of the seal
+		.envelope-tooltip {
+			right: 140% !important; // Push further left
 			left: auto !important;
+			top: 50% !important;
 			transform: translateY(-50%) !important;
-			border-width: 6px 0 6px 6px !important;
-			border-color: transparent transparent transparent rgba(0, 0, 0, 0.5) !important;
-		}
-	}
+			margin: 0 !important;
 
+			// Arrow points RIGHT (towards seal)
+			&::after {
+				top: 50% !important;
+				right: -6px !important;
+				left: auto !important;
+				transform: translateY(-50%) !important;
+				border-width: 6px 0 6px 6px !important;
+				border-color: transparent transparent transparent rgba(0, 0, 0, 0.5) !important;
+			}
+		}
 	}
 
 	.envelope-pocket {
@@ -392,7 +396,7 @@
 		top: 40% !important; // Adjusted to overlap slightly or meet new flap height
 		height: 60% !important;
 		z-index: 2; // Should be visually below flap (5) but above base
-		border-top: 2px solid rgba($birthday-sepia, 0.1) !important;
+		border-top: 2px solid rgba(primitives.$base-coffee-700, 0.1) !important;
 	}
 
 	// Asymmetric Content Layout
@@ -414,9 +418,9 @@
 		z-index: 20;
 
 		.envelope-stamp {
-			border: 2px double $birthday-wax-red;
+			border: 2px double primitives.$base-wax-red;
 			padding: 4px 8px;
-			color: $birthday-wax-red;
+			color: primitives.$base-wax-red;
 			font-family: 'Special Elite', monospace;
 			display: flex;
 			flex-direction: column;
@@ -443,7 +447,7 @@
 			display: block;
 			font-family: 'Special Elite', monospace;
 			font-size: 0.7rem;
-			color: rgba($birthday-sepia, 0.6);
+			color: rgba(primitives.$base-coffee-700, 0.6);
 			letter-spacing: 0.3em;
 			margin-bottom: 0.5rem;
 		}
@@ -466,7 +470,7 @@
 				left: 0;
 				width: 60%;
 				height: 2px;
-				background: rgba($birthday-sepia, 0.2);
+				background: rgba(primitives.$base-coffee-700, 0.2);
 			}
 		}
 	}
@@ -507,7 +511,7 @@
 		.envelope-microcopy {
 			font-family: 'EB Garamond', serif;
 			font-style: italic;
-			color: rgba($birthday-sepia, 0.7);
+			color: rgba(primitives.$base-coffee-700, 0.7);
 			margin-top: 0.5rem;
 		}
 	}
@@ -522,17 +526,14 @@
 		// ── Layered Contact Shadow ──
 		// Three graduated layers simulate physical contact with parchment.
 		// Avoids the "floating object" artifact of a single drop-shadow.
-		filter:
-			drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45))
-			drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))
 			drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2)) !important;
 		transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
 
 		&:hover {
 			transform: scale(1.08) rotate(2deg) !important;
 			// Lift the contact shadow slightly on hover for "just pressed" feel
-			filter:
-				drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5))
+			filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5))
 				drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3))
 				drop-shadow(0 14px 28px rgba(0, 0, 0, 0.15)) !important;
 		}
@@ -546,10 +547,10 @@
 		// 4-stop radial: specular at 20%, warm body, dark rim, charred edge
 		background: radial-gradient(
 			circle at 35% 30%,
-			#{color.adjust($birthday-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
-			#{color.adjust($birthday-wax-red, $lightness: 8%)} 20%,
-			#{$birthday-wax-red} 55%,
-			#{color.adjust($birthday-wax-red, $lightness: -20%)} 100%
+			#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
+			#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
+			#{primitives.$base-wax-red} 55%,
+			#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
 		) !important;
 		border: none !important;
 
@@ -583,17 +584,14 @@
 			// Directional fill: lighter where light enters (TL), darker in shadow (BR)
 			background: linear-gradient(
 				140deg,
-				#{color.adjust($birthday-wax-red, $lightness: -8%)} 0%,
-				#{color.adjust($birthday-wax-red, $lightness: -16%)} 50%,
-				#{color.adjust($birthday-wax-red, $lightness: -6%)} 100%
+				#{color.adjust(primitives.$base-wax-red, $lightness: -8%)} 0%,
+				#{color.adjust(primitives.$base-wax-red, $lightness: -16%)} 50%,
+				#{color.adjust(primitives.$base-wax-red, $lightness: -6%)} 100%
 			) !important;
 
 			// ── Irregular Hexagonal Stamp ──
 			// Vertices offset 1-3% from a perfect hexagon to simulate hand-forged die
-			clip-path: polygon(
-				48% 2%, 98% 24%, 100% 73%,
-				52% 98%, 2% 77%, 0% 27%
-			) !important;
+			clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%) !important;
 
 			// ── Three-Point Lighting System ──
 			// 1. Top-left depth shadow (primary light source casts this)
@@ -628,8 +626,7 @@
 
 			// ── Debossed Lighting ──
 			// Top-left shadow (depth) + Bottom-right highlight (rim light)
-			filter:
-				drop-shadow(-1px -1px 0.5px rgba(0, 0, 0, 0.85))
+			filter: drop-shadow(-1px -1px 0.5px rgba(0, 0, 0, 0.85))
 				drop-shadow(0.75px 0.75px 0.3px rgba(255, 255, 255, 0.12));
 
 			opacity: 0.9;
@@ -645,7 +642,7 @@
 	.envelope-seal-button .seal-pulse {
 		width: 92px !important;
 		height: 92px !important;
-		border-color: rgba($birthday-wax-red, 0.35) !important;
+		border-color: rgba(primitives.$base-wax-red, 0.35) !important;
 		// Match the asymmetric blob shape
 		border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
 	}
