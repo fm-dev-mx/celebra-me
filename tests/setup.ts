@@ -36,3 +36,26 @@ Object.defineProperty(global, 'import', {
 		},
 	},
 });
+
+// Mock global fetch
+global.fetch = jest.fn().mockImplementation(() =>
+	Promise.resolve({
+		ok: true,
+		json: () => Promise.resolve({}),
+	}),
+) as jest.Mock;
+
+// Mock framer-motion to avoid issues in JSDOM
+jest.mock('framer-motion', () => {
+	const React = require('react');
+	return {
+		motion: {
+			div: ({ children, ...props }: any) => React.createElement('div', props, children),
+			h2: ({ children, ...props }: any) => React.createElement('h2', props, children),
+			span: ({ children, ...props }: any) => React.createElement('span', props, children),
+			button: ({ children, ...props }: any) => React.createElement('button', props, children),
+			form: ({ children, ...props }: any) => React.createElement('form', props, children),
+		},
+		AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+	};
+});

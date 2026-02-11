@@ -12,6 +12,10 @@ describe('RSVP Component', () => {
 		confirmationMessage: '¡Gracias por confirmar! Te esperamos con mucha emoción.',
 	};
 
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
 	describe('Initial Render', () => {
 		it('should render the title', () => {
 			render(<RSVP {...defaultProps} />);
@@ -58,13 +62,15 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
 		});
 
-		it('should show decline message when "No" is selected', async () => {
+		it('should enable the confirm button when any option is selected', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
-			await user.click(screen.getByLabelText(/No podré asistir/i));
+			const button = screen.getByRole('button', { name: /Confirmar/i });
+			expect(button).toBeDisabled();
 
-			expect(screen.getByText(/Te extrañaremos/i)).toBeInTheDocument();
+			await user.click(screen.getByLabelText(/No podré asistir/i));
+			expect(button).not.toBeDisabled();
 		});
 
 		it('should display max guest cap in the label', async () => {
@@ -82,18 +88,21 @@ describe('RSVP Component', () => {
 	describe('Guest Cap Validation', () => {
 		it('should show error when guest count exceeds cap', async () => {
 			const user = userEvent.setup();
-			render(<RSVP {...defaultProps} />);
+			const { container } = render(<RSVP {...defaultProps} />);
 
 			// Select "Yes"
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+
+			// Fill name
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 
 			// Set guest count above cap
 			const guestInput = screen.getByLabelText(/Número de acompañantes/i);
 			fireEvent.change(guestInput, { target: { value: '5' } });
 
 			// Submit
-			const form = screen.getByRole('form');
-			fireEvent.submit(form);
+			const form = container.querySelector('form');
+			fireEvent.submit(form!);
 
 			// Should show error
 			await waitFor(() => {
@@ -106,6 +115,7 @@ describe('RSVP Component', () => {
 			render(<RSVP {...defaultProps} />);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 
 			const guestInput = screen.getByLabelText(/Número de acompañantes/i);
 			await user.clear(guestInput);
@@ -113,8 +123,10 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			// Should not show error, should show confirmation
-			expect(screen.queryByText(/El límite de invitados/i)).not.toBeInTheDocument();
+			// Should not show error, should show confirmation (which means no error was triggered)
+			await waitFor(() => {
+				expect(screen.queryByText(/El límite de invitados/i)).not.toBeInTheDocument();
+			});
 		});
 	});
 
@@ -123,33 +135,41 @@ describe('RSVP Component', () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			expect(screen.getByText(defaultProps.confirmationMessage)).toBeInTheDocument();
+			await waitFor(() => {
+				expect(screen.getByText((content) => content.includes('¡Gracias por confirmar!'))).toBeInTheDocument();
+			});
 		});
 
 		it('should show decline message on "No" submission', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 			await user.click(screen.getByLabelText(/No podré asistir/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			expect(
-				screen.getByText(/Sentimos mucho que no puedas acompañarnos/i),
-			).toBeInTheDocument();
+			await waitFor(() => {
+				expect(
+					screen.getByText((content) => content.includes('Sentimos mucho que no puedas acompañarnos')),
+				).toBeInTheDocument();
+			});
 		});
 
 		it('should hide the form after submission', async () => {
 			const user = userEvent.setup();
-			render(<RSVP {...defaultProps} />);
+			const { container } = render(<RSVP {...defaultProps} />);
 
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
-			// Form should be replaced with greeting
-			expect(screen.queryByRole('form')).not.toBeInTheDocument();
+			await waitFor(() => {
+				expect(container.querySelector('form')).not.toBeInTheDocument();
+			});
 		});
 	});
 
@@ -157,7 +177,6 @@ describe('RSVP Component', () => {
 		it('should have proper form structure', () => {
 			const { container } = render(<RSVP {...defaultProps} />);
 
-			// The form element exists (even without accessible name)
 			const form = container.querySelector('form');
 			expect(form).toBeInTheDocument();
 		});
@@ -168,7 +187,6 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			// All interactive elements should be findable by label
 			expect(screen.getByLabelText(/Número de acompañantes/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
 		});

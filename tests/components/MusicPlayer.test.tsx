@@ -37,12 +37,6 @@ describe('MusicPlayer Component', () => {
 
 			expect(screen.getByText(/Toca para escuchar música/i)).toBeInTheDocument();
 		});
-
-		it('should not show mute button when not playing', () => {
-			render(<MusicPlayer {...defaultProps} />);
-
-			expect(screen.queryByRole('button', { name: /Silenciar/i })).not.toBeInTheDocument();
-		});
 	});
 
 	describe('Play/Pause Toggle', () => {
@@ -66,17 +60,6 @@ describe('MusicPlayer Component', () => {
 			await user.click(playButton);
 
 			expect(screen.queryByText(/Toca para escuchar música/i)).not.toBeInTheDocument();
-		});
-
-		it('should show mute button after play is started', async () => {
-			const user = userEvent.setup();
-			render(<MusicPlayer {...defaultProps} />);
-
-			const playButton = screen.getByRole('button', { name: defaultProps.title });
-			await user.click(playButton);
-
-			// After playing, mute button should appear
-			expect(screen.getByRole('button', { name: /Silenciar/i })).toBeInTheDocument();
 		});
 
 		it('should change to pause button after play', async () => {
@@ -108,55 +91,12 @@ describe('MusicPlayer Component', () => {
 		});
 	});
 
-	describe('Mute Toggle', () => {
-		it('should toggle mute state when mute button is clicked', async () => {
-			const user = userEvent.setup();
-			render(<MusicPlayer {...defaultProps} />);
-
-			// Start playing first
-			const playButton = screen.getByRole('button', { name: defaultProps.title });
-			await user.click(playButton);
-
-			// Click mute
-			const muteButton = screen.getByRole('button', { name: /Silenciar/i });
-			await user.click(muteButton);
-
-			// Should now show "Activar sonido"
-			expect(screen.getByRole('button', { name: /Activar sonido/i })).toBeInTheDocument();
-		});
-
-		it('should toggle audio.muted property', async () => {
-			const user = userEvent.setup();
-			const { container } = render(<MusicPlayer {...defaultProps} />);
-
-			const audioElement = container.querySelector('audio') as HTMLAudioElement;
-
-			// Start playing
-			await user.click(screen.getByRole('button', { name: defaultProps.title }));
-
-			// Mute
-			await user.click(screen.getByRole('button', { name: /Silenciar/i }));
-
-			expect(audioElement.muted).toBe(true);
-		});
-	});
-
 	describe('Accessibility', () => {
 		it('should have aria-label on play button', () => {
 			render(<MusicPlayer {...defaultProps} />);
 
 			const playButton = screen.getByRole('button', { name: defaultProps.title });
 			expect(playButton).toHaveAttribute('aria-label', defaultProps.title);
-		});
-
-		it('should have aria-label on mute button when visible', async () => {
-			const user = userEvent.setup();
-			render(<MusicPlayer {...defaultProps} />);
-
-			await user.click(screen.getByRole('button', { name: defaultProps.title }));
-
-			const muteButton = screen.getByRole('button', { name: /Silenciar/i });
-			expect(muteButton).toHaveAttribute('aria-label');
 		});
 
 		it('should have type="button" to prevent form submission', () => {

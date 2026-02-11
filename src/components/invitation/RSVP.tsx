@@ -19,7 +19,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	nameLabel = 'Tu nombre completo *',
 	attendanceLabel = '¿Asistirás al evento? *',
 	guestCountLabel = 'Número de acompañantes',
-	buttonLabel = 'Confirmar Asistencia',
+	buttonLabel = 'Confirmar',
 }) => {
 	const [name, setName] = useState('');
 	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
@@ -96,7 +96,8 @@ const RSVP: React.FC<RSVPProps> = ({
 							</>
 						) : (
 							<>
-								Gracias por avisarnos, <strong>{name}</strong>. Te extrañaremos.
+								Sentimos mucho que no puedas acompañarnos. <br />
+								Gracias por avisarnos, <strong>{name}</strong>.
 							</>
 						)}
 					</h2>
@@ -155,7 +156,7 @@ const RSVP: React.FC<RSVPProps> = ({
 								onChange={() => setAttendance('no')}
 								required
 							/>
-							No podré
+							No podré asistir
 						</label>
 					</div>
 				</motion.div>
@@ -197,7 +198,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							</div>
 
 							<div className="rsvp__field">
-								<label htmlFor="notes">Mensaje adicional (Opcional)</label>
+								<label htmlFor="notes">Notas adicionales</label>
 								<textarea
 									id="notes"
 									placeholder="Alguna nota para nosotros..."
