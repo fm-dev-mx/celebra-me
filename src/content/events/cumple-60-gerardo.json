@@ -3,8 +3,8 @@
     "title": "Gerardo - 60 Años",
     "description": "Estás invitado a celebrar los 60 años del Jefe Botas.",
     "theme": {
-        "primaryColor": "#4B3621",
-        "accentColor": "#D4AF37",
+        "primaryColor": "#3A2819",
+        "accentColor": "#DCB43C",
         "fontFamily": "serif",
         "preset": "luxury-hacienda"
     },
@@ -52,7 +52,11 @@
             "date": "21 de febrero de 2026",
             "time": "8:00 PM",
             "googleMapsUrl": "https://maps.app.goo.gl/KuRk4L96VD5T2GfR9",
-            "image": "jardin"
+            "image": "",
+            "coordinates": {
+                "lat": 25.7988274,
+                "lng": -108.9893813
+            }
         },
         "indications": [
             {
@@ -202,8 +206,8 @@
         "stampYear": "1866",
         "microcopy": "Toca para abrir el sobre",
         "closedPalette": {
-            "primary": "#4B3621",
-            "accent": "#D4AF37",
+            "primary": "#3A2819",
+            "accent": "#DCB43C",
             "background": "#F5F5DC"
         }
     }

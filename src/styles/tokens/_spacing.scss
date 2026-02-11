@@ -1,0 +1,51 @@
+// src/styles/tokens/_spacing.scss
+/**
+ * Spacing Tokens - Celebra-me Ecosystem
+ * 8px grid system (0.5rem base unit)
+ * Use these tokens for consistent spacing throughout the application.
+ */
+
+// Base spacing unit (8px = 0.5rem)
+$spacing-unit: 0.5rem;
+
+// Spacing scale (8px grid)
+$spacing-0: 0;
+$spacing-1: calc($spacing-unit * 0.5); // 4px
+$spacing-2: $spacing-unit; // 8px
+$spacing-3: calc($spacing-unit * 1.5); // 12px
+$spacing-4: calc($spacing-unit * 2); // 16px
+$spacing-5: calc($spacing-unit * 2.5); // 20px
+$spacing-6: calc($spacing-unit * 3); // 24px
+$spacing-8: calc($spacing-unit * 4); // 32px
+$spacing-10: calc($spacing-unit * 5); // 40px
+$spacing-12: calc($spacing-unit * 6); // 48px
+$spacing-16: calc($spacing-unit * 8); // 64px
+$spacing-20: calc($spacing-unit * 10); // 80px
+$spacing-24: calc($spacing-unit * 12); // 96px
+$spacing-32: calc($spacing-unit * 16); // 128px
+
+// Semantic spacing roles
+$spacing-container-padding: $spacing-6;
+$spacing-section-gap: $spacing-16;
+$spacing-component-gap: $spacing-6;
+$spacing-element-gap: $spacing-4;
+$spacing-text-gap: $spacing-2;
+
+// Responsive spacing map
+$spacing-responsive: (
+	mobile: (
+		container: $spacing-4,
+		section: $spacing-12,
+		component: $spacing-4,
+	),
+	tablet: (
+		container: $spacing-6,
+		section: $spacing-16,
+		component: $spacing-6,
+	),
+	desktop: (
+		container: $spacing-8,
+		section: $spacing-20,
+		component: $spacing-8,
+	),
+);

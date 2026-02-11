@@ -10,7 +10,7 @@
 
 // Text Roles
 $color-text-primary: var(--color-text-primary, primitives.$base-coffee-900);
-$color-text-primary-rgb: var(--color-text-primary-rgb, 75, 54, 33);
+$color-text-primary-rgb: var(--color-text-primary-rgb, 58, 40, 25);
 $color-text-secondary: var(--color-text-secondary, primitives.$base-coffee-700);
 $color-text-emphasis: var(--color-text-emphasis, primitives.$base-gold-700);
 $color-text-on-dark: var(--color-text-on-dark, primitives.$base-parchment-100);
@@ -20,12 +20,12 @@ $color-surface-primary: var(--color-surface-primary, primitives.$base-parchment-
 $color-surface-primary-rgb: var(--color-surface-primary-rgb, 245, 245, 220);
 $color-surface-secondary: var(--color-surface-secondary, primitives.$base-coffee-100);
 $color-surface-dark: var(--color-surface-dark, primitives.$base-coffee-900);
-$color-surface-dark-rgb: var(--color-surface-dark-rgb, 75, 54, 33);
+$color-surface-dark-rgb: var(--color-surface-dark-rgb, 58, 40, 25);
 
 // Action Roles
 $color-action-primary: var(--color-action-primary, primitives.$base-coffee-900);
 $color-action-accent: var(--color-action-accent, primitives.$base-gold-500);
-$color-action-accent-rgb: var(--color-action-accent-rgb, 212, 175, 55);
+$color-action-accent-rgb: var(--color-action-accent-rgb, 220, 180, 60);
 
 // Borders & Dividers
 $color-border-subtle: var(--color-border-subtle, rgba(primitives.$base-coffee-900, 0.1));

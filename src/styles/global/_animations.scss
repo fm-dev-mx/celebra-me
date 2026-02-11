@@ -79,3 +79,106 @@
 		animation-delay: var(--icon-delay, 0ms);
 	}
 }
+
+// Premium Texture Animations
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+
+@keyframes gold-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.4);
+	}
+	50% {
+		box-shadow: 0 0 0 10px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0);
+	}
+}
+
+@keyframes lift-up {
+	0% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(-4px);
+	}
+}
+
+// Scroll-triggered animation utilities
+.animate-on-scroll {
+	opacity: 0;
+	transform: translateY(30px);
+	transition:
+		opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+		transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+
+	&.animate-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-in {
+	animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+	animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.animate-gold-pulse {
+	animation: gold-pulse 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+	animation: shimmer 3s ease-in-out infinite;
+}
+
+// Stagger children animation
+.stagger-container > * {
+	opacity: 0;
+	transform: translateY(20px);
+	transition:
+		opacity 0.5s ease,
+		transform 0.5s ease;
+}
+
+.stagger-container.animate-visible > * {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.stagger-container > *:nth-child(1) {
+	transition-delay: 0.1s;
+}
+.stagger-container > *:nth-child(2) {
+	transition-delay: 0.2s;
+}
+.stagger-container > *:nth-child(3) {
+	transition-delay: 0.3s;
+}
+.stagger-container > *:nth-child(4) {
+	transition-delay: 0.4s;
+}
+.stagger-container > *:nth-child(5) {
+	transition-delay: 0.5s;
+}
+.stagger-container > *:nth-child(6) {
+	transition-delay: 0.6s;
+}

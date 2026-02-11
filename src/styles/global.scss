@@ -36,15 +36,71 @@
 	--font-body: #{tokens.$font-ui};
 	--font-ui: #{tokens.$font-ui};
 
-	/* Spacing & Utilities */
-	--spacing-sm: 0.5rem;
-	--spacing-md: 1rem;
-	--spacing-lg: 2rem;
-	--spacing-xl: 4rem;
+	/* Spacing & Utilities - 8px Grid System */
+	--spacing-0: #{tokens.$spacing-0};
+	--spacing-1: #{tokens.$spacing-1};
+	--spacing-2: #{tokens.$spacing-2};
+	--spacing-3: #{tokens.$spacing-3};
+	--spacing-4: #{tokens.$spacing-4};
+	--spacing-5: #{tokens.$spacing-5};
+	--spacing-6: #{tokens.$spacing-6};
+	--spacing-8: #{tokens.$spacing-8};
+	--spacing-10: #{tokens.$spacing-10};
+	--spacing-12: #{tokens.$spacing-12};
+	--spacing-16: #{tokens.$spacing-16};
+	--spacing-20: #{tokens.$spacing-20};
+	--spacing-24: #{tokens.$spacing-24};
+	--spacing-32: #{tokens.$spacing-32};
+
+	/* Semantic spacing roles */
+	--spacing-container-padding: #{tokens.$spacing-container-padding};
+	--spacing-section-gap: #{tokens.$spacing-section-gap};
+	--spacing-component-gap: #{tokens.$spacing-component-gap};
+	--spacing-element-gap: #{tokens.$spacing-element-gap};
+	--spacing-text-gap: #{tokens.$spacing-text-gap};
 
 	/* Motion - Mapped to tokens */
 	--duration-standard: #{tokens.$duration-standard};
 	--ease-premium: #{tokens.$ease-premium};
+}
+
+/* Premium Utility Classes */
+.gold-foil {
+	background: linear-gradient(
+		135deg,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 0%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 25%,
+		rgba(255, 223, 0, 0.4) 50%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 75%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 100%
+	);
+	background-size: 200% 200%;
+	animation: shimmer 3s ease-in-out infinite;
+}
+
+.engraved-text {
+	color: transparent;
+	background-clip: text;
+	-webkit-background-clip: text;
+	background-image: linear-gradient(
+		to bottom,
+		rgba(255, 255, 255, 0.8) 0%,
+		rgba(255, 255, 255, 0.4) 50%,
+		rgba(0, 0, 0, 0.2) 51%,
+		rgba(0, 0, 0, 0.6) 100%
+	);
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.lift-on-hover {
+	transition:
+		transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+	&:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+	}
 }
 
 html {

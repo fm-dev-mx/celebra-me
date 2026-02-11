@@ -85,3 +85,66 @@ $typography-scale: (
 		@error "Typography variant `#{$variant}` is not defined.";
 	}
 }
+
+// Premium Texture Mixins
+@mixin paper-texture {
+	background-image:
+		radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+		radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+		linear-gradient(45deg, transparent 49%, rgba(0, 0, 0, 0.03) 50%, transparent 51%);
+	background-size:
+		100px 100px,
+		100px 100px,
+		20px 20px;
+	background-blend-mode: multiply;
+}
+
+@mixin leather-texture {
+	background-image:
+		radial-gradient(ellipse at 30% 20%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+		radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+		linear-gradient(105deg, transparent 40%, rgba(0, 0, 0, 0.05) 50%, transparent 60%);
+	background-size:
+		200% 200%,
+		200% 200%,
+		100% 100%;
+	background-blend-mode: overlay;
+}
+
+@mixin gold-foil {
+	background: linear-gradient(
+		135deg,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 0%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 25%,
+		rgba(255, 223, 0, 0.4) 50%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 75%,
+		rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 100%
+	);
+	background-size: 200% 200%;
+	animation: shimmer 3s ease-in-out infinite;
+}
+
+@mixin lift-on-hover {
+	transition:
+		transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+	&:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+	}
+}
+
+@mixin engraved-text {
+	color: transparent;
+	background-clip: text;
+	-webkit-background-clip: text;
+	background-image: linear-gradient(
+		to bottom,
+		rgba(255, 255, 255, 0.8) 0%,
+		rgba(255, 255, 255, 0.4) 50%,
+		rgba(0, 0, 0, 0.2) 51%,
+		rgba(0, 0, 0, 0.6) 100%
+	);
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}

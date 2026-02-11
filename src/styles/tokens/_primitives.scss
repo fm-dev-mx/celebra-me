@@ -7,19 +7,29 @@
  * These should not be used directly in components.
  */
 
-// Coffee / Leather Bases
-$base-coffee-100: hsl(30, 40%, 95%);
-$base-coffee-300: hsl(30, 40%, 70%);
-$base-coffee-500: hsl(30, 40%, 40%);
-$base-coffee-700: hsl(30, 40%, 25%);
-$base-coffee-900: hsl(30, 40%, 13%); // #4B3621 is approx HSL(30, 40%, 21%) - adjusted for depth
+// Coffee / Leather Bases - Enhanced Depth Variation
+$base-coffee-50: hsl(30, 35%, 97%);
+$base-coffee-100: hsl(30, 40%, 92%);
+$base-coffee-200: hsl(30, 40%, 80%);
+$base-coffee-300: hsl(30, 45%, 70%);
+$base-coffee-400: hsl(30, 45%, 60%);
+$base-coffee-500: hsl(30, 45%, 45%); // Richer primary brown
+$base-coffee-600: hsl(30, 45%, 35%);
+$base-coffee-700: hsl(30, 45%, 28%);
+$base-coffee-800: hsl(30, 45%, 20%);
+$base-coffee-900: hsl(30, 45%, 15%); // Deeper, richer brown
 
-// Gold / Accent Bases
-$base-gold-100: hsl(45, 60%, 90%);
-$base-gold-300: hsl(45, 60%, 70%);
-$base-gold-500: hsl(45, 60%, 50%); // #D4AF37 is approx HSL(45, 62%, 53%)
-$base-gold-700: hsl(45, 60%, 35%);
-$base-gold-900: hsl(45, 60%, 20%);
+// Gold / Accent Bases - Enhanced Premium Palette
+$base-gold-50: hsl(40, 60%, 95%);
+$base-gold-100: hsl(40, 65%, 92%);
+$base-gold-200: hsl(40, 65%, 85%);
+$base-gold-300: hsl(40, 65%, 75%);
+$base-gold-400: hsl(40, 65%, 65%);
+$base-gold-500: hsl(40, 65%, 55%); // Primary Gold - Warmer & Richer
+$base-gold-600: hsl(40, 65%, 48%);
+$base-gold-700: hsl(40, 65%, 40%);
+$base-gold-800: hsl(40, 65%, 32%);
+$base-gold-900: hsl(40, 65%, 25%);
 
 // Parchment / Surface Bases
 $base-parchment-100: hsl(45, 50%, 95%); // #F5F5DC

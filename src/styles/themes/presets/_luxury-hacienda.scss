@@ -5,24 +5,33 @@
 .theme-preset--luxury-hacienda {
 	// Color Architecture: CSS Variable Injection
 	--color-text-primary: #{primitives.$base-coffee-900};
-	--color-text-primary-rgb: #{75, 54, 33}; // #4B3621
+	--color-text-primary-rgb: #{58, 40, 25}; // Enhanced premium brown
 	--color-text-secondary: #{color.adjust(primitives.$base-coffee-900, $lightness: 15%)};
 	--color-text-emphasis: #{primitives.$base-gold-500};
 
 	--color-surface-primary: #{primitives.$base-parchment-100};
 	--color-surface-primary-rgb: #{245, 245, 220}; // #F5F5DC
 	--color-surface-dark: #{primitives.$base-coffee-900};
-	--color-surface-dark-rgb: #{62, 43, 26}; // #3E2B1A
+	--color-surface-dark-rgb: #{50, 35, 22}; // Enhanced dark brown
 
 	--color-action-primary: #{primitives.$base-coffee-900};
 	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb: #{212, 175, 55}; // #D4AF37
+	--color-action-accent-rgb: #{220, 180, 60}; // Enhanced premium gold
 
-	--color-border-subtle: rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.1);
+	--color-border-subtle: rgba(var(--color-text-primary-rgb, 58, 40, 25), 0.1);
 	--color-border-emphasis: var(--color-action-accent);
 
 	// Base Theme Styles
 	background-color: var(--color-surface-primary, primitives.$base-parchment-100);
+	background-image:
+		radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+		radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+		linear-gradient(45deg, transparent 49%, rgba(0, 0, 0, 0.03) 50%, transparent 51%);
+	background-size:
+		100px 100px,
+		100px 100px,
+		20px 20px;
+	background-blend-mode: multiply;
 	color: var(--color-text-primary, primitives.$base-coffee-900);
 	min-height: 100vh;
 	font-family: tokens.$font-body-hacienda;
@@ -41,8 +50,12 @@
 	.invitation-hero__nickname-badge {
 		display: inline-block;
 		margin-top: 1rem;
-		padding: 0.5rem 1.5rem;
-		background-color: primitives.$base-coffee-900;
+		padding: 0.75rem 2rem;
+		background: linear-gradient(
+			135deg,
+			primitives.$base-coffee-900 0%,
+			color.adjust(primitives.$base-coffee-900, $lightness: -5%) 100%
+		);
 		color: primitives.$base-gold-500;
 		border: 2px solid primitives.$base-gold-500;
 		border-radius: 50px;
@@ -51,9 +64,28 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		transform: rotate(-3deg);
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+		box-shadow:
+			0 6px 20px rgba(0, 0, 0, 0.4),
+			inset 0 1px 0 rgba(255, 255, 255, 0.1);
 		position: relative;
 		z-index: 10;
+		letter-spacing: 0.05em;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: 50px;
+			background: linear-gradient(
+				135deg,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 0%,
+				transparent 50%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 100%
+			);
+			opacity: 0.5;
+			z-index: -1;
+		}
 
 		&::after {
 			content: '';
@@ -61,7 +93,15 @@
 			inset: -4px;
 			border: 1px solid primitives.$base-gold-500;
 			border-radius: 50px;
-			opacity: 0.5;
+			opacity: 0.3;
+		}
+
+		&:hover {
+			transform: rotate(-1deg) scale(1.05);
+			box-shadow:
+				0 10px 30px rgba(0, 0, 0, 0.5),
+				0 0 30px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
+			color: color.adjust(primitives.$base-gold-500, $lightness: 10%);
 		}
 	}
 
@@ -76,6 +116,17 @@
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+		background: linear-gradient(
+			to right,
+			primitives.$base-gold-300,
+			primitives.$base-gold-500,
+			primitives.$base-gold-300
+		);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		background-size: 200% auto;
+		animation: shimmer 3s ease-in-out infinite;
 	}
 
 	.invitation-hero__label {
@@ -88,9 +139,9 @@
 		height: 2px;
 		background: linear-gradient(
 			to right,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1) 0%,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.4) 50%,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1) 100%
+			rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 0%,
+			rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.4) 50%,
+			rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 100%
 		);
 		background-size: 200% auto;
 		animation:
@@ -120,19 +171,31 @@
 
 	.invitation-hero__content {
 		background: tokens.$color-glass-bg;
-		border: 1px solid tokens.$color-glass-border;
+		border: 1px solid rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.25);
+		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px; // Masculine square-ish
 		position: relative;
 		overflow: hidden;
+		box-shadow:
+			inset 0 0 30px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1),
+			0 10px 30px rgba(0, 0, 0, 0.2);
 
-		// Leather-like noise texture
+		// Premium paper texture
 		&::before {
 			content: '';
 			position: absolute;
 			inset: 0;
-			opacity: 0.05;
+			opacity: 0.08;
 			pointer-events: none;
-			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			background-image:
+				radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+				radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+				linear-gradient(45deg, transparent 49%, rgba(0, 0, 0, 0.03) 50%, transparent 51%);
+			background-size:
+				100px 100px,
+				100px 100px,
+				20px 20px;
+			background-blend-mode: multiply;
 			z-index: -1;
 		}
 	}
@@ -146,8 +209,8 @@
 			radial-gradient(
 				circle at center,
 				transparent 10%,
-				rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.3) 60%,
-				rgba(var(--color-surface-dark-rgb, 62, 43, 26), 0.8) 100%
+				rgba(var(--color-text-primary-rgb, 58, 40, 25), 0.3) 60%,
+				rgba(var(--color-surface-dark-rgb, 50, 35, 22), 0.8) 100%
 			),
 			linear-gradient(
 				to bottom,
@@ -190,12 +253,46 @@
 		color: primitives.$base-gold-500;
 		border: 2px solid primitives.$base-gold-500;
 		font-family: tokens.$font-ui;
+		font-weight: 600;
 		text-transform: uppercase;
 		border-radius: 4px;
+		padding: 0.75rem 2rem;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		position: relative;
+		overflow: hidden;
+		letter-spacing: 0.05em;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.2),
+				transparent
+			);
+			transition: left 0.6s ease;
+		}
 
 		&:hover:not(:disabled) {
-			background: color.adjust(primitives.$base-coffee-900, $lightness: -10%);
-			box-shadow: 0 0 20px rgba(primitives.$base-gold-500, 0.4);
+			background: color.adjust(primitives.$base-coffee-900, $lightness: -15%);
+			box-shadow:
+				0 0 25px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.5),
+				inset 0 0 20px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
+			transform: translateY(-2px);
+
+			&::before {
+				left: 100%;
+			}
+		}
+
+		&:active:not(:disabled) {
+			transform: translateY(0);
+			transition-duration: 0.1s;
 		}
 	}
 
@@ -211,9 +308,37 @@
 	.gallery__item {
 		border: 3px solid rgba(primitives.$base-coffee-900, 0.3);
 		border-radius: 4px;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		overflow: hidden;
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			background: linear-gradient(
+				135deg,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0) 0%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 50%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0) 100%
+			);
+			opacity: 0;
+			transition: opacity 0.4s ease;
+			z-index: 1;
+			pointer-events: none;
+		}
 
 		&:hover {
 			border-color: primitives.$base-gold-500;
+			transform: translateY(-8px) scale(1.02);
+			box-shadow:
+				0 20px 40px rgba(0, 0, 0, 0.3),
+				0 0 30px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.2);
+
+			&::before {
+				opacity: 1;
+			}
 		}
 	}
 
@@ -242,23 +367,75 @@
 	.card,
 	.glass-panel {
 		background: tokens.$color-glass-bg;
-		border: 1px solid tokens.$color-glass-border;
-		backdrop-filter: blur(8px);
+		border: 1px solid rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
+		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px;
-		box-shadow: tokens.$shadow-emphasis;
+		box-shadow:
+			tokens.$shadow-emphasis,
+			inset 0 0 20px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			background: linear-gradient(
+				135deg,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 0%,
+				transparent 50%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 100%
+			);
+			pointer-events: none;
+			z-index: -1;
+		}
 	}
 
 	.btn-primary {
 		background-color: primitives.$base-coffee-900;
 		color: primitives.$base-gold-500;
-		border: 1px solid primitives.$base-gold-500;
+		border: 2px solid primitives.$base-gold-500;
 		font-family: tokens.$font-ui;
 		font-weight: 600;
 		text-transform: uppercase;
+		padding: 0.75rem 2rem;
+		border-radius: 4px;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		position: relative;
+		overflow: hidden;
+		letter-spacing: 0.05em;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.2),
+				transparent
+			);
+			transition: left 0.6s ease;
+		}
 
 		&:hover {
-			background-color: color.adjust(primitives.$base-coffee-900, $lightness: -10%);
-			box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+			background-color: color.adjust(primitives.$base-coffee-900, $lightness: -15%);
+			box-shadow:
+				0 0 20px rgba(220, 180, 60, 0.5),
+				inset 0 0 20px rgba(220, 180, 60, 0.1);
+			transform: translateY(-2px);
+
+			&::before {
+				left: 100%;
+			}
+		}
+
+		&:active {
+			transform: translateY(0);
+			transition-duration: 0.1s;
 		}
 	}
 
@@ -285,13 +462,20 @@
 
 	.envelope-wrapper {
 		background:
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E"),
+			radial-gradient(ellipse at 30% 20%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+			radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+			linear-gradient(105deg, transparent 40%, rgba(0, 0, 0, 0.05) 50%, transparent 60%),
 			radial-gradient(
 				ellipse at center,
 				#{primitives.$base-coffee-900} 0%,
 				#{color.adjust(primitives.$base-coffee-900, $lightness: -15%)} 100%
 			);
-		background-blend-mode: soft-light, normal;
+		background-size:
+			200% 200%,
+			200% 200%,
+			100% 100%,
+			auto;
+		background-blend-mode: overlay, overlay, overlay, normal;
 	}
 
 	.envelope-container {
@@ -403,7 +587,7 @@
 			border: 2px double primitives.$base-wax-red;
 			padding: 4px 8px;
 			color: primitives.$base-wax-red;
-			font-family: 'Special Elite', monospace;
+			font-family: 'Cormorant Garamond', serif;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -427,7 +611,7 @@
 
 		.envelope-manifest-label {
 			display: block;
-			font-family: 'Special Elite', monospace;
+			font-family: 'Cormorant Garamond', serif;
 			font-size: 0.7rem;
 			color: rgba(primitives.$base-coffee-700, 0.6);
 			letter-spacing: 0.3em;
@@ -484,7 +668,7 @@
 		}
 
 		.envelope-details {
-			font-family: 'Special Elite', monospace;
+			font-family: 'Cormorant Garamond', serif;
 			font-size: 0.9rem !important;
 			color: #2b2b2b !important;
 			opacity: 0.9;
