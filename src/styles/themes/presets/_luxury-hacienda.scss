@@ -590,4 +590,31 @@
 		// Match the asymmetric blob shape
 		border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
 	}
+
+	// ==========================================================================
+	// IMAGE FILTERS: COGNAC & LUXURY
+	// Unifies all photography under the 'Hacienda' aesthetic
+	// ==========================================================================
+
+	.invitation-hero__background img {
+		// Darkens the background and warms it up to let gold text pop
+		filter: sepia(0.35) contrast(1.15) brightness(0.85) sasurate(1.1);
+	}
+
+	.gallery__item img {
+		// Vintage warm look for gallery
+		filter: sepia(0.3) contrast(1.1) brightness(0.95) saturate(0.9);
+		transition: filter 0.5s ease;
+
+		&:hover {
+			// Reveal original color on hover
+			filter: sepia(0) contrast(1) brightness(1) saturate(1);
+		}
+	}
+
+	.photo-image,
+	.invitation-hero__portrait img {
+		// Elegant portrait treatment
+		filter: sepia(0.25) contrast(1.1) brightness(1.05);
+	}
 }

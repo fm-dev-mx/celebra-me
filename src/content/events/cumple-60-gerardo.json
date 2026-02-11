@@ -12,7 +12,7 @@
         "name": "Gerardo García",
         "nickname": "Jefe Botas",
         "date": "2026-05-16T19:00:00.000Z",
-        "backgroundImage": "../../assets/images/events/cumple-60-gerardo/hero.png"
+        "backgroundImage": "../../assets/images/events/cumple-60-gerardo/hero.webp"
     },
     "location": {
         "venueName": "Hacienda San José",
@@ -50,28 +50,48 @@
         "subtitle": "60 años de historias",
         "items": [
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png",
-                "caption": "Los primeros pasos"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-01.webp",
+                "caption": "El Jefe Botas"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png",
-                "caption": "Jefe Botas en acción"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-02.webp",
+                "caption": "Caminando juntos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png",
-                "caption": "Familia y raíces"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-03.webp",
+                "caption": "Hacienda y tradición"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-1.png",
-                "caption": "Amigos de toda la vida"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-04.webp",
+                "caption": "Legado familiar"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-2.png",
-                "caption": "Celebrando juntos"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-05.webp",
+                "caption": "Sonrisa de siempre"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-3.png",
-                "caption": "El legado continúa"
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-06.webp",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-07.webp",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-08.webp",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-09.webp",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-10.webp",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "../../assets/images/events/cumple-60-gerardo/gallery-11.webp",
+                "caption": "60 Años bien vividos"
             }
         ]
     },
@@ -87,7 +107,7 @@
     "thankYou": {
         "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
         "closingName": "Gerardo",
-        "image": "../../assets/images/events/cumple-60-gerardo/thank-you.png"
+        "image": "../../assets/images/events/cumple-60-gerardo/portrait.webp"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/western-theme.mp3",
