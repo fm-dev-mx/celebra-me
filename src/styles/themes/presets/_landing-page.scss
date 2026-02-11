@@ -1,0 +1,34 @@
+@use '../../tokens/primitives' as primitives;
+
+.theme-preset--landing-page {
+	// Color Architecture: Standard Brand Palette (Direct Primitive Mapping)
+	--color-text-primary: #{primitives.$base-coffee-900};
+	--color-text-primary-rgb: 75, 54, 33; // #4B3621
+	--color-text-secondary: #{primitives.$base-coffee-700};
+	--color-text-emphasis: #{primitives.$base-gold-700};
+
+	--color-surface-primary: #{primitives.$base-parchment-100};
+	--color-surface-primary-rgb: 245, 245, 220; // #F5F5DC
+	--color-surface-dark: #{primitives.$base-coffee-900};
+	--color-surface-dark-rgb: 75, 54, 33; // #3E2B1A
+
+	--color-action-primary: #{primitives.$base-coffee-900};
+	--color-action-accent: #{primitives.$base-gold-500};
+	--color-action-accent-rgb: 212, 175, 55; // #D4AF37
+
+	// Specific fixes for Contact Form
+	--color-border-subtle: rgba(75, 54, 33, 0.1); // Based on coffee-900
+	--color-border-emphasis: #{primitives.$base-gold-500};
+
+    // Glassmorphism default
+    --color-glass-bg: rgba(245, 245, 220, 0.1); // parchment-100 rgb
+    --color-glass-border: rgba(245, 245, 220, 0.2);
+
+    // Shadows
+    --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --shadow-emphasis: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+	// Base Theme Styles
+	background-color: var(--color-surface-primary);
+	color: var(--color-text-primary);
+}

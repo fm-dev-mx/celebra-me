@@ -1,4 +1,6 @@
 @use '../../global/variables' as *;
+@use '../../tokens' as tokens;
+@use 'sass:color';
 
 .whatsapp-button {
 	display: inline-flex;
@@ -6,9 +8,9 @@
 	justify-content: center;
 	gap: 0.5rem;
 	padding: 0.625rem 1.5rem;
-	background-color: #25d366;
+	background-color: tokens.$color-whatsapp;
 	opacity: 0.8;
-	color: #ffffff;
+	color: tokens.$color-text-on-dark;
 	border-radius: 9999px;
 	font-weight: 500;
 	transition:
@@ -24,7 +26,7 @@
 	}
 
 	&:hover {
-		background-color: #20b157;
+		background-color: color.scale(tokens.$color-whatsapp, $lightness: -10%);
 		transform: translateY(-1px);
 	}
 
