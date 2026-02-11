@@ -5,6 +5,7 @@
 export const prerender = true;
 
 import { type CollectionEntry, getCollection } from 'astro:content';
+import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/AssetRegistry';
 import Layout from '@/layouts/Layout.astro';
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
@@ -32,9 +33,7 @@ export async function getStaticPaths() {
 	}));
 }
 
-interface Props {
-	event: CollectionEntry<'events'>;
-}
+
 
 const { event } = Astro.props;
 
@@ -61,6 +60,55 @@ function hexToRgb(hex: string): string {
 const primaryColorRgb = hexToRgb(data.theme.primaryColor);
 const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
 
+// --- Asset Resolution Helpers ---
+function resolveAsset(keyOrUrl: string | undefined): ImageAsset | undefined {
+	if (!keyOrUrl) return undefined;
+
+	// If it's a URL (cloud or external), return as ImageAsset
+	if (keyOrUrl.startsWith('http') || keyOrUrl.startsWith('/')) {
+		return {
+			src: keyOrUrl,
+			alt: 'Recurso del evento'
+		};
+	}
+
+	// Otherwise treat as registry key
+	return getEventAsset(event.id, keyOrUrl as EventAssetKey);
+}
+
+function requireAsset(keyOrUrl: string): ImageAsset {
+	const asset = resolveAsset(keyOrUrl);
+	if (!asset) {
+		console.warn(`[AssetWarning] Asset not found for key: ${keyOrUrl} in event ${event.id}`);
+		// Fallback to avoid crash, though this should ideally be handled better
+		return { src: '', alt: 'Recurso faltante' };
+	}
+	return asset;
+}
+
+// --- Data Mapping ---
+// Map registry keys/URLs to actual ImageAsset objects for components
+const heroBg = requireAsset(data.hero.backgroundImage);
+const heroPortrait = resolveAsset(data.hero.portrait);
+const ceremonyData = data.location.ceremony ? {
+	...data.location.ceremony,
+	image: data.location.ceremony.image ? resolveAsset(data.location.ceremony.image) : undefined
+} : undefined;
+
+const receptionData = data.location.reception ? {
+	...data.location.reception,
+	image: data.location.reception.image ? resolveAsset(data.location.reception.image) : undefined
+} : undefined;
+
+const familyImage = data.family?.featuredImage ? resolveAsset(data.family.featuredImage) : undefined;
+const thankYouImage = data.thankYou?.image ? resolveAsset(data.thankYou.image) : undefined;
+
+// Gallery Mapping
+const galleryItems = data.gallery?.items.map(item => ({
+	...item,
+	image: requireAsset(item.image)
+})) || [];
+
 // Preset handle
 const preset = data.theme.preset;
 const themeClass = preset ? `theme-preset--${preset}` : '';
@@ -72,12 +120,13 @@ const labels: Record<string, string> = {
 	cumple: '60 Años',
 };
 const heroLabel = labels[data.eventType] || 'Invitación Especial';
+const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.src;
 ---
 
 <Layout
 	title={data.title}
 	description={data.description || ''}
-	image={data.hero.backgroundImage.src}
+	image={heroImageSrc}
 	hideHeader={true}
 >
 
@@ -99,7 +148,7 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 
 	<main class={`event-theme-wrapper ${themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
 		{
-			showEnvelope && (
+			data.envelope && !data.envelope.disabled && (
 				<EnvelopeReveal
 					client:load
 					name={data.hero.name}
@@ -129,8 +178,8 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 			nickname={data.hero.nickname}
 			date={data.hero.date}
 			venueName={data.location.venueName}
-			backgroundImage={data.hero.backgroundImage}
-			portrait={data.hero.portrait}
+			backgroundImage={heroBg}
+			portrait={heroPortrait}
 		/>
 
 		{data.quote && <Quote text={data.quote.text} author={data.quote.author} />}
@@ -151,15 +200,15 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 				<Family
 					parents={data.family.parents}
 					godparents={data.family.godparents}
-					featuredImage={data.family.featuredImage}
+					featuredImage={familyImage}
 					celebrantName={data.hero.name}
 				/>
 			)
 		}
 
 		<EventLocation
-			ceremony={data.location.ceremony}
-			reception={data.location.reception}
+			ceremony={ceremonyData}
+			reception={receptionData}
 			indications={data.location.indications}
 		/>
 
@@ -176,7 +225,7 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 				<Gallery
 					title={data.gallery.title}
 					subtitle={data.gallery.subtitle}
-					items={data.gallery.items}
+					items={galleryItems}
 				/>
 			)
 		}
@@ -208,7 +257,7 @@ const heroLabel = labels[data.eventType] || 'Invitación Especial';
 				<ThankYou
 					message={data.thankYou.message}
 					closingName={data.thankYou.closingName}
-					image={data.thankYou.image}
+					image={thankYouImage}
 				/>
 			)
 		}

@@ -12,7 +12,7 @@
         "name": "Gerardo Mendoza",
         "nickname": "Jefe Botas",
         "date": "2026-02-21T20:00:00.000Z",
-        "backgroundImage": "../../assets/images/events/cumple-60-gerardo/hero.webp"
+        "backgroundImage": "hero"
     },
     "location": {
         "venueName": "Jardín De Eventos Cuatro 60",
@@ -25,7 +25,7 @@
             "date": "21 de febrero de 2026",
             "time": "8:00 PM",
             "googleMapsUrl": "https://maps.app.goo.gl/KuRk4L96VD5T2GfR9",
-            "image": "../../assets/images/events/cumple-60-gerardo/jardin.webp"
+            "image": "jardin"
         },
         "indications": [
             {
@@ -49,47 +49,47 @@
         "subtitle": "60 años de historias",
         "items": [
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-01.webp",
+                "image": "gallery01",
                 "caption": "El Jefe Botas"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-02.webp",
+                "image": "gallery02",
                 "caption": "Caminando juntos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-03.webp",
+                "image": "gallery03",
                 "caption": "Hacienda y tradición"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-04.webp",
+                "image": "gallery04",
                 "caption": "Legado familiar"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-05.webp",
+                "image": "gallery05",
                 "caption": "Sonrisa de siempre"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-06.webp",
+                "image": "gallery06",
                 "caption": "60 Años bien vividos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-07.webp",
+                "image": "gallery07",
                 "caption": "60 Años bien vividos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-08.webp",
+                "image": "gallery08",
                 "caption": "60 Años bien vividos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-09.webp",
+                "image": "gallery09",
                 "caption": "60 Años bien vividos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-10.webp",
+                "image": "gallery10",
                 "caption": "60 Años bien vividos"
             },
             {
-                "image": "../../assets/images/events/cumple-60-gerardo/gallery-11.webp",
+                "image": "gallery11",
                 "caption": "60 Años bien vividos"
             }
         ]
@@ -106,7 +106,7 @@
     "thankYou": {
         "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
         "closingName": "Gerardo",
-        "image": "../../assets/images/events/cumple-60-gerardo/portrait.webp"
+        "image": "portrait"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/western-theme.mp3",

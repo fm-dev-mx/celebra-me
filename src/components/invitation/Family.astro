@@ -3,6 +3,7 @@
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface Props {
 	parents: {
@@ -13,11 +14,13 @@ interface Props {
 		name: string;
 		role?: string;
 	}>;
-	featuredImage?: string;
+	featuredImage?: string | ImageAsset;
 	celebrantName: string;
 }
 
 const { parents, godparents, featuredImage, celebrantName } = Astro.props;
+
+const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
 ---
 
 <section id="family-section" class="family">
@@ -60,7 +63,7 @@ const { parents, godparents, featuredImage, celebrantName } = Astro.props;
 					<div class="family__image-container">
 						<div class="family__image-frame">
 							<OptimizedImage
-								imagePath={featuredImage}
+								imagePath={imagePath}
 								alt={celebrantName}
 								width={600}
 								height={800}

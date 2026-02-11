@@ -5,8 +5,7 @@ import { defineCollection, z } from 'astro:content';
 // Just adding image context
 const eventsCollection = defineCollection({
 	type: 'data',
-	schema: ({ image }) =>
-		z.object({
+	schema: z.object({
 			eventType: z.enum(['xv', 'boda', 'bautizo', 'cumple']),
 			isDemo: z.boolean().optional(),
 			title: z.string(),
@@ -21,8 +20,8 @@ const eventsCollection = defineCollection({
 				name: z.string(),
 				nickname: z.string().optional(),
 				date: z.string().datetime(), // ISO 8601
-				backgroundImage: image(),
-				portrait: image().optional(), // ADU-8: Optional celebrant portrait
+				backgroundImage: z.string(),
+				portrait: z.string().optional(), // ADU-8: Optional celebrant portrait
 			}),
 			location: z.object({
 				// Base venue info (backward compatible)
@@ -56,7 +55,7 @@ const eventsCollection = defineCollection({
 						mapUrl: z.string().url().optional(),
 						appleMapsUrl: z.string().url().optional(),
 						googleMapsUrl: z.string().url().optional(),
-						image: image().optional(),
+						image: z.string().optional(),
 						coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 						itinerary: z
 							.array(
@@ -94,7 +93,7 @@ const eventsCollection = defineCollection({
 							}),
 						)
 						.optional(),
-					featuredImage: image().optional(),
+					featuredImage: z.string().optional(),
 				})
 				.optional(),
 			rsvp: z
@@ -118,7 +117,7 @@ const eventsCollection = defineCollection({
 				.object({
 					message: z.string(),
 					closingName: z.string(),
-					image: image().optional(),
+					image: z.string().optional(),
 				})
 				.optional(),
 			music: z
@@ -142,7 +141,7 @@ const eventsCollection = defineCollection({
 					subtitle: z.string().optional(),
 					items: z.array(
 						z.object({
-							image: image(),
+							image: z.string(),
 							caption: z.string().optional(),
 						}),
 					),

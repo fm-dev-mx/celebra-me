@@ -1,6 +1,6 @@
 import hero from './hero.webp';
 import portrait from './portrait.webp';
-import signature01 from './signature-01.webp';
+import signature from './signature.webp';
 import jardin from './jardin.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
@@ -18,7 +18,7 @@ export const assets = {
   hero,
   portrait,
   jardin,
-  signature: signature01,
+  signature,
   gallery: [
     gallery01,
     gallery02,

@@ -11,6 +11,7 @@ import SectionNavButton from '@/components/invitation/components/SectionNavButto
 import Icon from '@/components/common/icons/Icon.astro';
 
 import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface VenueData {
 	venueName: string;
@@ -21,7 +22,7 @@ interface VenueData {
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;
 	wazeUrl?: string;
-	image?: string | ImageMetadata;
+	image?: string | ImageMetadata | ImageAsset;
 	coordinates?: {
 		lat: number;
 		lng: number;

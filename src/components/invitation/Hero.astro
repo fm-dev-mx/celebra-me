@@ -2,6 +2,7 @@
 // src/components/invitation/Hero.astro
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 import '@/styles/invitation/_hero.scss';
 
 interface Props {
@@ -11,11 +12,14 @@ interface Props {
 	date: string;
 	time?: string;
 	venueName: string;
-	backgroundImage: ImageMetadata;
-	portrait?: ImageMetadata; // ADU-8: Optional celebrant portrait
+	backgroundImage: ImageMetadata | ImageAsset;
+	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
 }
 
 const { name, label, nickname, date, time, venueName, backgroundImage, portrait } = Astro.props;
+
+const bgSrc = 'src' in backgroundImage ? backgroundImage.src : backgroundImage;
+const portraitSrc = portrait ? ('src' in portrait ? portrait.src : portrait) : undefined;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -26,16 +30,31 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 
 <section id="inicio" class="invitation-hero">
 	<div class="invitation-hero__background">
-		<Image
-			src={backgroundImage}
-			alt={name}
-			width={1920}
-			height={1080}
-			format="webp"
-			quality={80}
-			loading="eager"
-			fetchpriority="high"
-		/>
+		{
+			typeof bgSrc === 'string' ? (
+				<Image
+					src={bgSrc}
+					alt={name}
+					width={1920}
+					height={1080}
+					format="webp"
+					quality={80}
+					loading="eager"
+					fetchpriority="high"
+				/>
+			) : (
+				<Image
+					src={bgSrc}
+					alt={name}
+					width={1920}
+					height={1080}
+					format="webp"
+					quality={80}
+					loading="eager"
+					fetchpriority="high"
+				/>
+			)
+		}
 	</div>
 
 	<div class="invitation-hero__content">
@@ -48,16 +67,27 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 			</div>
 		)}
 
-		{portrait && (
+		{portraitSrc && (
 			<div class="invitation-hero__portrait">
-				<Image
-					src={portrait}
-					alt={`Retrato de ${name}`}
-					width={200}
-					height={200}
-					format="webp"
-					quality={85}
-				/>
+				{typeof portraitSrc === 'string' ? (
+					<Image
+						src={portraitSrc}
+						alt={`Retrato de ${name}`}
+						width={200}
+						height={200}
+						format="webp"
+						quality={85}
+					/>
+				) : (
+					<Image
+						src={portraitSrc}
+						alt={`Retrato de ${name}`}
+						width={200}
+						height={200}
+						format="webp"
+						quality={85}
+					/>
+				)}
 			</div>
 		)}
 

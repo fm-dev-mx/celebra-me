@@ -1,11 +1,12 @@
 ---
 // src/components/invitation/Gallery.astro
 import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 import PhotoGallery from './PhotoGallery';
 import '@/styles/invitation/_gallery.scss';
 
 interface GalleryItem {
-	image: ImageMetadata;
+	image: ImageMetadata | ImageAsset;
 	caption?: string;
 }
 

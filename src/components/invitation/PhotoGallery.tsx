@@ -3,15 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
+
 interface GalleryItem {
-	image: {
-		src: string;
-		width: number;
-		height: number;
-		format: string;
-	};
+	image: ImageMetadata | ImageAsset;
 	caption?: string;
 }
+
+const getSrc = (image: ImageMetadata | ImageAsset): string => {
+	if ('src' in image) {
+        // ImageAsset or ImageMetadata
+        const src = image.src;
+        if (typeof src === 'string') return src;
+        return src.src;
+    }
+    // Fallback? Types say it must be one of the above.
+    // ImageMetadata has src string. ImageAsset has src string|Metadata.
+    // Actually, ImageMetadata has src property.
+    return (image as ImageMetadata).src;
+};
 
 interface PhotoGalleryProps {
 	items: GalleryItem[];
@@ -89,7 +100,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 						aria-label={item.caption || `Ver imagen ${index + 1}`}
 					>
 						<img
-							src={item.image.src}
+							src={getSrc(item.image)}
 							alt={item.caption || `Galería ${index + 1}`}
 							loading="lazy"
 						/>
@@ -142,7 +153,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 							onClick={(e) => e.stopPropagation()}
 						>
 							<img
-								src={items[selectedImage].image.src}
+								src={getSrc(items[selectedImage].image)}
 								alt={items[selectedImage].caption || `Galería ${selectedImage + 1}`}
 							/>
 							{items[selectedImage].caption && (

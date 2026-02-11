@@ -12,7 +12,7 @@
     "hero": {
         "name": "Lucía García",
         "date": "2026-04-25T18:00:00.000Z",
-        "backgroundImage": "../../assets/images/events/demo-xv/hero.webp"
+        "backgroundImage": "hero"
     },
     "location": {
         "venueName": "Quinta Las Flores",
@@ -67,7 +67,7 @@
             { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
             { "name": "Sra. Ana María", "role": "Madrina de Honor" }
         ],
-        "featuredImage": "../../assets/images/events/demo-xv/family.webp"
+        "featuredImage": "family"
     },
     "sections": {
         "countdown": true,
@@ -80,51 +80,51 @@
         "subtitle": "Recuerdos antes del gran día",
         "items": [
             {
-                "image": "../../assets/images/events/demo-xv/gallery-01.webp",
+                "image": "gallery01",
                 "caption": "Momentos de ilusión"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-02.webp",
+                "image": "gallery02",
                 "caption": "Sonrisas que iluminan"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-03.webp",
+                "image": "gallery03",
                 "caption": "Elegancia y gracia"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-04.webp",
+                "image": "gallery04",
                 "caption": "Un sueño hecho realidad"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-05.webp",
+                "image": "gallery05",
                 "caption": "Esperando el gran día"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-06.webp",
+                "image": "gallery06",
                 "caption": "Brillo propio"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-07.webp",
+                "image": "gallery07",
                 "caption": "Naturalidad"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-08.webp",
+                "image": "gallery08",
                 "caption": "Retratos inolvidables"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-09.webp",
+                "image": "gallery09",
                 "caption": "Dulce transición"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-10.webp",
+                "image": "gallery10",
                 "caption": "Cada detalle cuenta"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-11.webp",
+                "image": "gallery11",
                 "caption": "En el jardín"
             },
             {
-                "image": "../../assets/images/events/demo-xv/gallery-12.webp",
+                "image": "gallery12",
                 "caption": "Felicidad pura"
             }
         ]
@@ -164,7 +164,7 @@
     "thankYou": {
         "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
         "closingName": "Lucía",
-        "image": "../../assets/images/events/demo-xv/signature.webp"
+        "image": "signature"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",

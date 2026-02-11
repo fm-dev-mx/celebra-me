@@ -2,11 +2,12 @@
 // src/components/invitation/ThankYou.astro
 import '@/styles/invitation/_thank-you.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface Props {
 	message: string;
 	closingName: string;
-	image?: string;
+	image?: string | ImageAsset;
 }
 
 const { message, closingName, image } = Astro.props;

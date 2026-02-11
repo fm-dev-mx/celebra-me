@@ -5,8 +5,23 @@
 
 import { assets as Cumple60GerardoAssets } from '../../assets/images/events/cumple-60-gerardo';
 import { assets as DemoXvAssets } from '../../assets/images/events/demo-xv';
-import heroBgDesktop from '../../assets/images/hero/bgHeroDesktop.jpg';
-import heroBgMobile from '../../assets/images/hero/bgHeroMobile.jpg';
+import type { ImageMetadata } from 'astro';
+
+// Social Proof
+import avatar1 from '../../assets/images/hero/avatar1.png';
+import avatar2 from '../../assets/images/hero/avatar2.png';
+import avatar3 from '../../assets/images/hero/avatar3.png';
+
+// Services
+import serviceXv from '../../assets/images/services/xv.png';
+import serviceWedding from '../../assets/images/services/wedding.png';
+import serviceBaptism from '../../assets/images/services/baptism.png';
+
+// Header
+import headerLogo from '../../assets/images/header/horizontalLogo150x56.png';
+
+// About
+import partyToast from '../../assets/images/about/partyToastPremium.png';
 
 /**
  * Represents a processed image asset.
@@ -52,6 +67,18 @@ export interface CommonAssets {
 	logo: ImageAsset;
 	heroBgDesktop: ImageAsset;
 	heroBgMobile: ImageAsset;
+	// Social Proof
+	avatar1: ImageAsset;
+	avatar2: ImageAsset;
+	avatar3: ImageAsset;
+	// Services
+	serviceXv: ImageAsset;
+	serviceWedding: ImageAsset;
+	serviceBaptism: ImageAsset;
+	// Header
+	headerLogo: ImageAsset;
+	// About
+	aboutToast: ImageAsset;
 }
 
 interface Registry {
@@ -59,52 +86,58 @@ interface Registry {
 	common: CommonAssets;
 }
 
+type RawEventAssets = {
+	hero: ImageMetadata;
+	portrait: ImageMetadata;
+	family?: ImageMetadata;
+	jardin: ImageMetadata;
+	signature: ImageMetadata;
+	gallery: ImageMetadata[];
+};
+
 // Event-specific asset mapping helpers
-// Using 'any' for rawAssets to allow flexibility between event exports without strict type intersection
-// in this utility, relying on the return type EventAssets to enforce correct structure.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapEventAssets = (rawAssets: any, eventName: string): EventAssets => ({
-	hero: { src: rawAssets.hero, alt: `${eventName} Hero` },
-	portrait: { src: rawAssets.portrait, alt: `${eventName} Portrait` },
+const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAssets => ({
+	hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
+	portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
 	family: rawAssets.family
-		? { src: rawAssets.family, alt: `${eventName} Family` }
+		? { src: rawAssets.family, alt: `Familia de ${eventName}` }
 		: undefined,
-	jardin: { src: rawAssets.jardin, alt: `${eventName} Venue` },
-	signature: { src: rawAssets.signature, alt: `${eventName} Signature` },
-	gallery01: { src: rawAssets.gallery[0], alt: `${eventName} Gallery 01` },
-	gallery02: { src: rawAssets.gallery[1], alt: `${eventName} Gallery 02` },
-	gallery03: { src: rawAssets.gallery[2], alt: `${eventName} Gallery 03` },
-	gallery04: { src: rawAssets.gallery[3], alt: `${eventName} Gallery 04` },
-	gallery05: { src: rawAssets.gallery[4], alt: `${eventName} Gallery 05` },
-	gallery06: { src: rawAssets.gallery[5], alt: `${eventName} Gallery 06` },
-	gallery07: { src: rawAssets.gallery[6], alt: `${eventName} Gallery 07` },
-	gallery08: { src: rawAssets.gallery[7], alt: `${eventName} Gallery 08` },
-	gallery09: { src: rawAssets.gallery[8], alt: `${eventName} Gallery 09` },
-	gallery10: { src: rawAssets.gallery[9], alt: `${eventName} Gallery 10` },
-	gallery11: { src: rawAssets.gallery[10], alt: `${eventName} Gallery 11` },
+	jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
+	signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
+	gallery01: { src: rawAssets.gallery[0], alt: `Galería 01 de ${eventName}` },
+	gallery02: { src: rawAssets.gallery[1], alt: `Galería 02 de ${eventName}` },
+	gallery03: { src: rawAssets.gallery[2], alt: `Galería 03 de ${eventName}` },
+	gallery04: { src: rawAssets.gallery[3], alt: `Galería 04 de ${eventName}` },
+	gallery05: { src: rawAssets.gallery[4], alt: `Galería 05 de ${eventName}` },
+	gallery06: { src: rawAssets.gallery[5], alt: `Galería 06 de ${eventName}` },
+	gallery07: { src: rawAssets.gallery[6], alt: `Galería 07 de ${eventName}` },
+	gallery08: { src: rawAssets.gallery[7], alt: `Galería 08 de ${eventName}` },
+	gallery09: { src: rawAssets.gallery[8], alt: `Galería 09 de ${eventName}` },
+	gallery10: { src: rawAssets.gallery[9], alt: `Galería 10 de ${eventName}` },
+	gallery11: { src: rawAssets.gallery[10], alt: `Galería 11 de ${eventName}` },
 	gallery12: rawAssets.gallery[11]
-		? { src: rawAssets.gallery[11], alt: `${eventName} Gallery 12` }
+		? { src: rawAssets.gallery[11], alt: `Galería 12 de ${eventName}` }
 		: undefined,
 });
 
 export const ImageRegistry: Registry = {
 	events: {
-		'cumple-60-gerardo': mapEventAssets(Cumple60GerardoAssets, 'Gerardo 60th'),
-		'demo-xv': mapEventAssets(DemoXvAssets, 'Demo XV'),
+		'cumple-60-gerardo': mapEventAssets(Cumple60GerardoAssets, 'Gerardo 60 años'),
+		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
 	},
 	common: {
 		logo: {
 			src: '/icons/favicon.svg',
-			alt: 'Celebra-me Logo',
+			alt: 'Logotipo de Celebra-me',
 		},
-		heroBgDesktop: {
-			src: heroBgDesktop,
-			alt: 'Landing Hero Desktop',
-		},
-		heroBgMobile: {
-			src: heroBgMobile,
-			alt: 'Landing Hero Mobile',
-		},
+		avatar1: { src: avatar1, alt: 'Usuario de Celebra-me' },
+		avatar2: { src: avatar2, alt: 'Usuario de Celebra-me' },
+		avatar3: { src: avatar3, alt: 'Usuario de Celebra-me' },
+		serviceXv: { src: serviceXv, alt: 'Servicio de XV Años' },
+		serviceWedding: { src: serviceWedding, alt: 'Servicio de Bodas' },
+		serviceBaptism: { src: serviceBaptism, alt: 'Servicio de Bautizos' },
+		headerLogo: { src: headerLogo, alt: 'Celebra-me Logo' },
+		aboutToast: { src: partyToast, alt: 'Celebración elegante con brindis' },
 	},
 };
 
