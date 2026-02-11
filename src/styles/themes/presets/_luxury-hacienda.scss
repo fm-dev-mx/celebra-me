@@ -2,8 +2,27 @@
 @use '../../birthday/variables' as *;
 
 .theme-preset--luxury-hacienda {
-	background-color: $birthday-bg;
-	color: $birthday-primary;
+	// Color Architecture: CSS Variable Injection
+	--color-text-primary: #{$birthday-primary};
+	--color-text-primary-rgb: #{75, 54, 33}; // #4B3621
+	--color-text-secondary: #{color.adjust($birthday-primary, $lightness: 15%)};
+	--color-text-emphasis: #{$birthday-accent};
+
+	--color-surface-primary: #{$birthday-bg};
+	--color-surface-primary-rgb: #{245, 245, 220}; // #F5F5DC
+	--color-surface-dark: #{$birthday-bg-dark};
+	--color-surface-dark-rgb: #{62, 43, 26}; // #3E2B1A
+
+	--color-action-primary: #{$birthday-primary};
+	--color-action-accent: #{$birthday-accent};
+	--color-action-accent-rgb: #{212, 175, 55}; // #D4AF37
+
+	--color-border-subtle: rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.1);
+	--color-border-emphasis: var(--color-action-accent);
+
+	// Base Theme Styles
+	background-color: var(--color-surface-primary, $birthday-bg);
+	color: var(--color-text-primary, $birthday-primary);
 	min-height: 100vh;
 	font-family: $birthday-font-heading;
 
@@ -71,9 +90,9 @@
 		height: 2px;
 		background: linear-gradient(
 			to right,
-			rgba($birthday-accent, 0.1) 0%,
-			rgba($birthday-accent, 0.4) 50%,
-			rgba($birthday-accent, 0.1) 100%
+			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1) 0%,
+			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.4) 50%,
+			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1) 100%
 		);
 		background-size: 200% auto;
 		animation:
@@ -130,8 +149,8 @@
 			radial-gradient(
 				circle at center,
 				transparent 10%,
-				rgba($birthday-primary, 0.3) 60%,
-				rgba(color.adjust($birthday-primary, $lightness: -20%), 0.8) 100%
+				rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.3) 60%,
+				rgba(var(--color-surface-dark-rgb, 62, 43, 26), 0.8) 100%
 			),
 			linear-gradient(
 				to bottom,
@@ -150,8 +169,8 @@
 	.countdown {
 		background: linear-gradient(
 			135deg,
-			rgba($birthday-primary, 0.95) 0%,
-			rgba($birthday-bg-dark, 0.98) 100%
+			rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.95) 0%,
+			rgba(var(--color-surface-dark-rgb, 62, 43, 26), 0.98) 100%
 		);
 
 		&__title {
