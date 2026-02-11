@@ -1,0 +1,137 @@
+@use '../../global/mixins' as mixins;
+@use '../../tokens' as tokens;
+
+// ==========================================================================
+// FAMILY SECTION THEMES
+// ==========================================================================
+
+// --- JEWELRY BOX (XV / Wedding) ---
+.family[data-variant='jewelry-box'] {
+	background: linear-gradient(180deg, #fff9f5 0%, #fff0f5 100%);
+
+	&::before {
+		background: linear-gradient(90deg, transparent, #d4af37, transparent);
+	}
+
+	.family__suptitle {
+		font-family: tokens.$font-display-elegant;
+		color: #d4af37;
+	}
+
+	.family__title-main {
+		font-family: tokens.$font-display-formal;
+		background: linear-gradient(to right, #111 0%, #d4af37 50%, #111 100%);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.family__card-inner {
+		background: tokens.$color-glass-bg;
+		border: 1px solid tokens.$color-glass-border;
+		box-shadow: tokens.$shadow-subtle;
+
+		&::after {
+			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+		}
+	}
+
+	.family__card-subtitle {
+		font-family: tokens.$font-display-elegant;
+		color: #d4af37;
+	}
+
+	.family__calligraphy-ampersand {
+		font-family: 'Pinyon Script', cursive;
+		font-size: 2.5rem;
+		color: #d4af37;
+		line-height: 1;
+	}
+
+	.family__name {
+		font-family: 'Playfair Display', serif;
+		color: #111;
+
+		&::first-letter {
+			color: #d4af37;
+		}
+	}
+
+	.family__role {
+		font-family: tokens.$font-display-formal;
+		color: #d4af37;
+	}
+
+	.family__image-frame {
+		border: 1px solid rgba(212, 175, 55, 0.4);
+		box-shadow: 0 15px 45px rgba(212, 175, 55, 0.3);
+	}
+}
+
+// --- LUXURY HACIENDA (Gerardo / Masculine) ---
+.family[data-variant='luxury-hacienda'] {
+	background: #1a1512;
+	background-image:
+		radial-gradient(circle at 0% 0%, rgba(75, 54, 33, 0.2) 0%, transparent 50%),
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+
+	&::before {
+		background: linear-gradient(90deg, transparent, #4B3621, transparent);
+	}
+
+	.family__suptitle {
+		font-family: tokens.$font-display-elegant;
+		color: #8B4513;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+	}
+
+	.family__title-main {
+		font-family: tokens.$font-display-formal;
+		background: linear-gradient(to right, #D4AF37 0%, #8B4513 50%, #D4AF37 100%);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.family__card-inner {
+		background: rgba(30, 25, 20, 0.9);
+		border: 1px solid #4B3621;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+		&::after {
+			background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+		}
+	}
+
+	.family__card-subtitle {
+		font-family: tokens.$font-display-elegant;
+		color: #D4AF37;
+	}
+
+	.family__calligraphy-ampersand {
+		font-family: 'Pinyon Script', cursive;
+		font-size: 2.5rem;
+		color: #D4AF37;
+	}
+
+	.family__name {
+		font-family: 'EB Garamond', serif;
+		color: #f5f5f5;
+
+		&::first-letter {
+			color: #D4AF37;
+		}
+	}
+
+	.family__role {
+		font-family: tokens.$font-display-formal;
+		color: #8B4513;
+	}
+
+	.family__image-frame {
+		border: 2px solid #4B3621;
+		box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.5);
+		border-radius: 4px; // More masculine sharp corners or slight rounding
+	}
+}

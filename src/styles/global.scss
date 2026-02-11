@@ -10,6 +10,7 @@
 @use 'invitation/envelope-reveal';
 @use 'tokens' as tokens;
 @use 'themes/presets/all';
+@use 'themes/sections';
 
 :root {
 	/* Premium Color Palette - Mapped to tokens */

@@ -1,0 +1,128 @@
+@use '../../global/mixins' as mixins;
+@use '../../tokens' as tokens;
+
+// ==========================================================================
+// GIFTS SECTION THEMES
+// ==========================================================================
+
+// --- JEWELRY BOX (XV / Wedding) ---
+.gifts-section[data-variant='jewelry-box'] {
+	background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+
+	.gifts-section__title {
+		font-family: tokens.$font-display-formal;
+		color: #d4af37;
+	}
+
+	.gift-card {
+		background: tokens.$color-glass-bg;
+		border: 1px solid tokens.$color-glass-border;
+		backdrop-filter: blur(12px);
+
+		&::before {
+			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+		}
+
+		&:hover {
+			border-color: rgba(212, 175, 55, 0.5);
+			box-shadow: 0 15px 35px rgba(212, 175, 55, 0.2);
+		}
+	}
+
+	.gift-card__icon {
+		color: #d4af37;
+	}
+
+	.gift-card__title {
+		font-family: tokens.$font-display-formal;
+		color: #d4af37;
+	}
+
+	.gift-card__button {
+		border-color: #d4af37;
+		color: #d4af37;
+
+		&:hover {
+			background: #d4af37;
+			color: white;
+		}
+	}
+
+	.bank-details {
+		background: rgba(255, 255, 255, 0.05);
+		border-left: 3px solid #d4af37;
+
+		strong {
+			color: #d4af37;
+		}
+	}
+
+	.copy-button {
+		background: #d4af37;
+		color: white;
+	}
+}
+
+// --- LUXURY HACIENDA (Gerardo / Masculine) ---
+.gifts-section[data-variant='luxury-hacienda'] {
+	background: #12100e;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+
+	.gifts-section__title {
+		font-family: tokens.$font-display-formal;
+		color: #8B4513;
+	}
+
+	.gift-card {
+		background: rgba(30, 25, 20, 0.95);
+		border: 1px solid #4B3621;
+		border-radius: 4px;
+
+		&::before {
+			background: linear-gradient(90deg, transparent, #8B4513, transparent);
+		}
+
+		&:hover {
+			border-color: #D4AF37;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+		}
+	}
+
+	.gift-card__icon {
+		color: #D4AF37;
+	}
+
+	.gift-card__title {
+		font-family: tokens.$font-display-formal;
+		color: #D4AF37;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+
+	.gift-card__button {
+		border-color: #D4AF37;
+		color: #D4AF37;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-weight: 600;
+
+		&:hover {
+			background: #D4AF37;
+			color: #1a1512;
+		}
+	}
+
+	.bank-details {
+		background: rgba(0, 0, 0, 0.3);
+		border-left: 3px solid #8B4513;
+
+		strong {
+			color: #D4AF37;
+		}
+	}
+
+	.copy-button {
+		background: #8B4513;
+		color: white;
+	}
+}

@@ -1,0 +1,8 @@
+// src/styles/themes/sections/_index.scss
+// Export all section-specific theme styles
+
+@forward 'quote-theme';
+@forward 'countdown-theme';
+@forward 'location-theme';
+@forward 'family-theme';
+@forward 'gifts-theme';

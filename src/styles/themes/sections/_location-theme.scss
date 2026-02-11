@@ -1,0 +1,786 @@
+// src/styles/themes/sections/_location-theme.scss
+// Theme-specific styles for Location/EventLocation Section
+// Supports: structured (default), organic, minimal, luxury
+
+@use '../../tokens' as tokens;
+@use '../../invitation/variables' as vars;
+@use '@/styles/global/mixins' as mixins;
+
+// ==========================================================================
+// STRUCTURED VARIANT (Default - Organized/Architectural Style)
+// Best for: Formal events, weddings, corporate events
+// Characteristics: Grid layout, defined borders, structured cards
+// ==========================================================================
+
+.event-location[data-variant='structured'] {
+	// Clean parchment background
+	background-color: tokens.$color-surface-primary;
+	background-image:
+		url('https://www.transparenttextures.com/patterns/paper-fibers.png'),
+		linear-gradient(
+			180deg,
+			rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.95) 0%,
+			rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.9) 100%
+		);
+	background-blend-mode: overlay, normal;
+	text-align: center;
+
+	// Structured container - cards side by side on desktop
+	.event-location__container {
+		max-width: 1000px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1.5rem, 3vh, 3rem);
+		align-items: center;
+
+		@include mixins.respond-to(md) {
+			flex-direction: row;
+			align-items: flex-start;
+			justify-content: center;
+			gap: clamp(2rem, 5vw, 4rem);
+		}
+	}
+
+	// Card wrapper with standard width
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: 420px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex: 1;
+	}
+
+	// Clean modern card title
+	.event-location__card-title {
+		font-family: vars.$font-heading-modern;
+		font-size: 0.85rem;
+		color: hsla(43, 30%, 45%, 0.7);
+		letter-spacing: 5px;
+		text-transform: uppercase;
+		margin-bottom: 0.5rem;
+		font-weight: 600;
+		text-align: center;
+	}
+
+	// Diamond flourish separator
+	.event-location__card-flourish {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin-bottom: 2rem;
+		opacity: 0.8;
+
+		.flourish-line {
+			width: 30px;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, tokens.$color-action-accent);
+
+			&:last-child {
+				background: linear-gradient(-90deg, transparent, tokens.$color-action-accent);
+			}
+		}
+
+		.flourish-diamond {
+			width: 6px;
+			height: 6px;
+			background: tokens.$color-action-accent;
+			transform: rotate(45deg);
+		}
+	}
+
+	// Structured parchment cards
+	.event-location__card {
+		background-color: tokens.$color-surface-primary;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
+		background-blend-mode: multiply;
+		border: 1px solid rgba(tokens.$color-action-accent, 0.3);
+		border-radius: 4px;
+		padding: 2.5rem 1.5rem;
+		box-shadow:
+			0 15px 40px rgba(0, 0, 0, 0.08),
+			inset 0 0 20px rgba(tokens.$color-action-accent, 0.05);
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+
+		&:hover {
+			transform: translateY(-4px);
+			box-shadow:
+				0 20px 45px hsla(0, 0%, 0%, 0.08),
+				0 8px 20px hsla(43, 55%, 55%, 0.1);
+		}
+	}
+
+	// Gold photo frame
+	.event-location__card-image-outer-frame {
+		width: 100%;
+		border-radius: 2px;
+		background: linear-gradient(135deg, #c5a059 0%, #f1e1b9 45%, #d4af37 55%, #a67c37 100%);
+		padding: 2px;
+		box-shadow:
+			0 10px 30px -10px rgba(0, 0, 0, 0.3),
+			inset 0 0 1px rgba(255, 255, 255, 0.5);
+		margin-bottom: 2rem;
+	}
+
+	.event-location__card-image-inner-frame {
+		border-radius: 2px;
+		background: white;
+		padding: 8px;
+	}
+
+	.event-location__card-image {
+		filter: sepia(0.1) contrast(1.05);
+	}
+
+	// Styled content list
+	.event-location__card-content-list {
+		&__place {
+			font-family: vars.$font-heading-elegant;
+			font-size: 1.9rem;
+			color: tokens.$color-text-primary;
+			margin-bottom: 1.5rem;
+			line-height: 1.1;
+			letter-spacing: -0.5px;
+		}
+
+		&__date {
+			font-family: vars.$font-decorative-calligraphy;
+			font-size: clamp(1rem, 6vw, 1.3rem);
+			color: tokens.$color-action-accent;
+			margin-bottom: 0.5rem;
+			white-space: nowrap;
+		}
+
+		&__hour {
+			font-family: vars.$font-heading-modern;
+			font-size: clamp(0.7rem, 2vw, 1rem);
+			letter-spacing: 6px;
+			font-weight: 500;
+			text-transform: uppercase;
+			color: tokens.$color-neutral-muted;
+			margin-bottom: 2.5rem;
+		}
+
+		&__address {
+			font-size: 0.85rem;
+			color: tokens.$color-neutral-base;
+			line-height: 1.6;
+			font-style: normal;
+			letter-spacing: 0.5px;
+		}
+	}
+
+	// Luxury navigation buttons
+	.nav-button {
+		background: var(--color-action-accent, tokens.$color-action-accent);
+		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+		border-radius: 4px;
+		font-family: vars.$font-heading-modern;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+		&:hover {
+			background: hsla(43, 55%, 55%, 0.08);
+			border-color: hsla(43, 55%, 55%, 0.6);
+			box-shadow: 0 0 25px hsla(43, 55%, 55%, 0.15);
+		}
+	}
+}
+
+// ==========================================================================
+// ORGANIC VARIANT (Natural/Flowing Style)
+// Best for: XV Años, outdoor events, garden weddings
+// Characteristics: Soft curves, floral flourishes, pastel colors
+// ==========================================================================
+
+.event-location[data-variant='organic'] {
+	// Soft gradient background
+	background: linear-gradient(180deg, #fff9f5 0%, #fff0f5 50%, #faf0f8 100%);
+	text-align: center;
+	position: relative;
+	overflow: hidden;
+
+	// Decorative organic shapes
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			radial-gradient(ellipse at 0% 0%, rgba(255, 182, 193, 0.2) 0%, transparent 50%),
+			radial-gradient(ellipse at 100% 100%, rgba(221, 160, 221, 0.2) 0%, transparent 50%);
+		pointer-events: none;
+	}
+
+	// Flowing container
+	.event-location__container {
+		max-width: 1100px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(2rem, 4vh, 4rem);
+		align-items: center;
+
+		@include mixins.respond-to(md) {
+			flex-direction: row;
+			align-items: stretch;
+			justify-content: center;
+			gap: clamp(2.5rem, 6vw, 5rem);
+		}
+	}
+
+	// Card wrapper with breathing room
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: 450px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	// Decorative card title with script accent
+	.event-location__card-title {
+		font-family: 'Dancing Script', cursive;
+		font-size: 1.4rem;
+		color: #b76e79;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.8rem;
+		font-weight: 600;
+	}
+
+	// Floral flourish separator
+	.event-location__card-flourish {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 2rem;
+		opacity: 0.9;
+
+		.flourish-line {
+			width: 50px;
+			height: 2px;
+			background: linear-gradient(90deg, transparent, #ffb6c1, transparent);
+			border-radius: 2px;
+
+			&:last-child {
+				background: linear-gradient(-90deg, transparent, #ffb6c1, transparent);
+			}
+		}
+
+		.flourish-diamond {
+			width: 12px;
+			height: 12px;
+			background: linear-gradient(135deg, #ffb6c1, #ffc0cb);
+			border-radius: 50% 0;
+			transform: rotate(45deg);
+			box-shadow: 0 2px 8px rgba(255, 182, 193, 0.4);
+		}
+	}
+
+	// Soft organic cards with curves
+	.event-location__card {
+		background: linear-gradient(145deg, #ffffff 0%, #fff5f8 100%);
+		border: none;
+		border-radius: 24px;
+		padding: 2rem;
+		box-shadow:
+			0 10px 40px rgba(183, 110, 121, 0.1),
+			0 4px 12px rgba(0, 0, 0, 0.05);
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+
+		// Soft inner glow
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgba(255, 182, 193, 0.3);
+			border-radius: 18px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-6px) scale(1.01);
+			box-shadow:
+				0 20px 50px rgba(183, 110, 121, 0.15),
+				0 8px 20px rgba(0, 0, 0, 0.08);
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: 2.5rem;
+			border-radius: 28px;
+		}
+	}
+
+	// Soft pastel frame
+	.event-location__card-image-outer-frame {
+		width: 100%;
+		border-radius: 20px;
+		background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 50%, #dda0dd 100%);
+		padding: 4px;
+		box-shadow: 0 8px 30px rgba(255, 182, 193, 0.3);
+		margin-bottom: 1.5rem;
+	}
+
+	.event-location__card-image-inner-frame {
+		border-radius: 16px;
+		background: white;
+		padding: 6px;
+		overflow: hidden;
+	}
+
+	.event-location__card-image {
+		filter: saturate(1.1) contrast(1.05);
+		border-radius: 12px;
+	}
+
+	// Soft styled content
+	.event-location__card-content-list {
+		&__place {
+			font-family: 'Playfair Display', serif;
+			font-size: 1.7rem;
+			color: #6b4c4c;
+			margin-bottom: 1rem;
+			line-height: 1.2;
+		}
+
+		&__date {
+			font-family: 'Dancing Script', cursive;
+			font-size: 1.2rem;
+			color: #b76e79;
+			margin-bottom: 0.5rem;
+		}
+
+		&__hour {
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.9rem;
+			letter-spacing: 4px;
+			font-weight: 500;
+			text-transform: uppercase;
+			color: #9b7b7b;
+			margin-bottom: 1.5rem;
+		}
+
+		&__address {
+			font-family: 'Poppins', sans-serif;
+			font-size: 0.85rem;
+			color: #8b6b6b;
+			line-height: 1.6;
+		}
+	}
+
+	// Soft navigation buttons
+	.nav-button {
+		background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
+		border: none;
+		border-radius: 25px;
+		font-family: 'Poppins', sans-serif;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		color: white;
+		padding: 1rem 1.8rem;
+		box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+		transition: all 0.3s ease;
+
+		&:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 25px rgba(255, 182, 193, 0.5);
+			filter: brightness(1.05);
+		}
+
+		&--maps,
+		&--waze {
+			background: rgba(255, 255, 255, 0.9);
+			color: #b76e79;
+			border: 2px solid #ffb6c1;
+
+			&:hover {
+				background: white;
+				border-color: #ffc0cb;
+			}
+		}
+	}
+}
+
+// ==========================================================================
+// MINIMAL VARIANT (Clean/Simple Style)
+// Best for: Modern events, corporate gatherings
+// Characteristics: No flourishes, clean cards, straightforward design
+// ==========================================================================
+
+.event-location[data-variant='minimal'] {
+	// Clean white background
+	background: #fafafa;
+	text-align: left;
+
+	// Simple container
+	.event-location__container {
+		max-width: 900px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+
+		@include mixins.respond-to(md) {
+			flex-direction: row;
+			gap: 3rem;
+		}
+	}
+
+	// Card wrapper
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: none;
+	}
+
+	// Simple title
+	.event-location__card-title {
+		font-family: 'Inter', sans-serif;
+		font-size: 0.75rem;
+		color: #999;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		margin-bottom: 1rem;
+		font-weight: 600;
+	}
+
+	// No flourishes
+	.event-location__card-flourish {
+		display: none;
+	}
+
+	// Clean simple cards
+	.event-location__card {
+		background: white;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		width: 100%;
+
+		&:hover {
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: 2rem;
+		}
+	}
+
+	// Simple frame
+	.event-location__card-image-outer-frame {
+		width: 100%;
+		border-radius: 6px;
+		background: #e0e0e0;
+		padding: 1px;
+		margin-bottom: 1.5rem;
+	}
+
+	.event-location__card-image-inner-frame {
+		border-radius: 5px;
+		background: white;
+		padding: 0;
+	}
+
+	.event-location__card-image {
+		filter: none;
+	}
+
+	// Simple content
+	.event-location__card-content-list {
+		&__place {
+			font-family: 'Inter', sans-serif;
+			font-size: 1.4rem;
+			color: #333;
+			margin-bottom: 1rem;
+			font-weight: 600;
+		}
+
+		&__date {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.95rem;
+			color: #666;
+			margin-bottom: 0.5rem;
+		}
+
+		&__hour {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.85rem;
+			letter-spacing: 2px;
+			font-weight: 500;
+			text-transform: uppercase;
+			color: #999;
+			margin-bottom: 1.5rem;
+		}
+
+		&__address {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.85rem;
+			color: #666;
+			line-height: 1.6;
+		}
+	}
+
+	// Simple buttons
+	.nav-button {
+		background: #333;
+		border: none;
+		border-radius: 6px;
+		font-family: 'Inter', sans-serif;
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		color: white;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: #555;
+		}
+
+		&--maps,
+		&--waze {
+			background: white;
+			color: #333;
+			border: 1px solid #ccc;
+
+			&:hover {
+				background: #f5f5f5;
+				border-color: #999;
+			}
+		}
+	}
+}
+
+// ==========================================================================
+// LUXURY VARIANT (Premium/High-end Style)
+// Best for: High-end weddings, gala events, VIP celebrations
+// Characteristics: Dark theme, gold accents, sophisticated details
+// ==========================================================================
+
+.event-location[data-variant='luxury'] {
+	// Rich dark background
+	background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+	text-align: center;
+	position: relative;
+
+	// Subtle ambient glow
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 80%;
+		height: 300px;
+		background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+		pointer-events: none;
+	}
+
+	// Elegant container
+	.event-location__container {
+		max-width: 1000px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(2rem, 4vh, 4rem);
+		align-items: center;
+
+		@include mixins.respond-to(md) {
+			flex-direction: row;
+			align-items: stretch;
+			gap: clamp(3rem, 6vw, 5rem);
+		}
+	}
+
+	// Card wrapper
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: 440px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	// Elegant title
+	.event-location__card-title {
+		font-family: 'Cormorant Garamond', serif;
+		font-size: 1rem;
+		color: rgba(212, 175, 55, 0.8);
+		letter-spacing: 4px;
+		text-transform: uppercase;
+		margin-bottom: 1rem;
+		font-weight: 400;
+	}
+
+	// Elegant flourish
+	.event-location__card-flourish {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 2rem;
+
+		.flourish-line {
+			width: 60px;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+
+			&:last-child {
+				background: linear-gradient(-90deg, transparent, #d4af37, transparent);
+			}
+		}
+
+		.flourish-diamond {
+			width: 8px;
+			height: 8px;
+			background: #d4af37;
+			transform: rotate(45deg);
+			box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+		}
+	}
+
+	// Luxury dark cards
+	.event-location__card {
+		background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+		border: 1px solid rgba(212, 175, 55, 0.3);
+		border-radius: 8px;
+		padding: 2rem;
+		box-shadow:
+			0 20px 60px rgba(0, 0, 0, 0.5),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+
+		// Subtle inner border
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 6px;
+			border: 1px solid rgba(212, 175, 55, 0.1);
+			border-radius: 4px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-5px);
+			border-color: rgba(212, 175, 55, 0.5);
+			box-shadow:
+				0 25px 70px rgba(0, 0, 0, 0.6),
+				0 0 30px rgba(212, 175, 55, 0.1);
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: 2.5rem;
+		}
+	}
+
+	// Gold frame
+	.event-location__card-image-outer-frame {
+		width: 100%;
+		border-radius: 6px;
+		background: linear-gradient(
+			135deg,
+			#b8860b 0%,
+			#d4af37 25%,
+			#ffd700 50%,
+			#d4af37 75%,
+			#b8860b 100%
+		);
+		padding: 3px;
+		box-shadow:
+			0 10px 40px rgba(0, 0, 0, 0.4),
+			0 0 20px rgba(212, 175, 55, 0.2);
+		margin-bottom: 1.5rem;
+	}
+
+	.event-location__card-image-inner-frame {
+		border-radius: 4px;
+		background: #0f0f0f;
+		padding: 4px;
+	}
+
+	.event-location__card-image {
+		filter: contrast(1.1) saturate(0.9);
+		border-radius: 2px;
+	}
+
+	// Luxury content
+	.event-location__card-content-list {
+		&__place {
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.8rem;
+			color: #d4af37;
+			margin-bottom: 1.2rem;
+			line-height: 1.2;
+			font-weight: 400;
+		}
+
+		&__date {
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.1rem;
+			color: rgba(255, 255, 255, 0.7);
+			margin-bottom: 0.5rem;
+			font-style: italic;
+		}
+
+		&__hour {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.8rem;
+			letter-spacing: 5px;
+			font-weight: 400;
+			text-transform: uppercase;
+			color: rgba(255, 255, 255, 0.5);
+			margin-bottom: 1.5rem;
+		}
+
+		&__address {
+			font-family: 'Inter', sans-serif;
+			font-size: 0.85rem;
+			color: rgba(255, 255, 255, 0.6);
+			line-height: 1.6;
+		}
+	}
+
+	// Luxury buttons
+	.nav-button {
+		background: transparent;
+		border: 1px solid rgba(212, 175, 55, 0.5);
+		border-radius: 4px;
+		font-family: 'Inter', sans-serif;
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: #d4af37;
+		padding: 1rem 1.5rem;
+		transition: all 0.4s ease;
+
+		&:hover {
+			background: rgba(212, 175, 55, 0.1);
+			border-color: #d4af37;
+			box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+		}
+
+		&--maps,
+		&--waze {
+			background: rgba(212, 175, 55, 0.1);
+			border-color: rgba(212, 175, 55, 0.3);
+
+			&:hover {
+				background: rgba(212, 175, 55, 0.2);
+			}
+		}
+	}
+}
