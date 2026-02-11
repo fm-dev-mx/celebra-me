@@ -5,6 +5,7 @@
  */
 
 @use '../global/mixins' as mixins;
+@use '../tokens' as tokens;
 
 .rsvp {
 	position: relative;
@@ -16,13 +17,13 @@
 	overflow: hidden;
 
 	// Glassmorphism Base
-	background: rgba(255, 255, 255, 0.1);
+	background: var(--color-glass-bg, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.1));
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.2);
+	border: 1px solid rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.2);
 	box-shadow:
 		0 8px 32px rgba(0, 0, 0, 0.1),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+		inset 0 0 0 1px rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.1);
 
 	@include mixins.respond-to(md) {
 		padding: 3.5rem 3rem;
@@ -36,7 +37,7 @@
 		left: -50%;
 		width: 200%;
 		height: 200%;
-		background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+		background: radial-gradient(circle at center, rgba(var(--color-action-accent-rgb), 0.05) 0%, transparent 70%);
 		pointer-events: none;
 	}
 
@@ -53,7 +54,7 @@
 			display: block;
 			width: 60px;
 			height: 1px;
-			background: var(--color-primary);
+			background: tokens.$color-action-primary;
 			margin: 0.75rem auto 0;
 			opacity: 0.6;
 		}
@@ -84,8 +85,8 @@
 		input[type='text'],
 		input[type='number'],
 		textarea {
-			background: rgba(255, 255, 255, 0.5);
-			border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+			background: rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.5);
+			border: 1px solid rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.2);
 			border-radius: 12px;
 			padding: 0.875rem 1rem;
 			font-family: var(--font-body);
@@ -96,8 +97,8 @@
 			&:focus {
 				outline: none;
 				background: rgba(255, 255, 255, 0.8);
-				border-color: var(--color-primary);
-				box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.1);
+				border-color: tokens.$color-action-primary;
+				box-shadow: 0 0 0 4px rgba(var(--color-text-primary-rgb), 0.1);
 			}
 
 			&::placeholder {
@@ -129,17 +130,17 @@
 
 			input {
 				cursor: pointer;
-				accent-color: var(--color-primary);
+				accent-color: tokens.$color-action-primary;
 			}
 
 			&:has(input:checked) {
-				background: rgba(var(--color-primary-rgb), 0.1);
-				border-color: var(--color-primary);
-				color: var(--color-primary-dark);
+				background: rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.1);
+				border-color: var(--color-action-primary, tokens.$color-action-primary);
+				color: var(--color-text-primary, tokens.$color-text-primary);
 			}
 
 			&:hover:not(:has(input:checked)) {
-				background: rgba(255, 255, 255, 0.5);
+				background: rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.5);
 			}
 		}
 	}
@@ -160,8 +161,8 @@
 
 	&__button {
 		margin-top: 1rem;
-		background: var(--color-primary);
-		color: white;
+		background: var(--color-action-primary, tokens.$color-action-primary);
+		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
 		border: none;
 		border-radius: 12px;
 		padding: 1rem;
@@ -171,11 +172,11 @@
 		letter-spacing: 1px;
 		cursor: pointer;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 15px rgba(var(--color-primary-rgb), 0.3);
+		box-shadow: 0 4px 15px rgba(var(--color-text-primary-rgb), 0.3);
 
 		&:hover:not(:disabled) {
 			transform: translateY(-2px);
-			box-shadow: 0 6px 20px rgba(var(--color-primary-rgb), 0.4);
+			box-shadow: 0 6px 20px rgba(var(--color-text-primary-rgb), 0.4);
 			filter: brightness(1.1);
 		}
 
@@ -221,7 +222,7 @@
 		&-message {
 			font-family: var(--font-display);
 			font-size: 1.5rem;
-			color: var(--color-primary-dark);
+			color: tokens.$color-text-primary;
 			line-height: 1.4;
 			margin-bottom: 1.5rem;
 		}

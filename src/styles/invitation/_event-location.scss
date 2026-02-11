@@ -1,5 +1,6 @@
 /* Event Location Section - Digital Jewelry Box Aesthetic */
-@use 'xv-variables' as vars;
+@use 'variables' as vars;
+@use '../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
 @use '@/styles/global/animations' as animations;
 
@@ -11,10 +12,10 @@
 	overflow: hidden;
 
 	/* Multi-layered Jewelry Box Background: Ivory silk with paper fiber texture */
-	background-color: hsl(45, 40%, 97%);
+	background-color: tokens.$color-surface-primary;
 	background-image:
 		url('https://www.transparenttextures.com/patterns/paper-fibers.png'),
-		linear-gradient(180deg, hsl(45, 30%, 96%) 0%, hsl(38, 45%, 91%) 100%);
+		linear-gradient(180deg, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.95) 0%, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.9) 100%);
 	background-blend-mode: overlay, normal;
 
 	&__container {
@@ -66,33 +67,32 @@
 		.flourish-line {
 			width: 30px;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, var(--color-primary, #d4af37));
+			background: linear-gradient(90deg, transparent, tokens.$color-action-accent);
 
 			&:last-child {
-				background: linear-gradient(-90deg, transparent, var(--color-primary, #d4af37));
+				background: linear-gradient(-90deg, transparent, tokens.$color-action-accent);
 			}
 		}
 
 		.flourish-diamond {
 			width: 6px;
 			height: 6px;
-			background: var(--color-primary, #d4af37);
+			background: tokens.$color-action-accent;
 			transform: rotate(45deg);
 		}
 	}
 
 	&__card {
-		/* Deep Glassmorphism with Metallic Borders */
-		background: hsla(45, 50%, 98%, 0.7); /* Warm ivory glass */
-		backdrop-filter: blur(20px);
-		-webkit-backdrop-filter: blur(20px);
-		border: 1px solid hsla(43, 55%, 55%, 0.35); /* Metallic gold border */
-		border-radius: 3px; /* Ultra-sharp luxury edges */
+		/* Tactile Parchment Card */
+		background-color: tokens.$color-surface-primary;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
+		background-blend-mode: multiply;
+		border: 1px solid rgba(tokens.$color-action-accent, 0.3); // Aged gold border
+		border-radius: 4px; // Masculine square-ish
 		padding: 2.5rem 1.5rem;
 		box-shadow:
-			0 15px 40px hsla(0, 0%, 0%, 0.06),
-			0 5px 15px hsla(43, 55%, 55%, 0.08),
-			inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
+			0 15px 40px rgba(0, 0, 0, 0.08),
+			inset 0 0 20px rgba(tokens.$color-action-accent, 0.05);
 		transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 		width: 100%;
 		display: flex;
@@ -171,7 +171,7 @@
 				&__place {
 					font-family: vars.$font-heading-elegant; /* Playfair Display */
 					font-size: 1.9rem;
-					color: #1a1a1a;
+					color: tokens.$color-text-primary;
 					margin-bottom: 1.5rem;
 					line-height: 1.1;
 					letter-spacing: -0.5px;
@@ -180,7 +180,7 @@
 				&__date {
 					font-family: vars.$font-decorative-calligraphy; /* Pinyon Script */
 					font-size: clamp(1rem, 6vw, 1.3rem);
-					color: var(--color-primary, #d4af37);
+					color: tokens.$color-action-accent;
 					margin-bottom: 0.5rem;
 					white-space: nowrap; /* Ensure single line */
 					display: block;
@@ -192,14 +192,14 @@
 					letter-spacing: 6px;
 					font-weight: 500;
 					text-transform: uppercase;
-					color: hsla(0, 0%, 55%, 1);
+					color: tokens.$color-neutral-muted;
 					margin-bottom: 2.5rem;
 					display: block;
 				}
 
 				&__address {
 					font-size: 0.85rem;
-					color: #555;
+					color: tokens.$color-neutral-base;
 					line-height: 1.6;
 					display: flex;
 					align-items: center;
@@ -215,7 +215,7 @@
 					.copy-button {
 						background: transparent;
 						border: none;
-						color: var(--color-primary, #d4af37);
+						color: tokens.$color-action-accent;
 						cursor: pointer;
 						padding: 4px;
 						transition: all 0.3s ease;
@@ -257,7 +257,7 @@
 				&-dot {
 					width: 4px;
 					height: 4px;
-					background: var(--color-primary, #d4af37);
+					background: var(--color-action-accent, tokens.$color-action-accent);
 					border-radius: 50%;
 					display: block;
 					opacity: 0.6;
@@ -265,14 +265,14 @@
 
 				&-label {
 					font-size: 0.9rem;
-					color: #444;
+					color: tokens.$color-neutral-base;
 					text-align: left;
 				}
 
 				&-time {
 					margin-left: auto;
 					font-size: 0.85rem;
-					color: #888;
+					color: tokens.$color-neutral-muted;
 					font-variant-numeric: tabular-nums;
 				}
 			}
@@ -295,22 +295,22 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: 0.5rem;
-			padding: 0.9rem 1.4rem;
+			gap: 0.6rem;
+			padding: 1rem 1.4rem;
 			font-family: vars.$font-heading-modern;
-			font-size: 0.7rem;
-			font-weight: 500;
-			letter-spacing: 2.5px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			letter-spacing: 2px;
 			text-transform: uppercase;
 			text-decoration: none;
-			border-radius: 0;
-			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			border-radius: 4px;
+			transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 			position: relative;
 			overflow: hidden;
-			background: hsla(0, 0%, 100%, 0.45);
-			backdrop-filter: blur(8px);
-			border: 1px solid hsla(43, 55%, 55%, 0.25);
-			color: hsla(43, 50%, 40%, 1);
+			background: var(--color-action-accent, tokens.$color-action-accent); // Standard gold
+			backdrop-filter: blur(12px);
+			border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+			color: var(--color-text-primary, tokens.$color-text-primary);
 
 			/* Shimmer overlay */
 			&::before {
@@ -359,15 +359,15 @@
 
 			&--maps,
 			&--waze {
-				background: hsla(43, 55%, 55%, 0.1);
-				color: hsla(43, 50%, 40%, 1);
-				border-color: hsla(43, 55%, 55%, 0.4);
-				backdrop-filter: blur(8px);
+				background: rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
+				color: var(--color-text-primary, tokens.$color-text-primary);
+				border-color: rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
+				backdrop-filter: blur(12px);
 
 				&:hover {
-					background: hsla(43, 55%, 55%, 0.15);
-					border-color: hsla(43, 55%, 55%, 0.8);
-					box-shadow: 0 8px 25px hsla(43, 55%, 55%, 0.2);
+					background: rgba(var(--color-accent-rgb), 0.2);
+					border-color: var(--color-accent);
+					box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
 				}
 			}
 
@@ -379,13 +379,13 @@
 			}
 
 			&--primary {
-				background: hsla(43, 55%, 55%, 1);
-				color: white;
+				background: var(--color-action-accent, tokens.$color-action-accent);
+				color: var(--color-surface-primary, tokens.$color-surface-primary);
 				border-color: transparent;
 
 				&:hover {
-					background: hsla(43, 55%, 48%, 1);
-					box-shadow: 0 8px 25px hsla(43, 55%, 55%, 0.3);
+					filter: brightness(0.9);
+					box-shadow: 0 8px 25px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 				}
 			}
 
@@ -471,7 +471,7 @@
 
 			p {
 				margin: 0;
-				color: #444;
+				color: tokens.$color-neutral-base;
 				font-family: vars.$font-body;
 				font-size: 1.1rem;
 				line-height: 1.6;

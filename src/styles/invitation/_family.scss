@@ -1,5 +1,5 @@
-@use 'xv-variables' as vars;
-@use '../global/typography';
+@use 'variables' as vars;
+@use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
 
 // Subtle float animation for image
@@ -15,7 +15,7 @@
 
 .family {
 	position: relative;
-	background-color: var(--color-background);
+	background-color: tokens.$color-surface-primary;
 	padding: 8rem 0;
 	overflow: hidden;
 
@@ -29,7 +29,7 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			rgba(var(--color-primary-rgb), 0.3),
+			tokens.$color-border-subtle,
 			transparent
 		);
 	}
@@ -51,7 +51,7 @@
 		margin-bottom: 6rem;
 		opacity: 0;
 		transform: translateY(20px);
-		transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: tokens.$transition-premium;
 
 		.family.is-visible & {
 			opacity: 1;
@@ -61,30 +61,30 @@
 
 	&__suptitle {
 		display: block;
-		font-family: vars.$font-heading-elegant;
+		font-family: tokens.$font-display-elegant;
 		font-style: italic;
 		font-size: 1.1rem;
-		color: var(--color-primary);
+		color: tokens.$color-action-accent;
 		margin-bottom: 1rem;
-		letter-spacing: 0.2em;
+		letter-spacing: tokens.$letter-spacing-wide;
 		text-transform: lowercase;
 		font-variant: small-caps;
 		opacity: 0.8;
 	}
 
 	&__title-main {
-		font-family: vars.$font-heading-formal; // Cinzel for that engraved look
-		font-size: clamp(2rem, 5vw, 3rem);
-		color: var(--color-text);
+		font-family: tokens.$font-display-formal;
+		font-size: tokens.$font-size-h1;
+		color: tokens.$color-text-primary;
 		text-transform: uppercase;
-		letter-spacing: 0.25em;
-		font-weight: 400;
+		letter-spacing: tokens.$letter-spacing-extra-wide;
+		font-weight: tokens.$font-weight-regular;
 		line-height: 1.2;
 		background: linear-gradient(
 			to right,
-			var(--color-primary-dark) 0%,
-			var(--color-primary) 50%,
-			var(--color-primary-dark) 100%
+			tokens.$color-surface-dark 0%,
+			tokens.$color-action-accent 50%,
+			tokens.$color-surface-dark 100%
 		);
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -106,7 +106,7 @@
 	&__card {
 		opacity: 0;
 		transform: translateY(30px);
-		transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: all tokens.$duration-premium tokens.$ease-premium;
 
 		.family.is-visible & {
 			opacity: 1;
@@ -129,14 +129,12 @@
 	}
 
 	&__card-inner {
-		background: rgba(var(--color-white-rgb), 0.4);
+		background: tokens.$color-glass-bg;
 		backdrop-filter: blur(15px);
 		padding: 3.5rem 2.5rem;
 		border-radius: 1.5rem;
-		border: 1px solid rgba(var(--color-primary-rgb), 0.15);
-		box-shadow:
-			0 20px 40px -15px rgba(0, 0, 0, 0.05),
-			inset 0 0 40px rgba(var(--color-white-rgb), 0.8);
+		border: 1px solid tokens.$color-glass-border;
+		box-shadow: tokens.$shadow-subtle;
 		position: relative;
 		overflow: hidden;
 
@@ -147,18 +145,18 @@
 			left: 0;
 			right: 0;
 			height: 3px;
-			background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+			background: linear-gradient(90deg, transparent, tokens.$color-action-primary, transparent);
 			opacity: 0.3;
 		}
 	}
 
 	&__card-subtitle {
-		font-family: vars.$font-heading-elegant;
+		font-family: tokens.$font-display-elegant;
 		font-style: italic;
 		font-size: 0.95rem;
-		color: var(--color-primary);
+		color: tokens.$color-action-primary;
 		margin-bottom: 2.5rem;
-		letter-spacing: 0.15em;
+		letter-spacing: tokens.$letter-spacing-wide;
 		text-transform: uppercase;
 		opacity: 0.7;
 		display: flex;
@@ -169,7 +167,7 @@
 			content: '';
 			flex: 1;
 			height: 1px;
-			background: linear-gradient(to right, rgba(var(--color-primary-rgb), 0.4), transparent);
+			background: linear-gradient(to right, tokens.$color-border-subtle, transparent);
 		}
 
 		.family__card--left & {
@@ -178,7 +176,7 @@
 				order: -1;
 				background: linear-gradient(
 					to left,
-					rgba(var(--color-primary-rgb), 0.4),
+					tokens.$color-border-subtle,
 					transparent
 				);
 			}
@@ -188,7 +186,7 @@
 	&__names-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem; /* Reduced gap to account for ampersand */
+		gap: 0.5rem;
 	}
 
 	&__ampersand-divider {
@@ -212,7 +210,7 @@
 	&__name-item {
 		opacity: 0;
 		transform: translateY(10px);
-		transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: tokens.$transition-standard;
 		transition-delay: calc(0.6s + (var(--index) * 0.1s));
 
 		.family.is-visible & {
@@ -222,31 +220,31 @@
 	}
 
 	&__name {
-		font-family: vars.$font-subtitle-refined; // Cormorant Garamond
+		font-family: tokens.$font-body;
 		font-size: 1.85rem;
-		font-weight: 400;
-		color: var(--color-text);
+		font-weight: tokens.$font-weight-regular;
+		color: tokens.$color-text-primary;
 		line-height: 1.1;
-		letter-spacing: 0.03em;
+		letter-spacing: tokens.$letter-spacing-tight;
 		margin: 0;
 
 		&::first-letter {
-			font-family: vars.$font-heading-elegant;
+			font-family: tokens.$font-display-elegant;
 			font-size: 110%;
-			color: var(--color-primary);
+			color: tokens.$color-action-primary;
 		}
 	}
 
 	&__role {
 		display: block;
-		font-family: vars.$font-heading-formal; // Cinzel
-		font-size: 0.65rem;
+		font-family: tokens.$font-display-formal;
+		font-size: tokens.$font-size-ui;
 		text-transform: uppercase;
-		letter-spacing: 0.4em;
-		color: var(--color-primary-dark);
+		letter-spacing: tokens.$letter-spacing-extra-wide;
+		color: tokens.$color-surface-dark;
 		margin-top: 0.75rem;
 		opacity: 0.6;
-		font-weight: 600;
+		font-weight: tokens.$font-weight-semibold;
 	}
 
 	&__image-column {
@@ -254,7 +252,7 @@
 		justify-content: center;
 		opacity: 0;
 		transform: scale(0.95);
-		transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+		transition: tokens.$transition-premium;
 		transition-delay: 0.3s;
 		order: -1;
 
@@ -279,12 +277,10 @@
 
 	&__image-frame {
 		aspect-ratio: 3 / 4;
-		border-radius: 12rem; // Slightly less than circular for a "pill" look
+		border-radius: 12rem;
 		overflow: hidden;
-		border: 1px solid rgba(var(--color-primary-rgb), 0.3);
-		box-shadow:
-			0 40px 80px -20px rgba(0, 0, 0, 0.2),
-			0 0 0 10px rgba(var(--color-white-rgb), 0.5);
+		border: 1px solid tokens.$color-glass-border;
+		box-shadow: tokens.$shadow-emphasis;
 		z-index: 2;
 		position: relative;
 
@@ -292,7 +288,7 @@
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
-			transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1);
+			transition: transform tokens.$duration-reveal tokens.$ease-premium;
 			filter: sepia(0.1) contrast(1.05);
 		}
 
@@ -304,7 +300,7 @@
 	&__image-decoration {
 		position: absolute;
 		inset: 0;
-		border: 1px solid rgba(var(--color-primary-rgb), 0.15);
+		border: 1px solid tokens.$color-glass-border;
 		border-radius: 13rem;
 		z-index: 1;
 		pointer-events: none;
@@ -316,7 +312,7 @@
 			position: absolute;
 			width: 40px;
 			height: 40px;
-			background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+			background: radial-gradient(circle, tokens.$color-action-primary 0%, transparent 70%);
 			opacity: 0.2;
 			filter: blur(5px);
 		}

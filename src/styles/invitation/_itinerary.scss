@@ -1,8 +1,9 @@
+@use '../tokens' as tokens;
 @use '../global/variables' as *;
 
 .itinerary {
 	padding: 8rem 2rem;
-	background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+	background: radial-gradient(circle at center, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.05) 0%, transparent 70%);
 	position: relative;
 	overflow: hidden;
 
@@ -37,13 +38,13 @@
 
 		&.font-heading-formal {
 			font-size: clamp(2.5rem, 8vw, 4rem);
-			color: var(--color-primary);
+			color: tokens.$color-action-primary;
 			margin-bottom: 1rem;
 		}
 
 		// Ensuring specific H2 styling
 		.itinerary__title {
-			color: var(--color-primary);
+			color: tokens.$color-action-primary;
 			letter-spacing: 0.1em;
 		}
 	}
@@ -61,7 +62,7 @@
 			background: linear-gradient(
 				to var(--direction, right),
 				transparent,
-				var(--color-primary)
+				tokens.$color-action-primary
 			);
 
 			&:last-child {
@@ -72,9 +73,9 @@
 		.flourish-diamond {
 			width: 8px;
 			height: 8px;
-			background: var(--color-primary);
+			background: tokens.$color-action-primary;
 			transform: rotate(45deg);
-			box-shadow: 0 0 10px var(--color-primary);
+			box-shadow: 0 0 10px tokens.$color-action-primary;
 		}
 	}
 
@@ -93,8 +94,8 @@
 		background: linear-gradient(
 			to bottom,
 			transparent,
-			var(--color-primary) 5%,
-			var(--color-primary) 95%,
+			tokens.$color-action-primary 5%,
+			tokens.$color-action-primary 95%,
 			transparent
 		);
 		transform: translateX(-50%);
@@ -108,8 +109,8 @@
 			left: 0;
 			right: 0;
 			bottom: 0;
-			background: var(--color-primary);
-			box-shadow: 0 0 15px var(--color-primary);
+			background: tokens.$color-action-primary;
+			box-shadow: 0 0 15px tokens.$color-action-primary;
 			opacity: 0.6;
 		}
 	}
@@ -121,16 +122,16 @@
 		transform: translateX(-50%) rotate(45deg);
 		width: 12px;
 		height: 12px;
-		border: 1px solid var(--color-primary);
-		background: var(--color-accent);
+		border: 1px solid var(--color-action-accent, tokens.$color-action-accent);
+		background: var(--color-surface-primary, tokens.$color-surface-primary);
 		z-index: 2;
-		box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+		box-shadow: 0 0 10px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.4);
 
 		&::after {
 			content: '';
 			position: absolute;
 			inset: 2px;
-			background: var(--color-primary);
+			background: tokens.$color-action-primary;
 			opacity: 0.8;
 		}
 	}
@@ -186,14 +187,14 @@
 		font-size: 0.95rem;
 		text-transform: uppercase;
 		letter-spacing: 0.25em;
-		color: var(--color-primary);
+		color: tokens.$color-action-primary;
 		font-weight: 500;
 		margin-bottom: 0.5rem;
 	}
 
 	&__item-label {
 		font-size: 1.6rem;
-		color: var(--color-primary); // High contrast with dark, and themed
+		color: tokens.$color-action-primary; // High contrast with dark, and themed
 		margin-bottom: 0.4rem;
 		line-height: 1.2;
 
@@ -201,8 +202,8 @@
 		// but since it's an invitation we usually control the sections
 		background: linear-gradient(
 			135deg,
-			var(--color-primary) 0%,
-			var(--color-primary-light) 100%
+			tokens.$color-action-primary 0%,
+			tokens.$color-text-secondary 100%
 		);
 		-webkit-background-clip: text;
 		background-clip: text;
@@ -221,8 +222,8 @@
 	&__item-icon-wrapper {
 		width: 56px;
 		height: 56px;
-		background: rgba(255, 255, 255, 0.95); // Pearl white background
-		border: 1.5px solid var(--color-primary);
+		background: rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.95); // Pearl white background
+		border: 1.5px solid tokens.$color-action-primary;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -247,7 +248,7 @@
 	&__item-icon-inner {
 		width: 28px;
 		height: 28px;
-		color: var(--color-primary); // Icon contrast on pearl
+		color: tokens.$color-action-primary; // Icon contrast on pearl
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -3,20 +3,19 @@
 // Premium Countdown Styles - Jewelry Box Aesthetic
 // ----------------------------------------------------
 
-@use 'xv-variables' as vars;
+@use 'variables' as vars;
+@use '../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
 
 .countdown-section {
 	position: relative;
 	padding: 8rem 0.5rem;
-	// Warm ivory/champagne gradient background matching Jewelry Box palette
+	// Warm parchment gradient matching Hacienda palette
 	background: linear-gradient(
 		180deg,
-		rgba(253, 249, 242, 1) 0%,
-		// Warm ivory top
-		rgba(247, 231, 206, 0.3) 50%,
-		// Champagne tint middle
-		rgba(253, 249, 242, 1) 100% // Warm ivory bottom
+		tokens.$color-surface-primary 0%,
+		tokens.$color-surface-secondary 50%,
+		tokens.$color-surface-primary 100%
 	);
 	overflow: hidden;
 	display: flex;
@@ -35,8 +34,7 @@
 		height: 60%;
 		background: radial-gradient(
 			ellipse at center,
-			rgba(var(--color-primary-rgb), 0.06) 0%,
-			// Dynamic glow center
+			rgba(var(--color-text-primary-rgb), 0.06) 0%,
 			transparent 70%
 		);
 		pointer-events: none;
@@ -45,9 +43,7 @@
 	// Entrance animation
 	opacity: 0;
 	transform: translateY(20px);
-	transition:
-		opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
-		transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: tokens.$transition-premium;
 
 	&.is-visible {
 		opacity: 1;
@@ -58,10 +54,10 @@
 .countdown-texture {
 	position: absolute;
 	inset: 0;
-	opacity: 0.06; // Increased from 0.03 for more visible texture
+	opacity: 0.12;
 	pointer-events: none;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-	filter: contrast(140%) brightness(100%); // Enhanced contrast for tactile feel
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
+	filter: contrast(110%) brightness(100%);
 }
 
 .countdown-container {
@@ -77,11 +73,12 @@
 }
 
 .countdown-title {
-	font-family: vars.$font-heading-elegant;
-	font-size: clamp(2rem, 6vw, 3.5rem);
-	color: var(--color-primary-dark);
+	font-family: tokens.$font-display-formal;
+	font-size: tokens.$font-size-h1;
+	color: tokens.$color-surface-dark;
 	margin-bottom: 1.5rem;
-	letter-spacing: -0.02em;
+	letter-spacing: tokens.$letter-spacing-wide;
+	text-transform: uppercase;
 }
 
 .countdown-subtitle {
@@ -94,7 +91,7 @@
 	.subtitle-line {
 		height: 1px;
 		width: 40px;
-		background-color: var(--color-primary);
+		background-color: tokens.$color-action-accent;
 		display: none;
 
 		@include mixins.respond-to(sm) {
@@ -103,11 +100,11 @@
 	}
 
 	.event-date {
-		font-family: vars.$font-heading-formal;
+		font-family: tokens.$font-display-formal;
 		font-size: 0.9rem;
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		color: var(--color-text);
+		letter-spacing: tokens.$letter-spacing-extra-wide;
+		color: tokens.$color-text-primary;
 	}
 }
 
@@ -126,28 +123,24 @@
 }
 
 .countdown__segment {
-	background: rgba(var(--color-white-rgb), 0.5);
-	backdrop-filter: blur(12px);
-	border: 1px solid rgba(var(--color-primary-rgb), 0.2);
-	padding: 2rem 1rem;
-	border-radius: 12px;
+	background: rgba(var(--color-surface-primary-rgb), 0.4);
+	backdrop-filter: blur(8px);
+	border: 2px solid tokens.$color-action-accent;
+	padding: 2.2rem 1rem;
+	border-radius: 4px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	box-shadow:
-		0 15px 50px -15px rgba(var(--color-primary-dark-rgb), 0.08),
-		inset 0 0 20px rgba(var(--color-primary-rgb), 0.05);
-	transition:
-		transform 0.3s ease,
-		border-color 0.3s ease;
+	box-shadow: tokens.$shadow-subtle;
+	transition: tokens.$transition-snappy;
 
 	// Staggered entrance animation
 	opacity: 0;
 	transform: translateY(15px);
 	transition:
-		opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-		transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-		border-color 0.3s ease;
+		opacity tokens.$duration-slower tokens.$ease-out,
+		transform tokens.$duration-slower tokens.$ease-out,
+		border-color tokens.$duration-snappy tokens.$ease-in;
 	transition-delay: calc(0.2s + (var(--index, 0) * 0.1s));
 
 	.countdown-section.is-visible & {
@@ -157,7 +150,7 @@
 
 	&:hover {
 		transform: translateY(-5px);
-		border-color: rgba(var(--color-primary-rgb), 0.35);
+		border-color: rgba(var(--color-text-primary-rgb), 0.35);
 	}
 
 	@include mixins.respond-to(sm) {
@@ -181,23 +174,24 @@
 }
 
 .countdown__value {
-	font-family: vars.$font-heading-elegant;
-	font-size: clamp(1.5rem, 5vw, 2.2rem);
-	color: var(--color-primary);
-	font-weight: 400;
+	font-family: tokens.$font-display-formal;
+	font-size: clamp(1.8rem, 6vw, 2.6rem);
+	color: tokens.$color-text-primary;
+	font-weight: 700;
 	line-height: 1;
+	letter-spacing: tokens.$letter-spacing-wide;
 
 	@include mixins.respond-to(sm) {
-		font-size: clamp(2.5rem, 5vw, 3.2rem);
+		font-size: clamp(2.8rem, 6vw, 3.5rem);
 	}
 }
 
 .countdown__label {
-	font-family: vars.$font-heading-formal;
+	font-family: tokens.$font-display-formal;
 	font-size: 0.65rem;
 	text-transform: uppercase;
-	letter-spacing: 0.15em;
-	color: var(--color-text);
+	letter-spacing: tokens.$letter-spacing-wide;
+	color: tokens.$color-text-primary;
 	opacity: 0.6;
 
 	@include mixins.respond-to(sm) {
@@ -210,10 +204,10 @@
 }
 
 .countdown-invitation-text {
-	font-family: vars.$font-subtitle-refined;
+	font-family: tokens.$font-body;
 	font-size: 1.25rem;
 	font-style: italic;
-	color: var(--color-text);
+	color: tokens.$color-text-primary;
 	opacity: 0.8;
 }
 
