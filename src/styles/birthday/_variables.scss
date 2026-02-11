@@ -1,4 +1,9 @@
 // src/styles/birthday/_variables.scss
+// ⚠️ DEPRECATED: This file is deprecated. Use @use '../tokens' as tokens instead.
+// Migration: $birthday-* variables have been replaced with tokens.$* and primitives.$*
+// See: technical-debt-audit-2026-02-11.md for migration details
+
+@warn "birthday/variables is deprecated. Use @use '../tokens' as tokens instead.";
 
 // Luxury Hacienda Design Tokens
 $birthday-primary: #4b3621 !default; // Deep Cognac / Leather
