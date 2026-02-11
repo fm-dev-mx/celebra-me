@@ -7,8 +7,8 @@ description:
 
 # 🎬 Animation & Motion Skill
 
-> **Related skills**: [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for
-> reduced-motion requirements and focus states.
+> **Related skills**: [`accessibility`](../accessibility/SKILL.md) for reduced-motion requirements
+> and focus states.
 
 This skill guides creation of **elegant minimalist animations** for Celebra-me digital invitations.
 Animations should enhance the premium feel without overwhelming the content or compromising
@@ -78,7 +78,7 @@ Simple opacity transition for content appearing:
 
 Content rises gently into view:
 
-```scss
+````scss
 .slide-up {
 	opacity: 0;
 	transform: translateY(20px);
@@ -116,7 +116,7 @@ Sophisticated entrance with blur and subtle scaling:
 		animation: premiumFadeUp 1.2s tokens.$ease-premium forwards;
 	}
 }
-```
+````
 
 ### 3. Staggered Reveals
 
@@ -210,8 +210,7 @@ document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el))
 ## Accessibility: Reduced Motion
 
 **MANDATORY**: Always respect `prefers-reduced-motion`. See the
-[`accessibility` skill](file://.agent/skills/accessibility/SKILL.md) for the canonical
-implementation.
+[`accessibility` skill](../accessibility/SKILL.md) for the canonical implementation.
 
 When adding new animation classes, ensure they are covered by the reduced-motion query in your
 global styles:

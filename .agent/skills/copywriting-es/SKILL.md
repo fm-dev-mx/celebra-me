@@ -5,8 +5,8 @@ description:
     formal/warm tone, event-specific vocabulary, courtesy formulas, and common UI patterns.
 ---
 
-> **Related skills**: [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for accessible
-> error messages and form labels.
+> **Related skills**: [`accessibility`](../accessibility/SKILL.md) for accessible error messages and
+> form labels.
 
 This skill guides **Spanish copywriting** for Celebra-me digital invitations. Maintain a formal yet
 warm tone appropriate for celebrations and family events.

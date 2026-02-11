@@ -1,45 +1,54 @@
 ---
 name: astro-patterns
-description: Apply idiomatic Astro patterns to optimize performance, maintainability, and leverage framework features correctly. Covers Content Collections, partial hydration, image optimization, and SCSS integration.
+description:
+    Apply idiomatic Astro patterns to optimize performance, maintainability, and leverage framework
+    features correctly. Covers Content Collections, partial hydration, image optimization, and SCSS
+    integration.
 ---
 
-> **Related skills**: [`frontend-design`](file://.agent/skills/frontend-design/SKILL.md) for SCSS design system.
+> **Related skills**: [`frontend-design`](../frontend-design/SKILL.md) for SCSS design system.
 
-This skill guides use of **Astro-specific patterns** in Celebra-me to maximize static generation benefits, optimize performance, and maintain clean architecture.
+This skill guides use of **Astro-specific patterns** in Celebra-me to maximize static generation
+benefits, optimize performance, and maintain clean architecture.
 
 ## Content Collections
 
 ### Schema Definition
+
 Define schemas in `src/content/config.ts`:
+
 ```typescript
 import { defineCollection, z } from 'astro:content';
 
 const eventsCollection = defineCollection({
-  type: 'data',
-  schema: z.object({
-    eventType: z.enum(['xv', 'boda', 'bautizo', 'cumpleanos']),
-    slug: z.string(),
-    title: z.string(),
-    date: z.string(),
-    venue: z.object({
-      name: z.string(),
-      address: z.string(),
-      mapUrl: z.string().url().optional(),
-    }),
-    gallery: z.array(z.string()).optional(),
-    rsvp: z.object({
-      enabled: z.boolean(),
-      deadline: z.string().optional(),
-    }).optional(),
-  }),
+	type: 'data',
+	schema: z.object({
+		eventType: z.enum(['xv', 'boda', 'bautizo', 'cumpleanos']),
+		slug: z.string(),
+		title: z.string(),
+		date: z.string(),
+		venue: z.object({
+			name: z.string(),
+			address: z.string(),
+			mapUrl: z.string().url().optional(),
+		}),
+		gallery: z.array(z.string()).optional(),
+		rsvp: z
+			.object({
+				enabled: z.boolean(),
+				deadline: z.string().optional(),
+			})
+			.optional(),
+	}),
 });
 
 export const collections = {
-  events: eventsCollection,
+	events: eventsCollection,
 };
 ```
 
 ### Querying Content
+
 ```astro
 ---
 import { getCollection, getEntry } from 'astro:content';
@@ -51,13 +60,12 @@ const allEvents = await getCollection('events');
 const event = await getEntry('events', 'demo-xv');
 
 // Filter by type
-const xvEvents = await getCollection('events',
-  ({ data }) => data.eventType === 'xv'
-);
+const xvEvents = await getCollection('events', ({ data }) => data.eventType === 'xv');
 ---
 ```
 
 ### File Organization
+
 ```
 src/content/
 ├── config.ts          # Schema definitions
@@ -71,15 +79,16 @@ src/content/
 
 ### Client Directives Decision Tree
 
-| Directive | When to Use | Example |
-|-----------|-------------|---------|
-| None (default) | Static content, no JS needed | Text, images, layout |
-| `client:load` | Critical interactivity, above fold | RSVP form submit button |
-| `client:visible` | Below fold interactivity | Gallery lightbox, modals |
-| `client:idle` | Non-critical, can wait | Analytics, tracking |
-| `client:only` | Client-only (no SSR) | Browser-specific features |
+| Directive        | When to Use                        | Example                   |
+| ---------------- | ---------------------------------- | ------------------------- |
+| None (default)   | Static content, no JS needed       | Text, images, layout      |
+| `client:load`    | Critical interactivity, above fold | RSVP form submit button   |
+| `client:visible` | Below fold interactivity           | Gallery lightbox, modals  |
+| `client:idle`    | Non-critical, can wait             | Analytics, tracking       |
+| `client:only`    | Client-only (no SSR)               | Browser-specific features |
 
 ### Examples
+
 ```astro
 <!-- Static - no directive needed -->
 <EventHeader title={event.title} />
@@ -95,10 +104,13 @@ src/content/
 ```
 
 ### Anti-Pattern
+
 ```astro
 <!-- ❌ Don't hydrate everything -->
-<Header client:load />      <!-- Usually static! -->
-<Footer client:load />      <!-- Usually static! -->
+<Header client:load />
+<!-- Usually static! -->
+<Footer client:load />
+<!-- Usually static! -->
 
 <!-- ✅ Keep static components static -->
 <Header />
@@ -108,6 +120,7 @@ src/content/
 ## Image Optimization
 
 ### Using astro:assets
+
 ```astro
 ---
 import { Image } from 'astro:assets';
@@ -116,50 +129,64 @@ import heroImage from '@images/events/xv-hero.jpg';
 
 <!-- Optimized with automatic format conversion -->
 <Image
-  src={heroImage}
-  alt="Salón decorado para XV años"
-  width={1200}
-  height={800}
-  loading="eager"  <!-- For above-fold images -->
-/>
+	src={heroImage}
+	alt="Salón decorado para XV años"
+	width={1200}
+	height={800}
+	loading="eager"
+	<!--
+	For
+	above-fold
+	images
+	--
+>
+	/>
 
-<!-- Below fold -->
-<Image
-  src={galleryImage}
-  alt="..."
-  loading="lazy"
-  decoding="async"
-/>
+	<!-- Below fold -->
+	<Image src={galleryImage} alt="..." loading="lazy" decoding="async" /></Image
+>
 ```
 
 ### Remote Images
+
 ```astro
 ---
 import { Image } from 'astro:assets';
 ---
 
 <Image
-  src="https://example.com/image.jpg"
-  alt="Description"
-  width={800}
-  height={600}
-  inferSize  <!-- For unknown dimensions -->
-/>
+	src="https://example.com/image.jpg"
+	alt="Description"
+	width={800}
+	height={600}
+	inferSize
+	<!--
+	For
+	unknown
+	dimensions
+	--
+>
+	/></Image
+>
 ```
 
 ### Background Images (CSS)
+
 For decorative backgrounds, use CSS:
+
 ```scss
 .hero {
-  background-image: url('/images/pattern.svg');
-  background-size: cover;
+	background-image: url('/images/pattern.svg');
+	background-size: cover;
 }
 ```
 
 ## SCSS Integration
 
 ### Global Styles
+
 Import in `src/layouts/BaseLayout.astro`:
+
 ```astro
 ---
 import '@/styles/global.scss';
@@ -167,9 +194,12 @@ import '@/styles/global.scss';
 ```
 
 ### External Component Styles
-**STRICT RULE**: Internal `<style>` blocks are **FORBIDDEN** in `.astro` files. All styles must be externalized.
+
+**STRICT RULE**: Internal `<style>` blocks are **FORBIDDEN** in `.astro` files. All styles must be
+externalized.
 
 import the SCSS file in the frontmatter:
+
 ```astro
 ---
 import '@/styles/components/my-component.scss';
@@ -179,15 +209,20 @@ import '@/styles/components/my-component.scss';
 ```
 
 **Do NOT do this (Forbidden):**
+
 ```astro
 <!-- ❌ INTERNAL STYLES ARE BANNED -->
 <style lang="scss">
-  .component { ... }
+	.component {
+		/* ... */
+	}
 </style>
 ```
 
 ### Partial Imports
+
 Organize SCSS with partials:
+
 ```
 src/styles/
 ├── global.scss        # Entry point
@@ -200,28 +235,31 @@ src/styles/
 ```
 
 ### Naming Conventions
+
 1. **Case**: All SCSS files must use `kebab-case`.
-2. **Partials**: All styles intended for import (variables, mixins, component styles) **MUST** start with an underscore `_` (e.g., `_header.scss`, `_service-card.scss`).
+2. **Partials**: All styles intended for import (variables, mixins, component styles) **MUST** start
+   with an underscore `_` (e.g., `_header.scss`, `_service-card.scss`).
 3. **Entry Points**: Only top-level entry points (e.g., `global.scss`) should lack the underscore.
 
 ## Dynamic Routes
 
 ### Static Generation (SSG)
+
 ```astro
 ---
 // src/pages/[eventType]/[slug].astro
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const events = await getCollection('events');
+	const events = await getCollection('events');
 
-  return events.map(event => ({
-    params: {
-      eventType: event.data.eventType,
-      slug: event.data.slug
-    },
-    props: { event },
-  }));
+	return events.map((event) => ({
+		params: {
+			eventType: event.data.eventType,
+			slug: event.data.slug,
+		},
+		props: { event },
+	}));
 }
 
 const { event } = Astro.props;
@@ -229,6 +267,7 @@ const { event } = Astro.props;
 ```
 
 ### URL Structure
+
 ```
 /xv/maria-elena      → XV Años invitation
 /boda/ana-y-carlos   → Wedding invitation
@@ -248,7 +287,7 @@ import { ViewTransitions } from 'astro:transitions';
 ---
 
 <head>
-  <ViewTransitions />
+	<ViewTransitions />
 </head>
 ```
 
@@ -279,12 +318,13 @@ View Transitions automatically respects `prefers-reduced-motion`.
 ## Component Patterns
 
 ### Props Interface
+
 ```astro
 ---
 interface Props {
-  title: string;
-  subtitle?: string;
-  variant?: 'primary' | 'secondary';
+	title: string;
+	subtitle?: string;
+	variant?: 'primary' | 'secondary';
 }
 
 const { title, subtitle, variant = 'primary' } = Astro.props;
@@ -292,25 +332,28 @@ const { title, subtitle, variant = 'primary' } = Astro.props;
 ```
 
 ### Slots
+
 ```astro
 ---
 // Section.astro
 interface Props {
-  title: string;
+	title: string;
 }
 const { title } = Astro.props;
 ---
 
 <section>
-  <h2>{title}</h2>
-  <slot />                    <!-- Default slot -->
-  <slot name="footer" />      <!-- Named slot -->
+	<h2>{title}</h2>
+	<slot />
+	<!-- Default slot -->
+	<slot name="footer" />
+	<!-- Named slot -->
 </section>
 
 <!-- Usage -->
 <Section title="Detalles">
-  <p>Content goes here</p>
-  <div slot="footer">Footer content</div>
+	<p>Content goes here</p>
+	<div slot="footer">Footer content</div>
 </Section>
 ```
 

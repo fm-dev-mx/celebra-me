@@ -70,7 +70,8 @@ applicable):
 - dead/obsolete code, unused exports/selectors
 - Astro server/client boundary violations
 - broken refs/imports, contract/schema drift
-- **Logging Hygiene**: Staged changes must not include raw log files or test outputs outside `logs/`.
+- **Logging Hygiene**: Staged changes must not include raw log files or test outputs outside
+  `logs/`.
 - SCSS anti-patterns (only if SCSS touched)
 
 For each finding include:
@@ -122,6 +123,7 @@ When Ready:
     - propose a split plan (no execution) and ask which path to take.
 
 Final question:
+
 > Ready to apply the approved suggestions and restage? If not, specify what to skip or adjust.
 
 // turbo

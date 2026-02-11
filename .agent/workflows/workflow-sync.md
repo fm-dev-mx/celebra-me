@@ -16,21 +16,25 @@ synchronized with the project's evolution, avoiding "instruction drift" and obso
 - Identify the current project phase: **Phase 2: Expansion**.
 - **Cross-Reference Rules**: Ensure any change in `.agent/GATEKEEPER_RULES.md` or
   `PROJECT_CONVENTIONS.md` is reflected in the workflows.
-- **Path Validation**: Verify that every file/path referenced (e.g., `docs/PREMIUM_UX_VISION.md`) exists.
-  If not, update the reference or flag the workflow as broken.
+- **Path Validation**: Verify that every file/path referenced (e.g., `docs/PREMIUM_UX_VISION.md`)
+  exists. If not, update the reference or flag the workflow as broken.
 
 ### 2. Taxonomy, Desuetude & Language Consistency
 
 - **Categorize**: Classify workflows by role:
-  - **Execution**: `invitation-execution`, `premium-dev-cycle`.
-  - **Gatekeeper**: `atomic-ui-commit`, `safe-commit`.
-  - **Audit**: `docs-audit`, `workflow-sync`.
-  - **Asset/Design**: `universal-asset-system`, `color-architecture`, `asset-management`.
-  - **Meta/Support**: `prompt-refiner`, `invitation-verification`.
-- **Archive**: `archive/hero-refinement`, `archive/icon-refactor`, `archive/refactor-architecture`.
+    - **Execution**: `invitation-execution`, `premium-dev-cycle`, `technical-debt-remediation`,
+      `jewelry-box-extension`, `align-gerardo-styles`.
+    - **Gatekeeper**: `atomic-ui-commit`, `safe-commit`.
+    - **Audit**: `docs-audit`, `workflow-sync`, `skills-sync`.
+    - **Asset/Design**: `universal-asset-system`, `color-architecture`, `asset-management`.
+    - **Meta/Support**: `prompt-to-workflow`, `invitation-verification`.
+- **Archive**: `archive/hero-refinement`, `archive/icon-refactor`, `archive/husky-standardization`,
+  `archive/audit-cumple-60-gerardo`.
 - **Pruning**: Propose the deletion of workflows referencing archived plans or obsolete engines.
-- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, **Hacienda**, and **Universal Asset Registry/System**. Harmonize terminology to avoid agent confusion.
-- **Link Hygiene**: Replace any file-scheme references (e.g., `file://...`) with repo-relative links (e.g., `./workflow-name.md`) for portability.
+- **Terminology Check**: Ensure consistent use of terms like **ADU**, **Jewelry Box**, **Hacienda**,
+  and **Universal Asset Registry/System**. Harmonize terminology to avoid agent confusion.
+- **Link Hygiene**: Replace any file-scheme references (e.g., `file://...`) with repo-relative links
+  (e.g., `./workflow-name.md`) for portability.
 
 ### 3. Skill & Ability Integration
 

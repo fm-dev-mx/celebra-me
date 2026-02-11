@@ -6,7 +6,7 @@ description:
     and dynamic content.
 ---
 
-> **Related skills**: [`animation-motion`](file://.agent/skills/animation-motion/SKILL.md) for
+> **Related skills**: [`animation-motion`](../animation-motion/SKILL.md) for
 > `prefers-reduced-motion` patterns in specific animations.
 
 This skill ensures Celebra-me digital invitations meet **WCAG 2.1 Level AA** accessibility

@@ -1,11 +1,15 @@
 ---
 name: testing
-description: Write and maintain tests for Celebra-me using Jest, React Testing Library, and Playwright. Covers unit tests, component tests, schema validation, and E2E patterns.
+description:
+    Write and maintain tests for Celebra-me using Jest, React Testing Library, and Playwright.
+    Covers unit tests, component tests, schema validation, and E2E patterns.
 ---
 
-> **Related skills**: [`astro-patterns`](file://.agent/skills/astro-patterns/SKILL.md) for understanding what requires E2E vs unit tests, [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for a11y testing queries.
+> **Related skills**: [`astro-patterns`](../astro-patterns/SKILL.md) for understanding what requires
+> E2E vs unit tests, [`accessibility`](../accessibility/SKILL.md) for a11y testing queries.
 
-This skill guides testing practices for the Celebra-me project, ensuring code reliability and preventing regressions.
+This skill guides testing practices for the Celebra-me project, ensuring code reliability and
+preventing regressions.
 
 ## Test Organization
 
@@ -25,12 +29,12 @@ tests/
 
 ## Running Tests
 
-| Command | Purpose |
-| ------- | ------- |
-| `pnpm test` | Run all tests |
-| `pnpm test -- --verbose` | Verbose output |
-| `pnpm test -- --watch` | Watch mode |
-| `pnpm test -- --coverage` | Coverage report |
+| Command                      | Purpose                 |
+| ---------------------------- | ----------------------- |
+| `pnpm test`                  | Run all tests           |
+| `pnpm test -- --verbose`     | Verbose output          |
+| `pnpm test -- --watch`       | Watch mode              |
+| `pnpm test -- --coverage`    | Coverage report         |
 | `node scripts/smoke-test.js` | Post-build verification |
 
 ## Test File Conventions
@@ -47,17 +51,17 @@ tests/
 import { myFunction } from '@/utils/myUtil';
 
 describe('myFunction', () => {
-  it('should return expected value for valid input', () => {
-    expect(myFunction('valid')).toBe('expected');
-  });
+	it('should return expected value for valid input', () => {
+		expect(myFunction('valid')).toBe('expected');
+	});
 
-  it('should handle edge cases gracefully', () => {
-    expect(myFunction(null)).toBeNull();
-  });
+	it('should handle edge cases gracefully', () => {
+		expect(myFunction(null)).toBeNull();
+	});
 
-  it('should throw on invalid input', () => {
-    expect(() => myFunction(-1)).toThrow();
-  });
+	it('should throw on invalid input', () => {
+		expect(() => myFunction(-1)).toThrow();
+	});
 });
 ```
 
@@ -65,14 +69,14 @@ describe('myFunction', () => {
 
 ```typescript
 describe('asyncFunction', () => {
-  it('should resolve with data', async () => {
-    const result = await asyncFunction();
-    expect(result).toEqual({ success: true });
-  });
+	it('should resolve with data', async () => {
+		const result = await asyncFunction();
+		expect(result).toEqual({ success: true });
+	});
 
-  it('should reject on error', async () => {
-    await expect(asyncFunction('bad')).rejects.toThrow('Error message');
-  });
+	it('should reject on error', async () => {
+		await expect(asyncFunction('bad')).rejects.toThrow('Error message');
+	});
 });
 ```
 
@@ -80,50 +84,50 @@ describe('asyncFunction', () => {
 
 ### Basic Rendering
 
-```typescript
+```tsx
 import { render, screen } from '@testing-library/react';
 import MyComponent from '@/components/MyComponent';
 
 describe('MyComponent', () => {
-  it('should render with required props', () => {
-    render(<MyComponent title="Test" />);
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
+	it('should render with required props', () => {
+		render(<MyComponent title="Test" />);
+		expect(screen.getByText('Test')).toBeInTheDocument();
+	});
 });
 ```
 
 ### User Interactions
 
-```typescript
+```tsx
 import userEvent from '@testing-library/user-event';
 
 it('should handle click events', async () => {
-  const user = userEvent.setup();
-  const handleClick = jest.fn();
+	const user = userEvent.setup();
+	const handleClick = jest.fn();
 
-  render(<Button onClick={handleClick}>Click Me</Button>);
-  await user.click(screen.getByRole('button'));
+	render(<Button onClick={handleClick}>Click Me</Button>);
+	await user.click(screen.getByRole('button'));
 
-  expect(handleClick).toHaveBeenCalledTimes(1);
+	expect(handleClick).toHaveBeenCalledTimes(1);
 });
 ```
 
 ### Form Testing
 
-```typescript
+```tsx
 it('should validate form inputs', async () => {
-  const user = userEvent.setup();
-  render(<ContactForm />);
+	const user = userEvent.setup();
+	render(<ContactForm />);
 
-  // Fill form
-  await user.type(screen.getByLabelText(/name/i), 'John');
-  await user.type(screen.getByLabelText(/email/i), 'john@test.com');
+	// Fill form
+	await user.type(screen.getByLabelText(/name/i), 'John');
+	await user.type(screen.getByLabelText(/email/i), 'john@test.com');
 
-  // Submit
-  await user.click(screen.getByRole('button', { name: /submit/i }));
+	// Submit
+	await user.click(screen.getByRole('button', { name: /submit/i }));
 
-  // Assert
-  expect(screen.getByText(/success/i)).toBeInTheDocument();
+	// Assert
+	expect(screen.getByText(/success/i)).toBeInTheDocument();
 });
 ```
 
@@ -133,21 +137,21 @@ it('should validate form inputs', async () => {
 
 ```typescript
 jest.mock('@sendgrid/mail', () => ({
-  setApiKey: jest.fn(),
-  send: jest.fn(),
+	setApiKey: jest.fn(),
+	send: jest.fn(),
 }));
 
 import sgMail from '@sendgrid/mail';
 const mockedSgMail = sgMail as jest.Mocked<typeof sgMail>;
 
 beforeEach(() => {
-  jest.clearAllMocks();
+	jest.clearAllMocks();
 });
 
 it('should send email successfully', async () => {
-  mockedSgMail.send.mockResolvedValue([{ statusCode: 202, headers: {}, body: '' }, {}]);
-  const result = await sendEmail(payload);
-  expect(result).toBe(true);
+	mockedSgMail.send.mockResolvedValue([{ statusCode: 202, headers: {}, body: '' }, {}]);
+	const result = await sendEmail(payload);
+	expect(result).toBe(true);
 });
 ```
 
@@ -177,15 +181,15 @@ Configured in `tests/setup.ts`:
 
 ```typescript
 Object.defineProperty(global, 'import', {
-  value: {
-    meta: {
-      env: {
-        SENDGRID_API_KEY: 'test-api-key',
-        EMAIL_TO: 'test@example.com',
-        EMAIL_FROM: 'noreply@test.com',
-      },
-    },
-  },
+	value: {
+		meta: {
+			env: {
+				SENDGRID_API_KEY: 'test-api-key',
+				EMAIL_TO: 'test@example.com',
+				EMAIL_FROM: 'noreply@test.com',
+			},
+		},
+	},
 });
 ```
 
@@ -197,38 +201,38 @@ Object.defineProperty(global, 'import', {
 import { z } from 'zod';
 
 const eventSchema = z.object({
-  title: z.string(),
-  date: z.string().datetime(),
+	title: z.string(),
+	date: z.string().datetime(),
 });
 
 describe('Event Schema', () => {
-  it('should validate correct data', () => {
-    const result = eventSchema.safeParse({
-      title: 'Test',
-      date: '2025-01-01T00:00:00.000Z',
-    });
-    expect(result.success).toBe(true);
-  });
+	it('should validate correct data', () => {
+		const result = eventSchema.safeParse({
+			title: 'Test',
+			date: '2025-01-01T00:00:00.000Z',
+		});
+		expect(result.success).toBe(true);
+	});
 
-  it('should reject invalid date format', () => {
-    const result = eventSchema.safeParse({
-      title: 'Test',
-      date: 'invalid',
-    });
-    expect(result.success).toBe(false);
-  });
+	it('should reject invalid date format', () => {
+		const result = eventSchema.safeParse({
+			title: 'Test',
+			date: 'invalid',
+		});
+		expect(result.success).toBe(false);
+	});
 });
 ```
 
 ## What NOT to Test with Jest
 
-| Component Type | Reason | Alternative |
-| -------------- | ------ | ----------- |
+| Component Type              | Reason                         | Alternative       |
+| --------------------------- | ------------------------------ | ----------------- |
 | Astro components (`.astro`) | Server-rendered, no runtime JS | Smoke test or E2E |
-| SCSS visual output | Can't verify visual rendering | Visual regression |
-| Full page layouts | Complex hydration | E2E tests |
-| API routes | Need server context | Integration tests |
-| Browser-specific APIs | Need real browser | E2E tests |
+| SCSS visual output          | Can't verify visual rendering  | Visual regression |
+| Full page layouts           | Complex hydration              | E2E tests         |
+| API routes                  | Need server context            | Integration tests |
+| Browser-specific APIs       | Need real browser              | E2E tests         |
 
 ## Smoke Test Checks
 
@@ -244,31 +248,31 @@ The `scripts/smoke-test.js` validates build output:
 
 When Playwright is set up:
 
-```typescript
+```tsx
 // e2e/invitation.spec.ts
 import { test, expect } from '@playwright/test';
 
 test('XV invitation loads correctly', async ({ page }) => {
-  await page.goto('/xv/demo-xv');
+	await page.goto('/xv/demo-xv');
 
-  // Check countdown is visible
-  await expect(page.locator('.countdown')).toBeVisible();
+	// Check countdown is visible
+	await expect(page.locator('.countdown')).toBeVisible();
 
-  // Check RSVP form
-  await expect(page.getByRole('heading', { name: /celebrar/i })).toBeVisible();
+	// Check RSVP form
+	await expect(page.getByRole('heading', { name: /celebrar/i })).toBeVisible();
 });
 
 test('RSVP form submission', async ({ page }) => {
-  await page.goto('/xv/demo-xv');
+	await page.goto('/xv/demo-xv');
 
-  // Select attendance
-  await page.getByLabel(/Sí, asistiré/i).click();
+	// Select attendance
+	await page.getByLabel(/Sí, asistiré/i).click();
 
-  // Submit
-  await page.getByRole('button', { name: /Confirmar/i }).click();
+	// Submit
+	await page.getByRole('button', { name: /Confirmar/i }).click();
 
-  // Check confirmation
-  await expect(page.getByText(/Gracias por confirmar/i)).toBeVisible();
+	// Check confirmation
+	await expect(page.getByText(/Gracias por confirmar/i)).toBeVisible();
 });
 ```
 
@@ -285,12 +289,12 @@ Before submitting a PR:
 
 ## Coverage Thresholds
 
-| Category | Target | Priority |
-| -------- | ------ | -------- |
-| Critical utilities (`email.ts`) | 80%+ | High |
-| React components with state | 70%+ | Medium |
-| Content schemas | 90%+ | Medium |
-| Static display components | Optional | Low |
+| Category                        | Target   | Priority |
+| ------------------------------- | -------- | -------- |
+| Critical utilities (`email.ts`) | 80%+     | High     |
+| React components with state     | 70%+     | Medium   |
+| Content schemas                 | 90%+     | Medium   |
+| Static display components       | Optional | Low      |
 
 ## Troubleshooting
 

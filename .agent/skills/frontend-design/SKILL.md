@@ -7,8 +7,8 @@ description:
 
 # 🎨 Frontend Design Skill
 
-> **Related skills**: [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for contrast
-> ratios, [`astro-patterns`](file://.agent/skills/astro-patterns/SKILL.md) for SCSS structure.
+> **Related skills**: [`accessibility`](../accessibility/SKILL.md) for contrast ratios,
+> [`astro-patterns`](../astro-patterns/SKILL.md) for SCSS structure.
 
 This skill guides creation of distinctive, production-grade frontend interfaces for **Celebra-me
 digital invitations**. Avoid generic "AI slop" aesthetics. Execute with exceptional attention to

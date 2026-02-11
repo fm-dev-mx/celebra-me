@@ -1,7 +1,7 @@
 ---
 description:
-    Transforms raw instructions into high-fidelity, dual-language engineered prompts or
-    ready-to-use workflows (Evergreen or Task) in .agent/workflows.
+    Transforms raw instructions into high-fidelity, dual-language engineered prompts or ready-to-use
+    workflows (Evergreen or Task) in .agent/workflows.
 ---
 
 # 💎 Workflow: Prompt-to-Workflow Architect
@@ -14,15 +14,18 @@ technical specifications AND deployable workflow files (Evergreen or Task).
 1. **Context Synthesis & Ground Truth**:
     - Identify the core objective: New feature, visual refinement, or architectural debt?
     - **Source of Truth**: Always prioritize the current state of the code over outdated docs.
-    - Reference the **Project Vision** (textures, motion, typography) and **Tech Stack** (Astro/SCSS).
+    - Reference the **Project Vision** (textures, motion, typography) and **Tech Stack**
+      (Astro/SCSS).
 
 2. **Lifespan Categorization**:
     - **Evergreen (Tool/System)**: Reusable tools or global standards (e.g., `safe-commit`).
-    - **Task (Tactical/Ephemeral)**: Single-use fixes or event updates (e.g., `update-hero-gerardo`).
+    - **Task (Tactical/Ephemeral)**: Single-use fixes or event updates (e.g.,
+      `update-hero-gerardo`).
 
 3. **Strategic Constraint Injection**:
     - **Role Definition**: Assign a specific persona (Senior Design Engineer, Architect, etc.).
-    - **Optimization Standards**: Mandate checks for performance, accessibility (WCAG), and mobile-first responsiveness.
+    - **Optimization Standards**: Mandate checks for performance, accessibility (WCAG), and
+      mobile-first responsiveness.
     - **UI & Language**: English for logic, Target Language for UI strings.
     - **Architectural Integrity**: Enforce data/UI separation and design tokens.
 
@@ -45,4 +48,7 @@ technical specifications AND deployable workflow files (Evergreen or Task).
 
 ## Agent Instruction
 
-Analyze the user's input, synthesize the context using the **Ground Truth** principle, and proceed to **create the workflow file**. You MUST include a **Critical Reflection** block in your output before deploying the file, analyzing friction points. The resulting workflow must follow the project's premium standards.
+Analyze the user's input, synthesize the context using the **Ground Truth** principle, and proceed
+to **create the workflow file**. You MUST include a **Critical Reflection** block in your output
+before deploying the file, analyzing friction points. The resulting workflow must follow the
+project's premium standards.

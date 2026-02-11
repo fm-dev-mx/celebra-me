@@ -62,11 +62,11 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 - Inspect **all pending changes** (staged + unstaged).
 - Detect mixed intents.
 - Scan diffs for:
-  - inline styles,
-  - Tailwind-like utilities,
-  - `client:` misuse,
-  - casing/path issues,
-  - forbidden imports.
+    - inline styles,
+    - Tailwind-like utilities,
+    - `client:` misuse,
+    - casing/path issues,
+    - forbidden imports.
 
 ---
 
@@ -124,5 +124,6 @@ Ask:
 // turbo
 
 ## Agent Instruction
+
 Execute a strict staged-scope gatekeeping pass, propose ADUs, auto-fix blockers/majors on approval,
 and keep commits deployable and minimal.
