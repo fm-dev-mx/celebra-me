@@ -7,19 +7,6 @@
 	min-height: 100vh;
 	font-family: $birthday-font-heading;
 
-	// Parchment Texture Overlay
-	&::before {
-		content: '';
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		opacity: 0.15;
-		z-index: 100;
-		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-	}
 
 	h1,
 	h2,
@@ -63,44 +50,97 @@
 	// ADU-8: Hero Portrait Photo
 	// ==========================================================================
 
-	.invitation-hero__portrait {
-		width: 160px;
-		height: 160px;
-		margin: 1.5rem auto;
-		border-radius: 50%;
-		overflow: hidden;
-		border: 4px solid $birthday-accent;
-		box-shadow:
-			0 0 0 3px $birthday-primary,
-			0 8px 24px rgba(0, 0, 0, 0.5);
 
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		}
-
-		@media (min-width: 768px) {
-			width: 200px;
-			height: 200px;
-		}
-	}
 
 	// Hero title leather/gold shimmer
 	.invitation-hero__title {
 		font-family: $birthday-font-heading;
+		font-weight: 500;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 	}
 
 	.invitation-hero__label {
 		font-family: $birthday-font-sub;
 		color: $birthday-accent;
+		letter-spacing: 0.4em;
 	}
 
 	.invitation-hero__divider {
-		background: $birthday-accent;
 		height: 2px;
+		background: linear-gradient(
+			to right,
+			rgba($birthday-accent, 0.1) 0%,
+			rgba($birthday-accent, 0.4) 50%,
+			rgba($birthday-accent, 0.1) 100%
+		);
+		background-size: 200% auto;
+		animation:
+			growLine 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards,
+			shimmer 4s linear infinite 1.5s;
+	}
+
+	.invitation-hero__date {
+		font-family: $birthday-font-sub;
+		letter-spacing: 0.15em;
+	}
+
+	.invitation-hero__venue {
+		letter-spacing: 0.05em;
+
+		.calligraphy-accent {
+			color: $birthday-parchment;
+			font-family: $birthday-font-sub;
+			font-weight: 300;
+			font-size: 0.8em;
+		}
+	}
+
+	// ==========================================================================
+	// ADU-3: Cognac Glass Panel
+	// ==========================================================================
+
+	.invitation-hero__content {
+		background: $birthday-glass-bg;
+		border: 1px solid $birthday-glass-border;
+		border-radius: 4px; // Masculine square-ish
+		position: relative;
+		overflow: hidden;
+
+
+		// Leather-like noise texture
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			opacity: 0.05;
+			pointer-events: none;
+			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			z-index: -1;
+		}
+	}
+
+	// ==========================================================================
+	// CUSTOM VIGNETTE: Hacienda Cognac Tint
+	// ==========================================================================
+
+	.invitation-hero__background::after {
+		background:
+			radial-gradient(
+				circle at center,
+				transparent 10%,
+				rgba($birthday-primary, 0.3) 60%,
+				rgba(color.adjust($birthday-primary, $lightness: -20%), 0.8) 100%
+			),
+			linear-gradient(
+				to bottom,
+				transparent 0%,
+				rgba(0, 0, 0, 0.2) 50%,
+				rgba(0, 0, 0, 0.7) 100%
+			);
+		background-blend-mode: normal, normal;
+		opacity: 1;
 	}
 
 	// ==========================================================================
@@ -598,7 +638,9 @@
 
 	.invitation-hero__background img {
 		// Darkens the background and warms it up to let gold text pop
-		filter: sepia(0.35) contrast(1.15) brightness(0.85) sasurate(1.1);
+		// Added slightly higher contrast and a subtle brightness boost to dark regions
+		filter: sepia(0.35) contrast(1.3) brightness(0.85) saturate(1.15);
+		transform: scale(1.02); // Subtle over-scan to avoid edge artifacts
 	}
 
 	.gallery__item img {

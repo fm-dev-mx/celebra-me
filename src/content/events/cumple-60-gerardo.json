@@ -9,24 +9,23 @@
         "preset": "luxury-hacienda"
     },
     "hero": {
-        "name": "Gerardo García",
+        "name": "Gerardo Mendoza",
         "nickname": "Jefe Botas",
-        "date": "2026-05-16T19:00:00.000Z",
+        "date": "2026-02-21T20:00:00.000Z",
         "backgroundImage": "../../assets/images/events/cumple-60-gerardo/hero.webp"
     },
     "location": {
-        "venueName": "Hacienda San José",
-        "address": "Km 15, Carretera a la Hacienda, Monterrey, N.L.",
-        "city": "Monterrey",
+        "venueName": "Jardín De Eventos Cuatro 60",
+        "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
+        "city": "Los Mochis",
         "mapUrl": "https://maps.app.goo.gl/example",
         "reception": {
-            "venueName": "Jardín Principal de la Hacienda",
-            "address": "Km 15, Carretera a la Hacienda",
-            "date": "16 de mayo de 2026",
-            "time": "7:00 PM",
-            "googleMapsUrl": "https://maps.app.goo.gl/example",
-            "wazeUrl": "https://waze.com/ul?q=Hacienda+San+Jose",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/hacienda-sample.jpg"
+            "venueName": "Jardín De Eventos Cuatro 60",
+            "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
+            "date": "21 de febrero de 2026",
+            "time": "8:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/KuRk4L96VD5T2GfR9",
+            "image": "../../assets/images/events/cumple-60-gerardo/jardin.webp"
         },
         "indications": [
             {
