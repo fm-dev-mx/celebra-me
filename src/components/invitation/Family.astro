@@ -16,14 +16,15 @@ interface Props {
 	}>;
 	featuredImage?: string | ImageAsset;
 	celebrantName: string;
+	variant?: string;
 }
 
-const { parents, godparents, featuredImage, celebrantName } = Astro.props;
+const { parents, godparents, featuredImage, celebrantName, variant = 'standard' } = Astro.props;
 
 const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
 ---
 
-<section id="family-section" class="family">
+<section id="family-section" class="family" data-variant={variant}>
 	<div class="family-bg-texture" aria-hidden="true"></div>
 
 	<Container>
@@ -45,7 +46,7 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 						)}
 						{parents.mother && parents.father && (
 							<div class="family__ampersand-divider" aria-hidden="true">
-								<span class="calligraphy-ampersand">y</span>
+								<span class="family__calligraphy-ampersand">y</span>
 							</div>
 						)}
 						{parents.father && (

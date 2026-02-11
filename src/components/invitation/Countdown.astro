@@ -2,6 +2,7 @@
 // src/components/invitation/Countdown.astro
 // Premium countdown section
 import '@/styles/invitation/_countdown.scss';
+import '@/styles/themes/sections/_countdown-theme.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
 
 interface Props {
@@ -9,13 +10,17 @@ interface Props {
 	title?: string;
 	subtitlePrefix?: string;
 	footerText?: string;
+	variant?: 'minimal' | 'vibrant' | 'classic' | 'modern' | 'jewelry-box';
+	showParticles?: boolean;
 }
 
 const {
 	eventDate,
 	title = "¡Falta muy poco!",
 	subtitlePrefix = "El",
-	footerText = "Prepárate para una noche inolvidable"
+	footerText = "Prepárate para una noche inolvidable",
+	variant = 'minimal',
+	showParticles = false
 } = Astro.props;
 
 // Function to format the date in Spanish for the subtitle
@@ -37,7 +42,7 @@ function getFormattedDate(dateString: string): string {
 const formattedEventDate = getFormattedDate(eventDate);
 ---
 
-<section class="countdown-section" id="countdown">
+<section class="countdown-section" id="countdown" data-variant={variant} data-show-particles={showParticles}>
 	<div class="countdown-texture" aria-hidden="true"></div>
 	<div class="countdown-container">
 		<header class="countdown-header">

@@ -11,12 +11,7 @@
 	text-align: center;
 	overflow: hidden;
 
-	/* Multi-layered Jewelry Box Background: Ivory silk with paper fiber texture */
-	background-color: tokens.$color-surface-primary;
-	background-image:
-		url('https://www.transparenttextures.com/patterns/paper-fibers.png'),
-		linear-gradient(180deg, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.95) 0%, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.9) 100%);
-	background-blend-mode: overlay, normal;
+	// Aesthetic background moved to theme variants
 
 	&__container {
 		max-width: 1000px;
@@ -83,16 +78,8 @@
 	}
 
 	&__card {
-		/* Tactile Parchment Card */
-		background-color: tokens.$color-surface-primary;
-		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
-		background-blend-mode: multiply;
-		border: 1px solid rgba(tokens.$color-action-accent, 0.3); // Aged gold border
-		border-radius: 4px; // Masculine square-ish
 		padding: 2.5rem 1.5rem;
-		box-shadow:
-			0 15px 40px rgba(0, 0, 0, 0.08),
-			inset 0 0 20px rgba(tokens.$color-action-accent, 0.05);
+		border-radius: 4px;
 		transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 		width: 100%;
 		display: flex;
@@ -102,6 +89,8 @@
 		animation: fadeInUp 0.8s ease-out forwards;
 		position: relative;
 		overflow: hidden;
+
+		// Visual card styles moved to theme variants
 
 		&--ceremony {
 			animation-delay: 0.1s;

@@ -4,7 +4,6 @@
 
 .gifts-section {
 	padding: var(--spacing-xl) var(--spacing-md);
-	background: radial-gradient(circle at center, rgba(var(--color-surface-primary-rgb), 0.05) 0%, transparent 70%);
 	position: relative;
 	overflow: hidden;
 
@@ -20,19 +19,15 @@
 	}
 
 	&__title {
-		font-family: tokens.$font-display-formal;
 		font-size: tokens.$font-size-h1;
-		color: tokens.$color-action-accent;
 		margin-bottom: var(--spacing-md);
 		text-transform: uppercase;
 		letter-spacing: tokens.$letter-spacing-wide;
 	}
 
 	&__subtitle {
-		font-family: tokens.$font-body;
 		font-size: 1.25rem;
 		line-height: 1.6;
-		color: tokens.$color-text-primary;
 		max-width: 600px;
 		margin: 0 auto;
 		opacity: 0.9;
@@ -47,10 +42,6 @@
 }
 
 .gift-card {
-	background: tokens.$color-glass-bg;
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border: 1px solid tokens.$color-glass-border;
 	border-radius: 12px;
 	padding: var(--spacing-xl) var(--spacing-lg);
 	transition: tokens.$transition-snappy;
@@ -64,19 +55,14 @@
 		left: 0;
 		right: 0;
 		height: 2px;
-		background: linear-gradient(90deg, transparent, tokens.$color-action-accent, transparent);
 		opacity: 0.5;
 	}
 
 	&:hover {
 		transform: translateY(-10px);
-		border-color: rgba(var(--color-action-accent-rgb), 0.5);
-		box-shadow: tokens.$shadow-emphasis;
-		background: rgba(var(--color-surface-primary-rgb), 0.08);
 	}
 
 	&__icon {
-		color: tokens.$color-action-accent;
 		width: 48px;
 		height: 48px;
 		margin: 0 auto var(--spacing-lg);
@@ -88,17 +74,13 @@
 	}
 
 	&__title {
-		font-family: tokens.$font-display-formal;
 		font-size: 1.5rem;
 		margin-bottom: var(--spacing-lg);
-		color: tokens.$color-action-accent;
 	}
 
 	&__description {
-		font-family: tokens.$font-body;
 		font-size: 1.1rem;
 		line-height: 1.5;
-		color: tokens.$color-text-primary;
 		margin-top: -0.5rem;
 		opacity: 0.9;
 	}
@@ -107,19 +89,12 @@
 		display: inline-block;
 		padding: 0.75rem 1.5rem;
 		background: transparent;
-		border: 1px solid tokens.$color-action-primary;
-		color: tokens.$color-action-primary;
-		font-family: tokens.$font-body;
+		border: 1px solid;
 		font-size: 1.1rem;
 		text-decoration: none;
 		border-radius: 4px;
 		transition: tokens.$transition-snappy;
 		cursor: pointer;
-
-		&:hover {
-			background: tokens.$color-action-primary;
-			color: tokens.$color-text-on-dark;
-		}
 
 		&--paypal {
 			border-color: #0070ba;
@@ -135,21 +110,15 @@
 
 .bank-details {
 	text-align: left;
-	font-family: tokens.$font-body;
-	background: rgba(0, 0, 0, 0.1);
 	padding: var(--spacing-md);
 	border-radius: 8px;
 	margin-bottom: var(--spacing-lg);
-	border-left: 3px solid tokens.$color-action-primary;
 
 	&__item {
 		margin-bottom: 0.5rem;
 		font-size: 1rem;
-		color: tokens.$color-text-primary;
 
 		strong {
-			color: tokens.$color-action-primary;
-			font-family: tokens.$font-display-formal;
 			font-size: 0.8rem;
 			text-transform: uppercase;
 			margin-right: 0.5rem;
@@ -173,12 +142,9 @@
 }
 
 .copy-button {
-	background: tokens.$color-action-primary;
-	color: tokens.$color-text-on-dark;
 	border: none;
 	padding: 4px 12px;
 	border-radius: 4px;
-	font-family: tokens.$font-display-formal;
 	font-size: 0.7rem;
 	cursor: pointer;
 	transition: tokens.$transition-snappy;
@@ -189,6 +155,7 @@
 
 	&--success {
 		background: #28a745;
+		color: white;
 	}
 }
 

@@ -10,35 +10,15 @@
 .countdown-section {
 	position: relative;
 	padding: 8rem 0.5rem;
-	// Warm parchment gradient matching Hacienda palette
-	background: linear-gradient(
-		180deg,
-		tokens.$color-surface-primary 0%,
-		tokens.$color-surface-secondary 50%,
-		tokens.$color-surface-primary 100%
-	);
 	overflow: hidden;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	min-height: 50vh;
 
-	// Subtle radial glow for depth
-	&::before {
-		content: '';
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 80%;
-		height: 60%;
-		background: radial-gradient(
-			ellipse at center,
-			rgba(var(--color-text-primary-rgb), 0.06) 0%,
-			transparent 70%
-		);
-		pointer-events: none;
-	}
+	// Background and effects moved to theme variants
+
+	// Visual properties moved to _countdown-theme.scss
 
 	// Entrance animation
 	opacity: 0;
@@ -54,10 +34,8 @@
 .countdown-texture {
 	position: absolute;
 	inset: 0;
-	opacity: 0.12;
 	pointer-events: none;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
-	filter: contrast(110%) brightness(100%);
+	// Texture defined in theme variants
 }
 
 .countdown-container {
@@ -123,15 +101,11 @@
 }
 
 .countdown__segment {
-	background: rgba(var(--color-surface-primary-rgb), 0.4);
-	backdrop-filter: blur(8px);
-	border: 2px solid tokens.$color-action-accent;
 	padding: 2.2rem 1rem;
 	border-radius: 4px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	box-shadow: tokens.$shadow-subtle;
 	transition: tokens.$transition-snappy;
 
 	// Staggered entrance animation

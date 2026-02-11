@@ -31,16 +31,17 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 
 interface Props {
 	gifts: Gift[];
+	variant?: string;
 }
 
-const { gifts } = Astro.props;
+const { gifts, variant = 'standard' } = Astro.props;
 
 import { GiftIcon } from '@/components/common/icons/invitation';
 import { BankCardIcon, CashIcon } from '@/components/common/icons/ui';
 import { PayPalIcon } from '@/components/common/icons/social';
 ---
 
-<section id="regalos" class="gifts-section">
+<section id="regalos" class="gifts-section" data-variant={variant}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			<h2 class="gifts-section__title">Mesa de Regalos</h2>

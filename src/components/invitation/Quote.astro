@@ -1,16 +1,19 @@
 ---
 // src/components/invitation/Quote.astro
 import '@/styles/invitation/_quote.scss';
+import '@/styles/themes/sections/_quote-theme.scss';
 
 interface Props {
 	text: string;
 	author?: string;
+	variant?: 'elegant' | 'modern' | 'minimal' | 'floral' | 'jewelry-box';
+	animation?: 'fade' | 'bounce' | 'elastic' | 'none';
 }
 
-const { text, author } = Astro.props;
+const { text, author, variant = 'elegant', animation = 'fade' } = Astro.props;
 ---
 
-<section id="quote-section" class="quote-section">
+<section id="quote-section" class="quote-section" data-variant={variant} data-animation={animation}>
 	<div class="quote-texture" aria-hidden="true"></div>
 	<div class="quote-container">
 		<div class="quote-divider-top" aria-hidden="true">

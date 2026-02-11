@@ -5,6 +5,7 @@
 */
 import '@/styles/invitation/_event-location.scss';
 import '@/styles/invitation/_section-nav-button.scss';
+import '@/styles/themes/sections/_location-theme.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import GoogleMap from '@/components/common/GoogleMap.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
@@ -39,9 +40,19 @@ interface Props {
 	ceremony?: VenueData;
 	reception?: VenueData;
 	indications?: Indication[];
+	variant?: 'structured' | 'organic' | 'minimal' | 'luxury';
+	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+	showFlourishes?: boolean;
 }
 
-const { ceremony, reception, indications } = Astro.props;
+const {
+	ceremony,
+	reception,
+	indications,
+	variant = 'structured',
+	mapStyle = 'dark',
+	showFlourishes = true
+} = Astro.props;
 
 const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 
@@ -55,11 +66,11 @@ const iconMap = {
 };
 ---
 
-<section class="event-location" id="event-location">
+<section class="event-location" id="event-location" data-variant={variant} data-map-style={mapStyle} data-show-flourishes={showFlourishes}>
 	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
 		{ceremony && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title font-heading-formal">Ceremonia</h3>
+				<h3 class="event-location__card-title">Ceremonia</h3>
 				<div class="event-location__card-flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
 					<span class="flourish-diamond"></span>
@@ -87,14 +98,14 @@ const iconMap = {
 					</div>
 					<div class="event-location__card-content">
 						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place font-heading-formal">
+							<li class="event-location__card-content-list__place">
 								{ceremony.venueName}
 							</li>
-							<li class="event-location__card-content-list__date font-decorative-dancing">
+							<li class="event-location__card-content-list__date">
 								{ceremony.date}
 							</li>
 							<li class="event-location__card-content-list__hour">{ceremony.time}</li>
-							<li class="event-location__card-content-list__address font-body">
+							<li class="event-location__card-content-list__address">
 								<span class="address-text">{ceremony.address}</span>
 								<button class="copy-button" data-address={ceremony.address} aria-label="Copiar dirección" title="Copiar dirección">
 									<Icon name="Copy" size={20} />
@@ -153,7 +164,7 @@ const iconMap = {
 
 		{reception && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title font-heading-formal">Recepción</h3>
+				<h3 class="event-location__card-title">Recepción</h3>
 				<div class="event-location__card-flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
 					<span class="flourish-diamond"></span>
@@ -181,14 +192,14 @@ const iconMap = {
 					</div>
 					<div class="event-location__card-content">
 						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place font-heading-formal">
+							<li class="event-location__card-content-list__place">
 								{reception.venueName}
 							</li>
-							<li class="event-location__card-content-list__date font-decorative-dancing">
+							<li class="event-location__card-content-list__date">
 								{reception.date}
 							</li>
 							<li class="event-location__card-content-list__hour">{reception.time}</li>
-							<li class="event-location__card-content-list__address font-body">
+							<li class="event-location__card-content-list__address">
 								<span class="address-text">{reception.address}</span>
 								<button class="copy-button" data-address={reception.address} aria-label="Copiar dirección" title="Copiar dirección">
 									<Icon name="Copy" size={20} />
@@ -257,7 +268,7 @@ const iconMap = {
 						<div class="indication-icon">
 							<Icon name={iconMap[indication.icon] || 'Crown'} size={24} />
 						</div>
-						<p class="font-body">{indication.text}</p>
+						<p>{indication.text}</p>
 					</div>
 				))}
 			</div>

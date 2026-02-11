@@ -14,25 +14,9 @@
 	align-items: center;
 	overflow: hidden;
 	padding: 6rem 1.5rem;
-	background-color: var(--color-surface-dark, tokens.$color-surface-dark);
-	background-image:
-		radial-gradient(
-			ellipse at center,
-			rgba(var(--color-text-primary-rgb, 75, 54, 33), 0.4) 0%,
-			transparent 80%
-		),
-		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3Cfilter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E");
-	background-blend-mode: soft-light, overlay;
-	color: tokens.$color-text-on-dark;
 	text-align: center;
 
-	&::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
-		pointer-events: none;
-	}
+	// Visual properties moved to _quote-theme.scss to avoid aesthetic bleed-through
 }
 
 .quote-texture {
@@ -50,8 +34,7 @@
 .quote-divider-bottom {
 	width: 180px;
 	margin: 0 auto;
-	color: tokens.$color-action-accent;
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+	// Aesthetic properties (color, shadow) moved to theme
 
 	svg {
 		width: 100%;
@@ -70,14 +53,11 @@
 .quote-content {
 	margin: 0;
 	padding: 0;
-	font-family: vars.$font-body; // EB Garamond
-	font-weight: 500;
+	// Typography strictly defined in theme variants
 	font-size: clamp(1.6rem, 5.5vw, 2.4rem);
 	line-height: 1.5;
-	font-style: italic;
 	perspective: 1000px;
 	letter-spacing: -0.01em;
-	color: tokens.$color-text-on-dark;
 }
 
 .quote-line {
