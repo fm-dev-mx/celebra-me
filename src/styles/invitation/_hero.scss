@@ -75,7 +75,7 @@
 
 	&__label {
 		display: block;
-		font-family: var(--font-serif, serif);
+		font-family: var(--font-display-elegant, serif);
 		font-size: 1.1rem;
 		text-transform: uppercase;
 		letter-spacing: 0.3em;
@@ -85,7 +85,7 @@
 	}
 
 	&__title {
-		font-family: var(--font-serif, serif);
+		font-family: var(--font-display-elegant, serif);
 		font-size: clamp(2.2rem, 8vw, 4rem);
 		font-weight: 300;
 		margin: 0.5rem 0;
@@ -97,9 +97,9 @@
 		// Gold Shimmer
 		background: linear-gradient(
 			to right,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0) 0%,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.4) 50%,
-			rgba(var(--color-action-accent-rgb, 212, 175, 55), 0) 100%
+			rgba(var(--color-action-accent-rgb), 0) 0%,
+			rgba(var(--color-action-accent-rgb), 0.4) 50%,
+			rgba(var(--color-action-accent-rgb), 0) 100%
 		);
 		background-size: 200% auto;
 		-webkit-background-clip: text;

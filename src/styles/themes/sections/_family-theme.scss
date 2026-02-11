@@ -10,17 +10,17 @@
 	background: linear-gradient(180deg, #fff9f5 0%, #fff0f5 100%);
 
 	&::before {
-		background: linear-gradient(90deg, transparent, #d4af37, transparent);
+		background: linear-gradient(90deg, transparent, var(--color-action-accent, tokens.$color-action-accent), transparent);
 	}
 
 	.family__suptitle {
 		font-family: tokens.$font-display-elegant;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.family__title-main {
 		font-family: tokens.$font-display-formal;
-		background: linear-gradient(to right, #111 0%, #d4af37 50%, #111 100%);
+		background: linear-gradient(to right, #111 0%, var(--color-action-accent, tokens.$color-action-accent) 50%, #111 100%);
 		background-clip: text;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -32,19 +32,19 @@
 		box-shadow: tokens.$shadow-subtle;
 
 		&::after {
-			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+			background: linear-gradient(90deg, transparent, var(--color-action-accent, tokens.$color-action-accent), transparent);
 		}
 	}
 
 	.family__card-subtitle {
 		font-family: tokens.$font-display-elegant;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.family__calligraphy-ampersand {
-		font-family: 'Pinyon Script', cursive;
+		font-family: var(--font-calligraphy, 'Pinyon Script'), cursive;
 		font-size: 2.5rem;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 		line-height: 1;
 	}
 
@@ -53,18 +53,18 @@
 		color: #111;
 
 		&::first-letter {
-			color: #d4af37;
+			color: var(--color-action-accent, tokens.$color-action-accent);
 		}
 	}
 
 	.family__role {
 		font-family: tokens.$font-display-formal;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.family__image-frame {
-		border: 1px solid rgba(212, 175, 55, 0.4);
-		box-shadow: 0 15px 45px rgba(212, 175, 55, 0.3);
+		border: 1px solid rgba(var(--color-action-accent-rgb), 0.4);
+		box-shadow: 0 15px 45px rgba(var(--color-action-accent-rgb), 0.3);
 	}
 }
 

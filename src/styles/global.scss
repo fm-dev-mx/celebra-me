@@ -29,7 +29,12 @@
 
 	/* Typography - Mapped to tokens */
 	--font-display: #{tokens.$font-display-elegant};
+	--font-display-formal: #{tokens.$font-display-formal};
+	--font-display-elegant: #{tokens.$font-display-elegant};
+	--font-calligraphy: #{tokens.$font-calligraphy};
+	--font-body-narrative: #{tokens.$font-body};
 	--font-body: #{tokens.$font-ui};
+	--font-ui: #{tokens.$font-ui};
 
 	/* Spacing & Utilities */
 	--spacing-sm: 0.5rem;

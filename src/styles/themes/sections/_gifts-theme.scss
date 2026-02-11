@@ -7,11 +7,11 @@
 
 // --- JEWELRY BOX (XV / Wedding) ---
 .gifts-section[data-variant='jewelry-box'] {
-	background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+	background: radial-gradient(circle at center, rgba(var(--color-action-accent-rgb), 0.1) 0%, transparent 70%);
 
 	.gifts-section__title {
 		font-family: tokens.$font-display-formal;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.gift-card {
@@ -20,45 +20,45 @@
 		backdrop-filter: blur(12px);
 
 		&::before {
-			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+			background: linear-gradient(90deg, transparent, var(--color-action-accent, tokens.$color-action-accent), transparent);
 		}
 
 		&:hover {
-			border-color: rgba(212, 175, 55, 0.5);
-			box-shadow: 0 15px 35px rgba(212, 175, 55, 0.2);
+			border-color: rgba(var(--color-action-accent-rgb), 0.5);
+			box-shadow: 0 15px 35px rgba(var(--color-action-accent-rgb), 0.2);
 		}
 	}
 
 	.gift-card__icon {
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.gift-card__title {
 		font-family: tokens.$font-display-formal;
-		color: #d4af37;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	.gift-card__button {
-		border-color: #d4af37;
-		color: #d4af37;
+		border-color: var(--color-action-accent, tokens.$color-action-accent);
+		color: var(--color-action-accent, tokens.$color-action-accent);
 
 		&:hover {
-			background: #d4af37;
+			background: var(--color-action-accent, tokens.$color-action-accent);
 			color: white;
 		}
 	}
 
 	.bank-details {
-		background: rgba(255, 255, 255, 0.05);
-		border-left: 3px solid #d4af37;
+		background: rgba(var(--color-surface-primary-rgb), 0.05);
+		border-left: 3px solid var(--color-action-accent, tokens.$color-action-accent);
 
 		strong {
-			color: #d4af37;
+			color: var(--color-action-accent, tokens.$color-action-accent);
 		}
 	}
 
 	.copy-button {
-		background: #d4af37;
+		background: var(--color-action-accent, tokens.$color-action-accent);
 		color: white;
 	}
 }

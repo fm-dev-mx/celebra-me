@@ -21,7 +21,7 @@
             "showParticles": false
         },
         "location": {
-            "variant": "organic",
+            "variant": "structured",
             "mapStyle": "colorful",
             "showFlourishes": true
         },
@@ -66,7 +66,7 @@
             "appleMapsUrl": "https://maps.apple.com/?address=Av+Real+de+Catorce+123,+Col+Valle+Alto",
             "googleMapsUrl": "https://maps.app.goo.gl/example",
             "wazeUrl": "https://waze.com/ul?q=Quinta+Las+Flores+Monterrey",
-            "image": "https://res.cloudinary.com/dusxvauvj/image/upload/v1738985219/salon_piedra_bonita1920x1080_k8lsby.jpg",
+            "image": "jardin",
             "coordinates": {
                 "lat": 25.5687,
                 "lng": -100.2488

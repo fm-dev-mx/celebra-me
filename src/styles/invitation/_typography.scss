@@ -1,26 +1,27 @@
+@use '../tokens' as tokens;
 // src/styles/invitation/_typography.scss
 
 // Headings (Primary Titles)
-$font-heading-elegant: 'Playfair Display', serif !default;
-$font-heading-formal: 'Cinzel', serif !default;
-$font-heading-modern: 'Montserrat', sans-serif !default;
+$font-heading-elegant: tokens.$font-display-elegant !default;
+$font-heading-formal: tokens.$font-display-formal !default;
+$font-heading-modern: tokens.$font-ui !default;
 
 // Subtitles & Formal Text
-$font-subtitle-refined: 'Cormorant Garamond', serif !default;
-$font-subtitle-classic: 'Lora', serif !default;
+$font-subtitle-refined: tokens.$font-display-elegant !default;
+$font-subtitle-classic: tokens.$font-body !default;
 
 // Body copy
-$font-body: 'EB Garamond', serif !default;
+$font-body: tokens.$font-body !default;
 
 // Decorative Fonts
 $font-decorative-cursive: 'Great Vibes', cursive !default;
 $font-decorative-dancing: 'Dancing Script', cursive !default;
-$font-decorative-calligraphy: 'Pinyon Script', cursive !default;
+$font-decorative-calligraphy: tokens.$font-calligraphy !default;
 $font-decorative-display: 'Abril Fatface', serif !default;
 
 // Document Default Fonts
 $font-default: $font-body !default;
-$font-special-title: 'Pinyon Script', serif !default;
+$font-special-title: $font-decorative-calligraphy !default;
 
 // Additional Texts (buttons, captions, footer)
 $font-button: $font-heading-modern !default;

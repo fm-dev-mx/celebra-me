@@ -2,12 +2,12 @@
 
 .theme-preset--jewelry-box {
 	// Primary: Gold Metallic
-	--color-text-emphasis: #{tokens.$color-action-accent};
-	--color-action-accent: #{tokens.$color-action-accent};
-	--color-action-accent-rgb: 212, 175, 55;
+	--color-text-emphasis: #{tokens.$base-gold-500};
+	--color-action-accent: var(--color-primary, #{tokens.$base-gold-500});
+	--color-action-accent-rgb: var(--color-primary-rgb, 212, 175, 55);
 
 	// Dark: Deep Surfaces
-	--color-surface-dark: #{tokens.$color-surface-dark};
+	--color-surface-dark: #{tokens.$base-coffee-900};
 	--color-surface-dark-rgb: 75, 54, 33;
 
 	// Semantic Overrides
