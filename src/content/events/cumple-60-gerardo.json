@@ -8,6 +8,23 @@
         "fontFamily": "serif",
         "preset": "luxury-hacienda"
     },
+    "sectionStyles": {
+        "quote": {
+            "variant": "elegant",
+            "fontStyle": "serif",
+            "animation": "fade"
+        },
+        "countdown": {
+            "variant": "minimal",
+            "numberStyle": "thin",
+            "showParticles": false
+        },
+        "location": {
+            "variant": "structured",
+            "mapStyle": "dark",
+            "showFlourishes": true
+        }
+    },
     "hero": {
         "name": "Gerardo Mendoza",
         "nickname": "Jefe Botas",

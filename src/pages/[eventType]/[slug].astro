@@ -182,7 +182,14 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			portrait={heroPortrait}
 		/>
 
-		{data.quote && <Quote text={data.quote.text} author={data.quote.author} />}
+		{data.quote && (
+			<Quote
+				text={data.quote.text}
+				author={data.quote.author}
+				variant={data.sectionStyles?.quote?.variant}
+				animation={data.sectionStyles?.quote?.animation}
+			/>
+		)}
 
 		{
 			data.sections?.countdown && (
@@ -191,6 +198,8 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 					title={data.countdown?.title}
 					subtitlePrefix={data.countdown?.subtitlePrefix}
 					footerText={data.countdown?.footerText}
+					variant={data.sectionStyles?.countdown?.variant}
+					showParticles={data.sectionStyles?.countdown?.showParticles}
 				/>
 			)
 		}
@@ -202,6 +211,7 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 					godparents={data.family.godparents}
 					featuredImage={familyImage}
 					celebrantName={data.hero.name}
+					variant={data.sectionStyles?.family?.variant}
 				/>
 			)
 		}
@@ -210,6 +220,9 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			ceremony={ceremonyData}
 			reception={receptionData}
 			indications={data.location.indications}
+			variant={data.sectionStyles?.location?.variant}
+			mapStyle={data.sectionStyles?.location?.mapStyle}
+			showFlourishes={data.sectionStyles?.location?.showFlourishes}
 		/>
 
 		{
@@ -218,7 +231,7 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			)
 		}
 
-		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} />}
+		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} variant={data.sectionStyles?.gifts?.variant} />}
 
 		{
 			data.sections?.gallery && data.gallery && (

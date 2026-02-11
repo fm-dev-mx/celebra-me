@@ -9,6 +9,29 @@
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
+    "sectionStyles": {
+        "quote": {
+            "variant": "jewelry-box",
+            "fontStyle": "script",
+            "animation": "bounce"
+        },
+        "countdown": {
+            "variant": "jewelry-box",
+            "numberStyle": "thin",
+            "showParticles": false
+        },
+        "location": {
+            "variant": "organic",
+            "mapStyle": "colorful",
+            "showFlourishes": true
+        },
+        "family": {
+            "variant": "jewelry-box"
+        },
+        "gifts": {
+            "variant": "jewelry-box"
+        }
+    },
     "hero": {
         "name": "Lucía García",
         "date": "2026-04-25T18:00:00.000Z",
