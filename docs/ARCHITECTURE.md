@@ -162,7 +162,7 @@ Celebra-me uses a **Preset-based** styling architecture to support multiple aest
   - The `preset` is defined in the content collection (`src/content/config.ts`).
   - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
   - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
-    preset.
+    preset. See [THEME_SYSTEM.md](file:///c:/Code/celebra-me/docs/THEME_SYSTEM.md) for variant details.
 
 ---
 

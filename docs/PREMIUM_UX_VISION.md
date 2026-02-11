@@ -14,11 +14,11 @@ scrolling.
 
 ## 2. Global Status (Production Ready)
 
-| Module             | Status              | Visual Aesthetic  | Implementation Notes                                      |
-| :----------------- | :------------------ | :---------------- | :-------------------------------------------------------- |
-| **Landing Page**   | ✅ **Live**         | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                  |
-| **XV Años Engine** | ✅ **Live**         | "The Jewelry Box" | Full data integration, interactive maps, reduced motion.  |
-| **60th Birthday**  | 🚧 **Implementing** | "Luxury Hacienda" | Bespoke spec finalized. Transitioning to styling & logic. |
+| Module             | Status            | Visual Aesthetic  | Implementation Notes                                      |
+| :----------------- | :---------------- | :---------------- | :-------------------------------------------------------- |
+| **Landing Page**   | ✅ **Live**       | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                  |
+| **XV Años Engine** | ✅ **Production** | "Jewelry Box"     | 3-Layer Color Arch, Asset Registry, Preset System.        |
+| **60th Birthday**  | ✅ **Production** | "Luxury Hacienda" | Full data integration, interactive maps, refined motion.  |
 
 ---
 
@@ -40,8 +40,7 @@ duplication:
 - **Available Presets:**
   - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
   - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
-- **Integration:** The `preset` field in content collections (`src/content/config.ts`) drives the
-  theme application in `[slug].astro`.
+- **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in [THEME_SYSTEM.md](file:///c:/Code/celebra-me/docs/THEME_SYSTEM.md).
 
 ### C. Typography System (Core 5)
 
@@ -110,3 +109,4 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 | 2026-02-08 | **Aesthetic Presets Architecture** implemented. Components generalized.   |
 | 2026-02-08 | **Typography System** documentation added. Documentation audit completed. |
 | 2026-02-11 | **Universal Asset System** implemented. Documentation sync completed.     |
+| 2026-02-11 | **Refined Preset Architecture** extended to Family, Gifts, and Countdown.  |
