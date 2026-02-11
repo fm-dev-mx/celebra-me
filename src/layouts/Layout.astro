@@ -1,5 +1,5 @@
 ---
-/** src/Layouts/Layout.astro */
+/** src/layouts/Layout.astro */
 import '@/styles/global.scss';
 
 import Header from '@/components/home/HomeHeader.astro';
@@ -39,10 +39,15 @@ const {
 	hideHeader = false,
 } = Astro.props;
 
-// Ensure full URL for social sharing
-const ogImage = new URL(image, Astro.url);
----
+// Environment guard: only load Vercel tooling in production
+const isProd = import.meta.env.PROD;
 
+// Ensure full URL for social sharing (absolute URL required by crawlers)
+const ogImage = new URL(image, Astro.url);
+
+// Canonical URL (avoid leaking dev localhost into metadata)
+const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
+---
 <!doctype html>
 <html lang="es">
 	<head>
@@ -53,26 +58,28 @@ const ogImage = new URL(image, Astro.url);
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 
-		<!-- Open Graph / Facebook -->
+		<!-- Open Graph -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url} />
+		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImage} />
 
 		<!-- Twitter -->
-		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content={Astro.url} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={canonicalUrl} />
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={ogImage} />
 	</head>
 	<body>
 		{!hideHeader && <Header />}
+
 		<main>
 			<slot />
 		</main>
-		<Analytics />
-		<SpeedInsights />
+
+		{isProd && <Analytics />}
+		{isProd && <SpeedInsights />}
 	</body>
 </html>
