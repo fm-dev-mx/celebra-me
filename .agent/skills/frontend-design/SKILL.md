@@ -1,12 +1,11 @@
 ---
 name: frontend-design
 description:
-    Create distinctive, production-grade frontend interfaces with high design quality. Use this
-    skill when the user asks to build web components, pages, artifacts, posters, or applications
-    (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or
-    when styling/beautifying any web UI). Generates creative, polished code and UI design that
-    avoids generic AI aesthetics.
+    Create distinctive, production-grade frontend interfaces using 3-Layer Color Architecture,
+    Jewelry Box aesthetic, and premium typography systems.
 ---
+
+# 🎨 Frontend Design Skill
 
 > **Related skills**: [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for contrast
 > ratios, [`astro-patterns`](file://.agent/skills/astro-patterns/SKILL.md) for SCSS structure.
@@ -48,28 +47,16 @@ Before coding, commit to a **BOLD aesthetic direction**:
 
 ### Typography
 
-- **Display fonts**: Elegant serifs (Playfair Display, Cormorant) or refined scripts (Great Vibes,
-  Tangerine)
-- **Body fonts**: Clean, readable sans-serif (Lato, Source Sans Pro, Nunito)
+- **Display fonts**: Elegant serifs (Playfair Display, Cinzel) or refined scripts (Pinyon Script)
+- **Body fonts**: Clean, readable serifs (EB Garamond) or sans-serif (Montserrat)
 - **NEVER use**: Arial, Inter, Roboto, system fonts, Space Grotesk
 - Import fonts from Google Fonts in `BaseLayout.astro`
 
 ### Color Palettes
 
-- Define CSS custom properties in `:root`
-- Use SCSS variables referencing CSS properties
-- Dominant color + 1-2 accent colors
-- Ensure WCAG AA contrast (see `accessibility` skill)
-
-```scss
-:root {
-	--color-primary: #8b5a2b;
-	--color-secondary: #d4a574;
-	--color-accent: #c9a054;
-	--color-background: #faf8f5;
-	--color-text: #2d2d2d;
-}
-```
+- Use the 3-Layer Color Architecture (Action, Surface, Status)
+- Define tokens in `src/styles/tokens/`
+- Import tokens via `@use '@/styles/tokens' as tokens;` in SCSS files
 
 ### Spatial Composition
 
@@ -90,13 +77,13 @@ Before coding, commit to a **BOLD aesthetic direction**:
 ```scss
 // Use design tokens
 .invitation-section {
-	padding: var(--spacing-xl);
-	background: var(--color-background);
+	padding: tokens.$spacing-xl;
+	background: tokens.$color-surface-primary;
 
 	&__title {
-		font-family: var(--font-display);
-		font-size: var(--text-3xl);
-		color: var(--color-primary);
+		font-family: tokens.$font-display-elegant;
+		font-size: tokens.$text-3xl;
+		color: tokens.$color-action-accent;
 	}
 }
 

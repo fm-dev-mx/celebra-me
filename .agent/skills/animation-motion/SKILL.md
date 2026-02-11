@@ -1,10 +1,11 @@
 ---
 name: animation-motion
 description:
-    Create elegant, performant animations for premium digital invitations. Focus on subtle
-    transitions, scroll reveals, and micro-interactions while respecting accessibility and
-    performance constraints.
+    Create elegant minimalist animations using GPU-accelerated properties, Jewelry Box aesthetic
+    patterns, and accessibility-aware motion design.
 ---
+
+# 🎬 Animation & Motion Skill
 
 > **Related skills**: [`accessibility`](file://.agent/skills/accessibility/SKILL.md) for
 > reduced-motion requirements and focus states.
@@ -88,6 +89,31 @@ Content rises gently into view:
 	&.visible {
 		opacity: 1;
 		transform: translateY(0);
+	}
+}
+
+### 4. Premium Fade-Up (Jewelry Box)
+
+Sophisticated entrance with blur and subtle scaling:
+
+```scss
+@keyframes premiumFadeUp {
+	0% {
+		opacity: 0;
+		filter: blur(10px);
+		transform: translateY(40px) scale(0.98);
+	}
+	100% {
+		opacity: 1;
+		filter: blur(0);
+		transform: translateY(0) scale(1);
+	}
+}
+
+.premium-reveal {
+	opacity: 0;
+	&.is-visible {
+		animation: premiumFadeUp 1.2s tokens.$ease-premium forwards;
 	}
 }
 ```
