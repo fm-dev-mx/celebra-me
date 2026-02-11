@@ -1,5 +1,4 @@
 /* src/styles/home/_about-us.scss */
-@use '../global/variables' as vars;
 @use '../global/mixins' as mixins;
 
 .about-us {
@@ -14,7 +13,12 @@
 	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
 	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
 	--about-glint-angle: 45deg;
-	--about-gold-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 50%, var(--color-primary-dark) 100%);
+	--about-gold-gradient: linear-gradient(
+		135deg,
+		var(--color-primary) 0%,
+		var(--color-primary-light) 50%,
+		var(--color-primary-dark) 100%
+	);
 
 	&__bg-overlay {
 		position: absolute;
@@ -30,7 +34,11 @@
 				rgba(var(--color-primary-rgb, 197, 160, 89), 0.1) 0%,
 				transparent 70%
 			),
-			radial-gradient(60% 60% at 50% 50%, rgba(var(--color-white-rgb, 255, 255, 255), 0.15) 0%, transparent 90%);
+			radial-gradient(
+				60% 60% at 50% 50%,
+				rgba(var(--color-white-rgb, 255, 255, 255), 0.15) 0%,
+				transparent 90%
+			);
 		z-index: 0;
 		opacity: 0.98;
 
@@ -274,7 +282,11 @@
 				rgba(var(--color-white-rgb, 255, 255, 255), 0.25) 45%,
 				rgba(var(--color-white-rgb, 255, 255, 255), 0.1)
 			),
-			radial-gradient(80% 80% at 0% 0%, rgba(var(--color-primary-rgb, 197, 160, 89), 0.15), transparent 80%);
+			radial-gradient(
+				80% 80% at 0% 0%,
+				rgba(var(--color-primary-rgb, 197, 160, 89), 0.15),
+				transparent 80%
+			);
 		backdrop-filter: blur(24px);
 		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.5);
 		padding: clamp(2rem, 3vh, 3rem) 2rem;
