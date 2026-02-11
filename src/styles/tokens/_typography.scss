@@ -1,0 +1,31 @@
+/**
+ * Typography Tokens - Celebra-me Ecosystem
+ * Defines fonts, sizes, and weights for universal use.
+ */
+
+// Font Stacks
+$font-display-formal: 'Cinzel', serif;
+$font-display-elegant: 'Playfair Display', serif;
+$font-calligraphy: 'Pinyon Script', cursive;
+$font-body: 'EB Garamond', Georgia, serif;
+$font-ui: 'Montserrat', system-ui, sans-serif;
+
+// Fluid Scale (Shared)
+$font-size-h1: clamp(2.5rem, 8vw, 5rem);
+$font-size-h2: clamp(1.8rem, 5vw, 3rem);
+$font-size-h3: clamp(1.4rem, 3vw, 2rem);
+$font-size-body: clamp(1rem, 1.2vw, 1.25rem);
+$font-size-ui: 0.9rem;
+
+// Weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Letter Spacing
+$letter-spacing-tight: -0.02em;
+$letter-spacing-normal: 0;
+$letter-spacing-wide: 0.1em;
+$letter-spacing-extra-wide: 0.25em;

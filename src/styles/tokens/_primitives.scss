@@ -1,0 +1,46 @@
+// src/styles/tokens/_primitives.scss
+/**
+ * Design Primitives - Celebra-me Ecosystem
+ * Theme: Digital Jewelry Box / Luxury Hacienda
+ *
+ * Defines the RAW color palette used throughout the application.
+ * These should not be used directly in components.
+ */
+
+// Coffee / Leather Bases
+$base-coffee-100: hsl(30, 40%, 95%);
+$base-coffee-300: hsl(30, 40%, 70%);
+$base-coffee-500: hsl(30, 40%, 40%);
+$base-coffee-700: hsl(30, 40%, 25%);
+$base-coffee-900: hsl(30, 40%, 13%); // #4B3621 is approx HSL(30, 40%, 21%) - adjusted for depth
+
+// Gold / Accent Bases
+$base-gold-100: hsl(45, 60%, 90%);
+$base-gold-300: hsl(45, 60%, 70%);
+$base-gold-500: hsl(45, 60%, 50%); // #D4AF37 is approx HSL(45, 62%, 53%)
+$base-gold-700: hsl(45, 60%, 35%);
+$base-gold-900: hsl(45, 60%, 20%);
+
+// Parchment / Surface Bases
+$base-parchment-100: hsl(45, 50%, 95%); // #F5F5DC
+$base-parchment-300: hsl(45, 50%, 85%);
+$base-parchment-500: hsl(45, 50%, 70%);
+
+// Neutral Bases
+$base-neutral-0: hsl(0, 0%, 100%);
+$base-neutral-50: hsl(0, 0%, 98%);
+$base-neutral-100: hsl(0, 0%, 96%);
+$base-neutral-200: hsl(0, 0%, 90%);
+$base-neutral-300: hsl(0, 0%, 80%);
+$base-neutral-400: hsl(0, 0%, 60%);
+$base-neutral-500: hsl(0, 0%, 50%);
+$base-neutral-600: hsl(0, 0%, 40%);
+$base-neutral-700: hsl(0, 0%, 25%);
+$base-neutral-800: hsl(0, 0%, 15%);
+$base-neutral-900: hsl(0, 0%, 8%);
+$base-neutral-1000: hsl(0, 0%, 0%);
+
+// Special
+$base-whatsapp: #25d366;
+$base-wax-red: #8b0000;
+$base-error: #d93025;

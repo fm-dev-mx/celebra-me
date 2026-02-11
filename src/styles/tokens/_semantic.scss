@@ -1,0 +1,50 @@
+// src/styles/tokens/_semantic.scss
+/**
+ * Semantic Tokens - Celebra-me Ecosystem
+ * Theme: Digital Jewelry Box / Luxury Hacienda
+ *
+ * Defines the PURPOSE-DRIVEN roles for colors. Use these in components
+ * to ensure theme-ability and visual consistency.
+ */
+@use 'primitives' as primitives;
+
+// Text Roles
+$color-text-primary: var(--color-text-primary, primitives.$base-coffee-900);
+$color-text-primary-rgb: var(--color-text-primary-rgb, 75, 54, 33);
+$color-text-secondary: var(--color-text-secondary, primitives.$base-coffee-700);
+$color-text-emphasis: var(--color-text-emphasis, primitives.$base-gold-700);
+$color-text-on-dark: var(--color-text-on-dark, primitives.$base-parchment-100);
+
+// Surface Roles
+$color-surface-primary: var(--color-surface-primary, primitives.$base-parchment-100);
+$color-surface-primary-rgb: var(--color-surface-primary-rgb, 245, 245, 220);
+$color-surface-secondary: var(--color-surface-secondary, primitives.$base-coffee-100);
+$color-surface-dark: var(--color-surface-dark, primitives.$base-coffee-900);
+$color-surface-dark-rgb: var(--color-surface-dark-rgb, 75, 54, 33);
+
+// Action Roles
+$color-action-primary: var(--color-action-primary, primitives.$base-coffee-900);
+$color-action-accent: var(--color-action-accent, primitives.$base-gold-500);
+$color-action-accent-rgb: var(--color-action-accent-rgb, 212, 175, 55);
+
+// Borders & Dividers
+$color-border-subtle: var(--color-border-subtle, rgba(primitives.$base-coffee-900, 0.1));
+$color-border-emphasis: var(--color-border-emphasis, primitives.$base-gold-500);
+
+// Neutral Roles
+$color-neutral-subtle: var(--color-neutral-subtle, primitives.$base-neutral-100);
+$color-neutral-muted: var(--color-neutral-muted, primitives.$base-neutral-400);
+$color-neutral-base: var(--color-neutral-base, primitives.$base-neutral-700);
+$color-neutral-emphasis: var(--color-neutral-emphasis, primitives.$base-neutral-900);
+
+// Glassmorphism
+$color-glass-bg: var(--color-glass-bg, rgba(var(--color-surface-primary-rgb), 0.1));
+$color-glass-border: var(--color-glass-border, rgba(var(--color-surface-primary-rgb), 0.2));
+
+// Shadows
+$shadow-subtle: var(--shadow-subtle, 0 4px 15px rgba(0, 0, 0, 0.1));
+$shadow-emphasis: var(--shadow-emphasis, 0 10px 30px rgba(0, 0, 0, 0.2));
+
+// Special Roles
+$color-whatsapp: primitives.$base-whatsapp;
+$color-wax-seal: primitives.$base-wax-red;
