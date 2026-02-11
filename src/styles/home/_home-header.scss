@@ -1,5 +1,6 @@
 @use '../global/variables' as *;
 @use '../global/mixins' as *;
+@use '../tokens' as tokens;
 
 /*
  * Block: .home-header
@@ -16,30 +17,19 @@
 		img {
 			height: 100%;
 			width: auto;
-			transition: opacity 0.3s ease;
+			transition: tokens.$transition-snappy;
 		}
 	}
 
-	/* Adaptive Logo Logic
-     * Uses the parent .header-base--scrolled class to toggle visibility
-     */
 	&__logo {
 		&--white {
-			display: block; // Default visible on transparent
-			// Make logo white for maximum contrast on dark hero backgrounds
+			display: block;
 			filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 		}
 		&--gold {
-			display: none; // Default hidden on transparent
+			display: none;
 		}
 	}
-
-	// When scrolled (Parent modifier)
-	// Note: We need to reference the global scope for the parent class if not nested inside it,
-	// but since this SCSS will be imported/used where .header-base exists or processed globally...
-	// Actually, usually easier to use strict BEM: .header-base--scrolled .home-header__logo--white
-	// IF this file is imported globally. If scoped, we might need :global().
-	// Assuming global import or usage in .astro without scope for these selectors.
 }
 
 .home-header__desktop {
@@ -49,8 +39,6 @@
 	text-wrap: nowrap;
 }
 
-// Global overrides/interactions matching HeaderBase state
-// We nest this outside .home-header if we want to hook into .header-base states
 :global(.header-base--logo-adaptive.header-base--scrolled) {
 	.home-header__logo--white {
 		display: none;
@@ -73,44 +61,40 @@
 
 :global(.header-base--scrolled) {
 	.home-nav__link {
-		color: var(--color-text); // Switch to dark text on scroll (if background is white)
+		color: var(--color-text);
 
 		&::after {
-			background-color: var(--color-primary); // Gold underline
+			background-color: tokens.$color-action-accent;
 		}
 	}
 
 	.home-nav-actions__login {
-		color: var(--color-primary-dark);
+		color: tokens.$color-action-primary;
 	}
 }
 
 :global(.header-base--transparent) {
 	.home-nav__link {
-		color: #ffffff; // Force White text on transparent hero
-		font-weight: 600;
-		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); // Soft shadow for legibility
+		color: tokens.$base-neutral-0;
+		font-weight: tokens.$font-weight-semibold;
+		text-shadow: tokens.$shadow-subtle;
 
 		&::after {
-			background-color: #ffffff; // White underline matches text
+			background-color: tokens.$base-neutral-0;
 		}
 
 		&:hover {
-			color: #ffffff; // Keep white on hover
+			color: tokens.$base-neutral-0;
 			opacity: 0.9;
 		}
 	}
 
 	.home-nav-actions__login {
-		color: #ffffff;
+		color: tokens.$base-neutral-0;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 }
 
-/*
- * Block: .home-nav
- * Desktop Navigation Links
- */
 .home-nav {
 	display: flex;
 	gap: var(--spacing-lg);
@@ -118,18 +102,17 @@
 
 	&__link {
 		text-decoration: none;
-		color: var(--color-primary-dark);
+		color: tokens.$color-action-primary;
 		opacity: 0.8;
-		font-family: var(--font-body);
-		font-weight: 500;
+		font-family: tokens.$font-ui;
+		font-weight: tokens.$font-weight-medium;
 		font-size: 0.95rem;
-		letter-spacing: 0.05em;
+		letter-spacing: tokens.$letter-spacing-wide;
 		text-transform: uppercase;
 		position: relative;
 		padding: 5px 0;
-		transition: color 0.3s ease;
+		transition: tokens.$transition-snappy;
 
-		// Growing underline effect
 		&::after {
 			content: '';
 			position: absolute;
@@ -138,7 +121,7 @@
 			width: 0;
 			height: 2px;
 			transform: translateX(-50%);
-			transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			transition: width tokens.$duration-standard tokens.$ease-in-out;
 		}
 
 		&:hover::after {
@@ -146,29 +129,25 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-primary);
+			outline: 2px solid tokens.$color-action-accent;
 			outline-offset: 4px;
 		}
 	}
 }
 
-/*
- * Block: .home-nav-actions
- * Login and CTA
- */
 .home-nav-actions {
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-md);
 
 	&__login {
-		color: var(--color-accent-dark);
+		color: tokens.$color-text-secondary;
 		opacity: 0.5;
 		text-decoration: underline;
 		font-size: 0.9rem;
 		text-transform: uppercase;
-		font-weight: 400;
-		transition: color 0.3s ease;
+		font-weight: tokens.$font-weight-regular;
+		transition: tokens.$transition-snappy;
 		padding: 0.5rem;
 
 		&:hover {
@@ -176,34 +155,31 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-primary);
+			outline: 2px solid tokens.$color-action-accent;
 			outline-offset: 4px;
 		}
 	}
 
 	&__cta {
-		background-color: var(--color-primary);
-		color: #ffffff;
+		background-color: tokens.$color-action-accent;
+		color: tokens.$color-text-on-dark;
 		opacity: 0.8;
 		padding: 0.6rem 1.5rem;
-		border-radius: 50px; // Pill shape
+		border-radius: 50px;
 		text-decoration: none;
-		font-weight: 600;
+		font-weight: tokens.$font-weight-semibold;
 		font-size: 0.9rem;
-		transition:
-			transform 0.2s ease,
-			background-color 0.2s ease,
-			box-shadow 0.2s ease;
-		box-shadow: 0 4px 6px rgba(197, 160, 89, 0.2);
+		transition: tokens.$transition-snappy;
+		box-shadow: tokens.$shadow-subtle;
 
 		&:hover {
 			transform: translateY(-2px);
-			background-color: var(--color-primary-dark);
-			box-shadow: 0 6px 12px rgba(197, 160, 89, 0.3);
+			background-color: tokens.$color-action-primary;
+			box-shadow: tokens.$shadow-emphasis;
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-primary);
+			outline: 2px solid tokens.$color-action-accent;
 			outline-offset: 4px;
 		}
 	}

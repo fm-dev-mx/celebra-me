@@ -14,7 +14,7 @@
 	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
 	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
 	--about-glint-angle: 45deg;
-	--about-gold-gradient: linear-gradient(135deg, #d4af37 0%, #f9e29c 50%, #b8860b 100%);
+	--about-gold-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 50%, var(--color-primary-dark) 100%);
 
 	&__bg-overlay {
 		position: absolute;
@@ -27,10 +27,10 @@
 			),
 			radial-gradient(
 				100% 100% at 100% 100%,
-				rgba(var(--color-accent-rgb), 0.1) 0%,
+				rgba(var(--color-primary-rgb, 197, 160, 89), 0.1) 0%,
 				transparent 70%
 			),
-			radial-gradient(60% 60% at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 90%);
+			radial-gradient(60% 60% at 50% 50%, rgba(var(--color-white-rgb, 255, 255, 255), 0.15) 0%, transparent 90%);
 		z-index: 0;
 		opacity: 0.98;
 
@@ -170,13 +170,13 @@
 		overflow: hidden;
 		background: linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.4) 0%,
-			rgba(255, 255, 255, 0.05) 50%,
-			rgba(255, 255, 255, 0.02) 100%
+			rgba(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
+			rgba(var(--color-white-rgb, 255, 255, 255), 0.05) 50%,
+			rgba(var(--color-white-rgb, 255, 255, 255), 0.02) 100%
 		);
 		box-shadow:
 			0 40px 80px -20px rgba(0, 0, 0, 0.2),
-			0 15px 40px -15px rgba(var(--color-primary-rgb), 0.15);
+			0 15px 40px -15px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15);
 		animation: floating-luxury 10s var(--about-ease-slow) infinite alternate;
 
 		@media (max-width: 992px) {
@@ -200,17 +200,17 @@
 		position: absolute;
 		inset: 16px;
 		border-radius: 1.6rem;
-		border: 1px solid rgba(255, 255, 255, 0.35);
+		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.35);
 		background: linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.12) 0%,
+			rgba(var(--color-white-rgb, 255, 255, 255), 0.12) 0%,
 			transparent 40%,
 			transparent 60%,
-			rgba(255, 255, 255, 0.08) 100%
+			rgba(var(--color-white-rgb, 255, 255, 255), 0.08) 100%
 		);
 		box-shadow:
-			inset 0 0 30px rgba(255, 255, 255, 0.05),
-			0 0 0 1px rgba(255, 255, 255, 0.05);
+			inset 0 0 30px rgba(var(--color-white-rgb, 255, 255, 255), 0.05),
+			0 0 0 1px rgba(var(--color-white-rgb, 255, 255, 255), 0.05);
 		pointer-events: none;
 		z-index: 2;
 	}
@@ -270,19 +270,19 @@
 		background:
 			linear-gradient(
 				140deg,
-				rgba(255, 255, 255, 0.65),
-				rgba(255, 255, 255, 0.25) 45%,
-				rgba(255, 255, 255, 0.1)
+				rgba(var(--color-white-rgb, 255, 255, 255), 0.65),
+				rgba(var(--color-white-rgb, 255, 255, 255), 0.25) 45%,
+				rgba(var(--color-white-rgb, 255, 255, 255), 0.1)
 			),
-			radial-gradient(80% 80% at 0% 0%, rgba(var(--color-primary-rgb), 0.15), transparent 80%);
+			radial-gradient(80% 80% at 0% 0%, rgba(var(--color-primary-rgb, 197, 160, 89), 0.15), transparent 80%);
 		backdrop-filter: blur(24px);
-		border: 1px solid rgba(255, 255, 255, 0.5);
+		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.5);
 		padding: clamp(2rem, 3vh, 3rem) 2rem;
 		border-radius: 2rem;
 		text-align: center;
 		box-shadow:
 			0 40px 80px -40px rgba(0, 0, 0, 0.25),
-			0 15px 35px -25px rgba(var(--color-primary-rgb), 0.15);
+			0 15px 35px -25px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15);
 		transition:
 			transform 0.8s var(--about-ease-luxury),
 			box-shadow 0.8s var(--about-ease-luxury),
@@ -313,13 +313,13 @@
 			background:
 				linear-gradient(
 					140deg,
-					rgba(255, 255, 255, 0.8),
-					rgba(255, 255, 255, 0.4) 45%,
-					rgba(255, 255, 255, 0.15)
+					rgba(var(--color-white-rgb, 255, 255, 255), 0.8),
+					rgba(var(--color-white-rgb, 255, 255, 255), 0.4) 45%,
+					rgba(var(--color-white-rgb, 255, 255, 255), 0.15)
 				),
 				radial-gradient(
 					80% 80% at 0% 0%,
-					rgba(var(--color-primary-rgb), 0.2),
+					rgba(var(--color-primary-rgb, 197, 160, 89), 0.2),
 					transparent 80%
 				);
 			box-shadow:

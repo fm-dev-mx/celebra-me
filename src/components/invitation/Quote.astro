@@ -14,8 +14,10 @@ const { text, author } = Astro.props;
 	<div class="quote-texture" aria-hidden="true"></div>
 	<div class="quote-container">
 		<div class="quote-divider-top" aria-hidden="true">
-			<svg viewBox="0 0 100 20" preserveAspectRatio="none">
-				<path d="M0,10 Q25,0 50,10 T100,10" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+			<svg viewBox="0 0 200 40" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor">
+				<path d="M10,20 Q50,0 100,20 T190,20" stroke-width="0.5" opacity="0.6"/>
+				<path d="M40,20 Q100,10 160,20" stroke-width="1" stroke-linecap="round"/>
+				<circle cx="100" cy="15" r="1.5" fill="currentColor"/>
 			</svg>
 		</div>
 
@@ -36,8 +38,10 @@ const { text, author } = Astro.props;
 		)}
 
 		<div class="quote-divider-bottom" aria-hidden="true">
-			<svg viewBox="0 0 100 20" preserveAspectRatio="none">
-				<path d="M0,10 Q25,20 50,10 T100,10" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+			<svg viewBox="0 0 200 40" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor">
+				<path d="M10,20 Q50,40 100,20 T190,20" stroke-width="0.5" opacity="0.6"/>
+				<path d="M40,20 Q100,30 160,20" stroke-width="1" stroke-linecap="round"/>
+				<circle cx="100" cy="25" r="1.5" fill="currentColor"/>
 			</svg>
 		</div>
 	</div>

@@ -98,7 +98,7 @@
 			background: var(--color-primary);
 			border-color: var(--color-primary);
 			transform: translateY(-5px);
-			box-shadow: 0 10px 20px rgba(197, 160, 89, 0.2);
+			box-shadow: 0 10px 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.2);
 		}
 
 		svg {

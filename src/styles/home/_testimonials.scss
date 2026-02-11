@@ -45,10 +45,10 @@
 	}
 
 	&__card {
-		background: rgba(255, 255, 255, 0.6);
+		background: rgba(var(--color-white-rgb, 255, 255, 255), 0.6);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid rgba(212, 175, 55, 0.15);
+		border: 1px solid rgba(var(--color-primary-rgb, 212, 175, 55), 0.15);
 		border-radius: 2px; // Sharp, jewelry box feel
 		padding: 3rem 2.5rem;
 		position: relative;
@@ -74,9 +74,9 @@
 
 		&:hover {
 			transform: translateY(-8px);
-			background: rgba(255, 255, 255, 0.95);
-			border-color: rgba(var(--color-accent-rgb, 212, 175, 55), 0.4);
-			box-shadow: 0 25px 50px -20px rgba(var(--color-accent-rgb, 212, 175, 55), 0.15);
+			background: rgba(var(--color-white-rgb, 255, 255, 255), 0.95);
+			border-color: rgba(var(--color-primary-rgb, 212, 175, 55), 0.4);
+			box-shadow: 0 25px 50px -20px rgba(var(--color-primary-rgb, 212, 175, 55), 0.15);
 
 			.testimonials__quote-icon {
 				opacity: 0.15;

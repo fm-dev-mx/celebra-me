@@ -1,16 +1,37 @@
 ---
+/**
+ * Icon Registry - Centralized Dispatcher
+ * Allows unified usage of icons across Astro and React components.
+ *
+ * Usage:
+ * <Icon name="Heart" size={24} className="my-icon" />
+ * <Icon name="WhatsApp" size={32} />
+ */
+import * as UIIcons from './icons/ui';
+import * as InvitationIcons from './icons/invitation';
+import * as SocialIcons from './icons/social';
+
 interface Props {
-	icon: string;
-	size?: string;
-	class?: string;
+	name: string;
+	size?: number | string;
+	className?: string;
 }
 
-const { icon, size = 'h-6 w-6', class: className } = Astro.props;
+const { name, size = 24, className = '' } = Astro.props;
+
+// Flatten the registries
+const allIcons: Record<string, any> = {
+	...UIIcons,
+	...InvitationIcons,
+	...SocialIcons,
+};
+
+// Handle both 'Heart' and 'HeartIcon' formats
+const IconComponent = allIcons[name] || allIcons[`${name}Icon`];
+
+if (!IconComponent) {
+	console.warn(`[Icon Registry] Icon "${name}" not found in registry.`);
+}
 ---
 
-<div
-	class:list={[size, 'flex items-center justify-center border border-current rounded', className]}
-	title={icon}
->
-	<span class="text-[8px] uppercase">{icon.substring(0, 3)}</span>
-</div>
+{IconComponent && <IconComponent client:load size={size} className={className} />}
