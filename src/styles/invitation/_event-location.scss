@@ -1,5 +1,4 @@
 /* Event Location Section - Digital Jewelry Box Aesthetic */
-@use 'variables' as vars;
 @use '../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
 @use '@/styles/global/animations' as animations;
@@ -39,7 +38,7 @@
 	}
 
 	&__card-title {
-		font-family: vars.$font-heading-modern; /* Montserrat for a clean secondary label */
+		font-family: tokens.$font-ui; /* Montserrat for a clean secondary label */
 		font-size: 0.5rem;
 		color: hsla(43, 30%, 45%, 0.7);
 		letter-spacing: 5px;
@@ -158,7 +157,7 @@
 				margin: 0 0 2rem;
 
 				&__place {
-					font-family: vars.$font-heading-elegant; /* Playfair Display */
+					font-family: tokens.$font-display-elegant; /* Playfair Display */
 					font-size: 1.9rem;
 					color: tokens.$color-text-primary;
 					margin-bottom: 1.5rem;
@@ -167,7 +166,7 @@
 				}
 
 				&__date {
-					font-family: vars.$font-decorative-calligraphy; /* Pinyon Script */
+					font-family: tokens.$font-calligraphy; /* Pinyon Script */
 					font-size: clamp(1rem, 6vw, 1.3rem);
 					color: tokens.$color-action-accent;
 					margin-bottom: 0.5rem;
@@ -176,7 +175,7 @@
 				}
 
 				&__hour {
-					font-family: vars.$font-heading-modern;
+					font-family: tokens.$font-ui;
 					font-size: clamp(0.7rem, 2vw, 1rem);
 					letter-spacing: 6px;
 					font-weight: 500;
@@ -286,7 +285,7 @@
 			justify-content: center;
 			gap: 0.6rem;
 			padding: 1rem 1.4rem;
-			font-family: vars.$font-heading-modern;
+			font-family: tokens.$font-ui;
 			font-size: 0.75rem;
 			font-weight: 600;
 			letter-spacing: 2px;
@@ -461,7 +460,7 @@
 			p {
 				margin: 0;
 				color: tokens.$color-neutral-base;
-				font-family: vars.$font-body;
+				font-family: tokens.$font-body;
 				font-size: 1.1rem;
 				line-height: 1.6;
 				letter-spacing: 0.5px;
@@ -478,7 +477,7 @@
 		opacity: 0.6;
 
 		.signature-text {
-			font-family: vars.$font-decorative-calligraphy;
+			font-family: tokens.$font-calligraphy;
 			font-size: 2.5rem;
 			color: var(--color-primary, #d4af37);
 		}

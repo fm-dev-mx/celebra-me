@@ -1,6 +1,5 @@
 /* src/styles/common/_bullet-list.scss */
-@use '../global/variables' as vars;
-@use 'sass:map';
+@use '../tokens' as tokens;
 
 .bullet-list {
 	display: flex;
@@ -18,7 +17,7 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 0.75rem;
-		color: map.get(vars.$colors, text, default);
+		color: tokens.$color-text-primary;
 		font-size: 1rem;
 	}
 
@@ -29,6 +28,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: map.get(vars.$colors, primary, default);
+		color: tokens.$color-action-accent;
 	}
 }

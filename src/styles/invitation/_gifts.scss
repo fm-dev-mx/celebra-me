@@ -1,6 +1,5 @@
 @use '../global/mixins' as *;
 @use '../tokens' as tokens;
-@use '../global/variables' as *;
 
 .gifts-section {
 	padding: var(--spacing-xl) var(--spacing-md);

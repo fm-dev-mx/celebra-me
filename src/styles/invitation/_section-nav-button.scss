@@ -1,4 +1,3 @@
-@use 'variables' as vars;
 @use '../tokens' as tokens;
 @use '@/styles/global/functions' as functions;
 @use '@/styles/global/mixins' as mixins;
@@ -39,7 +38,7 @@
 	}
 
 	&__text {
-		font-family: vars.$font-heading-modern;
+		font-family: tokens.$font-ui;
 		font-size: 0.7rem;
 		letter-spacing: 2px;
 		text-transform: uppercase;

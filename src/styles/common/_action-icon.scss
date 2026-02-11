@@ -1,6 +1,4 @@
 /* src/styles/common/_action-icon.scss */
-@use 'sass:map';
-@use '../global/variables' as vars;
 @use '../global/mixins' as mixins;
 
 .action-icon {
@@ -84,7 +82,7 @@
 		background: var(--color-primary);
 		color: white;
 		box-shadow: 0 10px 30px -10px rgba(var(--color-primary-rgb), 0.5);
-		z-index: map.get(vars.$z-index, 'header');
+		z-index: 10;
 
 		&:hover {
 			transform: scale(1.1) translateY(-4px);

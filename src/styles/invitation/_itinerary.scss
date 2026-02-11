@@ -1,9 +1,12 @@
 @use '../tokens' as tokens;
-@use '../global/variables' as *;
 
 .itinerary {
 	padding: 8rem 2rem;
-	background: radial-gradient(circle at center, rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.05) 0%, transparent 70%);
+	background: radial-gradient(
+		circle at center,
+		rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.05) 0%,
+		transparent 70%
+	);
 	position: relative;
 	overflow: hidden;
 
@@ -222,7 +225,10 @@
 	&__item-icon-wrapper {
 		width: 56px;
 		height: 56px;
-		background: rgba(var(--color-surface-primary-rgb, 255, 255, 255), 0.95); // Pearl white background
+		background: rgba(
+			var(--color-surface-primary-rgb, 255, 255, 255),
+			0.95
+		); // Pearl white background
 		border: 1.5px solid tokens.$color-action-primary;
 		border-radius: 50%;
 		display: flex;

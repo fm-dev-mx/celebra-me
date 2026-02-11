@@ -1,13 +1,16 @@
 /* Footer Styles for XV Invitation */
 // Premium minimal footer - maintains Jewelry Box immersion
 
-@use 'variables' as *;
 @use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
 
 .invitation-footer {
 	// Subtle fade from transparent to barely visible
-	background: linear-gradient(to bottom, transparent 0%, rgba(var(--color-surface-primary-rgb), 0.3) 100%);
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgba(var(--color-surface-primary-rgb), 0.3) 100%
+	);
 	backdrop-filter: blur(4px);
 	padding: 0.75rem 1rem;
 	font-family: tokens.$font-ui;
