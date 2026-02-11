@@ -30,10 +30,10 @@ Celebra-me follows these guiding principles:
 
 - Pages are rendered at **build time** whenever possible.
 - Runtime server execution is reserved for:
-    - user input,
-    - side effects,
-    - protected operations,
-    - integrations requiring secrets.
+  - user input,
+  - side effects,
+  - protected operations,
+  - integrations requiring secrets.
 
 This aligns with Astro’s recommended hybrid model.
 
@@ -144,9 +144,10 @@ This aligns with Astro’s content-first model.
   (e.g., `_button.scss`).
 - **Module-based imports**: Use `@use` for variables, mixins, and functions. Avoid legacy `@import`.
 - **Logic-Based structure**:
-    - `src/styles/global/`: Design tokens, mixins, functions.
-    - `src/styles/components/`: Shared/reusable UI component styles.
-    - `src/styles/[domain]/`: Feature-specific styles (e.g., `home/`, `xv/`).
+  - `src/styles/tokens/`: Primitive and semantic design tokens.
+  - `src/styles/themes/`: Aesthetic presets (e.g., `presets/`).
+  - `src/styles/components/`: Shared/reusable UI component styles.
+  - `src/styles/invitation/`: Invitation-specific layouts and utilities.
 - **No Tailwind**: Inline styles and Tailwind CSS are prohibited to maintain the premium custom
   aesthetic.
 
@@ -158,10 +159,10 @@ Celebra-me uses a **Preset-based** styling architecture to support multiple aest
 - **Presets Directory**: `src/styles/themes/presets/` contains the entry points for each aesthetic.
 - **Scoping**: Each preset file wraps its styles in a `.theme-preset--{name}` class.
 - **Integration**:
-    - The `preset` is defined in the content collection (`src/content/config.ts`).
-    - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
-    - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
-      preset.
+  - The `preset` is defined in the content collection (`src/content/config.ts`).
+  - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
+  - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
+    preset.
 
 ---
 
@@ -212,3 +213,17 @@ When the implementation diverges from this document:
 - then align the code.
 
 Silent divergence is discouraged.
+
+---
+
+## 12) Universal Asset Registry
+
+To ensure deterministic asset consumption and optimized delivery, all invitation-specific assets
+MUST be registered in the **Universal Asset Registry**.
+
+- **Location**: `src/lib/assets/AssetRegistry.ts`.
+- **Documentation**: See `docs/ASSET_MANAGEMENT.md` for detailed classification and usage strategies.
+- **Mechanism**: Components consume assets via semantic keys using `getEventAsset()` or
+  `getCommonAsset()`.
+- **Benefit**: Decouples component logic from raw filesystem paths, ensures strict type safety, and
+  guarantees only optimized assets are referenced.

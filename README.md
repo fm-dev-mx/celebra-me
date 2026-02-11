@@ -62,7 +62,8 @@ celebra-me/
 │   ├── layouts/              # Page layouts
 │   ├── pages/                # File-based routing and API endpoints
 │   ├── content/              # Astro content collections
-│   ├── styles/               # SCSS styles (global, tokens, feature-level)
+│   ├── lib/                  # Core libraries (Universal Asset Registry)
+│   ├── styles/               # SCSS (tokens/, themes/, components/)
 │   ├── utils/                # Shared utilities
 │   └── env.d.ts              # Environment variable typings
 ├── .agent/                   # Agent rules and conventions

@@ -7,3 +7,4 @@
  * 3. Export it here as a named namespace
  */
 export * as Cumple60Gerardo from './cumple-60-gerardo';
+export * as DemoXv from './demo-xv';

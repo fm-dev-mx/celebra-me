@@ -1,43 +1,46 @@
 ---
-description:
-    Deterministic, iterative execution workflow for the Digital Invitation plan. Executes exactly
-    one Atomic Deployable Unit (ADU) per run.
+description: Deterministic execution plan for the aesthetic audit findings (cumple-60-gerardo).
 ---
+# /invitation-execution: Gerardo - Phase 2 (Quotes, Countdown, Location)
 
-# 🚀 Workflow: Invitation Execution (ADU-Based)
+This workflow executes the aesthetic refinements for the middle sections of the invitation, transitioning from "Jewelry Box" to "Luxury Hacienda".
 
-Use this workflow to implement the sections of the digital invitation in a strictly sequential and
-documented manner.
+## 🏗️ Atomic Deployable Units (ADUs)
 
-## 📋 Pre-requisites
+### ADU-1: Theme & Variables Synchronization
 
-- An active Master Plan or Specification in `docs/plan/`.
-- `Planning Mode` or `Execution Mode` active in the assistant.
+- **Target**: `src/styles/themes/presets/` (e.g., `_luxury-hacienda.scss`).
+- **Action**: Align palette with `#4B3621` (Deep Coffee) and `#D4AF37` (Aged Gold) within the preset.
+- **Verification**: Check that color variables in the preset correctly map to the semantic tokens.
 
-## 🛠️ Execution Steps
+### ADU-2: Quote Section – Leather & Authority
 
-1. **State Synchronization**:
-    - Identify and read the **Active Implementation Log** (e.g., `docs/plan/invitation-*.md`).
-    - Identify the first ADU marked as `Pending`.
+- **Target**: `src/styles/invitation/_quote.scss`
+- **Action**:
+  - Update `.quote-section` background to use a dark leather texture.
+  - Swap `.quote-content` typography to a more weighted serif (`EB Garamond` Medium).
+  - Replace SVG dividers with brass-finished ornaments.
+- **Verification**: Visual check of text legibility over texture.
 
-2. **Targeted Coding**:
-    - Implement ONLY the components and data specified in that ADU.
-    - **Rule**: Do not add features or sections not explicitly mentioned in the current ADU.
-    - **Aesthetic Alignment**: Follow the specific aesthetic style defined in the plan (e.g.,
-      "Jewelry Box", "Vaquero", "Luxury Hacienda") using established design tokens.
+### ADU-3: Countdown Section – The Chronometer
 
-3. **Documentation Update**:
-    - Update the Implementation Log in the active plan file:
-        - Change Status to `Implemented`.
-        - Add any relevant technical notes (in English).
+- **Target**: `src/styles/invitation/_countdown.scss` & `src/components/invitation/CountdownTimer.tsx`
+- **Action**:
+  - Change background to a warm parchment/leather gradient.
+  - Redesign `.countdown__segment` as brass-rimmed boxes.
+  - Update digit typography for high-contrast masculine feel.
+- **Verification**: Ensure animation fluidity (`framer-motion`) is maintained.
 
-4. **Halt & Verify**:
-    - Do NOT proceed to the next ADU.
-    - Stop and wait for the `/invitation-verification` workflow or user confirmation.
+### ADU-4: EventLocation – Hacienda Cards & Persona Icons
 
-// turbo
+- **Target**: `src/styles/invitation/_event-location.scss` & `src/components/invitation/EventLocation.astro`
+- **Action**:
+  - Update `iconMap` to use thematic icons (Boot/Envelope/Hat).
+  - Change card background to tactile parchment texture.
+  - Refine nav-buttons with Cognac glass effect and gold shimmer.
+- **Verification**: Confirm `jardin.webp` is properly framed.
 
-## Agent Instruction
+## 🏁 Final Verification
 
-Execute the next pending ADU from the active implementation plan. Follow the aesthetic guidelines
-and update the progress log. Suggest a safe commit upon completion.
+1. Run `pnpm build` to ensure no SCSS regression.
+2. Visual walkthrough of the full scroll experience from Hero to Location.

@@ -12,7 +12,7 @@
     "hero": {
         "name": "Lucía García",
         "date": "2026-04-25T18:00:00.000Z",
-        "backgroundImage": "../../assets/images/hero/lucia-portrait.png"
+        "backgroundImage": "../../assets/images/events/demo-xv/hero.webp"
     },
     "location": {
         "venueName": "Quinta Las Flores",
@@ -67,7 +67,7 @@
             { "name": "Sr. Juan Carlos", "role": "Padrino de Honor" },
             { "name": "Sra. Ana María", "role": "Madrina de Honor" }
         ],
-        "featuredImage": "../../assets/images/about/lucia-family.png"
+        "featuredImage": "../../assets/images/events/demo-xv/family.webp"
     },
     "sections": {
         "countdown": true,
@@ -80,51 +80,51 @@
         "subtitle": "Recuerdos antes del gran día",
         "items": [
             {
-                "image": "../../assets/images/gallery/lucia-gallery-1.png",
+                "image": "../../assets/images/events/demo-xv/gallery-01.webp",
                 "caption": "Momentos de ilusión"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-2.png",
+                "image": "../../assets/images/events/demo-xv/gallery-02.webp",
                 "caption": "Sonrisas que iluminan"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-3.png",
+                "image": "../../assets/images/events/demo-xv/gallery-03.webp",
                 "caption": "Elegancia y gracia"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-4.png",
+                "image": "../../assets/images/events/demo-xv/gallery-04.webp",
                 "caption": "Un sueño hecho realidad"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-5.png",
+                "image": "../../assets/images/events/demo-xv/gallery-05.webp",
                 "caption": "Esperando el gran día"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-6.png",
+                "image": "../../assets/images/events/demo-xv/gallery-06.webp",
                 "caption": "Brillo propio"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-7.png",
+                "image": "../../assets/images/events/demo-xv/gallery-07.webp",
                 "caption": "Naturalidad"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-8.png",
+                "image": "../../assets/images/events/demo-xv/gallery-08.webp",
                 "caption": "Retratos inolvidables"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-9.png",
+                "image": "../../assets/images/events/demo-xv/gallery-09.webp",
                 "caption": "Dulce transición"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-10.png",
+                "image": "../../assets/images/events/demo-xv/gallery-10.webp",
                 "caption": "Cada detalle cuenta"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-11.png",
+                "image": "../../assets/images/events/demo-xv/gallery-11.webp",
                 "caption": "En el jardín"
             },
             {
-                "image": "../../assets/images/gallery/lucia-gallery-12.png",
+                "image": "../../assets/images/events/demo-xv/gallery-12.webp",
                 "caption": "Felicidad pura"
             }
         ]
@@ -164,7 +164,7 @@
     "thankYou": {
         "message": "Gracias por ser parte de este momento tan especial en mi vida. Su presencia y cariño hacen de este día algo inolvidable. Los espero con todo mi corazón para celebrar juntos.",
         "closingName": "Lucía",
-        "image": "../../assets/images/gallery/lucia-thank-you.png"
+        "image": "../../assets/images/events/demo-xv/signature.webp"
     },
     "music": {
         "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",

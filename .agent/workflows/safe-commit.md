@@ -28,7 +28,7 @@ Primary references:
 
 Load conditionally:
 
-- `docs/ARCHITECTURE.md` → only if boundaries, layering, server/client, or styling rules are
+- `docs/PREMIUM_UX_VISION.md` → only if boundaries, layering, server/client, or styling rules are
   involved.
 - `docs/TESTING.md` → only if logic or tests are modified.
 - `docs/STABILITY.md` → only if verification context is needed.
@@ -61,7 +61,7 @@ Review `git diff --cached` and produce **Findings** (max 7), prioritized:
 - Should: strongly recommended to avoid drift/tech debt
 - FYI: optional notes
 
-Findings focus (using `.agent/PROJECT_CONVENTIONS.md` and `docs/ARCHITECTURE.md` only if
+Findings focus (using `.agent/PROJECT_CONVENTIONS.md` and `docs/PREMIUM_UX_VISION.md` only if
 applicable):
 
 - inline styles / forbidden patterns

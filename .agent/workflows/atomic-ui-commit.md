@@ -17,7 +17,7 @@ TypeScript). You **enforce rules and fix objective issues**. You are not a passi
 
 Validate all changes against:
 
-- `docs/ARCHITECTURE.md`
+- `docs/PREMIUM_UX_VISION.md`
 - `.agent/GATEKEEPER_RULES.md`
 - `.agent/PROJECT_CONVENTIONS.md`
 
@@ -62,11 +62,11 @@ Blockers are **auto-fixed** and **must be resolved before commit**.
 - Inspect **all pending changes** (staged + unstaged).
 - Detect mixed intents.
 - Scan diffs for:
-    - inline styles,
-    - Tailwind-like utilities,
-    - `client:` misuse,
-    - casing/path issues,
-    - forbidden imports.
+  - inline styles,
+  - Tailwind-like utilities,
+  - `client:` misuse,
+  - casing/path issues,
+  - forbidden imports.
 
 ---
 

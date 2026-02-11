@@ -38,8 +38,8 @@ duplication:
 - **Presets Directory:** `src/styles/themes/presets/` contains entry points for each aesthetic.
 - **Scoping:** Each preset wraps styles in a `.theme-preset--{name}` class.
 - **Available Presets:**
-    - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
-    - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
+  - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
+  - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** The `preset` field in content collections (`src/content/config.ts`) drives the
   theme application in `[slug].astro`.
 
@@ -55,21 +55,30 @@ A curated font system optimized for premium digital invitations:
 | Body Narrative  | EB Garamond      | Paragraphs, descriptions            |
 | UI/Functional   | Montserrat       | Buttons, navigation, metadata       |
 
-Tokens defined in `src/styles/global/_variables.scss`. Utility classes in `_typography.scss`.
+Tokens defined in `src/styles/tokens/`. Utility classes in `src/styles/invitation/_typography.scss`.
 
 ### D. Standard Component Library (The "Engine")
 
 All invitations share a core library in `src/components/invitation/`, adapted via CSS variables and
 JSON configuration:
 
-1.  **Ceremonial Opening:** 3D Envelope reveal.
-2.  **Hero:** High-impact portrait + typography.
-3.  **Countdown:** Dynamic urgency feedback.
-4.  **Protocol:** Family/Godparents editorial layout.
-5.  **Location:** Interactive styled maps (Google Maps custom styles).
-6.  **Itinerary:** Vertical timeline with scroll-triggered animations.
-7.  **RSVP:** Conversational form with capacity logic.
-8.  **Gifts:** Multi-channel registry (Store, Bank, PayPal, Cash).
+1. **Ceremonial Opening:** 3D Envelope reveal.
+2. **Hero:** High-impact portrait + typography.
+3. **Countdown:** Dynamic urgency feedback.
+4. **Protocol:** Family/Godparents editorial layout.
+5. **Location:** Interactive styled maps (Google Maps custom styles).
+6. **Itinerary:** Vertical timeline with scroll-triggered animations.
+7. **RSVP:** Conversational form with capacity logic.
+8. **Gifts:** Multi-channel registry (Store, Bank, PayPal, Cash).
+
+### E. Universal Asset System
+
+All invitation assets (images, logos, signatures) are managed via a deterministic registry in
+`src/lib/assets/AssetRegistry.ts`. This ensures:
+
+- **Performance:** Only optimized assets are consumed.
+- **Maintainability:** Semantic naming (e.g., `getEventAsset('cumple-60-gerardo', 'hero')`).
+- **Safety:** Build-time validation of asset paths.
 
 ---
 
@@ -77,17 +86,17 @@ JSON configuration:
 
 ### Phase 1: Foundation (Completed)
 
-- [x] Landing Page Remaster (Jewelry Box Aesthetic)
-- [x] XV Años Demo (Proof of Concept)
-- [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
+-   [x] Landing Page Remaster (Jewelry Box Aesthetic)
+-   [x] XV Años Demo (Proof of Concept)
+-   [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
 
 ### Phase 2: Expansion (Current Focus)
 
-- [ ] **60th Birthday Invitation (Gerardo "Jefe Botas")**
-    - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
-    - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
-- [ ] **Multi-Event Support**
-    - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
+- **60th Birthday Invitation (Gerardo "Jefe Botas")**
+  - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
+  - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
+- **Multi-Event Support**
+  - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
 
 ---
 
@@ -100,3 +109,4 @@ JSON configuration:
 | 2026-02-07 | Consolidated documentation to focus on Phase 2 (Expansion).               |
 | 2026-02-08 | **Aesthetic Presets Architecture** implemented. Components generalized.   |
 | 2026-02-08 | **Typography System** documentation added. Documentation audit completed. |
+| 2026-02-11 | **Universal Asset System** implemented. Documentation sync completed.     |
