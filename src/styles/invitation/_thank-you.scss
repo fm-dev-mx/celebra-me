@@ -1,6 +1,6 @@
-// src/styles/invitation/_thank-you.scss
 @use '../global/mixins' as mixins;
-@use 'xv-variables' as *;
+@use '../tokens' as tokens;
+@use 'variables' as *;
 
 .thank-you-section {
 	position: relative;
@@ -9,7 +9,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background: linear-gradient(180deg, rgba($color-white, 0.95) 0%, $color-champagne-light 100%);
+	background: linear-gradient(180deg, tokens.$color-surface-primary 0%, rgba(var(--color-action-accent-rgb), 0.1) 100%);
 	overflow: hidden;
 
 	// Subtle decorative overlay
@@ -22,7 +22,7 @@
 		height: 100%;
 		background: radial-gradient(
 			ellipse at center,
-			rgba($color-gold-metallic, 0.05) 0%,
+			rgba(var(--color-action-accent-rgb), 0.05) 0%,
 			transparent 70%
 		);
 		pointer-events: none;
@@ -46,11 +46,11 @@
 	position: relative;
 	width: 220px;
 	height: 220px;
-	border: 2px solid $color-gold-dust; // Gold-dust border
+	border: 2px solid tokens.$color-glass-border;
 	border-radius: 50%;
 	padding: 8px;
-	background: rgba(255, 255, 255, 0.5);
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+	background: tokens.$color-glass-bg;
+	box-shadow: tokens.$shadow-subtle;
 	overflow: hidden;
 
 	@include mixins.respond-to(sm) {
@@ -80,7 +80,7 @@
 		height: 100%;
 		object-fit: cover;
 		border-radius: 50%;
-		transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+		transition: tokens.$transition-premium;
 	}
 
 	&:hover :global(.photo-image) {
@@ -94,20 +94,20 @@
 }
 
 .thank-you-message {
-	font-family: $font-body;
-	font-size: clamp(1.1rem, 3vw, 1.4rem);
+	font-family: tokens.$font-body;
+	font-size: tokens.$font-size-body;
 	line-height: 2;
-	color: $color-dark;
+	color: tokens.$color-text-primary;
 	margin: 0 0 2rem 0;
-	letter-spacing: 0.01em;
+	letter-spacing: tokens.$letter-spacing-tight;
 
 	.drop-cap {
-		font-family: $font-heading-formal;
+		font-family: tokens.$font-display-formal;
 		font-size: 3.5em;
 		float: left;
 		line-height: 0.8;
 		padding-right: 0.1em;
-		color: $color-gold-metallic;
+		color: tokens.$color-text-emphasis;
 		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 	}
 }
@@ -115,15 +115,15 @@
 .signature-block {
 	opacity: 0;
 	transform: translateY(10px);
-	animation: signatureReveal 2s ease-out 1.2s forwards;
+	animation: signatureReveal tokens.$duration-reveal tokens.$ease-out 1.2s forwards;
 }
 
 .closing-name {
-	font-family: $font-decorative-cursive;
+	font-family: tokens.$font-calligraphy;
 	font-size: clamp(2.5rem, 6vw, 4rem);
-	color: $color-darker;
+	color: tokens.$color-text-primary;
 	margin: 0;
-	background: linear-gradient(135deg, $color-gold-metallic 0%, $color-gold-deep 100%);
+	background: linear-gradient(135deg, tokens.$color-action-accent 0%, tokens.$color-border-emphasis 100%);
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -133,11 +133,11 @@
 .thank-you-footer {
 	margin-top: 2rem;
 	padding-top: 2rem;
-	border-top: 1px solid rgba($color-dark, 0.1);
+	border-top: 1px solid tokens.$color-border-subtle;
 	opacity: 0.4;
-	font-family: $font-heading-modern;
-	font-size: 0.75rem;
-	letter-spacing: 0.1em;
+	font-family: tokens.$font-ui;
+	font-size: tokens.$font-size-ui;
+	letter-spacing: tokens.$letter-spacing-wide;
 	text-transform: uppercase;
 }
 

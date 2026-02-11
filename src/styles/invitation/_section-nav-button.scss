@@ -1,5 +1,5 @@
-/* Section Navigation Button Styles */
-@use 'xv-variables' as vars;
+@use 'variables' as vars;
+@use '../tokens' as tokens;
 @use '@/styles/global/functions' as functions;
 @use '@/styles/global/mixins' as mixins;
 @use '@/styles/global/animations' as animations;
@@ -26,7 +26,7 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 0.5rem;
-	color: vars.$color-white;
+	color: var(--color-text-on-dark, tokens.$color-text-on-dark);
 	z-index: functions.z-index('navButton');
 	text-decoration: none;
 	transition: all 0.3s ease;
@@ -57,7 +57,7 @@
 	}
 
 	&:hover {
-		color: vars.$color-accent-light;
+		color: var(--color-action-accent, tokens.$color-action-accent);
 		&__icon svg {
 			transform: translateY(3px);
 		}
@@ -69,29 +69,30 @@
 
 	/* Modifiers - Using -- instead of __ for variant/modifier */
 	&--hero {
-		color: vars.$color-white;
+		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
 		&:hover {
-			color: vars.$color-accent-light;
+			color: var(--color-action-accent, tokens.$color-action-accent);
 		}
 	}
 
 	&--event-location {
 		/* Use the same gold as titles for visibility and elegance */
-		color: hsla(43, 55%, 45%, 1);
+		color: var(--color-text-emphasis, tokens.$color-text-emphasis);
 
 		&:hover {
-			color: hsla(43, 55%, 35%, 1);
+			color: var(--color-action-accent, tokens.$color-action-accent);
 		}
 
 		.section-nav-button__text {
-			color: hsla(43, 55%, 45%, 0.8);
+			color: var(--color-text-emphasis, tokens.$color-text-emphasis);
+			opacity: 0.8;
 		}
 	}
 
 	&--family {
-		color: vars.$color-secondary-dark;
+		color: var(--color-text-secondary, tokens.$color-text-secondary);
 		&:hover {
-			color: vars.$color-secondary;
+			color: var(--color-text-primary, tokens.$color-text-primary);
 		}
 	}
 }

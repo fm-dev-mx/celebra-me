@@ -1,15 +1,10 @@
 // src/styles/invitation/_envelope-reveal.scss
+@use '../tokens' as tokens;
 
 // Seal dimensions and safe zone
 $envelope-seal-size: 76px;
 $envelope-seal-gap: 1rem;
 $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap});
-
-// Premium colors (Local)
-$gold-darkest: #b8860b;
-$gold-dark: #9e7d3d;
-$gold-base: #d4af37;
-$gold-light: #f1d592;
 
 .envelope-wrapper {
 	position: fixed;
@@ -34,13 +29,13 @@ $gold-light: #f1d592;
 }
 
 %paper-texture {
-	background-color: #fdfdfb;
+	background-color: tokens.$color-surface-primary;
 	background-image:
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.9'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E"),
-		linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(245, 245, 230, 0.4) 100%);
+		linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(var(--color-surface-secondary-rgb), 0.4) 100%);
 	background-blend-mode: multiply, normal;
 	border-radius: 20px;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border: 1px solid tokens.$color-glass-border;
 }
 
 .envelope-base {
@@ -72,7 +67,7 @@ $gold-light: #f1d592;
 	z-index: 4;
 	transform-origin: top;
 	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-	transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: transform tokens.$duration-reveal tokens.$ease-in-out;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 
 	&.is-open {
@@ -88,12 +83,12 @@ $gold-light: #f1d592;
 	background: #ffffff;
 	border-radius: 8px;
 	z-index: 2;
-	transition: transform 1.5s 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+	transition: transform tokens.$duration-reveal 0.3s tokens.$ease-out;
+	box-shadow: tokens.$shadow-subtle;
 
 	&.is-rising {
 		transform: translateY(-60%) scale(1.04);
-		box-shadow: 0 50px 100px rgba(0, 0, 0, 0.4);
+		box-shadow: tokens.$shadow-emphasis;
 	}
 }
 
@@ -110,16 +105,16 @@ $gold-light: #f1d592;
 	padding: 2rem 2rem 1.5rem;
 
 	.envelope-name {
-		font-family: var(--font-display);
+		font-family: tokens.$font-display-elegant;
 		font-size: clamp(1.8rem, 8vw, 2.8rem);
 		line-height: 1.1;
 		background: linear-gradient(
 			75deg,
-			$gold-dark 0%,
-			$gold-base 45%,
-			$gold-light 50%,
-			$gold-base 55%,
-			$gold-dark 100%
+			tokens.$color-surface-dark 0%,
+			tokens.$color-action-accent 45%,
+			tokens.$base-gold-300 50%,
+			tokens.$color-action-accent 55%,
+			tokens.$color-surface-dark 100%
 		);
 		background-size: 200% auto;
 		background-clip: text;
@@ -149,25 +144,25 @@ $gold-light: #f1d592;
 	.tease-divider {
 		width: 60px;
 		height: 1px;
-		background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+		background: linear-gradient(to right, transparent, tokens.$color-border-subtle, transparent);
 		margin-bottom: 1rem;
 	}
 
 	.envelope-details {
-		font-family: var(--font-body);
+		font-family: tokens.$font-body;
 		font-size: 0.8rem;
 		letter-spacing: 0.01rem;
 		text-transform: uppercase;
-		color: #444;
+		color: tokens.$color-text-primary;
 		font-weight: 400;
 	}
 
 	.envelope-microcopy {
 		margin-top: 0.75rem;
-		font-family: var(--font-body);
+		font-family: tokens.$font-body;
 		font-size: clamp(0.5rem, 2vw, 0.65rem);
-		letter-spacing: 0.15em;
-		color: #999;
+		letter-spacing: tokens.$letter-spacing-wide;
+		color: tokens.$color-text-secondary;
 		text-transform: uppercase;
 	}
 
@@ -243,7 +238,7 @@ $gold-light: #f1d592;
 	.seal-pulse {
 		position: absolute;
 		inset: -12px;
-		border: 2px solid $gold-base;
+		border: 2px solid tokens.$color-action-accent;
 		border-radius: 50%;
 		opacity: 0;
 		pointer-events: none;
@@ -262,18 +257,18 @@ $gold-light: #f1d592;
 
 	background: rgba(0, 0, 0, 0.5);
 	color: rgba(255, 255, 255, 0.55);
-	font-family: 'Courier Prime', monospace;
-	font-size: 0.85rem;
+	font-family: tokens.$font-ui;
+	font-size: 0.75rem;
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 
 	padding: 0.6rem 0.9rem;
-	border-radius: 8px; // "Cut paper" look
-	box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15); // Resting shadow
+	border-radius: 8px;
+	box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
 	white-space: nowrap;
 	pointer-events: none;
-	border: 1px solid rgba(62, 43, 30, 0.1); // Extremely subtle ink border
+	border: 1px solid rgba(62, 43, 30, 0.1);
 	transform-origin: right center;
 
     // The Arrow (pointing right) - matching paper
@@ -320,9 +315,9 @@ $gold-light: #f1d592;
 }
 
 .seal-visual {
-	width: 52px; // Slightly larger for better touch target
+	width: 52px;
 	height: 52px;
-	background: radial-gradient(circle at 35% 35%, $gold-light, $gold-base, $gold-darkest);
+	background: radial-gradient(circle at 35% 35%, tokens.$base-gold-300, tokens.$color-action-accent, tokens.$color-surface-dark);
 	border-radius: 50%;
 	box-shadow:
 		0 8px 16px rgba(0, 0, 0, 0.4),
@@ -346,13 +341,9 @@ $gold-light: #f1d592;
 	.seal-icon {
 		width: 32px;
 		height: 32px;
-		color: rgba(60, 40, 10, 0.65); // Darker tone for multiply
-		mix-blend-mode: multiply; // Debossed effect
+		color: rgba(60, 40, 10, 0.65);
+		mix-blend-mode: multiply;
 		opacity: 0.9;
-
-		// Debossed Effect:
-		// 1. Highlight on bottom-right edges (light hits the bottom/right wall of the depression)
-		// 2. Shadow on top-left edges (lip casts shadow into the depression)
 		filter:
 			drop-shadow(0 1px 0 rgba(255, 255, 255, 0.5))
 			drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.15));

@@ -1,10 +1,7 @@
 // src/styles/invitation/_background-music.scss
 // Premium floating music player — Digital Jewelry Box aesthetic
 
-// Gold tokens (matching envelope)
-$gold-base: #d4af37;
-$gold-light: #f1d592;
-$gold-dark: #9e7d3d;
+@use '../tokens' as tokens;
 
 .music-player {
 	position: fixed;
@@ -17,24 +14,22 @@ $gold-dark: #9e7d3d;
 	z-index: 1000;
 
 	&__prompt {
-		font-family: var(--font-body);
-		font-size: 0.8rem;
-		font-weight: 400;
-		letter-spacing: 0.02em;
-		color: rgba(#333, 0.8);
+		font-family: tokens.$font-body;
+		font-size: tokens.$font-size-ui;
+		font-weight: tokens.$font-weight-regular;
+		letter-spacing: tokens.$letter-spacing-tight;
+		color: tokens.$color-text-primary;
 		background: linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.95) 0%,
-			rgba(247, 231, 206, 0.9) 100%
+			rgba(var(--color-surface-primary-rgb), 0.95) 0%,
+			rgba(var(--color-surface-secondary-rgb), 0.9) 100%
 		);
 		backdrop-filter: blur(12px);
 		padding: 0.5rem 1rem;
 		border-radius: 2rem;
-		border: 1px solid rgba($gold-base, 0.2);
-		box-shadow:
-			0 4px 20px rgba(0, 0, 0, 0.08),
-			0 1px 3px rgba($gold-base, 0.15);
-		animation: fadeInSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+		border: 1px solid tokens.$color-glass-border;
+		box-shadow: tokens.$shadow-subtle;
+		animation: fadeInSlide tokens.$duration-slower tokens.$ease-premium;
 		white-space: nowrap;
 
 		// Subtle shimmer on prompt
@@ -59,11 +54,11 @@ $gold-dark: #9e7d3d;
 		border: none;
 		border-radius: 50%;
 		cursor: pointer;
-		transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+		transition: tokens.$transition-snappy;
 		outline: none;
 
 		&:focus-visible {
-			outline: 2px solid $gold-base;
+			outline: 2px solid tokens.$color-action-accent;
 			outline-offset: 3px;
 		}
 
@@ -83,27 +78,21 @@ $gold-dark: #9e7d3d;
 			background: linear-gradient(
 				145deg,
 				rgba(255, 255, 255, 0.98) 0%,
-				rgba(247, 231, 206, 0.95) 50%,
-				rgba($gold-light, 0.3) 100%
+				rgba(var(--color-surface-secondary-rgb), 0.95) 50%,
+				rgba(var(--color-action-accent-rgb), 0.3) 100%
 			);
 			backdrop-filter: blur(16px);
-			color: $gold-dark;
-			border: 1.5px solid rgba($gold-base, 0.35);
-			box-shadow:
-				0 4px 24px rgba($gold-base, 0.2),
-				0 2px 8px rgba(0, 0, 0, 0.08),
-				inset 0 1px 0 rgba(255, 255, 255, 0.8);
+			color: tokens.$color-action-primary;
+			border: 1.5px solid tokens.$color-glass-border;
+			box-shadow: tokens.$shadow-emphasis;
 
 			svg {
-				filter: drop-shadow(0 1px 1px rgba($gold-dark, 0.2));
+				filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 			}
 
 			&:hover {
-				border-color: rgba($gold-base, 0.5);
-				box-shadow:
-					0 6px 32px rgba($gold-base, 0.35),
-					0 4px 12px rgba(0, 0, 0, 0.1),
-					inset 0 1px 0 rgba(255, 255, 255, 0.9);
+				border-color: tokens.$color-action-accent;
+				box-shadow: tokens.$shadow-emphasis;
 			}
 
 			// Golden ring animation indicator
@@ -112,9 +101,9 @@ $gold-dark: #9e7d3d;
 				position: absolute;
 				inset: -4px;
 				border-radius: 50%;
-				border: 1.5px solid rgba($gold-base, 0.4);
+				border: 1.5px solid tokens.$color-action-accent;
 				opacity: 0;
-				transition: opacity 0.3s ease;
+				transition: tokens.$transition-snappy;
 			}
 
 			&:hover::after {
@@ -132,7 +121,7 @@ $gold-dark: #9e7d3d;
 				position: absolute;
 				inset: -6px;
 				border-radius: 50%;
-				border: 1px solid rgba($gold-base, 0.5);
+				border: 1px solid tokens.$color-action-accent;
 				animation: ringPulse 2.5s ease-in-out infinite;
 			}
 		}
@@ -141,16 +130,16 @@ $gold-dark: #9e7d3d;
 		&--mute {
 			width: 2.25rem;
 			height: 2.25rem;
-			background: rgba(255, 255, 255, 0.85);
+			background: tokens.$color-glass-bg;
 			backdrop-filter: blur(10px);
-			color: rgba(#333, 0.7);
-			border: 1px solid rgba($gold-base, 0.15);
-			box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+			color: tokens.$color-text-primary;
+			border: 1px solid tokens.$color-glass-border;
+			box-shadow: tokens.$shadow-subtle;
 
 			&:hover {
 				background: rgba(255, 255, 255, 0.95);
-				color: $gold-dark;
-				border-color: rgba($gold-base, 0.3);
+				color: tokens.$color-action-primary;
+				border-color: tokens.$color-action-accent;
 			}
 		}
 	}
@@ -206,17 +195,10 @@ $gold-dark: #9e7d3d;
 @keyframes elegantPulse {
 	0%,
 	100% {
-		box-shadow:
-			0 4px 24px rgba($gold-base, 0.2),
-			0 2px 8px rgba(0, 0, 0, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+		box-shadow: tokens.$shadow-subtle;
 	}
 	50% {
-		box-shadow:
-			0 6px 36px rgba($gold-base, 0.4),
-			0 4px 16px rgba($gold-light, 0.25),
-			0 0 24px rgba($gold-base, 0.2),
-			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+		box-shadow: 0 6px 36px rgba(var(--color-action-accent-rgb), 0.4);
 	}
 }
 

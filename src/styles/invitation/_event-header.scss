@@ -1,5 +1,5 @@
-@use '../global/variables' as *;
-@use '../global/mixins' as *;
+@use '../global/mixins' as mixins;
+@use '../tokens' as tokens;
 
 /*
  * Block: .event-header
@@ -10,12 +10,12 @@
 .event-header {
 	// Branding / Breadcrumbs
 	&__title {
-		font-family: var(--font-display);
+		font-family: tokens.$font-display-elegant;
 		font-size: 1.25rem;
-		font-weight: 700;
+		font-weight: tokens.$font-weight-bold;
 		text-decoration: none;
-		color: var(--theme-color-primary, #333); // Fallback
-		transition: color 0.3s ease;
+		color: tokens.$color-action-accent;
+		transition: tokens.$transition-snappy;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -35,37 +35,37 @@
 	&__actions {
 		display: flex;
 		align-items: center;
-		gap: var(--spacing-sm);
+		gap: 0.5rem;
 
 		@media (min-width: 768px) {
-			gap: var(--spacing-md);
+			gap: 1rem;
 		}
 	}
 
 	&__action-btn {
 		text-decoration: none;
-		font-family: var(--font-body);
+		font-family: tokens.$font-ui;
 		font-size: 0.85rem;
-		font-weight: 600;
+		font-weight: tokens.$font-weight-semibold;
 		padding: 0.5rem 1rem;
 		border-radius: 4px;
-		transition: all 0.3s ease;
-		color: var(--color-text);
+		transition: tokens.$transition-snappy;
+		color: tokens.$color-text-primary;
 
 		&:hover {
-			color: var(--theme-color-primary);
-			background-color: rgba(255, 255, 255, 0.5);
+			color: tokens.$color-action-accent;
+			background-color: rgba(var(--color-surface-primary-rgb), 0.5);
 		}
 
 		&--cta {
-			background-color: var(--theme-color-primary);
-			color: #ffffff; // Assuming contrast is handled in theme generation or we force light text
+			background-color: tokens.$color-action-accent;
+			color: tokens.$color-text-on-dark;
 			border-radius: 50px;
 
 			&:hover {
-				background-color: var(--theme-color-primary-dark, var(--theme-color-primary));
+				background-color: tokens.$color-action-accent;
 				transform: translateY(-1px);
-				color: #ffffff;
+				color: tokens.$color-text-on-dark;
 			}
 		}
 	}
@@ -77,39 +77,28 @@
 	width: 100%;
 
 	a {
-		font-family: var(--font-display);
+		font-family: tokens.$font-display-formal;
 		font-size: 1.8rem;
-		color: var(--color-text);
+		color: tokens.$color-text-primary;
 		text-decoration: none;
 		display: block;
 		padding: 15px 0;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		transition: color 0.3s ease;
+		border-bottom: 1px solid tokens.$color-border-subtle;
+		transition: tokens.$transition-snappy;
 
 		&:last-child {
 			border-bottom: none;
 		}
 
 		&:hover {
-			color: var(--theme-color-primary);
+			color: tokens.$color-action-accent;
 		}
-	}
-}
-
-// Scrolled overrides
-:global(.header-base--scrolled) {
-	.event-header__title {
-		// Ensure visibility on scrolled background (white/glass)
-		// If theme color is light, this might be an issue, but usually primary is dark enough.
-		// We can enforce a dark variant if provided.
 	}
 }
 
 :global(.header-base--transparent) {
 	.event-header__title,
 	.event-header__action-btn:not(.event-header__action-btn--cta) {
-		// On hero, usually we want white if hero is dark, or dark if hero is light.
-		// Assuming Hero is image/video -> Text should be White or have text-shadow.
 		color: #ffffff;
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 	}
@@ -117,7 +106,7 @@
 
 // Hide header until the envelope reveal completes (when enabled)
 :global(.event-theme-wrapper--sealed) #event-header {
-	transition: opacity 0.6s ease;
+	transition: opacity tokens.$duration-slower tokens.$ease-in-out;
 }
 
 :global(body:not(.invitation-revealed)) .event-theme-wrapper--sealed #event-header {

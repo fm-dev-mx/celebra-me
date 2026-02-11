@@ -1,18 +1,19 @@
 /* Footer Styles for XV Invitation */
 // Premium minimal footer - maintains Jewelry Box immersion
 
-@use 'xv-variables' as *;
+@use 'variables' as *;
+@use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
 
 .invitation-footer {
 	// Subtle fade from transparent to barely visible
-	background: linear-gradient(to bottom, transparent 0%, rgba($color-white, 0.3) 100%);
+	background: linear-gradient(to bottom, transparent 0%, rgba(var(--color-surface-primary-rgb), 0.3) 100%);
 	backdrop-filter: blur(4px);
 	padding: 0.75rem 1rem;
-	font-family: $font-footer;
-	color: rgba($color-dark, 0.4); // Very subtle text
-	font-size: 0.75rem;
-	border-top: 1px solid rgba($color-dark, 0.05);
+	font-family: tokens.$font-ui;
+	color: rgba(var(--color-text-primary-rgb), 0.4); // Very subtle text
+	font-size: tokens.$font-size-ui;
+	border-top: 1px solid tokens.$color-border-subtle;
 
 	display: flex;
 	align-items: center;
@@ -29,7 +30,7 @@
 	gap: 1.5rem;
 	white-space: nowrap;
 	opacity: 0.6;
-	transition: opacity 0.3s ease;
+	transition: tokens.$transition-snappy;
 
 	&:hover {
 		opacity: 1;
@@ -57,7 +58,7 @@
 	font-size: 0.65rem;
 	opacity: 0.6;
 	font-weight: 300;
-	letter-spacing: 0.05em;
+	letter-spacing: tokens.$letter-spacing-wide;
 	text-transform: uppercase;
 
 	@include mixins.respond-to(xs) {
@@ -74,15 +75,15 @@
 	align-items: center;
 	gap: 0.35rem;
 	background-color: transparent;
-	color: rgba($color-dark, 0.5);
+	color: rgba(var(--color-text-primary-rgb), 0.5);
 	padding: 0.35rem 0.75rem;
 	border-radius: 99px;
-	border: 1px solid rgba($color-dark, 0.1);
-	transition: all 0.3s ease;
-	font-family: $font-button;
-	font-size: 0.55rem;
+	border: 1px solid tokens.$color-border-subtle;
+	transition: tokens.$transition-snappy;
+	font-family: tokens.$font-ui;
+	font-size: 0.65rem;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: tokens.$letter-spacing-wide;
 
 	svg,
 	img {
@@ -101,9 +102,9 @@
 	}
 
 	&:hover {
-		background-color: rgba($color-whatsapp, 0.1);
-		border-color: rgba($color-whatsapp, 0.3);
-		color: rgba($color-dark, 0.8);
+		background-color: rgba(var(--color-whatsapp-rgb), 0.1);
+		border-color: rgba(var(--color-whatsapp-rgb), 0.3);
+		color: rgba(var(--color-text-primary-rgb), 0.8);
 		transform: scale(1.02);
 	}
 
