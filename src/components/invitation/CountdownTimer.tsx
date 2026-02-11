@@ -52,6 +52,10 @@ const CountdownTimer: React.FC<Props> = ({ eventDate }) => {
 					style={{ '--index': index } as React.CSSProperties}
 				>
 					<div className="countdown__value-wrapper">
+						<span className="rivet rivet--tl"></span>
+						<span className="rivet rivet--tr"></span>
+						<span className="rivet rivet--bl"></span>
+						<span className="rivet rivet--br"></span>
 						<AnimatePresence mode="popLayout" initial={false}>
 							<motion.span
 								key={segment.value}
@@ -60,6 +64,7 @@ const CountdownTimer: React.FC<Props> = ({ eventDate }) => {
 								exit={{ y: -20, opacity: 0 }}
 								transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
 								className="countdown__value"
+								data-value={segment.value.toString().padStart(2, '0')}
 							>
 								{segment.value.toString().padStart(2, '0')}
 							</motion.span>

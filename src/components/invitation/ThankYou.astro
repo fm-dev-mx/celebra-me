@@ -8,12 +8,13 @@ interface Props {
 	message: string;
 	closingName: string;
 	image?: string | ImageAsset;
+	variant?: string;
 }
 
-const { message, closingName, image } = Astro.props;
+const { message, closingName, image, variant = 'standard' } = Astro.props;
 ---
 
-<section id="thank-you-section" class="thank-you-section">
+<section id="thank-you-section" class="thank-you-section" data-variant={variant}>
 	<div class="thank-you-content">
 		{
 			image && (
@@ -26,6 +27,14 @@ const { message, closingName, image } = Astro.props;
 						height={400}
 						class="photo-image"
 					/>
+					{variant === 'luxury-hacienda' && (
+						<>
+							<span class="rivet rivet--tl"></span>
+							<span class="rivet rivet--tr"></span>
+							<span class="rivet rivet--bl"></span>
+							<span class="rivet rivet--br"></span>
+						</>
+					)}
 				</div>
 			)
 		}

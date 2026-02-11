@@ -15,14 +15,23 @@
             "animation": "fade"
         },
         "countdown": {
-            "variant": "minimal",
+            "variant": "luxury-hacienda",
             "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "variant": "structured",
+            "variant": "luxury-hacienda",
             "mapStyle": "dark",
             "showFlourishes": true
+        },
+        "gifts": {
+            "variant": "luxury-hacienda"
+        },
+        "gallery": {
+            "variant": "luxury-hacienda"
+        },
+        "thankYou": {
+            "variant": "luxury-hacienda"
         }
     },
     "hero": {
@@ -37,6 +46,7 @@
         "city": "Los Mochis",
         "mapUrl": "https://maps.app.goo.gl/example",
         "reception": {
+            "venueEvent": "Fiesta",
             "venueName": "Jardín De Eventos Cuatro 60",
             "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
             "date": "21 de febrero de 2026",
@@ -117,8 +127,8 @@
         "confirmationMessage": "¡Excelente! Te esperamos para celebrar juntos."
     },
     "quote": {
-        "text": "60 años de tradición, familia y legado. Gracias por ser parte del camino.",
-        "author": "Jefe Botas"
+        "text": "Sesenta años construidos con trabajo, familia y buenas amistades.",
+        "author": "Gerardo"
     },
     "thankYou": {
         "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
@@ -160,10 +170,22 @@
             { "icon": "party", "label": "Fiesta", "time": "12:00 AM" }
         ]
     },
+    "gifts": [
+        {
+            "type": "bank",
+            "bankName": "BBVA",
+            "accountHolder": "Gerardo Mendoza",
+            "clabe": "0123 4567 8901 2345 67"
+        },
+        {
+            "type": "cash",
+            "text": "Su presencia es el mejor regalo. Si desean tener un detalle, tendremos un buzón para sobres en la recepción."
+        }
+    ],
     "countdown": {
-        "title": "¡El momento ha llegado!",
+        "title": "¡Te espero con las botas puestas!",
         "subtitlePrefix": "El",
-        "footerText": "Un homenaje a 60 años de historia"
+        "footerText": "Un homenaje a 60 años de buenas historias"
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },
@@ -172,7 +194,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "sealIcon": "boot",
         "documentLabel": "MANIFEST / WANTED",

@@ -24,26 +24,36 @@ const eventsCollection = defineCollection({
 							.enum(['elegant', 'modern', 'minimal', 'floral', 'jewelry-box'])
 							.default('elegant'),
 						fontStyle: z.enum(['serif', 'script', 'sans']).optional(),
-						animation: z
-							.enum(['fade', 'bounce', 'elastic', 'none'])
-							.default('fade'),
+						animation: z.enum(['fade', 'bounce', 'elastic', 'none']).default('fade'),
 					})
 					.optional(),
 				countdown: z
 					.object({
 						variant: z
-							.enum(['minimal', 'vibrant', 'classic', 'modern', 'jewelry-box'])
+							.enum([
+								'minimal',
+								'vibrant',
+								'classic',
+								'modern',
+								'jewelry-box',
+								'luxury-hacienda',
+							])
 							.default('minimal'),
-						numberStyle: z
-							.enum(['thin', 'bold', 'monospace'])
-							.default('thin'),
+						numberStyle: z.enum(['thin', 'bold', 'monospace']).default('thin'),
 						showParticles: z.boolean().default(false),
 					})
 					.optional(),
 				location: z
 					.object({
 						variant: z
-							.enum(['structured', 'organic', 'minimal', 'luxury', 'jewelry-box'])
+							.enum([
+								'structured',
+								'organic',
+								'minimal',
+								'luxury',
+								'jewelry-box',
+								'luxury-hacienda',
+							])
 							.default('structured'),
 						mapStyle: z
 							.enum(['dark', 'colorful', 'minimal', 'satellite'])
@@ -57,6 +67,16 @@ const eventsCollection = defineCollection({
 					})
 					.optional(),
 				gifts: z
+					.object({
+						variant: z.string().default('standard'),
+					})
+					.optional(),
+				gallery: z
+					.object({
+						variant: z.string().default('standard'),
+					})
+					.optional(),
+				thankYou: z
 					.object({
 						variant: z.string().default('standard'),
 					})
@@ -80,6 +100,7 @@ const eventsCollection = defineCollection({
 			// Extended: Ceremony venue (optional, for XV/wedding with church)
 			ceremony: z
 				.object({
+					venueEvent: z.string().default('Ceremonia'),
 					venueName: z.string(),
 					address: z.string(),
 					date: z.string(),
@@ -95,6 +116,7 @@ const eventsCollection = defineCollection({
 			// Extended: Reception venue with itinerary
 			reception: z
 				.object({
+					venueEvent: z.string().default('Recepción'),
 					venueName: z.string(),
 					address: z.string(),
 					date: z.string(),

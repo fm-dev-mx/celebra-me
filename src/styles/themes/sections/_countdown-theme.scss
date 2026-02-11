@@ -3,6 +3,7 @@
 // Supports: minimal (default), vibrant, classic, modern
 
 @use '../../tokens' as tokens;
+@use '../../tokens/primitives' as primitives;
 @use '@/styles/global/mixins' as mixins;
 
 // ==========================================================================
@@ -629,6 +630,259 @@
 }
 
 // ==========================================================================
+// LUXURY HACIENDA VARIANT (Western/Premium Style)
+// Best for: Hacienda events, formal rustic celebrations
+// Characteristics: Leather textures, debossed parchment, Special Elite typography
+// ==========================================================================
+
+.countdown-section[data-variant='luxury-hacienda'] {
+	background: linear-gradient(135deg, rgba(45, 30, 20, 0.98) 0%, rgba(25, 15, 10, 1) 100%);
+	padding: 12rem 1rem;
+	position: relative;
+	box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+
+	// Refined Leather Stitching (Section Frame)
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 2rem;
+		border: 1px dashed rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+		pointer-events: none;
+		border-radius: 4px;
+		opacity: 0.5;
+	}
+
+	// Heavy Leather Texture
+	.countdown-texture {
+		position: absolute;
+		inset: 0;
+		opacity: 0.2;
+		pointer-events: none;
+	}
+
+	.countdown-title {
+		font-family: tokens.$font-display-hacienda;
+		font-size: clamp(2.2rem, 5vw, 3.5rem);
+		color: tokens.$color-action-accent;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		text-shadow:
+			0 4px 15px rgba(0, 0, 0, 0.8),
+			0 0 20px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+		margin-bottom: 3rem;
+
+		// Light Sweep Animation on Title
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(
+			90deg,
+			tokens.$color-action-accent 0%,
+			#fff 50%,
+			tokens.$color-action-accent 100%
+		);
+		background-size: 200% auto;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: goldShimmer 5s linear infinite;
+	}
+
+	.countdown-subtitle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 2.5rem;
+		margin-bottom: 4rem;
+
+		.subtitle-line {
+			display: block;
+			height: 3px;
+			width: 80px;
+			background: linear-gradient(
+				to right,
+				transparent,
+				tokens.$color-action-accent,
+				transparent
+			);
+			position: relative;
+
+			// Central Rivet
+			&::before {
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 6px;
+				height: 6px;
+				background: radial-gradient(
+					circle at 30% 30%,
+					#fff 0%,
+					tokens.$color-action-accent 70%,
+					#000 100%
+				);
+				border-radius: 50%;
+				transform: translate(-50%, -50%);
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+			}
+		}
+
+		.event-date {
+			font-family: tokens.$font-display-hacienda;
+			color: rgba(primitives.$base-parchment-100, 0.9);
+			letter-spacing: 0.15em;
+			text-transform: uppercase;
+			font-size: clamp(1rem, 2vw, 1.5rem);
+		}
+	}
+
+	.countdown__segment {
+		background: linear-gradient(145deg, rgba(20, 15, 10, 0.7) 0%, rgba(0, 0, 0, 0.9) 100%);
+		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+		border-radius: 4px;
+		padding: 3rem 1.5rem;
+		box-shadow:
+			inset 0 0 25px rgba(0, 0, 0, 0.9),
+			0 15px 35px rgba(0, 0, 0, 0.5),
+			0 0 10px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
+		position: relative;
+		overflow: hidden;
+		transition:
+			transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+			border-color 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+			box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+		will-change: transform;
+
+		// Metallic Gold Double Trim
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 2px;
+			border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+			pointer-events: none;
+			border-radius: 3px;
+		}
+
+		// Specular Highlight (Behind Glass)
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 50%;
+			background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+			pointer-events: none;
+			z-index: 2;
+		}
+
+		// Riveted Corners
+		.rivet {
+			position: absolute;
+			width: 5px;
+			height: 5px;
+			background: radial-gradient(
+				circle at 30% 30%,
+				#fff 0%,
+				tokens.$color-action-accent 70%,
+				#000 100%
+			);
+			border-radius: 50%;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+			z-index: 3;
+
+			&--tl {
+				top: 8px;
+				left: 8px;
+			}
+			&--tr {
+				top: 8px;
+				right: 8px;
+			}
+			&--bl {
+				bottom: 8px;
+				left: 8px;
+			}
+			&--br {
+				bottom: 8px;
+				right: 8px;
+			}
+		}
+
+		&:hover {
+			border-color: tokens.$color-action-accent;
+			transform: translateY(-8px) scale(1.03);
+			box-shadow:
+				inset 0 0 30px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
+				0 25px 50px rgba(0, 0, 0, 0.6),
+				0 0 20px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+
+			.countdown__value {
+				color: #fff;
+				text-shadow: 0 0 15px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.8);
+			}
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: 4rem 2rem;
+		}
+	}
+
+	.countdown__value {
+		font-family: tokens.$font-display-hacienda;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		font-weight: 400;
+		color: tokens.$color-action-accent;
+		filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.9));
+		position: relative;
+		z-index: 1;
+		transition:
+			color 0.4s ease,
+			text-shadow 0.4s ease;
+	}
+
+	.countdown__label {
+		font-family: tokens.$font-display-hacienda;
+		color: tokens.$color-action-accent;
+		opacity: 0.7;
+		letter-spacing: 0.3em;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		margin-top: 1rem;
+		z-index: 1;
+	}
+
+	.countdown-invitation-text {
+		font-family: tokens.$font-body-hacienda;
+		color: rgba(primitives.$base-parchment-100, 0.8);
+		font-size: 1.5rem;
+		line-height: 1.6;
+		max-width: 700px;
+		margin: 5rem auto 0;
+		font-style: italic;
+		position: relative;
+
+		&::before {
+			content: '“';
+			position: absolute;
+			left: -2rem;
+			top: -1rem;
+			font-size: 4rem;
+			color: tokens.$color-action-accent;
+			opacity: 0.3;
+		}
+	}
+}
+
+@keyframes goldShimmer {
+	0% {
+		background-position: -200% center;
+	}
+	100% {
+		background-position: 200% center;
+	}
+}
+
+// ==========================================================================
 // ANIMATION KEYFRAMES
 // ==========================================================================
 
@@ -665,6 +919,31 @@
 
 		.countdown-texture {
 			animation: none;
+		}
+	}
+
+	// Luxury Hacienda optimizations
+	.countdown-section[data-variant='luxury-hacienda'] {
+		.countdown-title {
+			animation: none;
+			background: tokens.$color-action-accent;
+			-webkit-text-fill-color: initial;
+			background-clip: initial;
+			color: tokens.$color-action-accent;
+		}
+
+		.countdown__segment {
+			transition:
+				border-color 0.2s ease,
+				box-shadow 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+
+		.countdown__value {
+			transition: color 0.2s ease;
 		}
 	}
 }

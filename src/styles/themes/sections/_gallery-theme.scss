@@ -1,0 +1,179 @@
+@use '../../tokens' as tokens;
+@use '../../global/mixins' as mixins;
+
+// ==========================================================================
+// LUXURY HACIENDA GALLERY
+// ==========================================================================
+
+.gallery-section[data-variant='luxury-hacienda'] {
+	background: linear-gradient(135deg, rgba(30, 20, 15, 0.98) 0%, #12100e 100%);
+	background-blend-mode: overlay;
+	padding: 10rem 2rem;
+	position: relative;
+	box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+
+	// Leather Stitching (Section Frame)
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 2rem;
+		border: 1px dashed rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+		pointer-events: none;
+		border-radius: 4px;
+		opacity: 0.5;
+	}
+
+	.gallery-section__title {
+		font-family: tokens.$font-display-hacienda;
+		color: tokens.$color-action-accent;
+		text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+
+		// Premium Shimmer
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(
+			90deg,
+			tokens.$color-action-accent 0%,
+			#fff 50%,
+			tokens.$color-action-accent 100%
+		);
+		background-size: 200% auto;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: goldShimmer 5s linear infinite;
+	}
+
+	.gallery-section__subtitle {
+		font-family: tokens.$font-body-hacienda;
+		color: rgba(255, 255, 255, 0.6);
+		font-style: normal;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		margin-top: 1rem;
+	}
+
+	.gallery-grid__item {
+		background: #1a1510;
+		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+		border-radius: 4px;
+		padding: 10px;
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+		transition:
+			transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+			border-color 0.5s ease,
+			box-shadow 0.5s ease;
+
+		&:hover {
+			transform: translateY(-8px) scale(1.02);
+			border-color: tokens.$color-action-accent;
+			box-shadow:
+				0 25px 50px rgba(0, 0, 0, 0.7),
+				0 0 20px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
+				inset 0 0 30px rgba(0, 0, 0, 0.8);
+		}
+
+		img {
+			border-radius: 2px;
+			filter: sepia(0.3) contrast(1.15) brightness(0.9);
+			mix-blend-mode: luminosity;
+			transition: all 0.5s ease;
+		}
+
+		&:hover img {
+			filter: sepia(0.1) contrast(1.1) brightness(1);
+			mix-blend-mode: normal;
+		}
+
+		// Rivets
+		.rivet {
+			position: absolute;
+			width: 6px;
+			height: 6px;
+			background: radial-gradient(
+				circle at 30% 30%,
+				#fff 0%,
+				tokens.$color-action-accent 70%,
+				#000 100%
+			);
+			border-radius: 50%;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+			z-index: 3;
+
+			&--tl {
+				top: 12px;
+				left: 12px;
+			}
+			&--tr {
+				top: 12px;
+				right: 12px;
+			}
+			&--bl {
+				bottom: 12px;
+				left: 12px;
+			}
+			&--br {
+				bottom: 12px;
+				right: 12px;
+			}
+		}
+
+		// Metallic Inner Bevel (Double Trim)
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 4px;
+			border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+			border-radius: 2px;
+			pointer-events: none;
+		}
+
+		// Specular Highlight (Behind Glass Effect)
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 40%;
+			background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+			pointer-events: none;
+			z-index: 2;
+		}
+	}
+
+	.gallery-grid__caption {
+		font-family: tokens.$font-body-hacienda;
+		color: tokens.$color-action-accent;
+		font-style: italic;
+		background: rgba(0, 0, 0, 0.8);
+		width: 100%;
+		text-align: center;
+		padding: 1rem;
+	}
+}
+
+.gallery-lightbox {
+	background: rgba(10, 8, 5, 0.98);
+
+	&__content img {
+		border: 4px solid #c5a059;
+		border-radius: 2px;
+		box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+	}
+
+	&__footer p {
+		font-family: tokens.$font-body-hacienda;
+		color: tokens.$color-action-accent;
+		font-size: 1.5rem;
+	}
+}
+
+@keyframes goldShimmer {
+	0% {
+		background-position: -200% center;
+	}
+	100% {
+		background-position: 200% center;
+	}
+}

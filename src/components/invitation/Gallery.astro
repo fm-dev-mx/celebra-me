@@ -14,20 +14,21 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	items: GalleryItem[];
+	variant?: string;
 }
 
-const { title = 'Galería', subtitle, items } = Astro.props;
+const { title = 'Galería', subtitle, items, variant = 'standard' } = Astro.props;
 
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section">
+<section id="galeria" class="gallery-section" data-variant={variant}>
 	<div class="gallery-section__container">
 		<header class="gallery-section__header">
 			<h2 class="gallery-section__title">{title}</h2>
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
 		</header>
 
-		<PhotoGallery client:visible items={items} />
+		<PhotoGallery client:visible items={items} variant={variant} />
 	</div>
 </section>

@@ -239,6 +239,7 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 					title={data.gallery.title}
 					subtitle={data.gallery.subtitle}
 					items={galleryItems}
+					variant={data.sectionStyles?.gallery?.variant}
 				/>
 			)
 		}
@@ -271,6 +272,7 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 					message={data.thankYou.message}
 					closingName={data.thankYou.closingName}
 					image={thankYouImage}
+					variant={data.sectionStyles?.thankYou?.variant}
 				/>
 			)
 		}

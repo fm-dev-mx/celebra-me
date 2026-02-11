@@ -15,6 +15,7 @@ import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface VenueData {
+	venueEvent: string;
 	venueName: string;
 	address: string;
 	date: string;
@@ -40,7 +41,7 @@ interface Props {
 	ceremony?: VenueData;
 	reception?: VenueData;
 	indications?: Indication[];
-	variant?: 'structured' | 'organic' | 'minimal' | 'luxury' | 'jewelry-box';
+	variant?: 'structured' | 'organic' | 'minimal' | 'luxury' | 'jewelry-box' | 'luxury-hacienda';
 	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
 	showFlourishes?: boolean;
 }
@@ -70,7 +71,7 @@ const iconMap = {
 	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
 		{ceremony && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">Ceremonia</h3>
+				<h3 class="event-location__card-title">{ceremony.venueEvent}</h3>
 				<div class="event-location__card-flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
 					<span class="flourish-diamond"></span>
@@ -158,13 +159,17 @@ const iconMap = {
 							)}
 						</div>
 					</div>
+					<span class="rivet rivet--tl"></span>
+					<span class="rivet rivet--tr"></span>
+					<span class="rivet rivet--bl"></span>
+					<span class="rivet rivet--br"></span>
 				</article>
 			</div>
 		)}
 
 		{reception && (
 			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">Recepción</h3>
+				<h3 class="event-location__card-title">{reception.venueEvent}</h3>
 				<div class="event-location__card-flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
 					<span class="flourish-diamond"></span>
@@ -253,6 +258,10 @@ const iconMap = {
 							)}
 						</div>
 					</div>
+					<span class="rivet rivet--tl"></span>
+					<span class="rivet rivet--tr"></span>
+					<span class="rivet rivet--bl"></span>
+					<span class="rivet rivet--br"></span>
 				</article>
 			</div>
 		)}

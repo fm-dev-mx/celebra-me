@@ -13,22 +13,23 @@ interface GalleryItem {
 
 const getSrc = (image: ImageMetadata | ImageAsset): string => {
 	if ('src' in image) {
-        // ImageAsset or ImageMetadata
-        const src = image.src;
-        if (typeof src === 'string') return src;
-        return src.src;
-    }
-    // Fallback? Types say it must be one of the above.
-    // ImageMetadata has src string. ImageAsset has src string|Metadata.
-    // Actually, ImageMetadata has src property.
-    return (image as ImageMetadata).src;
+		// ImageAsset or ImageMetadata
+		const src = image.src;
+		if (typeof src === 'string') return src;
+		return src.src;
+	}
+	// Fallback? Types say it must be one of the above.
+	// ImageMetadata has src string. ImageAsset has src string|Metadata.
+	// Actually, ImageMetadata has src property.
+	return (image as ImageMetadata).src;
 };
 
 interface PhotoGalleryProps {
 	items: GalleryItem[];
+	variant?: string;
 }
 
-const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
+const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard' }) => {
 	const [selectedImage, setSelectedImage] = useState<number | null>(null);
 
 	// Keyboard and scroll lock effect
@@ -108,6 +109,14 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items }) => {
 							<div className="gallery-grid__overlay">
 								<p className="gallery-grid__caption">{item.caption}</p>
 							</div>
+						)}
+						{variant === 'luxury-hacienda' && (
+							<>
+								<span className="rivet rivet--tl"></span>
+								<span className="rivet rivet--tr"></span>
+								<span className="rivet rivet--bl"></span>
+								<span className="rivet rivet--br"></span>
+							</>
 						)}
 					</motion.div>
 				))}

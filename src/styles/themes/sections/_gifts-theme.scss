@@ -7,7 +7,11 @@
 
 // --- JEWELRY BOX (XV / Wedding) ---
 .gifts-section[data-variant='jewelry-box'] {
-	background: radial-gradient(circle at center, rgba(var(--color-action-accent-rgb), 0.1) 0%, transparent 70%);
+	background: radial-gradient(
+		circle at center,
+		rgba(var(--color-action-accent-rgb), 0.1) 0%,
+		transparent 70%
+	);
 
 	.gifts-section__title {
 		font-family: tokens.$font-display-formal;
@@ -20,7 +24,12 @@
 		backdrop-filter: blur(12px);
 
 		&::before {
-			background: linear-gradient(90deg, transparent, var(--color-action-accent, tokens.$color-action-accent), transparent);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-action-accent, tokens.$color-action-accent),
+				transparent
+			);
 		}
 
 		&:hover {
@@ -65,64 +74,176 @@
 
 // --- LUXURY HACIENDA (Gerardo / Masculine) ---
 .gifts-section[data-variant='luxury-hacienda'] {
-	background: #12100e;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	background: linear-gradient(135deg, rgba(30, 20, 15, 0.98) 0%, #12100e 100%);
+	background-blend-mode: overlay;
 
 	.gifts-section__title {
-		font-family: tokens.$font-display-formal;
-		color: #8B4513;
+		font-family: tokens.$font-display-hacienda;
+		color: tokens.$color-action-accent;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+
+		// Premium Shimmer
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(
+			90deg,
+			tokens.$color-action-accent 0%,
+			#fff 50%,
+			tokens.$color-action-accent 100%
+		);
+		background-size: 200% auto;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		animation: goldShimmer 5s linear infinite;
+	}
+
+	.gifts-section__subtitle {
+		font-family: tokens.$font-body-hacienda;
+		color: rgba(255, 255, 255, 0.6);
 	}
 
 	.gift-card {
-		background: rgba(30, 25, 20, 0.95);
-		border: 1px solid #4B3621;
+		background: rgba(45, 35, 30, 0.9);
+		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		border-radius: 4px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+		transition:
+			transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+			border-color 0.4s ease,
+			box-shadow 0.4s ease;
+		will-change: transform;
 
 		&::before {
-			background: linear-gradient(90deg, transparent, #8B4513, transparent);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				tokens.$color-action-accent,
+				transparent
+			);
 		}
 
 		&:hover {
-			border-color: #D4AF37;
-			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+			transform: translateY(-5px);
+			border-color: tokens.$color-action-accent;
+			box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+		}
+
+		// Riveted Corners
+		.rivet {
+			position: absolute;
+			width: 5px;
+			height: 5px;
+			background: radial-gradient(
+				circle at 30% 30%,
+				#fff 0%,
+				tokens.$color-action-accent 70%,
+				#000 100%
+			);
+			border-radius: 50%;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+			z-index: 3;
+
+			&--tl {
+				top: 12px;
+				left: 12px;
+			}
+			&--tr {
+				top: 12px;
+				right: 12px;
+			}
+			&--bl {
+				bottom: 12px;
+				left: 12px;
+			}
+			&--br {
+				bottom: 12px;
+				right: 12px;
+			}
+		}
+
+		// Specular Highlight
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 40%;
+			background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+			pointer-events: none;
+			z-index: 2;
 		}
 	}
 
 	.gift-card__icon {
-		color: #D4AF37;
+		color: tokens.$color-action-accent;
 	}
 
 	.gift-card__title {
-		font-family: tokens.$font-display-formal;
-		color: #D4AF37;
+		font-family: tokens.$font-display-hacienda;
+		color: tokens.$color-action-accent;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 	}
 
+	.gift-card__description {
+		font-family: tokens.$font-body-hacienda;
+		color: rgba(255, 255, 255, 0.7);
+		line-height: 1.6;
+	}
+
 	.gift-card__button {
-		border-color: #D4AF37;
-		color: #D4AF37;
+		border-color: tokens.$color-action-accent;
+		color: tokens.$color-action-accent;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		font-weight: 600;
+		font-family: tokens.$font-display-hacienda;
 
 		&:hover {
-			background: #D4AF37;
+			background: tokens.$color-action-accent;
 			color: #1a1512;
 		}
 	}
 
 	.bank-details {
 		background: rgba(0, 0, 0, 0.3);
-		border-left: 3px solid #8B4513;
+		border-left: 3px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
+		font-family: tokens.$font-body-hacienda;
+		color: rgba(255, 255, 255, 0.8);
 
 		strong {
-			color: #D4AF37;
+			color: tokens.$color-action-accent;
 		}
 	}
 
 	.copy-button {
-		background: #8B4513;
-		color: white;
+		background: rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.8);
+		color: #1a1512;
+		font-family: tokens.$font-display-hacienda;
+		letter-spacing: 0.05em;
+
+		&:hover {
+			background: tokens.$color-action-accent;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gift-card {
+			transition: border-color 0.2s ease;
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}
+@keyframes goldShimmer {
+	0% {
+		background-position: -200% center;
+	}
+	100% {
+		background-position: 200% center;
 	}
 }

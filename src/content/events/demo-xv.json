@@ -43,6 +43,7 @@
         "city": "Monterrey",
         "mapUrl": "https://maps.app.goo.gl/example",
         "ceremony": {
+            "venueEvent": "Ceremonia",
             "venueName": "Parroquia de la Sagrada Familia",
             "address": "Avenida Ayuntamiento s/n, Jardines de Guadalupe",
             "date": "25 de abril de 2026",
@@ -58,6 +59,7 @@
             }
         },
         "reception": {
+            "venueEvent": "Recepción",
             "venueName": "Quinta Las Flores",
             "address": "Av. Real de Catorce 123, Col. Valle Alto",
             "date": "25 de abril de 2026",
