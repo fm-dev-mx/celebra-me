@@ -173,15 +173,16 @@
 	}
 }
 
-/* FIXING THE FORM ELEMENTS FOR LIGHT THEME */
+/* OPTIMIZED CONTACT CARD (Removed !important) */
 .contact-card {
-	background: transparent !important;
-	padding: 0 !important;
-	border: none !important;
-	box-shadow: none !important;
-	backdrop-filter: none !important;
+	background: var(--landing-contact-bg-override, transparent);
+	padding: var(--landing-contact-padding-override, 0);
+	border: none;
+	box-shadow: var(--landing-contact-box-shadow-override, none);
+	backdrop-filter: none;
+
 	&::before {
-		display: none !important;
+		display: none;
 	}
 }
 

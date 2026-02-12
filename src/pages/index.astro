@@ -10,33 +10,12 @@ import FAQ from '@/components/home/FAQ.astro';
 import Contact from '@/components/home/Contact.astro';
 import Footer from '@/components/home/Footer.astro';
 import { landingData, footerData } from '@/data/landing-page.data';
+import '@styles/home/_landing-page.scss';
 
 ---
 
-<Layout title="Celebra.me | Invitaciones Digitales Premium">
-	<style is:global>
-		html {
-			scroll-snap-type: y mandatory;
-			scroll-behavior: smooth;
-		}
-
-		section, .hero-prime, footer {
-			scroll-snap-align: start;
-			scroll-snap-stop: always;
-			min-height: 100vh;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-		}
-
-		/* Footer doesn't need to be full height if it's small */
-		footer {
-			min-height: auto;
-			scroll-snap-align: end;
-		}
-	</style>
-
-	<div class="landing-sections-wrapper theme-preset--elegant">
+<Layout title="Celebra.me | Invitaciones Digitales Premium" className="theme-preset--elegant">
+	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} />
 		<div class="animate-icons"><Services data={landingData.services} /></div>
 		<div class="animate-icons"><AboutUs data={landingData.about} /></div>

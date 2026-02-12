@@ -1,0 +1,19 @@
+html {
+	scroll-snap-type: y proximity;
+	scroll-behavior: smooth;
+}
+
+section,
+.hero-prime,
+footer {
+	scroll-snap-align: start;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+footer {
+	min-height: auto;
+	scroll-snap-align: end;
+}

@@ -8,12 +8,8 @@
 
 import HeaderBase from '@components/common/HeaderBase.astro';
 import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
+import Logo from '@components/ui/Logo.astro';
 import '@styles/home/_home-header.scss';
-
-import { getCommonAsset } from '@/lib/assets/AssetRegistry';
-
-// Import assets
-const logoAsset = getCommonAsset('headerLogo');
 
 const navLinks = [
     { label: 'Inicio', href: '#inicio' },
@@ -21,8 +17,6 @@ const navLinks = [
     { label: 'Planes', href: '#pricing' },
     { label: 'Nosotros', href: '#nosotros' },
 ];
-
-const logoSrc = typeof logoAsset.src === 'string' ? logoAsset.src : logoAsset.src.src;
 ---
 
 <HeaderBase
@@ -34,16 +28,8 @@ const logoSrc = typeof logoAsset.src === 'string' ? logoAsset.src : logoAsset.sr
 
     <!-- SLOT: Logo -->
     <a href="/" slot="logo" class="home-header__logo-container" aria-label="Celebra-me Inicio">
-        <img
-            src={logoSrc}
-            alt="Celebra-me Logo"
-            class="home-header__logo--white"
-        />
-        <img
-            src={logoSrc}
-            alt="Celebra-me Logo"
-            class="home-header__logo--gold"
-        />
+        <Logo variant="white" class="logo-img home-header__logo--white" />
+        <Logo variant="gold" class="logo-img home-header__logo--gold" />
     </a>
 
     <!-- SLOT: Desktop Nav -->

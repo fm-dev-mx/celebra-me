@@ -23,12 +23,15 @@
 	&__logo {
 		&--white {
 			display: block;
-			filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 		}
 		&--gold {
 			display: none;
 		}
 	}
+}
+
+.home-header .home-header__logo--white {
+	filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 .home-header__desktop {
@@ -55,42 +58,6 @@
 
 	.home-header__logo--gold {
 		display: block;
-	}
-}
-
-:global(.header-base--scrolled) {
-	.home-nav__link {
-		color: var(--color-text);
-
-		&::after {
-			background-color: tokens.$color-action-accent;
-		}
-	}
-
-	.home-nav-actions__login {
-		color: tokens.$color-action-primary;
-	}
-}
-
-:global(.header-base--transparent) {
-	.home-nav__link {
-		color: tokens.$base-neutral-0;
-		font-weight: tokens.$font-weight-semibold;
-		text-shadow: tokens.$shadow-subtle;
-
-		&::after {
-			background-color: tokens.$base-neutral-0;
-		}
-
-		&:hover {
-			color: tokens.$base-neutral-0;
-			opacity: 0.9;
-		}
-	}
-
-	.home-nav-actions__login {
-		color: tokens.$base-neutral-0;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 }
 
@@ -182,4 +149,79 @@
 			outline-offset: 4px;
 		}
 	}
+}
+
+// --- Specific State Overrides (Refactored to use Semantic Tokens) ---
+
+:global(.header-base) {
+	transition:
+		background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+		backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+		border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:global(.header-base--transparent) {
+	background-color: var(--landing-header-bg-transparent);
+
+	.home-nav__link {
+		color: var(--landing-header-text-transparent);
+		font-weight: tokens.$font-weight-bold;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+		opacity: 1;
+
+		&::after {
+			background-color: var(--landing-header-text-transparent);
+		}
+	}
+
+	.home-nav-actions__login {
+		color: var(--landing-header-text-transparent);
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+		opacity: 1;
+	}
+
+	.home-header__logo--white {
+		opacity: 1;
+		visibility: visible;
+	}
+	.home-header__logo--gold {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+
+:global(.header-base--scrolled) {
+	background-color: var(--landing-header-bg-scrolled);
+	backdrop-filter: blur(var(--landing-header-backdrop-blur));
+	box-shadow: var(--landing-header-shadow-scrolled);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+	.home-nav__link {
+		color: var(--landing-header-text-scrolled);
+		font-weight: tokens.$font-weight-semibold;
+
+		&::after {
+			background-color: var(--landing-header-accent-scrolled);
+		}
+	}
+
+	.home-nav-actions__login {
+		color: var(--landing-header-accent-scrolled);
+		opacity: 1;
+	}
+
+	.home-header__logo--white {
+		opacity: 0;
+		visibility: hidden;
+	}
+	.home-header__logo--gold {
+		opacity: 1;
+		visibility: visible;
+	}
+}
+
+// Ensure hover states respect the new tokens
+.home-nav__link:hover {
+	opacity: 1;
 }

@@ -1,0 +1,15 @@
+@use '../tokens' as tokens;
+
+.logo {
+	width: 8rem;
+	height: auto;
+	transition: tokens.$transition-snappy;
+
+	@media (min-width: 768px) {
+		width: 10rem;
+	}
+}
+
+.logo--white {
+	filter: brightness(0) invert(1);
+}

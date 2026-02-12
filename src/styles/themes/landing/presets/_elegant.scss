@@ -61,6 +61,15 @@
 	--landing-services-card-transition-duration: 0.4s;
 	--landing-services-card-stagger-delay: 100ms;
 
+	// Header Section
+	--landing-header-bg-transparent: transparent;
+	--landing-header-bg-scrolled: rgba(15, 23, 42, 0.95); // Dark blue from FAQ/Footer
+	--landing-header-text-transparent: #{primitives.$base-neutral-0};
+	--landing-header-text-scrolled: #{primitives.$base-parchment-100};
+	--landing-header-accent-scrolled: #{primitives.$base-gold-500};
+	--landing-header-shadow-scrolled: 0 4px 20px rgba(0, 0, 0, 0.3);
+	--landing-header-backdrop-blur: 12px;
+
 	// About Us Section
 	--landing-about-noise-opacity: 0.04;
 	--landing-about-underline-shine-color: rgba(255, 255, 255, 0.6);
@@ -181,8 +190,8 @@
 	--landing-contact-title-color: var(--color-text-primary);
 	--landing-contact-divider-bg: var(--color-border-emphasis);
 	--landing-contact-info-title-color: var(--color-text-primary);
-	--landing-contact-info-description-color: rgba(var(--color-text-secondary-rgb), 0.8);
-	--landing-contact-info-footer-color: rgba(var(--color-text-secondary-rgb), 0.5);
+	--landing-contact-info-description-color: var(--color-text-secondary);
+	--landing-contact-info-footer-color: var(--color-text-secondary);
 	--landing-contact-channel-bg: var(--color-surface-primary);
 	--landing-contact-channel-border: var(--color-border-subtle);
 	--landing-contact-channel-shadow: var(--shadow-subtle);
@@ -210,6 +219,11 @@
 	--landing-contact-submit-hover-bg: var(--color-action-accent);
 	--landing-contact-submit-hover-transform: translateY(-2px);
 	--landing-contact-submit-hover-shadow: var(--shadow-subtle);
+
+	// Supplemental for remediation
+	--landing-contact-bg-override: transparent;
+	--landing-contact-padding-override: 0;
+	--landing-contact-box-shadow-override: none;
 
 	// Testimonials Section
 	--landing-testimonials-title-font: var(--font-display, 'Playfair Display', serif);
