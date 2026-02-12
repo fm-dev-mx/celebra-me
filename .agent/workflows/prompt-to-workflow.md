@@ -1,54 +1,32 @@
 ---
-description:
-    Transforms raw instructions into high-fidelity, dual-language engineered prompts or ready-to-use
-    workflows (Evergreen or Task) in .agent/workflows.
+description: Transforms instructions into ready-to-use workflows in .agent/workflows.
 ---
 
 # 💎 Workflow: Prompt-to-Workflow Architect
 
-Use this workflow to transform raw ideas or vague instructions into high-fidelity, dual-language
-technical specifications AND deployable workflow files (Evergreen or Task).
+1. **Synthesis**
+    - Identify core objective: Feature, refinement, or architectural debt.
+    - **Source of Truth**: Prioritize code over docs.
+    - Reference Project Vision (textures, motion, typography).
 
-## Execution Steps
+2. **Categorization**
+    - **Evergreen**: Reusable / Global standards (e.g., `safe-commit`).
+    - **Task**: Tactical / Ephemeral (e.g., `update-hero-gerardo`).
 
-1. **Context Synthesis & Ground Truth**:
-    - Identify the core objective: New feature, visual refinement, or architectural debt?
-    - **Source of Truth**: Always prioritize the current state of the code over outdated docs.
-    - Reference the **Project Vision** (textures, motion, typography) and **Tech Stack**
-      (Astro/SCSS).
+3. **Strategic Injection**
+    - UI Strings: Spanish. Code/Logic: English.
+    - Performance & A11y (WCAG) checks.
+    - Enforce data/UI separation and design tokens.
 
-2. **Lifespan Categorization**:
-    - **Evergreen (Tool/System)**: Reusable tools or global standards (e.g., `safe-commit`).
-    - **Task (Tactical/Ephemeral)**: Single-use fixes or event updates (e.g.,
-      `update-hero-gerardo`).
+4. **Construction**
+    - Slug-based filename.
+    - sequential logic in ADUs.
+    - `// turbo` for safe commands.
+    - **Tasks**: Include self-archive step.
 
-3. **Strategic Constraint Injection**:
-    - **Role Definition**: Assign a specific persona (Senior Design Engineer, Architect, etc.).
-    - **Optimization Standards**: Mandate checks for performance, accessibility (WCAG), and
-      mobile-first responsiveness.
-    - **UI & Language**: English for logic, Target Language for UI strings.
-    - **Architectural Integrity**: Enforce data/UI separation and design tokens.
-
-4. **Workflow Construction**:
-    - **Frontmatter**: Clear description. For **Tasks**, include references to target data/files.
-    - **Sequential Logic**: Break down into Atomic Deployable Units (ADUs).
-    - **Turbo Mode**: Apply `// turbo` to safe, non-destructive commands.
-    - **Verification**: Mandatory technical checks (builds, linting) and qualitative Visual QA.
-
-5. **Critical Reflection (Pre-Finalization)**:
-    - Analyze potential friction points: performance impact, UX inconsistencies, or technical debt.
-    - **Self-Archive (Tasks Only)**: Ensure a final step to move the workflow to `archive/`.
-
-6. **File Deployment & Sync**:
-    - Generate a slug-based filename and save via `write_to_file`.
-    - Update `docs/implementation-log.md`.
-    - Inform the user: "Blueprint deployed: `/[filename]` (Categorized as [Evergreen|Task])".
+5. **Deployment**
+    - Save via `write_to_file`. Update `docs/implementation-log.md`.
 
 // turbo
 
-## Agent Instruction
-
-Analyze the user's input, synthesize the context using the **Ground Truth** principle, and proceed
-to **create the workflow file**. You MUST include a **Critical Reflection** block in your output
-before deploying the file, analyzing friction points. The resulting workflow must follow the
-project's premium standards.
+> [!IMPORTANT] Include a **Critical Reflection** block analyzing friction points before deployment.

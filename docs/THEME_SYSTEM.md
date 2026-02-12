@@ -12,23 +12,23 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 
 ```json
 {
-  "sectionStyles": {
-    "quote": {
-      "variant": "elegant",
-      "fontStyle": "serif",
-      "animation": "fade"
-    },
-    "countdown": {
-      "variant": "vibrant",
-      "numberStyle": "bold",
-      "showParticles": true
-    },
-    "location": {
-      "variant": "organic",
-      "mapStyle": "colorful",
-      "showFlourishes": true
-    }
-  }
+	"sectionStyles": {
+		"quote": {
+			"variant": "elegant",
+			"fontStyle": "serif",
+			"animation": "fade"
+		},
+		"countdown": {
+			"variant": "vibrant",
+			"numberStyle": "bold",
+			"showParticles": true
+		},
+		"location": {
+			"variant": "organic",
+			"mapStyle": "colorful",
+			"showFlourishes": true
+		}
+	}
 }
 ```
 
@@ -45,21 +45,21 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 
 ### Countdown Section
 
-| Variante      | Descripción                                                                                             | Status    | Mejor para                              |
-| ------------- | ------------------------------------------------------------------------------------------------------- | --------- | --------------------------------------- |
-| `minimal`     | Números finos, fondo pergamino, diseño limpio                                                           | [APPLIED] | Eventos formales                        |
-| `vibrant`     | Números bold, gradientes vibrantes, partículas                                                          | [APPLIED] | XV Años convencionales                  |
+| Variante      | Descripción                                                                                            | Status    | Mejor para                             |
+| ------------- | ------------------------------------------------------------------------------------------------------ | --------- | -------------------------------------- |
+| `minimal`     | Números finos, fondo pergamino, diseño limpio                                                          | [APPLIED] | Eventos formales                       |
+| `vibrant`     | Números bold, gradientes vibrantes, partículas                                                         | [APPLIED] | XV Años convencionales                 |
 | `jewelry-box` | **Sophisticated**, números delgados `Playfair Display`, glassmorphism, fondo crema, sin distracciones. | [APPLIED] | **Demo XV**, Invitaciones de alta gama |
-| `classic`     | Atemporal, números serif, bordes dorados, fondo oscuro                                                  | [APPLIED] | Bodas tradicionales                     |
+| `classic`     | Atemporal, números serif, bordes dorados, fondo oscuro                                                 | [APPLIED] | Bodas tradicionales                    |
 
 ### Location Section
 
-| Variante      | Descripción                                                                           | Status    | Mejor para                            |
-| ------------- | ------------------------------------------------------------------------------------- | --------- | ------------------------------------- |
-| `structured`  | Layout en grid, bordes definidos, tarjetas rígidas                                     | [APPLIED] | Eventos corporativos                  |
-| `organic`     | Curvas suaves, flourishes florales, colores pasteles                                  | [APPLIED] | XV Años estándar                      |
-| `jewelry-box` | **Immersion**, marcos de oro fino, fondo marfil, tipografía `EB Garamond` optimizada. | [PENDING] | **XV Años Premium**                   |
-| `luxury`      | Tema oscuro, acentos dorados, detalles sofisticados                                   | [APPLIED] | Bodas de lujo                         |
+| Variante      | Descripción                                                                           | Status    | Mejor para           |
+| ------------- | ------------------------------------------------------------------------------------- | --------- | -------------------- |
+| `structured`  | Layout en grid, bordes definidos, tarjetas rígidas                                    | [APPLIED] | Eventos corporativos |
+| `organic`     | Curvas suaves, flourishes florales, colores pasteles                                  | [APPLIED] | XV Años estándar     |
+| `jewelry-box` | **Immersion**, marcos de oro fino, fondo marfil, tipografía `EB Garamond` optimizada. | [PENDING] | **XV Años Premium**  |
+| `luxury`      | Tema oscuro, acentos dorados, detalles sofisticados                                   | [APPLIED] | Bodas de lujo        |
 
 ### Family & Gifts
 
@@ -111,7 +111,8 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 }
 ```
 
-**Identidad Visual:** Ivory parchment, Pinyon Script accents, liquid gold borders, airy spacing, reduced saturation.
+**Identidad Visual:** Ivory parchment, Pinyon Script accents, liquid gold borders, airy spacing,
+reduced saturation.
 
 ## Tokens de Diseño
 
@@ -181,11 +182,9 @@ $ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 ## Arquitectura de Archivos
 
 ```markdown
-src/styles/themes/sections/
-├── _index.scss              # Exporta todos los temas de sección
-├── _quote-theme.scss        # Estilos temáticos para Quote
-├── _countdown-theme.scss    # Estilos temáticos para Countdown
-└── _location-theme.scss     # Estilos temáticos para Location
+src/styles/themes/sections/ ├── \_index.scss # Exporta todos los temas de sección ├──
+\_quote-theme.scss # Estilos temáticos para Quote ├── \_countdown-theme.scss # Estilos temáticos
+para Countdown └── \_location-theme.scss # Estilos temáticos para Location
 ```
 
 ## Implementación Técnica
@@ -202,21 +201,21 @@ El schema de Zod ahora incluye configuración por sección:
 
 ```typescript
 sectionStyles: z.object({
-  quote: z.object({
-    variant: z.enum(['elegant', 'modern', 'minimal', 'floral', 'jewelry-box']),
-    fontStyle: z.enum(['serif', 'script', 'sans']),
-    animation: z.enum(['fade', 'bounce', 'elastic', 'none']),
-  }),
-  countdown: z.object({
-    variant: z.enum(['minimal', 'vibrant', 'classic', 'modern', 'jewelry-box']),
-    numberStyle: z.enum(['thin', 'bold', 'monospace']),
-    showParticles: z.boolean(),
-  }),
-  location: z.object({
-    variant: z.enum(['structured', 'organic', 'minimal', 'luxury', 'jewelry-box']),
-    mapStyle: z.enum(['dark', 'colorful', 'minimal', 'satellite']),
-    showFlourishes: z.boolean(),
-  }),
+	quote: z.object({
+		variant: z.enum(['elegant', 'modern', 'minimal', 'floral', 'jewelry-box']),
+		fontStyle: z.enum(['serif', 'script', 'sans']),
+		animation: z.enum(['fade', 'bounce', 'elastic', 'none']),
+	}),
+	countdown: z.object({
+		variant: z.enum(['minimal', 'vibrant', 'classic', 'modern', 'jewelry-box']),
+		numberStyle: z.enum(['thin', 'bold', 'monospace']),
+		showParticles: z.boolean(),
+	}),
+	location: z.object({
+		variant: z.enum(['structured', 'organic', 'minimal', 'luxury', 'jewelry-box']),
+		mapStyle: z.enum(['dark', 'colorful', 'minimal', 'satellite']),
+		showFlourishes: z.boolean(),
+	}),
 });
 ```
 

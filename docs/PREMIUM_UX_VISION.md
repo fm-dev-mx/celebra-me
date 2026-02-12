@@ -14,11 +14,11 @@ scrolling.
 
 ## 2. Global Status (Production Ready)
 
-| Module             | Status            | Visual Aesthetic  | Implementation Notes                                      |
-| :----------------- | :---------------- | :---------------- | :-------------------------------------------------------- |
-| **Landing Page**   | ✅ **Live**       | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                  |
-| **XV Años Engine** | ✅ **Production** | "Jewelry Box"     | 3-Layer Color Arch, Asset Registry, Preset System.        |
-| **60th Birthday**  | ✅ **Production** | "Luxury Hacienda" | Full data integration, interactive maps, refined motion.  |
+| Module             | Status            | Visual Aesthetic  | Implementation Notes                                     |
+| :----------------- | :---------------- | :---------------- | :------------------------------------------------------- |
+| **Landing Page**   | ✅ **Live**       | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
+| **XV Años Engine** | ✅ **Production** | "Jewelry Box"     | 3-Layer Color Arch, Asset Registry, Preset System.       |
+| **60th Birthday**  | ✅ **Production** | "Luxury Hacienda" | Full data integration, interactive maps, refined motion. |
 
 ---
 
@@ -38,9 +38,10 @@ duplication:
 - **Presets Directory:** `src/styles/themes/presets/` contains entry points for each aesthetic.
 - **Scoping:** Each preset wraps styles in a `.theme-preset--{name}` class.
 - **Available Presets:**
-  - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
-  - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
-- **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in [THEME_SYSTEM.md](file:///c:/Code/celebra-me/docs/THEME_SYSTEM.md).
+    - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
+    - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
+- **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in
+  [THEME_SYSTEM.md](file:///c:/Code/celebra-me/docs/THEME_SYSTEM.md).
 
 ### C. Typography System (Core 5)
 
@@ -85,17 +86,17 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 
 ### Phase 1: Foundation (Completed)
 
--   [x] Landing Page Remaster (Jewelry Box Aesthetic)
--   [x] XV Años Demo (Proof of Concept)
--   [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
+- [x] Landing Page Remaster (Jewelry Box Aesthetic)
+- [x] XV Años Demo (Proof of Concept)
+- [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
 
 ### Phase 2: Expansion (Current Focus)
 
 - **60th Birthday Invitation (Gerardo "Jefe Botas")**
-  - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
-  - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
+    - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
+    - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
 - **Multi-Event Support**
-  - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
+    - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
 
 ---
 
@@ -109,4 +110,4 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 | 2026-02-08 | **Aesthetic Presets Architecture** implemented. Components generalized.   |
 | 2026-02-08 | **Typography System** documentation added. Documentation audit completed. |
 | 2026-02-11 | **Universal Asset System** implemented. Documentation sync completed.     |
-| 2026-02-11 | **Refined Preset Architecture** extended to Family, Gifts, and Countdown.  |
+| 2026-02-11 | **Refined Preset Architecture** extended to Family, Gifts, and Countdown. |

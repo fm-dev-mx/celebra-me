@@ -5,12 +5,13 @@ description: Architectural Icon Refactor - Transitioning to Universal Atomic Rea
 # Workflow: Architectural Icon Refactor
 
 ## Role
-You are the **Lead Architect** for Celebra-me. Your mission is to migrate all system icons
-(Astro fragments, scattered SVGs, and legacy registries) into a standardized, universal
-atomic component system using React (`.tsx`).
 
-This ensures icons can be used in both pure React components (interactive) and Astro
-components (server-rendered) without duplication or hydration issues.
+You are the **Lead Architect** for Celebra-me. Your mission is to migrate all system icons (Astro
+fragments, scattered SVGs, and legacy registries) into a standardized, universal atomic component
+system using React (`.tsx`).
+
+This ensures icons can be used in both pure React components (interactive) and Astro components
+(server-rendered) without duplication or hydration issues.
 
 ---
 
@@ -23,8 +24,8 @@ components (server-rendered) without duplication or hydration issues.
     - Every icon must accept `className?: string` and `size?: number | string`.
     - Always include `aria-hidden="true"` and `role="img"` on the `<svg>` for accessibility.
     - Use `fill="currentColor"` or `stroke="currentColor"` to ensure CSS theming works.
-4.  **Documentation**: Every file must include a **TSDoc** block in English explaining its
-    intended use and source origin.
+4.  **Documentation**: Every file must include a **TSDoc** block in English explaining its intended
+    use and source origin.
 5.  **Naming & Exports**:
     - File: `IconName.tsx` (PascalCase).
     - Named Export: `IconNameIcon`.
@@ -36,62 +37,69 @@ components (server-rendered) without duplication or hydration issues.
 ## Execution Loop
 
 ### Phase 1 — Infrastructure & Setup
+
 1. Create the base directory structure:
-   - `src/components/common/icons/ui/`
-   - `src/components/common/icons/social/`
-   - `src/components/common/icons/invitation/`
+    - `src/components/common/icons/ui/`
+    - `src/components/common/icons/social/`
+    - `src/components/common/icons/invitation/`
 2. Initialize empty `index.ts` files in each.
 
 ### Phase 2 — Migration of Legacy Registries
+
 // turbo
+
 1. Explode `src/components/common/icons/ReactIcons.tsx` into:
-   - `ui/ChevronDown.tsx`
-   - `social/WhatsApp.tsx`
+    - `ui/ChevronDown.tsx`
+    - `social/WhatsApp.tsx`
 2. Explode `src/components/invitation/icons/react/SealIcons.tsx` into `invitation/`:
-   - `invitation/BootSeal.tsx`
-   - `invitation/HeartSeal.tsx`
-   - `invitation/MonogramSeal.tsx`
-   - `invitation/FlowerSeal.tsx`
+    - `invitation/BootSeal.tsx`
+    - `invitation/HeartSeal.tsx`
+    - `invitation/MonogramSeal.tsx`
+    - `invitation/FlowerSeal.tsx`
 
 ### Phase 3 — Discovery & Migration of Astro Fragments
+
 1. **Audit**: List all files in `src/components/invitation/icons/*.astro`.
 2. **Convert**: Transform each into a `.tsx` component.
-   - Pay attention to `stroke-width` (convert to `strokeWidth` for React).
-   - Ensure `currentColor` is used for the primary visual path.
+    - Pay attention to `stroke-width` (convert to `strokeWidth` for React).
+    - Ensure `currentColor` is used for the primary visual path.
 3. **Move**: Place in `src/components/common/icons/invitation/`.
 4. **Specific Mapping Targets**:
-   - `MapIcon.astro` -> `invitation/MapLocation.tsx`
-   - `CrownIcon.astro` -> `invitation/Crown.tsx`
-   - `DinnerIcon.astro` -> `invitation/Dinner.tsx`
-   - `WaltzIcon.astro` -> `invitation/Waltz.tsx`
-   - `ToastIcon.astro` -> `invitation/Toast.tsx`
-   - `ForbiddenIcon.astro` -> `invitation/Forbidden.tsx`
+    - `MapIcon.astro` -> `invitation/MapLocation.tsx`
+    - `CrownIcon.astro` -> `invitation/Crown.tsx`
+    - `DinnerIcon.astro` -> `invitation/Dinner.tsx`
+    - `WaltzIcon.astro` -> `invitation/Waltz.tsx`
+    - `ToastIcon.astro` -> `invitation/Toast.tsx`
+    - `ForbiddenIcon.astro` -> `invitation/Forbidden.tsx`
 
 ### Phase 4 — Extraction of Inline SVGs (The "Hidden" Icons)
+
 1. **Source Audit**: Locate and extract SVGs from:
-   - `src/components/invitation/MusicPlayer.tsx` -> `ui/Play.tsx` and `ui/Pause.tsx`.
-   - `src/components/invitation/Gifts.astro` -> `invitation/Gift.tsx`.
-   - `src/components/invitation/TimelineList.tsx` -> Identify and extract list markers.
-   - `src/components/common/icons/AppIcon.astro` -> `ui/AppLogo.tsx`.
+    - `src/components/invitation/MusicPlayer.tsx` -> `ui/Play.tsx` and `ui/Pause.tsx`.
+    - `src/components/invitation/Gifts.astro` -> `invitation/Gift.tsx`.
+    - `src/components/invitation/TimelineList.tsx` -> Identify and extract list markers.
+    - `src/components/common/icons/AppIcon.astro` -> `ui/AppLogo.tsx`.
 
 ### Phase 5 — Barrel File Generation & Refactor
+
 1. Update all `index.ts` files to export the new components.
 2. Update all imports in the system. Use the barrel imports where possible for cleaner code:
-   - `import { WhatsAppIcon } from '@/components/common/icons/social';`
+    - `import { WhatsAppIcon } from '@/components/common/icons/social';`
 3. **Audit Consumers**:
-   - `src/components/invitation/EnvelopeReveal.tsx`
-   - `src/components/ui/FAQList.tsx` (update to path-based or barrel)
-   - `src/components/ui/WhatsAppButton.tsx`
-   - `src/pages/[eventType]/[slug].astro`
+    - `src/components/invitation/EnvelopeReveal.tsx`
+    - `src/components/ui/FAQList.tsx` (update to path-based or barrel)
+    - `src/components/ui/WhatsAppButton.tsx`
+    - `src/pages/[eventType]/[slug].astro`
 
 ### Phase 6 — Verification & Cleanup
+
 1. Run `pnpm check` (or `tsc`) to find broken imports.
 2. Run `npm run dev` and visually verify 3-4 key icons.
 3. Delete legacy files:
-   - `src/components/common/icons/ReactIcons.tsx`
-   - `src/components/invitation/icons/react/SealIcons.tsx`
-   - `src/components/invitation/icons/*.astro` (once all are moved).
-   - `src/components/common/icons/AppIcon.astro`
+    - `src/components/common/icons/ReactIcons.tsx`
+    - `src/components/invitation/icons/react/SealIcons.tsx`
+    - `src/components/invitation/icons/*.astro` (once all are moved).
+    - `src/components/common/icons/AppIcon.astro`
 
 ---
 
@@ -130,6 +138,7 @@ export default [IconName]Icon;
 ---
 
 ## Reporting Checklist
+
 - [ ] Accessibility: All icons have `aria-hidden="true"` and `role="img"`?
 - [ ] React Compliance: `stroke-width` converted to `strokeWidth`?
 - [ ] Barrel Files: `index.ts` created and populated in all 3 categories?

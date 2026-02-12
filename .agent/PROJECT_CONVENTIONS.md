@@ -142,4 +142,18 @@ Not all situations fit the conventions. If a change requires deviating:
 - This directory is ignored by git to keep the repository clean.
 - When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
 
+## 12) Adding New Events
+
+When adding a new event to the platform, follow the AssetRegistry pattern to ensure type safety,
+centralized management, and consistency:
+
+1. **Create event directory** in `src/assets/images/events/{event-slug}/`
+2. **Add required images** (hero.webp, portrait.webp, jardin.webp, signature.webp, gallery-01.webp
+   through gallery-11.webp)
+3. **Create barrel file** (`index.ts`) with proper exports (see `docs/ASSET_REGISTRY_GUIDE.md`)
+4. **Register event** in `src/lib/assets/AssetRegistry.ts` using the `mapEventAssets()` helper
+5. **Verify registration** by running `npm run build` and checking TypeScript compilation
+
+For complete step-by-step instructions, refer to `docs/ASSET_REGISTRY_GUIDE.md`.
+
 Conventions are agreements to reduce friction, not obstacles to progress.
