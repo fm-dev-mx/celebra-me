@@ -52,6 +52,14 @@
 	--spacing-24: #{tokens.$spacing-24};
 	--spacing-32: #{tokens.$spacing-32};
 
+	// Aliases for easier usage
+	--spacing-xs: var(--spacing-2);
+	--spacing-sm: var(--spacing-4);
+	--spacing-md: var(--spacing-6);
+	--spacing-lg: var(--spacing-8);
+	--spacing-xl: var(--spacing-12);
+	--spacing-2xl: var(--spacing-16);
+
 	/* Semantic spacing roles */
 	--spacing-container-padding: #{tokens.$spacing-container-padding};
 	--spacing-section-gap: #{tokens.$spacing-section-gap};

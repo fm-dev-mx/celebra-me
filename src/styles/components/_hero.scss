@@ -49,7 +49,7 @@
 		text-align: center;
 		max-width: 800px;
 		padding: var(--spacing-xl) var(--spacing-xl);
-		padding-top: calc(var(--spacing-xl) * 2); // Extra space for header
+		padding-top: calc(var(--spacing-xl) * 1.25); // Reduced from 2x to restore balance
 		display: flex;
 		flex-direction: column;
 		align-items: center;

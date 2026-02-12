@@ -1,7 +1,7 @@
 @use '../global/mixins' as *;
 
 .footer-section {
-	background-color: var(--color-secondary);
+	background-color: #0f172a; // Match FAQ neutral slate
 	color: white;
 	padding: var(--spacing-xl) 0;
 	position: relative;
@@ -130,7 +130,7 @@
 
 	.legal-links {
 		display: flex;
-		gap: var(--spacing-lg);
+		gap: 1.5rem; // Explicit gap for legal links
 		font-size: 0.85rem;
 		opacity: 0.5;
 

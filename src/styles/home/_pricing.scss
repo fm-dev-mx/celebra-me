@@ -58,7 +58,7 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: var(--spacing-lg);
-	align-items: center;
+	align-items: stretch; // Ensure cards have same height
 
 	@media (min-width: 992px) {
 		grid-template-columns: repeat(3, 1fr);
@@ -138,7 +138,7 @@
 		}
 	}
 	&.is-elite {
-		background: rgba(var(--color-secondary-rgb, 44, 62, 80), 0.8);
+		background: rgba(15, 23, 42, 0.9); // Neutral Slate Blue instead of Brown
 		border: 1px solid var(--color-primary-light);
 		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 
