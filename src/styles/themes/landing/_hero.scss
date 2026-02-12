@@ -1,0 +1,38 @@
+// src/styles/themes/landing/_hero.scss
+
+/**
+ * Hero Section Semantic Tokens
+ * Thematic properties for hero overlay, mesh gradients, and title effects
+ */
+@use '../../tokens/primitives' as primitives;
+
+// Hero Overlay
+$hero-overlay-alpha: var(--landing-hero-overlay-alpha, 0.4);
+$hero-overlay-gradient: var(
+	--landing-hero-overlay-gradient,
+	linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 0.3) 0%,
+		rgba(0, 0, 0, 0.1) 50%,
+		rgba(0, 0, 0, 0.4) 100%
+	)
+);
+
+// Mesh Gradient Colors (for hero backgrounds)
+$hero-mesh-color-1: var(--landing-hero-mesh-color-1, rgba(primitives.$base-gold-300, 0.2));
+$hero-mesh-color-2: var(--landing-hero-mesh-color-2, rgba(primitives.$base-coffee-200, 0.15));
+$hero-mesh-color-3: var(--landing-hero-mesh-color-3, rgba(primitives.$base-parchment-100, 0.3));
+
+// Title Typography Effects
+$hero-title-text-shadow: var(--landing-hero-title-text-shadow, 0 2px 20px rgba(0, 0, 0, 0.3));
+$hero-title-color: var(--landing-hero-title-color, primitives.$base-neutral-0);
+$hero-subtitle-color: var(--landing-hero-subtitle-color, rgba(255, 255, 255, 0.9));
+
+// CTA Button Styles
+$hero-cta-bg: var(--landing-hero-cta-bg, primitives.$base-gold-500);
+$hero-cta-color: var(--landing-hero-cta-color, primitives.$base-coffee-900);
+$hero-cta-hover-bg: var(--landing-hero-cta-hover-bg, primitives.$base-gold-400);
+$hero-cta-shadow: var(--landing-hero-cta-shadow, 0 10px 30px rgba(0, 0, 0, 0.2));
+
+// Scroll Indicator
+$hero-scroll-indicator-color: var(--landing-hero-scroll-indicator-color, rgba(255, 255, 255, 0.6));

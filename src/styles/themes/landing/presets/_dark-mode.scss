@@ -1,0 +1,23 @@
+// src/styles/themes/landing/presets/_dark-mode.scss
+
+/**
+ * Dark Mode Theme - Landing Page Preset
+ * Tema oscuro para la landing page (placeholder para implementación futura)
+ * 
+ * Para activar, descomenta la línea en _index.scss y ajusta las variables
+ */
+
+@use '../../../tokens/primitives' as primitives;
+
+.theme-preset--dark-mode {
+	// TODO: Implementar tema oscuro completo
+	// Este es un placeholder para futura implementación
+
+	// Ejemplo de overrides mínimos:
+	// --color-surface-primary: #{primitives.$base-neutral-900};
+	// --color-text-primary: #{primitives.$base-neutral-100};
+
+	// Base Theme Styles
+	background-color: var(--color-surface-primary);
+	color: var(--color-text-primary);
+}

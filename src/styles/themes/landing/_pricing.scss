@@ -1,0 +1,84 @@
+// src/styles/themes/landing/_pricing.scss
+
+/**
+ * Pricing Section Semantic Tokens
+ * Thematic properties for tier cards, highlight effects, and border glows
+ */
+@use '../../tokens/primitives' as primitives;
+
+// Section Background
+$pricing-section-bg: var(--landing-pricing-section-bg, var(--color-background));
+$pricing-noise-opacity: var(--landing-pricing-noise-opacity, 0.03);
+
+// Card Base Styles
+$pricing-card-bg: var(--landing-pricing-card-bg, rgba(var(--color-white-rgb, 255, 255, 255), 0.7));
+$pricing-card-backdrop-blur: var(--landing-pricing-card-backdrop-blur, 10px);
+$pricing-card-border: var(
+	--landing-pricing-card-border,
+	rgba(var(--color-primary-rgb, 197, 160, 89), 0.2)
+);
+$pricing-card-border-radius: var(--landing-pricing-card-border-radius, 4px);
+
+// Card Hover Effects
+$pricing-card-hover-transform: var(--landing-pricing-card-hover-transform, translateY(-10px));
+$pricing-card-hover-shadow: var(
+	--landing-pricing-card-hover-shadow,
+	0 20px 40px rgba(0, 0, 0, 0.05)
+);
+
+// Premium Tier
+$pricing-premium-bg: var(
+	--landing-pricing-premium-bg,
+	rgba(var(--color-secondary-rgb, 44, 62, 80), 0.02)
+);
+$pricing-premium-border: var(--landing-pricing-premium-border, var(--color-primary));
+$pricing-premium-shadow: var(
+	--landing-pricing-premium-shadow,
+	0 0 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.1)
+);
+$pricing-premium-scale: var(--landing-pricing-premium-scale, 1.05);
+$pricing-premium-badge-bg: var(--landing-pricing-premium-badge-bg, var(--color-primary));
+
+// Elite Tier (Dark)
+$pricing-elite-bg: var(--landing-pricing-elite-bg, rgba(15, 23, 42, 0.9));
+$pricing-elite-border: var(--landing-pricing-elite-border, var(--color-primary-light));
+$pricing-elite-shadow: var(--landing-pricing-elite-shadow, 0 20px 50px rgba(0, 0, 0, 0.2));
+$pricing-elite-text-color: var(--landing-pricing-elite-text-color, white);
+$pricing-elite-accent-color: var(--landing-pricing-elite-accent-color, var(--color-primary-light));
+
+// Tier Typography
+$pricing-tier-name-color: var(--landing-pricing-tier-name-color, var(--color-secondary));
+$pricing-tier-desc-color: var(--landing-pricing-tier-desc-color, var(--color-text));
+$pricing-tier-price-color: var(--landing-pricing-tier-price-color, var(--color-secondary));
+$pricing-tier-currency-color: var(--landing-pricing-tier-currency-color, var(--color-primary));
+
+// Feature Items
+$pricing-feature-highlight-bg: var(
+	--landing-pricing-feature-highlight-bg,
+	rgba(var(--color-primary-rgb, 197, 160, 89), 0.1)
+);
+$pricing-feature-highlight-color: var(
+	--landing-pricing-feature-highlight-color,
+	var(--color-primary-dark)
+);
+
+// CTA Button
+$pricing-cta-border: var(--landing-pricing-cta-border, var(--color-primary));
+$pricing-cta-color: var(--landing-pricing-cta-color, var(--color-primary));
+$pricing-cta-hover-bg: var(
+	--landing-pricing-cta-hover-bg,
+	rgba(var(--color-primary-rgb, 197, 160, 89), 0.05)
+);
+
+// Card Border Glow Effect
+$pricing-card-border-glow: var(--landing-pricing-card-border-glow, var(--color-primary));
+$pricing-card-border-glow-shine: var(
+	--landing-pricing-card-border-glow-shine,
+	linear-gradient(90deg, transparent, white, transparent)
+);
+
+// Glint Animation
+$pricing-glint-gradient: var(
+	--landing-pricing-glint-gradient,
+	linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)
+);

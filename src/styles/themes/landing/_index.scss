@@ -1,0 +1,72 @@
+// src/styles/themes/landing/_index.scss
+
+/**
+ * Landing Page Theme - Index
+ * Aggregates all section-specific semantic tokens for the landing page
+ */
+
+// Hero Section Tokens
+@forward 'hero' as hero-*;
+
+// Services Section Tokens
+@forward 'services' as services-*;
+
+// About Us Section Tokens
+@forward 'about-us' as about-*;
+
+// Pricing Section Tokens
+@forward 'pricing' as pricing-*;
+
+// FAQ Section Tokens
+@forward 'faq' as faq-*;
+
+// Footer Section Tokens
+@forward 'footer' as footer-*;
+
+// Contact Section Tokens
+@forward 'contact' as contact-*;
+
+// Testimonials Section Tokens
+@forward 'testimonials' as testimonials-*;
+
+// Re-export all tokens with landing- prefix for CSS custom properties
+@mixin landing-theme-variables {
+	// Hero
+	--landing-hero-overlay-alpha: 0.4;
+	--landing-hero-title-text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+
+	// Services
+	--landing-services-card-bg: rgba(255, 255, 255, 0.7);
+	--landing-services-card-hover-transform: translateY(-8px);
+	--landing-services-card-hover-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
+
+	// About
+	--landing-about-noise-opacity: 0.04;
+	--landing-about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+	--landing-about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+	// Pricing
+	--landing-pricing-card-border-radius: 4px;
+	--landing-pricing-premium-scale: 1.05;
+	--landing-pricing-elite-bg: rgba(15, 23, 42, 0.9);
+
+	// FAQ
+	--landing-faq-section-bg: #0f172a;
+	--landing-faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
+
+	// Footer
+	--landing-footer-section-bg: #0f172a;
+	--landing-footer-slogan-opacity: 0.7;
+
+	// Contact
+	--landing-contact-texture-opacity: 0.03;
+	--landing-contact-divider-bg: var(--color-border-emphasis);
+	--landing-contact-channel-hover-transform: translateY(-3px);
+	--landing-contact-form-backdrop-blur: 20px;
+	--landing-contact-submit-hover-transform: translateY(-2px);
+
+	// Testimonials
+	--landing-testimonials-card-border-radius: 2px;
+	--landing-testimonials-card-hover-transform: translateY(-8px);
+	--landing-testimonials-quote-icon-opacity: 0.08;
+}

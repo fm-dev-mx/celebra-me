@@ -11,21 +11,39 @@
 @use 'tokens' as tokens;
 @use 'themes/presets/all';
 @use 'themes/sections';
+@use 'themes/landing' as landing;
 
 :root {
+	/* Landing Page Theme Variables */
+	@include landing.landing-theme-variables;
+
 	/* Premium Color Palette - Mapped to tokens */
 	--color-primary: #{tokens.$color-action-accent};
 	--color-primary-rgb: #{tokens.$color-action-accent-rgb};
 	--color-primary-dark: #{tokens.$color-action-primary};
 	--color-primary-light: #{tokens.$color-surface-secondary};
+	--color-accent: var(--color-action-accent);
+	--color-accent-rgb: var(--color-action-accent-rgb);
 	--color-secondary: #{tokens.$color-surface-dark};
 	--color-secondary-rgb: #{tokens.$color-surface-dark-rgb};
 	--color-background: #{tokens.$color-surface-primary};
 	--color-text: #{tokens.$color-text-primary};
+	--color-text-on-dark: #{tokens.$base-parchment-100};
 	--color-white: #{tokens.$base-neutral-0};
 	--color-white-rgb: 255, 255, 255;
 	--color-dark: #{tokens.$color-surface-dark};
 	--color-error: #{tokens.$base-error};
+	--color-surface-secondary: #{tokens.$base-coffee-100};
+	--color-surface-secondary-rgb: 243, 235, 226;
+	--color-text-secondary-rgb: 104, 71, 39;
+	--color-neutral-subtle: #{tokens.$base-neutral-100};
+	--color-neutral-muted: #{tokens.$base-neutral-400};
+	--color-neutral-base: #{tokens.$base-neutral-700};
+	--color-neutral-emphasis: #{tokens.$base-neutral-900};
+	--color-text-light: var(--color-neutral-muted);
+	--color-bg-primary: var(--color-surface-primary);
+	--color-bg-secondary: var(--color-surface-secondary);
+	--color-whatsapp-rgb: 37, 211, 102;
 
 	/* Typography - Mapped to tokens */
 	--font-display: #{tokens.$font-display-elegant};

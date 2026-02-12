@@ -1,0 +1,55 @@
+// src/styles/themes/landing/_faq.scss
+
+/**
+ * FAQ Section Semantic Tokens
+ * Thematic properties for accordion backgrounds, borders, and icon colors
+ */
+@use '../../tokens/primitives' as primitives;
+
+// Section Background
+$faq-section-bg: var(--landing-faq-section-bg, #0f172a);
+$faq-section-color: var(--landing-faq-section-color, white);
+$faq-noise-opacity: var(--landing-faq-noise-opacity, 0.1);
+
+// Accordion Item Base
+$faq-item-bg: var(--landing-faq-item-bg, rgba(var(--color-white-rgb, 255, 255, 255), 0.03));
+$faq-item-backdrop-blur: var(--landing-faq-item-backdrop-blur, 10px);
+$faq-item-border: var(--landing-faq-item-border, rgba(var(--color-white-rgb, 255, 255, 255), 0.05));
+$faq-item-border-radius: var(--landing-faq-item-border-radius, 2px);
+
+// Accordion Item Hover
+$faq-item-hover-bg: var(--landing-faq-item-hover-bg, rgba(255, 255, 255, 0.05));
+$faq-item-hover-border: var(--landing-faq-item-hover-border, rgba(var(--color-primary-rgb), 0.3));
+
+// Accordion Open State
+$faq-item-open-bg: var(
+	--landing-faq-item-open-bg,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.07)
+);
+$faq-item-open-border: var(--landing-faq-item-open-border, var(--color-primary));
+$faq-item-open-shadow: var(--landing-faq-item-open-shadow, 0 30px 60px rgba(0, 0, 0, 0.3));
+
+// Typography
+$faq-pretitle-color: var(--landing-faq-pretitle-color, var(--color-primary));
+$faq-title-color: var(--landing-faq-title-color, var(--color-primary-light));
+$faq-subtitle-color: var(
+	--landing-faq-subtitle-color,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.7)
+);
+$faq-question-color: var(--landing-faq-question-color, var(--color-primary-light));
+$faq-question-hover-color: var(--landing-faq-question-hover-color, white);
+$faq-answer-color: var(
+	--landing-faq-answer-color,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.6)
+);
+
+// Icon Colors
+$faq-chevron-color: var(
+	--landing-faq-chevron-color,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.3)
+);
+$faq-chevron-open-color: var(--landing-faq-chevron-open-color, var(--color-primary));
+
+// Transitions
+$faq-transition-duration: var(--landing-faq-transition-duration, 0.5s);
+$faq-transition-easing: var(--landing-faq-transition-easing, cubic-bezier(0.19, 1, 0.22, 1));

@@ -1,0 +1,76 @@
+// src/styles/themes/landing/_contact.scss
+
+/**
+ * Contact Section Semantic Tokens
+ * Thematic properties for contact form, channels, and layout
+ */
+
+@use '../../tokens/primitives' as primitives;
+
+// Section Background & Texture
+$contact-section-bg: var(--landing-contact-section-bg, var(--color-background));
+$contact-section-color: var(--landing-contact-section-color, var(--color-secondary));
+$contact-texture-opacity: var(--landing-contact-texture-opacity, 0.03);
+
+// Header Typography
+$contact-pretitle-color: var(--landing-contact-pretitle-color, var(--color-text-emphasis));
+$contact-title-color: var(--landing-contact-title-color, var(--color-text-primary));
+$contact-divider-bg: var(--landing-contact-divider-bg, var(--color-border-emphasis));
+
+// Contact Info
+$contact-info-title-color: var(--landing-contact-info-title-color, var(--color-text-primary));
+$contact-info-description-color: var(
+	--landing-contact-info-description-color,
+	rgba(var(--color-text-secondary-rgb), 0.8)
+);
+$contact-info-footer-color: var(
+	--landing-contact-info-footer-color,
+	rgba(var(--color-text-secondary-rgb), 0.5)
+);
+
+// Channel Links
+$contact-channel-bg: var(--landing-contact-channel-bg, var(--color-surface-primary));
+$contact-channel-border: var(--landing-contact-channel-border, var(--color-border-subtle));
+$contact-channel-shadow: var(--landing-contact-channel-shadow, var(--shadow-subtle));
+$contact-channel-icon-bg: var(--landing-contact-channel-icon-bg, var(--color-surface-secondary));
+$contact-channel-icon-color: var(--landing-contact-channel-icon-color, var(--color-action-accent));
+$contact-channel-label-color: var(
+	--landing-contact-channel-label-color,
+	rgba(var(--color-text-secondary-rgb), 0.6)
+);
+$contact-channel-value-color: var(--landing-contact-channel-value-color, var(--color-text-primary));
+$contact-channel-hover-border: var(
+	--landing-contact-channel-hover-border,
+	var(--color-border-emphasis)
+);
+$contact-channel-hover-transform: var(--landing-contact-channel-hover-transform, translateY(-3px));
+$contact-channel-hover-shadow: var(--landing-contact-channel-hover-shadow, var(--shadow-emphasis));
+$contact-channel-icon-hover-bg: var(
+	--landing-contact-channel-icon-hover-bg,
+	var(--color-action-accent)
+);
+$contact-channel-icon-hover-color: var(--landing-contact-channel-icon-hover-color, white);
+
+// Form Wrapper
+$contact-form-bg: var(--landing-contact-form-bg, rgba(var(--color-surface-primary-rgb), 0.7));
+$contact-form-backdrop-blur: var(--landing-contact-form-backdrop-blur, 20px);
+$contact-form-border: var(--landing-contact-form-border, var(--color-border-subtle));
+$contact-form-shadow: var(--landing-contact-form-shadow, var(--shadow-emphasis));
+$contact-form-accent-line: var(--landing-contact-form-accent-line, var(--color-border-emphasis));
+
+// Form Inputs
+$contact-input-border: var(--landing-contact-input-border, var(--color-border-subtle));
+$contact-input-color: var(--landing-contact-input-color, var(--color-text-primary));
+$contact-input-focus-border: var(--landing-contact-input-focus-border, var(--color-action-accent));
+$contact-label-color: var(
+	--landing-contact-label-color,
+	rgba(var(--color-text-secondary-rgb), 0.5)
+);
+$contact-label-focus-color: var(--landing-contact-label-focus-color, var(--color-action-accent));
+
+// Submit Button
+$contact-submit-bg: var(--landing-contact-submit-bg, var(--color-action-primary));
+$contact-submit-color: var(--landing-contact-submit-color, var(--color-text-on-dark));
+$contact-submit-hover-bg: var(--landing-contact-submit-hover-bg, var(--color-action-accent));
+$contact-submit-hover-transform: var(--landing-contact-submit-hover-transform, translateY(-2px));
+$contact-submit-hover-shadow: var(--landing-contact-submit-hover-shadow, var(--shadow-subtle));

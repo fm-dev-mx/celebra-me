@@ -1,0 +1,52 @@
+// src/styles/themes/landing/_services.scss
+
+/**
+ * Services Section Semantic Tokens
+ * Thematic properties for service cards, icons, and hover effects
+ */
+@use '../../tokens/primitives' as primitives;
+
+// Card Background & Glassmorphism
+$services-card-bg: var(--landing-services-card-bg, rgba(255, 255, 255, 0.7));
+$services-card-backdrop-blur: var(--landing-services-card-backdrop-blur, 10px);
+$services-card-border: var(--landing-services-card-border, rgba(255, 255, 255, 0.5));
+
+// Card Hover Effects
+$services-card-hover-transform: var(--landing-services-card-hover-transform, translateY(-8px));
+$services-card-hover-shadow: var(
+	--landing-services-card-hover-shadow,
+	0 20px 40px -5px rgba(0, 0, 0, 0.15)
+);
+
+// Image Overlay
+$services-image-overlay-bg: var(
+	--landing-services-image-overlay-bg,
+	linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)
+);
+$services-image-overlay-opacity: var(--landing-services-image-overlay-opacity, 0.6);
+$services-image-filter-default: var(--landing-services-image-filter-default, grayscale(100%));
+$services-image-filter-hover: var(--landing-services-image-filter-hover, grayscale(0%));
+
+// Icon Container
+$services-icon-wrapper-bg: var(
+	--landing-services-icon-wrapper-bg,
+	var(--color-bg-primary, primitives.$base-neutral-0)
+);
+$services-icon-wrapper-color: var(--landing-services-icon-wrapper-color, primitives.$base-gold-500);
+$services-icon-wrapper-shadow: var(
+	--landing-services-icon-wrapper-shadow,
+	0 4px 10px rgba(0, 0, 0, 0.05)
+);
+
+// Typography
+$services-heading-accent-color: var(
+	--landing-services-heading-accent-color,
+	primitives.$base-gold-500
+);
+$services-title-color: var(--landing-services-title-color, var(--color-text-primary));
+$services-description-color: var(--landing-services-description-color, var(--color-text-secondary));
+$services-cta-color: var(--landing-services-cta-color, primitives.$base-gold-500);
+
+// Animation
+$services-card-transition-duration: var(--landing-services-card-transition-duration, 0.4s);
+$services-card-stagger-delay: var(--landing-services-card-stagger-delay, 100ms);

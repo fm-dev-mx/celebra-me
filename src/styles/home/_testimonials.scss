@@ -2,11 +2,11 @@
 
 .testimonials {
 	&__title-text {
-		font-family: var(--font-primary, 'Playfair Display', serif);
+		font-family: var(--landing-testimonials-title-font);
 		font-size: clamp(2.5rem, 5vw, 3.5rem);
-		color: var(--color-text-primary, #333);
-		letter-spacing: -0.02em;
-		font-weight: 500;
+		color: var(--landing-testimonials-title-color);
+		letter-spacing: var(--landing-testimonials-title-letter-spacing);
+		font-weight: var(--landing-testimonials-title-weight);
 		position: relative;
 		padding-bottom: 1.5rem;
 		text-align: center;
@@ -19,12 +19,7 @@
 			transform: translateX(-50%);
 			width: 80px;
 			height: 2px;
-			background: linear-gradient(
-				90deg,
-				transparent,
-				var(--color-accent, #d4af37),
-				transparent
-			);
+			background: var(--landing-testimonials-title-underline-bg);
 		}
 	}
 
@@ -44,16 +39,16 @@
 	}
 
 	&__card {
-		background: rgba(var(--color-white-rgb, 255, 255, 255), 0.6);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid rgba(var(--color-primary-rgb, 212, 175, 55), 0.15);
-		border-radius: 2px; // Sharp, jewelry box feel
+		background: var(--landing-testimonials-card-bg);
+		backdrop-filter: blur(var(--landing-testimonials-card-backdrop-blur));
+		-webkit-backdrop-filter: blur(var(--landing-testimonials-card-backdrop-blur));
+		border: 1px solid var(--landing-testimonials-card-border);
+		border-radius: var(--landing-testimonials-card-border-radius);
 		padding: 3rem 2.5rem;
 		position: relative;
 		overflow: hidden;
-		box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.05);
-		transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+		box-shadow: var(--landing-testimonials-card-shadow);
+		transition: var(--landing-testimonials-card-transition);
 
 		&::before {
 			content: '';
@@ -62,24 +57,19 @@
 			left: 0;
 			width: 100%;
 			height: 3px;
-			background: linear-gradient(
-				90deg,
-				transparent,
-				var(--color-accent, #d4af37),
-				transparent
-			);
-			opacity: 0.3;
+			background: var(--landing-testimonials-card-accent-bg);
+			opacity: var(--landing-testimonials-card-accent-opacity);
 		}
 
 		&:hover {
-			transform: translateY(-8px);
-			background: rgba(var(--color-white-rgb, 255, 255, 255), 0.95);
-			border-color: rgba(var(--color-primary-rgb, 212, 175, 55), 0.4);
-			box-shadow: 0 25px 50px -20px rgba(var(--color-primary-rgb, 212, 175, 55), 0.15);
+			transform: var(--landing-testimonials-card-hover-transform);
+			background: var(--landing-testimonials-card-hover-bg);
+			border-color: var(--landing-testimonials-card-hover-border);
+			box-shadow: var(--landing-testimonials-card-hover-shadow);
 
 			.testimonials__quote-icon {
-				opacity: 0.15;
-				transform: scale(1.1) rotate(-5deg);
+				opacity: var(--landing-testimonials-quote-icon-hover-opacity);
+				transform: var(--landing-testimonials-quote-icon-hover-transform);
 			}
 		}
 	}
@@ -89,8 +79,8 @@
 		top: 1.5rem;
 		right: 1.5rem;
 		font-size: 5rem;
-		color: var(--color-accent, #d4af37);
-		opacity: 0.08;
+		color: var(--landing-testimonials-quote-icon-color);
+		opacity: var(--landing-testimonials-quote-icon-opacity);
 		font-family: serif;
 		line-height: 1;
 		transition: all 0.5s ease;
@@ -98,12 +88,12 @@
 	}
 
 	&__text {
-		font-family: var(--font-primary, serif);
-		font-size: 1.15rem;
-		line-height: 1.8;
-		color: var(--color-text, #1a1a1a);
+		font-family: var(--landing-testimonials-text-font);
+		font-size: var(--landing-testimonials-text-size);
+		line-height: var(--landing-testimonials-text-line-height);
+		color: var(--landing-testimonials-text-color);
 		margin-bottom: 2.5rem;
-		font-style: italic;
+		font-style: var(--landing-testimonials-text-style);
 		position: relative;
 		z-index: 1;
 		letter-spacing: 0.01em;
@@ -112,23 +102,23 @@
 	&__footer {
 		display: flex;
 		flex-direction: column;
-		border-top: 1px solid rgba(0, 0, 0, 0.05);
+		border-top: 1px solid var(--landing-testimonials-footer-border);
 		padding-top: 2rem;
 	}
 
 	&__name {
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		font-size: 0.85rem;
-		color: var(--color-accent, #d4af37);
+		font-weight: var(--landing-testimonials-author-name-weight);
+		text-transform: var(--landing-testimonials-author-name-transform);
+		letter-spacing: var(--landing-testimonials-author-name-letter-spacing);
+		font-size: var(--landing-testimonials-author-name-size);
+		color: var(--landing-testimonials-author-name-color);
 		margin-bottom: 0.4rem;
 	}
 
 	&__role {
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.15em;
-		color: var(--color-text-light, #666);
+		font-size: var(--landing-testimonials-author-role-size);
+		text-transform: var(--landing-testimonials-author-role-transform);
+		letter-spacing: var(--landing-testimonials-author-role-letter-spacing);
+		color: var(--landing-testimonials-author-role-color);
 	}
 }

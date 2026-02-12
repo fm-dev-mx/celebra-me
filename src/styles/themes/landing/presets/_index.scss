@@ -1,0 +1,13 @@
+// src/styles/themes/landing/presets/_index.scss
+
+/**
+ * Landing Page Presets - Index
+ * Exporta todos los presets disponibles para landing pages
+ */
+
+// Elegant Theme (Default) - Coffee/Gold/Parchment
+@forward 'elegant';
+
+// Dark Mode Theme (Experimental)
+// Descomenta la siguiente línea para activar soporte de dark mode:
+// @forward 'dark-mode';

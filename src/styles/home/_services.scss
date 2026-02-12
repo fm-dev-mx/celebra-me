@@ -31,7 +31,7 @@
 			transform: translateX(-50%);
 			width: 60px;
 			height: 3px;
-			background-color: var(--color-accent);
+			background-color: var(--landing-services-heading-accent-color);
 		}
 	}
 
@@ -65,12 +65,12 @@
 		width: 100%; // Full width relative to container
 		border-radius: 1.5rem;
 		overflow: hidden;
-		background: rgba(var(--color-white-rgb, 255, 255, 255), 0.7);
-		backdrop-filter: blur(10px); // Glassmorphism
-		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.5);
+		background: var(--landing-services-card-bg);
+		backdrop-filter: blur(var(--landing-services-card-backdrop-blur)); // Glassmorphism
+		border: 1px solid var(--landing-services-card-border);
 		transition:
-			transform 0.4s ease,
-			box-shadow 0.4s ease;
+			transform var(--landing-services-card-transition-duration) ease,
+			box-shadow var(--landing-services-card-transition-duration) ease;
 
 		// Initial Animation State
 		opacity: 0;
@@ -82,11 +82,11 @@
 
 		// Hover Effects (Desktop mainly)
 		&:hover {
-			transform: translateY(-8px);
-			box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15); // Deep shadow
+			transform: var(--landing-services-card-hover-transform);
+			box-shadow: var(--landing-services-card-hover-shadow);
 
 			.services__image {
-				filter: grayscale(0%);
+				filter: var(--landing-services-image-filter-hover);
 				transform: scale(1.05);
 			}
 
@@ -132,15 +132,15 @@
 		transition:
 			filter 0.5s ease,
 			transform 0.7s ease;
-		filter: grayscale(100%); // Default desaturated
+		filter: var(--landing-services-image-filter-default);
 	}
 
 	&__overlay {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
-		opacity: 0.6;
-		transition: opacity 0.4s ease;
+		background: var(--landing-services-image-overlay-bg);
+		opacity: var(--landing-services-image-overlay-opacity);
+		transition: opacity var(--landing-services-card-transition-duration) ease;
 	}
 
 	&__content {
@@ -158,9 +158,9 @@
 		height: 3rem;
 		padding: 0.6rem;
 		border-radius: 50%;
-		background-color: var(--color-bg-primary);
-		color: var(--color-accent);
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+		background-color: var(--landing-services-icon-wrapper-bg);
+		color: var(--landing-services-icon-wrapper-color);
+		box-shadow: var(--landing-services-icon-wrapper-shadow);
 		margin-top: -3rem; // Overlap effect
 		position: relative;
 		z-index: 2;
@@ -169,18 +169,18 @@
 	&__icon {
 		width: 100%;
 		height: 100%;
-		transition: transform 0.3s ease;
+		transition: transform var(--landing-services-card-transition-duration) ease;
 	}
 
 	&__title {
 		@include mixins.typography(h3);
 		margin: 0;
-		color: var(--color-text-primary);
+		color: var(--landing-services-title-color);
 	}
 
 	&__description {
 		@include mixins.typography(body-small);
-		color: var(--color-text-secondary);
+		color: var(--landing-services-description-color);
 		margin-bottom: 1.5rem;
 		line-height: 1.6;
 	}
@@ -188,11 +188,11 @@
 	&__cta {
 		margin-top: auto;
 		@include mixins.typography(button);
-		color: var(--color-accent);
+		color: var(--landing-services-cta-color);
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		transition: color 0.3s ease;
+		transition: color var(--landing-services-card-transition-duration) ease;
 	}
 
 	&__cta-icon {

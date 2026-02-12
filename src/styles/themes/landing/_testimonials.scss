@@ -1,0 +1,123 @@
+// src/styles/themes/landing/_testimonials.scss
+
+/**
+ * Testimonials Section Semantic Tokens
+ * Thematic properties for testimonial cards and typography
+ */
+
+@use '../../tokens/primitives' as primitives;
+
+// Section Title
+$testimonials-title-font: var(
+	--landing-testimonials-title-font,
+	var(--font-display, 'Playfair Display', serif)
+);
+$testimonials-title-color: var(--landing-testimonials-title-color, var(--color-text-primary, #333));
+$testimonials-title-letter-spacing: var(--landing-testimonials-title-letter-spacing, -0.02em);
+$testimonials-title-weight: var(--landing-testimonials-title-weight, 500);
+$testimonials-title-underline-bg: var(
+	--landing-testimonials-title-underline-bg,
+	linear-gradient(
+		90deg,
+		transparent,
+		var(--color-accent, #{primitives.$base-gold-500}),
+		transparent
+	)
+);
+
+// Testimonial Cards
+$testimonials-card-bg: var(
+	--landing-testimonials-card-bg,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.6)
+);
+$testimonials-card-backdrop-blur: var(--landing-testimonials-card-backdrop-blur, 12px);
+$testimonials-card-border: var(
+	--landing-testimonials-card-border,
+	rgba(var(--color-primary-rgb, 212, 175, 55), 0.15)
+);
+$testimonials-card-border-radius: var(--landing-testimonials-card-border-radius, 2px);
+$testimonials-card-shadow: var(
+	--landing-testimonials-card-shadow,
+	0 10px 30px -15px rgba(0, 0, 0, 0.05)
+);
+$testimonials-card-transition: var(
+	--landing-testimonials-card-transition,
+	all 0.5s cubic-bezier(0.22, 1, 0.36, 1)
+);
+
+// Card Top Accent Line
+$testimonials-card-accent-bg: var(
+	--landing-testimonials-card-accent-bg,
+	linear-gradient(
+		90deg,
+		transparent,
+		var(--color-accent, #{primitives.$base-gold-500}),
+		transparent
+	)
+);
+$testimonials-card-accent-opacity: var(--landing-testimonials-card-accent-opacity, 0.3);
+
+// Card Hover States
+$testimonials-card-hover-bg: var(
+	--landing-testimonials-card-hover-bg,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.95)
+);
+$testimonials-card-hover-border: var(
+	--landing-testimonials-card-hover-border,
+	rgba(var(--color-primary-rgb, 212, 175, 55), 0.4)
+);
+$testimonials-card-hover-shadow: var(
+	--landing-testimonials-card-hover-shadow,
+	0 25px 50px -20px rgba(var(--color-primary-rgb, 212, 175, 55), 0.15)
+);
+$testimonials-card-hover-transform: var(
+	--landing-testimonials-card-hover-transform,
+	translateY(-8px)
+);
+
+// Quote Icon
+$testimonials-quote-icon-color: var(
+	--landing-testimonials-quote-icon-color,
+	var(--color-accent, #{primitives.$base-gold-500})
+);
+$testimonials-quote-icon-opacity: var(--landing-testimonials-quote-icon-opacity, 0.08);
+$testimonials-quote-icon-hover-opacity: var(--landing-testimonials-quote-icon-hover-opacity, 0.15);
+$testimonials-quote-icon-hover-transform: var(
+	--landing-testimonials-quote-icon-hover-transform,
+	scale(1.1) rotate(-5deg)
+);
+
+// Testimonial Text
+$testimonials-text-font: var(--landing-testimonials-text-font, var(--font-display, serif));
+$testimonials-text-size: var(--landing-testimonials-text-size, 1.15rem);
+$testimonials-text-line-height: var(--landing-testimonials-text-line-height, 1.8);
+$testimonials-text-color: var(--landing-testimonials-text-color, var(--color-text, #1a1a1a));
+$testimonials-text-style: var(--landing-testimonials-text-style, italic);
+
+// Author Name
+$testimonials-author-name-weight: var(--landing-testimonials-author-name-weight, 700);
+$testimonials-author-name-transform: var(--landing-testimonials-author-name-transform, uppercase);
+$testimonials-author-name-letter-spacing: var(
+	--landing-testimonials-author-name-letter-spacing,
+	0.2em
+);
+$testimonials-author-name-size: var(--landing-testimonials-author-name-size, 0.85rem);
+$testimonials-author-name-color: var(
+	--landing-testimonials-author-name-color,
+	var(--color-accent, #{primitives.$base-gold-500})
+);
+
+// Author Role
+$testimonials-author-role-size: var(--landing-testimonials-author-role-size, 0.7rem);
+$testimonials-author-role-transform: var(--landing-testimonials-author-role-transform, uppercase);
+$testimonials-author-role-letter-spacing: var(
+	--landing-testimonials-author-role-letter-spacing,
+	0.15em
+);
+$testimonials-author-role-color: var(
+	--landing-testimonials-author-role-color,
+	var(--color-text-light, #666)
+);
+
+// Footer Border
+$testimonials-footer-border: var(--landing-testimonials-footer-border, rgba(0, 0, 0, 0.05));

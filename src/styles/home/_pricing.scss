@@ -3,14 +3,14 @@
 .pricing-section {
 	position: relative;
 	padding: var(--spacing-xl) 0;
-	background-color: var(--color-background);
+	background-color: var(--landing-pricing-section-bg);
 	overflow: hidden;
 
 	.pricing-noise {
 		position: absolute;
 		inset: 0;
 		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Ffilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-		opacity: 0.03;
+		opacity: var(--landing-pricing-noise-opacity);
 		pointer-events: none;
 		z-index: 1;
 	}
@@ -68,10 +68,10 @@
 .pricing-card {
 	position: relative;
 	padding: var(--spacing-lg);
-	background: rgba(var(--color-white-rgb, 255, 255, 255), 0.7);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(var(--color-primary-rgb, 197, 160, 89), 0.2);
-	border-radius: 4px;
+	background: var(--landing-pricing-card-bg);
+	backdrop-filter: blur(var(--landing-pricing-card-backdrop-blur));
+	border: 1px solid var(--landing-pricing-card-border);
+	border-radius: var(--landing-pricing-card-border-radius);
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -91,8 +91,8 @@
 	}
 
 	&:hover {
-		transform: translateY(-10px);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+		transform: var(--landing-pricing-card-hover-transform);
+		box-shadow: var(--landing-pricing-card-hover-shadow);
 
 		.card-border {
 			opacity: 1;
@@ -100,22 +100,22 @@
 	}
 
 	&.is-premium {
-		background: rgba(var(--color-secondary-rgb, 44, 62, 80), 0.02);
-		border: 1px solid var(--color-primary);
-		box-shadow: 0 0 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.1);
-		transform: scale(1.05) translateY(30px);
+		background: var(--landing-pricing-premium-bg);
+		border: 1px solid var(--landing-pricing-premium-border);
+		box-shadow: var(--landing-pricing-premium-shadow);
+		transform: scale(var(--landing-pricing-premium-scale)) translateY(30px);
 		z-index: 3;
 
 		&.is-visible {
-			transform: scale(1.05) translateY(0);
+			transform: scale(var(--landing-pricing-premium-scale)) translateY(0);
 		}
 
 		.tier-name {
-			color: var(--color-primary-dark);
+			color: var(--landing-pricing-tier-name-color);
 		}
 
 		.cta-button {
-			background: var(--color-primary);
+			background: var(--landing-pricing-premium-badge-bg);
 			color: white;
 
 			&:hover {
@@ -128,7 +128,7 @@
 			top: 0;
 			left: 50%;
 			transform: translate(-50%, -50%);
-			background: var(--color-primary);
+			background: var(--landing-pricing-premium-badge-bg);
 			color: white;
 			padding: 4px 16px;
 			font-size: 0.7rem;
@@ -138,15 +138,15 @@
 		}
 	}
 	&.is-elite {
-		background: rgba(15, 23, 42, 0.9); // Neutral Slate Blue instead of Brown
-		border: 1px solid var(--color-primary-light);
-		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+		background: var(--landing-pricing-elite-bg);
+		border: 1px solid var(--landing-pricing-elite-border);
+		box-shadow: var(--landing-pricing-elite-shadow);
 
 		.tier-name,
 		.tier-desc,
 		.tier-price .amount,
 		.feature-item {
-			color: white;
+			color: var(--landing-pricing-elite-text-color);
 		}
 
 		.tier-desc {
@@ -155,7 +155,7 @@
 
 		.tier-price .currency-symbol,
 		.tier-price .currency-code {
-			color: var(--color-primary-light);
+			color: var(--landing-pricing-elite-accent-color);
 		}
 
 		.tier-price .period {
@@ -164,18 +164,18 @@
 
 		.cta-button {
 			background: transparent;
-			border-color: var(--color-primary-light);
-			color: var(--color-primary-light);
+			border-color: var(--landing-pricing-elite-accent-color);
+			color: var(--landing-pricing-elite-accent-color);
 
 			&:hover {
-				background: var(--color-primary-light);
+				background: var(--landing-pricing-elite-accent-color);
 				color: var(--color-secondary);
 			}
 		}
 
 		.feature-item.is-highlighted {
 			background: rgba(255, 255, 255, 0.1);
-			color: white;
+			color: var(--landing-pricing-elite-text-color);
 		}
 	}
 
@@ -191,12 +191,12 @@
 		font-family: var(--font-display);
 		font-size: 1.8rem;
 		margin-bottom: var(--spacing-sm);
-		color: var(--color-secondary);
+		color: var(--landing-pricing-tier-name-color);
 	}
 
 	.tier-desc {
 		font-size: 0.95rem;
-		color: var(--color-text);
+		color: var(--landing-pricing-tier-desc-color);
 		opacity: 0.7;
 		margin-bottom: var(--spacing-lg);
 		min-height: 3em;
@@ -211,20 +211,20 @@
 		.currency-symbol {
 			font-family: var(--font-display);
 			font-size: 1.2rem;
-			color: var(--color-primary);
+			color: var(--landing-pricing-tier-currency-color);
 		}
 
 		.amount {
 			font-family: var(--font-display);
 			font-size: 3rem;
 			font-weight: 700;
-			color: var(--color-secondary);
+			color: var(--landing-pricing-tier-price-color);
 		}
 
 		.currency-code {
 			font-size: 0.8rem;
 			font-weight: 600;
-			color: var(--color-primary);
+			color: var(--landing-pricing-tier-currency-color);
 		}
 
 		.period {
@@ -253,8 +253,8 @@
 		transition: all 0.3s ease;
 
 		&.is-highlighted {
-			background: rgba(var(--color-primary-rgb, 197, 160, 89), 0.1);
-			color: var(--color-primary-dark);
+			background: var(--landing-pricing-feature-highlight-bg);
+			color: var(--landing-pricing-feature-highlight-color);
 			transform: translateX(5px);
 
 			.check-icon {
@@ -281,15 +281,15 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		font-size: 0.85rem;
-		border: 1px solid var(--color-primary);
-		color: var(--color-primary);
+		border: 1px solid var(--landing-pricing-cta-border);
+		color: var(--landing-pricing-cta-color);
 		border-radius: 2px;
 		position: relative;
 		overflow: hidden;
 		transition: all 0.3s ease;
 
 		&:hover {
-			background: rgba(var(--color-primary-rgb, 197, 160, 89), 0.05);
+			background: var(--landing-pricing-cta-hover-bg);
 
 			.glint {
 				left: 120%;
@@ -302,7 +302,7 @@
 			left: -120%;
 			width: 100%;
 			height: 100%;
-			background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+			background: var(--landing-pricing-glint-gradient);
 			transition: left 0.7s ease-in-out;
 		}
 	}
@@ -310,7 +310,7 @@
 	.card-border {
 		position: absolute;
 		inset: -1px;
-		border: 1px solid var(--color-primary);
+		border: 1px solid var(--landing-pricing-card-border-glow);
 		border-radius: 4px;
 		pointer-events: none;
 		opacity: 0;
@@ -325,7 +325,7 @@
 			left: 0;
 			right: 0;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, white, transparent);
+			background: var(--landing-pricing-card-border-glow-shine);
 			opacity: 0.5;
 		}
 	}

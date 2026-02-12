@@ -8,6 +8,7 @@
 	--color-text-primary-rgb: #{58, 40, 25}; // Enhanced premium brown
 	--color-text-secondary: #{color.adjust(primitives.$base-coffee-900, $lightness: 15%)};
 	--color-text-emphasis: #{primitives.$base-gold-500};
+	--color-text-on-dark: #{primitives.$base-parchment-100};
 
 	--color-surface-primary: #{primitives.$base-parchment-100};
 	--color-surface-primary-rgb: #{245, 245, 220}; // #F5F5DC

@@ -1,0 +1,143 @@
+// src/styles/themes/landing/_about-us.scss
+
+/**
+ * About Us Section Semantic Tokens
+ * Thematic properties for gradients, animations, sparkle effects, and value cards
+ */
+@use '../../tokens/primitives' as primitives;
+
+// Background Overlay Gradients
+$about-bg-gradient-1: var(
+	--landing-about-bg-gradient-1,
+	rgba(var(--color-primary-rgb, 197, 160, 89), 0.12)
+);
+$about-bg-gradient-2: var(
+	--landing-about-bg-gradient-2,
+	rgba(var(--color-primary-rgb, 197, 160, 89), 0.1)
+);
+$about-bg-gradient-3: var(
+	--landing-about-bg-gradient-3,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.15)
+);
+$about-noise-opacity: var(--landing-about-noise-opacity, 0.04);
+
+// Title Underline Effect
+$about-underline-gradient: var(
+	--landing-about-underline-gradient,
+	linear-gradient(
+		90deg,
+		rgba(var(--color-accent-rgb), 0.8) 0%,
+		rgba(var(--color-primary-rgb), 0.6) 50%,
+		transparent 100%
+	)
+);
+$about-underline-shine-color: var(--landing-about-underline-shine-color, rgba(255, 255, 255, 0.6));
+
+// Image Wrapper Styles
+$about-image-wrapper-bg: var(
+	--landing-about-image-wrapper-bg,
+	linear-gradient(
+		135deg,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.05) 50%,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.02) 100%
+	)
+);
+$about-image-wrapper-shadow: var(
+	--landing-about-image-wrapper-shadow,
+	0 40px 80px -20px rgba(0, 0, 0, 0.2),
+	0 15px 40px -15px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15)
+);
+
+// Image Frame
+$about-image-frame-border: var(
+	--landing-about-image-frame-border,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.35)
+);
+$about-image-frame-bg: var(
+	--landing-about-image-frame-bg,
+	linear-gradient(
+		135deg,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.12) 0%,
+		transparent 40%,
+		transparent 60%,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.08) 100%
+	)
+);
+
+// Image Glow Effect
+$about-image-glow-color: var(--landing-about-image-glow-color, rgba(var(--color-accent-rgb), 0.18));
+
+// Image Decoration (floating accent element)
+$about-decoration-border: var(
+	--landing-about-decoration-border,
+	rgba(var(--color-accent-rgb), 0.35)
+);
+$about-decoration-bg: var(
+	--landing-about-decoration-bg,
+	linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.16) 0%, rgba(255, 255, 255, 0.02) 100%)
+);
+$about-decoration-shadow: var(
+	--landing-about-decoration-shadow,
+	0 20px 40px rgba(var(--color-accent-rgb), 0.08)
+);
+
+// Value Cards
+$about-value-card-bg: var(
+	--landing-about-value-card-bg,
+	linear-gradient(
+		140deg,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.65),
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.25) 45%,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.1)
+	),
+	radial-gradient(
+		80% 80% at 0% 0%,
+		rgba(var(--color-primary-rgb, 197, 160, 89), 0.15),
+		transparent 80%
+	)
+);
+$about-value-card-border: var(
+	--landing-about-value-card-border,
+	rgba(var(--color-white-rgb, 255, 255, 255), 0.5)
+);
+$about-value-card-shadow: var(
+	--landing-about-value-card-shadow,
+	0 40px 80px -40px rgba(0, 0, 0, 0.25),
+	0 15px 35px -25px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15)
+);
+
+// Value Card Hover
+$about-value-card-hover-bg: var(
+	--landing-about-value-card-hover-bg,
+	linear-gradient(
+		140deg,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.9),
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.5) 45%,
+		rgba(var(--color-white-rgb, 255, 255, 255), 0.2)
+	),
+	radial-gradient(
+		80% 80% at 0% 0%,
+		rgba(var(--color-primary-rgb, 197, 160, 89), 0.25),
+		transparent 80%
+	)
+);
+$about-value-card-hover-border: var(
+	--landing-about-value-card-hover-border,
+	rgba(var(--color-primary-rgb), 0.4)
+);
+
+// Value Icon Wrapper
+$about-value-icon-bg: var(--landing-about-value-icon-bg, rgba(var(--color-primary-rgb), 0.08));
+$about-value-icon-color: var(--landing-value-icon-color, var(--color-primary));
+$about-value-icon-border: var(--landing-value-icon-border, rgba(var(--color-primary-rgb), 0.2));
+$about-value-icon-hover-bg: var(--landing-value-icon-hover-bg, var(--color-primary));
+
+// Sparkle Animation Colors
+$about-sparkle-color: var(--landing-about-sparkle-color, var(--color-accent));
+
+// Animation Timing
+$about-ease-luxury: var(--landing-about-ease-luxury, cubic-bezier(0.19, 1, 0.22, 1));
+$about-ease-slow: var(--landing-about-ease-slow, cubic-bezier(0.22, 0.61, 0.36, 1));
+$about-glint-angle: var(--landing-about-glint-angle, 45deg);
+$about-animation-duration: var(--landing-about-animation-duration, 10s);

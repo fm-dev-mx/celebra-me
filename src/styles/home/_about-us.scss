@@ -10,15 +10,6 @@
 	padding: clamp(3rem, 6vh, 6rem) 0;
 	overflow: hidden;
 	background-color: var(--color-bg-primary);
-	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
-	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
-	--about-glint-angle: 45deg;
-	--about-gold-gradient: linear-gradient(
-		135deg,
-		var(--color-primary) 0%,
-		var(--color-primary-light) 50%,
-		var(--color-primary-dark) 100%
-	);
 
 	&__bg-overlay {
 		position: absolute;
@@ -26,17 +17,17 @@
 		background:
 			radial-gradient(
 				100% 100% at 0% 0%,
-				rgba(var(--color-primary-rgb), 0.12) 0%,
+				var(--landing-about-bg-gradient-1) 0%,
 				transparent 70%
 			),
 			radial-gradient(
 				100% 100% at 100% 100%,
-				rgba(var(--color-primary-rgb, 197, 160, 89), 0.1) 0%,
+				var(--landing-about-bg-gradient-2) 0%,
 				transparent 70%
 			),
 			radial-gradient(
 				60% 60% at 50% 50%,
-				rgba(var(--color-white-rgb, 255, 255, 255), 0.15) 0%,
+				var(--landing-about-bg-gradient-3) 0%,
 				transparent 90%
 			);
 		z-index: 0;
@@ -46,7 +37,7 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			opacity: 0.04;
+			opacity: var(--landing-about-noise-opacity);
 			pointer-events: none;
 			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			mix-blend-mode: overlay;
@@ -91,12 +82,7 @@
 	&__underline {
 		width: clamp(100px, 15vw, 180px);
 		height: 2px;
-		background: linear-gradient(
-			90deg,
-			rgba(var(--color-accent-rgb), 0.8) 0%,
-			rgba(var(--color-primary-rgb), 0.6) 50%,
-			transparent 100%
-		);
+		background: var(--landing-about-underline-gradient);
 		margin-top: clamp(1rem, 2vw, 2rem);
 		position: relative;
 		border-radius: 999px;
@@ -109,7 +95,7 @@
 			left: 0;
 			width: 30%;
 			height: 4px;
-			background: white;
+			background: var(--landing-about-underline-shine-color);
 			filter: blur(2px);
 			opacity: 0.6;
 			animation: underline-shine 3s infinite linear;
@@ -176,16 +162,10 @@
 		aspect-ratio: 4 / 5;
 		border-radius: 2.5rem;
 		overflow: hidden;
-		background: linear-gradient(
-			135deg,
-			rgba(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
-			rgba(var(--color-white-rgb, 255, 255, 255), 0.05) 50%,
-			rgba(var(--color-white-rgb, 255, 255, 255), 0.02) 100%
-		);
-		box-shadow:
-			0 40px 80px -20px rgba(0, 0, 0, 0.2),
-			0 15px 40px -15px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15);
-		animation: floating-luxury 10s var(--about-ease-slow) infinite alternate;
+		background: var(--landing-about-image-wrapper-bg);
+		box-shadow: var(--landing-about-image-wrapper-shadow);
+		animation: floating-luxury var(--landing-about-animation-duration)
+			var(--landing-about-ease-slow) infinite alternate;
 
 		@media (max-width: 992px) {
 			max-width: 340px;
@@ -208,14 +188,8 @@
 		position: absolute;
 		inset: 16px;
 		border-radius: 1.6rem;
-		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.35);
-		background: linear-gradient(
-			135deg,
-			rgba(var(--color-white-rgb, 255, 255, 255), 0.12) 0%,
-			transparent 40%,
-			transparent 60%,
-			rgba(var(--color-white-rgb, 255, 255, 255), 0.08) 100%
-		);
+		border: 1px solid var(--landing-about-image-frame-border);
+		background: var(--landing-about-image-frame-bg);
 		box-shadow:
 			inset 0 0 30px rgba(var(--color-white-rgb, 255, 255, 255), 0.05),
 			0 0 0 1px rgba(var(--color-white-rgb, 255, 255, 255), 0.05);
@@ -228,7 +202,7 @@
 		inset: -10%;
 		background: radial-gradient(
 			50% 50% at 70% 20%,
-			rgba(var(--color-accent-rgb), 0.18) 0%,
+			var(--landing-about-image-glow-color) 0%,
 			transparent 65%
 		);
 		mix-blend-mode: screen;
@@ -243,14 +217,10 @@
 		right: -28px;
 		width: 170px;
 		height: 170px;
-		border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+		border: 1px solid var(--landing-about-decoration-border);
 		border-radius: 2rem;
-		background: linear-gradient(
-			135deg,
-			rgba(var(--color-accent-rgb), 0.16) 0%,
-			rgba(255, 255, 255, 0.02) 100%
-		);
-		box-shadow: 0 20px 40px rgba(var(--color-accent-rgb), 0.08);
+		background: var(--landing-about-decoration-bg);
+		box-shadow: var(--landing-about-decoration-shadow);
 		z-index: 0;
 		opacity: 0.7;
 	}
@@ -275,31 +245,18 @@
 
 	&__value-card {
 		position: relative;
-		background:
-			linear-gradient(
-				140deg,
-				rgba(var(--color-white-rgb, 255, 255, 255), 0.65),
-				rgba(var(--color-white-rgb, 255, 255, 255), 0.25) 45%,
-				rgba(var(--color-white-rgb, 255, 255, 255), 0.1)
-			),
-			radial-gradient(
-				80% 80% at 0% 0%,
-				rgba(var(--color-primary-rgb, 197, 160, 89), 0.15),
-				transparent 80%
-			);
+		background: var(--landing-about-value-card-bg);
 		backdrop-filter: blur(24px);
-		border: 1px solid rgba(var(--color-white-rgb, 255, 255, 255), 0.5);
+		border: 1px solid var(--landing-about-value-card-border);
 		padding: clamp(2rem, 3vh, 3rem) 2rem;
 		border-radius: 2rem;
 		text-align: center;
-		box-shadow:
-			0 40px 80px -40px rgba(0, 0, 0, 0.25),
-			0 15px 35px -25px rgba(var(--color-primary-rgb, 197, 160, 89), 0.15);
+		box-shadow: var(--landing-about-value-card-shadow);
 		transition:
-			transform 0.8s var(--about-ease-luxury),
-			box-shadow 0.8s var(--about-ease-luxury),
-			background 0.8s var(--about-ease-luxury),
-			border-color 0.8s var(--about-ease-luxury);
+			transform 0.8s var(--landing-about-ease-luxury),
+			box-shadow 0.8s var(--landing-about-ease-luxury),
+			background 0.8s var(--landing-about-ease-luxury),
+			border-color 0.8s var(--landing-about-ease-luxury);
 		overflow: hidden;
 
 		&::after {
@@ -307,7 +264,7 @@
 			position: absolute;
 			inset: 0;
 			background: linear-gradient(
-				var(--about-glint-angle),
+				var(--landing-about-glint-angle),
 				transparent 0%,
 				rgba(255, 255, 255, 0) 40%,
 				rgba(255, 255, 255, 0.4) 50%,
@@ -315,36 +272,25 @@
 				transparent 100%
 			);
 			transform: translateX(-100%) skewX(-20deg);
-			transition: transform 0.8s var(--about-ease-luxury);
+			transition: transform 0.8s var(--landing-about-ease-luxury);
 			pointer-events: none;
 			z-index: 3;
 		}
 
 		&:hover {
 			transform: translateY(-8px) scale(1.02);
-			background:
-				linear-gradient(
-					140deg,
-					rgba(var(--color-white-rgb, 255, 255, 255), 0.9),
-					rgba(var(--color-white-rgb, 255, 255, 255), 0.5) 45%,
-					rgba(var(--color-white-rgb, 255, 255, 255), 0.2)
-				),
-				radial-gradient(
-					80% 80% at 0% 0%,
-					rgba(var(--color-primary-rgb, 197, 160, 89), 0.25),
-					transparent 80%
-				);
+			background: var(--landing-about-value-card-hover-bg);
 			box-shadow:
 				0 30px 60px -20px rgba(0, 0, 0, 0.2),
 				0 15px 35px -25px rgba(var(--color-primary-rgb), 0.2);
-			border-color: rgba(var(--color-primary-rgb), 0.4);
+			border-color: var(--landing-about-value-card-hover-border);
 
 			&::after {
 				transform: translateX(100%) skewX(-20deg);
 			}
 
 			.about-us__value-icon-wrapper {
-				background: var(--color-primary); // Primary instead of Accent for better visibility
+				background: var(--landing-about-value-icon-hover-bg);
 				color: white;
 				transform: translateY(-4px) scale(1.05);
 				box-shadow: 0 10px 20px -5px rgba(var(--color-primary-rgb), 0.3);
@@ -355,18 +301,18 @@
 	&__value-icon-wrapper {
 		width: 4.5rem;
 		height: 4.5rem;
-		background: rgba(var(--color-primary-rgb), 0.08);
-		color: var(--color-primary);
+		background: var(--landing-about-value-icon-bg);
+		color: var(--landing-about-value-icon-color);
 		border-radius: 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		margin: 0 auto clamp(0.75rem, 1.5vh, 1.5rem);
-		border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+		border: 1px solid var(--landing-about-value-icon-border);
 		box-shadow:
 			inset 0 0 15px rgba(var(--color-primary-rgb), 0.05),
 			0 10px 20px -10px rgba(0, 0, 0, 0.05);
-		transition: all 0.5s var(--about-ease-luxury);
+		transition: all 0.5s var(--landing-about-ease-luxury);
 
 		@media (max-width: 640px) {
 			width: 3.5rem;
@@ -388,7 +334,7 @@
 		path {
 			stroke-dasharray: 100;
 			stroke-dashoffset: 100;
-			transition: stroke-dashoffset 2s var(--about-ease-luxury);
+			transition: stroke-dashoffset 2s var(--landing-about-ease-luxury);
 			transition-delay: calc(var(--animation-delay, 0ms) + 400ms);
 		}
 	}
@@ -426,9 +372,9 @@
 	transform: translateY(30px) scale(0.96);
 	filter: blur(8px);
 	transition:
-		opacity 1.2s var(--about-ease-luxury),
-		transform 1.4s var(--about-ease-luxury),
-		filter 1.5s var(--about-ease-slow);
+		opacity 1.2s var(--landing-about-ease-luxury),
+		transform 1.4s var(--landing-about-ease-luxury),
+		filter 1.5s var(--landing-about-ease-slow);
 	transition-delay: var(--animation-delay, 0ms);
 
 	&.is-visible {
@@ -518,7 +464,7 @@
 	position: absolute;
 	width: 12px;
 	height: 12px;
-	background: var(--color-accent);
+	background: var(--landing-about-sparkle-color);
 	clip-path: polygon(
 		50% 0%,
 		61% 35%,

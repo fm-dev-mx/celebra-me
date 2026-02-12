@@ -1,4 +1,13 @@
 // src/styles/themes/presets/_all.scss
+
+/**
+ * Theme Presets - All
+ * Agrega todos los presets disponibles en el sistema
+ */
+
+// Invitation/Event presets
 @use 'jewelry-box';
 @use 'luxury-hacienda';
-@use 'landing-page';
+
+// Landing page presets (ubicados en themes/landing/presets)
+@use '../landing/presets' as landing-presets;
