@@ -140,7 +140,9 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				expect(screen.getByText((content) => content.includes('¡Gracias por confirmar!'))).toBeInTheDocument();
+				expect(
+					screen.getByText((content) => content.includes('¡Gracias por confirmar!')),
+				).toBeInTheDocument();
 			});
 		});
 
@@ -154,7 +156,9 @@ describe('RSVP Component', () => {
 
 			await waitFor(() => {
 				expect(
-					screen.getByText((content) => content.includes('Sentimos mucho que no puedas acompañarnos')),
+					screen.getByText((content) =>
+						content.includes('Sentimos mucho que no puedas acompañarnos'),
+					),
 				).toBeInTheDocument();
 			});
 		});

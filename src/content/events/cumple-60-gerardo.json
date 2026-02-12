@@ -32,6 +32,9 @@
         },
         "thankYou": {
             "variant": "luxury-hacienda"
+        },
+        "family": {
+            "variant": "luxury-hacienda"
         }
     },
     "hero": {
@@ -73,7 +76,9 @@
         "countdown": true,
         "rsvp": true,
         "gifts": true,
-        "gallery": true
+        "gallery": true,
+        "family": true,
+        "itinerary": true
     },
     "gallery": {
         "title": "Momentos del Jefe",
@@ -134,15 +139,29 @@
         "text": "Sesenta años construidos con trabajo, familia y buenas amistades.",
         "author": "Gerardo"
     },
+    "family": {
+        "spouse": "Trinidad Orduño",
+        "parents": {
+            "father": "Delfino Mendoza",
+            "mother": "Angela Martinez"
+        },
+        "children": [
+            { "name": "Viridiana Mendoza" },
+            { "name": "Francisco Mendoza" },
+            { "name": "Jenniffer Mendoza" },
+            { "name": "Carlos Mendoza" }
+        ],
+        "featuredImage": "portrait"
+    },
     "thankYou": {
         "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
         "closingName": "Gerardo",
         "image": "portrait"
     },
     "music": {
-        "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/western-theme.mp3",
+        "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
         "autoPlay": false,
-        "title": "Música Regional"
+        "title": "Música de fondo"
     },
     "itinerary": {
         "title": "Orden del Día",

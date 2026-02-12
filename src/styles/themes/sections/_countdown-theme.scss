@@ -186,7 +186,7 @@
 
 	// Bold playful title
 	.countdown-title {
-		font-family: 'Poppins', 'Montserrat', sans-serif;
+		font-family: Poppins, Montserrat, sans-serif;
 		font-size: clamp(2rem, 8vw, 4rem);
 		font-weight: 800;
 		color: #fff;
@@ -198,7 +198,7 @@
 	// Vibrant date display with decorative lines
 	.countdown-subtitle {
 		.event-date {
-			font-family: 'Poppins', sans-serif;
+			font-family: Poppins, sans-serif;
 			font-size: 1.1rem;
 			font-weight: 500;
 			color: rgba(255, 255, 255, 0.95);
@@ -246,7 +246,7 @@
 
 	// Bold impactful numbers
 	.countdown__value {
-		font-family: 'Poppins', 'Montserrat', sans-serif;
+		font-family: Poppins, Montserrat, sans-serif;
 		font-size: clamp(2.5rem, 8vw, 5rem);
 		font-weight: 800;
 		color: #fff;
@@ -256,7 +256,7 @@
 
 	// Bold labels
 	.countdown__label {
-		font-family: 'Poppins', sans-serif;
+		font-family: Poppins, sans-serif;
 		font-size: 0.75rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -270,7 +270,7 @@
 
 	// Vibrant footer
 	.countdown-invitation-text {
-		font-family: 'Poppins', sans-serif;
+		font-family: Poppins, sans-serif;
 		font-size: 1.3rem;
 		font-weight: 500;
 		color: rgba(255, 255, 255, 0.95);
@@ -547,7 +547,7 @@
 
 	// Modern sans-serif title
 	.countdown-title {
-		font-family: 'Inter', 'Helvetica Neue', sans-serif;
+		font-family: Inter, 'Helvetica Neue', sans-serif;
 		font-size: clamp(1.6rem, 5vw, 2.5rem);
 		font-weight: 700;
 		color: #2d3436;
@@ -558,7 +558,7 @@
 	// Modern date
 	.countdown-subtitle {
 		.event-date {
-			font-family: 'Inter', sans-serif;
+			font-family: Inter, sans-serif;
 			font-size: 0.9rem;
 			font-weight: 500;
 			color: #636e72;
@@ -599,7 +599,7 @@
 
 	// Monospace numbers for modern tech feel
 	.countdown__value {
-		font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+		font-family: 'SF Mono', Monaco, Inconsolata, monospace;
 		font-size: clamp(2.2rem, 6vw, 3.5rem);
 		font-weight: 600;
 		color: #2d3436;
@@ -608,7 +608,7 @@
 
 	// Modern labels
 	.countdown__label {
-		font-family: 'Inter', sans-serif;
+		font-family: Inter, sans-serif;
 		font-size: 0.65rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -622,7 +622,7 @@
 
 	// Modern footer
 	.countdown-invitation-text {
-		font-family: 'Inter', sans-serif;
+		font-family: Inter, sans-serif;
 		font-size: 1.1rem;
 		font-weight: 400;
 		color: #636e72;

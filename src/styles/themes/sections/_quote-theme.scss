@@ -213,7 +213,7 @@
 	}
 
 	.quote-author {
-		font-family: 'Montserrat', sans-serif;
+		font-family: Montserrat, sans-serif;
 		font-size: clamp(1rem, 3vw, 1.3rem);
 		text-transform: none;
 		letter-spacing: 0.1em;
@@ -323,7 +323,7 @@
 
 	// Clean sans-serif typography
 	.quote-content {
-		font-family: 'Inter', 'Helvetica Neue', sans-serif;
+		font-family: Inter, 'Helvetica Neue', sans-serif;
 		font-weight: 300;
 		font-size: clamp(1.4rem, 4vw, 2rem);
 		line-height: 1.6;
@@ -343,7 +343,7 @@
 	}
 
 	.quote-author {
-		font-family: 'Inter', sans-serif;
+		font-family: Inter, sans-serif;
 		font-size: 0.9rem;
 		text-transform: uppercase;
 		letter-spacing: 0.3em;

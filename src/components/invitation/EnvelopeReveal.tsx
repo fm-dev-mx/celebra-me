@@ -265,7 +265,6 @@ const EnvelopeReveal: React.FC<Props> = ({
 								<p className="envelope-details">
 									{formattedDate} • {city}
 								</p>
-
 							</div>
 						</div>
 					</motion.div>

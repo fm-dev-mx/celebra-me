@@ -2,6 +2,9 @@
     "name": "celebra-me.com",
     "type": "module",
     "version": "0.0.1",
+    "engines": {
+        "node": ">=20.19.0"
+    },
     "scripts": {
         "dev": "astro dev",
         "start": "astro dev",
@@ -10,6 +13,7 @@
         "astro": "astro",
         "test": "jest",
         "lint": "eslint .",
+        "lint:scss": "stylelint \"src/**/*.scss\"",
         "type-check": "astro check",
         "format": "prettier --write .",
         "prepare": "husky"
@@ -73,6 +77,9 @@
         "prettier": "^3.8.1",
         "prettier-plugin-astro": "^0.14.1",
         "sass-embedded": "^1.97.3",
+        "stylelint": "^17.2.0",
+        "stylelint-config-standard-scss": "^17.0.0",
+        "stylelint-scss": "^7.0.0",
         "tailwindcss": "^3.4.19",
         "ts-jest": "^29.4.6",
         "typescript": "^5.9.3",
@@ -80,6 +87,7 @@
     },
     "lint-staged": {
         "*.{js,ts,tsx,astro}": ["eslint --fix", "prettier --write"],
-        "*.{scss,css,json,md,yml}": ["prettier --write"]
+        "*.{scss,css}": ["stylelint --fix", "prettier --write"],
+        "*.{json,md,yml}": ["prettier --write"]
     }
 }

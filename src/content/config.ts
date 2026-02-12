@@ -157,10 +157,21 @@ const eventsCollection = defineCollection({
 		}),
 		family: z
 			.object({
-				parents: z.object({
-					father: z.string().optional(),
-					mother: z.string().optional(),
-				}),
+				parents: z
+					.object({
+						father: z.string().optional(),
+						mother: z.string().optional(),
+					})
+					.optional(),
+				spouse: z.string().optional(),
+				children: z
+					.array(
+						z.object({
+							name: z.string(),
+							role: z.string().optional(),
+						}),
+					)
+					.optional(),
 				godparents: z
 					.array(
 						z.object({

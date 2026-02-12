@@ -208,7 +208,8 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			data.family && (
 				<Family
 					parents={data.family.parents}
-					godparents={data.family.godparents}
+					spouse={data.family.spouse}
+					children={data.family.children}
 					featuredImage={familyImage}
 					celebrantName={data.hero.name}
 					variant={data.sectionStyles?.family?.variant}

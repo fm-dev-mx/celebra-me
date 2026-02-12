@@ -814,6 +814,165 @@
 	}
 
 	// ==========================================================================
+	// ADU-10: Family Section - Luxury Hacienda
+	// ==========================================================================
+
+	.family {
+		background-color: var(--color-surface-primary, primitives.$base-parchment-100);
+		background-image:
+			radial-gradient(circle at 25% 25%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+			radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.05) 2%, transparent 2.5%),
+			linear-gradient(45deg, transparent 49%, rgba(0, 0, 0, 0.03) 50%, transparent 51%);
+		background-size:
+			100px 100px,
+			100px 100px,
+			20px 20px;
+		background-blend-mode: multiply;
+
+		&__suptitle {
+			font-family: tokens.$font-display-hacienda;
+			color: var(--color-action-accent, primitives.$base-gold-500);
+			letter-spacing: 0.15em;
+		}
+
+		&__title-main {
+			font-family: tokens.$font-display-hacienda;
+			color: var(--color-text-primary, primitives.$base-coffee-900);
+			text-transform: uppercase;
+			letter-spacing: 0.12em;
+			font-weight: 500;
+			background: linear-gradient(
+				to right,
+				primitives.$base-gold-300,
+				primitives.$base-gold-500,
+				primitives.$base-gold-300
+			);
+			background-clip: text;
+			-webkit-background-clip: text;
+			color: transparent;
+			background-size: 200% auto;
+			animation: shimmer 3s ease-in-out infinite;
+		}
+
+		&__card-inner {
+			background: tokens.$color-glass-bg;
+			border: 1px solid rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.25);
+			backdrop-filter: blur(12px) saturate(180%);
+			border-radius: 4px;
+			box-shadow:
+				tokens.$shadow-emphasis,
+				inset 0 0 20px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
+			position: relative;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border-radius: inherit;
+				background: linear-gradient(
+					135deg,
+					rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 0%,
+					transparent 50%,
+					rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 100%
+				);
+				pointer-events: none;
+				z-index: -1;
+			}
+		}
+
+		&__card-subtitle {
+			font-family: tokens.$font-display-hacienda;
+			color: var(--color-action-accent, primitives.$base-gold-500);
+			letter-spacing: 0.2em;
+		}
+
+		&__name {
+			font-family: tokens.$font-display-hacienda;
+			color: var(--color-text-primary, primitives.$base-coffee-900);
+
+			&::first-letter {
+				font-family: tokens.$font-display-hacienda;
+				color: var(--color-action-accent, primitives.$base-gold-500);
+			}
+		}
+
+		&__role {
+			font-family: tokens.$font-ui;
+			color: rgba(var(--color-text-primary-rgb, 58, 40, 25), 0.7);
+
+			&--accent {
+				color: var(--color-action-accent, primitives.$base-gold-500);
+			}
+		}
+
+		&__child-number {
+			background: linear-gradient(
+				135deg,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1),
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05)
+			);
+			border: 1px solid rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.2);
+			border-radius: 4px;
+			color: var(--color-action-accent, primitives.$base-gold-500);
+			font-family: tokens.$font-ui;
+		}
+
+		&__image-outer-frame {
+			background: linear-gradient(
+				135deg,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.8) 0%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.4) 25%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 50%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.4) 75%,
+				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.8) 100%
+			);
+			box-shadow:
+				0 8px 32px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3),
+				inset 0 1px 0 rgba(255, 255, 255, 0.2);
+		}
+
+		&__image-frame img {
+			filter: sepia(0.25) contrast(1.1) brightness(1.05);
+			transition: filter 0.5s ease;
+
+			&:hover {
+				filter: sepia(0) contrast(1) brightness(1) saturate(1);
+			}
+		}
+
+		// Masculine Ornaments - Luxury Hacienda Style
+		&__card-ornament {
+			opacity: 0.12;
+
+			&--heart {
+				background: linear-gradient(
+					135deg,
+					rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.8),
+					transparent
+				);
+				border-radius: 2px;
+			}
+
+			&--branch {
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.6),
+					transparent
+				);
+			}
+
+			&--leaf {
+				background: linear-gradient(
+					135deg,
+					rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.7),
+					transparent
+				);
+			}
+		}
+	}
+
+	// ==========================================================================
 	// IMAGE FILTERS: COGNAC & LUXURY
 	// Unifies all photography under the 'Hacienda' aesthetic
 	// ==========================================================================

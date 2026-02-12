@@ -15,22 +15,21 @@ import gallery10 from './gallery-10.webp';
 import gallery11 from './gallery-11.webp';
 
 export const assets = {
-  hero,
-  portrait,
-  jardin,
-  signature,
-  gallery: [
-    gallery01,
-    gallery02,
-    gallery03,
-    gallery04,
-    gallery05,
-    gallery06,
-    gallery07,
-    gallery08,
-    gallery09,
-    gallery10,
-    gallery11,
-  ],
+	hero,
+	portrait,
+	jardin,
+	signature,
+	gallery: [
+		gallery01,
+		gallery02,
+		gallery03,
+		gallery04,
+		gallery05,
+		gallery06,
+		gallery07,
+		gallery08,
+		gallery09,
+		gallery10,
+		gallery11,
+	],
 };
-

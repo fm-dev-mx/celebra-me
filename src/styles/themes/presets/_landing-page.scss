@@ -20,13 +20,13 @@
 	--color-border-subtle: rgba(75, 54, 33, 0.1); // Based on coffee-900
 	--color-border-emphasis: #{primitives.$base-gold-500};
 
-    // Glassmorphism default
-    --color-glass-bg: rgba(245, 245, 220, 0.1); // parchment-100 rgb
-    --color-glass-border: rgba(245, 245, 220, 0.2);
+	// Glassmorphism default
+	--color-glass-bg: rgba(245, 245, 220, 0.1); // parchment-100 rgb
+	--color-glass-border: rgba(245, 245, 220, 0.2);
 
-    // Shadows
-    --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.1);
-    --shadow-emphasis: 0 10px 30px rgba(0, 0, 0, 0.2);
+	// Shadows
+	--shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.1);
+	--shadow-emphasis: 0 10px 30px rgba(0, 0, 0, 0.2);
 
 	// Base Theme Styles
 	background-color: var(--color-surface-primary);

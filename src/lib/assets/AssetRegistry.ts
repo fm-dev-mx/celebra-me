@@ -138,8 +138,14 @@ export const ImageRegistry: Registry = {
 		serviceBaptism: { src: serviceBaptism, alt: 'Servicio de Bautizos' },
 		headerLogo: { src: headerLogo, alt: 'Celebra-me Logo' },
 		aboutToast: { src: partyToast, alt: 'Celebración elegante con brindis' },
-		heroBgDesktop: { src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069', alt: 'Fondo Hero' },
-		heroBgMobile: { src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069', alt: 'Fondo Hero' },
+		heroBgDesktop: {
+			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+			alt: 'Fondo Hero',
+		},
+		heroBgMobile: {
+			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+			alt: 'Fondo Hero',
+		},
 	},
 };
 
@@ -168,4 +174,3 @@ export function getEventAsset(event: string, key: EventAssetKey): ImageAsset | u
 export function getCommonAsset(key: CommonAssetKey): ImageAsset {
 	return ImageRegistry.common[key];
 }
-

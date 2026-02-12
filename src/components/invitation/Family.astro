@@ -6,11 +6,12 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface Props {
-	parents: {
+	parents?: {
 		father?: string;
 		mother?: string;
 	};
-	godparents?: Array<{
+	spouse?: string;
+	children?: Array<{
 		name: string;
 		role?: string;
 	}>;
@@ -19,7 +20,7 @@ interface Props {
 	variant?: string;
 }
 
-const { parents, godparents, featuredImage, celebrantName, variant = 'standard' } = Astro.props;
+const { parents, spouse, children, featuredImage, celebrantName, variant = 'standard' } = Astro.props;
 
 const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
 ---
@@ -27,75 +28,163 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 <section id="family-section" class="family" data-variant={variant}>
 	<div class="family-bg-texture" aria-hidden="true"></div>
 
+	{/* Elementos premium solo para luxury-hacienda */}
+	{variant === 'luxury-hacienda' && (
+		<>
+			{/* Remaches estructurales */}
+			<div class="family-rivet family-rivet--tl" aria-hidden="true"></div>
+			<div class="family-rivet family-rivet--tr" aria-hidden="true"></div>
+			<div class="family-rivet family-rivet--bl" aria-hidden="true"></div>
+			<div class="family-rivet family-rivet--br" aria-hidden="true"></div>
+
+			{/* Textura de pergamino superpuesta */}
+			<div class="family-parchment-overlay" aria-hidden="true"></div>
+
+			{/* Patrones de cuero tooling */}
+			<div class="leather-tooling leather-tooling--geometric" aria-hidden="true"></div>
+		</>
+	)}
+
 	<Container>
 		<div class="family__header">
-			<span class="family__suptitle">Con la bendición de</span>
-			<h2 class="family__title-main">Mis Padres y Padrinos</h2>
+			<span class="family__suptitle">Mi Familia</span>
+			<h2 class="family__title-main" data-text="Los que hacen mi vida completa">Los que hacen mi vida completa</h2>
 		</div>
 
-		<div class="family__grid">
-			{/* Parents Card */}
-			<div class="family__card family__card--left">
-				<div class="family__card-inner">
-					<h3 class="family__card-subtitle">Padres de {celebrantName}</h3>
-					<div class="family__names-list">
-						{parents.mother && (
-							<div class="family__name-item" style="--index: 0">
-								<p class="family__name">{parents.mother}</p>
+		<div class="family__layout">
+			{/* Left Column - Spouse & Children */}
+			<div class="family__left-column">
+				{/* Spouse Card */}
+				{spouse && (
+					<div class="family__card family__card--spouse">
+						<div class="family__card-inner">
+							<div class="family__card-header">
+								<h3 class="family__card-subtitle">Mi Compañera de Vida</h3>
+								<div class="family__card-flourish" aria-hidden="true">
+									<span class="flourish-line"></span>
+									<span class="flourish-diamond"></span>
+									<span class="flourish-line"></span>
+								</div>
 							</div>
-						)}
-						{parents.mother && parents.father && (
-							<div class="family__ampersand-divider" aria-hidden="true">
-								<span class="family__calligraphy-ampersand">y</span>
+							<div class="family__names-list">
+								<div class="family__name-item family__name-item--highlighted family__name-item--delay-0">
+									<p class="family__name">{spouse}</p>
+									<span class="family__role family__role--accent">Esposa</span>
+								</div>
 							</div>
-						)}
-						{parents.father && (
-							<div class="family__name-item" style="--index: 1">
-								<p class="family__name">{parents.father}</p>
-							</div>
-						)}
+							<div class="family__card-ornament family__card-ornament--heart" aria-hidden="true"></div>
+						</div>
 					</div>
-				</div>
+				)}
+
+				{/* Children Card */}
+				{children && children.length > 0 && (
+					<div class="family__card family__card--children">
+						<div class="family__card-inner">
+							<div class="family__card-header">
+								<h3 class="family__card-subtitle">Nuestros Hijos</h3>
+								<div class="family__card-flourish" aria-hidden="true">
+									<span class="flourish-line"></span>
+									<span class="flourish-diamond"></span>
+									<span class="flourish-line"></span>
+								</div>
+							</div>
+							<div class="family__children-grid">
+								{children.map((child, index) => (
+									<div class={`family__child-item family__child-item--delay-${Math.min(index, 5)}`}>
+										<div class="family__child-content">
+											<p class="family__name family__name--child">{child.name}</p>
+
+										</div>
+									</div>
+								))}
+							</div>
+							<div class="family__card-ornament family__card-ornament--branch" aria-hidden="true"></div>
+						</div>
+					</div>
+				)}
 			</div>
 
-			{/* Featured Image (Middle) */}
+			{/* Center Column - Featured Image with Premium Frame */}
 			{featuredImage && (
-				<div class="family__image-column">
-					<div class="family__image-container">
-						<div class="family__image-frame">
-							<OptimizedImage
-								imagePath={imagePath}
-								alt={celebrantName}
-								width={600}
-								height={800}
-							/>
+				<div class="family__center-column">
+					<div class="family__image-column">
+						<div class="family__image-container">
+							{/* Remaches del marco para luxury-hacienda */}
+							{variant === 'luxury-hacienda' && (
+								<>
+									<div class="frame-rivet frame-rivet--tl" aria-hidden="true"></div>
+									<div class="frame-rivet frame-rivet--tr" aria-hidden="true"></div>
+									<div class="frame-rivet frame-rivet--bl" aria-hidden="true"></div>
+									<div class="frame-rivet frame-rivet--br" aria-hidden="true"></div>
+								</>
+							)}
+
+							<div class="family__image-outer-frame">
+								<div class="family__image-inner-frame">
+									<div class="family__image-frame">
+										<OptimizedImage
+											imagePath={imagePath}
+											alt={celebrantName}
+											width={600}
+											height={800}
+										/>
+										<div class="family__image-overlay" aria-hidden="true"></div>
+									</div>
+								</div>
+							</div>
+							<div class="family__image-decoration" aria-hidden="true"></div>
+							<div class="family__image-corner family__image-corner--tl" aria-hidden="true"></div>
+							<div class="family__image-corner family__image-corner--tr" aria-hidden="true"></div>
+							<div class="family__image-corner family__image-corner--bl" aria-hidden="true"></div>
+							<div class="family__image-corner family__image-corner--br" aria-hidden="true"></div>
 						</div>
-						<div class="family__image-decoration" aria-hidden="true"></div>
 					</div>
 				</div>
 			)}
 
-			{/* Godparents Card */}
-			{godparents && godparents.length > 0 && (
-				<div class="family__card family__card--right">
-					<div class="family__card-inner">
-						<h3 class="family__card-subtitle">Mis Padrinos</h3>
-						<div class="family__names-list">
-							{godparents.map((godparent, index) => (
-								<div class="family__name-item" style={`--index: ${index}`}>
-									<p class="family__name">{godparent.name}</p>
-									{godparent.role && (
-										<span class="family__role">{godparent.role}</span>
-									)}
+			{/* Right Column - Parents */}
+			<div class="family__right-column">
+				{/* Parents Card */}
+				{parents && (parents.father || parents.mother) && (
+					<div class="family__card family__card--parents">
+						<div class="family__card-inner">
+							<div class="family__card-header">
+								<h3 class="family__card-subtitle">Con la bendición de</h3>
+								<div class="family__card-flourish" aria-hidden="true">
+									<span class="flourish-line"></span>
+									<span class="flourish-diamond"></span>
+									<span class="flourish-line"></span>
 								</div>
-							))}
+							</div>
+							<div class="family__names-list">
+								{parents.mother && (
+									<div class="family__name-item family__name-item--delay-0">
+										<p class="family__name">{parents.mother}</p>
+										<span class="family__role">Madre</span>
+									</div>
+								)}
+								{parents.mother && parents.father && (
+									<div class="family__ampersand-divider" aria-hidden="true">
+										<span class="family__calligraphy-ampersand">y</span>
+									</div>
+								)}
+								{parents.father && (
+									<div class="family__name-item family__name-item--delay-1">
+										<p class="family__name">{parents.father}</p>
+										<span class="family__role">Padre</span>
+									</div>
+								)}
+							</div>
+							<div class="family__card-ornament family__card-ornament--leaf" aria-hidden="true"></div>
 						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	</Container>
 </section>
+
 
 <script>
 	const observerOptions = {
