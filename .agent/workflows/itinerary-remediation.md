@@ -10,8 +10,10 @@ Box".
 
 ## 1. Diagnosis & Setup
 
-- [ ] **Analyze Style Leakage**: Examine `src/styles/invitation/_itinerary.scss`. Identify hardcoded
-      colors, fonts, or effects that belong to specific themes.
+- [ ] **Analyze Style Leakage**: Examine `src/styles/invitation/_itinerary.scss` and
+      `docs/audit/discovery-itinerary-2026-02-13.md`.
+- [ ] **Fix SVG Path Fallback**: Update `TimelineList.tsx` to remove hardcoded `#d4af37`.
+- [ ] **Align Line End**: Verify `.itinerary__line-end` positioning relative to SVG finish.
 - [ ] **Verify Content Type**: Check `src/content/config.ts` and `src/content/events/*.json` to
       ensure itinerary data is strictly data-driven and not hardcoded in `Itinerary.astro`.
 - [ ] **Create Theme File**:

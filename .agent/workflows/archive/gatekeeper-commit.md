@@ -1,5 +1,5 @@
 ---
-description: Unified commit gatekeeper with strict and minimal modes.
+description: Commit gatekeeper with strict and minimal modes.
 ---
 
 # 🔒 Workflow: Gatekeeper Commit
