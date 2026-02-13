@@ -104,6 +104,7 @@ const eventsCollection = defineCollection({
 			date: z.string().datetime(), // ISO 8601
 			backgroundImage: z.string(),
 			portrait: z.string().optional(), // ADU-8: Optional celebrant portrait
+			variant: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
 		}),
 		location: z.object({
 			// Base venue info (backward compatible)
@@ -263,6 +264,7 @@ const eventsCollection = defineCollection({
 					accent: z.string().regex(/^#/, 'Must be a hex color'),
 					background: z.string().regex(/^#/, 'Must be a hex color'),
 				}),
+				variant: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
 			})
 			.optional(),
 		itinerary: z

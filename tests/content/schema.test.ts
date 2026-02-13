@@ -6,7 +6,7 @@ import { z } from 'zod';
 // Recreate the schema from config.ts for testing
 // Note: We can't import the actual schema because it uses Astro-specific imports
 const eventSchema = z.object({
-	eventType: z.enum(['xv', 'boda', 'bautizo']),
+	eventType: z.enum(['xv', 'boda', 'bautizo', 'cumple']),
 	title: z.string(),
 	description: z.string().optional(),
 	theme: z.object({
@@ -163,7 +163,7 @@ describe('Event Schema Validation', () => {
 		});
 
 		it('should validate all event types', () => {
-			const eventTypes = ['xv', 'boda', 'bautizo'];
+			const eventTypes = ['xv', 'boda', 'bautizo', 'cumple'];
 
 			eventTypes.forEach((type) => {
 				const event = {
