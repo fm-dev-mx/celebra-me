@@ -151,7 +151,7 @@
             { "name": "Jenniffer Mendoza" },
             { "name": "Carlos Mendoza" }
         ],
-        "featuredImage": "portrait"
+        "featuredImage": "family"
     },
     "thankYou": {
         "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
@@ -217,7 +217,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "sealIcon": "boot",
         "documentLabel": "MANIFEST / WANTED",

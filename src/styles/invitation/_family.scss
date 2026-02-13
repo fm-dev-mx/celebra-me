@@ -2,7 +2,7 @@
 @use '../global/mixins' as mixins;
 
 // Premium animations
-@keyframes gentleFloat {
+@keyframes gentle-float {
 	0%,
 	100% {
 		transform: translateY(0);
@@ -13,7 +13,7 @@
 	}
 }
 
-@keyframes goldShimmer {
+@keyframes gold-shimmer {
 	0% {
 		background-position: -200% center;
 	}
@@ -23,7 +23,7 @@
 	}
 }
 
-@keyframes subtlePulse {
+@keyframes subtle-pulse {
 	0%,
 	100% {
 		opacity: 30%;
@@ -50,12 +50,12 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3),
+			rgb(var(--color-action-accent-rgb), 0.3),
 			transparent
 		);
 	}
 
-	&-bg-texture {
+	&__bg-texture {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -64,19 +64,11 @@
 		opacity: 12%;
 		pointer-events: none;
 		filter: contrast(120%) brightness(105%);
-
-		// 💎 Ultra-Premium: Silk Texture Activation
-		.theme-preset--jewelry-box & {
-			background: var(--texture-silk);
-			background-size: 1000px 1000px;
-			animation: silkFlow 60s linear infinite;
-			opacity: 25%;
-		}
 	}
 
 	&__header {
 		text-align: center;
-		margin-bottom: 8rem;
+		margin-bottom: tokens.$spacing-32;
 		opacity: 0%;
 		transform: translateY(30px);
 		transition: tokens.$transition-premium;
@@ -91,9 +83,9 @@
 		display: block;
 		font-family: var(--font-display, tokens.$font-display-elegant);
 		font-style: italic;
-		font-size: 1.3rem;
-		color: var(--color-text-emphasis, var(--color-action-accent, #d4af37));
-		margin-bottom: 1.5rem;
+		font-size: tokens.$font-size-h3;
+		color: var(--color-text-emphasis, var(--color-action-accent));
+		margin-bottom: tokens.$spacing-6;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		opacity: 90%;
@@ -102,7 +94,7 @@
 
 	&__title-main {
 		font-family: var(--font-display, tokens.$font-display-elegant);
-		font-size: 3.5rem;
+		font-size: tokens.$font-size-h1;
 		color: var(--color-text-primary, tokens.$color-text-primary);
 		text-transform: uppercase;
 		letter-spacing: 0.12em;
@@ -110,16 +102,16 @@
 		line-height: 1.1;
 		background: linear-gradient(
 			to right,
-			var(--color-text-secondary, #8b7355) 0%,
-			var(--color-action-accent, #d4af37) 25%,
-			color-mix(in srgb, var(--color-action-accent, #d4af37), white 30%) 50%,
-			var(--color-action-accent, #d4af37) 75%,
-			var(--color-text-secondary, #8b7355) 100%
+			var(--color-text-secondary),
+			var(--color-action-accent) 25%,
+			color-mix(in srgb, var(--color-action-accent), white 30%) 50%,
+			var(--color-action-accent) 75%,
+			var(--color-text-secondary) 100%
 		);
 		background-size: 200% auto;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: goldShimmer 4s ease-in-out infinite;
+		animation: gold-shimmer 4s ease-in-out infinite;
 		margin: 0;
 		text-shadow: 0 4px 8px rgb(0 0 0 / 15%);
 	}
@@ -127,27 +119,22 @@
 	&__layout {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 4rem;
+		gap: tokens.$spacing-16;
 		align-items: start;
 
 		@include mixins.respond-to(lg) {
-			grid-template-columns: 1fr auto 1fr;
-			gap: 5rem;
+			grid-template-columns: 4fr 6fr;
+			gap: tokens.$spacing-32;
 			align-items: start;
 		}
 	}
 
-	&__left-column,
-	&__right-column {
+	&__content-column {
 		display: flex;
 		flex-direction: column;
-		gap: 3rem;
-	}
-
-	&__center-column {
-		display: flex;
+		gap: tokens.$spacing-12;
 		justify-content: center;
-		align-items: center;
+		height: 100%;
 	}
 
 	&__card {
@@ -162,31 +149,19 @@
 
 		&--spouse {
 			transition-delay: 0.2s;
-
-			@include mixins.respond-to(lg) {
-				text-align: right;
-			}
 		}
 
 		&--children {
 			transition-delay: 0.3s;
-
-			@include mixins.respond-to(lg) {
-				text-align: right;
-			}
 		}
 
 		&--parents {
 			transition-delay: 0.4s;
-
-			@include mixins.respond-to(lg) {
-				text-align: left;
-			}
 		}
 	}
 
 	&__card-header {
-		margin-bottom: 3rem;
+		margin-bottom: tokens.$spacing-12;
 	}
 
 	&__card-inner {
@@ -197,10 +172,10 @@
 		backdrop-filter: blur(12px) saturate(180%);
 		padding: 3rem 2.5rem;
 		border-radius: 4px;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.25);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.25);
 		box-shadow:
 			0 10px 30px rgb(0 0 0 / 20%),
-			inset 0 0 20px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
+			inset 0 0 20px rgb(var(--color-action-accent-rgb), 0.1);
 		position: relative;
 		overflow: hidden;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -211,9 +186,9 @@
 			inset: 0;
 			background: linear-gradient(
 				135deg,
-				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0) 0%,
-				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 50%,
-				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0) 100%
+				rgb(var(--color-action-accent-rgb), 0) 0%,
+				rgb(var(--color-action-accent-rgb), 0.05) 50%,
+				rgb(var(--color-action-accent-rgb), 0) 100%
 			);
 			opacity: 0%;
 			transition: opacity 0.4s ease;
@@ -230,7 +205,7 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				var(--color-action-accent, #d4af37),
+				var(--color-action-accent),
 				transparent
 			);
 			opacity: 40%;
@@ -240,10 +215,10 @@
 			transform: translateY(-8px);
 			box-shadow:
 				0 25px 50px rgb(0 0 0 / 25%),
-				0 0 40px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.25),
+				0 0 40px rgb(var(--color-action-accent-rgb), 0.25),
 				inset 0 0 25px rgb(255 255 255 / 15%); // Glass glow
 
-			border-color: rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.5);
+			border-color: rgb(var(--color-action-accent-rgb), 0.5);
 
 			&::before {
 				opacity: 30%;
@@ -263,14 +238,14 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.5)
+				rgb(var(--color-action-accent-rgb), 0.5)
 			);
 
 			&:last-child {
 				background: linear-gradient(
 					-90deg,
 					transparent,
-					rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.5)
+					rgb(var(--color-action-accent-rgb), 0.5)
 				);
 			}
 		}
@@ -278,18 +253,18 @@
 		.flourish-diamond {
 			width: 10px;
 			height: 10px;
-			background: var(--color-action-accent, #d4af37);
+			background: var(--color-action-accent);
 			transform: rotate(45deg);
 			border-radius: 2px;
-			box-shadow: 0 0 10px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.5);
+			box-shadow: 0 0 10px rgb(var(--color-action-accent-rgb), 0.5);
 		}
 	}
 
 	&__card-subtitle {
 		font-family: var(--font-display, tokens.$font-display-formal);
 		font-style: italic;
-		font-size: 1.1rem;
-		color: var(--color-text-emphasis, var(--color-action-accent, #d4af37));
+		font-size: tokens.$font-size-body;
+		color: var(--color-text-emphasis, var(--color-action-accent));
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		opacity: 90%;
@@ -307,7 +282,7 @@
 			right: 2rem;
 			width: 60px;
 			height: 60px;
-			background: var(--color-action-accent, #d4af37);
+			background: var(--color-action-accent);
 			mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1'%3E%3Cpath d='M20.8 4.6a5.5 5.5 0 0 0-7.7 0l-1.1 1-1.1-1a5.5 5.5 0 0 0-7.7 7.7l1.1 1L12 21l7.7-7.7 1.1-1a5.5 5.5 0 0 0 0-7.7z'/%3E%3C/svg%3E");
 			mask-size: contain;
 			mask-repeat: no-repeat;
@@ -321,8 +296,7 @@
 			width: 60px;
 			height: 30px;
 			background: var(
-				--color-action-accent,
-				#d4af37
+				--color-action-accent
 			); // Placeholder-like but clean, I'll use a better organic path
 			mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 22s5-4 5-10V2'/%3E%3Cpath d='M7 12c0-3 2-5 5-5'/%3E%3Cpath d='M7 15c0-3-2-5-5-5'/%3E%3C/svg%3E");
 			mask-size: contain;
@@ -336,7 +310,7 @@
 			right: 2rem;
 			width: 40px;
 			height: 40px;
-			background: var(--color-action-accent, #d4af37);
+			background: var(--color-action-accent);
 			mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 22c1.25-1.25 2.5-2.5 5-2.5s3.75 1.25 5 2.5c1.25-1.25 2.5-2.5 5-2.5s3.75 1.25 5 2.5'/%3E%3Cpath d='M12 22V12'/%3E%3Cpath d='M12 12c0-3 2-5 5-5'/%3E%3Cpath d='M12 12c0-3-2-5-5-5'/%3E%3C/svg%3E");
 			mask-size: contain;
 			mask-repeat: no-repeat;
@@ -352,7 +326,7 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				var(--color-action-accent, #d4af37),
+				var(--color-action-accent),
 				transparent
 			);
 			clip-path: polygon(
@@ -374,7 +348,7 @@
 			right: 2rem;
 			width: 30px;
 			height: 30px;
-			background: linear-gradient(135deg, var(--color-action-accent, #d4af37), transparent);
+			background: linear-gradient(135deg, var(--color-action-accent), transparent);
 			clip-path: polygon(
 				50% 0%,
 				83% 12%,
@@ -392,7 +366,7 @@
 	&__names-list {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: tokens.$spacing-6;
 	}
 
 	&__name-item {
@@ -428,32 +402,32 @@
 
 		&--highlighted {
 			.family__name {
-				font-size: 2.2rem;
+				font-size: 2.2rem; // Slightly larger than typical H2 but specific to this component
 				background: linear-gradient(
 					to right,
-					var(--color-action-accent, #d4af37),
-					color-mix(in srgb, var(--color-action-accent, #d4af37), white 40%),
-					var(--color-action-accent, #d4af37)
+					var(--color-action-accent),
+					color-mix(in srgb, var(--color-action-accent), white 40%),
+					var(--color-action-accent)
 				);
 				background-size: 200% auto;
 				-webkit-text-fill-color: transparent;
 				background-clip: text;
-				animation: goldShimmer 3s ease-in-out infinite;
+				animation: gold-shimmer 3s ease-in-out infinite;
 			}
 
 			.family__role--accent {
-				color: var(--color-action-accent, #d4af37);
+				color: var(--color-action-accent);
 				font-size: 1.1rem;
 				letter-spacing: 0.25em;
 				opacity: 90%;
-				text-shadow: 0 2px 4px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
+				text-shadow: 0 2px 4px rgb(var(--color-action-accent-rgb), 0.3);
 			}
 		}
 	}
 
 	&__name {
 		font-family: var(--font-display, tokens.$font-display-elegant);
-		font-size: 1.9rem;
+		font-size: tokens.$font-size-h2;
 		font-weight: 400;
 		color: var(--color-text-primary, tokens.$color-text-primary);
 		line-height: 1.1;
@@ -464,7 +438,7 @@
 		&::first-letter {
 			font-family: var(--font-display, tokens.$font-display-elegant);
 			font-size: 120%;
-			color: var(--color-text-emphasis, var(--color-action-accent, #d4af37));
+			color: var(--color-text-emphasis, var(--color-action-accent));
 		}
 
 		&--child {
@@ -479,13 +453,13 @@
 		font-size: 0.95rem;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
-		color: rgb(var(--color-text-primary-rgb, 58, 40, 25), 0.7);
+		color: rgb(var(--color-surface-dark-rgb), 0.7);
 		margin-top: 0.5rem;
 		font-weight: 500;
 		transition: all 0.3s ease;
 
 		&--accent {
-			color: var(--color-action-accent, #d4af37);
+			color: var(--color-action-accent);
 		}
 
 		&--child {
@@ -498,14 +472,14 @@
 	&__children-grid {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 1.2rem;
-		margin-top: 1rem;
+		gap: tokens.$spacing-4;
+		margin-top: tokens.$spacing-4;
 	}
 
 	&__child-item {
 		display: flex;
 		align-items: center;
-		gap: 1.5rem;
+		gap: tokens.$spacing-6;
 		opacity: 0%;
 		transform: translateX(-20px);
 		transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -545,14 +519,14 @@
 		justify-content: center;
 		background: linear-gradient(
 			135deg,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1),
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.05)
+			rgb(var(--color-action-accent-rgb), 0.1),
+			rgb(var(--color-action-accent-rgb), 0.05)
 		);
-		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.2);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
 		border-radius: 4px;
 		font-family: tokens.$font-ui;
 		font-size: 0.9rem;
-		color: var(--color-action-accent, #d4af37);
+		color: var(--color-action-accent);
 		font-weight: 500;
 		flex-shrink: 0;
 		box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
@@ -569,23 +543,14 @@
 		z-index: 1;
 
 		@include mixins.respond-to(lg) {
-			.family__card--spouse &,
-			.family__card--children & {
-				text-align: right;
-				padding-right: 2rem;
-			}
-
-			.family__card--parents & {
-				text-align: left;
-				padding-left: 2rem;
-			}
+			// Removed column-specific alignment as everything is now in one column
 		}
 	}
 
 	&__calligraphy-ampersand {
 		font-family: tokens.$font-calligraphy;
 		font-size: 2.5rem;
-		color: rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.5);
+		color: rgb(var(--color-action-accent-rgb), 0.5);
 		font-style: italic;
 		display: inline-block;
 		transform: translateY(5px);
@@ -594,15 +559,12 @@
 	&__image-column {
 		display: flex;
 		justify-content: center;
+		align-items: center; // Center vertically in its column
 		opacity: 0%;
 		transform: scale(0.9);
 		transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 		transition-delay: 0.5s;
-		order: -1;
-
-		@include mixins.respond-to(lg) {
-			order: 0;
-		}
+		height: 100%;
 
 		.family.is-visible & {
 			opacity: 100%;
@@ -615,21 +577,21 @@
 		width: 100%;
 		max-width: 420px;
 		padding: 30px;
-		animation: gentleFloat 8s ease-in-out infinite;
+		animation: gentle-float 8s ease-in-out infinite;
 	}
 
 	&__image-outer-frame {
 		border-radius: 4px;
 		background: linear-gradient(
 			135deg,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.8) 0%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.4) 25%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 50%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.4) 75%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.8) 100%
+			rgb(var(--color-action-accent-rgb), 0.8) 0%,
+			rgb(var(--color-action-accent-rgb), 0.4) 25%,
+			rgb(var(--color-action-accent-rgb), 0.1) 50%,
+			rgb(var(--color-action-accent-rgb), 0.4) 75%,
+			rgb(var(--color-action-accent-rgb), 0.8) 100%
 		);
 		box-shadow:
-			0 8px 32px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3),
+			0 8px 32px rgb(var(--color-action-accent-rgb), 0.3),
 			inset 0 1px 0 rgb(255 255 255 / 20%);
 		padding: 12px;
 		position: relative;
@@ -651,7 +613,7 @@
 		aspect-ratio: 3 / 4;
 		border-radius: 2px;
 		overflow: hidden;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
 		position: relative;
 		z-index: 2;
 
@@ -673,9 +635,9 @@
 		inset: 0;
 		background: linear-gradient(
 			135deg,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0) 0%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 50%,
-			rgb(var(--color-action-accent-rgb, 220, 180, 60), 0) 100%
+			rgb(var(--color-action-accent-rgb), 0) 0%,
+			rgb(var(--color-action-accent-rgb), 0.05) 50%,
+			rgb(var(--color-action-accent-rgb), 0) 100%
 		);
 		opacity: 0%;
 		transition: opacity 0.6s ease;
@@ -690,12 +652,12 @@
 	&__image-decoration {
 		position: absolute;
 		inset: 0;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.2);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
 		border-radius: 8px;
 		z-index: 1;
 		pointer-events: none;
 		transform: scale(1.02);
-		animation: subtlePulse 4s ease-in-out infinite;
+		animation: subtle-pulse 4s ease-in-out infinite;
 
 		&::before,
 		&::after {
@@ -705,7 +667,7 @@
 			height: 60px;
 			background: radial-gradient(
 				circle,
-				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 0%,
+				rgb(var(--color-action-accent-rgb), 0.3) 0%,
 				transparent 70%
 			);
 			filter: blur(8px);
@@ -726,7 +688,7 @@
 		position: absolute;
 		width: 24px;
 		height: 24px;
-		background: linear-gradient(135deg, var(--color-action-accent, #d4af37), transparent);
+		background: linear-gradient(135deg, var(--color-action-accent), transparent);
 		z-index: 3;
 		pointer-events: none;
 

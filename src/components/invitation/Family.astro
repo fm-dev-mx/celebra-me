@@ -3,6 +3,7 @@
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import FamilyDecorations from './FamilyDecorations.astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
 
 interface Props {
@@ -26,24 +27,9 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 ---
 
 <section id="family-section" class="family" data-variant={variant}>
-	<div class="family-bg-texture" aria-hidden="true"></div>
+	<div class="family__bg-texture" aria-hidden="true"></div>
 
-	{/* Elementos premium solo para luxury-hacienda */}
-	{variant === 'luxury-hacienda' && (
-		<>
-			{/* Remaches estructurales */}
-			<div class="family-rivet family-rivet--tl" aria-hidden="true"></div>
-			<div class="family-rivet family-rivet--tr" aria-hidden="true"></div>
-			<div class="family-rivet family-rivet--bl" aria-hidden="true"></div>
-			<div class="family-rivet family-rivet--br" aria-hidden="true"></div>
-
-			{/* Textura de pergamino superpuesta */}
-			<div class="family-parchment-overlay" aria-hidden="true"></div>
-
-			{/* Patrones de cuero tooling */}
-			<div class="leather-tooling leather-tooling--geometric" aria-hidden="true"></div>
-		</>
-	)}
+	<FamilyDecorations variant={variant} component="bg" />
 
 	<Container>
 		<div class="family__header">
@@ -52,8 +38,37 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 		</div>
 
 		<div class="family__layout">
-			{/* Left Column - Spouse & Children */}
-			<div class="family__left-column">
+			{/* Image Column - Left Side (40%) */}
+			{featuredImage && (
+				<div class="family__image-column">
+					<div class="family__image-container">
+						<FamilyDecorations variant={variant} component="frame" />
+
+						<div class="family__image-outer-frame">
+							<div class="family__image-inner-frame">
+								<div class="family__image-frame">
+									<OptimizedImage
+										imagePath={imagePath}
+										alt={celebrantName}
+										width={600}
+										height={800}
+									/>
+									<div class="family__image-overlay" aria-hidden="true"></div>
+								</div>
+							</div>
+						</div>
+						<div class="family__image-decoration" aria-hidden="true"></div>
+						<div class="family__image-corner family__image-corner--tl" aria-hidden="true"></div>
+						<div class="family__image-corner family__image-corner--tr" aria-hidden="true"></div>
+						<div class="family__image-corner family__image-corner--bl" aria-hidden="true"></div>
+						<div class="family__image-corner family__image-corner--br" aria-hidden="true"></div>
+					</div>
+				</div>
+			)}
+
+
+			{/* Content Column - Right Side (60%) */}
+			<div class="family__content-column">
 				{/* Spouse Card */}
 				{spouse && (
 					<div class="family__card family__card--spouse">
@@ -94,7 +109,6 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 									<div class={`family__child-item family__child-item--delay-${Math.min(index, 5)}`}>
 										<div class="family__child-content">
 											<p class="family__name family__name--child">{child.name}</p>
-
 										</div>
 									</div>
 								))}
@@ -103,48 +117,7 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 						</div>
 					</div>
 				)}
-			</div>
 
-			{/* Center Column - Featured Image with Premium Frame */}
-			{featuredImage && (
-				<div class="family__center-column">
-					<div class="family__image-column">
-						<div class="family__image-container">
-							{/* Remaches del marco para luxury-hacienda */}
-							{variant === 'luxury-hacienda' && (
-								<>
-									<div class="frame-rivet frame-rivet--tl" aria-hidden="true"></div>
-									<div class="frame-rivet frame-rivet--tr" aria-hidden="true"></div>
-									<div class="frame-rivet frame-rivet--bl" aria-hidden="true"></div>
-									<div class="frame-rivet frame-rivet--br" aria-hidden="true"></div>
-								</>
-							)}
-
-							<div class="family__image-outer-frame">
-								<div class="family__image-inner-frame">
-									<div class="family__image-frame">
-										<OptimizedImage
-											imagePath={imagePath}
-											alt={celebrantName}
-											width={600}
-											height={800}
-										/>
-										<div class="family__image-overlay" aria-hidden="true"></div>
-									</div>
-								</div>
-							</div>
-							<div class="family__image-decoration" aria-hidden="true"></div>
-							<div class="family__image-corner family__image-corner--tl" aria-hidden="true"></div>
-							<div class="family__image-corner family__image-corner--tr" aria-hidden="true"></div>
-							<div class="family__image-corner family__image-corner--bl" aria-hidden="true"></div>
-							<div class="family__image-corner family__image-corner--br" aria-hidden="true"></div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Right Column - Parents */}
-			<div class="family__right-column">
 				{/* Parents Card */}
 				{parents && (parents.father || parents.mother) && (
 					<div class="family__card family__card--parents">
@@ -193,3 +166,4 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 		target.classList.add('is-visible');
 	});
 </script>
+

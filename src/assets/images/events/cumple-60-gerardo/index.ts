@@ -2,6 +2,7 @@ import hero from './hero.webp';
 import portrait from './portrait.webp';
 import signature from './signature.webp';
 import jardin from './jardin.webp';
+import family from './family.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
@@ -19,6 +20,7 @@ export const assets = {
 	portrait,
 	jardin,
 	signature,
+	family,
 	gallery: [
 		gallery01,
 		gallery02,

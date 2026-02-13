@@ -147,6 +147,14 @@
 			filter: sepia(0.1) contrast(1.05) brightness(1.02);
 		}
 	}
+
+	// 💎 Ultra-Premium: Silk Texture Activation
+	.family__bg-texture {
+		background: var(--texture-silk);
+		background-size: 1000px 1000px;
+		animation: silkFlow 60s linear infinite;
+		opacity: 25%;
+	}
 }
 
 // --- LUXURY HACIENDA PREMIUM (Gerardo / Masculine Elite) ---
@@ -294,11 +302,58 @@
 		}
 	}
 
+	// Structural Decorations (Rivets, Parchment)
+	.family__rivet {
+		position: absolute;
+		width: 12px;
+		height: 12px;
+		background: radial-gradient(circle at 30% 30%, #e8d5b5, #8b7355 60%, #4a3b2a);
+		border-radius: 50%;
+		border: 1px solid rgba(0, 0, 0, 0.4);
+		box-shadow:
+			1px 1px 2px rgba(0, 0, 0, 0.5),
+			inset -1px -1px 2px rgba(255, 255, 255, 0.2);
+		z-index: 10;
+		pointer-events: none;
+
+		&--tl { top: 2rem; left: 2rem; }
+		&--tr { top: 2rem; right: 2rem; }
+		&--bl { bottom: 2rem; left: 2rem; }
+		&--br { bottom: 2rem; right: 2rem; }
+	}
+
+	.family__frame-rivet {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		background: radial-gradient(circle at 30% 30%, #d4af37, #8b7355 60%, #4a3b2a);
+		border-radius: 50%;
+		border: 1px solid rgba(0, 0, 0, 0.4);
+		box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+		z-index: 10;
+		pointer-events: none;
+
+		&--tl { top: 15px; left: 15px; }
+		&--tr { top: 15px; right: 15px; }
+		&--bl { bottom: 15px; left: 15px; }
+		&--br { bottom: 15px; right: 15px; }
+	}
+
+	.family__parchment-overlay {
+		position: absolute;
+		inset: 0;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+		background-blend-mode: multiply;
+		opacity: 0.05;
+		pointer-events: none;
+		z-index: 1;
+	}
+
 	// ==========================================================================
 	// PATRONES DE CUERO TOOLING COMO ELEMENTOS DECORATIVOS
 	// ==========================================================================
 
-	.leather-tooling {
+	.family__leather-tooling {
 		position: absolute;
 		opacity: 8%;
 		pointer-events: none;
@@ -375,22 +430,22 @@
 			inset: 1.5rem;
 		}
 
-		.family-rivet--tl {
+		.family__rivet--tl {
 			top: 1.5rem;
 			left: 1.5rem;
 		}
 
-		.family-rivet--tr {
+		.family__rivet--tr {
 			top: 1.5rem;
 			right: 1.5rem;
 		}
 
-		.family-rivet--bl {
+		.family__rivet--bl {
 			bottom: 1.5rem;
 			left: 1.5rem;
 		}
 
-		.family-rivet--br {
+		.family__rivet--br {
 			bottom: 1.5rem;
 			right: 1.5rem;
 		}
@@ -404,27 +459,27 @@
 			padding: 15px;
 		}
 
-		.frame-rivet {
+		.family__frame-rivet {
 			width: 8px;
 			height: 8px;
 		}
 
-		.frame-rivet--tl {
+		.family__frame-rivet--tl {
 			top: 10px;
 			left: 10px;
 		}
 
-		.frame-rivet--tr {
+		.family__frame-rivet--tr {
 			top: 10px;
 			right: 10px;
 		}
 
-		.frame-rivet--bl {
+		.family__frame-rivet--bl {
 			bottom: 10px;
 			left: 10px;
 		}
 
-		.frame-rivet--br {
+		.family__frame-rivet--br {
 			bottom: 10px;
 			right: 10px;
 		}
