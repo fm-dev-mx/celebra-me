@@ -1,8 +1,23 @@
 ---
-description: Recovery and remediation of Landing Page regressions (Hero, Pricing, Colors, Icons).
+description: ARCHIVED - Consolidated into landing-page-maintenance.md
+archived: 2026-02-12
+replacement: .agent/workflows/docs/landing-page-maintenance.md
 ---
 
-# 🛡️ Workflow: Landing Page Regression Recovery
+# [ARCHIVED] Workflow: Landing Page Regression Recovery
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Consolidated with `landing-page-remediation.md` into unified
+> `landing-page-maintenance.md`  
+> **Replacement**: Use `.agent/workflows/docs/landing-page-maintenance.md` with `--recovery` mode
+
+---
+
+## Original Content (Preserved for Reference)
+
+## 🛡️ Workflow: Landing Page Regression Recovery
 
 This task workflow is designed to systematically analyze and fix visual and structural regressions
 on the main landing page.
@@ -61,12 +76,9 @@ on the main landing page.
 3. **Responsive Check**:
     - Validate vertical stacking on mobile and horizontal spacing on desktop.
 
----
-
 // turbo
 
 ## Completion
 
 1. Update `docs/implementation-log.md` with the remediation details.
-2. Self-archive this workflow by moving it to `.agent/workflows/archive/` or deleting it after
-   verification.
+2. ✅ Self-archived: Moved to `.agent/workflows/archive/` on 2026-02-12.

@@ -21,37 +21,30 @@ Este workflow soluciona las regresiones visuales en la demo de XV años, asegura
 ## 🏗️ Fase 1: Blindaje Arquitectónico (Isolation)
 
 1. **Protección de Selectores Globales**
-    - Auditar
-      [luxury-hacienda.scss](file:///c:/Code/celebra-me/src/styles/themes/presets/_luxury-hacienda.scss).
+    - Auditar `src/styles/themes/presets/_luxury-hacienda.scss`.
     - Mover cualquier override de `.card` o `.btn-primary` dentro del selector
       `.theme-preset--luxury-hacienda`.
 
 2. **Robustecer Jewelry Box**
-    - Enriquecer
-      [jewelry-box.scss](file:///c:/Code/celebra-me/src/styles/themes/presets/_jewelry-box.scss) con
-      variables semánticas completas (surfaces, actions, borders) para evitar dependencia de valores
-      por defecto.
+    - Enriquecer `src/styles/themes/presets/_jewelry-box.scss` con variables semánticas completas
+      (surfaces, actions, borders) para evitar dependencia de valores por defecto.
 
 ---
 
 ## ✨ Fase 2: Remediación Focalizada
 
 1. **Familia (Family - Jewelry Variant)**
-    - Modificar
-      [\_family-theme.scss](file:///c:/Code/celebra-me/src/styles/themes/sections/_family-theme.scss).
+    - Modificar `src/styles/themes/sections/_family-theme.scss`.
     - Eliminar texturas Western (cuero/remaches) de la variante `jewelry-box`.
     - Implementar un "Layout de Seda": Fondos claros, marcos de oro fino, tipografía formal.
 
 2. **Ubicación & Regalos (Location & Gifts)**
-    - Refinar
-      [\_location-theme.scss](file:///c:/Code/celebra-me/src/styles/themes/sections/_location-theme.scss)
-      e
-      [\_gifts-theme.scss](file:///c:/Code/celebra-me/src/styles/themes/sections/_gifts-theme.scss).
+    - Refinar `src/styles/themes/sections/_location-theme.scss` e
+      `src/styles/themes/sections/_gifts-theme.scss`.
     - Asegurar que las cards tengan el acabado "Glass/Gold" esperado.
 
 3. **RSVP, Itinerario & Header**
-    - Ajustar [\_rsvp.scss](file:///c:/Code/celebra-me/src/styles/invitation/_rsvp.scss) e
-      [\_itinerary.scss](file:///c:/Code/celebra-me/src/styles/invitation/_itinerary.scss).
+    - Ajustar `src/styles/invitation/_rsvp.scss` e `src/styles/invitation/_itinerary.scss`.
     - El Header de la invitación debe adaptarse cromáticamente al tema activo sin afectar la Landing
       Page.
 

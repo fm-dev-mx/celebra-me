@@ -10,14 +10,18 @@ description: Workflow maintenance and drift detection.
     - Paths: Verify all `docs/` references exist.
 
 2. **Categorization & Pruning**
-    - **Execution**: `premium-dev-cycle`, `technical-debt-remediation`, `jewelry-box-extension`,
-      `align-gerardo-styles`.
-    - **Gatekeeper**: `atomic-ui-commit`, `safe-commit`.
-    - **Asset/Design**: `universal-asset-system`, `color-architecture`, `asset-management`.
-    - **Sync/Support**: `workflow-sync`, `skills-sync`, `docs-audit`, `prompt-to-workflow`.
+    - **Execution**: `jewelry-box-remediation`, `align-gerardo-styles`,
+      `landing-page-theme-abstraction`.
+    - **Gatekeeper**: `gatekeeper-commit` (consolidated from atomic-ui-commit + safe-commit).
+    - **Asset/Design**: `asset-management`.
+    - **Sync/Support**: `workflow-sync`, `skills-sync`, `docs/docs-audit`, `docs/docs-remediation`,
+      `prompt-to-workflow`.
+    - **Documentation**: `docs/docs-content-collections`, `docs/landing-page-maintenance`.
+    - **Archived**: Check `archive/` folder for obsolete workflows (atomic-ui-commit, safe-commit,
+      landing-page-remediation, docs-audit-old).
     - **Pruning**: Propose deletion for obsolete logic or engines.
     - **Terminology**: Enforce ADU, Jewelry Box, Hacienda, Asset Registry.
-    - **Links**: Repo-relative `./name.md` only. No `file://`.
+    - **Links**: Repo-relative `./name.md` or `./docs/name.md` only. No `file://`.
 
 3. **Ability Integration**
     - Cross-ref with `.agent/skills/` (a11y, animation-motion).

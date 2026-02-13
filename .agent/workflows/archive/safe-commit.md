@@ -1,8 +1,20 @@
 ---
-description: Minimal staged-only gatekeeper to detect blockers and drift.
+description: ARCHIVED - Consolidated into gatekeeper-commit.md
+archived: 2026-02-12
+replacement: .agent/workflows/docs/gatekeeper-commit.md
 ---
 
-# Workflow: Staged Gatekeeper (Minimal)
+# [ARCHIVED] Workflow: Staged Gatekeeper (Minimal)
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Consolidated with `atomic-ui-commit.md` into unified `gatekeeper-commit.md`  
+> **Replacement**: Use `.agent/workflows/docs/gatekeeper-commit.md` with `--minimal` mode
+
+---
+
+## Original Content (Preserved for Reference)
 
 1. **Authority**
     - `.agent/*` (Source of Truth).

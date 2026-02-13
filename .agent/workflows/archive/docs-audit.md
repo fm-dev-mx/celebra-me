@@ -1,8 +1,22 @@
 ---
+description: ARCHIVED - Moved to docs/ folder and enhanced
 description: Documentation ecosystem synchronization and drift detection.
+archived: 2026-02-12
+replacement: .agent/workflows/docs/docs-audit.md
 ---
 
-# 📚 Workflow: Documentation Audit & Sync
+# [ARCHIVED] Workflow: Documentation Audit & Sync
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Moved to `.agent/workflows/docs/` and significantly enhanced with validation,
+> remediation guidance, and comprehensive coverage  
+> **Replacement**: Use `.agent/workflows/docs/docs-audit.md` for all documentation audits
+
+---
+
+## Original Content (Preserved for Reference)
 
 1. **Gatekeeper (Vision Check)**
     - Check `docs/PREMIUM_UX_VISION.md`. Ensure "Aesthetic Presets" and "Typography" match `src/`.

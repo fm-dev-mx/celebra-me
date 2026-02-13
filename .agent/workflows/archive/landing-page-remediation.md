@@ -1,8 +1,23 @@
 ---
-description: Remediation of Landing Page regressions (Scroll, Header, Contact, Footer).
+description: ARCHIVED - Consolidated into landing-page-maintenance.md
+archived: 2026-02-12
+replacement: .agent/workflows/docs/landing-page-maintenance.md
 ---
 
-# 💎 Workflow: Landing Page Remediation
+# [ARCHIVED] Workflow: Landing Page Remediation
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Consolidated with `landing-page-regression-recovery.md` into unified
+> `landing-page-maintenance.md`  
+> **Replacement**: Use `.agent/workflows/docs/landing-page-maintenance.md` with `--remediation` mode
+
+---
+
+## Original Content (Preserved for Reference)
+
+## 💎 Workflow: Landing Page Remediation
 
 1. **Phase 0: Technical Debt Audit & Scope Lock**
     - [MODIFY] Scan `src/styles/home/` for `!important` usage.

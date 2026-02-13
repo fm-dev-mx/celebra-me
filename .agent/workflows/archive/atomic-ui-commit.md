@@ -1,8 +1,20 @@
 ---
-description: Strict architecture gatekeeper (Astro, React, SCSS, TS).
+description: ARCHIVED - Consolidated into gatekeeper-commit.md
+archived: 2026-02-12
+replacement: .agent/workflows/docs/gatekeeper-commit.md
 ---
 
-# Workflow: Atomic Gatekeeper (Strict)
+# [ARCHIVED] Workflow: Atomic Gatekeeper (Strict)
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Consolidated with `safe-commit.md` into unified `gatekeeper-commit.md`  
+> **Replacement**: Use `.agent/workflows/docs/gatekeeper-commit.md` with `--strict` mode
+
+---
+
+## Original Content (Preserved for Reference)
 
 1. **Guards (Blockers)**
     - Repo must stay **deployable**.

@@ -1,8 +1,20 @@
 ---
-description: Deterministic execution plan for the aesthetic audit findings (cumple-60-gerardo).
+description: ARCHIVED - Task-specific workflow completed
+archived: 2026-02-12
+replacement: Use general invitation workflows or create new task workflow
 ---
 
-# /invitation-execution: Gerardo - Phase 2 (Quotes, Countdown, Location)
+# [ARCHIVED] Workflow: Invitation Execution (Gerardo 60)
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Task-specific workflow for Gerardo 60 invitation has been completed  
+> **Replacement**: Create new task-specific workflows as needed or use general theme workflows
+
+---
+
+## Original Content (Preserved for Reference)
 
 This workflow executes the aesthetic refinements for the middle sections of the invitation,
 transitioning from "Jewelry Box" to "Luxury Hacienda".

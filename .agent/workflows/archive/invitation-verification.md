@@ -1,10 +1,21 @@
 ---
-description:
-    Verification workflow for digital invitations. Ensures aesthetic consistency and technical
-    health after each ADU.
+description: ARCHIVED - Generic workflow, superseded by quality gates in other workflows
+archived: 2026-02-12
+replacement: Use verification steps within each workflow or gatekeeper-commit.md
 ---
 
-# 🔍 Workflow: Invitation Verification
+# [ARCHIVED] Workflow: Invitation Verification
+
+> **⚠️ THIS WORKFLOW HAS BEEN ARCHIVED**
+>
+> **Date**: 2026-02-12  
+> **Reason**: Verification steps now integrated into individual workflows and gatekeeper  
+> **Replacement**: Use `gatekeeper-commit.md` with verification phases or include verification in
+> task workflows
+
+---
+
+## Original Content (Preserved for Reference)
 
 Use this workflow immediately after an ADU has been implemented to ensure zero-defect delivery.
 
