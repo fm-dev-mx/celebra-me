@@ -2,6 +2,7 @@
 // Theme-specific styles for Countdown Section
 // Supports: minimal (default), vibrant, classic, modern
 
+@use 'sass:color';
 @use '../../tokens' as tokens;
 @use '../../tokens/primitives' as primitives;
 @use '@/styles/global/mixins' as mixins;
@@ -140,11 +141,11 @@
 	// Vibrant gradient background with depth
 	background: linear-gradient(
 		135deg,
-		#667eea 0%,
-		#764ba2 25%,
-		#f093fb 50%,
-		#f5576c 75%,
-		#ffd93d 100%
+		primitives.$base-gold-500 0%,
+		color.adjust(primitives.$base-gold-500, $lightness: -15%) 25%,
+		color.adjust(primitives.$base-gold-500, $lightness: 30%) 50%,
+		color.adjust(primitives.$base-gold-500, $lightness: -25%) 75%,
+		color.adjust(primitives.$base-gold-500, $lightness: 20%) 100%
 	);
 	background-size: 400% 400%;
 	animation: gradientShift 15s ease infinite;
