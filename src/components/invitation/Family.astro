@@ -187,22 +187,9 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 
 
 <script>
-	const observerOptions = {
-		threshold: 0.1,
-		rootMargin: '0px 0px -50px 0px'
-	};
+	import { createIntersectionObserver } from '@/lib/utils/animations';
 
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach(entry => {
-			if (entry.isIntersecting) {
-				entry.target.classList.add('is-visible');
-				observer.unobserve(entry.target);
-			}
-		});
-	}, observerOptions);
-
-	const familySection = document.querySelector('.family');
-	if (familySection) {
-		observer.observe(familySection);
-	}
+	createIntersectionObserver('.family', (target) => {
+		target.classList.add('is-visible');
+	});
 </script>

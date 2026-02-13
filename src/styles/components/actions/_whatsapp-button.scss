@@ -25,7 +25,7 @@
 	}
 
 	&:hover {
-		background-color: color.scale(tokens.$color-whatsapp, $lightness: -10%);
+		background-color: color.scale(tokens.$color-whatsapp, $lightness: -10%, $space: hsl);
 		transform: translateY(-1px);
 	}
 
