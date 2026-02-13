@@ -41,13 +41,19 @@
 
 		&.font-heading-formal {
 			font-size: clamp(2.5rem, 8vw, 4rem);
-			color: tokens.$color-action-primary;
+			color: var(
+				--color-text-emphasis,
+				var(--color-action-primary, tokens.$color-action-primary)
+			);
 			margin-bottom: 1rem;
 		}
 
 		// Ensuring specific H2 styling
 		.itinerary__title {
-			color: tokens.$color-action-primary;
+			color: var(
+				--color-text-emphasis,
+				var(--color-action-primary, tokens.$color-action-primary)
+			);
 			letter-spacing: 0.1em;
 		}
 	}
@@ -65,7 +71,7 @@
 			background: linear-gradient(
 				to var(--direction, right),
 				transparent,
-				tokens.$color-action-primary
+				var(--color-action-primary, tokens.$color-action-primary)
 			);
 
 			&:last-child {
@@ -76,9 +82,9 @@
 		.flourish-diamond {
 			width: 8px;
 			height: 8px;
-			background: tokens.$color-action-primary;
+			background: var(--color-action-primary, tokens.$color-action-primary);
 			transform: rotate(45deg);
-			box-shadow: 0 0 10px tokens.$color-action-primary;
+			box-shadow: 0 0 10px var(--color-action-primary, tokens.$color-action-primary);
 		}
 	}
 
@@ -97,8 +103,8 @@
 		background: linear-gradient(
 			to bottom,
 			transparent,
-			tokens.$color-action-primary 5%,
-			tokens.$color-action-primary 95%,
+			var(--color-action-primary, tokens.$color-action-primary) 5%,
+			var(--color-action-primary, tokens.$color-action-primary) 95%,
 			transparent
 		);
 		transform: translateX(-50%);
@@ -109,8 +115,8 @@
 			content: '';
 			position: absolute;
 			inset: 0 0 0 0;
-			background: tokens.$color-action-primary;
-			box-shadow: 0 0 15px tokens.$color-action-primary;
+			background: var(--color-action-primary, tokens.$color-action-primary);
+			box-shadow: 0 0 15px var(--color-action-primary, tokens.$color-action-primary);
 			opacity: 0.6;
 		}
 	}
@@ -122,16 +128,16 @@
 		transform: translateX(-50%) rotate(45deg);
 		width: 12px;
 		height: 12px;
-		border: 1px solid var(--color-action-accent, tokens.$color-action-accent);
-		background: var(--color-surface-primary, tokens.$color-surface-primary);
+		border: 1px solid var(--color-action-accent);
+		background: var(--color-surface-primary);
 		z-index: 2;
-		box-shadow: 0 0 10px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.4);
+		box-shadow: 0 0 10px var(--color-glass-shadow);
 
 		&::after {
 			content: '';
 			position: absolute;
 			inset: 2px;
-			background: tokens.$color-action-primary;
+			background: var(--color-action-accent);
 			opacity: 0.8;
 		}
 	}
@@ -187,28 +193,28 @@
 		font-size: 0.95rem;
 		text-transform: uppercase;
 		letter-spacing: 0.25em;
-		color: tokens.$color-action-primary;
+		color: var(--color-action-primary, tokens.$color-action-primary);
 		font-weight: 500;
 		margin-bottom: 0.5rem;
 	}
 
 	&__item-label {
-		font-size: 1.6rem;
-		color: tokens.$color-action-primary; // High contrast with dark, and themed
+		font-family: var(--font-display);
+		font-size: 1.8rem;
+		color: var(--color-action-primary);
 		margin-bottom: 0.4rem;
 		line-height: 1.2;
+		font-weight: 300;
 
-		// If background is very light, we might need a fallback,
-		// but since it's an invitation we usually control the sections
 		background: linear-gradient(
 			135deg,
-			tokens.$color-action-primary 0%,
-			tokens.$color-text-secondary 100%
+			var(--color-text-primary) 0%,
+			var(--color-action-accent) 100%
 		);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+		filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 	}
 
 	&__item-description {
@@ -222,11 +228,8 @@
 	&__item-icon-wrapper {
 		width: 56px;
 		height: 56px;
-		background: rgba(
-			var(--color-surface-primary-rgb, 255, 255, 255),
-			0.95
-		); // Pearl white background
-		border: 1.5px solid tokens.$color-action-primary;
+		background: var(--color-surface-soft, rgba(255, 255, 255, 0.95));
+		border: 1.5px solid var(--color-glass-border);
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -234,15 +237,16 @@
 		position: relative;
 		z-index: 2;
 		box-shadow:
-			0 4px 15px rgba(0, 0, 0, 0.15),
-			0 0 10px rgba(212, 175, 55, 0.2);
+			0 4px 15px rgba(0, 0, 0, 0.1),
+			0 0 10px var(--color-glass-shadow);
 		backdrop-filter: blur(8px);
 
 		&::before {
 			content: '';
 			position: absolute;
 			inset: -5px;
-			border: 1px solid rgba(212, 175, 55, 0.2);
+			border: 1px solid var(--color-glass-border);
+			opacity: 0.3;
 			border-radius: 50%;
 			pointer-events: none;
 		}
@@ -251,7 +255,7 @@
 	&__item-icon-inner {
 		width: 28px;
 		height: 28px;
-		color: tokens.$color-action-primary; // Icon contrast on pearl
+		color: var(--color-action-primary, tokens.$color-action-primary); // Icon contrast on pearl
 		display: flex;
 		align-items: center;
 		justify-content: center;

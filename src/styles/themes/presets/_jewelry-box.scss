@@ -1,16 +1,52 @@
 @use '../../tokens' as tokens;
 
 .theme-preset--jewelry-box {
-	// Primary: Gold Metallic
-	--color-text-emphasis: #{tokens.$base-gold-500};
-	--color-action-accent: var(--color-primary, #{tokens.$base-gold-500});
-	--color-action-accent-rgb: var(--color-primary-rgb, 212, 175, 55);
+	// 💎 Color Architecture: Gold, Pearl & Glass
+	--color-surface-primary: #fff9f5;
+	--color-surface-primary-rgb: 255, 249, 245;
+	--color-surface-soft: #fffdfc;
+	--color-surface-dark: #111111;
+	--color-surface-dark-rgb: 17, 17, 17;
 
-	// Dark: Deep Surfaces
-	--color-surface-dark: #{tokens.$base-coffee-900};
-	--color-surface-dark-rgb: 75, 54, 33;
-
-	// Semantic Overrides
-	--color-text-primary: var(--color-surface-dark);
+	// Actions & Emphasis
 	--color-action-primary: var(--color-surface-dark);
+	--color-action-accent: #{tokens.$base-gold-500};
+	--color-action-accent-rgb: 212, 175, 55;
+	--color-text-primary: var(--color-surface-dark);
+	--color-text-emphasis: #{tokens.$base-gold-500};
+	--color-text-on-dark: #{tokens.$base-gold-500};
+
+	// Glassmorphism UI
+	--color-glass-bg: rgba(255, 255, 255, 0.45);
+	--color-glass-border: rgba(212, 175, 55, 0.3);
+	--color-glass-shadow: rgba(212, 175, 55, 0.15);
+	--glass-blur: 16px;
+	--glass-saturate: 180%;
+
+	// Typography & Semantic Overrides
+	--font-display: #{tokens.$font-display-elegant};
+	--font-body: #{tokens.$font-body};
+	--font-calligraphy: 'Pinyon Script', cursive;
+
+	// Component Specifics
+	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgba(0, 0, 0, 0.05);
+	--border-fine-gold: 1px solid var(--color-glass-border);
+	--border-image: 2px solid rgba(var(--color-action-accent-rgb), 0.5);
+
+	// 🎨 Texture & Light Effects (Ultra-Premium)
+	--texture-silk:
+		radial-gradient(
+			circle at 50% 50%,
+			rgba(255, 255, 255, 0.8) 0%,
+			rgba(255, 249, 245, 0.4) 100%
+		),
+		url('https://www.transparenttextures.com/patterns/silk.png');
+	--light-sweep: linear-gradient(
+		-45deg,
+		rgba(255, 255, 255, 0) 0%,
+		rgba(255, 255, 255, 0) 40%,
+		rgba(255, 255, 255, 0.4) 50%,
+		rgba(255, 255, 255, 0) 60%,
+		rgba(255, 255, 255, 0) 100%
+	);
 }

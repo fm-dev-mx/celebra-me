@@ -8,67 +8,96 @@
 // --- JEWELRY BOX (XV / Wedding) ---
 .gifts-section[data-variant='jewelry-box'] {
 	background: radial-gradient(
-		circle at center,
-		rgba(var(--color-action-accent-rgb), 0.1) 0%,
-		transparent 70%
+		circle at 50% 50%,
+		rgba(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
 	);
+	padding: 8rem 2rem;
 
 	.gifts-section__title {
-		font-family: tokens.$font-display-formal;
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.3rem;
+		font-weight: 300;
 	}
 
 	.gift-card {
-		background: tokens.$color-glass-bg;
-		border: 1px solid tokens.$color-glass-border;
-		backdrop-filter: blur(12px);
+		background: var(--color-glass-bg);
+		border: 1px solid var(--color-glass-border);
+		border-radius: 12px;
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		box-shadow: var(--shadow-premium);
+		transition: all 0.5s tokens.$ease-premium;
+		position: relative;
+		overflow: hidden;
 
 		&::before {
-			background: linear-gradient(
-				90deg,
-				transparent,
-				var(--color-action-accent, tokens.$color-action-accent),
-				transparent
-			);
+			display: none; // Remove old gradient line
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgba(var(--color-action-accent-rgb), 0.05);
+			border-radius: 8px;
+			pointer-events: none;
 		}
 
 		&:hover {
-			border-color: rgba(var(--color-action-accent-rgb), 0.5);
-			box-shadow: 0 15px 35px rgba(var(--color-action-accent-rgb), 0.2);
+			transform: translateY(-8px);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 25px 50px var(--color-glass-shadow);
 		}
 	}
 
 	.gift-card__icon {
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		color: var(--color-action-accent);
+		opacity: 0.8;
 	}
 
 	.gift-card__title {
-		font-family: tokens.$font-display-formal;
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		font-family: var(--font-display);
+		color: var(--color-text-primary);
+		letter-spacing: 0.15rem;
+		font-size: 1.4rem;
 	}
 
 	.gift-card__button {
-		border-color: var(--color-action-accent, tokens.$color-action-accent);
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
+		font-family: var(--font-body);
+		border-radius: 50px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-weight: 600;
 
 		&:hover {
-			background: var(--color-action-accent, tokens.$color-action-accent);
+			background: var(--color-action-accent);
 			color: white;
 		}
 	}
 
 	.bank-details {
-		background: rgba(var(--color-surface-primary-rgb), 0.05);
-		border-left: 3px solid var(--color-action-accent, tokens.$color-action-accent);
+		background: rgba(255, 255, 255, 0.4);
+		border-left: 2px solid var(--color-action-accent);
+		backdrop-filter: blur(4px);
+		border-radius: 0 8px 8px 0;
 
 		strong {
-			color: var(--color-action-accent, tokens.$color-action-accent);
+			color: var(--color-action-accent);
 		}
 	}
 
 	.copy-button {
-		background: var(--color-action-accent, tokens.$color-action-accent);
+		background: var(--color-action-accent);
 		color: white;
+		border-radius: 50px;
+		font-family: var(--font-body);
+		text-transform: uppercase;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
 	}
 }
 

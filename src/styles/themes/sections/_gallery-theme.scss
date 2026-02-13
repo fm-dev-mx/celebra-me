@@ -2,6 +2,106 @@
 @use '../../global/mixins' as mixins;
 
 // ==========================================================================
+// JEWELRY BOX GALLERY (XV / Wedding Premium)
+// ==========================================================================
+
+.thank-you-section[data-variant='jewelry-box'] {
+	background: radial-gradient(
+		circle at 50% 0%,
+		rgba(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	padding: 10rem 2rem;
+
+	.photo-frame {
+		background: var(--color-glass-bg);
+		border: 1px solid var(--color-glass-border);
+		border-radius: 12px;
+		box-shadow: var(--shadow-premium);
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		padding: 12px;
+
+		:global(.photo-image) {
+			border-radius: 8px;
+		}
+	}
+
+	.thank-you-message {
+		font-family: var(--font-display);
+		color: var(--color-surface-dark);
+		background: rgba(var(--color-surface-primary-rgb), 0.4);
+		border: 1px solid var(--color-glass-border);
+		backdrop-filter: blur(8px);
+		border-radius: 12px;
+		padding: 3rem;
+		box-shadow: var(--shadow-premium);
+	}
+
+	.closing-name {
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-weight: 300;
+		font-size: clamp(3rem, 8vw, 5rem);
+	}
+}
+
+.gallery-section[data-variant='jewelry-box'] {
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgba(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	padding: 8rem 2rem;
+
+	.gallery-section__title {
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.3rem;
+		font-weight: 300;
+	}
+
+	.gallery-grid__item {
+		background: var(--color-glass-bg);
+		border: 1px solid var(--color-glass-border);
+		border-radius: 12px;
+		padding: 10px;
+		box-shadow: var(--shadow-premium);
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		transition: all 0.5s tokens.$ease-premium;
+		position: relative;
+
+		&:hover {
+			transform: translateY(-8px) scale(1.02);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 25px 45px var(--color-glass-shadow);
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgba(var(--color-action-accent-rgb), 0.05);
+			border-radius: 8px;
+			pointer-events: none;
+		}
+
+		img {
+			border-radius: 4px;
+		}
+	}
+
+	.gallery-grid__caption {
+		font-family: var(--font-body);
+		color: var(--color-action-accent);
+		background: rgba(var(--color-surface-primary-rgb), 0.95);
+		border-radius: 0 0 8px 8px;
+	}
+}
+
+// ==========================================================================
 // LUXURY HACIENDA GALLERY
 // ==========================================================================
 

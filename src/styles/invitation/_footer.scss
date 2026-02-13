@@ -9,14 +9,15 @@
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
-		rgba(var(--color-surface-primary-rgb), 0.3) 100%
+		rgba(var(--color-surface-primary-rgb), 0.2) 100%
 	);
-	backdrop-filter: blur(4px);
+	backdrop-filter: blur(var(--glass-blur, 4px));
 	padding: 0.75rem 1rem;
 	font-family: tokens.$font-ui;
-	color: rgba(var(--color-text-primary-rgb), 0.4); // Very subtle text
+	color: var(--color-text-primary);
+	opacity: 0.6;
 	font-size: tokens.$font-size-ui;
-	border-top: 1px solid tokens.$color-border-subtle;
+	border-top: 1px solid var(--color-glass-border, tokens.$color-border-subtle);
 
 	display: flex;
 	align-items: center;

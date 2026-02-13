@@ -21,7 +21,7 @@
             "showParticles": false
         },
         "location": {
-            "variant": "structured",
+            "variant": "jewelry-box",
             "mapStyle": "colorful",
             "showFlourishes": true
         },
@@ -76,10 +76,6 @@
         },
         "indications": [
             { "icon": "crown", "text": "El color púrpura está reservado para la festejada." },
-            {
-                "icon": "envelope",
-                "text": "Su presencia es nuestro mayor regalo. Si desean tener un detalle, un sobre será bien recibido."
-            },
             { "icon": "forbidden", "text": "Celebración sin niños." }
         ]
     },
@@ -231,7 +227,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "sealIcon": "heart",
         "microcopy": "Toca para abrir mi invitación",

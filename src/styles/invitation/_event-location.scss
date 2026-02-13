@@ -1,4 +1,5 @@
 /* Event Location Section - Digital Jewelry Box Aesthetic */
+@use 'sass:color';
 @use '../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
 @use '@/styles/global/animations' as animations;
@@ -452,17 +453,35 @@
 		align-items: center;
 		gap: 1rem;
 		text-align: center;
+		padding: 1rem;
+		border-radius: 8px;
+		transition: all 0.3s ease;
 
 		@include mixins.respond-to(sm) {
 			flex-direction: row;
 			text-align: left;
 			gap: 1.5rem;
 		}
+
+		&--reserved {
+			background: linear-gradient(135deg, rgba(129, 79, 150, 0.08), rgba(129, 79, 150, 0.03));
+			border: 1px solid rgba(129, 79, 150, 0.2);
+
+			.event-location__indication-icon {
+				color: tokens.$base-purple-reserved;
+			}
+
+			.event-location__indication-text {
+				color: color.adjust(#814f96, $lightness: -15%);
+				font-weight: 500;
+			}
+		}
 	}
 
 	&__indication-icon {
 		color: var(--color-primary, #d4af37);
 		opacity: 0.9;
+		flex-shrink: 0;
 		font-size: 1.5rem; /* Larger but fine */
 
 		svg {

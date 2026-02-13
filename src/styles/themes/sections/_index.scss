@@ -1,10 +1,14 @@
 // src/styles/themes/sections/_index.scss
 // Export all section-specific theme styles
 
+@forward 'base-theme';
+@forward 'hero-theme';
 @forward 'quote-theme';
 @forward 'countdown-theme';
 @forward 'location-theme';
 @forward 'family-theme';
 @forward 'gifts-theme';
 @forward 'gallery-theme';
+@forward 'rsvp-theme';
 @forward 'thank-you-theme';
+@forward 'reveal-theme';

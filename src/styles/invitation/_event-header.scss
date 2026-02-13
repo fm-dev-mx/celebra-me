@@ -14,7 +14,7 @@
 		font-size: 1.25rem;
 		font-weight: tokens.$font-weight-bold;
 		text-decoration: none;
-		color: tokens.$color-action-accent;
+		color: var(--color-action-accent);
 		transition: tokens.$transition-snappy;
 		white-space: nowrap;
 		overflow: hidden;
@@ -50,22 +50,23 @@
 		padding: 0.5rem 1rem;
 		border-radius: 4px;
 		transition: tokens.$transition-snappy;
-		color: tokens.$color-text-primary;
+		color: var(--color-text-primary);
 
 		&:hover {
-			color: tokens.$color-action-accent;
+			color: var(--color-action-accent);
 			background-color: rgba(var(--color-surface-primary-rgb), 0.5);
 		}
 
 		&--cta {
-			background-color: tokens.$color-action-accent;
-			color: tokens.$color-text-on-dark;
+			background-color: var(--color-action-accent);
+			color: var(--color-text-on-dark);
 			border-radius: 50px;
 
 			&:hover {
-				background-color: tokens.$color-action-accent;
+				background-color: var(--color-action-accent);
 				transform: translateY(-1px);
-				color: tokens.$color-text-on-dark;
+				color: var(--color-text-on-dark);
+				box-shadow: 0 4px 12px var(--color-glass-shadow);
 			}
 		}
 	}

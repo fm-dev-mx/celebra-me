@@ -36,12 +36,29 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 
 ### Quote Section
 
-| Variante      | Descripción                                                                                                | Status    | Mejor para                               |
-| ------------- | ---------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------- |
-| `elegant`     | Clásico, fondo cuero oscuro, serif, transiciones suaves                                                    | [APPLIED] | Bodas formales, aniversarios             |
-| `modern`      | Juvenil, gradientes pasteles, script, animaciones bounce                                                   | [APPLIED] | XV Años, fiestas modernas                |
-| `jewelry-box` | **Premium Luxury**, fondo pergamino marfil, `Pinyon Script`, animaciones `premiumFadeUp`, acentos dorados. | [APPLIED] | **XV Años Premium**, Bodas de Lujo       |
-| `minimal`     | Limpio, sans-serif, fondo claro simple                                                                     | [APPLIED] | Eventos corporativos, bodas minimalistas |
+| Variante          | Descripción                                                                                                | Status    | Mejor para                               |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------- |
+| `elegant`         | Clásico, fondo cuero oscuro, serif, transiciones suaves                                                    | [APPLIED] | Bodas formales, aniversarios             |
+| `modern`          | Juvenil, gradientes pasteles, script, animaciones bounce                                                   | [APPLIED] | XV Años, fiestas modernas                |
+| `jewelry-box`     | **Premium Luxury**, fondo pergamino marfil, `Pinyon Script`, animaciones `premiumFadeUp`, acentos dorados. | [APPLIED] | **XV Años Premium**, Bodas de Lujo       |
+| `luxury-hacienda` | **Masculine Elite**, fondo pergamino con textura, tipografía Hacienda, acentos cobre/café.                 | [APPLIED] | **Gerardo 60**, Eventos rústicos de lujo |
+| `minimal`         | Limpio, sans-serif, fondo claro simple                                                                     | [APPLIED] | Eventos corporativos, bodas minimalistas |
+
+### Hero Section
+
+| Variante          | Descripción                                                               | Status    | Mejor para          |
+| ----------------- | ------------------------------------------------------------------------- | --------- | ------------------- |
+| `standard`        | Diseño base con overlays estándar                                         | [APPLIED] | Genérico            |
+| `jewelry-box`     | Glassmorphism profundo, light sweep, animaciones de foil de oro           | [APPLIED] | **XV Años Premium** |
+| `luxury-hacienda` | Estética de cuero y metal, tipografía con shimmer dorado, bordes rústicos | [APPLIED] | **Gerardo 60**      |
+
+### RSVP Section
+
+| Variante          | Descripción                                                   | Status    | Mejor para          |
+| ----------------- | ------------------------------------------------------------- | --------- | ------------------- |
+| `standard`        | Formulario base con estilos neutros                           | [APPLIED] | Genérico            |
+| `jewelry-box`     | Botones glass con bordes dorados, tipografía manuscrita sutil | [APPLIED] | **XV Años Premium** |
+| `luxury-hacienda` | Botones de alto contraste (café/oro), tipografía UI bloqueada | [APPLIED] | **Gerardo 60**      |
 
 ### Countdown Section
 
@@ -182,10 +199,17 @@ $ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 ## Arquitectura de Archivos
 
 ```markdown
-src/styles/themes/sections/ ├── \_index.scss # Exporta todos los temas de sección ├──
-\_quote-theme.scss # Estilos temáticos para Quote ├── \_countdown-theme.scss # Estilos temáticos
-para Countdown └── \_location-theme.scss # Estilos temáticos para Location
+src/styles/themes/ ├── presets/ │ ├── \_jewelry-box.scss # SOLO inyección de variables CSS │ └──
+\_luxury-hacienda.scss # SOLO inyección de variables CSS └── sections/ ├── \_index.scss # Exporta
+todos los temas ├── \_base-theme.scss # Overrides globales y filtros por variante ├──
+\_hero-theme.scss # Hero UI por variante ├── \_quote-theme.scss # Quote UI por variante ├──
+\_rsvp-theme.scss # RSVP UI por variante ├── \_reveal-theme.scss # Envelope/Seal UI por variante └──
+... # Otros temas de sección
 ```
+
+> [!IMPORTANT] **Ley de Aislamiento**: Los archivos en `presets/` NUNCA deben contener estilos CSS
+> directos ni selectores de clase (ej. `.card`). Su única responsabilidad es definir variables CSS.
+> Los estilos visuales se encapsulan en `sections/` usando selectores de atributo `[data-variant]`.
 
 ## Implementación Técnica
 

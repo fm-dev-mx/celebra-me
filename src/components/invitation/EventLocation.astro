@@ -272,14 +272,17 @@ const iconMap = {
 			<div class="event-location__divider" aria-hidden="true"></div>
 
 			<div class="event-location__indications">
-				{indications.map((indication) => (
-					<div class="indication-item">
-						<div class="indication-icon">
-							<Icon name={iconMap[indication.icon] || 'Crown'} size={24} />
+				{indications.map((indication) => {
+					const isReserved = indication.text.toLowerCase().includes('púrpura');
+					return (
+						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
+							<div class="event-location__indication-icon">
+								<Icon name={iconMap[indication.icon] || 'Crown'} size={24} />
+							</div>
+							<p class="event-location__indication-text">{indication.text}</p>
 						</div>
-						<p>{indication.text}</p>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</div>
 	)}
