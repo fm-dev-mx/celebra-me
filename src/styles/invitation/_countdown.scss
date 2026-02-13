@@ -19,15 +19,8 @@
 
 	// Visual properties moved to _countdown-theme.scss
 
-	// Entrance animation
-	opacity: 0;
-	transform: translateY(20px);
-	transition: tokens.$transition-premium;
-
-	&.is-visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
+	// Keep section background visible from first paint.
+	// Entrance animation is applied to .countdown-container instead.
 }
 
 .countdown-texture {
@@ -43,6 +36,16 @@
 	max-width: 900px;
 	width: 100%;
 	text-align: center;
+
+	// Entrance animation (content only)
+	opacity: 0;
+	transform: translateY(20px);
+	transition: tokens.$transition-premium;
+
+	.countdown-section.is-visible & {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .countdown-header {
@@ -190,7 +193,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.countdown-section {
+	.countdown-container {
 		opacity: 1;
 		transform: none;
 		transition: none;
