@@ -14,6 +14,9 @@ import gallery08 from './gallery-08.webp';
 import gallery09 from './gallery-09.webp';
 import gallery10 from './gallery-10.webp';
 import gallery11 from './gallery-11.webp';
+import gallery12 from './gallery-12.webp';
+import gallery13 from './gallery-13.webp';
+import gallery14 from './gallery-14.webp';
 
 export const assets = {
 	hero,
@@ -33,5 +36,8 @@ export const assets = {
 		gallery09,
 		gallery10,
 		gallery11,
+		gallery12,
+		gallery13,
+		gallery14,
 	],
 };

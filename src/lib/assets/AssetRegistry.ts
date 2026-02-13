@@ -58,6 +58,8 @@ export interface EventAssets {
 	gallery10: ImageAsset;
 	gallery11: ImageAsset;
 	gallery12?: ImageAsset; // Optional: Extra gallery image
+	gallery13?: ImageAsset; // Optional: Extra gallery image
+	gallery14?: ImageAsset; // Optional: Extra gallery image
 }
 
 /**
@@ -117,6 +119,12 @@ const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAsse
 	gallery11: { src: rawAssets.gallery[10], alt: `Galería 11 de ${eventName}` },
 	gallery12: rawAssets.gallery[11]
 		? { src: rawAssets.gallery[11], alt: `Galería 12 de ${eventName}` }
+		: undefined,
+	gallery13: rawAssets.gallery[12]
+		? { src: rawAssets.gallery[12], alt: `Galería 13 de ${eventName}` }
+		: undefined,
+	gallery14: rawAssets.gallery[13]
+		? { src: rawAssets.gallery[13], alt: `Galería 14 de ${eventName}` }
 		: undefined,
 });
 

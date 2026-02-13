@@ -60,17 +60,7 @@
                 "lat": 25.7988274,
                 "lng": -108.9893813
             }
-        },
-        "indications": [
-            {
-                "icon": "dress",
-                "text": "Temática Vaquera: Se recomienda asistir con botas y sombrero."
-            },
-            {
-                "icon": "envelope",
-                "text": "Su presencia es el mejor regalo. Si desean obsequiar, un sobre será bien recibido."
-            }
-        ]
+        }
     },
     "sections": {
         "countdown": true,
@@ -127,6 +117,18 @@
             {
                 "image": "gallery11",
                 "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "gallery12",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "gallery13",
+                "caption": "60 Años bien vividos"
+            },
+            {
+                "image": "gallery14",
+                "caption": "60 Años bien vividos"
             }
         ]
     },
@@ -159,7 +161,7 @@
         "image": "portrait"
     },
     "music": {
-        "url": "https://pub-651602ccdef14f40bd29dbd4e02c31da.r2.dev/Only-LeeHi.MP3",
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1771003968/el-rey_sptxkp.mp3",
         "autoPlay": false,
         "title": "Música de fondo"
     },
