@@ -47,15 +47,22 @@ global.fetch = jest.fn().mockImplementation(() =>
 
 // Mock framer-motion to avoid issues in JSDOM
 jest.mock('framer-motion', () => {
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const React = require('react');
 	return {
 		motion: {
-			div: ({ children, ...props }: any) => React.createElement('div', props, children),
-			h2: ({ children, ...props }: any) => React.createElement('h2', props, children),
-			span: ({ children, ...props }: any) => React.createElement('span', props, children),
-			button: ({ children, ...props }: any) => React.createElement('button', props, children),
-			form: ({ children, ...props }: any) => React.createElement('form', props, children),
+			div: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('div', props, children),
+			h2: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('h2', props, children),
+			span: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('span', props, children),
+			button: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('button', props, children),
+			form: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('form', props, children),
 		},
-		AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+		AnimatePresence: ({ children }: { children: React.ReactNode }) =>
+			React.createElement(React.Fragment, null, children),
 	};
 });
