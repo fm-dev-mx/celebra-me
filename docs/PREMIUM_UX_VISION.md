@@ -41,7 +41,7 @@ duplication:
     - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
     - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in
-  [THEME_SYSTEM.md](file:///c:/Code/celebra-me/docs/THEME_SYSTEM.md).
+  [THEME_SYSTEM.md](./THEME_SYSTEM.md).
 
 ### C. Typography System (Core 5)
 

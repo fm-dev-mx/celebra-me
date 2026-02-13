@@ -25,6 +25,25 @@ We have successfully executed the following phases to clean up technical debt:
 - ✅ No breaking changes to existing events
 - ✅ All 3 critical audit issues resolved
 
+### Phase 3: Documentation Cleanup (2026-02-12)
+
+**High Priority Fixes Completed:**
+
+- **Documentation Links**: Replaced all `file://` protocol links with relative paths (6 files)
+- **Workflow Consolidation**: Archived 4 duplicate workflows (atomic-ui-commit, safe-commit,
+  landing-page-remediation, landing-page-regression-recovery)
+- **Workflow Organization**: Moved enhanced docs workflows to `.agent/workflows/docs/` folder
+- **Type Safety**: Added Zod enums for family, gifts, gallery, and thankYou section variants (was
+  `z.string()`, now typed)
+- **Task Workflows**: Archived completed invitation-specific workflows
+
+**Verification:**
+
+- ✅ 0 `file://` links remain in documentation (except examples)
+- ✅ TypeScript validation passes with new enums
+- ✅ All existing events still validate correctly
+- ✅ Workflow structure cleaned and organized
+
 - **Dependencies**: Removed unused packages (`lodash`, `winston`, etc.) and dev-dependencies.
 - **Linting**: Achieved 0 linting errors/warnings in `src`.
 - **Assets**: Refactored `public/images` to `src/assets`, enabling Astro optimization.
