@@ -24,6 +24,7 @@
 		&--white {
 			display: block;
 		}
+
 		&--gold {
 			display: none;
 		}
@@ -31,7 +32,7 @@
 }
 
 .home-header .home-header__logo--white {
-	filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+	filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgb(0 0 0 / 50%));
 }
 
 .home-header__desktop {
@@ -69,7 +70,7 @@
 	&__link {
 		text-decoration: none;
 		color: tokens.$color-action-primary;
-		opacity: 0.8;
+		opacity: 80%;
 		font-family: tokens.$font-ui;
 		font-weight: tokens.$font-weight-medium;
 		font-size: 0.95rem;
@@ -108,7 +109,7 @@
 
 	&__login {
 		color: tokens.$color-text-secondary;
-		opacity: 0.5;
+		opacity: 50%;
 		text-decoration: underline;
 		font-size: 0.9rem;
 		text-transform: uppercase;
@@ -117,7 +118,7 @@
 		padding: 0.5rem;
 
 		&:hover {
-			opacity: 0.8;
+			opacity: 80%;
 		}
 
 		&:focus-visible {
@@ -129,7 +130,7 @@
 	&__cta {
 		background-color: tokens.$color-action-accent;
 		color: tokens.$color-text-on-dark;
-		opacity: 0.8;
+		opacity: 80%;
 		padding: 0.6rem 1.5rem;
 		border-radius: 50px;
 		text-decoration: none;
@@ -167,8 +168,8 @@
 	.home-nav__link {
 		color: var(--landing-header-text-transparent);
 		font-weight: tokens.$font-weight-bold;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-		opacity: 1;
+		text-shadow: 0 2px 4px rgb(0 0 0 / 50%);
+		opacity: 100%;
 
 		&::after {
 			background-color: var(--landing-header-text-transparent);
@@ -177,16 +178,17 @@
 
 	.home-nav-actions__login {
 		color: var(--landing-header-text-transparent);
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-		opacity: 1;
+		text-shadow: 0 2px 4px rgb(0 0 0 / 50%);
+		opacity: 100%;
 	}
 
 	.home-header__logo--white {
-		opacity: 1;
+		opacity: 100%;
 		visibility: visible;
 	}
+
 	.home-header__logo--gold {
-		opacity: 0;
+		opacity: 0%;
 		visibility: hidden;
 	}
 }
@@ -195,7 +197,7 @@
 	background-color: var(--landing-header-bg-scrolled);
 	backdrop-filter: blur(var(--landing-header-backdrop-blur));
 	box-shadow: var(--landing-header-shadow-scrolled);
-	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	border-bottom: 1px solid rgb(255 255 255 / 5%);
 
 	.home-nav__link {
 		color: var(--landing-header-text-scrolled);
@@ -208,20 +210,21 @@
 
 	.home-nav-actions__login {
 		color: var(--landing-header-accent-scrolled);
-		opacity: 1;
+		opacity: 100%;
 	}
 
 	.home-header__logo--white {
-		opacity: 0;
+		opacity: 0%;
 		visibility: hidden;
 	}
+
 	.home-header__logo--gold {
-		opacity: 1;
+		opacity: 100%;
 		visibility: visible;
 	}
 }
 
 // Ensure hover states respect the new tokens
 .home-nav__link:hover {
-	opacity: 1;
+	opacity: 100%;
 }

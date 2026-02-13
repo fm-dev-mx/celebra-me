@@ -33,6 +33,7 @@
 .quote-divider-bottom {
 	width: 180px;
 	margin: 0 auto;
+
 	// Aesthetic properties (color, shadow) moved to theme
 
 	svg {
@@ -52,6 +53,7 @@
 .quote-content {
 	margin: 0;
 	padding: 0;
+
 	// Typography strictly defined in theme variants
 	font-size: clamp(1.6rem, 5.5vw, 2.4rem);
 	line-height: 1.5;
@@ -61,7 +63,7 @@
 
 .quote-line {
 	margin-bottom: 0.5rem;
-	opacity: 0;
+	opacity: 0%;
 	transform: translateY(20px);
 	transition:
 		opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
@@ -72,7 +74,7 @@
 	}
 
 	&.is-visible {
-		opacity: 1;
+		opacity: 100%;
 		transform: translateY(0);
 	}
 }
@@ -83,14 +85,14 @@
 	justify-content: center;
 	gap: 1rem;
 	margin-top: 2rem;
-	opacity: 0.8;
+	opacity: 80%;
 }
 
 .quote-ornament {
 	width: 40px;
 	height: 1px;
-	background: currentColor;
-	opacity: 0.3;
+	background: currentcolor;
+	opacity: 30%;
 }
 
 .quote-author {
@@ -103,7 +105,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.quote-line {
-		opacity: 1;
+		opacity: 100%;
 		transform: none !important;
 		transition: none !important;
 	}

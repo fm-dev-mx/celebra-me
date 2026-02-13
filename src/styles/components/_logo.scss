@@ -5,7 +5,7 @@
 	height: auto;
 	transition: tokens.$transition-snappy;
 
-	@media (min-width: 768px) {
+	@media (width >= 768px) {
 		width: 10rem;
 	}
 }

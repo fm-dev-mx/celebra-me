@@ -41,7 +41,7 @@
 	&__card-title {
 		font-family: tokens.$font-ui; /* Montserrat for a clean secondary label */
 		font-size: 0.5rem;
-		color: hsla(43, 30%, 45%, 0.7);
+		color: hsl(43deg 30% 45% / 70%);
 		letter-spacing: 5px;
 		text-transform: uppercase;
 		margin-bottom: 0.5rem;
@@ -57,7 +57,7 @@
 		align-items: center;
 		gap: 0.8rem;
 		margin-bottom: 2rem;
-		opacity: 0.8;
+		opacity: 80%;
 
 		.flourish-line {
 			width: 30px;
@@ -93,11 +93,12 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		opacity: 0;
+		opacity: 0%;
 
 		&.is-visible {
 			animation: fadeInUp 0.8s ease-out forwards;
 		}
+
 		position: relative;
 		overflow: hidden;
 
@@ -115,8 +116,8 @@
 		&:hover {
 			transform: translateY(-4px);
 			box-shadow:
-				0 20px 45px hsla(0, 0%, 0%, 0.08),
-				0 8px 20px hsla(43, 55%, 55%, 0.1);
+				0 20px 45px hsl(0deg 0% 0% / 8%),
+				0 8px 20px hsl(43deg 55% 55% / 10%);
 		}
 	}
 
@@ -126,8 +127,8 @@
 		background: var(--color-frame-bg, tokens.$color-action-accent);
 		padding: 2px;
 		box-shadow:
-			0 10px 30px -10px rgba(0, 0, 0, 0.3),
-			inset 0 0 1px rgba(255, 255, 255, 0.5);
+			0 10px 30px -10px rgb(0 0 0 / 30%),
+			inset 0 0 1px rgb(255 255 255 / 50%);
 		margin-bottom: 2rem;
 	}
 
@@ -221,16 +222,16 @@
 			opacity 0.3s ease,
 			transform 0.3s ease,
 			color 0.3s ease;
-		opacity: 0.6;
+		opacity: 60%;
 
 		&:hover {
-			opacity: 1;
+			opacity: 100%;
 			transform: scale(1.1);
 		}
 
 		&.copy-success {
 			color: tokens.$color-action-accent;
-			opacity: 1;
+			opacity: 100%;
 		}
 	}
 
@@ -238,8 +239,8 @@
 	&__card-content-itinerary {
 		margin: 0 0 2rem;
 		padding: 1.5rem 0;
-		border-top: 1px solid rgba(var(--color-action-accent-rgb), 0.15);
-		border-bottom: 1px solid rgba(var(--color-action-accent-rgb), 0.15);
+		border-top: 1px solid rgb(var(--color-action-accent-rgb), 0.15);
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb), 0.15);
 	}
 
 	&__card-content-itinerary-list {
@@ -263,7 +264,7 @@
 		background: var(--color-action-accent, tokens.$color-action-accent);
 		border-radius: 50%;
 		display: block;
-		opacity: 0.6;
+		opacity: 60%;
 		flex: 0 0 auto;
 	}
 
@@ -317,7 +318,7 @@
 		overflow: hidden;
 		background: var(--color-action-accent, tokens.$color-action-accent); /* Standard gold */
 		backdrop-filter: blur(12px);
-		border: 1px solid rgba(var(--color-action-accent-rgb), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
 		color: var(--color-text-primary, tokens.$color-text-primary);
 
 		/* Shimmer overlay */
@@ -328,7 +329,7 @@
 			left: -100%;
 			width: 100%;
 			height: 100%;
-			background: linear-gradient(90deg, transparent, hsla(43, 55%, 55%, 0.15), transparent);
+			background: linear-gradient(90deg, transparent, hsl(43deg 55% 55% / 15%), transparent);
 			transition: 0s;
 			pointer-events: none;
 		}
@@ -340,14 +341,14 @@
 			left: 50%;
 			width: 0;
 			height: 1px;
-			background: currentColor;
+			background: currentcolor;
 			transition: all 0.4s ease;
 		}
 
 		&:hover {
-			background: hsla(43, 55%, 55%, 0.08);
-			border-color: hsla(43, 55%, 55%, 0.6);
-			box-shadow: 0 0 25px hsla(43, 55%, 55%, 0.15);
+			background: hsl(43deg 55% 55% / 8%);
+			border-color: hsl(43deg 55% 55% / 60%);
+			box-shadow: 0 0 25px hsl(43deg 55% 55% / 15%);
 		}
 
 		&:hover::before {
@@ -362,22 +363,22 @@
 
 		&--maps,
 		&--waze {
-			background: rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
+			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
 			color: var(--color-text-primary, tokens.$color-text-primary);
-			border-color: rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
+			border-color: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
 			backdrop-filter: blur(12px);
 		}
 
 		&--maps:hover,
 		&--waze:hover {
-			background: rgba(var(--color-accent-rgb), 0.2);
+			background: rgb(var(--color-accent-rgb), 0.2);
 			border-color: var(--color-accent);
-			box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
+			box-shadow: 0 8px 25px rgb(212 175 55 / 25%);
 		}
 
 		&--waze:hover {
 			/* On hover: subtle cyan glow inspired by Waze brand, while preserving gold luxury aesthetic */
-			box-shadow: 0 8px 25px hsla(199, 85%, 50%, 0.15);
+			box-shadow: 0 8px 25px hsl(199deg 85% 50% / 15%);
 		}
 
 		&--primary {
@@ -388,24 +389,24 @@
 
 		&--primary:hover {
 			filter: brightness(0.9);
-			box-shadow: 0 8px 25px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		}
 
 		&--apple {
-			background: hsla(0, 0%, 98%, 0.9);
+			background: hsl(0deg 0% 98% / 90%);
 			color: tokens.$color-text-primary;
-			border-color: hsla(0, 0%, 80%, 0.5);
+			border-color: hsl(0deg 0% 80% / 50%);
 		}
 
 		&--apple:hover {
-			background: hsla(0, 0%, 95%, 1);
-			box-shadow: 0 4px 15px hsla(0, 0%, 0%, 0.1);
+			background: hsl(0deg 0% 95% / 100%);
+			box-shadow: 0 4px 15px hsl(0deg 0% 0% / 10%);
 		}
 
 		svg {
 			width: 14px;
 			height: 14px;
-			opacity: 0.85;
+			opacity: 85%;
 		}
 	}
 
@@ -425,7 +426,7 @@
 			var(--color-action-accent, tokens.$color-action-accent) 0%,
 			transparent 70%
 		);
-		opacity: 0.3;
+		opacity: 30%;
 		margin-bottom: 4rem;
 	}
 
@@ -433,16 +434,16 @@
 		display: grid;
 		gap: 2.5rem;
 		padding: 3rem 2rem;
-		background: rgba(255, 252, 240, 0.5);
+		background: rgb(255 252 240 / 50%);
 		backdrop-filter: blur(10px);
-		border: 1px solid rgba(var(--color-action-accent-rgb), 0.2);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
 		position: relative;
 
 		&::before {
 			content: '';
 			position: absolute;
-			inset: 6px 6px 6px 6px;
-			border: 1px solid rgba(var(--color-action-accent-rgb), 0.1);
+			inset: 6px;
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.1);
 			pointer-events: none;
 		}
 	}
@@ -466,7 +467,7 @@
 
 	&__indication-icon {
 		color: var(--color-action-accent, tokens.$color-action-accent);
-		opacity: 0.9;
+		opacity: 90%;
 		flex-shrink: 0;
 		font-size: 1.5rem; /* Larger but fine */
 
@@ -492,7 +493,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 1rem;
-		opacity: 0.6;
+		opacity: 60%;
 	}
 
 	&__signature-text {
@@ -516,11 +517,12 @@
 /* Subtle fade-in-up entry animation */
 @keyframes fadeInUp {
 	from {
-		opacity: 0;
+		opacity: 0%;
 		transform: translateY(12px);
 	}
+
 	to {
-		opacity: 1;
+		opacity: 100%;
 		transform: translateY(0);
 	}
 }

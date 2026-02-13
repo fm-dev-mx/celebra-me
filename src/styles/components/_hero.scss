@@ -36,10 +36,10 @@
 		inset: 0;
 		z-index: 1;
 		background:
-			radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.45) 0%, transparent 70%),
-			radial-gradient(circle at 80% 70%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
-			linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.7) 100%);
-		background-color: rgba(0, 0, 0, 0.2);
+			radial-gradient(circle at 20% 30%, rgb(0 0 0 / 45%) 0%, transparent 70%),
+			radial-gradient(circle at 80% 70%, rgb(197 160 89 / 15%) 0%, transparent 50%),
+			linear-gradient(to bottom, rgb(0 0 0 / 20%) 0%, rgb(0 0 0 / 70%) 100%);
+		background-color: rgb(0 0 0 / 20%);
 	}
 
 	// 3. Content Layer
@@ -61,9 +61,9 @@
 		font-family: var(--font-display);
 		font-size: clamp(2.5rem, 5vw, 4.5rem);
 		line-height: 1.1;
-		color: rgba(255, 255, 255, 0.9);
+		color: rgb(255 255 255 / 90%);
 		margin: 0;
-		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+		text-shadow: 0 2px 10px rgb(0 0 0 / 30%);
 	}
 
 	&__subtitle {
@@ -71,7 +71,7 @@
 		font-size: clamp(1.1rem, 2vw, 1.5rem);
 		font-weight: 300;
 		letter-spacing: 0.02em;
-		color: rgba(255, 255, 255, 0.5);
+		color: rgb(255 255 255 / 50%);
 		max-width: 600px;
 		line-height: 1.6;
 	}
@@ -99,7 +99,7 @@
 		margin-top: var(--spacing-xl);
 		font-size: 0.875rem;
 		text-wrap: nowrap;
-		color: rgba(255, 255, 255, 0.9);
+		color: rgb(255 255 255 / 90%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -109,7 +109,7 @@
 		span {
 			font-size: 0.875rem;
 			font-weight: 500;
-			color: rgba(255, 255, 255, 0.95);
+			color: rgb(255 255 255 / 95%);
 		}
 	}
 
@@ -127,9 +127,11 @@
 			transition:
 				transform 0.2s ease,
 				border-color 0.2s ease;
+
 			&:first-child {
 				margin-left: 0;
 			}
+
 			&:hover {
 				transform: scale(1.1);
 				z-index: 10;
@@ -151,37 +153,41 @@
 	.stagger-2,
 	.stagger-3,
 	.stagger-4 {
-		opacity: 0;
+		opacity: 0%;
 		animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 	}
 
 	.stagger-1 {
 		animation-delay: 0.2s;
 	}
+
 	.stagger-2 {
 		animation-delay: 0.4s;
 	}
+
 	.stagger-3 {
 		animation-delay: 0.6s;
 	}
+
 	.stagger-4 {
 		animation-delay: 0.8s;
 	}
 
 	@keyframes fadeUp {
 		from {
-			opacity: 0;
+			opacity: 0%;
 			transform: translateY(30px);
 		}
+
 		to {
-			opacity: 1;
+			opacity: 100%;
 			transform: translateY(0);
 		}
 	}
 }
 
 // Mobile Adjustments
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.hero-prime {
 		&__title {
 			font-size: 2.2rem;
@@ -209,6 +215,7 @@
 	0% {
 		transform: translateX(-100%) skewX(-15deg);
 	}
+
 	100% {
 		transform: translateX(200%) skewX(-15deg);
 	}
@@ -227,9 +234,9 @@
 		height: 100%;
 		background: linear-gradient(
 			to right,
-			rgba(255, 255, 255, 0) 0%,
-			rgba(255, 255, 255, 0.4) 50%,
-			rgba(255, 255, 255, 0) 100%
+			rgb(255 255 255 / 0%) 0%,
+			rgb(255 255 255 / 40%) 50%,
+			rgb(255 255 255 / 0%) 100%
 		);
 		animation: shineSweep 3s infinite;
 		pointer-events: none;

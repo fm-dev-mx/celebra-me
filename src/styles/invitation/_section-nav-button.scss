@@ -43,7 +43,7 @@
 		letter-spacing: 2px;
 		text-transform: uppercase;
 		font-weight: 500;
-		opacity: 0.8;
+		opacity: 80%;
 	}
 
 	&__icon {
@@ -57,6 +57,7 @@
 
 	&:hover {
 		color: var(--color-action-accent, tokens.$color-action-accent);
+
 		&__icon svg {
 			transform: translateY(3px);
 		}
@@ -69,6 +70,7 @@
 	/* Modifiers - Using -- instead of __ for variant/modifier */
 	&--hero {
 		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
+
 		&:hover {
 			color: var(--color-action-accent, tokens.$color-action-accent);
 		}
@@ -84,12 +86,13 @@
 
 		.section-nav-button__text {
 			color: var(--color-text-emphasis, tokens.$color-text-emphasis);
-			opacity: 0.8;
+			opacity: 80%;
 		}
 	}
 
 	&--family {
 		color: var(--color-text-secondary, tokens.$color-text-secondary);
+
 		&:hover {
 			color: var(--color-text-primary, tokens.$color-text-primary);
 		}

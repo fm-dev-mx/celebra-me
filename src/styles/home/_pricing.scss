@@ -50,7 +50,7 @@
 		color: var(--color-text);
 		max-width: 600px;
 		margin: 0 auto;
-		opacity: 0.8;
+		opacity: 80%;
 	}
 }
 
@@ -60,7 +60,7 @@
 	gap: var(--spacing-lg);
 	align-items: stretch; // Ensure cards have same height
 
-	@media (min-width: 992px) {
+	@media (width >= 992px) {
 		grid-template-columns: repeat(3, 1fr);
 	}
 }
@@ -81,11 +81,11 @@
 		opacity 0.8s ease-out;
 
 	// Animation state
-	opacity: 0;
+	opacity: 0%;
 	transform: translateY(30px);
 
 	&.is-visible {
-		opacity: 1;
+		opacity: 100%;
 		transform: translateY(0);
 
 		@for $i from 0 through 5 {
@@ -100,7 +100,7 @@
 		box-shadow: var(--landing-pricing-card-hover-shadow);
 
 		.card-border {
-			opacity: 1;
+			opacity: 100%;
 		}
 	}
 
@@ -142,6 +142,7 @@
 			border-radius: 20px;
 		}
 	}
+
 	&.is-elite {
 		background: var(--landing-pricing-elite-bg);
 		border: 1px solid var(--landing-pricing-elite-border);
@@ -155,7 +156,7 @@
 		}
 
 		.tier-desc {
-			opacity: 0.8;
+			opacity: 80%;
 		}
 
 		.tier-price .currency-symbol,
@@ -164,7 +165,7 @@
 		}
 
 		.tier-price .period {
-			opacity: 0.5;
+			opacity: 50%;
 		}
 
 		.cta-button {
@@ -179,7 +180,7 @@
 		}
 
 		.feature-item.is-highlighted {
-			background: rgba(255, 255, 255, 0.1);
+			background: rgb(255 255 255 / 10%);
 			color: var(--landing-pricing-elite-text-color);
 		}
 	}
@@ -202,7 +203,7 @@
 	.tier-desc {
 		font-size: 0.95rem;
 		color: var(--landing-pricing-tier-desc-color);
-		opacity: 0.7;
+		opacity: 70%;
 		margin-bottom: var(--spacing-lg);
 		min-height: 3em;
 	}
@@ -234,7 +235,7 @@
 
 		.period {
 			font-size: 0.9rem;
-			opacity: 0.6;
+			opacity: 60%;
 			margin-left: 4px;
 		}
 	}
@@ -318,7 +319,7 @@
 		border: 1px solid var(--landing-pricing-card-border-glow);
 		border-radius: 4px;
 		pointer-events: none;
-		opacity: 0;
+		opacity: 0%;
 		transition: opacity 0.3s ease;
 		z-index: 1;
 
@@ -331,7 +332,7 @@
 			right: 0;
 			height: 1px;
 			background: var(--landing-pricing-card-border-glow-shine);
-			opacity: 0.5;
+			opacity: 50%;
 		}
 	}
 }

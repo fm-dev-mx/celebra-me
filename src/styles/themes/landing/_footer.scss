@@ -23,18 +23,18 @@ $footer-link-hover-opacity: var(--landing-footer-link-hover-opacity, 1);
 $footer-link-hover-color: var(--landing-footer-link-hover-color, var(--color-primary-light));
 
 // Social Icons
-$footer-social-bg: var(--landing-footer-social-bg, rgba(255, 255, 255, 0.1));
-$footer-social-border: var(--landing-footer-social-border, rgba(255, 255, 255, 0.1));
+$footer-social-bg: var(--landing-footer-social-bg, rgb(255 255 255 / 10%));
+$footer-social-border: var(--landing-footer-social-border, rgb(255 255 255 / 10%));
 $footer-social-color: var(--landing-footer-social-color, white);
 $footer-social-hover-bg: var(--landing-footer-social-hover-bg, var(--color-primary));
 $footer-social-hover-border: var(--landing-footer-social-hover-border, var(--color-primary));
 $footer-social-hover-shadow: var(
 	--landing-footer-social-hover-shadow,
-	0 10px 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.2)
+	0 10px 20px rgb(var(--color-primary-rgb, 197, 160, 89), 0.2)
 );
 
 // Footer Bottom (Sub-footer)
-$footer-bottom-border: var(--landing-footer-bottom-border, rgba(255, 255, 255, 0.1));
+$footer-bottom-border: var(--landing-footer-bottom-border, rgb(255 255 255 / 10%));
 $footer-copyright-opacity: var(--landing-footer-copyright-opacity, 0.5);
 $footer-legal-opacity: var(--landing-footer-legal-opacity, 0.5);
 

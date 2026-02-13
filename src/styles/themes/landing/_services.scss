@@ -7,21 +7,21 @@
 @use '../../tokens/primitives' as primitives;
 
 // Card Background & Glassmorphism
-$services-card-bg: var(--landing-services-card-bg, rgba(255, 255, 255, 0.7));
+$services-card-bg: var(--landing-services-card-bg, rgb(255 255 255 / 70%));
 $services-card-backdrop-blur: var(--landing-services-card-backdrop-blur, 10px);
-$services-card-border: var(--landing-services-card-border, rgba(255, 255, 255, 0.5));
+$services-card-border: var(--landing-services-card-border, rgb(255 255 255 / 50%));
 
 // Card Hover Effects
 $services-card-hover-transform: var(--landing-services-card-hover-transform, translateY(-8px));
 $services-card-hover-shadow: var(
 	--landing-services-card-hover-shadow,
-	0 20px 40px -5px rgba(0, 0, 0, 0.15)
+	0 20px 40px -5px rgb(0 0 0 / 15%)
 );
 
 // Image Overlay
 $services-image-overlay-bg: var(
 	--landing-services-image-overlay-bg,
-	linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)
+	linear-gradient(to top, rgb(0 0 0 / 40%), transparent)
 );
 $services-image-overlay-opacity: var(--landing-services-image-overlay-opacity, 0.6);
 $services-image-filter-default: var(--landing-services-image-filter-default, grayscale(100%));
@@ -35,7 +35,7 @@ $services-icon-wrapper-bg: var(
 $services-icon-wrapper-color: var(--landing-services-icon-wrapper-color, primitives.$base-gold-500);
 $services-icon-wrapper-shadow: var(
 	--landing-services-icon-wrapper-shadow,
-	0 4px 10px rgba(0, 0, 0, 0.05)
+	0 4px 10px rgb(0 0 0 / 5%)
 );
 
 // Typography

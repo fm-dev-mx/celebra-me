@@ -7,27 +7,24 @@
                 "ignoreAtRules": ["each", "for", "if", "else", "media", "supports"]
             }
         ],
-        "scss/at-use-no-unnamespaced": null,
-        "selector-class-pattern": null,
-        "scss/operator-no-unspaced": null,
-        "color-function-alias-notation": null,
-        "color-function-notation": null,
-        "alpha-value-notation": null,
-        "property-no-vendor-prefix": null,
-        "rule-empty-line-before": null,
-        "declaration-empty-line-before": null,
-        "at-rule-empty-line-before": null,
-        "media-feature-range-notation": null,
+
+        "selector-class-pattern": "^[a-z]([a-z0-9-]+)?(__([a-z0-9]+-?)+)?(--([a-z0-9]+-?)+)?$",
+        "scss/operator-no-unspaced": true,
+        "color-function-notation": "modern",
+        "alpha-value-notation": "percentage",
+        "property-no-vendor-prefix": true,
+        "declaration-block-no-duplicate-properties": true,
         "keyframes-name-pattern": null,
-        "selector-pseudo-class-no-unknown": null,
-        "scss/at-extend-no-missing-placeholder": null,
-        "value-keyword-case": null,
-        "custom-property-empty-line-before": null,
-        "shorthand-property-no-redundant-values": null,
-        "scss/dollar-variable-empty-line-before": null,
-        "color-hex-length": null,
-        "hue-degree-notation": null,
-        "scss/double-slash-comment-empty-line-before": null,
-        "declaration-block-no-duplicate-properties": null
+        "scss/at-use-no-unnamespaced": null,
+        "selector-pseudo-class-no-unknown": [
+            true,
+            {
+                "ignorePseudoClasses": ["global"]
+            }
+        ],
+        "scss/at-extend-no-missing-placeholder": true,
+        "shorthand-property-no-redundant-values": true,
+        "length-zero-no-unit": true,
+        "no-descending-specificity": null
     }
 }

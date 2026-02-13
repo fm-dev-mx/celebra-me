@@ -23,9 +23,9 @@
 
 	// Variant: Scroll
 	&--scroll {
-		background: rgba(255, 255, 255, 0.05);
+		background: rgb(255 255 255 / 5%);
 		backdrop-filter: blur(8px);
-		border: 1px solid rgba(255, 255, 255, 0.15);
+		border: 1px solid rgb(255 255 255 / 15%);
 		color: var(--color-primary);
 
 		&::before {
@@ -34,21 +34,21 @@
 			inset: 0;
 			background: linear-gradient(
 				135deg,
-				rgba(var(--color-primary-rgb), 0.2),
-				rgba(var(--color-accent-rgb), 0.1)
+				rgb(var(--color-primary-rgb), 0.2),
+				rgb(var(--color-accent-rgb), 0.1)
 			);
-			opacity: 0;
+			opacity: 0%;
 			transition: opacity 0.4s var(--icon-transition);
 			z-index: 1;
 		}
 
 		&:hover {
-			border-color: rgba(var(--color-primary-rgb), 0.4);
+			border-color: rgb(var(--color-primary-rgb), 0.4);
 			transform: translateY(4px);
-			box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
 
 			&::before {
-				opacity: 1;
+				opacity: 100%;
 			}
 
 			.action-icon__inner {
@@ -63,12 +63,13 @@
 	// Colors
 	&--white {
 		color: white;
-		border-color: rgba(255, 255, 255, 0.3);
+		border-color: rgb(255 255 255 / 30%);
 
 		&.action-icon--scroll {
-			background: rgba(255, 255, 255, 0.1);
+			background: rgb(255 255 255 / 10%);
+
 			&:hover {
-				background: rgba(255, 255, 255, 0.2);
+				background: rgb(255 255 255 / 20%);
 				border-color: white;
 			}
 		}
@@ -81,13 +82,13 @@
 		right: 2rem;
 		background: var(--color-primary);
 		color: white;
-		box-shadow: 0 10px 30px -10px rgba(var(--color-primary-rgb), 0.5);
+		box-shadow: 0 10px 30px -10px rgb(var(--color-primary-rgb), 0.5);
 		z-index: 10;
 
 		&:hover {
 			transform: scale(1.1) translateY(-4px);
 			background: var(--color-primary-dark);
-			box-shadow: 0 15px 40px -10px rgba(var(--color-primary-rgb), 0.6);
+			box-shadow: 0 15px 40px -10px rgb(var(--color-primary-rgb), 0.6);
 		}
 	}
 }
@@ -97,6 +98,7 @@
 	100% {
 		transform: translateY(0);
 	}
+
 	50% {
 		transform: translateY(8px);
 	}

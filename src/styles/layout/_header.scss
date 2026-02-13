@@ -9,8 +9,10 @@
 	z-index: 10;
 	background-color: rgba(tokens.$base-neutral-0, 0.95);
 	backdrop-filter: blur(4px);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+
 	@include mixins.transition(header);
+
 	width: 100%;
 
 	// Smart Header: Automatic transparency if Hero is present
@@ -22,6 +24,7 @@
 
 		.header__nav-link {
 			color: #fff;
+
 			&:hover {
 				color: var(--color-primary);
 			}
@@ -34,7 +37,7 @@
 
 	&--scrolled {
 		background-color: rgba(tokens.$base-neutral-0, 0.98);
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
 		padding-top: 0.5rem;
 		padding-bottom: 0.5rem;
 

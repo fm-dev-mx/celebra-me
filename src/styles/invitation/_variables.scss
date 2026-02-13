@@ -4,5 +4,4 @@
 // See: technical-debt-audit-2026-02-11.md for migration details
 
 @warn "invitation/variables is deprecated. Use @use '../tokens' as tokens instead.";
-
 @forward 'typography';

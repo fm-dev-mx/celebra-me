@@ -28,17 +28,17 @@ $testimonials-title-underline-bg: var(
 // Testimonial Cards
 $testimonials-card-bg: var(
 	--landing-testimonials-card-bg,
-	rgba(var(--color-white-rgb, 255, 255, 255), 0.6)
+	rgb(var(--color-white-rgb, 255, 255, 255), 0.6)
 );
 $testimonials-card-backdrop-blur: var(--landing-testimonials-card-backdrop-blur, 12px);
 $testimonials-card-border: var(
 	--landing-testimonials-card-border,
-	rgba(var(--color-primary-rgb, 212, 175, 55), 0.15)
+	rgb(var(--color-primary-rgb, 212, 175, 55), 0.15)
 );
 $testimonials-card-border-radius: var(--landing-testimonials-card-border-radius, 2px);
 $testimonials-card-shadow: var(
 	--landing-testimonials-card-shadow,
-	0 10px 30px -15px rgba(0, 0, 0, 0.05)
+	0 10px 30px -15px rgb(0 0 0 / 5%)
 );
 $testimonials-card-transition: var(
 	--landing-testimonials-card-transition,
@@ -60,15 +60,15 @@ $testimonials-card-accent-opacity: var(--landing-testimonials-card-accent-opacit
 // Card Hover States
 $testimonials-card-hover-bg: var(
 	--landing-testimonials-card-hover-bg,
-	rgba(var(--color-white-rgb, 255, 255, 255), 0.95)
+	rgb(var(--color-white-rgb, 255, 255, 255), 0.95)
 );
 $testimonials-card-hover-border: var(
 	--landing-testimonials-card-hover-border,
-	rgba(var(--color-primary-rgb, 212, 175, 55), 0.4)
+	rgb(var(--color-primary-rgb, 212, 175, 55), 0.4)
 );
 $testimonials-card-hover-shadow: var(
 	--landing-testimonials-card-hover-shadow,
-	0 25px 50px -20px rgba(var(--color-primary-rgb, 212, 175, 55), 0.15)
+	0 25px 50px -20px rgb(var(--color-primary-rgb, 212, 175, 55), 0.15)
 );
 $testimonials-card-hover-transform: var(
 	--landing-testimonials-card-hover-transform,
@@ -120,4 +120,4 @@ $testimonials-author-role-color: var(
 );
 
 // Footer Border
-$testimonials-footer-border: var(--landing-testimonials-footer-border, rgba(0, 0, 0, 0.05));
+$testimonials-footer-border: var(--landing-testimonials-footer-border, rgb(0 0 0 / 5%));

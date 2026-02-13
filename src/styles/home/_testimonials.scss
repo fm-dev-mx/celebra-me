@@ -41,7 +41,6 @@
 	&__card {
 		background: var(--landing-testimonials-card-bg);
 		backdrop-filter: blur(var(--landing-testimonials-card-backdrop-blur));
-		-webkit-backdrop-filter: blur(var(--landing-testimonials-card-backdrop-blur));
 		border: 1px solid var(--landing-testimonials-card-border);
 		border-radius: var(--landing-testimonials-card-border-radius);
 		padding: 3rem 2.5rem;

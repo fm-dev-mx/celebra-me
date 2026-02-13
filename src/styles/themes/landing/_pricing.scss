@@ -11,38 +11,35 @@ $pricing-section-bg: var(--landing-pricing-section-bg, var(--color-background));
 $pricing-noise-opacity: var(--landing-pricing-noise-opacity, 0.03);
 
 // Card Base Styles
-$pricing-card-bg: var(--landing-pricing-card-bg, rgba(var(--color-white-rgb, 255, 255, 255), 0.7));
+$pricing-card-bg: var(--landing-pricing-card-bg, rgb(var(--color-white-rgb, 255, 255, 255), 0.7));
 $pricing-card-backdrop-blur: var(--landing-pricing-card-backdrop-blur, 10px);
 $pricing-card-border: var(
 	--landing-pricing-card-border,
-	rgba(var(--color-primary-rgb, 197, 160, 89), 0.2)
+	rgb(var(--color-primary-rgb, 197, 160, 89), 0.2)
 );
 $pricing-card-border-radius: var(--landing-pricing-card-border-radius, 4px);
 
 // Card Hover Effects
 $pricing-card-hover-transform: var(--landing-pricing-card-hover-transform, translateY(-10px));
-$pricing-card-hover-shadow: var(
-	--landing-pricing-card-hover-shadow,
-	0 20px 40px rgba(0, 0, 0, 0.05)
-);
+$pricing-card-hover-shadow: var(--landing-pricing-card-hover-shadow, 0 20px 40px rgb(0 0 0 / 5%));
 
 // Premium Tier
 $pricing-premium-bg: var(
 	--landing-pricing-premium-bg,
-	rgba(var(--color-secondary-rgb, 44, 62, 80), 0.02)
+	rgb(var(--color-secondary-rgb, 44, 62, 80), 0.02)
 );
 $pricing-premium-border: var(--landing-pricing-premium-border, var(--color-primary));
 $pricing-premium-shadow: var(
 	--landing-pricing-premium-shadow,
-	0 0 20px rgba(var(--color-primary-rgb, 197, 160, 89), 0.1)
+	0 0 20px rgb(var(--color-primary-rgb, 197, 160, 89), 0.1)
 );
 $pricing-premium-scale: var(--landing-pricing-premium-scale, 1.05);
 $pricing-premium-badge-bg: var(--landing-pricing-premium-badge-bg, var(--color-primary));
 
 // Elite Tier (Dark)
-$pricing-elite-bg: var(--landing-pricing-elite-bg, rgba(15, 23, 42, 0.9));
+$pricing-elite-bg: var(--landing-pricing-elite-bg, rgb(15 23 42 / 90%));
 $pricing-elite-border: var(--landing-pricing-elite-border, var(--color-primary-light));
-$pricing-elite-shadow: var(--landing-pricing-elite-shadow, 0 20px 50px rgba(0, 0, 0, 0.2));
+$pricing-elite-shadow: var(--landing-pricing-elite-shadow, 0 20px 50px rgb(0 0 0 / 20%));
 $pricing-elite-text-color: var(--landing-pricing-elite-text-color, white);
 $pricing-elite-accent-color: var(--landing-pricing-elite-accent-color, var(--color-primary-light));
 
@@ -55,7 +52,7 @@ $pricing-tier-currency-color: var(--landing-pricing-tier-currency-color, var(--c
 // Feature Items
 $pricing-feature-highlight-bg: var(
 	--landing-pricing-feature-highlight-bg,
-	rgba(var(--color-primary-rgb, 197, 160, 89), 0.1)
+	rgb(var(--color-primary-rgb, 197, 160, 89), 0.1)
 );
 $pricing-feature-highlight-color: var(
 	--landing-pricing-feature-highlight-color,
@@ -67,7 +64,7 @@ $pricing-cta-border: var(--landing-pricing-cta-border, var(--color-primary));
 $pricing-cta-color: var(--landing-pricing-cta-color, var(--color-primary));
 $pricing-cta-hover-bg: var(
 	--landing-pricing-cta-hover-bg,
-	rgba(var(--color-primary-rgb, 197, 160, 89), 0.05)
+	rgb(var(--color-primary-rgb, 197, 160, 89), 0.05)
 );
 
 // Card Border Glow Effect
@@ -80,5 +77,5 @@ $pricing-card-border-glow-shine: var(
 // Glint Animation
 $pricing-glint-gradient: var(
 	--landing-pricing-glint-gradient,
-	linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)
+	linear-gradient(90deg, transparent, rgb(255 255 255 / 40%), transparent)
 );

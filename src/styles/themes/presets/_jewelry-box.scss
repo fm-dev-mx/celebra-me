@@ -5,7 +5,7 @@
 	--color-surface-primary: #fff9f5;
 	--color-surface-primary-rgb: 255, 249, 245;
 	--color-surface-soft: #fffdfc;
-	--color-surface-dark: #111111;
+	--color-surface-dark: #111;
 	--color-surface-dark-rgb: 17, 17, 17;
 
 	// Actions & Emphasis
@@ -17,9 +17,9 @@
 	--color-text-on-dark: #{tokens.$base-gold-500};
 
 	// Glassmorphism UI
-	--color-glass-bg: rgba(255, 255, 255, 0.45);
-	--color-glass-border: rgba(212, 175, 55, 0.3);
-	--color-glass-shadow: rgba(212, 175, 55, 0.15);
+	--color-glass-bg: rgb(255 255 255 / 45%);
+	--color-glass-border: rgb(212 175 55 / 30%);
+	--color-glass-shadow: rgb(212 175 55 / 15%);
 	--glass-blur: 16px;
 	--glass-saturate: 180%;
 
@@ -29,30 +29,26 @@
 	--font-calligraphy: 'Pinyon Script', cursive;
 
 	// Component Specifics
-	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgba(0, 0, 0, 0.05);
+	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgb(0 0 0 / 5%);
 	--border-fine-gold: 1px solid var(--color-glass-border);
-	--border-image: 2px solid rgba(var(--color-action-accent-rgb), 0.5);
+	--border-image: 2px solid rgb(var(--color-action-accent-rgb), 0.5);
 	--color-frame-bg: linear-gradient(
 		135deg,
-		rgba(var(--color-action-accent-rgb), 0.45) 0%,
-		rgba(var(--color-surface-primary-rgb), 1) 50%,
-		rgba(var(--color-action-accent-rgb), 0.8) 100%
+		rgb(var(--color-action-accent-rgb), 0.45) 0%,
+		rgb(var(--color-surface-primary-rgb), 1) 50%,
+		rgb(var(--color-action-accent-rgb), 0.8) 100%
 	);
 
 	// 🎨 Texture & Light Effects (Ultra-Premium)
 	--texture-silk:
-		radial-gradient(
-			circle at 50% 50%,
-			rgba(255, 255, 255, 0.8) 0%,
-			rgba(255, 249, 245, 0.4) 100%
-		),
+		radial-gradient(circle at 50% 50%, rgb(255 255 255 / 80%) 0%, rgb(255 249 245 / 40%) 100%),
 		url('https://www.transparenttextures.com/patterns/silk.png');
 	--light-sweep: linear-gradient(
 		-45deg,
-		rgba(255, 255, 255, 0) 0%,
-		rgba(255, 255, 255, 0) 40%,
-		rgba(255, 255, 255, 0.4) 50%,
-		rgba(255, 255, 255, 0) 60%,
-		rgba(255, 255, 255, 0) 100%
+		rgb(255 255 255 / 0%) 0%,
+		rgb(255 255 255 / 0%) 40%,
+		rgb(255 255 255 / 40%) 50%,
+		rgb(255 255 255 / 0%) 60%,
+		rgb(255 255 255 / 0%) 100%
 	);
 }

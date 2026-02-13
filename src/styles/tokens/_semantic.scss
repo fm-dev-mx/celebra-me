@@ -39,12 +39,12 @@ $color-neutral-base: var(--color-neutral-base, primitives.$base-neutral-700);
 $color-neutral-emphasis: var(--color-neutral-emphasis, primitives.$base-neutral-900);
 
 // Glassmorphism
-$color-glass-bg: var(--color-glass-bg, rgba(var(--color-surface-primary-rgb), 0.1));
-$color-glass-border: var(--color-glass-border, rgba(var(--color-surface-primary-rgb), 0.2));
+$color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
+$color-glass-border: var(--color-glass-border, rgb(var(--color-surface-primary-rgb), 0.2));
 
 // Shadows
-$shadow-subtle: var(--shadow-subtle, 0 4px 15px rgba(0, 0, 0, 0.1));
-$shadow-emphasis: var(--shadow-emphasis, 0 10px 30px rgba(0, 0, 0, 0.2));
+$shadow-subtle: var(--shadow-subtle, 0 4px 15px rgb(0 0 0 / 10%));
+$shadow-emphasis: var(--shadow-emphasis, 0 10px 30px rgb(0 0 0 / 20%));
 
 // Special Roles
 $color-whatsapp: primitives.$base-whatsapp;

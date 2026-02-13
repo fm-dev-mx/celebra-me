@@ -21,13 +21,13 @@
 		text-overflow: ellipsis;
 		max-width: 200px;
 
-		@media (min-width: 768px) {
+		@media (width >= 768px) {
 			max-width: 400px;
 			font-size: 1.5rem;
 		}
 
 		&:hover {
-			opacity: 0.8;
+			opacity: 80%;
 		}
 	}
 
@@ -37,7 +37,7 @@
 		align-items: center;
 		gap: 0.5rem;
 
-		@media (min-width: 768px) {
+		@media (width >= 768px) {
 			gap: 1rem;
 		}
 	}
@@ -54,7 +54,7 @@
 
 		&:hover {
 			color: var(--color-action-accent);
-			background-color: rgba(var(--color-surface-primary-rgb), 0.5);
+			background-color: rgb(var(--color-surface-primary-rgb), 0.5);
 		}
 
 		&--cta {
@@ -100,8 +100,8 @@
 :global(.header-base--transparent) {
 	.event-header__title,
 	.event-header__action-btn:not(.event-header__action-btn--cta) {
-		color: #ffffff;
-		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+		color: #fff;
+		text-shadow: 0 1px 3px rgb(0 0 0 / 30%);
 	}
 }
 
@@ -111,11 +111,11 @@
 }
 
 :global(body:not(.invitation-revealed)) .event-theme-wrapper--sealed #event-header {
-	opacity: 0;
+	opacity: 0%;
 	pointer-events: none;
 }
 
 :global(body.invitation-revealed) .event-theme-wrapper--sealed #event-header {
-	opacity: 1;
+	opacity: 100%;
 	pointer-events: auto;
 }

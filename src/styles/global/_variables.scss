@@ -41,7 +41,6 @@ $colors: (
 		hover: tokens.$color-whatsapp,
 	),
 );
-
 $backdrop-blurs: (
 	xs: blur(2px),
 	sm: blur(4px),
@@ -54,11 +53,11 @@ $backdrop-blurs: (
 $font-stack: (
 	'Rubik Variable',
 	-apple-system,
-	BlinkMacSystemFont,
+	blinkmacsystemfont,
 	'Segoe UI',
-	Roboto,
+	roboto,
 	'Helvetica Neue',
-	Arial,
+	arial,
 	'Noto Sans',
 	sans-serif
 );
@@ -83,7 +82,6 @@ $transition-timing: (
 	overshoot: tokens.$ease-overshoot,
 	bouncy: tokens.$ease-bouncy,
 );
-
 $transitions-by-component: (
 	button: (
 		duration: tokens.$duration-snappy,
@@ -122,7 +120,6 @@ $transitions-by-component: (
 		timing: tokens.$ease-overshoot,
 	),
 );
-
 $default-transition-duration: tokens.$duration-standard;
 $default-transition-timing: tokens.$ease-in-out;
 
@@ -152,7 +149,7 @@ $z-index: (
 	behind: -1,
 	default: 1,
 	header: 10,
-	navButton: 15,
+	navbutton: 15,
 	modal: 12,
 	tooltip: 10,
 	highest: 14,

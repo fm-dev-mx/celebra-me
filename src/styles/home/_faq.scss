@@ -37,7 +37,7 @@
 		font-size: 0.75rem;
 		color: var(--landing-faq-pretitle-color);
 		margin-bottom: var(--spacing-sm);
-		opacity: 0.9;
+		opacity: 90%;
 	}
 
 	.faq-title {
@@ -69,7 +69,6 @@
 .faq-item {
 	background: var(--landing-faq-item-bg);
 	backdrop-filter: blur(var(--landing-faq-item-backdrop-blur));
-	-webkit-backdrop-filter: blur(var(--landing-faq-item-backdrop-blur));
 	border: 1px solid var(--landing-faq-item-border);
 	border-radius: var(--landing-faq-item-border-radius);
 	overflow: hidden;
@@ -131,8 +130,8 @@
 }
 
 .faq-answer-content {
-	padding: 0 2rem 2rem 2rem;
-	border-top: 1px solid rgba(255, 255, 255, 0.05);
+	padding: 0 2rem 2rem;
+	border-top: 1px solid rgb(255 255 255 / 5%);
 	margin-top: -0.5rem;
 	padding-top: 1.5rem;
 

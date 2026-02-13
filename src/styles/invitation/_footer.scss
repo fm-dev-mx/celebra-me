@@ -9,16 +9,15 @@
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
-		rgba(var(--color-surface-primary-rgb), 0.2) 100%
+		rgb(var(--color-surface-primary-rgb), 0.2) 100%
 	);
 	backdrop-filter: blur(var(--glass-blur, 4px));
 	padding: 0.75rem 1rem;
 	font-family: tokens.$font-ui;
 	color: var(--color-text-primary);
-	opacity: 0.6;
+	opacity: 60%;
 	font-size: tokens.$font-size-ui;
 	border-top: 1px solid var(--color-glass-border, tokens.$color-border-subtle);
-
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -33,11 +32,11 @@
 	align-items: center;
 	gap: 1.5rem;
 	white-space: nowrap;
-	opacity: 0.6;
+	opacity: 60%;
 	transition: tokens.$transition-snappy;
 
 	&:hover {
-		opacity: 1;
+		opacity: 100%;
 	}
 }
 
@@ -60,7 +59,7 @@
 .powered-by {
 	display: none;
 	font-size: 0.65rem;
-	opacity: 0.6;
+	opacity: 60%;
 	font-weight: 300;
 	letter-spacing: tokens.$letter-spacing-wide;
 	text-transform: uppercase;
@@ -71,7 +70,7 @@
 }
 
 .contact-number {
-	opacity: 0.5;
+	opacity: 50%;
 }
 
 .whatsapp-button {
@@ -79,7 +78,7 @@
 	align-items: center;
 	gap: 0.35rem;
 	background-color: transparent;
-	color: rgba(var(--color-text-primary-rgb), 0.5);
+	color: rgb(var(--color-text-primary-rgb), 0.5);
 	padding: 0.35rem 0.75rem;
 	border-radius: 99px;
 	border: 1px solid tokens.$color-border-subtle;
@@ -93,11 +92,12 @@
 	img {
 		width: 0.7rem;
 		height: 0.7rem;
-		opacity: 0.6;
+		opacity: 60%;
 	}
 
 	@include mixins.respond-to(md) {
 		font-size: 0.65rem;
+
 		svg,
 		img {
 			width: 0.8rem;
@@ -106,9 +106,9 @@
 	}
 
 	&:hover {
-		background-color: rgba(var(--color-whatsapp-rgb), 0.1);
-		border-color: rgba(var(--color-whatsapp-rgb), 0.3);
-		color: rgba(var(--color-text-primary-rgb), 0.8);
+		background-color: rgb(var(--color-whatsapp-rgb), 0.1);
+		border-color: rgb(var(--color-whatsapp-rgb), 0.3);
+		color: rgb(var(--color-text-primary-rgb), 0.8);
 		transform: scale(1.02);
 	}
 

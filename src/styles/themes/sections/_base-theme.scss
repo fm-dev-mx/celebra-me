@@ -26,12 +26,12 @@
 	.card,
 	.glass-panel {
 		background: tokens.$color-glass-bg;
-		border: 1px solid rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
 		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px;
 		box-shadow:
 			tokens.$shadow-emphasis,
-			inset 0 0 20px rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
+			inset 0 0 20px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
 		position: relative;
 
 		&::before {
@@ -41,9 +41,9 @@
 			border-radius: inherit;
 			background: linear-gradient(
 				135deg,
-				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 0%,
+				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 0%,
 				transparent 50%,
-				rgba(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 100%
+				rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.05) 100%
 			);
 			pointer-events: none;
 			z-index: -1;
@@ -74,17 +74,17 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgba(var(--color-action-accent-rgb), 0.2),
+				rgb(var(--color-action-accent-rgb), 0.2),
 				transparent
 			);
 			transition: left 0.6s ease;
 		}
 
 		&:hover {
-			background-color: rgba(var(--color-action-primary-rgb), 0.85);
+			background-color: rgb(var(--color-action-primary-rgb), 0.85);
 			box-shadow:
-				0 0 20px rgba(var(--color-action-accent-rgb), 0.5),
-				inset 0 0 20px rgba(var(--color-action-accent-rgb), 0.1);
+				0 0 20px rgb(var(--color-action-accent-rgb), 0.5),
+				inset 0 0 20px rgb(var(--color-action-accent-rgb), 0.1);
 			transform: translateY(-2px);
 
 			&::before {
@@ -98,9 +98,11 @@
 	&::-webkit-scrollbar {
 		width: 8px;
 	}
+
 	&::-webkit-scrollbar-track {
 		background: var(--color-surface-primary);
 	}
+
 	&::-webkit-scrollbar-thumb {
 		background: var(--color-surface-dark);
 		border: 1px solid var(--color-action-accent);
@@ -110,7 +112,7 @@
 // JEWELRY BOX BASE
 .theme-preset--jewelry-box {
 	// Base overrides for jewelry box (if any)
-	--color-border-subtle: rgba(var(--color-action-accent-rgb), 0.1);
+	--color-border-subtle: rgb(var(--color-action-accent-rgb), 0.1);
 }
 
 // ==========================================================================

@@ -183,7 +183,30 @@ const EnvelopeReveal: React.FC<Props> = ({
 						<div className="envelope-base" />
 
 						{/* 2. Rising Card (Depth 2) */}
-						<div className={`envelope-card ${phase === 'rising' ? 'is-rising' : ''}`} />
+						<div className={`envelope-card ${phase === 'rising' ? 'is-rising' : ''}`}>
+							<div className="rivet rivet--tl" />
+							<div className="rivet rivet--tr" />
+							<div className="rivet rivet--bl" />
+							<div className="rivet rivet--br" />
+							<div className="envelope-card__content">
+								<div className="envelope-card__header">
+									<div className="envelope-card__monogram">
+										{renderSealIcon()}
+									</div>
+								</div>
+								<div className="envelope-card__body">
+									<span className="envelope-card__label">
+										{documentLabel || 'Invitación'}
+									</span>
+									<h2 className="envelope-card__name">{name}</h2>
+								</div>
+								<div className="envelope-card__footer">
+									<p className="envelope-card__details">
+										{formattedDate} • {city}
+									</p>
+								</div>
+							</div>
+						</div>
 
 						{/* 3. Pocket Layer (Depth 3) */}
 						<div className="envelope-pocket" />

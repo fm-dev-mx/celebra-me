@@ -8,7 +8,7 @@
 .thank-you-section[data-variant='jewelry-box'] {
 	background: radial-gradient(
 		circle at 50% 0%,
-		rgba(var(--color-action-accent-rgb), 0.05) 0%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
 		var(--color-surface-primary) 100%
 	);
 	padding: 10rem 2rem;
@@ -29,7 +29,7 @@
 	.thank-you-message {
 		font-family: var(--font-display);
 		color: var(--color-surface-dark);
-		background: rgba(var(--color-surface-primary-rgb), 0.4);
+		background: rgb(var(--color-surface-primary-rgb), 0.4);
 		border: 1px solid var(--color-glass-border);
 		backdrop-filter: blur(8px);
 		border-radius: 12px;
@@ -50,7 +50,7 @@
 .gallery-section[data-variant='jewelry-box'] {
 	background: radial-gradient(
 		circle at 50% 50%,
-		rgba(var(--color-action-accent-rgb), 0.05) 0%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
 		var(--color-surface-primary) 100%
 	);
 	padding: 8rem 2rem;
@@ -83,7 +83,7 @@
 			content: '';
 			position: absolute;
 			inset: 8px;
-			border: 1px solid rgba(var(--color-action-accent-rgb), 0.05);
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
 			border-radius: 8px;
 			pointer-events: none;
 		}
@@ -96,7 +96,7 @@
 	.gallery-grid__caption {
 		font-family: var(--font-body);
 		color: var(--color-action-accent);
-		background: rgba(var(--color-surface-primary-rgb), 0.95);
+		background: rgb(var(--color-surface-primary-rgb), 0.95);
 		border-radius: 0 0 8px 8px;
 	}
 }
@@ -106,27 +106,27 @@
 // ==========================================================================
 
 .gallery-section[data-variant='luxury-hacienda'] {
-	background: linear-gradient(135deg, rgba(30, 20, 15, 0.98) 0%, #12100e 100%);
+	background: linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, #12100e 100%);
 	background-blend-mode: overlay;
 	padding: 10rem 2rem;
 	position: relative;
-	box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+	box-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
 
 	// Leather Stitching (Section Frame)
 	&::after {
 		content: '';
 		position: absolute;
 		inset: 2rem;
-		border: 1px dashed rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+		border: 1px dashed rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
 		pointer-events: none;
 		border-radius: 4px;
-		opacity: 0.5;
+		opacity: 50%;
 	}
 
 	.gallery-section__title {
 		font-family: tokens.$font-display-hacienda;
 		color: tokens.$color-action-accent;
-		text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+		text-shadow: 0 4px 15px rgb(0 0 0 / 80%);
 
 		// Premium Shimmer
 		position: relative;
@@ -138,15 +138,14 @@
 			tokens.$color-action-accent 100%
 		);
 		background-size: 200% auto;
-		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		animation: goldShimmer 5s linear infinite;
+		animation: gold-shimmer 5s linear infinite;
 	}
 
 	.gallery-section__subtitle {
 		font-family: tokens.$font-body-hacienda;
-		color: rgba(255, 255, 255, 0.6);
+		color: rgb(255 255 255 / 60%);
 		font-style: normal;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
@@ -155,10 +154,10 @@
 
 	.gallery-grid__item {
 		background: #1a1510;
-		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		border-radius: 4px;
 		padding: 10px;
-		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 15px 35px rgb(0 0 0 / 50%);
 		transition:
 			transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
 			border-color 0.5s ease,
@@ -168,9 +167,9 @@
 			transform: translateY(-8px) scale(1.02);
 			border-color: tokens.$color-action-accent;
 			box-shadow:
-				0 25px 50px rgba(0, 0, 0, 0.7),
-				0 0 20px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
-				inset 0 0 30px rgba(0, 0, 0, 0.8);
+				0 25px 50px rgb(0 0 0 / 70%),
+				0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
+				inset 0 0 30px rgb(0 0 0 / 80%);
 		}
 
 		img {
@@ -197,21 +196,24 @@
 				#000 100%
 			);
 			border-radius: 50%;
-			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
 			z-index: 3;
 
 			&--tl {
 				top: 12px;
 				left: 12px;
 			}
+
 			&--tr {
 				top: 12px;
 				right: 12px;
 			}
+
 			&--bl {
 				bottom: 12px;
 				left: 12px;
 			}
+
 			&--br {
 				bottom: 12px;
 				right: 12px;
@@ -223,7 +225,7 @@
 			content: '';
 			position: absolute;
 			inset: 4px;
-			border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+			border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
 			border-radius: 2px;
 			pointer-events: none;
 		}
@@ -236,7 +238,7 @@
 			left: 0;
 			right: 0;
 			height: 40%;
-			background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+			background: linear-gradient(to bottom, rgb(255 255 255 / 5%) 0%, transparent 100%);
 			pointer-events: none;
 			z-index: 2;
 		}
@@ -246,7 +248,7 @@
 		font-family: tokens.$font-body-hacienda;
 		color: tokens.$color-action-accent;
 		font-style: italic;
-		background: rgba(0, 0, 0, 0.8);
+		background: rgb(0 0 0 / 80%);
 		width: 100%;
 		text-align: center;
 		padding: 1rem;
@@ -254,12 +256,12 @@
 }
 
 .gallery-lightbox {
-	background: rgba(10, 8, 5, 0.98);
+	background: rgb(10 8 5 / 98%);
 
 	&__content img {
 		border: 4px solid #c5a059;
 		border-radius: 2px;
-		box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+		box-shadow: 0 0 50px rgb(0 0 0 / 100%);
 	}
 
 	&__footer p {
@@ -269,10 +271,11 @@
 	}
 }
 
-@keyframes goldShimmer {
+@keyframes gold-shimmer {
 	0% {
 		background-position: -200% center;
 	}
+
 	100% {
 		background-position: 200% center;
 	}

@@ -33,12 +33,12 @@
 @mixin landing-theme-variables {
 	// Hero
 	--landing-hero-overlay-alpha: 0.4;
-	--landing-hero-title-text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+	--landing-hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
 
 	// Services
-	--landing-services-card-bg: rgba(255, 255, 255, 0.7);
+	--landing-services-card-bg: rgb(255 255 255 / 70%);
 	--landing-services-card-hover-transform: translateY(-8px);
-	--landing-services-card-hover-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15);
+	--landing-services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
 
 	// About
 	--landing-about-noise-opacity: 0.04;
@@ -48,7 +48,7 @@
 	// Pricing
 	--landing-pricing-card-border-radius: 4px;
 	--landing-pricing-premium-scale: 1.05;
-	--landing-pricing-elite-bg: rgba(15, 23, 42, 0.9);
+	--landing-pricing-elite-bg: rgb(15 23 42 / 90%);
 
 	// FAQ
 	--landing-faq-section-bg: #0f172a;

@@ -11,7 +11,6 @@ $backdrop-blurs: (
 	lg: blur(12px),
 	xl: blur(16px),
 );
-
 $breakpoints: (
 	xs: 375px,
 	sm: 640px,
@@ -20,18 +19,16 @@ $breakpoints: (
 	xl: 1280px,
 	xxl: 1536px,
 );
-
 $z-index: (
 	behind: -1,
 	default: 1,
 	header: 10,
-	navButton: 15,
+	navbutton: 15,
 	modal: 12,
 	tooltip: 10,
 	highest: 14,
 	music: 10,
 );
-
 $border-radius: (
 	small: 0.25rem,
 	modal-button: 0.25rem,
@@ -79,6 +76,7 @@ $border-radius: (
 			hover: tokens.$color-whatsapp,
 		),
 	);
+
 	@return map.get(map.get($color-map, $group), $shade);
 }
 

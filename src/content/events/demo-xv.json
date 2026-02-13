@@ -227,7 +227,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "heart",
         "microcopy": "Toca para abrir mi invitación",

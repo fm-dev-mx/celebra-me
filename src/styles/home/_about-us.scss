@@ -31,7 +31,7 @@
 				transparent 90%
 			);
 		z-index: 0;
-		opacity: 0.98;
+		opacity: 98%;
 
 		&::after {
 			content: '';
@@ -72,6 +72,7 @@
 
 	&__title {
 		@include mixins.typography(display-2);
+
 		font-size: clamp(2.5rem, 5vw, 4rem);
 		color: var(--color-text-primary);
 		margin: 0;
@@ -97,13 +98,14 @@
 			height: 4px;
 			background: var(--landing-about-underline-shine-color);
 			filter: blur(2px);
-			opacity: 0.6;
+			opacity: 60%;
 			animation: underline-shine 3s infinite linear;
 		}
 	}
 
 	&__description {
 		@include mixins.typography(body-large);
+
 		font-size: clamp(1.1rem, 1.3vw, 1.2rem);
 		color: var(--color-text-secondary);
 		margin-bottom: clamp(1.5rem, 3vh, 3rem);
@@ -114,12 +116,13 @@
 
 	&__cta {
 		@include mixins.typography(button);
+
 		display: inline-flex;
 		align-items: center;
 		padding: 1rem 2.75rem;
 		gap: 0.85rem;
 		background: transparent;
-		border: 1px solid rgba(var(--color-primary-rgb), 0.4);
+		border: 1px solid rgb(var(--color-primary-rgb), 0.4);
 		color: var(--color-primary);
 		text-transform: uppercase;
 		letter-spacing: 0.15em;
@@ -138,8 +141,8 @@
 			color: white;
 			border-color: var(--color-primary);
 			box-shadow:
-				0 20px 40px -15px rgba(var(--color-primary-rgb), 0.25),
-				inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+				0 20px 40px -15px rgb(var(--color-primary-rgb), 0.25),
+				inset 0 0 0 1px rgb(255 255 255 / 20%);
 			transform: translateY(-2px);
 
 			.about-us__cta-icon {
@@ -167,7 +170,7 @@
 		animation: floating-luxury var(--landing-about-animation-duration)
 			var(--landing-about-ease-slow) infinite alternate;
 
-		@media (max-width: 992px) {
+		@media (width <= 992px) {
 			max-width: 340px;
 		}
 	}
@@ -191,8 +194,8 @@
 		border: 1px solid var(--landing-about-image-frame-border);
 		background: var(--landing-about-image-frame-bg);
 		box-shadow:
-			inset 0 0 30px rgba(var(--color-white-rgb, 255, 255, 255), 0.05),
-			0 0 0 1px rgba(var(--color-white-rgb, 255, 255, 255), 0.05);
+			inset 0 0 30px rgb(var(--color-white-rgb, 255, 255, 255), 0.05),
+			0 0 0 1px rgb(var(--color-white-rgb, 255, 255, 255), 0.05);
 		pointer-events: none;
 		z-index: 2;
 	}
@@ -206,7 +209,7 @@
 			transparent 65%
 		);
 		mix-blend-mode: screen;
-		opacity: 0.8;
+		opacity: 80%;
 		pointer-events: none;
 		z-index: 1;
 	}
@@ -222,7 +225,7 @@
 		background: var(--landing-about-decoration-bg);
 		box-shadow: var(--landing-about-decoration-shadow);
 		z-index: 0;
-		opacity: 0.7;
+		opacity: 70%;
 	}
 
 	// Values Grid
@@ -232,12 +235,12 @@
 		gap: clamp(1rem, 2vw, 2.5rem);
 		margin-top: clamp(3rem, 6vh, 6rem);
 
-		@media (max-width: 1024px) {
+		@media (width <= 1024px) {
 			grid-template-columns: repeat(2, 1fr);
 			gap: 1.5rem;
 		}
 
-		@media (max-width: 640px) {
+		@media (width <= 640px) {
 			grid-template-columns: 1fr;
 			margin-top: 4rem;
 		}
@@ -266,9 +269,9 @@
 			background: linear-gradient(
 				var(--landing-about-glint-angle),
 				transparent 0%,
-				rgba(255, 255, 255, 0) 40%,
-				rgba(255, 255, 255, 0.4) 50%,
-				rgba(255, 255, 255, 0) 60%,
+				rgb(255 255 255 / 0%) 40%,
+				rgb(255 255 255 / 40%) 50%,
+				rgb(255 255 255 / 0%) 60%,
 				transparent 100%
 			);
 			transform: translateX(-100%) skewX(-20deg);
@@ -281,8 +284,8 @@
 			transform: translateY(-8px) scale(1.02);
 			background: var(--landing-about-value-card-hover-bg);
 			box-shadow:
-				0 30px 60px -20px rgba(0, 0, 0, 0.2),
-				0 15px 35px -25px rgba(var(--color-primary-rgb), 0.2);
+				0 30px 60px -20px rgb(0 0 0 / 20%),
+				0 15px 35px -25px rgb(var(--color-primary-rgb), 0.2);
 			border-color: var(--landing-about-value-card-hover-border);
 
 			&::after {
@@ -293,7 +296,7 @@
 				background: var(--landing-about-value-icon-hover-bg);
 				color: white;
 				transform: translateY(-4px) scale(1.05);
-				box-shadow: 0 10px 20px -5px rgba(var(--color-primary-rgb), 0.3);
+				box-shadow: 0 10px 20px -5px rgb(var(--color-primary-rgb), 0.3);
 			}
 		}
 	}
@@ -310,11 +313,11 @@
 		margin: 0 auto clamp(0.75rem, 1.5vh, 1.5rem);
 		border: 1px solid var(--landing-about-value-icon-border);
 		box-shadow:
-			inset 0 0 15px rgba(var(--color-primary-rgb), 0.05),
-			0 10px 20px -10px rgba(0, 0, 0, 0.05);
+			inset 0 0 15px rgb(var(--color-primary-rgb), 0.05),
+			0 10px 20px -10px rgb(0 0 0 / 5%);
 		transition: all 0.5s var(--landing-about-ease-luxury);
 
-		@media (max-width: 640px) {
+		@media (width <= 640px) {
 			width: 3.5rem;
 			height: 3.5rem;
 		}
@@ -345,6 +348,7 @@
 
 	&__value-title {
 		@include mixins.typography(h4);
+
 		color: var(--color-text-primary);
 		margin-bottom: 1rem;
 		letter-spacing: 0.02em;
@@ -352,6 +356,7 @@
 
 	&__value-description {
 		@include mixins.typography(body-small);
+
 		color: var(--color-text-secondary);
 		line-height: 1.7;
 	}
@@ -368,7 +373,7 @@
 
 // Animations
 .animate-on-scroll {
-	opacity: 0;
+	opacity: 0%;
 	transform: translateY(30px) scale(0.96);
 	filter: blur(8px);
 	transition:
@@ -378,7 +383,7 @@
 	transition-delay: var(--animation-delay, 0ms);
 
 	&.is-visible {
-		opacity: 1;
+		opacity: 100%;
 		transform: translateY(0) scale(1);
 		filter: blur(0);
 	}
@@ -390,12 +395,15 @@
 	0% {
 		transform: translateY(0) rotate(0deg) scale(1);
 	}
+
 	33% {
 		transform: translateY(-20px) rotate(1deg) scale(1.01);
 	}
+
 	66% {
 		transform: translateY(-10px) rotate(-1deg) scale(1);
 	}
+
 	100% {
 		transform: translateY(-30px) rotate(1.5deg) scale(1.02);
 	}
@@ -405,12 +413,13 @@
 	0% {
 		transform: translateX(-150%);
 	}
+
 	100% {
 		transform: translateX(350%);
 	}
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
 	.about-us {
 		&__grid {
 			grid-template-columns: 1fr;
@@ -434,7 +443,7 @@
 	}
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
 	.about-us {
 		padding: 5rem 0;
 
@@ -451,11 +460,12 @@
 @keyframes sparkle-animation {
 	0%,
 	100% {
-		opacity: 0;
+		opacity: 0%;
 		transform: scale(0) rotate(0deg);
 	}
+
 	50% {
-		opacity: 1;
+		opacity: 100%;
 		transform: scale(1.2) rotate(180deg);
 	}
 }
@@ -478,7 +488,7 @@
 		39% 35%
 	);
 	pointer-events: none;
-	opacity: 0;
+	opacity: 0%;
 	z-index: 5;
 
 	&--1 {
@@ -486,11 +496,13 @@
 		left: 10%;
 		animation: sparkle-animation 3s infinite;
 	}
+
 	&--2 {
 		bottom: 15%;
 		right: 12%;
 		animation: sparkle-animation 3.5s infinite 1s;
 	}
+
 	&--3 {
 		top: 20%;
 		right: 20%;
@@ -500,7 +512,7 @@
 	}
 }
 
-@media (min-width: 992px) {
+@media (width >= 992px) {
 	// Optimization for desktop height to fit in viewport
 	.about-us {
 		padding: clamp(2rem, 4vh, 4rem) 0;
@@ -516,6 +528,6 @@
 		transition: none;
 		transform: none;
 		filter: none;
-		opacity: 1;
+		opacity: 100%;
 	}
 }

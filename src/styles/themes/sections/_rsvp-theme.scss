@@ -34,17 +34,17 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgba(var(--color-action-accent-rgb), 0.2),
+				rgb(var(--color-action-accent-rgb), 0.2),
 				transparent
 			);
 			transition: left 0.6s ease;
 		}
 
 		&:hover:not(:disabled) {
-			background: rgba(var(--color-action-primary-rgb), 0.85);
+			background: rgb(var(--color-action-primary-rgb), 0.85);
 			box-shadow:
-				0 0 25px rgba(var(--color-action-accent-rgb), 0.5),
-				inset 0 0 20px rgba(var(--color-action-accent-rgb), 0.1);
+				0 0 25px rgb(var(--color-action-accent-rgb), 0.5),
+				inset 0 0 20px rgb(var(--color-action-accent-rgb), 0.1);
 			transform: translateY(-2px);
 
 			&::before {

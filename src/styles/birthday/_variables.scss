@@ -16,9 +16,9 @@ $birthday-font-heading: 'EB Garamond', serif !default;
 $birthday-font-sub: 'Montserrat', sans-serif !default;
 
 // Utilities
-$birthday-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-$birthday-glass-bg: rgba(75, 54, 33, 0.35); // Sturdier glassmorphism
-$birthday-glass-border: rgba(212, 175, 55, 0.4);
+$birthday-shadow: 0 4px 20px rgb(0 0 0 / 30%);
+$birthday-glass-bg: rgb(75 54 33 / 35%); // Sturdier glassmorphism
+$birthday-glass-border: rgb(212 175 55 / 40%);
 
 // Old West Envelope Tokens
 $birthday-leather-dark: #3e2723 !default; // Wrapper background

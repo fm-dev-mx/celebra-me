@@ -21,11 +21,11 @@ $contact-divider-bg: var(--landing-contact-divider-bg, var(--color-border-emphas
 $contact-info-title-color: var(--landing-contact-info-title-color, var(--color-text-primary));
 $contact-info-description-color: var(
 	--landing-contact-info-description-color,
-	rgba(var(--color-text-secondary-rgb), 0.8)
+	rgb(var(--color-text-secondary-rgb), 0.8)
 );
 $contact-info-footer-color: var(
 	--landing-contact-info-footer-color,
-	rgba(var(--color-text-secondary-rgb), 0.5)
+	rgb(var(--color-text-secondary-rgb), 0.5)
 );
 
 // Channel Links
@@ -36,7 +36,7 @@ $contact-channel-icon-bg: var(--landing-contact-channel-icon-bg, var(--color-sur
 $contact-channel-icon-color: var(--landing-contact-channel-icon-color, var(--color-action-accent));
 $contact-channel-label-color: var(
 	--landing-contact-channel-label-color,
-	rgba(var(--color-text-secondary-rgb), 0.6)
+	rgb(var(--color-text-secondary-rgb), 0.6)
 );
 $contact-channel-value-color: var(--landing-contact-channel-value-color, var(--color-text-primary));
 $contact-channel-hover-border: var(
@@ -52,7 +52,7 @@ $contact-channel-icon-hover-bg: var(
 $contact-channel-icon-hover-color: var(--landing-contact-channel-icon-hover-color, white);
 
 // Form Wrapper
-$contact-form-bg: var(--landing-contact-form-bg, rgba(var(--color-surface-primary-rgb), 0.7));
+$contact-form-bg: var(--landing-contact-form-bg, rgb(var(--color-surface-primary-rgb), 0.7));
 $contact-form-backdrop-blur: var(--landing-contact-form-backdrop-blur, 20px);
 $contact-form-border: var(--landing-contact-form-border, var(--color-border-subtle));
 $contact-form-shadow: var(--landing-contact-form-shadow, var(--shadow-emphasis));
@@ -62,10 +62,7 @@ $contact-form-accent-line: var(--landing-contact-form-accent-line, var(--color-b
 $contact-input-border: var(--landing-contact-input-border, var(--color-border-subtle));
 $contact-input-color: var(--landing-contact-input-color, var(--color-text-primary));
 $contact-input-focus-border: var(--landing-contact-input-focus-border, var(--color-action-accent));
-$contact-label-color: var(
-	--landing-contact-label-color,
-	rgba(var(--color-text-secondary-rgb), 0.5)
-);
+$contact-label-color: var(--landing-contact-label-color, rgb(var(--color-text-secondary-rgb), 0.5));
 $contact-label-focus-color: var(--landing-contact-label-focus-color, var(--color-action-accent));
 
 // Submit Button
