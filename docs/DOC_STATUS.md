@@ -1,20 +1,20 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-02-12 **Next Review:** 2026-03-12 **Maintainer:** Automated Documentation
+**Last Updated:** 2026-02-13 **Next Review:** 2026-03-13 **Maintainer:** Automated Documentation
 Audit System
 
 ---
 
 ## Quick Stats
 
-| Metric                 | Count                     | Status |
-| ---------------------- | ------------------------- | ------ |
-| **Total Documents**    | 52                        | 🟢     |
-| **Core Documentation** | 8                         | 🟢     |
-| **Workflows**          | 15 (7 active, 7 archived) | 🟢     |
-| **Issues Critical**    | 0                         | 🟢     |
-| **Issues High**        | 0                         | 🟢     |
-| **Issues Medium**      | 9                         | 🟡     |
+| Metric                 | Count                       | Status |
+| ---------------------- | --------------------------- | ------ |
+| **Total Documents**    | 52                          | 🟢     |
+| **Core Documentation** | 8                           | 🟢     |
+| **Workflows**          | 33 (16 active, 17 archived) | 🟢     |
+| **Issues Critical**    | 0                           | 🟢     |
+| **Issues High**        | 0                           | 🟢     |
+| **Issues Medium**      | 9                           | 🟡     |
 
 **Overall Health:** 85% 🟢
 
@@ -37,50 +37,66 @@ Audit System
 
 ## Workflow Organization
 
-### Active Workflows (7)
+### Active Workflows (16)
 
 **Documentation Workflows** (`.agent/workflows/docs/`):
 
 | Workflow                                                                            | Purpose                          | Status    |
-| ----------------------------------------------------------------------------------- | -------------------------------- | --------- | --- |
-| [docs-audit.md](../.agent/workflows/docs/docs-audit.md)                             | Documentation audit & governance | 🟢 Active |     |
-| [docs-remediation.md](../.agent/workflows/docs/docs-remediation.md)                 | Fix documentation drift          | 🟢 Active |     |
-| [docs-content-collections.md](../.agent/workflows/docs/docs-content-collections.md) | Generate content docs            | 🟢 Active |     |
-| [gatekeeper-commit.md](../.agent/workflows/docs/gatekeeper-commit.md)               | Unified commit gatekeeper        | 🟢 Active |     |
-| [landing-page-maintenance.md](../.agent/workflows/docs/landing-page-maintenance.md) | Landing page fixes               | 🟢 Active |     |
-| [sync-framework.md](../.agent/workflows/docs/sync-framework.md)                     | Base sync pattern                | 🟢 Active |     |
+| ----------------------------------------------------------------------------------- | -------------------------------- | --------- |
+| [docs-audit.md](../.agent/workflows/docs/docs-audit.md)                             | Documentation audit & governance | 🟢 Active |
+| [docs-remediation.md](../.agent/workflows/docs/docs-remediation.md)                 | Fix documentation drift          | 🟢 Active |
+| [docs-content-collections.md](../.agent/workflows/docs/docs-content-collections.md) | Generate content docs            | 🟢 Active |
+| [gatekeeper-commit.md](../.agent/workflows/docs/gatekeeper-commit.md)               | Unified commit gatekeeper        | 🟢 Active |
+| [landing-page-maintenance.md](../.agent/workflows/docs/landing-page-maintenance.md) | Landing page fixes               | 🟢 Active |
+| [sync-framework.md](../.agent/workflows/docs/sync-framework.md)                     | Base sync pattern                | 🟢 Active |
+| [tech-debt-remediation.md](../.agent/workflows/docs/tech-debt-remediation.md)       | Technical debt remediation       | 🟢 Active |
 | [README.md](../.agent/workflows/docs/README.md)                                     | Docs workflows guide             | 🟢 Active |
 
 **Other Active Workflows**:
 
-| Workflow                                                                                   | Purpose              | Status    |
-| ------------------------------------------------------------------------------------------ | -------------------- | --------- |
-| [align-gerardo-styles.md](../.agent/workflows/align-gerardo-styles.md)                     | Gerardo 60 theme     | 🟢 Active |
-| [jewelry-box-remediation.md](../.agent/workflows/jewelry-box-remediation.md)               | Jewelry Box fixes    | 🟢 Active |
-| [landing-page-theme-abstraction.md](../.agent/workflows/landing-page-theme-abstraction.md) | Landing theme work   | 🟢 Active |
-| [theme-architecture-governance.md](../.agent/workflows/theme-architecture-governance.md)   | Theme governance     | 🟢 Active |
-| [workflow-sync.md](../.agent/workflows/workflow-sync.md)                                   | Workflow maintenance | 🟢 Active |
-| [skills-sync.md](../.agent/workflows/skills-sync.md)                                       | Skills maintenance   | 🟢 Active |
-| [error-remediation.md](../.agent/workflows/error-remediation.md)                           | Error fixes          | 🟢 Active |
-| [prompt-to-workflow.md](../.agent/workflows/prompt-to-workflow.md)                         | Workflow creation    | 🟢 Active |
+| Workflow                                                                                 | Purpose              | Status    |
+| ---------------------------------------------------------------------------------------- | -------------------- | --------- |
+| [gerardo-technical-audit.md](../.agent/workflows/gerardo-technical-audit.md)             | Gerardo audit        | 🟢 Active |
+| [gerardo-remediation.md](../.agent/workflows/gerardo-remediation.md)                     | Gerardo remediation  | 🟢 Active |
+| [theme-architecture-governance.md](../.agent/workflows/theme-architecture-governance.md) | Theme governance     | 🟢 Active |
+| [workflow-sync.md](../.agent/workflows/workflow-sync.md)                                 | Workflow maintenance | 🟢 Active |
+| [skills-sync.md](../.agent/workflows/skills-sync.md)                                     | Skills maintenance   | 🟢 Active |
+| [sync-coordinator.md](../.agent/workflows/sync-coordinator.md)                           | Sync coordination    | 🟢 Active |
+| [error-remediation.md](../.agent/workflows/error-remediation.md)                         | Error fixes          | 🟢 Active |
+| [prompt-to-workflow.md](../.agent/workflows/prompt-to-workflow.md)                       | Workflow creation    | 🟢 Active |
 
-### Archived Workflows (7)
+### Archived Workflows (17)
 
-All archived workflows are in `.agent/workflows/archive/`:
+All archived workflows are in `.agent/workflows/archive/`. Key archived workflows:
 
-| Workflow                            | Archived Date | Replacement                      |
-| ----------------------------------- | ------------- | -------------------------------- |
-| atomic-ui-commit.md                 | 2026-02-12    | gatekeeper-commit.md (--strict)  |
-| safe-commit.md                      | 2026-02-12    | gatekeeper-commit.md (--minimal) |
-| landing-page-remediation.md         | 2026-02-12    | landing-page-maintenance.md      |
-| landing-page-regression-recovery.md | 2026-02-12    | landing-page-maintenance.md      |
-| docs-audit.md (old)                 | 2026-02-12    | docs/docs-audit.md               |
-| invitation-execution.md             | 2026-02-12    | N/A (completed)                  |
-| invitation-verification.md          | 2026-02-12    | N/A (integrated)                 |
+| Workflow                            | Archived Date | Replacement                       |
+| ----------------------------------- | ------------- | --------------------------------- |
+| landing-page-theme-abstraction.md   | 2026-02-13    | theme-architecture-governance.md  |
+| align-gerardo-styles.md             | 2026-02-13    | gerardo-\* workflows + governance |
+| jewelry-box-remediation.md          | 2026-02-13    | governance + maintenance flows    |
+| atomic-ui-commit.md                 | 2026-02-12    | gatekeeper-commit.md (--strict)   |
+| safe-commit.md                      | 2026-02-12    | gatekeeper-commit.md (--minimal)  |
+| landing-page-remediation.md         | 2026-02-12    | landing-page-maintenance.md       |
+| landing-page-regression-recovery.md | 2026-02-12    | landing-page-maintenance.md       |
+| docs-audit.md (old)                 | 2026-02-12    | docs/docs-audit.md                |
+| invitation-execution.md             | 2026-02-12    | N/A (completed)                   |
+| invitation-verification.md          | 2026-02-12    | N/A (integrated)                  |
 
 ---
 
 ## Recent Changes
+
+### 2026-02-13 - Aggressive Workflow Cleanup
+
+**Workflow cleanup actions:**
+
+- ✅ Archived 3 completed tactical workflows from top-level to `.agent/workflows/archive/`
+- ✅ Added `[ARCHIVED]` headers with replacement coverage metadata
+- ✅ Removed legacy references in active workflows (`write_to_file`, `.agent/ARCHITECTURE.md`,
+  `/safe-commit`, `tasks/` path assumptions)
+- ✅ Added lifecycle rule in `workflow-sync.md`: archive tasks when completion evidence exists in
+  `docs/implementation-log.md`
+- ✅ Created workflow inventory snapshot: `docs/audit/workflow-inventory-2026-02-13.md`
 
 ### 2026-02-12 - Documentation Governance Phase
 
@@ -102,6 +118,14 @@ All archived workflows are in `.agent/workflows/archive/`:
 - ✅ Fixed test schema (added 'cumple' to eventType enum)
 - ✅ Created DOC_STATUS.md (this file)
 
+**Sync Framework Implementation:**
+
+- ✅ Updated workflow-sync.md to follow sync framework pattern
+- ✅ Updated skills-sync.md to follow sync framework pattern
+- ✅ Created sync-coordinator.md for unified sync management
+- ✅ Added automation scripts (check-links.sh, find-stale.sh, validate-schema.js)
+- ✅ Enhanced docs-audit.md with framework reference
+
 ---
 
 ## Known Issues
@@ -121,9 +145,9 @@ All archived workflows are in `.agent/workflows/archive/`:
     - File: `docs/implementation-log.md`
     - Action: Update with recent changes
 
-4. **MED-005**: No automated link checking
-    - Impact: Broken links go undetected
-    - Action: Add CI check
+4. **MED-005**: ✅ Automated link checking implemented
+    - Impact: Broken links now detected
+    - Action: Use `scripts/check-links.sh`; consider CI integration
 
 5. **MED-006**: Workflow categorization inconsistent
     - Impact: Confusion
@@ -221,7 +245,7 @@ To update this dashboard:
 **Next Actions:**
 
 - [ ] Address remaining Medium priority issues
-- [ ] Set up automated link checking (MED-005)
+- [x] Set up automated link checking (MED-005)
 - [ ] Archive completed plan documents (MED-009)
 - [ ] Add review dates to all docs (MED-011)
 
