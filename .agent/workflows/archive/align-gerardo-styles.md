@@ -1,8 +1,13 @@
 ---
-description: Gerardo 60 aesthetic alignment (Luxury Hacienda).
+description:
+    ARCHIVED - Task workflow completed and replaced by broader Gerardo governance workflows.
 ---
 
-# 🤠 Workflow: Gerardo 60 Aesthetic Alignment
+# [ARCHIVED] 🤠 Workflow: Gerardo 60 Aesthetic Alignment
+
+> **Archived Date**: 2026-02-13 **Reason**: Tactical alignment workflow completed. **Coverage**: Use
+> `.agent/workflows/gerardo-technical-audit.md`, `.agent/workflows/gerardo-remediation.md`, and
+> `.agent/workflows/theme-architecture-governance.md` for active work.
 
 1. **Audit (Read-Only)**
     - [ ] `src/content/events/cumple-60-gerardo.json`: Verify theme params.
@@ -32,7 +37,7 @@ description: Gerardo 60 aesthetic alignment (Luxury Hacienda).
     - [ ] Visual QA: "Wanted" poster effect integrity.
 
 6. **Self-Archive**
-    - [ ] Move to `archive/workflows/` post-completion.
+    - [x] Moved to `.agent/workflows/archive/align-gerardo-styles.md`.
 
 ---
 

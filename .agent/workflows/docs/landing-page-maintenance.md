@@ -6,8 +6,8 @@ description: Comprehensive landing page maintenance and remediation (consolidate
 
 Consolidated workflow replacing:
 
-- `landing-page-remediation.md`
-- `landing-page-regression-recovery.md` (tasks/)
+- `landing-page-remediation.md` (deleted)
+- `landing-page-regression-recovery.md` (archived)
 
 **Modes:**
 

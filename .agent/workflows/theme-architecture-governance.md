@@ -54,8 +54,9 @@ If violations are found during Step 1 or 2:
 After alignment:
 
 - [ ] Run full build/test suite if necessary.
-- [ ] Execute `git add .` for corrected files.
-- [ ] Perform `git commit` following conventional commit standards.
+- [ ] Stage only the files for one coherent ADU (no mixed-intent commits).
+- [ ] Execute `.agent/workflows/docs/gatekeeper-commit.md` (`--strict` for code changes, `--minimal`
+      for doc-only updates).
 
 ---
 

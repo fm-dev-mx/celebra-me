@@ -10,7 +10,7 @@ description: Transforms instructions into ready-to-use workflows in .agent/workf
     - Reference Project Vision (textures, motion, typography).
 
 2. **Categorization**
-    - **Evergreen**: Reusable / Global standards (e.g., `safe-commit`).
+    - **Evergreen**: Reusable / Global standards (e.g., `gatekeeper-commit`).
     - **Task**: Tactical / Ephemeral (e.g., `update-hero-gerardo`).
 
 3. **Strategic Injection**
@@ -25,7 +25,7 @@ description: Transforms instructions into ready-to-use workflows in .agent/workf
     - **Tasks**: Include self-archive step.
 
 5. **Deployment**
-    - Save via `write_to_file`. Update `docs/implementation-log.md`.
+    - Save via direct file edits (`apply_patch` or editor). Update `docs/implementation-log.md`.
 
 // turbo
 

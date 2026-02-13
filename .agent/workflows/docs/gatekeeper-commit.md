@@ -19,7 +19,7 @@ Consolidated gatekeeper replacing `atomic-ui-commit.md` and `safe-commit.md`.
 
 - `.agent/GATEKEEPER_RULES.md`
 - `.agent/PROJECT_CONVENTIONS.md`
-- `.agent/ARCHITECTURE.md`
+- `docs/ARCHITECTURE.md`
 
 **Scope Definition:**
 
@@ -59,10 +59,12 @@ Use for: Feature development, refactors, significant changes
 ### Phase 0: Comprehensive Scope
 
 1. **Scan all changes**
+
     ```bash
     git status
     git diff --name-status
     ```
+
 2. **Classify changes**
     - Docs only → Fast track (minimal checks)
     - Code/Config → Full validation
@@ -88,7 +90,7 @@ Use for: Feature development, refactors, significant changes
 
 **Example ADUs:**
 
-```
+```text
 ADU 1: Add new theme variant CSS
 ADU 2: Update component to use variant
 ADU 3: Update schema to support variant
@@ -120,7 +122,7 @@ For each ADU:
 
 4. **Propose commit**:
 
-    ```
+    ```text
     type(scope): Description in imperative mood
 
     - What changed (brief)
@@ -147,9 +149,11 @@ Use for: Hotfixes, documentation updates, trivial changes
 ### Phase 0: Staged Scope Lock
 
 1. **Check staged files only**
+
     ```bash
     git diff --name-status --cached
     ```
+
 2. **If empty**: STOP - nothing to commit
 
 3. **Classify**:

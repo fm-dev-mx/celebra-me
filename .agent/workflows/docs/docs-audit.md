@@ -5,6 +5,8 @@ description:
 
 # 📚 Workflow: Documentation Audit & Governance
 
+**Framework**: Follows the universal sync pattern from `.agent/workflows/docs/sync-framework.md`
+
 ## 1. Scope & Authority
 
 **Source of Truth Hierarchy:**
@@ -64,6 +66,32 @@ description:
 - [ ] Markdown links point to existing files
 - [ ] No `file://` protocol (use relative paths `./`)
 - [ ] No references to archived workflows
+
+### 2.5 Automation Scripts
+
+**Available automation** (see `scripts/`):
+
+- **Link validation**: `scripts/check-links.sh` – scans all `.md` files for broken internal links.
+    ```bash
+    bash scripts/check-links.sh
+    ```
+- **Stale file detection**: `scripts/find-stale.sh <days>` – identifies documentation files older
+  than specified days.
+    ```bash
+    bash scripts/find-stale.sh 30
+    ```
+- **Schema validation**: `scripts/validate-schema.js` – compares Zod enum variants with CSS theme
+  selectors.
+    ```bash
+    node scripts/validate-schema.js
+    ```
+
+**Usage in audit**:
+
+1. Run link validation to identify broken references.
+2. Run schema validation to detect CSS/Zod mismatches.
+3. Run stale detection to flag outdated documentation.
+4. Integrate findings into audit report.
 
 ---
 

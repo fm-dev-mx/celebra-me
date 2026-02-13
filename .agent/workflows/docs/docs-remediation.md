@@ -38,9 +38,11 @@ Before starting, you MUST have:
 
 1. Identify missing variant in `src/content/config.ts`
 2. Add to appropriate enum:
+
     ```typescript
     variant: z.enum(['existing', 'NEW_VARIANT', 'others']);
     ```
+
 3. Update discriminated union if needed
 4. Run `pnpm check` to verify
 5. Update `docs/THEME_SYSTEM.md` variant table
@@ -264,17 +266,10 @@ grep -r "file://" docs/ .agent/workflows/ || echo "✅ No file:// links found"
 
 ### 7.2 Commit Changes
 
-```bash
-# Group related changes
-git add docs/
-git commit -m "docs: Remediate schema mismatches and broken links
-
-- Fix luxury-hacienda variant missing from quote schema
-- Replace file:// links with relative paths
-- Archive obsolete workflows
-
-Refs: audit-report-YYYY-MM-DD.md"
-```
+- [ ] Execute `.agent/workflows/docs/gatekeeper-commit.md`:
+    - `--minimal` for docs-only remediation.
+    - `--strict` if remediation touches schema/code.
+- [ ] Use a Conventional Commit message referencing the audit report ID.
 
 ### 7.3 Cleanup
 

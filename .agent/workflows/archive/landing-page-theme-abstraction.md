@@ -1,8 +1,12 @@
 ---
-description: Comprehensive abstraction of Landing Page styles into a decoupled theme layer.
+description: ARCHIVED - Completed and superseded by theme governance workflows.
 ---
 
-# 🎨 Workflow: Landing Page Theme Abstraction
+# [ARCHIVED] 🎨 Workflow: Landing Page Theme Abstraction
+
+> **Archived Date**: 2026-02-13 **Reason**: Workflow completed (see `docs/implementation-log.md`
+> 2026-02-12 entry). **Coverage**: Use `.agent/workflows/theme-architecture-governance.md` for
+> ongoing governance.
 
 This workflow implements a dedicated theme layer for the landing page, separating structural layouts
 from aesthetic properties (colors, gradients, shadows) to enable better maintenance and future
@@ -73,5 +77,5 @@ variables. **Layout, Flexbox, and Grid properties must remain in the structural 
 ## Completion
 
 1. Update `docs/implementation-log.md` with the abstraction details.
-2. Self-archive this workflow by moving it to `.agent/workflows/tasks/archive/` or deleting it after
-   verification.
+2. This workflow is already archived at
+   `.agent/workflows/archive/landing-page-theme-abstraction.md`.

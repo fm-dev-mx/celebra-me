@@ -1,9 +1,13 @@
 ---
 description:
-    Remediación estética y técnica del tema 'jewelry-box' (XV años) tras la abstracción de temas.
+    ARCHIVED - Remediación estética y técnica completada; consolidado en workflows de gobernanza.
 ---
 
-# 💎 Workflow: Jewelry Box Remediation (XV Años)
+# [ARCHIVED] 💎 Workflow: Jewelry Box Remediation (XV Años)
+
+> **Archived Date**: 2026-02-13 **Reason**: Workflow táctico consolidado y cerrado. **Coverage**:
+> Use `.agent/workflows/theme-architecture-governance.md` y
+> `.agent/workflows/docs/landing-page-maintenance.md` para mantenimiento continuo.
 
 Este workflow soluciona las regresiones visuales en la demo de XV años, asegurando que el tema
 `jewelry-box` sea 100% premium y esté **técnicamente aislado** de otros temas como
@@ -60,4 +64,4 @@ Este workflow soluciona las regresiones visuales en la demo de XV años, asegura
     - Verificar que la Landing Page mantenga sus estilos originales.
 
 2. **Cierre de Calidad**
-    - Ejecutar `/safe-commit`.
+    - Ejecutar `.agent/workflows/docs/gatekeeper-commit.md` (`--strict`).
