@@ -92,21 +92,39 @@
 		opacity: 0;
 		animation: fadeInSlideUp 1s ease-out 1s forwards;
 
-		// Refined Premium Shimmer
-		// Gold Shimmer
+		// 🌟 Refined Specular Glint
 		background: linear-gradient(
-			to right,
-			rgba(var(--color-action-accent-rgb), 0) 0%,
-			rgba(var(--color-action-accent-rgb), 0.4) 50%,
-			rgba(var(--color-action-accent-rgb), 0) 100%
+			110deg,
+			var(--color-action-accent, tokens.$color-action-accent) 35%,
+			#ffffff 50%,
+			var(--color-action-accent, tokens.$color-action-accent) 65%
 		);
-		background-size: 200% auto;
+		background-size: 250% auto;
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
 			fadeInSlideUp 1s ease-out 1s forwards,
-			shimmer 6s linear infinite;
+			specularGlint 8s ease-in-out infinite;
+	}
+
+	&__nickname-badge {
+		opacity: 0;
+		animation: fadeInSlideUp 0.8s ease-out 1.2s forwards;
+
+		span {
+			background: linear-gradient(
+				110deg,
+				var(--color-text-on-dark, #fff) 35%,
+				#ffffff 50%,
+				var(--color-text-on-dark, #fff) 65%
+			);
+			background-size: 250% auto;
+			-webkit-background-clip: text;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			animation: specularGlint 8s ease-in-out infinite;
+		}
 	}
 
 	&__divider {
@@ -209,12 +227,17 @@
 	}
 }
 
-@keyframes shimmer {
-	0% {
-		background-position: -200% center;
-	}
+@keyframes specularGlint {
+	0%,
 	100% {
-		background-position: 200% center;
+		background-position: -150% center;
+	}
+	30%,
+	50% {
+		background-position: 50% center;
+	}
+	80% {
+		background-position: 250% center;
 	}
 }
 
@@ -287,7 +310,7 @@ body.invitation-revealed .event-theme-wrapper--sealed {
 	.invitation-hero__title {
 		animation:
 			fadeInSlideUp 1s ease-out 0.7s forwards,
-			shimmer 6s linear infinite;
+			specularGlint 8s ease-in-out infinite;
 	}
 
 	.invitation-hero__divider {
