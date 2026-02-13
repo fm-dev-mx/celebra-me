@@ -46,11 +46,7 @@ const CountdownTimer: React.FC<Props> = ({ eventDate }) => {
 	return (
 		<div className="countdown__timer">
 			{segments.map((segment, index) => (
-				<div
-					key={segment.label}
-					className="countdown__segment"
-					style={{ '--index': index } as React.CSSProperties}
-				>
+				<div key={segment.label} className="countdown__segment" data-index={index}>
 					<div className="countdown__value-wrapper">
 						<span className="rivet rivet--tl"></span>
 						<span className="rivet rivet--tr"></span>

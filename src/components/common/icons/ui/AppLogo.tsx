@@ -10,10 +10,7 @@ interface IconProps {
  * Source: AppIcon.astro (Logic extracted)
  */
 export const AppLogoIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
-	<div
-		className={`border-2 border-current rounded-full flex items-center justify-center font-bold text-[10px] ${className}`}
-		style={{ width: size, height: size }}
-	>
+	<div className={`universal-icon--fallback ${className}`} data-size={size}>
 		C
 	</div>
 );

@@ -33,30 +33,45 @@ const {
 
 
 // Prepare CSS variables for inline style or scope
-const themeStyles = `
-    --theme-color-primary: ${theme.primaryColor};
-    --theme-color-primary-dark: ${theme.primaryColor}CC;
-    --theme-color-accent: ${theme.accentColor || theme.primaryColor};
-`;
+const themeColorPrimary = theme.primaryColor;
+const themeColorPrimaryDark = `${theme.primaryColor}CC`;
+const themeColorAccent = theme.accentColor || theme.primaryColor;
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" hideMobileToggle={true}>
-    <div slot="logo" style={themeStyles}>
-        <a href="#" class="event-header__title">
-            {eventName}
-        </a>
-    </div>
+	<div slot="logo">
+		<a href="#" class="event-header__title">
+			{eventName}
+		</a>
+	</div>
 
-    <div slot="desktop-nav" class="event-header__actions" style={themeStyles}>
-        {links.map((link) => (
-            <a href={link.href} class={`event-header__action-btn ${link.href === '#rsvp' ? 'event-header__action-btn--cta' : ''}`}>
-                {link.label}
-            </a>
-        ))}
-    </div>
+	<div slot="desktop-nav" class="event-header__actions">
+		{
+			links.map((link) => (
+				<a
+					href={link.href}
+					class:list={[
+						'event-header__action-btn',
+						{ 'event-header__action-btn--cta': link.href === '#rsvp' }
+					]}
+				>
+					{link.label}
+				</a>
+			))
+		}
+	</div>
 
-    <!-- SLOT: Premium Mobile Nav (React) -->
-    <div slot="mobile-nav-premium">
-        <NavBarMobile client:load links={links} headerId="event-header" />
-    </div>
+	<!-- SLOT: Premium Mobile Nav (React) -->
+	<div slot="mobile-nav-premium">
+		<NavBarMobile client:load links={links} headerId="event-header" />
+	</div>
 </HeaderBase>
+
+<style define:vars={{ themeColorPrimary, themeColorPrimaryDark, themeColorAccent }}>
+	.event-header__title,
+	.event-header__actions {
+		--theme-color-primary: var(--themeColorPrimary);
+		--theme-color-primary-dark: var(--themeColorPrimaryDark);
+		--theme-color-accent: var(--themeColorAccent);
+	}
+</style>

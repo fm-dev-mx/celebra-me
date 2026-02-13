@@ -37,8 +37,6 @@ export async function getStaticPaths() {
 	}));
 }
 
-
-
 const { event } = Astro.props as Props;
 
 if (!event) {
@@ -125,6 +123,10 @@ const labels: Record<string, string> = {
 };
 const heroLabel = labels[data.eventType] || 'Invitación Especial';
 const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.src;
+
+const envBg = data.envelope?.closedPalette?.background || 'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)';
+const envPrimary = data.envelope?.closedPalette?.primary || data.theme.primaryColor;
+const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor || '#d4af37';
 ---
 
 <Layout
@@ -140,6 +142,9 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			primaryColorRgb: primaryColorRgb,
 			accentColor: data.theme.accentColor || '#333',
 			accentColorRgb: accentColorRgb,
+			envBg,
+			envPrimary,
+			envAccent,
 		}}
 	>
 		.event-theme-wrapper {
@@ -147,6 +152,9 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 			--color-primary-rgb: var(--primaryColorRgb);
 			--color-accent: var(--accentColor);
 			--color-accent-rgb: var(--accentColorRgb);
+			--env-bg: var(--envBg);
+			--env-primary: var(--envPrimary);
+			--env-accent: var(--envAccent);
 		}
 	</style>
 
@@ -165,7 +173,6 @@ const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.sr
 					stampText={data.envelope.stampText}
 					stampYear={data.envelope.stampYear}
 					eventSlug={event.id}
-					palette={data.envelope.closedPalette}
 				/>
 			)
 		}

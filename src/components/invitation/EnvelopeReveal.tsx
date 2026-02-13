@@ -20,11 +20,6 @@ interface Props {
 	stampYear?: string;
 	eventSlug: string;
 	tooltipText?: string;
-	palette: {
-		primary: string;
-		accent: string;
-		background: string;
-	};
 }
 
 const EnvelopeReveal: React.FC<Props> = ({
@@ -38,7 +33,6 @@ const EnvelopeReveal: React.FC<Props> = ({
 	stampYear,
 	eventSlug,
 	tooltipText,
-	palette,
 }) => {
 	const shouldReduceMotion = useReducedMotion();
 	const [showTooltip, setShowTooltip] = useState(false);
@@ -175,13 +169,6 @@ const EnvelopeReveal: React.FC<Props> = ({
 						y: '-100%',
 						transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
 					}}
-					style={
-						{
-							'--env-bg': palette.background,
-							'--env-primary': palette.primary,
-							'--env-accent': palette.accent,
-						} as React.CSSProperties
-					}
 				>
 					<motion.div className="envelope-container" animate={controls}>
 						{/* 1. Base Layer (The Paper) */}

@@ -114,7 +114,12 @@
 		opacity tokens.$duration-slower tokens.$ease-out,
 		transform tokens.$duration-slower tokens.$ease-out,
 		border-color tokens.$duration-snappy tokens.$ease-in;
-	transition-delay: calc(0.2s + (var(--index, 0) * 0.1s));
+
+	@for $i from 0 through 3 {
+		&[data-index='#{$i}'] {
+			transition-delay: calc(0.2s + (#{$i} * 0.1s));
+		}
+	}
 
 	.countdown-section.is-visible & {
 		opacity: 1;

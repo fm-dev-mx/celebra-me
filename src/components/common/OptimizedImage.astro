@@ -50,9 +50,15 @@ const finalSrc = resolveSrc(imagePath);
 	) : (
 		<div
 			class:list={['bg-gray-300 flex items-center justify-center', rounded, className]}
-			style={`width: ${width}px; height: ${height}px;`}
 		>
 			<span class="text-xs text-gray-500">{alt}</span>
 		</div>
 	)
 }
+
+<style define:vars={{ width: `${width}px`, height: `${height}px` }}>
+	div {
+		width: var(--width);
+		height: var(--height);
+	}
+</style>

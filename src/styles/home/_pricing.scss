@@ -87,7 +87,12 @@
 	&.is-visible {
 		opacity: 1;
 		transform: translateY(0);
-		transition-delay: var(--delay);
+
+		@for $i from 0 through 5 {
+			&[data-index='#{$i}'] {
+				transition-delay: #{$i * 0.2}s;
+			}
+		}
 	}
 
 	&:hover {

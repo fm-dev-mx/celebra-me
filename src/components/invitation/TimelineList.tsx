@@ -97,7 +97,6 @@ const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
 						strokeDasharray="100"
 						style={{
 							pathLength: scaleY,
-							filter: 'drop-shadow(0 0 8px var(--color-primary))',
 						}}
 					/>
 				</svg>

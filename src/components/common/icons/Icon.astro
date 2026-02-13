@@ -142,9 +142,15 @@ const combinedClass = ['universal-icon', className].filter(Boolean).join(' ');
 				'universal-icon--fallback',
 				className,
 			]}
-			style={{ width: size, height: size }}
 		>
 			{name?.charAt(0) || '?'}
 		</div>
 	)
 }
+
+<style define:vars={{ width: size, height: size }}>
+	.universal-icon--fallback {
+		width: var(--width);
+		height: var(--height);
+	}
+</style>

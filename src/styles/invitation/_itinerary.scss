@@ -26,6 +26,10 @@
 		svg {
 			height: 100%;
 			width: 2px;
+
+			path {
+				filter: drop-shadow(0 0 8px var(--color-primary, tokens.$color-action-primary));
+			}
 		}
 	}
 
