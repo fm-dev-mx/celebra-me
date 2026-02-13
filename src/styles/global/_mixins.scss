@@ -3,16 +3,64 @@
 @use 'sass:map';
 @use 'sass:list';
 @use 'functions' as funcs;
-@use 'variables' as vars;
+@use '../tokens' as tokens;
+
+$transitions-by-component: (
+	button: (
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-in-out,
+	),
+	card: (
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-snappy,
+	),
+	card-item: (
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-overshoot,
+	),
+	header: (
+		duration: tokens.$duration-premium,
+		timing: tokens.$ease-in-out,
+	),
+	menu: (
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-snappy,
+	),
+	modal: (
+		duration: tokens.$duration-snappy,
+		timing: tokens.$ease-bouncy,
+	),
+	section-nav-button: (
+		duration: tokens.$duration-standard,
+		timing: ease-in-out,
+	),
+	whatsapp-button: (
+		duration: tokens.$duration-standard,
+		timing: ease-in-out,
+	),
+	whatsapp-button-after: (
+		duration: tokens.$duration-standard,
+		timing: tokens.$ease-overshoot,
+	),
+);
+
+$breakpoints: (
+	xs: 375px,
+	sm: 640px,
+	md: 768px,
+	lg: 1024px,
+	xl: 1280px,
+	xxl: 1536px,
+);
 
 /// Applies a transition based on component settings.
 @mixin transition($component) {
-	$settings: map.get(vars.$transitions-by-component, $component);
+	$settings: map.get($transitions-by-component, $component);
 	@if $settings {
 		transition: all map.get($settings, duration) map.get($settings, timing);
 	} @else {
 		@warn "No transition settings found for `#{$component}`. Using default transition.";
-		transition: all vars.$default-transition-duration vars.$default-transition-timing;
+		transition: all tokens.$duration-standard tokens.$ease-in-out;
 	}
 }
 
@@ -24,8 +72,8 @@
 
 /// Media query mixin for a given breakpoint key.
 @mixin respond-to($breakpoint) {
-	@if map.has-key(vars.$breakpoints, $breakpoint) {
-		@media (min-width: #{map.get(vars.$breakpoints, $breakpoint)}) {
+	@if map.has-key($breakpoints, $breakpoint) {
+		@media (min-width: #{map.get($breakpoints, $breakpoint)}) {
 			@content;
 		}
 	} @else {

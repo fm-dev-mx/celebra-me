@@ -2,24 +2,98 @@
 
 @use 'sass:map';
 @use 'sass:color';
-@use 'variables' as vars;
+@use '../tokens' as tokens;
+
+$backdrop-blurs: (
+	xs: blur(2px),
+	sm: blur(4px),
+	md: blur(8px),
+	lg: blur(12px),
+	xl: blur(16px),
+);
+
+$breakpoints: (
+	xs: 375px,
+	sm: 640px,
+	md: 768px,
+	lg: 1024px,
+	xl: 1280px,
+	xxl: 1536px,
+);
+
+$z-index: (
+	behind: -1,
+	default: 1,
+	header: 10,
+	navButton: 15,
+	modal: 12,
+	tooltip: 10,
+	highest: 14,
+	music: 10,
+);
+
+$border-radius: (
+	small: 0.25rem,
+	modal-button: 0.25rem,
+	default: 0.5rem,
+	card: 0.75rem,
+	container: 1rem,
+	button: 1.5rem,
+	oval: 9999px,
+);
 
 @function color($group, $shade: 'default') {
-	@return map.get(map.get(vars.$colors, $group), $shade);
+	$color-map: (
+		primary: (
+			light: tokens.$color-surface-secondary,
+			default: tokens.$color-action-accent,
+			dark: tokens.$color-surface-dark,
+		),
+		secondary: (
+			light: tokens.$color-surface-primary,
+			default: tokens.$color-surface-dark,
+			dark: tokens.$color-surface-dark,
+		),
+		accent: (
+			light: tokens.$color-surface-secondary,
+			default: tokens.$color-action-accent,
+			dark: tokens.$color-action-accent,
+		),
+		neutral: (
+			lightest: tokens.$base-neutral-0,
+			light: tokens.$color-neutral-subtle,
+			medium: tokens.$color-neutral-muted,
+			dark: tokens.$color-neutral-base,
+			darkest: tokens.$color-neutral-emphasis,
+		),
+		background: (
+			default: tokens.$color-surface-primary,
+			alt: tokens.$color-surface-secondary,
+		),
+		text: (
+			default: tokens.$color-text-primary,
+			light: tokens.$color-text-secondary,
+		),
+		whatsapp: (
+			default: tokens.$color-whatsapp,
+			hover: tokens.$color-whatsapp,
+		),
+	);
+	@return map.get(map.get($color-map, $group), $shade);
 }
 
 @function blur($size) {
-	@return map.get(vars.$backdrop-blurs, $size);
+	@return map.get($backdrop-blurs, $size);
 }
 
 @function breakpoint($size) {
-	@return map.get(vars.$breakpoints, $size);
+	@return map.get($breakpoints, $size);
 }
 
 @function z-index($layer) {
-	@return map.get(vars.$z-index, $layer);
+	@return map.get($z-index, $layer);
 }
 
 @function border-radius($component) {
-	@return map.get(vars.$border-radius, $component);
+	@return map.get($border-radius, $component);
 }
