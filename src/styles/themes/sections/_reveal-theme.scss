@@ -304,8 +304,10 @@ $gold-light: #f1d592;
 			line-height: 1 !important;
 			margin: 0 !important;
 			background: none !important;
-			-webkit-text-fill-color: #2b2b2b !important; // Iron Gall Ink (charcoal black)
-			color: #2b2b2b !important;
+			-webkit-text-fill-color: var(
+				--color-text-primary
+			) !important; // Iron Gall Ink (charcoal black)
+			color: var(--color-text-primary) !important;
 			font-family: 'EB Garamond', serif !important;
 			font-weight: 800 !important;
 			position: relative;
@@ -351,7 +353,7 @@ $gold-light: #f1d592;
 		.envelope-details {
 			font-family: 'Cormorant Garamond', serif;
 			font-size: 0.9rem !important;
-			color: #2b2b2b !important;
+			color: var(--color-text-primary) !important;
 			opacity: 90%;
 		}
 
@@ -532,7 +534,7 @@ $gold-light: #f1d592;
 		// Avoids the "floating object" artifact of a single drop-shadow.
 		filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)) drop-shadow(0 4px 6px rgb(0 0 0 / 30%))
 			drop-shadow(0 10px 20px rgb(0 0 0 / 20%)) !important;
-		transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+		transition: transform tokens.$duration-snappy tokens.$ease-premium !important;
 
 		&:hover {
 			transform: scale(1.08) rotate(2deg) !important;
@@ -540,6 +542,11 @@ $gold-light: #f1d592;
 			// Lift the contact shadow slightly on hover for "just pressed" feel
 			filter: drop-shadow(0 2px 3px rgb(0 0 0 / 50%)) drop-shadow(0 6px 10px rgb(0 0 0 / 30%))
 				drop-shadow(0 14px 28px rgb(0 0 0 / 15%)) !important;
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-action-accent, tokens.$color-action-accent);
+			outline-offset: 4px;
 		}
 	}
 
@@ -634,7 +641,7 @@ $gold-light: #f1d592;
 
 			// GPU compositing for smooth animation without repaints
 			will-change: transform;
-			transition: opacity 0.4s ease;
+			transition: opacity tokens.$duration-standard tokens.$ease-out;
 
 			// No hover transform on the icon itself to prevent clip-path clipping.
 			// Hover animation is handled at the .envelope-seal-button level.
@@ -648,5 +655,19 @@ $gold-light: #f1d592;
 
 		// Match the asymmetric blob shape
 		border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.envelope-seal-button {
+			transition: none !important;
+
+			&:hover {
+				transform: none !important;
+			}
+		}
+
+		.envelope-seal-button .seal-icon {
+			transition: none !important;
+		}
 	}
 }

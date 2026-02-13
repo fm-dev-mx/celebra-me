@@ -1019,7 +1019,7 @@
 		background: linear-gradient(
 			90deg,
 			tokens.$color-action-accent 0%,
-			#fff 50%,
+			var(--color-text-on-dark, tokens.$color-text-on-dark) 50%,
 			tokens.$color-action-accent 100%
 		);
 		background-size: 200% auto;
@@ -1083,9 +1083,9 @@
 			height: 5px;
 			background: radial-gradient(
 				circle at 30% 30%,
-				#fff 0%,
+				var(--color-text-on-dark, tokens.$color-text-on-dark) 0%,
 				tokens.$color-action-accent 70%,
-				#000 100%
+				var(--color-surface-dark, tokens.$color-surface-dark) 100%
 			);
 			border-radius: 50%;
 			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
@@ -1135,7 +1135,7 @@
 	}
 
 	.event-location__card-image-inner-frame {
-		background: #1a1510;
+		background: var(--color-surface-dark, tokens.$color-surface-dark);
 		padding: 4px;
 		border-radius: 1px;
 	}
@@ -1175,7 +1175,7 @@
 			color: tokens.$color-action-accent;
 
 			&:hover {
-				color: #fff;
+				color: var(--color-text-on-dark, tokens.$color-text-on-dark);
 			}
 		}
 	}
@@ -1188,13 +1188,25 @@
 		font-size: 0.75rem;
 		letter-spacing: 0.15em;
 		padding: tokens.$spacing-5 tokens.$spacing-6;
-		transition: all 0.3s ease;
+		transition:
+			background-color tokens.$duration-snappy tokens.$ease-out,
+			border-color tokens.$duration-snappy tokens.$ease-out,
+			box-shadow tokens.$duration-snappy tokens.$ease-out,
+			transform tokens.$duration-snappy tokens.$ease-out;
 
 		&:hover {
 			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
 			border-color: tokens.$color-action-accent;
 			box-shadow: 0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 			transform: scale(1.05);
+		}
+
+		&:focus-visible {
+			outline: 2px solid tokens.$color-action-accent;
+			outline-offset: 3px;
+			box-shadow:
+				0 0 0 2px rgb(0 0 0 / 70%),
+				0 0 0 6px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.35);
 		}
 
 		&--maps,
@@ -1239,7 +1251,7 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.event-location__card {
-			transition: border-color 0.2s ease;
+			transition: border-color tokens.$duration-snappy tokens.$ease-out;
 
 			&:hover {
 				transform: none;

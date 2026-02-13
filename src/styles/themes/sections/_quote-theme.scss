@@ -301,7 +301,10 @@
 	}
 
 	.quote-line {
-		transition: all tokens.$duration-premium tokens.$ease-premium;
+		transition:
+			opacity tokens.$duration-premium tokens.$ease-premium,
+			transform tokens.$duration-premium tokens.$ease-premium,
+			filter tokens.$duration-premium tokens.$ease-premium;
 
 		&.is-visible {
 			animation: premium-fade-up 1.2s tokens.$ease-premium forwards;
@@ -502,7 +505,7 @@
 
 	.quote-author {
 		font-family: tokens.$font-ui;
-		color: var(--color-action-accent);
+		color: var(--color-text-secondary);
 		text-transform: uppercase;
 		letter-spacing: 0.15em;
 		font-weight: 600;
