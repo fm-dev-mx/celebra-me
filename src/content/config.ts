@@ -70,22 +70,30 @@ const eventsCollection = defineCollection({
 					.optional(),
 				family: z
 					.object({
-						variant: z.string().default('standard'),
+						variant: z
+							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
+							.default('standard'),
 					})
 					.optional(),
 				gifts: z
 					.object({
-						variant: z.string().default('standard'),
+						variant: z
+							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
+							.default('standard'),
 					})
 					.optional(),
 				gallery: z
 					.object({
-						variant: z.string().default('standard'),
+						variant: z
+							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
+							.default('standard'),
 					})
 					.optional(),
 				thankYou: z
 					.object({
-						variant: z.string().default('standard'),
+						variant: z
+							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
+							.default('standard'),
 					})
 					.optional(),
 			})
