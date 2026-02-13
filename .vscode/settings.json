@@ -19,5 +19,6 @@
     "prettier.documentSelectors": ["**/*.astro", "**/*.json", "**/*.jsonc"],
     "files.associations": {
         "*.astro": "astro"
-    }
+    },
+    "markdown.preview.openMarkdownLinks": "inEditor"
 }
