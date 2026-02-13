@@ -117,17 +117,10 @@
 		}
 	}
 
-	/* Premium Jewelry Photo Frame (flat element naming) */
 	&__card-image-outer-frame {
 		width: 100%;
 		border-radius: 2px;
-		background: linear-gradient(
-			135deg,
-			#c5a059 0%,
-			#f1e1b9 45%,
-			#d4af37 55%,
-			#a67c37 100%
-		); /* Realistic gold foil gradient */
+		background: var(--color-frame-bg, tokens.$color-action-accent);
 		padding: 2px;
 		box-shadow:
 			0 10px 30px -10px rgba(0, 0, 0, 0.3),
@@ -233,7 +226,7 @@
 		}
 
 		&.copy-success {
-			color: #4caf50;
+			color: tokens.$color-action-accent;
 			opacity: 1;
 		}
 	}
@@ -397,7 +390,7 @@
 
 		&--apple {
 			background: hsla(0, 0%, 98%, 0.9);
-			color: #1d1d1f;
+			color: tokens.$color-text-primary;
 			border-color: hsla(0, 0%, 80%, 0.5);
 		}
 
@@ -424,7 +417,11 @@
 
 	&__divider {
 		height: 1px;
-		background: radial-gradient(circle, var(--color-primary, #d4af37) 0%, transparent 70%);
+		background: radial-gradient(
+			circle,
+			var(--color-action-accent, tokens.$color-action-accent) 0%,
+			transparent 70%
+		);
 		opacity: 0.3;
 		margin-bottom: 4rem;
 	}
@@ -462,24 +459,10 @@
 			text-align: left;
 			gap: 1.5rem;
 		}
-
-		&--reserved {
-			background: linear-gradient(135deg, rgba(129, 79, 150, 0.08), rgba(129, 79, 150, 0.03));
-			border: 1px solid rgba(129, 79, 150, 0.2);
-
-			.event-location__indication-icon {
-				color: tokens.$base-purple-reserved;
-			}
-
-			.event-location__indication-text {
-				color: color.adjust(#814f96, $lightness: -15%);
-				font-weight: 500;
-			}
-		}
 	}
 
 	&__indication-icon {
-		color: var(--color-primary, #d4af37);
+		color: var(--color-action-accent, tokens.$color-action-accent);
 		opacity: 0.9;
 		flex-shrink: 0;
 		font-size: 1.5rem; /* Larger but fine */
@@ -512,13 +495,18 @@
 	&__signature-text {
 		font-family: tokens.$font-calligraphy;
 		font-size: 2.5rem;
-		color: var(--color-primary, #d4af37);
+		color: var(--color-action-accent, tokens.$color-action-accent);
 	}
 
 	&__signature-line {
 		width: 60px;
 		height: 1px;
-		background: linear-gradient(90deg, transparent, var(--color-primary, #d4af37), transparent);
+		background: linear-gradient(
+			90deg,
+			transparent,
+			var(--color-action-accent, tokens.$color-action-accent),
+			transparent
+		);
 	}
 }
 

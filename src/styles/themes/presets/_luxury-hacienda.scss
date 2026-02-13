@@ -21,4 +21,10 @@
 
 	--color-border-subtle: rgba(var(--color-text-primary-rgb, 58, 40, 25), 0.1);
 	--color-border-emphasis: var(--color-action-accent);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		rgba(var(--color-action-accent-rgb), 0.75) 0%,
+		rgba(var(--color-action-accent-rgb), 0.35) 50%,
+		rgba(var(--color-action-accent-rgb), 0.8) 100%
+	);
 }

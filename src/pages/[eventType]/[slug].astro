@@ -22,6 +22,10 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
 
+type Props = {
+	event: CollectionEntry<'events'>;
+};
+
 export async function getStaticPaths() {
 	const events = await getCollection('events');
 	return events.map((event: CollectionEntry<'events'>) => ({
@@ -35,7 +39,7 @@ export async function getStaticPaths() {
 
 
 
-const { event } = Astro.props;
+const { event } = Astro.props as Props;
 
 if (!event) {
 	return Astro.redirect('/404');
@@ -104,7 +108,7 @@ const familyImage = data.family?.featuredImage ? resolveAsset(data.family.featur
 const thankYouImage = data.thankYou?.image ? resolveAsset(data.thankYou.image) : undefined;
 
 // Gallery Mapping
-const galleryItems = data.gallery?.items.map(item => ({
+const galleryItems = data.gallery?.items.map((item: { image: string; caption?: string }) => ({
 	...item,
 	image: requireAsset(item.image)
 })) || [];

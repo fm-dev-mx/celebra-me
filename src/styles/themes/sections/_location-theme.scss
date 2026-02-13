@@ -2,6 +2,7 @@
 // Theme-specific styles for Location/EventLocation Section
 // Supports: structured (default), organic, minimal, luxury
 
+@use 'sass:color';
 @use '../../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
 
@@ -120,6 +121,20 @@
 			filter: brightness(1.1);
 			transform: translateY(-2px);
 			box-shadow: 0 8px 20px var(--color-glass-shadow);
+		}
+	}
+
+	.event-location__indication-item--reserved {
+		background: linear-gradient(135deg, rgba(129, 79, 150, 0.08), rgba(129, 79, 150, 0.03));
+		border: 1px solid rgba(129, 79, 150, 0.2);
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
+		}
+
+		.event-location__indication-text {
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: -15%, $space: hsl);
+			font-weight: 500;
 		}
 	}
 }
@@ -305,9 +320,21 @@
 		transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 
 		&:hover {
-			background: hsla(43, 55%, 55%, 0.08);
-			border-color: hsla(43, 55%, 55%, 0.6);
 			box-shadow: 0 0 25px hsla(43, 55%, 55%, 0.15);
+		}
+	}
+
+	.event-location__indication-item--reserved {
+		background: linear-gradient(135deg, rgba(129, 79, 150, 0.08), rgba(129, 79, 150, 0.03));
+		border: 1px solid rgba(129, 79, 150, 0.2);
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
+		}
+
+		.event-location__indication-text {
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: -15%, $space: hsl);
+			font-weight: 500;
 		}
 	}
 }
@@ -528,6 +555,19 @@
 			}
 		}
 	}
+
+	.event-location__indication-item--reserved {
+		background: rgba(129, 79, 150, 0.08);
+		border: 1px solid rgba(129, 79, 150, 0.2);
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
+		}
+
+		.event-location__indication-text {
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: -10%, $space: hsl);
+		}
+	}
 }
 
 // ==========================================================================
@@ -676,6 +716,19 @@
 				background: #f5f5f5;
 				border-color: #999;
 			}
+		}
+	}
+
+	.event-location__indication-item--reserved {
+		background: #f8f0ff;
+		border: 1px solid #dcd0ff;
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
+		}
+
+		.event-location__indication-text {
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: -10%, $space: hsl);
 		}
 	}
 }
@@ -899,6 +952,15 @@
 			&:hover {
 				background: rgba(212, 175, 55, 0.2);
 			}
+		}
+	}
+
+	.event-location__indication-item--reserved {
+		background: rgba(129, 79, 150, 0.1);
+		border: 1px solid rgba(129, 79, 150, 0.3);
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
 		}
 	}
 }
@@ -1180,6 +1242,20 @@
 		}
 		.nav-button:hover {
 			transform: none;
+		}
+	}
+
+	.event-location__indication-item--reserved {
+		background: rgba(129, 79, 150, 0.15);
+		border: 1px solid tokens.$base-purple-reserved;
+
+		.event-location__indication-icon {
+			color: tokens.$base-purple-reserved;
+		}
+
+		.event-location__indication-text {
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: 20%, $space: hsl);
+			font-weight: 600;
 		}
 	}
 }

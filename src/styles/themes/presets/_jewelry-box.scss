@@ -32,6 +32,12 @@
 	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgba(0, 0, 0, 0.05);
 	--border-fine-gold: 1px solid var(--color-glass-border);
 	--border-image: 2px solid rgba(var(--color-action-accent-rgb), 0.5);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		rgba(var(--color-action-accent-rgb), 0.45) 0%,
+		rgba(var(--color-surface-primary-rgb), 1) 50%,
+		rgba(var(--color-action-accent-rgb), 0.8) 100%
+	);
 
 	// 🎨 Texture & Light Effects (Ultra-Premium)
 	--texture-silk:
