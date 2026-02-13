@@ -6,6 +6,23 @@
 
 // LUXURY HACIENDA BASE
 .theme-preset--luxury-hacienda {
+	// Base theme styles (moved from preset file per architecture guidelines)
+	background-color: var(--color-surface-primary);
+	min-height: 100vh;
+	font-family: tokens.$font-body-hacienda;
+
+	// Typography overrides
+	h1,
+	h2,
+	h3,
+	h4,
+	.font-heading {
+		font-family: tokens.$font-display-hacienda;
+		color: var(--color-surface-dark);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
 	.card,
 	.glass-panel {
 		background: tokens.$color-glass-bg;

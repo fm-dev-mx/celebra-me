@@ -21,7 +21,14 @@ const eventsCollection = defineCollection({
 				quote: z
 					.object({
 						variant: z
-							.enum(['elegant', 'modern', 'minimal', 'floral', 'jewelry-box'])
+							.enum([
+								'elegant',
+								'modern',
+								'minimal',
+								'floral',
+								'jewelry-box',
+								'luxury-hacienda',
+							])
 							.default('elegant'),
 						fontStyle: z.enum(['serif', 'script', 'sans']).optional(),
 						animation: z.enum(['fade', 'bounce', 'elastic', 'none']).default('fade'),
