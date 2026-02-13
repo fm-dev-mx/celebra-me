@@ -62,9 +62,17 @@ const EnvelopeReveal: React.FC<Props> = ({
 	});
 
 	const controls = useAnimation();
+	const rustleAudio =
+		typeof Audio !== 'undefined' ? new Audio('/assets/audio/paper-rustle.mp3') : null;
 
 	const handleOpen = () => {
 		if (phase !== 'closed') return;
+
+		// Play tactile sound
+		if (rustleAudio) {
+			rustleAudio.volume = 0.4;
+			rustleAudio.play().catch((e) => console.warn('Audio play blocked:', e));
+		}
 
 		// Save to localStorage
 		if (typeof window !== 'undefined') {
