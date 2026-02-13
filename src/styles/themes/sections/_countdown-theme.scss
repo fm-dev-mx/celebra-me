@@ -142,10 +142,10 @@
 	background: linear-gradient(
 		135deg,
 		primitives.$base-gold-500 0%,
-		color.adjust(primitives.$base-gold-500, $lightness: -15%) 25%,
-		color.adjust(primitives.$base-gold-500, $lightness: 30%) 50%,
-		color.adjust(primitives.$base-gold-500, $lightness: -25%) 75%,
-		color.adjust(primitives.$base-gold-500, $lightness: 20%) 100%
+		color.adjust(primitives.$base-gold-500, $lightness: -15%, $space: hsl) 25%,
+		color.adjust(primitives.$base-gold-500, $lightness: 30%, $space: hsl) 50%,
+		color.adjust(primitives.$base-gold-500, $lightness: -25%, $space: hsl) 75%,
+		color.adjust(primitives.$base-gold-500, $lightness: 20%, $space: hsl) 100%
 	);
 	background-size: 400% 400%;
 	animation: gradientShift 15s ease infinite;

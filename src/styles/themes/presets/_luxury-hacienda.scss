@@ -5,21 +5,37 @@
 .theme-preset--luxury-hacienda {
 	// Color Architecture: CSS Variable Injection
 	--color-text-primary: #{primitives.$base-coffee-900};
-	--color-text-primary-rgb: #{58, 40, 25}; // Enhanced premium brown
-	--color-text-secondary: #{color.adjust(primitives.$base-coffee-900, $lightness: 15%)};
+	--color-text-primary-rgb:
+		#{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
+	--color-text-secondary: #{color.adjust(
+			primitives.$base-coffee-900,
+			$lightness: 15%,
+			$space: hsl
+		)};
 	--color-text-emphasis: #{primitives.$base-gold-500};
 	--color-text-on-dark: #{primitives.$base-parchment-100};
 
 	--color-surface-primary: #{primitives.$base-parchment-100};
-	--color-surface-primary-rgb: #{245, 245, 220}; // #F5F5DC
+	--color-surface-primary-rgb:
+		#{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)};
 	--color-surface-dark: #{primitives.$base-coffee-900};
-	--color-surface-dark-rgb: #{50, 35, 22}; // Enhanced dark brown
+	--color-surface-dark-rgb:
+		#{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
 
 	--color-action-primary: #{primitives.$base-coffee-900};
 	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb: #{220, 180, 60}; // Enhanced premium gold
+	--color-action-accent-rgb:
+		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
 
-	--color-border-subtle: rgba(var(--color-text-primary-rgb, 58, 40, 25), 0.1);
+	--color-border-subtle: rgba(var(--color-text-primary-rgb), 0.1);
 	--color-border-emphasis: var(--color-action-accent);
 	--color-frame-bg: linear-gradient(
 		135deg,
