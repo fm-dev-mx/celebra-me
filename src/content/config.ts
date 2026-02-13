@@ -179,6 +179,16 @@ const eventsCollection = defineCollection({
 						mother: z.string().optional(),
 					})
 					.optional(),
+				labels: z
+					.object({
+						sectionTitle: z.string().optional(),
+						sectionSubtitle: z.string().optional(),
+						spouseTitle: z.string().optional(),
+						spouseRole: z.string().optional(),
+						childrenTitle: z.string().optional(),
+						parentsTitle: z.string().optional(),
+					})
+					.optional(),
 				spouse: z.string().optional(),
 				children: z
 					.array(
