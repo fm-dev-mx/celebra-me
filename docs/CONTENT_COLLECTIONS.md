@@ -139,8 +139,10 @@ Per-section theme customization. Allows each section to have a unique visual tre
 | `quote`     | `elegant`, `modern`, `minimal`, `floral`, `jewelry-box`, `luxury-hacienda`     | `elegant`    |
 | `countdown` | `minimal`, `vibrant`, `classic`, `modern`, `jewelry-box`, `luxury-hacienda`    | `minimal`    |
 | `location`  | `structured`, `organic`, `minimal`, `luxury`, `jewelry-box`, `luxury-hacienda` | `structured` |
-| `family`    | `jewelry-box`, `luxury-hacienda`                                               | `standard`   |
-| `gifts`     | `jewelry-box`, `luxury-hacienda`                                               | `standard`   |
+| `family`    | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
+| `gifts`     | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
+| `gallery`   | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
+| `thankYou`  | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
 
 ---
 
