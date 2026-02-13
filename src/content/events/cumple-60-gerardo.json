@@ -166,36 +166,36 @@
         "title": "Música de fondo"
     },
     "itinerary": {
-        "title": "Programa de la noche",
+        "title": "Así será la fiesta",
         "items": [
             {
-                "icon": "reception",
-                "label": "¡Llegue con sed!",
+                "icon": "western-hat",
+                "label": "Inicia la fiesta",
                 "time": "7:00 PM",
                 "description": "Los esperamos para empezar el festejo"
             },
             {
-                "icon": "dinner",
+                "icon": "taco",
                 "label": "La Taquiza",
                 "time": "8:30 PM",
-                "description": "Tacos de los buenos para agarrar fuerza"
+                "description": "Pa' agarrar fuerza"
             },
             {
-                "icon": "toast",
-                "label": "¡Que ruja la banda!",
+                "icon": "tuba",
+                "label": "Suena la banda",
                 "time": "9:45 PM",
-                "description": "A sacarle brillo al piso"
+                "description": "Banda la Esencial"
+            },
+            {
+                "icon": "accordion",
+                "label": "Norteño",
+                "time": "11:30 PM",
+                "description": "Los Baros de Sinaloa"
             },
             {
                 "icon": "boot",
-                "label": "Norteño y Botas",
-                "time": "11:30 PM",
-                "description": "Los clásicos que le gustan al Jefe"
-            },
-            {
-                "icon": "party",
                 "label": "¡Hasta donde aguanten!",
-                "time": "12:30 AM",
+                "time": "2:30 AM",
                 "description": "Echando fiesta con el cumpleañero"
             }
         ]
@@ -219,6 +219,7 @@
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },
+        { "label": "Familia", "href": "#family-section" },
         { "label": "Galería", "href": "#galeria" },
         { "label": "Ubicación", "href": "#event-location" },
         { "label": "Confirmar", "href": "#rsvp" }
