@@ -4,8 +4,6 @@ description: Unified commit gatekeeper with strict and minimal modes.
 
 # 🔒 Workflow: Gatekeeper Commit
 
-Consolidated gatekeeper replacing `atomic-ui-commit.md` and `safe-commit.md`.
-
 **Modes:**
 
 - `--strict` (default): Full Atomic Deployable Unit enforcement
