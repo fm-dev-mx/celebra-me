@@ -145,7 +145,7 @@ const eventsCollection = defineCollection({
 					itinerary: z
 						.array(
 							z.object({
-								icon: z.enum(['waltz', 'dinner', 'toast', 'cake', 'party']),
+								icon: z.enum(['waltz', 'dinner', 'toast', 'cake', 'party', 'boot']),
 								label: z.string(),
 								time: z.string(),
 							}),
@@ -292,6 +292,7 @@ const eventsCollection = defineCollection({
 							'reception',
 							'music',
 							'photo',
+							'boot',
 						]),
 						label: z.string(),
 						description: z.string().optional(),

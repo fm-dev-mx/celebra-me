@@ -2,10 +2,13 @@
 
 .itinerary {
 	padding: 8rem 2rem;
-	background: radial-gradient(
-		circle at center,
-		rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.05) 0%,
-		transparent 70%
+	background: var(
+		--itinerary-bg,
+		radial-gradient(
+			circle at center,
+			rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.05) 0%,
+			transparent 70%
+		)
 	);
 	position: relative;
 	overflow: hidden;
@@ -28,7 +31,13 @@
 			width: 2px;
 
 			path {
-				filter: drop-shadow(0 0 8px var(--color-primary, tokens.$color-action-primary));
+				filter: drop-shadow(
+					0 0 8px
+						var(
+							--itinerary-line-color,
+							var(--color-primary, tokens.$color-action-primary)
+						)
+				);
 			}
 		}
 	}
@@ -45,19 +54,12 @@
 
 		&.font-heading-formal {
 			font-size: clamp(2.5rem, 8vw, 4rem);
-			color: var(
-				--color-text-emphasis,
-				var(--color-action-primary, tokens.$color-action-primary)
-			);
+			color: var(--color-text-emphasis);
 			margin-bottom: 1rem;
 		}
 
-		// Ensuring specific H2 styling
 		.itinerary__title {
-			color: var(
-				--color-text-emphasis,
-				var(--color-action-primary, tokens.$color-action-primary)
-			);
+			color: var(--color-text-emphasis);
 			letter-spacing: 0.1em;
 		}
 	}
@@ -75,7 +77,10 @@
 			background: linear-gradient(
 				to var(--direction, right),
 				transparent,
-				var(--color-action-primary, tokens.$color-action-primary)
+				var(
+					--itinerary-line-color,
+					var(--color-action-primary, tokens.$color-action-primary)
+				)
 			);
 
 			&:last-child {
@@ -86,9 +91,16 @@
 		.flourish-diamond {
 			width: 8px;
 			height: 8px;
-			background: var(--color-action-primary, tokens.$color-action-primary);
+			background: var(
+				--itinerary-line-color,
+				var(--color-action-primary, tokens.$color-action-primary)
+			);
 			transform: rotate(45deg);
-			box-shadow: 0 0 10px var(--color-action-primary, tokens.$color-action-primary);
+			box-shadow: 0 0 10px
+				var(
+					--itinerary-line-color,
+					var(--color-action-primary, tokens.$color-action-primary)
+				);
 		}
 	}
 
@@ -99,30 +111,6 @@
 
 	&__line {
 		display: none; // Handled by TimelineList SVG
-		position: absolute;
-		left: 50%;
-		top: 0;
-		bottom: 0;
-		width: 1px;
-		background: linear-gradient(
-			to bottom,
-			transparent,
-			var(--color-action-primary, tokens.$color-action-primary) 5%,
-			var(--color-action-primary, tokens.$color-action-primary) 95%,
-			transparent
-		);
-		transform: translateX(-50%);
-		opacity: 40%;
-		z-index: 1;
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: var(--color-action-primary, tokens.$color-action-primary);
-			box-shadow: 0 0 15px var(--color-action-primary, tokens.$color-action-primary);
-			opacity: 60%;
-		}
 	}
 
 	&__line-end {
@@ -132,7 +120,7 @@
 		transform: translateX(-50%) rotate(45deg);
 		width: 12px;
 		height: 12px;
-		border: 1px solid var(--color-action-accent);
+		border: 1px solid var(--itinerary-line-color, var(--color-action-primary));
 		background: var(--color-surface-primary);
 		z-index: 2;
 		box-shadow: 0 0 10px var(--color-glass-shadow);
@@ -141,7 +129,7 @@
 			content: '';
 			position: absolute;
 			inset: 2px;
-			background: var(--color-action-accent);
+			background: var(--itinerary-line-color, var(--color-action-primary));
 			opacity: 80%;
 		}
 	}
@@ -163,7 +151,7 @@
 			.itinerary__item-content {
 				grid-column: 1;
 				text-align: right;
-				padding-right: 3rem; // Closer to line
+				padding-right: 3rem;
 			}
 
 			.itinerary__item-icon-wrapper {
@@ -177,21 +165,13 @@
 			.itinerary__item-content {
 				grid-column: 2;
 				text-align: left;
-				padding-left: 3rem; // Closer to line
+				padding-left: 3rem;
 			}
 
 			.itinerary__item-icon-wrapper {
 				grid-column: 1;
 				justify-self: flex-end;
 				margin-right: -28px;
-			}
-
-			.itinerary__item-content {
-				order: 2;
-			}
-
-			.itinerary__item-icon-wrapper {
-				order: 1;
 			}
 		}
 	}
@@ -200,31 +180,26 @@
 		font-size: 0.95rem;
 		text-transform: uppercase;
 		letter-spacing: 0.25em;
-		color: var(--color-action-primary, tokens.$color-action-primary);
+		color: var(
+			--itinerary-item-time-color,
+			var(--color-action-primary, tokens.$color-action-primary)
+		);
 		font-weight: 500;
 		margin-bottom: 0.5rem;
 	}
 
 	&__item-label {
-		font-family: var(--font-display);
+		font-family: var(--itinerary-item-label-font, var(--font-display));
 		font-size: 1.8rem;
-		color: var(--color-action-primary);
+		color: var(--itinerary-item-label-color, var(--color-action-primary));
 		margin-bottom: 0.4rem;
 		line-height: 1.2;
 		font-weight: 300;
-		background: linear-gradient(
-			135deg,
-			var(--color-text-primary) 0%,
-			var(--color-action-accent) 100%
-		);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
 	}
 
 	&__item-description {
 		font-size: 1rem;
-		color: rgb(255 255 255 / 85%); // Increased opacity for legibility
+		color: var(--itinerary-item-desc-color, rgb(255 255 255 / 85%));
 		line-height: 1.4;
 		max-width: 300px;
 		display: inline-block;
@@ -233,17 +208,15 @@
 	&__item-icon-wrapper {
 		width: 56px;
 		height: 56px;
-		background: var(--color-surface-soft, rgb(255 255 255 / 95%));
-		border: 1.5px solid var(--color-glass-border);
+		background: var(--itinerary-icon-bg, var(--color-surface-soft, rgb(255 255 255 / 95%)));
+		border: var(--itinerary-icon-border, 1.5px solid var(--color-glass-border));
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		position: relative;
 		z-index: 2;
-		box-shadow:
-			0 4px 15px rgb(0 0 0 / 10%),
-			0 0 10px var(--color-glass-shadow);
+		box-shadow: var(--itinerary-icon-shadow, 0 4px 15px rgb(0 0 0 / 10%));
 		backdrop-filter: blur(8px);
 
 		&::before {
@@ -260,7 +233,10 @@
 	&__item-icon-inner {
 		width: 28px;
 		height: 28px;
-		color: var(--color-action-primary, tokens.$color-action-primary); // Icon contrast on pearl
+		color: var(
+			--itinerary-icon-color,
+			var(--color-action-primary, tokens.$color-action-primary)
+		);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -281,11 +257,6 @@
 @media (width <= 768px) {
 	.itinerary {
 		padding: 5rem 1.5rem;
-
-		&__line {
-			left: 2rem;
-			transform: none;
-		}
 
 		&__line-end {
 			left: 2rem;
@@ -310,7 +281,7 @@
 					grid-column: 1;
 					justify-self: flex-start;
 					position: absolute;
-					left: -3rem; // Aligned with line
+					left: -3rem;
 					top: -5px;
 					margin: 0;
 					order: 2;

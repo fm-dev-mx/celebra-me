@@ -133,8 +133,8 @@
         ]
     },
     "rsvp": {
-        "title": "¿Nos acompañas a celebrar al Jefe?",
-        "guestCap": 2,
+        "title": "Confirma tu asistencia para prepararnos.",
+        "guestCap": 10,
         "confirmationMessage": "¡Excelente! Te esperamos para celebrar juntos."
     },
     "quote": {
@@ -156,7 +156,7 @@
         "featuredImage": "family"
     },
     "thankYou": {
-        "message": "Gracias por acompañarme en este día tan especial. Su presencia es el mejor regalo que puedo recibir. Si desean tener un detalle, un sobre será bien recibido.",
+        "message": "Gracias por estar aquí y compartir este momento conmigo. Celebrar juntos es lo que realmente importa.",
         "closingName": "Gerardo",
         "image": "portrait"
     },
@@ -166,33 +166,38 @@
         "title": "Música de fondo"
     },
     "itinerary": {
-        "title": "Orden del Día",
+        "title": "Programa de la noche",
         "items": [
             {
                 "icon": "reception",
-                "label": "Bienvenida",
+                "label": "¡Llegue con sed!",
                 "time": "7:00 PM",
-                "description": "Coctel de recepción"
+                "description": "Los esperamos para empezar el festejo"
             },
             {
                 "icon": "dinner",
-                "label": "Cena",
-                "time": "9:00 PM",
-                "description": "Cena tradicional"
+                "label": "La Taquiza",
+                "time": "8:30 PM",
+                "description": "Tacos de los buenos para agarrar fuerza"
             },
             {
                 "icon": "toast",
-                "label": "Brindis",
-                "time": "10:00 PM",
-                "description": "Palabras y felicitaciones"
+                "label": "¡Que ruja la banda!",
+                "time": "9:45 PM",
+                "description": "A sacarle brillo al piso"
             },
             {
-                "icon": "music",
-                "label": "Banda y Norteño",
-                "time": "10:30 PM",
-                "description": "Música en vivo"
+                "icon": "boot",
+                "label": "Norteño y Botas",
+                "time": "11:30 PM",
+                "description": "Los clásicos que le gustan al Jefe"
             },
-            { "icon": "party", "label": "Fiesta", "time": "12:00 AM" }
+            {
+                "icon": "party",
+                "label": "¡Hasta donde aguanten!",
+                "time": "12:30 AM",
+                "description": "Echando fiesta con el cumpleañero"
+            }
         ]
     },
     "gifts": [

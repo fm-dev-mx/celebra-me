@@ -9,6 +9,7 @@ import {
 	PartyIcon,
 	CakeIcon,
 	PhotoIcon,
+	BootSealIcon,
 } from '@/components/common/icons/invitation';
 
 // Types (should match internal TimelineItem logic or be shared)
@@ -21,7 +22,8 @@ type IconType =
 	| 'church'
 	| 'reception'
 	| 'music'
-	| 'photo';
+	| 'photo'
+	| 'boot';
 
 interface TimelineItemData {
 	icon: IconType;
@@ -45,6 +47,7 @@ const Icons: Record<string, React.FC<{ size?: number | string }>> = {
 	cake: CakeIcon,
 	music: WaltzIcon,
 	photo: PhotoIcon,
+	boot: BootSealIcon,
 };
 
 import type { Variants } from 'framer-motion';
@@ -92,7 +95,7 @@ const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
 				<svg width="2" height="100%" viewBox="0 0 2 100" preserveAspectRatio="none">
 					<motion.path
 						d="M 1 0 L 1 100"
-						stroke="var(--color-text-emphasis, #d4af37)"
+						stroke="var(--itinerary-line-color, var(--color-text-emphasis, #d4af37))"
 						strokeWidth="2"
 						strokeDasharray="100"
 						style={{
@@ -118,12 +121,10 @@ const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
 							variants={itemVariants}
 						>
 							<div className="itinerary__item-content">
-								<div className="itinerary__item-time font-body">{item.time}</div>
-								<h4 className="itinerary__item-label font-heading-formal">
-									{item.label}
-								</h4>
+								<div className="itinerary__item-time">{item.time}</div>
+								<h4 className="itinerary__item-label">{item.label}</h4>
 								{item.description && (
-									<p className="itinerary__item-description font-body">
+									<p className="itinerary__item-description">
 										{item.description}
 									</p>
 								)}
