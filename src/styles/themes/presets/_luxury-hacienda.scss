@@ -43,4 +43,8 @@
 		rgba(var(--color-action-accent-rgb), 0.35) 50%,
 		rgba(var(--color-action-accent-rgb), 0.8) 100%
 	);
+
+	// Typography Overrides
+	--font-display: #{tokens.$font-display-hacienda};
+	--font-body: #{tokens.$font-body-hacienda};
 }

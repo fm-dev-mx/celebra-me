@@ -17,7 +17,7 @@
 		var(--color-surface-primary) 100%
 	);
 	text-align: center;
-	padding: 8rem 2rem;
+	padding: tokens.$spacing-32 tokens.$spacing-8;
 
 	.event-location__container {
 		max-width: 1000px;
@@ -993,13 +993,13 @@
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		gap: 3rem;
+		gap: tokens.$spacing-12;
 
 		@include mixins.respond-to(md) {
 			flex-direction: row;
 			align-items: stretch;
 			justify-content: center;
-			gap: 4rem;
+			gap: tokens.$spacing-16;
 		}
 	}
 
@@ -1009,7 +1009,7 @@
 		color: tokens.$color-action-accent;
 		letter-spacing: 0.2rem;
 		text-transform: uppercase;
-		margin-bottom: 2rem;
+		margin-bottom: tokens.$spacing-8;
 		text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 
 		// Premium Shimmer
@@ -1030,7 +1030,7 @@
 
 	.event-location__card-flourish {
 		opacity: 0.6;
-		margin-bottom: 2.5rem;
+		margin-bottom: tokens.$spacing-10;
 
 		.flourish-line {
 			background: linear-gradient(90deg, transparent, tokens.$color-action-accent);
@@ -1046,7 +1046,7 @@
 		background: linear-gradient(145deg, rgba(30, 25, 20, 0.95) 0%, rgba(15, 10, 5, 0.98) 100%);
 		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		border-radius: 4px;
-		padding: 3rem 2rem;
+		padding: tokens.$spacing-12 tokens.$spacing-8;
 		box-shadow:
 			0 20px 50px rgba(0, 0, 0, 0.6),
 			inset 0 0 30px rgba(0, 0, 0, 0.4);
@@ -1183,7 +1183,7 @@
 		font-family: tokens.$font-display-hacienda;
 		font-size: 0.75rem;
 		letter-spacing: 0.15em;
-		padding: 1.2rem 1.5rem;
+		padding: tokens.$spacing-5 tokens.$spacing-6;
 		transition: all 0.3s ease;
 
 		&:hover {
@@ -1202,7 +1202,7 @@
 	.event-location__indications-container {
 		position: relative;
 		z-index: 1;
-		margin-top: 6rem;
+		margin-top: tokens.$spacing-24;
 	}
 
 	.event-location__divider {

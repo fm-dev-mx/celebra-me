@@ -124,7 +124,7 @@
 	// Elegant footer text
 	.countdown-invitation-text {
 		font-family: tokens.$font-body;
-		font-size: 1.1rem;
+		@include mixins.typography(body-large);
 		font-style: italic;
 		color: tokens.$color-text-primary;
 		opacity: 0.7;
@@ -645,7 +645,7 @@
 
 .countdown-section[data-variant='luxury-hacienda'] {
 	background: linear-gradient(135deg, rgba(45, 30, 20, 0.98) 0%, rgba(25, 15, 10, 1) 100%);
-	padding: 12rem 1rem;
+	padding: 12rem tokens.$spacing-4;
 	position: relative;
 	box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
 
@@ -653,7 +653,7 @@
 	&::after {
 		content: '';
 		position: absolute;
-		inset: 2rem;
+		inset: tokens.$spacing-8;
 		border: 1px dashed rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
 		pointer-events: none;
 		border-radius: 4px;
@@ -677,7 +677,7 @@
 		text-shadow:
 			0 4px 15px rgba(0, 0, 0, 0.8),
 			0 0 20px rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
-		margin-bottom: 3rem;
+		margin-bottom: tokens.$spacing-12;
 
 		// Light Sweep Animation on Title
 		position: relative;
@@ -699,8 +699,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 2.5rem;
-		margin-bottom: 4rem;
+		gap: tokens.$spacing-10;
+		margin-bottom: tokens.$spacing-16;
 
 		.subtitle-line {
 			display: block;
@@ -747,7 +747,7 @@
 		background: linear-gradient(145deg, rgba(20, 15, 10, 0.7) 0%, rgba(0, 0, 0, 0.9) 100%);
 		border: 1px solid rgba(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		border-radius: 4px;
-		padding: 3rem 1.5rem;
+		padding: tokens.$spacing-12 tokens.$spacing-6;
 		box-shadow:
 			inset 0 0 25px rgba(0, 0, 0, 0.9),
 			0 15px 35px rgba(0, 0, 0, 0.5),

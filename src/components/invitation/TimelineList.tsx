@@ -92,7 +92,7 @@ const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
 				<svg width="2" height="100%" viewBox="0 0 2 100" preserveAspectRatio="none">
 					<motion.path
 						d="M 1 0 L 1 100"
-						stroke="var(--color-primary, #d4af37)"
+						stroke="var(--color-text-emphasis, #d4af37)"
 						strokeWidth="2"
 						strokeDasharray="100"
 						style={{
