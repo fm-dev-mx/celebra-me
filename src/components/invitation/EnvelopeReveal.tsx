@@ -63,7 +63,11 @@ const EnvelopeReveal: React.FC<Props> = ({
 
 	const controls = useAnimation();
 	const rustleAudio =
-		typeof Audio !== 'undefined' ? new Audio('/assets/audio/paper-rustle.mp3') : null;
+		typeof Audio !== 'undefined'
+			? new Audio(
+					'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
+				)
+			: null;
 
 	const handleOpen = () => {
 		if (phase !== 'closed') return;

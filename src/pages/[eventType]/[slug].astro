@@ -203,19 +203,6 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 		)}
 
 		{
-			data.sections?.countdown && (
-				<Countdown
-					eventDate={data.hero.date}
-					title={data.countdown?.title}
-					subtitlePrefix={data.countdown?.subtitlePrefix}
-					footerText={data.countdown?.footerText}
-					variant={data.sectionStyles?.countdown?.variant}
-					showParticles={data.sectionStyles?.countdown?.showParticles}
-				/>
-			)
-		}
-
-		{
 			data.family && (
 				<Family
 					parents={data.family.parents}
@@ -225,6 +212,30 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 					labels={data.family.labels}
 					celebrantName={data.hero.name}
 					variant={data.sectionStyles?.family?.variant}
+				/>
+			)
+		}
+
+		{
+			data.sections?.gallery && data.gallery && (
+				<Gallery
+					title={data.gallery.title}
+					subtitle={data.gallery.subtitle}
+					items={galleryItems}
+					variant={data.sectionStyles?.gallery?.variant}
+				/>
+			)
+		}
+
+		{
+			data.sections?.countdown && (
+				<Countdown
+					eventDate={data.hero.date}
+					title={data.countdown?.title}
+					subtitlePrefix={data.countdown?.subtitlePrefix}
+					footerText={data.countdown?.footerText}
+					variant={data.sectionStyles?.countdown?.variant}
+					showParticles={data.sectionStyles?.countdown?.showParticles}
 				/>
 			)
 		}
@@ -241,19 +252,6 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 		{
 			data.itinerary && (
 				<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
-			)
-		}
-
-		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} variant={data.sectionStyles?.gifts?.variant} />}
-
-		{
-			data.sections?.gallery && data.gallery && (
-				<Gallery
-					title={data.gallery.title}
-					subtitle={data.gallery.subtitle}
-					items={galleryItems}
-					variant={data.sectionStyles?.gallery?.variant}
-				/>
 			)
 		}
 
@@ -278,6 +276,8 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 				);
 			})()
 		}
+
+		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} variant={data.sectionStyles?.gifts?.variant} />}
 
 		{
 			data.thankYou && (

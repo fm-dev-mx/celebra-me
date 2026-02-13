@@ -10,6 +10,10 @@ import {
 	CakeIcon,
 	PhotoIcon,
 	BootSealIcon,
+	WesternHatIcon,
+	TacoIcon,
+	TubaIcon,
+	AccordionIcon,
 } from '@/components/common/icons/invitation';
 
 // Types (should match internal TimelineItem logic or be shared)
@@ -23,7 +27,11 @@ type IconType =
 	| 'reception'
 	| 'music'
 	| 'photo'
-	| 'boot';
+	| 'boot'
+	| 'western-hat'
+	| 'taco'
+	| 'tuba'
+	| 'accordion';
 
 interface TimelineItemData {
 	icon: IconType;
@@ -48,6 +56,10 @@ const Icons: Record<string, React.FC<{ size?: number | string }>> = {
 	music: WaltzIcon,
 	photo: PhotoIcon,
 	boot: BootSealIcon,
+	'western-hat': WesternHatIcon,
+	taco: TacoIcon,
+	tuba: TubaIcon,
+	accordion: AccordionIcon,
 };
 
 import type { Variants } from 'framer-motion';
