@@ -94,7 +94,10 @@
 		flex-direction: column;
 		height: 100%;
 		opacity: 0;
-		animation: fadeInUp 0.8s ease-out forwards;
+
+		&.is-visible {
+			animation: fadeInUp 0.8s ease-out forwards;
+		}
 		position: relative;
 		overflow: hidden;
 

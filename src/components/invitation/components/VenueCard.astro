@@ -1,0 +1,138 @@
+---
+/*
+  VenueCard Component
+  Extracted from EventLocation.astro to avoid duplication.
+*/
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import GoogleMap from '@/components/common/GoogleMap.astro';
+import Icon from '@/components/common/icons/Icon.astro';
+
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/AssetRegistry';
+
+interface VenueData {
+	venueEvent: string;
+	venueName: string;
+	address: string;
+	date: string;
+	time: string;
+	mapUrl?: string;
+	appleMapsUrl?: string;
+	googleMapsUrl?: string;
+	wazeUrl?: string;
+	image?: string | ImageMetadata | ImageAsset;
+	coordinates?: {
+		lat: number;
+		lng: number;
+		};
+}
+
+interface Props {
+	venue: VenueData;
+	type: 'ceremony' | 'reception';
+	variant?: string;
+}
+
+const { venue, type, variant = 'structured' } = Astro.props;
+---
+
+<div class="event-location__card-wrapper">
+	<h3 class="event-location__card-title">{venue.venueEvent}</h3>
+	<div class="event-location__card-flourish" aria-hidden="true">
+		<span class="flourish-line"></span>
+		<span class="flourish-diamond"></span>
+		<span class="flourish-line"></span>
+	</div>
+	<article class={`event-location__card event-location__card--${type}`}>
+		<div class="event-location__card-image-outer-frame">
+			<div class="event-location__card-image-inner-frame">
+				<div class="event-location__card-image-container">
+					{venue.coordinates ? (
+						<GoogleMap
+							lat={venue.coordinates.lat}
+							lng={venue.coordinates.lng}
+							title={venue.venueName}
+						/>
+					) : (
+						<OptimizedImage
+							imagePath={venue.image}
+							alt={venue.venueName}
+							class="event-location__card-image"
+						/>
+					)}
+				</div>
+			</div>
+		</div>
+		<div class="event-location__card-content">
+			<ul class="event-location__card-content-list">
+				<li class="event-location__card-content-place">
+					{venue.venueName}
+				</li>
+				<li class="event-location__card-content-date">
+					{venue.date}
+				</li>
+				<li class="event-location__card-content-hour">{venue.time}</li>
+				<li class="event-location__card-content-address">
+					<span class="event-location__card-content-address-text">{venue.address}</span>
+					<button class="event-location__card-content-copy-button copy-button" data-address={venue.address} aria-label="Copiar dirección" title="Copiar dirección">
+						<Icon name="Copy" size={20} />
+					</button>
+				</li>
+			</ul>
+
+			<div class="event-location__card-navigation-buttons">
+				{venue.appleMapsUrl && (
+					<a
+						href={venue.appleMapsUrl}
+						class="event-location__nav-button event-location__nav-button--apple u-hidden-initially"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-apple-link
+					>
+						Apple Maps
+					</a>
+				)}
+				{venue.googleMapsUrl && (
+					<a
+						href={venue.googleMapsUrl}
+						class="event-location__nav-button event-location__nav-button--maps"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Google Maps
+					</a>
+				)}
+				{venue.wazeUrl && (
+					<a
+						href={venue.wazeUrl}
+						class="event-location__nav-button event-location__nav-button--waze"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Waze
+					</a>
+				)}
+				{!venue.appleMapsUrl && !venue.googleMapsUrl && venue.mapUrl && (
+					<a
+						href={venue.mapUrl}
+						class="event-location__nav-button event-location__nav-button--primary"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Icon name="Map" size={20} />
+						Cómo llegar
+					</a>
+				)}
+			</div>
+		</div>
+
+		{variant === 'luxury-hacienda' && (
+			<>
+				<span class="rivet rivet--tl"></span>
+				<span class="rivet rivet--tr"></span>
+				<span class="rivet rivet--bl"></span>
+				<span class="rivet rivet--br"></span>
+			</>
+		)}
+	</article>
+</div>

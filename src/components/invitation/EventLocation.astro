@@ -6,10 +6,9 @@
 import '@/styles/invitation/_event-location.scss';
 import '@/styles/invitation/_section-nav-button.scss';
 import '@/styles/themes/sections/_location-theme.scss';
-import OptimizedImage from '@/components/common/OptimizedImage.astro';
-import GoogleMap from '@/components/common/GoogleMap.astro';
-import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
+import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import Icon from '@/components/common/icons/Icon.astro';
+import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
@@ -69,202 +68,8 @@ const iconMap = {
 
 <section class="event-location" id="event-location" data-variant={variant} data-map-style={mapStyle} data-show-flourishes={showFlourishes}>
 	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-		{ceremony && (
-			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">{ceremony.venueEvent}</h3>
-				<div class="event-location__card-flourish" aria-hidden="true">
-					<span class="flourish-line"></span>
-					<span class="flourish-diamond"></span>
-					<span class="flourish-line"></span>
-				</div>
-				<article class="event-location__card event-location__card--ceremony">
-					<div class="event-location__card-image-outer-frame">
-						<div class="event-location__card-image-inner-frame">
-							<div class="event-location__card-image-container">
-								{ceremony.coordinates ? (
-									<GoogleMap
-										lat={ceremony.coordinates.lat}
-										lng={ceremony.coordinates.lng}
-										title={ceremony.venueName}
-									/>
-								) : (
-									<OptimizedImage
-										imagePath={ceremony.image}
-										alt={ceremony.venueName}
-										class="event-location__card-image"
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-					<div class="event-location__card-content">
-						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place">
-								{ceremony.venueName}
-							</li>
-							<li class="event-location__card-content-list__date">
-								{ceremony.date}
-							</li>
-							<li class="event-location__card-content-list__hour">{ceremony.time}</li>
-							<li class="event-location__card-content-list__address">
-								<span class="address-text">{ceremony.address}</span>
-								<button class="copy-button" data-address={ceremony.address} aria-label="Copiar dirección" title="Copiar dirección">
-									<Icon name="Copy" size={20} />
-								</button>
-							</li>
-						</ul>
-
-						<div class="event-location__navigation-buttons">
-							{ceremony.appleMapsUrl && (
-								<a
-									href={ceremony.appleMapsUrl}
-									class="nav-button nav-button--apple u-hidden-initially"
-									target="_blank"
-									rel="noopener noreferrer"
-									data-apple-link
-								>
-									Apple Maps
-								</a>
-							)}
-							{ceremony.googleMapsUrl && (
-								<a
-									href={ceremony.googleMapsUrl}
-									class="nav-button nav-button--maps"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Google Maps
-								</a>
-							)}
-							{ceremony.wazeUrl && (
-								<a
-									href={ceremony.wazeUrl}
-									class="nav-button nav-button--waze"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Waze
-								</a>
-							)}
-							{!ceremony.appleMapsUrl && !ceremony.googleMapsUrl && ceremony.mapUrl && (
-								<a
-									href={ceremony.mapUrl}
-									class="nav-button nav-button--primary"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Icon name="Map" size={20} />
-									Cómo llegar
-								</a>
-							)}
-						</div>
-					</div>
-					<span class="rivet rivet--tl"></span>
-					<span class="rivet rivet--tr"></span>
-					<span class="rivet rivet--bl"></span>
-					<span class="rivet rivet--br"></span>
-				</article>
-			</div>
-		)}
-
-		{reception && (
-			<div class="event-location__card-wrapper">
-				<h3 class="event-location__card-title">{reception.venueEvent}</h3>
-				<div class="event-location__card-flourish" aria-hidden="true">
-					<span class="flourish-line"></span>
-					<span class="flourish-diamond"></span>
-					<span class="flourish-line"></span>
-				</div>
-				<article class="event-location__card event-location__card--reception">
-					<div class="event-location__card-image-outer-frame">
-						<div class="event-location__card-image-inner-frame">
-							<div class="event-location__card-image-container">
-								{reception.coordinates ? (
-									<GoogleMap
-										lat={reception.coordinates.lat}
-										lng={reception.coordinates.lng}
-										title={reception.venueName}
-									/>
-								) : (
-									<OptimizedImage
-										imagePath={reception.image}
-										alt={reception.venueName}
-										class="event-location__card-image"
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-					<div class="event-location__card-content">
-						<ul class="event-location__card-content-list">
-							<li class="event-location__card-content-list__place">
-								{reception.venueName}
-							</li>
-							<li class="event-location__card-content-list__date">
-								{reception.date}
-							</li>
-							<li class="event-location__card-content-list__hour">{reception.time}</li>
-							<li class="event-location__card-content-list__address">
-								<span class="address-text">{reception.address}</span>
-								<button class="copy-button" data-address={reception.address} aria-label="Copiar dirección" title="Copiar dirección">
-									<Icon name="Copy" size={20} />
-								</button>
-							</li>
-						</ul>
-
-
-						<div class="event-location__navigation-buttons">
-							{reception.appleMapsUrl && (
-								<a
-									href={reception.appleMapsUrl}
-									class="nav-button nav-button--apple u-hidden-initially"
-									target="_blank"
-									rel="noopener noreferrer"
-									data-apple-link
-								>
-									Apple Maps
-								</a>
-							)}
-							{reception.googleMapsUrl && (
-								<a
-									href={reception.googleMapsUrl}
-									class="nav-button nav-button--maps"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Google Maps
-								</a>
-							)}
-							{reception.wazeUrl && (
-								<a
-									href={reception.wazeUrl}
-									class="nav-button nav-button--waze"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									Waze
-								</a>
-							)}
-							{!reception.appleMapsUrl && !reception.googleMapsUrl && reception.mapUrl && (
-								<a
-									href={reception.mapUrl}
-									class="nav-button nav-button--primary"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Icon name="Map" size={20} />
-									Cómo llegar
-								</a>
-							)}
-						</div>
-					</div>
-					<span class="rivet rivet--tl"></span>
-					<span class="rivet rivet--tr"></span>
-					<span class="rivet rivet--bl"></span>
-					<span class="rivet rivet--br"></span>
-				</article>
-			</div>
-		)}
+		{ceremony && <VenueCard venue={ceremony} type="ceremony" variant={variant} />}
+		{reception && <VenueCard venue={reception} type="reception" variant={variant} />}
 	</div>
 
 	{indications && indications.length > 0 && (
@@ -294,42 +99,15 @@ const iconMap = {
 </section>
 
 <script>
-	// Copy to clipboard logic
-	const copyButtons = document.querySelectorAll('.copy-button');
-	copyButtons.forEach(button => {
-		button.addEventListener('click', async () => {
-			const address = button.getAttribute('data-address');
-			if (address) {
-				try {
-					await navigator.clipboard.writeText(address);
+	import { initCopyButtons, revealIOSOnly } from '@/lib/utils/ui';
+	import { createIntersectionObserver } from '@/lib/utils/animations';
 
-					// Visual feedback
-					const originalContent = button.innerHTML;
-					button.innerHTML = '<span class="copy-success">✓</span>';
-					button.classList.add('copy-success');
+	// Initialize UI behaviors
+	initCopyButtons();
+	revealIOSOnly();
 
-					setTimeout(() => {
-						button.innerHTML = originalContent;
-						button.classList.remove('copy-success');
-					}, 2000);
-				} catch (err) {
-					console.error('Failed to copy: ', err);
-				}
-			}
-		});
+	// Animations: Trigger card animations on scroll
+	createIntersectionObserver('.event-location__card', (target) => {
+		target.classList.add('is-visible');
 	});
-</script>
-
-<script>
-	// Show Apple Maps only on iOS/macOS devices
-	const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-				 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-	if (isIOS) {
-		const appleLinks = document.querySelectorAll('[data-apple-link]');
-		appleLinks.forEach(link => {
-			(link as HTMLElement).classList.remove('u-hidden-initially');
-			(link as HTMLElement).style.display = 'flex'; // Keep flex for layout but class handles the initial 'none'
-		});
-	}
 </script>
