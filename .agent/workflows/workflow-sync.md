@@ -14,9 +14,9 @@ description: Workflow maintenance and drift detection.
       `landing-page-theme-abstraction`.
     - **Gatekeeper**: `gatekeeper-commit` (consolidated from atomic-ui-commit + safe-commit).
     - **Asset/Design**: `asset-management`.
-    - **Sync/Support**: `workflow-sync`, `skills-sync`, `docs/docs-audit`, `docs/docs-remediation`,
-      `prompt-to-workflow`.
-    - **Documentation**: `docs/docs-content-collections`, `docs/landing-page-maintenance`.
+    - **Sync/Support**: `workflow-sync`, `skills-sync`, `./docs/docs-audit.md`,
+      `./docs/docs-remediation.md`, `prompt-to-workflow`.
+    - **Documentation**: `./docs/docs-content-collections.md`, `./docs/landing-page-maintenance.md`.
     - **Archived**: Check `archive/` folder for obsolete workflows (atomic-ui-commit, safe-commit,
       landing-page-remediation, docs-audit-old).
     - **Pruning**: Propose deletion for obsolete logic or engines.
