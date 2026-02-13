@@ -1,20 +1,32 @@
+@use 'sass:color';
 @use '../../tokens' as tokens;
+@use '../../tokens/primitives' as primitives;
 
 .theme-preset--jewelry-box {
 	// 💎 Color Architecture: Gold, Pearl & Glass
-	--color-surface-primary: #fff9f5;
-	--color-surface-primary-rgb: 255, 249, 245;
-	--color-surface-soft: #fffdfc;
-	--color-surface-dark: #111;
-	--color-surface-dark-rgb: 17, 17, 17;
+	--color-surface-primary: #{primitives.$base-gold-50};
+	--color-surface-primary-rgb:
+		#{color.channel(primitives.$base-gold-50, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-gold-50, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-gold-50, 'blue', $space: rgb)};
+	--color-surface-soft: #{primitives.$base-neutral-50};
+	--color-surface-dark: #{primitives.$base-neutral-900};
+	--color-surface-dark-rgb:
+		#{color.channel(primitives.$base-neutral-900, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-neutral-900, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-neutral-900, 'blue', $space: rgb)};
 
 	// Actions & Emphasis
 	--color-action-primary: var(--color-surface-dark);
-	--color-action-accent: #{tokens.$base-gold-500};
-	--color-action-accent-rgb: 212, 175, 55;
+	--color-action-accent: #{primitives.$base-gold-500};
+	--color-action-accent-rgb:
+		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
+		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
+		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
 	--color-text-primary: var(--color-surface-dark);
-	--color-text-emphasis: #{tokens.$base-gold-500};
-	--color-text-on-dark: #{tokens.$base-gold-500};
+	--color-text-emphasis: #{primitives.$base-gold-500};
+	--color-text-on-dark: #{primitives.$base-gold-500};
+	--color-text-on-light: #{primitives.$base-neutral-700};
 
 	// Glassmorphism UI
 	--color-glass-bg: rgb(255 255 255 / 45%);

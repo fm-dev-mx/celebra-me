@@ -16,6 +16,7 @@ export interface Props {
     headerId?: string;
     logoVariant?: 'adaptive' | 'static';
     hideMobileToggle?: boolean;
+    variant?: string;
 }
 
 const {
@@ -23,6 +24,7 @@ const {
     headerId = 'main-header',
     logoVariant = 'adaptive',
     hideMobileToggle = false,
+    variant = 'standard',
 } = Astro.props;
 ---
 
@@ -31,6 +33,7 @@ const {
     class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''} ${
         logoVariant === 'static' ? 'header-base--logo-static' : 'header-base--logo-adaptive'
     }`}
+    data-variant={variant}
 >
     <div class="header-base__container">
         <!-- Slot: Logo (Adaptive logic lives in parent) -->

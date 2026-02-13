@@ -16,7 +16,7 @@
 		)};
 	--color-text-emphasis: #{primitives.$base-gold-500};
 	--color-text-on-dark: #{primitives.$base-parchment-100};
-	--color-surface-primary: #{primitives.$base-parchment-100};
+	--color-text-on-light: #{primitives.$base-parchment-500};
 	--color-surface-primary-rgb:
 		#{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)},

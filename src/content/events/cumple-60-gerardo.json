@@ -44,7 +44,7 @@
         "backgroundImage": "hero"
     },
     "location": {
-        "venueName": "Jardín De Eventos Cuatro 60",
+        "venueName": "Jardín Cuatro 60",
         "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
         "city": "Los Mochis",
         "mapUrl": "https://maps.app.goo.gl/example",
@@ -76,59 +76,59 @@
         "items": [
             {
                 "image": "gallery01",
-                "caption": "El Jefe Botas"
+                "caption": "Carácter fuerte, corazón grande."
             },
             {
                 "image": "gallery02",
-                "caption": "Caminando juntos"
+                "caption": "El lazo que nunca se rompe."
             },
             {
                 "image": "gallery03",
-                "caption": "Hacienda y tradición"
+                "caption": "La familia que florece."
             },
             {
                 "image": "gallery04",
-                "caption": "Legado familiar"
+                "caption": "Nuestro hogar."
             },
             {
                 "image": "gallery05",
-                "caption": "Sonrisa de siempre"
+                "caption": "El negocio que lo formó."
             },
             {
                 "image": "gallery06",
-                "caption": "60 Años bien vividos"
+                "caption": "El legado que sigue creciendo."
             },
             {
                 "image": "gallery07",
-                "caption": "60 Años bien vividos"
+                "caption": "60 Años bien vividos."
             },
             {
                 "image": "gallery08",
-                "caption": "60 Años bien vividos"
+                "caption": "Siempre sonriendo en familia."
             },
             {
                 "image": "gallery09",
-                "caption": "60 Años bien vividos"
+                "caption": "Compañera de toda la vida."
             },
             {
                 "image": "gallery10",
-                "caption": "60 Años bien vividos"
+                "caption": "Navidad en familia."
             },
             {
                 "image": "gallery11",
-                "caption": "60 Años bien vividos"
+                "caption": "Caminando la vida juntos."
             },
             {
                 "image": "gallery12",
-                "caption": "60 Años bien vividos"
+                "caption": "De generación en generación."
             },
             {
                 "image": "gallery13",
-                "caption": "60 Años bien vividos"
+                "caption": "El trabajo sigue."
             },
             {
                 "image": "gallery14",
-                "caption": "60 Años bien vividos"
+                "caption": "Abuelo orgulloso."
             }
         ]
     },

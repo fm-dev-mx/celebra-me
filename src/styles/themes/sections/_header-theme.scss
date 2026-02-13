@@ -1,0 +1,37 @@
+@use '../../tokens' as tokens;
+
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
+// Default Header Variables (Safe Fallbacks)
+:root {
+	--header-bg: var(--header-glass-bg);
+	--header-bg-scrolled: var(--header-scrolled-bg);
+	--header-nav-color: var(--color-text-primary);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
+}
+
+// LUXURY HACIENDA PRESET
+.header-base[data-variant='luxury-hacienda'] {
+	--header-bg: rgb(10 10 10 / 80%);
+	--header-bg-scrolled: rgb(10 10 10 / 95%);
+	--header-nav-color: var(--color-text-on-dark);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
+}
+
+// JEWELRY BOX PRESET
+.header-base[data-variant='jewelry-box'] {
+	--header-bg: rgb(255 255 255 / 60%);
+	--header-bg-scrolled: rgb(255 255 255 / 95%);
+	--header-nav-color: var(--color-surface-dark);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
+	--header-nav-filter-transparent: none;
+}

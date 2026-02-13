@@ -111,7 +111,7 @@ const galleryItems = data.gallery?.items.map((item: { image: string; caption?: s
 	image: requireAsset(item.image)
 })) || [];
 
-// Preset handle
+// Preset handle (Architecture Refactor)
 const preset = data.theme.preset;
 const themeClass = preset ? `theme-preset--${preset}` : '';
 
@@ -181,6 +181,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 			eventName={data.hero.name}
 			theme={data.theme}
 			links={data.navigation}
+			variant={preset}
 		/>
 
 		<Hero
@@ -191,6 +192,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 			venueName={data.location.venueName}
 			backgroundImage={heroBg}
 			portrait={heroPortrait}
+			variant={preset}
 		/>
 
 		{data.quote && (

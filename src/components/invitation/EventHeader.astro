@@ -23,22 +23,19 @@ export interface Props {
         label: string;
         href: string
     }[];
+    variant?: string;
 }
 
 const {
     eventName = 'Boda de Ale & Fer',
-    theme = { primaryColor: '#C5A059', accentColor: '#E8DCC2' }, // Gold-500 / Parchment-100 fallback
-    links = navigation
+    links = navigation,
+    variant = 'standard'
 } = Astro.props;
 
 
-// Prepare CSS variables for inline style or scope
-const themeColorPrimary = theme.primaryColor;
-const themeColorPrimaryDark = `${theme.primaryColor}CC`;
-const themeColorAccent = theme.accentColor || theme.primaryColor;
 ---
 
-<HeaderBase transparentOnHero={true} headerId="event-header" hideMobileToggle={true}>
+<HeaderBase transparentOnHero={true} headerId="event-header" hideMobileToggle={true} variant={variant}>
 	<div slot="logo">
 		<a href="#" class="event-header__title">
 			{eventName}
@@ -66,12 +63,3 @@ const themeColorAccent = theme.accentColor || theme.primaryColor;
 		<NavBarMobile client:load links={links} headerId="event-header" />
 	</div>
 </HeaderBase>
-
-<style define:vars={{ themeColorPrimary, themeColorPrimaryDark, themeColorAccent }}>
-	.event-header__title,
-	.event-header__actions {
-		--theme-color-primary: var(--themeColorPrimary);
-		--theme-color-primary-dark: var(--themeColorPrimaryDark);
-		--theme-color-accent: var(--themeColorAccent);
-	}
-</style>

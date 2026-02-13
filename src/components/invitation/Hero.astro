@@ -14,9 +14,20 @@ interface Props {
 	venueName: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
+	variant?: string;
 }
 
-const { name, label, nickname, date, time, venueName, backgroundImage, portrait } = Astro.props;
+const {
+	name,
+	label,
+	nickname,
+	date,
+	time,
+	venueName,
+	backgroundImage,
+	portrait,
+	variant = 'standard',
+} = Astro.props;
 
 const bgSrc = 'src' in backgroundImage ? backgroundImage.src : backgroundImage;
 const portraitSrc = portrait ? ('src' in portrait ? portrait.src : portrait) : undefined;
@@ -28,7 +39,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 });
 ---
 
-<section id="inicio" class="invitation-hero">
+<section id="inicio" class="invitation-hero" data-variant={variant}>
 	<div class="invitation-hero__background">
 		{
 			typeof bgSrc === 'string' ? (
