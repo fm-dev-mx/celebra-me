@@ -1,39 +1,28 @@
 ---
 // src/components/invitation/FamilyDecorations.astro
 interface Props {
-	variant: string;
-	component: 'bg' | 'frame' | 'card';
+	variant?: string;
+	component: 'bg' | 'frame';
 }
 
-const { variant, component } = Astro.props;
+const { variant = 'standard', component } = Astro.props;
 ---
 
-{variant === 'luxury-hacienda' && (
+{variant === 'luxury-hacienda' && component === 'bg' && (
 	<>
-		{component === 'bg' && (
-			<>
-				{/* Remaches estructurales de sección */}
-				<div class="family__rivet family__rivet--tl" aria-hidden="true"></div>
-				<div class="family__rivet family__rivet--tr" aria-hidden="true"></div>
-				<div class="family__rivet family__rivet--bl" aria-hidden="true"></div>
-				<div class="family__rivet family__rivet--br" aria-hidden="true"></div>
+		<div class="family__bg-vignette" aria-hidden="true"></div>
+		<div class="family__ledger-lines" aria-hidden="true">
+			<div class="family__ledger-line family__ledger-line--vertical"></div>
+		</div>
+	</>
+)}
 
-				{/* Textura de pergamino superpuesta */}
-				<div class="family__parchment-overlay" aria-hidden="true"></div>
-
-				{/* Patrones de cuero tooling */}
-				<div class="family__leather-tooling family__leather-tooling--geometric" aria-hidden="true"></div>
-			</>
-		)}
-
-		{component === 'frame' && (
-			<>
-				{/* Remaches del marco de la imagen */}
-				<div class="family__frame-rivet family__frame-rivet--tl" aria-hidden="true"></div>
-				<div class="family__frame-rivet family__frame-rivet--tr" aria-hidden="true"></div>
-				<div class="family__frame-rivet family__frame-rivet--bl" aria-hidden="true"></div>
-				<div class="family__frame-rivet family__frame-rivet--br" aria-hidden="true"></div>
-			</>
-		)}
+{variant === 'luxury-hacienda' && component === 'frame' && (
+	<>
+		<div class="family__frame-accent" aria-hidden="true"></div>
+		<div class="family__corner family__corner--tl" aria-hidden="true"></div>
+		<div class="family__corner family__corner--tr" aria-hidden="true"></div>
+		<div class="family__corner family__corner--bl" aria-hidden="true"></div>
+		<div class="family__corner family__corner--br" aria-hidden="true"></div>
 	</>
 )}

@@ -18,152 +18,162 @@ interface Props {
 	}>;
 	featuredImage?: string | ImageAsset;
 	celebrantName: string;
+	labels?: {
+		sectionTitle?: string;
+		sectionSubtitle?: string;
+		spouseTitle?: string;
+		spouseRole?: string;
+		childrenTitle?: string;
+		parentsTitle?: string;
+	};
 	variant?: string;
 }
 
-const { parents, spouse, children, featuredImage, celebrantName, variant = 'standard' } = Astro.props;
+interface FamilyEntry {
+	name?: string;
+	role?: string;
+	connector?: boolean;
+	lead?: boolean;
+}
+
+interface FamilyBlock {
+	id: 'spouse' | 'children' | 'parents';
+	title: string;
+	entries: FamilyEntry[];
+	isChildren?: boolean;
+}
+
+const {
+	parents,
+	spouse,
+	children,
+	featuredImage,
+	celebrantName,
+	labels,
+	variant = 'standard',
+} = Astro.props;
+
+const resolvedLabels = {
+	sectionTitle: labels?.sectionTitle ?? 'Los que hacen mi vida completa',
+	sectionSubtitle: labels?.sectionSubtitle ?? 'Mi Familia',
+	spouseTitle: labels?.spouseTitle ?? 'Mi Compañera de Vida',
+	spouseRole: labels?.spouseRole ?? 'Esposa',
+	childrenTitle: labels?.childrenTitle ?? 'Nuestros Hijos',
+	parentsTitle: labels?.parentsTitle ?? 'Con la bendición de',
+};
 
 const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
+
+const familyBlocks: FamilyBlock[] = [];
+
+if (spouse) {
+	familyBlocks.push({
+		id: 'spouse',
+		title: resolvedLabels.spouseTitle,
+		entries: [
+			{
+				name: spouse,
+				role: resolvedLabels.spouseRole,
+				lead: true,
+			},
+		],
+	});
+}
+
+if (children && children.length > 0) {
+	familyBlocks.push({
+		id: 'children',
+		title: resolvedLabels.childrenTitle,
+		isChildren: true,
+		entries: children.map((child) => ({
+			name: child.name,
+			role: child.role,
+		})),
+	});
+}
+
+if (parents && (parents.father || parents.mother)) {
+	const parentEntries: FamilyEntry[] = [];
+
+	if (parents.mother) {
+		parentEntries.push({ name: parents.mother, role: 'Madre' });
+	}
+	if (parents.mother && parents.father) {
+		parentEntries.push({ connector: true });
+	}
+	if (parents.father) {
+		parentEntries.push({ name: parents.father, role: 'Padre' });
+	}
+
+	familyBlocks.push({
+		id: 'parents',
+		title: resolvedLabels.parentsTitle,
+		entries: parentEntries,
+	});
+}
 ---
 
 <section id="family-section" class="family" data-variant={variant}>
 	<div class="family__bg-texture" aria-hidden="true"></div>
-
 	<FamilyDecorations variant={variant} component="bg" />
 
-	<Container>
-		<div class="family__header">
-			<span class="family__suptitle">Mi Familia</span>
-			<h2 class="family__title-main" data-text="Los que hacen mi vida completa">Los que hacen mi vida completa</h2>
-		</div>
+	<Container class="family__container">
+		<header class="family__header family__reveal">
+			<div class="family__header-inner">
+				<span class="family__eyebrow">{resolvedLabels.sectionSubtitle}</span>
+				<h2 class="family__title">{resolvedLabels.sectionTitle}</h2>
+				<div class="family__header-divider" aria-hidden="true"></div>
+			</div>
+		</header>
 
-		<div class="family__layout">
-			{/* Image Column - Left Side (40%) */}
+		<div class:list={['family__panel', !featuredImage && 'family__panel--no-media']}>
 			{featuredImage && (
-				<div class="family__image-column">
-					<div class="family__image-container">
+				<figure class="family__media family__reveal">
+					<div class="family__media-frame">
+						<OptimizedImage imagePath={imagePath} alt={celebrantName} width={600} height={800} />
 						<FamilyDecorations variant={variant} component="frame" />
-
-						<div class="family__image-outer-frame">
-							<div class="family__image-inner-frame">
-								<div class="family__image-frame">
-									<OptimizedImage
-										imagePath={imagePath}
-										alt={celebrantName}
-										width={600}
-										height={800}
-									/>
-									<div class="family__image-overlay" aria-hidden="true"></div>
-								</div>
-							</div>
-						</div>
-						<div class="family__image-decoration" aria-hidden="true"></div>
-						<div class="family__image-corner family__image-corner--tl" aria-hidden="true"></div>
-						<div class="family__image-corner family__image-corner--tr" aria-hidden="true"></div>
-						<div class="family__image-corner family__image-corner--bl" aria-hidden="true"></div>
-						<div class="family__image-corner family__image-corner--br" aria-hidden="true"></div>
 					</div>
-				</div>
+				</figure>
 			)}
 
-
-			{/* Content Column - Right Side (60%) */}
-			<div class="family__content-column">
-				{/* Spouse Card */}
-				{spouse && (
-					<div class="family__card family__card--spouse">
-						<div class="family__card-inner">
-							<div class="family__card-header">
-								<h3 class="family__card-subtitle">Mi Compañera de Vida</h3>
-								<div class="family__card-flourish" aria-hidden="true">
-									<span class="flourish-line"></span>
-									<span class="flourish-diamond"></span>
-									<span class="flourish-line"></span>
-								</div>
-							</div>
-							<div class="family__names-list">
-								<div class="family__name-item family__name-item--highlighted family__name-item--delay-0">
-									<p class="family__name">{spouse}</p>
-									<span class="family__role family__role--accent">Esposa</span>
-								</div>
-							</div>
-							<div class="family__card-ornament family__card-ornament--heart" aria-hidden="true"></div>
-						</div>
-					</div>
-				)}
-
-				{/* Children Card */}
-				{children && children.length > 0 && (
-					<div class="family__card family__card--children">
-						<div class="family__card-inner">
-							<div class="family__card-header">
-								<h3 class="family__card-subtitle">Nuestros Hijos</h3>
-								<div class="family__card-flourish" aria-hidden="true">
-									<span class="flourish-line"></span>
-									<span class="flourish-diamond"></span>
-									<span class="flourish-line"></span>
-								</div>
-							</div>
-							<div class="family__children-grid">
-								{children.map((child, index) => (
-									<div class={`family__child-item family__child-item--delay-${Math.min(index, 5)}`}>
-										<div class="family__child-content">
-											<p class="family__name family__name--child">{child.name}</p>
-										</div>
-									</div>
-								))}
-							</div>
-							<div class="family__card-ornament family__card-ornament--branch" aria-hidden="true"></div>
-						</div>
-					</div>
-				)}
-
-				{/* Parents Card */}
-				{parents && (parents.father || parents.mother) && (
-					<div class="family__card family__card--parents">
-						<div class="family__card-inner">
-							<div class="family__card-header">
-								<h3 class="family__card-subtitle">Con la bendición de</h3>
-								<div class="family__card-flourish" aria-hidden="true">
-									<span class="flourish-line"></span>
-									<span class="flourish-diamond"></span>
-									<span class="flourish-line"></span>
-								</div>
-							</div>
-							<div class="family__names-list">
-								{parents.mother && (
-									<div class="family__name-item family__name-item--delay-0">
-										<p class="family__name">{parents.mother}</p>
-										<span class="family__role">Madre</span>
-									</div>
-								)}
-								{parents.mother && parents.father && (
-									<div class="family__ampersand-divider" aria-hidden="true">
-										<span class="family__calligraphy-ampersand">y</span>
-									</div>
-								)}
-								{parents.father && (
-									<div class="family__name-item family__name-item--delay-1">
-										<p class="family__name">{parents.father}</p>
-										<span class="family__role">Padre</span>
-									</div>
-								)}
-							</div>
-							<div class="family__card-ornament family__card-ornament--leaf" aria-hidden="true"></div>
-						</div>
-					</div>
-				)}
+			<div class="family__content">
+				{familyBlocks.map((block) => (
+					<section class={`family__group family__group--${block.id} family__reveal`}>
+						<h3 class="family__group-title">{block.title}</h3>
+						<ul class:list={['family__list', block.isChildren && 'family__list--children']}>
+							{block.entries.map((entry) =>
+								entry.connector ? (
+									<li class="family__connector" aria-hidden="true">
+										<span>y</span>
+									</li>
+								) : (
+									<li class:list={['family__item', entry.lead && 'family__item--lead']}>
+										<p class="family__name">{entry.name}</p>
+										{entry.role && <span class="family__meta">{entry.role}</span>}
+									</li>
+								),
+							)}
+						</ul>
+					</section>
+				))}
 			</div>
 		</div>
 	</Container>
 </section>
 
-
 <script>
 	import { createIntersectionObserver } from '@/lib/utils/animations';
 
-	createIntersectionObserver('.family', (target) => {
-		target.classList.add('is-visible');
-	});
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (!prefersReducedMotion) {
+		document.querySelectorAll('.family').forEach((section) => {
+			section.classList.add('has-motion');
+		});
+
+		createIntersectionObserver('.family.has-motion', (target) => {
+			target.classList.add('is-visible');
+		});
+	}
 </script>
 
