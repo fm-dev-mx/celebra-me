@@ -18,3 +18,7 @@ export * from './Photo';
 export * from './Rings';
 export * from './Dove';
 export * from './Diamond';
+export * from './WesternHat';
+export * from './Taco';
+export * from './Tuba';
+export * from './Accordion';
