@@ -45,52 +45,80 @@ global.fetch = jest.fn().mockImplementation(() =>
 	}),
 ) as jest.Mock;
 
+const allowedConsoleErrorPatterns: RegExp[] = [];
+
+beforeEach(() => {
+	jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+		const message = args
+			.map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+			.join(' ');
+
+		const isAllowed = allowedConsoleErrorPatterns.some((pattern) => pattern.test(message));
+		if (isAllowed) return;
+
+		throw new Error(`Unexpected console.error in test: ${message}`);
+	});
+});
+
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 // Mock framer-motion to avoid issues in JSDOM and suppress Prop Leakage warnings
 jest.mock('framer-motion', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const React = require('react');
 
 	// Helper to filter out motion props
-	const filterMotionProps = (props: Record<string, any>) => {
-		const {
-			_initial,
-			_animate,
-			_exit,
-			_variants,
-			_transition,
-			_whileHover,
-			_whileTap,
-			_whileInView,
-			_whileFocus,
-			_whileDrag,
-			_viewport,
-			_onAnimationStart,
-			_onAnimationComplete,
-			_onUpdate,
-			_layout,
-			_custom,
-			_inherit,
-			...validProps
-		} = props;
+	const filterMotionProps = (props: Record<string, unknown>) => {
+		const validProps = { ...props };
+		const blockedProps = [
+			'initial',
+			'animate',
+			'exit',
+			'variants',
+			'transition',
+			'whileHover',
+			'whileTap',
+			'whileInView',
+			'whileFocus',
+			'whileDrag',
+			'viewport',
+			'onAnimationStart',
+			'onAnimationComplete',
+			'onUpdate',
+			'layout',
+			'custom',
+			'inherit',
+		] as const;
+
+		for (const propName of blockedProps) {
+			delete validProps[propName];
+		}
+
 		return validProps;
 	};
 
 	const createMotionComponent = (Tag: string) => {
-		return ({ children, ...props }: any) =>
+		return ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) =>
 			React.createElement(Tag, filterMotionProps(props), children);
 	};
 
-	return {
-		motion: {
-			div: createMotionComponent('div'),
-			h2: createMotionComponent('h2'),
-			span: createMotionComponent('span'),
-			button: createMotionComponent('button'),
-			form: createMotionComponent('form'),
-			fieldset: createMotionComponent('fieldset'),
-			p: createMotionComponent('p'),
-			section: createMotionComponent('section'),
+	const motionComponents = new Map<string, ReturnType<typeof createMotionComponent>>();
+	const motion = new Proxy(
+		{},
+		{
+			get: (_, tag: string) => {
+				if (!motionComponents.has(tag)) {
+					motionComponents.set(tag, createMotionComponent(tag));
+				}
+				return motionComponents.get(tag);
+			},
 		},
+	);
+
+	return {
+		motion,
 		AnimatePresence: ({ children }: { children: React.ReactNode }) =>
 			React.createElement(React.Fragment, null, children),
 		useReducedMotion: () => false,
