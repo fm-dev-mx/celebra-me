@@ -65,7 +65,7 @@
             }
         },
         "indications": [
-            { "icon": "western-hat", "text": "Sugerencia: botas y sombrero (si tienes)." }
+            { "icon": "western-hat", "text": "Sugerencia: botas y sombrero<br />(si tienes)." }
         ]
     },
     "sections": {

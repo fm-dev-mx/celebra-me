@@ -99,7 +99,7 @@ const resolveIndicationIconName = (icon: string): EventLocationIconName => {
 							<div class="event-location__indication-icon">
 								<Icon name={resolveIndicationIconName(indication.icon)} size={24} />
 							</div>
-							<p class="event-location__indication-text">{indication.text}</p>
+							<p class="event-location__indication-text" set:html={indication.text} />
 						</div>
 					);
 				})}
