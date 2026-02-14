@@ -1,6 +1,4 @@
 @use '../../global/mixins' as mixins;
-@use '../../tokens' as tokens;
-@use '../../tokens/primitives' as primitives;
 
 // =====================================================================
 // FAMILY SECTION THEMES
@@ -43,155 +41,130 @@
 }
 
 .family[data-variant='luxury-hacienda'] {
-	// The Grand Ledger: Visual Theme Tokens
-	--family-bg: #fdfcf9; // High-quality parchment
-	--family-texture-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23926d48' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
-	--family-texture-opacity: 1;
-	--family-panel-bg: transparent;
-	--family-border: rgb(146 109 72 / 18%);
-	--family-text-primary: #1a1410; // Near black for authority
-	--family-text-muted: #5d4a3a;
-	--family-accent: #926d48; // Bronze Bruni
-	--family-shadow: none; // Editorial ledger doesn't use digital shadows
-	--family-divider: linear-gradient(
-		90deg,
-		transparent 0%,
-		rgb(146 109 72 / 40%) 50%,
-		transparent 100%
-	);
-	--family-media-filter: sepia(0.05) contrast(1.02) brightness(0.99);
-	--family-group-title-font: #{tokens.$font-display-formal}; // Cinzel
-	--family-name-font: #{tokens.$font-display-hacienda}; // Cormorant
-	--family-ledger-display: block;
-
 	position: relative;
 	padding: clamp(6.5rem, 11vw, 10rem) 0;
 
-	// Background Materiality
 	&::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
-		background: radial-gradient(
-			circle at 50% 50%,
-			rgb(255 255 255 / 0%) 0%,
-			rgb(146 109 72 / 4%) 100%
+		background: var(
+			--family-vignette-bg,
+			radial-gradient(
+				circle at 50% 50%,
+				rgb(255 255 255 / 0%) 0%,
+				rgb(var(--color-action-accent-rgb), 0.06) 100%
+			)
 		);
 	}
 
 	.family__header {
 		text-align: center;
-		margin-bottom: 5rem;
 	}
 
 	.family__eyebrow {
-		font-family: tokens.$font-ui;
 		font-size: 0.7rem;
 		font-weight: 500;
-		letter-spacing: 0.3em;
+		letter-spacing: 0.32em;
 		color: var(--family-accent);
-		margin-bottom: 1.25rem;
+		margin-bottom: 1rem;
 	}
 
 	.family__title {
-		font-family: tokens.$font-display-formal; // Cinzel for authority
-		font-size: clamp(2.2rem, 5.2vw, 3.8rem);
+		font-size: clamp(2.2rem, 5vw, 3.7rem);
 		font-weight: 400;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.048em;
 		text-transform: uppercase;
-		max-width: 14ch;
 		margin-inline: auto;
-		line-height: 1;
-		color: var(--family-text-primary);
+		line-height: 1.03;
 	}
 
 	.family__header-divider {
 		height: 1px;
-		width: 100px;
+		width: 108px;
 		background: var(--family-accent);
-		opacity: 30%;
-		margin-top: 2rem;
+		opacity: 34%;
+		margin-top: 1.75rem;
 	}
 
 	.family__panel {
 		border: none;
 		background: transparent;
 		box-shadow: none;
-		padding: 0;
-		gap: clamp(2rem, 5vw, 4rem);
+		align-items: start;
+	}
+
+	.family__content {
+		width: 100%;
+		margin-inline: auto;
 	}
 
 	.family__media-frame {
-		border-radius: 0; // Editorial look uses sharp corners
+		border-radius: 0;
 		border: 1px solid var(--family-border);
 		padding: 12px;
-		background: #fff;
+		background: rgb(var(--color-surface-primary-rgb), 0.96);
 		box-shadow: 0 15px 35px rgb(0 0 0 / 6%);
 
 		img {
-			border: 1px solid rgb(0 0 0 / 5%);
+			border: 1px solid rgb(var(--color-text-primary-rgb), 0.08);
 		}
 	}
 
 	.family__frame-accent {
 		inset: 0;
 		border: 1px solid var(--family-accent);
-		opacity: 20%;
+		opacity: 22%;
 	}
 
-	.family__group {
-		padding-block: 2.5rem;
+	.family__corner {
+		width: 18px;
+		height: 18px;
+		border-width: 1.5px;
+		opacity: 48%;
 	}
 
 	.family__group + .family__group::before {
 		background: var(--family-divider);
 		height: 1px;
-		opacity: 60%;
-		animation: none; // Removed sheen
+		opacity: 62%;
+		animation: none;
 	}
 
 	.family__group-title {
-		font-family: tokens.$font-display-formal;
-		font-size: 0.85rem;
+		font-size: 0.82rem;
 		font-weight: 700;
-		letter-spacing: 0.25em;
+		letter-spacing: 0.24em;
 		color: var(--family-accent);
-		margin-bottom: 2rem;
+		margin-bottom: var(--family-group-title-margin-bottom, 1.7rem);
 	}
 
 	.family__item {
-		gap: 0.4rem;
+		gap: 0.32rem;
 	}
 
 	.family__name {
-		font-family: tokens.$font-display-hacienda;
-		font-size: clamp(1.6rem, 3.5vw, 2.3rem);
 		font-weight: 400;
 		letter-spacing: 0.01em;
-		color: var(--family-text-primary);
 	}
 
 	.family__meta {
-		font-family: tokens.$font-ui;
-		font-size: 0.65rem;
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		color: var(--family-text-muted);
+		opacity: 94%;
 	}
 
 	.family__connector {
-		font-family: tokens.$font-calligraphy;
-		font-size: 2.2rem;
-		color: var(--family-accent);
-		margin-block: -0.2rem;
-		opacity: 80%;
+		opacity: 84%;
+	}
+
+	.family__group--parents .family__connector {
+		justify-content: center;
 	}
 
 	@include mixins.respond-to(md) {
 		.family__header {
-			text-align: center; // Forced center for the Ledger concept
+			text-align: center;
 		}
 
 		.family__title {
@@ -201,8 +174,11 @@
 
 	@include mixins.respond-to(lg) {
 		.family__panel {
-			grid-template-columns: 0.45fr 0.55fr;
-			align-items: center;
+			align-items: start;
+		}
+
+		.family__content {
+			justify-self: end;
 		}
 	}
 }
