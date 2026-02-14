@@ -1,5 +1,9 @@
 ---
 description: Base framework for all sync/audit workflows (docs, workflows, skills).
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 🔄 Framework: Sync & Audit

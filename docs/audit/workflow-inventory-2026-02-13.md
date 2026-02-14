@@ -1,5 +1,7 @@
 # Workflow Inventory Snapshot - 2026-02-13
 
+> Superseded by `docs/audit/workflow-inventory-2026-02-14.md` after hybrid taxonomy migration.
+
 ## Summary
 
 - Scope: `.agent/workflows/`, `.agent/workflows/docs/`, `.agent/workflows/archive/`
@@ -14,25 +16,25 @@
 
 ### evergreen (14)
 
-- `.agent/workflows/error-remediation.md`
-- `.agent/workflows/prompt-to-workflow.md`
-- `.agent/workflows/skills-sync.md`
-- `.agent/workflows/sync-coordinator.md`
-- `.agent/workflows/theme-architecture-governance.md`
-- `.agent/workflows/workflow-sync.md`
+- `.agent/workflows/governance/evergreen/error-remediation.md`
+- `.agent/workflows/governance/evergreen/prompt-to-workflow.md`
+- `.agent/workflows/sync/evergreen/skills-sync.md`
+- `.agent/workflows/sync/evergreen/sync-coordinator.md`
+- `.agent/workflows/governance/evergreen/theme-architecture-governance.md`
+- `.agent/workflows/sync/evergreen/workflow-sync.md`
 - `.agent/workflows/docs/README.md`
 - `.agent/workflows/docs/docs-audit.md`
 - `.agent/workflows/docs/docs-content-collections.md`
 - `.agent/workflows/docs/docs-remediation.md`
-- `.agent/workflows/docs/gatekeeper-commit.md`
+- `.agent/workflows/governance/evergreen/gatekeeper-commit.md`
 - `.agent/workflows/docs/landing-page-maintenance.md`
 - `.agent/workflows/docs/sync-framework.md`
 - `.agent/workflows/docs/tech-debt-remediation.md`
 
 ### task-open (2)
 
-- `.agent/workflows/gerardo-technical-audit.md`
-- `.agent/workflows/gerardo-remediation.md`
+- `.agent/workflows/audits/task-open/gerardo-technical-audit.md`
+- `.agent/workflows/remediation/task-open/gerardo-remediation.md`
 
 ## Archived Workflows (17)
 

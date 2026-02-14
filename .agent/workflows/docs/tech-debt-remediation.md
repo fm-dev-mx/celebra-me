@@ -1,6 +1,10 @@
 ---
 description:
     Comprehensive technical debt remediation workflow for SCSS, TypeScript, and documentation.
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 🔧 Workflow: Technical Debt Remediation

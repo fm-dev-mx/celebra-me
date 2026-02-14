@@ -1,5 +1,9 @@
 ---
 description: Remediation execution for documentation drift and inconsistencies.
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 🔧 Workflow: Documentation Remediation
@@ -266,7 +270,7 @@ grep -r "file://" docs/ .agent/workflows/ || echo "✅ No file:// links found"
 
 ### 7.2 Commit Changes
 
-- [ ] Execute `.agent/workflows/docs/gatekeeper-commit.md`:
+- [ ] Execute `.agent/workflows/governance/evergreen/gatekeeper-commit.md`:
     - `--minimal` for docs-only remediation.
     - `--strict` if remediation touches schema/code.
 - [ ] Use a Conventional Commit message referencing the audit report ID.

@@ -13,7 +13,7 @@
 ### 🔴 Link Integrity
 
 - Multiple `file://` links found in `docs/STABILITY.md`, `docs/DOC_STATUS.md`, and
-  `.agent/workflows/workflow-sync.md`.
+  `.agent/workflows/sync/evergreen/workflow-sync.md`.
 - Rule violation: "No `file://` protocol (use relative paths `./`)".
 
 ### 🟠 Schema & Implementation Drift

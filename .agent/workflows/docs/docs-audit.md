@@ -1,6 +1,10 @@
 ---
 description:
     Documentation ecosystem governance with validation, drift detection, and remediation guidance.
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 📚 Workflow: Documentation Audit & Governance

@@ -1,5 +1,9 @@
 ---
 description: Comprehensive landing page maintenance and remediation (consolidated).
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 🏠 Workflow: Landing Page Maintenance

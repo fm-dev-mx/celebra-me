@@ -1,5 +1,9 @@
 ---
 description: Generate comprehensive Content Collections documentation from schema and examples.
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
 ---
 
 # 📝 Workflow: Content Collections Documentation

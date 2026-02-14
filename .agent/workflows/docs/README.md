@@ -1,3 +1,11 @@
+---
+description: Workflow artifact
+lifecycle: evergreen
+domain: docs
+owner: docs-governance
+last_reviewed: 2026-02-14
+---
+
 # 📚 Documentation Workflows
 
 This folder contains specialized workflows for documentation governance and maintenance.
