@@ -111,7 +111,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		validate();
 	};
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setSubmitStatus('loading');
 

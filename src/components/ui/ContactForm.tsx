@@ -1,10 +1,10 @@
-import { useState, type FC, type FormEvent } from 'react';
+import { useState, type FC, type SubmitEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ContactForm: FC = () => {
 	const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
-	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setStatus('submitting');
 
