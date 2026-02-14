@@ -133,6 +133,17 @@
 	}
 }
 
+@media (width <= 480px) {
+	.music-player {
+		&__prompt {
+			max-width: min(72vw, 15rem);
+			white-space: normal;
+			overflow-wrap: anywhere;
+			text-align: right;
+		}
+	}
+}
+
 @keyframes musicPlayerFadeInSlide {
 	from {
 		opacity: 0%;

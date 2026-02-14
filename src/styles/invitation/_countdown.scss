@@ -95,16 +95,17 @@
 
 .countdown__timer {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(var(--countdown-grid-columns-mobile, 4), minmax(0, 1fr));
 	gap: 0.5rem;
 
 	@include mixins.respond-to(sm) {
+		grid-template-columns: repeat(var(--countdown-grid-columns-tablet, 4), minmax(0, 1fr));
 		gap: 0.75rem;
 	}
 }
 
 .countdown__segment {
-	padding: 2.2rem 1rem;
+	padding: var(--countdown-segment-padding-mobile, 2.2rem 1rem);
 	border-radius: 4px;
 	display: flex;
 	flex-direction: column;
@@ -135,14 +136,14 @@
 	}
 
 	@include mixins.respond-to(sm) {
-		padding: 2.5rem 1.5rem;
+		padding: var(--countdown-segment-padding-desktop, 2.5rem 1.5rem);
 		border-radius: 16px;
 	}
 }
 
 .countdown__value-wrapper {
-	height: 3.5rem;
-	width: 2.5rem;
+	height: var(--countdown-value-wrapper-height-mobile, 3.5rem);
+	width: var(--countdown-value-wrapper-width-mobile, 2.5rem);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -150,7 +151,8 @@
 	margin-bottom: 0.5rem;
 
 	@include mixins.respond-to(sm) {
-		width: 5rem;
+		height: var(--countdown-value-wrapper-height-desktop, 3.5rem);
+		width: var(--countdown-value-wrapper-width-desktop, 5rem);
 	}
 }
 

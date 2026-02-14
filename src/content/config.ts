@@ -183,7 +183,14 @@ const eventsCollection = defineCollection({
 			indications: z
 				.array(
 					z.object({
-						icon: z.enum(['crown', 'envelope', 'forbidden', 'dress', 'gift']),
+						icon: z.enum([
+							'crown',
+							'envelope',
+							'forbidden',
+							'dress',
+							'gift',
+							'western-hat',
+						]),
 						text: z.string(),
 					}),
 				)
@@ -195,6 +202,8 @@ const eventsCollection = defineCollection({
 					.object({
 						father: z.string().optional(),
 						mother: z.string().optional(),
+						fatherDeceased: z.boolean().optional(),
+						motherDeceased: z.boolean().optional(),
 					})
 					.optional(),
 				labels: z

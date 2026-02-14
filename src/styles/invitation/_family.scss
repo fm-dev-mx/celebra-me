@@ -250,7 +250,19 @@
 		font-size: var(--family-name-size, clamp(1.3rem, 3vw, 1.9rem));
 		line-height: 1.15;
 		letter-spacing: 0.02em;
+		display: inline-flex;
+		align-items: baseline;
+		gap: var(--family-deceased-symbol-gap, 0.2em);
 		text-wrap: nowrap;
+	}
+
+	&__deceased-indicator {
+		color: var(--family-deceased-symbol-color, currentcolor);
+		font-size: var(--family-deceased-symbol-size, 0.62em);
+		line-height: 1;
+		opacity: var(--family-deceased-symbol-opacity, 70%);
+		transform: translateY(var(--family-deceased-symbol-offset-y, -0.25em));
+		text-shadow: 0 1px 1px rgb(0 0 0 / 10%);
 	}
 
 	&__meta {

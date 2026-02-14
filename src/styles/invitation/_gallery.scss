@@ -47,6 +47,8 @@
 	--gallery-item-focus-outline: 2px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.65);
 	--gallery-item-focus-outline-offset: 3px;
 	--gallery-item-image-radius: calc(var(--gallery-item-radius) - 2px);
+	--gallery-item-image-fit: cover;
+	--gallery-item-image-position: center;
 	--gallery-item-image-filter-rest: none;
 	--gallery-item-image-filter-in-view: var(--gallery-item-image-filter-rest);
 	--gallery-item-image-filter-hover: var(--gallery-item-image-filter-in-view);
@@ -155,7 +157,8 @@
 			width: 100%;
 			height: 100%;
 			display: block;
-			object-fit: cover;
+			object-fit: var(--gallery-item-image-fit);
+			object-position: var(--gallery-item-image-position);
 			border-radius: var(--gallery-item-image-radius);
 			filter: var(--gallery-item-image-filter-rest);
 			transform: scale(var(--gallery-item-image-scale-rest));

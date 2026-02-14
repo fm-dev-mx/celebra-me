@@ -10,6 +10,8 @@ interface Props {
 	parents?: {
 		father?: string;
 		mother?: string;
+		fatherDeceased?: boolean;
+		motherDeceased?: boolean;
 	};
 	spouse?: string;
 	children?: Array<{
@@ -34,6 +36,7 @@ interface FamilyEntry {
 	role?: string;
 	connector?: boolean;
 	lead?: boolean;
+	deceased?: boolean;
 }
 
 interface FamilyBlock {
@@ -95,13 +98,21 @@ if (parents && (parents.father || parents.mother)) {
 	const parentEntries: FamilyEntry[] = [];
 
 	if (parents.mother) {
-		parentEntries.push({ name: parents.mother, role: 'Madre' });
+		parentEntries.push({
+			name: parents.mother,
+			role: 'Madre',
+			deceased: Boolean(parents.motherDeceased),
+		});
 	}
 	if (parents.mother && parents.father) {
 		parentEntries.push({ connector: true });
 	}
 	if (parents.father) {
-		parentEntries.push({ name: parents.father, role: 'Padre' });
+		parentEntries.push({
+			name: parents.father,
+			role: 'Padre',
+			deceased: Boolean(parents.fatherDeceased),
+		});
 	}
 
 	familyBlocks.push({
@@ -158,7 +169,12 @@ if (parents && (parents.father || parents.mother)) {
 									</li>
 								) : (
 									<li class:list={['family__item', entry.lead && 'family__item--lead']}>
-										<p class="family__name">{entry.name}</p>
+										<p class="family__name">
+											<span>{entry.name}</span>
+											{entry.deceased && (
+												<span class="family__deceased-indicator" aria-hidden="true">†</span>
+											)}
+										</p>
 										{entry.role && <span class="family__meta">{entry.role}</span>}
 									</li>
 								),

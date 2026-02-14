@@ -63,7 +63,10 @@
                 "lat": 25.7988274,
                 "lng": -108.9893813
             }
-        }
+        },
+        "indications": [
+            { "icon": "western-hat", "text": "Sugerencia: botas y sombrero (si tienes)." }
+        ]
     },
     "sections": {
         "countdown": true,
@@ -125,7 +128,9 @@
         "spouse": "Trinidad Orduño",
         "parents": {
             "father": "Delfino Mendoza",
-            "mother": "Angela Martinez"
+            "mother": "Angela Martinez",
+            "fatherDeceased": true,
+            "motherDeceased": true
         },
         "children": [
             { "name": "Viridiana Mendoza" },
@@ -184,13 +189,6 @@
         "title": "Mesa de Regalos",
         "subtitle": "",
         "items": [
-            {
-                "title": "Transferencia",
-                "type": "bank",
-                "bankName": "BBVA",
-                "accountHolder": "Gerardo Mendoza",
-                "clabe": "0123 4567 8901 2345 67"
-            },
             {
                 "title": "Buzón de sobres",
                 "type": "cash",

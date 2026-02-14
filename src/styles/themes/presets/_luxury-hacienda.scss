@@ -45,6 +45,24 @@
 	);
 
 	// ---------------------------------------------------------------------
+	// Countdown section tokens
+	// ---------------------------------------------------------------------
+	--luxury-countdown-grid-columns-mobile: 2;
+	--luxury-countdown-grid-columns-tablet: 4;
+	--luxury-countdown-segment-padding-mobile: 2.6rem 1rem;
+	--luxury-countdown-segment-padding-desktop: 4rem 1.9rem;
+	--luxury-countdown-value-wrapper-width-mobile: 100%;
+	--luxury-countdown-value-wrapper-width-desktop: 100%;
+	--luxury-countdown-value-wrapper-height-mobile: 4.25rem;
+	--luxury-countdown-value-wrapper-height-desktop: 5.8rem;
+	--luxury-countdown-value-size-mobile: clamp(3rem, 13vw, 4.8rem);
+	--luxury-countdown-value-size-desktop: clamp(4.2rem, 9vw, 6.2rem);
+	--luxury-countdown-value-weight: 400;
+	--luxury-countdown-label-size: 0.8rem;
+	--luxury-countdown-label-letter-spacing: 0.32em;
+	--luxury-countdown-label-opacity: 64%;
+
+	// ---------------------------------------------------------------------
 	// Family section tokens
 	// ---------------------------------------------------------------------
 	--family-bg: linear-gradient(
@@ -97,6 +115,10 @@
 		rgb(255 255 255 / 0%) 0%,
 		rgb(var(--color-action-accent-rgb), 0.06) 100%
 	);
+	--family-deceased-symbol-color: rgb(var(--color-action-accent-rgb), 0.82);
+	--family-deceased-symbol-size: 0.9em;
+	--family-deceased-symbol-opacity: 80%;
+	--family-deceased-symbol-offset-y: -0.1em;
 
 	// ---------------------------------------------------------------------
 	// Hero tokens
@@ -242,6 +264,8 @@
 	--luxury-gallery-image-scale-rest: 1;
 	--luxury-gallery-image-scale-in-view: 1.018;
 	--luxury-gallery-image-scale-hover: 1.036;
+	--luxury-gallery-image-fit: contain;
+	--luxury-gallery-image-position: center;
 	--luxury-gallery-image-blend-rest: luminosity;
 	--luxury-gallery-image-blend-in-view: soft-light;
 	--luxury-gallery-image-blend-hover: normal;
@@ -255,7 +279,7 @@
 	--luxury-gallery-overlay-opacity-hover: 0.74;
 	--luxury-gallery-caption-font: var(--font-body, #{tokens.$font-body-hacienda});
 	--luxury-gallery-caption-color: rgb(246 232 201 / 92%);
-	--luxury-gallery-caption-size: 0.94rem;
+	--luxury-gallery-caption-size: 1.1rem;
 	--luxury-gallery-caption-bg: rgb(9 8 7 / 45%);
 	--luxury-gallery-caption-padding: 0.45rem 0.6rem;
 	--luxury-gallery-caption-radius: 0.14rem;

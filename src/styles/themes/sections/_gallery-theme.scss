@@ -132,6 +132,8 @@
 	--gallery-item-transition-duration: var(--luxury-gallery-card-transition-duration);
 	--gallery-item-transition-ease: var(--luxury-gallery-card-transition-ease);
 	--gallery-item-image-radius: var(--luxury-gallery-image-radius);
+	--gallery-item-image-fit: var(--luxury-gallery-image-fit, cover);
+	--gallery-item-image-position: var(--luxury-gallery-image-position, center);
 	--gallery-item-image-filter-rest: var(--luxury-gallery-image-filter-rest);
 	--gallery-item-image-filter-in-view: var(--luxury-gallery-image-filter-in-view);
 	--gallery-item-image-filter-hover: var(--luxury-gallery-image-filter-hover);
@@ -148,8 +150,8 @@
 	--gallery-item-aspect-ratio-wide: var(--luxury-gallery-item-aspect-ratio-wide);
 	--gallery-item-aspect-ratio-standard: var(--luxury-gallery-item-aspect-ratio-standard);
 	--gallery-overlay-bg: var(--luxury-gallery-overlay-bg);
-	--gallery-overlay-emphasis-opacity: var(--luxury-gallery-overlay-opacity-in-view);
-	--gallery-overlay-hover-opacity: var(--luxury-gallery-overlay-opacity-hover);
+	--gallery-overlay-emphasis-opacity: var(--luxury-gallery-overlay-opacity-in-view, 0.2);
+	--gallery-overlay-hover-opacity: var(--luxury-gallery-overlay-opacity-hover, 0.68);
 	--gallery-caption-font: var(--luxury-gallery-caption-font);
 	--gallery-caption-color: var(--luxury-gallery-caption-color);
 	--gallery-caption-size: var(--luxury-gallery-caption-size);

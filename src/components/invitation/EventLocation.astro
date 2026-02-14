@@ -32,7 +32,7 @@ interface VenueData {
 
 
 interface Indication {
-	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'gift';
+	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'western-hat' | 'gift';
 	text: string;
 }
 
@@ -56,13 +56,28 @@ const {
 
 const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 
-// Map icon names to components
-const iconMap = {
-	crown: 'Envelope',
+type EventLocationIconName = 'Crown' | 'Envelope' | 'Forbidden' | 'Gift' | 'western-hat';
+
+// Keep this map aligned with the icon registry in Icon.astro
+const iconMap: Record<Indication['icon'], EventLocationIconName> = {
+	crown: 'Crown',
 	envelope: 'Envelope',
 	forbidden: 'Forbidden',
-	dress: 'Hat',
-	gift: 'Boot',
+	// There is no dedicated "Dress" icon in the current registry; use western hat as closest theme-safe fallback.
+	dress: 'western-hat',
+	'western-hat': 'western-hat',
+	gift: 'Gift',
+};
+
+const resolveIndicationIconName = (icon: string): EventLocationIconName => {
+	const mapped = iconMap[icon as Indication['icon']];
+	if (mapped) return mapped;
+
+	if (import.meta.env.DEV) {
+		console.warn(`[EventLocation] Unknown indication icon "${icon}". Falling back to "Gift".`);
+	}
+
+	return 'Gift';
 };
 ---
 
@@ -82,7 +97,7 @@ const iconMap = {
 					return (
 						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
 							<div class="event-location__indication-icon">
-								<Icon name={iconMap[indication.icon] || 'Crown'} size={24} />
+								<Icon name={resolveIndicationIconName(indication.icon)} size={24} />
 							</div>
 							<p class="event-location__indication-text">{indication.text}</p>
 						</div>
