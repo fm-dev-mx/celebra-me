@@ -1,5 +1,7 @@
+@use 'sass:color';
 @use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
+@use '../tokens/primitives' as primitives;
 
 /*
  * Block: .event-header
@@ -10,7 +12,7 @@
 .event-header {
 	// Branding / Breadcrumbs
 	&__title {
-		font-family: tokens.$font-display-elegant;
+		font-family: var(--font-display, tokens.$font-display-elegant);
 		font-size: 1.25rem;
 		font-weight: tokens.$font-weight-bold;
 		text-decoration: none;
@@ -20,6 +22,9 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		max-width: 200px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		text-shadow: var(--header-nav-shadow-transparent);
 
 		@media (width >= 768px) {
 			max-width: 400px;
@@ -27,7 +32,8 @@
 		}
 
 		&:hover {
-			opacity: 80%;
+			opacity: 100%;
+			filter: brightness(1.1);
 		}
 	}
 
@@ -47,26 +53,38 @@
 		font-family: tokens.$font-ui;
 		font-size: 0.85rem;
 		font-weight: tokens.$font-weight-semibold;
-		padding: 0.5rem 1rem;
+		padding: 0.5rem 1.25rem;
 		border-radius: 4px;
 		transition: tokens.$transition-snappy;
-		color: var(--color-text-primary);
+		color: var(--header-nav-color);
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
 
 		&:hover {
 			color: var(--color-action-accent);
-			background-color: rgb(var(--color-surface-primary-rgb), 0.5);
+			background-color: rgb(var(--color-surface-primary-rgb), 0.05);
 		}
 
 		&--cta {
-			background-color: var(--color-action-accent);
-			color: var(--color-text-on-dark);
-			border-radius: 50px;
+			background: linear-gradient(
+				145deg,
+				var(--color-action-accent) 0%,
+				#{color.adjust(primitives.$base-gold-500, $lightness: -10%, $space: hsl)} 100%
+			);
+			color: var(--color-text-primary);
+			border-radius: 2px;
+			box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
+			border: 1px solid rgb(255 255 255 / 10%);
 
 			&:hover {
-				background-color: var(--color-action-accent);
+				background: linear-gradient(
+					145deg,
+					#{color.adjust(primitives.$base-gold-500, $lightness: 5%, $space: hsl)} 0%,
+					var(--color-action-accent) 100%
+				);
 				transform: translateY(-1px);
-				color: var(--color-text-on-dark);
-				box-shadow: 0 4px 12px var(--color-glass-shadow);
+				color: var(--color-text-primary);
+				box-shadow: var(--header-luxury-cta-glow, 0 4px 12px var(--color-glass-shadow));
 			}
 		}
 	}
