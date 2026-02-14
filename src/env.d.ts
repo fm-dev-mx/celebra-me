@@ -1,6 +1,7 @@
 // src/env.d.ts
 
 /// <reference types="astro/client" />
+/// <reference types="framer-motion" />
 // reference path="../.astro/types.d.ts"
 /// <reference types="astro/content" />
 

@@ -73,7 +73,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		return `https://wa.me/${whatsappConfig.phone}?text=${encodeURIComponent(message)}`;
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
 		e.preventDefault();
 		setError(null);
 

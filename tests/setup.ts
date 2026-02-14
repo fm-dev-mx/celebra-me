@@ -45,24 +45,51 @@ global.fetch = jest.fn().mockImplementation(() =>
 	}),
 ) as jest.Mock;
 
-// Mock framer-motion to avoid issues in JSDOM
+// Mock framer-motion to avoid issues in JSDOM and suppress Prop Leakage warnings
 jest.mock('framer-motion', () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const React = require('react');
+
+	// Helper to filter out motion props
+	const filterMotionProps = (props: Record<string, any>) => {
+		const {
+			_initial,
+			_animate,
+			_exit,
+			_variants,
+			_transition,
+			_whileHover,
+			_whileTap,
+			_whileInView,
+			_whileFocus,
+			_whileDrag,
+			_viewport,
+			_onAnimationStart,
+			_onAnimationComplete,
+			_onUpdate,
+			_layout,
+			_custom,
+			_inherit,
+			...validProps
+		} = props;
+		return validProps;
+	};
+
+	const createMotionComponent = (Tag: string) => {
+		return ({ children, ...props }: any) =>
+			React.createElement(Tag, filterMotionProps(props), children);
+	};
+
 	return {
 		motion: {
-			div: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('div', props, children),
-			h2: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('h2', props, children),
-			span: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('span', props, children),
-			button: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('button', props, children),
-			form: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('form', props, children),
-			fieldset: ({ children, ...props }: Record<string, unknown>) =>
-				React.createElement('fieldset', props, children),
+			div: createMotionComponent('div'),
+			h2: createMotionComponent('h2'),
+			span: createMotionComponent('span'),
+			button: createMotionComponent('button'),
+			form: createMotionComponent('form'),
+			fieldset: createMotionComponent('fieldset'),
+			p: createMotionComponent('p'),
+			section: createMotionComponent('section'),
 		},
 		AnimatePresence: ({ children }: { children: React.ReactNode }) =>
 			React.createElement(React.Fragment, null, children),

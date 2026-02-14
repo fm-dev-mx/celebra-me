@@ -17,6 +17,8 @@
         },
         "jsx": "react-jsx",
         "jsxImportSource": "react",
+        "module": "preserve",
+        "moduleResolution": "bundler",
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -24,5 +26,5 @@
         "resolveJsonModule": true,
         "skipLibCheck": true
     },
-    "include": ["src/**/*", "tests/**/*", "env.d.ts"]
+    "include": ["src/**/*", "tests/**/*", "src/env.d.ts"]
 }

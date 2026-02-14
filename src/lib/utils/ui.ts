@@ -7,9 +7,9 @@
  */
 export function isIOS(): boolean {
 	if (typeof window === 'undefined') return false;
+	const ua = navigator.userAgent;
 	return (
-		/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-		(navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1)
+		/iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && (navigator as any).maxTouchPoints > 1)
 	);
 }
 

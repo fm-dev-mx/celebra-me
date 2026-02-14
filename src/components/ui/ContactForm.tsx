@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ContactForm: React.FC = () => {
 	const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
 		e.preventDefault();
 		setStatus('submitting');
 

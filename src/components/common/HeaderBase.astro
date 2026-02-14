@@ -79,8 +79,10 @@ const {
 </header>
 
 <script is:inline define:vars={{ headerId, transparentOnHero }}>
-    document.addEventListener('DOMContentLoaded', () => {
-        const header = document.getElementById(headerId);
+    (() => {
+        const id = headerId;
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.getElementById(id);
         if (!(header instanceof HTMLElement)) return;
 
         let lastScrollY = window.scrollY;
@@ -157,4 +159,5 @@ const {
         updateAutoHide();
         handleScroll();
     });
+})();
 </script>
