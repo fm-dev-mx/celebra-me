@@ -4,6 +4,13 @@ import '@/styles/invitation/_footer.scss';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 
+interface Props {
+	eventSlug?: string;
+	showEnvelope?: boolean;
+}
+
+const { eventSlug, showEnvelope = false } = Astro.props;
+
 // Define contact details
 const contactNumber = '526681167477';
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
@@ -33,5 +40,21 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 				Contáctanos
 			</a>
 		</div>
+		{showEnvelope && eventSlug && (
+			<button
+				class="footer__replay-link"
+				data-slug={eventSlug}
+				aria-label="Volver a ver la apertura del sobre"
+			>
+				✉ Volver a ver la apertura
+			</button>
+			<script is:inline>
+				document.querySelector('.footer__replay-link')?.addEventListener('click', function() {
+					const slug = this.dataset.slug;
+					localStorage.removeItem(`envelope-opened-${slug}`);
+					location.reload();
+				});
+			</script>
+		)}
 	</div>
 </footer>

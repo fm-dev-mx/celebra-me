@@ -427,3 +427,9 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		transition: none;
 	}
 }
+
+// Safety net: ensure wrapper never blocks interactions after reveal completes.
+// Covers edge cases where AnimatePresence exit doesn't fully unmount the element.
+body.invitation-revealed .envelope-wrapper {
+	pointer-events: none;
+}

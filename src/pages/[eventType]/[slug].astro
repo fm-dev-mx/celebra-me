@@ -160,6 +160,16 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 	</style>
 
 	<main class={`event-theme-wrapper ${themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
+		{/* Sync unlock: runs before React hydration to prevent pointer-events deadlock */}
+		{showEnvelope && (
+			<script is:inline define:vars={{ eventSlug: event.id }}>
+				const key = `envelope-opened-${eventSlug}`;
+				if (localStorage.getItem(key) === 'true') {
+					document.body.classList.add('invitation-revealed');
+				}
+			</script>
+		)}
+
 		{
 			data.envelope && !data.envelope.disabled && (
 				<EnvelopeReveal
@@ -310,7 +320,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 			)
 		}
 
-		<Footer />
+		<Footer eventSlug={event.id} showEnvelope={showEnvelope} />
 
 		{
 			data.music && (

@@ -1,6 +1,4 @@
-import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
+import { spawnSync } from 'child_process';
 
 // --- Configuration ---
 const COLORS = {
@@ -34,20 +32,54 @@ function error(message) {
 	process.exit(1);
 }
 
-function exec(command, options = {}) {
-	try {
-		return execSync(command, { encoding: 'utf8', stdio: 'pipe', ...options }).trim();
-	} catch (e) {
-		if (options.ignoreError) return '';
-		throw e;
+function runCommand(command, args = [], options = {}) {
+	const result = spawnSync(command, args, {
+		encoding: 'utf8',
+		stdio: options.stdio ?? 'pipe',
+		shell: options.shell ?? process.platform === 'win32',
+	});
+
+	if (result.error) {
+		throw result.error;
 	}
+
+	if (typeof result.status === 'number' && result.status !== 0 && !options.ignoreError) {
+		const errorOutput = [result.stdout, result.stderr].filter(Boolean).join('\n').trim();
+		throw new Error(
+			`Command failed (${command} ${args.join(' ')}): ${errorOutput || `exit ${result.status}`}`,
+		);
+	}
+
+	return {
+		status: result.status ?? 0,
+		stdout: result.stdout ?? '',
+		stderr: result.stderr ?? '',
+	};
 }
 
 function getStagedFiles() {
 	try {
-		const output = exec('git diff --name-only --cached');
-		return output.split('\n').filter((f) => f.trim() !== '');
+		const { stdout } = runCommand('git', ['diff', '--name-only', '--cached']);
+		const output = stdout.trim();
+		if (!output) return [];
+		return output
+			.split('\n')
+			.map((file) => file.trim())
+			.filter(Boolean);
 	} catch (e) {
+		const fromEnv = process.env.GATEKEEPER_STAGED_FILES;
+		if (fromEnv) {
+			return fromEnv
+				.split(',')
+				.map((file) => file.trim())
+				.filter(Boolean);
+		}
+		if (e?.code === 'EPERM') {
+			error(
+				'Cannot spawn child processes in this environment (EPERM). ' +
+					'Run gatekeeper outside the sandbox or set GATEKEEPER_STAGED_FILES.',
+			);
+		}
 		error('Failed to get staged files. Are you in a git repository?');
 		return [];
 	}
@@ -76,8 +108,8 @@ function checkLint(files) {
 	if (jsFiles.length > 0) {
 		try {
 			log(`  • ESLint checking ${jsFiles.length} files...`);
-			execSync(`npx eslint ${jsFiles.join(' ')}`, { stdio: 'inherit' });
-		} catch (e) {
+			runCommand('npx', ['eslint', ...jsFiles], { stdio: 'inherit' });
+		} catch {
 			hasErrors = true;
 			log(`  ❌ ESLint failed.`, COLORS.red);
 		}
@@ -86,8 +118,8 @@ function checkLint(files) {
 	if (styleFiles.length > 0) {
 		try {
 			log(`  • Stylelint checking ${styleFiles.length} files...`);
-			execSync(`npx stylelint ${styleFiles.join(' ')}`, { stdio: 'inherit' });
-		} catch (e) {
+			runCommand('npx', ['stylelint', ...styleFiles], { stdio: 'inherit' });
+		} catch {
 			hasErrors = true;
 			log(`  ❌ Stylelint failed.`, COLORS.red);
 		}
@@ -103,9 +135,9 @@ function checkLint(files) {
 function checkTypes() {
 	log('\n📐 Running full type check (Strict Mode)...', COLORS.blue);
 	try {
-		execSync('pnpm type-check', { stdio: 'inherit' });
+		runCommand('pnpm', ['type-check'], { stdio: 'inherit' });
 		log('✅ Type check passed.', COLORS.green);
-	} catch (e) {
+	} catch {
 		error('Type check failed.');
 	}
 }

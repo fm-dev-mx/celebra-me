@@ -1,5 +1,5 @@
 // src/components/invitation/EnvelopeReveal.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import { motion, AnimatePresence, useAnimation, useReducedMotion } from 'framer-motion';
 import {
 	BootSealIcon,
@@ -30,7 +30,7 @@ const PHASE_DELAY_EXIT = 3500; // ms before full exit
 // ── Seal Spring Physics ──
 const SEAL_SPRING = { delay: 0.6, type: 'spring' as const, stiffness: 200, damping: 15 };
 
-const EnvelopeReveal: React.FC<Props> = ({
+const EnvelopeReveal: FC<Props> = ({
 	name,
 	date,
 	city,
@@ -62,9 +62,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 			const storageKey = `envelope-opened-${eventSlug}`;
 			const wasOpened = localStorage.getItem(storageKey) === 'true';
 
-			// In DEV mode, we always want to see the envelope unless skip is present
-			const isDev = import.meta.env.DEV;
-			if (wasOpened && !isDev) {
+			if (wasOpened) {
 				return 'exit';
 			}
 		}
@@ -186,141 +184,138 @@ const EnvelopeReveal: React.FC<Props> = ({
 		}
 	};
 
+	// Return null immediately for return visitors — don't mount AnimatePresence at all
+	if (phase === 'exit') return null;
+
 	return (
 		<AnimatePresence>
-			{phase !== 'exit' && (
-				<motion.div
-					className="envelope-wrapper"
-					data-variant={variant}
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{
-						y: '-100%',
-						transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
-					}}
-				>
-					<motion.div className="envelope-container" animate={controls}>
-						{/* 1. Base Layer (The Paper) */}
-						<div className="envelope-base" />
+			<motion.div
+				className="envelope-wrapper"
+				data-variant={variant}
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{
+					y: '-100%',
+					transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+				}}
+			>
+				<motion.div className="envelope-container" animate={controls}>
+					{/* 1. Base Layer (The Paper) */}
+					<div className="envelope-base" />
 
-						{/* 2. Rising Card (Depth 2) */}
-						<div className={`envelope-card ${phase === 'rising' ? 'is-rising' : ''}`}>
-							<div className="rivet rivet--tl" />
-							<div className="rivet rivet--tr" />
-							<div className="rivet rivet--bl" />
-							<div className="rivet rivet--br" />
-							<div className="envelope-card__content">
-								<div className="envelope-card__header">
-									<div className="envelope-card__monogram">
-										{renderSealIcon()}
-									</div>
-								</div>
-								<div className="envelope-card__body">
-									<span className="envelope-card__label">
-										{documentLabel || 'Invitación'}
-									</span>
-									<h2 className="envelope-card__name">{name}</h2>
-								</div>
-								<div className="envelope-card__footer">
-									<p className="envelope-card__details">
-										{formattedDate} • {city}
-									</p>
-								</div>
+					{/* 2. Rising Card (Depth 2) */}
+					<div className={`envelope-card ${phase === 'rising' ? 'is-rising' : ''}`}>
+						<div className="rivet rivet--tl" />
+						<div className="rivet rivet--tr" />
+						<div className="rivet rivet--bl" />
+						<div className="rivet rivet--br" />
+						<div className="envelope-card__content">
+							<div className="envelope-card__header">
+								<div className="envelope-card__monogram">{renderSealIcon()}</div>
+							</div>
+							<div className="envelope-card__body">
+								<span className="envelope-card__label">
+									{documentLabel || 'Invitación'}
+								</span>
+								<h2 className="envelope-card__name">{name}</h2>
+							</div>
+							<div className="envelope-card__footer">
+								<p className="envelope-card__details">
+									{formattedDate} • {city}
+								</p>
 							</div>
 						</div>
+					</div>
 
-						{/* 3. Pocket Layer (Depth 3) */}
-						<div className="envelope-pocket" />
+					{/* 3. Pocket Layer (Depth 3) */}
+					<div className="envelope-pocket" />
 
-						{/* 4. Flap Layer (Depth 4 - Behind text) */}
-						<div className={`envelope-flap ${phase !== 'closed' ? 'is-open' : ''}`} />
+					{/* 4. Flap Layer (Depth 4 - Behind text) */}
+					<div className={`envelope-flap ${phase !== 'closed' ? 'is-open' : ''}`} />
 
-						{/* 5. The Content/Info Layer (Floating on Top) */}
-						<div className="envelope-tease">
-							<AnimatePresence mode="wait">
-								{phase === 'closed' && (
-									<motion.div
-										key="tease-content"
-										initial={{ opacity: 1 }}
-										exit={{
-											opacity: 0,
-											transition: { duration: 0.4, ease: 'easeOut' },
-										}}
-										className="envelope-tease__interactive-content"
-									>
-										{/* Official Stamp / Tax Marker Area (Theme-specific, only if stampText provided) */}
-										{stampText && (
-											<div className="envelope-stamp-area">
-												<div className="envelope-stamp">
-													<span>{stampText}</span>
-													{stampYear && <small>{stampYear}</small>}
-												</div>
+					{/* 5. The Content/Info Layer (Floating on Top) */}
+					<div className="envelope-tease">
+						<AnimatePresence mode="wait">
+							{phase === 'closed' && (
+								<motion.div
+									key="tease-content"
+									initial={{ opacity: 1 }}
+									exit={{
+										opacity: 0,
+										transition: { duration: 0.4, ease: 'easeOut' },
+									}}
+									className="envelope-tease__interactive-content"
+								>
+									{/* Official Stamp / Tax Marker Area (Theme-specific, only if stampText provided) */}
+									{stampText && (
+										<div className="envelope-stamp-area">
+											<div className="envelope-stamp">
+												<span>{stampText}</span>
+												{stampYear && <small>{stampYear}</small>}
 											</div>
+										</div>
+									)}
+
+									<div className="tease-header">
+										{/* Document label only if provided (Western theme) */}
+										{documentLabel && (
+											<span className="envelope-manifest-label">
+												{documentLabel}
+											</span>
 										)}
+										<h2 className="envelope-name">{name}</h2>
+									</div>
 
-										<div className="tease-header">
-											{/* Document label only if provided (Western theme) */}
-											{documentLabel && (
-												<span className="envelope-manifest-label">
-													{documentLabel}
-												</span>
-											)}
-											<h2 className="envelope-name">{name}</h2>
-										</div>
+									{/* Seal as layout participant (middle zone) */}
+									<div className="envelope-seal-zone">
+										<motion.button
+											className={`envelope-seal-button envelope-seal-button--${sealStyle}`}
+											onClick={handleOpen}
+											initial={{ scale: 0, opacity: 0 }}
+											animate={{
+												scale: 1,
+												opacity: 1,
+												transition: SEAL_SPRING,
+											}}
+											whileHover={{ scale: 1.1 }}
+											whileTap={{ scale: 0.95 }}
+											aria-label="Abrir sobre de la invitación"
+										>
+											<div className="seal-visual">{renderSealIcon()}</div>
+											<div className="seal-pulse" />
 
-										{/* Seal as layout participant (middle zone) */}
-										<div className="envelope-seal-zone">
-											<motion.button
-												className={`envelope-seal-button envelope-seal-button--${sealStyle}`}
-												onClick={handleOpen}
-												initial={{ scale: 0, opacity: 0 }}
-												animate={{
-													scale: 1,
-													opacity: 1,
-													transition: SEAL_SPRING,
-												}}
-												whileHover={{ scale: 1.1 }}
-												whileTap={{ scale: 0.95 }}
-												aria-label="Abrir sobre de la invitación"
-											>
-												<div className="seal-visual">
-													{renderSealIcon()}
-												</div>
-												<div className="seal-pulse" />
+											{/* Tooltip - appears after 1.5s delay */}
+											<AnimatePresence>
+												{showTooltip && (
+													<motion.span
+														className="envelope-tooltip"
+														initial={{ opacity: 0, x: 10 }}
+														animate={{ opacity: 1, x: 0 }}
+														exit={{ opacity: 0, x: 5 }}
+														transition={{ duration: 0.3 }}
+													>
+														{tooltipText || 'Abre el sobre'}
+													</motion.span>
+												)}
+											</AnimatePresence>
+										</motion.button>
+									</div>
 
-												{/* Tooltip - appears after 1.5s delay */}
-												<AnimatePresence>
-													{showTooltip && (
-														<motion.span
-															className="envelope-tooltip"
-															initial={{ opacity: 0, x: 10 }}
-															animate={{ opacity: 1, x: 0 }}
-															exit={{ opacity: 0, x: 5 }}
-															transition={{ duration: 0.3 }}
-														>
-															{tooltipText || 'Abre el sobre'}
-														</motion.span>
-													)}
-												</AnimatePresence>
-											</motion.button>
-										</div>
-
-										<div className="tease-content-bottom">
-											<div className="tease-divider" />
-											<p className="envelope-details">
-												{formattedDate} • {city}
-											</p>
-											{microcopy && (
-												<p className="envelope-microcopy">{microcopy}</p>
-											)}
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
-						</div>
-					</motion.div>
+									<div className="tease-content-bottom">
+										<div className="tease-divider" />
+										<p className="envelope-details">
+											{formattedDate} • {city}
+										</p>
+										{microcopy && (
+											<p className="envelope-microcopy">{microcopy}</p>
+										)}
+									</div>
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</div>
 				</motion.div>
-			)}
+			</motion.div>
 		</AnimatePresence>
 	);
 };

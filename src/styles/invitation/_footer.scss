@@ -116,3 +116,32 @@
 		transform: scale(1);
 	}
 }
+
+// Replay envelope link — discreet, premium feel
+.footer__replay-link {
+	display: inline-block;
+	margin-top: 1rem;
+	width: 100%;
+	text-align: center;
+	font-family: tokens.$font-ui;
+	font-size: 0.65rem;
+	letter-spacing: tokens.$letter-spacing-wide;
+	text-transform: uppercase;
+	color: var(--color-text-secondary, tokens.$color-text-secondary);
+	opacity: 80%;
+	background: none;
+	border: none;
+	cursor: pointer;
+	transition: opacity tokens.$duration-snappy tokens.$ease-premium;
+	padding: 0.5rem;
+
+	&:hover {
+		opacity: 100%;
+	}
+
+	&:focus-visible {
+		outline: 1px solid var(--color-action-accent, tokens.$color-action-accent);
+		outline-offset: 4px;
+		opacity: 80%;
+	}
+}
