@@ -154,27 +154,21 @@
         "title": "Así será la fiesta",
         "items": [
             {
-                "icon": "western-hat",
-                "label": "Inicia la fiesta",
-                "time": "7:00 PM",
-                "description": "Los esperamos para empezar el festejo"
+                "icon": "tuba",
+                "label": "Suena la banda",
+                "time": "8:00 PM",
+                "description": "Banda la Esencial"
             },
             {
                 "icon": "taco",
                 "label": "La Taquiza",
-                "time": "8:30 PM",
+                "time": "9:30 PM",
                 "description": "Pa' agarrar fuerza"
-            },
-            {
-                "icon": "tuba",
-                "label": "Suena la banda",
-                "time": "9:45 PM",
-                "description": "Banda la Esencial"
             },
             {
                 "icon": "accordion",
                 "label": "Norteño",
-                "time": "11:30 PM",
+                "time": "12:00 PM",
                 "description": "Los Baros de Sinaloa"
             },
             {
