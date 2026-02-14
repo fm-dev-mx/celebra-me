@@ -39,6 +39,8 @@
 		0 0 18px rgb(var(--color-action-accent-rgb), 0.2);
 	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
 	--rsvp-button-filter-hover: saturate(1.08);
+	--color-error-field: rgb(var(--color-action-accent-rgb), 0.9);
+	--color-error-text: rgb(var(--color-action-accent-rgb), 0.5);
 
 	.rsvp__title {
 		font-family: var(--font-display);

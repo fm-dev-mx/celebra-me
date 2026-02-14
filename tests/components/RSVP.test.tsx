@@ -14,6 +14,7 @@ describe('RSVP Component', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		window.HTMLElement.prototype.scrollIntoView = jest.fn();
 	});
 
 	describe('Initial Render', () => {
@@ -62,15 +63,16 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
 		});
 
-		it('should enable the confirm button when any option is selected', async () => {
+		it('should show error when confirm button is clicked without selection', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);
 
 			const button = screen.getByRole('button', { name: /Confirmar/i });
-			expect(button).toBeDisabled();
+			await user.click(button);
 
-			await user.click(screen.getByLabelText(/No podré asistir/i));
-			expect(button).not.toBeDisabled();
+			await waitFor(() => {
+				expect(screen.getByText(/Por favor, selecciona si asistirás/i)).toBeInTheDocument();
+			});
 		});
 
 		it('should display max guest cap in the label', async () => {
@@ -193,6 +195,36 @@ describe('RSVP Component', () => {
 
 			expect(screen.getByLabelText(/Número de acompañantes/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
+		});
+	});
+
+	describe('Auto-focus on Errors', () => {
+		it('should focus the name field if it is the first empty required field', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			const button = screen.getByRole('button', { name: /Confirmar/i });
+			await user.click(button);
+
+			await waitFor(() => {
+				expect(screen.getByLabelText(/Nombre completo/i)).toHaveFocus();
+			});
+		});
+
+		it('should focus the attendance radio if name is present but attendance is missing', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			const nameInput = screen.getByLabelText(/Nombre completo/i);
+			await user.type(nameInput, 'Test User');
+
+			const button = screen.getByRole('button', { name: /Confirmar/i });
+			await user.click(button);
+
+			await waitFor(() => {
+				// The first radio button (Yes) should have focus
+				expect(screen.getByLabelText(/Sí, asistiré/i)).toHaveFocus();
+			});
 		});
 	});
 });

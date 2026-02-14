@@ -138,6 +138,37 @@
 				color: var(--rsvp-placeholder-color);
 			}
 		}
+
+		&--error {
+			label {
+				color: var(--color-error-field);
+			}
+
+			input[type='text'],
+			input[type='number'],
+			textarea {
+				border-color: var(--color-error-field);
+				background: rgb(var(--color-error-field), 0.05);
+			}
+
+			input[type='text']:focus,
+			input[type='number']:focus,
+			textarea:focus {
+				box-shadow: 0 0 0 4px rgb(var(--color-error-field), 0.25);
+				background: rgb(var(--color-error-field), 0.08);
+				outline: none;
+			}
+		}
+
+		&-error {
+			font-family: var(--font-body);
+			font-size: 0.78rem;
+			color: var(--color-error-text);
+			margin-top: 0.25rem;
+			margin-left: 0.25rem;
+
+			@include mixins.animate-in(fade-up, tokens.$duration-standard);
+		}
 	}
 
 	&__radio-group {
@@ -188,10 +219,15 @@
 	}
 
 	&__error {
-		font-size: 0.8rem;
+		font-size: 0.85rem;
+		font-weight: 500;
 		color: var(--color-error);
 		margin-top: 2px;
 		margin-left: 4px;
+		text-align: center;
+		padding: 0.5rem;
+		background: rgb(var(--color-error-rgb, 255, 77, 77), 0.1);
+		border-radius: 8px;
 	}
 
 	&__extra-fields {
@@ -270,8 +306,12 @@
 		}
 
 		&--loading {
-			position: relative;
-			color: transparent;
+			pointer-events: none;
+			cursor: wait;
+
+			.rsvp__button-text {
+				opacity: 40%;
+			}
 
 			&::after {
 				content: '';
@@ -285,6 +325,19 @@
 				border-radius: 50%;
 				animation: rsvp-spin 0.8s linear infinite;
 			}
+		}
+
+		&--success {
+			pointer-events: none;
+			animation: rsvp-pulse-success 0.6s ease-out;
+		}
+
+		&--error {
+			animation: rsvp-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+		}
+
+		&-text {
+			transition: opacity tokens.$duration-snappy tokens.$ease-out;
 		}
 	}
 
@@ -398,5 +451,45 @@
 	to {
 		opacity: 100%;
 		transform: translateY(0);
+	}
+}
+
+@keyframes rsvp-shake {
+	10%,
+	90% {
+		transform: translate3d(-1px, 0, 0);
+	}
+
+	20%,
+	80% {
+		transform: translate3d(2px, 0, 0);
+	}
+
+	30%,
+	50%,
+	70% {
+		transform: translate3d(-4px, 0, 0);
+	}
+
+	40%,
+	60% {
+		transform: translate3d(4px, 0, 0);
+	}
+}
+
+@keyframes rsvp-pulse-success {
+	0% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 rgb(40 167 69 / 40%);
+	}
+
+	70% {
+		transform: scale(1.02);
+		box-shadow: 0 0 0 10px rgb(40 167 69 / 0%);
+	}
+
+	100% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 rgb(40 167 69 / 0%);
 	}
 }

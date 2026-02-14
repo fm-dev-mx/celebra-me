@@ -59,6 +59,18 @@
 	}
 }
 
+@keyframes fade-up {
+	from {
+		opacity: 0%;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
 @keyframes pulseButton {
 	0%,
 	100% {
