@@ -3,7 +3,7 @@
  * Provides a deterministic way to access and optimize project assets.
  */
 
-import { assets as Cumple60GerardoAssets } from '../../assets/images/events/cumple-60-gerardo';
+import { assets as GerardoSesentaAssets } from '../../assets/images/events/gerardo-sesenta';
 import { assets as DemoXvAssets } from '../../assets/images/events/demo-xv';
 import type { ImageMetadata } from 'astro';
 
@@ -130,7 +130,7 @@ const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAsse
 
 export const ImageRegistry: Registry = {
 	events: {
-		'cumple-60-gerardo': mapEventAssets(Cumple60GerardoAssets, 'Gerardo 60 años'),
+		'gerardo-sesenta': mapEventAssets(GerardoSesentaAssets, 'Gerardo 60 años'),
 		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
 	},
 	common: {

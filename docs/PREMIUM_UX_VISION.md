@@ -77,7 +77,7 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 `src/lib/assets/AssetRegistry.ts`. This ensures:
 
 - **Performance:** Only optimized assets are consumed.
-- **Maintainability:** Semantic naming (e.g., `getEventAsset('cumple-60-gerardo', 'hero')`).
+- **Maintainability:** Semantic naming (e.g., `getEventAsset('gerardo-sesenta', 'hero')`).
 - **Safety:** Build-time validation of asset paths.
 
 ---

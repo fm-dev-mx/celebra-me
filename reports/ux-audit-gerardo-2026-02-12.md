@@ -99,7 +99,7 @@ _None identified._
 
 - **Preset:** `luxury-hacienda`
 - **Main Tokens:** `$base-coffee-900`, `$base-gold-500`, `$base-parchment-100`
-- **Hero Image:** `cumple-60-gerardo/hero.webp`
+- **Hero Image:** `gerardo-sesenta/hero.webp`
 - **Special Elements:** Wax Seal (Boot), Leather Stitched Borders.
 
 ---

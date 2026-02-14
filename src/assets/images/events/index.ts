@@ -6,5 +6,5 @@
  * 2. Create an `index.ts` in that folder following the assets pattern
  * 3. Export it here as a named namespace
  */
-export * as Cumple60Gerardo from './cumple-60-gerardo';
+export * as GerardoSesenta from './gerardo-sesenta';
 export * as DemoXv from './demo-xv';

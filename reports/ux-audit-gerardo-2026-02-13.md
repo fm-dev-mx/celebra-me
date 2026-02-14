@@ -1,6 +1,6 @@
 # Premium UI/UX Audit Report - Gerardo 60 Años (Luxury Hacienda)
 
-Date: 2026-02-13 Status: Completed (Discovery-Only, Read-Only Audit) Scope: `cumple-60-gerardo`
+Date: 2026-02-13 Status: Completed (Discovery-Only, Read-Only Audit) Scope: `gerardo-sesenta`
 invitation
 
 ## 1) Executive Summary
@@ -39,9 +39,9 @@ Surface inventory (active for Gerardo):
 
 Evidence:
 
-- Event toggles and variants: `src/content/events/cumple-60-gerardo.json:9`,
-  `src/content/events/cumple-60-gerardo.json:11`, `src/content/events/cumple-60-gerardo.json:76`,
-  `src/content/events/cumple-60-gerardo.json:220`
+- Event toggles and variants: `src/content/events/gerardo-sesenta.json:9`,
+  `src/content/events/gerardo-sesenta.json:11`, `src/content/events/gerardo-sesenta.json:76`,
+  `src/content/events/gerardo-sesenta.json:220`
 - Page composition + conditional rendering: `src/pages/[eventType]/[slug].astro:164`,
   `src/pages/[eventType]/[slug].astro:206`, `src/pages/[eventType]/[slug].astro:247`,
   `src/pages/[eventType]/[slug].astro:261`, `src/pages/[eventType]/[slug].astro:284`,
@@ -89,7 +89,7 @@ Format:
 - Evidence: contrast check outputs:
     - `#DCB43C on #F5F5DC => 1.78:1`
     - `#9F7133 on #F7F1E8 => 3.83:1`
-- Relevant sources: `src/content/events/cumple-60-gerardo.json:6`,
+- Relevant sources: `src/content/events/gerardo-sesenta.json:6`,
   `src/styles/themes/presets/_luxury-hacienda.scss:52`
 - Confidence: High
 
@@ -189,8 +189,8 @@ Format:
 
 - Evidencia (UI/copy en espanol): `"Estás invitado a celebrar los 60 años del Jefe Botas."`,
   `"¡Te espero con las botas puestas!"`
-- Evidence files: `src/content/events/cumple-60-gerardo.json:4`,
-  `src/content/events/cumple-60-gerardo.json:209`
+- Evidence files: `src/content/events/gerardo-sesenta.json:4`,
+  `src/content/events/gerardo-sesenta.json:209`
 - Confidence: Medium
 
 ### Phase 8 - Competitive Benchmark (Internal-Heuristic)
@@ -296,7 +296,7 @@ Accessibility states:
 
 ## 7) Command Appendix (Executed)
 
-- `rg -n "preset|sectionStyles|variant|disabled|navigation" src/content/events/cumple-60-gerardo.json`
+- `rg -n "preset|sectionStyles|variant|disabled|navigation" src/content/events/gerardo-sesenta.json`
 - `rg -n "luxury-hacienda|data-variant|theme-preset|animation|transition|prefers-reduced-motion|will-change" src/styles/themes/sections src/styles/themes/presets src/styles/tokens src/styles/invitation`
 - `rg -n "aria-|role=|required|button|dialog|onKeyDown|tabIndex|disabled" src/components/invitation`
 - `rg -n "#([0-9a-fA-F]{3,6})|rgba?\(|hsla?\(" src/components/invitation src/styles/themes/sections src/styles/themes/presets`

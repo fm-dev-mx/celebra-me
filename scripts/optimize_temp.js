@@ -4,8 +4,8 @@ import path from 'path';
 
 // Using __dirname won't work in ESM without special handling, but process.cwd() is reliable for this purpose
 const ROOT = process.cwd();
-const inputPath = path.join(ROOT, 'src/assets/images/events/cumple-60-gerardo/family.jpeg');
-const outputPath = path.join(ROOT, 'src/assets/images/events/cumple-60-gerardo/family.webp');
+const inputPath = path.join(ROOT, 'src/assets/images/events/gerardo-sesenta/family.jpeg');
+const outputPath = path.join(ROOT, 'src/assets/images/events/gerardo-sesenta/family.webp');
 
 console.log(`Processing: ${inputPath} -> ${outputPath}`);
 

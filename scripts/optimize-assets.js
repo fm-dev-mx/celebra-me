@@ -12,7 +12,7 @@ const ASSET_MAPPING = [
 	{ src: 'about/lucia-family.png', dest: 'portrait.webp' }, // Also mapping to portrait for now as per plan
 	{ src: 'gallery/lucia-thank-you.png', dest: 'signature.webp' }, // Mapping thank you image to signature slot for now
 	// Jardin image not found in originals, will keep placeholder or copy one
-	{ src: 'events/cumple-60-gerardo/jardin.webp', dest: 'jardin.webp' },
+	{ src: 'events/gerardo-sesenta/jardin.webp', dest: 'jardin.webp' },
 
 	// Gallery
 	{ src: 'gallery/lucia-gallery-1.png', dest: 'gallery-01.webp' },

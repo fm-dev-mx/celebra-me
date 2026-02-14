@@ -181,7 +181,7 @@ The `getEventAsset()` function provides type-safe access to event assets:
 import { getEventAsset } from '@/lib/assets/AssetRegistry';
 
 // Get a specific asset
-const hero = getEventAsset('cumple-60-gerardo', 'hero');
+const hero = getEventAsset('gerardo-sesenta', 'hero');
 const gallery03 = getEventAsset('demo-xv', 'gallery03');
 ```
 
@@ -191,7 +191,7 @@ const gallery03 = getEventAsset('demo-xv', 'gallery03');
 ---
 import { getEventAsset } from '@/lib/assets/AssetRegistry';
 
-const eventSlug = 'cumple-60-gerardo';
+const eventSlug = 'gerardo-sesenta';
 const heroAsset = getEventAsset(eventSlug, 'hero');
 ---
 
@@ -245,7 +245,7 @@ The registry mapping function will handle the optional field appropriately.
 For working examples, see:
 
 - `src/assets/images/events/demo-xv/` - Complete XV Años example
-- `src/assets/images/events/cumple-60-gerardo/` - Birthday event example
+- `src/assets/images/events/gerardo-sesenta/` - Birthday event example
 - `src/pages/[eventType]/[slug].astro` - Asset consumption pattern
 
 ## Related Documentation
