@@ -1,12 +1,44 @@
 // src/styles/invitation/_envelope-reveal.scss
 @use '../tokens' as tokens;
+@use '../tokens/primitives' as primitives;
 
 // Seal dimensions and safe zone
 $envelope-seal-size: 76px;
 $envelope-seal-gap: 1rem;
 $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap});
 
+// ==========================================================================
+// Theme Hook Variables
+// Variants override these via [data-variant] selectors.
+// ==========================================================================
 .envelope-wrapper {
+	// ── Surface Hooks ──
+	--env-paper-bg: #{tokens.$color-surface-primary};
+	--env-paper-border: #{tokens.$color-glass-border};
+	--env-paper-radius: 20px;
+	--env-card-bg: #{primitives.$base-neutral-0};
+	--env-card-radius: 8px;
+	--env-card-shadow: #{tokens.$shadow-subtle};
+
+	// ── Text Hooks ──
+	--env-name-font: #{tokens.$font-display-elegant};
+	--env-details-color: #{tokens.$color-text-primary};
+	--env-seal-icon-color: rgb(60 40 10 / 65%);
+
+	// ── Seal Hooks ──
+	--env-seal-size: 52px;
+	--env-seal-gradient: radial-gradient(
+		circle at 35% 35%,
+		#{tokens.$base-gold-300},
+		#{tokens.$color-action-accent},
+		#{tokens.$color-surface-dark}
+	);
+	--env-seal-pulse-color: #{tokens.$color-action-accent};
+
+	// ── Flap Hooks ──
+	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
+	--env-flap-height: 52%;
+
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
@@ -30,17 +62,20 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 }
 
 %paper-texture {
-	background-color: tokens.$color-surface-primary;
+	background-color: var(--env-paper-bg);
 	background-image:
-		url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.9'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E"),
+		var(
+			--env-paper-texture,
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.9'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E")
+		),
 		linear-gradient(
 			135deg,
 			rgb(255 255 255 / 100%) 0%,
 			rgb(var(--color-surface-secondary-rgb), 0.4) 100%
 		);
-	background-blend-mode: multiply, normal;
-	border-radius: 20px;
-	border: 1px solid tokens.$color-glass-border;
+	background-blend-mode: var(--env-paper-blend, multiply, normal);
+	border-radius: var(--env-paper-radius);
+	border: 1px solid var(--env-paper-border);
 }
 
 .envelope-base {
@@ -70,8 +105,8 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 52%;
-	clip-path: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
+	height: var(--env-flap-height);
+	clip-path: var(--env-flap-clip);
 	z-index: 4;
 	transform-origin: top;
 	box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
@@ -79,7 +114,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	border-bottom: 1px solid rgb(255 255 255 / 40%);
 
 	&.is-open {
-		transform: rotateX(170deg);
+		transform: var(--env-flap-open-transform, rotateX(170deg));
 		z-index: 0;
 		box-shadow: none;
 	}
@@ -88,15 +123,15 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 .envelope-card {
 	position: absolute;
 	inset: 10% 14%;
-	background: #fff;
-	border-radius: 8px;
+	background: var(--env-card-bg);
+	border-radius: var(--env-card-radius);
 	z-index: 2;
 	transition: transform tokens.$duration-reveal 0.3s tokens.$ease-out;
-	box-shadow: tokens.$shadow-subtle;
+	box-shadow: var(--env-card-shadow);
 
 	&.is-rising {
-		transform: translateY(-60%) scale(1.04);
-		box-shadow: tokens.$shadow-subtle;
+		transform: var(--env-card-rising-transform, translateY(-60%) scale(1.04));
+		box-shadow: var(--env-card-shadow);
 	}
 }
 
@@ -113,21 +148,24 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	padding: 2rem 2rem 1.5rem;
 
 	.envelope-name {
-		font-family: tokens.$font-display-elegant;
+		font-family: var(--env-name-font);
 		font-size: clamp(1.8rem, 8vw, 2.8rem);
 		line-height: 1.1;
-		background: linear-gradient(
-			75deg,
-			tokens.$color-surface-dark 0%,
-			tokens.$color-action-accent 45%,
-			tokens.$base-gold-300 50%,
-			tokens.$color-action-accent 55%,
-			tokens.$color-surface-dark 100%
+		background: var(
+			--env-name-gradient,
+			linear-gradient(
+				75deg,
+				#{tokens.$color-surface-dark} 0%,
+				#{tokens.$color-action-accent} 45%,
+				#{tokens.$base-gold-300} 50%,
+				#{tokens.$color-action-accent} 55%,
+				#{tokens.$color-surface-dark} 100%
+			)
 		);
 		background-size: 200% auto;
 		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		animation: goldShimmer 5s linear infinite;
+		-webkit-text-fill-color: var(--env-name-fill, transparent);
+		animation: var(--env-name-animation, goldShimmer 5s linear infinite);
 		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
 	}
 
@@ -166,7 +204,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		font-size: 0.8rem;
 		letter-spacing: 0.01rem;
 		text-transform: uppercase;
-		color: tokens.$color-text-primary;
+		color: var(--env-details-color);
 		font-weight: 400;
 	}
 
@@ -248,10 +286,17 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	padding: 0;
 	cursor: pointer;
 
+	// Accessibility: visible focus ring for keyboard users
+	&:focus-visible {
+		outline: 2px solid var(--env-seal-pulse-color);
+		outline-offset: 8px;
+		border-radius: 50%;
+	}
+
 	.seal-pulse {
 		position: absolute;
 		inset: -12px;
-		border: 2px solid tokens.$color-action-accent;
+		border: 2px solid var(--env-seal-pulse-color);
 		border-radius: 50%;
 		opacity: 0%;
 		pointer-events: none;
@@ -327,14 +372,9 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 }
 
 .seal-visual {
-	width: 52px;
-	height: 52px;
-	background: radial-gradient(
-		circle at 35% 35%,
-		tokens.$base-gold-300,
-		tokens.$color-action-accent,
-		tokens.$color-surface-dark
-	);
+	width: var(--env-seal-size);
+	height: var(--env-seal-size);
+	background: var(--env-seal-gradient);
 	border-radius: 50%;
 	box-shadow:
 		0 8px 16px rgb(0 0 0 / 40%),
@@ -358,7 +398,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	.seal-icon {
 		width: 32px;
 		height: 32px;
-		color: rgb(60 40 10 / 65%);
+		color: var(--env-seal-icon-color);
 		mix-blend-mode: multiply;
 		opacity: 90%;
 		filter: drop-shadow(0 1px 0 rgb(255 255 255 / 50%)) drop-shadow(0 -1px 0 rgb(0 0 0 / 15%));
@@ -368,5 +408,22 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 @media (prefers-reduced-motion: reduce) {
 	.envelope-wrapper.is-opened {
 		opacity: 0%;
+	}
+
+	// Disable all infinite animations
+	.envelope-name {
+		animation: none;
+	}
+
+	.seal-pulse {
+		animation: none;
+	}
+
+	.envelope-flap {
+		transition: none;
+	}
+
+	.envelope-card {
+		transition: none;
 	}
 }

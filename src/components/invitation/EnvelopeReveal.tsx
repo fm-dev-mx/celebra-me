@@ -1,5 +1,5 @@
 // src/components/invitation/EnvelopeReveal.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation, useReducedMotion } from 'framer-motion';
 import {
 	BootSealIcon,
@@ -23,12 +23,20 @@ interface Props {
 	variant?: string;
 }
 
+// ── Timing Constants (synced with _motion.scss tokens) ──
+const PHASE_DELAY_RISING = 800; // ms before card starts rising
+const PHASE_DELAY_EXIT = 3500; // ms before full exit
+
+// ── Seal Spring Physics ──
+const SEAL_SPRING = { delay: 0.6, type: 'spring' as const, stiffness: 200, damping: 15 };
+
 const EnvelopeReveal: React.FC<Props> = ({
 	name,
 	date,
 	city,
 	sealStyle,
 	sealIcon,
+	microcopy,
 	documentLabel,
 	stampText,
 	stampYear,
@@ -64,20 +72,26 @@ const EnvelopeReveal: React.FC<Props> = ({
 	});
 
 	const controls = useAnimation();
-	const rustleAudio =
-		typeof Audio !== 'undefined'
-			? new Audio(
-					'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
-				)
-			: null;
+
+	// Lazy audio initialization — avoids re-creating on every render
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const getAudio = () => {
+		if (!audioRef.current && typeof Audio !== 'undefined') {
+			audioRef.current = new Audio(
+				'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
+			);
+		}
+		return audioRef.current;
+	};
 
 	const handleOpen = () => {
 		if (phase !== 'closed') return;
 
 		// Play tactile sound
-		if (rustleAudio) {
-			rustleAudio.volume = 0.4;
-			rustleAudio.play().catch((e) => console.warn('Audio play blocked:', e));
+		const audio = getAudio();
+		if (audio) {
+			audio.volume = 0.4;
+			audio.play().catch((e) => console.warn('Audio play blocked:', e));
 		}
 
 		// Save to localStorage
@@ -98,14 +112,14 @@ const EnvelopeReveal: React.FC<Props> = ({
 		// Phase 2: Card rises after flap opens
 		setTimeout(() => {
 			setPhase('rising');
-		}, 800);
+		}, PHASE_DELAY_RISING);
 
 		// Phase 3: Total exit to reveal invitation content
 		setTimeout(() => {
 			setPhase('exit');
 			document.body.style.overflow = 'auto';
 			document.body.classList.add('invitation-revealed');
-		}, 3500);
+		}, PHASE_DELAY_EXIT);
 	};
 
 	// Tooltip delay logic
@@ -263,7 +277,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 												animate={{
 													scale: 1,
 													opacity: 1,
-													transition: { delay: 0.6, type: 'spring' },
+													transition: SEAL_SPRING,
 												}}
 												whileHover={{ scale: 1.1 }}
 												whileTap={{ scale: 0.95 }}
@@ -296,6 +310,9 @@ const EnvelopeReveal: React.FC<Props> = ({
 											<p className="envelope-details">
 												{formattedDate} • {city}
 											</p>
+											{microcopy && (
+												<p className="envelope-microcopy">{microcopy}</p>
+											)}
 										</div>
 									</motion.div>
 								)}

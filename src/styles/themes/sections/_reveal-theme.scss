@@ -3,47 +3,47 @@
 @use '../../tokens/primitives' as primitives;
 
 // ==========================================================================
-// LUXURY HACIENDA REVEAL (Envelope & Seal)
+// JEWELRY BOX REVEAL (Envelope & Seal)
 // ==========================================================================
-
-// Shared variables for Jewelry Box from history
-$gold-darkest: #b8860b;
-$gold-dark: #9e7d3d;
-$gold-base: #d4af37;
-$gold-light: #f1d592;
 
 .envelope-wrapper[data-variant='jewelry-box'] {
 	background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
 
-	.envelope-base,
-	.envelope-pocket,
-	.envelope-flap {
-		background-color: #fdfdfb !important;
-		background-image:
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.9'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E"),
-			linear-gradient(135deg, rgb(255 255 255 / 100%) 0%, rgb(245 245 230 / 40%) 100%);
-		background-blend-mode: multiply, normal;
-		border: 1px solid rgb(0 0 0 / 6%) !important;
-		box-shadow: none !important;
-	}
+	// Override hooks — paper surface
+	--env-paper-bg: #{primitives.$base-neutral-0};
+	--env-paper-border: rgb(0 0 0 / 6%);
+	--env-card-bg: #{primitives.$base-neutral-0};
+	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 10%);
+	--env-details-color: #{primitives.$base-neutral-600};
+	--env-seal-pulse-color: #{primitives.$base-gold-500};
+
+	// Override hooks — name gradient (gold shimmer)
+	--env-name-gradient: linear-gradient(
+		75deg,
+		#{primitives.$base-gold-700} 0%,
+		#{primitives.$base-gold-500} 45%,
+		#{primitives.$base-gold-200} 50%,
+		#{primitives.$base-gold-500} 55%,
+		#{primitives.$base-gold-700} 100%
+	);
+
+	// Override hooks — seal
+	--env-seal-gradient: radial-gradient(
+		circle at 35% 35%,
+		#{primitives.$base-gold-200},
+		#{primitives.$base-gold-500},
+		#{primitives.$base-gold-900}
+	);
 
 	.envelope-pocket {
 		box-shadow:
 			inset 0 30px 60px rgb(0 0 0 / 2%),
-			0 -5px 15px rgb(0 0 0 / 3%) !important;
-	}
-
-	.envelope-flap {
-		border-bottom: 1px solid rgb(255 255 255 / 40%) !important;
+			0 -5px 15px rgb(0 0 0 / 3%);
 	}
 
 	.envelope-card {
-		background: #fff !important;
-		box-shadow: 0 4px 20px rgb(0 0 0 / 10%) !important;
-
 		&.is-rising {
-			transform: translateY(-60%) scale(1.04) !important;
-			box-shadow: 0 50px 100px rgb(255 255 255 / 40%) !important;
+			box-shadow: 0 50px 100px rgb(255 255 255 / 40%);
 		}
 
 		// Clean modern look, no stitching
@@ -57,20 +57,24 @@ $gold-light: #f1d592;
 		}
 
 		.envelope-card__monogram {
-			color: $gold-dark;
+			color: primitives.$base-gold-700;
 			opacity: 80%;
 		}
 
 		.envelope-card__label {
-			font-family: var(--font-body);
+			font-family: tokens.$font-body;
 			letter-spacing: 0.2em;
-			color: #999;
+			color: tokens.$color-text-secondary;
 			font-size: 0.7rem;
 		}
 
 		.envelope-card__name {
-			font-family: var(--font-display);
-			background: linear-gradient(45deg, $gold-dark, $gold-base);
+			font-family: tokens.$font-display-elegant;
+			background: linear-gradient(
+				45deg,
+				primitives.$base-gold-700,
+				primitives.$base-gold-500
+			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
 			font-size: 2.5rem;
@@ -78,56 +82,27 @@ $gold-light: #f1d592;
 	}
 
 	.envelope-tease {
-		.envelope-name {
-			background: linear-gradient(
-				75deg,
-				$gold-dark 0%,
-				$gold-base 45%,
-				$gold-light 50%,
-				$gold-base 55%,
-				$gold-dark 100%
-			);
-			background-size: 200% auto;
-			background-clip: text;
-			-webkit-text-fill-color: transparent;
-			animation: gold-shimmer 5s linear infinite;
-		}
-
-		.envelope-details {
-			color: #444 !important;
-		}
-
 		.envelope-microcopy {
-			color: #999 !important;
-			letter-spacing: 0.15em !important;
+			color: primitives.$base-neutral-400;
+			letter-spacing: 0.15em;
 		}
 	}
 
 	.seal-visual {
-		background: radial-gradient(
-			circle at 35% 35%,
-			$gold-light,
-			$gold-base,
-			$gold-darkest
-		) !important;
 		box-shadow:
 			0 12px 24px rgb(0 0 0 / 30%),
 			inset 0 -4px 10px rgb(0 0 0 / 20%),
-			inset 0 4px 10px rgb(255 255 255 / 40%) !important;
+			inset 0 4px 10px rgb(255 255 255 / 40%);
 
 		&::before {
-			box-shadow: inset 0 0 20px rgb(0 0 0 / 20%) !important;
+			box-shadow: inset 0 0 20px rgb(0 0 0 / 20%);
 		}
 
 		.seal-icon {
-			color: rgb(0 0 0 / 20%) !important;
-			filter: drop-shadow(1px 1px 0 rgb(255 255 255 / 15%)) !important;
-			mix-blend-mode: normal !important;
+			color: rgb(0 0 0 / 20%);
+			filter: drop-shadow(1px 1px 0 rgb(255 255 255 / 15%));
+			mix-blend-mode: normal;
 		}
-	}
-
-	.seal-pulse {
-		border-color: $gold-base !important;
 	}
 }
 
@@ -140,6 +115,43 @@ $gold-light: #f1d592;
 	// ADU-7: Radical Old West Document (Boceto de Carta)
 	// Breaking the "Envelope" mold: Tri-fold geometry, torn edges, asymmetric.
 	// ==========================================================================
+
+	// Override hooks — surface
+	--env-paper-bg: #{primitives.$base-parchment-100};
+	--env-paper-border: transparent;
+	--env-paper-radius: 20px;
+	--env-card-bg: #{tokens.$base-coffee-900};
+	--env-card-radius: 2px;
+	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 10%);
+
+	// Override hooks — flap geometry (horizontal fold, not triangle)
+	--env-flap-clip: none;
+	--env-flap-height: 49%;
+	--env-flap-open-transform: rotateX(160deg) translateY(-20%);
+
+	// Override hooks — card rising
+	--env-card-rising-transform: translateY(-80%) rotate(-1deg) scale(1.05);
+
+	// Override hooks — name (Iron Gall Ink, no shimmer)
+	--env-name-font: #{tokens.$font-body-hacienda};
+	--env-name-gradient: none;
+	--env-name-fill: var(--color-text-primary);
+	--env-name-animation: none;
+
+	// Override hooks — details
+	--env-details-color: var(--color-text-primary);
+
+	// Override hooks — seal (wax red)
+	--env-seal-size: 84px;
+	--env-seal-icon-color: rgb(0 0 0 / 70%);
+	--env-seal-gradient: radial-gradient(
+		circle at 35% 30%,
+		#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
+		#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
+		#{primitives.$base-wax-red} 55%,
+		#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
+	);
+	--env-seal-pulse-color: #{rgba(primitives.$base-wax-red, 0.35)};
 
 	background:
 		radial-gradient(ellipse at 30% 20%, rgb(0 0 0 / 10%) 0%, transparent 50%),
@@ -168,9 +180,9 @@ $gold-light: #f1d592;
 	.envelope-pocket,
 	.envelope-flap {
 		// Aggressive Aged Parchment with Heavy Staining
-		background-color: primitives.$base-parchment-100 !important;
-		background-image:
-            // Heavy coffee/tobacco stains in corners
+		--env-paper-texture:
+			// Heavy coffee/tobacco stains in corners
+
 			radial-gradient(
 				circle at 10% 10%,
 				rgba(primitives.$base-coffee-700, 0.4),
@@ -190,105 +202,81 @@ $gold-light: #f1d592;
 				),
 			// Paper fiber texture
 			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
-		background-blend-mode: multiply, multiply, multiply, normal;
-		border: none !important;
+		--env-paper-blend: multiply, multiply, multiply, normal;
 
 		// TORN EDGES EFFECT via mask
 		mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='rough'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.2' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect x='2' y='2' width='96' height='96' filter='url(%23rough)' fill='black'/%3E%3C/svg%3E");
 		mask-size: 100% 100%;
-		box-shadow: 2px 4px 15px rgb(0 0 0 / 40%) !important;
+		box-shadow: 2px 4px 15px rgb(0 0 0 / 40%);
 	}
 
-	// Geometry Shift: Remove triangular flap, use horizontal fold
+	// Geometry Shift: horizontal fold
 	.envelope-flap {
-		clip-path: none !important;
-		height: 49% !important; // Increased to nearly half (49%)
-		width: 100% !important;
-		border-bottom: 3px solid rgba(primitives.$base-coffee-700, 0.2) !important;
-		box-shadow: inset 0 -10px 20px rgb(0 0 0 / 20%) !important;
+		border-bottom: 3px solid rgba(primitives.$base-coffee-700, 0.2);
+		box-shadow: inset 0 -10px 20px rgb(0 0 0 / 20%);
 		z-index: 10;
 
 		&.is-open {
-			transform: rotateX(160deg) translateY(-20%) !important;
 			z-index: 0;
-		}
-
-		// Tooltip Override: Loop to the LEFT of the seal
-		.envelope-tooltip {
-			right: 140% !important; // Push further left
-			left: auto !important;
-			top: 50% !important;
-			transform: translateY(-50%) !important;
-			margin: 0 !important;
-
-			// Arrow points RIGHT (towards seal)
-			&::after {
-				top: 50% !important;
-				right: -6px !important;
-				left: auto !important;
-				transform: translateY(-50%) !important;
-				border-width: 6px 0 6px 6px !important;
-				border-color: transparent transparent transparent rgb(0 0 0 / 50%) !important;
-			}
 		}
 	}
 
 	.envelope-pocket {
-		clip-path: none !important;
-		top: 40% !important; // Adjusted to overlap slightly or meet new flap height
-		height: 60% !important;
-		z-index: 2; // Should be visually below flap (5) but above base
-		border-top: 2px solid rgba(primitives.$base-coffee-700, 0.1) !important;
+		clip-path: none;
+		top: 40%;
+		height: 60%;
+		z-index: 2;
+		border-top: 2px solid rgba(primitives.$base-coffee-700, 0.1);
 	}
 
 	// Asymmetric Content Layout
 	.envelope-tease {
-		padding: 2.5rem !important;
-		display: flex !important;
-		flex-direction: column !important;
-		justify-content: flex-start !important;
-		align-items: flex-start !important;
-		text-align: left !important;
+		padding: 2.5rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: flex-start;
+		text-align: left;
 		height: 100%;
 
 		.envelope-seal-zone {
-			position: absolute !important;
-			inset: 47% auto auto 50% !important; // Adjusted to new fold line (almost halfway)
-			left: 85% !important;
-			transform: translate(-50%, -50%) !important;
-			margin: 0 !important;
-			z-index: 15 !important;
-			flex: none !important;
-			padding: 0 !important;
-			min-height: auto !important;
+			position: absolute;
+			inset: 47% auto auto 50%;
+			left: 85%;
+			transform: translate(-50%, -50%);
+			margin: 0;
+			z-index: 15;
+			flex: none;
+			padding: 0;
+			min-height: auto;
 		}
 
 		.tease-content-bottom {
-			position: absolute !important;
-			bottom: 8% !important;
-			left: 8% !important;
-			display: flex !important;
-			flex-direction: column !important;
-			align-items: center !important;
+			position: absolute;
+			bottom: 8%;
+			left: 8%;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
 			margin-top: auto;
 			width: 70%;
-			padding: 0 !important;
+			padding: 0;
 
 			.tease-divider {
 				display: none;
 			}
 
 			.envelope-details {
-				font-family: tokens.$font-body-hacienda, 'Cormorant Garamond', serif !important;
-				font-size: 0.95rem !important;
-				letter-spacing: 0.15rem !important;
-				font-weight: 500 !important;
-				color: var(--color-text-primary) !important;
+				font-family: tokens.$font-body-hacienda;
+				font-size: 0.95rem;
+				letter-spacing: 0.15rem;
+				font-weight: 500;
+				color: var(--color-text-primary);
 				opacity: 90%;
 			}
 
 			.envelope-microcopy {
-				font-family: 'EB Garamond', serif;
+				font-family: tokens.$font-body-hacienda;
 				font-style: italic;
 				color: rgba(primitives.$base-coffee-700, 0.7);
 				margin-top: 0.5rem;
@@ -307,7 +295,7 @@ $gold-light: #f1d592;
 			border: 2px double primitives.$base-wax-red;
 			padding: 4px 8px;
 			color: primitives.$base-wax-red;
-			font-family: 'Cormorant Garamond', serif;
+			font-family: tokens.$font-display-hacienda;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -332,7 +320,7 @@ $gold-light: #f1d592;
 
 		.envelope-manifest-label {
 			display: block;
-			font-family: 'Cormorant Garamond', serif;
+			font-family: tokens.$font-display-hacienda;
 			font-size: 0.7rem;
 			color: rgba(primitives.$base-coffee-700, 0.6);
 			letter-spacing: 0.3em;
@@ -340,17 +328,11 @@ $gold-light: #f1d592;
 		}
 
 		.envelope-name {
-			font-size: clamp(1.6rem, 6vw, 2.6rem) !important; // Bigger base size
-			line-height: 1 !important;
-			margin: 0 !important;
-			background: none !important;
-			-webkit-text-fill-color: var(
-				--color-text-primary
-			) !important; // Iron Gall Ink (charcoal black)
-
-			color: var(--color-text-primary) !important;
-			font-family: 'EB Garamond', serif !important;
-			font-weight: 800 !important;
+			font-size: clamp(1.6rem, 6vw, 2.6rem);
+			line-height: 1;
+			margin: 0;
+			font-family: tokens.$font-body-hacienda;
+			font-weight: 800;
 			position: relative;
 
 			&::after {
@@ -366,29 +348,26 @@ $gold-light: #f1d592;
 	}
 
 	.envelope-card {
-		background: var(--env-card-bg, tokens.$base-coffee-900) !important;
 		background-image:
 			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E"),
-			linear-gradient(135deg, rgb(255 255 255 / 2%) 0%, transparent 100%) !important;
+			linear-gradient(135deg, rgb(255 255 255 / 2%) 0%, transparent 100%);
 		background-blend-mode: overlay;
-		border-radius: 2px !important;
 
 		// Double Border Effect
-		border: 1px solid tokens.$base-gold-500 !important;
-		outline: 1px solid tokens.$base-gold-300 !important;
+		border: 1px solid tokens.$base-gold-500;
+		outline: 1px solid tokens.$base-gold-300;
 		outline-offset: -5px;
-		color: var(--color-text-on-dark) !important;
-		padding: 1rem !important;
+		color: var(--color-text-on-dark);
+		padding: 1rem;
 		transform: rotate(1deg);
 		transition: transform tokens.$duration-reveal + 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 		&.is-rising {
-			transform: translateY(-80%) rotate(-1deg) scale(1.05) !important;
 			z-index: 5;
-			box-shadow: tokens.$shadow-emphasis !important;
+			box-shadow: tokens.$shadow-emphasis;
 		}
 
-		// Double Leather stitching effect (Legacy preservation or combined)
+		// Double Leather stitching effect
 		&::before {
 			content: '';
 			position: absolute;
@@ -426,25 +405,25 @@ $gold-light: #f1d592;
 		}
 
 		.envelope-card__name {
-			font-family: tokens.$font-display-hacienda !important;
-			color: tokens.$base-gold-300 !important;
+			font-family: tokens.$font-display-hacienda;
+			color: tokens.$base-gold-300;
 
 			// Engraved Effect
 			text-shadow:
 				-1px -1px 1px rgb(0 0 0 / 70%),
-				1px 1px 1px rgb(255 255 255 / 15%) !important;
+				1px 1px 1px rgb(255 255 255 / 15%);
 			letter-spacing: 0.05em;
-			font-size: clamp(1.4rem, 4vw, 2.2rem) !important;
-			margin: 0 !important;
-			line-height: 1.1 !important;
-			font-weight: 800 !important;
-			background: none !important;
-			-webkit-text-fill-color: initial !important;
+			font-size: clamp(1.4rem, 4vw, 2.2rem);
+			margin: 0;
+			line-height: 1.1;
+			font-weight: 800;
+			background: none;
+			-webkit-text-fill-color: initial;
 		}
 
 		.envelope-card__label,
 		.envelope-card__details {
-			color: tokens.$base-parchment-500 !important;
+			color: primitives.$base-parchment-500;
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
 			font-weight: 600;
@@ -502,59 +481,49 @@ $gold-light: #f1d592;
 	// ── PREMIUM ARTISANAL WAX SEAL ──
 	.envelope-seal-button {
 		filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)) drop-shadow(0 4px 6px rgb(0 0 0 / 30%))
-			drop-shadow(0 10px 20px rgb(0 0 0 / 20%)) !important;
-		transition: transform tokens.$duration-snappy tokens.$ease-premium !important;
+			drop-shadow(0 10px 20px rgb(0 0 0 / 20%));
+		transition: transform tokens.$duration-snappy tokens.$ease-premium;
 
 		&:hover {
-			transform: scale(1.08) rotate(2deg) !important;
+			transform: scale(1.08) rotate(2deg);
 			filter: drop-shadow(0 2px 3px rgb(0 0 0 / 50%)) drop-shadow(0 6px 10px rgb(0 0 0 / 30%))
-				drop-shadow(0 14px 28px rgb(0 0 0 / 15%)) !important;
+				drop-shadow(0 14px 28px rgb(0 0 0 / 15%));
 		}
 
 		.seal-visual {
-			width: 84px !important;
-			height: 84px !important;
-			background: radial-gradient(
-				circle at 35% 30%,
-				#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
-				#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
-				#{primitives.$base-wax-red} 55%,
-				#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
-			) !important;
-			border: none !important;
+			border: none;
 			box-shadow:
 				inset -3px -4px 8px rgb(0 0 0 / 40%),
 				inset 3px 4px 8px rgb(255 255 255 / 8%),
-				inset 0 0 20px rgb(0 0 0 / 15%) !important;
-			border-radius: 48% 52% 45% 95% / 53% 44% 56% 47% !important;
+				inset 0 0 20px rgb(0 0 0 / 15%);
+			border-radius: 48% 52% 45% 95% / 53% 44% 56% 47%;
 
 			&::after {
-				content: '' !important;
-				position: absolute !important;
-				inset: 11px !important;
+				content: '';
+				position: absolute;
+				inset: 11px;
 				background: linear-gradient(
 					140deg,
 					#{color.adjust(primitives.$base-wax-red, $lightness: -8%)} 0%,
 					#{color.adjust(primitives.$base-wax-red, $lightness: -16%)} 50%,
 					#{color.adjust(primitives.$base-wax-red, $lightness: -6%)} 100%
-				) !important;
-				clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%) !important;
+				);
+				clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%);
 				box-shadow:
 					inset 2px 2px 4px rgb(0 0 0 / 50%),
 					inset -1px -1px 3px rgb(255 255 255 / 10%),
-					inset 0 0 8px rgb(0 0 0 / 20%) !important;
-				z-index: 1 !important;
+					inset 0 0 8px rgb(0 0 0 / 20%);
+				z-index: 1;
 			}
 
 			&::before {
-				display: none !important;
+				display: none;
 			}
 
 			.seal-icon {
-				width: 40px !important;
-				height: 40px !important;
-				z-index: 2 !important;
-				color: rgb(0 0 0 / 70%) !important;
+				width: 40px;
+				height: 40px;
+				z-index: 2;
 				mix-blend-mode: multiply;
 				transform: rotate(-10deg);
 				filter: drop-shadow(-1px -1px 0.5px rgb(0 0 0 / 85%))
@@ -564,10 +533,9 @@ $gold-light: #f1d592;
 		}
 
 		.seal-pulse {
-			width: 92px !important;
-			height: 92px !important;
-			border-color: rgba(primitives.$base-wax-red, 0.35) !important;
-			border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
+			width: 92px;
+			height: 92px;
+			border-radius: 48% 52% 45% 55% / 53% 44% 56% 47%;
 		}
 	}
 }

@@ -297,6 +297,7 @@ const eventsCollection = defineCollection({
 				documentLabel: z.string().optional(), // Theme-specific: "MANIFEST / WANTED" for Western
 				stampText: z.string().optional(), // Theme-specific: "TAX PAID" for Western
 				stampYear: z.string().optional(), // Theme-specific: "1866" for Western
+				tooltipText: z.string().optional(), // Custom tooltip text for seal button
 				closedPalette: z.object({
 					primary: z.string().regex(/^#/, 'Must be a hex color'),
 					accent: z.string().regex(/^#/, 'Must be a hex color'),

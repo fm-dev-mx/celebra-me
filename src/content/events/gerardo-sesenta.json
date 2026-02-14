@@ -211,13 +211,14 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "boot",
         "documentLabel": "MANIFEST / WANTED",
         "stampText": "TAX PAID",
         "stampYear": "1866",
         "microcopy": "Toca para abrir el sobre",
+        "tooltipText": "Rompe el sello",
         "closedPalette": {
             "primary": "#3A2819",
             "accent": "#DCB43C",
