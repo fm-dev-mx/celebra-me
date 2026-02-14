@@ -107,8 +107,8 @@
 	background-blend-mode: overlay;
 
 	.gifts-section__title {
-		font-family: tokens.$font-display-hacienda;
-		color: tokens.$color-action-accent;
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
 
@@ -117,9 +117,9 @@
 		overflow: hidden;
 		background: linear-gradient(
 			90deg,
-			tokens.$color-action-accent 0%,
+			var(--color-action-accent) 0%,
 			#fff 50%,
-			tokens.$color-action-accent 100%
+			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;
 		background-clip: text;
@@ -128,13 +128,13 @@
 	}
 
 	.gifts-section__subtitle {
-		font-family: tokens.$font-body-hacienda;
+		font-family: var(--font-body);
 		color: rgb(255 255 255 / 60%);
 	}
 
 	.gift-card {
 		background: rgb(45 35 30 / 90%);
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
 		border-radius: 4px;
 		box-shadow: 0 10px 30px rgb(0 0 0 / 50%);
 		transition:
@@ -147,51 +147,9 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				tokens.$color-action-accent,
+				var(--color-action-accent),
 				transparent
 			);
-		}
-
-		&:hover {
-			transform: translateY(-5px);
-			border-color: tokens.$color-action-accent;
-			box-shadow: 0 15px 40px rgb(0 0 0 / 60%);
-		}
-
-		// Riveted Corners
-		.rivet {
-			position: absolute;
-			width: 5px;
-			height: 5px;
-			background: radial-gradient(
-				circle at 30% 30%,
-				#fff 0%,
-				tokens.$color-action-accent 70%,
-				#000 100%
-			);
-			border-radius: 50%;
-			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
-			z-index: 3;
-
-			&--tl {
-				top: 12px;
-				left: 12px;
-			}
-
-			&--tr {
-				top: 12px;
-				right: 12px;
-			}
-
-			&--bl {
-				bottom: 12px;
-				left: 12px;
-			}
-
-			&--br {
-				bottom: 12px;
-				right: 12px;
-			}
 		}
 
 		// Specular Highlight
@@ -206,58 +164,100 @@
 			pointer-events: none;
 			z-index: 2;
 		}
+
+		&:hover {
+			transform: translateY(-5px);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 15px 40px rgb(0 0 0 / 60%);
+		}
+
+		// Riveted Corners & Frame
+		background-image:
+			radial-gradient(
+				circle at 14px 14px,
+				#fff 0%,
+				var(--color-action-accent) 70%,
+				#000 100%
+			),
+			radial-gradient(
+				circle at calc(100% - 14px) 14px,
+				#fff 0%,
+				var(--color-action-accent) 70%,
+				#000 100%
+			),
+			radial-gradient(
+				circle at 14px calc(100% - 14px),
+				#fff 0%,
+				var(--color-action-accent) 70%,
+				#000 100%
+			),
+			radial-gradient(
+				circle at calc(100% - 14px) calc(100% - 14px),
+				#fff 0%,
+				var(--color-action-accent) 70%,
+				#000 100%
+			);
+		background-repeat: no-repeat;
+		background-size: 5px 5px;
+	}
+
+	.gift-card__inner {
+		position: relative;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.gift-card__icon {
-		color: tokens.$color-action-accent;
+		color: var(--color-action-accent);
 	}
 
 	.gift-card__title {
-		font-family: tokens.$font-display-hacienda;
-		color: tokens.$color-action-accent;
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 	}
 
 	.gift-card__description {
-		font-family: tokens.$font-body-hacienda;
+		font-family: var(--font-body);
 		color: rgb(255 255 255 / 70%);
 		line-height: 1.6;
 	}
 
 	.gift-card__button {
-		border-color: tokens.$color-action-accent;
-		color: tokens.$color-action-accent;
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		font-weight: 600;
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display);
 
 		&:hover {
-			background: tokens.$color-action-accent;
+			background: var(--color-action-accent);
 			color: #1a1512;
 		}
 	}
 
 	.bank-details {
 		background: rgb(0 0 0 / 30%);
-		border-left: 3px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
-		font-family: tokens.$font-body-hacienda;
+		border-left: 3px solid rgb(var(--color-action-accent-rgb), 0.5);
+		font-family: var(--font-body);
 		color: rgb(255 255 255 / 80%);
 
 		strong {
-			color: tokens.$color-action-accent;
+			color: var(--color-action-accent);
 		}
 	}
 
 	.copy-button {
-		background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.8);
+		background: rgb(var(--color-action-accent-rgb), 0.8);
 		color: #1a1512;
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display);
 		letter-spacing: 0.05em;
 
 		&:hover {
-			background: tokens.$color-action-accent;
+			background: var(--color-action-accent);
 		}
 	}
 

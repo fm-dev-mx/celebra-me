@@ -282,7 +282,16 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 			})()
 		}
 
-		{data.sections?.gifts && data.gifts && <Gifts gifts={data.gifts} variant={data.sectionStyles?.gifts?.variant} />}
+		{
+			data.sections?.gifts && data.gifts && (
+				<Gifts
+					gifts={data.gifts.items}
+					title={data.gifts.title}
+					subtitle={data.gifts.subtitle}
+					variant={data.sectionStyles?.gifts?.variant}
+				/>
+			)
+		}
 
 		{
 			data.thankYou && (

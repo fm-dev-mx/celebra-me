@@ -4,13 +4,14 @@ import '@/styles/invitation/_gifts.scss';
 
 interface GiftStore {
 	type: 'store';
-	name: string;
+	title: string;
 	url: string;
 	logo?: string;
 }
 
 interface GiftBank {
 	type: 'bank';
+	title: string;
 	bankName: string;
 	accountHolder: string;
 	clabe: string;
@@ -19,11 +20,13 @@ interface GiftBank {
 
 interface GiftPaypal {
 	type: 'paypal';
+	title: string;
 	url: string;
 }
 
 interface GiftCash {
 	type: 'cash';
+	title: string;
 	text?: string;
 }
 
@@ -32,96 +35,99 @@ type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
 interface Props {
 	gifts: Gift[];
 	variant?: string;
+	title?: string;
+	subtitle?: string;
+	labels?: {
+		copy?: string;
+		copied?: string;
+		viewRegistry?: string;
+		sendGift?: string;
+		bank?: string;
+		titular?: string;
+		clabe?: string;
+	};
 }
 
-const { gifts, variant = 'standard' } = Astro.props;
+const {
+	gifts,
+	variant = 'standard',
+	title = 'Mesa de Regalos',
+	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
+	labels = {
+		copy: 'Copiar',
+		copied: '¡Copiado!',
+		viewRegistry: 'Ver Mesa de Regalos',
+		sendGift: 'Enviar Regalo',
+		bank: 'Banco',
+		titular: 'Titular',
+		clabe: 'CLABE',
+	},
+} = Astro.props;
 
 import { GiftIcon } from '@/components/common/icons/invitation';
 import { BankCardIcon, CashIcon } from '@/components/common/icons/ui';
 import { PayPalIcon } from '@/components/common/icons/social';
+
+const ICON_MAP = {
+	store: GiftIcon,
+	bank: BankCardIcon,
+	paypal: PayPalIcon,
+	cash: CashIcon,
+};
 ---
 
 <section id="regalos" class="gifts-section" data-variant={variant}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
-			<h2 class="gifts-section__title">Mesa de Regalos</h2>
-			<p class="gifts-section__subtitle">
-				Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.
-			</p>
+			<h2 class="gifts-section__title">{title}</h2>
+			{subtitle && <p class="gifts-section__subtitle">{subtitle}</p>}
 		</header>
 
 		<div class="gifts-grid">
 			{
-				gifts.map((gift) => (
-					<div class={`gift-card gift-card--${gift.type}`}>
-						<div class="gift-card__inner">
-							{gift.type === 'store' && (
-								<>
-									<div class="gift-card__icon">
-										<GiftIcon size={24} />
-									</div>
-									<h3 class="gift-card__title">{gift.name}</h3>
-									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
-										Ver Mesa de Regalos
-									</a>
-								</>
-							)}
+				gifts.map((gift) => {
+					const Icon = ICON_MAP[gift.type];
+					return (
+						<div class={`gift-card gift-card--${gift.type}`}>
+							<div class="gift-card__inner">
+								<div class="gift-card__icon">
+									<Icon size={24} />
+								</div>
 
-							{gift.type === 'bank' && (
-								<>
-									<div class="gift-card__icon">
-										<BankCardIcon size={24} />
-									</div>
-									<h3 class="gift-card__title">Transferencia</h3>
+								<h3 class="gift-card__title">{gift.title}</h3>
+
+								{gift.type === 'store' && (
+									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button">
+										{labels.viewRegistry}
+									</a>
+								)}
+
+								{gift.type === 'bank' && (
 									<div class="bank-details">
-										<p class="bank-details__item">
-											<strong>Banco:</strong> {gift.bankName}
-										</p>
-										<p class="bank-details__item">
-											<strong>Titular:</strong> {gift.accountHolder}
-										</p>
+										<p class="bank-details__item"><strong>{labels.bank}:</strong> {gift.bankName}</p>
+										<p class="bank-details__item"><strong>{labels.titular}:</strong> {gift.accountHolder}</p>
 										<div class="bank-details__clabe-wrapper">
-											<p class="bank-details__item">
-												<strong>CLABE:</strong> <span class="clabe-number">{gift.clabe}</span>
-											</p>
-											<button class="copy-button" data-clabe={gift.clabe} aria-label="Copiar número CLABE">
-												Copiar
+											<p class="bank-details__item"><strong>{labels.clabe}:</strong> <span class="clabe-number">{gift.clabe}</span></p>
+											<button class="copy-button" data-clabe={gift.clabe} data-label-copy={labels.copy} data-label-copied={labels.copied} aria-label="Copiar número CLABE">
+												{labels.copy}
 											</button>
 										</div>
 									</div>
-								</>
-							)}
+								)}
 
-							{gift.type === 'paypal' && (
-								<>
-									<div class="gift-card__icon">
-										<PayPalIcon size={24} />
-									</div>
-									<h3 class="gift-card__title">PayPal</h3>
+								{gift.type === 'paypal' && (
 									<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
-										Enviar Regalo
+										{labels.sendGift}
 									</a>
-								</>
-							)}
+								)}
 
-							{gift.type === 'cash' && (
-								<>
-									<div class="gift-card__icon">
-										<CashIcon size={24} />
-									</div>
-									<h3 class="gift-card__title">Lluvia de Sobres</h3>
-									<p class="gift-card__description">
-										{gift.text || "Su presencia es nuestro mayor regalo, pero si desean tener un detalle, tendremos un buzón para sobres en la recepción."}
-									</p>
-								</>
-							)}
+								{gift.type === 'cash' && gift.text && (
+									<p class="gift-card__description">{gift.text}</p>
+								)}
+							</div>
 						</div>
-						<span class="rivet rivet--tl"></span>
-						<span class="rivet rivet--tr"></span>
-						<span class="rivet rivet--bl"></span>
-						<span class="rivet rivet--br"></span>
-					</div>
-				))
+					);
+				})
 			}
 		</div>
 	</div>
@@ -129,17 +135,19 @@ import { PayPalIcon } from '@/components/common/icons/social';
 
 <script>
 	const copyButtons = document.querySelectorAll('.copy-button');
-	copyButtons.forEach(button => {
+	copyButtons.forEach((button) => {
 		button.addEventListener('click', () => {
 			const clabe = button.getAttribute('data-clabe');
+			const labelCopy = button.getAttribute('data-label-copy') || 'Copiar';
+			const labelCopied = button.getAttribute('data-label-copied') || '¡Copiado!';
+
 			if (clabe) {
 				const normalizedClabe = clabe.replace(/\s+/g, '');
 				navigator.clipboard.writeText(normalizedClabe).then(() => {
-					const originalText = button.textContent;
-					button.textContent = '¡Copiado!';
+					button.textContent = labelCopied;
 					button.classList.add('copy-button--success');
 					setTimeout(() => {
-						button.textContent = originalText;
+						button.textContent = labelCopy;
 						button.classList.remove('copy-button--success');
 					}, 2000);
 				});

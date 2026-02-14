@@ -222,26 +222,28 @@
 	--luxury-gallery-card-frame-opacity: 0.9;
 	--luxury-gallery-card-transform-in-view: translateY(-2px) scale(1.004);
 	--luxury-gallery-card-transform-hover: translateY(-4px) scale(1.008);
-	--luxury-gallery-card-shadow-rest: 0 12px 28px rgb(0 0 0 / 38%);
+	--luxury-gallery-card-shadow-rest: 0 14px 32px rgb(0 0 0 / 44%), 0 1px 0 rgb(255 255 255 / 4%);
 	--luxury-gallery-card-shadow-in-view:
-		0 16px 34px rgb(0 0 0 / 46%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.22),
-		0 0 10px rgb(var(--color-action-accent-rgb), 0.08);
+		0 18px 38px rgb(0 0 0 / 52%), 0 8px 18px rgb(0 0 0 / 24%),
+		0 0 12px rgb(var(--color-action-accent-rgb), 0.08);
 	--luxury-gallery-card-shadow-hover:
-		0 20px 40px rgb(0 0 0 / 54%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.4),
-		0 0 14px rgb(var(--color-action-accent-rgb), 0.12);
+		0 24px 48px rgb(0 0 0 / 58%), 0 10px 24px rgb(0 0 0 / 28%),
+		0 0 14px rgb(var(--color-action-accent-rgb), 0.1);
 	--luxury-gallery-card-shadow-priority:
-		0 16px 34px rgb(0 0 0 / 48%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.12);
+		0 18px 40px rgb(0 0 0 / 56%), 0 0 16px rgb(var(--color-action-accent-rgb), 0.08);
 	--luxury-gallery-card-transition-duration: 500ms;
 	--luxury-gallery-card-transition-ease: cubic-bezier(0.23, 1, 0.32, 1);
 	--luxury-gallery-image-radius: 1px;
-	--luxury-gallery-image-filter-rest: grayscale(1) saturate(0.08) contrast(1.08) brightness(0.86);
-	--luxury-gallery-image-filter-in-view: var(--luxury-gallery-image-filter-rest);
-	--luxury-gallery-image-filter-hover: grayscale(0) saturate(1.08) contrast(1.08) brightness(1.06);
+	--luxury-gallery-image-filter-rest: grayscale(0.72) saturate(0.58) contrast(1.04)
+		brightness(0.9);
+	--luxury-gallery-image-filter-in-view: grayscale(0.42) saturate(0.82) contrast(1.06)
+		brightness(0.97);
+	--luxury-gallery-image-filter-hover: grayscale(0) saturate(1.06) contrast(1.08) brightness(1.04);
 	--luxury-gallery-image-scale-rest: 1;
 	--luxury-gallery-image-scale-in-view: 1.018;
 	--luxury-gallery-image-scale-hover: 1.036;
 	--luxury-gallery-image-blend-rest: luminosity;
-	--luxury-gallery-image-blend-in-view: var(--luxury-gallery-image-blend-rest);
+	--luxury-gallery-image-blend-in-view: soft-light;
 	--luxury-gallery-image-blend-hover: normal;
 	--luxury-gallery-overlay-bg: linear-gradient(
 		to top,

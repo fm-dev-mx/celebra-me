@@ -47,16 +47,6 @@
 	position: relative;
 	overflow: hidden;
 
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 2px;
-		opacity: 50%;
-	}
-
 	&:hover {
 		transform: translateY(-10px);
 	}
@@ -94,16 +84,6 @@
 		border-radius: 4px;
 		transition: tokens.$transition-snappy;
 		cursor: pointer;
-
-		&--paypal {
-			border-color: #0070ba;
-			color: #0070ba;
-
-			&:hover {
-				background: #0070ba;
-				color: white;
-			}
-		}
 	}
 }
 
@@ -126,28 +106,32 @@
 
 	&__clabe-wrapper {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: space-between;
 		align-items: center;
 		margin-top: var(--spacing-md);
-		gap: 1rem;
+		gap: 0.5rem;
 	}
 }
 
 .clabe-number {
 	font-family: monospace;
 	background: rgb(255 255 255 / 10%);
-	padding: 2px 6px;
+	padding: 4px 8px;
 	border-radius: 4px;
-	text-wrap: nowrap;
+	font-size: 0.9rem;
+	letter-spacing: 0.05em;
 }
 
 .copy-button {
 	border: none;
-	padding: 4px 12px;
+	padding: 6px 16px;
 	border-radius: 4px;
-	font-size: 0.7rem;
+	font-size: 0.8rem;
 	cursor: pointer;
 	transition: tokens.$transition-snappy;
+	white-space: nowrap;
+	flex-shrink: 0;
 
 	&:hover {
 		filter: brightness(1.2);
