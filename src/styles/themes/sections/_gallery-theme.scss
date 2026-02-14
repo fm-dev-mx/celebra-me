@@ -1,4 +1,3 @@
-@use '../../tokens' as tokens;
 @use '../../global/mixins' as mixins;
 
 // ==========================================================================
@@ -48,56 +47,45 @@
 }
 
 .gallery-section[data-variant='jewelry-box'] {
-	background: radial-gradient(
+	--gallery-section-bg: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb), 0.05) 0%,
 		var(--color-surface-primary) 100%
 	);
-	padding: 8rem 2rem;
+	--gallery-title-font: var(--font-display);
+	--gallery-title-color: var(--color-action-accent);
+	--gallery-title-transform: uppercase;
+	--gallery-title-letter-spacing: 0.3rem;
+	--gallery-subtitle-color: rgb(var(--color-action-accent-rgb), 0.8);
+	--gallery-item-bg: var(--color-glass-bg);
+	--gallery-item-border: 1px solid var(--color-glass-border);
+	--gallery-item-border-color: var(--color-glass-border);
+	--gallery-item-radius: 12px;
+	--gallery-item-padding: 10px;
+	--gallery-item-shadow: var(--shadow-premium);
+	--gallery-item-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+	--gallery-item-emphasis-transform: translateY(-6px) scale(1.01);
+	--gallery-item-hover-transform: translateY(-8px) scale(1.02);
+	--gallery-item-emphasis-border-color: var(--color-action-accent);
+	--gallery-item-hover-border-color: var(--color-action-accent);
+	--gallery-item-emphasis-shadow: 0 22px 42px var(--color-glass-shadow);
+	--gallery-item-hover-shadow: 0 25px 45px var(--color-glass-shadow);
+	--gallery-item-image-radius: 4px;
+	--gallery-overlay-emphasis-opacity: 0.95;
+	--gallery-overlay-hover-opacity: 1;
+	--gallery-caption-font: var(--font-body);
+	--gallery-caption-color: var(--color-action-accent);
+	--gallery-caption-bg: rgb(var(--color-surface-primary-rgb), 0.95);
+	--gallery-caption-padding: 0.35rem 0.5rem;
+	--gallery-caption-radius: 0.45rem;
 
-	.gallery-section__title {
-		font-family: var(--font-display);
-		color: var(--color-action-accent);
-		text-transform: uppercase;
-		letter-spacing: 0.3rem;
-		font-weight: 300;
-	}
-
-	.gallery-grid__item {
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		padding: 10px;
-		box-shadow: var(--shadow-premium);
-		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-		transition: all 0.5s tokens.$ease-premium;
-		position: relative;
-
-		&:hover {
-			transform: translateY(-8px) scale(1.02);
-			border-color: var(--color-action-accent);
-			box-shadow: 0 25px 45px var(--color-glass-shadow);
-		}
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 8px;
-			border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
-			border-radius: 8px;
-			pointer-events: none;
-		}
-
-		img {
-			border-radius: 4px;
-		}
-	}
-
-	.gallery-grid__caption {
-		font-family: var(--font-body);
-		color: var(--color-action-accent);
-		background: rgb(var(--color-surface-primary-rgb), 0.95);
-		border-radius: 0 0 8px 8px;
+	.gallery-grid__item::after {
+		content: '';
+		position: absolute;
+		inset: 8px;
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
+		border-radius: 8px;
+		pointer-events: none;
 	}
 }
 
@@ -106,177 +94,165 @@
 // ==========================================================================
 
 .gallery-section[data-variant='luxury-hacienda'] {
-	background: linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, #12100e 100%);
-	background-blend-mode: overlay;
-	padding: 10rem 2rem;
+	--gallery-section-bg: var(--luxury-gallery-section-bg);
+	--gallery-section-padding-block: var(--luxury-gallery-section-padding-block);
+	--gallery-section-padding-inline: var(--luxury-gallery-section-padding-inline);
+	--gallery-grid-column-gap: var(--luxury-gallery-grid-column-gap-mobile);
+	--gallery-grid-row-gap: var(--luxury-gallery-grid-row-gap-mobile);
+	--gallery-grid-columns-tablet: var(--luxury-gallery-grid-columns-tablet);
+	--gallery-grid-columns-desktop: var(--luxury-gallery-grid-columns-desktop);
+	--gallery-item-aspect-ratio: var(--luxury-gallery-item-aspect-ratio);
+	--gallery-title-font: var(--luxury-gallery-title-font);
+	--gallery-title-size: var(--luxury-gallery-title-size);
+	--gallery-title-color: var(--luxury-gallery-title-color);
+	--gallery-title-letter-spacing: var(--luxury-gallery-title-letter-spacing);
+	--gallery-subtitle-font: var(--luxury-gallery-subtitle-font);
+	--gallery-subtitle-size: var(--luxury-gallery-subtitle-size);
+	--gallery-subtitle-color: var(--luxury-gallery-subtitle-color);
+	--gallery-subtitle-transform: uppercase;
+	--gallery-subtitle-letter-spacing: 0.13em;
+	--gallery-item-bg: var(--luxury-gallery-card-bg);
+	--gallery-item-border: 1px solid var(--luxury-gallery-card-border);
+	--gallery-item-border-color: var(--luxury-gallery-card-border);
+	--gallery-item-radius: var(--luxury-gallery-card-radius);
+	--gallery-item-padding: var(--luxury-gallery-card-padding);
+	--gallery-item-frame-inset: var(--luxury-gallery-card-frame-inset, 3px);
+	--gallery-item-frame-border: var(
+		--luxury-gallery-card-frame-border,
+		1px solid rgb(var(--color-action-accent-rgb), 0.12)
+	);
+	--gallery-item-frame-opacity: var(--luxury-gallery-card-frame-opacity, 0.8);
+	--gallery-item-shadow: var(--luxury-gallery-card-shadow-rest);
+	--gallery-item-emphasis-transform: var(--luxury-gallery-card-transform-in-view);
+	--gallery-item-hover-transform: var(--luxury-gallery-card-transform-hover);
+	--gallery-item-emphasis-border-color: var(--luxury-gallery-card-border-focus);
+	--gallery-item-hover-border-color: var(--luxury-gallery-card-border-hover);
+	--gallery-item-emphasis-shadow: var(--luxury-gallery-card-shadow-in-view);
+	--gallery-item-hover-shadow: var(--luxury-gallery-card-shadow-hover);
+	--gallery-item-transition-duration: var(--luxury-gallery-card-transition-duration);
+	--gallery-item-transition-ease: var(--luxury-gallery-card-transition-ease);
+	--gallery-item-image-radius: var(--luxury-gallery-image-radius);
+	--gallery-item-image-filter-rest: var(--luxury-gallery-image-filter-rest);
+	--gallery-item-image-filter-in-view: var(--luxury-gallery-image-filter-in-view);
+	--gallery-item-image-filter-hover: var(--luxury-gallery-image-filter-hover);
+	--gallery-item-image-scale-rest: var(--luxury-gallery-image-scale-rest);
+	--gallery-item-image-scale-in-view: var(--luxury-gallery-image-scale-in-view);
+	--gallery-item-image-scale-hover: var(--luxury-gallery-image-scale-hover);
+	--gallery-item-image-base-filter: var(--gallery-item-image-filter-rest);
+	--gallery-item-image-emphasis-filter: var(--gallery-item-image-filter-in-view);
+	--gallery-item-image-hover-filter: var(--gallery-item-image-filter-hover);
+	--gallery-item-image-base-blend: var(--luxury-gallery-image-blend-rest);
+	--gallery-item-image-emphasis-blend: var(--luxury-gallery-image-blend-in-view);
+	--gallery-item-image-hover-blend: var(--luxury-gallery-image-blend-hover);
+	--gallery-item-aspect-ratio-feature: var(--luxury-gallery-item-aspect-ratio-feature);
+	--gallery-item-aspect-ratio-wide: var(--luxury-gallery-item-aspect-ratio-wide);
+	--gallery-item-aspect-ratio-standard: var(--luxury-gallery-item-aspect-ratio-standard);
+	--gallery-overlay-bg: var(--luxury-gallery-overlay-bg);
+	--gallery-overlay-emphasis-opacity: var(--luxury-gallery-overlay-opacity-in-view);
+	--gallery-overlay-hover-opacity: var(--luxury-gallery-overlay-opacity-hover);
+	--gallery-caption-font: var(--luxury-gallery-caption-font);
+	--gallery-caption-color: var(--luxury-gallery-caption-color);
+	--gallery-caption-size: var(--luxury-gallery-caption-size);
+	--gallery-caption-style: italic;
+	--gallery-caption-bg: var(--luxury-gallery-caption-bg);
+	--gallery-caption-padding: var(--luxury-gallery-caption-padding);
+	--gallery-caption-radius: var(--luxury-gallery-caption-radius);
+	--gallery-lightbox-bg: var(--luxury-gallery-lightbox-bg);
+	--gallery-lightbox-image-border: var(--luxury-gallery-lightbox-image-border);
+	--gallery-lightbox-image-radius: var(--luxury-gallery-lightbox-image-radius);
+	--gallery-lightbox-footer-font: var(--luxury-gallery-caption-font);
+	--gallery-lightbox-footer-color: var(--luxury-gallery-caption-color);
+	--gallery-lightbox-footer-size: 1.45rem;
+
 	position: relative;
-	box-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
+	box-shadow: var(--luxury-gallery-section-inset-shadow);
 
 	// Leather Stitching (Section Frame)
 	&::after {
 		content: '';
 		position: absolute;
-		inset: 2rem;
-		border: 1px dashed rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+		inset: var(--luxury-gallery-section-frame-inset);
+		border: var(--luxury-gallery-section-frame-border);
 		pointer-events: none;
-		border-radius: 4px;
-		opacity: 50%;
+		border-radius: var(--luxury-gallery-section-frame-radius);
+		opacity: var(--luxury-gallery-section-frame-opacity);
 	}
 
 	.gallery-section__title {
-		font-family: tokens.$font-display-hacienda;
-		color: tokens.$color-action-accent;
-		text-shadow: 0 4px 15px rgb(0 0 0 / 80%);
-
-		// Premium Shimmer
-		position: relative;
-		overflow: hidden;
-		background: linear-gradient(
-			90deg,
-			tokens.$color-action-accent 0%,
-			#fff 50%,
-			tokens.$color-action-accent 100%
-		);
-		background-size: 200% auto;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		animation: gold-shimmer 5s linear infinite;
+		color: var(--gallery-title-color);
+		text-shadow: var(--luxury-gallery-title-shadow);
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		animation: none;
 	}
 
 	.gallery-section__subtitle {
-		font-family: tokens.$font-body-hacienda;
-		color: rgb(255 255 255 / 60%);
 		font-style: normal;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
 		margin-top: 1rem;
 	}
 
 	.gallery-grid__item {
-		background: #1a1510;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
-		border-radius: 4px;
-		padding: 10px;
-		box-shadow: 0 15px 35px rgb(0 0 0 / 50%);
-		transition:
-			transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-			border-color 0.5s ease,
-			box-shadow 0.5s ease;
+		position: relative;
 
-		&:hover {
-			transform: translateY(-8px) scale(1.02);
-			border-color: tokens.$color-action-accent;
-			box-shadow:
-				0 25px 50px rgb(0 0 0 / 70%),
-				0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
-				inset 0 0 30px rgb(0 0 0 / 80%);
-		}
-
-		img {
-			border-radius: 2px;
-			filter: sepia(0.3) contrast(1.15) brightness(0.9);
-			mix-blend-mode: luminosity;
-			transition: all 0.5s ease;
-		}
-
-		&:hover img {
-			filter: sepia(0.1) contrast(1.1) brightness(1);
-			mix-blend-mode: normal;
-		}
-
-		// Rivets
-		.rivet {
-			position: absolute;
-			width: 6px;
-			height: 6px;
-			background: radial-gradient(
-				circle at 30% 30%,
-				#fff 0%,
-				tokens.$color-action-accent 70%,
-				#000 100%
-			);
-			border-radius: 50%;
-			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
-			z-index: 3;
-
-			&--tl {
-				top: 12px;
-				left: 12px;
-			}
-
-			&--tr {
-				top: 12px;
-				right: 12px;
-			}
-
-			&--bl {
-				bottom: 12px;
-				left: 12px;
-			}
-
-			&--br {
-				bottom: 12px;
-				right: 12px;
-			}
-		}
-
-		// Metallic Inner Bevel (Double Trim)
 		&::after {
 			content: '';
 			position: absolute;
-			inset: 4px;
-			border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
-			border-radius: 2px;
+			inset: var(--gallery-item-frame-inset);
+			border: var(--gallery-item-frame-border);
+			opacity: var(--gallery-item-frame-opacity);
 			pointer-events: none;
 		}
 
-		// Specular Highlight (Behind Glass Effect)
 		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			height: 40%;
-			background: linear-gradient(to bottom, rgb(255 255 255 / 5%) 0%, transparent 100%);
-			pointer-events: none;
-			z-index: 2;
+			content: none;
 		}
 	}
 
-	.gallery-grid__caption {
-		font-family: tokens.$font-body-hacienda;
-		color: tokens.$color-action-accent;
-		font-style: italic;
-		background: rgb(0 0 0 / 80%);
-		width: 100%;
-		text-align: center;
-		padding: 1rem;
+	// Touch devices have no hover state, so in-view acts as the premium reveal state.
+	@media (hover: none) and (pointer: coarse) {
+		--gallery-item-image-filter-in-view: var(--luxury-gallery-image-filter-hover);
+		--gallery-item-image-emphasis-blend: var(--luxury-gallery-image-blend-hover);
+	}
+
+	@include mixins.respond-to(md) {
+		--gallery-grid-column-gap: var(--luxury-gallery-grid-column-gap-tablet);
+		--gallery-grid-row-gap: var(--luxury-gallery-grid-row-gap-tablet);
+	}
+
+	@include mixins.respond-to(lg) {
+		--gallery-grid-column-gap: var(--luxury-gallery-grid-column-gap-desktop);
+		--gallery-grid-row-gap: var(--luxury-gallery-grid-row-gap-desktop);
+
+		.gallery-grid {
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+			grid-auto-flow: dense;
+		}
+
+		.gallery-grid__item--feature {
+			grid-column: span var(--luxury-gallery-item-feature-column-span);
+			grid-row: span var(--luxury-gallery-item-feature-row-span);
+		}
+
+		.gallery-grid__item--wide {
+			grid-column: span var(--luxury-gallery-item-wide-column-span);
+			grid-row: span var(--luxury-gallery-item-wide-row-span);
+		}
+
+		.gallery-grid__item--standard {
+			grid-column: span var(--luxury-gallery-item-standard-column-span);
+			grid-row: span var(--luxury-gallery-item-standard-row-span);
+		}
+
+		.gallery-grid__item:nth-child(-n + 4) {
+			box-shadow: var(--luxury-gallery-card-shadow-priority);
+		}
 	}
 }
 
-.gallery-lightbox {
-	background: rgb(10 8 5 / 98%);
-
-	&__content img {
-		border: 4px solid #c5a059;
-		border-radius: 2px;
-		box-shadow: 0 0 50px rgb(0 0 0 / 100%);
-	}
-
-	&__footer p {
-		font-family: tokens.$font-body-hacienda;
-		color: tokens.$color-action-accent;
-		font-size: 1.5rem;
-	}
-}
-
-@keyframes gold-shimmer {
-	0% {
-		background-position: -200% center;
-	}
-
-	100% {
-		background-position: 200% center;
+.gallery-section[data-variant='luxury-hacienda'] {
+	.gallery-lightbox {
+		&__content img {
+			box-shadow: var(--luxury-gallery-lightbox-image-shadow);
+		}
 	}
 }

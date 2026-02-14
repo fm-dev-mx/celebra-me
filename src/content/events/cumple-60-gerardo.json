@@ -50,7 +50,7 @@
         "mapUrl": "https://maps.app.goo.gl/example",
         "reception": {
             "venueEvent": "Fiesta",
-            "venueName": "Jardín De Eventos Cuatro 60",
+            "venueName": "Jardín Cuatro 60",
             "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
             "date": "21 de febrero de 2026",
             "time": "8:00 PM",
@@ -75,21 +75,10 @@
         "subtitle": "60 años de historias",
         "items": [
             {
-                "image": "gallery01",
-                "caption": "Carácter fuerte, corazón grande."
-            },
-            {
                 "image": "gallery02",
                 "caption": "El lazo que nunca se rompe."
             },
-            {
-                "image": "gallery03",
-                "caption": "La familia que florece."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Nuestro hogar."
-            },
+
             {
                 "image": "gallery05",
                 "caption": "El negocio que lo formó."
@@ -103,20 +92,8 @@
                 "caption": "60 Años bien vividos."
             },
             {
-                "image": "gallery08",
-                "caption": "Siempre sonriendo en familia."
-            },
-            {
-                "image": "gallery09",
-                "caption": "Compañera de toda la vida."
-            },
-            {
                 "image": "gallery10",
                 "caption": "Navidad en familia."
-            },
-            {
-                "image": "gallery11",
-                "caption": "Caminando la vida juntos."
             },
             {
                 "image": "gallery12",
@@ -225,7 +202,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "sealIcon": "boot",
         "documentLabel": "MANIFEST / WANTED",

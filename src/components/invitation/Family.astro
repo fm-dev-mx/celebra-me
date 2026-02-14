@@ -73,7 +73,6 @@ if (spouse) {
 		entries: [
 			{
 				name: spouse,
-				role: resolvedLabels.spouseRole,
 				lead: true,
 			},
 		],
@@ -136,11 +135,22 @@ if (parents && (parents.father || parents.mother)) {
 				</figure>
 			)}
 
-			<div class="family__content">
-				{familyBlocks.map((block) => (
-					<section class={`family__group family__group--${block.id} family__reveal`}>
-						<h3 class="family__group-title">{block.title}</h3>
-						<ul class:list={['family__list', block.isChildren && 'family__list--children']}>
+				<div class="family__content">
+					{familyBlocks.map((block) => (
+						<section
+							class:list={[
+								'family__group',
+								`family__group--${block.id}`,
+								'family__reveal',
+							]}
+						>
+							<h3 class="family__group-title">{block.title}</h3>
+							<ul
+								class:list={[
+									'family__list',
+									block.isChildren && 'family__list--children',
+								]}
+							>
 							{block.entries.map((entry) =>
 								entry.connector ? (
 									<li class="family__connector" aria-hidden="true">
@@ -176,4 +186,3 @@ if (parents && (parents.father || parents.mother)) {
 		});
 	}
 </script>
-

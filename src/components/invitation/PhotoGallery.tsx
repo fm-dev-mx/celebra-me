@@ -1,7 +1,7 @@
 // src/components/invitation/PhotoGallery.tsx
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
@@ -29,8 +29,17 @@ interface PhotoGalleryProps {
 	variant?: string;
 }
 
+const getLuxuryLayoutClass = (index: number): string => {
+	if (index === 0) return 'gallery-grid__item--feature';
+	if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
+	return 'gallery-grid__item--standard';
+};
+
 const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard' }) => {
 	const [selectedImage, setSelectedImage] = useState<number | null>(null);
+	const [visibleItems, setVisibleItems] = useState<Record<number, true>>({});
+	const [isTouchDevice, setIsTouchDevice] = useState(false);
+	const shouldReduceMotion = useReducedMotion();
 
 	// Keyboard and scroll lock effect
 	useEffect(() => {
@@ -53,26 +62,75 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 		};
 	}, [selectedImage]);
 
-	const containerVariants: Variants = {
-		hidden: { opacity: 0 },
-		visible: {
-			opacity: 1,
-			transition: {
-				staggerChildren: 0.1,
-			},
-		},
-	};
+	// Keep interaction mode in sync so touch devices can use a single "active" in-view item.
+	useEffect(() => {
+		if (typeof window === 'undefined' || !window.matchMedia) return;
 
-	const itemVariants: Variants = {
-		hidden: { opacity: 0, y: 20 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: {
-				duration: 0.8,
-				ease: 'easeOut',
-			},
-		},
+		const mediaQuery = window.matchMedia('(hover: none) and (pointer: coarse)');
+		const updateTouchMode = (event?: MediaQueryListEvent) => {
+			setIsTouchDevice(event ? event.matches : mediaQuery.matches);
+		};
+		const hasModernListenerAPI = 'addEventListener' in mediaQuery;
+
+		updateTouchMode();
+		if (hasModernListenerAPI) {
+			mediaQuery.addEventListener('change', updateTouchMode);
+		} else {
+			(mediaQuery as any).addListener(updateTouchMode);
+		}
+
+		return () => {
+			if (hasModernListenerAPI) {
+				mediaQuery.removeEventListener('change', updateTouchMode);
+			} else {
+				(mediaQuery as any).removeListener(updateTouchMode);
+			}
+		};
+	}, []);
+
+	const containerVariants: Variants = shouldReduceMotion
+		? {
+				hidden: { opacity: 1 },
+				visible: { opacity: 1 },
+			}
+		: {
+				hidden: { opacity: 0 },
+				visible: {
+					opacity: 1,
+					transition: {
+						staggerChildren: 0.1,
+					},
+				},
+			};
+
+	const itemVariants: Variants = shouldReduceMotion
+		? {
+				hidden: { opacity: 1, y: 0 },
+				visible: { opacity: 1, y: 0, transition: { duration: 0 } },
+			}
+		: {
+				hidden: { opacity: 0, y: 20 },
+				visible: {
+					opacity: 1,
+					y: 0,
+					transition: {
+						duration: 0.8,
+						ease: 'easeOut',
+					},
+				},
+			};
+
+	const markItemAsVisible = (index: number) => {
+		setVisibleItems((current) => {
+			const shouldUseSingleActiveItem = variant === 'luxury-hacienda' && isTouchDevice;
+			if (shouldUseSingleActiveItem) {
+				if (current[index]) return current;
+				return { [index]: true };
+			}
+
+			if (current[index]) return current;
+			return { ...current, [index]: true };
+		});
 	};
 
 	return (
@@ -80,15 +138,18 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 			<motion.div
 				className="gallery-grid"
 				variants={containerVariants}
-				initial="hidden"
-				whileInView="visible"
-				viewport={{ once: true, margin: '-100px' }}
+				initial={shouldReduceMotion ? 'visible' : 'hidden'}
+				whileInView={shouldReduceMotion ? undefined : 'visible'}
+				viewport={shouldReduceMotion ? undefined : { once: true, margin: '-100px' }}
 			>
 				{items.map((item, index) => (
 					<motion.div
 						key={index}
-						className="gallery-grid__item"
+						className={`gallery-grid__item ${variant === 'luxury-hacienda' ? getLuxuryLayoutClass(index) : 'gallery-grid__item--standard'} ${visibleItems[index] ? 'is-in-view' : ''}`}
+						data-in-view={visibleItems[index] ? 'true' : 'false'}
 						variants={itemVariants}
+						onViewportEnter={() => markItemAsVisible(index)}
+						viewport={{ once: true, amount: 0.3 }}
 						onClick={() => setSelectedImage(index)}
 						onKeyDown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
@@ -109,14 +170,6 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 							<div className="gallery-grid__overlay">
 								<p className="gallery-grid__caption">{item.caption}</p>
 							</div>
-						)}
-						{variant === 'luxury-hacienda' && (
-							<>
-								<span className="rivet rivet--tl"></span>
-								<span className="rivet rivet--tr"></span>
-								<span className="rivet rivet--bl"></span>
-								<span className="rivet rivet--br"></span>
-							</>
 						)}
 					</motion.div>
 				))}

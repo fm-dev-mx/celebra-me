@@ -96,7 +96,7 @@
 		margin-bottom: 0.5rem;
 	}
 
-	.event-location__card-content-list__place {
+	.event-location__card-content-place {
 		font-family: var(--font-display);
 		color: var(--color-text-primary);
 		font-size: 2.2rem;
@@ -104,7 +104,7 @@
 		margin-bottom: 1.5rem;
 	}
 
-	.nav-button {
+	.event-location__nav-button {
 		background: var(--color-action-accent);
 		color: white;
 		border: none;
@@ -309,7 +309,7 @@
 	}
 
 	// Luxury navigation buttons
-	.nav-button {
+	.event-location__nav-button {
 		background: var(--color-action-accent, tokens.$color-action-accent);
 		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
 		border-radius: 4px;
@@ -524,7 +524,7 @@
 	}
 
 	// Soft navigation buttons
-	.nav-button {
+	.event-location__nav-button {
 		background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
 		border: none;
 		border-radius: 25px;
@@ -691,7 +691,7 @@
 	}
 
 	// Simple buttons
-	.nav-button {
+	.event-location__nav-button {
 		background: #333;
 		border: none;
 		border-radius: 6px;
@@ -926,7 +926,7 @@
 	}
 
 	// Luxury buttons
-	.nav-button {
+	.event-location__nav-button {
 		background: transparent;
 		border: 1px solid rgb(212 175 55 / 50%);
 		border-radius: 4px;
@@ -976,13 +976,26 @@
 	background: linear-gradient(135deg, rgb(45 30 20 / 98%) 0%, rgb(25 15 10 / 100%) 100%);
 	position: relative;
 	box-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
+	padding: tokens.$spacing-32 tokens.$spacing-8;
 
-	// Heavy Leather Texture
+	// Heavy Leather Texture + Vignette
 	&::before {
 		content: '';
 		position: absolute;
 		inset: 0;
-		opacity: 15%;
+		background-image: var(--location-leather-texture);
+		background-repeat: repeat;
+		opacity: 8%;
+		pointer-events: none;
+		z-index: 0;
+		mix-blend-mode: overlay;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(circle at center, transparent 30%, rgb(0 0 0 / 40%) 100%);
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -994,285 +1007,310 @@
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		gap: tokens.$spacing-12;
+		gap: 3rem;
 
 		@include mixins.respond-to(md) {
 			flex-direction: row;
 			align-items: stretch;
 			justify-content: center;
-			gap: tokens.$spacing-16;
+			gap: 4.5rem;
 		}
+	}
+
+	.event-location__card-wrapper {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.event-location__card-title {
 		font-family: tokens.$font-display-hacienda;
-		font-size: 1.2rem;
+		font-size: 1.35rem;
 		color: tokens.$color-action-accent;
-		letter-spacing: 0.2rem;
+		letter-spacing: 0.25rem;
 		text-transform: uppercase;
-		margin-bottom: tokens.$spacing-8;
-		text-shadow: 0 4px 10px rgb(0 0 0 / 50%);
-
-		// Premium Shimmer
+		margin-bottom: 0.8rem;
+		text-shadow: 0 4px 12px rgb(0 0 0 / 60%);
 		position: relative;
-		overflow: hidden;
+
+		// Premium Shimmer Effect
 		background: linear-gradient(
 			90deg,
 			tokens.$color-action-accent 0%,
-			var(--color-text-on-dark, tokens.$color-text-on-dark) 50%,
+			#fff 50%,
 			tokens.$color-action-accent 100%
 		);
 		background-size: 200% auto;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		animation: gold-shimmer 5s linear infinite;
+		animation: gold-shimmer 6s linear infinite;
 	}
 
 	.event-location__card-flourish {
-		opacity: 60%;
-		margin-bottom: tokens.$spacing-10;
+		opacity: 50%;
+		margin-bottom: 2.2rem;
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
 
 		.flourish-line {
+			width: 40px;
+			height: 1px;
 			background: linear-gradient(90deg, transparent, tokens.$color-action-accent);
+
+			&:last-child {
+				background: linear-gradient(-90deg, transparent, tokens.$color-action-accent);
+			}
 		}
 
 		.flourish-diamond {
+			width: 6px;
+			height: 6px;
 			background: tokens.$color-action-accent;
-			box-shadow: 0 0 10px tokens.$color-action-accent;
+			transform: rotate(45deg);
+			box-shadow: 0 0 8px tokens.$color-action-accent;
 		}
 	}
 
 	.event-location__card {
-		background: linear-gradient(145deg, rgb(30 25 20 / 95%) 0%, rgb(15 10 5 / 98%) 100%);
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
-		border-radius: 4px;
-		padding: tokens.$spacing-12 tokens.$spacing-8;
-		box-shadow:
-			0 20px 50px rgb(0 0 0 / 60%),
-			inset 0 0 30px rgb(0 0 0 / 40%);
+		background: linear-gradient(145deg, rgb(32 26 21 / 98%) 0%, rgb(18 14 10 / 100%) 100%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.25);
+		border-radius: 6px;
+		padding: 3.5rem 2.2rem;
+		box-shadow: var(--location-card-shadow-premium);
 		position: relative;
-		transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-		will-change: transform;
+		transition: all 0.5s tokens.$ease-premium;
+		will-change: transform, box-shadow;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 6rem;
 
-		// Subtle Inner Parchment Glow
+		// Specular Inner Glow
 		&::after {
 			content: '';
 			position: absolute;
-			inset: 4px;
-			border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
-			border-radius: 2px;
+			inset: 5px;
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.1);
+			border-radius: 4px;
 			pointer-events: none;
+			transition: opacity 0.5s ease;
 		}
 
 		&:hover {
-			transform: translateY(-8px);
+			transform: translateY(-12px);
 			border-color: tokens.$color-action-accent;
 			box-shadow:
-				0 30px 60px rgb(0 0 0 / 70%),
-				0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+				0 40px 80px rgb(0 0 0 / 80%),
+				0 0 25px var(--location-glow-accent);
 
 			&::after {
-				opacity: 15%;
+				border-color: rgb(var(--color-action-accent-rgb), 0.2);
+			}
+
+			.rivet {
+				box-shadow: 0 0 10px var(--location-glow-accent);
+				transform: scale(1.1);
 			}
 		}
 
-		// Riveted Corners
+		// Riveted Corners (Refined)
 		.rivet {
 			position: absolute;
-			width: 5px;
-			height: 5px;
+			width: 6px;
+			height: 6px;
 			background: radial-gradient(
-				circle at 30% 30%,
-				var(--color-text-on-dark, tokens.$color-text-on-dark) 0%,
-				tokens.$color-action-accent 70%,
-				var(--color-surface-dark, tokens.$color-surface-dark) 100%
+				circle at 35% 35%,
+				#fff7e6 0%,
+				tokens.$color-action-accent 60%,
+				#3a2819 100%
 			);
 			border-radius: 50%;
-			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
+			box-shadow: 0 2px 4px rgb(0 0 0 / 90%);
 			z-index: 3;
+			transition: all 0.4s tokens.$ease-premium;
 
 			&--tl {
-				top: 12px;
-				left: 12px;
+				top: 18px;
+				left: 18px;
 			}
 
 			&--tr {
-				top: 12px;
-				right: 12px;
+				top: 18px;
+				right: 18px;
 			}
 
 			&--bl {
-				bottom: 12px;
-				left: 12px;
+				bottom: 18px;
+				left: 18px;
 			}
 
 			&--br {
-				bottom: 12px;
-				right: 12px;
+				bottom: 18px;
+				right: 18px;
 			}
-		}
-
-		// Specular Highlight
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			height: 40%;
-			background: linear-gradient(to bottom, rgb(255 255 255 / 5%) 0%, transparent 100%);
-			pointer-events: none;
-			z-index: 2;
 		}
 	}
 
 	.event-location__card-image-outer-frame {
-		background: linear-gradient(135deg, #c5a059 0%, #f1e1b9 45%, #d4af37 55%, #a67c37 100%);
+		background: linear-gradient(135deg, #a67c37 0%, #f1e1b9 48%, #d4af37 52%, #8b6b3e 100%);
 		padding: 3px;
 		border-radius: 2px;
-		box-shadow: 0 10px 30px rgb(0 0 0 / 50%);
-		margin-bottom: 2.5rem;
+		box-shadow: 0 15px 35px rgb(0 0 0 / 60%);
+		margin-bottom: 2.8rem;
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(to bottom, rgb(255 255 255 / 10%) 0%, transparent 100%);
+			pointer-events: none;
+		}
 	}
 
 	.event-location__card-image-inner-frame {
-		background: var(--color-surface-dark, tokens.$color-surface-dark);
+		background: #1a1a1a;
 		padding: 4px;
 		border-radius: 1px;
 	}
 
-	.event-location__card-content-list__place {
+	.event-location__card-content-place {
 		font-family: tokens.$font-display-hacienda;
-		color: tokens.$color-action-accent;
-		font-size: 2.2rem;
+		font-size: clamp(1.5rem, 3vw, 2rem);
+		color: var(--location-text-highlight);
+		text-wrap: nowrap;
 		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		margin-bottom: 1.5rem;
+		letter-spacing: 0.125em;
+		margin-bottom: 1.65rem;
+		line-height: 1.1;
+		font-weight: 500;
 	}
 
 	.event-location__card-content-list__date {
-		font-family: tokens.$font-display-hacienda;
-		color: rgb(255 255 255 / 85%);
-		font-size: 1.2rem;
-		letter-spacing: 0.1em;
-		margin-bottom: 0.5rem;
+		font-family: tokens.$font-body-hacienda;
+		color: rgb(245 228 188 / 90%);
+		font-size: 1.15rem;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		margin-bottom: 0.6rem;
+		text-shadow: 0 2px 4px rgb(0 0 0 / 40%);
 	}
 
 	.event-location__card-content-list__hour {
 		font-family: tokens.$font-body-hacienda;
 		color: tokens.$color-action-accent;
-		opacity: 70%;
-		font-size: 0.9rem;
-		letter-spacing: 0.3em;
-		margin-bottom: 2.5rem;
+		opacity: 65%;
+		font-size: 0.85rem;
+		letter-spacing: 0.4em;
+		margin-bottom: 3.2rem;
+		font-weight: 600;
 	}
 
-	.event-location__card-content-list__address {
-		color: rgb(255 255 255 / 60%);
+	.event-location__card-content-address {
+		color: var(--location-text-muted-premium);
 		font-family: tokens.$font-body-hacienda;
-		line-height: 1.6;
+		line-height: 1.7;
+		font-size: 0.98rem;
+		letter-spacing: 0.02em;
 
 		.copy-button {
 			color: tokens.$color-action-accent;
+			margin-left: 0.5rem;
+			transition: all 0.3s ease;
 
 			&:hover {
-				color: var(--color-text-on-dark, tokens.$color-text-on-dark);
+				color: #fff;
+				text-shadow: 0 0 8px tokens.$color-action-accent;
 			}
 		}
 	}
 
-	.nav-button {
-		background: transparent;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
-		color: tokens.$color-action-accent;
+	.event-location__nav-button {
+		background: rgb(0 0 0 / 25%);
+		border: 1.5px solid rgb(var(--color-action-accent-rgb), 0.6);
+		color: var(--location-text-highlight);
 		font-family: tokens.$font-display-hacienda;
-		font-size: 0.75rem;
-		letter-spacing: 0.15em;
-		padding: tokens.$spacing-5 tokens.$spacing-6;
-		transition:
-			background-color tokens.$duration-snappy tokens.$ease-out,
-			border-color tokens.$duration-snappy tokens.$ease-out,
-			box-shadow tokens.$duration-snappy tokens.$ease-out,
-			transform tokens.$duration-snappy tokens.$ease-out;
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		padding: tokens.$spacing-5 tokens.$spacing-10;
+		border-radius: 4px;
+		transition: all 0.4s tokens.$ease-premium;
 
 		&:hover {
-			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+			background: rgb(var(--color-action-accent-rgb), 0.12);
 			border-color: tokens.$color-action-accent;
-			box-shadow: 0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
-			transform: scale(1.05);
-		}
-
-		&:focus-visible {
-			outline: 2px solid tokens.$color-action-accent;
-			outline-offset: 3px;
 			box-shadow:
-				0 0 0 2px rgb(0 0 0 / 70%),
-				0 0 0 6px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.35);
+				0 12px 24px rgb(0 0 0 / 50%),
+				0 0 15px var(--location-glow-accent);
+			transform: translateY(-2px);
 		}
 
 		&--maps,
 		&--waze {
-			background: rgb(0 0 0 / 40%);
+			background: rgb(0 0 0 / 45%);
 		}
 	}
 
 	.event-location__indications-container {
 		position: relative;
 		z-index: 1;
-		margin-top: tokens.$spacing-24;
+		margin-top: tokens.$spacing-32;
+		padding: 0 tokens.$spacing-8;
 	}
 
 	.event-location__divider {
-		background: radial-gradient(circle, tokens.$color-action-accent 0%, transparent 70%);
-		height: 2px;
-		opacity: 40%;
+		background: radial-gradient(circle, tokens.$color-action-accent 0%, transparent 80%);
+		height: 1px;
+		opacity: 35%;
+		max-width: 800px;
+		margin: 0 auto;
 	}
 
 	.event-location__indications {
-		background: rgb(20 15 10 / 80%);
-		border-color: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
-		backdrop-filter: blur(20px);
-		box-shadow: 0 20px 40px rgb(0 0 0 / 40%);
+		margin-top: 3rem;
+		background: linear-gradient(135deg, rgb(24 18 12 / 92%) 0%, rgb(18 14 10 / 95%) 100%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.18);
+		backdrop-filter: blur(25px);
+		box-shadow: 0 30px 60px rgb(0 0 0 / 60%);
+		padding: 2.5rem;
+		border-radius: 8px;
 
 		&::before {
-			border-color: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.08);
+			border-radius: 4px;
+			pointer-events: none;
 		}
 
-		.indication-item {
-			p {
-				color: rgb(255 255 255 / 80%);
+		.event-location__indication-item {
+			.event-location__indication-text {
+				color: rgb(245 228 188 / 85%);
 				font-family: tokens.$font-body-hacienda;
+				font-size: 1rem;
 			}
 
-			.indication-icon {
+			.event-location__indication-icon {
 				color: tokens.$color-action-accent;
+				filter: drop-shadow(0 2px 4px rgb(0 0 0 / 50%));
 			}
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.event-location__card {
-			transition: border-color tokens.$duration-snappy tokens.$ease-out;
-
-			&:hover {
-				transform: none;
-			}
-		}
-
-		.nav-button:hover {
-			transform: none;
 		}
 	}
 
 	.event-location__indication-item--reserved {
-		background: rgb(129 79 150 / 15%);
-		border: 1px solid tokens.$base-purple-reserved;
+		background: linear-gradient(135deg, rgb(129 79 150 / 22%), rgb(30 20 50 / 12%));
+		border: 1px solid rgb(129 79 150 / 40%);
 
 		.event-location__indication-icon {
 			color: tokens.$base-purple-reserved;
+			filter: drop-shadow(0 0 8px rgb(129 79 150 / 30%));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: 20%, $space: hsl);
+			color: color.adjust(tokens.$base-purple-reserved, $lightness: 25%, $space: hsl);
 			font-weight: 600;
 		}
 	}

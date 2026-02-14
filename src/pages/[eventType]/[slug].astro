@@ -46,6 +46,7 @@ if (!event) {
 const { data } = event;
 
 const showEnvelope = !!(data.envelope && !data.envelope.disabled);
+const musicRevealMode = showEnvelope ? 'envelope' : 'immediate';
 
 function hexToRgb(hex: string): string {
 	hex = hex.replace(/^#/, '');
@@ -303,6 +304,8 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 					url={data.music.url}
 					autoPlay={data.music.autoPlay}
 					title={data.music.title}
+					revealMode={musicRevealMode}
+					variant={preset}
 				/>
 			)
 		}

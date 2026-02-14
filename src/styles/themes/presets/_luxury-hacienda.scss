@@ -3,7 +3,9 @@
 @use '../../tokens/primitives' as primitives;
 
 .theme-preset--luxury-hacienda {
-	// Color Architecture: CSS Variable Injection
+	// ---------------------------------------------------------------------
+	// Core semantic tokens (single source of truth for the preset palette)
+	// ---------------------------------------------------------------------
 	--color-text-primary: #{primitives.$base-coffee-900};
 	--color-text-primary-rgb:
 		#{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)},
@@ -16,17 +18,18 @@
 		)};
 	--color-text-emphasis: #{primitives.$base-gold-500};
 	--color-text-on-dark: #{primitives.$base-parchment-100};
+
+	// Kept for semantic parity across presets, even if currently not consumed.
 	--color-text-on-light: #{primitives.$base-parchment-500};
+	--color-surface-primary: #{primitives.$base-parchment-100};
 	--color-surface-primary-rgb:
 		#{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)},
 		#{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)};
-	--color-surface-dark: #{primitives.$base-coffee-900};
-	--color-surface-dark-rgb:
-		#{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)},
-		#{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
-	--color-action-primary: #{primitives.$base-coffee-900};
+	--color-surface-dark: var(--color-text-primary);
+	--color-surface-dark-rgb: var(--color-text-primary-rgb);
+	--color-action-primary: var(--color-text-primary);
+	--color-action-primary-rgb: var(--color-text-primary-rgb);
 	--color-action-accent: #{primitives.$base-gold-500};
 	--color-action-accent-rgb:
 		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
@@ -40,6 +43,10 @@
 		rgb(var(--color-action-accent-rgb), 0.35) 50%,
 		rgb(var(--color-action-accent-rgb), 0.8) 100%
 	);
+
+	// ---------------------------------------------------------------------
+	// Family section tokens
+	// ---------------------------------------------------------------------
 	--family-bg: linear-gradient(
 		155deg,
 		#{color.adjust(primitives.$base-parchment-100, $lightness: 2%)} 0%,
@@ -70,28 +77,30 @@
 	--family-container-max-width: 1120px;
 	--family-panel-gap: clamp(2rem, 4.8vw, 4.2rem);
 	--family-panel-padding: 0;
-	--family-panel-padding-md: 0;
+	--family-panel-padding-md: var(--family-panel-padding);
 	--family-title-max-width: 15ch;
-	--family-content-max-width: 34rem;
-	--family-group-padding-block: clamp(1.6rem, 3.1vw, 2.45rem);
-	--family-group-title-margin-bottom: clamp(1.15rem, 2.3vw, 1.65rem);
+	--family-content-max-width: 32rem;
+	--family-group-padding-block: clamp(1.9rem, 3.2vw, 2.7rem);
+	--family-group-title-margin-bottom: clamp(1.35rem, 2.4vw, 1.9rem);
 	--family-list-gap: 0.9rem;
 	--family-children-gap: 1rem;
-	--family-name-size: clamp(1.7rem, 3.3vw, 2.3rem);
-	--family-lead-name-size: clamp(2.15rem, 4.4vw, 2.95rem);
+	--family-name-size: clamp(1.6rem, 3vw, 2.15rem);
+	--family-lead-name-size: clamp(2.05rem, 4vw, 2.7rem);
 	--family-meta-size: 0.72rem;
-	--family-meta-letter-spacing: 0.22em;
+	--family-meta-letter-spacing: 0.18em;
 	--family-connector-size: 2.15rem;
 	--family-connector-margin: 0.1rem 0 0.2rem;
-	--family-media-column: 0.44fr;
-	--family-content-column: 0.56fr;
+	--family-media-column: 0.48fr;
+	--family-content-column: 0.52fr;
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		rgb(255 255 255 / 0%) 0%,
 		rgb(var(--color-action-accent-rgb), 0.06) 100%
 	);
 
-	// Hero Premium Tokens (Luxury Hacienda only)
+	// ---------------------------------------------------------------------
+	// Hero tokens
+	// ---------------------------------------------------------------------
 	--hero-card-bg: linear-gradient(
 		156deg,
 		rgb(26 17 11 / 72%) 0%,
@@ -139,11 +148,15 @@
 		transparent 100%
 	);
 
-	// Typography Overrides
+	// ---------------------------------------------------------------------
+	// Typography tokens
+	// ---------------------------------------------------------------------
 	--font-display: #{tokens.$font-display-hacienda};
 	--font-body: #{tokens.$font-body-hacienda};
 
-	// Header Premium Refinements
+	// ---------------------------------------------------------------------
+	// Header tokens
+	// ---------------------------------------------------------------------
 	--header-luxury-bg-scrolled: linear-gradient(
 		180deg,
 		rgb(26 17 11 / 98%) 0%,
@@ -153,4 +166,108 @@
 	--header-luxury-nav-color: rgb(240 212 157 / 90%);
 	--header-luxury-nav-hover: rgb(251 240 217 / 100%);
 	--header-luxury-cta-glow: 0 8px 24px rgb(0 0 0 / 40%), 0 2px 6px rgb(198 156 81 / 20%);
+
+	// ---------------------------------------------------------------------
+	// Gallery tokens
+	// ---------------------------------------------------------------------
+	--luxury-gallery-section-bg: linear-gradient(
+		135deg,
+		rgb(30 20 15 / 98%) 0%,
+		rgb(18 16 14 / 100%) 100%
+	);
+	--luxury-gallery-section-padding-block: clamp(6rem, 9vw, 10rem);
+	--luxury-gallery-section-padding-inline: clamp(1rem, 4vw, 2rem);
+	--luxury-gallery-section-inset-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
+	--luxury-gallery-section-frame-inset: clamp(1rem, 3vw, 2rem);
+	--luxury-gallery-section-frame-border: 1px dashed rgb(var(--color-action-accent-rgb), 0.2);
+	--luxury-gallery-section-frame-radius: 4px;
+	--luxury-gallery-section-frame-opacity: 0.5;
+	--luxury-gallery-grid-columns-tablet: 2;
+	--luxury-gallery-grid-columns-desktop: 3;
+	--luxury-gallery-grid-column-gap-mobile: 1rem;
+	--luxury-gallery-grid-column-gap-tablet: 1.5rem;
+	--luxury-gallery-grid-column-gap-desktop: 2rem;
+	--luxury-gallery-grid-row-gap-mobile: 1rem;
+	--luxury-gallery-grid-row-gap-tablet: 1.55rem;
+	--luxury-gallery-grid-row-gap-desktop: 2rem;
+	--luxury-gallery-item-aspect-ratio: 4 / 5;
+	--luxury-gallery-item-aspect-ratio-feature: var(--luxury-gallery-item-aspect-ratio);
+	--luxury-gallery-item-aspect-ratio-wide: var(--luxury-gallery-item-aspect-ratio);
+	--luxury-gallery-item-aspect-ratio-standard: var(--luxury-gallery-item-aspect-ratio);
+	--luxury-gallery-item-feature-column-span: 6;
+	--luxury-gallery-item-feature-row-span: 2;
+	--luxury-gallery-item-wide-column-span: 6;
+	--luxury-gallery-item-wide-row-span: 1;
+	--luxury-gallery-item-standard-column-span: 3;
+	--luxury-gallery-item-standard-row-span: 1;
+	--luxury-gallery-title-font: var(--font-display, #{tokens.$font-display-hacienda});
+	--luxury-gallery-title-size: clamp(2.3rem, 4.8vw, 3.4rem);
+	--luxury-gallery-title-color: var(--color-action-accent);
+	--luxury-gallery-title-letter-spacing: 0.12em;
+	--luxury-gallery-title-shadow: 0 3px 10px rgb(0 0 0 / 55%);
+	--luxury-gallery-subtitle-font: var(--font-body, #{tokens.$font-body-hacienda});
+	--luxury-gallery-subtitle-size: clamp(0.86rem, 1.6vw, 1rem);
+	--luxury-gallery-subtitle-color: rgb(245 228 188 / 60%);
+	--luxury-gallery-card-bg: rgb(28 23 18 / 96%);
+	--luxury-gallery-card-border: rgb(var(--color-action-accent-rgb), 0.22);
+	--luxury-gallery-card-border-focus: rgb(var(--color-action-accent-rgb), 0.45);
+	--luxury-gallery-card-border-hover: rgb(var(--color-action-accent-rgb), 0.62);
+
+	// Frame + B/W + zoom tokens are intentionally tuned together for a premium progression.
+	// If one changes, validate rest/in-view/hover states as a single system.
+	--luxury-gallery-card-radius: 1px;
+	--luxury-gallery-card-padding: 4px;
+	--luxury-gallery-card-frame-inset: 3px;
+	--luxury-gallery-card-frame-border: 1px solid rgb(var(--color-action-accent-rgb), 0.14);
+	--luxury-gallery-card-frame-opacity: 0.9;
+	--luxury-gallery-card-transform-in-view: translateY(-2px) scale(1.004);
+	--luxury-gallery-card-transform-hover: translateY(-4px) scale(1.008);
+	--luxury-gallery-card-shadow-rest: 0 12px 28px rgb(0 0 0 / 38%);
+	--luxury-gallery-card-shadow-in-view:
+		0 16px 34px rgb(0 0 0 / 46%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.22),
+		0 0 10px rgb(var(--color-action-accent-rgb), 0.08);
+	--luxury-gallery-card-shadow-hover:
+		0 20px 40px rgb(0 0 0 / 54%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.4),
+		0 0 14px rgb(var(--color-action-accent-rgb), 0.12);
+	--luxury-gallery-card-shadow-priority:
+		0 16px 34px rgb(0 0 0 / 48%), 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.12);
+	--luxury-gallery-card-transition-duration: 500ms;
+	--luxury-gallery-card-transition-ease: cubic-bezier(0.23, 1, 0.32, 1);
+	--luxury-gallery-image-radius: 1px;
+	--luxury-gallery-image-filter-rest: grayscale(1) saturate(0.08) contrast(1.08) brightness(0.86);
+	--luxury-gallery-image-filter-in-view: var(--luxury-gallery-image-filter-rest);
+	--luxury-gallery-image-filter-hover: grayscale(0) saturate(1.08) contrast(1.08) brightness(1.06);
+	--luxury-gallery-image-scale-rest: 1;
+	--luxury-gallery-image-scale-in-view: 1.018;
+	--luxury-gallery-image-scale-hover: 1.036;
+	--luxury-gallery-image-blend-rest: luminosity;
+	--luxury-gallery-image-blend-in-view: var(--luxury-gallery-image-blend-rest);
+	--luxury-gallery-image-blend-hover: normal;
+	--luxury-gallery-overlay-bg: linear-gradient(
+		to top,
+		rgb(7 6 5 / 78%) 0%,
+		rgb(8 7 6 / 22%) 50%,
+		transparent 100%
+	);
+	--luxury-gallery-overlay-opacity-in-view: 0.24;
+	--luxury-gallery-overlay-opacity-hover: 0.74;
+	--luxury-gallery-caption-font: var(--font-body, #{tokens.$font-body-hacienda});
+	--luxury-gallery-caption-color: rgb(246 232 201 / 92%);
+	--luxury-gallery-caption-size: 0.94rem;
+	--luxury-gallery-caption-bg: rgb(9 8 7 / 45%);
+	--luxury-gallery-caption-padding: 0.45rem 0.6rem;
+	--luxury-gallery-caption-radius: 0.14rem;
+	--luxury-gallery-lightbox-bg: rgb(10 8 5 / 98%);
+	--luxury-gallery-lightbox-image-border: 2px solid rgb(var(--color-action-accent-rgb), 0.58);
+	--luxury-gallery-lightbox-image-radius: 2px;
+	--luxury-gallery-lightbox-image-shadow: 0 20px 56px rgb(0 0 0 / 78%);
+
+	// ---------------------------------------------------------------------
+	// Location Section Refinements
+	// ---------------------------------------------------------------------
+	--location-leather-texture: url('https://www.transparenttextures.com/patterns/black-linen.png');
+	--location-card-shadow-premium: 0 30px 60px rgb(0 0 0 / 70%), inset 0 0 40px rgb(0 0 0 / 40%);
+	--location-glow-accent: rgb(var(--color-action-accent-rgb), 0.2);
+	--location-text-highlight: #{primitives.$base-parchment-100};
+	--location-text-muted-premium: #{rgba(primitives.$base-parchment-100, 0.85)};
 }

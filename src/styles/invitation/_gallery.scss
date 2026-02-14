@@ -1,24 +1,96 @@
-// src/styles/invitation/_gallery.scss
-
 @use '../global/mixins' as m;
 @use '../tokens' as tokens;
 
-// Luxury "Jewelry Box" Tokens
-$color-gold: tokens.$color-action-accent;
-$color-white: tokens.$base-neutral-0;
-
 .gallery-section {
-	padding: 8rem 2rem;
-	position: relative;
-	overflow: hidden;
-	background: linear-gradient(
+	--gallery-section-padding-block: clamp(5rem, 9vw, 8rem);
+	--gallery-section-padding-inline: clamp(1rem, 4vw, 2rem);
+	--gallery-section-bg: linear-gradient(
 		to bottom,
 		transparent,
 		rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.3)
 	);
+	--gallery-container-max-width: 1200px;
+	--gallery-header-gap: clamp(2rem, 4vw, 4rem);
+	--gallery-title-font: var(--font-display, #{tokens.$font-display-elegant});
+	--gallery-title-size: clamp(2.2rem, 5vw, 3.5rem);
+	--gallery-title-color: var(--color-action-accent, #{tokens.$color-action-accent});
+	--gallery-title-transform: uppercase;
+	--gallery-title-letter-spacing: 0.18em;
+	--gallery-subtitle-font: var(--font-body, #{tokens.$font-body});
+	--gallery-subtitle-size: clamp(1.05rem, 2.4vw, 1.4rem);
+	--gallery-subtitle-color: rgb(var(--color-text-primary-rgb, 43, 30, 18), 0.75);
+	--gallery-subtitle-transform: none;
+	--gallery-subtitle-letter-spacing: 0.03em;
+	--gallery-subtitle-opacity: 1;
+	--gallery-grid-columns-mobile: 1;
+	--gallery-grid-columns-tablet: 2;
+	--gallery-grid-columns-desktop: 3;
+	--gallery-grid-column-gap: clamp(1rem, 2vw, 1.5rem);
+	--gallery-grid-row-gap: clamp(1rem, 2vw, 1.5rem);
+	--gallery-item-aspect-ratio: 4 / 5;
+	--gallery-item-radius: 12px;
+	--gallery-item-padding: 0;
+	--gallery-item-bg: rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.8);
+	--gallery-item-border: 1px solid rgb(var(--color-text-primary-rgb, 0, 0, 0), 0.08);
+	--gallery-item-border-color: rgb(var(--color-text-primary-rgb, 0, 0, 0), 0.08);
+	--gallery-item-shadow: 0 6px 18px rgb(0 0 0 / 7%);
+	--gallery-item-backdrop-filter: none;
+	--gallery-item-transform: translateY(0) scale(1);
+	--gallery-item-emphasis-transform: translateY(-2px) scale(1.004);
+	--gallery-item-hover-transform: translateY(-4px) scale(1.008);
+	--gallery-item-emphasis-border-color: var(--gallery-item-border-color);
+	--gallery-item-hover-border-color: var(--gallery-item-emphasis-border-color);
+	--gallery-item-emphasis-shadow: 0 10px 26px rgb(0 0 0 / 11%);
+	--gallery-item-hover-shadow: 0 14px 30px rgb(0 0 0 / 15%);
+	--gallery-item-transition-duration: 420ms;
+	--gallery-item-transition-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--gallery-item-focus-outline: 2px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.65);
+	--gallery-item-focus-outline-offset: 3px;
+	--gallery-item-image-radius: calc(var(--gallery-item-radius) - 2px);
+	--gallery-item-image-filter-rest: none;
+	--gallery-item-image-filter-in-view: var(--gallery-item-image-filter-rest);
+	--gallery-item-image-filter-hover: var(--gallery-item-image-filter-in-view);
+	--gallery-item-image-scale-rest: 1;
+	--gallery-item-image-scale-in-view: var(--gallery-item-image-scale-rest);
+	--gallery-item-image-scale-hover: var(--gallery-item-image-scale-in-view);
+	--gallery-item-image-base-filter: none;
+	--gallery-item-image-emphasis-filter: var(--gallery-item-image-base-filter);
+	--gallery-item-image-hover-filter: var(--gallery-item-image-emphasis-filter);
+	--gallery-item-image-base-blend: normal;
+	--gallery-item-image-emphasis-blend: var(--gallery-item-image-base-blend);
+	--gallery-item-image-hover-blend: var(--gallery-item-image-emphasis-blend);
+	--gallery-item-aspect-ratio-feature: var(--gallery-item-aspect-ratio);
+	--gallery-item-aspect-ratio-wide: var(--gallery-item-aspect-ratio);
+	--gallery-item-aspect-ratio-standard: var(--gallery-item-aspect-ratio);
+	--gallery-overlay-bg: linear-gradient(to top, rgb(0 0 0 / 62%), transparent 72%);
+	--gallery-overlay-padding: clamp(0.85rem, 2vw, 1.3rem);
+	--gallery-overlay-opacity: 0;
+	--gallery-overlay-emphasis-opacity: 0.24;
+	--gallery-overlay-hover-opacity: 0.86;
+	--gallery-caption-font: var(--font-body, #{tokens.$font-body});
+	--gallery-caption-color: var(--color-text-on-dark, #{tokens.$color-text-on-dark});
+	--gallery-caption-size: 1rem;
+	--gallery-caption-style: normal;
+	--gallery-caption-letter-spacing: 0.015em;
+	--gallery-caption-bg: transparent;
+	--gallery-caption-padding: 0;
+	--gallery-caption-radius: 0;
+	--gallery-lightbox-bg: rgb(0 0 0 / 90%);
+	--gallery-lightbox-close-color: var(--color-action-accent, #{tokens.$color-action-accent});
+	--gallery-lightbox-image-border: 2px solid
+		rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+	--gallery-lightbox-image-radius: 4px;
+	--gallery-lightbox-footer-font: var(--font-body, #{tokens.$font-body});
+	--gallery-lightbox-footer-color: var(--color-text-on-dark, #{tokens.$color-text-on-dark});
+	--gallery-lightbox-footer-size: 1.15rem;
+
+	padding: var(--gallery-section-padding-block) var(--gallery-section-padding-inline);
+	position: relative;
+	overflow: hidden;
+	background: var(--gallery-section-bg);
 
 	&__container {
-		max-width: 1200px;
+		max-width: var(--gallery-container-max-width);
 		margin: 0 auto;
 		position: relative;
 		z-index: 1;
@@ -26,97 +98,157 @@ $color-white: tokens.$base-neutral-0;
 
 	&__header {
 		text-align: center;
-		margin-bottom: 4rem;
+		margin-bottom: var(--gallery-header-gap);
 	}
 
 	&__title {
-		font-family: tokens.$font-display-elegant; // Cinzel
-		font-size: clamp(2.5rem, 5vw, 3.5rem);
-		color: $color-gold;
-		margin-bottom: 1rem;
-		text-transform: uppercase;
-		letter-spacing: 0.2em;
+		font-family: var(--gallery-title-font);
+		font-size: var(--gallery-title-size);
+		color: var(--gallery-title-color);
+		margin-bottom: 0.75rem;
+		text-transform: var(--gallery-title-transform);
+		letter-spacing: var(--gallery-title-letter-spacing);
 	}
 
 	&__subtitle {
-		font-family: tokens.$font-calligraphy; // Great Vibes
-		font-size: clamp(1.5rem, 3vw, 2rem);
-		color: $color-gold;
-		opacity: 80%;
+		font-family: var(--gallery-subtitle-font);
+		font-size: var(--gallery-subtitle-size);
+		color: var(--gallery-subtitle-color);
+		text-transform: var(--gallery-subtitle-transform);
+		letter-spacing: var(--gallery-subtitle-letter-spacing);
+		opacity: var(--gallery-subtitle-opacity);
 	}
 }
 
 .gallery-grid {
-	columns: 1;
-	column-gap: 1.5rem;
+	display: grid;
+	grid-template-columns: repeat(var(--gallery-grid-columns-mobile), minmax(0, 1fr));
+	gap: var(--gallery-grid-row-gap) var(--gallery-grid-column-gap);
 
 	@include m.respond-to(md) {
-		columns: 2;
+		grid-template-columns: repeat(var(--gallery-grid-columns-tablet), minmax(0, 1fr));
 	}
 
 	@include m.respond-to(lg) {
-		columns: 3;
+		grid-template-columns: repeat(var(--gallery-grid-columns-desktop), minmax(0, 1fr));
 	}
 
 	&__item {
-		break-inside: avoid;
-		margin-bottom: 1.5rem;
 		position: relative;
-		border-radius: 12px;
+		border-radius: var(--gallery-item-radius);
 		overflow: hidden;
 		cursor: pointer;
-		aspect-ratio: auto;
-
-		// Jewelry Box Frame
-		border: 1px solid rgba($color-gold, 0.2);
-		background: rgba($color-white, 0.05);
-		backdrop-filter: blur(5px);
-		box-shadow: 0 4px 20px rgb(0 0 0 / 10%);
-		transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-		&:hover {
-			transform: scale(1.02);
-			border-color: rgba($color-gold, 0.5);
-			box-shadow: 0 8px 30px rgba($color-gold, 0.15);
-
-			.gallery-grid__overlay {
-				opacity: 100%;
-			}
-		}
+		aspect-ratio: var(--gallery-item-aspect-ratio);
+		border: var(--gallery-item-border);
+		border-color: var(--gallery-item-border-color);
+		padding: var(--gallery-item-padding);
+		background: var(--gallery-item-bg);
+		box-shadow: var(--gallery-item-shadow);
+		backdrop-filter: var(--gallery-item-backdrop-filter);
+		transform: var(--gallery-item-transform);
+		transition:
+			transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+			border-color var(--gallery-item-transition-duration) ease,
+			box-shadow var(--gallery-item-transition-duration) ease;
 
 		img {
 			width: 100%;
-			height: auto;
+			height: 100%;
 			display: block;
 			object-fit: cover;
+			border-radius: var(--gallery-item-image-radius);
+			filter: var(--gallery-item-image-filter-rest);
+			transform: scale(var(--gallery-item-image-scale-rest));
+			mix-blend-mode: var(--gallery-item-image-base-blend);
+			transition:
+				filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
+				transform var(--gallery-item-transition-duration)
+					var(--gallery-item-transition-ease),
+				mix-blend-mode var(--gallery-item-transition-duration) ease;
+		}
+
+		&.is-in-view,
+		&[data-in-view='true'],
+		&:focus-visible {
+			transform: var(--gallery-item-emphasis-transform);
+			border-color: var(--gallery-item-emphasis-border-color);
+			box-shadow: var(--gallery-item-emphasis-shadow);
+
+			img {
+				filter: var(--gallery-item-image-filter-in-view);
+				transform: scale(var(--gallery-item-image-scale-in-view));
+				mix-blend-mode: var(--gallery-item-image-emphasis-blend);
+			}
+
+			.gallery-grid__overlay {
+				opacity: var(--gallery-overlay-emphasis-opacity);
+			}
+		}
+
+		&:focus-visible {
+			outline: var(--gallery-item-focus-outline);
+			outline-offset: var(--gallery-item-focus-outline-offset);
+		}
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover {
+				transform: var(--gallery-item-hover-transform);
+				border-color: var(--gallery-item-hover-border-color);
+				box-shadow: var(--gallery-item-hover-shadow);
+
+				img {
+					filter: var(--gallery-item-image-filter-hover);
+					transform: scale(var(--gallery-item-image-scale-hover));
+					mix-blend-mode: var(--gallery-item-image-hover-blend);
+				}
+
+				.gallery-grid__overlay {
+					opacity: var(--gallery-overlay-hover-opacity);
+				}
+			}
+		}
+
+		&--feature {
+			aspect-ratio: var(--gallery-item-aspect-ratio-feature);
+		}
+
+		&--wide {
+			aspect-ratio: var(--gallery-item-aspect-ratio-wide);
+		}
+
+		&--standard {
+			aspect-ratio: var(--gallery-item-aspect-ratio-standard);
 		}
 	}
 
 	&__overlay {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(to top, rgb(0 0 0 / 60%), transparent);
+		background: var(--gallery-overlay-bg);
 		display: flex;
 		align-items: flex-end;
-		padding: 1.5rem;
-		opacity: 0%;
-		transition: opacity 0.3s ease;
+		padding: var(--gallery-overlay-padding);
+		opacity: var(--gallery-overlay-opacity);
+		transition: opacity 320ms ease;
 	}
 
 	&__caption {
-		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
-		font-family: tokens.$font-body; // EB Garamond
-		font-size: 1.1rem;
-		font-style: italic;
+		color: var(--gallery-caption-color);
+		font-family: var(--gallery-caption-font);
+		font-size: var(--gallery-caption-size);
+		font-style: var(--gallery-caption-style);
+		letter-spacing: var(--gallery-caption-letter-spacing);
+		background: var(--gallery-caption-bg);
+		padding: var(--gallery-caption-padding);
+		border-radius: var(--gallery-caption-radius);
 	}
 }
 
-// Lightbox Styles
 .gallery-lightbox {
 	position: fixed;
 	inset: 0;
 	z-index: 1000;
-	background: rgb(0 0 0 / 90%);
+	background: var(--gallery-lightbox-bg);
 	backdrop-filter: blur(10px);
 	display: flex;
 	align-items: center;
@@ -129,7 +261,7 @@ $color-white: tokens.$base-neutral-0;
 		right: 2rem;
 		background: transparent;
 		border: none;
-		color: $color-gold;
+		color: var(--gallery-lightbox-close-color);
 		cursor: pointer;
 		padding: 0.5rem;
 		transition: transform 0.3s ease;
@@ -153,8 +285,8 @@ $color-white: tokens.$base-neutral-0;
 			width: 100%;
 			height: 100%;
 			object-fit: contain;
-			border: 2px solid rgba($color-gold, 0.3);
-			border-radius: 4px;
+			border: var(--gallery-lightbox-image-border);
+			border-radius: var(--gallery-lightbox-image-radius);
 		}
 	}
 
@@ -164,9 +296,20 @@ $color-white: tokens.$base-neutral-0;
 		left: 0;
 		right: 0;
 		text-align: center;
-		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
-		font-family: tokens.$font-body;
-		font-size: 1.2rem;
-		font-style: italic;
+
+		p {
+			color: var(--gallery-lightbox-footer-color);
+			font-family: var(--gallery-lightbox-footer-font);
+			font-size: var(--gallery-lightbox-footer-size);
+			margin: 0;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.gallery-grid__item,
+	.gallery-grid__item img,
+	.gallery-grid__overlay {
+		transition-duration: 1ms !important;
 	}
 }

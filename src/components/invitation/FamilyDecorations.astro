@@ -10,6 +10,7 @@ const { variant = 'standard', component } = Astro.props;
 
 {variant === 'luxury-hacienda' && component === 'bg' && (
 	<>
+		{/* Compatibility hook: effective luxury vignette is applied in theme CSS via .family[data-variant='luxury-hacienda']::before. */}
 		<div class="family__bg-vignette" aria-hidden="true"></div>
 		<div class="family__ledger-lines" aria-hidden="true">
 			<div class="family__ledger-line family__ledger-line--vertical"></div>

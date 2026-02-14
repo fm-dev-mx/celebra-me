@@ -92,7 +92,6 @@
 		border: none;
 		background: transparent;
 		box-shadow: none;
-		align-items: start;
 	}
 
 	.family__content {
@@ -115,20 +114,22 @@
 	.family__frame-accent {
 		inset: 0;
 		border: 1px solid var(--family-accent);
-		opacity: 22%;
+		opacity: 16%;
 	}
 
 	.family__corner {
 		width: 18px;
 		height: 18px;
 		border-width: 1.5px;
-		opacity: 48%;
+		opacity: 34%;
 	}
 
 	.family__group + .family__group::before {
 		background: var(--family-divider);
 		height: 1px;
-		opacity: 62%;
+		left: 3%;
+		right: 3%;
+		opacity: 52%;
 		animation: none;
 	}
 
@@ -147,6 +148,9 @@
 	.family__name {
 		font-weight: 400;
 		letter-spacing: 0.01em;
+		line-height: 1.18;
+		white-space: normal;
+		text-wrap: balance;
 	}
 
 	.family__meta {
@@ -173,10 +177,6 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		.family__panel {
-			align-items: start;
-		}
-
 		.family__content {
 			justify-self: end;
 		}

@@ -206,6 +206,7 @@
 		right: 0;
 		height: 1px;
 		background: var(--family-divider, rgb(var(--color-text-primary-rgb), 0.2));
+		opacity: var(--family-divider-opacity, 100%);
 	}
 
 	&__group-title {
@@ -249,6 +250,7 @@
 		font-size: var(--family-name-size, clamp(1.3rem, 3vw, 1.9rem));
 		line-height: 1.15;
 		letter-spacing: 0.02em;
+		text-wrap: nowrap;
 	}
 
 	&__meta {
@@ -317,14 +319,6 @@
 		--family-reveal-delay: 0.32s;
 	}
 
-	@include mixins.respond-to(sm) {
-		&__list--children {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			column-gap: 1.2rem;
-		}
-	}
-
 	@include mixins.respond-to(md) {
 		&__header {
 			text-align: left;
@@ -333,6 +327,12 @@
 		&__panel {
 			padding: var(--family-panel-padding-md, clamp(1.5rem, 2.4vw, 2.25rem));
 		}
+
+		&__list--children {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1.1rem 2rem;
+		}
 	}
 
 	@include mixins.respond-to(lg) {
@@ -340,7 +340,7 @@
 			grid-template-columns:
 				minmax(0, var(--family-media-column, 0.42fr))
 				minmax(0, var(--family-content-column, 0.58fr));
-			align-items: start;
+			align-items: center;
 		}
 	}
 }
