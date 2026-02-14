@@ -61,8 +61,11 @@ jest.mock('framer-motion', () => {
 				React.createElement('button', props, children),
 			form: ({ children, ...props }: Record<string, unknown>) =>
 				React.createElement('form', props, children),
+			fieldset: ({ children, ...props }: Record<string, unknown>) =>
+				React.createElement('fieldset', props, children),
 		},
 		AnimatePresence: ({ children }: { children: React.ReactNode }) =>
 			React.createElement(React.Fragment, null, children),
+		useReducedMotion: () => false,
 	};
 });

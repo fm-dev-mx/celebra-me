@@ -35,6 +35,9 @@
         },
         "family": {
             "variant": "luxury-hacienda"
+        },
+        "rsvp": {
+            "variant": "luxury-hacienda"
         }
     },
     "hero": {
@@ -112,7 +115,7 @@
     "rsvp": {
         "title": "Confirma tu asistencia para prepararnos.",
         "guestCap": 10,
-        "confirmationMessage": "¡Excelente! Te esperamos para celebrar juntos."
+        "confirmationMessage": "Te esperamos de botas y sombrero."
     },
     "quote": {
         "text": "Sesenta años construidos con trabajo, familia y buenas amistades.",

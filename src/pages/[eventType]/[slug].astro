@@ -278,7 +278,9 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 						showDietaryField={data.rsvp.showDietaryField}
 						dietaryLabel={data.rsvp.dietaryLabel}
 						dietaryPlaceholder={data.rsvp.dietaryPlaceholder}
-						variant={preset}
+						confirmationMode={data.rsvp.confirmationMode}
+						whatsappConfig={data.rsvp.whatsappConfig}
+						variant={data.sectionStyles?.rsvp?.variant ?? preset}
 						{...rsvpProps}
 					/>
 				);

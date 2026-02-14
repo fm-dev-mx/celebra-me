@@ -96,6 +96,13 @@ const eventsCollection = defineCollection({
 							.default('standard'),
 					})
 					.optional(),
+				rsvp: z
+					.object({
+						variant: z
+							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
+							.default('standard'),
+					})
+					.optional(),
 			})
 			.optional(),
 		hero: z.object({
@@ -230,6 +237,13 @@ const eventsCollection = defineCollection({
 				showDietaryField: z.boolean().default(false),
 				dietaryLabel: z.string().optional(),
 				dietaryPlaceholder: z.string().optional(),
+				confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
+				whatsappConfig: z
+					.object({
+						phone: z.string(),
+						messageTemplate: z.string().optional(),
+					})
+					.optional(),
 			})
 			.optional(),
 		// Quote section for inspirational/personalized phrases

@@ -5,6 +5,8 @@
 // ==========================================================================
 
 .rsvp[data-variant='luxury-hacienda'] {
+	--rsvp-emoji-yes: '🤠';
+	--rsvp-emoji-no: '🙏';
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb), 0.24);
 	--color-glass-border: rgb(var(--color-action-accent-rgb), 0.28);
 	--color-glass-shadow: rgb(var(--color-action-accent-rgb), 0.18);
@@ -39,7 +41,7 @@
 	--rsvp-button-filter-hover: saturate(1.08);
 
 	.rsvp__title {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display);
 		color: var(--color-text-primary);
 		letter-spacing: 0.07em;
 	}
@@ -101,6 +103,115 @@
 			box-shadow:
 				0 0 0 2px rgb(var(--color-action-primary-rgb), 0.95),
 				0 0 0 6px rgb(var(--color-action-accent-rgb), 0.45);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rsvp__button {
+			transition: none;
+
+			&::before {
+				transition: none;
+			}
+
+			&:hover:not(:disabled) {
+				transform: none;
+			}
+		}
+	}
+}
+
+// ==========================================================================
+// JEWELRY BOX RSVP
+// ==========================================================================
+
+.rsvp[data-variant='jewelry-box'] {
+	--rsvp-emoji-yes: '💎';
+	--rsvp-emoji-no: '💌';
+	--color-glass-bg: rgb(255 255 255 / 45%);
+	--color-glass-border: rgb(var(--color-action-accent-rgb), 0.3);
+	--color-glass-shadow: rgb(var(--color-action-accent-rgb), 0.15);
+	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgb(0 0 0 / 5%);
+	--rsvp-label-color: var(--color-text-on-light, rgb(var(--color-text-primary-rgb), 0.78));
+	--rsvp-label-letter-spacing: 0.018em;
+	--rsvp-field-bg: rgb(255 255 255 / 55%);
+	--rsvp-field-bg-focus: rgb(255 255 255 / 85%);
+	--rsvp-field-border: rgb(var(--color-action-accent-rgb), 0.25);
+	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb), 0.38);
+	--rsvp-radio-bg: rgb(255 255 255 / 48%);
+	--rsvp-radio-bg-hover: rgb(255 255 255 / 68%);
+	--rsvp-radio-border: rgb(var(--color-action-accent-rgb), 0.2);
+	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.12);
+	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.55);
+	--rsvp-button-shadow-rest:
+		0 6px 18px rgb(var(--color-surface-dark-rgb), 0.18),
+		0 1px 0 rgb(var(--color-action-accent-rgb), 0.16);
+	--rsvp-button-shadow-hover:
+		0 10px 24px rgb(var(--color-surface-dark-rgb), 0.24),
+		0 0 14px rgb(var(--color-action-accent-rgb), 0.14);
+	--rsvp-button-bg-hover: rgb(var(--color-surface-dark-rgb), 0.88);
+	--rsvp-button-filter-hover: none;
+	--rsvp-radius-card: 20px;
+	--rsvp-radius-field: 14px;
+
+	.rsvp__title {
+		font-family: var(--font-calligraphy, var(--font-display));
+		color: var(--color-action-accent);
+		font-size: 2.2rem;
+		letter-spacing: 0.02em;
+		font-weight: 400;
+
+		&::after {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-action-accent) 50%,
+				transparent 100%
+			);
+			opacity: 50%;
+		}
+	}
+
+	.rsvp__button {
+		background: var(--color-surface-dark, var(--color-action-primary));
+		color: var(--color-action-accent);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.35);
+		font-family: var(--font-body);
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-action-accent-rgb), 0.15),
+				transparent
+			);
+			transition: left 0.6s ease-out;
+		}
+
+		&:hover:not(:disabled) {
+			border-color: rgb(var(--color-action-accent-rgb), 0.55);
+
+			&::before {
+				left: 100%;
+			}
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-action-accent);
+			outline-offset: 3px;
+			box-shadow:
+				0 0 0 2px rgb(255 255 255 / 90%),
+				0 0 0 6px rgb(var(--color-action-accent-rgb), 0.35);
 		}
 	}
 

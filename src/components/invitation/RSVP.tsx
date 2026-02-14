@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import '@/styles/invitation/_rsvp.scss';
 
+type ConfirmationMode = 'api' | 'whatsapp' | 'both';
+
+interface WhatsAppConfig {
+	phone: string;
+	messageTemplate?: string;
+}
+
 interface RSVPProps {
 	title: string;
 	guestCap: number;
@@ -14,6 +21,9 @@ interface RSVPProps {
 	dietaryLabel?: string;
 	dietaryPlaceholder?: string;
 	variant?: string;
+	confirmationMode?: ConfirmationMode;
+	whatsappConfig?: WhatsAppConfig;
+	apiEndpoint?: string;
 }
 
 const RSVP: React.FC<RSVPProps> = ({
@@ -28,6 +38,9 @@ const RSVP: React.FC<RSVPProps> = ({
 	dietaryLabel = 'Alergias o restricciones alimentarias',
 	dietaryPlaceholder = 'Ej. Vegetariano, alergia al maní...',
 	variant,
+	confirmationMode = 'api',
+	whatsappConfig,
+	apiEndpoint = '/api/rsvp',
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const [name, setName] = useState('');
@@ -48,6 +61,18 @@ const RSVP: React.FC<RSVPProps> = ({
 		}
 	}, []);
 
+	const buildWhatsAppUrl = () => {
+		if (!whatsappConfig?.phone) return '';
+		const template =
+			whatsappConfig.messageTemplate ||
+			'Hola, soy {name}. Confirmo mi asistencia ({attendance}). Acompañantes: {guestCount}.';
+		const message = template
+			.replace('{name}', name)
+			.replace('{attendance}', attendance === 'yes' ? 'Sí, asistiré' : 'No podré asistir')
+			.replace('{guestCount}', String(guestCount));
+		return `https://wa.me/${whatsappConfig.phone}?text=${encodeURIComponent(message)}`;
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError(null);
@@ -57,8 +82,16 @@ const RSVP: React.FC<RSVPProps> = ({
 			return;
 		}
 
-		if (attendance === 'yes' && guestCount > guestCap) {
+		if (attendance === 'yes' && guestCount > Number(guestCap)) {
 			setError(`El límite de invitados es de ${guestCap}.`);
+			return;
+		}
+
+		// WhatsApp-only mode: open link and mark as submitted
+		if (confirmationMode === 'whatsapp') {
+			const url = buildWhatsAppUrl();
+			if (url) window.open(url, '_blank', 'noopener,noreferrer');
+			setSubmitted(true);
 			return;
 		}
 
@@ -75,7 +108,7 @@ const RSVP: React.FC<RSVPProps> = ({
 				payload.dietary = dietary.trim();
 			}
 
-			const response = await fetch('/api/rsvp', {
+			const response = await fetch(apiEndpoint, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload),
@@ -95,12 +128,19 @@ const RSVP: React.FC<RSVPProps> = ({
 	};
 
 	if (submitted) {
+		const showWhatsAppCta =
+			(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
+			whatsappConfig?.phone &&
+			attendance === 'yes';
 		return (
 			<section id="rsvp" className="rsvp" data-variant={variant}>
 				<div className="rsvp__greeting">
-					<span className="rsvp__greeting-icon" role="img" aria-label="Celebration">
-						{attendance === 'yes' ? '✨' : '✉️'}
-					</span>
+					<span
+						className="rsvp__greeting-icon"
+						data-response={attendance === 'yes' ? 'yes' : 'no'}
+						role="img"
+						aria-label={attendance === 'yes' ? 'Celebración' : 'Agradecimiento'}
+					/>
 					<h2 className="rsvp__greeting-message">
 						{attendance === 'yes' ? (
 							<>
@@ -115,6 +155,17 @@ const RSVP: React.FC<RSVPProps> = ({
 						)}
 					</h2>
 					<p className="rsvp__greeting-submessage">Tu respuesta ha sido registrada.</p>
+					{showWhatsAppCta && (
+						<a
+							href={buildWhatsAppUrl()}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="rsvp__whatsapp-cta"
+							aria-label="Enviar confirmación por WhatsApp"
+						>
+							Enviar confirmación por WhatsApp
+						</a>
+					)}
 				</div>
 			</section>
 		);
@@ -124,7 +175,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 
-			<form onSubmit={handleSubmit} className="rsvp__form">
+			<form onSubmit={handleSubmit} className="rsvp__form" id="rsvp-form">
 				<motion.div
 					className="rsvp__field"
 					initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
@@ -142,14 +193,14 @@ const RSVP: React.FC<RSVPProps> = ({
 					/>
 				</motion.div>
 
-				<motion.div
-					className="rsvp__field"
+				<motion.fieldset
+					className="rsvp__field rsvp__fieldset"
 					initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
 					whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
 					viewport={prefersReducedMotion ? undefined : { once: true }}
 					transition={prefersReducedMotion ? undefined : { delay: 0.1 }}
 				>
-					<label>{attendanceLabel}</label>
+					<legend className="rsvp__legend">{attendanceLabel}</legend>
 					<div className="rsvp__radio-group">
 						<label>
 							<input
@@ -172,7 +223,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							No podré asistir
 						</label>
 					</div>
-				</motion.div>
+				</motion.fieldset>
 
 				<AnimatePresence>
 					{attendance === 'yes' && (
@@ -190,7 +241,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							<div className="rsvp__field">
 								<label htmlFor="guestCount">
 									{guestCountLabel}
-									{guestCap <= 4 ? ` (Máx. ${guestCap})` : ''}
+									{Number(guestCap) <= 4 ? ` (Máx. ${guestCap})` : ''}
 								</label>
 								<input
 									type="number"
@@ -230,7 +281,13 @@ const RSVP: React.FC<RSVPProps> = ({
 					)}
 				</AnimatePresence>
 
-				{error && <p className="rsvp__error">{error}</p>}
+				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">
+					{error && (
+						<p className="rsvp__error" role="alert">
+							{error}
+						</p>
+					)}
+				</div>
 
 				<motion.button
 					type="submit"
