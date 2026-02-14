@@ -138,156 +138,218 @@ body.invitation-revealed
 	.invitation-hero__background::after {
 		background:
 			radial-gradient(
-				circle at center,
-				transparent 10%,
-				rgb(var(--color-text-primary-rgb), 0.3) 60%,
-				rgb(var(--color-surface-dark-rgb), 0.8) 100%
+				circle at 50% 34%,
+				transparent 12%,
+				rgb(var(--color-text-primary-rgb), 0.36) 58%,
+				rgb(var(--color-surface-dark-rgb), 0.88) 100%
 			),
-			linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 20%) 50%, rgb(0 0 0 / 70%) 100%);
+			linear-gradient(
+				to bottom,
+				rgb(0 0 0 / 8%) 0%,
+				rgb(0 0 0 / 24%) 46%,
+				rgb(0 0 0 / 76%) 100%
+			);
 		background-blend-mode: normal, normal;
 		opacity: 100%;
 	}
 
 	.invitation-hero__content {
-		background: tokens.$color-glass-bg;
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.25);
-		backdrop-filter: blur(12px) saturate(180%);
-		border-radius: 4px;
+		background: var(--hero-card-bg-overlay), var(--hero-card-bg);
+		border: 1px solid transparent;
+		border-image: linear-gradient(
+				145deg,
+				var(--hero-card-border-old-gold-start),
+				var(--hero-card-border-old-gold-mid) 52%,
+				var(--hero-card-border-old-gold-end)
+			)
+			1;
+		backdrop-filter: blur(16px) saturate(140%) contrast(108%);
+		border-radius: 5px;
 		position: relative;
 		overflow: hidden;
 		box-shadow:
-			inset 0 0 30px rgb(var(--color-action-accent-rgb), 0.1),
-			0 10px 30px rgb(0 0 0 / 20%);
+			var(--hero-card-inner-glow), var(--hero-card-shadow-contact),
+			var(--hero-card-shadow-ambient);
 
 		&::before {
 			content: '';
 			position: absolute;
-			inset: 0;
-			opacity: 8%;
+			inset: 1px;
+			border: 0.5px solid var(--hero-card-border-hairline);
 			pointer-events: none;
-			background-image:
-				radial-gradient(circle at 25% 25%, rgb(0 0 0 / 5%) 2%, transparent 2.5%),
-				radial-gradient(circle at 75% 75%, rgb(0 0 0 / 5%) 2%, transparent 2.5%),
-				linear-gradient(45deg, transparent 49%, rgb(0 0 0 / 3%) 50%, transparent 51%);
-			background-size:
-				100px 100px,
-				100px 100px,
-				20px 20px;
-			background-blend-mode: multiply;
-			z-index: -1;
-		}
-	}
-
-	.invitation-hero__title {
-		font-family: var(--font-display-hacienda, serif);
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		text-shadow: 0 2px 4px rgb(0 0 0 / 30%);
-		background: linear-gradient(
-			to right,
-			var(--color-action-accent),
-			tokens.$base-neutral-0,
-			var(--color-action-accent)
-		);
-		background-clip: text;
-		color: transparent;
-		background-size: 200% auto;
-		animation: shimmer 3s tokens.$ease-in-out infinite;
-	}
-
-	.invitation-hero__label {
-		color: var(--color-action-accent);
-		letter-spacing: 0.4em;
-	}
-
-	.invitation-hero__divider {
-		height: 2px;
-		background: linear-gradient(
-			to right,
-			rgb(var(--color-action-accent-rgb), 0.1) 0%,
-			rgb(var(--color-action-accent-rgb), 0.4) 50%,
-			rgb(var(--color-action-accent-rgb), 0.1) 100%
-		);
-		background-size: 200% auto;
-		animation:
-			grow-line tokens.$duration-premium tokens.$ease-premium 1.2s forwards,
-			shimmer 4s linear infinite 1.5s;
-	}
-
-	.invitation-hero__nickname-badge {
-		display: inline-block;
-		margin-top: 1rem;
-		padding: 0.75rem 2rem;
-		background: linear-gradient(
-			135deg,
-			var(--color-surface-dark) 0%,
-			rgb(var(--color-surface-dark-rgb), 0.95) 100%
-		);
-		color: var(--color-action-accent);
-		border: 2px solid var(--color-action-accent);
-		border-radius: 50px;
-		font-family: var(--font-ui, sans-serif);
-		font-size: 1.2rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		transform: rotate(-3deg);
-		box-shadow:
-			0 6px 20px rgb(0 0 0 / 40%),
-			inset 0 1px 0 rgb(255 255 255 / 10%);
-		position: relative;
-		z-index: 10;
-		letter-spacing: 0.05em;
-		transition:
-			transform tokens.$duration-standard tokens.$ease-premium,
-			box-shadow tokens.$duration-standard tokens.$ease-premium;
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			border-radius: 50px;
-			background: linear-gradient(
-				135deg,
-				rgb(var(--color-action-accent-rgb), 0.1) 0%,
-				transparent 50%,
-				rgb(var(--color-action-accent-rgb), 0.1) 100%
-			);
-			opacity: 50%;
-			z-index: -1;
+			z-index: 1;
 		}
 
 		&::after {
 			content: '';
 			position: absolute;
-			inset: -4px;
-			border: 1px solid var(--color-action-accent);
-			border-radius: 50px;
-			opacity: 30%;
+			inset: 0;
+			opacity: 18%;
+			pointer-events: none;
+			background-image:
+				url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='heroNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23heroNoise)' opacity='1'/%3E%3C/svg%3E"),
+				radial-gradient(circle at 18% 12%, rgb(255 238 202 / 16%), transparent 45%),
+				radial-gradient(circle at 80% 84%, rgb(0 0 0 / 24%), transparent 48%);
+			background-size:
+				180px 180px,
+				100% 100%,
+				100% 100%;
+			mix-blend-mode: soft-light;
+			z-index: 0;
+		}
+	}
+
+	.invitation-hero__title {
+		font-family: var(--font-display-hacienda, serif);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.065em;
+		line-height: 1.03;
+		text-shadow: var(--hero-title-shadow-near), var(--hero-title-shadow-far);
+		background: linear-gradient(
+			95deg,
+			var(--hero-title-color-start) 0%,
+			var(--hero-title-color-mid) 48%,
+			var(--hero-title-color-end) 100%
+		);
+		background-clip: text;
+		color: transparent;
+		background-size: 170% auto;
+		animation: shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
+		margin: 0.35rem 0 0.5rem;
+	}
+
+	.invitation-hero__label {
+		color: var(--hero-label-color);
+		letter-spacing: 0.48em;
+		font-weight: 700;
+		font-size: clamp(0.88rem, 2.4vw, 1.08rem);
+		text-shadow: var(--hero-label-shadow);
+		margin-bottom: 0.35rem;
+	}
+
+	.invitation-hero__divider {
+		width: 96px;
+		height: 1px;
+		background: var(--hero-divider-color);
+		opacity: 0%;
+		transform: scaleX(0);
+		animation: growLine 1.15s tokens.$ease-premium 1.28s forwards;
+	}
+
+	.invitation-hero__nickname-badge {
+		display: inline-block;
+		margin-top: 1.15rem;
+		padding: 0.52rem 1.55rem 0.58rem;
+		background: var(--hero-badge-bg);
+		color: var(--hero-badge-text);
+		border: 1px solid var(--hero-badge-border);
+		border-radius: 8px;
+		font-family: var(--font-display-hacienda, serif);
+		font-size: clamp(0.94rem, 2.8vw, 1.1rem);
+		font-weight: 650;
+		text-transform: uppercase;
+		transform: rotate(-2deg);
+		box-shadow: var(--hero-badge-shadow);
+		position: relative;
+		z-index: 10;
+		letter-spacing: 0.12em;
+		transition:
+			transform tokens.$duration-snappy tokens.$ease-premium,
+			box-shadow tokens.$duration-standard tokens.$ease-premium;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 2px;
+			border-radius: 6px;
+			border: 0.5px solid rgb(244 219 168 / 45%);
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: -3px;
+			border-radius: 9px;
+			border: 1px solid rgb(189 145 69 / 35%);
+			background: linear-gradient(
+				130deg,
+				rgb(0 0 0 / 14%),
+				transparent 45%,
+				rgb(255 235 194 / 10%)
+			);
+			opacity: 100%;
+			z-index: -1;
+			pointer-events: none;
 		}
 
 		&:hover,
 		&:focus-visible {
-			transform: rotate(-1deg) scale(1.05);
+			transform: rotate(-1deg) translateY(-1px);
 			box-shadow:
-				0 10px 30px rgb(0 0 0 / 50%),
-				0 0 30px rgb(var(--color-action-accent-rgb), 0.3);
+				0 13px 22px rgb(0 0 0 / 45%),
+				inset 0 1px 0 rgb(255 236 202 / 22%),
+				inset 0 -1px 0 rgb(34 23 14 / 74%);
 			outline: none;
 		}
 
 		&:focus-visible {
-			border-color: #fff;
+			border-color: rgb(246 224 180 / 95%);
 			box-shadow:
-				0 0 0 2px var(--color-action-accent),
-				0 10px 30px rgb(0 0 0 / 50%);
+				0 0 0 2px rgb(55 38 23 / 88%),
+				0 0 0 4px rgb(211 171 92 / 70%),
+				0 13px 22px rgb(0 0 0 / 45%);
 		}
 	}
 
+	.invitation-hero__details {
+		gap: 0.78rem;
+		margin-top: 0.25rem;
+	}
+
+	.invitation-hero__date,
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		color: var(--hero-meta-color);
+		text-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+	}
+
+	.invitation-hero__date {
+		font-size: clamp(1rem, 2.8vw, 1.18rem);
+		letter-spacing: 0.16em;
+		font-weight: 600;
+	}
+
+	.invitation-hero__venue {
+		margin-top: 0.72rem;
+		font-size: clamp(1rem, 2.9vw, 1.16rem);
+		letter-spacing: 0.04em;
+		font-style: normal;
+	}
+
 	.invitation-hero__venue .calligraphy-accent {
-		color: var(--color-surface-primary);
-		font-family: var(--font-ui, sans-serif);
-		font-weight: 300;
-		font-size: 0.8em;
+		color: rgb(239 214 164 / 90%);
+		font-family: var(--font-body, serif);
+		font-weight: 500;
+		font-size: 0.9em;
+		font-style: italic;
+		margin-right: 0.36rem;
+	}
+
+	@media (width <= 540px) {
+		.invitation-hero__content {
+			backdrop-filter: blur(14px) saturate(132%) contrast(106%);
+		}
+
+		.invitation-hero__label {
+			letter-spacing: 0.35em;
+		}
+
+		.invitation-hero__nickname-badge {
+			padding-inline: 1.2rem;
+			letter-spacing: 0.1em;
+		}
 	}
 }
 

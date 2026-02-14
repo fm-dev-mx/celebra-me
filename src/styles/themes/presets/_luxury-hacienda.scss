@@ -62,6 +62,54 @@
 	--family-group-title-font: #{tokens.$font-display-hacienda};
 	--family-name-font: #{tokens.$font-body-hacienda};
 
+	// Hero Premium Tokens (Luxury Hacienda only)
+	--hero-card-bg: linear-gradient(
+		156deg,
+		rgb(26 17 11 / 72%) 0%,
+		rgb(43 29 18 / 66%) 44%,
+		rgb(20 14 9 / 74%) 100%
+	);
+	--hero-card-bg-overlay: linear-gradient(
+		130deg,
+		rgb(240 220 178 / 14%) 0%,
+		transparent 34%,
+		rgb(0 0 0 / 18%) 100%
+	);
+	--hero-card-border-hairline: rgb(248 225 177 / 44%);
+	--hero-card-border-old-gold-start: rgb(102 78 38 / 68%);
+	--hero-card-border-old-gold-mid: rgb(212 175 95 / 78%);
+	--hero-card-border-old-gold-end: rgb(118 86 44 / 70%);
+	--hero-card-shadow-ambient: 0 34px 64px rgb(0 0 0 / 52%);
+	--hero-card-shadow-contact: 0 8px 18px rgb(0 0 0 / 36%);
+	--hero-card-inner-glow: inset 0 0 0 1px rgb(255 241 214 / 8%);
+	--hero-title-color-start: rgb(175 137 65 / 96%);
+	--hero-title-color-mid: rgb(251 240 217 / 96%);
+	--hero-title-color-end: rgb(166 125 56 / 92%);
+	--hero-title-shadow-near: 0 3px 8px rgb(0 0 0 / 58%);
+	--hero-title-shadow-far: 0 16px 28px rgb(0 0 0 / 42%);
+	--hero-label-color: rgb(224 188 111 / 88%);
+	--hero-label-shadow: 0 2px 6px rgb(0 0 0 / 44%);
+	--hero-meta-color: rgb(238 218 178 / 82%);
+	--hero-badge-bg: linear-gradient(
+		142deg,
+		rgb(24 17 11 / 95%) 0%,
+		rgb(45 31 20 / 93%) 52%,
+		rgb(19 13 8 / 95%) 100%
+	);
+	--hero-badge-border: rgb(198 156 81 / 80%);
+	--hero-badge-text: rgb(240 212 157 / 94%);
+	--hero-badge-shadow:
+		0 10px 18px rgb(0 0 0 / 40%), inset 0 1px 0 rgb(255 236 202 / 20%),
+		inset 0 -1px 0 rgb(34 23 14 / 70%);
+	--hero-divider-color: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(193 151 77 / 16%) 22%,
+		rgb(227 193 126 / 56%) 50%,
+		rgb(193 151 77 / 16%) 78%,
+		transparent 100%
+	);
+
 	// Typography Overrides
 	--font-display: #{tokens.$font-display-hacienda};
 	--font-body: #{tokens.$font-body-hacienda};
