@@ -27,12 +27,13 @@ interface ItineraryItemData {
 interface Props {
 	title?: string;
 	items: ItineraryItemData[];
+	variant?: string;
 }
 
-const { title = "Itinerario", items } = Astro.props;
+const { title = "Itinerario", items, variant } = Astro.props;
 ---
 
-<section class="itinerary" id="itinerary">
+<section class="itinerary" id="itinerary" data-variant={variant}>
 	<div class="itinerary__container">
 		{title && (
 			<div class="itinerary__header">

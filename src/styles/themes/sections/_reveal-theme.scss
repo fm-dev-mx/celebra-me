@@ -12,10 +12,8 @@ $gold-dark: #9e7d3d;
 $gold-base: #d4af37;
 $gold-light: #f1d592;
 
-.event-theme-wrapper.theme-preset--jewelry-box {
-	.envelope-wrapper {
-		background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
-	}
+.envelope-wrapper[data-variant='jewelry-box'] {
+	background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
 
 	.envelope-base,
 	.envelope-pocket,
@@ -137,29 +135,27 @@ $gold-light: #f1d592;
 // LUXURY HACIENDA REVEAL (Envelope & Seal)
 // ==========================================================================
 
-.event-theme-wrapper.theme-preset--luxury-hacienda {
+.envelope-wrapper[data-variant='luxury-hacienda'] {
 	// ==========================================================================
 	// ADU-7: Radical Old West Document (Boceto de Carta)
 	// Breaking the "Envelope" mold: Tri-fold geometry, torn edges, asymmetric.
 	// ==========================================================================
 
-	.envelope-wrapper {
-		background:
-			radial-gradient(ellipse at 30% 20%, rgb(0 0 0 / 10%) 0%, transparent 50%),
-			radial-gradient(ellipse at 70% 80%, rgb(0 0 0 / 10%) 0%, transparent 50%),
-			linear-gradient(105deg, transparent 40%, rgb(0 0 0 / 5%) 50%, transparent 60%),
-			radial-gradient(
-				ellipse at center,
-				#{primitives.$base-coffee-900} 0%,
-				#{color.adjust(primitives.$base-coffee-900, $lightness: -15%)} 100%
-			);
-		background-size:
-			200% 200%,
-			200% 200%,
-			100% 100%,
-			auto;
-		background-blend-mode: overlay, overlay, overlay, normal;
-	}
+	background:
+		radial-gradient(ellipse at 30% 20%, rgb(0 0 0 / 10%) 0%, transparent 50%),
+		radial-gradient(ellipse at 70% 80%, rgb(0 0 0 / 10%) 0%, transparent 50%),
+		linear-gradient(105deg, transparent 40%, rgb(0 0 0 / 5%) 50%, transparent 60%),
+		radial-gradient(
+			ellipse at center,
+			#{primitives.$base-coffee-900} 0%,
+			#{color.adjust(primitives.$base-coffee-900, $lightness: -15%)} 100%
+		);
+	background-size:
+		200% 200%,
+		200% 200%,
+		100% 100%,
+		auto;
+	background-blend-mode: overlay, overlay, overlay, normal;
 
 	.envelope-container {
 		width: 100%;
@@ -254,6 +250,50 @@ $gold-light: #f1d592;
 		align-items: flex-start !important;
 		text-align: left !important;
 		height: 100%;
+
+		.envelope-seal-zone {
+			position: absolute !important;
+			inset: 47% auto auto 50% !important; // Adjusted to new fold line (almost halfway)
+			left: 85% !important;
+			transform: translate(-50%, -50%) !important;
+			margin: 0 !important;
+			z-index: 15 !important;
+			flex: none !important;
+			padding: 0 !important;
+			min-height: auto !important;
+		}
+
+		.tease-content-bottom {
+			position: absolute !important;
+			bottom: 8% !important;
+			left: 8% !important;
+			display: flex !important;
+			flex-direction: column !important;
+			align-items: center !important;
+			margin-top: auto;
+			width: 70%;
+			padding: 0 !important;
+
+			.tease-divider {
+				display: none;
+			}
+
+			.envelope-details {
+				font-family: tokens.$font-body-hacienda, 'Cormorant Garamond', serif !important;
+				font-size: 0.95rem !important;
+				letter-spacing: 0.15rem !important;
+				font-weight: 500 !important;
+				color: var(--color-text-primary) !important;
+				opacity: 90%;
+			}
+
+			.envelope-microcopy {
+				font-family: 'EB Garamond', serif;
+				font-style: italic;
+				color: rgba(primitives.$base-coffee-700, 0.7);
+				margin-top: 0.5rem;
+			}
+		}
 	}
 
 	.envelope-stamp-area {
@@ -307,6 +347,7 @@ $gold-light: #f1d592;
 			-webkit-text-fill-color: var(
 				--color-text-primary
 			) !important; // Iron Gall Ink (charcoal black)
+
 			color: var(--color-text-primary) !important;
 			font-family: 'EB Garamond', serif !important;
 			font-weight: 800 !important;
@@ -324,82 +365,30 @@ $gold-light: #f1d592;
 		}
 	}
 
-	// ── Seal at the fold line ──
-	// Must be nested inside .envelope-tease to match base specificity
-	// from _envelope-reveal.scss (.envelope-tease .envelope-seal-zone).
-	// Positioned at the junction where flap meets pocket (~38% from top),
-	// centered horizontally. Simulates the seal holding the carta closed.
-	// z-index 15 ensures it sits ABOVE both flap (10) and pocket (5).
-	.envelope-tease .envelope-seal-zone {
-		position: absolute !important;
-		inset: 47% auto auto 50% !important; // Adjusted to new fold line (almost halfway)
-		left: 85% !important;
-		transform: translate(-50%, -50%) !important;
-		margin: 0 !important;
-		z-index: 15 !important;
-		flex: none !important;
-		padding: 0 !important;
-		min-height: auto !important;
-	}
-
-	.tease-content-bottom {
-		margin-top: auto;
-		width: 70%;
-
-		.tease-divider {
-			display: none;
-		}
-
-		.envelope-details {
-			font-family: 'Cormorant Garamond', serif;
-			font-size: 0.9rem !important;
-			color: var(--color-text-primary) !important;
-			opacity: 90%;
-		}
-
-		.envelope-microcopy {
-			font-family: 'EB Garamond', serif;
-			font-style: italic;
-			color: rgba(primitives.$base-coffee-700, 0.7);
-			margin-top: 0.5rem;
-		}
-	}
-
 	.envelope-card {
-		background-color: var(--color-surface-primary) !important;
+		background: var(--env-card-bg, tokens.$base-coffee-900) !important;
 		background-image:
-			radial-gradient(
-				circle at 50% 50%,
-				rgb(var(--color-surface-dark-rgb), 0.08),
-				transparent 80%
-			),
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.15' intercept='0.85'/%3E%3CfeFuncG type='linear' slope='0.15' intercept='0.82'/%3E%3CfeFuncB type='linear' slope='0.15' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E"),
-			linear-gradient(
-				135deg,
-				rgb(255 255 255 / 20%) 0%,
-				transparent 50%,
-				rgb(0 0 0 / 5%) 100%
-			);
-		background-blend-mode: multiply, normal, overlay;
-		border: 1px solid rgb(var(--color-surface-dark-rgb), 0.15) !important;
-		padding: 2.5rem !important;
-		display: flex !important;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-		box-shadow:
-			0 10px 30px rgb(0 0 0 / 30%),
-			inset 0 0 20px rgb(var(--color-surface-dark-rgb), 0.05) !important;
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E"),
+			linear-gradient(135deg, rgb(255 255 255 / 2%) 0%, transparent 100%) !important;
+		background-blend-mode: overlay;
+		border-radius: 2px !important;
+
+		// Double Border Effect
+		border: 1px solid tokens.$base-gold-500 !important;
+		outline: 1px solid tokens.$base-gold-300 !important;
+		outline-offset: -5px;
+		color: var(--color-text-on-dark) !important;
+		padding: 1rem !important;
 		transform: rotate(1deg);
 		transition: transform tokens.$duration-reveal + 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 		&.is-rising {
-			transform: translateY(-80%) rotate(-1deg) scale(1.05);
-			z-index: 5; // Ensure it rises above the pocket (z-index 2)
+			transform: translateY(-80%) rotate(-1deg) scale(1.05) !important;
+			z-index: 5;
+			box-shadow: tokens.$shadow-emphasis !important;
 		}
 
-		// Double Leather stitching effect
+		// Double Leather stitching effect (Legacy preservation or combined)
 		&::before {
 			content: '';
 			position: absolute;
@@ -412,15 +401,6 @@ $gold-light: #f1d592;
 			mask-size: 8px 100%;
 		}
 
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 14px;
-			border: 1px solid rgb(var(--color-text-primary-rgb), 0.05);
-			border-radius: 3px;
-			pointer-events: none;
-		}
-
 		.envelope-card__content {
 			position: relative;
 			z-index: 1;
@@ -430,12 +410,6 @@ $gold-light: #f1d592;
 			flex-direction: column;
 			justify-content: space-between;
 			padding: 1rem;
-		}
-
-		.envelope-card__header {
-			display: flex;
-			justify-content: center;
-			margin-bottom: 1rem;
 		}
 
 		.envelope-card__monogram {
@@ -451,223 +425,149 @@ $gold-light: #f1d592;
 			}
 		}
 
-		.envelope-card__body {
-			.envelope-card__label {
-				display: block;
-				font-family: 'Cormorant Garamond', serif;
-				font-size: 0.8rem;
-				color: var(--color-action-accent);
-				letter-spacing: 0.4em;
-				text-transform: uppercase;
-				margin-bottom: 0.75rem;
-			}
+		.envelope-card__name {
+			font-family: tokens.$font-display-hacienda !important;
+			color: tokens.$base-gold-300 !important;
 
-			.envelope-card__name {
-				font-family: 'EB Garamond', serif !important;
-				font-size: clamp(1.4rem, 4vw, 2.2rem) !important;
-				color: var(--color-text-primary) !important;
-				margin: 0 !important;
-				line-height: 1.1 !important;
-				font-weight: 800 !important;
-				background: none !important;
-				-webkit-text-fill-color: initial !important;
-			}
+			// Engraved Effect
+			text-shadow:
+				-1px -1px 1px rgb(0 0 0 / 70%),
+				1px 1px 1px rgb(255 255 255 / 15%) !important;
+			letter-spacing: 0.05em;
+			font-size: clamp(1.4rem, 4vw, 2.2rem) !important;
+			margin: 0 !important;
+			line-height: 1.1 !important;
+			font-weight: 800 !important;
+			background: none !important;
+			-webkit-text-fill-color: initial !important;
 		}
 
-		.envelope-card__footer {
-			margin-top: 1.5rem;
-			padding-top: 1rem;
-			border-top: 1px solid rgb(var(--color-text-primary-rgb), 0.1);
-
-			.envelope-card__details {
-				font-family: 'Cormorant Garamond', serif;
-				font-size: 0.9rem;
-				color: var(--color-text-primary);
-				opacity: 80%;
-				margin: 0;
-			}
+		.envelope-card__label,
+		.envelope-card__details {
+			color: tokens.$base-parchment-500 !important;
+			text-transform: uppercase;
+			letter-spacing: 0.15em;
+			font-weight: 600;
+			opacity: 90%;
 		}
 
-		// Add rivets
 		.rivet {
-			position: absolute;
-			width: 6px;
-			height: 6px;
-			background: radial-gradient(circle at 35% 35%, #e5c05b, #b8860b);
-			border-radius: 50%;
+			background: radial-gradient(
+				circle at 35% 35%,
+				tokens.$base-gold-300,
+				tokens.$color-action-accent 60%,
+				tokens.$color-surface-dark
+			);
 			box-shadow:
-				1px 1px 2px rgb(0 0 0 / 40%),
-				inset -0.5px -0.5px 1px rgb(0 0 0 / 50%);
-			z-index: 2;
+				0 2px 4px rgb(0 0 0 / 50%),
+				inset 0 1px 1px rgb(255 255 255 / 30%);
+			width: 8px;
+			height: 8px;
+			position: absolute;
+			z-index: 5;
 
 			&--tl {
-				top: 15px;
-				left: 15px;
+				top: 10px;
+				left: 10px;
 			}
 
 			&--tr {
-				top: 15px;
-				right: 15px;
+				top: 10px;
+				right: 10px;
 			}
 
 			&--bl {
-				bottom: 15px;
-				left: 15px;
+				bottom: 10px;
+				left: 10px;
 			}
 
 			&--br {
-				bottom: 15px;
-				right: 15px;
+				bottom: 10px;
+				right: 10px;
+			}
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 15%;
+				right: 15%;
+				height: 1px;
+				background: rgb(0 0 0 / 40%);
+				transform: translateY(-50%) rotate(45deg);
 			}
 		}
 	}
 
-	// ==========================================================================
-	// PREMIUM ARTISANAL WAX SEAL
-	// Simulates a hand-pressed oxide-red wax seal sitting on textured parchment.
-	// Architecture: 3-layer system (Contact Shadow → Wax Body → Stamp Recess)
-	// ==========================================================================
-
+	// ── PREMIUM ARTISANAL WAX SEAL ──
 	.envelope-seal-button {
-		// ── Layered Contact Shadow ──
-		// Three graduated layers simulate physical contact with parchment.
-		// Avoids the "floating object" artifact of a single drop-shadow.
 		filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)) drop-shadow(0 4px 6px rgb(0 0 0 / 30%))
 			drop-shadow(0 10px 20px rgb(0 0 0 / 20%)) !important;
 		transition: transform tokens.$duration-snappy tokens.$ease-premium !important;
 
 		&:hover {
 			transform: scale(1.08) rotate(2deg) !important;
-
-			// Lift the contact shadow slightly on hover for "just pressed" feel
 			filter: drop-shadow(0 2px 3px rgb(0 0 0 / 50%)) drop-shadow(0 6px 10px rgb(0 0 0 / 30%))
 				drop-shadow(0 14px 28px rgb(0 0 0 / 15%)) !important;
 		}
 
-		&:focus-visible {
-			outline: 2px solid var(--color-action-accent, tokens.$color-action-accent);
-			outline-offset: 4px;
-		}
-	}
-
-	.envelope-seal-button .seal-visual {
-		width: 84px !important;
-		height: 84px !important;
-
-		// ── Oxide Red Wax with Specular Highlight ──
-		// 4-stop radial: specular at 20%, warm body, dark rim, charred edge
-		background: radial-gradient(
-			circle at 35% 30%,
-			#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
-			#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
-			#{primitives.$base-wax-red} 55%,
-			#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
-		) !important;
-		border: none !important;
-
-		// ── Directional Internal Lighting ──
-		// Top-left: warm inner glow (light catching the wax rim)
-		// Bottom-right: deep shadow (underside of wax curvature)
-		// Overall: subtle depth ring
-		box-shadow:
-			inset -3px -4px 8px rgb(0 0 0 / 40%),
-			inset 3px 4px 8px rgb(255 255 255 / 8%),
-			inset 0 0 20px rgb(0 0 0 / 15%) !important;
-
-		// ── Hand-Pressed Asymmetric Blob ──
-		// Specific radius values simulate an organic, manual pressure "wax blob"
-		// rather than a perfect geometric circle.
-		border-radius: 48% 52% 45% 95% / 53% 44% 56% 47% !important;
-		display: flex !important;
-		align-items: center !important;
-		justify-content: center !important;
-		position: relative !important;
-
-		// ── The Stamp Recess (::after) ──
-		// Simulates the debossed hexagonal cavity left by a metal stamp.
-		// Uses a three-point lighting system for physical authenticity.
-		&::after {
-			content: '' !important;
-			position: absolute !important;
-			inset: 11px !important;
-
-			// Directional fill: lighter where light enters (TL), darker in shadow (BR)
-			background: linear-gradient(
-				140deg,
-				#{color.adjust(primitives.$base-wax-red, $lightness: -8%)} 0%,
-				#{color.adjust(primitives.$base-wax-red, $lightness: -16%)} 50%,
-				#{color.adjust(primitives.$base-wax-red, $lightness: -6%)} 100%
+		.seal-visual {
+			width: 84px !important;
+			height: 84px !important;
+			background: radial-gradient(
+				circle at 35% 30%,
+				#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
+				#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
+				#{primitives.$base-wax-red} 55%,
+				#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
 			) !important;
-
-			// ── Irregular Hexagonal Stamp ──
-			// Vertices offset 1-3% from a perfect hexagon to simulate hand-forged die
-			clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%) !important;
-
-			// ── Three-Point Lighting System ──
-			// 1. Top-left depth shadow (primary light source casts this)
-			// 2. Bottom-right lip highlight (light catches the edge)
-			// 3. Center diffusion (prevents dead-black in the recess)
+			border: none !important;
 			box-shadow:
-				inset 2px 2px 4px rgb(0 0 0 / 50%),
-				inset -1px -1px 3px rgb(255 255 255 / 10%),
-				inset 0 0 8px rgb(0 0 0 / 20%) !important;
-			z-index: 1 !important;
-		}
+				inset -3px -4px 8px rgb(0 0 0 / 40%),
+				inset 3px 4px 8px rgb(255 255 255 / 8%),
+				inset 0 0 20px rgb(0 0 0 / 15%) !important;
+			border-radius: 48% 52% 45% 95% / 53% 44% 56% 47% !important;
 
-		// Hide the base theme ::before glow/melted ring
-		&::before {
-			display: none !important;
-		}
+			&::after {
+				content: '' !important;
+				position: absolute !important;
+				inset: 11px !important;
+				background: linear-gradient(
+					140deg,
+					#{color.adjust(primitives.$base-wax-red, $lightness: -8%)} 0%,
+					#{color.adjust(primitives.$base-wax-red, $lightness: -16%)} 50%,
+					#{color.adjust(primitives.$base-wax-red, $lightness: -6%)} 100%
+				) !important;
+				clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%) !important;
+				box-shadow:
+					inset 2px 2px 4px rgb(0 0 0 / 50%),
+					inset -1px -1px 3px rgb(255 255 255 / 10%),
+					inset 0 0 8px rgb(0 0 0 / 20%) !important;
+				z-index: 1 !important;
+			}
 
-		// ── Icon (Boot Silhouette) ──
-		// Sits inside the stamp recess, styled as an engraved impression.
-		.seal-icon {
-			width: 40px !important;
-			height: 40px !important;
-			z-index: 2 !important;
+			&::before {
+				display: none !important;
+			}
 
-			// Deep engraved color: very dark, not pure black
-			color: rgb(0 0 0 / 70%) !important;
-			mix-blend-mode: multiply;
-
-			// Rotación orgánica — slight tilt for hand-stamped feel
-			transform: rotate(-10deg);
-
-			// ── Debossed Lighting ──
-			// Top-left shadow (depth) + Bottom-right highlight (rim light)
-			filter: drop-shadow(-1px -1px 0.5px rgb(0 0 0 / 85%))
-				drop-shadow(0.75px 0.75px 0.3px rgb(255 255 255 / 12%));
-			opacity: 90%;
-
-			// GPU compositing for smooth animation without repaints
-			will-change: transform;
-			transition: opacity tokens.$duration-standard tokens.$ease-out;
-
-			// No hover transform on the icon itself to prevent clip-path clipping.
-			// Hover animation is handled at the .envelope-seal-button level.
-		}
-	}
-
-	.envelope-seal-button .seal-pulse {
-		width: 92px !important;
-		height: 92px !important;
-		border-color: rgba(primitives.$base-wax-red, 0.35) !important;
-
-		// Match the asymmetric blob shape
-		border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.envelope-seal-button {
-			transition: none !important;
-
-			&:hover {
-				transform: none !important;
+			.seal-icon {
+				width: 40px !important;
+				height: 40px !important;
+				z-index: 2 !important;
+				color: rgb(0 0 0 / 70%) !important;
+				mix-blend-mode: multiply;
+				transform: rotate(-10deg);
+				filter: drop-shadow(-1px -1px 0.5px rgb(0 0 0 / 85%))
+					drop-shadow(0.75px 0.75px 0.3px rgb(255 255 255 / 12%));
+				opacity: 90%;
 			}
 		}
 
-		.envelope-seal-button .seal-icon {
-			transition: none !important;
+		.seal-pulse {
+			width: 92px !important;
+			height: 92px !important;
+			border-color: rgba(primitives.$base-wax-red, 0.35) !important;
+			border-radius: 48% 52% 45% 55% / 53% 44% 56% 47% !important;
 		}
 	}
 }

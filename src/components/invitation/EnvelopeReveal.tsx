@@ -20,6 +20,7 @@ interface Props {
 	stampYear?: string;
 	eventSlug: string;
 	tooltipText?: string;
+	variant?: string;
 }
 
 const EnvelopeReveal: React.FC<Props> = ({
@@ -33,6 +34,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 	stampYear,
 	eventSlug,
 	tooltipText,
+	variant,
 }) => {
 	const shouldReduceMotion = useReducedMotion();
 	const [showTooltip, setShowTooltip] = useState(false);
@@ -103,7 +105,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 			setPhase('exit');
 			document.body.style.overflow = 'auto';
 			document.body.classList.add('invitation-revealed');
-		}, 3000);
+		}, 3500);
 	};
 
 	// Tooltip delay logic
@@ -175,6 +177,7 @@ const EnvelopeReveal: React.FC<Props> = ({
 			{phase !== 'exit' && (
 				<motion.div
 					className="envelope-wrapper"
+					data-variant={variant}
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{

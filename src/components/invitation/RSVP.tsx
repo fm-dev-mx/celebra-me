@@ -10,6 +10,7 @@ interface RSVPProps {
 	attendanceLabel?: string;
 	guestCountLabel?: string;
 	buttonLabel?: string;
+	variant?: string;
 }
 
 const RSVP: React.FC<RSVPProps> = ({
@@ -20,6 +21,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	attendanceLabel = '¿Asistirás al evento? *',
 	guestCountLabel = 'Número de acompañantes',
 	buttonLabel = 'Confirmar',
+	variant,
 }) => {
 	const [name, setName] = useState('');
 	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
@@ -108,7 +110,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	}
 
 	return (
-		<section id="rsvp" className="rsvp">
+		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 
 			<form onSubmit={handleSubmit} className="rsvp__form">

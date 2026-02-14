@@ -37,7 +37,7 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 ### Quote Section
 
 | Variante          | Descripción                                                                                                | Status    | Mejor para                               |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------- |
+| :---------------- | :--------------------------------------------------------------------------------------------------------- | :-------- | :--------------------------------------- |
 | `elegant`         | Clásico, fondo cuero oscuro, serif, transiciones suaves                                                    | [APPLIED] | Bodas formales, aniversarios             |
 | `modern`          | Juvenil, gradientes pasteles, script, animaciones bounce                                                   | [APPLIED] | XV Años, fiestas modernas                |
 | `jewelry-box`     | **Premium Luxury**, fondo pergamino marfil, `Pinyon Script`, animaciones `premiumFadeUp`, acentos dorados. | [APPLIED] | **XV Años Premium**, Bodas de Lujo       |
@@ -47,7 +47,7 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 ### Hero Section
 
 | Variante          | Descripción                                                               | Status    | Mejor para          |
-| ----------------- | ------------------------------------------------------------------------- | --------- | ------------------- |
+| :---------------- | :------------------------------------------------------------------------ | :-------- | :------------------ |
 | `standard`        | Diseño base con overlays estándar                                         | [APPLIED] | Genérico            |
 | `jewelry-box`     | Glassmorphism profundo, light sweep, animaciones de foil de oro           | [APPLIED] | **XV Años Premium** |
 | `luxury-hacienda` | Estética de cuero y metal, tipografía con shimmer dorado, bordes rústicos | [APPLIED] | **Gerardo 60**      |
@@ -55,15 +55,30 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 ### RSVP Section
 
 | Variante          | Descripción                                                   | Status    | Mejor para          |
-| ----------------- | ------------------------------------------------------------- | --------- | ------------------- |
+| :---------------- | :------------------------------------------------------------ | :-------- | :------------------ |
 | `standard`        | Formulario base con estilos neutros                           | [APPLIED] | Genérico            |
 | `jewelry-box`     | Botones glass con bordes dorados, tipografía manuscrita sutil | [APPLIED] | **XV Años Premium** |
 | `luxury-hacienda` | Botones de alto contraste (café/oro), tipografía UI bloqueada | [APPLIED] | **Gerardo 60**      |
 
+### Itinerary Section
+
+| Variante          | Descripción                                                | Status    | Mejor para          |
+| :---------------- | :--------------------------------------------------------- | :-------- | :------------------ |
+| `base`            | Línea de tiempo editorial limpia                           | [APPLIED] | Eventos formales    |
+| `jewelry-box`     | Iconografía glassmorphic, acentos oro líquido              | [APPLIED] | **XV Años Premium** |
+| `luxury-hacienda` | Estética rústica, iconos cuero/bronce, tipografía Hacienda | [APPLIED] | **Gerardo 60**      |
+
+### Envelope Reveal (Sobre)
+
+| Variante          | Descripción                                                   | Status    | Mejor para          |
+| :---------------- | :------------------------------------------------------------ | :-------- | :------------------ |
+| `jewelry-box`     | Sello de oro brillante, tarjeta blanca minimalista            | [APPLIED] | **XV Años Premium** |
+| `luxury-hacienda` | Sobre de cuero, sello de lacre oscuro, tarjeta Hacienda beige | [APPLIED] | **Gerardo 60**      |
+
 ### Countdown Section
 
 | Variante      | Descripción                                                                                            | Status    | Mejor para                             |
-| ------------- | ------------------------------------------------------------------------------------------------------ | --------- | -------------------------------------- |
+| :------------ | :----------------------------------------------------------------------------------------------------- | :-------- | :------------------------------------- |
 | `minimal`     | Números finos, fondo pergamino, diseño limpio                                                          | [APPLIED] | Eventos formales                       |
 | `vibrant`     | Números bold, gradientes vibrantes, partículas                                                         | [APPLIED] | XV Años convencionales                 |
 | `jewelry-box` | **Sophisticated**, números delgados `Playfair Display`, glassmorphism, fondo crema, sin distracciones. | [APPLIED] | **Demo XV**, Invitaciones de alta gama |
@@ -72,7 +87,7 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 ### Location Section
 
 | Variante      | Descripción                                                                           | Status    | Mejor para           |
-| ------------- | ------------------------------------------------------------------------------------- | --------- | -------------------- |
+| :------------ | :------------------------------------------------------------------------------------ | :-------- | :------------------- |
 | `structured`  | Layout en grid, bordes definidos, tarjetas rígidas                                    | [APPLIED] | Eventos corporativos |
 | `organic`     | Curvas suaves, flourishes florales, colores pasteles                                  | [APPLIED] | XV Años estándar     |
 | `jewelry-box` | **Immersion**, marcos de oro fino, fondo marfil, tipografía `EB Garamond` optimizada. | [PENDING] | **XV Años Premium**  |
@@ -81,7 +96,7 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 ### Family & Gifts
 
 | Variante      | Descripción                                                                        | Status    | Secciones     |
-| ------------- | ---------------------------------------------------------------------------------- | --------- | ------------- |
+| :------------ | :--------------------------------------------------------------------------------- | :-------- | :------------ |
 | `standard`    | Layout base por defecto                                                            | [APPLIED] | Todas         |
 | `jewelry-box` | Vidrio esmerilado, bordes de oro líquido, tipografía marfil sobre crema, glass-ui. | [APPLIED] | Family, Gifts |
 | `floral`      | Decoraciones botánicas sutiles                                                     | [PENDING] | Family        |
@@ -130,6 +145,11 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 
 **Identidad Visual:** Ivory parchment, Pinyon Script accents, liquid gold borders, airy spacing,
 reduced saturation.
+
+### Inventario Completo
+
+Para una lista exhaustiva de todos los componentes, variantes y archivos de estilo asociados,
+consulte el [Inventario de Temas](file:///c:/Code/celebra-me/docs/THEME_INVENTORY.md).
 
 ## Tokens de Diseño
 
@@ -209,7 +229,8 @@ todos los temas ├── \_base-theme.scss # Overrides globales y filtros por v
 
 > [!IMPORTANT] **Ley de Aislamiento**: Los archivos en `presets/` NUNCA deben contener estilos CSS
 > directos ni selectores de clase (ej. `.card`). Su única responsabilidad es definir variables CSS.
-> Los estilos visuales se encapsulan en `sections/` usando selectores de atributo `[data-variant]`.
+> Los estilos visuales se encapsulan en `sections/` exclusivamente usando selectores de atributo
+> `[data-variant]`.
 
 ## Implementación Técnica
 
@@ -218,6 +239,9 @@ todos los temas ├── \_base-theme.scss # Overrides globales y filtros por v
 1. **Quote.astro**: Acepta `variant` y `animation`
 2. **Countdown.astro**: Acepta `variant` y `showParticles`
 3. **EventLocation.astro**: Acepta `variant`, `mapStyle` y `showFlourishes`
+4. **EnvelopeReveal.tsx**: Acepta `variant`
+5. **Itinerary.astro**: Acepta `variant`
+6. **RSVP.tsx**: Acepta `variant`
 
 ### Schema Extendido (config.ts)
 
@@ -248,7 +272,7 @@ sectionStyles: z.object({
 Para asegurar 0% de similitud visual entre eventos:
 
 | Sección   | Gerardo (60 años)                              | XV Años (Demo)                                      | Diferenciación |
-| --------- | ---------------------------------------------- | --------------------------------------------------- | -------------- |
+| :-------- | :--------------------------------------------- | :-------------------------------------------------- | :------------- |
 | Quote     | Fondo cuero oscuro, serif, transiciones suaves | Fondo pergamino marfil, script, animaciones premium | 100%           |
 | Countdown | Números finos, pergamino, sin partículas       | Números delgados Playfair, glassmorphism            | 100%           |
 | Location  | Estructurado, mapa oscuro, bordes dorados      | Orgánico, colores pastel, flourishes florales       | 100%           |

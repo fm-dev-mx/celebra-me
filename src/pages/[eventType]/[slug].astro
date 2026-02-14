@@ -173,6 +173,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 					stampText={data.envelope.stampText}
 					stampYear={data.envelope.stampYear}
 					eventSlug={event.id}
+					variant={preset}
 				/>
 			)
 		}
@@ -253,7 +254,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 
 		{
 			data.itinerary && (
-				<Itinerary title={data.itinerary.title} items={data.itinerary.items} />
+				<Itinerary title={data.itinerary.title} items={data.itinerary.items} variant={preset} />
 			)
 		}
 
@@ -273,6 +274,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 						title={data.rsvp.title}
 						guestCap={data.rsvp.guestCap}
 						confirmationMessage={data.rsvp.confirmationMessage}
+						variant={preset}
 						{...rsvpProps}
 					/>
 				);

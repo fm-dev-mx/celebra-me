@@ -96,7 +96,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 	&.is-rising {
 		transform: translateY(-60%) scale(1.04);
-		box-shadow: tokens.$shadow-emphasis;
+		box-shadow: tokens.$shadow-subtle;
 	}
 }
 
