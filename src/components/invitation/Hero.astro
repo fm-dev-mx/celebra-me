@@ -29,8 +29,9 @@ const {
 	variant = 'standard',
 } = Astro.props;
 
-const bgSrc = 'src' in backgroundImage ? backgroundImage.src : backgroundImage;
-const portraitSrc = portrait ? ('src' in portrait ? portrait.src : portrait) : undefined;
+// Distinguish between ImageAsset (wrapper with .src) and ImageMetadata (Astro object)
+const bgSrc = 'alt' in backgroundImage ? backgroundImage.src : backgroundImage;
+const portraitSrc = portrait ? ('alt' in portrait ? portrait.src : portrait) : undefined;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -41,31 +42,16 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 
 <section id="inicio" class="invitation-hero" data-variant={variant}>
 	<div class="invitation-hero__background">
-		{
-			typeof bgSrc === 'string' ? (
-				<Image
-					src={bgSrc}
-					alt={name}
-					width={1920}
-					height={1080}
-					format="webp"
-					quality={80}
-					loading="eager"
-					fetchpriority="high"
-				/>
-			) : (
-				<Image
-					src={bgSrc}
-					alt={name}
-					width={1920}
-					height={1080}
-					format="webp"
-					quality={80}
-					loading="eager"
-					fetchpriority="high"
-				/>
-			)
-		}
+		<Image
+			src={bgSrc as any}
+			alt={name}
+			width={1920}
+			height={1080}
+			format="webp"
+			quality={80}
+			loading="eager"
+			fetchpriority="high"
+		/>
 	</div>
 
 	<div class="invitation-hero__content">
@@ -80,25 +66,14 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 
 		{portraitSrc && (
 			<div class="invitation-hero__portrait">
-				{typeof portraitSrc === 'string' ? (
-					<Image
-						src={portraitSrc}
-						alt={`Retrato de ${name}`}
-						width={200}
-						height={200}
-						format="webp"
-						quality={85}
-					/>
-				) : (
-					<Image
-						src={portraitSrc}
-						alt={`Retrato de ${name}`}
-						width={200}
-						height={200}
-						format="webp"
-						quality={85}
-					/>
-				)}
+				<Image
+					src={portraitSrc as any}
+					alt={`Retrato de ${name}`}
+					width={200}
+					height={200}
+					format="webp"
+					quality={85}
+				/>
 			</div>
 		)}
 

@@ -220,74 +220,83 @@ const EnvelopeReveal: React.FC<Props> = ({
 
 						{/* 5. The Content/Info Layer (Floating on Top) */}
 						<div className="envelope-tease">
-							{/* Official Stamp / Tax Marker Area (Theme-specific, only if stampText provided) */}
-							{stampText && (
-								<div className="envelope-stamp-area">
-									<div className="envelope-stamp">
-										<span>{stampText}</span>
-										{stampYear && <small>{stampYear}</small>}
-									</div>
-								</div>
-							)}
+							<AnimatePresence mode="wait">
+								{phase === 'closed' && (
+									<motion.div
+										key="tease-content"
+										initial={{ opacity: 1 }}
+										exit={{
+											opacity: 0,
+											transition: { duration: 0.4, ease: 'easeOut' },
+										}}
+										className="envelope-tease__interactive-content"
+									>
+										{/* Official Stamp / Tax Marker Area (Theme-specific, only if stampText provided) */}
+										{stampText && (
+											<div className="envelope-stamp-area">
+												<div className="envelope-stamp">
+													<span>{stampText}</span>
+													{stampYear && <small>{stampYear}</small>}
+												</div>
+											</div>
+										)}
 
-							<div className="tease-header">
-								{/* Document label only if provided (Western theme) */}
-								{documentLabel && (
-									<span className="envelope-manifest-label">{documentLabel}</span>
+										<div className="tease-header">
+											{/* Document label only if provided (Western theme) */}
+											{documentLabel && (
+												<span className="envelope-manifest-label">
+													{documentLabel}
+												</span>
+											)}
+											<h2 className="envelope-name">{name}</h2>
+										</div>
+
+										{/* Seal as layout participant (middle zone) */}
+										<div className="envelope-seal-zone">
+											<motion.button
+												className={`envelope-seal-button envelope-seal-button--${sealStyle}`}
+												onClick={handleOpen}
+												initial={{ scale: 0, opacity: 0 }}
+												animate={{
+													scale: 1,
+													opacity: 1,
+													transition: { delay: 0.6, type: 'spring' },
+												}}
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.95 }}
+												aria-label="Abrir sobre de la invitación"
+											>
+												<div className="seal-visual">
+													{renderSealIcon()}
+												</div>
+												<div className="seal-pulse" />
+
+												{/* Tooltip - appears after 1.5s delay */}
+												<AnimatePresence>
+													{showTooltip && (
+														<motion.span
+															className="envelope-tooltip"
+															initial={{ opacity: 0, x: 10 }}
+															animate={{ opacity: 1, x: 0 }}
+															exit={{ opacity: 0, x: 5 }}
+															transition={{ duration: 0.3 }}
+														>
+															{tooltipText || 'Abre el sobre'}
+														</motion.span>
+													)}
+												</AnimatePresence>
+											</motion.button>
+										</div>
+
+										<div className="tease-content-bottom">
+											<div className="tease-divider" />
+											<p className="envelope-details">
+												{formattedDate} • {city}
+											</p>
+										</div>
+									</motion.div>
 								)}
-								<h2 className="envelope-name">{name}</h2>
-							</div>
-
-							{/* Seal as layout participant (middle zone) */}
-							<div className="envelope-seal-zone">
-								<AnimatePresence>
-									{phase === 'closed' && (
-										<motion.button
-											className={`envelope-seal-button envelope-seal-button--${sealStyle}`}
-											onClick={handleOpen}
-											initial={{ scale: 0, opacity: 0 }}
-											animate={{
-												scale: 1,
-												opacity: 1,
-												transition: { delay: 0.6, type: 'spring' },
-											}}
-											whileHover={{ scale: 1.1 }}
-											exit={{
-												scale: 1.5,
-												opacity: 0,
-												filter: 'blur(12px)',
-												transition: { duration: 0.5 },
-											}}
-											aria-label="Abrir sobre de la invitación"
-										>
-											<div className="seal-visual">{renderSealIcon()}</div>
-											<div className="seal-pulse" />
-
-											{/* Tooltip - appears after 1.5s delay */}
-											<AnimatePresence>
-												{showTooltip && (
-													<motion.span
-														className="envelope-tooltip"
-														initial={{ opacity: 0, x: 10 }}
-														animate={{ opacity: 1, x: 0 }}
-														exit={{ opacity: 0, x: 5 }}
-														transition={{ duration: 0.3 }}
-													>
-														{tooltipText || 'Abre el sobre'}
-													</motion.span>
-												)}
-											</AnimatePresence>
-										</motion.button>
-									)}
-								</AnimatePresence>
-							</div>
-
-							<div className="tease-content-bottom">
-								<div className="tease-divider" />
-								<p className="envelope-details">
-									{formattedDate} • {city}
-								</p>
-							</div>
+							</AnimatePresence>
 						</div>
 					</motion.div>
 				</motion.div>

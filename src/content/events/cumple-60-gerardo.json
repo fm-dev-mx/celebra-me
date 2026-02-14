@@ -225,7 +225,7 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "boot",
         "documentLabel": "MANIFEST / WANTED",

@@ -18,20 +18,20 @@
 
 // LUXURY HACIENDA PRESET
 .header-base[data-variant='luxury-hacienda'] {
-	--header-bg: rgb(10 10 10 / 80%);
-	--header-bg-scrolled: rgb(10 10 10 / 95%);
-	--header-nav-color: var(--color-text-on-dark);
-	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-bg: rgba(#{tokens.$color-surface-dark-rgb}, 1);
+	--header-bg-scrolled: rgba(#{tokens.$color-surface-dark-rgb}, 1);
+	--header-nav-color: #{tokens.$color-text-on-dark};
+	--header-nav-color-transparent: #{tokens.$color-text-on-dark};
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
 }
 
 // JEWELRY BOX PRESET
 .header-base[data-variant='jewelry-box'] {
-	--header-bg: rgb(255 255 255 / 60%);
-	--header-bg-scrolled: rgb(255 255 255 / 95%);
-	--header-nav-color: var(--color-surface-dark);
-	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
+	--header-bg-scrolled: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
+	--header-nav-color: #{tokens.$color-surface-dark};
+	--header-nav-color-transparent: #{tokens.$color-text-on-dark};
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
 	--header-nav-filter-transparent: none;
 }

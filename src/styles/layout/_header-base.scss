@@ -1,15 +1,16 @@
 @use '../global/mixins' as *;
+@use '../tokens' as tokens;
 
 .header-base {
 	--header-height: 100px;
 	--header-height-scrolled: 70px;
-	--header-transition: 0.6s;
-	--header-ease: cubic-bezier(0.22, 1, 0.36, 1);
-	--header-glass-bg: rgb(10 10 10 / 80%);
+	--header-transition: #{tokens.$duration-slower};
+	--header-ease: #{tokens.$ease-premium};
+	--header-glass-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0.8);
 	--header-glass-blur: 15px;
 	--header-glass-saturate: 160%;
-	--header-scrolled-bg: rgb(10 10 10 / 90%);
-	--header-shadow: 0 10px 30px rgb(0 0 0 / 30%);
+	--header-scrolled-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0.9);
+	--header-shadow: #{tokens.$shadow-emphasis};
 
 	position: fixed;
 	top: 0;

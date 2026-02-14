@@ -53,12 +53,8 @@
 		z-index: 1;
 		border-radius: 2rem 2rem 0 0;
 		backdrop-filter: blur(10px);
-		background: var(
-			--color-glass-bg,
-			rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.1)
-		);
-		border: 1px solid
-			var(--color-glass-border, rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.2));
+		background: tokens.$color-glass-bg;
+		border: 1px solid tokens.$color-glass-border;
 		box-shadow: 0 -10px 30px rgb(0 0 0 / 10%);
 
 		@include respond-to(md) {
@@ -68,7 +64,7 @@
 
 		// Reveal animation
 		opacity: 0%;
-		animation: heroContentReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+		animation: heroContentReveal tokens.$duration-reveal tokens.$ease-premium 0.5s forwards;
 	}
 
 	&__label {
@@ -79,7 +75,7 @@
 		letter-spacing: 0.3em;
 		margin-bottom: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp 0.8s ease-out 0.8s forwards;
+		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.8s forwards;
 	}
 
 	&__title {
@@ -94,27 +90,27 @@
 		background: linear-gradient(
 			110deg,
 			var(--color-action-accent, tokens.$color-action-accent) 35%,
-			#fff 50%,
+			tokens.$color-text-on-dark 50%,
 			var(--color-action-accent, tokens.$color-action-accent) 65%
 		);
 		background-size: 250% auto;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
-			fadeInSlideUp 1s ease-out 1s forwards,
+			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
 			specularGlint 8s ease-in-out infinite;
 	}
 
 	&__nickname-badge {
 		opacity: 0%;
-		animation: fadeInSlideUp 0.8s ease-out 1.2s forwards;
+		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1.2s forwards;
 
 		span {
 			background: linear-gradient(
 				110deg,
-				var(--color-text-on-dark, #fff) 35%,
-				#fff 50%,
-				var(--color-text-on-dark, #fff) 65%
+				tokens.$color-text-on-dark 35%,
+				tokens.$base-neutral-0 50%,
+				tokens.$color-text-on-dark 65%
 			);
 			background-size: 250% auto;
 			background-clip: text;
@@ -130,7 +126,7 @@
 		margin: 1.5rem auto;
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: growLine 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+		animation: growLine tokens.$duration-premium tokens.$ease-premium 1.2s forwards;
 	}
 
 	&__details {
@@ -138,7 +134,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp 0.8s ease-out 1.4s forwards;
+		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1.4s forwards;
 	}
 
 	&__date {
@@ -170,7 +166,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeIn 1.5s ease-out 2.5s forwards;
+		animation: fadeIn 1.5s tokens.$ease-out 2.5s forwards;
 		color: rgb(255 255 255 / 70%);
 		pointer-events: none;
 	}
@@ -266,6 +262,20 @@
 
 	to {
 		opacity: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.invitation-hero {
+		* {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+
+		&__scroll-chevron {
+			animation: none !important;
+		}
 	}
 }
 

@@ -23,11 +23,11 @@
 			rgb(255 255 255 / 50%) 100%
 		);
 		backdrop-filter: blur(24px) saturate(200%);
-		border: 1px solid rgb(212 175 55 / 45%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.45);
 		box-shadow:
 			0 30px 60px -12px rgb(0 0 0 / 35%),
 			inset 0 0 0 1px rgb(255 255 255 / 50%),
-			inset 0 0 20px rgb(212 175 55 / 5%);
+			inset 0 0 20px rgb(var(--color-action-accent-rgb) / 5%);
 		padding: 4rem 2.5rem;
 		position: relative;
 		overflow: hidden;
@@ -38,7 +38,7 @@
 			inset: 0;
 			background: var(--light-sweep);
 			background-size: 200% 100%;
-			animation: light-sweep 6s infinite ease-in-out;
+			animation: light-sweep 6s infinite tokens.$ease-in-out;
 			pointer-events: none;
 		}
 
@@ -46,7 +46,7 @@
 			content: '';
 			position: absolute;
 			inset: 7px;
-			border: 0.5px solid rgb(212 175 55 / 20%);
+			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 20%);
 			pointer-events: none;
 			z-index: 1;
 		}
@@ -64,9 +64,9 @@
 		background: linear-gradient(
 			to bottom,
 			#f1e1b9 0%,
-			#d4af37 25%,
+			var(--color-action-accent) 25%,
 			#a67c37 50%,
-			#d4af37 75%,
+			var(--color-action-accent) 75%,
 			#f1e1b9 100%
 		);
 		background-size: 100% 200%;
@@ -75,8 +75,8 @@
 		text-shadow: none;
 		filter: drop-shadow(0 4px 8px rgb(0 0 0 / 25%));
 		animation:
-			fadeInSlideUp 1s ease-out 1s forwards,
-			gold-foil 8s ease-in-out infinite;
+			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
+			gold-foil 8s tokens.$ease-in-out infinite;
 		margin: 0.2rem 0;
 		-webkit-text-stroke: 0.2px rgb(255 255 255 / 10%);
 	}
@@ -126,8 +126,8 @@ body.invitation-revealed
 	.invitation-hero[data-variant='jewelry-box']
 	.invitation-hero__title {
 	animation:
-		fadeInSlideUp 1s ease-out 0.7s forwards,
-		gold-foil 8s ease-in-out infinite;
+		fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.7s forwards,
+		gold-foil 8s tokens.$ease-in-out infinite;
 }
 
 // ==========================================================================
@@ -140,8 +140,8 @@ body.invitation-revealed
 			radial-gradient(
 				circle at center,
 				transparent 10%,
-				rgb(var(--color-text-primary-rgb, 58, 40, 25), 0.3) 60%,
-				rgb(var(--color-surface-dark-rgb, 50, 35, 22), 0.8) 100%
+				rgb(var(--color-text-primary-rgb), 0.3) 60%,
+				rgb(var(--color-surface-dark-rgb), 0.8) 100%
 			),
 			linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 20%) 50%, rgb(0 0 0 / 70%) 100%);
 		background-blend-mode: normal, normal;
@@ -150,13 +150,13 @@ body.invitation-revealed
 
 	.invitation-hero__content {
 		background: tokens.$color-glass-bg;
-		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.25);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.25);
 		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px;
 		position: relative;
 		overflow: hidden;
 		box-shadow:
-			inset 0 0 30px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1),
+			inset 0 0 30px rgb(var(--color-action-accent-rgb), 0.1),
 			0 10px 30px rgb(0 0 0 / 20%);
 
 		&::before {
@@ -179,7 +179,7 @@ body.invitation-revealed
 	}
 
 	.invitation-hero__title {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display-hacienda, serif);
 		font-weight: 500;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -187,13 +187,13 @@ body.invitation-revealed
 		background: linear-gradient(
 			to right,
 			var(--color-action-accent),
-			#fff,
+			tokens.$base-neutral-0,
 			var(--color-action-accent)
 		);
 		background-clip: text;
 		color: transparent;
 		background-size: 200% auto;
-		animation: shimmer 3s ease-in-out infinite;
+		animation: shimmer 3s tokens.$ease-in-out infinite;
 	}
 
 	.invitation-hero__label {
@@ -211,7 +211,7 @@ body.invitation-revealed
 		);
 		background-size: 200% auto;
 		animation:
-			grow-line 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards,
+			grow-line tokens.$duration-premium tokens.$ease-premium 1.2s forwards,
 			shimmer 4s linear infinite 1.5s;
 	}
 
@@ -227,7 +227,7 @@ body.invitation-revealed
 		color: var(--color-action-accent);
 		border: 2px solid var(--color-action-accent);
 		border-radius: 50px;
-		font-family: tokens.$font-ui;
+		font-family: var(--font-ui, sans-serif);
 		font-size: 1.2rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -238,7 +238,9 @@ body.invitation-revealed
 		position: relative;
 		z-index: 10;
 		letter-spacing: 0.05em;
-		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		transition:
+			transform tokens.$duration-standard tokens.$ease-premium,
+			box-shadow tokens.$duration-standard tokens.$ease-premium;
 
 		&::before {
 			content: '';
@@ -264,17 +266,26 @@ body.invitation-revealed
 			opacity: 30%;
 		}
 
-		&:hover {
+		&:hover,
+		&:focus-visible {
 			transform: rotate(-1deg) scale(1.05);
 			box-shadow:
 				0 10px 30px rgb(0 0 0 / 50%),
 				0 0 30px rgb(var(--color-action-accent-rgb), 0.3);
+			outline: none;
+		}
+
+		&:focus-visible {
+			border-color: #fff;
+			box-shadow:
+				0 0 0 2px var(--color-action-accent),
+				0 10px 30px rgb(0 0 0 / 50%);
 		}
 	}
 
 	.invitation-hero__venue .calligraphy-accent {
 		color: var(--color-surface-primary);
-		font-family: tokens.$font-ui;
+		font-family: var(--font-ui, sans-serif);
 		font-weight: 300;
 		font-size: 0.8em;
 	}
