@@ -19,7 +19,7 @@ findings.
 
 Before starting, you MUST have:
 
-- [ ] Audit report with specific findings (`docs/audit/audit-report-*.md`)
+- [ ] Audit report with specific findings (`docs/audit/archive/*/audit-report-*.md`)
 - [ ] Categorized issues (🔴🟠🟡)
 - [ ] Affected file paths clearly identified
 - [ ] Remediation scope agreed upon
@@ -118,8 +118,8 @@ quote: z.object({
 find docs .agent/workflows -name "*.md" -exec grep -l "file://" {} \;
 
 # Replace with relative paths
-# Before: [Link](file:///c:/Code/celebra-me/docs/file.md)
-# After:  [Link](./file.md)
+# Before: [Link](absolute local path)
+# After:  [Link](docs/ARCHITECTURE.md)
 ```
 
 ### 3.2 Obsolete Workflow References

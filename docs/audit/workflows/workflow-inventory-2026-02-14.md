@@ -2,11 +2,12 @@
 
 ## Summary
 
-- Scope: `.agent/workflows/`, `.agent/workflows/docs/`, `.agent/workflows/archive/`
+- Scope: `.agent/workflows/`
 - Strategy: Hybrid taxonomy (domain + lifecycle)
-- Total workflows: 55
-- Active workflows: 21
-- Archived workflows: 34
+- Total workflows: 32
+- Active workflows: 32
+- Archived workflows: 0
+- Note: `archive/` is currently empty in filesystem.
 
 ## Active Workflows by Domain
 
@@ -30,11 +31,11 @@
 
 ### remediation/task-open (5)
 
-- `.agent/workflows/remediation/task-open/gerardo-remediation.md`
-- `.agent/workflows/remediation/task-open/gerardo-ux-remediation.md`
 - `.agent/workflows/remediation/task-open/gerardo-initial-card-recovery.md`
-- `.agent/workflows/remediation/task-open/itinerary-remediation.md`
+- `.agent/workflows/remediation/task-open/gerardo-structural-audit.md`
 - `.agent/workflows/remediation/task-open/hero-premium-audit-remediation.md`
+- `.agent/workflows/remediation/task-open/premium-invitation-orchestrator.md`
+- `.agent/workflows/remediation/task-open/generic-section-remediation.md`
 
 ### docs evergreen (7)
 
@@ -48,22 +49,22 @@
 
 ## Archived Workflows
 
-- All task and superseded workflows are centralized in `.agent/workflows/archive/`.
-- Archive now includes former top-level premium audits/remediations and orchestrator flows.
+- `.agent/workflows/archive/` exists but currently has no files.
+- Prior inventory statements about archived workflow counts are stale and superseded.
 
 ## Critical Fixes Applied in This Cycle
 
 - Gatekeeper canonicalized to: `.agent/workflows/governance/evergreen/gatekeeper-commit.md`
-- Active workflows moved from top-level to hybrid folders.
+- Frontmatter lifecycle/domain normalized for remediation workflows in `task-open`.
 - Frontmatter metadata normalized on active workflows:
     - `description`
     - `lifecycle`
     - `domain`
     - `owner`
     - `last_reviewed`
-- New workflow created:
-    - `.agent/workflows/remediation/task-open/hero-premium-audit-remediation.md`
+- Canonical audit taxonomy introduced in
+  `docs/audit/{discovery,workflows,docs-governance,tech-debt,remediation}/`.
 
 ## Next Execution Queue
 
-See: `docs/audit/workflow-execution-queue-2026-02-14.md`
+See: `docs/audit/workflows/workflow-execution-queue-2026-02-14.md`

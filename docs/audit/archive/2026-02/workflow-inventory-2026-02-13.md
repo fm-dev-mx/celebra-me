@@ -1,6 +1,8 @@
 # Workflow Inventory Snapshot - 2026-02-13
 
-> Superseded by `docs/audit/workflow-inventory-2026-02-14.md` after hybrid taxonomy migration.
+> Superseded by `docs/audit/workflows/workflow-inventory-2026-02-14.md` after hybrid taxonomy
+> migration. Historical snapshot only. Paths and counts can be stale and must not be used as
+> operational source of truth.
 
 ## Summary
 

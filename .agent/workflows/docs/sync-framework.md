@@ -12,7 +12,7 @@ Base pattern for synchronization and drift detection workflows.
 
 **Used by:**
 
-- `docs/docs-audit.md` - Documentation sync
+- `.agent/workflows/docs/docs-audit.md` - Documentation sync
 - `workflow-sync.md` - Workflow maintenance
 - `skills-sync.md` - Agent skills sync
 

@@ -315,6 +315,6 @@ rg ":focus-visible|outline" src/styles/themes/luxury-hacienda/
 
 1. Save this workflow as `.agent/workflows/audits/task-open/gerardo-premium-ux-audit.md`.
 2. Update `docs/implementation-log.md` with audit initiation.
-3. Generate audit report in `reports/ux-audit-gerardo-YYYY-MM-DD.md`.
+3. Generate audit report in `docs/audit/discovery/discovery-ux-gerardo-YYYY-MM-DD.md`.
 
 // turbo

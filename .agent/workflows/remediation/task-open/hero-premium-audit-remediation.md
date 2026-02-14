@@ -21,7 +21,7 @@ consistency across `luxury-hacienda` and `jewelry-box` variants.
 
 ## Outputs
 
-- `docs/audit/discovery-hero-YYYY-MM-DD.md`
+- `docs/audit/discovery/discovery-hero-YYYY-MM-DD.md`
 - `docs/implementation-log.md` entry with ADU evidence
 - Lifecycle transition: `task-open` -> `task-completed` -> `archive`
 

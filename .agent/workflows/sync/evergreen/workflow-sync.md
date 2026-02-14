@@ -61,7 +61,7 @@ last_reviewed: 2026-02-14
 
 1. **Link Integrity**
     - Verify all `docs/` references exist
-    - No `file://` protocol (use repo-relative `./name.md` or `./docs/name.md`)
+    - No `file://` protocol (use repo-relative paths like `README.md` or `docs/ARCHITECTURE.md`)
     - Links to archived workflows should be updated or removed
 
 2. **Convention Compliance**

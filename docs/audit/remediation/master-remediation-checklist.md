@@ -58,9 +58,6 @@ the Premium Audit of the "Gerardo" (Luxury Hacienda) invitation.
 
 _Once remediations are executed, use these workflows to verify:_
 
-- [ ] Header Remediation (`/header-remediation`)
-- [ ] Family Remediation (`/family-remediation`)
-- [ ] Event Remediation (`/event-remediation`)
-- [ ] Itinerary Remediation (`/itinerary-remediation`)
-- [ ] Gallery Remediation (`/gallery-remediation`)
-- [ ] RSVP Remediation (`/rsvp-remediation`)
+- [ ] Gerardo Master Remediation (`/gerardo-remediation-master`)
+- [ ] Section Remediation (`/generic-section-remediation`)
+- [ ] Hero Remediation (`/hero-premium-audit-remediation`)

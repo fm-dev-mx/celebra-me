@@ -20,11 +20,11 @@ last_reviewed: 2026-02-14
 
 ### Three Synchronization Domains
 
-| Domain            | Workflow             | Frequency | Owner              |
-| ----------------- | -------------------- | --------- | ------------------ |
-| **Documentation** | `docs/docs-audit.md` | Monthly   | Documentation Lead |
-| **Workflows**     | `workflow-sync.md`   | Quarterly | Workflow Architect |
-| **Skills**        | `skills-sync.md`     | Quarterly | Skills Manager     |
+| Domain            | Workflow                              | Frequency | Owner              |
+| ----------------- | ------------------------------------- | --------- | ------------------ |
+| **Documentation** | `.agent/workflows/docs/docs-audit.md` | Monthly   | Documentation Lead |
+| **Workflows**     | `workflow-sync.md`                    | Quarterly | Workflow Architect |
+| **Skills**        | `skills-sync.md`                      | Quarterly | Skills Manager     |
 
 ### Dependencies
 

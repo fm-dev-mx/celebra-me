@@ -13,7 +13,7 @@ Execute phased technical debt cleanup based on audit findings.
 
 **Prerequisites:**
 
-- [x] Audit report reviewed (`docs/audit/technical-debt-audit-2026-02-11.md`)
+- [x] Audit report reviewed (`docs/audit/archive/2026-02/technical-debt-audit-2026-02-11.md`)
 - [x] `pnpm type-check` passes before starting
 - [x] `pnpm lint` passes before starting
 - [ ] Branch created: `git checkout -b tech-debt/remediation-YYYY-MM-DD`

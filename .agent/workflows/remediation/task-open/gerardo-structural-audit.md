@@ -1,7 +1,7 @@
 ---
 description: Structural Audit for Gerardo's Invitation (Luxury Hacienda)
-lifecycle: evergreen
-domain: governance
+lifecycle: task-open
+domain: remediation
 owner: workflow-governance
 last_reviewed: 2026-02-14
 ---
@@ -48,8 +48,8 @@ _Is the transition from "Family" to "Location" too abrupt? Should "Gallery" be m
 
 ## Phase 4: Adjustment Proposals
 
-1. **Draft Recommendations**: Create a report in `reports/structural-audit-gerardo-[DATE].md`
-   detailing:
+1. **Draft Recommendations**: Create a report in
+   `docs/audit/discovery/discovery-structural-gerardo-YYYY-MM-DD.md` detailing:
     - [ ] Sections to Add/Remove.
     - [ ] Proposed New Order.
     - [ ] Content Adjustments (Copywriting/Typography).
