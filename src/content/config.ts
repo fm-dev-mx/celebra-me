@@ -227,6 +227,9 @@ const eventsCollection = defineCollection({
 				confirmationMessage: z
 					.string()
 					.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
+				showDietaryField: z.boolean().default(false),
+				dietaryLabel: z.string().optional(),
+				dietaryPlaceholder: z.string().optional(),
 			})
 			.optional(),
 		// Quote section for inspirational/personalized phrases

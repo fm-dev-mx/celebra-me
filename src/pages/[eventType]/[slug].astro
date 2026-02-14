@@ -264,8 +264,8 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 				const rsvpProps = data.eventType === 'cumple'
 					? {
 							nameLabel: 'Nombre de los invitados *',
-							guestCountLabel: 'Lugares reservados',
-							buttonLabel: 'Confirmar lugar',
+							guestCountLabel: 'Número de asistentes',
+							buttonLabel: 'Confirmar asistencia',
 						}
 					: {};
 
@@ -275,6 +275,9 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 						title={data.rsvp.title}
 						guestCap={data.rsvp.guestCap}
 						confirmationMessage={data.rsvp.confirmationMessage}
+						showDietaryField={data.rsvp.showDietaryField}
+						dietaryLabel={data.rsvp.dietaryLabel}
+						dietaryPlaceholder={data.rsvp.dietaryPlaceholder}
 						variant={preset}
 						{...rsvpProps}
 					/>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import '@/styles/invitation/_rsvp.scss';
 
 interface RSVPProps {
@@ -10,6 +10,9 @@ interface RSVPProps {
 	attendanceLabel?: string;
 	guestCountLabel?: string;
 	buttonLabel?: string;
+	showDietaryField?: boolean;
+	dietaryLabel?: string;
+	dietaryPlaceholder?: string;
 	variant?: string;
 }
 
@@ -21,8 +24,12 @@ const RSVP: React.FC<RSVPProps> = ({
 	attendanceLabel = '¿Asistirás al evento? *',
 	guestCountLabel = 'Número de acompañantes',
 	buttonLabel = 'Confirmar',
+	showDietaryField = false,
+	dietaryLabel = 'Alergias o restricciones alimentarias',
+	dietaryPlaceholder = 'Ej. Vegetariano, alergia al maní...',
 	variant,
 }) => {
+	const prefersReducedMotion = useReducedMotion();
 	const [name, setName] = useState('');
 	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
 	const [guestCount, setGuestCount] = useState<number>(1);
@@ -58,16 +65,20 @@ const RSVP: React.FC<RSVPProps> = ({
 		setIsSubmitting(true);
 
 		try {
+			const payload: Record<string, unknown> = {
+				name,
+				attendance,
+				guestCount: attendance === 'yes' ? guestCount : 0,
+				notes,
+			};
+			if (showDietaryField && dietary.trim()) {
+				payload.dietary = dietary.trim();
+			}
+
 			const response = await fetch('/api/rsvp', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					name,
-					attendance,
-					guestCount: attendance === 'yes' ? guestCount : 0,
-					notes,
-					dietary,
-				}),
+				body: JSON.stringify(payload),
 			});
 
 			if (response.ok) {
@@ -85,7 +96,7 @@ const RSVP: React.FC<RSVPProps> = ({
 
 	if (submitted) {
 		return (
-			<section className="rsvp">
+			<section id="rsvp" className="rsvp" data-variant={variant}>
 				<div className="rsvp__greeting">
 					<span className="rsvp__greeting-icon" role="img" aria-label="Celebration">
 						{attendance === 'yes' ? '✨' : '✉️'}
@@ -116,9 +127,9 @@ const RSVP: React.FC<RSVPProps> = ({
 			<form onSubmit={handleSubmit} className="rsvp__form">
 				<motion.div
 					className="rsvp__field"
-					initial={{ opacity: 0, y: 10 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
+					initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+					whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+					viewport={prefersReducedMotion ? undefined : { once: true }}
 				>
 					<label htmlFor="name">{nameLabel}</label>
 					<input
@@ -133,10 +144,10 @@ const RSVP: React.FC<RSVPProps> = ({
 
 				<motion.div
 					className="rsvp__field"
-					initial={{ opacity: 0, y: 10 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.1 }}
+					initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+					whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+					viewport={prefersReducedMotion ? undefined : { once: true }}
+					transition={prefersReducedMotion ? undefined : { delay: 0.1 }}
 				>
 					<label>{attendanceLabel}</label>
 					<div className="rsvp__radio-group">
@@ -166,14 +177,20 @@ const RSVP: React.FC<RSVPProps> = ({
 				<AnimatePresence>
 					{attendance === 'yes' && (
 						<motion.div
-							initial={{ opacity: 0, height: 0 }}
+							initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: 'auto' }}
-							exit={{ opacity: 0, height: 0 }}
+							exit={
+								prefersReducedMotion
+									? { opacity: 1, height: 'auto' }
+									: { opacity: 0, height: 0 }
+							}
+							transition={prefersReducedMotion ? { duration: 0 } : undefined}
 							className="rsvp__extra-fields"
 						>
 							<div className="rsvp__field">
 								<label htmlFor="guestCount">
-									{guestCountLabel} (Máx. {guestCap})
+									{guestCountLabel}
+									{guestCap <= 4 ? ` (Máx. ${guestCap})` : ''}
 								</label>
 								<input
 									type="number"
@@ -186,18 +203,18 @@ const RSVP: React.FC<RSVPProps> = ({
 								/>
 							</div>
 
-							<div className="rsvp__field">
-								<label htmlFor="dietary">
-									Alergias o restricciones alimentarias
-								</label>
-								<textarea
-									id="dietary"
-									placeholder="Ej. Vegetariano, alergia al maní..."
-									rows={2}
-									value={dietary}
-									onChange={(e) => setDietary(e.target.value)}
-								/>
-							</div>
+							{showDietaryField && (
+								<div className="rsvp__field">
+									<label htmlFor="dietary">{dietaryLabel}</label>
+									<textarea
+										id="dietary"
+										placeholder={dietaryPlaceholder}
+										rows={2}
+										value={dietary}
+										onChange={(e) => setDietary(e.target.value)}
+									/>
+								</div>
+							)}
 
 							<div className="rsvp__field">
 								<label htmlFor="notes">Notas adicionales</label>
@@ -219,10 +236,10 @@ const RSVP: React.FC<RSVPProps> = ({
 					type="submit"
 					disabled={isSubmitting || !attendance}
 					className={`rsvp__button ${isSubmitting ? 'rsvp__button--loading' : ''}`}
-					initial={{ opacity: 0 }}
-					whileInView={{ opacity: 1 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.2 }}
+					initial={prefersReducedMotion ? false : { opacity: 0 }}
+					whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
+					viewport={prefersReducedMotion ? undefined : { once: true }}
+					transition={prefersReducedMotion ? undefined : { delay: 0.2 }}
 				>
 					{isSubmitting ? 'Enviando...' : buttonLabel}
 				</motion.button>

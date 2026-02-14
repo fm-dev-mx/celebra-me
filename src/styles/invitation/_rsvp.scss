@@ -16,12 +16,28 @@
 	border-radius: 24px;
 	overflow: hidden;
 
+	--rsvp-label-color: var(--color-text-secondary, var(--color-primary-dark));
+	--rsvp-label-letter-spacing: 0.012em;
+	--rsvp-field-bg: rgb(var(--color-surface-primary-rgb), 0.5);
+	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb), 0.9);
+	--rsvp-field-border: var(--color-glass-border, rgb(var(--color-action-accent-rgb), 0.24));
+	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb), 0.45);
+	--rsvp-radio-bg: rgb(var(--color-surface-primary-rgb), 0.45);
+	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb), 0.62);
+	--rsvp-radio-border: rgb(var(--color-text-primary-rgb), 0.14);
+	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.16);
+	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.62);
+	--rsvp-button-shadow-rest: 0 5px 16px rgb(var(--color-text-primary-rgb), 0.24);
+	--rsvp-button-shadow-hover: 0 9px 24px rgb(var(--color-text-primary-rgb), 0.3);
+	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
+	--rsvp-button-filter-hover: none;
+
 	// Glassmorphism Base
-	background: var(--color-glass-bg);
+	background: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.24));
 	backdrop-filter: blur(var(--glass-blur, 16px)) saturate(var(--glass-saturate, 180%));
-	border: 1px solid var(--color-glass-border);
+	border: 1px solid var(--color-glass-border, rgb(var(--color-action-accent-rgb), 0.24));
 	box-shadow:
-		var(--shadow-premium),
+		var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%)),
 		inset 0 0 0 1px rgb(255 255 255 / 10%);
 
 	@include mixins.respond-to(md) {
@@ -66,7 +82,7 @@
 	&__form {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: 1.35rem;
 		position: relative;
 		z-index: 1;
 	}
@@ -78,18 +94,19 @@
 
 		label {
 			font-family: var(--font-body);
-			font-size: 0.9rem;
-			font-weight: 500;
-			color: var(--color-primary-dark);
-			opacity: 80%;
+			font-size: 0.92rem;
+			font-weight: 530;
+			color: var(--rsvp-label-color);
+			letter-spacing: var(--rsvp-label-letter-spacing);
+			opacity: 92%;
 			margin-left: 4px;
 		}
 
 		input[type='text'],
 		input[type='number'],
 		textarea {
-			background: rgb(var(--color-surface-primary-rgb), 0.4);
-			border: 1px solid var(--color-glass-border);
+			background: var(--rsvp-field-bg);
+			border: 1px solid var(--rsvp-field-border);
 			border-radius: 12px;
 			padding: 0.875rem 1rem;
 			font-family: var(--font-body);
@@ -103,9 +120,10 @@
 
 			&:focus {
 				outline: none;
-				background: rgb(255 255 255 / 90%);
+				background: var(--rsvp-field-bg-focus);
 				border-color: var(--color-action-accent);
-				box-shadow: 0 0 0 4px var(--color-glass-shadow);
+				box-shadow: 0 0 0 4px
+					var(--color-glass-shadow, rgb(var(--color-action-accent-rgb), 0.16));
 			}
 
 			&:focus-visible {
@@ -117,7 +135,7 @@
 			}
 
 			&::placeholder {
-				color: rgb(0 0 0 / 30%);
+				color: var(--rsvp-placeholder-color);
 			}
 		}
 	}
@@ -135,8 +153,8 @@
 			justify-content: center;
 			gap: 0.5rem;
 			padding: 0.75rem;
-			background: rgb(255 255 255 / 30%);
-			border: 1px solid rgb(255 255 255 / 40%);
+			background: var(--rsvp-radio-bg);
+			border: 1px solid var(--rsvp-radio-border);
 			border-radius: 12px;
 			cursor: pointer;
 			transition:
@@ -153,13 +171,13 @@
 			}
 
 			&:has(input:checked) {
-				background: rgb(var(--color-action-accent-rgb), 0.1);
-				border-color: var(--color-action-accent);
+				background: var(--rsvp-radio-selected-bg);
+				border-color: var(--rsvp-radio-selected-border);
 				color: var(--color-text-primary);
 			}
 
 			&:hover:not(:has(input:checked)) {
-				background: rgb(var(--color-surface-primary-rgb, 255, 255, 255), 0.5);
+				background: var(--rsvp-radio-bg-hover);
 			}
 
 			&:focus-within {
@@ -179,7 +197,7 @@
 	&__extra-fields {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: 1.25rem;
 		overflow: hidden;
 	}
 
@@ -201,12 +219,13 @@
 			filter tokens.$duration-snappy tokens.$ease-out,
 			background-color tokens.$duration-snappy tokens.$ease-out,
 			color tokens.$duration-snappy tokens.$ease-out;
-		box-shadow: 0 4px 15px rgb(var(--color-text-primary-rgb), 0.3);
+		box-shadow: var(--rsvp-button-shadow-rest);
 
 		&:hover:not(:disabled) {
 			transform: translateY(-2px);
-			box-shadow: 0 6px 20px rgb(var(--color-text-primary-rgb), 0.4);
-			filter: brightness(1.1);
+			background: var(--rsvp-button-bg-hover);
+			box-shadow: var(--rsvp-button-shadow-hover);
+			filter: var(--rsvp-button-filter-hover);
 		}
 
 		&:active:not(:disabled) {
@@ -238,7 +257,7 @@
 				top: calc(50% - 10px);
 				left: calc(50% - 10px);
 				border: 2px solid rgb(255 255 255 / 30%);
-				border-top-color: white;
+				border-top-color: var(--color-text-on-dark, tokens.$color-text-on-dark);
 				border-radius: 50%;
 				animation: rsvp-spin 0.8s linear infinite;
 			}
@@ -259,7 +278,7 @@
 		&-message {
 			font-family: var(--font-display);
 			font-size: 1.5rem;
-			color: tokens.$color-text-primary;
+			color: var(--color-text-primary, tokens.$color-text-primary);
 			line-height: 1.4;
 			margin-bottom: 1.5rem;
 		}
@@ -267,8 +286,8 @@
 		&-submessage {
 			font-family: var(--font-body);
 			font-size: 1rem;
-			color: var(--color-dark);
-			opacity: 70%;
+			color: var(--color-text-secondary, var(--color-dark));
+			opacity: 78%;
 		}
 	}
 }
@@ -300,6 +319,11 @@
 			&:active:not(:disabled) {
 				transform: none;
 				filter: none;
+			}
+
+			&--loading::after {
+				animation: none;
+				border-top-color: var(--color-action-accent);
 			}
 		}
 	}

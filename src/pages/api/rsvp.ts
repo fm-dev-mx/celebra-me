@@ -4,6 +4,7 @@ export const POST: APIRoute = async ({ request }) => {
 	try {
 		const data = await request.json();
 		const { name, attendance } = data;
+		// Optional fields (e.g. dietary) may be omitted by design.
 
 		// Validation
 		if (!name || !attendance) {
