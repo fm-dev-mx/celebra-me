@@ -93,6 +93,24 @@ export interface AdminListResult {
 	};
 }
 
+export interface RsvpInvitationGuest {
+	guestId: string;
+	displayName: string;
+	maxAllowedAttendees: number;
+	token: string;
+	personalizedUrl: string;
+	waShareUrl: string;
+}
+
+export interface RsvpInvitationListResponse {
+	eventSlug: string;
+	eventType: string;
+	baseInviteUrl: string;
+	genericUrl: string;
+	guests: RsvpInvitationGuest[];
+	message?: string;
+}
+
 const MAX_FIELD_LENGTH = 200;
 const MAX_ATTENDEES_ABSOLUTE = 20;
 const DEV_RSVP_TOKEN_SECRET = 'dev-rsvp-secret-change-me';
@@ -111,6 +129,14 @@ function getRsvpTokenSecret(): string {
 function sanitizeString(value: unknown, maxLength = MAX_FIELD_LENGTH): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, maxLength);
+}
+
+function sanitizeBaseUrl(value: string): string {
+	try {
+		return new URL(value).origin;
+	} catch {
+		return 'http://localhost:4321';
+	}
 }
 
 function normalizeName(input: string): string {
@@ -513,6 +539,121 @@ export async function getAdminRsvpCsv(eventSlug: string): Promise<string> {
 	});
 
 	return [header.join(','), ...rows].join('\n');
+}
+
+export function buildGenericInvitationLink(input: {
+	baseUrl: string;
+	eventType: string;
+	eventSlug: string;
+}): string {
+	const safeBaseUrl = sanitizeBaseUrl(input.baseUrl);
+	const safeEventType = sanitizeString(input.eventType, 80);
+	const safeEventSlug = sanitizeString(input.eventSlug, 120);
+	return `${safeBaseUrl}/${encodeURIComponent(safeEventType)}/${encodeURIComponent(safeEventSlug)}`;
+}
+
+export function buildGuestInvitationLink(input: {
+	baseUrl: string;
+	eventType: string;
+	eventSlug: string;
+	guestId: string;
+}): { token: string; personalizedUrl: string } {
+	const safeEventSlug = sanitizeString(input.eventSlug, 120);
+	const safeGuestId = sanitizeString(input.guestId, 120);
+	const token = createGuestToken({
+		eventSlug: safeEventSlug,
+		guestId: safeGuestId,
+	});
+	const genericUrl = buildGenericInvitationLink({
+		baseUrl: input.baseUrl,
+		eventType: input.eventType,
+		eventSlug: safeEventSlug,
+	});
+	const personalizedUrl = `${genericUrl}?t=${encodeURIComponent(token)}`;
+	return { token, personalizedUrl };
+}
+
+export function buildWhatsAppShareLink(input: {
+	phone?: string;
+	guestName: string;
+	inviteUrl: string;
+	template?: string;
+}): string {
+	const safePhone = sanitizeString(input.phone, 40).replace(/\D/g, '');
+	if (!safePhone) return '';
+	const safeGuestName = sanitizeString(input.guestName, 120);
+	const safeInviteUrl = sanitizeString(input.inviteUrl, 2000);
+	const template =
+		sanitizeString(input.template, 300) ||
+		'Hola {name}, te comparto tu invitación: {inviteUrl}';
+	const message = template
+		.replace('{name}', safeGuestName)
+		.replace('{inviteUrl}', safeInviteUrl)
+		.replace('{guestCount}', '')
+		.trim();
+	return `https://wa.me/${safePhone}?text=${encodeURIComponent(message)}`;
+}
+
+export async function getRsvpInvitationContext(
+	eventSlug: string,
+	baseUrl?: string,
+): Promise<RsvpInvitationListResponse> {
+	const safeEventSlug = sanitizeString(eventSlug, 120);
+	const event = await getEventBySlug(safeEventSlug);
+	if (!event) {
+		throw new Error('Evento no encontrado.');
+	}
+
+	const safeEventType = sanitizeString(event.data.eventType, 80);
+	if (!safeEventType) {
+		throw new Error('Tipo de evento inválido.');
+	}
+
+	const configuredBaseUrl = sanitizeString(baseUrl || getEnv('BASE_URL'), 300);
+	const resolvedBaseUrl = sanitizeBaseUrl(configuredBaseUrl || 'http://localhost:4321');
+	const genericUrl = buildGenericInvitationLink({
+		baseUrl: resolvedBaseUrl,
+		eventType: safeEventType,
+		eventSlug: safeEventSlug,
+	});
+
+	const { guests } = getEventRsvpConfig(event);
+	const waPhone = sanitizeString(event.data.rsvp?.whatsappConfig?.phone, 40);
+	const waTemplate = sanitizeString(event.data.rsvp?.whatsappConfig?.messageTemplate, 300);
+
+	const guestLinks: RsvpInvitationGuest[] = guests.map((guest) => {
+		const { token, personalizedUrl } = buildGuestInvitationLink({
+			baseUrl: resolvedBaseUrl,
+			eventType: safeEventType,
+			eventSlug: safeEventSlug,
+			guestId: guest.guestId,
+		});
+		return {
+			guestId: guest.guestId,
+			displayName: guest.displayName,
+			maxAllowedAttendees: guest.maxAllowedAttendees,
+			token,
+			personalizedUrl,
+			waShareUrl: buildWhatsAppShareLink({
+				phone: waPhone,
+				guestName: guest.displayName,
+				inviteUrl: personalizedUrl,
+				template: waTemplate,
+			}),
+		};
+	});
+
+	return {
+		eventSlug: safeEventSlug,
+		eventType: safeEventType,
+		baseInviteUrl: resolvedBaseUrl,
+		genericUrl,
+		guests: guestLinks,
+		message:
+			guestLinks.length === 0
+				? 'Este evento no tiene invitados configurados en rsvp.guests.'
+				: undefined,
+	};
 }
 
 export function parseAttendanceInput(rawAttendance: unknown): AttendanceStatus | null {

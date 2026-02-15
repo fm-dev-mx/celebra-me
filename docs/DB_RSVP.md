@@ -27,7 +27,7 @@ Do not apply ad-hoc SQL directly in production without creating a migration file
 Prerequisites:
 
 - Docker running
-- Supabase CLI available (`npx supabase ...` scripts are provided)
+- Supabase CLI available in PATH (`supabase ...`)
 
 Commands:
 
@@ -57,7 +57,7 @@ pwsh -File scripts/rsvp-db-remote-runbook.ps1
 
 ## Staging / Production workflow
 
-1. Ensure remote project is linked (`npx supabase link --project-ref <ref>`).
+1. Ensure remote project is linked (`supabase link --project-ref <ref>`).
 2. Apply migrations:
 
 ```bash
@@ -74,6 +74,15 @@ pnpm db:push
 SQL verification queries:
 
 - `supabase/verification/rsvp_schema_checks.sql`
+
+### Connectivity note (Windows environments)
+
+If CLI commands fail with `127.0.0.1:9` proxy errors, clear proxy variables for the current session
+before running Supabase commands:
+
+```powershell
+$env:ALL_PROXY=''; $env:HTTP_PROXY=''; $env:HTTPS_PROXY=''; $env:GIT_HTTP_PROXY=''; $env:GIT_HTTPS_PROXY='';
+```
 
 ## Data model notes
 
@@ -104,6 +113,23 @@ RLS is enabled and forced on all RSVP tables.
 
 This protects RSVP data from accidental client-side exposure.
 
+## Client-facing UI operation
+
+The non-technical RSVP workflow is available from:
+
+- `/admin/rsvp` (Basic Auth required)
+
+From this panel, operators can:
+
+- Load personalized invitation links from configured guests in event content.
+- Copy/open a generic event link.
+- Open WhatsApp deeplinks with prefilled invitation message.
+- Monitor RSVP responses and export CSV in the same screen.
+
+Admin-only link generation API used by the panel:
+
+- `GET /api/rsvp/invitations?eventSlug=<slug>` (Basic Auth required)
+
 ## Required environment variables
 
 - `SUPABASE_URL`
@@ -125,6 +151,6 @@ This protects RSVP data from accidental client-side exposure.
 
 ## Operational checks
 
-- `pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts`
-- Verify `/api/rsvp/admin` and `/api/rsvp/export.csv` require Basic Auth
+- `pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts tests/api/rsvp.invitations.test.ts`
+- Verify `/api/rsvp/admin`, `/api/rsvp/export.csv`, and `/api/rsvp/invitations` require Basic Auth
 - Confirm data remains after process restart

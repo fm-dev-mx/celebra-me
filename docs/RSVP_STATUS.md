@@ -1,6 +1,6 @@
 # RSVP Status - Gerardo 60 (`luxury-hacienda`) - Cierre Final
 
-Fecha de cierre: 2026-02-14
+Fecha de cierre: 2026-02-15
 
 ## 1) Estado Ejecutivo
 
@@ -36,6 +36,7 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
 
 - `src/pages/api/rsvp/admin.ts`
 - `src/pages/api/rsvp/export.csv.ts`
+- `src/pages/api/rsvp/invitations.ts`
 - `src/pages/admin/rsvp.astro`
 - Respuesta no autorizada: `401` + `WWW-Authenticate`
 
@@ -108,6 +109,25 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
     - contraste de error reforzado
     - selección de radio más evidente
 
+### 2.5 Operación cliente no-técnico (UI-first)
+
+✅ Panel admin extendido en `src/pages/admin/rsvp.astro`
+
+- Nuevo módulo "Invitaciones" en la misma interfaz:
+    - carga de links por `eventSlug`
+    - link genérico (copiar/abrir)
+    - links personalizados por invitado (copiar/abrir)
+    - acceso directo a WhatsApp con mensaje prellenado
+
+✅ Endpoint admin-only para links
+
+- `GET /api/rsvp/invitations?eventSlug=<slug>`
+- Requiere Basic Auth
+- Respuesta incluye:
+    - `eventSlug`, `eventType`, `baseInviteUrl`, `genericUrl`
+    - `guests[]` con `guestId`, `displayName`, `maxAllowedAttendees`, `token`, `personalizedUrl`,
+      `waShareUrl`
+
 ---
 
 ## 3) Evidencia de validación
@@ -116,8 +136,8 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
 
 ✅ RSVP API críticas:
 
-- `pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts`
-- Resultado: **5 suites, 11 tests, todos passing**
+- `pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts tests/api/rsvp.invitations.test.ts`
+- Resultado: **6 suites, 14 tests, todos passing**
 
 ✅ Suite completa del proyecto:
 
@@ -135,6 +155,8 @@ Validaciones funcionales verificadas en handlers y flujo API durante QA técnico
 - Admin/export sin auth -> `401`
 - Admin/export con auth -> `200`
 - CSV incluye columnas críticas y escape de comillas
+- Carga de links desde UI admin (personalizado/genérico) operativa
+- Deeplink de WhatsApp operativo desde UI admin
 
 ---
 
@@ -189,6 +211,7 @@ Contingencia operativa si Supabase falla:
 - [x] Admin protegido con auth explícita
 - [x] Export CSV protegido con auth explícita
 - [x] Panel `/admin/rsvp` protegido con auth explícita
+- [x] Módulo UI para generar/copiar/abrir links RSVP en panel admin
 - [x] Persistencia durable por repositorio Supabase
 - [x] Migraciones Supabase versionadas en repo (`supabase/migrations`)
 - [x] RLS habilitado con acceso backend-only (service role)

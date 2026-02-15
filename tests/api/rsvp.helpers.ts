@@ -12,8 +12,13 @@ export function getMockEvents() {
 		{
 			id: EVENT_SLUG,
 			data: {
+				eventType: 'cumple',
 				rsvp: {
 					guestCap: 5,
+					whatsappConfig: {
+						phone: '5216681167477',
+						messageTemplate: 'Hola {name}, te comparto tu invitación: {inviteUrl}',
+					},
 					guests: [
 						{
 							guestId: 'fam-mendoza-001',

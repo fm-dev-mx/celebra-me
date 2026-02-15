@@ -59,6 +59,13 @@ node scripts/smoke-test.js
 tests/
 ├── setup.ts                 # Global test setup (RTL, mocks)
 ├── sanity.test.ts           # Basic sanity check
+├── api/
+│   ├── rsvp.context.test.ts        # RSVP context endpoint tests
+│   ├── rsvp.post-canonical.test.ts # RSVP canonical/legacy POST flow tests
+│   ├── rsvp.channel.test.ts        # RSVP channel telemetry endpoint tests
+│   ├── rsvp.admin.test.ts          # RSVP admin endpoint auth/list tests
+│   ├── rsvp.export.test.ts         # RSVP CSV export endpoint tests
+│   └── rsvp.invitations.test.ts    # RSVP invitation links endpoint tests
 ├── utils/
 │   └── email.test.ts        # Email utility tests
 ├── components/
@@ -179,12 +186,12 @@ Object.defineProperty(global, 'import', {
 
 ## What NOT to Test with Jest
 
-| Component Type              | Why                            | Alternative       |
-| --------------------------- | ------------------------------ | ----------------- |
-| Astro components (`.astro`) | Server-rendered, no runtime JS | Smoke test or E2E |
-| SCSS visual output          | Can't verify visual rendering  | Visual regression |
-| Full page layouts           | Complex hydration              | E2E tests         |
-| API routes                  | Need server context            | Integration tests |
+| Component Type               | Why                                                           | Alternative                  |
+| ---------------------------- | ------------------------------------------------------------- | ---------------------------- |
+| Astro components (`.astro`)  | Server-rendered, no runtime JS                                | Smoke test or E2E            |
+| SCSS visual output           | Can't verify visual rendering                                 | Visual regression            |
+| Full page layouts            | Complex hydration                                             | E2E tests                    |
+| API routes (`src/pages/api`) | Supported via handler-level tests with mocked request/context | Jest integration-style tests |
 
 ## Coverage Goals
 

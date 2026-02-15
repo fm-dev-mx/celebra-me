@@ -30,11 +30,28 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				border-radius: 12px;
 				padding: 1.25rem;
 			}
+			h1,
+			h2 {
+				margin-top: 0;
+			}
+			.card {
+				border: 1px solid #eadfce;
+				border-radius: 10px;
+				padding: 1rem;
+				margin-bottom: 1.2rem;
+				background: #fffdf8;
+			}
 			.controls {
 				display: grid;
 				grid-template-columns: 1fr 180px 160px auto auto;
 				gap: 0.75rem;
 				margin-bottom: 1rem;
+			}
+			.invitation-controls {
+				display: grid;
+				grid-template-columns: 1fr auto auto auto;
+				gap: 0.75rem;
+				margin-bottom: 0.75rem;
 			}
 			input,
 			select,
@@ -52,6 +69,10 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				background: #3a2819;
 				color: #fff;
 			}
+			button.secondary {
+				background: #fff;
+				color: #2b1f16;
+			}
 			a {
 				text-decoration: none;
 				display: inline-flex;
@@ -68,12 +89,12 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				border-collapse: collapse;
 				font-size: 0.92rem;
 			}
-			/* Suppressing unused selector warnings for dynamically rendered content */
 			th,
 			td {
 				border-bottom: 1px solid #eadfce;
 				padding: 0.65rem 0.5rem;
 				text-align: left;
+				vertical-align: top;
 			}
 			.badge {
 				padding: 0.2rem 0.5rem;
@@ -96,12 +117,42 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				color: #7c6115;
 				border-color: #ebdca6;
 			}
+			.table-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.35rem;
+			}
+			.link-cell {
+				max-width: 380px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+			.panel-note {
+				font-size: 0.9rem;
+				color: #5d4b3a;
+				margin: 0.4rem 0 0.8rem;
+			}
+			.status-line {
+				font-size: 0.9rem;
+				margin: 0.35rem 0;
+			}
+			.status-line--error {
+				color: #8c2323;
+			}
+			.status-line--ok {
+				color: #146b3a;
+			}
 			@media (max-width: 900px) {
-				.controls {
+				.controls,
+				.invitation-controls {
 					grid-template-columns: 1fr;
 				}
 				table {
 					font-size: 0.85rem;
+				}
+				.link-cell {
+					max-width: 200px;
 				}
 			}
 		</style>
@@ -109,46 +160,87 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 	<body>
 		<main class="panel">
 			<h1>Panel RSVP</h1>
-			<div class="controls">
-				<input id="eventSlug" value={defaultEventSlug} placeholder="eventSlug" />
-				<input id="search" placeholder="Buscar por nombre" />
-				<select id="status">
-					<option value="all">Todos</option>
-					<option value="confirmed">Confirmados</option>
-					<option value="declined">Declinados</option>
-					<option value="pending">Pendientes</option>
-				</select>
-				<button id="refreshBtn" type="button">Actualizar</button>
-				<a id="csvLink" href={`/api/rsvp/export.csv?eventSlug=${defaultEventSlug}`}>Exportar CSV</a>
-			</div>
 
-			<section class="stats" id="stats"></section>
-			<div style="overflow:auto">
-				<table>
-					<thead>
-						<tr>
-							<th>Nombre</th>
-							<th>Origen</th>
-							<th>Estado</th>
-							<th>Asistentes</th>
-							<th>Duplicado</th>
-							<th>Actualizado</th>
-							<th>WhatsApp</th>
-						</tr>
-					</thead>
-					<tbody id="rows"></tbody>
-				</table>
-			</div>
+			<section class="card">
+				<h2>Invitaciones</h2>
+				<p class="panel-note">
+					Genera links personalizados y compártelos por WhatsApp. El link genérico sirve como
+					fallback.
+				</p>
+				<div class="invitation-controls">
+					<input id="eventSlugLinks" value={defaultEventSlug} placeholder="eventSlug" />
+					<button id="loadLinksBtn" type="button">Cargar links</button>
+					<button id="copyGenericBtn" type="button" class="secondary">Copiar link genérico</button>
+					<a id="openGenericLink" href="#" target="_blank" rel="noopener noreferrer">Abrir genérico</a>
+				</div>
+				<p class="status-line" id="invitationStatus"></p>
+				<div style="overflow:auto">
+					<table>
+						<thead>
+							<tr>
+								<th>Invitado</th>
+								<th>guestId</th>
+								<th>Cupo</th>
+								<th>Link personalizado</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody id="invitationRows"></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="card">
+				<h2>Registros RSVP</h2>
+				<div class="controls">
+					<input id="eventSlug" value={defaultEventSlug} placeholder="eventSlug" />
+					<input id="search" placeholder="Buscar por nombre" />
+					<select id="status">
+						<option value="all">Todos</option>
+						<option value="confirmed">Confirmados</option>
+						<option value="declined">Declinados</option>
+						<option value="pending">Pendientes</option>
+					</select>
+					<button id="refreshBtn" type="button">Actualizar</button>
+					<a id="csvLink" href={`/api/rsvp/export.csv?eventSlug=${defaultEventSlug}`}>Exportar CSV</a>
+				</div>
+
+				<section class="stats" id="stats"></section>
+				<div style="overflow:auto">
+					<table>
+						<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Origen</th>
+								<th>Estado</th>
+								<th>Asistentes</th>
+								<th>Duplicado</th>
+								<th>Actualizado</th>
+								<th>WhatsApp</th>
+							</tr>
+						</thead>
+						<tbody id="rows"></tbody>
+					</table>
+				</div>
+			</section>
 		</main>
 
 		<script is:inline>
 			const eventSlugInput = document.getElementById('eventSlug');
+			const eventSlugLinksInput = document.getElementById('eventSlugLinks');
 			const searchInput = document.getElementById('search');
 			const statusSelect = document.getElementById('status');
 			const refreshBtn = document.getElementById('refreshBtn');
+			const loadLinksBtn = document.getElementById('loadLinksBtn');
 			const rowsEl = document.getElementById('rows');
 			const statsEl = document.getElementById('stats');
 			const csvLink = document.getElementById('csvLink');
+			const invitationRowsEl = document.getElementById('invitationRows');
+			const invitationStatusEl = document.getElementById('invitationStatus');
+			const copyGenericBtn = document.getElementById('copyGenericBtn');
+			const openGenericLink = document.getElementById('openGenericLink');
+
+			let currentInvitationData = null;
 
 			const formatDate = (iso) => {
 				try {
@@ -156,6 +248,29 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				} catch {
 					return iso;
 				}
+			};
+
+			const setInvitationStatus = (message, type = 'ok') => {
+				invitationStatusEl.textContent = message || '';
+				invitationStatusEl.className = `status-line ${
+					type === 'error' ? 'status-line--error' : 'status-line--ok'
+				}`;
+			};
+
+			const copyText = async (text) => {
+				if (!text) return false;
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					await navigator.clipboard.writeText(text);
+					return true;
+				}
+
+				const helper = document.createElement('textarea');
+				helper.value = text;
+				document.body.appendChild(helper);
+				helper.select();
+				const ok = document.execCommand('copy');
+				document.body.removeChild(helper);
+				return ok;
 			};
 
 			const renderStats = (totals) => {
@@ -192,6 +307,63 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 					.join('');
 			};
 
+			const renderInvitationRows = (guests) => {
+				if (!guests.length) {
+					invitationRowsEl.innerHTML = '<tr><td colspan="5">Sin invitados configurados.</td></tr>';
+					return;
+				}
+
+				invitationRowsEl.innerHTML = guests
+					.map(
+						(guest) => `
+						<tr>
+							<td>${guest.displayName}</td>
+							<td>${guest.guestId}</td>
+							<td>${guest.maxAllowedAttendees}</td>
+							<td class="link-cell"><a href="${guest.personalizedUrl}" target="_blank" rel="noopener noreferrer">${guest.personalizedUrl}</a></td>
+							<td>
+								<div class="table-actions">
+									<button type="button" class="secondary" data-copy-url="${guest.personalizedUrl}">Copiar</button>
+									<a href="${guest.personalizedUrl}" target="_blank" rel="noopener noreferrer">Abrir</a>
+									${guest.waShareUrl ? `<a href="${guest.waShareUrl}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : '<span>-</span>'}
+								</div>
+							</td>
+						</tr>
+					`,
+					)
+					.join('');
+			};
+
+			const loadInvitations = async () => {
+				const eventSlug = eventSlugLinksInput.value.trim();
+				if (!eventSlug) {
+					setInvitationStatus('Escribe un eventSlug para cargar links.', 'error');
+					return;
+				}
+
+				try {
+					setInvitationStatus('Cargando links...');
+					const params = new URLSearchParams({ eventSlug });
+					const response = await fetch(`/api/rsvp/invitations?${params.toString()}`);
+					const data = await response.json();
+					if (!response.ok) {
+						setInvitationStatus(data.message || 'No se pudieron cargar los links.', 'error');
+						invitationRowsEl.innerHTML = '<tr><td colspan="5">Sin datos.</td></tr>';
+						currentInvitationData = null;
+						openGenericLink.href = '#';
+						return;
+					}
+
+					currentInvitationData = data;
+					renderInvitationRows(data.guests || []);
+					openGenericLink.href = data.genericUrl || '#';
+					const baseMessage = data.message || `Links listos para ${data.eventSlug}.`;
+					setInvitationStatus(baseMessage, 'ok');
+				} catch {
+					setInvitationStatus('Error al cargar links de invitación.', 'error');
+				}
+			};
+
 			const loadData = async () => {
 				const eventSlug = eventSlugInput.value.trim();
 				const search = searchInput.value.trim();
@@ -212,8 +384,41 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 				renderRows(data.items || []);
 			};
 
+			invitationRowsEl.addEventListener('click', async (event) => {
+				const target = event.target;
+				if (!(target instanceof HTMLElement)) return;
+				const copyUrl = target.getAttribute('data-copy-url');
+				if (!copyUrl) return;
+
+				event.preventDefault();
+				try {
+					const copied = await copyText(copyUrl);
+					setInvitationStatus(copied ? 'Link personalizado copiado.' : 'No se pudo copiar.', copied ? 'ok' : 'error');
+				} catch {
+					setInvitationStatus('No se pudo copiar el link.', 'error');
+				}
+			});
+
+			copyGenericBtn.addEventListener('click', async () => {
+				const genericUrl = currentInvitationData?.genericUrl;
+				if (!genericUrl) {
+					setInvitationStatus('Primero carga links para copiar el genérico.', 'error');
+					return;
+				}
+
+				try {
+					const copied = await copyText(genericUrl);
+					setInvitationStatus(copied ? 'Link genérico copiado.' : 'No se pudo copiar.', copied ? 'ok' : 'error');
+				} catch {
+					setInvitationStatus('No se pudo copiar el link genérico.', 'error');
+				}
+			});
+
+			loadLinksBtn.addEventListener('click', loadInvitations);
 			refreshBtn.addEventListener('click', loadData);
 			statusSelect.addEventListener('change', loadData);
+
+			loadInvitations();
 			loadData();
 		</script>
 	</body>

@@ -214,6 +214,9 @@ pwsh -File scripts/rsvp-db-remote-runbook.ps1
 ## Documentation
 
 - **Architecture**: `docs/ARCHITECTURE.md`
+- **RSVP DB Operations**: `docs/DB_RSVP.md`
+- **RSVP UI Operation (Admin Panel)**: `docs/DB_RSVP.md#client-facing-ui-operation`
+- **RSVP Operational Status**: `docs/RSVP_STATUS.md`
 - **Agent Rules**: `.agent/`
 
 Documentation is expected to evolve alongside the codebase.
