@@ -36,52 +36,55 @@ export interface ImageAsset {
 	};
 }
 
+export const EVENT_KEYS = [
+	'hero',
+	'portrait',
+	'family',
+	'jardin',
+	'signature',
+	'gallery01',
+	'gallery02',
+	'gallery03',
+	'gallery04',
+	'gallery05',
+	'gallery06',
+	'gallery07',
+	'gallery08',
+	'gallery09',
+	'gallery10',
+	'gallery11',
+	'gallery12',
+	'gallery13',
+	'gallery14',
+] as const;
+
+export const COMMON_KEYS = [
+	'logo',
+	'heroBgDesktop',
+	'heroBgMobile',
+	'avatar1',
+	'avatar2',
+	'avatar3',
+	'serviceXv',
+	'serviceWedding',
+	'serviceBaptism',
+	'headerLogo',
+	'aboutToast',
+] as const;
+
+export type EventAssetKey = (typeof EVENT_KEYS)[number];
+export type CommonAssetKey = (typeof COMMON_KEYS)[number];
+
 /**
  * Standard schema for event-specific assets.
  * All events must implement this interface to ensure UI compatibility.
  */
-export interface EventAssets {
-	hero: ImageAsset;
-	portrait: ImageAsset;
-	family?: ImageAsset; // Optional: Family portrait
-	jardin: ImageAsset;
-	signature: ImageAsset;
-	gallery01: ImageAsset;
-	gallery02: ImageAsset;
-	gallery03: ImageAsset;
-	gallery04: ImageAsset;
-	gallery05: ImageAsset;
-	gallery06: ImageAsset;
-	gallery07: ImageAsset;
-	gallery08: ImageAsset;
-	gallery09: ImageAsset;
-	gallery10: ImageAsset;
-	gallery11: ImageAsset;
-	gallery12?: ImageAsset; // Optional: Extra gallery image
-	gallery13?: ImageAsset; // Optional: Extra gallery image
-	gallery14?: ImageAsset; // Optional: Extra gallery image
-}
+export type EventAssets = Record<EventAssetKey, ImageAsset | undefined>;
 
 /**
  * Schema for common/shared assets.
  */
-export interface CommonAssets {
-	logo: ImageAsset;
-	heroBgDesktop: ImageAsset;
-	heroBgMobile: ImageAsset;
-	// Social Proof
-	avatar1: ImageAsset;
-	avatar2: ImageAsset;
-	avatar3: ImageAsset;
-	// Services
-	serviceXv: ImageAsset;
-	serviceWedding: ImageAsset;
-	serviceBaptism: ImageAsset;
-	// Header
-	headerLogo: ImageAsset;
-	// About
-	aboutToast: ImageAsset;
-}
+export type CommonAssets = Record<CommonAssetKey, ImageAsset>;
 
 interface Registry {
 	events: Record<string, EventAssets>;
@@ -158,8 +161,6 @@ export const ImageRegistry: Registry = {
 };
 
 export type EventSlug = keyof typeof ImageRegistry.events;
-export type CommonAssetKey = keyof typeof ImageRegistry.common;
-export type EventAssetKey = keyof EventAssets;
 
 /**
  * Type guard to check if a string is a valid event slug.

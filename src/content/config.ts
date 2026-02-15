@@ -1,6 +1,13 @@
 // src/content/config.ts
 
 import { defineCollection, z } from 'astro:content';
+import { EVENT_KEYS, COMMON_KEYS } from '@/lib/assets/AssetRegistry';
+
+const AssetSchema = z.union([
+	z.enum([...EVENT_KEYS, ...COMMON_KEYS]),
+	z.string().url(),
+	z.string().startsWith('/'),
+]);
 
 // Just adding image context
 const eventsCollection = defineCollection({
@@ -127,8 +134,8 @@ const eventsCollection = defineCollection({
 			label: z.string().optional(),
 			nickname: z.string().optional(),
 			date: z.string().datetime(), // ISO 8601
-			backgroundImage: z.string(),
-			portrait: z.string().optional(), // ADU-8: Optional celebrant portrait
+			backgroundImage: AssetSchema,
+			portrait: AssetSchema.optional(), // ADU-8: Optional celebrant portrait
 			variant: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
 		}),
 		location: z.object({
@@ -149,7 +156,7 @@ const eventsCollection = defineCollection({
 					mapUrl: z.string().url().optional(),
 					appleMapsUrl: z.string().url().optional(),
 					googleMapsUrl: z.string().url().optional(),
-					image: z.string().optional(),
+					image: AssetSchema.optional(),
 					coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 				})
 				.optional(),
@@ -251,7 +258,7 @@ const eventsCollection = defineCollection({
 						}),
 					)
 					.optional(),
-				featuredImage: z.string().optional(),
+				featuredImage: AssetSchema.optional(),
 			})
 			.optional(),
 		rsvp: z
@@ -297,7 +304,7 @@ const eventsCollection = defineCollection({
 			.object({
 				message: z.string(),
 				closingName: z.string(),
-				image: z.string().optional(),
+				image: AssetSchema.optional(),
 			})
 			.optional(),
 		music: z
@@ -321,7 +328,7 @@ const eventsCollection = defineCollection({
 				subtitle: z.string().optional(),
 				items: z.array(
 					z.object({
-						image: z.string(),
+						image: AssetSchema,
 						caption: z.string().optional(),
 					}),
 				),

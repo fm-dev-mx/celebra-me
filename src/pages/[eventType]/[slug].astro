@@ -1,11 +1,9 @@
 ---
 // src/pages/[eventType]/[slug].astro
-
-// 1. Add this line to enable getStaticPaths in 'server' mode
 export const prerender = true;
 
-import { type CollectionEntry, getCollection } from 'astro:content';
-import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/AssetRegistry';
+import { type CollectionEntry, getCollection, getEntry } from 'astro:content';
+import { adaptEvent } from '@/lib/adapters/event';
 import Layout from '@/layouts/Layout.astro';
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
@@ -22,10 +20,7 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
 
-type Props = {
-	event: CollectionEntry<'events'>;
-};
-
+// --- Static Paths ---
 export async function getStaticPaths() {
 	const events = await getCollection('events');
 	return events.map((event: CollectionEntry<'events'>) => ({
@@ -37,109 +32,45 @@ export async function getStaticPaths() {
 	}));
 }
 
-const { event } = Astro.props as Props;
+// --- Page Logic (Adapter Pattern) ---
+const { slug } = Astro.params;
+const eventEntry = await getEntry('events', slug as string);
 
-if (!event) {
+if (!eventEntry) {
 	return Astro.redirect('/404');
 }
 
-const { data } = event;
+const viewModel = adaptEvent(eventEntry);
+const { theme, hero, envelope, sections, music, navigation } = viewModel;
 
-const showEnvelope = !!(data.envelope && !data.envelope.disabled);
-const musicRevealMode = showEnvelope ? 'envelope' : 'immediate';
+// Helper variables
+const showEnvelope = envelope.enabled;
 
-function hexToRgb(hex: string): string {
-	hex = hex.replace(/^#/, '');
-	if (hex.length === 3) {
-		hex = hex.split('').map((char) => char + char).join('');
-	}
-	const bigint = parseInt(hex, 16);
-	const r = (bigint >> 16) & 255;
-	const g = (bigint >> 8) & 255;
-	const b = bigint & 255;
-	return `${r}, ${g}, ${b}`;
-}
+// --- Asset Resolution for Layout ---
+// The hero background image is an object (Asset), we need the src string for the Layout metadata
+const heroImageSrc = typeof hero.backgroundImage.src === 'string'
+    ? hero.backgroundImage.src
+    : hero.backgroundImage.src.src;
 
-const primaryColorRgb = hexToRgb(data.theme.primaryColor);
-const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
-
-// --- Asset Resolution Helpers ---
-function resolveAsset(keyOrUrl: string | undefined): ImageAsset | undefined {
-	if (!keyOrUrl) return undefined;
-
-	// If it's a URL (cloud or external), return as ImageAsset
-	if (keyOrUrl.startsWith('http') || keyOrUrl.startsWith('/')) {
-		return {
-			src: keyOrUrl,
-			alt: 'Recurso del evento'
-		};
-	}
-
-	// Otherwise treat as registry key
-	return getEventAsset(event.id, keyOrUrl as EventAssetKey);
-}
-
-function requireAsset(keyOrUrl: string): ImageAsset {
-	const asset = resolveAsset(keyOrUrl);
-	if (!asset) {
-		console.warn(`[AssetWarning] Asset not found for key: ${keyOrUrl} in event ${event.id}`);
-		// Fallback to avoid crash, though this should ideally be handled better
-		return { src: '', alt: 'Recurso faltante' };
-	}
-	return asset;
-}
-
-// --- Data Mapping ---
-// Map registry keys/URLs to actual ImageAsset objects for components
-const heroBg = requireAsset(data.hero.backgroundImage);
-const heroPortrait = resolveAsset(data.hero.portrait);
-const ceremonyData = data.location.ceremony ? {
-	...data.location.ceremony,
-	image: data.location.ceremony.image ? resolveAsset(data.location.ceremony.image) : undefined
-} : undefined;
-
-const receptionData = data.location.reception ? {
-	...data.location.reception,
-	image: data.location.reception.image ? resolveAsset(data.location.reception.image) : undefined
-} : undefined;
-
-const familyImage = data.family?.featuredImage ? resolveAsset(data.family.featuredImage) : undefined;
-const thankYouImage = data.thankYou?.image ? resolveAsset(data.thankYou.image) : undefined;
-
-// Gallery Mapping
-const galleryItems = data.gallery?.items.map((item: { image: string; caption?: string }) => ({
-	...item,
-	image: requireAsset(item.image)
-})) || [];
-
-// Preset handle (Architecture Refactor)
-const preset = data.theme.preset;
-const themeClass = preset ? `theme-preset--${preset}` : '';
-
-const heroLabel = data.hero.label || 'Invitación Especial';
-const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.src;
-
-const envBg = data.envelope?.closedPalette?.background || 'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)';
-const envPrimary = data.envelope?.closedPalette?.primary || data.theme.primaryColor;
-const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor || '#d4af37';
 ---
 
 <Layout
-	title={data.title}
-	description={data.description || ''}
+	title={viewModel.title}
+	description={viewModel.description || ''}
 	image={heroImageSrc}
 	hideHeader={true}
 >
-
+	<!-- Theme Variables -->
 	<style
 		define:vars={{
-			primaryColor: data.theme.primaryColor,
-			primaryColorRgb: primaryColorRgb,
-			accentColor: data.theme.accentColor || '#333',
-			accentColorRgb: accentColorRgb,
-			envBg,
-			envPrimary,
-			envAccent,
+			primaryColor: theme.primaryColor,
+			primaryColorRgb: theme.colors.primaryRgb,
+			accentColor: theme.accentColor || '#333',
+			accentColorRgb: theme.colors.accentRgb,
+			// Envelope Palette
+			envBg: envelope.data?.colors.background || 'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)',
+			envPrimary: envelope.data?.colors.primary || theme.primaryColor,
+			envAccent: envelope.data?.colors.accent || theme.accentColor || '#d4af37',
 		}}
 	>
 		.event-theme-wrapper {
@@ -153,8 +84,10 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 		}
 	</style>
 
-	<main class={`event-theme-wrapper ${themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
-		<script is:inline define:vars={{ eventSlug: event.id }}>
+	<main class={`event-theme-wrapper ${theme.themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
+		<!-- Scripts -->
+		<script is:inline define:vars={{ eventSlug: viewModel.id }}>
+			// Legacy Token Resolution
 			const legacyToken = new URLSearchParams(window.location.search).get('t');
 			if (legacyToken) {
 				const params = new URLSearchParams({
@@ -168,15 +101,13 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 							window.location.replace(payload.canonicalUrl);
 						}
 					})
-					.catch(() => {
-						// silent fallback to legacy token flow in current page
-					});
+					.catch(() => { /* silent fallback */ });
 			}
 		</script>
 
-		{/* Sync unlock: runs before React hydration to prevent pointer-events deadlock */}
 		{showEnvelope && (
-			<script is:inline define:vars={{ eventSlug: event.id }}>
+			<script is:inline define:vars={{ eventSlug: viewModel.id }}>
+				// Sync unlock
 				const key = `envelope-opened-${eventSlug}`;
 				if (localStorage.getItem(key) === 'true') {
 					document.body.classList.add('invitation-revealed');
@@ -184,163 +115,141 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 			</script>
 		)}
 
+		<!-- Components -->
 		{
-			data.envelope && !data.envelope.disabled && (
+			envelope.enabled && envelope.data && (
 				<EnvelopeReveal
 					client:load
-					name={data.hero.name}
-					date={data.hero.date}
-					city={data.location.city}
-					sealStyle={data.envelope.sealStyle}
-					sealIcon={data.envelope.sealIcon}
-					microcopy={data.envelope.microcopy}
-					documentLabel={data.envelope.documentLabel}
-					stampText={data.envelope.stampText}
-					stampYear={data.envelope.stampYear}
-					tooltipText={data.envelope.tooltipText}
-					eventSlug={event.id}
-					variant={preset}
+					name={hero.name}
+					date={hero.date}
+					city={sections.location?.city || ''}
+					sealStyle={envelope.data.sealStyle}
+					sealIcon={envelope.data.sealIcon as any}
+					microcopy={envelope.data.microcopy}
+					documentLabel={envelope.data.documentLabel}
+					stampText={envelope.data.stampText}
+					stampYear={envelope.data.stampYear}
+					tooltipText={envelope.data.tooltipText}
+					eventSlug={viewModel.id}
+					variant={envelope.data.variant}
 				/>
 			)
 		}
 
 		<EventHeader
-			eventName={data.hero.name}
-			theme={data.theme}
-			links={data.navigation}
-			variant={preset}
+			eventName={hero.name}
+			theme={viewModel.theme}
+			links={navigation}
+			variant={theme.preset}
 		/>
 
 		<Hero
-			name={data.hero.name}
-			label={heroLabel}
-			nickname={data.hero.nickname}
-			date={data.hero.date}
-			venueName={data.location.venueName}
-			backgroundImage={heroBg}
-			portrait={heroPortrait}
-			variant={preset}
+			name={hero.name}
+			label={hero.label}
+			nickname={hero.nickname}
+			date={hero.date}
+			venueName={hero.venueName}
+			backgroundImage={hero.backgroundImage}
+			portrait={hero.portrait}
+			variant={hero.variant}
 		/>
 
-		{data.quote && (
+		{sections.quote && (
 			<Quote
-				text={data.quote.text}
-				author={data.quote.author}
-				variant={data.sectionStyles?.quote?.variant}
-				animation={data.sectionStyles?.quote?.animation}
+				text={sections.quote.text}
+				author={sections.quote.author}
+				variant={sections.quote.variant}
+				animation={sections.quote.animation}
 			/>
 		)}
 
-		{
-			data.family && (
-				<Family
-					parents={data.family.parents}
-					spouse={data.family.spouse}
-					children={data.family.children}
-					featuredImage={familyImage}
-					labels={data.family.labels}
-					celebrantName={data.hero.name}
-					variant={data.sectionStyles?.family?.variant}
-				/>
-			)
-		}
+		{sections.family && (
+			<Family
+				parents={sections.family.parents}
+				spouse={sections.family.spouse}
+				children={sections.family.children}
+				featuredImage={sections.family.featuredImage}
+				labels={sections.family.labels}
+				celebrantName={sections.family.celebrantName}
+				variant={sections.family.variant}
+			/>
+		)}
 
-		{
-			data.sections?.gallery && data.gallery && (
-				<Gallery
-					title={data.gallery.title}
-					subtitle={data.gallery.subtitle}
-					items={galleryItems}
-					variant={data.sectionStyles?.gallery?.variant}
-				/>
-			)
-		}
+		{sections.gallery && (
+			<Gallery
+				title={sections.gallery.title}
+				subtitle={sections.gallery.subtitle}
+				items={sections.gallery.items}
+				variant={sections.gallery.variant}
+			/>
+		)}
 
-		{
-			data.sections?.countdown && (
-				<Countdown
-					eventDate={data.hero.date}
-					title={data.countdown?.title}
-					subtitlePrefix={data.countdown?.subtitlePrefix}
-					footerText={data.countdown?.footerText}
-					variant={data.sectionStyles?.countdown?.variant}
-					showParticles={data.sectionStyles?.countdown?.showParticles}
-				/>
-			)
-		}
+		{sections.countdown && (
+			<Countdown
+				eventDate={sections.countdown.eventDate}
+				title={sections.countdown.title}
+				subtitlePrefix={sections.countdown.subtitlePrefix}
+				footerText={sections.countdown.footerText}
+				variant={sections.countdown.variant}
+				showParticles={sections.countdown.showParticles}
+			/>
+		)}
 
-		<EventLocation
-			ceremony={ceremonyData}
-			reception={receptionData}
-			indications={data.location.indications}
-			variant={data.sectionStyles?.location?.variant}
-			mapStyle={data.sectionStyles?.location?.mapStyle}
-			showFlourishes={data.sectionStyles?.location?.showFlourishes}
-		/>
+		{sections.location && (
+			<EventLocation
+				ceremony={sections.location.ceremony}
+				reception={sections.location.reception}
+				indications={sections.location.indications}
+				variant={sections.location.variant}
+				mapStyle={sections.location.mapStyle}
+				showFlourishes={sections.location.showFlourishes}
+			/>
+		)}
 
-		{
-			data.itinerary && (
-				<Itinerary title={data.itinerary.title} items={data.itinerary.items} variant={data.sectionStyles?.itinerary?.variant ?? preset} />
-			)
-		}
+		{sections.itinerary && (
+			<Itinerary
+				title={sections.itinerary.title}
+				items={sections.itinerary.items}
+				variant={sections.itinerary.variant}
+			/>
+		)}
 
-		{
-			data.sections?.rsvp && data.rsvp && (
-				<RSVP
-					client:visible
-					eventSlug={event.id}
-					title={data.rsvp.title}
-					guestCap={data.rsvp.guestCap}
-					confirmationMessage={data.rsvp.confirmationMessage}
-					showDietaryField={data.rsvp.showDietaryField}
-					dietaryLabel={data.rsvp.dietaryLabel}
-					dietaryPlaceholder={data.rsvp.dietaryPlaceholder}
-					confirmationMode={data.rsvp.confirmationMode}
-					whatsappConfig={data.rsvp.whatsappConfig}
-					variant={data.sectionStyles?.rsvp?.variant ?? preset}
-					nameLabel={data.sectionStyles?.rsvp?.labels?.name ?? data.sectionStyles?.rsvp?.nameLabel}
-					guestCountLabel={data.sectionStyles?.rsvp?.labels?.guestCount ?? data.sectionStyles?.rsvp?.guestCountLabel}
-					attendanceLabel={data.sectionStyles?.rsvp?.labels?.attendance}
-					buttonLabel={data.sectionStyles?.rsvp?.labels?.confirmButton ?? data.sectionStyles?.rsvp?.buttonLabel}
-				/>
-			)
-		}
+		{sections.rsvp && (
+			<RSVP
+				client:visible
+				{...sections.rsvp}
+			/>
+		)}
 
-		{
-			data.sections?.gifts && data.gifts && (
-				<Gifts
-					gifts={data.gifts.items}
-					title={data.gifts.title}
-					subtitle={data.gifts.subtitle}
-					variant={data.sectionStyles?.gifts?.variant}
-				/>
-			)
-		}
+		{sections.gifts && (
+			<Gifts
+				gifts={sections.gifts.items}
+				title={sections.gifts.title}
+				subtitle={sections.gifts.subtitle}
+				variant={sections.gifts.variant}
+			/>
+		)}
 
-		{
-			data.thankYou && (
-				<ThankYou
-					message={data.thankYou.message}
-					closingName={data.thankYou.closingName}
-					image={thankYouImage}
-					variant={data.sectionStyles?.thankYou?.variant}
-				/>
-			)
-		}
+		{sections.thankYou && (
+			<ThankYou
+				message={sections.thankYou.message}
+				closingName={sections.thankYou.closingName}
+				image={sections.thankYou.image}
+				variant={sections.thankYou.variant}
+			/>
+		)}
 
-		<Footer eventSlug={event.id} showEnvelope={showEnvelope} />
+		<Footer eventSlug={viewModel.id} showEnvelope={showEnvelope} />
 
-		{
-			data.music && (
-				<MusicPlayer
-					client:idle
-					url={data.music.url}
-					autoPlay={data.music.autoPlay}
-					title={data.music.title}
-					revealMode={musicRevealMode}
-					variant={preset}
-				/>
-			)
-		}
+		{music && (
+			<MusicPlayer
+				client:idle
+				url={music.url}
+				autoPlay={music.autoPlay}
+				title={music.title}
+				revealMode={music.revealMode}
+				variant={theme.preset}
+			/>
+		)}
 	</main>
 </Layout>
