@@ -6,21 +6,217 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 ---
 
 <Layout title="Acceso de anfitrión" description="Inicia sesión para administrar invitados RSVP">
-	<main style="max-width:720px;margin:2rem auto;padding:1rem;">
-		<h1>Acceso de anfitrión</h1>
-		<p>
-			Esta instalación requiere sesión de anfitrión para acceder al dashboard RSVP.
+	<main class="auth-shell">
+		<h1>Acceso de anfitrion</h1>
+		<p class="auth-note">
+			Ingresa con tu cuenta o crea una nueva con <code>eventSlug + claimCode</code>.
 		</p>
-		<p>
-			Después de autenticar tu sesión Supabase, continúa aquí:
-			<a href={next} rel="nofollow">{next}</a>
-		</p>
+
+		<div class="auth-tabs">
+			<button id="tab-login" class="active" type="button">Iniciar sesion</button>
+			<button id="tab-register" type="button">Crear cuenta cliente</button>
+		</div>
+
+		<section id="panel-login" class="auth-panel">
+			<label>
+				Metodo
+				<select id="login-method">
+					<option value="password">Email + password</option>
+					<option value="magic_link">Magic Link</option>
+				</select>
+			</label>
+			<label>
+				Email
+				<input id="login-email" type="email" autocomplete="email" />
+			</label>
+			<label id="login-password-wrap">
+				Password
+				<input id="login-password" type="password" autocomplete="current-password" />
+			</label>
+			<button id="login-submit" type="button">Continuar</button>
+		</section>
+
+		<section id="panel-register" class="auth-panel auth-panel--hidden">
+			<label>
+				Metodo
+				<select id="register-method">
+					<option value="password">Email + password</option>
+					<option value="magic_link">Magic Link</option>
+				</select>
+			</label>
+			<label>
+				Email
+				<input id="register-email" type="email" autocomplete="email" />
+			</label>
+			<label id="register-password-wrap">
+				Password
+				<input id="register-password" type="password" autocomplete="new-password" />
+			</label>
+			<label>
+				eventSlug
+				<input id="register-event-slug" type="text" placeholder="mi-evento-2026" />
+			</label>
+			<label>
+				claimCode
+				<input id="register-claim-code" type="text" />
+			</label>
+			<button id="register-submit" type="button">Registrar y reclamar evento</button>
+		</section>
+
+		<p id="auth-status" class="auth-status"></p>
+
 		<hr />
-		<p>
-			Panel admin legado:
-			<code>/admin/rsvp</code>
-			(temporal, Basic Auth).
+		<p class="auth-note">
+			Panel admin legado temporal: <code>/admin/rsvp</code> (Basic Auth).
 		</p>
 	</main>
+
+	<style>
+		.auth-shell {
+			max-width: 760px;
+			margin: 2rem auto;
+			padding: 1rem;
+			display: grid;
+			gap: 0.8rem;
+		}
+		.auth-tabs {
+			display: flex;
+			gap: 0.6rem;
+		}
+		.auth-tabs button {
+			border: 1px solid #d5d5d5;
+			background: #f5f5f5;
+			padding: 0.55rem 0.8rem;
+			border-radius: 0.5rem;
+			cursor: pointer;
+		}
+		.auth-tabs button.active {
+			background: #1f2937;
+			color: white;
+			border-color: #1f2937;
+		}
+		.auth-panel {
+			display: grid;
+			gap: 0.6rem;
+			padding: 0.8rem;
+			border: 1px solid #e5e7eb;
+			border-radius: 0.5rem;
+		}
+		.auth-panel--hidden {
+			display: none;
+		}
+		.auth-panel label {
+			display: grid;
+			gap: 0.25rem;
+			font-size: 0.94rem;
+		}
+		.auth-panel input,
+		.auth-panel select {
+			padding: 0.55rem 0.65rem;
+			border: 1px solid #d1d5db;
+			border-radius: 0.4rem;
+		}
+		.auth-panel button {
+			padding: 0.65rem 0.8rem;
+			background: #111827;
+			color: white;
+			border: none;
+			border-radius: 0.4rem;
+			cursor: pointer;
+		}
+		.auth-status {
+			min-height: 1.2rem;
+		}
+		.auth-note {
+			color: #4b5563;
+		}
+	</style>
+
+	<script is:inline define:vars={{ next }}>
+		const tabLogin = document.getElementById('tab-login');
+		const tabRegister = document.getElementById('tab-register');
+		const panelLogin = document.getElementById('panel-login');
+		const panelRegister = document.getElementById('panel-register');
+		const statusEl = document.getElementById('auth-status');
+
+		const loginMethod = document.getElementById('login-method');
+		const loginPasswordWrap = document.getElementById('login-password-wrap');
+		const registerMethod = document.getElementById('register-method');
+		const registerPasswordWrap = document.getElementById('register-password-wrap');
+
+		const setStatus = (message, isError = false) => {
+			statusEl.textContent = message || '';
+			statusEl.style.color = isError ? '#b91c1c' : '#065f46';
+		};
+
+		const switchTab = (isLogin) => {
+			tabLogin.classList.toggle('active', isLogin);
+			tabRegister.classList.toggle('active', !isLogin);
+			panelLogin.classList.toggle('auth-panel--hidden', !isLogin);
+			panelRegister.classList.toggle('auth-panel--hidden', isLogin);
+			setStatus('');
+		};
+
+		tabLogin.addEventListener('click', () => switchTab(true));
+		tabRegister.addEventListener('click', () => switchTab(false));
+
+		loginMethod.addEventListener('change', () => {
+			loginPasswordWrap.style.display = loginMethod.value === 'password' ? 'grid' : 'none';
+		});
+		registerMethod.addEventListener('change', () => {
+			registerPasswordWrap.style.display =
+				registerMethod.value === 'password' ? 'grid' : 'none';
+		});
+
+		document.getElementById('login-submit').addEventListener('click', async () => {
+			setStatus('Procesando...');
+			try {
+				const payload = {
+					method: loginMethod.value,
+					email: document.getElementById('login-email').value,
+					password: document.getElementById('login-password').value,
+				};
+				const response = await fetch('/api/auth/login-host', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload),
+				});
+				const data = await response.json();
+				if (!response.ok) throw new Error(data.message || 'Error de autenticacion.');
+				setStatus(data.message || 'Sesion iniciada.');
+				if (payload.method === 'password') {
+					window.location.href = next || data.next || '/dashboard/invitados';
+				}
+			} catch (error) {
+				setStatus(error.message || 'No se pudo iniciar sesion.', true);
+			}
+		});
+
+		document.getElementById('register-submit').addEventListener('click', async () => {
+			setStatus('Procesando registro...');
+			try {
+				const payload = {
+					method: registerMethod.value,
+					email: document.getElementById('register-email').value,
+					password: document.getElementById('register-password').value,
+					eventSlug: document.getElementById('register-event-slug').value,
+					claimCode: document.getElementById('register-claim-code').value,
+				};
+				const response = await fetch('/api/auth/register-host', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload),
+				});
+				const data = await response.json();
+				if (!response.ok) throw new Error(data.message || 'No se pudo registrar.');
+				setStatus(data.message || 'Cuenta creada.');
+				if (payload.method === 'password') {
+					window.location.href = next || data.next || '/dashboard/invitados';
+				}
+			} catch (error) {
+				setStatus(error.message || 'No se pudo registrar.', true);
+			}
+		});
+	</script>
 </Layout>
 

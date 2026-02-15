@@ -1,15 +1,23 @@
 import {
+	createEventMembershipService,
 	createGuestInvitation,
 	deleteGuestById,
 	findEventById,
 	findEventByIdService,
+	findEventBySlugService,
 	findEventByInvitationPublic,
-	findEventsByOwner,
+	findEventsForHost,
 	findGuestsByEvent,
+	findMembershipByEventForHost,
 	findGuestById,
 	findGuestByIdService,
 	findGuestByInviteIdPublic,
 	findGuestByLegacyIdentityPublic,
+	findUserRoleService,
+	incrementClaimCodeUsageService,
+	listMembershipsForHost,
+	upsertUserRoleService,
+	findClaimCodeRecordService,
 	updateGuestById,
 	updateGuestByInviteIdPublic,
 } from './repository';
@@ -25,6 +33,8 @@ import type {
 import { getRsvpContext } from '@/lib/rsvp/service';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
+import { createHash, randomBytes } from 'node:crypto';
+import { getEnv } from '@/utils/env';
 
 const MAX_TEXT_LEN = 500;
 
@@ -98,6 +108,30 @@ export async function listDashboardGuests(input: {
 }): Promise<DashboardGuestListResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (!event) {
+		const membership = await findMembershipByEventForHost(input.eventId, input.hostAccessToken);
+		if (membership) {
+			const guests = await findGuestsByEvent(
+				{
+					eventId: membership.eventId,
+					status: input.status ?? 'all',
+					search: sanitize(input.search, 120),
+				},
+				input.hostAccessToken,
+			);
+			const items = guests.map((guest) => toGuestDto(guest, input.origin));
+			return {
+				eventId: membership.eventId,
+				items,
+				totals: {
+					total: items.length,
+					pending: items.filter((item) => item.attendanceStatus === 'pending').length,
+					confirmed: items.filter((item) => item.attendanceStatus === 'confirmed').length,
+					declined: items.filter((item) => item.attendanceStatus === 'declined').length,
+					viewed: items.filter((item) => !!item.firstViewedAt).length,
+				},
+				updatedAt: new Date().toISOString(),
+			};
+		}
 		const serviceEvent = await findEventByIdService(input.eventId);
 		if (serviceEvent) {
 			throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
@@ -133,7 +167,8 @@ export async function listHostEvents(input: {
 	hostUserId: string;
 	hostAccessToken: string;
 }): Promise<EventRecord[]> {
-	return findEventsByOwner(input.hostUserId, input.hostAccessToken);
+	void input.hostUserId;
+	return findEventsForHost(input.hostAccessToken);
 }
 
 export async function createDashboardGuest(input: {
@@ -427,4 +462,108 @@ export async function resolveLegacyTokenToCanonicalUrl(input: {
 	if (!invitation) return null;
 
 	return buildInviteUrl(input.origin, invitation.inviteId);
+}
+
+function hashClaimCode(rawCode: string): string {
+	const pepper = getEnv('RSVP_CLAIM_CODE_PEPPER') || 'default-pepper';
+	return createHash('sha256')
+		.update(`${pepper}:${sanitize(rawCode, 256)}`)
+		.digest('hex');
+}
+
+export function isSuperAdminEmail(email: string): boolean {
+	const allowlist = (getEnv('SUPER_ADMIN_EMAILS') || '')
+		.split(',')
+		.map((item) => item.trim().toLowerCase())
+		.filter(Boolean);
+	if (allowlist.length === 0) return false;
+	return allowlist.includes(sanitize(email, 320).toLowerCase());
+}
+
+export async function ensureUserRole(input: {
+	userId: string;
+	email: string;
+	defaultRole?: 'host_client' | 'super_admin';
+}): Promise<'host_client' | 'super_admin'> {
+	const existing = await findUserRoleService(input.userId);
+	if (existing) return existing.role;
+	const nextRole = isSuperAdminEmail(input.email)
+		? 'super_admin'
+		: (input.defaultRole ?? 'host_client');
+	const upserted = await upsertUserRoleService({
+		userId: input.userId,
+		role: nextRole,
+	});
+	return upserted.role;
+}
+
+export async function claimEventForUser(input: {
+	userId: string;
+	eventSlug: string;
+	claimCode: string;
+}): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
+	const event = await findEventBySlugService(sanitize(input.eventSlug, 120));
+	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+
+	const claim = await findClaimCodeRecordService({
+		eventId: event.id,
+		codeHash: hashClaimCode(input.claimCode),
+	});
+	if (!claim || !claim.active) {
+		throw new ApiError(403, 'forbidden', 'Claim code invalido.');
+	}
+	if (claim.expiresAt && new Date(claim.expiresAt).getTime() < Date.now()) {
+		throw new ApiError(403, 'forbidden', 'Claim code expirado.');
+	}
+	if (claim.usedCount >= claim.maxUses) {
+		throw new ApiError(403, 'forbidden', 'Claim code agotado.');
+	}
+
+	await createEventMembershipService({
+		eventId: event.id,
+		userId: input.userId,
+		membershipRole: 'owner',
+	});
+	await incrementClaimCodeUsageService(claim.id, claim.usedCount + 1);
+	return {
+		eventId: event.id,
+		membershipRole: 'owner',
+	};
+}
+
+export async function buildAuthSessionDto(input: {
+	userId: string;
+	email: string;
+	accessToken: string;
+}): Promise<{
+	userId: string;
+	email: string;
+	role: 'host_client' | 'super_admin' | null;
+	isSuperAdmin: boolean;
+	memberships: Array<{
+		id: string;
+		eventId: string;
+		userId: string;
+		membershipRole: 'owner' | 'manager';
+		createdAt: string;
+		updatedAt: string;
+	}>;
+}> {
+	const role = await ensureUserRole({
+		userId: input.userId,
+		email: input.email,
+		defaultRole: 'host_client',
+	});
+	const memberships = await listMembershipsForHost(input.accessToken);
+	return {
+		userId: input.userId,
+		email: sanitize(input.email, 320),
+		role,
+		isSuperAdmin: role === 'super_admin',
+		memberships,
+	};
+}
+
+export function generateTemporaryPassword(): string {
+	return `${randomBytes(12).toString('base64url')}!aA1`;
 }

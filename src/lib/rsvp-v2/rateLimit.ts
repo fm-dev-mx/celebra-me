@@ -1,21 +1,26 @@
-interface Bucket {
-	count: number;
-	resetAtMs: number;
-}
+/**
+ * @deprecated Use `checkRateLimit` from `rateLimitProvider.ts`.
+ * This shim remains for one transition cycle and mirrors the prior signature.
+ */
+import { checkRateLimit as checkRateLimitProvider } from './rateLimitProvider';
 
-const bucketStore = new Map<string, Bucket>();
-
-export function checkRateLimit(key: string, maxHits: number, windowMs: number): boolean {
-	const now = Date.now();
-	const current = bucketStore.get(key);
-
-	if (!current || current.resetAtMs <= now) {
-		bucketStore.set(key, { count: 1, resetAtMs: now + windowMs });
-		return true;
-	}
-
-	if (current.count >= maxHits) return false;
-	current.count += 1;
-	bucketStore.set(key, current);
-	return true;
+export async function checkRateLimit(
+	key: string,
+	maxHits: number,
+	windowMs: number,
+): Promise<boolean> {
+	const [namespaceRaw, entityRaw, ipRaw] = key.split(':');
+	const namespace =
+		namespaceRaw === 'view' || namespaceRaw === 'rsvp' || namespaceRaw === 'dashboard'
+			? namespaceRaw
+			: 'ctx';
+	const entityId = entityRaw || 'legacy';
+	const ip = ipRaw || 'unknown';
+	return checkRateLimitProvider({
+		namespace,
+		entityId,
+		ip,
+		maxHits,
+		windowSec: Math.max(1, Math.trunc(windowMs / 1000)),
+	});
 }

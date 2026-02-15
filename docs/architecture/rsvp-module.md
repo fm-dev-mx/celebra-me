@@ -34,6 +34,9 @@ Primary v2 tables:
 - `events`
 - `guest_invitations`
 - `guest_invitation_audit`
+- `app_user_roles`
+- `event_memberships`
+- `event_claim_codes`
 
 Legacy tables retained during transition:
 
@@ -71,6 +74,18 @@ Legacy tables retained during transition:
 - `POST /api/dashboard/guests/:guestId/mark-shared`
 - `GET /api/dashboard/guests/export.csv?eventId=...`
 
+### Auth API
+
+- `POST /api/auth/login-host`
+- `POST /api/auth/register-host`
+- `GET /api/auth/session`
+- `POST /api/auth/logout`
+
+Registration policy:
+
+- host signup requires `eventSlug + claimCode`
+- successful claim creates event membership for the new host account
+
 ### Guest API
 
 - `GET /api/invitacion/:inviteId/context`
@@ -96,3 +111,4 @@ contracts.
 - Dashboard source of truth is now Supabase (`guest_invitations`).
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
 - `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.
+- Host registration uses `eventSlug + claimCode` and creates event membership.

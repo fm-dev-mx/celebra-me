@@ -12,15 +12,15 @@
 
 ## Traceability Matrix
 
-| Plan Item                                      | Status  | Evidence                                                                                                                                                               |
-| ---------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SSE + fallback dashboard                       | Done    | `src/pages/api/dashboard/guests/stream.ts`, `src/components/dashboard/guests/GuestDashboardApp.tsx`                                                                    |
-| Uniform API errors `{code,message,details?}`   | Done    | `src/lib/rsvp-v2/http.ts`, dashboard/invitacion endpoints                                                                                                              |
-| Ownership and RLS protections                  | Partial | SQL policies in `supabase/migrations/20260215000400_rsvp_v2_rls.sql`, guard logic in `src/lib/rsvp-v2/service.ts`; requires integration verification in deployed DB    |
-| `/context` side-effect free + `/view` explicit | Done    | `src/pages/api/invitacion/[inviteId]/context.ts`, `src/pages/api/invitacion/[inviteId]/view.ts`                                                                        |
-| Distributed rate limiting                      | Partial | `src/lib/rsvp-v2/rateLimitProvider.ts` with Upstash adapter + in-memory fallback; depends on env flags in runtime                                                      |
-| Legacy `?t=` bridge                            | Done    | `src/pages/[eventType]/[slug].astro`, `src/pages/api/invitacion/resolve.ts`                                                                                            |
-| Login flow host/admin consistency              | Partial | Host redirect exists (`src/pages/dashboard/invitados.astro`), login UI added (`src/pages/login.astro`), admin legacy remains Basic Auth (`src/pages/admin/rsvp.astro`) |
+| Plan Item                                      | Status  | Evidence                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SSE + fallback dashboard                       | Done    | `src/pages/api/dashboard/guests/stream.ts`, `src/components/dashboard/guests/GuestDashboardApp.tsx`                                                                                                                  |
+| Uniform API errors `{code,message,details?}`   | Done    | `src/lib/rsvp-v2/http.ts`, dashboard/invitacion endpoints                                                                                                                                                            |
+| Ownership and RLS protections                  | Partial | SQL policies in `supabase/migrations/20260215000400_rsvp_v2_rls.sql`, guard logic in `src/lib/rsvp-v2/service.ts`; requires integration verification in deployed DB                                                  |
+| `/context` side-effect free + `/view` explicit | Done    | `src/pages/api/invitacion/[inviteId]/context.ts`, `src/pages/api/invitacion/[inviteId]/view.ts`                                                                                                                      |
+| Distributed rate limiting                      | Partial | `src/lib/rsvp-v2/rateLimitProvider.ts` with Upstash adapter + in-memory fallback; depends on env flags in runtime                                                                                                    |
+| Legacy `?t=` bridge                            | Done    | `src/pages/[eventType]/[slug].astro`, `src/pages/api/invitacion/resolve.ts`                                                                                                                                          |
+| Login flow host/admin consistency              | Partial | Host redirect exists (`src/pages/dashboard/invitados.astro`), dual login/register UI in `src/pages/login.astro`, auth APIs in `src/pages/api/auth/*`, admin legacy remains Basic Auth (`src/pages/admin/rsvp.astro`) |
 
 ## Obsolete / Redundant / Coupled Inventory
 
@@ -46,7 +46,7 @@
 2. Rate-limit implementations:
 
 - `src/lib/rsvp-v2/rateLimit.ts` and `src/lib/rsvp-v2/rateLimitProvider.ts`.
-- Decision: `Eliminar` `rateLimit.ts` after final consumer check.
+- Decision: `Deprecado` `rateLimit.ts` como shim temporal; remover en próximo ciclo.
 
 ### Coupled Hotspots
 
@@ -101,20 +101,20 @@ Command:
 
 Results:
 
-- `src/lib/rsvp-v2/*`: `59.06%` lines (`55.47%` statements).
-- `src/pages/api/dashboard/*`: `~85.54%` lines in nested guests endpoints and `95.83%` in root
+- `src/lib/rsvp-v2/*`: `77.21%` lines (`73.49%` statements).
+- `src/pages/api/dashboard/*`: `~85.54%` lines in nested guests endpoints y `95.83%` in root
   dashboard endpoints.
 - `src/pages/api/invitacion/*`: `92.85%` + `90.32%` lines.
 
 Interpretation:
 
 - Dashboard and invitacion API targets are above objective.
-- `lib/rsvp-v2` remains below target mainly due `service.ts`, `repository.ts`, and legacy
-  `rateLimit.ts`.
+- `lib/rsvp-v2` reached line coverage objective (`>=70%`) in focused run.
+- Remaining debt is mostly branch/function coverage in `service.ts` and `repository.ts`.
 
 ## Residual Risks
 
-1. Coverage threshold target (`>=70%` libs/dashboard and `>=75%` invitacion) may still need
-   additional branch-path tests in `service.ts` and `repository.ts`.
+1. Branch/function coverage in `service.ts` and `repository.ts` still has room to improve despite
+   line target achieved.
 2. Distributed rate-limit remains partial without production env/Upstash validation.
 3. Legacy bridge and legacy APIs keep migration coupling alive until cutover.

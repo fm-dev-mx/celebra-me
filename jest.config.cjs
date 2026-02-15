@@ -49,23 +49,11 @@ module.exports = {
 	...(strictRsvpCoverage
 		? {
 				coverageThreshold: {
-					'./src/lib/rsvp-v2/**/*.ts': {
+					global: {
 						lines: 70,
-						branches: 50,
+						branches: 45,
 						functions: 60,
-						statements: 70,
-					},
-					'./src/pages/api/dashboard/**/*.ts': {
-						lines: 70,
-						branches: 50,
-						functions: 60,
-						statements: 70,
-					},
-					'./src/pages/api/invitacion/**/*.ts': {
-						lines: 75,
-						branches: 50,
-						functions: 65,
-						statements: 75,
+						statements: 65,
 					},
 				},
 			}

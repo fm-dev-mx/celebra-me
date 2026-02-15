@@ -3,6 +3,7 @@ export type ApiErrorCode =
 	| 'unauthorized'
 	| 'forbidden'
 	| 'not_found'
+	| 'conflict'
 	| 'rate_limited'
 	| 'internal_error';
 

@@ -1,7 +1,10 @@
 import { supabaseRestRequest } from './supabase';
 import type {
 	AttendanceStatus,
+	AppUserRole,
+	AppUserRoleRecord,
 	EventRecord,
+	EventMembershipRecord,
 	GuestInvitationAuditRecord,
 	GuestInvitationRecord,
 	ResponseSource,
@@ -73,6 +76,22 @@ type GuestAuditRow = {
 	created_at: string;
 };
 
+type UserRoleRow = {
+	user_id: string;
+	role: AppUserRole;
+	created_at: string;
+	updated_at: string;
+};
+
+type EventMembershipRow = {
+	id: string;
+	event_id: string;
+	user_id: string;
+	membership_role: 'owner' | 'manager';
+	created_at: string;
+	updated_at: string;
+};
+
 function toEventRecord(row: EventRow): EventRecord {
 	return {
 		id: row.id,
@@ -119,12 +138,40 @@ function toGuestAuditRecord(row: GuestAuditRow): GuestInvitationAuditRecord {
 	};
 }
 
+function toRoleRecord(row: UserRoleRow): AppUserRoleRecord {
+	return {
+		userId: row.user_id,
+		role: row.role,
+		createdAt: row.created_at,
+		updatedAt: row.updated_at,
+	};
+}
+
+function toMembershipRecord(row: EventMembershipRow): EventMembershipRecord {
+	return {
+		id: row.id,
+		eventId: row.event_id,
+		userId: row.user_id,
+		membershipRole: row.membership_role,
+		createdAt: row.created_at,
+		updatedAt: row.updated_at,
+	};
+}
+
 export async function findEventsByOwner(
 	ownerUserId: string,
 	hostAccessToken: string,
 ): Promise<EventRecord[]> {
 	const rows = await supabaseRestRequest<EventRow[]>({
 		pathWithQuery: `events?select=*&owner_user_id=eq.${encodeURIComponent(ownerUserId)}&order=created_at.desc`,
+		authToken: hostAccessToken,
+	});
+	return rows.map(toEventRecord);
+}
+
+export async function findEventsForHost(hostAccessToken: string): Promise<EventRecord[]> {
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: 'events?select=*&order=created_at.desc',
 		authToken: hostAccessToken,
 	});
 	return rows.map(toEventRecord);
@@ -144,6 +191,14 @@ export async function findEventById(
 export async function findEventByIdService(eventId: string): Promise<EventRecord | null> {
 	const rows = await supabaseRestRequest<EventRow[]>({
 		pathWithQuery: `events?select=*&id=eq.${encodeURIComponent(eventId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toEventRecord(rows[0]) : null;
+}
+
+export async function findEventBySlugService(slug: string): Promise<EventRecord | null> {
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: `events?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toEventRecord(rows[0]) : null;
@@ -329,4 +384,122 @@ export async function findGuestByLegacyIdentityPublic(input: {
 		useServiceRole: true,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
+}
+
+export async function upsertUserRoleService(input: {
+	userId: string;
+	role: AppUserRole;
+}): Promise<AppUserRoleRecord> {
+	const rows = await supabaseRestRequest<UserRoleRow[]>({
+		pathWithQuery: 'app_user_roles?select=*',
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'resolution=merge-duplicates,return=representation',
+		body: {
+			user_id: input.userId,
+			role: input.role,
+		},
+	});
+	if (!rows[0]) throw new Error('No se pudo actualizar rol de usuario.');
+	return toRoleRecord(rows[0]);
+}
+
+export async function findUserRoleService(userId: string): Promise<AppUserRoleRecord | null> {
+	const rows = await supabaseRestRequest<UserRoleRow[]>({
+		pathWithQuery: `app_user_roles?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toRoleRecord(rows[0]) : null;
+}
+
+export async function createEventMembershipService(input: {
+	eventId: string;
+	userId: string;
+	membershipRole: 'owner' | 'manager';
+}): Promise<EventMembershipRecord> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: 'event_memberships?select=*',
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'resolution=merge-duplicates,return=representation',
+		body: {
+			event_id: input.eventId,
+			user_id: input.userId,
+			membership_role: input.membershipRole,
+		},
+	});
+	if (!rows[0]) throw new Error('No se pudo crear membresia del evento.');
+	return toMembershipRecord(rows[0]);
+}
+
+export async function findMembershipByEventForHost(
+	eventId: string,
+	hostAccessToken: string,
+): Promise<EventMembershipRecord | null> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(eventId)}&limit=1`,
+		authToken: hostAccessToken,
+	});
+	return rows[0] ? toMembershipRecord(rows[0]) : null;
+}
+
+export async function listMembershipsForHost(
+	hostAccessToken: string,
+): Promise<EventMembershipRecord[]> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: 'event_memberships?select=*&order=created_at.desc',
+		authToken: hostAccessToken,
+	});
+	return rows.map(toMembershipRecord);
+}
+
+export async function findClaimCodeRecordService(input: {
+	eventId: string;
+	codeHash: string;
+}): Promise<{
+	id: string;
+	eventId: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+} | null> {
+	type ClaimRow = {
+		id: string;
+		event_id: string;
+		active: boolean;
+		expires_at: string | null;
+		max_uses: number;
+		used_count: number;
+	};
+
+	const rows = await supabaseRestRequest<ClaimRow[]>({
+		pathWithQuery: `event_claim_codes?select=id,event_id,active,expires_at,max_uses,used_count&event_id=eq.${encodeURIComponent(input.eventId)}&code_hash=eq.${encodeURIComponent(input.codeHash)}&limit=1`,
+		useServiceRole: true,
+	});
+
+	if (!rows[0]) return null;
+	return {
+		id: rows[0].id,
+		eventId: rows[0].event_id,
+		active: rows[0].active,
+		expiresAt: rows[0].expires_at,
+		maxUses: rows[0].max_uses,
+		usedCount: rows[0].used_count,
+	};
+}
+
+export async function incrementClaimCodeUsageService(
+	claimCodeId: string,
+	nextUsedCount: number,
+): Promise<void> {
+	await supabaseRestRequest<unknown[]>({
+		pathWithQuery: `event_claim_codes?id=eq.${encodeURIComponent(claimCodeId)}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=minimal',
+		body: {
+			used_count: nextUsedCount,
+		},
+	});
 }

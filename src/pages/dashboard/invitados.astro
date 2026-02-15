@@ -6,7 +6,8 @@ import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
 
 const hostSession = await getHostSessionFromRequest(Astro.request);
 if (!hostSession) {
-	return Astro.redirect(buildHostLoginRedirect('/dashboard/invitados'));
+	const loginUrl = buildHostLoginRedirect('/dashboard/invitados');
+	if (loginUrl) return Astro.redirect(loginUrl);
 }
 
 const eventId = Astro.url.searchParams.get('eventId') ?? '';
