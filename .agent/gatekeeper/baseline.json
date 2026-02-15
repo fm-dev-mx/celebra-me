@@ -1,0 +1,33 @@
+{
+    "version": 2,
+    "generatedAt": "2026-02-15T20:37:58.031Z",
+    "rules": {
+        "forbiddenFiles": ["forbiddenFiles|forbidden-file|.astro/types.d.ts|.astro/types.d.ts"],
+        "newAnyAdded": [
+            "newAnyAdded|new-any|any|src/components/common/icon.astro",
+            "newAnyAdded|new-any|any|src/components/invitation/hero.astro",
+            "newAnyAdded|new-any|any|src/components/invitation/photogallery.tsx",
+            "newAnyAdded|new-any|any|src/lib/adapters/event.ts",
+            "newAnyAdded|new-any|any|src/lib/utils/ui.ts",
+            "newAnyAdded|new-any|any|src/pages/[eventtype]/[slug].astro",
+            "newAnyAdded|new-any|any|src/pages/api/auth/register-host.ts",
+            "newAnyAdded|new-any|any|src/pages/dashboard/mfa-setup.astro",
+            "newAnyAdded|new-any|any|src/pages/login.astro"
+        ],
+        "inlineStylePolicy": [
+            "inlineStylePolicy|style-tag|line:<style define:vars={{ width: `${width}px`, height: `${height}px` }}>|src/components/common/optimizedimage.astro",
+            "inlineStylePolicy|style-tag|line:<style define:vars={{ width: size, height: size }}>|src/components/common/icons/icon.astro",
+            "inlineStylePolicy|style-tag|line:<style>|src/components/invitation/guestinvitationhero.astro",
+            "inlineStylePolicy|style-attr|line:style={{|src/components/invitation/timelinelist.tsx",
+            "inlineStylePolicy|style-tag|line:<style define:vars={{ desktopbgstyle, mobilebgstyle }}>|src/components/layout/section.astro",
+            "inlineStylePolicy|style-attr|line:<article class=\"auth-card\" style=\"max-width: 500px;\">|src/pages/dashboard/mfa-setup.astro",
+            "inlineStylePolicy|style-tag|line:<style>|src/pages/dashboard/mfa-setup.astro",
+            "inlineStylePolicy|style-attr|line:<p style=\"margin-top: 1.5rem; color: #000; font-weight: 600; font-size: 0.9rem;\"|src/pages/dashboard/mfa-setup.astro",
+            "inlineStylePolicy|style-tag|line:<style>|src/pages/invitacion/[inviteid].astro"
+        ],
+        "documentationMappings": [
+            "documentationMappings|doc-lines-too-low|docs/theme_system.md|theme-system-sync",
+            "documentationMappings|doc-lines-too-low|docs/doc_status.md|workflow-status-sync"
+        ]
+    }
+}

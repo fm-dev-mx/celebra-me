@@ -1,0 +1,191 @@
+{
+    "killSwitch": false,
+    "maxFindings": 20,
+    "phaseDefaults": {
+        "defaultPhase": 1,
+        "phases": {
+            "1": {
+                "description": "Report-only for new governance rules."
+            },
+            "2": {
+                "description": "Block high-signal architecture and docs mappings."
+            },
+            "3": {
+                "description": "Full hardening, including inline style/script policy."
+            }
+        }
+    },
+    "legacyAliases": {
+        "minimal": "quick"
+    },
+    "docsEvidence": {
+        "requireRealDiff": true,
+        "minChangedLines": 3,
+        "minChangedChars": 40,
+        "requireUpdateToken": false,
+        "acceptedUpdateTokens": ["Last Updated", "Changelog"],
+        "tokenMatchMode": "any"
+    },
+    "rules": {
+        "forbiddenFiles": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            }
+        },
+        "caseCollision": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 10,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            }
+        },
+        "publicAssetImport": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            }
+        },
+        "newAnyAdded": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            }
+        },
+        "serverClientBoundary": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "block",
+                "3": "block"
+            },
+            "appliesTo": ["src/components/**", "src/pages/**/*.astro", "src/pages/**/*.tsx"],
+            "exemptions": ["src/pages/api/**", "src/pages/admin/**"]
+        },
+        "themePresetIsolation": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "block",
+                "3": "block"
+            },
+            "appliesTo": ["src/styles/themes/presets/**/*.scss"]
+        },
+        "themeSectionVariantIsolation": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "block",
+                "3": "block"
+            },
+            "appliesTo": ["src/styles/themes/sections/**/*.scss"]
+        },
+        "inlineStylePolicy": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "warn",
+                "3": "block"
+            },
+            "appliesTo": ["src/**/*.astro", "src/**/*.tsx"],
+            "exemptions": ["src/pages/admin/**", "src/components/common/Icon.astro"]
+        },
+        "inlineScriptPolicy": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "warn",
+                "3": "block"
+            },
+            "appliesTo": ["src/**/*.astro"],
+            "allowlist": [
+                "src/pages/[eventType]/[slug].astro",
+                "src/components/common/HeaderBase.astro",
+                "src/components/invitation/Footer.astro",
+                "src/pages/admin/rsvp.astro"
+            ]
+        },
+        "documentationMappings": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "warn",
+                "2": "block",
+                "3": "block"
+            }
+        }
+    },
+    "docMappings": [
+        {
+            "id": "theme-system-sync",
+            "triggers": [
+                "src/content/config.ts",
+                "src/content/events/**",
+                "src/lib/adapters/**",
+                "src/styles/themes/**",
+                "src/components/invitation/**"
+            ],
+            "requiredAll": ["docs/THEME_SYSTEM.md"]
+        },
+        {
+            "id": "rsvp-architecture-sync",
+            "triggers": [
+                "src/lib/rsvp-v2/**",
+                "src/pages/api/auth/**",
+                "src/pages/api/dashboard/**",
+                "src/pages/api/invitacion/**",
+                "src/middleware.ts"
+            ],
+            "requiredAny": ["docs/architecture/rsvp-module.md", "docs/RSVP_STATUS.md"]
+        },
+        {
+            "id": "workflow-status-sync",
+            "triggers": [".agent/workflows/**"],
+            "requiredAll": ["docs/DOC_STATUS.md"]
+        }
+    ],
+    "architectureBoundaries": {
+        "clientForbiddenImports": [
+            "@api/",
+            "src/pages/api/",
+            "@backend/",
+            "@services/",
+            "@controllers/",
+            "@repositories/",
+            "@middlewares/",
+            "@models/",
+            "@db/",
+            "nodemailer",
+            "node:fs",
+            "fs",
+            "node:path",
+            "path"
+        ]
+    }
+}

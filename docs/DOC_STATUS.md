@@ -51,6 +51,11 @@
 1. Inventory references:
     1. `docs/audit/full-system-audit-2026-02-15.md`
 
+1. Gatekeeper governance rollout (staged-only):
+    1. Policy file: `.agent/gatekeeper/policy.json`
+    2. Baseline file: `.agent/gatekeeper/baseline.json`
+    3. CLI supports `--mode strict|quick`, `--enforce-phase 1|2|3`, `--report-json`, and `--s0-file`
+
 ---
 
 ## Next Operational Queue

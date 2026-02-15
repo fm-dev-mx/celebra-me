@@ -3,7 +3,7 @@ description: Governance and consistency workflow for theme abstraction and docum
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-02-14
+last_reviewed: 2026-02-15
 ---
 
 # 🏛️ Workflow: Theme Architecture Governance
@@ -63,8 +63,9 @@ After alignment:
 
 - [ ] Run full build/test suite if necessary.
 - [ ] Stage only the files for one coherent ADU (no mixed-intent commits).
-- [ ] Execute `.agent/workflows/evergreen/gatekeeper-commit.md` (`--strict` for code changes,
-      `--minimal` for doc-only updates).
+- [ ] Execute `.agent/workflows/evergreen/gatekeeper-commit.md` (`--mode strict` for code changes,
+      `--mode quick` for doc-only updates).
+- [ ] Set governance phase explicitly when needed (`--enforce-phase 1|2|3`) to match rollout policy.
 
 ---
 
