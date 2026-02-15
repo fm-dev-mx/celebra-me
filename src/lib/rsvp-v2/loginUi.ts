@@ -44,9 +44,7 @@ export function validateRegisterForm(input: RegisterFormState): string | null {
 	const loginError = validateLoginForm(input);
 	if (loginError) return loginError;
 
-	if (!normalize(input.claimCode)) {
-		return 'Ingresa el claimCode para vincular tu cuenta al evento.';
-	}
-
+	// In RSVP-V2, claimCode is handled by the backend.
+	// The mandatory check is removed to allow Superadmins to skip it.
 	return null;
 }

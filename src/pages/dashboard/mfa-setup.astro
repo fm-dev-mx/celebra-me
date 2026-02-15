@@ -1,0 +1,211 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Logo from '@/components/ui/Logo.astro';
+import '@styles/auth/_login.scss';
+
+// Read the session directly from the server-side cookie
+const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
+---
+
+<Layout
+	title="Configurar Seguridad MFA"
+	description="Protege tu cuenta de administrador con autenticación de dos factores"
+	hideHeader={true}
+	className="theme-preset--auth-dark"
+>
+	<section class="auth-shell" data-variant="dark">
+		<header class="auth-local-header">
+			<a class="auth-brand" href="/" aria-label="Volver al inicio">
+				<Logo variant="white" class="auth-brand__logo" altText="Celebra.me" />
+				<span class="auth-brand__caption">Seguridad Admin</span>
+			</a>
+		</header>
+
+		<article class="auth-card" style="max-width: 500px;">
+			<div class="auth-copy">
+				<p class="auth-kicker">Paso obligatorio de seguridad</p>
+				<h1>Configura MFA</h1>
+				<p>Como Superadmin, tu cuenta requiere autenticación de dos factores para proteger la plataforma.</p>
+			</div>
+
+			<!-- Pass the token via data-attribute -->
+			<div
+				id="mfa-app"
+				class="auth-panel"
+				data-token={sessionToken}
+				data-url={import.meta.env.PUBLIC_SUPABASE_URL}
+				data-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY}
+			>
+				<div class="mfa-setup-steps">
+					<div id="qr-container" class="qr-placeholder">
+						<div class="loader"></div>
+						<p>Generando código seguro...</p>
+					</div>
+
+					<div class="auth-form">
+						<div class="auth-field">
+							<label for="mfa-code">Código de verificación</label>
+							<input
+								id="mfa-code"
+								type="text"
+								inputmode="numeric"
+								pattern="[0-9]*"
+								placeholder="000000"
+								maxlength="6"
+							/>
+							<p class="auth-hint">Introduce el código de 6 dígitos de tu app de autenticación.</p>
+						</div>
+
+						<button id="verify-mfa" class="auth-submit">Verificar y Activar</button>
+						<p id="mfa-status" class="auth-status" role="status"></p>
+					</div>
+				</div>
+			</div>
+		</article>
+	</section>
+
+	<style>
+		.qr-placeholder {
+			background: white;
+			padding: 2rem;
+			border-radius: 1rem;
+			margin: 1.5rem 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-height: 250px;
+			color: #080808;
+			text-align: center;
+		}
+
+		.qr-placeholder img {
+			max-width: 200px;
+			height: auto;
+		}
+
+		.loader {
+			border: 3px solid #f3f3f3;
+			border-top: 3px solid #d4af37;
+			border-radius: 50%;
+			width: 30px;
+			height: 30px;
+			animation: spin 1s linear infinite;
+			margin-bottom: 1rem;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+	</style>
+
+	<script>
+		import { createClient } from '@supabase/supabase-js';
+
+		const appEl = document.getElementById('mfa-app');
+		const qrContainer = document.getElementById('qr-container');
+		const verifyBtn = document.getElementById('verify-mfa') as HTMLButtonElement | null;
+		const codeInput = document.getElementById('mfa-code') as HTMLInputElement | null;
+		const statusEl = document.getElementById('mfa-status');
+
+		const token = appEl?.dataset.token;
+		const url = appEl?.dataset.url;
+		const key = appEl?.dataset.key;
+
+		let enrollmentId = '';
+		let supabase: any = null;
+
+		function getCookie(name: string) {
+			const value = `; ${document.cookie}`;
+			const parts = value.split(`; ${name}=`);
+			if (parts.length === 2) return parts.pop()?.split(';').shift();
+			return null;
+		}
+
+		async function init() {
+			console.log('[MFA] Iniciando configuración...');
+
+			const finalToken = token || getCookie('sb-mfa-session');
+
+			if (!url || !key || !finalToken) {
+				console.error('[MFA] Error de configuración:', { url: !!url, key: !!key, token: !!finalToken });
+				if (statusEl) statusEl.textContent = 'Error: Faltan datos de sesión.';
+				return;
+			}
+
+			supabase = createClient(url, key);
+
+			// SYNC SESSION
+			const { error: sessionError } = await supabase.auth.setSession({
+				access_token: finalToken,
+				refresh_token: '',
+			});
+
+			if (sessionError) {
+				console.error('[MFA] Session Error:', sessionError);
+				if (statusEl) statusEl.textContent = 'Error al verificar sesión.';
+				return;
+			}
+
+			// ENROLL
+			try {
+				const { data, error } = await supabase.auth.mfa.enroll({
+					factorType: 'totp'
+				});
+
+				if (error) throw error;
+
+				enrollmentId = data.id;
+
+				if (qrContainer && data.totp.qr_code) {
+					qrContainer.innerHTML = `
+						<img src="${data.totp.qr_code}" alt="Scan this QR Code" />
+						<p style="margin-top: 1.5rem; color: #000; font-weight: 600; font-size: 0.9rem;">
+							Escanea este código con tu App Authenticator
+						</p>
+					`;
+				}
+			} catch (err: any) {
+				console.error('[MFA] Enrollment Error:', err);
+				if (statusEl) {
+					statusEl.textContent = `Error: ${err.message || 'No se pudo generar el QR'}. Reintenta el login.`;
+					statusEl.dataset.tone = 'error';
+				}
+			}
+		}
+
+		async function handleVerify() {
+			const code = codeInput?.value;
+			if (!code || code.length !== 6 || !verifyBtn || !statusEl) return;
+
+			verifyBtn.disabled = true;
+			statusEl.textContent = 'Verificando código...';
+
+			try {
+				const { error } = await supabase.auth.mfa.challengeAndVerify({
+					factorId: enrollmentId,
+					code: code
+				});
+
+				if (error) throw error;
+
+				statusEl.textContent = '¡Verificado! Redirigiendo...';
+				statusEl.dataset.tone = 'success';
+
+				setTimeout(() => {
+					window.location.href = '/dashboard/invitados';
+				}, 1000);
+
+			} catch (err: any) {
+				console.error('[MFA] Verify Error:', err);
+				statusEl.textContent = 'Código incorrecto. Intenta de nuevo.';
+				statusEl.dataset.tone = 'error';
+				verifyBtn.disabled = false;
+			}
+		}
+
+		verifyBtn?.addEventListener('click', handleVerify);
+		init();
+	</script>
+</Layout>

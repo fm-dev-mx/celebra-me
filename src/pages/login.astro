@@ -287,26 +287,19 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 		};
 
 		const validateRegisterClient = (payload: any) => {
-			const genericError = validateRegisterForm(payload);
-			if (!genericError) return null;
-			if (!payload.email.trim() || !isValidEmail(payload.email)) {
-				setFieldError('register-email', 'Escribe un correo valido para continuar.');
-				return 'Escribe un correo valido para continuar.';
+			const error = validateRegisterForm(payload);
+			if (!error) return null;
+
+			// If error is related to email or password, set field errors
+			if (error.includes('correo')) {
+				setFieldError('register-email', error);
+			} else if (error.includes('contrasena')) {
+				setFieldError('register-password', error);
+			} else if (error.includes('claimCode')) {
+				setFieldError('register-claim-code', error);
 			}
-			if (payload.method === 'password' && !payload.password.trim()) {
-				setFieldError(
-					'register-password',
-					'Ingresa tu contrasena para continuar con este metodo.',
-				);
-				return 'Ingresa tu contrasena para continuar con este metodo.';
-			}
-			if (!payload.claimCode.trim()) {
-				setFieldError(
-					'register-claim-code',
-					'Ingresa el claimCode para vincular el evento a tu cuenta.',
-				);
-			}
-			return genericError;
+
+			return error;
 		};
 
 		if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));

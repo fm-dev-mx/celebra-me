@@ -7,6 +7,7 @@ import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,
 	generateTemporaryPassword,
+	isSuperAdminEmail,
 } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 200): string {
@@ -29,8 +30,14 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const claimCode = sanitize(body.claimCode, 256);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
 
-		if (!email || !claimCode) {
-			throw new ApiError(400, 'bad_request', 'email y claimCode son obligatorios.');
+		const isAdhocAdmin = isSuperAdminEmail(email);
+
+		if (!email || (!claimCode && !isAdhocAdmin)) {
+			throw new ApiError(
+				400,
+				'bad_request',
+				isAdhocAdmin ? 'email es obligatorio.' : 'email y claimCode son obligatorios.',
+			);
 		}
 
 		const chosenPassword =
@@ -47,10 +54,15 @@ export const POST: APIRoute = async ({ request, url }) => {
 				email,
 				password: chosenPassword,
 			});
-			userId = sanitize(signed.user?.id, 120);
-			userEmail = sanitize(signed.user?.email || email, 320).toLowerCase();
+			// Supabase returns { user: { id } } if confirmation is OFF,
+			// but might return the user object directly { id } if confirmation is ON.
+			userId = sanitize(signed.user?.id || (signed as any).id, 120);
+			userEmail = sanitize(
+				signed.user?.email || (signed as any).email || email,
+				320,
+			).toLowerCase();
 			accessToken = sanitize(signed.access_token, 4096);
-		} catch {
+		} catch (error: any) {
 			const existing = await findAuthUserByEmail({
 				email,
 			});
@@ -58,7 +70,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				throw new ApiError(
 					409,
 					'conflict',
-					'No se pudo crear cuenta. Verifica el email o intenta iniciar sesión.',
+					`Error de Supabase: ${error.message || 'No se pudo crear cuenta. Verifica el email o intenta iniciar sesión.'}`,
 				);
 			}
 			userId = existing.id;
@@ -68,10 +80,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(409, 'conflict', 'No se pudo resolver el usuario para el registro.');
 		}
 
-		await claimEventForUserByClaimCode({
-			userId,
-			claimCode,
-		});
+		if (claimCode) {
+			await claimEventForUserByClaimCode({
+				userId,
+				claimCode,
+			});
+		}
 		await ensureUserRole({
 			userId,
 			email: userEmail,
