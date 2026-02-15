@@ -107,7 +107,8 @@ contracts.
 - RLS policies enforce host ownership for event and invitation CRUD.
 - Multi-factor Authentication (MFA) is required for Superadmin and sensitive dashboard operations.
 - Session persistence uses server-side cookie synchronization to maintain Level 2 (AAL2) security
-  across page navigations.
+  across page navigations. After successful MFA verification, the server synchronizes the elevated
+  session to maintain persistence.
 - Public guest endpoints never expose cross-event listings.
 - Input sanitization + attendee bound checks are enforced server-side.
 - Audit trail tracks view/response/share events.

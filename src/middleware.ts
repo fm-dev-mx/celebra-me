@@ -4,6 +4,33 @@ import { getSupabaseUserByAccessToken } from '@/lib/rsvp-v2/auth';
 const IDLE_TIMEOUT_SECONDS = 60 * 30;
 const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5;
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+	const parts = token.split('.');
+	if (parts.length < 2) return null;
+	try {
+		const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+		const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+		const json = Buffer.from(padded, 'base64').toString('utf8');
+		return JSON.parse(json) as Record<string, unknown>;
+	} catch {
+		return null;
+	}
+}
+
+function hasMfaEvidence(input: { token: string; amr?: Array<{ method?: string }> }): boolean {
+	const hasMfaMethod = (input.amr || []).some(
+		(item: { method?: string }) =>
+			item?.method === 'mfa' ||
+			item?.method === 'totp' ||
+			item?.method === 'otp' ||
+			item?.method === 'phone',
+	);
+	if (hasMfaMethod) return true;
+
+	const payload = decodeJwtPayload(input.token);
+	return payload?.aal === 'aal2';
+}
+
 export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, next) => {
 	// Only protect /dashboard routes
 	if (!url.pathname.startsWith('/dashboard')) {
@@ -36,7 +63,11 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
 			return redirect('/login');
 		}
 		const role = user.app_metadata?.role;
-		const aal = user.amr?.[0]?.method === 'mfa' ? 'aal2' : 'aal1';
+		const hasMfa = hasMfaEvidence({
+			token: sessionCookie.value,
+			amr: user.amr,
+		});
+		const aal = hasMfa ? 'aal2' : 'aal1';
 
 		// If superadmin, enforce MFA (aal2)
 		if (role === 'super_admin' && aal !== 'aal2') {
