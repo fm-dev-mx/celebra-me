@@ -5,145 +5,88 @@ description:
     Jewelry Box aesthetic, and premium typography systems.
 ---
 
-# 🎨 Frontend Design Skill
+> **Related skills**: [`theme-architecture`](../theme-architecture/SKILL.md) for SCSS
+> implementation, [`accessibility`](../accessibility/SKILL.md) for contrast.
 
-> **Related skills**: [`accessibility`](../accessibility/SKILL.md) for contrast ratios,
-> [`astro-patterns`](../astro-patterns/SKILL.md) for SCSS structure.
+This skill governs the **visual aesthetics** of Celebra-me digital invitations. Focus on _design
+intent_, composition, and feeling. Technical implementation details (CSS variables, file structure)
+are now managed by `theme-architecture`.
 
-This skill guides creation of distinctive, production-grade frontend interfaces for **Celebra-me
-digital invitations**. Avoid generic "AI slop" aesthetics. Execute with exceptional attention to
-aesthetic details and creative choices.
+## Design Philosophy
 
-## Project Context
+**"Anti-AI Slop"**: Avoid generic web design. Each invitation must feel:
 
-**Celebra-me** creates premium digital invitations for:
+1. **Premium**: Use of whitespace, serif typography, and rich textures.
+2. **Harmonious**: Colors and fonts must strictly follow the active theme's palette.
+3. **Alive**: Micro-interactions and smooth transitions (no jarring movements).
 
-- XV Años (Quinceañeras)
-- Weddings (Bodas)
-- Baptisms (Bautizos)
-- Birthdays and other celebrations
+## Aesthetic Directions
 
-**Tech Stack**: Astro, TypeScript, SCSS (no Tailwind), Vercel **Language**: UI in Spanish, code in
-English
+### 1. The "Jewelry Box" Aesthetic (XV Años Premium)
 
-## Design Thinking
+_Concept: A precious object being opened._
 
-Before coding, commit to a **BOLD aesthetic direction**:
+- **Keywords**: Ethereal, Sparkling, Soft, Luxurious.
+- **Palette**:
+    - Surface: Ivory (`#FDFBF7`), Cream.
+    - Accents: Liquid Gold (`#D4AF37`), Rose Gold.
+    - Text: Deep Warm Grey, never pure black.
+- **Typography**:
+    - Headings: `Pinyon Script` (Cursive) or `Playfair Display` (Italic).
+    - Body: `EB Garamond` or `Cormorant Garamond`.
+- **UI Qualities**:
+    - Glassmorphism (frosted glass) for cards.
+    - Thin, elegant borders (1px solid gold).
+    - Generous letter-spacing on uppercase text.
 
-1. **Purpose**: Premium digital invitation that honors the celebration
-2. **Audience**: Family and friends across generations (accessibility matters)
-3. **Tone**: Elegant, warm, celebratory — never cold or corporate
+### 2. The "Luxury Hacienda" Aesthetic (Bodas/Aniversarios)
 
-### Recommended Aesthetics by Event Type
+_Concept: Timeless tradition and strength._
 
-| Event      | Aesthetic Direction                                                           |
-| ---------- | ----------------------------------------------------------------------------- |
-| XV Años    | Romantic, soft pastels OR bold jewel tones. Floral motifs, elegant typography |
-| Boda       | Timeless elegance, refined minimalism. Classic serif fonts, muted palettes    |
-| Bautizo    | Pure, soft, ethereal. Light colors, gentle curves, spiritual motifs           |
-| Cumpleaños | Joyful, dynamic. Bold colors, playful elements appropriate to age             |
+- **Keywords**: Rusted, Earthy, Historic, Masculine/Neutral.
+- **Palette**:
+    - Surface: Leather texture, Dark Wood, Parchment.
+    - Accents: Bronze (`#CD7F32`), Burnt Orange, Deep Green.
+    - Text: Off-white on dark backgrounds, Dark Brown on light.
+- **Typography**:
+    - Headings: `Rye` (Western/Display) or `Cinzel` (Classic).
+    - Body: `Montserrat` (Clean Sans) or `Special Elite` (Typewriter).
+- **UI Qualities**:
+    - Heavy textures (paper grain, leather).
+    - Thick borders, double lines.
+    - Box-shadows that imply depth and weight.
 
-## Implementation Rules
+## Composition Rules
 
-### Typography
+### 1. 3-Layer Color Architecture
 
-- **Display fonts**: Elegant serifs (Playfair Display, Cinzel) or refined scripts (Pinyon Script)
-- **Body fonts**: Clean, readable serifs (EB Garamond) or sans-serif (Montserrat)
-- **NEVER use**: Arial, Inter, Roboto, system fonts, Space Grotesk
-- Import fonts from Google Fonts in `BaseLayout.astro`
+When designing a component, think in layers:
 
-### Color Palettes
+- **Layer 1 (Background)**: The event theme's base (e.g., the parchment texture).
+- **Layer 2 (Surface)**: The card or container (e.g., a white card or frosted glass).
+- **Layer 3 (Content)**: Text, icons, and buttons on top of the surface.
 
-- Use the 3-Layer Color Architecture (Action, Surface, Status)
-- Define tokens in `src/styles/tokens/`
-- Import tokens via `@use '@/styles/tokens' as tokens;` in SCSS files
+_Rule_: Never place text directly on Layer 1 unless it's a large display heading designed for it.
 
-### Spatial Composition
+### 2. Typography Hierarchy
 
-- Generous whitespace for elegance
-- Vertical rhythm with consistent spacing scale
-- Full-width hero sections
-- Centered content with max-width for readability
+- **Display**: Used for names ("María Elena") and big numbers ("XV").
+- **Heading**: Section titles ("Itinerario", "Ubicación").
+- **Body**: Readable text (16px+).
+- **Meta**: Small details (dates, hints), usually uppercase and tracking-wide.
 
-### Visual Details
+### 3. Spacing Rhythm
 
-- Subtle textures (paper, linen patterns)
-- Decorative borders and dividers
-- Soft shadows, not harsh drop shadows
-- Gradient accents used sparingly
+Use the `spacing` tokens religiously.
 
-### SCSS Patterns
+- Small gaps: `0.5rem` (8px).
+- Content separation: `1.5rem` (24px).
+- Section padding: `4rem` (64px) minimum.
 
-```scss
-// Use design tokens
-.invitation-section {
-	padding: tokens.$spacing-xl;
-	background: tokens.$color-surface-primary;
+## Common Anti-Patterns
 
-	&__title {
-		font-family: tokens.$font-display-elegant;
-		font-size: tokens.$text-3xl;
-		color: tokens.$color-action-accent;
-	}
-}
-
-// BEM naming for components
-.event-card {
-	&__header {
-	}
-	&__content {
-	}
-	&__footer {
-	}
-
-	&--highlight {
-	}
-}
-```
-
-## Anti-Patterns (NEVER DO)
-
-- ❌ Generic purple gradients on white
-- ❌ Cookie-cutter card layouts
-- ❌ Stock photo placeholders
-- ❌ Overused font families (Inter, Roboto, Arial)
-- ❌ **Internal `<style>` blocks (ALWAYS externalize to `src/styles/`)**
-- ❌ Inline styles in Astro components
-- ❌ Tailwind classes (project uses SCSS only)
-- ❌ Hard-coded colors (use variables)
-
-## Component Structure
-
-```astro
----
-// Import external styles FIRST
-import '@/styles/components/section.scss';
-
-// Props interface first
-interface Props {
-	title: string;
-	variant?: 'default' | 'highlight';
-}
-
-// Destructure with defaults
-const { title, variant = 'default' } = Astro.props;
----
-
-<section class:list={['section', `section--${variant}`]}>
-	<h2 class="section__title">{title}</h2>
-	<slot />
-</section>
-```
-
-## Quality Checklist
-
-Before completing any frontend work:
-
-- [ ] Typography uses distinctive fonts, not defaults
-- [ ] Colors defined as CSS/SCSS variables
-- [ ] Spacing uses consistent scale
-- [ ] No inline styles
-- [ ] BEM naming convention followed
-- [ ] Responsive design tested
-- [ ] Contrast ratios meet WCAG AA
-- [ ] Component is accessible via keyboard
+- ❌ **Generic Gradients**: Don't use default CSS generated gradients. Use tailored, subtle shifts.
+- ❌ **System Fonts**: Never use Arial/Helvetica. Always load specific fonts.
+- ❌ **High Contrast Borders**: Avoid pure black borders. Use alpha transparency (e.g.,
+  `rgba(0,0,0,0.1)`).
+- ❌ **Clutter**: If in doubt, add more whitespace.

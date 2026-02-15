@@ -2,367 +2,96 @@
 name: astro-patterns
 description:
     Apply idiomatic Astro patterns to optimize performance, maintainability, and leverage framework
-    features correctly. Covers Content Collections, partial hydration, image optimization, and SCSS
-    integration.
+    features correctly. Covers Content Collections, BFF data fetching, and Image Optimization.
 ---
 
-> **Related skills**: [`frontend-design`](../frontend-design/SKILL.md) for SCSS design system.
+> **Related skills**: [`backend-engineering`](../backend-engineering/SKILL.md) for API routes.
 
-This skill guides use of **Astro-specific patterns** in Celebra-me to maximize static generation
-benefits, optimize performance, and maintain clean architecture.
+This skill governs **Astro Component Architecture** in Celebra-me. It focuses on how components
+render, fetch data, and interact with the client.
 
-## Content Collections
+## Data Fetching Strategies
 
-### Schema Definition
+### 1. Static Content (Build Time)
 
-Define schemas in `src/content/config.ts`:
-
-```typescript
-import { defineCollection, z } from 'astro:content';
-
-const eventsCollection = defineCollection({
-	type: 'data',
-	schema: z.object({
-		eventType: z.enum(['xv', 'boda', 'bautizo', 'cumpleanos']),
-		slug: z.string(),
-		title: z.string(),
-		date: z.string(),
-		venue: z.object({
-			name: z.string(),
-			address: z.string(),
-			mapUrl: z.string().url().optional(),
-		}),
-		gallery: z.array(z.string()).optional(),
-		rsvp: z
-			.object({
-				enabled: z.boolean(),
-				deadline: z.string().optional(),
-			})
-			.optional(),
-	}),
-});
-
-export const collections = {
-	events: eventsCollection,
-};
-```
-
-### Querying Content
+Use **Content Collections** for data that doesn't change between builds (event details, themes).
 
 ```astro
 ---
-import { getCollection, getEntry } from 'astro:content';
-
-// Get all events
-const allEvents = await getCollection('events');
-
-// Get single event
-const event = await getEntry('events', 'demo-xv');
-
-// Filter by type
-const xvEvents = await getCollection('events', ({ data }) => data.eventType === 'xv');
+import { getEntry } from 'astro:content';
+const event = await getEntry('events', 'my-event');
 ---
+
+<h1>{event.data.title}</h1>
 ```
 
-### File Organization
+### 2. Dynamic Content (Runtime - BFF Pattern)
 
-```
-src/content/
-├── config.ts          # Schema definitions
-└── events/
-    ├── demo-xv.json   # XV Años demo
-    ├── demo-boda.json # Wedding demo
-    └── ...
-```
+For user-specific data (RSVP status, guest counts), use a **Backend-for-Frontend (BFF)** pattern. Do
+NOT fetch directly from the DB in `.astro` components if it prevents static caching of the shell.
 
-## Partial Hydration
-
-### Client Directives Decision Tree
-
-| Directive        | When to Use                        | Example                   |
-| ---------------- | ---------------------------------- | ------------------------- |
-| None (default)   | Static content, no JS needed       | Text, images, layout      |
-| `client:load`    | Critical interactivity, above fold | RSVP form submit button   |
-| `client:visible` | Below fold interactivity           | Gallery lightbox, modals  |
-| `client:idle`    | Non-critical, can wait             | Analytics, tracking       |
-| `client:only`    | Client-only (no SSR)               | Browser-specific features |
-
-### Examples
+**Preferred: Server Islands (Astro 5+)**
 
 ```astro
-<!-- Static - no directive needed -->
-<EventHeader title={event.title} />
-
-<!-- Interactive countdown - loads immediately -->
-<Countdown client:load targetDate={event.date} />
-
-<!-- Gallery below fold - loads when visible -->
-<PhotoGallery client:visible images={event.gallery} />
-
-<!-- Analytics - loads when idle -->
-<Analytics client:idle eventId={event.id} />
+<EventHeader />
+<!-- Static -->
+<server-island-guest-status>
+	<GuestStatus server:defer />
+	<!-- Dynamic, loads later -->
+</server-island-guest-status>
 ```
 
-### Anti-Pattern
+**Alternative: Client Fetch**
 
 ```astro
-<!-- ❌ Don't hydrate everything -->
-<Header client:load />
-<!-- Usually static! -->
-<Footer client:load />
-<!-- Usually static! -->
+---
+// Wrapper component
+---
 
-<!-- ✅ Keep static components static -->
-<Header />
-<Footer />
+<GuestDashboard client:load eventId={id} />
 ```
+
+## Partial Hydration Rules
+
+| Directive        | Use Case                          | Example               |
+| :--------------- | :-------------------------------- | :-------------------- |
+| `client:load`    | Critical interactivity above fold | RSVP Form, Main Nav   |
+| `client:visible` | Heavy components below fold       | Image Gallery, Maps   |
+| `client:idle`    | Low priority background tasks     | Analytics, Preloading |
+| `client:media`   | Device-specific features          | Mobile-only effects   |
 
 ## Image Optimization
 
-### Using astro:assets
+Always use `astro:assets`.
 
 ```astro
 ---
 import { Image } from 'astro:assets';
-import heroImage from '@images/events/xv-hero.jpg';
+import heroImg from '../assets/hero.jpg';
 ---
 
-<!-- Optimized with automatic format conversion -->
-<Image
-	src={heroImage}
-	alt="Salón decorado para XV años"
-	width={1200}
-	height={800}
-	loading="eager"
-	<!--
-	For
-	above-fold
-	images
-	--
->
-	/>
-
-	<!-- Below fold -->
-	<Image src={galleryImage} alt="..." loading="lazy" decoding="async" /></Image
->
+<Image src={heroImg} alt="Hero" w={1200} format="webp" />
 ```
 
-### Remote Images
+## Component Architecture
 
-```astro
----
-import { Image } from 'astro:assets';
----
+### The "Islands" Mental Model
 
-<Image
-	src="https://example.com/image.jpg"
-	alt="Description"
-	width={800}
-	height={600}
-	inferSize
-	<!--
-	For
-	unknown
-	dimensions
-	--
->
-	/></Image
->
-```
+Think of your page as a static ocean (HTML) with dynamic islands (React/Preact).
 
-### Background Images (CSS)
-
-For decorative backgrounds, use CSS:
-
-```scss
-.hero {
-	background-image: url('/images/pattern.svg');
-	background-size: cover;
-}
-```
-
-## SCSS Integration
-
-### Global Styles
-
-Import in `src/layouts/BaseLayout.astro`:
-
-```astro
----
-import '@/styles/global.scss';
----
-```
-
-### External Component Styles
-
-**STRICT RULE**: Internal `<style>` blocks are **FORBIDDEN** in `.astro` files. All styles must be
-externalized.
-
-import the SCSS file in the frontmatter:
-
-```astro
----
-import '@/styles/components/my-component.scss';
----
-
-<div class="my-component">...</div>
-```
-
-**Do NOT do this (Forbidden):**
-
-```astro
-<!-- ❌ INTERNAL STYLES ARE BANNED -->
-<style lang="scss">
-	.component {
-		/* ... */
-	}
-</style>
-```
-
-### Partial Imports
-
-Organize SCSS with partials:
-
-```
-src/styles/
-├── global.scss        # Entry point
-├── _variables.scss    # Design tokens
-├── _mixins.scss       # Reusable mixins
-├── _typography.scss   # Font styles
-├── _animations.scss   # Motion patterns
-└── components/
-    └── _buttons.scss  # Component styles
-```
-
-### Naming Conventions
-
-1. **Case**: All SCSS files must use `kebab-case`.
-2. **Partials**: All styles intended for import (variables, mixins, component styles) **MUST** start
-   with an underscore `_` (e.g., `_header.scss`, `_service-card.scss`).
-3. **Entry Points**: Only top-level entry points (e.g., `global.scss`) should lack the underscore.
-
-## Dynamic Routes
-
-### Static Generation (SSG)
-
-```astro
----
-// src/pages/[eventType]/[slug].astro
-import { getCollection } from 'astro:content';
-
-export async function getStaticPaths() {
-	const events = await getCollection('events');
-
-	return events.map((event) => ({
-		params: {
-			eventType: event.data.eventType,
-			slug: event.data.slug,
-		},
-		props: { event },
-	}));
-}
-
-const { event } = Astro.props;
----
-```
-
-### URL Structure
-
-```
-/xv/maria-elena      → XV Años invitation
-/boda/ana-y-carlos   → Wedding invitation
-/bautizo/sofia       → Baptism invitation
-```
-
-## View Transitions
-
-Astro 3+ includes native View Transitions API for page transitions.
-
-### Global Activation
-
-```astro
----
-// src/layouts/BaseLayout.astro
-import { ViewTransitions } from 'astro:transitions';
----
-
-<head>
-	<ViewTransitions />
-</head>
-```
-
-### Per-Element Transitions
-
-```astro
-<h1 transition:name="event-title">{event.title}</h1>
-<img transition:name={`hero-${event.slug}`} src={heroImage} />
-```
-
-### Custom Animations
-
-```astro
-<div transition:animate="slide">Content</div>
-<div transition:animate="fade">Content</div>
-```
-
-### When to Use
-
-- ✅ Navigation between invitation pages
-- ✅ Transition from event list to detail
-- ❌ Don't use for animations within a single page (use CSS/JS)
-
-### Accessibility
-
-View Transitions automatically respects `prefers-reduced-motion`.
-
-## Component Patterns
+- **Static Ocean**: Layouts, Typography, SEO, Images.
+- **Dynamic Islands**: Forms, Interactive Maps, Audio Players.
 
 ### Props Interface
 
+Start every component with a typed interface.
+
 ```astro
 ---
 interface Props {
 	title: string;
-	subtitle?: string;
 	variant?: 'primary' | 'secondary';
 }
-
-const { title, subtitle, variant = 'primary' } = Astro.props;
+const { title, variant = 'primary' } = Astro.props;
 ---
 ```
-
-### Slots
-
-```astro
----
-// Section.astro
-interface Props {
-	title: string;
-}
-const { title } = Astro.props;
----
-
-<section>
-	<h2>{title}</h2>
-	<slot />
-	<!-- Default slot -->
-	<slot name="footer" />
-	<!-- Named slot -->
-</section>
-
-<!-- Usage -->
-<Section title="Detalles">
-	<p>Content goes here</p>
-	<div slot="footer">Footer content</div>
-</Section>
-```
-
-## Performance Checklist
-
-- [ ] Static components have no `client:*` directive
-- [ ] Images use `<Image />` from `astro:assets`
-- [ ] Above-fold images have `loading="eager"`
-- [ ] Below-fold content uses `client:visible` when interactive
-- [ ] CSS is scoped or uses design system variables
-- [ ] No unused JavaScript in production bundle
-- [ ] Content Collections validate data at build time
