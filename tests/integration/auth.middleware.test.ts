@@ -43,6 +43,9 @@ describe('Middleware: Authentication & Authorization', () => {
 		url: new URL(`http://localhost${path}`),
 		cookies: mockCookies,
 		redirect: mockRedirect,
+		request: {
+			headers: new Map([['user-agent', 'test-agent']]),
+		},
 	});
 
 	it('Scenario: Allow Public Routes without Session', async () => {
