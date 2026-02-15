@@ -17,7 +17,12 @@
         "gatekeeper": "node scripts/gatekeeper.js",
         "type-check": "astro check",
         "format": "prettier --write .",
-        "prepare": "husky"
+        "prepare": "husky",
+        "db:migrate:new": "npx supabase migration new",
+        "db:push": "npx supabase db push",
+        "db:reset:local": "npx supabase db reset",
+        "db:start": "npx supabase start",
+        "db:stop": "npx supabase stop"
     },
     "dependencies": {
         "@astrojs/vercel": "9.0.4",

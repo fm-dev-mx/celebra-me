@@ -27,6 +27,7 @@
 	--rsvp-radio-border: rgb(var(--color-text-primary-rgb), 0.14);
 	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.16);
 	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.62);
+	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb), 0.22);
 	--rsvp-button-shadow-rest: 0 5px 16px rgb(var(--color-text-primary-rgb), 0.24);
 	--rsvp-button-shadow-hover: 0 9px 24px rgb(var(--color-text-primary-rgb), 0.3);
 	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
@@ -204,6 +205,7 @@
 			&:has(input:checked) {
 				background: var(--rsvp-radio-selected-bg);
 				border-color: var(--rsvp-radio-selected-border);
+				box-shadow: var(--rsvp-radio-selected-shadow);
 				color: var(--color-text-primary);
 			}
 
@@ -220,13 +222,14 @@
 
 	&__error {
 		font-size: 0.85rem;
-		font-weight: 500;
+		font-weight: 600;
 		color: var(--color-error);
 		margin-top: 2px;
 		margin-left: 4px;
 		text-align: center;
-		padding: 0.5rem;
+		padding: 0.625rem;
 		background: rgb(var(--color-error-rgb, 255, 77, 77), 0.1);
+		border: 1px solid rgb(var(--color-error-rgb, 255, 77, 77), 0.28);
 		border-radius: 8px;
 	}
 
@@ -382,8 +385,9 @@
 		gap: 0.5rem;
 		margin-top: 1.25rem;
 		padding: 0.75rem 1.5rem;
-		background: #25d366;
-		color: #fff;
+		background: rgb(255 255 255 / 88%);
+		color: #166e3b;
+		border: 1px solid rgb(37 211 102 / 42%);
 		border-radius: var(--rsvp-radius-field, 12px);
 		font-family: var(--font-body);
 		font-size: 0.95rem;
@@ -394,7 +398,7 @@
 			transform tokens.$duration-snappy tokens.$ease-out;
 
 		&:hover {
-			background: #1fa855;
+			background: rgb(255 255 255 / 96%);
 			transform: translateY(-1px);
 		}
 

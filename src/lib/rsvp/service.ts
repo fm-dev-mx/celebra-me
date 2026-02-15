@@ -1,11 +1,26 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { getEnv } from '@/utils/env';
+import { getRsvpRepository } from './repository';
+import type {
+	AttendanceStatus,
+	ChannelAction,
+	ChannelType,
+	RsvpAuditRecord,
+	RsvpChannelRecord,
+	RsvpRecord,
+	RsvpSource,
+} from './types';
 
-export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
-export type RsvpSource = 'personalized_link' | 'generic_link' | 'admin';
-export type ChannelType = 'whatsapp';
-export type ChannelAction = 'cta_rendered' | 'clicked';
+export type {
+	AttendanceStatus,
+	ChannelAction,
+	ChannelType,
+	RsvpAuditRecord,
+	RsvpChannelRecord,
+	RsvpRecord,
+	RsvpSource,
+} from './types';
 
 interface GuestEntry {
 	guestId: string;
@@ -36,48 +51,6 @@ export interface RsvpContextResult {
 		attendeeCount: number;
 		updatedAt: string;
 	};
-}
-
-export interface RsvpRecord {
-	rsvpId: string;
-	eventSlug: string;
-	guestId: string | null;
-	guestNameEntered: string;
-	attendanceStatus: AttendanceStatus;
-	attendeeCount: number;
-	notes: string;
-	dietary: string;
-	source: RsvpSource;
-	createdAt: string;
-	lastUpdatedAt: string;
-	normalizedGuestName: string;
-	isPotentialDuplicate: boolean;
-}
-
-interface RsvpAuditRecord {
-	auditId: string;
-	rsvpId: string;
-	previousStatus: AttendanceStatus | null;
-	newStatus: AttendanceStatus;
-	previousAttendeeCount: number | null;
-	newAttendeeCount: number;
-	changedBy: 'guest' | 'admin' | 'system';
-	changedAt: string;
-}
-
-interface RsvpChannelRecord {
-	channelEventId: string;
-	rsvpId: string;
-	channel: ChannelType;
-	action: ChannelAction;
-	occurredAt: string;
-}
-
-interface RsvpStoreState {
-	recordsByKey: Map<string, RsvpRecord>;
-	recordsById: Map<string, RsvpRecord>;
-	auditLog: RsvpAuditRecord[];
-	channelLog: RsvpChannelRecord[];
 }
 
 interface GuestTokenPayload {
@@ -122,7 +95,18 @@ export interface AdminListResult {
 
 const MAX_FIELD_LENGTH = 200;
 const MAX_ATTENDEES_ABSOLUTE = 20;
-const RSVP_TOKEN_SECRET = getEnv('RSVP_TOKEN_SECRET') || 'dev-rsvp-secret-change-me';
+const DEV_RSVP_TOKEN_SECRET = 'dev-rsvp-secret-change-me';
+
+function getRsvpTokenSecret(): string {
+	const configured = getEnv('RSVP_TOKEN_SECRET');
+	if (configured) return configured;
+	if (process.env.NODE_ENV === 'production') {
+		throw new Error(
+			'RSVP_TOKEN_SECRET es obligatorio en producción. Configura una clave fuerte y única.',
+		);
+	}
+	return DEV_RSVP_TOKEN_SECRET;
+}
 
 function sanitizeString(value: unknown, maxLength = MAX_FIELD_LENGTH): string {
 	if (typeof value !== 'string') return '';
@@ -140,22 +124,6 @@ function normalizeName(input: string): string {
 
 function uuidLike(prefix: string): string {
 	return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
-}
-
-function getState(): RsvpStoreState {
-	const key = '__celebra_rsvp_state__';
-	const globalRef = globalThis as typeof globalThis & { [k: string]: unknown };
-	const existing = globalRef[key] as RsvpStoreState | undefined;
-	if (existing) return existing;
-
-	const created: RsvpStoreState = {
-		recordsByKey: new Map<string, RsvpRecord>(),
-		recordsById: new Map<string, RsvpRecord>(),
-		auditLog: [],
-		channelLog: [],
-	};
-	globalRef[key] = created;
-	return created;
 }
 
 function base64UrlEncode(value: string): string {
@@ -177,7 +145,7 @@ function base64UrlDecode(value: string): string | null {
 }
 
 function signPayload(encodedPayload: string): string {
-	return createHmac('sha256', RSVP_TOKEN_SECRET).update(encodedPayload).digest('base64url');
+	return createHmac('sha256', getRsvpTokenSecret()).update(encodedPayload).digest('base64url');
 }
 
 function verifySignature(expected: string, received: string): boolean {
@@ -261,14 +229,14 @@ function buildStoreKey(
 	return `${eventSlug}::generic::${normalizedGuestName}`;
 }
 
-function markPotentialDuplicate(
-	state: RsvpStoreState,
+async function markPotentialDuplicate(
 	eventSlug: string,
 	normalizedGuestName: string,
 	currentRecordId: string | null,
-): boolean {
-	for (const record of state.recordsById.values()) {
-		if (record.eventSlug !== eventSlug) continue;
+): Promise<boolean> {
+	const repository = getRsvpRepository();
+	const records = await repository.listRsvpByEvent({ eventSlug, status: 'all' });
+	for (const record of records) {
 		if (record.guestId !== null) continue;
 		if (record.normalizedGuestName !== normalizedGuestName) continue;
 		if (currentRecordId && record.rsvpId === currentRecordId) continue;
@@ -327,13 +295,13 @@ export async function getRsvpContext(
 		};
 	}
 
-	const state = getState();
+	const repository = getRsvpRepository();
 	const existingKey = buildStoreKey(
 		safeEventSlug,
 		guest.guestId,
 		normalizeName(guest.displayName),
 	);
-	const existing = state.recordsByKey.get(existingKey);
+	const existing = await repository.getRsvpByStoreKey(existingKey);
 
 	return {
 		eventSlug: safeEventSlug,
@@ -404,10 +372,10 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 	const notes = sanitizeString(input.notes);
 	const dietary = sanitizeString(input.dietary);
 	const normalizedGuestName = normalizeName(resolvedName);
-	const state = getState();
 	const storeKey = buildStoreKey(eventSlug, guestId, normalizedGuestName);
 	const now = new Date().toISOString();
-	const existing = state.recordsByKey.get(storeKey);
+	const repository = getRsvpRepository();
+	const existing = await repository.getRsvpByStoreKey(storeKey);
 
 	const updatedRecord: RsvpRecord = {
 		rsvpId: existing?.rsvpId ?? uuidLike('rsvp'),
@@ -422,29 +390,28 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 		createdAt: existing?.createdAt ?? now,
 		lastUpdatedAt: now,
 		normalizedGuestName,
-		isPotentialDuplicate: markPotentialDuplicate(
-			state,
+		isPotentialDuplicate: await markPotentialDuplicate(
 			eventSlug,
 			normalizedGuestName,
 			existing?.rsvpId ?? null,
 		),
 	};
 
-	state.recordsByKey.set(storeKey, updatedRecord);
-	state.recordsById.set(updatedRecord.rsvpId, updatedRecord);
+	const persisted = await repository.saveRsvpRecord({ storeKey, record: updatedRecord });
 
-	state.auditLog.push({
+	const auditRecord: RsvpAuditRecord = {
 		auditId: uuidLike('audit'),
-		rsvpId: updatedRecord.rsvpId,
+		rsvpId: persisted.rsvpId,
 		previousStatus: existing?.attendanceStatus ?? null,
-		newStatus: updatedRecord.attendanceStatus,
+		newStatus: persisted.attendanceStatus,
 		previousAttendeeCount: existing?.attendeeCount ?? null,
-		newAttendeeCount: updatedRecord.attendeeCount,
+		newAttendeeCount: persisted.attendeeCount,
 		changedBy: 'guest',
 		changedAt: now,
-	});
+	};
+	await repository.appendAuditEvent(auditRecord);
 
-	return { rsvp: updatedRecord, contextMode };
+	return { rsvp: persisted, contextMode };
 }
 
 export async function logRsvpChannelEvent(input: {
@@ -452,20 +419,21 @@ export async function logRsvpChannelEvent(input: {
 	channel: ChannelType;
 	action: ChannelAction;
 }): Promise<void> {
-	const state = getState();
+	const repository = getRsvpRepository();
 	const safeRsvpId = sanitizeString(input.rsvpId, 120);
-	const rsvp = state.recordsById.get(safeRsvpId);
+	const rsvp = await repository.getRsvpById(safeRsvpId);
 	if (!rsvp) {
 		throw new Error('RSVP no encontrado.');
 	}
 
-	state.channelLog.push({
+	const channelRecord: RsvpChannelRecord = {
 		channelEventId: uuidLike('channel'),
 		rsvpId: safeRsvpId,
 		channel: input.channel,
 		action: input.action,
 		occurredAt: new Date().toISOString(),
-	});
+	};
+	await repository.appendChannelEvent(channelRecord);
 }
 
 export async function getAdminRsvpList(params: {
@@ -473,37 +441,41 @@ export async function getAdminRsvpList(params: {
 	status?: AttendanceStatus | 'all';
 	search?: string;
 }): Promise<AdminListResult> {
-	const state = getState();
+	const repository = getRsvpRepository();
 	const safeEventSlug = sanitizeString(params.eventSlug, 120);
 	const safeSearch = normalizeName(sanitizeString(params.search, 120));
 	const safeStatus = params.status ?? 'all';
 
+	const items = await repository.listRsvpByEvent({
+		eventSlug: safeEventSlug,
+		status: safeStatus,
+		search: safeSearch,
+	});
+
+	const channelEvents = await repository.listChannelEventsByRsvpIds(
+		items.map((item) => item.rsvpId),
+	);
 	const channelByRsvp = new Map<string, RsvpChannelRecord>();
-	for (const channelEvent of state.channelLog) {
+	for (const channelEvent of channelEvents) {
 		const existing = channelByRsvp.get(channelEvent.rsvpId);
 		if (!existing || existing.occurredAt < channelEvent.occurredAt) {
 			channelByRsvp.set(channelEvent.rsvpId, channelEvent);
 		}
 	}
 
-	const items = Array.from(state.recordsById.values())
-		.filter((item) => item.eventSlug === safeEventSlug)
-		.filter((item) => (safeStatus === 'all' ? true : item.attendanceStatus === safeStatus))
-		.filter((item) => (safeSearch ? item.normalizedGuestName.includes(safeSearch) : true))
-		.sort((a, b) => b.lastUpdatedAt.localeCompare(a.lastUpdatedAt))
-		.map((item) => ({
-			...item,
-			lastChannelEvent: channelByRsvp.get(item.rsvpId),
-		}));
+	const enrichedItems = items.map((item) => ({
+		...item,
+		lastChannelEvent: channelByRsvp.get(item.rsvpId),
+	}));
 
 	const totals = {
-		total: items.length,
-		pending: items.filter((item) => item.attendanceStatus === 'pending').length,
-		confirmed: items.filter((item) => item.attendanceStatus === 'confirmed').length,
-		declined: items.filter((item) => item.attendanceStatus === 'declined').length,
+		total: enrichedItems.length,
+		pending: enrichedItems.filter((item) => item.attendanceStatus === 'pending').length,
+		confirmed: enrichedItems.filter((item) => item.attendanceStatus === 'confirmed').length,
+		declined: enrichedItems.filter((item) => item.attendanceStatus === 'declined').length,
 	};
 
-	return { items, totals };
+	return { items: enrichedItems, totals };
 }
 
 export async function getAdminRsvpCsv(eventSlug: string): Promise<string> {

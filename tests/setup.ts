@@ -3,6 +3,47 @@
 
 import '@testing-library/jest-dom';
 
+class TestHeaders {
+	private readonly store = new Map<string, string>();
+
+	constructor(init?: Record<string, string>) {
+		if (init) {
+			for (const [key, value] of Object.entries(init)) {
+				this.store.set(key.toLowerCase(), value);
+			}
+		}
+	}
+
+	get(name: string): string | null {
+		return this.store.get(name.toLowerCase()) ?? null;
+	}
+}
+
+class TestResponse {
+	status: number;
+	headers: TestHeaders;
+	private readonly body: string;
+
+	constructor(body?: BodyInit | null, init?: ResponseInit) {
+		this.status = init?.status ?? 200;
+		this.headers = new TestHeaders(init?.headers as Record<string, string> | undefined);
+		this.body = typeof body === 'string' ? body : body ? String(body) : '';
+	}
+
+	async json(): Promise<unknown> {
+		return this.body ? JSON.parse(this.body) : {};
+	}
+
+	async text(): Promise<string> {
+		return this.body;
+	}
+}
+
+if (typeof global.Response === 'undefined') {
+	(global as typeof globalThis & { Response: typeof Response }).Response =
+		TestResponse as unknown as typeof Response;
+}
+
 // Mock window.matchMedia for responsive component tests
 Object.defineProperty(window, 'matchMedia', {
 	writable: true,

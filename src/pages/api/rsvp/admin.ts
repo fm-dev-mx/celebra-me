@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getAdminRsvpList, type AttendanceStatus } from '@/lib/rsvp/service';
+import { isAuthorizedBasicAuth, unauthorizedJsonResponse } from '@/lib/rsvp/adminAuth';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -13,8 +14,12 @@ function parseStatus(value: string): AttendanceStatus | 'all' {
 	return 'all';
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request }) => {
 	try {
+		if (!isAuthorizedBasicAuth(request.headers.get('authorization'))) {
+			return unauthorizedJsonResponse();
+		}
+
 		const eventSlug = sanitize(url.searchParams.get('eventSlug'));
 		const status = parseStatus(sanitize(url.searchParams.get('status')));
 		const search = sanitize(url.searchParams.get('search'));

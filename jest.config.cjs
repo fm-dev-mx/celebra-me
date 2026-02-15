@@ -32,6 +32,7 @@ module.exports = {
 
 		// Pages
 		'^@pages/(.*)$': '<rootDir>/src/pages/$1',
+		'^astro:content$': '<rootDir>/tests/mocks/astro-content.ts',
 	},
 	testMatch: ['**/tests/**/*.test.(ts|tsx)'],
 	collectCoverage: true, // Enable coverage reports

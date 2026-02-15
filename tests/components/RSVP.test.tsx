@@ -40,7 +40,7 @@ describe('RSVP Component', () => {
 		it('should not show guest count field initially', () => {
 			render(<RSVP {...defaultProps} />);
 
-			expect(screen.queryByLabelText(/Número de acompañantes/i)).not.toBeInTheDocument();
+			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
 		});
 	});
 
@@ -51,7 +51,7 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			expect(screen.getByLabelText(/Número de acompañantes/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
 		});
 
 		it('should show notes textarea when "Yes" is selected', async () => {
@@ -99,7 +99,7 @@ describe('RSVP Component', () => {
 			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 
 			// Set guest count above cap
-			const guestInput = screen.getByLabelText(/Número de acompañantes/i);
+			const guestInput = screen.getByLabelText(/Número total de asistentes/i);
 			fireEvent.change(guestInput, { target: { value: '5' } });
 
 			// Submit
@@ -119,7 +119,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
 
-			const guestInput = screen.getByLabelText(/Número de acompañantes/i);
+			const guestInput = screen.getByLabelText(/Número total de asistentes/i);
 			await user.clear(guestInput);
 			await user.type(guestInput, '2');
 
@@ -193,7 +193,7 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			expect(screen.getByLabelText(/Número de acompañantes/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
 		});
 	});

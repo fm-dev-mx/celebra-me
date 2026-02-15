@@ -1,5 +1,12 @@
 ---
+import * as rsvpAuth from '@/lib/rsvp/adminAuth';
+
 const defaultEventSlug = 'gerardo-sesenta';
+
+const authHeader = Astro.request.headers.get('authorization');
+if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
+	return rsvpAuth.unauthorizedTextResponse();
+}
 ---
 
 <html lang="es">
@@ -61,6 +68,7 @@ const defaultEventSlug = 'gerardo-sesenta';
 				border-collapse: collapse;
 				font-size: 0.92rem;
 			}
+			/* Suppressing unused selector warnings for dynamically rendered content */
 			th,
 			td {
 				border-bottom: 1px solid #eadfce;

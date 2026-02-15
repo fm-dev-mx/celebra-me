@@ -51,9 +51,9 @@ const RSVP: React.FC<RSVPProps> = ({
 	title,
 	guestCap,
 	confirmationMessage,
-	nameLabel = 'Tu nombre completo *',
+	nameLabel = 'Nombre completo *',
 	attendanceLabel = '¿Asistirás al evento? *',
-	guestCountLabel = 'Número de acompañantes',
+	guestCountLabel = 'Número total de asistentes',
 	buttonLabel = 'Confirmar',
 	showDietaryField = false,
 	dietaryLabel = 'Alergias o restricciones alimentarias',
@@ -576,7 +576,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							: submitStatus === 'success'
 								? '¡Confirmado!'
 								: submitStatus === 'error'
-									? 'Confirmar Asistencia'
+									? 'Confirmar asistencia'
 									: buttonLabel}
 					</span>
 				</motion.button>

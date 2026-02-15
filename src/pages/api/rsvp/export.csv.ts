@@ -1,13 +1,18 @@
 import type { APIRoute } from 'astro';
 import { getAdminRsvpCsv } from '@/lib/rsvp/service';
+import { isAuthorizedBasicAuth, unauthorizedTextResponse } from '@/lib/rsvp/adminAuth';
 
 function sanitize(value: unknown, maxLen = 120): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, maxLen);
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request }) => {
 	try {
+		if (!isAuthorizedBasicAuth(request.headers.get('authorization'))) {
+			return unauthorizedTextResponse();
+		}
+
 		const eventSlug = sanitize(url.searchParams.get('eventSlug'));
 		if (!eventSlug) {
 			return new Response('eventSlug es obligatorio.', { status: 400 });

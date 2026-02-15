@@ -10,7 +10,10 @@ function base64UrlEncode(value) {
 
 function createGuestToken(payload, secret) {
 	const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-	const signature = crypto.createHmac('sha256', secret).update(encodedPayload).digest('base64url');
+	const signature = crypto
+		.createHmac('sha256', secret)
+		.update(encodedPayload)
+		.digest('base64url');
 	return `${encodedPayload}.${signature}`;
 }
 
@@ -23,9 +26,10 @@ if (!eventSlug || !guestId) {
 
 const secret = process.env.RSVP_TOKEN_SECRET || 'dev-rsvp-secret-change-me';
 const expDays = Number(expDaysRaw || '30');
-const exp = Number.isFinite(expDays) && expDays > 0
-	? Math.floor(Date.now() / 1000) + expDays * 24 * 60 * 60
-	: undefined;
+const exp =
+	Number.isFinite(expDays) && expDays > 0
+		? Math.floor(Date.now() / 1000) + expDays * 24 * 60 * 60
+		: undefined;
 
 const token = createGuestToken({ eventSlug, guestId, exp }, secret);
 console.log(token);

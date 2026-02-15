@@ -188,6 +188,23 @@ For detailed testing documentation, see [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 
+## Database Migrations (Supabase)
+
+RSVP database schema is managed with versioned Supabase migrations in `supabase/migrations`.
+
+Useful commands:
+
+```bash
+pnpm db:start
+pnpm db:push
+pnpm db:reset:local
+pnpm db:migrate:new <migration_name>
+```
+
+Operational guide: [`docs/DB_RSVP.md`](docs/DB_RSVP.md)
+
+---
+
 ## Documentation
 
 - **Architecture**: `docs/ARCHITECTURE.md`
