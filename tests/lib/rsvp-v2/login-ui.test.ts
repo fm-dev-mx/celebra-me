@@ -29,7 +29,7 @@ describe('rsvp-v2 login UI helpers', () => {
 		).toBeNull();
 	});
 
-	it('validates register form required claim fields', () => {
+	it('allows register form with empty optional claim fields', () => {
 		expect(
 			validateRegisterForm({
 				method: 'password',
@@ -37,7 +37,7 @@ describe('rsvp-v2 login UI helpers', () => {
 				password: 'Pass123!',
 				claimCode: '',
 			}),
-		).toBe('Ingresa el claimCode para vincular tu cuenta al evento.');
+		).toBeNull();
 	});
 
 	it('returns clear helper text per auth method', () => {
