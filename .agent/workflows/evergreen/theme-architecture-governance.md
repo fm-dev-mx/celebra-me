@@ -20,6 +20,8 @@ Architecture and strict section-based abstraction.
    outside that variant.
 4. **Source of Truth**: The `THEME_SYSTEM.md` must be updated whenever a new section or variant is
    added.
+5. **Data-Driven Text Isolation**: Theme-specific labels (RSVP inputs, Hero descriptors) MUST live
+   in the event JSON, not hardcoded in Astro or React components.
 
 ---
 
@@ -43,7 +45,8 @@ For every modified section:
 
 - [ ] Audit `docs/THEME_SYSTEM.md` for drift.
 - [ ] Ensure all `sectionStyles` variants are documented.
-- [ ] Sync Zod schemas in `src/content/config.ts` with new variants.
+- [ ] Sync Zod schemas in `src/content/config.ts` (include `labels` for RSVP and Tier 3 WhatsApp
+      fields).
 
 ## 🏗️ Step 4: Remediation & Alignment
 
@@ -51,6 +54,7 @@ If violations are found during Step 1 or 2:
 
 - [ ] Move nested styles from `presets/` to their respective `sections/` files.
 - [ ] Replace hardcoded values with semantic tokens.
+- [ ] Migrate hardcoded text/labels to event JSON files via `sectionStyles`.
 - [ ] Ensure all variants follow the `[data-variant]` pattern.
 
 ## 🏗️ Step 5: Final Validation & Commit
@@ -59,8 +63,8 @@ After alignment:
 
 - [ ] Run full build/test suite if necessary.
 - [ ] Stage only the files for one coherent ADU (no mixed-intent commits).
-- [ ] Execute `.agent/workflows/governance/evergreen/gatekeeper-commit.md` (`--strict` for code
-      changes, `--minimal` for doc-only updates).
+- [ ] Execute `.agent/workflows/evergreen/gatekeeper-commit.md` (`--strict` for code changes,
+      `--minimal` for doc-only updates).
 
 ---
 

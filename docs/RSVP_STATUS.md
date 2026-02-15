@@ -128,6 +128,14 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
     - `guests[]` con `guestId`, `displayName`, `maxAllowedAttendees`, `token`, `personalizedUrl`,
       `waShareUrl`
 
+### 2.6 WhatsApp Avanzado (Tier 3)
+
+✅ Hardening de plantillas de WhatsApp:
+
+- Soporte para plantillas divididas: `confirmedTemplate` y `declinedTemplate`.
+- Flag de limpieza: `omitTitle` para mensajes más directos.
+- Placeholders dinámicos: `{name}`, `{guestCount}`, `{title}` integrales.
+
 ---
 
 ## 3) Evidencia de validación

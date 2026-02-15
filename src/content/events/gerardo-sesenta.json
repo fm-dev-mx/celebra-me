@@ -27,6 +27,9 @@
         "gifts": {
             "variant": "luxury-hacienda"
         },
+        "itinerary": {
+            "variant": "luxury-hacienda"
+        },
         "gallery": {
             "variant": "luxury-hacienda"
         },
@@ -37,11 +40,17 @@
             "variant": "luxury-hacienda"
         },
         "rsvp": {
-            "variant": "luxury-hacienda"
+            "variant": "luxury-hacienda",
+            "labels": {
+                "name": "Nombre de los invitados *",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
         }
     },
     "hero": {
         "name": "Gerardo Mendoza",
+        "label": "60 Años",
         "nickname": "Jefe Botas",
         "date": "2026-02-21T20:00:00.000Z",
         "backgroundImage": "hero"
@@ -122,7 +131,8 @@
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5216681167477",
-            "messageTemplate": "Hola, soy {name}. Confirmando mi asistencia, nos vemos el sábado. Asistentes: {guestCount}."
+            "messageTemplate": "Hola, soy {name}. Confirmando mi asistencia, nos vemos el sábado. Asistentes: {guestCount}.",
+            "omitTitle": true
         },
         "guests": [
             {

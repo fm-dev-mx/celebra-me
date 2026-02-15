@@ -116,13 +116,7 @@ const galleryItems = data.gallery?.items.map((item: { image: string; caption?: s
 const preset = data.theme.preset;
 const themeClass = preset ? `theme-preset--${preset}` : '';
 
-// Generic Labels
-const labels: Record<string, string> = {
-	xv: 'Mis XV Años',
-	boda: 'Nuestra Boda',
-	cumple: '60 Años',
-};
-const heroLabel = labels[data.eventType] || 'Invitación Especial';
+const heroLabel = data.hero.label || 'Invitación Especial';
 const heroImageSrc = typeof heroBg.src === 'string' ? heroBg.src : heroBg.src.src;
 
 const envBg = data.envelope?.closedPalette?.background || 'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)';
@@ -266,37 +260,30 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 
 		{
 			data.itinerary && (
-				<Itinerary title={data.itinerary.title} items={data.itinerary.items} variant={preset} />
+				<Itinerary title={data.itinerary.title} items={data.itinerary.items} variant={data.sectionStyles?.itinerary?.variant ?? preset} />
 			)
 		}
 
 		{
-			data.sections?.rsvp && data.rsvp && (() => {
-				const rsvpProps = data.eventType === 'cumple'
-					? {
-							nameLabel: 'Nombre de los invitados *',
-							guestCountLabel: 'Número de asistentes',
-							buttonLabel: 'Confirmar asistencia',
-						}
-					: {};
-
-				return (
-					<RSVP
-						client:visible
-						eventSlug={event.id}
-						title={data.rsvp.title}
-						guestCap={data.rsvp.guestCap}
-						confirmationMessage={data.rsvp.confirmationMessage}
-						showDietaryField={data.rsvp.showDietaryField}
-						dietaryLabel={data.rsvp.dietaryLabel}
-						dietaryPlaceholder={data.rsvp.dietaryPlaceholder}
-						confirmationMode={data.rsvp.confirmationMode}
-						whatsappConfig={data.rsvp.whatsappConfig}
-						variant={data.sectionStyles?.rsvp?.variant ?? preset}
-						{...rsvpProps}
-					/>
-				);
-			})()
+			data.sections?.rsvp && data.rsvp && (
+				<RSVP
+					client:visible
+					eventSlug={event.id}
+					title={data.rsvp.title}
+					guestCap={data.rsvp.guestCap}
+					confirmationMessage={data.rsvp.confirmationMessage}
+					showDietaryField={data.rsvp.showDietaryField}
+					dietaryLabel={data.rsvp.dietaryLabel}
+					dietaryPlaceholder={data.rsvp.dietaryPlaceholder}
+					confirmationMode={data.rsvp.confirmationMode}
+					whatsappConfig={data.rsvp.whatsappConfig}
+					variant={data.sectionStyles?.rsvp?.variant ?? preset}
+					nameLabel={data.sectionStyles?.rsvp?.labels?.name ?? data.sectionStyles?.rsvp?.nameLabel}
+					guestCountLabel={data.sectionStyles?.rsvp?.labels?.guestCount ?? data.sectionStyles?.rsvp?.guestCountLabel}
+					attendanceLabel={data.sectionStyles?.rsvp?.labels?.attendance}
+					buttonLabel={data.sectionStyles?.rsvp?.labels?.confirmButton ?? data.sectionStyles?.rsvp?.buttonLabel}
+				/>
+			)
 		}
 
 		{

@@ -89,6 +89,11 @@ const eventsCollection = defineCollection({
 							.default('standard'),
 					})
 					.optional(),
+				itinerary: z
+					.object({
+						variant: z.enum(['base', 'jewelry-box', 'luxury-hacienda']).default('base'),
+					})
+					.optional(),
 				thankYou: z
 					.object({
 						variant: z
@@ -101,12 +106,25 @@ const eventsCollection = defineCollection({
 						variant: z
 							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
 							.default('standard'),
+						labels: z
+							.object({
+								name: z.string().optional(),
+								guestCount: z.string().optional(),
+								attendance: z.string().optional(),
+								confirmButton: z.string().optional(),
+							})
+							.optional(),
+						// Legacy support (to be migrated)
+						nameLabel: z.string().optional(),
+						guestCountLabel: z.string().optional(),
+						buttonLabel: z.string().optional(),
 					})
 					.optional(),
 			})
 			.optional(),
 		hero: z.object({
 			name: z.string(),
+			label: z.string().optional(),
 			nickname: z.string().optional(),
 			date: z.string().datetime(), // ISO 8601
 			backgroundImage: z.string(),
@@ -260,6 +278,9 @@ const eventsCollection = defineCollection({
 					.object({
 						phone: z.string(),
 						messageTemplate: z.string().optional(),
+						confirmedTemplate: z.string().optional(),
+						declinedTemplate: z.string().optional(),
+						omitTitle: z.boolean().optional(),
 					})
 					.optional(),
 			})

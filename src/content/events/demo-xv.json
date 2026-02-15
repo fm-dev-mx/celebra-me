@@ -30,10 +30,22 @@
         },
         "gifts": {
             "variant": "jewelry-box"
+        },
+        "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "rsvp": {
+            "variant": "jewelry-box",
+            "labels": {
+                "name": "Nombre completo *",
+                "guestCount": "Número total de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
         }
     },
     "hero": {
         "name": "Lucía García",
+        "label": "Mis XV Años",
         "date": "2026-04-25T18:00:00.000Z",
         "backgroundImage": "hero"
     },
@@ -97,7 +109,6 @@
         "gallery": true
     },
     "gallery": {
-        "variant": "jewelry-box",
         "title": "Galería",
         "subtitle": "Recuerdos antes del gran día",
         "items": [
@@ -204,7 +215,6 @@
         "title": "Música de fondo"
     },
     "itinerary": {
-        "variant": "jewelry-box",
         "title": "Nuestra Celebración",
         "items": [
             {

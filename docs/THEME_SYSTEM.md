@@ -264,6 +264,34 @@ sectionStyles: z.object({
 		mapStyle: z.enum(['dark', 'colorful', 'minimal', 'satellite']),
 		showFlourishes: z.boolean(),
 	}),
+	rsvp: z.object({
+		variant: z.enum(['standard', 'jewelry-box', 'luxury-hacienda']),
+		labels: z
+			.object({
+				name: z.string().optional(),
+				guestCount: z.string().optional(),
+				attendance: z.string().optional(),
+				confirmButton: z.string().optional(),
+			})
+			.optional(),
+	}),
+});
+
+// Configuración de WhatsApp (Tier 3)
+whatsappConfig: z.object({
+	phone: z.string(),
+	messageTemplate: z.string().optional(),
+	confirmedTemplate: z.string().optional(),
+	declinedTemplate: z.string().optional(),
+	omitTitle: z.boolean().optional(),
+});
+
+// Hero Props
+hero: z.object({
+	name: z.string(),
+	label: z.string().optional(), // Ej: "Mis XV Años", "Nuestra Boda"
+	date: z.string(),
+	backgroundImage: z.string(),
 });
 ```
 
