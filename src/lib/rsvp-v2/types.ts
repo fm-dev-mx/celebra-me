@@ -42,6 +42,17 @@ export interface GuestInvitationAuditRecord {
 	createdAt: string;
 }
 
+export interface AuditLogRecord {
+	id: string;
+	actorId: string | null;
+	action: string;
+	targetTable: string;
+	targetId: string;
+	oldData: Record<string, unknown> | null;
+	newData: Record<string, unknown> | null;
+	createdAt: string;
+}
+
 export interface GuestInvitationDTO {
 	guestId: string;
 	inviteId: string;

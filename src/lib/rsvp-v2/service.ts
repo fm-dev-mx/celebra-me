@@ -19,6 +19,7 @@ import {
 	findClaimCodeRecordByKeyService,
 	updateGuestById,
 	updateGuestByInviteIdPublic,
+	createAuditLog,
 } from './repository';
 import type {
 	AttendanceStatus,
@@ -53,6 +54,24 @@ function toSafeAttendeeCount(raw: unknown): number {
 
 function buildInviteUrl(origin: string, inviteId: string): string {
 	return `${origin.replace(/\/+$/, '')}/invitacion/${encodeURIComponent(inviteId)}`;
+}
+
+async function logAdminAction(input: {
+	actorId: string;
+	action: string;
+	targetTable: string;
+	targetId: string;
+	oldData?: Record<string, unknown> | null;
+	newData?: Record<string, unknown> | null;
+}) {
+	try {
+		await createAuditLog({
+			...input,
+			useServiceRole: true,
+		});
+	} catch (error) {
+		console.error('[Audit] Failed to log admin action:', error);
+	}
 }
 
 function buildWhatsAppShareUrl(input: {
@@ -207,6 +226,18 @@ export async function createDashboardGuest(input: {
 	);
 
 	const item = toGuestDto(created, input.origin, event.title);
+
+	if (isSuperAdminEmail(input.origin)) {
+		await logAdminAction({
+			actorId: input.hostAccessToken,
+			action: 'create_guest',
+			targetTable: 'guest_invitations',
+			targetId: created.id,
+			oldData: null,
+			newData: created as unknown as Record<string, unknown>,
+		});
+	}
+
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: event.id,
@@ -274,6 +305,17 @@ export async function updateDashboardGuest(input: {
 		input.hostAccessToken,
 	);
 
+	if (isSuperAdminEmail(input.origin)) {
+		await logAdminAction({
+			actorId: input.hostAccessToken,
+			action: 'update_guest',
+			targetTable: 'guest_invitations',
+			targetId: input.guestId,
+			oldData: existing as unknown as Record<string, unknown>,
+			newData: updated as unknown as Record<string, unknown>,
+		});
+	}
+
 	const item = toGuestDto(updated, input.origin);
 	publishGuestStreamEvent({
 		type: 'guest_updated',
@@ -300,6 +342,18 @@ export async function deleteDashboardGuest(input: {
 		}
 		throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
 	}
+
+	if (isSuperAdminEmail(input.hostAccessToken)) {
+		await logAdminAction({
+			actorId: input.hostAccessToken,
+			action: 'delete_guest',
+			targetTable: 'guest_invitations',
+			targetId: input.guestId,
+			oldData: existing as unknown as Record<string, unknown>,
+			newData: null,
+		});
+	}
+
 	await deleteGuestById(input.guestId, input.hostAccessToken);
 	publishGuestStreamEvent({
 		type: 'guest_updated',
