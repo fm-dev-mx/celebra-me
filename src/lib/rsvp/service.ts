@@ -577,17 +577,20 @@ export function buildWhatsAppShareLink(input: {
 	phone?: string;
 	guestName: string;
 	inviteUrl: string;
+	eventTitle: string;
 	template?: string;
 }): string {
 	const safePhone = sanitizeString(input.phone, 40).replace(/\D/g, '');
 	if (!safePhone) return '';
 	const safeGuestName = sanitizeString(input.guestName, 120);
 	const safeInviteUrl = sanitizeString(input.inviteUrl, 2000);
+	const safeEventTitle = sanitizeString(input.eventTitle, 120);
 	const template =
 		sanitizeString(input.template, 300) ||
-		'Hola {name}, te comparto tu invitación: {inviteUrl}';
+		'Hola {name}, te comparto la invitación de {eventTitle}: {inviteUrl}';
 	const message = template
 		.replace('{name}', safeGuestName)
+		.replace('{eventTitle}', safeEventTitle)
 		.replace('{inviteUrl}', safeInviteUrl)
 		.replace('{guestCount}', '')
 		.trim();
@@ -638,6 +641,7 @@ export async function getRsvpInvitationContext(
 				phone: waPhone,
 				guestName: guest.displayName,
 				inviteUrl: personalizedUrl,
+				eventTitle: event.data.title,
 				template: waTemplate,
 			}),
 		};

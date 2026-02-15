@@ -49,7 +49,7 @@ const { title = "Itinerario", items, variant } = Astro.props;
 		<div class="itinerary__timeline">
 			<div class="itinerary__line" aria-hidden="true"></div>
 
-			<TimelineList client:visible items={items} />
+			<TimelineList client:visible items={items} variant={variant} />
 
 			<div class="itinerary__line-end" aria-hidden="true"></div>
 		</div>

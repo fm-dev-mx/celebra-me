@@ -51,6 +51,72 @@
 		rgb(var(--color-action-accent-rgb), 0.8) 100%
 	);
 
+	// ---------------------------------------------------------------------
+	// Countdown section tokens
+	// ---------------------------------------------------------------------
+	--jewelry-box-countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
+	--jewelry-box-countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
+	--jewelry-box-countdown-label-letter-spacing: 0.25em;
+	--jewelry-box-countdown-label-opacity: 0.8;
+
+	// ---------------------------------------------------------------------
+	// Family section tokens
+	// ---------------------------------------------------------------------
+	--family-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--family-texture-opacity: 0.3;
+	--family-border: var(--color-glass-border);
+	--family-text-primary: var(--color-surface-dark);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb), 0.6);
+	--family-accent: var(--color-action-accent);
+	--family-shadow: var(--shadow-premium);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--color-action-accent) 50%,
+		transparent 100%
+	);
+	--family-name-font: var(--font-display);
+	--family-group-title-font: var(--font-display);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb), 0.03) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Hero tokens
+	// ---------------------------------------------------------------------
+	--hero-card-bg: var(--color-glass-bg);
+	--hero-card-border-hairline: var(--color-glass-border);
+	--hero-card-shadow-ambient: var(--shadow-premium);
+	--hero-title-color-start: var(--color-action-accent);
+	--hero-title-color-mid: #fff;
+	--hero-title-color-end: var(--color-action-accent);
+	--hero-badge-bg: var(--color-glass-bg);
+	--hero-badge-border: var(--color-action-accent);
+	--hero-badge-text: var(--color-action-accent);
+
+	// ---------------------------------------------------------------------
+	// Gallery tokens
+	// ---------------------------------------------------------------------
+	--jewelry-box-gallery-section-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--jewelry-box-gallery-card-bg: var(--color-glass-bg);
+	--jewelry-box-gallery-card-radius: 12px;
+	--jewelry-box-gallery-card-padding: 10px;
+	--jewelry-box-gallery-image-radius: 4px;
+	--jewelry-box-gallery-title-font: var(--font-display);
+	--jewelry-box-gallery-title-color: var(--color-action-accent);
+	--jewelry-box-gallery-caption-bg: rgb(255 255 255 / 90%);
+	--jewelry-box-gallery-caption-color: var(--color-action-accent);
+
 	// 🎨 Texture & Light Effects (Ultra-Premium)
 	--texture-silk:
 		radial-gradient(circle at 50% 50%, rgb(255 255 255 / 80%) 0%, rgb(255 249 245 / 40%) 100%),

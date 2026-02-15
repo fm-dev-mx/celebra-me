@@ -47,21 +47,17 @@
 }
 
 .gallery-section[data-variant='jewelry-box'] {
-	--gallery-section-bg: radial-gradient(
-		circle at 50% 50%,
-		rgb(var(--color-action-accent-rgb), 0.05) 0%,
-		var(--color-surface-primary) 100%
-	);
-	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-action-accent);
+	--gallery-section-bg: var(--jewelry-box-gallery-section-bg);
+	--gallery-title-font: var(--jewelry-box-gallery-title-font);
+	--gallery-title-color: var(--jewelry-box-gallery-title-color);
 	--gallery-title-transform: uppercase;
 	--gallery-title-letter-spacing: 0.3rem;
 	--gallery-subtitle-color: rgb(var(--color-action-accent-rgb), 0.8);
-	--gallery-item-bg: var(--color-glass-bg);
+	--gallery-item-bg: var(--jewelry-box-gallery-card-bg);
 	--gallery-item-border: 1px solid var(--color-glass-border);
 	--gallery-item-border-color: var(--color-glass-border);
-	--gallery-item-radius: 12px;
-	--gallery-item-padding: 10px;
+	--gallery-item-radius: var(--jewelry-box-gallery-card-radius);
+	--gallery-item-padding: var(--jewelry-box-gallery-card-padding);
 	--gallery-item-shadow: var(--shadow-premium);
 	--gallery-item-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 	--gallery-item-emphasis-transform: translateY(-6px) scale(1.01);
@@ -70,12 +66,12 @@
 	--gallery-item-hover-border-color: var(--color-action-accent);
 	--gallery-item-emphasis-shadow: 0 22px 42px var(--color-glass-shadow);
 	--gallery-item-hover-shadow: 0 25px 45px var(--color-glass-shadow);
-	--gallery-item-image-radius: 4px;
+	--gallery-item-image-radius: var(--jewelry-box-gallery-image-radius);
 	--gallery-overlay-emphasis-opacity: 0.95;
 	--gallery-overlay-hover-opacity: 1;
 	--gallery-caption-font: var(--font-body);
-	--gallery-caption-color: var(--color-action-accent);
-	--gallery-caption-bg: rgb(var(--color-surface-primary-rgb), 0.95);
+	--gallery-caption-color: var(--jewelry-box-gallery-caption-color);
+	--gallery-caption-bg: var(--jewelry-box-gallery-caption-bg);
 	--gallery-caption-padding: 0.35rem 0.5rem;
 	--gallery-caption-radius: 0.45rem;
 

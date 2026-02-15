@@ -42,10 +42,11 @@ interface TimelineItemData {
 
 interface TimelineListProps {
 	items: TimelineItemData[];
+	variant?: string;
 }
 
 // Icon Mapping
-const Icons: Record<string, React.FC<{ size?: number | string }>> = {
+const Icons: Record<string, React.FC<{ size?: number | string; className?: string }>> = {
 	waltz: WaltzIcon,
 	dinner: DinnerIcon,
 	toast: ToastIcon,
@@ -57,6 +58,7 @@ const Icons: Record<string, React.FC<{ size?: number | string }>> = {
 	photo: PhotoIcon,
 	boot: BootSealIcon,
 	'western-hat': WesternHatIcon,
+	hat: WesternHatIcon,
 	taco: TacoIcon,
 	tuba: TubaIcon,
 	accordion: AccordionIcon,
@@ -87,7 +89,7 @@ const itemVariants: Variants = {
 	},
 };
 
-const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
+const TimelineList: React.FC<TimelineListProps> = ({ items, variant }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const { scrollYProgress } = useScroll({
 		target: containerRef,
@@ -101,7 +103,7 @@ const TimelineList: React.FC<TimelineListProps> = ({ items }) => {
 	});
 
 	return (
-		<div ref={containerRef} className="itinerary__items-wrapper">
+		<div ref={containerRef} className="itinerary__items-wrapper" data-variant={variant}>
 			{/* Animated SVG Line */}
 			<div className="itinerary__animated-line-container" aria-hidden="true">
 				<svg width="2" height="100%" viewBox="0 0 2 100" preserveAspectRatio="none">

@@ -97,6 +97,7 @@
         "gallery": true
     },
     "gallery": {
+        "variant": "jewelry-box",
         "title": "Galería",
         "subtitle": "Recuerdos antes del gran día",
         "items": [
@@ -181,7 +182,12 @@
     "rsvp": {
         "title": "¿Vienes a celebrar conmigo?",
         "guestCap": 2,
-        "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción."
+        "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción.",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5216681167477",
+            "messageTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta: {attendance}. Asistentes: {guestCount}."
+        }
     },
     "quote": {
         "text": "Hoy dejo atrás la niñez y abro las puertas a un nuevo capítulo lleno de sueños, amor y esperanza. Gracias por acompañarme en este viaje de transformación.",
@@ -198,6 +204,7 @@
         "title": "Música de fondo"
     },
     "itinerary": {
+        "variant": "jewelry-box",
         "title": "Nuestra Celebración",
         "items": [
             {

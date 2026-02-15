@@ -1,7 +1,7 @@
 // src/components/invitation/PhotoGallery.tsx
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/AssetRegistry';
@@ -11,27 +11,50 @@ interface GalleryItem {
 	caption?: string;
 }
 
-const getSrc = (image: ImageMetadata | ImageAsset): string => {
-	if ('src' in image) {
-		// ImageAsset or ImageMetadata
-		const src = image.src;
-		if (typeof src === 'string') return src;
-		return src.src;
-	}
-	// Fallback? Types say it must be one of the above.
-	// ImageMetadata has src string. ImageAsset has src string|Metadata.
-	// Actually, ImageMetadata has src property.
-	return (image as ImageMetadata).src;
-};
-
 interface PhotoGalleryProps {
 	items: GalleryItem[];
 	variant?: string;
 }
 
-const getLuxuryLayoutClass = (index: number): string => {
-	if (index === 0) return 'gallery-grid__item--feature';
-	if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
+/**
+ * Resolve src across Astro ImageMetadata and custom ImageAsset union.
+ * Keeps behavior identical to prior implementation while being explicit.
+ */
+const getSrc = (image: ImageMetadata | ImageAsset): string => {
+	if ('src' in image) {
+		const src = image.src as unknown;
+		if (typeof src === 'string') return src;
+		// Some image pipelines return an object with a .src string
+		if (
+			src &&
+			typeof src === 'object' &&
+			'src' in (src as any) &&
+			typeof (src as any).src === 'string'
+		) {
+			return (src as any).src;
+		}
+	}
+
+	// Final fallback for defensive typing; should not happen if types are correct.
+	return (image as ImageMetadata).src;
+};
+
+const getLayoutClass = (index: number, variant?: string): string => {
+	// Luxury Hacienda specific layout logic
+	if (variant === 'luxury-hacienda') {
+		if (index === 0) return 'gallery-grid__item--feature';
+		if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
+		return 'gallery-grid__item--standard';
+	}
+
+	// Jewelry Box / Wedding Premium layout logic
+	if (variant === 'jewelry-box' || variant === 'organic') {
+		if (index % 5 === 0) return 'gallery-grid__item--feature';
+		if (index % 3 === 0) return 'gallery-grid__item--wide';
+		return 'gallery-grid__item--standard';
+	}
+
+	// Default fallback layout (standard grid)
 	return 'gallery-grid__item--standard';
 };
 
@@ -41,12 +64,12 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 	const [isTouchDevice, setIsTouchDevice] = useState(false);
 	const shouldReduceMotion = useReducedMotion();
 
+	const closeLightbox = useCallback(() => setSelectedImage(null), []);
+
 	// Keyboard and scroll lock effect
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				setSelectedImage(null);
-			}
+			if (e.key === 'Escape') closeLightbox();
 		};
 
 		if (selectedImage !== null) {
@@ -60,7 +83,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 			document.body.style.overflow = '';
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [selectedImage]);
+	}, [selectedImage, closeLightbox]);
 
 	// Keep interaction mode in sync so touch devices can use a single "active" in-view item.
 	useEffect(() => {
@@ -70,9 +93,10 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 		const updateTouchMode = (event?: MediaQueryListEvent) => {
 			setIsTouchDevice(event ? event.matches : mediaQuery.matches);
 		};
-		const hasModernListenerAPI = 'addEventListener' in mediaQuery;
 
 		updateTouchMode();
+
+		const hasModernListenerAPI = 'addEventListener' in mediaQuery;
 		if (hasModernListenerAPI) {
 			mediaQuery.addEventListener('change', updateTouchMode);
 		} else {
@@ -88,50 +112,54 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 		};
 	}, []);
 
-	const containerVariants: Variants = shouldReduceMotion
-		? {
-				hidden: { opacity: 1 },
-				visible: { opacity: 1 },
-			}
-		: {
-				hidden: { opacity: 0 },
-				visible: {
-					opacity: 1,
-					transition: {
-						staggerChildren: 0.1,
-					},
-				},
-			};
+	const containerVariants: Variants = useMemo(() => {
+		if (shouldReduceMotion) {
+			return { hidden: { opacity: 1 }, visible: { opacity: 1 } };
+		}
+		return {
+			hidden: { opacity: 0 },
+			visible: {
+				opacity: 1,
+				transition: { staggerChildren: 0.1 },
+			},
+		};
+	}, [shouldReduceMotion]);
 
-	const itemVariants: Variants = shouldReduceMotion
-		? {
+	const itemVariants: Variants = useMemo(() => {
+		if (shouldReduceMotion) {
+			return {
 				hidden: { opacity: 1, y: 0 },
 				visible: { opacity: 1, y: 0, transition: { duration: 0 } },
-			}
-		: {
-				hidden: { opacity: 0, y: 20 },
-				visible: {
-					opacity: 1,
-					y: 0,
-					transition: {
-						duration: 0.8,
-						ease: 'easeOut',
-					},
-				},
 			};
+		}
+		return {
+			hidden: { opacity: 0, y: 20 },
+			visible: {
+				opacity: 1,
+				y: 0,
+				transition: { duration: 0.8, ease: 'easeOut' },
+			},
+		};
+	}, [shouldReduceMotion]);
 
-	const markItemAsVisible = (index: number) => {
-		setVisibleItems((current) => {
-			const shouldUseSingleActiveItem = variant === 'luxury-hacienda' && isTouchDevice;
-			if (shouldUseSingleActiveItem) {
+	const markItemAsVisible = useCallback(
+		(index: number) => {
+			setVisibleItems((current) => {
+				const shouldUseSingleActiveItem = variant === 'luxury-hacienda' && isTouchDevice;
+
+				if (shouldUseSingleActiveItem) {
+					if (current[index]) return current;
+					return { [index]: true };
+				}
+
 				if (current[index]) return current;
-				return { [index]: true };
-			}
+				return { ...current, [index]: true };
+			});
+		},
+		[variant, isTouchDevice],
+	);
 
-			if (current[index]) return current;
-			return { ...current, [index]: true };
-		});
-	};
+	const openLightbox = useCallback((index: number) => setSelectedImage(index), []);
 
 	return (
 		<>
@@ -142,37 +170,42 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 				whileInView={shouldReduceMotion ? undefined : 'visible'}
 				viewport={shouldReduceMotion ? undefined : { once: true, margin: '-100px' }}
 			>
-				{items.map((item, index) => (
-					<motion.div
-						key={index}
-						className={`gallery-grid__item ${variant === 'luxury-hacienda' ? getLuxuryLayoutClass(index) : 'gallery-grid__item--standard'} ${visibleItems[index] ? 'is-in-view' : ''}`}
-						data-in-view={visibleItems[index] ? 'true' : 'false'}
-						variants={itemVariants}
-						onViewportEnter={() => markItemAsVisible(index)}
-						viewport={{ once: true, amount: 0.3 }}
-						onClick={() => setSelectedImage(index)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') {
-								e.preventDefault();
-								setSelectedImage(index);
-							}
-						}}
-						tabIndex={0}
-						role="button"
-						aria-label={item.caption || `Ver imagen ${index + 1}`}
-					>
-						<img
-							src={getSrc(item.image)}
-							alt={item.caption || `Galería ${index + 1}`}
-							loading="lazy"
-						/>
-						{item.caption && (
-							<div className="gallery-grid__overlay">
-								<p className="gallery-grid__caption">{item.caption}</p>
-							</div>
-						)}
-					</motion.div>
-				))}
+				{items.map((item, index) => {
+					const layoutClass = getLayoutClass(index, variant);
+					const isInView = Boolean(visibleItems[index]);
+
+					return (
+						<motion.div
+							key={index}
+							className={`gallery-grid__item ${layoutClass} ${isInView ? 'is-in-view' : ''}`}
+							data-in-view={isInView ? 'true' : 'false'}
+							variants={itemVariants}
+							onViewportEnter={() => markItemAsVisible(index)}
+							viewport={{ once: true, amount: 0.3 }}
+							onClick={() => openLightbox(index)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									openLightbox(index);
+								}
+							}}
+							tabIndex={0}
+							role="button"
+							aria-label={item.caption || `Ver imagen ${index + 1}`}
+						>
+							<img
+								src={getSrc(item.image)}
+								alt={item.caption || `Galería ${index + 1}`}
+								loading="lazy"
+							/>
+							{item.caption && (
+								<div className="gallery-grid__overlay">
+									<p className="gallery-grid__caption">{item.caption}</p>
+								</div>
+							)}
+						</motion.div>
+					);
+				})}
 			</motion.div>
 
 			<AnimatePresence>
@@ -182,14 +215,14 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						onClick={() => setSelectedImage(null)}
+						onClick={closeLightbox}
 						role="dialog"
 						aria-modal="true"
 						aria-label="Vista ampliada de la imagen"
 					>
 						<button
 							className="gallery-lightbox__close"
-							onClick={() => setSelectedImage(null)}
+							onClick={closeLightbox}
 							aria-label="Cerrar galería"
 						>
 							<svg
@@ -201,8 +234,8 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 								strokeLinecap="round"
 								strokeLinejoin="round"
 							>
-								<line x1="18" y1="6" x2="6" y2="18"></line>
-								<line x1="6" y1="6" x2="18" y2="18"></line>
+								<line x1="18" y1="6" x2="6" y2="18" />
+								<line x1="6" y1="6" x2="18" y2="18" />
 							</svg>
 						</button>
 
