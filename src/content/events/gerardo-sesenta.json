@@ -118,7 +118,34 @@
     "rsvp": {
         "title": "Confirma tu asistencia para prepararnos.",
         "guestCap": 10,
-        "confirmationMessage": "Te esperamos de botas y sombrero."
+        "confirmationMessage": "Te esperamos de botas y sombrero.",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5216681167477",
+            "messageTemplate": "Hola, soy {name}. Confirmando mi asistencia, nos vemos el sábado. Asistentes: {guestCount}."
+        },
+        "guests": [
+            {
+                "guestId": "fam-mendoza-001",
+                "displayName": "Viridiana Mendoza",
+                "maxAllowedAttendees": 4
+            },
+            {
+                "guestId": "fam-mendoza-002",
+                "displayName": "Francisco Mendoza",
+                "maxAllowedAttendees": 4
+            },
+            {
+                "guestId": "fam-mendoza-003",
+                "displayName": "Jenniffer Mendoza",
+                "maxAllowedAttendees": 4
+            },
+            {
+                "guestId": "fam-mendoza-004",
+                "displayName": "Carlos Mendoza",
+                "maxAllowedAttendees": 4
+            }
+        ]
     },
     "quote": {
         "text": "Sesenta años construidos con trabajo, familia y buenas amistades.",

@@ -246,6 +246,15 @@ const eventsCollection = defineCollection({
 				showDietaryField: z.boolean().default(false),
 				dietaryLabel: z.string().optional(),
 				dietaryPlaceholder: z.string().optional(),
+				guests: z
+					.array(
+						z.object({
+							guestId: z.string().min(1),
+							displayName: z.string().min(1),
+							maxAllowedAttendees: z.number().int().positive().default(1),
+						}),
+					)
+					.optional(),
 				confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
 				whatsappConfig: z
 					.object({

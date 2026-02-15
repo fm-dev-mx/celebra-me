@@ -3,13 +3,33 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import '@/styles/invitation/_rsvp.scss';
 
 type ConfirmationMode = 'api' | 'whatsapp' | 'both';
+type AttendanceStatus = 'confirmed' | 'declined' | null;
 
 interface WhatsAppConfig {
 	phone: string;
 	messageTemplate?: string;
 }
 
+interface ContextResponse {
+	eventSlug: string;
+	mode: 'personalized' | 'generic';
+	tokenValid: boolean;
+	invalidTokenMessage?: string;
+	guest?: {
+		guestId: string;
+		displayName: string;
+		maxAllowedAttendees: number;
+	};
+	currentResponse?: {
+		rsvpId: string;
+		attendanceStatus: 'pending' | 'confirmed' | 'declined';
+		attendeeCount: number;
+		updatedAt: string;
+	};
+}
+
 interface RSVPProps {
+	eventSlug?: string;
 	title: string;
 	guestCap: number;
 	confirmationMessage: string;
@@ -27,6 +47,7 @@ interface RSVPProps {
 }
 
 const RSVP: React.FC<RSVPProps> = ({
+	eventSlug,
 	title,
 	guestCap,
 	confirmationMessage,
@@ -44,10 +65,17 @@ const RSVP: React.FC<RSVPProps> = ({
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const [name, setName] = useState('');
-	const [attendance, setAttendance] = useState<'yes' | 'no' | null>(null);
-	const [guestCount, setGuestCount] = useState<number | string>(1);
+	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
+	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
 	const [dietary, setDietary] = useState('');
+	const [token, setToken] = useState('');
+	const [contextLoading, setContextLoading] = useState(true);
+	const [contextMode, setContextMode] = useState<'personalized' | 'generic'>('generic');
+	const [tokenWarning, setTokenWarning] = useState('');
+	const [nameLocked, setNameLocked] = useState(false);
+	const [contextGuestCap, setContextGuestCap] = useState<number>(Number(guestCap));
+	const [rsvpId, setRsvpId] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
 	const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
@@ -56,49 +84,150 @@ const RSVP: React.FC<RSVPProps> = ({
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-	// Refs for focus/scroll
 	const nameRef = useRef<HTMLInputElement>(null);
 	const attendanceRef = useRef<HTMLDivElement>(null);
 	const guestCountRef = useRef<HTMLInputElement>(null);
 
-	// URL Pre-fill logic
+	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
+	const supportsPlusOnes = effectiveGuestCap > 1;
+	const showWhatsAppCta =
+		submitted &&
+		attendanceStatus === 'confirmed' &&
+		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
+		!!whatsappConfig?.phone;
+
 	useEffect(() => {
+		if (!eventSlug) {
+			setContextLoading(false);
+			return;
+		}
+
 		const params = new URLSearchParams(window.location.search);
 		const prefilledName = params.get('g') || params.get('name');
 		if (prefilledName) {
 			setName(prefilledName);
 		}
-	}, []);
+
+		const tokenParam = params.get('t') || '';
+		setToken(tokenParam);
+
+		let isActive = true;
+
+		const loadContext = async () => {
+			setContextLoading(true);
+			try {
+				const query = new URLSearchParams({ eventSlug });
+				if (tokenParam) query.set('token', tokenParam);
+
+				const response = await fetch(`/api/rsvp/context?${query.toString()}`);
+				if (!response.ok) {
+					if (isActive) setContextMode('generic');
+					return;
+				}
+
+				const context = (await response.json()) as ContextResponse;
+				if (context.mode === 'personalized' && context.tokenValid && context.guest) {
+					if (isActive) {
+						setContextMode('personalized');
+						setName(context.guest.displayName);
+						setNameLocked(true);
+						setContextGuestCap(context.guest.maxAllowedAttendees);
+					}
+
+					if (context.currentResponse) {
+						if (isActive) setRsvpId(context.currentResponse.rsvpId);
+						if (context.currentResponse.attendanceStatus === 'confirmed') {
+							if (isActive) {
+								setAttendanceStatus('confirmed');
+								setAttendeeCount(
+									Math.max(1, context.currentResponse.attendeeCount),
+								);
+							}
+						}
+						if (context.currentResponse.attendanceStatus === 'declined') {
+							if (isActive) {
+								setAttendanceStatus('declined');
+								setAttendeeCount(0);
+							}
+						}
+					}
+				} else {
+					if (isActive) {
+						setContextMode('generic');
+						setNameLocked(false);
+					}
+					if (context.invalidTokenMessage) {
+						if (isActive) setTokenWarning(context.invalidTokenMessage);
+					}
+				}
+			} catch {
+				if (isActive) setContextMode('generic');
+			} finally {
+				if (isActive) setContextLoading(false);
+			}
+		};
+
+		void loadContext();
+
+		return () => {
+			isActive = false;
+		};
+	}, [eventSlug]);
+
+	useEffect(() => {
+		const logCtaRendered = async () => {
+			if (!showWhatsAppCta || !rsvpId) return;
+			try {
+				await fetch('/api/rsvp/channel', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						rsvpId,
+						channel: 'whatsapp',
+						action: 'cta_rendered',
+					}),
+				});
+			} catch {
+				// non-blocking telemetry
+			}
+		};
+
+		void logCtaRendered();
+	}, [showWhatsAppCta, rsvpId]);
 
 	const buildWhatsAppUrl = () => {
 		if (!whatsappConfig?.phone) return '';
 		const template =
 			whatsappConfig.messageTemplate ||
-			'Hola, soy {name}. Confirmo mi asistencia ({attendance}). Acompañantes: {guestCount}.';
+			'Hola, soy {name}. Ya registré mi RSVP para Gerardo 60: {attendance}. Asistentes: {guestCount}.';
+		const attendanceText = attendanceStatus === 'confirmed' ? 'Confirmado' : 'Declinado';
+		const countText = attendanceStatus === 'confirmed' ? String(attendeeCount) : '0';
 		const message = template
 			.replace('{name}', name)
-			.replace('{attendance}', attendance === 'yes' ? 'Sí, asistiré' : 'No podré asistir')
-			.replace('{guestCount}', String(guestCount));
+			.replace('{attendance}', attendanceText)
+			.replace('{guestCount}', countText);
 		return `https://wa.me/${whatsappConfig.phone}?text=${encodeURIComponent(message)}`;
 	};
 
 	const validate = () => {
 		const newErrors: Record<string, string> = {};
 
-		if (!name.trim()) {
+		if (!nameLocked && !name.trim()) {
 			newErrors.name = 'Por favor, escribe tu nombre completo.';
 		}
 
-		if (!attendance) {
+		if (!attendanceStatus) {
 			newErrors.attendance = 'Por favor, selecciona si asistirás.';
 		}
 
-		if (attendance === 'yes') {
-			const count = typeof guestCount === 'string' ? parseInt(guestCount) : guestCount;
-			if (!count || count < 1) {
+		if (attendanceStatus === 'confirmed') {
+			const parsedCount =
+				typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
+			const normalizedCount = supportsPlusOnes ? parsedCount : 1;
+			if (!normalizedCount || normalizedCount < 1) {
 				newErrors.guestCount = 'El número de invitados debe ser al menos 1.';
-			} else if (count > Number(guestCap)) {
-				newErrors.guestCount = `El límite de invitados es de ${guestCap}.`;
+			} else if (normalizedCount > effectiveGuestCap) {
+				newErrors.guestCount = `El límite de invitados es de ${effectiveGuestCap}.`;
 			}
 		}
 
@@ -111,7 +240,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		validate();
 	};
 
-	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setSubmitStatus('loading');
 
@@ -126,7 +255,6 @@ const RSVP: React.FC<RSVPProps> = ({
 				guestCount: true,
 			});
 
-			// Scroll to first error
 			const firstError = errorKeys[0];
 			const refMap: Record<string, React.RefObject<HTMLElement | null>> = {
 				name: nameRef as React.RefObject<HTMLElement | null>,
@@ -140,8 +268,6 @@ const RSVP: React.FC<RSVPProps> = ({
 					behavior: prefersReducedMotion ? 'auto' : 'smooth',
 					block: 'center',
 				});
-
-				// Auto-focus the first field with error
 				if (firstError === 'attendance') {
 					const firstRadio = targetRef.current.querySelector(
 						'input[type="radio"]',
@@ -151,26 +277,23 @@ const RSVP: React.FC<RSVPProps> = ({
 					(targetRef.current as HTMLElement).focus();
 				}
 			}
-
-			return;
-		}
-
-		// WhatsApp-only mode: open link and mark as submitted
-		if (confirmationMode === 'whatsapp') {
-			const url = buildWhatsAppUrl();
-			if (url) window.open(url, '_blank', 'noopener,noreferrer');
-			setSubmitStatus('success');
-			setTimeout(() => setSubmitted(true), 600);
 			return;
 		}
 
 		setIsSubmitting(true);
 
 		try {
+			const parsedCount =
+				typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
+			const normalizedCount =
+				attendanceStatus === 'confirmed' ? (supportsPlusOnes ? parsedCount || 1 : 1) : 0;
+
 			const payload: Record<string, unknown> = {
-				name,
-				attendance,
-				guestCount: attendance === 'yes' ? Number(guestCount) || 1 : 0,
+				eventSlug,
+				token: token || undefined,
+				guestName: name,
+				attendanceStatus,
+				attendeeCount: normalizedCount,
 				notes,
 			};
 			if (showDietaryField && dietary.trim()) {
@@ -184,10 +307,12 @@ const RSVP: React.FC<RSVPProps> = ({
 			});
 
 			if (response.ok) {
+				const data = (await response.json()) as { rsvpId?: string };
+				if (data.rsvpId) setRsvpId(data.rsvpId);
 				setSubmitStatus('success');
-				setTimeout(() => setSubmitted(true), 800);
+				setTimeout(() => setSubmitted(true), 500);
 			} else {
-				const data = await response.json();
+				const data = (await response.json()) as { message?: string };
 				setSubmitStatus('error');
 				setErrors((prev) => ({ ...prev, global: data.message || 'Error al enviar.' }));
 			}
@@ -199,22 +324,46 @@ const RSVP: React.FC<RSVPProps> = ({
 		}
 	};
 
+	const handleWhatsAppClick = async () => {
+		if (!rsvpId) return;
+		try {
+			await fetch('/api/rsvp/channel', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					rsvpId,
+					channel: 'whatsapp',
+					action: 'clicked',
+				}),
+			});
+		} catch {
+			// non-blocking telemetry
+		}
+	};
+
+	if (contextLoading) {
+		return (
+			<section id="rsvp" className="rsvp" data-variant={variant}>
+				<h2 className="rsvp__title">{title}</h2>
+				<p>Cargando confirmación...</p>
+			</section>
+		);
+	}
+
 	if (submitted) {
-		const showWhatsAppCta =
-			(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
-			whatsappConfig?.phone &&
-			attendance === 'yes';
 		return (
 			<section id="rsvp" className="rsvp" data-variant={variant}>
 				<div className="rsvp__greeting">
 					<span
 						className="rsvp__greeting-icon"
-						data-response={attendance === 'yes' ? 'yes' : 'no'}
+						data-response={attendanceStatus === 'confirmed' ? 'yes' : 'no'}
 						role="img"
-						aria-label={attendance === 'yes' ? 'Celebración' : 'Agradecimiento'}
+						aria-label={
+							attendanceStatus === 'confirmed' ? 'Celebración' : 'Agradecimiento'
+						}
 					/>
 					<h2 className="rsvp__greeting-message">
-						{attendance === 'yes' ? (
+						{attendanceStatus === 'confirmed' ? (
 							<>
 								¡Gracias, <strong>{name}</strong>!<br />
 								{confirmationMessage}
@@ -233,6 +382,7 @@ const RSVP: React.FC<RSVPProps> = ({
 							target="_blank"
 							rel="noopener noreferrer"
 							className="rsvp__whatsapp-cta"
+							onClick={handleWhatsAppClick}
 							aria-label="Enviar confirmación por WhatsApp"
 						>
 							Enviar confirmación por WhatsApp
@@ -247,34 +397,45 @@ const RSVP: React.FC<RSVPProps> = ({
 		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 
+			{contextMode === 'personalized' && (
+				<p className="rsvp__greeting-submessage">
+					Hola, <strong>{name}</strong>. Tu enlace está personalizado.
+				</p>
+			)}
+			{tokenWarning && <p className="rsvp__error">{tokenWarning}</p>}
+
 			<form onSubmit={handleSubmit} className="rsvp__form" id="rsvp-form">
-				<motion.div
-					className={`rsvp__field ${touched.name && errors.name ? 'rsvp__field--error' : ''}`}
-					initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-					whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-					viewport={prefersReducedMotion ? undefined : { once: true }}
-				>
-					<label htmlFor="name">{nameLabel}</label>
-					<input
-						ref={nameRef}
-						type="text"
-						id="name"
-						placeholder="Escribe tu nombre"
-						value={name}
-						onChange={(e) => {
-							setName(e.target.value);
-							if (touched.name) validate();
-						}}
-						onBlur={() => handleBlur('name')}
-						aria-invalid={!!(touched.name && errors.name)}
-						aria-describedby={touched.name && errors.name ? 'name-error' : undefined}
-					/>
-					{touched.name && errors.name && (
-						<p className="rsvp__field-error" id="name-error" role="alert">
-							{errors.name}
-						</p>
-					)}
-				</motion.div>
+				{!nameLocked && (
+					<motion.div
+						className={`rsvp__field ${touched.name && errors.name ? 'rsvp__field--error' : ''}`}
+						initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+						whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+						viewport={prefersReducedMotion ? undefined : { once: true }}
+					>
+						<label htmlFor="name">{nameLabel}</label>
+						<input
+							ref={nameRef}
+							type="text"
+							id="name"
+							placeholder="Escribe tu nombre"
+							value={name}
+							onChange={(e) => {
+								setName(e.target.value);
+								if (touched.name) validate();
+							}}
+							onBlur={() => handleBlur('name')}
+							aria-invalid={!!(touched.name && errors.name)}
+							aria-describedby={
+								touched.name && errors.name ? 'name-error' : undefined
+							}
+						/>
+						{touched.name && errors.name && (
+							<p className="rsvp__field-error" id="name-error" role="alert">
+								{errors.name}
+							</p>
+						)}
+					</motion.div>
+				)}
 
 				<motion.fieldset
 					className={`rsvp__field rsvp__fieldset ${touched.attendance && errors.attendance ? 'rsvp__field--error' : ''}`}
@@ -289,9 +450,10 @@ const RSVP: React.FC<RSVPProps> = ({
 							<input
 								type="radio"
 								name="attendance"
-								checked={attendance === 'yes'}
+								checked={attendanceStatus === 'confirmed'}
 								onChange={() => {
-									setAttendance('yes');
+									setAttendanceStatus('confirmed');
+									if (!supportsPlusOnes) setAttendeeCount(1);
 									if (touched.attendance) validate();
 								}}
 								onBlur={() => handleBlur('attendance')}
@@ -302,9 +464,10 @@ const RSVP: React.FC<RSVPProps> = ({
 							<input
 								type="radio"
 								name="attendance"
-								checked={attendance === 'no'}
+								checked={attendanceStatus === 'declined'}
 								onChange={() => {
-									setAttendance('no');
+									setAttendanceStatus('declined');
+									setAttendeeCount(0);
 									if (touched.attendance) validate();
 								}}
 								onBlur={() => handleBlur('attendance')}
@@ -320,7 +483,7 @@ const RSVP: React.FC<RSVPProps> = ({
 				</motion.fieldset>
 
 				<AnimatePresence>
-					{attendance === 'yes' && (
+					{attendanceStatus === 'confirmed' && (
 						<motion.div
 							initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: 'auto' }}
@@ -332,32 +495,36 @@ const RSVP: React.FC<RSVPProps> = ({
 							transition={prefersReducedMotion ? { duration: 0 } : undefined}
 							className="rsvp__extra-fields"
 						>
-							<div
-								className={`rsvp__field ${touched.guestCount && errors.guestCount ? 'rsvp__field--error' : ''}`}
-							>
-								<label htmlFor="guestCount">
-									{guestCountLabel}
-									{Number(guestCap) <= 4 ? ` (Máx. ${guestCap})` : ''}
-								</label>
-								<input
-									ref={guestCountRef}
-									type="number"
-									id="guestCount"
-									min="1"
-									max={guestCap}
-									value={guestCount}
-									onChange={(e) => {
-										setGuestCount(e.target.value);
-										if (touched.guestCount) validate();
-									}}
-									onBlur={() => handleBlur('guestCount')}
-								/>
-								{touched.guestCount && errors.guestCount && (
-									<p className="rsvp__field-error" role="alert">
-										{errors.guestCount}
-									</p>
-								)}
-							</div>
+							{supportsPlusOnes && (
+								<div
+									className={`rsvp__field ${touched.guestCount && errors.guestCount ? 'rsvp__field--error' : ''}`}
+								>
+									<label htmlFor="guestCount">
+										{guestCountLabel}
+										{effectiveGuestCap <= 10
+											? ` (Máx. ${effectiveGuestCap})`
+											: ''}
+									</label>
+									<input
+										ref={guestCountRef}
+										type="number"
+										id="guestCount"
+										min="1"
+										max={effectiveGuestCap}
+										value={attendeeCount}
+										onChange={(e) => {
+											setAttendeeCount(e.target.value);
+											if (touched.guestCount) validate();
+										}}
+										onBlur={() => handleBlur('guestCount')}
+									/>
+									{touched.guestCount && errors.guestCount && (
+										<p className="rsvp__field-error" role="alert">
+											{errors.guestCount}
+										</p>
+									)}
+								</div>
+							)}
 
 							{showDietaryField && (
 								<div className="rsvp__field">

@@ -283,6 +283,7 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 				return (
 					<RSVP
 						client:visible
+						eventSlug={event.id}
 						title={data.rsvp.title}
 						guestCap={data.rsvp.guestCap}
 						confirmationMessage={data.rsvp.confirmationMessage}

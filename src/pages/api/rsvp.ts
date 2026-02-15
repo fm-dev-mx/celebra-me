@@ -1,56 +1,111 @@
 import type { APIRoute } from 'astro';
+import {
+	getAdminRsvpList,
+	parseAttendanceInput,
+	saveRsvp,
+	type AttendanceStatus,
+} from '@/lib/rsvp/service';
 
-const MAX_FIELD_LENGTH = 200;
-const VALID_ATTENDANCE = ['yes', 'no'] as const;
-const JSON_HEADERS = { 'Content-Type': 'application/json' };
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+const MAX_NAME_LENGTH = 200;
 
-/** Trim and cap a string field to prevent abuse. */
-function sanitize(value: unknown, maxLen = MAX_FIELD_LENGTH): string {
+function sanitize(value: unknown, maxLen = MAX_NAME_LENGTH): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, maxLen);
 }
+
+function parseAttendeeCount(value: unknown): number {
+	if (typeof value !== 'number') return 0;
+	if (!Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(Math.trunc(value), 20));
+}
+
+export const GET: APIRoute = async ({ url }) => {
+	try {
+		const eventSlug = sanitize(url.searchParams.get('eventSlug'));
+		if (!eventSlug) {
+			return new Response(JSON.stringify({ message: 'eventSlug es obligatorio.' }), {
+				status: 400,
+				headers: JSON_HEADERS,
+			});
+		}
+
+		const rawStatus = sanitize(url.searchParams.get('status'));
+		const search = sanitize(url.searchParams.get('search'), 120);
+		const status: AttendanceStatus | 'all' =
+			rawStatus === 'pending' || rawStatus === 'confirmed' || rawStatus === 'declined'
+				? rawStatus
+				: 'all';
+
+		const result = await getAdminRsvpList({ eventSlug, status, search });
+		return new Response(JSON.stringify(result), {
+			status: 200,
+			headers: JSON_HEADERS,
+		});
+	} catch (error) {
+		console.error('RSVP API GET Error:', error);
+		return new Response(JSON.stringify({ message: 'Error interno del servidor.' }), {
+			status: 500,
+			headers: JSON_HEADERS,
+		});
+	}
+};
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
 		const raw = await request.json();
 
-		// Sanitise inputs
-		const name = sanitize(raw.name);
-		const attendance = sanitize(raw.attendance);
-		const guestCount =
-			typeof raw.guestCount === 'number' ? Math.max(0, Math.min(raw.guestCount, 20)) : 0;
+		const eventSlug = sanitize(raw.eventSlug, 120);
+		const token = sanitize(raw.token, 2048);
+		const guestName = sanitize(raw.guestName || raw.name);
+		const attendanceStatus = parseAttendanceInput(raw.attendanceStatus ?? raw.attendance);
+		const attendeeCount = parseAttendeeCount(raw.attendeeCount ?? raw.guestCount);
 		const notes = sanitize(raw.notes);
 		const dietary = sanitize(raw.dietary);
 
-		// Validation
-		if (!name || !attendance) {
-			return new Response(JSON.stringify({ message: 'Faltan campos obligatorios.' }), {
-				status: 400,
-				headers: JSON_HEADERS,
-			});
+		if (!eventSlug || !attendanceStatus) {
+			return new Response(
+				JSON.stringify({ message: 'eventSlug y attendanceStatus son obligatorios.' }),
+				{
+					status: 400,
+					headers: JSON_HEADERS,
+				},
+			);
 		}
 
-		if (!VALID_ATTENDANCE.includes(attendance as (typeof VALID_ATTENDANCE)[number])) {
-			return new Response(JSON.stringify({ message: 'Valor de asistencia inválido.' }), {
-				status: 400,
-				headers: JSON_HEADERS,
-			});
-		}
-
-		// TODO: Replace with real persistence (Astro DB / Supabase).
-		// For now, we simulate a successful submission.
-		const payload = { name, attendance, guestCount, notes, dietary };
-		console.info('[RSVP] Confirmation received:', JSON.stringify(payload));
-		await new Promise((resolve) => setTimeout(resolve, 800));
-
-		return new Response(JSON.stringify({ message: '¡Confirmación recibida con éxito!' }), {
-			status: 200,
-			headers: JSON_HEADERS,
+		const { rsvp, contextMode } = await saveRsvp({
+			eventSlug,
+			token: token || undefined,
+			guestName,
+			attendanceStatus,
+			attendeeCount,
+			notes,
+			dietary,
 		});
+
+		return new Response(
+			JSON.stringify({
+				message: '¡Confirmación recibida con éxito!',
+				rsvpId: rsvp.rsvpId,
+				status: rsvp.attendanceStatus,
+				updatedAt: rsvp.lastUpdatedAt,
+				contextMode,
+				whatsappTemplatePayload: {
+					name: rsvp.guestNameEntered,
+					attendanceStatus: rsvp.attendanceStatus,
+					attendeeCount: rsvp.attendeeCount,
+				},
+			}),
+			{
+				status: 200,
+				headers: JSON_HEADERS,
+			},
+		);
 	} catch (error) {
-		console.error('RSVP API Error:', error);
-		return new Response(JSON.stringify({ message: 'Error interno del servidor.' }), {
-			status: 500,
+		const message = error instanceof Error ? error.message : 'Error interno del servidor.';
+		const status = message.includes('obligatorio') || message.includes('inválido') ? 400 : 500;
+		return new Response(JSON.stringify({ message }), {
+			status,
 			headers: JSON_HEADERS,
 		});
 	}

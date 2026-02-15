@@ -1,0 +1,212 @@
+---
+const defaultEventSlug = 'gerardo-sesenta';
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Admin RSVP</title>
+		<style>
+			body {
+				font-family: 'Montserrat', system-ui, sans-serif;
+				margin: 0;
+				padding: 2rem;
+				background: #f5f2e9;
+				color: #2b1f16;
+			}
+			.panel {
+				max-width: 1200px;
+				margin: 0 auto;
+				background: #fff;
+				border: 1px solid #d9c9ad;
+				border-radius: 12px;
+				padding: 1.25rem;
+			}
+			.controls {
+				display: grid;
+				grid-template-columns: 1fr 180px 160px auto auto;
+				gap: 0.75rem;
+				margin-bottom: 1rem;
+			}
+			input,
+			select,
+			button,
+			a {
+				font: inherit;
+				padding: 0.65rem 0.75rem;
+				border: 1px solid #c6b28f;
+				border-radius: 8px;
+				background: #fff;
+				color: #2b1f16;
+			}
+			button {
+				cursor: pointer;
+				background: #3a2819;
+				color: #fff;
+			}
+			a {
+				text-decoration: none;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.stats {
+				display: flex;
+				gap: 1rem;
+				margin-bottom: 1rem;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 0.92rem;
+			}
+			th,
+			td {
+				border-bottom: 1px solid #eadfce;
+				padding: 0.65rem 0.5rem;
+				text-align: left;
+			}
+			.badge {
+				padding: 0.2rem 0.5rem;
+				border-radius: 999px;
+				font-size: 0.78rem;
+				border: 1px solid transparent;
+			}
+			.badge--confirmed {
+				background: #e8f8ef;
+				color: #146b3a;
+				border-color: #b8e7c9;
+			}
+			.badge--declined {
+				background: #feeceb;
+				color: #8c2323;
+				border-color: #f6c7c5;
+			}
+			.badge--pending {
+				background: #fdf7e6;
+				color: #7c6115;
+				border-color: #ebdca6;
+			}
+			@media (max-width: 900px) {
+				.controls {
+					grid-template-columns: 1fr;
+				}
+				table {
+					font-size: 0.85rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main class="panel">
+			<h1>Panel RSVP</h1>
+			<div class="controls">
+				<input id="eventSlug" value={defaultEventSlug} placeholder="eventSlug" />
+				<input id="search" placeholder="Buscar por nombre" />
+				<select id="status">
+					<option value="all">Todos</option>
+					<option value="confirmed">Confirmados</option>
+					<option value="declined">Declinados</option>
+					<option value="pending">Pendientes</option>
+				</select>
+				<button id="refreshBtn" type="button">Actualizar</button>
+				<a id="csvLink" href={`/api/rsvp/export.csv?eventSlug=${defaultEventSlug}`}>Exportar CSV</a>
+			</div>
+
+			<section class="stats" id="stats"></section>
+			<div style="overflow:auto">
+				<table>
+					<thead>
+						<tr>
+							<th>Nombre</th>
+							<th>Origen</th>
+							<th>Estado</th>
+							<th>Asistentes</th>
+							<th>Duplicado</th>
+							<th>Actualizado</th>
+							<th>WhatsApp</th>
+						</tr>
+					</thead>
+					<tbody id="rows"></tbody>
+				</table>
+			</div>
+		</main>
+
+		<script is:inline>
+			const eventSlugInput = document.getElementById('eventSlug');
+			const searchInput = document.getElementById('search');
+			const statusSelect = document.getElementById('status');
+			const refreshBtn = document.getElementById('refreshBtn');
+			const rowsEl = document.getElementById('rows');
+			const statsEl = document.getElementById('stats');
+			const csvLink = document.getElementById('csvLink');
+
+			const formatDate = (iso) => {
+				try {
+					return new Date(iso).toLocaleString('es-MX');
+				} catch {
+					return iso;
+				}
+			};
+
+			const renderStats = (totals) => {
+				statsEl.innerHTML = `
+					<div><strong>Total:</strong> ${totals.total}</div>
+					<div><strong>Confirmados:</strong> ${totals.confirmed}</div>
+					<div><strong>Declinados:</strong> ${totals.declined}</div>
+					<div><strong>Pendientes:</strong> ${totals.pending}</div>
+				`;
+			};
+
+			const renderRows = (items) => {
+				if (!items.length) {
+					rowsEl.innerHTML = '<tr><td colspan="7">Sin registros.</td></tr>';
+					return;
+				}
+
+				rowsEl.innerHTML = items
+					.map((row) => {
+						const action = row.lastChannelEvent?.action || '-';
+						const actionAt = row.lastChannelEvent?.occurredAt;
+						return `
+							<tr>
+								<td>${row.guestNameEntered}</td>
+								<td>${row.source}</td>
+								<td><span class="badge badge--${row.attendanceStatus}">${row.attendanceStatus}</span></td>
+								<td>${row.attendeeCount}</td>
+								<td>${row.isPotentialDuplicate ? 'Sí' : 'No'}</td>
+								<td>${formatDate(row.lastUpdatedAt)}</td>
+								<td>${action}${actionAt ? ` (${formatDate(actionAt)})` : ''}</td>
+							</tr>
+						`;
+					})
+					.join('');
+			};
+
+			const loadData = async () => {
+				const eventSlug = eventSlugInput.value.trim();
+				const search = searchInput.value.trim();
+				const status = statusSelect.value;
+				csvLink.href = `/api/rsvp/export.csv?eventSlug=${encodeURIComponent(eventSlug)}`;
+
+				if (!eventSlug) return;
+
+				const params = new URLSearchParams({
+					eventSlug,
+					status,
+					search,
+				});
+
+				const response = await fetch(`/api/rsvp/admin?${params.toString()}`);
+				const data = await response.json();
+				renderStats(data.totals || { total: 0, confirmed: 0, declined: 0, pending: 0 });
+				renderRows(data.items || []);
+			};
+
+			refreshBtn.addEventListener('click', loadData);
+			statusSelect.addEventListener('change', loadData);
+			loadData();
+		</script>
+	</body>
+</html>
