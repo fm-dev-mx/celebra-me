@@ -83,8 +83,11 @@ Legacy tables retained during transition:
 
 Registration policy:
 
-- host signup requires `eventSlug + claimCode`
+- host signup requires `claimCode` (global unique) + email
 - successful claim creates event membership for the new host account
+- backend compatibility: `eventSlug` is accepted as deprecated input but ignored for claim
+  resolution
+- lookup key is `event_claim_codes.code_key` (current implementation stores normalized hashed key)
 
 ### Guest API
 
@@ -111,4 +114,4 @@ contracts.
 - Dashboard source of truth is now Supabase (`guest_invitations`).
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
 - `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.
-- Host registration uses `eventSlug + claimCode` and creates event membership.
+- Host registration uses `claimCode` global único and creates event membership.

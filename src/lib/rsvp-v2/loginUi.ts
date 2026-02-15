@@ -8,7 +8,6 @@ export interface LoginFormState {
 }
 
 export interface RegisterFormState extends LoginFormState {
-	eventSlug: string;
 	claimCode: string;
 }
 
@@ -45,8 +44,8 @@ export function validateRegisterForm(input: RegisterFormState): string | null {
 	const loginError = validateLoginForm(input);
 	if (loginError) return loginError;
 
-	if (!normalize(input.eventSlug) || !normalize(input.claimCode)) {
-		return 'Completa eventSlug y claimCode para crear y vincular tu cuenta.';
+	if (!normalize(input.claimCode)) {
+		return 'Ingresa el claimCode para vincular tu cuenta al evento.';
 	}
 
 	return null;

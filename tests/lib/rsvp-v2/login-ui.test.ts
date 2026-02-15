@@ -35,10 +35,9 @@ describe('rsvp-v2 login UI helpers', () => {
 				method: 'password',
 				email: 'host@test.com',
 				password: 'Pass123!',
-				eventSlug: '',
 				claimCode: '',
 			}),
-		).toBe('Completa eventSlug y claimCode para crear y vincular tu cuenta.');
+		).toBe('Ingresa el claimCode para vincular tu cuenta al evento.');
 	});
 
 	it('returns clear helper text per auth method', () => {

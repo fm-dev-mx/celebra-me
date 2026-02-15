@@ -489,6 +489,39 @@ export async function findClaimCodeRecordService(input: {
 	};
 }
 
+export async function findClaimCodeRecordByKeyService(input: { codeKey: string }): Promise<{
+	id: string;
+	eventId: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+} | null> {
+	type ClaimRow = {
+		id: string;
+		event_id: string;
+		active: boolean;
+		expires_at: string | null;
+		max_uses: number;
+		used_count: number;
+	};
+
+	const rows = await supabaseRestRequest<ClaimRow[]>({
+		pathWithQuery: `event_claim_codes?select=id,event_id,active,expires_at,max_uses,used_count&code_key=eq.${encodeURIComponent(input.codeKey)}&limit=1`,
+		useServiceRole: true,
+	});
+
+	if (!rows[0]) return null;
+	return {
+		id: rows[0].id,
+		eventId: rows[0].event_id,
+		active: rows[0].active,
+		expiresAt: rows[0].expires_at,
+		maxUses: rows[0].max_uses,
+		usedCount: rows[0].used_count,
+	};
+}
+
 export async function incrementClaimCodeUsageService(
 	claimCodeId: string,
 	nextUsedCount: number,

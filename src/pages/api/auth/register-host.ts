@@ -4,7 +4,7 @@ import { errorResponse } from '@/lib/rsvp-v2/http';
 import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp-v2/authApi';
 import { buildSessionCookie } from '@/lib/rsvp-v2/cookies';
 import {
-	claimEventForUser,
+	claimEventForUserByClaimCode,
 	ensureUserRole,
 	generateTemporaryPassword,
 } from '@/lib/rsvp-v2/service';
@@ -25,16 +25,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 		};
 
 		const email = sanitize(body.email, 320).toLowerCase();
-		const eventSlug = sanitize(body.eventSlug, 120);
+		void sanitize(body.eventSlug, 120);
 		const claimCode = sanitize(body.claimCode, 256);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
 
-		if (!email || !eventSlug || !claimCode) {
-			throw new ApiError(
-				400,
-				'bad_request',
-				'email, eventSlug y claimCode son obligatorios.',
-			);
+		if (!email || !claimCode) {
+			throw new ApiError(400, 'bad_request', 'email y claimCode son obligatorios.');
 		}
 
 		const chosenPassword =
@@ -72,9 +68,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(409, 'conflict', 'No se pudo resolver el usuario para el registro.');
 		}
 
-		await claimEventForUser({
+		await claimEventForUserByClaimCode({
 			userId,
-			eventSlug,
 			claimCode,
 		});
 		await ensureUserRole({

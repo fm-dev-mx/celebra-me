@@ -3,7 +3,11 @@ import { POST as registerHost } from '@/pages/api/auth/register-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
 import * as authApi from '@/lib/rsvp-v2/authApi';
-import { buildAuthSessionDto, claimEventForUser, ensureUserRole } from '@/lib/rsvp-v2/service';
+import {
+	buildAuthSessionDto,
+	claimEventForUserByClaimCode,
+	ensureUserRole,
+} from '@/lib/rsvp-v2/service';
 import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
 import { createMockRequest } from './rsvp.helpers';
 
@@ -16,7 +20,7 @@ jest.mock('@/lib/rsvp-v2/authApi', () => ({
 
 jest.mock('@/lib/rsvp-v2/service', () => ({
 	buildAuthSessionDto: jest.fn(),
-	claimEventForUser: jest.fn(),
+	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
 	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 }));
@@ -35,8 +39,8 @@ describe('auth endpoints', () => {
 	const sendMagicLinkMock = authApi.sendMagicLink as jest.MockedFunction<
 		typeof authApi.sendMagicLink
 	>;
-	const claimEventForUserMock = claimEventForUser as jest.MockedFunction<
-		typeof claimEventForUser
+	const claimEventForUserByClaimCodeMock = claimEventForUserByClaimCode as jest.MockedFunction<
+		typeof claimEventForUserByClaimCode
 	>;
 	const ensureUserRoleMock = ensureUserRole as jest.MockedFunction<typeof ensureUserRole>;
 	const getHostSessionFromRequestMock = getHostSessionFromRequest as jest.MockedFunction<
@@ -83,7 +87,7 @@ describe('auth endpoints', () => {
 			access_token: 'token-xyz',
 			user: { id: 'u-register', email: 'client@test.com' },
 		});
-		claimEventForUserMock.mockResolvedValue({
+		claimEventForUserByClaimCodeMock.mockResolvedValue({
 			eventId: 'evt-1',
 			membershipRole: 'owner',
 		});
@@ -94,13 +98,50 @@ describe('auth endpoints', () => {
 				method: 'password',
 				email: 'client@test.com',
 				password: 'Pass123!',
-				eventSlug: 'demo',
 				claimCode: 'CLAIM123',
 			}),
 			url: new URL('http://localhost/api/auth/register-host'),
 		} as never);
 		expect(response.status).toBe(200);
 		expect(response.headers.get('set-cookie')).toContain('sb-access-token=');
+	});
+
+	it('register-host keeps backward compatibility when eventSlug is sent', async () => {
+		signUpWithPasswordMock.mockResolvedValue({
+			access_token: 'token-legacy',
+			user: { id: 'u-legacy', email: 'legacy@test.com' },
+		});
+		claimEventForUserByClaimCodeMock.mockResolvedValue({
+			eventId: 'evt-legacy',
+			membershipRole: 'owner',
+		});
+		ensureUserRoleMock.mockResolvedValue('host_client');
+
+		const response = await registerHost({
+			request: createMockRequest({
+				method: 'password',
+				email: 'legacy@test.com',
+				password: 'Pass123!',
+				eventSlug: 'demo-event',
+				claimCode: 'CLAIM123',
+			}),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as never);
+
+		expect(response.status).toBe(200);
+	});
+
+	it('register-host returns bad_request when claimCode is missing', async () => {
+		const response = await registerHost({
+			request: createMockRequest({
+				method: 'password',
+				email: 'missing@test.com',
+				password: 'Pass123!',
+			}),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as never);
+
+		expect(response.status).toBe(400);
 	});
 
 	it('session endpoint returns unauthorized when session is missing', async () => {

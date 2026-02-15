@@ -4,7 +4,6 @@ import {
 	deleteGuestById,
 	findEventById,
 	findEventByIdService,
-	findEventBySlugService,
 	findEventByInvitationPublic,
 	findEventsForHost,
 	findGuestsByEvent,
@@ -17,7 +16,7 @@ import {
 	incrementClaimCodeUsageService,
 	listMembershipsForHost,
 	upsertUserRoleService,
-	findClaimCodeRecordService,
+	findClaimCodeRecordByKeyService,
 	updateGuestById,
 	updateGuestByInviteIdPublic,
 } from './repository';
@@ -467,8 +466,12 @@ export async function resolveLegacyTokenToCanonicalUrl(input: {
 function hashClaimCode(rawCode: string): string {
 	const pepper = getEnv('RSVP_CLAIM_CODE_PEPPER') || 'default-pepper';
 	return createHash('sha256')
-		.update(`${pepper}:${sanitize(rawCode, 256)}`)
+		.update(`${pepper}:${normalizeClaimCode(rawCode)}`)
 		.digest('hex');
+}
+
+export function normalizeClaimCode(rawCode: string): string {
+	return sanitize(rawCode, 256).toLowerCase();
 }
 
 export function isSuperAdminEmail(email: string): boolean {
@@ -502,12 +505,19 @@ export async function claimEventForUser(input: {
 	eventSlug: string;
 	claimCode: string;
 }): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
-	const event = await findEventBySlugService(sanitize(input.eventSlug, 120));
-	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	void sanitize(input.eventSlug, 120);
+	return claimEventForUserByClaimCode({
+		userId: input.userId,
+		claimCode: input.claimCode,
+	});
+}
 
-	const claim = await findClaimCodeRecordService({
-		eventId: event.id,
-		codeHash: hashClaimCode(input.claimCode),
+export async function claimEventForUserByClaimCode(input: {
+	userId: string;
+	claimCode: string;
+}): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
+	const claim = await findClaimCodeRecordByKeyService({
+		codeKey: hashClaimCode(input.claimCode),
 	});
 	if (!claim || !claim.active) {
 		throw new ApiError(403, 'forbidden', 'Claim code invalido.');
@@ -520,13 +530,13 @@ export async function claimEventForUser(input: {
 	}
 
 	await createEventMembershipService({
-		eventId: event.id,
+		eventId: claim.eventId,
 		userId: input.userId,
 		membershipRole: 'owner',
 	});
 	await incrementClaimCodeUsageService(claim.id, claim.usedCount + 1);
 	return {
-		eventId: event.id,
+		eventId: claim.eventId,
 		membershipRole: 'owner',
 	};
 }

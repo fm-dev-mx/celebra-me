@@ -132,18 +132,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 					</div>
 
 					<div class="auth-field">
-						<label for="register-event-slug">eventSlug</label>
-						<input
-							id="register-event-slug"
-							name="eventSlug"
-							type="text"
-							placeholder="mi-evento-2026"
-						/>
-						<p class="auth-hint">Ejemplo: boda-lucia-jorge-2026</p>
-						<p id="register-event-slug-error" class="field-error" aria-live="polite"></p>
-					</div>
-
-					<div class="auth-field">
 						<label for="register-claim-code">claimCode</label>
 						<input
 							id="register-claim-code"
@@ -151,7 +139,9 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 							type="text"
 							placeholder="Ejemplo: CLAIM-2026"
 						/>
-						<p class="auth-hint">Este codigo te lo comparte el equipo de Celebra.me.</p>
+						<p class="auth-hint">
+							Este codigo identifica tu evento y te lo comparte el equipo de Celebra.me.
+						</p>
 						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
 					</div>
 
@@ -316,9 +306,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 				);
 				return 'Ingresa tu contrasena para continuar con este metodo.';
 			}
-			if (!payload.eventSlug.trim()) {
-				setFieldError('register-event-slug', 'Indica el eventSlug del evento que vas a gestionar.');
-			}
 			if (!payload.claimCode.trim()) {
 				setFieldError(
 					'register-claim-code',
@@ -393,14 +380,12 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 
 				const emailEl = document.getElementById('register-email') as HTMLInputElement | null;
 				const passwordEl = document.getElementById('register-password') as HTMLInputElement | null;
-				const eventSlugEl = document.getElementById('register-event-slug') as HTMLInputElement | null;
 				const claimCodeEl = document.getElementById('register-claim-code') as HTMLInputElement | null;
 
 				const payload = {
 					method: registerMethod?.value || 'password',
 					email: emailEl?.value || '',
 					password: passwordEl?.value || '',
-					eventSlug: eventSlugEl?.value || '',
 					claimCode: claimCodeEl?.value || '',
 				};
 				const validationError = validateRegisterClient(payload);
@@ -447,4 +432,3 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 		setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
 	</script>
 </Layout>
-
