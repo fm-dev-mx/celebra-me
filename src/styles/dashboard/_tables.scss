@@ -1,0 +1,28 @@
+.dashboard-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.92rem;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+	padding: 0.62rem;
+	text-align: left;
+	border-bottom: 1px solid rgb(var(--color-surface-dark-rgb), 0.12);
+}
+
+.dashboard-table th {
+	font-size: 0.75rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: rgb(var(--color-surface-dark-rgb), 0.75);
+}
+
+.dashboard-badge {
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	background: rgb(var(--color-action-accent-rgb), 0.17);
+	color: var(--color-action-primary);
+}

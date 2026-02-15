@@ -1,0 +1,64 @@
+---
+import '@/styles/global.scss';
+import '@/styles/dashboard/_shell.scss';
+import '@/styles/dashboard/_tables.scss';
+import '@/styles/dashboard/_forms.scss';
+import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
+import DashboardTopbar from '@/components/dashboard/shell/DashboardTopbar.astro';
+import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
+import { toDisplayRole } from '@/lib/rsvp-v2/roles';
+import type { DashboardNavItem } from '@/lib/rsvp-v2/types';
+
+interface Crumb {
+	label: string;
+	href?: string;
+}
+
+interface Props {
+	title: string;
+	breadcrumbs?: Crumb[];
+}
+
+const { title, breadcrumbs = [] } = Astro.props as Props;
+const session = await getSessionContextFromRequest(Astro.request);
+if (!session) {
+	return Astro.redirect(`/login?next=${encodeURIComponent(Astro.url.pathname)}`);
+}
+
+const navItems: DashboardNavItem[] = [
+	{ label: 'Invitados', href: '/dashboard/invitados' },
+	{ label: 'Admin', href: '/dashboard/admin', adminOnly: true },
+	{ label: 'Claim Codes', href: '/dashboard/claimcodes', adminOnly: true },
+	{ label: 'Eventos', href: '/dashboard/eventos', adminOnly: true },
+	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
+];
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>{title}</title>
+	</head>
+	<body class="theme-preset--jewelry-box dashboard-shell-body">
+		<div class="dashboard-shell">
+			<DashboardSidebar
+				items={navItems}
+				currentPath={Astro.url.pathname}
+				isAdmin={session.isSuperAdmin}
+			/>
+			<div class="dashboard-shell__content">
+				<DashboardTopbar
+					title={title}
+					breadcrumbs={breadcrumbs}
+					userEmail={session.email}
+					roleLabel={toDisplayRole(session.role)}
+				/>
+				<main class="dashboard-main">
+					<slot />
+				</main>
+			</div>
+		</div>
+	</body>
+</html>

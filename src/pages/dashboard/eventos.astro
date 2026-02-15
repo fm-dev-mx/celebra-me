@@ -1,0 +1,14 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import EventsAdminTable from '@/components/dashboard/events/EventsAdminTable';
+---
+
+<DashboardLayout
+	title="Eventos Globales"
+	breadcrumbs={[
+		{ label: 'Dashboard', href: '/dashboard/admin' },
+		{ label: 'Eventos' },
+	]}
+>
+	<EventsAdminTable client:load />
+</DashboardLayout>

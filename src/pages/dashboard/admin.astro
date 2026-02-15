@@ -1,0 +1,18 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout
+	title="Panel de Administración"
+	breadcrumbs={[
+		{ label: 'Dashboard', href: '/dashboard/admin' },
+		{ label: 'Admin' },
+	]}
+>
+	<section class="dashboard-card">
+		<h2>Administración Global</h2>
+		<p>
+			Usa la navegación lateral para gestionar claim codes, eventos y usuarios.
+		</p>
+	</section>
+</DashboardLayout>

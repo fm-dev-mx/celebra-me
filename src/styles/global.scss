@@ -8,6 +8,9 @@
 @use 'home/footer';
 @use 'components/icons';
 @use 'components/logo';
+@use 'dashboard/shell';
+@use 'dashboard/tables';
+@use 'dashboard/forms';
 @use 'invitation/envelope-reveal';
 @use 'tokens' as tokens;
 @use 'themes/presets/all';

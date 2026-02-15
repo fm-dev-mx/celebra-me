@@ -1,0 +1,39 @@
+---
+import type { DashboardNavItem } from '@/lib/rsvp-v2/types';
+
+interface Props {
+	items: DashboardNavItem[];
+	currentPath: string;
+	isAdmin: boolean;
+}
+
+const { items, currentPath, isAdmin } = Astro.props as Props;
+const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
+---
+
+<aside class="dashboard-sidebar" aria-label="Navegación de dashboard">
+	<div class="dashboard-sidebar__brand">
+		<a href="/dashboard/invitados">Celebra.me Panel</a>
+	</div>
+	<nav>
+		<ul>
+			{
+				visibleItems.map((item) => (
+					<li>
+						<a
+							href={item.href}
+							class:list={{
+								active:
+									currentPath === item.href ||
+									(item.href !== '/dashboard/invitados' &&
+										currentPath.startsWith(`${item.href}/`)),
+							}}
+						>
+							{item.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+</aside>
