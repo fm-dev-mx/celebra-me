@@ -48,6 +48,13 @@ Create a new migration:
 pnpm db:migrate:new <migration_name>
 ```
 
+Remote runbook helper (PowerShell):
+
+```powershell
+pwsh -File scripts/rsvp-db-remote-runbook.ps1
+# optional: pwsh -File scripts/rsvp-db-remote-runbook.ps1 -ProjectRef <project_ref>
+```
+
 ## Staging / Production workflow
 
 1. Ensure remote project is linked (`npx supabase link --project-ref <ref>`).
@@ -63,6 +70,10 @@ pnpm db:push
 - submit declined RSVP
 - admin list and CSV export
 - channel telemetry event
+
+SQL verification queries:
+
+- `supabase/verification/rsvp_schema_checks.sql`
 
 ## Data model notes
 

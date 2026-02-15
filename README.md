@@ -203,6 +203,12 @@ pnpm db:migrate:new <migration_name>
 
 Operational guide: [`docs/DB_RSVP.md`](docs/DB_RSVP.md)
 
+Remote runbook helper:
+
+```powershell
+pwsh -File scripts/rsvp-db-remote-runbook.ps1
+```
+
 ---
 
 ## Documentation
