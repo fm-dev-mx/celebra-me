@@ -60,5 +60,10 @@ module.exports = {
 			}
 		: {}),
 	// Ignore patterns
-	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.vercel/'],
+	testPathIgnorePatterns: [
+		'/node_modules/',
+		'/dist/',
+		'/.vercel/',
+		'/tests/e2e/',
+	],
 };
