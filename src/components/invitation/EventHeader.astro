@@ -9,7 +9,6 @@
 
 import HeaderBase from '@components/common/HeaderBase.astro';
 import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
-import {navigation} from '@content/events/demo-xv.json';
 import '@styles/invitation/_event-header.scss';
 
 export interface Props {
@@ -19,7 +18,7 @@ export interface Props {
         accentColor?: string;
         fontDisplay?: string;
     };
-    links?: {
+    links: { // Made required to enforce passing data
         label: string;
         href: string
     }[];
@@ -27,8 +26,8 @@ export interface Props {
 }
 
 const {
-    eventName = 'Boda de Ale & Fer',
-    links = navigation,
+    eventName = 'Mi Evento', // Generic default
+    links = [],
     variant = 'standard'
 } = Astro.props;
 

@@ -1,26 +1,17 @@
 import type { APIRoute } from 'astro';
+import { z } from 'zod';
 import { sendEmail } from '@/utils/email';
+import { successResponse, errorResponse, validateBody } from '@/utils/api-utils';
+
+const contactSchema = z.object({
+	name: z.string().min(6, 'El nombre es obligatorio'),
+	email: z.string().email('El formato del correo electrónico no es válido'),
+	message: z.string().min(10, 'El mensaje es obligatorio'),
+});
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		const data = await request.json();
-		const { name, email, message } = data;
-
-		// Validation
-		if (!name || !email || !message) {
-			return new Response(JSON.stringify({ message: 'Todos los campos son obligatorios' }), {
-				status: 400,
-			});
-		}
-
-		// Basic email validation
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if (!emailRegex.test(email)) {
-			return new Response(
-				JSON.stringify({ message: 'El formato del correo electrónico no es válido' }),
-				{ status: 400 },
-			);
-		}
+		const { name, email, message } = await validateBody(request, contactSchema);
 
 		// Process email sending
 		const success = await sendEmail({
@@ -31,18 +22,15 @@ export const POST: APIRoute = async ({ request }) => {
 		});
 
 		if (success) {
-			return new Response(JSON.stringify({ message: 'Mensaje enviado con éxito' }), {
-				status: 200,
-			});
+			return successResponse({ message: 'Mensaje enviado con éxito' });
 		} else {
-			return new Response(JSON.stringify({ message: 'Error al enviar el correo' }), {
-				status: 500,
-			});
+			return errorResponse('Error al enviar el correo', { status: 500 });
 		}
 	} catch (error) {
 		console.error('API Error:', error);
-		return new Response(JSON.stringify({ message: 'Error interno del servidor' }), {
-			status: 500,
-		});
+		if (error instanceof Error && error.message.includes('Validación fallida')) {
+			return errorResponse(error.message, { status: 400, error });
+		}
+		return errorResponse('Error interno del servidor', { error });
 	}
 };

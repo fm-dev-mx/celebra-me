@@ -139,7 +139,7 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 		<EventHeader
 			eventName={hero.name}
 			theme={viewModel.theme}
-			links={navigation}
+			links={navigation || []}
 			variant={theme.preset}
 		/>
 
