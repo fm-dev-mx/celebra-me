@@ -8,35 +8,9 @@ import {
 	clearMfaRefreshCookie,
 	clearMfaSessionCookie,
 } from '@/lib/rsvp-v2/cookies';
+import { hasMfaEvidence } from '@/lib/rsvp-v2/authMfaEvidence';
 import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp-v2/authSecurity';
 import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp-v2/auth';
-
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-	const parts = token.split('.');
-	if (parts.length < 2) return null;
-	try {
-		const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-		const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-		const json = Buffer.from(padded, 'base64').toString('utf8');
-		return JSON.parse(json) as Record<string, unknown>;
-	} catch {
-		return null;
-	}
-}
-
-function hasMfaEvidence(input: { token: string; amr?: Array<{ method?: string }> }): boolean {
-	const hasMfaMethod = (input.amr || []).some(
-		(item) =>
-			item?.method === 'mfa' ||
-			item?.method === 'totp' ||
-			item?.method === 'otp' ||
-			item?.method === 'phone',
-	);
-	if (hasMfaMethod) return true;
-
-	const payload = decodeJwtPayload(input.token);
-	return payload?.aal === 'aal2';
-}
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {

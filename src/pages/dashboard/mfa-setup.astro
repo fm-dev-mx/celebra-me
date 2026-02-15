@@ -74,7 +74,11 @@ import '@styles/auth/_login.scss';
 			text-align: center;
 		}
 
-
+		.qr-placeholder--continue {
+			background: #f8f6ef;
+			border: 1px solid rgba(212, 175, 55, 0.45);
+			min-height: 200px;
+		}
 
 		.loader {
 			border: 3px solid #f3f3f3;
@@ -96,8 +100,6 @@ import '@styles/auth/_login.scss';
 		import { createClient } from '@supabase/supabase-js';
 		import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp-v2/mfaSetup';
 
-		type MfaMode = 'enroll' | 'verify-existing';
-
 		const appEl = document.getElementById('mfa-app');
 		const qrContainer = document.getElementById('qr-container');
 		const verifyBtn = document.getElementById('verify-mfa') as HTMLButtonElement | null;
@@ -111,11 +113,7 @@ import '@styles/auth/_login.scss';
 		const key = appEl?.dataset.key;
 
 		let supabase: ReturnType<typeof createClient> | null = null;
-		let mfaMode: MfaMode = 'enroll';
 		let factorId = '';
-		const isDebugMode =
-			typeof window !== 'undefined' &&
-			(window.location.hostname === 'localhost' || window.location.search.includes('mfaDebug=1'));
 
 		function getCookie(name: string) {
 			const value = `; ${document.cookie}`;
@@ -128,11 +126,6 @@ import '@styles/auth/_login.scss';
 			if (!statusEl) return;
 			statusEl.textContent = message;
 			statusEl.dataset.tone = tone;
-		}
-
-		function debugLog(step: string, details?: Record<string, unknown>) {
-			if (!isDebugMode) return;
-			console.info(`[MFA DEBUG] ${step}`, details || {});
 		}
 
 		function renderVerifyExistingUI() {
@@ -207,12 +200,6 @@ import '@styles/auth/_login.scss';
 				access_token: accessToken,
 				refresh_token: refreshToken,
 			});
-			debugLog('setSession', {
-				ok: !error,
-				hasAccessCookie: Boolean(accessToken),
-				hasRefreshCookie: Boolean(refreshToken),
-				error: error?.message || null,
-			});
 
 			if (error) {
 				setStatus('No fue posible recuperar la sesión de seguridad. Inicia sesión de nuevo.', 'error');
@@ -230,18 +217,10 @@ import '@styles/auth/_login.scss';
 			const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
 			if (factorsError) throw factorsError;
 			const allFactors = factors?.all || [];
-			debugLog('listFactors', {
-				all: allFactors.length,
-				verifiedTotp: allFactors.filter((item) => item.status === 'verified' && item.factor_type === 'totp')
-					.length,
-				unverified: allFactors.filter((item) => item.status === 'unverified').length,
-			});
 
 			const verifiedFactor = pickLatestVerifiedTotpFactor(allFactors as any[]);
 			if (verifiedFactor?.id) {
-				mfaMode = 'verify-existing';
 				factorId = verifiedFactor.id;
-				debugLog('selectedFactor', { mode: mfaMode, factorId });
 				renderVerifyExistingUI();
 				return;
 			}
@@ -257,9 +236,7 @@ import '@styles/auth/_login.scss';
 				throw new Error('No se pudo preparar el factor MFA.');
 			}
 
-			mfaMode = 'enroll';
 			factorId = enrollData.id;
-			debugLog('selectedFactor', { mode: mfaMode, factorId });
 			renderEnrollUI(enrollData.totp.qr_code);
 		}
 
@@ -272,6 +249,8 @@ import '@styles/auth/_login.scss';
 			}
 
 			if (!supabase) return;
+			verifyBtn.disabled = true;
+			setStatus('Verificando código...', 'info');
 
 			try {
 				const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
@@ -279,7 +258,6 @@ import '@styles/auth/_login.scss';
 					code,
 				});
 				if (verifyError) throw verifyError;
-				debugLog('challengeAndVerify', { ok: true, mode: mfaMode, factorId });
 
 				const {
 					data: { session: elevatedSession },
@@ -287,11 +265,6 @@ import '@styles/auth/_login.scss';
 				if (!elevatedSession?.access_token) {
 					throw new Error('No se obtuvo sesión MFA elevada.');
 				}
-				debugLog('getSessionAfterVerify', {
-					ok: true,
-					hasAccessToken: Boolean(elevatedSession?.access_token),
-					hasRefreshToken: Boolean(elevatedSession?.refresh_token),
-				});
 
 				const syncResponse = await fetch('/api/auth/sync-session', {
 					method: 'POST',
@@ -301,7 +274,6 @@ import '@styles/auth/_login.scss';
 						refreshToken: elevatedSession.refresh_token,
 					}),
 				});
-				debugLog('syncSession', { status: syncResponse.status, ok: syncResponse.ok });
 				if (!syncResponse.ok) {
 					throw new Error('No se pudo sincronizar la sesión segura.');
 				}
@@ -311,14 +283,6 @@ import '@styles/auth/_login.scss';
 					window.location.replace('/dashboard/invitados');
 				}, 250);
 			} catch (error) {
-				const mfaError = error as { message?: string; code?: string; status?: number };
-				debugLog('verifyError', {
-					mode: mfaMode,
-					factorId,
-					message: mfaError?.message || null,
-					code: mfaError?.code || null,
-					status: mfaError?.status || null,
-				});
 				const errorType = classifyMfaError(error);
 				if (errorType === 'session_expired') {
 					setStatus('Tu sesión de verificación expiró. Inicia sesión de nuevo.', 'error');
