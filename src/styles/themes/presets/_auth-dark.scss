@@ -1,0 +1,36 @@
+.theme-preset--auth-dark {
+	--auth-bg: var(--color-surface-primary);
+	--auth-surface-card: linear-gradient(165deg, #211a14 0%, #2a2119 100%);
+	--auth-border: rgb(233 206 170 / 19%);
+	--auth-shadow-card: 0 18px 44px rgb(4 3 2 / 60%), 0 2px 8px rgb(4 3 2 / 45%);
+	--auth-text-strong: #f4ece2;
+	--auth-text-heading: #f9efe2;
+	--auth-text-body: #d6c1a6;
+	--auth-text-muted: #c4ac90;
+	--auth-link-color: #e3c9a8;
+	--auth-label-color: #f2dfca;
+	--auth-tabs-bg: #17120e;
+	--auth-tabs-border: rgb(225 197 158 / 22%);
+	--auth-tab-text: #c7ae92;
+	--auth-tab-active-bg: #f0d7b7;
+	--auth-tab-active-text: #2a1e13;
+	--auth-tab-active-shadow: 0 4px 10px rgb(10 8 5 / 35%);
+	--auth-input-bg: #15110d;
+	--auth-input-border: rgb(227 197 160 / 27%);
+	--auth-input-text: #f9efe2;
+	--auth-button-bg: linear-gradient(140deg, #f1d8b7 0%, #d4b086 100%);
+	--auth-button-text: #1f150e;
+	--auth-button-shadow: 0 8px 20px rgb(6 5 3 / 45%);
+	--auth-button-shadow-hover: 0 12px 24px rgb(6 5 3 / 58%);
+	--auth-focus-ring: #f1d8b7;
+	--auth-error: #b42318;
+	--auth-status-info-text: #dcc3a4;
+	--auth-status-info-bg: #18130f;
+	--auth-status-info-border: rgb(225 197 158 / 24%);
+	--auth-status-success-text: #065f46;
+	--auth-status-success-bg: #ecfdf5;
+	--auth-status-success-border: #a7f3d0;
+	--auth-status-error-text: #991b1b;
+	--auth-status-error-bg: #fef2f2;
+	--auth-status-error-border: #fecaca;
+}

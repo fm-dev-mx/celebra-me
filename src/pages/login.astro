@@ -1,222 +1,450 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { resolveNextPath } from '@/lib/rsvp-v2/login';
+import '@styles/auth/_login.scss';
 
 const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
 ---
 
-<Layout title="Acceso de anfitrión" description="Inicia sesión para administrar invitados RSVP">
-	<main class="auth-shell">
-		<h1>Acceso de anfitrion</h1>
-		<p class="auth-note">
-			Ingresa con tu cuenta o crea una nueva con <code>eventSlug + claimCode</code>.
-		</p>
+<Layout
+	title="Acceso de anfitrion"
+	description="Inicia sesion para administrar invitados RSVP"
+	hideHeader={true}
+	className="theme-preset--auth-dark"
+>
+	<section class="auth-shell" data-next={next} data-variant="dark">
+		<header class="auth-local-header">
+			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra.me">
+				<span class="auth-brand__name">Celebra.me</span>
+				<span class="auth-brand__caption">Panel de anfitrion</span>
+			</a>
+			<a class="auth-back-link" href="/">Volver al inicio</a>
+		</header>
 
-		<div class="auth-tabs">
-			<button id="tab-login" class="active" type="button">Iniciar sesion</button>
-			<button id="tab-register" type="button">Crear cuenta cliente</button>
-		</div>
+		<article class="auth-card" aria-labelledby="auth-title">
+			<div class="auth-copy">
+				<p class="auth-kicker">Acceso seguro para anfitriones</p>
+				<h1 id="auth-title">Accede a tu panel</h1>
+				<p>
+					Gestiona invitados, confirma asistencias y mantente al dia con tu evento en un
+					solo lugar.
+				</p>
+			</div>
 
-		<section id="panel-login" class="auth-panel">
-			<label>
-				Metodo
-				<select id="login-method">
-					<option value="password">Email + password</option>
-					<option value="magic_link">Magic Link</option>
-				</select>
-			</label>
-			<label>
-				Email
-				<input id="login-email" type="email" autocomplete="email" />
-			</label>
-			<label id="login-password-wrap">
-				Password
-				<input id="login-password" type="password" autocomplete="current-password" />
-			</label>
-			<button id="login-submit" type="button">Continuar</button>
-		</section>
+			<div class="auth-tabs" role="tablist" aria-label="Opciones de autenticacion">
+				<button
+					id="tab-login"
+					class="is-active"
+					type="button"
+					role="tab"
+					aria-selected="true"
+					aria-controls="panel-login"
+				>
+					Ya tengo cuenta
+				</button>
+				<button
+					id="tab-register"
+					type="button"
+					role="tab"
+					aria-selected="false"
+					aria-controls="panel-register"
+				>
+					Soy cliente nuevo
+				</button>
+			</div>
 
-		<section id="panel-register" class="auth-panel auth-panel--hidden">
-			<label>
-				Metodo
-				<select id="register-method">
-					<option value="password">Email + password</option>
-					<option value="magic_link">Magic Link</option>
-				</select>
-			</label>
-			<label>
-				Email
-				<input id="register-email" type="email" autocomplete="email" />
-			</label>
-			<label id="register-password-wrap">
-				Password
-				<input id="register-password" type="password" autocomplete="new-password" />
-			</label>
-			<label>
-				eventSlug
-				<input id="register-event-slug" type="text" placeholder="mi-evento-2026" />
-			</label>
-			<label>
-				claimCode
-				<input id="register-claim-code" type="text" />
-			</label>
-			<button id="register-submit" type="button">Registrar y reclamar evento</button>
-		</section>
+			<section id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login">
+				<form id="login-form" class="auth-form" novalidate>
+					<div class="auth-field">
+						<label for="login-method">Como quieres entrar</label>
+						<select id="login-method" name="method">
+							<option value="password">Email + contrasena</option>
+							<option value="magic_link">Magic Link</option>
+						</select>
+						<p id="login-method-help" class="auth-hint" aria-live="polite"></p>
+					</div>
 
-		<p id="auth-status" class="auth-status"></p>
+					<div class="auth-field">
+						<label for="login-email">Correo electronico</label>
+						<input
+							id="login-email"
+							name="email"
+							type="email"
+							autocomplete="email"
+							placeholder="tu-correo@ejemplo.com"
+						/>
+						<p id="login-email-error" class="field-error" aria-live="polite"></p>
+					</div>
 
-		<hr />
-		<p class="auth-note">
-			Panel admin legado temporal: <code>/admin/rsvp</code> (Basic Auth).
-		</p>
-	</main>
+					<div id="login-password-wrap" class="auth-field">
+						<label for="login-password">Contrasena</label>
+						<input
+							id="login-password"
+							name="password"
+							type="password"
+							autocomplete="current-password"
+						/>
+						<p id="login-password-error" class="field-error" aria-live="polite"></p>
+					</div>
 
-	<style>
-		.auth-shell {
-			max-width: 760px;
-			margin: 2rem auto;
-			padding: 1rem;
-			display: grid;
-			gap: 0.8rem;
-		}
-		.auth-tabs {
-			display: flex;
-			gap: 0.6rem;
-		}
-		.auth-tabs button {
-			border: 1px solid #d5d5d5;
-			background: #f5f5f5;
-			padding: 0.55rem 0.8rem;
-			border-radius: 0.5rem;
-			cursor: pointer;
-		}
-		.auth-tabs button.active {
-			background: #1f2937;
-			color: white;
-			border-color: #1f2937;
-		}
-		.auth-panel {
-			display: grid;
-			gap: 0.6rem;
-			padding: 0.8rem;
-			border: 1px solid #e5e7eb;
-			border-radius: 0.5rem;
-		}
-		.auth-panel--hidden {
-			display: none;
-		}
-		.auth-panel label {
-			display: grid;
-			gap: 0.25rem;
-			font-size: 0.94rem;
-		}
-		.auth-panel input,
-		.auth-panel select {
-			padding: 0.55rem 0.65rem;
-			border: 1px solid #d1d5db;
-			border-radius: 0.4rem;
-		}
-		.auth-panel button {
-			padding: 0.65rem 0.8rem;
-			background: #111827;
-			color: white;
-			border: none;
-			border-radius: 0.4rem;
-			cursor: pointer;
-		}
-		.auth-status {
-			min-height: 1.2rem;
-		}
-		.auth-note {
-			color: #4b5563;
-		}
-	</style>
+					<button id="login-submit" type="submit" class="auth-submit">Continuar</button>
+				</form>
+			</section>
 
-	<script is:inline define:vars={{ next }}>
+			<section
+				id="panel-register"
+				class="auth-panel auth-panel--hidden"
+				role="tabpanel"
+				aria-labelledby="tab-register"
+				hidden
+			>
+				<form id="register-form" class="auth-form" novalidate>
+					<div class="auth-field">
+						<label for="register-method">Como quieres entrar</label>
+						<select id="register-method" name="method">
+							<option value="password">Email + contrasena</option>
+							<option value="magic_link">Magic Link</option>
+						</select>
+						<p id="register-method-help" class="auth-hint" aria-live="polite"></p>
+					</div>
+
+					<div class="auth-field">
+						<label for="register-email">Correo electronico</label>
+						<input
+							id="register-email"
+							name="email"
+							type="email"
+							autocomplete="email"
+							placeholder="tu-correo@ejemplo.com"
+						/>
+						<p id="register-email-error" class="field-error" aria-live="polite"></p>
+					</div>
+
+					<div id="register-password-wrap" class="auth-field">
+						<label for="register-password">Contrasena</label>
+						<input
+							id="register-password"
+							name="password"
+							type="password"
+							autocomplete="new-password"
+						/>
+						<p id="register-password-error" class="field-error" aria-live="polite"></p>
+					</div>
+
+					<div class="auth-field">
+						<label for="register-event-slug">eventSlug</label>
+						<input
+							id="register-event-slug"
+							name="eventSlug"
+							type="text"
+							placeholder="mi-evento-2026"
+						/>
+						<p class="auth-hint">Ejemplo: boda-lucia-jorge-2026</p>
+						<p id="register-event-slug-error" class="field-error" aria-live="polite"></p>
+					</div>
+
+					<div class="auth-field">
+						<label for="register-claim-code">claimCode</label>
+						<input
+							id="register-claim-code"
+							name="claimCode"
+							type="text"
+							placeholder="Ejemplo: CLAIM-2026"
+						/>
+						<p class="auth-hint">Este codigo te lo comparte el equipo de Celebra.me.</p>
+						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
+					</div>
+
+					<button id="register-submit" type="submit" class="auth-submit">
+						Crear cuenta y reclamar evento
+					</button>
+				</form>
+			</section>
+
+			<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
+
+			<p class="auth-note">
+				Panel admin legado temporal: <code>/admin/rsvp</code> (Basic Auth).
+			</p>
+		</article>
+	</section>
+
+	<script>
+		import {
+			getMethodHelpText,
+			isValidEmail,
+			validateLoginForm,
+			validateRegisterForm,
+		} from '../lib/rsvp-v2/loginUi';
+
+		const statusEl = document.getElementById('auth-status');
+		const shellEl = document.querySelector('.auth-shell') as HTMLElement | null;
+		const nextPath = shellEl?.dataset.next || '';
 		const tabLogin = document.getElementById('tab-login');
 		const tabRegister = document.getElementById('tab-register');
 		const panelLogin = document.getElementById('panel-login');
 		const panelRegister = document.getElementById('panel-register');
-		const statusEl = document.getElementById('auth-status');
-
-		const loginMethod = document.getElementById('login-method');
+		const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
+		const registerForm = document.getElementById('register-form') as HTMLFormElement | null;
+		const loginMethod = document.getElementById('login-method') as HTMLSelectElement | null;
+		const registerMethod = document.getElementById('register-method') as HTMLSelectElement | null;
+		const loginMethodHelp = document.getElementById('login-method-help');
+		const registerMethodHelp = document.getElementById('register-method-help');
 		const loginPasswordWrap = document.getElementById('login-password-wrap');
-		const registerMethod = document.getElementById('register-method');
 		const registerPasswordWrap = document.getElementById('register-password-wrap');
+		const loginSubmit = document.getElementById('login-submit');
+		const registerSubmit = document.getElementById('register-submit');
 
-		const setStatus = (message, isError = false) => {
+		let activePanel: 'login' | 'register' = 'login';
+		let isSubmitting = false;
+
+		const setStatus = (message: string, tone = 'info', shouldFocus = false) => {
+			if (!statusEl) return;
 			statusEl.textContent = message || '';
-			statusEl.style.color = isError ? '#b91c1c' : '#065f46';
+			(statusEl as HTMLElement).dataset.tone = message ? tone : '';
+			if (shouldFocus && message) {
+				(statusEl as HTMLElement).focus();
+			}
 		};
 
-		const switchTab = (isLogin) => {
-			tabLogin.classList.toggle('active', isLogin);
-			tabRegister.classList.toggle('active', !isLogin);
-			panelLogin.classList.toggle('auth-panel--hidden', !isLogin);
-			panelRegister.classList.toggle('auth-panel--hidden', isLogin);
+		const clearFieldErrors = () => {
+			for (const el of document.querySelectorAll('.field-error')) {
+				el.textContent = '';
+			}
+			for (const input of document.querySelectorAll('input, select')) {
+				input.removeAttribute('aria-invalid');
+			}
+		};
+
+		const setFieldError = (inputId: string, message: string) => {
+			const errorEl = document.getElementById(`${inputId}-error`);
+			const inputEl = document.getElementById(inputId);
+			if (!errorEl || !inputEl) return;
+			errorEl.textContent = message;
+			inputEl.setAttribute('aria-invalid', 'true');
+		};
+
+		const updateMethodUI = (panel: 'login' | 'register') => {
+			const methodSelect = (panel === 'login' ? loginMethod : registerMethod) as HTMLSelectElement | null;
+			const methodHelp = panel === 'login' ? loginMethodHelp : registerMethodHelp;
+			const passwordWrap = panel === 'login' ? loginPasswordWrap : registerPasswordWrap;
+
+			if (!methodSelect || !methodHelp || !passwordWrap) return;
+
+			const method = methodSelect.value as 'password' | 'magic_link';
+			passwordWrap.style.display = method === 'password' ? 'grid' : 'none';
+			methodHelp.textContent = getMethodHelpText(method);
+		};
+
+		const setSubmitting = (value: boolean, panel: 'login' | 'register') => {
+			isSubmitting = value;
+			if (loginSubmit) (loginSubmit as HTMLButtonElement).disabled = value;
+			if (registerSubmit) (registerSubmit as HTMLButtonElement).disabled = value;
+
+			if (panel === 'login' && loginSubmit) {
+				loginSubmit.textContent = value ? 'Validando acceso...' : 'Continuar';
+			}
+			if (panel === 'register' && registerSubmit) {
+				registerSubmit.textContent = value
+					? 'Creando tu cuenta...'
+					: 'Crear cuenta y reclamar evento';
+			}
+		};
+
+		const focusFirstInput = (panel: 'login' | 'register') => {
+			if (panel === 'login') {
+				const emailEl = document.getElementById('login-email');
+				if (emailEl) emailEl.focus();
+			} else {
+				const emailEl = document.getElementById('register-email');
+				if (emailEl) emailEl.focus();
+			}
+		};
+
+		const switchTab = (panel: 'login' | 'register') => {
+			activePanel = panel;
+			const isLogin = panel === 'login';
+			if (tabLogin) tabLogin.classList.toggle('is-active', isLogin);
+			if (tabRegister) tabRegister.classList.toggle('is-active', !isLogin);
+			if (tabLogin) tabLogin.setAttribute('aria-selected', isLogin ? 'true' : 'false');
+			if (tabRegister) tabRegister.setAttribute('aria-selected', isLogin ? 'false' : 'true');
+			if (panelLogin) panelLogin.classList.toggle('auth-panel--hidden', !isLogin);
+			if (panelRegister) panelRegister.classList.toggle('auth-panel--hidden', isLogin);
+			if (panelLogin) (panelLogin as HTMLElement).hidden = !isLogin;
+			if (panelRegister) (panelRegister as HTMLElement).hidden = isLogin;
+			clearFieldErrors();
 			setStatus('');
+			focusFirstInput(panel);
 		};
 
-		tabLogin.addEventListener('click', () => switchTab(true));
-		tabRegister.addEventListener('click', () => switchTab(false));
-
-		loginMethod.addEventListener('change', () => {
-			loginPasswordWrap.style.display = loginMethod.value === 'password' ? 'grid' : 'none';
-		});
-		registerMethod.addEventListener('change', () => {
-			registerPasswordWrap.style.display =
-				registerMethod.value === 'password' ? 'grid' : 'none';
-		});
-
-		document.getElementById('login-submit').addEventListener('click', async () => {
-			setStatus('Procesando...');
+		const parseJsonSafe = async (response: Response) => {
 			try {
-				const payload = {
-					method: loginMethod.value,
-					email: document.getElementById('login-email').value,
-					password: document.getElementById('login-password').value,
-				};
-				const response = await fetch('/api/auth/login-host', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-				});
-				const data = await response.json();
-				if (!response.ok) throw new Error(data.message || 'Error de autenticacion.');
-				setStatus(data.message || 'Sesion iniciada.');
-				if (payload.method === 'password') {
-					window.location.href = next || data.next || '/dashboard/invitados';
-				}
-			} catch (error) {
-				setStatus(error.message || 'No se pudo iniciar sesion.', true);
+				return await response.json();
+			} catch {
+				return {};
 			}
-		});
+		};
 
-		document.getElementById('register-submit').addEventListener('click', async () => {
-			setStatus('Procesando registro...');
-			try {
-				const payload = {
-					method: registerMethod.value,
-					email: document.getElementById('register-email').value,
-					password: document.getElementById('register-password').value,
-					eventSlug: document.getElementById('register-event-slug').value,
-					claimCode: document.getElementById('register-claim-code').value,
-				};
-				const response = await fetch('/api/auth/register-host', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-				});
-				const data = await response.json();
-				if (!response.ok) throw new Error(data.message || 'No se pudo registrar.');
-				setStatus(data.message || 'Cuenta creada.');
-				if (payload.method === 'password') {
-					window.location.href = next || data.next || '/dashboard/invitados';
-				}
-			} catch (error) {
-				setStatus(error.message || 'No se pudo registrar.', true);
+		const validateLoginClient = (payload: any) => {
+			const genericError = validateLoginForm(payload);
+			if (!genericError) return null;
+			if (!payload.email.trim() || !isValidEmail(payload.email)) {
+				setFieldError('login-email', 'Escribe un correo valido para continuar.');
+				return 'Escribe un correo valido para continuar.';
 			}
-		});
+			if (payload.method === 'password' && !payload.password.trim()) {
+				setFieldError(
+					'login-password',
+					'Ingresa tu contrasena para continuar con este metodo.',
+				);
+				return 'Ingresa tu contrasena para continuar con este metodo.';
+			}
+			return genericError;
+		};
+
+		const validateRegisterClient = (payload: any) => {
+			const genericError = validateRegisterForm(payload);
+			if (!genericError) return null;
+			if (!payload.email.trim() || !isValidEmail(payload.email)) {
+				setFieldError('register-email', 'Escribe un correo valido para continuar.');
+				return 'Escribe un correo valido para continuar.';
+			}
+			if (payload.method === 'password' && !payload.password.trim()) {
+				setFieldError(
+					'register-password',
+					'Ingresa tu contrasena para continuar con este metodo.',
+				);
+				return 'Ingresa tu contrasena para continuar con este metodo.';
+			}
+			if (!payload.eventSlug.trim()) {
+				setFieldError('register-event-slug', 'Indica el eventSlug del evento que vas a gestionar.');
+			}
+			if (!payload.claimCode.trim()) {
+				setFieldError(
+					'register-claim-code',
+					'Ingresa el claimCode para vincular el evento a tu cuenta.',
+				);
+			}
+			return genericError;
+		};
+
+		if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
+		if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
+		if (loginMethod) loginMethod.addEventListener('change', () => updateMethodUI('login'));
+		if (registerMethod) registerMethod.addEventListener('change', () => updateMethodUI('register'));
+
+		if (loginForm) {
+			loginForm.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				if (isSubmitting) return;
+				clearFieldErrors();
+
+				const emailEl = document.getElementById('login-email') as HTMLInputElement | null;
+				const passwordEl = document.getElementById('login-password') as HTMLInputElement | null;
+
+				const payload = {
+					method: loginMethod?.value || 'password',
+					email: emailEl?.value || '',
+					password: passwordEl?.value || '',
+				};
+				const validationError = validateLoginClient(payload);
+				if (validationError) {
+					setStatus(validationError, 'error', true);
+					return;
+				}
+
+				setSubmitting(true, 'login');
+				setStatus('Verificando tus datos, espera un momento...', 'info');
+				try {
+					const response = await fetch('/api/auth/login-host', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload),
+					});
+					const data = await parseJsonSafe(response);
+					if (!response.ok) {
+						throw new Error(data.message || 'No se pudo iniciar sesion.');
+					}
+					const message =
+						payload.method === 'magic_link'
+							? `${data.message || 'Listo, te enviamos el enlace.'} Revisa tambien spam o promociones.`
+							: data.message || 'Bienvenido, redirigiendo a tu panel...';
+					setStatus(message, 'success', true);
+					if (payload.method === 'password') {
+						window.location.href = nextPath || data.next || '/dashboard/invitados';
+					}
+				} catch (error: any) {
+					setStatus(
+						error.message || 'No pudimos iniciar sesion. Verifica tus datos e intenta de nuevo.',
+						'error',
+						true,
+					);
+				} finally {
+					setSubmitting(false, 'login');
+				}
+			});
+		}
+
+		if (registerForm) {
+			registerForm.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				if (isSubmitting) return;
+				clearFieldErrors();
+
+				const emailEl = document.getElementById('register-email') as HTMLInputElement | null;
+				const passwordEl = document.getElementById('register-password') as HTMLInputElement | null;
+				const eventSlugEl = document.getElementById('register-event-slug') as HTMLInputElement | null;
+				const claimCodeEl = document.getElementById('register-claim-code') as HTMLInputElement | null;
+
+				const payload = {
+					method: registerMethod?.value || 'password',
+					email: emailEl?.value || '',
+					password: passwordEl?.value || '',
+					eventSlug: eventSlugEl?.value || '',
+					claimCode: claimCodeEl?.value || '',
+				};
+				const validationError = validateRegisterClient(payload);
+				if (validationError) {
+					setStatus(validationError, 'error', true);
+					return;
+				}
+
+				setSubmitting(true, 'register');
+				setStatus('Estamos creando tu cuenta y preparando tu acceso...', 'info');
+				try {
+					const response = await fetch('/api/auth/register-host', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload),
+					});
+					const data = await parseJsonSafe(response);
+					if (!response.ok) {
+						throw new Error(data.message || 'No se pudo registrar.');
+					}
+					const message =
+						payload.method === 'magic_link'
+							? `${data.message || 'Cuenta creada.'} Te enviamos un enlace; revisa tambien spam o promociones.`
+							: data.message || 'Cuenta creada con exito. Te llevamos a tu panel...';
+					setStatus(message, 'success', true);
+					if (payload.method === 'password') {
+						window.location.href = nextPath || data.next || '/dashboard/invitados';
+					}
+				} catch (error: any) {
+					setStatus(
+						error.message || 'No pudimos completar el registro. Revisa los datos e intenta de nuevo.',
+						'error',
+						true,
+					);
+				} finally {
+					setSubmitting(false, 'register');
+				}
+			});
+		}
+
+		updateMethodUI('login');
+		updateMethodUI('register');
+		switchTab(activePanel);
+		setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
 	</script>
 </Layout>
 
