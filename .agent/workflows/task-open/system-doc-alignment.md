@@ -1,65 +1,59 @@
 ---
 description:
-    'Plan de resolución para alinear el sistema con la documentación y corregir inconsistencias
-    arquitectónicas.'
-lifecycle: task-open
+    Governance and synchronization of technical documentation with the current system state.
+lifecycle: evergreen
 domain: governance
-owner: workflow-governance
+owner: system-agent
 last_reviewed: 2026-02-15
 ---
 
-# 🛠️ Workflow: Alineación Sistema-Documentación
+# 🛠️ Workflow: System Documentation Alignment
 
-Este workflow resuelve las discrepancias identificadas en la auditoría
-`full-system-audit-2026-02-15.md`.
+This workflow ensures that technical documentation (ADRs, Architecture, Status) remains in sync with
+the actual code implementation, preventing "documentation drift."
 
-## Fase 1: Sincronización de Gobernanza (Docs)
+## Phase 1: Drift Audit (Code vs. Docs)
 
-1. **Corregir `docs/DOC_STATUS.md`**:
-    - Actualizar rutas de `evergreen/` (eliminar prefijos `governance/` y `sync/`).
-    - Eliminar referencias a archivos no existentes (ej. `workflow-sync.md`, `skills-sync.md`).
-2. **Limpiar `docs/implementation-log.md`**:
-    - Corregir los paths mencionados en la entrada `[2026-02-14]`.
-3. **Actualizar `docs/RSVP_STATUS.md`**:
-    - Añadir sección sobre "Plantillas avanzadas de WhatsApp (Tier 3)" reflejando los cambios en
-      `RSVP.tsx`.
+1.  **Validate File Structure**:
+    - Compare the project's physical structure against definitions in `docs/ARCHITECTURE.md`.
+    - Identify new or moved modules not reflected in documentation.
+2.  **Verify Documentation Status**:
+    - Review `docs/DOC_STATUS.md` to ensure all listed files exist and their paths are correct.
+    - Identify orphaned or outdated documents.
+3.  **Detect Logic Changes**:
+    - Scan for discrepancies between implemented business logic and descriptions in ADRs
+      (`docs/architecture/*.md`).
 
-## Fase 2: Estandarización de Esquema y Datos
+## Phase 2: Artifact Synchronization
 
-1. **Actualizar `src/content/config.ts`**:
-    - Incluir `itinerary` en `sectionStyles`.
-    - Añadir campos `confirmedTemplate`, `declinedTemplate` y `omitTitle` al schema de
-      `whatsappConfig`.
-    - Permitir etiquetas personalizadas (`labels`) en `sectionStyles.rsvp`.
-2. **Migrar Contenido (`src/content/events/*.json`)**:
-    - Mover `variant` de itinerario/galería a `sectionStyles` en `demo-xv.json`.
-    - Mover etiquetas de RSVP de Gerardo al JSON en `gerardo-sesenta.json`.
+1.  **Update `docs/DOC_STATUS.md`**:
+    - Correct paths and documentation health statuses based on findings from Phase 1.
+2.  **Maintain Implementation Log**:
+    - Record significant architectural or governance changes in `docs/implementation-log.md`.
+3.  **Update Specifications**:
+    - Ensure specification documents exist for any newly added features (e.g., RSVP, Themes, or
+      APIs).
 
-## Fase 3: Desacoplamiento de Rutas y Lógica
+## Phase 3: Data Integrity Validation
 
-1. **Refactorizar `src/pages/[eventType]/[slug].astro`**:
-    - Pasar `data.sectionStyles.itinerary.variant` al componente `Itinerary`.
-    - Eliminar el bloque `if (data.eventType === 'cumple')` que hardcodea etiquetas de RSVP.
-    - Consumir etiquetas desde `data.sectionStyles?.rsvp` o caer en los defaults equilibrados de
-      `RSVP.tsx`.
+1.  **Validate Content Schemas**:
+    - Ensure schemas in `src/content/config.ts` align with technical documentation and business
+      requirements.
+2.  **Verify Data Consistency**:
+    - Check that content files (`src/content/**/*.json`, `*.md`) comply with validated schemas.
 
-## Fase 4: Verificación y Cierre
+## Phase 4: Technical Verification & Closure
 
-1. **Validación de Esquema**:
-
+1.  **Run Astro Technical Check**:
     ```bash
     pnpm astro check
     ```
+2.  **Integrity Testing**:
+    - Execute relevant schema or integration tests to ensure alignment hasn't broken data contracts.
+3.  **Update Workflow Metadata**:
+    - Update the `last_reviewed` date in this file if process changes were made.
 
-2. **Tests de Regresión**:
+// turbo-all
 
-    ```bash
-    pnpm test tests/api/rsvp.context.test.ts
-    ```
-
-3. **Audit Visual**:
-    - Verificar que `demo-xv` e itinerarios de `gerardo-sesenta` mantienen sus estilos correctos.
-
-// turbo
-
-> [!IMPORTANT] No procedas a la Fase 2 sin haber validado la Fase 1 en una revisión de "dry-run".
+> [!IMPORTANT] This workflow is iterative. If a major change altering the project's vision is
+> detected, prioritize creating a new ADR before proceeding with mass synchronization.
