@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Logo from '@/components/ui/Logo.astro';
 import { resolveNextPath } from '@/lib/rsvp-v2/login';
 import '@styles/auth/_login.scss';
 
@@ -15,7 +16,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 	<section class="auth-shell" data-next={next} data-variant="dark">
 		<header class="auth-local-header">
 			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra.me">
-				<span class="auth-brand__name">Celebra.me</span>
+				<Logo variant="white" class="auth-brand__logo" altText="Celebra.me" />
 				<span class="auth-brand__caption">Panel de anfitrion</span>
 			</a>
 			<a class="auth-back-link" href="/">Volver al inicio</a>
@@ -25,10 +26,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			<div class="auth-copy">
 				<p class="auth-kicker">Acceso seguro para anfitriones</p>
 				<h1 id="auth-title">Accede a tu panel</h1>
-				<p>
-					Gestiona invitados, confirma asistencias y mantente al dia con tu evento en un
-					solo lugar.
-				</p>
+				<p>Gestiona tu evento en un solo lugar.</p>
 			</div>
 
 			<div class="auth-tabs" role="tablist" aria-label="Opciones de autenticacion">
@@ -140,7 +138,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 							placeholder="Ejemplo: CLAIM-2026"
 						/>
 						<p class="auth-hint">
-							Este codigo identifica tu evento y te lo comparte el equipo de Celebra.me.
+							Codigo compartido por el equipo de Celebra.me.
 						</p>
 						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
 					</div>
@@ -152,10 +150,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			</section>
 
 			<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
-
-			<p class="auth-note">
-				Panel admin legado temporal: <code>/admin/rsvp</code> (Basic Auth).
-			</p>
 		</article>
 	</section>
 

@@ -114,4 +114,5 @@ contracts.
 - Dashboard source of truth is now Supabase (`guest_invitations`).
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
 - `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.
+- `/admin/rsvp` is intentionally hidden from the public login UI to reduce user friction.
 - Host registration uses `claimCode` global único and creates event membership.
