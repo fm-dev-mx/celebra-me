@@ -98,9 +98,10 @@ Registration policy:
 
 ## Realtime Strategy
 
-Current implementation uses short-interval refresh in the dashboard as a transport-safe baseline.
-The repository and API contracts are ready for a future websocket-based channel without breaking UI
-contracts.
+Current implementation uses **Server-Sent Events (SSE)** via `/api/dashboard/guests/stream` to
+provide near-real-time updates to the dashboard for guest status changes and audit logs. The
+repository and API contracts are ready for a future websocket-based channel if bi-directional
+realtime is required.
 
 ## Security
 

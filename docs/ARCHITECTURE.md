@@ -33,7 +33,10 @@ Celebra-me follows these guiding principles:
     - user input,
     - side effects,
     - protected operations,
-    - integrations requiring secrets.
+    - integrations requiring secrets. Current implementation uses **Server-Sent Events (SSE)** via
+      `/api/dashboard/guests/stream` to provide near-real-time updates to the dashboard for guest
+      status changes and audit logs. The repository and API contracts are ready for a future
+      websocket-based channel if bi-directional realtime is required.
 
 This aligns with Astro’s recommended hybrid model.
 
@@ -96,8 +99,16 @@ used by API routes.
 
 Recommended locations:
 
-- `src/utils/server/**`, or
-- co-located under `src/pages/api/_lib/**`.
+- `src/utils/server/**`
+- `src/lib/rsvp-v2/**`
+- Co-located under `src/pages/api/_lib/**` (Legacy)
+
+### 5.3 Global Logic
+
+- `src/middleware.ts`: Global session orchestration, AAL2 enforcement, and route-level
+  authorization.
+- `src/data/`: Static global data and schema-less configuration.
+- `src/interfaces/`: Global Type definitions and shared contracts.
 
 These modules must never be imported by UI components or client islands.
 
@@ -251,7 +262,16 @@ MUST be registered in the **Universal Asset Registry**.
 Celebra-me includes a dedicated RSVP module for host-side guest management and guest-side
 confirmation flows.
 
-- Canonical guest links use `/invitacion/{inviteId}`.
+### Dashboard API Endpoints
+
+- `GET /api/dashboard/guests?eventId=...&status=...&search=...`
+- `GET /api/dashboard/guests/stream` (SSE for realtime updates)
+- `POST /api/dashboard/guests`
+- `PATCH /api/dashboard/guests/:guestId`
+- `DELETE /api/dashboard/guests/:guestId`
+- `POST /api/dashboard/guests/:guestId/mark-shared`
+- `GET /api/dashboard/guests/export.csv?eventId=...`
+
 - Host dashboard operations are protected by Supabase Auth and constrained by Postgres RLS.
 - Guest-facing RSVP operations are served through server APIs and do not expose direct table access
   from anonymous clients.

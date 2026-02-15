@@ -24,15 +24,26 @@
 
 ### Governance Evergreen
 
-- [error-remediation.md](../.agent/workflows/evergreen/error-remediation.md)
-- [gatekeeper-commit.md](../.agent/workflows/evergreen/gatekeeper-commit.md)
-- [prompt-to-workflow.md](../.agent/workflows/evergreen/prompt-to-workflow.md)
-- [theme-architecture-governance.md](../.agent/workflows/evergreen/theme-architecture-governance.md)
+- [error-remediation.md](../.agent/workflows/evergreen/error-remediation.md) - 🟢
+- [gatekeeper-commit.md](../.agent/workflows/evergreen/gatekeeper-commit.md) - 🟢
+- [prompt-to-workflow.md](../.agent/workflows/evergreen/prompt-to-workflow.md) - 🟢
+- [theme-architecture-governance.md](../.agent/workflows/evergreen/theme-architecture-governance.md) -
+  🟢
 
 ### Tasks Open
 
-- [generic-section-remediation.md](../.agent/workflows/task-open/generic-section-remediation.md)
-- [system-doc-alignment.md](../.agent/workflows/task-open/system-doc-alignment.md)
+- [generic-section-remediation.md](../.agent/workflows/task-open/generic-section-remediation.md) -
+  🟡 (Inherited)
+- [system-doc-alignment.md](../.agent/workflows/task-open/system-doc-alignment.md) - 🟢 (Current)
+
+### Core Technical Docs
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - 🟢 (Updated 2026-02-15)
+- [THEME_SYSTEM.md](./THEME_SYSTEM.md) - 🟢
+- [ASSET_MANAGEMENT.md](./ASSET_MANAGEMENT.md) - 🟢
+- [DB_RSVP.md](./DB_RSVP.md) - 🟢
+- [rsvp-module.md](./architecture/rsvp-module.md) - 🟢 (Updated 2026-02-15)
+- [TESTING.md](./TESTING.md) - 🟡 (Requires update for new test suites)
 
 ---
 
