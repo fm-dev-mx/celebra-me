@@ -1,0 +1,125 @@
+.dashboard-guests {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 1.25rem;
+}
+
+.dashboard-guests__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.dashboard-guests__filters {
+	display: grid;
+	grid-template-columns: 1.2fr 180px repeat(2, 160px);
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.dashboard-guests__stats {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(120px, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.dashboard-guests__stat {
+	border: 1px solid #d6c5a5;
+	border-radius: 8px;
+	padding: 0.75rem;
+	background: #fff;
+	display: flex;
+	flex-direction: column;
+}
+
+.dashboard-guests__table-wrap {
+	overflow: auto;
+}
+
+.dashboard-guests__table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.dashboard-guests__table th,
+.dashboard-guests__table td {
+	border-bottom: 1px solid #ece3d5;
+	padding: 0.65rem 0.5rem;
+	text-align: left;
+	vertical-align: top;
+}
+
+.dashboard-guests__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.dashboard-guests__wa-button {
+	background: #1e7b34;
+	color: #fff;
+	border: 1px solid #1e7b34;
+}
+
+.dashboard-guests__modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgb(0 0 0 / 45%);
+	display: grid;
+	place-items: center;
+	z-index: 30;
+}
+
+.dashboard-guests__modal {
+	width: min(560px, 92vw);
+	background: #fff;
+	border-radius: 12px;
+	padding: 1rem;
+}
+
+.dashboard-guests__modal form {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.dashboard-guests__modal input,
+.dashboard-guests__modal textarea,
+.dashboard-guests__modal select,
+.dashboard-guests__filters input,
+.dashboard-guests__filters select,
+.dashboard-guests__filters button,
+.dashboard-guests__header input,
+.dashboard-guests__table button {
+	font: inherit;
+	border: 1px solid #cbb89a;
+	border-radius: 6px;
+	padding: 0.55rem 0.6rem;
+	background: #fff;
+}
+
+.dashboard-guests__modal-actions {
+	display: flex;
+	justify-content: end;
+	gap: 0.5rem;
+}
+
+.dashboard-guests__error {
+	color: #9b1f1f;
+}
+
+.dashboard-guests__status {
+	color: #64513a;
+}
+
+@media (width <= 900px) {
+	.dashboard-guests__filters {
+		grid-template-columns: 1fr;
+	}
+
+	.dashboard-guests__stats {
+		grid-template-columns: repeat(2, minmax(120px, 1fr));
+	}
+}

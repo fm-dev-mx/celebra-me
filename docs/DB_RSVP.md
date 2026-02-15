@@ -10,6 +10,10 @@ schema includes:
 - `public.rsvp_records`
 - `public.rsvp_audit_log`
 - `public.rsvp_channel_log`
+- `public.host_profiles` (v2)
+- `public.events` (v2)
+- `public.guest_invitations` (v2)
+- `public.guest_invitation_audit` (v2)
 
 ## Migration strategy
 
@@ -19,6 +23,8 @@ Current baseline:
 
 - `20260215000100_rsvp_init.sql`
 - `20260215000200_rsvp_hardening.sql`
+- `20260215000300_rsvp_v2_core.sql`
+- `20260215000400_rsvp_v2_rls.sql`
 
 Do not apply ad-hoc SQL directly in production without creating a migration file first.
 
@@ -86,6 +92,17 @@ $env:ALL_PROXY=''; $env:HTTP_PROXY=''; $env:HTTPS_PROXY=''; $env:GIT_HTTP_PROXY=
 
 ## Data model notes
 
+### v2 guest management model
+
+`events` + `guest_invitations` is the canonical model for host dashboard guest management.
+
+- `events.owner_user_id` maps ownership to `auth.users(id)`.
+- `guest_invitations.invite_id` is the public UUID used in `/invitacion/{inviteId}`.
+- `guest_invitation_audit` stores lifecycle events (`created`, `viewed`, `status_changed`, etc).
+
+Legacy tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`) remain in place during
+transition and are not removed by v2 migrations.
+
 ### `rsvp_records`
 
 - `store_key` is primary key and conflict key for upsert.
@@ -113,6 +130,12 @@ RLS is enabled and forced on all RSVP tables.
 
 This protects RSVP data from accidental client-side exposure.
 
+For v2 tables:
+
+- `events`: authenticated users can CRUD only rows where `owner_user_id = auth.uid()`.
+- `guest_invitations`: authenticated users can CRUD only invitations belonging to their own events.
+- `guest_invitation_audit`: authenticated users can read only audit events tied to owned events.
+
 ## Client-facing UI operation
 
 The non-technical RSVP workflow is available from:
@@ -129,6 +152,12 @@ From this panel, operators can:
 Admin-only link generation API used by the panel:
 
 - `GET /api/rsvp/invitations?eventSlug=<slug>` (Basic Auth required)
+
+New host dashboard (v2):
+
+- `/dashboard/invitados` (Supabase Auth required)
+- APIs under `/api/dashboard/guests/*`
+- Guest public APIs under `/api/invitacion/*`
 
 ## Required environment variables
 

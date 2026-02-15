@@ -331,7 +331,9 @@ const eventsCollection = defineCollection({
 			.object({
 				disabled: z.boolean().optional().default(false),
 				sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
-				sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower']).optional(),
+				sealIcon: z
+					.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition'])
+					.optional(),
 				microcopy: z.string().default('Toca para abrir mi invitación'),
 				documentLabel: z.string().optional(), // Theme-specific: "MANIFEST / WANTED" for Western
 				stampText: z.string().optional(), // Theme-specific: "TAX PAID" for Western

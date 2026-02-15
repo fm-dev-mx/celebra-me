@@ -1,0 +1,21 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
+import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
+
+const hostSession = await getHostSessionFromRequest(Astro.request);
+if (!hostSession) {
+	return new Response('No autorizado. Inicia sesion para acceder al dashboard.', {
+		status: 401,
+		headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+	});
+}
+
+const eventId = Astro.url.searchParams.get('eventId') ?? '';
+---
+
+<Layout title="Dashboard Invitados" description="Gestion de invitados RSVP">
+	<main>
+		<GuestDashboardApp client:load initialEventId={eventId} />
+	</main>
+</Layout>

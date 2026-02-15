@@ -1,0 +1,29 @@
+---
+interface Props {
+	eventTitle: string;
+	guestName: string;
+}
+
+const { eventTitle, guestName } = Astro.props as Props;
+---
+
+<section class="guest-invitation-hero">
+	<p class="guest-invitation-hero__eyebrow">Invitacion personalizada</p>
+	<h1>Hola {guestName}</h1>
+	<p>Nos encantaria contar contigo en <strong>{eventTitle}</strong>.</p>
+</section>
+
+<style>
+	.guest-invitation-hero {
+		max-width: 780px;
+		margin: 0 auto;
+		padding: 1rem 1.25rem;
+		text-align: center;
+	}
+
+	.guest-invitation-hero__eyebrow {
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		font-size: 0.8rem;
+	}
+</style>

@@ -154,6 +154,26 @@ const envAccent = data.envelope?.closedPalette?.accent || data.theme.accentColor
 	</style>
 
 	<main class={`event-theme-wrapper ${themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
+		<script is:inline define:vars={{ eventSlug: event.id }}>
+			const legacyToken = new URLSearchParams(window.location.search).get('t');
+			if (legacyToken) {
+				const params = new URLSearchParams({
+					eventSlug,
+					token: legacyToken,
+				});
+				fetch(`/api/invitacion/resolve?${params.toString()}`)
+					.then((response) => (response.ok ? response.json() : null))
+					.then((payload) => {
+						if (payload?.canonicalUrl) {
+							window.location.replace(payload.canonicalUrl);
+						}
+					})
+					.catch(() => {
+						// silent fallback to legacy token flow in current page
+					});
+			}
+		</script>
+
 		{/* Sync unlock: runs before React hydration to prevent pointer-events deadlock */}
 		{showEnvelope && (
 			<script is:inline define:vars={{ eventSlug: event.id }}>

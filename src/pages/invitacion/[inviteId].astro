@@ -1,0 +1,66 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import GuestInvitationHero from '@/components/invitation/GuestInvitationHero.astro';
+import GuestRSVPForm from '@/components/invitation/GuestRSVPForm';
+import { getInvitationContextByInviteId } from '@/lib/rsvp-v2/service';
+
+const inviteId = Astro.params.inviteId ?? '';
+
+let context:
+	| Awaited<ReturnType<typeof getInvitationContextByInviteId>>
+	| null = null;
+let loadError = '';
+
+try {
+	context = await getInvitationContextByInviteId(inviteId);
+} catch (error) {
+	loadError = error instanceof Error ? error.message : 'No fue posible cargar la invitacion.';
+}
+---
+
+<Layout title="Invitacion personalizada" description="Confirma tu asistencia">
+	<main class="guest-invitation-page">
+		{
+			loadError && (
+				<section class="guest-invitation-page__error">
+					<h1>Invitacion no disponible</h1>
+					<p>{loadError}</p>
+				</section>
+			)
+		}
+
+		{
+			context && (
+				<>
+					<GuestInvitationHero eventTitle={context.eventTitle} guestName={context.guest.fullName} />
+					<GuestRSVPForm
+						client:load
+						inviteId={context.inviteId}
+						eventTitle={context.eventTitle}
+						guestName={context.guest.fullName}
+						maxAllowedAttendees={context.guest.maxAllowedAttendees}
+						initialStatus={context.guest.attendanceStatus}
+						initialAttendeeCount={context.guest.attendeeCount}
+						initialGuestMessage={context.guest.guestMessage}
+					/>
+				</>
+			)
+		}
+	</main>
+</Layout>
+
+<style>
+	.guest-invitation-page {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 1rem;
+	}
+
+	.guest-invitation-page__error {
+		padding: 1rem;
+		border: 1px solid #d6c7ad;
+		border-radius: 10px;
+	}
+</style>

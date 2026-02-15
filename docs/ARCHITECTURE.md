@@ -228,3 +228,20 @@ MUST be registered in the **Universal Asset Registry**.
   `getCommonAsset()`.
 - **Benefit**: Decouples component logic from raw filesystem paths, ensures strict type safety, and
   guarantees only optimized assets are referenced.
+
+---
+
+## 13) RSVP Module (Multi-tenant)
+
+Celebra-me includes a dedicated RSVP module for host-side guest management and guest-side
+confirmation flows.
+
+- Canonical guest links use `/invitacion/{inviteId}`.
+- Host dashboard operations are protected by Supabase Auth and constrained by Postgres RLS.
+- Guest-facing RSVP operations are served through server APIs and do not expose direct table access
+  from anonymous clients.
+- Legacy RSVP endpoints under `src/pages/api/rsvp/**` remain supported during migration.
+
+Detailed module design and flows are documented in:
+
+- `docs/architecture/rsvp-module.md`
