@@ -20,6 +20,14 @@ describe('API: /api/auth/sync-session', () => {
 		jest.clearAllMocks();
 	});
 
+	const makeToken = (payload: Record<string, unknown>): string => {
+		const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
+			'base64url',
+		);
+		const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+		return `${header}.${body}.signature`;
+	};
+
 	it('rejects when there is no base session', async () => {
 		getHostSessionMock.mockResolvedValue(null);
 
@@ -86,7 +94,7 @@ describe('API: /api/auth/sync-session', () => {
 		});
 		getSupabaseUserMock.mockResolvedValue({
 			id: 'user-1',
-			amr: [{ method: 'mfa' }],
+			amr: [{ method: 'totp' }],
 		});
 
 		const response = await syncSession({
@@ -103,5 +111,56 @@ describe('API: /api/auth/sync-session', () => {
 		expect(response.status).toBe(200);
 		const data = await response.json();
 		expect(data.ok).toBe(true);
+	});
+
+	it('stores session when elevated token uses otp amr method', async () => {
+		getHostSessionMock.mockResolvedValue({
+			userId: 'user-1',
+			email: 'admin@celebra.me',
+			accessToken: 'base-token',
+		});
+		getSupabaseUserMock.mockResolvedValue({
+			id: 'user-1',
+			amr: [{ method: 'otp' }],
+		});
+
+		const response = await syncSession({
+			request: createMockRequest(
+				{
+					accessToken: 'elevated-token',
+					refreshToken: 'elevated-refresh',
+				},
+				{ Origin: 'http://localhost' },
+			),
+			url: new URL('http://localhost/api/auth/sync-session'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(200);
+	});
+
+	it('stores session when jwt has aal2 even without amr methods', async () => {
+		const elevatedToken = makeToken({ sub: 'user-1', aal: 'aal2' });
+		getHostSessionMock.mockResolvedValue({
+			userId: 'user-1',
+			email: 'admin@celebra.me',
+			accessToken: 'base-token',
+		});
+		getSupabaseUserMock.mockResolvedValue({
+			id: 'user-1',
+			amr: [],
+		});
+
+		const response = await syncSession({
+			request: createMockRequest(
+				{
+					accessToken: elevatedToken,
+					refreshToken: 'elevated-refresh',
+				},
+				{ Origin: 'http://localhost' },
+			),
+			url: new URL('http://localhost/api/auth/sync-session'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(200);
 	});
 });

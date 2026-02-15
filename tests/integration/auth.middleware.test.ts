@@ -31,6 +31,14 @@ describe('Middleware: Authentication & Authorization', () => {
 		process.env.SUPABASE_ANON_KEY = originalSupabaseAnon;
 	});
 
+	const makeToken = (payload: Record<string, unknown>): string => {
+		const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
+			'base64url',
+		);
+		const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+		return `${header}.${body}.signature`;
+	};
+
 	const createContext = (path: string) => ({
 		url: new URL(`http://localhost${path}`),
 		cookies: mockCookies,
@@ -124,7 +132,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		);
 	});
 
-	it('Scenario: Superadmin with MFA (aal2) allowed to Dashboard', async () => {
+	it('Scenario: Superadmin with TOTP MFA (aal2) allowed to Dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'admin-token' });
 
@@ -133,7 +141,44 @@ describe('Middleware: Authentication & Authorization', () => {
 			json: async () => ({
 				id: 'admin-1',
 				app_metadata: { role: 'super_admin' },
-				amr: [{ method: 'mfa' }], // aal2
+				amr: [{ method: 'totp' }], // aal2
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
+
+	it('Scenario: Superadmin with OTP MFA (aal2) allowed to Dashboard', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'admin-token' });
+
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'otp' }],
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
+
+	it('Scenario: Superadmin with aal2 claim in token is allowed even when amr is empty', async () => {
+		const context = createContext('/dashboard/invitados');
+		const aal2Token = makeToken({ sub: 'admin-1', aal: 'aal2' });
+		mockCookies.get.mockReturnValue({ value: aal2Token });
+
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [],
 			}),
 		});
 
