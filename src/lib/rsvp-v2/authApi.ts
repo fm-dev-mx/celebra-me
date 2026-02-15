@@ -58,6 +58,19 @@ export async function signInWithPassword(input: { email: string; password: strin
 	});
 }
 
+export async function refreshAccessToken(input: { refreshToken: string }): Promise<{
+	access_token: string;
+	refresh_token: string;
+	user: { id: string; email?: string };
+}> {
+	return authRequest({
+		path: 'token?grant_type=refresh_token',
+		body: {
+			refresh_token: input.refreshToken,
+		},
+	});
+}
+
 export async function signUpWithPassword(input: { email: string; password: string }): Promise<{
 	access_token?: string;
 	refresh_token?: string;
@@ -89,10 +102,8 @@ export async function sendMagicLink(input: {
 export async function findAuthUserByEmail(input: {
 	email: string;
 }): Promise<{ id: string } | null> {
-	const response = await authRequest<{
-		users?: Array<{ id: string; email?: string }>;
-	}>({
-		path: 'admin/users',
+	const response = await authRequest<{ users?: Array<{ id: string; email?: string }> }>({
+		path: 'admin/users?page=1&per_page=1000',
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -101,4 +112,20 @@ export async function findAuthUserByEmail(input: {
 		(item) => (item.email || '').trim().toLowerCase() === wanted,
 	);
 	return user ? { id: user.id } : null;
+}
+
+export async function listAuthUsers(input?: {
+	page?: number;
+	perPage?: number;
+}): Promise<Array<{ id: string; email?: string; created_at?: string }>> {
+	const page = input?.page && input.page > 0 ? input.page : 1;
+	const perPage = input?.perPage && input.perPage > 0 ? Math.min(input.perPage, 1000) : 200;
+	const response = await authRequest<{
+		users?: Array<{ id: string; email?: string; created_at?: string }>;
+	}>({
+		path: `admin/users?page=${page}&per_page=${perPage}`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return response.users || [];
 }

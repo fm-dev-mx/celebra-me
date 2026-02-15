@@ -5,12 +5,15 @@ import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
 	buildSessionCookie,
+	buildTrustedDeviceCookie,
 	clearMfaRefreshCookie,
 	clearMfaSessionCookie,
 } from '@/lib/rsvp-v2/cookies';
 import { hasMfaEvidence } from '@/lib/rsvp-v2/authMfaEvidence';
 import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp-v2/authSecurity';
 import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp-v2/auth';
+import { createTrustedDeviceToken } from '@/lib/rsvp-v2/trustedDevice';
+import { normalizeAppRole } from '@/lib/rsvp-v2/roles';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -57,6 +60,18 @@ export const POST: APIRoute = async ({ request, url }) => {
 		headers.append('Set-Cookie', buildIdleActivityCookie(Math.floor(Date.now() / 1000)));
 		if (elevatedRefreshToken) {
 			headers.append('Set-Cookie', buildRefreshTokenCookie(elevatedRefreshToken));
+		}
+		const role = normalizeAppRole(elevatedUser.app_metadata?.role);
+		if (role === 'super_admin') {
+			const trusted = createTrustedDeviceToken({
+				userId: elevatedUser.id,
+				role,
+				userAgent: request.headers.get('user-agent') || '',
+			});
+			headers.append(
+				'Set-Cookie',
+				buildTrustedDeviceCookie(trusted.token, trusted.maxAgeSeconds),
+			);
 		}
 		headers.append('Set-Cookie', clearMfaSessionCookie());
 		headers.append('Set-Cookie', clearMfaRefreshCookie());

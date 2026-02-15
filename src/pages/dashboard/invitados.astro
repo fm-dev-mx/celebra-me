@@ -1,5 +1,5 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
 import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
 import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
@@ -13,8 +13,14 @@ if (!hostSession) {
 const eventId = Astro.url.searchParams.get('eventId') ?? '';
 ---
 
-<Layout title="Dashboard Invitados" description="Gestion de invitados RSVP">
-	<main>
+<DashboardLayout
+	title="Dashboard Invitados"
+	breadcrumbs={[
+		{ label: 'Dashboard', href: '/dashboard/invitados' },
+		{ label: 'Invitados' },
+	]}
+>
+	<div class="dashboard-card">
 		<GuestDashboardApp client:load initialEventId={eventId} />
-	</main>
-</Layout>
+	</div>
+</DashboardLayout>

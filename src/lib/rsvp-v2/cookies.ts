@@ -6,6 +6,7 @@ const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60; // 1 hour
 const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const IDLE_TIMEOUT_SECONDS = 60 * 30; // 30 minutes
 const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5; // 5 minutes
+const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 export function buildSessionCookie(accessToken: string): string {
 	const parts = [
@@ -65,6 +66,21 @@ export function buildIdleActivityCookie(unixSeconds: number): string {
 	return parts.join('; ');
 }
 
+export function buildTrustedDeviceCookie(
+	token: string,
+	maxAge = TRUST_DEVICE_MAX_AGE_SECONDS,
+): string {
+	const parts = [
+		`sb-trust-device=${encodeURIComponent(token)}`,
+		'Path=/',
+		'HttpOnly',
+		'SameSite=Lax',
+		`Max-Age=${Math.max(60, Math.trunc(maxAge))}`,
+	];
+	if (isProduction()) parts.push('Secure');
+	return parts.join('; ');
+}
+
 export function clearSessionCookie(): string {
 	const parts = ['sb-access-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
 	if (isProduction()) parts.push('Secure');
@@ -91,6 +107,12 @@ export function clearMfaRefreshCookie(): string {
 
 export function clearIdleActivityCookie(): string {
 	const parts = ['sb-idle-seen=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
+	if (isProduction()) parts.push('Secure');
+	return parts.join('; ');
+}
+
+export function clearTrustedDeviceCookie(): string {
+	const parts = ['sb-trust-device=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
 	if (isProduction()) parts.push('Secure');
 	return parts.join('; ');
 }

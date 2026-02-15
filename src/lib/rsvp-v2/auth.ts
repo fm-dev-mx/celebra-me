@@ -1,10 +1,18 @@
 import { getEnv } from '@/utils/env';
 import { ApiError } from './errors';
+import { normalizeAppRole, isSuperAdminRole } from './roles';
+import type { AppUserRole } from './types';
 
 export interface HostSession {
 	userId: string;
 	email: string;
 	accessToken: string;
+}
+
+export interface SessionContext extends HostSession {
+	role: AppUserRole | null;
+	isSuperAdmin: boolean;
+	amr?: Array<{ method?: string }>;
 }
 
 export interface SupabaseAuthUser {
@@ -104,15 +112,31 @@ export async function getSupabaseUserByAccessToken(
 }
 
 export async function getHostSessionFromRequest(request: Request): Promise<HostSession | null> {
+	const context = await getSessionContextFromRequest(request);
+	if (!context) return null;
+	return {
+		userId: context.userId,
+		email: context.email,
+		accessToken: context.accessToken,
+	};
+}
+
+export async function getSessionContextFromRequest(
+	request: Request,
+): Promise<SessionContext | null> {
 	const accessToken = resolveAccessTokenFromRequest(request);
 	if (!accessToken) return null;
 	const user = await getSupabaseUserByAccessToken(accessToken);
 	if (!user) return null;
+	const role = normalizeAppRole(user.app_metadata?.role);
 
 	return {
 		userId: user.id,
 		email: sanitize(user.email, 320),
 		accessToken,
+		role,
+		isSuperAdmin: isSuperAdminRole(role),
+		amr: user.amr,
 	};
 }
 
@@ -122,4 +146,12 @@ export async function requireHostSession(request: Request): Promise<HostSession>
 		throw new ApiError(401, 'unauthorized', 'No autorizado.');
 	}
 	return session;
+}
+
+export async function requireSessionContext(request: Request): Promise<SessionContext> {
+	const context = await getSessionContextFromRequest(request);
+	if (!context) {
+		throw new ApiError(401, 'unauthorized', 'No autorizado.');
+	}
+	return context;
 }

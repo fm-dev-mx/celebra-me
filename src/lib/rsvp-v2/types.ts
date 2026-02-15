@@ -129,3 +129,58 @@ export interface AuthSessionDTO {
 	isSuperAdmin: boolean;
 	memberships: EventMembershipRecord[];
 }
+
+export type ClaimCodeStatus = 'active' | 'expired' | 'exhausted' | 'disabled';
+
+export interface ClaimCodeRecord {
+	id: string;
+	eventId: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+	createdBy: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ClaimCodeDTO {
+	id: string;
+	eventId: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+	createdBy: string | null;
+	createdAt: string;
+	updatedAt: string;
+	status: ClaimCodeStatus;
+}
+
+export interface AdminClaimCodeListResponse {
+	items: ClaimCodeDTO[];
+}
+
+export interface AdminEventListItemDTO {
+	id: string;
+	title: string;
+	slug: string;
+	eventType: EventRecord['eventType'];
+	status: EventRecord['status'];
+	ownerUserId: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface AdminUserListItemDTO {
+	id: string;
+	email: string;
+	role: AppUserRole;
+	createdAt: string;
+}
+
+export interface DashboardNavItem {
+	label: string;
+	href: string;
+	adminOnly?: boolean;
+}

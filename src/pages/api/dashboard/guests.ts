@@ -82,6 +82,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
+			actorUserId: session.userId,
 		});
 
 		return jsonResponse(result, 201);

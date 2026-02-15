@@ -20,21 +20,35 @@ import {
 	updateGuestById,
 	updateGuestByInviteIdPublic,
 	createAuditLog,
+	createClaimCodeService,
+	disableClaimCodeService,
+	findAppUserRoleByUserIdService,
+	findClaimCodeByIdService,
+	listAllEventsService,
+	listClaimCodesService,
+	listUserRolesService,
+	updateClaimCodeService,
 } from './repository';
 import type {
+	AdminEventListItemDTO,
+	AdminUserListItemDTO,
 	AttendanceStatus,
+	ClaimCodeDTO,
+	ClaimCodeStatus,
 	DashboardGuestListResponse,
 	DashboardGuestMutationResponse,
 	EventRecord,
 	GuestInvitationDTO,
 	GuestInvitationRecord,
 	GuestRSVPSubmitDTO,
+	AppUserRole,
 } from './types';
 import { getRsvpContext } from '@/lib/rsvp/service';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
 import { createHash, randomBytes } from 'node:crypto';
 import { getEnv } from '@/utils/env';
+import { listAuthUsers } from './authApi';
 
 const MAX_TEXT_LEN = 500;
 
@@ -64,6 +78,7 @@ async function logAdminAction(input: {
 	oldData?: Record<string, unknown> | null;
 	newData?: Record<string, unknown> | null;
 }) {
+	if (!sanitize(input.actorId, 120)) return;
 	try {
 		await createAuditLog({
 			...input,
@@ -196,6 +211,8 @@ export async function createDashboardGuest(input: {
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
 	origin: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
 }): Promise<DashboardGuestMutationResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (!event) {
@@ -227,9 +244,9 @@ export async function createDashboardGuest(input: {
 
 	const item = toGuestDto(created, input.origin, event.title);
 
-	if (isSuperAdminEmail(input.origin)) {
+	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
-			actorId: input.hostAccessToken,
+			actorId: input.actorUserId,
 			action: 'create_guest',
 			targetTable: 'guest_invitations',
 			targetId: created.id,
@@ -255,6 +272,8 @@ export async function updateDashboardGuest(input: {
 	guestId: string;
 	hostAccessToken: string;
 	origin: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
 	fullName?: string;
 	phoneE164?: string;
 	maxAllowedAttendees?: number;
@@ -305,9 +324,9 @@ export async function updateDashboardGuest(input: {
 		input.hostAccessToken,
 	);
 
-	if (isSuperAdminEmail(input.origin)) {
+	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
-			actorId: input.hostAccessToken,
+			actorId: input.actorUserId,
 			action: 'update_guest',
 			targetTable: 'guest_invitations',
 			targetId: input.guestId,
@@ -333,6 +352,8 @@ export async function updateDashboardGuest(input: {
 export async function deleteDashboardGuest(input: {
 	guestId: string;
 	hostAccessToken: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
 }): Promise<void> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
 	if (!existing) {
@@ -343,9 +364,9 @@ export async function deleteDashboardGuest(input: {
 		throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
 	}
 
-	if (isSuperAdminEmail(input.hostAccessToken)) {
+	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
-			actorId: input.hostAccessToken,
+			actorId: input.actorUserId,
 			action: 'delete_guest',
 			targetTable: 'guest_invitations',
 			targetId: input.guestId,
@@ -367,6 +388,8 @@ export async function markGuestShared(input: {
 	guestId: string;
 	hostAccessToken: string;
 	origin: string;
+	actorUserId?: string;
+	isSuperAdmin?: boolean;
 }): Promise<DashboardGuestMutationResponse> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
 	if (!existing) {
@@ -386,6 +409,16 @@ export async function markGuestShared(input: {
 	);
 
 	const item = toGuestDto(updated, input.origin);
+	if (input.isSuperAdmin && input.actorUserId) {
+		await logAdminAction({
+			actorId: input.actorUserId,
+			action: 'mark_guest_shared',
+			targetTable: 'guest_invitations',
+			targetId: input.guestId,
+			oldData: existing as unknown as Record<string, unknown>,
+			newData: updated as unknown as Record<string, unknown>,
+		});
+	}
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: updated.eventId,
@@ -625,6 +658,188 @@ export async function buildAuthSessionDto(input: {
 		role,
 		isSuperAdmin: role === 'super_admin',
 		memberships,
+	};
+}
+
+function toClaimCodeStatus(input: {
+	active: boolean;
+	expiresAt: string | null;
+	usedCount: number;
+	maxUses: number;
+}): ClaimCodeStatus {
+	if (!input.active) return 'disabled';
+	if (input.expiresAt && new Date(input.expiresAt).getTime() < Date.now()) return 'expired';
+	if (input.usedCount >= input.maxUses) return 'exhausted';
+	return 'active';
+}
+
+function toClaimCodeDto(input: {
+	id: string;
+	eventId: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+	createdBy: string | null;
+	createdAt: string;
+	updatedAt: string;
+}): ClaimCodeDTO {
+	return {
+		id: input.id,
+		eventId: input.eventId,
+		active: input.active,
+		expiresAt: input.expiresAt,
+		maxUses: input.maxUses,
+		usedCount: input.usedCount,
+		createdBy: input.createdBy,
+		createdAt: input.createdAt,
+		updatedAt: input.updatedAt,
+		status: toClaimCodeStatus(input),
+	};
+}
+
+function generateClaimCode(length = 12): string {
+	return randomBytes(length)
+		.toString('base64url')
+		.replace(/[^A-Za-z0-9]/g, '')
+		.slice(0, length);
+}
+
+export async function listClaimCodesAdmin(input: { eventId?: string }): Promise<ClaimCodeDTO[]> {
+	const items = await listClaimCodesService({
+		eventId: sanitize(input.eventId, 120) || undefined,
+	});
+	return items.map(toClaimCodeDto);
+}
+
+export async function createClaimCodeAdmin(input: {
+	eventId: string;
+	createdBy: string;
+	expiresAt?: string | null;
+	maxUses?: number;
+}): Promise<{ plainCode: string; item: ClaimCodeDTO }> {
+	const eventId = sanitize(input.eventId, 120);
+	if (!eventId) throw new ApiError(400, 'bad_request', 'eventId es obligatorio.');
+	const plainCode = generateClaimCode(14);
+	const maxUses = Math.max(1, Math.min(10000, Math.trunc(input.maxUses ?? 1)));
+	const expiresAt = input.expiresAt ? new Date(input.expiresAt).toISOString() : null;
+	const created = await createClaimCodeService({
+		eventId,
+		codeHash: hashClaimCode(plainCode),
+		active: true,
+		expiresAt,
+		maxUses,
+		usedCount: 0,
+		createdBy: sanitize(input.createdBy, 120),
+	});
+	return {
+		plainCode,
+		item: toClaimCodeDto(created),
+	};
+}
+
+export async function updateClaimCodeAdmin(input: {
+	claimCodeId: string;
+	active?: boolean;
+	expiresAt?: string | null;
+	maxUses?: number;
+}): Promise<ClaimCodeDTO> {
+	const claimCodeId = sanitize(input.claimCodeId, 120);
+	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId es obligatorio.');
+	const existing = await findClaimCodeByIdService(claimCodeId);
+	if (!existing) throw new ApiError(404, 'not_found', 'Claim code no encontrado.');
+	const updated = await updateClaimCodeService({
+		claimCodeId,
+		active: typeof input.active === 'boolean' ? input.active : undefined,
+		expiresAt: input.expiresAt !== undefined ? input.expiresAt : undefined,
+		maxUses:
+			typeof input.maxUses === 'number'
+				? Math.max(1, Math.min(10000, Math.trunc(input.maxUses)))
+				: undefined,
+	});
+	return toClaimCodeDto(updated);
+}
+
+export async function disableClaimCodeAdmin(input: { claimCodeId: string }): Promise<ClaimCodeDTO> {
+	const claimCodeId = sanitize(input.claimCodeId, 120);
+	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId es obligatorio.');
+	const updated = await disableClaimCodeService(claimCodeId);
+	return toClaimCodeDto(updated);
+}
+
+export async function validateClaimCodeAdmin(input: { claimCode: string }): Promise<ClaimCodeDTO> {
+	const claim = await findClaimCodeRecordByKeyService({
+		codeKey: hashClaimCode(input.claimCode),
+	});
+	if (!claim) throw new ApiError(404, 'not_found', 'Claim code no encontrado.');
+	return toClaimCodeDto({
+		id: claim.id,
+		eventId: claim.eventId,
+		active: claim.active,
+		expiresAt: claim.expiresAt,
+		maxUses: claim.maxUses,
+		usedCount: claim.usedCount,
+		createdBy: null,
+		createdAt: '',
+		updatedAt: '',
+	});
+}
+
+export async function listAdminEvents(): Promise<AdminEventListItemDTO[]> {
+	const events = await listAllEventsService();
+	return events.map((event) => ({
+		id: event.id,
+		title: event.title,
+		slug: event.slug,
+		eventType: event.eventType,
+		status: event.status,
+		ownerUserId: event.ownerUserId,
+		createdAt: event.createdAt,
+		updatedAt: event.updatedAt,
+	}));
+}
+
+export async function listAdminUsers(input?: {
+	page?: number;
+	perPage?: number;
+}): Promise<AdminUserListItemDTO[]> {
+	const users = await listAuthUsers({
+		page: input?.page ?? 1,
+		perPage: input?.perPage ?? 200,
+	});
+	const roleRecords = await listUserRolesService();
+	const roleMap = new Map<string, AppUserRole>();
+	for (const item of roleRecords) {
+		roleMap.set(item.userId, item.role);
+	}
+	return users.map((user) => ({
+		id: user.id,
+		email: sanitize(user.email, 320),
+		role: roleMap.get(user.id) ?? 'host_client',
+		createdAt: user.created_at || new Date().toISOString(),
+	}));
+}
+
+export async function changeUserRoleAdmin(input: {
+	userId: string;
+	role: AppUserRole;
+	actorUserId: string;
+}): Promise<{ userId: string; role: AppUserRole }> {
+	const userId = sanitize(input.userId, 120);
+	const role = input.role === 'super_admin' ? 'super_admin' : 'host_client';
+	const existing = await findAppUserRoleByUserIdService(userId);
+	const next = await upsertUserRoleService({ userId, role });
+	await logAdminAction({
+		actorId: sanitize(input.actorUserId, 120),
+		action: 'change_user_role',
+		targetTable: 'app_user_roles',
+		targetId: userId,
+		oldData: existing ? (existing as unknown as Record<string, unknown>) : null,
+		newData: next as unknown as Record<string, unknown>,
+	});
+	return {
+		userId: next.userId,
+		role: next.role,
 	};
 }
 

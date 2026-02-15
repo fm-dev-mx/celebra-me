@@ -52,6 +52,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			guestId,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
+			actorUserId: session.userId,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
 			phoneE164: body.phoneE164 !== undefined ? sanitize(body.phoneE164, 40) : undefined,
 			maxAllowedAttendees:
@@ -85,7 +86,11 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId es obligatorio.');
 
-		await deleteDashboardGuest({ guestId, hostAccessToken: session.accessToken });
+		await deleteDashboardGuest({
+			guestId,
+			hostAccessToken: session.accessToken,
+			actorUserId: session.userId,
+		});
 		return jsonResponse({
 			source: 'mutation',
 			updatedAt: new Date().toISOString(),

@@ -3,6 +3,7 @@ import type {
 	AttendanceStatus,
 	AppUserRole,
 	AppUserRoleRecord,
+	ClaimCodeRecord,
 	EventRecord,
 	EventMembershipRecord,
 	GuestInvitationAuditRecord,
@@ -92,6 +93,18 @@ type EventMembershipRow = {
 	updated_at: string;
 };
 
+type ClaimCodeRow = {
+	id: string;
+	event_id: string;
+	active: boolean;
+	expires_at: string | null;
+	max_uses: number;
+	used_count: number;
+	created_by: string | null;
+	created_at: string;
+	updated_at: string;
+};
+
 function toEventRecord(row: EventRow): EventRecord {
 	return {
 		id: row.id,
@@ -153,6 +166,20 @@ function toMembershipRecord(row: EventMembershipRow): EventMembershipRecord {
 		eventId: row.event_id,
 		userId: row.user_id,
 		membershipRole: row.membership_role,
+		createdAt: row.created_at,
+		updatedAt: row.updated_at,
+	};
+}
+
+function toClaimCodeRecord(row: ClaimCodeRow): ClaimCodeRecord {
+	return {
+		id: row.id,
+		eventId: row.event_id,
+		active: row.active,
+		expiresAt: row.expires_at,
+		maxUses: row.max_uses,
+		usedCount: row.used_count,
+		createdBy: row.created_by,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -412,6 +439,20 @@ export async function findUserRoleService(userId: string): Promise<AppUserRoleRe
 	return rows[0] ? toRoleRecord(rows[0]) : null;
 }
 
+export async function findAppUserRoleByUserIdService(
+	userId: string,
+): Promise<AppUserRoleRecord | null> {
+	return findUserRoleService(userId);
+}
+
+export async function listUserRolesService(): Promise<AppUserRoleRecord[]> {
+	const rows = await supabaseRestRequest<UserRoleRow[]>({
+		pathWithQuery: 'app_user_roles?select=*&order=created_at.desc',
+		useServiceRole: true,
+	});
+	return rows.map(toRoleRecord);
+}
+
 export async function createEventMembershipService(input: {
 	eventId: string;
 	userId: string;
@@ -453,6 +494,14 @@ export async function listMembershipsForHost(
 	return rows.map(toMembershipRecord);
 }
 
+export async function listAllEventsService(): Promise<EventRecord[]> {
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: 'events?select=*&order=created_at.desc',
+		useServiceRole: true,
+	});
+	return rows.map(toEventRecord);
+}
+
 export async function findClaimCodeRecordService(input: {
 	eventId: string;
 	codeHash: string;
@@ -464,16 +513,7 @@ export async function findClaimCodeRecordService(input: {
 	maxUses: number;
 	usedCount: number;
 } | null> {
-	type ClaimRow = {
-		id: string;
-		event_id: string;
-		active: boolean;
-		expires_at: string | null;
-		max_uses: number;
-		used_count: number;
-	};
-
-	const rows = await supabaseRestRequest<ClaimRow[]>({
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
 		pathWithQuery: `event_claim_codes?select=id,event_id,active,expires_at,max_uses,used_count&event_id=eq.${encodeURIComponent(input.eventId)}&code_hash=eq.${encodeURIComponent(input.codeHash)}&limit=1`,
 		useServiceRole: true,
 	});
@@ -497,16 +537,7 @@ export async function findClaimCodeRecordByKeyService(input: { codeKey: string }
 	maxUses: number;
 	usedCount: number;
 } | null> {
-	type ClaimRow = {
-		id: string;
-		event_id: string;
-		active: boolean;
-		expires_at: string | null;
-		max_uses: number;
-		used_count: number;
-	};
-
-	const rows = await supabaseRestRequest<ClaimRow[]>({
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
 		pathWithQuery: `event_claim_codes?select=id,event_id,active,expires_at,max_uses,used_count&code_key=eq.${encodeURIComponent(input.codeKey)}&limit=1`,
 		useServiceRole: true,
 	});
@@ -520,6 +551,81 @@ export async function findClaimCodeRecordByKeyService(input: { codeKey: string }
 		maxUses: rows[0].max_uses,
 		usedCount: rows[0].used_count,
 	};
+}
+
+export async function listClaimCodesService(input: {
+	eventId?: string;
+}): Promise<ClaimCodeRecord[]> {
+	const eventFilter = input.eventId ? `&event_id=eq.${encodeURIComponent(input.eventId)}` : '';
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
+		pathWithQuery: `event_claim_codes?select=*&order=created_at.desc${eventFilter}`,
+		useServiceRole: true,
+	});
+	return rows.map(toClaimCodeRecord);
+}
+
+export async function findClaimCodeByIdService(
+	claimCodeId: string,
+): Promise<ClaimCodeRecord | null> {
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
+		pathWithQuery: `event_claim_codes?select=*&id=eq.${encodeURIComponent(claimCodeId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toClaimCodeRecord(rows[0]) : null;
+}
+
+export async function createClaimCodeService(input: {
+	eventId: string;
+	codeHash: string;
+	active: boolean;
+	expiresAt: string | null;
+	maxUses: number;
+	usedCount: number;
+	createdBy: string;
+}): Promise<ClaimCodeRecord> {
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
+		pathWithQuery: 'event_claim_codes?select=*',
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			event_id: input.eventId,
+			code_hash: input.codeHash,
+			code_key: input.codeHash,
+			active: input.active,
+			expires_at: input.expiresAt,
+			max_uses: input.maxUses,
+			used_count: input.usedCount,
+			created_by: input.createdBy,
+		},
+	});
+	if (!rows[0]) throw new Error('No se pudo crear claim code.');
+	return toClaimCodeRecord(rows[0]);
+}
+
+export async function updateClaimCodeService(input: {
+	claimCodeId: string;
+	active?: boolean;
+	expiresAt?: string | null;
+	maxUses?: number;
+}): Promise<ClaimCodeRecord> {
+	const body: Record<string, unknown> = {};
+	if (typeof input.active === 'boolean') body.active = input.active;
+	if (input.expiresAt !== undefined) body.expires_at = input.expiresAt;
+	if (typeof input.maxUses === 'number') body.max_uses = input.maxUses;
+	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
+		pathWithQuery: `event_claim_codes?id=eq.${encodeURIComponent(input.claimCodeId)}&select=*`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+	if (!rows[0]) throw new Error('No se pudo actualizar claim code.');
+	return toClaimCodeRecord(rows[0]);
+}
+
+export async function disableClaimCodeService(claimCodeId: string): Promise<ClaimCodeRecord> {
+	return updateClaimCodeService({ claimCodeId, active: false });
 }
 
 export async function incrementClaimCodeUsageService(

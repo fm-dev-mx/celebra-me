@@ -37,6 +37,7 @@ export const POST: APIRoute = async ({ params, request, url }) => {
 			guestId,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
+			actorUserId: session.userId,
 		});
 
 		return jsonResponse(result);

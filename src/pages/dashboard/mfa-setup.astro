@@ -280,7 +280,7 @@ import '@styles/auth/_login.scss';
 
 				setStatus('Verificación completada. Redirigiendo...', 'success');
 				setTimeout(() => {
-					window.location.replace('/dashboard/invitados');
+					window.location.replace('/dashboard/admin');
 				}, 250);
 			} catch (error) {
 				const errorType = classifyMfaError(error);
