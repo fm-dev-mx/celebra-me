@@ -6,6 +6,8 @@ describe('Middleware: Authentication & Authorization', () => {
 	let mockRedirect: jest.Mock;
 	let mockNext: jest.Mock;
 	let originalFetch: typeof global.fetch;
+	let originalSupabaseUrl: string | undefined;
+	let originalSupabaseAnon: string | undefined;
 
 	beforeEach(() => {
 		mockCookies = {
@@ -17,10 +19,16 @@ describe('Middleware: Authentication & Authorization', () => {
 		mockNext = jest.fn(() => ({ status: 200 }));
 		originalFetch = global.fetch;
 		global.fetch = jest.fn();
+		originalSupabaseUrl = process.env.SUPABASE_URL;
+		originalSupabaseAnon = process.env.SUPABASE_ANON_KEY;
+		process.env.SUPABASE_URL = 'http://localhost:54321';
+		process.env.SUPABASE_ANON_KEY = 'anon-key';
 	});
 
 	afterEach(() => {
 		global.fetch = originalFetch;
+		process.env.SUPABASE_URL = originalSupabaseUrl;
+		process.env.SUPABASE_ANON_KEY = originalSupabaseAnon;
 	});
 
 	const createContext = (path: string) => ({
@@ -51,6 +59,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		(global.fetch as jest.Mock).mockResolvedValue({
 			ok: true,
 			json: async () => ({
+				id: 'user-1',
 				app_metadata: { role: 'host_client' },
 				amr: [{ method: 'password' }], // aal1
 			}),
@@ -68,6 +77,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		(global.fetch as jest.Mock).mockResolvedValue({
 			ok: true,
 			json: async () => ({
+				id: 'admin-1',
 				app_metadata: { role: 'super_admin' },
 				amr: [{ method: 'password' }], // aal1
 			}),
@@ -77,6 +87,43 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
 	});
 
+	it('Scenario: Superadmin on MFA setup route receives temporary MFA cookies (300s)', async () => {
+		const context = createContext('/dashboard/mfa-setup');
+		mockCookies.get.mockImplementation((name: string) => {
+			if (name === 'sb-access-token') return { value: 'admin-token' };
+			if (name === 'sb-refresh-token') return { value: 'refresh-token' };
+			return null;
+		});
+
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'password' }],
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-mfa-session',
+			'admin-token',
+			expect.objectContaining({
+				path: '/dashboard/mfa-setup',
+				maxAge: 300,
+			}),
+		);
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'sb-mfa-refresh',
+			'refresh-token',
+			expect.objectContaining({
+				path: '/dashboard/mfa-setup',
+				maxAge: 300,
+			}),
+		);
+	});
+
 	it('Scenario: Superadmin with MFA (aal2) allowed to Dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'admin-token' });
@@ -84,6 +131,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		(global.fetch as jest.Mock).mockResolvedValue({
 			ok: true,
 			json: async () => ({
+				id: 'admin-1',
 				app_metadata: { role: 'super_admin' },
 				amr: [{ method: 'mfa' }], // aal2
 			}),

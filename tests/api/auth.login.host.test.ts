@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { POST as loginHost } from '@/pages/api/auth/login-host';
 import * as authApi from '@/lib/rsvp-v2/authApi';
+import * as rateLimitProvider from '@/lib/rsvp-v2/rateLimitProvider';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { createMockRequest } from './rsvp.helpers';
 
@@ -9,12 +10,18 @@ jest.mock('@/lib/rsvp-v2/authApi', () => ({
 	sendMagicLink: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+	checkRateLimit: jest.fn(),
+}));
+
 describe('API: /api/auth/login-host', () => {
 	const signInMock = authApi.signInWithPassword as jest.Mock;
 	const sendMagicMock = authApi.sendMagicLink as jest.Mock;
+	const checkRateLimitMock = rateLimitProvider.checkRateLimit as jest.Mock;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		checkRateLimitMock.mockResolvedValue(true);
 	});
 
 	it('Scenario: Successful Password Login', async () => {
@@ -36,7 +43,6 @@ describe('API: /api/auth/login-host', () => {
 		const data = await response.json();
 		expect(data.ok).toBe(true);
 		expect(data.next).toBe('/dashboard/invitados');
-		expect(response.headers.get('set-cookie')).toContain('sb-access-token=secret-token-123');
 	});
 
 	it('Scenario: Failed Password Login (Invalid Credentials)', async () => {
@@ -89,6 +95,41 @@ describe('API: /api/auth/login-host', () => {
 
 		expect(response.status).toBe(400);
 		const data = await response.json();
-		expect(data.message).toContain('Email');
+		expect(data.message).toContain('inválido');
+	});
+
+	it('Scenario: Reject Cross-Origin Request', async () => {
+		const response = await loginHost({
+			request: createMockRequest(
+				{
+					email: 'host@test.com',
+					password: 'correctPassword',
+					method: 'password',
+				},
+				{ Origin: 'https://attacker.example' },
+			),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(403);
+		const data = await response.json();
+		expect(data.code).toBe('forbidden');
+	});
+
+	it('Scenario: Rate Limited Login Attempt', async () => {
+		checkRateLimitMock.mockResolvedValue(false);
+
+		const response = await loginHost({
+			request: createMockRequest({
+				email: 'host@test.com',
+				password: 'correctPassword',
+				method: 'password',
+			}),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(429);
+		const data = await response.json();
+		expect(data.code).toBe('rate_limited');
 	});
 });

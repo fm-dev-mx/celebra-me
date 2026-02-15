@@ -118,4 +118,23 @@ describe('API: /api/auth/register-host', () => {
 			expect.objectContaining({ userId: 'existing-001' }),
 		);
 	});
+
+	it('Scenario: Reject Cross-Origin Registration Request', async () => {
+		const response = await registerHost({
+			request: createMockRequest(
+				{
+					email: 'client@test.com',
+					password: 'password123',
+					claimCode: 'CLAIM-OK',
+					method: 'password',
+				},
+				{ Origin: 'https://attacker.example' },
+			),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(403);
+		const data = await response.json();
+		expect(data.code).toBe('forbidden');
+	});
 });
