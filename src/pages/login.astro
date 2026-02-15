@@ -339,12 +339,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 					if (!response.ok) {
 						throw new Error(data.message || 'No se pudo iniciar sesion.');
 					}
-					if (data.accessToken) {
-						sessionStorage.setItem('temp-sb-access-token', data.accessToken);
-					}
-					if (data.refreshToken) {
-						sessionStorage.setItem('temp-sb-refresh-token', data.refreshToken);
-					}
 					const message =
 						payload.method === 'magic_link'
 							? `${data.message || 'Listo, te enviamos el enlace.'} Revisa tambien spam o promociones.`
@@ -398,12 +392,6 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 					const data = await parseJsonSafe(response);
 					if (!response.ok) {
 						throw new Error(data.message || 'No se pudo registrar.');
-					}
-					if (data.accessToken) {
-						sessionStorage.setItem('temp-sb-access-token', data.accessToken);
-					}
-					if (data.refreshToken) {
-						sessionStorage.setItem('temp-sb-refresh-token', data.refreshToken);
 					}
 					const message =
 						payload.method === 'magic_link'

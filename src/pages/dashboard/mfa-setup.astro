@@ -2,9 +2,6 @@
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
 import '@styles/auth/_login.scss';
-
-// Read the session directly from the server-side cookie
-const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 ---
 
 <Layout
@@ -24,22 +21,20 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 		<article class="auth-card" style="max-width: 500px;">
 			<div class="auth-copy">
 				<p class="auth-kicker">Paso obligatorio de seguridad</p>
-				<h1>Configura MFA</h1>
-				<p>Como Superadmin, tu cuenta requiere autenticación de dos factores para proteger la plataforma.</p>
+				<h1 id="mfa-title">Configura tu verificación en dos pasos</h1>
+				<p id="mfa-description">Como Superadmin, tu cuenta requiere autenticación de dos factores para proteger la plataforma.</p>
 			</div>
 
-			<!-- Pass the token via data-attribute -->
 			<div
 				id="mfa-app"
 				class="auth-panel"
-				data-token={sessionToken}
 				data-url={import.meta.env.PUBLIC_SUPABASE_URL}
 				data-key={import.meta.env.PUBLIC_SUPABASE_ANON_KEY}
 			>
 				<div class="mfa-setup-steps">
 					<div id="qr-container" class="qr-placeholder">
 						<div class="loader"></div>
-						<p>Generando código seguro...</p>
+						<p>Preparando verificación segura...</p>
 					</div>
 
 					<div class="auth-form">
@@ -53,7 +48,7 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 								placeholder="000000"
 								maxlength="6"
 							/>
-							<p class="auth-hint">Introduce el código de 6 dígitos de tu app de autenticación.</p>
+							<p id="mfa-hint" class="auth-hint">Introduce el código de 6 dígitos de tu app de autenticación.</p>
 						</div>
 
 						<button id="verify-mfa" class="auth-submit">Verificar y Activar</button>
@@ -77,6 +72,12 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 			min-height: 250px;
 			color: #080808;
 			text-align: center;
+		}
+
+		.qr-placeholder--continue {
+			background: #f8f6ef;
+			border: 1px solid rgba(212, 175, 55, 0.45);
+			min-height: 200px;
 		}
 
 		.qr-placeholder img {
@@ -103,18 +104,23 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 	<script>
 		import { createClient } from '@supabase/supabase-js';
 
+		type MfaMode = 'enroll' | 'verify-existing';
+
 		const appEl = document.getElementById('mfa-app');
 		const qrContainer = document.getElementById('qr-container');
 		const verifyBtn = document.getElementById('verify-mfa') as HTMLButtonElement | null;
 		const codeInput = document.getElementById('mfa-code') as HTMLInputElement | null;
 		const statusEl = document.getElementById('mfa-status');
+		const titleEl = document.getElementById('mfa-title');
+		const descriptionEl = document.getElementById('mfa-description');
+		const hintEl = document.getElementById('mfa-hint');
 
-		const token = appEl?.dataset.token;
 		const url = appEl?.dataset.url;
 		const key = appEl?.dataset.key;
 
-		let enrollmentId = '';
 		let supabase: any = null;
+		let mfaMode: MfaMode = 'enroll';
+		let factorId = '';
 
 		function getCookie(name: string) {
 			const value = `; ${document.cookie}`;
@@ -123,156 +129,197 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 			return null;
 		}
 
-		async function init() {
-			console.log('[MFA] Iniciando configuración...');
+		function setStatus(message: string, tone: 'info' | 'error' | 'success' = 'info') {
+			if (!statusEl) return;
+			statusEl.textContent = message;
+			statusEl.dataset.tone = tone;
+		}
 
-			const finalToken = token || getCookie('sb-access-token') || getCookie('sb-mfa-session') || sessionStorage.getItem('temp-sb-access-token');
-			const refreshToken = getCookie('sb-refresh-token') || sessionStorage.getItem('temp-sb-refresh-token') || '';
-
-			console.log('[MFA] Session check:', {
-				hasAttrToken: !!token,
-				hasAccessTokenCookie: !!getCookie('sb-access-token'),
-				hasRefreshTokenCookie: !!getCookie('sb-refresh-token'),
-				hasMfaSessionCookie: !!getCookie('sb-mfa-session'),
-				tokenLength: finalToken?.length
-			});
-
-			if (!url || !key || !finalToken) {
-				console.error('[MFA] Error de configuración:', { url: !!url, key: !!key, token: !!finalToken });
-				if (statusEl) {
-					statusEl.textContent = 'Faltan datos de sesión para configurar seguridad. Por favor, intenta iniciar sesión de nuevo.';
-					statusEl.dataset.tone = 'error';
-				}
-				return;
+		function renderVerifyExistingUI() {
+			if (titleEl) titleEl.textContent = 'Verifica tu acceso';
+			if (descriptionEl) {
+				descriptionEl.textContent =
+					'Tu cuenta está protegida con verificación en dos pasos. Ingresa el código de tu app para continuar.';
 			}
+			if (hintEl) hintEl.textContent = 'Abre tu app Authenticator y escribe el código actual de 6 dígitos.';
+			if (verifyBtn) verifyBtn.textContent = 'Continuar';
 
-			try {
-				supabase = createClient(url, key);
-				console.log('[MFA] Supabase client created');
+			if (qrContainer) {
+				qrContainer.classList.add('qr-placeholder--continue');
+				qrContainer.innerHTML = '';
 
-				// SYNC SESSION
-				const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-					access_token: finalToken,
-					refresh_token: refreshToken,
-				});
+				const icon = document.createElement('div');
+				icon.innerHTML =
+					'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+				icon.style.marginBottom = '1rem';
+				qrContainer.appendChild(icon);
 
-				if (sessionError) {
-					console.error('[MFA] setSession Error:', sessionError);
-					if (statusEl) statusEl.textContent = 'Error al sincronizar sesión de seguridad. Reintenta el acceso.';
-					return;
-				}
-
-				console.log('[MFA] Session synced successfully:', { user: sessionData?.user?.email });
-
-				// CHECK EXISTING FACTORS
-				const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-				if (factorsError) {
-					console.warn('[MFA] Could not list factors, proceeding with enrollment anyway:', factorsError);
-				}
-
-				const verifiedFactor = factors?.all?.find((f: any) => f.status === 'verified' && f.factor_type === 'totp');
-
-				if (verifiedFactor) {
-					console.log('[MFA] Found verified factor, switching to Challenge Mode:', verifiedFactor.id);
-					enrollmentId = verifiedFactor.id;
-
-					if (qrContainer) {
-						qrContainer.innerHTML = '';
-						const icon = document.createElement('div');
-						// Gold icon for success/locked state
-						icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
-						icon.style.marginBottom = '1rem';
-						qrContainer.appendChild(icon);
-
-						const p = document.createElement('p');
-						p.style.color = '#080808';
-						p.style.fontWeight = '500';
-						p.textContent = 'MFA ya está configurado. Ingresa el código de tu aplicación para continuar.';
-						qrContainer.appendChild(p);
-					}
-					// Return early to skip enrollment, but ensure we set enrollmentId so verify works
-					return;
-				}
-
-				// IF NO VERIFIED FACTOR, CLEANUP UNVERIFIED ONES
-				if (factors && factors.all && factors.all.length > 0) {
-					console.log('[MFA] Found unverified factors, cleaning up...', factors.all.length);
-					const unverifiedFactors = factors.all.filter((f: any) => f.status === 'unverified');
-
-					for (const factor of unverifiedFactors) {
-						const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
-						if (unenrollError) {
-							console.error('[MFA] Failed to unenroll factor:', factor.id, unenrollError);
-						} else {
-							console.log('[MFA] Unenrolled factor:', factor.id);
-						}
-					}
-				}
-
-				// ENROLL NEW FACTOR
-				const { data, error: enrollError } = await supabase.auth.mfa.enroll({
-					factorType: 'totp'
-				});
-
-				if (enrollError) throw enrollError;
-
-				enrollmentId = data.id;
-
-				if (qrContainer && data.totp.qr_code) {
-					qrContainer.innerHTML = '';
-					const img = document.createElement('img');
-					img.src = data.totp.qr_code;
-					img.alt = 'Scan this QR Code';
-					qrContainer.appendChild(img);
-
-					const p = document.createElement('p');
-					p.style.marginTop = '1.5rem';
-					p.style.color = '#000';
-					p.style.fontWeight = '600';
-					p.style.fontSize = '0.9rem';
-					p.textContent = 'Escanea este código con tu App Authenticator';
-					qrContainer.appendChild(p);
-				}
-			} catch (err: any) {
-				console.error('[MFA] Init/Enrollment Error:', err);
-				if (statusEl) {
-					statusEl.textContent = `Error: ${err.message || 'No se pudo generar el QR'}. Reintenta el login.`;
-					statusEl.dataset.tone = 'error';
-				}
+				const text = document.createElement('p');
+				text.style.color = '#080808';
+				text.style.fontWeight = '500';
+				text.textContent = 'Verificación en dos pasos activa. Ingresa tu código para continuar.';
+				qrContainer.appendChild(text);
 			}
 		}
 
-		async function handleVerify() {
-			const code = codeInput?.value;
-			if (!code || code.length !== 6 || !verifyBtn || !statusEl) return;
+		function renderEnrollUI(qrCode: string) {
+			if (titleEl) titleEl.textContent = 'Configura tu verificación en dos pasos';
+			if (descriptionEl) {
+				descriptionEl.textContent =
+					'Como Superadmin, tu cuenta requiere autenticación de dos factores para proteger la plataforma.';
+			}
+			if (hintEl) hintEl.textContent = 'Introduce el código de 6 dígitos de tu app de autenticación.';
+			if (verifyBtn) verifyBtn.textContent = 'Verificar y Activar';
+
+			if (qrContainer) {
+				qrContainer.classList.remove('qr-placeholder--continue');
+				qrContainer.innerHTML = '';
+
+				const img = document.createElement('img');
+				img.src = qrCode;
+				img.alt = 'Escanea este código QR con tu app de autenticación';
+				qrContainer.appendChild(img);
+
+				const text = document.createElement('p');
+				text.style.marginTop = '1.5rem';
+				text.style.color = '#000';
+				text.style.fontWeight = '600';
+				text.style.fontSize = '0.9rem';
+				text.textContent = 'Escanea este código con tu App Authenticator';
+				qrContainer.appendChild(text);
+			}
+		}
+
+		async function initSessionFromCookies() {
+			const accessToken = getCookie('sb-mfa-session') || '';
+			const refreshToken = getCookie('sb-mfa-refresh') || '';
+
+			if (!url || !key || !accessToken) {
+				setStatus('Tu sesión de seguridad expiró. Inicia sesión de nuevo.', 'error');
+				setTimeout(() => {
+					window.location.href = '/login';
+				}, 1200);
+				return false;
+			}
+
+			supabase = createClient(url, key);
+			const { error } = await supabase.auth.setSession({
+				access_token: accessToken,
+				refresh_token: refreshToken,
+			});
+
+			if (error) {
+				setStatus('No fue posible recuperar la sesión de seguridad. Inicia sesión de nuevo.', 'error');
+				setTimeout(() => {
+					window.location.href = '/login';
+				}, 1200);
+				return false;
+			}
+
+			return true;
+		}
+
+		async function resolveMfaMode() {
+			const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+			if (factorsError) throw factorsError;
+
+			const verifiedFactor = factors?.all?.find((item: any) => item.status === 'verified' && item.factor_type === 'totp');
+			if (verifiedFactor) {
+				mfaMode = 'verify-existing';
+				factorId = verifiedFactor.id;
+				renderVerifyExistingUI();
+				return;
+			}
+
+			const unverifiedFactors = (factors?.all || []).filter((item: any) => item.status === 'unverified');
+			for (const factor of unverifiedFactors) {
+				await supabase.auth.mfa.unenroll({ factorId: factor.id });
+			}
+
+			const { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+			if (enrollError) throw enrollError;
+			if (!enrollData?.id || !enrollData?.totp?.qr_code) {
+				throw new Error('No se pudo preparar el factor MFA.');
+			}
+
+			mfaMode = 'enroll';
+			factorId = enrollData.id;
+			renderEnrollUI(enrollData.totp.qr_code);
+		}
+
+		async function verifyCode() {
+			const code = codeInput?.value?.trim() || '';
+			if (!verifyBtn || !codeInput || !factorId) return;
+			if (!/^\d{6}$/.test(code)) {
+				setStatus('Ingresa un código válido de 6 dígitos.', 'error');
+				return;
+			}
 
 			verifyBtn.disabled = true;
-			statusEl.textContent = 'Verificando código...';
+			setStatus('Verificando código...', 'info');
 
 			try {
-				const { error } = await supabase.auth.mfa.challengeAndVerify({
-					factorId: enrollmentId,
-					code: code
+				const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+				if (challengeError) throw challengeError;
+
+				const challengeId = challengeData?.id || challengeData?.challengeId || '';
+				if (!challengeId) {
+					throw new Error('No se pudo generar el challenge MFA.');
+				}
+
+				const { error: verifyError } = await supabase.auth.mfa.verify({
+					factorId,
+					challengeId,
+					code,
 				});
+				if (verifyError) throw verifyError;
 
-				if (error) throw error;
+				const {
+					data: { session: elevatedSession },
+				} = await supabase.auth.getSession();
+				if (!elevatedSession?.access_token) {
+					throw new Error('No se obtuvo sesión MFA elevada.');
+				}
 
-				statusEl.textContent = '¡Verificado! Redirigiendo...';
-				statusEl.dataset.tone = 'success';
+				const syncResponse = await fetch('/api/auth/sync-session', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						accessToken: elevatedSession.access_token,
+						refreshToken: elevatedSession.refresh_token,
+					}),
+				});
+				if (!syncResponse.ok) {
+					throw new Error('No se pudo sincronizar la sesión segura.');
+				}
 
+				setStatus('Verificación completada. Redirigiendo...', 'success');
 				setTimeout(() => {
 					window.location.href = '/dashboard/invitados';
-				}, 1000);
-
-			} catch (err: any) {
-				console.error('[MFA] Verify Error:', err);
-				statusEl.textContent = 'Código incorrecto. Intenta de nuevo.';
-				statusEl.dataset.tone = 'error';
+				}, 900);
+			} catch {
+				setStatus(
+					mfaMode === 'verify-existing'
+						? 'El código no fue válido. Revisa tu app e inténtalo de nuevo.'
+						: 'No se pudo activar la verificación. Revisa el código e inténtalo otra vez.',
+					'error',
+				);
 				verifyBtn.disabled = false;
 			}
 		}
 
-		verifyBtn?.addEventListener('click', handleVerify);
-		init();
+		verifyBtn?.addEventListener('click', () => {
+			void verifyCode();
+		});
+
+		(async () => {
+			const sessionOk = await initSessionFromCookies();
+			if (!sessionOk) return;
+			try {
+				await resolveMfaMode();
+			} catch {
+				setStatus('No fue posible preparar la verificación MFA. Inicia sesión nuevamente.', 'error');
+			}
+		})();
 	</script>
 </Layout>

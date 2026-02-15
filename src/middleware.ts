@@ -1,5 +1,8 @@
 import { defineMiddleware } from 'astro:middleware';
-import { getEnv } from '@/utils/env';
+import { getSupabaseUserByAccessToken } from '@/lib/rsvp-v2/auth';
+
+const IDLE_TIMEOUT_SECONDS = 60 * 30;
+const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5;
 
 export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, next) => {
 	// Only protect /dashboard routes
@@ -13,20 +16,25 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
 	}
 
 	try {
-		// Get user info and app_metadata from Supabase Auth
-		// We use the access token to get the user profile
-		const userResponse = await fetch(`${getEnv('SUPABASE_URL')}/auth/v1/user`, {
-			headers: {
-				apikey: getEnv('SUPABASE_ANON_KEY'),
-				Authorization: `Bearer ${sessionCookie.value}`,
-			},
-		});
-
-		if (!userResponse.ok) {
+		const now = Math.floor(Date.now() / 1000);
+		const idleSeenRaw = cookies.get('sb-idle-seen')?.value || '';
+		const idleSeenAt = Number.parseInt(idleSeenRaw, 10);
+		if (
+			Number.isFinite(idleSeenAt) &&
+			idleSeenAt > 0 &&
+			now - idleSeenAt > IDLE_TIMEOUT_SECONDS
+		) {
+			cookies.delete('sb-access-token', { path: '/' });
+			cookies.delete('sb-refresh-token', { path: '/' });
+			cookies.delete('sb-mfa-session', { path: '/dashboard/mfa-setup' });
+			cookies.delete('sb-idle-seen', { path: '/' });
 			return redirect('/login');
 		}
 
-		const user = await userResponse.json();
+		const user = await getSupabaseUserByAccessToken(sessionCookie.value);
+		if (!user) {
+			return redirect('/login');
+		}
 		const role = user.app_metadata?.role;
 		const aal = user.amr?.[0]?.method === 'mfa' ? 'aal2' : 'aal1';
 
@@ -36,15 +44,40 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
 				return redirect('/dashboard/mfa-setup');
 			}
 
-			// For MFA setup page, we EXPOSE the token to JS so it can talk to Supabase
-			// This is temporary until AAL2 is achieved
+			const refreshCookie = cookies.get('sb-refresh-token');
 			cookies.set('sb-mfa-session', sessionCookie.value, {
-				path: '/',
+				path: '/dashboard/mfa-setup',
 				httpOnly: false,
-				sameSite: 'lax',
-				maxAge: 300,
+				sameSite: 'strict',
+				maxAge: MFA_TEMP_MAX_AGE_SECONDS,
+				secure: process.env.NODE_ENV === 'production',
+			});
+			if (refreshCookie?.value) {
+				cookies.set('sb-mfa-refresh', refreshCookie.value, {
+					path: '/dashboard/mfa-setup',
+					httpOnly: false,
+					sameSite: 'strict',
+					maxAge: MFA_TEMP_MAX_AGE_SECONDS,
+					secure: process.env.NODE_ENV === 'production',
+				});
+			}
+		}
+		if (aal === 'aal2' && cookies.get('sb-mfa-session')) {
+			cookies.delete('sb-mfa-session', {
+				path: '/dashboard/mfa-setup',
+			});
+			cookies.delete('sb-mfa-refresh', {
+				path: '/dashboard/mfa-setup',
 			});
 		}
+
+		cookies.set('sb-idle-seen', String(now), {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			maxAge: IDLE_TIMEOUT_SECONDS,
+			secure: process.env.NODE_ENV === 'production',
+		});
 
 		return next();
 	} catch (error) {
