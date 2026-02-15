@@ -7,6 +7,13 @@ export interface HostSession {
 	accessToken: string;
 }
 
+export interface SupabaseAuthUser {
+	id: string;
+	email?: string;
+	app_metadata?: { role?: string };
+	amr?: Array<{ method?: string }>;
+}
+
 function sanitize(value: unknown, maxLen = 4096): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, maxLen);
@@ -69,9 +76,11 @@ export function resolveAccessTokenFromRequest(request: Request): string {
 	return getTokenFromCookieMap(parseCookieHeader(request.headers.get('cookie')));
 }
 
-export async function getHostSessionFromRequest(request: Request): Promise<HostSession | null> {
-	const accessToken = resolveAccessTokenFromRequest(request);
-	if (!accessToken) return null;
+export async function getSupabaseUserByAccessToken(
+	accessToken: string,
+): Promise<SupabaseAuthUser | null> {
+	const normalizedToken = sanitize(accessToken);
+	if (!normalizedToken) return null;
 
 	const supabaseUrl = getEnv('SUPABASE_URL');
 	const anonKey = getEnv('SUPABASE_ANON_KEY');
@@ -82,14 +91,23 @@ export async function getHostSessionFromRequest(request: Request): Promise<HostS
 	const response = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/user`, {
 		headers: {
 			apikey: anonKey,
-			Authorization: `Bearer ${accessToken}`,
+			Authorization: `Bearer ${normalizedToken}`,
 		},
 	});
 
 	if (!response.ok) return null;
 
-	const user = (await response.json()) as { id?: string; email?: string };
+	const user = (await response.json()) as SupabaseAuthUser;
 	if (!user.id) return null;
+
+	return user;
+}
+
+export async function getHostSessionFromRequest(request: Request): Promise<HostSession | null> {
+	const accessToken = resolveAccessTokenFromRequest(request);
+	if (!accessToken) return null;
+	const user = await getSupabaseUserByAccessToken(accessToken);
+	if (!user) return null;
 
 	return {
 		userId: user.id,

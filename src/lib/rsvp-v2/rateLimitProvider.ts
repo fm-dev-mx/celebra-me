@@ -81,7 +81,7 @@ export function hashIp(ip: string): string {
 }
 
 export async function checkRateLimit(input: {
-	namespace: 'ctx' | 'view' | 'rsvp' | 'dashboard';
+	namespace: 'ctx' | 'view' | 'rsvp' | 'dashboard' | 'auth';
 	entityId: string;
 	ip: string;
 	maxHits: number;

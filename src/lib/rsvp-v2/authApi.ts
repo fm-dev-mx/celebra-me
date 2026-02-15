@@ -39,8 +39,7 @@ async function authRequest<T>(options: AuthApiOptions): Promise<T> {
 		body: options.body ? JSON.stringify(options.body) : undefined,
 	});
 	if (!response.ok) {
-		const raw = await response.text();
-		throw new Error(`Supabase auth error (${response.status}): ${raw || response.statusText}`);
+		throw new Error(`Supabase auth error (${response.status}).`);
 	}
 	return (await response.json()) as T;
 }
