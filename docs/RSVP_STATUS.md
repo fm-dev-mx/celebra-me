@@ -144,6 +144,20 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
 - Soporte dual: Password + Magic Link
 - Cobertura de pruebas E2E y unitarias para flujos de registro e inicio de sesión.
 
+### 2.8 MFA y Persistencia de Sesión (Hardening)
+
+✅ Autenticación de múltiples factores (MFA) implementada para Superadmin.
+
+- Registro de factores (TOTP) en `/dashboard/mfa-setup`.
+- Verificación de factores en `/login`.
+- Gatekeeper de middleware para forzar AAL2 en rutas protegidas.
+
+✅ Sincronización de sesión servidor-cliente.
+
+- Endpoint `api/auth/sync-session` para refrescar tokens y persistir niveles de seguridad (AAL) en
+  cookies.
+- Manejo proactivo de `refresh_token` para evitar cierres de sesión inesperados.
+
 ---
 
 ## 3) Evidencia de validación

@@ -116,6 +116,21 @@ Astro-recommended mechanisms are preferred:
 
 These approaches preserve accessibility and minimize client-side JavaScript.
 
+### 6.1 Session Elevation (MFA)
+
+When a user completes MFA verification on the client, the session in the Supabase client is elevated
+to AAL2. However, since session cookies (`sb-access-token`) are marked as `HttpOnly`, they cannot be
+updated directly by client-side code.
+
+To ensure the server recognizes the elevated session:
+
+1. The client performs `challengeAndVerify()`.
+2. The client fetches the updated session via `getSession()`.
+3. The client calls the `/api/auth/sync-session` endpoint to bridge the tokens back to `HttpOnly`
+   cookies.
+
+This pattern is required for AAL2 enforcement in server-side middleware.
+
 ---
 
 ## 7) Content Collections
