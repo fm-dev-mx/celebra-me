@@ -141,6 +141,14 @@ export async function findEventById(
 	return rows[0] ? toEventRecord(rows[0]) : null;
 }
 
+export async function findEventByIdService(eventId: string): Promise<EventRecord | null> {
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: `events?select=*&id=eq.${encodeURIComponent(eventId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toEventRecord(rows[0]) : null;
+}
+
 export async function findGuestsByEvent(
 	filters: GuestFilters,
 	hostAccessToken: string,
@@ -188,6 +196,14 @@ export async function findGuestById(
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=*&id=eq.${encodeURIComponent(guestId)}&limit=1`,
 		authToken: hostAccessToken,
+	});
+	return rows[0] ? toGuestRecord(rows[0]) : null;
+}
+
+export async function findGuestByIdService(guestId: string): Promise<GuestInvitationRecord | null> {
+	const rows = await supabaseRestRequest<GuestRow[]>({
+		pathWithQuery: `guest_invitations?select=*&id=eq.${encodeURIComponent(guestId)}&limit=1`,
+		useServiceRole: true,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
 }

@@ -2,10 +2,12 @@ import {
 	createGuestInvitation,
 	deleteGuestById,
 	findEventById,
+	findEventByIdService,
 	findEventByInvitationPublic,
 	findEventsByOwner,
 	findGuestsByEvent,
 	findGuestById,
+	findGuestByIdService,
 	findGuestByInviteIdPublic,
 	findGuestByLegacyIdentityPublic,
 	updateGuestById,
@@ -14,12 +16,15 @@ import {
 import type {
 	AttendanceStatus,
 	DashboardGuestListResponse,
+	DashboardGuestMutationResponse,
 	EventRecord,
 	GuestInvitationDTO,
 	GuestInvitationRecord,
 	GuestRSVPSubmitDTO,
 } from './types';
 import { getRsvpContext } from '@/lib/rsvp/service';
+import { ApiError } from './errors';
+import { publishGuestStreamEvent } from './stream';
 
 const MAX_TEXT_LEN = 500;
 
@@ -92,7 +97,13 @@ export async function listDashboardGuests(input: {
 	origin: string;
 }): Promise<DashboardGuestListResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
-	if (!event) throw new Error('Evento no encontrado o sin permisos.');
+	if (!event) {
+		const serviceEvent = await findEventByIdService(input.eventId);
+		if (serviceEvent) {
+			throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
+		}
+		throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	}
 
 	const guests = await findGuestsByEvent(
 		{
@@ -105,6 +116,7 @@ export async function listDashboardGuests(input: {
 
 	const items = guests.map((guest) => toGuestDto(guest, input.origin, event.title));
 	return {
+		eventId: event.id,
 		items,
 		totals: {
 			total: items.length,
@@ -131,14 +143,20 @@ export async function createDashboardGuest(input: {
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
 	origin: string;
-}): Promise<GuestInvitationDTO> {
+}): Promise<DashboardGuestMutationResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
-	if (!event) throw new Error('Evento no encontrado o sin permisos.');
+	if (!event) {
+		const serviceEvent = await findEventByIdService(input.eventId);
+		if (serviceEvent) {
+			throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
+		}
+		throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	}
 
 	const fullName = sanitize(input.fullName, 140);
-	if (!fullName) throw new Error('Nombre completo es obligatorio.');
+	if (!fullName) throw new ApiError(400, 'bad_request', 'Nombre completo es obligatorio.');
 	const phoneE164 = normalizePhone(input.phoneE164);
-	if (!phoneE164) throw new Error('Telefono es obligatorio.');
+	if (!phoneE164) throw new ApiError(400, 'bad_request', 'Telefono es obligatorio.');
 	const maxAllowedAttendees = Math.max(
 		1,
 		Math.min(20, Math.trunc(input.maxAllowedAttendees || 1)),
@@ -154,7 +172,18 @@ export async function createDashboardGuest(input: {
 		input.hostAccessToken,
 	);
 
-	return toGuestDto(created, input.origin, event.title);
+	const item = toGuestDto(created, input.origin, event.title);
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: event.id,
+		guestId: created.id,
+		updatedAt: item.updatedAt,
+	});
+	return {
+		item,
+		updatedAt: item.updatedAt,
+		source: 'mutation',
+	};
 }
 
 export async function updateDashboardGuest(input: {
@@ -167,9 +196,15 @@ export async function updateDashboardGuest(input: {
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
 	guestMessage?: string;
-}): Promise<GuestInvitationDTO> {
+}): Promise<DashboardGuestMutationResponse> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
-	if (!existing) throw new Error('Invitado no encontrado o sin permisos.');
+	if (!existing) {
+		const serviceGuest = await findGuestByIdService(input.guestId);
+		if (serviceGuest) {
+			throw new ApiError(403, 'forbidden', 'Sin acceso al invitado solicitado.');
+		}
+		throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
+	}
 
 	const nextStatus = input.attendanceStatus ?? existing.attendanceStatus;
 	const requestedCount =
@@ -183,10 +218,10 @@ export async function updateDashboardGuest(input: {
 			: existing.maxAllowedAttendees;
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
-		throw new Error('Confirmado requiere al menos un asistente.');
+		throw new ApiError(400, 'bad_request', 'Confirmado requiere al menos un asistente.');
 	}
 	if (nextAttendeeCount > nextCap) {
-		throw new Error(`El maximo permitido es ${nextCap}.`);
+		throw new ApiError(400, 'bad_request', `El maximo permitido es ${nextCap}.`);
 	}
 
 	const updated = await updateGuestById(
@@ -205,7 +240,18 @@ export async function updateDashboardGuest(input: {
 		input.hostAccessToken,
 	);
 
-	return toGuestDto(updated, input.origin);
+	const item = toGuestDto(updated, input.origin);
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: updated.eventId,
+		guestId: updated.id,
+		updatedAt: item.updatedAt,
+	});
+	return {
+		item,
+		updatedAt: item.updatedAt,
+		source: 'mutation',
+	};
 }
 
 export async function deleteDashboardGuest(input: {
@@ -213,17 +259,35 @@ export async function deleteDashboardGuest(input: {
 	hostAccessToken: string;
 }): Promise<void> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
-	if (!existing) throw new Error('Invitado no encontrado o sin permisos.');
+	if (!existing) {
+		const serviceGuest = await findGuestByIdService(input.guestId);
+		if (serviceGuest) {
+			throw new ApiError(403, 'forbidden', 'Sin acceso al invitado solicitado.');
+		}
+		throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
+	}
 	await deleteGuestById(input.guestId, input.hostAccessToken);
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: existing.eventId,
+		guestId: existing.id,
+		updatedAt: new Date().toISOString(),
+	});
 }
 
 export async function markGuestShared(input: {
 	guestId: string;
 	hostAccessToken: string;
 	origin: string;
-}): Promise<GuestInvitationDTO> {
+}): Promise<DashboardGuestMutationResponse> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
-	if (!existing) throw new Error('Invitado no encontrado o sin permisos.');
+	if (!existing) {
+		const serviceGuest = await findGuestByIdService(input.guestId);
+		if (serviceGuest) {
+			throw new ApiError(403, 'forbidden', 'Sin acceso al invitado solicitado.');
+		}
+		throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
+	}
 
 	const updated = await updateGuestById(
 		{
@@ -233,7 +297,18 @@ export async function markGuestShared(input: {
 		input.hostAccessToken,
 	);
 
-	return toGuestDto(updated, input.origin);
+	const item = toGuestDto(updated, input.origin);
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: updated.eventId,
+		guestId: updated.id,
+		updatedAt: item.updatedAt,
+	});
+	return {
+		item,
+		updatedAt: item.updatedAt,
+		source: 'mutation',
+	};
 }
 
 export async function getInvitationContextByInviteId(inviteId: string): Promise<{
@@ -249,13 +324,13 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	};
 }> {
 	const safeInviteId = sanitize(inviteId, 64);
-	if (!safeInviteId) throw new Error('inviteId invalido.');
+	if (!safeInviteId) throw new ApiError(400, 'bad_request', 'inviteId invalido.');
 
 	const invitation = await findGuestByInviteIdPublic(safeInviteId);
-	if (!invitation) throw new Error('Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
 
 	const event = await findEventByInvitationPublic(invitation.eventId);
-	if (!event) throw new Error('Evento no encontrado.');
+	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
 
 	return {
 		inviteId: invitation.inviteId,
@@ -276,20 +351,24 @@ export async function submitGuestRsvpByInviteId(
 	payload: GuestRSVPSubmitDTO,
 ): Promise<{ attendanceStatus: AttendanceStatus; attendeeCount: number; respondedAt: string }> {
 	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
-	if (!invitation) throw new Error('Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
 
 	const attendanceStatus = payload.attendanceStatus;
 	if (attendanceStatus !== 'confirmed' && attendanceStatus !== 'declined') {
-		throw new Error('Estado de asistencia invalido.');
+		throw new ApiError(400, 'bad_request', 'Estado de asistencia invalido.');
 	}
 
 	const safeCount = toSafeAttendeeCount(payload.attendeeCount);
 	const attendeeCount = attendanceStatus === 'declined' ? 0 : safeCount;
 	if (attendanceStatus === 'confirmed' && attendeeCount < 1) {
-		throw new Error('Confirmado requiere al menos 1 asistente.');
+		throw new ApiError(400, 'bad_request', 'Confirmado requiere al menos 1 asistente.');
 	}
 	if (attendeeCount > invitation.maxAllowedAttendees) {
-		throw new Error(`El limite para esta invitacion es ${invitation.maxAllowedAttendees}.`);
+		throw new ApiError(
+			400,
+			'bad_request',
+			`El limite para esta invitacion es ${invitation.maxAllowedAttendees}.`,
+		);
 	}
 
 	const respondedAt = new Date().toISOString();
@@ -299,6 +378,12 @@ export async function submitGuestRsvpByInviteId(
 		guest_message: sanitize(payload.guestMessage, 500),
 		responded_at: respondedAt,
 		last_response_source: 'link',
+	});
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: invitation.eventId,
+		guestId: invitation.id,
+		updatedAt: updated.updatedAt,
 	});
 
 	return {
@@ -310,11 +395,17 @@ export async function submitGuestRsvpByInviteId(
 
 export async function trackInvitationView(inviteId: string): Promise<void> {
 	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
-	if (!invitation) throw new Error('Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
 	const now = new Date().toISOString();
 	await updateGuestByInviteIdPublic(inviteId, {
 		first_viewed_at: invitation.firstViewedAt ?? now,
 		last_viewed_at: now,
+	});
+	publishGuestStreamEvent({
+		type: 'guest_updated',
+		eventId: invitation.eventId,
+		guestId: invitation.id,
+		updatedAt: now,
 	});
 }
 

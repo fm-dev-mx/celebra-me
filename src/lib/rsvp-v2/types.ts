@@ -59,6 +59,7 @@ export interface GuestInvitationDTO {
 }
 
 export interface DashboardGuestListResponse {
+	eventId: string;
 	items: GuestInvitationDTO[];
 	totals: {
 		total: number;
@@ -68,6 +69,22 @@ export interface DashboardGuestListResponse {
 		viewed: number;
 	};
 	updatedAt: string;
+}
+
+export interface DashboardEventListResponse {
+	items: Array<{
+		id: string;
+		title: string;
+		slug: string;
+		eventType: EventRecord['eventType'];
+		status: EventRecord['status'];
+	}>;
+}
+
+export interface DashboardGuestMutationResponse {
+	item: GuestInvitationDTO;
+	updatedAt: string;
+	source: 'mutation';
 }
 
 export interface GuestRSVPSubmitDTO {

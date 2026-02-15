@@ -1,4 +1,5 @@
 import { getEnv } from '@/utils/env';
+import { ApiError } from './errors';
 
 export interface HostSession {
 	userId: string;
@@ -100,7 +101,7 @@ export async function getHostSessionFromRequest(request: Request): Promise<HostS
 export async function requireHostSession(request: Request): Promise<HostSession> {
 	const session = await getHostSessionFromRequest(request);
 	if (!session) {
-		throw new Error('No autorizado.');
+		throw new ApiError(401, 'unauthorized', 'No autorizado.');
 	}
 	return session;
 }

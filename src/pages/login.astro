@@ -1,0 +1,26 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { resolveNextPath } from '@/lib/rsvp-v2/login';
+
+const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
+---
+
+<Layout title="Acceso de anfitrión" description="Inicia sesión para administrar invitados RSVP">
+	<main style="max-width:720px;margin:2rem auto;padding:1rem;">
+		<h1>Acceso de anfitrión</h1>
+		<p>
+			Esta instalación requiere sesión de anfitrión para acceder al dashboard RSVP.
+		</p>
+		<p>
+			Después de autenticar tu sesión Supabase, continúa aquí:
+			<a href={next} rel="nofollow">{next}</a>
+		</p>
+		<hr />
+		<p>
+			Panel admin legado:
+			<code>/admin/rsvp</code>
+			(temporal, Basic Auth).
+		</p>
+	</main>
+</Layout>
+

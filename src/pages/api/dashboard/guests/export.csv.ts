@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { badRequest, csvResponse, internalError, unauthorizedResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, csvResponse, errorResponse } from '@/lib/rsvp-v2/http';
 import { listDashboardGuests } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 200): string {
@@ -61,9 +61,6 @@ export const GET: APIRoute = async ({ request, url }) => {
 			`dashboard-guests-${eventId}.csv`,
 		);
 	} catch (error) {
-		if (error instanceof Error && error.message.includes('No autorizado')) {
-			return unauthorizedResponse();
-		}
-		return internalError(error);
+		return errorResponse(error);
 	}
 };

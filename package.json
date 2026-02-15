@@ -12,6 +12,8 @@
         "preview": "npx serve .vercel/output/static",
         "astro": "astro",
         "test": "jest",
+        "test:rsvp-v2": "jest --runInBand tests/api tests/lib/rsvp-v2 tests/unit/rsvp-v2.service.test.ts tests/components/GuestDashboardApp.auth.test.tsx",
+        "test:rsvp-v2:coverage": "jest --runInBand --coverage tests/api tests/lib/rsvp-v2 tests/unit/rsvp-v2.service.test.ts tests/components/GuestDashboardApp.auth.test.tsx --collectCoverageFrom=\"src/lib/rsvp-v2/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/dashboard/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/invitacion/**/*.{ts,tsx}\"",
         "lint": "eslint .",
         "lint:scss": "stylelint \"src/**/*.scss\"",
         "gatekeeper": "node scripts/gatekeeper.js",

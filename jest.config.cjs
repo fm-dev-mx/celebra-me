@@ -1,4 +1,6 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
+const strictRsvpCoverage = process.env.RSVP_V2_STRICT_COVERAGE === 'true';
+
 module.exports = {
 	preset: 'ts-jest/presets/default-esm', // Use ESM preset
 	testEnvironment: 'jsdom', // DOM environment for React component testing
@@ -44,6 +46,30 @@ module.exports = {
 	],
 	coverageDirectory: '<rootDir>/coverage', // Directory for coverage reports
 	coverageReporters: ['text', 'lcov'], // Output formats
+	...(strictRsvpCoverage
+		? {
+				coverageThreshold: {
+					'./src/lib/rsvp-v2/**/*.ts': {
+						lines: 70,
+						branches: 50,
+						functions: 60,
+						statements: 70,
+					},
+					'./src/pages/api/dashboard/**/*.ts': {
+						lines: 70,
+						branches: 50,
+						functions: 60,
+						statements: 70,
+					},
+					'./src/pages/api/invitacion/**/*.ts': {
+						lines: 75,
+						branches: 50,
+						functions: 65,
+						statements: 75,
+					},
+				},
+			}
+		: {}),
 	// Ignore patterns
 	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.vercel/'],
 };

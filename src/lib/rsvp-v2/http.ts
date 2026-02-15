@@ -1,3 +1,5 @@
+import { ApiError, isApiError } from './errors';
+
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export function jsonResponse(payload: unknown, status = 200): Response {
@@ -15,14 +17,35 @@ export function csvResponse(content: string, fileName: string): Response {
 }
 
 export function unauthorizedResponse(): Response {
-	return jsonResponse({ message: 'No autorizado.' }, 401);
+	return errorResponse(new ApiError(401, 'unauthorized', 'No autorizado.'));
 }
 
 export function badRequest(message: string): Response {
-	return jsonResponse({ message }, 400);
+	return errorResponse(new ApiError(400, 'bad_request', message));
 }
 
 export function internalError(error: unknown): Response {
-	const message = error instanceof Error ? error.message : 'Error interno del servidor.';
-	return jsonResponse({ message }, 500);
+	return errorResponse(error);
+}
+
+export function errorResponse(error: unknown): Response {
+	if (isApiError(error)) {
+		return jsonResponse(
+			{
+				code: error.code,
+				message: error.message,
+				details: error.details,
+			},
+			error.status,
+		);
+	}
+
+	const fallbackMessage = error instanceof Error ? error.message : 'Error interno del servidor.';
+	return jsonResponse(
+		{
+			code: 'internal_error',
+			message: fallbackMessage,
+		},
+		500,
+	);
 }

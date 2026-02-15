@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
-import { badRequest, jsonResponse } from '@/lib/rsvp-v2/http';
-import { checkRateLimit } from '@/lib/rsvp-v2/rateLimit';
+import { ApiError } from '@/lib/rsvp-v2/errors';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { trackInvitationView } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 200): string {
@@ -9,10 +10,9 @@ function sanitize(value: unknown, maxLen = 200): string {
 }
 
 function getIp(request: Request): string {
-	return sanitize(
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-		100,
-	);
+	const raw =
+		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+	return sanitize(raw.split(',')[0], 100);
 }
 
 export const POST: APIRoute = async ({ params, request }) => {
@@ -21,15 +21,20 @@ export const POST: APIRoute = async ({ params, request }) => {
 		if (!inviteId) return badRequest('inviteId es obligatorio.');
 
 		const ip = getIp(request);
-		if (!checkRateLimit(`view:${inviteId}:${ip}`, 60, 60_000)) {
-			return jsonResponse({ message: 'Demasiadas solicitudes.' }, 429);
+		const allowed = await checkRateLimit({
+			namespace: 'view',
+			entityId: inviteId,
+			ip,
+			maxHits: 120,
+			windowSec: 60,
+		});
+		if (!allowed) {
+			return errorResponse(new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.'));
 		}
 
 		await trackInvitationView(inviteId);
 		return jsonResponse({ message: 'Vista registrada.' });
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Error interno del servidor.';
-		const status = message.includes('no encontrada') ? 404 : 500;
-		return jsonResponse({ message }, status);
+		return errorResponse(error);
 	}
 };

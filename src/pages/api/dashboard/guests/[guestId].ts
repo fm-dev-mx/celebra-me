@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { badRequest, internalError, jsonResponse, unauthorizedResponse } from '@/lib/rsvp-v2/http';
+import { ApiError } from '@/lib/rsvp-v2/errors';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { deleteDashboardGuest, updateDashboardGuest } from '@/lib/rsvp-v2/service';
 import type { AttendanceStatus } from '@/lib/rsvp-v2/types';
 
@@ -14,9 +16,26 @@ function parseStatus(raw: string): AttendanceStatus | undefined {
 	return undefined;
 }
 
+function getIp(request: Request): string {
+	const raw =
+		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+	return sanitize(raw.split(',')[0], 100);
+}
+
 export const PATCH: APIRoute = async ({ params, request, url }) => {
 	try {
 		const session = await requireHostSession(request);
+		const allowed = await checkRateLimit({
+			namespace: 'dashboard',
+			entityId: `patch:${session.userId}`,
+			ip: getIp(request),
+			maxHits: 30,
+			windowSec: 60,
+		});
+		if (!allowed) {
+			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+		}
+
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId es obligatorio.');
 
@@ -29,7 +48,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			guestMessage?: string;
 		};
 
-		const item = await updateDashboardGuest({
+		const result = await updateDashboardGuest({
 			guestId,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
@@ -43,27 +62,36 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 				body.guestMessage !== undefined ? sanitize(body.guestMessage, 500) : undefined,
 		});
 
-		return jsonResponse({ item });
+		return jsonResponse(result);
 	} catch (error) {
-		if (error instanceof Error && error.message.includes('No autorizado')) {
-			return unauthorizedResponse();
-		}
-		return internalError(error);
+		return errorResponse(error);
 	}
 };
 
 export const DELETE: APIRoute = async ({ params, request }) => {
 	try {
 		const session = await requireHostSession(request);
+		const allowed = await checkRateLimit({
+			namespace: 'dashboard',
+			entityId: `delete:${session.userId}`,
+			ip: getIp(request),
+			maxHits: 30,
+			windowSec: 60,
+		});
+		if (!allowed) {
+			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+		}
+
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId es obligatorio.');
 
 		await deleteDashboardGuest({ guestId, hostAccessToken: session.accessToken });
-		return jsonResponse({ message: 'Invitado eliminado.' });
+		return jsonResponse({
+			source: 'mutation',
+			updatedAt: new Date().toISOString(),
+			message: 'Invitado eliminado.',
+		});
 	} catch (error) {
-		if (error instanceof Error && error.message.includes('No autorizado')) {
-			return unauthorizedResponse();
-		}
-		return internalError(error);
+		return errorResponse(error);
 	}
 };

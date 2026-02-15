@@ -2,13 +2,11 @@
 import Layout from '@/layouts/Layout.astro';
 import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
 import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
+import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
 
 const hostSession = await getHostSessionFromRequest(Astro.request);
 if (!hostSession) {
-	return new Response('No autorizado. Inicia sesion para acceder al dashboard.', {
-		status: 401,
-		headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-	});
+	return Astro.redirect(buildHostLoginRedirect('/dashboard/invitados'));
 }
 
 const eventId = Astro.url.searchParams.get('eventId') ?? '';

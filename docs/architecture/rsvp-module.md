@@ -46,10 +46,11 @@ Legacy tables retained during transition:
 ### Host Flow
 
 1. Host signs in with Supabase Auth.
-2. Dashboard requests `/api/dashboard/guests` with JWT.
-3. API queries PostgREST with user JWT (RLS scoped by `auth.uid()`).
-4. CRUD actions update `guest_invitations` and append `guest_invitation_audit`.
-5. Dashboard refreshes list periodically and after mutations.
+2. Unauthenticated access to `/dashboard/invitados` redirects to `/login?next=/dashboard/invitados`.
+3. Dashboard requests `/api/dashboard/guests` with JWT.
+4. API queries PostgREST with user JWT (RLS scoped by `auth.uid()`).
+5. CRUD actions update `guest_invitations` and append `guest_invitation_audit`.
+6. Dashboard refreshes list periodically and after mutations.
 
 ### Guest Flow
 
@@ -94,3 +95,4 @@ contracts.
 - `src/content/events/*.json -> rsvp.guests` is legacy for invitation rendering.
 - Dashboard source of truth is now Supabase (`guest_invitations`).
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
+- `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.

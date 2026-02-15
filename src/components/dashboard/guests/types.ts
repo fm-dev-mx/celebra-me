@@ -18,6 +18,7 @@ export interface DashboardGuestItem {
 }
 
 export interface DashboardGuestListResponse {
+	eventId: string;
 	items: DashboardGuestItem[];
 	totals: {
 		total: number;

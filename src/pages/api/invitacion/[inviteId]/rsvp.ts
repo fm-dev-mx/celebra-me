@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
-import { badRequest, jsonResponse } from '@/lib/rsvp-v2/http';
-import { checkRateLimit } from '@/lib/rsvp-v2/rateLimit';
+import { ApiError } from '@/lib/rsvp-v2/errors';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 500): string {
@@ -9,10 +10,9 @@ function sanitize(value: unknown, maxLen = 500): string {
 }
 
 function getIp(request: Request): string {
-	return sanitize(
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-		100,
-	);
+	const raw =
+		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+	return sanitize(raw.split(',')[0], 100);
 }
 
 export const POST: APIRoute = async ({ params, request }) => {
@@ -21,8 +21,15 @@ export const POST: APIRoute = async ({ params, request }) => {
 		if (!inviteId) return badRequest('inviteId es obligatorio.');
 
 		const ip = getIp(request);
-		if (!checkRateLimit(`rsvp:${inviteId}:${ip}`, 20, 60_000)) {
-			return jsonResponse({ message: 'Demasiadas solicitudes.' }, 429);
+		const allowed = await checkRateLimit({
+			namespace: 'rsvp',
+			entityId: inviteId,
+			ip,
+			maxHits: 20,
+			windowSec: 60,
+		});
+		if (!allowed) {
+			return errorResponse(new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.'));
 		}
 
 		const body = (await request.json()) as {
@@ -47,15 +54,6 @@ export const POST: APIRoute = async ({ params, request }) => {
 		});
 		return jsonResponse({ message: 'RSVP guardado.', ...result });
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Error interno del servidor.';
-		const status =
-			message.includes('invalido') ||
-			message.includes('limite') ||
-			message.includes('requiere')
-				? 400
-				: message.includes('no encontrada')
-					? 404
-					: 500;
-		return jsonResponse({ message }, status);
+		return errorResponse(error);
 	}
 };

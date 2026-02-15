@@ -4,6 +4,7 @@ import type { DashboardGuestItem } from './types';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];
+	inviteBaseUrl: string;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -18,7 +19,13 @@ function formatDate(value: string | null): string {
 	}
 }
 
-const GuestTable: React.FC<GuestTableProps> = ({ items, onEdit, onDelete, onMarkShared }) => {
+const GuestTable: React.FC<GuestTableProps> = ({
+	items,
+	inviteBaseUrl,
+	onEdit,
+	onDelete,
+	onMarkShared,
+}) => {
 	if (items.length === 0) {
 		return <p className="dashboard-guests__empty">No hay invitados registrados.</p>;
 	}
@@ -39,7 +46,7 @@ const GuestTable: React.FC<GuestTableProps> = ({ items, onEdit, onDelete, onMark
 				</thead>
 				<tbody>
 					{items.map((item) => {
-						const inviteUrl = `${window.location.origin}/invitacion/${encodeURIComponent(item.inviteId)}`;
+						const inviteUrl = `${inviteBaseUrl}/invitacion/${encodeURIComponent(item.inviteId)}`;
 						return (
 							<tr key={item.guestId}>
 								<td>

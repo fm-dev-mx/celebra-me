@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { badRequest, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 400): string {
@@ -23,7 +23,6 @@ export const GET: APIRoute = async ({ url }) => {
 		}
 		return jsonResponse({ canonicalUrl });
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Error interno del servidor.';
-		return jsonResponse({ message }, 500);
+		return errorResponse(error);
 	}
 };
