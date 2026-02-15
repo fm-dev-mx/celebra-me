@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getEnv } from '@/utils/env';
 
 export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, next) => {
 	// Only protect /dashboard routes
@@ -14,9 +15,9 @@ export const onRequest = defineMiddleware(async ({ url, cookies, redirect }, nex
 	try {
 		// Get user info and app_metadata from Supabase Auth
 		// We use the access token to get the user profile
-		const userResponse = await fetch(`${import.meta.env.SUPABASE_URL}/auth/v1/user`, {
+		const userResponse = await fetch(`${getEnv('SUPABASE_URL')}/auth/v1/user`, {
 			headers: {
-				apikey: import.meta.env.SUPABASE_ANON_KEY,
+				apikey: getEnv('SUPABASE_ANON_KEY'),
 				Authorization: `Bearer ${sessionCookie.value}`,
 			},
 		});

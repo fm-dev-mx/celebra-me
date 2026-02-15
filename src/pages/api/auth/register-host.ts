@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { errorResponse } from '@/lib/rsvp-v2/http';
 import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp-v2/authApi';
-import { buildSessionCookie } from '@/lib/rsvp-v2/cookies';
+import { buildRefreshTokenCookie, buildSessionCookie } from '@/lib/rsvp-v2/cookies';
 import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,
@@ -47,6 +47,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		}
 
 		let accessToken = '';
+		let refreshToken = '';
 		let userId = '';
 		let userEmail = email;
 		try {
@@ -61,7 +62,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 				signed.user?.email || (signed as any).email || email,
 				320,
 			).toLowerCase();
-			accessToken = sanitize(signed.access_token, 4096);
+			accessToken = signed.access_token || '';
+			refreshToken = signed.refresh_token || '';
 		} catch (error: any) {
 			const existing = await findAuthUserByEmail({
 				email,
@@ -106,17 +108,22 @@ export const POST: APIRoute = async ({ request, url }) => {
 					? 'Cuenta creada. Revisa tu correo para ingresar con Magic Link.'
 					: 'Cuenta creada correctamente.',
 			next: '/dashboard/invitados',
+			refreshToken,
+			accessToken,
 		};
 
 		if (accessToken) {
+			const headers = new Headers({ 'Content-Type': 'application/json' });
+			headers.append('Set-Cookie', buildSessionCookie(accessToken));
+			if (refreshToken) {
+				headers.append('Set-Cookie', buildRefreshTokenCookie(refreshToken));
+			}
 			return new Response(JSON.stringify(payload), {
 				status: 200,
-				headers: {
-					'Content-Type': 'application/json',
-					'Set-Cookie': buildSessionCookie(accessToken),
-				},
+				headers,
 			});
 		}
+
 		return new Response(JSON.stringify(payload), {
 			status: 200,
 			headers: {

@@ -126,48 +126,115 @@ const sessionToken = Astro.cookies.get('sb-access-token')?.value || '';
 		async function init() {
 			console.log('[MFA] Iniciando configuración...');
 
-			const finalToken = token || getCookie('sb-mfa-session');
+			const finalToken = token || getCookie('sb-access-token') || getCookie('sb-mfa-session') || sessionStorage.getItem('temp-sb-access-token');
+			const refreshToken = getCookie('sb-refresh-token') || sessionStorage.getItem('temp-sb-refresh-token') || '';
+
+			console.log('[MFA] Session check:', {
+				hasAttrToken: !!token,
+				hasAccessTokenCookie: !!getCookie('sb-access-token'),
+				hasRefreshTokenCookie: !!getCookie('sb-refresh-token'),
+				hasMfaSessionCookie: !!getCookie('sb-mfa-session'),
+				tokenLength: finalToken?.length
+			});
 
 			if (!url || !key || !finalToken) {
 				console.error('[MFA] Error de configuración:', { url: !!url, key: !!key, token: !!finalToken });
-				if (statusEl) statusEl.textContent = 'Error: Faltan datos de sesión.';
+				if (statusEl) {
+					statusEl.textContent = 'Faltan datos de sesión para configurar seguridad. Por favor, intenta iniciar sesión de nuevo.';
+					statusEl.dataset.tone = 'error';
+				}
 				return;
 			}
 
-			supabase = createClient(url, key);
-
-			// SYNC SESSION
-			const { error: sessionError } = await supabase.auth.setSession({
-				access_token: finalToken,
-				refresh_token: '',
-			});
-
-			if (sessionError) {
-				console.error('[MFA] Session Error:', sessionError);
-				if (statusEl) statusEl.textContent = 'Error al verificar sesión.';
-				return;
-			}
-
-			// ENROLL
 			try {
-				const { data, error } = await supabase.auth.mfa.enroll({
+				supabase = createClient(url, key);
+				console.log('[MFA] Supabase client created');
+
+				// SYNC SESSION
+				const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+					access_token: finalToken,
+					refresh_token: refreshToken,
+				});
+
+				if (sessionError) {
+					console.error('[MFA] setSession Error:', sessionError);
+					if (statusEl) statusEl.textContent = 'Error al sincronizar sesión de seguridad. Reintenta el acceso.';
+					return;
+				}
+
+				console.log('[MFA] Session synced successfully:', { user: sessionData?.user?.email });
+
+				// CHECK EXISTING FACTORS
+				const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+				if (factorsError) {
+					console.warn('[MFA] Could not list factors, proceeding with enrollment anyway:', factorsError);
+				}
+
+				const verifiedFactor = factors?.all?.find((f: any) => f.status === 'verified' && f.factor_type === 'totp');
+
+				if (verifiedFactor) {
+					console.log('[MFA] Found verified factor, switching to Challenge Mode:', verifiedFactor.id);
+					enrollmentId = verifiedFactor.id;
+
+					if (qrContainer) {
+						qrContainer.innerHTML = '';
+						const icon = document.createElement('div');
+						// Gold icon for success/locked state
+						icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+						icon.style.marginBottom = '1rem';
+						qrContainer.appendChild(icon);
+
+						const p = document.createElement('p');
+						p.style.color = '#080808';
+						p.style.fontWeight = '500';
+						p.textContent = 'MFA ya está configurado. Ingresa el código de tu aplicación para continuar.';
+						qrContainer.appendChild(p);
+					}
+					// Return early to skip enrollment, but ensure we set enrollmentId so verify works
+					return;
+				}
+
+				// IF NO VERIFIED FACTOR, CLEANUP UNVERIFIED ONES
+				if (factors && factors.all && factors.all.length > 0) {
+					console.log('[MFA] Found unverified factors, cleaning up...', factors.all.length);
+					const unverifiedFactors = factors.all.filter((f: any) => f.status === 'unverified');
+
+					for (const factor of unverifiedFactors) {
+						const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+						if (unenrollError) {
+							console.error('[MFA] Failed to unenroll factor:', factor.id, unenrollError);
+						} else {
+							console.log('[MFA] Unenrolled factor:', factor.id);
+						}
+					}
+				}
+
+				// ENROLL NEW FACTOR
+				const { data, error: enrollError } = await supabase.auth.mfa.enroll({
 					factorType: 'totp'
 				});
 
-				if (error) throw error;
+				if (enrollError) throw enrollError;
 
 				enrollmentId = data.id;
 
 				if (qrContainer && data.totp.qr_code) {
-					qrContainer.innerHTML = `
-						<img src="${data.totp.qr_code}" alt="Scan this QR Code" />
-						<p style="margin-top: 1.5rem; color: #000; font-weight: 600; font-size: 0.9rem;">
-							Escanea este código con tu App Authenticator
-						</p>
-					`;
+					qrContainer.innerHTML = '';
+					const img = document.createElement('img');
+					img.src = data.totp.qr_code;
+					img.alt = 'Scan this QR Code';
+					qrContainer.appendChild(img);
+
+					const p = document.createElement('p');
+					p.style.marginTop = '1.5rem';
+					p.style.color = '#000';
+					p.style.fontWeight = '600';
+					p.style.fontSize = '0.9rem';
+					p.textContent = 'Escanea este código con tu App Authenticator';
+					qrContainer.appendChild(p);
 				}
 			} catch (err: any) {
-				console.error('[MFA] Enrollment Error:', err);
+				console.error('[MFA] Init/Enrollment Error:', err);
 				if (statusEl) {
 					statusEl.textContent = `Error: ${err.message || 'No se pudo generar el QR'}. Reintenta el login.`;
 					statusEl.dataset.tone = 'error';

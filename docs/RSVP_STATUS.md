@@ -136,6 +136,14 @@ persistencia durable integrada y cobertura crítica de pruebas backend.
 - Flag de limpieza: `omitTitle` para mensajes más directos.
 - Placeholders dinámicos: `{name}`, `{guestCount}`, `{title}` integrales.
 
+### 2.7 Host Authentication (Soporte Admin)
+
+✅ Autenticación de anfitriones integrada
+
+- Endpoints base: `api/auth/login-host`, `api/auth/register-host`
+- Soporte dual: Password + Magic Link
+- Cobertura de pruebas E2E y unitarias para flujos de registro e inicio de sesión.
+
 ---
 
 ## 3) Evidencia de validación

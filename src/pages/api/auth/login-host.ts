@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { sendMagicLink, signInWithPassword } from '@/lib/rsvp-v2/authApi';
-import { buildSessionCookie } from '@/lib/rsvp-v2/cookies';
+import { buildRefreshTokenCookie, buildSessionCookie } from '@/lib/rsvp-v2/cookies';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';
@@ -38,20 +38,24 @@ export const POST: APIRoute = async ({ request, url }) => {
 			email,
 			password,
 		});
-		return new Response(
-			JSON.stringify({
-				ok: true,
-				message: 'Inicio de sesión exitoso.',
-				next: '/dashboard/invitados',
-			}),
-			{
-				status: 200,
-				headers: {
-					'Content-Type': 'application/json',
-					'Set-Cookie': buildSessionCookie(auth.access_token),
-				},
-			},
-		);
+		const payload = {
+			ok: true,
+			message: 'Inicio de sesión exitoso.',
+			next: '/dashboard/invitados',
+			refreshToken: auth.refresh_token,
+			accessToken: auth.access_token,
+		};
+
+		const headers = new Headers({ 'Content-Type': 'application/json' });
+		headers.append('Set-Cookie', buildSessionCookie(auth.access_token));
+		if (auth.refresh_token) {
+			headers.append('Set-Cookie', buildRefreshTokenCookie(auth.refresh_token));
+		}
+
+		return new Response(JSON.stringify(payload), {
+			status: 200,
+			headers,
+		});
 	} catch (error) {
 		return errorResponse(error);
 	}
