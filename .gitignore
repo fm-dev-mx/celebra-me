@@ -32,6 +32,7 @@ test_output.txt
 staged.diff
 coverage/
 temp/
+_tmp_*
 
 
 # --- ENVIRONMENT & SECRETS ----------------------------------------------------
@@ -65,6 +66,7 @@ temp/
 # Auto-generated type definitions and internal settings
 astro/types.d.ts
 .astro/settings.json
+/supabase/.temp/
 
 
 # --- SYSTEM FILES -------------------------------------------------------------
