@@ -2,24 +2,39 @@ import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { sendMagicLink, signInWithPassword } from '@/lib/rsvp-v2/authApi';
-import { buildRefreshTokenCookie, buildSessionCookie } from '@/lib/rsvp-v2/cookies';
-
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
+import {
+	buildIdleActivityCookie,
+	buildRefreshTokenCookie,
+	buildSessionCookie,
+} from '@/lib/rsvp-v2/cookies';
+import {
+	assertSameOrigin,
+	assertValidEmail,
+	assertValidPassword,
+	enforceAuthRateLimit,
+	normalizeEmail,
+	sanitizePassword,
+} from '@/lib/rsvp-v2/authSecurity';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
+		assertSameOrigin(request, url.origin);
+
 		const body = (await request.json()) as {
 			email?: string;
 			password?: string;
 			method?: 'password' | 'magic_link';
 		};
 
-		const email = sanitize(body.email, 320).toLowerCase();
+		const email = normalizeEmail(body.email);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
-		if (!email) throw new ApiError(400, 'bad_request', 'Email es obligatorio.');
+		assertValidEmail(email);
+		await enforceAuthRateLimit({
+			request,
+			entityId: `login:${email}`,
+			maxHits: 8,
+			windowSec: 60,
+		});
 
 		if (method === 'magic_link') {
 			await sendMagicLink({
@@ -32,22 +47,26 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 		}
 
-		const password = sanitize(body.password, 200);
-		if (!password) throw new ApiError(400, 'bad_request', 'Password es obligatoria.');
-		const auth = await signInWithPassword({
-			email,
-			password,
-		});
+		const password = sanitizePassword(body.password);
+		assertValidPassword(password);
+		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
+		try {
+			auth = await signInWithPassword({
+				email,
+				password,
+			});
+		} catch {
+			throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+		}
 		const payload = {
 			ok: true,
 			message: 'Inicio de sesión exitoso.',
 			next: '/dashboard/invitados',
-			refreshToken: auth.refresh_token,
-			accessToken: auth.access_token,
 		};
 
 		const headers = new Headers({ 'Content-Type': 'application/json' });
 		headers.append('Set-Cookie', buildSessionCookie(auth.access_token));
+		headers.append('Set-Cookie', buildIdleActivityCookie(Math.floor(Date.now() / 1000)));
 		if (auth.refresh_token) {
 			headers.append('Set-Cookie', buildRefreshTokenCookie(auth.refresh_token));
 		}
@@ -56,7 +75,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 			status: 200,
 			headers,
 		});
-	} catch (error) {
+	} catch (error: unknown) {
+		if (error instanceof SyntaxError) {
+			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
+		}
 		return errorResponse(error);
 	}
 };

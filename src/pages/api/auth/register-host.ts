@@ -2,7 +2,21 @@ import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { errorResponse } from '@/lib/rsvp-v2/http';
 import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp-v2/authApi';
-import { buildRefreshTokenCookie, buildSessionCookie } from '@/lib/rsvp-v2/cookies';
+import {
+	buildIdleActivityCookie,
+	buildRefreshTokenCookie,
+	buildSessionCookie,
+} from '@/lib/rsvp-v2/cookies';
+import {
+	assertSameOrigin,
+	assertValidClaimCode,
+	assertValidEmail,
+	assertValidPassword,
+	enforceAuthRateLimit,
+	normalizeEmail,
+	sanitizeClaimCode,
+	sanitizePassword,
+} from '@/lib/rsvp-v2/authSecurity';
 import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,
@@ -17,6 +31,8 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
+		assertSameOrigin(request, url.origin);
+
 		const body = (await request.json()) as {
 			email?: string;
 			password?: string;
@@ -25,25 +41,33 @@ export const POST: APIRoute = async ({ request, url }) => {
 			method?: 'password' | 'magic_link';
 		};
 
-		const email = sanitize(body.email, 320).toLowerCase();
+		const email = normalizeEmail(body.email);
 		void sanitize(body.eventSlug, 120);
-		const claimCode = sanitize(body.claimCode, 256);
+		const claimCode = sanitizeClaimCode(body.claimCode);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
+		assertValidEmail(email);
+		await enforceAuthRateLimit({
+			request,
+			entityId: `register:${email}`,
+			maxHits: 6,
+			windowSec: 60,
+		});
 
 		const isAdhocAdmin = isSuperAdminEmail(email);
 
-		if (!email || (!claimCode && !isAdhocAdmin)) {
+		if (!claimCode && !isAdhocAdmin) {
 			throw new ApiError(
 				400,
 				'bad_request',
 				isAdhocAdmin ? 'email es obligatorio.' : 'email y claimCode son obligatorios.',
 			);
 		}
+		if (claimCode) assertValidClaimCode(claimCode);
 
 		const chosenPassword =
-			method === 'password' ? sanitize(body.password, 200) : generateTemporaryPassword();
-		if (method === 'password' && !chosenPassword) {
-			throw new ApiError(400, 'bad_request', 'Password es obligatoria.');
+			method === 'password' ? sanitizePassword(body.password) : generateTemporaryPassword();
+		if (method === 'password') {
+			assertValidPassword(chosenPassword);
 		}
 
 		let accessToken = '';
@@ -64,7 +88,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			).toLowerCase();
 			accessToken = signed.access_token || '';
 			refreshToken = signed.refresh_token || '';
-		} catch (error: any) {
+		} catch {
 			const existing = await findAuthUserByEmail({
 				email,
 			});
@@ -72,7 +96,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				throw new ApiError(
 					409,
 					'conflict',
-					`Error de Supabase: ${error.message || 'No se pudo crear cuenta. Verifica el email o intenta iniciar sesión.'}`,
+					'No se pudo completar el registro. Verifica los datos o intenta iniciar sesión.',
 				);
 			}
 			userId = existing.id;
@@ -108,13 +132,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 					? 'Cuenta creada. Revisa tu correo para ingresar con Magic Link.'
 					: 'Cuenta creada correctamente.',
 			next: '/dashboard/invitados',
-			refreshToken,
-			accessToken,
 		};
 
 		if (accessToken) {
 			const headers = new Headers({ 'Content-Type': 'application/json' });
 			headers.append('Set-Cookie', buildSessionCookie(accessToken));
+			headers.append('Set-Cookie', buildIdleActivityCookie(Math.floor(Date.now() / 1000)));
 			if (refreshToken) {
 				headers.append('Set-Cookie', buildRefreshTokenCookie(refreshToken));
 			}
@@ -130,7 +153,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 				'Content-Type': 'application/json',
 			},
 		});
-	} catch (error) {
+	} catch (error: unknown) {
+		if (error instanceof SyntaxError) {
+			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
+		}
 		return errorResponse(error);
 	}
 };
