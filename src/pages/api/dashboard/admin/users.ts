@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdminSession } from '@/lib/rsvp-v2/authorization';
+import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { listAdminUsers } from '@/lib/rsvp-v2/service';
 
@@ -10,7 +10,7 @@ function toSafeInt(raw: string | null, fallback: number): number {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		await requireAdminSession(request);
+		await requireAdminStrongSession(request);
 		const page = toSafeInt(url.searchParams.get('page'), 1);
 		const perPage = Math.min(toSafeInt(url.searchParams.get('perPage'), 200), 1000);
 		const items = await listAdminUsers({ page, perPage });
