@@ -1,10 +1,13 @@
 ---
 // src/pages/[eventType]/[slug].astro
-export const prerender = true;
+export const prerender = false;
 
 import { type CollectionEntry, getCollection, getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
+import { getInvitationContextByInviteId } from '@/lib/rsvp-v2/service';
 import Layout from '@/layouts/Layout.astro';
+// ... rest of imports ...
+// (Note: I will use the actual imports from the file in the replacement)
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
 import Footer from '@/components/invitation/Footer.astro';
@@ -19,6 +22,7 @@ import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
+import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
 
 // --- Static Paths ---
 export async function getStaticPaths() {
@@ -34,6 +38,8 @@ export async function getStaticPaths() {
 
 // --- Page Logic (Adapter Pattern) ---
 const { slug } = Astro.params;
+const inviteId = Astro.url.searchParams.get('invite');
+
 const eventEntry = await getEntry('events', slug as string);
 
 if (!eventEntry) {
@@ -43,19 +49,27 @@ if (!eventEntry) {
 const viewModel = adaptEvent(eventEntry);
 const { theme, hero, envelope, sections, music, navigation } = viewModel;
 
+// Guest Context Retrieval
+let guestContext = null;
+if (inviteId) {
+	try {
+		guestContext = await getInvitationContextByInviteId(inviteId);
+	} catch (e) {
+		console.error('[Personalization] Failed to load guest context:', e);
+	}
+}
+
 // Helper variables
 const showEnvelope = envelope.enabled;
 
-// --- Asset Resolution for Layout ---
-// The hero background image is an object (Asset), we need the src string for the Layout metadata
+// Asset Resolution for Layout
 const heroImageSrc = typeof hero.backgroundImage.src === 'string'
     ? hero.backgroundImage.src
     : hero.backgroundImage.src.src;
-
 ---
 
 <Layout
-	title={viewModel.title}
+	title={guestContext ? `Invitación para ${guestContext.guest.fullName}` : viewModel.title}
 	description={viewModel.description || ''}
 	image={heroImageSrc}
 	hideHeader={true}
@@ -124,7 +138,7 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 					date={hero.date}
 					city={sections.location?.city || ''}
 					sealStyle={envelope.data.sealStyle}
-					sealIcon={envelope.data.sealIcon as any}
+					sealIcon={envelope.data.sealIcon as 'boot' | 'heart' | 'monogram' | 'flower' | undefined}
 					microcopy={envelope.data.microcopy}
 					documentLabel={envelope.data.documentLabel}
 					stampText={envelope.data.stampText}
@@ -132,6 +146,7 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 					tooltipText={envelope.data.tooltipText}
 					eventSlug={viewModel.id}
 					variant={envelope.data.variant}
+					guestName={guestContext?.guest.fullName}
 				/>
 			)
 		}
@@ -152,7 +167,15 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			backgroundImage={hero.backgroundImage}
 			portrait={hero.portrait}
 			variant={hero.variant}
+			guestName={guestContext?.guest.fullName}
 		/>
+
+		{guestContext && (
+			<PersonalizedAccess
+				guestName={guestContext.guest.fullName}
+				maxAllowedAttendees={guestContext.guest.maxAllowedAttendees}
+			/>
+		)}
 
 		{sections.quote && (
 			<Quote
@@ -218,6 +241,13 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			<RSVP
 				client:visible
 				{...sections.rsvp}
+				eventSlug={viewModel.id}
+				guestCap={guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap}
+				initialGuestData={guestContext ? {
+					fullName: guestContext.guest.fullName,
+					maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+					inviteId: guestContext.inviteId
+				} : undefined}
 			/>
 		)}
 

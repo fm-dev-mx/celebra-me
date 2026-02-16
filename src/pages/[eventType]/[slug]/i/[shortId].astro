@@ -1,0 +1,32 @@
+---
+// src/pages/[eventType]/[slug]/i/[shortId].astro
+export const prerender = false;
+
+import { getInvitationContextByShortId } from '@/lib/rsvp-v2/service';
+
+const { shortId } = Astro.params;
+
+if (!shortId) {
+	return Astro.redirect('/404');
+}
+
+try {
+	const { eventType: contextType, eventSlug, inviteId } = await getInvitationContextByShortId(shortId);
+
+	// Canonical URL now points to the landing page with the invite parameter
+	// Pattern: /{eventType}/{slug}?invite={inviteId}
+	return Astro.redirect(`/${contextType}/${eventSlug}?invite=${inviteId}`);
+} catch (error) {
+	console.error('[ShortID Resolution] Error:', error);
+	return Astro.redirect('/404');
+}
+---
+
+<html>
+	<head>
+		<title>Redirigiendo...</title>
+	</head>
+	<body>
+		<p>Cargando tu invitación...</p>
+	</body>
+</html>
