@@ -667,3 +667,39 @@ export async function createAuditLog(input: {
 		},
 	});
 }
+
+export async function redeemClaimCodeRpc(input: { userId: string; codeKey: string }): Promise<{
+	success: boolean;
+	eventId: string | null;
+	membershipRole: 'owner' | 'manager' | null;
+	errorCode: string | null;
+}> {
+	const rows = await supabaseRestRequest<
+		Array<{
+			success: boolean;
+			event_id: string | null;
+			membership_role: string | null;
+			error_code: string | null;
+		}>
+	>({
+		pathWithQuery: 'rpc/redeem_claim_code',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_user_id: input.userId,
+			p_code_key: input.codeKey,
+		},
+	});
+
+	const result = rows[0];
+	if (!result) {
+		throw new Error('No se recibió respuesta del RPC redeem_claim_code');
+	}
+
+	return {
+		success: result.success,
+		eventId: result.event_id,
+		membershipRole: (result.membership_role as 'owner' | 'manager') || null,
+		errorCode: result.error_code,
+	};
+}
