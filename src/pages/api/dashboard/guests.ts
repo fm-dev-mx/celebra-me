@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
+import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
@@ -24,7 +24,10 @@ function getIp(request: Request): string {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		const session = await requireHostSession(request);
+		const session = await getSessionContextFromRequest(request);
+		if (!session) {
+			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		}
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const search = sanitize(url.searchParams.get('search'), 120);
 		const status = parseStatus(sanitize(url.searchParams.get('status'), 20));
@@ -46,7 +49,10 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
-		const session = await requireHostSession(request);
+		const session = await getSessionContextFromRequest(request);
+		if (!session) {
+			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
 			entityId: `create:${session.userId}`,
@@ -83,6 +89,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
 			actorUserId: session.userId,
+			isSuperAdmin: session.isSuperAdmin,
 		});
 
 		return jsonResponse(result, 201);

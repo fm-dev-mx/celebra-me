@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
+import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
@@ -24,7 +24,10 @@ function getIp(request: Request): string {
 
 export const PATCH: APIRoute = async ({ params, request, url }) => {
 	try {
-		const session = await requireHostSession(request);
+		const session = await getSessionContextFromRequest(request);
+		if (!session) {
+			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
 			entityId: `patch:${session.userId}`,
@@ -53,6 +56,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
 			actorUserId: session.userId,
+			isSuperAdmin: session.isSuperAdmin,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
 			phoneE164: body.phoneE164 !== undefined ? sanitize(body.phoneE164, 40) : undefined,
 			maxAllowedAttendees:
@@ -71,7 +75,10 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 
 export const DELETE: APIRoute = async ({ params, request }) => {
 	try {
-		const session = await requireHostSession(request);
+		const session = await getSessionContextFromRequest(request);
+		if (!session) {
+			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
 			entityId: `delete:${session.userId}`,
@@ -90,6 +97,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 			guestId,
 			hostAccessToken: session.accessToken,
 			actorUserId: session.userId,
+			isSuperAdmin: session.isSuperAdmin,
 		});
 		return jsonResponse({
 			source: 'mutation',
