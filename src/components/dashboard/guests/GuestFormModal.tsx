@@ -41,10 +41,21 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [saving, setSaving] = useState(false);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const [localError, setLocalError] = useState('');
+	const [isMobile, setIsMobile] = useState(false);
 
 	const nameInputRef = React.useRef<HTMLInputElement>(null);
 	const phoneInputRef = React.useRef<HTMLInputElement>(null);
-	const attendeesInputRef = React.useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		const checkMobile = () => {
+			const mobileParam =
+				new URLSearchParams(window.location.search).get('mobile') === 'true';
+			setIsMobile(mobileParam || window.innerWidth < 768);
+		};
+		checkMobile();
+		window.addEventListener('resize', checkMobile);
+		return () => window.removeEventListener('resize', checkMobile);
+	}, []);
 
 	const resetForm = () => {
 		setFullName('');
@@ -138,196 +149,285 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			className="dashboard-modal-backdrop"
 			role="dialog"
 			aria-modal="true"
+			style={
+				isMobile
+					? { position: 'fixed', inset: 0, padding: 0, background: 'white', zIndex: 9999 }
+					: {}
+			}
 			onClick={(e) => {
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-				<button
-					type="button"
-					className="dashboard-modal-close"
-					onClick={onClose}
-					aria-label="Cerrar"
+			<div
+				className="dashboard-modal"
+				onClick={(e) => e.stopPropagation()}
+				style={
+					isMobile
+						? {
+								position: 'fixed',
+								inset: 0,
+								width: '100%',
+								height: '100dvh',
+								borderRadius: 0,
+								display: 'flex',
+								flexDirection: 'column',
+								overflow: 'hidden',
+								border: 'none',
+								boxShadow: 'none',
+							}
+						: {}
+				}
+			>
+				<div
+					className="dashboard-modal__header"
+					style={
+						isMobile
+							? { position: 'sticky', top: 0, background: 'white', zIndex: 10 }
+							: {}
+					}
 				>
-					×
-				</button>
-				<h3>{mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}</h3>
-				<form
-					className="dashboard-form-grid"
-					onSubmit={(event) => {
-						event.preventDefault();
-						void handleFormSubmit(false);
-					}}
+					<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
+					<button className="btn-close" onClick={onClose} aria-label="Cerrar modal">
+						&times;
+					</button>
+				</div>
+				<div
+					className="dashboard-modal__content"
+					style={isMobile ? { flex: 1, overflowY: 'auto', padding: '1.5rem' } : {}}
 				>
-					<div className="dashboard-form-field">
-						<label htmlFor="fullName">Nombre completo</label>
-						<input
-							id="fullName"
-							ref={nameInputRef}
-							value={fullName}
-							onChange={(event) => setFullName(event.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									phoneInputRef.current?.focus();
-								}
-							}}
-							required
-							placeholder="Ej. Juan Pérez"
-							autoFocus
-						/>
-						{fieldErrors.fullName && (
-							<span className="field-error">{fieldErrors.fullName}</span>
-						)}
-					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="phone">Teléfono (WhatsApp)</label>
-						<input
-							id="phone"
-							ref={phoneInputRef}
-							value={phone}
-							onChange={(event) => setPhone(event.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									attendeesInputRef.current?.focus();
-								}
-							}}
-							placeholder="Opcional (para WhatsApp)"
-						/>
-						{fieldErrors.phone && (
-							<span className="field-error">{fieldErrors.phone}</span>
-						)}
-					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="maxAllowedAttendees">Límite de invitados</label>
-						<input
-							id="maxAllowedAttendees"
-							ref={attendeesInputRef}
-							type="number"
-							min={1}
-							max={50}
-							value={maxAllowedAttendees}
-							onChange={(event) => setMaxAllowedAttendees(Number(event.target.value))}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									if (mode === 'create') {
-										void handleFormSubmit(true);
+					<form
+						className="dashboard-form-grid"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void handleFormSubmit(false);
+						}}
+					>
+						<div className="dashboard-form-field">
+							<label htmlFor="fullName">Nombre completo</label>
+							<input
+								id="fullName"
+								ref={nameInputRef}
+								value={fullName}
+								onChange={(event) => setFullName(event.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										phoneInputRef.current?.focus();
 									}
-								}
-							}}
-							required
-						/>
-					</div>
-					<div className="dashboard-form-field" style={{ gridColumn: '1 / -1' }}>
-						<label>Categorías (opcional)</label>
-						<div className="category-checkboxes">
-							{PREDEFINED_TAGS.map((tag) => (
-								<label key={tag} className="checkbox-item">
-									<input
-										type="checkbox"
-										checked={tags.includes(tag)}
-										onChange={(e) => {
-											if (e.target.checked) {
-												setTags([...tags, tag]);
-											} else {
-												setTags(tags.filter((t) => t !== tag));
-											}
-										}}
-									/>
-									{tag}
-								</label>
-							))}
+								}}
+								required
+								placeholder="Ej. Juan Pérez"
+								autoFocus
+							/>
+							{fieldErrors.fullName && (
+								<span className="field-error">{fieldErrors.fullName}</span>
+							)}
 						</div>
-					</div>
+						<div className="dashboard-form-field">
+							<label htmlFor="phone">Teléfono (WhatsApp)</label>
+							<input
+								id="phone"
+								ref={phoneInputRef}
+								value={phone}
+								onChange={(event) => {
+									const val = event.target.value.replace(/[^\d+ ]/g, '');
+									setPhone(val);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										// No auto-focus next since limit is now radio cards
+									}
+								}}
+								placeholder="Opcional (10 dígitos)"
+							/>
+							{fieldErrors.phone && (
+								<span className="field-error">{fieldErrors.phone}</span>
+							)}
+						</div>
 
-					{mode === 'edit' && (
-						<div className="dashboard-form-section" style={{ gridColumn: '1 / -1' }}>
-							<div
-								className="dashboard-form-grid"
-								style={{ padding: 0, border: 'none', background: 'none' }}
-							>
-								<div className="dashboard-form-field">
-									<label htmlFor="attendanceStatus">Estado</label>
-									<select
-										id="attendanceStatus"
-										value={attendanceStatus}
-										onChange={(event) =>
-											setAttendanceStatus(
-												event.target.value as
-													| 'pending'
-													| 'confirmed'
-													| 'declined',
-											)
-										}
-									>
-										<option value="pending">⏳ Pendiente</option>
-										<option value="confirmed">✅ Confirmado</option>
-										<option value="declined">❌ Declinado</option>
-									</select>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor="attendeeCount">Asistentes reales</label>
-									<input
-										id="attendeeCount"
-										type="number"
-										min={0}
-										max={maxAllowedAttendees}
-										value={attendeeCount}
-										onChange={(event) =>
-											setAttendeeCount(Number(event.target.value))
-										}
-									/>
-								</div>
-								<div
-									className="dashboard-form-field"
-									style={{ gridColumn: '1 / -1' }}
-								>
-									<label htmlFor="guestMessage">Mensaje del invitado</label>
-									<textarea
-										id="guestMessage"
-										value={guestMessage}
-										onChange={(event) => setGuestMessage(event.target.value)}
-										rows={2}
-										placeholder="Nota opcional..."
-									/>
-								</div>
+						<div className="dashboard-form-field dashboard-form-field--full">
+							<label htmlFor="maxAllowedAttendees">
+								¿Cuántos acompañantes permite?
+							</label>
+							<div className="radio-cards-container">
+								{[1, 2, 3, 4, 5, 10].map((num) => (
+									<label key={num} className="radio-card">
+										<input
+											type="radio"
+											name="maxAllowedAttendees"
+											value={num}
+											checked={maxAllowedAttendees === num}
+											onChange={() => setMaxAllowedAttendees(num)}
+										/>
+										<div className="radio-card__content">
+											{num === 10 ? '10+' : num}
+										</div>
+									</label>
+								))}
 							</div>
 						</div>
-					)}
+						<div className="dashboard-form-field dashboard-form-field--full">
+							<label>Categorías (opcional)</label>
+							<div className="radio-cards-container radio-cards-container--tags">
+								{PREDEFINED_TAGS.map((tag) => (
+									<label key={tag} className="radio-card">
+										<input
+											type="checkbox"
+											className="hidden-input"
+											checked={tags.includes(tag)}
+											onChange={(e) => {
+												if (e.target.checked) {
+													setTags([...tags, tag]);
+												} else {
+													setTags(tags.filter((t) => t !== tag));
+												}
+											}}
+										/>
+										<div className="radio-card__content">{tag}</div>
+									</label>
+								))}
+							</div>
+						</div>
 
-					{localError && (
-						<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
-							{localError}
-						</p>
-					)}
+						{mode === 'edit' && (
+							<div
+								className="dashboard-form-section"
+								style={{ gridColumn: '1 / -1' }}
+							>
+								<div
+									className="dashboard-form-grid"
+									style={{ padding: 0, border: 'none', background: 'none' }}
+								>
+									<div className="dashboard-form-field">
+										<label htmlFor="attendanceStatus">Estado</label>
+										<select
+											id="attendanceStatus"
+											value={attendanceStatus}
+											onChange={(event) =>
+												setAttendanceStatus(
+													event.target.value as
+														| 'pending'
+														| 'confirmed'
+														| 'declined',
+												)
+											}
+										>
+											<option value="pending">⏳ Pendiente</option>
+											<option value="confirmed">✅ Confirmado</option>
+											<option value="declined">❌ Declinado</option>
+										</select>
+									</div>
+									<div className="dashboard-form-field">
+										<label htmlFor="attendeeCount">Asistentes reales</label>
+										<input
+											id="attendeeCount"
+											type="number"
+											min={0}
+											max={maxAllowedAttendees}
+											value={attendeeCount}
+											onChange={(event) =>
+												setAttendeeCount(Number(event.target.value))
+											}
+										/>
+									</div>
+									<div
+										className="dashboard-form-field"
+										style={{ gridColumn: '1 / -1' }}
+									>
+										<label htmlFor="guestMessage">Mensaje del invitado</label>
+										<textarea
+											id="guestMessage"
+											value={guestMessage}
+											onChange={(event) =>
+												setGuestMessage(event.target.value)
+											}
+											rows={2}
+											placeholder="Nota opcional..."
+										/>
+									</div>
+								</div>
+							</div>
+						)}
 
-					<div className="dashboard-modal__actions" style={{ gridColumn: '1 / -1' }}>
-						<button type="button" className="btn-secondary" onClick={onClose}>
+						{localError && (
+							<div
+								className="dashboard-guests__error"
+								style={{
+									color: 'var(--color-wax-seal)',
+									marginTop: 'var(--spacing-md)',
+									fontSize: '0.85rem',
+								}}
+							>
+								{localError}
+							</div>
+						)}
+					</form>
+				</div>
+
+				<div
+					className="dashboard-modal__footer"
+					style={
+						isMobile
+							? {
+									position: 'sticky',
+									bottom: 0,
+									background: 'white',
+									zIndex: 10,
+									borderTop: '1px solid #eee',
+								}
+							: {}
+					}
+				>
+					<div className="modal-actions">
+						<button
+							type="button"
+							className="btn-secondary"
+							onClick={onClose}
+							disabled={saving}
+						>
 							Cancelar
 						</button>
 						{mode === 'create' ? (
 							<>
-								<button type="submit" className="btn-accent" disabled={saving}>
-									{saving ? 'Guardando...' : 'Guardar y cerrar'}
+								<button
+									type="submit"
+									className="btn-accent"
+									disabled={saving}
+									onClick={(e) => {
+										e.preventDefault();
+										void handleFormSubmit(true);
+									}}
+								>
+									{saving ? 'Guardando...' : 'Guardar y masivo'}
 								</button>
 								<button
 									type="button"
 									className="btn-primary"
 									disabled={saving}
-									onClick={() => void handleFormSubmit(true)}
+									onClick={(e) => {
+										e.preventDefault();
+										void handleFormSubmit(false);
+									}}
 								>
-									{saving ? 'Guardando...' : 'Guardar y agregar otro'}
+									{saving ? 'Guardando...' : 'Guardar'}
 								</button>
 							</>
 						) : (
-							<button type="submit" className="btn-primary" disabled={saving}>
-								{saving ? 'Guardando...' : 'Guardar y cerrar'}
+							<button
+								type="button"
+								className="btn-primary"
+								disabled={saving}
+								onClick={(e) => {
+									e.preventDefault();
+									void handleFormSubmit(false);
+								}}
+							>
+								{saving ? 'Guardando...' : 'Actualizar'}
 							</button>
 						)}
 					</div>
-				</form>
+				</div>
 			</div>
 		</div>
 	);
