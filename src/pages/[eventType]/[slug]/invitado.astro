@@ -1,0 +1,112 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import GuestInvitationHero from '@/components/invitation/GuestInvitationHero.astro';
+import GuestRSVPForm from '@/components/invitation/GuestRSVPForm';
+import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp-v2/service';
+
+const inviteId = Astro.url.searchParams.get('invite') || '';
+const { eventType, slug } = Astro.params;
+
+let context: Awaited<ReturnType<typeof getInvitationContextByInviteId>> | null = null;
+let loadError = '';
+
+try {
+    if (!inviteId) {
+        throw new Error('No se proporcionó un ID de invitación válido.');
+    }
+	context = await getInvitationContextByInviteId(inviteId);
+
+    // Verify slug and type match for SEO consistency (optional but recommended)
+    if (context.eventSlug !== slug) {
+        console.warn(`[Invitado] Slug mismatch: expected ${context.eventSlug}, got ${slug}`);
+    }
+    if (context.eventType !== eventType) {
+        console.warn(`[Invitado] Event type mismatch: expected ${context.eventType}, got ${eventType}`);
+    }
+
+    // Track view background
+    void trackInvitationView(inviteId).catch(err => console.error('Failed to track view:', err));
+
+} catch (error) {
+	loadError = error instanceof Error ? error.message : 'No fue posible cargar la invitacion.';
+}
+
+const pageTitle = context ? `Invitación para ${context.guest.fullName}` : 'Invitación personalizada';
+const pageDescription = context ? `Te invitamos a: ${context.eventTitle}. Por favor confirma tu asistencia.` : 'Confirma tu asistencia al evento.';
+---
+
+<Layout
+    title={pageTitle}
+    description={pageDescription}
+>
+    <!-- Dynamic OG Tags for premium social previews -->
+    <Fragment slot="head">
+        {context && (
+            <>
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="article" />
+                <meta property="og:site_name" content="Celebra-me" />
+                <!-- Add a premium preview image if available in the future -->
+                <meta name="twitter:card" content="summary_large_image" />
+            </>
+        )}
+    </Fragment>
+
+	<main class="guest-invitation-page">
+		{
+			loadError && (
+				<section class="guest-invitation-page__error">
+					<h1>Invitación no disponible</h1>
+					<p>{loadError}</p>
+				</section>
+			)
+		}
+
+		{
+			context && (
+				<>
+					<GuestInvitationHero eventTitle={context.eventTitle} guestName={context.guest.fullName} />
+					<GuestRSVPForm
+						client:load
+						inviteId={context.inviteId}
+						eventTitle={context.eventTitle}
+						guestName={context.guest.fullName}
+						maxAllowedAttendees={context.guest.maxAllowedAttendees}
+						initialStatus={context.guest.attendanceStatus}
+						initialAttendeeCount={context.guest.attendeeCount}
+						initialGuestMessage={context.guest.guestMessage}
+					/>
+				</>
+			)
+		}
+	</main>
+</Layout>
+
+<style>
+	.guest-invitation-page {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 1rem;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+	}
+
+	.guest-invitation-page__error {
+		padding: 2rem;
+		border: 1px solid rgba(214, 199, 173, 0.3);
+		border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        text-align: center;
+	}
+
+    .guest-invitation-page__error h1 {
+        color: #d6c7ad;
+        margin-bottom: 1rem;
+    }
+</style>
