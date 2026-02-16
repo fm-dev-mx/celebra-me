@@ -1,5 +1,6 @@
 import React from 'react';
 import WhatsAppInviteButton from './WhatsAppInviteButton';
+import { generateInvitationLink } from '@/utils/invitationLink';
 import type { DashboardGuestItem } from './types';
 
 interface GuestTableProps {
@@ -46,12 +47,17 @@ const GuestTable: React.FC<GuestTableProps> = ({
 				</thead>
 				<tbody>
 					{items.map((item) => {
-						const inviteUrl = `${inviteBaseUrl}/invitacion/${encodeURIComponent(item.inviteId)}`;
+						const inviteUrl = generateInvitationLink({
+							origin: inviteBaseUrl,
+							eventType: item.eventType || 'evento',
+							eventSlug: item.eventSlug || 'invitacion',
+							inviteId: item.inviteId,
+						});
 						const isViewed = !!item.firstViewedAt;
 						const isShared = item.deliveryStatus === 'shared';
 
 						return (
-							<tr key={item.guestId}>
+							<tr key={item.guestId} id={`guest-row-${item.guestId}`}>
 								<td>
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>
