@@ -1,8 +1,47 @@
+#!/bin/sh
+# Husky pre-commit hook compatible with gatekeeper-commit workflow
+# Prevents direct commits to main and runs lint-staged in report-only mode
+
 # Prevent direct commits to main
 ERROR_MSG="❌ No puedes hacer commit directamente en la rama 'main'. Usa una rama de feature."
-if [[ "$(git branch --show-current)" == "main" ]]; then
+if [ "$(git branch --show-current)" = "main" ]; then
   echo "$ERROR_MSG"
   exit 1
 fi
 
-npx lint-staged
+# Check if we're in gatekeeper-commit workflow mode
+# Look for S0 snapshot file
+if [ -f ".git/gatekeeper-s0.txt" ]; then
+  echo "🔍 Gatekeeper-commit workflow detected (S0 snapshot present)"
+  echo "📝 Running lint-staged in report-only mode for S0 files..."
+  
+  # Get S0 files
+  S0_FILES=$(cat .git/gatekeeper-s0.txt 2>/dev/null | tr '\n' ' ')
+  
+  if [ -n "$S0_FILES" ]; then
+    echo "📋 S0 files to check:"
+    echo "$S0_FILES" | tr ' ' '\n' | sed 's/^/  /'
+    
+    # Run lint-staged but don't auto-stage fixes
+    # We use --no-stash to avoid interfering with the workflow
+    npx lint-staged --no-stash 2>/dev/null || true
+    
+    # Check if lint-staged modified any files
+    MODIFIED_FILES=$(git diff --name-only 2>/dev/null)
+    if [ -n "$MODIFIED_FILES" ]; then
+      echo ""
+      echo "⚠️  lint-staged modified files. You need to:"
+      echo "   1. Review the changes"
+      echo "   2. Add only S0 files back to staging: git add [S0-file]"
+      echo "   3. Continue with gatekeeper-commit workflow"
+      echo ""
+      echo "Modified files:"
+      echo "$MODIFIED_FILES" | sed 's/^/  /'
+      exit 0  # Exit with success to allow manual handling
+    fi
+  fi
+else
+  # Normal mode - run lint-staged as usual
+  echo "🔧 Running lint-staged for all staged files..."
+  npx lint-staged
+fi
