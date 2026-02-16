@@ -1,5 +1,4 @@
 import {
-	createEventMembershipService,
 	createGuestInvitation,
 	deleteGuestById,
 	findEventById,
@@ -13,7 +12,6 @@ import {
 	findGuestByInviteIdPublic,
 	findGuestByLegacyIdentityPublic,
 	findUserRoleService,
-	incrementClaimCodeUsageService,
 	listMembershipsForHost,
 	upsertUserRoleService,
 	findClaimCodeRecordByKeyService,
@@ -28,6 +26,7 @@ import {
 	listClaimCodesService,
 	listUserRolesService,
 	updateClaimCodeService,
+	redeemClaimCodeRpc,
 } from './repository';
 import type {
 	AdminEventListItemDTO,
@@ -603,28 +602,32 @@ export async function claimEventForUserByClaimCode(input: {
 	userId: string;
 	claimCode: string;
 }): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
-	const claim = await findClaimCodeRecordByKeyService({
+	const result = await redeemClaimCodeRpc({
+		userId: input.userId,
 		codeKey: hashClaimCode(input.claimCode),
 	});
-	if (!claim || !claim.active) {
-		throw new ApiError(403, 'forbidden', 'Claim code invalido.');
-	}
-	if (claim.expiresAt && new Date(claim.expiresAt).getTime() < Date.now()) {
-		throw new ApiError(403, 'forbidden', 'Claim code expirado.');
-	}
-	if (claim.usedCount >= claim.maxUses) {
-		throw new ApiError(403, 'forbidden', 'Claim code agotado.');
+
+	if (!result.success) {
+		const errorMessages: Record<string, string> = {
+			invalid_code: 'Claim code invalido.',
+			inactive: 'Claim code desactivado.',
+			expired: 'Claim code expirado.',
+			exhausted: 'Claim code agotado.',
+		};
+		throw new ApiError(
+			403,
+			'forbidden',
+			errorMessages[result.errorCode || ''] || 'Error al canjear el codigo.',
+		);
 	}
 
-	await createEventMembershipService({
-		eventId: claim.eventId,
-		userId: input.userId,
-		membershipRole: 'owner',
-	});
-	await incrementClaimCodeUsageService(claim.id, claim.usedCount + 1);
+	if (!result.eventId) {
+		throw new ApiError(500, 'internal_error', 'Error inesperado: no se recibio event_id');
+	}
+
 	return {
-		eventId: claim.eventId,
-		membershipRole: 'owner',
+		eventId: result.eventId,
+		membershipRole: result.membershipRole || 'owner',
 	};
 }
 

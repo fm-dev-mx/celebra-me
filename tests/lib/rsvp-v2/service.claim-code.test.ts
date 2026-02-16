@@ -1,35 +1,24 @@
 import { claimEventForUserByClaimCode } from '@/lib/rsvp-v2/service';
-import {
-	createEventMembershipService,
-	findClaimCodeRecordByKeyService,
-	incrementClaimCodeUsageService,
-} from '@/lib/rsvp-v2/repository';
+import { redeemClaimCodeRpc } from '@/lib/rsvp-v2/repository';
 
 jest.mock('@/lib/rsvp-v2/repository', () => ({
-	findClaimCodeRecordByKeyService: jest.fn(),
-	createEventMembershipService: jest.fn(),
-	incrementClaimCodeUsageService: jest.fn(),
+	redeemClaimCodeRpc: jest.fn(),
 }));
 
-describe('rsvp-v2 claim code service', () => {
-	const findClaimCodeRecordByKeyServiceMock =
-		findClaimCodeRecordByKeyService as jest.MockedFunction<
-			typeof findClaimCodeRecordByKeyService
-		>;
-	const createEventMembershipServiceMock = createEventMembershipService as jest.MockedFunction<
-		typeof createEventMembershipService
-	>;
-	const incrementClaimCodeUsageServiceMock =
-		incrementClaimCodeUsageService as jest.MockedFunction<
-			typeof incrementClaimCodeUsageService
-		>;
+const redeemClaimCodeRpcMock = redeemClaimCodeRpc as jest.MockedFunction<typeof redeemClaimCodeRpc>;
 
+describe('rsvp-v2 claim code service (atomic RPC)', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
 	});
 
 	it('throws forbidden when claim code is invalid', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue(null);
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: false,
+			eventId: null,
+			membershipRole: null,
+			errorCode: 'invalid_code',
+		});
 
 		await expect(
 			claimEventForUserByClaimCode({
@@ -43,13 +32,11 @@ describe('rsvp-v2 claim code service', () => {
 	});
 
 	it('throws forbidden when claim code is expired', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue({
-			id: 'claim-1',
-			eventId: 'evt-1',
-			active: true,
-			expiresAt: '2000-01-01T00:00:00.000Z',
-			maxUses: 1,
-			usedCount: 0,
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: false,
+			eventId: null,
+			membershipRole: null,
+			errorCode: 'expired',
 		});
 
 		await expect(
@@ -64,13 +51,11 @@ describe('rsvp-v2 claim code service', () => {
 	});
 
 	it('throws forbidden when claim code is exhausted', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue({
-			id: 'claim-1',
-			eventId: 'evt-1',
-			active: true,
-			expiresAt: null,
-			maxUses: 1,
-			usedCount: 1,
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: false,
+			eventId: null,
+			membershipRole: null,
+			errorCode: 'exhausted',
 		});
 
 		await expect(
@@ -84,14 +69,12 @@ describe('rsvp-v2 claim code service', () => {
 		});
 	});
 
-	it('creates membership and increments usage when claim is valid', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue({
-			id: 'claim-1',
+	it('returns event details when claim is successful', async () => {
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: true,
 			eventId: 'evt-1',
-			active: true,
-			expiresAt: null,
-			maxUses: 2,
-			usedCount: 1,
+			membershipRole: 'owner',
+			errorCode: null,
 		});
 
 		const result = await claimEventForUserByClaimCode({
@@ -99,13 +82,37 @@ describe('rsvp-v2 claim code service', () => {
 			claimCode: 'VALID',
 		});
 
-		expect(createEventMembershipServiceMock).toHaveBeenCalledWith({
-			eventId: 'evt-1',
+		expect(redeemClaimCodeRpcMock).toHaveBeenCalledWith({
 			userId: 'u1',
+			codeKey: expect.any(String),
+		});
+		expect(result).toEqual({
+			eventId: 'evt-1',
 			membershipRole: 'owner',
 		});
-		expect(incrementClaimCodeUsageServiceMock).toHaveBeenCalledWith('claim-1', 2);
-		expect(result).toEqual({
+	});
+
+	it('is idempotent - retry returns same result without error', async () => {
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: true,
+			eventId: 'evt-1',
+			membershipRole: 'owner',
+			errorCode: null,
+		});
+
+		// First attempt
+		await claimEventForUserByClaimCode({
+			userId: 'u1',
+			claimCode: 'VALID',
+		});
+
+		// Retry (simulating user clicking twice)
+		const retry = await claimEventForUserByClaimCode({
+			userId: 'u1',
+			claimCode: 'VALID',
+		});
+
+		expect(retry).toEqual({
 			eventId: 'evt-1',
 			membershipRole: 'owner',
 		});

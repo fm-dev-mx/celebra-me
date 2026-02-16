@@ -28,6 +28,7 @@ jest.mock('@/lib/rsvp-v2/repository', () => ({
 	findClaimCodeRecordByKeyService: jest.fn(),
 	createEventMembershipService: jest.fn(),
 	incrementClaimCodeUsageService: jest.fn(),
+	redeemClaimCodeRpc: jest.fn(),
 	findEventsForHost: jest.fn(),
 	findMembershipByEventForHost: jest.fn(),
 }));
@@ -61,18 +62,9 @@ describe('rsvp-v2 service branches', () => {
 		repo.findGuestByLegacyIdentityPublic as jest.MockedFunction<
 			typeof repo.findGuestByLegacyIdentityPublic
 		>;
-	const findClaimCodeRecordByKeyServiceMock =
-		repo.findClaimCodeRecordByKeyService as jest.MockedFunction<
-			typeof repo.findClaimCodeRecordByKeyService
-		>;
-	const createEventMembershipServiceMock =
-		repo.createEventMembershipService as jest.MockedFunction<
-			typeof repo.createEventMembershipService
-		>;
-	const incrementClaimCodeUsageServiceMock =
-		repo.incrementClaimCodeUsageService as jest.MockedFunction<
-			typeof repo.incrementClaimCodeUsageService
-		>;
+	const redeemClaimCodeRpcMock = repo.redeemClaimCodeRpc as jest.MockedFunction<
+		typeof repo.redeemClaimCodeRpc
+	>;
 	const findMembershipByEventForHostMock =
 		repo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof repo.findMembershipByEventForHost
@@ -264,39 +256,41 @@ describe('rsvp-v2 service branches', () => {
 		).toBeNull();
 	});
 
-	it('claimEventForUser validates claim states and increments usage', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue({
-			id: 'claim-1',
+	it('claimEventForUser validates claim states via atomic RPC', async () => {
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: true,
 			eventId: 'evt-1',
-			active: true,
-			expiresAt: null,
-			maxUses: 5,
-			usedCount: 2,
+			membershipRole: 'owner',
+			errorCode: null,
 		});
 
-		await claimEventForUserByClaimCode({
+		const result = await claimEventForUserByClaimCode({
 			userId: 'host-1',
 			claimCode: 'abc123',
 		});
 
-		expect(createEventMembershipServiceMock).toHaveBeenCalled();
-		expect(incrementClaimCodeUsageServiceMock).toHaveBeenCalledWith('claim-1', 3);
+		expect(redeemClaimCodeRpcMock).toHaveBeenCalledWith({
+			userId: 'host-1',
+			codeKey: expect.any(String),
+		});
+		expect(result).toEqual({
+			eventId: 'evt-1',
+			membershipRole: 'owner',
+		});
 	});
 
 	it('claimEventForUser wrapper remains compatible', async () => {
-		findClaimCodeRecordByKeyServiceMock.mockResolvedValue({
-			id: 'claim-2',
+		redeemClaimCodeRpcMock.mockResolvedValue({
+			success: true,
 			eventId: 'evt-1',
-			active: true,
-			expiresAt: null,
-			maxUses: 2,
-			usedCount: 0,
+			membershipRole: 'owner',
+			errorCode: null,
 		});
 		await claimEventForUser({
 			userId: 'host-2',
 			eventSlug: 'legacy-slug',
 			claimCode: 'legacy-code',
 		});
-		expect(createEventMembershipServiceMock).toHaveBeenCalled();
+		expect(redeemClaimCodeRpcMock).toHaveBeenCalled();
 	});
 });
