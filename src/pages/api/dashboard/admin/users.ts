@@ -1,23 +1,21 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
+import { validateQueryOrRespond } from '@/lib/rsvp-v2/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { listAdminUsers } from '@/lib/rsvp-v2/service';
-
-function toSafeInt(raw: string | null, fallback: number): number {
-	const parsed = Number.parseInt(raw || '', 10);
-	return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
+import { PaginationSchema } from '@/lib/schemas';
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		// Rate limiting: 60 req/min para listados
 		await requireAdminRateLimit(request, 'admin:list');
 		await requireAdminStrongSession(request);
-		const page = toSafeInt(url.searchParams.get('page'), 1);
-		const perPage = Math.min(toSafeInt(url.searchParams.get('perPage'), 200), 1000);
-		const items = await listAdminUsers({ page, perPage });
-		return jsonResponse({ items, page, perPage });
+
+		const parsed = validateQueryOrRespond(url.searchParams, PaginationSchema);
+		if (parsed instanceof Response) return parsed;
+
+		const items = await listAdminUsers({ page: parsed.page, perPage: parsed.perPage });
+		return jsonResponse({ items, page: parsed.page, perPage: parsed.perPage });
 	} catch (error) {
 		return errorResponse(error);
 	}
