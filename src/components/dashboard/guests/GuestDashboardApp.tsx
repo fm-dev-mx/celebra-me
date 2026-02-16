@@ -339,6 +339,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							},
 						);
 						await loadGuests();
+						setNotification({
+							message: `Invitado ${item.fullName} eliminado.`,
+							type: 'info',
+						});
 					}}
 					onMarkShared={async (item) => {
 						await apiJson<{ item: DashboardGuestItem }>(
@@ -348,6 +352,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							},
 						);
 						await loadGuests();
+						setNotification({
+							message: 'Invitación marcada como enviada.',
+							type: 'info',
+						});
 					}}
 				/>
 
@@ -356,7 +364,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					mode={modalMode}
 					initialGuest={editingGuest}
 					onClose={() => setModalOpen(false)}
-					onSubmit={async (payload) => {
+					onSubmit={async (payload, stayOpen) => {
 						if (modalMode === 'create') {
 							await apiJson<{ item: DashboardGuestItem }>('/api/dashboard/guests', {
 								method: 'POST',
@@ -380,6 +388,12 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							);
 						}
 						await loadGuests();
+						if (stayOpen) {
+							setNotification({
+								message: 'Invitado guardado correctamente.',
+								type: 'info',
+							});
+						}
 					}}
 				/>
 

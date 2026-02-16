@@ -47,12 +47,19 @@ const GuestTable: React.FC<GuestTableProps> = ({
 				<tbody>
 					{items.map((item) => {
 						const inviteUrl = `${inviteBaseUrl}/invitacion/${encodeURIComponent(item.inviteId)}`;
+						const isViewed = !!item.firstViewedAt;
+						const isShared = item.deliveryStatus === 'shared';
+
 						return (
 							<tr key={item.guestId}>
 								<td>
-									<strong>{item.fullName}</strong>
-									<div>{item.phoneE164}</div>
-									{item.email && <div className="text-small">{item.email}</div>}
+									<div className="guest-info">
+										<span className="guest-info__name">{item.fullName}</span>
+										<span className="guest-info__phone">{item.phoneE164}</span>
+										{item.email && (
+											<span className="guest-info__email">{item.email}</span>
+										)}
+									</div>
 								</td>
 								<td>
 									<div className="dashboard-guests__tags">
@@ -61,54 +68,96 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												{tag}
 											</span>
 										))}
-										{(!item.tags || item.tags.length === 0) && (
-											<span className="tag-empty">-</span>
-										)}
 									</div>
 								</td>
 								<td>
-									<span
-										className={`status-badge status-${item.attendanceStatus}`}
+									<div
+										className={`status-pill status-pill--${item.attendanceStatus}`}
 									>
+										<span className="status-pill__dot"></span>
 										{item.attendanceStatus === 'pending'
 											? 'Pendiente'
 											: item.attendanceStatus === 'confirmed'
 												? 'Confirmado'
 												: 'Declinó'}
-									</span>
+									</div>
 								</td>
 								<td>
-									{item.attendeeCount} / {item.maxAllowedAttendees}
+									<div className="attendee-count">
+										<span className="attendee-count__current">
+											{item.attendeeCount}
+										</span>
+										<span className="attendee-count__separator">/</span>
+										<span className="attendee-count__max">
+											{item.maxAllowedAttendees}
+										</span>
+									</div>
 								</td>
 								<td>
-									{item.deliveryStatus === 'shared' ? 'Enviado' : 'Pendiente'}
+									<div
+										className={`delivery-status delivery-status--${item.deliveryStatus}`}
+									>
+										{isShared ? (
+											<span title="Invitación compartida">✅ Enviado</span>
+										) : (
+											<span title="Pendiente de enviar">⏳ Pendiente</span>
+										)}
+									</div>
 								</td>
-								<td>{formatDate(item.firstViewedAt)}</td>
+								<td>
+									<div
+										className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}
+									>
+										{isViewed ? (
+											<span
+												title={`Visto el ${formatDate(item.firstViewedAt)}`}
+											>
+												👁️ {formatDate(item.firstViewedAt).split(',')[0]}
+											</span>
+										) : (
+											<span title="No ha sido abierto">🌑 No visto</span>
+										)}
+									</div>
+								</td>
 								<td>
 									<div className="dashboard-guests__actions">
-										<button type="button" onClick={() => onEdit(item)}>
-											Editar
-										</button>
-										<button
-											type="button"
-											onClick={async () => {
-												await navigator.clipboard.writeText(inviteUrl);
-											}}
-										>
-											Copiar link
-										</button>
 										<WhatsAppInviteButton
 											waShareUrl={item.waShareUrl}
 											onShared={async () => onMarkShared(item)}
 										/>
 										<button
 											type="button"
+											className="btn-icon"
+											title="Copiar Link"
+											onClick={async () => {
+												await navigator.clipboard.writeText(inviteUrl);
+											}}
+										>
+											🔗
+										</button>
+										<button
+											type="button"
+											className="btn-icon"
+											title="Abrir invitación"
 											onClick={() => window.open(inviteUrl, '_blank')}
 										>
-											Abrir
+											🌍
 										</button>
-										<button type="button" onClick={() => onDelete(item)}>
-											Eliminar
+										<button
+											type="button"
+											className="btn-icon"
+											title="Editar"
+											onClick={() => onEdit(item)}
+										>
+											✏️
+										</button>
+										<button
+											type="button"
+											className="btn-icon btn-icon--danger"
+											title="Eliminar"
+											onClick={() => onDelete(item)}
+										>
+											🗑️
 										</button>
 									</div>
 								</td>

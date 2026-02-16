@@ -13,8 +13,13 @@ const WhatsAppInviteButton: React.FC<WhatsAppInviteButtonProps> = ({ waShareUrl,
 	};
 
 	return (
-		<button type="button" className="dashboard-guests__wa-button" onClick={handleClick}>
-			WhatsApp
+		<button
+			type="button"
+			className="dashboard-guests__wa-button"
+			onClick={handleClick}
+			title="Enviar por WhatsApp"
+		>
+			<span className="wa-icon">📱</span> Enviar
 		</button>
 	);
 };
