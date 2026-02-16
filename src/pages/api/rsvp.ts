@@ -6,19 +6,9 @@ import {
 	type AttendanceStatus,
 } from '@/lib/rsvp/service';
 
+import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/shared-utils';
+
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
-const MAX_NAME_LENGTH = 200;
-
-function sanitize(value: unknown, maxLen = MAX_NAME_LENGTH): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
-function parseAttendeeCount(value: unknown): number {
-	if (typeof value !== 'number') return 0;
-	if (!Number.isFinite(value)) return 0;
-	return Math.max(0, Math.min(Math.trunc(value), 20));
-}
 
 export const GET: APIRoute = async ({ url }) => {
 	try {
@@ -172,7 +162,7 @@ export const POST: APIRoute = async ({ request }) => {
 		const token = sanitize(body.token, 2048);
 		const guestName = sanitize(body.guestName || body.name);
 		const attendanceStatus = parseAttendanceInput(body.attendanceStatus ?? body.attendance);
-		const attendeeCount = parseAttendeeCount(body.attendeeCount ?? body.guestCount);
+		const attendeeCount = toSafeAttendeeCount(body.attendeeCount ?? body.guestCount);
 		const notes = sanitize(body.notes);
 		const dietary = sanitize(body.dietary);
 

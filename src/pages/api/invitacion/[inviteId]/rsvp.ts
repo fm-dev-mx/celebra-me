@@ -4,10 +4,7 @@ import { badRequest, errorResponse, successResponse } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp-v2/service';
 
-function sanitize(value: unknown, maxLen = 500): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
+import { sanitize } from '@/lib/rsvp/shared-utils';
 
 function getIp(request: Request): string {
 	const raw =
