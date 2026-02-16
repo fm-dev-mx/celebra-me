@@ -253,5 +253,8 @@
             "accent": "#DCB43C",
             "background": "#F5F5DC"
         }
+    },
+    "sharing": {
+        "whatsappTemplate": "Te envío la invitación para los 60 de Gerardo. Ayúdame confirmando tu asistencia aquí: \n\n✨ {inviteUrl}"
     }
 }

@@ -431,6 +431,11 @@ const eventsCollection = defineCollection({
 				}),
 			)
 			.optional(),
+		sharing: z
+			.object({
+				whatsappTemplate: z.string().optional(),
+			})
+			.optional(),
 	}),
 });
 
