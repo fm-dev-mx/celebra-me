@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import GuestFilters from './GuestFilters';
 import GuestFormModal from './GuestFormModal';
 import GuestStatsCards from './GuestStatsCards';
+import GuestProgressCard from './GuestProgressCard';
 import GuestTable from './GuestTable';
 import ImportMagic from './ImportMagic';
 import Toast from './Toast';
@@ -50,7 +51,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [realtimeState, setRealtimeState] = useState<RealtimeState>('fallback');
 	const [notification, setNotification] = useState<{
 		message: string;
-		type: 'info' | 'warning';
+		type: 'info' | 'success' | 'warning';
 	} | null>(null);
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
 	const reconnectTimerRef = useRef<number | null>(null);
@@ -101,9 +102,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 	const loadEvents = useCallback(async () => {
 		try {
-			console.log('[GuestDashboard] Loading events...');
+			console.info('[GuestDashboard] Loading events...');
 			const data = await apiJson<{ items: HostEventItem[] }>('/api/dashboard/events');
-			console.log('[GuestDashboard] Events loaded:', data.items.length);
+			console.info('[GuestDashboard] Events loaded:', data.items.length);
 			setHostEvents(data.items);
 			const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
 			const candidates = [initialEventId, storedEventId, data.items[0]?.id || ''].filter(
@@ -113,7 +114,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				data.items.some((event) => event.id === candidate),
 			);
 			if (nextEventId && nextEventId !== eventId) {
-				console.log('[GuestDashboard] Setting eventId:', nextEventId);
+				console.info('[GuestDashboard] Setting eventId:', nextEventId);
 				setEventId(nextEventId);
 			}
 		} catch (err) {
@@ -125,13 +126,13 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 	const loadGuests = useCallback(async () => {
 		if (!eventId) {
-			console.log('[GuestDashboard] No eventId, skipping loadGuests');
+			console.info('[GuestDashboard] No eventId, skipping loadGuests');
 			return;
 		}
 		setLoading(true);
 		setError('');
 		try {
-			console.log('[GuestDashboard] Loading guests for event:', eventId);
+			console.info('[GuestDashboard] Loading guests for event:', eventId);
 			const params = new URLSearchParams({ eventId, search, status });
 			const data = await apiJson<DashboardGuestListResponse>(
 				`/api/dashboard/guests?${params.toString()}`,
@@ -303,6 +304,35 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onImportClick={() => setImportModalOpen(true)}
 				/>
 
+				<div className="dashboard-guests__quick-actions">
+					<button
+						className="btn-primary btn--shiny"
+						disabled={
+							loading ||
+							items.filter((i) => i.deliveryStatus === 'generated').length === 0
+						}
+						onClick={() => {
+							const next = items.find((i) => i.deliveryStatus === 'generated');
+							if (next) {
+								const btn = document.querySelector(
+									`[key="${next.guestId}"] .dashboard-guests__wa-button`,
+								) as HTMLElement;
+								if (btn) btn.click();
+								// Scroll to item
+								const row = document.getElementById(`guest-row-${next.guestId}`);
+								row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+							}
+						}}
+					>
+						🚀 Enviar Siguiente Invitación
+					</button>
+				</div>
+
+				<GuestProgressCard
+					total={totals.total}
+					shared={items.filter((i) => i.deliveryStatus === 'shared').length}
+				/>
+
 				<GuestStatsCards totals={totals} />
 
 				{loading && <p className="dashboard-guests__status">Cargando...</p>}
@@ -345,17 +375,34 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						});
 					}}
 					onMarkShared={async (item) => {
-						await apiJson<{ item: DashboardGuestItem }>(
-							`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
-							{
-								method: 'POST',
-							},
+						// Optimistic Update
+						const previousItems = [...items];
+						setItems((prev) =>
+							prev.map((i) =>
+								i.guestId === item.guestId ? { ...i, deliveryStatus: 'shared' } : i,
+							),
 						);
-						await loadGuests();
-						setNotification({
-							message: 'Invitación marcada como enviada.',
-							type: 'info',
-						});
+						try {
+							await apiJson<{ item: DashboardGuestItem }>(
+								`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
+								{
+									method: 'POST',
+								},
+							);
+							await loadGuests();
+							setNotification({
+								message: 'Invitación marcada como enviada.',
+								type: 'success',
+							});
+						} catch (err) {
+							console.error('[GuestDashboard] Mark shared error:', err);
+							// Rollback
+							setItems(previousItems);
+							setNotification({
+								message: 'Error al actualizar el estado de envío.',
+								type: 'warning',
+							});
+						}
 					}}
 				/>
 
