@@ -122,6 +122,7 @@ using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
 
 drop policy if exists events_select_own on public.events;
+drop policy if exists events_select_owned_or_member on public.events;
 create policy events_select_owned_or_member
 on public.events
 for select
@@ -137,6 +138,7 @@ using (
 );
 
 drop policy if exists guest_invitations_select_own on public.guest_invitations;
+drop policy if exists guest_invitations_select_owner_or_member on public.guest_invitations;
 create policy guest_invitations_select_owner_or_member
 on public.guest_invitations
 for select
@@ -157,6 +159,7 @@ using (
 );
 
 drop policy if exists guest_invitations_insert_own on public.guest_invitations;
+drop policy if exists guest_invitations_insert_owner_or_member on public.guest_invitations;
 create policy guest_invitations_insert_owner_or_member
 on public.guest_invitations
 for insert
@@ -177,6 +180,7 @@ with check (
 );
 
 drop policy if exists guest_invitations_update_own on public.guest_invitations;
+drop policy if exists guest_invitations_update_owner_or_member on public.guest_invitations;
 create policy guest_invitations_update_owner_or_member
 on public.guest_invitations
 for update
@@ -211,6 +215,7 @@ with check (
 );
 
 drop policy if exists guest_invitations_delete_own on public.guest_invitations;
+drop policy if exists guest_invitations_delete_owner_or_member on public.guest_invitations;
 create policy guest_invitations_delete_owner_or_member
 on public.guest_invitations
 for delete
