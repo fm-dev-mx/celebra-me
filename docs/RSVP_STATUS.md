@@ -261,3 +261,37 @@ Contingencia operativa si Supabase falla:
 - [x] Admin y export protegidos
 - [x] Pruebas críticas pasando
 - [x] Estado de lanzamiento documentado en este archivo
+
+---
+
+## 8) Extensión del Dashboard Admin
+
+**Last Updated: 2026-02-15**
+
+Se han agregado las siguientes capacidades al dashboard admin:
+
+### API de Administración
+
+- Endpoints CRUD para gestión de eventos (`/api/dashboard/admin/events`)
+- Endpoints CRUD para gestión de usuarios (`/api/dashboard/admin/users`)
+- Endpoints CRUD para gestión de códigos de claim (`/api/dashboard/claimcodes`)
+
+### Componentes de UI
+
+- Tabla de administración de eventos con filtros y acciones
+- Tabla de administración de usuarios con cambio de roles
+- Tabla de administración de códigos de claim con generación y edición
+- Componente ErrorBoundary para manejo de errores en dashboard
+
+### Arquitectura
+
+- Cliente API tipado para operaciones del dashboard
+- DTOs estructurados para cada entidad
+- Integración con sistema de autorización RSVP v2
+- Pruebas completas de integración para cada endpoint
+
+### Seguridad
+
+- Todas las operaciones requieren sesión de administrador fuerte
+- Validación de roles y permisos
+- Protección contra inyección y acceso no autorizado
