@@ -11,22 +11,24 @@
 	z-index: 2000;
 	background: rgb(26 26 26 / 45%);
 	backdrop-filter: blur(12px) saturate(180%);
-	display: grid;
-	place-items: center;
-	padding: var(--spacing-md);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--spacing-xl);
 	animation: fadeIn 0.3s ease;
 }
 
 .dashboard-modal {
-	width: min(700px, 100%);
+	width: min(650px, 95vw);
 	background: $color-surface-primary;
 	border: 1px solid rgb($color-action-accent / 30%);
 	border-radius: 12px;
-	padding: clamp(1.5rem, 5vw, 3rem);
+	padding: clamp(1.2rem, 3vw, 2.5rem);
 	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
 	position: relative;
-	max-height: 90vh;
-	overflow-y: auto;
+	max-height: 85vh;
+	display: flex;
+	flex-direction: column;
 	animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
 	// Inner frame for Jewelry Box look
@@ -42,10 +44,18 @@
 	h3 {
 		font-family: $font-display-elegant; // Cinzel
 		color: $color-text-emphasis;
-		font-size: clamp(1.5rem, 4vw, 2.2rem);
-		margin: 0 0 2rem;
+		font-size: clamp(1.3rem, 3vw, 1.8rem);
+		margin: 0 0 1.5rem;
 		text-align: center;
 		letter-spacing: $letter-spacing-tight;
+	}
+
+	// Content container to allow internal scroll if needed
+	&__content {
+		flex: 1;
+		overflow-y: auto;
+		padding: 0.5rem;
+		margin: 0 -0.5rem; // Adjust for scrollbar
 	}
 }
 
