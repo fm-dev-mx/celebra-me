@@ -125,8 +125,17 @@ export interface RsvpInvitationListResponse {
 const MAX_ATTENDEES_ABSOLUTE = 20;
 
 function getRsvpTokenSecret(): string {
+	// In production mode, check process.env directly to avoid caching issues
+	if (process.env.NODE_ENV === 'production') {
+		const fromProcessEnv = process.env.RSVP_TOKEN_SECRET;
+		if (!fromProcessEnv || fromProcessEnv.trim() === '') {
+			throw new Error('RSVP_TOKEN_SECRET es obligatorio en producción');
+		}
+		return fromProcessEnv;
+	}
+
 	const configured = getEnv('RSVP_TOKEN_SECRET');
-	if (!configured) {
+	if (!configured || configured.trim() === '') {
 		throw new Error(
 			'RSVP_TOKEN_SECRET no está configurada. ' +
 				'Por favor, configura esta variable de entorno. ' +

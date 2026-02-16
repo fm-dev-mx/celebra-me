@@ -48,18 +48,30 @@ export const GET: APIRoute = async ({ url }) => {
 			},
 		);
 	} catch (error) {
-		console.error('RSVP API GET Error:', error);
+		// Only log actual server errors (500), not client errors
+		const message =
+			error instanceof Error ? error.message : String(error || 'Error interno del servidor.');
+		const status =
+			typeof message === 'string' &&
+			(message.includes('obligatorio') || message.includes('inválido'))
+				? 400
+				: 500;
+
+		if (status === 500) {
+			console.error('RSVP API GET Error:', error);
+		}
+
 		return new Response(
 			JSON.stringify({
 				success: false,
 				error: {
-					code: 'internal_error',
-					message: 'Error interno del servidor.',
+					code: status === 400 ? 'bad_request' : 'internal_error',
+					message,
 					details: error instanceof Error ? { stack: error.stack } : undefined,
 				},
 			}),
 			{
-				status: 500,
+				status,
 				headers: JSON_HEADERS,
 			},
 		);
@@ -214,9 +226,6 @@ export const POST: APIRoute = async ({ request }) => {
 			},
 		);
 	} catch (error) {
-		// Log the error for debugging
-		console.error('RSVP API POST Error:', error);
-
 		// Always return valid JSON, even for unexpected errors
 		const message =
 			error instanceof Error ? error.message : String(error || 'Error interno del servidor.');
@@ -225,6 +234,12 @@ export const POST: APIRoute = async ({ request }) => {
 			(message.includes('obligatorio') || message.includes('inválido'))
 				? 400
 				: 500;
+
+		// Only log actual server errors (500), not client errors
+		if (status === 500) {
+			console.error('RSVP API POST Error:', error);
+		}
+
 		return new Response(
 			JSON.stringify({
 				success: false,
