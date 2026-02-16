@@ -7,7 +7,6 @@ import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astr
 import DashboardTopbar from '@/components/dashboard/shell/DashboardTopbar.astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { toDisplayRole } from '@/lib/rsvp-v2/roles';
-import { setCsrfToken } from '@/lib/rsvp-v2/csrf';
 import type { DashboardNavItem } from '@/lib/rsvp-v2/types';
 
 interface Crumb {
@@ -26,9 +25,6 @@ if (!session) {
 	return Astro.redirect(`/login?next=${encodeURIComponent(Astro.url.pathname)}`);
 }
 
-// Generar token CSRF para protección de formularios
-const csrfToken = setCsrfToken(Astro.cookies);
-
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
 	{ label: 'Admin', href: '/dashboard/admin', adminOnly: true },
@@ -43,7 +39,6 @@ const navItems: DashboardNavItem[] = [
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<meta name="csrf-token" content={csrfToken} />
 		<title>{title}</title>
 	</head>
 	<body class="theme-preset--jewelry-box dashboard-shell-body">

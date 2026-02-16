@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp-v2/csrf';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { listAdminEvents, createEventAdmin } from '@/lib/rsvp-v2/service';
 
@@ -22,16 +21,10 @@ export const GET: APIRoute = async ({ request }) => {
 	}
 };
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request }) => {
 	try {
 		// Rate limiting: 20 req/min para creación
 		await requireAdminRateLimit(request, 'admin:create');
-
-		// Validar CSRF token para operaciones de escritura
-		if (!shouldSkipCsrfValidation(new URL(request.url).pathname)) {
-			validateCsrfToken(request, cookies);
-		}
-
 		const session = await requireAdminStrongSession(request);
 
 		const body = (await request.json()) as {

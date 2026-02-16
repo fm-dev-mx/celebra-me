@@ -24,10 +24,6 @@ export function badRequest(message: string): Response {
 	return errorResponse(new ApiError(400, 'bad_request', message));
 }
 
-export function forbidden(message: string): Response {
-	return errorResponse(new ApiError(403, 'forbidden', message));
-}
-
 export function internalError(error: unknown): Response {
 	return errorResponse(error);
 }
