@@ -61,6 +61,11 @@ interface RSVPProps {
 	confirmationMode?: ConfirmationMode;
 	whatsappConfig?: WhatsAppConfig;
 	apiEndpoint?: string;
+	initialGuestData?: {
+		fullName: string;
+		maxAllowedAttendees: number;
+		inviteId?: string;
+	};
 }
 
 const RSVP: React.FC<RSVPProps> = ({
@@ -79,20 +84,25 @@ const RSVP: React.FC<RSVPProps> = ({
 	confirmationMode = 'api',
 	whatsappConfig,
 	apiEndpoint = '/api/rsvp',
+	initialGuestData,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 
-	const [name, setName] = useState('');
+	const [name, setName] = useState(initialGuestData?.fullName || '');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
 	const [dietary, setDietary] = useState('');
-	const [token, setToken] = useState('');
-	const [contextLoading, setContextLoading] = useState(true);
-	const [contextMode, setContextMode] = useState<'personalized' | 'generic'>('generic');
+	const [token, setToken] = useState(initialGuestData?.inviteId || '');
+	const [contextLoading, setContextLoading] = useState(!initialGuestData);
+	const [contextMode, setContextMode] = useState<'personalized' | 'generic'>(
+		initialGuestData ? 'personalized' : 'generic',
+	);
 	const [tokenWarning, setTokenWarning] = useState('');
-	const [nameLocked, setNameLocked] = useState(false);
-	const [contextGuestCap, setContextGuestCap] = useState<number>(Number(guestCap));
+	const [nameLocked, setNameLocked] = useState(!!initialGuestData);
+	const [contextGuestCap, setContextGuestCap] = useState<number>(
+		Number(initialGuestData?.maxAllowedAttendees || guestCap),
+	);
 	const [rsvpId, setRsvpId] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);

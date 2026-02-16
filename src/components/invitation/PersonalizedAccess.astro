@@ -1,0 +1,170 @@
+---
+// src/components/invitation/PersonalizedAccess.astro
+interface Props {
+	maxAllowedAttendees: number;
+	guestName: string;
+}
+
+const { maxAllowedAttendees, guestName } = Astro.props;
+---
+
+<section class="personalized-access">
+	<div class="personalized-access__container">
+		<div class="access-card">
+			<div class="access-card__header">
+				<div class="access-card__ring"></div>
+				<h3 class="access-card__title">Pase de Acceso</h3>
+			</div>
+			<div class="access-card__content">
+				<div class="access-card__item">
+					<span class="label">Para</span>
+					<span class="value">{guestName}</span>
+				</div>
+				<div class="access-card__divider"></div>
+				<div class="access-card__item access-card__item--large">
+					<span class="label">Lugares Reservados</span>
+					<span class="value">{maxAllowedAttendees}</span>
+				</div>
+			</div>
+			<div class="access-card__footer">
+				<p>Por favor confirma tu asistencia en la sección de RSVP al final.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style lang="scss">
+	.personalized-access {
+		padding: 3rem 1.5rem;
+		background: transparent;
+		display: flex;
+		justify-content: center;
+	}
+
+	.access-card {
+		background: var(--color-surface-primary, #fffaf5);
+		border-radius: 4px;
+		box-shadow: var(--hero-card-shadow-ambient, 0 20px 40px rgba(0,0,0,0.3));
+		border: 1px solid var(--hero-card-border-hairline, rgba(212, 175, 95, 0.3));
+		width: 100%;
+		max-width: 450px;
+		overflow: hidden;
+		position: relative;
+
+		&::before, &::after {
+			content: '';
+			position: absolute;
+			width: 24px;
+			height: 24px;
+			background: var(--color-background, #1a110b);
+			border-radius: 50%;
+			top: 50%;
+			transform: translateY(-50%);
+			z-index: 2;
+		}
+
+		&::before { left: -12px; }
+		&::after { right: -12px; }
+
+		&__header {
+			background: var(--hero-card-bg, #2b1d12);
+			padding: 2rem 1.5rem;
+			color: var(--color-text-emphasis, #d4af5f);
+			text-align: center;
+			position: relative;
+			border-bottom: 1px solid var(--hero-card-border-hairline);
+
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 10%;
+				right: 10%;
+				height: 1px;
+				background: var(--hero-divider-color);
+			}
+		}
+
+		&__ring {
+			width: 40px;
+			height: 40px;
+			border: 1px solid var(--color-action-accent, #d4af5f);
+			border-radius: 50%;
+			margin: 0 auto 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0.8;
+
+			&::after {
+				content: 'H';
+				font-family: var(--font-display, serif);
+				font-size: 1.2rem;
+			}
+		}
+
+		&__title {
+			font-family: var(--font-display, serif);
+			font-size: 1.5rem;
+			text-transform: uppercase;
+			letter-spacing: 4px;
+			color: var(--color-text-emphasis);
+		}
+
+		&__content {
+			padding: 3rem 2rem;
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+			background-image: var(--family-texture-image);
+			background-opacity: 0.05;
+		}
+
+		&__item {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			text-align: center;
+
+			.label {
+				font-size: 0.8rem;
+				text-transform: uppercase;
+				color: var(--color-text-secondary, #926d48);
+				letter-spacing: 2px;
+				font-family: var(--font-body);
+			}
+
+			.value {
+				font-size: 1.75rem;
+				font-family: var(--font-display);
+				color: var(--color-text-primary, #1a110b);
+			}
+
+			&--large {
+				.value {
+					font-size: 3.5rem;
+					color: var(--color-text-emphasis);
+					line-height: 1;
+				}
+			}
+		}
+
+		&__divider {
+			height: 1px;
+			background: var(--hero-divider-color);
+			margin: 0.5rem 0;
+			opacity: 0.3;
+		}
+
+		&__footer {
+			padding: 1.5rem;
+			background: rgba(var(--color-text-primary-rgb), 0.03);
+			border-top: 1px solid var(--color-border-subtle);
+			text-align: center;
+			font-size: 0.9rem;
+			color: var(--color-text-secondary);
+			font-family: var(--font-body);
+			font-style: italic;
+		}
+	}
+</style>

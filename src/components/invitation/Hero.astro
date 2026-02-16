@@ -15,6 +15,7 @@ interface Props {
 	backgroundImage: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
 	variant?: string;
+	guestName?: string;
 }
 
 const {
@@ -27,11 +28,24 @@ const {
 	backgroundImage,
 	portrait,
 	variant = 'standard',
+	guestName,
 } = Astro.props;
 
 // Distinguish between ImageAsset (wrapper with .src) and ImageMetadata (Astro object)
-const bgSrc = 'alt' in backgroundImage ? backgroundImage.src : backgroundImage;
-const portraitSrc = portrait ? ('alt' in portrait ? portrait.src : portrait) : undefined;
+const getSrc = (image: ImageMetadata | ImageAsset): string => {
+	if ('src' in image) {
+		const src = image.src as unknown;
+		if (typeof src === 'string') return src;
+		if (src && typeof src === 'object' && 'src' in src && typeof (src as any).src === 'string') {
+			return (src as any).src;
+		}
+	}
+	// Fallback for ImageMetadata
+	return image as unknown as string;
+};
+
+const bgSrc = getSrc(backgroundImage);
+const portraitSrc = portrait ? getSrc(portrait) : null;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -43,7 +57,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 <section id="inicio" class="invitation-hero" data-variant={variant}>
 	<div class="invitation-hero__background">
 		<Image
-			src={bgSrc as any}
+			src={bgSrc}
 			alt={name}
 			width={1920}
 			height={1080}
@@ -56,6 +70,13 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 
 	<div class="invitation-hero__content">
 		{label && <span class="invitation-hero__label">{label}</span>}
+
+		{guestName && (
+			<div class="invitation-hero__personal-greeting">
+				<span>¡Hola, {guestName}!</span>
+			</div>
+		)}
+
 		<h1 class="invitation-hero__title">{name}</h1>
 
 		{nickname && (
@@ -67,7 +88,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 		{portraitSrc && (
 			<div class="invitation-hero__portrait">
 				<Image
-					src={portraitSrc as any}
+					src={portraitSrc}
 					alt={`Retrato de ${name}`}
 					width={200}
 					height={200}

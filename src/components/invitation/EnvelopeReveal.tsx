@@ -21,6 +21,7 @@ interface Props {
 	eventSlug: string;
 	tooltipText?: string;
 	variant?: string;
+	guestName?: string;
 }
 
 // ── Timing Constants (synced with _motion.scss tokens) ──
@@ -43,6 +44,7 @@ const EnvelopeReveal: FC<Props> = ({
 	eventSlug,
 	tooltipText,
 	variant,
+	guestName,
 }) => {
 	const shouldReduceMotion = useReducedMotion();
 	const [showTooltip, setShowTooltip] = useState(false);
@@ -218,6 +220,12 @@ const EnvelopeReveal: FC<Props> = ({
 									{documentLabel || 'Invitación'}
 								</span>
 								<h2 className="envelope-card__name">{name}</h2>
+								{guestName && (
+									<div className="envelope-card__guest-personalized">
+										<p className="personalized-label">Especialmente para:</p>
+										<strong className="personalized-name">{guestName}</strong>
+									</div>
+								)}
 							</div>
 							<div className="envelope-card__footer">
 								<p className="envelope-card__details">
@@ -264,6 +272,11 @@ const EnvelopeReveal: FC<Props> = ({
 											</span>
 										)}
 										<h2 className="envelope-name">{name}</h2>
+										{guestName && (
+											<p className="envelope-tease__guest-name">
+												Para: {guestName}
+											</p>
+										)}
 									</div>
 
 									{/* Seal as layout participant (middle zone) */}
