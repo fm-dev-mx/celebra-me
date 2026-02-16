@@ -46,6 +46,7 @@ import type {
 	AppUserRole,
 } from './types';
 import { getRsvpContext } from '@/lib/rsvp/service';
+import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp/shared-utils';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
 import { mapSupabaseErrorToApiError } from './supabase-errors';
@@ -54,22 +55,6 @@ import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './authApi';
 import { generateShortId } from '@/utils/ids';
 import { generateInvitationLink } from '@/utils/invitationLink';
-
-const MAX_TEXT_LEN = 500;
-
-function sanitize(value: unknown, maxLen = MAX_TEXT_LEN): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
-function normalizePhone(phone: string): string {
-	return sanitize(phone, 40).replace(/[^\d]/g, '');
-}
-
-function toSafeAttendeeCount(raw: unknown): number {
-	if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-	return Math.max(0, Math.min(Math.trunc(raw), 20));
-}
 
 function buildInviteUrl(
 	origin: string,

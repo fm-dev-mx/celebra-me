@@ -268,6 +268,30 @@ export async function findGuestsByEvent(
 	return rows.map(toGuestRecord);
 }
 
+export async function createGuestInvitationPublic(
+	input: CreateGuestInput,
+): Promise<GuestInvitationRecord> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+
+	const rows = await supabaseRestRequest<GuestRow[]>({
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}`,
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			event_id: input.eventId,
+			full_name: input.fullName,
+			phone: input.phone,
+			max_allowed_attendees: input.maxAllowedAttendees,
+			tags: input.tags,
+			short_id: input.short_id,
+		},
+	});
+	if (!rows[0]) throw new Error('No se pudo crear invitado (público).');
+	return toGuestRecord(rows[0]);
+}
+
 export async function createGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken: string,
@@ -401,6 +425,19 @@ export async function appendGuestAuditByHost(
 			payload,
 		},
 	});
+}
+
+export async function findGuestByEventAndNamePublic(
+	eventId: string,
+	fullName: string,
+): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+	const rows = await supabaseRestRequest<GuestRow[]>({
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&event_id=eq.${encodeURIComponent(eventId)}&full_name=ilike.${encodeURIComponent(fullName)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toGuestRecord(rows[0]) : null;
 }
 
 export async function findGuestByInviteIdPublic(
