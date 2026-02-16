@@ -4,13 +4,20 @@ interface ShareActionProps {
 	phone: string;
 	waShareUrl: string;
 	inviteUrl: string;
+	shareText: string;
 	onShared: () => Promise<void> | void;
 }
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
 type ShareMethod = 'whatsapp' | 'web-share' | 'copy' | 'open';
 
-const ShareAction: React.FC<ShareActionProps> = ({ phone, waShareUrl, inviteUrl, onShared }) => {
+const ShareAction: React.FC<ShareActionProps> = ({
+	phone,
+	waShareUrl,
+	inviteUrl,
+	shareText,
+	onShared,
+}) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
 	const [showMenu, setShowMenu] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
@@ -41,7 +48,7 @@ const ShareAction: React.FC<ShareActionProps> = ({ phone, waShareUrl, inviteUrl,
 					if (navigator.share) {
 						await navigator.share({
 							title: 'Invitación Celebra-me',
-							text: '¡Hola! Te comparto tu invitación personalizada.',
+							text: shareText,
 							url: inviteUrl,
 						});
 						await onShared();
@@ -55,7 +62,6 @@ const ShareAction: React.FC<ShareActionProps> = ({ phone, waShareUrl, inviteUrl,
 					await navigator.clipboard.writeText(inviteUrl);
 					await onShared();
 					setStatus('delivered');
-					setTimeout(() => setStatus('idle'), 2000);
 					break;
 
 				case 'open':
@@ -63,6 +69,11 @@ const ShareAction: React.FC<ShareActionProps> = ({ phone, waShareUrl, inviteUrl,
 					await onShared();
 					setStatus('delivered');
 					break;
+			}
+
+			// Restore idle state after a cooling period for all successful actions
+			if (method !== 'copy' || status === 'delivered') {
+				setTimeout(() => setStatus('idle'), 3000);
 			}
 		} catch (err) {
 			console.info('Share action aborted or failed:', err);

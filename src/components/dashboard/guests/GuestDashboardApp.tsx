@@ -159,7 +159,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	useEffect(() => {
 		try {
 			void loadEvents();
-		} catch (err) {
+		} catch {
 			// Errors from loadEvents are already handled within the function
 		}
 	}, [loadEvents]);
@@ -167,7 +167,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	useEffect(() => {
 		try {
 			void loadGuests();
-		} catch (err) {
+		} catch {
 			// Errors from loadGuests are already handled within the function
 		}
 	}, [loadGuests]);
@@ -270,7 +270,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				message: `Invitado ${guestToDelete.fullName} eliminado con éxito.`,
 				type: 'success',
 			});
-		} catch (err) {
+		} catch {
 			setNotification({
 				message: 'Error al eliminar invitado.',
 				type: 'warning',
@@ -424,6 +424,28 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							}
 
 							await loadGuests();
+
+							// Smart Focus: Scroll to next guest
+							const currentIndex = items.findIndex((i) => i.guestId === item.guestId);
+							if (currentIndex !== -1 && currentIndex < items.length - 1) {
+								const nextGuest = items[currentIndex + 1];
+								setTimeout(() => {
+									const nextRow = document.querySelector(
+										`[data-guest-id="${nextGuest.guestId}"]`,
+									);
+									if (nextRow) {
+										nextRow.scrollIntoView({
+											behavior: 'smooth',
+											block: 'center',
+										});
+										nextRow.classList.add('celebrate-success');
+										setTimeout(
+											() => nextRow.classList.remove('celebrate-success'),
+											2000,
+										);
+									}
+								}, 800);
+							}
 						} catch (err) {
 							console.error('[GuestDashboard] Mark shared error:', err);
 							setItems(previousItems);
@@ -440,8 +462,41 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						className="dashboard-modal-backdrop"
 						onClick={() => setDeleteConfirmOpen(false)}
 					>
-						<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-							<h3>Confirmar eliminación</h3>
+						<div
+							className="dashboard-modal dashboard-modal--confirm"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<div className="dashboard-modal__header">
+								<h3>Confirmar eliminación</h3>
+								<button
+									className="btn-close"
+									onClick={() => setDeleteConfirmOpen(false)}
+									aria-label="Cerrar modal"
+								>
+									&times;
+								</button>
+							</div>
+							<div className="dashboard-modal__content">
+								<p
+									style={{
+										textAlign: 'center',
+										marginBottom: '1rem',
+										color: 'var(--color-text-secondary)',
+									}}
+								>
+									¿Estás seguro de que deseas eliminar a{' '}
+									<strong>{guestToDelete?.fullName}</strong>?
+								</p>
+								<p
+									style={{
+										textAlign: 'center',
+										fontSize: '0.85rem',
+										color: 'var(--color-wax-seal)',
+									}}
+								>
+									Esta acción no se puede deshacer.
+								</p>
+							</div>
 							<p
 								style={{
 									textAlign: 'center',
@@ -478,7 +533,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					mode={modalMode}
 					initialGuest={editingGuest}
 					onClose={() => setModalOpen(false)}
-					onSubmit={async (payload, _stayOpen) => {
+					onSubmit={async (payload) => {
 						let savedItem: DashboardGuestItem | null = null;
 						if (modalMode === 'create') {
 							const response = await apiJson<{ item: DashboardGuestItem }>(

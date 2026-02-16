@@ -90,6 +90,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					phone={item.phone}
 					waShareUrl={item.waShareUrl}
 					inviteUrl={inviteUrl}
+					shareText={item.shareText}
 					onShared={async () => onMarkShared(item)}
 				/>
 				<button

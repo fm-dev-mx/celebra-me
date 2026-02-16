@@ -41,21 +41,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [saving, setSaving] = useState(false);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const [localError, setLocalError] = useState('');
-	const [isMobile, setIsMobile] = useState(false);
 
 	const nameInputRef = React.useRef<HTMLInputElement>(null);
 	const phoneInputRef = React.useRef<HTMLInputElement>(null);
-
-	useEffect(() => {
-		const checkMobile = () => {
-			const mobileParam =
-				new URLSearchParams(window.location.search).get('mobile') === 'true';
-			setIsMobile(mobileParam || window.innerWidth < 768);
-		};
-		checkMobile();
-		window.addEventListener('resize', checkMobile);
-		return () => window.removeEventListener('resize', checkMobile);
-	}, []);
 
 	const resetForm = () => {
 		setFullName('');
@@ -149,52 +137,18 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			className="dashboard-modal-backdrop"
 			role="dialog"
 			aria-modal="true"
-			style={
-				isMobile
-					? { position: 'fixed', inset: 0, padding: 0, background: 'white', zIndex: 9999 }
-					: {}
-			}
 			onClick={(e) => {
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div
-				className="dashboard-modal"
-				onClick={(e) => e.stopPropagation()}
-				style={
-					isMobile
-						? {
-								position: 'fixed',
-								inset: 0,
-								width: '100%',
-								height: '100dvh',
-								borderRadius: 0,
-								display: 'flex',
-								flexDirection: 'column',
-								overflow: 'hidden',
-								border: 'none',
-								boxShadow: 'none',
-							}
-						: {}
-				}
-			>
-				<div
-					className="dashboard-modal__header"
-					style={
-						isMobile
-							? { position: 'sticky', top: 0, background: 'white', zIndex: 10 }
-							: {}
-					}
-				>
+			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
+				<div className="dashboard-modal__header">
 					<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
 					<button className="btn-close" onClick={onClose} aria-label="Cerrar modal">
 						&times;
 					</button>
 				</div>
-				<div
-					className="dashboard-modal__content"
-					style={isMobile ? { flex: 1, overflowY: 'auto', padding: '1.5rem' } : {}}
-				>
+				<div className="dashboard-modal__content">
 					<form
 						className="dashboard-form-grid"
 						onSubmit={(event) => {
@@ -365,20 +319,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					</form>
 				</div>
 
-				<div
-					className="dashboard-modal__footer"
-					style={
-						isMobile
-							? {
-									position: 'sticky',
-									bottom: 0,
-									background: 'white',
-									zIndex: 10,
-									borderTop: '1px solid #eee',
-								}
-							: {}
-					}
-				>
+				<div className="dashboard-modal__footer">
 					<div className="modal-actions">
 						<button
 							type="button"

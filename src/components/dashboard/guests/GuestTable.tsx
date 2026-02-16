@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GuestCard from './GuestCard';
 import ShareAction from './ShareAction';
 import { generateInvitationLink } from '@/utils/invitationLink';
@@ -45,6 +45,20 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onMarkShared,
 }) => {
 	const isMobile = useIsMobile(992);
+	const [copiedGuestId, setCopiedGuestId] = useState<string | null>(null);
+	const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+	useEffect(() => {
+		if (copiedGuestId) {
+			if (timerRef.current) clearTimeout(timerRef.current);
+			timerRef.current = setTimeout(() => {
+				setCopiedGuestId(null);
+			}, 5000);
+		}
+		return () => {
+			if (timerRef.current) clearTimeout(timerRef.current);
+		};
+	}, [copiedGuestId]);
 
 	if (!items || items.length === 0) {
 		return (
@@ -101,7 +115,13 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						const isShared = item.deliveryStatus === 'shared';
 
 						return (
-							<tr key={item.guestId} data-guest-id={item.guestId}>
+							<tr
+								key={item.guestId}
+								data-guest-id={item.guestId}
+								className={
+									copiedGuestId === item.guestId ? 'row-focus-highlight' : ''
+								}
+							>
 								<td data-label="Nombre / Contacto">
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>
@@ -175,18 +195,32 @@ const GuestTable: React.FC<GuestTableProps> = ({
 											phone={item.phone}
 											waShareUrl={item.waShareUrl}
 											inviteUrl={inviteUrl}
+											shareText={item.shareText}
 											onShared={async () => onMarkShared(item)}
 										/>
 										<button
 											type="button"
-											className="btn-icon"
+											className={`btn-icon ${copiedGuestId === item.guestId ? 'btn-icon--active' : ''}`}
 											title="Copiar Link"
 											onClick={async () => {
 												await navigator.clipboard.writeText(inviteUrl);
+												setCopiedGuestId(item.guestId);
 											}}
 										>
-											🔗
+											{copiedGuestId === item.guestId ? '✅' : '🔗'}
 										</button>
+										{copiedGuestId === item.guestId && !isShared && (
+											<button
+												type="button"
+												className="btn-accent btn-accent--small animate-pop-in"
+												onClick={() => {
+													void onMarkShared(item);
+													setCopiedGuestId(null);
+												}}
+											>
+												¿Enviado?
+											</button>
+										)}
 										<button
 											type="button"
 											className="btn-icon"

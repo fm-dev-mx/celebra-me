@@ -17,6 +17,7 @@ export interface DashboardGuestItem {
 	firstViewedAt: string | null;
 	respondedAt: string | null;
 	waShareUrl: string;
+	shareText: string;
 	updatedAt: string;
 	eventType?: string;
 	eventSlug?: string;
