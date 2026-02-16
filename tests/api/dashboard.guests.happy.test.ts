@@ -93,6 +93,7 @@ describe('dashboard guests happy path', () => {
 				firstViewedAt: null,
 				respondedAt: null,
 				waShareUrl: '',
+				shareText: '',
 				updatedAt: new Date().toISOString(),
 				eventType: 'xv',
 				eventSlug: 'demo',
@@ -127,6 +128,7 @@ describe('dashboard guests happy path', () => {
 				firstViewedAt: null,
 				respondedAt: null,
 				waShareUrl: '',
+				shareText: '',
 				updatedAt: new Date().toISOString(),
 				eventType: 'xv',
 				eventSlug: 'demo',
@@ -148,6 +150,7 @@ describe('dashboard guests happy path', () => {
 				firstViewedAt: null,
 				respondedAt: null,
 				waShareUrl: '',
+				shareText: '',
 				updatedAt: new Date().toISOString(),
 			},
 		});
