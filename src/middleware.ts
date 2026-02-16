@@ -9,7 +9,12 @@ const IDLE_TIMEOUT_SECONDS = 60 * 30;
 const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5;
 const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-const ADMIN_ONLY_PATHS = ['/dashboard/admin', '/dashboard/usuarios', '/dashboard/claimcodes'];
+const ADMIN_ONLY_PATHS = [
+	'/dashboard/admin',
+	'/dashboard/usuarios',
+	'/dashboard/claimcodes',
+	'/dashboard/eventos',
+];
 
 function isAdminOnlyPath(pathname: string): boolean {
 	return ADMIN_ONLY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

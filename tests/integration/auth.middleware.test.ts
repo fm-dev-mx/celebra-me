@@ -189,4 +189,43 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockNext).toHaveBeenCalled();
 		expect(mockRedirect).not.toHaveBeenCalled();
 	});
+
+	it('Scenario: host_client accessing /dashboard/eventos is redirected to /dashboard/invitados', async () => {
+		const context = createContext('/dashboard/eventos');
+		mockCookies.get.mockReturnValue({ value: 'host-token' });
+
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				id: 'host-1',
+				app_metadata: { role: 'host_client' },
+				amr: [{ method: 'password' }],
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
+		expect(mockNext).not.toHaveBeenCalled();
+	});
+
+	it('Scenario: super_admin with MFA can access /dashboard/eventos', async () => {
+		const context = createContext('/dashboard/eventos');
+		mockCookies.get.mockImplementation((name: string) => {
+			if (name === 'sb-access-token') return { value: 'admin-token' };
+			return null;
+		});
+
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'totp' }],
+			}),
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockNext).toHaveBeenCalled();
+		expect(mockRedirect).not.toHaveBeenCalled();
+	});
 });
