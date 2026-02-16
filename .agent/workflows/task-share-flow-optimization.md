@@ -19,7 +19,7 @@ on Short-URLs (Short-IDs), personalized guest experiences, and high-speed dashbo
 ## 2. Dynamic & Secure Link Resolution
 
 1. **Utility**: Update `src/utils/invitationLink.ts` to prioritize `short_id`.
-    - Pattern: `{baseUrl}/e/{short_id}` or `{baseUrl}/{event_type}/{event_slug}/i/{short_id}`.
+    - Pattern: `{baseUrl}/{event_type}/{event_slug}/i/{short_id}`.
     - **Environment-Aware**: Production uses the custom domain; local uses `localhost:4321`.
 2. **Personalization Engine**: Modifiy the invitation route (`[slug].astro`) to:
     - Resolve `short_id` to guest data server-side (SSR).
