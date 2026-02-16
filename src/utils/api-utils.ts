@@ -67,12 +67,25 @@ export function errorResponse(
  */
 export async function validateBody<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
 	try {
-		const json = await request.json();
+		const contentType = request.headers.get('content-type');
+		if (!contentType?.includes('application/json')) {
+			throw new Error('Content-Type must be application/json');
+		}
+
+		const rawText = await request.text();
+		if (!rawText.trim()) {
+			throw new Error('Request body is empty');
+		}
+
+		const json = JSON.parse(rawText);
 		return schema.parse(json);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			const issues = error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ');
 			throw new Error(`Validación fallida: ${issues}`);
+		}
+		if (error instanceof Error && error.message.includes('JSON')) {
+			throw new Error(`Invalid JSON format: ${error.message}`);
 		}
 		throw new Error('Cuerpo de petición inválido o malformado.');
 	}
