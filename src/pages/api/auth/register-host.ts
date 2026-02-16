@@ -100,6 +100,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				);
 			}
 			userId = existing.id;
+			userEmail = existing.email || email;
 		}
 
 		if (!userId) {
@@ -107,16 +108,40 @@ export const POST: APIRoute = async ({ request, url }) => {
 		}
 
 		if (claimCode) {
-			await claimEventForUserByClaimCode({
-				userId,
-				claimCode,
-			});
+			try {
+				await claimEventForUserByClaimCode({
+					userId,
+					claimCode,
+				});
+			} catch (claimError) {
+				if (claimError instanceof ApiError) {
+					throw new ApiError(
+						claimError.status,
+						claimError.code,
+						`El código de invitación no es válido o ya fue usado. ${claimError.message}`,
+					);
+				}
+				throw new ApiError(
+					400,
+					'bad_request',
+					'Error al procesar el código de invitación.',
+				);
+			}
 		}
-		await ensureUserRole({
-			userId,
-			email: userEmail,
-			defaultRole: 'host_client',
-		});
+		try {
+			await ensureUserRole({
+				userId,
+				email: userEmail,
+				defaultRole: 'host_client',
+			});
+		} catch (roleError) {
+			console.error('[Register Host] Error ensuring user role:', roleError);
+			throw new ApiError(
+				500,
+				'internal_error',
+				'Error al configurar los permisos de usuario.',
+			);
+		}
 
 		if (method === 'magic_link') {
 			await sendMagicLink({

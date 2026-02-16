@@ -101,7 +101,7 @@ export async function sendMagicLink(input: {
 
 export async function findAuthUserByEmail(input: {
 	email: string;
-}): Promise<{ id: string } | null> {
+}): Promise<{ id: string; email?: string } | null> {
 	const response = await authRequest<{ users?: Array<{ id: string; email?: string }> }>({
 		path: 'admin/users?page=1&per_page=1000',
 		method: 'GET',
@@ -111,7 +111,7 @@ export async function findAuthUserByEmail(input: {
 	const user = (response.users || []).find(
 		(item) => (item.email || '').trim().toLowerCase() === wanted,
 	);
-	return user ? { id: user.id } : null;
+	return user ? { id: user.id, email: user.email } : null;
 }
 
 export async function listAuthUsers(input?: {
