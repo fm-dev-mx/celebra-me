@@ -15,6 +15,7 @@ create table if not exists public.audit_logs (
 alter table public.audit_logs enable row level security;
 alter table public.audit_logs force row level security;
 
+drop policy if exists audit_logs_select_admin on public.audit_logs;
 create policy audit_logs_select_admin
 on public.audit_logs
 for select
