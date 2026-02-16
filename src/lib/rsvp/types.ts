@@ -1,5 +1,5 @@
 export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
-export type RsvpSource = 'personalized_link' | 'generic_link' | 'admin';
+export type RsvpSource = 'personalized_link' | 'generic_link' | 'admin' | 'manual_entry';
 export type ChannelType = 'whatsapp';
 export type ChannelAction = 'cta_rendered' | 'clicked';
 
