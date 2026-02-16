@@ -365,10 +365,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					)}
 				</div>
 
-				<GuestProgressCard
-					totals={totals}
-					sessionCount={shareSessionCount}
-				/>
+				<GuestProgressCard totals={totals} sessionCount={shareSessionCount} />
 
 				<GuestStatsCards totals={totals} />
 

@@ -362,9 +362,17 @@ export async function updateDashboardGuest(input: {
 	try {
 		const nextPhone = input.phone !== undefined ? normalizePhone(input.phone) : undefined;
 		if (nextPhone && nextPhone !== existing.phone) {
-			const duplicate = await findGuestByPhone(existing.eventId, nextPhone, input.hostAccessToken);
+			const duplicate = await findGuestByPhone(
+				existing.eventId,
+				nextPhone,
+				input.hostAccessToken,
+			);
 			if (duplicate) {
-				throw new ApiError(409, 'conflict', 'Este teléfono ya está registrado en este evento.');
+				throw new ApiError(
+					409,
+					'conflict',
+					'Este teléfono ya está registrado en este evento.',
+				);
 			}
 		}
 
