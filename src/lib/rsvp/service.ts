@@ -113,17 +113,17 @@ export interface RsvpInvitationListResponse {
 
 const MAX_FIELD_LENGTH = 200;
 const MAX_ATTENDEES_ABSOLUTE = 20;
-const DEV_RSVP_TOKEN_SECRET = 'dev-rsvp-secret-change-me';
 
 function getRsvpTokenSecret(): string {
 	const configured = getEnv('RSVP_TOKEN_SECRET');
-	if (configured) return configured;
-	if (process.env.NODE_ENV === 'production') {
+	if (!configured) {
 		throw new Error(
-			'RSVP_TOKEN_SECRET es obligatorio en producción. Configura una clave fuerte y única.',
+			'RSVP_TOKEN_SECRET no está configurada. ' +
+				'Por favor, configura esta variable de entorno. ' +
+				'Genera un valor seguro con: openssl rand -base64 32',
 		);
 	}
-	return DEV_RSVP_TOKEN_SECRET;
+	return configured;
 }
 
 function sanitizeString(value: unknown, maxLength = MAX_FIELD_LENGTH): string {

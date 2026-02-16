@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
 import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { listAdminUsers } from '@/lib/rsvp-v2/service';
 
@@ -10,6 +11,8 @@ function toSafeInt(raw: string | null, fallback: number): number {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
+		// Rate limiting: 60 req/min para listados
+		await requireAdminRateLimit(request, 'admin:list');
 		await requireAdminStrongSession(request);
 		const page = toSafeInt(url.searchParams.get('page'), 1);
 		const perPage = Math.min(toSafeInt(url.searchParams.get('perPage'), 200), 1000);

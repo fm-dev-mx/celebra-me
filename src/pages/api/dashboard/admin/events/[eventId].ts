@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { updateEventAdmin } from '@/lib/rsvp-v2/service';
 
@@ -10,6 +11,8 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const PATCH: APIRoute = async ({ params, request }) => {
 	try {
+		// Rate limiting: 30 req/min para actualizaciones
+		await requireAdminRateLimit(request, 'admin:update');
 		const session = await requireAdminStrongSession(request);
 
 		const eventId = sanitize(params.eventId, 120);

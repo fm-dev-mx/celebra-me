@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { disableClaimCodeAdmin, updateClaimCodeAdmin } from '@/lib/rsvp-v2/service';
 
@@ -10,6 +11,8 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const PATCH: APIRoute = async ({ request, params }) => {
 	try {
+		// Rate limiting: 30 req/min para actualizaciones
+		await requireAdminRateLimit(request, 'claimcodes:update');
 		await requireAdminStrongSession(request);
 		const claimCodeId = sanitize(params.claimCodeId, 120);
 		if (!claimCodeId) return badRequest('claimCodeId es obligatorio.');
@@ -32,6 +35,8 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
 export const DELETE: APIRoute = async ({ request, params }) => {
 	try {
+		// Rate limiting: 10 req/min para eliminaciones
+		await requireAdminRateLimit(request, 'claimcodes:delete');
 		await requireAdminStrongSession(request);
 		const claimCodeId = sanitize(params.claimCodeId, 120);
 		if (!claimCodeId) return badRequest('claimCodeId es obligatorio.');

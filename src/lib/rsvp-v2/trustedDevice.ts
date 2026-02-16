@@ -29,10 +29,14 @@ function fromBase64Url(input: string): string {
 
 function getSecret(): string {
 	const secret = sanitize(getEnv('TRUST_DEVICE_SECRET'), 512);
-	if (process.env.NODE_ENV === 'production' && !secret) {
-		throw new Error('TRUST_DEVICE_SECRET es obligatoria en producción.');
+	if (!secret) {
+		throw new Error(
+			'TRUST_DEVICE_SECRET no está configurada. ' +
+				'Por favor, configura esta variable de entorno. ' +
+				'Genera un valor seguro con: openssl rand -hex 32',
+		);
 	}
-	return secret || 'dev-trust-device-secret';
+	return secret;
 }
 
 function getMaxAgeSeconds(): number {

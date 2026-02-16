@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
 import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
 import { createClaimCodeAdmin, listClaimCodesAdmin } from '@/lib/rsvp-v2/service';
 
@@ -10,6 +11,8 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
+		// Rate limiting: 60 req/min para listados
+		await requireAdminRateLimit(request, 'claimcodes:list');
 		await requireAdminStrongSession(request);
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const items = await listClaimCodesAdmin({ eventId: eventId || undefined });
@@ -21,6 +24,8 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
+		// Rate limiting: 20 req/min para creación
+		await requireAdminRateLimit(request, 'claimcodes:create');
 		const session = await requireAdminStrongSession(request);
 		const body = (await request.json()) as {
 			eventId?: string;
