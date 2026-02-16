@@ -46,6 +46,7 @@ import type {
 	GuestRSVPSubmitDTO,
 	AppUserRole,
 } from './types';
+import { getEntry } from 'astro:content';
 import { getRsvpContext } from '@/lib/rsvp/service';
 import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp/shared-utils';
 import { ApiError } from './errors';
@@ -57,6 +58,30 @@ import { listAuthUsers } from './authApi';
 import { generateShortId } from '@/utils/ids';
 import { generateInvitationLink } from '@/utils/invitationLink';
 
+function resolveOrigin(providedOrigin?: string): string {
+	const baseUrl = getEnv('BASE_URL');
+	const isProd = process.env.NODE_ENV === 'production';
+
+	// Prefer BASE_URL if it's a real domain (not localhost) or if we are in production
+	if (baseUrl && baseUrl.startsWith('http')) {
+		if (isProd || !baseUrl.includes('localhost')) {
+			return baseUrl.replace(/\/+$/, '');
+		}
+	}
+
+	// Use provided origin if it's not localhost
+	if (
+		providedOrigin &&
+		providedOrigin.startsWith('http') &&
+		!providedOrigin.includes('localhost')
+	) {
+		return providedOrigin.replace(/\/+$/, '');
+	}
+
+	// Fallback to provided or localhost
+	return (baseUrl || providedOrigin || 'http://localhost:4321').replace(/\/+$/, '');
+}
+
 function buildInviteUrl(
 	origin: string,
 	id: string,
@@ -64,16 +89,16 @@ function buildInviteUrl(
 	eventType?: string,
 	eventSlug?: string,
 ): string {
+	const resolvedOrigin = resolveOrigin(origin);
 	// For backward compatibility, if eventType and eventSlug are not provided,
 	// use the old format
 	if (!eventType || !eventSlug) {
-		const baseUrl = origin.replace(/\/+$/, '');
-		return `${baseUrl}/invitacion/${encodeURIComponent(id)}`;
+		return `${resolvedOrigin}/invitacion/${encodeURIComponent(id)}`;
 	}
 
 	// Use the new format with generateInvitationLink
 	return generateInvitationLink({
-		origin,
+		origin: resolvedOrigin,
 		eventType,
 		eventSlug,
 		inviteId: isShortId ? '' : id,
@@ -100,7 +125,7 @@ async function logAdminAction(input: {
 	}
 }
 
-function buildWhatsAppShareUrl(input: {
+interface BuildShareMessageInput {
 	origin: string;
 	inviteId: string;
 	phone: string;
@@ -109,18 +134,48 @@ function buildWhatsAppShareUrl(input: {
 	eventTitle?: string;
 	eventType?: string;
 	eventSlug?: string;
-}): string {
-	const targetPhone = normalizePhone(input.phone).replace(/^\+/, '');
-	if (!targetPhone) return '';
+	template?: string;
+	includeLink?: boolean;
+}
+
+function buildShareMessage(input: BuildShareMessageInput): string {
+	const resolvedOrigin = resolveOrigin(input.origin);
 	const inviteUrl = buildInviteUrl(
-		input.origin,
+		resolvedOrigin,
 		input.shortId || input.inviteId,
 		!!input.shortId,
 		input.eventType,
 		input.eventSlug,
 	);
 	const eventLabel = sanitize(input.eventTitle, 120) || 'nuestro evento';
-	const message = `Hola ${sanitize(input.fullName, 120)}, te compartimos tu invitacion: ${inviteUrl} (${eventLabel}).`;
+
+	let template =
+		input.template || 'Hola {name}, te compartimos tu invitacion: {inviteUrl} ({eventTitle}).';
+
+	// Handle link inclusion logic
+	if (input.includeLink) {
+		// Only append if it's not already in the template (explicitly as token or implicitly as URL)
+		if (!template.includes('{inviteUrl}') && !template.includes(resolvedOrigin)) {
+			template = template.trim() + '\n\n{inviteUrl}';
+		}
+	} else {
+		// Remove {inviteUrl} and trailing whitespace/newlines if we don't want the link in text
+		// We use a regex to handle cases where there might be punctuation after the token
+		template = template.replace('{inviteUrl}', '').replace(/\s+$/, '');
+	}
+
+	return template
+		.replace('{name}', sanitize(input.fullName, 120))
+		.replace('{fullName}', sanitize(input.fullName, 120))
+		.replace('{eventTitle}', eventLabel)
+		.replace('{inviteUrl}', inviteUrl);
+}
+
+function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
+	const targetPhone = normalizePhone(input.phone).replace(/^\+/, '');
+	if (!targetPhone) return '';
+
+	const message = buildShareMessage({ ...input, includeLink: true });
 	return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
 }
 
@@ -130,6 +185,7 @@ function toGuestDto(
 	eventTitle?: string,
 	eventType?: EventRecord['eventType'],
 	eventSlug?: string,
+	template?: string,
 ): GuestInvitationDTO {
 	return {
 		guestId: guest.id,
@@ -152,6 +208,19 @@ function toGuestDto(
 			shortId: guest.shortId,
 			eventType,
 			eventSlug,
+			template,
+		}),
+		shareText: buildShareMessage({
+			origin,
+			inviteId: guest.inviteId,
+			phone: guest.phone,
+			fullName: guest.fullName,
+			eventTitle,
+			shortId: guest.shortId,
+			eventType,
+			eventSlug,
+			template,
+			includeLink: false,
 		}),
 		updatedAt: guest.updatedAt,
 		tags: guest.tags || [],
@@ -213,8 +282,11 @@ export async function listDashboardGuests(input: {
 		input.hostAccessToken,
 	);
 
+	const entry = event ? await getEntry('events', event.slug) : null;
+	const template = entry?.data?.sharing?.whatsappTemplate;
+
 	const items = guests.map((guest) =>
-		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug),
+		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
 	);
 	return {
 		eventId: event.id,
@@ -291,7 +363,17 @@ export async function createDashboardGuest(input: {
 		throw mapSupabaseErrorToApiError(error);
 	}
 
-	const item = toGuestDto(created, input.origin, event.title, event.eventType, event.slug);
+	const entry = await getEntry('events', event.slug);
+	const template = entry?.data?.sharing?.whatsappTemplate;
+
+	const item = toGuestDto(
+		created,
+		input.origin,
+		event.title,
+		event.eventType,
+		event.slug,
+		template,
+	);
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -420,7 +502,10 @@ export async function updateDashboardGuest(input: {
 		eventSlug = event.slug;
 	}
 
-	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug);
+	const entry = event ? await getEntry('events', event.slug) : null;
+	const template = entry?.data?.sharing?.whatsappTemplate;
+
+	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug, template);
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: updated.eventId,
@@ -504,7 +589,10 @@ export async function markGuestShared(input: {
 		eventSlug = event.slug;
 	}
 
-	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug);
+	const entry = event ? await getEntry('events', event.slug) : null;
+	const template = entry?.data?.sharing?.whatsappTemplate;
+
+	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug, template);
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
 			actorId: input.actorUserId,
@@ -636,7 +724,7 @@ export async function submitGuestRsvpByInviteId(
 		last_response_source: 'link',
 	});
 
-	console.log(`[RSVP-V2] Success: RSVP submitted for invite ${inviteId}`);
+	console.info(`[RSVP-V2] Success: RSVP submitted for invite ${inviteId}`);
 
 	publishGuestStreamEvent({
 		type: 'guest_updated',

@@ -68,6 +68,7 @@ export interface GuestInvitationDTO {
 	firstViewedAt: string | null;
 	respondedAt: string | null;
 	waShareUrl: string;
+	shareText: string;
 	updatedAt: string;
 	tags?: string[];
 	eventType?: EventRecord['eventType'];
