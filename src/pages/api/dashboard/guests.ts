@@ -68,25 +68,25 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const body = (await request.json()) as {
 			eventId?: string;
 			fullName?: string;
-			phoneE164?: string;
+			phone?: string;
 			maxAllowedAttendees?: number;
 			tags?: string[];
 		};
 
 		const eventId = sanitize(body.eventId, 120);
 		const fullName = sanitize(body.fullName, 140);
-		const phoneE164 = sanitize(body.phoneE164, 40);
+		const phone = sanitize(body.phone, 40);
 		const maxAllowedAttendees =
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
-		if (!eventId || !fullName || !phoneE164) {
-			return badRequest('eventId, fullName y phoneE164 son obligatorios.');
+		if (!eventId || !fullName || !phone) {
+			return badRequest('eventId, fullName y phone son obligatorios.');
 		}
 
 		const result = await createDashboardGuest({
 			eventId,
 			fullName,
-			phoneE164,
+			phone,
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,

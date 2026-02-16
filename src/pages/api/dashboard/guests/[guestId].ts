@@ -44,7 +44,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 
 		const body = (await request.json()) as {
 			fullName?: string;
-			phoneE164?: string;
+			phone?: string;
 			maxAllowedAttendees?: number;
 			attendanceStatus?: string;
 			attendeeCount?: number;
@@ -59,7 +59,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			actorUserId: session.userId,
 			isSuperAdmin: session.isSuperAdmin,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
-			phoneE164: body.phoneE164 !== undefined ? sanitize(body.phoneE164, 40) : undefined,
+			phone: body.phone !== undefined ? sanitize(body.phone, 40) : undefined,
 			maxAllowedAttendees:
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,
 			attendanceStatus: parseStatus(sanitize(body.attendanceStatus, 20)),

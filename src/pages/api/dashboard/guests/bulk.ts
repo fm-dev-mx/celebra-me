@@ -10,7 +10,7 @@ const BulkImportSchema = z.object({
 	guests: z.array(
 		z.object({
 			full_name: z.string(),
-			phone_e164: z.string().optional(),
+			phone: z.string().optional(),
 			email: z.string().email().optional().nullable(),
 			tags: z.array(z.string()).optional(),
 			max_allowed_attendees: z.number().optional().default(2),
