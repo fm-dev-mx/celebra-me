@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, successResponse } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp-v2/service';
 
@@ -20,6 +20,13 @@ export const POST: APIRoute = async ({ params, request }) => {
 		const inviteId = sanitize(params.inviteId, 100);
 		if (!inviteId) return badRequest('inviteId es obligatorio.');
 
+		// Validate basic request structure before rate limiting
+		const contentType = request.headers.get('content-type');
+		if (!contentType?.includes('application/json')) {
+			return badRequest('Content-Type must be application/json');
+		}
+
+		// Only check rate limit after basic validation passes
 		const ip = getIp(request);
 		const allowed = await checkRateLimit({
 			namespace: 'rsvp',
@@ -32,11 +39,25 @@ export const POST: APIRoute = async ({ params, request }) => {
 			return errorResponse(new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.'));
 		}
 
-		const body = (await request.json()) as {
-			attendanceStatus?: string;
-			attendeeCount?: number;
-			guestMessage?: string;
-		};
+		let rawText: string;
+		try {
+			rawText = await request.text();
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Failed to read request body';
+			return badRequest(`Failed to read request body: ${message}`);
+		}
+
+		if (!rawText.trim()) {
+			return badRequest('Request body is empty');
+		}
+
+		let body: Record<string, unknown>;
+		try {
+			body = JSON.parse(rawText) as Record<string, unknown>;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Invalid JSON';
+			return badRequest(`Invalid JSON format: ${message}`);
+		}
 
 		const attendanceStatus =
 			body.attendanceStatus === 'confirmed' || body.attendanceStatus === 'declined'
@@ -45,14 +66,14 @@ export const POST: APIRoute = async ({ params, request }) => {
 		if (!attendanceStatus) return badRequest('attendanceStatus invalido.');
 
 		const attendeeCount = typeof body.attendeeCount === 'number' ? body.attendeeCount : 0;
-		const guestMessage = sanitize(body.guestMessage, 500);
+		const guestMessage = sanitize(body.guestMessage as string, 500);
 
 		const result = await submitGuestRsvpByInviteId(inviteId, {
 			attendanceStatus,
 			attendeeCount,
 			guestMessage,
 		});
-		return jsonResponse({ message: 'RSVP guardado.', ...result });
+		return successResponse({ message: 'RSVP guardado.', ...result });
 	} catch (error) {
 		return errorResponse(error);
 	}
