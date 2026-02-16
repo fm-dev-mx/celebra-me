@@ -8,6 +8,7 @@ import {
 	findGuestsByEvent,
 	findMembershipByEventForHost,
 	findGuestById,
+	findGuestByPhone,
 	findGuestByIdService,
 	findGuestByInviteIdPublic,
 	findGuestByLegacyIdentityPublic,
@@ -240,7 +241,7 @@ export async function listHostEvents(input: {
 export async function createDashboardGuest(input: {
 	eventId: string;
 	fullName: string;
-	phone: string;
+	phone?: string;
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
 	origin: string;
@@ -259,8 +260,15 @@ export async function createDashboardGuest(input: {
 
 	const fullName = sanitize(input.fullName, 140);
 	if (!fullName) throw new ApiError(400, 'bad_request', 'Nombre completo es obligatorio.');
-	const phone = normalizePhone(input.phone);
-	if (!phone) throw new ApiError(400, 'bad_request', 'Telefono es obligatorio.');
+
+	const phone = input.phone ? normalizePhone(input.phone) : '';
+	if (phone) {
+		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
+		if (existing) {
+			throw new ApiError(409, 'conflict', 'Este teléfono ya está registrado en este evento.');
+		}
+	}
+
 	const maxAllowedAttendees = Math.max(
 		1,
 		Math.min(20, Math.trunc(input.maxAllowedAttendees || 1)),
@@ -352,11 +360,19 @@ export async function updateDashboardGuest(input: {
 
 	let updated;
 	try {
+		const nextPhone = input.phone !== undefined ? normalizePhone(input.phone) : undefined;
+		if (nextPhone && nextPhone !== existing.phone) {
+			const duplicate = await findGuestByPhone(existing.eventId, nextPhone, input.hostAccessToken);
+			if (duplicate) {
+				throw new ApiError(409, 'conflict', 'Este teléfono ya está registrado en este evento.');
+			}
+		}
+
 		updated = await updateGuestById(
 			{
 				guestId: input.guestId,
 				fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
-				phone: input.phone !== undefined ? normalizePhone(input.phone) : undefined,
+				phone: nextPhone,
 				maxAllowedAttendees: nextCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,

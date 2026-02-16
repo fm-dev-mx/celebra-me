@@ -9,7 +9,7 @@ interface GuestFormModalProps {
 	onSubmit: (
 		payload: {
 			fullName: string;
-			phone: string;
+			phone?: string;
 			maxAllowedAttendees: number;
 			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 			attendeeCount?: number;
@@ -19,6 +19,8 @@ interface GuestFormModalProps {
 		stayOpen?: boolean,
 	) => Promise<void>;
 }
+
+const PREDEFINED_TAGS = ['Familia', 'Amigos', 'VIP', 'Trabajo'];
 
 const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	open,
@@ -35,10 +37,14 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	);
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [guestMessage, setGuestMessage] = useState('');
-	const [tagsInput, setTagsInput] = useState('');
+	const [tags, setTags] = useState<string[]>([]);
 	const [saving, setSaving] = useState(false);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const [localError, setLocalError] = useState('');
+
 	const nameInputRef = React.useRef<HTMLInputElement>(null);
+	const phoneInputRef = React.useRef<HTMLInputElement>(null);
+	const attendeesInputRef = React.useRef<HTMLInputElement>(null);
 
 	const resetForm = () => {
 		setFullName('');
@@ -47,8 +53,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
 		setGuestMessage('');
-		setTagsInput('');
-		nameInputRef.current?.focus();
+		setTags([]);
+		setFieldErrors({});
+		setLocalError('');
+		setTimeout(() => nameInputRef.current?.focus(), 0);
 	};
 
 	useEffect(() => {
@@ -58,42 +66,47 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			return;
 		}
 		setFullName(initialGuest.fullName);
-		setPhone(initialGuest.phone);
+		setPhone(initialGuest.phone || '');
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
 		setGuestMessage(initialGuest.guestMessage || '');
-		setTagsInput((initialGuest.tags || []).join(', '));
+		setTags(initialGuest.tags || []);
 	}, [initialGuest, open]);
 
 	if (!open) return null;
 
 	const handleFormSubmit = async (stayOpen = false) => {
-		// Validations
-		const PHONE_REGEX = /^\d{10}$/;
-		if (!PHONE_REGEX.test(phone.replace(/[\s-]/g, ''))) {
-			setLocalError('El teléfono debe ser de 10 dígitos.');
-			return;
+		const errors: Record<string, string> = {};
+
+		if (!fullName.trim()) {
+			errors.fullName = 'El nombre es obligatorio.';
+		}
+
+		if (phone.trim()) {
+			const PHONE_REGEX = /^\d{10}$/;
+			if (!PHONE_REGEX.test(phone.replace(/[\s-]/g, ''))) {
+				errors.phone = 'El teléfono debe ser de 10 dígitos.';
+			}
 		}
 
 		if (mode === 'edit' && attendeeCount > maxAllowedAttendees) {
-			setLocalError(
-				`El número de asistentes (${attendeeCount}) no puede superar el límite (${maxAllowedAttendees}).`,
-			);
+			errors.attendeeCount = `No puede superar el límite (${maxAllowedAttendees}).`;
+		}
+
+		if (Object.keys(errors).length > 0) {
+			setFieldErrors(errors);
 			return;
 		}
 
 		setSaving(true);
+		setFieldErrors({});
 		setLocalError('');
 		try {
-			const tags = tagsInput
-				.split(',')
-				.map((t) => t.trim())
-				.filter(Boolean);
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phone: phone.trim(),
+					phone: phone.trim() || undefined,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
@@ -109,7 +122,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				onClose();
 			}
 		} catch (err) {
-			setLocalError(err instanceof Error ? err.message : 'Error al guardar invitado.');
+			const msg = err instanceof Error ? err.message : String(err);
+			if (msg.includes('ya está registrado') || msg.toLowerCase().includes('conflict')) {
+				setFieldErrors({ phone: 'Este teléfono ya está registrado.' });
+			} else {
+				setLocalError(msg === '[object Object]' ? 'Error al guardar invitado.' : msg);
+			}
 		} finally {
 			setSaving(false);
 		}
@@ -148,41 +166,80 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							ref={nameInputRef}
 							value={fullName}
 							onChange={(event) => setFullName(event.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									phoneInputRef.current?.focus();
+								}
+							}}
 							required
 							placeholder="Ej. Juan Pérez"
 							autoFocus
 						/>
+						{fieldErrors.fullName && (
+							<span className="field-error">{fieldErrors.fullName}</span>
+						)}
 					</div>
 					<div className="dashboard-form-field">
 						<label htmlFor="phone">Teléfono (WhatsApp)</label>
 						<input
 							id="phone"
+							ref={phoneInputRef}
 							value={phone}
 							onChange={(event) => setPhone(event.target.value)}
-							required
-							placeholder="668 123 4567"
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									attendeesInputRef.current?.focus();
+								}
+							}}
+							placeholder="Opcional (para WhatsApp)"
 						/>
+						{fieldErrors.phone && (
+							<span className="field-error">{fieldErrors.phone}</span>
+						)}
 					</div>
 					<div className="dashboard-form-field">
 						<label htmlFor="maxAllowedAttendees">Límite de invitados</label>
 						<input
 							id="maxAllowedAttendees"
+							ref={attendeesInputRef}
 							type="number"
 							min={1}
 							max={50}
 							value={maxAllowedAttendees}
 							onChange={(event) => setMaxAllowedAttendees(Number(event.target.value))}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									if (mode === 'create') {
+										void handleFormSubmit(true);
+									}
+								}
+							}}
 							required
 						/>
 					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="tagsInput">Categorías (opcional)</label>
-						<input
-							id="tagsInput"
-							value={tagsInput}
-							onChange={(event) => setTagsInput(event.target.value)}
-							placeholder="Familia, Amigos..."
-						/>
+					<div className="dashboard-form-field" style={{ gridColumn: '1 / -1' }}>
+						<label>Categorías (opcional)</label>
+						<div className="category-checkboxes">
+							{PREDEFINED_TAGS.map((tag) => (
+								<label key={tag} className="checkbox-item">
+									<input
+										type="checkbox"
+										checked={tags.includes(tag)}
+										onChange={(e) => {
+											if (e.target.checked) {
+												setTags([...tags, tag]);
+											} else {
+												setTags(tags.filter((t) => t !== tag));
+											}
+										}}
+									/>
+									{tag}
+								</label>
+							))}
+						</div>
 					</div>
 
 					{mode === 'edit' && (
@@ -250,19 +307,25 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						<button type="button" className="btn-secondary" onClick={onClose}>
 							Cancelar
 						</button>
-						{mode === 'create' && (
-							<button
-								type="button"
-								className="btn-accent"
-								disabled={saving}
-								onClick={() => void handleFormSubmit(true)}
-							>
-								{saving ? 'Guardando...' : 'Guardar y agregar otro'}
+						{mode === 'create' ? (
+							<>
+								<button type="submit" className="btn-accent" disabled={saving}>
+									{saving ? 'Guardando...' : 'Guardar y cerrar'}
+								</button>
+								<button
+									type="button"
+									className="btn-primary"
+									disabled={saving}
+									onClick={() => void handleFormSubmit(true)}
+								>
+									{saving ? 'Guardando...' : 'Guardar y agregar otro'}
+								</button>
+							</>
+						) : (
+							<button type="submit" className="btn-primary" disabled={saving}>
+								{saving ? 'Guardando...' : 'Guardar y cerrar'}
 							</button>
 						)}
-						<button type="submit" className="btn-primary" disabled={saving}>
-							{saving ? 'Guardando...' : 'Guardar y cerrar'}
-						</button>
 					</div>
 				</form>
 			</div>

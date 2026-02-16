@@ -20,7 +20,7 @@ interface GuestFilters {
 interface CreateGuestInput {
 	eventId: string;
 	fullName: string;
-	phone: string;
+	phone?: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
 	short_id?: string;
@@ -460,6 +460,21 @@ export async function findGuestByShortIdPublic(
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&short_id=eq.${encodeURIComponent(shortId)}&limit=1`,
 		useServiceRole: true,
+	});
+	return rows[0] ? toGuestRecord(rows[0]) : null;
+}
+
+export async function findGuestByPhone(
+	eventId: string,
+	phone: string,
+	hostAccessToken?: string,
+): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+	const rows = await supabaseRestRequest<GuestRow[]>({
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&limit=1`,
+		authToken: hostAccessToken,
+		useServiceRole: !hostAccessToken,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
 }

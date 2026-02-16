@@ -2,16 +2,28 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface GuestProgressCardProps {
-	total: number;
-	shared: number;
+	totals: {
+		total: number;
+		confirmed: number;
+		declined: number;
+		pending: number;
+		viewed: number;
+	};
+	sessionCount: number;
 }
 
-const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ total, shared }) => {
+const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ totals, sessionCount }) => {
+	const total = totals.total;
+	const shared = total - totals.pending; // Approximation based on pending vs actions
 	const percentage = total > 0 ? Math.round((shared / total) * 100) : 0;
 
 	// Milestones for sparkle effect
 	const showSparkle = percentage >= 50;
 	const isComplete = percentage === 100;
+
+	// Session goal constant
+	const SESSION_GOAL = 10;
+	const sessionPercentage = Math.min((sessionCount / SESSION_GOAL) * 100, 100);
 
 	return (
 		<article className="dashboard-guests__progress-card">
@@ -47,11 +59,20 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ total, shared }) 
 					<p>
 						<strong>{shared}</strong> de {total} invitaciones compartidas
 					</p>
-					{!isComplete && total > 0 && (
-						<p className="progress-next-action">
-							💡 Tip: Usa "Enviar Siguiente" para avanzar rápido.
-						</p>
-					)}
+
+					{/* Session Progress Tracker */}
+					<div className="session-progress">
+						<span className="session-progress__label">Meta de la sesión</span>
+						<div className="session-progress__bar-container">
+							<div
+								className="session-progress__bar"
+								style={{ width: `${sessionPercentage}%` }}
+							/>
+						</div>
+						<span className="session-progress__count">
+							{sessionCount} / {SESSION_GOAL} compartidos ahora
+						</span>
+					</div>
 				</div>
 				{isComplete && (
 					<motion.span

@@ -54,6 +54,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		type: 'info' | 'success' | 'warning';
 	} | null>(null);
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
+	const [shareSessionCount, setShareSessionCount] = useState(0);
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
 	const reconnectTimerRef = useRef<number | null>(null);
 	const refreshDebounceRef = useRef<number | null>(null);
@@ -365,8 +366,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				</div>
 
 				<GuestProgressCard
-					total={totals.total}
-					shared={items.filter((i) => i.deliveryStatus === 'shared').length}
+					totals={totals}
+					sessionCount={shareSessionCount}
 				/>
 
 				<GuestStatsCards totals={totals} />
@@ -409,15 +410,23 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						try {
 							await apiJson<{ item: DashboardGuestItem }>(
 								`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
-								{
-									method: 'POST',
-								},
+								{ method: 'POST' },
 							);
-							await loadGuests();
+
+							setShareSessionCount((prev) => prev + 1);
 							setNotification({
-								message: 'Invitación compartida con éxito.',
+								message: '¡Invitación compartida! 🎉',
 								type: 'success',
 							});
+
+							// Trigger celebration animation on the table row
+							const row = document.querySelector(`[data-guest-id="${item.guestId}"]`);
+							if (row) {
+								row.classList.add('celebrate-success');
+								setTimeout(() => row.classList.remove('celebrate-success'), 1500);
+							}
+
+							await loadGuests();
 						} catch (err) {
 							console.error('[GuestDashboard] Mark shared error:', err);
 							setItems(previousItems);

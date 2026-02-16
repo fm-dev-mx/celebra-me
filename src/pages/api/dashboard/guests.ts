@@ -75,8 +75,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const maxAllowedAttendees =
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
-		if (!eventId || !fullName || !phone) {
-			return badRequest('eventId, fullName y phone son obligatorios.');
+		if (!eventId || !fullName) {
+			return badRequest('eventId y fullName son obligatorios.');
 		}
 
 		const result = await createDashboardGuest({
