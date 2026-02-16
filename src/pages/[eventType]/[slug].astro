@@ -4,7 +4,7 @@ export const prerender = false;
 
 import { getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
-import { getInvitationContextByInviteId } from '@/lib/rsvp-v2/service';
+import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp-v2/service';
 import Layout from '@/layouts/Layout.astro';
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
@@ -40,6 +40,8 @@ let guestContext = null;
 if (inviteId) {
 	try {
 		guestContext = await getInvitationContextByInviteId(inviteId);
+		// Telemetry: Record that the invitation was viewed
+		void trackInvitationView(inviteId);
 	} catch (e) {
 		console.error('[Personalization] Failed to load guest context:', e);
 	}

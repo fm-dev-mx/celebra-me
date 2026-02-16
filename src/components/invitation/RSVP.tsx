@@ -348,35 +348,26 @@ const RSVP: React.FC<RSVPProps> = ({
 			const normalizedCount =
 				attendanceStatus === 'confirmed' ? (supportsPlusOnes ? parsedCount || 1 : 1) : 0;
 
-			// Determine which endpoint to use based on available data
+			// Determine if we use personalized link (V2) or fallback to name-based/generic (RSVP endpoint)
 			const v2InviteId = initialGuestData?.inviteId;
-			const useV2Endpoint = !!v2InviteId;
+			const useV2Endpoint = !!v2InviteId && contextMode === 'personalized';
 			const endpoint = useV2Endpoint ? `/api/invitacion/${v2InviteId}/rsvp` : apiEndpoint;
 
-			let payload: Record<string, unknown>;
-
-			if (useV2Endpoint) {
-				// V2 endpoint payload format
-				payload = {
-					attendanceStatus,
-					attendeeCount: normalizedCount,
-					guestMessage: notes,
-				};
-			} else {
-				// Legacy endpoint payload format
-				payload = {
-					eventSlug,
-					token: token || undefined,
-					guestName: name,
-					attendanceStatus,
-					attendeeCount: normalizedCount,
-					notes,
-				};
-
-				if (showDietaryField && dietary.trim()) {
-					payload.dietary = dietary.trim();
-				}
-			}
+			const payload: Record<string, unknown> = useV2Endpoint
+				? {
+						attendanceStatus,
+						attendeeCount: normalizedCount,
+						guestMessage: notes,
+					}
+				: {
+						eventSlug,
+						token: token || undefined,
+						guestName: name,
+						attendanceStatus,
+						attendeeCount: normalizedCount,
+						notes: notes || undefined, // notes is maps to 'notes' or 'guestMessage' depending on backend
+						dietary: showDietaryField && dietary.trim() ? dietary.trim() : undefined,
+					};
 
 			const response = await fetch(endpoint, {
 				method: 'POST',
@@ -386,35 +377,22 @@ const RSVP: React.FC<RSVPProps> = ({
 
 			if (response.ok) {
 				const data = (await response.json()) as {
+					data?: { rsvpId?: string };
 					rsvpId?: string;
-					message?: string;
-					success?: boolean;
-					data?: { rsvpId?: string; message?: string };
 				};
 
-				// Handle both response formats: legacy {rsvpId, message} and new {success, data: {rsvpId, message}}
 				const rsvpIdResponse = data.rsvpId || data.data?.rsvpId;
 				if (rsvpIdResponse) setRsvpId(rsvpIdResponse);
 
 				setSubmitStatus('success');
 				setTimeout(() => setSubmitted(true), 500);
 			} else {
-				let message = 'Error al enviar.';
-				try {
-					const data = (await response.json()) as {
-						message?: string;
-						error?: { message?: string };
-						success?: boolean;
-					};
-					if (data?.message) message = data.message;
-					else if (data?.error?.message) message = data.error.message;
-				} catch {
-					// ignore json parse failure
-				}
+				const data = await response.json().catch(() => ({}));
+				const message = data.error?.message || data.message || 'Error al enviar.';
 				setSubmitStatus('error');
 				setErrors((prev) => ({ ...prev, global: message }));
 			}
-		} catch {
+		} catch (error) {
 			setSubmitStatus('error');
 			setErrors((prev) => ({ ...prev, global: 'No se pudo conectar con el servidor.' }));
 		} finally {
