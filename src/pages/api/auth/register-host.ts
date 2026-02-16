@@ -81,9 +81,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 			// Supabase returns { user: { id } } if confirmation is OFF,
 			// but might return the user object directly { id } if confirmation is ON.
-			userId = sanitize(signed.user?.id || (signed as any).id, 120);
+			userId = sanitize(signed.user?.id || (signed as { id?: string }).id, 120);
 			userEmail = sanitize(
-				signed.user?.email || (signed as any).email || email,
+				signed.user?.email || (signed as { email?: string }).email || email,
 				320,
 			).toLowerCase();
 			accessToken = signed.access_token || '';
@@ -114,6 +114,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 					claimCode,
 				});
 			} catch (claimError) {
+				console.error('[Register Host] Claim code error:', claimError);
 				if (claimError instanceof ApiError) {
 					throw new ApiError(
 						claimError.status,
@@ -124,7 +125,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 				throw new ApiError(
 					400,
 					'bad_request',
-					'Error al procesar el código de invitación.',
+					`Error al procesar el código de invitación. ${claimError instanceof Error ? claimError.message : 'Detalles no disponibles'}`,
 				);
 			}
 		}

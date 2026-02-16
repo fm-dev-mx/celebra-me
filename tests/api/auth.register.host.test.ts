@@ -95,7 +95,7 @@ describe('API: /api/auth/register-host', () => {
 
 		expect(response.status).toBe(400);
 		const data = await response.json();
-		expect(data.message).toContain('claimCode');
+		expect(data.error.message).toContain('claimCode');
 	});
 
 	it('Scenario: User Already Exists (Login Fallback)', async () => {
@@ -135,6 +135,6 @@ describe('API: /api/auth/register-host', () => {
 
 		expect(response.status).toBe(403);
 		const data = await response.json();
-		expect(data.code).toBe('forbidden');
+		expect(data.error.code).toBe('forbidden');
 	});
 });
