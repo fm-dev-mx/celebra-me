@@ -3,7 +3,6 @@ import { createGuestToken } from '@/lib/rsvp/service';
 import { GET } from '@/pages/api/rsvp/context';
 import { EVENT_SLUG, TOKEN_SECRET, getMockEvents } from './rsvp.helpers';
 import { getCollection } from 'astro:content';
-import { resetEnvCacheForTests } from '@/utils/env';
 
 const getCollectionMock = getCollection as jest.Mock;
 
