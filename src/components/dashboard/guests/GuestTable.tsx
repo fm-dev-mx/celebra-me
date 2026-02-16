@@ -28,7 +28,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onMarkShared,
 }) => {
 	if (!items || items.length === 0) {
-		return <p className="dashboard-guests__empty">No hay invitados registrados.</p>;
+		return (
+			<div className="dashboard-guests__empty">
+				<p>No hay invitados registrados.</p>
+			</div>
+		);
 	}
 
 	return (
@@ -37,10 +41,10 @@ const GuestTable: React.FC<GuestTableProps> = ({
 				<thead>
 					<tr>
 						<th>Nombre / Contacto</th>
-						<th>Categorias</th>
+						<th>Categorías</th>
 						<th>Estado</th>
 						<th>Asistentes</th>
-						<th>Envio</th>
+						<th>Envío</th>
 						<th>Visto</th>
 						<th>Acciones</th>
 					</tr>
@@ -59,7 +63,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 
 						return (
 							<tr key={item.guestId} data-guest-id={item.guestId}>
-								<td>
+								<td data-label="Nombre / Contacto">
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>
 										<span className="guest-info__phone">{item.phoneE164}</span>
@@ -68,7 +72,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										)}
 									</div>
 								</td>
-								<td>
+								<td data-label="Categorías">
 									<div className="dashboard-guests__tags">
 										{(item.tags || []).map((tag) => (
 											<span key={tag} className="tag">
@@ -77,7 +81,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										))}
 									</div>
 								</td>
-								<td>
+								<td data-label="Estado">
 									<div
 										className={`status-pill status-pill--${item.attendanceStatus}`}
 									>
@@ -89,7 +93,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												: 'Declinó'}
 									</div>
 								</td>
-								<td>
+								<td data-label="Asistentes">
 									<div className="attendee-count">
 										<span className="attendee-count__current">
 											{item.attendeeCount}
@@ -100,7 +104,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										</span>
 									</div>
 								</td>
-								<td>
+								<td data-label="Envío">
 									<div
 										className={`delivery-status delivery-status--${item.deliveryStatus}`}
 									>
@@ -111,7 +115,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										)}
 									</div>
 								</td>
-								<td>
+								<td data-label="Visto">
 									<div
 										className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}
 									>
@@ -126,7 +130,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										)}
 									</div>
 								</td>
-								<td>
+								<td data-label="Acciones">
 									<div className="dashboard-guests__actions">
 										<WhatsAppInviteButton
 											waShareUrl={item.waShareUrl}

@@ -55,7 +55,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	} | null>(null);
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
-	const [nextActionGuestId, setNextActionGuestId] = useState<string | null>(null);
 	const reconnectTimerRef = useRef<number | null>(null);
 	const refreshDebounceRef = useRef<number | null>(null);
 	const reconnectAttemptRef = useRef(0);
@@ -247,25 +246,57 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		[editingGuest?.fullName, modalMode],
 	);
 
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
+
+	const handleDeleteConfirm = async () => {
+		if (!guestToDelete) return;
+		setLoading(true);
+		try {
+			await apiJson<{ message: string }>(
+				`/api/dashboard/guests/${encodeURIComponent(guestToDelete.guestId)}`,
+				{
+					method: 'DELETE',
+				},
+			);
+			await loadGuests();
+			setNotification({
+				message: `Invitado ${guestToDelete.fullName} eliminado con éxito.`,
+				type: 'success',
+			});
+		} catch (err) {
+			setNotification({
+				message: 'Error al eliminar invitado.',
+				type: 'warning',
+			});
+		} finally {
+			setLoading(false);
+			setDeleteConfirmOpen(false);
+			setGuestToDelete(null);
+		}
+	};
+
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
 				<header className="dashboard-guests__header">
 					<h1>Dashboard de invitados</h1>
-					<label>
-						Evento
-						<select
-							value={eventId}
-							onChange={(event) => setEventId(event.target.value)}
-						>
-							<option value="">Selecciona un evento</option>
-							{hostEvents.map((event) => (
-								<option key={event.id} value={event.id}>
-									{event.title} ({event.slug})
-								</option>
-							))}
-						</select>
-					</label>
+					<div className="header-actions">
+						<div className="filter-group">
+							<label>Evento activo</label>
+							<select
+								value={eventId}
+								onChange={(event) => setEventId(event.target.value)}
+							>
+								<option value="">Selecciona un evento</option>
+								{hostEvents.map((event) => (
+									<option key={event.id} value={event.id}>
+										{event.title} ({event.slug})
+									</option>
+								))}
+							</select>
+						</div>
+					</div>
 				</header>
 
 				<GuestFilters
@@ -317,7 +348,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									setModalMode('edit');
 									setEditingGuest(next);
 									setIsNextActionActive(true);
-									setNextActionGuestId(next.guestId);
 									setModalOpen(true);
 								}
 							}}
@@ -336,20 +366,19 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 				<GuestStatsCards totals={totals} />
 
-				{loading && <p className="dashboard-guests__status">Cargando...</p>}
-				{updatedAt && (
-					<p className="dashboard-guests__status">
-						Ultima actualizacion: {new Date(updatedAt).toLocaleString('es-MX')}
-					</p>
-				)}
-				<p className="dashboard-guests__status">
-					Estado realtime:{' '}
-					{realtimeState === 'connected'
-						? 'Conectado'
-						: realtimeState === 'reconnecting'
-							? 'Reconectando'
-							: 'Fallback activo'}
-				</p>
+				{loading && <p className="dashboard-guests__status">Procesando...</p>}
+
+				<div className="dashboard-guests__meta-bar">
+					{updatedAt && (
+						<span className="dashboard-guests__status">
+							Actualizado: {new Date(updatedAt).toLocaleString('es-MX')}
+						</span>
+					)}
+					<span className="dashboard-guests__status">
+						Streaming: {realtimeState === 'connected' ? '✅' : '🔄'}
+					</span>
+				</div>
+
 				{error && <p className="dashboard-guests__error">{error}</p>}
 
 				<GuestTable
@@ -361,19 +390,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						setModalOpen(true);
 					}}
 					onDelete={async (item) => {
-						const confirmed = window.confirm(`Eliminar a ${item.fullName}?`);
-						if (!confirmed) return;
-						await apiJson<{ message: string }>(
-							`/api/dashboard/guests/${encodeURIComponent(item.guestId)}`,
-							{
-								method: 'DELETE',
-							},
-						);
-						await loadGuests();
-						setNotification({
-							message: `Invitado ${item.fullName} eliminado.`,
-							type: 'info',
-						});
+						setGuestToDelete(item);
+						setDeleteConfirmOpen(true);
 					}}
 					onMarkShared={async (item) => {
 						// Optimistic Update
@@ -392,27 +410,67 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							);
 							await loadGuests();
 							setNotification({
-								message: 'Invitación marcada como enviada.',
+								message: 'Invitación compartida con éxito.',
 								type: 'success',
 							});
 						} catch (err) {
 							console.error('[GuestDashboard] Mark shared error:', err);
-							// Rollback
 							setItems(previousItems);
 							setNotification({
-								message: 'Error al actualizar el estado de envío.',
+								message: 'Error al actualizar estado.',
 								type: 'warning',
 							});
 						}
 					}}
 				/>
 
+				{deleteConfirmOpen && (
+					<div
+						className="dashboard-guests__modal-backdrop"
+						onClick={() => setDeleteConfirmOpen(false)}
+					>
+						<div
+							className="dashboard-guests__modal"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<h3>Confirmar eliminación</h3>
+							<p
+								style={{
+									textAlign: 'center',
+									marginBottom: '2rem',
+									color: 'var(--color-text-secondary)',
+								}}
+							>
+								¿Estás seguro de que deseas eliminar a{' '}
+								<strong>{guestToDelete?.fullName}</strong>? Esta acción no se puede
+								deshacer.
+							</p>
+							<div className="dashboard-guests__modal-actions">
+								<button
+									type="button"
+									className="btn-secondary"
+									onClick={() => setDeleteConfirmOpen(false)}
+								>
+									Cancelar
+								</button>
+								<button
+									type="button"
+									className="btn-primary btn-primary--danger"
+									onClick={handleDeleteConfirm}
+								>
+									Eliminar definitivamente
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+
 				<GuestFormModal
 					open={modalOpen}
 					mode={modalMode}
 					initialGuest={editingGuest}
 					onClose={() => setModalOpen(false)}
-					onSubmit={async (payload, stayOpen) => {
+					onSubmit={async (payload, _stayOpen) => {
 						let savedItem: DashboardGuestItem | null = null;
 						if (modalMode === 'create') {
 							const response = await apiJson<{ item: DashboardGuestItem }>(
@@ -464,7 +522,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 								}
 								setIsNextActionActive(false);
-								setNextActionGuestId(null);
 							}, 400);
 						}
 					}}

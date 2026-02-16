@@ -123,9 +123,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					}}
 				>
 					<div className="dashboard-guests__form-grid">
-						<label>
-							Nombre completo
+						<div className="form-field">
+							<label htmlFor="fullName">Nombre completo</label>
 							<input
+								id="fullName"
 								ref={nameInputRef}
 								value={fullName}
 								onChange={(event) => setFullName(event.target.value)}
@@ -133,19 +134,21 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								placeholder="Ej. Juan Pérez"
 								autoFocus
 							/>
-						</label>
-						<label>
-							Teléfono (WhatsApp)
+						</div>
+						<div className="form-field">
+							<label htmlFor="phoneE164">Teléfono (WhatsApp)</label>
 							<input
+								id="phoneE164"
 								value={phoneE164}
 								onChange={(event) => setPhoneE164(event.target.value)}
 								required
 								placeholder="+52 1..."
 							/>
-						</label>
-						<label>
-							Límite de invitados
+						</div>
+						<div className="form-field">
+							<label htmlFor="maxAllowedAttendees">Límite de invitados</label>
 							<input
+								id="maxAllowedAttendees"
 								type="number"
 								min={1}
 								max={20}
@@ -155,23 +158,25 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								}
 								required
 							/>
-						</label>
-						<label>
-							Categorías (opcional)
+						</div>
+						<div className="form-field">
+							<label htmlFor="tagsInput">Categorías (opcional)</label>
 							<input
+								id="tagsInput"
 								value={tagsInput}
 								onChange={(event) => setTagsInput(event.target.value)}
 								placeholder="Familia, Amigos..."
 							/>
-						</label>
+						</div>
 					</div>
 
 					{mode === 'edit' && (
 						<div className="dashboard-guests__form-section">
 							<div className="dashboard-guests__form-grid">
-								<label>
-									Estado
+								<div className="form-field">
+									<label htmlFor="attendanceStatus">Estado</label>
 									<select
+										id="attendanceStatus"
 										value={attendanceStatus}
 										onChange={(event) =>
 											setAttendanceStatus(
@@ -182,14 +187,15 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											)
 										}
 									>
-										<option value="pending">Pendiente</option>
-										<option value="confirmed">Confirmado</option>
-										<option value="declined">Declinado</option>
+										<option value="pending">⏳ Pendiente</option>
+										<option value="confirmed">✅ Confirmado</option>
+										<option value="declined">❌ Declinado</option>
 									</select>
-								</label>
-								<label>
-									Asistentes reales
+								</div>
+								<div className="form-field">
+									<label htmlFor="attendeeCount">Asistentes reales</label>
 									<input
+										id="attendeeCount"
 										type="number"
 										min={0}
 										max={20}
@@ -198,17 +204,18 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											setAttendeeCount(Number(event.target.value))
 										}
 									/>
-								</label>
+								</div>
 							</div>
-							<label>
-								Mensaje del invitado
+							<div className="form-field">
+								<label htmlFor="guestMessage">Mensaje del invitado</label>
 								<textarea
+									id="guestMessage"
 									value={guestMessage}
 									onChange={(event) => setGuestMessage(event.target.value)}
 									rows={2}
 									placeholder="Nota opcional..."
 								/>
-							</label>
+							</div>
 						</div>
 					)}
 
