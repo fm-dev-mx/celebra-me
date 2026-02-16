@@ -51,9 +51,6 @@ describe('rsvp-v2 service branches', () => {
 		repo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof repo.findMembershipByEventForHost
 		>;
-	const findGuestByPhoneMock = repo.findGuestByPhone as jest.MockedFunction<
-		typeof repo.findGuestByPhone
-	>;
 	const getRsvpContextMock = getRsvpContext as jest.MockedFunction<typeof getRsvpContext>;
 
 	const baseEvent = {
