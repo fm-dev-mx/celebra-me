@@ -1,15 +1,19 @@
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
 import { GET as getDashboardGuests } from '@/pages/api/dashboard/guests';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
+import { requireHostSession, getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
 import { createMockRequest } from './rsvp.helpers';
 
 jest.mock('@/lib/rsvp-v2/auth', () => ({
 	requireHostSession: jest.fn(),
+	getSessionContextFromRequest: jest.fn(),
 }));
 
 const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
+const getSessionContextFromRequestMock = getSessionContextFromRequest as jest.MockedFunction<
+	typeof getSessionContextFromRequest
+>;
 
 describe('dashboard auth flow', () => {
 	afterEach(() => {
@@ -20,6 +24,7 @@ describe('dashboard auth flow', () => {
 		requireHostSessionMock.mockRejectedValue(
 			new ApiError(401, 'unauthorized', 'No autorizado.'),
 		);
+		getSessionContextFromRequestMock.mockResolvedValue(null);
 
 		const eventsResp = await getDashboardEvents({
 			request: createMockRequest(),
@@ -32,10 +37,16 @@ describe('dashboard auth flow', () => {
 		expect(eventsResp.status).toBe(401);
 		expect(guestsResp.status).toBe(401);
 
-		const eventsBody = (await eventsResp.json()) as { code?: string };
-		const guestsBody = (await guestsResp.json()) as { code?: string };
-		expect(eventsBody.code).toBe('unauthorized');
-		expect(guestsBody.code).toBe('unauthorized');
+		const eventsBody = (await eventsResp.json()) as {
+			success: false;
+			error: { code: string; message: string };
+		};
+		const guestsBody = (await guestsResp.json()) as {
+			success: false;
+			error: { code: string; message: string };
+		};
+		expect(eventsBody.error.code).toBe('unauthorized');
+		expect(guestsBody.error.code).toBe('unauthorized');
 	});
 
 	it('builds login redirect preserving next dashboard path', () => {

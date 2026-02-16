@@ -59,7 +59,7 @@ describe('API: /api/auth/login-host', () => {
 
 		expect(response.status).toBe(401);
 		const data = await response.json();
-		expect(data.code).toBe('unauthorized');
+		expect(data.error.code).toBe('unauthorized');
 	});
 
 	it('Scenario: Successful Magic Link Request', async () => {
@@ -95,7 +95,7 @@ describe('API: /api/auth/login-host', () => {
 
 		expect(response.status).toBe(400);
 		const data = await response.json();
-		expect(data.message).toContain('inválido');
+		expect(data.error.message).toContain('inválido');
 	});
 
 	it('Scenario: Reject Cross-Origin Request', async () => {
@@ -113,7 +113,7 @@ describe('API: /api/auth/login-host', () => {
 
 		expect(response.status).toBe(403);
 		const data = await response.json();
-		expect(data.code).toBe('forbidden');
+		expect(data.error.code).toBe('forbidden');
 	});
 
 	it('Scenario: Rate Limited Login Attempt', async () => {
@@ -130,6 +130,6 @@ describe('API: /api/auth/login-host', () => {
 
 		expect(response.status).toBe(429);
 		const data = await response.json();
-		expect(data.code).toBe('rate_limited');
+		expect(data.error.code).toBe('rate_limited');
 	});
 });

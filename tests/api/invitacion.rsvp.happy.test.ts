@@ -31,11 +31,14 @@ describe('POST /api/invitacion/[inviteId]/rsvp happy', () => {
 
 		const response = await POST({
 			params: { inviteId: 'invite-1' },
-			request: createMockRequest({
-				attendanceStatus: 'confirmed',
-				attendeeCount: 2,
-				guestMessage: 'Nos vemos!',
-			}),
+			request: createMockRequest(
+				{
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestMessage: 'Nos vemos!',
+				},
+				{ 'Content-Type': 'application/json' },
+			),
 		} as never);
 		expect(response.status).toBe(200);
 	});

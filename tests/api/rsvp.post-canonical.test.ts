@@ -11,6 +11,34 @@ async function postRsvp(payload: Record<string, unknown>): Promise<Response> {
 	return await POST({ request } as never);
 }
 
+async function postRsvpWithInvalidJson(): Promise<Response> {
+	const request = {
+		json: async () => {
+			throw new Error('Unexpected end of JSON input');
+		},
+		text: async () => {
+			throw new Error('Unexpected end of JSON input');
+		},
+		headers: {
+			get: (name: string) =>
+				name.toLowerCase() === 'content-type' ? 'application/json' : null,
+		} as Headers,
+	};
+	return await POST({ request } as never);
+}
+
+async function postRsvpWithoutContentType(payload: Record<string, unknown>): Promise<Response> {
+	const request = createMockRequest(payload, { 'Content-Type': '' });
+	return await POST({ request } as never);
+}
+
+async function postRsvpWithNonObjectJson(): Promise<Response> {
+	const request = createMockRequest('invalid-json-string', {
+		'Content-Type': 'application/json',
+	});
+	return await POST({ request } as never);
+}
+
 describe('POST /api/rsvp', () => {
 	beforeEach(() => {
 		process.env.NODE_ENV = 'test';
@@ -53,7 +81,10 @@ describe('POST /api/rsvp', () => {
 			attendanceStatus: 'confirmed',
 			attendeeCount: 3,
 		});
-		const firstBody = (await first.json()) as { rsvpId: string; status: string };
+		const firstBody = (await first.json()) as {
+			success: true;
+			data: { rsvpId: string; status: string };
+		};
 
 		const second = await postRsvp({
 			eventSlug: EVENT_SLUG,
@@ -62,15 +93,55 @@ describe('POST /api/rsvp', () => {
 			attendeeCount: 5,
 		});
 		const secondBody = (await second.json()) as {
-			rsvpId: string;
-			status: string;
-			whatsappTemplatePayload: { attendeeCount: number };
+			success: true;
+			data: {
+				rsvpId: string;
+				status: string;
+				whatsappTemplatePayload: { attendeeCount: number };
+			};
 		};
 
 		expect(first.status).toBe(200);
 		expect(second.status).toBe(200);
-		expect(secondBody.rsvpId).toBe(firstBody.rsvpId);
-		expect(secondBody.status).toBe('declined');
-		expect(secondBody.whatsappTemplatePayload.attendeeCount).toBe(0);
+		expect(secondBody.data.rsvpId).toBe(firstBody.data.rsvpId);
+		expect(secondBody.data.status).toBe('declined');
+		expect(secondBody.data.whatsappTemplatePayload.attendeeCount).toBe(0);
+	});
+
+	it('returns 400 for invalid JSON format', async () => {
+		const response = await postRsvpWithInvalidJson();
+		expect(response.status).toBe(400);
+
+		const body = (await response.json()) as {
+			success: false;
+			error: { code: string; message: string };
+		};
+		expect(body.error.message).toContain('Failed to read request body');
+	});
+
+	it('returns 400 for missing Content-Type header', async () => {
+		const response = await postRsvpWithoutContentType({
+			eventSlug: EVENT_SLUG,
+			attendanceStatus: 'confirmed',
+		});
+		expect(response.status).toBe(400);
+
+		const body = (await response.json()) as {
+			success: false;
+			error: { code: string; message: string };
+		};
+		expect(body.error.message).toBe('Content-Type must be application/json');
+	});
+
+	it('returns 400 for non-object JSON', async () => {
+		const response = await postRsvpWithNonObjectJson();
+		expect(response.status).toBe(400);
+
+		const body = (await response.json()) as {
+			success: false;
+			error: { code: string; message: string };
+		};
+		// Ahora devuelve error de parsing JSON porque "invalid-json-string" no es JSON válido
+		expect(body.error.message).toContain('Invalid JSON format');
 	});
 });

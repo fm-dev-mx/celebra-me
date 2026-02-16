@@ -55,7 +55,7 @@ describe('Admin API Strong Session Guard', () => {
 			const response = await getEvents({ request: createMockRequest() } as never);
 			expect(response.status).toBe(403);
 			const body = await response.json();
-			expect(body.code).toBe('forbidden');
+			expect(body.error.code).toBe('forbidden');
 		});
 
 		it('GET /api/dashboard/admin/users returns 403', async () => {
