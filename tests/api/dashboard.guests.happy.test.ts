@@ -1,7 +1,7 @@
 import { GET, POST } from '@/pages/api/dashboard/guests';
 import { PATCH, DELETE } from '@/pages/api/dashboard/guests/[guestId]';
 import { POST as markShared } from '@/pages/api/dashboard/guests/[guestId]/mark-shared';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
+import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp-v2/auth';
 import {
 	createDashboardGuest,
 	deleteDashboardGuest,
@@ -13,6 +13,7 @@ import { createMockRequest } from './rsvp.helpers';
 
 jest.mock('@/lib/rsvp-v2/auth', () => ({
 	requireHostSession: jest.fn(),
+	getSessionContextFromRequest: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp-v2/service', () => ({
@@ -24,6 +25,9 @@ jest.mock('@/lib/rsvp-v2/service', () => ({
 }));
 
 const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
+const getSessionContextFromRequestMock = getSessionContextFromRequest as jest.MockedFunction<
+	typeof getSessionContextFromRequest
+>;
 const listDashboardGuestsMock = listDashboardGuests as jest.MockedFunction<
 	typeof listDashboardGuests
 >;
@@ -40,11 +44,15 @@ const markGuestSharedMock = markGuestShared as jest.MockedFunction<typeof markGu
 
 describe('dashboard guests happy path', () => {
 	beforeEach(() => {
-		requireHostSessionMock.mockResolvedValue({
+		const session = {
 			userId: 'host-1',
 			email: 'host@test.com',
 			accessToken: 'token',
-		});
+			role: 'host_client' as const,
+			isSuperAdmin: false,
+		};
+		requireHostSessionMock.mockResolvedValue(session);
+		getSessionContextFromRequestMock.mockResolvedValue(session);
 	});
 
 	afterEach(() => {
@@ -62,6 +70,9 @@ describe('dashboard guests happy path', () => {
 			request: createMockRequest(),
 			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1'),
 		} as never);
+		if (response.status !== 200) {
+			console.error('FAILED lists guests:', await response.json());
+		}
 		expect(response.status).toBe(200);
 	});
 
@@ -83,6 +94,8 @@ describe('dashboard guests happy path', () => {
 				respondedAt: null,
 				waShareUrl: '',
 				updatedAt: new Date().toISOString(),
+				eventType: 'xv',
+				eventSlug: 'demo',
 			},
 		});
 		const response = await POST({
@@ -115,6 +128,8 @@ describe('dashboard guests happy path', () => {
 				respondedAt: null,
 				waShareUrl: '',
 				updatedAt: new Date().toISOString(),
+				eventType: 'xv',
+				eventSlug: 'demo',
 			},
 		});
 		markGuestSharedMock.mockResolvedValue({
