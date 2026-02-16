@@ -70,13 +70,19 @@ const GuestTable: React.FC<GuestTableProps> = ({
 									<span
 										className={`status-badge status-${item.attendanceStatus}`}
 									>
-										{item.attendanceStatus}
+										{item.attendanceStatus === 'pending'
+											? 'Pendiente'
+											: item.attendanceStatus === 'confirmed'
+												? 'Confirmado'
+												: 'Declinó'}
 									</span>
 								</td>
 								<td>
 									{item.attendeeCount} / {item.maxAllowedAttendees}
 								</td>
-								<td>{item.deliveryStatus}</td>
+								<td>
+									{item.deliveryStatus === 'shared' ? 'Enviado' : 'Pendiente'}
+								</td>
 								<td>{formatDate(item.firstViewedAt)}</td>
 								<td>
 									<div className="dashboard-guests__actions">
