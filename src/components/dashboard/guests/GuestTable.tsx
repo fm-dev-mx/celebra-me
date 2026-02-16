@@ -1,5 +1,6 @@
-import React from 'react';
-import WhatsAppInviteButton from './WhatsAppInviteButton';
+import React, { useState, useEffect } from 'react';
+import GuestCard from './GuestCard';
+import ShareAction from './ShareAction';
 import { generateInvitationLink } from '@/utils/invitationLink';
 import type { DashboardGuestItem } from './types';
 
@@ -20,6 +21,22 @@ function formatDate(value: string | null): string {
 	}
 }
 
+const useIsMobile = (breakpoint = 992): boolean => {
+	const [isMobile, setIsMobile] = useState(false);
+
+	useEffect(() => {
+		const checkMobile = () => {
+			setIsMobile(window.innerWidth <= breakpoint);
+		};
+
+		checkMobile();
+		window.addEventListener('resize', checkMobile);
+		return () => window.removeEventListener('resize', checkMobile);
+	}, [breakpoint]);
+
+	return isMobile;
+};
+
 const GuestTable: React.FC<GuestTableProps> = ({
 	items,
 	inviteBaseUrl,
@@ -27,10 +44,38 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onDelete,
 	onMarkShared,
 }) => {
+	const isMobile = useIsMobile(992);
+
 	if (!items || items.length === 0) {
 		return (
 			<div className="dashboard-guests__empty">
 				<p>No hay invitados registrados.</p>
+			</div>
+		);
+	}
+
+	const getInviteUrl = (item: DashboardGuestItem) =>
+		generateInvitationLink({
+			origin: inviteBaseUrl,
+			eventType: item.eventType || 'evento',
+			eventSlug: item.eventSlug || 'invitacion',
+			inviteId: item.inviteId,
+			shortId: item.shortId,
+		});
+
+	if (isMobile) {
+		return (
+			<div className="dashboard-guests__cards">
+				{items.map((item) => (
+					<GuestCard
+						key={item.guestId}
+						item={item}
+						inviteUrl={getInviteUrl(item)}
+						onEdit={onEdit}
+						onDelete={onDelete}
+						onMarkShared={onMarkShared}
+					/>
+				))}
 			</div>
 		);
 	}
@@ -51,13 +96,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 				</thead>
 				<tbody>
 					{items.map((item) => {
-						const inviteUrl = generateInvitationLink({
-							origin: inviteBaseUrl,
-							eventType: item.eventType || 'evento',
-							eventSlug: item.eventSlug || 'invitacion',
-							inviteId: item.inviteId,
-							shortId: item.shortId,
-						});
+						const inviteUrl = getInviteUrl(item);
 						const isViewed = !!item.firstViewedAt;
 						const isShared = item.deliveryStatus === 'shared';
 
@@ -132,8 +171,10 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								</td>
 								<td data-label="Acciones">
 									<div className="dashboard-guests__actions">
-										<WhatsAppInviteButton
+										<ShareAction
+											phone={item.phone}
 											waShareUrl={item.waShareUrl}
+											inviteUrl={inviteUrl}
 											onShared={async () => onMarkShared(item)}
 										/>
 										<button

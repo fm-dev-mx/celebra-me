@@ -519,15 +519,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						if (isNextActionActive && modalMode === 'edit' && savedItem) {
 							const guestId = savedItem.guestId;
 							setTimeout(() => {
-								const waButton = document.querySelector(
-									`tr[data-guest-id="${guestId}"] .dashboard-guests__wa-button`,
+								const shareButton = document.querySelector(
+									`[data-guest-id="${guestId}"] .dashboard-guests__share-button`,
 								) as HTMLElement;
-								if (waButton) {
-									waButton.click();
-									const row = document.querySelector(
-										`tr[data-guest-id="${guestId}"]`,
+								if (shareButton) {
+									shareButton.click();
+									const card = document.querySelector(
+										`[data-guest-id="${guestId}"]`,
 									);
-									row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+									card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 								}
 								setIsNextActionActive(false);
 							}, 400);
