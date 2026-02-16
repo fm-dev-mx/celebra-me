@@ -722,32 +722,43 @@ export async function redeemClaimCodeRpc(input: { userId: string; codeKey: strin
 	membershipRole: 'owner' | 'manager' | null;
 	errorCode: string | null;
 }> {
-	const rows = await supabaseRestRequest<
-		Array<{
-			success: boolean;
-			event_id: string | null;
-			membership_role: string | null;
-			error_code: string | null;
-		}>
-	>({
-		pathWithQuery: 'rpc/redeem_claim_code',
-		method: 'POST',
-		useServiceRole: true,
-		body: {
-			p_user_id: input.userId,
-			p_code_key: input.codeKey,
-		},
-	});
+	try {
+		const rows = await supabaseRestRequest<
+			Array<{
+				r_success: boolean;
+				r_event_id: string | null;
+				r_membership_role: string | null;
+				r_error_code: string | null;
+			}>
+		>({
+			pathWithQuery: 'rpc/redeem_claim_code',
+			method: 'POST',
+			useServiceRole: true,
+			body: {
+				p_user_id: input.userId,
+				p_code_key: input.codeKey,
+			},
+		});
 
-	const result = rows[0];
-	if (!result) {
-		throw new Error('No se recibió respuesta del RPC redeem_claim_code');
+		const result = rows[0];
+		if (!result) {
+			console.error('[RedeemClaimCode] No response from RPC, rows:', rows);
+			throw new Error(
+				'No se recibió respuesta del RPC redeem_claim_code. La función puede no existir o estar mal configurada.',
+			);
+		}
+
+		// console.log('[RedeemClaimCode] RPC result:', result);
+		return {
+			success: result.r_success,
+			eventId: result.r_event_id,
+			membershipRole: (result.r_membership_role as 'owner' | 'manager') || null,
+			errorCode: result.r_error_code,
+		};
+	} catch (error) {
+		console.error('[RedeemClaimCode] RPC call failed:', error);
+		throw new Error(
+			`Error al llamar a redeem_claim_code: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+		);
 	}
-
-	return {
-		success: result.success,
-		eventId: result.event_id,
-		membershipRole: (result.membership_role as 'owner' | 'manager') || null,
-		errorCode: result.error_code,
-	};
 }
