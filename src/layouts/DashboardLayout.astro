@@ -20,12 +20,18 @@ interface Props {
 }
 
 const { title, breadcrumbs = [] } = Astro.props as Props;
+
+// El middleware ya valida la sesión y hace redirect a /login si no hay sesión
+// Aquí solo leemos la sesión para obtener datos del usuario
 const session = await getSessionContextFromRequest(Astro.request);
+
+// Verificación defensiva: si por alguna razón la sesión es null, redirect a login
+// (El middleware debería manejar esto, pero es un fallback de seguridad)
 if (!session) {
 	return Astro.redirect(`/login?next=${encodeURIComponent(Astro.url.pathname)}`);
 }
 
-// El token CSRF se genera en el middleware y se pasa por locals
+// El csrfToken se genera en el middleware y se pasa por locals
 const { csrfToken } = Astro.locals;
 
 const navItems: DashboardNavItem[] = [

@@ -1,14 +1,6 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
-import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
-import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
-
-const hostSession = await getHostSessionFromRequest(Astro.request);
-if (!hostSession) {
-	const loginUrl = buildHostLoginRedirect('/dashboard/invitados');
-	if (loginUrl) return Astro.redirect(loginUrl);
-}
 
 const eventId = Astro.url.searchParams.get('eventId') ?? '';
 ---
