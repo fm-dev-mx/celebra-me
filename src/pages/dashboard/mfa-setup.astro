@@ -250,6 +250,8 @@ import '@styles/auth/_login.scss';
 
 			if (!supabase) return;
 			verifyBtn.disabled = true;
+			verifyBtn.textContent = 'Verificando...';
+			verifyBtn.style.opacity = '0.7';
 			setStatus('Verificando código...', 'info');
 
 			try {
@@ -291,12 +293,14 @@ import '@styles/auth/_login.scss';
 					}, 1200);
 					return;
 				}
-				if (errorType === 'sync_failed') {
+			if (errorType === 'sync_failed') {
 					setStatus(
 						'Verificamos tu código, pero no pudimos activar la sesión. Intenta de nuevo.',
 						'error',
 					);
 					verifyBtn.disabled = false;
+					verifyBtn.textContent = 'Verificar y Activar';
+					verifyBtn.style.opacity = '1';
 					return;
 				}
 				if (errorType === 'invalid_code') {
@@ -305,11 +309,20 @@ import '@styles/auth/_login.scss';
 					setStatus('No pudimos validar tu código. Intenta de nuevo.', 'error');
 				}
 				verifyBtn.disabled = false;
+				verifyBtn.textContent = 'Verificar y Activar';
+				verifyBtn.style.opacity = '1';
 			}
 		}
 
 		verifyBtn?.addEventListener('click', () => {
 			void verifyCode();
+		});
+
+		codeInput?.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+				void verifyCode();
+			}
 		});
 
 		(async () => {
