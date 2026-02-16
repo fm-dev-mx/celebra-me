@@ -11,8 +11,9 @@ function sanitize(value: unknown, maxLen = 200): string {
 	return value.trim().slice(0, maxLen);
 }
 
-function parseStatus(raw: string): AttendanceStatus | 'all' {
-	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;
+function parseStatus(raw: string): AttendanceStatus | 'all' | 'viewed' {
+	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined' || raw === 'viewed')
+		return raw;
 	return 'all';
 }
 
@@ -69,6 +70,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			fullName?: string;
 			phoneE164?: string;
 			maxAllowedAttendees?: number;
+			tags?: string[];
 		};
 
 		const eventId = sanitize(body.eventId, 120);
@@ -90,6 +92,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			origin: url.origin,
 			actorUserId: session.userId,
 			isSuperAdmin: session.isSuperAdmin,
+			tags: body.tags,
 		});
 
 		return jsonResponse(result, 201);

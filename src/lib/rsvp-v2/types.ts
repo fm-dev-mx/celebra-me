@@ -31,6 +31,7 @@ export interface GuestInvitationRecord {
 	lastResponseSource: ResponseSource;
 	createdAt: string;
 	updatedAt: string;
+	tags?: string[];
 }
 
 export interface GuestInvitationAuditRecord {
@@ -67,6 +68,7 @@ export interface GuestInvitationDTO {
 	respondedAt: string | null;
 	waShareUrl: string;
 	updatedAt: string;
+	tags?: string[];
 }
 
 export interface DashboardGuestListResponse {

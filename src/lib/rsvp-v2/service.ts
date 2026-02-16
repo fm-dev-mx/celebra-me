@@ -130,12 +130,13 @@ function toGuestDto(
 			eventTitle,
 		}),
 		updatedAt: guest.updatedAt,
+		tags: guest.tags || [],
 	};
 }
 
 export async function listDashboardGuests(input: {
 	eventId: string;
-	status?: AttendanceStatus | 'all';
+	status?: AttendanceStatus | 'all' | 'viewed';
 	search?: string;
 	hostAccessToken: string;
 	origin: string;
@@ -214,6 +215,7 @@ export async function createDashboardGuest(input: {
 	origin: string;
 	actorUserId?: string;
 	isSuperAdmin?: boolean;
+	tags?: string[];
 }): Promise<DashboardGuestMutationResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
 	if (!event) {
@@ -239,6 +241,7 @@ export async function createDashboardGuest(input: {
 			fullName,
 			phoneE164,
 			maxAllowedAttendees,
+			tags: input.tags,
 		},
 		input.hostAccessToken,
 	);
@@ -281,6 +284,7 @@ export async function updateDashboardGuest(input: {
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
 	guestMessage?: string;
+	tags?: string[];
 }): Promise<DashboardGuestMutationResponse> {
 	const existing = await findGuestById(input.guestId, input.hostAccessToken);
 	if (!existing) {
@@ -321,6 +325,7 @@ export async function updateDashboardGuest(input: {
 				input.guestMessage !== undefined ? sanitize(input.guestMessage, 500) : undefined,
 			lastResponseSource: 'admin',
 			respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
+			tags: input.tags,
 		},
 		input.hostAccessToken,
 	);

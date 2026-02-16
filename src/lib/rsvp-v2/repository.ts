@@ -13,7 +13,7 @@ import type {
 
 interface GuestFilters {
 	eventId: string;
-	status?: AttendanceStatus | 'all';
+	status?: AttendanceStatus | 'all' | 'viewed';
 	search?: string;
 }
 
@@ -22,6 +22,7 @@ interface CreateGuestInput {
 	fullName: string;
 	phoneE164: string;
 	maxAllowedAttendees: number;
+	tags?: string[];
 }
 
 interface UpdateGuestInput {
@@ -35,6 +36,7 @@ interface UpdateGuestInput {
 	deliveryStatus?: 'generated' | 'shared';
 	lastResponseSource?: ResponseSource;
 	respondedAt?: string | null;
+	tags?: string[];
 }
 
 type EventRow = {
@@ -66,6 +68,7 @@ type GuestRow = {
 	last_response_source: ResponseSource;
 	created_at: string;
 	updated_at: string;
+	tags: string[];
 };
 
 type GuestAuditRow = {
@@ -137,6 +140,7 @@ function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		lastResponseSource: row.last_response_source,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
+		tags: row.tags || [],
 	};
 }
 
@@ -237,7 +241,11 @@ export async function findGuestsByEvent(
 ): Promise<GuestInvitationRecord[]> {
 	const queryParts = [`select=*`, `event_id=eq.${encodeURIComponent(filters.eventId)}`];
 	if (filters.status && filters.status !== 'all') {
-		queryParts.push(`attendance_status=eq.${encodeURIComponent(filters.status)}`);
+		if (filters.status === 'viewed') {
+			queryParts.push('first_viewed_at=not.is.null');
+		} else {
+			queryParts.push(`attendance_status=eq.${encodeURIComponent(filters.status)}`);
+		}
 	}
 	if (filters.search) {
 		queryParts.push(`full_name=ilike.*${encodeURIComponent(filters.search)}*`);
@@ -265,6 +273,7 @@ export async function createGuestInvitation(
 			full_name: input.fullName,
 			phone_e164: input.phoneE164,
 			max_allowed_attendees: input.maxAllowedAttendees,
+			tags: input.tags || [],
 		},
 	});
 	if (!rows[0]) throw new Error('No se pudo crear invitado.');
@@ -306,6 +315,7 @@ export async function updateGuestById(
 	if (input.lastResponseSource !== undefined)
 		body.last_response_source = input.lastResponseSource;
 	if (input.respondedAt !== undefined) body.responded_at = input.respondedAt;
+	if (input.tags !== undefined) body.tags = input.tags;
 
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?id=eq.${encodeURIComponent(input.guestId)}&select=*`,

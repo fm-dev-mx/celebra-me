@@ -49,6 +49,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			attendanceStatus?: string;
 			attendeeCount?: number;
 			guestMessage?: string;
+			tags?: string[];
 		};
 
 		const result = await updateDashboardGuest({
@@ -65,6 +66,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : undefined,
 			guestMessage:
 				body.guestMessage !== undefined ? sanitize(body.guestMessage, 500) : undefined,
+			tags: body.tags,
 		});
 
 		return jsonResponse(result);

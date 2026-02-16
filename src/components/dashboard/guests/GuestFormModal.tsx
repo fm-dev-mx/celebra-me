@@ -13,6 +13,7 @@ interface GuestFormModalProps {
 		attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 		attendeeCount?: number;
 		guestMessage?: string;
+		tags?: string[];
 	}) => Promise<void>;
 }
 
@@ -31,6 +32,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	);
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [guestMessage, setGuestMessage] = useState('');
+	const [tagsInput, setTagsInput] = useState('');
 	const [saving, setSaving] = useState(false);
 
 	useEffect(() => {
@@ -42,6 +44,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			setAttendanceStatus('pending');
 			setAttendeeCount(0);
 			setGuestMessage('');
+			setTagsInput('');
 			return;
 		}
 		setFullName(initialGuest.fullName);
@@ -50,6 +53,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
 		setGuestMessage(initialGuest.guestMessage || '');
+		setTagsInput((initialGuest.tags || []).join(', '));
 	}, [initialGuest, open]);
 
 	if (!open) return null;
@@ -63,6 +67,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						event.preventDefault();
 						setSaving(true);
 						try {
+							const tags = tagsInput
+								.split(',')
+								.map((t) => t.trim())
+								.filter(Boolean);
 							await onSubmit({
 								fullName,
 								phoneE164,
@@ -70,6 +78,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 								attendeeCount: mode === 'edit' ? attendeeCount : undefined,
 								guestMessage: mode === 'edit' ? guestMessage : undefined,
+								tags,
 							});
 							onClose();
 						} finally {
@@ -102,6 +111,14 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							value={maxAllowedAttendees}
 							onChange={(event) => setMaxAllowedAttendees(Number(event.target.value))}
 							required
+						/>
+					</label>
+					<label>
+						Categorias (separadas por coma)
+						<input
+							value={tagsInput}
+							onChange={(event) => setTagsInput(event.target.value)}
+							placeholder="ej. Familia, Amigos, VIP"
 						/>
 					</label>
 					{mode === 'edit' && (
