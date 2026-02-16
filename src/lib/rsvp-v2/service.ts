@@ -261,7 +261,7 @@ export async function createDashboardGuest(input: {
 	const fullName = sanitize(input.fullName, 140);
 	if (!fullName) throw new ApiError(400, 'bad_request', 'Nombre completo es obligatorio.');
 
-	const phone = input.phone ? normalizePhone(input.phone) : '';
+	const phone = input.phone ? normalizePhone(input.phone) : undefined;
 	if (phone) {
 		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
 		if (existing) {
@@ -280,7 +280,7 @@ export async function createDashboardGuest(input: {
 			{
 				eventId: event.id,
 				fullName,
-				phone,
+				phone: phone || undefined,
 				maxAllowedAttendees,
 				tags: input.tags,
 				short_id: generateShortId(8),
