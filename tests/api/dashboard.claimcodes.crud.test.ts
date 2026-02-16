@@ -11,10 +11,23 @@ import {
 	disableClaimCodeAdmin,
 } from '@/lib/rsvp-v2/service';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
+import { createMockRequest } from './rsvp.helpers';
 
 // Mock funciones de seguridad admin
-mockAdminSecurityPass();
+jest.mock('@/lib/rsvp-v2/adminRateLimit', () => ({
+	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
+}));
+
+jest.mock('@/lib/rsvp-v2/csrf', () => ({
+	validateCsrfToken: jest.fn(),
+	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false),
+	getCsrfTokenFromCookies: jest.fn().mockReturnValue(null),
+	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null),
+}));
+
+jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+	checkRateLimit: jest.fn().mockResolvedValue(true as never),
+}));
 
 jest.mock('@/lib/rsvp-v2/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -43,23 +56,6 @@ const disableClaimCodeAdminMock = disableClaimCodeAdmin as jest.MockedFunction<
 	typeof disableClaimCodeAdmin
 >;
 
-function createMockRequest(
-	payload?: unknown,
-	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'headers'> {
-	return {
-		json: async () => payload,
-		headers: {
-			get: (name: string) => {
-				const key = Object.keys(headers ?? {}).find(
-					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
-				);
-				return key ? (headers?.[key] ?? null) : null;
-			},
-		} as Headers,
-	};
-}
-
 function createMockUrl(searchParams?: Record<string, string>): URL {
 	const url = new URL('http://localhost/api/dashboard/claimcodes');
 	if (searchParams) {
@@ -70,11 +66,13 @@ function createMockUrl(searchParams?: Record<string, string>): URL {
 	return url;
 }
 
+const VALID_ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
+const VALID_EVENT_ID = '5b29352e-503a-4a8e-a226-802528726247';
+const VALID_CODE_ID = '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d';
+
 describe('Admin Claim Codes CRUD API', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		// Mock funciones de seguridad admin
-		mockAdminSecurityPass();
 	});
 
 	describe('GET /api/dashboard/claimcodes', () => {
@@ -92,7 +90,7 @@ describe('Admin Claim Codes CRUD API', () => {
 
 		it('returns list of claim codes filtered by eventId', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -101,13 +99,13 @@ describe('Admin Claim Codes CRUD API', () => {
 
 			const mockClaimCodes = [
 				{
-					id: 'code-1',
-					eventId: 'evt-1',
+					id: VALID_CODE_ID,
+					eventId: VALID_EVENT_ID,
 					active: true,
 					expiresAt: null,
 					maxUses: 10,
 					usedCount: 0,
-					createdBy: 'user-1',
+					createdBy: '550e8400-e29b-41d4-a716-446655440000',
 					status: 'active' as const,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString(),
@@ -117,17 +115,17 @@ describe('Admin Claim Codes CRUD API', () => {
 
 			const response = await getClaimCodes({
 				request: createMockRequest(),
-				url: createMockUrl({ eventId: 'evt-1' }),
+				url: createMockUrl({ eventId: VALID_EVENT_ID }),
 			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.items).toEqual(mockClaimCodes);
-			expect(listClaimCodesAdminMock).toHaveBeenCalledWith({ eventId: 'evt-1' });
+			expect(listClaimCodesAdminMock).toHaveBeenCalledWith({ eventId: VALID_EVENT_ID });
 		});
 
 		it('returns all claim codes when no eventId filter', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -148,7 +146,7 @@ describe('Admin Claim Codes CRUD API', () => {
 	describe('POST /api/dashboard/claimcodes', () => {
 		it('creates new claim code with valid data', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -158,13 +156,13 @@ describe('Admin Claim Codes CRUD API', () => {
 			const mockClaimCode = {
 				plainCode: 'XYZ789',
 				item: {
-					id: 'new-code',
-					eventId: 'evt-1',
+					id: '550e8400-e29b-41d4-a716-446655440004',
+					eventId: VALID_EVENT_ID,
 					active: true,
 					expiresAt: null,
 					maxUses: 5,
 					usedCount: 0,
-					createdBy: 'admin-1',
+					createdBy: VALID_ADMIN_ID,
 					status: 'active' as const,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString(),
@@ -174,7 +172,7 @@ describe('Admin Claim Codes CRUD API', () => {
 			createClaimCodeAdminMock.mockResolvedValue(mockClaimCode);
 
 			const request = createMockRequest({
-				eventId: 'evt-1',
+				eventId: VALID_EVENT_ID,
 				maxUses: 5,
 			});
 
@@ -184,29 +182,29 @@ describe('Admin Claim Codes CRUD API', () => {
 			expect(body).toEqual({
 				plainCode: 'XYZ789',
 				item: {
-					id: 'new-code',
-					eventId: 'evt-1',
+					id: '550e8400-e29b-41d4-a716-446655440004',
+					eventId: VALID_EVENT_ID,
 					active: true,
 					expiresAt: null,
 					maxUses: 5,
 					usedCount: 0,
-					createdBy: 'admin-1',
+					createdBy: VALID_ADMIN_ID,
 					status: 'active',
 					createdAt: expect.any(String),
 					updatedAt: expect.any(String),
 				},
 			});
 			expect(createClaimCodeAdminMock).toHaveBeenCalledWith({
-				eventId: 'evt-1',
+				eventId: VALID_EVENT_ID,
 				expiresAt: null,
 				maxUses: 5,
-				createdBy: 'admin-1',
+				createdBy: VALID_ADMIN_ID,
 			});
 		});
 
 		it('returns 400 when eventId is missing', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -225,7 +223,7 @@ describe('Admin Claim Codes CRUD API', () => {
 	describe('PATCH /api/dashboard/claimcodes/[claimCodeId]', () => {
 		it('updates claim code with valid data', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -233,13 +231,13 @@ describe('Admin Claim Codes CRUD API', () => {
 			});
 
 			const mockUpdatedClaimCode = {
-				id: 'code-1',
-				eventId: 'evt-1',
+				id: VALID_CODE_ID,
+				eventId: VALID_EVENT_ID,
 				active: false,
 				expiresAt: '2025-12-31T23:59:59Z',
 				maxUses: 20,
 				usedCount: 5,
-				createdBy: 'user-1',
+				createdBy: '550e8400-e29b-41d4-a716-446655440000',
 				status: 'active' as const,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
@@ -254,14 +252,14 @@ describe('Admin Claim Codes CRUD API', () => {
 			});
 
 			const response = await updateClaimCode({
-				params: { claimCodeId: 'code-1' },
+				params: { claimCodeId: VALID_CODE_ID },
 				request,
 			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.item).toEqual(mockUpdatedClaimCode);
 			expect(updateClaimCodeAdminMock).toHaveBeenCalledWith({
-				claimCodeId: 'code-1',
+				claimCodeId: VALID_CODE_ID,
 				active: false,
 				expiresAt: '2025-12-31T23:59:59Z',
 				maxUses: 20,
@@ -292,7 +290,7 @@ describe('Admin Claim Codes CRUD API', () => {
 	describe('DELETE /api/dashboard/claimcodes/[claimCodeId]', () => {
 		it('disables claim code', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -300,13 +298,13 @@ describe('Admin Claim Codes CRUD API', () => {
 			});
 
 			const mockDisabledClaimCode = {
-				id: 'code-1',
-				eventId: 'evt-1',
+				id: VALID_CODE_ID,
+				eventId: VALID_EVENT_ID,
 				active: false,
 				expiresAt: null,
 				maxUses: 10,
 				usedCount: 0,
-				createdBy: 'user-1',
+				createdBy: '550e8400-e29b-41d4-a716-446655440000',
 				status: 'active' as const,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
@@ -315,13 +313,13 @@ describe('Admin Claim Codes CRUD API', () => {
 			disableClaimCodeAdminMock.mockResolvedValue(mockDisabledClaimCode);
 
 			const response = await deleteClaimCode({
-				params: { claimCodeId: 'code-1' },
+				params: { claimCodeId: VALID_CODE_ID },
 				request: createMockRequest(),
 			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.item).toEqual(mockDisabledClaimCode);
-			expect(disableClaimCodeAdminMock).toHaveBeenCalledWith({ claimCodeId: 'code-1' });
+			expect(disableClaimCodeAdminMock).toHaveBeenCalledWith({ claimCodeId: VALID_CODE_ID });
 		});
 	});
 });

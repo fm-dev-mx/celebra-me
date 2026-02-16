@@ -17,8 +17,8 @@ async function createRsvp(): Promise<string> {
 		{ 'Content-Type': 'application/json' },
 	);
 	const response = await postRsvp({ request } as never);
-	const body = (await response.json()) as { rsvpId: string };
-	return body.rsvpId;
+	const body = (await response.json()) as { success: true; data: { rsvpId: string } };
+	return body.data.rsvpId;
 }
 
 describe('POST /api/rsvp/channel', () => {

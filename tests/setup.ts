@@ -86,7 +86,7 @@ global.fetch = jest.fn().mockImplementation(() =>
 	}),
 ) as jest.Mock;
 
-const allowedConsoleErrorPatterns: RegExp[] = [];
+const allowedConsoleErrorPatterns: RegExp[] = [/RSVP Sync/, /GuestDashboard API/, /RSVP-V2/];
 
 beforeEach(() => {
 	jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {

@@ -35,7 +35,8 @@ export function getMockEvents() {
 export function createMockRequest(
 	payload?: unknown,
 	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'text' | 'headers'> {
+	url = 'http://localhost/api/test',
+): Pick<Request, 'json' | 'text' | 'headers' | 'url'> {
 	const defaultHeaders: Record<string, string> = {};
 
 	// Only add Content-Type if not explicitly overridden or removed
@@ -57,6 +58,7 @@ export function createMockRequest(
 	}
 
 	return {
+		url,
 		json: async () => payload,
 		text: async () => {
 			if (payload === undefined || payload === null) {

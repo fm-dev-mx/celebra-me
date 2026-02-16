@@ -3,6 +3,7 @@ import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventI
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { listAdminEvents, createEventAdmin, updateEventAdmin } from '@/lib/rsvp-v2/service';
 import { ApiError } from '@/lib/rsvp-v2/errors';
+import { createMockRequest } from './rsvp.helpers';
 
 jest.mock('@/lib/rsvp-v2/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -36,51 +37,9 @@ const listAdminEventsMock = listAdminEvents as jest.MockedFunction<typeof listAd
 const createEventAdminMock = createEventAdmin as jest.MockedFunction<typeof createEventAdmin>;
 const updateEventAdminMock = updateEventAdmin as jest.MockedFunction<typeof updateEventAdmin>;
 
-function createMockRequest(
-	payload?: unknown,
-	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'text' | 'headers'> {
-	const defaultHeaders: Record<string, string> = {};
-
-	// Only add Content-Type if not explicitly overridden or removed
-	if (headers && 'Content-Type' in headers) {
-		if (headers['Content-Type'] !== '') {
-			defaultHeaders['Content-Type'] = headers['Content-Type'];
-		}
-	} else {
-		defaultHeaders['Content-Type'] = 'application/json';
-	}
-
-	// Add other headers
-	if (headers) {
-		for (const [key, value] of Object.entries(headers)) {
-			if (key !== 'Content-Type' || value !== '') {
-				defaultHeaders[key] = value;
-			}
-		}
-	}
-
-	return {
-		json: async () => payload,
-		text: async () => {
-			if (payload === undefined || payload === null) {
-				return '';
-			}
-			if (typeof payload === 'string') {
-				return payload;
-			}
-			return JSON.stringify(payload);
-		},
-		headers: {
-			get: (name: string) => {
-				const key = Object.keys(defaultHeaders).find(
-					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
-				);
-				return key ? (defaultHeaders[key] ?? null) : null;
-			},
-		} as Headers,
-	};
-}
+const VALID_ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
+const VALID_EVENT_ID = '5b29352e-503a-4a8e-a226-802528726247';
+const VALID_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('Admin Events CRUD API', () => {
 	beforeEach(() => {
@@ -102,7 +61,7 @@ describe('Admin Events CRUD API', () => {
 
 		it('returns list of events for super_admin', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -111,22 +70,22 @@ describe('Admin Events CRUD API', () => {
 
 			const mockEvents = [
 				{
-					id: 'evt-1',
+					id: VALID_EVENT_ID,
 					title: 'Demo Event',
 					slug: 'demo',
 					eventType: 'cumple' as const,
 					status: 'published' as const,
-					ownerUserId: 'user-1',
+					ownerUserId: VALID_USER_ID,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString(),
 				},
 				{
-					id: 'evt-2',
+					id: '550e8400-e29b-41d4-a716-446655440003',
 					title: 'Another Event',
 					slug: 'another',
 					eventType: 'boda' as const,
 					status: 'draft' as const,
-					ownerUserId: 'user-2',
+					ownerUserId: '550e8400-e29b-41d4-a716-446655440002',
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString(),
 				},
@@ -146,7 +105,7 @@ describe('Admin Events CRUD API', () => {
 	describe('POST /api/dashboard/admin/events', () => {
 		it('creates new event with valid data', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -154,12 +113,12 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const mockEvent = {
-				id: 'evt-1',
+				id: VALID_EVENT_ID,
 				title: 'New Event',
 				slug: 'new-event',
 				eventType: 'cumple' as const,
 				status: 'draft' as const,
-				ownerUserId: 'admin-1',
+				ownerUserId: VALID_ADMIN_ID,
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-01T00:00:00Z',
 			};
@@ -181,13 +140,13 @@ describe('Admin Events CRUD API', () => {
 				slug: 'new-birthday',
 				eventType: 'cumple',
 				status: 'draft',
-				actorUserId: 'admin-1',
+				actorUserId: VALID_ADMIN_ID,
 			});
 		});
 
 		it('returns 400 when required fields are missing', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -206,7 +165,7 @@ describe('Admin Events CRUD API', () => {
 
 		it('returns 400 for invalid eventType', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -229,7 +188,7 @@ describe('Admin Events CRUD API', () => {
 	describe('PATCH /api/dashboard/admin/events/[eventId]', () => {
 		it('updates event with valid data', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -237,12 +196,12 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const mockUpdatedEvent = {
-				id: 'evt-1',
+				id: VALID_EVENT_ID,
 				title: 'Updated Title',
 				slug: 'updated-slug',
 				eventType: 'boda' as const,
 				status: 'published' as const,
-				ownerUserId: 'admin-1',
+				ownerUserId: VALID_ADMIN_ID,
 				createdAt: '2024-01-01T00:00:00Z',
 				updatedAt: '2024-01-02T00:00:00Z',
 			};
@@ -256,25 +215,25 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const response = await updateEvent({
-				params: { eventId: 'evt-1' },
+				params: { eventId: VALID_EVENT_ID },
 				request,
 			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.item).toEqual(mockUpdatedEvent);
 			expect(updateEventAdminMock).toHaveBeenCalledWith({
-				eventId: 'evt-1',
+				eventId: VALID_EVENT_ID,
 				title: 'Updated Title',
 				slug: 'updated-slug',
 				eventType: 'boda',
 				status: 'published',
-				actorUserId: 'admin-1',
+				actorUserId: VALID_ADMIN_ID,
 			});
 		});
 
 		it('returns 400 for invalid status', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -286,7 +245,7 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const response = await updateEvent({
-				params: { eventId: 'evt-1' },
+				params: { eventId: VALID_EVENT_ID },
 				request,
 				cookies: {} as any,
 			} as never);
@@ -297,7 +256,7 @@ describe('Admin Events CRUD API', () => {
 
 		it('returns 400 when eventId is missing', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -309,7 +268,7 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const response = await updateEvent({
-				params: { eventId: 'evt-1' },
+				params: { eventId: '' },
 				request,
 				cookies: {} as any,
 			} as never);

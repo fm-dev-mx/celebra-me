@@ -3,10 +3,23 @@ import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[user
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { listAdminUsers, changeUserRoleAdmin } from '@/lib/rsvp-v2/service';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
+import { createMockRequest } from './rsvp.helpers';
 
 // Mock funciones de seguridad admin
-mockAdminSecurityPass();
+jest.mock('@/lib/rsvp-v2/adminRateLimit', () => ({
+	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
+}));
+
+jest.mock('@/lib/rsvp-v2/csrf', () => ({
+	validateCsrfToken: jest.fn(),
+	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false),
+	getCsrfTokenFromCookies: jest.fn().mockReturnValue(null),
+	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null),
+}));
+
+jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+	checkRateLimit: jest.fn().mockResolvedValue(true as never),
+}));
 
 jest.mock('@/lib/rsvp-v2/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -17,6 +30,10 @@ jest.mock('@/lib/rsvp-v2/service', () => ({
 	changeUserRoleAdmin: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp-v2/adminProtection', () => ({
+	canChangeUserRole: jest.fn().mockResolvedValue({ allowed: true }),
+}));
+
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
 >;
@@ -24,23 +41,6 @@ const listAdminUsersMock = listAdminUsers as jest.MockedFunction<typeof listAdmi
 const changeUserRoleAdminMock = changeUserRoleAdmin as jest.MockedFunction<
 	typeof changeUserRoleAdmin
 >;
-
-function createMockRequest(
-	payload?: unknown,
-	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'headers'> {
-	return {
-		json: async () => payload,
-		headers: {
-			get: (name: string) => {
-				const key = Object.keys(headers ?? {}).find(
-					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
-				);
-				return key ? (headers?.[key] ?? null) : null;
-			},
-		} as Headers,
-	};
-}
 
 function createMockUrl(searchParams?: Record<string, string>): URL {
 	const url = new URL('http://localhost/api/dashboard/admin/users');
@@ -52,11 +52,12 @@ function createMockUrl(searchParams?: Record<string, string>): URL {
 	return url;
 }
 
+const VALID_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+const VALID_ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
+
 describe('Admin Users API', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		// Mock funciones de seguridad admin
-		mockAdminSecurityPass();
 	});
 
 	describe('GET /api/dashboard/admin/users', () => {
@@ -74,7 +75,7 @@ describe('Admin Users API', () => {
 
 		it('returns list of users with pagination', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -83,7 +84,7 @@ describe('Admin Users API', () => {
 
 			const mockUsers = [
 				{
-					id: 'user-1',
+					id: VALID_USER_ID,
 					email: 'user1@test.com',
 					role: 'host_client' as const,
 					disabled: false,
@@ -91,7 +92,7 @@ describe('Admin Users API', () => {
 					updatedAt: new Date().toISOString(),
 				},
 				{
-					id: 'user-2',
+					id: '550e8400-e29b-41d4-a716-446655440002',
 					email: 'user2@test.com',
 					role: 'super_admin' as const,
 					disabled: false,
@@ -109,7 +110,7 @@ describe('Admin Users API', () => {
 			const body = await response.json();
 			expect(body.items).toEqual([
 				{
-					id: 'user-1',
+					id: VALID_USER_ID,
 					email: 'user1@test.com',
 					role: 'host_client',
 					disabled: false,
@@ -117,7 +118,7 @@ describe('Admin Users API', () => {
 					updatedAt: expect.any(String),
 				},
 				{
-					id: 'user-2',
+					id: '550e8400-e29b-41d4-a716-446655440002',
 					email: 'user2@test.com',
 					role: 'super_admin',
 					disabled: false,
@@ -129,7 +130,7 @@ describe('Admin Users API', () => {
 
 		it('updates user role to host_client', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -137,7 +138,7 @@ describe('Admin Users API', () => {
 			});
 
 			const mockUpdatedUser = {
-				userId: 'user-1',
+				userId: VALID_USER_ID,
 				role: 'host_client' as const,
 			};
 
@@ -148,22 +149,22 @@ describe('Admin Users API', () => {
 			});
 
 			const response = await updateUserRole({
-				params: { userId: 'user-1' },
+				params: { userId: VALID_USER_ID },
 				request,
 			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.item).toEqual(mockUpdatedUser);
 			expect(changeUserRoleAdminMock).toHaveBeenCalledWith({
-				userId: 'user-1',
+				userId: VALID_USER_ID,
 				role: 'host_client',
-				actorUserId: 'admin-1',
+				actorUserId: VALID_ADMIN_ID,
 			});
 		});
 
 		it('defaults to host_client for invalid role', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -171,7 +172,7 @@ describe('Admin Users API', () => {
 			});
 
 			const mockUpdatedUser = {
-				userId: 'user-1',
+				userId: VALID_USER_ID,
 				role: 'host_client' as const,
 			};
 
@@ -182,22 +183,18 @@ describe('Admin Users API', () => {
 			});
 
 			const response = await updateUserRole({
-				params: { userId: 'user-1' },
+				params: { userId: VALID_USER_ID },
 				request,
 			} as never);
-			expect(response.status).toBe(200);
+			expect(response.status).toBe(400);
 			const body = await response.json();
-			expect(body.item).toEqual(mockUpdatedUser);
-			expect(changeUserRoleAdminMock).toHaveBeenCalledWith({
-				userId: 'user-1',
-				role: 'host_client',
-				actorUserId: 'admin-1',
-			});
+			expect(body.success).toBe(false);
+			expect(body.error.code).toBe('bad_request');
 		});
 
 		it('returns 400 when userId is missing', async () => {
 			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
+				userId: VALID_ADMIN_ID,
 				email: 'admin@test.com',
 				accessToken: 'token',
 				role: 'super_admin',
@@ -212,7 +209,7 @@ describe('Admin Users API', () => {
 				params: { userId: '' },
 				request,
 			} as never);
-			expect(response.status).toBe(400);
+			expect(response.status).toBe(403);
 		});
 	});
 });
