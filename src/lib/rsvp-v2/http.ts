@@ -82,51 +82,32 @@ export function errorResponse(error: unknown): Response {
 	}
 
 	// Non-ApiError: check if it's an empty object or has no meaningful message
-	// Don't log empty objects as they're likely test artifacts or validation errors
-	const shouldLog = !(error && typeof error === 'object' && Object.keys(error).length === 0);
-	if (shouldLog) {
-		console.error('[RSVP-V2] Error:', error);
+	const isErrorInstance = error instanceof Error;
+	const isEmptyObject =
+		error && typeof error === 'object' && !isErrorInstance && Object.keys(error).length === 0;
+
+	if (!isEmptyObject) {
+		console.error('[RSVP-V2] Unexpected Error:', error);
 	}
 
-	// Handle empty objects - in tests, this is often a mock issue
-	// In test environment, return success to allow tests to pass
-	// In production/other environments, return bad request
-	if (error && typeof error === 'object' && Object.keys(error).length === 0) {
-		if (process.env.NODE_ENV === 'test') {
-			// In tests, assume empty object means "no error" (mock issue)
-			// Return a generic success response
-			return jsonResponse(
-				{
-					success: true,
-					data: { testMode: true, emptyErrorObjectHandled: true },
-				},
-				200,
-			);
-		}
-		// In non-test environments, return bad request
-		return jsonResponse(
-			{
-				success: false,
-				error: {
-					code: 'bad_request',
-					message: 'Solicitud inválida',
-				},
-			},
-			400,
-		);
-	}
+	const fallbackMessage = isErrorInstance
+		? error.message
+		: typeof error === 'string'
+			? error
+			: 'Error interno del servidor.';
 
-	const fallbackMessage =
-		error instanceof Error ? error.message : String(error || 'Error interno del servidor.');
+	const errorCode = isEmptyObject ? 'bad_request' : 'internal_error';
+	const status = isEmptyObject ? 400 : 500;
+
 	return jsonResponse(
 		{
 			success: false,
 			error: {
-				code: 'internal_error',
+				code: errorCode,
 				message: fallbackMessage,
 			},
 		},
-		500,
+		status,
 	);
 }
 
