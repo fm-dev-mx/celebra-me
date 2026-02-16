@@ -6,8 +6,12 @@ interface WhatsAppInviteButtonProps {
 }
 
 const WhatsAppInviteButton: React.FC<WhatsAppInviteButtonProps> = ({ waShareUrl, onShared }) => {
+	const [status, setStatus] = React.useState<'idle' | 'sending' | 'delivered'>('idle');
+
 	const handleClick = async () => {
 		if (!waShareUrl) return;
+
+		setStatus('sending');
 
 		// Intelligent Social Sharing: use Web Share API if possible
 		if (navigator.share) {
@@ -20,6 +24,7 @@ const WhatsAppInviteButton: React.FC<WhatsAppInviteButtonProps> = ({ waShareUrl,
 						: waShareUrl,
 				});
 				await onShared();
+				setStatus('delivered');
 				return;
 			} catch (err) {
 				console.info('Web Share aborted or failed:', err);
@@ -28,17 +33,20 @@ const WhatsAppInviteButton: React.FC<WhatsAppInviteButtonProps> = ({ waShareUrl,
 		}
 
 		await onShared();
+		setStatus('delivered');
 		window.open(waShareUrl, '_blank', 'noopener,noreferrer');
 	};
 
 	return (
 		<button
 			type="button"
-			className="dashboard-guests__wa-button"
+			className={`dashboard-guests__wa-button dashboard-guests__wa-button--${status}`}
 			onClick={handleClick}
+			disabled={status !== 'idle'}
 			title="Enviar por WhatsApp"
 		>
-			<span className="wa-icon">📱</span> Enviar
+			<span className="wa-icon">{status === 'delivered' ? '✅' : '📱'}</span>{' '}
+			{status === 'idle' ? 'Enviar' : status === 'sending' ? 'Enviando...' : 'Enviado'}
 		</button>
 	);
 };

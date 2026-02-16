@@ -20,6 +20,7 @@ export interface DashboardGuestItem {
 	updatedAt: string;
 	eventType?: string;
 	eventSlug?: string;
+	shortId?: string;
 }
 
 export interface DashboardGuestListResponse {

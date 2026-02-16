@@ -52,12 +52,13 @@ const GuestTable: React.FC<GuestTableProps> = ({
 							eventType: item.eventType || 'evento',
 							eventSlug: item.eventSlug || 'invitacion',
 							inviteId: item.inviteId,
+							shortId: item.shortId,
 						});
 						const isViewed = !!item.firstViewedAt;
 						const isShared = item.deliveryStatus === 'shared';
 
 						return (
-							<tr key={item.guestId} id={`guest-row-${item.guestId}`}>
+							<tr key={item.guestId} data-guest-id={item.guestId}>
 								<td>
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>

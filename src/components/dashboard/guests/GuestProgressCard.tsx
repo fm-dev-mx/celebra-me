@@ -43,14 +43,22 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ total, shared }) 
 			</div>
 
 			<div className="progress-footer">
-				<p>
-					<strong>{shared}</strong> de {total} invitaciones compartidas
-				</p>
+				<div className="progress-footer__info">
+					<p>
+						<strong>{shared}</strong> de {total} invitaciones compartidas
+					</p>
+					{!isComplete && total > 0 && (
+						<p className="progress-next-action">
+							💡 Tip: Usa "Enviar Siguiente" para avanzar rápido.
+						</p>
+					)}
+				</div>
 				{isComplete && (
 					<motion.span
 						className="completion-badge"
 						initial={{ scale: 0 }}
 						animate={{ scale: 1 }}
+						transition={{ type: 'spring', stiffness: 200, damping: 10 }}
 					>
 						🏆 ¡Todo enviado!
 					</motion.span>

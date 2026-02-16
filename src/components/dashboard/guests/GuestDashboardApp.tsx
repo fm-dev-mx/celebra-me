@@ -54,6 +54,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		type: 'info' | 'success' | 'warning';
 	} | null>(null);
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
+	const [isNextActionActive, setIsNextActionActive] = useState(false);
+	const [nextActionGuestId, setNextActionGuestId] = useState<string | null>(null);
 	const reconnectTimerRef = useRef<number | null>(null);
 	const refreshDebounceRef = useRef<number | null>(null);
 	const reconnectAttemptRef = useRef(0);
@@ -305,27 +307,26 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				/>
 
 				<div className="dashboard-guests__quick-actions">
-					<button
-						className="btn-primary btn--shiny"
-						disabled={
-							loading ||
-							items.filter((i) => i.deliveryStatus === 'generated').length === 0
-						}
-						onClick={() => {
-							const next = items.find((i) => i.deliveryStatus === 'generated');
-							if (next) {
-								const btn = document.querySelector(
-									`[key="${next.guestId}"] .dashboard-guests__wa-button`,
-								) as HTMLElement;
-								if (btn) btn.click();
-								// Scroll to item
-								const row = document.getElementById(`guest-row-${next.guestId}`);
-								row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-							}
-						}}
-					>
-						🚀 Enviar Siguiente Invitación
-					</button>
+					{items.some((i) => i.deliveryStatus === 'generated') && (
+						<button
+							className="btn-primary btn--shiny"
+							disabled={loading}
+							onClick={() => {
+								const next = items.find((i) => i.deliveryStatus === 'generated');
+								if (next) {
+									setModalMode('edit');
+									setEditingGuest(next);
+									setIsNextActionActive(true);
+									setNextActionGuestId(next.guestId);
+									setModalOpen(true);
+								}
+							}}
+						>
+							🚀 Enviar Siguiente (
+							{items.filter((i) => i.deliveryStatus === 'generated').length}{' '}
+							pendientes)
+						</button>
+					)}
 				</div>
 
 				<GuestProgressCard
@@ -412,20 +413,25 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					initialGuest={editingGuest}
 					onClose={() => setModalOpen(false)}
 					onSubmit={async (payload, stayOpen) => {
+						let savedItem: DashboardGuestItem | null = null;
 						if (modalMode === 'create') {
-							await apiJson<{ item: DashboardGuestItem }>('/api/dashboard/guests', {
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify({
-									eventId,
-									fullName: payload.fullName,
-									phoneE164: payload.phoneE164,
-									maxAllowedAttendees: payload.maxAllowedAttendees,
-									tags: payload.tags,
-								}),
-							});
+							const response = await apiJson<{ item: DashboardGuestItem }>(
+								'/api/dashboard/guests',
+								{
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify({
+										eventId,
+										fullName: payload.fullName,
+										phoneE164: payload.phoneE164,
+										maxAllowedAttendees: payload.maxAllowedAttendees,
+										tags: payload.tags,
+									}),
+								},
+							);
+							savedItem = response.item;
 						} else if (editingGuest) {
-							await apiJson<{ item: DashboardGuestItem }>(
+							const response = await apiJson<{ item: DashboardGuestItem }>(
 								`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
 								{
 									method: 'PATCH',
@@ -433,13 +439,33 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									body: JSON.stringify(payload),
 								},
 							);
+							savedItem = response.item;
 						}
+
 						await loadGuests();
-						if (stayOpen) {
-							setNotification({
-								message: 'Invitado guardado correctamente.',
-								type: 'info',
-							});
+
+						setNotification({
+							message: `Invitado ${savedItem?.fullName || 'guardado'} correctamente.`,
+							type: 'success',
+						});
+
+						// Handle auto-share logic for "Send Next" flow
+						if (isNextActionActive && modalMode === 'edit' && savedItem) {
+							const guestId = savedItem.guestId;
+							setTimeout(() => {
+								const waButton = document.querySelector(
+									`tr[data-guest-id="${guestId}"] .dashboard-guests__wa-button`,
+								) as HTMLElement;
+								if (waButton) {
+									waButton.click();
+									const row = document.querySelector(
+										`tr[data-guest-id="${guestId}"]`,
+									);
+									row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+								}
+								setIsNextActionActive(false);
+								setNextActionGuestId(null);
+							}, 400);
 						}
 					}}
 				/>
