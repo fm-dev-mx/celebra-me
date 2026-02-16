@@ -32,6 +32,7 @@ export interface GuestInvitationRecord {
 	createdAt: string;
 	updatedAt: string;
 	tags?: string[];
+	shortId?: string;
 }
 
 export interface GuestInvitationAuditRecord {
@@ -71,6 +72,7 @@ export interface GuestInvitationDTO {
 	tags?: string[];
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
+	shortId?: string;
 }
 
 export interface DashboardGuestListResponse {

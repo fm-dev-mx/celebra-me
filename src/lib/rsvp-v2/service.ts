@@ -29,6 +29,7 @@ import {
 	redeemClaimCodeRpc,
 	createEventService,
 	updateEventService,
+	findGuestByShortIdPublic,
 } from './repository';
 import type {
 	AdminEventListItemDTO,
@@ -50,6 +51,7 @@ import { publishGuestStreamEvent } from './stream';
 import { createHash, randomBytes } from 'node:crypto';
 import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './authApi';
+import { generateShortId } from '@/utils/ids';
 
 const MAX_TEXT_LEN = 500;
 
@@ -67,8 +69,9 @@ function toSafeAttendeeCount(raw: unknown): number {
 	return Math.max(0, Math.min(Math.trunc(raw), 20));
 }
 
-function buildInviteUrl(origin: string, inviteId: string): string {
-	return `${origin.replace(/\/+$/, '')}/invitacion/${encodeURIComponent(inviteId)}`;
+function buildInviteUrl(origin: string, id: string): string {
+	const baseUrl = origin.replace(/\/+$/, '');
+	return `${baseUrl}/invitacion/${encodeURIComponent(id)}`;
 }
 
 async function logAdminAction(input: {
@@ -95,11 +98,16 @@ function buildWhatsAppShareUrl(input: {
 	inviteId: string;
 	phoneE164: string;
 	fullName: string;
+	shortId?: string;
 	eventTitle?: string;
 }): string {
 	const targetPhone = normalizePhone(input.phoneE164).replace(/^\+/, '');
 	if (!targetPhone) return '';
-	const inviteUrl = buildInviteUrl(input.origin, input.inviteId);
+	const inviteUrl = buildInviteUrl(
+		input.origin,
+		input.shortId || input.inviteId,
+		!!input.shortId,
+	);
 	const eventLabel = sanitize(input.eventTitle, 120) || 'nuestro evento';
 	const message = `Hola ${sanitize(input.fullName, 120)}, te compartimos tu invitacion: ${inviteUrl} (${eventLabel}).`;
 	return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
@@ -130,11 +138,13 @@ function toGuestDto(
 			phoneE164: guest.phoneE164,
 			fullName: guest.fullName,
 			eventTitle,
+			shortId: guest.shortId,
 		}),
 		updatedAt: guest.updatedAt,
 		tags: guest.tags || [],
 		eventType,
 		eventSlug,
+		shortId: guest.shortId,
 	};
 }
 
@@ -251,6 +261,7 @@ export async function createDashboardGuest(input: {
 			phoneE164,
 			maxAllowedAttendees,
 			tags: input.tags,
+			short_id: generateShortId(8),
 		},
 		input.hostAccessToken,
 	);
@@ -486,6 +497,43 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	if (!safeInviteId) throw new ApiError(400, 'bad_request', 'inviteId invalido.');
 
 	const invitation = await findGuestByInviteIdPublic(safeInviteId);
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
+
+	const event = await findEventByInvitationPublic(invitation.eventId);
+	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+
+	return {
+		inviteId: invitation.inviteId,
+		eventSlug: event.slug,
+		eventType: event.eventType,
+		eventTitle: event.title,
+		guest: {
+			fullName: invitation.fullName,
+			maxAllowedAttendees: invitation.maxAllowedAttendees,
+			attendanceStatus: invitation.attendanceStatus,
+			attendeeCount: invitation.attendeeCount,
+			guestMessage: invitation.guestMessage,
+		},
+	};
+}
+
+export async function getInvitationContextByShortId(shortId: string): Promise<{
+	inviteId: string;
+	eventSlug: string;
+	eventType: EventRecord['eventType'];
+	eventTitle: string;
+	guest: {
+		fullName: string;
+		maxAllowedAttendees: number;
+		attendanceStatus: AttendanceStatus;
+		attendeeCount: number;
+		guestMessage: string;
+	};
+}> {
+	const safeShortId = sanitize(shortId, 12);
+	if (!safeShortId) throw new ApiError(400, 'bad_request', 'short_id invalido.');
+
+	const invitation = await findGuestByShortIdPublic(safeShortId);
 	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
 
 	const event = await findEventByInvitationPublic(invitation.eventId);

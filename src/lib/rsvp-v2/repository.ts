@@ -23,6 +23,7 @@ interface CreateGuestInput {
 	phoneE164: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
+	short_id?: string;
 }
 
 interface UpdateGuestInput {
@@ -69,6 +70,7 @@ type GuestRow = {
 	created_at: string;
 	updated_at: string;
 	tags: string[];
+	short_id?: string;
 };
 
 type GuestAuditRow = {
@@ -141,6 +143,7 @@ function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 		tags: row.tags || [],
+		shortId: row.short_id,
 	};
 }
 
@@ -193,16 +196,20 @@ export async function findEventsByOwner(
 	ownerUserId: string,
 	hostAccessToken: string,
 ): Promise<EventRecord[]> {
+	const EVENT_COLUMNS =
+		'id,owner_user_id,slug,event_type,title,status,published_at,created_at,updated_at';
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&owner_user_id=eq.${encodeURIComponent(ownerUserId)}&order=created_at.desc`,
+		pathWithQuery: `events?select=${EVENT_COLUMNS}&owner_user_id=eq.${encodeURIComponent(ownerUserId)}&order=created_at.desc`,
 		authToken: hostAccessToken,
 	});
 	return rows.map(toEventRecord);
 }
 
 export async function findEventsForHost(hostAccessToken: string): Promise<EventRecord[]> {
+	const EVENT_COLUMNS =
+		'id,owner_user_id,slug,event_type,title,status,published_at,created_at,updated_at';
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: 'events?select=*&order=created_at.desc',
+		pathWithQuery: `events?select=${EVENT_COLUMNS}&order=created_at.desc`,
 		authToken: hostAccessToken,
 	});
 	return rows.map(toEventRecord);
@@ -212,8 +219,10 @@ export async function findEventById(
 	eventId: string,
 	hostAccessToken: string,
 ): Promise<EventRecord | null> {
+	const EVENT_COLUMNS =
+		'id,owner_user_id,slug,event_type,title,status,published_at,created_at,updated_at';
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?select=*&id=eq.${encodeURIComponent(eventId)}&limit=1`,
+		pathWithQuery: `events?select=${EVENT_COLUMNS}&id=eq.${encodeURIComponent(eventId)}&limit=1`,
 		authToken: hostAccessToken,
 	});
 	return rows[0] ? toEventRecord(rows[0]) : null;
@@ -263,29 +272,64 @@ export async function createGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: 'guest_invitations?select=*',
-		method: 'POST',
-		authToken: hostAccessToken,
-		prefer: 'return=representation',
-		body: {
-			event_id: input.eventId,
-			full_name: input.fullName,
-			phone_e164: input.phoneE164,
-			max_allowed_attendees: input.maxAllowedAttendees,
-			tags: input.tags || [],
-		},
-	});
-	if (!rows[0]) throw new Error('No se pudo crear invitado.');
-	return toGuestRecord(rows[0]);
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+
+	// Defensive approach: Try with short_id, fallback without it if it fails with PGRST204
+	try {
+		const rows = await supabaseRestRequest<GuestRow[]>({
+			pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}`,
+			method: 'POST',
+			authToken: hostAccessToken,
+			prefer: 'return=representation',
+			body: {
+				event_id: input.eventId,
+				full_name: input.fullName,
+				phone_e164: input.phoneE164,
+				max_allowed_attendees: input.maxAllowedAttendees,
+				tags: input.tags,
+				short_id: input.short_id,
+			},
+		});
+		if (!rows[0]) throw new Error('No se pudo crear invitado.');
+		return toGuestRecord(rows[0]);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		if (message.includes('PGRST204') || message.includes('short_id')) {
+			console.warn(
+				'[Repository] PGRST204 detected, falling back to insertion without short_id.',
+			);
+			// Fallback: exclude short_id from both select and body
+			const FALLBACK_COLUMNS =
+				'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
+			const rows = await supabaseRestRequest<GuestRow[]>({
+				pathWithQuery: `guest_invitations?select=${FALLBACK_COLUMNS}`,
+				method: 'POST',
+				authToken: hostAccessToken,
+				prefer: 'return=representation',
+				body: {
+					event_id: input.eventId,
+					full_name: input.fullName,
+					phone_e164: input.phoneE164,
+					max_allowed_attendees: input.maxAllowedAttendees,
+					tags: input.tags,
+				},
+			});
+			if (!rows[0]) throw new Error('No se pudo crear invitado (fallback).');
+			return toGuestRecord(rows[0]);
+		}
+		throw error;
+	}
 }
 
 export async function findGuestById(
 	guestId: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: `guest_invitations?select=*&id=eq.${encodeURIComponent(guestId)}&limit=1`,
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&id=eq.${encodeURIComponent(guestId)}&limit=1`,
 		authToken: hostAccessToken,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
@@ -303,26 +347,28 @@ export async function updateGuestById(
 	input: UpdateGuestInput,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	const body: Record<string, unknown> = {};
-	if (input.fullName !== undefined) body.full_name = input.fullName;
-	if (input.phoneE164 !== undefined) body.phone_e164 = input.phoneE164;
+	const updateBody: Record<string, unknown> = {};
+	if (input.fullName !== undefined) updateBody.full_name = input.fullName;
+	if (input.phoneE164 !== undefined) updateBody.phone_e164 = input.phoneE164;
 	if (input.maxAllowedAttendees !== undefined)
-		body.max_allowed_attendees = input.maxAllowedAttendees;
-	if (input.attendanceStatus !== undefined) body.attendance_status = input.attendanceStatus;
-	if (input.attendeeCount !== undefined) body.attendee_count = input.attendeeCount;
-	if (input.guestMessage !== undefined) body.guest_message = input.guestMessage;
-	if (input.deliveryStatus !== undefined) body.delivery_status = input.deliveryStatus;
+		updateBody.max_allowed_attendees = input.maxAllowedAttendees;
+	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
+	if (input.attendeeCount !== undefined) updateBody.attendee_count = input.attendeeCount;
+	if (input.guestMessage !== undefined) updateBody.guest_message = input.guestMessage;
+	if (input.deliveryStatus !== undefined) updateBody.delivery_status = input.deliveryStatus;
 	if (input.lastResponseSource !== undefined)
-		body.last_response_source = input.lastResponseSource;
-	if (input.respondedAt !== undefined) body.responded_at = input.respondedAt;
-	if (input.tags !== undefined) body.tags = input.tags;
+		updateBody.last_response_source = input.lastResponseSource;
+	if (input.respondedAt !== undefined) updateBody.responded_at = input.respondedAt;
+	if (input.tags !== undefined) updateBody.tags = input.tags;
 
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: `guest_invitations?id=eq.${encodeURIComponent(input.guestId)}&select=*`,
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&id=eq.${encodeURIComponent(input.guestId)}`,
 		method: 'PATCH',
 		authToken: hostAccessToken,
 		prefer: 'return=representation',
-		body,
+		body: updateBody,
 	});
 	if (!rows[0]) throw new Error('Invitado no encontrado o sin permisos.');
 	return toGuestRecord(rows[0]);
@@ -360,8 +406,22 @@ export async function appendGuestAuditByHost(
 export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: `guest_invitations?select=*&invite_id=eq.${encodeURIComponent(inviteId)}&limit=1`,
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&invite_id=eq.${encodeURIComponent(inviteId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toGuestRecord(rows[0]) : null;
+}
+
+export async function findGuestByShortIdPublic(
+	shortId: string,
+): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+	const rows = await supabaseRestRequest<GuestRow[]>({
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&short_id=eq.${encodeURIComponent(shortId)}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
@@ -371,8 +431,10 @@ export async function updateGuestByInviteIdPublic(
 	inviteId: string,
 	body: Record<string, unknown>,
 ): Promise<GuestInvitationRecord> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: `guest_invitations?invite_id=eq.${encodeURIComponent(inviteId)}&select=*`,
+		pathWithQuery: `guest_invitations?invite_id=eq.${encodeURIComponent(inviteId)}&select=${GUEST_COLUMNS}`,
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',
@@ -389,7 +451,8 @@ export async function appendGuestAuditPublic(
 	actorType: GuestAuditRow['actor_type'] = 'guest',
 ): Promise<GuestInvitationAuditRecord> {
 	const rows = await supabaseRestRequest<GuestAuditRow[]>({
-		pathWithQuery: 'guest_invitation_audit?select=*',
+		pathWithQuery:
+			'guest_invitation_audit?select=id,guest_invitation_id,actor_type,event_type,payload,created_at',
 		method: 'POST',
 		useServiceRole: true,
 		prefer: 'return=representation',
@@ -416,8 +479,10 @@ export async function findGuestByLegacyIdentityPublic(input: {
 	eventSlug: string;
 	guestId: string;
 }): Promise<GuestInvitationRecord | null> {
+	const GUEST_COLUMNS =
+		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
-		pathWithQuery: `guest_invitations?select=*&legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}&limit=1`,
+		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toGuestRecord(rows[0]) : null;
@@ -519,8 +584,9 @@ export async function createEventService(input: {
 	title: string;
 	status?: EventRecord['status'];
 }): Promise<EventRecord> {
+	const EVENT_COLUMNS = 'id,owner_user_id,slug,event_type,title,status,created_at,updated_at';
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: 'events?select=*',
+		pathWithQuery: `events?select=${EVENT_COLUMNS}`,
 		method: 'POST',
 		useServiceRole: true,
 		prefer: 'return=representation',
