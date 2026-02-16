@@ -52,6 +52,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './authApi';
 import { generateShortId } from '@/utils/ids';
+import { generateInvitationLink } from '@/utils/invitationLink';
 
 const MAX_TEXT_LEN = 500;
 
@@ -69,9 +70,28 @@ function toSafeAttendeeCount(raw: unknown): number {
 	return Math.max(0, Math.min(Math.trunc(raw), 20));
 }
 
-function buildInviteUrl(origin: string, id: string): string {
-	const baseUrl = origin.replace(/\/+$/, '');
-	return `${baseUrl}/invitacion/${encodeURIComponent(id)}`;
+function buildInviteUrl(
+	origin: string,
+	id: string,
+	isShortId?: boolean,
+	eventType?: string,
+	eventSlug?: string,
+): string {
+	// For backward compatibility, if eventType and eventSlug are not provided,
+	// use the old format
+	if (!eventType || !eventSlug) {
+		const baseUrl = origin.replace(/\/+$/, '');
+		return `${baseUrl}/invitacion/${encodeURIComponent(id)}`;
+	}
+
+	// Use the new format with generateInvitationLink
+	return generateInvitationLink({
+		origin,
+		eventType,
+		eventSlug,
+		inviteId: isShortId ? '' : id,
+		shortId: isShortId ? id : undefined,
+	});
 }
 
 async function logAdminAction(input: {
@@ -100,6 +120,8 @@ function buildWhatsAppShareUrl(input: {
 	fullName: string;
 	shortId?: string;
 	eventTitle?: string;
+	eventType?: string;
+	eventSlug?: string;
 }): string {
 	const targetPhone = normalizePhone(input.phoneE164).replace(/^\+/, '');
 	if (!targetPhone) return '';
@@ -107,6 +129,8 @@ function buildWhatsAppShareUrl(input: {
 		input.origin,
 		input.shortId || input.inviteId,
 		!!input.shortId,
+		input.eventType,
+		input.eventSlug,
 	);
 	const eventLabel = sanitize(input.eventTitle, 120) || 'nuestro evento';
 	const message = `Hola ${sanitize(input.fullName, 120)}, te compartimos tu invitacion: ${inviteUrl} (${eventLabel}).`;
@@ -139,6 +163,8 @@ function toGuestDto(
 			fullName: guest.fullName,
 			eventTitle,
 			shortId: guest.shortId,
+			eventType,
+			eventSlug,
 		}),
 		updatedAt: guest.updatedAt,
 		tags: guest.tags || [],

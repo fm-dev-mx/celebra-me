@@ -11,11 +11,12 @@ if (!shortId) {
 }
 
 try {
-	const { eventType: contextType, eventSlug, inviteId } = await getInvitationContextByShortId(shortId);
+	const result = await getInvitationContextByShortId(shortId);
+	void result; // TypeScript workaround for unused variable warning
 
 	// Canonical URL now points to the landing page with the invite parameter
 	// Pattern: /{eventType}/{slug}?invite={inviteId}
-	return Astro.redirect(`/${contextType}/${eventSlug}?invite=${inviteId}`);
+	return Astro.redirect(`/${result.eventType}/${result.eventSlug}?invite=${result.inviteId}`);
 } catch (error) {
 	console.error('[ShortID Resolution] Error:', error);
 	return Astro.redirect('/404');
