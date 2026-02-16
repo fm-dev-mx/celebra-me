@@ -11,9 +11,15 @@ export function generateInvitationLink(params: {
 	eventType: string;
 	eventSlug: string;
 	inviteId: string;
+	shortId?: string;
 }): string {
-	const { origin, eventType, eventSlug, inviteId } = params;
+	const { origin, eventType, eventSlug, inviteId, shortId } = params;
 	const baseUrl = origin.replace(/\/+$/, '');
+
+	if (shortId) {
+		return `${baseUrl}/${eventType}/${eventSlug}/i/${shortId}`;
+	}
+
 	const type = encodeURIComponent(eventType || 'evento');
 	const slug = encodeURIComponent(eventSlug || 'invitacion');
 	const invite = encodeURIComponent(inviteId);
