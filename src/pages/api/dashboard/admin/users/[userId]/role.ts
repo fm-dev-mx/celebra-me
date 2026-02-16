@@ -24,7 +24,7 @@ export const PATCH: APIRoute = async ({ request, params, cookies }) => {
 		}
 		const userId = userIdValidation.data;
 
-		const parsed = validateBodyOrRespond(request, UpdateUserRoleSchema);
+		const parsed = await validateBodyOrRespond(request, UpdateUserRoleSchema);
 		if (parsed instanceof Response) return parsed;
 
 		const canChange = await canChangeUserRole(userId, parsed.role);

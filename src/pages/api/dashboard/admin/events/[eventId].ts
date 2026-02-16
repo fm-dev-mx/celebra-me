@@ -17,7 +17,7 @@ export const PATCH: APIRoute = async ({ params, request }) => {
 		}
 		const eventId = eventIdValidation.data;
 
-		const parsed = validateBodyOrRespond(request, UpdateEventSchema);
+		const parsed = await validateBodyOrRespond(request, UpdateEventSchema);
 		if (parsed instanceof Response) return parsed;
 
 		const updatedEvent = await updateEventAdmin({

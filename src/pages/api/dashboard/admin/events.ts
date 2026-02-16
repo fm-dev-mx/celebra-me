@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 		const session = await requireAdminStrongSession(request);
 
-		const parsed = validateBodyOrRespond(request, CreateEventSchema);
+		const parsed = await validateBodyOrRespond(request, CreateEventSchema);
 		if (parsed instanceof Response) return parsed;
 
 		const newEvent = await createEventAdmin({
