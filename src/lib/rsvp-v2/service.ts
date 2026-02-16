@@ -62,7 +62,7 @@ function sanitize(value: unknown, maxLen = MAX_TEXT_LEN): string {
 }
 
 function normalizePhone(phone: string): string {
-	return sanitize(phone, 40).replace(/[^\d+]/g, '');
+	return sanitize(phone, 40).replace(/[^\d]/g, '');
 }
 
 function toSafeAttendeeCount(raw: unknown): number {
@@ -116,14 +116,14 @@ async function logAdminAction(input: {
 function buildWhatsAppShareUrl(input: {
 	origin: string;
 	inviteId: string;
-	phoneE164: string;
+	phone: string;
 	fullName: string;
 	shortId?: string;
 	eventTitle?: string;
 	eventType?: string;
 	eventSlug?: string;
 }): string {
-	const targetPhone = normalizePhone(input.phoneE164).replace(/^\+/, '');
+	const targetPhone = normalizePhone(input.phone).replace(/^\+/, '');
 	if (!targetPhone) return '';
 	const inviteUrl = buildInviteUrl(
 		input.origin,
@@ -148,7 +148,7 @@ function toGuestDto(
 		guestId: guest.id,
 		inviteId: guest.inviteId,
 		fullName: guest.fullName,
-		phoneE164: guest.phoneE164,
+		phone: guest.phone,
 		maxAllowedAttendees: guest.maxAllowedAttendees,
 		attendanceStatus: guest.attendanceStatus,
 		attendeeCount: guest.attendeeCount,
@@ -159,7 +159,7 @@ function toGuestDto(
 		waShareUrl: buildWhatsAppShareUrl({
 			origin,
 			inviteId: guest.inviteId,
-			phoneE164: guest.phoneE164,
+			phone: guest.phone,
 			fullName: guest.fullName,
 			eventTitle,
 			shortId: guest.shortId,
@@ -254,7 +254,7 @@ export async function listHostEvents(input: {
 export async function createDashboardGuest(input: {
 	eventId: string;
 	fullName: string;
-	phoneE164: string;
+	phone: string;
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
 	origin: string;
@@ -273,8 +273,8 @@ export async function createDashboardGuest(input: {
 
 	const fullName = sanitize(input.fullName, 140);
 	if (!fullName) throw new ApiError(400, 'bad_request', 'Nombre completo es obligatorio.');
-	const phoneE164 = normalizePhone(input.phoneE164);
-	if (!phoneE164) throw new ApiError(400, 'bad_request', 'Telefono es obligatorio.');
+	const phone = normalizePhone(input.phone);
+	if (!phone) throw new ApiError(400, 'bad_request', 'Telefono es obligatorio.');
 	const maxAllowedAttendees = Math.max(
 		1,
 		Math.min(20, Math.trunc(input.maxAllowedAttendees || 1)),
@@ -284,7 +284,7 @@ export async function createDashboardGuest(input: {
 		{
 			eventId: event.id,
 			fullName,
-			phoneE164,
+			phone,
 			maxAllowedAttendees,
 			tags: input.tags,
 			short_id: generateShortId(8),
@@ -325,7 +325,7 @@ export async function updateDashboardGuest(input: {
 	actorUserId?: string;
 	isSuperAdmin?: boolean;
 	fullName?: string;
-	phoneE164?: string;
+	phone?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
@@ -363,7 +363,7 @@ export async function updateDashboardGuest(input: {
 		{
 			guestId: input.guestId,
 			fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
-			phoneE164: input.phoneE164 !== undefined ? normalizePhone(input.phoneE164) : undefined,
+			phone: input.phone !== undefined ? normalizePhone(input.phone) : undefined,
 			maxAllowedAttendees: nextCap,
 			attendanceStatus: nextStatus,
 			attendeeCount: nextAttendeeCount,

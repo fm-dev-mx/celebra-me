@@ -20,7 +20,7 @@ interface GuestFilters {
 interface CreateGuestInput {
 	eventId: string;
 	fullName: string;
-	phoneE164: string;
+	phone: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
 	short_id?: string;
@@ -29,7 +29,7 @@ interface CreateGuestInput {
 interface UpdateGuestInput {
 	guestId: string;
 	fullName?: string;
-	phoneE164?: string;
+	phone?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
@@ -57,7 +57,7 @@ type GuestRow = {
 	invite_id: string;
 	event_id: string;
 	full_name: string;
-	phone_e164: string;
+	phone: string;
 	max_allowed_attendees: number;
 	attendance_status: AttendanceStatus;
 	attendee_count: number;
@@ -130,7 +130,7 @@ function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		inviteId: row.invite_id,
 		eventId: row.event_id,
 		fullName: row.full_name,
-		phoneE164: row.phone_e164,
+		phone: row.phone,
 		maxAllowedAttendees: row.max_allowed_attendees,
 		attendanceStatus: row.attendance_status,
 		attendeeCount: row.attendee_count,
@@ -273,7 +273,7 @@ export async function createGuestInvitation(
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 
 	// Defensive approach: Try with short_id, fallback without it if it fails with PGRST204
 	try {
@@ -285,7 +285,7 @@ export async function createGuestInvitation(
 			body: {
 				event_id: input.eventId,
 				full_name: input.fullName,
-				phone_e164: input.phoneE164,
+				phone: input.phone,
 				max_allowed_attendees: input.maxAllowedAttendees,
 				tags: input.tags,
 				short_id: input.short_id,
@@ -301,7 +301,7 @@ export async function createGuestInvitation(
 			);
 			// Fallback: exclude short_id from both select and body
 			const FALLBACK_COLUMNS =
-				'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
+				'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
 			const rows = await supabaseRestRequest<GuestRow[]>({
 				pathWithQuery: `guest_invitations?select=${FALLBACK_COLUMNS}`,
 				method: 'POST',
@@ -310,7 +310,7 @@ export async function createGuestInvitation(
 				body: {
 					event_id: input.eventId,
 					full_name: input.fullName,
-					phone_e164: input.phoneE164,
+					phone: input.phone,
 					max_allowed_attendees: input.maxAllowedAttendees,
 					tags: input.tags,
 				},
@@ -327,7 +327,7 @@ export async function findGuestById(
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&id=eq.${encodeURIComponent(guestId)}&limit=1`,
 		authToken: hostAccessToken,
@@ -349,7 +349,7 @@ export async function updateGuestById(
 ): Promise<GuestInvitationRecord> {
 	const updateBody: Record<string, unknown> = {};
 	if (input.fullName !== undefined) updateBody.full_name = input.fullName;
-	if (input.phoneE164 !== undefined) updateBody.phone_e164 = input.phoneE164;
+	if (input.phone !== undefined) updateBody.phone = input.phone;
 	if (input.maxAllowedAttendees !== undefined)
 		updateBody.max_allowed_attendees = input.maxAllowedAttendees;
 	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
@@ -362,7 +362,7 @@ export async function updateGuestById(
 	if (input.tags !== undefined) updateBody.tags = input.tags;
 
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&id=eq.${encodeURIComponent(input.guestId)}`,
 		method: 'PATCH',
@@ -407,7 +407,7 @@ export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&invite_id=eq.${encodeURIComponent(inviteId)}&limit=1`,
 		useServiceRole: true,
@@ -419,7 +419,7 @@ export async function findGuestByShortIdPublic(
 	shortId: string,
 ): Promise<GuestInvitationRecord | null> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&short_id=eq.${encodeURIComponent(shortId)}&limit=1`,
 		useServiceRole: true,
@@ -432,7 +432,7 @@ export async function updateGuestByInviteIdPublic(
 	body: Record<string, unknown>,
 ): Promise<GuestInvitationRecord> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?invite_id=eq.${encodeURIComponent(inviteId)}&select=${GUEST_COLUMNS}`,
 		method: 'PATCH',
@@ -480,7 +480,7 @@ export async function findGuestByLegacyIdentityPublic(input: {
 	guestId: string;
 }): Promise<GuestInvitationRecord | null> {
 	const GUEST_COLUMNS =
-		'id,invite_id,event_id,full_name,phone_e164,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+		'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 	const rows = await supabaseRestRequest<GuestRow[]>({
 		pathWithQuery: `guest_invitations?select=${GUEST_COLUMNS}&legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}&limit=1`,
 		useServiceRole: true,
