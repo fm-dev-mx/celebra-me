@@ -1,0 +1,65 @@
+name: Gatekeeper Commit ADU
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+        branches:
+            - main
+            - develop
+
+jobs:
+    validate-commits:
+        name: Validate ADU Commits
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Validate commit messages
+              run: |
+                  echo "Validating ADU commits for PR #${{ github.event.pull_request.number }}"
+
+                  # Get base and head commits
+                  BASE_SHA="${{ github.event.pull_request.base.sha }}"
+                  HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+                  # Get all commits in the PR
+                  echo "Base SHA: $BASE_SHA"
+                  echo "Head SHA: $HEAD_SHA"
+
+                  # List all commits in the PR range
+                  COMMITS=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | wc -l)
+                  echo "Number of commits in PR: $COMMITS"
+
+                  if [ "$COMMITS" -eq 0 ]; then
+                    echo "No commits found in PR range"
+                    exit 0
+                  fi
+
+                # Use the Node.js validation script
+                echo "Running ADU validation script..."
+                node scripts/validate-commits.cjs "$BASE_SHA" "$HEAD_SHA" || {
+                    echo "❌ ADU validation failed"
+                    exit 1
+                  }
+
+                  echo "🎉 All commits passed ADU validation!"
+
+            - name: Check for atomic commits (optional - can be enabled later)
+              if: false # Disabled by default, can be enabled when team is ready
+              run: |
+                  echo "Checking for atomic commits..."
+                  # This would require more complex analysis of changed files per commit
+                  # For now, we rely on commitlint and manual review
+                  echo "Atomic commit check is currently disabled"
