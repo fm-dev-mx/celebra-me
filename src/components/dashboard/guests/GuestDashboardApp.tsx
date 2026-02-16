@@ -5,6 +5,7 @@ import GuestStatsCards from './GuestStatsCards';
 import GuestTable from './GuestTable';
 import ImportMagic from './ImportMagic';
 import Toast from './Toast';
+import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import { useShortcuts } from '@/hooks/useShortcuts';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
 import '@/styles/invitation/_dashboard-guests.scss';
@@ -79,19 +80,28 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 	const apiJson = useCallback(
 		async <T,>(input: RequestInfo | URL, init?: RequestInit): Promise<T> => {
-			const response = await fetch(input, init);
-			const payload = (await response.json()) as T & { message?: string };
-			if (!response.ok) {
-				throw new Error(payload.message || 'Error inesperado.');
+			try {
+				const response = await fetch(input, init);
+				const payload = (await response.json()) as T & { message?: string; error?: string };
+				if (!response.ok) {
+					const errorMsg = payload.message || payload.error || `Error ${response.status}`;
+					console.error('[GuestDashboard API] Error:', response.status, errorMsg);
+					throw new Error(errorMsg);
+				}
+				return payload as T;
+			} catch (err) {
+				console.error('[GuestDashboard API] Fetch error:', err);
+				throw err;
 			}
-			return payload as T;
 		},
 		[],
 	);
 
 	const loadEvents = useCallback(async () => {
 		try {
+			console.log('[GuestDashboard] Loading events...');
 			const data = await apiJson<{ items: HostEventItem[] }>('/api/dashboard/events');
+			console.log('[GuestDashboard] Events loaded:', data.items.length);
 			setHostEvents(data.items);
 			const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
 			const candidates = [initialEventId, storedEventId, data.items[0]?.id || ''].filter(
@@ -101,19 +111,25 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				data.items.some((event) => event.id === candidate),
 			);
 			if (nextEventId && nextEventId !== eventId) {
+				console.log('[GuestDashboard] Setting eventId:', nextEventId);
 				setEventId(nextEventId);
 			}
 		} catch (err) {
+			console.error('[GuestDashboard] Error loading events:', err);
 			const message = err instanceof Error ? err.message : 'No se pudieron cargar eventos.';
 			setError(message);
 		}
 	}, [apiJson, eventId, initialEventId]);
 
 	const loadGuests = useCallback(async () => {
-		if (!eventId) return;
+		if (!eventId) {
+			console.log('[GuestDashboard] No eventId, skipping loadGuests');
+			return;
+		}
 		setLoading(true);
 		setError('');
 		try {
+			console.log('[GuestDashboard] Loading guests for event:', eventId);
 			const params = new URLSearchParams({ eventId, search, status });
 			const data = await apiJson<DashboardGuestListResponse>(
 				`/api/dashboard/guests?${params.toString()}`,
@@ -131,20 +147,36 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	}, [apiJson, eventId, search, status]);
 
 	useEffect(() => {
-		void loadEvents();
+		try {
+			void loadEvents();
+		} catch (err) {
+			console.error('[GuestDashboard] useEffect loadEvents error:', err);
+		}
 	}, [loadEvents]);
 
 	useEffect(() => {
-		void loadGuests();
+		try {
+			void loadGuests();
+		} catch (err) {
+			console.error('[GuestDashboard] useEffect loadGuests error:', err);
+		}
 	}, [loadGuests]);
 
 	useEffect(() => {
-		setInviteBaseUrl(window.location.origin);
+		try {
+			setInviteBaseUrl(window.location.origin);
+		} catch (err) {
+			console.error('[GuestDashboard] useEffect setInviteBaseUrl error:', err);
+		}
 	}, []);
 
 	useEffect(() => {
-		if (!eventId) return;
-		window.localStorage.setItem('rsvp-dashboard-event-id', eventId);
+		try {
+			if (!eventId) return;
+			window.localStorage.setItem('rsvp-dashboard-event-id', eventId);
+		} catch (err) {
+			console.error('[GuestDashboard] useEffect localStorage error:', err);
+		}
 	}, [eventId]);
 
 	const connectStream = useCallback(() => {
@@ -211,155 +243,160 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	return (
-		<section className="dashboard-guests">
-			<header className="dashboard-guests__header">
-				<h1>Dashboard de invitados</h1>
-				<label>
-					Evento
-					<select value={eventId} onChange={(event) => setEventId(event.target.value)}>
-						<option value="">Selecciona un evento</option>
-						{hostEvents.map((event) => (
-							<option key={event.id} value={event.id}>
-								{event.title} ({event.slug})
-							</option>
-						))}
-					</select>
-				</label>
-			</header>
+		<ErrorBoundary>
+			<section className="dashboard-guests">
+				<header className="dashboard-guests__header">
+					<h1>Dashboard de invitados</h1>
+					<label>
+						Evento
+						<select
+							value={eventId}
+							onChange={(event) => setEventId(event.target.value)}
+						>
+							<option value="">Selecciona un evento</option>
+							{hostEvents.map((event) => (
+								<option key={event.id} value={event.id}>
+									{event.title} ({event.slug})
+								</option>
+							))}
+						</select>
+					</label>
+				</header>
 
-			<GuestFilters
-				searchInputRef={searchInputRef}
-				search={search}
-				status={status}
-				onSearchChange={setSearch}
-				onStatusChange={setStatus}
-				onRefreshClick={loadGuests}
-				onCreateClick={() => {
-					setModalMode('create');
-					setEditingGuest(null);
-					setModalOpen(true);
-				}}
-				onImportClick={() => setImportModalOpen(true)}
-			/>
+				<GuestFilters
+					searchInputRef={searchInputRef}
+					search={search}
+					status={status}
+					onSearchChange={setSearch}
+					onStatusChange={setStatus}
+					onRefreshClick={loadGuests}
+					onCreateClick={() => {
+						setModalMode('create');
+						setEditingGuest(null);
+						setModalOpen(true);
+					}}
+					onImportClick={() => setImportModalOpen(true)}
+				/>
 
-			<GuestStatsCards totals={totals} />
+				<GuestStatsCards totals={totals} />
 
-			{loading && <p className="dashboard-guests__status">Cargando...</p>}
-			{updatedAt && (
+				{loading && <p className="dashboard-guests__status">Cargando...</p>}
+				{updatedAt && (
+					<p className="dashboard-guests__status">
+						Ultima actualizacion: {new Date(updatedAt).toLocaleString('es-MX')}
+					</p>
+				)}
 				<p className="dashboard-guests__status">
-					Ultima actualizacion: {new Date(updatedAt).toLocaleString('es-MX')}
+					Estado realtime:{' '}
+					{realtimeState === 'connected'
+						? 'Conectado'
+						: realtimeState === 'reconnecting'
+							? 'Reconectando'
+							: 'Fallback activo'}
 				</p>
-			)}
-			<p className="dashboard-guests__status">
-				Estado realtime:{' '}
-				{realtimeState === 'connected'
-					? 'Conectado'
-					: realtimeState === 'reconnecting'
-						? 'Reconectando'
-						: 'Fallback activo'}
-			</p>
-			{error && <p className="dashboard-guests__error">{error}</p>}
+				{error && <p className="dashboard-guests__error">{error}</p>}
 
-			<GuestTable
-				items={items}
-				inviteBaseUrl={inviteBaseUrl}
-				onEdit={(item) => {
-					setModalMode('edit');
-					setEditingGuest(item);
-					setModalOpen(true);
-				}}
-				onDelete={async (item) => {
-					const confirmed = window.confirm(`Eliminar a ${item.fullName}?`);
-					if (!confirmed) return;
-					await apiJson<{ message: string }>(
-						`/api/dashboard/guests/${encodeURIComponent(item.guestId)}`,
-						{
-							method: 'DELETE',
-						},
-					);
-					await loadGuests();
-				}}
-				onMarkShared={async (item) => {
-					await apiJson<{ item: DashboardGuestItem }>(
-						`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
-						{
-							method: 'POST',
-						},
-					);
-					await loadGuests();
-				}}
-			/>
-
-			<GuestFormModal
-				open={modalOpen}
-				mode={modalMode}
-				initialGuest={editingGuest}
-				onClose={() => setModalOpen(false)}
-				onSubmit={async (payload) => {
-					if (modalMode === 'create') {
-						await apiJson<{ item: DashboardGuestItem }>('/api/dashboard/guests', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								eventId,
-								fullName: payload.fullName,
-								phoneE164: payload.phoneE164,
-								maxAllowedAttendees: payload.maxAllowedAttendees,
-							}),
-						});
-					} else if (editingGuest) {
-						await apiJson<{ item: DashboardGuestItem }>(
-							`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
+				<GuestTable
+					items={items}
+					inviteBaseUrl={inviteBaseUrl}
+					onEdit={(item) => {
+						setModalMode('edit');
+						setEditingGuest(item);
+						setModalOpen(true);
+					}}
+					onDelete={async (item) => {
+						const confirmed = window.confirm(`Eliminar a ${item.fullName}?`);
+						if (!confirmed) return;
+						await apiJson<{ message: string }>(
+							`/api/dashboard/guests/${encodeURIComponent(item.guestId)}`,
 							{
-								method: 'PATCH',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify(payload),
+								method: 'DELETE',
 							},
 						);
-					}
-					await loadGuests();
-				}}
-			/>
-
-			{modalOpen && <p className="dashboard-guests__status">{modalTitle}</p>}
-
-			{notification && (
-				<Toast
-					message={notification.message}
-					type={notification.type}
-					onClose={() => setNotification(null)}
-					action={{
-						label: 'Actualizar',
-						onClick: () => {
-							void loadGuests();
-							setNotification(null);
-						},
+						await loadGuests();
 					}}
-				/>
-			)}
-
-			{importModalOpen && (
-				<ImportMagic
-					onClose={() => setImportModalOpen(false)}
-					onImport={async (guests) => {
-						await apiJson('/api/dashboard/guests/bulk', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								eventId,
-								guests: guests.map((g) => ({
-									full_name: g.fullName,
-									phone_e164: g.phoneE164,
-									email: g.email,
-									tags: g.tags,
-								})),
-							}),
-						});
+					onMarkShared={async (item) => {
+						await apiJson<{ item: DashboardGuestItem }>(
+							`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
+							{
+								method: 'POST',
+							},
+						);
 						await loadGuests();
 					}}
 				/>
-			)}
-		</section>
+
+				<GuestFormModal
+					open={modalOpen}
+					mode={modalMode}
+					initialGuest={editingGuest}
+					onClose={() => setModalOpen(false)}
+					onSubmit={async (payload) => {
+						if (modalMode === 'create') {
+							await apiJson<{ item: DashboardGuestItem }>('/api/dashboard/guests', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({
+									eventId,
+									fullName: payload.fullName,
+									phoneE164: payload.phoneE164,
+									maxAllowedAttendees: payload.maxAllowedAttendees,
+								}),
+							});
+						} else if (editingGuest) {
+							await apiJson<{ item: DashboardGuestItem }>(
+								`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
+								{
+									method: 'PATCH',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify(payload),
+								},
+							);
+						}
+						await loadGuests();
+					}}
+				/>
+
+				{modalOpen && <p className="dashboard-guests__status">{modalTitle}</p>}
+
+				{notification && (
+					<Toast
+						message={notification.message}
+						type={notification.type}
+						onClose={() => setNotification(null)}
+						action={{
+							label: 'Actualizar',
+							onClick: () => {
+								void loadGuests();
+								setNotification(null);
+							},
+						}}
+					/>
+				)}
+
+				{importModalOpen && (
+					<ImportMagic
+						onClose={() => setImportModalOpen(false)}
+						onImport={async (guests) => {
+							await apiJson('/api/dashboard/guests/bulk', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({
+									eventId,
+									guests: guests.map((g) => ({
+										full_name: g.fullName,
+										phone_e164: g.phoneE164,
+										email: g.email,
+										tags: g.tags,
+									})),
+								}),
+							});
+							await loadGuests();
+						}}
+					/>
+				)}
+			</section>
+		</ErrorBoundary>
 	);
 };
 

@@ -26,7 +26,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onDelete,
 	onMarkShared,
 }) => {
-	if (items.length === 0) {
+	if (!items || items.length === 0) {
 		return <p className="dashboard-guests__empty">No hay invitados registrados.</p>;
 	}
 
@@ -56,12 +56,12 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								</td>
 								<td>
 									<div className="dashboard-guests__tags">
-										{item.tags.map((tag) => (
+										{(item.tags || []).map((tag) => (
 											<span key={tag} className="tag">
 												{tag}
 											</span>
 										))}
-										{item.tags.length === 0 && (
+										{(!item.tags || item.tags.length === 0) && (
 											<span className="tag-empty">-</span>
 										)}
 									</div>
