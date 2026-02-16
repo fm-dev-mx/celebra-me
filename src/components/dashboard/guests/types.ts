@@ -5,7 +5,7 @@ export interface DashboardGuestItem {
 	guestId: string;
 	inviteId: string;
 	fullName: string;
-	phoneE164: string;
+	phone: string;
 	email: string | null;
 	tags: string[];
 	metadata: Record<string, unknown>;
