@@ -3,6 +3,9 @@ import GuestFilters from './GuestFilters';
 import GuestFormModal from './GuestFormModal';
 import GuestStatsCards from './GuestStatsCards';
 import GuestTable from './GuestTable';
+import ImportMagic from './ImportMagic';
+import Toast from './Toast';
+import { useShortcuts } from '@/hooks/useShortcuts';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
 import '@/styles/invitation/_dashboard-guests.scss';
 
@@ -38,13 +41,41 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [modalOpen, setModalOpen] = useState(false);
+	const [importModalOpen, setImportModalOpen] = useState(false);
 	const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 	const [editingGuest, setEditingGuest] = useState<DashboardGuestItem | null>(null);
 	const [realtimeState, setRealtimeState] = useState<RealtimeState>('fallback');
+	const [notification, setNotification] = useState<{
+		message: string;
+		type: 'info' | 'warning';
+	} | null>(null);
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
 	const reconnectTimerRef = useRef<number | null>(null);
 	const refreshDebounceRef = useRef<number | null>(null);
 	const reconnectAttemptRef = useRef(0);
+	const searchInputRef = useRef<HTMLInputElement>(null);
+
+	useShortcuts(
+		{
+			'/': () => searchInputRef.current?.focus(),
+			n: () => {
+				setModalMode('create');
+				setEditingGuest(null);
+				setModalOpen(true);
+			},
+			e: () => {
+				if (items.length > 0) {
+					setModalMode('edit');
+					setEditingGuest(items[0]); // Por ahora editamos el primero si no hay selección explícita
+					setModalOpen(true);
+				}
+			},
+			escape: () => {
+				setModalOpen(false);
+			},
+		},
+		!modalOpen,
+	);
 
 	const apiJson = useCallback(
 		async <T,>(input: RequestInfo | URL, init?: RequestInit): Promise<T> => {
@@ -130,6 +161,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		};
 
 		source.addEventListener('guest_updated', () => {
+			setNotification({ message: 'Cambios detectados en los invitados.', type: 'info' });
 			scheduleRefresh();
 		});
 
@@ -196,6 +228,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			</header>
 
 			<GuestFilters
+				searchInputRef={searchInputRef}
 				search={search}
 				status={status}
 				onSearchChange={setSearch}
@@ -206,6 +239,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					setEditingGuest(null);
 					setModalOpen(true);
 				}}
+				onImportClick={() => setImportModalOpen(true)}
 			/>
 
 			<GuestStatsCards totals={totals} />
@@ -288,6 +322,43 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			/>
 
 			{modalOpen && <p className="dashboard-guests__status">{modalTitle}</p>}
+
+			{notification && (
+				<Toast
+					message={notification.message}
+					type={notification.type}
+					onClose={() => setNotification(null)}
+					action={{
+						label: 'Actualizar',
+						onClick: () => {
+							void loadGuests();
+							setNotification(null);
+						},
+					}}
+				/>
+			)}
+
+			{importModalOpen && (
+				<ImportMagic
+					onClose={() => setImportModalOpen(false)}
+					onImport={async (guests) => {
+						await apiJson('/api/dashboard/guests/bulk', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								eventId,
+								guests: guests.map((g) => ({
+									full_name: g.fullName,
+									phone_e164: g.phoneE164,
+									email: g.email,
+									tags: g.tags,
+								})),
+							}),
+						});
+						await loadGuests();
+					}}
+				/>
+			)}
 		</section>
 	);
 };

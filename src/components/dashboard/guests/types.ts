@@ -6,6 +6,9 @@ export interface DashboardGuestItem {
 	inviteId: string;
 	fullName: string;
 	phoneE164: string;
+	email: string | null;
+	tags: string[];
+	metadata: Record<string, unknown>;
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;

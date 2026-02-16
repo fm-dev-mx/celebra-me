@@ -6,7 +6,9 @@ interface GuestFiltersProps {
 	onSearchChange: (value: string) => void;
 	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined') => void;
 	onCreateClick: () => void;
+	onImportClick: () => void;
 	onRefreshClick: () => void;
+	searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 const GuestFilters: React.FC<GuestFiltersProps> = ({
@@ -15,11 +17,14 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	onSearchChange,
 	onStatusChange,
 	onCreateClick,
+	onImportClick,
 	onRefreshClick,
+	searchInputRef,
 }) => {
 	return (
 		<div className="dashboard-guests__filters">
 			<input
+				ref={searchInputRef}
 				type="search"
 				value={search}
 				onChange={(event) => onSearchChange(event.target.value)}
@@ -36,6 +41,9 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 			</select>
 			<button type="button" onClick={onRefreshClick}>
 				Actualizar
+			</button>
+			<button type="button" onClick={onImportClick}>
+				Importar
 			</button>
 			<button type="button" onClick={onCreateClick}>
 				Agregar invitado

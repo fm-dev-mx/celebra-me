@@ -35,12 +35,12 @@ const GuestTable: React.FC<GuestTableProps> = ({
 			<table className="dashboard-guests__table">
 				<thead>
 					<tr>
-						<th>Nombre</th>
+						<th>Nombre / Contacto</th>
+						<th>Categorias</th>
 						<th>Estado</th>
 						<th>Asistentes</th>
 						<th>Envio</th>
 						<th>Visto</th>
-						<th>Mensaje</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
@@ -52,14 +52,32 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								<td>
 									<strong>{item.fullName}</strong>
 									<div>{item.phoneE164}</div>
+									{item.email && <div className="text-small">{item.email}</div>}
 								</td>
-								<td>{item.attendanceStatus}</td>
+								<td>
+									<div className="dashboard-guests__tags">
+										{item.tags.map((tag) => (
+											<span key={tag} className="tag">
+												{tag}
+											</span>
+										))}
+										{item.tags.length === 0 && (
+											<span className="tag-empty">-</span>
+										)}
+									</div>
+								</td>
+								<td>
+									<span
+										className={`status-badge status-${item.attendanceStatus}`}
+									>
+										{item.attendanceStatus}
+									</span>
+								</td>
 								<td>
 									{item.attendeeCount} / {item.maxAllowedAttendees}
 								</td>
 								<td>{item.deliveryStatus}</td>
 								<td>{formatDate(item.firstViewedAt)}</td>
-								<td>{item.guestMessage || '-'}</td>
 								<td>
 									<div className="dashboard-guests__actions">
 										<button type="button" onClick={() => onEdit(item)}>

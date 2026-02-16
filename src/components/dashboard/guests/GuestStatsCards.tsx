@@ -8,26 +8,26 @@ interface GuestStatsCardsProps {
 const GuestStatsCards: React.FC<GuestStatsCardsProps> = ({ totals }) => {
 	return (
 		<div className="dashboard-guests__stats">
-			<div className="dashboard-guests__stat">
-				<strong>{totals.total}</strong>
+			<article className="dashboard-guests__stat">
 				<span>Total</span>
-			</div>
-			<div className="dashboard-guests__stat">
-				<strong>{totals.pending}</strong>
+				<strong>{totals.total}</strong>
+			</article>
+			<article className="dashboard-guests__stat">
 				<span>Pendientes</span>
-			</div>
-			<div className="dashboard-guests__stat">
-				<strong>{totals.confirmed}</strong>
+				<strong>{totals.pending}</strong>
+			</article>
+			<article className="dashboard-guests__stat">
 				<span>Confirmados</span>
-			</div>
-			<div className="dashboard-guests__stat">
-				<strong>{totals.declined}</strong>
+				<strong>{totals.confirmed}</strong>
+			</article>
+			<article className="dashboard-guests__stat">
 				<span>Declinados</span>
-			</div>
-			<div className="dashboard-guests__stat">
-				<strong>{totals.viewed}</strong>
+				<strong>{totals.declined}</strong>
+			</article>
+			<article className="dashboard-guests__stat">
 				<span>Vistos</span>
-			</div>
+				<strong>{totals.viewed}</strong>
+			</article>
 		</div>
 	);
 };
