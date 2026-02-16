@@ -40,18 +40,27 @@ function validateCommit(commitHash) {
 
 	console.log(`   Asunto: ${commitSubject}`);
 
-	// 1. Validar con commitlint
+	// 1. Validar con commitlint (solo el título/subject)
 	try {
-		// Limpiar el mensaje del commit (remover espacios al final y newlines)
-		const cleanCommitMessage = commitMessage.trim().replace(/\r?\n/g, ' ');
-		// Ejecutar commitlint de forma programática
-		const result = execSync(
-			`echo "${cleanCommitMessage.replace(/"/g, '\\"')}" | npx commitlint`,
-			{
-				encoding: 'utf8',
-				stdio: 'pipe',
-			},
-		);
+		// Tomar solo la primera línea (el título/subject) y limpiar espacios y newlines
+		const commitSubject = commitMessage
+			.split('\n')[0]
+			.replace(/\r?\n$/, '')
+			.trim();
+		// Crear un archivo temporal para pasar el subject a commitlint
+		const fs = require('fs');
+		const tmpFile = `/tmp/commit-${commitHash}.txt`;
+		fs.writeFileSync(tmpFile, commitSubject);
+
+		// Ejecutar commitlint de forma programática solo con el subject
+		const result = execSync(`npx commitlint --edit "${tmpFile}"`, {
+			encoding: 'utf8',
+			stdio: 'pipe',
+		});
+
+		// Limpiar archivo temporal
+		fs.unlinkSync(tmpFile);
+
 		console.log('   ✅ Formato Conventional Commits válido');
 	} catch (error) {
 		console.error('   ❌ Error en formato Conventional Commits:');
