@@ -407,7 +407,10 @@ class Snapshot {
 		if (!files.length) {
 			try {
 				files = uniq(
-					parseList(run('git', ['diff', '--cached', '--name-only', '-z']).stdout),
+					parseList(
+						run('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=d'])
+							.stdout,
+					),
 				);
 			} catch (e) {
 				const env = process.env.GATEKEEPER_STAGED_FILES;
