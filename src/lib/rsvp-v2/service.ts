@@ -48,6 +48,7 @@ import type {
 import { getRsvpContext } from '@/lib/rsvp/service';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
+import { mapSupabaseErrorToApiError } from './supabase-errors';
 import { createHash, randomBytes } from 'node:crypto';
 import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './authApi';
@@ -280,17 +281,22 @@ export async function createDashboardGuest(input: {
 		Math.min(20, Math.trunc(input.maxAllowedAttendees || 1)),
 	);
 
-	const created = await createGuestInvitation(
-		{
-			eventId: event.id,
-			fullName,
-			phone,
-			maxAllowedAttendees,
-			tags: input.tags,
-			short_id: generateShortId(8),
-		},
-		input.hostAccessToken,
-	);
+	let created;
+	try {
+		created = await createGuestInvitation(
+			{
+				eventId: event.id,
+				fullName,
+				phone,
+				maxAllowedAttendees,
+				tags: input.tags,
+				short_id: generateShortId(8),
+			},
+			input.hostAccessToken,
+		);
+	} catch (error) {
+		throw mapSupabaseErrorToApiError(error);
+	}
 
 	const item = toGuestDto(created, input.origin, event.title, event.eventType, event.slug);
 
@@ -359,22 +365,29 @@ export async function updateDashboardGuest(input: {
 		throw new ApiError(400, 'bad_request', `El maximo permitido es ${nextCap}.`);
 	}
 
-	const updated = await updateGuestById(
-		{
-			guestId: input.guestId,
-			fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
-			phone: input.phone !== undefined ? normalizePhone(input.phone) : undefined,
-			maxAllowedAttendees: nextCap,
-			attendanceStatus: nextStatus,
-			attendeeCount: nextAttendeeCount,
-			guestMessage:
-				input.guestMessage !== undefined ? sanitize(input.guestMessage, 500) : undefined,
-			lastResponseSource: 'admin',
-			respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
-			tags: input.tags,
-		},
-		input.hostAccessToken,
-	);
+	let updated;
+	try {
+		updated = await updateGuestById(
+			{
+				guestId: input.guestId,
+				fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
+				phone: input.phone !== undefined ? normalizePhone(input.phone) : undefined,
+				maxAllowedAttendees: nextCap,
+				attendanceStatus: nextStatus,
+				attendeeCount: nextAttendeeCount,
+				guestMessage:
+					input.guestMessage !== undefined
+						? sanitize(input.guestMessage, 500)
+						: undefined,
+				lastResponseSource: 'admin',
+				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
+				tags: input.tags,
+			},
+			input.hostAccessToken,
+		);
+	} catch (error) {
+		throw mapSupabaseErrorToApiError(error);
+	}
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -613,6 +626,9 @@ export async function submitGuestRsvpByInviteId(
 		responded_at: respondedAt,
 		last_response_source: 'link',
 	});
+
+	console.log(`[RSVP-V2] Success: RSVP submitted for invite ${inviteId}`);
+
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: invitation.eventId,

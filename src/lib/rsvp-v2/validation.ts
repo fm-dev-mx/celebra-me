@@ -38,15 +38,35 @@ function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
  * Valida el body de una request contra un schema de Zod
  * @returns Data validada o error de validación
  */
-export function validateBody<T>(request: Request, schema: z.ZodSchema<T>): ValidationOutcome<T> {
+export async function validateBody<T>(
+	request: Request,
+	schema: z.ZodSchema<T>,
+): Promise<ValidationOutcome<T>> {
 	let body: unknown;
 
 	try {
-		body = request.json();
-	} catch {
+		const contentType = request.headers.get('content-type');
+		if (!contentType?.includes('application/json')) {
+			return {
+				success: false,
+				errors: [{ path: 'body', message: 'Content-Type must be application/json' }],
+			};
+		}
+
+		const rawText = await request.text();
+		if (!rawText.trim()) {
+			return {
+				success: false,
+				errors: [{ path: 'body', message: 'Request body is empty' }],
+			};
+		}
+
+		body = JSON.parse(rawText);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Invalid JSON';
 		return {
 			success: false,
-			errors: [{ path: 'body', message: 'Body JSON inválido' }],
+			errors: [{ path: 'body', message: `Invalid JSON format: ${message}` }],
 		};
 	}
 
@@ -69,8 +89,11 @@ export function validateBody<T>(request: Request, schema: z.ZodSchema<T>): Valid
  * Valida el body de una request y retorna Response de error si falla
  * Útil para usar directamente en handlers de API
  */
-export function validateBodyOrRespond<T>(request: Request, schema: z.ZodSchema<T>): T | Response {
-	const result = validateBody(request, schema);
+export async function validateBodyOrRespond<T>(
+	request: Request,
+	schema: z.ZodSchema<T>,
+): Promise<T | Response> {
+	const result = await validateBody(request, schema);
 
 	if (!result.success) {
 		const message = result.errors.map((e) => `${e.path}: ${e.message}`).join(', ');

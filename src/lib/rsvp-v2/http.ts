@@ -62,6 +62,9 @@ export function internalError(error: unknown): Response {
 }
 
 export function errorResponse(error: unknown): Response {
+	// Log the error for backend visibility
+	console.error('[RSVP-V2] Error:', error);
+
 	if (isApiError(error)) {
 		return jsonResponse(
 			{
@@ -76,7 +79,8 @@ export function errorResponse(error: unknown): Response {
 		);
 	}
 
-	const fallbackMessage = error instanceof Error ? error.message : 'Error interno del servidor.';
+	const fallbackMessage =
+		error instanceof Error ? error.message : String(error || 'Error interno del servidor.');
 	return jsonResponse(
 		{
 			success: false,
@@ -87,4 +91,30 @@ export function errorResponse(error: unknown): Response {
 		},
 		500,
 	);
+}
+
+export async function parseJsonBody(request: Request): Promise<Record<string, unknown> | Response> {
+	const contentType = request.headers.get('content-type');
+	if (!contentType?.includes('application/json')) {
+		return badRequest('Content-Type must be application/json');
+	}
+
+	let rawText: string;
+	try {
+		rawText = await request.text();
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Failed to read request body';
+		return badRequest(`Failed to read request body: ${message}`);
+	}
+
+	if (!rawText.trim()) {
+		return badRequest('Request body is empty');
+	}
+
+	try {
+		return JSON.parse(rawText) as Record<string, unknown>;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Invalid JSON';
+		return badRequest(`Invalid JSON format: ${message}`);
+	}
 }

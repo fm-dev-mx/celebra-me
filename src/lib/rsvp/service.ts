@@ -372,6 +372,24 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 			resolvedName = context.guest.displayName;
 			maxAllowedAttendees = Math.min(context.guest.maxAllowedAttendees, guestCap);
 			contextMode = 'personalized';
+		} else {
+			// Token validation failed, but we might have a guest name that matches a configured guest
+			// Try to find a guest by name match as fallback
+			const { guests } = getEventRsvpConfig(event);
+			const normalizedInputName = normalizeName(sanitizeString(input.guestName));
+
+			for (const guest of guests) {
+				const normalizedGuestName = normalizeName(guest.displayName);
+				if (normalizedGuestName === normalizedInputName) {
+					// Found a matching guest by name
+					source = 'personalized_link';
+					guestId = guest.guestId;
+					resolvedName = guest.displayName;
+					maxAllowedAttendees = Math.min(guest.maxAllowedAttendees, guestCap);
+					contextMode = 'personalized';
+					break;
+				}
+			}
 		}
 	}
 
