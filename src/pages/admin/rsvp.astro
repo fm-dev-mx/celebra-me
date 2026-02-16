@@ -263,18 +263,13 @@ if (!rsvpAuth.isAuthorizedBasicAuth(authHeader)) {
 
 			const copyText = async (text) => {
 				if (!text) return false;
-				if (navigator.clipboard && navigator.clipboard.writeText) {
+				try {
 					await navigator.clipboard.writeText(text);
 					return true;
+				} catch (err) {
+					console.warn('Clipboard API not available:', err);
+					return false;
 				}
-
-				const helper = document.createElement('textarea');
-				helper.value = text;
-				document.body.appendChild(helper);
-				helper.select();
-				const ok = document.execCommand('copy');
-				document.body.removeChild(helper);
-				return ok;
 			};
 
 			const renderStats = (totals) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import type { AdminEventListItemDTO } from '@/lib/rsvp-v2/types';
 import { adminApi } from '@/lib/dashboard/adminApi';
 import type { CreateEventDTO, UpdateEventDTO } from '@/lib/dashboard/dto/events';
@@ -206,7 +206,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: SyntheticEvent) => {
 		e.preventDefault();
 		if (busy) return;
 		setBusy(true);

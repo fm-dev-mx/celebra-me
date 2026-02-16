@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import '@/styles/invitation/_rsvp.scss';
 
@@ -287,7 +287,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		validate();
 	};
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: SyntheticEvent) => {
 		e.preventDefault();
 		setSubmitStatus('loading');
 

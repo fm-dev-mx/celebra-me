@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import { adminApi } from '@/lib/dashboard/adminApi';
 import type { EventListItemDTO } from '@/lib/dashboard/dto/events';
 
@@ -39,7 +39,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 		void loadEvents();
 	}, [eventId]);
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (event: SyntheticEvent) => {
 		event.preventDefault();
 		if (busy || !eventId) return;
 		setBusy(true);
