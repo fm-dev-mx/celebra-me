@@ -26,6 +26,7 @@ describe('GET /api/invitacion/[inviteId]/context happy', () => {
 		getInvitationContextByInviteIdMock.mockResolvedValue({
 			inviteId: 'invite-1',
 			eventSlug: 'demo',
+			eventType: 'xv',
 			eventTitle: 'Evento Demo',
 			guest: {
 				fullName: 'Invitado Demo',
