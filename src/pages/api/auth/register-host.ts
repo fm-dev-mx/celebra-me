@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { errorResponse } from '@/lib/rsvp-v2/http';
+import { errorResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp-v2/authApi';
 import {
 	buildIdleActivityCookie,
@@ -33,17 +33,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		assertSameOrigin(request, url.origin);
 
-		const body = (await request.json()) as {
-			email?: string;
-			password?: string;
-			eventSlug?: string;
-			claimCode?: string;
-			method?: 'password' | 'magic_link';
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 
-		const email = normalizeEmail(body.email);
-		void sanitize(body.eventSlug, 120);
-		const claimCode = sanitizeClaimCode(body.claimCode);
+		const email = normalizeEmail(body.email as string);
+		void sanitize(body.eventSlug as string, 120);
+		const claimCode = sanitizeClaimCode(body.claimCode as string);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
 		assertValidEmail(email);
 		await enforceAuthRateLimit({
@@ -65,7 +61,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 		if (claimCode) assertValidClaimCode(claimCode);
 
 		const chosenPassword =
-			method === 'password' ? sanitizePassword(body.password) : generateTemporaryPassword();
+			method === 'password'
+				? sanitizePassword(body.password as string)
+				: generateTemporaryPassword();
 		if (method === 'password') {
 			assertValidPassword(chosenPassword);
 		}

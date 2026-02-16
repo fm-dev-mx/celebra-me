@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { sendMagicLink, signInWithPassword } from '@/lib/rsvp-v2/authApi';
 import {
 	buildIdleActivityCookie,
@@ -20,13 +20,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		assertSameOrigin(request, url.origin);
 
-		const body = (await request.json()) as {
-			email?: string;
-			password?: string;
-			method?: 'password' | 'magic_link';
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 
-		const email = normalizeEmail(body.email);
+		const email = normalizeEmail(body.email as string);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
 		assertValidEmail(email);
 		await enforceAuthRateLimit({
@@ -47,7 +45,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 		}
 
-		const password = sanitizePassword(body.password);
+		const password = sanitizePassword(body.password as string);
 		assertValidPassword(password);
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
 		try {

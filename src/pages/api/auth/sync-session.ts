@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { errorResponse } from '@/lib/rsvp-v2/http';
+import { errorResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import {
 	buildIdleActivityCookie,
@@ -30,13 +30,12 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(401, 'unauthorized', 'No autorizado.');
 		}
 
-		const { accessToken, refreshToken } = (await request.json()) as {
-			accessToken?: string;
-			refreshToken?: string;
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 
-		const elevatedAccessToken = sanitizeToken(accessToken);
-		const elevatedRefreshToken = sanitizeToken(refreshToken);
+		const elevatedAccessToken = sanitizeToken(body.accessToken as string);
+		const elevatedRefreshToken = sanitizeToken(body.refreshToken as string);
 
 		if (!elevatedAccessToken) {
 			throw new ApiError(400, 'bad_request', 'Access token is required');
