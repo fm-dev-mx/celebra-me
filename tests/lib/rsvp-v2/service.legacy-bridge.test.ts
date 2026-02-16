@@ -2,9 +2,7 @@ import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp-v2/service';
 import { findGuestByLegacyIdentityPublic } from '@/lib/rsvp-v2/repository';
 import { getRsvpContext } from '@/lib/rsvp/service';
 
-jest.mock('@/lib/rsvp-v2/repository', () => ({
-	findGuestByLegacyIdentityPublic: jest.fn(),
-}));
+jest.mock('@/lib/rsvp-v2/repository');
 
 jest.mock('@/lib/rsvp/service', () => ({
 	getRsvpContext: jest.fn(),

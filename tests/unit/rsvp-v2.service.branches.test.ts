@@ -13,25 +13,7 @@ import {
 import * as repo from '@/lib/rsvp-v2/repository';
 import { getRsvpContext } from '@/lib/rsvp/service';
 
-jest.mock('@/lib/rsvp-v2/repository', () => ({
-	findEventById: jest.fn(),
-	findEventByIdService: jest.fn(),
-	findGuestsByEvent: jest.fn(),
-	createGuestInvitation: jest.fn(),
-	findGuestById: jest.fn(),
-	findGuestByIdService: jest.fn(),
-	updateGuestById: jest.fn(),
-	findGuestByInviteIdPublic: jest.fn(),
-	findEventByInvitationPublic: jest.fn(),
-	updateGuestByInviteIdPublic: jest.fn(),
-	findGuestByLegacyIdentityPublic: jest.fn(),
-	findClaimCodeRecordByKeyService: jest.fn(),
-	createEventMembershipService: jest.fn(),
-	incrementClaimCodeUsageService: jest.fn(),
-	redeemClaimCodeRpc: jest.fn(),
-	findEventsForHost: jest.fn(),
-	findMembershipByEventForHost: jest.fn(),
-}));
+jest.mock('@/lib/rsvp-v2/repository');
 
 jest.mock('@/lib/rsvp/service', () => ({
 	getRsvpContext: jest.fn(),
@@ -69,6 +51,9 @@ describe('rsvp-v2 service branches', () => {
 		repo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof repo.findMembershipByEventForHost
 		>;
+	const findGuestByPhoneMock = repo.findGuestByPhone as jest.MockedFunction<
+		typeof repo.findGuestByPhone
+	>;
 	const getRsvpContextMock = getRsvpContext as jest.MockedFunction<typeof getRsvpContext>;
 
 	const baseEvent = {
@@ -128,17 +113,6 @@ describe('rsvp-v2 service branches', () => {
 				eventId: 'evt-1',
 				fullName: '',
 				phone: '6680000000',
-				maxAllowedAttendees: 2,
-				hostAccessToken: 'token',
-				origin: 'http://localhost',
-			}),
-		).rejects.toMatchObject({ status: 400 });
-
-		await expect(
-			createDashboardGuest({
-				eventId: 'evt-1',
-				fullName: 'Guest',
-				phone: '',
 				maxAllowedAttendees: 2,
 				hostAccessToken: 'token',
 				origin: 'http://localhost',

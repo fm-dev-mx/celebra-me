@@ -1,10 +1,7 @@
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp-v2/service';
 import { findGuestByInviteIdPublic, updateGuestByInviteIdPublic } from '@/lib/rsvp-v2/repository';
 
-jest.mock('@/lib/rsvp-v2/repository', () => ({
-	findGuestByInviteIdPublic: jest.fn(),
-	updateGuestByInviteIdPublic: jest.fn(),
-}));
+jest.mock('@/lib/rsvp-v2/repository');
 
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
 	typeof findGuestByInviteIdPublic
