@@ -1,30 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp-v2/types';
+import { adminApi } from '@/lib/dashboard/adminApi';
+import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 
 const UsersAdminTable: React.FC = () => {
 	const [items, setItems] = useState<AdminUserListItemDTO[]>([]);
 	const [error, setError] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	const load = async () => {
-		const response = await fetch('/api/dashboard/admin/users');
-		const data = (await response.json()) as {
-			items?: AdminUserListItemDTO[];
-			message?: string;
-		};
-		if (!response.ok) throw new Error(data.message || 'No se pudieron cargar usuarios.');
-		setItems(data.items || []);
+		setLoading(true);
+		setError('');
+		try {
+			const result = await adminApi.listUsers();
+			setItems(result.items);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Error inesperado.');
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	useEffect(() => {
-		load().catch((err) => {
-			setError(err instanceof Error ? err.message : 'Error inesperado.');
-		});
+		void load();
 	}, []);
+
+	const handleRoleChange = async (userId: string, newRole: AppUserRole) => {
+		try {
+			// Check if this is the last super_admin
+			const superAdminCount = items.filter((item) => item.role === 'super_admin').length;
+			const currentUser = items.find((item) => item.id === userId);
+
+			if (
+				currentUser?.role === 'super_admin' &&
+				newRole === 'host_client' &&
+				superAdminCount <= 1
+			) {
+				alert('No se puede eliminar el último super_admin del sistema.');
+				return;
+			}
+
+			await adminApi.updateUserRole(userId, { role: newRole });
+			await load();
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'No se pudo actualizar rol.');
+		}
+	};
 
 	return (
 		<div className="dashboard-card">
 			<h2>Usuarios del Sistema</h2>
 			{error && <p className="dashboard-guests__error">{error}</p>}
+			{loading && <p className="dashboard-guests__status">Cargando...</p>}
 			<table className="dashboard-table">
 				<thead>
 					<tr>
@@ -40,25 +67,11 @@ const UsersAdminTable: React.FC = () => {
 							<td>
 								<select
 									value={item.role}
-									onChange={async (event) => {
+									onChange={(event) => {
 										const role = event.target.value as AppUserRole;
-										const response = await fetch(
-											`/api/dashboard/admin/users/${encodeURIComponent(item.id)}/role`,
-											{
-												method: 'PATCH',
-												headers: { 'Content-Type': 'application/json' },
-												body: JSON.stringify({ role }),
-											},
-										);
-										const data = (await response.json()) as {
-											message?: string;
-										};
-										if (!response.ok)
-											throw new Error(
-												data.message || 'No se pudo actualizar rol.',
-											);
-										await load();
+										void handleRoleChange(item.id, role);
 									}}
+									disabled={loading}
 								>
 									<option value="host_client">HOST</option>
 									<option value="super_admin">ADMIN</option>
@@ -67,10 +80,21 @@ const UsersAdminTable: React.FC = () => {
 							<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>
 						</tr>
 					))}
+					{items.length === 0 && !loading && (
+						<tr>
+							<td colSpan={3}>No hay usuarios registrados.</td>
+						</tr>
+					)}
 				</tbody>
 			</table>
 		</div>
 	);
 };
 
-export default UsersAdminTable;
+const UsersAdminTableWithErrorBoundary: React.FC = () => (
+	<ErrorBoundary>
+		<UsersAdminTable />
+	</ErrorBoundary>
+);
+
+export default UsersAdminTableWithErrorBoundary;

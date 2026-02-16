@@ -1,33 +1,58 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ClaimCodeDTO } from '@/lib/rsvp-v2/types';
+import { adminApi } from '@/lib/dashboard/adminApi';
+import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import ClaimCodesTable from './ClaimCodesTable';
 import ClaimCodeFormModal from './ClaimCodeFormModal';
-
-interface ClaimCodeCreateResponse {
-	plainCode: string;
-	item: ClaimCodeDTO;
-}
 
 const ClaimCodesApp: React.FC = () => {
 	const [items, setItems] = useState<ClaimCodeDTO[]>([]);
 	const [error, setError] = useState('');
 	const [lastPlainCode, setLastPlainCode] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	const load = useCallback(async () => {
 		setError('');
+		setLoading(true);
 		try {
-			const response = await fetch('/api/dashboard/claimcodes');
-			const data = (await response.json()) as { items: ClaimCodeDTO[]; message?: string };
-			if (!response.ok) throw new Error(data.message || 'No se pudo cargar claim codes.');
-			setItems(data.items || []);
+			const result = await adminApi.listClaimCodes();
+			setItems(result.items);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error inesperado.');
+		} finally {
+			setLoading(false);
 		}
 	}, []);
 
 	useEffect(() => {
 		void load();
 	}, [load]);
+
+	const handleCreate = async (payload: {
+		eventId: string;
+		maxUses: number;
+		expiresAt: string | null;
+	}) => {
+		setError('');
+		try {
+			const result = await adminApi.createClaimCode(payload);
+			setLastPlainCode(result.plainCode);
+			await load();
+		} catch (err) {
+			throw new Error(err instanceof Error ? err.message : 'No se pudo crear claim code.');
+		}
+	};
+
+	const handleDisable = async (claimCodeId: string) => {
+		try {
+			await adminApi.disableClaimCode(claimCodeId);
+			await load();
+		} catch (err) {
+			throw new Error(
+				err instanceof Error ? err.message : 'No se pudo desactivar claim code.',
+			);
+		}
+	};
 
 	return (
 		<section className="dashboard-main">
@@ -36,24 +61,7 @@ const ClaimCodesApp: React.FC = () => {
 				<p>
 					El código plano se muestra una sola vez. Guarda el valor al momento de creación.
 				</p>
-				<ClaimCodeFormModal
-					onCreate={async (payload) => {
-						setError('');
-						const response = await fetch('/api/dashboard/claimcodes', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify(payload),
-						});
-						const data = (await response.json()) as ClaimCodeCreateResponse & {
-							message?: string;
-						};
-						if (!response.ok) {
-							throw new Error(data.message || 'No se pudo crear claim code.');
-						}
-						setLastPlainCode(data.plainCode);
-						await load();
-					}}
-				/>
+				<ClaimCodeFormModal onCreate={handleCreate} />
 				{lastPlainCode && (
 					<p>
 						Código generado (copia ahora): <strong>{lastPlainCode}</strong>
@@ -62,24 +70,16 @@ const ClaimCodesApp: React.FC = () => {
 				{error && <p className="dashboard-guests__error">{error}</p>}
 			</div>
 
-			<ClaimCodesTable
-				items={items}
-				onDisable={async (claimCodeId) => {
-					const response = await fetch(
-						`/api/dashboard/claimcodes/${encodeURIComponent(claimCodeId)}`,
-						{
-							method: 'DELETE',
-						},
-					);
-					const data = (await response.json()) as { message?: string };
-					if (!response.ok) {
-						throw new Error(data.message || 'No se pudo desactivar claim code.');
-					}
-					await load();
-				}}
-			/>
+			{loading && <p className="dashboard-guests__status">Cargando...</p>}
+			<ClaimCodesTable items={items} onDisable={handleDisable} onRefresh={load} />
 		</section>
 	);
 };
 
-export default ClaimCodesApp;
+const ClaimCodesAppWithErrorBoundary: React.FC = () => (
+	<ErrorBoundary>
+		<ClaimCodesApp />
+	</ErrorBoundary>
+);
+
+export default ClaimCodesAppWithErrorBoundary;
