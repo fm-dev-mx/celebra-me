@@ -35,7 +35,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [eventId, setEventId] = useState(initialEventId);
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [search, setSearch] = useState('');
-	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined'>('all');
+	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
+		'all',
+	);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
 	const [updatedAt, setUpdatedAt] = useState('');
@@ -275,6 +277,29 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						setEditingGuest(null);
 						setModalOpen(true);
 					}}
+					onExportClick={async () => {
+						try {
+							const response = await fetch(
+								`/api/dashboard/guests/export.csv?eventId=${encodeURIComponent(eventId)}`,
+							);
+							if (!response.ok) throw new Error('Error al exportar CSV');
+							const blob = await response.blob();
+							const url = window.URL.createObjectURL(blob);
+							const a = document.createElement('a');
+							a.href = url;
+							a.download = `invitados-${eventId}.csv`;
+							document.body.appendChild(a);
+							a.click();
+							window.URL.revokeObjectURL(url);
+							document.body.removeChild(a);
+						} catch (err) {
+							console.error('[GuestDashboard] Export error:', err);
+							setNotification({
+								message: 'Error al exportar invitados.',
+								type: 'warning',
+							});
+						}
+					}}
 					onImportClick={() => setImportModalOpen(true)}
 				/>
 
@@ -341,6 +366,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									fullName: payload.fullName,
 									phoneE164: payload.phoneE164,
 									maxAllowedAttendees: payload.maxAllowedAttendees,
+									tags: payload.tags,
 								}),
 							});
 						} else if (editingGuest) {

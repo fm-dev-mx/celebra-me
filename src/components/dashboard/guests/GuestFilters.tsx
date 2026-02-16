@@ -2,12 +2,13 @@ import React from 'react';
 
 interface GuestFiltersProps {
 	search: string;
-	status: 'all' | 'pending' | 'confirmed' | 'declined';
+	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	onSearchChange: (value: string) => void;
-	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined') => void;
+	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
 	onCreateClick: () => void;
 	onImportClick: () => void;
 	onRefreshClick: () => void;
+	onExportClick: () => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -19,6 +20,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	onCreateClick,
 	onImportClick,
 	onRefreshClick,
+	onExportClick,
 	searchInputRef,
 }) => {
 	return (
@@ -38,14 +40,18 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				<option value="pending">Pendientes</option>
 				<option value="confirmed">Confirmados</option>
 				<option value="declined">Declinados</option>
+				<option value="viewed">Vistos</option>
 			</select>
-			<button type="button" onClick={onRefreshClick}>
+			<button type="button" onClick={onRefreshClick} title="Recargar lista">
 				Actualizar
 			</button>
-			<button type="button" onClick={onImportClick}>
+			<button type="button" onClick={onExportClick} className="btn-secondary">
+				Exportar CSV
+			</button>
+			<button type="button" onClick={onImportClick} className="btn-secondary">
 				Importar
 			</button>
-			<button type="button" onClick={onCreateClick}>
+			<button type="button" onClick={onCreateClick} className="btn-primary">
 				Agregar invitado
 			</button>
 		</div>
