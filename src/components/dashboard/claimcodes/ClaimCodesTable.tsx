@@ -149,9 +149,10 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 								void handleEditSubmit();
 							}}
 						>
-							<label>
-								Activo
+							<div className="dashboard-form-field">
+								<label htmlFor="claim-edit-active">Activo</label>
 								<select
+									id="claim-edit-active"
 									value={editModal.active ? 'true' : 'false'}
 									onChange={(e) =>
 										setEditModal({
@@ -164,10 +165,11 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 									<option value="true">Activo</option>
 									<option value="false">Inactivo</option>
 								</select>
-							</label>
-							<label>
-								Usos máximos
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="claim-edit-max-uses">Usos máximos</label>
 								<input
+									id="claim-edit-max-uses"
 									type="number"
 									min={Math.max(1, editModal.item.usedCount)}
 									max={10000}
@@ -184,10 +186,11 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 								<p className="dashboard-form-help">
 									Mínimo {editModal.item.usedCount} (ya usados), máximo 10000
 								</p>
-							</label>
-							<label>
-								Expira en (opcional)
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="claim-edit-expires">Expira en (opcional)</label>
 								<input
+									id="claim-edit-expires"
 									type="datetime-local"
 									value={editModal.expiresAt}
 									onChange={(e) =>
@@ -197,19 +200,32 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 									disabled={editModal.busy}
 								/>
 								<p className="dashboard-form-help">Deja vacío para que no expire</p>
-							</label>
+							</div>
 							{editModal.error && (
-								<p className="dashboard-guests__error">{editModal.error}</p>
+								<p
+									className="dashboard-guests__error"
+									style={{ gridColumn: '1 / -1' }}
+								>
+									{editModal.error}
+								</p>
 							)}
-							<div className="dashboard-guests__modal-actions">
+							<div
+								className="dashboard-modal__actions"
+								style={{ gridColumn: '1 / -1' }}
+							>
 								<button
 									type="button"
+									className="btn-secondary"
 									onClick={closeEditModal}
 									disabled={editModal.busy}
 								>
 									Cancelar
 								</button>
-								<button type="submit" disabled={editModal.busy}>
+								<button
+									type="submit"
+									className="btn-primary"
+									disabled={editModal.busy}
+								>
 									{editModal.busy ? 'Guardando...' : 'Guardar'}
 								</button>
 							</div>

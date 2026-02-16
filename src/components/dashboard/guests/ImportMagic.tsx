@@ -68,10 +68,10 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 	};
 
 	return (
-		<div className="import-magic-modal">
-			<div className="import-magic-modal__content">
+		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
+			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 				<h3>Importador Mágico ✨</h3>
-				<p>
+				<p style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
 					Pega aquí tus invitados desde Excel o Google Sheets, o arrastra un archivo CSV.
 				</p>
 
@@ -84,25 +84,33 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 					}}
 					placeholder="Ejemplo: Juan Perez	+525512345678"
 					rows={8}
+					className="dashboard-form-field"
+					style={{ width: '100%', marginBottom: '1.5rem', minHeight: '150px' }}
 				/>
 
-				<div className="import-magic-modal__actions">
+				<div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
 					<input
 						type="file"
 						accept=".csv"
 						ref={fileInputRef}
-						className="import-magic-modal__file-input"
+						style={{ display: 'none' }}
 						onChange={handleFileChange}
 					/>
-					<button type="button" onClick={() => fileInputRef.current?.click()}>
+					<button
+						type="button"
+						className="btn-secondary"
+						onClick={() => fileInputRef.current?.click()}
+					>
 						Subir CSV
 					</button>
 				</div>
 
 				{preview.length > 0 && (
 					<div className="import-magic-modal__preview">
-						<h4>Vista previa ({preview.length} invitados)</h4>
-						<table>
+						<h4 style={{ marginBottom: '1rem' }}>
+							Vista previa ({preview.length} invitados)
+						</h4>
+						<table className="dashboard-table">
 							<thead>
 								<tr>
 									<th>Nombre</th>
@@ -124,16 +132,19 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 								))}
 							</tbody>
 						</table>
-						{preview.length > 10 && <p>...y {preview.length - 10} más</p>}
+						{preview.length > 10 && (
+							<p className="dashboard-form-help">...y {preview.length - 10} más</p>
+						)}
 					</div>
 				)}
 
-				<div className="import-magic-modal__footer">
-					<button type="button" onClick={onClose}>
+				<div className="dashboard-modal__actions">
+					<button type="button" className="btn-secondary" onClick={onClose}>
 						Cancelar
 					</button>
 					<button
 						type="button"
+						className="btn-primary"
 						disabled={preview.length === 0 || parsing}
 						onClick={async () => {
 							setParsing(true);

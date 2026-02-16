@@ -62,14 +62,15 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 
 	return (
 		<form className="dashboard-form-grid" onSubmit={handleSubmit}>
-			<label>
-				Evento
+			<div className="dashboard-form-field">
+				<label htmlFor="claim-event">Evento</label>
 				{loading ? (
-					<select disabled>
+					<select id="claim-event" disabled>
 						<option>Cargando eventos...</option>
 					</select>
 				) : (
 					<select
+						id="claim-event"
 						value={eventId}
 						onChange={(event) => setEventId(event.target.value)}
 						required
@@ -88,10 +89,11 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 						No hay eventos disponibles. Crea un evento primero.
 					</p>
 				)}
-			</label>
-			<label>
-				Usos máximos
+			</div>
+			<div className="dashboard-form-field">
+				<label htmlFor="claim-max-uses">Usos máximos</label>
 				<input
+					id="claim-max-uses"
 					type="number"
 					min={1}
 					max={10000}
@@ -100,20 +102,29 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 					required
 				/>
 				<p className="dashboard-form-help">Mínimo 1, máximo 10000</p>
-			</label>
-			<label>
-				Expira en (opcional)
+			</div>
+			<div className="dashboard-form-field">
+				<label htmlFor="claim-expires">Expira en (opcional)</label>
 				<input
+					id="claim-expires"
 					type="datetime-local"
 					value={expiresAt}
 					onChange={(event) => setExpiresAt(event.target.value)}
 					min={new Date().toISOString().slice(0, 16)}
 				/>
 				<p className="dashboard-form-help">Deja vacío para que no expire</p>
-			</label>
-			{error && <p className="dashboard-guests__error">{error}</p>}
-			<div className="dashboard-actions">
-				<button type="submit" disabled={busy || !eventId || events.length === 0}>
+			</div>
+			{error && (
+				<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
+					{error}
+				</p>
+			)}
+			<div className="dashboard-actions" style={{ gridColumn: '1 / -1' }}>
+				<button
+					type="submit"
+					className="btn-primary"
+					disabled={busy || !eventId || events.length === 0}
+				>
 					{busy ? 'Generando...' : 'Generar Claim Code'}
 				</button>
 			</div>

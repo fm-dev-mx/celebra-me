@@ -10,6 +10,19 @@ const EventsAdminTable: React.FC = () => {
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [editingEvent, setEditingEvent] = useState<AdminEventListItemDTO | null>(null);
+	const [confirmModal, setConfirmModal] = useState<{
+		open: boolean;
+		title: string;
+		message: string;
+		onConfirm: () => Promise<void>;
+		confirmLabel?: string;
+		variant?: 'primary' | 'danger';
+	}>({
+		open: false,
+		title: '',
+		message: '',
+		onConfirm: async () => {},
+	});
 
 	const loadEvents = async () => {
 		setLoading(true);
@@ -54,29 +67,35 @@ const EventsAdminTable: React.FC = () => {
 	};
 
 	const handleArchive = async (eventId: string) => {
-		if (
-			!window.confirm('¿Archivar este evento? Los datos se conservarán pero no será visible.')
-		) {
-			return;
-		}
-		try {
-			await adminApi.archiveEvent(eventId);
-			await loadEvents();
-		} catch (err) {
-			alert(err instanceof Error ? err.message : 'Error al archivar evento.');
-		}
+		setConfirmModal({
+			open: true,
+			title: 'Archivar Evento',
+			message:
+				'¿Estás seguro de que deseas archivar este evento? Los datos se conservarán pero no será visible para los invitados.',
+			confirmLabel: 'Archivar Evento',
+			variant: 'danger',
+			onConfirm: async () => {
+				await adminApi.archiveEvent(eventId);
+				await loadEvents();
+				setConfirmModal((prev) => ({ ...prev, open: false }));
+			},
+		});
 	};
 
 	const handlePublish = async (eventId: string) => {
-		if (!window.confirm('¿Publicar este evento? Será visible para los hosts asignados.')) {
-			return;
-		}
-		try {
-			await adminApi.publishEvent(eventId);
-			await loadEvents();
-		} catch (err) {
-			alert(err instanceof Error ? err.message : 'Error al publicar evento.');
-		}
+		setConfirmModal({
+			open: true,
+			title: 'Publicar Evento',
+			message:
+				'¿Deseas publicar este evento? Será visible para los hosts asignados y se podrán generar invitaciones.',
+			confirmLabel: 'Publicar Ahora',
+			variant: 'primary',
+			onConfirm: async () => {
+				await adminApi.publishEvent(eventId);
+				await loadEvents();
+				setConfirmModal((prev) => ({ ...prev, open: false }));
+			},
+		});
 	};
 
 	return (
@@ -178,6 +197,46 @@ const EventsAdminTable: React.FC = () => {
 					onSubmit={(payload) => handleUpdate(editingEvent.id, payload)}
 				/>
 			)}
+
+			{confirmModal.open && (
+				<div
+					className="dashboard-modal-backdrop"
+					role="dialog"
+					aria-modal="true"
+					onClick={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
+				>
+					<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
+						<h3>{confirmModal.title}</h3>
+						<p
+							style={{
+								textAlign: 'center',
+								marginBottom: '2rem',
+								color: 'var(--color-text-secondary)',
+							}}
+						>
+							{confirmModal.message}
+						</p>
+						<div className="dashboard-modal__actions">
+							<button
+								type="button"
+								className="btn-secondary"
+								onClick={() =>
+									setConfirmModal((prev) => ({ ...prev, open: false }))
+								}
+							>
+								Cancelar
+							</button>
+							<button
+								type="button"
+								className={`btn-primary ${confirmModal.variant === 'danger' ? 'btn-primary--danger' : ''}`}
+								onClick={confirmModal.onConfirm}
+							>
+								{confirmModal.confirmLabel || 'Confirmar'}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
@@ -206,17 +265,26 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 
+	const SLUG_REGEX = /^[a-z0-9-]+$/;
+
 	const handleSubmit = async (e: SyntheticEvent) => {
 		e.preventDefault();
 		if (busy) return;
+
+		// Validations
+		if (title.trim().length < 3) {
+			setError('El título debe tener al menos 3 caracteres.');
+			return;
+		}
+		if (!SLUG_REGEX.test(slug)) {
+			setError('El slug solo puede contener letras minúsculas, números y guiones.');
+			return;
+		}
+
 		setBusy(true);
 		setError('');
 		try {
-			if (mode === 'create') {
-				await onSubmit({ title, slug, eventType, status });
-			} else {
-				await onSubmit({ title, slug, eventType, status });
-			}
+			await onSubmit({ title: title.trim(), slug: slug.trim(), eventType, status });
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al guardar evento.');
 		} finally {
@@ -225,34 +293,40 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 	};
 
 	return (
-		<div className="dashboard-guests__modal-backdrop" role="dialog" aria-modal="true">
-			<div className="dashboard-guests__modal">
+		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
+			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 				<h3>{mode === 'create' ? 'Nuevo Evento' : 'Editar Evento'}</h3>
-				<form onSubmit={handleSubmit}>
-					<label>
-						Título
+				<form onSubmit={handleSubmit} className="dashboard-form-grid">
+					<div className="dashboard-form-field">
+						<label htmlFor="event-title">Título</label>
 						<input
+							id="event-title"
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
+							placeholder="Ej. Mi Boda Increíble"
 							required
 							disabled={busy}
 						/>
-					</label>
-					<label>
-						Slug (URL)
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="event-slug">Slug (URL)</label>
 						<input
+							id="event-slug"
 							value={slug}
-							onChange={(e) => setSlug(e.target.value)}
+							onChange={(e) => setSlug(e.target.value.toLowerCase())}
+							placeholder="ej-mi-boda-2024"
 							required
 							disabled={busy}
 							pattern="[a-z0-9-]+"
-							title="Solo letras minúsculas, números y guiones"
 						/>
-						<p className="dashboard-form-help">Ejemplo: mi-boda-2024</p>
-					</label>
-					<label>
-						Tipo de evento
+						<p className="dashboard-form-help">
+							Solo letras minúsculas, números y guiones.
+						</p>
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="event-type">Tipo de evento</label>
 						<select
+							id="event-type"
 							value={eventType}
 							onChange={(e) =>
 								setEventType(e.target.value as 'xv' | 'boda' | 'bautizo' | 'cumple')
@@ -265,10 +339,11 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 							<option value="bautizo">Bautizo</option>
 							<option value="cumple">Cumpleaños</option>
 						</select>
-					</label>
-					<label>
-						Estado
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="event-status">Estado</label>
 						<select
+							id="event-status"
 							value={status}
 							onChange={(e) =>
 								setStatus(e.target.value as 'draft' | 'published' | 'archived')
@@ -280,13 +355,22 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 							<option value="published">Publicado</option>
 							<option value="archived">Archivado</option>
 						</select>
-					</label>
-					{error && <p className="dashboard-guests__error">{error}</p>}
-					<div className="dashboard-guests__modal-actions">
-						<button type="button" onClick={onClose} disabled={busy}>
+					</div>
+					{error && (
+						<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
+							{error}
+						</p>
+					)}
+					<div className="dashboard-modal__actions" style={{ gridColumn: '1 / -1' }}>
+						<button
+							type="button"
+							className="btn-secondary"
+							onClick={onClose}
+							disabled={busy}
+						>
 							Cancelar
 						</button>
-						<button type="submit" disabled={busy}>
+						<button type="submit" className="btn-primary" disabled={busy}>
 							{busy ? 'Guardando...' : 'Guardar'}
 						</button>
 					</div>

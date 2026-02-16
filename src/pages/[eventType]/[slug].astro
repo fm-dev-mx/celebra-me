@@ -2,12 +2,10 @@
 // src/pages/[eventType]/[slug].astro
 export const prerender = false;
 
-import { type CollectionEntry, getCollection, getEntry } from 'astro:content';
+import { getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
 import { getInvitationContextByInviteId } from '@/lib/rsvp-v2/service';
 import Layout from '@/layouts/Layout.astro';
-// ... rest of imports ...
-// (Note: I will use the actual imports from the file in the replacement)
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
 import Footer from '@/components/invitation/Footer.astro';
@@ -23,18 +21,6 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
 import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
-
-// --- Static Paths ---
-export async function getStaticPaths() {
-	const events = await getCollection('events');
-	return events.map((event: CollectionEntry<'events'>) => ({
-		params: {
-			eventType: event.data.eventType,
-			slug: event.id,
-		},
-		props: { event },
-	}));
-}
 
 // --- Page Logic (Adapter Pattern) ---
 const { slug } = Astro.params;

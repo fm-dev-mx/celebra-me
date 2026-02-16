@@ -37,6 +37,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [guestMessage, setGuestMessage] = useState('');
 	const [tagsInput, setTagsInput] = useState('');
 	const [saving, setSaving] = useState(false);
+	const [localError, setLocalError] = useState('');
 	const nameInputRef = React.useRef<HTMLInputElement>(null);
 
 	const resetForm = () => {
@@ -68,7 +69,25 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	if (!open) return null;
 
 	const handleFormSubmit = async (stayOpen = false) => {
+		// Validations
+		const PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
+		if (!PHONE_REGEX.test(phoneE164)) {
+			// Local error handling would be better, but using alert or toast-like
+			// approach for now as per current pattern in other modals
+			// Actually let's add a local error state if it doesn't exist
+			setLocalError('El teléfono debe tener formato E.164 (Ej: +521234567890)');
+			return;
+		}
+
+		if (mode === 'edit' && attendeeCount > maxAllowedAttendees) {
+			setLocalError(
+				`El número de asistentes (${attendeeCount}) no puede superar el límite (${maxAllowedAttendees}).`,
+			);
+			return;
+		}
+
 		setSaving(true);
+		setLocalError('');
 		try {
 			const tags = tagsInput
 				.split(',')
@@ -76,12 +95,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				.filter(Boolean);
 			await onSubmit(
 				{
-					fullName,
-					phoneE164,
+					fullName: fullName.trim(),
+					phoneE164: phoneE164.trim(),
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
-					guestMessage: mode === 'edit' ? guestMessage : undefined,
+					guestMessage: mode === 'edit' ? guestMessage.trim() : undefined,
 					tags,
 				},
 				stayOpen,
@@ -92,6 +111,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			} else {
 				onClose();
 			}
+		} catch (err) {
+			setLocalError(err instanceof Error ? err.message : 'Error al guardar invitado.');
 		} finally {
 			setSaving(false);
 		}
@@ -99,17 +120,17 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	return (
 		<div
-			className="dashboard-guests__modal-backdrop"
+			className="dashboard-modal-backdrop"
 			role="dialog"
 			aria-modal="true"
 			onClick={(e) => {
 				if (e.target === e.currentTarget) onClose();
 			}}
 		>
-			<div className="dashboard-guests__modal">
+			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 				<button
 					type="button"
-					className="dashboard-guests__modal-close"
+					className="dashboard-modal-close"
 					onClick={onClose}
 					aria-label="Cerrar"
 				>
@@ -117,63 +138,64 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				</button>
 				<h3>{mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}</h3>
 				<form
+					className="dashboard-form-grid"
 					onSubmit={(event) => {
 						event.preventDefault();
 						void handleFormSubmit(false);
 					}}
 				>
-					<div className="dashboard-guests__form-grid">
-						<div className="form-field">
-							<label htmlFor="fullName">Nombre completo</label>
-							<input
-								id="fullName"
-								ref={nameInputRef}
-								value={fullName}
-								onChange={(event) => setFullName(event.target.value)}
-								required
-								placeholder="Ej. Juan Pérez"
-								autoFocus
-							/>
-						</div>
-						<div className="form-field">
-							<label htmlFor="phoneE164">Teléfono (WhatsApp)</label>
-							<input
-								id="phoneE164"
-								value={phoneE164}
-								onChange={(event) => setPhoneE164(event.target.value)}
-								required
-								placeholder="+52 1..."
-							/>
-						</div>
-						<div className="form-field">
-							<label htmlFor="maxAllowedAttendees">Límite de invitados</label>
-							<input
-								id="maxAllowedAttendees"
-								type="number"
-								min={1}
-								max={20}
-								value={maxAllowedAttendees}
-								onChange={(event) =>
-									setMaxAllowedAttendees(Number(event.target.value))
-								}
-								required
-							/>
-						</div>
-						<div className="form-field">
-							<label htmlFor="tagsInput">Categorías (opcional)</label>
-							<input
-								id="tagsInput"
-								value={tagsInput}
-								onChange={(event) => setTagsInput(event.target.value)}
-								placeholder="Familia, Amigos..."
-							/>
-						</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="fullName">Nombre completo</label>
+						<input
+							id="fullName"
+							ref={nameInputRef}
+							value={fullName}
+							onChange={(event) => setFullName(event.target.value)}
+							required
+							placeholder="Ej. Juan Pérez"
+							autoFocus
+						/>
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="phoneE164">Teléfono (WhatsApp)</label>
+						<input
+							id="phoneE164"
+							value={phoneE164}
+							onChange={(event) => setPhoneE164(event.target.value)}
+							required
+							placeholder="+52 1..."
+						/>
+						<p className="dashboard-form-help">Formato: +[código][número]</p>
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="maxAllowedAttendees">Límite de invitados</label>
+						<input
+							id="maxAllowedAttendees"
+							type="number"
+							min={1}
+							max={50}
+							value={maxAllowedAttendees}
+							onChange={(event) => setMaxAllowedAttendees(Number(event.target.value))}
+							required
+						/>
+					</div>
+					<div className="dashboard-form-field">
+						<label htmlFor="tagsInput">Categorías (opcional)</label>
+						<input
+							id="tagsInput"
+							value={tagsInput}
+							onChange={(event) => setTagsInput(event.target.value)}
+							placeholder="Familia, Amigos..."
+						/>
 					</div>
 
 					{mode === 'edit' && (
-						<div className="dashboard-guests__form-section">
-							<div className="dashboard-guests__form-grid">
-								<div className="form-field">
+						<div className="dashboard-form-section" style={{ gridColumn: '1 / -1' }}>
+							<div
+								className="dashboard-form-grid"
+								style={{ padding: 0, border: 'none', background: 'none' }}
+							>
+								<div className="dashboard-form-field">
 									<label htmlFor="attendanceStatus">Estado</label>
 									<select
 										id="attendanceStatus"
@@ -192,34 +214,43 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 										<option value="declined">❌ Declinado</option>
 									</select>
 								</div>
-								<div className="form-field">
+								<div className="dashboard-form-field">
 									<label htmlFor="attendeeCount">Asistentes reales</label>
 									<input
 										id="attendeeCount"
 										type="number"
 										min={0}
-										max={20}
+										max={maxAllowedAttendees}
 										value={attendeeCount}
 										onChange={(event) =>
 											setAttendeeCount(Number(event.target.value))
 										}
 									/>
 								</div>
-							</div>
-							<div className="form-field">
-								<label htmlFor="guestMessage">Mensaje del invitado</label>
-								<textarea
-									id="guestMessage"
-									value={guestMessage}
-									onChange={(event) => setGuestMessage(event.target.value)}
-									rows={2}
-									placeholder="Nota opcional..."
-								/>
+								<div
+									className="dashboard-form-field"
+									style={{ gridColumn: '1 / -1' }}
+								>
+									<label htmlFor="guestMessage">Mensaje del invitado</label>
+									<textarea
+										id="guestMessage"
+										value={guestMessage}
+										onChange={(event) => setGuestMessage(event.target.value)}
+										rows={2}
+										placeholder="Nota opcional..."
+									/>
+								</div>
 							</div>
 						</div>
 					)}
 
-					<div className="dashboard-guests__modal-actions">
+					{localError && (
+						<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
+							{localError}
+						</p>
+					)}
+
+					<div className="dashboard-modal__actions" style={{ gridColumn: '1 / -1' }}>
 						<button type="button" className="btn-secondary" onClick={onClose}>
 							Cancelar
 						</button>

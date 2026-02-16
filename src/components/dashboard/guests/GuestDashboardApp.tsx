@@ -426,13 +426,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 				{deleteConfirmOpen && (
 					<div
-						className="dashboard-guests__modal-backdrop"
+						className="dashboard-modal-backdrop"
 						onClick={() => setDeleteConfirmOpen(false)}
 					>
-						<div
-							className="dashboard-guests__modal"
-							onClick={(e) => e.stopPropagation()}
-						>
+						<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 							<h3>Confirmar eliminación</h3>
 							<p
 								style={{
@@ -445,7 +442,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 								<strong>{guestToDelete?.fullName}</strong>? Esta acción no se puede
 								deshacer.
 							</p>
-							<div className="dashboard-guests__modal-actions">
+							<div className="dashboard-modal__actions">
 								<button
 									type="button"
 									className="btn-secondary"
