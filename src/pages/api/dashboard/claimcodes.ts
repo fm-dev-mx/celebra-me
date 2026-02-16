@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { createClaimCodeAdmin, listClaimCodesAdmin } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 200): string {
@@ -27,17 +27,18 @@ export const POST: APIRoute = async ({ request }) => {
 		// Rate limiting: 20 req/min para creación
 		await requireAdminRateLimit(request, 'claimcodes:create');
 		const session = await requireAdminStrongSession(request);
-		const body = (await request.json()) as {
-			eventId?: string;
-			expiresAt?: string | null;
-			maxUses?: number;
-		};
-		const eventId = sanitize(body.eventId, 120);
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
+		const eventId = sanitize(body.eventId as string, 120);
 		if (!eventId) return badRequest('eventId es obligatorio.');
 		const created = await createClaimCodeAdmin({
 			eventId,
-			expiresAt: body.expiresAt ?? null,
-			maxUses: body.maxUses,
+			expiresAt:
+				typeof body.expiresAt === 'string' || body.expiresAt === null
+					? body.expiresAt
+					: null,
+			maxUses: typeof body.maxUses === 'number' ? body.maxUses : undefined,
 			createdBy: session.userId,
 		});
 		return jsonResponse(created, 201);

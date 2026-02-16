@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { disableClaimCodeAdmin, updateClaimCodeAdmin } from '@/lib/rsvp-v2/service';
 
 function sanitize(value: unknown, maxLen = 200): string {
@@ -16,15 +16,13 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 		await requireAdminStrongSession(request);
 		const claimCodeId = sanitize(params.claimCodeId, 120);
 		if (!claimCodeId) return badRequest('claimCodeId es obligatorio.');
-		const body = (await request.json()) as {
-			active?: boolean;
-			expiresAt?: string | null;
-			maxUses?: number;
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 		const item = await updateClaimCodeAdmin({
 			claimCodeId,
 			active: typeof body.active === 'boolean' ? body.active : undefined,
-			expiresAt: body.expiresAt,
+			expiresAt: body.expiresAt as string | null | undefined,
 			maxUses: typeof body.maxUses === 'number' ? body.maxUses : undefined,
 		});
 		return jsonResponse({ item });
