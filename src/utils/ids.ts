@@ -5,7 +5,7 @@ import { randomBytes } from 'node:crypto';
  * Default length 8 provides ~218 trillion combinations.
  */
 export function generateShortId(length = 8): string {
-	const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+	const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const bytes = randomBytes(length);
 	let result = '';
 	for (let i = 0; i < length; i++) {
