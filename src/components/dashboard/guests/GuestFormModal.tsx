@@ -9,7 +9,7 @@ interface GuestFormModalProps {
 	onSubmit: (
 		payload: {
 			fullName: string;
-			phoneE164: string;
+			phone: string;
 			maxAllowedAttendees: number;
 			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 			attendeeCount?: number;
@@ -28,7 +28,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	onSubmit,
 }) => {
 	const [fullName, setFullName] = useState('');
-	const [phoneE164, setPhoneE164] = useState('');
+	const [phone, setPhone] = useState('');
 	const [maxAllowedAttendees, setMaxAllowedAttendees] = useState(1);
 	const [attendanceStatus, setAttendanceStatus] = useState<'pending' | 'confirmed' | 'declined'>(
 		'pending',
@@ -42,7 +42,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	const resetForm = () => {
 		setFullName('');
-		setPhoneE164('');
+		setPhone('');
 		setMaxAllowedAttendees(1);
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
@@ -58,7 +58,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			return;
 		}
 		setFullName(initialGuest.fullName);
-		setPhoneE164(initialGuest.phoneE164);
+		setPhone(initialGuest.phone);
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
@@ -70,12 +70,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	const handleFormSubmit = async (stayOpen = false) => {
 		// Validations
-		const PHONE_REGEX = /^\+[1-9]\d{1,14}$/;
-		if (!PHONE_REGEX.test(phoneE164)) {
-			// Local error handling would be better, but using alert or toast-like
-			// approach for now as per current pattern in other modals
-			// Actually let's add a local error state if it doesn't exist
-			setLocalError('El teléfono debe tener formato E.164 (Ej: +521234567890)');
+		const PHONE_REGEX = /^\d{10}$/;
+		if (!PHONE_REGEX.test(phone.replace(/[\s-]/g, ''))) {
+			setLocalError('El teléfono debe ser de 10 dígitos.');
 			return;
 		}
 
@@ -96,7 +93,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phoneE164: phoneE164.trim(),
+					phone: phone.trim(),
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
@@ -157,15 +154,14 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						/>
 					</div>
 					<div className="dashboard-form-field">
-						<label htmlFor="phoneE164">Teléfono (WhatsApp)</label>
+						<label htmlFor="phone">Teléfono (WhatsApp)</label>
 						<input
-							id="phoneE164"
-							value={phoneE164}
-							onChange={(event) => setPhoneE164(event.target.value)}
+							id="phone"
+							value={phone}
+							onChange={(event) => setPhone(event.target.value)}
 							required
-							placeholder="+52 1..."
+							placeholder="668 123 4567"
 						/>
-						<p className="dashboard-form-help">Formato: +[código][número]</p>
 					</div>
 					<div className="dashboard-form-field">
 						<label htmlFor="maxAllowedAttendees">Límite de invitados</label>

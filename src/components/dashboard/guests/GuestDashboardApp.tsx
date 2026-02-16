@@ -478,7 +478,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									body: JSON.stringify({
 										eventId,
 										fullName: payload.fullName,
-										phoneE164: payload.phoneE164,
+										phone: payload.phone,
 										maxAllowedAttendees: payload.maxAllowedAttendees,
 										tags: payload.tags,
 									}),
@@ -552,7 +552,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 									eventId,
 									guests: guests.map((g) => ({
 										full_name: g.fullName,
-										phone_e164: g.phoneE164,
+										phone_: g.phone,
 										email: g.email,
 										tags: g.tags,
 									})),

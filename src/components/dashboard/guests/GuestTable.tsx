@@ -66,7 +66,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								<td data-label="Nombre / Contacto">
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>
-										<span className="guest-info__phone">{item.phoneE164}</span>
+										<span className="guest-info__phone">{item.phone}</span>
 										{item.email && (
 											<span className="guest-info__email">{item.email}</span>
 										)}

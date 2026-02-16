@@ -31,13 +31,13 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 
 			if (parts.length >= 1) {
 				const fullName = parts[0]?.trim();
-				const phoneE164 = parts[1]?.trim() || '';
+				const phone = parts[1]?.trim() || '';
 				const email = parts[2]?.trim() || null;
 
 				if (fullName) {
 					results.push({
 						fullName,
-						phoneE164,
+						phone,
 						email,
 						maxAllowedAttendees: 2, // Default
 						tags: [],
@@ -82,7 +82,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 						setText(e.target.value);
 						parseContent(e.target.value);
 					}}
-					placeholder="Ejemplo: Juan Perez	+525512345678"
+					placeholder="Ejemplo: Juan Perez  6671234567"
 					rows={8}
 					className="dashboard-form-field"
 					style={{ width: '100%', marginBottom: '1.5rem', minHeight: '150px' }}
@@ -123,7 +123,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 									<tr key={i}>
 										<td>{p.fullName}</td>
 										<td>
-											{p.phoneE164 || (
+											{p.phone || (
 												<span className="text-warning">Revisar</span>
 											)}
 										</td>
