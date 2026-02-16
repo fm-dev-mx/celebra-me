@@ -502,6 +502,54 @@ export async function listAllEventsService(): Promise<EventRecord[]> {
 	return rows.map(toEventRecord);
 }
 
+export async function createEventService(input: {
+	ownerUserId: string;
+	slug: string;
+	eventType: EventRecord['eventType'];
+	title: string;
+	status?: EventRecord['status'];
+}): Promise<EventRecord> {
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: 'events?select=*',
+		method: 'POST',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			owner_user_id: input.ownerUserId,
+			slug: input.slug,
+			event_type: input.eventType,
+			title: input.title,
+			status: input.status || 'draft',
+		},
+	});
+	if (!rows[0]) throw new Error('No se pudo crear evento.');
+	return toEventRecord(rows[0]);
+}
+
+export async function updateEventService(input: {
+	eventId: string;
+	title?: string;
+	slug?: string;
+	eventType?: EventRecord['eventType'];
+	status?: EventRecord['status'];
+}): Promise<EventRecord> {
+	const body: Record<string, unknown> = {};
+	if (input.title !== undefined) body.title = input.title;
+	if (input.slug !== undefined) body.slug = input.slug;
+	if (input.eventType !== undefined) body.event_type = input.eventType;
+	if (input.status !== undefined) body.status = input.status;
+
+	const rows = await supabaseRestRequest<EventRow[]>({
+		pathWithQuery: `events?id=eq.${encodeURIComponent(input.eventId)}&select=*`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+	if (!rows[0]) throw new Error('Evento no encontrado.');
+	return toEventRecord(rows[0]);
+}
+
 export async function findClaimCodeRecordService(input: {
 	eventId: string;
 	codeHash: string;
