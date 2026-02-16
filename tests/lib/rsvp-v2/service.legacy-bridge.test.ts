@@ -36,7 +36,7 @@ describe('rsvp-v2 legacy bridge', () => {
 			inviteId: 'invite-uuid',
 			eventId: 'evt-1',
 			fullName: 'Invitado',
-			phoneE164: '+5216680000000',
+			phone: '6680000000',
 			maxAllowedAttendees: 2,
 			attendanceStatus: 'pending',
 			attendeeCount: 0,

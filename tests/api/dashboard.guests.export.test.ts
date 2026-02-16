@@ -45,7 +45,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					guestId: 'guest-1',
 					inviteId: 'invite-1',
 					fullName: 'Ana, "Mendoza"',
-					phoneE164: '+5216680000000',
+					phone: '6680000000',
 					maxAllowedAttendees: 2,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,

@@ -32,7 +32,7 @@ describe('rsvp-v2 repository branches', () => {
 				invite_id: 'i1',
 				event_id: 'e1',
 				full_name: 'Name',
-				phone_e164: '+521',
+				phone: '6680000000',
 				max_allowed_attendees: 2,
 				attendance_status: 'pending',
 				attendee_count: 0,
@@ -68,7 +68,7 @@ describe('rsvp-v2 repository branches', () => {
 				{
 					eventId: 'evt',
 					fullName: 'Name',
-					phoneE164: '+521',
+					phone: '6680000000',
 					maxAllowedAttendees: 2,
 				},
 				'token',

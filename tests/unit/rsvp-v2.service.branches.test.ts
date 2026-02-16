@@ -88,7 +88,7 @@ describe('rsvp-v2 service branches', () => {
 		inviteId: 'invite-1',
 		eventId: 'evt-1',
 		fullName: 'Guest',
-		phoneE164: '+5216680000000',
+		phone: '6680000000',
 		maxAllowedAttendees: 2,
 		attendanceStatus: 'pending' as const,
 		attendeeCount: 0,
@@ -127,7 +127,7 @@ describe('rsvp-v2 service branches', () => {
 			createDashboardGuest({
 				eventId: 'evt-1',
 				fullName: '',
-				phoneE164: '+52',
+				phone: '6680000000',
 				maxAllowedAttendees: 2,
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
@@ -138,7 +138,7 @@ describe('rsvp-v2 service branches', () => {
 			createDashboardGuest({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phoneE164: '',
+				phone: '',
 				maxAllowedAttendees: 2,
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
@@ -154,7 +154,7 @@ describe('rsvp-v2 service branches', () => {
 		const result = await createDashboardGuest({
 			eventId: 'evt-1',
 			fullName: 'Guest',
-			phoneE164: '+5216680000000',
+			phone: '6680000000',
 			maxAllowedAttendees: 100,
 			hostAccessToken: 'token',
 			origin: 'http://localhost',
