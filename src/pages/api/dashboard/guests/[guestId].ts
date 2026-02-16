@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { deleteDashboardGuest, updateDashboardGuest } from '@/lib/rsvp-v2/service';
 import type { AttendanceStatus } from '@/lib/rsvp-v2/types';
@@ -42,15 +42,9 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 		const guestId = sanitize(params.guestId, 120);
 		if (!guestId) return badRequest('guestId es obligatorio.');
 
-		const body = (await request.json()) as {
-			fullName?: string;
-			phone?: string;
-			maxAllowedAttendees?: number;
-			attendanceStatus?: string;
-			attendeeCount?: number;
-			guestMessage?: string;
-			tags?: string[];
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 
 		const result = await updateDashboardGuest({
 			guestId,
@@ -66,7 +60,9 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : undefined,
 			guestMessage:
 				body.guestMessage !== undefined ? sanitize(body.guestMessage, 500) : undefined,
-			tags: body.tags,
+			tags: Array.isArray(body.tags)
+				? body.tags.filter((tag): tag is string => typeof tag === 'string')
+				: undefined,
 		});
 
 		return jsonResponse(result);

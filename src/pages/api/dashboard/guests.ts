@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { ApiError } from '@/lib/rsvp-v2/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
 import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
 import { createDashboardGuest, listDashboardGuests } from '@/lib/rsvp-v2/service';
 import type { AttendanceStatus } from '@/lib/rsvp-v2/types';
@@ -65,17 +65,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
 		}
 
-		const body = (await request.json()) as {
-			eventId?: string;
-			fullName?: string;
-			phone?: string;
-			maxAllowedAttendees?: number;
-			tags?: string[];
-		};
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 
-		const eventId = sanitize(body.eventId, 120);
-		const fullName = sanitize(body.fullName, 140);
-		const phone = sanitize(body.phone, 40);
+		const eventId = sanitize(body.eventId as string, 120);
+		const fullName = sanitize(body.fullName as string, 140);
+		const phone = sanitize(body.phone as string, 40);
 		const maxAllowedAttendees =
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
@@ -92,7 +88,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 			origin: url.origin,
 			actorUserId: session.userId,
 			isSuperAdmin: session.isSuperAdmin,
-			tags: body.tags,
+			tags: Array.isArray(body.tags)
+				? body.tags.filter((tag): tag is string => typeof tag === 'string')
+				: undefined,
 		});
 
 		return jsonResponse(result, 201);
