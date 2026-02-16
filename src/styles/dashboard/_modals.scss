@@ -1,0 +1,141 @@
+@use 'sass:color';
+@use '../tokens' as *;
+
+// ==========================================================================
+// DASHBOARD MODAL SYSTEM (Jewelry Box Aesthetic)
+// ==========================================================================
+
+.dashboard-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	background: rgb(26 26 26 / 45%);
+	backdrop-filter: blur(12px) saturate(180%);
+	display: grid;
+	place-items: center;
+	padding: var(--spacing-md);
+	animation: fadeIn 0.3s ease;
+}
+
+.dashboard-modal {
+	width: min(700px, 100%);
+	background: $color-surface-primary;
+	border: 1px solid rgb($color-action-accent / 30%);
+	border-radius: 12px;
+	padding: clamp(1.5rem, 5vw, 3rem);
+	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+	position: relative;
+	max-height: 90vh;
+	overflow-y: auto;
+	animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+	// Inner frame for Jewelry Box look
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0.5rem;
+		border: 1px solid rgb($color-action-accent / 15%);
+		pointer-events: none;
+		border-radius: 8px;
+	}
+
+	h3 {
+		font-family: $font-display-elegant; // Cinzel
+		color: $color-text-emphasis;
+		font-size: clamp(1.5rem, 4vw, 2.2rem);
+		margin: 0 0 2rem;
+		text-align: center;
+		letter-spacing: $letter-spacing-tight;
+	}
+}
+
+.dashboard-modal-close {
+	position: absolute;
+	top: 1rem;
+	right: 1.2rem;
+	background: none;
+	border: none;
+	font-size: 1.8rem;
+	color: $color-text-secondary;
+	cursor: pointer;
+	z-index: 10;
+	transition: color 0.2s ease;
+
+	&:hover {
+		color: $color-text-emphasis;
+	}
+}
+
+.dashboard-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--spacing-md);
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid $color-border-subtle;
+
+	@media (width <= 480px) {
+		flex-direction: column-reverse;
+
+		button {
+			width: 100%;
+		}
+	}
+}
+
+// Generic Form Field for Dashboard
+.dashboard-form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: var(--spacing-md);
+
+	label {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: $letter-spacing-wide;
+		color: $color-text-secondary;
+		font-weight: $font-weight-bold;
+	}
+
+	input,
+	select,
+	textarea {
+		padding: 0.75rem 1rem;
+		border: 1px solid $color-border-subtle;
+		border-radius: 6px;
+		font-size: 1rem;
+		background: #fff;
+		color: $color-text-primary;
+		transition: all 0.2s ease;
+
+		&:focus {
+			outline: none;
+			border-color: $color-action-accent;
+			box-shadow: 0 0 0 3px rgba($color-action-accent, 0.1);
+		}
+
+		&:disabled {
+			background: $color-neutral-subtle;
+			cursor: not-allowed;
+		}
+	}
+
+	textarea {
+		resize: vertical;
+		min-height: 80px;
+	}
+}
+
+// Animations used in modals
+@keyframes slideUp {
+	from {
+		opacity: 0%;
+		transform: translateY(30px) scale(0.98);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0) scale(1);
+	}
+}

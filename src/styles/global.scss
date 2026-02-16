@@ -11,6 +11,7 @@
 @use 'dashboard/shell';
 @use 'dashboard/tables';
 @use 'dashboard/forms';
+@use 'dashboard/modals';
 @use 'invitation/envelope-reveal';
 @use 'tokens' as tokens;
 @use 'themes/presets/all';
