@@ -134,7 +134,17 @@ class SupabaseRsvpRepository implements RsvpRepository {
 			return [] as T;
 		}
 
-		return (await response.json()) as T;
+		const text = await response.text();
+		if (!text) {
+			return [] as T;
+		}
+
+		try {
+			return JSON.parse(text) as T;
+		} catch (error) {
+			console.error('[SupabaseRsvpRepository] JSON Parse Error:', error, 'Raw body:', text);
+			return [] as T;
+		}
 	}
 
 	async getRsvpByStoreKey(storeKey: string): Promise<RsvpRecord | null> {

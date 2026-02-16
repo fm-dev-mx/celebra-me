@@ -2,6 +2,17 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { getEnv } from '@/utils/env';
 import { getRsvpRepository } from './repository';
+import { sanitize, normalizeName, toSafeAttendeeCount } from './shared-utils';
+import {
+	findGuestByInviteIdPublic,
+	updateGuestByInviteIdPublic,
+	findGuestByShortIdPublic,
+	findGuestByEventAndNamePublic,
+	findEventBySlugService,
+	createGuestInvitationPublic,
+} from '@/lib/rsvp-v2/repository';
+import { publishGuestStreamEvent } from '@/lib/rsvp-v2/stream';
+import { generateShortId } from '@/utils/ids';
 import type {
 	AttendanceStatus,
 	ChannelAction,
@@ -111,7 +122,6 @@ export interface RsvpInvitationListResponse {
 	message?: string;
 }
 
-const MAX_FIELD_LENGTH = 200;
 const MAX_ATTENDEES_ABSOLUTE = 20;
 
 function getRsvpTokenSecret(): string {
@@ -126,26 +136,12 @@ function getRsvpTokenSecret(): string {
 	return configured;
 }
 
-function sanitizeString(value: unknown, maxLength = MAX_FIELD_LENGTH): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLength);
-}
-
 function sanitizeBaseUrl(value: string): string {
 	try {
 		return new URL(value).origin;
 	} catch {
 		return 'http://localhost:4321';
 	}
-}
-
-function normalizeName(input: string): string {
-	return input
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase()
-		.replace(/\s+/g, ' ')
-		.trim();
 }
 
 function uuidLike(prefix: string): string {
@@ -168,6 +164,10 @@ function base64UrlDecode(value: string): string | null {
 	} catch {
 		return null;
 	}
+}
+
+function isUuid(value: string): boolean {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 function signPayload(encodedPayload: string): string {
@@ -220,12 +220,9 @@ function getEventRsvpConfig(event: EventEntry): EventRsvpConfig {
 	const guestCap = Math.max(1, event.data.rsvp?.guestCap ?? 1);
 	const rawGuests = (event.data.rsvp?.guests ?? []) as GuestEntry[];
 	const guests: GuestEntry[] = rawGuests.map((guest: GuestEntry) => ({
-		guestId: sanitizeString(guest.guestId, 80),
-		displayName: sanitizeString(guest.displayName, 120),
-		maxAllowedAttendees: Math.max(
-			1,
-			Math.min(guest.maxAllowedAttendees, MAX_ATTENDEES_ABSOLUTE),
-		),
+		guestId: sanitize(guest.guestId, 80),
+		displayName: sanitize(guest.displayName, 120),
+		maxAllowedAttendees: toSafeAttendeeCount(guest.maxAllowedAttendees, MAX_ATTENDEES_ABSOLUTE),
 	}));
 
 	return { guestCap, guests };
@@ -275,7 +272,7 @@ export async function getRsvpContext(
 	eventSlug: string,
 	token?: string,
 ): Promise<RsvpContextResult> {
-	const safeEventSlug = sanitizeString(eventSlug, 120);
+	const safeEventSlug = sanitize(eventSlug, 120);
 	const event = await getEventBySlug(safeEventSlug);
 	if (!event) {
 		return {
@@ -293,6 +290,43 @@ export async function getRsvpContext(
 
 	const tokenResult = resolveGuestToken(token);
 	if (!tokenResult.isValid || !tokenResult.payload) {
+		// FALLBACK: Try resolving as V2 inviteId (UUID) or shortId
+		let v2Guest = null;
+		if (isUuid(token)) {
+			v2Guest = await findGuestByInviteIdPublic(token);
+		} else if (token.length <= 12) {
+			v2Guest = await findGuestByShortIdPublic(token);
+		}
+
+		if (v2Guest) {
+			const repository = getRsvpRepository();
+			const existingKey = buildStoreKey(
+				safeEventSlug,
+				v2Guest.inviteId,
+				normalizeName(v2Guest.fullName),
+			);
+			const existing = await repository.getRsvpByStoreKey(existingKey);
+
+			return {
+				eventSlug: safeEventSlug,
+				mode: 'personalized',
+				tokenValid: true,
+				guest: {
+					guestId: v2Guest.inviteId,
+					displayName: v2Guest.fullName,
+					maxAllowedAttendees: v2Guest.maxAllowedAttendees,
+				},
+				currentResponse: existing
+					? {
+							rsvpId: existing.rsvpId,
+							attendanceStatus: existing.attendanceStatus,
+							attendeeCount: existing.attendeeCount,
+							updatedAt: existing.lastUpdatedAt,
+						}
+					: undefined,
+			};
+		}
+
 		return {
 			eventSlug: safeEventSlug,
 			mode: 'generic',
@@ -350,7 +384,7 @@ export async function getRsvpContext(
 }
 
 export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
-	const eventSlug = sanitizeString(input.eventSlug, 120);
+	const eventSlug = sanitize(input.eventSlug, 120);
 	const event = await getEventBySlug(eventSlug);
 	if (!event) {
 		throw new Error('Evento no encontrado.');
@@ -359,11 +393,11 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 	const { guestCap } = getEventRsvpConfig(event);
 	let source: RsvpSource = 'generic_link';
 	let guestId: string | null = null;
-	let resolvedName = sanitizeString(input.guestName);
+	let resolvedName = sanitize(input.guestName);
 	let maxAllowedAttendees = Math.min(guestCap, MAX_ATTENDEES_ABSOLUTE);
 	let contextMode: 'personalized' | 'generic' = 'generic';
 
-	const rawToken = sanitizeString(input.token, 2000);
+	const rawToken = sanitize(input.token, 2000);
 	if (rawToken) {
 		const context = await getRsvpContext(eventSlug, rawToken);
 		if (context.mode === 'personalized' && context.tokenValid && context.guest) {
@@ -373,23 +407,73 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 			maxAllowedAttendees = Math.min(context.guest.maxAllowedAttendees, guestCap);
 			contextMode = 'personalized';
 		} else {
-			// Token validation failed, but we might have a guest name that matches a configured guest
-			// Try to find a guest by name match as fallback
 			const { guests } = getEventRsvpConfig(event);
-			const normalizedInputName = normalizeName(sanitizeString(input.guestName));
+			const normalizedInputName = normalizeName(resolvedName);
 
 			for (const guest of guests) {
 				const normalizedGuestName = normalizeName(guest.displayName);
 				if (normalizedGuestName === normalizedInputName) {
-					// Found a matching guest by name
-					source = 'personalized_link';
-					guestId = guest.guestId;
-					resolvedName = guest.displayName;
-					maxAllowedAttendees = Math.min(guest.maxAllowedAttendees, guestCap);
-					contextMode = 'personalized';
+					// Found matching guest by name but no valid token => flag as manual_entry
+					source = 'manual_entry';
+					guestId = null;
+					resolvedName = input.guestName ?? guest.displayName;
+					maxAllowedAttendees = guestCap;
 					break;
 				}
 			}
+
+			// V2 DASHBOARD SYNC: If no guestId yet, try to find a V2 guest by name
+			if (!guestId && resolvedName) {
+				try {
+					const v2Event = await findEventBySlugService(eventSlug);
+					if (v2Event) {
+						const v2Guest = await findGuestByEventAndNamePublic(
+							v2Event.id,
+							resolvedName,
+						);
+						if (v2Guest) {
+							guestId = v2Guest.inviteId; // Use V2 inviteId for sync
+							console.log(
+								`[RSVP Sync] Found V2 guest by name match: ${resolvedName} (${guestId})`,
+							);
+						}
+					}
+				} catch (e) {
+					console.error('[RSVP Sync] Failed to find v2 guest by name:', e);
+				}
+			}
+		}
+	} else if (resolvedName) {
+		// Generic link or custom name entry
+		source = 'manual_entry';
+
+		// V2 DASHBOARD SYNC: Try to find a V2 guest by name even for generic links
+		try {
+			const v2Event = await findEventBySlugService(eventSlug);
+			if (v2Event) {
+				const v2Guest = await findGuestByEventAndNamePublic(v2Event.id, resolvedName);
+				if (v2Guest) {
+					guestId = v2Guest.inviteId; // Link it for sync
+					console.log(
+						`[RSVP Sync] Linked generic RSVP to V2 guest by name: ${resolvedName} (${guestId})`,
+					);
+				} else {
+					// AUTO-CREATE: No V2 guest found by name, create a new one to show in dashboard
+					const createdV2 = await createGuestInvitationPublic({
+						eventId: v2Event.id,
+						fullName: resolvedName,
+						phone: '', // Phone is optional in V1, setting empty for now
+						maxAllowedAttendees: maxAllowedAttendees,
+						short_id: generateShortId(8),
+					});
+					guestId = createdV2.inviteId;
+					console.log(
+						`[RSVP Sync] Created new V2 guest for generic entry: ${resolvedName} (${guestId})`,
+					);
+				}
+			}
+		} catch (e) {
+			console.error('[RSVP Sync] Failed to link/create generic RSVP in v2 guest:', e);
 		}
 	}
 
@@ -402,8 +486,10 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 		throw new Error('El estado de asistencia es inválido.');
 	}
 
-	const boundedInputCount = Math.max(0, Math.min(input.attendeeCount, MAX_ATTENDEES_ABSOLUTE));
-	const attendeeCount = attendanceStatus === 'declined' ? 0 : boundedInputCount;
+	const attendeeCount =
+		attendanceStatus === 'declined'
+			? 0
+			: toSafeAttendeeCount(input.attendeeCount, MAX_ATTENDEES_ABSOLUTE);
 
 	if (attendanceStatus === 'confirmed' && attendeeCount < 1) {
 		throw new Error('Para confirmar asistencia, el total de asistentes debe ser al menos 1.');
@@ -413,8 +499,8 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 		throw new Error(`El límite de asistentes para este enlace es ${maxAllowedAttendees}.`);
 	}
 
-	const notes = sanitizeString(input.notes);
-	const dietary = sanitizeString(input.dietary);
+	const notes = sanitize(input.notes);
+	const dietary = sanitize(input.dietary);
 	const normalizedGuestName = normalizeName(resolvedName);
 	const storeKey = buildStoreKey(eventSlug, guestId, normalizedGuestName);
 	const now = new Date().toISOString();
@@ -443,6 +529,39 @@ export async function saveRsvp(input: SaveRsvpInput): Promise<SaveRsvpResult> {
 
 	const persisted = await repository.saveRsvpRecord({ storeKey, record: updatedRecord });
 
+	// SYNC: Update V2 guest_invitations if guestId is a UUID (inviteId)
+	if (guestId && isUuid(guestId)) {
+		try {
+			await updateGuestByInviteIdPublic(guestId, {
+				attendance_status: updatedRecord.attendanceStatus,
+				attendee_count: updatedRecord.attendeeCount,
+				guest_message: updatedRecord.notes,
+				responded_at: now,
+				last_response_source: 'link',
+			});
+			console.log(`[RSVP Sync] Updated V2 guest_invitation for ${guestId}`);
+
+			// Publish stream event for real-time dashboard updates
+			const v2Event = await findEventBySlugService(eventSlug);
+			if (v2Event) {
+				const v2Guest = await findGuestByInviteIdPublic(guestId);
+				if (v2Guest) {
+					publishGuestStreamEvent({
+						type: 'guest_updated',
+						eventId: v2Event.id,
+						guestId: v2Guest.id, // V2 internal ID
+						updatedAt: now,
+					});
+				}
+			}
+		} catch (error) {
+			console.error(
+				`[RSVP Sync] Failed to update V2 guest_invitation for ${guestId}:`,
+				error,
+			);
+		}
+	}
+
 	const auditRecord: RsvpAuditRecord = {
 		auditId: uuidLike('audit'),
 		rsvpId: persisted.rsvpId,
@@ -464,7 +583,7 @@ export async function logRsvpChannelEvent(input: {
 	action: ChannelAction;
 }): Promise<void> {
 	const repository = getRsvpRepository();
-	const safeRsvpId = sanitizeString(input.rsvpId, 120);
+	const safeRsvpId = sanitize(input.rsvpId, 120);
 	const rsvp = await repository.getRsvpById(safeRsvpId);
 	if (!rsvp) {
 		throw new Error('RSVP no encontrado.');
@@ -486,8 +605,8 @@ export async function getAdminRsvpList(params: {
 	search?: string;
 }): Promise<AdminListResult> {
 	const repository = getRsvpRepository();
-	const safeEventSlug = sanitizeString(params.eventSlug, 120);
-	const safeSearch = normalizeName(sanitizeString(params.search, 120));
+	const safeEventSlug = sanitize(params.eventSlug, 120);
+	const safeSearch = normalizeName(sanitize(params.search, 120));
 	const safeStatus = params.status ?? 'all';
 
 	const items = await repository.listRsvpByEvent({
@@ -565,8 +684,8 @@ export function buildGenericInvitationLink(input: {
 	eventSlug: string;
 }): string {
 	const safeBaseUrl = sanitizeBaseUrl(input.baseUrl);
-	const safeEventType = sanitizeString(input.eventType, 80);
-	const safeEventSlug = sanitizeString(input.eventSlug, 120);
+	const safeEventType = sanitize(input.eventType, 80);
+	const safeEventSlug = sanitize(input.eventSlug, 120);
 	return `${safeBaseUrl}/${encodeURIComponent(safeEventType)}/${encodeURIComponent(safeEventSlug)}`;
 }
 
@@ -576,8 +695,8 @@ export function buildGuestInvitationLink(input: {
 	eventSlug: string;
 	guestId: string;
 }): { token: string; personalizedUrl: string } {
-	const safeEventSlug = sanitizeString(input.eventSlug, 120);
-	const safeGuestId = sanitizeString(input.guestId, 120);
+	const safeEventSlug = sanitize(input.eventSlug, 120);
+	const safeGuestId = sanitize(input.guestId, 120);
 	const token = createGuestToken({
 		eventSlug: safeEventSlug,
 		guestId: safeGuestId,
@@ -598,13 +717,13 @@ export function buildWhatsAppShareLink(input: {
 	eventTitle: string;
 	template?: string;
 }): string {
-	const safePhone = sanitizeString(input.phone, 40).replace(/\D/g, '');
+	const safePhone = normalizeName(sanitize(input.phone, 40)).replace(/\D/g, '');
 	if (!safePhone) return '';
-	const safeGuestName = sanitizeString(input.guestName, 120);
-	const safeInviteUrl = sanitizeString(input.inviteUrl, 2000);
-	const safeEventTitle = sanitizeString(input.eventTitle, 120);
+	const safeGuestName = sanitize(input.guestName, 120);
+	const safeInviteUrl = sanitize(input.inviteUrl, 2000);
+	const safeEventTitle = sanitize(input.eventTitle, 120);
 	const template =
-		sanitizeString(input.template, 300) ||
+		sanitize(input.template, 300) ||
 		'Hola {name}, te comparto la invitación de {eventTitle}: {inviteUrl}';
 	const message = template
 		.replace('{name}', safeGuestName)
@@ -619,18 +738,18 @@ export async function getRsvpInvitationContext(
 	eventSlug: string,
 	baseUrl?: string,
 ): Promise<RsvpInvitationListResponse> {
-	const safeEventSlug = sanitizeString(eventSlug, 120);
+	const safeEventSlug = sanitize(eventSlug, 120);
 	const event = await getEventBySlug(safeEventSlug);
 	if (!event) {
 		throw new Error('Evento no encontrado.');
 	}
 
-	const safeEventType = sanitizeString(event.data.eventType, 80);
+	const safeEventType = sanitize(event.data.eventType, 80);
 	if (!safeEventType) {
 		throw new Error('Tipo de evento inválido.');
 	}
 
-	const configuredBaseUrl = sanitizeString(baseUrl || getEnv('BASE_URL'), 300);
+	const configuredBaseUrl = sanitize(baseUrl || getEnv('BASE_URL'), 300);
 	const resolvedBaseUrl = sanitizeBaseUrl(configuredBaseUrl || 'http://localhost:4321');
 	const genericUrl = buildGenericInvitationLink({
 		baseUrl: resolvedBaseUrl,
@@ -639,8 +758,8 @@ export async function getRsvpInvitationContext(
 	});
 
 	const { guests } = getEventRsvpConfig(event);
-	const waPhone = sanitizeString(event.data.rsvp?.whatsappConfig?.phone, 40);
-	const waTemplate = sanitizeString(event.data.rsvp?.whatsappConfig?.messageTemplate, 300);
+	const waPhone = sanitize(event.data.rsvp?.whatsappConfig?.phone, 40);
+	const waTemplate = sanitize(event.data.rsvp?.whatsappConfig?.messageTemplate, 300);
 
 	const guestLinks: RsvpInvitationGuest[] = guests.map((guest) => {
 		const { token, personalizedUrl } = buildGuestInvitationLink({
@@ -679,5 +798,5 @@ export async function getRsvpInvitationContext(
 }
 
 export function parseAttendanceInput(rawAttendance: unknown): AttendanceStatus | null {
-	return parseAttendanceStatus(sanitizeString(rawAttendance));
+	return parseAttendanceStatus(sanitize(rawAttendance));
 }
