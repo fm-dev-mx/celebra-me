@@ -163,7 +163,7 @@ begin
   insert into public.guest_invitations (
     event_id,
     full_name,
-    phone_e164,
+    phone,
     max_allowed_attendees,
     attendance_status,
     attendee_count,

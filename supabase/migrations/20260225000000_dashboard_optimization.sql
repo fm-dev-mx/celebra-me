@@ -15,12 +15,12 @@ create index if not exists idx_guest_invitations_tags on public.guest_invitation
 
 -- 3. Función RPC para Upsert Masivo
 -- Esta función maneja la lógica de:
---   - Match por phone_e164 dentro de un evento.
+--   - Match por phone dentro de un evento.
 --   - Merge de tags (no sobrescribe, añade).
 --   - Marcado de "needs_review" si falta teléfono.
 create or replace function public.upsert_guests_v1(
   p_event_id uuid,
-  p_guests jsonb -- Array de objetos: {full_name, phone_e164, email, tags, max_allowed_attendees}
+  p_guests jsonb -- Array de objetos: {full_name, phone, email, tags, max_allowed_attendees}
 )
 returns jsonb
 language plpgsql
@@ -35,11 +35,11 @@ begin
   for v_guest in select * from jsonb_array_elements(p_guests)
   loop
     -- Caso: Sin teléfono (Requiere revisión)
-    if (v_guest->>'phone_e164') is null or (v_guest->>'phone_e164') = '' then
+    if (v_guest->>'phone') is null or (v_guest->>'phone') = '' then
       insert into public.guest_invitations (
         event_id,
         full_name,
-        phone_e164,
+        phone,
         email,
         tags,
         max_allowed_attendees,
@@ -56,12 +56,12 @@ begin
       );
       v_count_created := v_count_created + 1;
 
-    -- Caso: Con teléfono (Upsert por phone_e164 + event_id)
+    -- Caso: Con teléfono (Upsert por phone + event_id)
     else
       insert into public.guest_invitations (
         event_id,
         full_name,
-        phone_e164,
+        phone,
         email,
         tags,
         max_allowed_attendees
@@ -69,12 +69,12 @@ begin
       values (
         p_event_id,
         v_guest->>'full_name',
-        v_guest->>'phone_e164',
+        v_guest->>'phone',
         v_guest->>'email',
         array(select jsonb_array_elements_text(v_guest->'tags')),
         coalesce((v_guest->>'max_allowed_attendees')::int, 2)
       )
-      on conflict (event_id, phone_e164) where (phone_e164 not like 'PENDING_%')
+      on conflict (event_id, phone) where (phone not like 'PENDING_%')
       do update set
         full_name = excluded.full_name,
         email = coalesce(excluded.email, guest_invitations.email),
@@ -109,7 +109,7 @@ begin
     ) then
         alter table public.guest_invitations
         add constraint guest_invitations_event_phone_unique
-        unique (event_id, phone_e164);
+        unique (event_id, phone);
     end if;
 end $$;
 

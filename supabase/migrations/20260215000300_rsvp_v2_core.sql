@@ -26,7 +26,7 @@ create table if not exists public.guest_invitations (
   invite_id uuid not null unique default gen_random_uuid(),
   event_id uuid not null references public.events(id) on delete cascade,
   full_name text not null,
-  phone_e164 text not null,
+  phone text not null,
   max_allowed_attendees integer not null check (max_allowed_attendees between 1 and 20),
   attendance_status text not null default 'pending' check (attendance_status in ('pending', 'confirmed', 'declined')),
   attendee_count integer not null default 0 check (attendee_count between 0 and 20),
@@ -70,8 +70,8 @@ create index if not exists idx_guest_invitations_event_status
 create index if not exists idx_guest_invitations_invite_id
   on public.guest_invitations (invite_id);
 
-create index if not exists idx_guest_invitations_phone_e164
-  on public.guest_invitations (phone_e164);
+create index if not exists idx_guest_invitations_phone
+  on public.guest_invitations (phone);
 
 create index if not exists idx_guest_invitation_audit_guest_created
   on public.guest_invitation_audit (guest_invitation_id, created_at desc);
