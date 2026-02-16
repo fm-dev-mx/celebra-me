@@ -89,11 +89,16 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				const payload = (await response.json()) as T & { message?: string; error?: string };
 				if (!response.ok) {
 					const errorMsg = payload.message || payload.error || `Error ${response.status}`;
-					console.error('[GuestDashboard API] Error:', response.status, errorMsg);
+					// Only log server errors (5xx), not client errors (4xx)
+					// Also handle undefined status (network errors, etc.)
+					if (response.status && response.status >= 500) {
+						console.error('[GuestDashboard API] Error:', response.status, errorMsg);
+					}
 					throw new Error(errorMsg);
 				}
 				return payload as T;
 			} catch (err) {
+				// Network errors or JSON parsing errors should still be logged
 				console.error('[GuestDashboard API] Fetch error:', err);
 				throw err;
 			}
@@ -119,7 +124,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				setEventId(nextEventId);
 			}
 		} catch (err) {
-			console.error('[GuestDashboard] Error loading events:', err);
+			// Don't log 401/403 as errors - they're expected auth states
 			const message = err instanceof Error ? err.message : 'No se pudieron cargar eventos.';
 			setError(message);
 		}
@@ -154,7 +159,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		try {
 			void loadEvents();
 		} catch (err) {
-			console.error('[GuestDashboard] useEffect loadEvents error:', err);
+			// Errors from loadEvents are already handled within the function
 		}
 	}, [loadEvents]);
 
@@ -162,7 +167,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		try {
 			void loadGuests();
 		} catch (err) {
-			console.error('[GuestDashboard] useEffect loadGuests error:', err);
+			// Errors from loadGuests are already handled within the function
 		}
 	}, [loadGuests]);
 

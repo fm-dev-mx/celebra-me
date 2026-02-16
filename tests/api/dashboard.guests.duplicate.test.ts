@@ -4,6 +4,10 @@ import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
 import { createDashboardGuest, updateDashboardGuest } from '@/lib/rsvp-v2/service';
 import { ApiError } from '@/lib/rsvp-v2/errors';
 import { createMockRequest } from './rsvp.helpers';
+import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
+
+// Mock funciones de seguridad
+mockAdminSecurityPass();
 
 jest.mock('@/lib/rsvp-v2/auth', () => ({
 	getSessionContextFromRequest: jest.fn(),
@@ -26,6 +30,9 @@ const updateDashboardGuestMock = updateDashboardGuest as jest.MockedFunction<
 
 describe('dashboard guests duplicate phone handling', () => {
 	beforeEach(() => {
+		// Mock funciones de seguridad
+		mockAdminSecurityPass();
+
 		const session = {
 			userId: 'host-1',
 			email: 'host@test.com',

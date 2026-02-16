@@ -25,6 +25,7 @@ describe('GuestDashboardApp auth states', () => {
 	it('shows API unauthorized error when dashboard endpoints return 401', async () => {
 		global.fetch = jest.fn().mockResolvedValue({
 			ok: false,
+			status: 401,
 			json: async () => ({ code: 'unauthorized', message: 'No autorizado.' }),
 		}) as typeof fetch;
 

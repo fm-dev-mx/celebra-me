@@ -3,6 +3,10 @@ import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[user
 import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
 import { listAdminUsers, changeUserRoleAdmin } from '@/lib/rsvp-v2/service';
 import { ApiError } from '@/lib/rsvp-v2/errors';
+import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
+
+// Mock funciones de seguridad admin
+mockAdminSecurityPass();
 
 jest.mock('@/lib/rsvp-v2/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -51,6 +55,8 @@ function createMockUrl(searchParams?: Record<string, string>): URL {
 describe('Admin Users API', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		// Mock funciones de seguridad admin
+		mockAdminSecurityPass();
 	});
 
 	describe('GET /api/dashboard/admin/users', () => {

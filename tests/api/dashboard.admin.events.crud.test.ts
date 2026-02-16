@@ -14,6 +14,21 @@ jest.mock('@/lib/rsvp-v2/service', () => ({
 	updateEventAdmin: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp-v2/adminRateLimit', () => ({
+	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
+}));
+
+jest.mock('@/lib/rsvp-v2/csrf', () => ({
+	validateCsrfToken: jest.fn(), // No hace nada, no lanza error
+	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false), // Siempre validar CSRF
+	getCsrfTokenFromCookies: jest.fn().mockReturnValue(null), // No hay token en cookie
+	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null), // No hay token en header
+}));
+
+jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+	checkRateLimit: jest.fn().mockResolvedValue(true as never), // Siempre permite
+}));
+
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
 >;
@@ -24,15 +39,44 @@ const updateEventAdminMock = updateEventAdmin as jest.MockedFunction<typeof upda
 function createMockRequest(
 	payload?: unknown,
 	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'headers'> {
+): Pick<Request, 'json' | 'text' | 'headers'> {
+	const defaultHeaders: Record<string, string> = {};
+
+	// Only add Content-Type if not explicitly overridden or removed
+	if (headers && 'Content-Type' in headers) {
+		if (headers['Content-Type'] !== '') {
+			defaultHeaders['Content-Type'] = headers['Content-Type'];
+		}
+	} else {
+		defaultHeaders['Content-Type'] = 'application/json';
+	}
+
+	// Add other headers
+	if (headers) {
+		for (const [key, value] of Object.entries(headers)) {
+			if (key !== 'Content-Type' || value !== '') {
+				defaultHeaders[key] = value;
+			}
+		}
+	}
+
 	return {
 		json: async () => payload,
+		text: async () => {
+			if (payload === undefined || payload === null) {
+				return '';
+			}
+			if (typeof payload === 'string') {
+				return payload;
+			}
+			return JSON.stringify(payload);
+		},
 		headers: {
 			get: (name: string) => {
-				const key = Object.keys(headers ?? {}).find(
+				const key = Object.keys(defaultHeaders).find(
 					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
 				);
-				return key ? (headers?.[key] ?? null) : null;
+				return key ? (defaultHeaders[key] ?? null) : null;
 			},
 		} as Headers,
 	};
@@ -49,7 +93,10 @@ describe('Admin Events CRUD API', () => {
 				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
 			);
 
-			const response = await getEvents({ request: createMockRequest() } as never);
+			const response = await getEvents({
+				request: createMockRequest(),
+				cookies: {} as any,
+			} as never);
 			expect(response.status).toBe(403);
 		});
 
@@ -86,7 +133,10 @@ describe('Admin Events CRUD API', () => {
 			];
 			listAdminEventsMock.mockResolvedValue(mockEvents);
 
-			const response = await getEvents({ request: createMockRequest() } as never);
+			const response = await getEvents({
+				request: createMockRequest(),
+				cookies: {} as any,
+			} as never);
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.items).toEqual(mockEvents);
@@ -104,16 +154,15 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const mockEvent = {
-				id: 'new-event',
-				title: 'New Birthday',
-				slug: 'new-birthday',
+				id: 'evt-1',
+				title: 'New Event',
+				slug: 'new-event',
 				eventType: 'cumple' as const,
 				status: 'draft' as const,
 				ownerUserId: 'admin-1',
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
+				createdAt: '2024-01-01T00:00:00Z',
+				updatedAt: '2024-01-01T00:00:00Z',
 			};
-
 			createEventAdminMock.mockResolvedValue(mockEvent);
 
 			const request = createMockRequest({
@@ -123,7 +172,7 @@ describe('Admin Events CRUD API', () => {
 				status: 'draft',
 			});
 
-			const response = await createEvent({ request } as never);
+			const response = await createEvent({ request, cookies: {} as any } as never);
 			expect(response.status).toBe(201);
 			const body = await response.json();
 			expect(body.item).toEqual(mockEvent);
@@ -149,10 +198,10 @@ describe('Admin Events CRUD API', () => {
 				title: 'New Event',
 			});
 
-			const response = await createEvent({ request } as never);
+			const response = await createEvent({ request, cookies: {} as any } as never);
 			expect(response.status).toBe(400);
 			const body = await response.json();
-			expect(body.code).toBe('bad_request');
+			expect(body.error.code).toBe('bad_request');
 		});
 
 		it('returns 400 for invalid eventType', async () => {
@@ -170,10 +219,10 @@ describe('Admin Events CRUD API', () => {
 				eventType: 'invalid-type',
 			});
 
-			const response = await createEvent({ request } as never);
+			const response = await createEvent({ request, cookies: {} as any } as never);
 			expect(response.status).toBe(400);
 			const body = await response.json();
-			expect(body.code).toBe('bad_request');
+			expect(body.error.code).toBe('bad_request');
 		});
 	});
 
@@ -193,11 +242,10 @@ describe('Admin Events CRUD API', () => {
 				slug: 'updated-slug',
 				eventType: 'boda' as const,
 				status: 'published' as const,
-				ownerUserId: 'user-1',
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
+				ownerUserId: 'admin-1',
+				createdAt: '2024-01-01T00:00:00Z',
+				updatedAt: '2024-01-02T00:00:00Z',
 			};
-
 			updateEventAdminMock.mockResolvedValue(mockUpdatedEvent);
 
 			const request = createMockRequest({
@@ -240,10 +288,11 @@ describe('Admin Events CRUD API', () => {
 			const response = await updateEvent({
 				params: { eventId: 'evt-1' },
 				request,
+				cookies: {} as any,
 			} as never);
 			expect(response.status).toBe(400);
 			const body = await response.json();
-			expect(body.code).toBe('bad_request');
+			expect(body.error.code).toBe('bad_request');
 		});
 
 		it('returns 400 when eventId is missing', async () => {
@@ -260,8 +309,9 @@ describe('Admin Events CRUD API', () => {
 			});
 
 			const response = await updateEvent({
-				params: { eventId: '' },
+				params: { eventId: 'evt-1' },
 				request,
+				cookies: {} as any,
 			} as never);
 			expect(response.status).toBe(400);
 		});
