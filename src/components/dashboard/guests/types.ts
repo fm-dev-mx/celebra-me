@@ -18,6 +18,8 @@ export interface DashboardGuestItem {
 	respondedAt: string | null;
 	waShareUrl: string;
 	updatedAt: string;
+	eventType?: string;
+	eventSlug?: string;
 }
 
 export interface DashboardGuestListResponse {

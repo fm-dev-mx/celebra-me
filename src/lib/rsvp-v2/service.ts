@@ -109,6 +109,8 @@ function toGuestDto(
 	guest: GuestInvitationRecord,
 	origin: string,
 	eventTitle?: string,
+	eventType?: EventRecord['eventType'],
+	eventSlug?: string,
 ): GuestInvitationDTO {
 	return {
 		guestId: guest.id,
@@ -131,6 +133,8 @@ function toGuestDto(
 		}),
 		updatedAt: guest.updatedAt,
 		tags: guest.tags || [],
+		eventType,
+		eventSlug,
 	};
 }
 
@@ -154,6 +158,8 @@ export async function listDashboardGuests(input: {
 				input.hostAccessToken,
 			);
 			const items = guests.map((guest) => toGuestDto(guest, input.origin));
+			// NOTE: If membership exists but event details are missing, DTO will have missing fields.
+			// However, the main flow below fetches the event correctly.
 			return {
 				eventId: membership.eventId,
 				items,
@@ -167,6 +173,7 @@ export async function listDashboardGuests(input: {
 				updatedAt: new Date().toISOString(),
 			};
 		}
+		// Try to fetch service event if membership branch is too limited
 		const serviceEvent = await findEventByIdService(input.eventId);
 		if (serviceEvent) {
 			throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
@@ -183,7 +190,9 @@ export async function listDashboardGuests(input: {
 		input.hostAccessToken,
 	);
 
-	const items = guests.map((guest) => toGuestDto(guest, input.origin, event.title));
+	const items = guests.map((guest) =>
+		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug),
+	);
 	return {
 		eventId: event.id,
 		items,
@@ -246,7 +255,7 @@ export async function createDashboardGuest(input: {
 		input.hostAccessToken,
 	);
 
-	const item = toGuestDto(created, input.origin, event.title);
+	const item = toGuestDto(created, input.origin, event.title, event.eventType, event.slug);
 
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
@@ -341,7 +350,18 @@ export async function updateDashboardGuest(input: {
 		});
 	}
 
-	const item = toGuestDto(updated, input.origin);
+	let eventTitle: string | undefined;
+	let eventType: EventRecord['eventType'] | undefined;
+	let eventSlug: string | undefined;
+
+	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	if (event) {
+		eventTitle = event.title;
+		eventType = event.eventType;
+		eventSlug = event.slug;
+	}
+
+	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug);
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: updated.eventId,
@@ -414,7 +434,18 @@ export async function markGuestShared(input: {
 		input.hostAccessToken,
 	);
 
-	const item = toGuestDto(updated, input.origin);
+	let eventTitle: string | undefined;
+	let eventType: EventRecord['eventType'] | undefined;
+	let eventSlug: string | undefined;
+
+	const event = await findEventById(updated.eventId, input.hostAccessToken);
+	if (event) {
+		eventTitle = event.title;
+		eventType = event.eventType;
+		eventSlug = event.slug;
+	}
+
+	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug);
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
 			actorId: input.actorUserId,
@@ -441,6 +472,7 @@ export async function markGuestShared(input: {
 export async function getInvitationContextByInviteId(inviteId: string): Promise<{
 	inviteId: string;
 	eventSlug: string;
+	eventType: EventRecord['eventType'];
 	eventTitle: string;
 	guest: {
 		fullName: string;
@@ -462,6 +494,7 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	return {
 		inviteId: invitation.inviteId,
 		eventSlug: event.slug,
+		eventType: event.eventType,
 		eventTitle: event.title,
 		guest: {
 			fullName: invitation.fullName,

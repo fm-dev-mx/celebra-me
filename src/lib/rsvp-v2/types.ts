@@ -69,6 +69,8 @@ export interface GuestInvitationDTO {
 	waShareUrl: string;
 	updatedAt: string;
 	tags?: string[];
+	eventType?: EventRecord['eventType'];
+	eventSlug?: string;
 }
 
 export interface DashboardGuestListResponse {
