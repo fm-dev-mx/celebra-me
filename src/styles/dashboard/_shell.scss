@@ -149,6 +149,75 @@
 	}
 }
 
+/* --- Dashboard Guests Toolbar --- */
+.dashboard-guests__toolbar {
+	margin-bottom: 2rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba($color-action-accent, 0.1);
+
+	.dashboard-guests__title-area {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 2rem;
+
+		@media (width <= 768px) {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 1rem;
+		}
+
+		h1 {
+			margin: 0;
+			font-family: $font-display-elegant;
+			font-size: 2.25rem;
+			color: $color-text-primary;
+			letter-spacing: $letter-spacing-tight;
+		}
+	}
+}
+
+.header-event-selector {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 280px;
+
+	label {
+		font-size: 0.65rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.15em;
+		color: rgba($color-text-secondary, 0.6);
+	}
+
+	select {
+		appearance: none;
+		background: rgb(255 255 255 / 60%);
+		border: 1px solid rgba($color-action-accent, 0.15);
+		border-radius: 12px;
+		padding: 0.75rem 1.25rem;
+		font-family: $font-ui;
+		font-size: 0.9rem;
+		color: $color-text-primary;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: $shadow-subtle;
+
+		&:hover {
+			border-color: rgba($color-action-accent, 0.4);
+			background: white;
+			box-shadow: $shadow-emphasis;
+		}
+
+		&:focus {
+			outline: none;
+			border-color: $color-text-emphasis;
+			box-shadow: 0 0 0 4px rgba($color-text-emphasis, 0.1);
+		}
+	}
+}
+
 /* --- Premium Buttons (Tactile/Game-like) --- */
 .btn-primary,
 .btn-accent,
@@ -212,22 +281,11 @@
 /* --- Premium User Menu --- */
 .dashboard-user-menu {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	margin: 0 auto;
 	gap: 1rem;
-	background: rgb(white, 0.4);
-	padding: 0.4rem 0.4rem 0.4rem 1rem;
-	border: 1px solid rgba($color-action-accent, 0.25);
-	border-radius: 100px;
-	box-shadow: $shadow-subtle;
-	transition: all 0.3s ease;
 	max-width: 100%;
 	flex-shrink: 1;
-
-	&:hover {
-		background: rgb(white, 0.6);
-		box-shadow: $shadow-emphasis;
-		border-color: rgba($color-action-accent, 0.4);
-	}
 
 	@media (width <= 480px) {
 		gap: 0.5rem;
@@ -253,14 +311,14 @@
 .dashboard-user-menu__meta {
 	display: flex;
 	flex-direction: column;
-	line-height: 1.2;
+	line-height: 1.8;
 }
 
 .dashboard-user-menu__role {
 	font-size: 0.6rem;
 	font-weight: 800;
 	letter-spacing: 0.15em;
-	color: $color-text-emphasis;
+	color: $color-text-secondary;
 	text-transform: uppercase;
 }
 
@@ -394,4 +452,11 @@
 		width: 100%;
 		box-sizing: border-box;
 	}
+}
+
+// Robust Scroll Lock Utility
+body.modal-open {
+	overflow: hidden !important;
+	position: fixed;
+	width: 100%;
 }
