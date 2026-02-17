@@ -225,6 +225,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 					? {
 							...data.rsvp,
 							eventSlug,
+							celebrantName: data.hero.nickname || data.hero.name.split(' ')[0],
 							variant: (data.sectionStyles?.rsvp?.variant ?? preset) as
 								| 'standard'
 								| 'jewelry-box'

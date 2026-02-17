@@ -371,6 +371,15 @@
 			margin-bottom: 1.5rem;
 		}
 
+		&-name {
+			font-family: tokens.$font-display-elegant;
+			color: var(--color-action-accent);
+			font-weight: tokens.$font-weight-regular;
+			display: inline-block;
+			padding: 0 0.25rem;
+			border-bottom: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
+		}
+
 		&-submessage {
 			font-family: var(--font-body);
 			font-size: 1rem;
@@ -379,32 +388,68 @@
 		}
 	}
 
+	&__contact-host {
+		margin-top: 1.75rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid rgb(var(--color-action-accent-rgb), 0.15);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+
+		@include mixins.animate-in(fade-up, tokens.$duration-standard, 0.2s);
+	}
+
+	&__contact-text {
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		color: var(--color-text-secondary);
+		opacity: 85%;
+	}
+
 	&__whatsapp-cta {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		margin-top: 1.25rem;
-		padding: 0.75rem 1.5rem;
-		background: rgb(255 255 255 / 88%);
-		color: #166e3b;
-		border: 1px solid rgb(37 211 102 / 42%);
-		border-radius: var(--rsvp-radius-field, 12px);
+		justify-content: center;
+		gap: 0.65rem;
+		padding: 0.875rem 1.75rem;
+		background: var(--color-glass-bg-accent, rgb(var(--color-action-accent-rgb), 0.08));
+		color: var(--color-action-accent);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.24);
+		border-radius: var(--rsvp-radius-field, 32px);
 		font-family: var(--font-body);
 		font-size: 0.95rem;
-		font-weight: 500;
+		font-weight: 550;
 		text-decoration: none;
 		transition:
-			background-color tokens.$duration-snappy tokens.$ease-out,
-			transform tokens.$duration-snappy tokens.$ease-out;
+			background-color tokens.$duration-standard tokens.$ease-out,
+			transform tokens.$duration-snappy tokens.$ease-out,
+			box-shadow tokens.$duration-standard tokens.$ease-out;
+		backdrop-filter: blur(8px);
+		box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
 
 		&:hover {
-			background: rgb(255 255 255 / 96%);
-			transform: translateY(-1px);
+			background: rgb(var(--color-action-accent-rgb), 0.14);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgb(var(--color-action-accent-rgb), 0.12);
+		}
+
+		&:active {
+			transform: translateY(0);
 		}
 
 		&:focus-visible {
-			outline: 2px solid #25d366;
+			outline: 2px solid var(--color-action-accent);
 			outline-offset: 3px;
+		}
+
+		svg {
+			opacity: 92%;
+			transition: transform tokens.$duration-standard tokens.$ease-out;
+		}
+
+		&:hover svg {
+			transform: scale(1.1) rotate(4deg);
 		}
 	}
 }
