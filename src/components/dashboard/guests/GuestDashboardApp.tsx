@@ -40,34 +40,6 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 
 const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId }) => {
 	const [eventId, setEventId] = useState<string>(initialEventId || '');
-	const [lastScrollY, setLastScrollY] = useState(0);
-	const [headerHidden, setHeaderHidden] = useState(false);
-	const [headerScrolled, setHeaderScrolled] = useState(false);
-
-	// Smart Header Logic
-	useEffect(() => {
-		const handleScroll = () => {
-			const currentScrollY = window.scrollY;
-
-			// Topbar visibility logic
-			if (currentScrollY > 100) {
-				setHeaderScrolled(true);
-				if (currentScrollY > lastScrollY && !headerHidden) {
-					setHeaderHidden(true);
-				} else if (currentScrollY < lastScrollY && headerHidden) {
-					setHeaderHidden(false);
-				}
-			} else {
-				setHeaderScrolled(false);
-				setHeaderHidden(false);
-			}
-
-			setLastScrollY(currentScrollY);
-		};
-
-		window.addEventListener('scroll', handleScroll, { passive: true });
-		return () => window.removeEventListener('scroll', handleScroll);
-	}, [lastScrollY, headerHidden]);
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [search, setSearch] = useState('');
 	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
@@ -323,81 +295,92 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		}
 	};
 
+	// Unified Modal Scroll Lock (Robust CSS-class based)
 	useEffect(() => {
-		if (!deleteConfirmOpen) return;
+		const isAnyModalOpen = modalOpen || deleteConfirmOpen || importModalOpen;
 
-		const scrollY = window.scrollY;
-		const body = document.body;
-		const style = body.style;
-
-		const prev = {
-			overflow: style.overflow,
-			position: style.position,
-			top: style.top,
-			width: style.width,
-			paddingRight: style.paddingRight,
-		};
-
-		// Compensate scrollbar (desktop)
-		const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-		if (scrollbarWidth > 0) {
-			style.paddingRight = `${scrollbarWidth}px`;
+		if (isAnyModalOpen) {
+			document.body.classList.add('modal-open');
+		} else {
+			document.body.classList.remove('modal-open');
+			document.body.style.overflow = '';
+			document.body.style.position = '';
+			document.body.style.top = '';
 		}
 
-		body.classList.add('modal-open');
-
-		style.overflow = 'hidden';
-		style.position = 'fixed';
-		style.top = `-${scrollY}px`;
-		style.width = '100%';
-
 		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
+			if (e.key === 'Escape' && isAnyModalOpen) {
+				setModalOpen(false);
 				setDeleteConfirmOpen(false);
+				setImportModalOpen(false);
 			}
 		};
 
 		document.addEventListener('keydown', handleEscape);
-
 		return () => {
-			body.classList.remove('modal-open');
-			style.overflow = prev.overflow;
-			style.position = prev.position;
-			style.top = prev.top;
-			style.width = prev.width;
-			style.paddingRight = prev.paddingRight;
-
-			window.scrollTo(0, scrollY);
-
 			document.removeEventListener('keydown', handleEscape);
 		};
-	}, [deleteConfirmOpen]);
+	}, [modalOpen, deleteConfirmOpen, importModalOpen]);
+
+	const handlePostpone = useCallback(() => {
+		if (!editingGuest) return;
+
+		setItems((prev) => {
+			const index = prev.findIndex((i) => i.guestId === editingGuest.guestId);
+			if (index === -1) return prev;
+
+			const newItems = [...prev];
+			const [postponedItem] = newItems.splice(index, 1);
+			newItems.push(postponedItem);
+			return newItems;
+		});
+
+		// Find the NEXT guest to edit (after the local state update is potentially queued)
+		const remainingPending = items.filter(
+			(i) => i.deliveryStatus === 'generated' && i.guestId !== editingGuest.guestId,
+		);
+
+		if (remainingPending.length > 0) {
+			setEditingGuest(remainingPending[0]);
+			setNotification({
+				message: `Invitado pospuesto. Siguiente: ${remainingPending[0].fullName}`,
+				type: 'info',
+			});
+		} else {
+			setModalOpen(false);
+			setIsNextActionActive(false);
+			setNotification({
+				message: 'No hay más invitados pendientes en la cola.',
+				type: 'info',
+			});
+		}
+	}, [editingGuest, items]);
 
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
 				<Confetti active={confettiActive} onComplete={() => setConfettiActive(false)} />
 
-				<header
-					className={`dashboard-guests__header ${headerHidden ? 'dashboard-guests__header--hidden' : ''} ${headerScrolled ? 'dashboard-guests__header--scrolled' : ''}`}
-				>
-					<h1>Dashboard de invitados</h1>
-					<div className="header-event-selector">
-						<label htmlFor="active-event">Evento activo</label>
-						<select
-							id="active-event"
-							value={eventId}
-							onChange={(event) => setEventId(event.target.value)}
-						>
-							<option value="">Selecciona un evento</option>
-							{hostEvents.map((event) => (
-								<option key={event.id} value={event.id}>
-									{event.title} ({event.slug})
-								</option>
-							))}
-						</select>
+				<div className="dashboard-guests__toolbar">
+					<div className="dashboard-guests__title-area">
+						<h1>Dashboard de invitados</h1>
+						<div className="header-event-selector">
+							<label htmlFor="active-event">Evento activo</label>
+							<select
+								id="active-event"
+								value={eventId}
+								onChange={(event) => setEventId(event.target.value)}
+							>
+								<option value="">Selecciona un evento</option>
+								{hostEvents.map((event) => (
+									<option key={event.id} value={event.id}>
+										{event.title} ({event.slug})
+									</option>
+								))}
+							</select>
+						</div>
 					</div>
-				</header>
+				</div>
 
 				<div className="dashboard-guests__meta-bar">
 					{updatedAt && (
@@ -637,14 +620,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							setModalOpen(false);
 							setIsNextActionActive(false);
 						}}
-						onPostpone={() => {
-							setModalOpen(false);
-							setIsNextActionActive(false);
-							setNotification({
-								message: 'Invitado pospuesto.',
-								type: 'info',
-							});
-						}}
+						onPostpone={handlePostpone}
 						onSubmit={async (payload, stayOpen) => {
 							let savedItem: DashboardGuestItem | null = null;
 							try {
