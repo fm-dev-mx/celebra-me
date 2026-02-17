@@ -11,6 +11,7 @@ import { useShortcuts } from '@/hooks/useShortcuts';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
 import '@/styles/invitation/_dashboard-guests.scss';
 import { createPortal } from 'react-dom';
+import { Confetti } from '@/components/ui/Confetti';
 
 interface GuestDashboardAppProps {
 	initialEventId: string;
@@ -26,15 +27,47 @@ interface HostEventItem {
 type RealtimeState = 'connected' | 'reconnecting' | 'fallback';
 
 const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
-	total: 0,
-	pending: 0,
-	confirmed: 0,
-	declined: 0,
+	totalInvitations: 0,
+	totalPeople: 0,
+	pendingInvitations: 0,
+	pendingPeople: 0,
+	confirmedInvitations: 0,
+	confirmedPeople: 0,
+	declinedInvitations: 0,
+	declinedPeople: 0,
 	viewed: 0,
 };
 
 const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId }) => {
-	const [eventId, setEventId] = useState(initialEventId);
+	const [eventId, setEventId] = useState<string>(initialEventId || '');
+	const [lastScrollY, setLastScrollY] = useState(0);
+	const [headerHidden, setHeaderHidden] = useState(false);
+	const [headerScrolled, setHeaderScrolled] = useState(false);
+
+	// Smart Header Logic
+	useEffect(() => {
+		const handleScroll = () => {
+			const currentScrollY = window.scrollY;
+
+			// Topbar visibility logic
+			if (currentScrollY > 100) {
+				setHeaderScrolled(true);
+				if (currentScrollY > lastScrollY && !headerHidden) {
+					setHeaderHidden(true);
+				} else if (currentScrollY < lastScrollY && headerHidden) {
+					setHeaderHidden(false);
+				}
+			} else {
+				setHeaderScrolled(false);
+				setHeaderHidden(false);
+			}
+
+			setLastScrollY(currentScrollY);
+		};
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, [lastScrollY, headerHidden]);
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [search, setSearch] = useState('');
 	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
@@ -60,6 +93,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const reconnectTimerRef = useRef<number | null>(null);
 	const refreshDebounceRef = useRef<number | null>(null);
 	const reconnectAttemptRef = useRef(0);
+	const [confettiActive, setConfettiActive] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	useShortcuts(
@@ -259,12 +293,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		});
 	}, [items]);
 
-	const modalTitle = useMemo(
-		() =>
-			modalMode === 'create' ? 'Nuevo invitado' : `Editar: ${editingGuest?.fullName ?? ''}`,
-		[editingGuest?.fullName, modalMode],
-	);
-
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
 
@@ -348,25 +376,71 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
-				<header className="dashboard-guests__header">
+				<Confetti active={confettiActive} onComplete={() => setConfettiActive(false)} />
+
+				<header
+					className={`dashboard-guests__header ${headerHidden ? 'dashboard-guests__header--hidden' : ''} ${headerScrolled ? 'dashboard-guests__header--scrolled' : ''}`}
+				>
 					<h1>Dashboard de invitados</h1>
-					<div className="header-actions">
-						<div className="filter-group">
-							<label>Evento activo</label>
-							<select
-								value={eventId}
-								onChange={(event) => setEventId(event.target.value)}
-							>
-								<option value="">Selecciona un evento</option>
-								{hostEvents.map((event) => (
-									<option key={event.id} value={event.id}>
-										{event.title} ({event.slug})
-									</option>
-								))}
-							</select>
-						</div>
+					<div className="header-event-selector">
+						<label htmlFor="active-event">Evento activo</label>
+						<select
+							id="active-event"
+							value={eventId}
+							onChange={(event) => setEventId(event.target.value)}
+						>
+							<option value="">Selecciona un evento</option>
+							{hostEvents.map((event) => (
+								<option key={event.id} value={event.id}>
+									{event.title} ({event.slug})
+								</option>
+							))}
+						</select>
 					</div>
 				</header>
+
+				<div className="dashboard-guests__meta-bar">
+					{updatedAt && (
+						<span className="dashboard-guests__status">
+							<span>🕒</span> Actualizado:{' '}
+							{new Date(updatedAt).toLocaleString('es-MX')}
+						</span>
+					)}
+					<span className="dashboard-guests__status">
+						<span>📡</span> Streaming:{' '}
+						{realtimeState === 'connected' ? '✅ Conectado' : '🔄 Reconectando'}
+					</span>
+				</div>
+
+				<GuestProgressCard
+					totalPeople={totals.totalPeople}
+					confirmedPeople={totals.confirmedPeople}
+					sessionCount={shareSessionCount}
+				/>
+
+				<GuestStatsCards totals={totals} />
+
+				<div className="dashboard-guests__quick-actions">
+					{items.some((i) => i.deliveryStatus === 'generated') && (
+						<button
+							className="btn-primary btn--shiny"
+							disabled={loading}
+							onClick={() => {
+								const next = items.find((i) => i.deliveryStatus === 'generated');
+								if (next) {
+									setModalMode('edit');
+									setEditingGuest(next);
+									setIsNextActionActive(true);
+									setModalOpen(true);
+								}
+							}}
+						>
+							🚀 Enviar Siguiente (
+							{items.filter((i) => i.deliveryStatus === 'generated').length}{' '}
+							pendientes)
+						</button>
+					)}
+				</div>
 
 				<GuestFilters
 					searchInputRef={searchInputRef}
@@ -406,44 +480,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onImportClick={() => setImportModalOpen(true)}
 				/>
 
-				<div className="dashboard-guests__quick-actions">
-					{items.some((i) => i.deliveryStatus === 'generated') && (
-						<button
-							className="btn-primary btn--shiny"
-							disabled={loading}
-							onClick={() => {
-								const next = items.find((i) => i.deliveryStatus === 'generated');
-								if (next) {
-									setModalMode('edit');
-									setEditingGuest(next);
-									setIsNextActionActive(true);
-									setModalOpen(true);
-								}
-							}}
-						>
-							🚀 Enviar Siguiente (
-							{items.filter((i) => i.deliveryStatus === 'generated').length}{' '}
-							pendientes)
-						</button>
-					)}
-				</div>
-
-				<GuestProgressCard totals={totals} sessionCount={shareSessionCount} />
-
-				<GuestStatsCards totals={totals} />
-
 				{loading && <p className="dashboard-guests__status">Procesando...</p>}
-
-				<div className="dashboard-guests__meta-bar">
-					{updatedAt && (
-						<span className="dashboard-guests__status">
-							Actualizado: {new Date(updatedAt).toLocaleString('es-MX')}
-						</span>
-					)}
-					<span className="dashboard-guests__status">
-						Streaming: {realtimeState === 'connected' ? '✅' : '🔄'}
-					</span>
-				</div>
 
 				{error && <p className="dashboard-guests__error">{error}</p>}
 
@@ -474,6 +511,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							);
 
 							setShareSessionCount((prev) => prev + 1);
+							setConfettiActive(true);
 							setNotification({
 								message: '¡Invitación compartida! 🎉',
 								type: 'success',
@@ -589,70 +627,90 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						</div>,
 						document.body,
 					)}
-
-				<GuestFormModal
-					open={modalOpen}
-					mode={modalMode}
-					initialGuest={editingGuest}
-					onClose={() => setModalOpen(false)}
-					onSubmit={async (payload) => {
-						let savedItem: DashboardGuestItem | null = null;
-						if (modalMode === 'create') {
-							const response = await apiJson<{ item: DashboardGuestItem }>(
-								'/api/dashboard/guests',
-								{
-									method: 'POST',
-									headers: { 'Content-Type': 'application/json' },
-									body: JSON.stringify({
-										eventId,
-										fullName: payload.fullName,
-										phone: payload.phone,
-										maxAllowedAttendees: payload.maxAllowedAttendees,
-										tags: payload.tags,
-									}),
-								},
-							);
-							savedItem = response.item;
-						} else if (editingGuest) {
-							const response = await apiJson<{ item: DashboardGuestItem }>(
-								`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
-								{
-									method: 'PATCH',
-									headers: { 'Content-Type': 'application/json' },
-									body: JSON.stringify(payload),
-								},
-							);
-							savedItem = response.item;
-						}
-
-						await loadGuests();
-
-						setNotification({
-							message: `Invitado ${savedItem?.fullName || 'guardado'} correctamente.`,
-							type: 'success',
-						});
-
-						// Handle auto-share logic for "Send Next" flow
-						if (isNextActionActive && modalMode === 'edit' && savedItem) {
-							const guestId = savedItem.guestId;
-							setTimeout(() => {
-								const shareButton = document.querySelector(
-									`[data-guest-id="${guestId}"] .dashboard-guests__share-button`,
-								) as HTMLElement;
-								if (shareButton) {
-									shareButton.click();
-									const card = document.querySelector(
-										`[data-guest-id="${guestId}"]`,
+				{modalOpen && (
+					<GuestFormModal
+						open={modalOpen}
+						mode={modalMode}
+						initialGuest={editingGuest}
+						isInvitationFactory={isNextActionActive}
+						onClose={() => {
+							setModalOpen(false);
+							setIsNextActionActive(false);
+						}}
+						onPostpone={() => {
+							setModalOpen(false);
+							setIsNextActionActive(false);
+							setNotification({
+								message: 'Invitado pospuesto.',
+								type: 'info',
+							});
+						}}
+						onSubmit={async (payload, stayOpen) => {
+							let savedItem: DashboardGuestItem | null = null;
+							try {
+								if (modalMode === 'create') {
+									const response = await apiJson<{ item: DashboardGuestItem }>(
+										'/api/dashboard/guests',
+										{
+											method: 'POST',
+											headers: { 'Content-Type': 'application/json' },
+											body: JSON.stringify({
+												eventId,
+												...payload,
+											}),
+										},
 									);
-									card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+									savedItem = response.item;
+								} else if (editingGuest) {
+									const response = await apiJson<{ item: DashboardGuestItem }>(
+										`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
+										{
+											method: 'PATCH',
+											headers: { 'Content-Type': 'application/json' },
+											body: JSON.stringify(payload),
+										},
+									);
+									savedItem = response.item;
 								}
-								setIsNextActionActive(false);
-							}, 400);
-						}
-					}}
-				/>
 
-				{modalOpen && <p className="dashboard-guests__status">{modalTitle}</p>}
+								await loadGuests();
+
+								setNotification({
+									message: `Invitado ${savedItem?.fullName || 'guardado'} correctamente.`,
+									type: 'success',
+								});
+
+								if (isNextActionActive && modalMode === 'edit' && savedItem) {
+									const guestId = savedItem.guestId;
+									setTimeout(() => {
+										const shareButton = document.querySelector(
+											`[data-guest-id="${guestId}"] .dashboard-guests__share-button`,
+										) as HTMLElement;
+										if (shareButton) {
+											shareButton.click();
+											const card = document.querySelector(
+												`[data-guest-id="${guestId}"]`,
+											);
+											card?.scrollIntoView({
+												behavior: 'smooth',
+												block: 'center',
+											});
+										}
+										setIsNextActionActive(false);
+									}, 400);
+								}
+
+								if (!stayOpen) {
+									setModalOpen(false);
+									setIsNextActionActive(false);
+								}
+							} catch (err) {
+								console.error('Error saving guest:', err);
+								throw err;
+							}
+						}}
+					/>
+				)}
 
 				{notification && (
 					<Toast
@@ -690,6 +748,59 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						}}
 					/>
 				)}
+
+				{/* Mobile Action Dock - Portaled for permanent visibility */}
+				{typeof document !== 'undefined' &&
+					createPortal(
+						<div className="dashboard-guests__mobile-dock">
+							<button
+								className="dock-item"
+								onClick={() => {
+									setModalMode('create');
+									setEditingGuest(null);
+									setModalOpen(true);
+								}}
+							>
+								<span className="dock-icon">➕</span>
+								<span className="dock-label">Nuevo</span>
+							</button>
+
+							<button
+								className="dock-item dock-item--main"
+								disabled={
+									loading || !items.some((i) => i.deliveryStatus === 'generated')
+								}
+								onClick={() => {
+									const next = items.find(
+										(i) => i.deliveryStatus === 'generated',
+									);
+									if (next) {
+										setModalMode('edit');
+										setEditingGuest(next);
+										setIsNextActionActive(true);
+										setModalOpen(true);
+									}
+								}}
+							>
+								<span className="dock-icon">🚀</span>
+								<span className="dock-label">Siguiente</span>
+							</button>
+
+							<div className="dock-item dock-item--filter">
+								<select
+									value={status}
+									onChange={(e) => setStatus(e.target.value as typeof status)}
+								>
+									<option value="all">Filtrar</option>
+									<option value="pending">⏳ Pend.</option>
+									<option value="confirmed">✅ Conf.</option>
+									<option value="declined">❌ Decl.</option>
+								</select>
+								<span className="dock-label">Estado</span>
+							</div>
+						</div>,
+						document.body,
+					)}
 			</section>
 		</ErrorBoundary>
 	);
