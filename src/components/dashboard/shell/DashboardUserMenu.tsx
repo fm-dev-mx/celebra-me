@@ -13,17 +13,32 @@ const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel 
 		<div className="dashboard-user-menu">
 			<div className="dashboard-user-menu__meta">
 				<span className="dashboard-user-menu__role">{roleLabel}</span>
-				<span className="dashboard-user-menu__email">{email || 'sin-email'}</span>
+				<span className="dashboard-user-menu__email" title={email}>
+					{email
+						? email.length > 15
+							? email.substring(0, 12) + '...'
+							: email
+						: 'sin-email'}
+				</span>
 			</div>
 			<button
 				type="button"
+				className="btn-pill-logout"
 				disabled={busy}
 				onClick={async () => {
 					setBusy(true);
 					await logoutAndRedirect('/');
 				}}
 			>
-				{busy ? 'Saliendo...' : 'Cerrar sesión'}
+				{busy ? (
+					<span className="busy-loader">
+						<span className="dot"></span>
+						<span className="dot"></span>
+						<span className="dot"></span>
+					</span>
+				) : (
+					<span className="btn-text">Cerrar sesión</span>
+				)}
 			</button>
 		</div>
 	);
