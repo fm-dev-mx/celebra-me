@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import { useShortcuts } from '@/hooks/useShortcuts';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
 import '@/styles/invitation/_dashboard-guests.scss';
+import { createPortal } from 'react-dom';
 
 interface GuestDashboardAppProps {
 	initialEventId: string;
@@ -246,6 +247,18 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		return () => window.clearInterval(id);
 	}, [loadGuests, realtimeState]);
 
+	const sortedItems = useMemo(() => {
+		return [...items].sort((a, b) => {
+			// 1. Pending (generated) first
+			if (a.deliveryStatus === 'generated' && b.deliveryStatus === 'shared') return -1;
+			if (a.deliveryStatus === 'shared' && b.deliveryStatus === 'generated') return 1;
+
+			// 2. Then within same delivery status, sort by name or creation?
+			// Let's keep existing order for same status
+			return 0;
+		});
+	}, [items]);
+
 	const modalTitle = useMemo(
 		() =>
 			modalMode === 'create' ? 'Nuevo invitado' : `Editar: ${editingGuest?.fullName ?? ''}`,
@@ -281,6 +294,56 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			setGuestToDelete(null);
 		}
 	};
+
+	useEffect(() => {
+		if (!deleteConfirmOpen) return;
+
+		const scrollY = window.scrollY;
+		const body = document.body;
+		const style = body.style;
+
+		const prev = {
+			overflow: style.overflow,
+			position: style.position,
+			top: style.top,
+			width: style.width,
+			paddingRight: style.paddingRight,
+		};
+
+		// Compensate scrollbar (desktop)
+		const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+		if (scrollbarWidth > 0) {
+			style.paddingRight = `${scrollbarWidth}px`;
+		}
+
+		body.classList.add('modal-open');
+
+		style.overflow = 'hidden';
+		style.position = 'fixed';
+		style.top = `-${scrollY}px`;
+		style.width = '100%';
+
+		const handleEscape = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				setDeleteConfirmOpen(false);
+			}
+		};
+
+		document.addEventListener('keydown', handleEscape);
+
+		return () => {
+			body.classList.remove('modal-open');
+			style.overflow = prev.overflow;
+			style.position = prev.position;
+			style.top = prev.top;
+			style.width = prev.width;
+			style.paddingRight = prev.paddingRight;
+
+			window.scrollTo(0, scrollY);
+
+			document.removeEventListener('keydown', handleEscape);
+		};
+	}, [deleteConfirmOpen]);
 
 	return (
 		<ErrorBoundary>
@@ -385,7 +448,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				{error && <p className="dashboard-guests__error">{error}</p>}
 
 				<GuestTable
-					items={items}
+					items={sortedItems}
 					inviteBaseUrl={inviteBaseUrl}
 					onEdit={(item) => {
 						setModalMode('edit');
@@ -457,76 +520,75 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					}}
 				/>
 
-				{deleteConfirmOpen && (
-					<div
-						className="dashboard-modal-backdrop"
-						onClick={() => setDeleteConfirmOpen(false)}
-					>
+				{deleteConfirmOpen &&
+					createPortal(
 						<div
-							className="dashboard-modal dashboard-modal--confirm"
-							onClick={(e) => e.stopPropagation()}
+							className="dashboard-modal-backdrop"
+							onClick={() => setDeleteConfirmOpen(false)}
+							role="presentation"
 						>
-							<div className="dashboard-modal__header">
-								<h3>Confirmar eliminación</h3>
-								<button
-									className="btn-close"
-									onClick={() => setDeleteConfirmOpen(false)}
-									aria-label="Cerrar modal"
-								>
-									&times;
-								</button>
-							</div>
-							<div className="dashboard-modal__content">
-								<p
-									style={{
-										textAlign: 'center',
-										marginBottom: '1rem',
-										color: 'var(--color-text-secondary)',
-									}}
-								>
-									¿Estás seguro de que deseas eliminar a{' '}
-									<strong>{guestToDelete?.fullName}</strong>?
-								</p>
-								<p
-									style={{
-										textAlign: 'center',
-										fontSize: '0.85rem',
-										color: 'var(--color-wax-seal)',
-									}}
-								>
-									Esta acción no se puede deshacer.
-								</p>
-							</div>
-							<p
-								style={{
-									textAlign: 'center',
-									marginBottom: '2rem',
-									color: 'var(--color-text-secondary)',
-								}}
+							<div
+								className="dashboard-modal dashboard-modal--confirm"
+								onClick={(e) => e.stopPropagation()}
+								role="dialog"
+								aria-modal="true"
+								aria-labelledby="delete-modal-title"
 							>
-								¿Estás seguro de que deseas eliminar a{' '}
-								<strong>{guestToDelete?.fullName}</strong>? Esta acción no se puede
-								deshacer.
-							</p>
-							<div className="dashboard-modal__actions">
-								<button
-									type="button"
-									className="btn-secondary"
-									onClick={() => setDeleteConfirmOpen(false)}
-								>
-									Cancelar
-								</button>
-								<button
-									type="button"
-									className="btn-primary btn-primary--danger"
-									onClick={handleDeleteConfirm}
-								>
-									Eliminar definitivamente
-								</button>
+								<div className="dashboard-modal__header">
+									<h3 id="delete-modal-title">Confirmar eliminación</h3>
+									<button
+										className="btn-close"
+										onClick={() => setDeleteConfirmOpen(false)}
+										aria-label="Cerrar modal"
+									>
+										&times;
+									</button>
+								</div>
+
+								<div className="dashboard-modal__content">
+									<p
+										style={{
+											textAlign: 'center',
+											marginBottom: '1rem',
+											color: 'var(--color-text-secondary)',
+										}}
+									>
+										¿Estás seguro de que deseas eliminar a{' '}
+										<strong>{guestToDelete?.fullName}</strong>?
+									</p>
+
+									<p
+										style={{
+											textAlign: 'center',
+											fontSize: '0.85rem',
+											color: 'var(--color-wax-seal)',
+										}}
+									>
+										Esta acción no se puede deshacer.
+									</p>
+								</div>
+
+								<div className="dashboard-modal__actions">
+									<button
+										type="button"
+										className="btn-secondary"
+										onClick={() => setDeleteConfirmOpen(false)}
+									>
+										Cancelar
+									</button>
+
+									<button
+										type="button"
+										className="btn-primary btn-primary--danger"
+										onClick={handleDeleteConfirm}
+									>
+										Eliminar definitivamente
+									</button>
+								</div>
 							</div>
-						</div>
-					</div>
-				)}
+						</div>,
+						document.body,
+					)}
 
 				<GuestFormModal
 					open={modalOpen}

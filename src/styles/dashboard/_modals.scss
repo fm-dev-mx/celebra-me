@@ -1,21 +1,30 @@
-@use 'sass:color';
 @use '../tokens' as *;
+
+body.modal-open {
+	overflow: hidden !important;
+	height: 100vh !important;
+	touch-action: none;
+}
 
 // ==========================================================================
 // DASHBOARD MODAL SYSTEM (Jewelry Box Aesthetic)
 // ==========================================================================
 
 .dashboard-modal-backdrop {
-	position: fixed;
-	inset: 0;
-	z-index: 2000;
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100vw !important;
+	height: 100dvh !important;
+	z-index: 9999 !important;
 	background: rgb(26 26 26 / 45%);
 	backdrop-filter: blur(12px) saturate(180%);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: var(--spacing-xl);
-	animation: fadeIn 0.3s ease;
+	overflow: hidden;
+	overscroll-behavior: contain;
+	touch-action: none;
 }
 
 .dashboard-modal {
@@ -26,7 +35,7 @@
 	padding: clamp(1.2rem, 3vw, 2.5rem);
 	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
 	position: relative;
-	max-height: 85vh;
+	max-height: min(calc(100dvh - 40px), 850px);
 	display: flex;
 	flex-direction: column;
 	animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);

@@ -60,6 +60,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	useEffect(() => {
 		if (!open) return;
+
+		// Body Scroll Lock
+		const originalOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		document.body.classList.add('modal-open');
+
 		if (!initialGuest) {
 			resetForm();
 			return;
@@ -71,6 +77,11 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendeeCount(initialGuest.attendeeCount);
 		setGuestMessage(initialGuest.guestMessage || '');
 		setTags(initialGuest.tags || []);
+
+		return () => {
+			document.body.style.overflow = originalOverflow;
+			document.body.classList.remove('modal-open');
+		};
 	}, [initialGuest, open]);
 
 	if (!open) return null;
