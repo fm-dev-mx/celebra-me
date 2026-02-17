@@ -4,7 +4,7 @@
 .dashboard-guests {
 	max-width: 1400px;
 	margin: 0 auto;
-	padding: var(--spacing-xl) var(--spacing-md);
+	padding: var(--spacing-xl) clamp(var(--spacing-md), 5vw, var(--spacing-xl));
 	background-color: $color-surface-primary;
 	min-height: calc(100vh - 64px); // Adjust for topbar
 	color: $color-text-primary;
@@ -41,43 +41,77 @@
 .btn-secondary,
 .btn-accent {
 	font-family: inherit;
-	font-weight: $font-weight-medium;
-	padding: 0.75rem 1.75rem;
-	border-radius: 6px;
+	font-weight: $font-weight-bold;
+	padding: 0.85rem 2rem;
+	border-radius: 8px;
 	cursor: pointer;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	text-transform: uppercase;
 	letter-spacing: $letter-spacing-wide;
-	font-size: 0.8rem;
+	font-size: 0.85rem;
 	border: 1px solid transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.5rem;
+	gap: 0.6rem;
+	min-height: 48px;
+	position: relative;
+	overflow: hidden;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(rgb(255 255 255 / 10%), transparent);
+		opacity: 0%;
+		transition: opacity 0.2s ease;
+	}
+
+	&:hover::after {
+		opacity: 100%;
+	}
 }
 
 .btn-primary {
 	background: $color-text-emphasis;
 	color: white;
-	box-shadow: 0 4px 12px rgba($color-text-emphasis, 0.15);
+	box-shadow:
+		0 4px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
+		0 8px 16px rgba($color-text-emphasis, 0.25);
 
 	&:hover {
 		background: #{color.adjust($base-gold-700, $lightness: 5%)};
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba($color-text-emphasis, 0.25);
+		box-shadow:
+			0 6px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
+			0 12px 24px rgba($color-text-emphasis, 0.35);
 	}
 
 	&:active {
-		transform: translateY(0);
+		transform: translateY(2px);
+		box-shadow:
+			0 2px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
+			0 4px 8px rgba($color-text-emphasis, 0.2);
 	}
 
 	&--danger {
 		background: $color-wax-seal;
-		box-shadow: 0 4px 12px rgba($color-wax-seal, 0.2);
+		box-shadow:
+			0 4px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
+			0 8px 16px rgba($color-wax-seal, 0.2);
 
 		&:hover {
 			background: color.adjust($color-wax-seal, $lightness: -5%);
-			box-shadow: 0 6px 16px rgba($color-wax-seal, 0.3);
+			box-shadow:
+				0 6px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
+				0 12px 24px rgba($color-wax-seal, 0.3);
+		}
+
+		&:active {
+			transform: translateY(2px);
+			box-shadow:
+				0 2px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
+				0 4px 8px rgba($color-wax-seal, 0.2);
 		}
 	}
 }
@@ -284,6 +318,20 @@
 
 		&:hover {
 			background-color: rgba($color-action-accent, 0.03);
+		}
+
+		&.row-shared {
+			opacity: 60%;
+			background-color: transparent;
+
+			&:hover {
+				opacity: 100%;
+				background-color: rgba($color-action-accent, 0.03);
+			}
+
+			.guest-info__name {
+				color: $color-text-secondary;
+			}
 		}
 
 		&:last-child {
@@ -525,16 +573,33 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing-sm);
-	padding: var(--spacing-md);
+	padding: var(--spacing-lg);
 	background: white;
 	border: 1px solid $color-border-subtle;
 	border-radius: 12px;
 	box-shadow: $shadow-subtle;
-	transition: all 0.2s ease;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	margin-bottom: var(--spacing-sm);
 
 	&:hover {
 		box-shadow: $shadow-emphasis;
 		border-color: rgba($color-action-accent, 0.3);
+		transform: translateY(-2px);
+	}
+
+	&--shared {
+		opacity: 75%;
+		background-color: transparent;
+		border-style: dashed;
+
+		&:hover {
+			opacity: 100%;
+			background-color: white;
+		}
+
+		.guest-card__name {
+			color: $color-text-secondary;
+		}
 	}
 
 	&__header {

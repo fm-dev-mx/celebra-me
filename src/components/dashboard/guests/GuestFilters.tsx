@@ -53,19 +53,19 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 			</div>
 
 			<div className="header-actions">
-				<button
-					type="button"
-					onClick={onRefreshClick}
-					className="btn-icon"
-					title="Recargar lista"
-				>
-					🔄
-				</button>
 				<button type="button" onClick={onExportClick} className="btn-secondary">
 					Exportar
 				</button>
 				<button type="button" onClick={onImportClick} className="btn-secondary">
 					Importar
+				</button>
+				<button
+					type="button"
+					onClick={onRefreshClick}
+					className="btn-secondary"
+					title="Recargar lista"
+				>
+					🔄 Actualizar
 				</button>
 				<button type="button" onClick={onCreateClick} className="btn-primary">
 					+ Nuevo invitado
