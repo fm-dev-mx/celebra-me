@@ -130,14 +130,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<button
 					type="button"
 					className="btn-icon"
-					title="Abrir invitación"
-					onClick={() => window.open(inviteUrl, '_blank')}
-				>
-					🌍
-				</button>
-				<button
-					type="button"
-					className="btn-icon"
 					title="Editar"
 					onClick={() => onEdit(item)}
 				>

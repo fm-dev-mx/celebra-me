@@ -229,14 +229,6 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										<button
 											type="button"
 											className="btn-icon"
-											title="Abrir invitación"
-											onClick={() => window.open(inviteUrl, '_blank')}
-										>
-											🌍
-										</button>
-										<button
-											type="button"
-											className="btn-icon"
 											title="Editar"
 											onClick={() => onEdit(item)}
 										>
