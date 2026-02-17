@@ -58,7 +58,17 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					updatedAt: new Date().toISOString(),
 				},
 			],
-			totals: { total: 1, pending: 0, confirmed: 1, declined: 0, viewed: 0 },
+			totals: {
+				totalInvitations: 1,
+				totalPeople: 1,
+				pendingInvitations: 0,
+				pendingPeople: 0,
+				confirmedInvitations: 1,
+				confirmedPeople: 1,
+				declinedInvitations: 0,
+				declinedPeople: 0,
+				viewed: 0,
+			},
 			updatedAt: new Date().toISOString(),
 		});
 

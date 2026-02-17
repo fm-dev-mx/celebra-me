@@ -63,7 +63,17 @@ describe('dashboard guests happy path', () => {
 		listDashboardGuestsMock.mockResolvedValue({
 			eventId: 'evt-1',
 			items: [],
-			totals: { total: 0, pending: 0, confirmed: 0, declined: 0, viewed: 0 },
+			totals: {
+				totalInvitations: 0,
+				totalPeople: 0,
+				pendingInvitations: 0,
+				pendingPeople: 0,
+				confirmedInvitations: 0,
+				confirmedPeople: 0,
+				declinedInvitations: 0,
+				declinedPeople: 0,
+				viewed: 0,
+			},
 			updatedAt: new Date().toISOString(),
 		});
 		const response = await GET({
