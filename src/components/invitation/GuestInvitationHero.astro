@@ -7,10 +7,15 @@ interface Props {
 const { eventTitle, guestName } = Astro.props as Props;
 ---
 
-<section class="guest-invitation-hero">
-	<p class="guest-invitation-hero__eyebrow">Invitacion personalizada</p>
-	<h1>Hola {guestName}</h1>
-	<p>Nos encantaria contar contigo en <strong>{eventTitle}</strong>.</p>
+<section class="invitation-hero guest-invitation-hero">
+	<div class="invitation-hero__content">
+		<span class="invitation-hero__label">Especialmente para</span>
+		<h1 class="invitation-hero__title">{guestName}</h1>
+		<div class="invitation-hero__divider"></div>
+		<div class="invitation-hero__details">
+			<p>Nos encantaría contar contigo en <br /><strong>{eventTitle}</strong></p>
+		</div>
+	</div>
 </section>
 
 <style>

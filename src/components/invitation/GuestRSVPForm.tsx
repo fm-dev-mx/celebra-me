@@ -83,9 +83,10 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 					}
 				}}
 			>
-				<p>
-					Invitado: <strong>{guestName}</strong>
-				</p>
+				<div className="guest-rsvp-form__personalized-welcome">
+					<p className="personalized-label">Especialmente para:</p>
+					<strong className="personalized-name">{guestName}</strong>
+				</div>
 				<div className="guest-rsvp-form__row">
 					<label>
 						<input

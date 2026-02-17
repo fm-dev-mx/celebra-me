@@ -189,6 +189,24 @@
 	}
 }
 
+// ── Guest Prototype Hero Variant ──
+.guest-invitation-hero {
+	.invitation-hero__content {
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
+		box-shadow: tokens.$shadow-premium;
+	}
+
+	.invitation-hero__title {
+		font-family: tokens.$font-display-elegant;
+		font-weight: tokens.$font-weight-regular;
+
+		// More dramatic shimmer for the protagonist
+		animation:
+			fadeInSlideUp 1.2s tokens.$ease-out 0.8s forwards,
+			specularGlint 6s ease-in-out infinite;
+	}
+}
+
 // Keyframes
 @keyframes heroContentReveal {
 	from {

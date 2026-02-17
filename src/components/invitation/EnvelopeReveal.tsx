@@ -274,7 +274,7 @@ const EnvelopeReveal: FC<Props> = ({
 										<h2 className="envelope-name">{name}</h2>
 										{guestName && (
 											<p className="envelope-tease__guest-name">
-												Para: {guestName}
+												{guestName}
 											</p>
 										)}
 									</div>
