@@ -1,13 +1,15 @@
 ---
 import type { DashboardNavItem } from '@/lib/rsvp-v2/types';
-
+import DashboardUserMenu from './DashboardUserMenu';
 interface Props {
 	items: DashboardNavItem[];
 	currentPath: string;
 	isAdmin: boolean;
+	userEmail: string;
+	roleLabel: 'ADMIN' | 'HOST';
 }
 
-const { items, currentPath, isAdmin } = Astro.props as Props;
+const { items, currentPath, isAdmin, userEmail, roleLabel } = Astro.props as Props;
 const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 ---
 
@@ -36,4 +38,5 @@ const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 			}
 		</ul>
 	</nav>
+	<DashboardUserMenu client:load email={userEmail} roleLabel={roleLabel} />
 </aside>

@@ -7,10 +7,6 @@ const eventId = Astro.url.searchParams.get('eventId') ?? '';
 
 <DashboardLayout
 	title="Dashboard Invitados"
-	breadcrumbs={[
-		{ label: 'Dashboard', href: '/dashboard/invitados' },
-		{ label: 'Invitados' },
-	]}
 >
 	<div class="dashboard-card">
 		<GuestDashboardApp client:load initialEventId={eventId} />
