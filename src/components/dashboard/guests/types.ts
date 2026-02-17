@@ -28,10 +28,14 @@ export interface DashboardGuestListResponse {
 	eventId: string;
 	items: DashboardGuestItem[];
 	totals: {
-		total: number;
-		pending: number;
-		confirmed: number;
-		declined: number;
+		totalInvitations: number;
+		totalPeople: number;
+		pendingInvitations: number;
+		pendingPeople: number;
+		confirmedInvitations: number;
+		confirmedPeople: number;
+		declinedInvitations: number;
+		declinedPeople: number;
 		viewed: number;
 	};
 	updatedAt: string;
