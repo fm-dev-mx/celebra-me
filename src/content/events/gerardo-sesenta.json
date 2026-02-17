@@ -130,7 +130,7 @@
         "confirmationMessage": "Te esperamos de botas y sombrero.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "5216681167477",
+            "phone": "5216681037219",
             "messageTemplate": "Hola, soy {name}. Confirmando mi asistencia, nos vemos el sábado. Asistentes: {guestCount}.",
             "omitTitle": true
         },
