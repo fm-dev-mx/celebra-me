@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 
 interface ShareActionProps {
 	phone: string;
@@ -9,7 +9,7 @@ interface ShareActionProps {
 }
 
 type ShareStatus = 'idle' | 'sending' | 'delivered';
-type ShareMethod = 'whatsapp' | 'web-share' | 'copy' | 'open';
+type ShareMethod = 'whatsapp' | 'web-share' | 'copy';
 
 const ShareAction: React.FC<ShareActionProps> = ({
 	phone,
@@ -19,248 +19,98 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	onShared,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
-	const [showMenu, setShowMenu] = useState(false);
-	const menuRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-				setShowMenu(false);
-			}
-		};
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
+	const hasPhoneAndWa = useMemo(() => !!(phone && waShareUrl), [phone, waShareUrl]);
+
+	// Guarded access to navigator for environments where it's undefined (tests/SSR-ish cases).
+	const supportsWebShare = useMemo(() => {
+		if (typeof navigator === 'undefined') return false;
+		return !!(navigator.share && typeof navigator.share === 'function');
 	}, []);
 
-	const handleShare = async (method: ShareMethod) => {
-		setShowMenu(false);
+	const primaryAction: ShareMethod = useMemo(() => {
+		if (hasPhoneAndWa) return 'whatsapp';
+		if (supportsWebShare) return 'web-share';
+		return 'copy';
+	}, [hasPhoneAndWa, supportsWebShare]);
+
+	const handleShare = async () => {
+		if (status !== 'idle') return;
+
 		setStatus('sending');
+		let didSucceed = false;
 
 		try {
-			switch (method) {
-				case 'whatsapp':
-					window.open(waShareUrl, '_blank', 'noopener,noreferrer');
-					await onShared();
-					setStatus('delivered');
-					break;
-
-				case 'web-share':
-					if (navigator.share) {
-						await navigator.share({
-							title: 'Invitación Celebra-me',
-							text: shareText,
-							url: inviteUrl,
-						});
-						await onShared();
-						setStatus('delivered');
-					} else {
-						throw new Error('Web Share not supported');
-					}
-					break;
-
-				case 'copy':
+			if (primaryAction === 'whatsapp') {
+				window.open(waShareUrl, '_blank', 'noopener,noreferrer');
+				await onShared();
+				didSucceed = true;
+			} else if (primaryAction === 'web-share') {
+				// supportsWebShare already checked, but keep defensive guard.
+				if (!supportsWebShare) throw new Error('Web Share not supported');
+				await navigator.share({
+					title: 'Invitación Celebra-me',
+					text: shareText,
+					url: inviteUrl,
+				});
+				await onShared();
+				didSucceed = true;
+			} else {
+				// copy
+				if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+					// Very old browsers: fallback to opening the link rather than failing silently.
+					window.open(inviteUrl, '_blank', 'noopener,noreferrer');
+				} else {
 					await navigator.clipboard.writeText(inviteUrl);
-					await onShared();
-					setStatus('delivered');
-					break;
-
-				case 'open':
-					window.open(inviteUrl, '_blank');
-					await onShared();
-					setStatus('delivered');
-					break;
+				}
+				await onShared();
+				didSucceed = true;
 			}
 
-			// Restore idle state after a cooling period for all successful actions
-			if (method !== 'copy' || status === 'delivered') {
-				setTimeout(() => setStatus('idle'), 3000);
+			if (didSucceed) {
+				setStatus('delivered');
+				window.setTimeout(() => setStatus('idle'), 3000);
+			} else {
+				setStatus('idle');
 			}
 		} catch (err) {
+			// Share can be aborted by user (Web Share) or blocked by browser; keep it quiet.
 			console.info('Share action aborted or failed:', err);
 			setStatus('idle');
 		}
 	};
 
-	const hasPhoneAndWa = !!(phone && waShareUrl);
-	const supportsWebShare = !!(navigator.share && typeof navigator.share === 'function');
-
-	const determinePrimaryAction = (): ShareMethod => {
-		if (hasPhoneAndWa) return 'whatsapp';
-		if (supportsWebShare) return 'web-share';
-		return 'copy';
-	};
-
-	const primaryAction = determinePrimaryAction();
-
-	const handlePrimaryClick = () => {
-		if (hasPhoneAndWa) {
-			handleShare('whatsapp');
-		} else if (supportsWebShare) {
-			handleShare('web-share');
-		} else {
-			setShowMenu(!showMenu);
-		}
-	};
-
 	const getButtonLabel = () => {
-		switch (status) {
-			case 'sending':
-				return 'Enviando...';
-			case 'delivered':
-				return 'Enviado';
-			default:
-				return primaryAction === 'whatsapp' ? 'WhatsApp' : 'Compartir';
-		}
+		if (status === 'sending') return 'Enviando...';
+		if (status === 'delivered') return 'Enviado';
+		return primaryAction === 'whatsapp' ? 'WhatsApp' : 'Compartir';
 	};
 
 	const getButtonIcon = () => {
-		switch (status) {
-			case 'delivered':
-				return '✓';
-			case 'sending':
-				return '⟳';
-			default:
-				return primaryAction === 'whatsapp' ? '💬' : '📤';
-		}
+		if (status === 'delivered') return '✓';
+		if (status === 'sending') return '⟳';
+		return primaryAction === 'whatsapp' ? '💬' : '📤';
 	};
 
+	const title =
+		primaryAction === 'whatsapp'
+			? 'Enviar por WhatsApp'
+			: primaryAction === 'web-share'
+				? 'Compartir invitación'
+				: 'Copiar enlace';
+
 	return (
-		<div ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
-			<button
-				type="button"
-				className={`dashboard-guests__share-button dashboard-guests__share-button--${status}`}
-				onClick={handlePrimaryClick}
-				disabled={status !== 'idle'}
-				title={
-					primaryAction === 'whatsapp' ? 'Enviar por WhatsApp' : 'Compartir invitación'
-				}
-			>
-				<span className="share-icon">{getButtonIcon()}</span>
-				<span className="share-label">{getButtonLabel()}</span>
-			</button>
-
-			{(!phone || !waShareUrl || !navigator.share) && (
-				<button
-					type="button"
-					className="dashboard-guests__share-menu-toggle"
-					onClick={() => setShowMenu(!showMenu)}
-					disabled={status !== 'idle'}
-					title="Más opciones"
-					aria-label="Más opciones de compartición"
-					style={{
-						marginLeft: '4px',
-						padding: '0.6rem',
-						background: 'var(--color-surface-secondary, #f5f5f5)',
-						border: '1px solid var(--color-border-subtle, #e5e5e5)',
-						borderRadius: '6px',
-						cursor: 'pointer',
-						fontSize: '0.8rem',
-					}}
-				>
-					▾
-				</button>
-			)}
-
-			{showMenu && (
-				<div
-					className="dashboard-guests__share-menu"
-					style={{
-						position: 'absolute',
-						top: '100%',
-						right: 0,
-						marginTop: '4px',
-						background: 'white',
-						border: '1px solid var(--color-border-subtle, #e5e5e5)',
-						borderRadius: '8px',
-						boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-						zIndex: 100,
-						minWidth: '160px',
-						overflow: 'hidden',
-					}}
-				>
-					{phone && waShareUrl && (
-						<button
-							type="button"
-							className="share-menu-item"
-							onClick={() => handleShare('whatsapp')}
-							style={{
-								display: 'flex',
-								alignItems: 'center',
-								gap: '8px',
-								width: '100%',
-								padding: '10px 14px',
-								background: 'none',
-								border: 'none',
-								cursor: 'pointer',
-								fontSize: '0.9rem',
-								textAlign: 'left',
-							}}
-						>
-							💬 WhatsApp
-						</button>
-					)}
-					{supportsWebShare && (
-						<button
-							type="button"
-							className="share-menu-item"
-							onClick={() => handleShare('web-share')}
-							style={{
-								display: 'flex',
-								alignItems: 'center',
-								gap: '8px',
-								width: '100%',
-								padding: '10px 14px',
-								background: 'none',
-								border: 'none',
-								cursor: 'pointer',
-								fontSize: '0.9rem',
-								textAlign: 'left',
-							}}
-						>
-							📤 Compartir...
-						</button>
-					)}
-					<button
-						type="button"
-						className="share-menu-item"
-						onClick={() => handleShare('copy')}
-						style={{
-							display: 'flex',
-							alignItems: 'center',
-							gap: '8px',
-							width: '100%',
-							padding: '10px 14px',
-							background: 'none',
-							border: 'none',
-							cursor: 'pointer',
-							fontSize: '0.9rem',
-							textAlign: 'left',
-						}}
-					>
-						📋 Copiar enlace
-					</button>
-					<button
-						type="button"
-						className="share-menu-item"
-						onClick={() => handleShare('open')}
-						style={{
-							display: 'flex',
-							alignItems: 'center',
-							gap: '8px',
-							width: '100%',
-							padding: '10px 14px',
-							background: 'none',
-							border: 'none',
-							cursor: 'pointer',
-							fontSize: '0.9rem',
-							textAlign: 'left',
-						}}
-					>
-						🌐 Abrir enlace
-					</button>
-				</div>
-			)}
-		</div>
+		<button
+			type="button"
+			className={`dashboard-guests__share-button dashboard-guests__share-button--${status}`}
+			onClick={handleShare}
+			disabled={status !== 'idle'}
+			title={title}
+			aria-label={title}
+		>
+			<span className="share-icon">{getButtonIcon()}</span>
+			<span className="share-label">{getButtonLabel()}</span>
+		</button>
 	);
 };
 
