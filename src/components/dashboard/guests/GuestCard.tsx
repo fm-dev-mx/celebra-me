@@ -30,7 +30,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	const isShared = item.deliveryStatus === 'shared';
 
 	return (
-		<article className="guest-card" data-guest-id={item.guestId}>
+		<article
+			className={`guest-card ${item.deliveryStatus === 'shared' ? 'guest-card--shared' : ''}`}
+			data-guest-id={item.guestId}
+		>
 			<div className="guest-card__header">
 				<div className="guest-card__name">{item.fullName}</div>
 				<div className={`status-pill status-pill--${item.attendanceStatus}`}>

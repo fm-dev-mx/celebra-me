@@ -118,9 +118,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 							<tr
 								key={item.guestId}
 								data-guest-id={item.guestId}
-								className={
-									copiedGuestId === item.guestId ? 'row-focus-highlight' : ''
-								}
+								className={`${copiedGuestId === item.guestId ? 'row-focus-highlight' : ''} ${item.deliveryStatus === 'shared' ? 'row-shared' : ''}`}
 							>
 								<td data-label="Nombre / Contacto">
 									<div className="guest-info">
