@@ -2,19 +2,21 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface GuestProgressCardProps {
-	totals: {
-		total: number;
-		confirmed: number;
-		declined: number;
-		pending: number;
-		viewed: number;
-	};
+	totalPeople: number;
+	confirmedPeople: number;
 	sessionCount: number;
 }
 
-const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ totals, sessionCount }) => {
-	const total = totals.total;
-	const shared = total - totals.pending; // Approximation based on pending vs actions
+const GuestProgressCard: React.FC<GuestProgressCardProps> = ({
+	totalPeople,
+	confirmedPeople,
+	sessionCount,
+}) => {
+	const total = totalPeople;
+	const shared = confirmedPeople; // Using confirmed as "progress" for now or keep it as invitations shared?
+	// User said: "en total y pendientes muestre dentro de la misma card: En número grande el número de invitados y en número chico el numero de invitaciones"
+	// Wait, GuestProgressCard is different from GuestStatsCards.
+	// Let's stick to the implementation plan: GuestProgressCard will show people progress.
 	const percentage = total > 0 ? Math.round((shared / total) * 100) : 0;
 
 	// Milestones for sparkle effect
@@ -57,7 +59,7 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ totals, sessionCo
 			<div className="progress-footer">
 				<div className="progress-footer__info">
 					<p>
-						<strong>{shared}</strong> de {total} invitaciones compartidas
+						<strong>{shared}</strong> de {total} invitados confirmados
 					</p>
 
 					{/* Session Progress Tracker */}
@@ -89,44 +91,62 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ totals, sessionCo
 			<style>{`
 				.dashboard-guests__progress-card {
 					padding: 1.5rem;
-					background: rgba(255, 255, 255, 0.05);
-					backdrop-filter: blur(10px);
-					border: 1px solid rgba(214, 199, 173, 0.2);
-					border-radius: 16px;
-					margin-bottom: 2rem;
-					box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+					background: rgba(white, 0.03);
+					backdrop-filter: blur(12px);
+					border: 1px solid rgba(214, 199, 173, 0.15);
+					border-radius: 20px;
+					margin-bottom: 2.5rem;
+					box-shadow: $shadow-premium;
+					width: 100%;
+					box-sizing: border-box;
+					position: relative;
+				}
+				@media (max-width: 480px) {
+					.dashboard-guests__progress-card {
+						padding: 1.25rem 1rem;
+					}
 				}
 				.progress-header {
 					display: flex;
+					gap: 1rem;
 					justify-content: space-between;
 					align-items: center;
-					margin-bottom: 1rem;
+					margin-bottom: 1.5rem;
+					flex-wrap: wrap;
 				}
 				.progress-header h3 {
-					font-size: 1rem;
+					font-size: 0.85rem;
 					color: #d6c7ad;
 					margin: 0;
 					text-transform: uppercase;
-					letter-spacing: 1px;
+					letter-spacing: 0.2em;
+					font-weight: 700;
 				}
 				.progress-percentage {
-					font-size: 1.5rem;
-					font-weight: 700;
+					font-size: 1.75rem;
+					font-weight: 800;
 					color: #f5f5f5;
+					font-family: 'Playfair Display', serif;
 				}
 				.progress-track {
-					height: 12px;
-					background: rgba(0, 0, 0, 0.2);
-					border-radius: 6px;
+					height: 8px;
+					background: rgba(0, 0, 0, 0.3);
+					border-radius: 100px;
 					overflow: visible;
 					position: relative;
-					margin-bottom: 1rem;
+					margin-bottom: 1.5rem;
 				}
 				.progress-fill {
 					height: 100%;
-					background: linear-gradient(90deg, #d6c7ad, #f5f5f5);
-					border-radius: 6px;
-					box-shadow: 0 0 10px rgba(214, 199, 173, 0.5);
+					background: linear-gradient(90deg, #d6c7ad, #f5f5f5, #d6c7ad);
+					background-size: 200% 100%;
+					animation: shimmer 3s infinite linear;
+					border-radius: 100px;
+					box-shadow: 0 0 15px rgba(214, 199, 173, 0.4);
+				}
+				@keyframes shimmer {
+					0% { background-position: 0% 0%; }
+					100% { background-position: -200% 0%; }
 				}
 				.progress-sparkle {
 					position: absolute;
@@ -134,21 +154,65 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({ totals, sessionCo
 					transform: translateX(-50%);
 					font-size: 1.2rem;
 					pointer-events: none;
+					text-shadow: 0 0 10px #d6c7ad;
 				}
 				.progress-footer {
 					display: flex;
-					justify-content: space-between;
-					align-items: center;
+					flex-direction: column;
+					gap: 1.5rem;
 					color: rgba(245, 245, 245, 0.7);
 					font-size: 0.9rem;
 				}
-				.progress-footer p { margin: 0; }
+				.progress-footer p {
+					margin: 0;
+					word-break: break-word;
+					font-family: inherit;
+				}
+				.session-progress {
+					background: rgba(0, 0, 0, 0.15);
+					padding: 1rem;
+					border-radius: 12px;
+				}
+				.session-progress__label {
+					font-size: 0.7rem;
+					text-transform: uppercase;
+					letter-spacing: 0.1em;
+					margin-bottom: 0.5rem;
+					display: block;
+				}
+				.session-progress__bar-container {
+					height: 4px;
+					background: rgba(255, 255, 255, 0.05);
+					border-radius: 2px;
+					margin: 0.5rem 0;
+				}
+				.session-progress__bar {
+					height: 100%;
+					background: #d6c7ad;
+					border-radius: 2px;
+					transition: width 0.5s ease;
+				}
 				.completion-badge {
+					align-self: flex-start;
 					color: #d6c7ad;
-					font-weight: 600;
-					background: rgba(214, 199, 173, 0.1);
-					padding: 4px 8px;
-					border-radius: 4px;
+					font-weight: 700;
+					background: rgba(214, 199, 173, 0.15);
+					padding: 6px 12px;
+					border-radius: 100px;
+					border: 1px solid rgba(214, 199, 173, 0.3);
+					font-size: 0.8rem;
+					display: flex;
+					align-items: center;
+					gap: 0.5rem;
+				}
+				@media (min-width: 640px) {
+					.progress-footer {
+						flex-direction: row;
+						justify-content: space-between;
+						align-items: flex-end;
+					}
+					.progress-header h3 { font-size: 1rem; }
+					.progress-percentage { font-size: 2.25rem; }
 				}
 			`}</style>
 		</article>

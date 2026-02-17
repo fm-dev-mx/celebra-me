@@ -4,6 +4,7 @@ import type { DashboardGuestItem } from './types';
 
 interface GuestCardProps {
 	item: DashboardGuestItem;
+	index: number;
 	inviteUrl: string;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
@@ -21,6 +22,7 @@ function formatDate(value: string | null): string {
 
 const GuestCard: React.FC<GuestCardProps> = ({
 	item,
+	index,
 	inviteUrl,
 	onEdit,
 	onDelete,
@@ -35,7 +37,19 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			data-guest-id={item.guestId}
 		>
 			<div className="guest-card__header">
-				<div className="guest-card__name">{item.fullName}</div>
+				<div
+					className="guest-card__name"
+					style={{
+						wordBreak: 'break-word',
+						overflowWrap: 'break-word',
+						maxWidth: '100%',
+					}}
+				>
+					<span className="guest-card__number">
+						#{String(index + 1).padStart(2, '0')}
+					</span>{' '}
+					{item.fullName}
+				</div>
 				<div className={`status-pill status-pill--${item.attendanceStatus}`}>
 					<span className="status-pill__dot"></span>
 					{item.attendanceStatus === 'pending'
@@ -46,7 +60,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</div>
 			</div>
 
-			<div className="guest-card__contact">
+			<div
+				className="guest-card__contact"
+				style={{
+					wordBreak: 'break-word',
+					overflowWrap: 'break-word',
+					maxWidth: '100%',
+				}}
+			>
 				{item.phone && <span className="guest-card__phone">📱 {item.phone}</span>}
 				{item.email && <span className="guest-card__email">✉️ {item.email}</span>}
 			</div>

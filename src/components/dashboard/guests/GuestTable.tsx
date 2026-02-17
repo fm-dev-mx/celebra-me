@@ -80,10 +80,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	if (isMobile) {
 		return (
 			<div className="dashboard-guests__cards">
-				{items.map((item) => (
+				{items.map((item, index) => (
 					<GuestCard
 						key={item.guestId}
 						item={item}
+						index={index}
 						inviteUrl={getInviteUrl(item)}
 						onEdit={onEdit}
 						onDelete={onDelete}
@@ -99,6 +100,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 			<table className="dashboard-guests__table">
 				<thead>
 					<tr>
+						<th>No.</th>
 						<th>Nombre / Contacto</th>
 						<th>Categorías</th>
 						<th>Estado</th>
@@ -109,7 +111,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 					</tr>
 				</thead>
 				<tbody>
-					{items.map((item) => {
+					{items.map((item, index) => {
 						const inviteUrl = getInviteUrl(item);
 						const isViewed = !!item.firstViewedAt;
 						const isShared = item.deliveryStatus === 'shared';
@@ -120,6 +122,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								data-guest-id={item.guestId}
 								className={`${copiedGuestId === item.guestId ? 'row-focus-highlight' : ''} ${item.deliveryStatus === 'shared' ? 'row-shared' : ''}`}
 							>
+								<td data-label="No.">
+									<span className="invitation-number">
+										#{String(index + 1).padStart(2, '0')}
+									</span>
+								</td>
 								<td data-label="Nombre / Contacto">
 									<div className="guest-info">
 										<span className="guest-info__name">{item.fullName}</span>
