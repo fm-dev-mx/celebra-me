@@ -394,7 +394,7 @@ const RSVP: React.FC<RSVPProps> = ({
 				setSubmitStatus('error');
 				setErrors((prev) => ({ ...prev, global: message }));
 			}
-		} catch (error) {
+		} catch {
 			setSubmitStatus('error');
 			setErrors((prev) => ({ ...prev, global: 'No se pudo conectar con el servidor.' }));
 		} finally {
@@ -443,18 +443,20 @@ const RSVP: React.FC<RSVPProps> = ({
 					<h2 className="rsvp__greeting-message">
 						{attendanceStatus === 'confirmed' ? (
 							<>
-								¡Gracias, <strong>{name}</strong>!<br />
+								¡Gracias, <strong className="rsvp__greeting-name">{name}</strong>!
+								<br />
 								{confirmationMessage}
 							</>
 						) : (
 							<>
 								Sentimos mucho que no puedas acompañarnos. <br />
-								Gracias por avisarnos, <strong>{name}</strong>.
+								Gracias por avisarnos,{' '}
+								<strong className="rsvp__greeting-name">{name}</strong>.
 							</>
 						)}
 					</h2>
 
-					<p className="rsvp__greeting-submessage">Tu respuesta ha sido registrada.</p>
+					<p className="rsvp__greeting-submessage">Tu confirmación ha sido registrada.</p>
 
 					{showWhatsAppCta && (
 						<div className="rsvp__contact-host">

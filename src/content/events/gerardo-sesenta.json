@@ -131,7 +131,8 @@
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5216681037219",
-            "messageTemplate": "Hola, soy {name}. Confirmando mi asistencia, nos vemos el sábado. Asistentes: {guestCount}.",
+            "confirmedTemplate": "¡Hola Gerardo! Soy {name}. Acabo de confirmar mi asistencia a tus 60. ¡Ahí nos vemos para celebrar! (Asistentes: {guestCount})",
+            "declinedTemplate": "Hola Gerardo, soy {name}. Siento mucho no poder acompañarte, pero te deseo lo mejor. ¡Felicidades!",
             "omitTitle": true
         },
         "guests": [
@@ -255,6 +256,6 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Te envío la invitación para los 60 de Gerardo. Ayúdame confirmando tu asistencia aquí: \n\n✨ {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, te envío la invitación para los 60 de Gerardo. Ayúdame confirmando tu asistencia aquí: \n\n✨ {inviteUrl}"
     }
 }
