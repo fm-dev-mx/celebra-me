@@ -252,14 +252,36 @@ export async function listDashboardGuests(input: {
 			const items = guests.map((guest) => toGuestDto(guest, input.origin));
 			// NOTE: If membership exists but event details are missing, DTO will have missing fields.
 			// However, the main flow below fetches the event correctly.
+			const totalInvitations = items.length;
+			const totalPeople = items.reduce(
+				(acc, item) => acc + (item.maxAllowedAttendees || 0),
+				0,
+			);
+			const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
+			const confirmedItems = items.filter((item) => item.attendanceStatus === 'confirmed');
+			const declinedItems = items.filter((item) => item.attendanceStatus === 'declined');
+
 			return {
 				eventId: membership.eventId,
 				items,
 				totals: {
-					total: items.length,
-					pending: items.filter((item) => item.attendanceStatus === 'pending').length,
-					confirmed: items.filter((item) => item.attendanceStatus === 'confirmed').length,
-					declined: items.filter((item) => item.attendanceStatus === 'declined').length,
+					totalInvitations,
+					totalPeople,
+					pendingInvitations: pendingItems.length,
+					pendingPeople: pendingItems.reduce(
+						(acc, item) => acc + (item.maxAllowedAttendees || 0),
+						0,
+					),
+					confirmedInvitations: confirmedItems.length,
+					confirmedPeople: confirmedItems.reduce(
+						(acc, item) => acc + (item.attendeeCount || 0),
+						0,
+					),
+					declinedInvitations: declinedItems.length,
+					declinedPeople: declinedItems.reduce(
+						(acc, item) => acc + (item.maxAllowedAttendees || 0),
+						0,
+					),
 					viewed: items.filter((item) => !!item.firstViewedAt).length,
 				},
 				updatedAt: new Date().toISOString(),
@@ -288,14 +310,34 @@ export async function listDashboardGuests(input: {
 	const items = guests.map((guest) =>
 		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
 	);
+
+	const totalInvitations = items.length;
+	const totalPeople = items.reduce((acc, item) => acc + (item.maxAllowedAttendees || 0), 0);
+	const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
+	const confirmedItems = items.filter((item) => item.attendanceStatus === 'confirmed');
+	const declinedItems = items.filter((item) => item.attendanceStatus === 'declined');
+
 	return {
 		eventId: event.id,
 		items,
 		totals: {
-			total: items.length,
-			pending: items.filter((item) => item.attendanceStatus === 'pending').length,
-			confirmed: items.filter((item) => item.attendanceStatus === 'confirmed').length,
-			declined: items.filter((item) => item.attendanceStatus === 'declined').length,
+			totalInvitations,
+			totalPeople,
+			pendingInvitations: pendingItems.length,
+			pendingPeople: pendingItems.reduce(
+				(acc, item) => acc + (item.maxAllowedAttendees || 0),
+				0,
+			),
+			confirmedInvitations: confirmedItems.length,
+			confirmedPeople: confirmedItems.reduce(
+				(acc, item) => acc + (item.attendeeCount || 0),
+				0,
+			),
+			declinedInvitations: declinedItems.length,
+			declinedPeople: declinedItems.reduce(
+				(acc, item) => acc + (item.maxAllowedAttendees || 0),
+				0,
+			),
 			viewed: items.filter((item) => !!item.firstViewedAt).length,
 		},
 		updatedAt: new Date().toISOString(),
