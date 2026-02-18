@@ -53,7 +53,8 @@ function validateCommit(commitHash) {
 		fs.writeFileSync(tmpFile, commitSubject);
 
 		// Ejecutar commitlint de forma programática solo con el subject
-		const result = execSync(`npx commitlint --edit "${tmpFile}"`, {
+		// eslint-disable-next-line no-unused-vars
+		const _result = execSync(`npx commitlint --edit "${tmpFile}"`, {
 			encoding: 'utf8',
 			stdio: 'pipe',
 		});
