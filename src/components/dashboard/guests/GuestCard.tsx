@@ -41,14 +41,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			data-guest-id={item.guestId}
 		>
 			<div className="guest-card__header">
-				<div
-					className="guest-card__name"
-					style={{
-						wordBreak: 'break-word',
-						overflowWrap: 'break-word',
-						maxWidth: '100%',
-					}}
-				>
+				<div className="guest-card__name">
 					<span className="guest-card__number">
 						#{String(index + 1).padStart(2, '0')}
 					</span>{' '}
@@ -64,14 +57,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</div>
 			</div>
 
-			<div
-				className="guest-card__contact"
-				style={{
-					wordBreak: 'break-word',
-					overflowWrap: 'break-word',
-					maxWidth: '100%',
-				}}
-			>
+			<div className="guest-card__contact">
 				{item.phone && <span className="guest-card__phone">📱 {item.phone}</span>}
 				{item.email && <span className="guest-card__email">✉️ {item.email}</span>}
 			</div>

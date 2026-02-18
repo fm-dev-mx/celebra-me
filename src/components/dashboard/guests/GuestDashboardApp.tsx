@@ -556,29 +556,17 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 								</div>
 
 								<div className="dashboard-modal__content">
-									<p
-										style={{
-											textAlign: 'center',
-											marginBottom: '1rem',
-											color: 'var(--color-text-secondary)',
-										}}
-									>
+									<p className="dashboard-modal__confirm-text">
 										¿Estás seguro de que deseas eliminar a{' '}
 										<strong>{guestToDelete?.fullName}</strong>?
 									</p>
 
-									<p
-										style={{
-											textAlign: 'center',
-											fontSize: '0.85rem',
-											color: 'var(--color-wax-seal)',
-										}}
-									>
+									<p className="dashboard-modal__confirm-warning">
 										Esta acción no se puede deshacer.
 									</p>
 								</div>
 
-								<div className="dashboard-modal__actions">
+								<div className="dashboard-modal__footer">
 									<button
 										type="button"
 										className="btn-secondary"

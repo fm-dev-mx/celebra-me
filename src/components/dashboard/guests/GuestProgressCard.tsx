@@ -63,9 +63,11 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({
 					<div className="session-progress">
 						<span className="session-progress__label">Meta de la sesión</span>
 						<div className="session-progress__bar-container">
-							<div
+							<motion.div
 								className="session-progress__bar"
-								style={{ width: `${sessionPercentage}%` }}
+								initial={{ width: 0 }}
+								animate={{ width: `${sessionPercentage}%` }}
+								transition={{ duration: 0.8, ease: 'easeOut' }}
 							/>
 						</div>
 						<span className="session-progress__count">
