@@ -24,7 +24,8 @@
         "noUnusedParameters": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["jest", "@testing-library/jest-dom", "@testing-library/react"]
     },
     "include": ["src/**/*", "tests/**/*", "src/env.d.ts"]
 }
