@@ -30,7 +30,7 @@
 		@include mixins.respond-to(md) {
 			flex-direction: row;
 			justify-content: center;
-			gap: 4rem;
+			gap: clamp(3rem, 8vw, 6rem); // Increased gap
 		}
 	}
 
