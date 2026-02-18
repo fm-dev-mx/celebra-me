@@ -60,6 +60,7 @@ _tmp_*
 .prettierignore
 # .editorconfig  <-- Keep tracked if you want shared IDE settings
 # .eslintrc.*    <-- Keep tracked for linting consistency
+.eslintcache
 
 
 # --- ASTRO GENERATED ----------------------------------------------------------
