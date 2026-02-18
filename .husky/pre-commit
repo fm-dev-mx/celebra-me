@@ -1,47 +1,76 @@
 #!/bin/sh
-# Husky pre-commit hook compatible with gatekeeper-commit workflow
-# Prevents direct commits to main and runs lint-staged in report-only mode
 
-# Prevent direct commits to main
-ERROR_MSG="❌ No puedes hacer commit directamente en la rama 'main'. Usa una rama de feature."
+# ------------------------------------------------------------
+# 1) Prevent direct commits to main
+# ------------------------------------------------------------
 if [ "$(git branch --show-current)" = "main" ]; then
-  echo "$ERROR_MSG"
+  echo "❌ No puedes hacer commit directamente en la rama 'main'. Usa una rama de feature."
   exit 1
 fi
 
-# Check if we're in gatekeeper-commit workflow mode
-# Look for S0 snapshot file
-if [ -f ".git/gatekeeper-s0.txt" ]; then
-  echo "🔍 Gatekeeper-commit workflow detected (S0 snapshot present)"
-  echo "📝 Running lint-staged in report-only mode for S0 files..."
-  
-  # Get S0 files
-  S0_FILES=$(cat .git/gatekeeper-s0.txt 2>/dev/null | tr '\n' ' ')
-  
-  if [ -n "$S0_FILES" ]; then
-    echo "📋 S0 files to check:"
-    echo "$S0_FILES" | tr ' ' '\n' | sed 's/^/  /'
-    
-    # Run lint-staged but don't auto-stage fixes
-    # We use --no-stash to avoid interfering with the workflow
-    npx lint-staged --no-stash 2>/dev/null || true
-    
-    # Check if lint-staged modified any files
-    MODIFIED_FILES=$(git diff --name-only 2>/dev/null)
-    if [ -n "$MODIFIED_FILES" ]; then
-      echo ""
-      echo "⚠️  lint-staged modified files. You need to:"
-      echo "   1. Review the changes"
-      echo "   2. Add only S0 files back to staging: git add [S0-file]"
-      echo "   3. Continue with gatekeeper-commit workflow"
-      echo ""
-      echo "Modified files:"
-      echo "$MODIFIED_FILES" | sed 's/^/  /'
-      exit 0  # Exit with success to allow manual handling
-    fi
+# ------------------------------------------------------------
+# 2) Secret scan (lightweight regex-based)
+# ------------------------------------------------------------
+echo "🔍 Verificando posibles secrets..."
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+PATTERNS="
+api[_-]?key.*=.*['\"][a-zA-Z0-9]{20,}['\"]
+secret.*=.*['\"][a-zA-Z0-9]{20,}['\"]
+password.*=.*['\"][^'\"]{8,}['\"]
+token.*=.*['\"][a-zA-Z0-9]{20,}['\"]
+SG\.[a-zA-Z0-9]{20,}
+eyJ[a-zA-Z0-9_-]{20,}
+sk-[a-zA-Z0-9]{20,}
+xox[baprs]-[a-zA-Z0-9]{10,}
+"
+
+FOUND=0
+
+for file in $FILES; do
+  case "$file" in
+    *.md|*.example|*.sh)
+      continue
+      ;;
+  esac
+
+  if [ -f "$file" ]; then
+    for pattern in $PATTERNS; do
+      grep -iE "$pattern" "$file" >/dev/null 2>&1 && {
+        echo "⚠️ Posible secret detectado en: $file"
+        FOUND=1
+      }
+    done
   fi
-else
-  # Normal mode - run lint-staged as usual
-  echo "🔧 Running lint-staged for all staged files..."
-  npx lint-staged
+done
+
+if echo "$FILES" | grep -E "^\.env" >/dev/null; then
+  echo "🚨 No puedes commitear archivos .env"
+  exit 1
 fi
+
+if [ $FOUND -eq 1 ]; then
+  echo "❌ Commit bloqueado por posible secret."
+  exit 1
+fi
+
+# ------------------------------------------------------------
+# 3) Gatekeeper workflow (S0 mode)
+# ------------------------------------------------------------
+if [ -f ".git/gatekeeper-s0.txt" ]; then
+  echo "🔍 Gatekeeper mode detected"
+  S0_FILES=$(cat .git/gatekeeper-s0.txt | sed '/^\s*$/d')
+
+  if [ -n "$S0_FILES" ]; then
+    echo "$S0_FILES" | tr '\n' '\0' | xargs -0 pnpm lint-staged --no-stash
+  fi
+
+  exit 0
+fi
+
+# ------------------------------------------------------------
+# 4) Normal lint-staged
+# ------------------------------------------------------------
+echo "🔧 Running lint-staged..."
+pnpm lint-staged
