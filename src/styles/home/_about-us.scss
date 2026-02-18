@@ -50,7 +50,8 @@
 		width: 100%;
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 0 clamp(1.5rem, 5vw, 5rem);
+		padding: 0 var(--spacing-md); // Use standardized spacing
+		box-sizing: border-box; // Ensure padding is included in width
 	}
 
 	&__grid {
