@@ -229,7 +229,6 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			<RSVP
 				client:visible
 				{...sections.rsvp}
-				eventSlug={viewModel.id}
 				celebrantName={hero.name}
 				guestCap={guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap}
 				initialGuestData={guestContext ? {

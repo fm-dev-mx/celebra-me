@@ -27,26 +27,7 @@ interface WhatsAppConfig {
 	omitTitle?: boolean;
 }
 
-interface ContextResponse {
-	eventSlug: string;
-	mode: 'personalized' | 'generic';
-	tokenValid: boolean;
-	invalidTokenMessage?: string;
-	guest?: {
-		guestId: string;
-		displayName: string;
-		maxAllowedAttendees: number;
-	};
-	currentResponse?: {
-		rsvpId: string;
-		attendanceStatus: 'pending' | 'confirmed' | 'declined';
-		attendeeCount: number;
-		updatedAt: string;
-	};
-}
-
 interface RSVPProps {
-	eventSlug?: string;
 	title: string;
 	celebrantName?: string;
 	guestCap: number;
@@ -61,7 +42,6 @@ interface RSVPProps {
 	variant?: string;
 	confirmationMode?: ConfirmationMode;
 	whatsappConfig?: WhatsAppConfig;
-	apiEndpoint?: string;
 	initialGuestData?: {
 		fullName: string;
 		maxAllowedAttendees: number;
@@ -70,7 +50,6 @@ interface RSVPProps {
 }
 
 const RSVP: React.FC<RSVPProps> = ({
-	eventSlug,
 	title,
 	celebrantName,
 	guestCap,
@@ -85,7 +64,6 @@ const RSVP: React.FC<RSVPProps> = ({
 	variant,
 	confirmationMode = 'api',
 	whatsappConfig,
-	apiEndpoint = '/api/rsvp',
 	initialGuestData,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
@@ -95,12 +73,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
 	const [dietary, setDietary] = useState('');
-	const [token, setToken] = useState(initialGuestData?.inviteId || '');
 	const [contextLoading, setContextLoading] = useState(!initialGuestData);
-	const [contextMode, setContextMode] = useState<'personalized' | 'generic'>(
-		initialGuestData ? 'personalized' : 'generic',
-	);
-	const [tokenWarning, setTokenWarning] = useState('');
 	const [nameLocked, setNameLocked] = useState(!!initialGuestData);
 	const [contextGuestCap, setContextGuestCap] = useState<number>(
 		Number(initialGuestData?.maxAllowedAttendees || guestCap),
@@ -128,105 +101,17 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		!!whatsappConfig?.phone;
 
-	// Load context if eventSlug exists (personalized links)
+	// Init data from props
 	useEffect(() => {
-		if (!eventSlug) {
-			setContextLoading(false);
-			return;
+		if (initialGuestData) {
+			setName(initialGuestData.fullName);
+			setNameLocked(true);
+			setContextGuestCap(initialGuestData.maxAllowedAttendees);
+		} else {
+			setNameLocked(false);
 		}
-
-		const params = new URLSearchParams(window.location.search);
-		const prefilledName = params.get('g') || params.get('name');
-		if (prefilledName) setName(prefilledName);
-
-		const tokenParam = params.get('t') || '';
-		setToken(tokenParam);
-
-		let isActive = true;
-
-		const loadContext = async () => {
-			setContextLoading(true);
-			try {
-				const query = new URLSearchParams({ eventSlug });
-				if (tokenParam) query.set('token', tokenParam);
-
-				const response = await fetch(`/api/rsvp/context?${query.toString()}`);
-				if (!response.ok) {
-					if (isActive) setContextMode('generic');
-					return;
-				}
-
-				const context = (await response.json()) as ContextResponse;
-
-				if (context.mode === 'personalized' && context.tokenValid && context.guest) {
-					if (isActive) {
-						setContextMode('personalized');
-						setName(context.guest.displayName);
-						setNameLocked(true);
-						setContextGuestCap(context.guest.maxAllowedAttendees);
-					}
-
-					if (context.currentResponse) {
-						if (isActive) setRsvpId(context.currentResponse.rsvpId);
-
-						if (context.currentResponse.attendanceStatus === 'confirmed') {
-							if (isActive) {
-								setAttendanceStatus('confirmed');
-								setAttendeeCount(
-									Math.max(1, context.currentResponse.attendeeCount),
-								);
-							}
-						} else if (context.currentResponse.attendanceStatus === 'declined') {
-							if (isActive) {
-								setAttendanceStatus('declined');
-								setAttendeeCount(0);
-							}
-						}
-					}
-				} else {
-					if (isActive) {
-						setContextMode('generic');
-						setNameLocked(false);
-					}
-					if (context.invalidTokenMessage && isActive) {
-						setTokenWarning(context.invalidTokenMessage);
-					}
-				}
-			} catch {
-				if (isActive) setContextMode('generic');
-			} finally {
-				if (isActive) setContextLoading(false);
-			}
-		};
-
-		void loadContext();
-
-		return () => {
-			isActive = false;
-		};
-	}, [eventSlug]);
-
-	// Telemetry: CTA rendered
-	useEffect(() => {
-		const logCtaRendered = async () => {
-			if (!showWhatsAppCta || !rsvpId) return;
-			try {
-				await fetch('/api/rsvp/channel', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						rsvpId,
-						channel: 'whatsapp',
-						action: 'cta_rendered',
-					}),
-				});
-			} catch {
-				// non-blocking telemetry
-			}
-		};
-
-		void logCtaRendered();
-	}, [showWhatsAppCta, rsvpId]);
+		setContextLoading(false);
+	}, [initialGuestData]);
 
 	const buildWhatsAppUrl = (): string => {
 		if (!whatsappConfig?.phone) return '';
@@ -350,26 +235,25 @@ const RSVP: React.FC<RSVPProps> = ({
 			const normalizedCount =
 				attendanceStatus === 'confirmed' ? (supportsPlusOnes ? parsedCount || 1 : 1) : 0;
 
-			// Determine if we use personalized link (V2) or fallback to name-based/generic (RSVP endpoint)
 			const v2InviteId = initialGuestData?.inviteId;
-			const useV2Endpoint = !!v2InviteId && contextMode === 'personalized';
-			const endpoint = useV2Endpoint ? `/api/invitacion/${v2InviteId}/rsvp` : apiEndpoint;
 
-			const payload: Record<string, unknown> = useV2Endpoint
-				? {
-						attendanceStatus,
-						attendeeCount: normalizedCount,
-						guestMessage: notes,
-					}
-				: {
-						eventSlug,
-						token: token || undefined,
-						guestName: name,
-						attendanceStatus,
-						attendeeCount: normalizedCount,
-						notes: notes || undefined, // notes is maps to 'notes' or 'guestMessage' depending on backend
-						dietary: showDietaryField && dietary.trim() ? dietary.trim() : undefined,
-					};
+			// We only support personalized RSVPs via InviteId now
+			if (!v2InviteId) {
+				setSubmitStatus('error');
+				setErrors((prev) => ({
+					...prev,
+					global: 'Esta invitación requiere un enlace personalizado.',
+				}));
+				return;
+			}
+
+			const endpoint = `/api/invitacion/${v2InviteId}/rsvp`;
+
+			const payload = {
+				attendanceStatus,
+				attendeeCount: normalizedCount,
+				guestMessage: notes,
+			};
 
 			const response = await fetch(endpoint, {
 				method: 'POST',
@@ -493,14 +377,6 @@ const RSVP: React.FC<RSVPProps> = ({
 	return (
 		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
-
-			{contextMode === 'personalized' && (
-				<p className="rsvp__greeting-submessage">
-					Hola, <strong>{name}</strong>. Tu enlace está personalizado.
-				</p>
-			)}
-
-			{tokenWarning && <p className="rsvp__error">{tokenWarning}</p>}
 
 			<form onSubmit={handleSubmit} className="rsvp__form" id="rsvp-form">
 				{!nameLocked && (
