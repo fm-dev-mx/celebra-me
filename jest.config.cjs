@@ -1,25 +1,39 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-const strictRsvpCoverage = process.env.RSVP_V2_STRICT_COVERAGE === 'true';
+const strictRsvpCoverage =
+	process.env.RSVP_STRICT_COVERAGE === 'true' || process.env.RSVP_V2_STRICT_COVERAGE === 'true';
 
 module.exports = {
-	preset: 'ts-jest/presets/default-esm', // Use ESM preset
-	testEnvironment: 'jsdom', // DOM environment for React component testing
+	// ESM + TypeScript preset
+	preset: 'ts-jest/presets/default-esm',
+	testEnvironment: 'jsdom',
+
+	// Treat TS/TSX as ESM under Jest
 	extensionsToTreatAsEsm: ['.ts', '.tsx'],
-	setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'], // RTL + custom mocks
-	transform: {
-		'^.+\\.[tj]sx?$': [
-			'ts-jest',
-			{
-				useESM: true,
-			},
-		],
+
+	// RTL + custom mocks
+	setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+
+	// Configure ts-jest (avoid duplicating preset transform)
+	globals: {
+		'ts-jest': {
+			useESM: true,
+			tsconfig: '<rootDir>/tsconfig.json',
+		},
 	},
+
 	moduleNameMapper: {
-		// SCSS files - mock with identity-obj-proxy
-		'\\.scss$': 'identity-obj-proxy',
+		// Fix ESM relative imports that may include ".js" extension in compiled output
+		'^(\\.{1,2}/.*)\\.js$': '$1',
+
+		// Styles
+		'\\.(css|scss)$': 'identity-obj-proxy',
+
+		// Static assets
+		'\\.(png|jpg|jpeg|gif|webp|svg)$': '<rootDir>/tests/mocks/fileMock.cjs',
 
 		// Root aliases
 		'^@/(.*)$': '<rootDir>/src/$1',
+		'^@core/(.*)$': '<rootDir>/src/$1',
 
 		// Components & Layouts
 		'^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -27,6 +41,8 @@ module.exports = {
 
 		// Assets & Styles
 		'^@styles/(.*)$': '<rootDir>/src/styles/$1',
+		'^@images/(.*)$': '<rootDir>/src/assets/images/$1',
+		'^@content/(.*)$': '<rootDir>/src/content/$1',
 
 		// Utils & Helpers
 		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
@@ -34,21 +50,39 @@ module.exports = {
 
 		// Pages
 		'^@pages/(.*)$': '<rootDir>/src/pages/$1',
+
+		// Astro virtual modules (tests)
 		'^astro:content$': '<rootDir>/tests/mocks/astro-content.ts',
 		'^astro:middleware$': '<rootDir>/tests/mocks/astro-middleware.ts',
 	},
-	testMatch: ['**/tests/**/*.test.(ts|tsx)'],
-	collectCoverage: true, // Enable coverage reports
+
+	// Correct glob patterns (no regex syntax here)
+	testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.tsx'],
+
+	// Coverage
+	collectCoverage: true,
 	collectCoverageFrom: [
 		'src/**/*.{ts,tsx}',
-		'!src/**/index.ts', // Exclude barrel files
-		'!src/**/*.d.ts', // Exclude type definitions
-		'!src/**/*.astro', // Astro components tested via E2E
+		'!src/**/index.ts',
+		'!src/**/*.d.ts',
+		'!src/**/*.astro',
 	],
-	coverageDirectory: '<rootDir>/coverage', // Directory for coverage reports
-	coverageReporters: ['text', 'lcov'], // Output formats
+
+	coverageDirectory: '<rootDir>/coverage',
+	coverageReporters: ['text', 'lcov'],
+
 	...(strictRsvpCoverage
 		? {
+				// When strict coverage is enabled, scope coverage to the RSVP surface
+				// to avoid punishing unrelated code paths.
+				collectCoverageFrom: [
+					'src/lib/rsvp/**/*.{ts,tsx}',
+					'src/pages/api/**/*.{ts,tsx}',
+
+					'!src/**/index.ts',
+					'!src/**/*.d.ts',
+					'!src/**/*.astro',
+				],
 				coverageThreshold: {
 					global: {
 						lines: 70,
@@ -59,11 +93,6 @@ module.exports = {
 				},
 			}
 		: {}),
-	// Ignore patterns
-	testPathIgnorePatterns: [
-		'/node_modules/',
-		'/dist/',
-		'/.vercel/',
-		'/tests/e2e/',
-	],
+
+	testPathIgnorePatterns: ['/node_modules/', '/dist/', '/\\.vercel/', '/tests/e2e/'],
 };
