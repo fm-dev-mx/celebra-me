@@ -1242,7 +1242,34 @@
 		.dashboard-form-field--full {
 			grid-column: 1 / -1;
 		}
+
+		&--nested {
+			padding: 0;
+			border: none;
+			background: none;
+			grid-template-columns: 1fr 1fr;
+		}
 	}
+}
+
+.radio-cards-container--compact {
+	.radio-card {
+		min-width: 45px;
+		flex: 1 1 auto;
+
+		&__content {
+			padding: 0.75rem 0.25rem;
+		}
+	}
+}
+
+.btn-secondary--modal {
+	min-width: 100px;
+}
+
+.btn-secondary--postpone {
+	border: 1px dashed var(--color-border-emphasis);
+	color: var(--color-text-secondary);
 }
 
 @keyframes slideDown {

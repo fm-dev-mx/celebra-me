@@ -71,7 +71,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
 			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 				<h3>Importador Mágico ✨</h3>
-				<p style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
+				<p className="dashboard-modal__description">
 					Pega aquí tus invitados desde Excel o Google Sheets, o arrastra un archivo CSV.
 				</p>
 
@@ -84,16 +84,15 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 					}}
 					placeholder="Ejemplo: Juan Perez  6671234567"
 					rows={8}
-					className="dashboard-form-field"
-					style={{ width: '100%', marginBottom: '1.5rem', minHeight: '150px' }}
+					className="dashboard-form-field__textarea dashboard-form-field__textarea--import"
 				/>
 
-				<div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+				<div className="dashboard-modal__file-actions">
 					<input
 						type="file"
 						accept=".csv"
 						ref={fileInputRef}
-						style={{ display: 'none' }}
+						className="hidden-input"
 						onChange={handleFileChange}
 					/>
 					<button
@@ -107,10 +106,8 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 
 				{preview.length > 0 && (
 					<div className="import-magic-modal__preview">
-						<h4 style={{ marginBottom: '1rem' }}>
-							Vista previa ({preview.length} invitados)
-						</h4>
-						<table className="dashboard-table">
+						<h4>Vista previa ({preview.length} invitados)</h4>
+						<table className="dashboard-guests__table">
 							<thead>
 								<tr>
 									<th>Nombre</th>
@@ -121,13 +118,13 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 							<tbody>
 								{preview.slice(0, 10).map((p, i) => (
 									<tr key={i}>
-										<td>{p.fullName}</td>
-										<td>
+										<td data-label="Nombre">{p.fullName}</td>
+										<td data-label="Teléfono">
 											{p.phone || (
 												<span className="text-warning">Revisar</span>
 											)}
 										</td>
-										<td>{p.email || '-'}</td>
+										<td data-label="Email">{p.email || '-'}</td>
 									</tr>
 								))}
 							</tbody>

@@ -8,9 +8,11 @@
 @use 'home/footer';
 @use 'components/icons';
 @use 'components/logo';
+@use 'components/nav-bar-desktop';
 @use 'dashboard/common';
 @use 'dashboard/shell';
 @use 'dashboard/tables';
+@use 'dashboard/toast';
 @use 'dashboard/forms';
 @use 'dashboard/modals';
 @use 'invitation/envelope-reveal';
