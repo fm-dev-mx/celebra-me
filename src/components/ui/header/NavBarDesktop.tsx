@@ -3,9 +3,9 @@ import type { NavBarProps } from '../../../interfaces/ui/components/navBar.inter
 
 const NavBarDesktop: React.FC<NavBarProps> = ({ links = [] }) => {
 	return (
-		<div className="hidden md:flex gap-6">
+		<div className="nav-bar-desktop">
 			{links.map((link, i) => (
-				<a key={i} href={link.href} className="hover:text-primary">
+				<a key={i} href={link.href} className="nav-bar-desktop__link">
 					{link.label}
 				</a>
 			))}
