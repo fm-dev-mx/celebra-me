@@ -78,6 +78,10 @@
 	animation: auth-orb-drift 8s ease-in-out infinite;
 }
 
+.auth-card--narrow {
+	max-width: 500px;
+}
+
 .auth-kicker {
 	margin: 0;
 	font-family: var(--font-ui);
