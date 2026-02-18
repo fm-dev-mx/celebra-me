@@ -16,7 +16,7 @@ export const ArrowDownIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		height={size}
 		fill="none"
 		stroke="currentColor"
-		strokeWidth="1.2"
+		strokeWidth="2"
 		strokeLinecap="round"
 		strokeLinejoin="round"
 		className={className}

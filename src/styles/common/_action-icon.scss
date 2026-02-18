@@ -19,6 +19,11 @@
 		position: relative;
 		z-index: 2;
 		transition: transform 0.4s var(--icon-transition);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
 	}
 
 	// Variant: Scroll
@@ -63,7 +68,7 @@
 	// Colors
 	&--white {
 		color: white;
-		border-color: rgb(255 255 255 / 30%);
+		border-color: rgb(255 255 255 / 40%);
 
 		&.action-icon--scroll {
 			background: rgb(255 255 255 / 10%);
@@ -71,8 +76,21 @@
 			&:hover {
 				background: rgb(255 255 255 / 20%);
 				border-color: white;
+				color: white;
 			}
 		}
+
+		.action-icon__inner {
+			color: white;
+		}
+	}
+
+	&--primary {
+		color: var(--color-primary);
+	}
+
+	&--secondary {
+		color: var(--color-secondary);
 	}
 
 	// Variant: Fixed
