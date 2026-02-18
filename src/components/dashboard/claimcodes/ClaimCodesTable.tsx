@@ -140,8 +140,8 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 			</div>
 
 			{editModal.open && editModal.item && (
-				<div className="dashboard-guests__modal-backdrop" role="dialog" aria-modal="true">
-					<div className="dashboard-guests__modal">
+				<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
+					<div className="dashboard-modal">
 						<h3>Editar Claim Code</h3>
 						<form
 							onSubmit={(e) => {
@@ -202,10 +202,7 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 								<p className="dashboard-form-help">Deja vacío para que no expire</p>
 							</div>
 							{editModal.error && (
-								<p
-									className="dashboard-guests__error"
-									style={{ gridColumn: '1 / -1' }}
-								>
+								<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
 									{editModal.error}
 								</p>
 							)}

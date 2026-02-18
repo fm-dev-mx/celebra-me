@@ -66,6 +66,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const refreshDebounceRef = useRef<number | null>(null);
 	const reconnectAttemptRef = useRef(0);
 	const [confettiActive, setConfettiActive] = useState(false);
+	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
+	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	useShortcuts(
@@ -199,7 +201,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const connectStream = useCallback(() => {
 		if (!eventId) return () => {};
 		const streamUrl = `/api/dashboard/guests/stream?eventId=${encodeURIComponent(eventId)}`;
-		const source = new EventSource(streamUrl);
+		const source = new EventSource(streamUrl, { withCredentials: true });
 		setRealtimeState('reconnecting');
 
 		const scheduleRefresh = () => {
@@ -470,6 +472,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestTable
 					items={sortedItems}
 					inviteBaseUrl={inviteBaseUrl}
+					celebratingGuestId={celebratingGuestId}
+					highlightedGuestId={highlightedGuestId}
 					onEdit={(item) => {
 						setModalMode('edit');
 						setEditingGuest(item);
@@ -501,33 +505,18 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							});
 
 							// Trigger celebration animation on the table row
-							const row = document.querySelector(`[data-guest-id="${item.guestId}"]`);
-							if (row) {
-								row.classList.add('celebrate-success');
-								setTimeout(() => row.classList.remove('celebrate-success'), 1500);
-							}
+							setCelebratingGuestId(item.guestId);
+							setTimeout(() => setCelebratingGuestId(null), 1500);
 
 							await loadGuests();
 
-							// Smart Focus: Scroll to next guest
+							// Smart Focus: Highlight next guest
 							const currentIndex = items.findIndex((i) => i.guestId === item.guestId);
 							if (currentIndex !== -1 && currentIndex < items.length - 1) {
 								const nextGuest = items[currentIndex + 1];
 								setTimeout(() => {
-									const nextRow = document.querySelector(
-										`[data-guest-id="${nextGuest.guestId}"]`,
-									);
-									if (nextRow) {
-										nextRow.scrollIntoView({
-											behavior: 'smooth',
-											block: 'center',
-										});
-										nextRow.classList.add('celebrate-success');
-										setTimeout(
-											() => nextRow.classList.remove('celebrate-success'),
-											2000,
-										);
-									}
+									setHighlightedGuestId(nextGuest.guestId);
+									setTimeout(() => setHighlightedGuestId(null), 2000);
 								}, 800);
 							}
 						} catch (err) {

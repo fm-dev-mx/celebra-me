@@ -7,6 +7,8 @@ import type { DashboardGuestItem } from './types';
 interface GuestTableProps {
 	items: DashboardGuestItem[];
 	inviteBaseUrl: string;
+	celebratingGuestId?: string | null;
+	highlightedGuestId?: string | null;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -40,6 +42,8 @@ const useIsMobile = (breakpoint = 992): boolean => {
 const GuestTable: React.FC<GuestTableProps> = ({
 	items,
 	inviteBaseUrl,
+	celebratingGuestId,
+	highlightedGuestId,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -86,6 +90,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						item={item}
 						index={index}
 						inviteUrl={getInviteUrl(item)}
+						isCelebrating={celebratingGuestId === item.guestId}
+						isHighlighted={highlightedGuestId === item.guestId}
 						onEdit={onEdit}
 						onDelete={onDelete}
 						onMarkShared={onMarkShared}
@@ -120,7 +126,12 @@ const GuestTable: React.FC<GuestTableProps> = ({
 							<tr
 								key={item.guestId}
 								data-guest-id={item.guestId}
-								className={`${copiedGuestId === item.guestId ? 'row-focus-highlight' : ''} ${item.deliveryStatus === 'shared' ? 'row-shared' : ''}`}
+								className={`
+									${copiedGuestId === item.guestId ? 'row-focus-highlight' : ''}
+									${item.deliveryStatus === 'shared' ? 'row-shared' : ''}
+									${celebratingGuestId === item.guestId ? 'celebrate-success' : ''}
+									${highlightedGuestId === item.guestId ? 'celebrate-success' : ''}
+								`.trim()}
 							>
 								<td data-label="No.">
 									<span className="invitation-number">

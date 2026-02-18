@@ -106,8 +106,8 @@ const EventsAdminTable: React.FC = () => {
 					+ Nuevo Evento
 				</button>
 			</div>
-			{error && <p className="dashboard-guests__error">{error}</p>}
-			{loading && <p className="dashboard-guests__status">Cargando...</p>}
+			{error && <p className="dashboard-error">{error}</p>}
+			{loading && <p className="dashboard-status">Cargando...</p>}
 			<table className="dashboard-table">
 				<thead>
 					<tr>
@@ -357,7 +357,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 						</select>
 					</div>
 					{error && (
-						<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
+						<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
 							{error}
 						</p>
 					)}

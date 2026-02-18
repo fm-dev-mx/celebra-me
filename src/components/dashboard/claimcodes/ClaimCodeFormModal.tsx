@@ -115,7 +115,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 				<p className="dashboard-form-help">Deja vacío para que no expire</p>
 			</div>
 			{error && (
-				<p className="dashboard-guests__error" style={{ gridColumn: '1 / -1' }}>
+				<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
 					{error}
 				</p>
 			)}

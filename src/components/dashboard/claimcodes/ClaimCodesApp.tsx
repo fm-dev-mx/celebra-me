@@ -67,10 +67,10 @@ const ClaimCodesApp: React.FC = () => {
 						Código generado (copia ahora): <strong>{lastPlainCode}</strong>
 					</p>
 				)}
-				{error && <p className="dashboard-guests__error">{error}</p>}
+				{error && <p className="dashboard-error">{error}</p>}
 			</div>
 
-			{loading && <p className="dashboard-guests__status">Cargando...</p>}
+			{loading && <p className="dashboard-status">Cargando...</p>}
 			<ClaimCodesTable items={items} onDisable={handleDisable} onRefresh={load} />
 		</section>
 	);

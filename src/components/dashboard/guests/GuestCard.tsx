@@ -6,6 +6,8 @@ interface GuestCardProps {
 	item: DashboardGuestItem;
 	index: number;
 	inviteUrl: string;
+	isCelebrating?: boolean;
+	isHighlighted?: boolean;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -24,6 +26,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	item,
 	index,
 	inviteUrl,
+	isCelebrating,
+	isHighlighted,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -33,7 +37,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 	return (
 		<article
-			className={`guest-card ${item.deliveryStatus === 'shared' ? 'guest-card--shared' : ''}`}
+			className={`guest-card ${item.deliveryStatus === 'shared' ? 'guest-card--shared' : ''} ${isCelebrating || isHighlighted ? 'celebrate-success' : ''}`}
 			data-guest-id={item.guestId}
 		>
 			<div className="guest-card__header">

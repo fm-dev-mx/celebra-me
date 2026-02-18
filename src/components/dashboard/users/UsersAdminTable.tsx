@@ -50,8 +50,8 @@ const UsersAdminTable: React.FC = () => {
 	return (
 		<div className="dashboard-card">
 			<h2>Usuarios del Sistema</h2>
-			{error && <p className="dashboard-guests__error">{error}</p>}
-			{loading && <p className="dashboard-guests__status">Cargando...</p>}
+			{error && <p className="dashboard-error">{error}</p>}
+			{loading && <p className="dashboard-status">Cargando...</p>}
 			<table className="dashboard-table">
 				<thead>
 					<tr>

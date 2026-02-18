@@ -6,29 +6,38 @@ interface Props {
 }
 
 import { getCommonAsset } from '@/lib/assets/AssetRegistry';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 
 const { class: className, variant, altText } = Astro.props;
 
 // Currently using the same logo for both variants, can be customized later
 const logoAsset = getCommonAsset('headerLogo');
-const logoSrc = logoAsset?.src
-    ? (typeof logoAsset.src === 'string' ? logoAsset.src : logoAsset.src.src)
-    : '';
+const logoSrc = logoAsset?.src;
+
+if (!logoSrc) {
+	console.error('Logo asset not found in AssetRegistry');
+}
 
 // White variants require color inversion against dark surfaces.
 const isWhite = variant === 'white' || variant === 'footer';
 ---
 
-<img
-	src={logoSrc}
-	alt={altText || "Celebra.me Logo"}
-	width="150"
-	height="56"
-	class:list={[
-		'logo',
-		{
-			'logo--white': isWhite
-		},
-		className
-	]}
-/>
+{
+	logoSrc && (
+		<Image
+			src={logoSrc as ImageMetadata}
+			alt={altText || "Celebra.me Logo"}
+			width={150}
+			height={56}
+			class:list={[
+				'logo',
+				{
+					'logo--white': isWhite
+				},
+				className
+			]}
+			loading="eager"
+		/>
+	)
+}
