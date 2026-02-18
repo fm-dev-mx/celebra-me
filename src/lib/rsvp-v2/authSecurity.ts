@@ -1,13 +1,9 @@
 import { ApiError } from './errors';
 import { checkRateLimit } from './rateLimitProvider';
+import { sanitize } from '@/lib/rsvp-v2/utils';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;
-
-function sanitize(value: unknown, maxLen: number): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
 
 export function normalizeEmail(value: unknown): string {
 	return sanitize(value, 320).toLowerCase();

@@ -1,4 +1,4 @@
-const MAX_TEXT_LEN = 500;
+export const MAX_TEXT_LEN = 500;
 
 /**
  * Sanitizes a string by trimming and slicing to a maximum length.
