@@ -4,6 +4,7 @@ import {
 	findEventById,
 	findEventByIdService,
 	findEventByInvitationPublic,
+	findEventBySlugService,
 	findEventsForHost,
 	findGuestsByEvent,
 	findMembershipByEventForHost,
@@ -11,7 +12,6 @@ import {
 	findGuestByPhone,
 	findGuestByIdService,
 	findGuestByInviteIdPublic,
-	findGuestByLegacyIdentityPublic,
 	findUserRoleService,
 	listMembershipsForHost,
 	upsertUserRoleService,
@@ -47,8 +47,7 @@ import type {
 	AppUserRole,
 } from './types';
 import { getEntry } from 'astro:content';
-import { getRsvpContext } from '@/lib/rsvp/service';
-import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp/shared-utils';
+import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp-v2/utils';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
 import { mapSupabaseErrorToApiError } from './supabase-errors';
@@ -57,6 +56,11 @@ import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './authApi';
 import { generateShortId } from '@/utils/ids';
 import { generateInvitationLink } from '@/utils/invitationLink';
+
+function isUuid(value: string): boolean {
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	return uuidRegex.test(value);
+}
 
 function resolveOrigin(providedOrigin?: string): string {
 	const baseUrl = getEnv('BASE_URL');
@@ -803,19 +807,26 @@ export async function resolveLegacyTokenToCanonicalUrl(input: {
 	token: string;
 	origin: string;
 }): Promise<string | null> {
-	const context = await getRsvpContext(
-		sanitize(input.eventSlug, 120),
-		sanitize(input.token, 2048),
-	);
-	if (!context.tokenValid || !context.guest) return null;
+	const safeEventSlug = sanitize(input.eventSlug, 120);
+	const safeToken = sanitize(input.token, 2048);
 
-	const invitation = await findGuestByLegacyIdentityPublic({
-		eventSlug: context.eventSlug,
-		guestId: context.guest.guestId,
-	});
-	if (!invitation) return null;
+	const event = await findEventBySlugService(safeEventSlug);
+	if (!event) return null;
 
-	return buildInviteUrl(input.origin, invitation.inviteId);
+	const token = safeToken;
+	if (!token) return null;
+
+	let v2Guest: GuestInvitationRecord | null = null;
+
+	if (isUuid(token)) {
+		v2Guest = await findGuestByInviteIdPublic(token);
+	} else if (token.length <= 12) {
+		v2Guest = await findGuestByShortIdPublic(token);
+	}
+
+	if (!v2Guest) return null;
+
+	return buildInviteUrl(input.origin, v2Guest.inviteId);
 }
 
 function hashClaimCode(rawCode: string): string {

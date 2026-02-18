@@ -11,18 +11,16 @@ import {
 	updateDashboardGuest,
 } from '@/lib/rsvp-v2/service';
 import * as repo from '@/lib/rsvp-v2/repository';
-import { getRsvpContext } from '@/lib/rsvp/service';
 
 jest.mock('@/lib/rsvp-v2/repository');
-
-jest.mock('@/lib/rsvp/service', () => ({
-	getRsvpContext: jest.fn(),
-}));
 
 describe('rsvp-v2 service branches', () => {
 	const findEventByIdMock = repo.findEventById as jest.MockedFunction<typeof repo.findEventById>;
 	const findEventByIdServiceMock = repo.findEventByIdService as jest.MockedFunction<
 		typeof repo.findEventByIdService
+	>;
+	const findEventBySlugServiceMock = repo.findEventBySlugService as jest.MockedFunction<
+		typeof repo.findEventBySlugService
 	>;
 	const findGuestsByEventMock = repo.findGuestsByEvent as jest.MockedFunction<
 		typeof repo.findGuestsByEvent
@@ -37,13 +35,12 @@ describe('rsvp-v2 service branches', () => {
 	const findGuestByInviteIdPublicMock = repo.findGuestByInviteIdPublic as jest.MockedFunction<
 		typeof repo.findGuestByInviteIdPublic
 	>;
+	const findGuestByShortIdPublicMock = repo.findGuestByShortIdPublic as jest.MockedFunction<
+		typeof repo.findGuestByShortIdPublic
+	>;
 	const findEventByInvitationPublicMock = repo.findEventByInvitationPublic as jest.MockedFunction<
 		typeof repo.findEventByInvitationPublic
 	>;
-	const findGuestByLegacyIdentityPublicMock =
-		repo.findGuestByLegacyIdentityPublic as jest.MockedFunction<
-			typeof repo.findGuestByLegacyIdentityPublic
-		>;
 	const redeemClaimCodeRpcMock = repo.redeemClaimCodeRpc as jest.MockedFunction<
 		typeof repo.redeemClaimCodeRpc
 	>;
@@ -51,7 +48,6 @@ describe('rsvp-v2 service branches', () => {
 		repo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof repo.findMembershipByEventForHost
 		>;
-	const getRsvpContextMock = getRsvpContext as jest.MockedFunction<typeof getRsvpContext>;
 
 	const baseEvent = {
 		id: 'evt-1',
@@ -87,6 +83,7 @@ describe('rsvp-v2 service branches', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		findEventByIdMock.mockResolvedValue(baseEvent);
+		findEventBySlugServiceMock.mockResolvedValue(baseEvent);
 		findGuestsByEventMock.mockResolvedValue([baseGuest]);
 	});
 
@@ -199,32 +196,48 @@ describe('rsvp-v2 service branches', () => {
 	});
 
 	it('resolveLegacyTokenToCanonicalUrl returns null on invalid token or missing mapping', async () => {
-		getRsvpContextMock.mockResolvedValue({
-			tokenValid: false,
-			eventSlug: 'demo',
-			guest: null,
-		} as never);
 		expect(
 			await resolveLegacyTokenToCanonicalUrl({
 				eventSlug: 'demo',
-				token: 'bad',
+				token: 'bad-format-token',
 				origin: 'http://localhost',
 			}),
 		).toBeNull();
 
-		getRsvpContextMock.mockResolvedValue({
-			tokenValid: true,
-			eventSlug: 'demo',
-			guest: { guestId: 'g-1' },
-		} as never);
-		findGuestByLegacyIdentityPublicMock.mockResolvedValue(null);
+		findGuestByInviteIdPublicMock.mockResolvedValue(null);
 		expect(
 			await resolveLegacyTokenToCanonicalUrl({
 				eventSlug: 'demo',
-				token: 'ok',
+				token: 'e297864e-0c7f-4b08-963d-4a1e96e00123', // Valid UUID format
 				origin: 'http://localhost',
 			}),
 		).toBeNull();
+	});
+
+	it('resolveLegacyTokenToCanonicalUrl returns canonical URL for valid UUID', async () => {
+		const uuid = 'e297864e-0c7f-4b08-963d-4a1e96e00123';
+		findGuestByInviteIdPublicMock.mockResolvedValue({ ...baseGuest, inviteId: uuid });
+
+		const result = await resolveLegacyTokenToCanonicalUrl({
+			eventSlug: 'demo',
+			token: uuid,
+			origin: 'http://localhost',
+		});
+
+		expect(result).toContain(uuid);
+	});
+
+	it('resolveLegacyTokenToCanonicalUrl returns canonical URL for valid ShortId', async () => {
+		const shortId = 'ABC12345';
+		findGuestByShortIdPublicMock.mockResolvedValue({ ...baseGuest, inviteId: 'some-uuid' });
+
+		const result = await resolveLegacyTokenToCanonicalUrl({
+			eventSlug: 'demo',
+			token: shortId,
+			origin: 'http://localhost',
+		});
+
+		expect(result).toContain('some-uuid');
 	});
 
 	it('claimEventForUser validates claim states via atomic RPC', async () => {
