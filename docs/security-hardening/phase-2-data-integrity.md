@@ -1,10 +1,7 @@
 # 📋 Fase 2 - Data Integrity
 
-**Prioridad:** 🟠 ALTA  
-**Estado:** 🔴 No Iniciada  
-**Bloquea Deploy:** ⚠️ Parcialmente  
-**Fecha Inicio:** Pendiente  
-**Depende de:** Fase 1
+**Prioridad:** 🟠 ALTA **Estado:** 🔴 No Iniciada **Bloquea Deploy:** ⚠️ Parcialmente **Fecha
+Inicio:** Pendiente **Depende de:** Fase 1
 
 ---
 
@@ -19,10 +16,7 @@ optimistic locking para ediciones concurrentes.
 
 ### Tarea 2.1: Implementar Soft Delete
 
-**ID:** DATA-001  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @database-admin
+**ID:** DATA-001 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @database-admin
 
 #### Descripción
 
@@ -111,7 +105,7 @@ $$;
 - [ ]   3. Modificar repositorios para usar soft delete:
 
 ```typescript
-// src/lib/rsvp-v2/repository.ts
+// src/lib/rsvp/repository.ts
 
 // ANTES:
 export async function deleteEventService(eventId: string): Promise<void> {
@@ -180,10 +174,7 @@ query: {
 
 ### Tarea 2.2: Protección Server-Side Último Super Admin
 
-**ID:** DATA-002  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** DATA-002 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -309,10 +300,7 @@ const handleRoleChange = async (userId: string, newRole: string) => {
 
 ### Tarea 2.3: Implementar Optimistic Locking
 
-**ID:** DATA-003  
-**Prioridad:** 🟠 ALTA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** DATA-003 **Prioridad:** 🟠 ALTA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -330,7 +318,7 @@ Implementar optimistic locking para detectar ediciones concurrentes y prevenir p
 - [ ]   1. Modificar queries UPDATE para usar optimistic locking:
 
 ```typescript
-// src/lib/rsvp-v2/repository.ts
+// src/lib/rsvp/repository.ts
 
 // ANTES:
 export async function updateEventService(eventId: string, data: Partial<Event>): Promise<Event> {
@@ -514,5 +502,4 @@ Esta fase se considera completa cuando:
 
 ---
 
-**Última actualización:** 2026-02-15  
-**Próxima revisión:** Al iniciar Fase 2
+**Última actualización:** 2026-02-15 **Próxima revisión:** Al iniciar Fase 2

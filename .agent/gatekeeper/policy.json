@@ -156,7 +156,7 @@
         {
             "id": "rsvp-architecture-sync",
             "triggers": [
-                "src/lib/rsvp-v2/**",
+                "src/lib/rsvp/**",
                 "src/pages/api/auth/**",
                 "src/pages/api/dashboard/**",
                 "src/pages/api/invitacion/**",

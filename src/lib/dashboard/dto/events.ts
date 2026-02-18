@@ -1,4 +1,4 @@
-import type { EventRecord } from '@/lib/rsvp-v2/types';
+import type { EventRecord } from '@/lib/rsvp/types';
 
 export interface CreateEventDTO {
 	title: string;

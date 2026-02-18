@@ -30,8 +30,8 @@ Celebra-me.
 
 ### Fase 1 - Core Security (100%)
 
-- **Rate limiting**: Implementado en 10 endpoints admin (`src/lib/rsvp-v2/adminRateLimit.ts`)
-- **CSRF Protection**: Módulo `src/lib/rsvp-v2/csrf.ts`, integrado en DashboardLayout y apiClient
+- **Rate limiting**: Implementado en 10 endpoints admin (`src/lib/rsvp/adminRateLimit.ts`)
+- **CSRF Protection**: Módulo `src/lib/rsvp/csrf.ts`, integrado en DashboardLayout y apiClient
 - **Security headers**: Agregados en `vercel.json`
 - **Default secrets eliminados**: Modificados `trustedDevice.ts` y `service.ts`, creado
   `env-validation.ts`
@@ -43,12 +43,12 @@ Celebra-me.
 ### Fase 2 - Data Integrity
 
 - ✅ **DATA-002**: Protección último super_admin server-side ✅ COMPLETO
-    - Archivo: `src/lib/rsvp-v2/adminProtection.ts`
+    - Archivo: `src/lib/rsvp/adminProtection.ts`
     - Endpoint actualizado: `src/pages/api/dashboard/admin/users/[userId]/role.ts`
     - Retorna 403 si se intenta eliminar último admin
 - ⚠️ **DATA-001**: Soft Delete
     - ❌ Migración creada: `supabase/migrations/20260220000000_add_soft_delete.sql`
-    - ❌ Servicio creado: `src/lib/rsvp-v2/softDelete.ts`
+    - ❌ Servicio creado: `src/lib/rsvp/softDelete.ts`
     - ⏳ **PENDIENTE**: Aplicar migración en Supabase con `supabase db push`
 
 - ❌ **DATA-003**: Optimistic Locking - PENDIENTE
@@ -56,7 +56,7 @@ Celebra-me.
 ### Fase 3 - API Hardening
 
 - ✅ Schemas Zod creados: `src/lib/schemas/index.ts`
-- ✅ Utilidades de validación: `src/lib/rsvp-v2/validation.ts`
+- ✅ Utilidades de validación: `src/lib/rsvp/validation.ts`
 - ❌ Integración en endpoints - PENDIENTE
 
 ---
@@ -134,7 +134,7 @@ supabase/migrations/
 src/lib/
 ├── env-validation.ts
 ├── schemas/index.ts
-└── rsvp-v2/
+└── rsvp/
     ├── adminRateLimit.ts
     ├── csrf.ts
     ├── adminProtection.ts

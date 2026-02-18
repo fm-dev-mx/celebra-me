@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { errorResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
-import { ApiError } from '@/lib/rsvp-v2/errors';
+import { errorResponse, parseJsonBody } from '@/lib/rsvp/http';
+import { ApiError } from '@/lib/rsvp/errors';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -8,12 +8,12 @@ import {
 	buildTrustedDeviceCookie,
 	clearMfaRefreshCookie,
 	clearMfaSessionCookie,
-} from '@/lib/rsvp-v2/cookies';
-import { hasMfaEvidence } from '@/lib/rsvp-v2/authMfaEvidence';
-import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp-v2/authSecurity';
-import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp-v2/auth';
-import { createTrustedDeviceToken } from '@/lib/rsvp-v2/trustedDevice';
-import { normalizeAppRole } from '@/lib/rsvp-v2/roles';
+} from '@/lib/rsvp/cookies';
+import { hasMfaEvidence } from '@/lib/rsvp/authMfaEvidence';
+import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp/authSecurity';
+import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp/auth';
+import { createTrustedDeviceToken } from '@/lib/rsvp/trustedDevice';
+import { normalizeAppRole } from '@/lib/rsvp/roles';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {

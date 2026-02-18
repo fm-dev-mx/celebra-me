@@ -2,23 +2,23 @@ import { POST as loginHost } from '@/pages/api/auth/login-host';
 import { POST as registerHost } from '@/pages/api/auth/register-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
-import * as authApi from '@/lib/rsvp-v2/authApi';
+import * as authApi from '@/lib/rsvp/authApi';
 import {
 	buildAuthSessionDto,
 	claimEventForUserByClaimCode,
 	ensureUserRole,
-} from '@/lib/rsvp-v2/service';
-import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
+} from '@/lib/rsvp/service';
+import { getHostSessionFromRequest } from '@/lib/rsvp/auth';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/authApi', () => ({
+jest.mock('@/lib/rsvp/authApi', () => ({
 	signInWithPassword: jest.fn(),
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
 	findAuthUserByEmail: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	buildAuthSessionDto: jest.fn(),
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
@@ -26,7 +26,7 @@ jest.mock('@/lib/rsvp-v2/service', () => ({
 	isSuperAdminEmail: jest.fn(() => false),
 }));
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	getHostSessionFromRequest: jest.fn(),
 }));
 

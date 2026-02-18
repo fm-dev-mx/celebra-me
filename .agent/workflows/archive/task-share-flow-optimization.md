@@ -29,7 +29,7 @@ interface optimized for mobile viewports, adhering to the "Jewelry Box" aestheti
         - **If `phone` is empty**: Trigger `navigator.share()` (Web Share API) for a native OS share
           sheet.
         - **Fallback**: Implement a simple menu for "Copy Link" or "Open Web".
-- **File**: `src/lib/rsvp-v2/service.ts`
+- **File**: `src/lib/rsvp/service.ts`
     - **Link Builder**: Ensure `buildWhatsAppShareUrl` and `generateInvitationLink` (in
       `src/utils/invitationLink.ts`) are synchronized.
 

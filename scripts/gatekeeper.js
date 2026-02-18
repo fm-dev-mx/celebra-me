@@ -134,7 +134,7 @@ const DEFAULT_POLICY = {
 		{
 			id: 'rsvp-architecture-sync',
 			triggers: [
-				'src/lib/rsvp-v2/**',
+				'src/lib/rsvp/**',
 				'src/pages/api/auth/**',
 				'src/pages/api/dashboard/**',
 				'src/pages/api/invitacion/**',
@@ -615,7 +615,6 @@ function reporterOf({ baseline, reportJson, output, maxGlobal, phase, mode }) {
 		if (truncGlobal)
 			log(`⚠️ Global findings cap reached (+${truncGlobal} truncated).`, COLORS.yellow);
 		if (reportJson) {
-			// eslint-disable-next-line no-console
 			console.log(
 				JSON.stringify(
 					{

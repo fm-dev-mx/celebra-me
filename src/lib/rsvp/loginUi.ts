@@ -44,7 +44,7 @@ export function validateRegisterForm(input: RegisterFormState): string | null {
 	const loginError = validateLoginForm(input);
 	if (loginError) return loginError;
 
-	// In RSVP-V2, claimCode is handled by the backend.
+	// In rsvp, claimCode is handled by the backend.
 	// The mandatory check is removed to allow Superadmins to skip it.
 	return null;
 }

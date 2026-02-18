@@ -43,7 +43,7 @@ When modifying code, you **MUST** update the corresponding documentation in the 
     - _Action_: Update `docs/architecture/*.md` or creating a new ADR.
 
 2.  **File Structure Change**:
-    - _If_ moving core modules (e.g., `src/lib/rsvp` -> `src/lib/rsvp-v2`).
+    - _If_ moving core modules (e.g., `src/lib/rsvp` -> `src/lib/rsvp`).
     - _Action_: Update `docs/ARCHITECTURE.md`.
 
 3.  **New Feature**:

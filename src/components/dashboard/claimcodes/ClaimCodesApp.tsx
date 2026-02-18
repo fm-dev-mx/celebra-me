@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { ClaimCodeDTO } from '@/lib/rsvp-v2/types';
+import type { ClaimCodeDTO } from '@/lib/rsvp/types';
 import { adminApi } from '@/lib/dashboard/adminApi';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import ClaimCodesTable from './ClaimCodesTable';

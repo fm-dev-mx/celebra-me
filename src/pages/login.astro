@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
-import { resolveNextPath } from '@/lib/rsvp-v2/login';
+import { resolveNextPath } from '@/lib/rsvp/login';
 import '@styles/auth/_login.scss';
 
 const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
@@ -159,7 +159,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			isValidEmail,
 			validateLoginForm,
 			validateRegisterForm,
-		} from '../lib/rsvp-v2/loginUi';
+		} from '../lib/rsvp/loginUi';
 
 		const statusEl = document.getElementById('auth-status');
 		const shellEl = document.querySelector('.auth-shell') as HTMLElement | null;

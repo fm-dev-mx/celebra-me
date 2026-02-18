@@ -1,4 +1,4 @@
-import type { AppUserRole } from '@/lib/rsvp-v2/types';
+import type { AppUserRole } from '@/lib/rsvp/types';
 
 export interface UserListItemDTO {
 	id: string;

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp-v2/http';
-import { supabaseRestRequest } from '@/lib/rsvp-v2/supabase';
+import { requireHostSession } from '@/lib/rsvp/auth';
+import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/http';
+import { supabaseRestRequest } from '@/lib/rsvp/supabase';
 import { validateBody } from '@/utils/api-utils';
 import { z } from 'zod';
 
@@ -20,7 +20,7 @@ const BulkImportSchema = z.object({
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// 1. Verificar sesión (patrón rsvp-v2)
+		// 1. Verificar sesión (patrón rsvp)
 		const session = await requireHostSession(request);
 
 		// 2. Validar cuerpo

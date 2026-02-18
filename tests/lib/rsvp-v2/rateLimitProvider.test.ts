@@ -2,9 +2,9 @@ import {
 	checkRateLimit,
 	hashIp,
 	resetRateLimitProviderForTests,
-} from '@/lib/rsvp-v2/rateLimitProvider';
+} from '@/lib/rsvp/rateLimitProvider';
 
-describe('rsvp-v2 rateLimitProvider', () => {
+describe('rsvp rateLimitProvider', () => {
 	const originalEnv = { ...process.env };
 	const originalFetch = global.fetch;
 

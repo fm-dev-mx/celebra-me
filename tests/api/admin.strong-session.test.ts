@@ -1,15 +1,15 @@
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
 import { GET as getUsers } from '@/pages/api/dashboard/admin/users';
 import { GET as getClaimCodes } from '@/pages/api/dashboard/claimcodes';
-import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
-import { listAdminEvents, listAdminUsers, listClaimCodesAdmin } from '@/lib/rsvp-v2/service';
-import { ApiError } from '@/lib/rsvp-v2/errors';
+import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
+import { listAdminEvents, listAdminUsers, listClaimCodesAdmin } from '@/lib/rsvp/service';
+import { ApiError } from '@/lib/rsvp/errors';
 
-jest.mock('@/lib/rsvp-v2/authorization', () => ({
+jest.mock('@/lib/rsvp/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	listAdminEvents: jest.fn(),
 	listAdminUsers: jest.fn(),
 	listClaimCodesAdmin: jest.fn(),

@@ -2,7 +2,7 @@
 
 ## Scope
 
-- `src/lib/rsvp-v2/**`
+- `src/lib/rsvp/**`
 - `src/pages/api/dashboard/**`
 - `src/pages/api/invitacion/**`
 - `src/pages/dashboard/invitados.astro`
@@ -15,10 +15,10 @@
 | Plan Item                                      | Status  | Evidence                                                                                                                                                                                                             |
 | ---------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SSE + fallback dashboard                       | Done    | `src/pages/api/dashboard/guests/stream.ts`, `src/components/dashboard/guests/GuestDashboardApp.tsx`                                                                                                                  |
-| Uniform API errors `{code,message,details?}`   | Done    | `src/lib/rsvp-v2/http.ts`, dashboard/invitacion endpoints                                                                                                                                                            |
-| Ownership and RLS protections                  | Partial | SQL policies in `supabase/migrations/20260215000400_rsvp_v2_rls.sql`, guard logic in `src/lib/rsvp-v2/service.ts`; requires integration verification in deployed DB                                                  |
+| Uniform API errors `{code,message,details?}`   | Done    | `src/lib/rsvp/http.ts`, dashboard/invitacion endpoints                                                                                                                                                               |
+| Ownership and RLS protections                  | Partial | SQL policies in `supabase/migrations/20260215000400_rsvp_v2_rls.sql`, guard logic in `src/lib/rsvp/service.ts`; requires integration verification in deployed DB                                                     |
 | `/context` side-effect free + `/view` explicit | Done    | `src/pages/api/invitacion/[inviteId]/context.ts`, `src/pages/api/invitacion/[inviteId]/view.ts`                                                                                                                      |
-| Distributed rate limiting                      | Partial | `src/lib/rsvp-v2/rateLimitProvider.ts` with Upstash adapter + in-memory fallback; depends on env flags in runtime                                                                                                    |
+| Distributed rate limiting                      | Partial | `src/lib/rsvp/rateLimitProvider.ts` with Upstash adapter + in-memory fallback; depends on env flags in runtime                                                                                                       |
 | Legacy `?t=` bridge                            | Done    | `src/pages/[eventType]/[slug].astro`, `src/pages/api/invitacion/resolve.ts`                                                                                                                                          |
 | Login flow host/admin consistency              | Partial | Host redirect exists (`src/pages/dashboard/invitados.astro`), dual login/register UI in `src/pages/login.astro`, auth APIs in `src/pages/api/auth/*`, admin legacy remains Basic Auth (`src/pages/admin/rsvp.astro`) |
 
@@ -40,12 +40,12 @@
 
 1. RSVP legacy and v2 run in parallel:
 
-- `src/lib/rsvp/*` and `src/lib/rsvp-v2/*`.
+- `src/lib/rsvp/*` and `src/lib/rsvp/*`.
 - Decision: `Migrar` consumers to v2 and freeze legacy with no new features.
 
 2. Rate-limit implementations:
 
-- `src/lib/rsvp-v2/rateLimit.ts` and `src/lib/rsvp-v2/rateLimitProvider.ts`.
+- `src/lib/rsvp/rateLimit.ts` and `src/lib/rsvp/rateLimitProvider.ts`.
 - Decision: `Deprecado` `rateLimit.ts` como shim temporal; remover en próximo ciclo.
 
 ### Coupled Hotspots
@@ -97,11 +97,11 @@
 
 Command:
 
-`pnpm test:rsvp-v2:coverage`
+`pnpm test:rsvp:coverage`
 
 Results:
 
-- `src/lib/rsvp-v2/*`: `77.21%` lines (`73.49%` statements).
+- `src/lib/rsvp/*`: `77.21%` lines (`73.49%` statements).
 - `src/pages/api/dashboard/*`: `~85.54%` lines in nested guests endpoints y `95.83%` in root
   dashboard endpoints.
 - `src/pages/api/invitacion/*`: `92.85%` + `90.32%` lines.
@@ -109,7 +109,7 @@ Results:
 Interpretation:
 
 - Dashboard and invitacion API targets are above objective.
-- `lib/rsvp-v2` reached line coverage objective (`>=70%`) in focused run.
+- `lib/rsvp` reached line coverage objective (`>=70%`) in focused run.
 - Remaining debt is mostly branch/function coverage in `service.ts` and `repository.ts`.
 
 ## Residual Risks

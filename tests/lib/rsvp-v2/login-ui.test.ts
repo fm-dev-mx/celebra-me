@@ -3,9 +3,9 @@ import {
 	isValidEmail,
 	validateLoginForm,
 	validateRegisterForm,
-} from '@/lib/rsvp-v2/loginUi';
+} from '@/lib/rsvp/loginUi';
 
-describe('rsvp-v2 login UI helpers', () => {
+describe('rsvp login UI helpers', () => {
 	it('validates email format', () => {
 		expect(isValidEmail('host@test.com')).toBe(true);
 		expect(isValidEmail('host@test')).toBe(false);

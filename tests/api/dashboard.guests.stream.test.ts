@@ -1,20 +1,20 @@
 import { GET } from '@/pages/api/dashboard/guests/stream';
-import { ApiError } from '@/lib/rsvp-v2/errors';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { listDashboardGuests } from '@/lib/rsvp-v2/service';
-import { subscribeGuestStreamEvent } from '@/lib/rsvp-v2/stream';
+import { ApiError } from '@/lib/rsvp/errors';
+import { requireHostSession } from '@/lib/rsvp/auth';
+import { listDashboardGuests } from '@/lib/rsvp/service';
+import { subscribeGuestStreamEvent } from '@/lib/rsvp/stream';
 import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { TextEncoder as NodeTextEncoder } from 'node:util';
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	requireHostSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	listDashboardGuests: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/stream', () => ({
+jest.mock('@/lib/rsvp/stream', () => ({
 	subscribeGuestStreamEvent: jest.fn(),
 }));
 

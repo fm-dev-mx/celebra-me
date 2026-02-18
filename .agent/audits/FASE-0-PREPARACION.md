@@ -45,7 +45,7 @@
 
 **Análisis realizado**:
 
-- Archivo: `rsvp-v2/service.ts` (1227 líneas)
+- Archivo: `rsvp/service.ts` (1227 líneas)
 - Funciones guest: 6 funciones (~200 líneas, ~16%)
 - Funciones: listDashboardGuests, createDashboardGuest, updateDashboardGuest, deleteDashboardGuest,
   markGuestShared, submitGuestRsvpByInviteId
@@ -76,7 +76,7 @@ significativamente.
 
 ## FASE 5 — MODULARIZACIÓN SERVICE (PENDIENTE)
 
-**Objetivo**: Extraer GuestService de rsvp-v2/service.ts (~1200 líneas)
+**Objetivo**: Extraer GuestService de rsvp/service.ts (~1200 líneas)
 
 ---
 
@@ -108,7 +108,7 @@ significativamente.
 
 ## 3. Imports Legacy V1 Detectados
 
-### 3.1 En rsvp-v2/service.ts (Línea 50)
+### 3.1 En rsvp/service.ts (Línea 50)
 
 ```typescript
 import { getRsvpContext } from '@/lib/rsvp/service';
@@ -194,7 +194,7 @@ V1 **Solución propuesta**: Crear versión V2 del RPC o migrar a operaciones ind
     - `handlePostpone` (líneas 325-357)
     - Render principal (líneas 359-781)
 
-### 6.2 rsvp-v2/service.ts
+### 6.2 rsvp/service.ts
 
 - **Líneas totales**: 1217
 - **Funciones guest-related**: ~15
@@ -253,7 +253,7 @@ if (row) {
 
 ### 8.3 Baja Prioridad (Fases 4-5)
 
-9. `src/lib/rsvp-v2/service.ts`
+9. `src/lib/rsvp/service.ts`
 10. `src/pages/api/dashboard/guests/bulk.ts`
 
 ---

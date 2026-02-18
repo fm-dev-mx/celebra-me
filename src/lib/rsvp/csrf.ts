@@ -143,7 +143,7 @@ export function generateCsrfMetaTag(token: string): string {
  * Middleware para validar CSRF en Astro
  * Uso en middleware.ts:
  *
- * import { csrfMiddleware } from '@/lib/rsvp-v2/csrf';
+ * import { csrfMiddleware } from '@/lib/rsvp/csrf';
  *
  * export const onRequest = defineMiddleware((context, next) => {
  *   // ... otra lógica de middleware ...

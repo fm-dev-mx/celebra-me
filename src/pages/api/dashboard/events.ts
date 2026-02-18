@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
-import { listHostEvents } from '@/lib/rsvp-v2/service';
-import type { DashboardEventListResponse } from '@/lib/rsvp-v2/types';
+import { requireHostSession } from '@/lib/rsvp/auth';
+import { errorResponse, jsonResponse } from '@/lib/rsvp/http';
+import { listHostEvents } from '@/lib/rsvp/service';
+import type { DashboardEventListResponse } from '@/lib/rsvp/types';
 
 export const GET: APIRoute = async ({ request }) => {
 	try {

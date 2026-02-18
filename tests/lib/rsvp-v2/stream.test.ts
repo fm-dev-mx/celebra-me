@@ -1,6 +1,6 @@
-import { publishGuestStreamEvent, subscribeGuestStreamEvent } from '@/lib/rsvp-v2/stream';
+import { publishGuestStreamEvent, subscribeGuestStreamEvent } from '@/lib/rsvp/stream';
 
-describe('rsvp-v2 stream bus', () => {
+describe('rsvp stream bus', () => {
 	it('publishes events to subscribers of the same event id', () => {
 		const listener = jest.fn();
 		const unsubscribe = subscribeGuestStreamEvent('evt-1', listener);

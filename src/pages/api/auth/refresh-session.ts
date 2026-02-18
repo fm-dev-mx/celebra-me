@@ -1,15 +1,15 @@
 import type { APIRoute } from 'astro';
-import { refreshAccessToken } from '@/lib/rsvp-v2/authApi';
-import { ApiError } from '@/lib/rsvp-v2/errors';
+import { refreshAccessToken } from '@/lib/rsvp/authApi';
+import { ApiError } from '@/lib/rsvp/errors';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
 	buildSessionCookie,
 	clearRefreshTokenCookie,
 	clearSessionCookie,
-} from '@/lib/rsvp-v2/cookies';
-import { assertSameOrigin, enforceAuthRateLimit } from '@/lib/rsvp-v2/authSecurity';
-import { errorResponse } from '@/lib/rsvp-v2/http';
+} from '@/lib/rsvp/cookies';
+import { assertSameOrigin, enforceAuthRateLimit } from '@/lib/rsvp/authSecurity';
+import { errorResponse } from '@/lib/rsvp/http';
 
 function sanitize(value: unknown, maxLen = 4096): string {
 	if (typeof value !== 'string') return '';

@@ -1,6 +1,6 @@
-import { supabaseRestRequest } from '@/lib/rsvp-v2/supabase';
+import { supabaseRestRequest } from '@/lib/rsvp/supabase';
 
-describe('rsvp-v2 supabase rest client', () => {
+describe('rsvp supabase rest client', () => {
 	const originalEnv = { ...process.env };
 	const originalFetch = global.fetch;
 

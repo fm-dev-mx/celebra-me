@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp-v2/errors';
-import { badRequest, errorResponse, successResponse } from '@/lib/rsvp-v2/http';
-import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
-import { submitGuestRsvpByInviteId } from '@/lib/rsvp-v2/service';
+import { ApiError } from '@/lib/rsvp/errors';
+import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/http';
+import { checkRateLimit } from '@/lib/rsvp/rateLimitProvider';
+import { submitGuestRsvpByInviteId } from '@/lib/rsvp/service';
 
-import { sanitize } from '@/lib/rsvp-v2/utils';
+import { sanitize } from '@/lib/rsvp/utils';
 
 function getIp(request: Request): string {
 	const raw =

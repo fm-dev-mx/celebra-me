@@ -1,9 +1,9 @@
 import type { APIContext } from 'astro';
 import { POST as syncSession } from '@/pages/api/auth/sync-session';
-import * as auth from '@/lib/rsvp-v2/auth';
+import * as auth from '@/lib/rsvp/auth';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	getHostSessionFromRequest: jest.fn(),
 	getSupabaseUserByAccessToken: jest.fn(),
 }));

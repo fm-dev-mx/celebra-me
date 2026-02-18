@@ -1,11 +1,11 @@
-import { claimEventForUserByClaimCode } from '@/lib/rsvp-v2/service';
-import { redeemClaimCodeRpc } from '@/lib/rsvp-v2/repository';
+import { claimEventForUserByClaimCode } from '@/lib/rsvp/service';
+import { redeemClaimCodeRpc } from '@/lib/rsvp/repository';
 
-jest.mock('@/lib/rsvp-v2/repository');
+jest.mock('@/lib/rsvp/repository');
 
 const redeemClaimCodeRpcMock = redeemClaimCodeRpc as jest.MockedFunction<typeof redeemClaimCodeRpc>;
 
-describe('rsvp-v2 claim code service (atomic RPC)', () => {
+describe('rsvp claim code service (atomic RPC)', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
 	});

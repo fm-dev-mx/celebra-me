@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { validateQueryOrRespond } from '@/lib/rsvp-v2/validation';
-import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
-import { listAdminUsers } from '@/lib/rsvp-v2/service';
+import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { validateQueryOrRespond } from '@/lib/rsvp/validation';
+import { errorResponse, jsonResponse } from '@/lib/rsvp/http';
+import { listAdminUsers } from '@/lib/rsvp/service';
 import { PaginationSchema } from '@/lib/schemas';
 
 export const GET: APIRoute = async ({ request, url }) => {

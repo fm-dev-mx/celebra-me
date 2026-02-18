@@ -1,4 +1,4 @@
-import { getHostSessionFromRequest, resolveAccessTokenFromRequest } from '@/lib/rsvp-v2/auth';
+import { getHostSessionFromRequest, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth';
 
 function createRequest(headers: Record<string, string>): Request {
 	const normalized = Object.fromEntries(
@@ -11,7 +11,7 @@ function createRequest(headers: Record<string, string>): Request {
 	} as unknown as Request;
 }
 
-describe('rsvp-v2 auth session edge cases', () => {
+describe('rsvp auth session edge cases', () => {
 	const originalFetch = global.fetch;
 	const originalEnv = { ...process.env };
 

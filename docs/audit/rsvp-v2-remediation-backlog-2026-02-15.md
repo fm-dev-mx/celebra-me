@@ -15,7 +15,7 @@
 - Problem: host audit inserts use host JWT but audit table only has `select` policy.
 - Evidence:
     - `supabase/migrations/20260215000400_rsvp_v2_rls.sql:140`
-    - `src/lib/rsvp-v2/repository.ts:231`
+    - `src/lib/rsvp/repository.ts:231`
 - Fix:
     - Add `insert` policy on `guest_invitation_audit` for authenticated owners via join to `events`.
     - Keep service-role path for guest/public insert cases.
@@ -26,9 +26,9 @@
 
 - Problem: partial success path (core row updated, audit failed).
 - Evidence:
-    - `src/lib/rsvp-v2/service.ts:133`
-    - `src/lib/rsvp-v2/service.ts:183`
-    - `src/lib/rsvp-v2/service.ts:225`
+    - `src/lib/rsvp/service.ts:133`
+    - `src/lib/rsvp/service.ts:183`
+    - `src/lib/rsvp/service.ts:225`
 - Fix:
     - Move mutation flow into SQL RPC functions with a transaction.
     - Return normalized DTO from RPC to API.
@@ -39,7 +39,7 @@
 
 - Problem: no tests for v2 APIs/services.
 - Evidence:
-    - No matching tests for `rsvp-v2`, `api/invitacion`, `api/dashboard/guests`.
+    - No matching tests for `rsvp`, `api/invitacion`, `api/dashboard/guests`.
 - Fix:
     - Add API tests:
         - `tests/api/dashboard.guests.test.ts`
@@ -69,7 +69,7 @@
 - Problem: context call mutates viewed state and logs audit during page render.
 - Evidence:
     - `src/pages/invitacion/[inviteId].astro:17`
-    - `src/lib/rsvp-v2/service.ts:265`
+    - `src/lib/rsvp/service.ts:265`
 - Fix:
     - Create pure read context method.
     - Move telemetry to explicit `POST /view` beacon from client.
@@ -107,7 +107,7 @@
 
 - Problem: limiter resets per instance and is bypassable in distributed runtime.
 - Evidence:
-    - `src/lib/rsvp-v2/rateLimit.ts:6`
+    - `src/lib/rsvp/rateLimit.ts:6`
 - Fix:
     - Redis/Upstash-based token bucket or Supabase-based abuse table.
 - Acceptance:
@@ -137,7 +137,7 @@
 
 - Problem: duplicated responsibilities between `/api/rsvp/*` and v2 APIs.
 - Evidence:
-    - Coexisting modules in `src/lib/rsvp/*` and `src/lib/rsvp-v2/*`
+    - Coexisting modules in `src/lib/rsvp/*` and `src/lib/rsvp/*`
 - Fix:
     - Define milestones:
         - parity complete

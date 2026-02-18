@@ -1,22 +1,22 @@
 import { GET, POST } from '@/pages/api/dashboard/guests';
 import { PATCH, DELETE } from '@/pages/api/dashboard/guests/[guestId]';
 import { POST as markShared } from '@/pages/api/dashboard/guests/[guestId]/mark-shared';
-import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp-v2/auth';
+import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp/auth';
 import {
 	createDashboardGuest,
 	deleteDashboardGuest,
 	listDashboardGuests,
 	markGuestShared,
 	updateDashboardGuest,
-} from '@/lib/rsvp-v2/service';
+} from '@/lib/rsvp/service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	requireHostSession: jest.fn(),
 	getSessionContextFromRequest: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	listDashboardGuests: jest.fn(),
 	createDashboardGuest: jest.fn(),
 	updateDashboardGuest: jest.fn(),

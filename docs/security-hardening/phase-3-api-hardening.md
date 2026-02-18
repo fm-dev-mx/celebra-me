@@ -1,10 +1,7 @@
 # 📋 Fase 3 - API Hardening
 
-**Prioridad:** 🟡 MEDIA  
-**Estado:** 🔴 No Iniciada  
-**Bloquea Deploy:** ❌ NO  
-**Fecha Inicio:** Pendiente  
-**Depende de:** Fase 1
+**Prioridad:** 🟡 MEDIA **Estado:** 🔴 No Iniciada **Bloquea Deploy:** ❌ NO **Fecha Inicio:**
+Pendiente **Depende de:** Fase 1
 
 ---
 
@@ -19,10 +16,7 @@ idempotencia en operaciones críticas.
 
 ### Tarea 3.1: Implementar Validación de Schema con Zod
 
-**ID:** API-001  
-**Prioridad:** 🟡 MEDIA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** API-001 **Prioridad:** 🟡 MEDIA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -84,7 +78,7 @@ export type UpdateEventInput = z.infer<typeof UpdateEventSchema>;
 - [ ]   3. Crear middleware de validación:
 
 ```typescript
-// src/lib/rsvp-v2/validation.ts
+// src/lib/rsvp/validation.ts
 import { z } from 'zod';
 import { ApiError } from './errors';
 
@@ -128,7 +122,7 @@ export function validateQuery<T>(searchParams: URLSearchParams, schema: z.ZodSch
 ```typescript
 // src/pages/api/dashboard/admin/events.ts
 import { CreateEventSchema } from '@/schemas/events';
-import { validateBody } from '@/lib/rsvp-v2/validation';
+import { validateBody } from '@/lib/rsvp/validation';
 
 export const POST: APIRoute = async ({ request }) => {
 	const { actorUserId } = await requireAdminStrongSession(request);
@@ -172,10 +166,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 ### Tarea 3.2: Estandarizar Respuestas API
 
-**ID:** API-002  
-**Prioridad:** 🟡 MEDIA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** API-002 **Prioridad:** 🟡 MEDIA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -187,7 +178,7 @@ Actualmente hay 3 formatos de respuesta diferentes. Estandarizar todos los endpo
 - [ ]   1. Crear helpers de respuesta:
 
 ```typescript
-// src/lib/rsvp-v2/response.ts
+// src/lib/rsvp/response.ts
 
 interface SuccessResponse<T> {
 	success: true;
@@ -389,7 +380,7 @@ CREATE INDEX idx_idempotency_expires ON idempotency_keys(expires_at);
 - [ ]   2. Crear middleware de idempotencia:
 
 ```typescript
-// src/lib/rsvp-v2/idempotency.ts
+// src/lib/rsvp/idempotency.ts
 
 export async function handleIdempotentRequest<T>(
 	request: Request,
@@ -510,5 +501,4 @@ Esta fase se considera completa cuando:
 
 ---
 
-**Última actualización:** 2026-02-15  
-**Próxima revisión:** Al iniciar Fase 3
+**Última actualización:** 2026-02-15 **Próxima revisión:** Al iniciar Fase 3

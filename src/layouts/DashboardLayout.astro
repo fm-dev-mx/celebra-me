@@ -4,9 +4,9 @@ import '@/styles/dashboard/_shell.scss';
 import '@/styles/dashboard/_tables.scss';
 import '@/styles/dashboard/_forms.scss';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
-import { toDisplayRole } from '@/lib/rsvp-v2/roles';
-import type { DashboardNavItem } from '@/lib/rsvp-v2/types';
+import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
+import { toDisplayRole } from '@/lib/rsvp/roles';
+import type { DashboardNavItem } from '@/lib/rsvp/types';
 
 interface Props {
 	title: string;

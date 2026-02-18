@@ -8,9 +8,7 @@ Documento de referencia con todos los issues de seguridad encontrados durante la
 
 ### ISS-001: Credenciales Expuestas en Repositorio
 
-**Archivos:** `.env`, `.env.local`  
-**Líneas:** Múltiples  
-**Riesgo:** Compromiso total del sistema
+**Archivos:** `.env`, `.env.local` **Líneas:** Múltiples **Riesgo:** Compromiso total del sistema
 
 **Detalle:** Los siguientes secrets están hardcodeados en archivos trackeados por git:
 
@@ -45,9 +43,8 @@ RSVP_ADMIN_PASSWORD=xxxx
 
 ### ISS-002: Protección Último Super Admin Solo Client-Side
 
-**Archivo:** `src/components/dashboard/users/UsersAdminTable.tsx` L30-41  
-**Archivo:** `src/pages/api/dashboard/admin/users/[userId]/role.ts`  
-**Riesgo:** Bloqueo total del sistema
+**Archivo:** `src/components/dashboard/users/UsersAdminTable.tsx` L30-41 **Archivo:**
+`src/pages/api/dashboard/admin/users/[userId]/role.ts` **Riesgo:** Bloqueo total del sistema
 
 **Detalle:** El check de "no eliminar último super_admin" solo existe en el cliente:
 
@@ -78,8 +75,7 @@ El endpoint API NO tiene esta validación.
 
 ### ISS-003: Sin Rate Limiting en Endpoints Admin
 
-**Archivos:** Todos los endpoints en `/api/dashboard/admin/*`  
-**Riesgo:** DoS, brute force
+**Archivos:** Todos los endpoints en `/api/dashboard/admin/*` **Riesgo:** DoS, brute force
 
 **Detalle:** Ningún endpoint admin tiene rate limiting. Esto permite:
 
@@ -103,8 +99,7 @@ El endpoint API NO tiene esta validación.
 
 ### ISS-004: Sin Protección CSRF
 
-**Archivos:** Todos los endpoints POST/PATCH/DELETE  
-**Riesgo:** Ataques cross-site
+**Archivos:** Todos los endpoints POST/PATCH/DELETE **Riesgo:** Ataques cross-site
 
 **Detalle:** No hay tokens CSRF implementados. Solo se usa SameSite cookies:
 
@@ -128,8 +123,7 @@ El endpoint API NO tiene esta validación.
 
 ### ISS-005: Sin Soft Delete
 
-**Archivos:** Todas las operaciones DELETE en BD  
-**Riesgo:** Pérdida de datos irreversible
+**Archivos:** Todas las operaciones DELETE en BD **Riesgo:** Pérdida de datos irreversible
 
 **Detalle:** Todas las operaciones DELETE son hard delete físico:
 
@@ -164,8 +158,7 @@ El endpoint API NO tiene esta validación.
 
 ### ISS-006: Default Secrets en Código
 
-**Archivo:** `src/lib/rsvp-v2/trustedDevice.ts` L35  
-**Archivo:** `src/lib/rsvp/service.ts` L116  
+**Archivo:** `src/lib/rsvp/trustedDevice.ts` L35 **Archivo:** `src/lib/rsvp/service.ts` L116
 **Riesgo:** Bypass de autenticación
 
 **Detalle:** Secrets por defecto en código:
@@ -193,8 +186,7 @@ const DEV_RSVP_TOKEN_SECRET = 'dev-rsvp-secret-change-me';
 
 ### ISS-007: Sin Headers de Seguridad
 
-**Archivo:** `vercel.json`  
-**Riesgo:** XSS, clickjacking, MIME sniffing
+**Archivo:** `vercel.json` **Riesgo:** XSS, clickjacking, MIME sniffing
 
 **Detalle:** Configuración actual:
 
@@ -225,8 +217,7 @@ Faltan:
 
 ### ISS-008: Sin Validación de Schema
 
-**Archivos:** 32 de 33 endpoints  
-**Riesgo:** Data corruption, injection
+**Archivos:** 32 de 33 endpoints **Riesgo:** Data corruption, injection
 
 **Detalle:** Solo 1 endpoint usa Zod (`/api/contact`). El resto usa validación manual o type
 casting:
@@ -255,8 +246,7 @@ const body = (await request.json()) as {
 
 ### ISS-009: Race Conditions en Ediciones Concurrentes
 
-**Archivos:** Todos los endpoints PATCH  
-**Riesgo:** Pérdida de datos
+**Archivos:** Todos los endpoints PATCH **Riesgo:** Pérdida de datos
 
 **Detalle:** No hay optimistic locking:
 
@@ -283,8 +273,7 @@ const updated = await updateEvent(eventId, data); // Sobrescribe cambios
 
 ### ISS-010: Sin Error Tracking
 
-**Archivos:** Todo el proyecto  
-**Riesgo:** Errores silenciosos en producción
+**Archivos:** Todo el proyecto **Riesgo:** Errores silenciosos en producción
 
 **Detalle:** No hay integración con Sentry, LogRocket, o similar:
 
@@ -310,8 +299,7 @@ console.error('ErrorBoundary caught an error:', error, errorInfo);
 
 ### ISS-011: In-Memory Rate Limiting en Serverless
 
-**Archivo:** `src/lib/rsvp-v2/rateLimitProvider.ts`  
-**Riesgo:** Rate limiting inefectivo
+**Archivo:** `src/lib/rsvp/rateLimitProvider.ts` **Riesgo:** Rate limiting inefectivo
 
 **Detalle:** Cuando Upstash no está configurado, usa in-memory:
 
@@ -338,8 +326,7 @@ if (distributedEnabled && url && token) {
 
 ### ISS-012: Console.log en Producción
 
-**Archivos:** 96 instancias encontradas  
-**Riesgo:** Data leakage
+**Archivos:** 96 instancias encontradas **Riesgo:** Data leakage
 
 **Detalle:** Múltiples console.log/console.error en código:
 
@@ -369,13 +356,12 @@ console.error('Audit log failed:', error);
 
 ### ISS-013: Respuestas API Inconsistentes
 
-**Archivos:** Todos los endpoints  
-**Riesgo:** Client errors, breaking changes
+**Archivos:** Todos los endpoints **Riesgo:** Client errors, breaking changes
 
 **Detalle:** Hay 3 formatos diferentes:
 
 ```typescript
-// RSVP-v2: { code, message, details }
+// rsvp: { code, message, details }
 // Legacy: { message }
 // Contact: { error, code, meta }
 ```
@@ -390,8 +376,7 @@ console.error('Audit log failed:', error);
 
 ### ISS-014: Sin Health Check
 
-**Archivo:** N/A  
-**Riesgo:** Deploys ciegos
+**Archivo:** N/A **Riesgo:** Deploys ciegos
 
 **Detalle:** No hay endpoint `/health` o similar.
 
@@ -401,8 +386,7 @@ console.error('Audit log failed:', error);
 
 ### ISS-015: Sin Idempotency Keys
 
-**Archivos:** POST endpoints  
-**Riesgo:** Duplicados en retries
+**Archivos:** POST endpoints **Riesgo:** Duplicados en retries
 
 **Detalle:** No hay protección contra duplicados si el cliente hace retry.
 
@@ -416,8 +400,7 @@ console.error('Audit log failed:', error);
 
 ### ISS-016: Sin Security Event Logging
 
-**Archivos:** Auth, autorización  
-**Riesgo:** No detección de ataques
+**Archivos:** Auth, autorización **Riesgo:** No detección de ataques
 
 **Detalle:** No se loggean eventos de seguridad:
 
@@ -437,8 +420,7 @@ console.error('Audit log failed:', error);
 
 ### ISS-017: Localhost Fallback en URLs
 
-**Archivo:** `src/lib/rsvp/service.ts` L138, L616  
-**Riesgo:** Links rotos
+**Archivo:** `src/lib/rsvp/service.ts` L138, L616 **Riesgo:** Links rotos
 
 **Detalle:** Fallback a localhost si BASE_URL no está seteado.
 
@@ -448,8 +430,7 @@ console.error('Audit log failed:', error);
 
 ### ISS-018: Sin Paginación
 
-**Archivos:** Queries de listado  
-**Riesgo:** Performance degradation
+**Archivos:** Queries de listado **Riesgo:** Performance degradation
 
 **Detalle:** Queries retornan todas las filas:
 
@@ -474,5 +455,4 @@ console.error('Audit log failed:', error);
 
 ---
 
-**Documento generado:** 2026-02-15  
-**Próxima actualización:** Semanalmente durante hardening
+**Documento generado:** 2026-02-15 **Próxima actualización:** Semanalmente durante hardening

@@ -98,7 +98,7 @@ import '@styles/auth/_login.scss';
 
 	<script>
 		import { createClient } from '@supabase/supabase-js';
-		import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp-v2/mfaSetup';
+		import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp/mfaSetup';
 
 		const appEl = document.getElementById('mfa-app');
 		const qrContainer = document.getElementById('qr-container');

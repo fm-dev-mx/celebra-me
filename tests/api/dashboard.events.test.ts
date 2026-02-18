@@ -1,14 +1,14 @@
 import { GET } from '@/pages/api/dashboard/events';
-import { ApiError } from '@/lib/rsvp-v2/errors';
-import { requireHostSession } from '@/lib/rsvp-v2/auth';
-import { listHostEvents } from '@/lib/rsvp-v2/service';
+import { ApiError } from '@/lib/rsvp/errors';
+import { requireHostSession } from '@/lib/rsvp/auth';
+import { listHostEvents } from '@/lib/rsvp/service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	requireHostSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	listHostEvents: jest.fn(),
 }));
 

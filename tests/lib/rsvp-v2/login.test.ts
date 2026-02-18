@@ -1,6 +1,6 @@
-import { buildHostLoginRedirect, resolveNextPath } from '@/lib/rsvp-v2/login';
+import { buildHostLoginRedirect, resolveNextPath } from '@/lib/rsvp/login';
 
-describe('rsvp-v2 login helpers', () => {
+describe('rsvp login helpers', () => {
 	it('builds login redirect with encoded next', () => {
 		expect(buildHostLoginRedirect('/dashboard/invitados')).toBe(
 			'/login?next=%2Fdashboard%2Finvitados',
