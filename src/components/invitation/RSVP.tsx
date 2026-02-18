@@ -43,8 +43,8 @@ interface RSVPProps {
 	confirmationMode?: ConfirmationMode;
 	whatsappConfig?: WhatsAppConfig;
 	initialGuestData?: {
-		fullName: string;
-		maxAllowedAttendees: number;
+		fullName?: string;
+		maxAllowedAttendees?: number;
 		inviteId?: string;
 	};
 }
@@ -74,7 +74,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const [notes, setNotes] = useState('');
 	const [dietary, setDietary] = useState('');
 	const [contextLoading, setContextLoading] = useState(!initialGuestData);
-	const [nameLocked, setNameLocked] = useState(!!initialGuestData);
+	const [nameLocked, setNameLocked] = useState(!!initialGuestData?.fullName);
 	const [contextGuestCap, setContextGuestCap] = useState<number>(
 		Number(initialGuestData?.maxAllowedAttendees || guestCap),
 	);
@@ -101,12 +101,15 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		!!whatsappConfig?.phone;
 
-	// Init data from props
 	useEffect(() => {
 		if (initialGuestData) {
-			setName(initialGuestData.fullName);
-			setNameLocked(true);
-			setContextGuestCap(initialGuestData.maxAllowedAttendees);
+			if (initialGuestData.fullName) {
+				setName(initialGuestData.fullName);
+				setNameLocked(true);
+			}
+			if (initialGuestData.maxAllowedAttendees) {
+				setContextGuestCap(initialGuestData.maxAllowedAttendees);
+			}
 		} else {
 			setNameLocked(false);
 		}

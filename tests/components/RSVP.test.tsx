@@ -10,11 +10,22 @@ describe('RSVP Component', () => {
 		title: '¿Vienes a celebrar conmigo?',
 		guestCap: 2,
 		confirmationMessage: '¡Gracias por confirmar! Te esperamos con mucha emoción.',
+		initialGuestData: {
+			inviteId: 'mock-invite-id',
+		},
 	};
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		window.HTMLElement.prototype.scrollIntoView = jest.fn();
+
+		// Mock global fetch for API submissions
+		global.fetch = jest.fn(() =>
+			Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({ rsvpId: 'mock-rsvp-id' }),
+			}),
+		) as jest.Mock;
 	});
 
 	describe('Initial Render', () => {
