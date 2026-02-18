@@ -2,7 +2,6 @@
 
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap'; // Automatic site map generation for SEO
-import tailwind from '@astrojs/tailwind';
 import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for SEO
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
@@ -15,7 +14,7 @@ export default defineConfig({
 			? 'http://localhost:4321'
 			: 'https://celebra-me.vercel.app',
 
-	integrations: [react(), tailwind(), sitemap(), robotsTxt()],
+	integrations: [react(), sitemap(), robotsTxt()],
 	image: {
 		remotePatterns: [
 			{
