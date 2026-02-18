@@ -449,6 +449,139 @@
 	}
 }
 
+/* Progress Card */
+.dashboard-guests__progress-card {
+	padding: 1.5rem;
+	background: rgba($color-surface-primary, 0.03);
+	backdrop-filter: blur(12px);
+	border: 1px solid rgba($color-action-accent, 0.15);
+	border-radius: 20px;
+	margin-bottom: 2.5rem;
+	box-shadow: $shadow-premium;
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+
+	@media (width <= 480px) {
+		padding: 1.25rem 1rem;
+	}
+}
+
+.progress-header {
+	display: flex;
+	gap: 1rem;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	flex-wrap: wrap;
+
+	h3 {
+		font-size: 0.85rem;
+		color: $color-action-accent;
+		margin: 0;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-weight: 700;
+
+		@media (width >= 640px) {
+			font-size: 1rem;
+		}
+	}
+}
+
+.progress-percentage {
+	font-size: 1.75rem;
+	font-weight: 800;
+	color: $color-text-primary;
+	font-family: $font-display-elegant;
+
+	@media (width >= 640px) {
+		font-size: 2.25rem;
+	}
+}
+
+.progress-track {
+	height: 8px;
+	background: rgb(0 0 0 / 30%);
+	border-radius: 100px;
+	overflow: visible;
+	position: relative;
+	margin-bottom: 1.5rem;
+}
+
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		$color-action-accent,
+		$color-text-primary,
+		$color-action-accent
+	);
+	background-size: 200% 100%;
+	animation: shimmer 3s infinite linear;
+	border-radius: 100px;
+	box-shadow: 0 0 15px rgba($color-action-accent, 0.4);
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: 0% 0%;
+	}
+
+	100% {
+		background-position: -200% 0%;
+	}
+}
+
+.progress-sparkle {
+	position: absolute;
+	top: -10px;
+	transform: translateX(-50%);
+	font-size: 1.2rem;
+	pointer-events: none;
+	text-shadow: 0 0 10px $color-action-accent;
+}
+
+.progress-footer {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	color: rgba($color-text-primary, 0.7);
+	font-size: 0.9rem;
+
+	p {
+		margin: 0;
+		word-break: normal;
+		font-family: inherit;
+	}
+
+	@media (width >= 640px) {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: flex-end;
+	}
+}
+
+.progress-footer__info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.completion-badge {
+	align-self: flex-start;
+	color: $color-action-accent;
+	font-weight: 700;
+	background: rgba($color-action-accent, 0.15);
+	padding: 6px 12px;
+	border-radius: 100px;
+	border: 1px solid rgba($color-action-accent, 0.3);
+	font-size: 0.8rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
 /* Invitation Numbering */
 .invitation-number,
 .guest-card__number {
@@ -1330,4 +1463,57 @@
 		font-weight: $font-weight-medium;
 		text-align: right;
 	}
+}
+
+// ============================================================================
+// Legacy Class Aliases (DEPRECATED)
+// These classes are kept for backward compatibility but should not be used
+// in new code. Use the dashboard-common classes instead.
+// ============================================================================
+
+/// @deprecated Use .dashboard-error instead
+.dashboard-guests__error {
+	color: $color-wax-seal;
+	font-size: 0.875rem;
+	padding: 0.75rem;
+	background: rgba($color-wax-seal, 0.1);
+	border: 1px solid rgba($color-wax-seal, 0.3);
+	border-radius: 8px;
+	margin: 0.5rem 0;
+}
+
+/// @deprecated Use .dashboard-status instead
+.dashboard-guests__status {
+	font-size: 0.875rem;
+	color: $color-text-secondary;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0;
+}
+
+/// @deprecated Use .dashboard-modal-backdrop instead
+.dashboard-guests__modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgb(0 0 0 / 60%);
+	backdrop-filter: blur(4px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 1rem;
+}
+
+/// @deprecated Use .dashboard-modal instead
+.dashboard-guests__modal {
+	background: white;
+	border-radius: 24px;
+	box-shadow: $shadow-premium;
+	width: min(600px, 95vw);
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	overflow: hidden;
 }
