@@ -6,10 +6,64 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 
 export default [
+	// ------------------------------------------------------------
+	// Global ignores (apply first)
+	// ------------------------------------------------------------
+	{
+		ignores: [
+			'dist/',
+			'node_modules/',
+			'.astro/',
+			'.vercel/',
+			'.build/',
+			'coverage/',
+			'public/',
+			'*.log',
+			'*.tmp',
+			'*.min.js',
+			'*.min.css',
+			'astro/types.d.ts',
+			// Lockfiles
+			'package-lock.json',
+			'pnpm-lock.yaml',
+			// Env files
+			'.env',
+			'.env.local',
+			'.env.*.local',
+		],
+	},
+
+	// ------------------------------------------------------------
+	// Base recommended (JS)
+	// ------------------------------------------------------------
 	eslint.configs.recommended,
-	...tseslint.configs.recommended,
-	...eslintPluginAstro.configs.recommended,
+
+	// ------------------------------------------------------------
+	// TypeScript recommended (only for TS/TSX)
+	// This prevents TS rules from incorrectly applying to .js
+	// ------------------------------------------------------------
+	...tseslint.configs.recommended.map((cfg) => ({
+		...cfg,
+		files: ['**/*.{ts,tsx}'],
+	})),
+
+	// ------------------------------------------------------------
+	// Astro recommended (Astro files only)
+	// ------------------------------------------------------------
+	...eslintPluginAstro.configs.recommended.map((cfg) => ({
+		...cfg,
+		files: ['**/*.astro'],
+	})),
+
+	// ------------------------------------------------------------
+	// Prettier integration
+	// Keep it global, but we'll selectively disable for .astro if needed
+	// ------------------------------------------------------------
 	eslintPluginPrettierRecommended,
+
+	// ------------------------------------------------------------
+	// Global language options
+	// ------------------------------------------------------------
 	{
 		languageOptions: {
 			globals: {
@@ -22,12 +76,13 @@ export default [
 			},
 		},
 	},
+
+	// ------------------------------------------------------------
+	// Project-wide rules (reasonable defaults)
+	// ------------------------------------------------------------
 	{
 		rules: {
-			'@typescript-eslint/explicit-module-boundary-types': 'off',
-			'@typescript-eslint/no-explicit-any': 'warn',
 			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
-			'@typescript-eslint/no-unused-vars': 'warn',
 			'prettier/prettier': [
 				'error',
 				{
@@ -38,6 +93,22 @@ export default [
 			],
 		},
 	},
+
+	// ------------------------------------------------------------
+	// TypeScript-specific rules (TS/TSX only)
+	// ------------------------------------------------------------
+	{
+		files: ['**/*.{ts,tsx}'],
+		rules: {
+			'@typescript-eslint/explicit-module-boundary-types': 'off',
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/no-unused-vars': 'warn',
+		},
+	},
+
+	// ------------------------------------------------------------
+	// Astro parsing + Astro-specific rules
+	// ------------------------------------------------------------
 	{
 		files: ['**/*.astro'],
 		languageOptions: {
@@ -49,29 +120,48 @@ export default [
 		},
 		rules: {
 			'astro/no-unused-css-selector': 'warn',
+
+			// Prettier + Astro can be noisy depending on plugin version.
+			// Keep it off for .astro (you're already formatting via prettier-plugin-astro).
 			'prettier/prettier': 'off',
 		},
 	},
 
+	// ------------------------------------------------------------
+	// Node scripts (scripts/**/*.js|cjs|mjs)
+	// Allow require/import flexibility in tooling scripts
+	// ------------------------------------------------------------
 	{
-		ignores: [
-			'dist/',
-			'node_modules/',
-			'.astro/',
-			'.vercel/',
-			'.build/',
-			'public/',
-			'package-lock.json',
-			'pnpm-lock.yaml',
-			'*.log',
-			'*.tmp',
-			'.env',
-			'.env.local',
-			'.env.*.local',
-			'coverage/',
-			'*.min.js',
-			'*.min.css',
-			'astro/types.d.ts',
-		],
+		files: ['scripts/**/*.{js,cjs,mjs}', '**/*.config.{js,cjs,mjs}'],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+		rules: {
+			// Tooling scripts often legitimately use console
+			'no-console': 'off',
+
+			// If TS-eslint rules accidentally get picked up (via future changes),
+			// keep scripts permissive.
+			'@typescript-eslint/no-require-imports': 'off',
+			'@typescript-eslint/no-var-requires': 'off',
+		},
+	},
+
+	// ------------------------------------------------------------
+	// Tests: allow slightly looser rules
+	// (you are already enforcing strictness via your console.error guard)
+	// ------------------------------------------------------------
+	{
+		files: ['tests/**/*.{ts,tsx,js,jsx}', '**/*.{test,spec}.{ts,tsx,js,jsx}'],
+		rules: {
+			// Tests frequently use "any" for mocks
+			'@typescript-eslint/no-explicit-any': 'off',
+
+			// Tests may use console in debugging; keep warn but allow log if you want.
+			// If you prefer strict, leave as-is.
+			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+		},
 	},
 ];
