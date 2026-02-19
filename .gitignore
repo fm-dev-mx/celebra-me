@@ -58,6 +58,7 @@ _tmp_*
 
 # Project Tooling
 .prettierignore
+.eslintcache
 # .editorconfig  <-- Keep tracked if you want shared IDE settings
 # .eslintrc.*    <-- Keep tracked for linting consistency
 
