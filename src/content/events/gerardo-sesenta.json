@@ -256,6 +256,6 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te envío la invitación para los 60 de Gerardo. Ayúdame confirmando tu asistencia aquí: \n\n✨ {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, solo paso a recordarte la invitación para los 60 de Gerardo 🎉\nNos ayudaría mucho que confirmes tu asistencia aquí:\n\n✨ {inviteUrl}"
     }
 }
