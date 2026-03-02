@@ -4,7 +4,7 @@ export const prerender = false;
 
 import { getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
-import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp-v2/service';
+import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 import Layout from '@/layouts/Layout.astro';
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';

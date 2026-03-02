@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { getHostSessionFromRequest } from '@/lib/rsvp-v2/auth';
-import { errorResponse, jsonResponse, unauthorizedResponse } from '@/lib/rsvp-v2/http';
-import { buildAuthSessionDto } from '@/lib/rsvp-v2/service';
+import { getHostSessionFromRequest } from '@/lib/rsvp/auth';
+import { errorResponse, jsonResponse, unauthorizedResponse } from '@/lib/rsvp/http';
+import { buildAuthSessionDto } from '@/lib/rsvp/service';
 
 export const GET: APIRoute = async ({ request }) => {
 	try {

@@ -3,9 +3,9 @@ import {
 	sendMagicLink,
 	signInWithPassword,
 	signUpWithPassword,
-} from '@/lib/rsvp-v2/authApi';
+} from '@/lib/rsvp/authApi';
 
-describe('rsvp-v2 authApi', () => {
+describe('rsvp authApi', () => {
 	const originalFetch = global.fetch;
 	const originalEnv = { ...process.env };
 

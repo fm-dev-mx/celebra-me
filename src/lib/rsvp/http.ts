@@ -66,7 +66,7 @@ export function errorResponse(error: unknown): Response {
 	if (isApiError(error)) {
 		// Only log server errors (5xx), not client errors (4xx)
 		if (error.status >= 500) {
-			console.error('[RSVP-V2] Error:', error);
+			console.error('[rsvp] Error:', error);
 		}
 		return jsonResponse(
 			{
@@ -87,7 +87,7 @@ export function errorResponse(error: unknown): Response {
 		error && typeof error === 'object' && !isErrorInstance && Object.keys(error).length === 0;
 
 	if (!isEmptyObject) {
-		console.error('[RSVP-V2] Unexpected Error:', error);
+		console.error('[rsvp] Unexpected Error:', error);
 	}
 
 	const fallbackMessage = isErrorInstance

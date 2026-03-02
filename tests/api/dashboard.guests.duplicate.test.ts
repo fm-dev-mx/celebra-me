@@ -1,19 +1,19 @@
 import { POST } from '@/pages/api/dashboard/guests';
 import { PATCH } from '@/pages/api/dashboard/guests/[guestId]';
-import { getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
-import { createDashboardGuest, updateDashboardGuest } from '@/lib/rsvp-v2/service';
-import { ApiError } from '@/lib/rsvp-v2/errors';
+import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
+import { createDashboardGuest, updateDashboardGuest } from '@/lib/rsvp/service';
+import { ApiError } from '@/lib/rsvp/errors';
 import { createMockRequest } from './rsvp.helpers';
 import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
 
 // Mock funciones de seguridad
 mockAdminSecurityPass();
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	getSessionContextFromRequest: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	createDashboardGuest: jest.fn(),
 	updateDashboardGuest: jest.fn(),
 }));

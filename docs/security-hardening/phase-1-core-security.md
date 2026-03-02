@@ -1,10 +1,7 @@
 # 📋 Fase 1 - Core Security
 
-**Prioridad:** 🔴 ALTA  
-**Estado:** 🔴 No Iniciada  
-**Bloquea Deploy:** ✅ SÍ  
-**Fecha Inicio:** Pendiente  
-**Depende de:** Fase 0
+**Prioridad:** 🔴 ALTA **Estado:** 🔴 No Iniciada **Bloquea Deploy:** ✅ SÍ **Fecha Inicio:**
+Pendiente **Depende de:** Fase 0
 
 ---
 
@@ -19,10 +16,7 @@ headers y eliminar secrets por defecto.
 
 ### Tarea 1.1: Implementar Rate Limiting en Endpoints Admin
 
-**ID:** SEC-005  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** SEC-005 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -55,7 +49,7 @@ brute force.
 - [ ]   2. Crear middleware de rate limiting para admin:
 
 ```typescript
-// src/lib/rsvp-v2/rateLimitAdmin.ts
+// src/lib/rsvp/rateLimitAdmin.ts
 export async function requireAdminRateLimit(request: Request, namespace: string): Promise<void> {
 	const provider = getRateLimitProvider();
 	const result = await provider.check(
@@ -101,10 +95,7 @@ export const GET: APIRoute = async ({ request }) => {
 
 ### Tarea 1.2: Implementar CSRF Protection
 
-**ID:** SEC-006  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** SEC-006 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -116,7 +107,7 @@ tokens CSRF para operaciones de mutación.
 - [ ]   1. Crear utilidad de CSRF:
 
 ```typescript
-// src/lib/rsvp-v2/csrf.ts
+// src/lib/rsvp/csrf.ts
 const CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET!;
 const CSRF_COOKIE_NAME = 'csrf-token';
 
@@ -189,10 +180,7 @@ private async fetchWithCsrf(url: string, options: RequestInit): Promise<Response
 
 ### Tarea 1.3: Agregar Security Headers
 
-**ID:** SEC-007  
-**Prioridad:** 🔴 ALTA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @devops-lead
+**ID:** SEC-007 **Prioridad:** 🔴 ALTA **Estado:** 🔴 Pendiente **Asignado a:** @devops-lead
 
 #### Descripción
 
@@ -275,10 +263,7 @@ curl -I https://tu-app.vercel.app/
 
 ### Tarea 1.4: Eliminar Default Secrets
 
-**ID:** SEC-008  
-**Prioridad:** 🔴 ALTA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** SEC-008 **Prioridad:** 🔴 ALTA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -288,7 +273,7 @@ entorno no están seteadas.
 **Ubicaciones encontradas:**
 
 - `src/lib/rsvp/service.ts` L116: `DEV_RSVP_TOKEN_SECRET`
-- `src/lib/rsvp-v2/trustedDevice.ts` L35: `'dev-trust-device-secret'`
+- `src/lib/rsvp/trustedDevice.ts` L35: `'dev-trust-device-secret'`
 
 #### Checklist de Ejecución
 
@@ -323,7 +308,7 @@ if (!process.env.RSVP_TOKEN_SECRET) {
 - [ ]   3. Crear validación en startup:
 
 ```typescript
-// src/lib/rsvp-v2/validateEnv.ts
+// src/lib/rsvp/validateEnv.ts
 export function validateRequiredEnv(): void {
 	const required = [
 		'SUPABASE_URL',
@@ -411,5 +396,4 @@ Esta fase se considera completa cuando:
 
 ---
 
-**Última actualización:** 2026-02-15  
-**Próxima revisión:** Al iniciar Fase 1
+**Última actualización:** 2026-02-15 **Próxima revisión:** Al iniciar Fase 1

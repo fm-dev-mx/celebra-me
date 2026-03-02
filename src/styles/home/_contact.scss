@@ -111,16 +111,17 @@
 	transition: all 0.4s ease;
 	box-shadow: var(--landing-contact-channel-shadow);
 
-	.channel-icon {
+	.channel-icon-wrapper {
 		width: 44px;
 		height: 44px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--landing-contact-channel-icon-bg);
-		color: var(--landing-contact-channel-icon-color);
+		background: var(--landing-contact-channel-icon-bg, var(--color-action-accent-rgb, 0.1));
+		color: var(--landing-contact-channel-icon-color, var(--color-action-accent));
 		border-radius: 50%;
 		transition: all 0.4s ease;
+		flex-shrink: 0;
 	}
 
 	.channel-text {
@@ -147,9 +148,9 @@
 		transform: var(--landing-contact-channel-hover-transform);
 		box-shadow: var(--landing-contact-channel-hover-shadow);
 
-		.channel-icon {
-			background: var(--landing-contact-channel-icon-hover-bg);
-			color: var(--landing-contact-channel-icon-hover-color);
+		.channel-icon-wrapper {
+			background: var(--landing-contact-channel-icon-hover-bg, var(--color-action-accent));
+			color: var(--landing-contact-channel-icon-hover-color, white);
 		}
 	}
 }

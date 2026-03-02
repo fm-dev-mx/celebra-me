@@ -2,7 +2,7 @@
 // src/pages/[eventType]/[slug]/i/[shortId].astro
 export const prerender = false;
 
-import { getInvitationContextByShortId } from '@/lib/rsvp-v2/service';
+import { getInvitationContextByShortId } from '@/lib/rsvp/service';
 
 const { shortId } = Astro.params;
 

@@ -9,9 +9,9 @@ import {
 	clearMfaSessionCookie,
 	clearRefreshTokenCookie,
 	clearSessionCookie,
-} from '@/lib/rsvp-v2/cookies';
+} from '@/lib/rsvp/cookies';
 
-describe('rsvp-v2 cookies', () => {
+describe('rsvp cookies', () => {
 	it('builds hardened access token cookie with ttl', () => {
 		const cookie = buildSessionCookie('token-123');
 		expect(cookie).toContain('sb-access-token=token-123');

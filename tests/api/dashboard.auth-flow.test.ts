@@ -1,11 +1,11 @@
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
 import { GET as getDashboardGuests } from '@/pages/api/dashboard/guests';
-import { ApiError } from '@/lib/rsvp-v2/errors';
-import { requireHostSession, getSessionContextFromRequest } from '@/lib/rsvp-v2/auth';
-import { buildHostLoginRedirect } from '@/lib/rsvp-v2/login';
+import { ApiError } from '@/lib/rsvp/errors';
+import { requireHostSession, getSessionContextFromRequest } from '@/lib/rsvp/auth';
+import { buildHostLoginRedirect } from '@/lib/rsvp/login';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/auth', () => ({
+jest.mock('@/lib/rsvp/auth', () => ({
 	requireHostSession: jest.fn(),
 	getSessionContextFromRequest: jest.fn(),
 }));

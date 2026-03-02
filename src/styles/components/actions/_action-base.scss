@@ -1,0 +1,108 @@
+/* src/styles/components/actions/_action-base.scss */
+@use '../../tokens/primitives' as primitives;
+@use '../../tokens/semantic' as semantic;
+
+.action-base {
+	display: inline-block;
+	padding: 0.75rem 2rem;
+	border-radius: 999px;
+	font-family: var(--font-body);
+	font-weight: 500;
+	text-align: center;
+	text-decoration: none;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	cursor: pointer;
+	border: 2px solid transparent;
+
+	// Colors
+	&--primary {
+		background-color: var(--color-action-primary, primitives.$base-gold-500);
+		color: var(--color-action-primary-content, primitives.$base-coffee-900);
+
+		&:hover {
+			background-color: var(--color-action-primary-hover, primitives.$base-gold-400);
+			transform: translateY(-2px);
+			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 20%);
+		}
+	}
+
+	&--secondary {
+		background-color: var(--color-action-secondary, primitives.$base-coffee-800);
+		color: var(--color-action-secondary-content, primitives.$base-neutral-0);
+
+		&:hover {
+			background-color: var(--color-action-secondary-hover, primitives.$base-coffee-700);
+			transform: translateY(-2px);
+			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 20%);
+		}
+	}
+
+	&--white {
+		background-color: white;
+		color: primitives.$base-coffee-900;
+
+		&:hover {
+			background-color: primitives.$base-neutral-100;
+			transform: translateY(-2px);
+			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
+		}
+	}
+
+	// Variants
+	&--outline {
+		background-color: transparent;
+
+		&.action-base--primary {
+			border-color: var(--color-action-primary, primitives.$base-gold-500);
+			color: var(--color-action-primary, primitives.$base-gold-500);
+
+			&:hover {
+				background-color: var(--color-action-primary, primitives.$base-gold-500);
+				color: var(--color-action-primary-content, primitives.$base-coffee-900);
+			}
+		}
+
+		&.action-base--secondary {
+			border-color: var(--color-action-secondary, primitives.$base-coffee-800);
+			color: var(--color-action-secondary, primitives.$base-coffee-800);
+
+			&:hover {
+				background-color: var(--color-action-secondary, primitives.$base-coffee-800);
+				color: var(--color-action-secondary-content, primitives.$base-neutral-0);
+			}
+		}
+
+		&.action-base--white {
+			color: white;
+
+			&:hover {
+				background-color: white;
+				color: primitives.$base-coffee-900;
+			}
+		}
+	}
+
+	&--text {
+		background-color: transparent;
+		padding-left: 0.5rem;
+		padding-right: 0.5rem;
+
+		&:hover {
+			transform: none;
+			box-shadow: none;
+			text-decoration: underline;
+		}
+
+		&.action-base--primary {
+			color: var(--color-action-primary, primitives.$base-gold-500);
+		}
+
+		&.action-base--secondary {
+			color: var(--color-action-secondary, primitives.$base-coffee-800);
+		}
+
+		&.action-base--white {
+			color: white;
+		}
+	}
+}

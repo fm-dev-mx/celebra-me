@@ -52,6 +52,9 @@ Cada evento puede configurar sus estilos en el archivo JSON correspondiente:
 | `jewelry-box`     | Glassmorphism profundo, light sweep, animaciones de foil de oro           | [APPLIED] | **XV Años Premium** |
 | `luxury-hacienda` | Estética de cuero y metal, tipografía con shimmer dorado, bordes rústicos | [APPLIED] | **Gerardo 60**      |
 
+> [!NOTE] Recent refinements to `jewelry-box` and `luxury-hacienda` themes include optimized scroll
+> icons and responsive action buttons.
+
 ### RSVP Section
 
 | Variante          | Descripción                                                   | Status    | Mejor para          |

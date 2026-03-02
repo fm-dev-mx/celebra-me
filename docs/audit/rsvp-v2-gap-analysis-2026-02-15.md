@@ -28,7 +28,7 @@ Final status:
 | Legacy compatibility | `?t=` bridge to canonical URL                                   | Partial | `src/pages/[eventType]/[slug].astro:157` + `src/pages/api/invitacion/resolve.ts`                                                                                                              |
 | Supabase realtime    | Push updates                                                    | Missing | Dashboard uses polling (`setInterval`) `src/components/dashboard/guests/GuestDashboardApp.tsx:60`                                                                                             |
 | Auth UX              | Protected host dashboard with proper flow                       | Partial | 401 plain text only: `src/pages/dashboard/invitados.astro:7`                                                                                                                                  |
-| Tests for v2         | API/service/component coverage                                  | Missing | `rg` on `tests` found no references for `rsvp-v2`, `api/invitacion`, `api/dashboard/guests`                                                                                                   |
+| Tests for v2         | API/service/component coverage                                  | Missing | `rg` on `tests` found no references for `rsvp`, `api/invitacion`, `api/dashboard/guests`                                                                                                      |
 | Documentation        | Architecture + DB updates                                       | Done    | `docs/architecture/rsvp-module.md`, `docs/ARCHITECTURE.md`, `docs/DB_RSVP.md`                                                                                                                 |
 
 ---
@@ -40,7 +40,7 @@ Final status:
 1. **Host audit inserts are blocked by RLS policy model**
 
 - Evidence:
-    - Host operations append audit with host JWT: `src/lib/rsvp-v2/repository.ts:231`
+    - Host operations append audit with host JWT: `src/lib/rsvp/repository.ts:231`
     - RLS only creates `select` policy for `guest_invitation_audit`:
       `supabase/migrations/20260215000400_rsvp_v2_rls.sql:140`
 - Impact:
@@ -50,9 +50,9 @@ Final status:
 2. **Non-transactional mutation + audit causes inconsistent outcomes**
 
 - Evidence:
-    - Create then audit: `src/lib/rsvp-v2/service.ts:133` and `src/lib/rsvp-v2/service.ts:143`
-    - Update then audit: `src/lib/rsvp-v2/service.ts:183` and `src/lib/rsvp-v2/service.ts:198`
-    - Mark-shared then audit: `src/lib/rsvp-v2/service.ts:225` and `src/lib/rsvp-v2/service.ts:233`
+    - Create then audit: `src/lib/rsvp/service.ts:133` and `src/lib/rsvp/service.ts:143`
+    - Update then audit: `src/lib/rsvp/service.ts:183` and `src/lib/rsvp/service.ts:198`
+    - Mark-shared then audit: `src/lib/rsvp/service.ts:225` and `src/lib/rsvp/service.ts:233`
 - Impact:
     - Data integrity drift between core entity and audit log.
     - User retries can create operational confusion.
@@ -71,8 +71,8 @@ Final status:
 
 - Evidence:
     - Page server render calls context service: `src/pages/invitacion/[inviteId].astro:17`
-    - Context service mutates view timestamps and writes audit: `src/lib/rsvp-v2/service.ts:265` and
-      `src/lib/rsvp-v2/service.ts:270`
+    - Context service mutates view timestamps and writes audit: `src/lib/rsvp/service.ts:265` and
+      `src/lib/rsvp/service.ts:270`
 - Impact:
     - Any server render increments telemetry side effects.
     - Harder to reason about idempotency and analytics meaning.
@@ -88,8 +88,8 @@ Final status:
 6. **Legacy-v2 coupling introduces fragile bridge dependency**
 
 - Evidence:
-    - v2 depends on legacy token context parser: `src/lib/rsvp-v2/service.ts:22` and
-      `src/lib/rsvp-v2/service.ts:350`
+    - v2 depends on legacy token context parser: `src/lib/rsvp/service.ts:22` and
+      `src/lib/rsvp/service.ts:350`
     - Legacy page performs client-side resolve/redirect: `src/pages/[eventType]/[slug].astro:157`
 - Impact:
     - Migration path is coupled to old service semantics.
@@ -100,7 +100,7 @@ Final status:
 7. **Rate limiting is in-memory only**
 
 - Evidence:
-    - In-memory map: `src/lib/rsvp-v2/rateLimit.ts:6`
+    - In-memory map: `src/lib/rsvp/rateLimit.ts:6`
 - Impact:
     - Not distributed/persistent across instances.
     - Weak against burst on multi-instance deployments.
@@ -145,7 +145,7 @@ Rationale: still needed for legacy token and previous admin flow.
 
 ### Coupled hot spots to decouple
 
-- `src/lib/rsvp-v2/service.ts` -> `@/lib/rsvp/service` dependency for token bridge.
+- `src/lib/rsvp/service.ts` -> `@/lib/rsvp/service` dependency for token bridge.
 - `src/pages/[eventType]/[slug].astro` containing migration redirect logic.
 
 ### Candidate obsolete (post-migration removal)

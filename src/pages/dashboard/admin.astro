@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import { requireAdminSession } from '@/lib/rsvp-v2/authorization';
-import { listAdminEvents, listAdminUsers, listClaimCodesAdmin } from '@/lib/rsvp-v2/service';
+import { requireAdminSession } from '@/lib/rsvp/authorization';
+import { listAdminEvents, listAdminUsers, listClaimCodesAdmin } from '@/lib/rsvp/service';
 
 await requireAdminSession(Astro.request);
 

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
-import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp-v2/service';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/http';
+import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp/service';
 
 function sanitize(value: unknown, maxLen = 400): string {
 	if (typeof value !== 'string') return '';

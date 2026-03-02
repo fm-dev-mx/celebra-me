@@ -1,4 +1,4 @@
-const { mapSupabaseErrorToApiError } = require('./src/lib/rsvp-v2/supabase-errors.ts');
+const { mapSupabaseErrorToApiError } = require('./src/lib/rsvp/supabase-errors.ts');
 
 // Test the error mapper directly
 const testError1 = new Error(

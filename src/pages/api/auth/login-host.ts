@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp-v2/errors';
-import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
-import { sendMagicLink, signInWithPassword } from '@/lib/rsvp-v2/authApi';
+import { ApiError } from '@/lib/rsvp/errors';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/http';
+import { sendMagicLink, signInWithPassword } from '@/lib/rsvp/authApi';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
 	buildSessionCookie,
-} from '@/lib/rsvp-v2/cookies';
+} from '@/lib/rsvp/cookies';
 import {
 	assertSameOrigin,
 	assertValidEmail,
@@ -14,7 +14,7 @@ import {
 	enforceAuthRateLimit,
 	normalizeEmail,
 	sanitizePassword,
-} from '@/lib/rsvp-v2/authSecurity';
+} from '@/lib/rsvp/authSecurity';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {

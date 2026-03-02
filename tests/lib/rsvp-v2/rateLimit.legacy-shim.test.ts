@@ -1,7 +1,7 @@
-import { checkRateLimit as checkRateLimitProvider } from '@/lib/rsvp-v2/rateLimitProvider';
-import { checkRateLimit as checkLegacyRateLimit } from '@/lib/rsvp-v2/rateLimit';
+import { checkRateLimit as checkRateLimitProvider } from '@/lib/rsvp/rateLimitProvider';
+import { checkRateLimit as checkLegacyRateLimit } from '@/lib/rsvp/rateLimit';
 
-jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 

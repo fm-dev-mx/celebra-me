@@ -18,13 +18,13 @@ Created `redeem_claim_code(p_user_id uuid, p_code_key text)` function that:
 
 ### 2. Added Repository Function
 
-**File:** `src/lib/rsvp-v2/repository.ts`
+**File:** `src/lib/rsvp/repository.ts`
 
 Added `redeemClaimCodeRpc()` to call the PostgreSQL RPC endpoint.
 
 ### 3. Updated Service Layer
 
-**File:** `src/lib/rsvp-v2/service.ts`
+**File:** `src/lib/rsvp/service.ts`
 
 Rewrote `claimEventForUserByClaimCode()` to:
 
@@ -34,7 +34,7 @@ Rewrote `claimEventForUserByClaimCode()` to:
 
 ### 4. Updated Tests
 
-**File:** `tests/lib/rsvp-v2/service.claim-code.test.ts`
+**File:** `tests/lib/rsvp/service.claim-code.test.ts`
 
 Rewrote tests to use new RPC-based implementation:
 
@@ -77,9 +77,9 @@ If a user retries the same claim code, they get the same result without consumin
 ## Files Changed
 
 - `supabase/migrations/20260215000900_claim_code_atomic_rpc.sql` (new)
-- `src/lib/rsvp-v2/repository.ts` (added `redeemClaimCodeRpc`)
-- `src/lib/rsvp-v2/service.ts` (rewrote `claimEventForUserByClaimCode`)
-- `tests/lib/rsvp-v2/service.claim-code.test.ts` (rewrote for new implementation)
+- `src/lib/rsvp/repository.ts` (added `redeemClaimCodeRpc`)
+- `src/lib/rsvp/service.ts` (rewrote `claimEventForUserByClaimCode`)
+- `tests/lib/rsvp/service.claim-code.test.ts` (rewrote for new implementation)
 
 ## Test Results
 

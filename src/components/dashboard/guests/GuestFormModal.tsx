@@ -152,18 +152,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			>
 				<div className="dashboard-modal__header">
 					<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
-					<button
-						className="btn-close"
-						onClick={onClose}
-						aria-label="Cerrar modal"
-						style={{
-							fontSize: '1.5rem',
-							background: 'none',
-							border: 'none',
-							cursor: 'pointer',
-							color: 'var(--color-text-secondary)',
-						}}
-					>
+					<button className="btn-close" onClick={onClose} aria-label="Cerrar modal">
 						✕
 					</button>
 				</div>
@@ -224,13 +213,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							<label htmlFor="maxAllowedAttendees">
 								¿Cuántos acompañantes permite?
 							</label>
-							<div className="radio-cards-container">
+							<div className="radio-cards-container radio-cards-container--compact">
 								{[1, 2, 3, 4, 5, 10].map((num) => (
-									<label
-										key={num}
-										className="radio-card"
-										style={{ minWidth: '45px', flex: '1 1 auto' }}
-									>
+									<label key={num} className="radio-card">
 										<input
 											type="radio"
 											name="maxAllowedAttendees"
@@ -238,13 +223,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											checked={maxAllowedAttendees === num}
 											onChange={() => setMaxAllowedAttendees(num)}
 										/>
-										<div
-											className="radio-card__content"
-											style={{
-												padding: '0.75rem 0.25rem',
-												fontSize: '0.9rem',
-											}}
-										>
+										<div className="radio-card__content">
 											{num === 10 ? '10+' : num}
 										</div>
 									</label>
@@ -268,31 +247,15 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 												}
 											}}
 										/>
-										<div
-											className="radio-card__content"
-											style={{ padding: '0.75rem' }}
-										>
-											{tag}
-										</div>
+										<div className="radio-card__content">{tag}</div>
 									</label>
 								))}
 							</div>
 						</div>
 
 						{mode === 'edit' && (
-							<div
-								className="dashboard-form-section"
-								style={{
-									gridColumn: '1 / -1',
-									marginTop: '1rem',
-									paddingTop: '1.5rem',
-									borderTop: '1px solid rgba(0,0,0,0.05)',
-								}}
-							>
-								<div
-									className="dashboard-form-grid"
-									style={{ padding: 0, border: 'none', background: 'none' }}
-								>
+							<div className="dashboard-form-section dashboard-form-field--full">
+								<div className="dashboard-form-grid dashboard-form-grid--nested">
 									<div className="dashboard-form-field">
 										<label htmlFor="attendanceStatus">Estado de RSVP</label>
 										<select
@@ -306,7 +269,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 														| 'declined',
 												)
 											}
-											style={{ padding: '0.75rem', borderRadius: '10px' }}
+											className="dashboard-form-field__input"
 										>
 											<option value="pending">⏳ Pendiente</option>
 											<option value="confirmed">✅ Confirmado</option>
@@ -324,13 +287,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											onChange={(event) =>
 												setAttendeeCount(Number(event.target.value))
 											}
-											style={{ padding: '0.75rem' }}
+											className="dashboard-form-field__input"
 										/>
 									</div>
-									<div
-										className="dashboard-form-field"
-										style={{ gridColumn: '1 / -1' }}
-									>
+									<div className="dashboard-form-field dashboard-form-field--full">
 										<label htmlFor="guestMessage">Nota o mensaje</label>
 										<textarea
 											id="guestMessage"
@@ -340,7 +300,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											}
 											rows={3}
 											placeholder="Alguna nota especial del invitado..."
-											style={{ padding: '0.85rem', borderRadius: '12px' }}
+											className="dashboard-form-field__textarea"
 										/>
 									</div>
 								</div>
@@ -348,20 +308,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						)}
 
 						{localError && (
-							<div
-								className="dashboard-guests__error"
-								style={{
-									color: 'var(--color-wax-seal)',
-									marginTop: 'var(--spacing-md)',
-									padding: '1rem',
-									background: 'rgba(160, 40, 40, 0.05)',
-									borderRadius: '10px',
-									fontSize: '0.85rem',
-									gridColumn: '1 / -1',
-								}}
-							>
-								⚠️ {localError}
-							</div>
+							<div className="dashboard-guests__error">⚠️ {localError}</div>
 						)}
 					</form>
 				</div>
@@ -369,10 +316,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				<div className="dashboard-modal__footer">
 					<button
 						type="button"
-						className="btn-secondary"
+						className="btn-secondary btn-secondary--modal"
 						onClick={onClose}
 						disabled={saving}
-						style={{ minWidth: '100px' }}
 					>
 						Cancelar
 					</button>
@@ -380,26 +326,15 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					{isInvitationFactory && onPostpone && (
 						<button
 							type="button"
-							className="btn-secondary"
+							className="btn-secondary btn-secondary--postpone"
 							onClick={onPostpone}
 							disabled={saving}
-							style={{
-								border: '1px dashed var(--color-border-emphasis)',
-								color: 'var(--color-text-secondary)',
-							}}
 						>
 							⏭️ Posponer
 						</button>
 					)}
 
-					<div
-						style={{
-							display: 'flex',
-							gap: '0.75rem',
-							flex: 1,
-							justifyContent: 'flex-end',
-						}}
-					>
+					<div className="footer-actions">
 						{mode === 'create' && (
 							<button
 								type="button"
@@ -409,7 +344,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									e.preventDefault();
 									void handleFormSubmit(true);
 								}}
-								style={{ flex: 1, maxWidth: '200px' }}
 							>
 								{saving ? '...' : 'Guardar y Nuevo'}
 							</button>
@@ -419,7 +353,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							form="guest-form"
 							className="btn-primary"
 							disabled={saving}
-							style={{ flex: 1, maxWidth: '200px' }}
 						>
 							{saving
 								? 'Guardando...'

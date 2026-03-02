@@ -1,13 +1,13 @@
 import { GET } from '@/pages/api/invitacion/[inviteId]/context';
-import { getInvitationContextByInviteId } from '@/lib/rsvp-v2/service';
-import { checkRateLimit } from '@/lib/rsvp-v2/rateLimitProvider';
+import { getInvitationContextByInviteId } from '@/lib/rsvp/service';
+import { checkRateLimit } from '@/lib/rsvp/rateLimitProvider';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	getInvitationContextByInviteId: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 

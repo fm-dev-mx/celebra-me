@@ -18,7 +18,7 @@ import type {
 	ClaimCodeCreateResponse,
 	ClaimCodesListResponse,
 } from './dto/claimcodes';
-import type { ClaimCodeDTO } from '@/lib/rsvp-v2/types';
+import type { ClaimCodeDTO } from '@/lib/rsvp/types';
 
 export class AdminApi {
 	// Events

@@ -1,9 +1,7 @@
 # 🔒 Security Hardening - Master Tracking Document
 
-**Proyecto:** Celebra-me Admin Dashboard  
-**Auditoría realizada:** 2026-02-15  
-**Última actualización:** 2026-02-15  
-**Estado global:** 🟡 En Progreso
+**Proyecto:** Celebra-me Admin Dashboard **Auditoría realizada:** 2026-02-15 **Última
+actualización:** 2026-02-15 **Estado global:** 🟡 En Progreso
 
 ---
 
@@ -48,12 +46,12 @@
 ### Fase 1 - Core Security ✅
 
 - [x] **SEC-005:** Rate limiting implementado
-    - `src/lib/rsvp-v2/adminRateLimit.ts` creado
+    - `src/lib/rsvp/adminRateLimit.ts` creado
     - Aplicado a 10 endpoints admin
     - Límites: 5-60 req/min según operación
 
 - [x] **SEC-006:** CSRF Protection implementado
-    - `src/lib/rsvp-v2/csrf.ts` creado
+    - `src/lib/rsvp/csrf.ts` creado
     - `DashboardLayout.astro` genera tokens
     - `apiClient.ts` envía tokens en headers
     - Validación en endpoints de escritura
@@ -74,13 +72,13 @@
 ### Fase 2 - Data Integrity
 
 - [x] **DATA-002:** Protección último super_admin server-side ✅
-    - `src/lib/rsvp-v2/adminProtection.ts` creado
+    - `src/lib/rsvp/adminProtection.ts` creado
     - Endpoint `users/[userId]/role.ts` validado
     - Retorna 403 si se intenta eliminar último admin
 
 - [ ] **DATA-001:** Soft Delete
     - Migración `20260220000000_add_soft_delete.sql` creada
-    - `src/lib/rsvp-v2/softDelete.ts` servicio creado
+    - `src/lib/rsvp/softDelete.ts` servicio creado
     - Requiere: Aplicar migración en DB
 
 - [ ] **DATA-003:** Optimistic Locking

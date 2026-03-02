@@ -46,24 +46,6 @@
 	}
 
 	&__content {
-		width: 90%;
-		max-width: 600px;
-		padding: 1.5rem;
-		margin-bottom: 10rem;
-		z-index: 1;
-		border-radius: 2rem 2rem 0 0;
-		backdrop-filter: blur(10px);
-		background: tokens.$color-glass-bg;
-		border: 1px solid tokens.$color-glass-border;
-		box-shadow: 0 -10px 30px rgb(0 0 0 / 10%);
-
-		@include respond-to(md) {
-			width: 100%;
-			padding: 2rem;
-		}
-
-		// Reveal animation
-		opacity: 0%;
 		animation: heroContentReveal tokens.$duration-reveal tokens.$ease-premium 0.5s forwards;
 	}
 
@@ -192,8 +174,11 @@
 // ── Guest Prototype Hero Variant ──
 .guest-invitation-hero {
 	.invitation-hero__content {
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
-		box-shadow: tokens.$shadow-premium;
+		width: 100%; // Default to full width, themes will constrain
+		max-width: 800px;
+		margin: 0 auto;
+		z-index: 10;
+		animation: heroContentReveal tokens.$duration-reveal tokens.$ease-premium 0.5s forwards;
 	}
 
 	.invitation-hero__title {

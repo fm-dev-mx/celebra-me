@@ -100,7 +100,7 @@ used by API routes.
 Recommended locations:
 
 - `src/utils/server/**`
-- `src/lib/rsvp-v2/**`
+- `src/lib/rsvp/**`
 - Co-located under `src/pages/api/_lib/**` (Legacy)
 
 ### 5.3 Global Logic

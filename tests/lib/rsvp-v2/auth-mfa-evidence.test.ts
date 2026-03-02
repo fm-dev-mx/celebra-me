@@ -1,4 +1,4 @@
-import { decodeJwtPayload, hasMfaEvidence } from '@/lib/rsvp-v2/authMfaEvidence';
+import { decodeJwtPayload, hasMfaEvidence } from '@/lib/rsvp/authMfaEvidence';
 
 function makeToken(payload: Record<string, unknown>): string {
 	const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
@@ -6,7 +6,7 @@ function makeToken(payload: Record<string, unknown>): string {
 	return `${header}.${body}.signature`;
 }
 
-describe('rsvp-v2 authMfaEvidence', () => {
+describe('rsvp authMfaEvidence', () => {
 	it('returns true when amr includes totp', () => {
 		expect(
 			hasMfaEvidence({

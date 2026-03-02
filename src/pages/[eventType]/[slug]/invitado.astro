@@ -4,7 +4,7 @@ export const prerender = false;
 import Layout from '@/layouts/Layout.astro';
 import GuestInvitationHero from '@/components/invitation/GuestInvitationHero.astro';
 import GuestRSVPForm from '@/components/invitation/GuestRSVPForm';
-import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp-v2/service';
+import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 
 const inviteId = Astro.url.searchParams.get('invite') || '';
 const { eventType, slug } = Astro.params;

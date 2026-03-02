@@ -4,7 +4,7 @@
 
 ## Changes Made
 
-### 1. Updated `src/lib/rsvp-v2/authorization.ts`
+### 1. Updated `src/lib/rsvp/authorization.ts`
 
 - Added `REQUIRE_FRESH_MFA_FOR_ADMIN` environment variable support
 - Created `requireAdminStrongSession()` function that:
@@ -58,7 +58,7 @@ REQUIRE_FRESH_MFA_FOR_ADMIN=false
 
 ## Files Changed
 
-- `src/lib/rsvp-v2/authorization.ts` (rewritten with strong session guard)
+- `src/lib/rsvp/authorization.ts` (rewritten with strong session guard)
 - `src/pages/api/dashboard/admin/events.ts`
 - `src/pages/api/dashboard/admin/users.ts`
 - `src/pages/api/dashboard/admin/users/[userId]/role.ts`

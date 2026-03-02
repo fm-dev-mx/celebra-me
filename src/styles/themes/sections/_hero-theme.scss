@@ -28,9 +28,17 @@
 			0 30px 60px -12px rgb(0 0 0 / 35%),
 			inset 0 0 0 1px rgb(255 255 255 / 50%),
 			inset 0 0 20px rgb(var(--color-action-accent-rgb) / 5%);
-		padding: 4rem 2.5rem;
+		border-radius: 20px;
+		width: 90%;
+		max-width: 500px;
+		margin: 0 auto;
 		position: relative;
 		overflow: hidden;
+
+		@media (width <= 480px) {
+			width: 95%;
+			padding: 2.5rem 1.5rem;
+		}
 
 		&::after {
 			content: '';
@@ -49,6 +57,10 @@
 			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 20%);
 			pointer-events: none;
 			z-index: 1;
+		}
+
+		@media (width <= 480px) {
+			max-width: 250px;
 		}
 	}
 
@@ -167,9 +179,17 @@ body.invitation-revealed
 		border-radius: 5px;
 		position: relative;
 		overflow: hidden;
-		box-shadow:
-			var(--hero-card-inner-glow), var(--hero-card-shadow-contact),
-			var(--hero-card-shadow-ambient);
+		box-shadow: var(--hero-card-shadow-contact), var(--hero-card-shadow-ambient);
+		width: 60%;
+		max-width: 500px;
+		margin: 0 1rem;
+		margin-bottom: 6rem;
+		padding: 4rem 2rem;
+
+		@media (width <= 480px) {
+			width: 95%;
+			padding: 2.5rem 1.5rem;
+		}
 
 		&::before {
 			content: '';

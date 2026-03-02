@@ -8,9 +8,11 @@
 @use 'home/footer';
 @use 'components/icons';
 @use 'components/logo';
+@use 'components/nav-bar-desktop';
 @use 'dashboard/common';
 @use 'dashboard/shell';
 @use 'dashboard/tables';
+@use 'dashboard/toast';
 @use 'dashboard/forms';
 @use 'dashboard/modals';
 @use 'invitation/envelope-reveal';
@@ -83,6 +85,9 @@
 	--spacing-lg: var(--spacing-8);
 	--spacing-xl: var(--spacing-12);
 	--spacing-2xl: var(--spacing-16);
+	--spacing-3xl: var(--spacing-20);
+	--spacing-4xl: var(--spacing-24);
+	--spacing-5xl: var(--spacing-32);
 
 	/* Semantic spacing roles */
 	--spacing-container-padding: #{tokens.$spacing-container-padding};
@@ -132,6 +137,33 @@
 		transform: translateY(-4px);
 		box-shadow: 0 12px 24px rgb(0 0 0 / 20%);
 	}
+}
+
+/* Accessibility Utilities */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Common Size Utilities */
+.w-6 {
+	width: 1.5rem;
+}
+.h-6 {
+	height: 1.5rem;
+}
+.w-8 {
+	width: 2rem;
+}
+.h-8 {
+	height: 2rem;
 }
 
 html {

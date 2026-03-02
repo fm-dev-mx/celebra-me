@@ -9,12 +9,12 @@ import {
 	submitGuestRsvpByInviteId,
 	trackInvitationView,
 	updateDashboardGuest,
-} from '@/lib/rsvp-v2/service';
-import * as repo from '@/lib/rsvp-v2/repository';
+} from '@/lib/rsvp/service';
+import * as repo from '@/lib/rsvp/repository';
 
-jest.mock('@/lib/rsvp-v2/repository');
+jest.mock('@/lib/rsvp/repository');
 
-describe('rsvp-v2 service branches', () => {
+describe('rsvp service branches', () => {
 	const findEventByIdMock = repo.findEventById as jest.MockedFunction<typeof repo.findEventById>;
 	const findEventByIdServiceMock = repo.findEventByIdService as jest.MockedFunction<
 		typeof repo.findEventByIdService

@@ -5,10 +5,10 @@ import {
 	findGuestById,
 	findGuestByInviteIdPublic,
 	updateGuestByInviteIdPublic,
-} from '@/lib/rsvp-v2/repository';
-import { supabaseRestRequest } from '@/lib/rsvp-v2/supabase';
+} from '@/lib/rsvp/repository';
+import { supabaseRestRequest } from '@/lib/rsvp/supabase';
 
-jest.mock('@/lib/rsvp-v2/supabase', () => ({
+jest.mock('@/lib/rsvp/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
 }));
 
@@ -16,7 +16,7 @@ const supabaseRestRequestMock = supabaseRestRequest as jest.MockedFunction<
 	typeof supabaseRestRequest
 >;
 
-describe('rsvp-v2 repository', () => {
+describe('rsvp repository', () => {
 	afterEach(() => {
 		jest.clearAllMocks();
 	});

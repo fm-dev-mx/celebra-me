@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp-v2/http';
-import { validateClaimCodeAdmin } from '@/lib/rsvp-v2/service';
+import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/http';
+import { validateClaimCodeAdmin } from '@/lib/rsvp/service';
 
 function sanitize(value: unknown, maxLen = 256): string {
 	if (typeof value !== 'string') return '';

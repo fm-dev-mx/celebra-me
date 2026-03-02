@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { validateBodyOrRespond } from '@/lib/rsvp-v2/validation';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
-import { updateEventAdmin } from '@/lib/rsvp-v2/service';
+import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { validateBodyOrRespond } from '@/lib/rsvp/validation';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/http';
+import { updateEventAdmin } from '@/lib/rsvp/service';
 import { UpdateEventSchema, UuidSchema } from '@/lib/schemas';
 
 export const PATCH: APIRoute = async ({ params, request }) => {

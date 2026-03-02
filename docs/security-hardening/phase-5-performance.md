@@ -1,10 +1,7 @@
 # 📋 Fase 5 - Performance
 
-**Prioridad:** 🟡 BAJA  
-**Estado:** 🔴 No Iniciada  
-**Bloquea Deploy:** ❌ NO  
-**Fecha Inicio:** Pendiente  
-**Depende de:** Fase 1
+**Prioridad:** 🟡 BAJA **Estado:** 🔴 No Iniciada **Bloquea Deploy:** ❌ NO **Fecha Inicio:**
+Pendiente **Depende de:** Fase 1
 
 ---
 
@@ -18,10 +15,7 @@ Optimizar performance: índices de BD, paginación, y timeouts.
 
 ### Tarea 5.1: Agregar Índices Faltantes
 
-**ID:** PERF-001  
-**Prioridad:** 🟠 MEDIA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @database-admin
+**ID:** PERF-001 **Prioridad:** 🟠 MEDIA **Estado:** 🔴 Pendiente **Asignado a:** @database-admin
 
 #### Descripción
 
@@ -112,10 +106,7 @@ LIMIT 50;
 
 ### Tarea 5.2: Implementar Paginación
 
-**ID:** PERF-002  
-**Prioridad:** 🟠 MEDIA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** PERF-002 **Prioridad:** 🟠 MEDIA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -126,7 +117,7 @@ Agregar paginación a todos los endpoints de listado.
 - [ ]   1. Modificar repositorios:
 
 ```typescript
-// src/lib/rsvp-v2/repository.ts
+// src/lib/rsvp/repository.ts
 
 interface PaginationOptions {
 	page: number;
@@ -182,7 +173,7 @@ export async function listEventsPaginated(
 ```typescript
 // src/pages/api/dashboard/admin/events.ts
 import { PaginationSchema } from '@/schemas/common';
-import { validateQuery } from '@/lib/rsvp-v2/validation';
+import { validateQuery } from '@/lib/rsvp/validation';
 
 export const GET: APIRoute = async ({ request }) => {
 	const { actorUserId } = await requireAdminStrongSession(request);
@@ -243,10 +234,7 @@ interface CursorPaginationOptions {
 
 ### Tarea 5.3: Configurar Timeouts
 
-**ID:** PERF-003  
-**Prioridad:** 🟡 BAJA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** PERF-003 **Prioridad:** 🟡 BAJA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -264,7 +252,7 @@ ALTER DATABASE postgres SET statement_timeout = '10s';
 - [ ]   2. Agregar timeout a fetch calls:
 
 ```typescript
-// src/lib/rsvp-v2/repository.ts
+// src/lib/rsvp/repository.ts
 
 const FETCH_TIMEOUT = 10000; // 10 segundos
 
@@ -356,5 +344,4 @@ Esta fase se considera completa cuando:
 
 ---
 
-**Última actualización:** 2026-02-15  
-**Próxima revisión:** Al iniciar Fase 5
+**Última actualización:** 2026-02-15 **Próxima revisión:** Al iniciar Fase 5

@@ -47,7 +47,7 @@ import type {
 	AppUserRole,
 } from './types';
 import { getEntry } from 'astro:content';
-import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp-v2/utils';
+import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp/utils';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
 import { mapSupabaseErrorToApiError } from './supabase-errors';
@@ -770,7 +770,7 @@ export async function submitGuestRsvpByInviteId(
 		last_response_source: 'link',
 	});
 
-	console.info(`[RSVP-V2] Success: RSVP submitted for invite ${inviteId}`);
+	console.info(`[rsvp] Success: RSVP submitted for invite ${inviteId}`);
 
 	publishGuestStreamEvent({
 		type: 'guest_updated',

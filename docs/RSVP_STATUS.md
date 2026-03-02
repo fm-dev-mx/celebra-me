@@ -266,9 +266,12 @@ Contingencia operativa si Supabase falla:
 
 ## 8) Extensión del Dashboard Admin
 
-**Last Updated: 2026-02-15**
+**Last Updated: 2026-02-18**
 
-Se han agregado las siguientes capacidades al dashboard admin:
+Se han agregado las siguientes capacidades al dashboard admin y autenticación:
+
+- **Refactorización de Login:** Migración de lógica de autenticación desde `login.astro` a
+  `src/lib/rsvp/login-bridge.ts` para mejor mantenibilidad y tipado.
 
 ### API de Administración
 

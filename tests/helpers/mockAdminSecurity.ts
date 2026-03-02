@@ -59,11 +59,11 @@ export function getAdminSecurityMocksConfigWithCsrfSkip() {
  * Útil para endpoints que explícitamente permiten skip CSRF en test/dev
  */
 export function mockAdminSecurityPassWithCsrfSkip(): void {
-	jest.mock('@/lib/rsvp-v2/adminRateLimit', () => ({
+	jest.mock('@/lib/rsvp/adminRateLimit', () => ({
 		requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 	}));
 
-	jest.mock('@/lib/rsvp-v2/csrf', () => ({
+	jest.mock('@/lib/rsvp/csrf', () => ({
 		validateCsrfToken: jest.fn(), // No se llamará porque skip es true
 		shouldSkipCsrfValidation: jest.fn().mockReturnValue(true), // Saltar validación CSRF
 		getCsrfTokenFromCookies: jest.fn(),
@@ -76,18 +76,18 @@ export function mockAdminSecurityPassWithCsrfSkip(): void {
  * Útil para endpoints que requieren CSRF validation
  */
 export function mockAdminSecurityPass(): void {
-	jest.mock('@/lib/rsvp-v2/adminRateLimit', () => ({
+	jest.mock('@/lib/rsvp/adminRateLimit', () => ({
 		requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 	}));
 
-	jest.mock('@/lib/rsvp-v2/csrf', () => ({
+	jest.mock('@/lib/rsvp/csrf', () => ({
 		validateCsrfToken: jest.fn(), // No lanza error = token válido
 		shouldSkipCsrfValidation: jest.fn().mockReturnValue(false), // Siempre validar CSRF
 		getCsrfTokenFromCookies: jest.fn(),
 		getCsrfTokenFromHeader: jest.fn(),
 	}));
 
-	jest.mock('@/lib/rsvp-v2/rateLimitProvider', () => ({
+	jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
 		checkRateLimit: jest.fn().mockResolvedValue(true as never), // Siempre permite
 	}));
 }
@@ -102,10 +102,10 @@ export function getAdminSecurityMocks(): {
 	shouldSkipCsrfValidation: jest.Mock;
 } {
 	// These will be mocked by Jest in test files
-	const adminRateLimit = jest.requireMock('@/lib/rsvp-v2/adminRateLimit') as {
+	const adminRateLimit = jest.requireMock('@/lib/rsvp/adminRateLimit') as {
 		requireAdminRateLimit: jest.Mock;
 	};
-	const csrf = jest.requireMock('@/lib/rsvp-v2/csrf') as {
+	const csrf = jest.requireMock('@/lib/rsvp/csrf') as {
 		validateCsrfToken: jest.Mock;
 		shouldSkipCsrfValidation: jest.Mock;
 	};
@@ -122,7 +122,7 @@ export function getAdminSecurityMocks(): {
  * Útil para tests que verifican respuestas de error CSRF
  */
 export function setupCsrfFailure(): void {
-	const csrf = jest.requireMock('@/lib/rsvp-v2/csrf') as {
+	const csrf = jest.requireMock('@/lib/rsvp/csrf') as {
 		validateCsrfToken: jest.Mock;
 	};
 	csrf.validateCsrfToken.mockImplementation(() => {
@@ -135,7 +135,7 @@ export function setupCsrfFailure(): void {
  * Útil para tests que verifican respuestas 429
  */
 export function setupRateLimitFailure(): void {
-	const { ApiError } = jest.requireMock('@/lib/rsvp-v2/errors') as {
+	const { ApiError } = jest.requireMock('@/lib/rsvp/errors') as {
 		ApiError: new (
 			status: number,
 			code: string,
@@ -143,7 +143,7 @@ export function setupRateLimitFailure(): void {
 			details?: Record<string, unknown>,
 		) => Error;
 	};
-	const adminRateLimit = jest.requireMock('@/lib/rsvp-v2/adminRateLimit') as {
+	const adminRateLimit = jest.requireMock('@/lib/rsvp/adminRateLimit') as {
 		requireAdminRateLimit: jest.Mock;
 	};
 

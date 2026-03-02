@@ -1,10 +1,7 @@
 # 📋 Fase 4 - Observability
 
-**Prioridad:** 🟠 ALTA  
-**Estado:** 🔴 No Iniciada  
-**Bloquea Deploy:** ❌ NO (pero crítico para producción)  
-**Fecha Inicio:** Pendiente  
-**Depende de:** Fase 1
+**Prioridad:** 🟠 ALTA **Estado:** 🔴 No Iniciada **Bloquea Deploy:** ❌ NO (pero crítico para
+producción) **Fecha Inicio:** Pendiente **Depende de:** Fase 1
 
 ---
 
@@ -19,10 +16,7 @@ event logging.
 
 ### Tarea 4.1: Integrar Sentry para Error Tracking
 
-**ID:** OBS-001  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @devops-lead
+**ID:** OBS-001 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @devops-lead
 
 #### Descripción
 
@@ -82,7 +76,7 @@ componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 - [ ]   5. Agregar contexto a errores de API:
 
 ```typescript
-// src/lib/rsvp-v2/errors.ts
+// src/lib/rsvp/errors.ts
 import * as Sentry from '@sentry/astro';
 
 export function handleApiError(error: unknown, context: Record<string, unknown>) {
@@ -117,10 +111,7 @@ export function handleApiError(error: unknown, context: Record<string, unknown>)
 
 ### Tarea 4.2: Implementar Logging Estructurado
 
-**ID:** OBS-002  
-**Prioridad:** 🔴 CRÍTICA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** OBS-002 **Prioridad:** 🔴 CRÍTICA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -234,10 +225,7 @@ logger.error({ error, requestId }, 'Authentication failed');
 
 ### Tarea 4.3: Crear Health Check Endpoint
 
-**ID:** OBS-003  
-**Prioridad:** 🔴 ALTA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** OBS-003 **Prioridad:** 🔴 ALTA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -329,10 +317,7 @@ export const GET: APIRoute = async () => {
 
 ### Tarea 4.4: Implementar Security Event Logging
 
-**ID:** OBS-004  
-**Prioridad:** 🔴 ALTA  
-**Estado:** 🔴 Pendiente  
-**Asignado a:** @backend-lead
+**ID:** OBS-004 **Prioridad:** 🔴 ALTA **Estado:** 🔴 Pendiente **Asignado a:** @backend-lead
 
 #### Descripción
 
@@ -395,7 +380,7 @@ try {
 - [ ]   3. Loggear rate limit hits:
 
 ```typescript
-// src/lib/rsvp-v2/rateLimitProvider.ts
+// src/lib/rsvp/rateLimitProvider.ts
 if (!result.allowed) {
 	logSecurityEvent({
 		type: 'rate_limit_hit',
@@ -411,7 +396,7 @@ if (!result.allowed) {
 - [ ]   4. Loggear permisos denegados:
 
 ```typescript
-// src/lib/rsvp-v2/authorization.ts
+// src/lib/rsvp/authorization.ts
 if (!isSuperAdmin) {
 	logSecurityEvent({
 		type: 'permission_denied',
@@ -480,5 +465,4 @@ Esta fase se considera completa cuando:
 
 ---
 
-**Última actualización:** 2026-02-15  
-**Próxima revisión:** Al iniciar Fase 4
+**Última actualización:** 2026-02-15 **Próxima revisión:** Al iniciar Fase 4

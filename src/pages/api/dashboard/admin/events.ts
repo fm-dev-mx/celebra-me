@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp-v2/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp-v2/adminRateLimit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp-v2/csrf';
-import { validateBodyOrRespond } from '@/lib/rsvp-v2/validation';
-import { errorResponse, jsonResponse } from '@/lib/rsvp-v2/http';
-import { listAdminEvents, createEventAdmin } from '@/lib/rsvp-v2/service';
+import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/csrf';
+import { validateBodyOrRespond } from '@/lib/rsvp/validation';
+import { errorResponse, jsonResponse } from '@/lib/rsvp/http';
+import { listAdminEvents, createEventAdmin } from '@/lib/rsvp/service';
 import { CreateEventSchema } from '@/lib/schemas';
 
 export const GET: APIRoute = async ({ request }) => {

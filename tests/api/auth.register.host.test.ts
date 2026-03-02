@@ -1,16 +1,16 @@
 import type { APIContext } from 'astro';
 import { POST as registerHost } from '@/pages/api/auth/register-host';
-import * as authApi from '@/lib/rsvp-v2/authApi';
-import * as service from '@/lib/rsvp-v2/service';
+import * as authApi from '@/lib/rsvp/authApi';
+import * as service from '@/lib/rsvp/service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp-v2/authApi', () => ({
+jest.mock('@/lib/rsvp/authApi', () => ({
 	signUpWithPassword: jest.fn(),
 	findAuthUserByEmail: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp-v2/service', () => ({
+jest.mock('@/lib/rsvp/service', () => ({
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
 	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
