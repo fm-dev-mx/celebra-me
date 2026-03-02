@@ -230,8 +230,8 @@ importers:
         specifier: ^8.53.1
         version: 8.55.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       validator:
-        specifier: 13.15.20
-        version: 13.15.20
+        specifier: 13.15.22
+        version: 13.15.22
 
 packages:
 
@@ -5540,8 +5540,8 @@ packages:
     resolution: {integrity: sha512-VEYTpTVPMgO799f2wI7zWf0x2C54bPX6NAfbZ2Z8kZn76p+3rEYCTYVYzMUcVSMvakxMQTriBf24s3+WeXJtEg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  validator@13.15.20:
-    resolution: {integrity: sha512-KxPOq3V2LmfQPP4eqf3Mq/zrT0Dqp2Vmx2Bn285LwVahLc+CsxOM0crBHczm8ijlcjZ0Q5Xd6LW3z3odTPnlrw==}
+  validator@13.15.22:
+    resolution: {integrity: sha512-uT/YQjiyLJP7HSrv/dPZqK9L28xf8hsNca01HSz1dfmI0DgMfjopp1rO/z13NeGF1tVystF0Ejx3y4rUKPw+bQ==}
     engines: {node: '>= 0.10'}
 
   varint@6.0.0:
@@ -12076,7 +12076,7 @@ snapshots:
     dependencies:
       filename-reserved-regex: 3.0.0
 
-  validator@13.15.20: {}
+  validator@13.15.22: {}
 
   varint@6.0.0: {}
 
