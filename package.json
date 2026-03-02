@@ -10,32 +10,25 @@
         "build": "astro check && astro build",
         "preview": "pnpm serve .vercel/output/static",
         "start": "astro preview",
-
         "astro": "astro",
         "type-check": "astro check",
-
         "ci": "pnpm type-check && pnpm lint && pnpm test",
-
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "lint:scss": "stylelint \"src/**/*.scss\"",
         "lint:scss:fix": "stylelint \"src/**/*.scss\" --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-
         "test": "jest",
         "test:watch": "jest --watch",
         "test:rsvp": "jest --runInBand tests/api tests/lib/rsvp tests/unit tests/components/GuestDashboardApp.auth.test.tsx",
         "test:rsvp:coverage": "jest --runInBand --coverage tests/api tests/lib/rsvp tests/unit tests/components/GuestDashboardApp.auth.test.tsx --collectCoverageFrom=\"src/lib/rsvp/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/dashboard/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/invitacion/**/*.{ts,tsx}\"",
-
         "gatekeeper": "node scripts/gatekeeper.js",
         "gatekeeper:report": "node scripts/gatekeeper.js --mode strict --report-json",
         "gatekeeper:baseline": "node scripts/gatekeeper.js --build-baseline",
-
         "lint-staged": "lint-staged",
         "commitlint": "commitlint",
         "prepare": "husky",
-
         "db:migrate:new": "supabase migration new",
         "db:push": "supabase db push",
         "db:reset:local": "supabase db reset",
@@ -122,5 +115,17 @@
         "*.{scss,css}": ["stylelint --fix", "prettier --write"],
         "*.{json,md,yml}": ["prettier --write"]
     },
-    "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937"
+    "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937",
+    "pnpm": {
+        "overrides": {
+            "tar": ">=7.5.8",
+            "minimatch@<3.1.4": "3.1.4",
+            "minimatch@>=7.0.0 <7.4.8": "7.4.8",
+            "minimatch@>=9.0.0 <9.0.7": "9.0.7",
+            "rollup": ">=4.59.0",
+            "lodash": ">=4.17.23",
+            "ajv-draft-04>ajv": "8.18.0",
+            "ajv@^8.0.0": "8.18.0"
+        }
+    }
 }
