@@ -15,6 +15,7 @@ const COLORS = {
 const DEFAULT_POLICY_PATH = '.agent/gatekeeper/policy.json';
 const DEFAULT_BASELINE_PATH = '.agent/gatekeeper/baseline.json';
 const DEFAULT_MAX_FINDINGS = 20;
+const PROTECTED_BRANCHES = new Set(['main', 'develop']);
 
 const FORBIDDEN_FILES = [
 	/\.log$/,
@@ -30,6 +31,9 @@ const FORBIDDEN_FILES = [
 	/(^|\/)\.astro\//,
 	/(^|\/)logs\//,
 ];
+
+const BLOCK_ALL = { 1: 'block', 2: 'block', 3: 'block' };
+const WARN_BLOCK_BLOCK = { 1: 'warn', 2: 'block', 3: 'block' };
 
 const DEFAULT_POLICY = {
 	killSwitch: false,
@@ -49,31 +53,31 @@ const DEFAULT_POLICY = {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'block', 2: 'block', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 		},
 		caseCollision: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 10,
-			severityByPhase: { 1: 'block', 2: 'block', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 		},
 		publicAssetImport: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'block', 2: 'block', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 		},
 		newAnyAdded: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'block', 2: 'block', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 		},
 		serverClientBoundary: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'block', 3: 'block' },
+			severityByPhase: WARN_BLOCK_BLOCK,
 			appliesTo: ['src/components/**', 'src/pages/**/*.astro', 'src/pages/**/*.tsx'],
 			exemptions: ['src/pages/api/**', 'src/pages/admin/**'],
 		},
@@ -81,21 +85,21 @@ const DEFAULT_POLICY = {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'block', 3: 'block' },
+			severityByPhase: WARN_BLOCK_BLOCK,
 			appliesTo: ['src/styles/themes/presets/**/*.scss'],
 		},
 		themeSectionVariantIsolation: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'block', 3: 'block' },
+			severityByPhase: WARN_BLOCK_BLOCK,
 			appliesTo: ['src/styles/themes/sections/**/*.scss'],
 		},
 		inlineStylePolicy: {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'warn', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 			appliesTo: ['src/**/*.astro', 'src/**/*.tsx'],
 			exemptions: ['src/pages/admin/**', 'src/components/common/Icon.astro'],
 		},
@@ -103,7 +107,7 @@ const DEFAULT_POLICY = {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'warn', 3: 'block' },
+			severityByPhase: BLOCK_ALL,
 			appliesTo: ['src/**/*.astro'],
 			allowlist: [
 				'src/pages/[eventType]/[slug].astro',
@@ -116,7 +120,66 @@ const DEFAULT_POLICY = {
 			enabled: true,
 			killSwitch: false,
 			maxFindings: 20,
-			severityByPhase: { 1: 'warn', 2: 'block', 3: 'block' },
+			severityByPhase: WARN_BLOCK_BLOCK,
+		},
+		seoAudit: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: { 1: 'warn', 2: 'warn', 3: 'block' },
+			appliesTo: ['src/pages/[eventType]/**'],
+		},
+		themeGovernance: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: WARN_BLOCK_BLOCK,
+		},
+		godObjectGuard: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: BLOCK_ALL,
+			appliesTo: ['src/**/*.{ts,tsx,astro,js,jsx}'],
+			maxFileLines: 400,
+			maxExportCount: 20,
+			maxFunctionParams: 6,
+		},
+		couplingGuard: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: BLOCK_ALL,
+			appliesTo: ['src/**/*.{ts,tsx,astro,js,jsx}'],
+			maxImportsPerFile: 30,
+		},
+		duplicationGuard: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: BLOCK_ALL,
+			minFingerprintLength: 40,
+			maxOccurrences: 10,
+		},
+		obsoleteGovernanceGuard: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 10,
+			severityByPhase: BLOCK_ALL,
+			requiredPaths: [
+				'.agent/gatekeeper/policy.json',
+				'.agent/gatekeeper/baseline.json',
+				'scripts/gatekeeper.js',
+				'commitlint.config.cjs',
+			],
+		},
+		languageGovernance: {
+			enabled: true,
+			killSwitch: false,
+			maxFindings: 20,
+			severityByPhase: BLOCK_ALL,
+			englishPaths: ['docs/**/*.md', 'src/**/*.{ts,tsx,astro,js,jsx}', 'scripts/**/*.js'],
+			spanishUiPaths: ['src/content/events/**/*.json'],
 		},
 	},
 	docMappings: [
@@ -166,7 +229,51 @@ const DEFAULT_POLICY = {
 			'path',
 		],
 	},
+	autoBranching: {
+		enabled: true,
+		protectedBranches: ['main', 'develop'],
+	},
 };
+
+const DOMAIN_MAP_PATH = 'scripts/config/domain-map.json';
+
+class DomainMapper {
+	constructor() {
+		this.config = loadJson(DOMAIN_MAP_PATH, { domains: {}, defaultDomain: 'core' });
+	}
+
+	matchDomain(file) {
+		for (const [domain, patterns] of Object.entries(this.config.domains)) {
+			if (matchAny(file, patterns)) return { domain, matched: true };
+		}
+		return { domain: this.config.defaultDomain || 'core', matched: false };
+	}
+
+	analyze(files) {
+		const groups = {};
+		const unmappedFiles = [];
+		for (const f of files) {
+			const mapped = this.matchDomain(f);
+			const d = mapped.domain;
+			if (!mapped.matched) unmappedFiles.push(f);
+			if (!groups[d]) groups[d] = [];
+			groups[d].push(f);
+		}
+		const suggestedSplits = Object.entries(groups)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([id, domainFiles]) => ({
+				id,
+				files: domainFiles.slice().sort((a, b) => a.localeCompare(b)),
+			}));
+		const fileCount = files.length || 1;
+		const splitConfidence = Number(((fileCount - unmappedFiles.length) / fileCount).toFixed(2));
+		return {
+			suggestedSplits,
+			unmappedFiles: unmappedFiles.sort((a, b) => a.localeCompare(b)),
+			splitConfidence,
+		};
+	}
+}
 
 function log(m, c = COLORS.reset) {
 	console.log(`${c}${m}${COLORS.reset}`);
@@ -182,9 +289,15 @@ const np = (v) =>
 const uniq = (arr) => Array.from(new Set(arr));
 
 function run(cmd, args = [], opts = {}) {
+	for (const token of [cmd, ...(args || [])]) {
+		if (/[\0\r\n]/.test(String(token || ''))) {
+			throw new Error(`Unsafe command token detected: ${String(token)}`);
+		}
+	}
+	const isWin = process.platform === 'win32';
 	const r = spawnSync(cmd, args, {
 		encoding: 'utf8',
-		shell: opts.shell ?? process.platform === 'win32',
+		shell: opts.shell ?? isWin,
 		stdio: opts.stdio ?? 'pipe',
 	});
 	if (r.error) throw r.error;
@@ -465,11 +578,32 @@ class Snapshot {
 		return s;
 	}
 	astImports(f) {
-		const k = `${f}|${this.sha(f)}`;
-		if (this.astCache.has(k)) return this.astCache.get(k);
+		if (this.astCache.has(f)) return this.astCache.get(f);
 		const parsed = parseImportsAst(f, this.content(f));
-		this.astCache.set(k, parsed);
+		this.astCache.set(f, parsed);
 		return parsed;
+	}
+	signature() {
+		const payload = this.files
+			.map((f) => `${f}|${this.stat(f).added}|${this.stat(f).deleted}`)
+			.join('\n');
+		return createHash('sha256').update(payload).digest('hex').slice(0, 12);
+	}
+	detailedSignature() {
+		const files = this.files
+			.slice()
+			.sort((a, b) => a.localeCompare(b))
+			.map((f) => ({
+				path: f,
+				sha: this.sha(f),
+				added: this.stat(f).added || 0,
+				deleted: this.stat(f).deleted || 0,
+			}));
+		const signature = createHash('sha256')
+			.update(JSON.stringify(files))
+			.digest('hex')
+			.slice(0, 16);
+		return { signature, files };
 	}
 }
 
@@ -565,6 +699,8 @@ function reporterOf({ baseline, reportJson, output, maxGlobal, phase, mode }) {
 	const byRule = new Map();
 	const truncByRule = new Map();
 	let truncGlobal = 0;
+	const sevRank = { block: 0, warn: 1, off: 2 };
+
 	const add = (f, ruleMax) => {
 		if (f.severity === 'off') return;
 		f.stableKey = stableKey(
@@ -587,63 +723,68 @@ function reporterOf({ baseline, reportJson, output, maxGlobal, phase, mode }) {
 		byRule.set(f.ruleId, n + 1);
 		findings.push(f);
 	};
+
 	const summarize = () => {
 		const grouped = new Map();
 		let blocked = false;
+		let autoFixable = false;
+
 		for (const f of findings) {
 			if (!grouped.has(f.ruleId)) grouped.set(f.ruleId, []);
 			grouped.get(f.ruleId).push(f);
+			if (f.severity === 'block') blocked = true;
+			if (f.autoFixable) autoFixable = true;
 		}
-		if (!grouped.size) log('PASS all governance rules', COLORS.green);
-		for (const [ruleId, arr] of grouped.entries()) {
-			const hasBlock = arr.some((x) => x.severity === 'block');
-			if (hasBlock) blocked = true;
-			const t = truncByRule.get(ruleId) || 0;
-			log(
-				`${hasBlock ? 'BLOCKED' : 'WARN'} ${ruleId} (${arr.length}${t ? ` +${t} truncated` : ''})`,
-				hasBlock ? COLORS.red : COLORS.yellow,
+		const orderedFindings = findings
+			.slice()
+			.sort(
+				(a, b) =>
+					(sevRank[a.severity] ?? 3) - (sevRank[b.severity] ?? 3) ||
+					String(a.ruleId || '').localeCompare(String(b.ruleId || '')) ||
+					String(a.file || '').localeCompare(String(b.file || '')) ||
+					Number(a.line || 0) - Number(b.line || 0) ||
+					String(a.stableKey || '').localeCompare(String(b.stableKey || '')),
 			);
-			if (output === 'compact') continue;
-			const show = output === 'verbose' ? arr.length : Math.min(arr.length, 8);
-			for (const f of arr.slice(0, show)) {
-				const loc = f.file ? `${f.file}${f.line ? `:${f.line}` : ''}` : '';
-				log(`  - ${loc} ${f.message}`.trim());
+
+		if (!reportJson) {
+			if (!grouped.size) log('PASS all governance rules', COLORS.green);
+			for (const [ruleId, arr] of grouped.entries()) {
+				const hasBlock = arr.some((x) => x.severity === 'block');
+				const t = truncByRule.get(ruleId) || 0;
+				log(
+					`${hasBlock ? 'BLOCKED' : 'WARN'} ${ruleId} (${arr.length}${t ? ` +${t} truncated` : ''})`,
+					hasBlock ? COLORS.red : COLORS.yellow,
+				);
+				if (output === 'compact') continue;
+				const show = output === 'verbose' ? arr.length : Math.min(arr.length, 8);
+				for (const f of orderedFindings.filter((x) => x.ruleId === ruleId).slice(0, show)) {
+					const loc = f.file ? `${f.file}${f.line ? `:${f.line}` : ''}` : '';
+					log(`  - ${loc} ${f.message}`.trim());
+				}
+				if (output !== 'verbose' && arr.length > show)
+					log(`  - ...and ${arr.length - show} more`);
 			}
-			if (output !== 'verbose' && arr.length > show)
-				log(`  - ...and ${arr.length - show} more`);
+			if (truncGlobal)
+				log(`⚠️ Global findings cap reached (+${truncGlobal} truncated).`, COLORS.yellow);
 		}
-		if (truncGlobal)
-			log(`⚠️ Global findings cap reached (+${truncGlobal} truncated).`, COLORS.yellow);
-		if (reportJson) {
-			console.log(
-				JSON.stringify(
-					{
-						status: blocked ? 'failed' : 'passed',
-						meta: { phase, mode, output, maxGlobal, truncatedGlobal: truncGlobal },
-						summary: Array.from(grouped.entries()).map(([ruleId, arr]) => ({
-							ruleId,
-							count: arr.length,
-							truncated: truncByRule.get(ruleId) || 0,
-							hasBlock: arr.some((x) => x.severity === 'block'),
-						})),
-						findings: findings.map((f) => ({
-							ruleId: f.ruleId,
-							severity: f.severity,
-							file: f.file,
-							line: f.line,
-							findingType: f.findingType,
-							normalizedSubject: f.normalizedSubject,
-							stableKey: f.stableKey,
-							message: output === 'verbose' ? f.message : undefined,
-						})),
-					},
-					null,
-					2,
-				),
-			);
-		}
-		return { blocked, findings };
+
+		return {
+			blocked,
+			autoFixable,
+			findings: orderedFindings,
+			truncatedGlobal: truncGlobal,
+			summary: Array.from(grouped.entries())
+				.map(([ruleId, arr]) => ({
+					ruleId,
+					count: arr.length,
+					truncated: truncByRule.get(ruleId) || 0,
+					hasBlock: arr.some((x) => x.severity === 'block'),
+				}))
+				.sort((a, b) => a.ruleId.localeCompare(b.ruleId)),
+			meta: { phase, mode, output, maxGlobal, truncatedGlobal: truncGlobal },
+		};
 	};
+
 	return { add, summarize };
 }
 
@@ -654,6 +795,60 @@ function ruleMax(policy, ruleId, fallback) {
 
 function addFinding(rep, policy, globalMax, f) {
 	rep.add(f, ruleMax(policy, f.ruleId, globalMax));
+}
+
+const SECRET_PATTERNS = [
+	{ id: 'api-key-assignment', re: /api[_-]?key\s*[:=]\s*['"][A-Za-z0-9_-]{20,}['"]/i },
+	{ id: 'secret-assignment', re: /\bsecret\b\s*[:=]\s*['"][A-Za-z0-9_-]{20,}['"]/i },
+	{ id: 'token-assignment', re: /\btoken\b\s*[:=]\s*['"][A-Za-z0-9_-]{20,}['"]/i },
+	{ id: 'password-assignment', re: /\bpassword\b\s*[:=]\s*['"][^'"]{8,}['"]/i },
+	{ id: 'sendgrid-key', re: /\bSG\.[A-Za-z0-9._-]{20,}\b/ },
+	{ id: 'openai-key', re: /\bsk-[A-Za-z0-9]{20,}\b/ },
+	{ id: 'slack-token', re: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ },
+	{ id: 'jwt-like', re: /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/ },
+];
+
+function isLikelyTextFile(file) {
+	return /\.(ts|tsx|js|jsx|astro|json|md|txt|yml|yaml|scss|css|html|sql|sh|ps1|mjs|cjs)$/i.test(
+		file,
+	);
+}
+
+function verifyS0Drift(snapshot, signatureFile) {
+	if (!signatureFile || !existsSync(signatureFile)) return { enabled: false, hasDrift: false };
+	const expected = loadJson(signatureFile, null);
+	if (!expected || !Array.isArray(expected.files)) {
+		return { enabled: true, hasDrift: true, reason: 'invalid_s0_signature_file' };
+	}
+	const current = snapshot.detailedSignature();
+	const expMap = new Map(expected.files.map((f) => [f.path, f]));
+	const curMap = new Map(current.files.map((f) => [f.path, f]));
+	const missing = expected.files.filter((f) => !curMap.has(f.path)).map((f) => f.path);
+	const added = current.files.filter((f) => !expMap.has(f.path)).map((f) => f.path);
+	const modified = [];
+	for (const f of current.files) {
+		const exp = expMap.get(f.path);
+		if (!exp) continue;
+		if (
+			exp.sha !== f.sha ||
+			Number(exp.added || 0) !== f.added ||
+			Number(exp.deleted || 0) !== f.deleted
+		)
+			modified.push(f.path);
+	}
+	return {
+		enabled: true,
+		hasDrift:
+			expected.signature !== current.signature ||
+			missing.length > 0 ||
+			added.length > 0 ||
+			modified.length > 0,
+		expectedSignature: expected.signature,
+		currentSignature: current.signature,
+		missing,
+		added,
+		modified,
+	};
 }
 
 function validateDocEvidence(
@@ -746,7 +941,7 @@ function checks(
 	changedDocToken,
 	audit,
 ) {
-	const rep = reporterOf({ baseline, reportJson, output, maxGlobal, phase, mode });
+	const rep = reporterOf({ baseline, reportJson, output, maxGlobal, phase, mode, snapshot });
 	const forbidden = policy.architectureBoundaries?.clientForbiddenImports || [];
 
 	const severity = (id) => sev(id, phase, policy, audit);
@@ -1067,43 +1262,279 @@ function checks(
 		}
 	}
 
-	return rep.summarize();
+	if (severity('seoAudit') !== 'off') {
+		const rule = policy.rules.seoAudit || {};
+		for (const file of snapshot.files) {
+			if (!matchAny(file, rule.appliesTo || [])) continue;
+			const content = snapshot.content(file);
+			const titleMatch = content.match(/<title>([\s\S]*?)<\/title>/i);
+			if (titleMatch && titleMatch[1].length > 60) {
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'seoAudit',
+					severity: severity('seoAudit'),
+					file,
+					message: `Title too long (${titleMatch[1].length} chars, max 60).`,
+					findingType: 'seo-title-length',
+					normalizedSubject: 'title',
+					scope: file,
+				});
+			}
+			const descMatch = content.match(
+				/<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']/i,
+			);
+			if (descMatch && descMatch[1].length > 155) {
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'seoAudit',
+					severity: severity('seoAudit'),
+					file,
+					message: `Description too long (${descMatch[1].length} chars, max 155).`,
+					findingType: 'seo-desc-length',
+					normalizedSubject: 'description',
+					scope: file,
+				});
+			}
+		}
+	}
+
+	if (severity('themeGovernance') !== 'off') {
+		if (
+			snapshot.has('src/content/config.ts') ||
+			snapshot.files.some((f) => f.startsWith('src/styles/themes/'))
+		) {
+			try {
+				const r = run('node', ['scripts/validate-schema.js'], { ignoreError: true });
+				if (r.status !== 0) {
+					addFinding(rep, policy, maxGlobal, {
+						ruleId: 'themeGovernance',
+						severity: severity('themeGovernance'),
+						message:
+							'Theme schema / CSS sync check failed. Run scripts/validate-schema.js for details.',
+						findingType: 'schema-unsynced',
+						normalizedSubject: 'theme-system',
+					});
+				}
+			} catch {
+				/* ignore */
+			}
+		}
+	}
+
+	if (severity('godObjectGuard') !== 'off') {
+		const rule = policy.rules.godObjectGuard || {};
+		const maxFileLines = Number(rule.maxFileLines || 400);
+		const maxExportCount = Number(rule.maxExportCount || 20);
+		const maxFunctionParams = Number(rule.maxFunctionParams || 6);
+		for (const file of snapshot.files) {
+			if (!matchAny(file, rule.appliesTo || [])) continue;
+			const content = snapshot.content(file);
+			const lines = content.split(/\r?\n/).length;
+			if (lines > maxFileLines)
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'godObjectGuard',
+					severity: severity('godObjectGuard'),
+					file,
+					message: `Potential God object: file length ${lines} exceeds ${maxFileLines}.`,
+					findingType: 'file-lines',
+					normalizedSubject: `${file}|${lines}`,
+					scope: file,
+				});
+			const exportCount = (content.match(/^\s*export\s+/gm) || []).length;
+			if (exportCount > maxExportCount)
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'godObjectGuard',
+					severity: severity('godObjectGuard'),
+					file,
+					message: `Potential God object: export count ${exportCount} exceeds ${maxExportCount}.`,
+					findingType: 'export-count',
+					normalizedSubject: `${file}|${exportCount}`,
+					scope: file,
+				});
+			for (const line of snapshot.lines(file)) {
+				const m = line.text.match(/\(([^)]*)\)\s*=>|\w+\s*\(([^)]*)\)\s*{/);
+				if (!m) continue;
+				const params = (m[1] || m[2] || '')
+					.split(',')
+					.map((x) => x.trim())
+					.filter(Boolean).length;
+				if (params > maxFunctionParams)
+					addFinding(rep, policy, maxGlobal, {
+						ruleId: 'godObjectGuard',
+						severity: severity('godObjectGuard'),
+						file,
+						line: line.line,
+						message: `Potential God function: ${params} parameters exceeds ${maxFunctionParams}.`,
+						findingType: 'function-params',
+						normalizedSubject: `${file}|${params}`,
+						scope: file,
+					});
+			}
+		}
+	}
+
+	if (severity('couplingGuard') !== 'off') {
+		const rule = policy.rules.couplingGuard || {};
+		const maxImportsPerFile = Number(rule.maxImportsPerFile || 30);
+		for (const file of snapshot.files) {
+			if (!matchAny(file, rule.appliesTo || [])) continue;
+			const parsed = snapshot.astImports(file);
+			if (parsed.imports.length > maxImportsPerFile)
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'couplingGuard',
+					severity: severity('couplingGuard'),
+					file,
+					message: `Tight coupling risk: ${parsed.imports.length} imports exceeds ${maxImportsPerFile}.`,
+					findingType: 'import-count',
+					normalizedSubject: `${file}|${parsed.imports.length}`,
+					scope: file,
+				});
+		}
+	}
+
+	if (severity('duplicationGuard') !== 'off') {
+		const rule = policy.rules.duplicationGuard || {};
+		const minFingerprintLength = Number(rule.minFingerprintLength || 40);
+		const maxOccurrences = Number(rule.maxOccurrences || 2);
+		const fpMap = new Map();
+		for (const file of snapshot.files)
+			for (const line of snapshot.lines(file)) {
+				const fp = inlineFingerprint(line.text || '');
+				if (fp.length < minFingerprintLength) continue;
+				if (!fpMap.has(fp)) fpMap.set(fp, []);
+				fpMap.get(fp).push({ file, line: line.line });
+			}
+		for (const [fp, hits] of fpMap.entries())
+			if (hits.length > maxOccurrences)
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'duplicationGuard',
+					severity: severity('duplicationGuard'),
+					file: hits[0].file,
+					line: hits[0].line,
+					message: `Duplicated logic fingerprint repeated ${hits.length} times in staged diff.`,
+					findingType: 'duplicate-fingerprint',
+					normalizedSubject: fp,
+					scope: hits.map((x) => x.file).join('|'),
+				});
+	}
+
+	if (severity('obsoleteGovernanceGuard') !== 'off') {
+		const requiredPaths = policy.rules.obsoleteGovernanceGuard?.requiredPaths || [];
+		for (const path of requiredPaths)
+			if (!existsSync(path))
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'obsoleteGovernanceGuard',
+					severity: severity('obsoleteGovernanceGuard'),
+					message: `Required governance path missing: ${path}`,
+					findingType: 'missing-governance-path',
+					normalizedSubject: path,
+					scope: path,
+				});
+	}
+
+	if (severity('languageGovernance') !== 'off') {
+		const rule = policy.rules.languageGovernance || {};
+		const englishPaths = rule.englishPaths || [];
+		const spanishUiPaths = rule.spanishUiPaths || [];
+		const spanishIndicators =
+			/\b(el|la|los|las|de|para|con|sin|por|que|como|cuando|donde|error|cambio|archivo|actualizar)\b|[áéíóúñ]/i;
+		const englishIndicators =
+			/\b(the|and|with|from|for|when|where|please|update|fix|change|button|form|submit)\b/i;
+		for (const file of snapshot.files)
+			for (const line of snapshot.lines(file)) {
+				const txt = String(line.text || '');
+				if (
+					matchAny(file, englishPaths) &&
+					/\/\/|\/\*|\*|#/.test(txt) &&
+					spanishIndicators.test(txt)
+				)
+					addFinding(rep, policy, maxGlobal, {
+						ruleId: 'languageGovernance',
+						severity: severity('languageGovernance'),
+						file,
+						line: line.line,
+						message: 'Code/docs comments must be written in English.',
+						findingType: 'non-english-code-doc',
+						normalizedSubject: inlineFingerprint(txt),
+						scope: file,
+					});
+				if (matchAny(file, spanishUiPaths) && englishIndicators.test(txt))
+					addFinding(rep, policy, maxGlobal, {
+						ruleId: 'languageGovernance',
+						severity: severity('languageGovernance'),
+						file,
+						line: line.line,
+						message: 'Visible UI text must be in Spanish.',
+						findingType: 'non-spanish-ui',
+						normalizedSubject: inlineFingerprint(txt),
+						scope: file,
+					});
+			}
+	}
+
+	return { ...rep.summarize(), rep };
 }
 
-function lint(files) {
-	log('\n🔍 Running linters on staged files...', COLORS.blue);
+function lint(files, reportJson, rep, policy, maxGlobal) {
+	if (!reportJson) log('\n🔍 Running linters on staged files...', COLORS.blue);
 	const js = files.filter((f) => /\.(js|ts|tsx|astro)$/.test(f));
 	const scss = files.filter((f) => /\.(scss|css)$/.test(f));
 	let bad = false;
+	const details = [];
+
 	if (js.length) {
 		try {
-			log(`  • ESLint checking ${js.length} files...`);
-			run('npx', ['eslint', ...js], { stdio: 'inherit' });
+			if (!reportJson) log(`  • ESLint checking ${js.length} files...`);
+			run('npx', ['eslint', ...js], { stdio: reportJson ? 'pipe' : 'inherit' });
+			details.push({ tool: 'eslint', status: 'passed', files: js.length });
 		} catch {
 			bad = true;
-			log('  ❌ ESLint failed.', COLORS.red);
+			details.push({ tool: 'eslint', status: 'failed', files: js.length });
+			if (reportJson) {
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'linting',
+					severity: 'block',
+					message: 'ESLint findings detected.',
+					findingType: 'eslint-fail',
+					autoFixable: true,
+					fixCommand: 'pnpm lint:fix',
+				});
+			} else log('  ❌ ESLint failed.', COLORS.red);
 		}
 	}
 	if (scss.length) {
 		try {
-			log(`  • Stylelint checking ${scss.length} files...`);
-			run('npx', ['stylelint', ...scss], { stdio: 'inherit' });
+			if (!reportJson) log(`  • Stylelint checking ${scss.length} files...`);
+			run('npx', ['stylelint', ...scss], { stdio: reportJson ? 'pipe' : 'inherit' });
+			details.push({ tool: 'stylelint', status: 'passed', files: scss.length });
 		} catch {
 			bad = true;
-			log('  ❌ Stylelint failed.', COLORS.red);
+			details.push({ tool: 'stylelint', status: 'failed', files: scss.length });
+			if (reportJson) {
+				addFinding(rep, policy, maxGlobal, {
+					ruleId: 'linting',
+					severity: 'block',
+					message: 'Stylelint findings detected.',
+					findingType: 'stylelint-fail',
+					autoFixable: true,
+					fixCommand: 'pnpm lint:scss:fix',
+				});
+			} else log('  ❌ Stylelint failed.', COLORS.red);
 		}
 	}
-	if (bad) fail('Linting failed. Please fix the errors above.');
-	log('✅ Linting passed.', COLORS.green);
+	if (!reportJson && bad) fail('Linting failed. Please fix the errors above.');
+	if (!reportJson) log('✅ Linting passed.', COLORS.green);
+	return { failed: bad, details };
 }
-function typecheck() {
-	log('\n📐 Running full type check (Strict Mode)...', COLORS.blue);
+function typecheck(snapshot, reportJson) {
+	if (!reportJson) log('\n📐 Running full type check (Strict Mode)...', COLORS.blue);
 	try {
-		run('pnpm', ['type-check'], { stdio: 'inherit' });
-		log('✅ Type check passed.', COLORS.green);
+		run('pnpm', ['type-check'], { stdio: reportJson ? 'pipe' : 'inherit' });
+		if (!reportJson) log('✅ Type check passed.', COLORS.green);
+		return { failed: false, status: 'passed' };
 	} catch {
+		if (reportJson) return { failed: true, status: 'failed', message: 'Type check failed' };
 		fail('Type check failed.');
 	}
+	return { failed: false, status: 'passed' };
 }
 
 function trackedFiles() {
@@ -1167,24 +1598,182 @@ function buildBaseline(policy, baselinePath) {
 	log(`✅ Baseline v2 generated at ${baselinePath}`, COLORS.green);
 }
 
+function scanStagedSecrets(snapshot, policy, phase, audit, rep, maxGlobal) {
+	const severity = sev('forbiddenFiles', phase, policy, audit) === 'off' ? 'off' : 'block';
+	let found = 0;
+	for (const file of snapshot.files) {
+		if (!isLikelyTextFile(file)) continue;
+		const content = snapshot.content(file);
+		if (!content) continue;
+		for (const pattern of SECRET_PATTERNS) {
+			if (!pattern.re.test(content)) continue;
+			found += 1;
+			addFinding(rep, policy, maxGlobal, {
+				ruleId: 'secretScan',
+				severity,
+				file,
+				message: `Potential secret found in staged content (${pattern.id}).`,
+				findingType: 'staged-secret',
+				normalizedSubject: pattern.id,
+				scope: file,
+			});
+		}
+	}
+	return { failed: found > 0, findings: found };
+}
+
+function computeRoute(findings, adu) {
+	const hasBlocks = findings.some((f) => f.severity === 'block');
+	const hasAutoFix = findings.some((f) => Boolean(f.autoFixable));
+	const routeReasons = [];
+	if (hasBlocks) routeReasons.push('blocking_findings_present');
+	if (!hasBlocks && hasAutoFix) routeReasons.push('autofix_findings_present');
+	if (adu.unmappedFiles.length > 0) routeReasons.push('unmapped_files_present');
+	if (adu.splitConfidence < 0.6) routeReasons.push('low_split_confidence');
+	let route = 'proceed_adu';
+	if (hasBlocks || adu.splitConfidence < 0.6) route = 'architectural_intervention';
+	else if (hasAutoFix) route = 'auto_fix';
+	return { route, routeReasons };
+}
+
+function getCurrentBranch() {
+	const res = run('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { ignoreError: true });
+	if (res.status !== 0) return null;
+	return String(res.stdout || '').trim();
+}
+
+function branchExists(name) {
+	if (!name) return false;
+	const res = run('git', ['show-ref', '--verify', '--quiet', `refs/heads/${name}`], {
+		ignoreError: true,
+	});
+	return res.status === 0;
+}
+
+function classifyBranchPrefix(files) {
+	const xs = files.map((f) => np(f).toLowerCase());
+	if (xs.length && xs.every((f) => f.startsWith('docs/') || f.endsWith('.md'))) return 'docs';
+	if (xs.length && xs.every((f) => f.startsWith('tests/') || f.includes('.test.'))) return 'test';
+	if (xs.length && xs.every((f) => f.startsWith('src/styles/') || /\.(scss|css)$/i.test(f)))
+		return 'style';
+	if (xs.length && xs.every((f) => f.startsWith('scripts/') || f.startsWith('.agent/')))
+		return 'chore';
+	return 'feat';
+}
+
+function branchSlugFromFiles(files) {
+	const ignored = new Set([
+		'src',
+		'docs',
+		'tests',
+		'scripts',
+		'components',
+		'pages',
+		'styles',
+		'lib',
+		'content',
+		'index',
+	]);
+	const shortAllowlist = new Set(['api', 'ui', 'db', 'ci', 'ux']);
+	const normalizeToken = (token) => {
+		const map = {
+			cfg: 'config',
+			configs: 'config',
+			authn: 'auth',
+			authz: 'auth',
+			gk: 'gatekeeper',
+			gate: 'gatekeeper',
+		};
+		return map[token] || token;
+	};
+	const tokens = [];
+	for (const file of files.slice().sort((a, b) => a.localeCompare(b))) {
+		for (const token of np(file)
+			.toLowerCase()
+			.split(/[/.\\_[\]-]+/)
+			.filter(Boolean)) {
+			const normalized = normalizeToken(token);
+			if (ignored.has(normalized)) continue;
+			if (!/^[a-z0-9]+$/.test(normalized)) continue;
+			if (normalized.length < 4 && !shortAllowlist.has(normalized)) continue;
+			if (!tokens.includes(normalized)) tokens.push(normalized);
+			if (tokens.length >= 3) break;
+		}
+		if (tokens.length >= 3) break;
+	}
+	return tokens.join('-') || 'changes';
+}
+
+function inferBranchName(snapshot) {
+	const mapper = new DomainMapper();
+	const adu = mapper.analyze(snapshot.files);
+	const preferred = adu.suggestedSplits
+		.slice()
+		.sort((a, b) => b.files.length - a.files.length || a.id.localeCompare(b.id))[0];
+	const domain = preferred?.id || 'core';
+	const prefix = classifyBranchPrefix(snapshot.files);
+	const slug = branchSlugFromFiles(snapshot.files);
+	const raw = `${prefix}/${domain}-${slug}`.replace(/-+/g, '-').replace(/\/-/, '/');
+	return raw.slice(0, 72);
+}
+
+function ensureWorkingBranch(snapshot, policy, reportJson) {
+	const enabled = policy.autoBranching?.enabled !== false;
+	if (!enabled) return { enabled: false, changed: false };
+	const current = getCurrentBranch();
+	if (!current || current === 'HEAD')
+		return { enabled: true, changed: false, skipped: 'detached_head' };
+	const protectedBranches = new Set(
+		(policy.autoBranching?.protectedBranches || Array.from(PROTECTED_BRANCHES)).map((x) =>
+			String(x || '').trim(),
+		),
+	);
+	if (!protectedBranches.has(current)) return { enabled: true, changed: false, current };
+	const target = inferBranchName(snapshot);
+	if (!target || target === current) return { enabled: true, changed: false, current };
+
+	const switchArgs = branchExists(target) ? ['switch', target] : ['switch', '-c', target];
+	const switched = run('git', switchArgs, {
+		ignoreError: true,
+		stdio: reportJson ? 'pipe' : 'inherit',
+	});
+	if (switched.status !== 0) {
+		fail(`Gatekeeper could not switch from protected branch "${current}" to "${target}".`);
+	}
+	return {
+		enabled: true,
+		changed: true,
+		from: current,
+		to: target,
+		action: switchArgs.join(' '),
+	};
+}
+
 function main() {
 	const args = process.argv.slice(2);
 	const policyPath = arg(args, '--policy') || DEFAULT_POLICY_PATH;
 	const baselinePath = arg(args, '--baseline') || DEFAULT_BASELINE_PATH;
 	const s0File = arg(args, '--s0-file');
+	const s0SignatureFile = arg(args, '--s0-signature-file');
 	const requestedMode = arg(args, '--mode') || 'strict';
 	const phase = phaseOf(args, loadPolicy(policyPath));
 	const policy = loadPolicy(policyPath);
 	const mode = modeOf(requestedMode, policy.legacyAliases || {});
 	const reportJson = has(args, '--report-json');
+	const noAutoBranch = has(args, '--no-auto-branch');
+	const requireCompleteReport = has(args, '--require-complete-report');
+	const secretScanStaged = has(args, '--secret-scan-staged') || reportJson;
+	const writeS0Signature = has(args, '--write-s0-signature');
 	const output = outputOf(args);
 	const changedDocToken = arg(args, '--changed-doc-token');
 	const maxGlobal = maxFindingsOf(args, policy);
 	const build = has(args, '--build-baseline');
 	const audit = [];
 
-	log(`🛡️  Starting Gatekeeper [Mode: ${mode.toUpperCase()} | Phase: ${phase}]`, COLORS.bold);
-	log(`⚙️  Output: ${output} | Max findings: ${maxGlobal}`);
+	if (!reportJson) {
+		log(`🛡️  Starting Gatekeeper [Mode: ${mode.toUpperCase()} | Phase: ${phase}]`, COLORS.bold);
+		log(`⚙️  Output: ${output} | Max findings: ${maxGlobal}`);
+	}
 
 	if (build) {
 		buildBaseline(policy, baselinePath);
@@ -1193,12 +1782,49 @@ function main() {
 
 	const snapshot = Snapshot.fromGit(s0File);
 	if (!snapshot.files.length) {
-		log('⚠️  No files staged. Nothing to check.', COLORS.yellow);
+		if (reportJson) {
+			console.log(
+				JSON.stringify(
+					{
+						schemaVersion: 2,
+						route: 'proceed_adu',
+						status: 'passed',
+						routeReasons: ['empty_staged_set'],
+						meta: { empty: true },
+					},
+					null,
+					2,
+				),
+			);
+		} else {
+			log('⚠️  No files staged. Nothing to check.', COLORS.yellow);
+		}
 		return;
 	}
 
-	log(`📌 Staged source: ${snapshot.src}`);
-	log(`📄 Analyzing ${snapshot.files.length} staged file(s) from index...`);
+	const branchManagement = noAutoBranch
+		? { enabled: false, changed: false, skipped: 'disabled_by_flag' }
+		: ensureWorkingBranch(snapshot, policy, reportJson);
+
+	if (writeS0Signature && s0SignatureFile) {
+		const payload = { generatedAt: new Date().toISOString(), ...snapshot.detailedSignature() };
+		const parent = dirname(s0SignatureFile);
+		if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
+		writeFileSync(s0SignatureFile, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+		if (!reportJson) log(`✅ S0 signature written to ${s0SignatureFile}`, COLORS.green);
+		return;
+	}
+
+	if (!reportJson) {
+		log(`📌 Staged source: ${snapshot.src}`);
+		log(`📄 Analyzing ${snapshot.files.length} staged file(s) from index...`);
+		if (branchManagement.changed) {
+			log(
+				`🌿 Auto-switched branch: ${branchManagement.from} -> ${branchManagement.to}`,
+				COLORS.blue,
+			);
+		}
+	}
 
 	const baseline = loadBaseline(baselinePath);
 	const governance = checks(
@@ -1213,26 +1839,110 @@ function main() {
 		changedDocToken,
 		audit,
 	);
+	const lintResult = lint(snapshot.files, reportJson, governance.rep, policy, maxGlobal);
+	const hasTs = snapshot.files.some((f) => /\.(ts|tsx|astro)$/.test(f));
+	let typecheckResult = {
+		failed: false,
+		status: hasTs && mode === 'strict' ? 'not_run' : 'skipped',
+	};
+	if (mode === 'strict') {
+		if (hasTs) typecheckResult = typecheck(snapshot, reportJson);
+		else if (!reportJson) log('\nℹ️  Skipping type check (no TS/Astro files changed).');
+	} else if (!reportJson) {
+		log('\nℹ️  Quick mode selected: skipping type-check.');
+	}
+	const securityResult = secretScanStaged
+		? scanStagedSecrets(snapshot, policy, phase, audit, governance.rep, maxGlobal)
+		: { failed: false, findings: 0, skipped: true };
+	const s0Drift = verifyS0Drift(snapshot, s0SignatureFile);
+	if (s0Drift.enabled && s0Drift.hasDrift) {
+		addFinding(governance.rep, policy, maxGlobal, {
+			ruleId: 's0ScopeDrift',
+			severity: 'block',
+			message: 'Scope drift detected between S0 snapshot and current staged state.',
+			findingType: 's0-drift',
+			normalizedSubject: s0Drift.currentSignature || 'unknown',
+			scope: s0SignatureFile || '.git/gatekeeper-s0-signature.json',
+		});
+	}
+	const governanceFinal = governance.rep.summarize();
+	const mapper = new DomainMapper();
+	const adu = mapper.analyze(snapshot.files);
+	const routeData = computeRoute(governanceFinal.findings, adu);
+	const completeChecks = {
+		governance: 'done',
+		lint: 'done',
+		typecheck: typecheckResult.status || (typecheckResult.failed ? 'failed' : 'passed'),
+		security: secretScanStaged ? 'done' : 'skipped',
+	};
+	if (
+		reportJson &&
+		requireCompleteReport &&
+		Object.values(completeChecks).some((v) => v === 'not_run')
+	) {
+		fail('Incomplete report: one or more required checks were not executed.');
+	}
 
-	if (audit.length) {
+	if (audit.length && !reportJson) {
 		log('\n🧭 Override audit log:', COLORS.blue);
 		for (const item of uniq(audit)) log(`  - ${item}`);
 	}
 
-	if (governance.blocked)
-		fail('Gatekeeper governance checks failed. Fix BLOCKED findings before committing.');
+	if (!reportJson && routeData.route === 'architectural_intervention')
+		fail('Gatekeeper checks failed. Fix BLOCKED findings before committing.');
 
-	lint(snapshot.files);
-	if (mode === 'strict') {
-		const hasTs = snapshot.files.some((f) => /\.(ts|tsx|astro)$/.test(f));
-		if (hasTs) typecheck();
-		else log('\nℹ️  Skipping type check (no TS/Astro files changed).');
-	} else {
-		log('\nℹ️  Quick mode selected: skipping type-check.');
+	if (!reportJson) {
+		log('\n✨ Gatekeeper passed. You are ready to commit.', COLORS.green);
+		log('\n💡 To commit:\n   git commit -m "type(scope): description"', COLORS.blue);
+		return;
 	}
 
-	log('\n✨ Gatekeeper passed. You are ready to commit.', COLORS.green);
-	log('\n💡 To commit:\n   git commit -m "type(scope): description"', COLORS.blue);
+	const finalReport = {
+		schemaVersion: 2,
+		route: routeData.route,
+		routeReasons: routeData.routeReasons,
+		status: routeData.route === 'architectural_intervention' ? 'failed' : 'passed',
+		staged: {
+			signature: snapshot.signature(),
+			count: snapshot.files.length,
+			source: snapshot.src,
+		},
+		branch: branchManagement,
+		s0Drift,
+		checks: completeChecks,
+		governance: {
+			summary: governanceFinal.summary,
+			findings: governanceFinal.findings.map((f) => ({
+				ruleId: f.ruleId,
+				severity: f.severity,
+				file: f.file,
+				line: f.line,
+				findingType: f.findingType,
+				normalizedSubject: f.normalizedSubject,
+				stableKey: f.stableKey,
+				message: f.message,
+				autoFixable: f.autoFixable,
+				fixCommand: f.fixCommand,
+			})),
+		},
+		lint: lintResult,
+		typecheck: typecheckResult,
+		security: securityResult,
+		adu,
+		blockingFindings: governanceFinal.findings
+			.filter((f) => f.severity === 'block')
+			.map((f) => ({
+				ruleId: f.ruleId,
+				file: f.file,
+				line: f.line,
+				message: f.message,
+			})),
+		meta: governanceFinal.meta,
+	};
+	console.log(JSON.stringify(finalReport, null, 2));
+	if (routeData.route === 'architectural_intervention') {
+		process.exitCode = 1;
+	}
 }
 
 main();

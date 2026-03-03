@@ -24,8 +24,11 @@
         "test:rsvp": "jest --runInBand tests/api tests/lib/rsvp tests/unit tests/components/GuestDashboardApp.auth.test.tsx",
         "test:rsvp:coverage": "jest --runInBand --coverage tests/api tests/lib/rsvp tests/unit tests/components/GuestDashboardApp.auth.test.tsx --collectCoverageFrom=\"src/lib/rsvp/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/dashboard/**/*.{ts,tsx}\" --collectCoverageFrom=\"src/pages/api/invitacion/**/*.{ts,tsx}\"",
         "gatekeeper": "node scripts/gatekeeper.js",
-        "gatekeeper:report": "node scripts/gatekeeper.js --mode strict --report-json",
+        "gatekeeper:report": "node scripts/gatekeeper.js --mode strict --report-json --secret-scan-staged --require-complete-report",
         "gatekeeper:baseline": "node scripts/gatekeeper.js --build-baseline",
+        "gatekeeper:workflow": "node scripts/gatekeeper-workflow.mjs",
+        "gatekeeper:commit-ready": "node scripts/gatekeeper-commit-ready.mjs",
+        "gatekeeper:commit-ready:create": "node scripts/gatekeeper-commit-ready.mjs --create-branch",
         "lint-staged": "lint-staged",
         "commitlint": "commitlint",
         "prepare": "husky",
@@ -108,7 +111,7 @@
         "ts-jest": "^29.4.6",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.53.1",
-        "validator": "13.15.22"
+        "validator": "13.15.20"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx}": ["eslint --fix --cache", "prettier --write"],

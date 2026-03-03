@@ -1,0 +1,41 @@
+{
+    "domains": {
+        "invitation": [
+            "src/components/invitation/**",
+            "src/pages/[eventType]/**",
+            "src/layouts/Layout.astro"
+        ],
+        "auth": [
+            "src/lib/rsvp/**",
+            "src/pages/api/auth/**",
+            "src/pages/api/invitacion/**",
+            "src/middleware.ts"
+        ],
+        "theme": ["src/styles/themes/**", "src/styles/tokens/**", "src/styles/*.scss"],
+        "governance": [
+            ".agent/**",
+            ".husky/**",
+            ".github/**",
+            "scripts/**",
+            "commitlint.config.cjs",
+            "package.json",
+            "pnpm-lock.yaml",
+            ".gitignore"
+        ],
+        "core": [
+            "src/content/config.ts",
+            "src/content/events/**",
+            "src/lib/adapters/**",
+            "src/lib/assets/**",
+            "src/data/**"
+        ],
+        "ui": [
+            "src/components/common/**",
+            "src/components/ui/**",
+            "src/components/home/**",
+            "src/components/layout/**",
+            "src/assets/**"
+        ]
+    },
+    "defaultDomain": "core"
+}

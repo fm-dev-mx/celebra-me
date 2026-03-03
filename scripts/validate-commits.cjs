@@ -1,175 +1,139 @@
 #!/usr/bin/env node
 
-/**
- * Script de validación de commits ADU (Atomic, Descriptive, Unitary)
- *
- * Este script valida que los commits cumplan con:
- * 1. Formato Conventional Commits
- * 2. No contengan indicadores WIP/draft
- * 3. No sean merge commits en PRs
- * 4. Tengan cuerpo explicativo para cambios complejos
- *
- * Uso:
- *   node scripts/validate-commits.cjs <base-sha> <head-sha>
- */
-
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
+const { mkdtempSync, writeFileSync, unlinkSync, rmSync } = require('fs');
+const { join } = require('path');
+const { tmpdir } = require('os');
 const { exit } = require('process');
 
-function runCommand(command) {
+function run(cmd, args, options = {}) {
+	const isWin = process.platform === 'win32';
+	const result = spawnSync(cmd, args, {
+		encoding: 'utf8',
+		stdio: 'pipe',
+		shell: isWin,
+		...options,
+	});
+	if (result.error) throw result.error;
+	return {
+		status: result.status ?? 1,
+		stdout: (result.stdout || '').trim(),
+		stderr: (result.stderr || '').trim(),
+	};
+}
+
+function getCommitMessage(commitHash) {
+	const full = run('git', ['log', '--format=%B', '-n', '1', commitHash]);
+	const subject = run('git', ['log', '--format=%s', '-n', '1', commitHash]);
+	if (full.status !== 0 || !full.stdout) return null;
+	return { full: full.stdout, subject: subject.stdout || '' };
+}
+
+function validateConventionalSubject(subject, commitHash) {
+	const tmpDir = mkdtempSync(join(tmpdir(), 'commitlint-'));
+	const tmpFile = join(tmpDir, `${commitHash}.txt`);
 	try {
-		return execSync(command, { encoding: 'utf8', stdio: 'pipe' }).trim();
-	} catch (error) {
-		console.error(`Error ejecutando comando: ${command}`);
-		console.error(error.message);
-		return null;
+		writeFileSync(tmpFile, `${subject}\n`, 'utf8');
+		const result = run('npx', ['commitlint', '--edit', tmpFile]);
+		return {
+			ok: result.status === 0,
+			output: [result.stdout, result.stderr].filter(Boolean).join('\n'),
+		};
+	} finally {
+		try {
+			unlinkSync(tmpFile);
+		} catch {
+			/* ignore */
+		}
+		try {
+			rmSync(tmpDir, { recursive: true, force: true });
+		} catch {
+			/* ignore */
+		}
 	}
 }
 
+function validateAtomicity(commitHash) {
+	const files = run('git', ['show', '--name-only', '--format=', commitHash]);
+	const changedFiles = files.stdout ? files.stdout.split('\n').filter((f) => f.trim()) : [];
+	if (changedFiles.length > 12) {
+		return {
+			ok: false,
+			message: `Commit touches ${changedFiles.length} files (max 12 for ADU policy).`,
+		};
+	}
+	return { ok: true };
+}
+
 function validateCommit(commitHash) {
-	console.log(`\n🔍 Validando commit: ${commitHash}`);
-
-	// Obtener mensaje completo del commit
-	const commitMessage = runCommand(`git log --format="%B" -n 1 ${commitHash}`);
-	const commitSubject = runCommand(`git log --format="%s" -n 1 ${commitHash}`);
-
-	if (!commitMessage) {
-		console.error(`❌ No se pudo obtener mensaje del commit ${commitHash}`);
+	console.log(`\nChecking commit: ${commitHash}`);
+	const commit = getCommitMessage(commitHash);
+	if (!commit) {
+		console.error(`❌ Unable to read commit message for ${commitHash}`);
 		return false;
 	}
 
-	console.log(`   Asunto: ${commitSubject}`);
-
-	// 1. Validar con commitlint (solo el título/subject)
-	try {
-		// Tomar solo la primera línea (el título/subject) y limpiar espacios y newlines
-		const commitSubject = commitMessage
-			.split('\n')[0]
-			.replace(/\r?\n$/, '')
-			.trim();
-		// Crear un archivo temporal para pasar el subject a commitlint
-		const fs = require('fs');
-		const tmpFile = `/tmp/commit-${commitHash}.txt`;
-		fs.writeFileSync(tmpFile, commitSubject);
-
-		// Ejecutar commitlint de forma programática solo con el subject
-		// eslint-disable-next-line no-unused-vars
-		const _result = execSync(`npx commitlint --edit "${tmpFile}"`, {
-			encoding: 'utf8',
-			stdio: 'pipe',
-		});
-
-		// Limpiar archivo temporal
-		fs.unlinkSync(tmpFile);
-
-		console.log('   ✅ Formato Conventional Commits válido');
-	} catch (error) {
-		console.error('   ❌ Error en formato Conventional Commits:');
-		console.error(`      ${error.stdout || error.message}`);
-		console.error('\n   Formato esperado:');
-		console.error('     feat: agregar nueva funcionalidad');
-		console.error('     fix: corregir error');
-		console.error('     docs: cambios en documentación');
-		console.error('     style: formato, punto y coma, etc');
-		console.error('     refactor: refactorización de código');
-		console.error('     test: agregar o corregir tests');
-		console.error('     chore: tareas de mantenimiento');
+	console.log(`  Subject: ${commit.subject}`);
+	const conventional = validateConventionalSubject(commit.subject, commitHash);
+	if (!conventional.ok) {
+		console.error('  ❌ Conventional Commit validation failed');
+		if (conventional.output) console.error(`  ${conventional.output}`);
 		return false;
 	}
 
-	// 2. Verificar indicadores WIP/draft
-	const wipPatterns = [/wip/i, /draft/i, /work in progress/i, /en progreso/i];
-	for (const pattern of wipPatterns) {
-		if (pattern.test(commitSubject)) {
-			console.error(`   ❌ Commit contiene indicador WIP/draft: "${commitSubject}"`);
-			console.error('      Por favor elimina indicadores WIP/draft antes de hacer merge');
-			return false;
-		}
+	if (/^Merge\s/i.test(commit.subject)) {
+		console.error('  ❌ Merge commit detected in PR range');
+		return false;
 	}
-
-	// 3. Verificar merge commits
-	if (commitSubject.startsWith('Merge ')) {
-		console.error(`   ❌ Commit es un merge commit: "${commitSubject}"`);
-		console.error('      Por favor usa rebase en lugar de merge en ramas de feature');
+	if (/\b(wip|draft|work in progress)\b/i.test(commit.subject)) {
+		console.error('  ❌ WIP/draft markers are not allowed');
 		return false;
 	}
 
-	// 4. Verificar cuerpo para cambios complejos
-	const commitBody = commitMessage.split('\n').slice(1).join('\n').trim();
-	const subjectLength = commitSubject.length;
-
-	if (!commitBody && subjectLength > 72) {
-		console.warn('   ⚠️  Advertencia: Asunto largo sin cuerpo explicativo');
-		console.warn('      Considera agregar un cuerpo para explicar el "por qué" del cambio');
+	const atomicity = validateAtomicity(commitHash);
+	if (!atomicity.ok) {
+		console.error(`  ❌ ${atomicity.message}`);
+		return false;
 	}
 
-	// 5. Verificar atomicidad (análisis básico)
-	const changedFiles = runCommand(`git show --name-only --format="" ${commitHash}`);
-	const fileCount = changedFiles ? changedFiles.split('\n').filter((f) => f.trim()).length : 0;
-
-	if (fileCount > 10) {
-		console.warn(`   ⚠️  Advertencia: Commit modifica ${fileCount} archivos`);
-		console.warn('      Considera si este cambio podría dividirse en commits más atómicos');
-	}
-
-	console.log('   ✅ Commit válido');
+	console.log('  ✅ Commit valid');
 	return true;
 }
 
 function main() {
-	const args = process.argv.slice(2);
-
-	if (args.length < 2) {
-		console.error('Uso: node scripts/validate-commits.cjs <base-sha> <head-sha>');
-		console.error('Ejemplo: node scripts/validate-commits.cjs main feature-branch');
+	const [baseSha, headSha] = process.argv.slice(2);
+	if (!baseSha || !headSha) {
+		console.error('Usage: node scripts/validate-commits.cjs <base-sha> <head-sha>');
 		exit(1);
 	}
 
-	const [baseSha, headSha] = args;
+	console.log('Running ADU commit validation');
+	console.log(`Range: ${baseSha}..${headSha}`);
 
-	console.log('🚀 Validación de commits ADU');
-	console.log(`📊 Rango: ${baseSha}..${headSha}`);
-
-	// Obtener lista de commits en el rango
-	const commitsOutput = runCommand(`git log --oneline --format="%H" ${baseSha}..${headSha}`);
-
-	if (!commitsOutput) {
-		console.log('✅ No hay commits para validar en este rango');
-		exit(0);
+	const commitsOutput = run('git', ['log', '--format=%H', `${baseSha}..${headSha}`]);
+	if (commitsOutput.status !== 0) {
+		console.error('❌ Unable to list commits in the provided range');
+		exit(1);
 	}
 
-	const commitHashes = commitsOutput.split('\n').filter((hash) => hash.trim());
-
-	if (commitHashes.length === 0) {
-		console.log('✅ No hay commits para validar en este rango');
+	const hashes = commitsOutput.stdout ? commitsOutput.stdout.split('\n').filter(Boolean) : [];
+	if (!hashes.length) {
+		console.log('No commits found in range');
 		exit(0);
 	}
-
-	console.log(`📝 Encontrados ${commitHashes.length} commit(s) para validar\n`);
 
 	let allValid = true;
-
-	for (const commitHash of commitHashes) {
-		if (!validateCommit(commitHash)) {
-			allValid = false;
-		}
+	for (const hash of hashes) {
+		if (!validateCommit(hash)) allValid = false;
 	}
 
-	if (allValid) {
-		console.log('\n🎉 ¡Todos los commits pasaron la validación ADU!');
-		console.log('✅ Atomic - Cada commit tiene un propósito único');
-		console.log('✅ Descriptive - Mensajes claros y descriptivos');
-		console.log('✅ Unitary - Cambios cohesivos y bien definidos');
-		exit(0);
-	} else {
-		console.error('\n❌ Algunos commits no pasaron la validación ADU');
-		console.error('   Por favor corrige los problemas antes de hacer merge');
+	if (!allValid) {
+		console.error('\n❌ ADU validation failed');
 		exit(1);
 	}
+	console.log('\n✅ All commits passed ADU validation');
 }
 
-if (require.main === module) {
-	main();
-}
+if (require.main === module) main();
 
 module.exports = { validateCommit };

@@ -106,8 +106,8 @@
             "killSwitch": false,
             "maxFindings": 20,
             "severityByPhase": {
-                "1": "warn",
-                "2": "warn",
+                "1": "block",
+                "2": "block",
                 "3": "block"
             },
             "appliesTo": ["src/**/*.astro", "src/**/*.tsx"],
@@ -118,8 +118,8 @@
             "killSwitch": false,
             "maxFindings": 20,
             "severityByPhase": {
-                "1": "warn",
-                "2": "warn",
+                "1": "block",
+                "2": "block",
                 "3": "block"
             },
             "appliesTo": ["src/**/*.astro"],
@@ -139,6 +139,72 @@
                 "2": "block",
                 "3": "block"
             }
+        },
+        "godObjectGuard": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 10,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            },
+            "appliesTo": ["src/**/*.{ts,tsx,astro,js,jsx}"],
+            "maxFileLines": 400,
+            "maxExportCount": 20,
+            "maxFunctionParams": 6
+        },
+        "couplingGuard": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 10,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            },
+            "appliesTo": ["src/**/*.{ts,tsx,astro,js,jsx}"],
+            "maxImportsPerFile": 30
+        },
+        "duplicationGuard": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 10,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            },
+            "minFingerprintLength": 40,
+            "maxOccurrences": 10
+        },
+        "obsoleteGovernanceGuard": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 10,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            },
+            "requiredPaths": [
+                ".agent/gatekeeper/policy.json",
+                ".agent/gatekeeper/baseline.json",
+                "scripts/gatekeeper.js",
+                "commitlint.config.cjs"
+            ]
+        },
+        "languageGovernance": {
+            "enabled": true,
+            "killSwitch": false,
+            "maxFindings": 20,
+            "severityByPhase": {
+                "1": "block",
+                "2": "block",
+                "3": "block"
+            },
+            "englishPaths": ["docs/**/*.md", "src/**/*.{ts,tsx,astro,js,jsx}", "scripts/**/*.js"],
+            "spanishUiPaths": ["src/content/events/**/*.json"]
         }
     },
     "docMappings": [
@@ -187,5 +253,9 @@
             "node:path",
             "path"
         ]
+    },
+    "autoBranching": {
+        "enabled": true,
+        "protectedBranches": ["main", "develop"]
     }
 }
