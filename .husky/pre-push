@@ -1,2 +1,5 @@
-echo "🧪 Ejecutando validación completa antes del push..."
-pnpm type-check && pnpm test
+#!/bin/sh
+
+echo "🧪 Running full validation before push..."
+pnpm gatekeeper:report --require-complete-report --secret-scan-staged
+pnpm test

@@ -1,97 +1,21 @@
 #!/bin/sh
 
 # ------------------------------------------------------------
-# 1) Prevent direct commits to main
+# 1) Gatekeeper strict checks (governance + lint + type-check + staged secret scan)
 # ------------------------------------------------------------
-if [ "$(git branch --show-current)" = "main" ]; then
-  echo "❌ No puedes hacer commit directamente en la rama 'main'. Usa una rama de feature."
-  exit 1
+echo "🛡️ Running Gatekeeper strict checks..."
+S0_SIG_FILE=".git/gatekeeper-s0-signature.json"
+if [ -f "$S0_SIG_FILE" ]; then
+  pnpm gatekeeper --mode strict --secret-scan-staged --require-complete-report --s0-signature-file "$S0_SIG_FILE"
+else
+  pnpm gatekeeper --mode strict --secret-scan-staged --require-complete-report
 fi
 
 # ------------------------------------------------------------
-# 2) Secret scan (lightweight regex-based, portable ERE)
-# ------------------------------------------------------------
-echo "🔍 Verificando posibles secrets..."
-
-FILES=$(git diff --cached --name-only --diff-filter=ACM)
-
-# Block committing any .env* files (tracked or staged)
-if echo "$FILES" | grep -E '(^|/)\.env($|\.)' >/dev/null 2>&1; then
-  echo "🚨 No puedes commitear archivos .env"
-  exit 1
-fi
-
-FOUND=0
-
-# Files to ignore for secret scan (keep small + explicit)
-is_ignored_file() {
-  case "$1" in
-    *.md|*.example|*.sh) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-# Patterns are ERE (grep -E), portable: no \b, no \s.
-# NOTE: By default, we skip JWT-like patterns in tests/ to reduce false positives.
-# If you want to enforce JWT blocking in tests too, remove the tests/* case below.
-scan_file_for_secrets() {
-  file="$1"
-
-  # Skip binary-ish / irrelevant files
-  if is_ignored_file "$file"; then
-    return 0
-  fi
-
-  # If the file doesn't exist in workspace (renames/deletes), skip
-  [ -f "$file" ] || return 0
-
-  # ---- Keyword assignments (word-boundary-ish using POSIX classes) ----
-  # api key-ish
-  grep -iE '(^|[^[:alnum:]_])api[_-]?key([^[:alnum:]_]|$)[[:space:]]*=[[:space:]]*['\''"][A-Za-z0-9]{20,}['\''"]' "$file" >/dev/null 2>&1 && return 1
-  # secret-ish
-  grep -iE '(^|[^[:alnum:]_])secret([^[:alnum:]_]|$)[[:space:]]*=[[:space:]]*['\''"][A-Za-z0-9]{20,}['\''"]' "$file" >/dev/null 2>&1 && return 1
-  # password (allow any chars, min 8)
-  grep -iE '(^|[^[:alnum:]_])password([^[:alnum:]_]|$)[[:space:]]*=[[:space:]]*['\''"][^'\''"]{8,}['\''"]' "$file" >/dev/null 2>&1 && return 1
-  # token-ish
-  grep -iE '(^|[^[:alnum:]_])token([^[:alnum:]_]|$)[[:space:]]*=[[:space:]]*['\''"][A-Za-z0-9]{20,}['\''"]' "$file" >/dev/null 2>&1 && return 1
-
-  # ---- Common provider token formats ----
-  # SendGrid
-  grep -iE 'SG\.[A-Za-z0-9]{20,}' "$file" >/dev/null 2>&1 && return 1
-  # OpenAI-like
-  grep -iE 'sk-[A-Za-z0-9]{20,}' "$file" >/dev/null 2>&1 && return 1
-  # Slack tokens
-  grep -iE 'xox[baprs]-[A-Za-z0-9]{10,}' "$file" >/dev/null 2>&1 && return 1
-
-  # ---- JWT-like strings (often appear in tests/ fixtures) ----
-  case "$file" in
-    tests/*)
-      # Skip JWT-like scan in tests to avoid constant false positives.
-      return 0
-      ;;
-  esac
-  grep -iE 'eyJ[A-Za-z0-9_-]{20,}' "$file" >/dev/null 2>&1 && return 1
-
-  return 0
-}
-
-for file in $FILES; do
-  if ! scan_file_for_secrets "$file"; then
-    echo "⚠️ Posible secret detectado en: $file"
-    FOUND=1
-  fi
-done
-
-if [ $FOUND -eq 1 ]; then
-  echo "❌ Commit bloqueado por posible secret."
-  exit 1
-fi
-
-# ------------------------------------------------------------
-# 3) Gatekeeper workflow (S0 mode)
+# 2) Gatekeeper workflow (S0 mode)
 # ------------------------------------------------------------
 if [ -f ".git/gatekeeper-s0.txt" ]; then
-  echo "🔍 Gatekeeper mode detected"
+  echo "🔍 Gatekeeper S0 mode detected"
   S0_FILES=$(cat .git/gatekeeper-s0.txt | sed '/^[[:space:]]*$/d')
 
   if [ -n "$S0_FILES" ]; then
@@ -103,7 +27,7 @@ if [ -f ".git/gatekeeper-s0.txt" ]; then
 fi
 
 # ------------------------------------------------------------
-# 4) Normal lint-staged
+# 3) Normal lint-staged (formatting/autofix pass)
 # ------------------------------------------------------------
 echo "🔧 Running lint-staged..."
 pnpm lint-staged
