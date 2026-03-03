@@ -234,6 +234,19 @@
             "id": "workflow-status-sync",
             "triggers": [".agent/workflows/**"],
             "requiredAll": ["docs/DOC_STATUS.md"]
+        },
+        {
+            "id": "git-governance-sync",
+            "triggers": [
+                "scripts/gatekeeper.js",
+                "scripts/gatekeeper-workflow.mjs",
+                "scripts/gatekeeper-commit-ready.mjs",
+                "scripts/validate-commits.cjs",
+                "scripts/config/domain-map.json",
+                "commitlint.config.cjs",
+                ".agent/gatekeeper/policy.json"
+            ],
+            "requiredAll": ["docs/GIT_GOVERNANCE.md"]
         }
     ],
     "architectureBoundaries": {

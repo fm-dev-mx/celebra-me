@@ -78,9 +78,9 @@ function main() {
 		}
 	}
 
-	console.log('🛡️ Ejecutando Gatekeeper...');
+	console.log('🛡️ Running Gatekeeper checks...');
 	runGatekeeper();
-	console.log('✅ Commit gatekeeper listo. Puedes ejecutar git commit.');
+	console.log('✅ Gatekeeper passed. You can run: git commit');
 }
 
 main();
