@@ -1,7 +1,8 @@
 {
     "eventType": "cumple",
-    "title": "Gerardo - 60 Años",
-    "description": "Estás invitado a celebrar los 60 años del Jefe Botas.",
+    "isDemo": true,
+    "title": "Demo - Gerardo 60 Años",
+    "description": "Demo oficial: celebración estilo Luxury Hacienda para cumpleaños.",
     "theme": {
         "primaryColor": "#3A2819",
         "accentColor": "#DCB43C",
@@ -10,7 +11,7 @@
     },
     "sectionStyles": {
         "quote": {
-            "variant": "elegant",
+            "variant": "luxury-hacienda",
             "fontStyle": "serif",
             "animation": "fade"
         },

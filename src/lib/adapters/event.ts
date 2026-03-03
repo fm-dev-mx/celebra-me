@@ -3,6 +3,50 @@ import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets
 import type { InvitationViewModel, ThemeConfig, HeroViewModel, EnvelopeViewModel } from './types';
 
 // --- Helpers ---
+const QUOTE_VARIANTS = [
+	'elegant',
+	'modern',
+	'minimal',
+	'floral',
+	'jewelry-box',
+	'luxury-hacienda',
+] as const;
+
+const COUNTDOWN_VARIANTS = [
+	'minimal',
+	'vibrant',
+	'classic',
+	'modern',
+	'jewelry-box',
+	'luxury-hacienda',
+] as const;
+
+const LOCATION_VARIANTS = [
+	'structured',
+	'organic',
+	'minimal',
+	'luxury',
+	'jewelry-box',
+	'luxury-hacienda',
+] as const;
+
+const SHARED_VARIANTS = ['standard', 'jewelry-box', 'luxury-hacienda'] as const;
+const ITINERARY_VARIANTS = ['base', 'jewelry-box', 'luxury-hacienda'] as const;
+const HERO_VARIANTS = ['jewelry-box', 'luxury-hacienda'] as const;
+
+function pickVariant<T extends readonly string[]>(
+	scope: string,
+	candidate: string | undefined,
+	allowed: T,
+	fallback: T[number],
+): T[number] {
+	if (!candidate) return fallback;
+	if ((allowed as readonly string[]).includes(candidate)) return candidate as T[number];
+	console.warn(
+		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Fallback applied: "${fallback}".`,
+	);
+	return fallback;
+}
 
 function hexToRgb(hex: string): string {
 	hex = hex.replace(/^#/, '');
@@ -48,17 +92,19 @@ function requireAsset(eventSlug: string, keyOrUrl: string): ImageAsset {
 export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewModel {
 	const { data, id: eventSlug } = event;
 	const preset = data.theme.preset;
+	const isDemo = data.isDemo ?? false;
 
 	// --- Theme Processing ---
 	const primaryColorRgb = hexToRgb(data.theme.primaryColor);
 	const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
+	const normalizedPreset = pickVariant('theme.preset', preset, HERO_VARIANTS, 'jewelry-box');
 
 	const theme: ThemeConfig = {
 		primaryColor: data.theme.primaryColor,
 		accentColor: data.theme.accentColor,
 		fontFamily: data.theme.fontFamily,
-		preset: preset,
-		themeClass: preset ? `theme-preset--${preset}` : '',
+		preset: normalizedPreset,
+		themeClass: `theme-preset--${normalizedPreset}`,
 		colors: {
 			primaryRgb: primaryColorRgb,
 			accentRgb: accentColorRgb,
@@ -76,7 +122,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 		venueName: data.location.venueName,
 		backgroundImage: heroBg,
 		portrait: heroPortrait,
-		variant: (preset || data.hero.variant) as 'jewelry-box' | 'luxury-hacienda',
+		variant: pickVariant(
+			'hero.variant',
+			data.hero.variant ?? normalizedPreset,
+			HERO_VARIANTS,
+			normalizedPreset,
+		),
 	};
 
 	// --- Envelope Processing ---
@@ -93,7 +144,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 						stampText: data.envelope.stampText,
 						stampYear: data.envelope.stampYear,
 						tooltipText: data.envelope.tooltipText,
-						variant: data.envelope.variant || preset,
+						variant: pickVariant(
+							'envelope.variant',
+							data.envelope.variant ?? normalizedPreset,
+							HERO_VARIANTS,
+							normalizedPreset,
+						),
 						colors: {
 							background: data.envelope.closedPalette.background,
 							primary: data.envelope.closedPalette.primary,
@@ -139,6 +195,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 
 	return {
 		id: eventSlug,
+		isDemo,
 		title: data.title,
 		description: data.description,
 		theme,
@@ -148,13 +205,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 			quote: data.quote
 				? {
 						...data.quote,
-						variant: data.sectionStyles?.quote?.variant as
-							| 'elegant'
-							| 'modern'
-							| 'minimal'
-							| 'floral'
-							| 'jewelry-box'
-							| 'luxury-hacienda',
+						variant: pickVariant(
+							'sectionStyles.quote.variant',
+							data.sectionStyles?.quote?.variant,
+							QUOTE_VARIANTS,
+							'elegant',
+						),
 						animation: data.sectionStyles?.quote?.animation,
 					}
 				: undefined,
@@ -163,13 +219,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 					? {
 							...data.countdown,
 							eventDate: data.hero.date,
-							variant: data.sectionStyles?.countdown?.variant as
-								| 'minimal'
-								| 'vibrant'
-								| 'classic'
-								| 'modern'
-								| 'jewelry-box'
-								| 'luxury-hacienda',
+							variant: pickVariant(
+								'sectionStyles.countdown.variant',
+								data.sectionStyles?.countdown?.variant,
+								COUNTDOWN_VARIANTS,
+								'minimal',
+							),
 							showParticles: data.sectionStyles?.countdown?.showParticles,
 						}
 					: undefined,
@@ -177,13 +232,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 				ceremony,
 				reception,
 				indications: data.location.indications,
-				variant: data.sectionStyles?.location?.variant as
-					| 'structured'
-					| 'organic'
-					| 'minimal'
-					| 'luxury'
-					| 'jewelry-box'
-					| 'luxury-hacienda',
+				variant: pickVariant(
+					'sectionStyles.location.variant',
+					data.sectionStyles?.location?.variant,
+					LOCATION_VARIANTS,
+					'structured',
+				),
 				mapStyle: data.sectionStyles?.location?.mapStyle,
 				showFlourishes: data.sectionStyles?.location?.showFlourishes,
 				city: data.location.city,
@@ -194,10 +248,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 						...data.family,
 						featuredImage: familyImage,
 						celebrantName: data.hero.name,
-						variant: data.sectionStyles?.family?.variant as
-							| 'standard'
-							| 'jewelry-box'
-							| 'luxury-hacienda',
+						variant: pickVariant(
+							'sectionStyles.family.variant',
+							data.sectionStyles?.family?.variant,
+							SHARED_VARIANTS,
+							'standard',
+						),
 					}
 				: undefined,
 			gallery:
@@ -205,19 +261,23 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 					? {
 							...data.gallery,
 							items: galleryItems,
-							variant: data.sectionStyles?.gallery?.variant as
-								| 'standard'
-								| 'jewelry-box'
-								| 'luxury-hacienda',
+							variant: pickVariant(
+								'sectionStyles.gallery.variant',
+								data.sectionStyles?.gallery?.variant,
+								SHARED_VARIANTS,
+								'standard',
+							),
 						}
 					: undefined,
 			itinerary: data.itinerary
 				? {
 						...data.itinerary,
-						variant: (data.sectionStyles?.itinerary?.variant ?? preset) as
-							| 'base'
-							| 'jewelry-box'
-							| 'luxury-hacienda',
+						variant: pickVariant(
+							'sectionStyles.itinerary.variant',
+							data.sectionStyles?.itinerary?.variant ?? normalizedPreset,
+							ITINERARY_VARIANTS,
+							normalizedPreset,
+						),
 					}
 				: undefined,
 			rsvp:
@@ -226,10 +286,12 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 							...data.rsvp,
 							eventSlug,
 							celebrantName: data.hero.nickname || data.hero.name.split(' ')[0],
-							variant: (data.sectionStyles?.rsvp?.variant ?? preset) as
-								| 'standard'
-								| 'jewelry-box'
-								| 'luxury-hacienda',
+							variant: pickVariant(
+								'sectionStyles.rsvp.variant',
+								data.sectionStyles?.rsvp?.variant ?? normalizedPreset,
+								SHARED_VARIANTS,
+								normalizedPreset,
+							),
 							nameLabel:
 								data.sectionStyles?.rsvp?.labels?.name ??
 								data.sectionStyles?.rsvp?.nameLabel,
@@ -246,20 +308,24 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 				data.sections?.gifts && data.gifts
 					? {
 							...data.gifts,
-							variant: data.sectionStyles?.gifts?.variant as
-								| 'standard'
-								| 'jewelry-box'
-								| 'luxury-hacienda',
+							variant: pickVariant(
+								'sectionStyles.gifts.variant',
+								data.sectionStyles?.gifts?.variant,
+								SHARED_VARIANTS,
+								'standard',
+							),
 						}
 					: undefined,
 			thankYou: data.thankYou
 				? {
 						...data.thankYou,
 						image: thankYouImage,
-						variant: data.sectionStyles?.thankYou?.variant as
-							| 'standard'
-							| 'jewelry-box'
-							| 'luxury-hacienda',
+						variant: pickVariant(
+							'sectionStyles.thankYou.variant',
+							data.sectionStyles?.thankYou?.variant,
+							SHARED_VARIANTS,
+							'standard',
+						),
 					}
 				: undefined,
 		},

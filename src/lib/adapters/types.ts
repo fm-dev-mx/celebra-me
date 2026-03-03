@@ -151,6 +151,7 @@ export interface EnvelopeViewModel {
 
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
+	isDemo: boolean;
 	title: string;
 	description?: string;
 	theme: ThemeConfig;

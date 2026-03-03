@@ -23,13 +23,22 @@ import Gallery from '@/components/invitation/Gallery.astro';
 import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
 
 // --- Page Logic (Adapter Pattern) ---
-const { slug } = Astro.params;
+const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
 
 const eventEntry = await getEntry('events', slug as string);
 
 if (!eventEntry) {
 	return Astro.redirect('/404');
+}
+
+const canonicalEventType = eventEntry.data.eventType;
+if (eventType !== canonicalEventType) {
+	const canonicalUrl = new URL(`/${canonicalEventType}/${slug as string}`, Astro.url);
+	if (inviteId) {
+		canonicalUrl.searchParams.set('invite', inviteId);
+	}
+	return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search, 301);
 }
 
 const viewModel = adaptEvent(eventEntry);

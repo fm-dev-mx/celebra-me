@@ -14,7 +14,7 @@ const eventsCollection = defineCollection({
 	type: 'data',
 	schema: z.object({
 		eventType: z.enum(['xv', 'boda', 'bautizo', 'cumple']),
-		isDemo: z.boolean().optional(),
+		isDemo: z.boolean().default(false),
 		title: z.string(),
 		description: z.string().optional(),
 		theme: z.object({

@@ -1,0 +1,185 @@
+{
+    "eventType": "xv",
+    "title": "Plantilla Cliente XV",
+    "description": "Plantilla base para invitaciones reales de XV años en producción.",
+    "theme": {
+        "primaryColor": "#d4af37",
+        "accentColor": "#1a1a1a",
+        "fontFamily": "serif",
+        "preset": "jewelry-box"
+    },
+    "sectionStyles": {
+        "quote": {
+            "variant": "jewelry-box",
+            "fontStyle": "script",
+            "animation": "fade"
+        },
+        "countdown": {
+            "variant": "jewelry-box",
+            "numberStyle": "thin",
+            "showParticles": false
+        },
+        "location": {
+            "variant": "jewelry-box",
+            "mapStyle": "colorful",
+            "showFlourishes": true
+        },
+        "gallery": {
+            "variant": "jewelry-box"
+        },
+        "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "gifts": {
+            "variant": "jewelry-box"
+        },
+        "rsvp": {
+            "variant": "jewelry-box",
+            "labels": {
+                "name": "Nombre completo *",
+                "attendance": "¿Asistirás al evento? *",
+                "guestCount": "Número total de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
+        },
+        "thankYou": {
+            "variant": "jewelry-box"
+        }
+    },
+    "hero": {
+        "name": "Nombre de la Festejada",
+        "label": "Mis XV Años",
+        "date": "2026-11-21T01:00:00.000Z",
+        "backgroundImage": "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=1920&q=80",
+        "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"
+    },
+    "location": {
+        "venueName": "Salón de Eventos",
+        "address": "Dirección pendiente de confirmar",
+        "city": "Ciudad de México",
+        "mapUrl": "https://maps.google.com",
+        "ceremony": {
+            "venueEvent": "Ceremonia",
+            "venueName": "Templo",
+            "address": "Dirección del templo",
+            "date": "21 de noviembre de 2026",
+            "time": "7:00 PM",
+            "googleMapsUrl": "https://maps.google.com"
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Salón de Eventos",
+            "address": "Dirección del salón",
+            "date": "21 de noviembre de 2026",
+            "time": "9:00 PM",
+            "googleMapsUrl": "https://maps.google.com"
+        },
+        "indications": [
+            {
+                "icon": "crown",
+                "text": "El color de la festejada está reservado."
+            }
+        ]
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true
+    },
+    "gallery": {
+        "title": "Galería",
+        "subtitle": "Momentos especiales",
+        "items": [
+            {
+                "image": "https://images.unsplash.com/photo-1532635241-17e820acc59f?auto=format&fit=crop&w=1200&q=80",
+                "caption": "Recuerdo 1"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1525441791270-744163f6fc98?auto=format&fit=crop&w=1200&q=80",
+                "caption": "Recuerdo 2"
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "¿Nos acompañas en este día tan especial?",
+        "guestCap": 2,
+        "confirmationMessage": "Gracias por confirmar tu asistencia.",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5210000000000",
+            "messageTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s)."
+        }
+    },
+    "quote": {
+        "text": "Con ilusión en el corazón, celebro una nueva etapa de mi vida.",
+        "author": "Nombre de la Festejada"
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarme en este día inolvidable.",
+        "closingName": "Nombre de la Festejada",
+        "image": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?auto=format&fit=crop&w=800&q=80"
+    },
+    "itinerary": {
+        "title": "Itinerario",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Ceremonia",
+                "time": "7:00 PM"
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "9:00 PM"
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Mesa de Regalos",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Tu presencia es lo más importante para nosotros."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "¡Cada día falta menos!",
+        "subtitlePrefix": "El",
+        "footerText": "Te esperamos para celebrar juntos."
+    },
+    "navigation": [
+        {
+            "label": "Inicio",
+            "href": "#inicio"
+        },
+        {
+            "label": "Ubicación",
+            "href": "#event-location"
+        },
+        {
+            "label": "Galería",
+            "href": "#galeria"
+        },
+        {
+            "label": "Confirmar",
+            "href": "#rsvp"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "heart",
+        "microcopy": "Toca para abrir mi invitación",
+        "closedPalette": {
+            "primary": "#d4af37",
+            "accent": "#4a4a4a",
+            "background": "#fdf8f0"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}"
+    }
+}

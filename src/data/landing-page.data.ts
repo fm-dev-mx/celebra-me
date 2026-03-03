@@ -41,6 +41,12 @@ export const landingData: LandingPageData = {
 				description: 'Detalles tiernos para celebrar la vida.',
 				icon: 'DoveIcon',
 			},
+			{
+				href: '/cumple/demo-gerardo-sesenta',
+				title: 'Cumpleaños',
+				description: 'Demo premium para celebraciones con estilo.',
+				icon: 'StarIcon',
+			},
 		],
 	},
 	about: {
