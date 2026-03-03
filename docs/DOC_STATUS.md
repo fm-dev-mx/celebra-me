@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-02-15 **Next Review:** 2026-03-15 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-03 **Next Review:** 2026-04-03 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -38,6 +38,7 @@
 
 ### Core Technical Docs
 
+- [GIT_GOVERNANCE.md](./GIT_GOVERNANCE.md) - 🟢 (Established 2026-03-03)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - 🟢 (Updated 2026-02-15)
 - [THEME_SYSTEM.md](./THEME_SYSTEM.md) - 🟢
 - [ASSET_MANAGEMENT.md](./ASSET_MANAGEMENT.md) - 🟢
