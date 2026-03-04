@@ -57,23 +57,19 @@ node scripts/smoke-test.js
 
 ```text
 tests/
+├── README.md                # Testing practices and overview
 ├── setup.ts                 # Global test setup (RTL, mocks)
 ├── sanity.test.ts           # Basic sanity check
-├── api/
-│   ├── rsvp.context.test.ts        # RSVP context endpoint tests
-│   ├── rsvp.post-canonical.test.ts # RSVP canonical/legacy POST flow tests
-│   ├── rsvp.channel.test.ts        # RSVP channel telemetry endpoint tests
-│   ├── rsvp.admin.test.ts          # RSVP admin endpoint auth/list tests
-│   ├── rsvp.export.test.ts         # RSVP CSV export endpoint tests
-│   └── rsvp.invitations.test.ts    # RSVP invitation links endpoint tests
-├── utils/
-│   └── email.test.ts        # Email utility tests
-├── components/
-│   ├── RSVP.test.tsx        # RSVP form tests
-│   ├── MusicPlayer.test.tsx # Audio player tests
-│   └── FAQList.test.tsx     # FAQ list tests
-└── content/
-    └── schema.test.ts       # Zod schema validation tests
+├── api/                     # Endpoint tests (RSVP, etc)
+├── components/              # UI Component tests (React)
+├── content/                 # Zod schema validation tests
+├── e2e/                     # End-to-end tests
+├── helpers/                 # Test specific helpers
+├── integration/             # Integration layer tests
+├── lib/                     # Library integration tests
+├── mocks/                   # MSW or Jest mocks
+├── unit/                    # General unit tests
+└── utils/                   # Shared utility tests
 ```
 
 ## Writing Tests
