@@ -112,9 +112,29 @@ class Governance {
 				}
 			}
 
-			// Example Law: All files in a domain must follow kebab-case
 			const filename = file.split('/').pop();
-			if (matchedDomain && !/^[a-z0-0.-]+$/.test(filename) && !filename.includes('README')) {
+
+			// --- Calibrated Exclusions ---
+			// Allow standard ALL_CAPS.md files (e.g. README, CHANGELOG, ARCHITECTURE, SKILL)
+			if (/^[A-Z0-9_]+\.md$/.test(filename) || filename.includes('README')) continue;
+			// Allow PascalCase & tests
+			if (/^[A-Z][a-zA-Z0-9]*(\.[a-z0-9-]+)*\.(astro|tsx?|ts)$/.test(filename)) continue;
+			// Allow camelCase for assets, libs, and utils
+			if (
+				file.includes('src/assets/') ||
+				file.includes('src/lib/') ||
+				file.includes('src/utils/') ||
+				file.includes('src/data/') ||
+				file.includes('tests/')
+			)
+				continue;
+			if (filename.startsWith('.')) continue; // .agent, .gitignore, etc
+			if (filename.startsWith('_')) continue; // SCSS partials
+			if (filename.startsWith('!')) continue;
+			if (filename.match(/^\[.*\]\.([a-z]+)$/)) continue; // Dynamic routes [id].ts or [slug].astro
+
+			// Original rule: kebab-case
+			if (matchedDomain && !/^[a-z0-9.-]+$/.test(filename)) {
 				this.addFinding({
 					ruleId: 'namingConvention',
 					severity: 'warn',
