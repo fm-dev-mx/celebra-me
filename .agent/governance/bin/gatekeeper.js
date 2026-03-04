@@ -12,8 +12,8 @@ const COLORS = {
 	blue: '\x1b[34m',
 	bold: '\x1b[1m',
 };
-const DEFAULT_POLICY_PATH = '.agent/gatekeeper/policy.json';
-const DEFAULT_BASELINE_PATH = '.agent/gatekeeper/baseline.json';
+const DEFAULT_POLICY_PATH = '.agent/governance/config/policy.json';
+const DEFAULT_BASELINE_PATH = '.agent/governance/config/baseline.json';
 const DEFAULT_MAX_FINDINGS = 20;
 const PROTECTED_BRANCHES = new Set(['main', 'develop']);
 
@@ -167,9 +167,9 @@ const DEFAULT_POLICY = {
 			maxFindings: 10,
 			severityByPhase: BLOCK_ALL,
 			requiredPaths: [
-				'.agent/gatekeeper/policy.json',
-				'.agent/gatekeeper/baseline.json',
-				'scripts/gatekeeper.js',
+				'.agent/governance/config/policy.json',
+				'.agent/governance/config/baseline.json',
+				'.agent/governance/bin/gatekeeper.js',
 				'commitlint.config.cjs',
 			],
 		},
@@ -235,7 +235,7 @@ const DEFAULT_POLICY = {
 	},
 };
 
-const DOMAIN_MAP_PATH = 'scripts/config/domain-map.json';
+const DOMAIN_MAP_PATH = '.agent/governance/config/domain-map.json';
 
 class DomainMapper {
 	constructor() {

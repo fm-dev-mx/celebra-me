@@ -57,14 +57,10 @@ module.exports = {
 					const body = (parsed.body || '').trim();
 					const isComplex = subject.length >= 50 || /\b(and|with|plus)\b/i.test(subject);
 					if (!isComplex) return [true];
-					if (!body)
-						return [false, 'complex commits require a body with bullet points'];
+					if (!body) return [false, 'complex commits require a body with bullet points'];
 					const bodyLines = body.split(/\r?\n/).filter(Boolean);
 					const allBullets = bodyLines.every((line) => /^-\s+\S+/.test(line));
-					return [
-						allBullets,
-						'complex commit bodies must use concise "- ..." bullets',
-					];
+					return [allBullets, 'complex commit bodies must use concise "- ..." bullets'];
 				},
 				/**
 				 * Enforce a minimum body length when the commit is "complex" (long subject
@@ -73,8 +69,7 @@ module.exports = {
 				'body-min-length-when-required': (parsed) => {
 					const subject = parsed.subject || '';
 					const body = (parsed.body || '').trim();
-					const isComplex =
-						subject.length >= 50 || /\b(and|with|plus)\b/i.test(subject);
+					const isComplex = subject.length >= 50 || /\b(and|with|plus)\b/i.test(subject);
 					if (!isComplex) return [true];
 					if (body.length < MIN_BODY_LENGTH) {
 						return [
