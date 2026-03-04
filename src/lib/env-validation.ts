@@ -87,6 +87,30 @@ const REQUIRED_ENV_VARS: EnvRequirement[] = [
 		productionOnly: true,
 		description: 'DSN de Sentry para error tracking',
 	},
+	{
+		name: 'SENTRY_AUTH_TOKEN',
+		required: true,
+		productionOnly: true,
+		description: 'Token de autenticación de Sentry',
+	},
+	{
+		name: 'SENDGRID_API_KEY',
+		required: false,
+		productionOnly: true,
+		description: 'API key para SendGrid (alternativa SMTP)',
+	},
+	{
+		name: 'TRUST_DEVICE_MAX_AGE_DAYS',
+		required: true,
+		productionOnly: false,
+		description: 'Duración máxima en días para dispositivos de confianza',
+	},
+	{
+		name: 'ENABLE_MFA',
+		required: true,
+		productionOnly: false,
+		description: 'Feature flag para Multi-Factor Authentication',
+	},
 ];
 
 /**

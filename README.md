@@ -181,7 +181,7 @@ pnpm test -- --coverage
 
 ```bash
 pnpm build
-node scripts/smoke-test.js
+pnpm ops smoke-test
 ```
 
 For detailed testing documentation, see [`docs/TESTING.md`](docs/TESTING.md).
@@ -205,8 +205,8 @@ Operational guide: [`docs/DB_RSVP.md`](docs/DB_RSVP.md)
 
 Remote runbook helper:
 
-```powershell
-pwsh -File scripts/rsvp-db-remote-runbook.ps1
+```bash
+pnpm ops rsvp-db-remote-runbook
 ```
 
 ---
