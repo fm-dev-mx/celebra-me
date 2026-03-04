@@ -32,7 +32,7 @@ We have successfully executed the following phases to clean up technical debt:
 - **Documentation Links**: Replaced all `file://` protocol links with relative paths (6 files)
 - **Workflow Consolidation**: Archived 4 duplicate workflows (atomic-ui-commit, safe-commit,
   landing-page-remediation, landing-page-regression-recovery)
-- **Workflow Organization**: Moved enhanced docs workflows to `.agent/workflows/docs/` folder
+- **Workflow Organization**: Moved enhanced docs workflows to `.agent/workflows/evergreen/` folder
 - **Type Safety**: Added Zod enums for family, gifts, gallery, and thankYou section variants (was
   `z.string()`, now typed)
 - **Task Workflows**: Archived completed invitation-specific workflows

@@ -1,28 +1,47 @@
-# Documentation Status Dashboard
+# Documentation Status Dashboard (3-Layer Architecture)
 
 **Last Updated:** 2026-03-03 **Next Review:** 2026-04-03 **Maintainer:** Workflow Governance System
 
 ---
 
-## Quick Stats
+## 🏗 Layer 1: Core (Constitución)
 
-| Metric             | Count                       | Status |
-| ------------------ | --------------------------- | ------ |
-| Total Workflows    | 6                           | 🟢     |
-| Active Workflows   | 6                           | 🟢     |
-| Archived Workflows | 0                           | 🟢     |
-| Taxonomy           | Hybrid (domain + lifecycle) | 🟢     |
+Documentos inamovibles de políticas transversales.
 
-## Canonical Workflow Paths
+| Documento                                               | Estado                             | Última Revisión |
+| :------------------------------------------------------ | :--------------------------------- | :-------------- |
+| [architecture.md](./core/architecture.md)               | 🟡 (Migrando de ARCHITECTURE.md)   | 2026-02-15      |
+| [git-governance.md](./core/git-governance.md)           | 🟡 (Migrando de GIT_GOVERNANCE.md) | 2026-03-03      |
+| [testing-strategy.md](./core/testing-strategy.md)       | 🟡 (Migrando de TESTING.md)        | 2026-03-03      |
+| [project-conventions.md](./core/project-conventions.md) | 🟡 (Migrando de .agent)            | 2026-03-03      |
 
-- Gatekeeper: `.agent/workflows/evergreen/gatekeeper-commit.md`
-- Error Remediation: `.agent/workflows/evergreen/error-remediation.md`
-- Prompt to Workflow: `.agent/workflows/evergreen/prompt-to-workflow.md`
-- Theme Architecture: `.agent/workflows/evergreen/theme-architecture-governance.md`
+---
 
-## Active Workflow Registry
+## 🏛 Layer 2: Features/Domains
 
-### Governance Evergreen
+Documentación técnica organizada por submódulo o dominio.
+
+| Dominio / Archivo                                  | Estado                               | Notas |
+| :------------------------------------------------- | :----------------------------------- | :---- |
+| **RSVP**                                           |                                      |       |
+| [database.md](./domains/rsvp/database.md)          | 🟡 (Migrando de DB_RSVP.md)          |       |
+| [architecture.md](./domains/rsvp/architecture.md)  | 🟡 (Migrando de rsvp-module.md)      |       |
+| [status.md](./domains/rsvp/status.md)              | 🟡 (Migrando de RSVP_STATUS.md)      |       |
+| **Theme**                                          |                                      |       |
+| [architecture.md](./domains/theme/architecture.md) | 🟡 (Consolidando THEME_SYSTEM.md)    |       |
+| [typography.md](./domains/theme/typography.md)     | 🟡 (Consolidando TYPOGRAPHY.md)      |       |
+| **Assets**                                         |                                      |       |
+| [management.md](./domains/assets/management.md)    | 🟡 (Consolidando ASSET_MANAGEMENT)   |       |
+| **Security**                                       |                                      |       |
+| [roadmap.md](./domains/security/roadmap.md)        | 🟡 (Consolidando security-hardening) |       |
+
+---
+
+## 🛠 Layer 3: Operations (Workflows & Plans)
+
+### 🟢 Evergreen Workflows (Activos)
+
+Workflows críticos y permanentes de mantenimiento continuo.
 
 - [error-remediation.md](../.agent/workflows/evergreen/error-remediation.md) - 🟢
 - [gatekeeper-commit.md](../.agent/workflows/evergreen/gatekeeper-commit.md) - 🟢
@@ -30,48 +49,45 @@
 - [system-doc-alignment.md](../.agent/workflows/evergreen/system-doc-alignment.md) - 🟢
 - [theme-architecture-governance.md](../.agent/workflows/evergreen/theme-architecture-governance.md) -
   🟢
+- [auto-fix.md](../.agent/workflows/evergreen/auto-fix.md) - 🟢 (Recuperado de huérfanos)
 
-### Tasks Open
+### 🟡 Task-Active Workflows & Plans (En Progreso)
+
+Tareas puntuales actualmente en desarrollo.
 
 - [generic-section-remediation.md](../.agent/workflows/task-open/generic-section-remediation.md) -
   🟡 (Inherited)
+- [task-auth-dashboard-remediation.md](../.agent/workflows/task-auth-dashboard-remediation.md) - 🟡
+  (Recuperado de huérfanos, migrar a task-open)
+- [invitation-evolution-march-2026](../.agent/plans/invitation-evolution-march-2026/) - 🟡 (Plan
+  Activo)
+- [doc-realignment-plan.md](../.agent/plans/doc-realignment-plan.md) - 🟡 (Plan de Refactorización
+  Activo)
 
-### Core Technical Docs
+### ⚪ Archive / Legacy (Completados / Retirados)
 
-- [GIT_GOVERNANCE.md](./GIT_GOVERNANCE.md) - 🟢 (Established 2026-03-03)
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - 🟢 (Updated 2026-02-15)
-- [THEME_SYSTEM.md](./THEME_SYSTEM.md) - 🟢
-- [ASSET_MANAGEMENT.md](./ASSET_MANAGEMENT.md) - 🟢
-- [DB_RSVP.md](./DB_RSVP.md) - 🟢
-- [rsvp-module.md](./architecture/rsvp-module.md) - 🟢 (Updated 2026-02-15)
-- [TESTING.md](./TESTING.md) - 🟢 (Updated 2026-03-03)
-
----
-
-## Governance Notes
-
-1. All active workflows must include frontmatter keys:
-    1. `description`
-    2. `lifecycle`
-    3. `domain`
-    4. `owner`
-    5. `last_reviewed`
-
-1. Completed tactical workflows flow:
-    1. `task-open` -> `task-completed` -> `archive` (next manual cycle)
-
-1. Inventory references:
-    1. `docs/audit/full-system-audit-2026-02-15.md`
-
-1. Gatekeeper governance rollout (staged-only):
-    1. Policy file: `.agent/gatekeeper/policy.json`
-    2. Baseline file: `.agent/gatekeeper/baseline.json`
-    3. CLI supports `--mode strict|quick`, `--enforce-phase 1|2|3`, `--report-json`, and `--s0-file`
+- [task-share-flow-optimization.md](../.agent/workflows/archive/task-share-flow-optimization.md)
 
 ---
 
-## Next Operational Queue
+## 📜 Governance Notes
 
-1. `system-doc-alignment`
-2. `theme-architecture-governance`
-3. `gatekeeper-commit`
+1. **Estructura 3-Layer obligatoria:** Todo archivo `.md` nuevo debe clasificarse en `docs/core`,
+   `docs/domains`, o `.agent/`. No se permiten archivos sueltos en `docs/`.
+2. **Nomenclatura Estricta:** Exceptuando `README.md`, `CHANGELOG.md` y `CONTRIBUTING.md`, todos los
+   demás archivos deben usar **`kebab-case.md`**.
+3. **Referencias a Gatekeeper:** Las configuraciones se leen exclusivamente desde
+   `.agent/governance/config/policy.json` (Las referencias obsoletas a `.agent/gatekeeper/` han sido
+   depreciadas).
+4. **Manejo de Tareas Completadas:** El flujo correcto para workflows caducos es: `task-open` ->
+   `task-completed` -> `archive`.
+5. **Auditoría Origen:** Esta taxonomía deriva de `docs/audit/doc-audit-report.md`.
+
+---
+
+## 🚀 Próxima Fila Operativa
+
+1. Ejecutar Fase 1 del `doc-realignment-plan.md` (Limpieza de obsoletos).
+2. Ejecutar Fase 2 del `doc-realignment-plan.md` (Migración a `kebab-case` y carpetas
+   `core`/`domains`).
+3. Actualizar `system-doc-alignment` para validar la estructura 3-Layer.
