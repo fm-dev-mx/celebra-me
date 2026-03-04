@@ -14,11 +14,11 @@ scrolling.
 
 ## 2. Global Status (Production Ready)
 
-| Module             | Status            | Visual Aesthetic  | Implementation Notes                                     |
-| :----------------- | :---------------- | :---------------- | :------------------------------------------------------- |
-| **Landing Page**   | ✅ **Live**       | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
-| **XV Años Engine** | ✅ **Production** | "Jewelry Box"     | 3-Layer Color Arch, Asset Registry, Preset System.       |
-| **60th Birthday**  | ✅ **Production** | "Luxury Hacienda" | Full data integration, interactive maps, refined motion. |
+| Module              | Status            | Visual Aesthetic  | Implementation Notes                                     |
+| :------------------ | :---------------- | :---------------- | :------------------------------------------------------- |
+| **Landing Page**    | ✅ **Live**       | "The Jewelry Box" | Optimized, SEO-ready, zero broken links.                 |
+| **XV Years Engine** | ✅ **Production** | "Jewelry Box"     | 3-Layer Color Arch, Asset Registry, Preset System.       |
+| **60th Birthday**   | ✅ **Production** | "Luxury Hacienda" | Full data integration, interactive maps, refined motion. |
 
 ---
 
@@ -41,7 +41,7 @@ duplication:
     - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
     - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in
-  [THEME_SYSTEM.md](./THEME_SYSTEM.md).
+  [THEME_SYSTEM.md](../domains/theme/architecture.md).
 
 ### C. Typography System (Core 5)
 
@@ -87,7 +87,7 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 ### Phase 1: Foundation (Completed)
 
 - [x] Landing Page Remaster (Jewelry Box Aesthetic)
-- [x] XV Años Demo (Proof of Concept)
+- [x] XV Years Demo (Proof of Concept)
 - [x] Technical Debt Liquidation (Maps, Waze, Reduced Motion)
 
 ### Phase 2: Expansion (Current Focus)
