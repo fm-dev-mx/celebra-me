@@ -54,11 +54,11 @@ Create a new migration:
 pnpm db:migrate:new <migration_name>
 ```
 
-Remote runbook helper (PowerShell):
+Remote runbook helper:
 
-```powershell
-pwsh -File scripts/rsvp-db-remote-runbook.ps1
-# optional: pwsh -File scripts/rsvp-db-remote-runbook.ps1 -ProjectRef <project_ref>
+```bash
+pnpm ops rsvp-db-remote-runbook
+# optional: pnpm ops rsvp-db-remote-runbook --project-ref <project_ref>
 ```
 
 ## Staging / Production workflow

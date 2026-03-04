@@ -71,14 +71,14 @@ We have successfully executed the following phases to clean up technical debt:
 
 ## 2. Verification Status
 
-| Check            | Command                      | Status  | Notes                                                    |
-| :--------------- | :--------------------------- | :------ | :------------------------------------------------------- |
-| **Lint**         | `pnpm lint`                  | ✅ PASS | Code is compliant with project rules.                    |
-| **Dependencies** | `npx depcheck ...`           | ✅ PASS | No unused dependencies found.                            |
-| **Type Check**   | `pnpm type-check`            | ✅ PASS | TypeScript validation passes.                            |
-| **Unit Tests**   | `pnpm test`                  | ✅ PASS | Jest test suite configured and passing.                  |
-| **Build**        | `pnpm build`                 | ⚠️ FAIL | Fails with `astro-compiler` crash (Go panic) on Windows. |
-| **Smoke Test**   | `node scripts/smoke-test.js` | ⚠️ FAIL | Blocked by build failure.                                |
+| Check            | Command               | Status  | Notes                                                    |
+| :--------------- | :-------------------- | :------ | :------------------------------------------------------- |
+| **Lint**         | `pnpm lint`           | ✅ PASS | Code is compliant with project rules.                    |
+| **Dependencies** | `npx depcheck ...`    | ✅ PASS | No unused dependencies found.                            |
+| **Type Check**   | `pnpm type-check`     | ✅ PASS | TypeScript validation passes.                            |
+| **Unit Tests**   | `pnpm test`           | ✅ PASS | Jest test suite configured and passing.                  |
+| **Build**        | `pnpm build`          | ⚠️ FAIL | Fails with `astro-compiler` crash (Go panic) on Windows. |
+| **Smoke Test**   | `pnpm ops smoke-test` | ⚠️ FAIL | Blocked by build failure.                                |
 
 ## 3. Testing Coverage
 

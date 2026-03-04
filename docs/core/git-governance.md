@@ -26,7 +26,7 @@ responsibility in the validation pipeline.
 | `.agent/governance/bin/gatekeeper.js`               | Core validation engine: 15+ rules covering forbidden files, architecture boundaries, secret scanning, style/script policies, god-object detection, duplication guards, and language governance. Outputs a JSON report with a deterministic `route`. | `pre-commit`                              |
 | `.agent/governance/bin/gatekeeper-workflow.mjs`     | Self-healing workflow orchestrator: reads the gatekeeper JSON report, extracts auto-fixable findings, executes fix commands in a retry loop (max 3 attempts), and re-validates.                                                                     | Manual via `pnpm gatekeeper:workflow`     |
 | `.agent/governance/bin/gatekeeper-commit-ready.mjs` | Branch guard: prevents direct commits to `main`, offers `--create-branch` for new feature branches, then runs `gatekeeper:report`.                                                                                                                  | Manual via `pnpm gatekeeper:commit-ready` |
-| `scripts/validate-commits.cjs`                      | Post-push ADU validator: iterates over a commit range (`base..head`), validates each commit against conventional-commit format, rejects merge commits and WIP markers, and enforces a max-12-files-per-commit atomicity rule.                       | `pre-push` / CI                           |
+| `scripts/validate-commits.mjs`                      | Post-push ADU validator: iterates over a commit range (`base..head`), validates each commit against conventional-commit format, rejects merge commits and WIP markers, and enforces a max-12-files-per-commit atomicity rule.                       | `pre-push` / CI                           |
 | `.agent/governance/config/domain-map.json`          | Domain boundary definitions: maps file globs to semantic domains (`invitation`, `auth`, `theme`, `governance`, `core`, `ui`, `docs`, `test`, `admin`). Used by `DomainMapper` to compute ADU splits and split confidence.                           | Read by `gatekeeper.js`                   |
 | `commitlint.config.cjs`                             | Conventional Commit enforcement: type/scope validation, vague-subject rejection, English-only message enforcement, mandatory body with file-level bullets for multi-file commits, and minimum body length for complex changes.                      | `commit-msg`                              |
 | `.agent/governance/config/policy.json`              | Governance thresholds: per-rule enablement, kill-switches, severity-by-phase escalation, documentation mapping triggers, architecture boundary imports, and auto-branching configuration.                                                           | Read by `gatekeeper.js`                   |
@@ -70,7 +70,7 @@ flowchart TD
     M -->|No| N[REJECTED: fix message and retry]
     M -->|Yes| O[Commit created]
     O --> P[pre-push hook fires]
-    P --> Q[validate-commits.cjs checks range]
+    P --> Q[validate-commits.mjs checks range]
     Q --> R{All commits valid?}
     R -->|No| S[BLOCKED: rebase/fixup required]
     R -->|Yes| T[Push succeeds]

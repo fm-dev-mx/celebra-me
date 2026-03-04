@@ -50,7 +50,7 @@ Coverage reports are generated in the `coverage/` directory:
 
 ```bash
 pnpm build
-node scripts/smoke-test.js
+pnpm ops smoke-test
 ```
 
 ## Test File Organization
@@ -200,7 +200,7 @@ Object.defineProperty(global, 'import', {
 
 ## Smoke Test Checks
 
-The enhanced `scripts/smoke-test.js` verifies:
+The enhanced `scripts/smoke-test.mjs` verifies:
 
 1. **Required Files** — `index.html`, invitation pages, `_astro/` directory
 2. **Asset Bundles** — CSS and JS files in `_astro/`

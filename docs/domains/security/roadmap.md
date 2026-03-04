@@ -113,8 +113,8 @@ Continue implementing the security hardening plan for the Celebra-me Admin Dashb
 
 ```text
 scripts/
-├── rotate-credentials.sh
-├── remove-env-from-history.sh
+├── rotate-credentials.mjs
+├── remove-env-from-history.mjs
 └── install-precommit-hooks.sh
 
 docs/security-hardening/
@@ -317,7 +317,7 @@ After rotating ALL credentials:
 ## After Rotating
 
 1. **DO NOT commit new credentials to repo**
-2. **Execute:** `./scripts/remove-env-from-history.sh`
+2. **Execute:** `pnpm ops remove-env-from-history`
 3. **Configure:** Pre-commit hooks to prevent future leaks
 4. **Notify:** Team must re-clone repo or do `git pull --force`
 
@@ -333,5 +333,4 @@ If you have issues:
 
 ---
 
-**Document created:** 2026-02-15  
-**Last updated:** 2026-02-15
+**Document created:** 2026-02-15 **Last updated:** 2026-02-15
