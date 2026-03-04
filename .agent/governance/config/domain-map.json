@@ -25,9 +25,9 @@
         "core": [
             "src/content/config.ts",
             "src/content/events/**",
-            "src/lib/adapters/**",
-            "src/lib/assets/**",
-            "src/data/**"
+            "src/lib/**",
+            "src/data/**",
+            "*.md"
         ],
         "ui": [
             "src/components/common/**",

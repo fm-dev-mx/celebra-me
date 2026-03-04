@@ -8,9 +8,9 @@ This directory contains the core automation and governance tools for the `celebr
 | :------------------------ | :------------------------------------------------------------------------------------------- |
 | `gatekeeper.js`           | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
 | `gatekeeper-workflow.mjs` | Runs the full one-command Gatekeeper workflow (report + auto-fix loop + deterministic exit). |
-| `validate-schema.js`      | Synchronizes Zod schemas with CSS theme variants.                                            |
-| `validate-commits.cjs`    | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
-| `optimize-assets.js`      | Handles image optimization and asset registry sync.                                          |
+| `validate-schema.mjs`     | Synchronizes Zod schemas with CSS theme variants.                                            |
+| `validate-commits.mjs`    | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
+| `optimize-assets.mjs`     | Handles image optimization and asset registry sync.                                          |
 
 ## The Gatekeeper Contract
 

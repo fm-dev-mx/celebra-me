@@ -37,7 +37,8 @@
         "db:push": "supabase db push",
         "db:reset:local": "supabase db reset",
         "db:start": "supabase start",
-        "db:stop": "supabase stop"
+        "db:stop": "supabase stop",
+        "ops": "node scripts/cli.mjs"
     },
     "dependencies": {
         "@astrojs/vercel": "9.0.4",

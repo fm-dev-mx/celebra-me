@@ -8,18 +8,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Let's check both or default to .vercel/output/static as per package.json
 const distDir = path.resolve(__dirname, '../.vercel/output/static');
 
-// ============================================================
-// Required Files Check
-// ============================================================
+// --- Required Files ---
 const requiredFiles = [
 	'index.html',
 	'xv/demo-xv/index.html',
 	'_astro', // Asset directory
 ];
 
-// ============================================================
-// SEO Files Check (optional but important)
-// ============================================================
+// --- SEO Files (optional but important) ---
 const seoFiles = ['robots.txt', 'sitemap-index.xml'];
 
 console.log(`\n🔍 Analyzing build output in: ${distDir}\n`);
@@ -32,9 +28,7 @@ if (!fs.existsSync(distDir)) {
 let hasErrors = false;
 let warnings = 0;
 
-// ============================================================
-// 1. Check Required Files
-// ============================================================
+// --- 1. Check Required Files ---
 console.log('📂 Checking required files...');
 requiredFiles.forEach((file) => {
 	const filePath = path.join(distDir, file);
@@ -49,9 +43,7 @@ requiredFiles.forEach((file) => {
 	}
 });
 
-// ============================================================
-// 2. Check CSS and JS Bundles
-// ============================================================
+// --- 2. Check CSS and JS Bundles ---
 console.log('\n📦 Checking asset bundles...');
 const astroDir = path.join(distDir, '_astro');
 
@@ -78,9 +70,7 @@ if (fs.existsSync(astroDir)) {
 	hasErrors = true;
 }
 
-// ============================================================
-// 3. Check Meta Tags in index.html
-// ============================================================
+// --- 3. Check Meta Tags in index.html ---
 console.log('\n🏷️ Checking meta tags in index.html...');
 const indexPath = path.join(distDir, 'index.html');
 
@@ -120,9 +110,7 @@ if (fs.existsSync(indexPath)) {
 	}
 }
 
-// ============================================================
-// 4. Check SEO Files
-// ============================================================
+// --- 4. Check SEO Files ---
 console.log('\n🔎 Checking SEO files...');
 seoFiles.forEach((file) => {
 	const filePath = path.join(distDir, file);
@@ -134,9 +122,7 @@ seoFiles.forEach((file) => {
 	}
 });
 
-// ============================================================
-// Checking for optimized images (WebP)
-// ============================================================
+// --- 5. Check Optimized Images (WebP) ---
 console.log('\n🖼️ Checking for optimized images...');
 if (fs.existsSync(astroDir)) {
 	const files = fs.readdirSync(astroDir);
@@ -153,9 +139,7 @@ if (fs.existsSync(astroDir)) {
 	}
 }
 
-// ============================================================
-// Summary
-// ============================================================
+// --- Final Summary ---
 console.log('\n' + '='.repeat(50));
 if (hasErrors) {
 	console.error(`❌ Smoke test FAILED with ${warnings} warning(s).`);

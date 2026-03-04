@@ -40,7 +40,7 @@ jobs:
                     echo "No commits found in PR range"
                     exit 0
                   fi
-                  node scripts/validate-commits.cjs "$BASE_SHA" "$HEAD_SHA"
+                  node scripts/validate-commits.mjs "$BASE_SHA" "$HEAD_SHA"
 
             - name: Gatekeeper deterministic report contract
               run: pnpm gatekeeper:report --require-complete-report --secret-scan-staged
