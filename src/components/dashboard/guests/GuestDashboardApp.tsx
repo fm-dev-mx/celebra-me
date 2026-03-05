@@ -410,20 +410,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					}}
 					onExportClick={async () => {
 						try {
-							const query = new URLSearchParams({ eventId });
-							const response = await fetch(
-								`/api/dashboard/guests/export.csv?${query.toString()}`,
-							);
-							if (!response.ok) throw new Error('Error al exportar CSV');
-							const blob = await response.blob();
-							const url = window.URL.createObjectURL(blob);
-							const a = document.createElement('a');
-							a.href = url;
-							a.download = `invitados-${eventId}.csv`;
-							document.body.appendChild(a);
-							a.click();
-							window.URL.revokeObjectURL(url);
-							document.body.removeChild(a);
+							await guestsApi.exportCsv(eventId);
 						} catch (err) {
 							console.error('[GuestDashboard] Export error:', err);
 							setNotification({
