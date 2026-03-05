@@ -1,9 +1,8 @@
+import { authBridgeApi } from './auth-bridge-api';
+
 export async function logoutAndRedirect(target = '/'): Promise<void> {
 	try {
-		await fetch('/api/auth/logout', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		await authBridgeApi.logout();
 	} catch {
 		// Ignore transport errors; local cleanup + redirect still apply.
 	}

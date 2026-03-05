@@ -5,6 +5,7 @@ import {
 	validateLoginForm,
 	validateRegisterForm,
 } from './login-ui';
+import { authBridgeApi } from './auth-bridge-api';
 
 export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');
@@ -107,14 +108,6 @@ export function initLoginFlow() {
 		focusFirstInput(panel);
 	};
 
-	const parseJsonSafe = async (response: Response) => {
-		try {
-			return await response.json();
-		} catch {
-			return {};
-		}
-	};
-
 	const validateLoginClient = (payload: import('./login-ui').LoginFormState) => {
 		const genericError = validateLoginForm(payload);
 		if (!genericError) return null;
@@ -175,15 +168,7 @@ export function initLoginFlow() {
 			setSubmitting(true, 'login');
 			setStatus('Verificando tus datos, espera un momento...', 'info');
 			try {
-				const response = await fetch('/api/auth/login-host', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-				});
-				const data = await parseJsonSafe(response);
-				if (!response.ok) {
-					throw new Error(data.message || 'No se pudo iniciar sesion.');
-				}
+				const data = await authBridgeApi.login(payload);
 				const message =
 					payload.method === 'magic_link'
 						? `${data.message || 'Listo, te enviamos el enlace.'} Revisa tambien spam o promociones.`
@@ -233,15 +218,7 @@ export function initLoginFlow() {
 			setSubmitting(true, 'register');
 			setStatus('Estamos creando tu cuenta y preparando tu acceso...', 'info');
 			try {
-				const response = await fetch('/api/auth/register-host', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload),
-				});
-				const data = await parseJsonSafe(response);
-				if (!response.ok) {
-					throw new Error(data.message || 'No se pudo registrar.');
-				}
+				const data = await authBridgeApi.register(payload);
 				const message =
 					payload.method === 'magic_link'
 						? `${data.message || 'Cuenta creada.'} Te enviamos un enlace; revisa tambien spam o promociones.`
