@@ -13,6 +13,8 @@ import '@/styles/invitation/_dashboard-guests.scss';
 import { createPortal } from 'react-dom';
 import { Confetti } from '@/components/ui/Confetti';
 
+import { guestsApi } from '@/lib/dashboard/guests-api';
+
 interface GuestDashboardAppProps {
 	initialEventId: string;
 }
@@ -92,34 +94,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		!modalOpen,
 	);
 
-	const apiJson = useCallback(
-		async <T,>(input: RequestInfo | URL, init?: RequestInit): Promise<T> => {
-			try {
-				const response = await fetch(input, init);
-				const payload = (await response.json()) as T & { message?: string; error?: string };
-				if (!response.ok) {
-					const errorMsg = payload.message || payload.error || `Error ${response.status}`;
-					// Only log server errors (5xx), not client errors (4xx)
-					// Also handle undefined status (network errors, etc.)
-					if (response.status && response.status >= 500) {
-						console.error('[GuestDashboard API] Error:', response.status, errorMsg);
-					}
-					throw new Error(errorMsg);
-				}
-				return payload as T;
-			} catch (err) {
-				// Network errors or JSON parsing errors should still be logged
-				console.error('[GuestDashboard API] Fetch error:', err);
-				throw err;
-			}
-		},
-		[],
-	);
-
 	const loadEvents = useCallback(async () => {
 		try {
 			console.info('[GuestDashboard] Loading events...');
-			const data = await apiJson<{ items: HostEventItem[] }>('/api/dashboard/events');
+			const data = await guestsApi.listEvents();
 			console.info('[GuestDashboard] Events loaded:', data.items.length);
 			setHostEvents(data.items);
 			const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
@@ -134,11 +112,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				setEventId(nextEventId);
 			}
 		} catch (err) {
-			// Don't log 401/403 as errors - they're expected auth states
 			const message = err instanceof Error ? err.message : 'No se pudieron cargar eventos.';
 			setError(message);
 		}
-	}, [apiJson, eventId, initialEventId]);
+	}, [eventId, initialEventId]);
 
 	const loadGuests = useCallback(async () => {
 		if (!eventId) {
@@ -149,10 +126,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		setError('');
 		try {
 			console.info('[GuestDashboard] Loading guests for event:', eventId);
-			const params = new URLSearchParams({ eventId, search, status });
-			const data = await apiJson<DashboardGuestListResponse>(
-				`/api/dashboard/guests?${params.toString()}`,
-			);
+			const data = await guestsApi.list({ eventId, search, status });
 			setItems(data.items);
 			setTotals(data.totals);
 			setUpdatedAt(data.updatedAt);
@@ -163,7 +137,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		} finally {
 			setLoading(false);
 		}
-	}, [apiJson, eventId, search, status]);
+	}, [eventId, search, status]);
 
 	useEffect(() => {
 		try {
@@ -274,12 +248,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		if (!guestToDelete) return;
 		setLoading(true);
 		try {
-			await apiJson<{ message: string }>(
-				`/api/dashboard/guests/${encodeURIComponent(guestToDelete.guestId)}`,
-				{
-					method: 'DELETE',
-				},
-			);
+			await guestsApi.delete(guestToDelete.guestId);
 			await loadGuests();
 			setNotification({
 				message: `Invitado ${guestToDelete.fullName} eliminado con éxito.`,
@@ -441,8 +410,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					}}
 					onExportClick={async () => {
 						try {
+							const query = new URLSearchParams({ eventId });
 							const response = await fetch(
-								`/api/dashboard/guests/export.csv?eventId=${encodeURIComponent(eventId)}`,
+								`/api/dashboard/guests/export.csv?${query.toString()}`,
 							);
 							if (!response.ok) throw new Error('Error al exportar CSV');
 							const blob = await response.blob();
@@ -492,10 +462,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							),
 						);
 						try {
-							await apiJson<{ item: DashboardGuestItem }>(
-								`/api/dashboard/guests/${encodeURIComponent(item.guestId)}/mark-shared`,
-								{ method: 'POST' },
-							);
+							await guestsApi.markShared(item.guestId);
 
 							setShareSessionCount((prev) => prev + 1);
 							setConfettiActive(true);
@@ -602,28 +569,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 							let savedItem: DashboardGuestItem | null = null;
 							try {
 								if (modalMode === 'create') {
-									const response = await apiJson<{ item: DashboardGuestItem }>(
-										'/api/dashboard/guests',
-										{
-											method: 'POST',
-											headers: { 'Content-Type': 'application/json' },
-											body: JSON.stringify({
-												eventId,
-												...payload,
-											}),
-										},
-									);
-									savedItem = response.item;
+									savedItem = await guestsApi.create({
+										eventId,
+										...payload,
+									});
 								} else if (editingGuest) {
-									const response = await apiJson<{ item: DashboardGuestItem }>(
-										`/api/dashboard/guests/${encodeURIComponent(editingGuest.guestId)}`,
-										{
-											method: 'PATCH',
-											headers: { 'Content-Type': 'application/json' },
-											body: JSON.stringify(payload),
-										},
+									savedItem = await guestsApi.update(
+										editingGuest.guestId,
+										payload,
 									);
-									savedItem = response.item;
 								}
 
 								await loadGuests();
@@ -684,18 +638,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					<ImportMagic
 						onClose={() => setImportModalOpen(false)}
 						onImport={async (guests) => {
-							await apiJson('/api/dashboard/guests/bulk', {
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify({
-									eventId,
-									guests: guests.map((g) => ({
-										full_name: g.fullName,
-										phone_: g.phone,
-										email: g.email,
-										tags: g.tags,
-									})),
-								}),
+							await guestsApi.bulkImport({
+								eventId,
+								guests: guests.map((g) => ({
+									full_name: g.fullName || '',
+									phone_: g.phone,
+									email: g.email,
+									tags: g.tags,
+								})),
 							});
 							await loadGuests();
 						}}
