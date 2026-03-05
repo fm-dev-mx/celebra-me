@@ -1,5 +1,6 @@
 import { useState, type FC, type SubmitEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { rsvpApi, type ContactPayload } from '@/lib/rsvp/rsvp-api';
 
 const ContactForm: FC = () => {
 	const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
@@ -10,20 +11,12 @@ const ContactForm: FC = () => {
 
 		try {
 			const formData = new FormData(e.currentTarget);
-			const data = Object.fromEntries(formData.entries());
+			const data = Object.fromEntries(formData.entries()) as unknown as ContactPayload;
 
-			const response = await fetch('/api/contact', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(data),
-			});
+			await rsvpApi.submitContact(data);
 
-			if (response.ok) {
-				setStatus('success');
-				e.currentTarget.reset();
-			} else {
-				setStatus('error');
-			}
+			setStatus('success');
+			e.currentTarget.reset();
 		} catch (error) {
 			console.error('Submission error:', error);
 			setStatus('error');
