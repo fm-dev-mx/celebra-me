@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { rsvpApi } from '@/lib/rsvp/rsvp-api';
 import '@/styles/invitation/_rsvp.scss';
 
 type ConfirmationMode = 'api' | 'whatsapp' | 'both';
@@ -250,40 +251,22 @@ const RSVP: React.FC<RSVPProps> = ({
 				return;
 			}
 
-			const endpoint = `/api/invitacion/${v2InviteId}/rsvp`;
-
 			const payload = {
-				attendanceStatus,
+				attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 				attendeeCount: normalizedCount,
 				guestMessage: notes,
 			};
 
-			const response = await fetch(endpoint, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			});
+			const data = await rsvpApi.submitRsvp(v2InviteId, payload);
+			if (data.rsvpId) setRsvpId(data.rsvpId);
 
-			if (response.ok) {
-				const data = (await response.json()) as {
-					data?: { rsvpId?: string };
-					rsvpId?: string;
-				};
-
-				const rsvpIdResponse = data.rsvpId || data.data?.rsvpId;
-				if (rsvpIdResponse) setRsvpId(rsvpIdResponse);
-
-				setSubmitStatus('success');
-				setTimeout(() => setSubmitted(true), 500);
-			} else {
-				const data = await response.json().catch(() => ({}));
-				const message = data.error?.message || data.message || 'Error al enviar.';
-				setSubmitStatus('error');
-				setErrors((prev) => ({ ...prev, global: message }));
-			}
-		} catch {
+			setSubmitStatus('success');
+			setTimeout(() => setSubmitted(true), 500);
+		} catch (err) {
+			const message =
+				err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';
 			setSubmitStatus('error');
-			setErrors((prev) => ({ ...prev, global: 'No se pudo conectar con el servidor.' }));
+			setErrors((prev) => ({ ...prev, global: message }));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -292,15 +275,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const handleWhatsAppClick = async () => {
 		if (!rsvpId) return;
 		try {
-			await fetch('/api/rsvp/channel', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					rsvpId,
-					channel: 'whatsapp',
-					action: 'clicked',
-				}),
-			});
+			await rsvpApi.trackAction(rsvpId, 'clicked', 'whatsapp');
 		} catch {
 			// non-blocking telemetry
 		}

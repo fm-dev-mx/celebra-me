@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GuestPostConfirmActions from './GuestPostConfirmActions';
+import { rsvpApi } from '@/lib/rsvp/rsvp-api';
 
 interface GuestRSVPFormProps {
 	inviteId: string;
@@ -38,9 +39,7 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 	useEffect(() => {
 		const run = async () => {
 			try {
-				await fetch(`/api/invitacion/${encodeURIComponent(inviteId)}/view`, {
-					method: 'POST',
-				});
+				await rsvpApi.markViewed(inviteId);
 			} catch {
 				// non-blocking view telemetry
 			}
@@ -57,27 +56,14 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 					setSubmitting(true);
 					setError('');
 					try {
-						const response = await fetch(
-							`/api/invitacion/${encodeURIComponent(inviteId)}/rsvp`,
-							{
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify({
-									attendanceStatus,
-									attendeeCount:
-										attendanceStatus === 'declined' ? 0 : attendeeCount,
-									guestMessage,
-								}),
-							},
-						);
-						const data = (await response.json()) as { message?: string };
-						if (!response.ok) {
-							setError(data.message || 'No se pudo guardar RSVP.');
-							return;
-						}
+						await rsvpApi.submitRsvp(inviteId, {
+							attendanceStatus,
+							attendeeCount: attendanceStatus === 'declined' ? 0 : attendeeCount,
+							guestMessage,
+						});
 						setSubmitted(true);
-					} catch {
-						setError('Error de red al guardar RSVP.');
+					} catch (err) {
+						setError(err instanceof Error ? err.message : 'Error al guardar RSVP.');
 					} finally {
 						setSubmitting(false);
 					}
