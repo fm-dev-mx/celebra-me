@@ -9,14 +9,14 @@
 import { parseArgs } from 'node:util';
 import { execSync } from 'node:child_process';
 
-const { values, positionals } = parseArgs({
+const { values } = parseArgs({
 	options: {
 		help: { type: 'boolean', short: 'h' },
 		'dry-run': { type: 'boolean' },
 		'skip-tests': { type: 'boolean' },
-		'project-ref': { type: 'string' }
+		'project-ref': { type: 'string' },
 	},
-	strict: false
+	strict: false,
 });
 
 if (values.help) {
@@ -51,64 +51,71 @@ function assertEnv(key) {
 	}
 }
 
-step("Validating required environment variables");
-assertEnv("SUPABASE_URL");
-assertEnv("SUPABASE_SERVICE_ROLE_KEY");
-assertEnv("RSVP_TOKEN_SECRET");
+step('Validating required environment variables');
+assertEnv('SUPABASE_URL');
+assertEnv('SUPABASE_SERVICE_ROLE_KEY');
+assertEnv('RSVP_TOKEN_SECRET');
 
 let projectRef = values['project-ref'];
 if (!projectRef) {
 	try {
 		const url = new URL(process.env.SUPABASE_URL);
 		projectRef = url.hostname.split('.')[0];
-	} catch (e) {
-		console.error("Could not resolve project ref from SUPABASE_URL. Pass --project-ref explicitly.");
+	} catch {
+		console.error(
+			'Could not resolve project ref from SUPABASE_URL. Pass --project-ref explicitly.',
+		);
 		process.exit(1);
 	}
 }
 
-step("Checking Supabase CLI availability");
+step('Checking Supabase CLI availability');
 try {
 	execSync('vpx supabase --version', { stdio: 'ignore' });
 } catch {
 	try {
-        execSync('supabase --version', { stdio: 'ignore' });
-    } catch {
-        console.error("Command 'supabase' not found in PATH.");
-        process.exit(1);
-    }
+		execSync('supabase --version', { stdio: 'ignore' });
+	} catch {
+		console.error("Command 'supabase' not found in PATH.");
+		process.exit(1);
+	}
 }
 
 step(`Linking remote project (${projectRef})`);
 if (values['dry-run']) {
-    console.log(`[DRY RUN] supabase link --project-ref ${projectRef}`);
+	console.log(`[DRY RUN] supabase link --project-ref ${projectRef}`);
 } else {
-    execSync(`supabase link --project-ref ${projectRef}`, { stdio: 'inherit' });
+	execSync(`supabase link --project-ref ${projectRef}`, { stdio: 'inherit' });
 }
 
-step("Listing available projects (quick auth sanity check)");
+step('Listing available projects (quick auth sanity check)');
 if (!values['dry-run']) {
-    execSync(`supabase projects list`, { stdio: 'inherit' });
+	execSync(`supabase projects list`, { stdio: 'inherit' });
 }
 
-step("Applying migrations to remote (db push)");
+step('Applying migrations to remote (db push)');
 if (values['dry-run']) {
-    console.log(`[DRY RUN] supabase db push`);
+	console.log(`[DRY RUN] supabase db push`);
 } else {
-    execSync(`supabase db push`, { stdio: 'inherit' });
+	execSync(`supabase db push`, { stdio: 'inherit' });
 }
 
-step("Reminder: run SQL verification in Supabase SQL Editor");
+step('Reminder: run SQL verification in Supabase SQL Editor');
 console.log(`${yellow}Use: supabase/verification/rsvp_schema_checks.sql${reset}`);
 
 if (!values['skip-tests']) {
-	step("Running RSVP critical API test suite");
+	step('Running RSVP critical API test suite');
 	if (values['dry-run']) {
-        console.log(`[DRY RUN] pnpm test -- --runInBand tests/api/rsvp.*.test.ts`);
-    } else {
-        execSync(`pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts`, { stdio: 'inherit' });
-    }
+		console.log(`[DRY RUN] pnpm test -- --runInBand tests/api/rsvp.*.test.ts`);
+	} else {
+		execSync(
+			`pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts`,
+			{ stdio: 'inherit' },
+		);
+	}
 }
 
-step("Runbook completed");
-console.log(`${green}Next: verify RLS/policies/constraints in SQL editor and do manual API smoke.${reset}`);
+step('Runbook completed');
+console.log(
+	`${green}Next: verify RLS/policies/constraints in SQL editor and do manual API smoke.${reset}`,
+);

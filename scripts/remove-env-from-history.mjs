@@ -22,9 +22,9 @@ if (!fs.existsSync(path.join(REPO_ROOT, '.git'))) {
 const { values } = parseArgs({
 	options: {
 		help: { type: 'boolean', short: 'h' },
-		'dry-run': { type: 'boolean' }
+		'dry-run': { type: 'boolean' },
 	},
-	strict: false
+	strict: false,
 });
 
 if (values.help) {
@@ -43,7 +43,7 @@ Options:
 
 const rl = readline.createInterface({
 	input: process.stdin,
-	output: process.stdout
+	output: process.stdout,
 });
 
 const red = '\x1B[31m';
@@ -62,17 +62,21 @@ console.log(`🧹 Eliminando archivos .env del historial git
 
 console.log(`📋 Archivos que serán eliminados del historial:`);
 try {
-	const gitLogFiles = execSync('git log --all --full-history --name-only --pretty=format:', { encoding: 'utf8' })
+	const gitLogFiles = execSync('git log --all --full-history --name-only --pretty=format:', {
+		encoding: 'utf8',
+	})
 		.split('\n')
-		.filter(l => l.startsWith('.env'))
+		.filter((l) => l.startsWith('.env'))
 		.filter((v, i, a) => a.indexOf(v) === i)
 		.sort();
 
 	if (gitLogFiles.length === 0) {
-		console.log(`${green}No se encontraron archivos .env en el historial. Todo limpio.${reset}`);
+		console.log(
+			`${green}No se encontraron archivos .env en el historial. Todo limpio.${reset}`,
+		);
 		process.exit(0);
 	}
-	gitLogFiles.forEach(f => console.log(`  - ${f}`));
+	gitLogFiles.forEach((f) => console.log(`  - ${f}`));
 } catch (e) {
 	console.error('Git history check failed.', e.message);
 }
@@ -88,11 +92,13 @@ rl.question(`\n¿Estás seguro de continuar? Escribe 'ELIMINAR' para confirmar: 
 
 	try {
 		if (values['dry-run']) {
-			console.log(`[DRY RUN] git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env .env.local' ...`);
+			console.log(
+				`[DRY RUN] git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env .env.local' ...`,
+			);
 		} else {
 			execSync(
 				`git filter-branch --force --index-filter "git rm --cached --ignore-unmatch .env .env.local .env.production .env.*.local" --prune-empty --tag-name-filter cat -- --all`,
-				{ stdio: 'inherit' }
+				{ stdio: 'inherit' },
 			);
 
 			console.log(`\n🧹 Limpiando referencias...`);
@@ -110,7 +116,9 @@ rl.question(`\n¿Estás seguro de continuar? Escribe 'ELIMINAR' para confirmar: 
 		process.exit(1);
 	}
 
-	console.log(`\n${green}✅ Archivos eliminados del historial (DRY RUN: ${values['dry-run'] ? 'SI' : 'NO'})${reset}`);
+	console.log(
+		`\n${green}✅ Archivos eliminados del historial (DRY RUN: ${values['dry-run'] ? 'SI' : 'NO'})${reset}`,
+	);
 	console.log(`
 📋 Próximos pasos:
 1. Verificar que no quedan rastros: git log --all --full-history -- .env

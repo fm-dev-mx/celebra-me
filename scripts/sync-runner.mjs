@@ -4,17 +4,15 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const PROJECT_ROOT = path.resolve(process.cwd());
-
 const { values } = parseArgs({
 	options: {
 		help: { type: 'boolean', short: 'h' },
 		'only-docs': { type: 'boolean' },
 		'only-workflows': { type: 'boolean' },
 		'only-skills': { type: 'boolean' },
-		'stale-days': { type: 'string' }
+		'stale-days': { type: 'string' },
 	},
-	strict: false
+	strict: false,
 });
 
 if (values.help) {
@@ -37,7 +35,7 @@ Options:
 let RUN_DOCS = true;
 let RUN_WORKFLOWS = true;
 let RUN_SKILLS = true;
-let DAYS_STALE = values['stale-days'] || "180";
+let DAYS_STALE = values['stale-days'] || '180';
 
 if (values['only-docs']) {
 	RUN_WORKFLOWS = false;
@@ -52,12 +50,17 @@ if (values['only-skills']) {
 	RUN_WORKFLOWS = false;
 }
 
-const SUMMARY_FILE = process.env.SUMMARY_FILE || path.join(process.env.TEMP || process.env.TMP || '/tmp', `sync-summary-${new Date().toISOString().split('T')[0]}.txt`);
+const SUMMARY_FILE =
+	process.env.SUMMARY_FILE ||
+	path.join(
+		process.env.TEMP || process.env.TMP || '/tmp',
+		`sync-summary-${new Date().toISOString().split('T')[0]}.txt`,
+	);
 if (fs.existsSync(SUMMARY_FILE)) {
-    fs.writeFileSync(SUMMARY_FILE, '');
+	fs.writeFileSync(SUMMARY_FILE, '');
 } else {
-    fs.mkdirSync(path.dirname(SUMMARY_FILE), { recursive: true });
-    fs.writeFileSync(SUMMARY_FILE, '');
+	fs.mkdirSync(path.dirname(SUMMARY_FILE), { recursive: true });
+	fs.writeFileSync(SUMMARY_FILE, '');
 }
 
 function log(msg) {
@@ -67,7 +70,7 @@ function log(msg) {
 
 function runCmd(cmd) {
 	try {
-        // Ejecutamos en node y mostramos en stdout/err directamente para evitar buffer overflow
+		// Ejecutamos en node y mostramos en stdout/err directamente para evitar buffer overflow
 		execSync(cmd, { stdio: 'inherit', encoding: 'utf8' });
 		fs.appendFileSync(SUMMARY_FILE, `[Executed: ${cmd}]\n`);
 	} catch (e) {
@@ -79,39 +82,39 @@ function runCmd(cmd) {
 log(`🚀 Starting sync runner\n==========================================`);
 
 if (RUN_DOCS) {
-	log("📚 DOCUMENTATION SYNC");
-	log("------------------------------------------");
-	console.log("Running link validation...");
-	runCmd("node scripts/check-links.mjs");
+	log('📚 DOCUMENTATION SYNC');
+	log('------------------------------------------');
+	console.log('Running link validation...');
+	runCmd('node scripts/check-links.mjs');
 	console.log(`Running stale detection (older than ${DAYS_STALE} days)...`);
 	runCmd(`node scripts/find-stale.mjs ${DAYS_STALE}`);
-	console.log("Running schema validation...");
-	runCmd("node scripts/validate-schema.mjs");
-	log("");
+	console.log('Running schema validation...');
+	runCmd('node scripts/validate-schema.mjs');
+	log('');
 }
 
 if (RUN_WORKFLOWS) {
-	log("💎 WORKFLOW SYNC");
-	log("------------------------------------------");
-	console.log("Running link validation...");
-	runCmd("node scripts/check-links.mjs");
+	log('💎 WORKFLOW SYNC');
+	log('------------------------------------------');
+	console.log('Running link validation...');
+	runCmd('node scripts/check-links.mjs');
 	console.log(`Running stale detection (older than ${DAYS_STALE} days)...`);
 	runCmd(`node scripts/find-stale.mjs ${DAYS_STALE}`);
-	log("");
+	log('');
 }
 
 if (RUN_SKILLS) {
-	log("🛠️  SKILLS SYNC");
-	log("------------------------------------------");
-	console.log("Running link validation...");
-	runCmd("node scripts/check-links.mjs");
+	log('🛠️  SKILLS SYNC');
+	log('------------------------------------------');
+	console.log('Running link validation...');
+	runCmd('node scripts/check-links.mjs');
 	console.log(`Running stale detection (older than ${DAYS_STALE} days)...`);
 	runCmd(`node scripts/find-stale.mjs ${DAYS_STALE}`);
-	log("");
+	log('');
 }
 
-log("==========================================");
-log("✅ Sync runner completed");
+log('==========================================');
+log('✅ Sync runner completed');
 log(`Summary saved to: ${SUMMARY_FILE}\n`);
 console.log(`Next steps:`);
 console.log(`1. Review the output above for errors/warnings.`);

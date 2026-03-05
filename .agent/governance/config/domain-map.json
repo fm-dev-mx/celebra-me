@@ -38,7 +38,12 @@
         ],
         "docs": ["docs/**"],
         "test": ["tests/**", "**/*.test.*", "**/*.spec.*", "jest.config.*", "playwright.config.*"],
-        "admin": ["src/pages/admin/**", "src/components/admin/**", "src/pages/api/dashboard/**"]
+        "admin": [
+            "src/pages/admin/**",
+            "src/components/admin/**",
+            "src/components/dashboard/**",
+            "src/pages/api/dashboard/**"
+        ]
     },
     "defaultDomain": "core"
 }

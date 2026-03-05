@@ -10,9 +10,9 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const { values } = parseArgs({
 	options: {
-		help: { type: 'boolean', short: 'h' }
+		help: { type: 'boolean', short: 'h' },
 	},
-	strict: false
+	strict: false,
 });
 
 if (values.help) {
@@ -56,7 +56,9 @@ function checkLink(file, link, lineNum) {
 		console.log(`  ✅ ${link}`);
 		return 0;
 	} else {
-		console.log(`  ❌ ${link} (line ${lineNum}) - File not found: ${path.relative(PROJECT_ROOT, targetPath)}`);
+		console.log(
+			`  ❌ ${link} (line ${lineNum}) - File not found: ${path.relative(PROJECT_ROOT, targetPath)}`,
+		);
 		return 1;
 	}
 }

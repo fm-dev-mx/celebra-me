@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { parseArgs } from 'node:util';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +17,7 @@ const SCRIPTS = {
 	'validate-schema': 'validate-schema.mjs',
 	'validate-commits': 'validate-commits.mjs',
 	'remove-env-from-history': 'remove-env-from-history.mjs',
-	'rsvp-db-remote-runbook': 'rsvp-db-remote-runbook.mjs'
+	'rsvp-db-remote-runbook': 'rsvp-db-remote-runbook.mjs',
 };
 
 const args = process.argv.slice(2);
@@ -30,7 +29,9 @@ Ops Automation CLI Dispatcher
 Usage: pnpm ops <command> [options]
 
 Available Commands:
-${Object.keys(SCRIPTS).map(c => `  - ${c}`).join('\n')}
+${Object.keys(SCRIPTS)
+	.map((c) => `  - ${c}`)
+	.join('\n')}
 
 Global Options:
   --help, -h     Show this help message
@@ -52,7 +53,7 @@ const scriptPath = path.join(__dirname, SCRIPTS[command]);
 const childProcessArgs = args.slice(1);
 
 const child = spawn(process.execPath, [scriptPath, ...childProcessArgs], {
-	stdio: 'inherit'
+	stdio: 'inherit',
 });
 
 child.on('exit', (code) => {

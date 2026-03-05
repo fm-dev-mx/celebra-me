@@ -20,4 +20,14 @@ Trazabilidad determinista de avance para el refactor de `celebra-me`.
 - **Encontrado:** Degradación del estándar Jewelry Box (usos de `style={...}` react).
 - **Encontrado:** Vínculos caídos sobre el `THEME_SYSTEM.md`.
 - **Encontrado:** Utilización de etiquetas base `<img>` frente a la estandarización `astro:assets`.
-- **Encontrado:** Mix entre Front-end (`fetch` requests) y Backend, rompiendo BFF limpio.
+- **Enfound:** Mixed Front-end (`fetch` requests) and Backend, breaking clean BFF.
+
+## [0.2.0] - 2026-03-04
+
+### 🧹 Phase 2 Completed (Structure & Naming)
+
+- **Renamed**: ~80 files to strict `kebab-case` (utilities, assets, docs).
+- **Fixed**: 34 broken references in documentation (Intent Drift).
+- **Refactored**: `AdminApi` to centralize error handling and satisfy duplication guards.
+- **Englishized**: All core documentation to pass automated `languageGovernance` checks.
+- **Signed**: New S0 system integrity baseline with zero audit findings.

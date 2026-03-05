@@ -21,9 +21,9 @@ if (!fs.existsSync(path.join(REPO_ROOT, 'package.json'))) {
 const { values } = parseArgs({
 	options: {
 		help: { type: 'boolean', short: 'h' },
-		'dry-run': { type: 'boolean' }
+		'dry-run': { type: 'boolean' },
 	},
-	strict: false
+	strict: false,
 });
 
 if (values.help) {
@@ -42,7 +42,7 @@ Options:
 
 const rl = readline.createInterface({
 	input: process.stdin,
-	output: process.stdout
+	output: process.stdout,
 });
 
 const red = '\x1B[31m';
@@ -50,7 +50,9 @@ const green = '\x1B[32m';
 const yellow = '\x1B[33m';
 const reset = '\x1B[0m';
 
-console.log(`🔐 Security Hardening - Fase 0: Rotación de Credenciales\n=========================================================\n`);
+console.log(
+	`🔐 Security Hardening - Fase 0: Rotación de Credenciales\n=========================================================\n`,
+);
 console.log(`📋 Lista de credenciales a rotar:\n
 1. SendGrid API Key
    - URL: https://app.sendgrid.com/settings/api_keys
@@ -90,7 +92,10 @@ rl.question('¿Has rotado TODAS las credenciales listadas arriba? (s/N): ', (con
 	} else {
 		console.log(`${yellow}⚠️  Agregando .env* a .gitignore...${reset}`);
 		if (!values['dry-run']) {
-			fs.appendFileSync(gitignorePath, '\n# Environment variables\n.env\n.env.local\n.env.*.local\n');
+			fs.appendFileSync(
+				gitignorePath,
+				'\n# Environment variables\n.env\n.env.local\n.env.*.local\n',
+			);
 		}
 		console.log(`${green}✅ .gitignore actualizado${reset}`);
 	}
@@ -98,7 +103,11 @@ rl.question('¿Has rotado TODAS las credenciales listadas arriba? (s/N): ', (con
 	console.log(`\n🔍 Verificando que .env files no están trackeados...`);
 	try {
 		const gitFiles = execSync('git ls-files', { encoding: 'utf8' });
-		if (gitFiles.split('\n').some(file => file.endsWith('.env') || file.endsWith('.env.local'))) {
+		if (
+			gitFiles
+				.split('\n')
+				.some((file) => file.endsWith('.env') || file.endsWith('.env.local'))
+		) {
 			console.log(`${red}❌ ATENCIÓN: Archivos .env aún están en git${reset}`);
 			console.log(`Ejecuta: git rm --cached .env .env.local`);
 			rl.close();
@@ -106,21 +115,26 @@ rl.question('¿Has rotado TODAS las credenciales listadas arriba? (s/N): ', (con
 		} else {
 			console.log(`${green}✅ Archivos .env no están trackeados${reset}`);
 		}
-	} catch (err) {
+	} catch {
 		console.log(`${yellow}⚠️  No se pudo verificar GIT. ¿Es un repositorio?${reset}`);
 	}
 
-	rl.question(`\n🔍 ¿Las nuevas credenciales están configuradas en dashboard Vercel? (s/N): `, (verConfirm) => {
-		if (verConfirm.toLowerCase() !== 's') {
-			console.log(`${yellow}⚠️  Configura credenciales en Vercel antes de continuar${reset}`);
-			rl.close();
-			process.exit(1);
-		}
+	rl.question(
+		`\n🔍 ¿Las nuevas credenciales están configuradas en dashboard Vercel? (s/N): `,
+		(verConfirm) => {
+			if (verConfirm.toLowerCase() !== 's') {
+				console.log(
+					`${yellow}⚠️  Configura credenciales en Vercel antes de continuar${reset}`,
+				);
+				rl.close();
+				process.exit(1);
+			}
 
-		console.log(`\n${green}✅ Fase 0.1 completada${reset}\n`);
-		console.log(`Próximo paso: Eliminar archivos .env del historial git`);
-		console.log(`Ejecuta: pnpm ops remove-env-from-history`);
-		rl.close();
-		process.exit(0);
-	});
+			console.log(`\n${green}✅ Fase 0.1 completada${reset}\n`);
+			console.log(`Próximo paso: Eliminar archivos .env del historial git`);
+			console.log(`Ejecuta: pnpm ops remove-env-from-history`);
+			rl.close();
+			process.exit(0);
+		},
+	);
 });

@@ -8,9 +8,9 @@ const PROJECT_ROOT = path.resolve(process.cwd());
 const { values, positionals } = parseArgs({
 	options: {
 		help: { type: 'boolean', short: 'h' },
-		days: { type: 'string', short: 'd' }
+		days: { type: 'string', short: 'd' },
 	},
-	strict: false
+	strict: false,
 });
 
 const DEFAULT_DAYS = 180;
@@ -62,7 +62,9 @@ function checkDirectory(dirRel, pattern, description) {
 					const daysOld = Math.floor((now - modTime) / 86400000);
 
 					if (daysOld > DAYS) {
-						console.log(`  ⚠️  ${path.relative(PROJECT_ROOT, res)} (${daysOld} days old)`);
+						console.log(
+							`  ⚠️  ${path.relative(PROJECT_ROOT, res)} (${daysOld} days old)`,
+						);
 						found++;
 						STALE_COUNT++;
 					}
@@ -79,19 +81,19 @@ function checkDirectory(dirRel, pattern, description) {
 }
 
 console.log(`Phase 1: Checking documentation...`);
-checkDirectory("docs", "*.md", "Documentation files");
+checkDirectory('docs', '*.md', 'Documentation files');
 
 console.log(`\nPhase 2: Checking workflows...`);
-checkDirectory(".agent/workflows", "*.md", "Workflow files");
+checkDirectory('.agent/workflows', '*.md', 'Workflow files');
 
 console.log(`\nPhase 3: Checking skills...`);
-checkDirectory(".agent/skills", "*.md", "Skill files");
+checkDirectory('.agent/skills', '*.md', 'Skill files');
 
 console.log(`\nPhase 4: Checking source code...`);
-checkDirectory("src", "*.ts", "TypeScript files");
-checkDirectory("src", "*.tsx", "TypeScript React files");
-checkDirectory("src", "*.astro", "Astro files");
-checkDirectory("src/styles", "*.scss", "SCSS files");
+checkDirectory('src', '*.ts', 'TypeScript files');
+checkDirectory('src', '*.tsx', 'TypeScript React files');
+checkDirectory('src', '*.astro', 'Astro files');
+checkDirectory('src/styles', '*.scss', 'SCSS files');
 
 console.log(`\n========================================================`);
 console.log(`Stale file detection complete!`);
