@@ -43,7 +43,7 @@ _Operations/Workflows:_
 
 - `.agent/workflows/task-auth-dashboard-remediation.md` (Active workflow orphaned from dashboard).
 - `.agent/workflows/archive/task-share-flow-optimization.md`
-- `.agent/workflows/evergreen/auto-fix.md`
+- `.agent/workflows/auto-fix.md`
 - `docs/core/project-conventions.md` and `.agent/GATEKEEPER_RULES.md` (At agent root but not indexed
   anywhere, should be Core).
 
@@ -63,9 +63,10 @@ prior audits of closed features. **Files to DELETE / ARCHIVE IMMEDIATELY:**
 - `tracking/PR3-atomic-claim-code.md`
 - `tracking/README.md`
 
-_Removal Justification:_ The RSVP module has already reached stability (`docs/domains/rsvp/status.md`,
-`docs/domains/rsvp/database.md`). Maintaining "gap-analysis" and "remediation-backlogs" from a month ago fragments
-semantic search contexts for agents, increasing hallucination about resolved issues.
+_Removal Justification:_ The RSVP module has already reached stability
+(`docs/domains/rsvp/status.md`, `docs/domains/rsvp/database.md`). Maintaining "gap-analysis" and
+"remediation-backlogs" from a month ago fragments semantic search contexts for agents, increasing
+hallucination about resolved issues.
 
 ---
 
@@ -75,12 +76,12 @@ semantic search contexts for agents, increasing hallucination about resolved iss
 
 **System Constitution.** Documents that are core and should not be moved. Includes ARCHITECTURE.md,
 GIT_GOVERNANCE.md, ASSET_MANAGEMENT.md, THEME_SYSTEM.md, and evergreen workflows (task-to-prompt,
-gatekeeper, etc.). **Action:** Consolidate redundant files (core/project-conventions.md into GIT_GOVERNANCE.md or
-vice versa).
+gatekeeper, etc.). **Action:** Consolidate redundant files (core/project-conventions.md into
+GIT_GOVERNANCE.md or vice versa).
 
 ### Category: Task-Active (Current Work)
 
-Plans in .agent/plans/invitation-evolution-march-2026/\* and reports in .agent/audits/. **Action:**
+Plans in .agent/plans/invitation-evolution-march-2026/\* and reports in .agent/plans/. **Action:**
 Temporarily index them in the 'Tasks Open' section in DOC_STATUS.
 
 ### Category: Legacy/Archive (Historicals)
@@ -142,8 +143,7 @@ Modular domain documentation, located in `docs/domains/`:
 
 Workflows, scripts, and audits, located in `.agent/`:
 
-- `.agent/workflows/` (Evergreen, Task-Open, Archive)
-- `.agent/plans/` (Multi-phase remediation plans)
-- `.agent/audits/` (Dynamic audits)
+- `.agent/workflows/` (Evergreen)
+- `.agent/plans/` (Multi-phase remediation plans and dynamic audits)
 
 This report is the basis for executing the "Doc Realignment Plan".

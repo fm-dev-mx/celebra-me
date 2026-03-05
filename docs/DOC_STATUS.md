@@ -43,13 +43,12 @@ Documentación técnica organizada por submódulo o dominio.
 
 Workflows críticos y permanentes de mantenimiento continuo.
 
-- [error-remediation.md](../.agent/workflows/evergreen/error-remediation.md) - 🟢
-- [gatekeeper-commit.md](../.agent/workflows/evergreen/gatekeeper-commit.md) - 🟢
-- [prompt-to-workflow.md](../.agent/workflows/evergreen/prompt-to-workflow.md) - 🟢
-- [system-doc-alignment.md](../.agent/workflows/evergreen/system-doc-alignment.md) - 🟢
-- [theme-architecture-governance.md](../.agent/workflows/evergreen/theme-architecture-governance.md) -
-  🟢
-- [auto-fix.md](../.agent/workflows/evergreen/auto-fix.md) - 🟢 (Recuperado de huérfanos)
+- [error-remediation.md](../.agent/workflows/error-remediation.md) - 🟢
+- [gatekeeper-commit.md](../.agent/workflows/gatekeeper-commit.md) - 🟢
+- [prompt-to-workflow.md](../.agent/workflows/prompt-to-workflow.md) - 🟢
+- [system-doc-alignment.md](../.agent/workflows/system-doc-alignment.md) - 🟢
+- [theme-architecture-governance.md](../.agent/workflows/theme-architecture-governance.md) - 🟢
+- [auto-fix.md](../.agent/workflows/auto-fix.md) - 🟢 (Recuperado de huérfanos)
 
 ### 🟡 Task-Active Workflows & Plans (En Progreso)
 
