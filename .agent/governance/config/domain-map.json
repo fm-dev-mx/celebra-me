@@ -20,7 +20,8 @@
             "commitlint.config.cjs",
             "package.json",
             "pnpm-lock.yaml",
-            ".gitignore"
+            ".gitignore",
+            "astro.config.mjs"
         ],
         "core": [
             "src/content/config.ts",
