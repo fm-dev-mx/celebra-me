@@ -4,7 +4,7 @@
 alineando el código al 100% con la documentación existente y validando los estándares de ingeniería
 antes de la próxima fase de escalado.
 
-**Estado:** `50% Completado` **Duración Estimada:** 4 Fases
+**Estado:** `75% Completado` **Duración Estimada:** 4 Fases
 
 ---
 
@@ -47,7 +47,7 @@ Aceptación específicos y desglose de ejecución:
   Gatekeeper.
 
 - **[Fase 3: Desacoplamiento (Coupling) Front-End de Lógica BFF](./phases/03-bff-decoupling.md)
-  [0%]** Toda llamada a red está en un cliente de API/Hook y Astro maneja sus `Assets` vía
+  [100%]** Toda llamada a red está en un cliente de API/Hook y Astro maneja sus `Assets` vía
   componentes nativos, eliminando deuda arquitectónica técnica.
 
 - **[Fase 4: Saneamiento Visual (Jewelry Box Architecture Refactoring)](./phases/04-jewelry-box-styling.md)

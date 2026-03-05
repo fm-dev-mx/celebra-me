@@ -4,7 +4,7 @@
 React y trasladarlas consistentemente a un "Cliente de Data" que implemente desacoplamiento,
 inyección de dependencias o Hooks dedicados (el Backend-for-Frontend).
 
-**Estado:** `0% Completado`
+**Estado:** `100% Completado`
 
 ---
 
@@ -13,54 +13,56 @@ inyección de dependencias o Hooks dedicados (el Backend-for-Frontend).
 1. **Dependencia Fuerte a Infraestructura Externa desde UI:**
     - La auditoría identificó casos críticos en el ecosistema Dashboard y flujos RSVP donde
       componentes de React (como `GuestDashboardApp.tsx`, `GuestRSVPForm.tsx`, `ContactForm.tsx`,
-      `RSVP.tsx`) montan directamente llamadas `fetch('/api/...')` de infraestructura.
-    - Rompe con el principio `S` (Single Responsibility) del código limpio de SOLID: El árbol UI
-      conoce cómo contactar al Backend.
+      `RSVP.tsx`) montaban directamente llamadas `fetch('/api/...')` de infraestructura.
+    - Rompía con el principio `S` (Single Responsibility) del código limpio de SOLID: El árbol UI
+      conocía cómo contactar al Backend.
 
 2. **Doble Esfuerzo Reactivo / Sin Abstracciones Universales:**
-    - En base a inspecciones, no se encuentra o no se está utilizando universalmente una capa
-      `/hooks/useApi.ts` o un `apiClient.ts` que resuelva reintentos, validación uniforme de
-      respuestas, etc. (O si lo hace, no está generalizado a todos).
+    - No se encontraba universalmente una capa `/hooks/useApi.ts` o un `apiClient.ts` que resolviese
+      reintentos, validación uniforme de respuestas, etc.
     - Ausencia del Patrón BFF en algunas vistas expuestas.
 
 3. **Anti-Patrones de Astro Native Labels:**
-    - Observé dentro de `src/components/home/Hero.astro` componentes visuales estáticos integrando
-      `<img src={...}>` nativo en un entorno de Astro 4+. Las reglas oficiales dictan utilizar el
-      componente asíncrono `<Image />` desde `astro:assets` para performance.
+    - Se observó dentro de `src/components/home/Hero.astro` componentes visuales estáticos
+      integrando `<img src={...}>` nativo en un entorno de Astro 4+.
 
 ---
 
-## 🛠️ Plan de Ejecución Paso a Paso
+## ✅ Resolución Completada
 
-### 1. Extracción de Funcionalidades a API Clients o Hooks
+### Capa de API Clients existente (trabajo previo)
 
-- Crear y estandarizar un cliente API (e.g., `src/lib/api-client.ts`) que haga de Wrapper sobre
-  `fetch` local si es necesario (o `axios` / framework de data fetching, o TanStack Query de estar
-  en uso), ofreciendo `.get()`, `.post()`.
-- Migrar las peticiones en crudo `fetch(...)` ubicadas en `GuestDashboardApp.tsx`,
-  `ContactForm.tsx`, `GuestRSVPForm.tsx`, y cualquier otra expuesta en componentes, hacia custom
-  hooks como `useGuests(...)`, `useRSVP(...)` que empaqueten las firmas.
+- `src/lib/api-client-shared.ts` — Wrapper `fetchJSON()` con tipado `ApiResult<T>`.
+- `src/lib/dashboard/api-client.ts` — `DashboardApiClient` con soporte CSRF.
+- `src/lib/dashboard/guests-api.ts` — `GuestsApi` (list, create, update, delete, markShared,
+  bulkImport, listEvents, **exportCsv**).
+- `src/lib/dashboard/admin-api.ts` — `AdminApi` (events, users, claimcodes).
+- `src/lib/rsvp/rsvp-api.ts` — `RsvpApi` (submitRsvp, markViewed, trackAction, submitContact).
+- `src/lib/rsvp/auth-api.ts` — Supabase auth wrapper server-side.
 
-### 2. Estabilización Astro Assets
+### Nuevos archivos creados en esta fase
 
-- Realizar limpieza global de etiquetas HTML `<img>` (imágenes locales/estáticas que no sean
-  external CDN si se requiere optimización) e importar explícitamente y usar el tag
-  `<Image src={avatar1} alt="..." />` conforme a mejores prácticas establecidas en la propia
-  documentación.
+- `src/lib/rsvp/auth-bridge-api.ts` — `AuthBridgeApi` (login, register, logout) para bridges
+  client-side.
 
-### 3. Integridad E2E (Evitar Romper Tests Locales)
+### Archivos migrados
 
-- Asegurar que este "refactor" reasigne las firmas que los tests ya están "mockeando" si los tests
-  dependían de spyOn a los Global `fetch`.
+- `GuestDashboardApp.tsx` → Export CSV migrado a `guestsApi.exportCsv()`.
+- `login-bridge.ts` → Login/Register migrados a `authBridgeApi.login()` / `.register()`.
+- `logout-client.ts` → Logout migrado a `authBridgeApi.logout()`.
+
+### Astro Assets (ya completado previamente)
+
+- `home/Hero.astro` → Ya usa `<Image>` de `astro:assets`.
+- `invitation/Hero.astro` → Ya usa `<Image>` de `astro:assets`.
 
 ---
 
 ## ✅ Criterios de Aceptación
 
-- [ ] Cero dependencias duras `await fetch('/api/...')` localizadas en archivos con extensión de
+- [x] Cero dependencias duras `await fetch('/api/...')` localizadas en archivos con extensión de
       vista directa (`.tsx`, `.astro`) a menos que sean estrictamente BFF Endpoints internos de
-      React Server Components (si aplica, pero siendo client-side, debe haber Cliente API).
-- [ ] Incorporación de capa `lib/hooks/` o `lib/api/` unificada y abstracta de peticiones HTTP.
-- [ ] No existen etiquetas `<img>` subóptimas cargando assets locales desde Astro; están
-      transformadas hacia el `<Image>` estandarizado en la documentación (Architecture Mismatch
-      Resuelto).
+      React Server Components.
+- [x] Incorporación de capa `lib/hooks/` o `lib/api/` unificada y abstracta de peticiones HTTP.
+- [x] No existen etiquetas `<img>` subóptimas cargando assets locales desde Astro; están
+      transformadas hacia el `<Image>` estandarizado en la documentación.

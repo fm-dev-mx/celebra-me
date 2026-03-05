@@ -31,3 +31,17 @@ Trazabilidad determinista de avance para el refactor de `celebra-me`.
 - **Refactored**: `AdminApi` to centralize error handling and satisfy duplication guards.
 - **Englishized**: All core documentation to pass automated `languageGovernance` checks.
 - **Signed**: New S0 system integrity baseline with zero audit findings.
+
+## [0.3.0] - 2026-03-04
+
+### 🔌 Phase 3 Completed (BFF Decoupling)
+
+- **Created**: `src/lib/rsvp/auth-bridge-api.ts` — `AuthBridgeApi` class for client-side auth
+  endpoints (login, register, logout).
+- **Migrated**: `GuestDashboardApp.tsx` CSV export from raw `fetch()` to `guestsApi.exportCsv()`.
+- **Migrated**: `login-bridge.ts` login/register from raw `fetch()` to `authBridgeApi` methods.
+- **Migrated**: `logout-client.ts` logout from raw `fetch()` to `authBridgeApi.logout()`.
+- **Verified**: Zero `<img>` tags in Astro components — both `Hero.astro` files already use
+  `<Image>` from `astro:assets`.
+- **Verified**: Zero direct `fetch('/api/...')` calls remaining in `.tsx` view components.
+- **Result**: All 3 acceptance criteria passed. TypeScript compiles with zero errors.
