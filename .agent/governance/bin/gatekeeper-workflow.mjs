@@ -36,7 +36,7 @@ function parseReport(raw) {
 
 function runGatekeeperReport() {
 	const res = run('node', [
-		'scripts/gatekeeper.js',
+		'.agent/governance/bin/gatekeeper.mjs',
 		'--mode',
 		'strict',
 		'--report-json',

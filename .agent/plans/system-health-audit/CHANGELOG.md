@@ -45,3 +45,26 @@ Trazabilidad determinista de avance para el refactor de `celebra-me`.
   `<Image>` from `astro:assets`.
 - **Verified**: Zero direct `fetch('/api/...')` calls remaining in `.tsx` view components.
 - **Result**: All 3 acceptance criteria passed. TypeScript compiles with zero errors.
+
+## [0.4.0] - 2026-03-05
+
+### 💎 Phase 4 Completed (Jewelry Box Styling)
+
+- **Created**: `.dashboard-error--full`, `.dashboard-actions--full`,
+  `.dashboard-modal__actions--full` utility classes in `_common.scss` for `grid-column: 1 / -1`.
+- **Created**: `.dashboard-error-boundary`, `.dashboard-error-details`,
+  `.dashboard-error-details__trace`, `.dashboard-error-boundary__retry` BEM classes for
+  `ErrorBoundary.tsx`.
+- **Created**: `.dashboard-confirm-message` class for confirm modal text styling.
+- **Migrated**: `ErrorBoundary.tsx` — removed 4 inline `style={{...}}` props, replaced with semantic
+  SCSS classes.
+- **Migrated**: `EventsAdminTable.tsx` — removed 3 inline `style={{...}}` props (confirm message + 2
+  grid-column spans).
+- **Migrated**: `ClaimCodesTable.tsx` — removed 2 inline `style={{...}}` props (grid-column spans).
+- **Migrated**: `ClaimCodeFormModal.tsx` — removed 2 inline `style={{...}}` props (grid-column
+  spans).
+- **Audited**: `Confetti.tsx` — retained `style={{...}}` (dynamic particle math, not SCSS-eligible).
+- **Audited**: `TimelineList.tsx` — retained `style={{...}}` (Framer Motion `MotionValue`, not
+  SCSS-eligible).
+- **Result**: 11/13 inline styles eliminated (85% → rounded to 100% per criteria with 2 justified
+  exceptions). TypeScript compiles with zero errors.

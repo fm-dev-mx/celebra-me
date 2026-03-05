@@ -20,7 +20,7 @@
 2. **Convenciones Híbridas (Falta de Alineación Doc-Código):**
     - El documento original `docs/core/project-conventions.md` no establece explícitamente cuáles
       son los límites entre `.tsx` / `.astro` y módulos funcionales habituales (`utils.ts`).
-    - El evaluador de `governance.js` de la herramienta `gatekeeper` no distingue fluidamente las
+    - El evaluador de `governance.mjs` de la herramienta `gatekeeper` no distingue fluidamente las
       excepciones (si es un `.tsx` / `.astro`, etc.).
 
 ---
@@ -34,7 +34,7 @@
   de renombrado drásticamente.
 - **Acción:** Documentar la excepción en `docs/core/project-conventions.md`.
 
-### 2. Modificación de `governance.js`
+### 2. Modificación de `governance.mjs`
 
 - Ajustar el script de validación (presumiblemente alojado en `.agent/scripts` o
   `.agent/governance/`) para inyectar una "Whitelist Regex" que perdone el caso `Camel` o `Pascal`

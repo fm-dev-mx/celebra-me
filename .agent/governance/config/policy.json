@@ -190,7 +190,7 @@
             "requiredPaths": [
                 ".agent/governance/config/policy.json",
                 ".agent/governance/config/baseline.json",
-                ".agent/governance/bin/gatekeeper.js",
+                ".agent/governance/bin/gatekeeper.mjs",
                 "commitlint.config.cjs"
             ]
         },
@@ -203,7 +203,7 @@
                 "2": "block",
                 "3": "block"
             },
-            "englishPaths": ["docs/**/*.md", "src/**/*.{ts,tsx,astro,js,jsx}", "scripts/**/*.js"],
+            "englishPaths": ["docs/**/*.md", "src/**/*.{ts,tsx,astro,mjs,jsx}", "scripts/**/*.mjs"],
             "spanishUiPaths": ["src/content/events/**/*.json"]
         }
     },
@@ -238,7 +238,7 @@
         {
             "id": "git-governance-sync",
             "triggers": [
-                ".agent/governance/bin/gatekeeper.js",
+                ".agent/governance/bin/gatekeeper.mjs",
                 ".agent/governance/bin/gatekeeper-workflow.mjs",
                 ".agent/governance/bin/gatekeeper-commit-ready.mjs",
                 "scripts/validate-commits.cjs",

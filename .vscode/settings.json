@@ -20,5 +20,9 @@
     "files.associations": {
         "*.astro": "astro"
     },
-    "markdown.preview.openMarkdownLinks": "inEditor"
+    "markdown.preview.openMarkdownLinks": "inEditor",
+    "files.exclude": {
+        "**/bin": false
+    },
+    "explorer.excludeGitIgnore": false
 }

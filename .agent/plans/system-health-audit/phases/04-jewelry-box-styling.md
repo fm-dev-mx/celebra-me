@@ -4,7 +4,7 @@
 el ecosistema, mudando las reglas a una arquitectura coherente y centralizada `SCSS` gestionada por
 el tema global "Jewelry Box", incrementando mantenibilidad para futuros features.
 
-**Estado:** `0% Completado`
+**Estado:** `100% Completado`
 
 ---
 
@@ -55,8 +55,17 @@ el tema global "Jewelry Box", incrementando mantenibilidad para futuros features
 
 ## ✅ Criterios de Aceptación
 
-- [ ] Se redujeron en al menos un **95%** las ocurrencias totales de la propiedad `style={{...}}` o
+- [x] Se redujeron en al menos un **95%** las ocurrencias totales de la propiedad `style={{...}}` o
       equivalente en componentes JSX, a excepción exclusiva de manipulaciones matemáticas dinámicas
       que no se puedan alojar en `SCSS` de clase estática.
-- [ ] La estructura domina y confía únicamente en referencias nominales formales a clases semánticas
+- [x] La estructura domina y confía únicamente en referencias nominales formales a clases semánticas
       CSS conectadas con `docs/domains/theme/` (Architecture Refactoring Completo).
+
+## 📝 Excepciones Documentadas
+
+Las siguientes 2 ocurrencias de `style={{}}` fueron auditadas y se mantienen intencionalmente:
+
+- **`Confetti.tsx`**: Cada partícula recibe `width`, `height`, `backgroundColor` y `borderRadius`
+  derivados de `Math.random()` en runtime. No migrable a SCSS estático.
+- **`TimelineList.tsx`**: La prop `pathLength` recibe un `MotionValue` de Framer Motion (`scaleY`)
+  que controla la animación SVG reactiva al scroll. No migrable a SCSS estático.

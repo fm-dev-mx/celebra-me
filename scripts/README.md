@@ -6,16 +6,17 @@ This directory contains the core automation and governance tools for the `celebr
 
 | Script                    | Purpose                                                                                      |
 | :------------------------ | :------------------------------------------------------------------------------------------- |
-| `gatekeeper.js`           | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
+| `gatekeeper.mjs`          | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
 | `gatekeeper-workflow.mjs` | Runs the full one-command Gatekeeper workflow (report + auto-fix loop + deterministic exit). |
 | `validate-schema.mjs`     | Synchronizes Zod schemas with CSS theme variants.                                            |
 | `validate-commits.mjs`    | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
+| `cli.mjs`                 | Standardized CLI entry point for all operations.                                             |
 | `optimize-assets.mjs`     | Handles image optimization and asset registry sync.                                          |
 
-## The Gatekeeper Contract
+### Using Gatekeeper
 
-The `gatekeeper.js` script is designed to be consumed by agents. When run with `--report-json`, it
-outputs a single deterministic contract that dictates the "Next Step":
+The `gatekeeper.mjs` script is designed to be consumed by agents. When run with `--report-json`, it
+provides a comprehensive analysis of the project's health.at dictates the "Next Step":
 
 - **`route: "architectural_intervention"`**: The agent must manually fix blockings (e.g., forbidden
   imports).
@@ -39,7 +40,7 @@ branch, Gatekeeper deterministically creates or switches to a branch named in En
 - dominant domain from `scripts/config/domain-map.json`
 - stable slug from changed file paths
 
-## Adding Rules
+#### Adding New Rules
 
-New rules should be added as modules within `gatekeeper.js` or as standalone scripts that
-`gatekeeper.js` can invoke as a host.
+New rules should be added as modules within `gatekeeper.mjs` or as standalone scripts that
+`gatekeeper.mjs` can invoke as a host.
