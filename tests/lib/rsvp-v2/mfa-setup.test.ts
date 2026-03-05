@@ -1,4 +1,4 @@
-import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp/mfaSetup';
+import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp/mfa-setup';
 
 describe('rsvp mfaSetup helpers', () => {
 	it('selects the latest verified totp factor deterministically', () => {

@@ -25,13 +25,13 @@ Continue implementing the security hardening plan for the Celebra-me Admin Dashb
 ### Phase 0 - Immediate Security (100%)
 
 - Credential rotation scripts
-- Rotation guide in `docs/security-hardening/CREDENTIAL_ROTATION.md`
+- Rotation guide in `docs/domains/security/roadmap.md`
 - Pre-commit hooks to detect secrets
 - `.env.example` updated
 
 ### Phase 1 - Core Security (100%)
 
-- **Rate limiting**: Implemented on 10 admin endpoints (`src/lib/rsvp/adminRateLimit.ts`)
+- **Rate limiting**: Implemented on 10 admin endpoints (`src/lib/rsvp/admin-rate-limit.ts`)
 - **CSRF Protection**: Module `src/lib/rsvp/csrf.ts`, integrated in DashboardLayout and apiClient
 - **Security headers**: Added in `vercel.json`
 - **Default secrets removed**: Modified `trustedDevice.ts` and `service.ts`, created
@@ -44,12 +44,12 @@ Continue implementing the security hardening plan for the Celebra-me Admin Dashb
 ### Phase 2 - Data Integrity
 
 - **DATA-002**: Last super_admin server-side protection COMPLETE
-    - File: `src/lib/rsvp/adminProtection.ts`
+    - File: `src/lib/rsvp/admin-protection.ts`
     - Updated endpoint: `src/pages/api/dashboard/admin/users/[userId]/role.ts`
     - Returns 403 if attempting to delete last admin
 - **DATA-001**: Soft Delete
     - Migration created: `supabase/migrations/20260220000000_add_soft_delete.sql`
-    - Service created: `src/lib/rsvp/softDelete.ts`
+    - Service created: `src/lib/rsvp/soft-delete.ts`
     - PENDING: Apply migration in Supabase with `supabase db push`
 
 - **DATA-003**: Optimistic Locking - PENDING

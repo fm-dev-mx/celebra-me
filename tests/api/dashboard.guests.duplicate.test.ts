@@ -4,7 +4,7 @@ import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
 import { createDashboardGuest, updateDashboardGuest } from '@/lib/rsvp/service';
 import { ApiError } from '@/lib/rsvp/errors';
 import { createMockRequest } from './rsvp.helpers';
-import { mockAdminSecurityPass } from '../helpers/mockAdminSecurity';
+import { mockAdminSecurityPass } from '../helpers/mock-admin-security';
 
 // Mock funciones de seguridad
 mockAdminSecurityPass();

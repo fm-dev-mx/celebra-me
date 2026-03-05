@@ -77,7 +77,7 @@ Tareas puntuales actualmente en desarrollo.
 2. **Nomenclatura Estricta:** Exceptuando `README.md`, `CHANGELOG.md` y `CONTRIBUTING.md`, todos los
    demás archivos deben usar **`kebab-case.md`**.
 3. **Referencias a Gatekeeper:** Las configuraciones se leen exclusivamente desde
-   `.agent/governance/config/policy.json` (Las referencias obsoletas a `.agent/gatekeeper/` han sido
+   `.agent/governance/config/policy.json` (Las referencias obsoletas a `.agent/governance/` han sido
    depreciadas).
 4. **Manejo de Tareas Completadas:** El flujo correcto para workflows caducos es: `task-open` ->
    `task-completed` -> `archive`.

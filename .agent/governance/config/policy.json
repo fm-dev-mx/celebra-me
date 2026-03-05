@@ -217,7 +217,7 @@
                 "src/styles/themes/**",
                 "src/components/invitation/**"
             ],
-            "requiredAll": ["docs/THEME_SYSTEM.md"]
+            "requiredAll": ["docs/domains/theme/architecture.md"]
         },
         {
             "id": "rsvp-architecture-sync",
@@ -228,7 +228,7 @@
                 "src/pages/api/invitacion/**",
                 "src/middleware.ts"
             ],
-            "requiredAny": ["docs/architecture/rsvp-module.md", "docs/RSVP_STATUS.md"]
+            "requiredAny": ["docs/domains/rsvp/architecture.md", "docs/domains/rsvp/status.md"]
         },
         {
             "id": "workflow-status-sync",
@@ -246,7 +246,7 @@
                 "commitlint.config.cjs",
                 ".agent/governance/config/policy.json"
             ],
-            "requiredAll": ["docs/GIT_GOVERNANCE.md"]
+            "requiredAll": ["docs/core/git-governance.md"]
         }
     ],
     "architectureBoundaries": {

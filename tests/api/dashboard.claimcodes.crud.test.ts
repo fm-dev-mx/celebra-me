@@ -14,7 +14,7 @@ import { ApiError } from '@/lib/rsvp/errors';
 import { createMockRequest } from './rsvp.helpers';
 
 // Mock funciones de seguridad admin
-jest.mock('@/lib/rsvp/adminRateLimit', () => ({
+jest.mock('@/lib/rsvp/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 }));
 
@@ -25,7 +25,7 @@ jest.mock('@/lib/rsvp/csrf', () => ({
 	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null),
 }));
 
-jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true as never),
 }));
 

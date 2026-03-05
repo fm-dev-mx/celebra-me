@@ -1,6 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useGuests } from '@/components/dashboard/guests/useGuests';
-import { useGuestMutations } from '@/components/dashboard/guests/useGuestMutations';
+import { useGuests } from '@/components/dashboard/guests/use-guests';
+import { useGuestMutations } from '@/components/dashboard/guests/use-guest-mutations';
 
 class MockEventSource {
 	addEventListener = jest.fn();

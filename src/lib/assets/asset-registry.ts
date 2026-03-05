@@ -18,10 +18,10 @@ import serviceWedding from '../../assets/images/services/wedding.png';
 import serviceBaptism from '../../assets/images/services/baptism.png';
 
 // Header
-import headerLogo from '../../assets/images/header/horizontalLogo150x56.png';
+import headerLogo from '../../assets/images/header/horizontal-logo150x56.png';
 
 // About
-import partyToast from '../../assets/images/about/partyToastPremium.png';
+import partyToast from '../../assets/images/about/party-toast-premium.png';
 
 /**
  * Represents a processed image asset.

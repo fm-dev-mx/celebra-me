@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { requireAdminRateLimit } from '@/lib/rsvp/admin-rate-limit';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/http';
 import { validateClaimCodeAdmin } from '@/lib/rsvp/service';
 

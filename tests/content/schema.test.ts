@@ -109,7 +109,7 @@ describe('Event Schema Validation', () => {
 						{ name: 'Sr. Juan Carlos', role: 'Padrino de Honor' },
 						{ name: 'Sra. Ana María', role: 'Madrina de Honor' },
 					],
-					featuredImage: '../../assets/images/about/partyToast.jpg',
+					featuredImage: '../../assets/images/about/party-toast.jpg',
 				},
 				sections: {
 					countdown: true,
@@ -127,7 +127,7 @@ describe('Event Schema Validation', () => {
 				thankYou: {
 					message: 'Gracias por ser parte de este momento tan especial...',
 					closingName: 'Lucía',
-					image: '../../assets/images/about/partyToast.jpg',
+					image: '../../assets/images/about/party-toast.jpg',
 				},
 				music: {
 					url: 'https://example.com/audio.mp3',

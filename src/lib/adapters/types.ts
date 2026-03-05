@@ -1,4 +1,4 @@
-import type { ImageAsset } from '@/lib/assets/AssetRegistry';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 
 export interface ThemeConfig {
 	primaryColor: string;

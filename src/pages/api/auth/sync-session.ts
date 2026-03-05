@@ -9,10 +9,10 @@ import {
 	clearMfaRefreshCookie,
 	clearMfaSessionCookie,
 } from '@/lib/rsvp/cookies';
-import { hasMfaEvidence } from '@/lib/rsvp/authMfaEvidence';
-import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp/authSecurity';
+import { hasMfaEvidence } from '@/lib/rsvp/auth-mfa-evidence';
+import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp/auth-security';
 import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp/auth';
-import { createTrustedDeviceToken } from '@/lib/rsvp/trustedDevice';
+import { createTrustedDeviceToken } from '@/lib/rsvp/trusted-device';
 import { normalizeAppRole } from '@/lib/rsvp/roles';
 
 export const POST: APIRoute = async ({ request, url }) => {

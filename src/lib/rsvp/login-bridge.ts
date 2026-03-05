@@ -4,7 +4,7 @@ import {
 	isValidEmail,
 	validateLoginForm,
 	validateRegisterForm,
-} from './loginUi';
+} from './login-ui';
 
 export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');
@@ -115,7 +115,7 @@ export function initLoginFlow() {
 		}
 	};
 
-	const validateLoginClient = (payload: import('./loginUi').LoginFormState) => {
+	const validateLoginClient = (payload: import('./login-ui').LoginFormState) => {
 		const genericError = validateLoginForm(payload);
 		if (!genericError) return null;
 		if (!payload.email.trim() || !isValidEmail(payload.email)) {
@@ -132,7 +132,7 @@ export function initLoginFlow() {
 		return genericError;
 	};
 
-	const validateRegisterClient = (payload: import('./loginUi').RegisterFormState) => {
+	const validateRegisterClient = (payload: import('./login-ui').RegisterFormState) => {
 		const error = validateRegisterForm(payload);
 		if (!error) return null;
 
@@ -162,7 +162,7 @@ export function initLoginFlow() {
 			const passwordEl = document.getElementById('login-password') as HTMLInputElement | null;
 
 			const payload = {
-				method: (loginMethod?.value as import('./loginUi').AuthMethod) || 'password',
+				method: (loginMethod?.value as import('./login-ui').AuthMethod) || 'password',
 				email: emailEl?.value || '',
 				password: passwordEl?.value || '',
 			};
@@ -219,7 +219,7 @@ export function initLoginFlow() {
 			) as HTMLInputElement | null;
 
 			const payload = {
-				method: (registerMethod?.value as import('./loginUi').AuthMethod) || 'password',
+				method: (registerMethod?.value as import('./login-ui').AuthMethod) || 'password',
 				email: emailEl?.value || '',
 				password: passwordEl?.value || '',
 				claimCode: claimCodeEl?.value || '',

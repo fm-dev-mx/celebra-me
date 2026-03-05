@@ -1,6 +1,6 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
 import type { AdminEventListItemDTO } from '@/lib/rsvp/types';
-import { adminApi } from '@/lib/dashboard/adminApi';
+import { adminApi } from '@/lib/dashboard/admin-api';
 import type { CreateEventDTO, UpdateEventDTO } from '@/lib/dashboard/dto/events';
 
 const EventsAdminTable: React.FC = () => {

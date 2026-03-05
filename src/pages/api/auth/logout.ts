@@ -7,7 +7,7 @@ import {
 	clearSessionCookie,
 	clearTrustedDeviceCookie,
 } from '@/lib/rsvp/cookies';
-import { assertSameOrigin } from '@/lib/rsvp/authSecurity';
+import { assertSameOrigin } from '@/lib/rsvp/auth-security';
 import { errorResponse } from '@/lib/rsvp/http';
 
 export const POST: APIRoute = async ({ request, url }) => {

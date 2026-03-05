@@ -1,6 +1,6 @@
 # RSVP Status - Gerardo 60 (`luxury-hacienda`) - Final Closure
 
-Date: 2026-02-15
+**Last Updated:** 2026-03-04 (Governance Phase 2: Kebab-case naming enforced)
 
 ## 1) Executive Status
 
@@ -27,16 +27,16 @@ persistence integrated and critical backend test coverage preserved.
 
 ✅ Basic Auth authentication layer implemented
 
-- New helper: `src/lib/rsvp/adminProtection.ts`
+- New helper: `src/lib/rsvp/admin-protection.ts`
 - Required variables:
-    - `RSVP_ADMIN_USER`
-    - `RSVP_ADMIN_PASSWORD`
+  - `RSVP_ADMIN_USER`
+  - `RSVP_ADMIN_PASSWORD`
 
 ✅ Protected endpoints/panel
 
 - `src/pages/api/dashboard/admin/events.ts`
 - `/api/dashboard/admin/export`: Event CSV download.
-- `/api/invitacion/rsvp`: External invitation state tracking.astro`
+- `/api/invitation/rsvp`: External invitation state tracking.astro`
 - `src/pages/dashboard/admin.astro`
 - Unauthorized response: `401` + `WWW-Authenticate`
 
@@ -46,19 +46,19 @@ persistence integrated and critical backend test coverage preserved.
 
 - New: `src/lib/rsvp/repository.ts`
 - Implemented contracts:
-    - `saveRsvpRecord`
-    - `getRsvpByStoreKey`
-    - `getRsvpById`
-    - `listRsvpByEvent`
-    - `appendAuditEvent`
-    - `appendChannelEvent`
-    - `getLastChannelEventByRsvpId`
+  - `saveRsvpRecord`
+  - `getRsvpByStoreKey`
+  - `getRsvpById`
+  - `listRsvpByEvent`
+  - `appendAuditEvent`
+  - `appendChannelEvent`
+  - `getLastChannelEventByRsvpId`
 
 ✅ Durable implementation for Supabase (REST)
 
 - Activated when exists:
-    - `SUPABASE_URL`
-    - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
 - In `production`, if not configured, fails gracefully.
 - In `test/dev`, memory fallback for local DX.
 
@@ -95,37 +95,37 @@ persistence integrated and critical backend test coverage preserved.
 ✅ `src/components/invitation/RSVP.tsx`
 
 - More consistent copy:
-    - `Full name *`
-    - `Total number of attendees`
-    - `Confirm attendance`
+  - `Full name *`
+  - `Total number of attendees`
+  - `Confirm attendance`
 
 ✅ Visual clarity adjustments
 
 - `src/styles/invitation/_rsvp.scss`
-    - more readable error (weight, border, padding)
-    - selected radio with state shadow
-    - WhatsApp CTA degraded to visual secondary
+  - more readable error (weight, border, padding)
+  - selected radio with state shadow
+  - WhatsApp CTA degraded to visual secondary
 - `src/styles/themes/sections/_rsvp-theme.scss`
-    - reinforced error contrast
-    - more evident radio selection
+  - reinforced error contrast
+  - more evident radio selection
 
 ### 2.5 Non-Technical Client Operation (UI-first)
 
 ✅ Extended admin panel in `src/pages/dashboard/admin.astro`
 
 - New "Invitations" module in same interface:
-    - link loading by `eventSlug`
-    - generic link (copy/open)
-    - custom links per guest (copy/open)
-    - direct WhatsApp access with pre-filled message
+  - link loading by `eventSlug`
+  - generic link (copy/open)
+  - custom links per guest (copy/open)
+  - direct WhatsApp access with pre-filled message
 
 ✅ Admin-only endpoint for links
 
 - `GET /api/rsvp/invitations?eventSlug=<slug>`
 - Requires Basic Auth
 - Response includes:
-    - `eventSlug`, `eventType`, `baseInviteUrl`, `genericUrl`
-    - `guests[]` with `guestId`, `displayName`, `maxAllowedAttendees`, `token`, `personalizedUrl`,
+  - `eventSlug`, `eventType`, `baseInviteUrl`, `genericUrl`
+  - `guests[]` with `guestId`, `displayName`, `maxAllowedAttendees`, `token`, `personalizedUrl`,
       `waShareUrl`
 
 ### 2.6 Advanced WhatsApp (Tier 3)
@@ -297,3 +297,11 @@ The following capabilities have been added to the admin dashboard and authentica
 - All operations require strong administrator session
 - Role and permission validation
 - Injection and unauthorized access protection
+
+## Changelog
+
+- **2026-03-04**: Renamed core RSVP/Auth utilities to strict `kebab-case` (e.g., `rateLimitProvider.ts` -> `rate-limit-provider.ts`).
+- **2026-03-04**: Updated all documentation links to reflect the consolidated 3-layer architecture.
+- **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy duplication guards.
+- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
+- **2026-03-04**: Verified 100% integrity with `governance audit` (Zero findings).

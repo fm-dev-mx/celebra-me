@@ -1,7 +1,7 @@
 import { ApiError } from './errors';
 import { requireSessionContext, type SessionContext, resolveAccessTokenFromRequest } from './auth';
-import { hasMfaEvidence } from './authMfaEvidence';
-import { verifyTrustedDeviceToken } from './trustedDevice';
+import { hasMfaEvidence } from './auth-mfa-evidence';
+import { verifyTrustedDeviceToken } from './trusted-device';
 import { getEnv } from '@/utils/env';
 
 function sanitize(value: unknown, maxLen = 4096): string {

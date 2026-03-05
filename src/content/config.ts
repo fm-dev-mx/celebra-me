@@ -1,7 +1,7 @@
 // src/content/config.ts
 
 import { defineCollection, z } from 'astro:content';
-import { EVENT_KEYS, COMMON_KEYS } from '@/lib/assets/AssetRegistry';
+import { EVENT_KEYS, COMMON_KEYS } from '@/lib/assets/asset-registry';
 
 const AssetSchema = z.union([
 	z.enum([...EVENT_KEYS, ...COMMON_KEYS]),

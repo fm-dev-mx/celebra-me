@@ -3,7 +3,7 @@
  * Protege contra brute force y DoS attacks
  */
 
-import { checkRateLimit, hashIp } from './rateLimitProvider';
+import { checkRateLimit, hashIp } from './rate-limit-provider';
 import { ApiError } from './errors';
 
 interface RateLimitConfig {

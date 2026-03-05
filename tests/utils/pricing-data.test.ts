@@ -1,4 +1,4 @@
-// tests/utils/pricingData.test.ts
+// tests/utils/pricing-data.test.ts
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
 
 describe('Pricing Data Structure Validation', () => {

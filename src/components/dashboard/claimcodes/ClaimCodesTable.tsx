@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ClaimCodeDTO } from '@/lib/rsvp/types';
-import { adminApi } from '@/lib/dashboard/adminApi';
+import { adminApi } from '@/lib/dashboard/admin-api';
 
 interface ClaimCodesTableProps {
 	items: ClaimCodeDTO[];

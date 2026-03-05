@@ -188,7 +188,7 @@ Celebra-me uses a **Preset-based** styling architecture to support multiple aest
     - The `preset` is defined in the content collection (`src/content/config.ts`).
     - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
     - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
-      preset. See [THEME_SYSTEM.md](../domains/theme/architecture.md) for variant details.
+      preset. See [domains/theme/architecture.md](../domains/theme/architecture.md) for variant details.
 
 ---
 
@@ -247,8 +247,8 @@ Silent divergence is discouraged.
 To ensure deterministic asset consumption and optimized delivery, all invitation-specific assets
 MUST be registered in the **Universal Asset Registry**.
 
-- **Location**: `src/lib/assets/AssetRegistry.ts`.
-- **Documentation**: See `docs/ASSET_MANAGEMENT.md` for detailed classification and usage
+- **Location**: `src/lib/assets/asset-registry.ts`.
+- **Documentation**: See `docs/domains/assets/management.md` for detailed classification and usage
   strategies.
 - **Mechanism**: Components consume assets via semantic keys using `getEventAsset()` or
   `getCommonAsset()`.
@@ -279,4 +279,4 @@ confirmation flows.
 
 Detailed module design and flows are documented in:
 
-- `docs/architecture/rsvp-module.md`
+- `docs/domains/rsvp/architecture.md`

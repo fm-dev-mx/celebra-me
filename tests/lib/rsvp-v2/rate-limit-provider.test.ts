@@ -2,7 +2,7 @@ import {
 	checkRateLimit,
 	hashIp,
 	resetRateLimitProviderForTests,
-} from '@/lib/rsvp/rateLimitProvider';
+} from '@/lib/rsvp/rate-limit-provider';
 
 describe('rsvp rateLimitProvider', () => {
 	const originalEnv = { ...process.env };

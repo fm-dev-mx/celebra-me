@@ -1,4 +1,4 @@
-import { dashboardApi } from './apiClient';
+import { dashboardApi, type ApiResult } from './api-client';
 import type {
 	CreateEventDTO,
 	UpdateEventDTO,
@@ -21,13 +21,19 @@ import type {
 import type { ClaimCodeDTO } from '@/lib/rsvp/types';
 
 export class AdminApi {
+	private handleResponse<T>(result: ApiResult<T>): T {
+		if (!result.ok) {
+			throw new Error(result.message);
+		}
+		return result.data;
+	}
+
 	// Events
 	async listEvents(page = 1, perPage = 50): Promise<EventsListResponse> {
 		const result = await dashboardApi.get<EventsListResponse>(
 			`/api/dashboard/admin/events?page=${page}&perPage=${perPage}`,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data;
+		return this.handleResponse(result);
 	}
 
 	async createEvent(payload: CreateEventDTO): Promise<EventListItemDTO> {
@@ -35,8 +41,7 @@ export class AdminApi {
 			'/api/dashboard/admin/events',
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 
 	async updateEvent(eventId: string, payload: UpdateEventDTO): Promise<EventListItemDTO> {
@@ -44,8 +49,7 @@ export class AdminApi {
 			`/api/dashboard/admin/events/${encodeURIComponent(eventId)}`,
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 
 	async archiveEvent(eventId: string): Promise<EventListItemDTO> {
@@ -61,8 +65,7 @@ export class AdminApi {
 		const result = await dashboardApi.get<UsersListResponse>(
 			`/api/dashboard/admin/users?page=${page}&perPage=${perPage}`,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data;
+		return this.handleResponse(result);
 	}
 
 	async createUser(payload: CreateUserDTO): Promise<UserListItemDTO> {
@@ -70,8 +73,7 @@ export class AdminApi {
 			'/api/dashboard/admin/users',
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 
 	async updateUserRole(
@@ -82,8 +84,7 @@ export class AdminApi {
 			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/role`,
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data;
+		return this.handleResponse(result);
 	}
 
 	// Claim Codes
@@ -97,8 +98,7 @@ export class AdminApi {
 		const result = await dashboardApi.get<ClaimCodesListResponse>(
 			`/api/dashboard/claimcodes?${query.toString()}`,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data;
+		return this.handleResponse(result);
 	}
 
 	async createClaimCode(payload: CreateClaimCodeDTO): Promise<ClaimCodeCreateResponse> {
@@ -106,8 +106,7 @@ export class AdminApi {
 			'/api/dashboard/claimcodes',
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data;
+		return this.handleResponse(result);
 	}
 
 	async updateClaimCode(claimCodeId: string, payload: UpdateClaimCodeDTO): Promise<ClaimCodeDTO> {
@@ -115,16 +114,14 @@ export class AdminApi {
 			`/api/dashboard/claimcodes/${encodeURIComponent(claimCodeId)}`,
 			payload,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 
 	async disableClaimCode(claimCodeId: string): Promise<ClaimCodeDTO> {
 		const result = await dashboardApi.delete<{ item: ClaimCodeDTO }>(
 			`/api/dashboard/claimcodes/${encodeURIComponent(claimCodeId)}`,
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 
 	async validateClaimCode(claimCode: string): Promise<ClaimCodeDTO> {
@@ -132,8 +129,7 @@ export class AdminApi {
 			'/api/dashboard/claimcodes/validate',
 			{ claimCode },
 		);
-		if (!result.ok) throw new Error(result.message);
-		return result.data.item;
+		return this.handleResponse(result).item;
 	}
 }
 

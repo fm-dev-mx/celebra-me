@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ClaimCodeDTO } from '@/lib/rsvp/types';
-import { adminApi } from '@/lib/dashboard/adminApi';
+import { adminApi } from '@/lib/dashboard/admin-api';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import ClaimCodesTable from './ClaimCodesTable';
 import ClaimCodeFormModal from './ClaimCodeFormModal';

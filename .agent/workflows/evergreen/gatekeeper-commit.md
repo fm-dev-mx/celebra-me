@@ -75,8 +75,5 @@ refactor scripts|minor changes|small fix|cleanup|tweaks|
 improvements|adjustments|stuff|things
 ```
 
-> [!TIP] `gatekeeper:report` now includes governance, lint, type-check, security, and ADU sections
-> in one JSON output. Use `jq '.adu.suggestedSplits'` to preview domain splits.
-
-> [!IMPORTANT] See `docs/GIT_GOVERNANCE.md` for the complete commit message standard of excellence,
-> domain boundary reference, and troubleshooting guide.
+- [git-governance.md](../../docs/core/git-governance.md) - Complete commit message standard.
+- [gatekeeper:report] - Run for ADU splits and JSON results.

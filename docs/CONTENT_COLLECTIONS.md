@@ -394,7 +394,7 @@ pnpm build    # Full build with content validation
 
 ## Related Documentation
 
-- `docs/ASSET_REGISTRY_GUIDE.md` - Asset management and registration
-- `docs/THEME_SYSTEM.md` - Theme variants and customization
-- `docs/ARCHITECTURE.md` - System architecture overview
+- `docs/domains/assets/management.md` - Asset management and registration
+- `docs/domains/theme/architecture.md` - Theme variants and customization
+- `docs/core/architecture.md` - System architecture overview
 - `src/content/config.ts` - Zod schema definition

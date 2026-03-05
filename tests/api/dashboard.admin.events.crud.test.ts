@@ -15,7 +15,7 @@ jest.mock('@/lib/rsvp/service', () => ({
 	updateEventAdmin: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/adminRateLimit', () => ({
+jest.mock('@/lib/rsvp/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 }));
 
@@ -26,7 +26,7 @@ jest.mock('@/lib/rsvp/csrf', () => ({
 	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null), // No hay token en header
 }));
 
-jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true as never), // Siempre permite
 }));
 

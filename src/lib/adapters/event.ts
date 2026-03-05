@@ -1,5 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
-import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/AssetRegistry';
+import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/asset-registry';
 import type { InvitationViewModel, ThemeConfig, HeroViewModel, EnvelopeViewModel } from './types';
 
 // --- Helpers ---

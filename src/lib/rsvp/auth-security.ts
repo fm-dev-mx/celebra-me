@@ -1,5 +1,5 @@
 import { ApiError } from './errors';
-import { checkRateLimit } from './rateLimitProvider';
+import { checkRateLimit } from './rate-limit-provider';
 import { sanitize } from '@/lib/rsvp/utils';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

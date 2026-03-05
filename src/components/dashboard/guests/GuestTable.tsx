@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GuestCard from './GuestCard';
 import ShareAction from './ShareAction';
-import { generateInvitationLink } from '@/utils/invitationLink';
+import { generateInvitationLink } from '@/utils/invitation-link';
 import type { DashboardGuestItem } from './types';
 
 interface GuestTableProps {

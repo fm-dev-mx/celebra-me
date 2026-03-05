@@ -16,7 +16,7 @@ Files referenced in some index or configuration but that **do not physically exi
 
 - `src/assets/images/common` and `src/assets/icons` referenced in ASSET_MANAGEMENT.md as broken in
   previous iterations.
-- `.agent/gatekeeper/policy.json` and `.agent/gatekeeper/baseline.json` (References in
+- `.agent/governance/config/policy.json` and `.agent/governance/config/baseline.json` (References in
   `docs/DOC_STATUS.md` to the old path still create ghosts if someone follows the documentation,
   must be updated to `.agent/governance/config/`).
 
@@ -25,14 +25,14 @@ Files referenced in some index or configuration but that **do not physically exi
 Files that physically exist but are **not registered** or properly tracked in the dashboard
 (`docs/DOC_STATUS.md`): _Technical and Core Docs:_
 
-- `docs/ASSET_REGISTRY_GUIDE.md`
+- `docs/domains/assets/management.md`
 - `docs/CONTENT_COLLECTIONS.md`
-- `docs/GOVERNANCE.md` (Possible historical redundancy)
-- `docs/PREMIUM_UX_VISION.md`
-- `docs/RSVP_STATUS.md`
+- `docs/core/project-conventions.md` (Possible historical redundancy)
+- `docs/core/premium-ux-vision.md`
+- `docs/domains/rsvp/status.md`
 - `docs/STABILITY.md`
-- `docs/TYPOGRAPHY_SYSTEM.md`
-- `docs/THEME_INVENTORY.md`
+- `docs/domains/theme/typography.md`
+- `docs/domains/theme/architecture.md`
 
 _Architecture & Security:_
 
@@ -44,7 +44,7 @@ _Operations/Workflows:_
 - `.agent/workflows/task-auth-dashboard-remediation.md` (Active workflow orphaned from dashboard).
 - `.agent/workflows/archive/task-share-flow-optimization.md`
 - `.agent/workflows/evergreen/auto-fix.md`
-- `.agent/PROJECT_CONVENTIONS.md` and `.agent/GATEKEEPER_RULES.md` (At agent root but not indexed
+- `docs/core/project-conventions.md` and `.agent/GATEKEEPER_RULES.md` (At agent root but not indexed
   anywhere, should be Core).
 
 ### 3. Obsolete Documents (Low Current Relevance)
@@ -63,8 +63,8 @@ prior audits of closed features. **Files to DELETE / ARCHIVE IMMEDIATELY:**
 - `tracking/PR3-atomic-claim-code.md`
 - `tracking/README.md`
 
-_Removal Justification:_ The RSVP module has already reached stability (`docs/RSVP_STATUS.md`,
-`docs/DB_RSVP.md`). Maintaining "gap-analysis" and "remediation-backlogs" from a month ago fragments
+_Removal Justification:_ The RSVP module has already reached stability (`docs/domains/rsvp/status.md`,
+`docs/domains/rsvp/database.md`). Maintaining "gap-analysis" and "remediation-backlogs" from a month ago fragments
 semantic search contexts for agents, increasing hallucination about resolved issues.
 
 ---
@@ -75,7 +75,7 @@ semantic search contexts for agents, increasing hallucination about resolved iss
 
 **System Constitution.** Documents that are core and should not be moved. Includes ARCHITECTURE.md,
 GIT_GOVERNANCE.md, ASSET_MANAGEMENT.md, THEME_SYSTEM.md, and evergreen workflows (task-to-prompt,
-gatekeeper, etc.). **Action:** Consolidate redundant files (GOVERNANCE.md into GIT_GOVERNANCE.md or
+gatekeeper, etc.). **Action:** Consolidate redundant files (core/project-conventions.md into GIT_GOVERNANCE.md or
 vice versa).
 
 ### Category: Task-Active (Current Work)

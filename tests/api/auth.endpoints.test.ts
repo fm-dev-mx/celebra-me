@@ -2,7 +2,7 @@ import { POST as loginHost } from '@/pages/api/auth/login-host';
 import { POST as registerHost } from '@/pages/api/auth/register-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
-import * as authApi from '@/lib/rsvp/authApi';
+import * as authApi from '@/lib/rsvp/auth-api';
 import {
 	buildAuthSessionDto,
 	claimEventForUserByClaimCode,
@@ -11,7 +11,7 @@ import {
 import { getHostSessionFromRequest } from '@/lib/rsvp/auth';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/authApi', () => ({
+jest.mock('@/lib/rsvp/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),

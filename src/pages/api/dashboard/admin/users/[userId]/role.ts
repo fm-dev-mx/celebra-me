@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/adminRateLimit';
+import { requireAdminRateLimit } from '@/lib/rsvp/admin-rate-limit';
 import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/csrf';
-import { canChangeUserRole } from '@/lib/rsvp/adminProtection';
+import { canChangeUserRole } from '@/lib/rsvp/admin-protection';
 import { validateBodyOrRespond } from '@/lib/rsvp/validation';
 import { errorResponse, forbidden, jsonResponse } from '@/lib/rsvp/http';
 import { changeUserRoleAdmin } from '@/lib/rsvp/service';

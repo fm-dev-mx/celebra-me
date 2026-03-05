@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
 
 import type { ImageMetadata } from 'astro';
-import type { ImageAsset } from '@/lib/assets/AssetRegistry';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;

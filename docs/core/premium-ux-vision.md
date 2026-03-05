@@ -41,7 +41,7 @@ duplication:
     - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
     - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in
-  [THEME_SYSTEM.md](../domains/theme/architecture.md).
+  [domains/theme/architecture.md](../domains/theme/architecture.md).
 
 ### C. Typography System (Core 5)
 
@@ -74,7 +74,7 @@ JSON configuration:
 ### E. Universal Asset System
 
 All invitation assets (images, logos, signatures) are managed via a deterministic registry in
-`src/lib/assets/AssetRegistry.ts`. This ensures:
+`src/lib/assets/asset-registry.ts`. This ensures:
 
 - **Performance:** Only optimized assets are consumed.
 - **Maintainability:** Semantic naming (e.g., `getEventAsset('gerardo-sesenta', 'hero')`).

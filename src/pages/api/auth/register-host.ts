@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/errors';
 import { errorResponse, parseJsonBody } from '@/lib/rsvp/http';
-import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp/authApi';
+import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -16,7 +16,7 @@ import {
 	normalizeEmail,
 	sanitizeClaimCode,
 	sanitizePassword,
-} from '@/lib/rsvp/authSecurity';
+} from '@/lib/rsvp/auth-security';
 import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,

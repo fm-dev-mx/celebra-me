@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp/types';
-import { adminApi } from '@/lib/dashboard/adminApi';
+import { adminApi } from '@/lib/dashboard/admin-api';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 
 const UsersAdminTable: React.FC = () => {

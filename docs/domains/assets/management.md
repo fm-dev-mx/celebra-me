@@ -3,7 +3,7 @@
 ## 1. Universal Asset Registry
 
 All invitation-specific and shared assets MUST be accessed via the **Universal Asset Registry**
-(`src/lib/assets/AssetRegistry.ts`) to ensure type safety, consistency, and centralized management.
+(`src/lib/assets/asset-registry.ts`) to ensure type safety, consistency, and centralized management.
 
 - `getEventAsset(eventSlug: string, assetKey: string): ImageAsset | undefined`
 - `getCommonAsset(assetKey: string): ImageAsset | undefined`
@@ -69,7 +69,7 @@ export const assets = {
 
 ### Step 3: Register in AssetRegistry
 
-Update `src/lib/assets/AssetRegistry.ts`:
+Update `src/lib/assets/asset-registry.ts`:
 
 ```typescript
 import { assets as NewEventAssets } from '@/assets/images/events/{event-slug}';

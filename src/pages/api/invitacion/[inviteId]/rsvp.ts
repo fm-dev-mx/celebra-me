@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/errors';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/http';
-import { checkRateLimit } from '@/lib/rsvp/rateLimitProvider';
+import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp/service';
 
 import { sanitize } from '@/lib/rsvp/utils';

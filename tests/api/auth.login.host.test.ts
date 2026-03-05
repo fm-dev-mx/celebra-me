@@ -1,16 +1,16 @@
 import type { APIContext } from 'astro';
 import { POST as loginHost } from '@/pages/api/auth/login-host';
-import * as authApi from '@/lib/rsvp/authApi';
-import * as rateLimitProvider from '@/lib/rsvp/rateLimitProvider';
+import * as authApi from '@/lib/rsvp/auth-api';
+import * as rateLimitProvider from '@/lib/rsvp/rate-limit-provider';
 import { ApiError } from '@/lib/rsvp/errors';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/authApi', () => ({
+jest.mock('@/lib/rsvp/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 

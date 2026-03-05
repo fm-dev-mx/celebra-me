@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { refreshAccessToken } from '@/lib/rsvp/authApi';
+import { refreshAccessToken } from '@/lib/rsvp/auth-api';
 import { ApiError } from '@/lib/rsvp/errors';
 import {
 	buildIdleActivityCookie,
@@ -8,7 +8,7 @@ import {
 	clearRefreshTokenCookie,
 	clearSessionCookie,
 } from '@/lib/rsvp/cookies';
-import { assertSameOrigin, enforceAuthRateLimit } from '@/lib/rsvp/authSecurity';
+import { assertSameOrigin, enforceAuthRateLimit } from '@/lib/rsvp/auth-security';
 import { errorResponse } from '@/lib/rsvp/http';
 
 function sanitize(value: unknown, maxLen = 4096): string {

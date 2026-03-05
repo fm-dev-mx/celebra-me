@@ -1,5 +1,7 @@
 # RSVP Module Architecture (Multi-tenant)
 
+**Last Updated:** 2026-03-04 (Governance Phase 2: Kebab-case naming enforced)
+
 ## Context
 
 This module adds a full guest management workflow for hosts and a personalized RSVP journey for
@@ -14,7 +16,7 @@ The stack is:
 ## Goals
 
 - Hosts can CRUD guests under their own events.
-- Every guest has a canonical invitation URL: `/invitacion/{inviteId}`.
+- Every guest has a canonical invitation URL: `/invitation/{inviteId}`.
 - Guests can confirm/decline with strict attendee limits.
 - Dashboard status updates are near-real-time.
 - Legacy RSVP (`rsvp_records`) remains operational during migration.
@@ -49,7 +51,7 @@ Legacy tables retained during transition:
 ### Host Flow
 
 1. Host signs in with Supabase Auth.
-2. Unauthenticated access to `/dashboard/invitados` redirects to `/login?next=/dashboard/invitados`.
+2. Unauthenticated access to `/dashboard/guests` redirects to `/login?next=/dashboard/guests`.
 3. Dashboard requests `/api/dashboard/guests` with JWT.
 4. API queries PostgREST with user JWT (RLS scoped by `auth.uid()`).
 5. CRUD actions update `guest_invitations` and append `guest_invitation_audit`.
@@ -57,9 +59,9 @@ Legacy tables retained during transition:
 
 ### Guest Flow
 
-1. Guest opens `/invitacion/{inviteId}`.
+1. Guest opens `/invitation/{inviteId}`.
 2. API context endpoint resolves invitation by `inviteId`.
-3. Client posts view telemetry to `/api/invitacion/{inviteId}/view`.
+3. Client posts view telemetry to `/api/invitation/{inviteId}/view`.
 4. API marks `first_viewed_at` (once) and updates `last_viewed_at`.
 5. Guest submits RSVP; API validates limits and updates status/message.
 
@@ -92,9 +94,9 @@ Registration policy:
 
 ### Guest API
 
-- `GET /api/invitacion/:inviteId/context`
-- `POST /api/invitacion/:inviteId/rsvp`
-- `POST /api/invitacion/:inviteId/view`
+- `GET /api/invitation/:inviteId/context`
+- `POST /api/invitation/:inviteId/rsvp`
+- `POST /api/invitation/:inviteId/view`
 
 ## Realtime Strategy
 
@@ -121,4 +123,13 @@ realtime is required.
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
 - `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.
 - `/admin/rsvp` is intentionally hidden from the public login UI to reduce user friction.
-- Host registration uses `claimCode` global único and creates event membership.
+- Host registration uses `claimCode` global unique and creates event membership.
+
+## Changelog
+
+- **2026-03-04**: Renamed core RSVP/Auth utilities to strict `kebab-case`.
+- **2026-03-04**: Updated all documentation links to reflect the consolidated 3-layer architecture.
+- **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy duplication guards.
+- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
+- **2026-03-04**: Re-signed S0 Signature for the new repository baseline.
+

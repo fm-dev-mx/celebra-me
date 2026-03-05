@@ -1,7 +1,8 @@
 # Git Governance: High-Precision Commit Architecture
 
 > **Status**: Active — enforced at `pre-commit`, `commit-msg`, and `pre-push` hooks. **Last
-> Updated**: 2026-03-03
+> Updated**: 2026-03-04
+**Audit**: Phase 2 (Naming Conventions & Kebab-case) completed.
 
 ## Overview
 
@@ -198,7 +199,7 @@ _(mixes `core` and `theme` domains — must be 2 separate commits)_
 | Domain       | Glob Patterns                                                                                                                 | Typical Commit Scopes                           |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | `invitation` | `src/components/invitation/**`, `src/pages/[eventType]/**`, `src/layouts/Layout.astro`                                        | `invitation`, `layout`, `event-page`            |
-| `auth`       | `src/lib/rsvp/**`, `src/pages/api/auth/**`, `src/pages/api/invitacion/**`, `src/middleware.ts`                                | `auth`, `rsvp`, `session`, `middleware`         |
+| `auth`       | `src/lib/rsvp/**`, `src/pages/api/auth/**`, `src/pages/api/invitation/**`, `src/middleware.ts`                                | `auth`, `rsvp`, `session`, `middleware`         |
 | `theme`      | `src/styles/themes/**`, `src/styles/tokens/**`, `src/styles/*.scss`                                                           | `theme`, `theme-preset`, `tokens`, `typography` |
 | `governance` | `.agent/**`, `.husky/**`, `.github/**`, `scripts/**`, `commitlint.config.cjs`, `package.json`, `pnpm-lock.yaml`, `.gitignore` | `governance`, `gatekeeper`, `ci`, `deps`        |
 | `core`       | `src/content/config.ts`, `src/content/events/**`, `src/lib/adapters/**`, `src/lib/assets/**`, `src/data/**`                   | `core`, `content`, `adapter`, `data`            |
@@ -384,3 +385,9 @@ the Gatekeeper blocks the commit.
 > [!IMPORTANT] This document must be updated whenever changes are made to any governance script,
 > commitlint configuration, or domain-map. The `documentationMappings` rule in `policy.json` will
 > flag stale documentation automatically.
+
+## Changelog
+
+- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
+- **2026-03-04**: Enforced strict `kebab-case` across all utility, assets, and documentation files.
+- **2026-03-04**: Re-signed S0 Signature to establish a new healthy system baseline.

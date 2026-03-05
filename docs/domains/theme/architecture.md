@@ -240,4 +240,4 @@ gallery: {
 
 ---
 
-**Last Updated:** 2026-02-15 **Owner:** Frontend Lead
+**Last Updated:** 2026-03-04 (Governance Phase 2: Kebab-case naming enforced) **Owner:** Frontend Lead

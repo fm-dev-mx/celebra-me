@@ -43,7 +43,7 @@ For every modified section:
 
 ## 🏗️ Step 3: Documentation & Sync
 
-- [ ] Audit `docs/THEME_SYSTEM.md` for drift.
+- [ ] Audit `docs/domains/theme/architecture.md` for drift.
 - [ ] Ensure all `sectionStyles` variants are documented.
 - [ ] Sync Zod schemas in `src/content/config.ts` (include `labels` for RSVP and Tier 3 WhatsApp
       fields).

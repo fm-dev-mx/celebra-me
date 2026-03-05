@@ -28,8 +28,8 @@
   plantillas divididas (`confirmedTemplate`, `declinedTemplate`) y `omitTitle`, pero esta capacidad
   NO ha sido reflejada en:
     - `src/content/config.ts` (Validación de esquema fallará si se usan estos campos).
-    - `docs/THEME_SYSTEM.md` (Documentación técnica incompleta).
-    - `docs/RSVP_STATUS.md` (Estado de implementación no actualizado).
+    - `docs/domains/theme/architecture.md` (Documentación técnica incompleta).
+    - `docs/domains/rsvp/status.md` (Estado de implementación no actualizado).
 
 ### D. Hardcoding en Rutas
 
@@ -45,9 +45,9 @@
 | Archivo                | Estado            | Hallazgo                                                                              |
 | :--------------------- | :---------------- | :------------------------------------------------------------------------------------ |
 | `docs/DOC_STATUS.md`   | ❌ Crítico        | Reporta 55 workflows; solo existen ~5 activos. Paths rotos.                           |
-| `docs/THEME_SYSTEM.md` | ⚠️ Desactualizado | Esquema de `sectionStyles` de ejemplo no coincide con `config.ts`. Omite `itinerary`. |
-| `docs/RSVP_STATUS.md`  | ⚠️ Incompleto     | No menciona las nuevas capacidades de plantillas de WhatsApp (Tier 3).                |
-| `docs/ARCHITECTURE.md` | 🟢 Saludable      | Sigue siendo la base sólida, pero debe reforzarse el aislamiento de labels de RSVP.   |
+| `docs/domains/theme/architecture.md` | ⚠️ Desactualizado | Esquema de `sectionStyles` de ejemplo no coincide con `config.ts`. Omite `itinerary`. |
+| `docs/domains/rsvp/status.md`  | ⚠️ Incompleto     | No menciona las nuevas capacidades de plantillas de WhatsApp (Tier 3).                |
+| `docs/core/architecture.md` | 🟢 Saludable      | Sigue siendo la base sólida, pero debe reforzarse el aislamiento de labels de RSVP.   |
 
 ---
 

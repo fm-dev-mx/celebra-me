@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
-import { adminApi } from '@/lib/dashboard/adminApi';
+import { adminApi } from '@/lib/dashboard/admin-api';
 import type { EventListItemDTO } from '@/lib/dashboard/dto/events';
 
 interface ClaimCodeFormModalProps {

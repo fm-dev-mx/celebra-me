@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
 import { ApiError } from '@/lib/rsvp/errors';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/http';
-import { checkRateLimit } from '@/lib/rsvp/rateLimitProvider';
+import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
 import { deleteDashboardGuest, updateDashboardGuest } from '@/lib/rsvp/service';
 import type { AttendanceStatus } from '@/lib/rsvp/types';
 

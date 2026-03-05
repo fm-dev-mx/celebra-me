@@ -1,9 +1,9 @@
 import { POST } from '@/pages/api/invitacion/[inviteId]/view';
-import { checkRateLimit } from '@/lib/rsvp/rateLimitProvider';
+import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
 import { trackInvitationView } from '@/lib/rsvp/service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/rateLimitProvider', () => ({
+jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 

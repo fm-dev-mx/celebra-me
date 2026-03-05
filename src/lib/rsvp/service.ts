@@ -53,9 +53,9 @@ import { publishGuestStreamEvent } from './stream';
 import { mapSupabaseErrorToApiError } from './supabase-errors';
 import { createHash, randomBytes } from 'node:crypto';
 import { getEnv } from '@/utils/env';
-import { listAuthUsers } from './authApi';
+import { listAuthUsers } from './auth-api';
 import { generateShortId } from '@/utils/ids';
-import { generateInvitationLink } from '@/utils/invitationLink';
+import { generateInvitationLink } from '@/utils/invitation-link';
 
 function isUuid(value: string): boolean {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

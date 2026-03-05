@@ -1,9 +1,9 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getSupabaseUserByAccessToken } from '@/lib/rsvp/auth';
-import { hasMfaEvidence } from '@/lib/rsvp/authMfaEvidence';
-import { refreshAccessToken } from '@/lib/rsvp/authApi';
+import { hasMfaEvidence } from '@/lib/rsvp/auth-mfa-evidence';
+import { refreshAccessToken } from '@/lib/rsvp/auth-api';
 import { normalizeAppRole } from '@/lib/rsvp/roles';
-import { verifyTrustedDeviceToken } from '@/lib/rsvp/trustedDevice';
+import { verifyTrustedDeviceToken } from '@/lib/rsvp/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/csrf';
 
 const IDLE_TIMEOUT_SECONDS = 60 * 30;

@@ -14,14 +14,10 @@ They are not architectural mandates; they are **shared agreements**.
 
 Astro promotes the following conventional folders, though you may extend them if necessary:
 
-- `src/pages/` — Routes and API endpoints (file-based routing, required).
-- `src/components/` — Reusable UI components (presentation-only).
-- `src/layouts/` — Page layouts that structure pages.
-- `src/styles/` — Global and feature-level SCSS styles.
-- `src/content/` — Astro content collections and structured content.
-- `src/utils/` — Shared utilities (pure logic, browser-safe).
-- `public/` — Static assets (images, icons, fonts).
-- `docs/plan/` — Modular implementation plans and detailed specifications for each section/feature.
+- `docs/` — Permanent documentation (Architecture, Domains, UX).
+- `.agent/plans/` — Modular implementation plans and detailed specifications for each section/feature.
+- `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
+- `.agent/governance/` — Quality control scripts and policies.
 
 These conventions help align the repo with widely used Astro layouts without enforcing unnecessary
 rigidity.
@@ -40,9 +36,10 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 
 ### 2.2 Files
 
-- UI components: `PascalCase.astro` or `PascalCase.ts`
-- Utilities: `camelCase.ts`
-- Styles: `kebab-case.scss` or `feature-name.scss` when scoped to a feature
+- UI components: `PascalCase.astro` or `PascalCase.tsx`
+- Utilities & Logic: `kebab-case.ts`
+- Assets & Documentation: `kebab-case.extension` (e.g. `bg-hero.jpg`, `intro-guide.md`)
+- Styles: `kebab-case.scss`
 
 ### 2.3 Routes & URLs
 
@@ -60,8 +57,8 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 
 ### 3.2 Server-Only Helpers
 
-- Server-only logic (e.g., integrations, secrets) should live alongside API routes:
-  `src/pages/api/_lib/` or `src/utils/server/`.
+- Server-only logic (e.g., integrations, secrets) should live in `src/lib/`.
+- This ensures clean separation between framework (Astro/Pages) and logic (Lib).
 - This makes boundaries explicit without inventing unnecessary folders.
 
 ---
@@ -113,9 +110,9 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 
 - Use semantic HTML (`<main>`, `<header>`, `<footer>`).
 - Always provide:
-    - `alt` attributes for images
-    - associated `label` for form controls
-    - explicit `type` on `<button>`
+  - `alt` attributes for images
+  - associated `label` for form controls
+  - explicit `type` on `<button>`
 
 ---
 
@@ -150,10 +147,9 @@ centralized management, and consistency:
 1. **Create event directory** in `src/assets/images/events/{event-slug}/`
 2. **Add required images** (hero.webp, portrait.webp, jardin.webp, signature.webp, gallery-01.webp
    through gallery-11.webp)
-3. **Create barrel file** (`index.ts`) with proper exports (see `docs/ASSET_REGISTRY_GUIDE.md`)
-4. **Register event** in `src/lib/assets/AssetRegistry.ts` using the `mapEventAssets()` helper
-5. **Verify registration** by running `npm run build` and checking TypeScript compilation
+3. **Register event** in `src/lib/assets/asset-registry.ts` using the `mapEventAssets()` helper
+4. **Verify registration** by running `pnpm exec astro check` and checking TypeScript compilation
 
-For complete step-by-step instructions, refer to `docs/ASSET_REGISTRY_GUIDE.md`.
+For complete step-by-step instructions, refer to `docs/domains/assets/management.md`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

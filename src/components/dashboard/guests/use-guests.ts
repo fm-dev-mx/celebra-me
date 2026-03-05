@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { dashboardApi } from '@/lib/dashboard/apiClient';
+import { dashboardApi } from '@/lib/dashboard/api-client';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
 
 interface UseGuestsReturn {
