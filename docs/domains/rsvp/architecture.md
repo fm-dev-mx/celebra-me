@@ -129,7 +129,12 @@ realtime is required.
 
 - **2026-03-04**: Renamed core RSVP/Auth utilities to strict `kebab-case`.
 - **2026-03-04**: Updated all documentation links to reflect the consolidated 3-layer architecture.
-- **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy duplication guards.
-- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
+- **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy
+  duplication guards.
+- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to
+  `.agent/governance`.
 - **2026-03-04**: Re-signed S0 Signature for the new repository baseline.
-
+- **2026-03-04**: Migrated RSVP and Auth API calls to dedicated API client classes (`AuthBridgeApi`,
+  `GuestsApi`) to enforce consistent patterns.
+- **2026-03-04**: Enhanced `AuthBridgeApi` with explicit session synchronization logic to maintain
+  AAL2 security tiers across client-side transitions.
