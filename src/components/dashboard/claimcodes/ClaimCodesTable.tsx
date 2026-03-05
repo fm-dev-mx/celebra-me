@@ -202,14 +202,11 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 								<p className="dashboard-form-help">Deja vacío para que no expire</p>
 							</div>
 							{editModal.error && (
-								<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
+								<p className="dashboard-error dashboard-error--full">
 									{editModal.error}
 								</p>
 							)}
-							<div
-								className="dashboard-modal__actions"
-								style={{ gridColumn: '1 / -1' }}
-							>
+							<div className="dashboard-modal__actions dashboard-modal__actions--full">
 								<button
 									type="button"
 									className="btn-secondary"

@@ -33,21 +33,13 @@ export class ErrorBoundary extends Component<Props, State> {
 			}
 
 			return (
-				<div
-					className="dashboard-error-boundary"
-					style={{ padding: '2rem', textAlign: 'center' }}
-				>
+				<div className="dashboard-error-boundary">
 					<h3>Algo salió mal</h3>
 					<p>Ocurrió un error al cargar este componente.</p>
 					{this.state.error && (
-						<details
-							className="dashboard-error-details"
-							style={{ marginTop: '1rem', textAlign: 'left' }}
-						>
+						<details className="dashboard-error-details">
 							<summary>Detalles del error</summary>
-							<pre
-								style={{ fontSize: '0.8rem', overflow: 'auto', maxHeight: '200px' }}
-							>
+							<pre className="dashboard-error-details__trace">
 								{this.state.error.message}
 								{this.state.error.stack && (
 									<>
@@ -73,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
 								errorInfo: undefined,
 							})
 						}
-						style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}
+						className="dashboard-error-boundary__retry"
 					>
 						Reintentar
 					</button>

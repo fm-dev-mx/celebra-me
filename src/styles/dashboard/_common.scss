@@ -4,9 +4,9 @@
 
 @use '../tokens' as *;
 
-// ============================================================================
+// ==============================
 // Status & Error Messages
-// ============================================================================
+// ==============================
 
 .dashboard-status {
 	font-size: 0.875rem;
@@ -39,9 +39,9 @@
 	margin: 0.5rem 0;
 }
 
-// ============================================================================
+// ==============================
 // Modal System
-// ============================================================================
+// ==============================
 
 .dashboard-modal-backdrop {
 	position: fixed;
@@ -72,9 +72,9 @@
 	}
 }
 
-// ============================================================================
+// ==============================
 // Loading States
-// ============================================================================
+// ==============================
 
 .dashboard-loading {
 	display: flex;
@@ -99,4 +99,51 @@
 	to {
 		transform: rotate(360deg);
 	}
+}
+
+// ==============================
+// Grid Utility: Span All Columns
+// ==============================
+// Used by .dashboard-error, .dashboard-actions, .dashboard-modal__actions
+// when placed inside a .dashboard-form-grid to span the full width.
+
+.dashboard-error--full,
+.dashboard-actions--full,
+.dashboard-modal__actions--full {
+	grid-column: 1 / -1;
+}
+
+// ==============================
+// Error Boundary Component
+// ==============================
+
+.dashboard-error-boundary {
+	padding: var(--spacing-xl, 2rem);
+	text-align: center;
+}
+
+.dashboard-error-details {
+	margin-top: var(--spacing-md, 1rem);
+	text-align: left;
+}
+
+.dashboard-error-details__trace {
+	font-size: 0.8rem;
+	overflow: auto;
+	max-height: 200px;
+}
+
+.dashboard-error-boundary__retry {
+	margin-top: var(--spacing-md, 1rem);
+	padding: 0.5rem 1rem;
+}
+
+// ==============================
+// Confirm Modal Message
+// ==============================
+
+.dashboard-confirm-message {
+	text-align: center;
+	margin-bottom: var(--spacing-xl, 2rem);
+	color: $color-text-secondary;
 }

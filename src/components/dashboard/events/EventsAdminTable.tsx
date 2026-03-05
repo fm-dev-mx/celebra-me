@@ -207,15 +207,7 @@ const EventsAdminTable: React.FC = () => {
 				>
 					<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
 						<h3>{confirmModal.title}</h3>
-						<p
-							style={{
-								textAlign: 'center',
-								marginBottom: '2rem',
-								color: 'var(--color-text-secondary)',
-							}}
-						>
-							{confirmModal.message}
-						</p>
+						<p className="dashboard-confirm-message">{confirmModal.message}</p>
 						<div className="dashboard-modal__actions">
 							<button
 								type="button"
@@ -356,12 +348,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 							<option value="archived">Archivado</option>
 						</select>
 					</div>
-					{error && (
-						<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
-							{error}
-						</p>
-					)}
-					<div className="dashboard-modal__actions" style={{ gridColumn: '1 / -1' }}>
+					{error && <p className="dashboard-error dashboard-error--full">{error}</p>}
+					<div className="dashboard-modal__actions dashboard-modal__actions--full">
 						<button
 							type="button"
 							className="btn-secondary"

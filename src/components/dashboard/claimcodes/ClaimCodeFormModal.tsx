@@ -114,12 +114,8 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 				/>
 				<p className="dashboard-form-help">Deja vacío para que no expire</p>
 			</div>
-			{error && (
-				<p className="dashboard-error" style={{ gridColumn: '1 / -1' }}>
-					{error}
-				</p>
-			)}
-			<div className="dashboard-actions" style={{ gridColumn: '1 / -1' }}>
+			{error && <p className="dashboard-error dashboard-error--full">{error}</p>}
+			<div className="dashboard-actions dashboard-actions--full">
 				<button
 					type="submit"
 					className="btn-primary"
