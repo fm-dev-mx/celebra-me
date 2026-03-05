@@ -1,8 +1,7 @@
 # Git Governance: High-Precision Commit Architecture
 
 > **Status**: Active — enforced at `pre-commit`, `commit-msg`, and `pre-push` hooks. **Last
-> Updated**: 2026-03-04
-**Audit**: Phase 2 (Naming Conventions & Kebab-case) completed.
+> Updated**: 2026-03-04 **Audit**: Phase 2 (Naming Conventions & Kebab-case) completed.
 
 ## Overview
 
@@ -24,19 +23,19 @@ responsibility in the validation pipeline.
 
 | File                                                | Responsibility                                                                                                                                                                                                                                      | Hook / Trigger                            |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `.agent/governance/bin/gatekeeper.js`               | Core validation engine: 15+ rules covering forbidden files, architecture boundaries, secret scanning, style/script policies, god-object detection, duplication guards, and language governance. Outputs a JSON report with a deterministic `route`. | `pre-commit`                              |
+| `.agent/governance/bin/gatekeeper.mjs`              | Core validation engine: 15+ rules covering forbidden files, architecture boundaries, secret scanning, style/script policies, god-object detection, duplication guards, and language governance. Outputs a JSON report with a deterministic `route`. | `pre-commit`                              |
 | `.agent/governance/bin/gatekeeper-workflow.mjs`     | Self-healing workflow orchestrator: reads the gatekeeper JSON report, extracts auto-fixable findings, executes fix commands in a retry loop (max 3 attempts), and re-validates.                                                                     | Manual via `pnpm gatekeeper:workflow`     |
 | `.agent/governance/bin/gatekeeper-commit-ready.mjs` | Branch guard: prevents direct commits to `main`, offers `--create-branch` for new feature branches, then runs `gatekeeper:report`.                                                                                                                  | Manual via `pnpm gatekeeper:commit-ready` |
 | `scripts/validate-commits.mjs`                      | Post-push ADU validator: iterates over a commit range (`base..head`), validates each commit against conventional-commit format, rejects merge commits and WIP markers, and enforces a max-12-files-per-commit atomicity rule.                       | `pre-push` / CI                           |
-| `.agent/governance/config/domain-map.json`          | Domain boundary definitions: maps file globs to semantic domains (`invitation`, `auth`, `theme`, `governance`, `core`, `ui`, `docs`, `test`, `admin`). Used by `DomainMapper` to compute ADU splits and split confidence.                           | Read by `gatekeeper.js`                   |
+| `.agent/governance/config/domain-map.json`          | Domain boundary definitions: maps file globs to semantic domains (`invitation`, `auth`, `theme`, `governance`, `core`, `ui`, `docs`, `test`, `admin`). Used by `DomainMapper` to compute ADU splits and split confidence.                           | Read by `gatekeeper.mjs`                  |
 | `commitlint.config.cjs`                             | Conventional Commit enforcement: type/scope validation, vague-subject rejection, English-only message enforcement, mandatory body with file-level bullets for multi-file commits, and minimum body length for complex changes.                      | `commit-msg`                              |
-| `.agent/governance/config/policy.json`              | Governance thresholds: per-rule enablement, kill-switches, severity-by-phase escalation, documentation mapping triggers, architecture boundary imports, and auto-branching configuration.                                                           | Read by `gatekeeper.js`                   |
-| `.agent/governance/config/baseline.json`            | Baseline suppressions: stable-key and legacy-fingerprint entries for known findings that are temporarily suppressed during phased rollout.                                                                                                          | Read by `gatekeeper.js`                   |
+| `.agent/governance/config/policy.json`              | Governance thresholds: per-rule enablement, kill-switches, severity-by-phase escalation, documentation mapping triggers, architecture boundary imports, and auto-branching configuration.                                                           | Read by `gatekeeper.mjs`                  |
+| `.agent/governance/config/baseline.json`            | Baseline suppressions: stable-key and legacy-fingerprint entries for known findings that are temporarily suppressed during phased rollout.                                                                                                          | Read by `gatekeeper.mjs`                  |
 
 ### npm Scripts
 
 ```text
-pnpm gatekeeper              → Run gatekeeper.js (default: strict mode)
+pnpm gatekeeper              → Run gatekeeper.mjs (default: strict mode)
 pnpm gatekeeper:report        → Full JSON report (governance + lint + typecheck + security + ADU)
 pnpm gatekeeper:baseline      → Rebuild baseline.json from current codebase state
 pnpm gatekeeper:workflow      → Self-healing loop (fix → re-validate × 3)
@@ -55,7 +54,7 @@ one semantic domain. This ensures domain isolation, clean reverts, and readable 
 ```mermaid
 flowchart TD
     A[git add files] --> B[pre-commit hook fires]
-    B --> C[gatekeeper.js runs strict checks]
+    B --> C[gatekeeper.mjs runs strict checks]
     C --> D{Route decision}
     D -->|architectural_intervention| E[BLOCKED: fix findings first]
     D -->|auto_fix| F[gatekeeper-workflow.mjs runs fixes]
@@ -221,7 +220,7 @@ When `DomainMapper.analyze()` returns `suggestedSplits` with more than one domai
 
 ## Gatekeeper Routes
 
-The `computeRoute()` function in `gatekeeper.js` produces one of three deterministic routes:
+The `computeRoute()` function in `gatekeeper.mjs` produces one of three deterministic routes:
 
 | Route                        | Meaning                                             | Action                                         |
 | ---------------------------- | --------------------------------------------------- | ---------------------------------------------- |
@@ -354,13 +353,13 @@ The Governance Vault (`.agent/governance/`) is the central intelligence unit for
 integrity, naming standards, and documentation alignment of the `celebra-me` project. It
 consolidates scattered scripts and configurations into a single, deterministic architecture.
 
-| Path                        | Purpose                                                         |
-| --------------------------- | --------------------------------------------------------------- |
-| `.agent/governance/bin/`    | **The Brain**: Core scripts (`governance.js`, `gatekeeper.js`). |
-| `.agent/governance/config/` | **The Law**: Policy, Baseline, and Domain Mapping.              |
-| `.agent/governance/state/`  | **The Truth**: Current S0 Signature and system state.           |
+| Path                        | Purpose                                                           |
+| --------------------------- | ----------------------------------------------------------------- |
+| `.agent/governance/bin/`    | **The Brain**: Core scripts (`governance.mjs`, `gatekeeper.mjs`). |
+| `.agent/governance/config/` | **The Law**: Policy, Baseline, and Domain Mapping.                |
+| `.agent/governance/state/`  | **The Truth**: Current S0 Signature and system state.             |
 
-### The Governance Micro-CLI (`governance.js`)
+### The Governance Micro-CLI (`governance.mjs`)
 
 A lean, high-performance tool for audit and signing.
 
@@ -388,6 +387,7 @@ the Gatekeeper blocks the commit.
 
 ## Changelog
 
-- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
+- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to
+  `.agent/governance`.
 - **2026-03-04**: Enforced strict `kebab-case` across all utility, assets, and documentation files.
 - **2026-03-04**: Re-signed S0 Signature to establish a new healthy system baseline.

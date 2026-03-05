@@ -87,7 +87,7 @@ code level:
 - **Documentation / Help:** Maintains explanations throughout the code via comments, but does not
   implement `--help`.
 
-### `.agent/governance/bin/gatekeeper.js`
+### `.agent/governance/bin/gatekeeper.mjs`
 
 - **Fault tolerance:** Highly advanced under try/catch and wrapper utilities. Terminates with an
   explicit `process.exit(1)`.
