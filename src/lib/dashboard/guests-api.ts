@@ -73,6 +73,30 @@ export class GuestsApi {
 		}>('/api/dashboard/events');
 		return this.handleResponse(result);
 	}
+
+	/**
+	 * Downloads the guest list as a CSV file.
+	 * Uses raw fetch (blob response) because the shared fetchJSON helper
+	 * only handles JSON payloads.
+	 */
+	async exportCsv(eventId: string): Promise<void> {
+		const query = new URLSearchParams({ eventId });
+		const response = await fetch(`/api/dashboard/guests/export.csv?${query.toString()}`);
+
+		if (!response.ok) {
+			throw new Error('Error al exportar CSV');
+		}
+
+		const blob = await response.blob();
+		const url = window.URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = `invitados-${eventId}.csv`;
+		document.body.appendChild(anchor);
+		anchor.click();
+		window.URL.revokeObjectURL(url);
+		document.body.removeChild(anchor);
+	}
 }
 
 export const guestsApi = new GuestsApi();
