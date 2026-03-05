@@ -4,7 +4,7 @@
 (Astro/React con `PascalCase`) y las políticas documentadas de Gatekeeper de "todo en minúsculas y
 `kebab-case`", para asegurar un pipeline y reglas deterministas sin fricción para el usuario.
 
-**Estado:** `0% Completado`
+**Estado:** `100% Completado`
 
 ---
 
@@ -51,9 +51,9 @@
 
 ## ✅ Criterios de Aceptación
 
-- [ ] Todas las extensiones `.tsx` y `.astro` están expresamente exentas del `kebab-case`
+- [x] Todas las extensiones `.tsx` y `.astro` están expresamente exentas del `kebab-case`
       restrictivo en la regla oficial de validación.
-- [ ] La herramienta Gatekeeper (sea el script manual o el Workflow general) pasa exitosamente sin
+- [x] La herramienta Gatekeeper (sea el script manual o el Workflow general) pasa exitosamente sin
       arrojar falsos positivos por la capitalización de nombres de componentes UI.
-- [ ] Cualquier función de soporte `.ts` / utilerías, activos y directorios han sido sanitizados al
+- [x] Cualquier función de soporte `.ts` / utilerías, activos y directorios han sido sanitizados al
       estricto `kebab-case`.

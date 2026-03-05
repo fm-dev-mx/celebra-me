@@ -66,3 +66,11 @@ inyección de dependencias o Hooks dedicados (el Backend-for-Frontend).
 - [x] Incorporación de capa `lib/hooks/` o `lib/api/` unificada y abstracta de peticiones HTTP.
 - [x] No existen etiquetas `<img>` subóptimas cargando assets locales desde Astro; están
       transformadas hacia el `<Image>` estandarizado en la documentación.
+
+## 📝 Excepciones Documentadas
+
+- **`mfa-setup.astro`**: Contiene `fetch('/api/auth/sync-session')` dentro de un bloque `<script>`
+  de página Astro (vanilla JS con manipulación DOM directa). No es un componente React ni una vista
+  reutilizable — es un flujo MFA acoplado a Supabase que sincroniza la sesión elevada tras la
+  verificación TOTP. Migrar a `AuthBridgeApi` sería arquitectónicamente correcto pero queda fuera
+  del alcance original de esta fase (componentes `.tsx`).

@@ -69,3 +69,10 @@ Las siguientes 2 ocurrencias de `style={{}}` fueron auditadas y se mantienen int
   derivados de `Math.random()` en runtime. No migrable a SCSS estático.
 - **`TimelineList.tsx`**: La prop `pathLength` recibe un `MotionValue` de Framer Motion (`scaleY`)
   que controla la animación SVG reactiva al scroll. No migrable a SCSS estático.
+
+Adicionalmente, se identificó deuda técnica fuera del alcance original (JSX `style={{}}`):
+
+- **`mfa-setup.astro`**: Contiene ~10 asignaciones imperativas `.style.*` dentro de un bloque
+  `<script>` de página Astro (vanilla JS con `document.createElement`). No son props JSX
+  `style={{}}` sino manipulación DOM directa para el flujo MFA de Supabase. Se registra como backlog
+  de refinamiento visual, no como regresión de esta fase.

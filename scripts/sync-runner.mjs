@@ -119,5 +119,5 @@ log(`Summary saved to: ${SUMMARY_FILE}\n`);
 console.log(`Next steps:`);
 console.log(`1. Review the output above for errors/warnings.`);
 console.log(`2. Execute the relevant sync workflows for remediation:`);
-console.log(`   - .agent/workflows/evergreen/system-doc-alignment.md`);
+console.log(`   - .agent/workflows/system-doc-alignment.md`);
 console.log(`3. Update DOC_STATUS.md with findings.\n`);
