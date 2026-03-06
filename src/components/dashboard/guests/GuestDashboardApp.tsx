@@ -9,7 +9,7 @@ import Toast from './Toast';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import { useShortcuts } from '@/hooks/useShortcuts';
 import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
-import '@/styles/invitation/_dashboard-guests.scss';
+import '@/styles/dashboard/_guests.scss';
 import { createPortal } from 'react-dom';
 import { Confetti } from '@/components/ui/Confetti';
 
