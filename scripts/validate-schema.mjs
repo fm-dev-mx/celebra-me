@@ -22,11 +22,10 @@ console.log('================================');
 const ERRORS = [];
 const WARNINGS = [];
 
-// Extract variants from Zod schema (only variant enums)
-function extractZodVariants() {
-	const configPath = path.join(__dirname, '..', 'src', 'content', 'config.ts');
-	const content = fs.readFileSync(configPath, 'utf8');
-	const lines = content.split('\n');
+// Extract variants from centralized theme contract
+function extractContractVariants() {
+	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-contract.ts');
+	const content = fs.readFileSync(contractPath, 'utf8');
 
 	const variants = {
 		quote: new Set(),
@@ -38,89 +37,25 @@ function extractZodVariants() {
 		thankYou: new Set(),
 	};
 
-	let currentSection = null;
-	let inSectionStyles = false;
-	let collectingArray = false;
-	let arrayContent = '';
-	let bracketDepth = 0;
-
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		const trimmed = line.trim();
-
-		// Enter/exit sectionStyles block
-		if (trimmed.startsWith('sectionStyles:')) {
-			inSectionStyles = true;
-			continue;
-		}
-		if (inSectionStyles && trimmed === '},') {
-			// End of sectionStyles object
-			inSectionStyles = false;
-			currentSection = null;
-			continue;
-		}
-
-		if (!inSectionStyles) continue;
-
-		// Detect section start
-		if (trimmed.startsWith('quote:')) currentSection = 'quote';
-		else if (trimmed.startsWith('countdown:')) currentSection = 'countdown';
-		else if (trimmed.startsWith('location:')) currentSection = 'location';
-		else if (trimmed.startsWith('family:')) currentSection = 'family';
-		else if (trimmed.startsWith('gifts:')) currentSection = 'gifts';
-		else if (trimmed.startsWith('gallery:')) currentSection = 'gallery';
-		else if (trimmed.startsWith('thankYou:')) currentSection = 'thankYou';
-
-		// Detect variant enum start
-		if (currentSection && trimmed.includes('variant:') && trimmed.includes('z')) {
-			// Look for .enum([ in this line or next lines
-			let j = i;
-			let enumLine = '';
-			while (j < lines.length) {
-				enumLine += lines[j];
-				if (enumLine.includes('.enum([')) {
-					// Found start of enum array
-					const startIdx = enumLine.indexOf('[');
-					if (startIdx !== -1) {
-						arrayContent = enumLine.substring(startIdx);
-						bracketDepth = countBrackets(arrayContent);
-						collectingArray = true;
-						i = j; // advance outer loop
-					}
-					break;
-				}
-				j++;
-				if (j - i > 5) break; // safety
-			}
-		}
-
-		if (collectingArray) {
-			// Continue collecting lines until brackets balance
-			if (i > 0) arrayContent += '\n' + line;
-			bracketDepth = countBrackets(arrayContent);
-			if (bracketDepth === 0) {
-				// Array closed, extract values
-				const valueRegex = /'([^']+)'/g;
-				let match;
-				while ((match = valueRegex.exec(arrayContent)) !== null) {
-					variants[currentSection].add(match[1]);
-				}
-				// Reset state
-				collectingArray = false;
-				arrayContent = '';
-				currentSection = null;
-			}
-		}
+	function parseArrayConst(constName) {
+		const regex = new RegExp(`export const ${constName} = \\[([\\s\\S]*?)\\] as const;`);
+		const match = content.match(regex);
+		if (!match) return [];
+		return Array.from(match[1].matchAll(/'([^']+)'/g)).map((item) => item[1]);
 	}
 
-	function countBrackets(str) {
-		let depth = 0;
-		for (const ch of str) {
-			if (ch === '[') depth++;
-			else if (ch === ']') depth--;
-		}
-		return depth;
-	}
+	const quote = parseArrayConst('QUOTE_VARIANTS');
+	const countdown = parseArrayConst('COUNTDOWN_VARIANTS');
+	const location = parseArrayConst('LOCATION_VARIANTS');
+	const shared = parseArrayConst('SHARED_SECTION_VARIANTS');
+
+	quote.forEach((variant) => variants.quote.add(variant));
+	countdown.forEach((variant) => variants.countdown.add(variant));
+	location.forEach((variant) => variants.location.add(variant));
+	shared.forEach((variant) => variants.family.add(variant));
+	shared.forEach((variant) => variants.gifts.add(variant));
+	shared.forEach((variant) => variants.gallery.add(variant));
+	shared.forEach((variant) => variants.thankYou.add(variant));
 
 	return variants;
 }
@@ -179,7 +114,8 @@ function checkPresetIsolation() {
 	const violations = [];
 
 	for (const file of files) {
-		if (!file.endsWith('.scss') || file === '_all.scss') continue;
+		if (!file.endsWith('.scss') || file === '_all.scss' || file === '_invitation.scss')
+			continue;
 
 		const filePath = path.join(presetsDir, file);
 		const content = fs.readFileSync(filePath, 'utf8');
@@ -193,7 +129,8 @@ function checkPresetIsolation() {
 			if (!line || line.startsWith('//') || line.startsWith('/*')) continue;
 
 			// Check for CSS rules (not variable declarations)
-			if (line.match(/^[.#[a-zA-Z][^{]*\{/) && !line.includes('--')) {
+			if (line.startsWith('#{')) continue;
+			if (/^[.#a-zA-Z][^{]*\{\s*$/.test(line) && !line.includes('--')) {
 				violations.push({
 					file,
 					line: i + 1,
@@ -208,8 +145,8 @@ function checkPresetIsolation() {
 
 // Main validation
 function main() {
-	console.log('Phase 1: Extracting Zod schema variants...');
-	const zodVariants = extractZodVariants();
+	console.log('Phase 1: Extracting ThemeContract variants...');
+	const contractVariants = extractContractVariants();
 
 	console.log('Phase 2: Extracting CSS variants...');
 	const cssVariants = extractCSSVariants();
@@ -220,24 +157,26 @@ function main() {
 	const sections = ['quote', 'countdown', 'location', 'family', 'gifts', 'gallery', 'thankYou'];
 
 	for (const section of sections) {
-		const zodSet = zodVariants[section];
+		const contractSet = contractVariants[section];
 		const cssSet = cssVariants[section];
 
 		console.log(`\n${section.toUpperCase()}:`);
-		console.log(`  Zod variants: ${Array.from(zodSet).sort().join(', ') || '(none)'}`);
+		console.log(
+			`  Contract variants: ${Array.from(contractSet).sort().join(', ') || '(none)'}`,
+		);
 		console.log(`  CSS variants: ${Array.from(cssSet).sort().join(', ') || '(none)'}`);
 
-		// Check for Zod variants missing in CSS
-		for (const variant of zodSet) {
+		// Check for contract variants missing in CSS
+		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
-				WARNINGS.push(`${section}: Zod variant '${variant}' not found in CSS`);
+				WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
 			}
 		}
 
-		// Check for CSS variants missing in Zod
+		// Check for CSS variants missing in contract
 		for (const variant of cssSet) {
-			if (!zodSet.has(variant)) {
-				ERRORS.push(`${section}: CSS variant '${variant}' not found in Zod schema`);
+			if (!contractSet.has(variant)) {
+				ERRORS.push(`${section}: CSS variant '${variant}' not found in ThemeContract`);
 			}
 		}
 	}

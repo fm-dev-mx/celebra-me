@@ -127,7 +127,8 @@
                 "src/pages/[eventType]/[slug].astro",
                 "src/components/common/HeaderBase.astro",
                 "src/components/invitation/Footer.astro",
-                "src/pages/admin/rsvp.astro"
+                "src/pages/admin/rsvp.astro",
+                "src/layouts/DashboardLayout.astro"
             ]
         },
         "documentationMappings": {

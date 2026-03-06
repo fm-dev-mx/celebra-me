@@ -4,14 +4,16 @@ This directory contains the core automation and governance tools for the `celebr
 
 ## Core Tools
 
-| Script                    | Purpose                                                                                      |
-| :------------------------ | :------------------------------------------------------------------------------------------- |
-| `gatekeeper.mjs`          | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
-| `gatekeeper-workflow.mjs` | Runs the full one-command Gatekeeper workflow (report + auto-fix loop + deterministic exit). |
-| `validate-schema.mjs`     | Synchronizes Zod schemas with CSS theme variants.                                            |
-| `validate-commits.mjs`    | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
-| `cli.mjs`                 | Standardized CLI entry point for all operations.                                             |
-| `optimize-assets.mjs`     | Handles image optimization and asset registry sync.                                          |
+| Script                      | Purpose                                                                                      |
+| :-------------------------- | :------------------------------------------------------------------------------------------- |
+| `gatekeeper.mjs`            | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
+| `gatekeeper-workflow.mjs`   | Runs the full one-command Gatekeeper workflow (report + auto-fix loop + deterministic exit). |
+| `validate-schema.mjs`       | Synchronizes Zod schemas with CSS theme variants.                                            |
+| `validate-event-parity.mjs` | Validates DB events and content event files use matching `eventType/slug` pairs.             |
+| `validate-commits.mjs`      | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
+| `cli.mjs`                   | Standardized CLI entry point for all operations.                                             |
+| `optimize-assets.mjs`       | Handles image optimization and asset registry sync.                                          |
+| `new-invitation.mjs`        | Scaffolds a new invitation content file, override style, assets manifest, and checklist.     |
 
 ### Using Gatekeeper
 

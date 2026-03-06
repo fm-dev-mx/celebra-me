@@ -15,7 +15,9 @@ const SCRIPTS = {
 	'optimize-assets': 'optimize-assets.mjs',
 	'smoke-test': 'smoke-test.mjs',
 	'validate-schema': 'validate-schema.mjs',
+	'validate-event-parity': 'validate-event-parity.mjs',
 	'validate-commits': 'validate-commits.mjs',
+	'new-invitation': 'new-invitation.mjs',
 	'remove-env-from-history': 'remove-env-from-history.mjs',
 	'rsvp-db-remote-runbook': 'rsvp-db-remote-runbook.mjs',
 };

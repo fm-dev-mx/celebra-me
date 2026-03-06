@@ -7,6 +7,7 @@
         ],
         "auth": [
             "src/lib/rsvp/**",
+            "src/pages/login.astro",
             "src/pages/api/auth/**",
             "src/pages/api/invitacion/**",
             "src/middleware.ts"
@@ -29,9 +30,11 @@
             "src/content/events/**",
             "src/lib/**",
             "src/data/**",
+            "src/styles/events/README.md",
             "*.md"
         ],
         "ui": [
+            "src/pages/index.astro",
             "src/components/common/**",
             "src/components/ui/**",
             "src/components/home/**",
@@ -42,6 +45,7 @@
         "test": ["tests/**", "**/*.test.*", "**/*.spec.*", "jest.config.*", "playwright.config.*"],
         "admin": [
             "src/pages/admin/**",
+            "src/layouts/DashboardLayout.astro",
             "src/components/admin/**",
             "src/components/dashboard/**",
             "src/pages/api/dashboard/**",

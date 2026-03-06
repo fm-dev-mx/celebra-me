@@ -44,3 +44,6 @@ jobs:
 
             - name: Gatekeeper deterministic report contract
               run: pnpm gatekeeper:report --require-complete-report --secret-scan-staged
+
+            - name: Documentation link integrity
+              run: pnpm ops check-links
