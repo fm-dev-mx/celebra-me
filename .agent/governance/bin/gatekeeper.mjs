@@ -1651,17 +1651,25 @@ function branchExists(name) {
 }
 
 function classifyBranchPrefix(files) {
-	const xs = files.map((f) => np(f).toLowerCase());
-	if (xs.length && xs.every((f) => f.startsWith('docs/') || f.endsWith('.md'))) return 'docs';
-	if (xs.length && xs.every((f) => f.startsWith('tests/') || f.includes('.test.'))) return 'test';
-	if (xs.length && xs.every((f) => f.startsWith('src/styles/') || /\.(scss|css)$/i.test(f)))
-		return 'style';
-	if (xs.length && xs.every((f) => f.startsWith('scripts/') || f.startsWith('.agent/')))
-		return 'chore';
+	const scores = { docs: 0, test: 0, style: 0, chore: 0, feat: 0 };
+	files.forEach((f) => {
+		const path = np(f).toLowerCase();
+		if (path.startsWith('docs/') || path.endsWith('.md')) scores.docs++;
+		else if (path.startsWith('tests/') || path.includes('.test.')) scores.test++;
+		else if (path.startsWith('src/styles/') || /\.(scss|css)$/i.test(path)) scores.style++;
+		else if (path.startsWith('scripts/') || path.startsWith('.agent/')) scores.chore++;
+		else scores.feat++;
+	});
+
+	const total = files.length || 1;
+	if (scores.docs / total > 0.7) return 'docs';
+	if (scores.test / total > 0.7) return 'test';
+	if (scores.style / total > 0.7) return 'style';
+	if (scores.chore / total > 0.7) return 'chore';
 	return 'feat';
 }
 
-function branchSlugFromFiles(files) {
+function branchSlugFromFiles(files, domain = '') {
 	const ignored = new Set([
 		'src',
 		'docs',
@@ -1673,8 +1681,19 @@ function branchSlugFromFiles(files) {
 		'lib',
 		'content',
 		'index',
+		'common',
+		'utils',
+		'shared',
+		'ui',
+		'app',
+		'base',
+		'core',
+		'main',
+		'manifest',
+		'all',
+		(domain || '').toLowerCase(),
 	]);
-	const shortAllowlist = new Set(['api', 'ui', 'db', 'ci', 'ux']);
+	const shortAllowlist = new Set(['api', 'ui', 'db', 'ci', 'ux', 'gk']);
 	const normalizeToken = (token) => {
 		const map = {
 			cfg: 'config',
@@ -1686,22 +1705,29 @@ function branchSlugFromFiles(files) {
 		};
 		return map[token] || token;
 	};
-	const tokens = [];
-	for (const file of files.slice().sort((a, b) => a.localeCompare(b))) {
-		for (const token of np(file)
-			.toLowerCase()
-			.split(/[/.\\_[\]-]+/)
-			.filter(Boolean)) {
-			const normalized = normalizeToken(token);
-			if (ignored.has(normalized)) continue;
-			if (!/^[a-z0-9]+$/.test(normalized)) continue;
-			if (normalized.length < 4 && !shortAllowlist.has(normalized)) continue;
-			if (!tokens.includes(normalized)) tokens.push(normalized);
-			if (tokens.length >= 3) break;
+
+	const tokens = new Set();
+	const sortedFiles = files.slice().sort((a, b) => b.split('/').length - a.split('/').length);
+
+	for (let i = 0; i < 3; i++) {
+		for (const file of sortedFiles) {
+			const parts = np(file).toLowerCase().split(/[/.\\_[\]-]+/).filter(Boolean);
+			const validParts = parts
+				.map(normalizeToken)
+				.filter((p) => !ignored.has(p) && /^[a-z0-9]+$/.test(p))
+				.filter((p) => p.length >= 4 || shortAllowlist.has(p))
+				.reverse();
+
+			const part = validParts[i];
+			if (part && !tokens.has(part)) {
+				tokens.add(part);
+				if (tokens.size >= 3) break;
+			}
 		}
-		if (tokens.length >= 3) break;
+		if (tokens.size >= 3) break;
 	}
-	return tokens.join('-') || 'changes';
+
+	return Array.from(tokens).join('-') || 'changes';
 }
 
 function inferBranchName(snapshot) {
@@ -1712,7 +1738,7 @@ function inferBranchName(snapshot) {
 		.sort((a, b) => b.files.length - a.files.length || a.id.localeCompare(b.id))[0];
 	const domain = preferred?.id || 'core';
 	const prefix = classifyBranchPrefix(snapshot.files);
-	const slug = branchSlugFromFiles(snapshot.files);
+	const slug = branchSlugFromFiles(snapshot.files, domain);
 	const raw = `${prefix}/${domain}-${slug}`.replace(/-+/g, '-').replace(/\/-/, '/');
 	return raw.slice(0, 72);
 }
