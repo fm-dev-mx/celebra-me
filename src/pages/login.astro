@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
 import { resolveNextPath } from '@/lib/rsvp/login';
+import '@/styles/auth.scss';
 import '@styles/auth/_login.scss';
 
 const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
