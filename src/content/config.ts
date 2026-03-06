@@ -2,6 +2,22 @@
 
 import { defineCollection, z } from 'astro:content';
 import { EVENT_KEYS, COMMON_KEYS } from '@/lib/assets/asset-registry';
+import {
+	COUNTDOWN_NUMBER_STYLES,
+	COUNTDOWN_VARIANTS,
+	EVENT_TYPES,
+	INDICATION_ICON_KEYS,
+	INDICATION_ICON_NAMES,
+	INDICATION_STYLE_VARIANTS,
+	ITINERARY_VARIANTS,
+	LOCATION_MAP_STYLES,
+	LOCATION_VARIANTS,
+	QUOTE_ANIMATIONS,
+	QUOTE_FONT_STYLES,
+	QUOTE_VARIANTS,
+	SHARED_SECTION_VARIANTS,
+	THEME_PRESETS,
+} from '@/lib/theme/theme-contract';
 
 const AssetSchema = z.union([
 	z.enum([...EVENT_KEYS, ...COMMON_KEYS]),
@@ -13,7 +29,7 @@ const AssetSchema = z.union([
 const eventsCollection = defineCollection({
 	type: 'data',
 	schema: z.object({
-		eventType: z.enum(['xv', 'boda', 'bautizo', 'cumple']),
+		eventType: z.enum(EVENT_TYPES),
 		isDemo: z.boolean().default(false),
 		title: z.string(),
 		description: z.string().optional(),
@@ -21,98 +37,59 @@ const eventsCollection = defineCollection({
 			primaryColor: z.string().regex(/^#/, 'Must be a hex color'),
 			accentColor: z.string().regex(/^#/, 'Must be a hex color').optional(),
 			fontFamily: z.enum(['serif', 'sans']).default('serif'),
-			preset: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
+			preset: z.enum(THEME_PRESETS).optional(),
 		}),
 		sectionStyles: z
 			.object({
 				quote: z
 					.object({
-						variant: z
-							.enum([
-								'elegant',
-								'modern',
-								'minimal',
-								'floral',
-								'jewelry-box',
-								'luxury-hacienda',
-							])
-							.default('elegant'),
-						fontStyle: z.enum(['serif', 'script', 'sans']).optional(),
-						animation: z.enum(['fade', 'bounce', 'elastic', 'none']).default('fade'),
+						variant: z.enum(QUOTE_VARIANTS).default('elegant'),
+						fontStyle: z.enum(QUOTE_FONT_STYLES).optional(),
+						animation: z.enum(QUOTE_ANIMATIONS).default('fade'),
 					})
 					.optional(),
 				countdown: z
 					.object({
-						variant: z
-							.enum([
-								'minimal',
-								'vibrant',
-								'classic',
-								'modern',
-								'jewelry-box',
-								'luxury-hacienda',
-							])
-							.default('minimal'),
-						numberStyle: z.enum(['thin', 'bold', 'monospace']).default('thin'),
+						variant: z.enum(COUNTDOWN_VARIANTS).default('minimal'),
+						numberStyle: z.enum(COUNTDOWN_NUMBER_STYLES).default('thin'),
 						showParticles: z.boolean().default(false),
 					})
 					.optional(),
 				location: z
 					.object({
-						variant: z
-							.enum([
-								'structured',
-								'organic',
-								'minimal',
-								'luxury',
-								'jewelry-box',
-								'luxury-hacienda',
-							])
-							.default('structured'),
-						mapStyle: z
-							.enum(['dark', 'colorful', 'minimal', 'satellite'])
-							.default('dark'),
+						variant: z.enum(LOCATION_VARIANTS).default('structured'),
+						mapStyle: z.enum(LOCATION_MAP_STYLES).default('dark'),
 						showFlourishes: z.boolean().default(true),
 					})
 					.optional(),
 				family: z
 					.object({
-						variant: z
-							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
-							.default('standard'),
+						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
 					})
 					.optional(),
 				gifts: z
 					.object({
-						variant: z
-							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
-							.default('standard'),
+						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
 					})
 					.optional(),
 				gallery: z
 					.object({
-						variant: z
-							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
-							.default('standard'),
+						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
 					})
 					.optional(),
 				itinerary: z
 					.object({
-						variant: z.enum(['base', 'jewelry-box', 'luxury-hacienda']).default('base'),
+						variant: z.enum(ITINERARY_VARIANTS).default('base'),
 					})
 					.optional(),
 				thankYou: z
 					.object({
-						variant: z
-							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
-							.default('standard'),
+						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
 					})
 					.optional(),
 				rsvp: z
 					.object({
-						variant: z
-							.enum(['standard', 'jewelry-box', 'luxury-hacienda'])
-							.default('standard'),
+						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
 						labels: z
 							.object({
 								name: z.string().optional(),
@@ -136,7 +113,7 @@ const eventsCollection = defineCollection({
 			date: z.string().datetime(), // ISO 8601
 			backgroundImage: AssetSchema,
 			portrait: AssetSchema.optional(), // ADU-8: Optional celebrant portrait
-			variant: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
+			variant: z.enum(THEME_PRESETS).optional(),
 		}),
 		location: z.object({
 			// Base venue info (backward compatible)
@@ -208,14 +185,9 @@ const eventsCollection = defineCollection({
 			indications: z
 				.array(
 					z.object({
-						icon: z.enum([
-							'crown',
-							'envelope',
-							'forbidden',
-							'dress',
-							'gift',
-							'western-hat',
-						]),
+						icon: z.enum(INDICATION_ICON_KEYS),
+						iconName: z.enum(INDICATION_ICON_NAMES).optional(),
+						styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
 						text: z.string(),
 					}),
 				)
@@ -351,7 +323,7 @@ const eventsCollection = defineCollection({
 					accent: z.string().regex(/^#/, 'Must be a hex color'),
 					background: z.string().regex(/^#/, 'Must be a hex color'),
 				}),
-				variant: z.enum(['jewelry-box', 'luxury-hacienda']).optional(),
+				variant: z.enum(THEME_PRESETS).optional(),
 			})
 			.optional(),
 		itinerary: z

@@ -184,7 +184,8 @@ pnpm build
 pnpm ops smoke-test
 ```
 
-For detailed testing documentation, see [`docs/TESTING.md`](docs/TESTING.md).
+For detailed testing documentation, see
+[`docs/core/testing-strategy.md`](docs/core/testing-strategy.md).
 
 ---
 
@@ -201,7 +202,7 @@ pnpm db:reset:local
 pnpm db:migrate:new <migration_name>
 ```
 
-Operational guide: [`docs/DB_RSVP.md`](docs/DB_RSVP.md)
+Operational guide: [`docs/domains/rsvp/database.md`](docs/domains/rsvp/database.md)
 
 Remote runbook helper:
 
@@ -213,10 +214,10 @@ pnpm ops rsvp-db-remote-runbook
 
 ## Documentation
 
-- **Architecture**: `docs/ARCHITECTURE.md`
-- **RSVP DB Operations**: `docs/DB_RSVP.md`
-- **RSVP UI Operation (Admin Panel)**: `docs/DB_RSVP.md#client-facing-ui-operation`
-- **RSVP Operational Status**: `docs/RSVP_STATUS.md`
+- **Architecture**: `docs/core/architecture.md`
+- **RSVP DB Operations**: `docs/domains/rsvp/database.md`
+- **RSVP UI Operation (Admin Panel)**: `docs/domains/rsvp/database.md#client-facing-ui-operation`
+- **RSVP Operational Status**: `docs/domains/rsvp/status.md`
 - **Agent Rules**: `.agent/`
 
 Documentation is expected to evolve alongside the codebase.

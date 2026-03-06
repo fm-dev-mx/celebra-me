@@ -87,8 +87,18 @@
             }
         },
         "indications": [
-            { "icon": "crown", "text": "El color púrpura está reservado para la festejada." },
-            { "icon": "forbidden", "text": "Celebración sin niños." }
+            {
+                "icon": "crown",
+                "iconName": "Crown",
+                "styleVariant": "reserved",
+                "text": "El color púrpura está reservado para la festejada."
+            },
+            {
+                "icon": "forbidden",
+                "iconName": "Forbidden",
+                "styleVariant": "default",
+                "text": "Celebración sin niños."
+            }
         ]
     },
     "family": {

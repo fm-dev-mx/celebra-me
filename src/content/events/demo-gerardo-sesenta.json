@@ -75,7 +75,12 @@
             }
         },
         "indications": [
-            { "icon": "western-hat", "text": "Sugerencia: botas y sombrero<br />(si tienes)." }
+            {
+                "icon": "western-hat",
+                "iconName": "western-hat",
+                "styleVariant": "default",
+                "text": "Sugerencia: botas y sombrero<br />(si tienes)."
+            }
         ]
     },
     "sections": {

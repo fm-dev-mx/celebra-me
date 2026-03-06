@@ -77,6 +77,8 @@
         "indications": [
             {
                 "icon": "crown",
+                "iconName": "Crown",
+                "styleVariant": "reserved",
                 "text": "El color de la festejada está reservado."
             }
         ]

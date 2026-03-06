@@ -1,10 +1,22 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type {
+	CountdownVariant,
+	IndicationIconName,
+	IndicationStyleVariant,
+	ItineraryVariant,
+	LocationMapStyle,
+	LocationVariant,
+	QuoteAnimation,
+	QuoteVariant,
+	SharedSectionVariant,
+	ThemePreset,
+} from '@/lib/theme/theme-contract';
 
 export interface ThemeConfig {
 	primaryColor: string;
 	accentColor?: string;
 	fontFamily: 'serif' | 'sans';
-	preset?: 'jewelry-box' | 'luxury-hacienda';
+	preset?: ThemePreset;
 	// Derived CSS class for the body/wrapper
 	themeClass: string;
 	// Processed RGB values for CSS variables
@@ -22,7 +34,7 @@ export interface HeroViewModel {
 	venueName: string;
 	backgroundImage: ImageAsset;
 	portrait?: ImageAsset;
-	variant?: 'jewelry-box' | 'luxury-hacienda';
+	variant?: ThemePreset;
 }
 
 export interface Coordinate {
@@ -84,7 +96,8 @@ export interface Reception {
 }
 
 export interface Indication {
-	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'gift' | 'western-hat';
+	iconName: IndicationIconName;
+	styleVariant: IndicationStyleVariant;
 	text: string;
 }
 
@@ -140,7 +153,7 @@ export interface EnvelopeViewModel {
 		stampText?: string;
 		stampYear?: string;
 		tooltipText?: string;
-		variant?: 'jewelry-box' | 'luxury-hacienda';
+		variant?: ThemePreset;
 		colors: {
 			background: string;
 			primary: string;
@@ -163,41 +176,23 @@ export interface InvitationViewModel {
 		quote?: {
 			text: string;
 			author?: string;
-			variant?:
-				| 'elegant'
-				| 'modern'
-				| 'minimal'
-				| 'floral'
-				| 'jewelry-box'
-				| 'luxury-hacienda';
-			animation?: 'fade' | 'bounce' | 'elastic' | 'none';
+			variant?: QuoteVariant;
+			animation?: QuoteAnimation;
 		};
 		countdown?: {
 			eventDate: string;
 			title: string;
 			subtitlePrefix: string;
 			footerText: string;
-			variant?:
-				| 'minimal'
-				| 'vibrant'
-				| 'classic'
-				| 'modern'
-				| 'jewelry-box'
-				| 'luxury-hacienda';
+			variant?: CountdownVariant;
 			showParticles?: boolean;
 		};
 		location?: {
 			ceremony?: Ceremony;
 			reception?: Reception;
 			indications?: Indication[];
-			variant?:
-				| 'structured'
-				| 'organic'
-				| 'minimal'
-				| 'luxury'
-				| 'jewelry-box'
-				| 'luxury-hacienda';
-			mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+			variant?: LocationVariant;
+			mapStyle?: LocationMapStyle;
 			showFlourishes?: boolean;
 			city: string;
 			venueName: string;
@@ -210,18 +205,18 @@ export interface InvitationViewModel {
 			featuredImage?: ImageAsset;
 			labels?: FamilyLabels;
 			celebrantName: string;
-			variant?: 'standard' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: SharedSectionVariant;
 		};
 		gallery?: {
 			title: string;
 			subtitle?: string;
 			items: Array<{ image: ImageAsset; caption?: string }>;
-			variant?: 'standard' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: SharedSectionVariant;
 		};
 		itinerary?: {
 			title: string;
 			items: ItineraryItem[];
-			variant?: 'base' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: ItineraryVariant;
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -233,7 +228,7 @@ export interface InvitationViewModel {
 			dietaryPlaceholder?: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';
 			whatsappConfig?: WhatsAppConfig;
-			variant?: 'standard' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: SharedSectionVariant;
 			nameLabel?: string;
 			guestCountLabel?: string;
 			attendanceLabel?: string;
@@ -243,13 +238,13 @@ export interface InvitationViewModel {
 			title?: string;
 			subtitle?: string;
 			items: GiftItem[];
-			variant?: 'standard' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: SharedSectionVariant;
 		};
 		thankYou?: {
 			message: string;
 			closingName: string;
 			image?: ImageAsset;
-			variant?: 'standard' | 'jewelry-box' | 'luxury-hacienda';
+			variant?: SharedSectionVariant;
 		};
 	};
 
