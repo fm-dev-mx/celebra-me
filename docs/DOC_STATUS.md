@@ -54,18 +54,12 @@ Workflows críticos y permanentes de mantenimiento continuo.
 
 Tareas puntuales actualmente en desarrollo.
 
-- [generic-section-remediation.md](../.agent/workflows/task-open/generic-section-remediation.md) -
-  🟡 (Inherited)
-- [task-auth-dashboard-remediation.md](../.agent/workflows/task-auth-dashboard-remediation.md) - 🟡
-  (Recuperado de huérfanos, migrar a task-open)
-- [invitation-evolution-march-2026](../.agent/plans/invitation-evolution-march-2026/) - 🟡 (Plan
-  Activo)
-- [doc-realignment-plan.md](../.agent/plans/doc-realignment-plan.md) - 🟡 (Plan de Refactorización
-  Activo)
+- No hay planes activos registrados en `.agent/plans/` al corte actual.
 
 ### ⚪ Archive / Legacy (Completados / Retirados)
 
-- [task-share-flow-optimization.md](../.agent/workflows/archive/task-share-flow-optimization.md)
+- [invitation-evolution-march-2026](../.agent/plans/archive/invitation-evolution-march-2026/README.md)
+- [system-health-audit](../.agent/plans/archive/system-health-audit/README.md)
 
 ---
 
@@ -86,7 +80,6 @@ Tareas puntuales actualmente en desarrollo.
 
 ## 🚀 Próxima Fila Operativa
 
-1. Ejecutar Fase 1 del `doc-realignment-plan.md` (Limpieza de obsoletos).
-2. Ejecutar Fase 2 del `doc-realignment-plan.md` (Migración a `kebab-case` y carpetas
-   `core`/`domains`).
-3. Actualizar `system-doc-alignment` para validar la estructura 3-Layer.
+1. Registrar nuevos planes activos dentro de `.agent/plans/` cuando se creen.
+2. Mantener sincronizados los enlaces de `docs/` con movimientos a `archive/`.
+3. Ejecutar `pnpm ops check-links` en cada PR de documentación.

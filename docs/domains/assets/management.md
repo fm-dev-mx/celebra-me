@@ -1,87 +1,41 @@
-# Asset Management & Registry Guide
+# Asset Management Guide
 
-## 1. Universal Asset Registry
+## Strategy (Current)
 
-All invitation-specific and shared assets MUST be accessed via the **Universal Asset Registry**
-(`src/lib/assets/asset-registry.ts`) to ensure type safety, consistency, and centralized management.
+Asset references in event content support a mixed mode:
 
-- `getEventAsset(eventSlug: string, assetKey: string): ImageAsset | undefined`
-- `getCommonAsset(assetKey: string): ImageAsset | undefined`
+1. **Registry key** from `src/lib/assets/asset-registry.ts`
+2. **Absolute URL** (CDN or external)
+3. **Root-relative path** (`/images/...`)
 
-### Event Asset Schema Requirement
+This is intentionally permissive for production onboarding speed.
 
-Events must implement the strict schema ensuring no missing assets at runtime:
+## Resolution Pipeline
 
-```typescript
-interface EventAssets {
-	hero: ImageAsset;
-	portrait: ImageAsset;
-	family?: ImageAsset; // Optional
-	jardin: ImageAsset;
-	signature: ImageAsset;
-	gallery01: ImageAsset;
-	// ... gallery01 to gallery11 required
-	gallery12?: ImageAsset;
-}
-```
+- Content schema accepts mixed asset sources (`src/content/config.ts` `AssetSchema`).
+- Adapter resolves assets through:
+    - registry lookup for keys
+    - direct passthrough for URL/root paths
 
-## 2. Asset Classification & Paths
+## Governance Rules
 
-### Processed Assets (`src/assets`)
+- Preferred for stable assets: registry keys
+- Allowed for rapid onboarding/migrations: URLs
+- If URL usage is temporary, track it in the invitation checklist and plan migration to registry
 
-Processed by Vite/Astro (optimization, hashing, bundling).
+## New Invitation Checklist Requirement
 
-- **Event Specific:** `src/assets/images/events/[event-slug]/`
-- **Common:** `src/assets/images/common/`
-- **Icons:** `src/assets/icons/` (SVG sources)
+For each new invitation scaffold:
 
-### Static Assets (`/public`)
+- Fill `src/content/events/<slug>.assets.json`
+- Confirm all referenced assets are available and optimized
+- Decide whether each asset stays as URL or moves to registry
 
-For files served directly without processing (`favicon.ico`, `robots.txt`).
+## Operational Commands
 
-## 3. Adding a New Event - Step by Step
+- `pnpm ops new-invitation <slug>`
+- `pnpm ops optimize-assets`
 
-### Step 1: Create Directory & Add Images
+---
 
-```bash
-mkdir -p src/assets/images/events/{event-slug}
-```
-
-Add images in `.webp` format (e.g. `hero.webp`, `portrait.webp`, `gallery-01.webp`).
-
-### Step 2: Create Barrel File
-
-Create `src/assets/images/events/{event-slug}/index.ts`:
-
-```typescript
-import hero from './hero.webp';
-import portrait from './portrait.webp';
-// ... imports ...
-import gallery01 from './gallery-01.webp';
-
-export const assets = {
-	hero,
-	portrait,
-	// Include all mapping
-	gallery: [gallery01 /*...*/],
-};
-```
-
-### Step 3: Register in AssetRegistry
-
-Update `src/lib/assets/asset-registry.ts`:
-
-```typescript
-import { assets as NewEventAssets } from '@/assets/images/events/{event-slug}';
-
-export const ImageRegistry: Registry = {
-	events: {
-		'{event-slug}': mapEventAssets(NewEventAssets, 'Event Display Name'),
-	},
-};
-```
-
-### Step 4: Validate Build
-
-Run `pnpm check`. TypeScript compilation will fail if the structure exported lacks required fields,
-ensuring complete certainty of asset presence during SSR rendering.
+**Last Updated:** 2026-03-06

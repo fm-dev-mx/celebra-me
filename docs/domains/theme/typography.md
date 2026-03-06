@@ -1,65 +1,44 @@
-# Typography System — Celebra-me (Core Elegant)
+# Typography System
 
-This document defines the **Default Base Typography** for the Celebra-me platform. These tokens
-serve as the foundation for the "Elegant/Classic" aesthetic used in the XV Años Demo and the Landing
-Page.
+This document defines the active typography stack and how it is loaded.
 
-> **Note:** Future themes (e.g., Neon, Modern) will extend or override this system.
+## Loaded Fonts (Runtime)
 
----
+`src/layouts/Layout.astro` loads eight families:
 
-## Typography Tokens — "Core 5"
+1. Cinzel (`@fontsource-variable/cinzel`)
+2. Playfair Display (`@fontsource-variable/playfair-display`)
+3. Pinyon Script (`@fontsource/pinyon-script`)
+4. EB Garamond (`@fontsource-variable/eb-garamond`)
+5. Montserrat (`@fontsource-variable/montserrat`)
+6. Cormorant Garamond (`@fontsource-variable/cormorant-garamond`)
+7. Special Elite (`@fontsource/special-elite`)
+8. Rye (`@fontsource/rye`)
 
-A curated font system optimized for premium digital invitations with high performance.
+## Core Roles
 
-### Font Families
+Primary tokens still map to the Core 5 roles:
 
-| Role                | Family           | Weights  | Use Case                              |
-| ------------------- | ---------------- | -------- | ------------------------------------- |
-| **Display Formal**  | Cinzel           | 400, 700 | Monumental headers, XV/Wedding titles |
-| **Display Elegant** | Playfair Display | 400, 700 | Editorial-style titles, Hero sections |
-| **Calligraphy**     | Pinyon Script    | 400      | Accents, signatures, "y" separators   |
-| **Body Narrative**  | EB Garamond      | 400, 500 | Paragraphs, stories, descriptions     |
-| **UI/Functional**   | Montserrat       | 400, 600 | Buttons, navigation, metadata         |
+- Display Formal: Cinzel
+- Display Elegant: Playfair Display
+- Calligraphy: Pinyon Script
+- Body Narrative: EB Garamond
+- UI/Functional: Montserrat
 
-### SCSS Tokens
+Additional families (`Cormorant Garamond`, `Special Elite`, `Rye`) are loaded for preset-specific
+accents and fallback stylization.
 
-Defined in `src/styles/global/_variables.scss`:
+## Token Sources
 
-```scss
-$font-display-formal: 'Cinzel', serif;
-$font-display-elegant: 'Playfair Display', serif;
-$font-calligraphy: 'Pinyon Script', cursive;
-$font-body: 'EB Garamond', Georgia, serif;
-$font-ui: 'Montserrat', system-ui, sans-serif;
-```
+- SCSS token source: `src/styles/tokens/_typography.scss`
+- Global CSS variables: `src/styles/global.scss`
 
-### Fluid Type Scale
+## Usage Rules
 
-Responsive sizing using `clamp()`:
-
-```scss
-$text-h1-fluid: clamp(2.5rem, 8vw, 5rem);
-$text-h2-fluid: clamp(1.8rem, 5vw, 3rem);
-$text-h3-fluid: clamp(1.4rem, 3vw, 2rem);
-$text-body-fluid: clamp(1rem, 1.2vw, 1.25rem);
-```
-
-### Utility Classes
-
-Defined in `src/styles/global/_typography.scss`:
-
-- `.font-heading-formal` — Cinzel
-- `.font-heading-elegant` — Playfair Display
-- `.font-calligraphy` — Pinyon Script
-- `.font-body` — EB Garamond
-- `.font-ui` — Montserrat
+- Use token-based CSS variables (`--font-*`) in component/theme styles.
+- Do not hardcode raw font family names in section styles.
+- If adding/removing loaded fonts, update both this doc and `Layout.astro` in the same PR.
 
 ---
 
-## Principles
-
-1. **Performance First**: Only Core 5 fonts loaded; no redundant packages.
-2. **Fallback Resilience**: Each token includes system fallbacks.
-3. **Fluid Scaling**: All sizes use `clamp()` for seamless responsiveness.
-4. **@fontsource**: Provides `font-display: swap` by default.
+**Last Updated:** 2026-03-06
