@@ -3,22 +3,10 @@
 @use 'global/mixins';
 @use 'global/functions';
 @use 'global/animations';
-@use 'home/pricing';
-@use 'home/faq';
-@use 'home/footer';
 @use 'components/icons';
 @use 'components/logo';
 @use 'components/nav-bar-desktop';
-@use 'dashboard/common';
-@use 'dashboard/shell';
-@use 'dashboard/tables';
-@use 'dashboard/toast';
-@use 'dashboard/forms';
-@use 'dashboard/modals';
-@use 'invitation/envelope-reveal';
 @use 'tokens' as tokens;
-@use 'themes/presets/all';
-@use 'themes/sections';
 @use 'themes/landing' as landing;
 
 :root {
