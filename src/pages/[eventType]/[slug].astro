@@ -6,6 +6,7 @@ import { getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
 import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 import Layout from '@/layouts/Layout.astro';
+import '@/styles/invitation.scss';
 import Countdown from '@/components/invitation/Countdown.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
 import Footer from '@/components/invitation/Footer.astro';
@@ -25,6 +26,9 @@ import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro
 // --- Page Logic (Adapter Pattern) ---
 const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
+const normalizedSlug = (slug as string).toLowerCase();
+const eventScopeClass = `event--${normalizedSlug.replace(/[^a-z0-9-]/g, '-')}`;
+const eventOverrideStyles = import.meta.glob('/src/styles/events/*.scss');
 
 const eventEntry = await getEntry('events', slug as string);
 
@@ -39,6 +43,11 @@ if (eventType !== canonicalEventType) {
 		canonicalUrl.searchParams.set('invite', inviteId);
 	}
 	return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search, 301);
+}
+
+const eventOverrideImporter = eventOverrideStyles[`/src/styles/events/${slug as string}.scss`];
+if (eventOverrideImporter) {
+	await eventOverrideImporter();
 }
 
 const viewModel = adaptEvent(eventEntry);
@@ -95,7 +104,9 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 		}
 	</style>
 
-	<main class={`event-theme-wrapper ${theme.themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}>
+	<main
+		class={`event-theme-wrapper ${eventScopeClass} ${theme.themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}
+	>
 		<!-- Scripts -->
 		<script is:inline define:vars={{ eventSlug: viewModel.id }}>
 			// Legacy Token Resolution

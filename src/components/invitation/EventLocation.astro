@@ -5,13 +5,18 @@
 */
 import '@/styles/invitation/_event-location.scss';
 import '@/styles/invitation/_section-nav-button.scss';
-import '@/styles/themes/sections/_location-theme.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type {
+	IndicationIconName,
+	IndicationStyleVariant,
+	LocationMapStyle,
+	LocationVariant,
+} from '@/lib/theme/theme-contract';
 
 interface VenueData {
 	venueEvent: string;
@@ -32,7 +37,8 @@ interface VenueData {
 
 
 interface Indication {
-	icon: 'crown' | 'envelope' | 'forbidden' | 'dress' | 'western-hat' | 'gift';
+	iconName: IndicationIconName;
+	styleVariant: IndicationStyleVariant;
 	text: string;
 }
 
@@ -40,8 +46,8 @@ interface Props {
 	ceremony?: VenueData;
 	reception?: VenueData;
 	indications?: Indication[];
-	variant?: 'structured' | 'organic' | 'minimal' | 'luxury' | 'jewelry-box' | 'luxury-hacienda';
-	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+	variant?: LocationVariant;
+	mapStyle?: LocationMapStyle;
 	showFlourishes?: boolean;
 }
 
@@ -55,30 +61,6 @@ const {
 } = Astro.props;
 
 const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
-
-type EventLocationIconName = 'Crown' | 'Envelope' | 'Forbidden' | 'Gift' | 'western-hat';
-
-// Keep this map aligned with the icon registry in Icon.astro
-const iconMap: Record<Indication['icon'], EventLocationIconName> = {
-	crown: 'Crown',
-	envelope: 'Envelope',
-	forbidden: 'Forbidden',
-	// There is no dedicated "Dress" icon in the current registry; use western hat as closest theme-safe fallback.
-	dress: 'western-hat',
-	'western-hat': 'western-hat',
-	gift: 'Gift',
-};
-
-const resolveIndicationIconName = (icon: string): EventLocationIconName => {
-	const mapped = iconMap[icon as Indication['icon']];
-	if (mapped) return mapped;
-
-	if (import.meta.env.DEV) {
-		console.warn(`[EventLocation] Unknown indication icon "${icon}". Falling back to "Gift".`);
-	}
-
-	return 'Gift';
-};
 ---
 
 <section class="event-location" id="event-location" data-variant={variant} data-map-style={mapStyle} data-show-flourishes={showFlourishes}>
@@ -93,11 +75,11 @@ const resolveIndicationIconName = (icon: string): EventLocationIconName => {
 
 			<div class="event-location__indications">
 				{indications.map((indication) => {
-					const isReserved = indication.text.toLowerCase().includes('púrpura');
+					const isReserved = indication.styleVariant === 'reserved';
 					return (
 						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
 							<div class="event-location__indication-icon">
-								<Icon name={resolveIndicationIconName(indication.icon)} size={24} />
+								<Icon name={indication.iconName} size={24} />
 							</div>
 							<p class="event-location__indication-text" set:html={indication.text} />
 						</div>

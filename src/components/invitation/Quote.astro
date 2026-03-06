@@ -1,13 +1,13 @@
 ---
 // src/components/invitation/Quote.astro
 import '@/styles/invitation/_quote.scss';
-import '@/styles/themes/sections/_quote-theme.scss';
+import type { QuoteAnimation, QuoteVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	text: string;
 	author?: string;
-	variant?: 'elegant' | 'modern' | 'minimal' | 'floral' | 'jewelry-box' | 'luxury-hacienda';
-	animation?: 'fade' | 'bounce' | 'elastic' | 'none';
+	variant?: QuoteVariant;
+	animation?: QuoteAnimation;
 }
 
 const { text, author, variant = 'elegant', animation = 'fade' } = Astro.props;

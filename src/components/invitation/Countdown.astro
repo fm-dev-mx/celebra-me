@@ -2,15 +2,15 @@
 // src/components/invitation/Countdown.astro
 // Premium countdown section
 import '@/styles/invitation/_countdown.scss';
-import '@/styles/themes/sections/_countdown-theme.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer';
+import type { CountdownVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	eventDate: string; // ISO Date string
 	title?: string;
 	subtitlePrefix?: string;
 	footerText?: string;
-	variant?: 'minimal' | 'vibrant' | 'classic' | 'modern' | 'jewelry-box' | 'luxury-hacienda';
+	variant?: CountdownVariant;
 	showParticles?: boolean;
 }
 
