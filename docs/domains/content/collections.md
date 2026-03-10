@@ -1,5 +1,10 @@
 # Content Collections
 
+**Last Updated:** 2026-03-10
+
+This document was moved from the docs root during the March 10, 2026 system-wide alignment audit to
+live under the `content` domain taxonomy.
+
 Content collections are the foundation of Celebra-me's event system. Each invitation is defined as a
 JSON file, validated by a Zod schema at build time, and rendered dynamically through Astro's content
 collection API.
@@ -12,7 +17,7 @@ collection API.
 
 - **Type Safety**: Full TypeScript support with Zod schema validation
 - **Build-time Validation**: Errors caught before deployment
-- **Multi-event Support**: XV Años, Weddings, Baptisms, Birthdays
+- **Multi-event Support**: Quinceaneras, Weddings, Baptisms, Birthdays
 - **Theme Integration**: Connects to the Aesthetic Presets system
 - **Asset Management**: Seamless integration with AssetRegistry
 
@@ -22,9 +27,9 @@ collection API.
 
 ## Event Types
 
-### XV Años (`xv`)
+### Quinceanera (`xv`)
 
-Quinceañera celebrations marking a young woman's 15th birthday.
+Quinceanera celebrations marking a young woman's 15th birthday.
 
 **Characteristics**:
 

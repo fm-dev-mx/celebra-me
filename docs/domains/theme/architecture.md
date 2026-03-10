@@ -40,6 +40,10 @@ This avoids loading invitation section themes in non-invitation routes.
 Section base styles live with components (e.g. `src/styles/invitation/_quote.scss`). Section variant
 styles live in `src/styles/themes/sections/` and are loaded through `src/styles/invitation.scss`.
 
+For `family`, `gifts`, `gallery`, and `thankYou`, the `standard` variant is satisfied by the base
+section styles. Dedicated theme selectors are only required for non-default variants such as
+`jewelry-box` and `luxury-hacienda`.
+
 Selector contract:
 
 ```scss
@@ -85,6 +89,7 @@ These files are lazy-loaded only for the matching event route.
 - Do not add variant literals directly in components/adapters/schema.
 - Update `theme-contract.ts` first, then consume from it.
 - Run `pnpm ops validate-schema` after theme changes.
+- Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
 
 ---
 

@@ -1,5 +1,9 @@
 # System Stability Report
 
+> **Historical Context:** This report was moved from the docs root to `docs/audit/` on 2026-03-10.
+> Legacy references are preserved where they describe the repository state at the time of the
+> original report.
+
 **Date:** 2026-02-12 **Status:** Expansion Phase (Documentation Governance)
 
 ## 1. Remediation Summary
@@ -16,8 +20,8 @@ We have successfully executed the following phases to clean up technical debt:
   variant
 - **Architecture Compliance**: Moved direct CSS styles from `_luxury-hacienda.scss` preset to
   `_base-theme.scss` section file per isolation law
-- **Critical Documentation**: Created comprehensive `docs/CONTENT_COLLECTIONS.md` covering all event
-  types, schema fields, and usage examples
+- **Critical Documentation**: Created comprehensive `docs/domains/content/collections.md` covering
+  all event types, schema fields, and usage examples
 
 **Verification:**
 
