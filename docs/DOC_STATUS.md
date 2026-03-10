@@ -9,8 +9,8 @@
 - Links: `pnpm ops check-links` passing as of 2026-03-10.
 - Staleness: `pnpm ops find-stale 180` passing as of 2026-03-10.
 - Schema parity: `pnpm ops validate-schema` passing with zero warnings as of 2026-03-10.
-- Verification: `pnpm astro check` passed with 6 pre-existing hints, and `pnpm lint` passed with 26
-  pre-existing warnings and 0 errors.
+- Verification: `pnpm astro check` passed with 0 errors, 0 warnings, and 0 hints; `pnpm lint` passed
+  with 0 warnings and 0 errors.
 - Active plan inventory: top-level plans are tracked below exactly as they exist under
   `.agent/plans/`, excluding `archive/`.
 
@@ -74,15 +74,16 @@
 
 ### Active Plans
 
-- [system-doc-alignment-hardening](../.agent/plans/system-doc-alignment-hardening/README.md) -
-  `COMPLETED`, pending archive as a deferred governance finding.
-- [system-wide-alignment-audit-2026-03](../.agent/plans/system-wide-alignment-audit-2026-03/README.md) -
-  `COMPLETED`, pending archive while it remains top-level.
+- [post-alignment-remediation-2026-03](../.agent/plans/post-alignment-remediation-2026-03/README.md) -
+  `COMPLETED`, pending archive approval after executing archive cleanup plus `lint` and
+  `astro check` remediation.
 
 ### Archived Plans
 
 - [invitation-evolution-march-2026](../.agent/plans/archive/invitation-evolution-march-2026/README.md)
+- [system-doc-alignment-hardening](../.agent/plans/archive/system-doc-alignment-hardening/README.md)
 - [system-health-audit](../.agent/plans/archive/system-health-audit/README.md)
+- [system-wide-alignment-audit-2026-03](../.agent/plans/archive/system-wide-alignment-audit-2026-03/README.md)
 
 ---
 
@@ -102,7 +103,7 @@
 
 ## Next Review Queue
 
-1. Archive `system-doc-alignment-hardening` in a follow-up governance pass.
+1. Archive `post-alignment-remediation-2026-03` after owner approval.
 2. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
 3. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
