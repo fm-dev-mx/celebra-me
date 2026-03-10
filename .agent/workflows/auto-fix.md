@@ -1,5 +1,9 @@
 ---
 description: Automated remediation for gatekeeper findings using self-healing commands.
+lifecycle: evergreen
+domain: governance
+owner: workflow-governance
+last_reviewed: 2026-03-10
 ---
 
 # Auto-Fix (Self-Healing) Routine

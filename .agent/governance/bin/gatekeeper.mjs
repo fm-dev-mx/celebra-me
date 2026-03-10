@@ -192,7 +192,7 @@ const DEFAULT_POLICY = {
 				'src/styles/themes/**',
 				'src/components/invitation/**',
 			],
-			requiredAll: ['docs/THEME_SYSTEM.md'],
+			requiredAll: ['docs/domains/theme/architecture.md'],
 		},
 		{
 			id: 'rsvp-architecture-sync',
@@ -203,7 +203,7 @@ const DEFAULT_POLICY = {
 				'src/pages/api/invitacion/**',
 				'src/middleware.ts',
 			],
-			requiredAny: ['docs/architecture/rsvp-module.md', 'docs/RSVP_STATUS.md'],
+			requiredAny: ['docs/domains/rsvp/architecture.md', 'docs/domains/rsvp/status.md'],
 		},
 		{
 			id: 'workflow-status-sync',
@@ -1711,7 +1711,10 @@ function branchSlugFromFiles(files, domain = '') {
 
 	for (let i = 0; i < 3; i++) {
 		for (const file of sortedFiles) {
-			const parts = np(file).toLowerCase().split(/[/.\\_[\]-]+/).filter(Boolean);
+			const parts = np(file)
+				.toLowerCase()
+				.split(/[/.\\_[\]-]+/)
+				.filter(Boolean);
 			const validParts = parts
 				.map(normalizeToken)
 				.filter((p) => !ignored.has(p) && /^[a-z0-9]+$/.test(p))

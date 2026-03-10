@@ -67,7 +67,7 @@ This document governs **how agents act**.
 
 ---
 
-### `PROJECT_CONVENTIONS.md`
+### `docs/core/project-conventions.md`
 
 **Canonical project conventions.**
 
@@ -87,7 +87,8 @@ This document defines **how the project should look when healthy**.
 
 High-level architectural decisions live outside this folder.
 
-Agents may consult `docs/ARCHITECTURE.md` **only when needed**, such as when:
+Agents may consult [`docs/core/architecture.md`](../docs/core/architecture.md) **only when needed**,
+such as when:
 
 - evaluating server/client boundaries,
 - reasoning about refactors,
@@ -159,3 +160,18 @@ When they no longer reflect the reality of the repository:
 - then update agent behavior.
 
 Silent workarounds are discouraged.
+
+---
+
+## Documentation Map
+
+The current documentation taxonomy is:
+
+- `docs/core/` for evergreen architecture and policy
+- `docs/domains/` for domain- or feature-specific docs
+- `docs/architecture/` for proposals and evolution plans
+- `docs/audit/` for reports, inventories, and historical findings
+- `docs/DOC_STATUS.md` as the dashboard exception at the docs root
+
+Historical logs may exist under `docs/audit/` and can retain legacy path references when clearly
+marked as historical context.

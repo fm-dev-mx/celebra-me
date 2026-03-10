@@ -18,8 +18,8 @@ Architecture and strict section-based abstraction.
 2. **Section Abstraction**: Every UI section MUST have a corresponding theme file in `sections/`.
 3. **Variant Independence**: Modifying one `[data-variant]` must never affect global components
    outside that variant.
-4. **Source of Truth**: The `THEME_SYSTEM.md` must be updated whenever a new section or variant is
-   added.
+4. **Source of Truth**: `docs/domains/theme/architecture.md` must be updated whenever a new section
+   or variant is added.
 5. **Data-Driven Text Isolation**: Theme-specific labels (RSVP inputs, Hero descriptors) MUST live
    in the event JSON, not hardcoded in Astro or React components.
 
@@ -47,6 +47,9 @@ For every modified section:
 - [ ] Ensure all `sectionStyles` variants are documented.
 - [ ] Sync Zod schemas in `src/content/config.ts` (include `labels` for RSVP and Tier 3 WhatsApp
       fields).
+
+> **Source of Truth Path:** `docs/domains/theme/architecture.md` is the canonical theme-system
+> document for the current repository layout.
 
 ## 🏗️ Step 4: Remediation & Alignment
 

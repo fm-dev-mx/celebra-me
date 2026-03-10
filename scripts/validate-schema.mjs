@@ -21,6 +21,12 @@ console.log('================================');
 
 const ERRORS = [];
 const WARNINGS = [];
+const IMPLICIT_BASE_VARIANTS = {
+	family: new Set(['standard']),
+	gifts: new Set(['standard']),
+	gallery: new Set(['standard']),
+	thankYou: new Set(['standard']),
+};
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
@@ -168,6 +174,9 @@ function main() {
 
 		// Check for contract variants missing in CSS
 		for (const variant of contractSet) {
+			if (IMPLICIT_BASE_VARIANTS[section]?.has(variant)) {
+				continue;
+			}
 			if (!cssSet.has(variant)) {
 				WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
 			}

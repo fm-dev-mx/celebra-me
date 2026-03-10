@@ -1,10 +1,66 @@
+# Phase 01: Governance Drift Analysis & Templating
+
+**Completion:** `100%` | **Status:** `COMPLETED`
+
+**Objective:** Audit the existing `/system-doc-alignment` workflow against the centralized Planning
+Governance Framework and compile an action plan with an updated template.
+
+**Weight:** 50% of total plan
+
+---
+
+## 🎯 Analysis / Findings (Governance Drift Report)
+
+### 1. Discovery & Mapping
+
+The primary assets related to documentation and systemic alignment are:
+
+- **Workflow:** `.agent/workflows/system-doc-alignment.md` (The primary subject of this audit)
+- **Skill:** `.agent/skills/documentation-governance/SKILL.md` (Governs broader documentation
+  metadata and lifecycle rules)
+- **Framework:** `.agent/plans/README.md` (The newly established Planning Governance Framework)
+
+### 2. Structural Audit Conflicts
+
+When mapping the "Persistent Planning Layer" of the current workflow against the mandatory
+`README.md` schema, the following critical conflicts emerge:
+
+- **Missing `manifest.json`:** The current workflow ignores the mandatory `manifest.json` required
+  for programmatic tracking.
+- **Deprecated File Structure:** It assumes a monolithic `PHASED_PLAN.md` file rather than using the
+  strict `phases/` directory containing individual `01-{phase-name}.md` files.
+- **Incorrect Progress Tokens:** It instructs the agent to use `[Progress: 45%]` instead of the
+  mandatory progress header: `**Completion:** 0% | **Status:** PENDING`.
+- **Missing Frontmatter:** The workflow itself lacks the standardized YAML frontmatter defined by
+  the `documentation-governance` skill (`lifecycle`, `domain`, `owner`).
+
+### 3. Drift Analysis (Architectural Layers)
+
+While the workflow correctly enforces sweeps for "Jewelry Box" and "3-Layer Color Architecture", it
+has drifted from recent architectural expansions:
+
+- **Missing Specialized Skills:** It fails to explicitly scan for compliance with newer foundational
+  skills such as `copywriting-es`, `seo-metadata`, and modern `astro-patterns`.
+- **Incomplete Granularity:** The workflow's drift detection doesn't mandate verifying GFM checkbox
+  granularity and timestamp implementations `(Completed: YYYY-MM-DD HH:MM)` within planning
+  documents.
+
+---
+
+## 🛠️ Proposed Workflow Template [STATUS: COMPLETED]
+
+The proposed, fully compliant version of `.agent/workflows/system-doc-alignment.md` is provided
+below. Do NOT apply changes to the live file until user approval is granted.
+
+### Updated Template
+
+```markdown
 ---
 description:
     Governance and synchronization of technical documentation with the current system state.
 lifecycle: 'evergreen'
 domain: 'governance'
 owner: 'system-agent'
-last_reviewed: '2026-03-10'
 ---
 
 # Optimized Governance & Alignment Prompt
@@ -70,7 +126,7 @@ Design and implement a robust, independent workflow (complementing the existing
 
 **Command**: `/system-doc-alignment`
 
-### Execution Phases
+### Execution Phases:
 
 #### Phase 1: Deep Audit & Drift Detection
 
@@ -105,3 +161,36 @@ Design and implement a robust, independent workflow (complementing the existing
 **Instruction for the Agent**: "When I run this workflow, start by scanning the environment. If a
 plan already exists in `.agent/plans/`, ask me if you should resume it or start a new one. Provide a
 summary of the current alignment health before proposing the next steps."
+```
+
+---
+
+## 🛠️ Execution Tasks [STATUS: COMPLETED]
+
+### Audit & Discovery
+
+- [x] Analyze `system-doc-alignment.md` workflow. (Completed: 2026-03-10 11:41)
+- [x] Compare against Planning Governance Framework `README.md`. (Completed: 2026-03-10 11:41)
+- [x] Perform Drift Analysis against architectural boundaries. (Completed: 2026-03-10 11:41)
+
+### Templating
+
+- [x] Draft updated Governance Drift Report. (Completed: 2026-03-10 11:41)
+- [x] Produce completely compliant `system-doc-alignment` replacement template. (Completed:
+      2026-03-10 11:41)
+
+---
+
+## ✅ Acceptance Criteria
+
+- [x] Governance Drift Report is comprehensive and explicitly maps structural conflicts with
+      `manifest.json` and the `phases/` hierarchy.
+- [x] Updated template corrects `PHASED_PLAN.md` references.
+- [x] The completed plan phase aligns entirely with the new Planning Governance Framework itself.
+
+---
+
+## 📎 References
+
+- [.agent/plans/README.md](../../README.md)
+- [.agent/workflows/system-doc-alignment.md](../../../workflows/system-doc-alignment.md)

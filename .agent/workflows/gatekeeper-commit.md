@@ -1,5 +1,9 @@
 ---
 description: Deterministic Gatekeeper commit workflow with Domain Mapping and ADU splits.
+lifecycle: evergreen
+domain: governance
+owner: workflow-governance
+last_reviewed: 2026-03-10
 ---
 
 # Gatekeeper Commit Routine
@@ -23,7 +27,7 @@ domain splits, and high-precision commit messages.
 2. **Evaluate Route** Based on the JSON `route` property:
     - **`route: "architectural_intervention"`**: Manual fix required for `severity: "block"`
       findings.
-    - **`route: "auto_fix"`**: Jump to `.agent/workflows/evergreen/auto-fix.md`.
+    - **`route: "auto_fix"`**: Jump to `.agent/workflows/auto-fix.md`.
     - **`route: "proceed_adu"`**: Proceed using `adu.suggestedSplits` when
       `adu.splitConfidence >= 0.6`.
 

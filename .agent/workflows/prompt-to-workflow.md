@@ -29,7 +29,8 @@ last_reviewed: 2026-02-14
     - **Tasks**: Include self-archive step.
 
 5. **Deployment**
-    - Save via direct file edits (`apply_patch` or editor). Update `docs/implementation-log.md`.
+    - Save via direct file edits (`apply_patch` or editor). Update
+      `docs/audit/implementation-log.md`.
 
 // turbo
 
