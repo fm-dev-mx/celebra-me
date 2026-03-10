@@ -20,6 +20,7 @@
             ".vscode/**",
             "scripts/**",
             "commitlint.config.cjs",
+            "eslint.config.js",
             "package.json",
             "pnpm-lock.yaml",
             ".gitignore",
@@ -31,6 +32,7 @@
             "src/lib/**",
             "src/data/**",
             "src/styles/events/README.md",
+            "src/pages/api/*",
             "*.md"
         ],
         "ui": [
@@ -49,6 +51,7 @@
             "src/components/admin/**",
             "src/components/dashboard/**",
             "src/pages/api/dashboard/**",
+            "src/pages/dashboard/**",
             "src/styles/dashboard/**"
         ]
     },
