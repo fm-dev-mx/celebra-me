@@ -5,7 +5,9 @@ class MockEventSource {
 	addEventListener = jest.fn();
 	close = jest.fn();
 	onerror: (() => void) | null = null;
-	constructor(_url: string) {}
+	constructor(url: string) {
+		void url;
+	}
 }
 
 describe('GuestDashboardApp auth states', () => {
