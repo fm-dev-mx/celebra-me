@@ -74,12 +74,6 @@ import '@styles/auth/_login.scss';
 			text-align: center;
 		}
 
-		.qr-placeholder--continue {
-			background: #f8f6ef;
-			border: 1px solid rgba(212, 175, 55, 0.45);
-			min-height: 200px;
-		}
-
 		.loader {
 			border: 3px solid #f3f3f3;
 			border-top: 3px solid #d4af37;
@@ -98,7 +92,11 @@ import '@styles/auth/_login.scss';
 
 	<script>
 		import { createClient } from '@supabase/supabase-js';
-		import { classifyMfaError, pickLatestVerifiedTotpFactor } from '@/lib/rsvp/mfa-setup';
+		import {
+			classifyMfaError,
+			pickLatestVerifiedTotpFactor,
+			type MfaFactorLike,
+		} from '@/lib/rsvp/mfa-setup';
 
 		const appEl = document.getElementById('mfa-app');
 		const qrContainer = document.getElementById('qr-container');
@@ -138,8 +136,10 @@ import '@styles/auth/_login.scss';
 			if (verifyBtn) verifyBtn.textContent = 'Continuar';
 
 			if (qrContainer) {
-				qrContainer.classList.add('qr-placeholder--continue');
 				qrContainer.innerHTML = '';
+				qrContainer.style.background = '#f8f6ef';
+				qrContainer.style.border = '1px solid rgba(212, 175, 55, 0.45)';
+				qrContainer.style.minHeight = '200px';
 
 				const icon = document.createElement('div');
 				icon.innerHTML =
@@ -165,8 +165,10 @@ import '@styles/auth/_login.scss';
 			if (verifyBtn) verifyBtn.textContent = 'Verificar y Activar';
 
 			if (qrContainer) {
-				qrContainer.classList.remove('qr-placeholder--continue');
 				qrContainer.innerHTML = '';
+				qrContainer.style.background = 'white';
+				qrContainer.style.border = 'none';
+				qrContainer.style.minHeight = '250px';
 
 				const img = document.createElement('img');
 				img.src = qrCode;
@@ -218,7 +220,7 @@ import '@styles/auth/_login.scss';
 			if (factorsError) throw factorsError;
 			const allFactors = factors?.all || [];
 
-			const verifiedFactor = pickLatestVerifiedTotpFactor(allFactors as any[]);
+			const verifiedFactor = pickLatestVerifiedTotpFactor(allFactors as MfaFactorLike[]);
 			if (verifiedFactor?.id) {
 				factorId = verifiedFactor.id;
 				renderVerifyExistingUI();
@@ -293,7 +295,7 @@ import '@styles/auth/_login.scss';
 					}, 1200);
 					return;
 				}
-			if (errorType === 'sync_failed') {
+				if (errorType === 'sync_failed') {
 					setStatus(
 						'Verificamos tu código, pero no pudimos activar la sesión. Intenta de nuevo.',
 						'error',
