@@ -42,7 +42,7 @@ export function logSecurityEvent(event: SecurityEvent): void {
 	}
 
 	if (import.meta.env.DEV) {
-		console.log('[SECURITY]', JSON.stringify(logEntry));
+		console.info('[SECURITY]', JSON.stringify(logEntry));
 	}
 }
 
