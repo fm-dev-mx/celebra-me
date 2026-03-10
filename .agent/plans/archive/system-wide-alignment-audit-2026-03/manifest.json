@@ -1,0 +1,55 @@
+{
+    "id": "system-wide-alignment-audit-2026-03",
+    "title": "System-Wide Alignment Audit and Cleanup",
+    "status": "ARCHIVED",
+    "completion": 100,
+    "created": "2026-03-10",
+    "updated": "2026-03-10",
+    "archivedAt": "2026-03-10",
+    "estimatedDuration": "5 phases / ~1 day",
+    "owner": "system-agent",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-baseline-and-inventory",
+            "title": "Baseline and Inventory",
+            "file": "phases/01-baseline-and-inventory.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "02-governance-contract-realignment",
+            "title": "Governance Contract Realignment",
+            "file": "phases/02-governance-contract-realignment.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "03-doc-taxonomy-and-dashboard-cleanup",
+            "title": "Doc Taxonomy and Dashboard Cleanup",
+            "file": "phases/03-doc-taxonomy-and-dashboard-cleanup.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "04-code-and-validation-parity-remediation",
+            "title": "Code and Validation Parity Remediation",
+            "file": "phases/04-code-and-validation-parity-remediation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "05-verification-and-closure",
+            "title": "Verification and Closure",
+            "file": "phases/05-verification-and-closure.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        }
+    ],
+    "tags": ["governance", "documentation", "audit", "theme"]
+}

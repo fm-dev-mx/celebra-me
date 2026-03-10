@@ -1,0 +1,46 @@
+{
+    "id": "post-alignment-remediation-2026-03",
+    "title": "Post-Alignment Remediation",
+    "status": "COMPLETED",
+    "completion": 100,
+    "created": "2026-03-10",
+    "updated": "2026-03-10",
+    "estimatedDuration": "4 phases / ~1-2 days",
+    "owner": "system-agent",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-archive-completed-plan-records",
+            "title": "Archive Completed Plan Records",
+            "file": "phases/01-archive-completed-plan-records.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        },
+        {
+            "id": "02-lint-warning-remediation",
+            "title": "Lint Warning Remediation",
+            "file": "phases/02-lint-warning-remediation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        },
+        {
+            "id": "03-astro-hint-remediation",
+            "title": "Astro Hint Remediation",
+            "file": "phases/03-astro-hint-remediation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        },
+        {
+            "id": "04-verification-and-dashboard-sync",
+            "title": "Verification and Dashboard Sync",
+            "file": "phases/04-verification-and-dashboard-sync.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        }
+    ],
+    "tags": ["governance", "lint", "astro", "archive"]
+}

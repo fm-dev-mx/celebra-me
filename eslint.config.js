@@ -132,7 +132,11 @@ export default [
 	// Allow require/import flexibility in tooling scripts
 	// ------------------------------------------------------------
 	{
-		files: ['scripts/**/*.{js,cjs,mjs}', '**/*.config.{js,cjs,mjs}'],
+		files: [
+			'scripts/**/*.{js,cjs,mjs}',
+			'.agent/governance/bin/**/*.{js,cjs,mjs}',
+			'**/*.config.{js,cjs,mjs}',
+		],
 		languageOptions: {
 			globals: {
 				...globals.node,
