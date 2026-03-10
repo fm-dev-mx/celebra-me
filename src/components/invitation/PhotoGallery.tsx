@@ -16,6 +16,13 @@ interface PhotoGalleryProps {
 	variant?: string;
 }
 
+type NestedSrc = {
+	src: string;
+};
+
+const hasNestedSrc = (value: unknown): value is NestedSrc =>
+	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
+
 /**
  * Resolve src across Astro ImageMetadata and custom ImageAsset union.
  * Keeps behavior identical to prior implementation while being explicit.
@@ -25,13 +32,8 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 		const src = image.src as unknown;
 		if (typeof src === 'string') return src;
 		// Some image pipelines return an object with a .src string
-		if (
-			src &&
-			typeof src === 'object' &&
-			'src' in (src as any) &&
-			typeof (src as any).src === 'string'
-		) {
-			return (src as any).src;
+		if (hasNestedSrc(src)) {
+			return src.src;
 		}
 	}
 
@@ -96,19 +98,10 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 
 		updateTouchMode();
 
-		const hasModernListenerAPI = 'addEventListener' in mediaQuery;
-		if (hasModernListenerAPI) {
-			mediaQuery.addEventListener('change', updateTouchMode);
-		} else {
-			(mediaQuery as any).addListener(updateTouchMode);
-		}
+		mediaQuery.addEventListener('change', updateTouchMode);
 
 		return () => {
-			if (hasModernListenerAPI) {
-				mediaQuery.removeEventListener('change', updateTouchMode);
-			} else {
-				(mediaQuery as any).removeListener(updateTouchMode);
-			}
+			mediaQuery.removeEventListener('change', updateTouchMode);
 		};
 	}, []);
 
