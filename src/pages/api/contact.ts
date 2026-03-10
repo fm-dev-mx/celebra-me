@@ -5,7 +5,7 @@ import { successResponse, errorResponse, validateBody } from '@/utils/api-utils'
 
 const contactSchema = z.object({
 	name: z.string().min(6, 'El nombre es obligatorio'),
-	email: z.string().email('El formato del correo electrónico no es válido'),
+	email: z.email('El formato del correo electrónico no es válido'),
 	message: z.string().min(10, 'El mensaje es obligatorio'),
 });
 

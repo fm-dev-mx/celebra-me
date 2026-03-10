@@ -8,8 +8,10 @@
 export function isIOS(): boolean {
 	if (typeof window === 'undefined') return false;
 	const ua = navigator.userAgent;
+	const touchCapableNavigator = navigator as Navigator & { maxTouchPoints?: number };
 	return (
-		/iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && (navigator as any).maxTouchPoints > 1)
+		/iPad|iPhone|iPod/.test(ua) ||
+		(ua.includes('Mac') && (touchCapableNavigator.maxTouchPoints || 0) > 1)
 	);
 }
 

@@ -163,7 +163,7 @@ export function validateRequiredEnv(): void {
 		throw new Error(errorMessage);
 	}
 
-	console.log('✅ Variables de entorno validadas correctamente');
+	console.info('Variables de entorno validadas correctamente');
 }
 
 /**

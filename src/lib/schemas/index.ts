@@ -9,7 +9,7 @@ import { z } from 'zod';
 // Common Schemas
 // =============================================================================
 
-export const UuidSchema = z.string().uuid({
+export const UuidSchema = z.uuid({
 	message: 'Debe ser un UUID válido',
 });
 
@@ -18,11 +18,11 @@ export const PaginationSchema = z.object({
 	perPage: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export const EmailSchema = z.string().email({
+export const EmailSchema = z.email({
 	message: 'Debe ser un email válido',
 });
 
-export const TimestampSchema = z.string().datetime({
+export const TimestampSchema = z.iso.datetime({
 	message: 'Debe ser una fecha ISO 8601 válida',
 });
 

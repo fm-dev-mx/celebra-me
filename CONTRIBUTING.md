@@ -120,7 +120,8 @@ Before submitting a pull request, ensure:
     pnpm type-check
     ```
 
-For detailed testing guidelines, see [`docs/TESTING.md`](docs/TESTING.md).
+For detailed testing guidelines, see
+[`docs/core/testing-strategy.md`](docs/core/testing-strategy.md).
 
 ## Thank You
 
