@@ -8,7 +8,7 @@ export default defineConfig({
 	workers: process.env.CI ? 1 : undefined,
 	reporter: 'list',
 	use: {
-		baseURL: 'http://localhost:4321',
+		baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4321',
 		trace: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},
