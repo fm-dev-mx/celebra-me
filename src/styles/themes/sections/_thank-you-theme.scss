@@ -14,6 +14,8 @@
 	padding: 10rem 2rem;
 
 	.photo-frame {
+		width: var(--jewelry-box-thank-you-frame-size-mobile);
+		height: var(--jewelry-box-thank-you-frame-size-mobile);
 		background: var(--color-glass-bg);
 		border: 1px solid var(--color-glass-border);
 		border-radius: 12px;
@@ -21,8 +23,16 @@
 		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 		padding: 12px;
 
-		:global(.photo-image) {
+		@include mixins.respond-to(sm) {
+			width: var(--jewelry-box-thank-you-frame-size-desktop);
+			height: var(--jewelry-box-thank-you-frame-size-desktop);
+		}
+
+		.photo-image {
 			border-radius: 8px;
+			object-fit: var(--jewelry-box-thank-you-image-fit);
+			object-position: var(--jewelry-box-thank-you-image-position);
+			padding: 0.4rem;
 		}
 	}
 
@@ -35,14 +45,15 @@
 		border-radius: 12px;
 		padding: 3rem;
 		box-shadow: var(--shadow-premium);
+		line-height: 1.8;
 	}
 
 	.closing-name {
 		font-family: var(--font-display);
 		color: var(--color-action-accent);
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		font-weight: 300;
+		letter-spacing: 0.16em;
+		font-weight: 400;
 		font-size: clamp(3rem, 8vw, 5rem);
 	}
 }
@@ -117,7 +128,7 @@
 			display: none; // Remove Jewelry Box glimmer
 		}
 
-		:global(.photo-image) {
+		.photo-image {
 			border-radius: 2px;
 			filter: sepia(0.15) contrast(1.1) brightness(0.9);
 			box-shadow: inset 0 0 10px rgb(0 0 0 / 80%);

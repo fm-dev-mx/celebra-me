@@ -19,25 +19,27 @@
 	.invitation-hero__content {
 		background: radial-gradient(
 			circle at center,
-			rgb(255 255 255 / 70%) 0%,
-			rgb(255 255 255 / 50%) 100%
+			rgb(255 255 255 / 78%) 0%,
+			rgb(255 255 255 / 56%) 52%,
+			rgb(250 247 241 / 46%) 100%
 		);
-		backdrop-filter: blur(24px) saturate(200%);
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.45);
+		backdrop-filter: blur(24px) saturate(210%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.38);
 		box-shadow:
-			0 30px 60px -12px rgb(0 0 0 / 35%),
-			inset 0 0 0 1px rgb(255 255 255 / 50%),
-			inset 0 0 20px rgb(var(--color-action-accent-rgb) / 5%);
-		border-radius: 20px;
-		width: 90%;
-		max-width: 500px;
-		margin: 0 auto;
+			0 34px 72px -18px rgb(0 0 0 / 42%),
+			inset 0 0 0 1px rgb(255 255 255 / 54%),
+			inset 0 0 28px rgb(var(--color-action-accent-rgb) / 7%);
+		border-radius: clamp(18px, 3.5vw, 24px);
+		width: min(92%, 34rem);
+		max-width: 24rem;
+		margin: 8rem 0;
+		padding: clamp(2.35rem, 4vw, 3.6rem) clamp(1.35rem, 3vw, 2.5rem);
 		position: relative;
 		overflow: hidden;
 
 		@media (width <= 480px) {
-			width: 95%;
-			padding: 2.5rem 1.5rem;
+			width: min(94%, 21.75rem);
+			padding: clamp(2rem, 8vw, 2.55rem) clamp(1.05rem, 5vw, 1.4rem);
 		}
 
 		&::after {
@@ -60,12 +62,12 @@
 		}
 
 		@media (width <= 480px) {
-			max-width: 250px;
+			max-width: none;
 		}
 	}
 
 	.invitation-hero__label {
-		color: rgb(var(--color-action-accent-rgb), 0.8);
+		color: var(--hero-label-color);
 		text-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 		letter-spacing: 0.4em;
 		font-weight: 600;
@@ -74,23 +76,24 @@
 	.invitation-hero__title {
 		font-weight: 400;
 		background: linear-gradient(
-			to bottom,
-			#f1e1b9 0%,
-			var(--color-action-accent) 25%,
-			#a67c37 50%,
-			var(--color-action-accent) 75%,
-			#f1e1b9 100%
+			180deg,
+			#fff7df 0%,
+			#f5d98c 16%,
+			var(--color-action-accent) 40%,
+			#a06f26 60%,
+			#f1d48c 84%,
+			#fff7df 100%
 		);
 		background-size: 100% 200%;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-shadow: none;
-		filter: drop-shadow(0 4px 8px rgb(0 0 0 / 25%));
+		filter: drop-shadow(0 4px 10px rgb(0 0 0 / 24%));
 		animation:
 			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
 			gold-foil 8s tokens.$ease-in-out infinite;
-		margin: 0.2rem 0;
-		-webkit-text-stroke: 0.2px rgb(255 255 255 / 10%);
+		margin: 0.3rem 0;
+		-webkit-text-stroke: 0.35px rgb(255 255 255 / 18%);
 	}
 
 	.invitation-hero__divider {
@@ -117,7 +120,7 @@
 	.invitation-hero__date,
 	.invitation-hero__venue {
 		color: var(--color-surface-dark);
-		text-shadow: 0 1px 2px rgb(255 255 255 / 50%);
+		text-shadow: 0 1px 2px rgb(255 255 255 / 52%);
 		font-weight: 400;
 		letter-spacing: 0.05em;
 	}

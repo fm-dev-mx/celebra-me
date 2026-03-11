@@ -24,7 +24,7 @@
 		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
 		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
 	--color-text-primary: var(--color-surface-dark);
-	--color-text-emphasis: #{primitives.$base-gold-500};
+	--color-text-emphasis: #{primitives.$base-gold-800};
 	--color-text-on-dark: #{primitives.$base-gold-500};
 	--color-text-on-light: #{primitives.$base-neutral-700};
 
@@ -81,6 +81,12 @@
 	);
 	--family-name-font: var(--font-display);
 	--family-group-title-font: var(--font-display);
+	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
+	--family-meta-size: 0.74rem;
+	--family-meta-letter-spacing: 0.22em;
+	--family-group-padding-block: clamp(1.15rem, 2.2vw, 1.55rem);
+	--family-content-max-width: 38rem;
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
@@ -99,6 +105,7 @@
 	--hero-badge-bg: var(--color-glass-bg);
 	--hero-badge-border: var(--color-action-accent);
 	--hero-badge-text: var(--color-action-accent);
+	--hero-label-color: var(--color-text-emphasis);
 
 	// ---------------------------------------------------------------------
 	// Gallery tokens
@@ -114,8 +121,20 @@
 	--jewelry-box-gallery-image-radius: 4px;
 	--jewelry-box-gallery-title-font: var(--font-display);
 	--jewelry-box-gallery-title-color: var(--color-action-accent);
+	--jewelry-box-gallery-subtitle-color: rgb(var(--color-surface-dark-rgb), 0.72);
 	--jewelry-box-gallery-caption-bg: rgb(255 255 255 / 90%);
 	--jewelry-box-gallery-caption-color: var(--color-action-accent);
+	--jewelry-box-gallery-caption-font: 'Cormorant Garamond', serif;
+	--jewelry-box-gallery-caption-size: 0.8rem;
+	--jewelry-box-gallery-caption-letter-spacing: 0.04em;
+
+	// ---------------------------------------------------------------------
+	// Thank-you section tokens
+	// ---------------------------------------------------------------------
+	--jewelry-box-thank-you-frame-size-mobile: 220px;
+	--jewelry-box-thank-you-frame-size-desktop: 280px;
+	--jewelry-box-thank-you-image-fit: contain;
+	--jewelry-box-thank-you-image-position: center;
 
 	// 🎨 Texture & Light Effects (Ultra-Premium)
 	--texture-silk:

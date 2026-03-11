@@ -9,8 +9,12 @@
 	--gallery-title-font: var(--jewelry-box-gallery-title-font);
 	--gallery-title-color: var(--jewelry-box-gallery-title-color);
 	--gallery-title-transform: uppercase;
-	--gallery-title-letter-spacing: 0.3rem;
-	--gallery-subtitle-color: rgb(var(--color-action-accent-rgb), 0.8);
+	--gallery-title-size: clamp(2.35rem, 5vw, 3.85rem);
+	--gallery-title-letter-spacing: 0.22rem;
+	--gallery-subtitle-font: 'Cormorant Garamond', serif;
+	--gallery-subtitle-size: clamp(1.05rem, 2.2vw, 1.32rem);
+	--gallery-subtitle-color: var(--jewelry-box-gallery-subtitle-color);
+	--gallery-subtitle-letter-spacing: 0.06em;
 	--gallery-item-bg: var(--jewelry-box-gallery-card-bg);
 	--gallery-item-border: 1px solid var(--color-glass-border);
 	--gallery-item-border-color: var(--color-glass-border);
@@ -27,11 +31,13 @@
 	--gallery-item-image-radius: var(--jewelry-box-gallery-image-radius);
 	--gallery-overlay-emphasis-opacity: 0.95;
 	--gallery-overlay-hover-opacity: 1;
-	--gallery-caption-font: var(--font-body);
+	--gallery-caption-font: var(--jewelry-box-gallery-caption-font);
 	--gallery-caption-color: var(--jewelry-box-gallery-caption-color);
-	--gallery-caption-bg: var(--jewelry-box-gallery-caption-bg);
-	--gallery-caption-padding: 0.35rem 0.5rem;
-	--gallery-caption-radius: 0.45rem;
+	--gallery-caption-size: var(--jewelry-box-gallery-caption-size);
+	--gallery-caption-letter-spacing: var(--jewelry-box-gallery-caption-letter-spacing);
+	--gallery-caption-bg: transparent;
+	--gallery-caption-padding: 0.45rem 0.75rem;
+	--gallery-caption-radius: 999px;
 
 	.gallery-grid__item::after {
 		content: '';
@@ -40,6 +46,17 @@
 		border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
 		border-radius: 8px;
 		pointer-events: none;
+	}
+
+	.gallery-section__title {
+		line-height: 1.06;
+		text-shadow: 0 10px 28px rgb(var(--color-action-accent-rgb), 0.12);
+	}
+
+	.gallery-section__subtitle {
+		max-width: 36rem;
+		margin-inline: auto;
+		line-height: 1.5;
 	}
 }
 
