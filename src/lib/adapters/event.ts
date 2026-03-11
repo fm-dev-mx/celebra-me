@@ -13,6 +13,11 @@ import {
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
 
+const runtimeEnv = {
+	PROD: process.env.NODE_ENV === 'production',
+	DEV: process.env.NODE_ENV !== 'production',
+};
+
 function pickVariant<T extends readonly string[]>(
 	scope: string,
 	candidate: string | undefined,
@@ -31,7 +36,7 @@ function pickPreset(candidate: string | undefined): ThemePreset {
 	if (!candidate) return THEME_PRESETS[0];
 	if ((THEME_PRESETS as readonly string[]).includes(candidate)) return candidate as ThemePreset;
 
-	if (import.meta.env.PROD) {
+	if (runtimeEnv.PROD) {
 		throw new Error(`[ThemePreset] Invalid preset "${candidate}" in theme.preset.`);
 	}
 
@@ -174,7 +179,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 
 	const locationIndications = data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => {
-			if (!indication.iconName && indication.icon === 'dress' && import.meta.env.DEV) {
+			if (!indication.iconName && indication.icon === 'dress' && runtimeEnv.DEV) {
 				console.warn(
 					'[EventAdapter] Legacy indication icon "dress" detected. Use indication.iconName for explicit icon semantics.',
 				);
@@ -244,6 +249,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 			family: data.family
 				? {
 						...data.family,
+						godparents: data.family.godparents,
 						featuredImage: familyImage,
 						celebrantName: data.hero.name,
 						variant: pickVariant(

@@ -28,10 +28,16 @@
         "family": {
             "variant": "jewelry-box"
         },
+        "gallery": {
+            "variant": "jewelry-box"
+        },
         "gifts": {
             "variant": "jewelry-box"
         },
         "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "thankYou": {
             "variant": "jewelry-box"
         },
         "rsvp": {
