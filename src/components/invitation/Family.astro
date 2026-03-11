@@ -18,6 +18,10 @@ interface Props {
 		name: string;
 		role?: string;
 	}>;
+	godparents?: Array<{
+		name: string;
+		role?: string;
+	}>;
 	featuredImage?: string | ImageAsset;
 	celebrantName: string;
 	labels?: {
@@ -40,7 +44,7 @@ interface FamilyEntry {
 }
 
 interface FamilyBlock {
-	id: 'spouse' | 'children' | 'parents';
+	id: 'spouse' | 'children' | 'parents' | 'godparents';
 	title: string;
 	entries: FamilyEntry[];
 	isChildren?: boolean;
@@ -50,6 +54,7 @@ const {
 	parents,
 	spouse,
 	children,
+	godparents,
 	featuredImage,
 	celebrantName,
 	labels,
@@ -63,6 +68,7 @@ const resolvedLabels = {
 	spouseRole: labels?.spouseRole ?? 'Esposa',
 	childrenTitle: labels?.childrenTitle ?? 'Nuestros Hijos',
 	parentsTitle: labels?.parentsTitle ?? 'Con la bendición de',
+	godparentsTitle: 'Con cariño de mis padrinos',
 };
 
 const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
@@ -119,6 +125,17 @@ if (parents && (parents.father || parents.mother)) {
 		id: 'parents',
 		title: resolvedLabels.parentsTitle,
 		entries: parentEntries,
+	});
+}
+
+if (godparents && godparents.length > 0) {
+	familyBlocks.push({
+		id: 'godparents',
+		title: resolvedLabels.godparentsTitle,
+		entries: godparents.map((godparent) => ({
+			name: godparent.name,
+			role: godparent.role,
+		})),
 	});
 }
 ---
