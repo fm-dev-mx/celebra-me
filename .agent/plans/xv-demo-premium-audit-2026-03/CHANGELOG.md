@@ -8,23 +8,37 @@ Deterministic audit trail for `xv-demo-premium-audit-2026-03`.
 
 ### Phase 01: Full Visual Audit
 
-_No entries yet._
+**Completed:** Playwright audit executed across 5 viewports with evidence stored under
+`temp/xv-demo-premium-audit/post-remediation-final/` (Completed: 2026-03-10 16:49) **Findings:**
+Logged initial issues: hero mobile width regression, thank-you crop/variant mismatch, missing
+godparents render path, and audit noise from media requests (Completed: 2026-03-10 16:49)
 
 ### Phase 02: Critical Regressions Fix
 
-_No entries yet._
+**Remediation:** Rebalanced `jewelry-box` hero card proportions and premium glass/title treatment in
+`_hero-theme.scss` (Completed: 2026-03-10 16:49) **Remediation:** Corrected thank-you frame/image
+rendering via `jewelry-box` variant wiring and non-clipping portrait fit rules (Completed:
+2026-03-10 16:49)
 
 ### Phase 03: Godparents Data Pipeline
 
-_No entries yet._
+**Implementation:** Forwarded `godparents` through adapter and page props into `Family.astro`
+(Completed: 2026-03-10 16:49) **Validation:** Added adapter unit coverage for `family.godparents`
+present/absent paths (Completed: 2026-03-10 16:49)
 
 ### Phase 04: Typography & Font Polish
 
-_No entries yet._
+**Polish:** Refined `jewelry-box` family typography tokens for names, metadata, spacing, and reveal
+order including godparents (Completed: 2026-03-10 16:49) **Polish:** Refined `jewelry-box` gallery
+title/subtitle/caption typography and enabled variant usage in `demo-xv.json` (Completed: 2026-03-10
+16:49)
 
 ### Phase 05: Extended Premium Refinements
 
-_No entries yet._
+**Validation:** Added configurable Playwright `baseURL`, filtered non-actionable audio request
+failures, and waited for family reveal before screenshots (Completed: 2026-03-10 16:49) **Smoke:**
+Verified `demo-xv` and `demo-gerardo-sesenta` render without runtime errors after scoped changes
+(Completed: 2026-03-10 16:49)
 
 ---
 
