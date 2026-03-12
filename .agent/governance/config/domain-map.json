@@ -17,6 +17,7 @@
             "src/styles/themes/**",
             "src/styles/tokens/**",
             "src/styles/global/**",
+            "src/styles/ui/**",
             "src/styles/*.scss"
         ],
         "governance": [
@@ -43,6 +44,8 @@
         ],
         "ui": [
             "src/pages/index.astro",
+            "src/pages/404.astro",
+            "src/pages/under-construction.astro",
             "src/components/common/**",
             "src/components/ui/**",
             "src/components/home/**",
