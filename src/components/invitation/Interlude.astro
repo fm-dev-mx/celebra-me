@@ -1,0 +1,26 @@
+---
+import '@/styles/invitation/_interlude.scss';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+
+interface Props {
+	image: ImageAsset;
+	alt: string;
+	height?: 'screen' | 'tall';
+	variant?: string;
+}
+
+const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
+---
+
+<section class="invitation-interlude" data-variant={variant} data-height={height} aria-label={alt}>
+	<div class="invitation-interlude__media">
+		<OptimizedImage
+			imagePath={image}
+			alt={alt}
+			width={1920}
+			height={1400}
+			class="invitation-interlude__image"
+		/>
+	</div>
+</section>
