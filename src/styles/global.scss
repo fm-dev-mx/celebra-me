@@ -8,6 +8,8 @@
 @use 'components/nav-bar-desktop';
 @use 'tokens' as tokens;
 @use 'themes/landing' as landing;
+@use 'ui/status-pages';
+@use 'ui/card';
 
 :root {
 	/* Landing Page Theme Variables */
