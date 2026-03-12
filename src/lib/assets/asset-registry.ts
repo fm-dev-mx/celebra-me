@@ -3,8 +3,9 @@
  * Provides a deterministic way to access and optimize project assets.
  */
 
-import { assets as DemoGerardoSesentaAssets } from '../../assets/images/events/gerardo-sesenta';
+import { assets as DemoAlbertoSesentaAssets } from '../../assets/images/events/alberto-sesenta';
 import { assets as DemoXvAssets } from '../../assets/images/events/demo-xv';
+import { assets as DemoWeddingAssets } from '../../assets/images/events/demo-wedding';
 import type { ImageMetadata } from 'astro';
 
 // Social Proof
@@ -16,6 +17,7 @@ import avatar3 from '../../assets/images/hero/avatar3.png';
 import serviceXv from '../../assets/images/services/xv.png';
 import serviceWedding from '../../assets/images/services/wedding.png';
 import serviceBaptism from '../../assets/images/services/baptism.png';
+import serviceCumple from '../../assets/images/services/cumple.png';
 
 // Header
 import headerLogo from '../../assets/images/header/horizontal-logo150x56.png';
@@ -40,6 +42,8 @@ export const EVENT_KEYS = [
 	'hero',
 	'portrait',
 	'family',
+	'ceremony',
+	'reception',
 	'jardin',
 	'signature',
 	'gallery01',
@@ -68,6 +72,7 @@ export const COMMON_KEYS = [
 	'serviceXv',
 	'serviceWedding',
 	'serviceBaptism',
+	'serviceCumple',
 	'headerLogo',
 	'aboutToast',
 ] as const;
@@ -95,6 +100,8 @@ type RawEventAssets = {
 	hero: ImageMetadata;
 	portrait: ImageMetadata;
 	family?: ImageMetadata;
+	ceremony?: ImageMetadata;
+	reception?: ImageMetadata;
 	jardin: ImageMetadata;
 	signature: ImageMetadata;
 	gallery: ImageMetadata[];
@@ -106,6 +113,12 @@ const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAsse
 	portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
 	family: rawAssets.family
 		? { src: rawAssets.family, alt: `Familia de ${eventName}` }
+		: undefined,
+	ceremony: rawAssets.ceremony
+		? { src: rawAssets.ceremony, alt: `Ceremonia de ${eventName}` }
+		: undefined,
+	reception: rawAssets.reception
+		? { src: rawAssets.reception, alt: `Recepción de ${eventName}` }
 		: undefined,
 	jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
 	signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
@@ -133,8 +146,9 @@ const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAsse
 
 export const ImageRegistry: Registry = {
 	events: {
-		'demo-gerardo-sesenta': mapEventAssets(DemoGerardoSesentaAssets, 'Demo Gerardo 60 años'),
+		'demo-cumple': mapEventAssets(DemoAlbertoSesentaAssets, 'Don Alberto 60 años'),
 		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
+		'demo-bodas': mapEventAssets(DemoWeddingAssets, 'Sofía & Alejandro'),
 	},
 	common: {
 		logo: {
@@ -147,6 +161,7 @@ export const ImageRegistry: Registry = {
 		serviceXv: { src: serviceXv, alt: 'Servicio de XV Años' },
 		serviceWedding: { src: serviceWedding, alt: 'Servicio de Bodas' },
 		serviceBaptism: { src: serviceBaptism, alt: 'Servicio de Bautizos' },
+		serviceCumple: { src: serviceCumple, alt: 'Servicio de Cumpleaños' },
 		headerLogo: { src: headerLogo, alt: 'Celebra-me Logo' },
 		aboutToast: { src: partyToast, alt: 'Celebración elegante con brindis' },
 		heroBgDesktop: {

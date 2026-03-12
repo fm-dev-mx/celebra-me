@@ -1,6 +1,13 @@
 import type { CollectionEntry } from 'astro:content';
 import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/asset-registry';
-import type { InvitationViewModel, ThemeConfig, HeroViewModel, EnvelopeViewModel } from './types';
+import type {
+	InvitationViewModel,
+	ThemeConfig,
+	HeroViewModel,
+	EnvelopeViewModel,
+	ContentBlock,
+	ContentSectionKey,
+} from './types';
 import {
 	COUNTDOWN_VARIANTS,
 	ITINERARY_VARIANTS,
@@ -17,6 +24,7 @@ const runtimeEnv = {
 	PROD: process.env.NODE_ENV === 'production',
 	DEV: process.env.NODE_ENV !== 'production',
 };
+type RawContentBlock = NonNullable<CollectionEntry<'events'>['data']['contentBlocks']>[number];
 
 function pickVariant<T extends readonly string[]>(
 	scope: string,
@@ -107,6 +115,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 	const heroPortrait = resolveAsset(eventSlug, data.hero.portrait);
 	const hero: HeroViewModel = {
 		name: data.hero.name,
+		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
 		date: data.hero.date,
@@ -173,7 +182,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 	const reception = data.location.reception
 		? {
 				...data.location.reception,
-				image: data.location.reception.image,
+				image: resolveAsset(eventSlug, data.location.reception.image as string),
 			}
 		: undefined;
 
@@ -193,6 +202,26 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 				styleVariant: indication.styleVariant ?? 'default',
 				text: indication.text,
 			};
+		},
+	);
+
+	const contentBlocks: ContentBlock[] | undefined = data.contentBlocks?.flatMap(
+		(block: RawContentBlock): ContentBlock[] => {
+			if (block.type === 'section') {
+				return [{ type: 'section', section: block.section as ContentSectionKey }];
+			}
+
+			const image = resolveAsset(eventSlug, block.image);
+			if (!image) return [];
+
+			return [
+				{
+					type: 'interlude',
+					image,
+					alt: block.alt || `Interludio de ${data.title}`,
+					height: block.height,
+				},
+			];
 		},
 	);
 
@@ -250,6 +279,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 				? {
 						...data.family,
 						godparents: data.family.godparents,
+						groups: data.family.groups,
 						featuredImage: familyImage,
 						celebrantName: data.hero.name,
 						variant: pickVariant(
@@ -289,7 +319,11 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 					? {
 							...data.rsvp,
 							eventSlug,
-							celebrantName: data.hero.nickname || data.hero.name.split(' ')[0],
+							celebrantName:
+								data.hero.nickname ||
+								(data.hero.secondaryName
+									? `${data.hero.name} & ${data.hero.secondaryName}`
+									: data.hero.name.split(' ')[0]),
 							variant: pickVariant(
 								'sectionStyles.rsvp.variant',
 								data.sectionStyles?.rsvp?.variant ?? normalizedPreset,
@@ -339,6 +373,7 @@ export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewMode
 					revealMode: showEnvelope ? 'envelope' : 'immediate',
 				}
 			: undefined,
+		contentBlocks,
 		navigation: data.navigation,
 	};
 }

@@ -28,6 +28,7 @@ export interface ThemeConfig {
 
 export interface HeroViewModel {
 	name: string;
+	secondaryName?: string;
 	label: string;
 	nickname?: string;
 	date: string;
@@ -85,7 +86,7 @@ export interface Reception {
 	mapUrl?: string;
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;
-	image?: string;
+	image?: ImageAsset;
 	coordinates?: Coordinate;
 	itinerary?: ItineraryItem[];
 	countdown?: {
@@ -120,6 +121,12 @@ export interface FamilyLabels {
 export interface FamilyMember {
 	name: string;
 	role?: string;
+	deceased?: boolean;
+}
+
+export interface FamilyGroup {
+	title: string;
+	items: FamilyMember[];
 }
 
 export interface WhatsAppConfig {
@@ -162,6 +169,29 @@ export interface EnvelopeViewModel {
 	};
 }
 
+export type ContentSectionKey =
+	| 'quote'
+	| 'countdown'
+	| 'location'
+	| 'family'
+	| 'itinerary'
+	| 'gallery'
+	| 'rsvp'
+	| 'gifts'
+	| 'thankYou';
+
+export type ContentBlock =
+	| {
+			type: 'section';
+			section: ContentSectionKey;
+	  }
+	| {
+			type: 'interlude';
+			image: ImageAsset;
+			alt: string;
+			height: 'screen' | 'tall';
+	  };
+
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
 	isDemo: boolean;
@@ -202,6 +232,7 @@ export interface InvitationViewModel {
 			spouse?: string;
 			children?: FamilyMember[];
 			godparents?: FamilyMember[];
+			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
 			labels?: FamilyLabels;
 			celebrantName: string;
@@ -254,5 +285,6 @@ export interface InvitationViewModel {
 		title?: string;
 		revealMode: 'envelope' | 'immediate';
 	};
+	contentBlocks?: ContentBlock[];
 	navigation?: Array<{ label: string; href: string }>;
 }
