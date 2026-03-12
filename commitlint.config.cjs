@@ -1,4 +1,19 @@
-const VAGUE_SUBJECT =
+const fs = require('fs');
+const path = require('path');
+
+// Load valid domains from domain-map.json
+const domainMapPath = path.resolve(__dirname, '.agent/governance/config/domain-map.json');
+let validScopes = [];
+try {
+	const domainMapContent = fs.readFileSync(domainMapPath, 'utf8');
+	const domainMap = JSON.parse(domainMapContent);
+	validScopes = Object.keys(domainMap.domains || {});
+} catch (error) {
+	console.error('Failed to load domain-map.json for commitlint scopes:', error);
+	validScopes = ['core', 'ui', 'invitation', 'auth', 'theme', 'governance', 'docs', 'test', 'admin']; // Fallback
+}
+
+const FORBIDDEN_VOCABULARY =
 	/\b(wip|update|fix stuff|changes|misc|various|tmp|temp|quick fix|refactor scripts|minor changes|small fix|cleanup|tweaks|improvements|adjustments|stuff|things)\b/i;
 const SPANISH_HINT =
 	/\b(el|la|los|las|para|con|sin|por|que|como|cuando|donde|arreglo|cambio)\b|[áéíóúñ]/i;
@@ -27,13 +42,14 @@ module.exports = {
 			],
 		],
 		'type-case': [2, 'always', 'lower-case'],
+		'scope-enum': [2, 'always', validScopes],
 		'scope-case': [2, 'always', 'kebab-case'],
 		'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
 		'subject-empty': [2, 'never'],
 		'subject-full-stop': [2, 'never', '.'],
 		'header-max-length': [2, 'always', 72],
 		'body-leading-blank': [2, 'always'],
-		'no-vague-subject': [2, 'always'],
+		'no-forbidden-vocabulary': [2, 'always'],
 		'english-message': [2, 'always'],
 		'body-bullets-for-complex': [2, 'always'],
 		'body-min-length-when-required': [2, 'always'],
@@ -42,9 +58,15 @@ module.exports = {
 	plugins: [
 		{
 			rules: {
-				'no-vague-subject': (parsed) => {
+				'no-forbidden-vocabulary': (parsed) => {
 					const subject = parsed.subject || '';
-					return [!VAGUE_SUBJECT.test(subject), 'commit subject is too vague'];
+					const body = parsed.body || '';
+					const combined = `${subject}\n${body}`;
+					const match = combined.match(FORBIDDEN_VOCABULARY);
+					if (match) {
+						return [false, `commit message contains forbidden vocabulary: "${match[0]}"`];
+					}
+					return [true];
 				},
 				'english-message': (parsed) => {
 					const full = [parsed.header, parsed.body, parsed.footer]
