@@ -36,7 +36,7 @@ export const landingData: LandingPageData = {
 				icon: 'RingsIcon',
 			},
 			{
-				href: '/bautizos/demo-bautizos',
+				href: '/under-construction',
 				title: 'Bautizos',
 				description: 'Detalles tiernos para celebrar la vida.',
 				icon: 'DoveIcon',
