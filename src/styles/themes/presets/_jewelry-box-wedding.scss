@@ -1,0 +1,56 @@
+@use 'sass:color';
+@use '../../tokens/index' as tokens;
+@use '../../global/mixins' as mixins;
+@use '../../global/functions' as funcs;
+
+/* --- PRESET: Jewelry Box Wedding --- */
+
+.theme-preset--jewelry-box-wedding {
+	// 💎 Layer 1 & 2: Surface Architecture
+	--color-surface-primary: #fefcf9; // Soft Ivory
+	--color-surface-primary-rgb: 254, 252, 249;
+	--color-surface-soft: #fdfbf7;
+	--color-surface-dark: #333; // Charcoal Grey
+	--color-surface-dark-rgb: 51, 51, 51;
+
+	// 💎 Layer 3: Actions & Emphasis
+	--color-action-primary: var(--color-surface-dark);
+	--color-action-accent: #e5c387; // Champagne Gold
+	--color-action-accent-rgb: 229, 195, 135;
+	--color-text-primary: var(--color-surface-dark);
+	--color-text-emphasis: #b88e44; // Deeper gold for readability
+	--color-text-on-dark: #e5c387;
+	--color-text-on-light: #4a4a4a;
+
+	// ✨ Glassmorphism & Effects
+	--color-glass-bg: rgb(255 252 249 / 65%);
+	--color-glass-border: rgb(229 195 135 / 35%);
+	--color-glass-shadow: rgb(184 142 68 / 12%);
+	--glass-blur: 12px;
+	--glass-saturate: 160%;
+
+	// 🖋️ Typography
+	--font-display: #{tokens.$font-display-elegant};
+	--font-body: #{tokens.$font-body};
+	--font-calligraphy: 'Pinyon Script', cursive;
+
+	// 🎨 Premium Details
+	--shadow-premium: 0 20px 40px var(--color-glass-shadow), 0 8px 16px rgb(0 0 0 / 4%);
+	--border-fine-gold: 1px solid var(--color-glass-border);
+
+	// Component Specific Overrides
+	--family-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(229 195 135 / 8%) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--family-divider: #{funcs.linear-gradient-divider('--color-action-accent-rgb', 0.3)};
+	--family-name-font: var(--font-display);
+	--family-group-title-font: var(--font-display);
+	--family-accent: var(--color-action-accent);
+	--hero-card-bg: var(--color-glass-bg);
+	--hero-label-color: var(--color-text-emphasis);
+	--hero-badge-border: var(--color-action-accent);
+	--jewelry-box-gallery-section-bg: var(--family-bg);
+	--jewelry-box-gallery-title-color: var(--color-text-emphasis);
+}
