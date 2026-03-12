@@ -1,0 +1,47 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/common/icons/Icon.astro';
+
+// SEO: Avoid indexing utility pages
+const title = "Sección en Desarrollo | Celebra-me";
+const description = "Estamos puliendo cada detalle para ofrecerte una experiencia impecable.";
+---
+
+<Layout title={title} description={description} hideHeader={true} className="theme-preset--elegant">
+    <meta name="robots" content="noindex" slot="head" />
+
+    <div class="status-page">
+        <div class="status-page__bg-decoration"></div>
+
+        <div class="status-page__container">
+            <div class="status-page__card">
+                <div class="status-page__icon-wrapper">
+                    <Icon name="Sparkles" size={48} />
+                </div>
+
+                <div class="status-page__header">
+                    <span class="status-page__subtitle">Próximamente</span>
+                    <h1 class="status-page__title">Bajo Diseño</h1>
+                </div>
+
+                <p class="status-page__description">
+                    Estamos curando esta sección con la misma dedicación que pones en tu evento. 
+                    Vuelve pronto para descubrir nuevas posibilidades.
+                </p>
+
+                <div class="status-page__actions">
+                    <a href="/" class="status-page__btn">
+                        Volver al Portal
+                    </a>
+                    <a href="https://wa.me/5216681167477" target="_blank" class="status-page__btn status-page__btn--outline">
+                        Saber más por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="status-page__footer">
+            &copy; {new Date().getFullYear()} Celebra-me &bull; Arte en Detalles Digitales
+        </footer>
+    </div>
+</Layout>

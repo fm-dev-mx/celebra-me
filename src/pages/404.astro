@@ -1,0 +1,47 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/common/icons/Icon.astro';
+
+// SEO: Avoid indexing error pages
+const title = "Página no encontrada | Celebra-me";
+const description = "Lo sentimos, la página que buscas no existe o ha sido movida.";
+---
+
+<Layout title={title} description={description} hideHeader={true} className="theme-preset--elegant">
+    <meta name="robots" content="noindex" slot="head" />
+
+    <div class="status-page">
+        <div class="status-page__bg-decoration"></div>
+
+        <div class="status-page__container">
+            <div class="status-page__card">
+                <div class="status-page__icon-wrapper">
+                    <Icon name="Search" size={48} />
+                </div>
+
+                <div class="status-page__header">
+                    <span class="status-page__subtitle">Error 404</span>
+                    <h1 class="status-page__title">Página no Encontrada</h1>
+                </div>
+
+                <p class="status-page__description">
+                    Parece que el enlace que seguiste ha desaparecido entre los pétalos de nuestra galería. 
+                    Permítenos guiarte de vuelta a casa.
+                </p>
+
+                <div class="status-page__actions">
+                    <a href="/" class="status-page__btn">
+                        Regresar al Inicio
+                    </a>
+                    <a href="/#contacto" class="status-page__btn status-page__btn--outline">
+                        Solicitar Ayuda
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="status-page__footer">
+            &copy; {new Date().getFullYear()} Celebra-me &bull; Experiencias Digitales Premium
+        </footer>
+    </div>
+</Layout>
