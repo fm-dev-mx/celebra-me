@@ -1,0 +1,252 @@
+{
+    "eventType": "boda",
+    "isDemo": true,
+    "title": "Demo - Sofía & Alejandro",
+    "description": "Demo oficial: celebración de boda estilo Jewelry Box para Sofía y Alejandro.",
+    "theme": {
+        "primaryColor": "#FEFCF9",
+        "accentColor": "#E5C387",
+        "fontFamily": "serif",
+        "preset": "jewelry-box"
+    },
+    "sectionStyles": {
+        "quote": {
+            "variant": "jewelry-box",
+            "fontStyle": "script",
+            "animation": "fade"
+        },
+        "countdown": {
+            "variant": "jewelry-box",
+            "numberStyle": "thin",
+            "showParticles": true
+        },
+        "location": {
+            "variant": "jewelry-box",
+            "mapStyle": "minimal",
+            "showFlourishes": true
+        },
+        "gifts": {
+            "variant": "jewelry-box"
+        },
+        "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "gallery": {
+            "variant": "jewelry-box"
+        },
+        "thankYou": {
+            "variant": "jewelry-box"
+        },
+        "family": {
+            "variant": "jewelry-box"
+        },
+        "rsvp": {
+            "variant": "jewelry-box",
+            "labels": {
+                "name": "Nombres de los invitados *",
+                "guestCount": "Pases solicitados",
+                "confirmButton": "Confirmar nuestra asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Sofía",
+        "secondaryName": "Alejandro",
+        "label": "¡Nos Casamos!",
+        "date": "2026-12-12T18:00:00.000Z",
+        "backgroundImage": "hero"
+    },
+    "location": {
+        "venueName": "Ex Hacienda de Mendocinas",
+        "address": "Km. 2.5 Carretera Federal Libre México-Puebla",
+        "city": "Puebla",
+        "mapUrl": "https://maps.app.goo.gl/example-wedding",
+        "ceremony": {
+            "venueEvent": "Ceremonia Religiosa",
+            "venueName": "Capilla de la Inmaculada",
+            "address": "Calle de los Artistas #45, Centro",
+            "date": "12 de Diciembre de 2026",
+            "time": "6:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/example-church"
+        },
+        "reception": {
+            "venueEvent": "Gran Recepción",
+            "venueName": "Salón Real Mendocinas",
+            "address": "Ex Hacienda de Mendocinas",
+            "date": "12 de Diciembre de 2026",
+            "time": "8:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/example-reception"
+        },
+        "indications": [
+            {
+                "icon": "dress",
+                "iconName": "Gift",
+                "styleVariant": "default",
+                "text": "Código de vestimenta:<br />Gala (Riguroso)"
+            },
+            {
+                "icon": "forbidden",
+                "iconName": "Forbidden",
+                "styleVariant": "reserved",
+                "text": "Evento solo para adultos"
+            }
+        ]
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true,
+        "family": true,
+        "itinerary": true
+    },
+    "rsvp": {
+        "title": "¿Nos acompañan a celebrar nuestro amor?",
+        "guestCap": 10,
+        "confirmationMessage": "¡Gracias por ser parte de nuestra historia!",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5212221234567",
+            "confirmedTemplate": "¡Hola! Somos {name}. Confirmamos con mucha emoción nuestra asistencia a la boda de Sofía y Alejandro. (Asistentes: {guestCount})",
+            "declinedTemplate": "Hola chicos, somos {name}. Lamentamos mucho no poder acompañarlos, pero les enviamos todo nuestro cariño.",
+            "omitTitle": true
+        }
+    },
+    "quote": {
+        "text": "Donde tú vayas, yo iré; donde tú vivas, yo viviré. Tu pueblo será mi pueblo y tu Dios será mi Dios.",
+        "author": "Rut 1:16"
+    },
+    "family": {
+        "groups": [
+            {
+                "title": "Padres de la Novia",
+                "items": [
+                    {
+                        "name": "Bernardo Silva",
+                        "role": "Padre"
+                    },
+                    {
+                        "name": "Alicia Montes",
+                        "role": "Madre"
+                    }
+                ]
+            },
+            {
+                "title": "Padres del Novio",
+                "items": [
+                    {
+                        "name": "Roberto García",
+                        "role": "Padre"
+                    },
+                    {
+                        "name": "Elena Torres",
+                        "role": "Madre",
+                        "deceased": true
+                    }
+                ]
+            }
+        ],
+        "godparents": [
+            {
+                "name": "Carlos Ruiz",
+                "role": "Padrino de Velación"
+            },
+            {
+                "name": "Marta Sosa",
+                "role": "Madrina de Velación"
+            }
+        ],
+        "featuredImage": "family"
+    },
+    "gallery": {
+        "title": "Nuestra Historia",
+        "subtitle": "Momentos que nos trajeron hasta aquí",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "El comienzo de todo."
+            },
+            {
+                "image": "gallery02",
+                "caption": "Nuestro lugar favorito."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Mesa de Regalos",
+        "subtitle": "Su presencia es nuestro mejor regalo",
+        "items": [
+            {
+                "type": "store",
+                "title": "Liverpool",
+                "url": "https://www.liverpool.com.mx/tienda/giftregistry/example",
+                "logo": "LIVERPOOL"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Si desean hacernos un presente en efectivo, contaremos con un buzón en la recepción."
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa del Día",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Ceremonia Religiosa",
+                "time": "6:00 PM",
+                "description": "Capilla de la Inmaculada."
+            },
+            {
+                "icon": "toast",
+                "label": "Cóctel de Bienvenida",
+                "time": "7:30 PM",
+                "description": "Jardín Central."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena de Gala",
+                "time": "9:00 PM",
+                "description": "Salón Mendocinas."
+            },
+            {
+                "icon": "waltz",
+                "label": "Nuestro Primer Baile",
+                "time": "10:30 PM",
+                "description": "Bajo las estrellas."
+            },
+            {
+                "icon": "party",
+                "label": "Gran Festejo",
+                "time": "11:00 PM",
+                "description": "Música y alegría."
+            }
+        ]
+    },
+    "thankYou": {
+        "message": "Gracias por ser parte del día más feliz de nuestras vidas. Los queremos mucho.",
+        "closingName": "Sofía & Alejandro",
+        "image": "portrait"
+    },
+    "countdown": {
+        "title": "¡Comienza la cuenta regresiva!",
+        "subtitlePrefix": "Faltan",
+        "footerText": "Estamos ansiosos de compartir este día con ustedes."
+    },
+    "envelope": {
+        "variant": "jewelry-box",
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "documentLabel": "M & S",
+        "stampText": "BODA REAL",
+        "stampYear": "2026",
+        "microcopy": "Toca para abrir nuestra invitación",
+        "closedPalette": {
+            "primary": "#FEFCF9",
+            "accent": "#E5C387",
+            "background": "#FDFBF7"
+        }
+    }
+}
