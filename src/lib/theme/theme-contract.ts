@@ -1,12 +1,13 @@
 export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple'] as const;
 
-export const THEME_PRESETS = ['jewelry-box', 'luxury-hacienda'] as const;
+export const THEME_PRESETS = ['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda'] as const;
 export const QUOTE_VARIANTS = [
 	'elegant',
 	'modern',
 	'minimal',
 	'floral',
 	'jewelry-box',
+	'jewelry-box-wedding',
 	'luxury-hacienda',
 ] as const;
 export const COUNTDOWN_VARIANTS = [
@@ -15,6 +16,7 @@ export const COUNTDOWN_VARIANTS = [
 	'classic',
 	'modern',
 	'jewelry-box',
+	'jewelry-box-wedding',
 	'luxury-hacienda',
 ] as const;
 export const LOCATION_VARIANTS = [
@@ -23,10 +25,21 @@ export const LOCATION_VARIANTS = [
 	'minimal',
 	'luxury',
 	'jewelry-box',
+	'jewelry-box-wedding',
 	'luxury-hacienda',
 ] as const;
-export const SHARED_SECTION_VARIANTS = ['standard', 'jewelry-box', 'luxury-hacienda'] as const;
-export const ITINERARY_VARIANTS = ['base', 'jewelry-box', 'luxury-hacienda'] as const;
+export const SHARED_SECTION_VARIANTS = [
+	'standard',
+	'jewelry-box',
+	'jewelry-box-wedding',
+	'luxury-hacienda',
+] as const;
+export const ITINERARY_VARIANTS = [
+	'base',
+	'jewelry-box',
+	'jewelry-box-wedding',
+	'luxury-hacienda',
+] as const;
 
 export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite'] as const;
 export const QUOTE_ANIMATIONS = ['fade', 'bounce', 'elastic', 'none'] as const;

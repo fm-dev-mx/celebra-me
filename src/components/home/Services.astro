@@ -25,9 +25,10 @@ const { data } = Astro.props;
 
 // Map images to services by title
 const serviceImages: Record<string, ImageAsset> = {
-    'XV Años': getCommonAsset('serviceXv'),
-    'Bodas': getCommonAsset('serviceWedding'),
-    'Bautizos': getCommonAsset('serviceBaptism')
+	'XV Años': getCommonAsset('serviceXv'),
+	Bodas: getCommonAsset('serviceWedding'),
+	Bautizos: getCommonAsset('serviceBaptism'),
+	Cumpleaños: getCommonAsset('serviceCumple'),
 };
 
 // All services link to contact section for inquiry
@@ -42,11 +43,11 @@ const serviceImages: Record<string, ImageAsset> = {
 		<div class="services__grid">
 			{
 				data.services.map((service, index) => {
-                    const image = serviceImages[service.title] || serviceImages['XV Años'];
+					const image = serviceImages[service.title] || serviceImages['XV Años'];
 					// Calculate delay for staggered animation: 0ms, 200ms, 400ms
 					const delay = `${index * 200}ms`;
 					const href = service.href || '#contacto';
-                    return (
+					return (
 					<a href={href} class="services__card" data-delay={delay} aria-label={`Ver detalles del servicio ${service.title}`}>
 						<div class="services__card-visual">
 							<div class="services__image-wrapper">

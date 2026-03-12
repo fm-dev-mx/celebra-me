@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use '../global/mixins' as mixins;
+@use '../global/functions' as funcs;
 @use '../tokens' as tokens;
 @use '../tokens/primitives' as primitives;
 
@@ -136,6 +137,28 @@
 
 .event-header__action-btn:not(.event-header__action-btn--cta) {
 	color: var(--header-nav-color);
+}
+
+// --- WEDDING SPECIFIC STYLES ---
+.theme-preset--jewelry-box-wedding .event-header {
+	&__title {
+		font-family: var(--font-display);
+		font-weight: 300;
+		letter-spacing: 0.28em;
+		color: var(
+			--header-wedding-title-color,
+			funcs.glass-surface('--color-text-primary-rgb', 0.9)
+		);
+		text-shadow: none;
+	}
+
+	&__action-btn:not(.event-header__action-btn--cta) {
+		font-family: var(--font-display);
+		font-weight: 300;
+		letter-spacing: 0.15em;
+		color: var(--header-wedding-nav-color, var(--color-text-primary));
+		opacity: 80%;
+	}
 }
 
 // Hide header until the envelope reveal completes (when enabled)

@@ -95,3 +95,17 @@ $border-radius: (
 @function border-radius($component) {
 	@return map.get($border-radius, $component);
 }
+
+@function linear-gradient-divider($color-rgb-var, $opacity: 0.3) {
+	@return linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(#{$color-rgb-var}), #{$opacity}) 50%,
+		transparent 100%
+	);
+}
+
+/// Creates a color with opacity from a CSS variable containing RGB channels.
+@function glass-surface($color-rgb-var, $opacity: 0.8) {
+	@return rgb(var(#{$color-rgb-var}), #{$opacity});
+}

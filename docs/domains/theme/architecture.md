@@ -1,4 +1,4 @@
-# Theme System Architecture
+# Theme System Architecture (3-Layer Color Architecture)
 
 ## Overview
 
@@ -64,6 +64,10 @@ Presets are class-scoped and applied on page wrappers/body.
 
 Preset classes are consumed at runtime by invitation wrappers and dashboard/auth layouts.
 
+> [!NOTE] When defining presets, always use explicit index imports for tokens (e.g.,
+> `@use '../../tokens/index' as tokens;`) to prevent name resolution ambiguities in complex
+> dependency trees.
+
 ## Invitation-Level Isolation
 
 Invitation pages now include event-level namespace classes:
@@ -93,4 +97,4 @@ These files are lazy-loaded only for the matching event route.
 
 ---
 
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-03-12

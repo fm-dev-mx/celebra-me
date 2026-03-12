@@ -78,15 +78,17 @@
 		z-index: 1;
 	}
 
-	:global(.photo-image) {
+	.photo-image {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		object-fit: var(--thank-you-image-fit, cover);
+		object-position: var(--thank-you-image-position, center);
 		border-radius: 50%;
 		transition: tokens.$transition-premium;
+		background: rgb(255 255 255 / 35%);
 	}
 
-	&:hover :global(.photo-image) {
+	&:hover .photo-image {
 		transform: scale(1.05);
 	}
 }

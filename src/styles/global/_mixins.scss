@@ -1,7 +1,7 @@
 // src/styles/global/_mixins.scss
-
 @use 'sass:map';
 @use 'sass:list';
+@use 'sass:color';
 @use 'functions' as funcs;
 @use '../tokens' as tokens;
 
@@ -201,4 +201,28 @@ $typography-scale: (
 /// Generic entry animation mixin
 @mixin animate-in($animation, $duration: tokens.$duration-standard, $delay: 0s) {
 	animation: #{$animation} #{$duration} tokens.$ease-out #{$delay} both;
+}
+
+/// Centralizes RGB channel extraction for theme variables.
+@mixin define-rgb-vars($name-prefix, $color) {
+	#{$name-prefix}-rgb:
+		#{color.channel($color, 'red', $space: rgb)},
+		#{color.channel($color, 'green', $space: rgb)},
+		#{color.channel($color, 'blue', $space: rgb)};
+}
+
+/// Creates a standard horizontal gradient divider.
+@mixin gradient-divider($color-rgb-var, $opacity: 0.3) {
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(#{$color-rgb-var}), #{$opacity}) 50%,
+		transparent 100%
+	);
+}
+
+/// Creates a glassmorphism surface.
+@mixin surface-glass($bg-color-rgb: --color-surface-primary-rgb, $opacity: 0.8, $blur: 10px) {
+	background: rgb(var(#{$bg-color-rgb}), #{$opacity});
+	backdrop-filter: blur(#{$blur});
 }

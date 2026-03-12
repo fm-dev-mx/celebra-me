@@ -331,6 +331,10 @@
 		--family-reveal-delay: 0.32s;
 	}
 
+	&__group--godparents {
+		--family-reveal-delay: 0.4s;
+	}
+
 	@include mixins.respond-to(md) {
 		&__header {
 			text-align: left;
