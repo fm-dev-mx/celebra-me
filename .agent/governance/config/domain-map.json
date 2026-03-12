@@ -3,7 +3,8 @@
         "invitation": [
             "src/components/invitation/**",
             "src/pages/[eventType]/**",
-            "src/layouts/Layout.astro"
+            "src/layouts/Layout.astro",
+            "src/styles/invitation/**"
         ],
         "auth": [
             "src/lib/rsvp/**",
@@ -12,7 +13,12 @@
             "src/pages/api/invitacion/**",
             "src/middleware.ts"
         ],
-        "theme": ["src/styles/themes/**", "src/styles/tokens/**", "src/styles/*.scss"],
+        "theme": [
+            "src/styles/themes/**",
+            "src/styles/tokens/**",
+            "src/styles/global/**",
+            "src/styles/*.scss"
+        ],
         "governance": [
             ".agent/**",
             ".husky/**",
