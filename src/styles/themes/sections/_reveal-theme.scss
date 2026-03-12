@@ -116,105 +116,70 @@
 	// Breaking the "Envelope" mold: Tri-fold geometry, torn edges, asymmetric.
 	// ==========================================================================
 
-	// Override hooks — surface
-	--env-paper-bg: #{primitives.$base-parchment-100};
-	--env-paper-border: transparent;
-	--env-paper-radius: 20px;
-	--env-card-bg: #{tokens.$base-coffee-900};
+	// Override hooks — surface (High-End Cardstock)
+	--env-paper-bg: #f8f5f2; // Pristine Bone White
+	--env-paper-border: rgb(0 0 0 / 8%);
+	--env-paper-radius: 4px; // Sharp, formal corners
+	--env-card-bg: #1a1a1a; // Deep Charcoal
 	--env-card-radius: 2px;
-	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 10%);
+	--env-card-shadow: 0 20px 50px rgb(0 0 0 / 40%);
 
-	// Override hooks — flap geometry (horizontal fold, not triangle)
-	--env-flap-clip: none;
-	--env-flap-height: 49%;
-	--env-flap-open-transform: rotateX(160deg) translateY(-20%);
-
-	// Override hooks — card rising
-	--env-card-rising-transform: translateY(-80%) rotate(-1deg) scale(1.05);
-
-	// Override hooks — name (Iron Gall Ink, no shimmer)
-	--env-name-font: #{tokens.$font-body-hacienda};
-	--env-name-gradient: none;
-	--env-name-fill: var(--color-text-primary);
-	--env-name-animation: none;
+	// Override hooks — name (Formal Foil Stamped)
+	--env-name-font: #{tokens.$font-display-formal};
+	--env-name-gradient: linear-gradient(135deg, #d4af37 0%, #f9e4b7 50%, #d4af37 100%);
+	--env-name-fill: transparent;
+	--env-name-animation: goldshimmer 8s linear infinite;
 
 	// Override hooks — details
-	--env-details-color: var(--color-text-primary);
+	--env-details-color: #1a1a1a;
 
-	// Override hooks — seal (wax red)
-	--env-seal-size: 84px;
-	--env-seal-icon-color: rgb(0 0 0 / 70%);
-	--env-seal-gradient: radial-gradient(
-		circle at 35% 30%,
-		#{color.adjust(primitives.$base-wax-red, $lightness: 18%, $saturation: -5%)} 0%,
-		#{color.adjust(primitives.$base-wax-red, $lightness: 8%)} 20%,
-		#{primitives.$base-wax-red} 55%,
-		#{color.adjust(primitives.$base-wax-red, $lightness: -20%)} 100%
-	);
-	--env-seal-pulse-color: #{rgba(primitives.$base-wax-red, 0.35)};
+	// Override hooks — seal (Aged Gold Coin)
+	--env-seal-size: 78px;
+	--env-seal-icon-color: rgb(26 26 26 / 80%);
+	--env-seal-gradient: radial-gradient(circle at 35% 30%, #f9e4b7 0%, #d4af37 40%, #b8860b 100%);
+	--env-seal-pulse-color: rgb(212 175 55 / 30%);
 
-	background:
-		radial-gradient(ellipse at 30% 20%, rgb(0 0 0 / 10%) 0%, transparent 50%),
-		radial-gradient(ellipse at 70% 80%, rgb(0 0 0 / 10%) 0%, transparent 50%),
-		linear-gradient(105deg, transparent 40%, rgb(0 0 0 / 5%) 50%, transparent 60%),
-		radial-gradient(
-			ellipse at center,
-			#{primitives.$base-coffee-900} 0%,
-			#{color.adjust(primitives.$base-coffee-900, $lightness: -15%)} 100%
-		);
-	background-size:
-		200% 200%,
-		200% 200%,
-		100% 100%,
-		auto;
-	background-blend-mode: overlay, overlay, overlay, normal;
+	background: #121212; // Solid minimalist background
+	background-image: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 3%) 0%, transparent 70%);
 
 	.envelope-container {
 		width: 100%;
 		max-width: 500px;
 		aspect-ratio: 4 / 3;
-		transform: rotate(-1deg); // Slight amateur tilt
+
+		// Removed amateur tilt from western theme
 	}
 
 	.envelope-base,
 	.envelope-pocket,
 	.envelope-flap {
-		// Aggressive Aged Parchment with Heavy Staining
+		// High-End Textured Cardstock (Opaque)
 		--env-paper-texture:
-			// Heavy coffee/tobacco stains in corners
+			linear-gradient(rgb(0 0 0 / 2%) 1px, transparent 1px),
+			linear-gradient(90deg, rgb(0 0 0 / 2%) 1px, transparent 1px);
 
-			radial-gradient(
-				circle at 10% 10%,
-				rgba(primitives.$base-coffee-700, 0.4),
-				transparent 40%
-			),
-			radial-gradient(
-				circle at 90% 85%,
-				rgba(primitives.$base-coffee-700, 0.5),
-				transparent 30%
-			),
-			// Moisture rings
-			radial-gradient(
-					circle at 70% 20%,
-					transparent 20%,
-					rgba(primitives.$base-coffee-700, 0.1) 21%,
-					transparent 23%
-				),
-			// Paper fiber texture
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='parchment'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.90'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.85'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.75'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23parchment)'/%3E%3C/svg%3E");
-		--env-paper-blend: multiply, multiply, multiply, normal;
+		background-size: 3px 3px;
+		background-color: var(--env-paper-bg);
 
-		// TORN EDGES EFFECT via mask
-		mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='rough'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.2' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect x='2' y='2' width='96' height='96' filter='url(%23rough)' fill='black'/%3E%3C/svg%3E");
-		mask-size: 100% 100%;
-		box-shadow: 2px 4px 15px rgb(0 0 0 / 40%);
+		// CRITICAL: Disable multiply blend mode to prevent transparency
+		background-image: var(--env-paper-texture), none;
+		background-blend-mode: normal !important;
+		opacity: 100% !important;
+		mask-image: none;
+		box-shadow: 0 15px 45px rgb(0 0 0 / 15%);
+		border: 1px solid rgb(0 0 0 / 5%);
 	}
 
 	// Geometry Shift: horizontal fold
 	.envelope-flap {
-		border-bottom: 3px solid rgba(primitives.$base-coffee-700, 0.2);
-		box-shadow: inset 0 -10px 20px rgb(0 0 0 / 20%);
+		// Reset to triangular geometry with extra coverage
+		--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
+		--env-flap-height: 55%;
+
+		border-bottom: 1px solid rgb(0 0 0 / 5%);
+		box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
 		z-index: 10;
+		background-color: var(--env-paper-bg) !important;
 
 		&.is-open {
 			z-index: 0;
@@ -222,45 +187,63 @@
 	}
 
 	.envelope-pocket {
-		clip-path: none;
-		top: 40%;
-		height: 60%;
-		z-index: 2;
-		border-top: 2px solid rgba(primitives.$base-coffee-700, 0.1);
+		// Restore standard triangular structural flap behavior
+		// clip-path: polygon(0 45%, 100% 45%, 100% 100%, 0% 100%); // More overlap
+		z-index: 3;
+		border-top: 1px solid rgb(0 0 0 / 5%);
+		background-color: var(--env-paper-bg) !important;
 	}
 
-	// Asymmetric Content Layout
+	// Centered Elegant Content Layout
 	.envelope-tease {
+		position: absolute;
+		inset: 0;
 		padding: 2.5rem;
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-start;
-		align-items: flex-start;
-		text-align: left;
+		justify-content: space-between;
+		align-items: center;
+		text-align: center;
 		height: 100%;
+		z-index: 100;
+		background: none; // Container itself is transparent
+
+		// The interactive wrapper becomes the solid front panel
+		> div {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: center;
+
+			// Opaque Front Panel (Hides holes and card text)
+			background-color: var(--env-paper-bg);
+			background-image: var(--env-paper-texture), none;
+			background-blend-mode: normal !important;
+			border-radius: var(--env-paper-radius);
+			border: 1px solid var(--env-paper-border);
+			box-shadow: 0 15px 45px rgb(0 0 0 / 20%);
+			padding: 2rem;
+		}
 
 		.envelope-seal-zone {
-			position: absolute;
-			inset: 47% auto auto 50%;
-			left: 85%;
-			transform: translate(-50%, -50%);
-			margin: 0;
+			flex: 0 1 auto;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 			z-index: 15;
-			flex: none;
-			padding: 0;
-			min-height: auto;
+			padding: 1rem 0;
+			pointer-events: auto;
 		}
 
 		.tease-content-bottom {
-			position: absolute;
-			bottom: 8%;
-			left: 8%;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			margin-top: auto;
-			width: 70%;
+			width: 100%;
 			padding: 0;
+			margin-top: auto;
 
 			.tease-divider {
 				display: none;
@@ -285,33 +268,7 @@
 	}
 
 	.envelope-stamp-area {
-		position: absolute;
-		top: 15px;
-		right: 15px;
-		transform: rotate(12deg);
-		z-index: 20;
-
-		.envelope-stamp {
-			border: 2px double primitives.$base-wax-red;
-			padding: 4px 8px;
-			color: primitives.$base-wax-red;
-			font-family: tokens.$font-display-hacienda;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			opacity: 80%;
-			filter: contrast(1.5) sepia(0.5);
-
-			span {
-				font-weight: 700;
-				font-size: 0.8rem;
-			}
-
-			small {
-				font-size: 0.6rem;
-				letter-spacing: 0.2em;
-			}
-		}
+		display: none; // Remove the rubber stamp, too "cheap"
 	}
 
 	.tease-header {
@@ -320,29 +277,34 @@
 
 		.envelope-manifest-label {
 			display: block;
-			font-family: tokens.$font-display-hacienda;
-			font-size: 0.7rem;
-			color: rgba(primitives.$base-coffee-700, 0.6);
-			letter-spacing: 0.3em;
-			margin-bottom: 0.5rem;
+			font-family: tokens.$font-ui;
+			font-size: clamp(0.6rem, 2vw, 0.75rem);
+			color: #1a1a1a;
+			letter-spacing: 0.4em; // Broad tracking for luxury
+			margin-bottom: 1rem;
+			font-weight: 600;
+			opacity: 60%;
 		}
 
 		.envelope-name {
-			font-size: clamp(1.6rem, 6vw, 2.6rem);
-			line-height: 1;
-			margin: 0;
-			font-family: tokens.$font-body-hacienda;
-			font-weight: 800;
-			position: relative;
+			position: relative; // Needed for ::after underline
+			display: inline-block; // Ensure it wraps content properly
+			font-size: clamp(1.8rem, 7vw, 2.8rem);
+			letter-spacing: 0.05em;
+			color: #1a1a1a;
+			font-family: tokens.$font-display-formal;
+			font-weight: 400;
 
 			&::after {
 				content: '';
-				position: absolute;
-				bottom: -5px;
-				left: 0;
-				width: 60%;
+				background: #d4af37;
+				width: 30px;
 				height: 2px;
-				background: rgba(primitives.$base-coffee-700, 0.2);
+				position: absolute;
+				bottom: -15px;
+				left: 50%;
+				transform: translateX(-50%);
+				display: block; // Ensure visibility
 			}
 		}
 	}
@@ -354,41 +316,16 @@
 		background-blend-mode: overlay;
 
 		// Double Border Effect
-		border: 1px solid tokens.$base-gold-500;
-		outline: 1px solid tokens.$base-gold-300;
-		outline-offset: -5px;
-		color: var(--color-text-on-dark);
-		padding: 1rem;
-		transform: rotate(1deg);
-		transition: transform tokens.$duration-reveal + 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+		// Gold Leaf Inner Border
+		border: 1px solid #d4af37;
+		padding: 1.5rem;
 
-		&.is-rising {
-			z-index: 5;
-			box-shadow: tokens.$shadow-emphasis;
-		}
-
-		// Double Leather stitching effect
-		&::before {
+		&::after {
 			content: '';
 			position: absolute;
-			inset: 12px;
-			border: 1px dashed rgb(var(--color-text-primary-rgb), 0.25);
-			border-radius: 4px;
+			inset: 8px;
+			border: 1px solid rgb(212 175 55 / 30%);
 			pointer-events: none;
-			opacity: 80%;
-			mask-image: linear-gradient(to right, black 4px, transparent 4px);
-			mask-size: 8px 100%;
-		}
-
-		.envelope-card__content {
-			position: relative;
-			z-index: 1;
-			width: 100%;
-			height: 100%;
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
-			padding: 1rem;
 		}
 
 		.envelope-card__monogram {
@@ -431,49 +368,19 @@
 		}
 
 		.rivet {
-			background: radial-gradient(
-				circle at 35% 35%,
-				tokens.$base-gold-300,
-				tokens.$color-action-accent 60%,
-				tokens.$color-surface-dark
-			);
+			background: radial-gradient(circle at 35% 35%, #f9e4b7, #d4af37 60%, #b8860b);
 			box-shadow:
-				0 2px 4px rgb(0 0 0 / 50%),
-				inset 0 1px 1px rgb(255 255 255 / 30%);
-			width: 8px;
-			height: 8px;
+				0 2px 5px rgb(0 0 0 / 30%),
+				inset 0 1px 1px rgb(255 255 255 / 40%);
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
 			position: absolute;
 			z-index: 5;
 
-			&--tl {
-				top: 10px;
-				left: 10px;
-			}
-
-			&--tr {
-				top: 10px;
-				right: 10px;
-			}
-
-			&--bl {
-				bottom: 10px;
-				left: 10px;
-			}
-
-			&--br {
-				bottom: 10px;
-				right: 10px;
-			}
-
+			// Removed screw slot for premium boutique look
 			&::after {
-				content: '';
-				position: absolute;
-				top: 50%;
-				left: 15%;
-				right: 15%;
-				height: 1px;
-				background: rgb(0 0 0 / 40%);
-				transform: translateY(-50%) rotate(45deg);
+				display: none;
 			}
 		}
 	}
@@ -491,29 +398,14 @@
 		}
 
 		.seal-visual {
-			border: none;
+			border: 2px solid #d4af37;
 			box-shadow:
-				inset -3px -4px 8px rgb(0 0 0 / 40%),
-				inset 3px 4px 8px rgb(255 255 255 / 8%),
-				inset 0 0 20px rgb(0 0 0 / 15%);
-			border-radius: 48% 52% 45% 95% / 53% 44% 56% 47%;
+				0 15px 35px rgb(0 0 0 / 40%),
+				inset 0 0 10px rgb(0 0 0 / 20%);
+			border-radius: 50%; // Perfect circle for coin look
 
 			&::after {
-				content: '';
-				position: absolute;
-				inset: 11px;
-				background: linear-gradient(
-					140deg,
-					#{color.adjust(primitives.$base-wax-red, $lightness: -8%)} 0%,
-					#{color.adjust(primitives.$base-wax-red, $lightness: -16%)} 50%,
-					#{color.adjust(primitives.$base-wax-red, $lightness: -6%)} 100%
-				);
-				clip-path: polygon(48% 2%, 98% 24%, 100% 73%, 52% 98%, 2% 77%, 0% 27%);
-				box-shadow:
-					inset 2px 2px 4px rgb(0 0 0 / 50%),
-					inset -1px -1px 3px rgb(255 255 255 / 10%),
-					inset 0 0 8px rgb(0 0 0 / 20%);
-				z-index: 1;
+				display: none;
 			}
 
 			&::before {
@@ -521,21 +413,19 @@
 			}
 
 			.seal-icon {
-				width: 40px;
-				height: 40px;
-				z-index: 2;
-				mix-blend-mode: multiply;
-				transform: rotate(-10deg);
-				filter: drop-shadow(-1px -1px 0.5px rgb(0 0 0 / 85%))
-					drop-shadow(0.75px 0.75px 0.3px rgb(255 255 255 / 12%));
+				width: 38px;
+				height: 38px;
+				transform: none;
+				filter: drop-shadow(0 2px 2px rgb(0 0 0 / 40%));
 				opacity: 90%;
+				mix-blend-mode: normal;
 			}
 		}
 
 		.seal-pulse {
 			width: 92px;
 			height: 92px;
-			border-radius: 48% 52% 45% 55% / 53% 44% 56% 47%;
+			border-radius: 50%;
 		}
 	}
 }

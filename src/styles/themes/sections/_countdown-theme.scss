@@ -5,6 +5,7 @@
 @use 'sass:color';
 @use '../../tokens' as tokens;
 @use '../../tokens/primitives' as primitives;
+@use '../../global/functions' as funcs;
 @use '@/styles/global/mixins' as mixins;
 
 // ==========================================================================
@@ -455,10 +456,11 @@
 	.countdown-subtitle {
 		.event-date {
 			font-family: 'Cormorant Garamond', serif;
-			font-size: 1.1rem;
+			font-size: clamp(1.05rem, 2.2vw, 1.4rem);
 			font-style: italic;
-			color: rgb(255 255 255 / 80%);
-			letter-spacing: 0.1em;
+			text-transform: none;
+			letter-spacing: 0.03em;
+			color: funcs.glass-surface('--color-text-primary-rgb', 0.66);
 		}
 
 		.subtitle-line {

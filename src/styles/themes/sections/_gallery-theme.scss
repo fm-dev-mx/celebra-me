@@ -1,8 +1,6 @@
 @use '../../global/mixins' as mixins;
 
-// ==========================================================================
-// JEWELRY BOX GALLERY (XV / Wedding Premium)
-// ==========================================================================
+/* --- GALLERY: JEWELRY BOX VARIANT --- */
 
 .gallery-section[data-variant='jewelry-box'] {
 	--gallery-section-bg: var(--jewelry-box-gallery-section-bg);
@@ -60,9 +58,7 @@
 	}
 }
 
-// ==========================================================================
-// LUXURY HACIENDA GALLERY
-// ==========================================================================
+/* --- GALLERY: LUXURY HACIENDA VARIANT --- */
 
 .gallery-section[data-variant='luxury-hacienda'] {
 	--gallery-section-bg: var(--luxury-gallery-section-bg);

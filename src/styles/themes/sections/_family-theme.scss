@@ -1,8 +1,6 @@
 @use '../../global/mixins' as mixins;
 
-// =====================================================================
-// FAMILY SECTION THEMES
-// =====================================================================
+/* --- FAMILY SECTION THEMES --- */
 
 .family[data-variant='jewelry-box'] {
 	--family-bg: radial-gradient(circle at 50% -20%, #fffdfc 0%, var(--color-surface-primary) 100%);
