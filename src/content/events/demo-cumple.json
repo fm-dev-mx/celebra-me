@@ -1,0 +1,262 @@
+{
+    "eventType": "cumple",
+    "isDemo": true,
+    "title": "Demo - Alberto 60 Años",
+    "description": "Demo oficial: celebración estilo Luxury Hacienda para cumpleaños de Don Alberto.",
+    "theme": {
+        "primaryColor": "#2C1E12",
+        "accentColor": "#C5A028",
+        "fontFamily": "serif",
+        "preset": "luxury-hacienda"
+    },
+    "sectionStyles": {
+        "quote": {
+            "variant": "luxury-hacienda",
+            "fontStyle": "serif",
+            "animation": "fade"
+        },
+        "countdown": {
+            "variant": "luxury-hacienda",
+            "numberStyle": "thin",
+            "showParticles": false
+        },
+        "location": {
+            "variant": "luxury-hacienda",
+            "mapStyle": "dark",
+            "showFlourishes": true
+        },
+        "gifts": {
+            "variant": "luxury-hacienda"
+        },
+        "itinerary": {
+            "variant": "luxury-hacienda"
+        },
+        "gallery": {
+            "variant": "luxury-hacienda"
+        },
+        "thankYou": {
+            "variant": "luxury-hacienda"
+        },
+        "family": {
+            "variant": "luxury-hacienda"
+        },
+        "rsvp": {
+            "variant": "luxury-hacienda",
+            "labels": {
+                "name": "Nombre de los invitados *",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Alberto Valenzuela",
+        "label": "60 Años",
+        "nickname": "Don Alberto",
+        "date": "2026-10-24T20:00:00.000Z",
+        "backgroundImage": "hero"
+    },
+    "location": {
+        "venueName": "Hacienda San Ignacio",
+        "address": "Km 12 Carretera a Capilla de Guadalupe, Tepatitlán, Jal.",
+        "city": "Tepatitlán",
+        "mapUrl": "https://maps.app.goo.gl/example",
+        "reception": {
+            "venueEvent": "Gran Festejo",
+            "venueName": "Hacienda San Ignacio",
+            "address": "Km 12 Carretera a Capilla de Guadalupe, Tepatitlán, Jal.",
+            "date": "24 de octubre de 2026",
+            "time": "8:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/example",
+            "coordinates": {
+                "lat": 20.8167,
+                "lng": -102.7667
+            }
+        },
+        "indications": [
+            {
+                "icon": "dress",
+                "iconName": "Gift",
+                "styleVariant": "default",
+                "text": "Código de vestimenta:<br />Gala Hacienda"
+            },
+            {
+                "icon": "forbidden",
+                "iconName": "Forbidden",
+                "styleVariant": "reserved",
+                "text": "Evento solo para adultos"
+            }
+        ]
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true,
+        "family": true,
+        "itinerary": true
+    },
+    "gallery": {
+        "title": "Legado de Vida",
+        "subtitle": "Un recorrido por seis décadas de historia",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Raíces que sostienen un gran árbol."
+            },
+            {
+                "image": "gallery02",
+                "caption": "El esfuerzo que forjó el camino."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Momentos de gratitud."
+            },
+            {
+                "image": "gallery04",
+                "caption": "La alegría de compartir."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Nuevas generaciones, mismo legado."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Celebrando la vida a plenitud."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Acompáñanos a celebrar esta fecha tan especial.",
+        "guestCap": 8,
+        "confirmationMessage": "Será un honor contar con su presencia.",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5213312345678",
+            "confirmedTemplate": "¡Hola Don Alberto! Soy {name}. Confirmo con gusto mi asistencia a sus 60 años. ¡Ahí estaremos! (Asistentes: {guestCount})",
+            "declinedTemplate": "Estimado Don Alberto, soy {name}. Lamento no poder acompañarlo en esta ocasión, pero le envío un fuerte abrazo y mis mejores deseos.",
+            "omitTitle": true
+        },
+        "guests": [
+            {
+                "guestId": "fam-valenzuela-001",
+                "displayName": "Alberto Valenzuela Jr.",
+                "maxAllowedAttendees": 4
+            }
+        ]
+    },
+    "quote": {
+        "text": "La vida no se mide por los años, sino por los momentos que te dejan sin aliento y la familia que camina a tu lado.",
+        "author": "Don Alberto"
+    },
+    "family": {
+        "spouse": "Maria Elena Ruiz",
+        "parents": {
+            "father": "Don Jose Valenzuela",
+            "mother": "Doña Martha Lopez",
+            "fatherDeceased": true,
+            "motherDeceased": true
+        },
+        "children": [
+            { "name": "Alberto Valenzuela Jr." },
+            { "name": "Sofia Valenzuela" },
+            { "name": "Ricardo Valenzuela" },
+            { "name": "Elena Valenzuela" }
+        ],
+        "featuredImage": "family"
+    },
+    "thankYou": {
+        "message": "Mi mayor regalo es verlos reunidos hoy. Gracias por ser parte de mi historia y por llenar mi vida de recuerdos inolvidables.",
+        "closingName": "Alberto",
+        "image": "portrait"
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1771003968/el-rey_sptxkp.mp3",
+        "autoPlay": false,
+        "title": "Música de fondo"
+    },
+    "itinerary": {
+        "title": "Programa de la Noche",
+        "items": [
+            {
+                "icon": "toast",
+                "label": "Recepción y Brindis",
+                "time": "8:00 PM",
+                "description": "Bienvenida en el jardín principal."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena de Gala",
+                "time": "9:30 PM",
+                "description": "Sabor tradicional de la Hacienda."
+            },
+            {
+                "icon": "music",
+                "label": "Mariachi y Sorpresas",
+                "time": "11:00 PM",
+                "description": "Música en vivo para celebrar."
+            },
+            {
+                "icon": "party",
+                "label": "Baile y Alegría",
+                "time": "12:30 AM",
+                "description": "Hasta que el cuerpo aguante."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Gesto de Cariño",
+        "subtitle": "Si desean hacerme un presente",
+        "items": [
+            {
+                "type": "bank",
+                "title": "Cuenta Bancaria",
+                "bankName": "Banco Lux",
+                "accountHolder": "Alberto Valenzuela",
+                "clabe": "123 456 789 012 345 678"
+            },
+            {
+                "type": "store",
+                "title": "Mesa de Regalos",
+                "url": "https://www.liverpool.com.mx/tienda/giftregistry",
+                "logo": "LIVERPOOL"
+            },
+            {
+                "title": "Lluvia de Sobres",
+                "type": "cash",
+                "text": "Su presencia es nuestro mejor regalo. Si desean tener un detalle con Don Alberto, contaremos con un buzón para sobres en la entrada."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "¡Los espero en la Hacienda!",
+        "subtitlePrefix": "Faltan",
+        "footerText": "Sesenta años de gratitud y legado."
+    },
+    "navigation": [
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Familia", "href": "#family-section" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
+    "envelope": {
+        "variant": "luxury-hacienda",
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "monogram",
+        "documentLabel": "RESERVACIÓN DE GALA",
+        "stampText": "EST. 1966",
+        "stampYear": "2026",
+        "microcopy": "Haga clic para desvelar",
+        "tooltipText": "Acceder a la invitación",
+        "closedPalette": {
+            "primary": "#2C1E12",
+            "accent": "#C5A028",
+            "background": "#FDF5E6"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, es un gusto invitarte a celebrar los 60 años de Don Alberto Valenzuela 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
+    }
+}

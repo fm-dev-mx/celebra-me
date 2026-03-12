@@ -1,0 +1,299 @@
+{
+    "eventType": "boda",
+    "isDemo": true,
+    "title": "Demo - Sofía & Alejandro",
+    "description": "Demo oficial de boda con dirección editorial premium para Sofía y Alejandro.",
+    "theme": {
+        "primaryColor": "#F7F3EE",
+        "accentColor": "#C9A46A",
+        "fontFamily": "serif",
+        "preset": "jewelry-box-wedding"
+    },
+    "sectionStyles": {
+        "quote": {
+            "variant": "jewelry-box-wedding",
+            "fontStyle": "script",
+            "animation": "fade"
+        },
+        "countdown": {
+            "variant": "jewelry-box-wedding",
+            "numberStyle": "thin",
+            "showParticles": true
+        },
+        "location": {
+            "variant": "jewelry-box-wedding",
+            "mapStyle": "minimal",
+            "showFlourishes": true
+        },
+        "gifts": {
+            "variant": "jewelry-box-wedding"
+        },
+        "itinerary": {
+            "variant": "jewelry-box-wedding"
+        },
+        "gallery": {
+            "variant": "jewelry-box-wedding"
+        },
+        "thankYou": {
+            "variant": "jewelry-box-wedding"
+        },
+        "family": {
+            "variant": "jewelry-box-wedding"
+        },
+        "rsvp": {
+            "variant": "jewelry-box-wedding",
+            "labels": {
+                "name": "Nombres de los invitados *",
+                "guestCount": "Pases solicitados",
+                "confirmButton": "Confirmar nuestra asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Sofía",
+        "secondaryName": "Alejandro",
+        "label": "¡Nos Casamos!",
+        "date": "2026-12-12T18:00:00.000Z",
+        "backgroundImage": "hero",
+        "variant": "jewelry-box-wedding"
+    },
+    "location": {
+        "venueName": "Ex Hacienda de Mendocinas",
+        "address": "Km. 2.5 Carretera Federal Libre México-Puebla",
+        "city": "Puebla",
+        "mapUrl": "https://maps.app.goo.gl/example-wedding",
+        "ceremony": {
+            "venueEvent": "Ceremonia Religiosa",
+            "venueName": "Capilla de la Inmaculada",
+            "address": "Calle de los Artistas #45, Centro",
+            "date": "12 de Diciembre de 2026",
+            "time": "6:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/example-church",
+            "image": "ceremony"
+        },
+        "reception": {
+            "venueEvent": "Gran Recepción",
+            "venueName": "Salón Real Mendocinas",
+            "address": "Ex Hacienda de Mendocinas",
+            "date": "12 de Diciembre de 2026",
+            "time": "8:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/example-reception",
+            "image": "reception"
+        },
+        "indications": [
+            {
+                "icon": "dress",
+                "iconName": "Gift",
+                "styleVariant": "default",
+                "text": "Código de vestimenta:<br />Gala (Riguroso)"
+            },
+            {
+                "icon": "forbidden",
+                "iconName": "Forbidden",
+                "styleVariant": "reserved",
+                "text": "Evento solo para adultos"
+            }
+        ]
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true,
+        "family": true,
+        "itinerary": true
+    },
+    "rsvp": {
+        "title": "¿Nos acompañan a celebrar nuestro amor?",
+        "guestCap": 10,
+        "confirmationMessage": "¡Gracias por ser parte de nuestra historia!",
+        "confirmationMode": "both",
+        "whatsappConfig": {
+            "phone": "5212221234567",
+            "confirmedTemplate": "¡Hola! Somos {name}. Confirmamos con mucha emoción nuestra asistencia a la boda de Sofía y Alejandro. (Asistentes: {guestCount})",
+            "declinedTemplate": "Hola chicos, somos {name}. Lamentamos mucho no poder acompañarlos, pero les enviamos todo nuestro cariño.",
+            "omitTitle": true
+        }
+    },
+    "quote": {
+        "text": "Donde tú vayas, yo iré; donde tú vivas, yo viviré. Tu pueblo será mi pueblo y tu Dios será mi Dios.",
+        "author": "Rut 1:16"
+    },
+    "family": {
+        "groups": [
+            {
+                "title": "Padres de la Novia",
+                "items": [
+                    {
+                        "name": "Bernardo Silva",
+                        "role": "Padre"
+                    },
+                    {
+                        "name": "Alicia Montes",
+                        "role": "Madre"
+                    }
+                ]
+            },
+            {
+                "title": "Padres del Novio",
+                "items": [
+                    {
+                        "name": "Roberto García",
+                        "role": "Padre"
+                    },
+                    {
+                        "name": "Elena Torres",
+                        "role": "Madre",
+                        "deceased": true
+                    }
+                ]
+            }
+        ],
+        "godparents": [
+            {
+                "name": "Carlos Ruiz",
+                "role": "Padrino de Velación"
+            },
+            {
+                "name": "Marta Sosa",
+                "role": "Madrina de Velación"
+            }
+        ],
+        "featuredImage": "family"
+    },
+    "gallery": {
+        "title": "Crónica de un Sí",
+        "subtitle": "Un recorrido editorial por los momentos, miradas y lugares que nos trajeron hasta este día.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Donde todo comenzó."
+            },
+            {
+                "image": "gallery02",
+                "caption": "Nuestra pausa favorita."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Promesas entre jardines."
+            },
+            {
+                "image": "gallery04",
+                "caption": "Luz dorada al final de la tarde."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Detalles que también cuentan la historia."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Listos para comenzar la siguiente etapa."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Wedding Concierge",
+        "subtitle": "Su presencia es lo mas importante; si desean acompañarnos con un detalle, aqui les compartimos opciones discretas.",
+        "items": [
+            {
+                "type": "store",
+                "title": "Liverpool",
+                "url": "https://www.liverpool.com.mx/tienda/giftregistry/example",
+                "logo": "LIVERPOOL"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Si desean hacernos un presente en efectivo, contaremos con un buzón en la recepción."
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa del Día",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Ceremonia Religiosa",
+                "time": "6:00 PM",
+                "description": "Capilla de la Inmaculada."
+            },
+            {
+                "icon": "toast",
+                "label": "Cóctel de Bienvenida",
+                "time": "7:30 PM",
+                "description": "Jardín Central."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena de Gala",
+                "time": "9:00 PM",
+                "description": "Salón Mendocinas."
+            },
+            {
+                "icon": "waltz",
+                "label": "Nuestro Primer Baile",
+                "time": "10:30 PM",
+                "description": "Bajo las estrellas."
+            },
+            {
+                "icon": "party",
+                "label": "Gran Festejo",
+                "time": "11:00 PM",
+                "description": "Música y alegría."
+            }
+        ]
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarnos en un día que recordaremos siempre con el corazón lleno.",
+        "closingName": "Sofía & Alejandro",
+        "image": "portrait"
+    },
+    "countdown": {
+        "title": "La celebracion comienza en",
+        "subtitlePrefix": "Faltan",
+        "footerText": "Estamos ansiosos de compartir este día con ustedes."
+    },
+    "envelope": {
+        "variant": "jewelry-box-wedding",
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "documentLabel": "M & S",
+        "stampText": "BODA REAL",
+        "stampYear": "2026",
+        "microcopy": "Toca para abrir nuestra invitación",
+        "closedPalette": {
+            "primary": "#FEFCF9",
+            "accent": "#E5C387",
+            "background": "#FDFBF7"
+        }
+    },
+    "navigation": [
+        { "label": "Historia", "href": "#quote-section" },
+        { "label": "Ceremonia", "href": "#event-location" },
+        { "label": "Galeria", "href": "#galeria" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
+    "contentBlocks": [
+        { "type": "section", "section": "quote" },
+        {
+            "type": "interlude",
+            "image": "gallery04",
+            "alt": "Retrato editorial de la pareja",
+            "height": "screen"
+        },
+        { "type": "section", "section": "location" },
+        { "type": "section", "section": "family" },
+        { "type": "section", "section": "itinerary" },
+        { "type": "section", "section": "gallery" },
+        { "type": "section", "section": "rsvp" },
+        { "type": "section", "section": "gifts" },
+        {
+            "type": "interlude",
+            "image": "gallery06",
+            "alt": "Cierre fotografico de la boda",
+            "height": "screen"
+        },
+        { "type": "section", "section": "thankYou" }
+    ]
+}

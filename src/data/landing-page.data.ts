@@ -30,7 +30,7 @@ export const landingData: LandingPageData = {
 				icon: 'CrownIcon',
 			},
 			{
-				href: '/bodas/demo-bodas',
+				href: '/boda/demo-bodas',
 				title: 'Bodas',
 				description: 'Elegancia y distinción para el día más importante.',
 				icon: 'RingsIcon',
@@ -42,7 +42,7 @@ export const landingData: LandingPageData = {
 				icon: 'DoveIcon',
 			},
 			{
-				href: '/cumple/demo-gerardo-sesenta',
+				href: '/cumple/demo-cumple',
 				title: 'Cumpleaños',
 				description: 'Demo premium para celebraciones con estilo.',
 				icon: 'StarIcon',
