@@ -22,6 +22,14 @@ interface Props {
 		name: string;
 		role?: string;
 	}>;
+	groups?: Array<{
+		title: string;
+		items: Array<{
+			name: string;
+			role?: string;
+			deceased?: boolean;
+		}>;
+	}>;
 	featuredImage?: string | ImageAsset;
 	celebrantName: string;
 	labels?: {
@@ -44,7 +52,7 @@ interface FamilyEntry {
 }
 
 interface FamilyBlock {
-	id: 'spouse' | 'children' | 'parents' | 'godparents';
+	id: string; // Changed from enum to string for flexibility
 	title: string;
 	entries: FamilyEntry[];
 	isChildren?: boolean;
@@ -55,6 +63,7 @@ const {
 	spouse,
 	children,
 	godparents,
+	groups,
 	featuredImage,
 	celebrantName,
 	labels,
@@ -75,59 +84,76 @@ const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredI
 
 const familyBlocks: FamilyBlock[] = [];
 
-if (spouse) {
-	familyBlocks.push({
-		id: 'spouse',
-		title: resolvedLabels.spouseTitle,
-		entries: [
-			{
-				name: spouse,
-				lead: true,
-			},
-		],
-	});
-}
-
-if (children && children.length > 0) {
-	familyBlocks.push({
-		id: 'children',
-		title: resolvedLabels.childrenTitle,
-		isChildren: true,
-		entries: children.map((child) => ({
-			name: child.name,
-			role: child.role,
-		})),
-	});
-}
-
-if (parents && (parents.father || parents.mother)) {
-	const parentEntries: FamilyEntry[] = [];
-
-	if (parents.mother) {
-		parentEntries.push({
-			name: parents.mother,
-			role: 'Madre',
-			deceased: Boolean(parents.motherDeceased),
+// 💎 NEW: Render groups if provided (Wedding/Custom style)
+if (groups && groups.length > 0) {
+	groups.forEach((group, index) => {
+		familyBlocks.push({
+			id: `group-${index}`,
+			title: group.title,
+			entries: group.items.map(item => ({
+				name: item.name,
+				role: item.role,
+				deceased: item.deceased
+			}))
 		});
-	}
-	if (parents.mother && parents.father) {
-		parentEntries.push({ connector: true });
-	}
-	if (parents.father) {
-		parentEntries.push({
-			name: parents.father,
-			role: 'Padre',
-			deceased: Boolean(parents.fatherDeceased),
+	});
+} else {
+	// Legacy layout logic
+	if (spouse) {
+		familyBlocks.push({
+			id: 'spouse',
+			title: resolvedLabels.spouseTitle,
+			entries: [
+				{
+					name: spouse,
+					lead: true,
+				},
+			],
 		});
 	}
 
-	familyBlocks.push({
-		id: 'parents',
-		title: resolvedLabels.parentsTitle,
-		entries: parentEntries,
-	});
+	if (children && children.length > 0) {
+		familyBlocks.push({
+			id: 'children',
+			title: resolvedLabels.childrenTitle,
+			isChildren: true,
+			entries: children.map((child) => ({
+				name: child.name,
+				role: child.role,
+			})),
+		});
+	}
+
+	if (parents && (parents.father || parents.mother)) {
+		const parentEntries: FamilyEntry[] = [];
+
+		if (parents.mother) {
+			parentEntries.push({
+				name: parents.mother,
+				role: 'Madre',
+				deceased: Boolean(parents.motherDeceased),
+			});
+		}
+		if (parents.mother && parents.father) {
+			parentEntries.push({ connector: true });
+		}
+		if (parents.father) {
+			parentEntries.push({
+				name: parents.father,
+				role: 'Padre',
+				deceased: Boolean(parents.fatherDeceased),
+			});
+		}
+
+		familyBlocks.push({
+			id: 'parents',
+			title: resolvedLabels.parentsTitle,
+			entries: parentEntries,
+		});
+	}
 }
 
+// Godparents are always separate if provided
 if (godparents && godparents.length > 0) {
 	familyBlocks.push({
 		id: 'godparents',

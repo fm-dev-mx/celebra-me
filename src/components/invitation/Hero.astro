@@ -7,6 +7,7 @@ import '@/styles/invitation/_hero.scss';
 
 interface Props {
 	name: string;
+	secondaryName?: string; // New prop for Wedding (Groom/Bride)
 	label?: string; // New prop for generic label
 	nickname?: string;
 	date: string;
@@ -20,6 +21,7 @@ interface Props {
 
 const {
 	name,
+	secondaryName,
 	label,
 	nickname,
 	date,
@@ -77,7 +79,13 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 			</div>
 		)}
 
-		<h1 class="invitation-hero__title">{name}</h1>
+		<h1 class="invitation-hero__title">
+			{name}
+			{secondaryName && (
+				<span class="invitation-hero__ampersand">&</span>
+				<span class="invitation-hero__secondary-name">{secondaryName}</span>
+			)}
+		</h1>
 
 		{nickname && (
 			<div class="invitation-hero__nickname-badge">
