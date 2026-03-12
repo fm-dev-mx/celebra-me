@@ -1,0 +1,54 @@
+{
+    "id": "event-transformation-gerardo",
+    "title": "Event Transformation & AI Asset Creation (demo-cumple)",
+    "status": "COMPLETED",
+    "completion": 100,
+    "created": "2026-03-11",
+    "updated": "2026-03-11",
+    "estimatedDuration": "3 phases / ~1 day",
+    "owner": "antigravity",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-analysis",
+            "title": "Analysis & Data Strategy",
+            "file": "phases/01-analysis.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "02-data-transformation",
+            "title": "Data Transformation",
+            "file": "phases/02-data-transformation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 30
+        },
+        {
+            "id": "03-asset-generation",
+            "title": "AI Image Generation & Integration",
+            "file": "phases/03-asset-generation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 50
+        },
+        {
+            "id": "04-refinement",
+            "title": "Final Refinement & Polishing",
+            "file": "phases/04-refinement.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        },
+        {
+            "id": "05-ultra-premium-fix",
+            "title": "Ultra-Premium Structural Fix",
+            "file": "phases/05-ultra-premium-fix.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        }
+    ],
+    "tags": ["content", "ai-assets", "governance"]
+}
