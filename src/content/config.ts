@@ -25,6 +25,18 @@ const AssetSchema = z.union([
 	z.string().startsWith('/'),
 ]);
 
+const CONTENT_SECTION_KEYS = [
+	'quote',
+	'countdown',
+	'location',
+	'family',
+	'itinerary',
+	'gallery',
+	'rsvp',
+	'gifts',
+	'thankYou',
+] as const;
+
 // Just adding image context
 const eventsCollection = defineCollection({
 	type: 'data',
@@ -108,6 +120,7 @@ const eventsCollection = defineCollection({
 			.optional(),
 		hero: z.object({
 			name: z.string(),
+			secondaryName: z.string().optional(),
 			label: z.string().optional(),
 			nickname: z.string().optional(),
 			date: z.string().datetime(), // ISO 8601
@@ -149,7 +162,7 @@ const eventsCollection = defineCollection({
 					mapUrl: z.string().url().optional(),
 					appleMapsUrl: z.string().url().optional(),
 					googleMapsUrl: z.string().url().optional(),
-					image: z.string().optional(),
+					image: AssetSchema.optional(),
 					coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
 					itinerary: z
 						.array(
@@ -227,6 +240,20 @@ const eventsCollection = defineCollection({
 						z.object({
 							name: z.string(),
 							role: z.string().optional(),
+						}),
+					)
+					.optional(),
+				groups: z
+					.array(
+						z.object({
+							title: z.string(),
+							items: z.array(
+								z.object({
+									name: z.string(),
+									role: z.string().optional(),
+									deceased: z.boolean().optional(),
+								}),
+							),
 						}),
 					)
 					.optional(),
@@ -401,6 +428,22 @@ const eventsCollection = defineCollection({
 					label: z.string(),
 					href: z.string(),
 				}),
+			)
+			.optional(),
+		contentBlocks: z
+			.array(
+				z.discriminatedUnion('type', [
+					z.object({
+						type: z.literal('section'),
+						section: z.enum(CONTENT_SECTION_KEYS),
+					}),
+					z.object({
+						type: z.literal('interlude'),
+						image: AssetSchema,
+						alt: z.string().optional(),
+						height: z.enum(['screen', 'tall']).default('screen'),
+					}),
+				]),
 			)
 			.optional(),
 		sharing: z
