@@ -40,7 +40,7 @@
             "src/content/event-templates/**",
             "src/lib/**",
             "src/data/**",
-            "src/styles/events/README.md",
+            "src/styles/events/**",
             "src/pages/api/*",
             "archive/**",
             "*.md"

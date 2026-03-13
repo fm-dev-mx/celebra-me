@@ -195,17 +195,17 @@ _(mixes `core` and `theme` domains — must be 2 separate commits)_
 
 ### Current Domain Map
 
-| Domain       | Glob Patterns                                                                                                                 | Typical Commit Scopes                           |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `invitation` | `src/components/invitation/**`, `src/pages/[eventType]/**`, `src/layouts/Layout.astro`                                        | `invitation`, `layout`, `event-page`            |
-| `auth`       | `src/lib/rsvp/**`, `src/pages/api/auth/**`, `src/pages/api/invitation/**`, `src/middleware.ts`                                | `auth`, `rsvp`, `session`, `middleware`         |
-| `theme`      | `src/styles/themes/**`, `src/styles/tokens/**`, `src/styles/*.scss`                                                           | `theme`, `theme-preset`, `tokens`, `typography` |
-| `governance` | `.agent/**`, `.husky/**`, `.github/**`, `scripts/**`, `commitlint.config.cjs`, `package.json`, `pnpm-lock.yaml`, `.gitignore` | `governance`, `gatekeeper`, `ci`, `deps`        |
-| `core`       | `src/content/config.ts`, `src/content/events/**`, `src/lib/adapters/**`, `src/lib/assets/**`, `src/data/**`                   | `core`, `content`, `adapter`, `data`            |
-| `ui`         | `src/components/common/**`, `src/components/ui/**`, `src/components/home/**`, `src/components/layout/**`, `src/assets/**`     | `ui`, `component`, `icon`, `layout`             |
-| `docs`       | `docs/**`                                                                                                                     | `docs`, `architecture`, `audit`                 |
-| `test`       | `tests/**`, `**/*.test.*`, `**/*.spec.*`, `jest.config.*`                                                                     | `test`, `e2e`, `unit`                           |
-| `admin`      | `src/pages/admin/**`, `src/components/admin/**`                                                                               | `admin`, `dashboard`, `crm`                     |
+| Domain       | Glob Patterns                                                                                                                                                                                                                                   | Typical Commit Scopes                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `invitation` | `src/components/invitation/**`, `src/pages/[eventType]/**`, `src/layouts/Layout.astro`                                                                                                                                                          | `invitation`, `layout`, `event-page`                              |
+| `auth`       | `src/lib/rsvp/**`, `src/pages/api/auth/**`, `src/pages/api/invitation/**`, `src/middleware.ts`                                                                                                                                                  | `auth`, `rsvp`, `session`, `middleware`                           |
+| `theme`      | `src/styles/themes/**`, `src/styles/tokens/**`, `src/styles/*.scss`                                                                                                                                                                             | `theme`, `theme-preset`, `tokens`, `typography`                   |
+| `governance` | `.agent/**`, `.husky/**`, `.github/**`, `scripts/**`, `commitlint.config.cjs`, `package.json`, `pnpm-lock.yaml`, `.gitignore`                                                                                                                   | `governance`, `gatekeeper`, `ci`, `deps`                          |
+| `core`       | `src/content/config.ts`, `src/content/events/**`, `src/content/event-demos/**`, `src/content/event-templates/**`, `src/lib/adapters/**`, `src/lib/assets/**`, `src/lib/content/**`, `src/styles/events/**`, `src/data/**`, `archive/**`, `*.md` | `core`, `content`, `adapter`, `data`, `archive`, `style-override` |
+| `ui`         | `src/components/common/**`, `src/components/ui/**`, `src/components/home/**`, `src/components/layout/**`, `src/assets/**`                                                                                                                       | `ui`, `component`, `icon`, `layout`                               |
+| `docs`       | `docs/**`                                                                                                                                                                                                                                       | `docs`, `architecture`, `audit`                                   |
+| `test`       | `tests/**`, `**/*.test.*`, `**/*.spec.*`, `jest.config.*`                                                                                                                                                                                       | `test`, `e2e`, `unit`                                             |
+| `admin`      | `src/pages/admin/**`, `src/components/admin/**`                                                                                                                                                                                                 | `admin`, `dashboard`, `crm`                                       |
 
 ### ADU Violation Detection
 
@@ -394,3 +394,4 @@ the Gatekeeper blocks the commit.
 - **2026-03-06**: Optimized branch naming logic in `gatekeeper.mjs` with weighted prefix
   classification and semantic tokens.
 - **2026-03-10**: Workflow and baseline sync.
+- **2026-03-12**: Align domain mapping to include specialized event styles.
