@@ -1,0 +1,38 @@
+{
+    "eventSlug": "ximena-meza-trasvina",
+    "provider": "cloudinary-placeholders",
+    "status": "placeholder-prompts-ready",
+    "palette": {
+        "primary": "#F6E7D1",
+        "accent": "#D1B06A",
+        "ink": "#1B140D"
+    },
+    "promptPack": [
+        {
+            "slot": "hero",
+            "prompt": "Photorealistic full-length quinceanera editorial portrait, champagne-gold couture gown, luxury magazine lighting, cinematic soft shadows, poised stance, premium glass-card negative space, high-fashion digital publication aesthetic, refined gold highlights, vertical cover composition"
+        },
+        {
+            "slot": "portrait",
+            "prompt": "Photorealistic close-up quinceanera beauty portrait, champagne and gold palette, luminous skin, fine jewelry, couture makeup, editorial magazine crop, soft contrast, premium fashion publication styling"
+        },
+        {
+            "slot": "reception",
+            "prompt": "Elegant poolside reception venue at night in Los Mochis, champagne-gold grading, premium editorial atmosphere, reflective water, luxury event lighting, cinematic realism, upscale celebration setting"
+        },
+        {
+            "slot": "gallery-interludes",
+            "prompt": "Series of photorealistic quinceanera editorial frames, high-end gowns, movement in fabric, jewelry close-ups, cinematic backlight, magazine fashion storytelling, champagne and gold styling, premium luxury mood"
+        },
+        {
+            "slot": "signature",
+            "prompt": "Soft luxury closing portrait of a quinceanera, warm champagne light, elegant expression, premium editorial retouching, delicate gold shimmer, graceful end-card composition"
+        }
+    ],
+    "placeholderUrls": {
+        "hero": "https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1920/v1773331200/celebra-me/events/ximena-meza-trasvina/hero-editorial-cover.jpg",
+        "portrait": "https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_85,w_900/v1773331200/celebra-me/events/ximena-meza-trasvina/portrait-beauty-closeup.jpg",
+        "reception": "https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1400/v1773331200/celebra-me/events/ximena-meza-trasvina/reception-night-scene.jpg",
+        "signature": "https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_85,w_900/v1773331200/celebra-me/events/ximena-meza-trasvina/signature-soft-portrait.jpg"
+    }
+}
