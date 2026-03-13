@@ -1,6 +1,11 @@
 export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple'] as const;
 
-export const THEME_PRESETS = ['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda'] as const;
+export const THEME_PRESETS = [
+	'jewelry-box',
+	'jewelry-box-wedding',
+	'luxury-hacienda',
+	'top-premium-xv-ximena',
+] as const;
 export const QUOTE_VARIANTS = [
 	'elegant',
 	'modern',

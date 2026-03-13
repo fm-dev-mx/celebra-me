@@ -107,8 +107,55 @@ type RawEventAssets = {
 	gallery: ImageMetadata[];
 };
 
+type RemoteEventAssets = {
+	hero: string;
+	portrait: string;
+	family?: string;
+	ceremony?: string;
+	reception?: string;
+	jardin: string;
+	signature: string;
+	gallery: string[];
+};
+
 // Event-specific asset mapping helpers
 const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAssets => ({
+	hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
+	portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
+	family: rawAssets.family
+		? { src: rawAssets.family, alt: `Familia de ${eventName}` }
+		: undefined,
+	ceremony: rawAssets.ceremony
+		? { src: rawAssets.ceremony, alt: `Ceremonia de ${eventName}` }
+		: undefined,
+	reception: rawAssets.reception
+		? { src: rawAssets.reception, alt: `Recepción de ${eventName}` }
+		: undefined,
+	jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
+	signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
+	gallery01: { src: rawAssets.gallery[0], alt: `Galería 01 de ${eventName}` },
+	gallery02: { src: rawAssets.gallery[1], alt: `Galería 02 de ${eventName}` },
+	gallery03: { src: rawAssets.gallery[2], alt: `Galería 03 de ${eventName}` },
+	gallery04: { src: rawAssets.gallery[3], alt: `Galería 04 de ${eventName}` },
+	gallery05: { src: rawAssets.gallery[4], alt: `Galería 05 de ${eventName}` },
+	gallery06: { src: rawAssets.gallery[5], alt: `Galería 06 de ${eventName}` },
+	gallery07: { src: rawAssets.gallery[6], alt: `Galería 07 de ${eventName}` },
+	gallery08: { src: rawAssets.gallery[7], alt: `Galería 08 de ${eventName}` },
+	gallery09: { src: rawAssets.gallery[8], alt: `Galería 09 de ${eventName}` },
+	gallery10: { src: rawAssets.gallery[9], alt: `Galería 10 de ${eventName}` },
+	gallery11: { src: rawAssets.gallery[10], alt: `Galería 11 de ${eventName}` },
+	gallery12: rawAssets.gallery[11]
+		? { src: rawAssets.gallery[11], alt: `Galería 12 de ${eventName}` }
+		: undefined,
+	gallery13: rawAssets.gallery[12]
+		? { src: rawAssets.gallery[12], alt: `Galería 13 de ${eventName}` }
+		: undefined,
+	gallery14: rawAssets.gallery[13]
+		? { src: rawAssets.gallery[13], alt: `Galería 14 de ${eventName}` }
+		: undefined,
+});
+
+const mapRemoteEventAssets = (rawAssets: RemoteEventAssets, eventName: string): EventAssets => ({
 	hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
 	portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
 	family: rawAssets.family
@@ -149,6 +196,36 @@ export const ImageRegistry: Registry = {
 		'demo-cumple': mapEventAssets(DemoAlbertoSesentaAssets, 'Don Alberto 60 años'),
 		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
 		'demo-bodas': mapEventAssets(DemoBodasAssets, 'Sofía & Alejandro'),
+		'ximena-meza-trasvina': mapRemoteEventAssets(
+			{
+				hero: 'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1920/v1773331200/celebra-me/events/ximena-meza-trasvina/hero-editorial-cover.jpg',
+				portrait:
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_85,w_900/v1773331200/celebra-me/events/ximena-meza-trasvina/portrait-beauty-closeup.jpg',
+				family: 'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_85,w_900/v1773331200/celebra-me/events/ximena-meza-trasvina/family-editorial-portrait.jpg',
+				reception:
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1400/v1773331200/celebra-me/events/ximena-meza-trasvina/reception-night-scene.jpg',
+				jardin: 'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1400/v1773331200/celebra-me/events/ximena-meza-trasvina/reception-night-scene.jpg',
+				signature:
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_85,w_900/v1773331200/celebra-me/events/ximena-meza-trasvina/signature-soft-portrait.jpg',
+				gallery: [
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-01.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-02.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-03.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-04.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-05.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-06.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-07.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-08.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-09.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-10.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-11.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-12.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-13.jpg',
+					'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1200/v1773331200/celebra-me/events/ximena-meza-trasvina/gallery-14.jpg',
+				],
+			},
+			'XV de Ximena Meza Trasviña',
+		),
 	},
 	common: {
 		logo: {

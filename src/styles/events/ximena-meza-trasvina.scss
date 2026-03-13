@@ -1,0 +1,166 @@
+.event--ximena-meza-trasvina {
+	--ximena-editorial-shadow: 0 28px 70px rgb(27 20 13 / 20%);
+
+	background:
+		radial-gradient(circle at top, rgb(255 249 242 / 82%) 0%, transparent 36%),
+		linear-gradient(180deg, #fffaf4 0%, #f7ebdc 32%, #f2dfc8 100%);
+	color: var(--color-text-primary);
+
+	.invitation-hero[data-variant='jewelry-box'] {
+		align-items: stretch;
+		justify-content: center;
+		padding-inline: clamp(1.2rem, 4vw, 3rem);
+
+		.invitation-hero__background img {
+			object-position: center 20%;
+			filter: saturate(0.94) contrast(1.02) brightness(0.82);
+			transform: scale(1.04);
+		}
+
+		.invitation-hero__content {
+			width: min(100%, 72rem);
+			max-width: none;
+			margin: min(9vh, 6rem) auto 4rem;
+			padding: clamp(2rem, 3.6vw, 3.6rem) clamp(1.4rem, 4vw, 3rem) clamp(2.2rem, 3.8vw, 3rem);
+			display: grid;
+			grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.75fr);
+			grid-template-areas:
+				'label portrait'
+				'title portrait'
+				'divider portrait'
+				'details portrait';
+			gap: 0.75rem clamp(1.5rem, 4vw, 4rem);
+			text-align: left;
+			align-items: center;
+		}
+
+		.invitation-hero__label {
+			grid-area: label;
+			margin: 0;
+		}
+
+		.invitation-hero__title {
+			grid-area: title;
+			font-size: clamp(3rem, 7.5vw, 6.4rem);
+			line-height: 0.94;
+			max-width: 10ch;
+		}
+
+		.invitation-hero__divider {
+			grid-area: divider;
+			margin: 0;
+			width: 100%;
+			max-width: 200px;
+		}
+
+		.invitation-hero__details {
+			grid-area: details;
+			align-items: flex-start;
+		}
+
+		.invitation-hero__portrait {
+			grid-area: portrait;
+			place-self: stretch end;
+			width: min(100%, 320px);
+			padding: 12px;
+			border-radius: 28px;
+			background: linear-gradient(155deg, rgb(255 255 255 / 54%), rgb(209 176 106 / 12%));
+			border: 1px solid rgb(209 176 106 / 28%);
+			box-shadow: var(--ximena-editorial-shadow);
+			backdrop-filter: blur(10px);
+		}
+
+		.invitation-hero__portrait img {
+			width: 100%;
+			height: 100%;
+			border-radius: 18px;
+			object-fit: cover;
+			aspect-ratio: 0.78;
+		}
+
+		.invitation-hero__date,
+		.invitation-hero__time,
+		.invitation-hero__venue {
+			font-size: clamp(1rem, 2vw, 1.18rem);
+		}
+
+		@media (width <= 860px) {
+			.invitation-hero__content {
+				grid-template-columns: 1fr;
+				grid-template-areas:
+					'label'
+					'title'
+					'portrait'
+					'divider'
+					'details';
+				text-align: center;
+			}
+
+			.invitation-hero__divider,
+			.invitation-hero__details {
+				margin-inline: auto;
+				align-items: center;
+			}
+
+			.invitation-hero__portrait {
+				justify-self: center;
+				width: min(100%, 280px);
+			}
+		}
+	}
+
+	.invitation-interlude[data-variant='top-premium-xv-ximena'] {
+		--interlude-overlay-opacity: 0.28;
+	}
+
+	.invitation-interlude[data-variant='top-premium-xv-ximena'] .invitation-interlude__image {
+		filter: saturate(0.92) contrast(1.08) brightness(0.78);
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.08);
+	}
+
+	.invitation-interlude[data-variant='top-premium-xv-ximena']::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(180deg, rgb(27 20 13 / 8%) 0%, rgb(27 20 13 / 24%) 100%),
+			radial-gradient(circle at 20% 20%, rgb(255 243 222 / 24%) 0%, transparent 34%);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.family,
+	.gallery-section,
+	.countdown-section,
+	.gifts-section,
+	.rsvp,
+	.thank-you-section,
+	.event-location,
+	.itinerary {
+		position: relative;
+		z-index: 2;
+	}
+
+	.family,
+	.gallery-section,
+	.countdown-section,
+	.gifts-section,
+	.thank-you-section,
+	.event-location,
+	.itinerary {
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 24%);
+	}
+
+	.event-location[data-variant='jewelry-box'] .event-location__container--single {
+		max-width: 40rem;
+	}
+
+	.event-location[data-variant='jewelry-box'] .event-location__card {
+		border-radius: 24px;
+	}
+
+	.gifts-section[data-variant='jewelry-box'] .gift-card,
+	.rsvp[data-variant='jewelry-box'] {
+		box-shadow: var(--ximena-editorial-shadow);
+	}
+}

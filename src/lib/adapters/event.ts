@@ -16,6 +16,8 @@ import {
 	SHARED_SECTION_VARIANTS,
 	THEME_PRESETS,
 	type IndicationIconKey,
+	type ItineraryVariant,
+	type SharedSectionVariant,
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
@@ -99,6 +101,16 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 
 	const primaryColorRgb = hexToRgb(data.theme.primaryColor);
 	const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
+	const itineraryFallback = (
+		(ITINERARY_VARIANTS as readonly string[]).includes(normalizedPreset)
+			? normalizedPreset
+			: 'base'
+	) as ItineraryVariant;
+	const sharedSectionFallback = (
+		(SHARED_SECTION_VARIANTS as readonly string[]).includes(normalizedPreset)
+			? normalizedPreset
+			: 'standard'
+	) as SharedSectionVariant;
 
 	const theme: ThemeConfig = {
 		primaryColor: data.theme.primaryColor,
@@ -309,9 +321,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 						...data.itinerary,
 						variant: pickVariant(
 							'sectionStyles.itinerary.variant',
-							data.sectionStyles?.itinerary?.variant ?? normalizedPreset,
+							data.sectionStyles?.itinerary?.variant ?? itineraryFallback,
 							ITINERARY_VARIANTS,
-							normalizedPreset,
+							itineraryFallback,
 						),
 					}
 				: undefined,
@@ -327,9 +339,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 									: data.hero.name.split(' ')[0]),
 							variant: pickVariant(
 								'sectionStyles.rsvp.variant',
-								data.sectionStyles?.rsvp?.variant ?? normalizedPreset,
+								data.sectionStyles?.rsvp?.variant ?? sharedSectionFallback,
 								SHARED_SECTION_VARIANTS,
-								normalizedPreset,
+								sharedSectionFallback,
 							),
 							nameLabel:
 								data.sectionStyles?.rsvp?.labels?.name ??

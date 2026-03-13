@@ -21,7 +21,7 @@ export async function getRoutableEventEntry(
 		return liveEntry;
 	}
 
-	const demoEntries = await getCollection('event-demos');
+	const demoEntries = (await getCollection('event-demos')) ?? [];
 	return (
 		demoEntries.find((entry: CollectionEntry<'event-demos'>) => {
 			return (
@@ -36,7 +36,7 @@ export async function getEventTemplateEntry(
 	slug: string,
 	expectedEventType?: string,
 ): Promise<CollectionEntry<'event-templates'> | null> {
-	const templateEntries = await getCollection('event-templates');
+	const templateEntries = (await getCollection('event-templates')) ?? [];
 	return (
 		templateEntries.find((entry: CollectionEntry<'event-templates'>) => {
 			return (

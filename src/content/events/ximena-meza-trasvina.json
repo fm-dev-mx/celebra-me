@@ -1,0 +1,351 @@
+{
+    "eventType": "xv",
+    "isDemo": false,
+    "title": "XV Años de Ximena Meza Trasviña",
+    "description": "Una invitación editorial digital para celebrar los XV años de Ximena Meza Trasviña en una noche de elegancia, luz y celebración en Los Mochis.",
+    "theme": {
+        "primaryColor": "#F6E7D1",
+        "accentColor": "#D1B06A",
+        "fontFamily": "serif",
+        "preset": "top-premium-xv-ximena"
+    },
+    "sectionStyles": {
+        "countdown": {
+            "variant": "jewelry-box",
+            "numberStyle": "thin",
+            "showParticles": false
+        },
+        "location": {
+            "variant": "jewelry-box",
+            "mapStyle": "colorful",
+            "showFlourishes": true
+        },
+        "family": {
+            "variant": "jewelry-box"
+        },
+        "gallery": {
+            "variant": "jewelry-box"
+        },
+        "gifts": {
+            "variant": "jewelry-box"
+        },
+        "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "thankYou": {
+            "variant": "jewelry-box"
+        },
+        "rsvp": {
+            "variant": "jewelry-box",
+            "labels": {
+                "name": "Nombre completo *",
+                "guestCount": "Número total de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Ximena Meza Trasviña",
+        "label": "Mis XV Años",
+        "date": "2026-04-11T20:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "variant": "jewelry-box"
+    },
+    "location": {
+        "venueName": "D'Galaz Alberca y Eventos",
+        "address": "Los Mochis, Sinaloa",
+        "city": "Los Mochis",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+        "reception": {
+            "venueEvent": "Celebración",
+            "venueName": "D'Galaz Alberca y Eventos",
+            "address": "Los Mochis, Sinaloa",
+            "date": "11 de abril de 2026",
+            "time": "8:00 PM",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+            "appleMapsUrl": "https://maps.apple.com/?q=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
+            "wazeUrl": "https://www.waze.com/ul?q=D%27Galaz%20Alberca%20y%20Eventos%20Los%20Mochis",
+            "image": "reception"
+        },
+        "indications": [
+            {
+                "icon": "crown",
+                "iconName": "Crown",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta: <strong>Formal</strong>"
+            },
+            {
+                "icon": "envelope",
+                "iconName": "Envelope",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia antes del <strong>4 de abril de 2026</strong>."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Bladimir Meza Briceño",
+            "mother": "Christian Jasiela Trasviña Valenzuela"
+        },
+        "labels": {
+            "sectionTitle": "Con amor, quienes iluminan mi historia",
+            "sectionSubtitle": "Mi Círculo Íntimo",
+            "parentsTitle": "Con la bendición de mis padres"
+        },
+        "godparents": [
+            {
+                "name": "Karla Gabriela Montoya Valenzuela",
+                "role": "Madrina de regalo sorpresa"
+            }
+        ],
+        "featuredImage": "family"
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true
+    },
+    "gallery": {
+        "title": "Editorial de Ximena",
+        "subtitle": "Una secuencia visual en clave de moda, brillo y celebración.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Aura de alta costura."
+            },
+            {
+                "image": "gallery02",
+                "caption": "Brillo suave en champagne."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Movimiento y elegancia."
+            },
+            {
+                "image": "gallery04",
+                "caption": "Un retrato de portada."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Joyas, luz y editorial."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Mirada de noche premium."
+            },
+            {
+                "image": "gallery07",
+                "caption": "Silueta en dorado."
+            },
+            {
+                "image": "gallery08",
+                "caption": "Texturas que cuentan."
+            },
+            {
+                "image": "gallery09",
+                "caption": "Elegancia contemporánea."
+            },
+            {
+                "image": "gallery10",
+                "caption": "El instante antes del gran festejo."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Gift Concierge",
+        "subtitle": "Opciones preliminares para revisión del cliente. La información final se actualizará tras aprobación.",
+        "items": [
+            {
+                "type": "store",
+                "title": "Liverpool",
+                "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/placeholder-ximena-xv"
+            },
+            {
+                "type": "bank",
+                "title": "Transferencia bancaria",
+                "bankName": "BBVA México",
+                "accountHolder": "PENDIENTE DE APROBACIÓN DEL CLIENTE",
+                "clabe": "0000 0000 0000 0000 00",
+                "accountNumber": "0000000000"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de sobres",
+                "text": "Placeholder para revisión: se confirmará con la familia la dinámica final para el día del evento."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma tu presencia en esta edición especial",
+        "guestCap": 4,
+        "confirmationMessage": "Tu asistencia ha quedado registrada. Nos encantará recibirte en esta noche inolvidable.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por acompañarme en una noche que guardaré para siempre. Su presencia hará que cada página de esta celebración brille aún más.",
+        "closingName": "Ximena",
+        "image": "signature"
+    },
+    "itinerary": {
+        "title": "La Noche en Escena",
+        "items": [
+            {
+                "icon": "reception",
+                "label": "Recepción editorial",
+                "time": "8:00 PM",
+                "description": "Apertura de la celebración en D'Galaz Alberca y Eventos."
+            },
+            {
+                "icon": "photo",
+                "label": "Momentos de retrato",
+                "time": "8:45 PM",
+                "description": "Una entrada pensada para capturar cada detalle."
+            },
+            {
+                "icon": "waltz",
+                "label": "Vals de honor",
+                "time": "9:30 PM",
+                "description": "El instante central de la noche."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena de gala",
+                "time": "10:15 PM",
+                "description": "Celebración y convivencia."
+            },
+            {
+                "icon": "toast",
+                "label": "Brindis",
+                "time": "11:15 PM",
+                "description": "Un brindis por una nueva etapa."
+            },
+            {
+                "icon": "party",
+                "label": "Gran festejo",
+                "time": "11:45 PM",
+                "description": "La noche continúa entre música y alegría."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "La edición especial comienza en",
+        "subtitlePrefix": "El",
+        "footerText": "Prepárate para una celebración editorial en Los Mochis."
+    },
+    "navigation": [
+        {
+            "label": "Inicio",
+            "href": "#inicio"
+        },
+        {
+            "label": "Celebración",
+            "href": "#event-location"
+        },
+        {
+            "label": "Galería",
+            "href": "#galeria"
+        },
+        {
+            "label": "Regalos",
+            "href": "#regalos"
+        },
+        {
+            "label": "Confirmar",
+            "href": "#rsvp"
+        }
+    ],
+    "contentBlocks": [
+        {
+            "type": "section",
+            "section": "location"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery03",
+            "alt": "Ximena en un retrato editorial de movimiento suave",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "family"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery05",
+            "alt": "Editorial dorado con textura y joyería",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "itinerary"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery07",
+            "alt": "Silueta de alta costura en champagne y oro",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "gallery"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery08",
+            "alt": "Interludio editorial con luz cinematográfica",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "countdown"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery10",
+            "alt": "Transición visual hacia los detalles finales del evento",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "gifts"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery12",
+            "alt": "Cierre editorial con brillo delicado",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "rsvp"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery14",
+            "alt": "Último retrato premium antes del agradecimiento",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "thankYou"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "microcopy": "Toca para abrir mi edición especial",
+        "variant": "jewelry-box",
+        "closedPalette": {
+            "primary": "#D1B06A",
+            "accent": "#1B140D",
+            "background": "#F6E7D1"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}"
+    }
+}
