@@ -9,6 +9,8 @@ The invitation theme system is contract-driven and section-based.
 - **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
 - **Rendering**: invitation sections use `data-variant` selectors
 - **Preset application**: class-scoped presets (`.theme-preset--*`), not `:root` injection
+- **Editorial Aesthetic**: Support for full-bleed, high-fashion layout variants (`editorial`) and
+  event-specific premium overrides.
 
 ## Contract Ownership
 
@@ -108,4 +110,4 @@ are correctly mapped regardless of the source collection.
 
 ---
 
-**Last Updated:** 2026-03-12 (Collection Refactor)
+**Last Updated:** 2026-03-12 (Editorial Aesthetic Sync)
