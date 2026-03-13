@@ -1,56 +1,56 @@
 {
     "eventType": "xv",
     "isDemo": false,
-    "title": "XV Años de Ximena Meza Trasviña",
-    "description": "Una invitación editorial digital para celebrar los XV años de Ximena Meza Trasviña en una noche de elegancia, luz y celebración en Los Mochis.",
+    "title": "La Noche Premiere de Ximena",
+    "description": "Una celebración editorial donde el brillo de los quince años se encuentra con la elegancia Noir. Sé parte de la historia de Ximena.",
     "theme": {
-        "primaryColor": "#F6E7D1",
-        "accentColor": "#D1B06A",
+        "primaryColor": "#1B140D",
+        "accentColor": "#C5A059",
         "fontFamily": "serif",
         "preset": "top-premium-xv-ximena"
     },
     "sectionStyles": {
         "countdown": {
-            "variant": "jewelry-box",
+            "variant": "editorial",
             "numberStyle": "thin",
-            "showParticles": false
+            "showParticles": true
         },
         "location": {
-            "variant": "jewelry-box",
+            "variant": "editorial",
             "mapStyle": "colorful",
             "showFlourishes": true
         },
         "family": {
-            "variant": "jewelry-box"
+            "variant": "editorial"
         },
         "gallery": {
-            "variant": "jewelry-box"
+            "variant": "editorial"
         },
         "gifts": {
-            "variant": "jewelry-box"
+            "variant": "editorial"
         },
         "itinerary": {
-            "variant": "jewelry-box"
+            "variant": "editorial"
         },
         "thankYou": {
-            "variant": "jewelry-box"
+            "variant": "editorial"
         },
         "rsvp": {
-            "variant": "jewelry-box",
+            "variant": "editorial",
             "labels": {
-                "name": "Nombre completo *",
-                "guestCount": "Número total de asistentes",
-                "confirmButton": "Confirmar asistencia"
+                "name": "Tu nombre en la lista *",
+                "guestCount": "Acompañantes",
+                "confirmButton": "Reservar mi lugar"
             }
         }
     },
     "hero": {
         "name": "Ximena Meza Trasviña",
-        "label": "Mis XV Años",
+        "label": "The Anniversary Issue",
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "variant": "jewelry-box"
+        "variant": "editorial"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
@@ -67,20 +67,20 @@
             "appleMapsUrl": "https://maps.apple.com/?q=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
             "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
             "wazeUrl": "https://www.waze.com/ul?q=D%27Galaz%20Alberca%20y%20Eventos%20Los%20Mochis",
-            "image": "reception"
+            "image": "jardin"
         },
         "indications": [
             {
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta: <strong>Formal</strong>"
+                "text": "Etiqueta: <strong>Gala Editorial (Riguroso Negro/Blanco)</strong>"
             },
             {
                 "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
-                "text": "Confirma tu asistencia antes del <strong>4 de abril de 2026</strong>."
+                "text": "Favor de confirmar antes del <strong>4 de abril</strong>."
             }
         ]
     },
@@ -90,14 +90,14 @@
             "mother": "Christian Jasiela Trasviña Valenzuela"
         },
         "labels": {
-            "sectionTitle": "Con amor, quienes iluminan mi historia",
-            "sectionSubtitle": "Mi Círculo Íntimo",
+            "sectionTitle": "El Círculo de Luz",
+            "sectionSubtitle": "Inner Circle",
             "parentsTitle": "Con la bendición de mis padres"
         },
         "godparents": [
             {
                 "name": "Karla Gabriela Montoya Valenzuela",
-                "role": "Madrina de regalo sorpresa"
+                "role": "Madrina de honor"
             }
         ],
         "featuredImage": "family"
@@ -109,131 +109,101 @@
         "gallery": true
     },
     "gallery": {
-        "title": "Editorial de Ximena",
-        "subtitle": "Una secuencia visual en clave de moda, brillo y celebración.",
+        "title": "Editorial Lookbook",
+        "subtitle": "Un recorrido visual por la esencia y el brillo de Ximena.",
         "items": [
-            {
-                "image": "gallery01",
-                "caption": "Aura de alta costura."
-            },
-            {
-                "image": "gallery02",
-                "caption": "Brillo suave en champagne."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Movimiento y elegancia."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Un retrato de portada."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Joyas, luz y editorial."
-            },
-            {
-                "image": "gallery06",
-                "caption": "Mirada de noche premium."
-            },
-            {
-                "image": "gallery07",
-                "caption": "Silueta en dorado."
-            },
-            {
-                "image": "gallery08",
-                "caption": "Texturas que cuentan."
-            },
-            {
-                "image": "gallery09",
-                "caption": "Elegancia contemporánea."
-            },
-            {
-                "image": "gallery10",
-                "caption": "El instante antes del gran festejo."
-            }
+            { "image": "gallery01", "caption": "Portada Premiere." },
+            { "image": "gallery02", "caption": "El Baile de la Noche." },
+            { "image": "gallery03", "caption": "El Jardín de las Luces." },
+            { "image": "gallery04", "caption": "Rosas & Oro." },
+            { "image": "gallery05", "caption": "Detalles en Seda." },
+            { "image": "portrait", "caption": "Esencia de Perla." },
+            { "image": "gallery07", "caption": "Silueta Editorial." },
+            { "image": "hero", "caption": "Mirada Premiere." },
+            { "image": "gallery09", "caption": "El Sobre Dorado." },
+            { "image": "gallery10", "caption": "Destellos de Alegría." }
         ]
     },
     "gifts": {
         "title": "Gift Concierge",
-        "subtitle": "Opciones preliminares para revisión del cliente. La información final se actualizará tras aprobación.",
+        "subtitle": "Opciones seleccionadas para esta edición especial.",
         "items": [
             {
                 "type": "store",
-                "title": "Liverpool",
+                "title": "Mesa de Regalos Liverpool",
                 "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/placeholder-ximena-xv"
             },
             {
                 "type": "bank",
-                "title": "Transferencia bancaria",
+                "title": "Boutique Fund",
                 "bankName": "BBVA México",
-                "accountHolder": "PENDIENTE DE APROBACIÓN DEL CLIENTE",
+                "accountHolder": "PENDIENTE",
                 "clabe": "0000 0000 0000 0000 00",
                 "accountNumber": "0000000000"
             },
             {
                 "type": "cash",
-                "title": "Lluvia de sobres",
-                "text": "Placeholder para revisión: se confirmará con la familia la dinámica final para el día del evento."
+                "title": "Lluvia de Sobres",
+                "text": "Agradecemos su generosidad en el área de recepción."
             }
         ]
     },
     "rsvp": {
-        "title": "Confirma tu presencia en esta edición especial",
+        "title": "The Guest List",
         "guestCap": 4,
-        "confirmationMessage": "Tu asistencia ha quedado registrada. Nos encantará recibirte en esta noche inolvidable.",
+        "confirmationMessage": "Tu lugar en esta edición ha sido reservado. Nos vemos en la noche.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por acompañarme en una noche que guardaré para siempre. Su presencia hará que cada página de esta celebración brille aún más.",
+        "message": "Gracias por ser parte de este capítulo. Su presencia es el brillo que completa mi historia.",
         "closingName": "Ximena",
         "image": "signature"
     },
     "itinerary": {
-        "title": "La Noche en Escena",
+        "title": "The Program",
         "items": [
             {
                 "icon": "reception",
-                "label": "Recepción editorial",
+                "label": "Call to Celebration",
                 "time": "8:00 PM",
-                "description": "Apertura de la celebración en D'Galaz Alberca y Eventos."
+                "description": "Apertura de la gala."
             },
             {
                 "icon": "photo",
-                "label": "Momentos de retrato",
+                "label": "Editorial Moments",
                 "time": "8:45 PM",
-                "description": "Una entrada pensada para capturar cada detalle."
+                "description": "Captura de la noche."
             },
             {
                 "icon": "waltz",
-                "label": "Vals de honor",
+                "label": "The Golden Waltz",
                 "time": "9:30 PM",
-                "description": "El instante central de la noche."
+                "description": "El momento central."
             },
             {
                 "icon": "dinner",
-                "label": "Cena de gala",
+                "label": "Grand Dinner",
                 "time": "10:15 PM",
-                "description": "Celebración y convivencia."
+                "description": "Celebración gastronómica."
             },
             {
                 "icon": "toast",
-                "label": "Brindis",
+                "label": "The Toast",
                 "time": "11:15 PM",
-                "description": "Un brindis por una nueva etapa."
+                "description": "Brindis de honor."
             },
             {
                 "icon": "party",
-                "label": "Gran festejo",
+                "label": "Midnight Fête",
                 "time": "11:45 PM",
-                "description": "La noche continúa entre música y alegría."
+                "description": "Celebración continua."
             }
         ]
     },
     "countdown": {
-        "title": "La edición especial comienza en",
+        "title": "The Premiere Begins In",
         "subtitlePrefix": "El",
-        "footerText": "Prepárate para una celebración editorial en Los Mochis."
+        "footerText": "Los Mochis, Sinaloa."
     },
     "navigation": [
         {
@@ -241,19 +211,19 @@
             "href": "#inicio"
         },
         {
-            "label": "Celebración",
+            "label": "Gala",
             "href": "#event-location"
         },
         {
-            "label": "Galería",
+            "label": "Lookbook",
             "href": "#galeria"
         },
         {
-            "label": "Regalos",
+            "label": "Concierge",
             "href": "#regalos"
         },
         {
-            "label": "Confirmar",
+            "label": "RSVP",
             "href": "#rsvp"
         }
     ],
@@ -265,7 +235,8 @@
         {
             "type": "interlude",
             "image": "gallery03",
-            "alt": "Ximena en un retrato editorial de movimiento suave",
+            "alt": "Ximena editorial movement",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -275,7 +246,8 @@
         {
             "type": "interlude",
             "image": "gallery05",
-            "alt": "Editorial dorado con textura y joyería",
+            "alt": "Gold and obsidian textures",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -285,7 +257,8 @@
         {
             "type": "interlude",
             "image": "gallery07",
-            "alt": "Silueta de alta costura en champagne y oro",
+            "alt": "High fashion silhouette",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -295,7 +268,8 @@
         {
             "type": "interlude",
             "image": "gallery08",
-            "alt": "Interludio editorial con luz cinematográfica",
+            "alt": "Cinematic light",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -305,7 +279,8 @@
         {
             "type": "interlude",
             "image": "gallery10",
-            "alt": "Transición visual hacia los detalles finales del evento",
+            "alt": "Visual transition",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -315,7 +290,8 @@
         {
             "type": "interlude",
             "image": "gallery12",
-            "alt": "Cierre editorial con brillo delicado",
+            "alt": "Delicate closing shine",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -325,7 +301,8 @@
         {
             "type": "interlude",
             "image": "gallery14",
-            "alt": "Último retrato premium antes del agradecimiento",
+            "alt": "Last premium portrait",
+            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -337,12 +314,12 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
-        "microcopy": "Toca para abrir mi edición especial",
-        "variant": "jewelry-box",
+        "microcopy": "Open the Luminaire Issue",
+        "variant": "editorial",
         "closedPalette": {
-            "primary": "#D1B06A",
+            "primary": "#C5A059",
             "accent": "#1B140D",
-            "background": "#F6E7D1"
+            "background": "#F9F6F2"
         }
     },
     "sharing": {

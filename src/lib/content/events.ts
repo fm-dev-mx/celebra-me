@@ -9,7 +9,8 @@ export type RoutableEventEntry = CollectionEntry<'events'> | CollectionEntry<'ev
 
 export function getContentEntrySlug(id: string): string {
 	const segments = id.split('/');
-	return segments[segments.length - 1] || id;
+	const lastSegment = segments[segments.length - 1] || id;
+	return lastSegment.replace(/\.(json|md|mdx)$/, '');
 }
 
 export async function getRoutableEventEntry(

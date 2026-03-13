@@ -5,7 +5,9 @@ export const THEME_PRESETS = [
 	'jewelry-box-wedding',
 	'luxury-hacienda',
 	'top-premium-xv-ximena',
+	'editorial',
 ] as const;
+
 export const QUOTE_VARIANTS = [
 	'elegant',
 	'modern',
@@ -14,7 +16,9 @@ export const QUOTE_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
+	'editorial',
 ] as const;
+
 export const COUNTDOWN_VARIANTS = [
 	'minimal',
 	'vibrant',
@@ -23,7 +27,9 @@ export const COUNTDOWN_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
+	'editorial',
 ] as const;
+
 export const LOCATION_VARIANTS = [
 	'structured',
 	'organic',
@@ -32,18 +38,23 @@ export const LOCATION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
+	'editorial',
 ] as const;
+
 export const SHARED_SECTION_VARIANTS = [
 	'standard',
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
+	'editorial',
 ] as const;
+
 export const ITINERARY_VARIANTS = [
 	'base',
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
+	'editorial',
 ] as const;
 
 export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite'] as const;
