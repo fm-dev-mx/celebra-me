@@ -29,5 +29,9 @@ export const assets = {
 		hero, // Reuse hero for 08
 		gallery09,
 		gallery10,
+		gallery01, // gallery11
+		gallery02, // gallery12
+		gallery03, // gallery13
+		gallery04, // gallery14
 	],
 };
