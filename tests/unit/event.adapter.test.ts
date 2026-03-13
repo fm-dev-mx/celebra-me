@@ -59,8 +59,6 @@ describe('adaptEvent', () => {
 			type: 'interlude',
 			height: 'screen',
 		});
-		expect(viewModel.hero.backgroundImage.src).toBe(
-			'https://res.cloudinary.com/dusxvauvj/image/upload/f_auto,q_80,w_1920/v1773331200/celebra-me/events/ximena-meza-trasvina/hero-editorial-cover.jpg',
-		);
+		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 	});
 });
