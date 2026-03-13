@@ -328,9 +328,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 						>
 							<option value="xv">XV Años</option>
 							<option value="boda">Boda</option>
-							<option value="bautizo">Bautizo</option>
 							<option value="cumple">Cumpleaños</option>
+							{eventType === 'bautizo' && <option value="bautizo">Bautizo</option>}
 						</select>
+						<p className="dashboard-form-help">
+							Bautizo permanece compatible en backend, pero se oculta del flujo normal
+							hasta contar con una plantilla premium aprobada.
+						</p>
 					</div>
 					<div className="dashboard-form-field">
 						<label htmlFor="event-status">Estado</label>
