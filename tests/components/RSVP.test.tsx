@@ -53,6 +53,24 @@ describe('RSVP Component', () => {
 
 			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
 		});
+
+		it('shows a locked preview when no personalized inviteId is provided', async () => {
+			render(
+				<RSVP
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			await waitFor(() => {
+				expect(
+					screen.getByText(/Esta invitación utiliza enlaces personalizados/i),
+				).toBeInTheDocument();
+			});
+
+			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
+		});
 	});
 
 	describe('Attendance Selection', () => {
