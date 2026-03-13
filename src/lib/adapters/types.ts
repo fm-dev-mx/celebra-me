@@ -52,6 +52,7 @@ export interface Ceremony {
 	mapUrl?: string;
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;
+	wazeUrl?: string;
 	image?: ImageAsset;
 	coordinates?: Coordinate;
 }
@@ -86,6 +87,7 @@ export interface Reception {
 	mapUrl?: string;
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;
+	wazeUrl?: string;
 	image?: ImageAsset;
 	coordinates?: Coordinate;
 	itinerary?: ItineraryItem[];

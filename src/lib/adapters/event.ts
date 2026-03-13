@@ -1,4 +1,3 @@
-import type { CollectionEntry } from 'astro:content';
 import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	InvitationViewModel,
@@ -19,12 +18,13 @@ import {
 	type IndicationIconKey,
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
+import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 
 const runtimeEnv = {
 	PROD: process.env.NODE_ENV === 'production',
 	DEV: process.env.NODE_ENV !== 'production',
 };
-type RawContentBlock = NonNullable<CollectionEntry<'events'>['data']['contentBlocks']>[number];
+type RawContentBlock = NonNullable<EventContentEntry['data']['contentBlocks']>[number];
 
 function pickVariant<T extends readonly string[]>(
 	scope: string,
@@ -91,8 +91,9 @@ function requireAsset(eventSlug: string, keyOrUrl: string): ImageAsset {
 	return asset;
 }
 
-export function adaptEvent(event: CollectionEntry<'events'>): InvitationViewModel {
-	const { data, id: eventSlug } = event;
+export function adaptEvent(event: EventContentEntry): InvitationViewModel {
+	const { data, id: contentEntryId } = event;
+	const eventSlug = getContentEntrySlug(contentEntryId);
 	const isDemo = data.isDemo ?? false;
 	const normalizedPreset = pickPreset(data.theme.preset);
 

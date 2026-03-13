@@ -5,7 +5,7 @@
 
 import { assets as DemoAlbertoSesentaAssets } from '../../assets/images/events/alberto-sesenta';
 import { assets as DemoXvAssets } from '../../assets/images/events/demo-xv';
-import { assets as DemoWeddingAssets } from '../../assets/images/events/demo-wedding';
+import { assets as DemoBodasAssets } from '../../assets/images/events/demo-wedding';
 import type { ImageMetadata } from 'astro';
 
 // Social Proof
@@ -148,7 +148,7 @@ export const ImageRegistry: Registry = {
 	events: {
 		'demo-cumple': mapEventAssets(DemoAlbertoSesentaAssets, 'Don Alberto 60 años'),
 		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
-		'demo-bodas': mapEventAssets(DemoWeddingAssets, 'Sofía & Alejandro'),
+		'demo-bodas': mapEventAssets(DemoBodasAssets, 'Sofía & Alejandro'),
 	},
 	common: {
 		logo: {

@@ -95,6 +95,17 @@ These files are lazy-loaded only for the matching event route.
 - Run `pnpm ops validate-schema` after theme changes.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
 
+## Collection Integration
+
+The theme system integrates with Astro Content Collections. Content is now partitioned into:
+
+- `event-demos`: Curated previews and marketing examples.
+- `event-templates`: Master patterns for production invitations.
+- `events`: Production user data (legacy/active).
+
+Runtime resolution in `src/lib/content/events.ts` ensures that theme presets and section variants
+are correctly mapped regardless of the source collection.
+
 ---
 
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-12 (Collection Refactor)

@@ -37,423 +37,436 @@ const CONTENT_SECTION_KEYS = [
 	'thankYou',
 ] as const;
 
-// Just adding image context
-const eventsCollection = defineCollection({
-	type: 'data',
-	schema: z.object({
-		eventType: z.enum(EVENT_TYPES),
-		isDemo: z.boolean().default(false),
-		title: z.string(),
-		description: z.string().optional(),
-		theme: z.object({
-			primaryColor: z.string().regex(/^#/, 'Must be a hex color'),
-			accentColor: z.string().regex(/^#/, 'Must be a hex color').optional(),
-			fontFamily: z.enum(['serif', 'sans']).default('serif'),
-			preset: z.enum(THEME_PRESETS).optional(),
-		}),
-		sectionStyles: z
+const eventContentSchema = z.object({
+	eventType: z.enum(EVENT_TYPES),
+	isDemo: z.boolean().default(false),
+	title: z.string(),
+	description: z.string().optional(),
+	theme: z.object({
+		primaryColor: z.string().regex(/^#/, 'Must be a hex color'),
+		accentColor: z.string().regex(/^#/, 'Must be a hex color').optional(),
+		fontFamily: z.enum(['serif', 'sans']).default('serif'),
+		preset: z.enum(THEME_PRESETS).optional(),
+	}),
+	sectionStyles: z
+		.object({
+			quote: z
+				.object({
+					variant: z.enum(QUOTE_VARIANTS).default('elegant'),
+					fontStyle: z.enum(QUOTE_FONT_STYLES).optional(),
+					animation: z.enum(QUOTE_ANIMATIONS).default('fade'),
+				})
+				.optional(),
+			countdown: z
+				.object({
+					variant: z.enum(COUNTDOWN_VARIANTS).default('minimal'),
+					numberStyle: z.enum(COUNTDOWN_NUMBER_STYLES).default('thin'),
+					showParticles: z.boolean().default(false),
+				})
+				.optional(),
+			location: z
+				.object({
+					variant: z.enum(LOCATION_VARIANTS).default('structured'),
+					mapStyle: z.enum(LOCATION_MAP_STYLES).default('dark'),
+					showFlourishes: z.boolean().default(true),
+				})
+				.optional(),
+			family: z
+				.object({
+					variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
+				})
+				.optional(),
+			gifts: z
+				.object({
+					variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
+				})
+				.optional(),
+			gallery: z
+				.object({
+					variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
+				})
+				.optional(),
+			itinerary: z
+				.object({
+					variant: z.enum(ITINERARY_VARIANTS).default('base'),
+				})
+				.optional(),
+			thankYou: z
+				.object({
+					variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
+				})
+				.optional(),
+			rsvp: z
+				.object({
+					variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
+					labels: z
+						.object({
+							name: z.string().optional(),
+							guestCount: z.string().optional(),
+							attendance: z.string().optional(),
+							confirmButton: z.string().optional(),
+						})
+						.optional(),
+					// Legacy support (to be migrated)
+					nameLabel: z.string().optional(),
+					guestCountLabel: z.string().optional(),
+					buttonLabel: z.string().optional(),
+				})
+				.optional(),
+		})
+		.optional(),
+	hero: z.object({
+		name: z.string(),
+		secondaryName: z.string().optional(),
+		label: z.string().optional(),
+		nickname: z.string().optional(),
+		date: z.string().datetime(), // ISO 8601
+		backgroundImage: AssetSchema,
+		portrait: AssetSchema.optional(), // ADU-8: Optional celebrant portrait
+		variant: z.enum(THEME_PRESETS).optional(),
+	}),
+	location: z.object({
+		// Base venue info (backward compatible)
+		venueName: z.string(),
+		address: z.string(),
+		city: z.string(),
+		mapUrl: z.string().url().optional(),
+
+		// Extended: Ceremony venue (optional, for XV/wedding with church)
+		ceremony: z
 			.object({
-				quote: z
-					.object({
-						variant: z.enum(QUOTE_VARIANTS).default('elegant'),
-						fontStyle: z.enum(QUOTE_FONT_STYLES).optional(),
-						animation: z.enum(QUOTE_ANIMATIONS).default('fade'),
-					})
+				venueEvent: z.string().default('Ceremonia'),
+				venueName: z.string(),
+				address: z.string(),
+				date: z.string(),
+				time: z.string(),
+				mapUrl: z.string().url().optional(),
+				appleMapsUrl: z.string().url().optional(),
+				googleMapsUrl: z.string().url().optional(),
+				wazeUrl: z.string().url().optional(),
+				image: AssetSchema.optional(),
+				coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+			})
+			.optional(),
+
+		// Extended: Reception venue with itinerary
+		reception: z
+			.object({
+				venueEvent: z.string().default('Recepción'),
+				venueName: z.string(),
+				address: z.string(),
+				date: z.string(),
+				time: z.string(),
+				mapUrl: z.string().url().optional(),
+				appleMapsUrl: z.string().url().optional(),
+				googleMapsUrl: z.string().url().optional(),
+				wazeUrl: z.string().url().optional(),
+				image: AssetSchema.optional(),
+				coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+				itinerary: z
+					.array(
+						z.object({
+							icon: z.enum([
+								'waltz',
+								'dinner',
+								'toast',
+								'cake',
+								'party',
+								'boot',
+								'western-hat',
+								'taco',
+								'tuba',
+								'accordion',
+							]),
+							label: z.string(),
+							time: z.string(),
+						}),
+					)
 					.optional(),
 				countdown: z
 					.object({
-						variant: z.enum(COUNTDOWN_VARIANTS).default('minimal'),
-						numberStyle: z.enum(COUNTDOWN_NUMBER_STYLES).default('thin'),
-						showParticles: z.boolean().default(false),
-					})
-					.optional(),
-				location: z
-					.object({
-						variant: z.enum(LOCATION_VARIANTS).default('structured'),
-						mapStyle: z.enum(LOCATION_MAP_STYLES).default('dark'),
-						showFlourishes: z.boolean().default(true),
-					})
-					.optional(),
-				family: z
-					.object({
-						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
-					})
-					.optional(),
-				gifts: z
-					.object({
-						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
-					})
-					.optional(),
-				gallery: z
-					.object({
-						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
-					})
-					.optional(),
-				itinerary: z
-					.object({
-						variant: z.enum(ITINERARY_VARIANTS).default('base'),
-					})
-					.optional(),
-				thankYou: z
-					.object({
-						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
-					})
-					.optional(),
-				rsvp: z
-					.object({
-						variant: z.enum(SHARED_SECTION_VARIANTS).default('standard'),
-						labels: z
-							.object({
-								name: z.string().optional(),
-								guestCount: z.string().optional(),
-								attendance: z.string().optional(),
-								confirmButton: z.string().optional(),
-							})
-							.optional(),
-						// Legacy support (to be migrated)
-						nameLabel: z.string().optional(),
-						guestCountLabel: z.string().optional(),
-						buttonLabel: z.string().optional(),
+						title: z.string().default('¡Falta muy poco!'),
+						subtitlePrefix: z.string().default('El'),
+						footerText: z.string().default('Prepárate para una noche inolvidable'),
 					})
 					.optional(),
 			})
 			.optional(),
-		hero: z.object({
-			name: z.string(),
-			secondaryName: z.string().optional(),
-			label: z.string().optional(),
-			nickname: z.string().optional(),
-			date: z.string().datetime(), // ISO 8601
-			backgroundImage: AssetSchema,
-			portrait: AssetSchema.optional(), // ADU-8: Optional celebrant portrait
-			variant: z.enum(THEME_PRESETS).optional(),
-		}),
-		location: z.object({
-			// Base venue info (backward compatible)
-			venueName: z.string(),
-			address: z.string(),
-			city: z.string(),
-			mapUrl: z.string().url().optional(),
 
-			// Extended: Ceremony venue (optional, for XV/wedding with church)
-			ceremony: z
+		// Event indications (dress code, gifts policy, etc.)
+		indications: z
+			.array(
+				z.object({
+					icon: z.enum(INDICATION_ICON_KEYS),
+					iconName: z.enum(INDICATION_ICON_NAMES).optional(),
+					styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
+					text: z.string(),
+				}),
+			)
+			.optional(),
+	}),
+	family: z
+		.object({
+			parents: z
 				.object({
-					venueEvent: z.string().default('Ceremonia'),
-					venueName: z.string(),
-					address: z.string(),
-					date: z.string(),
-					time: z.string(),
-					mapUrl: z.string().url().optional(),
-					appleMapsUrl: z.string().url().optional(),
-					googleMapsUrl: z.string().url().optional(),
-					image: AssetSchema.optional(),
-					coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+					father: z.string().optional(),
+					mother: z.string().optional(),
+					fatherDeceased: z.boolean().optional(),
+					motherDeceased: z.boolean().optional(),
 				})
 				.optional(),
-
-			// Extended: Reception venue with itinerary
-			reception: z
+			labels: z
 				.object({
-					venueEvent: z.string().default('Recepción'),
-					venueName: z.string(),
-					address: z.string(),
-					date: z.string(),
-					time: z.string(),
-					mapUrl: z.string().url().optional(),
-					appleMapsUrl: z.string().url().optional(),
-					googleMapsUrl: z.string().url().optional(),
-					image: AssetSchema.optional(),
-					coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
-					itinerary: z
-						.array(
-							z.object({
-								icon: z.enum([
-									'waltz',
-									'dinner',
-									'toast',
-									'cake',
-									'party',
-									'boot',
-									'western-hat',
-									'taco',
-									'tuba',
-									'accordion',
-								]),
-								label: z.string(),
-								time: z.string(),
-							}),
-						)
-						.optional(),
-					countdown: z
-						.object({
-							title: z.string().default('¡Falta muy poco!'),
-							subtitlePrefix: z.string().default('El'),
-							footerText: z.string().default('Prepárate para una noche inolvidable'),
-						})
-						.optional(),
+					sectionTitle: z.string().optional(),
+					sectionSubtitle: z.string().optional(),
+					spouseTitle: z.string().optional(),
+					spouseRole: z.string().optional(),
+					childrenTitle: z.string().optional(),
+					parentsTitle: z.string().optional(),
 				})
 				.optional(),
-
-			// Event indications (dress code, gifts policy, etc.)
-			indications: z
+			spouse: z.string().optional(),
+			children: z
 				.array(
 					z.object({
-						icon: z.enum(INDICATION_ICON_KEYS),
-						iconName: z.enum(INDICATION_ICON_NAMES).optional(),
-						styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
-						text: z.string(),
+						name: z.string(),
+						role: z.string().optional(),
 					}),
 				)
 				.optional(),
-		}),
-		family: z
-			.object({
-				parents: z
-					.object({
-						father: z.string().optional(),
-						mother: z.string().optional(),
-						fatherDeceased: z.boolean().optional(),
-						motherDeceased: z.boolean().optional(),
-					})
-					.optional(),
-				labels: z
-					.object({
-						sectionTitle: z.string().optional(),
-						sectionSubtitle: z.string().optional(),
-						spouseTitle: z.string().optional(),
-						spouseRole: z.string().optional(),
-						childrenTitle: z.string().optional(),
-						parentsTitle: z.string().optional(),
-					})
-					.optional(),
-				spouse: z.string().optional(),
-				children: z
-					.array(
-						z.object({
-							name: z.string(),
-							role: z.string().optional(),
-						}),
-					)
-					.optional(),
-				godparents: z
-					.array(
-						z.object({
-							name: z.string(),
-							role: z.string().optional(),
-						}),
-					)
-					.optional(),
-				groups: z
-					.array(
-						z.object({
-							title: z.string(),
-							items: z.array(
-								z.object({
-									name: z.string(),
-									role: z.string().optional(),
-									deceased: z.boolean().optional(),
-								}),
-							),
-						}),
-					)
-					.optional(),
-				featuredImage: AssetSchema.optional(),
-			})
-			.optional(),
-		rsvp: z
-			.object({
-				title: z.string().default('¿Vienes a celebrar conmigo?'),
-				guestCap: z.number().int().positive().default(1),
-				confirmationMessage: z
-					.string()
-					.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
-				showDietaryField: z.boolean().default(false),
-				dietaryLabel: z.string().optional(),
-				dietaryPlaceholder: z.string().optional(),
-				guests: z
-					.array(
-						z.object({
-							guestId: z.string().min(1),
-							displayName: z.string().min(1),
-							maxAllowedAttendees: z.number().int().positive().default(1),
-						}),
-					)
-					.optional(),
-				confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
-				whatsappConfig: z
-					.object({
-						phone: z.string(),
-						messageTemplate: z.string().optional(),
-						confirmedTemplate: z.string().optional(),
-						declinedTemplate: z.string().optional(),
-						omitTitle: z.boolean().optional(),
-					})
-					.optional(),
-			})
-			.optional(),
-		// Quote section for inspirational/personalized phrases
-		quote: z
-			.object({
-				text: z.string(),
-				author: z.string().optional(),
-			})
-			.optional(),
-		// Thank you / closing section
-		thankYou: z
-			.object({
-				message: z.string(),
-				closingName: z.string(),
-				image: AssetSchema.optional(),
-			})
-			.optional(),
-		music: z
-			.object({
-				url: z.string(),
-				autoPlay: z.boolean().default(false),
-				title: z.string().optional(), // For accessibility (aria-label)
-			})
-			.optional(),
-		sections: z
-			.object({
-				countdown: z.boolean().default(true),
-				rsvp: z.boolean().default(true),
-				gifts: z.boolean().default(false),
-				gallery: z.boolean().default(false),
-			})
-			.optional(),
-		gallery: z
-			.object({
-				title: z.string().default('Galería'),
-				subtitle: z.string().optional(),
-				items: z.array(
+			godparents: z
+				.array(
 					z.object({
-						image: AssetSchema,
-						caption: z.string().optional(),
+						name: z.string(),
+						role: z.string().optional(),
 					}),
-				),
-			})
-			.optional(),
-		envelope: z
-			.object({
-				disabled: z.boolean().optional().default(false),
-				sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
-				sealIcon: z
-					.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition'])
-					.optional(),
-				microcopy: z.string().default('Toca para abrir mi invitación'),
-				documentLabel: z.string().optional(), // Theme-specific: "MANIFEST / WANTED" for Western
-				stampText: z.string().optional(), // Theme-specific: "TAX PAID" for Western
-				stampYear: z.string().optional(), // Theme-specific: "1866" for Western
-				tooltipText: z.string().optional(), // Custom tooltip text for seal button
-				closedPalette: z.object({
-					primary: z.string().regex(/^#/, 'Must be a hex color'),
-					accent: z.string().regex(/^#/, 'Must be a hex color'),
-					background: z.string().regex(/^#/, 'Must be a hex color'),
-				}),
-				variant: z.enum(THEME_PRESETS).optional(),
-			})
-			.optional(),
-		itinerary: z
-			.object({
-				title: z.string().default('Itinerario'),
-				items: z.array(
+				)
+				.optional(),
+			groups: z
+				.array(
 					z.object({
-						icon: z.enum([
-							'waltz',
-							'dinner',
-							'toast',
-							'cake',
-							'party',
-							'church',
-							'reception',
-							'music',
-							'photo',
-							'boot',
-							'western-hat',
-							'taco',
-							'tuba',
-							'accordion',
-						]),
-						label: z.string(),
-						description: z.string().optional(),
-						time: z.string(),
+						title: z.string(),
+						items: z.array(
+							z.object({
+								name: z.string(),
+								role: z.string().optional(),
+								deceased: z.boolean().optional(),
+							}),
+						),
 					}),
-				),
-			})
-			.optional(),
-		gifts: z
-			.object({
-				title: z.string().optional(),
-				subtitle: z.string().optional(),
-				items: z.array(
-					z.discriminatedUnion('type', [
-						z.object({
-							type: z.literal('store'),
-							title: z.string(),
-							url: z.string().url(),
-							logo: z.string().optional(),
-						}),
-						z.object({
-							type: z.literal('bank'),
-							title: z.string().default('Transferencia'),
-							bankName: z.string(),
-							accountHolder: z.string(),
-							clabe: z.string(),
-							accountNumber: z.string().optional(),
-						}),
-						z.object({
-							type: z.literal('paypal'),
-							title: z.string().default('PayPal'),
-							url: z.string().url(),
-						}),
-						z.object({
-							type: z.literal('cash'),
-							title: z.string().default('Lluvia de Sobres'),
-							text: z.string().optional(),
-						}),
-					]),
-				),
-			})
-			.optional(),
-		countdown: z
-			.object({
-				title: z.string().default('¡Falta muy poco!'),
-				subtitlePrefix: z.string().default('El'),
-				footerText: z.string().default('Prepárate para una noche inolvidable'),
-			})
-			.optional(),
-		navigation: z
-			.array(
+				)
+				.optional(),
+			featuredImage: AssetSchema.optional(),
+		})
+		.optional(),
+	rsvp: z
+		.object({
+			title: z.string().default('¿Vienes a celebrar conmigo?'),
+			guestCap: z.number().int().positive().default(1),
+			confirmationMessage: z
+				.string()
+				.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
+			showDietaryField: z.boolean().default(false),
+			dietaryLabel: z.string().optional(),
+			dietaryPlaceholder: z.string().optional(),
+			guests: z
+				.array(
+					z.object({
+						guestId: z.string().min(1),
+						displayName: z.string().min(1),
+						maxAllowedAttendees: z.number().int().positive().default(1),
+					}),
+				)
+				.optional(),
+			confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
+			whatsappConfig: z
+				.object({
+					phone: z.string(),
+					messageTemplate: z.string().optional(),
+					confirmedTemplate: z.string().optional(),
+					declinedTemplate: z.string().optional(),
+					omitTitle: z.boolean().optional(),
+				})
+				.optional(),
+		})
+		.optional(),
+	// Quote section for inspirational/personalized phrases
+	quote: z
+		.object({
+			text: z.string(),
+			author: z.string().optional(),
+		})
+		.optional(),
+	// Thank you / closing section
+	thankYou: z
+		.object({
+			message: z.string(),
+			closingName: z.string(),
+			image: AssetSchema.optional(),
+		})
+		.optional(),
+	music: z
+		.object({
+			url: z.string(),
+			autoPlay: z.boolean().default(false),
+			title: z.string().optional(), // For accessibility (aria-label)
+		})
+		.optional(),
+	sections: z
+		.object({
+			countdown: z.boolean().default(true),
+			rsvp: z.boolean().default(true),
+			gifts: z.boolean().default(false),
+			gallery: z.boolean().default(false),
+		})
+		.optional(),
+	gallery: z
+		.object({
+			title: z.string().default('Galería'),
+			subtitle: z.string().optional(),
+			items: z.array(
 				z.object({
-					label: z.string(),
-					href: z.string(),
+					image: AssetSchema,
+					caption: z.string().optional(),
 				}),
-			)
-			.optional(),
-		contentBlocks: z
-			.array(
+			),
+		})
+		.optional(),
+	envelope: z
+		.object({
+			disabled: z.boolean().optional().default(false),
+			sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
+			sealIcon: z.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition']).optional(),
+			microcopy: z.string().default('Toca para abrir mi invitación'),
+			documentLabel: z.string().optional(), // Theme-specific: "MANIFEST / WANTED" for Western
+			stampText: z.string().optional(), // Theme-specific: "TAX PAID" for Western
+			stampYear: z.string().optional(), // Theme-specific: "1866" for Western
+			tooltipText: z.string().optional(), // Custom tooltip text for seal button
+			closedPalette: z.object({
+				primary: z.string().regex(/^#/, 'Must be a hex color'),
+				accent: z.string().regex(/^#/, 'Must be a hex color'),
+				background: z.string().regex(/^#/, 'Must be a hex color'),
+			}),
+			variant: z.enum(THEME_PRESETS).optional(),
+		})
+		.optional(),
+	itinerary: z
+		.object({
+			title: z.string().default('Itinerario'),
+			items: z.array(
+				z.object({
+					icon: z.enum([
+						'waltz',
+						'dinner',
+						'toast',
+						'cake',
+						'party',
+						'church',
+						'reception',
+						'music',
+						'photo',
+						'boot',
+						'western-hat',
+						'taco',
+						'tuba',
+						'accordion',
+					]),
+					label: z.string(),
+					description: z.string().optional(),
+					time: z.string(),
+				}),
+			),
+		})
+		.optional(),
+	gifts: z
+		.object({
+			title: z.string().optional(),
+			subtitle: z.string().optional(),
+			items: z.array(
 				z.discriminatedUnion('type', [
 					z.object({
-						type: z.literal('section'),
-						section: z.enum(CONTENT_SECTION_KEYS),
+						type: z.literal('store'),
+						title: z.string(),
+						url: z.string().url(),
+						logo: z.string().optional(),
 					}),
 					z.object({
-						type: z.literal('interlude'),
-						image: AssetSchema,
-						alt: z.string().optional(),
-						height: z.enum(['screen', 'tall']).default('screen'),
+						type: z.literal('bank'),
+						title: z.string().default('Transferencia'),
+						bankName: z.string(),
+						accountHolder: z.string(),
+						clabe: z.string(),
+						accountNumber: z.string().optional(),
+					}),
+					z.object({
+						type: z.literal('paypal'),
+						title: z.string().default('PayPal'),
+						url: z.string().url(),
+					}),
+					z.object({
+						type: z.literal('cash'),
+						title: z.string().default('Lluvia de Sobres'),
+						text: z.string().optional(),
 					}),
 				]),
-			)
-			.optional(),
-		sharing: z
-			.object({
-				whatsappTemplate: z.string().optional(),
-			})
-			.optional(),
-	}),
+			),
+		})
+		.optional(),
+	countdown: z
+		.object({
+			title: z.string().default('¡Falta muy poco!'),
+			subtitlePrefix: z.string().default('El'),
+			footerText: z.string().default('Prepárate para una noche inolvidable'),
+		})
+		.optional(),
+	navigation: z
+		.array(
+			z.object({
+				label: z.string(),
+				href: z.string(),
+			}),
+		)
+		.optional(),
+	contentBlocks: z
+		.array(
+			z.discriminatedUnion('type', [
+				z.object({
+					type: z.literal('section'),
+					section: z.enum(CONTENT_SECTION_KEYS),
+				}),
+				z.object({
+					type: z.literal('interlude'),
+					image: AssetSchema,
+					alt: z.string().optional(),
+					height: z.enum(['screen', 'tall']).default('screen'),
+				}),
+			]),
+		)
+		.optional(),
+	sharing: z
+		.object({
+			whatsappTemplate: z.string().optional(),
+		})
+		.optional(),
+});
+
+const eventsCollection = defineCollection({
+	type: 'data',
+	schema: eventContentSchema,
+});
+
+const eventDemosCollection = defineCollection({
+	type: 'data',
+	schema: eventContentSchema,
+});
+
+const eventTemplatesCollection = defineCollection({
+	type: 'data',
+	schema: eventContentSchema,
 });
 
 export const collections = {
 	events: eventsCollection,
+	'event-demos': eventDemosCollection,
+	'event-templates': eventTemplatesCollection,
 };

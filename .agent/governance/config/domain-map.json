@@ -36,10 +36,13 @@
         "core": [
             "src/content/config.ts",
             "src/content/events/**",
+            "src/content/event-demos/**",
+            "src/content/event-templates/**",
             "src/lib/**",
             "src/data/**",
             "src/styles/events/README.md",
             "src/pages/api/*",
+            "archive/**",
             "*.md"
         ],
         "ui": [
