@@ -2,8 +2,8 @@
 // src/pages/[eventType]/[slug].astro
 export const prerender = false;
 
-import { getEntry } from 'astro:content';
 import { adaptEvent } from '@/lib/adapters/event';
+import { getRoutableEventEntry } from '@/lib/content/events';
 import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
@@ -30,7 +30,7 @@ const normalizedSlug = (slug as string).toLowerCase();
 const eventScopeClass = `event--${normalizedSlug.replace(/[^a-z0-9-]/g, '-')}`;
 const eventOverrideStyles = import.meta.glob('/src/styles/events/*.scss');
 
-const eventEntry = await getEntry('events', slug as string);
+const eventEntry = await getRoutableEventEntry(slug as string, eventType as string);
 
 if (!eventEntry) {
 	return Astro.redirect('/404');

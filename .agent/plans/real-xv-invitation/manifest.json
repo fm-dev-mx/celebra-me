@@ -1,0 +1,54 @@
+{
+    "id": "real-xv-invitation",
+    "title": "Real XV Invitation — Production Implementation",
+    "status": "PENDING",
+    "completion": 0,
+    "created": "2026-03-12",
+    "updated": "2026-03-12",
+    "estimatedDuration": "5 phases / ~4 days",
+    "owner": "fm-dev-mx",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-audit-and-data-modeling",
+            "title": "Audit & Data Modeling",
+            "file": "phases/01-audit-and-data-modeling.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 15
+        },
+        {
+            "id": "02-theme-isolation",
+            "title": "Theme Isolation & Preset Registration",
+            "file": "phases/02-theme-isolation.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 25
+        },
+        {
+            "id": "03-asset-pipeline",
+            "title": "Asset Pipeline & CDN Strategy",
+            "file": "phases/03-asset-pipeline.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 20
+        },
+        {
+            "id": "04-content-population",
+            "title": "Content Population & Integration",
+            "file": "phases/04-content-population.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 25
+        },
+        {
+            "id": "05-creator-evaluation",
+            "title": "Invitation Creator Frontend Evaluation",
+            "file": "phases/05-creator-evaluation.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 15
+        }
+    ],
+    "tags": ["xv", "production", "architecture", "theme-isolation", "asset-management"]
+}
