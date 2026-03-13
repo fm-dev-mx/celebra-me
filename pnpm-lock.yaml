@@ -21,6 +21,9 @@ importers:
       '@astrojs/vercel':
         specifier: 9.0.4
         version: 9.0.4(astro@5.18.0(@types/node@25.3.3)(@vercel/functions@2.2.13)(jiti@2.6.1)(rollup@4.59.0)(sass-embedded@1.97.3)(sass@1.97.3)(typescript@5.9.3)(yaml@2.8.2))(react@19.2.4)(rollup@4.59.0)
+      '@fontsource-variable/bodoni-moda':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@fontsource-variable/cinzel':
         specifier: ^5.2.8
         version: 5.2.8
@@ -60,6 +63,9 @@ importers:
       '@fontsource/special-elite':
         specifier: ^5.2.8
         version: 5.2.8
+      '@fontsource/the-nautigal':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@supabase/supabase-js':
         specifier: ^2.95.3
         version: 2.95.3
@@ -1006,6 +1012,9 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@fontsource-variable/bodoni-moda@5.2.7':
+    resolution: {integrity: sha512-GZo4yqbmS/72On15EcAcKHjYfPbWCPKh4AlkVp8OP2pcGMD+XGoXVuNPEPFgaAfMJpcsa2fsJj/BvQby0gH7Eg==}
+
   '@fontsource-variable/cinzel@5.2.8':
     resolution: {integrity: sha512-62ddfR79tYNWxIZJPlyFGBusbnONbPL6d163mT/jZOGV4vV8so6Z3buRM5epqtiA6qcVVeF8OZijJJGeLABGJg==}
 
@@ -1044,6 +1053,9 @@ packages:
 
   '@fontsource/special-elite@5.2.8':
     resolution: {integrity: sha512-tJRYZ6dZK3wiGvMS5NMOg6fqctWimNUUrYtLfPGJYqidaFeI2QqFUE0rbn16DjqID0DrnZSHYfqz1jGdctd5ew==}
+
+  '@fontsource/the-nautigal@5.2.7':
+    resolution: {integrity: sha512-O50MTjncXqd4cbe70vAJdUYCzKjd7vD/dwtis6bcr+8coEp8OuQ1+e1FCGqBUG3lObMKFIKJjUcx6a+MXt/TvQ==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5302,10 +5314,6 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
-  strip-ansi@7.1.2:
-    resolution: {integrity: sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==}
-    engines: {node: '>=12'}
-
   strip-ansi@7.2.0:
     resolution: {integrity: sha512-yDPMNjp4WyfYBkHnjIRLfca1i6KMyGCtsVgoKe/z1+6vukgaENdgGBZt+ZmKPc4gavvEZ5OgHfHdrazhgNyG7w==}
     engines: {node: '>=12'}
@@ -6862,6 +6870,8 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@fontsource-variable/bodoni-moda@5.2.7': {}
+
   '@fontsource-variable/cinzel@5.2.8': {}
 
   '@fontsource-variable/cormorant-garamond@5.2.6': {}
@@ -6887,6 +6897,8 @@ snapshots:
   '@fontsource/rye@5.2.7': {}
 
   '@fontsource/special-elite@5.2.8': {}
+
+  '@fontsource/the-nautigal@5.2.7': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -11964,10 +11976,6 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
-
-  strip-ansi@7.1.2:
-    dependencies:
-      ansi-regex: 6.2.2
 
   strip-ansi@7.2.0:
     dependencies:
