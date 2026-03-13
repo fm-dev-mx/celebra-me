@@ -1,6 +1,6 @@
 # Content Collections
 
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-13
 
 This document was moved from the docs root during the March 10, 2026 system-wide alignment audit to
 live under the `content` domain taxonomy.
@@ -21,7 +21,11 @@ collection API.
 - **Theme Integration**: Connects to the Aesthetic Presets system
 - **Asset Management**: Seamless integration with AssetRegistry
 
-**File Location**: `src/content/events/*.json`
+**Collection Layout**:
+
+- `src/content/events/*.json` for live routable events
+- `src/content/event-demos/**.json` for public showcase demos
+- `src/content/event-templates/**.json` for internal master templates
 
 ---
 
@@ -315,7 +319,7 @@ See the full schema in `src/content/config.ts` for complete details.
 
 ## Asset Integration
 
-Content collections work with the AssetRegistry system for image management.
+Routable event collections work with the AssetRegistry system for image management.
 
 ### File Naming Convention
 
@@ -346,11 +350,15 @@ const heroAsset = getEventAsset('event-slug', 'hero');
 
 ## Route Generation
 
-Events generate routes based on `eventType` and filename:
+Public invitation routes remain `/{eventType}/{slug}`.
 
-**File**: `src/content/events/mi-xv-2026.json` with `"eventType": "xv"`
+- Live events resolve from `src/content/events/*.json` by slug.
+- Public demos resolve through the event content resolver and keep their existing public slugs.
+- Templates in `src/content/event-templates/` are intentionally non-routable.
 
-**Generated Route**: `/xv/mi-xv-2026`
+**Example live file**: `src/content/events/mi-xv-2026.json` with `"eventType": "xv"`
+
+**Generated route**: `/xv/mi-xv-2026`
 
 ---
 

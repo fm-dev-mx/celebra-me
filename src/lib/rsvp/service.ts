@@ -46,7 +46,6 @@ import type {
 	GuestRSVPSubmitDTO,
 	AppUserRole,
 } from './types';
-import { getEntry } from 'astro:content';
 import { sanitize, toSafeAttendeeCount, normalizePhone } from '@/lib/rsvp/utils';
 import { ApiError } from './errors';
 import { publishGuestStreamEvent } from './stream';
@@ -56,6 +55,7 @@ import { getEnv } from '@/utils/env';
 import { listAuthUsers } from './auth-api';
 import { generateShortId } from '@/utils/ids';
 import { generateInvitationLink } from '@/utils/invitation-link';
+import { getRoutableEventEntry } from '@/lib/content/events';
 
 function isUuid(value: string): boolean {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -183,6 +183,14 @@ function buildWhatsAppShareUrl(input: BuildShareMessageInput): string {
 	return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
 }
 
+async function getSharingTemplateForSlug(
+	eventSlug: string,
+	eventType?: EventRecord['eventType'],
+): Promise<string | undefined> {
+	const entry = await getRoutableEventEntry(eventSlug, eventType);
+	return entry?.data?.sharing?.whatsappTemplate;
+}
+
 function toGuestDto(
 	guest: GuestInvitationRecord,
 	origin: string,
@@ -308,8 +316,9 @@ export async function listDashboardGuests(input: {
 		input.hostAccessToken,
 	);
 
-	const entry = event ? await getEntry('events', event.slug) : null;
-	const template = entry?.data?.sharing?.whatsappTemplate;
+	const template = event
+		? await getSharingTemplateForSlug(event.slug, event.eventType)
+		: undefined;
 
 	const items = guests.map((guest) =>
 		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
@@ -409,8 +418,7 @@ export async function createDashboardGuest(input: {
 		throw mapSupabaseErrorToApiError(error);
 	}
 
-	const entry = await getEntry('events', event.slug);
-	const template = entry?.data?.sharing?.whatsappTemplate;
+	const template = await getSharingTemplateForSlug(event.slug, event.eventType);
 
 	const item = toGuestDto(
 		created,
@@ -548,8 +556,9 @@ export async function updateDashboardGuest(input: {
 		eventSlug = event.slug;
 	}
 
-	const entry = event ? await getEntry('events', event.slug) : null;
-	const template = entry?.data?.sharing?.whatsappTemplate;
+	const template = event
+		? await getSharingTemplateForSlug(event.slug, event.eventType)
+		: undefined;
 
 	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug, template);
 	publishGuestStreamEvent({
@@ -635,8 +644,9 @@ export async function markGuestShared(input: {
 		eventSlug = event.slug;
 	}
 
-	const entry = event ? await getEntry('events', event.slug) : null;
-	const template = entry?.data?.sharing?.whatsappTemplate;
+	const template = event
+		? await getSharingTemplateForSlug(event.slug, event.eventType)
+		: undefined;
 
 	const item = toGuestDto(updated, input.origin, eventTitle, eventType, eventSlug, template);
 	if (input.isSuperAdmin && input.actorUserId) {

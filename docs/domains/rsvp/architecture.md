@@ -118,7 +118,8 @@ realtime is required.
 
 ## Migration Notes
 
-- `src/content/events/*.json -> rsvp.guests` is legacy for invitation rendering.
+- `src/content/events/*.json` and `src/content/event-demos/**.json` remain legacy content sources
+  for invitation rendering.
 - Dashboard source of truth is now Supabase (`guest_invitations`).
 - Optional SQL backfill function: `backfill_guest_invitations_from_legacy()`.
 - `/admin/rsvp` remains legacy temporary (Basic Auth) during migration.
