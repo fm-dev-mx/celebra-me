@@ -68,13 +68,13 @@ const RSVP: React.FC<RSVPProps> = ({
 	initialGuestData,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
+	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
 
 	const [name, setName] = useState(initialGuestData?.fullName || '');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
 	const [dietary, setDietary] = useState('');
-	const [contextLoading, setContextLoading] = useState(!initialGuestData);
 	const [nameLocked, setNameLocked] = useState(!!initialGuestData?.fullName);
 	const [contextGuestCap, setContextGuestCap] = useState<number>(
 		Number(initialGuestData?.maxAllowedAttendees || guestCap),
@@ -114,7 +114,6 @@ const RSVP: React.FC<RSVPProps> = ({
 		} else {
 			setNameLocked(false);
 		}
-		setContextLoading(false);
 	}, [initialGuestData]);
 
 	const buildWhatsAppUrl = (): string => {
@@ -281,11 +280,19 @@ const RSVP: React.FC<RSVPProps> = ({
 		}
 	};
 
-	if (contextLoading) {
+	if (!hasPersonalizedInvite) {
 		return (
-			<section id="rsvp" className="rsvp" data-variant={variant}>
+			<section id="rsvp" className="rsvp rsvp--locked-preview" data-variant={variant}>
 				<h2 className="rsvp__title">{title}</h2>
-				<p>Cargando confirmación...</p>
+				<div className="rsvp__locked-card" role="status" aria-live="polite">
+					<p className="rsvp__locked-eyebrow">Confirmación personalizada</p>
+					<p className="rsvp__locked-message">
+						Esta invitación utiliza enlaces personalizados para confirmar asistencia.
+					</p>
+					<p className="rsvp__locked-detail">
+						Si recibiste tu acceso directo, abre ese enlace para registrar tu respuesta.
+					</p>
+				</div>
 			</section>
 		);
 	}

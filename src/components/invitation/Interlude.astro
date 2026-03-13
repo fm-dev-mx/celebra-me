@@ -24,3 +24,37 @@ const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 		/>
 	</div>
 </section>
+
+<script>
+	const globalWindow = window as Window & {
+		__celebraMeInterludeParallax?: boolean;
+	};
+
+	if (!globalWindow.__celebraMeInterludeParallax) {
+		globalWindow.__celebraMeInterludeParallax = true;
+
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
+
+		if (!prefersReducedMotion && interludes.length > 0) {
+			const updateParallax = () => {
+				for (const interlude of interludes) {
+					if (!(interlude instanceof HTMLElement)) continue;
+					if (interlude.dataset.variant !== 'top-premium-xv-ximena') continue;
+
+					const rect = interlude.getBoundingClientRect();
+					const viewportCenter = window.innerHeight / 2;
+					const offset = (rect.top + rect.height / 2 - viewportCenter) * -0.08;
+					interlude.style.setProperty(
+						'--interlude-parallax-offset',
+						`${offset.toFixed(2)}px`,
+					);
+				}
+			};
+
+			updateParallax();
+			window.addEventListener('scroll', updateParallax, { passive: true });
+			window.addEventListener('resize', updateParallax);
+		}
+	}
+</script>

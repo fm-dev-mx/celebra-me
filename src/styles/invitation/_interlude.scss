@@ -23,7 +23,9 @@
 		object-fit: cover;
 		object-position: center;
 		filter: saturate(0.96) contrast(1.02);
-		transform: scale(1.01);
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.01);
+		will-change: transform;
+		transition: transform 120ms linear;
 	}
 
 	&::after {
@@ -32,7 +34,11 @@
 		inset: 0;
 		background:
 			linear-gradient(180deg, rgb(14 11 8 / 10%) 0%, rgb(14 11 8 / 22%) 100%),
-			radial-gradient(circle at center, transparent 24%, rgb(14 11 8 / 10%) 100%);
+			radial-gradient(
+				circle at center,
+				transparent 24%,
+				rgb(14 11 8 / var(--interlude-overlay-opacity, 10%)) 100%
+			);
 		pointer-events: none;
 	}
 }

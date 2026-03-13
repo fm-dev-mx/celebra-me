@@ -452,6 +452,43 @@
 			transform: scale(1.1) rotate(4deg);
 		}
 	}
+
+	&--locked-preview {
+		.rsvp__locked-card {
+			position: relative;
+			z-index: 1;
+			display: grid;
+			gap: 0.9rem;
+			padding: 1.4rem 1.2rem;
+			border-radius: 18px;
+			background: rgb(255 255 255 / 26%);
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.18);
+			box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
+			text-align: center;
+		}
+
+		.rsvp__locked-eyebrow {
+			font-family: var(--font-body);
+			font-size: 0.8rem;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--color-text-emphasis);
+		}
+
+		.rsvp__locked-message {
+			font-family: var(--font-display);
+			font-size: 1.32rem;
+			line-height: 1.35;
+			color: var(--color-text-primary);
+		}
+
+		.rsvp__locked-detail {
+			font-family: var(--font-body);
+			font-size: 0.95rem;
+			line-height: 1.6;
+			color: var(--color-text-secondary);
+		}
+	}
 }
 
 @keyframes rsvp-spin {

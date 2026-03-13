@@ -22,6 +22,8 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
 import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
+import Interlude from '@/components/invitation/Interlude.astro';
+import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 
 // --- Page Logic (Adapter Pattern) ---
 const { eventType, slug } = Astro.params;
@@ -67,6 +69,8 @@ if (inviteId) {
 
 // Helper variables
 const showEnvelope = envelope.enabled;
+const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
+const renderPlan = buildInvitationRenderPlan(viewModel, { hasGuestContext: Boolean(guestContext) });
 
 // Asset Resolution for Layout
 const heroImageSrc = typeof hero.backgroundImage.src === 'string'
@@ -172,6 +176,7 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			label={hero.label}
 			nickname={hero.nickname}
 			date={hero.date}
+			time={heroTime}
 			venueName={hero.venueName}
 			backgroundImage={hero.backgroundImage}
 			portrait={hero.portrait}
@@ -179,106 +184,151 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			guestName={guestContext?.guest.fullName}
 		/>
 
-		{guestContext && (
-			<PersonalizedAccess
-				guestName={guestContext.guest.fullName}
-				maxAllowedAttendees={guestContext.guest.maxAllowedAttendees}
-			/>
-		)}
+		{
+			renderPlan.map((block) => {
+				if (block.type === 'interlude') {
+					return (
+						<Interlude
+							image={block.image}
+							alt={block.alt}
+							height={block.height}
+							variant={theme.preset}
+						/>
+					);
+				}
 
-		{sections.quote && (
-			<Quote
-				text={sections.quote.text}
-				author={sections.quote.author}
-				variant={sections.quote.variant}
-				animation={sections.quote.animation}
-			/>
-		)}
+				if (block.type === 'personalized-access' && guestContext) {
+					return (
+						<PersonalizedAccess
+							guestName={guestContext.guest.fullName}
+							maxAllowedAttendees={guestContext.guest.maxAllowedAttendees}
+						/>
+					);
+				}
 
-		{sections.family && (
-			<Family
-				parents={sections.family.parents}
-				spouse={sections.family.spouse}
-				children={sections.family.children}
-				godparents={sections.family.godparents}
-				groups={sections.family.groups}
-				featuredImage={sections.family.featuredImage}
-				labels={sections.family.labels}
-				celebrantName={sections.family.celebrantName}
-				variant={sections.family.variant}
-			/>
-		)}
+				if (block.type !== 'section') {
+					return null;
+				}
 
-		{sections.gallery && (
-			<Gallery
-				title={sections.gallery.title}
-				subtitle={sections.gallery.subtitle}
-				items={sections.gallery.items}
-				variant={sections.gallery.variant}
-			/>
-		)}
+				if (block.section === 'quote' && sections.quote) {
+					return (
+						<Quote
+							text={sections.quote.text}
+							author={sections.quote.author}
+							variant={sections.quote.variant}
+							animation={sections.quote.animation}
+						/>
+					);
+				}
 
-		{sections.countdown && (
-			<Countdown
-				eventDate={sections.countdown.eventDate}
-				title={sections.countdown.title}
-				subtitlePrefix={sections.countdown.subtitlePrefix}
-				footerText={sections.countdown.footerText}
-				variant={sections.countdown.variant}
-				showParticles={sections.countdown.showParticles}
-			/>
-		)}
+				if (block.section === 'family' && sections.family) {
+					return (
+						<Family
+							parents={sections.family.parents}
+							spouse={sections.family.spouse}
+							children={sections.family.children}
+							godparents={sections.family.godparents}
+							groups={sections.family.groups}
+							featuredImage={sections.family.featuredImage}
+							labels={sections.family.labels}
+							celebrantName={sections.family.celebrantName}
+							variant={sections.family.variant}
+						/>
+					);
+				}
 
-		{sections.location && (
-			<EventLocation
-				ceremony={sections.location.ceremony}
-				reception={sections.location.reception}
-				indications={sections.location.indications}
-				variant={sections.location.variant}
-				mapStyle={sections.location.mapStyle}
-				showFlourishes={sections.location.showFlourishes}
-			/>
-		)}
+				if (block.section === 'gallery' && sections.gallery) {
+					return (
+						<Gallery
+							title={sections.gallery.title}
+							subtitle={sections.gallery.subtitle}
+							items={sections.gallery.items}
+							variant={sections.gallery.variant}
+						/>
+					);
+				}
 
-		{sections.itinerary && (
-			<Itinerary
-				title={sections.itinerary.title}
-				items={sections.itinerary.items}
-				variant={sections.itinerary.variant}
-			/>
-		)}
+				if (block.section === 'countdown' && sections.countdown) {
+					return (
+						<Countdown
+							eventDate={sections.countdown.eventDate}
+							title={sections.countdown.title}
+							subtitlePrefix={sections.countdown.subtitlePrefix}
+							footerText={sections.countdown.footerText}
+							variant={sections.countdown.variant}
+							showParticles={sections.countdown.showParticles}
+						/>
+					);
+				}
 
-		{sections.rsvp && (
-			<RSVP
-				client:visible
-				{...sections.rsvp}
-				celebrantName={hero.name}
-				guestCap={guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap}
-				initialGuestData={guestContext ? {
-					fullName: guestContext.guest.fullName,
-					maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
-					inviteId: guestContext.inviteId
-				} : undefined}
-			/>
-		)}
+				if (block.section === 'location' && sections.location) {
+					return (
+						<EventLocation
+							ceremony={sections.location.ceremony}
+							reception={sections.location.reception}
+							indications={sections.location.indications}
+							variant={sections.location.variant}
+							mapStyle={sections.location.mapStyle}
+							showFlourishes={sections.location.showFlourishes}
+						/>
+					);
+				}
 
-		{sections.gifts && (
-			<Gifts
-				gifts={sections.gifts.items}
-				title={sections.gifts.title}
-				subtitle={sections.gifts.subtitle}
-				variant={sections.gifts.variant}
-			/>
-		)}
+				if (block.section === 'itinerary' && sections.itinerary) {
+					return (
+						<Itinerary
+							title={sections.itinerary.title}
+							items={sections.itinerary.items}
+							variant={sections.itinerary.variant}
+						/>
+					);
+				}
 
-		{sections.thankYou && (
-			<ThankYou
-				message={sections.thankYou.message}
-				closingName={sections.thankYou.closingName}
-				image={sections.thankYou.image}
-				variant={sections.thankYou.variant}
-			/>
-		)}
+				if (block.section === 'rsvp' && sections.rsvp) {
+					return (
+						<RSVP
+							client:visible
+							{...sections.rsvp}
+							celebrantName={hero.name}
+							guestCap={guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap}
+							initialGuestData={
+								guestContext
+									? {
+											fullName: guestContext.guest.fullName,
+											maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+											inviteId: guestContext.inviteId,
+										}
+									: undefined
+							}
+						/>
+					);
+				}
+
+				if (block.section === 'gifts' && sections.gifts) {
+					return (
+						<Gifts
+							gifts={sections.gifts.items}
+							title={sections.gifts.title}
+							subtitle={sections.gifts.subtitle}
+							variant={sections.gifts.variant}
+						/>
+					);
+				}
+
+				if (block.section === 'thankYou' && sections.thankYou) {
+					return (
+						<ThankYou
+							message={sections.thankYou.message}
+							closingName={sections.thankYou.closingName}
+							image={sections.thankYou.image}
+							variant={sections.thankYou.variant}
+						/>
+					);
+				}
+
+				return null;
+			})
+		}
 
 		<Footer eventSlug={viewModel.id} showEnvelope={showEnvelope} />
 
