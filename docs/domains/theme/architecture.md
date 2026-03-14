@@ -96,6 +96,8 @@ These files are lazy-loaded only for the matching event route.
 - Update `theme-contract.ts` first, then consume from it.
 - Run `pnpm ops validate-schema` after theme changes.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
+- Per-event editorial overhauls (e.g., `.event--ximena-meza-trasvina`) should prioritize 3-Layer
+  Architecture even when using generic section variants.
 
 ## Collection Integration
 
@@ -110,4 +112,4 @@ are correctly mapped regardless of the source collection.
 
 ---
 
-**Last Updated:** 2026-03-12 (Editorial Aesthetic Sync)
+**Last Updated:** 2026-03-13 (Ultra-Premium Editorial Overhaul Sync)

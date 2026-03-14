@@ -10,7 +10,12 @@ import gallery05 from './gallery-05.webp';
 import gallery07 from './gallery-07.webp';
 import gallery09 from './gallery-09.webp';
 import gallery10 from './gallery-10.webp';
-// import interlude01 from './interlude-01.webp'; // Replaced by gallery03 for jardin
+import interlude01 from './interlude-01.webp';
+import interlude02 from './interlude-02.webp';
+import interlude03 from './interlude-03.webp';
+import galleryNew01 from './gallery-new-01.webp';
+import interludeNew01 from './interlude-new-01.webp';
+import thankYouPortrait from './thank-you-portrait.webp';
 
 export const assets = {
 	hero,
@@ -24,14 +29,14 @@ export const assets = {
 		gallery03,
 		gallery04,
 		gallery05,
-		portrait, // Reuse portrait for 06
 		gallery07,
-		hero, // Reuse hero for 08
 		gallery09,
 		gallery10,
-		gallery01, // gallery11
-		gallery02, // gallery12
-		gallery03, // gallery13
-		gallery04, // gallery14
+		galleryNew01,
 	],
+	interlude01,
+	interlude02,
+	interlude03,
+	interludeNew01,
+	thankYouPortrait,
 };

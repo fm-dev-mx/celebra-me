@@ -39,14 +39,14 @@
             "variant": "editorial",
             "labels": {
                 "name": "Tu nombre en la lista *",
-                "guestCount": "Acompañantes",
+                "guestCount": "Número de acompañantes",
                 "confirmButton": "Reservar mi lugar"
             }
         }
     },
     "hero": {
         "name": "Ximena Meza Trasviña",
-        "label": "The Anniversary Issue",
+        "label": "Edición Aniversario",
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
@@ -91,7 +91,7 @@
         },
         "labels": {
             "sectionTitle": "El Círculo de Luz",
-            "sectionSubtitle": "Inner Circle",
+            "sectionSubtitle": "Círculo Íntimo",
             "parentsTitle": "Con la bendición de mis padres"
         },
         "godparents": [
@@ -109,24 +109,22 @@
         "gallery": true
     },
     "gallery": {
-        "title": "Editorial Lookbook",
+        "title": "Galería Editorial",
         "subtitle": "Un recorrido visual por la esencia y el brillo de Ximena.",
         "items": [
             { "image": "gallery01", "caption": "Portada Premiere." },
             { "image": "gallery02", "caption": "El Baile de la Noche." },
-            { "image": "gallery03", "caption": "El Jardín de las Luces." },
+            { "image": "galleryNew01", "caption": "Detalles en Oro & Perlas." },
             { "image": "gallery04", "caption": "Rosas & Oro." },
             { "image": "gallery05", "caption": "Detalles en Seda." },
-            { "image": "portrait", "caption": "Esencia de Perla." },
             { "image": "gallery07", "caption": "Silueta Editorial." },
-            { "image": "hero", "caption": "Mirada Premiere." },
             { "image": "gallery09", "caption": "El Sobre Dorado." },
             { "image": "gallery10", "caption": "Destellos de Alegría." }
         ]
     },
     "gifts": {
-        "title": "Gift Concierge",
-        "subtitle": "Opciones seleccionadas para esta edición especial.",
+        "title": "Mesa de Regalos",
+        "subtitle": "Tu generosidad ilumina esta celebración.",
         "items": [
             {
                 "type": "store",
@@ -135,7 +133,7 @@
             },
             {
                 "type": "bank",
-                "title": "Boutique Fund",
+                "title": "Fondo de Ahorro",
                 "bankName": "BBVA México",
                 "accountHolder": "PENDIENTE",
                 "clabe": "0000 0000 0000 0000 00",
@@ -149,59 +147,59 @@
         ]
     },
     "rsvp": {
-        "title": "The Guest List",
+        "title": "Confirma Tu Asistencia",
         "guestCap": 4,
-        "confirmationMessage": "Tu lugar en esta edición ha sido reservado. Nos vemos en la noche.",
+        "confirmationMessage": "Tu lugar en esta edición ha sido reservado. ¡Nos vemos en la noche!",
         "confirmationMode": "api"
     },
     "thankYou": {
         "message": "Gracias por ser parte de este capítulo. Su presencia es el brillo que completa mi historia.",
         "closingName": "Ximena",
-        "image": "signature"
+        "image": "thankYouPortrait"
     },
     "itinerary": {
-        "title": "The Program",
+        "title": "La Velada",
         "items": [
             {
                 "icon": "reception",
-                "label": "Call to Celebration",
+                "label": "Apertura de la Gala",
                 "time": "8:00 PM",
-                "description": "Apertura de la gala."
+                "description": "Recepción y bienvenida a los invitados."
             },
             {
                 "icon": "photo",
-                "label": "Editorial Moments",
+                "label": "Momentos Editoriales",
                 "time": "8:45 PM",
-                "description": "Captura de la noche."
+                "description": "Captura de los mejores momentos."
             },
             {
                 "icon": "waltz",
-                "label": "The Golden Waltz",
+                "label": "El Vals de Oro",
                 "time": "9:30 PM",
-                "description": "El momento central."
+                "description": "El momento más esperado de la noche."
             },
             {
                 "icon": "dinner",
-                "label": "Grand Dinner",
+                "label": "Cena de Gala",
                 "time": "10:15 PM",
                 "description": "Celebración gastronómica."
             },
             {
                 "icon": "toast",
-                "label": "The Toast",
+                "label": "Brindis de Honor",
                 "time": "11:15 PM",
-                "description": "Brindis de honor."
+                "description": "Un brindis por los quince años de Ximena."
             },
             {
                 "icon": "party",
-                "label": "Midnight Fête",
+                "label": "Fiesta de Medianoche",
                 "time": "11:45 PM",
-                "description": "Celebración continua."
+                "description": "¡La celebración continúa!"
             }
         ]
     },
     "countdown": {
-        "title": "The Premiere Begins In",
+        "title": "La Noche Premiere Comienza En",
         "subtitlePrefix": "El",
         "footerText": "Los Mochis, Sinaloa."
     },
@@ -215,11 +213,11 @@
             "href": "#event-location"
         },
         {
-            "label": "Lookbook",
+            "label": "Galería",
             "href": "#galeria"
         },
         {
-            "label": "Concierge",
+            "label": "Regalos",
             "href": "#regalos"
         },
         {
@@ -234,8 +232,8 @@
         },
         {
             "type": "interlude",
-            "image": "gallery03",
-            "alt": "Ximena editorial movement",
+            "image": "interlude02",
+            "alt": "Seda dorada fluyendo en un ambiente Noir",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -245,8 +243,8 @@
         },
         {
             "type": "interlude",
-            "image": "gallery05",
-            "alt": "Gold and obsidian textures",
+            "image": "interlude03",
+            "alt": "Tiara de diamantes sobre terciopelo negro",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -256,8 +254,8 @@
         },
         {
             "type": "interlude",
-            "image": "gallery07",
-            "alt": "High fashion silhouette",
+            "image": "interlude01",
+            "alt": "Detalle editorial de alta moda",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -267,8 +265,8 @@
         },
         {
             "type": "interlude",
-            "image": "gallery08",
-            "alt": "Cinematic light",
+            "image": "gallery09",
+            "alt": "Brillo dorado cinematográfico",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -278,8 +276,8 @@
         },
         {
             "type": "interlude",
-            "image": "gallery10",
-            "alt": "Visual transition",
+            "image": "interludeNew01",
+            "alt": "Explosión artística de destellos dorados",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -288,20 +286,13 @@
             "section": "gifts"
         },
         {
-            "type": "interlude",
-            "image": "gallery12",
-            "alt": "Delicate closing shine",
-            "variant": "top-premium-xv-ximena",
-            "height": "screen"
-        },
-        {
             "type": "section",
             "section": "rsvp"
         },
         {
             "type": "interlude",
-            "image": "gallery14",
-            "alt": "Last premium portrait",
+            "image": "interludeNew01",
+            "alt": "Último retrato editorial",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
@@ -314,7 +305,7 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
-        "microcopy": "Open the Luminaire Issue",
+        "microcopy": "Abre Tu Invitación",
         "variant": "editorial",
         "closedPalette": {
             "primary": "#C5A059",

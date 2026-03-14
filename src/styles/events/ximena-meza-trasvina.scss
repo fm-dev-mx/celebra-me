@@ -97,7 +97,7 @@
 			z-index: 2;
 			mix-blend-mode: overlay;
 			pointer-events: none;
-			transform: translateX(-5%);
+			transform: translateX(-5%) translateY(-10%);
 		}
 
 		.invitation-hero__portrait {
@@ -144,7 +144,7 @@
 			background: linear-gradient(90deg, transparent, rgb(27 20 13 / 64%), transparent);
 			backdrop-filter: blur(4px);
 			border-top: 1px solid rgb(197 160 89 / 40%);
-			z-index: 20;
+			z-index: 5;
 
 			p {
 				margin: 0;
@@ -181,15 +181,15 @@
 			.invitation-hero__title {
 				font-size: clamp(4rem, 18vw, 7rem);
 				text-align: center;
-				transform: translateY(-40%);
+				transform: translateY(-20%);
 				mix-blend-mode: normal;
 				text-shadow: 0 4px 12px rgb(27 20 13 / 40%);
 			}
 
 			.invitation-hero__portrait {
 				justify-self: center;
-				width: 75%;
-				margin-top: -5vh;
+				width: 85%;
+				margin-top: -2vh;
 			}
 
 			.invitation-hero__details {
@@ -242,7 +242,7 @@
 
 		.family__content {
 			display: grid;
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
 			gap: 3rem 2rem;
 		}
 
@@ -338,24 +338,96 @@
 			font-size: clamp(2.8rem, 7vw, 5.2rem);
 		}
 
-		.gift-card {
-			background: #fff;
-			color: #1b140d;
-			border-radius: 0; // Sharp stationery edges
-			border: 1px solid var(--color-action-accent);
-			box-shadow: none;
+		.gifts-section__subtitle {
+			color: rgb(249 246 242 / 72%);
+			font-family: var(--font-body);
+			font-size: clamp(0.95rem, 2vw, 1.15rem);
+			letter-spacing: 0.04em;
+			margin-top: 0.75rem;
+		}
+	} // End of .rsvp
 
-			.gift-card__title {
-				font-family: var(--font-label);
-				letter-spacing: 0.15em;
+	.gift-card {
+		background: radial-gradient(
+			circle at top left,
+			rgb(255 255 255 / 8%),
+			rgb(255 255 255 / 4%)
+		);
+		color: var(--color-text-on-dark);
+		border-radius: 0;
+		border: 1px solid rgb(197 160 89 / 22%);
+		box-shadow:
+			0 20px 40px rgb(0 0 0 / 20%),
+			inset 0 0 0 1px rgb(255 255 255 / 4%);
+		backdrop-filter: blur(16px);
+		padding: clamp(1.5rem, 4vw, 3rem);
+		transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-action-accent),
+				transparent
+			);
+			opacity: 0%;
+			transition: opacity 0.5s ease;
+		}
+
+		&:hover {
+			transform: translateY(-5px);
+			border-color: rgb(197 160 89 / 45%);
+			box-shadow:
+				0 30px 60px rgb(0 0 0 / 30%),
+				0 0 20px rgb(197 160 89 / 15%),
+				inset 0 0 0 1px rgb(255 255 255 / 8%);
+
+			&::before {
+				opacity: 100%;
 			}
 		}
+	}
 
-		.rsvp__form-card {
-			background: rgb(255 255 255 / 4%);
-			border: 1px solid rgb(197 160 89 / 20%);
-			border-radius: 0;
+	.gift-card__title {
+		font-family: var(--font-label);
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		font-size: 0.85rem;
+		color: var(--color-action-accent);
+		margin-bottom: 1.5rem;
+	}
+
+	.gift-card__text,
+	.gift-card__detail {
+		color: rgb(249 246 242 / 82%);
+		font-family: var(--font-body);
+	}
+
+	.gift-card__cta {
+		color: var(--color-action-accent);
+		border-color: var(--color-action-accent);
+		background: transparent;
+		font-family: var(--font-label);
+		letter-spacing: 0.12em;
+
+		&:hover {
+			background: var(--color-action-accent);
+			color: var(--color-surface-dark);
 		}
+	}
+
+	.rsvp__form-card {
+		background: rgb(255 255 255 / 4%);
+		border: 1px solid rgb(197 160 89 / 20%);
+		border-radius: 0;
 	}
 
 	.itinerary[data-variant='editorial'] {
@@ -426,19 +498,81 @@
 	.countdown-section[data-variant='editorial'] {
 		background: var(--color-surface-dark);
 		color: var(--color-text-on-dark);
+		padding-block: clamp(5rem, 12vw, 10rem);
+		position: relative;
 
-		.countdown-section__title {
-			font-family: var(--font-display);
-			color: var(--color-action-accent);
+		// Subtle radial glow for depth
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(
+				circle at 50% 40%,
+				rgb(197 160 89 / 6%) 0%,
+				transparent 60%
+			);
+			pointer-events: none;
 		}
 
-		.countdown-timer__value {
+		// Title — uses .countdown-title in actual DOM
+		.countdown-title {
 			font-family: var(--font-display);
+			color: var(--color-action-accent) !important;
+			font-size: clamp(2rem, 5vw, 3.5rem);
 		}
 
-		.countdown-timer__label {
-			font-family: var(--font-label);
+		// Subtitle date text
+		.countdown-subtitle .event-date {
+			color: rgb(249 246 242 / 72%) !important;
+		}
+
+		// CRITICAL FIX: Countdown values — actual class is .countdown__value
+		.countdown__value {
+			font-family: var(--font-display) !important;
+			color: var(--color-text-on-dark) !important;
+			font-size: var(--jewelry-box-countdown-value-size-mobile) !important;
+			line-height: 1.2;
+			padding: 0.2em 0;
+			text-shadow: 0 2px 16px rgb(197 160 89 / 20%);
+		}
+
+		// CRITICAL FIX: Labels — actual class is .countdown__label
+		.countdown__label {
+			font-family: var(--font-label) !important;
 			letter-spacing: 0.3em;
+			color: var(--color-action-accent) !important;
+			opacity: 92%;
+			text-transform: uppercase;
+			font-size: 0.75rem;
+		}
+
+		// Segment containers
+		.countdown__segment {
+			position: relative;
+
+			// Subtle separator between countdown groups
+			&:not(:last-child)::after {
+				content: '';
+				position: absolute;
+				right: -1rem;
+				top: 15%;
+				height: 70%;
+				width: 1px;
+				background: rgb(197 160 89 / 20%);
+			}
+		}
+
+		// Footer text — actual class is .countdown-invitation-text
+		.countdown-invitation-text {
+			color: rgb(249 246 242 / 60%) !important;
+			font-family: var(--font-body);
+			letter-spacing: 0.08em;
+		}
+
+		@media (width >= 860px) {
+			.countdown__value {
+				font-size: var(--jewelry-box-countdown-value-size-desktop) !important;
+			}
 		}
 	}
 
@@ -537,6 +671,7 @@
 		from {
 			background-position: 0 0;
 		}
+
 		to {
 			background-position: 300px 600px;
 		}

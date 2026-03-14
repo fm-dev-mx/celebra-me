@@ -61,6 +61,12 @@ export const EVENT_KEYS = [
 	'gallery12',
 	'gallery13',
 	'gallery14',
+	'galleryNew01',
+	'interlude01',
+	'interlude02',
+	'interlude03',
+	'interludeNew01',
+	'thankYouPortrait',
 ] as const;
 
 export const COMMON_KEYS = [
@@ -106,6 +112,11 @@ type RawEventAssets = {
 	jardin: ImageMetadata;
 	signature: ImageMetadata;
 	gallery: ImageMetadata[];
+	interlude01?: ImageMetadata;
+	interlude02?: ImageMetadata;
+	interlude03?: ImageMetadata;
+	interludeNew01?: ImageMetadata;
+	thankYouPortrait?: ImageMetadata;
 };
 
 // Remote event asset types are no longer needed.
@@ -144,6 +155,24 @@ const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAsse
 		: undefined,
 	gallery14: rawAssets.gallery[13]
 		? { src: rawAssets.gallery[13], alt: `Galería 14 de ${eventName}` }
+		: undefined,
+	galleryNew01: rawAssets.gallery[8]
+		? { src: rawAssets.gallery[8], alt: `Detalle Editorial de ${eventName}` }
+		: undefined,
+	interlude01: rawAssets.interlude01
+		? { src: rawAssets.interlude01, alt: `Interludio 01 de ${eventName}` }
+		: undefined,
+	interlude02: rawAssets.interlude02
+		? { src: rawAssets.interlude02, alt: `Interludio 02 de ${eventName}` }
+		: undefined,
+	interlude03: rawAssets.interlude03
+		? { src: rawAssets.interlude03, alt: `Interludio 03 de ${eventName}` }
+		: undefined,
+	interludeNew01: rawAssets.interludeNew01
+		? { src: rawAssets.interludeNew01, alt: `Interludio Premium de ${eventName}` }
+		: undefined,
+	thankYouPortrait: rawAssets.thankYouPortrait
+		? { src: rawAssets.thankYouPortrait, alt: `Retrato de Despedida de ${eventName}` }
 		: undefined,
 });
 
