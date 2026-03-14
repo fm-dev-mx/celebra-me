@@ -276,7 +276,7 @@
         },
         {
             "type": "interlude",
-            "image": "interludeNew01",
+            "image": "gallery10",
             "alt": "Explosión artística de destellos dorados",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
@@ -284,6 +284,13 @@
         {
             "type": "section",
             "section": "gifts"
+        },
+        {
+            "type": "interlude",
+            "image": "galleryNew01",
+            "alt": "Detalles editoriales en oro y perlas",
+            "variant": "top-premium-xv-ximena",
+            "height": "screen"
         },
         {
             "type": "section",
