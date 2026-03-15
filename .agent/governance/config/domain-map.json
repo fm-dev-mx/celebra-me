@@ -54,7 +54,8 @@
             "package.json",
             "pnpm-lock.yaml",
             ".gitignore",
-            "astro.config.mjs"
+            "astro.config.mjs",
+            "tsconfig.json"
         ],
         "core": [
             "src/content/config.ts",

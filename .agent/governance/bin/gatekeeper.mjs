@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
 import { spawnSync } from 'child_process';
-import ts from 'typescript';
+import { createRequire } from 'module';
 
 const COLORS = {
 	reset: '\x1b[0m',
@@ -16,7 +16,10 @@ const DEFAULT_POLICY_PATH = '.agent/governance/config/policy.json';
 const DEFAULT_BASELINE_PATH = '.agent/governance/config/baseline.json';
 const DEFAULT_MAX_FINDINGS = 20;
 const PROTECTED_BRANCHES = new Set(['main', 'develop']);
-const MAX_ADU_FILES = 12;
+const DEFAULT_ATOMICITY_LIMIT = 12;
+const require = createRequire(import.meta.url);
+let typescriptApi = null;
+let typescriptLoadAttempted = false;
 
 const FORBIDDEN_FILES = [
 	/\.log$/,
@@ -48,6 +51,24 @@ const DEFAULT_POLICY = {
 		requireUpdateToken: false,
 		acceptedUpdateTokens: ['Last Updated', 'Changelog'],
 		tokenMatchMode: 'any',
+	},
+	atomicity: {
+		defaultLimit: DEFAULT_ATOMICITY_LIMIT,
+		autoBucketOversizedDomains: true,
+	},
+	workflow: {
+		session: {
+			ttlMinutes: 30,
+			autoRefresh: true,
+		},
+		inspect: {
+			preflightChecks: ['governance', 'adu'],
+			heavyChecks: ['governance', 'lint', 'typecheck', 'security', 'adu'],
+			typecheckSkipPatterns: ['.agent/plans/**/*.md', '.agent/plans/**/*.json'],
+		},
+	},
+	s0Drift: {
+		ignorePatterns: ['.agent/plans/**/*.md', '.agent/plans/**/*.json'],
 	},
 	rules: {
 		forbiddenFiles: {
@@ -239,8 +260,9 @@ const DEFAULT_POLICY = {
 const DOMAIN_MAP_PATH = '.agent/governance/config/domain-map.json';
 
 class DomainMapper {
-	constructor() {
+	constructor(policy = DEFAULT_POLICY) {
 		this.config = loadJson(DOMAIN_MAP_PATH, { domains: {}, defaultDomain: 'core' });
+		this.policy = policy;
 	}
 
 	matchDomain(file) {
@@ -253,6 +275,10 @@ class DomainMapper {
 	analyze(files) {
 		const groups = {};
 		const unmappedFiles = [];
+		const atomicityLimit = Number(
+			this.policy.atomicity?.defaultLimit || DEFAULT_ATOMICITY_LIMIT,
+		);
+		const autoBucket = this.policy.atomicity?.autoBucketOversizedDomains !== false;
 		for (const f of files) {
 			const mapped = this.matchDomain(f);
 			const d = mapped.domain;
@@ -260,20 +286,38 @@ class DomainMapper {
 			if (!groups[d]) groups[d] = [];
 			groups[d].push(f);
 		}
-		const suggestedSplits = Object.entries(groups)
-			.sort(([a], [b]) => a.localeCompare(b))
-			.map(([id, domainFiles]) => ({
-				id,
-				files: domainFiles.slice().sort((a, b) => a.localeCompare(b)),
-			}));
+		const suggestedSplits = [];
+		for (const [id, domainFiles] of Object.entries(groups).sort(([a], [b]) =>
+			a.localeCompare(b),
+		)) {
+			const sortedFiles = domainFiles.slice().sort((a, b) => a.localeCompare(b));
+			const bucketCount =
+				autoBucket && sortedFiles.length > atomicityLimit
+					? Math.ceil(sortedFiles.length / atomicityLimit)
+					: 1;
+			for (let index = 0; index < bucketCount; index += 1) {
+				const bucketFiles = sortedFiles.slice(
+					index * atomicityLimit,
+					(index + 1) * atomicityLimit,
+				);
+				suggestedSplits.push({
+					id: bucketCount === 1 ? id : `${id}-${index + 1}`,
+					baseDomain: id,
+					bucketIndex: index + 1,
+					bucketCount,
+					autoBucketed: bucketCount > 1,
+					files: bucketFiles,
+				});
+			}
+		}
 		const fileCount = files.length || 1;
 		const splitConfidence = Number(((fileCount - unmappedFiles.length) / fileCount).toFixed(2));
 		return {
 			suggestedSplits,
 			unmappedFiles: unmappedFiles.sort((a, b) => a.localeCompare(b)),
 			splitConfidence,
-			atomicityLimit: MAX_ADU_FILES,
-			atomicityPassed: suggestedSplits.every((s) => s.files.length <= MAX_ADU_FILES),
+			atomicityLimit,
+			atomicityPassed: suggestedSplits.every((s) => s.files.length <= atomicityLimit),
 		};
 	}
 }
@@ -348,6 +392,23 @@ function loadPolicy(path) {
 		...DEFAULT_POLICY,
 		...p,
 		docsEvidence: { ...DEFAULT_POLICY.docsEvidence, ...(p.docsEvidence || {}) },
+		atomicity: { ...DEFAULT_POLICY.atomicity, ...(p.atomicity || {}) },
+		workflow: {
+			...DEFAULT_POLICY.workflow,
+			...(p.workflow || {}),
+			session: {
+				...DEFAULT_POLICY.workflow.session,
+				...(p.workflow?.session || {}),
+			},
+			inspect: {
+				...DEFAULT_POLICY.workflow.inspect,
+				...(p.workflow?.inspect || {}),
+			},
+		},
+		s0Drift: {
+			...DEFAULT_POLICY.s0Drift,
+			...(p.s0Drift || {}),
+		},
 		rules: { ...DEFAULT_POLICY.rules, ...(p.rules || {}) },
 	};
 }
@@ -438,6 +499,17 @@ function inlineFingerprint(text) {
 		.slice(0, 120);
 }
 
+function getTypescript() {
+	if (typescriptLoadAttempted) return typescriptApi;
+	typescriptLoadAttempted = true;
+	try {
+		typescriptApi = require('typescript');
+	} catch {
+		typescriptApi = null;
+	}
+	return typescriptApi;
+}
+
 function astroScripts(content) {
 	const chunks = [];
 	const fm = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -457,6 +529,20 @@ function parseImportsAst(pathname, content) {
 			parseFailed: false,
 			covered: ['import', 'export from', 'require', 'import()'],
 		};
+
+	const ts = getTypescript();
+	if (!ts) {
+		const re = /(?:import|export)\s+(?:[^;]*?\s+from\s+)?['"]([^'"]+)['"]/g;
+		const imports = [];
+		let match;
+		while ((match = re.exec(code)) !== null) imports.push(match[1].trim());
+		return {
+			imports: uniq(imports),
+			parseFailed: true,
+			covered: ['import', 'export from'],
+			fallback: 'regex',
+		};
+	}
 
 	let kind = ts.ScriptKind.TS;
 	if (/\.jsx$/i.test(pathname)) kind = ts.ScriptKind.JSX;
@@ -647,7 +733,7 @@ function collectAdded(files) {
 		out = run('git', ['diff', '--cached', '--unified=0', '--no-color', '--', ...files], {
 			ignoreError: true,
 		}).stdout;
-	} catch (e) {
+	} catch {
 		const env = process.env.GATEKEEPER_ADDED_LINES_JSON;
 		if (env) {
 			const p = JSON.parse(env);
@@ -839,7 +925,11 @@ const SECRET_PATTERNS = [
 function isLikelyTextFile(file) {
 	const lowered = file.toLowerCase();
 	// Explicitly non-text/binary extensions in invitation projects
-	if (/\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf|mp4|webm|pdf|zip|gz|exe|dll|so|wav|mp3|ico)$/i.test(lowered)) {
+	if (
+		/\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf|mp4|webm|pdf|zip|gz|exe|dll|so|wav|mp3|ico)$/i.test(
+			lowered,
+		)
+	) {
 		return false;
 	}
 	return /\.(ts|tsx|js|jsx|astro|json|mdx?|txt|yml|yaml|scss|css|html|sql|sh|ps1|mjs|cjs|env|local|config|cjs)$/i.test(
@@ -847,13 +937,15 @@ function isLikelyTextFile(file) {
 	);
 }
 
-function verifyS0Drift(snapshot, signatureFile) {
+function verifyS0Drift(snapshot, signatureFile, policy = DEFAULT_POLICY) {
 	if (!signatureFile || !existsSync(signatureFile)) return { enabled: false, hasDrift: false };
 	const expected = loadJson(signatureFile, null);
 	if (!expected || !Array.isArray(expected.files)) {
 		return { enabled: true, hasDrift: true, reason: 'invalid_s0_signature_file' };
 	}
 	const current = snapshot.detailedSignature();
+	const ignorePatterns = policy.s0Drift?.ignorePatterns || [];
+	const isIgnored = (file) => ignorePatterns.length > 0 && matchAny(file, ignorePatterns);
 	const expMap = new Map(expected.files.map((f) => [f.path, f]));
 	const curMap = new Map(current.files.map((f) => [f.path, f]));
 	const missing = expected.files.filter((f) => !curMap.has(f.path)).map((f) => f.path);
@@ -869,18 +961,29 @@ function verifyS0Drift(snapshot, signatureFile) {
 		)
 			modified.push(f.path);
 	}
+	const blockingMissing = missing.filter((file) => !isIgnored(file));
+	const blockingAdded = added.filter((file) => !isIgnored(file));
+	const blockingModified = modified.filter((file) => !isIgnored(file));
 	return {
 		enabled: true,
 		hasDrift:
-			expected.signature !== current.signature ||
-			missing.length > 0 ||
-			added.length > 0 ||
-			modified.length > 0,
+			blockingMissing.length > 0 || blockingAdded.length > 0 || blockingModified.length > 0,
 		expectedSignature: expected.signature,
 		currentSignature: current.signature,
 		missing,
 		added,
 		modified,
+		blockingMissing,
+		blockingAdded,
+		blockingModified,
+		ignoredOnly:
+			(expected.signature !== current.signature ||
+				missing.length > 0 ||
+				added.length > 0 ||
+				modified.length > 0) &&
+			blockingMissing.length === 0 &&
+			blockingAdded.length === 0 &&
+			blockingModified.length === 0,
 	};
 }
 
@@ -1557,6 +1660,27 @@ function lint(files, reportJson, rep, policy, maxGlobal) {
 	if (!reportJson) log('✅ Linting passed.', COLORS.green);
 	return { failed: bad, details };
 }
+
+function shouldRunTypecheck(snapshot, policy, selectedChecks, mode) {
+	if (!checkEnabled(selectedChecks, 'typecheck')) {
+		return { run: false, status: 'skipped', reason: 'check_not_selected' };
+	}
+	if (!snapshot.files.length) {
+		return { run: false, status: 'skipped', reason: 'empty_snapshot' };
+	}
+	const hasTs = snapshot.files.some((f) => /\.(ts|tsx|astro)$/.test(f));
+	const skipPatterns = policy.workflow?.inspect?.typecheckSkipPatterns || [];
+	const matchesSkipPatterns =
+		skipPatterns.length > 0 && snapshot.files.every((file) => matchAny(file, skipPatterns));
+	if (matchesSkipPatterns) {
+		return { run: false, status: 'skipped', reason: 'policy_skipped' };
+	}
+	if (!hasTs && mode !== 'strict') {
+		return { run: false, status: 'skipped', reason: 'no_ts_files' };
+	}
+	return { run: true, status: 'not_run', reason: hasTs ? 'ts_files_present' : 'strict_mode' };
+}
+
 function typecheck(snapshot, reportJson) {
 	if (!reportJson) log('\n📐 Running full type check (Strict Mode)...', COLORS.blue);
 	try {
@@ -1744,6 +1868,7 @@ function buildFinalReport({
 		status: workflowData.workflowRoute === 'architectural_intervention' ? 'failed' : 'passed',
 		staged: {
 			signature: snapshot.signature(),
+			detailedSignature: snapshot.detailedSignature(),
 			tsSignature: snapshot.tsSignature(),
 			count: snapshot.files.length,
 			source: snapshot.src,
@@ -1900,8 +2025,8 @@ function branchSlugFromFiles(files, domain = '') {
 	return Array.from(tokens).join('-') || 'changes';
 }
 
-function inferBranchName(snapshot) {
-	const mapper = new DomainMapper();
+function inferBranchName(snapshot, policy) {
+	const mapper = new DomainMapper(policy);
 	const adu = mapper.analyze(snapshot.files);
 	const preferred = adu.suggestedSplits
 		.slice()
@@ -1925,7 +2050,7 @@ function ensureWorkingBranch(snapshot, policy, reportJson) {
 		),
 	);
 	if (!protectedBranches.has(current)) return { enabled: true, changed: false, current };
-	const target = inferBranchName(snapshot);
+	const target = inferBranchName(snapshot, policy);
 	if (!target || target === current) return { enabled: true, changed: false, current };
 
 	const switchArgs = branchExists(target) ? ['switch', target] : ['switch', '-c', target];
@@ -1949,11 +2074,11 @@ function main() {
 	const args = process.argv.slice(2);
 	const policyPath = arg(args, '--policy') || DEFAULT_POLICY_PATH;
 	const baselinePath = arg(args, '--baseline') || DEFAULT_BASELINE_PATH;
+	const policy = loadPolicy(policyPath);
 	const s0File = arg(args, '--s0-file');
 	const s0SignatureFile = arg(args, '--s0-signature-file');
 	const requestedMode = arg(args, '--mode') || 'strict';
-	const phase = phaseOf(args, loadPolicy(policyPath));
-	const policy = loadPolicy(policyPath);
+	const phase = phaseOf(args, policy);
 	const mode = modeOf(requestedMode, policy.legacyAliases || {});
 	const reportJson = has(args, '--report-json');
 	const reportProfile = reportProfileOf(args);
@@ -2049,22 +2174,26 @@ function main() {
 	const lintResult = checkEnabled(selectedChecks, 'lint')
 		? lint(snapshot.files, reportJson, governance.rep, policy, maxGlobal)
 		: { failed: false, status: 'skipped', details: [] };
-	const hasTs = snapshot.files.some((f) => /\.(ts|tsx|astro)$/.test(f));
+	const typecheckDecision = shouldRunTypecheck(snapshot, policy, selectedChecks, mode);
 	let typecheckResult = {
 		failed: false,
-		status: checkEnabled(selectedChecks, 'typecheck') && hasTs && mode === 'strict' ? 'not_run' : 'skipped',
+		status: typecheckDecision.status,
+		reason: typecheckDecision.reason,
 	};
-	if (checkEnabled(selectedChecks, 'typecheck')) {
-		if (hasTs || mode === 'strict') typecheckResult = typecheck(snapshot, reportJson);
-		else if (!reportJson)
-			log('\nℹ️  Skipping type check (no TS/Astro files changed and not in strict mode).');
+	if (typecheckDecision.run) {
+		typecheckResult = typecheck(snapshot, reportJson);
 	} else if (!reportJson && requestedMode !== 'strict') {
 		log('\nℹ️  Type-check not requested. Use --checks typecheck to enable.');
+	} else if (!reportJson && typecheckDecision.reason === 'policy_skipped') {
+		log('\nℹ️  Skipping type check for plan-only markdown/json workflow changes.');
+	} else if (!reportJson && typecheckDecision.reason === 'no_ts_files') {
+		log('\nℹ️  Skipping type check (no TS/Astro files changed and not in strict mode).');
 	}
-	const securityResult = checkEnabled(selectedChecks, 'security') && secretScanStaged
-		? scanStagedSecrets(snapshot, policy, phase, audit, governance.rep, maxGlobal)
-		: { failed: false, findings: 0, skipped: true };
-	const s0Drift = verifyS0Drift(snapshot, s0SignatureFile);
+	const securityResult =
+		checkEnabled(selectedChecks, 'security') && secretScanStaged
+			? scanStagedSecrets(snapshot, policy, phase, audit, governance.rep, maxGlobal)
+			: { failed: false, findings: 0, skipped: true };
+	const s0Drift = verifyS0Drift(snapshot, s0SignatureFile, policy);
 	if (s0Drift.enabled && s0Drift.hasDrift) {
 		addFinding(governance.rep, policy, maxGlobal, {
 			ruleId: 's0ScopeDrift',
@@ -2076,7 +2205,7 @@ function main() {
 		});
 	}
 	const governanceFinal = governance.rep.summarize();
-	const mapper = new DomainMapper();
+	const mapper = new DomainMapper(policy);
 	const adu = mapper.analyze(snapshot.files);
 	const routeData = computeRoute(governanceFinal.findings, adu);
 	const workflowData = computeWorkflowRoute({
@@ -2135,4 +2264,20 @@ function main() {
 	}
 }
 
-main();
+const isMain =
+	import.meta.url ===
+	`file://${process.platform === 'win32' ? '/' : ''}${process.argv[1]?.replace(/\\/g, '/')}`;
+
+if (isMain) {
+	main();
+}
+
+export {
+	DEFAULT_POLICY,
+	DEFAULT_POLICY_PATH,
+	DomainMapper,
+	loadPolicy,
+	matchAny,
+	shouldRunTypecheck,
+	verifyS0Drift,
+};

@@ -1,17 +1,33 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'fs';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	renameSync,
+	rmSync,
+	unlinkSync,
+	writeFileSync,
+} from 'fs';
 import { dirname, resolve } from 'path';
-import { mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+import { loadPolicy } from './gatekeeper.mjs';
 
 const MAX_ATTEMPTS = 3;
-const SESSION_VERSION = 1;
-const DEFAULT_SESSION_FILE = '.git/gatekeeper-session.json';
-const DEFAULT_S0_FILE = '.git/gatekeeper-s0.txt';
-const DEFAULT_S0_SIGNATURE_FILE = '.git/gatekeeper-s0-signature.json';
+const SESSION_VERSION = 2;
+const DEFAULT_POLICY_FILE = '.agent/governance/config/policy.json';
+const DEFAULT_SESSION_BASENAME = 'gatekeeper-session.json';
+const DEFAULT_S0_BASENAME = 'gatekeeper-s0.txt';
+const DEFAULT_S0_SIGNATURE_BASENAME = 'gatekeeper-s0-signature.json';
 const DEFAULT_TTL_MINUTES = 30;
-const GATEKEEPER_BIN = '.agent/governance/bin/gatekeeper.mjs';
+const GATEKEEPER_BIN = resolve(dirname(fileURLToPath(import.meta.url)), 'gatekeeper.mjs');
+const WORKFLOW_REPORT_PROFILE = 'workflow';
+const ROUTE_REPORT_PROFILE = 'route';
+const BULLET_MAX_LENGTH = 100;
+const DESCRIPTION_MAX_LENGTH = 80;
+const HEADER_MAX_LENGTH = 72;
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
@@ -38,16 +54,18 @@ function parseArgs(argv) {
 	const args = {
 		command: argv[0] || 'inspect',
 		domain: null,
-		sessionFile: DEFAULT_SESSION_FILE,
-		s0File: DEFAULT_S0_FILE,
-		s0SignatureFile: DEFAULT_S0_SIGNATURE_FILE,
-		ttlMinutes: DEFAULT_TTL_MINUTES,
+		policyFile: DEFAULT_POLICY_FILE,
+		sessionFile: null,
+		s0File: null,
+		s0SignatureFile: null,
+		ttlMinutes: null,
 		noAutoBranch: false,
 		json: false,
 	};
 	for (let i = 1; i < argv.length; i += 1) {
 		const token = argv[i];
 		if (token === '--domain') args.domain = argv[i + 1] || null;
+		if (token === '--policy') args.policyFile = argv[i + 1] || args.policyFile;
 		if (token === '--session-file') args.sessionFile = argv[i + 1] || args.sessionFile;
 		if (token === '--s0-file') args.s0File = argv[i + 1] || args.s0File;
 		if (token === '--s0-signature-file')
@@ -56,7 +74,7 @@ function parseArgs(argv) {
 		if (token === '--no-auto-branch') args.noAutoBranch = true;
 		if (token === '--json') args.json = true;
 	}
-	return args;
+	return normalizeArtifactPaths(args);
 }
 
 function parseReport(raw) {
@@ -85,6 +103,25 @@ function currentHead() {
 	const result = run('git', ['rev-parse', 'HEAD']);
 	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect HEAD SHA.');
 	return result.stdout.trim();
+}
+
+function gitDir() {
+	const result = run('git', ['rev-parse', '--git-dir']);
+	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect git directory.');
+	return resolve(result.stdout.trim());
+}
+
+function defaultArtifactPath(basename) {
+	return resolve(gitDir(), basename);
+}
+
+function normalizeArtifactPaths(args) {
+	return {
+		...args,
+		sessionFile: args.sessionFile || defaultArtifactPath(DEFAULT_SESSION_BASENAME),
+		s0File: args.s0File || defaultArtifactPath(DEFAULT_S0_BASENAME),
+		s0SignatureFile: args.s0SignatureFile || defaultArtifactPath(DEFAULT_S0_SIGNATURE_BASENAME),
+	};
 }
 
 function writeAtomicJson(file, payload) {
@@ -127,21 +164,53 @@ function cleanupArtifacts({ sessionFile, s0File, s0SignatureFile }) {
 	}
 }
 
+function workflowSettings(policy, args) {
+	return {
+		ttlMinutes:
+			args.ttlMinutes ?? Number(policy.workflow?.session?.ttlMinutes || DEFAULT_TTL_MINUTES),
+		autoRefresh: policy.workflow?.session?.autoRefresh !== false,
+		preflightChecks: policy.workflow?.inspect?.preflightChecks || ['governance', 'adu'],
+		heavyChecks: policy.workflow?.inspect?.heavyChecks || [
+			'governance',
+			'lint',
+			'typecheck',
+			'security',
+			'adu',
+		],
+	};
+}
+
+function checksCsv(checks) {
+	return (checks || []).join(',');
+}
+
 function gatekeeperArgs(opts) {
 	const {
-		checks = 'governance',
+		checks = ['governance'],
 		mode = 'quick',
-		reportProfile = 'workflow',
+		reportProfile = WORKFLOW_REPORT_PROFILE,
+		policyFile = DEFAULT_POLICY_FILE,
 		sessionFile,
 		sessionInvalidReason,
 		s0SignatureFile,
 		noAutoBranch,
 	} = opts;
-	const args = [GATEKEEPER_BIN, '--mode', mode, '--report-json', '--report-profile', reportProfile];
-	if (checks) args.push('--checks', checks);
+	const checksValue = Array.isArray(checks) ? checksCsv(checks) : checks;
+	const args = [
+		GATEKEEPER_BIN,
+		'--policy',
+		policyFile,
+		'--mode',
+		mode,
+		'--report-json',
+		'--report-profile',
+		reportProfile,
+	];
+	if (checksValue) args.push('--checks', checksValue);
 	args.push('--require-complete-report');
 
-	if (checks && checks.split(',').includes('security')) args.push('--secret-scan-staged');
+	if (checksValue && checksValue.split(',').includes('security'))
+		args.push('--secret-scan-staged');
 	if (sessionFile) args.push('--session-file', sessionFile);
 	if (sessionInvalidReason) args.push('--session-invalid-reason', sessionInvalidReason);
 	if (s0SignatureFile && existsSync(s0SignatureFile))
@@ -159,33 +228,13 @@ function runGatekeeper(options) {
 	};
 }
 
-function buildSessionPayload(report, args) {
-	const splits = report?.adu?.suggestedSplits || [];
-	return {
-		version: SESSION_VERSION,
-		createdAt: new Date().toISOString(),
-		repoRoot: repoRoot(),
-		branch: currentBranch(),
-		head: currentHead(),
-		ttlMinutes: args.ttlMinutes,
-		reportProfile: 'workflow',
-		mode: 'quick',
-		staged: report.staged,
-		suggestedSplits: splits,
-		workflowRoute: report.workflowRoute,
-		route: report.route,
-		autoFixCommands: report.autoFixCommands || [],
-		fullReport: report, // Save full report for fast-path JSON output
-	};
-}
-
 function sessionAgeMinutes(session) {
-	const createdAt = new Date(session.createdAt || 0).getTime();
-	if (!createdAt) return Infinity;
-	return (Date.now() - createdAt) / 60000;
+	const refreshedAt = new Date(session?.refreshedAt || session?.createdAt || 0).getTime();
+	if (!refreshedAt) return Infinity;
+	return (Date.now() - refreshedAt) / 60000;
 }
 
-function validateSession(session, args, options = {}) {
+function structuralSessionValidation(session, args, settings) {
 	if (!session) return { ok: false, reason: 'session_missing' };
 	if (session.invalid) return { ok: false, reason: session.invalidReason || 'session_corrupted' };
 	if (session.version !== SESSION_VERSION)
@@ -193,22 +242,63 @@ function validateSession(session, args, options = {}) {
 	if (session.repoRoot !== repoRoot()) return { ok: false, reason: 'session_repo_mismatch' };
 	if (session.branch !== currentBranch()) return { ok: false, reason: 'session_branch_changed' };
 	if (session.head !== currentHead()) return { ok: false, reason: 'session_head_changed' };
-	if (sessionAgeMinutes(session) > Number(args.ttlMinutes || DEFAULT_TTL_MINUTES)) {
+	if (sessionAgeMinutes(session) > Number(settings.ttlMinutes || DEFAULT_TTL_MINUTES)) {
+		if (settings.autoRefresh) return { ok: true, stale: true };
 		return { ok: false, reason: 'session_expired' };
 	}
-	if (options.skipSignatureCheck) return { ok: true };
+	return { ok: true, stale: false };
+}
 
-	const { report } = runGatekeeper({
-		mode: 'quick',
-		reportProfile: 'route',
-		checks: 'governance,adu',
-		sessionFile: args.sessionFile,
-		noAutoBranch: args.noAutoBranch,
-	});
-	if ((report?.staged?.signature || '') !== (session?.staged?.signature || '')) {
-		return { ok: false, reason: 'session_signature_changed' };
-	}
-	return { ok: true };
+function buildSessionPayload(report, args, settings, options = {}) {
+	const now = new Date().toISOString();
+	const splits = report?.adu?.suggestedSplits || [];
+	return {
+		version: SESSION_VERSION,
+		createdAt: options.createdAt || now,
+		refreshedAt: now,
+		repoRoot: repoRoot(),
+		branch: currentBranch(),
+		head: currentHead(),
+		ttlMinutes: settings.ttlMinutes,
+		reportProfile: WORKFLOW_REPORT_PROFILE,
+		mode: options.mode || 'quick',
+		staged: report.staged,
+		inspectionCacheKey:
+			options.inspectionCacheKey || report?.staged?.detailedSignature?.signature || '',
+		effectiveChecks: options.effectiveChecks || checksCsv(settings.heavyChecks),
+		preflightReport: options.preflightReport || null,
+		suggestedSplits: splits,
+		workflowRoute: report.workflowRoute,
+		route: report.route,
+		autoFixCommands: report.autoFixCommands || [],
+		fullReport: report,
+	};
+}
+
+function refreshSessionFile(session, args, settings, options = {}) {
+	const refreshed = {
+		...session,
+		refreshedAt: new Date().toISOString(),
+		ttlMinutes: settings.ttlMinutes,
+		repoRoot: repoRoot(),
+		branch: currentBranch(),
+		head: currentHead(),
+		preflightReport: options.preflightReport ?? session.preflightReport ?? null,
+	};
+	writeAtomicJson(args.sessionFile, refreshed);
+	return refreshed;
+}
+
+function reportCacheKey(report) {
+	return report?.staged?.detailedSignature?.signature || '';
+}
+
+function matchingSessionReport(session, preflightReport, effectiveChecks) {
+	if (!session?.fullReport) return false;
+	return (
+		session.effectiveChecks === effectiveChecks &&
+		session.inspectionCacheKey === reportCacheKey(preflightReport)
+	);
 }
 
 function ensureSplit(session, domain) {
@@ -229,41 +319,192 @@ function inferCommitType(files) {
 	return 'feat';
 }
 
-function inspectCommand(args) {
-	const session = loadSession(args.sessionFile);
-	const validation = validateSession(session, args);
+function truncateText(value, maxLength) {
+	const text = String(value || '')
+		.trim()
+		.replace(/\s+/g, ' ');
+	if (text.length <= maxLength) return text;
+	if (maxLength <= 3) return text.slice(0, maxLength);
+	return `${text.slice(0, maxLength - 3).trim()}...`;
+}
 
-	if (validation.ok) {
+function compactPath(file, maxLength) {
+	if (file.length <= maxLength) return file;
+	const parts = file.split('/');
+	const basename = parts.at(-1) || file;
+	const candidates = [];
+	if (parts.length >= 4) candidates.push(`${parts[0]}/${parts[1]}/.../${basename}`);
+	if (parts.length >= 3) candidates.push(`${parts[0]}/.../${basename}`);
+	candidates.push(`.../${basename}`);
+	for (const candidate of candidates) {
+		if (candidate.length <= maxLength) return candidate;
+	}
+	if (maxLength <= 4) return basename.slice(-maxLength);
+	return `.../${basename.slice(-(maxLength - 4))}`;
+}
+
+function stemOf(file) {
+	const name = (file.split('/').pop() || file).replace(/\.[^.]+$/, '');
+	return name
+		.replace(/[^a-zA-Z0-9-]+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
+function fileDescription(file) {
+	const stem = stemOf(file).toLowerCase();
+	const normalizedStem = stem.replace(/-/g, ' ');
+	if (file.endsWith('README.md')) return 'record status summary';
+	if (file.endsWith('CHANGELOG.md')) return 'record audit trail';
+	if (/\/phases\/\d{2}-/.test(file)) return 'mark phase completion';
+	if (file.endsWith('manifest.json')) return 'set plan status metadata';
+	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} metadata`;
+	if (file.endsWith('.md')) return `record ${normalizedStem || 'document'} notes`;
+	if (file.endsWith('.mjs')) return `wire ${normalizedStem || 'workflow'} logic`;
+	if (file.endsWith('.sh')) return 'set hook execution flow';
+	return `record ${normalizedStem || 'file'} scope`;
+}
+
+function headerSubject(scope, split) {
+	const candidates = [
+		`record ${split.baseDomain || scope} scope`,
+		`record ${(split.baseDomain || scope).replace(/^gov-/, '')} scope`,
+		`record ${scope}`,
+		`sync ${scope}`,
+	];
+	return (
+		candidates
+			.map((value) => value.replace(/-/g, ' '))
+			.find(
+				(value) =>
+					`${inferCommitType(split.files)}(${scope}): ${value}`.length <=
+					HEADER_MAX_LENGTH,
+			) || 'sync scope'
+	);
+}
+
+function buildCommitScaffold(split) {
+	const commitType = inferCommitType(split.files);
+	const scope = split.id;
+	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
+	const body = split.files.map((file) => {
+		let description = truncateText(fileDescription(file), DESCRIPTION_MAX_LENGTH);
+		let pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
+		if (pathBudget < 10) {
+			description = truncateText(description, Math.max(10, BULLET_MAX_LENGTH - 18));
+			pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
+		}
+		const compacted = compactPath(file, Math.max(10, pathBudget));
+		const bullet = `- ${compacted}: ${description}`;
+		if (bullet.length <= BULLET_MAX_LENGTH) return bullet;
+		const overshoot = bullet.length - BULLET_MAX_LENGTH;
+		return `- ${compacted}: ${truncateText(description, Math.max(10, description.length - overshoot))}`;
+	});
+	return {
+		type: commitType,
+		scope,
+		header,
+		body,
+		fullMessage: `${header}\n\n${body.join('\n')}`,
+	};
+}
+
+function stagedFilesFromIndex() {
+	const result = run('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=d']);
+	if (result.status !== 0) fail('Unable to read staged files.');
+	return String(result.stdout || '')
+		.split('\0')
+		.map((value) => value.trim())
+		.filter(Boolean);
+}
+
+function signS0(args) {
+	run(
+		'node',
+		[
+			GATEKEEPER_BIN,
+			'--policy',
+			args.policyFile,
+			'--write-s0-signature',
+			'--s0-file',
+			args.s0File,
+			'--s0-signature-file',
+			args.s0SignatureFile,
+			'--no-auto-branch',
+		],
+		{ stdio: 'inherit' },
+	);
+}
+
+function validateSessionAgainstCurrentIndex(session, args, settings, preflightReport) {
+	const validation = structuralSessionValidation(session, args, settings);
+	if (!validation.ok) return validation;
+	const expected =
+		session?.staged?.detailedSignature?.signature || session?.inspectionCacheKey || '';
+	const current = reportCacheKey(preflightReport);
+	if (expected !== current) return { ok: false, reason: 'session_signature_changed' };
+	return validation;
+}
+
+function inspectCommand(args) {
+	const policy = loadPolicy(args.policyFile);
+	const settings = workflowSettings(policy, args);
+	const session = loadSession(args.sessionFile);
+	const effectiveChecks = checksCsv(settings.heavyChecks);
+	const preflight = runGatekeeper({
+		mode: 'quick',
+		reportProfile: WORKFLOW_REPORT_PROFILE,
+		checks: settings.preflightChecks,
+		policyFile: args.policyFile,
+		sessionFile: args.sessionFile,
+		noAutoBranch: args.noAutoBranch,
+	});
+	const preflightReport = preflight.report;
+	if (preflightReport?.routeReasons?.includes('empty_staged_set')) {
+		cleanupArtifacts(args);
 		if (args.json) {
-			console.log(JSON.stringify(session.fullReport || buildSessionPayload(session, args), null, 2));
+			console.log(JSON.stringify(preflightReport, null, 2));
+			return;
+		}
+		console.log('ℹ️ No staged files detected. Cleaned stale Gatekeeper workflow artifacts.');
+		return;
+	}
+
+	const validation = structuralSessionValidation(session, args, settings);
+	if (validation.ok && matchingSessionReport(session, preflightReport, effectiveChecks)) {
+		refreshSessionFile(session, args, settings, { preflightReport });
+		if (args.json) {
+			console.log(JSON.stringify(session.fullReport, null, 2));
 			return;
 		}
 		console.log(`🧭 workflowRoute=${session.workflowRoute} route=${session.route} (cached)`);
 		console.log(`📦 Suggested splits: ${(session.suggestedSplits || []).length}`);
 		console.log(`🗂️ Session file: ${args.sessionFile}`);
 		if (session.workflowRoute === 'architectural_intervention') {
-			console.log('⛔ Resolve blocking findings, unmapped files, or session drift before committing.');
+			console.log(
+				'⛔ Resolve blocking findings, unmapped files, or session drift before committing.',
+			);
 		}
 		return;
 	}
 
 	const { report } = runGatekeeper({
 		mode: 'quick',
-		reportProfile: 'workflow',
-		checks: 'governance,lint,typecheck,security,adu',
+		reportProfile: WORKFLOW_REPORT_PROFILE,
+		checks: settings.heavyChecks,
+		policyFile: args.policyFile,
 		sessionFile: args.sessionFile,
 		noAutoBranch: args.noAutoBranch,
 	});
-	if (report?.routeReasons?.includes('empty_staged_set')) {
-		cleanupArtifacts(args);
-		if (args.json) {
-			console.log(JSON.stringify(report, null, 2));
-			return;
-		}
-		console.log('ℹ️ No staged files detected. Cleaned stale Gatekeeper workflow artifacts.');
-		return;
-	}
-	writeAtomicJson(args.sessionFile, buildSessionPayload(report, args));
+	writeAtomicJson(
+		args.sessionFile,
+		buildSessionPayload(report, args, settings, {
+			createdAt: session?.createdAt,
+			effectiveChecks,
+			inspectionCacheKey: reportCacheKey(preflightReport),
+			preflightReport,
+		}),
+	);
 	if (args.json) {
 		console.log(JSON.stringify(report, null, 2));
 		return;
@@ -279,17 +520,27 @@ function inspectCommand(args) {
 }
 
 function autofixCommand(args) {
+	const policy = loadPolicy(args.policyFile);
+	const settings = workflowSettings(policy, args);
+	const autoFixChecks = settings.heavyChecks.filter((check) => check !== 'typecheck');
 	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
 		console.log(`\nAttempt ${attempt}/${MAX_ATTEMPTS}`);
 		const { report } = runGatekeeper({
 			mode: 'quick',
-			reportProfile: 'workflow',
-			checks: 'governance,lint,security,adu',
+			reportProfile: WORKFLOW_REPORT_PROFILE,
+			checks: autoFixChecks,
+			policyFile: args.policyFile,
 			sessionFile: args.sessionFile,
 			noAutoBranch: args.noAutoBranch,
 		});
 		if (report.workflowRoute === 'proceed_adu') {
-			writeAtomicJson(args.sessionFile, buildSessionPayload(report, args));
+			writeAtomicJson(
+				args.sessionFile,
+				buildSessionPayload(report, args, settings, {
+					inspectionCacheKey: reportCacheKey(report),
+					effectiveChecks: checksCsv(autoFixChecks),
+				}),
+			);
 			console.log('✅ Gatekeeper autofix path converged. Run inspect or stage a domain.');
 			return;
 		}
@@ -315,12 +566,19 @@ function autofixCommand(args) {
 
 	const { report } = runGatekeeper({
 		mode: 'strict',
-		reportProfile: 'workflow',
-		checks: 'governance,lint,typecheck,security,adu',
+		reportProfile: WORKFLOW_REPORT_PROFILE,
+		checks: settings.heavyChecks,
+		policyFile: args.policyFile,
 		sessionFile: args.sessionFile,
 		noAutoBranch: args.noAutoBranch,
 	});
-	writeAtomicJson(args.sessionFile, buildSessionPayload(report, args));
+	writeAtomicJson(
+		args.sessionFile,
+		buildSessionPayload(report, args, settings, {
+			inspectionCacheKey: reportCacheKey(report),
+			effectiveChecks: checksCsv(settings.heavyChecks),
+		}),
+	);
 	if (report.workflowRoute !== 'proceed_adu') {
 		cleanupArtifacts(args);
 		fail('Gatekeeper did not converge to proceed_adu after max attempts.');
@@ -330,34 +588,41 @@ function autofixCommand(args) {
 
 function stageCommand(args) {
 	if (!args.domain) fail('The stage command requires --domain <id>.');
+	const policy = loadPolicy(args.policyFile);
+	const settings = workflowSettings(policy, args);
 	const session = loadSession(args.sessionFile);
-	const validation = validateSession(session, args);
+	const preflight = runGatekeeper({
+		mode: 'quick',
+		reportProfile: ROUTE_REPORT_PROFILE,
+		checks: settings.preflightChecks,
+		policyFile: args.policyFile,
+		sessionFile: args.sessionFile,
+		noAutoBranch: args.noAutoBranch,
+	});
+	const validation = validateSessionAgainstCurrentIndex(
+		session,
+		args,
+		settings,
+		preflight.report,
+	);
 	if (!validation.ok) {
 		cleanupArtifacts(args);
 		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
 	}
+	refreshSessionFile(session, args, settings, {
+		preflightReport: session?.preflightReport || null,
+	});
 	const split = ensureSplit(session, args.domain);
 	run('git', ['reset', '-q', 'HEAD', '--', '.'], { stdio: 'inherit' });
 	run('git', ['add', '--', ...split.files], { stdio: 'inherit' });
 	writeAtomicText(args.s0File, `${split.files.join('\n')}\n`);
-	run(
-		'node',
-		[
-			'.agent/governance/bin/gatekeeper.mjs',
-			'--write-s0-signature',
-			'--s0-file',
-			args.s0File,
-			'--s0-signature-file',
-			args.s0SignatureFile,
-			'--no-auto-branch',
-		],
-		{ stdio: 'inherit' },
-	);
+	signS0(args);
 	if (args.json) {
 		console.log(
 			JSON.stringify(
 				{
 					domain: split.id,
+					baseDomain: split.baseDomain || split.id,
 					files: split.files,
 					s0File: args.s0File,
 					s0SignatureFile: args.s0SignatureFile,
@@ -375,27 +640,62 @@ function stageCommand(args) {
 
 function scaffoldCommand(args) {
 	if (!args.domain) fail('The scaffold command requires --domain <id>.');
+	const policy = loadPolicy(args.policyFile);
+	const settings = workflowSettings(policy, args);
 	const session = loadSession(args.sessionFile);
-	const validation = validateSession(session, args, { skipSignatureCheck: true });
+	const validation = structuralSessionValidation(session, args, settings);
 	if (!validation.ok) {
 		cleanupArtifacts(args);
 		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
 	}
+	refreshSessionFile(session, args, settings, {
+		preflightReport: session?.preflightReport || null,
+	});
 	const split = ensureSplit(session, args.domain);
-	const scaffold = {
-		type: inferCommitType(split.files),
-		scope: split.id,
-		headerTemplate: `${inferCommitType(split.files)}(${split.id}): <imperative technical subject>`,
-		headerMaxLength: 72,
-		bodyBullets: split.files.map((file) => `- ${file}: <precise technical description>`),
-	};
+	const scaffold = buildCommitScaffold(split);
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
 		return;
 	}
-	console.log(scaffold.headerTemplate);
-	console.log('');
-	for (const bullet of scaffold.bodyBullets) console.log(bullet);
+
+	console.log('📝 Commit message generated:');
+	console.log(scaffold.fullMessage);
+	console.log('\n🔄 Executing git commit...');
+	const tempFile = `.git/COMMIT_EDITMSG_${Date.now()}`;
+	writeFileSync(tempFile, scaffold.fullMessage, 'utf8');
+	const result = run('git', ['commit', '-F', tempFile]);
+	try {
+		unlinkSync(tempFile);
+	} catch {
+		/* ignore temp cleanup errors */
+	}
+	if (result.status !== 0) {
+		console.error(result.stderr);
+		fail('Git commit failed. Check the message format.');
+	}
+	console.log('✅ Commit created successfully.');
+}
+
+function syncS0Command(args) {
+	if (!existsSync(args.s0File)) fail(`S0 file not found: ${args.s0File}`);
+	const originalFiles = readFileSync(args.s0File, 'utf8')
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.sort((a, b) => a.localeCompare(b));
+	const currentFiles = stagedFilesFromIndex().sort((a, b) => a.localeCompare(b));
+	if (originalFiles.length !== currentFiles.length) {
+		fail('Current staged set no longer matches the original S0 scope.');
+	}
+	for (let i = 0; i < originalFiles.length; i += 1) {
+		if (originalFiles[i] !== currentFiles[i]) {
+			fail('Current staged set no longer matches the original S0 scope.');
+		}
+	}
+	signS0(args);
+	if (!args.json) {
+		console.log(`🔐 Refreshed S0 signature: ${args.s0SignatureFile}`);
+	}
 }
 
 function cleanupCommand(args) {
@@ -418,6 +718,9 @@ function main() {
 		case 'scaffold':
 			scaffoldCommand(args);
 			return;
+		case 'sync-s0':
+			syncS0Command(args);
+			return;
 		case 'cleanup':
 			cleanupCommand(args);
 			return;
@@ -426,4 +729,27 @@ function main() {
 	}
 }
 
-main();
+const isMain =
+	import.meta.url ===
+	`file://${process.platform === 'win32' ? '/' : ''}${process.argv[1]?.replace(/\\/g, '/')}`;
+
+if (isMain) {
+	main();
+}
+
+export {
+	autofixCommand,
+	buildCommitScaffold,
+	cleanupCommand,
+	compactPath,
+	fileDescription,
+	inspectCommand,
+	parseArgs,
+	runGatekeeper,
+	scaffoldCommand,
+	sessionAgeMinutes,
+	stageCommand,
+	structuralSessionValidation,
+	syncS0Command,
+	workflowSettings,
+};

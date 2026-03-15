@@ -26,6 +26,24 @@
         "acceptedUpdateTokens": ["Last Updated", "Changelog"],
         "tokenMatchMode": "any"
     },
+    "atomicity": {
+        "defaultLimit": 12,
+        "autoBucketOversizedDomains": true
+    },
+    "workflow": {
+        "session": {
+            "ttlMinutes": 30,
+            "autoRefresh": true
+        },
+        "inspect": {
+            "preflightChecks": ["governance", "adu"],
+            "heavyChecks": ["governance", "lint", "typecheck", "security", "adu"],
+            "typecheckSkipPatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"]
+        }
+    },
+    "s0Drift": {
+        "ignorePatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"]
+    },
     "rules": {
         "forbiddenFiles": {
             "enabled": true,
