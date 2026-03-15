@@ -20,9 +20,19 @@
             "src/styles/ui/**",
             "src/styles/*.scss"
         ],
-        "gov-tooling": [
+        "gov-agent-config": [
             ".agent/governance/bin/**",
             ".agent/governance/config/**",
+            ".agent/GATEKEEPER_RULES.md",
+            ".agent/README.md"
+        ],
+        "gov-skills": [".agent/skills/**"],
+        "gov-plans-archive": [".agent/plans/README.md", ".agent/plans/archive/**"],
+        "gov-plans-invitation": [
+            ".agent/plans/real-xv-invitation/**",
+            ".agent/plans/wedding-finalization/**"
+        ],
+        "gov-tooling": [
             "scripts/**",
             "commitlint.config.cjs",
             "eslint.config.js",
