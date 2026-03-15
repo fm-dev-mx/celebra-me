@@ -74,7 +74,9 @@
 
 ### Active Plans
 
-- [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `PENDING`,
+- [error-remediation-evolution](../.agent/plans/error-remediation-evolution/README.md) - `ACTIVE`,
+  systematic hardening of diagnostic automation and zero-loop remediation.
+- [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `ACTIVE`,
   governance optimization and workflow hardening plan for commit automation.
 
 ### Archived Plans

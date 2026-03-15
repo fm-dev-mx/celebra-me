@@ -74,9 +74,10 @@ the executable owner.
 
 ## ADU Contract
 
-`gatekeeper.mjs` computes ADU splits through `DomainMapper`. `gatekeeper-workflow.mjs` is the only
-supported owner for creating `.git/gatekeeper-session.json`, `.git/gatekeeper-s0.txt`, and
-`.git/gatekeeper-s0-signature.json`.
+`gatekeeper.mjs` computes ADU splits through `DomainMapper`, enforcing atomicity limits (default 12
+files per split) during the inspection phase to prevent non-atomic commits.
+`gatekeeper-workflow.mjs` is the only supported owner for creating `.git/gatekeeper-session.json`,
+`.git/gatekeeper-s0.txt`, and `.git/gatekeeper-s0-signature.json`.
 
 Auto-branching from protected branches remains owned by `gatekeeper.mjs`. Explicit branch creation
 for backward-compatible helpers remains owned by `gatekeeper-commit-ready.mjs`.
