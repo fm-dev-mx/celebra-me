@@ -26,7 +26,7 @@ redesign** while keeping the premium positioning and existing public URL contrac
 
 ### Design Name
 
-**Editorial Hacienda Wedding**
+#### Editorial Hacienda Wedding
 
 ### Emotional Reference
 
@@ -118,7 +118,7 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make the header feel like fine editorial navigation, not the XV luxury nav.
 
-**Layout**
+#### Header Layout
 
 - Keep the current component structure in
   [EventHeader.astro](../../../src/components/invitation/EventHeader.astro).
@@ -126,13 +126,13 @@ can be optimized through the same image pipeline used elsewhere.
 - Reduce visual weight of the title.
 - Make nav links feel like a printed program, not CTA chips.
 
-**Visual Changes**
+#### Header Visual Changes
 
 - Event title in `Cinzel Variable`, smaller and wider tracked.
 - Non-CTA links become text-only with thin underline on hover.
 - CTA becomes a slim bordered button, not a filled gold capsule.
 
-**Files**
+#### Header Files
 
 - [src/components/invitation/EventHeader.astro](../../../src/components/invitation/EventHeader.astro)
 - [src/styles/invitation/\_event-header.scss](../../../src/styles/invitation/_event-header.scss)
@@ -142,7 +142,7 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** remove the XV floating card feel entirely.
 
-**Layout**
+#### Hero Layout
 
 - Full-bleed background image remains.
 - Replace the central "glass card" composition with a **bottom-anchored editorial panel**.
@@ -152,13 +152,13 @@ can be optimized through the same image pipeline used elsewhere.
 - Mobile:
     - Same structure, compressed vertically, still no floating jewel card.
 
-**Typography**
+#### Hero Typography
 
 - Primary names in `Cinzel Variable`.
 - Ampersand in small `Pinyon Script`.
 - Label and metadata in `Montserrat`.
 
-**Visual Changes**
+#### Hero Visual Changes
 
 - Remove heavy glassmorphism as the dominant device.
 - Replace with:
@@ -167,11 +167,11 @@ can be optimized through the same image pipeline used elsewhere.
     - thin champagne rules
     - subtle ivory overlay
 
-**Photo Direction**
+#### Hero Photo Direction
 
 - Wide professional portrait, not decor-first.
 
-**Files**
+#### Hero Files
 
 - [src/components/invitation/Hero.astro](../../../src/components/invitation/Hero.astro)
 - [src/styles/invitation/\_hero.scss](../../../src/styles/invitation/_hero.scss)
@@ -182,20 +182,20 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make the quote feel like a magazine interlude, not a romantic XV plaque.
 
-**Layout**
+#### Quote Layout
 
 - Full-width editorial text block.
 - Large whitespace.
 - No jewel divider top/bottom as primary motif.
 
-**Visual Changes**
+#### Quote Visual Changes
 
 - Background in warm ivory with subtle paper texture.
 - Oversized opening quotation mark as a background mark.
 - Quote max width tighter than current version.
 - Author small, uppercase, tracked, understated.
 
-**Files**
+#### Quote Files
 
 - [src/components/invitation/Quote.astro](../../../src/components/invitation/Quote.astro)
 - [src/styles/themes/sections/\_quote-theme.scss](../../../src/styles/themes/sections/_quote-theme.scss)
@@ -204,19 +204,19 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make this the most recognizable "wedding-only" section.
 
-**Layout**
+#### Family Layout
 
 - Two equal editorial columns for "Padres de la Novia" and "Padres del Novio".
 - Godparents rendered in a narrower third block or separate lower strip.
 - Featured image uses an **arched portrait frame**.
 
-**Visual Changes**
+#### Family Visual Changes
 
 - Replace decorative symmetry with structured printed-program rhythm.
 - Use thin rules, muted olive/champagne accents.
 - Keep arches here as the hero motif of the system.
 
-**Files**
+#### Family Files
 
 - [src/components/invitation/Family.astro](../../../src/components/invitation/Family.astro)
 - [src/components/invitation/FamilyDecorations.astro](../../../src/components/invitation/FamilyDecorations.astro)
@@ -228,18 +228,18 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** feel ceremonial, not playful or premium-XV.
 
-**Layout**
+#### Countdown Layout
 
 - Four slim vertical number blocks.
 - Title and date stay minimal.
 
-**Visual Changes**
+#### Countdown Visual Changes
 
 - Remove floating gem-card feeling.
 - Number blocks become taller, cleaner, less rounded.
 - Accent only on separators and labels.
 
-**Files**
+#### Countdown Files
 
 - [src/styles/themes/sections/\_countdown-theme.scss](../../../src/styles/themes/sections/_countdown-theme.scss)
 - [src/styles/themes/presets/\_jewelry-box-wedding.scss](../../../src/styles/themes/presets/_jewelry-box-wedding.scss)
@@ -248,32 +248,32 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** feel architectural and venue-led.
 
-**Layout**
+#### Location Layout
 
 - Ceremony and reception remain separate cards structurally, but visually shift to **architectural
   editorial panels**.
 - The venue image becomes dominant.
 - Map links remain, but visually secondary.
 
-**Visual Changes**
+#### Location Visual Changes
 
 - Cards become taller and less jewel-like.
 - Venue photos move to the top as a true feature.
 - CTA buttons become rectangular fine-stationery controls.
 - Flourish markers become thin rules and tiny arch motifs instead of diamonds.
 
-**Photo Direction**
+#### Location Photo Direction
 
 - Real chapel image for ceremony.
 - Real reception setup or hacienda courtyard image for reception.
 
-**Implementation Decision**
+#### Location Implementation Decision
 
 - Extend event assets to support `ceremony` and `reception`.
 - Use these keys in `demo-bodas.json` under `location.ceremony.image` and
   `location.reception.image`.
 
-**Files**
+#### Location Files
 
 - [src/components/invitation/EventLocation.astro](../../../src/components/invitation/EventLocation.astro)
 - [src/components/invitation/components/VenueCard.astro](../../../src/components/invitation/components/VenueCard.astro)
@@ -287,17 +287,17 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make it read like a wedding program timeline.
 
-**Layout**
+#### Itinerary Layout
 
 - Vertical line timeline stays, but should feel more like printed sequence than glowing luxury.
 
-**Visual Changes**
+#### Itinerary Visual Changes
 
 - Fine line, restrained icon treatment, stronger typography hierarchy.
 - Labels in `Cinzel`.
 - Descriptions in `Cormorant Garamond`.
 
-**Files**
+#### Itinerary Files
 
 - [src/styles/themes/sections/\_itinerary-theme.scss](../../../src/styles/themes/sections/_itinerary-theme.scss)
 
@@ -305,7 +305,7 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** feel like editorial storytelling, not a reusable premium grid.
 
-**Layout Decision**
+#### Gallery Layout Decision
 
 - Keep `PhotoGallery.tsx`, but change its wedding layout logic.
 - For `jewelry-box-wedding`, use a fixed editorial rhythm:
@@ -317,14 +317,14 @@ can be optimized through the same image pipeline used elsewhere.
     - item 5: standard
     - item 6+: standard or wide alternating
 
-**Visual Changes**
+#### Gallery Visual Changes
 
 - Captions become small editorial labels.
 - Overlay is subtler.
 - More whitespace in section header.
 - Less “card” feeling around each image.
 
-**Files**
+#### Gallery Files
 
 - [src/components/invitation/Gallery.astro](../../../src/components/invitation/Gallery.astro)
 - [src/components/invitation/PhotoGallery.tsx](../../../src/components/invitation/PhotoGallery.tsx)
@@ -335,18 +335,18 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make gifts feel like premium stationery, not premium product cards.
 
-**Layout**
+#### Gifts Layout
 
 - Keep current semantic structure.
 - Visual shell becomes flatter, cleaner, more card-stock than glass.
 
-**Visual Changes**
+#### Gifts Visual Changes
 
 - Remove heavy glass look.
 - Use ivory blocks with thin borders and inset rules.
 - Buttons become bordered controls.
 
-**Files**
+#### Gifts Files
 
 - [src/styles/themes/sections/\_gifts-theme.scss](../../../src/styles/themes/sections/_gifts-theme.scss)
 
@@ -354,12 +354,12 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make RSVP feel like a formal response card.
 
-**Layout**
+#### RSVP Layout
 
 - Keep current React form and validation logic.
 - Change visual shell from glass card to **reply card / stationery form**.
 
-**Visual Changes**
+#### RSVP Visual Changes
 
 - Narrower width.
 - Less blur.
@@ -368,7 +368,7 @@ can be optimized through the same image pipeline used elsewhere.
 - Title in `Cinzel`, not script.
 - Radios styled like formal response options.
 
-**Files**
+#### RSVP Files
 
 - [src/components/invitation/RSVP.tsx](../../../src/components/invitation/RSVP.tsx)
 - [src/styles/invitation/\_rsvp.scss](../../../src/styles/invitation/_rsvp.scss)
@@ -378,19 +378,19 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** make the final screen feel like the closing page of a wedding editorial.
 
-**Layout**
+#### Thank You Layout
 
 - Switch from circular portrait to **vertical arch portrait**.
 - Message sits beside or below as a letter block depending on viewport.
 - Signature oversized but restrained.
 
-**Visual Changes**
+#### Thank You Visual Changes
 
 - Remove glimmer wheel and circular jewelry portrait frame.
 - Use ivory panel, thin border, arch silhouette.
 - Make the closing name feel like a magazine signature, not a fairy-tale flourish.
 
-**Files**
+#### Thank You Files
 
 - [src/components/invitation/ThankYou.astro](../../../src/components/invitation/ThankYou.astro)
 - [src/styles/invitation/\_thank-you.scss](../../../src/styles/invitation/_thank-you.scss)
@@ -400,13 +400,13 @@ can be optimized through the same image pipeline used elsewhere.
 
 **Goal:** turn it into a subtle concierge detail, not a shiny accent.
 
-**Visual Changes**
+#### Music Player Visual Changes
 
 - Reduce glow.
 - Softer prompt styling.
 - Match stationery and ivory/champagne finish.
 
-**Files**
+#### Music Player Files
 
 - [src/styles/themes/sections/\_music-theme.scss](../../../src/styles/themes/sections/_music-theme.scss)
 

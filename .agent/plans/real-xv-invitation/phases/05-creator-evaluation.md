@@ -19,7 +19,7 @@ invitations" with live preview.
 
 ### Current Manual Workflow (Baseline)
 
-```
+```text
 Client Request → Developer creates JSON → Developer creates/selects SCSS preset
 → Developer uploads photos to CDN → Developer commits & deploys → Client previews URL
 ```
@@ -29,7 +29,7 @@ SCSS basics, CDN uploads.
 
 ### Proposed Creator Workflow
 
-```
+```text
 Client Request → Admin opens Creator UI → Selects template → Fills form fields
 → Live preview updates → Exports JSON → Auto-deploys → Client previews URL
 ```
@@ -79,7 +79,7 @@ The project has a React-based dashboard (`src/components/dashboard/`) with:
 
 ### MVP Creator Architecture (If Built)
 
-```
+```text
 Dashboard Shell
 └── Event Creator (new page)
     ├── Template Selector            ← Choose base template (xv, boda, cumple)

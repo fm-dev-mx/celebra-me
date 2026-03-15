@@ -34,7 +34,7 @@ The production event will live in the `events` collection (`src/content/events/`
 **priority** over `event-demos` in the `getRoutableEventEntry()` resolution chain. This is the
 correct and intended path for real client data.
 
-```
+```text
 src/content/events/
 └── <client-slug>.json    ← New production event file
 ```
@@ -43,7 +43,7 @@ src/content/events/
 
 The slug becomes the URL path segment: `/<eventType>/<slug>`. Recommended pattern:
 
-```
+```text
 xv-<first-name>-<year>
 ```
 

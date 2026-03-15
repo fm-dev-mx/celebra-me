@@ -22,13 +22,13 @@ The project uses two asset referencing strategies:
 
 **Current registry structure:**
 
-```
+````text
 src/assets/images/events/
 ├── alberto-sesenta/   ← demo-cumple assets (local)
 ├── demo-wedding/      ← demo-bodas assets (local)
 ├── demo-xv/           ← demo-xv assets (local)
 └── gerardo-sesenta/   ← transformation event (local)
-```
+```text
 
 Each event folder exports a `RawEventAssets` object with hero, portrait, gallery, ceremony, etc. The
 `mapEventAssets()` helper normalizes them into `EventAssets`.
@@ -57,19 +57,19 @@ With this approach, the production JSON file references URLs directly in the `im
 
 ```json
 {
-	"hero": {
-		"backgroundImage": "https://res.cloudinary.com/dusxvauvj/image/upload/v.../xv-client-hero.jpg"
-	},
-	"gallery": {
-		"items": [
-			{
-				"image": "https://res.cloudinary.com/.../gallery01.jpg",
-				"caption": "..."
-			}
-		]
-	}
+ "hero": {
+  "backgroundImage": "https://res.cloudinary.com/dusxvauvj/image/upload/v.../xv-client-hero.jpg"
+ },
+ "gallery": {
+  "items": [
+   {
+    "image": "https://res.cloudinary.com/.../gallery01.jpg",
+    "caption": "..."
+   }
+  ]
+ }
 }
-```
+````
 
 The `AssetSchema` in `config.ts` already supports this — it's a union of `z.enum(EVENT_KEYS)`,
 `z.string().url()`, and `z.string().startsWith('/')`.

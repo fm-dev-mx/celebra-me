@@ -15,7 +15,7 @@ the content pipeline, and validate the full rendering flow end-to-end.
 
 The production JSON file goes in the `events` collection:
 
-```
+```text
 src/content/events/<client-slug>.json
 ```
 
