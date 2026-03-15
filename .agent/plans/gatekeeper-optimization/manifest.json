@@ -1,0 +1,46 @@
+{
+    "id": "gatekeeper-optimization",
+    "title": "Gatekeeper Commit Workflow Optimization & Governance Hardening",
+    "status": "PENDING",
+    "completion": 0,
+    "created": "2026-03-15",
+    "updated": "2026-03-15",
+    "estimatedDuration": "4 phases / ~2 days",
+    "owner": "system-agent",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-audit",
+            "title": "Audit Baseline",
+            "file": "phases/01-audit.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 30
+        },
+        {
+            "id": "02-script-enhancement",
+            "title": "Script Enhancement",
+            "file": "phases/02-script-enhancement.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 30
+        },
+        {
+            "id": "03-workflow-refactoring",
+            "title": "Workflow Refactoring",
+            "file": "phases/03-workflow-refactoring.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 25
+        },
+        {
+            "id": "04-validation",
+            "title": "Validation",
+            "file": "phases/04-validation.md",
+            "status": "PENDING",
+            "completion": 0,
+            "weight": 15
+        }
+    ],
+    "tags": ["governance", "git", "automation", "commit-workflow", "devex"]
+}
