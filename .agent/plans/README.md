@@ -38,7 +38,7 @@ All directories and files under `.agent/plans/`
 
 Every new plan **must** reside in a **kebab-case** directory directly under `.agent/plans/`:
 
-```
+```text
 .agent/plans/{plan-name}/
 ├── README.md          # Executive Summary & Phase Index
 ├── CHANGELOG.md       # Audit trail with timestamps
@@ -338,7 +338,7 @@ protocol is executed:
 
 ### Archive Procedure
 
-```
+```text
 # 1. Move the entire plan directory to archive
 .agent/plans/{plan-name}/  →  .agent/plans/archive/{plan-name}/
 
@@ -355,9 +355,11 @@ git commit -m "docs(plans): archive completed plan '{plan-name}'"
 - **No modifications** to archived plans. If a follow-up is needed, create a new plan with a
   reference to the archived one.
 - **Cross-referencing**: New plans may link to archived plans for historical context:
+
     ```markdown
     > **Predecessor:** [System Health Audit](../archive/system-health-audit/README.md)
     ```
+
 - **Retention**: Archived plans are retained indefinitely for audit purposes.
 
 ---
@@ -599,7 +601,7 @@ _No entries yet._
 
 ### Directory Hygiene
 
-```
+```text
 .agent/plans/
 ├── README.md              ← This file (governance rules)
 ├── {active-plan-1}/       ← Active plans live here

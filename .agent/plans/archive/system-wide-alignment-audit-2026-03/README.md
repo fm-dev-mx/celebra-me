@@ -52,7 +52,5 @@ of scope for this run.
 > **Governance Note:** This plan follows the rules defined in
 > [Planning Governance Framework](../../README.md). The predecessor hardening effort remains active
 > at the top level and is intentionally tracked as a deferred archive action rather than being
-> mutated here.
-
-> **Archive Note:** Archived on 2026-03-10 after its follow-up remediation plan assumed ownership of
-> remaining cleanup.
+> mutated here. **Archive Note:** Archived on 2026-03-10 after its follow-up remediation plan
+> assumed ownership of remaining cleanup.

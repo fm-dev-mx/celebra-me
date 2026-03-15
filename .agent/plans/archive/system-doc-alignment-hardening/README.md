@@ -45,7 +45,5 @@ actionable update plan.
 
 > **Governance Note:** This plan follows the rules defined in
 > [Planning Governance Framework](../../README.md). No phase may be committed without owner
-> approval.
-
-> **Archive Note:** Archived on 2026-03-10 after its workflow changes were absorbed into the active
-> governance baseline.
+> approval. **Archive Note:** Archived on 2026-03-10 after its workflow changes were absorbed into
+> the active governance baseline.
