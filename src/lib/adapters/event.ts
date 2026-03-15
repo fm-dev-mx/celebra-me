@@ -71,21 +71,42 @@ function hexToRgb(hex: string): string {
 	return `${r}, ${g}, ${b}`;
 }
 
-function resolveAsset(eventSlug: string, keyOrUrl: string | undefined): ImageAsset | undefined {
+function resolveAsset(
+	eventSlug: string,
+	keyOrUrl: string | undefined,
+	eventTitle: string,
+): ImageAsset | undefined {
 	if (!keyOrUrl) return undefined;
 
 	if (keyOrUrl.startsWith('http') || keyOrUrl.startsWith('/')) {
 		return {
 			src: keyOrUrl,
-			alt: 'Recurso del evento',
+			alt: `Recurso de ${eventTitle}`,
 		};
 	}
 
-	return getEventAsset(eventSlug, keyOrUrl as EventAssetKey);
+	const metadata = getEventAsset(eventSlug, keyOrUrl as EventAssetKey);
+	if (!metadata) return undefined;
+
+	// Centralized Alt text generation
+	let alt = `Imagen de ${eventTitle}`;
+	if (keyOrUrl === 'hero') alt = `Portada de ${eventTitle}`;
+	else if (keyOrUrl === 'portrait') alt = `Retrato de ${eventTitle}`;
+	else if (keyOrUrl.startsWith('gallery')) {
+		const num = keyOrUrl.replace('gallery', '');
+		alt = `Galería ${num} de ${eventTitle}`;
+	} else if (keyOrUrl.startsWith('interlude')) {
+		alt = `Interludio de ${eventTitle}`;
+	}
+
+	return {
+		src: metadata,
+		alt,
+	};
 }
 
-function requireAsset(eventSlug: string, keyOrUrl: string): ImageAsset {
-	const asset = resolveAsset(eventSlug, keyOrUrl);
+function requireAsset(eventSlug: string, keyOrUrl: string, eventTitle: string): ImageAsset {
+	const asset = resolveAsset(eventSlug, keyOrUrl, eventTitle);
 	if (!asset) {
 		console.warn(`[AssetWarning] Asset not found for key: ${keyOrUrl} in event ${eventSlug}`);
 		return { src: '', alt: 'Recurso faltante' };
@@ -124,8 +145,8 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 		},
 	};
 
-	const heroBg = requireAsset(eventSlug, data.hero.backgroundImage);
-	const heroPortrait = resolveAsset(eventSlug, data.hero.portrait);
+	const heroBg = requireAsset(eventSlug, data.hero.backgroundImage, data.title);
+	const heroPortrait = resolveAsset(eventSlug, data.hero.portrait, data.title);
 	const hero: HeroViewModel = {
 		name: data.hero.name,
 		secondaryName: data.hero.secondaryName,
@@ -174,28 +195,28 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 	const galleryItems =
 		data.gallery?.items.map((item: { image: string; caption?: string }) => ({
 			...item,
-			image: requireAsset(eventSlug, item.image),
+			image: requireAsset(eventSlug, item.image, data.title),
 		})) || [];
 
 	const familyImage = data.family?.featuredImage
-		? resolveAsset(eventSlug, data.family.featuredImage)
+		? resolveAsset(eventSlug, data.family.featuredImage, data.title)
 		: undefined;
 
 	const thankYouImage = data.thankYou?.image
-		? resolveAsset(eventSlug, data.thankYou.image)
+		? resolveAsset(eventSlug, data.thankYou.image, data.title)
 		: undefined;
 
 	const ceremony = data.location.ceremony
 		? {
 				...data.location.ceremony,
-				image: resolveAsset(eventSlug, data.location.ceremony.image as string),
+				image: resolveAsset(eventSlug, data.location.ceremony.image as string, data.title),
 			}
 		: undefined;
 
 	const reception = data.location.reception
 		? {
 				...data.location.reception,
-				image: resolveAsset(eventSlug, data.location.reception.image as string),
+				image: resolveAsset(eventSlug, data.location.reception.image as string, data.title),
 			}
 		: undefined;
 
@@ -224,7 +245,7 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 				return [{ type: 'section', section: block.section as ContentSectionKey }];
 			}
 
-			const image = resolveAsset(eventSlug, block.image);
+			const image = resolveAsset(eventSlug, block.image, data.title);
 			if (!image) return [];
 
 			return [

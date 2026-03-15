@@ -1,42 +1,29 @@
 /**
  * Universal Asset Registry
  * Provides a deterministic way to access and optimize project assets.
+ * Now using dynamic discovery to avoid manual import boilerplate.
  */
 
-import { assets as DemoAlbertoSesentaAssets } from '../../assets/images/events/alberto-sesenta';
-import { assets as DemoXvAssets } from '../../assets/images/events/demo-xv';
-import { assets as DemoBodasAssets } from '../../assets/images/events/demo-wedding';
-import { assets as XimenaAssets } from '../../assets/images/events/ximena-meza-trasvina';
 import type { ImageMetadata } from 'astro';
 
-// Social Proof
+// Common Assets
 import avatar1 from '../../assets/images/hero/avatar1.png';
 import avatar2 from '../../assets/images/hero/avatar2.png';
 import avatar3 from '../../assets/images/hero/avatar3.png';
-
-// Services
 import serviceXv from '../../assets/images/services/xv.png';
 import serviceWedding from '../../assets/images/services/wedding.png';
 import serviceBaptism from '../../assets/images/services/baptism.png';
 import serviceCumple from '../../assets/images/services/cumple.png';
-
-// Header
 import headerLogo from '../../assets/images/header/horizontal-logo150x56.png';
-
-// About
 import partyToast from '../../assets/images/about/party-toast-premium.png';
 
 /**
  * Represents a processed image asset.
+ * Note: Alt text is now handled by the Adapter to ensure decoupling.
  */
 export interface ImageAsset {
 	src: string | ImageMetadata;
 	alt: string;
-	resolutions?: {
-		x1: string;
-		x2: string;
-		x3?: string;
-	};
 }
 
 export const EVENT_KEYS = [
@@ -91,7 +78,7 @@ export type CommonAssetKey = (typeof COMMON_KEYS)[number];
  * Standard schema for event-specific assets.
  * All events must implement this interface to ensure UI compatibility.
  */
-export type EventAssets = Record<EventAssetKey, ImageAsset | undefined>;
+export type EventAssets = Record<EventAssetKey, ImageMetadata | undefined>;
 
 /**
  * Schema for common/shared assets.
@@ -103,82 +90,59 @@ interface Registry {
 	common: CommonAssets;
 }
 
-type RawEventAssets = {
-	hero: ImageMetadata;
-	portrait: ImageMetadata;
-	family?: ImageMetadata;
-	ceremony?: ImageMetadata;
-	reception?: ImageMetadata;
-	jardin: ImageMetadata;
-	signature: ImageMetadata;
-	gallery: (ImageMetadata | undefined)[];
-	interlude01?: ImageMetadata;
-	interlude02?: ImageMetadata;
-	interlude03?: ImageMetadata;
-	interludeNew01?: ImageMetadata;
-	thankYouPortrait?: ImageMetadata;
-};
+// --- DYNAMIC DISCOVERY ---
 
-// Remote event asset types are no longer needed.
+/**
+ * Automatically find all event asset modules.
+ */
+const EVENT_ASSET_MODULES = import.meta.glob('../../assets/images/events/*/index.ts', {
+	import: 'assets',
+	eager: true,
+}) as Record<string, EventAssets & { gallery?: ImageMetadata[] }>;
 
-// Event-specific asset mapping helpers
-const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAssets => {
-	const assets: Partial<EventAssets> = {
-		hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
-		portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
-		family: rawAssets.family
-			? { src: rawAssets.family, alt: `Familia de ${eventName}` }
-			: undefined,
-		ceremony: rawAssets.ceremony
-			? { src: rawAssets.ceremony, alt: `Ceremonia de ${eventName}` }
-			: undefined,
-		reception: rawAssets.reception
-			? { src: rawAssets.reception, alt: `Recepción de ${eventName}` }
-			: undefined,
-		jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
-		signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
-		interlude01: rawAssets.interlude01
-			? { src: rawAssets.interlude01, alt: `Interludio 01 de ${eventName}` }
-			: undefined,
-		interlude02: rawAssets.interlude02
-			? { src: rawAssets.interlude02, alt: `Interludio 02 de ${eventName}` }
-			: undefined,
-		interlude03: rawAssets.interlude03
-			? { src: rawAssets.interlude03, alt: `Interludio 03 de ${eventName}` }
-			: undefined,
-		interludeNew01: rawAssets.interludeNew01
-			? { src: rawAssets.interludeNew01, alt: `Interludio Premium de ${eventName}` }
-			: undefined,
-		thankYouPortrait: rawAssets.thankYouPortrait
-			? { src: rawAssets.thankYouPortrait, alt: `Retrato de Despedida de ${eventName}` }
-			: undefined,
-	};
+/**
+ * Helper to extract slug from path:
+ * "../../assets/images/events/ximena-meza-trasvina/index.ts" -> "ximena-meza-trasvina"
+ */
+const getSlugFromPath = (path: string) => path.split('/').slice(-2, -1)[0];
 
-	// Programmatic Gallery Mapping
-	for (let i = 0; i < 15; i++) {
-		const key = `gallery${String(i + 1).padStart(2, '0')}` as EventAssetKey;
-		const raw = rawAssets.gallery[i];
-		if (raw) {
-			const alt =
-				i === 14
-					? `Detalle Editorial de ${eventName}`
-					: `Galería ${String(i + 1).padStart(2, '0')} de ${eventName}`;
-			assets[key] = { src: raw, alt };
+/**
+ * Processes raw assets from modules into a flattened Registry structure.
+ */
+const EVENT_REGISTRY: Record<string, EventAssets> = Object.entries(EVENT_ASSET_MODULES).reduce(
+	(acc, [path, rawAssets]) => {
+		const slug = getSlugFromPath(path);
+		const assets: Partial<EventAssets> = {
+			hero: rawAssets.hero,
+			portrait: rawAssets.portrait,
+			family: rawAssets.family,
+			ceremony: rawAssets.ceremony,
+			reception: rawAssets.reception,
+			jardin: rawAssets.jardin,
+			signature: rawAssets.signature,
+			interlude01: rawAssets.interlude01,
+			interlude02: rawAssets.interlude02,
+			interlude03: rawAssets.interlude03,
+			interludeNew01: rawAssets.interludeNew01,
+			thankYouPortrait: rawAssets.thankYouPortrait,
+		};
+
+		// Map gallery array to flat keys (gallery01...gallery15)
+		if (Array.isArray(rawAssets.gallery)) {
+			rawAssets.gallery.forEach((img: ImageMetadata | undefined, index: number) => {
+				const key = `gallery${String(index + 1).padStart(2, '0')}` as EventAssetKey;
+				assets[key] = img;
+			});
 		}
-	}
 
-	return assets as EventAssets;
-};
-
-// Remote asset mapping is no longer used for this event as assets are hosted locally.
+		acc[slug] = assets as EventAssets;
+		return acc;
+	},
+	{} as Record<string, EventAssets>,
+);
 
 export const ImageRegistry: Registry = {
-	events: {
-		'demo-cumple': mapEventAssets(DemoAlbertoSesentaAssets, 'Don Alberto 60 años'),
-		'demo-xv': mapEventAssets(DemoXvAssets, 'XV de muestra'),
-		'demo-bodas': mapEventAssets(DemoBodasAssets, 'Sofía & Alejandro'),
-		'ximena-meza-trasvina': mapEventAssets(XimenaAssets, 'Ximena Meza Trasviña'),
-	},
+	events: EVENT_REGISTRY,
 	common: {
 		logo: {
 			src: '/icons/favicon.svg',
@@ -201,7 +165,7 @@ export const ImageRegistry: Registry = {
 			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			alt: 'Fondo Hero',
 		},
-	},
+	} satisfies Record<CommonAssetKey, ImageAsset>,
 };
 
 export type EventSlug = keyof typeof ImageRegistry.events;
@@ -214,9 +178,10 @@ export function isValidEvent(slug: string): slug is EventSlug {
 }
 
 /**
- * Get an event asset by key with strict typing.
+ * Get an event asset by key.
+ * Now returns ImageMetadata directly. The Adapter will wrap it with Alt text.
  */
-export function getEventAsset(event: string, key: EventAssetKey): ImageAsset | undefined {
+export function getEventAsset(event: string, key: EventAssetKey): ImageMetadata | undefined {
 	if (!isValidEvent(event)) return undefined;
 	return ImageRegistry.events[event][key];
 }
