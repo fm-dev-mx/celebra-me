@@ -5,6 +5,8 @@ description:
     formal/warm tone, event-specific vocabulary, courtesy formulas, and common UI patterns.
 ---
 
+# Copywriting ES
+
 > **Related skills**: [`accessibility`](../accessibility/SKILL.md) for accessible error messages and
 > form labels.
 
@@ -75,14 +77,14 @@ warm tone appropriate for celebrations and family events.
 
 ### Opening (Encabezado)
 
-```
+```text
 [Nombres de los anfitriones]
 tienen el honor de invitar a la celebración de...
 ```
 
 Or for parents hosting:
 
-```
+```text
 [Nombre de los padres]
 tienen el placer de anunciar...
 ```
@@ -95,7 +97,7 @@ tienen el placer de anunciar...
 
 ### Venue
 
-```
+```text
 [Nombre del lugar]
 [Dirección completa]
 [Ciudad, Estado/País]

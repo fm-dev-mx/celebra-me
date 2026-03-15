@@ -5,6 +5,8 @@ description:
     alignment between code and docs.
 ---
 
+# Documentation Governance
+
 > **Related skills**: [`backend-engineering`](../backend-engineering/SKILL.md) for documenting API
 > patterns.
 
@@ -40,17 +42,17 @@ last_reviewed: "YYYY-MM-DD"
 
 When modifying code, you **MUST** update the corresponding documentation in the same PR/Task.
 
-1.  **Business Logic Change**:
+1. **Business Logic Change**:
     - _If_ it changes the behavior described in an ADR or the Architecture doc.
     - _Action_: Update `docs/core/architecture.md`, the matching `docs/domains/**` doc, or create a
       new ADR under `docs/architecture/`.
 
-2.  **File Structure Change**:
+2. **File Structure Change**:
     - _If_ moving core modules (e.g., `src/lib/rsvp` -> `src/lib/rsvp`).
     - _Action_: Update `docs/core/architecture.md` and any affected dashboard entry in
       `docs/DOC_STATUS.md`.
 
-3.  **New Feature**:
+3. **New Feature**:
     - _Action_: Create the doc under the correct subtree (`docs/domains/` for feature docs,
       `docs/architecture/` for ADRs/proposals, `docs/audit/` for reports) and register it in
       `docs/DOC_STATUS.md` when it becomes an active source of truth.
@@ -59,7 +61,7 @@ When modifying code, you **MUST** update the corresponding documentation in the 
 
 Use **Mermaid** for all diagrams. Embedded directly in markdown files.
 
-**Flowchart (Logic Flow):**
+### Flowchart (Logic Flow)
 
 ```mermaid
 graph TD
@@ -68,7 +70,7 @@ graph TD
     B -->|No| D[Error]
 ```
 
-**Sequence (Interaction):**
+### Sequence (Interaction)
 
 ```mermaid
 sequenceDiagram
@@ -82,9 +84,9 @@ sequenceDiagram
 
 When using Agent Mode artifacts (`task.md`, `implementation_plan.md`):
 
-1.  **task.md**: Keep it granular. Check off items as you go.
-2.  **implementation_plan.md**: The "Contract" before Execution. Do not deviate without updating it.
-3.  **walkthrough.md**: The "Proof". Must include what was tested.
+1. **task.md**: Keep it granular. Check off items as you go.
+2. **implementation_plan.md**: The "Contract" before Execution. Do not deviate without updating it.
+3. **walkthrough.md**: The "Proof". Must include what was tested.
 
 ## Verification Checklist
 

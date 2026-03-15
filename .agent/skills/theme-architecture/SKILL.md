@@ -5,6 +5,8 @@ description:
     and Design Tokens in Celebra-me.
 ---
 
+# Theme Architecture
+
 > **Related skills**: [`frontend-design`](../frontend-design/SKILL.md) for aesthetic guidelines,
 > [`astro-patterns`](../astro-patterns/SKILL.md) for component usage.
 

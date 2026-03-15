@@ -5,6 +5,8 @@ description:
     Covers unit tests, component tests, schema validation, and E2E patterns.
 ---
 
+# Testing
+
 > **Related skills**: [`astro-patterns`](../astro-patterns/SKILL.md) for understanding what requires
 > E2E vs unit tests, [`accessibility`](../accessibility/SKILL.md) for a11y testing queries.
 

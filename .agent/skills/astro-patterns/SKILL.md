@@ -5,6 +5,8 @@ description:
     features correctly. Covers Content Collections, BFF data fetching, and Image Optimization.
 ---
 
+# Astro Patterns
+
 > **Related skills**: [`backend-engineering`](../backend-engineering/SKILL.md) for API routes.
 
 This skill governs **Astro Component Architecture** in Celebra-me. It focuses on how components
@@ -30,7 +32,7 @@ const event = await getEntry('events', 'my-event');
 For user-specific data (RSVP status, guest counts), use a **Backend-for-Frontend (BFF)** pattern. Do
 NOT fetch directly from the DB in `.astro` components if it prevents static caching of the shell.
 
-**Preferred: Server Islands (Astro 5+)**
+#### Preferred: Server Islands (Astro 5+)
 
 ```astro
 <EventHeader />
@@ -41,7 +43,7 @@ NOT fetch directly from the DB in `.astro` components if it prevents static cach
 </server-island-guest-status>
 ```
 
-**Alternative: Client Fetch**
+#### Alternative: Client Fetch
 
 ```astro
 ---

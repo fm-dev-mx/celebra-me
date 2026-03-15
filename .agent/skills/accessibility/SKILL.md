@@ -6,6 +6,8 @@ description:
     and dynamic content.
 ---
 
+# Accessibility
+
 > **Related skills**: [`animation-motion`](../animation-motion/SKILL.md) for
 > `prefers-reduced-motion` patterns in specific animations.
 

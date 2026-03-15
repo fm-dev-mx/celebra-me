@@ -5,6 +5,8 @@ description:
     service integration (Supabase, Email) for Celebra-me.
 ---
 
+# Backend Engineering
+
 > **Related skills**: [`astro-patterns`](../astro-patterns/SKILL.md) for data fetching in unrelated
 > components.
 
@@ -140,7 +142,7 @@ export async function findEvent(id: string, token: string) {
 
 All API responses must follow this shape when possible, or standard HTTP codes.
 
-**Success (200/201):**
+### Success (200/201)
 
 ```json
 {
@@ -149,7 +151,7 @@ All API responses must follow this shape when possible, or standard HTTP codes.
 }
 ```
 
-**Error (4xx/5xx):**
+### Error (4xx/5xx)
 
 ```json
 {

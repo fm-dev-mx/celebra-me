@@ -5,6 +5,8 @@ description:
     Jewelry Box aesthetic, and premium typography systems.
 ---
 
+# Frontend Design
+
 > **Related skills**: [`theme-architecture`](../theme-architecture/SKILL.md) for SCSS
 > implementation, [`accessibility`](../accessibility/SKILL.md) for contrast.
 
