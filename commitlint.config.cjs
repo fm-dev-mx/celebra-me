@@ -10,7 +10,17 @@ try {
 	validScopes = Object.keys(domainMap.domains || {});
 } catch (error) {
 	console.error('Failed to load domain-map.json for commitlint scopes:', error);
-	validScopes = ['core', 'ui', 'invitation', 'auth', 'theme', 'governance', 'docs', 'test', 'admin']; // Fallback
+	validScopes = [
+		'core',
+		'ui',
+		'invitation',
+		'auth',
+		'theme',
+		'governance',
+		'docs',
+		'test',
+		'admin',
+	]; // Fallback
 }
 
 const FORBIDDEN_VOCABULARY =
@@ -64,7 +74,10 @@ module.exports = {
 					const combined = `${subject}\n${body}`;
 					const match = combined.match(FORBIDDEN_VOCABULARY);
 					if (match) {
-						return [false, `commit message contains forbidden vocabulary: "${match[0]}"`];
+						return [
+							false,
+							`commit message contains forbidden vocabulary: "${match[0]}"`,
+						];
 					}
 					return [true];
 				},
