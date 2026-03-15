@@ -26,7 +26,8 @@
             "scripts/**",
             "commitlint.config.cjs",
             "eslint.config.js",
-            ".markdownlintignore"
+            ".markdownlintignore",
+            "docs/core/git-governance.md"
         ],
         "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
         "gov-plans-gatekeeper": [".agent/plans/gatekeeper-optimization/**"],

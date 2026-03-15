@@ -1,6 +1,6 @@
 # Git Governance: High-Precision Commit Architecture
 
-> **Status**: Active. **Last Updated**: 2026-03-15.
+> **Status**: Active. **Last Updated**: 2026-03-15. **Subdomains**: Normalized to kebab-case.
 
 ## Overview
 
