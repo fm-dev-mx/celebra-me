@@ -11,6 +11,8 @@ insert_final_newline = true      # Ensure a final newline in all files
 trim_trailing_whitespace = true  # Remove trailing whitespace
 
 [*.md]
+indent_style = space             # Markdownlint rule MD010 forbids hard tabs in Markdown
+indent_size = 2                  # Use two spaces for Markdown lists and nested content
 trim_trailing_whitespace = false # Allow trailing whitespace in Markdown (for visual alignment)
 
 [*.{yml,yaml}]

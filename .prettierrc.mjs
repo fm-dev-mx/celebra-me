@@ -26,6 +26,8 @@ export default {
 			files: '*.md',
 			options: {
 				parser: 'markdown',
+				useTabs: false,
+				tabWidth: 2,
 				proseWrap: 'always', // Wrap markdown text at the print width
 			},
 		},
