@@ -20,9 +20,9 @@ Decouple the Ximena Meza Trasviña invitation from the "Jewelry Box" demo logic 
 ### 2.2 Palette & Token Setup
 
 - [x] Update `_top-premium-xv-ximena.scss` with the new color tokens:
-    - Obsidian Ink (`#1B140D`)
-    - Pearl Silk (`#F9F6F2`)
-    - Burnished Gold (`#C5A059`)
+  - Obsidian Ink (`#1B140D`)
+  - Pearl Silk (`#F9F6F2`)
+  - Burnished Gold (`#C5A059`)
 - [x] Configure the high-contrast typography variables (Bodoni Moda).
 
 ### 2.3 Local Scope Initialization

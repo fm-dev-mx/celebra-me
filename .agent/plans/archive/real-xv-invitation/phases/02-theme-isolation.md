@@ -64,11 +64,11 @@ The real XV invitation requires a **dedicated preset** to prevent cross-contamin
 - [ ] Follow the `_jewelry-box-wedding.scss` pattern as the structural reference (already uses the
       optimized `@use` pattern with `tokens`, `mixins`, and `funcs`)
 - [ ] Define at minimum these overrides:
-    - `--color-surface-primary` and RGB variant
-    - `--color-action-accent` and RGB variant
-    - `--color-glass-*` family
-    - `--font-display`, `--font-calligraphy`
-    - Hero, Family, Gallery, and Countdown section tokens
+  - `--color-surface-primary` and RGB variant
+  - `--color-action-accent` and RGB variant
+  - `--color-glass-*` family
+  - `--font-display`, `--font-calligraphy`
+  - Hero, Family, Gallery, and Countdown section tokens
 
 ### Registration
 

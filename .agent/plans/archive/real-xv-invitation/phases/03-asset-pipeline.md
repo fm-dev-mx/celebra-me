@@ -98,9 +98,9 @@ Astro's built-in image optimization on client photos.
 - [ ] Confirm Cloudinary account has sufficient storage/bandwidth (15% of Phase)
 - [ ] Create a dedicated folder in Cloudinary: `celebra-me/events/<client-slug>/` (10% of Phase)
 - [ ] Define Cloudinary transformation presets for consistent quality:
-    - Hero: `w_1920,q_80,f_auto`
-    - Gallery: `w_1200,q_80,f_auto`
-    - Portrait/Signature: `w_800,q_85,f_auto` (15% of Phase)
+  - Hero: `w_1920,q_80,f_auto`
+  - Gallery: `w_1200,q_80,f_auto`
+  - Portrait/Signature: `w_800,q_85,f_auto` (15% of Phase)
 
 ### Photo Processing Pipeline
 

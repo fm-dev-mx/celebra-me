@@ -1,18 +1,19 @@
 {
     "id": "real-xv-invitation",
     "title": "Ximena Meza Trasviña XV Editorial Finalization",
-    "status": "DONE",
+    "status": "COMPLETED",
     "completion": 100,
     "created": "2026-03-12",
-    "updated": "2026-03-12",
+    "updated": "2026-03-15",
+    "archivedAt": "2026-03-15",
     "estimatedDuration": "4 phases / ~3 days",
     "owner": "fm-dev-mx",
     "blockers": [],
     "phases": [
         {
-            "id": "01-foundation-and-cleanup",
+            "id": "01-audit-and-data-modeling",
             "title": "Creative Foundation & Cleanup",
-            "file": "phases/01-foundation-and-cleanup.md",
+            "file": "phases/01-audit-and-data-modeling.md",
             "status": "COMPLETED",
             "completion": 100,
             "weight": 20

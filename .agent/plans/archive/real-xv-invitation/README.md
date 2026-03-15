@@ -82,15 +82,15 @@ Ximena's assets must be treated as a fashion lookbook:
    retouching, lighting (high-contrast or soft silk), and fashion styling to ensure the invitation
    feels like a single photoshoot session.
 3. **Hero (Portrait):**
-    - High-fashion pose, dramatic lighting (Chiaroscuro).
-    - Composition should allow for text overlap (White space on one side).
+   - High-fashion pose, dramatic lighting (Chiaroscuro).
+   - Composition should allow for text overlap (White space on one side).
 4. **Family (The Circle of Light):**
-    - Arched frames, portrait-style, high-end finishing.
+   - Arched frames, portrait-style, high-end finishing.
 5. **Interludes (Storytelling):**
-    - Dynamic parallax images that break the "section container" feeling.
+   - Dynamic parallax images that break the "section container" feeling.
 6. **Gallery Items:**
-    - A mix of wide, vertical, and detail shots (e.g., jewelry, dress texture) all from the same
-      aesthetic collection.
+   - A mix of wide, vertical, and detail shots (e.g., jewelry, dress texture) all from the same
+     aesthetic collection.
 
 ## 6. Section-by-Section Redesign Spec
 

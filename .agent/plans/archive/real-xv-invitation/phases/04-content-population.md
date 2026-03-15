@@ -29,75 +29,75 @@ changes:
 
 ```json
 {
-	"eventType": "xv",
-	"isDemo": false, // ← Production flag
-	"title": "<Client Event Title>",
-	"description": "<Client SEO Description>",
-	"theme": {
-		"primaryColor": "<client-hex>",
-		"accentColor": "<client-hex>",
-		"fontFamily": "serif",
-		"preset": "jewelry-box-xv-client" // ← From Phase 02
-	},
-	"sectionStyles": {
-		/* all with variant: "jewelry-box-xv-client" */
-	},
-	"hero": {
-		"name": "<Real Name>",
-		"label": "Mis XV Años",
-		"date": "<ISO-8601 event date>",
-		"backgroundImage": "<Cloudinary URL>", // ← From Phase 03
-		"portrait": "<Cloudinary URL>" // ← Optional
-	},
-	"location": {
-		"ceremony": {
-			/* Real venue data */
-		},
-		"reception": {
-			/* Real venue data */
-		},
-		"indications": [
-			/* Client-specific rules */
-		]
-	},
-	"family": {
-		"parents": { "father": "...", "mother": "..." },
-		"godparents": [
-			/* Real godparents */
-		],
-		"featuredImage": "<Cloudinary URL>"
-	},
-	"gallery": {
-		"title": "Galería",
-		"subtitle": "<Client subtitle>",
-		"items": [
-			/* 8-12 images with CDN URLs */
-		]
-	},
-	"rsvp": {
-		"confirmationMode": "both",
-		"whatsappConfig": { "phone": "<real-phone>" }
-	},
-	"quote": {
-		/* Client-chosen quote */
-	},
-	"thankYou": {
-		/* Personalized closing */
-	},
-	"music": { "url": "<R2 URL>", "autoPlay": false },
-	"itinerary": {
-		/* Event timeline */
-	},
-	"countdown": {
-		/* Countdown copy */
-	},
-	"navigation": [
-		/* Invitation nav links */
-	],
-	"envelope": {
-		/* Client seal & palette preferences */
-	},
-	"sharing": { "whatsappTemplate": "..." }
+  "eventType": "xv",
+  "isDemo": false, // ← Production flag
+  "title": "<Client Event Title>",
+  "description": "<Client SEO Description>",
+  "theme": {
+    "primaryColor": "<client-hex>",
+    "accentColor": "<client-hex>",
+    "fontFamily": "serif",
+    "preset": "jewelry-box-xv-client" // ← From Phase 02
+  },
+  "sectionStyles": {
+    /* all with variant: "jewelry-box-xv-client" */
+  },
+  "hero": {
+    "name": "<Real Name>",
+    "label": "Mis XV Años",
+    "date": "<ISO-8601 event date>",
+    "backgroundImage": "<Cloudinary URL>", // ← From Phase 03
+    "portrait": "<Cloudinary URL>" // ← Optional
+  },
+  "location": {
+    "ceremony": {
+      /* Real venue data */
+    },
+    "reception": {
+      /* Real venue data */
+    },
+    "indications": [
+      /* Client-specific rules */
+    ]
+  },
+  "family": {
+    "parents": { "father": "...", "mother": "..." },
+    "godparents": [
+      /* Real godparents */
+    ],
+    "featuredImage": "<Cloudinary URL>"
+  },
+  "gallery": {
+    "title": "Galería",
+    "subtitle": "<Client subtitle>",
+    "items": [
+      /* 8-12 images with CDN URLs */
+    ]
+  },
+  "rsvp": {
+    "confirmationMode": "both",
+    "whatsappConfig": { "phone": "<real-phone>" }
+  },
+  "quote": {
+    /* Client-chosen quote */
+  },
+  "thankYou": {
+    /* Personalized closing */
+  },
+  "music": { "url": "<R2 URL>", "autoPlay": false },
+  "itinerary": {
+    /* Event timeline */
+  },
+  "countdown": {
+    /* Countdown copy */
+  },
+  "navigation": [
+    /* Invitation nav links */
+  ],
+  "envelope": {
+    /* Client seal & palette preferences */
+  },
+  "sharing": { "whatsappTemplate": "..." }
 }
 ```
 
