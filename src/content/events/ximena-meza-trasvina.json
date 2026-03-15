@@ -17,7 +17,7 @@
         },
         "location": {
             "variant": "editorial",
-            "mapStyle": "colorful",
+            "mapStyle": "dark",
             "showFlourishes": true
         },
         "family": {
@@ -66,7 +66,6 @@
             "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
             "appleMapsUrl": "https://maps.apple.com/?q=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
             "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
-            "wazeUrl": "https://www.waze.com/ul?q=D%27Galaz%20Alberca%20y%20Eventos%20Los%20Mochis",
             "image": "jardin"
         },
         "indications": [
@@ -158,43 +157,43 @@
         "image": "thankYouPortrait"
     },
     "itinerary": {
-        "title": "La Velada",
+        "title": "Programa de la Noche",
         "items": [
             {
                 "icon": "reception",
-                "label": "Apertura de la Gala",
-                "time": "8:00 PM",
-                "description": "Recepción y bienvenida a los invitados."
-            },
-            {
-                "icon": "photo",
-                "label": "Momentos Editoriales",
-                "time": "8:45 PM",
-                "description": "Captura de los mejores momentos."
+                "label": "Recepción",
+                "time": "7:00 PM",
+                "description": "Los primeros en llegar."
             },
             {
                 "icon": "waltz",
-                "label": "El Vals de Oro",
-                "time": "9:30 PM",
-                "description": "El momento más esperado de la noche."
+                "label": "Vals",
+                "time": "8:00 PM",
+                "description": "Un baile que marca esta noche."
             },
             {
                 "icon": "dinner",
-                "label": "Cena de Gala",
-                "time": "10:15 PM",
-                "description": "Celebración gastronómica."
+                "label": "Cena",
+                "time": "9:00 PM",
+                "description": "Acompañados de buena mesa."
             },
             {
                 "icon": "toast",
-                "label": "Brindis de Honor",
-                "time": "11:15 PM",
-                "description": "Un brindis por los quince años de Ximena."
+                "label": "Brindis",
+                "time": "10:00 PM",
+                "description": "Para celebrar esta nueva etapa."
+            },
+            {
+                "icon": "cake",
+                "label": "Pastel",
+                "time": "10:45 PM",
+                "description": "El momento más dulce."
             },
             {
                 "icon": "party",
-                "label": "Fiesta de Medianoche",
-                "time": "11:45 PM",
-                "description": "¡La celebración continúa!"
+                "label": "Fiesta",
+                "time": "11:30 PM",
+                "description": "¡Que no pare la música!"
             }
         ]
     },
