@@ -1,33 +1,24 @@
 #!/bin/sh
 
-# ------------------------------------------------------------
-# 1) Gatekeeper strict checks (governance + lint + type-check + staged secret scan)
-# ------------------------------------------------------------
-echo "🛡️ Running Gatekeeper strict checks..."
+set -e
+
+S0_FILE=".git/gatekeeper-s0.txt"
 S0_SIG_FILE=".git/gatekeeper-s0-signature.json"
+
+echo "🔧 Running lint-staged..."
+if [ -f "$S0_FILE" ]; then
+  echo "🔍 Gatekeeper S0 mode detected"
+  S0_FILES=$(cat "$S0_FILE" | sed '/^[[:space:]]*$/d')
+  if [ -n "$S0_FILES" ]; then
+    printf '%s\n' "$S0_FILES" | tr '\n' '\0' | xargs -0 pnpm lint-staged --no-stash
+  fi
+else
+  pnpm lint-staged
+fi
+
+echo "🛡️ Running Gatekeeper strict checks..."
 if [ -f "$S0_SIG_FILE" ]; then
   pnpm gatekeeper --mode strict --secret-scan-staged --require-complete-report --s0-signature-file "$S0_SIG_FILE"
 else
   pnpm gatekeeper --mode strict --secret-scan-staged --require-complete-report
 fi
-
-# ------------------------------------------------------------
-# 2) Gatekeeper workflow (S0 mode)
-# ------------------------------------------------------------
-if [ -f ".git/gatekeeper-s0.txt" ]; then
-  echo "🔍 Gatekeeper S0 mode detected"
-  S0_FILES=$(cat .git/gatekeeper-s0.txt | sed '/^[[:space:]]*$/d')
-
-  if [ -n "$S0_FILES" ]; then
-    # Run lint-staged only for S0 files (null-delimited safe)
-    printf '%s\n' "$S0_FILES" | tr '\n' '\0' | xargs -0 pnpm lint-staged --no-stash
-  fi
-
-  exit 0
-fi
-
-# ------------------------------------------------------------
-# 3) Normal lint-staged (formatting/autofix pass)
-# ------------------------------------------------------------
-echo "🔧 Running lint-staged..."
-pnpm lint-staged
