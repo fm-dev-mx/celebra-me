@@ -1,10 +1,11 @@
 {
     "id": "error-remediation-evolution",
     "title": "Error Remediation Evolution",
-    "status": "COMPLETED",
+    "status": "ARCHIVED",
     "completion": 100,
     "created": "2026-03-15",
     "updated": "2026-03-15",
+    "archivedAt": "2026-03-15",
     "estimatedDuration": "3 phases / ~2 days",
     "owner": "fm-dev-mx",
     "blockers": [],

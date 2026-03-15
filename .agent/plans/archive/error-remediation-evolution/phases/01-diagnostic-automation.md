@@ -32,18 +32,18 @@ workflow.
 
 - [x] Scaffold `.agent/scripts/error-classifier.mjs` (20% of Phase)
 - [x] Implement robust Regex parsers for common tool outputs:
-    - [x] TypeScript (`tsc` / `astro check`)
-    - [x] Astro Build (`astro build`)
-    - [x] Jest / Playwright
-    - [x] ESLint / Stylelint
+  - [x] TypeScript (`tsc` / `astro check`)
+  - [x] Astro Build (`astro build`)
+  - [x] Jest / Playwright
+  - [x] ESLint / Stylelint
 - [x] Design JSON output schema (`DiagnosticReport`):
-    - `tool`: string
-    - `type`: string (e.g., `type-error`, `hydration-mismatch`)
-    - `file`: string (absolute path)
-    - `line`: number
-    - `column`: number
-    - `message`: string
-    - `snippet`: string (max 5 lines of stack trace)
+  - `tool`: string
+  - `type`: string (e.g., `type-error`, `hydration-mismatch`)
+  - `file`: string (absolute path)
+  - `line`: number
+  - `column`: number
+  - `message`: string
+  - `snippet`: string (max 5 lines of stack trace)
 - [x] Add support for reading from `stdin` or a file path argument. (10% of Phase)
 
 ### Script 2: Context Extractor (`context-extractor.mjs`)

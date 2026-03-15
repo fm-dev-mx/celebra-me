@@ -25,10 +25,10 @@ This phase introduces controlled test scenarios to prove the efficacy of the `er
 ### Scenarios Preparation
 
 - [x] Create synthetic and captured output scenarios to validate:
-    - [x] **TypeScript Error:** Representative type mismatch formatting.
-    - [x] **Astro Build Error:** Representative Astro build and hydration formatting.
-    - [x] **Hydration Mismatch:** Representative Astro/React boundary failure formatting.
-    - [x] **Jest Failure:** Representative test failure formatting.
+  - [x] **TypeScript Error:** Representative type mismatch formatting.
+  - [x] **Astro Build Error:** Representative Astro build and hydration formatting.
+  - [x] **Hydration Mismatch:** Representative Astro/React boundary failure formatting.
+  - [x] **Jest Failure:** Representative test failure formatting.
 
 ### Validation Execution
 
