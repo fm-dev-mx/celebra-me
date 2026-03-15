@@ -11,6 +11,12 @@
 @use 'ui/status-pages';
 @use 'ui/card';
 
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
 :root {
 	/* Landing Page Theme Variables */
 	@include landing.landing-theme-variables;
