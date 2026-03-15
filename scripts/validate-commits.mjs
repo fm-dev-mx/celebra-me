@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
-import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import process from 'process';
+
+const POLICY_PATH = '.agent/governance/config/policy.json';
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
@@ -20,6 +22,17 @@ function run(cmd, args, options = {}) {
 		stdout: (result.stdout || '').trim(),
 		stderr: (result.stderr || '').trim(),
 	};
+}
+
+function atomicityLimit() {
+	if (!existsSync(POLICY_PATH)) return 12;
+	try {
+		const policy = JSON.parse(readFileSync(POLICY_PATH, 'utf8'));
+		const value = Number(policy?.atomicity?.defaultLimit || 12);
+		return Number.isFinite(value) && value > 0 ? Math.floor(value) : 12;
+	} catch {
+		return 12;
+	}
 }
 
 function getCommitMessage(commitHash) {
@@ -69,10 +82,11 @@ function validateCommitMessage(message, commitHash, files) {
 }
 
 function validateAtomicity(files) {
-	if (files.length > 12) {
+	const limit = atomicityLimit();
+	if (files.length > limit) {
 		return {
 			ok: false,
-			message: `Commit touches ${files.length} files (max 12 for ADU policy).`,
+			message: `Commit touches ${files.length} files (max ${limit} for ADU policy).`,
 		};
 	}
 	return { ok: true };
@@ -148,7 +162,9 @@ function main() {
 	console.log('\n✅ All commits passed ADU validation');
 }
 
-const isMain = import.meta.url === `file://${process.platform === 'win32' ? '/' : ''}${process.argv[1]?.replace(/\\/g, '/')}`;
+const isMain =
+	import.meta.url ===
+	`file://${process.platform === 'win32' ? '/' : ''}${process.argv[1]?.replace(/\\/g, '/')}`;
 if (isMain) {
 	main();
 }
