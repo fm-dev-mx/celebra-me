@@ -1,0 +1,7 @@
+.agent/
+docs/
+.gemini/
+brain/
+**/brain/**
+**/scratchpad_*.md
+**/artifacts/**

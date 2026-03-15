@@ -4,45 +4,43 @@ This directory contains the core automation and governance tools for the `celebr
 
 ## Core Tools
 
-| Script                      | Purpose                                                                                      |
-| :-------------------------- | :------------------------------------------------------------------------------------------- |
-| `gatekeeper.mjs`            | **The Orchestrator.** Runs all governance checks and emits a machine-readable JSON report.   |
-| `gatekeeper-workflow.mjs`   | Runs the full one-command Gatekeeper workflow (report + auto-fix loop + deterministic exit). |
-| `validate-schema.mjs`       | Synchronizes Zod schemas with CSS theme variants.                                            |
-| `validate-event-parity.mjs` | Validates DB events and content event files use matching `eventType/slug` pairs.             |
-| `validate-commits.mjs`      | Validates that commit history follows ADU (Atomic, Descriptive, Useful) standards.           |
-| `cli.mjs`                   | Standardized CLI entry point for all operations.                                             |
-| `optimize-assets.mjs`       | Handles image optimization and asset registry sync.                                          |
-| `new-invitation.mjs`        | Scaffolds a new invitation content file, override style, assets manifest, and checklist.     |
+| Script                                          | Purpose                                                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `.agent/governance/bin/gatekeeper.mjs`          | Core validation engine and machine-readable report emitter. Owns governance findings and route data.   |
+| `.agent/governance/bin/gatekeeper-workflow.mjs` | Workflow CLI for `inspect`, `autofix`, `stage`, `scaffold`, and `cleanup`. Owns `.git/` session state. |
+| `scripts/validate-commits.mjs`                  | Commit-range validator that runs commitlint against full commit messages and enforces ADU atomicity.   |
+| `scripts/cli.mjs`                               | Standardized CLI entry point for ops commands.                                                         |
 
-### Using Gatekeeper
+## Gatekeeper Report Profiles
 
-The `gatekeeper.mjs` script is designed to be consumed by agents. When run with `--report-json`, it
-provides a comprehensive analysis of the project's health.at dictates the "Next Step":
+Use `.agent/governance/bin/gatekeeper.mjs` with `--report-json` and `--report-profile`:
 
-- **`route: "architectural_intervention"`**: The agent must manually fix blockings (e.g., forbidden
-  imports).
-- **`route: "auto_fix"`**: The agent should run the `fixCommand` provided in the findings.
-- **`route: "proceed_adu"`**: Everything is clean; proceed to commit using `suggestedSplits`.
+- `full`: backward-compatible full report for deep inspection
+- `workflow`: lean report for workflow automation
+- `route`: minimal route and split payload for lightweight consumers
 
-The JSON report now includes:
+## Gatekeeper Workflow Commands
 
-- `schemaVersion`
-- `checks` (`governance`, `lint`, `typecheck`, `security`)
-- `routeReasons`
-- `blockingFindings`
-- `s0Drift`
+Use `.agent/governance/bin/gatekeeper-workflow.mjs` for commit orchestration:
 
-## Automatic Branching on Protected Branches
+- `inspect`: quick workflow report plus `.git/gatekeeper-session.json`
+- `autofix`: retry auto-fix commands in quick mode, then run one final strict verification pass
+- `stage --domain <id>`: stage one ADU split and refresh `.git/gatekeeper-s0*` artifacts
+- `scaffold --domain <id>`: emit a commit message scaffold for the selected domain
+- `cleanup`: remove workflow-owned `.git/` session artifacts
 
-Gatekeeper automatically protects `main` and `develop`. If staged changes exist while on a protected
-branch, Gatekeeper deterministically creates or switches to a branch named in English using:
+## Compatibility Entry Points
 
-- inferred change type (`feat`, `docs`, `chore`, etc.)
-- dominant domain from `scripts/config/domain-map.json`
-- stable slug from changed file paths
+- `pnpm gatekeeper:commit-ready`: compatibility wrapper to workflow inspection
+- `pnpm gatekeeper:commit-ready:create <branch>`: create an explicit branch, then run inspection
+- protected branch auto-branching from `main` and `develop` remains owned by `gatekeeper.mjs`
 
-#### Adding New Rules
+## Ownership Rules
 
-New rules should be added as modules within `gatekeeper.mjs` or as standalone scripts that
-`gatekeeper.mjs` can invoke as a host.
+- Commit-message rules are owned by `commitlint.config.cjs`.
+- Route and split decisions are owned by `gatekeeper.mjs`.
+- Protected-branch auto-branching is owned by `gatekeeper.mjs`.
+- Explicit branch creation for compatibility helpers is owned by `gatekeeper-commit-ready.mjs`.
+- `.git/` session lifecycle is owned by `gatekeeper-workflow.mjs`.
+- Hook execution order is owned by `.husky/*`.
+- Documentation explains commands and owners; it does not duplicate executable logic.

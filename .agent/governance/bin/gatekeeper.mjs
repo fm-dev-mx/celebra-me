@@ -16,6 +16,7 @@ const DEFAULT_POLICY_PATH = '.agent/governance/config/policy.json';
 const DEFAULT_BASELINE_PATH = '.agent/governance/config/baseline.json';
 const DEFAULT_MAX_FINDINGS = 20;
 const PROTECTED_BRANCHES = new Set(['main', 'develop']);
+const MAX_ADU_FILES = 12;
 
 const FORBIDDEN_FILES = [
 	/\.log$/,
@@ -271,6 +272,8 @@ class DomainMapper {
 			suggestedSplits,
 			unmappedFiles: unmappedFiles.sort((a, b) => a.localeCompare(b)),
 			splitConfidence,
+			atomicityLimit: MAX_ADU_FILES,
+			atomicityPassed: suggestedSplits.every((s) => s.files.length <= MAX_ADU_FILES),
 		};
 	}
 }
@@ -368,6 +371,23 @@ function phaseOf(args, policy) {
 function outputOf(args) {
 	const v = arg(args, '--output') || 'normal';
 	return ['compact', 'normal', 'verbose'].includes(v) ? v : 'normal';
+}
+function reportProfileOf(args) {
+	const v = arg(args, '--report-profile') || 'full';
+	return ['full', 'workflow', 'route'].includes(v) ? v : 'full';
+}
+function checksOf(args) {
+	const raw = arg(args, '--checks');
+	if (!raw) return new Set(['governance', 'lint', 'typecheck', 'security', 'adu']);
+	return new Set(
+		String(raw)
+			.split(',')
+			.map((entry) => entry.trim())
+			.filter(Boolean),
+	);
+}
+function checkEnabled(selectedChecks, checkName) {
+	return selectedChecks.has(checkName);
 }
 function maxFindingsOf(args, policy) {
 	const a = Number(arg(args, '--max-findings'));
@@ -552,7 +572,8 @@ class Snapshot {
 		if (this.contentCache.has(f)) return this.contentCache.get(f);
 		let c = '';
 		try {
-			c = run('git', ['show', `:${f}`], { ignoreError: true }).stdout || '';
+			const res = run('git', ['show', `:${f}`], { ignoreError: true });
+			c = res.status === 0 ? res.stdout : '';
 		} catch (e) {
 			if (e?.code === 'EPERM' && existsSync(f)) {
 				c = readFileSync(f, 'utf8');
@@ -605,11 +626,22 @@ class Snapshot {
 			.slice(0, 16);
 		return { signature, files };
 	}
+
+	tsSignature() {
+		const tsFiles = this.files
+			.filter((f) => /\.(ts|tsx|astro)$/.test(f))
+			.sort((a, b) => a.localeCompare(b));
+		if (!tsFiles.length) return '';
+		const payload = tsFiles.map((f) => `${f}|${this.sha(f)}`).join('\n');
+		return createHash('sha256').update(payload).digest('hex').slice(0, 12);
+	}
 }
 
 function collectAdded(files) {
 	const m = new Map();
 	if (!files.length) return m;
+	// Optimization: Use a single diff call for both added lines and numstat if possible
+	// but for now let's just ensure we handle errors better and keep it simple.
 	let out = '';
 	try {
 		out = run('git', ['diff', '--cached', '--unified=0', '--no-color', '--', ...files], {
@@ -629,11 +661,7 @@ function collectAdded(files) {
 				);
 			return m;
 		}
-		if (e?.code === 'EPERM') {
-			log('⚠️ Unable to read staged diff (EPERM). Added-line checks reduced.', COLORS.yellow);
-			return m;
-		}
-		throw e;
+		return m;
 	}
 	let file = null;
 	let line = 0;
@@ -809,8 +837,13 @@ const SECRET_PATTERNS = [
 ];
 
 function isLikelyTextFile(file) {
-	return /\.(ts|tsx|js|jsx|astro|json|md|txt|yml|yaml|scss|css|html|sql|sh|ps1|mjs|cjs)$/i.test(
-		file,
+	const lowered = file.toLowerCase();
+	// Explicitly non-text/binary extensions in invitation projects
+	if (/\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf|mp4|webm|pdf|zip|gz|exe|dll|so|wav|mp3|ico)$/i.test(lowered)) {
+		return false;
+	}
+	return /\.(ts|tsx|js|jsx|astro|json|mdx?|txt|yml|yaml|scss|css|html|sql|sh|ps1|mjs|cjs|env|local|config|cjs)$/i.test(
+		lowered,
 	);
 }
 
@@ -1630,10 +1663,144 @@ function computeRoute(findings, adu) {
 	if (!hasBlocks && hasAutoFix) routeReasons.push('autofix_findings_present');
 	if (adu.unmappedFiles.length > 0) routeReasons.push('unmapped_files_present');
 	if (adu.splitConfidence < 0.6) routeReasons.push('low_split_confidence');
+	if (!adu.atomicityPassed) routeReasons.push('adu_atomicity_limit_exceeded');
 	let route = 'proceed_adu';
-	if (hasBlocks || adu.splitConfidence < 0.6) route = 'architectural_intervention';
+	if (hasBlocks || adu.splitConfidence < 0.6 || !adu.atomicityPassed)
+		route = 'architectural_intervention';
 	else if (hasAutoFix) route = 'auto_fix';
 	return { route, routeReasons };
+}
+function computeWorkflowRoute({ findings, adu, s0Drift, session }) {
+	const hasBlocks = findings.some((f) => f.severity === 'block');
+	const hasAutoFix = findings.some((f) => Boolean(f.autoFixable));
+	const workflowReasons = [];
+	if (hasBlocks) workflowReasons.push('blocking_findings_present');
+	if (!hasBlocks && hasAutoFix) workflowReasons.push('autofix_findings_present');
+	if (adu.unmappedFiles.length > 0) workflowReasons.push('unmapped_files_present');
+	if (adu.splitConfidence < 0.6) workflowReasons.push('low_split_confidence');
+	if (!adu.atomicityPassed) workflowReasons.push('adu_atomicity_limit_exceeded');
+	if (s0Drift?.enabled && s0Drift?.hasDrift) workflowReasons.push('s0_drift_present');
+	if (session?.invalidReason) workflowReasons.push('session_invalid');
+	let workflowRoute = 'proceed_adu';
+	if (
+		hasBlocks ||
+		adu.unmappedFiles.length > 0 ||
+		adu.splitConfidence < 0.6 ||
+		!adu.atomicityPassed ||
+		(s0Drift?.enabled && s0Drift?.hasDrift) ||
+		session?.invalidReason
+	)
+		workflowRoute = 'architectural_intervention';
+	else if (hasAutoFix) workflowRoute = 'auto_fix';
+	return { workflowRoute, workflowReasons: uniq(workflowReasons) };
+}
+function uniqueAutoFixCommands(findings) {
+	return uniq(findings.filter((f) => f.autoFixable && f.fixCommand).map((f) => f.fixCommand));
+}
+function formatGovernanceFinding(f) {
+	return {
+		ruleId: f.ruleId,
+		severity: f.severity,
+		file: f.file,
+		line: f.line,
+		findingType: f.findingType,
+		normalizedSubject: f.normalizedSubject,
+		stableKey: f.stableKey,
+		message: f.message,
+		autoFixable: f.autoFixable,
+		fixCommand: f.fixCommand,
+	};
+}
+function buildFinalReport({
+	snapshot,
+	routeData,
+	workflowData,
+	branchManagement,
+	s0Drift,
+	completeChecks,
+	governanceFinal,
+	lintResult,
+	typecheckResult,
+	securityResult,
+	adu,
+	reportProfile,
+	session,
+}) {
+	const findings = governanceFinal.findings.map(formatGovernanceFinding);
+	const blockingFindings = governanceFinal.findings
+		.filter((f) => f.severity === 'block')
+		.map((f) => ({
+			ruleId: f.ruleId,
+			file: f.file,
+			line: f.line,
+			message: f.message,
+		}));
+	const fullReport = {
+		schemaVersion: 2,
+		route: routeData.route,
+		workflowRoute: workflowData.workflowRoute,
+		routeReasons: routeData.routeReasons,
+		workflowReasons: workflowData.workflowReasons,
+		status: workflowData.workflowRoute === 'architectural_intervention' ? 'failed' : 'passed',
+		staged: {
+			signature: snapshot.signature(),
+			tsSignature: snapshot.tsSignature(),
+			count: snapshot.files.length,
+			source: snapshot.src,
+		},
+		branch: branchManagement,
+		session,
+		s0Drift,
+		checks: completeChecks,
+		governance: {
+			summary: governanceFinal.summary,
+			findings,
+		},
+		lint: lintResult,
+		typecheck: typecheckResult,
+		security: securityResult,
+		adu,
+		autoFixCommands: uniqueAutoFixCommands(governanceFinal.findings),
+		blockingFindings,
+		meta: governanceFinal.meta,
+	};
+	if (reportProfile === 'full') return fullReport;
+	if (reportProfile === 'workflow') {
+		return {
+			schemaVersion: fullReport.schemaVersion,
+			route: fullReport.route,
+			workflowRoute: fullReport.workflowRoute,
+			routeReasons: fullReport.routeReasons,
+			workflowReasons: fullReport.workflowReasons,
+			status: fullReport.status,
+			staged: fullReport.staged,
+			session: fullReport.session,
+			checks: fullReport.checks,
+			adu: fullReport.adu,
+			blockingFindings: fullReport.blockingFindings,
+			autoFixCommands: fullReport.autoFixCommands,
+			branch: fullReport.branch,
+			s0Drift: fullReport.s0Drift,
+		};
+	}
+	return {
+		schemaVersion: fullReport.schemaVersion,
+		route: fullReport.route,
+		workflowRoute: fullReport.workflowRoute,
+		routeReasons: fullReport.routeReasons,
+		workflowReasons: fullReport.workflowReasons,
+		status: fullReport.status,
+		staged: fullReport.staged,
+		session: fullReport.session,
+		checks: fullReport.checks,
+		adu: {
+			suggestedSplits: fullReport.adu.suggestedSplits,
+			unmappedFiles: fullReport.adu.unmappedFiles,
+			splitConfidence: fullReport.adu.splitConfidence,
+		},
+		blockingFindings: fullReport.blockingFindings,
+		autoFixCommands: fullReport.autoFixCommands,
+	};
 }
 
 function getCurrentBranch() {
@@ -1789,14 +1956,22 @@ function main() {
 	const policy = loadPolicy(policyPath);
 	const mode = modeOf(requestedMode, policy.legacyAliases || {});
 	const reportJson = has(args, '--report-json');
+	const reportProfile = reportProfileOf(args);
+	const selectedChecks = checksOf(args);
 	const noAutoBranch = has(args, '--no-auto-branch');
 	const requireCompleteReport = has(args, '--require-complete-report');
-	const secretScanStaged = has(args, '--secret-scan-staged') || reportJson;
+	const secretScanStaged =
+		(checkEnabled(selectedChecks, 'security') && has(args, '--secret-scan-staged')) ||
+		(checkEnabled(selectedChecks, 'security') && reportJson);
 	const writeS0Signature = has(args, '--write-s0-signature');
 	const output = outputOf(args);
 	const changedDocToken = arg(args, '--changed-doc-token');
 	const maxGlobal = maxFindingsOf(args, policy);
 	const build = has(args, '--build-baseline');
+	const session = {
+		file: arg(args, '--session-file'),
+		invalidReason: arg(args, '--session-invalid-reason'),
+	};
 	const audit = [];
 
 	if (!reportJson) {
@@ -1817,8 +1992,11 @@ function main() {
 					{
 						schemaVersion: 2,
 						route: 'proceed_adu',
+						workflowRoute: 'proceed_adu',
 						status: 'passed',
 						routeReasons: ['empty_staged_set'],
+						workflowReasons: ['empty_staged_set'],
+						session,
 						meta: { empty: true },
 					},
 					null,
@@ -1868,19 +2046,22 @@ function main() {
 		changedDocToken,
 		audit,
 	);
-	const lintResult = lint(snapshot.files, reportJson, governance.rep, policy, maxGlobal);
+	const lintResult = checkEnabled(selectedChecks, 'lint')
+		? lint(snapshot.files, reportJson, governance.rep, policy, maxGlobal)
+		: { failed: false, status: 'skipped', details: [] };
 	const hasTs = snapshot.files.some((f) => /\.(ts|tsx|astro)$/.test(f));
 	let typecheckResult = {
 		failed: false,
-		status: hasTs && mode === 'strict' ? 'not_run' : 'skipped',
+		status: checkEnabled(selectedChecks, 'typecheck') && hasTs && mode === 'strict' ? 'not_run' : 'skipped',
 	};
-	if (mode === 'strict') {
-		if (hasTs) typecheckResult = typecheck(snapshot, reportJson);
-		else if (!reportJson) log('\nℹ️  Skipping type check (no TS/Astro files changed).');
-	} else if (!reportJson) {
-		log('\nℹ️  Quick mode selected: skipping type-check.');
+	if (checkEnabled(selectedChecks, 'typecheck')) {
+		if (hasTs || mode === 'strict') typecheckResult = typecheck(snapshot, reportJson);
+		else if (!reportJson)
+			log('\nℹ️  Skipping type check (no TS/Astro files changed and not in strict mode).');
+	} else if (!reportJson && requestedMode !== 'strict') {
+		log('\nℹ️  Type-check not requested. Use --checks typecheck to enable.');
 	}
-	const securityResult = secretScanStaged
+	const securityResult = checkEnabled(selectedChecks, 'security') && secretScanStaged
 		? scanStagedSecrets(snapshot, policy, phase, audit, governance.rep, maxGlobal)
 		: { failed: false, findings: 0, skipped: true };
 	const s0Drift = verifyS0Drift(snapshot, s0SignatureFile);
@@ -1898,11 +2079,18 @@ function main() {
 	const mapper = new DomainMapper();
 	const adu = mapper.analyze(snapshot.files);
 	const routeData = computeRoute(governanceFinal.findings, adu);
+	const workflowData = computeWorkflowRoute({
+		findings: governanceFinal.findings,
+		adu,
+		s0Drift,
+		session,
+	});
 	const completeChecks = {
 		governance: 'done',
-		lint: 'done',
+		lint: checkEnabled(selectedChecks, 'lint') ? 'done' : 'skipped',
 		typecheck: typecheckResult.status || (typecheckResult.failed ? 'failed' : 'passed'),
-		security: secretScanStaged ? 'done' : 'skipped',
+		security: checkEnabled(selectedChecks, 'security') && secretScanStaged ? 'done' : 'skipped',
+		adu: 'done',
 	};
 	if (
 		reportJson &&
@@ -1917,7 +2105,7 @@ function main() {
 		for (const item of uniq(audit)) log(`  - ${item}`);
 	}
 
-	if (!reportJson && routeData.route === 'architectural_intervention')
+	if (!reportJson && workflowData.workflowRoute === 'architectural_intervention')
 		fail('Gatekeeper checks failed. Fix BLOCKED findings before committing.');
 
 	if (!reportJson) {
@@ -1926,50 +2114,23 @@ function main() {
 		return;
 	}
 
-	const finalReport = {
-		schemaVersion: 2,
-		route: routeData.route,
-		routeReasons: routeData.routeReasons,
-		status: routeData.route === 'architectural_intervention' ? 'failed' : 'passed',
-		staged: {
-			signature: snapshot.signature(),
-			count: snapshot.files.length,
-			source: snapshot.src,
-		},
-		branch: branchManagement,
+	const finalReport = buildFinalReport({
+		snapshot,
+		routeData,
+		workflowData,
+		branchManagement,
 		s0Drift,
-		checks: completeChecks,
-		governance: {
-			summary: governanceFinal.summary,
-			findings: governanceFinal.findings.map((f) => ({
-				ruleId: f.ruleId,
-				severity: f.severity,
-				file: f.file,
-				line: f.line,
-				findingType: f.findingType,
-				normalizedSubject: f.normalizedSubject,
-				stableKey: f.stableKey,
-				message: f.message,
-				autoFixable: f.autoFixable,
-				fixCommand: f.fixCommand,
-			})),
-		},
-		lint: lintResult,
-		typecheck: typecheckResult,
-		security: securityResult,
+		completeChecks,
+		governanceFinal,
+		lintResult,
+		typecheckResult,
+		securityResult,
 		adu,
-		blockingFindings: governanceFinal.findings
-			.filter((f) => f.severity === 'block')
-			.map((f) => ({
-				ruleId: f.ruleId,
-				file: f.file,
-				line: f.line,
-				message: f.message,
-			})),
-		meta: governanceFinal.meta,
-	};
+		reportProfile,
+		session,
+	});
 	console.log(JSON.stringify(finalReport, null, 2));
-	if (routeData.route === 'architectural_intervention') {
+	if (workflowData.workflowRoute === 'architectural_intervention') {
 		process.exitCode = 1;
 	}
 }

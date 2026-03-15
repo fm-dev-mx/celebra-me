@@ -2,19 +2,19 @@
 
 import { spawnSync } from 'child_process';
 
-function run(cmd, args, opts = {}) {
+function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
 	const result = spawnSync(cmd, args, {
 		encoding: 'utf8',
-		shell: isWin,
-		stdio: 'pipe',
-		...opts,
+		shell: options.shell ?? isWin,
+		stdio: options.stdio ?? 'pipe',
+		...options,
 	});
 	if (result.error) throw result.error;
 	return {
 		status: result.status ?? 1,
-		stdout: (result.stdout || '').trim(),
-		stderr: (result.stderr || '').trim(),
+		stdout: String(result.stdout || '').trim(),
+		stderr: String(result.stderr || '').trim(),
 	};
 }
 
@@ -24,9 +24,15 @@ function fail(message) {
 }
 
 function parseArgs(argv) {
-	const args = { createBranch: null };
+	const args = { createBranch: null, passthrough: [] };
 	for (let i = 0; i < argv.length; i += 1) {
-		if (argv[i] === '--create-branch') args.createBranch = argv[i + 1] || null;
+		const token = argv[i];
+		if (token === '--create-branch') {
+			args.createBranch = argv[i + 1] || null;
+			i += 1;
+			continue;
+		}
+		args.passthrough.push(token);
 	}
 	return args;
 }
@@ -35,52 +41,38 @@ function assertBranchName(name) {
 	return /^[a-z0-9]+(?:[-_/][a-z0-9]+)*$/i.test(name || '');
 }
 
-function getCurrentBranch() {
-	const res = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
-	if (res.status !== 0 || !res.stdout) fail('Unable to detect current branch.');
-	return res.stdout;
-}
-
-function createAndSwitchBranch(name) {
+function createBranch(name) {
 	if (!assertBranchName(name)) {
 		fail(
 			'Invalid branch name. Use letters, numbers, "-", "_" or "/" (example: feat/gatekeeper-hardening).',
 		);
 	}
-	const res = run('git', ['switch', '-c', name]);
-	if (res.status !== 0) fail(`Could not create branch "${name}". ${res.stderr || ''}`);
-	console.log(`✅ Branch created: ${name}`);
+	const result = run('git', ['switch', '-c', name], { stdio: 'inherit' });
+	if (result.status !== 0) {
+		fail(`Could not create branch "${name}".`);
+	}
 }
 
-function runGatekeeper() {
+function runInspect(passthrough) {
 	const isWin = process.platform === 'win32';
-	const res = spawnSync('pnpm', ['gatekeeper:report'], {
-		encoding: 'utf8',
-		shell: isWin,
-		stdio: 'inherit',
-	});
-	if ((res.status ?? 1) !== 0) {
-		process.exit(res.status ?? 1);
-	}
+	const result = spawnSync(
+		'node',
+		['.agent/governance/bin/gatekeeper-workflow.mjs', 'inspect', ...passthrough],
+		{
+			encoding: 'utf8',
+			shell: isWin,
+			stdio: 'inherit',
+		},
+	);
+	process.exit(result.status ?? 1);
 }
 
 function main() {
 	const args = parseArgs(process.argv.slice(2));
-	const current = getCurrentBranch();
-
-	if (current === 'main') {
-		if (args.createBranch) {
-			createAndSwitchBranch(args.createBranch);
-		} else {
-			fail(
-				'You are on main. Create a branch with --create-branch <name> or run git switch -c <name>.',
-			);
-		}
+	if (args.createBranch) {
+		createBranch(args.createBranch);
 	}
-
-	console.log('🛡️ Running Gatekeeper checks...');
-	runGatekeeper();
-	console.log('✅ Gatekeeper passed. You can run: git commit');
+	runInspect(args.passthrough);
 }
 
 main();
