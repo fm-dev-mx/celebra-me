@@ -1,6 +1,6 @@
 # Phase 01: Diagnostic Automation
 
-**Completion:** `0%` | **Status:** `PENDING`
+**Completion:** `100%` | **Status:** `COMPLETED`
 
 **Objective:** Create utility scripts to automate error classification and context extraction,
 minimizing agent token usage and improving diagnostic accuracy.
@@ -26,17 +26,17 @@ workflow.
 
 ---
 
-## 🛠️ Execution Tasks [STATUS: PENDING]
+## 🛠️ Execution Tasks [STATUS: COMPLETED]
 
 ### Script 1: Error Classifier (`error-classifier.mjs`)
 
-- [ ] Scaffold `.agent/scripts/error-classifier.mjs` (20% of Phase)
-- [ ] Implement robust Regex parsers for common tool outputs:
-    - [ ] TypeScript (`tsc` / `astro check`)
-    - [ ] Astro Build (`astro build`)
-    - [ ] Jest / Playwright
-    - [ ] ESLint / Stylelint
-- [ ] Design JSON output schema (`DiagnosticReport`):
+- [x] Scaffold `.agent/scripts/error-classifier.mjs` (20% of Phase)
+- [x] Implement robust Regex parsers for common tool outputs:
+    - [x] TypeScript (`tsc` / `astro check`)
+    - [x] Astro Build (`astro build`)
+    - [x] Jest / Playwright
+    - [x] ESLint / Stylelint
+- [x] Design JSON output schema (`DiagnosticReport`):
     - `tool`: string
     - `type`: string (e.g., `type-error`, `hydration-mismatch`)
     - `file`: string (absolute path)
@@ -44,26 +44,26 @@ workflow.
     - `column`: number
     - `message`: string
     - `snippet`: string (max 5 lines of stack trace)
-- [ ] Add support for reading from `stdin` or a file path argument. (10% of Phase)
+- [x] Add support for reading from `stdin` or a file path argument. (10% of Phase)
 
 ### Script 2: Context Extractor (`context-extractor.mjs`)
 
-- [ ] Scaffold `.agent/scripts/context-extractor.mjs` (10% of Phase)
-- [ ] Implement file reading with `fs` and line-number targeting.
-- [ ] Add `radius` parameter (default `±10` lines). (10% of Phase)
-- [ ] Format output to include line numbers for the agent (e.g., `144: const x = 1;`).
-- [ ] Ensure graceful degradation if line number is out of bounds or file doesn't exist.
+- [x] Scaffold `.agent/scripts/context-extractor.mjs` (10% of Phase)
+- [x] Implement file reading with `fs` and line-number targeting.
+- [x] Add `radius` parameter (default `±10` lines). (10% of Phase)
+- [x] Format output to include line numbers for the agent (e.g., `144: const x = 1;`).
+- [x] Ensure graceful degradation if line number is out of bounds or file doesn't exist.
 
 ---
 
 ## ✅ Acceptance Criteria
 
-- [ ] `node .agent/scripts/error-classifier.mjs` correctly parses a sample TypeScript error into the
+- [x] `node .agent/scripts/error-classifier.mjs` correctly parses a sample TypeScript error into the
       `DiagnosticReport` JSON format.
-- [ ] `node .agent/scripts/error-classifier.mjs` correctly categorizes Astro hydration errors.
-- [ ] `node .agent/scripts/context-extractor.mjs src/pages/index.astro 45` prints lines 35-55 with
+- [x] `node .agent/scripts/error-classifier.mjs` correctly categorizes Astro hydration errors.
+- [x] `node .agent/scripts/context-extractor.mjs src/pages/index.astro 45` prints lines 35-55 with
       line numbers prepended.
-- [ ] Both scripts handle invalid input (empty stdin, missing files) without crashing the agent
+- [x] Both scripts handle invalid input (empty stdin, missing files) without crashing the agent
       workflow.
 
 ---
