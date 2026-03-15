@@ -13,8 +13,8 @@ import gallery10 from './gallery-10.webp';
 import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
 import interlude03 from './interlude-03.webp';
-import galleryNew01 from './gallery-new-01.webp';
-import interludeNew01 from './interlude-new-01.webp';
+import gallery15 from './gallery-15.webp';
+import interludeNew01 from './interlude-04.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
 
 export const assets = {
@@ -24,15 +24,21 @@ export const assets = {
 	jardin: gallery03, // Using dedicated venue shot
 	signature,
 	gallery: [
-		gallery01,
-		gallery02,
-		gallery03,
-		gallery04,
-		gallery05,
-		gallery07,
-		gallery09,
-		gallery10,
-		galleryNew01,
+		gallery01, // 0 -> gallery01
+		gallery02, // 1 -> gallery02
+		gallery03, // 2 -> gallery03
+		gallery04, // 3 -> gallery04
+		gallery05, // 4 -> gallery05
+		gallery05, // 5 -> gallery06 (fallback)
+		gallery07, // 6 -> gallery07
+		gallery07, // 7 -> gallery08 (fallback)
+		gallery09, // 8 -> gallery09
+		gallery10, // 9 -> gallery10
+		undefined, // 10 -> gallery11
+		undefined, // 11 -> gallery12
+		undefined, // 12 -> gallery13
+		undefined, // 13 -> gallery14
+		gallery15, // 14 -> gallery15
 	],
 	interlude01,
 	interlude02,
