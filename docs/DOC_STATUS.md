@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-03-10 **Next Review:** 2026-04-10 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-15 **Next Review:** 2026-04-15 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -21,7 +21,7 @@
 | Document                                                | Status                 | Last Reviewed |
 | :------------------------------------------------------ | :--------------------- | :------------ |
 | [architecture.md](./core/architecture.md)               | Active source of truth | 2026-02-15    |
-| [git-governance.md](./core/git-governance.md)           | Active source of truth | 2026-03-03    |
+| [git-governance.md](./core/git-governance.md)           | Active source of truth | 2026-03-15    |
 | [project-conventions.md](./core/project-conventions.md) | Active source of truth | 2026-03-03    |
 | [premium-ux-vision.md](./core/premium-ux-vision.md)     | Active reference       | 2026-03-06    |
 | [testing-strategy.md](./core/testing-strategy.md)       | Active source of truth | 2026-03-03    |
@@ -74,13 +74,13 @@
 
 ### Active Plans
 
-- [post-alignment-remediation-2026-03](../.agent/plans/post-alignment-remediation-2026-03/README.md) -
-  `COMPLETED`, pending archive approval after executing archive cleanup plus `lint` and
-  `astro check` remediation.
+- [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `PENDING`,
+  governance optimization and workflow hardening plan for commit automation.
 
 ### Archived Plans
 
 - [invitation-evolution-march-2026](../.agent/plans/archive/invitation-evolution-march-2026/README.md)
+- [post-alignment-remediation-2026-03](../.agent/plans/archive/post-alignment-remediation-2026-03/README.md)
 - [system-doc-alignment-hardening](../.agent/plans/archive/system-doc-alignment-hardening/README.md)
 - [system-health-audit](../.agent/plans/archive/system-health-audit/README.md)
 - [system-wide-alignment-audit-2026-03](../.agent/plans/archive/system-wide-alignment-audit-2026-03/README.md)
@@ -103,7 +103,8 @@
 
 ## Next Review Queue
 
-1. Archive `post-alignment-remediation-2026-03` after owner approval.
-2. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
+1. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
+2. Track the Gatekeeper workflow and commit-validation refactor until `gatekeeper-optimization`
+   leaves `PENDING`.
 3. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
