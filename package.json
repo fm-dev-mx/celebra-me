@@ -122,7 +122,7 @@
         "validator": "13.15.20"
     },
     "lint-staged": {
-        "*.{ts,tsx,js,jsx}": ["eslint --fix --cache", "prettier --write"],
+        "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
         "*.astro": ["eslint --fix --cache", "prettier --write"],
         "*.{scss,css}": ["stylelint --fix", "prettier --write"],
         "*.{json,md,yml}": ["prettier --write"]

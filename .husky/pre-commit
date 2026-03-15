@@ -2,15 +2,17 @@
 
 set -e
 
-S0_FILE=".git/gatekeeper-s0.txt"
-S0_SIG_FILE=".git/gatekeeper-s0-signature.json"
+GIT_DIR=$(git rev-parse --git-dir)
+S0_FILE="$GIT_DIR/gatekeeper-s0.txt"
+S0_SIG_FILE="$GIT_DIR/gatekeeper-s0-signature.json"
 
 echo "🔧 Running lint-staged..."
 if [ -f "$S0_FILE" ]; then
   echo "🔍 Gatekeeper S0 mode detected"
   S0_FILES=$(cat "$S0_FILE" | sed '/^[[:space:]]*$/d')
   if [ -n "$S0_FILES" ]; then
-    printf '%s\n' "$S0_FILES" | tr '\n' '\0' | xargs -0 pnpm lint-staged --no-stash
+    printf '%s\n' "$S0_FILES" | tr '\n' '\0' | xargs -0 pnpm lint-staged
+    node .agent/governance/bin/gatekeeper-workflow.mjs sync-s0 --s0-file "$S0_FILE" --s0-signature-file "$S0_SIG_FILE"
   fi
 else
   pnpm lint-staged
