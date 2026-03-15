@@ -14,6 +14,7 @@ import {
 	TacoIcon,
 	TubaIcon,
 	AccordionIcon,
+	HeelIcon,
 } from '@/components/common/icons/invitation';
 
 // Types (should match internal TimelineItem logic or be shared)
@@ -23,11 +24,14 @@ type IconType =
 	| 'toast'
 	| 'cake'
 	| 'party'
+	| 'ceremony'
+	| 'doll'
 	| 'church'
 	| 'reception'
 	| 'music'
 	| 'photo'
 	| 'boot'
+	| 'heel'
 	| 'western-hat'
 	| 'taco'
 	| 'tuba'
@@ -51,12 +55,15 @@ const Icons: Record<string, React.FC<{ size?: number | string; className?: strin
 	dinner: DinnerIcon,
 	toast: ToastIcon,
 	church: ChurchIcon,
+	ceremony: ChurchIcon,
 	reception: ReceptionIcon,
+	heel: HeelIcon,
+	boot: BootSealIcon,
 	party: PartyIcon,
+	doll: PartyIcon,
 	cake: CakeIcon,
 	music: WaltzIcon,
 	photo: PhotoIcon,
-	boot: BootSealIcon,
 	'western-hat': WesternHatIcon,
 	hat: WesternHatIcon,
 	taco: TacoIcon,

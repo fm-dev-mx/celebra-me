@@ -11,6 +11,7 @@ interface Props {
 
 const { eventSlug, showEnvelope = false } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
+const isXimenaInvitation = eventSlug === 'ximena-meza-trasvina';
 
 // Define contact details
 const contactNumber = '526681167477';
@@ -18,44 +19,89 @@ const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital
 const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
-<footer class="invitation-footer">
+<footer class:list={['invitation-footer', { 'invitation-footer--ximena-editorial': isXimenaInvitation }]}>
 	<div class={`footer-content ${hasReplay ? 'footer-content--with-replay' : ''}`}>
-		<div class="footer-info">
-			<p class="powered-by">Powered by</p>
-			<Logo variant="xv" />
-		</div>
-		<div class="footer-contact">
-			<a
-				class="whatsapp-button"
-				href={whatsappLink}
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				<OptimizedImage
-					imagePath="/icons/whatsappIcon.svg"
-					alt="WhatsApp"
-					width={24}
-					height={24}
-					class="w-6 h-6"
-				/>
-				Contáctanos
-			</a>
-		</div>
-		{hasReplay && (
-			<button
-				class="footer__replay-link"
-				data-slug={eventSlug}
-				aria-label="Volver a ver la apertura del sobre"
-			>
-				✉ Volver a ver la apertura
-			</button>
-			<script is:inline>
-				document.querySelector('.footer__replay-link')?.addEventListener('click', function() {
-					const slug = this.dataset.slug;
-					localStorage.removeItem(`envelope-opened-${slug}`);
-					location.reload();
-				});
-			</script>
-		)}
+		{
+			isXimenaInvitation ? (
+				<>
+					<div class="footer-info footer-info--ximena">
+						<p class="powered-by">Powered by</p>
+						<Logo variant="footer" altText="Celebra-me" class="footer-brand-logo" />
+					</div>
+					<div class="footer-actions">
+						<a
+							class="footer-action whatsapp-button"
+							href={whatsappLink}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<span class="footer-action__icon" aria-hidden="true">
+								<OptimizedImage
+									imagePath="/icons/whatsappIcon.svg"
+									alt="WhatsApp"
+									width={24}
+									height={24}
+									class="footer-action__icon-media"
+								/>
+							</span>
+							<span class="footer-action__label">Contáctanos</span>
+						</a>
+						{hasReplay && (
+							<button
+								type="button"
+								class="footer__replay-link footer-secondary-link"
+								data-slug={eventSlug}
+								aria-label="Volver a ver la apertura del sobre"
+							>
+								Volver a ver la apertura
+							</button>
+						)}
+					</div>
+				</>
+			) : (
+				<>
+					<div class="footer-info">
+						<p class="powered-by">Powered by</p>
+						<Logo variant="xv" />
+					</div>
+					<div class="footer-contact">
+						<a
+							class="whatsapp-button"
+							href={whatsappLink}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<OptimizedImage
+								imagePath="/icons/whatsappIcon.svg"
+								alt="WhatsApp"
+								width={24}
+								height={24}
+								class="w-6 h-6"
+							/>
+							Contáctanos
+						</a>
+					</div>
+					{hasReplay && (
+						<button
+							type="button"
+							class="footer__replay-link"
+							data-slug={eventSlug}
+							aria-label="Volver a ver la apertura del sobre"
+						>
+							✉ Volver a ver la apertura
+						</button>
+					)}
+				</>
+			)
+		}
 	</div>
+	{hasReplay && (
+		<script is:inline>
+			document.querySelector('.footer__replay-link')?.addEventListener('click', function() {
+				const slug = this.dataset.slug;
+				localStorage.removeItem(`envelope-opened-${slug}`);
+				location.reload();
+			});
+		</script>
+	)}
 </footer>

@@ -5,7 +5,6 @@
 @use '../global/mixins' as mixins;
 
 .invitation-footer {
-	// Subtle fade from transparent to barely visible
 	background: linear-gradient(
 		to bottom,
 		transparent 0%,
@@ -79,7 +78,6 @@
 	align-items: center;
 	gap: 0.5rem;
 
-	// Scale down the logo
 	:global(.logo) {
 		transform: scale(0.7);
 		transform-origin: center;
@@ -156,7 +154,6 @@
 	}
 }
 
-// Replay envelope link — discreet, premium feel
 .footer__replay-link {
 	display: inline-flex;
 	align-items: center;
@@ -185,5 +182,256 @@
 		outline: 1px solid var(--color-action-accent, tokens.$color-action-accent);
 		outline-offset: 4px;
 		opacity: 80%;
+	}
+}
+
+.invitation-footer--ximena-editorial {
+	position: relative;
+	padding: clamp(1rem, 3vw, 1.5rem) 1rem
+		calc(clamp(1.4rem, 3.5vw, 2.2rem) + env(safe-area-inset-bottom, 0px));
+	color: var(--color-text-primary);
+	font-size: tokens.$font-size-ui;
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-surface-dark-rgb), 0) 0%,
+			rgb(var(--color-surface-dark-rgb), 0.78) 14%,
+			rgb(var(--color-surface-dark-rgb), 0.98) 100%
+		),
+		linear-gradient(
+			90deg,
+			rgb(var(--color-action-accent-rgb), 0.04) 0%,
+			transparent 30%,
+			transparent 70%,
+			rgb(var(--color-action-accent-rgb), 0.04) 100%
+		);
+	background-color: rgb(var(--color-surface-dark-rgb), 0.98);
+	border-top: 1px solid rgb(var(--color-action-accent-rgb), 0.16);
+	opacity: 100%;
+	isolation: isolate;
+	box-shadow:
+		inset 0 1px 0 rgb(var(--color-action-accent-rgb), 0.08),
+		0 18px 40px rgb(0 0 0 / 22%);
+
+	&::before,
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	&::before {
+		inset: 0 0 auto;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-action-accent-rgb), 0.6),
+			transparent
+		);
+		opacity: 72%;
+	}
+
+	&::after {
+		inset: auto 50% -4rem auto;
+		width: min(18rem, 48vw);
+		height: 6rem;
+		transform: translateX(50%);
+		background: radial-gradient(
+			circle,
+			rgb(var(--color-action-accent-rgb), 0.08) 0%,
+			transparent 72%
+		);
+		filter: blur(26px);
+		opacity: 48%;
+	}
+
+	@include mixins.respond-to(xs) {
+		padding-inline: 1.5rem;
+	}
+
+	.footer-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		width: min(100%, 26rem);
+		margin: 0 auto;
+		padding: 0;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		backdrop-filter: none;
+		position: relative;
+		overflow: visible;
+		text-align: center;
+		opacity: 100%;
+
+		&::before {
+			display: none;
+		}
+
+		@include mixins.respond-to(md) {
+			width: min(100%, 34rem);
+			gap: 0.9rem;
+		}
+	}
+
+	.footer-content--with-replay {
+		display: flex;
+	}
+
+	.footer-info--ximena {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		min-width: 0;
+		position: relative;
+		z-index: 1;
+	}
+
+	.powered-by {
+		margin: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: none;
+		background: transparent;
+		box-shadow: none;
+		font-size: 0.58rem;
+		font-weight: 500;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: rgb(var(--color-text-primary-rgb), 0.62);
+	}
+
+	.footer-brand-logo {
+		:global(&.logo) {
+			width: clamp(7.5rem, 17vw, 9rem);
+			height: auto;
+			transform: none;
+		}
+	}
+
+	.footer-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+		min-width: 0;
+		position: relative;
+		z-index: 1;
+		width: 100%;
+	}
+
+	.footer-action {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.55rem;
+		min-width: 0;
+		min-height: 2.5rem;
+		padding: 0.68rem 1rem;
+		border-radius: 999px;
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.18);
+		background: rgb(255 255 255 / 3%);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
+		color: rgb(var(--color-text-primary-rgb), 0.88);
+		font-family: tokens.$font-ui;
+		text-decoration: none;
+		text-align: center;
+		transition:
+			transform tokens.$duration-snappy tokens.$ease-premium,
+			border-color tokens.$duration-snappy tokens.$ease-premium,
+			background tokens.$duration-snappy tokens.$ease-premium,
+			color tokens.$duration-snappy tokens.$ease-premium;
+		flex: 0 0 auto;
+		width: auto;
+		max-width: 100%;
+
+		&:hover {
+			transform: translateY(-1px);
+			border-color: rgb(var(--color-action-accent-rgb), 0.3);
+			background: rgb(var(--color-action-accent-rgb), 0.08);
+			color: rgb(var(--color-text-primary-rgb), 0.96);
+		}
+
+		&:focus-visible {
+			outline: 1px solid rgb(var(--color-action-accent-rgb), 0.95);
+			outline-offset: 4px;
+		}
+	}
+
+	.footer-action__icon {
+		width: 1.65rem;
+		height: 1.65rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		background: rgb(255 255 255 / 6%);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
+		flex-shrink: 0;
+	}
+
+	.footer-action__icon-media {
+		width: 0.82rem;
+		height: 0.82rem;
+		display: block;
+		object-fit: contain;
+	}
+
+	.footer-action__label {
+		display: block;
+		font-size: 0.62rem;
+		letter-spacing: 0.2em;
+		line-height: 1.3;
+		text-transform: uppercase;
+		white-space: normal;
+	}
+
+	.whatsapp-button {
+		.footer-action__icon {
+			background: rgb(37 211 102 / 12%);
+			border: 1px solid rgb(37 211 102 / 14%);
+		}
+	}
+
+	.footer-secondary-link,
+	.footer__replay-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.2rem 0;
+		background: transparent;
+		border: none;
+		box-shadow: none;
+		border-radius: 0;
+		cursor: pointer;
+		color: rgb(var(--color-text-primary-rgb), 0.72);
+		font-family: var(--font-label, tokens.$font-display-formal);
+		font-size: 0.6rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		text-decoration: none;
+		transition:
+			color tokens.$duration-snappy tokens.$ease-premium,
+			opacity tokens.$duration-snappy tokens.$ease-premium;
+
+		&:hover {
+			background: transparent;
+			box-shadow: none;
+			transform: none;
+			color: rgb(var(--color-action-accent-rgb), 0.9);
+		}
+
+		&:focus-visible {
+			outline: 1px solid rgb(var(--color-action-accent-rgb), 0.8);
+			outline-offset: 4px;
+		}
 	}
 }

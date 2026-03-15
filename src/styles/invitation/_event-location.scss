@@ -364,15 +364,15 @@
 		&--maps,
 		&--waze {
 			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
-			color: var(--color-text-primary, tokens.$color-text-primary);
+			color: #f9f6f2; // Fixed: Ensuring text is visible on dark
 			border-color: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
 			backdrop-filter: blur(12px);
 		}
 
 		&--maps:hover,
 		&--waze:hover {
-			background: rgb(var(--color-accent-rgb), 0.2);
-			border-color: var(--color-accent);
+			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+			border-color: var(--color-action-accent);
 			box-shadow: 0 8px 25px rgb(212 175 55 / 25%);
 		}
 
