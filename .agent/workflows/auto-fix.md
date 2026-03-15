@@ -1,28 +1,27 @@
 ---
-description: Automated remediation for gatekeeper findings using self-healing commands.
+description: Automated remediation for gatekeeper findings using workflow-owned autofix commands.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-03-10
+last_reviewed: 2026-03-15
 ---
 
-# Auto-Fix (Self-Healing) Routine
+# Auto-Fix Routine
 
-Execute this when `gatekeeper:report` returns `route: "auto_fix"`.
+Execute this when the workflow report returns `workflowRoute: "auto_fix"`.
 
-If `route` is `architectural_intervention`, do not run this workflow.
+```bash
+pnpm gatekeeper:workflow:autofix
+```
 
-## Remediation Loop
+## Rules
 
-1.  **Extract Commands** Identify findings with `autoFixable: true` and extract their `fixCommand`
-    from the report.
+- Autofix command selection is owned by `gatekeeper.mjs`.
+- Retry orchestration, strict final verification, and session cleanup are owned by
+  `gatekeeper-workflow.mjs`.
+- Do not re-implement fix selection logic in markdown.
 
-2.  **Execute Fixes** Run the specific `fixCommand` for each finding (e.g., `pnpm lint:fix`). If
-    multiple findings share a command, run it once.
+## After Autofix
 
-3.  **Verify & Re-route** Re-run `pnpm gatekeeper:report`.
-    - If `route` is now `proceed_adu`: Proceed to commit.
-    - If `route` is still `auto_fix` after 2 attempts: Notify user about the persistent issue.
-
-> [!IMPORTANT] Do NOT attempt to fix issues manually if a `fixCommand` exists; let the tools do the
-> work.
+Run `pnpm gatekeeper:workflow:inspect` again. If `workflowRoute` is still
+`architectural_intervention`, resolve the blocking findings manually.
