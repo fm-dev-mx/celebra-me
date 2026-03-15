@@ -4,8 +4,8 @@
     "title": "La Noche Premiere de Ximena",
     "description": "Una celebración editorial donde el brillo de los quince años se encuentra con la elegancia Noir. Sé parte de la historia de Ximena.",
     "theme": {
-        "primaryColor": "#1B140D",
-        "accentColor": "#C5A059",
+        "primaryColor": "#0D0D0D",
+        "accentColor": "#D4AF37",
         "fontFamily": "serif",
         "preset": "top-premium-xv-ximena"
     },
@@ -114,7 +114,7 @@
         "items": [
             { "image": "gallery01", "caption": "Portada Premiere." },
             { "image": "gallery02", "caption": "El Baile de la Noche." },
-            { "image": "galleryNew01", "caption": "Detalles en Oro & Perlas." },
+            { "image": "gallery03", "caption": "Detalles en Oro & Perlas." },
             { "image": "gallery04", "caption": "Rosas & Oro." },
             { "image": "gallery05", "caption": "Detalles en Seda." },
             { "image": "gallery07", "caption": "Silueta Editorial." },
@@ -287,7 +287,7 @@
         },
         {
             "type": "interlude",
-            "image": "galleryNew01",
+            "image": "gallery15",
             "alt": "Detalles editoriales en oro y perlas",
             "variant": "top-premium-xv-ximena",
             "height": "screen"
@@ -315,8 +315,8 @@
         "microcopy": "Abre Tu Invitación",
         "variant": "editorial",
         "closedPalette": {
-            "primary": "#C5A059",
-            "accent": "#1B140D",
+            "primary": "#D4AF37",
+            "accent": "#0D0D0D",
             "background": "#F9F6F2"
         }
     },

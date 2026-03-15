@@ -61,7 +61,7 @@ export const EVENT_KEYS = [
 	'gallery12',
 	'gallery13',
 	'gallery14',
-	'galleryNew01',
+	'gallery15',
 	'interlude01',
 	'interlude02',
 	'interlude03',
@@ -111,7 +111,7 @@ type RawEventAssets = {
 	reception?: ImageMetadata;
 	jardin: ImageMetadata;
 	signature: ImageMetadata;
-	gallery: ImageMetadata[];
+	gallery: (ImageMetadata | undefined)[];
 	interlude01?: ImageMetadata;
 	interlude02?: ImageMetadata;
 	interlude03?: ImageMetadata;
@@ -122,59 +122,53 @@ type RawEventAssets = {
 // Remote event asset types are no longer needed.
 
 // Event-specific asset mapping helpers
-const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAssets => ({
-	hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
-	portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
-	family: rawAssets.family
-		? { src: rawAssets.family, alt: `Familia de ${eventName}` }
-		: undefined,
-	ceremony: rawAssets.ceremony
-		? { src: rawAssets.ceremony, alt: `Ceremonia de ${eventName}` }
-		: undefined,
-	reception: rawAssets.reception
-		? { src: rawAssets.reception, alt: `Recepción de ${eventName}` }
-		: undefined,
-	jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
-	signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
-	gallery01: { src: rawAssets.gallery[0], alt: `Galería 01 de ${eventName}` },
-	gallery02: { src: rawAssets.gallery[1], alt: `Galería 02 de ${eventName}` },
-	gallery03: { src: rawAssets.gallery[2], alt: `Galería 03 de ${eventName}` },
-	gallery04: { src: rawAssets.gallery[3], alt: `Galería 04 de ${eventName}` },
-	gallery05: { src: rawAssets.gallery[4], alt: `Galería 05 de ${eventName}` },
-	gallery06: { src: rawAssets.gallery[5], alt: `Galería 06 de ${eventName}` },
-	gallery07: { src: rawAssets.gallery[6], alt: `Galería 07 de ${eventName}` },
-	gallery08: { src: rawAssets.gallery[7], alt: `Galería 08 de ${eventName}` },
-	gallery09: { src: rawAssets.gallery[8], alt: `Galería 09 de ${eventName}` },
-	gallery10: { src: rawAssets.gallery[9], alt: `Galería 10 de ${eventName}` },
-	gallery11: { src: rawAssets.gallery[10], alt: `Galería 11 de ${eventName}` },
-	gallery12: rawAssets.gallery[11]
-		? { src: rawAssets.gallery[11], alt: `Galería 12 de ${eventName}` }
-		: undefined,
-	gallery13: rawAssets.gallery[12]
-		? { src: rawAssets.gallery[12], alt: `Galería 13 de ${eventName}` }
-		: undefined,
-	gallery14: rawAssets.gallery[13]
-		? { src: rawAssets.gallery[13], alt: `Galería 14 de ${eventName}` }
-		: undefined,
-	galleryNew01: rawAssets.gallery[8]
-		? { src: rawAssets.gallery[8], alt: `Detalle Editorial de ${eventName}` }
-		: undefined,
-	interlude01: rawAssets.interlude01
-		? { src: rawAssets.interlude01, alt: `Interludio 01 de ${eventName}` }
-		: undefined,
-	interlude02: rawAssets.interlude02
-		? { src: rawAssets.interlude02, alt: `Interludio 02 de ${eventName}` }
-		: undefined,
-	interlude03: rawAssets.interlude03
-		? { src: rawAssets.interlude03, alt: `Interludio 03 de ${eventName}` }
-		: undefined,
-	interludeNew01: rawAssets.interludeNew01
-		? { src: rawAssets.interludeNew01, alt: `Interludio Premium de ${eventName}` }
-		: undefined,
-	thankYouPortrait: rawAssets.thankYouPortrait
-		? { src: rawAssets.thankYouPortrait, alt: `Retrato de Despedida de ${eventName}` }
-		: undefined,
-});
+const mapEventAssets = (rawAssets: RawEventAssets, eventName: string): EventAssets => {
+	const assets: Partial<EventAssets> = {
+		hero: { src: rawAssets.hero, alt: `Portada de ${eventName}` },
+		portrait: { src: rawAssets.portrait, alt: `Retrato de ${eventName}` },
+		family: rawAssets.family
+			? { src: rawAssets.family, alt: `Familia de ${eventName}` }
+			: undefined,
+		ceremony: rawAssets.ceremony
+			? { src: rawAssets.ceremony, alt: `Ceremonia de ${eventName}` }
+			: undefined,
+		reception: rawAssets.reception
+			? { src: rawAssets.reception, alt: `Recepción de ${eventName}` }
+			: undefined,
+		jardin: { src: rawAssets.jardin, alt: `Sede de ${eventName}` },
+		signature: { src: rawAssets.signature, alt: `Firma de ${eventName}` },
+		interlude01: rawAssets.interlude01
+			? { src: rawAssets.interlude01, alt: `Interludio 01 de ${eventName}` }
+			: undefined,
+		interlude02: rawAssets.interlude02
+			? { src: rawAssets.interlude02, alt: `Interludio 02 de ${eventName}` }
+			: undefined,
+		interlude03: rawAssets.interlude03
+			? { src: rawAssets.interlude03, alt: `Interludio 03 de ${eventName}` }
+			: undefined,
+		interludeNew01: rawAssets.interludeNew01
+			? { src: rawAssets.interludeNew01, alt: `Interludio Premium de ${eventName}` }
+			: undefined,
+		thankYouPortrait: rawAssets.thankYouPortrait
+			? { src: rawAssets.thankYouPortrait, alt: `Retrato de Despedida de ${eventName}` }
+			: undefined,
+	};
+
+	// Programmatic Gallery Mapping
+	for (let i = 0; i < 15; i++) {
+		const key = `gallery${String(i + 1).padStart(2, '0')}` as EventAssetKey;
+		const raw = rawAssets.gallery[i];
+		if (raw) {
+			const alt =
+				i === 14
+					? `Detalle Editorial de ${eventName}`
+					: `Galería ${String(i + 1).padStart(2, '0')} de ${eventName}`;
+			assets[key] = { src: raw, alt };
+		}
+	}
+
+	return assets as EventAssets;
+};
 
 // Remote asset mapping is no longer used for this event as assets are hosted locally.
 
