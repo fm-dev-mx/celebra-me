@@ -107,3 +107,9 @@ edits.
 
 - **2026-03-15**: Added lean workflow report profile, workflow-owned session lifecycle, and
   commit-range validation alignment.
+
+### Gatekeeper Workflow
+
+The gatekeeper-workflow.mjs script manages the session-based commit lifecycle. It ensures that
+changes are inspected, staged by domain, and committed with high-precision messages while
+maintaining atomicity and schema alignment across the codebase during transition phases.

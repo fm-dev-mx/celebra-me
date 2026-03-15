@@ -31,7 +31,7 @@
         ],
         "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
         "gov-plans-gatekeeper": [".agent/plans/gatekeeper-optimization/**"],
-        "gov-workflows": [".agent/workflows/**"],
+        "gov-workflows": [".agent/workflows/**", "docs/DOC_STATUS.md"],
         "gov-scripts": [".agent/scripts/**"],
         "gov-infra": [
             ".husky/**",
