@@ -30,7 +30,8 @@
         "gov-plans-archive": [".agent/plans/README.md", ".agent/plans/archive/**"],
         "gov-plans-invitation": [
             ".agent/plans/real-xv-invitation/**",
-            ".agent/plans/wedding-finalization/**"
+            ".agent/plans/wedding-finalization/**",
+            ".agent/plans/ximena-overhaul/**"
         ],
         "gov-tooling": [
             "scripts/**",

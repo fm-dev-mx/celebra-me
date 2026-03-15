@@ -74,16 +74,17 @@
 
 ### Active Plans
 
-- [error-remediation-evolution](../.agent/plans/error-remediation-evolution/README.md) -
-  `COMPLETED`, systematic hardening of diagnostic automation and zero-loop remediation; pending
-  explicit archive approval.
 - [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `ACTIVE`,
   governance optimization and workflow hardening plan for commit automation.
 
 ### Archived Plans
 
+- [error-remediation-evolution](../.agent/plans/archive/error-remediation-evolution/README.md) -
+  `ARCHIVED`, systematic hardening of diagnostic automation and zero-loop remediation.
 - [invitation-evolution-march-2026](../.agent/plans/archive/invitation-evolution-march-2026/README.md)
 - [post-alignment-remediation-2026-03](../.agent/plans/archive/post-alignment-remediation-2026-03/README.md)
+- [real-xv-invitation](../.agent/plans/archive/real-xv-invitation/README.md) - `ARCHIVED`, Ximena
+  Meza Trasviña XV Editorial Finalization.
 - [system-doc-alignment-hardening](../.agent/plans/archive/system-doc-alignment-hardening/README.md)
 - [system-health-audit](../.agent/plans/archive/system-health-audit/README.md)
 - [system-wide-alignment-audit-2026-03](../.agent/plans/archive/system-wide-alignment-audit-2026-03/README.md)
