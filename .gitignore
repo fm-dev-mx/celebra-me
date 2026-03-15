@@ -51,7 +51,10 @@ _tmp_*
 .pnpm-store/
 
 # IDE/Editor specific settings
-.vscode/
+# Keep shared VS Code workspace files tracked while ignoring other local editor files.
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
 .idea/
 *.swp
 *.swo
