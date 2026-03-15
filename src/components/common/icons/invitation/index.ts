@@ -22,3 +22,4 @@ export * from './WesternHat';
 export * from './Taco';
 export * from './Tuba';
 export * from './Accordion';
+export * from './Heel';

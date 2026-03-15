@@ -40,7 +40,9 @@ import {
     WesternHatIcon,
     TacoIcon,
     TubaIcon,
-    AccordionIcon
+    AccordionIcon,
+    HeelIcon,
+    BootSealIcon
 } from './invitation';
 import type React from 'react';
 
@@ -140,7 +142,13 @@ const icons: Record<
     tuba: TubaIcon,
     AccordionIcon,
     Accordion: AccordionIcon,
-    accordion: AccordionIcon
+    accordion: AccordionIcon,
+    HeelIcon,
+    Heel: HeelIcon,
+    heel: HeelIcon,
+    BootIcon: BootSealIcon,
+    Boot: BootSealIcon,
+    boot: BootSealIcon
 };
 
 const SelectedIcon = icons[name];
@@ -164,7 +172,7 @@ const combinedClass = ['universal-icon', className].filter(Boolean).join(' ');
 	)
 }
 
-<style define:vars={{ width: size, height: size }}>
+<style lang="scss" define:vars={{ width: size, height: size }}>
 	.universal-icon--fallback {
 		width: var(--width);
 		height: var(--height);

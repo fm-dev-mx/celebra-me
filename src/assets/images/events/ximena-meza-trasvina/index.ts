@@ -1,6 +1,6 @@
 import hero from './hero.webp';
 import portrait from './portrait.webp';
-import family from './family.webp';
+import family from './family-editorial.png';
 import signature from './signature.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
