@@ -37,6 +37,9 @@
             "commitlint.config.cjs",
             "eslint.config.js",
             ".markdownlintignore",
+            ".markdownlint.json",
+            ".prettierrc.mjs",
+            ".editorconfig",
             "docs/core/git-governance.md"
         ],
         "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
