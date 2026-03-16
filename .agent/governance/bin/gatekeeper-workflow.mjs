@@ -396,7 +396,7 @@ function fileDescription(file) {
 	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
 	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
 	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} configuration`;
-	if (file.endsWith('.md')) return `add ${normalizedStem || 'documentation'} notes`;
+	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
 	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
 	if (file.endsWith('.sh')) return 'configure hook execution';
 	return `update ${normalizedStem || 'file'} configuration`;
