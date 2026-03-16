@@ -309,7 +309,18 @@ function ensureSplit(session, domain) {
 
 function inferCommitType(files) {
 	const lowered = files.map((file) => file.toLowerCase());
-	if (lowered.every((file) => file.startsWith('docs/') || file.endsWith('.md'))) return 'docs';
+	if (
+		lowered.every(
+			(file) =>
+				file.startsWith('docs/') ||
+				file.startsWith('.agent/plans/') ||
+				file.endsWith('.md') ||
+				file.endsWith('.mdx') ||
+				file.endsWith('manifest.json'),
+		)
+	) {
+		return 'docs';
+	}
 	if (lowered.every((file) => file.startsWith('tests/') || file.includes('.test.')))
 		return 'test';
 	if (lowered.every((file) => file.startsWith('src/styles/') || /\.(scss|css)$/.test(file)))
@@ -351,35 +362,72 @@ function stemOf(file) {
 		.replace(/^-|-$/g, '');
 }
 
+function normalizeStem(value) {
+	return String(value || '')
+		.replace(/[^a-zA-Z0-9-]+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
+function commonPathPrefix(files) {
+	if (!files.length) return '';
+	const segments = files.map((file) => file.split('/'));
+	const prefix = [];
+	for (let index = 0; index < segments[0].length; index += 1) {
+		const candidate = segments[0][index];
+		if (!segments.every((parts) => parts[index] === candidate)) break;
+		prefix.push(candidate);
+	}
+	return prefix.join('/');
+}
+
+function scaffoldTarget(split) {
+	const prefix = commonPathPrefix(split.files || []);
+	const fallback = split.baseDomain || split.id || 'change';
+	const target = prefix.split('/').filter(Boolean).pop() || fallback;
+	return normalizeStem(target).replace(/-/g, ' ');
+}
+
 function fileDescription(file) {
 	const stem = stemOf(file).toLowerCase();
 	const normalizedStem = stem.replace(/-/g, ' ');
-	if (file.endsWith('README.md')) return 'record status summary';
-	if (file.endsWith('CHANGELOG.md')) return 'record audit trail';
-	if (/\/phases\/\d{2}-/.test(file)) return 'mark phase completion';
+	if (file.endsWith('README.md')) return 'document the status summary';
+	if (file.endsWith('CHANGELOG.md')) return 'document the audit trail';
+	if (/\/phases\/\d{2}-/.test(file)) return 'document the phase details';
 	if (file.endsWith('manifest.json')) return 'set plan status metadata';
 	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} metadata`;
-	if (file.endsWith('.md')) return `record ${normalizedStem || 'document'} notes`;
-	if (file.endsWith('.mjs')) return `wire ${normalizedStem || 'workflow'} logic`;
-	if (file.endsWith('.sh')) return 'set hook execution flow';
-	return `record ${normalizedStem || 'file'} scope`;
+	if (file.endsWith('.md')) return `document ${normalizedStem || 'document'} notes`;
+	if (file.endsWith('.mjs')) return `refine ${normalizedStem || 'workflow'} logic`;
+	if (file.endsWith('.sh')) return 'align hook execution flow';
+	return `update ${normalizedStem || 'file'} metadata`;
 }
 
 function headerSubject(scope, split) {
-	const candidates = [
-		`record ${split.baseDomain || scope} scope`,
-		`record ${(split.baseDomain || scope).replace(/^gov-/, '')} scope`,
-		`record ${scope}`,
-		`sync ${scope}`,
-	];
+	const commitType = inferCommitType(split.files);
+	const baseDomain = split.baseDomain || scope;
+	const target = truncateText(scaffoldTarget(split), 18);
+	const candidates = [];
+	if (baseDomain.startsWith('gov-plans-archive')) {
+		candidates.push(`archive ${target} plan files`);
+	}
+	if (baseDomain.startsWith('gov-plans-')) {
+		candidates.push(`document ${target} plan files`);
+	}
+	if (commitType === 'test') {
+		candidates.push(`add ${target} coverage`);
+	}
+	if (commitType === 'style') {
+		candidates.push(`refine ${target} styles`);
+	}
+	if (baseDomain.startsWith('gov-tooling')) {
+		candidates.push(`align ${target} tooling`);
+	}
+	candidates.push(`align ${target} updates`);
 	return (
 		candidates
-			.map((value) => value.replace(/-/g, ' '))
-			.find(
-				(value) =>
-					`${inferCommitType(split.files)}(${scope}): ${value}`.length <=
-					HEADER_MAX_LENGTH,
-			) || 'sync scope'
+			.map((value) => value.replace(/\s+/g, ' ').trim())
+			.find((value) => `${commitType}(${scope}): ${value}`.length <= HEADER_MAX_LENGTH) ||
+		'align scoped updates'
 	);
 }
 

@@ -70,6 +70,8 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
   `- path/to/file.ext: description` `- path/to/folder/: description`
   `- path/to/prefix/**: description`
 - Bodies may group small coherent file sets when the commit is still atomic.
+- `gatekeeper-workflow scaffold` must generate subjects and bullets that already satisfy this
+  contract.
 
 If these rules change, update `commitlint.config.cjs` first and then update this document to match
 the executable owner.

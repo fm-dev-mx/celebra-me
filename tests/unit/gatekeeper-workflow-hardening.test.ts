@@ -194,4 +194,26 @@ describe('Gatekeeper workflow hardening', () => {
 			}),
 		);
 	});
+
+	it('builds scaffold headers without process bookkeeping language', () => {
+		const result = runNodeJson(`
+			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			const split = {
+				id: 'gov-plans-archive-1',
+				baseDomain: 'gov-plans-archive',
+				files: [
+					'.agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md',
+					'.agent/plans/archive/gatekeeper-hardening-fixture/02-manifest.json',
+				],
+			};
+			console.log(JSON.stringify(buildCommitScaffold(split)));
+		`);
+
+		expect(result.type).toBe('docs');
+		expect(result.header).toMatch(/^docs\(gov-plans-archive-1\): archive .+ plan files$/);
+		expect(result.fullMessage).not.toContain('record gov plans archive scope');
+		expect(result.body).toContain(
+			'- .agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md: document 01 phase notes',
+		);
+	});
 });
