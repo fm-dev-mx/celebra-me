@@ -13,12 +13,14 @@ module.exports = {
 	// RTL + custom mocks
 	setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 
-	// Configure ts-jest (avoid duplicating preset transform)
-	globals: {
-		'ts-jest': {
-			useESM: true,
-			tsconfig: '<rootDir>/tsconfig.json',
-		},
+	transform: {
+		'^.+\\.tsx?$': [
+			'ts-jest',
+			{
+				useESM: true,
+				tsconfig: '<rootDir>/tsconfig.json',
+			},
+		],
 	},
 
 	moduleNameMapper: {

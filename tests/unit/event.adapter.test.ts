@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { adaptEvent } from '@/lib/adapters/event';
 
 function loadFixture(relativePath: string) {

@@ -151,6 +151,8 @@ function safeJson(value: unknown): string {
 	}
 }
 
+jest.mock('@/lib/assets/discovery');
+
 // Mock framer-motion to avoid issues in JSDOM and suppress motion prop leakage warnings
 jest.mock('framer-motion', () => {
 	const filterMotionProps = (props: Record<string, unknown>) => {
