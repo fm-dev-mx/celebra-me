@@ -85,6 +85,17 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 - Conventional Astro projects use `src/styles/` for global/feature styles.
 - You may group styles by feature under `styles/feature-name/` if helpful.
 
+### 4.3 Semantic Token Usage
+
+- Astro and TSX components must consume semantic CSS variables such as `--color-*`, `--shadow-*`,
+  and preset-scoped section tokens instead of hardcoded hex values.
+- Expand semantic tokens in `src/styles/tokens/_semantic.scss` and preset files before adding new
+  component-level color roles.
+- Styling-only `define:vars` blocks are not allowed in Astro components. Pass styling values through
+  inline custom properties or preset/state classes instead.
+- Runtime `define:vars` is allowed only for script-level Astro data injection when markup or data
+  attributes are not sufficient.
+
 ---
 
 ## 5) Imports & Aliases

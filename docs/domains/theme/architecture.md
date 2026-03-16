@@ -67,6 +67,10 @@ Presets are class-scoped and applied on page wrappers/body.
 
 Preset classes are consumed at runtime by invitation wrappers and dashboard/auth layouts.
 
+Presenter-owned route wrappers may inject per-event custom properties inline for event-specific
+values such as envelope colors, but those values still flow through semantic CSS variable names
+rather than component-local hex literals.
+
 > [!NOTE] When defining presets, always use explicit index imports for tokens (e.g.,
 > `@use '../../tokens/index' as tokens;`) to prevent name resolution ambiguities in complex
 > dependency trees.
@@ -99,6 +103,26 @@ These files are lazy-loaded only for the matching event route.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
 - Per-event editorial overhauls (e.g., `.event--ximena-meza-trasvina`) should prioritize 3-Layer
   Architecture even when using generic section variants.
+
+## Semantic Token Governance
+
+Base semantic tokens live in `src/styles/tokens/_semantic.scss` and are surfaced globally through
+`src/styles/global.scss`.
+
+Phase 06 standardized these additional semantic roles for component-level styling:
+
+- `--color-surface-elevated`
+- `--color-surface-canvas`
+- `--color-border-premium`
+- `--color-text-muted`
+
+Component rules:
+
+- Astro and TSX files must not introduce hardcoded hex colors for invitation-facing UI.
+- Styling-only `define:vars` blocks should be replaced with inline custom properties or preset/state
+  classes.
+- Script-level `define:vars` remains acceptable when Astro needs runtime data injection for client
+  behavior.
 
 ## Collection Integration
 
