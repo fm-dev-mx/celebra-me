@@ -86,7 +86,7 @@ describe('Commit validation contract', () => {
 
 		expect(result.status).not.toBe(0);
 		expect(`${result.stdout}\n${result.stderr}`).toContain(
-			'subject must start with a strong verb',
+			'subject must include a concrete target after the verb',
 		);
 	});
 
