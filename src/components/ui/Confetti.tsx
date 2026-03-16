@@ -12,7 +12,13 @@ interface ConfettiPiece {
 	vy: number;
 }
 
-const COLORS = ['#d4c7ad', '#f5f5f5', '#dcb43c', '#ffffff', '#e5e5e5'];
+const COLORS = [
+	'var(--color-action-accent)',
+	'var(--color-surface-primary)',
+	'var(--color-text-emphasis)',
+	'var(--color-text-on-dark)',
+	'var(--color-neutral-subtle)',
+];
 
 export const Confetti: React.FC<{ active: boolean; onComplete: () => void }> = ({
 	active,

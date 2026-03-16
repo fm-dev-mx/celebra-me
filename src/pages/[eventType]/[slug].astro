@@ -65,18 +65,7 @@ const presenter = presentInvitationPage({
 	hideHeader={true}
 	className={presenter.layout.className}
 >
-	<main class={presenter.wrapper.className}>
-		<style lang="scss" define:vars={presenter.wrapper.variables}>
-			.event-theme-wrapper {
-				--color-primary: var(--color-primary);
-				--color-primary-rgb: var(--color-primary-rgb);
-				--color-accent: var(--color-accent);
-				--color-accent-rgb: var(--color-accent-rgb);
-				--env-bg: var(--env-bg);
-				--env-primary: var(--env-primary);
-				--env-accent: var(--env-accent);
-			}
-		</style>
+	<main class={presenter.wrapper.className} style={presenter.wrapper.style}>
 		<!-- Scripts -->
 		<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
 			// Legacy Token Resolution
