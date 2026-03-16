@@ -36,6 +36,7 @@
         "gatekeeper:commit-ready:create": "node .agent/governance/bin/gatekeeper-commit-ready.mjs --create-branch",
         "gatekeeper:validate-msg": "node .agent/governance/bin/validate-commit-msg.mjs",
         "governance": "node .agent/governance/bin/governance.mjs",
+        "assets:check-registry": "node scripts/check-event-assets.cjs",
         "lint-staged": "lint-staged",
         "commitlint": "commitlint",
         "prepare": "husky",
