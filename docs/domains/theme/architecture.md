@@ -5,7 +5,8 @@
 The invitation theme system is contract-driven and section-based.
 
 - **Single contract source**: `src/lib/theme/theme-contract.ts`
-- **Schema enforcement**: `src/content/config.ts` uses contract arrays in Zod enums
+- **Schema enforcement**: `src/content/config.ts` imports modular schemas from
+  `src/lib/schemas/content/`
 - **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
 - **Rendering**: invitation sections use `data-variant` selectors
 - **Preset application**: class-scoped presets (`.theme-preset--*`), not `:root` injection
@@ -50,7 +51,7 @@ Selector contract:
 
 ```scss
 .quote-section[data-variant='jewelry-box'] {
-	/* variant styles */
+  /* variant styles */
 }
 ```
 
@@ -60,7 +61,7 @@ Presets are class-scoped and applied on page wrappers/body.
 
 ```scss
 .theme-preset--jewelry-box {
-	--color-primary: #d4af37;
+  --color-primary: #d4af37;
 }
 ```
 
@@ -109,6 +110,23 @@ The theme system integrates with Astro Content Collections. Content is now parti
 
 Runtime resolution in `src/lib/content/events.ts` ensures that theme presets and section variants
 are correctly mapped regardless of the source collection.
+
+## Schema Architecture
+
+Content schemas are modularized under `src/lib/schemas/content/`:
+
+- `base-event.schema.ts`: Event top-level schema assembly
+- `hero.schema.ts`: Hero/celebrant metadata
+- `location.schema.ts`: Venue, ceremony, reception, indications
+- `family.schema.ts`: Family relationships and groups
+- `rsvp.schema.ts`: RSVP configuration + deprecated legacy labels
+- `gifts.schema.ts`: Gift option variants
+- `section-styles.schema.ts`: Section styling configuration
+- `shared.schema.ts`: Asset, theme, and shared primitives
+
+Legacy RSVP labels (`nameLabel`, `guestCountLabel`, `buttonLabel`) now live under
+`sectionStyles.rsvp.legacy` with `@deprecated` JSDoc annotations. Adapters read the legacy namespace
+as a fallback to preserve existing content behavior during migration.
 
 ---
 
