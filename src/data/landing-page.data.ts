@@ -24,7 +24,7 @@ export const landingData: LandingPageData = {
 		title: 'Nuestros Servicios',
 		services: [
 			{
-				href: '/xv/demo-xv',
+				href: '/xv/noir-premiere-xv',
 				title: 'XV Años',
 				description: 'Invitaciones mágicas para una noche inolvidable.',
 				icon: 'CrownIcon',

@@ -1,0 +1,325 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "title": "Noir Premiere XV",
+    "description": "Una invitacion editorial donde la elegancia noir y el brillo dorado presentan una noche de quince anos con presencia cinematografica.",
+    "theme": {
+        "primaryColor": "#0D0D0D",
+        "accentColor": "#D4AF37",
+        "fontFamily": "serif",
+        "preset": "jewelry-box"
+    },
+    "sectionStyles": {
+        "countdown": {
+            "variant": "editorial",
+            "numberStyle": "thin",
+            "showParticles": true
+        },
+        "location": {
+            "variant": "editorial",
+            "mapStyle": "dark",
+            "showFlourishes": true
+        },
+        "family": {
+            "variant": "editorial"
+        },
+        "gallery": {
+            "variant": "editorial"
+        },
+        "gifts": {
+            "variant": "editorial"
+        },
+        "itinerary": {
+            "variant": "editorial"
+        },
+        "thankYou": {
+            "variant": "editorial"
+        },
+        "rsvp": {
+            "variant": "editorial",
+            "labels": {
+                "name": "Tu nombre en la lista *",
+                "guestCount": "Numero de acompanantes",
+                "confirmButton": "Reservar mi lugar"
+            }
+        }
+    },
+    "hero": {
+        "name": "Valentina Noir",
+        "label": "Edicion Editorial",
+        "date": "2026-09-19T20:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "variant": "editorial"
+    },
+    "location": {
+        "venueName": "Maison Lumiere Eventos",
+        "address": "Ciudad de Mexico",
+        "city": "Ciudad de Mexico",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+        "reception": {
+            "venueEvent": "Celebracion",
+            "venueName": "Maison Lumiere Eventos",
+            "address": "Ciudad de Mexico",
+            "date": "19 de septiembre de 2026",
+            "time": "8:00 PM",
+            "mapUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "appleMapsUrl": "https://maps.apple.com/?q=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Maison+Lumiere+Eventos+Ciudad+de+Mexico",
+            "image": "jardin"
+        },
+        "indications": [
+            {
+                "icon": "crown",
+                "iconName": "Crown",
+                "styleVariant": "reserved",
+                "text": "Etiqueta: <strong>Gala Noir (Negro, champagne y acentos metalicos)</strong>"
+            },
+            {
+                "icon": "envelope",
+                "iconName": "Envelope",
+                "styleVariant": "default",
+                "text": "Favor de confirmar antes del <strong>12 de septiembre</strong>."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Alejandro Noir",
+            "mother": "Isabela Duval"
+        },
+        "labels": {
+            "sectionTitle": "El Circulo de Luz",
+            "sectionSubtitle": "Edicion de Familia",
+            "parentsTitle": "Con la bendicion de mis padres"
+        },
+        "godparents": [
+            {
+                "name": "Renata Bellamy",
+                "role": "Madrina de honor"
+            }
+        ],
+        "featuredImage": "family"
+    },
+    "sections": {
+        "countdown": true,
+        "rsvp": true,
+        "gifts": true,
+        "gallery": true
+    },
+    "gallery": {
+        "title": "Galeria Editorial",
+        "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",
+        "items": [
+            { "image": "gallery01", "caption": "Portada de la noche." },
+            { "image": "gallery02", "caption": "El vals en primer plano." },
+            { "image": "gallery03", "caption": "Escena de salon y reflejos." },
+            { "image": "gallery04", "caption": "Rosas, luz y metal." },
+            { "image": "gallery05", "caption": "Texturas en seda y brillo." },
+            { "image": "gallery07", "caption": "Silueta en composicion editorial." },
+            { "image": "gallery09", "caption": "El sobre dorado." },
+            { "image": "gallery10", "caption": "Destellos sobre la pista." }
+        ]
+    },
+    "gifts": {
+        "title": "Mesa de Regalos",
+        "subtitle": "Tu generosidad acompana esta noche de estreno.",
+        "items": [
+            {
+                "type": "store",
+                "title": "Mesa de Regalos Liverpool",
+                "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/placeholder-noir-premiere-xv"
+            },
+            {
+                "type": "bank",
+                "title": "Fondo de celebracion",
+                "bankName": "BBVA Mexico",
+                "accountHolder": "PENDIENTE",
+                "clabe": "0000 0000 0000 0000 00",
+                "accountNumber": "0000000000"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Agradecemos tu detalle en la recepcion de la gala."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma Tu Asistencia",
+        "guestCap": 4,
+        "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emocion.",
+        "closingName": "Valentina",
+        "image": "thankYouPortrait"
+    },
+    "itinerary": {
+        "title": "Programa de la Noche",
+        "items": [
+            {
+                "icon": "reception",
+                "label": "Recepcion editorial",
+                "time": "7:00 PM",
+                "description": "Apertura de puertas y bienvenida."
+            },
+            {
+                "icon": "waltz",
+                "label": "Vals de estreno",
+                "time": "8:00 PM",
+                "description": "La entrada principal de la festejada."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "9:00 PM",
+                "description": "Servicio de gala y conversacion."
+            },
+            {
+                "icon": "toast",
+                "label": "Brindis",
+                "time": "10:00 PM",
+                "description": "Un momento para celebrar esta nueva etapa."
+            },
+            {
+                "icon": "cake",
+                "label": "Pastel",
+                "time": "10:45 PM",
+                "description": "El instante mas dulce de la noche."
+            },
+            {
+                "icon": "party",
+                "label": "Fiesta",
+                "time": "11:30 PM",
+                "description": "Musica, pista y una noche en grande."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "La Noche Premiere Comienza En",
+        "subtitlePrefix": "El",
+        "footerText": "Ciudad de Mexico."
+    },
+    "navigation": [
+        {
+            "label": "Inicio",
+            "href": "#inicio"
+        },
+        {
+            "label": "Gala",
+            "href": "#event-location"
+        },
+        {
+            "label": "Galeria",
+            "href": "#galeria"
+        },
+        {
+            "label": "Regalos",
+            "href": "#regalos"
+        },
+        {
+            "label": "RSVP",
+            "href": "#rsvp"
+        }
+    ],
+    "contentBlocks": [
+        {
+            "type": "section",
+            "section": "location"
+        },
+        {
+            "type": "interlude",
+            "image": "interlude02",
+            "alt": "Seda dorada fluyendo en un ambiente noir",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "family"
+        },
+        {
+            "type": "interlude",
+            "image": "interlude03",
+            "alt": "Tiara y texturas sobre terciopelo oscuro",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "itinerary"
+        },
+        {
+            "type": "interlude",
+            "image": "interlude01",
+            "alt": "Detalle editorial de alta moda",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "gallery"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery09",
+            "alt": "Brillo dorado cinematografico",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "countdown"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery10",
+            "alt": "Explosion de destellos en la pista",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "gifts"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery15",
+            "alt": "Detalles de perlas, oro y textura editorial",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "rsvp"
+        },
+        {
+            "type": "interlude",
+            "image": "interludeNew01",
+            "alt": "Ultimo retrato editorial",
+            "variant": "editorial",
+            "height": "screen"
+        },
+        {
+            "type": "section",
+            "section": "thankYou"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "microcopy": "Abre Tu Invitacion",
+        "variant": "editorial",
+        "closedPalette": {
+            "primary": "#D4AF37",
+            "accent": "#0D0D0D",
+            "background": "#F9F6F2"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto tu invitacion para Noir Premiere XV: {inviteUrl}"
+    }
+}

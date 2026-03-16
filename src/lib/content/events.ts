@@ -1,4 +1,4 @@
-import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
 export type EventContentEntry =
 	| CollectionEntry<'events'>
@@ -17,7 +17,14 @@ export async function getRoutableEventEntry(
 	slug: string,
 	expectedEventType?: string,
 ): Promise<RoutableEventEntry | null> {
-	const liveEntry = await getEntry('events', slug);
+	const liveEntries = (await getCollection('events')) ?? [];
+	const liveEntry = liveEntries.find((entry: CollectionEntry<'events'>) => {
+		return (
+			getContentEntrySlug(entry.id) === slug &&
+			(!expectedEventType || entry.data.eventType === expectedEventType)
+		);
+	});
+
 	if (liveEntry && (!expectedEventType || liveEntry.data.eventType === expectedEventType)) {
 		return liveEntry;
 	}
