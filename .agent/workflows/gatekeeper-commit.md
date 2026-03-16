@@ -50,6 +50,9 @@ Verify no obvious blockers by running lint and typecheck manually if needed.
    node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --domain <domain-id>
    ```
 
+   The scaffold emits full relative paths in body bullets and those paths should not be manually
+   shortened with `...`.
+
 5. Commit the staged split with a message that satisfies the commit hook:
 
    ```bash
@@ -60,6 +63,7 @@ Verify no obvious blockers by running lint and typecheck manually if needed.
    - Header: `type(scope): verb target`
    - The verb must describe the dominant change, not bookkeeping such as `record ... scope`
    - Multi-file bodies must use `- path: description` bullets
+   - Bullet paths must use full relative paths; `...` is not allowed
    - Bullets may cover one file or one coherent folder/prefix when the split is still atomic
 
 6. Re-run `pnpm gatekeeper:workflow:inspect` for the remaining staged set. When no staged files
