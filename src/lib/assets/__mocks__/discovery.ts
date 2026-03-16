@@ -3,6 +3,7 @@ const assetStub = {
 	portrait: 'test-file-stub',
 	jardin: 'test-file-stub',
 	family: 'test-file-stub',
+	signature: 'test-file-stub',
 	thankYouPortrait: 'test-file-stub',
 	interlude01: 'test-file-stub',
 	interlude02: 'test-file-stub',

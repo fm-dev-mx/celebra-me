@@ -1,4 +1,12 @@
-import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/asset-registry';
+import {
+	getCommonAsset,
+	getEventAsset,
+	isCommonAssetKey,
+	isEventAssetKey,
+	isAssetRegistryKey,
+	type AssetSource,
+	type ImageAsset,
+} from '@/lib/assets/asset-registry';
 import {
 	COUNTDOWN_VARIANTS,
 	ITINERARY_VARIANTS,
@@ -19,6 +27,21 @@ const runtimeEnv = {
 };
 
 export { runtimeEnv };
+
+function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
+	if (!source) return undefined;
+	if (typeof source !== 'string') return source;
+
+	if (isAssetRegistryKey(source)) {
+		return { type: 'internal', key: source };
+	}
+
+	if (source.startsWith('https://') || source.startsWith('/')) {
+		return { type: 'external', src: source };
+	}
+
+	throw new Error(`[AssetRegistry] Invalid asset reference "${source}".`);
+}
 
 export function pickVariant<T extends readonly string[]>(
 	scope: string,
@@ -65,28 +88,41 @@ export function hexToRgb(hex: string): string {
 
 export function resolveAsset(
 	eventSlug: string,
-	keyOrUrl: string | undefined,
+	source: AssetSource | string | undefined,
 	eventTitle: string,
 ): ImageAsset | undefined {
-	if (!keyOrUrl) return undefined;
+	const normalizedSource = normalizeAssetSource(source);
+	if (!normalizedSource) return undefined;
 
-	if (keyOrUrl.startsWith('http') || keyOrUrl.startsWith('/')) {
+	if (normalizedSource.type === 'external') {
 		return {
-			src: keyOrUrl,
+			src: normalizedSource.src,
 			alt: `Recurso de ${eventTitle}`,
 		};
 	}
 
-	const metadata = getEventAsset(eventSlug, keyOrUrl as EventAssetKey);
-	if (!metadata) return undefined;
+	if (isCommonAssetKey(normalizedSource.key)) {
+		return getCommonAsset(normalizedSource.key);
+	}
+
+	if (!isEventAssetKey(normalizedSource.key)) {
+		throw new Error(`[AssetRegistry] Unsupported asset key "${normalizedSource.key}".`);
+	}
+
+	const metadata = getEventAsset(eventSlug, normalizedSource.key);
+	if (!metadata) {
+		throw new Error(
+			`[AssetRegistry] Missing asset "${normalizedSource.key}" for event "${eventSlug}".`,
+		);
+	}
 
 	let alt = `Imagen de ${eventTitle}`;
-	if (keyOrUrl === 'hero') alt = `Portada de ${eventTitle}`;
-	else if (keyOrUrl === 'portrait') alt = `Retrato de ${eventTitle}`;
-	else if (keyOrUrl.startsWith('gallery')) {
-		const num = keyOrUrl.replace('gallery', '');
+	if (normalizedSource.key === 'hero') alt = `Portada de ${eventTitle}`;
+	else if (normalizedSource.key === 'portrait') alt = `Retrato de ${eventTitle}`;
+	else if (normalizedSource.key.startsWith('gallery')) {
+		const num = normalizedSource.key.replace('gallery', '');
 		alt = `Galería ${num} de ${eventTitle}`;
-	} else if (keyOrUrl.startsWith('interlude')) {
+	} else if (normalizedSource.key.startsWith('interlude')) {
 		alt = `Interludio de ${eventTitle}`;
 	}
 
@@ -96,11 +132,14 @@ export function resolveAsset(
 	};
 }
 
-export function requireAsset(eventSlug: string, keyOrUrl: string, eventTitle: string): ImageAsset {
-	const asset = resolveAsset(eventSlug, keyOrUrl, eventTitle);
+export function requireAsset(
+	eventSlug: string,
+	source: AssetSource | string,
+	eventTitle: string,
+): ImageAsset {
+	const asset = resolveAsset(eventSlug, source, eventTitle);
 	if (!asset) {
-		console.warn(`[AssetWarning] Asset not found for key: ${keyOrUrl} in event ${eventSlug}`);
-		return { src: '', alt: 'Recurso faltante' };
+		throw new Error(`[AssetRegistry] Required asset is missing for event "${eventSlug}".`);
 	}
 	return asset;
 }

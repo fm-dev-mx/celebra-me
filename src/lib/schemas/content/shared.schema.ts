@@ -1,12 +1,39 @@
 import { z } from 'astro:content';
-import { COMMON_KEYS, EVENT_KEYS } from '@/lib/assets/asset-registry';
+import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 
-export const AssetSchema = z.union([
-	z.enum([...EVENT_KEYS, ...COMMON_KEYS]),
-	z.string().url(),
-	z.string().startsWith('/'),
-]);
+const secureUrlSchema = z
+	.string()
+	.url()
+	.refine((value) => value.startsWith('https://'), 'External asset URLs must use HTTPS.');
+
+const publicPathSchema = z.string().startsWith('/', 'Public asset paths must start with "/".');
+
+const internalAssetSchema = z.object({
+	type: z.literal('internal'),
+	key: z.enum(ALL_ASSET_KEYS),
+});
+
+const externalAssetSchema = z.object({
+	type: z.literal('external'),
+	src: z.union([secureUrlSchema, publicPathSchema]),
+});
+
+export const AssetSchema = z.preprocess(
+	(value) => {
+		if (typeof value !== 'string') return value;
+		if ((ALL_ASSET_KEYS as readonly string[]).includes(value)) {
+			return { type: 'internal', key: value };
+		}
+		if (value.startsWith('https://') || value.startsWith('/')) {
+			return { type: 'external', src: value };
+		}
+		return value;
+	},
+	z.discriminatedUnion('type', [internalAssetSchema, externalAssetSchema]),
+);
+
+export type ContentAssetSource = z.infer<typeof AssetSchema>;
 
 export const themeSchema = z.object({
 	primaryColor: z.string().regex(/^#/, 'Must be a hex color'),

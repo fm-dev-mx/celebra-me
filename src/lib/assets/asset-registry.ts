@@ -73,6 +73,20 @@ export const COMMON_KEYS = [
 
 export type EventAssetKey = (typeof EVENT_KEYS)[number];
 export type CommonAssetKey = (typeof COMMON_KEYS)[number];
+export const ALL_ASSET_KEYS = [...EVENT_KEYS, ...COMMON_KEYS] as const;
+export type AssetRegistryKey = (typeof ALL_ASSET_KEYS)[number];
+
+export interface InternalAssetSource {
+	type: 'internal';
+	key: AssetRegistryKey;
+}
+
+export interface ExternalAssetSource {
+	type: 'external';
+	src: string;
+}
+
+export type AssetSource = InternalAssetSource | ExternalAssetSource;
 
 /**
  * Standard schema for event-specific assets.
@@ -177,6 +191,18 @@ export type EventSlug = keyof typeof ImageRegistry.events;
  */
 export function isValidEvent(slug: string): slug is EventSlug {
 	return slug in ImageRegistry.events;
+}
+
+export function isEventAssetKey(key: string): key is EventAssetKey {
+	return (EVENT_KEYS as readonly string[]).includes(key);
+}
+
+export function isCommonAssetKey(key: string): key is CommonAssetKey {
+	return (COMMON_KEYS as readonly string[]).includes(key);
+}
+
+export function isAssetRegistryKey(key: string): key is AssetRegistryKey {
+	return isEventAssetKey(key) || isCommonAssetKey(key);
 }
 
 /**
