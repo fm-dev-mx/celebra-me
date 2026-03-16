@@ -197,6 +197,92 @@ describe('Gatekeeper workflow hardening', () => {
 		}
 	});
 
+	it('keeps scaffold non-mutating by default and exposes explicit commit mode', () => {
+		const result = runNodeJson(`
+			import { parseArgs } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			console.log(JSON.stringify({
+				scaffold: parseArgs(['scaffold', '--domain', 'core']),
+				commit: parseArgs(['commit', '--domain', 'core']),
+				scaffoldCommit: parseArgs(['scaffold', '--domain', 'core', '--commit']),
+			}));
+		`);
+
+		expect(result.scaffold.command).toBe('scaffold');
+		expect(result.scaffold.commit).toBe(false);
+		expect(result.commit.command).toBe('commit');
+		expect(result.commit.commit).toBe(false);
+		expect(result.scaffoldCommit.commit).toBe(true);
+	});
+
+	it('prefers dominant code changes in mixed presenter splits', () => {
+		const scaffold = runNodeJson(`
+			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			const split = {
+				id: 'core',
+				baseDomain: 'core',
+				files: [
+					'.agent/plans/pre-phase-audit-2026/CHANGELOG.md',
+					'src/components/invitation/InvitationSections.astro',
+					'src/lib/presenters/invitation-presenter.ts',
+					'src/pages/[eventType]/[slug].astro',
+					'tests/unit/invitation.presenter.test.ts',
+				],
+			};
+			console.log(JSON.stringify(buildCommitScaffold(split)));
+		`);
+
+		expect(scaffold.header).toBe('feat(core): implement invitation presenter-driven route');
+		expect(scaffold.header).not.toContain('plan');
+		expect(scaffold.header).not.toContain('files');
+	});
+
+	it('generates specific plan and presenter bullet descriptions', () => {
+		const result = runNodeJson(`
+			import { describeFileChange } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			console.log(JSON.stringify({
+				changelog: describeFileChange('.agent/plans/pre-phase-audit-2026/CHANGELOG.md'),
+				manifest: describeFileChange('.agent/plans/pre-phase-audit-2026/manifest.json'),
+				phase: describeFileChange('.agent/plans/pre-phase-audit-2026/phases/04-presenter-implementation.md'),
+				presenter: describeFileChange('src/lib/presenters/invitation-presenter.ts'),
+				page: describeFileChange('src/pages/[eventType]/[slug].astro', {
+					dominantCluster: { kind: 'presenter-route' },
+				}),
+				testFile: describeFileChange('tests/unit/invitation.presenter.test.ts'),
+			}));
+		`);
+
+		expect(result.changelog).toBe(
+			'log delivered work, validation runs, and remaining blockers',
+		);
+		expect(result.manifest).toBe('update plan status, blockers, and phase metadata');
+		expect(result.phase).toBe('document delivered scope, validation, and unresolved blockers');
+		expect(result.presenter).toBe('assemble invitation props from content and context');
+		expect(result.page).toBe('reduce the route to guest loading and presenter rendering');
+		expect(result.testFile).toBe('cover presenter outputs with fixture-based tests');
+	});
+
+	it('avoids generic scaffold targets and descriptions for presenter-heavy splits', () => {
+		const scaffold = runNodeJson(`
+			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			const split = {
+				id: 'core',
+				baseDomain: 'core',
+				files: [
+					'src/lib/presenters/invitation-presenter.ts',
+					'src/pages/[eventType]/[slug].astro',
+				],
+			};
+			console.log(JSON.stringify(buildCommitScaffold(split)));
+		`);
+
+		expect(scaffold.header).not.toMatch(/\b(files|changes|work)\b/);
+		for (const line of scaffold.body as string[]) {
+			expect(line).not.toMatch(/update file configuration/i);
+			expect(line).not.toContain('...');
+			expect(line.length).toBeLessThanOrEqual(100);
+		}
+	});
+
 	it('derives commitlint diff context for grouped atomic commits', () => {
 		const result = runNodeJson(`
 			import { buildCommitlintContext } from './scripts/validate-commits.mjs';

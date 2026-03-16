@@ -8,7 +8,9 @@ const WORKTREE_FILES = [
 	'.agent/governance/bin/gatekeeper.mjs',
 	'.agent/governance/bin/gatekeeper-workflow.mjs',
 	'.agent/governance/config/policy.json',
+	'.agent/governance/config/domain-map.json',
 	'.husky/pre-commit',
+	'commitlint.config.cjs',
 	'scripts/validate-commits.mjs',
 ];
 
@@ -75,6 +77,56 @@ function createPlanFiles(worktree: string, count: number) {
 		}
 	}
 	return dir;
+}
+
+function createUnmappedPlanFiles(worktree: string) {
+	const dir = join(worktree, '.agent/plans/tmp-unmapped-fixture');
+	mkdirSync(dir, { recursive: true });
+	writeFileSync(join(dir, 'README.md'), '# Tmp Unmapped Fixture\n', 'utf8');
+	writeFileSync(
+		join(dir, 'manifest.json'),
+		`${JSON.stringify({ status: 'pending' }, null, 2)}\n`,
+		'utf8',
+	);
+	return dir;
+}
+
+function createPresenterLikeFiles(worktree: string) {
+	const files = [
+		'.agent/plans/pre-phase-audit-2026/CHANGELOG.md',
+		'.agent/plans/pre-phase-audit-2026/README.md',
+		'.agent/plans/pre-phase-audit-2026/manifest.json',
+		'.agent/plans/pre-phase-audit-2026/phases/04-presenter-implementation.md',
+		'docs/core/architecture.md',
+		'docs/core/project-conventions.md',
+		'src/components/invitation/InvitationSections.astro',
+		'src/lib/presenters/invitation-presenter.ts',
+		'src/pages/[eventType]/[slug].astro',
+		'tests/unit/invitation.presenter.test.ts',
+	];
+
+	for (const relative of files) {
+		const target = join(worktree, relative);
+		mkdirSync(dirname(target), { recursive: true });
+		if (relative.endsWith('.json')) {
+			writeFileSync(target, `${JSON.stringify({ fixture: relative }, null, 2)}\n`, 'utf8');
+			continue;
+		}
+		if (relative.endsWith('.md')) {
+			writeFileSync(target, `# Fixture\n\n- ${relative}\n`, 'utf8');
+			continue;
+		}
+		if (relative.endsWith('.ts')) {
+			writeFileSync(target, `export const fixture = ${JSON.stringify(relative)};\n`, 'utf8');
+			continue;
+		}
+		writeFileSync(
+			target,
+			`---\nconst fixture = ${JSON.stringify(relative)};\n---\n<div>{fixture}</div>\n`,
+			'utf8',
+		);
+	}
+	return files;
 }
 
 function addAll(worktree: string, pathspec: string) {
@@ -241,6 +293,116 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 			expect(hook.status).toBe(0);
 			expect(`${hook.stdout}\n${hook.stderr}`).not.toContain('s0ScopeDrift');
 			expect(`${hook.stdout}\n${hook.stderr}`).not.toContain('Scope drift detected');
+		});
+	});
+
+	it('prints actionable architectural intervention guidance for unmapped plan files', async () => {
+		await withWorktree(async (worktree) => {
+			createUnmappedPlanFiles(worktree);
+			addAll(worktree, '.agent/plans/tmp-unmapped-fixture');
+
+			const inspect = runCommand(
+				'node',
+				['.agent/governance/bin/gatekeeper-workflow.mjs', 'inspect'],
+				{ cwd: worktree, allowFailure: true },
+			);
+
+			expect(`${inspect.stdout}\n${inspect.stderr}`).toContain(
+				'Architectural intervention required before staging or committing.',
+			);
+			expect(`${inspect.stdout}\n${inspect.stderr}`).toContain(
+				'gov-plans-tmp-unmapped-fixture',
+			);
+			expect(`${inspect.stdout}\n${inspect.stderr}`).toContain('domain-map.json');
+		});
+	});
+
+	it('blocks stage until inspect reaches proceed_adu for the current session', async () => {
+		await withWorktree(async (worktree) => {
+			createUnmappedPlanFiles(worktree);
+			addAll(worktree, '.agent/plans/tmp-unmapped-fixture');
+
+			runCommand('node', ['.agent/governance/bin/gatekeeper-workflow.mjs', 'inspect'], {
+				cwd: worktree,
+				allowFailure: true,
+			});
+
+			const stage = runCommand(
+				'node',
+				['.agent/governance/bin/gatekeeper-workflow.mjs', 'stage', '--domain', 'core'],
+				{ cwd: worktree, allowFailure: true },
+			);
+
+			expect(stage.status).not.toBe(0);
+			expect(`${stage.stdout}\n${stage.stderr}`).toContain('Resolve the workflow blockers');
+		});
+	});
+
+	it('keeps scaffold non-mutating and commit creates a valid commit for a presenter-like split', async () => {
+		await withWorktree(async (worktree) => {
+			const files = createPresenterLikeFiles(worktree);
+			runCommand('git', ['add', '--', ...files], { cwd: worktree });
+
+			const inspect = parseJsonFromOutput(
+				runCommand(
+					'node',
+					['.agent/governance/bin/gatekeeper-workflow.mjs', 'inspect', '--json'],
+					{ cwd: worktree },
+				).stdout,
+			);
+			expect(inspect.workflowRoute).toBe('proceed_adu');
+
+			runCommand(
+				'node',
+				['.agent/governance/bin/gatekeeper-workflow.mjs', 'stage', '--domain', 'core'],
+				{ cwd: worktree },
+			);
+
+			const beforeHead = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: worktree,
+			}).stdout.trim();
+			const scaffold = parseJsonFromOutput(
+				runCommand(
+					'node',
+					[
+						'.agent/governance/bin/gatekeeper-workflow.mjs',
+						'scaffold',
+						'--domain',
+						'core',
+						'--json',
+					],
+					{ cwd: worktree },
+				).stdout,
+			);
+			const afterScaffoldHead = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: worktree,
+			}).stdout.trim();
+
+			expect(afterScaffoldHead).toBe(beforeHead);
+			expect(scaffold.header).toBe('feat(core): implement invitation presenter-driven route');
+			for (const line of scaffold.body as string[]) {
+				expect(line.length).toBeLessThanOrEqual(100);
+				const [pathSpec, description] = line.replace(/^- /, '').split(': ', 2);
+				expect(pathSpec).not.toContain('...');
+				expect(pathSpec).toContain('/');
+				expect(description).toBeTruthy();
+				expect(description).not.toMatch(/update file configuration/i);
+			}
+
+			runCommand(
+				'node',
+				['.agent/governance/bin/gatekeeper-workflow.mjs', 'commit', '--domain', 'core'],
+				{ cwd: worktree },
+			);
+
+			const afterCommitHead = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: worktree,
+			}).stdout.trim();
+			expect(afterCommitHead).not.toBe(beforeHead);
+			const subject = runCommand('git', ['log', '-1', '--format=%s'], {
+				cwd: worktree,
+			}).stdout.trim();
+			expect(subject).toBe('feat(core): implement invitation presenter-driven route');
 		});
 	});
 });
