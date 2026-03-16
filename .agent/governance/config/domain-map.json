@@ -47,6 +47,7 @@
         ],
         "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
         "gov-plans-gatekeeper": [".agent/plans/gatekeeper-optimization/**"],
+        "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
         "gov-workflows": [".agent/workflows/**", "docs/DOC_STATUS.md"],
         "gov-scripts": [".agent/scripts/**"],
         "gov-infra": [

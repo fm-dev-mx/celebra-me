@@ -391,15 +391,15 @@ function scaffoldTarget(split) {
 function fileDescription(file) {
 	const stem = stemOf(file).toLowerCase();
 	const normalizedStem = stem.replace(/-/g, ' ');
-	if (file.endsWith('README.md')) return 'document the status summary';
-	if (file.endsWith('CHANGELOG.md')) return 'document the audit trail';
-	if (/\/phases\/\d{2}-/.test(file)) return 'document the phase details';
-	if (file.endsWith('manifest.json')) return 'set plan status metadata';
-	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} metadata`;
-	if (file.endsWith('.md')) return `document ${normalizedStem || 'document'} notes`;
-	if (file.endsWith('.mjs')) return `refine ${normalizedStem || 'workflow'} logic`;
-	if (file.endsWith('.sh')) return 'align hook execution flow';
-	return `update ${normalizedStem || 'file'} metadata`;
+	if (file.endsWith('README.md')) return 'describe plan status and overview';
+	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
+	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
+	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
+	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} configuration`;
+	if (file.endsWith('.md')) return `add ${normalizedStem || 'documentation'} notes`;
+	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
+	if (file.endsWith('.sh')) return 'configure hook execution';
+	return `update ${normalizedStem || 'file'} configuration`;
 }
 
 function headerSubject(scope, split) {
@@ -411,23 +411,26 @@ function headerSubject(scope, split) {
 		candidates.push(`archive ${target} plan files`);
 	}
 	if (baseDomain.startsWith('gov-plans-')) {
-		candidates.push(`document ${target} plan files`);
+		candidates.push(`create ${target} plan documentation`);
 	}
 	if (commitType === 'test') {
-		candidates.push(`add ${target} coverage`);
+		candidates.push(`add ${target} test coverage`);
 	}
 	if (commitType === 'style') {
-		candidates.push(`refine ${target} styles`);
+		candidates.push(`update ${target} styles`);
 	}
 	if (baseDomain.startsWith('gov-tooling')) {
-		candidates.push(`align ${target} tooling`);
+		candidates.push(`update ${target} tooling`);
 	}
-	candidates.push(`align ${target} updates`);
+	if (baseDomain.startsWith('gov-infra')) {
+		candidates.push(`update ${target} infrastructure`);
+	}
+	candidates.push(`update ${target} files`);
 	return (
 		candidates
 			.map((value) => value.replace(/\s+/g, ' ').trim())
 			.find((value) => `${commitType}(${scope}): ${value}`.length <= HEADER_MAX_LENGTH) ||
-		'align scoped updates'
+		'update scoped files'
 	);
 }
 
@@ -438,11 +441,11 @@ function buildCommitScaffold(split) {
 	const body = split.files.map((file) => {
 		let description = truncateText(fileDescription(file), DESCRIPTION_MAX_LENGTH);
 		let pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
-		if (pathBudget < 10) {
-			description = truncateText(description, Math.max(10, BULLET_MAX_LENGTH - 18));
+		if (pathBudget < 30) {
+			description = truncateText(description, Math.max(10, BULLET_MAX_LENGTH - 38));
 			pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
 		}
-		const compacted = compactPath(file, Math.max(10, pathBudget));
+		const compacted = compactPath(file, Math.max(30, pathBudget));
 		const bullet = `- ${compacted}: ${description}`;
 		if (bullet.length <= BULLET_MAX_LENGTH) return bullet;
 		const overshoot = bullet.length - BULLET_MAX_LENGTH;
