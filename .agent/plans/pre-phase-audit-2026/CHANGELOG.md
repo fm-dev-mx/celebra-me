@@ -1,5 +1,27 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.5] - 2026-03-16
+
+### Changed
+
+- Implemented the Phase 04 presenter layer with `src/lib/presenters/invitation-presenter.ts` and
+  `src/components/invitation/InvitationSections.astro`.
+- Refactored `src/pages/[eventType]/[slug].astro` into route orchestration plus presenter-driven
+  rendering, removing inline CSS token derivation from the page.
+- Added presenter-focused unit coverage and documented the `src/lib/presenters/` boundary in core
+  architecture docs.
+
+### Validation
+
+- Verified the presenter refactor with `pnpm exec astro check`.
+- Verified the invitation route build with `npx astro build`.
+- Verified presenter behavior with `npx jest tests/unit/invitation.presenter.test.ts --runInBand`.
+
+### Blocked
+
+- Left Phase 04 in `BLOCKED` state because the original plan references a missing `test:unit`
+  workflow and an undefined visual regression process.
+
 ## [1.0.4] - 2026-03-16
 
 ### Changed

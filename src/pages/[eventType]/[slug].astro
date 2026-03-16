@@ -2,34 +2,21 @@
 // src/pages/[eventType]/[slug].astro
 export const prerender = false;
 
-import { adaptEvent } from '@/lib/adapters/event';
+import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
+import { presentInvitationPage } from '@/lib/presenters/invitation-presenter';
 import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
-import Countdown from '@/components/invitation/Countdown.astro';
-import EventLocation from '@/components/invitation/EventLocation.astro';
 import Footer from '@/components/invitation/Footer.astro';
 import Hero from '@/components/invitation/Hero.astro';
-import Family from '@/components/invitation/Family.astro';
-import Quote from '@/components/invitation/Quote.astro';
-import ThankYou from '@/components/invitation/ThankYou.astro';
-import Gifts from '@/components/invitation/Gifts.astro';
-import RSVP from '@/components/invitation/RSVP';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
-import Itinerary from '@/components/invitation/Itinerary.astro';
-import Gallery from '@/components/invitation/Gallery.astro';
-import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
-import Interlude from '@/components/invitation/Interlude.astro';
-import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 
 // --- Page Logic (Adapter Pattern) ---
 const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
-const normalizedSlug = (slug as string).toLowerCase();
-const eventScopeClass = `event--${normalizedSlug.replace(/[^a-z0-9-]/g, '-')}`;
 const eventOverrideStyles = import.meta.glob('/src/styles/events/*.scss');
 
 const eventEntry = await getRoutableEventEntry(slug as string, eventType as string);
@@ -52,9 +39,6 @@ if (eventOverrideImporter) {
 	await eventOverrideImporter();
 }
 
-const viewModel = adaptEvent(eventEntry);
-const { theme, hero, envelope, sections, music, navigation } = viewModel;
-
 // Guest Context Retrieval
 let guestContext = null;
 if (inviteId) {
@@ -67,53 +51,34 @@ if (inviteId) {
 	}
 }
 
-// Helper variables
-const showEnvelope = envelope.enabled;
-const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
-const renderPlan = buildInvitationRenderPlan(viewModel, { hasGuestContext: Boolean(guestContext) });
-
-// Asset Resolution for Layout
-const heroImageSrc = typeof hero.backgroundImage.src === 'string'
-    ? hero.backgroundImage.src
-    : hero.backgroundImage.src.src;
+const presenter = presentInvitationPage({
+	eventEntry,
+	slug: slug as string,
+	guestContext,
+});
 ---
 
 <Layout
-	title={guestContext ? `Invitación para ${guestContext.guest.fullName}` : viewModel.title}
-	description={viewModel.description || ''}
-	image={heroImageSrc}
+	title={presenter.layout.title}
+	description={presenter.layout.description}
+	image={presenter.layout.image}
 	hideHeader={true}
-	className={slug === 'ximena-meza-trasvina' ? 'layout--ximena-premium' : undefined}
+	className={presenter.layout.className}
 >
-	<!-- Theme Variables -->
-	<style
-		define:vars={{
-			primaryColor: theme.primaryColor,
-			primaryColorRgb: theme.colors.primaryRgb,
-			accentColor: theme.accentColor || '#333',
-			accentColorRgb: theme.colors.accentRgb,
-			// Envelope Palette
-			envBg: envelope.data?.colors.background || 'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)',
-			envPrimary: envelope.data?.colors.primary || theme.primaryColor,
-			envAccent: envelope.data?.colors.accent || theme.accentColor || '#d4af37',
-		}}
-	>
-		.event-theme-wrapper {
-			--color-primary: var(--primaryColor);
-			--color-primary-rgb: var(--primaryColorRgb);
-			--color-accent: var(--accentColor);
-			--color-accent-rgb: var(--accentColorRgb);
-			--env-bg: var(--envBg);
-			--env-primary: var(--envPrimary);
-			--env-accent: var(--envAccent);
-		}
-	</style>
-
-	<main
-		class={`event-theme-wrapper ${eventScopeClass} ${theme.themeClass} ${showEnvelope ? 'event-theme-wrapper--sealed' : ''}`}
-	>
+	<main class={presenter.wrapper.className}>
+		<style lang="scss" define:vars={presenter.wrapper.variables}>
+			.event-theme-wrapper {
+				--color-primary: var(--color-primary);
+				--color-primary-rgb: var(--color-primary-rgb);
+				--color-accent: var(--color-accent);
+				--color-accent-rgb: var(--color-accent-rgb);
+				--env-bg: var(--env-bg);
+				--env-primary: var(--env-primary);
+				--env-accent: var(--env-accent);
+			}
+		</style>
 		<!-- Scripts -->
-		<script is:inline define:vars={{ eventSlug: viewModel.id }}>
+		<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
 			// Legacy Token Resolution
 			const legacyToken = new URLSearchParams(window.location.search).get('t');
 			if (legacyToken) {
@@ -132,8 +97,8 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 			}
 		</script>
 
-		{showEnvelope && (
-			<script is:inline define:vars={{ eventSlug: viewModel.id }}>
+		{presenter.wrapper.showEnvelope && (
+			<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
 				// Sync unlock
 				const key = `envelope-opened-${eventSlug}`;
 				if (localStorage.getItem(key) === 'true') {
@@ -144,203 +109,47 @@ const heroImageSrc = typeof hero.backgroundImage.src === 'string'
 
 		<!-- Components -->
 		{
-			envelope.enabled && envelope.data && (
+			presenter.envelope && (
 				<EnvelopeReveal
 					client:load
-					name={hero.name}
-					date={hero.date}
-					city={sections.location?.city || ''}
-					sealStyle={envelope.data.sealStyle}
-					sealIcon={envelope.data.sealIcon as 'boot' | 'heart' | 'monogram' | 'flower' | undefined}
-					microcopy={envelope.data.microcopy}
-					documentLabel={envelope.data.documentLabel}
-					stampText={envelope.data.stampText}
-					stampYear={envelope.data.stampYear}
-					tooltipText={envelope.data.tooltipText}
-					eventSlug={viewModel.id}
-					variant={envelope.data.variant}
-					guestName={guestContext?.guest.fullName}
+					name={presenter.envelope.name}
+					date={presenter.envelope.date}
+					city={presenter.envelope.city}
+					sealStyle={presenter.envelope.sealStyle}
+					sealIcon={presenter.envelope.sealIcon as 'boot' | 'heart' | 'monogram' | 'flower' | undefined}
+					microcopy={presenter.envelope.microcopy}
+					documentLabel={presenter.envelope.documentLabel}
+					stampText={presenter.envelope.stampText}
+					stampYear={presenter.envelope.stampYear}
+					tooltipText={presenter.envelope.tooltipText}
+					eventSlug={presenter.envelope.eventSlug}
+					variant={presenter.envelope.variant}
+					guestName={presenter.envelope.guestName}
 				/>
 			)
 		}
 
 		<EventHeader
-			eventName={hero.name}
-			theme={viewModel.theme}
-			links={navigation || []}
-			variant={theme.preset}
+			eventName={presenter.header.eventName}
+			theme={presenter.header.theme}
+			links={presenter.header.links}
+			variant={presenter.header.variant}
 		/>
 
-		<Hero
-			name={hero.name}
-			secondaryName={hero.secondaryName}
-			label={hero.label}
-			nickname={hero.nickname}
-			date={hero.date}
-			time={heroTime}
-			venueName={hero.venueName}
-			backgroundImage={hero.backgroundImage}
-			portrait={hero.portrait}
-			variant={hero.variant}
-			guestName={guestContext?.guest.fullName}
-		/>
+		<Hero {...presenter.hero} />
 
-		{
-			renderPlan.map((block) => {
-				if (block.type === 'interlude') {
-					return (
-						<Interlude
-							image={block.image}
-							alt={block.alt}
-							height={block.height}
-							variant={theme.preset}
-						/>
-					);
-				}
+		<InvitationSections presenter={presenter} />
 
-				if (block.type === 'personalized-access' && guestContext) {
-					return (
-						<PersonalizedAccess
-							guestName={guestContext.guest.fullName}
-							maxAllowedAttendees={guestContext.guest.maxAllowedAttendees}
-						/>
-					);
-				}
+		<Footer eventSlug={presenter.footer.eventSlug} showEnvelope={presenter.footer.showEnvelope} />
 
-				if (block.type !== 'section') {
-					return null;
-				}
-
-				if (block.section === 'quote' && sections.quote) {
-					return (
-						<Quote
-							text={sections.quote.text}
-							author={sections.quote.author}
-							variant={sections.quote.variant}
-							animation={sections.quote.animation}
-						/>
-					);
-				}
-
-				if (block.section === 'family' && sections.family) {
-					return (
-						<Family
-							parents={sections.family.parents}
-							spouse={sections.family.spouse}
-							children={sections.family.children}
-							godparents={sections.family.godparents}
-							groups={sections.family.groups}
-							featuredImage={sections.family.featuredImage}
-							labels={sections.family.labels}
-							celebrantName={sections.family.celebrantName}
-							variant={sections.family.variant}
-						/>
-					);
-				}
-
-				if (block.section === 'gallery' && sections.gallery) {
-					return (
-						<Gallery
-							title={sections.gallery.title}
-							subtitle={sections.gallery.subtitle}
-							items={sections.gallery.items}
-							variant={sections.gallery.variant}
-						/>
-					);
-				}
-
-				if (block.section === 'countdown' && sections.countdown) {
-					return (
-						<Countdown
-							eventDate={sections.countdown.eventDate}
-							title={sections.countdown.title}
-							subtitlePrefix={sections.countdown.subtitlePrefix}
-							footerText={sections.countdown.footerText}
-							variant={sections.countdown.variant}
-							showParticles={sections.countdown.showParticles}
-						/>
-					);
-				}
-
-				if (block.section === 'location' && sections.location) {
-					return (
-						<EventLocation
-							ceremony={sections.location.ceremony}
-							reception={sections.location.reception}
-							indications={sections.location.indications}
-							variant={sections.location.variant}
-							mapStyle={sections.location.mapStyle}
-							showFlourishes={sections.location.showFlourishes}
-						/>
-					);
-				}
-
-				if (block.section === 'itinerary' && sections.itinerary) {
-					return (
-						<Itinerary
-							title={sections.itinerary.title}
-							items={sections.itinerary.items}
-							variant={sections.itinerary.variant}
-						/>
-					);
-				}
-
-				if (block.section === 'rsvp' && sections.rsvp) {
-					return (
-						<RSVP
-							client:visible
-							{...sections.rsvp}
-							celebrantName={hero.name}
-							guestCap={guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap}
-							initialGuestData={
-								guestContext
-									? {
-											fullName: guestContext.guest.fullName,
-											maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
-											inviteId: guestContext.inviteId,
-										}
-									: undefined
-							}
-						/>
-					);
-				}
-
-				if (block.section === 'gifts' && sections.gifts) {
-					return (
-						<Gifts
-							gifts={sections.gifts.items}
-							title={sections.gifts.title}
-							subtitle={sections.gifts.subtitle}
-							variant={sections.gifts.variant}
-						/>
-					);
-				}
-
-				if (block.section === 'thankYou' && sections.thankYou) {
-					return (
-						<ThankYou
-							message={sections.thankYou.message}
-							closingName={sections.thankYou.closingName}
-							image={sections.thankYou.image}
-							variant={sections.thankYou.variant}
-						/>
-					);
-				}
-
-				return null;
-			})
-		}
-
-		<Footer eventSlug={viewModel.id} showEnvelope={showEnvelope} />
-
-		{music && (
+		{presenter.music && (
 			<MusicPlayer
 				client:idle
-				url={music.url}
-				autoPlay={music.autoPlay}
-				title={music.title}
-				revealMode={music.revealMode}
-				variant={theme.preset}
+				url={presenter.music.url}
+				autoPlay={presenter.music.autoPlay}
+				title={presenter.music.title}
+				revealMode={presenter.music.revealMode}
+				variant={presenter.music.variant}
 			/>
 		)}
 	</main>

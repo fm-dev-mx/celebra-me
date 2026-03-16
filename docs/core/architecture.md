@@ -61,6 +61,14 @@ This aligns with Astro’s recommended hybrid model.
 - Must not access secrets, environment variables, or server-only APIs.
 - Should remain framework-agnostic when possible.
 
+### 3.4 Presenters (`src/lib/presenters/**`)
+
+- Presenters are the BFF-facing assembly layer for complex routes.
+- They normalize page-ready props from adapters, render-plan helpers, and server context before the
+  `.astro` page renders.
+- Pages may fetch data and perform redirects, but view-model derivation should live in presenters
+  once route logic becomes non-trivial.
+
 ---
 
 ## 4) Client Islands (`client:*`)

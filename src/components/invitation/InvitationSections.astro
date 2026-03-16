@@ -1,0 +1,144 @@
+---
+import Countdown from '@/components/invitation/Countdown.astro';
+import EventLocation from '@/components/invitation/EventLocation.astro';
+import Family from '@/components/invitation/Family.astro';
+import Gallery from '@/components/invitation/Gallery.astro';
+import Gifts from '@/components/invitation/Gifts.astro';
+import Interlude from '@/components/invitation/Interlude.astro';
+import Itinerary from '@/components/invitation/Itinerary.astro';
+import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
+import Quote from '@/components/invitation/Quote.astro';
+import RSVP from '@/components/invitation/RSVP';
+import ThankYou from '@/components/invitation/ThankYou.astro';
+import type { InvitationPagePresenter } from '@/lib/presenters/invitation-presenter';
+
+interface Props {
+	presenter: InvitationPagePresenter;
+}
+
+const { presenter } = Astro.props;
+const { renderPlan, sections, personalizedAccess, rsvp, themePreset } = presenter;
+---
+
+{
+	renderPlan.map((block) => {
+		if (block.type === 'interlude') {
+			return <Interlude image={block.image} alt={block.alt} height={block.height} variant={themePreset} />;
+		}
+
+		if (block.type === 'personalized-access' && personalizedAccess) {
+			return (
+				<PersonalizedAccess
+					guestName={personalizedAccess.guestName}
+					maxAllowedAttendees={personalizedAccess.maxAllowedAttendees}
+				/>
+			);
+		}
+
+		if (block.type !== 'section') {
+			return null;
+		}
+
+		if (block.section === 'quote' && sections.quote) {
+			return (
+				<Quote
+					text={sections.quote.text}
+					author={sections.quote.author}
+					variant={sections.quote.variant}
+					animation={sections.quote.animation}
+				/>
+			);
+		}
+
+		if (block.section === 'family' && sections.family) {
+			return (
+				<Family
+					parents={sections.family.parents}
+					spouse={sections.family.spouse}
+					children={sections.family.children}
+					godparents={sections.family.godparents}
+					groups={sections.family.groups}
+					featuredImage={sections.family.featuredImage}
+					labels={sections.family.labels}
+					celebrantName={sections.family.celebrantName}
+					variant={sections.family.variant}
+				/>
+			);
+		}
+
+		if (block.section === 'gallery' && sections.gallery) {
+			return (
+				<Gallery
+					title={sections.gallery.title}
+					subtitle={sections.gallery.subtitle}
+					items={sections.gallery.items}
+					variant={sections.gallery.variant}
+				/>
+			);
+		}
+
+		if (block.section === 'countdown' && sections.countdown) {
+			return (
+				<Countdown
+					eventDate={sections.countdown.eventDate}
+					title={sections.countdown.title}
+					subtitlePrefix={sections.countdown.subtitlePrefix}
+					footerText={sections.countdown.footerText}
+					variant={sections.countdown.variant}
+					showParticles={sections.countdown.showParticles}
+				/>
+			);
+		}
+
+		if (block.section === 'location' && sections.location) {
+			return (
+				<EventLocation
+					ceremony={sections.location.ceremony}
+					reception={sections.location.reception}
+					indications={sections.location.indications}
+					variant={sections.location.variant}
+					mapStyle={sections.location.mapStyle}
+					showFlourishes={sections.location.showFlourishes}
+				/>
+			);
+		}
+
+		if (block.section === 'itinerary' && sections.itinerary) {
+			return (
+				<Itinerary
+					title={sections.itinerary.title}
+					items={sections.itinerary.items}
+					variant={sections.itinerary.variant}
+				/>
+			);
+		}
+
+		if (block.section === 'rsvp' && rsvp) {
+			return <RSVP client:visible {...rsvp} />;
+		}
+
+		if (block.section === 'gifts' && sections.gifts) {
+			return (
+				<Gifts
+					gifts={sections.gifts.items}
+					title={sections.gifts.title}
+					subtitle={sections.gifts.subtitle}
+					variant={sections.gifts.variant}
+				/>
+			);
+		}
+
+		if (block.section === 'thankYou' && sections.thankYou) {
+			return (
+				<ThankYou
+					message={sections.thankYou.message}
+					closingName={sections.thankYou.closingName}
+					image={sections.thankYou.image}
+					variant={sections.thankYou.variant}
+				/>
+			);
+		}
+
+		return null;
+	})
+}

@@ -1,8 +1,9 @@
-**Completion:** `50%` | **Status:** `IN-PROGRESS`
+**Completion:** `50%` | **Status:** `BLOCKED`
 
 # Plan: Pre-Phase Technical Audit (2026)
 
-> Phases 01-03 are complete. Phase 04 is the next pending execution target.
+> Phases 01-03 are complete. Phase 04 implementation is in place but blocked on unresolved
+> verification criteria.
 
 ## Executive Summary
 
@@ -14,7 +15,7 @@ Architecture, BFF Decoupling).
 > **Note**: Phase 01 (Technical Audit) has been completed. The findings have been decomposed into
 > remediation Phases 02-06.
 
-## ✅ Current State [STATUS: IN-PROGRESS]
+## ✅ Current State [STATUS: BLOCKED]
 
 > **Phase 02 Outcome:** RSVP service and repository logic were decomposed into domain modules with
 > compatibility aggregators preserved at [`src/lib/rsvp/service.ts`](../../src/lib/rsvp/service.ts)
@@ -27,6 +28,17 @@ Architecture, BFF Decoupling).
 > `sectionStyles.rsvp.legacy`. CLI verification passed with `pnpm exec astro check` and
 > `npx astro build` on 2026-03-16. Repository documentation now records the deprecated RSVP field
 > migration path in [`docs/core/content-schema.md`](../../docs/core/content-schema.md).
+>
+> **Phase 04 Implementation:** Invitation page derivation now flows through
+> [`src/lib/presenters/invitation-presenter.ts`](../../src/lib/presenters/invitation-presenter.ts)
+> and [`src/components/invitation/InvitationSections.astro`](../../src/components/invitation/InvitationSections.astro),
+> reducing [`src/pages/[eventType]/[slug].astro`](../../src/pages/[eventType]/[slug].astro) from
+> 316 LOC to 129 LOC. Verification passed with `pnpm exec astro check`, `npx astro build`, and
+> `npx jest tests/unit/invitation.presenter.test.ts --runInBand` on 2026-03-16.
+>
+> **Blocker:** The original Phase 04 plan depends on a non-existent `test:unit` workflow and an
+> undefined visual regression harness. The phase must be re-scoped before it can be marked
+> complete.
 
 ## Phase Index
 

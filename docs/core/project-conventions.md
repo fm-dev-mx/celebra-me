@@ -18,6 +18,8 @@ Astro promotes the following conventional folders, though you may extend them if
 - `.agent/plans/` — Modular implementation plans and detailed specifications for each section/feature.
 - `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
 - `.agent/governance/` — Quality control scripts and policies.
+- `src/lib/presenters/` — Route-facing presenter modules that assemble page-ready view models from
+  adapters, content, and server context.
 
 These conventions help align the repo with widely used Astro layouts without enforcing unnecessary
 rigidity.
@@ -60,6 +62,14 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 - Server-only logic (e.g., integrations, secrets) should live in `src/lib/`.
 - This ensures clean separation between framework (Astro/Pages) and logic (Lib).
 - This makes boundaries explicit without inventing unnecessary folders.
+
+### 3.3 Presenters (`src/lib/presenters/`)
+
+- Use presenters when an Astro route needs derived view state from multiple sources (content,
+  guest/session context, render plans, theme tokens).
+- Presenters may compose adapters and pure helpers, but they should return page-ready props instead
+  of framework-specific side effects.
+- Astro page files should stay focused on routing, redirects, data fetching, and rendering.
 
 ---
 
