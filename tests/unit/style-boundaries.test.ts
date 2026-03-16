@@ -8,6 +8,34 @@ function read(relativePath: string): string {
 }
 
 describe('Style boundary governance', () => {
+	it('invitation-facing components do not hardcode hex colors in Astro or TSX files', () => {
+		const files = [
+			'src/components/common/GoogleMap.astro',
+			'src/components/common/OptimizedImage.astro',
+			'src/components/invitation/PersonalizedAccess.astro',
+			'src/components/invitation/TimelineList.tsx',
+			'src/components/ui/Confetti.tsx',
+			'src/pages/[eventType]/[slug]/invitado.astro',
+		];
+
+		for (const file of files) {
+			expect(read(file)).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+		}
+	});
+
+	it('styling-only Astro components avoid style define:vars blocks', () => {
+		const files = [
+			'src/components/common/OptimizedImage.astro',
+			'src/components/common/icons/Icon.astro',
+			'src/components/layout/Section.astro',
+			'src/pages/[eventType]/[slug].astro',
+		];
+
+		for (const file of files) {
+			expect(read(file)).not.toMatch(/<style[^>]*define:vars=/);
+		}
+	});
+
 	it('global.scss does not import invitation or dashboard domains directly', () => {
 		const globalScss = read('src/styles/global.scss');
 		expect(globalScss).not.toContain("@use 'dashboard/");
