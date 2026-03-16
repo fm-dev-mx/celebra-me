@@ -1,5 +1,26 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.3] - 2026-03-16
+
+### Changed
+
+- Implemented Phase 03 schema modularization by extracting event content schemas into
+  `src/lib/schemas/content` and simplifying `src/content/config.ts` into a collection assembly
+  layer.
+- Added the legacy RSVP style namespace at `sectionStyles.rsvp.legacy` and updated
+  `src/lib/adapters/event.ts` to preserve backwards-compatible fallbacks.
+- Added `docs/core/content-schema.md` to document module boundaries and the deprecation path.
+
+### Validation
+
+- Verified the refactor with `pnpm exec astro check`.
+- Verified collection/build integrity with `npx astro build`.
+
+### Blocked
+
+- Left Phase 03 in `BLOCKED` state because the original plan requires IDE-only deprecation warnings
+  and a quantified build-time improvement without defining reproducible repository-level validation.
+
 ## [1.0.2] - 2026-03-16
 
 ### Changed
