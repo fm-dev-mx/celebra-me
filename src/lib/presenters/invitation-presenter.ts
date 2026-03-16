@@ -20,7 +20,7 @@ export interface InvitationPagePresenter {
 	};
 	wrapper: {
 		className: string;
-		variables: Record<string, string>;
+		style: string;
 		showEnvelope: boolean;
 	};
 	header: {
@@ -78,11 +78,11 @@ function resolveHeroImageSrc(hero: InvitationViewModel['hero']): string {
 		: hero.backgroundImage.src.src;
 }
 
-function buildWrapperVariables(
+function buildWrapperStyle(
 	theme: InvitationViewModel['theme'],
 	envelope: InvitationViewModel['envelope'],
-): Record<string, string> {
-	return {
+): string {
+	const variables = {
 		'color-primary': theme.primaryColor,
 		'color-primary-rgb': theme.colors.primaryRgb,
 		'color-accent': theme.accentColor || '#333',
@@ -93,6 +93,10 @@ function buildWrapperVariables(
 		'env-primary': envelope.data?.colors.primary || theme.primaryColor,
 		'env-accent': envelope.data?.colors.accent || theme.accentColor || '#d4af37',
 	};
+
+	return Object.entries(variables)
+		.map(([key, value]) => `--${key}: ${value}`)
+		.join('; ');
 }
 
 export function presentInvitationPage(input: {
@@ -125,7 +129,7 @@ export function presentInvitationPage(input: {
 			]
 				.filter(Boolean)
 				.join(' '),
-			variables: buildWrapperVariables(theme, envelope),
+			style: buildWrapperStyle(theme, envelope),
 			showEnvelope,
 		},
 		header: {

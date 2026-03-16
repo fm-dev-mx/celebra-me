@@ -20,6 +20,8 @@ $color-text-on-dark: var(--color-text-on-dark, primitives.$base-parchment-100);
 $color-surface-primary: var(--color-surface-primary, primitives.$base-parchment-100);
 $color-surface-primary-rgb: var(--color-surface-primary-rgb, 245, 245, 220);
 $color-surface-secondary: var(--color-surface-secondary, primitives.$base-coffee-100);
+$color-surface-elevated: var(--color-surface-elevated, primitives.$base-neutral-50);
+$color-surface-canvas: var(--color-surface-canvas, primitives.$base-coffee-900);
 $color-surface-dark: var(--color-surface-dark, primitives.$base-coffee-900);
 $color-surface-dark-rgb: var(--color-surface-dark-rgb, 58, 40, 25);
 
@@ -30,6 +32,7 @@ $color-action-accent-rgb: var(--color-action-accent-rgb, 220, 180, 60);
 
 // Borders & Dividers
 $color-border-subtle: var(--color-border-subtle, rgba(primitives.$base-coffee-900, 0.1));
+$color-border-premium: var(--color-border-premium, rgba(primitives.$base-gold-500, 0.3));
 $color-border-emphasis: var(--color-border-emphasis, primitives.$base-gold-500);
 
 // Neutral Roles
@@ -37,6 +40,7 @@ $color-neutral-subtle: var(--color-neutral-subtle, primitives.$base-neutral-100)
 $color-neutral-muted: var(--color-neutral-muted, primitives.$base-neutral-400);
 $color-neutral-base: var(--color-neutral-base, primitives.$base-neutral-700);
 $color-neutral-emphasis: var(--color-neutral-emphasis, primitives.$base-neutral-900);
+$color-text-muted: var(--color-text-muted, rgba(primitives.$base-coffee-900, 0.65));
 
 // Glassmorphism
 $color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));

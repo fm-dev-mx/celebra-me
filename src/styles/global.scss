@@ -39,7 +39,11 @@
 	--color-error: #{tokens.$base-error};
 	--color-surface-secondary: #{tokens.$base-coffee-100};
 	--color-surface-secondary-rgb: 243, 235, 226;
+	--color-surface-elevated: #{tokens.$color-surface-elevated};
+	--color-surface-canvas: #{tokens.$color-surface-canvas};
+	--color-border-premium: #{tokens.$color-border-premium};
 	--color-text-secondary-rgb: 104, 71, 39;
+	--color-text-muted: #{tokens.$color-text-muted};
 	--color-neutral-subtle: #{tokens.$base-neutral-100};
 	--color-neutral-muted: #{tokens.$base-neutral-400};
 	--color-neutral-base: #{tokens.$base-neutral-700};
