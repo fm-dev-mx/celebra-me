@@ -159,7 +159,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 			<motion.div
 				className="gallery-grid"
 				variants={containerVariants}
-				initial={shouldReduceMotion ? 'visible' : 'hidden'}
+				initial="visible"
 				whileInView={shouldReduceMotion ? undefined : 'visible'}
 				viewport={shouldReduceMotion ? undefined : { once: true, margin: '-100px' }}
 			>

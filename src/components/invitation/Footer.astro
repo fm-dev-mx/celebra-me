@@ -11,8 +11,9 @@ interface Props {
 
 const { eventSlug, showEnvelope = false } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
-const isXimenaInvitation = eventSlug === 'ximena-meza-trasvina';
-const logoVariant = isXimenaInvitation ? 'footer' : 'xv';
+const editorialInvitationSlugs = ['ximena-meza-trasvina', 'noir-premiere-xv'];
+const isEditorialInvitation = editorialInvitationSlugs.includes(eventSlug || '');
+const logoVariant = isEditorialInvitation ? 'footer' : 'xv';
 
 // Define contact details
 const contactNumber = '526681167477';
@@ -20,11 +21,20 @@ const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital
 const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
-<footer class:list={['invitation-footer', { 'invitation-footer--ximena-editorial': isXimenaInvitation }]}>
+<footer
+	class:list={[
+		'invitation-footer',
+		{ 'invitation-footer--ximena-editorial': isEditorialInvitation },
+	]}
+>
 	<div class:list={['footer-content', { 'footer-content--with-replay': hasReplay }]}>
 		<div class="footer-info">
 			<p class="powered-by">Powered by</p>
-			<Logo variant={logoVariant} altText="Celebra-me" class:list={[{ 'footer-brand-logo': isXimenaInvitation }]} />
+			<Logo
+				variant={logoVariant}
+				altText="Celebra-me"
+				class:list={[{ 'footer-brand-logo': isEditorialInvitation }]}
+			/>
 		</div>
 		
 		<div class="footer-contact">
@@ -39,7 +49,12 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 					alt="WhatsApp"
 					width={24}
 					height={24}
-					class:list={[{ 'footer-action__icon-media': isXimenaInvitation, 'w-6 h-6': !isXimenaInvitation }]}
+					class:list={[
+						{
+							'footer-action__icon-media': isEditorialInvitation,
+							'w-6 h-6': !isEditorialInvitation,
+						},
+					]}
 				/>
 				Contáctanos
 			</a>

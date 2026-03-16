@@ -128,7 +128,7 @@ const TimelineList: React.FC<TimelineListProps> = ({ items, variant }) => {
 
 			<motion.div
 				className="itinerary__items"
-				initial="hidden"
+				initial="visible"
 				whileInView="visible"
 				viewport={{ once: true, margin: '-100px' }}
 				variants={listVariants}
