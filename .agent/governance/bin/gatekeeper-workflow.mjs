@@ -599,19 +599,16 @@ function buildCommitScaffold(split) {
 	const dominantCluster = inferDominantFileCluster(split.files);
 	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
 	const body = split.files.map((file) => {
-		let description = truncateText(
+		const description = truncateText(
 			describeFileChange(file, { split, dominantCluster }),
 			DESCRIPTION_MAX_LENGTH,
 		);
 		const bulletPrefix = `- ${file}: `;
-		const maxDescriptionLength = Math.max(10, BULLET_MAX_LENGTH - bulletPrefix.length);
-		if (description.length > maxDescriptionLength) {
-			description = truncateText(description, maxDescriptionLength);
+		const remainingLength = Math.max(10, BULLET_MAX_LENGTH - bulletPrefix.length);
+		if (bulletPrefix.length + description.length > BULLET_MAX_LENGTH) {
+			return `${bulletPrefix}${truncateText(description, remainingLength)}`;
 		}
-		const bullet = `${bulletPrefix}${description}`;
-		if (bullet.length <= BULLET_MAX_LENGTH) return bullet;
-		const overshoot = bullet.length - BULLET_MAX_LENGTH;
-		return `${bulletPrefix}${truncateText(description, Math.max(10, description.length - overshoot))}`;
+		return `${bulletPrefix}${description}`;
 	});
 	return {
 		type: commitType,
