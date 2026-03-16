@@ -18,10 +18,10 @@
 		linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
 	color: #f9f6f2;
 	min-height: 100svh;
-	padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+	padding-bottom: env(safe-area-inset-bottom, 0);
 
 	@media (width >= 768px) {
-		padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+		padding-bottom: env(safe-area-inset-bottom, 0);
 	}
 
 	// Editorial Header: Hide name to avoid redundancy with H1
