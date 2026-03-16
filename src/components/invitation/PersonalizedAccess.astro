@@ -42,10 +42,10 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 	}
 
 	.access-card {
-		background: var(--color-surface-primary, #fffaf5);
+		background: var(--color-surface-elevated);
 		border-radius: 4px;
-		box-shadow: var(--hero-card-shadow-ambient, 0 20px 40px rgba(0,0,0,0.3));
-		border: 1px solid var(--hero-card-border-hairline, rgba(212, 175, 95, 0.3));
+		box-shadow: var(--hero-card-shadow-ambient, var(--shadow-premium));
+		border: 1px solid var(--hero-card-border-hairline, var(--color-border-premium));
 		width: 100%;
 		max-width: 450px;
 		overflow: hidden;
@@ -56,7 +56,7 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 			position: absolute;
 			width: 24px;
 			height: 24px;
-			background: var(--color-background, #1a110b);
+			background: var(--color-surface-canvas);
 			border-radius: 50%;
 			top: 50%;
 			transform: translateY(-50%);
@@ -67,9 +67,9 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 		&::after { right: -12px; }
 
 		&__header {
-			background: var(--hero-card-bg, #2b1d12);
+			background: var(--hero-card-bg, var(--color-surface-canvas));
 			padding: 2rem 1.5rem;
-			color: var(--color-text-emphasis, #d4af5f);
+			color: var(--color-text-emphasis);
 			text-align: center;
 			position: relative;
 			border-bottom: 1px solid var(--hero-card-border-hairline);
@@ -88,7 +88,7 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 		&__ring {
 			width: 40px;
 			height: 40px;
-			border: 1px solid var(--color-action-accent, #d4af5f);
+			border: 1px solid var(--color-action-accent);
 			border-radius: 50%;
 			margin: 0 auto 1rem;
 			display: flex;
@@ -129,7 +129,7 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 			.label {
 				font-size: 0.8rem;
 				text-transform: uppercase;
-				color: var(--color-text-secondary, #926d48);
+				color: var(--color-text-muted);
 				letter-spacing: 2px;
 				font-family: var(--font-body);
 			}
@@ -137,7 +137,7 @@ const { maxAllowedAttendees, guestName } = Astro.props;
 			.value {
 				font-size: 1.75rem;
 				font-family: var(--font-display);
-				color: var(--color-text-primary, #1a110b);
+				color: var(--color-text-primary);
 			}
 
 			&--large {

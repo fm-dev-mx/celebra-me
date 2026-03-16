@@ -27,7 +27,7 @@ interface Props {
         height: 100%;
         overflow: hidden;
         border-radius: var(--radius-md, 8px); // Use design token if available, fallback to 8px
-        background-color: var(--color-surface-200, #f5f5f5); // Placeholder background
+        background-color: var(--color-surface-secondary);
         isolation: isolate; // Create a new stacking context
 
         iframe {
@@ -51,7 +51,7 @@ interface Props {
             width: 100%;
             height: 100%;
             pointer-events: none; // Let clicks pass through to iframe if desired, or toggle on click
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1); // Inner shadow for depth
+            box-shadow: inset 0 0 20px rgb(var(--color-surface-dark-rgb), 0.1); // Inner shadow for depth
             border: 1px solid rgba(var(--color-primary-rgb), 0.2); // Subtle border using theme color
             border-radius: inherit;
         }
