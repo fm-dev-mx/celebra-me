@@ -1,5 +1,17 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.7] - 2026-03-16
+
+### Changed
+
+- Marked Phase 05 as `BLOCKED` after implementation review found the original asset-hardening scope
+  no longer matches the live architecture.
+
+### Audit
+
+- Recorded that the asset registry now uses dynamic discovery and that content still relies on
+  legacy string asset references, requiring a plan amendment before Phase 05 can proceed.
+
 ## [1.0.6] - 2026-03-16
 
 ### Changed
