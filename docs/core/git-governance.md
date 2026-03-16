@@ -36,6 +36,7 @@ pnpm gatekeeper:workflow:autofix  → Autofix loop + final strict pass
 pnpm gatekeeper:workflow:cleanup  → Remove workflow-owned .git artifacts
 node .agent/governance/bin/gatekeeper-workflow.mjs stage --domain <id>
 node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --domain <id>
+node .agent/governance/bin/gatekeeper-workflow.mjs commit --domain <id>
 ```
 
 ---
@@ -49,11 +50,15 @@ node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --domain <id>
    name instead of inferred auto-branching.
 4. Run workflow inspection to compute `workflowRoute` and `adu.suggestedSplits`.
 5. If `workflowRoute=auto_fix`, run workflow autofix.
-6. Use workflow `stage --domain <id>` to isolate one domain and refresh S0 artifacts.
-7. Commit normally; `commit-msg` enforces message structure and file-level body requirements.
-8. `pre-commit` runs `lint-staged` first, then strict Gatekeeper verification on the final staged
+6. If `workflowRoute=architectural_intervention`, stop and resolve the reported blockers before any
+   `stage` or `commit` command.
+7. Use workflow `stage --domain <id>` to isolate one domain and refresh S0 artifacts.
+8. Use `scaffold --domain <id>` to generate a non-mutating commit message preview.
+9. Use `commit --domain <id>` to validate the generated message against commitlint and create the
+   commit.
+10. `pre-commit` runs `lint-staged` first, then strict Gatekeeper verification on the final staged
    snapshot.
-9. `pre-push` and CI validate commit ranges with `scripts/validate-commits.mjs` and then run tests.
+11. `pre-push` and CI validate commit ranges with `scripts/validate-commits.mjs` and then run tests.
 
 ---
 
@@ -70,9 +75,12 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
   `- path/to/file.ext: description` `- path/to/folder/: description`
   `- path/to/prefix/**: description`
 - Bullet `pathSpec` values must use full relative paths; `...` is not allowed.
+- Bullet descriptions must describe the concrete file change, not generic placeholders.
 - Bodies may group small coherent file sets when the commit is still atomic.
 - `gatekeeper-workflow scaffold` must generate subjects and bullets that already satisfy this
-  contract, using full relative paths and truncating descriptions when needed.
+  contract, using full relative paths, concrete descriptions, and safe truncation when needed.
+- `gatekeeper-workflow commit` validates the generated message against commitlint before invoking
+  `git commit`.
 
 Example:
 
@@ -146,3 +154,15 @@ edits.
 The gatekeeper-workflow.mjs script manages the session-based commit lifecycle. It ensures that
 changes are inspected, staged by domain, and committed with high-precision messages while
 maintaining atomicity and schema alignment across the codebase during transition phases.
+
+### Pre-flight Resolution
+
+Manual pre-flight recommendations are resolved from `.agent/governance/config/policy.json`. The
+workflow should prefer `workflow.inspect.preflightCommand` when it is configured. If not set, the
+current fallback order is:
+
+1. `pnpm turbo-all`
+2. `pnpm ci`
+3. `pnpm lint && pnpm type-check && pnpm test`
+
+This prevents operators and agents from assuming commands that do not exist in the current repo.
