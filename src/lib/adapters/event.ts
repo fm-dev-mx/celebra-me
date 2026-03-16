@@ -1,4 +1,3 @@
-import { getEventAsset, type EventAssetKey, type ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	InvitationViewModel,
 	ThemeConfig,
@@ -18,101 +17,18 @@ import {
 	type IndicationIconKey,
 	type ItineraryVariant,
 	type SharedSectionVariant,
-	type ThemePreset,
 } from '@/lib/theme/theme-contract';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
+import {
+	pickVariant,
+	pickPreset,
+	hexToRgb,
+	resolveAsset,
+	requireAsset,
+	runtimeEnv,
+} from './event-helpers';
 
-const runtimeEnv = {
-	PROD: process.env.NODE_ENV === 'production',
-	DEV: process.env.NODE_ENV !== 'production',
-};
 type RawContentBlock = NonNullable<EventContentEntry['data']['contentBlocks']>[number];
-
-function pickVariant<T extends readonly string[]>(
-	scope: string,
-	candidate: string | undefined,
-	allowed: T,
-	fallback: T[number],
-): T[number] {
-	if (!candidate) return fallback;
-	if ((allowed as readonly string[]).includes(candidate)) return candidate as T[number];
-	console.warn(
-		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Fallback applied: "${fallback}".`,
-	);
-	return fallback;
-}
-
-function pickPreset(candidate: string | undefined): ThemePreset {
-	if (!candidate) return THEME_PRESETS[0];
-	if ((THEME_PRESETS as readonly string[]).includes(candidate)) return candidate as ThemePreset;
-
-	if (runtimeEnv.PROD) {
-		throw new Error(`[ThemePreset] Invalid preset "${candidate}" in theme.preset.`);
-	}
-
-	console.warn(
-		`[ThemePreset] Invalid preset "${candidate}". Using fallback "${THEME_PRESETS[0]}".`,
-	);
-	return THEME_PRESETS[0];
-}
-
-function hexToRgb(hex: string): string {
-	hex = hex.replace(/^#/, '');
-	if (hex.length === 3) {
-		hex = hex
-			.split('')
-			.map((char) => char + char)
-			.join('');
-	}
-	const bigint = parseInt(hex, 16);
-	const r = (bigint >> 16) & 255;
-	const g = (bigint >> 8) & 255;
-	const b = bigint & 255;
-	return `${r}, ${g}, ${b}`;
-}
-
-function resolveAsset(
-	eventSlug: string,
-	keyOrUrl: string | undefined,
-	eventTitle: string,
-): ImageAsset | undefined {
-	if (!keyOrUrl) return undefined;
-
-	if (keyOrUrl.startsWith('http') || keyOrUrl.startsWith('/')) {
-		return {
-			src: keyOrUrl,
-			alt: `Recurso de ${eventTitle}`,
-		};
-	}
-
-	const metadata = getEventAsset(eventSlug, keyOrUrl as EventAssetKey);
-	if (!metadata) return undefined;
-
-	// Centralized Alt text generation
-	let alt = `Imagen de ${eventTitle}`;
-	if (keyOrUrl === 'hero') alt = `Portada de ${eventTitle}`;
-	else if (keyOrUrl === 'portrait') alt = `Retrato de ${eventTitle}`;
-	else if (keyOrUrl.startsWith('gallery')) {
-		const num = keyOrUrl.replace('gallery', '');
-		alt = `Galería ${num} de ${eventTitle}`;
-	} else if (keyOrUrl.startsWith('interlude')) {
-		alt = `Interludio de ${eventTitle}`;
-	}
-
-	return {
-		src: metadata,
-		alt,
-	};
-}
-
-function requireAsset(eventSlug: string, keyOrUrl: string, eventTitle: string): ImageAsset {
-	const asset = resolveAsset(eventSlug, keyOrUrl, eventTitle);
-	if (!asset) {
-		console.warn(`[AssetWarning] Asset not found for key: ${keyOrUrl} in event ${eventSlug}`);
-		return { src: '', alt: 'Recurso faltante' };
-	}
-	return asset;
-}
 
 export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 	const { data, id: contentEntryId } = event;
@@ -366,14 +282,14 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 							),
 							nameLabel:
 								data.sectionStyles?.rsvp?.labels?.name ??
-								data.sectionStyles?.rsvp?.nameLabel,
+								data.sectionStyles?.rsvp?.legacy?.nameLabel,
 							guestCountLabel:
 								data.sectionStyles?.rsvp?.labels?.guestCount ??
-								data.sectionStyles?.rsvp?.guestCountLabel,
+								data.sectionStyles?.rsvp?.legacy?.guestCountLabel,
 							attendanceLabel: data.sectionStyles?.rsvp?.labels?.attendance,
 							buttonLabel:
 								data.sectionStyles?.rsvp?.labels?.confirmButton ??
-								data.sectionStyles?.rsvp?.buttonLabel,
+								data.sectionStyles?.rsvp?.legacy?.buttonLabel,
 						}
 					: undefined,
 			gifts:

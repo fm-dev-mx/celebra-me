@@ -1,0 +1,36 @@
+import { z } from 'astro:content';
+
+export const giftsSchema = z
+	.object({
+		title: z.string().optional(),
+		subtitle: z.string().optional(),
+		items: z.array(
+			z.discriminatedUnion('type', [
+				z.object({
+					type: z.literal('store'),
+					title: z.string(),
+					url: z.string().url(),
+					logo: z.string().optional(),
+				}),
+				z.object({
+					type: z.literal('bank'),
+					title: z.string().default('Transferencia'),
+					bankName: z.string(),
+					accountHolder: z.string(),
+					clabe: z.string(),
+					accountNumber: z.string().optional(),
+				}),
+				z.object({
+					type: z.literal('paypal'),
+					title: z.string().default('PayPal'),
+					url: z.string().url(),
+				}),
+				z.object({
+					type: z.literal('cash'),
+					title: z.string().default('Lluvia de Sobres'),
+					text: z.string().optional(),
+				}),
+			]),
+		),
+	})
+	.optional();
