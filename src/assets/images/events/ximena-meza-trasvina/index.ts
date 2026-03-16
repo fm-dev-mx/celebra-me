@@ -1,6 +1,7 @@
 import hero from './hero.webp';
 import portrait from './portrait.webp';
 import family from './family-editorial.png';
+import familyAlt from './family.webp';
 import signature from './signature.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
@@ -21,6 +22,7 @@ export const assets = {
 	hero,
 	portrait,
 	family,
+	familyAlt,
 	jardin: gallery03, // Using dedicated venue shot
 	signature,
 	gallery: [
