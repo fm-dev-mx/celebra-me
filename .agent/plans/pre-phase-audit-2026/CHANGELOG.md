@@ -1,5 +1,20 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.8] - 2026-03-16
+
+### Changed
+
+- Amended Phase 05 acceptance criteria to align with the dynamic-discovery asset pipeline and legacy
+  string asset compatibility.
+- Completed Phase 05 by normalizing asset references in content schemas, hardening adapter asset
+  resolution, and adding a discovery-aware asset audit script.
+
+### Validation
+
+- Confirmed Phase 05 closure against `pnpm exec astro check`, `npx astro build`,
+  `npx jest tests/content/schema.test.ts tests/unit/event.adapter.test.ts tests/unit/event-assets-audit.test.ts --runInBand`,
+  and `npm run assets:check-registry`.
+
 ## [1.0.7] - 2026-03-16
 
 ### Changed

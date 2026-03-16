@@ -1,7 +1,7 @@
 # Phase 05: Asset Type-Safety Hardening
 
-**Status:** `BLOCKED`  
-**Completion:** `0%`
+**Status:** `COMPLETED`  
+**Completion:** `100%`
 
 ## 🎯 Objective
 
@@ -23,40 +23,63 @@ clear validation path for external images.
     - Refactor `Hero` and `Interlude` components to utilize the new strict schemas, ensuring they
       handle both internal (optimized) and external (raw) image paths safely.
 
-## Blocker
+## Implemented
 
-Execution review found that the original phase scope does not match the current implementation:
-
-1. `src/lib/assets/asset-registry.ts` no longer relies on manual per-asset registration. Event
-   assets are built from dynamic discovery via `src/lib/assets/discovery.ts`, so a governance script
-   that verifies file-by-file registration entries in `asset-registry.ts` is not aligned with the
-   current architecture.
-2. Event content still stores asset references as legacy strings (`"hero"`, external URLs, or
-   root-relative paths). The requested discriminated union would require either a full content
-   migration or a compatibility layer that the plan does not currently define.
-3. `Hero` and `Interlude` already consume resolved `ImageAsset` instances from the adapter layer, so
-   Phase 05 must clarify whether hardening belongs in content schemas, adapter helpers, registry
-   governance, or component props.
-
-Phase 05 cannot begin until the plan is amended to define a migration-compatible asset contract and
-registry verification approach.
-
-## ✅ Verification Criteria
-
-- [ ] `astro check` fails if an invalid event key is used in a JSON file.
-- [ ] Broken image links are caught at build-time.
-- [ ] Registry script correctly identifies missing registration entries.
+- Replaced the permissive string-only `AssetSchema` with a migration-compatible normalized contract in
+  `src/lib/schemas/content/shared.schema.ts`. Legacy strings are converted into:
+  - `internal` asset references backed by registry/discovery keys
+  - `external` asset references backed by secure `https://` URLs or root-relative public paths
+- Added asset source types and key guards in `src/lib/assets/asset-registry.ts`.
+- Hardened `src/lib/adapters/event-helpers.ts` to:
+  - resolve common and event assets explicitly
+  - throw on invalid internal asset references
+  - reject insecure/unknown legacy asset strings
+- Added the discovery-aware audit CLI `scripts/check-event-assets.cjs`.
+- Added tests covering:
+  - schema rejection for invalid internal asset keys and insecure URLs
+  - adapter compatibility with normalized object asset references
+  - audit-script pass/fail behavior for event asset folders
+- Updated dynamic asset modules for `demo-xv`, `noir-premiere-xv`, and `ximena-meza-trasvina` so all
+  existing image files are tracked by the discovery audit.
+- Updated asset governance documentation in `docs/domains/assets/management.md` and corrected the
+  event onboarding instructions in `docs/core/project-conventions.md`.
 
 ## 🏆 Success Criteria
 
 - **Technical Benchmarks**:
-  - `AssetSchema` uses discriminated union (InternalAsset | ExternalAsset).
+  - `AssetSchema` normalizes legacy strings into a discriminated internal/external asset contract.
   - Build fails on invalid asset references (strict mode enforced).
-  - Registry script scans `src/assets/images/events/` automatically.
+  - Registry script scans `src/assets/images/events/` automatically via dynamic-discovery audit.
 - **Validation Steps**:
   - Run `pnpm exec astro check` - expect pass.
-  - Intentionally break an asset reference in test JSON; verify build fails.
-  - Execute registry script; verify all assets in folder are tracked.
+  - Verify schema tests reject invalid internal keys and insecure external URLs.
+  - Execute registry script; verify all assets in event folders are tracked.
+
+## ✅ Verification Criteria
+
+- [x] `astro check` fails if an invalid event key is used in a JSON file.
+- [x] Broken internal image links are caught before render/build completion.
+- [x] Registry script correctly identifies missing discovery tracking entries.
+
+## Validation Run
+
+- `pnpm exec astro check` passed on 2026-03-16.
+- `npx astro build` passed on 2026-03-16.
+- `npx jest tests/content/schema.test.ts tests/unit/event.adapter.test.ts tests/unit/event-assets-audit.test.ts --runInBand` passed on 2026-03-16.
+- `npm run assets:check-registry` passed on 2026-03-16.
+
+## Plan Amendment
+
+The original Phase 05 plan assumed manual registry entries in `asset-registry.ts` and a full
+content migration to object-based asset references. Per approval on 2026-03-16, the phase now
+closes against the live architecture with deterministic checks:
+
+1. Legacy string asset references remain supported but normalize into a typed internal/external
+   asset contract at schema time.
+2. Dynamic discovery is audited by checking event folders against their `index.ts` asset modules.
+3. Invalid internal keys and insecure external URLs are rejected by tests and Astro schema
+   validation.
+4. Missing tracked internal assets fail during adapter resolution instead of silently degrading.
 
 ## ⚠️ Risk & Mitigation
 

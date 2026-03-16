@@ -1,8 +1,8 @@
-**Completion:** `67%` | **Status:** `BLOCKED`
+**Completion:** `83%` | **Status:** `IN-PROGRESS`
 
 # Plan: Pre-Phase Technical Audit (2026)
 
-> Phases 01-04 are complete. Phase 05 is blocked pending a scope correction.
+> Phases 01-05 are complete. Phase 06 is the next pending execution target.
 
 ## Executive Summary
 
@@ -14,7 +14,7 @@ Architecture, BFF Decoupling).
 > **Note**: Phase 01 (Technical Audit) has been completed. The findings have been decomposed into
 > remediation Phases 02-06.
 
-## ✅ Current State [STATUS: BLOCKED]
+## ✅ Current State [STATUS: IN-PROGRESS]
 
 > **Phase 02 Outcome:** RSVP service and repository logic were decomposed into domain modules with
 > compatibility aggregators preserved at [`src/lib/rsvp/service.ts`](../../src/lib/rsvp/service.ts)
@@ -38,13 +38,15 @@ Architecture, BFF Decoupling).
 > [`docs/core/project-conventions.md`](../../docs/core/project-conventions.md) and
 > [`docs/core/architecture.md`](../../docs/core/architecture.md).
 >
-> **Phase 05 Blocker:** The current asset system already uses dynamic discovery in
-> [`src/lib/assets/asset-registry.ts`](../../src/lib/assets/asset-registry.ts) and
-> [`src/lib/assets/discovery.ts`](../../src/lib/assets/discovery.ts), while content schemas still
-> accept legacy string asset references in
-> [`src/lib/schemas/content/shared.schema.ts`](../../src/lib/schemas/content/shared.schema.ts).
-> The original Phase 05 plan assumes manual asset registration and object-based discriminated union
-> content references, so it must be amended before implementation can begin.
+>
+> **Phase 05 Outcome:** Asset references now normalize into a strict internal/external contract in
+> [`src/lib/schemas/content/shared.schema.ts`](../../src/lib/schemas/content/shared.schema.ts),
+> adapter resolution fails fast on missing internal assets in
+> [`src/lib/adapters/event-helpers.ts`](../../src/lib/adapters/event-helpers.ts), and dynamic
+> discovery is audited by
+> [`scripts/check-event-assets.cjs`](../../scripts/check-event-assets.cjs). Verification passed with
+> `pnpm exec astro check`, `npx astro build`, `npx jest tests/content/schema.test.ts tests/unit/event.adapter.test.ts tests/unit/event-assets-audit.test.ts --runInBand`, and
+> `npm run assets:check-registry` on 2026-03-16.
 
 ## Phase Index
 
