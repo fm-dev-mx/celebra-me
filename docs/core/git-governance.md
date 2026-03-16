@@ -69,9 +69,19 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
 - Required bodies must use path-aware bullets in one of these formats:
   `- path/to/file.ext: description` `- path/to/folder/: description`
   `- path/to/prefix/**: description`
+- Bullet `pathSpec` values must use full relative paths; `...` is not allowed.
 - Bodies may group small coherent file sets when the commit is still atomic.
 - `gatekeeper-workflow scaffold` must generate subjects and bullets that already satisfy this
-  contract.
+  contract, using full relative paths and truncating descriptions when needed.
+
+Example:
+
+```text
+refactor(auth): standardize rsvp repository flows
+
+- src/lib/rsvp/repositories/guest.repository.ts: refine guest persistence logic
+- src/lib/rsvp/services/dashboard-guest-query.service.ts: align dashboard query orchestration
+```
 
 If these rules change, update `commitlint.config.cjs` first and then update this document to match
 the executable owner.
@@ -124,6 +134,8 @@ edits.
 
 ## Changelog
 
+- **2026-03-16**: Required full relative paths in commit body bullets, banned ellipsis path
+  truncation, and aligned scaffold output with commitlint path validation.
 - **2026-03-16**: Expanded STRONG_VERBS in commitlint to include 'update' and migrated .npmrc to
   modern install-strategy. Added documentation sections for verb strategy and environment config.
 - **2026-03-15**: Added lean workflow report profile, workflow-owned session lifecycle, and

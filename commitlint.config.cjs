@@ -304,6 +304,7 @@ module.exports = {
 		'body-bullets-for-complex': [2, 'always'],
 		'body-min-length-when-required': [2, 'always'],
 		'body-file-path-bullets': [2, 'always'],
+		'body-no-ellipsis-paths': [2, 'always'],
 		'subject-strong-verb': [2, 'always'],
 		'subject-no-process-language': [2, 'always'],
 		'subject-target-required': [2, 'always'],
@@ -395,6 +396,17 @@ module.exports = {
 						];
 					}
 					return [true];
+				},
+				'body-no-ellipsis-paths': (parsed) => {
+					if (!bodyRequired(parsed)) return [true];
+					const bulletLines = getBulletLines(parsed.body);
+					const bullets = bulletLines.map(parseBullet).filter(Boolean);
+					const invalid = bullets.find((bullet) => bullet.pathSpec.includes('...'));
+					if (!invalid) return [true];
+					return [
+						false,
+						'commit body bullet paths must use full relative paths; ellipsis (...) is not allowed',
+					];
 				},
 				'subject-strong-verb': (parsed) => {
 					const verb = getSubjectVerb(parsed.subject);
