@@ -126,7 +126,7 @@ persistence integrated and critical backend test coverage preserved.
 - Response includes:
   - `eventSlug`, `eventType`, `baseInviteUrl`, `genericUrl`
   - `guests[]` with `guestId`, `displayName`, `maxAllowedAttendees`, `token`, `personalizedUrl`,
-      `waShareUrl`
+    `waShareUrl`
 
 ### 2.6 Advanced WhatsApp (Tier 3)
 
@@ -291,6 +291,12 @@ The following capabilities have been added to the admin dashboard and authentica
 - Structured DTOs for each entity
 - Integration with RSVP v2 authorization system
 - Complete integration tests for each endpoint
+- `src/lib/rsvp/service.ts` is now a thin compatibility aggregator over domain modules in
+  `src/lib/rsvp/services/`
+- `src/lib/rsvp/repository.ts` is now a thin compatibility aggregator over repository modules in
+  `src/lib/rsvp/repositories/`
+- Shared DTO, invite-link, and row-mapper helpers live under `src/lib/rsvp/services/shared/` and
+  `src/lib/rsvp/repositories/shared/`
 
 ### Security
 
@@ -300,8 +306,8 @@ The following capabilities have been added to the admin dashboard and authentica
 
 ## Changelog
 
-- **2026-03-04**: Renamed core RSVP/Auth utilities to strict `kebab-case` (e.g., `rateLimitProvider.ts` -> `rate-limit-provider.ts`).
-- **2026-03-04**: Updated all documentation links to reflect the consolidated 3-layer architecture.
-- **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy duplication guards.
-- **2026-03-04**: Consolidated governance architecture from `.agent/governance` to `.agent/governance`.
-- **2026-03-04**: Verified 100% integrity with `governance audit` (Zero findings).
+- **2026-03-04**: Renamed core RSVP utilities to kebab-case.
+- **2026-03-04**: Updated documentation links for 3-layer architecture.
+- **2026-03-04**: Refactored admin API to consolidate fault handling.
+- **2026-03-04**: Consolidated governance architecture.
+- **2026-03-16**: Decomposed service and repository monoliths into granular domain modules.
