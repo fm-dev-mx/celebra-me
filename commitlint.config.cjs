@@ -69,7 +69,7 @@ function getBulletLines(body) {
 }
 
 function isFilePathBullet(line) {
-	return /^-\s+[\w./-]+:\s+\S+/.test(line);
+	return /^-\s+[\w./[\]-]+:\s+\S+/.test(line);
 }
 
 module.exports = {
