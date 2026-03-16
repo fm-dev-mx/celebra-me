@@ -376,6 +376,12 @@ function scaffoldTarget(split) {
 function fileDescription(file) {
 	const stem = stemOf(file).toLowerCase();
 	const normalizedStem = stem.replace(/-/g, ' ');
+
+	if (file.includes('/schemas/')) return `add ${normalizedStem} schema definition`;
+	if (file.includes('config.ts') && file.includes('/content/'))
+		return 'simplify to import from modular schemas';
+	if (file.includes('/adapters/')) return 'update adapter for schema changes';
+
 	if (file.endsWith('README.md')) return 'describe plan status and overview';
 	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
 	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
@@ -384,6 +390,7 @@ function fileDescription(file) {
 	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
 	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
 	if (file.endsWith('.sh')) return 'configure hook execution';
+	if (file.endsWith('.schema.ts')) return `add ${normalizedStem} schema`;
 	return `update ${normalizedStem || 'file'} configuration`;
 }
 
@@ -392,11 +399,12 @@ function headerSubject(scope, split) {
 	const baseDomain = split.baseDomain || scope;
 	const target = truncateText(scaffoldTarget(split), 18);
 	const candidates = [];
+
 	if (baseDomain.startsWith('gov-plans-archive')) {
 		candidates.push(`archive ${target} plan files`);
 	}
 	if (baseDomain.startsWith('gov-plans-')) {
-		candidates.push(`create ${target} plan documentation`);
+		candidates.push(`update ${target} plan`);
 	}
 	if (commitType === 'test') {
 		candidates.push(`add ${target} test coverage`);
@@ -410,6 +418,13 @@ function headerSubject(scope, split) {
 	if (baseDomain.startsWith('gov-infra')) {
 		candidates.push(`update ${target} infrastructure`);
 	}
+	if (baseDomain === 'core' && split.files.some((f) => f.includes('/schemas/'))) {
+		candidates.push(`extract ${target} into modular schemas`);
+	}
+	if (baseDomain === 'core' && split.files.some((f) => f.includes('config.ts'))) {
+		candidates.push(`refactor ${target} configuration`);
+	}
+
 	candidates.push(`update ${target} files`);
 	return (
 		candidates
