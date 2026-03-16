@@ -24,14 +24,16 @@
             ".agent/governance/bin/**",
             ".agent/governance/config/**",
             ".agent/GATEKEEPER_RULES.md",
-            ".agent/README.md"
+            ".agent/README.md",
+            ".agent/*.html"
         ],
         "gov-skills": [".agent/skills/**"],
         "gov-plans-archive": [".agent/plans/README.md", ".agent/plans/archive/**"],
         "gov-plans-invitation": [
             ".agent/plans/real-xv-invitation/**",
             ".agent/plans/wedding-finalization/**",
-            ".agent/plans/ximena-overhaul/**"
+            ".agent/plans/ximena-overhaul/**",
+            ".agent/plans/quinceanera-demo-creation/**"
         ],
         "gov-tooling": [
             "scripts/**",
