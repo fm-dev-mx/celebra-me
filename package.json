@@ -12,6 +12,7 @@
         "start": "astro preview",
         "astro": "astro",
         "type-check": "astro check",
+        "turbo-all": "pnpm lint && pnpm type-check && pnpm test",
         "ci": "pnpm type-check && pnpm lint && pnpm test",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
