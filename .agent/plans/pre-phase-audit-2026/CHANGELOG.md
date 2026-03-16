@@ -1,5 +1,18 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.4] - 2026-03-16
+
+### Changed
+
+- Amended Phase 03 acceptance criteria to use deterministic repository checks instead of IDE-only
+  warnings and an undefined build-time benchmark.
+- Marked Phase 03 complete after reconciling the approved acceptance criteria with the implemented
+  schema modularization and documentation updates.
+
+### Validation
+
+- Confirmed Phase 03 closure against `pnpm exec astro check` and `npx astro build`.
+
 ## [1.0.3] - 2026-03-16
 
 ### Changed

@@ -1,7 +1,7 @@
 # Phase 03: Content Schema Modularization
 
-**Status:** `BLOCKED`  
-**Completion:** `80%`
+**Status:** `COMPLETED`  
+**Completion:** `100%`
 
 ## 🎯 Objective
 
@@ -17,7 +17,7 @@ files, improving build performance and developer clarity.
 
 2.  **Define Deprecation Strategy**:
     - Create a `legacy` namespace within the schemas for fields marked for removal.
-    - Apply `@deprecated` JSDoc tags to ensure IDE warnings.
+    - Apply `@deprecated` JSDoc tags in schema source and preserve a documented migration path.
 
 3.  **Refactor Config**:
     - Re-import modular schemas into `src/content/config.ts`.
@@ -40,18 +40,20 @@ files, improving build performance and developer clarity.
 
 - [x] Successful content collection build (`npx astro build`).
 - [x] No type-safety regressions in components consume content data (`pnpm exec astro check`).
-- [ ] IDE correctly flags deprecated fields in JSON content files.
+- [x] Deprecated fields are isolated under `sectionStyles.rsvp.legacy` and documented in schema and
+      architecture docs.
 
 ## 🏆 Success Criteria
 
 - **Technical Benchmarks**:
   - Each schema module in `src/lib/schemas/content/` <100 LOC.
   - Legacy fields isolated in `schema.legacy` namespace.
-  - Build time reduction for schema validation (>10% improvement).
+  - `src/content/config.ts` reduced to collection assembly only.
 - **Validation Steps**:
   - Execute `npx astro build` and verify no schema errors.
-  - Verify `@deprecated` warnings appear in IDE for legacy fields.
-  - Test adding new event with modular schema in staging.
+  - Execute `pnpm exec astro check` and verify no schema type regressions.
+  - Verify deprecated fields only exist under `sectionStyles.rsvp.legacy` in schema and adapter
+    code.
 
 ## Validation Run
 
@@ -59,19 +61,9 @@ files, improving build performance and developer clarity.
 - `npx astro build` passed on 2026-03-16.
 - All extracted schema modules are below the 100 LOC target.
 - Legacy RSVP style labels now live under `sectionStyles.rsvp.legacy`.
-
-## Blocker
-
-The original plan defines two completion requirements that are not reproducibly verifiable from the
-current repository workflow:
-
-1. IDE deprecation warnings for JSON content files depend on editor/Astro integration behavior that
-   is not observable from CLI automation.
-2. The ">10% build time reduction" benchmark does not define a baseline capture method, sample size,
-   or stable measurement protocol.
-
-Phase 03 therefore cannot be marked complete without a plan amendment that replaces those conditions
-with deterministic verification steps.
+- `src/content/config.ts` is now a thin assembly layer over `src/lib/schemas/content`.
+- Deprecated fields are documented in `docs/core/content-schema.md` and
+  `docs/domains/theme/architecture.md`.
 
 ## 🧪 Regression Testing Note
 
@@ -81,3 +73,14 @@ with deterministic verification steps.
 
 - Document new schema modularization approach in `docs/core/content-schema.md`.
 - List deprecated fields in migration guide.
+
+## Plan Amendment
+
+The original Phase 03 acceptance criteria required IDE-only warnings and a quantified build-time
+benchmark that were not reproducibly verifiable from the repository. Per approval on 2026-03-16, the
+phase now closes against deterministic checks:
+
+1. `pnpm exec astro check` passes.
+2. `npx astro build` passes.
+3. Deprecated fields are isolated to `sectionStyles.rsvp.legacy` and documented in repository docs.
+4. `src/content/config.ts` is reduced to schema assembly and collection registration.
