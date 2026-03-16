@@ -339,21 +339,6 @@ function truncateText(value, maxLength) {
 	return `${text.slice(0, maxLength - 3).trim()}...`;
 }
 
-function compactPath(file, maxLength) {
-	if (file.length <= maxLength) return file;
-	const parts = file.split('/');
-	const basename = parts.at(-1) || file;
-	const candidates = [];
-	if (parts.length >= 4) candidates.push(`${parts[0]}/${parts[1]}/.../${basename}`);
-	if (parts.length >= 3) candidates.push(`${parts[0]}/.../${basename}`);
-	candidates.push(`.../${basename}`);
-	for (const candidate of candidates) {
-		if (candidate.length <= maxLength) return candidate;
-	}
-	if (maxLength <= 4) return basename.slice(-maxLength);
-	return `.../${basename.slice(-(maxLength - 4))}`;
-}
-
 function stemOf(file) {
 	const name = (file.split('/').pop() || file).replace(/\.[^.]+$/, '');
 	return name
@@ -440,16 +425,15 @@ function buildCommitScaffold(split) {
 	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
 	const body = split.files.map((file) => {
 		let description = truncateText(fileDescription(file), DESCRIPTION_MAX_LENGTH);
-		let pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
-		if (pathBudget < 30) {
-			description = truncateText(description, Math.max(10, BULLET_MAX_LENGTH - 38));
-			pathBudget = BULLET_MAX_LENGTH - 4 - description.length;
+		const bulletPrefix = `- ${file}: `;
+		const maxDescriptionLength = Math.max(10, BULLET_MAX_LENGTH - bulletPrefix.length);
+		if (description.length > maxDescriptionLength) {
+			description = truncateText(description, maxDescriptionLength);
 		}
-		const compacted = compactPath(file, Math.max(30, pathBudget));
-		const bullet = `- ${compacted}: ${description}`;
+		const bullet = `${bulletPrefix}${description}`;
 		if (bullet.length <= BULLET_MAX_LENGTH) return bullet;
 		const overshoot = bullet.length - BULLET_MAX_LENGTH;
-		return `- ${compacted}: ${truncateText(description, Math.max(10, description.length - overshoot))}`;
+		return `${bulletPrefix}${truncateText(description, Math.max(10, description.length - overshoot))}`;
 	});
 	return {
 		type: commitType,
@@ -792,7 +776,6 @@ export {
 	autofixCommand,
 	buildCommitScaffold,
 	cleanupCommand,
-	compactPath,
 	fileDescription,
 	inspectCommand,
 	parseArgs,

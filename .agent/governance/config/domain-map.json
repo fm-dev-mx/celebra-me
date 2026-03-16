@@ -8,6 +8,8 @@
         ],
         "auth": [
             "src/lib/rsvp/**",
+            "src/lib/rsvp/services/**",
+            "src/lib/rsvp/repositories/**",
             "src/pages/login.astro",
             "src/pages/api/auth/**",
             "src/pages/api/invitacion/**",

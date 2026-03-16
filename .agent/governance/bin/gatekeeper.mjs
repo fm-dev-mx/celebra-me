@@ -366,16 +366,32 @@ function parseList(txt) {
 		? txt.split('\0').map(np).filter(Boolean)
 		: txt.split(/\r?\n/).map(np).filter(Boolean);
 }
+function expandBraces(pattern) {
+	const normalized = np(pattern);
+	const match = normalized.match(/\{([^{}]+)\}/);
+	if (!match) return [normalized];
+	const variants = match[1]
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+	return variants.flatMap((variant) =>
+		expandBraces(
+			`${normalized.slice(0, match.index)}${variant}${normalized.slice((match.index || 0) + match[0].length)}`,
+		),
+	);
+}
 function globRe(g) {
 	const e = np(g)
 		.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+		.replace(/\*\*\//g, '::DS_DIR::')
 		.replace(/\*\*/g, '::D::')
 		.replace(/\*/g, '[^/]*')
+		.replace(/::DS_DIR::/g, '(?:.*/)?')
 		.replace(/::D::/g, '.*');
 	return new RegExp(`^${e}$`);
 }
 function matchAny(p, gs = []) {
-	return (gs || []).some((g) => globRe(g).test(p));
+	return (gs || []).some((g) => expandBraces(g).some((variant) => globRe(variant).test(p)));
 }
 
 function loadJson(path, fallback) {
@@ -1571,7 +1587,7 @@ function checks(
 		const englishPaths = rule.englishPaths || [];
 		const spanishUiPaths = rule.spanishUiPaths || [];
 		const spanishIndicators =
-			/\b(el|la|los|las|de|para|con|sin|por|que|como|cuando|donde|error|cambio|archivo|actualizar)\b|[áéíóúñ]/i;
+			/\b(el|la|los|las|de|para|con|sin|por|que|como|cuando|donde|cambio|actualizar)\b|[áéíóúñ]/i;
 		const englishIndicators =
 			/\b(the|and|with|from|for|when|where|please|update|fix|change|button|form|submit)\b/i;
 		for (const file of snapshot.files)
