@@ -1,5 +1,21 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.1.0] - 2026-03-16
+
+### Changed
+
+- Completed Phase 06 by replacing invitation-facing hardcoded component colors with semantic CSS
+  variables, removing styling-only `define:vars` usage from the targeted Astro components, and
+  shifting the invitation route wrapper to inline semantic custom properties.
+- Updated styling governance documentation in `docs/core/project-conventions.md` and
+  `docs/domains/theme/architecture.md`.
+
+### Validation
+
+- Confirmed Phase 06 closure against
+  `npx jest tests/unit/invitation.presenter.test.ts tests/unit/style-boundaries.test.ts --runInBand`,
+  `pnpm exec astro check`, and `npx astro build`.
+
 ## [1.0.9] - 2026-03-16
 
 ### Changed
