@@ -14,6 +14,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import { loadPolicy } from './gatekeeper.mjs';
+import { buildCommitlintContext } from '../../../scripts/validate-commits.mjs';
 
 const MAX_ATTEMPTS = 3;
 const SESSION_VERSION = 2;
@@ -60,6 +61,7 @@ function parseArgs(argv) {
 		s0SignatureFile: null,
 		ttlMinutes: null,
 		noAutoBranch: false,
+		commit: false,
 		json: false,
 	};
 	for (let i = 1; i < argv.length; i += 1) {
@@ -72,6 +74,7 @@ function parseArgs(argv) {
 			args.s0SignatureFile = argv[i + 1] || args.s0SignatureFile;
 		if (token === '--ttl-minutes') args.ttlMinutes = Number(argv[i + 1] || DEFAULT_TTL_MINUTES);
 		if (token === '--no-auto-branch') args.noAutoBranch = true;
+		if (token === '--commit') args.commit = true;
 		if (token === '--json') args.json = true;
 	}
 	return normalizeArtifactPaths(args);
@@ -177,7 +180,33 @@ function workflowSettings(policy, args) {
 			'security',
 			'adu',
 		],
+		preflightCommand: resolvePreflightCommand(policy),
 	};
+}
+
+function packageScripts(repoRootPath) {
+	try {
+		const pkg = JSON.parse(readFileSync(resolve(repoRootPath, 'package.json'), 'utf8'));
+		return pkg?.scripts || {};
+	} catch {
+		return {};
+	}
+}
+
+function resolvePreflightCommand(policy) {
+	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
+	if (configured) return configured;
+	const repoScripts = packageScripts(repoRoot());
+	for (const command of policy.workflow?.inspect?.preflightFallbacks || []) {
+		const trimmed = String(command || '').trim();
+		if (!trimmed) continue;
+		if (trimmed === 'pnpm turbo-all' && repoScripts['turbo-all']) return trimmed;
+		if (trimmed === 'pnpm ci' && repoScripts.ci) return trimmed;
+		if (trimmed === 'pnpm lint && pnpm type-check && pnpm test') return trimmed;
+	}
+	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
+	if (repoScripts.ci) return 'pnpm ci';
+	return 'pnpm lint && pnpm type-check && pnpm test';
 }
 
 function checksCsv(checks) {
@@ -307,6 +336,71 @@ function ensureSplit(session, domain) {
 	return split;
 }
 
+function normalizePath(value) {
+	return String(value || '')
+		.replace(/\\/g, '/')
+		.trim();
+}
+
+function groupedReasons(report) {
+	return {
+		unmappedFiles: report?.adu?.unmappedFiles || [],
+		blockingFindings: report?.blockingFindings || [],
+		s0Drift: report?.s0Drift?.hasDrift ? report.s0Drift : null,
+		sessionInvalidReason: report?.session?.invalidReason || null,
+	};
+}
+
+function inferredPlanDomain(file) {
+	const normalized = normalizePath(file);
+	const match = normalized.match(/^\.agent\/plans\/([^/]+)\//);
+	if (!match) return null;
+	return `gov-plans-${match[1]}`;
+}
+
+function printArchitecturalInterventionGuidance(report, settings) {
+	const reasons = groupedReasons(report);
+	console.log('⛔ Architectural intervention required before staging or committing.');
+	console.log(`🔎 Recommended pre-flight: ${settings.preflightCommand}`);
+	if (reasons.unmappedFiles.length) {
+		console.log('• Unmapped files:');
+		for (const file of reasons.unmappedFiles) {
+			console.log(`  - ${file}`);
+		}
+		const suggested = inferredPlanDomain(reasons.unmappedFiles[0]);
+		if (suggested) {
+			console.log(
+				`  Action: add domain "${suggested}" to .agent/governance/config/domain-map.json and re-run inspect.`,
+			);
+		} else {
+			console.log(
+				'  Action: add a matching domain entry in .agent/governance/config/domain-map.json and re-run inspect.',
+			);
+		}
+	}
+	if (reasons.blockingFindings.length) {
+		console.log('• Blocking findings:');
+		for (const finding of reasons.blockingFindings.slice(0, 5)) {
+			console.log(
+				`  - ${finding.ruleId || finding.id || 'finding'}: ${finding.message || 'resolve the reported issue'}`,
+			);
+		}
+		console.log(
+			'  Action: resolve the blocking findings, stage intentionally, and re-run inspect.',
+		);
+	}
+	if (reasons.s0Drift) {
+		console.log('• S0 drift:');
+		console.log('  Action: run cleanup, restage the intended split, and restart the workflow.');
+	}
+	if (reasons.sessionInvalidReason) {
+		console.log('• Session state:');
+		console.log(
+			`  Action: session invalid because ${reasons.sessionInvalidReason}; run cleanup and re-run inspect.`,
+		);
+	}
+}
+
 function inferCommitType(files) {
 	const lowered = files.map((file) => file.toLowerCase());
 	if (
@@ -328,6 +422,33 @@ function inferCommitType(files) {
 	if (lowered.every((file) => file.startsWith('scripts/') || file.startsWith('.agent/')))
 		return 'chore';
 	return 'feat';
+}
+
+function inferDominantFileCluster(files) {
+	const normalized = files.map(normalizePath);
+	if (!normalized.length) return { kind: 'generic', target: 'change set' };
+	if (normalized.some((file) => file.startsWith('src/lib/presenters/'))) {
+		if (normalized.some((file) => file.startsWith('src/pages/'))) {
+			return { kind: 'presenter-route', target: 'invitation presenter-driven route' };
+		}
+		return { kind: 'presenter', target: 'invitation page presenter' };
+	}
+	if (
+		normalized.some((file) => file.startsWith('src/components/invitation/')) &&
+		normalized.some((file) => file.startsWith('src/pages/[eventType]/'))
+	) {
+		return { kind: 'invitation-route', target: 'invitation route rendering' };
+	}
+	if (normalized.every((file) => file.startsWith('.agent/plans/'))) {
+		return { kind: 'plan', target: 'plan status and validation notes' };
+	}
+	if (normalized.every((file) => file.startsWith('tests/'))) {
+		return { kind: 'test', target: 'workflow coverage' };
+	}
+	if (normalized.every((file) => file.startsWith('docs/'))) {
+		return { kind: 'docs', target: 'governance guidance' };
+	}
+	return { kind: 'generic', target: scaffoldTarget({ files }) || 'change set' };
 }
 
 function truncateText(value, maxLength) {
@@ -373,9 +494,43 @@ function scaffoldTarget(split) {
 	return normalizeStem(target).replace(/-/g, ' ');
 }
 
-function fileDescription(file) {
+function describeFileChange(file, splitContext = {}) {
 	const stem = stemOf(file).toLowerCase();
 	const normalizedStem = stem.replace(/-/g, ' ');
+	const dominantCluster = splitContext.dominantCluster?.kind || 'generic';
+
+	if (file.startsWith('src/lib/presenters/') && file.endsWith('.ts')) {
+		return 'assemble invitation props from content and context';
+	}
+	if (file.startsWith('src/pages/') && file.endsWith('.astro')) {
+		return dominantCluster === 'presenter-route'
+			? 'reduce the route to guest loading and presenter rendering'
+			: 'reduce the route to data loading and presenter rendering';
+	}
+	if (file.startsWith('src/components/invitation/') && file.endsWith('.astro')) {
+		return 'extract invitation section rendering into a dedicated component';
+	}
+	if (file.startsWith('tests/unit/') && file.includes('invitation.presenter.test')) {
+		return 'cover presenter outputs with fixture-based tests';
+	}
+	if (file.endsWith('/manifest.json') && file.startsWith('.agent/plans/')) {
+		return 'update plan status, blockers, and phase metadata';
+	}
+	if (file.endsWith('/CHANGELOG.md') && file.startsWith('.agent/plans/')) {
+		return 'log delivered work, validation runs, and remaining blockers';
+	}
+	if (/^\.agent\/plans\/.+\/phases\/\d{2}-/.test(file)) {
+		return 'document delivered scope, validation, and unresolved blockers';
+	}
+	if (file.endsWith('/README.md') && file.startsWith('.agent/plans/')) {
+		return 'mark the plan status and summarize verified implementation progress';
+	}
+	if (file === 'docs/core/architecture.md') {
+		return 'define presenters as the BFF assembly layer for complex routes';
+	}
+	if (file === 'docs/core/project-conventions.md') {
+		return 'document the presenters folder convention and route-facing usage guidance';
+	}
 
 	if (file.includes('/schemas/')) return `add ${normalizedStem} schema definition`;
 	if (file.includes('config.ts') && file.includes('/content/'))
@@ -397,49 +552,55 @@ function fileDescription(file) {
 function headerSubject(scope, split) {
 	const commitType = inferCommitType(split.files);
 	const baseDomain = split.baseDomain || scope;
-	const target = truncateText(scaffoldTarget(split), 18);
+	const dominantCluster = inferDominantFileCluster(split.files);
+	const target = dominantCluster.target || scaffoldTarget(split);
 	const candidates = [];
 
-	if (baseDomain.startsWith('gov-plans-archive')) {
-		candidates.push(`archive ${target} plan files`);
+	if (baseDomain.startsWith('gov-plans-archive'))
+		candidates.push('archive hardening fixture plan files');
+	if (dominantCluster.kind === 'presenter-route') {
+		candidates.push(`implement ${target}`);
+		candidates.push('refactor invitation route rendering');
 	}
-	if (baseDomain.startsWith('gov-plans-')) {
-		candidates.push(`update ${target} plan`);
+	if (dominantCluster.kind === 'presenter') {
+		candidates.push(`implement ${target}`);
 	}
-	if (commitType === 'test') {
-		candidates.push(`add ${target} test coverage`);
+	if (dominantCluster.kind === 'invitation-route') {
+		candidates.push(`refactor ${target}`);
 	}
-	if (commitType === 'style') {
-		candidates.push(`update ${target} styles`);
+	if (dominantCluster.kind === 'plan') {
+		candidates.push('document plan status and blockers');
+		candidates.push('clarify plan validation blockers');
 	}
-	if (baseDomain.startsWith('gov-tooling')) {
-		candidates.push(`update ${target} tooling`);
+	if (dominantCluster.kind === 'docs') {
+		candidates.push(`document ${target}`);
 	}
-	if (baseDomain.startsWith('gov-infra')) {
-		candidates.push(`update ${target} infrastructure`);
+	if (dominantCluster.kind === 'test') {
+		candidates.push(`add ${target}`);
 	}
+	if (baseDomain.startsWith('gov-tooling')) candidates.push(`refine ${target}`);
 	if (baseDomain === 'core' && split.files.some((f) => f.includes('/schemas/'))) {
-		candidates.push(`extract ${target} into modular schemas`);
+		candidates.push(`extract ${truncateText(scaffoldTarget(split), 24)} into modular schemas`);
 	}
-	if (baseDomain === 'core' && split.files.some((f) => f.includes('config.ts'))) {
-		candidates.push(`refactor ${target} configuration`);
-	}
-
-	candidates.push(`update ${target} files`);
+	candidates.push(`update ${truncateText(scaffoldTarget(split), 24)} scope`);
 	return (
 		candidates
 			.map((value) => value.replace(/\s+/g, ' ').trim())
 			.find((value) => `${commitType}(${scope}): ${value}`.length <= HEADER_MAX_LENGTH) ||
-		'update scoped files'
+		'refine scoped change set'
 	);
 }
 
 function buildCommitScaffold(split) {
 	const commitType = inferCommitType(split.files);
 	const scope = split.id;
+	const dominantCluster = inferDominantFileCluster(split.files);
 	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
 	const body = split.files.map((file) => {
-		let description = truncateText(fileDescription(file), DESCRIPTION_MAX_LENGTH);
+		let description = truncateText(
+			describeFileChange(file, { split, dominantCluster }),
+			DESCRIPTION_MAX_LENGTH,
+		);
 		const bulletPrefix = `- ${file}: `;
 		const maxDescriptionLength = Math.max(10, BULLET_MAX_LENGTH - bulletPrefix.length);
 		if (description.length > maxDescriptionLength) {
@@ -456,6 +617,52 @@ function buildCommitScaffold(split) {
 		header,
 		body,
 		fullMessage: `${header}\n\n${body.join('\n')}`,
+	};
+}
+
+function getStagedDiffEntries() {
+	const result = run('git', ['diff', '--cached', '--name-status', '--find-renames']);
+	if (result.status !== 0) fail('Unable to read staged diff entries.');
+	return String(result.stdout || '')
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const parts = line.split('\t').filter(Boolean);
+			const rawStatus = parts[0] || 'M';
+			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
+			const path = normalizePath(parts[parts.length - 1]);
+			const area =
+				path.startsWith('docs/') || path.endsWith('.md') || path.endsWith('.mdx')
+					? 'docs'
+					: path.startsWith('tests/') ||
+						  path.includes('.test.') ||
+						  path.includes('.spec.')
+						? 'test'
+						: path.startsWith('src/assets/')
+							? 'asset'
+							: path.startsWith('scripts/') || path.startsWith('.agent/')
+								? 'script'
+								: path.endsWith('.json') || path.endsWith('.cjs')
+									? 'config'
+									: 'source';
+			return { path, status, area };
+		});
+}
+
+function validateGeneratedCommitMessage(message, split) {
+	const files = split.files.map(normalizePath);
+	const diffEntries = getStagedDiffEntries().filter((entry) => files.includes(entry.path));
+	const result = run('npx', ['commitlint'], {
+		input: `${message.trim()}\n`,
+		env: {
+			...process.env,
+			...buildCommitlintContext(files, diffEntries),
+		},
+	});
+	return {
+		ok: result.status === 0,
+		output: [result.stdout, result.stderr].filter(Boolean).join('\n').trim(),
 	};
 }
 
@@ -531,9 +738,7 @@ function inspectCommand(args) {
 		console.log(`📦 Suggested splits: ${(session.suggestedSplits || []).length}`);
 		console.log(`🗂️ Session file: ${args.sessionFile}`);
 		if (session.workflowRoute === 'architectural_intervention') {
-			console.log(
-				'⛔ Resolve blocking findings, unmapped files, or session drift before committing.',
-			);
+			printArchitecturalInterventionGuidance(session.fullReport || preflightReport, settings);
 		}
 		return;
 	}
@@ -563,9 +768,7 @@ function inspectCommand(args) {
 	console.log(`📦 Suggested splits: ${(report.adu?.suggestedSplits || []).length}`);
 	console.log(`🗂️ Session file: ${args.sessionFile}`);
 	if (report.workflowRoute === 'architectural_intervention') {
-		console.log(
-			'⛔ Resolve blocking findings, unmapped files, or session drift before committing.',
-		);
+		printArchitecturalInterventionGuidance(report, settings);
 	}
 }
 
@@ -659,6 +862,11 @@ function stageCommand(args) {
 		cleanupArtifacts(args);
 		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
 	}
+	if (session.workflowRoute !== 'proceed_adu') {
+		fail(
+			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before staging.`,
+		);
+	}
 	refreshSessionFile(session, args, settings, {
 		preflightReport: session?.preflightReport || null,
 	});
@@ -703,6 +911,14 @@ function scaffoldCommand(args) {
 	});
 	const split = ensureSplit(session, args.domain);
 	const scaffold = buildCommitScaffold(split);
+	if (!args.json) {
+		const validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split);
+		if (!validationResult.ok) {
+			fail(
+				`Generated scaffold does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
+			);
+		}
+	}
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
 		return;
@@ -710,9 +926,18 @@ function scaffoldCommand(args) {
 
 	console.log('📝 Commit message generated:');
 	console.log(scaffold.fullMessage);
+	if (args.commit) {
+		console.log(
+			'\n⚠️ --commit is deprecated; use "gatekeeper-workflow commit --domain <id>" instead.',
+		);
+		executeCommit(scaffold.fullMessage);
+	}
+}
+
+function executeCommit(message) {
 	console.log('\n🔄 Executing git commit...');
 	const tempFile = `.git/COMMIT_EDITMSG_${Date.now()}`;
-	writeFileSync(tempFile, scaffold.fullMessage, 'utf8');
+	writeFileSync(tempFile, message, 'utf8');
 	const result = run('git', ['commit', '-F', tempFile]);
 	try {
 		unlinkSync(tempFile);
@@ -724,6 +949,38 @@ function scaffoldCommand(args) {
 		fail('Git commit failed. Check the message format.');
 	}
 	console.log('✅ Commit created successfully.');
+}
+
+function commitCommand(args) {
+	if (!args.domain) fail('The commit command requires --domain <id>.');
+	const policy = loadPolicy(args.policyFile);
+	const settings = workflowSettings(policy, args);
+	const session = loadSession(args.sessionFile);
+	const validation = structuralSessionValidation(session, args, settings);
+	if (!validation.ok) {
+		cleanupArtifacts(args);
+		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
+	}
+	if (session.workflowRoute !== 'proceed_adu') {
+		fail(
+			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before committing.`,
+		);
+	}
+	const split = ensureSplit(session, args.domain);
+	const scaffold = buildCommitScaffold(split);
+	const validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split);
+	if (!validationResult.ok) {
+		fail(
+			`Generated commit message does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
+		);
+	}
+	if (args.json) {
+		console.log(JSON.stringify(scaffold, null, 2));
+		return;
+	}
+	console.log('📝 Commit message validated:');
+	console.log(scaffold.fullMessage);
+	executeCommit(scaffold.fullMessage);
 }
 
 function syncS0Command(args) {
@@ -768,6 +1025,9 @@ function main() {
 		case 'scaffold':
 			scaffoldCommand(args);
 			return;
+		case 'commit':
+			commitCommand(args);
+			return;
 		case 'sync-s0':
 			syncS0Command(args);
 			return;
@@ -791,11 +1051,16 @@ export {
 	autofixCommand,
 	buildCommitScaffold,
 	cleanupCommand,
-	fileDescription,
+	describeFileChange as fileDescription,
 	inspectCommand,
 	parseArgs,
+	printArchitecturalInterventionGuidance,
 	runGatekeeper,
 	scaffoldCommand,
+	commitCommand,
+	describeFileChange,
+	inferDominantFileCluster,
+	validateGeneratedCommitMessage,
 	sessionAgeMinutes,
 	stageCommand,
 	structuralSessionValidation,

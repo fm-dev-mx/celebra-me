@@ -38,7 +38,13 @@
         "inspect": {
             "preflightChecks": ["governance", "adu"],
             "heavyChecks": ["governance", "lint", "typecheck", "security", "adu"],
-            "typecheckSkipPatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"]
+            "typecheckSkipPatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"],
+            "preflightCommand": "",
+            "preflightFallbacks": [
+                "pnpm turbo-all",
+                "pnpm ci",
+                "pnpm lint && pnpm type-check && pnpm test"
+            ]
         }
     },
     "s0Drift": {
