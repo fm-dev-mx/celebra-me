@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { dirname } from 'path';
 import { spawnSync } from 'child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
@@ -52,15 +53,147 @@ function getCommitFiles(commitHash) {
 		: [];
 }
 
-function validateCommitMessage(message, commitHash, files) {
+function normalizePath(file) {
+	return String(file || '')
+		.replace(/\\/g, '/')
+		.trim();
+}
+
+function classifyFileArea(file) {
+	const normalized = normalizePath(file).toLowerCase();
+	if (!normalized) return 'source';
+	if (
+		normalized.startsWith('docs/') ||
+		normalized.endsWith('.md') ||
+		normalized.endsWith('.mdx')
+	) {
+		return 'docs';
+	}
+	if (
+		normalized.startsWith('tests/') ||
+		normalized.includes('.test.') ||
+		normalized.includes('.spec.')
+	) {
+		return 'test';
+	}
+	if (
+		normalized.startsWith('src/assets/') ||
+		/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(normalized)
+	) {
+		return 'asset';
+	}
+	if (
+		normalized.startsWith('scripts/') ||
+		normalized.startsWith('.agent/') ||
+		normalized.endsWith('.mjs') ||
+		normalized.endsWith('.sh')
+	) {
+		return 'script';
+	}
+	if (
+		normalized.endsWith('.json') ||
+		normalized.endsWith('.yml') ||
+		normalized.endsWith('.yaml') ||
+		normalized.endsWith('.toml') ||
+		normalized.endsWith('.ini') ||
+		normalized.endsWith('.cjs')
+	) {
+		return 'config';
+	}
+	return 'source';
+}
+
+function classifyGroupKind(files) {
+	const areas = new Set(files.map((file) => classifyFileArea(file)));
+	if (areas.size === 1) return `${Array.from(areas)[0]}-group`;
+	return 'mixed-group';
+}
+
+function suggestFileGroups(files) {
+	const groups = new Map();
+	for (const file of files.map(normalizePath)) {
+		const dir = normalizePath(dirname(file));
+		const key = dir === '.' ? file : `${dir}/`;
+		if (!groups.has(key)) groups.set(key, []);
+		groups.get(key).push(file);
+	}
+	return Array.from(groups.entries())
+		.map(([key, groupFiles]) => ({
+			key,
+			files: groupFiles.sort((a, b) => a.localeCompare(b)),
+			kind: classifyGroupKind(groupFiles),
+		}))
+		.sort((a, b) => a.key.localeCompare(b.key));
+}
+
+function summarizeDiffEntries(entries) {
+	const kindCounts = new Map();
+	const areaCounts = new Map();
+	for (const entry of entries) {
+		const normalizedStatus =
+			entry.status === 'A'
+				? 'add'
+				: entry.status === 'D'
+					? 'delete'
+					: entry.status === 'R'
+						? 'rename'
+						: 'modify';
+		kindCounts.set(normalizedStatus, (kindCounts.get(normalizedStatus) || 0) + 1);
+		areaCounts.set(entry.area, (areaCounts.get(entry.area) || 0) + 1);
+	}
+	const dominantKind =
+		kindCounts.size === 1
+			? Array.from(kindCounts.keys())[0]
+			: Array.from(kindCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+	const dominantArea =
+		areaCounts.size === 1
+			? Array.from(areaCounts.keys())[0]
+			: Array.from(areaCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+	return {
+		dominantKind: kindCounts.size > 1 ? 'mixed' : dominantKind,
+		dominantArea: areaCounts.size > 1 ? dominantArea : dominantArea,
+	};
+}
+
+function getCommitDiffEntries(commitHash) {
+	const diff = run('git', ['show', '--name-status', '--format=', '--find-renames', commitHash]);
+	if (!diff.stdout) return [];
+	return diff.stdout
+		.split('\n')
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const parts = line.split('\t').filter(Boolean);
+			const rawStatus = parts[0] || 'M';
+			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
+			const path = normalizePath(parts[parts.length - 1]);
+			return { path, status, area: classifyFileArea(path) };
+		});
+}
+
+function buildCommitlintContext(files, diffEntries) {
+	const normalizedFiles = files.map(normalizePath);
+	const groups = suggestFileGroups(normalizedFiles);
+	const summary = summarizeDiffEntries(diffEntries);
+	return {
+		COMMITLINT_STAGED_FILES: normalizedFiles.join('\n'),
+		COMMITLINT_DIFF_JSON: JSON.stringify(diffEntries),
+		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify(groups),
+		COMMITLINT_DOMINANT_CHANGE_KIND: summary.dominantKind,
+		COMMITLINT_DOMINANT_AREA: summary.dominantArea,
+	};
+}
+
+function validateCommitMessage(message, commitHash, files, diffEntries) {
 	const tmpDir = mkdtempSync(join(tmpdir(), 'commitlint-'));
 	const tmpFile = join(tmpDir, `${commitHash}.txt`);
 	try {
 		writeFileSync(tmpFile, `${message.trim()}\n`, 'utf8');
+		const commitlintEnv = buildCommitlintContext(files, diffEntries);
 		const result = run('npx', ['commitlint', '--edit', tmpFile], {
 			env: {
 				...process.env,
-				COMMITLINT_STAGED_FILES: files.join('\n'),
+				...commitlintEnv,
 			},
 		});
 		return {
@@ -84,6 +217,14 @@ function validateCommitMessage(message, commitHash, files) {
 function validateAtomicity(files) {
 	const limit = atomicityLimit();
 	if (files.length > limit) {
+		const groups = suggestFileGroups(files);
+		const areaCount = new Set(files.map((file) => classifyFileArea(file))).size;
+		if (groups.length <= limit && areaCount <= 2) {
+			return {
+				ok: true,
+				message: `Grouped ${files.length} files into ${groups.length} coherent paths for atomicity.`,
+			};
+		}
 		return {
 			ok: false,
 			message: `Commit touches ${files.length} files (max ${limit} for ADU policy).`,
@@ -101,8 +242,9 @@ function validateCommit(commitHash) {
 	}
 
 	const files = getCommitFiles(commitHash);
+	const diffEntries = getCommitDiffEntries(commitHash);
 	console.log(`  Subject: ${commit.subject}`);
-	const conventional = validateCommitMessage(commit.full, commitHash, files);
+	const conventional = validateCommitMessage(commit.full, commitHash, files, diffEntries);
 	if (!conventional.ok) {
 		console.error('  ❌ Conventional Commit validation failed');
 		if (conventional.output) console.error(`  ${conventional.output}`);
@@ -169,4 +311,11 @@ if (isMain) {
 	main();
 }
 
-export { validateCommit };
+export {
+	buildCommitlintContext,
+	classifyFileArea,
+	getCommitDiffEntries,
+	suggestFileGroups,
+	summarizeDiffEntries,
+	validateCommit,
+};

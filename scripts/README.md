@@ -44,3 +44,11 @@ Use `.agent/governance/bin/gatekeeper-workflow.mjs` for commit orchestration:
 - `.git/` session lifecycle is owned by `gatekeeper-workflow.mjs`.
 - Hook execution order is owned by `.husky/*`.
 - Documentation explains commands and owners; it does not duplicate executable logic.
+
+## Commit Message Contract
+
+- Subjects must follow `type(scope): verb target`.
+- Subjects must describe the dominant change, not commit bookkeeping.
+- Multi-file or complex commits require path-aware bullets in the body.
+- Bodies may use one bullet per file or one bullet per coherent file group.
+- Each bullet must use a real file or folder path followed by a concise action-led description.

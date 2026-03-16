@@ -169,4 +169,29 @@ describe('Gatekeeper workflow hardening', () => {
 			expect(line.startsWith('- ')).toBe(true);
 		}
 	});
+
+	it('derives commitlint diff context for grouped atomic commits', () => {
+		const result = runNodeJson(`
+			import { buildCommitlintContext } from './scripts/validate-commits.mjs';
+			const files = [
+				'src/assets/images/events/demo-cumple/hero.webp',
+				'src/assets/images/events/demo-cumple/gallery-01.webp',
+				'src/assets/images/events/demo-cumple/index.ts',
+			];
+			const entries = [
+				{ path: files[0], status: 'A', area: 'asset' },
+				{ path: files[1], status: 'A', area: 'asset' },
+				{ path: files[2], status: 'A', area: 'source' },
+			];
+			console.log(JSON.stringify(buildCommitlintContext(files, entries)));
+		`);
+
+		expect(result.COMMITLINT_DOMINANT_CHANGE_KIND).toBe('add');
+		expect(result.COMMITLINT_DOMINANT_AREA).toBe('asset');
+		expect(JSON.parse(result.COMMITLINT_FILE_GROUPS_JSON)).toContainEqual(
+			expect.objectContaining({
+				key: 'src/assets/images/events/demo-cumple/',
+			}),
+		);
+	});
 });

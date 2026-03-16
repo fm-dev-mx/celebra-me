@@ -63,9 +63,13 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
 
 - Conventional Commit header is required.
 - Scope must be one of the governance domains.
-- Vague subject language is rejected.
+- Subject must use `type(scope): verb target` and describe the dominant change.
+- Process bookkeeping language such as `record ... scope` is rejected.
 - Multi-file or complex commits require a body.
-- Required bodies must use file-path bullets in `- path/to/file.ext: description` format.
+- Required bodies must use path-aware bullets in one of these formats:
+  `- path/to/file.ext: description` `- path/to/folder/: description`
+  `- path/to/prefix/**: description`
+- Bodies may group small coherent file sets when the commit is still atomic.
 
 If these rules change, update `commitlint.config.cjs` first and then update this document to match
 the executable owner.
