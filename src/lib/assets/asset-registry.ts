@@ -90,15 +90,17 @@ interface Registry {
 	common: CommonAssets;
 }
 
+import { discoverEventModules } from './discovery';
+
 // --- DYNAMIC DISCOVERY ---
 
 /**
  * Automatically find all event asset modules.
  */
-const EVENT_ASSET_MODULES = import.meta.glob('../../assets/images/events/*/index.ts', {
-	import: 'assets',
-	eager: true,
-}) as Record<string, EventAssets & { gallery?: ImageMetadata[] }>;
+const EVENT_ASSET_MODULES = (discoverEventModules() || {}) as Record<
+	string,
+	EventAssets & { gallery?: ImageMetadata[] }
+>;
 
 /**
  * Helper to extract slug from path:
