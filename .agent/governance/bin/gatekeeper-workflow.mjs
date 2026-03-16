@@ -541,12 +541,12 @@ function describeFileChange(file, splitContext = {}) {
 	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
 	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
 	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
-	if (file.endsWith('.json')) return `update ${normalizedStem || 'json'} configuration`;
+	if (file.endsWith('.json')) return `update ${normalizedStem || 'json'} implementation`;
 	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
 	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
 	if (file.endsWith('.sh')) return 'configure hook execution';
 	if (file.endsWith('.schema.ts')) return `add ${normalizedStem} schema`;
-	return `update ${normalizedStem || 'file'} configuration`;
+	return `update ${normalizedStem || 'file'} implementation`;
 }
 
 function headerSubject(scope, split) {
