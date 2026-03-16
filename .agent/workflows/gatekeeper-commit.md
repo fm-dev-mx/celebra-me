@@ -13,7 +13,7 @@ lifecycle, and split staging to executable scripts. Markdown describes sequence 
 
 ## Pre-flight
 
-// turbo-all
+Verify no obvious blockers by running lint and typecheck manually if needed.
 
 ## Routine
 
@@ -32,6 +32,9 @@ lifecycle, and split staging to executable scripts. Markdown describes sequence 
 
 2. Read `workflowRoute` from the workflow report:
    - `architectural_intervention`: stop and resolve blockers, unmapped files, or session drift.
+     - If unmapped files are in `.agent/plans/`, add a new domain to
+       `.agent/governance/config/domain-map.json` following the pattern
+       `gov-plans-<directory-name>`.
    - `auto_fix`: run `pnpm gatekeeper:workflow:autofix`, then inspect again.
    - `proceed_adu`: continue with deterministic domain staging.
 
