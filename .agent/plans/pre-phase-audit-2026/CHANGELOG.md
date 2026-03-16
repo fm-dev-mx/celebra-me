@@ -1,5 +1,19 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.6] - 2026-03-16
+
+### Changed
+
+- Amended Phase 04 acceptance criteria to use deterministic repository checks instead of the
+  missing `test:unit` workflow and undefined visual regression requirement.
+- Marked Phase 04 complete after reconciling the approved acceptance criteria with the implemented
+  presenter layer and documentation updates.
+
+### Validation
+
+- Confirmed Phase 04 closure against `pnpm exec astro check`, `npx astro build`, and
+  `npx jest tests/unit/invitation.presenter.test.ts --runInBand`.
+
 ## [1.0.5] - 2026-03-16
 
 ### Changed

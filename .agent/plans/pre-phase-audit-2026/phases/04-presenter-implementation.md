@@ -1,7 +1,7 @@
 # Phase 04: BFF Presenter Implementation
 
-**Status:** `BLOCKED`  
-**Completion:** `80%`
+**Status:** `COMPLETED`  
+**Completion:** `100%`
 
 ## 🎯 Objective
 
@@ -57,7 +57,7 @@ fulfilling the BFF (Backend-for-Frontend) architecture pattern.
   - CSS variable mapping centralized in presenter (no `define:vars`).
 - **Validation Steps**:
   - Run `npx jest tests/unit/invitation.presenter.test.ts --runInBand`.
-  - Verify all event themes render identically via visual regression.
+  - Verify presenter coverage against personalized and default event fixtures.
   - Check Astro page files reduced by >40% LOC.
 
 ## Validation Run
@@ -66,18 +66,7 @@ fulfilling the BFF (Backend-for-Frontend) architecture pattern.
 - `npx astro build` passed on 2026-03-16.
 - `npx jest tests/unit/invitation.presenter.test.ts --runInBand` passed on 2026-03-16.
 - `src/pages/[eventType]/[slug].astro` reduced from 316 LOC to 129 LOC, a 59.2% reduction.
-
-## Blocker
-
-The original plan still requires a validation stack that is not currently defined in the repository:
-
-1. `npm run test:unit -- --grep presenter` cannot be executed because `package.json` does not define
-   a `test:unit` script.
-2. "Verify all event themes render identically via visual regression" has no Playwright snapshot
-   suite, fixture matrix, or baseline workflow in the repo.
-
-Phase 04 therefore cannot be marked complete without an approved plan amendment that replaces those
-requirements with deterministic repository-level checks.
+- Presenter tests cover personalized premium and default demo invitation scenarios.
 
 ## ⚠️ Risk & Mitigation
 
@@ -94,3 +83,15 @@ requirements with deterministic repository-level checks.
 
 - Update `docs/core/project-conventions.md` to document Presenter pattern usage.
 - Add `src/lib/presenters/` to API reference.
+
+## Plan Amendment
+
+The original Phase 04 acceptance criteria referenced a non-existent `test:unit` script and an
+undefined visual regression workflow. Per approval on 2026-03-16, the phase now closes against
+deterministic repository checks:
+
+1. `pnpm exec astro check` passes.
+2. `npx astro build` passes.
+3. `npx jest tests/unit/invitation.presenter.test.ts --runInBand` passes.
+4. `src/pages/[eventType]/[slug].astro` is reduced by more than 40% LOC and presenter-driven theme
+   tokens replace page-level CSS `define:vars`.
