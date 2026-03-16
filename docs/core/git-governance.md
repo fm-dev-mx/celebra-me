@@ -76,6 +76,19 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
 If these rules change, update `commitlint.config.cjs` first and then update this document to match
 the executable owner.
 
+### STRONG_VERBS Strategy
+
+The `STRONG_VERBS` list in `commitlint.config.cjs` enforces the use of decisive, action-oriented
+vocabulary in commit subjects. While specific verbs like `implement` or `refactor` are preferred,
+generic verbs like `update` are permitted when used with a concrete target to maintain a balance
+between precision and developer flexibility.
+
+### Environment Configuration
+
+Project-level configurations in `.npmrc` should prioritize standard, cross-tool compatible flags.
+The use of `install-strategy=hoisted` replaces the deprecated `node-linker` setting to ensure
+compatibility across modern versions of npm and pnpm while maintaining required hoisting behaviors.
+
 ---
 
 ## ADU Contract
@@ -111,6 +124,8 @@ edits.
 
 ## Changelog
 
+- **2026-03-16**: Expanded STRONG_VERBS in commitlint to include 'update' and migrated .npmrc to
+  modern install-strategy. Added documentation sections for verb strategy and environment config.
 - **2026-03-15**: Added lean workflow report profile, workflow-owned session lifecycle, and
   commit-range validation alignment.
 

@@ -59,6 +59,7 @@ const STRONG_VERBS = new Set([
 	'standardize',
 	'sync',
 	'synchronize',
+	'update',
 ]);
 const GENERIC_TARGETS = new Set([
 	'change',
