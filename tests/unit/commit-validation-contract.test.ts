@@ -168,4 +168,54 @@ docs(gov-plans-archive): archive ximena-overhaul plan files
 
 		expect(result.status).toBe(0);
 	});
+
+	it('rejects ellipsis in commit body path bullets', () => {
+		const files = [
+			'src/lib/rsvp/repositories/guest.repository.ts',
+			'src/lib/rsvp/services/dashboard-guest-query.service.ts',
+		];
+		const result = lintMessage(
+			`
+refactor(auth): standardize guest repository flows
+
+- src/lib/.../guest.repository.ts: refine guest persistence logic
+			`,
+			{
+				COMMITLINT_STAGED_FILES: files.join('\n'),
+				COMMITLINT_DIFF_JSON: JSON.stringify(
+					files.map((file) => ({ path: file, status: 'M', area: 'source' })),
+				),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
+				COMMITLINT_DOMINANT_AREA: 'source',
+			},
+		);
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('ellipsis (...) is not allowed');
+	});
+
+	it('accepts full relative paths in commit body path bullets', () => {
+		const files = [
+			'src/lib/rsvp/repositories/guest.repository.ts',
+			'src/lib/rsvp/services/dashboard-guest-query.service.ts',
+		];
+		const result = lintMessage(
+			`
+refactor(auth): standardize guest repository flows
+
+- src/lib/rsvp/repositories/guest.repository.ts: refine guest persistence logic
+- src/lib/rsvp/services/dashboard-guest-query.service.ts: align dashboard query orchestration
+			`,
+			{
+				COMMITLINT_STAGED_FILES: files.join('\n'),
+				COMMITLINT_DIFF_JSON: JSON.stringify(
+					files.map((file) => ({ path: file, status: 'M', area: 'source' })),
+				),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
+				COMMITLINT_DOMINANT_AREA: 'source',
+			},
+		);
+
+		expect(result.status).toBe(0);
+	});
 });

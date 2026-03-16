@@ -67,6 +67,23 @@ describe('Gatekeeper workflow hardening', () => {
 		expect(required).toMatchObject({ run: true, status: 'not_run' });
 	});
 
+	it('matches english governance globs with nested and top-level paths', () => {
+		const result = runNodeJson(`
+			import { matchAny } from './.agent/governance/bin/gatekeeper.mjs';
+			console.log(JSON.stringify({
+				docsRoot: matchAny('docs/tmp-gatekeeper-spanish.md', ['docs/**/*.md']),
+				scriptsRoot: matchAny('scripts/tmp-gatekeeper-spanish.mjs', ['scripts/**/*.mjs']),
+				srcBrace: matchAny('src/lib/rsvp/service.ts', ['src/**/*.{ts,tsx,astro,mjs,jsx}']),
+			}));
+		`);
+
+		expect(result).toEqual({
+			docsRoot: true,
+			scriptsRoot: true,
+			srcBrace: true,
+		});
+	});
+
 	it('scopes S0 drift bypass to ignored plan files only', () => {
 		const tempDir = mkdtempSync(join(tmpdir(), 'gatekeeper-s0-'));
 		const signatureFile = join(tempDir, 's0-signature.json');
@@ -148,7 +165,7 @@ describe('Gatekeeper workflow hardening', () => {
 		}
 	});
 
-	it('builds compact scaffold output within commit budgets', () => {
+	it('builds scaffold output with full paths and truncated descriptions', () => {
 		const scaffold = runNodeJson(`
 			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
 			const split = {
@@ -164,9 +181,19 @@ describe('Gatekeeper workflow hardening', () => {
 
 		expect(scaffold.header.length).toBeLessThanOrEqual(72);
 		expect(scaffold.body).toHaveLength(2);
+		expect(
+			scaffold.body[0].startsWith(
+				'- .agent/plans/archive/extremely-long-feature-name-with-many-segments/phases/01-very-long-phase-name.md: ',
+			),
+		).toBe(true);
+		expect(
+			scaffold.body[1].startsWith(
+				'- .agent/plans/archive/extremely-long-feature-name-with-many-segments/manifest.json: ',
+			),
+		).toBe(true);
 		for (const line of scaffold.body) {
-			expect(line.length).toBeLessThanOrEqual(100);
-			expect(line.startsWith('- ')).toBe(true);
+			const [pathSpec] = line.replace(/^- /, '').split(': ', 1);
+			expect(pathSpec).not.toContain('...');
 		}
 	});
 
