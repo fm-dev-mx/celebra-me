@@ -541,7 +541,7 @@ function describeFileChange(file, splitContext = {}) {
 	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
 	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
 	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
-	if (file.endsWith('.json')) return `set ${normalizedStem || 'json'} configuration`;
+	if (file.endsWith('.json')) return `update ${normalizedStem || 'json'} configuration`;
 	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
 	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
 	if (file.endsWith('.sh')) return 'configure hook execution';
@@ -578,11 +578,13 @@ function headerSubject(scope, split) {
 	if (dominantCluster.kind === 'test') {
 		candidates.push(`add ${target}`);
 	}
+	if (baseDomain === 'gov-agent-config') candidates.push(`harden gatekeeper workflow logic`);
+	if (baseDomain === 'gov-workflows') candidates.push(`formalize ${target} workflow`);
 	if (baseDomain.startsWith('gov-tooling')) candidates.push(`refine ${target}`);
 	if (baseDomain === 'core' && split.files.some((f) => f.includes('/schemas/'))) {
 		candidates.push(`extract ${truncateText(scaffoldTarget(split), 24)} into modular schemas`);
 	}
-	candidates.push(`update ${truncateText(scaffoldTarget(split), 24)} scope`);
+	candidates.push(`update ${truncateText(scaffoldTarget(split), 24)} implementation`);
 	return (
 		candidates
 			.map((value) => value.replace(/\s+/g, ' ').trim())
