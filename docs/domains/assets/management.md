@@ -2,26 +2,31 @@
 
 ## Strategy (Current)
 
-Asset references in event content support a mixed mode:
+Asset references in event content use a normalized source contract with legacy-string compatibility:
 
-1. **Registry key** from `src/lib/assets/asset-registry.ts`
-2. **Absolute URL** (CDN or external)
-3. **Root-relative path** (`/images/...`)
+1. **Internal asset**: registry/discovery key resolved through `src/lib/assets/asset-registry.ts`
+2. **External asset**: secure `https://` URL
+3. **Public asset**: root-relative path (`/images/...`)
 
-This is intentionally permissive for production onboarding speed.
+Legacy string values in content are normalized by the schema into the internal/external contract at
+validation time.
 
 ## Resolution Pipeline
 
-- Content schema accepts mixed asset sources (`src/content/config.ts` `AssetSchema`).
-- Adapter resolves assets through:
-    - registry lookup for keys
-    - direct passthrough for URL/root paths
+- Content schema normalizes asset references in `src/lib/schemas/content/shared.schema.ts`.
+- Adapter resolution in `src/lib/adapters/event-helpers.ts` now:
+    - fails on invalid internal registry keys
+    - accepts only secure external URLs
+    - passes through root-relative public paths
+    - resolves common assets and event-discovered assets explicitly
 
 ## Governance Rules
 
-- Preferred for stable assets: registry keys
-- Allowed for rapid onboarding/migrations: URLs
-- If URL usage is temporary, track it in the invitation checklist and plan migration to registry
+- Preferred for stable invitation assets: internal registry/discovery keys
+- Allowed for onboarding and migration: `https://` URLs and root-relative public paths
+- Insecure `http://` asset URLs are rejected by schema validation
+- If URL usage is temporary, track it in the invitation checklist and plan migration to internal
+  assets
 
 ## New Invitation Checklist Requirement
 
@@ -35,6 +40,17 @@ For each new invitation scaffold:
 
 - `pnpm ops new-invitation <slug>`
 - `pnpm ops optimize-assets`
+- `pnpm assets:check-registry`
+
+## Discovery Audit
+
+`pnpm assets:check-registry` validates the dynamic-discovery pipeline by checking every folder under
+`src/assets/images/events/` for:
+
+- a local `index.ts` asset module
+- an exported `assets` object
+- local image files that are imported by that module
+- imported image files that actually exist on disk
 
 ---
 

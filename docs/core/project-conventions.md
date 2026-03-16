@@ -157,8 +157,9 @@ centralized management, and consistency:
 1. **Create event directory** in `src/assets/images/events/{event-slug}/`
 2. **Add required images** (hero.webp, portrait.webp, jardin.webp, signature.webp, gallery-01.webp
    through gallery-11.webp)
-3. **Register event** in `src/lib/assets/asset-registry.ts` using the `mapEventAssets()` helper
-4. **Verify registration** by running `pnpm exec astro check` and checking TypeScript compilation
+3. **Export assets** from `src/assets/images/events/{event-slug}/index.ts` so the dynamic discovery
+   pipeline can register them automatically
+4. **Verify registration** by running `pnpm assets:check-registry` and `pnpm exec astro check`
 
 For complete step-by-step instructions, refer to `docs/domains/assets/management.md`.
 
