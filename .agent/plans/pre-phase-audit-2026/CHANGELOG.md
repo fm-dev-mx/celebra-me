@@ -1,5 +1,19 @@
 # Changelog - Pre-Phase Technical Audit (2026)
 
+## [1.0.9] - 2026-03-16
+
+### Changed
+
+- Marked Phase 06 as `BLOCKED` after execution review found that the original acceptance criteria
+  rely on undefined visual-regression workflows and a missing documentation target.
+
+### Audit
+
+- Recorded that Phase 06 currently references staging or screenshot-baseline validation that is not
+  defined in the repository workflow.
+- Recorded that `docs/core/color-architecture.md` does not exist and that the active theme
+  architecture documentation currently lives in `docs/domains/theme/architecture.md`.
+
 ## [1.0.8] - 2026-03-16
 
 ### Changed

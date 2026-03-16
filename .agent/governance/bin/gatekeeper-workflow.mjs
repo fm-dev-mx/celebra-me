@@ -195,17 +195,22 @@ function packageScripts(repoRootPath) {
 
 function resolvePreflightCommand(policy) {
 	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
-	if (configured) return configured;
 	const repoScripts = packageScripts(repoRoot());
+	if (configured && (!configured.startsWith('pnpm ') || repoScripts[configured.slice(5)]))
+		return configured;
+
 	for (const command of policy.workflow?.inspect?.preflightFallbacks || []) {
 		const trimmed = String(command || '').trim();
 		if (!trimmed) continue;
-		if (trimmed === 'pnpm turbo-all' && repoScripts['turbo-all']) return trimmed;
-		if (trimmed === 'pnpm ci' && repoScripts.ci) return trimmed;
-		if (trimmed === 'pnpm lint && pnpm type-check && pnpm test') return trimmed;
+		if (trimmed.startsWith('pnpm ')) {
+			const scriptName = trimmed.slice(5);
+			if (repoScripts[scriptName]) return trimmed;
+			continue;
+		}
+		return trimmed;
 	}
-	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
 	if (repoScripts.ci) return 'pnpm ci';
+	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
 	return 'pnpm lint && pnpm type-check && pnpm test';
 }
 
@@ -451,11 +456,12 @@ function inferDominantFileCluster(files) {
 	return { kind: 'generic', target: scaffoldTarget({ files }) || 'change set' };
 }
 
-function truncateText(value, maxLength) {
+function truncateText(value, maxLength, options = {}) {
 	const text = String(value || '')
 		.trim()
 		.replace(/\s+/g, ' ');
 	if (text.length <= maxLength) return text;
+	if (options.noEllipsis) return text.slice(0, maxLength);
 	if (maxLength <= 3) return text.slice(0, maxLength);
 	return `${text.slice(0, maxLength - 3).trim()}...`;
 }
@@ -537,16 +543,28 @@ function describeFileChange(file, splitContext = {}) {
 		return 'simplify to import from modular schemas';
 	if (file.includes('/adapters/')) return 'update adapter for schema changes';
 
+	// Keyword-based fallback for quality
+	try {
+		const content = readFileSync(resolve(repoRoot(), file), 'utf8');
+		if (content.includes('z.object')) return `define ${normalizedStem} validation schema`;
+		if (content.includes('export const')) return `implement ${normalizedStem} constants`;
+		if (content.includes('<script')) return `add interactive logic to ${normalizedStem}`;
+		if (content.includes('interface ') || content.includes('type '))
+			return `define ${normalizedStem} type contracts`;
+	} catch {
+		/* ignore read failures for new/deleted files */
+	}
+
 	if (file.endsWith('README.md')) return 'describe plan status and overview';
 	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
 	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
 	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
-	if (file.endsWith('.json')) return `update ${normalizedStem || 'json'} implementation`;
+	if (file.endsWith('.json')) return `harden ${normalizedStem || 'json'} implementation`;
 	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
 	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
 	if (file.endsWith('.sh')) return 'configure hook execution';
 	if (file.endsWith('.schema.ts')) return `add ${normalizedStem} schema`;
-	return `update ${normalizedStem || 'file'} implementation`;
+	return `align ${normalizedStem || 'file'} implementation`;
 }
 
 function headerSubject(scope, split) {
@@ -599,12 +617,16 @@ function buildCommitScaffold(split) {
 	const dominantCluster = inferDominantFileCluster(split.files);
 	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
 	const body = split.files.map((file) => {
-		const description = truncateText(
-			describeFileChange(file, { split, dominantCluster }),
-			DESCRIPTION_MAX_LENGTH,
-		);
+		const description = describeFileChange(file, { split, dominantCluster });
 		const bulletPrefix = `- ${file}: `;
-		const remainingLength = Math.max(10, BULLET_MAX_LENGTH - bulletPrefix.length);
+		// Never truncate path (bulletPrefix). If line is too long, truncate description.
+		const remainingLength = BULLET_MAX_LENGTH - bulletPrefix.length;
+
+		if (remainingLength < 10) {
+			// Path itself is almost 100 chars, nothing we can do but keep the path and hope for the best/warn
+			return `${bulletPrefix}${truncateText(description, 10)}`;
+		}
+
 		if (bulletPrefix.length + description.length > BULLET_MAX_LENGTH) {
 			return `${bulletPrefix}${truncateText(description, remainingLength)}`;
 		}
@@ -614,6 +636,7 @@ function buildCommitScaffold(split) {
 		type: commitType,
 		scope,
 		header,
+		headerLength: header.length,
 		body,
 		fullMessage: `${header}\n\n${body.join('\n')}`,
 	};

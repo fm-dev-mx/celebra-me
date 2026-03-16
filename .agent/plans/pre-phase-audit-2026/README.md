@@ -2,7 +2,7 @@
 
 # Plan: Pre-Phase Technical Audit (2026)
 
-> Phases 01-05 are complete. Phase 06 is the next pending execution target.
+> Phases 01-05 are complete. Phase 06 is currently blocked pending an approved plan amendment.
 
 ## Executive Summary
 
@@ -47,6 +47,13 @@ Architecture, BFF Decoupling).
 > [`scripts/check-event-assets.cjs`](../../scripts/check-event-assets.cjs). Verification passed with
 > `pnpm exec astro check`, `npx astro build`, `npx jest tests/content/schema.test.ts tests/unit/event.adapter.test.ts tests/unit/event-assets-audit.test.ts --runInBand`, and
 > `npm run assets:check-registry` on 2026-03-16.
+>
+> **Phase 06 Blocker:** Execution review found that the original design-system-sync phase depends on
+> undefined staging or screenshot-baseline validation and points documentation to
+> `docs/core/color-architecture.md`, which does not exist in the repository. The live theme
+> architecture docs currently reside in
+> [`docs/domains/theme/architecture.md`](../../docs/domains/theme/architecture.md). Phase 06 remains
+> blocked until those acceptance criteria are amended.
 
 ## Phase Index
 
@@ -61,7 +68,8 @@ Architecture, BFF Decoupling).
 5.  **[Phase 05: Asset Hardening](./phases/05-asset-hardening.md)**: Enforcing strict type-safety
     for internal/external assets.
 6.  **[Phase 06: Design System Sync](./phases/06-design-system-sync.md)**: Synchronizing component
-    styles with semantic tokens.
+    styles with semantic tokens. Current status: `BLOCKED` pending verification and documentation
+    alignment.
 
 ## Governance Alignment
 
