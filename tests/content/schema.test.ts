@@ -120,4 +120,32 @@ describe('Event content schema (real contract)', () => {
 
 		expect(result.success).toBe(true);
 	});
+
+	it('rejects invalid internal asset keys in event content', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				hero: {
+					name: 'Test Name',
+					date: '2026-01-01T00:00:00.000Z',
+					backgroundImage: 'broken-asset-key',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects insecure external asset URLs', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				hero: {
+					name: 'Test Name',
+					date: '2026-01-01T00:00:00.000Z',
+					backgroundImage: 'http://example.com/hero.jpg',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
 });

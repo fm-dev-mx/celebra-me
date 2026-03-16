@@ -62,4 +62,30 @@ describe('adaptEvent', () => {
 		});
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 	});
+
+	it('supports normalized object asset references from the schema layer', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv',
+			data: {
+				...fixture,
+				hero: {
+					...fixture.hero,
+					backgroundImage: {
+						type: 'internal',
+						key: 'hero',
+					},
+					portrait: {
+						type: 'external',
+						src: '/images/custom-portrait.webp',
+					},
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
+		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
+	});
 });
