@@ -6,6 +6,11 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSyn
 import { tmpdir } from 'os';
 import { join } from 'path';
 import process from 'process';
+import {
+	classifyCommitFileArea,
+	normalizePath,
+	summarizeDiffEntries,
+} from '../.agent/governance/bin/commit-message-analysis.mjs';
 
 const POLICY_PATH = '.agent/governance/config/policy.json';
 
@@ -53,58 +58,8 @@ function getCommitFiles(commitHash) {
 		: [];
 }
 
-function normalizePath(file) {
-	return String(file || '')
-		.replace(/\\/g, '/')
-		.trim();
-}
-
-function classifyFileArea(file) {
-	const normalized = normalizePath(file).toLowerCase();
-	if (!normalized) return 'source';
-	if (
-		normalized.startsWith('docs/') ||
-		normalized.endsWith('.md') ||
-		normalized.endsWith('.mdx')
-	) {
-		return 'docs';
-	}
-	if (
-		normalized.startsWith('tests/') ||
-		normalized.includes('.test.') ||
-		normalized.includes('.spec.')
-	) {
-		return 'test';
-	}
-	if (
-		normalized.startsWith('src/assets/') ||
-		/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(normalized)
-	) {
-		return 'asset';
-	}
-	if (
-		normalized.startsWith('scripts/') ||
-		normalized.startsWith('.agent/') ||
-		normalized.endsWith('.mjs') ||
-		normalized.endsWith('.sh')
-	) {
-		return 'script';
-	}
-	if (
-		normalized.endsWith('.json') ||
-		normalized.endsWith('.yml') ||
-		normalized.endsWith('.yaml') ||
-		normalized.endsWith('.toml') ||
-		normalized.endsWith('.ini') ||
-		normalized.endsWith('.cjs')
-	) {
-		return 'config';
-	}
-	return 'source';
-}
-
 function classifyGroupKind(files) {
-	const areas = new Set(files.map((file) => classifyFileArea(file)));
+	const areas = new Set(files.map((file) => classifyCommitFileArea(file)));
 	if (areas.size === 1) return `${Array.from(areas)[0]}-group`;
 	return 'mixed-group';
 }
@@ -126,35 +81,6 @@ function suggestFileGroups(files) {
 		.sort((a, b) => a.key.localeCompare(b.key));
 }
 
-function summarizeDiffEntries(entries) {
-	const kindCounts = new Map();
-	const areaCounts = new Map();
-	for (const entry of entries) {
-		const normalizedStatus =
-			entry.status === 'A'
-				? 'add'
-				: entry.status === 'D'
-					? 'delete'
-					: entry.status === 'R'
-						? 'rename'
-						: 'modify';
-		kindCounts.set(normalizedStatus, (kindCounts.get(normalizedStatus) || 0) + 1);
-		areaCounts.set(entry.area, (areaCounts.get(entry.area) || 0) + 1);
-	}
-	const dominantKind =
-		kindCounts.size === 1
-			? Array.from(kindCounts.keys())[0]
-			: Array.from(kindCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
-	const dominantArea =
-		areaCounts.size === 1
-			? Array.from(areaCounts.keys())[0]
-			: Array.from(areaCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
-	return {
-		dominantKind: kindCounts.size > 1 ? 'mixed' : dominantKind,
-		dominantArea: areaCounts.size > 1 ? dominantArea : dominantArea,
-	};
-}
-
 function getCommitDiffEntries(commitHash) {
 	const diff = run('git', ['show', '--name-status', '--format=', '--find-renames', commitHash]);
 	if (!diff.stdout) return [];
@@ -166,8 +92,9 @@ function getCommitDiffEntries(commitHash) {
 			const parts = line.split('\t').filter(Boolean);
 			const rawStatus = parts[0] || 'M';
 			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
-			const path = normalizePath(parts[parts.length - 1]);
-			return { path, status, area: classifyFileArea(path) };
+			const oldPath = status === 'R' ? normalizePath(parts[1] || '') : '';
+			const path = normalizePath(parts[status === 'R' ? 2 : parts.length - 1]);
+			return { path, oldPath, status, area: classifyCommitFileArea(path) };
 		});
 }
 
@@ -218,7 +145,7 @@ function validateAtomicity(files) {
 	const limit = atomicityLimit();
 	if (files.length > limit) {
 		const groups = suggestFileGroups(files);
-		const areaCount = new Set(files.map((file) => classifyFileArea(file))).size;
+		const areaCount = new Set(files.map((file) => classifyCommitFileArea(file))).size;
 		if (groups.length <= limit && areaCount <= 2) {
 			return {
 				ok: true,
@@ -313,7 +240,7 @@ if (isMain) {
 
 export {
 	buildCommitlintContext,
-	classifyFileArea,
+	classifyCommitFileArea as classifyFileArea,
 	getCommitDiffEntries,
 	suggestFileGroups,
 	summarizeDiffEntries,

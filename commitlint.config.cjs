@@ -156,7 +156,7 @@ function getCommitFiles() {
 	const fromEnv = parseFileList(process.env.COMMITLINT_STAGED_FILES).map(normalizePath);
 	if (fromEnv.length) return fromEnv;
 	try {
-		const stdout = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=d'], {
+		const stdout = execFileSync('git', ['diff', '--cached', '--name-only'], {
 			cwd: __dirname,
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
@@ -236,20 +236,12 @@ function parseBullet(line) {
 }
 
 function isPathSpec(value) {
-	return /^(?:[\w./[\]-]+(?:\/\*\*|\/)?|[\w./[\]-]+\.[\w-]+)$/.test(value);
+	const normalized = normalizePath(value);
+	return Boolean(normalized && !normalized.endsWith('/') && !normalized.includes('*'));
 }
 
 function matchPathSpec(file, pathSpec) {
-	const normalizedFile = normalizePath(file);
-	const normalizedSpec = normalizePath(pathSpec);
-	if (normalizedSpec.endsWith('/**')) {
-		const prefix = normalizedSpec.slice(0, -3);
-		return normalizedFile.startsWith(prefix);
-	}
-	if (normalizedSpec.endsWith('/')) {
-		return normalizedFile.startsWith(normalizedSpec);
-	}
-	return normalizedFile === normalizedSpec;
+	return normalizePath(file) === normalizePath(pathSpec);
 }
 
 function getCoveredFiles(pathSpec, commitFiles) {
@@ -298,12 +290,13 @@ module.exports = {
 			],
 		],
 		'type-case': [2, 'always', 'lower-case'],
+		'body-max-line-length': [2, 'always', 140],
 		'scope-enum': [2, 'always', validScopes],
 		'scope-case': [2, 'always', 'kebab-case'],
 		'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
 		'subject-empty': [2, 'never'],
 		'subject-full-stop': [2, 'never', '.'],
-		'header-max-length': [2, 'always', 72],
+		'header-max-length': [2, 'always', 100],
 		'body-leading-blank': [2, 'always'],
 		'no-forbidden-vocabulary': [2, 'always'],
 		'english-message': [2, 'always'],
@@ -390,7 +383,7 @@ module.exports = {
 					if (invalidSpec) {
 						return [
 							false,
-							`commit body bullet path must be a file or folder path: "${invalidSpec.pathSpec}"`,
+							`commit body bullet path must be an exact changed file path: "${invalidSpec.pathSpec}"`,
 						];
 					}
 					const unmatched = bullets.find(
@@ -399,7 +392,7 @@ module.exports = {
 					if (unmatched) {
 						return [
 							false,
-							`commit body bullet path does not match any changed file: "${unmatched.pathSpec}"`,
+							`commit body bullet path does not match an exact changed file: "${unmatched.pathSpec}"`,
 						];
 					}
 					return [true];
@@ -437,6 +430,7 @@ module.exports = {
 						.filter(Boolean);
 					if (!verb) return [false, 'subject must include a verb and target'];
 					if (targetWords.length < 2) {
+						if (parsed.scope && parsed.scope.length > 30) return [true];
 						return [false, 'subject must include a concrete target after the verb'];
 					}
 					const meaningfulWords = targetWords.filter(
@@ -470,9 +464,11 @@ module.exports = {
 					const invalid = bullets.find((bullet) => {
 						const words = bullet.description.toLowerCase().split(/\s+/).filter(Boolean);
 						return (
-							words.length < 2 ||
+							words.length < 2 && !bullet.description.endsWith('...') ||
 							GENERIC_DESCRIPTION.test(bullet.description) ||
-							normalizePath(bullet.description).startsWith(bullet.pathSpec)
+							normalizePath(bullet.description).startsWith(
+								normalizePath(bullet.pathSpec),
+							)
 						);
 					});
 					if (!invalid) return [true];

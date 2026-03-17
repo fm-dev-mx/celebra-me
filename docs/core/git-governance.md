@@ -1,6 +1,6 @@
 # Git Governance: High-Precision Commit Architecture
 
-> **Status**: Active. **Last Updated**: 2026-03-15. **Subdomains**: Normalized to kebab-case.
+> **Status**: Active. **Last Updated**: 2026-03-16. **Subdomains**: Normalized to kebab-case.
 
 ## Overview
 
@@ -70,18 +70,23 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
 - Conventional Commit header is required.
 - Scope must be one of the governance domains.
 - Subject must use `type(scope): verb target` and describe the dominant change.
+- `type` and `scope` remain deterministic. Optional AI may refine only the subject fragment after
+  `type(scope):`.
 - Process bookkeeping language such as `record ... scope` is rejected.
 - Prefer decisive verbs such as `define`, `align`, `harden`, `extract`, `refactor`, or `clarify`
   when they better match the dominant change than `update`.
 - Multi-file or complex commits require a body.
-- Required bodies must use path-aware bullets in one of these formats:
-  `- path/to/file.ext: description` `- path/to/folder/: description`
-  `- path/to/prefix/**: description`
-- Bullet `pathSpec` values must use full relative paths; `...` is not allowed.
+- Required bodies must use one exact changed-file bullet per touched file:
+  `- path/to/file.ext: description`
+- Bullet `pathSpec` values must use full relative paths; `...`, folder bullets, and grouped prefix
+  bullets are not allowed.
 - Bullet descriptions must describe the concrete file change, not generic placeholders.
-- Bodies may group small coherent file sets when the commit is still atomic.
+- Deleted files must use the deleted path. Renamed files must use the new path and mention the old
+  path in the description.
 - `gatekeeper-workflow scaffold` must generate subjects and bullets that already satisfy this
   contract, using full relative paths, concrete descriptions, and safe truncation when needed.
+- AI title assist is opt-in through policy and env configuration. Missing config, low-quality AI
+  output, timeouts, or commitlint failures must fall back to the deterministic subject.
 - `gatekeeper-workflow commit` validates the generated message against commitlint before invoking
   `git commit`.
 
@@ -154,6 +159,8 @@ edits.
 
 ## Changelog
 
+- **2026-03-16**: Added optional AI subject assist with deterministic fallback, tightened commit
+  bodies to one exact bullet per changed file, and aligned validation ownership on commitlint.
 - **2026-03-16**: Required full relative paths in commit body bullets, banned ellipsis path
   truncation, and aligned scaffold output with commitlint path validation.
 - **2026-03-16**: Expanded STRONG_VERBS in commitlint to include 'update' and migrated .npmrc to
