@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { NavBarProps } from '../../../interfaces/ui/components/navBar.interface';
+import type { NavBarProps } from '../../../interfaces/ui/components/nav-bar.interface';
 
 const NavBarMobile: React.FC<NavBarProps> = ({ headerId, links = [] }) => {
 	const [isOpen, setIsOpen] = useState(false);

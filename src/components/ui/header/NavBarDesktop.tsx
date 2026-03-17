@@ -1,5 +1,5 @@
 import React from 'react';
-import type { NavBarProps } from '../../../interfaces/ui/components/navBar.interface';
+import type { NavBarProps } from '../../../interfaces/ui/components/nav-bar.interface';
 
 const NavBarDesktop: React.FC<NavBarProps> = ({ links = [] }) => {
 	return (
