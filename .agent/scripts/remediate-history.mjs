@@ -1,7 +1,7 @@
 import { execSync } from 'child_process';
 
 function run(command) {
-	console.log(`\n> ${command}`);
+	console.info(`\n> ${command}`);
 	try {
 		return execSync(command, { stdio: 'inherit' });
 	} catch {
@@ -11,7 +11,7 @@ function run(command) {
 }
 
 function commit(message) {
-	console.log(`\nCommit: ${message.split('\n')[0]}`);
+	console.info(`\nCommit: ${message.split('\n')[0]}`);
 	try {
 		execSync(
 			`git commit --no-verify --author="fm-dev-mx <48076635+fm-dev-mx@users.noreply.github.com>" -m "${message}"`,
@@ -24,7 +24,7 @@ function commit(message) {
 }
 
 // 1. Reset everything to captured state
-console.log('Resetting git history by 15 commits...');
+console.info('Resetting git history by 15 commits...');
 run('git reset --soft HEAD~15');
 
 // 2. Unstage everything so we can stage piecemeal
@@ -120,5 +120,5 @@ commit(
 	'chore(governance): add history remediation script\n\n- .agent/scripts/remediate-history.mjs: utility for git history alignment',
 );
 
-console.log('\nRemediation complete. Remaining uncommitted files:');
+console.info('\nRemediation complete. Remaining uncommitted files:');
 run('git status -s');
