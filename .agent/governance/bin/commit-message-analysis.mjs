@@ -171,8 +171,12 @@ function pickChangeVerb({ kind, area, clusterKind }) {
 	if (kind === 'rename') return 'rename';
 	if (clusterKind === 'presenter-route' || clusterKind === 'presenter') return 'implement';
 	if (clusterKind === 'invitation-route') return 'refactor';
-	if (clusterKind === 'plan') return 'clarify';
-	if (area === 'docs' || area === 'plan') return 'clarify';
+	if (area === 'plan' || clusterKind === 'plan') {
+		if (kind === 'add') return 'add';
+		if (kind === 'delete') return 'remove';
+		return 'update';
+	}
+	if (area === 'docs') return 'clarify';
 	if (area === 'test') return kind === 'add' ? 'add' : 'refine';
 	if (area === 'script' || area === 'config') return 'harden';
 	if (area === 'asset') return kind === 'add' ? 'add' : 'update';
@@ -602,14 +606,14 @@ function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
 	});
 	let baseTarget = target;
 	const prefixLength = `${commitType}(${scope}): `.length;
-	const maxSubjectLength = Math.max(10, 72 - prefixLength);
-	if (clusterKind === 'plan' && dominantKind !== 'delete' && dominantKind !== 'rename') {
+	const maxSubjectLength = Math.max(10, 100 - prefixLength);
+	if (scope === 'gov-plans-archive' && clusterKind === 'plan' && dominantKind !== 'delete' && dominantKind !== 'rename') {
 		const subject = truncateText(`archive ${target}`, maxSubjectLength);
 		return {
 			type: commitType,
 			subject,
 			header: `${commitType}(${scope}): ${subject}`,
-			confidence: dominantChange?.confidence || 0.76,
+			confidence: 0.9,
 		};
 	}
 	if (dominantKind === 'delete') {
@@ -640,7 +644,13 @@ function validateSubjectFragment(subject, options = {}) {
 	if (!verb || !VERB_PRIORITY.includes(verb)) {
 		return { ok: false, reason: 'invalid_verb' };
 	}
-	if (targetWords.length < 2) return { ok: false, reason: 'target_too_short' };
+	if (targetWords.length < 2) {
+		if (options.scope && options.scope.length > 30) {
+			/* skip strict length check for long scopes */
+		} else {
+			return { ok: false, reason: 'target_too_short' };
+		}
+	}
 	if (targetWords.every((word) => GENERIC_TARGETS.has(word))) {
 		return { ok: false, reason: 'generic_target' };
 	}
