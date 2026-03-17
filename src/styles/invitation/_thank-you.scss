@@ -10,7 +10,7 @@
 	align-items: center;
 	background: linear-gradient(
 		180deg,
-		tokens.$color-surface-primary 0%,
+		var(--color-surface-primary, tokens.$color-surface-primary) 0%,
 		rgb(var(--color-action-accent-rgb), 0.1) 100%
 	);
 	overflow: hidden;
@@ -49,11 +49,11 @@
 	position: relative;
 	width: 220px;
 	height: 220px;
-	border: 2px solid tokens.$color-glass-border;
+	border: 2px solid var(--color-glass-border, tokens.$color-glass-border);
 	border-radius: 50%;
 	padding: 8px;
-	background: tokens.$color-glass-bg;
-	box-shadow: tokens.$shadow-subtle;
+	background: var(--color-glass-bg, tokens.$color-glass-bg);
+	box-shadow: var(--shadow-subtle, tokens.$shadow-subtle);
 	overflow: hidden;
 
 	@include mixins.respond-to(sm) {
@@ -99,20 +99,20 @@
 }
 
 .thank-you-message {
-	font-family: tokens.$font-body;
+	font-family: var(--font-body-narrative, tokens.$font-body);
 	font-size: tokens.$font-size-body;
 	line-height: 2;
-	color: tokens.$color-text-primary;
+	color: var(--color-text-primary, tokens.$color-text-primary);
 	margin: 0 0 2rem;
 	letter-spacing: tokens.$letter-spacing-tight;
 
 	.drop-cap {
-		font-family: tokens.$font-display-formal;
+		font-family: var(--font-display-formal, tokens.$font-display-formal);
 		font-size: 3.5em;
 		float: left;
 		line-height: 0.8;
 		padding-right: 0.1em;
-		color: tokens.$color-text-emphasis;
+		color: var(--color-text-emphasis, tokens.$color-text-emphasis);
 		text-shadow: 1px 1px 2px rgb(0 0 0 / 10%);
 	}
 }
@@ -124,14 +124,14 @@
 }
 
 .closing-name {
-	font-family: tokens.$font-calligraphy;
+	font-family: var(--font-calligraphy, tokens.$font-calligraphy);
 	font-size: clamp(2.5rem, 6vw, 4rem);
-	color: tokens.$color-text-primary;
+	color: var(--color-text-primary, tokens.$color-text-primary);
 	margin: 0;
 	background: linear-gradient(
 		135deg,
-		tokens.$color-action-accent 0%,
-		tokens.$color-border-emphasis 100%
+		var(--color-action-accent, tokens.$color-action-accent) 0%,
+		var(--color-border-emphasis, tokens.$color-border-emphasis) 100%
 	);
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -141,9 +141,9 @@
 .thank-you-footer {
 	margin-top: 2rem;
 	padding-top: 2rem;
-	border-top: 1px solid tokens.$color-border-subtle;
+	border-top: 1px solid var(--color-border-subtle, tokens.$color-border-subtle);
 	opacity: 40%;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-ui, tokens.$font-ui);
 	font-size: tokens.$font-size-ui;
 	letter-spacing: tokens.$letter-spacing-wide;
 	text-transform: uppercase;
