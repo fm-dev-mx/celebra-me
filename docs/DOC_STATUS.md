@@ -74,6 +74,9 @@
 
 ### Active Plans
 
+- [comprehensive-audit-Q1-2026](../.agent/plans/comprehensive-audit-Q1-2026/README.md) - `ACTIVE`,
+  Q1 2026 technical audit and phased remediation plan with mandatory verification and
+  documentation-sync gates.
 - [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `ACTIVE`,
   governance optimization and workflow hardening plan for commit automation.
 
@@ -108,7 +111,8 @@
 ## Next Review Queue
 
 1. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
-2. Track the Gatekeeper workflow and commit-validation refactor until `gatekeeper-optimization`
+2. Track the Q1 2026 comprehensive audit until all five phases are completed and archived.
+3. Track the Gatekeeper workflow and commit-validation refactor until `gatekeeper-optimization`
    leaves `PENDING`.
-3. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
+4. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
