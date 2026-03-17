@@ -1,0 +1,664 @@
+import { existsSync, readFileSync } from 'fs';
+import { basename, resolve } from 'path';
+
+const AREA_WEIGHTS = {
+	source: 100,
+	test: 60,
+	docs: 40,
+	config: 35,
+	script: 30,
+	asset: 25,
+	plan: 20,
+	style: 20,
+};
+
+const VERB_PRIORITY = [
+	'implement',
+	'refactor',
+	'align',
+	'clarify',
+	'document',
+	'remove',
+	'rename',
+	'harden',
+	'update',
+];
+const SUBJECT_PROCESS_LANGUAGE =
+	/\b(record|scope|apply changes|process|misc|tmp|temp|things|stuff)\b/i;
+const GENERIC_TARGETS = new Set([
+	'change',
+	'changes',
+	'file',
+	'files',
+	'message',
+	'messages',
+	'scope',
+	'scopes',
+	'stuff',
+	'things',
+	'work',
+]);
+
+function truncateText(value, maxLength) {
+	const text = String(value || '')
+		.trim()
+		.replace(/\s+/g, ' ');
+	if (text.length <= maxLength) return text;
+	if (maxLength <= 3) return text.slice(0, maxLength);
+	return `${text.slice(0, maxLength - 3).trim()}...`;
+}
+
+function normalizePath(value) {
+	return String(value || '')
+		.replace(/\\/g, '/')
+		.trim();
+}
+
+function stemOf(file) {
+	const name = (normalizePath(file).split('/').pop() || file).replace(/\.[^.]+$/, '');
+	return name
+		.replace(/[^a-zA-Z0-9-]+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
+function normalizeStem(value) {
+	return String(value || '')
+		.replace(/[^a-zA-Z0-9-]+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
+function commonPathPrefix(files) {
+	if (!files.length) return '';
+	const segments = files.map((file) => normalizePath(file).split('/'));
+	const prefix = [];
+	for (let index = 0; index < segments[0].length; index += 1) {
+		const candidate = segments[0][index];
+		if (!segments.every((parts) => parts[index] === candidate)) break;
+		prefix.push(candidate);
+	}
+	return prefix.join('/');
+}
+
+function scaffoldTarget(files, fallback = 'change') {
+	const prefix = commonPathPrefix(files);
+	const target = prefix.split('/').filter(Boolean).pop() || fallback;
+	return normalizeStem(target).replace(/-/g, ' ');
+}
+
+function classifyCommitFileArea(file) {
+	const normalized = normalizePath(file).toLowerCase();
+	if (!normalized) return 'source';
+	if (normalized.startsWith('.agent/plans/')) return 'plan';
+	if (normalized.startsWith('src/styles/') || /\.(scss|css)$/i.test(normalized)) return 'style';
+	if (
+		normalized.startsWith('docs/') ||
+		normalized.endsWith('.md') ||
+		normalized.endsWith('.mdx')
+	) {
+		return 'docs';
+	}
+	if (
+		normalized.startsWith('tests/') ||
+		normalized.includes('.test.') ||
+		normalized.includes('.spec.')
+	) {
+		return 'test';
+	}
+	if (
+		normalized.startsWith('src/assets/') ||
+		/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(normalized)
+	) {
+		return 'asset';
+	}
+	if (
+		normalized.startsWith('scripts/') ||
+		normalized.startsWith('.agent/') ||
+		normalized.endsWith('.mjs') ||
+		normalized.endsWith('.sh')
+	) {
+		return 'script';
+	}
+	if (
+		normalized.endsWith('.json') ||
+		normalized.endsWith('.yml') ||
+		normalized.endsWith('.yaml') ||
+		normalized.endsWith('.toml') ||
+		normalized.endsWith('.ini') ||
+		normalized.endsWith('.cjs')
+	) {
+		return 'config';
+	}
+	return 'source';
+}
+
+function normalizeChangeKind(status) {
+	if (status === 'A') return 'add';
+	if (status === 'D') return 'delete';
+	if (status === 'R') return 'rename';
+	return 'modify';
+}
+
+function summarizeDiffEntries(entries) {
+	const kindCounts = new Map();
+	const areaCounts = new Map();
+	for (const entry of entries || []) {
+		const kind = normalizeChangeKind(String(entry.status || 'M').toUpperCase());
+		const area = entry.area || classifyCommitFileArea(entry.path);
+		kindCounts.set(kind, (kindCounts.get(kind) || 0) + 1);
+		areaCounts.set(area, (areaCounts.get(area) || 0) + 1);
+	}
+	const dominantKind =
+		kindCounts.size === 1
+			? Array.from(kindCounts.keys())[0]
+			: Array.from(kindCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+	const dominantArea =
+		areaCounts.size === 1
+			? Array.from(areaCounts.keys())[0]
+			: Array.from(areaCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+	return {
+		dominantKind: kindCounts.size > 1 ? 'mixed' : dominantKind,
+		dominantArea,
+		kindCounts: Object.fromEntries(kindCounts),
+		areaCounts: Object.fromEntries(areaCounts),
+		meaningfulAreaCount: areaCounts.size,
+	};
+}
+
+function pickChangeVerb({ kind, area, clusterKind }) {
+	if (kind === 'delete') return 'remove';
+	if (kind === 'rename') return 'rename';
+	if (clusterKind === 'presenter-route' || clusterKind === 'presenter') return 'implement';
+	if (clusterKind === 'invitation-route') return 'refactor';
+	if (clusterKind === 'plan') return 'clarify';
+	if (area === 'docs' || area === 'plan') return 'clarify';
+	if (area === 'test') return kind === 'add' ? 'add' : 'refine';
+	if (area === 'script' || area === 'config') return 'harden';
+	if (area === 'asset') return kind === 'add' ? 'add' : 'update';
+	if (kind === 'add') return 'implement';
+	return 'align';
+}
+
+function rankSpecificClusters(fileFacts, fallbackTarget) {
+	const paths = fileFacts.map((fact) => fact.path);
+	const allPlans = fileFacts.length > 0 && fileFacts.every((fact) => fact.area === 'plan');
+	const allTests = fileFacts.length > 0 && fileFacts.every((fact) => fact.area === 'test');
+	const allDocs = fileFacts.length > 0 && fileFacts.every((fact) => fact.area === 'docs');
+
+	if (
+		paths.some((file) => file.startsWith('src/lib/presenters/')) &&
+		paths.some((file) => file.startsWith('src/pages/'))
+	) {
+		return {
+			kind: 'presenter-route',
+			target: 'invitation presenter-driven route',
+			score: 140,
+			confidence: 0.92,
+		};
+	}
+	if (paths.some((file) => file.startsWith('src/lib/presenters/'))) {
+		return {
+			kind: 'presenter',
+			target: 'invitation page presenter',
+			score: 130,
+			confidence: 0.86,
+		};
+	}
+	if (
+		paths.some((file) => file.startsWith('src/components/invitation/')) &&
+		paths.some((file) => file.startsWith('src/pages/[eventType]/'))
+	) {
+		return {
+			kind: 'invitation-route',
+			target: 'invitation route rendering',
+			score: 125,
+			confidence: 0.84,
+		};
+	}
+	if (allPlans) {
+		const planRoot = commonPathPrefix(paths).split('/').filter(Boolean).slice(0, 4).join('/');
+		const planName = basename(planRoot || fallbackTarget || 'plan').replace(/-/g, ' ');
+		return {
+			kind: 'plan',
+			target: `${planName} plan files`,
+			score: 95,
+			confidence: 0.76,
+		};
+	}
+	if (allTests) {
+		return {
+			kind: 'test',
+			target: 'workflow coverage',
+			score: 75,
+			confidence: 0.78,
+		};
+	}
+	if (allDocs) {
+		return {
+			kind: 'docs',
+			target: 'governance guidance',
+			score: 65,
+			confidence: 0.74,
+		};
+	}
+	return null;
+}
+
+function collectFileFacts(files, diffEntries = []) {
+	const diffByPath = new Map(
+		(diffEntries || []).map((entry) => [normalizePath(entry.path), entry]),
+	);
+	return (files || []).map((file) => {
+		const normalizedPath = normalizePath(file);
+		const diffEntry = diffByPath.get(normalizedPath) || {};
+		return {
+			path: normalizedPath,
+			oldPath: normalizePath(diffEntry.oldPath || ''),
+			status: String(diffEntry.status || 'M').toUpperCase(),
+			area: diffEntry.area || classifyCommitFileArea(normalizedPath),
+			additions: Number(diffEntry.additions || 0),
+			deletions: Number(diffEntry.deletions || 0),
+			stem: stemOf(normalizedPath).toLowerCase(),
+			basename: basename(normalizedPath),
+		};
+	});
+}
+
+function rankDominantChange(fileFacts, options = {}) {
+	const fallbackTarget = scaffoldTarget(
+		fileFacts.map((fact) => fact.path),
+		options.fallbackTarget || 'change',
+	);
+	const specificCluster = rankSpecificClusters(fileFacts, fallbackTarget);
+	const summary = summarizeDiffEntries(
+		fileFacts.map((fact) => ({
+			path: fact.path,
+			status: fact.status,
+			area: fact.area,
+		})),
+	);
+	if (specificCluster) {
+		return {
+			...specificCluster,
+			dominantArea: summary.dominantArea,
+			dominantKind: summary.dominantKind,
+			meaningfulAreaCount: summary.meaningfulAreaCount,
+			fileScores: fileFacts.map((fact) => ({
+				path: fact.path,
+				score: AREA_WEIGHTS[fact.area] || AREA_WEIGHTS.source,
+				area: fact.area,
+			})),
+		};
+	}
+
+	const hasSource = fileFacts.some((fact) => fact.area === 'source');
+	const fileScores = fileFacts.map((fact) => {
+		let score = AREA_WEIGHTS[fact.area] || AREA_WEIGHTS.source;
+		if (fact.status === 'A' || fact.status === 'R') score += 10;
+		if (hasSource && ['docs', 'test', 'plan'].includes(fact.area)) score -= 15;
+		return {
+			path: fact.path,
+			score,
+			area: fact.area,
+			status: fact.status,
+		};
+	});
+	fileScores.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
+	const lead = fileScores[0] || {
+		path: '',
+		score: 0,
+		area: 'source',
+		status: 'M',
+	};
+	const fact = fileFacts.find((entry) => entry.path === lead.path) ||
+		fileFacts[0] || {
+			path: fallbackTarget,
+			area: 'source',
+			status: 'M',
+		};
+	const target = scaffoldTarget([fact.path], fallbackTarget) || fallbackTarget;
+	return {
+		kind: 'generic',
+		target,
+		score: lead.score,
+		confidence: summary.meaningfulAreaCount > 1 ? 0.58 : 0.72,
+		dominantArea: fact.area,
+		dominantKind: normalizeChangeKind(fact.status),
+		meaningfulAreaCount: summary.meaningfulAreaCount,
+		fileScores,
+	};
+}
+
+function inferCommitType(fileFacts) {
+	if (!fileFacts.length) return 'feat';
+	const areas = new Set(fileFacts.map((fact) => fact.area));
+	if ([...areas].every((area) => area === 'docs' || area === 'plan')) return 'docs';
+	if ([...areas].every((area) => area === 'test')) return 'test';
+	if ([...areas].every((area) => area === 'style')) return 'style';
+	if ([...areas].every((area) => area === 'script' || area === 'config')) return 'chore';
+	return 'feat';
+}
+
+function readContentHint(filePath, repoRootPath) {
+	if (!repoRootPath || !filePath) return '';
+	const absolutePath = resolve(repoRootPath, filePath);
+	if (!existsSync(absolutePath)) return '';
+	try {
+		return readFileSync(absolutePath, 'utf8');
+	} catch {
+		return '';
+	}
+}
+
+function statusAwareText(status, addText, modifyText, deleteText) {
+	if (status === 'A') return addText;
+	if (status === 'D') return deleteText;
+	return modifyText;
+}
+
+function buildRenameDescription(baseText, oldPath) {
+	if (!oldPath) return `rename implementation and ${baseText}`;
+	return `rename from ${oldPath} and ${baseText}`;
+}
+
+function buildFileBulletDescription(fileFact, options = {}) {
+	const fact = fileFact || {};
+	const path = normalizePath(fact.path);
+	const stem = stemOf(path).toLowerCase();
+	const normalizedStem = stem.replace(/-/g, ' ');
+	const dominantCluster = options.dominantChange?.kind || 'generic';
+
+	if (fact.status === 'R') {
+		const renamedBase = buildFileBulletDescription({ ...fact, status: 'M' }, options);
+		return buildRenameDescription(renamedBase, fact.oldPath);
+	}
+
+	if (path.startsWith('src/lib/presenters/') && path.endsWith('.ts')) {
+		return statusAwareText(
+			fact.status,
+			'add presenter assembly for invitation props',
+			'assemble invitation props from content and context',
+			'remove presenter assembly for invitation props',
+		);
+	}
+	if (path.startsWith('src/pages/') && path.endsWith('.astro')) {
+		return statusAwareText(
+			fact.status,
+			dominantCluster === 'presenter-route'
+				? 'add guest loading and presenter rendering route'
+				: 'add route data loading and rendering flow',
+			dominantCluster === 'presenter-route'
+				? 'reduce the route to guest loading and presenter rendering'
+				: 'reduce the route to data loading and presenter rendering',
+			'remove route rendering entrypoint',
+		);
+	}
+	if (path.startsWith('src/components/invitation/') && path.endsWith('.astro')) {
+		return statusAwareText(
+			fact.status,
+			'add invitation section rendering component',
+			'extract invitation section rendering into a dedicated component',
+			'remove invitation section rendering component',
+		);
+	}
+	if (path.startsWith('tests/unit/') && path.includes('invitation.presenter.test')) {
+		return statusAwareText(
+			fact.status,
+			'add fixture-based presenter coverage',
+			'cover presenter outputs with fixture-based tests',
+			'remove fixture-based presenter coverage',
+		);
+	}
+	if (path.endsWith('/manifest.json') && path.startsWith('.agent/plans/')) {
+		return statusAwareText(
+			fact.status,
+			'define plan status, blockers, and phase metadata',
+			'update plan status, blockers, and phase metadata',
+			'remove plan status and phase metadata',
+		);
+	}
+	if (path.endsWith('/CHANGELOG.md') && path.startsWith('.agent/plans/')) {
+		return statusAwareText(
+			fact.status,
+			'add plan audit trail entries',
+			'log delivered work, validation runs, and remaining blockers',
+			'remove plan audit trail entries',
+		);
+	}
+	if (/^\.agent\/plans\/.+\/phases\/\d{2}-/.test(path)) {
+		return statusAwareText(
+			fact.status,
+			'document phase scope, validation, and blockers',
+			'document delivered scope, validation, and unresolved blockers',
+			'remove phase delivery notes',
+		);
+	}
+	if (path.endsWith('/README.md') && path.startsWith('.agent/plans/')) {
+		return statusAwareText(
+			fact.status,
+			'define plan scope, risks, and phase index',
+			'mark the plan status and summarize verified implementation progress',
+			'remove plan overview and index',
+		);
+	}
+	if (path === 'docs/core/architecture.md') {
+		return statusAwareText(
+			fact.status,
+			'define presenters as the BFF assembly layer for complex routes',
+			'define presenters as the BFF assembly layer for complex routes',
+			'remove presenter architecture guidance',
+		);
+	}
+	if (path === 'docs/core/project-conventions.md') {
+		return statusAwareText(
+			fact.status,
+			'document the presenters folder convention and route-facing usage guidance',
+			'document the presenters folder convention and route-facing usage guidance',
+			'remove presenter usage guidance',
+		);
+	}
+	if (path.includes('/schemas/')) {
+		return statusAwareText(
+			fact.status,
+			`add ${normalizedStem} schema definition`,
+			`align ${normalizedStem} schema definition`,
+			`remove ${normalizedStem} schema definition`,
+		);
+	}
+	if (path.includes('config.ts') && path.includes('/content/')) {
+		return statusAwareText(
+			fact.status,
+			'simplify to import from modular schemas',
+			'simplify to import from modular schemas',
+			'remove content schema entrypoint',
+		);
+	}
+	if (path.includes('/adapters/')) {
+		return statusAwareText(
+			fact.status,
+			'add adapter support for schema changes',
+			'update adapter for schema changes',
+			'remove adapter for schema changes',
+		);
+	}
+
+	const content = fact.status === 'D' ? '' : readContentHint(path, options.repoRootPath);
+	if (content.includes('z.object')) {
+		return statusAwareText(
+			fact.status,
+			`define ${normalizedStem} validation schema`,
+			`align ${normalizedStem} validation schema`,
+			`remove ${normalizedStem} validation schema`,
+		);
+	}
+	if (content.includes('export const')) {
+		return statusAwareText(
+			fact.status,
+			`implement ${normalizedStem} constants`,
+			`align ${normalizedStem} constants`,
+			`remove ${normalizedStem} constants`,
+		);
+	}
+	if (content.includes('<script')) {
+		return statusAwareText(
+			fact.status,
+			`add interactive logic to ${normalizedStem}`,
+			`update interactive logic in ${normalizedStem}`,
+			`remove interactive logic from ${normalizedStem}`,
+		);
+	}
+	if (content.includes('interface ') || content.includes('type ')) {
+		return statusAwareText(
+			fact.status,
+			`define ${normalizedStem} type contracts`,
+			`align ${normalizedStem} type contracts`,
+			`remove ${normalizedStem} type contracts`,
+		);
+	}
+
+	if (path.endsWith('README.md')) {
+		return statusAwareText(
+			fact.status,
+			'add overview and operating guidance',
+			'update overview and operating guidance',
+			'remove overview and operating guidance',
+		);
+	}
+	if (path.endsWith('CHANGELOG.md')) {
+		return statusAwareText(
+			fact.status,
+			'add milestone audit entries',
+			'track milestones and decisions',
+			'remove milestone audit entries',
+		);
+	}
+	if (/\/phases\/\d{2}-/.test(path)) {
+		return statusAwareText(
+			fact.status,
+			'define phase scope and deliverables',
+			'update phase scope and deliverables',
+			'remove phase scope and deliverables',
+		);
+	}
+	if (path.endsWith('manifest.json')) {
+		return statusAwareText(
+			fact.status,
+			'define plan metadata and phases',
+			'update plan metadata and phases',
+			'remove plan metadata and phases',
+		);
+	}
+	if (path.endsWith('.json')) {
+		return statusAwareText(
+			fact.status,
+			`add ${normalizedStem || 'json'} configuration`,
+			`update ${normalizedStem || 'json'} configuration`,
+			`remove ${normalizedStem || 'json'} configuration`,
+		);
+	}
+	if (path.endsWith('.md')) {
+		return statusAwareText(
+			fact.status,
+			`document ${normalizedStem || 'documentation'} guidance`,
+			`update ${normalizedStem || 'documentation'} notes`,
+			`remove ${normalizedStem || 'documentation'} notes`,
+		);
+	}
+	if (path.endsWith('.mjs')) {
+		return statusAwareText(
+			fact.status,
+			`implement ${normalizedStem || 'script'} logic`,
+			`refine ${normalizedStem || 'script'} logic`,
+			`remove ${normalizedStem || 'script'} logic`,
+		);
+	}
+	if (path.endsWith('.sh')) {
+		return statusAwareText(
+			fact.status,
+			'configure hook execution',
+			'update hook execution',
+			'remove hook execution',
+		);
+	}
+	return statusAwareText(
+		fact.status,
+		`implement ${normalizedStem || 'file'} behavior`,
+		`align ${normalizedStem || 'file'} implementation`,
+		`remove ${normalizedStem || 'file'} implementation`,
+	);
+}
+
+function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
+	const commitType = inferCommitType(fileFacts);
+	const dominantArea = dominantChange?.dominantArea || 'source';
+	const dominantKind = dominantChange?.dominantKind || 'modify';
+	const clusterKind = dominantChange?.kind || 'generic';
+	const target = dominantChange?.target || 'change set';
+	const verb = pickChangeVerb({
+		kind: dominantKind,
+		area: dominantArea,
+		clusterKind,
+	});
+	let baseTarget = target;
+	const prefixLength = `${commitType}(${scope}): `.length;
+	const maxSubjectLength = Math.max(10, 72 - prefixLength);
+	if (clusterKind === 'plan' && dominantKind !== 'delete' && dominantKind !== 'rename') {
+		const subject = truncateText(`archive ${target}`, maxSubjectLength);
+		return {
+			type: commitType,
+			subject,
+			header: `${commitType}(${scope}): ${subject}`,
+			confidence: dominantChange?.confidence || 0.76,
+		};
+	}
+	if (dominantKind === 'delete') {
+		baseTarget =
+			clusterKind === 'plan' ? target : `${target}`.replace(/\bimplementation\b/, '').trim();
+	}
+	const subject = truncateText(
+		`${verb} ${baseTarget}`.replace(/\s+/g, ' ').trim(),
+		maxSubjectLength,
+	);
+	return {
+		type: commitType,
+		subject,
+		header: `${commitType}(${scope}): ${subject}`,
+		confidence: dominantChange?.confidence || 0.7,
+	};
+}
+
+function validateSubjectFragment(subject, options = {}) {
+	const normalized = String(subject || '')
+		.trim()
+		.replace(/\s+/g, ' ');
+	if (!normalized) return { ok: false, reason: 'empty_subject' };
+	if (SUBJECT_PROCESS_LANGUAGE.test(normalized)) {
+		return { ok: false, reason: 'process_language' };
+	}
+	const [verb, ...targetWords] = normalized.toLowerCase().split(/\s+/).filter(Boolean);
+	if (!verb || !VERB_PRIORITY.includes(verb)) {
+		return { ok: false, reason: 'invalid_verb' };
+	}
+	if (targetWords.length < 2) return { ok: false, reason: 'target_too_short' };
+	if (targetWords.every((word) => GENERIC_TARGETS.has(word))) {
+		return { ok: false, reason: 'generic_target' };
+	}
+	const header = `${options.type || 'feat'}(${options.scope || 'core'}): ${normalized}`;
+	if (header.length > Number(options.maxHeaderLength || 72)) {
+		return { ok: false, reason: 'header_too_long' };
+	}
+	return { ok: true, subject: normalized };
+}
+
+export {
+	normalizePath,
+	classifyCommitFileArea,
+	summarizeDiffEntries,
+	collectFileFacts,
+	rankDominantChange,
+	buildFileBulletDescription,
+	buildDeterministicSubject,
+	inferCommitType,
+	validateSubjectFragment,
+};

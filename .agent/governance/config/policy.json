@@ -45,6 +45,16 @@
                 "pnpm ci",
                 "pnpm lint && pnpm type-check && pnpm test"
             ]
+        },
+        "commit": {
+            "aiTitle": {
+                "enabled": false,
+                "mode": "assist",
+                "maxFiles": 12,
+                "maxSnippetChars": 400,
+                "confidenceThreshold": 0.75,
+                "timeoutMs": 4000
+            }
         }
     },
     "s0Drift": {

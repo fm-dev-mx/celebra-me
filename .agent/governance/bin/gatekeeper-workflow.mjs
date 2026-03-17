@@ -14,6 +14,19 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import { loadPolicy } from './gatekeeper.mjs';
+import {
+	buildDeterministicSubject,
+	buildFileBulletDescription,
+	collectFileFacts,
+	normalizePath,
+	rankDominantChange,
+	validateSubjectFragment,
+} from './commit-message-analysis.mjs';
+import {
+	hasAiTitleConfig,
+	requestAiTitleAssist,
+	shouldUseAiTitleAssist,
+} from './ai-title-assist.mjs';
 import { buildCommitlintContext } from '../../../scripts/validate-commits.mjs';
 
 const MAX_ATTEMPTS = 3;
@@ -180,6 +193,7 @@ function workflowSettings(policy, args) {
 			'adu',
 		],
 		preflightCommand: resolvePreflightCommand(policy),
+		aiTitle: policy.workflow?.commit?.aiTitle || {},
 	};
 }
 
@@ -342,12 +356,6 @@ function ensureSplit(session, domain) {
 	return split;
 }
 
-function normalizePath(value) {
-	return String(value || '')
-		.replace(/\\/g, '/')
-		.trim();
-}
-
 function groupedReasons(report) {
 	return {
 		unmappedFiles: report?.adu?.unmappedFiles || [],
@@ -407,56 +415,6 @@ function printArchitecturalInterventionGuidance(report, settings) {
 	}
 }
 
-function inferCommitType(files) {
-	const lowered = files.map((file) => file.toLowerCase());
-	if (
-		lowered.every(
-			(file) =>
-				file.startsWith('docs/') ||
-				file.startsWith('.agent/plans/') ||
-				file.endsWith('.md') ||
-				file.endsWith('.mdx') ||
-				file.endsWith('manifest.json'),
-		)
-	) {
-		return 'docs';
-	}
-	if (lowered.every((file) => file.startsWith('tests/') || file.includes('.test.')))
-		return 'test';
-	if (lowered.every((file) => file.startsWith('src/styles/') || /\.(scss|css)$/.test(file)))
-		return 'style';
-	if (lowered.every((file) => file.startsWith('scripts/') || file.startsWith('.agent/')))
-		return 'chore';
-	return 'feat';
-}
-
-function inferDominantFileCluster(files) {
-	const normalized = files.map(normalizePath);
-	if (!normalized.length) return { kind: 'generic', target: 'change set' };
-	if (normalized.some((file) => file.startsWith('src/lib/presenters/'))) {
-		if (normalized.some((file) => file.startsWith('src/pages/'))) {
-			return { kind: 'presenter-route', target: 'invitation presenter-driven route' };
-		}
-		return { kind: 'presenter', target: 'invitation page presenter' };
-	}
-	if (
-		normalized.some((file) => file.startsWith('src/components/invitation/')) &&
-		normalized.some((file) => file.startsWith('src/pages/[eventType]/'))
-	) {
-		return { kind: 'invitation-route', target: 'invitation route rendering' };
-	}
-	if (normalized.every((file) => file.startsWith('.agent/plans/'))) {
-		return { kind: 'plan', target: 'plan status and validation notes' };
-	}
-	if (normalized.every((file) => file.startsWith('tests/'))) {
-		return { kind: 'test', target: 'workflow coverage' };
-	}
-	if (normalized.every((file) => file.startsWith('docs/'))) {
-		return { kind: 'docs', target: 'governance guidance' };
-	}
-	return { kind: 'generic', target: scaffoldTarget({ files }) || 'change set' };
-}
-
 function truncateText(value, maxLength, options = {}) {
 	const text = String(value || '')
 		.trim()
@@ -467,179 +425,52 @@ function truncateText(value, maxLength, options = {}) {
 	return `${text.slice(0, maxLength - 3).trim()}...`;
 }
 
-function stemOf(file) {
-	const name = (file.split('/').pop() || file).replace(/\.[^.]+$/, '');
-	return name
-		.replace(/[^a-zA-Z0-9-]+/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '');
-}
-
-function normalizeStem(value) {
-	return String(value || '')
-		.replace(/[^a-zA-Z0-9-]+/g, '-')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '');
-}
-
-function commonPathPrefix(files) {
-	if (!files.length) return '';
-	const segments = files.map((file) => file.split('/'));
-	const prefix = [];
-	for (let index = 0; index < segments[0].length; index += 1) {
-		const candidate = segments[0][index];
-		if (!segments.every((parts) => parts[index] === candidate)) break;
-		prefix.push(candidate);
-	}
-	return prefix.join('/');
-}
-
-function scaffoldTarget(split) {
-	const prefix = commonPathPrefix(split.files || []);
-	const fallback = split.baseDomain || split.id || 'change';
-	const target = prefix.split('/').filter(Boolean).pop() || fallback;
-	return normalizeStem(target).replace(/-/g, ' ');
+function inferDominantFileCluster(files, diffEntries = []) {
+	const fileFacts = collectFileFacts(files, diffEntries);
+	const dominantChange = rankDominantChange(fileFacts, { fallbackTarget: 'change set' });
+	return {
+		kind: dominantChange.kind,
+		target: dominantChange.target,
+		confidence: dominantChange.confidence,
+	};
 }
 
 function describeFileChange(file, splitContext = {}) {
-	const stem = stemOf(file).toLowerCase();
-	const normalizedStem = stem.replace(/-/g, ' ');
-	const dominantCluster = splitContext.dominantCluster?.kind || 'generic';
-
-	if (file.startsWith('src/lib/presenters/') && file.endsWith('.ts')) {
-		return 'assemble invitation props from content and context';
-	}
-	if (file.startsWith('src/pages/') && file.endsWith('.astro')) {
-		return dominantCluster === 'presenter-route'
-			? 'reduce the route to guest loading and presenter rendering'
-			: 'reduce the route to data loading and presenter rendering';
-	}
-	if (file.startsWith('src/components/invitation/') && file.endsWith('.astro')) {
-		return 'extract invitation section rendering into a dedicated component';
-	}
-	if (file.startsWith('tests/unit/') && file.includes('invitation.presenter.test')) {
-		return 'cover presenter outputs with fixture-based tests';
-	}
-	if (file.endsWith('/manifest.json') && file.startsWith('.agent/plans/')) {
-		return 'update plan status, blockers, and phase metadata';
-	}
-	if (file.endsWith('/CHANGELOG.md') && file.startsWith('.agent/plans/')) {
-		return 'log delivered work, validation runs, and remaining blockers';
-	}
-	if (/^\.agent\/plans\/.+\/phases\/\d{2}-/.test(file)) {
-		return 'document delivered scope, validation, and unresolved blockers';
-	}
-	if (file.endsWith('/README.md') && file.startsWith('.agent/plans/')) {
-		return 'mark the plan status and summarize verified implementation progress';
-	}
-	if (file === 'docs/core/architecture.md') {
-		return 'define presenters as the BFF assembly layer for complex routes';
-	}
-	if (file === 'docs/core/project-conventions.md') {
-		return 'document the presenters folder convention and route-facing usage guidance';
-	}
-
-	if (file.includes('/schemas/')) return `add ${normalizedStem} schema definition`;
-	if (file.includes('config.ts') && file.includes('/content/'))
-		return 'simplify to import from modular schemas';
-	if (file.includes('/adapters/')) return 'update adapter for schema changes';
-
-	// Keyword-based fallback for quality
-	try {
-		const content = readFileSync(resolve(repoRoot(), file), 'utf8');
-		if (content.includes('z.object')) return `define ${normalizedStem} validation schema`;
-		if (content.includes('export const')) return `implement ${normalizedStem} constants`;
-		if (content.includes('<script')) return `add interactive logic to ${normalizedStem}`;
-		if (content.includes('interface ') || content.includes('type '))
-			return `define ${normalizedStem} type contracts`;
-	} catch {
-		/* ignore read failures for new/deleted files */
-	}
-
-	if (file.endsWith('README.md')) return 'describe plan status and overview';
-	if (file.endsWith('CHANGELOG.md')) return 'track milestones and decisions';
-	if (/\/phases\/\d{2}-/.test(file)) return 'define phase scope and deliverables';
-	if (file.endsWith('manifest.json')) return 'define plan metadata and phases';
-	if (file.endsWith('.json')) return `harden ${normalizedStem || 'json'} implementation`;
-	if (file.endsWith('.md')) return `document ${normalizedStem || 'documentation'} notes`;
-	if (file.endsWith('.mjs')) return `implement ${normalizedStem || 'script'} logic`;
-	if (file.endsWith('.sh')) return 'configure hook execution';
-	if (file.endsWith('.schema.ts')) return `add ${normalizedStem} schema`;
-	return `align ${normalizedStem || 'file'} implementation`;
-}
-
-function headerSubject(scope, split) {
-	const commitType = inferCommitType(split.files);
-	const baseDomain = split.baseDomain || scope;
-	const dominantCluster = inferDominantFileCluster(split.files);
-	const target = dominantCluster.target || scaffoldTarget(split);
-	const candidates = [];
-
-	if (baseDomain.startsWith('gov-plans-archive'))
-		candidates.push('archive hardening fixture plan files');
-	if (dominantCluster.kind === 'presenter-route') {
-		candidates.push(`implement ${target}`);
-		candidates.push('refactor invitation route rendering');
-	}
-	if (dominantCluster.kind === 'presenter') {
-		candidates.push(`implement ${target}`);
-	}
-	if (dominantCluster.kind === 'invitation-route') {
-		candidates.push(`refactor ${target}`);
-	}
-	if (dominantCluster.kind === 'plan') {
-		candidates.push('define plan validation gates');
-		candidates.push('clarify plan blockers and next steps');
-	}
-	if (dominantCluster.kind === 'docs') {
-		candidates.push(`clarify ${target}`);
-	}
-	if (dominantCluster.kind === 'test') {
-		candidates.push(`add ${target}`);
-	}
-	if (baseDomain === 'gov-agent-config') candidates.push('harden gatekeeper workflow guards');
-	if (baseDomain === 'gov-workflows') candidates.push(`harden ${target} workflow`);
-	if (baseDomain.startsWith('gov-tooling')) candidates.push(`refine ${target}`);
-	if (baseDomain === 'core' && split.files.some((f) => f.includes('/schemas/'))) {
-		candidates.push(`extract ${truncateText(scaffoldTarget(split), 24)} into modular schemas`);
-	}
-	candidates.push(`align ${truncateText(scaffoldTarget(split), 24)} implementation`);
-	return (
-		candidates
-			.map((value) => value.replace(/\s+/g, ' ').trim())
-			.find((value) => `${commitType}(${scope}): ${value}`.length <= HEADER_MAX_LENGTH) ||
-		'refine scoped change set'
-	);
-}
-
-function buildCommitScaffold(split) {
-	const commitType = inferCommitType(split.files);
-	const scope = split.id;
-	const dominantCluster = inferDominantFileCluster(split.files);
-	const header = `${commitType}(${scope}): ${headerSubject(scope, split)}`;
-	const body = split.files.map((file) => {
-		const description = describeFileChange(file, { split, dominantCluster });
-		const bulletPrefix = `- ${file}: `;
-		// Never truncate path (bulletPrefix). If line is too long, truncate description.
-		const remainingLength = BULLET_MAX_LENGTH - bulletPrefix.length;
-
-		if (remainingLength < 10) {
-			// Path itself is almost 100 chars, nothing we can do but keep the path and hope for the best/warn
-			return `${bulletPrefix}${truncateText(description, 10)}`;
-		}
-
-		if (bulletPrefix.length + description.length > BULLET_MAX_LENGTH) {
-			return `${bulletPrefix}${truncateText(description, remainingLength)}`;
-		}
-		return `${bulletPrefix}${description}`;
+	const diffEntries = splitContext.diffEntries || [];
+	const fileFacts = collectFileFacts([file], diffEntries);
+	return buildFileBulletDescription(fileFacts[0], {
+		dominantChange: splitContext.dominantChange || splitContext.dominantCluster || null,
+		repoRootPath: splitContext.repoRootPath || repoRoot(),
 	});
+}
+
+function formatBulletLine(filePath, description) {
+	const bulletPrefix = `- ${filePath}: `;
+	const remainingLength = BULLET_MAX_LENGTH - bulletPrefix.length;
+	if (remainingLength < 20) {
+		throw new Error(
+			`Path "${filePath}" leaves too little room for a specific body description within ${BULLET_MAX_LENGTH} characters.`,
+		);
+	}
+	if (bulletPrefix.length + description.length > BULLET_MAX_LENGTH) {
+		return `${bulletPrefix}${truncateText(description, remainingLength)}`;
+	}
+	return `${bulletPrefix}${description}`;
+}
+
+function getNumstatForPath(filePath) {
+	const result = run('git', ['diff', '--cached', '--numstat', '--', filePath]);
+	if (result.status !== 0) return { additions: 0, deletions: 0 };
+	const line = String(result.stdout || '')
+		.split(/\r?\n/)
+		.map((entry) => entry.trim())
+		.find(Boolean);
+	if (!line) return { additions: 0, deletions: 0 };
+	const [additions, deletions] = line.split('\t');
+	const parseCount = (value) => (value === '-' ? 0 : Number(value || 0));
 	return {
-		type: commitType,
-		scope,
-		header,
-		headerLength: header.length,
-		body,
-		fullMessage: `${header}\n\n${body.join('\n')}`,
+		additions: parseCount(additions),
+		deletions: parseCount(deletions),
 	};
 }
 
@@ -654,33 +485,183 @@ function getStagedDiffEntries() {
 			const parts = line.split('\t').filter(Boolean);
 			const rawStatus = parts[0] || 'M';
 			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
-			const path = normalizePath(parts[parts.length - 1]);
-			const area =
-				path.startsWith('docs/') || path.endsWith('.md') || path.endsWith('.mdx')
-					? 'docs'
-					: path.startsWith('tests/') ||
-						  path.includes('.test.') ||
-						  path.includes('.spec.')
-						? 'test'
-						: path.startsWith('src/assets/')
-							? 'asset'
-							: path.startsWith('scripts/') || path.startsWith('.agent/')
-								? 'script'
-								: path.endsWith('.json') || path.endsWith('.cjs')
-									? 'config'
-									: 'source';
-			return { path, status, area };
+			const oldPath = status === 'R' ? normalizePath(parts[1] || '') : '';
+			const path = normalizePath(parts[status === 'R' ? 2 : 1] || parts[parts.length - 1]);
+			const stats = getNumstatForPath(path || oldPath);
+			return {
+				path,
+				oldPath,
+				status,
+				area: collectFileFacts([path || oldPath])[0]?.area || 'source',
+				additions: stats.additions,
+				deletions: stats.deletions,
+			};
 		});
 }
 
-function validateGeneratedCommitMessage(message, split) {
+function buildCommitScaffold(split, options = {}) {
+	const repoRootPath = options.repoRootPath || repoRoot();
+	const diffEntries = options.diffEntries || [];
+	const fileFacts = collectFileFacts(split.files, diffEntries);
+	const dominantChange = rankDominantChange(fileFacts, {
+		fallbackTarget: split.baseDomain || split.id || 'change set',
+	});
+	const deterministic = buildDeterministicSubject({
+		scope: split.id,
+		fileFacts,
+		dominantChange,
+	});
+	const body = fileFacts.map((fact) =>
+		formatBulletLine(
+			fact.path,
+			buildFileBulletDescription(fact, {
+				dominantChange,
+				repoRootPath,
+			}),
+		),
+	);
+	return {
+		type: deterministic.type,
+		scope: split.id,
+		subject: deterministic.subject,
+		baseSubject: deterministic.subject,
+		finalSubject: deterministic.subject,
+		header: deterministic.header,
+		headerLength: deterministic.header.length,
+		body,
+		fullMessage: `${deterministic.header}\n\n${body.join('\n')}`,
+		titleSource: 'deterministic',
+		titleConfidence: deterministic.confidence,
+		meaningfulAreaCount: dominantChange.meaningfulAreaCount,
+		dominantChange,
+		fileFacts,
+	};
+}
+
+function getDiffSnippet(filePath, maxChars) {
+	const result = run('git', ['diff', '--cached', '--unified=0', '--no-color', '--', filePath]);
+	if (result.status !== 0) return '';
+	return truncateText(String(result.stdout || '').trim(), maxChars, { noEllipsis: false });
+}
+
+function buildAiTitlePayload(scaffold, policy, diffEntries) {
+	const aiConfig = policy?.workflow?.commit?.aiTitle || {};
+	const maxFiles = Number(aiConfig.maxFiles || 12);
+	const maxSnippetChars = Number(aiConfig.maxSnippetChars || 400);
+	const rankedPaths = (scaffold.dominantChange?.fileScores || [])
+		.slice()
+		.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path))
+		.map((entry) => entry.path);
+	const snippetPaths = rankedPaths.slice(0, 3);
+	return {
+		type: scaffold.type,
+		scope: scaffold.scope,
+		baseSubject: scaffold.baseSubject,
+		dominantChange: scaffold.dominantChange,
+		files: scaffold.fileFacts.slice(0, maxFiles).map((fact) => ({
+			path: fact.path,
+			oldPath: fact.oldPath || undefined,
+			status: fact.status,
+			area: fact.area,
+			additions: fact.additions,
+			deletions: fact.deletions,
+			description: buildFileBulletDescription(fact, {
+				dominantChange: scaffold.dominantChange,
+				repoRootPath: repoRoot(),
+			}),
+		})),
+		diffEntries,
+		diffSnippets: snippetPaths
+			.map((path) => ({
+				path,
+				snippet: getDiffSnippet(path, maxSnippetChars),
+			}))
+			.filter((entry) => entry.snippet),
+		constraints: {
+			language: 'English',
+			maxHeaderLength: HEADER_MAX_LENGTH,
+			format: 'verb target',
+			strongVerbRequired: true,
+			concreteTargetRequired: true,
+			noProcessLanguage: true,
+		},
+	};
+}
+
+async function resolveCommitScaffold(split, options = {}) {
+	const repoRootPath = options.repoRootPath || repoRoot();
+	const diffEntries =
+		options.diffEntries ||
+		getStagedDiffEntries().filter((entry) =>
+			split.files.map(normalizePath).includes(entry.path),
+		);
+	const deterministicScaffold = buildCommitScaffold(split, {
+		repoRootPath,
+		diffEntries,
+	});
+	const policy = options.policy || loadPolicy(options.policyFile || DEFAULT_POLICY_FILE);
+	if (
+		!hasAiTitleConfig(policy, options.env || process.env) ||
+		!shouldUseAiTitleAssist(policy, {
+			confidence: deterministicScaffold.titleConfidence,
+			meaningfulAreaCount: deterministicScaffold.meaningfulAreaCount,
+		})
+	) {
+		return { scaffold: deterministicScaffold, deterministicScaffold };
+	}
+
+	const env = options.env || process.env;
+	const aiPayload = buildAiTitlePayload(deterministicScaffold, policy, diffEntries);
+	const controller = new AbortController();
+	const timeoutMs = Number(policy?.workflow?.commit?.aiTitle?.timeoutMs || 4000);
+	const timeout = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const aiResult = await requestAiTitleAssist(aiPayload, {
+			fetchImpl: options.fetchImpl,
+			endpoint: env.GATEKEEPER_AI_TITLE_ENDPOINT,
+			model: env.GATEKEEPER_AI_TITLE_MODEL,
+			apiKey: env.GATEKEEPER_AI_TITLE_API_KEY,
+			signal: controller.signal,
+		});
+		const validation = validateSubjectFragment(aiResult.subject, {
+			type: deterministicScaffold.type,
+			scope: deterministicScaffold.scope,
+			maxHeaderLength: HEADER_MAX_LENGTH,
+		});
+		if (!validation.ok) {
+			return { scaffold: deterministicScaffold, deterministicScaffold };
+		}
+		const header = `${deterministicScaffold.type}(${deterministicScaffold.scope}): ${validation.subject}`;
+		return {
+			scaffold: {
+				...deterministicScaffold,
+				header,
+				headerLength: header.length,
+				fullMessage: `${header}\n\n${deterministicScaffold.body.join('\n')}`,
+				titleSource: 'ai-assisted',
+				finalSubject: validation.subject,
+				aiTitleConfidence: aiResult.confidence,
+				aiTitleRationale: aiResult.rationale,
+			},
+			deterministicScaffold,
+		};
+	} catch {
+		return { scaffold: deterministicScaffold, deterministicScaffold };
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
+function validateGeneratedCommitMessage(message, split, diffEntries = null) {
 	const files = split.files.map(normalizePath);
-	const diffEntries = getStagedDiffEntries().filter((entry) => files.includes(entry.path));
+	const commitDiffEntries = (diffEntries || getStagedDiffEntries()).filter((entry) =>
+		files.includes(entry.path),
+	);
 	const result = run('npx', ['commitlint'], {
 		input: `${message.trim()}\n`,
 		env: {
 			...process.env,
-			...buildCommitlintContext(files, diffEntries),
+			...buildCommitlintContext(files, commitDiffEntries),
 		},
 	});
 	return {
@@ -690,7 +671,7 @@ function validateGeneratedCommitMessage(message, split) {
 }
 
 function stagedFilesFromIndex() {
-	const result = run('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=d']);
+	const result = run('git', ['diff', '--cached', '--name-only', '-z']);
 	if (result.status !== 0) fail('Unable to read staged files.');
 	return String(result.stdout || '')
 		.split('\0')
@@ -919,7 +900,7 @@ function stageCommand(args) {
 	console.log(`🔐 S0 signature: ${args.s0SignatureFile}`);
 }
 
-function scaffoldCommand(args) {
+async function scaffoldCommand(args) {
 	if (!args.domain) fail('The scaffold command requires --domain <id>.');
 	const policy = loadPolicy(args.policyFile);
 	const settings = workflowSettings(policy, args);
@@ -938,14 +919,24 @@ function scaffoldCommand(args) {
 		preflightReport: session?.preflightReport || null,
 	});
 	const split = ensureSplit(session, args.domain);
-	const scaffold = buildCommitScaffold(split);
-	if (!args.json) {
-		const validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split);
-		if (!validationResult.ok) {
-			fail(
-				`Generated scaffold does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
-			);
-		}
+	const diffEntries = getStagedDiffEntries().filter((entry) =>
+		split.files.map(normalizePath).includes(entry.path),
+	);
+	const resolved = await resolveCommitScaffold(split, {
+		policy,
+		repoRootPath: repoRoot(),
+		diffEntries,
+	});
+	let scaffold = resolved.scaffold;
+	let validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
+	if (!validationResult.ok && scaffold.titleSource === 'ai-assisted') {
+		scaffold = resolved.deterministicScaffold;
+		validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
+	}
+	if (!validationResult.ok) {
+		fail(
+			`Generated scaffold does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
+		);
 	}
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
@@ -979,7 +970,7 @@ function executeCommit(message) {
 	console.log('✅ Commit created successfully.');
 }
 
-function commitCommand(args) {
+async function commitCommand(args) {
 	if (!args.domain) fail('The commit command requires --domain <id>.');
 	const policy = loadPolicy(args.policyFile);
 	const settings = workflowSettings(policy, args);
@@ -995,8 +986,20 @@ function commitCommand(args) {
 		);
 	}
 	const split = ensureSplit(session, args.domain);
-	const scaffold = buildCommitScaffold(split);
-	const validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split);
+	const diffEntries = getStagedDiffEntries().filter((entry) =>
+		split.files.map(normalizePath).includes(entry.path),
+	);
+	const resolved = await resolveCommitScaffold(split, {
+		policy,
+		repoRootPath: repoRoot(),
+		diffEntries,
+	});
+	let scaffold = resolved.scaffold;
+	let validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
+	if (!validationResult.ok && scaffold.titleSource === 'ai-assisted') {
+		scaffold = resolved.deterministicScaffold;
+		validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
+	}
 	if (!validationResult.ok) {
 		fail(
 			`Generated commit message does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
@@ -1038,7 +1041,7 @@ function cleanupCommand(args) {
 	if (!args.json) console.log('🧹 Cleaned Gatekeeper workflow session artifacts.');
 }
 
-function main() {
+async function main() {
 	const args = parseArgs(process.argv.slice(2));
 	switch (args.command) {
 		case 'inspect':
@@ -1051,10 +1054,10 @@ function main() {
 			stageCommand(args);
 			return;
 		case 'scaffold':
-			scaffoldCommand(args);
+			await scaffoldCommand(args);
 			return;
 		case 'commit':
-			commitCommand(args);
+			await commitCommand(args);
 			return;
 		case 'sync-s0':
 			syncS0Command(args);
@@ -1072,7 +1075,9 @@ const isMain =
 	`file://${process.platform === 'win32' ? '/' : ''}${process.argv[1]?.replace(/\\/g, '/')}`;
 
 if (isMain) {
-	main();
+	main().catch((error) => {
+		fail(error instanceof Error ? error.message : String(error));
+	});
 }
 
 export {
@@ -1083,6 +1088,7 @@ export {
 	inspectCommand,
 	parseArgs,
 	printArchitecturalInterventionGuidance,
+	resolveCommitScaffold,
 	resolvePreflightCommand,
 	runGatekeeper,
 	scaffoldCommand,
