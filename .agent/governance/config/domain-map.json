@@ -69,6 +69,8 @@
             "src/content/events/**",
             "src/content/event-demos/**",
             "src/content/event-templates/**",
+            "src/hooks/**",
+            "src/interfaces/**",
             "src/lib/**",
             "src/data/**",
             "src/styles/events/**",
