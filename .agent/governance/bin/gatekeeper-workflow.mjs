@@ -192,21 +192,23 @@ function packageScripts(repoRootPath) {
 	}
 }
 
+function resolveRunnablePnpmCommand(command, repoScripts) {
+	const trimmed = String(command || '').trim();
+	if (!trimmed) return null;
+	if (!trimmed.startsWith('pnpm ')) return trimmed;
+	const scriptName = trimmed.slice(5);
+	return repoScripts[scriptName] ? trimmed : null;
+}
+
 function resolvePreflightCommand(policy) {
 	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
 	const repoScripts = packageScripts(repoRoot());
-	if (configured && (!configured.startsWith('pnpm ') || repoScripts[configured.slice(5)]))
-		return configured;
+	const configuredCommand = resolveRunnablePnpmCommand(configured, repoScripts);
+	if (configuredCommand) return configuredCommand;
 
 	for (const command of policy.workflow?.inspect?.preflightFallbacks || []) {
-		const trimmed = String(command || '').trim();
-		if (!trimmed) continue;
-		if (trimmed.startsWith('pnpm ')) {
-			const scriptName = trimmed.slice(5);
-			if (repoScripts[scriptName]) return trimmed;
-			continue;
-		}
-		return trimmed;
+		const resolvedCommand = resolveRunnablePnpmCommand(command, repoScripts);
+		if (resolvedCommand) return resolvedCommand;
 	}
 	if (repoScripts.ci) return 'pnpm ci';
 	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
@@ -586,22 +588,22 @@ function headerSubject(scope, split) {
 		candidates.push(`refactor ${target}`);
 	}
 	if (dominantCluster.kind === 'plan') {
-		candidates.push('document plan status and blockers');
-		candidates.push('clarify plan validation blockers');
+		candidates.push('define plan validation gates');
+		candidates.push('clarify plan blockers and next steps');
 	}
 	if (dominantCluster.kind === 'docs') {
-		candidates.push(`document ${target}`);
+		candidates.push(`clarify ${target}`);
 	}
 	if (dominantCluster.kind === 'test') {
 		candidates.push(`add ${target}`);
 	}
-	if (baseDomain === 'gov-agent-config') candidates.push(`harden gatekeeper workflow logic`);
-	if (baseDomain === 'gov-workflows') candidates.push(`formalize ${target} workflow`);
+	if (baseDomain === 'gov-agent-config') candidates.push('harden gatekeeper workflow guards');
+	if (baseDomain === 'gov-workflows') candidates.push(`harden ${target} workflow`);
 	if (baseDomain.startsWith('gov-tooling')) candidates.push(`refine ${target}`);
 	if (baseDomain === 'core' && split.files.some((f) => f.includes('/schemas/'))) {
 		candidates.push(`extract ${truncateText(scaffoldTarget(split), 24)} into modular schemas`);
 	}
-	candidates.push(`update ${truncateText(scaffoldTarget(split), 24)} implementation`);
+	candidates.push(`align ${truncateText(scaffoldTarget(split), 24)} implementation`);
 	return (
 		candidates
 			.map((value) => value.replace(/\s+/g, ' ').trim())
@@ -927,6 +929,11 @@ function scaffoldCommand(args) {
 		cleanupArtifacts(args);
 		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
 	}
+	if (session.workflowRoute !== 'proceed_adu') {
+		fail(
+			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before scaffolding.`,
+		);
+	}
 	refreshSessionFile(session, args, settings, {
 		preflightReport: session?.preflightReport || null,
 	});
@@ -1076,9 +1083,11 @@ export {
 	inspectCommand,
 	parseArgs,
 	printArchitecturalInterventionGuidance,
+	resolvePreflightCommand,
 	runGatekeeper,
 	scaffoldCommand,
 	commitCommand,
+	resolveRunnablePnpmCommand,
 	describeFileChange,
 	inferDominantFileCluster,
 	validateGeneratedCommitMessage,
