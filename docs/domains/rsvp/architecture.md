@@ -116,6 +116,20 @@ realtime is required.
 - Input sanitization + attendee bound checks are enforced server-side.
 - Audit trail tracks view/response/share events.
 
+> **Security Note (2026-03-17):** The current implementation uses `useServiceRole: true` extensively
+> across repository operations (`guest.repository.ts`, `event.repository.ts`,
+> `claim-code.repository.ts`, `role-membership.repository.ts`, `audit.repository.ts`,
+> `soft-delete.ts`, `auth-api.ts`). This represents a deviation from the documented architecture
+> which states "Host operations use authenticated user JWT and RLS." This is a known gap identified
+> during Q1 2026 Audit Phase 04.
+>
+> - **Justified Usage:** Audit logging, cross-tenant reads for admin operations, soft-delete
+>   operations require elevated privileges.
+> - **Unjustified/Review Needed:** Host CRUD operations in guest.repository.ts that could leverage
+>   RLS-scoped queries.
+> - **Remediation:** Future work to refactor repository layer to use JWT-based RLS scoping where
+>   possible, while preserving service-role for truly privileged operations.
+
 ## Migration Notes
 
 - `src/content/events/*.json` and `src/content/event-demos/**.json` remain legacy content sources
