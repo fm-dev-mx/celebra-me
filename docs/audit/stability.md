@@ -97,8 +97,8 @@ We have successfully executed the following phases to clean up technical debt:
 
 - **Windows Build Crash**: The `astro build` command fails with a panic in the Go-based compiler.
   This is a known intermittent issue with `sass-embedded` on Windows environments.
-    - **Workaround**: Continue using `pnpm dev` for local development. For production deployments,
-      verify in a Linux/CI environment (e.g., Vercel, GitHub Actions).
+  - **Workaround**: Continue using `pnpm dev` for local development. For production deployments,
+    verify in a Linux/CI environment (e.g., Vercel, GitHub Actions).
 
 ## 5. Next Steps for Premium Phase
 
@@ -107,3 +107,13 @@ We have successfully executed the following phases to clean up technical debt:
   `Itinerary`).
 - **Regression Monitoring**: Run `pnpm test` after implementing each section to ensure no functional
   regressions.
+
+## 6. 2026-03-16 Stability Addendum
+
+- ✅ Phase 01 of the Q1 2026 comprehensive audit completed without build or type regressions.
+- ✅ Luxury-hacienda preset isolation improved by moving countdown, family, and gallery structural
+  defaults into section theme files.
+- ✅ `pnpm build` completed successfully in the current Windows environment for this phase.
+- ⚠️ `pnpm ops validate-schema` still reports existing contract-versus-CSS warnings for editorial
+  and jewelry-box-wedding section variants; those warnings predate this phase and were not
+  introduced by the preset isolation remediation.

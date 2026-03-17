@@ -39,6 +39,23 @@ accents and fallback stylization.
 - Do not hardcode raw font family names in section styles.
 - If adding/removing loaded fonts, update both this doc and `Layout.astro` in the same PR.
 
+## Runtime Variable Surface
+
+The runtime typography variables exposed by `src/styles/global.scss` now include:
+
+- `--font-display`
+- `--font-display-formal`
+- `--font-display-elegant`
+- `--font-display-hacienda`
+- `--font-calligraphy`
+- `--font-body`
+- `--font-body-narrative`
+- `--font-body-hacienda`
+- `--font-ui`
+
+Preset-sensitive invitation sections should consume these CSS variables instead of direct
+`tokens.$font-*` values when the chosen preset can change the rendered font stack at runtime.
+
 ---
 
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-03-16 (Phase 03 Q1 2026 Audit Sync)

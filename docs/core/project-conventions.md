@@ -15,7 +15,8 @@ They are not architectural mandates; they are **shared agreements**.
 Astro promotes the following conventional folders, though you may extend them if necessary:
 
 - `docs/` — Permanent documentation (Architecture, Domains, UX).
-- `.agent/plans/` — Modular implementation plans and detailed specifications for each section/feature.
+- `.agent/plans/` — Modular implementation plans and detailed specifications for each
+  section/feature.
 - `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
 - `.agent/governance/` — Quality control scripts and policies.
 - `src/lib/presenters/` — Route-facing presenter modules that assemble page-ready view models from
@@ -42,6 +43,10 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 - Utilities & Logic: `kebab-case.ts`
 - Assets & Documentation: `kebab-case.extension` (e.g. `bg-hero.jpg`, `intro-guide.md`)
 - Styles: `kebab-case.scss`
+
+Supporting TypeScript modules such as hooks, interfaces, repositories, presenters, and shared
+helpers follow the `Utilities & Logic` rule even when they export `camelCase` hooks or `PascalCase`
+types from inside the file.
 
 ### 2.3 Routes & URLs
 
@@ -91,6 +96,9 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
   and preset-scoped section tokens instead of hardcoded hex values.
 - Expand semantic tokens in `src/styles/tokens/_semantic.scss` and preset files before adding new
   component-level color roles.
+- SCSS may keep using token files for authoring defaults, motion constants, and spacing, but runtime
+  theme-sensitive invitation styles must read fonts, palette, glass, and shadow roles from semantic
+  CSS variables such as `var(--font-*)`, `var(--color-*)`, and `var(--shadow-*)`.
 - Styling-only `define:vars` blocks are not allowed in Astro components. Pass styling values through
   inline custom properties or preset/state classes instead.
 - Runtime `define:vars` is allowed only for script-level Astro data injection when markup or data

@@ -1,6 +1,6 @@
 # RSVP Module Architecture (Multi-tenant)
 
-**Last Updated:** 2026-03-04 (Governance Phase 2: Kebab-case naming enforced)
+**Last Updated:** 2026-03-16 (Phase 02 Q1 2026 Audit Sync)
 
 ## Context
 
@@ -128,7 +128,8 @@ realtime is required.
 
 ## Changelog
 
-- **2026-03-04**: Renamed core RSVP/Auth utilities to strict `kebab-case`.
+- **2026-03-04**: Renamed core RSVP/Auth support modules to `kebab-case` while keeping UI components
+  aligned with the project-wide `PascalCase` convention.
 - **2026-03-04**: Updated all documentation links to reflect the consolidated 3-layer architecture.
 - **2026-03-04**: Refactored `AdminApi` to consolidate redundant error handling and satisfy
   duplication guards.

@@ -71,6 +71,11 @@ Presenter-owned route wrappers may inject per-event custom properties inline for
 values such as envelope colors, but those values still flow through semantic CSS variable names
 rather than component-local hex literals.
 
+Preset files must not own section layout architecture. As of 2026-03-16, the luxury-hacienda
+countdown, family, and gallery layout defaults live in their section theme files rather than in
+`src/styles/themes/presets/_luxury-hacienda.scss`. Presets may still provide high-level semantic
+palette, typography, and cross-section surface tokens.
+
 > [!NOTE] When defining presets, always use explicit index imports for tokens (e.g.,
 > `@use '../../tokens/index' as tokens;`) to prevent name resolution ambiguities in complex
 > dependency trees.
@@ -109,6 +114,18 @@ These files are lazy-loaded only for the matching event route.
 Base semantic tokens live in `src/styles/tokens/_semantic.scss` and are surfaced globally through
 `src/styles/global.scss`.
 
+As of 2026-03-16 Phase 03, `src/styles/global.scss` also defines the canonical runtime typography
+and glass-role variables consumed by preset-sensitive invitation surfaces, including:
+
+- `--font-display-hacienda`
+- `--font-body-hacienda`
+- `--color-glass-bg`
+- `--color-glass-border`
+- `--color-glass-shadow`
+- `--shadow-subtle`
+- `--shadow-emphasis`
+- `--shadow-premium`
+
 Phase 06 standardized these additional semantic roles for component-level styling:
 
 - `--color-surface-elevated`
@@ -119,6 +136,11 @@ Phase 06 standardized these additional semantic roles for component-level stylin
 Component rules:
 
 - Astro and TSX files must not introduce hardcoded hex colors for invitation-facing UI.
+- Runtime theme-sensitive SCSS should prefer semantic CSS variables such as `var(--font-*)`,
+  `var(--color-*)`, and `var(--shadow-*)` over direct `tokens.$...` access for palette, glass, and
+  typography values that presets may override at runtime.
+- Direct `tokens.$...` access remains acceptable for authoring-only concerns such as animation
+  timing, spacing defaults, and fallbacks where no runtime override exists.
 - Styling-only `define:vars` blocks should be replaced with inline custom properties or preset/state
   classes.
 - Script-level `define:vars` remains acceptable when Astro needs runtime data injection for client
@@ -154,4 +176,4 @@ as a fallback to preserve existing content behavior during migration.
 
 ---
 
-**Last Updated:** 2026-03-13 (Ultra-Premium Editorial Overhaul Sync)
+**Last Updated:** 2026-03-16 (Phase 03 Q1 2026 Audit Sync)
