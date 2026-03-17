@@ -4,8 +4,8 @@
     "title": "La Noche Premiere de Ximena",
     "description": "Una celebración editorial donde el brillo de los quince años se encuentra con la elegancia Noir. Sé parte de la historia de Ximena.",
     "theme": {
-        "primaryColor": "#0D0D0D",
-        "accentColor": "#D4AF37",
+        "primaryColor": "#FBEDED",
+        "accentColor": "#D4A5A5",
         "fontFamily": "serif",
         "preset": "top-premium-xv-ximena"
     },
@@ -73,7 +73,7 @@
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "Etiqueta: <strong>Gala Editorial (Riguroso Negro/Blanco)</strong>"
+                "text": "Etiqueta: <strong>Gala Rose & Gold (Dusty Rose / Rose Gold)</strong>"
             },
             {
                 "icon": "envelope",
@@ -314,9 +314,9 @@
         "microcopy": "Abre Tu Invitación",
         "variant": "editorial",
         "closedPalette": {
-            "primary": "#D4AF37",
-            "accent": "#0D0D0D",
-            "background": "#F9F6F2"
+            "primary": "#D4A5A5",
+            "accent": "#5E4B4B",
+            "background": "#FBEDED"
         }
     },
     "sharing": {
