@@ -39,7 +39,7 @@ const DEFAULT_TTL_MINUTES = 30;
 const GATEKEEPER_BIN = resolve(dirname(fileURLToPath(import.meta.url)), 'gatekeeper.mjs');
 const WORKFLOW_REPORT_PROFILE = 'workflow';
 const ROUTE_REPORT_PROFILE = 'route';
-const BULLET_MAX_LENGTH = 100;
+const BULLET_MAX_LENGTH = 120;
 const HEADER_MAX_LENGTH = 72;
 
 function run(cmd, args, options = {}) {
