@@ -447,7 +447,7 @@ function describeFileChange(file, splitContext = {}) {
 function formatBulletLine(filePath, description) {
 	const bulletPrefix = `- ${filePath}: `;
 	const remainingLength = BULLET_MAX_LENGTH - bulletPrefix.length;
-	if (remainingLength < 20) {
+	if (remainingLength < 10) {
 		throw new Error(
 			`Path "${filePath}" leaves too little room for a specific body description within ${BULLET_MAX_LENGTH} characters.`,
 		);
