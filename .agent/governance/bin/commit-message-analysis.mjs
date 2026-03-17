@@ -1,5 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
-import { basename, resolve } from 'path';
+import { basename } from 'path';
 
 const AREA_WEIGHTS = {
 	source: 100,
@@ -344,17 +343,6 @@ function inferCommitType(fileFacts) {
 	return 'feat';
 }
 
-function readContentHint(filePath, repoRootPath) {
-	if (!repoRootPath || !filePath) return '';
-	const absolutePath = resolve(repoRootPath, filePath);
-	if (!existsSync(absolutePath)) return '';
-	try {
-		return readFileSync(absolutePath, 'utf8');
-	} catch {
-		return '';
-	}
-}
-
 function statusAwareText(status, addText, modifyText, deleteText) {
 	if (status === 'A') return addText;
 	if (status === 'D') return deleteText;
@@ -371,224 +359,16 @@ function buildFileBulletDescription(fileFact, options = {}) {
 	const path = normalizePath(fact.path);
 	const stem = stemOf(path).toLowerCase();
 	const normalizedStem = stem.replace(/-/g, ' ');
-	const dominantCluster = options.dominantChange?.kind || 'generic';
 
 	if (fact.status === 'R') {
 		const renamedBase = buildFileBulletDescription({ ...fact, status: 'M' }, options);
 		return buildRenameDescription(renamedBase, fact.oldPath);
 	}
 
-	if (path.startsWith('src/lib/presenters/') && path.endsWith('.ts')) {
-		return statusAwareText(
-			fact.status,
-			'add presenter assembly for invitation props',
-			'assemble invitation props from content and context',
-			'remove presenter assembly for invitation props',
-		);
-	}
-	if (path.startsWith('src/pages/') && path.endsWith('.astro')) {
-		return statusAwareText(
-			fact.status,
-			dominantCluster === 'presenter-route'
-				? 'add guest loading and presenter rendering route'
-				: 'add route data loading and rendering flow',
-			dominantCluster === 'presenter-route'
-				? 'reduce the route to guest loading and presenter rendering'
-				: 'reduce the route to data loading and presenter rendering',
-			'remove route rendering entrypoint',
-		);
-	}
-	if (path.startsWith('src/components/invitation/') && path.endsWith('.astro')) {
-		return statusAwareText(
-			fact.status,
-			'add invitation section rendering component',
-			'extract invitation section rendering into a dedicated component',
-			'remove invitation section rendering component',
-		);
-	}
-	if (path.startsWith('tests/unit/') && path.includes('invitation.presenter.test')) {
-		return statusAwareText(
-			fact.status,
-			'add fixture-based presenter coverage',
-			'cover presenter outputs with fixture-based tests',
-			'remove fixture-based presenter coverage',
-		);
-	}
-	if (path.endsWith('/manifest.json') && path.startsWith('.agent/plans/')) {
-		return statusAwareText(
-			fact.status,
-			'define plan status, blockers, and phase metadata',
-			'update plan status, blockers, and phase metadata',
-			'remove plan status and phase metadata',
-		);
-	}
-	if (path.endsWith('/CHANGELOG.md') && path.startsWith('.agent/plans/')) {
-		return statusAwareText(
-			fact.status,
-			'add plan audit trail entries',
-			'log delivered work, validation runs, and remaining blockers',
-			'remove plan audit trail entries',
-		);
-	}
-	if (/^\.agent\/plans\/.+\/phases\/\d{2}-/.test(path)) {
-		return statusAwareText(
-			fact.status,
-			'document phase scope, validation, and blockers',
-			'document delivered scope, validation, and unresolved blockers',
-			'remove phase delivery notes',
-		);
-	}
-	if (path.endsWith('/README.md') && path.startsWith('.agent/plans/')) {
-		return statusAwareText(
-			fact.status,
-			'define plan scope, risks, and phase index',
-			'mark the plan status and summarize verified implementation progress',
-			'remove plan overview and index',
-		);
-	}
-	if (path === 'docs/core/architecture.md') {
-		return statusAwareText(
-			fact.status,
-			'define presenters as the BFF assembly layer for complex routes',
-			'define presenters as the BFF assembly layer for complex routes',
-			'remove presenter architecture guidance',
-		);
-	}
-	if (path === 'docs/core/project-conventions.md') {
-		return statusAwareText(
-			fact.status,
-			'document the presenters folder convention and route-facing usage guidance',
-			'document the presenters folder convention and route-facing usage guidance',
-			'remove presenter usage guidance',
-		);
-	}
-	if (path.includes('/schemas/')) {
-		return statusAwareText(
-			fact.status,
-			`add ${normalizedStem} schema definition`,
-			`align ${normalizedStem} schema definition`,
-			`remove ${normalizedStem} schema definition`,
-		);
-	}
-	if (path.includes('config.ts') && path.includes('/content/')) {
-		return statusAwareText(
-			fact.status,
-			'simplify to import from modular schemas',
-			'simplify to import from modular schemas',
-			'remove content schema entrypoint',
-		);
-	}
-	if (path.includes('/adapters/')) {
-		return statusAwareText(
-			fact.status,
-			'add adapter support for schema changes',
-			'update adapter for schema changes',
-			'remove adapter for schema changes',
-		);
-	}
-
-	const content = fact.status === 'D' ? '' : readContentHint(path, options.repoRootPath);
-	if (content.includes('z.object')) {
-		return statusAwareText(
-			fact.status,
-			`define ${normalizedStem} validation schema`,
-			`align ${normalizedStem} validation schema`,
-			`remove ${normalizedStem} validation schema`,
-		);
-	}
-	if (content.includes('export const')) {
-		return statusAwareText(
-			fact.status,
-			`implement ${normalizedStem} constants`,
-			`align ${normalizedStem} constants`,
-			`remove ${normalizedStem} constants`,
-		);
-	}
-	if (content.includes('<script')) {
-		return statusAwareText(
-			fact.status,
-			`add interactive logic to ${normalizedStem}`,
-			`update interactive logic in ${normalizedStem}`,
-			`remove interactive logic from ${normalizedStem}`,
-		);
-	}
-	if (content.includes('interface ') || content.includes('type ')) {
-		return statusAwareText(
-			fact.status,
-			`define ${normalizedStem} type contracts`,
-			`align ${normalizedStem} type contracts`,
-			`remove ${normalizedStem} type contracts`,
-		);
-	}
-
-	if (path.endsWith('README.md')) {
-		return statusAwareText(
-			fact.status,
-			'add overview and operating guidance',
-			'update overview and operating guidance',
-			'remove overview and operating guidance',
-		);
-	}
-	if (path.endsWith('CHANGELOG.md')) {
-		return statusAwareText(
-			fact.status,
-			'add milestone audit entries',
-			'track milestones and decisions',
-			'remove milestone audit entries',
-		);
-	}
-	if (/\/phases\/\d{2}-/.test(path)) {
-		return statusAwareText(
-			fact.status,
-			'define phase scope and deliverables',
-			'update phase scope and deliverables',
-			'remove phase scope and deliverables',
-		);
-	}
-	if (path.endsWith('manifest.json')) {
-		return statusAwareText(
-			fact.status,
-			'define plan metadata and phases',
-			'update plan metadata and phases',
-			'remove plan metadata and phases',
-		);
-	}
-	if (path.endsWith('.json')) {
-		return statusAwareText(
-			fact.status,
-			`add ${normalizedStem || 'json'} configuration`,
-			`update ${normalizedStem || 'json'} configuration`,
-			`remove ${normalizedStem || 'json'} configuration`,
-		);
-	}
-	if (path.endsWith('.md')) {
-		return statusAwareText(
-			fact.status,
-			`document ${normalizedStem || 'documentation'} guidance`,
-			`update ${normalizedStem || 'documentation'} notes`,
-			`remove ${normalizedStem || 'documentation'} notes`,
-		);
-	}
-	if (path.endsWith('.mjs')) {
-		return statusAwareText(
-			fact.status,
-			`implement ${normalizedStem || 'script'} logic`,
-			`refine ${normalizedStem || 'script'} logic`,
-			`remove ${normalizedStem || 'script'} logic`,
-		);
-	}
-	if (path.endsWith('.sh')) {
-		return statusAwareText(
-			fact.status,
-			'configure hook execution',
-			'update hook execution',
-			'remove hook execution',
-		);
-	}
 	return statusAwareText(
 		fact.status,
-		`implement ${normalizedStem || 'file'} behavior`,
-		`align ${normalizedStem || 'file'} implementation`,
+		`add ${normalizedStem || 'file'} implementation`,
+		`modify ${normalizedStem || 'file'} implementation`,
 		`remove ${normalizedStem || 'file'} implementation`,
 	);
 }
@@ -606,8 +386,13 @@ function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
 	});
 	let baseTarget = target;
 	const prefixLength = `${commitType}(${scope}): `.length;
-	const maxSubjectLength = Math.max(10, 100 - prefixLength);
-	if (scope === 'gov-plans-archive' && clusterKind === 'plan' && dominantKind !== 'delete' && dominantKind !== 'rename') {
+	const maxSubjectLength = Math.max(10, 130 - prefixLength);
+	if (
+		scope === 'gov-plans-archive' &&
+		clusterKind === 'plan' &&
+		dominantKind !== 'delete' &&
+		dominantKind !== 'rename'
+	) {
 		const subject = truncateText(`archive ${target}`, maxSubjectLength);
 		return {
 			type: commitType,

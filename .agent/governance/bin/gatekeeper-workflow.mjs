@@ -40,7 +40,7 @@ const GATEKEEPER_BIN = resolve(dirname(fileURLToPath(import.meta.url)), 'gatekee
 const WORKFLOW_REPORT_PROFILE = 'workflow';
 const ROUTE_REPORT_PROFILE = 'route';
 const BULLET_MAX_LENGTH = 140;
-const HEADER_MAX_LENGTH = 100;
+const HEADER_MAX_LENGTH = 130;
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
@@ -538,8 +538,9 @@ function buildCommitScaffold(split, options = {}) {
 	};
 }
 
-function getDiffSnippet(filePath, maxChars) {
-	const result = run('git', ['diff', '--cached', '--unified=0', '--no-color', '--', filePath]);
+function getRawDiff(files, maxChars) {
+	if (!files || !files.length) return '';
+	const result = run('git', ['diff', '--cached', '--unified=1', '--no-color', '--', ...files]);
 	if (result.status !== 0) return '';
 	return truncateText(String(result.stdout || '').trim(), maxChars, { noEllipsis: false });
 }
@@ -547,12 +548,9 @@ function getDiffSnippet(filePath, maxChars) {
 function buildAiTitlePayload(scaffold, policy, diffEntries) {
 	const aiConfig = policy?.workflow?.commit?.aiTitle || {};
 	const maxFiles = Number(aiConfig.maxFiles || 12);
-	const maxSnippetChars = Number(aiConfig.maxSnippetChars || 400);
-	const rankedPaths = (scaffold.dominantChange?.fileScores || [])
-		.slice()
-		.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path))
-		.map((entry) => entry.path);
-	const snippetPaths = rankedPaths.slice(0, 3);
+	const maxSnippetChars = Number(aiConfig.maxSnippetChars || 3000);
+	const files = scaffold.fileFacts.slice(0, maxFiles).map((fact) => fact.path);
+	const rawDiff = getRawDiff(files, maxSnippetChars);
 	return {
 		type: scaffold.type,
 		scope: scaffold.scope,
@@ -565,18 +563,9 @@ function buildAiTitlePayload(scaffold, policy, diffEntries) {
 			area: fact.area,
 			additions: fact.additions,
 			deletions: fact.deletions,
-			description: buildFileBulletDescription(fact, {
-				dominantChange: scaffold.dominantChange,
-				repoRootPath: repoRoot(),
-			}),
 		})),
 		diffEntries,
-		diffSnippets: snippetPaths
-			.map((path) => ({
-				path,
-				snippet: getDiffSnippet(path, maxSnippetChars),
-			}))
-			.filter((entry) => entry.snippet),
+		rawDiff,
 		constraints: {
 			language: 'English',
 			maxHeaderLength: HEADER_MAX_LENGTH,
@@ -584,6 +573,8 @@ function buildAiTitlePayload(scaffold, policy, diffEntries) {
 			strongVerbRequired: true,
 			concreteTargetRequired: true,
 			noProcessLanguage: true,
+			instructions:
+				'Read rawDiff. Output must include "subject" string and an array of "bullets" objects. Each bullet must have "path" and "description".',
 		},
 	};
 }
@@ -632,12 +623,27 @@ async function resolveCommitScaffold(split, options = {}) {
 			return { scaffold: deterministicScaffold, deterministicScaffold };
 		}
 		const header = `${deterministicScaffold.type}(${deterministicScaffold.scope}): ${validation.subject}`;
+
+		let aiBody = [];
+		if (aiResult.bullets && Array.isArray(aiResult.bullets)) {
+			for (const b of aiResult.bullets) {
+				if (typeof b === 'object' && b.path && b.description) {
+					aiBody.push(formatBulletLine(b.path, b.description));
+				} else if (typeof b === 'string') {
+					aiBody.push(b.startsWith('- ') ? b : `- ${b}`);
+				}
+			}
+		}
+
+		if (aiBody.length === 0) aiBody = deterministicScaffold.body;
+
 		return {
 			scaffold: {
 				...deterministicScaffold,
 				header,
 				headerLength: header.length,
-				fullMessage: `${header}\n\n${deterministicScaffold.body.join('\n')}`,
+				body: aiBody,
+				fullMessage: `${header}\n\n${aiBody.join('\n')}`,
 				titleSource: 'ai-assisted',
 				finalSubject: validation.subject,
 				aiTitleConfidence: aiResult.confidence,

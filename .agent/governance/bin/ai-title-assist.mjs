@@ -41,6 +41,7 @@ async function requestAiTitleAssist(payload, options = {}) {
 		subject: String(normalized.subject || '').trim(),
 		confidence: Number(normalized.confidence || 0),
 		rationale: String(normalized.rationale || '').trim(),
+		bullets: Array.isArray(normalized.bullets) ? normalized.bullets : [],
 	};
 }
 
