@@ -27,7 +27,6 @@ const GATEKEEPER_BIN = resolve(dirname(fileURLToPath(import.meta.url)), 'gatekee
 const WORKFLOW_REPORT_PROFILE = 'workflow';
 const ROUTE_REPORT_PROFILE = 'route';
 const BULLET_MAX_LENGTH = 100;
-const DESCRIPTION_MAX_LENGTH = 80;
 const HEADER_MAX_LENGTH = 72;
 
 function run(cmd, args, options = {}) {
