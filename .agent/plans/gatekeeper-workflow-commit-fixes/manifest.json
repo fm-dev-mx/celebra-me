@@ -1,0 +1,34 @@
+{
+	"id": "gatekeeper-workflow-commit-fixes",
+	"title": "Gatekeeper Workflow Commit Fixes",
+	"status": "PENDING",
+	"completion": 0,
+	"created": "2026-03-17",
+	"updated": "2026-03-17",
+	"estimatedDuration": "2 phases / ~1 day",
+	"owner": "fm-dev-mx",
+	"blockers": [],
+	"phases": [
+		{
+			"id": "01-scope-and-truncation",
+			"title": "Scope Length and Truncation Fixes",
+			"file": "phases/01-scope-and-truncation.md",
+			"status": "PENDING",
+			"completion": 0,
+			"weight": 50
+		},
+		{
+			"id": "02-deterministic-descriptions",
+			"title": "Deterministic Descriptions Fix",
+			"file": "phases/02-deterministic-descriptions.md",
+			"status": "PENDING",
+			"completion": 0,
+			"weight": 50
+		}
+	],
+	"tags": [
+		"governance",
+		"commit-workflow",
+		"bug-fix"
+	]
+}
