@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-03-15 **Next Review:** 2026-04-15 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-16 **Next Review:** 2026-04-15 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -77,8 +77,13 @@
 - [comprehensive-audit-Q1-2026](../.agent/plans/comprehensive-audit-Q1-2026/README.md) - `ACTIVE`,
   Q1 2026 technical audit and phased remediation plan with mandatory verification and
   documentation-sync gates.
-- [gatekeeper-optimization](../.agent/plans/gatekeeper-optimization/README.md) - `ACTIVE`,
-  governance optimization and workflow hardening plan for commit automation.
+- [gatekeeper-commit-message-hardening](../.agent/plans/gatekeeper-commit-message-hardening/README.md) -
+  `ACTIVE`, deterministic commit-message hardening with optional AI title assist and exact per-file
+  body coverage.
+- [quinceanera-demo-creation](../.agent/plans/quinceanera-demo-creation/README.md) - `ACTIVE`,
+  phased demo creation and isolation plan for the quinceanera experience.
+- [retheme-ximena-rose-gold](../.agent/plans/retheme-ximena-rose-gold/README.md) - `ACTIVE`,
+  phased retheme plan for the Ximena rose-gold experience.
 
 ### Archived Plans
 
@@ -112,7 +117,7 @@
 
 1. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
 2. Track the Q1 2026 comprehensive audit until all five phases are completed and archived.
-3. Track the Gatekeeper workflow and commit-validation refactor until `gatekeeper-optimization`
-   leaves `PENDING`.
+3. Track the commit-message hardening rollout until exact per-file coverage and optional AI title
+   assist are fully verified.
 4. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.

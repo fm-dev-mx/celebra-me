@@ -72,16 +72,17 @@ fallback resolution order is:
    Commit messages must follow this contract:
    - Header: `type(scope): verb target`
    - The verb must describe the dominant change, not bookkeeping such as `record ... scope`
+   - `type` and `scope` are deterministic; optional AI assistance may refine only the subject text
    - Prefer decisive verbs such as `define`, `align`, `harden`, `extract`, `refactor`, or `clarify`
-   - Multi-file bodies must use `- path: description` bullets
+   - Multi-file bodies must use one exact `- path: description` bullet per touched file
    - Bullet paths must use full relative paths; `...` is not allowed
    - Bullet descriptions must describe the specific file change, not generic bookkeeping
-   - Bullets may cover one file or one coherent folder/prefix when the split is still atomic
+   - Deleted files must use the deleted path; renamed files must use the new path and mention the old path in the description
    - Shorten descriptions to satisfy line-length rules; never shorten the path
 
    Quick validation pass before `commit`:
    - confirm the title names the dominant change in the split
-   - confirm every bullet path is the exact staged relative path
+   - confirm every bullet path is the exact staged relative path for one changed file only
    - confirm every bullet description states the concrete file delta in one short clause
    - confirm no body line exceeds the commitlint limit
 
