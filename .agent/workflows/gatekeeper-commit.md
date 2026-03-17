@@ -14,7 +14,9 @@ lifecycle, and split staging to executable scripts. Markdown describes sequence 
 ## Pre-flight
 
 Use the configured workflow pre-flight command from `.agent/governance/config/policy.json` when you
-need a manual validation pass before inspecting. The current fallback resolution order is:
+need a manual validation pass before inspecting. Resolve commands by existence, not by guesswork:
+each `pnpm <script>` candidate is valid only when that script exists in `package.json`. The current
+fallback resolution order is:
 
 1. `workflow.inspect.preflightCommand`
 2. `pnpm turbo-all` when the script exists
@@ -41,7 +43,7 @@ need a manual validation pass before inspecting. The current fallback resolution
      - If unmapped files are in `.agent/plans/`, add a new domain to
        `.agent/governance/config/domain-map.json` following the pattern
        `gov-plans-<directory-name>`.
-     - Do not run `stage` or `commit` until `inspect` returns `proceed_adu`.
+     - Do not run `stage`, `scaffold`, or `commit` until `inspect` returns `proceed_adu`.
    - `auto_fix`: run `pnpm gatekeeper:workflow:autofix`, then inspect again.
    - `proceed_adu`: continue with deterministic domain staging.
 
@@ -57,8 +59,9 @@ need a manual validation pass before inspecting. The current fallback resolution
    node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --domain <domain-id>
    ```
 
-   `scaffold` is non-mutating by default. It emits full relative paths in body bullets and those
-   paths should not be manually shortened with `...`.
+   `scaffold` is non-mutating by default. It is only valid after `workflowRoute=proceed_adu`. It
+   emits full relative paths in body bullets and those paths should not be manually shortened with
+   `...`.
 
 5. Commit the staged split with the workflow-owned commit command:
 
@@ -69,10 +72,18 @@ need a manual validation pass before inspecting. The current fallback resolution
    Commit messages must follow this contract:
    - Header: `type(scope): verb target`
    - The verb must describe the dominant change, not bookkeeping such as `record ... scope`
+   - Prefer decisive verbs such as `define`, `align`, `harden`, `extract`, `refactor`, or `clarify`
    - Multi-file bodies must use `- path: description` bullets
    - Bullet paths must use full relative paths; `...` is not allowed
    - Bullet descriptions must describe the specific file change, not generic bookkeeping
    - Bullets may cover one file or one coherent folder/prefix when the split is still atomic
+   - Shorten descriptions to satisfy line-length rules; never shorten the path
+
+   Quick validation pass before `commit`:
+   - confirm the title names the dominant change in the split
+   - confirm every bullet path is the exact staged relative path
+   - confirm every bullet description states the concrete file delta in one short clause
+   - confirm no body line exceeds the commitlint limit
 
 6. Re-run `pnpm gatekeeper:workflow:inspect` for the remaining staged set. When no staged files
    remain, clean up any workflow artifacts:
