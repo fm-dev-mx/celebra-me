@@ -90,7 +90,7 @@ describe('Commit validation contract', () => {
 		);
 	});
 
-	it('accepts grouped path bullets for atomic asset commits', () => {
+	it('rejects grouped path bullets for atomic asset commits', () => {
 		const files = [
 			'src/assets/images/events/demo-cumple/hero.webp',
 			'src/assets/images/events/demo-cumple/gallery-01.webp',
@@ -109,7 +109,8 @@ feat(ui): add demo-cumple webp asset set
 			]),
 		);
 
-		expect(result.status).toBe(0);
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('exact changed file path');
 	});
 
 	it('rejects bullets without path coverage', () => {
@@ -133,7 +134,7 @@ feat(ui): add demo-cumple webp asset set
 		expect(`${result.stdout}\n${result.stderr}`).toContain('commit body bullets must use');
 	});
 
-	it('accepts grouped docs archive bullets with path prefixes', () => {
+	it('accepts exact per-file docs archive bullets', () => {
 		const files = [
 			'.agent/plans/archive/ximena-overhaul/CHANGELOG.md',
 			'.agent/plans/archive/ximena-overhaul/README.md',
@@ -143,7 +144,9 @@ feat(ui): add demo-cumple webp asset set
 			`
 docs(gov-plans-archive): archive ximena-overhaul plan files
 
-- .agent/plans/archive/ximena-overhaul/: archive changelog, manifest, and phase docs
+- .agent/plans/archive/ximena-overhaul/CHANGELOG.md: add plan audit trail entries
+- .agent/plans/archive/ximena-overhaul/README.md: add overview and operating guidance
+- .agent/plans/archive/ximena-overhaul/manifest.json: define plan metadata and phases
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -213,6 +216,82 @@ refactor(auth): standardize guest repository flows
 				),
 				COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
 				COMMITLINT_DOMINANT_AREA: 'source',
+			},
+		);
+
+		expect(result.status).toBe(0);
+	});
+
+	it('accepts renamed-file bullets that use the new path and mention the old path', () => {
+		const files = ['scripts/commit-title.mjs'];
+		const result = lintMessage(
+			`
+chore(gov-tooling): rename commit title helper
+
+- scripts/commit-title.mjs: rename from scripts/commit-helper.mjs
+			`,
+			{
+				COMMITLINT_STAGED_FILES: files.join('\n'),
+				COMMITLINT_DIFF_JSON: JSON.stringify([
+					{
+						path: files[0],
+						oldPath: 'scripts/commit-helper.mjs',
+						status: 'R',
+						area: 'script',
+					},
+				]),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'rename',
+				COMMITLINT_DOMINANT_AREA: 'script',
+			},
+		);
+
+		expect(result.status).toBe(0);
+	});
+
+	it('rejects remove-style subjects for rename-dominant commits', () => {
+		const files = ['scripts/commit-title.mjs'];
+		const result = lintMessage(
+			`
+chore(gov-tooling): remove commit title helper
+
+- scripts/commit-title.mjs: rename from scripts/commit-helper.mjs
+			`,
+			{
+				COMMITLINT_STAGED_FILES: files.join('\n'),
+				COMMITLINT_DIFF_JSON: JSON.stringify([
+					{
+						path: files[0],
+						oldPath: 'scripts/commit-helper.mjs',
+						status: 'R',
+						area: 'script',
+					},
+				]),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'rename',
+				COMMITLINT_DOMINANT_AREA: 'script',
+			},
+		);
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain(
+			'does not match dominant rename changes',
+		);
+	});
+
+	it('accepts deleted-file bullets that use the deleted path', () => {
+		const files = ['docs/core/legacy-governance.md'];
+		const result = lintMessage(
+			`
+docs(docs): remove legacy governance guide
+
+- docs/core/legacy-governance.md: remove legacy governance notes
+			`,
+			{
+				COMMITLINT_STAGED_FILES: files.join('\n'),
+				COMMITLINT_DIFF_JSON: JSON.stringify([
+					{ path: files[0], status: 'D', area: 'docs' },
+				]),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'delete',
+				COMMITLINT_DOMINANT_AREA: 'docs',
 			},
 		);
 

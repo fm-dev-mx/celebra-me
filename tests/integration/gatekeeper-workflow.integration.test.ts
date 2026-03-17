@@ -5,6 +5,8 @@ import { spawnSync } from 'child_process';
 
 const ROOT = process.cwd();
 const WORKTREE_FILES = [
+	'.agent/governance/bin/ai-title-assist.mjs',
+	'.agent/governance/bin/commit-message-analysis.mjs',
 	'.agent/governance/bin/gatekeeper.mjs',
 	'.agent/governance/bin/gatekeeper-workflow.mjs',
 	'.agent/governance/config/policy.json',
@@ -277,6 +279,7 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 				).stdout,
 			);
 			expect(scaffold.header.length).toBeLessThanOrEqual(72);
+			expect(scaffold.titleSource).toBe('deterministic');
 			for (const line of scaffold.body as string[]) {
 				expect(line.length).toBeLessThanOrEqual(100);
 			}
@@ -401,6 +404,7 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 
 			expect(afterScaffoldHead).toBe(beforeHead);
 			expect(scaffold.header).toBe('feat(core): implement invitation presenter-driven route');
+			expect(scaffold.titleSource).toBe('deterministic');
 			for (const line of scaffold.body as string[]) {
 				expect(line.length).toBeLessThanOrEqual(100);
 				const [pathSpec, description] = line.replace(/^- /, '').split(': ', 2);

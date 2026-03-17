@@ -196,15 +196,15 @@ describe('Gatekeeper workflow hardening', () => {
 		}
 	});
 
-	it('builds scaffold output with full paths and truncated descriptions', () => {
+	it('builds scaffold output with full paths and exact per-file metadata', () => {
 		const scaffold = runNodeJson(`
 			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
 			const split = {
 				id: 'gov-plans-archive-1',
 				baseDomain: 'gov-plans-archive',
 				files: [
-					'.agent/plans/archive/extremely-long-feature-name-with-many-segments/phases/01-very-long-phase-name.md',
-					'.agent/plans/archive/extremely-long-feature-name-with-many-segments/manifest.json',
+					'.agent/plans/archive/extremely-long-feature-name/phases/01-delivery.md',
+					'.agent/plans/archive/extremely-long-feature-name/manifest.json',
 				],
 			};
 			console.log(JSON.stringify(buildCommitScaffold(split)));
@@ -212,14 +212,15 @@ describe('Gatekeeper workflow hardening', () => {
 
 		expect(scaffold.header.length).toBeLessThanOrEqual(72);
 		expect(scaffold.body).toHaveLength(2);
+		expect(scaffold.titleSource).toBe('deterministic');
 		expect(
 			scaffold.body[0].startsWith(
-				'- .agent/plans/archive/extremely-long-feature-name-with-many-segments/phases/01-very-long-phase-name.md: ',
+				'- .agent/plans/archive/extremely-long-feature-name/phases/01-delivery.md: ',
 			),
 		).toBe(true);
 		expect(
 			scaffold.body[1].startsWith(
-				'- .agent/plans/archive/extremely-long-feature-name-with-many-segments/manifest.json: ',
+				'- .agent/plans/archive/extremely-long-feature-name/manifest.json: ',
 			),
 		).toBe(true);
 		for (const line of scaffold.body) {
@@ -314,6 +315,94 @@ describe('Gatekeeper workflow hardening', () => {
 		}
 	});
 
+	it('skips AI title assist for simple high-confidence splits even when configured', () => {
+		const result = runNodeJson(`
+			import { resolveCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			const split = {
+				id: 'core',
+				baseDomain: 'core',
+				files: [
+					'src/lib/presenters/invitation-presenter.ts',
+					'src/pages/[eventType]/[slug].astro',
+				],
+			};
+			const outcome = await resolveCommitScaffold(split, {
+				policy: {
+					workflow: {
+						commit: {
+							aiTitle: {
+								enabled: true,
+								mode: 'assist',
+								confidenceThreshold: 0.95,
+								timeoutMs: 1000,
+							},
+						},
+					},
+				},
+				env: {
+					GATEKEEPER_AI_TITLE_ENDPOINT: 'https://example.invalid',
+					GATEKEEPER_AI_TITLE_MODEL: 'fake-model',
+					GATEKEEPER_AI_TITLE_API_KEY: 'fake-key',
+				},
+				fetchImpl: async () => {
+					throw new Error('AI should not be called for a high-confidence split');
+				},
+			});
+			console.log(JSON.stringify(outcome.scaffold));
+		`);
+
+		expect(result.titleSource).toBe('deterministic');
+		expect(result.header).toBe('feat(core): implement invitation presenter-driven route');
+	});
+
+	it('falls back to deterministic titles when AI returns an invalid subject', () => {
+		const result = runNodeJson(`
+			import { resolveCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			const split = {
+				id: 'core',
+				baseDomain: 'core',
+				files: [
+					'docs/core/architecture.md',
+					'src/lib/presenters/invitation-presenter.ts',
+					'src/pages/[eventType]/[slug].astro',
+				],
+			};
+			const outcome = await resolveCommitScaffold(split, {
+				policy: {
+					workflow: {
+						commit: {
+							aiTitle: {
+								enabled: true,
+								mode: 'assist',
+								confidenceThreshold: 0.95,
+								timeoutMs: 1000,
+							},
+						},
+					},
+				},
+				env: {
+					GATEKEEPER_AI_TITLE_ENDPOINT: 'https://example.invalid',
+					GATEKEEPER_AI_TITLE_MODEL: 'fake-model',
+					GATEKEEPER_AI_TITLE_API_KEY: 'fake-key',
+				},
+				fetchImpl: async () => ({
+					ok: true,
+					async json() {
+						return {
+							subject: 'update files',
+							confidence: 0.99,
+							rationale: 'bad generic title',
+						};
+					},
+				}),
+			});
+			console.log(JSON.stringify(outcome.scaffold));
+		`);
+
+		expect(result.titleSource).toBe('deterministic');
+		expect(result.finalSubject).toBe('implement invitation presenter-driven route');
+	});
+
 	it('derives commitlint diff context for grouped atomic commits', () => {
 		const result = runNodeJson(`
 			import { buildCommitlintContext } from './scripts/validate-commits.mjs';
@@ -354,10 +443,11 @@ describe('Gatekeeper workflow hardening', () => {
 		`);
 
 		expect(result.type).toBe('docs');
-		expect(result.header).toMatch(/^docs\(gov-plans-archive-1\): archive .+ plan files$/);
+		expect(result.header).toMatch(/^docs\(gov-plans-archive-1\): archive /);
+		expect(result.header.length).toBeLessThanOrEqual(72);
 		expect(result.fullMessage).not.toContain('record gov plans archive scope');
 		expect(result.body).toContain(
-			'- .agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md: document 01 phase notes',
+			'- .agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md: update 01 phase notes',
 		);
 	});
 });
