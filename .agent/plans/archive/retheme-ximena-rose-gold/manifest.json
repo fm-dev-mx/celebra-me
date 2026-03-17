@@ -1,0 +1,55 @@
+{
+    "id": "retheme-ximena-rose-gold",
+    "title": "Retheme Ximena to Rose Gold",
+    "status": "COMPLETED",
+    "completion": 100,
+    "created": "2026-03-16",
+    "updated": "2026-03-17",
+    "archivedAt": "2026-03-17",
+    "estimatedDuration": "1 phase / ~2 hours",
+    "owner": "fm-dev-mx",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "00-architectural-alignment",
+            "title": "Architectural Audit & Alignment Gate",
+            "file": "phases/00-architectural-alignment.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 0.1
+        },
+        {
+            "id": "01-token-mapping",
+            "title": "Color Research & Token Mapping",
+            "file": "phases/01-token-mapping.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 0.1
+        },
+        {
+            "id": "02-theme-transformation",
+            "title": "Core Theme & Preset Transformation",
+            "file": "phases/02-theme-transformation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 0.3
+        },
+        {
+            "id": "03-section-refinement",
+            "title": "Section-Specific Refinement (Decoupled Layer)",
+            "file": "phases/03-section-refinement.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 0.4
+        },
+        {
+            "id": "04-validation",
+            "title": "Visual Validation & Quality Gate",
+            "file": "phases/04-validation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 0.1
+        }
+    ],
+    "tags": ["styling", "xv", "premium"]
+}
