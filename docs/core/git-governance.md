@@ -51,9 +51,10 @@ node .agent/governance/bin/gatekeeper-workflow.mjs commit --domain <id>
 4. Run workflow inspection to compute `workflowRoute` and `adu.suggestedSplits`.
 5. If `workflowRoute=auto_fix`, run workflow autofix.
 6. If `workflowRoute=architectural_intervention`, stop and resolve the reported blockers before any
-   `stage` or `commit` command.
+   `stage`, `scaffold`, or `commit` command.
 7. Use workflow `stage --domain <id>` to isolate one domain and refresh S0 artifacts.
-8. Use `scaffold --domain <id>` to generate a non-mutating commit message preview.
+8. Use `scaffold --domain <id>` to generate a non-mutating commit message preview only after
+   `workflowRoute=proceed_adu`.
 9. Use `commit --domain <id>` to validate the generated message against commitlint and create the
    commit.
 10. `pre-commit` runs `lint-staged` first, then strict Gatekeeper verification on the final staged
@@ -70,6 +71,8 @@ The executable owner for commit-message rules is `commitlint.config.cjs`. At a h
 - Scope must be one of the governance domains.
 - Subject must use `type(scope): verb target` and describe the dominant change.
 - Process bookkeeping language such as `record ... scope` is rejected.
+- Prefer decisive verbs such as `define`, `align`, `harden`, `extract`, `refactor`, or `clarify`
+  when they better match the dominant change than `update`.
 - Multi-file or complex commits require a body.
 - Required bodies must use path-aware bullets in one of these formats:
   `- path/to/file.ext: description` `- path/to/folder/: description`
@@ -89,6 +92,15 @@ refactor(auth): standardize rsvp repository flows
 
 - src/lib/rsvp/repositories/guest.repository.ts: refine guest persistence logic
 - src/lib/rsvp/services/dashboard-guest-query.service.ts: align dashboard query orchestration
+```
+
+Docs-heavy example:
+
+```text
+docs(gov-workflows): clarify gatekeeper commit stop conditions
+
+- .agent/workflows/gatekeeper-commit.md: require proceed_adu before scaffold and commit
+- docs/core/git-governance.md: align workflow stop conditions and commit message rules
 ```
 
 If these rules change, update `commitlint.config.cjs` first and then update this document to match
@@ -158,11 +170,12 @@ maintaining atomicity and schema alignment across the codebase during transition
 ### Pre-flight Resolution
 
 Manual pre-flight recommendations are resolved from `.agent/governance/config/policy.json`. The
-workflow should prefer `workflow.inspect.preflightCommand` when it is configured. If not set, the
-current fallback order is:
+workflow should prefer `workflow.inspect.preflightCommand` when it is configured and runnable. Each
+`pnpm <script>` candidate must exist in `package.json`; operators and agents should not probe
+missing scripts by trial. If the configured command is absent, the current fallback order is:
 
-1. `pnpm turbo-all`
-2. `pnpm ci`
+1. `pnpm turbo-all` when the script exists
+2. `pnpm ci` when the script exists
 3. `pnpm lint && pnpm type-check && pnpm test`
 
 This prevents operators and agents from assuming commands that do not exist in the current repo.
