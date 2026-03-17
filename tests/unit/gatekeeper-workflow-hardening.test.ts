@@ -15,6 +15,37 @@ function runNodeJson(script: string) {
 }
 
 describe('Gatekeeper workflow hardening', () => {
+	it('resolves configured pre-flight commands only when they are runnable in the repo', () => {
+		const result = runNodeJson(`
+			import { resolvePreflightCommand, resolveRunnablePnpmCommand } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			console.log(JSON.stringify({
+				missingConfigured: resolvePreflightCommand({
+					workflow: {
+						inspect: {
+							preflightCommand: 'pnpm missing-script',
+							preflightFallbacks: ['pnpm ci'],
+						},
+					},
+				}),
+				shellFallback: resolvePreflightCommand({
+					workflow: {
+						inspect: {
+							preflightCommand: 'node scripts/check.js',
+							preflightFallbacks: [],
+						},
+					},
+				}),
+				runnableScript: resolveRunnablePnpmCommand('pnpm ci', { ci: 'pnpm lint' }),
+				missingScript: resolveRunnablePnpmCommand('pnpm missing-script', { ci: 'pnpm lint' }),
+			}));
+		`);
+
+		expect(result.missingConfigured).toBe('pnpm ci');
+		expect(result.shellFallback).toBe('node scripts/check.js');
+		expect(result.runnableScript).toBe('pnpm ci');
+		expect(result.missingScript).toBeNull();
+	});
+
 	it('auto-buckets oversized domains into deterministic 12-file splits', () => {
 		const result = runNodeJson(`
 			import { DomainMapper, loadPolicy } from './.agent/governance/bin/gatekeeper.mjs';

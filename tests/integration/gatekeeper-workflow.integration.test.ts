@@ -338,6 +338,27 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 		});
 	});
 
+	it('blocks scaffold until inspect reaches proceed_adu for the current session', async () => {
+		await withWorktree(async (worktree) => {
+			createUnmappedPlanFiles(worktree);
+			addAll(worktree, '.agent/plans/tmp-unmapped-fixture');
+
+			runCommand('node', ['.agent/governance/bin/gatekeeper-workflow.mjs', 'inspect'], {
+				cwd: worktree,
+				allowFailure: true,
+			});
+
+			const scaffold = runCommand(
+				'node',
+				['.agent/governance/bin/gatekeeper-workflow.mjs', 'scaffold', '--domain', 'core'],
+				{ cwd: worktree, allowFailure: true },
+			);
+
+			expect(scaffold.status).not.toBe(0);
+			expect(`${scaffold.stdout}\n${scaffold.stderr}`).toContain('before scaffolding');
+		});
+	});
+
 	it('keeps scaffold non-mutating and commit creates a valid commit for a presenter-like split', async () => {
 		await withWorktree(async (worktree) => {
 			const files = createPresenterLikeFiles(worktree);
