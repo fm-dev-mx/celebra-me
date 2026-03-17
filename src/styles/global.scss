@@ -32,16 +32,26 @@
 	--color-secondary-rgb: #{tokens.$color-surface-dark-rgb};
 	--color-background: #{tokens.$color-surface-primary};
 	--color-text: #{tokens.$color-text-primary};
+	--color-text-primary: #{tokens.$color-text-primary};
+	--color-text-primary-rgb: #{tokens.$color-text-primary-rgb};
+	--color-text-secondary: #{tokens.$color-text-secondary};
 	--color-text-on-dark: #{tokens.$base-parchment-100};
+	--color-text-on-light: #{tokens.$color-text-primary};
 	--color-white: #{tokens.$base-neutral-0};
 	--color-white-rgb: 255, 255, 255;
 	--color-dark: #{tokens.$color-surface-dark};
 	--color-error: #{tokens.$base-error};
 	--color-surface-secondary: #{tokens.$base-coffee-100};
 	--color-surface-secondary-rgb: 243, 235, 226;
+	--color-surface-primary: #{tokens.$color-surface-primary};
+	--color-surface-primary-rgb: #{tokens.$color-surface-primary-rgb};
+	--color-surface-dark: #{tokens.$color-surface-dark};
+	--color-surface-dark-rgb: #{tokens.$color-surface-dark-rgb};
 	--color-surface-elevated: #{tokens.$color-surface-elevated};
 	--color-surface-canvas: #{tokens.$color-surface-canvas};
 	--color-border-premium: #{tokens.$color-border-premium};
+	--color-border-subtle: #{tokens.$color-border-subtle};
+	--color-border-emphasis: #{tokens.$color-border-emphasis};
 	--color-text-secondary-rgb: 104, 71, 39;
 	--color-text-muted: #{tokens.$color-text-muted};
 	--color-neutral-subtle: #{tokens.$base-neutral-100};
@@ -51,15 +61,23 @@
 	--color-text-light: var(--color-neutral-muted);
 	--color-bg-primary: var(--color-surface-primary);
 	--color-bg-secondary: var(--color-surface-secondary);
+	--color-action-primary: #{tokens.$color-action-primary};
+	--color-action-primary-rgb: #{tokens.$color-surface-dark-rgb};
+	--color-action-accent: #{tokens.$color-action-accent};
 	--color-whatsapp-rgb: 37, 211, 102;
+	--color-glass-bg: #{tokens.$color-glass-bg};
+	--color-glass-border: #{tokens.$color-glass-border};
+	--color-glass-shadow: rgb(0 0 0 / 12%);
 
 	/* Typography - Mapped to tokens */
 	--font-display: #{tokens.$font-display-elegant};
 	--font-display-formal: #{tokens.$font-display-formal};
 	--font-display-elegant: #{tokens.$font-display-elegant};
+	--font-display-hacienda: #{tokens.$font-display-hacienda};
 	--font-calligraphy: #{tokens.$font-calligraphy};
 	--font-body-narrative: #{tokens.$font-body};
 	--font-body: #{tokens.$font-ui};
+	--font-body-hacienda: #{tokens.$font-body-hacienda};
 	--font-ui: #{tokens.$font-ui};
 
 	/* Spacing & Utilities - 8px Grid System */
@@ -99,6 +117,9 @@
 	/* Motion - Mapped to tokens */
 	--duration-standard: #{tokens.$duration-standard};
 	--ease-premium: #{tokens.$ease-premium};
+	--shadow-subtle: #{tokens.$shadow-subtle};
+	--shadow-emphasis: #{tokens.$shadow-emphasis};
+	--shadow-premium: #{tokens.$shadow-premium};
 }
 
 /* Premium Utility Classes */

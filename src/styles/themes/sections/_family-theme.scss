@@ -39,6 +39,12 @@
 }
 
 .family[data-variant='luxury-hacienda'] {
+	--family-panel-gap: clamp(2rem, 4.8vw, 4.2rem);
+	--family-title-max-width: 15ch;
+	--family-content-max-width: 32rem;
+	--family-media-column: 0.48fr;
+	--family-content-column: 0.52fr;
+
 	position: relative;
 	padding: clamp(6.5rem, 11vw, 10rem) 0;
 

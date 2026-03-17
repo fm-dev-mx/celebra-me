@@ -20,7 +20,7 @@
 		),
 		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3Cfilter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E");
 	background-blend-mode: soft-light, overlay;
-	color: tokens.$color-text-on-dark;
+	color: var(--color-text-on-dark);
 
 	&::after {
 		content: '';
@@ -39,7 +39,7 @@
 	// Classic dividers with curves
 	.quote-divider-top,
 	.quote-divider-bottom {
-		color: tokens.$color-action-accent;
+		color: var(--color-action-accent);
 		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 30%));
 		width: 200px;
 
@@ -51,7 +51,7 @@
 
 	// Elegant serif typography
 	.quote-content {
-		font-family: tokens.$font-body; // EB Garamond
+		font-family: var(--font-body-narrative); // EB Garamond
 		font-weight: 500;
 		font-size: clamp(1.6rem, 5.5vw, 2.4rem);
 		line-height: 1.5;
@@ -68,7 +68,7 @@
 	}
 
 	.quote-author {
-		font-family: tokens.$font-display-formal;
+		font-family: var(--font-display-formal);
 		font-size: clamp(0.9rem, 3vw, 1.1rem);
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
@@ -493,7 +493,7 @@
 	}
 
 	.quote-content {
-		font-family: tokens.$font-body-hacienda;
+		font-family: var(--font-body-hacienda, var(--font-body-narrative));
 		font-weight: 500;
 		font-size: clamp(1.6rem, 5vw, 2.6rem);
 		font-style: italic;
@@ -504,7 +504,7 @@
 	}
 
 	.quote-author {
-		font-family: tokens.$font-ui;
+		font-family: var(--font-ui);
 		color: var(--color-text-secondary);
 		text-transform: uppercase;
 		letter-spacing: 0.15em;

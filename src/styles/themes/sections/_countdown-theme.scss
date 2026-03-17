@@ -648,26 +648,14 @@
 // ==========================================================================
 
 .countdown-section[data-variant='luxury-hacienda'] {
-	--countdown-grid-columns-mobile: var(--luxury-countdown-grid-columns-mobile, 2);
-	--countdown-grid-columns-tablet: var(--luxury-countdown-grid-columns-tablet, 4);
-	--countdown-segment-padding-mobile: var(--luxury-countdown-segment-padding-mobile, 2.5rem 1rem);
-	--countdown-segment-padding-desktop: var(--luxury-countdown-segment-padding-desktop, 4rem 2rem);
-	--countdown-value-wrapper-width-mobile: var(
-		--luxury-countdown-value-wrapper-width-mobile,
-		100%
-	);
-	--countdown-value-wrapper-width-desktop: var(
-		--luxury-countdown-value-wrapper-width-desktop,
-		100%
-	);
-	--countdown-value-wrapper-height-mobile: var(
-		--luxury-countdown-value-wrapper-height-mobile,
-		4.25rem
-	);
-	--countdown-value-wrapper-height-desktop: var(
-		--luxury-countdown-value-wrapper-height-desktop,
-		5.8rem
-	);
+	--countdown-grid-columns-mobile: 2;
+	--countdown-grid-columns-tablet: 4;
+	--countdown-segment-padding-mobile: 2.6rem 1rem;
+	--countdown-segment-padding-desktop: 4rem 1.9rem;
+	--countdown-value-wrapper-width-mobile: 100%;
+	--countdown-value-wrapper-width-desktop: 100%;
+	--countdown-value-wrapper-height-mobile: 4.25rem;
+	--countdown-value-wrapper-height-desktop: 5.8rem;
 
 	background: linear-gradient(135deg, rgb(45 30 20 / 98%) 0%, rgb(25 15 10 / 100%) 100%);
 	padding: 12rem tokens.$spacing-4;
@@ -864,8 +852,8 @@
 
 	.countdown__value {
 		font-family: tokens.$font-display-hacienda;
-		font-size: var(--luxury-countdown-value-size-mobile, clamp(3rem, 13vw, 4.8rem));
-		font-weight: var(--luxury-countdown-value-weight, 400);
+		font-size: clamp(3rem, 13vw, 4.8rem);
+		font-weight: 400;
 		color: tokens.$color-action-accent;
 		filter: drop-shadow(0 4px 4px rgb(0 0 0 / 90%));
 		position: relative;
@@ -875,16 +863,16 @@
 			text-shadow 0.4s ease;
 
 		@include mixins.respond-to(sm) {
-			font-size: var(--luxury-countdown-value-size-desktop, clamp(4.2rem, 9vw, 6.2rem));
+			font-size: clamp(4.2rem, 9vw, 6.2rem);
 		}
 	}
 
 	.countdown__label {
 		font-family: tokens.$font-display-hacienda;
 		color: tokens.$color-action-accent;
-		opacity: var(--luxury-countdown-label-opacity, 64%);
-		letter-spacing: var(--luxury-countdown-label-letter-spacing, 0.32em);
-		font-size: var(--luxury-countdown-label-size, 0.68rem);
+		opacity: 64%;
+		letter-spacing: 0.32em;
+		font-size: 0.8rem;
 		text-transform: uppercase;
 		margin-top: 1rem;
 		z-index: 1;

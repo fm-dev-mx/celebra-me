@@ -142,7 +142,7 @@
 			background: radial-gradient(
 				circle at 30% 30%,
 				#fff 0%,
-				tokens.$color-action-accent 70%,
+				var(--color-action-accent) 70%,
 				#000 100%
 			);
 			border-radius: 50%;
@@ -172,7 +172,7 @@
 	}
 
 	.thank-you-message {
-		font-family: tokens.$font-body-hacienda;
+		font-family: var(--font-body-hacienda, var(--font-body-narrative));
 		color: rgb(255 255 255 / 90%);
 		font-size: 1.4rem;
 		line-height: 1.8;
@@ -198,15 +198,15 @@
 		}
 
 		.drop-cap {
-			font-family: tokens.$font-display-hacienda;
-			color: tokens.$color-action-accent;
+			font-family: var(--font-display-hacienda, var(--font-display-formal));
+			color: var(--color-action-accent);
 			text-shadow: 0 2px 4px rgb(0 0 0 / 80%);
 			margin-right: 0.15em;
 		}
 	}
 
 	.closing-name {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display-hacienda, var(--font-display-formal));
 		font-size: clamp(3rem, 8vw, 5rem);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
@@ -214,9 +214,9 @@
 		// Premium Shimmer for Signature
 		background: linear-gradient(
 			90deg,
-			tokens.$color-action-accent 0%,
+			var(--color-action-accent) 0%,
 			#fff 50%,
-			tokens.$color-action-accent 100%
+			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;
 		background-clip: text;

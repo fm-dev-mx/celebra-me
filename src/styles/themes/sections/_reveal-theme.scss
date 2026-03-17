@@ -62,14 +62,14 @@
 		}
 
 		.envelope-card__label {
-			font-family: tokens.$font-body;
+			font-family: var(--font-body-narrative);
 			letter-spacing: 0.2em;
-			color: tokens.$color-text-secondary;
+			color: var(--color-text-secondary);
 			font-size: 0.7rem;
 		}
 
 		.envelope-card__name {
-			font-family: tokens.$font-display-elegant;
+			font-family: var(--font-display-elegant);
 			background: linear-gradient(
 				45deg,
 				primitives.$base-gold-700,
@@ -125,7 +125,7 @@
 	--env-card-shadow: 0 20px 50px rgb(0 0 0 / 40%);
 
 	// Override hooks — name (Formal Foil Stamped)
-	--env-name-font: #{tokens.$font-display-formal};
+	--env-name-font: var(--font-display-formal);
 	--env-name-gradient: linear-gradient(135deg, #d4af37 0%, #f9e4b7 50%, #d4af37 100%);
 	--env-name-fill: transparent;
 	--env-name-animation: goldshimmer 8s linear infinite;
@@ -250,7 +250,7 @@
 			}
 
 			.envelope-details {
-				font-family: tokens.$font-body-hacienda;
+				font-family: var(--font-body-hacienda, var(--font-body-narrative));
 				font-size: 0.95rem;
 				letter-spacing: 0.15rem;
 				font-weight: 500;
@@ -259,7 +259,7 @@
 			}
 
 			.envelope-microcopy {
-				font-family: tokens.$font-body-hacienda;
+				font-family: var(--font-body-hacienda, var(--font-body-narrative));
 				font-style: italic;
 				color: rgba(primitives.$base-coffee-700, 0.7);
 				margin-top: 0.5rem;
@@ -277,7 +277,7 @@
 
 		.envelope-manifest-label {
 			display: block;
-			font-family: tokens.$font-ui;
+			font-family: var(--font-ui);
 			font-size: clamp(0.6rem, 2vw, 0.75rem);
 			color: #1a1a1a;
 			letter-spacing: 0.4em; // Broad tracking for luxury
@@ -292,7 +292,7 @@
 			font-size: clamp(1.8rem, 7vw, 2.8rem);
 			letter-spacing: 0.05em;
 			color: #1a1a1a;
-			font-family: tokens.$font-display-formal;
+			font-family: var(--font-display-formal);
 			font-weight: 400;
 
 			&::after {
@@ -342,8 +342,8 @@
 		}
 
 		.envelope-card__name {
-			font-family: tokens.$font-display-hacienda;
-			color: tokens.$base-gold-300;
+			font-family: var(--font-display-hacienda, var(--font-display-formal));
+			color: var(--color-action-accent);
 
 			// Engraved Effect
 			text-shadow:

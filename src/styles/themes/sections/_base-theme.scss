@@ -9,7 +9,7 @@
 	// Base theme styles (moved from preset file per architecture guidelines)
 	background-color: var(--color-surface-primary);
 	min-height: 100vh;
-	font-family: tokens.$font-body-hacienda;
+	font-family: var(--font-body-hacienda, tokens.$font-body-hacienda);
 
 	// Typography overrides
 	h1,
@@ -17,7 +17,7 @@
 	h3,
 	h4,
 	.font-heading {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display-hacienda, tokens.$font-display-hacienda);
 		color: var(--color-surface-dark);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
@@ -25,7 +25,7 @@
 
 	.card,
 	.glass-panel {
-		background: tokens.$color-glass-bg;
+		background: var(--color-glass-bg, tokens.$color-glass-bg);
 		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
 		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px;
@@ -54,7 +54,7 @@
 		background-color: var(--color-action-primary);
 		color: var(--color-action-accent);
 		border: 2px solid var(--color-action-accent);
-		font-family: tokens.$font-ui;
+		font-family: var(--font-ui, tokens.$font-ui);
 		font-weight: 600;
 		text-transform: uppercase;
 		padding: 0.75rem 2rem;
