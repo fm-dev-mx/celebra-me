@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-03-16 **Next Review:** 2026-04-15 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-17 **Next Review:** 2026-04-16 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -21,6 +21,7 @@
 | Document                                                | Status                 | Last Reviewed |
 | :------------------------------------------------------ | :--------------------- | :------------ |
 | [architecture.md](./core/architecture.md)               | Active source of truth | 2026-02-15    |
+| [content-schema.md](./core/content-schema.md)           | Active source of truth | 2026-03-17    |
 | [git-governance.md](./core/git-governance.md)           | Active source of truth | 2026-03-15    |
 | [project-conventions.md](./core/project-conventions.md) | Active source of truth | 2026-03-03    |
 | [premium-ux-vision.md](./core/premium-ux-vision.md)     | Active reference       | 2026-03-06    |
@@ -34,6 +35,7 @@
 | :------- | :------------------------------------------------- | :----- |
 | Assets   | [management.md](./domains/assets/management.md)    | Active |
 | Content  | [collections.md](./domains/content/collections.md) | Active |
+| Content  | [event-governance.md](./domains/content/event-governance.md) | Active |
 | RSVP     | [architecture.md](./domains/rsvp/architecture.md)  | Active |
 | RSVP     | [database.md](./domains/rsvp/database.md)          | Active |
 | RSVP     | [status.md](./domains/rsvp/status.md)              | Active |
@@ -54,6 +56,7 @@
 
 - [doc-audit-report.md](./audit/doc-audit-report.md)
 - [full-system-audit-2026-02-15.md](./audit/full-system-audit-2026-02-15.md)
+- [gatekeeper-commit-hardening.md](./audit/gatekeeper-commit-hardening.md)
 - [implementation-log.md](./audit/implementation-log.md) - Historical log
 - [ops-health-report.md](./audit/ops-health-report.md)
 - [stability.md](./audit/stability.md) - Historical report
@@ -74,28 +77,38 @@
 
 ### Active Plans
 
-- [comprehensive-audit-Q1-2026](../.agent/plans/comprehensive-audit-Q1-2026/README.md) - `ACTIVE`,
-  Q1 2026 technical audit and phased remediation plan with mandatory verification and
-  documentation-sync gates.
-- [gatekeeper-commit-message-hardening](../.agent/plans/gatekeeper-commit-message-hardening/README.md) -
-  `ACTIVE`, deterministic commit-message hardening with optional AI title assist and exact per-file
-  body coverage.
-- [quinceanera-demo-creation](../.agent/plans/quinceanera-demo-creation/README.md) - `ACTIVE`,
-  phased demo creation and isolation plan for the quinceanera experience.
-- [retheme-ximena-rose-gold](../.agent/plans/retheme-ximena-rose-gold/README.md) - `ACTIVE`,
-  phased retheme plan for the Ximena rose-gold experience.
+- [align-system-docs](../.agent/plans/align-system-docs/README.md) - `COMPLETED`, top-level plan
+  pending archive handoff after the prior system documentation alignment run.
+- [system-doc-alignment-resync-2026-03](../.agent/plans/system-doc-alignment-resync-2026-03/README.md) -
+  `COMPLETED`, residual dashboard resync plan that corrected post-run inventory and status drift.
+- [system-doc-semantic-alignment-2026-03](../.agent/plans/system-doc-semantic-alignment-2026-03/README.md) -
+  `COMPLETED`, semantic documentation alignment plan covering evergreen docs, dashboard state, and
+  historical framing safeguards.
 
 ### Archived Plans
 
+- [comprehensive-audit-Q1-2026](../.agent/plans/archive/comprehensive-audit-Q1-2026/README.md)
 - [error-remediation-evolution](../.agent/plans/archive/error-remediation-evolution/README.md) -
   `ARCHIVED`, systematic hardening of diagnostic automation and zero-loop remediation.
+- [event-transformation-gerardo](../.agent/plans/archive/event-transformation-gerardo/README.md)
+- [gatekeeper-commit-message-hardening](../.agent/plans/archive/gatekeeper-commit-message-hardening/README.md)
+- [gatekeeper-optimization](../.agent/plans/archive/gatekeeper-optimization/README.md)
+- [gatekeeper-workflow-commit-fixes](../.agent/plans/archive/gatekeeper-workflow-commit-fixes/README.md)
 - [invitation-evolution-march-2026](../.agent/plans/archive/invitation-evolution-march-2026/README.md)
+- [master-finalization-2026](../.agent/plans/archive/master-finalization-2026/README.md)
 - [post-alignment-remediation-2026-03](../.agent/plans/archive/post-alignment-remediation-2026-03/README.md)
+- [pre-phase-audit-2026](../.agent/plans/archive/pre-phase-audit-2026/README.md)
 - [real-xv-invitation](../.agent/plans/archive/real-xv-invitation/README.md) - `ARCHIVED`, Ximena
   Meza Trasviña XV Editorial Finalization.
+- [quinceanera-demo-creation](../.agent/plans/archive/quinceanera-demo-creation/README.md)
+- [retheme-ximena-rose-gold](../.agent/plans/archive/retheme-ximena-rose-gold/README.md)
 - [system-doc-alignment-hardening](../.agent/plans/archive/system-doc-alignment-hardening/README.md)
 - [system-health-audit](../.agent/plans/archive/system-health-audit/README.md)
 - [system-wide-alignment-audit-2026-03](../.agent/plans/archive/system-wide-alignment-audit-2026-03/README.md)
+- [wedding-demo-scaffold](../.agent/plans/archive/wedding-demo-scaffold/README.md)
+- [wedding-finalization](../.agent/plans/archive/wedding-finalization/README.md)
+- [ximena-overhaul](../.agent/plans/archive/ximena-overhaul/README.md)
+- [xv-demo-premium-audit-2026-03](../.agent/plans/archive/xv-demo-premium-audit-2026-03/README.md)
 
 ---
 
@@ -116,8 +129,10 @@
 ## Next Review Queue
 
 1. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
-2. Track the Q1 2026 comprehensive audit until all five phases are completed and archived.
-3. Track the commit-message hardening rollout until exact per-file coverage and optional AI title
-   assist are fully verified.
-4. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
+2. Archive `align-system-docs` once owner-approved archival handoff is ready.
+3. Archive `system-doc-alignment-resync-2026-03` once owner-approved archival handoff is ready.
+4. Archive `system-doc-semantic-alignment-2026-03` once owner-approved archival handoff is ready.
+5. Re-verify plan inventory whenever new top-level plan directories are created under
+   `.agent/plans/`.
+6. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
