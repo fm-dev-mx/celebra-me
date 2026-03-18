@@ -1,0 +1,54 @@
+{
+  "id": "system-doc-semantic-alignment-2026-03",
+  "title": "System Documentation Semantic Alignment Plan",
+  "status": "COMPLETED",
+  "completion": 100,
+  "created": "2026-03-17",
+  "updated": "2026-03-17",
+  "estimatedDuration": "5 phases / ~1 day",
+  "owner": "system-agent",
+  "blockers": [],
+  "phases": [
+    {
+      "id": "01-baseline-and-scope-lock",
+      "title": "Baseline And Scope Lock",
+      "file": "phases/01-baseline-and-scope-lock.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 15
+    },
+    {
+      "id": "02-evergreen-alignment",
+      "title": "Evergreen Architecture And Domain Alignment",
+      "file": "phases/02-evergreen-alignment.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 35
+    },
+    {
+      "id": "03-dashboard-reconciliation",
+      "title": "Dashboard And Governance Reconciliation",
+      "file": "phases/03-dashboard-reconciliation.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 20
+    },
+    {
+      "id": "04-historical-context-safeguards",
+      "title": "Historical Context Safeguards",
+      "file": "phases/04-historical-context-safeguards.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 10
+    },
+    {
+      "id": "05-verification-and-closure",
+      "title": "Verification And Closure",
+      "file": "phases/05-verification-and-closure.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 20
+    }
+  ],
+  "tags": ["governance", "documentation", "alignment"]
+}

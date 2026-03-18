@@ -23,14 +23,61 @@ All directories and files under `.agent/plans/`
 
 ## 🎯 Core Principles
 
-| Principle                 | Description                                                               |
-| ------------------------- | ------------------------------------------------------------------------- |
-| **Deterministic Scope**   | Every plan must define a clear, bounded scope before execution begins.    |
-| **Phase Isolation**       | Each phase is a self-contained unit with its own acceptance criteria.     |
-| **Audit-First Tracking**  | All deviations, pivots, and completions are logged with timestamps.       |
-| **Machine Readability**   | Every plan includes a `manifest.json` for programmatic status assessment. |
-| **Archival Immutability** | Archived plans are read-only. They are never modified after archiving.    |
-| **Owner Approval Gate**   | No phase may be committed without explicit approval from the plan owner.  |
+| Principle                       | Description                                                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deterministic Scope**         | Every plan must define a clear, bounded scope before execution begins.                                                                                                                       |
+| **Phase Isolation**             | Each phase is a self-contained unit with its own acceptance criteria.                                                                                                                        |
+| **Audit-First Tracking**        | All deviations, pivots, and completions are logged with timestamps.                                                                                                                          |
+| **Machine Readability**         | Every plan includes a `manifest.json` for programmatic status assessment.                                                                                                                    |
+| **Archival Immutability**       | Archived plans are read-only. They are never modified after archiving.                                                                                                                       |
+| **Owner Approval Gate**         | No phase may be committed without explicit approval from the plan owner.                                                                                                                     |
+| **Modular Phase Documentation** | Every individual phase must be documented in an independent file (e.g., `phase-01-audit.md`, `phase-02-implementation.md`). This enables atomic implementation and better progress tracking. |
+
+---
+
+## 📂 Modular Phase Documentation Standard
+
+Every individual phase of a plan **must** be documented in an independent file (e.g.,
+`phase-01-audit.md`, `phase-02-implementation.md`). This standard applies to all plans created after
+this update.
+
+### Why Modular Phase Files?
+
+- **Atomic Implementation**: Each phase file serves as a self-contained unit of work that can be
+  implemented, tested, and verified independently.
+- **Better Progress Tracking**: Progress can be tracked at the phase level with clear ownership and
+  completion status.
+- **Parallel Workstreams**: Multiple contributors can work on different phases simultaneously
+  without conflicts.
+- **Improved Review**: Code reviews can focus on one phase at a time, reducing cognitive load.
+- **Rollback Flexibility**: If a phase fails, it's easier to isolate and address issues without
+  affecting completed phases.
+
+### Implementation Requirements
+
+1. **One Phase Per File**: Each phase must have its own dedicated markdown file in the `phases/`
+   directory.
+2. **Descriptive Naming**: Phase files must use zero-padded numeric prefixes (e.g., `01-audit.md`,
+   `02-implementation.md`).
+3. **Self-Contained**: Each phase file must include all necessary context, objectives, tasks, and
+   acceptance criteria to be implemented independently.
+4. **Progress Headers**: Every phase file must include the standard progression header:
+   `**Completion:** X% | **Status:** STATUS`.
+5. **Referenced by Manifest**: The `manifest.json` must reference each phase file in the `phases`
+   array.
+
+### Example Structure
+
+```text
+.agent/plans/my-plan/
+├── README.md
+├── CHANGELOG.md
+├── manifest.json
+└── phases/
+    ├── 01-audit.md          # Independent audit phase
+    ├── 02-implementation.md  # Independent implementation phase
+    └── 03-validation.md      # Independent validation phase
+```
 
 ---
 
@@ -163,108 +210,108 @@ programmatically assess the health, status, and composition of all active plans.
 
 ```json
 {
-	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"type": "object",
-	"required": ["id", "title", "status", "created", "phases", "owner"],
-	"properties": {
-		"id": {
-			"type": "string",
-			"description": "Kebab-case plan identifier matching the directory name.",
-			"pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
-		},
-		"title": {
-			"type": "string",
-			"description": "Human-readable plan title."
-		},
-		"status": {
-			"type": "string",
-			"enum": ["PENDING", "IN-PROGRESS", "BLOCKED", "COMPLETED", "ARCHIVED"],
-			"description": "Current overall status of the plan."
-		},
-		"completion": {
-			"type": "integer",
-			"minimum": 0,
-			"maximum": 100,
-			"description": "Overall completion percentage."
-		},
-		"created": {
-			"type": "string",
-			"format": "date",
-			"description": "Plan creation date (YYYY-MM-DD)."
-		},
-		"updated": {
-			"type": "string",
-			"format": "date",
-			"description": "Last modification date (YYYY-MM-DD)."
-		},
-		"estimatedDuration": {
-			"type": "string",
-			"description": "Human-readable duration estimate (e.g., '3 phases / ~2 days')."
-		},
-		"owner": {
-			"type": "string",
-			"description": "Primary owner or responsible party."
-		},
-		"blockers": {
-			"type": "array",
-			"items": {
-				"type": "object",
-				"required": ["description", "since"],
-				"properties": {
-					"description": { "type": "string" },
-					"since": { "type": "string", "format": "date" },
-					"escalatedTo": { "type": "string" }
-				}
-			},
-			"description": "Active blockers preventing progress."
-		},
-		"phases": {
-			"type": "array",
-			"items": {
-				"type": "object",
-				"required": ["id", "title", "file", "status", "completion"],
-				"properties": {
-					"id": {
-						"type": "string",
-						"description": "Phase identifier (e.g., '01-analysis')."
-					},
-					"title": {
-						"type": "string",
-						"description": "Human-readable phase title."
-					},
-					"file": {
-						"type": "string",
-						"description": "Relative path to the phase document."
-					},
-					"status": {
-						"type": "string",
-						"enum": ["PENDING", "IN-PROGRESS", "BLOCKED", "COMPLETED"]
-					},
-					"completion": {
-						"type": "integer",
-						"minimum": 0,
-						"maximum": 100
-					},
-					"weight": {
-						"type": "integer",
-						"minimum": 1,
-						"maximum": 100,
-						"description": "Percentage weight of this phase relative to the total plan."
-					}
-				}
-			}
-		},
-		"tags": {
-			"type": "array",
-			"items": { "type": "string" },
-			"description": "Categorical tags (e.g., 'architecture', 'styling', 'security')."
-		},
-		"archivedAt": {
-			"type": "string",
-			"format": "date",
-			"description": "Date when the plan was archived. Present only if status is ARCHIVED."
-		}
-	}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "title", "status", "created", "phases", "owner"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Kebab-case plan identifier matching the directory name.",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable plan title."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "IN-PROGRESS", "BLOCKED", "COMPLETED", "ARCHIVED"],
+      "description": "Current overall status of the plan."
+    },
+    "completion": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall completion percentage."
+    },
+    "created": {
+      "type": "string",
+      "format": "date",
+      "description": "Plan creation date (YYYY-MM-DD)."
+    },
+    "updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Last modification date (YYYY-MM-DD)."
+    },
+    "estimatedDuration": {
+      "type": "string",
+      "description": "Human-readable duration estimate (e.g., '3 phases / ~2 days')."
+    },
+    "owner": {
+      "type": "string",
+      "description": "Primary owner or responsible party."
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "since"],
+        "properties": {
+          "description": { "type": "string" },
+          "since": { "type": "string", "format": "date" },
+          "escalatedTo": { "type": "string" }
+        }
+      },
+      "description": "Active blockers preventing progress."
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "file", "status", "completion"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Phase identifier (e.g., '01-analysis')."
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable phase title."
+          },
+          "file": {
+            "type": "string",
+            "description": "Relative path to the phase document."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "IN-PROGRESS", "BLOCKED", "COMPLETED"]
+          },
+          "completion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Percentage weight of this phase relative to the total plan."
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Categorical tags (e.g., 'architecture', 'styling', 'security')."
+    },
+    "archivedAt": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the plan was archived. Present only if status is ARCHIVED."
+    }
+  }
 }
 ```
 
@@ -272,50 +319,50 @@ programmatically assess the health, status, and composition of all active plans.
 
 ```json
 {
-	"id": "system-health-audit",
-	"title": "System Health Audit & Architecture Master Plan",
-	"status": "COMPLETED",
-	"completion": 100,
-	"created": "2026-03-04",
-	"updated": "2026-03-05",
-	"estimatedDuration": "4 phases / ~2 days",
-	"owner": "fm-dev-mx",
-	"blockers": [],
-	"phases": [
-		{
-			"id": "01-cleanup-and-references",
-			"title": "Cleanup & References",
-			"file": "phases/01-cleanup-and-references.md",
-			"status": "COMPLETED",
-			"completion": 100,
-			"weight": 20
-		},
-		{
-			"id": "02-kebab-case-governance",
-			"title": "Kebab-case Governance",
-			"file": "phases/02-kebab-case-governance.md",
-			"status": "COMPLETED",
-			"completion": 100,
-			"weight": 30
-		},
-		{
-			"id": "03-bff-decoupling",
-			"title": "BFF Decoupling",
-			"file": "phases/03-bff-decoupling.md",
-			"status": "COMPLETED",
-			"completion": 100,
-			"weight": 30
-		},
-		{
-			"id": "04-jewelry-box-styling",
-			"title": "Jewelry Box Styling",
-			"file": "phases/04-jewelry-box-styling.md",
-			"status": "COMPLETED",
-			"completion": 100,
-			"weight": 20
-		}
-	],
-	"tags": ["architecture", "technical-debt", "governance"]
+  "id": "system-health-audit",
+  "title": "System Health Audit & Architecture Master Plan",
+  "status": "COMPLETED",
+  "completion": 100,
+  "created": "2026-03-04",
+  "updated": "2026-03-05",
+  "estimatedDuration": "4 phases / ~2 days",
+  "owner": "fm-dev-mx",
+  "blockers": [],
+  "phases": [
+    {
+      "id": "01-cleanup-and-references",
+      "title": "Cleanup & References",
+      "file": "phases/01-cleanup-and-references.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 20
+    },
+    {
+      "id": "02-kebab-case-governance",
+      "title": "Kebab-case Governance",
+      "file": "phases/02-kebab-case-governance.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 30
+    },
+    {
+      "id": "03-bff-decoupling",
+      "title": "BFF Decoupling",
+      "file": "phases/03-bff-decoupling.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 30
+    },
+    {
+      "id": "04-jewelry-box-styling",
+      "title": "Jewelry Box Styling",
+      "file": "phases/04-jewelry-box-styling.md",
+      "status": "COMPLETED",
+      "completion": 100,
+      "weight": 20
+    }
+  ],
+  "tags": ["architecture", "technical-debt", "governance"]
 }
 ```
 
@@ -331,8 +378,8 @@ protocol is executed:
 1. **All phases** must have `status: COMPLETED` in `manifest.json`.
 2. **CHANGELOG.md** must contain a final entry documenting the closure.
 3. **manifest.json** must be updated:
-    - `status` → `"ARCHIVED"`
-    - `archivedAt` → current date (`YYYY-MM-DD`)
+   - `status` → `"ARCHIVED"`
+   - `archivedAt` → current date (`YYYY-MM-DD`)
 4. **(Optional)** `post-mortem.md` is created if technical debt was introduced or significant
    lessons were learned.
 
@@ -356,9 +403,9 @@ git commit -m "docs(plans): archive completed plan '{plan-name}'"
   reference to the archived one.
 - **Cross-referencing**: New plans may link to archived plans for historical context:
 
-    ```markdown
-    > **Predecessor:** [System Health Audit](../archive/system-health-audit/README.md)
-    ```
+  ```markdown
+  > **Predecessor:** [System Health Audit](../archive/system-health-audit/README.md)
+  ```
 
 - **Retention**: Archived plans are retained indefinitely for audit purposes.
 
@@ -531,26 +578,26 @@ and fill in the placeholders marked with `{...}`.
 
 ```json
 {
-	"id": "{plan-id}",
-	"title": "{Plan Title}",
-	"status": "PENDING",
-	"completion": 0,
-	"created": "{YYYY-MM-DD}",
-	"updated": "{YYYY-MM-DD}",
-	"estimatedDuration": "{N phases / ~N days}",
-	"owner": "{owner-id}",
-	"blockers": [],
-	"phases": [
-		{
-			"id": "01-{phase-name}",
-			"title": "{Phase Title}",
-			"file": "phases/01-{phase-name}.md",
-			"status": "PENDING",
-			"completion": 0,
-			"weight": 0
-		}
-	],
-	"tags": []
+  "id": "{plan-id}",
+  "title": "{Plan Title}",
+  "status": "PENDING",
+  "completion": 0,
+  "created": "{YYYY-MM-DD}",
+  "updated": "{YYYY-MM-DD}",
+  "estimatedDuration": "{N phases / ~N days}",
+  "owner": "{owner-id}",
+  "blockers": [],
+  "phases": [
+    {
+      "id": "01-{phase-name}",
+      "title": "{Phase Title}",
+      "file": "phases/01-{phase-name}.md",
+      "status": "PENDING",
+      "completion": 0,
+      "weight": 0
+    }
+  ],
+  "tags": []
 }
 ```
 

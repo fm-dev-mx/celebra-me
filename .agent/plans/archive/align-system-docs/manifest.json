@@ -1,0 +1,46 @@
+{
+    "id": "align-system-docs",
+    "title": "System Documentation Alignment Plan",
+    "status": "COMPLETED",
+    "completion": 100,
+    "created": "2026-03-17",
+    "updated": "2026-03-17",
+    "estimatedDuration": "4 phases / ~1 day",
+    "owner": "system-agent",
+    "blockers": [],
+    "phases": [
+        {
+            "id": "01-workflow-correction",
+            "title": "Workflow Correction",
+            "file": "phases/01-workflow-correction.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 25
+        },
+        {
+            "id": "02-pre-execution-validation",
+            "title": "Pre-Execution Validation",
+            "file": "phases/02-pre-execution-validation.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 15
+        },
+        {
+            "id": "03-surgical-execution",
+            "title": "Surgical Execution",
+            "file": "phases/03-surgical-execution.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 40
+        },
+        {
+            "id": "04-post-execution-verification",
+            "title": "Post-Execution Verification",
+            "file": "phases/04-post-execution-verification.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        }
+    ],
+    "tags": ["governance", "documentation", "workflows"]
+}
