@@ -39,8 +39,16 @@ and internal templates.
 - All content must comply with the 3-Layer Color Architecture in
   `docs/domains/theme/architecture.md`.
 - Presets and section variants must come from `src/lib/theme/theme-contract.ts`.
-- `jewelry-box`, `jewelry-box-wedding`, and `luxury-hacienda` remain the only supported presets
-  unless the contract is extended first.
+- The current contract supports these presets:
+  - `jewelry-box`
+  - `jewelry-box-wedding`
+  - `luxury-hacienda`
+  - `top-premium-xv-ximena`
+  - `editorial`
+- `jewelry-box`, `jewelry-box-wedding`, and `luxury-hacienda` remain the baseline reusable presets
+  for broad content operations.
+- `top-premium-xv-ximena` and `editorial` are contract-supported presets and should be treated as
+  premium or event-specific options unless governance expands their operational use.
 - Do not introduce ad-hoc colors or theme literals directly in content without contract support.
 
 ## Schema Discipline

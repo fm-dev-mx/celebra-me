@@ -1,5 +1,9 @@
 # Documentation Audit Report: Celebra-me
 
+> **Historical Snapshot:** This report reflects repository state as of 2026-03-03 and is retained
+> for audit history. It must not be used as the current source of truth for active routes, plan
+> inventory, or evergreen documentation structure.
+
 **Date:** 2026-03-03 **Auditor:** Antigravity Agent (Documentation Architecture Governance)
 
 ## Executive Summary

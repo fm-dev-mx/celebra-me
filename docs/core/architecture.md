@@ -2,9 +2,9 @@
 
 This document describes the **current architectural model** of Celebra-me.
 
-It defines **clear boundaries and decision criteria** aligned with Astro.js best practices and
-Vercel deployment constraints. It is intentionally pragmatic and expected to evolve with the
-project.
+It defines the active system boundaries used by the repository today and should be treated as an
+evergreen source of truth for route structure, server boundaries, content flow, and invitation
+rendering.
 
 ---
 
@@ -14,13 +14,9 @@ Celebra-me follows these guiding principles:
 
 - **Hybrid by default** Static generation (SSG) is preferred. Server-side rendering (SSR) is used
   only when required by the feature.
-
-- **Pragmatism over theory** Design patterns are tools, not goals. They are applied only when they
-  reduce real complexity.
-
-- **Explicit boundaries** Especially between server-only logic and UI/client code.
-
-- **Deploy safety first** All decisions must remain compatible with Astro and Vercel constraints.
+- **Pragmatism over theory** Patterns are applied only when they reduce real complexity.
+- **Explicit boundaries** UI code, route orchestration, and server-only logic stay separated.
+- **Deploy safety first** Architecture must remain compatible with Astro and Vercel constraints.
 
 ---
 
@@ -28,17 +24,16 @@ Celebra-me follows these guiding principles:
 
 ### Default Strategy
 
-- Pages are rendered at **build time** whenever possible.
+- Pages render at build time whenever possible.
 - Runtime server execution is reserved for:
-    - user input,
-    - side effects,
-    - protected operations,
-    - integrations requiring secrets. Current implementation uses **Server-Sent Events (SSE)** via
-      `/api/dashboard/guests/stream` to provide near-real-time updates to the dashboard for guest
-      status changes and audit logs. The repository and API contracts are ready for a future
-      websocket-based channel if bi-directional realtime is required.
+  - user input,
+  - side effects,
+  - protected operations,
+  - integrations requiring secrets.
+- Current realtime behavior uses **Server-Sent Events (SSE)** via
+  `/api/dashboard/guests/stream` for near-real-time host dashboard updates.
 
-This aligns with Astro’s recommended hybrid model.
+This matches Astro's hybrid model and the repository's current route structure.
 
 ---
 
@@ -46,42 +41,45 @@ This aligns with Astro’s recommended hybrid model.
 
 ### 3.1 Pages (`src/pages/**`)
 
-- Define routes using Astro’s file-based routing.
-- May load data at build time or runtime.
+- Astro pages define public routes using file-based routing.
+- Public invitation rendering lives under:
+  - `src/pages/[eventType]/[slug].astro`
+  - `src/pages/[eventType]/[slug]/invitado.astro`
+  - `src/pages/[eventType]/[slug]/i/[shortId].astro`
+- Host dashboard pages live under `src/pages/dashboard/**`.
 - API routes live under `src/pages/api/**`.
 
 ### 3.2 Layouts (`src/layouts/**`)
 
-- Define shared page structure.
-- Handle layout concerns only (no business logic).
+- Layouts define shared page structure only.
+- They must not absorb domain logic that belongs in presenters, services, or route handlers.
 
 ### 3.3 Components (`src/components/**`)
 
-- Presentation-focused UI components.
-- Must not access secrets, environment variables, or server-only APIs.
-- Should remain framework-agnostic when possible.
+- Components remain presentation-focused.
+- React islands are used for interactive dashboard and RSVP experiences.
+- Components must not access secrets or server-only integrations directly.
 
 ### 3.4 Presenters (`src/lib/presenters/**`)
 
-- Presenters are the BFF-facing assembly layer for complex routes.
-- They normalize page-ready props from adapters, render-plan helpers, and server context before the
-  `.astro` page renders.
-- Pages may fetch data and perform redirects, but view-model derivation should live in presenters
-  once route logic becomes non-trivial.
+- Presenters assemble page-ready data for complex invitation routes.
+- They normalize page props from adapters, render-plan helpers, and server context before `.astro`
+  pages render.
+- View-model derivation should move into presenters when route logic becomes non-trivial.
 
 ---
 
 ## 4) Client Islands (`client:*`)
 
-Client-side JavaScript is **opt-in and intentional**.
+Client-side JavaScript is opt-in and intentional.
 
 ### Rules
 
-- Use islands only when real interactivity is required.
-- Avoid moving logic to the client by default.
-- Keep islands small, isolated, and purpose-driven.
+- Use islands only when interactivity is required.
+- Keep islands small and purpose-driven.
+- Prefer server rendering and progressive enhancement when interactivity is not essential.
 
-Unnecessary client-side code is considered architectural debt.
+Unnecessary client-side logic is architectural debt.
 
 ---
 
@@ -89,66 +87,61 @@ Unnecessary client-side code is considered architectural debt.
 
 ### 5.1 API Routes
 
-API routes (`src/pages/api/**`) are the **only entry point** for:
+API routes (`src/pages/api/**`) are the only entry point for:
 
 - handling user input,
 - performing side effects,
 - accessing secrets,
 - integrating with external services.
 
-They act as the boundary between client and server concerns.
-
----
-
 ### 5.2 Server-Only Modules
 
-External integrations (e.g., databases, email services, queues) must live in **server-only modules**
-used by API routes.
+The active server-only hubs in the repository are:
 
-Recommended locations:
+- `src/lib/rsvp/**` for RSVP, guest management, auth/session support, and dashboard services
+- `src/lib/dashboard/**` for typed dashboard API clients and DTO helpers
+- `src/lib/assets/**` for asset registry and discovery
+- `src/lib/content/**` and `src/lib/adapters/**` for event/content resolution and normalization
+- `src/lib/presenters/**` for route-facing view-model assembly
+- `src/utils/**` for shared utilities such as invitation-link and environment helpers
 
-- `src/utils/server/**`
-- `src/lib/rsvp/**`
-- Co-located under `src/pages/api/_lib/**` (Legacy)
+Historical note:
+
+- Historical only: older documentation and audit logs may reference `src/utils/server/**` or
+  `src/pages/api/_lib/**`; those paths are not active architectural hubs in the current tree.
 
 ### 5.3 Global Logic
 
-- `src/middleware.ts`: Global session orchestration, AAL2 enforcement, and route-level
-  authorization.
-- `src/data/`: Static global data and schema-less configuration.
-- `src/interfaces/`: Global Type definitions and shared contracts.
+- `src/middleware.ts`: session orchestration, AAL2 enforcement, and route-level authorization
+- `src/data/`: static global data and schema-less configuration
+- `src/interfaces/`: shared contracts and UI-facing interfaces
 
-These modules must never be imported by UI components or client islands.
+These modules must never be imported by purely client-side presentation code when doing so would
+pull in server concerns.
 
 ---
 
 ## 6) Client → Server Communication
 
-Astro-recommended mechanisms are preferred:
+Preferred mechanisms:
 
-- `fetch()` calls to `/api/*` endpoints.
-- Progressive enhancement using native HTML forms:
+- `fetch()` calls to `/api/*` endpoints
+- Native HTML forms where progressive enhancement is appropriate
 
 ```html
 <form action="/api/endpoint" method="post"></form>
 ```
 
-These approaches preserve accessibility and minimize client-side JavaScript.
-
 ### 6.1 Session Elevation (MFA)
 
-When a user completes MFA verification on the client, the session in the Supabase client is elevated
-to AAL2. However, since session cookies (`sb-access-token`) are marked as `HttpOnly`, they cannot be
-updated directly by client-side code.
+After MFA on the client:
 
-To ensure the server recognizes the elevated session:
+1. the client completes the challenge flow,
+2. fetches the elevated session,
+3. calls `/api/auth/sync-session`,
+4. and the server persists the AAL2 state in `HttpOnly` cookies.
 
-1. The client performs `challengeAndVerify()`.
-2. The client fetches the updated session via `getSession()`.
-3. The client calls the `/api/auth/sync-session` endpoint to bridge the tokens back to `HttpOnly`
-   cookies.
-
-This pattern is required for AAL2 enforcement in server-side middleware.
+This keeps middleware authorization aligned with the elevated session state.
 
 ---
 
@@ -156,47 +149,42 @@ This pattern is required for AAL2 enforcement in server-side middleware.
 
 Astro content collections (`src/content/**`) are used for:
 
-- declarative, structured, static content,
-- invitations, events, and templates.
+- declarative structured event content,
+- public demos,
+- internal event templates.
 
-### Rules for Content Collections
+### Active Collection Layout
 
-- Content must remain **logic-free**.
-- Validation and typing are encouraged.
-- Runtime behavior must not depend on content collections.
+- `src/content/events/*.json` for live routable events
+- `src/content/event-demos/**.json` for showcase demos
+- `src/content/event-templates/**.json` for internal master templates
 
-This aligns with Astro’s content-first model.
+### Rules
+
+- Content remains logic-free.
+- Validation and typing are defined through `src/content/config.ts`.
+- Runtime behavior must not depend on undocumented ad-hoc content fields.
 
 ---
 
 ## 8) Styling Architecture
 
-- **SCSS only**: All style files MUST be `.scss`. Remaining legacy `.css` files have been removed.
-- **BEM methodology**: Strict enforcement of Block-Element-Modifier for class names. Avoid nesting
-  beyond three levels.
-- **Naming Convention**: Use kebab-case for all style files. Prefix partials with an underscore
-  (e.g., `_button.scss`).
-- **Module-based imports**: Use `@use` for variables, mixins, and functions. Avoid legacy `@import`.
-- **Logic-Based structure**:
-    - `src/styles/tokens/`: Primitive and semantic design tokens.
-    - `src/styles/themes/`: Aesthetic presets (e.g., `presets/`).
-    - `src/styles/components/`: Shared/reusable UI component styles.
-    - `src/styles/invitation/`: Invitation-specific layouts and utilities.
-- **No Tailwind**: Inline styles and Tailwind CSS are prohibited to maintain the premium custom
-  aesthetic.
+- **SCSS only** for maintained style files.
+- **Theme contract driven** variants come from `src/lib/theme/theme-contract.ts`.
+- **Logic-based structure**:
+  - `src/styles/tokens/` for primitive and semantic tokens
+  - `src/styles/themes/` for presets and section themes
+  - `src/styles/components/` for shared UI styles
+  - `src/styles/invitation/` for invitation section/layout styles
+  - `src/styles/dashboard/` for dashboard shell/components
+  - `src/styles/events/` for event-specific overrides
 
-### 8.1 Aesthetic Presets Architecture
+### 8.1 Preset Strategy
 
-Celebra-me uses a **Preset-based** styling architecture to support multiple aesthetic themes (e.g.,
-"Jewelry Box", "Luxury Hacienda") without code duplication.
-
-- **Presets Directory**: `src/styles/themes/presets/` contains the entry points for each aesthetic.
-- **Scoping**: Each preset file wraps its styles in a `.theme-preset--{name}` class.
-- **Integration**:
-    - The `preset` is defined in the content collection (`src/content/config.ts`).
-    - The `[slug].astro` route applies the corresponding class to the `main` wrapper.
-    - Components use **CSS Variables** (e.g., `--color-primary`) which are redefined by the active
-      preset. See [domains/theme/architecture.md](../domains/theme/architecture.md) for variant details.
+- Presets are class-scoped through `.theme-preset--{name}` selectors.
+- Invitation routes consume preset classes generated from normalized event content.
+- Live preset and variant contracts are defined by `src/lib/theme/theme-contract.ts`, not by
+  free-form documentation lists.
 
 ---
 
@@ -204,18 +192,18 @@ Celebra-me uses a **Preset-based** styling architecture to support multiple aest
 
 ### Environment Variables
 
-- Defined in Vercel.
-- Typed in `src/env.d.ts`.
-- Never exposed to client code.
+- Defined in deployment/runtime environments
+- Typed in `src/env.d.ts`
+- Never exposed directly to client code unless explicitly safe
 
 ### Platform Constraints
 
 Architectural decisions must account for:
 
-- Linux case sensitivity,
-- build-time vs runtime execution,
-- filesystem limitations,
-- server vs edge execution contexts.
+- Linux case sensitivity
+- build-time vs runtime execution
+- filesystem limitations
+- server execution contexts used by Astro/Vercel
 
 ---
 
@@ -227,24 +215,16 @@ Architectural refactors are justified only when they:
 - eliminate bugs or boundary leaks,
 - improve clarity or maintainability.
 
-When possible, **simple design patterns** may be applied **only** if they:
-
-- make the code easier to reason about,
-- do not introduce additional layers,
-- avoid over-engineering.
-
-Refactors driven by aesthetics or pattern adherence alone should be avoided.
+Refactors driven only by pattern aesthetics should be avoided.
 
 ---
 
 ## 11) Evolution
 
-This architecture is not static.
+When implementation diverges from this document:
 
-When the implementation diverges from this document:
-
-- update the document first,
-- then align the code.
+- update the document,
+- then align the code or record the deviation explicitly.
 
 Silent divergence is discouraged.
 
@@ -252,39 +232,63 @@ Silent divergence is discouraged.
 
 ## 12) Universal Asset Registry
 
-To ensure deterministic asset consumption and optimized delivery, all invitation-specific assets
-MUST be registered in the **Universal Asset Registry**.
+Invitation-specific assets are registered through the **Universal Asset Registry**.
 
-- **Location**: `src/lib/assets/asset-registry.ts`.
-- **Documentation**: See `docs/domains/assets/management.md` for detailed classification and usage
-  strategies.
-- **Mechanism**: Components consume assets via semantic keys using `getEventAsset()` or
-  `getCommonAsset()`.
-- **Benefit**: Decouples component logic from raw filesystem paths, ensures strict type safety, and
-  guarantees only optimized assets are referenced.
+- **Location**: `src/lib/assets/asset-registry.ts`
+- **Documentation**: `docs/domains/assets/management.md`
+- **Mechanism**: components consume semantic keys via registry/discovery helpers instead of raw
+  filesystem paths
+
+This keeps asset consumption deterministic and type-safe.
 
 ---
 
 ## 13) RSVP Module (Multi-tenant)
 
-Celebra-me includes a dedicated RSVP module for host-side guest management and guest-side
-confirmation flows.
+Celebra-me includes a dedicated RSVP and guest-management module for:
 
-### Dashboard API Endpoints
+- host-side dashboard operations,
+- guest-side invitation access and confirmation,
+- protected auth/session flows.
+
+### Host Dashboard Routes
+
+- `/dashboard/invitados`
+- `/dashboard/eventos`
+- `/dashboard/claimcodes`
+- `/dashboard/usuarios`
+- `/dashboard/admin`
+- `/dashboard/mfa-setup`
+
+### Host Dashboard API Endpoints
 
 - `GET /api/dashboard/guests?eventId=...&status=...&search=...`
-- `GET /api/dashboard/guests/stream` (SSE for realtime updates)
+- `GET /api/dashboard/guests/stream`
 - `POST /api/dashboard/guests`
 - `PATCH /api/dashboard/guests/:guestId`
 - `DELETE /api/dashboard/guests/:guestId`
 - `POST /api/dashboard/guests/:guestId/mark-shared`
 - `GET /api/dashboard/guests/export.csv?eventId=...`
+- `GET /api/dashboard/events`
+- `GET /api/dashboard/claimcodes`
+- `GET /api/dashboard/admin/events`
+- `GET /api/dashboard/admin/users`
 
-- Host dashboard operations are protected by Supabase Auth and constrained by Postgres RLS.
-- Guest-facing RSVP operations are served through server APIs and do not expose direct table access
-  from anonymous clients.
-- Legacy RSVP endpoints under `src/pages/api/rsvp/**` remain supported during migration.
+### Guest Invitation Access
 
-Detailed module design and flows are documented in:
+The active guest-facing patterns are:
 
-- `docs/domains/rsvp/architecture.md`
+- `/{eventType}/{slug}/invitado?invite={inviteId}` for direct personalized access
+- `/{eventType}/{slug}/i/{shortId}` for short-link resolution
+- `/api/invitacion/:inviteId/context`
+- `/api/invitacion/:inviteId/rsvp`
+- `/api/invitacion/:inviteId/view`
+- `/api/invitacion/resolve`
+
+Historical note:
+
+- Older documents may reference `/invitation/{inviteId}` or `/api/invitation/*`. Those patterns are
+  no longer the current public contract.
+
+Detailed RSVP design and constraints are documented in
+`docs/domains/rsvp/architecture.md`.
