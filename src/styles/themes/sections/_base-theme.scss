@@ -18,9 +18,20 @@
 	h4,
 	.font-heading {
 		font-family: var(--font-display-hacienda, tokens.$font-display-hacienda);
-		color: var(--color-surface-dark);
+		color: var(--color-text-primary); // Default to primary (Coffee)
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
+
+		// Handle dark sections vs specialized titles
+		.event-location[data-variant='luxury-hacienda'] &,
+		.event-quote[data-variant='luxury-hacienda'] &,
+		.event-gifts[data-variant='luxury-hacienda'] &,
+		.event-rsvp[data-variant='luxury-hacienda'] &,
+		.event-itinerary[data-variant='luxury-hacienda'] &,
+		.event-interlude--dark &,
+		&.rsvp__title {
+			color: var(--color-action-accent);
+		}
 	}
 
 	.card,
