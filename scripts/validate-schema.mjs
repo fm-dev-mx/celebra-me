@@ -30,7 +30,7 @@ const IMPLICIT_BASE_VARIANTS = {
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
-	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-contract.ts');
+	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-variants.ts');
 	const content = fs.readFileSync(contractPath, 'utf8');
 
 	const variants = {

@@ -96,7 +96,7 @@ Example:
 refactor(auth): standardize rsvp repository flows
 
 - src/lib/rsvp/repositories/guest.repository.ts: refine guest persistence logic
-- src/lib/rsvp/services/dashboard-guest-query.service.ts: align dashboard query orchestration
+- src/lib/rsvp/services/dashboard-guests.service.ts: align dashboard guest orchestration
 ```
 
 Docs-heavy example:
