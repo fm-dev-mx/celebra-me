@@ -1,4 +1,4 @@
-import { buildHostLoginRedirect, resolveNextPath } from '@/lib/rsvp/login';
+import { buildHostLoginRedirect, resolveNextPath } from '@/lib/rsvp/auth/login';
 
 describe('rsvp login helpers', () => {
 	it('builds login redirect with encoded next', () => {

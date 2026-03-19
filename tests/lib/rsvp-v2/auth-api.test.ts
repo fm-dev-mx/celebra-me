@@ -3,7 +3,7 @@ import {
 	sendMagicLink,
 	signInWithPassword,
 	signUpWithPassword,
-} from '@/lib/rsvp/auth-api';
+} from '@/lib/rsvp/auth/auth-api';
 
 describe('rsvp authApi', () => {
 	const originalFetch = global.fetch;

@@ -1,4 +1,4 @@
-import { authBridgeApi } from './auth-bridge-api';
+import { authBridgeApi } from '@/lib/rsvp/auth/auth-bridge-api';
 
 export async function logoutAndRedirect(target = '/'): Promise<void> {
 	try {

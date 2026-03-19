@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp/errors';
-import { errorResponse, parseJsonBody } from '@/lib/rsvp/http';
-import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth-api';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
 	buildSessionCookie,
-} from '@/lib/rsvp/cookies';
+} from '@/lib/rsvp/auth/cookies';
 import {
 	assertSameOrigin,
 	assertValidClaimCode,
@@ -16,13 +16,9 @@ import {
 	normalizeEmail,
 	sanitizeClaimCode,
 	sanitizePassword,
-} from '@/lib/rsvp/auth-security';
-import {
-	claimEventForUserByClaimCode,
-	ensureUserRole,
-	generateTemporaryPassword,
-	isSuperAdminEmail,
-} from '@/lib/rsvp/service';
+} from '@/lib/rsvp/security/auth-security';
+import { claimEventForUserByClaimCode, ensureUserRole, isSuperAdminEmail } from '@/lib/rsvp/services/auth-access.service';
+import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';

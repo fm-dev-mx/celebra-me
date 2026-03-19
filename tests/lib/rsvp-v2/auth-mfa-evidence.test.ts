@@ -1,4 +1,4 @@
-import { decodeJwtPayload, hasMfaEvidence } from '@/lib/rsvp/auth-mfa-evidence';
+import { decodeJwtPayload, hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 
 function makeToken(payload: Record<string, unknown>): string {
 	const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');

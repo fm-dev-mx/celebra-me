@@ -1,4 +1,4 @@
-import { getHostSessionFromRequest, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth';
+import { getHostSessionFromRequest, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth/auth';
 
 function createRequest(headers: Record<string, string>): Request {
 	const normalized = Object.fromEntries(

@@ -1,28 +1,31 @@
 import type { APIContext } from 'astro';
 import { POST as registerHost } from '@/pages/api/auth/register-host';
-import * as authApi from '@/lib/rsvp/auth-api';
-import * as service from '@/lib/rsvp/service';
+import * as authApi from '@/lib/rsvp/auth/auth-api';
+import * as authAccessService from '@/lib/rsvp/services/auth-access.service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/auth-api', () => ({
+jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signUpWithPassword: jest.fn(),
 	findAuthUserByEmail: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
-	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 	isSuperAdminEmail: jest.fn(),
+}));
+
+jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
+	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 }));
 
 describe('API: /api/auth/register-host', () => {
 	const signUpMock = authApi.signUpWithPassword as jest.Mock;
 	const findUserMock = authApi.findAuthUserByEmail as jest.Mock;
-	const isSuperAdminMock = service.isSuperAdminEmail as jest.Mock;
-	const claimEventMock = service.claimEventForUserByClaimCode as jest.Mock;
-	const ensureRoleMock = service.ensureUserRole as jest.Mock;
+	const isSuperAdminMock = authAccessService.isSuperAdminEmail as jest.Mock;
+	const claimEventMock = authAccessService.claimEventForUserByClaimCode as jest.Mock;
+	const ensureRoleMock = authAccessService.ensureUserRole as jest.Mock;
 
 	beforeEach(() => {
 		jest.clearAllMocks();

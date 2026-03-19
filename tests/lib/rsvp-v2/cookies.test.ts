@@ -9,7 +9,7 @@ import {
 	clearMfaSessionCookie,
 	clearRefreshTokenCookie,
 	clearSessionCookie,
-} from '@/lib/rsvp/cookies';
+} from '@/lib/rsvp/auth/cookies';
 
 describe('rsvp cookies', () => {
 	it('builds hardened access token cookie with ttl', () => {

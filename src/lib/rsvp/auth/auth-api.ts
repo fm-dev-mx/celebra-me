@@ -1,4 +1,4 @@
-import { getEnv } from '@/utils/env';
+import { getEnv } from '@utils/env';
 
 interface AuthApiOptions {
 	path: string;

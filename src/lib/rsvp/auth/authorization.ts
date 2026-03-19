@@ -1,8 +1,8 @@
-import { ApiError } from './errors';
-import { requireSessionContext, type SessionContext, resolveAccessTokenFromRequest } from './auth';
-import { hasMfaEvidence } from './auth-mfa-evidence';
-import { verifyTrustedDeviceToken } from './trusted-device';
-import { getEnv } from '@/utils/env';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { requireSessionContext, type SessionContext, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth/auth';
+import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
+import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
+import { getEnv } from '@utils/env';
 
 function sanitize(value: unknown, maxLen = 4096): string {
 	if (typeof value !== 'string') return '';

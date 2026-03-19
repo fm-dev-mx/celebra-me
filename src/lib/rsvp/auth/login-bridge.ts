@@ -4,8 +4,8 @@ import {
 	isValidEmail,
 	validateLoginForm,
 	validateRegisterForm,
-} from './login-ui';
-import { authBridgeApi } from './auth-bridge-api';
+} from '@/lib/rsvp/auth/login-ui';
+import { authBridgeApi } from '@/lib/rsvp/auth/auth-bridge-api';
 
 export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');
