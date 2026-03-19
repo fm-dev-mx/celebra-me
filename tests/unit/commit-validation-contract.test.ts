@@ -61,14 +61,17 @@ function buildEnv(
 
 describe('Commit validation contract', () => {
 	it('rejects process-oriented subjects', () => {
-		const result = lintMessage('feat(ui): record ui scope', {
-			COMMITLINT_STAGED_FILES: 'src/components/Hero.tsx',
-			COMMITLINT_DIFF_JSON: JSON.stringify([
-				{ path: 'src/components/Hero.tsx', status: 'M', area: 'source' },
-			]),
-			COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
-			COMMITLINT_DOMINANT_AREA: 'source',
-		});
+		const result = lintMessage(
+			`feat(ui): record ui scope\n\n- src/components/Hero.tsx: Align hero to/for architectural purpose`,
+			{
+				COMMITLINT_STAGED_FILES: 'src/components/Hero.tsx',
+				COMMITLINT_DIFF_JSON: JSON.stringify([
+					{ path: 'src/components/Hero.tsx', status: 'M', area: 'source' },
+				]),
+				COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
+				COMMITLINT_DOMINANT_AREA: 'source',
+			},
+		);
 
 		expect(result.status).not.toBe(0);
 		expect(`${result.stdout}\n${result.stderr}`).toContain('subject must describe the change');
@@ -144,9 +147,9 @@ feat(ui): add demo-cumple webp asset set
 			`
 docs(gov-plans-archive): archive ximena-overhaul plan files
 
-- .agent/plans/archive/ximena-overhaul/CHANGELOG.md: add plan audit trail entries
-- .agent/plans/archive/ximena-overhaul/README.md: add overview and operating guidance
-- .agent/plans/archive/ximena-overhaul/manifest.json: define plan metadata and phases
+- .agent/plans/archive/ximena-overhaul/CHANGELOG.md: Align changelog to/for plan audit trail entries
+- .agent/plans/archive/ximena-overhaul/README.md: Align readme to/for overview and operating guidance
+- .agent/plans/archive/ximena-overhaul/manifest.json: Align manifest to/for plan metadata and phases
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -181,7 +184,7 @@ docs(gov-plans-archive): archive ximena-overhaul plan files
 			`
 refactor(auth): standardize guest repository flows
 
-- src/lib/.../guest.repository.ts: refine guest persistence logic
+- src/lib/.../guest.repository.ts: Align guest repository to/for guest persistence logic
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -206,8 +209,8 @@ refactor(auth): standardize guest repository flows
 			`
 refactor(auth): standardize guest repository flows
 
-- src/lib/rsvp/repositories/guest.repository.ts: refine guest persistence logic
-- src/lib/rsvp/services/dashboard-guest-query.service.ts: align dashboard query orchestration
+- src/lib/rsvp/repositories/guest.repository.ts: Align guest repository to/for guest persistence logic
+- src/lib/rsvp/services/dashboard-guest-query.service.ts: Align dashboard service to/for query orchestration
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -228,7 +231,7 @@ refactor(auth): standardize guest repository flows
 			`
 chore(gov-tooling): rename commit title helper
 
-- scripts/commit-title.mjs: rename from scripts/commit-helper.mjs
+- scripts/commit-title.mjs: Rename from scripts/commit-helper.mjs and Align script to/for governance tooling
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -254,7 +257,7 @@ chore(gov-tooling): rename commit title helper
 			`
 chore(gov-tooling): remove commit title helper
 
-- scripts/commit-title.mjs: rename from scripts/commit-helper.mjs
+- scripts/commit-title.mjs: Rename from scripts/commit-helper.mjs and Align script to/for governance tooling
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),
@@ -283,7 +286,7 @@ chore(gov-tooling): remove commit title helper
 			`
 docs(docs): remove legacy governance guide
 
-- docs/core/legacy-governance.md: remove legacy governance notes
+- docs/core/legacy-governance.md: Remove legacy governance to/for governance cleanup
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),

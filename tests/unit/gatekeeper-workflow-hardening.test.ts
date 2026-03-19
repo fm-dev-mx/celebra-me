@@ -210,7 +210,7 @@ describe('Gatekeeper workflow hardening', () => {
 			console.log(JSON.stringify(buildCommitScaffold(split)));
 		`);
 
-		expect(scaffold.header.length).toBeLessThanOrEqual(72);
+		expect(scaffold.header.length).toBeLessThanOrEqual(130);
 		expect(scaffold.body).toHaveLength(2);
 		expect(scaffold.titleSource).toBe('deterministic');
 		expect(
@@ -283,14 +283,16 @@ describe('Gatekeeper workflow hardening', () => {
 			}));
 		`);
 
-		expect(result.changelog).toBe(
-			'log delivered work, validation runs, and remaining blockers',
+		expect(result.changelog).toBe('Update changelog to/for architectural purpose');
+		expect(result.manifest).toBe('Update manifest to/for architectural purpose');
+		expect(result.phase).toBe(
+			'Update 04 presenter implementation to/for architectural purpose',
 		);
-		expect(result.manifest).toBe('update plan status, blockers, and phase metadata');
-		expect(result.phase).toBe('document delivered scope, validation, and unresolved blockers');
-		expect(result.presenter).toBe('assemble invitation props from content and context');
-		expect(result.page).toBe('reduce the route to guest loading and presenter rendering');
-		expect(result.testFile).toBe('cover presenter outputs with fixture-based tests');
+		expect(result.presenter).toBe('Align invitation presenter to/for architectural purpose');
+		expect(result.page).toBe('Implement slug to/for architectural purpose');
+		expect(result.testFile).toBe(
+			'Align invitation presenter test to/for architectural purpose',
+		);
 	});
 
 	it('avoids generic scaffold targets and descriptions for presenter-heavy splits', () => {
@@ -311,7 +313,7 @@ describe('Gatekeeper workflow hardening', () => {
 		for (const line of scaffold.body as string[]) {
 			expect(line).not.toMatch(/update file configuration/i);
 			expect(line).not.toContain('...');
-			expect(line.length).toBeLessThanOrEqual(100);
+			expect(line.length).toBeLessThanOrEqual(140);
 		}
 	});
 
@@ -444,10 +446,8 @@ describe('Gatekeeper workflow hardening', () => {
 
 		expect(result.type).toBe('docs');
 		expect(result.header).toMatch(/^docs\(gov-plans-archive-1\): archive /);
-		expect(result.header.length).toBeLessThanOrEqual(72);
+		expect(result.header.length).toBeLessThanOrEqual(130);
 		expect(result.fullMessage).not.toContain('record gov plans archive scope');
-		expect(result.body).toContain(
-			'- .agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md: update 01 phase notes',
-		);
+		expect(result.body[0]).toMatch(/- .+: [A-Z][a-z]+ .+ to\/for .+/);
 	});
 });

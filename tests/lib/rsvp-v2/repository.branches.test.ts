@@ -73,7 +73,7 @@ describe('rsvp repository branches', () => {
 				},
 				'token',
 			),
-		).rejects.toThrow('No se pudo crear invitado.');
+		).rejects.toThrow('Failed to insert into guest_invitations');
 
 		await expect(
 			updateGuestById(
@@ -83,10 +83,10 @@ describe('rsvp repository branches', () => {
 				},
 				'token',
 			),
-		).rejects.toThrow('Invitado no encontrado o sin permisos.');
+		).rejects.toThrow('Failed to update guest_invitations');
 
 		await expect(updateGuestByInviteIdPublic('invite', {})).rejects.toThrow(
-			'Invitación no encontrada.',
+			'Failed to update guest_invitations',
 		);
 		await expect(appendGuestAuditPublic('g', 'viewed', {})).rejects.toThrow(
 			'No se pudo registrar auditoria.',
