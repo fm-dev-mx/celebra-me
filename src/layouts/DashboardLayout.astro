@@ -1,9 +1,9 @@
 ---
 import '@/styles/dashboard.scss';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
-import { toDisplayRole } from '@/lib/rsvp/roles';
-import type { DashboardNavItem } from '@/lib/rsvp/types';
+import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
+import { toDisplayRole } from '@/lib/rsvp/auth/roles';
+import type { DashboardNavItem } from '@/lib/rsvp/core/types';
 
 interface Props {
 	title: string;

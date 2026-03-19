@@ -1,4 +1,4 @@
-import type { ClaimCodeDTO } from '@/lib/rsvp/types';
+import type { ClaimCodeDTO } from '@/lib/rsvp/core/types';
 
 export interface CreateClaimCodeDTO {
 	eventId: string;

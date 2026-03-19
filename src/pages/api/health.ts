@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { jsonResponse } from '@/lib/rsvp/http';
+import { jsonResponse } from '@/lib/rsvp/core/http';
 
 export const GET: APIRoute = async () => {
 	const checks: Record<string, { status: 'ok' | 'error'; latencyMs?: number; error?: string }> =

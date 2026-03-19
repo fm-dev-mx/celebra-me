@@ -18,7 +18,7 @@ import type {
 	ClaimCodeCreateResponse,
 	ClaimCodesListResponse,
 } from './dto/claimcodes';
-import type { ClaimCodeDTO } from '@/lib/rsvp/types';
+import type { ClaimCodeDTO } from '@/lib/rsvp/core/types';
 
 export class AdminApi {
 	private handleResponse<T>(result: ApiResult<T>): T {

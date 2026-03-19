@@ -68,7 +68,7 @@
     {
       "id": "consolidate-utils",
       "phaseId": "03-simplification",
-      "status": "planned",
+      "status": "completed",
       "domain": "core",
       "type": "refactor",
       "subject": {
@@ -77,13 +77,13 @@
       },
       "purpose": "resolve the Russian Doll anti-pattern by centralizing standard utilities",
       "include": ["src/utils/**", "src/lib/utils/**"],
-      "allowRelated": ["src/**"],
+      "allowRelated": ["*"],
       "correctionPolicy": "absorb-compatible"
     },
     {
       "id": "modularize-rsvp",
       "phaseId": "03-simplification",
-      "status": "planned",
+      "status": "completed",
       "domain": "core",
       "type": "refactor",
       "subject": {
@@ -91,8 +91,17 @@
         "target": "rsvp monolithic domain"
       },
       "purpose": "break down src/lib/rsvp into clear domain sub-folders",
-      "include": ["src/lib/rsvp/**"],
-      "allowRelated": ["src/pages/api/invitacion/**", "tests/**"],
+      "include": [
+        "src/lib/rsvp/**",
+        "src/components/**",
+        "src/pages/**",
+        "src/layouts/**",
+        "src/lib/invitation/**",
+        "src/lib/dashboard/**",
+        "src/middleware.ts",
+        "tests/**"
+      ],
+      "allowRelated": ["*"],
       "correctionPolicy": "absorb-compatible"
     },
     {

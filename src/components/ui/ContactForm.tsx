@@ -1,6 +1,6 @@
 import { useState, type FC, type SubmitEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { rsvpApi, type ContactPayload } from '@/lib/rsvp/rsvp-api';
+import { rsvpApi, type ContactPayload } from '@/lib/rsvp/services/rsvp-api';
 
 const ContactForm: FC = () => {
 	const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');

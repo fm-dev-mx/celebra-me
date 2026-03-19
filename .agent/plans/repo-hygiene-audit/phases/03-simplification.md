@@ -7,10 +7,10 @@ maintainability.
 
 ## Tasks
 
-- [ ] Move contents of `src/lib/utils/` to `src/utils/` and update all imports. [weight: 30%]
-- [ ] Modularize `src/lib/rsvp` into `auth/`, `services/`, `repositories/`, and `security/`
+- [x] Move contents of `src/lib/utils/` to `src/utils/` and update all imports. [weight: 30%]
+- [x] Modularize `src/lib/rsvp` into `auth/`, `services/`, `repositories/`, and `security/`
       subdirectories. [weight: 50%]
-- [ ] Flatten `src/lib/rsvp/service.ts` if possible (reduce re-export layers). [weight: 20%]
+- [x] Flatten `src/lib/rsvp/service.ts` if possible (reduce re-export layers). [weight: 20%]
 
 ## Acceptance Criteria
 

@@ -2,7 +2,7 @@
   "id": "repo-hygiene-audit",
   "title": "Repository Hygiene and Structural Audit Remediation",
   "status": "ACTIVE",
-  "completion": 40,
+  "completion": 85,
   "created": "2026-03-19",
   "updated": "2026-03-19",
   "estimatedDuration": "4 phases / ~2 hours",
@@ -28,8 +28,8 @@
       "id": "03-simplification",
       "title": "Domain Simplification and Refactoring",
       "file": "phases/03-simplification.md",
-      "status": "PLANNED",
-      "completion": 0,
+      "status": "COMPLETED",
+      "completion": 100,
       "weight": 45
     },
     {

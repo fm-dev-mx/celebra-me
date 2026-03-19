@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { logoutAndRedirect } from '@/lib/rsvp/logout-client';
+import { logoutAndRedirect } from '@/lib/rsvp/auth/logout-client';
 
 interface DashboardUserMenuProps {
 	email: string;

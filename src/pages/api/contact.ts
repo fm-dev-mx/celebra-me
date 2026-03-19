@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
-import { sendEmail } from '@/utils/email';
-import { successResponse, errorResponse, validateBody } from '@/utils/api-utils';
+import { sendEmail } from '@utils/email';
+import { successResponse, errorResponse, validateBody } from '@utils/api-utils';
 
 const contactSchema = z.object({
 	name: z.string().min(6, 'El nombre es obligatorio'),
