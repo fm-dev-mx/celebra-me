@@ -11,7 +11,7 @@
       "type": "refactor",
       "subject": {
         "verb": "modernize",
-        "target": "gatekeeper workflow and plan-aware commit logic"
+        "target": "gatekeeper plan-aware commit logic"
       },
       "purpose": "harden commit validation contract and improve workflow script reliability",
       "include": [
