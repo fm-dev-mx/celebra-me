@@ -5,11 +5,8 @@
 @use 'global/animations';
 @use 'components/icons';
 @use 'components/logo';
-@use 'components/nav-bar-desktop';
 @use 'tokens' as tokens;
-@use 'themes/landing' as landing;
 @use 'ui/status-pages';
-@use 'ui/card';
 
 *,
 *::before,
@@ -18,9 +15,6 @@
 }
 
 :root {
-	/* Landing Page Theme Variables */
-	@include landing.landing-theme-variables;
-
 	/* Premium Color Palette - Mapped to tokens */
 	--color-primary: #{tokens.$color-action-accent};
 	--color-primary-rgb: #{tokens.$color-action-accent-rgb};

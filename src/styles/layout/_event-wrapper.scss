@@ -9,7 +9,7 @@
 	--color-accent-rgb: var(--color-action-accent-rgb);
 
 	// ✉️ Envelope Dynamic Theming
-	// Uses data-attributes injected by InvitationPagePresenter
+	// Uses data-attributes injected by invitation page data assembly
 	&[data-env-state='ready'] {
 		--env-bg: var(--color-surface-dark); 
 		--env-paper-bg: var(--color-surface-primary);
