@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { adaptEvent } from '@/lib/adapters/event';
-import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
+import { buildInvitationRenderPlan } from '@/lib/invitation/page-data';
 
 function loadFixture(relativePath: string) {
 	const filePath = path.resolve(process.cwd(), relativePath);

@@ -1,21 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { presentInvitationPage } from '@/lib/presenters/invitation-presenter';
+import { prepareInvitationPageData } from '@/lib/invitation/page-data';
 
 function loadFixture(relativePath: string) {
 	const filePath = path.resolve(process.cwd(), relativePath);
 	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-describe('presentInvitationPage', () => {
+describe('prepareInvitationPageData', () => {
 	it('builds a personalized presenter for premium invitation routes', () => {
 		const event = {
 			id: 'events/ximena-meza-trasvina',
 			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
-		} as Parameters<typeof presentInvitationPage>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
 
-		const presenter = presentInvitationPage({
+		const presenter = prepareInvitationPageData({
 			eventEntry: event,
 			slug: 'ximena-meza-trasvina',
 			guestContext: {
@@ -62,9 +62,9 @@ describe('presentInvitationPage', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv',
 			data: fixture,
-		} as Parameters<typeof presentInvitationPage>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
 
-		const presenter = presentInvitationPage({
+		const presenter = prepareInvitationPageData({
 			eventEntry: event,
 			slug: 'demo-xv',
 		});

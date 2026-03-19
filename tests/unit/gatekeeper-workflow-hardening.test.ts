@@ -255,7 +255,7 @@ describe('Gatekeeper workflow hardening', () => {
 				files: [
 					'.agent/plans/pre-phase-audit-2026/CHANGELOG.md',
 					'src/components/invitation/InvitationSections.astro',
-					'src/lib/presenters/invitation-presenter.ts',
+					'src/lib/invitation/page-data.ts',
 					'src/pages/[eventType]/[slug].astro',
 					'tests/unit/invitation.presenter.test.ts',
 				],
@@ -263,7 +263,7 @@ describe('Gatekeeper workflow hardening', () => {
 			console.log(JSON.stringify(buildCommitScaffold(split)));
 		`);
 
-		expect(scaffold.header).toBe('feat(core): implement invitation presenter-driven route');
+		expect(scaffold.header).toBe('feat(core): implement invitation page-data route');
 		expect(scaffold.header).not.toContain('plan');
 		expect(scaffold.header).not.toContain('files');
 	});
@@ -275,7 +275,7 @@ describe('Gatekeeper workflow hardening', () => {
 				changelog: describeFileChange('.agent/plans/pre-phase-audit-2026/CHANGELOG.md'),
 				manifest: describeFileChange('.agent/plans/pre-phase-audit-2026/manifest.json'),
 				phase: describeFileChange('.agent/plans/pre-phase-audit-2026/phases/04-presenter-implementation.md'),
-				presenter: describeFileChange('src/lib/presenters/invitation-presenter.ts'),
+				presenter: describeFileChange('src/lib/invitation/page-data.ts'),
 				page: describeFileChange('src/pages/[eventType]/[slug].astro', {
 					dominantCluster: { kind: 'presenter-route' },
 				}),
@@ -288,7 +288,7 @@ describe('Gatekeeper workflow hardening', () => {
 		expect(result.phase).toBe(
 			'Update 04 presenter implementation to/for architectural purpose',
 		);
-		expect(result.presenter).toBe('Align invitation presenter to/for architectural purpose');
+		expect(result.presenter).toBe('Align page data to/for architectural purpose');
 		expect(result.page).toBe('Implement slug to/for architectural purpose');
 		expect(result.testFile).toBe(
 			'Align invitation presenter test to/for architectural purpose',
@@ -302,7 +302,7 @@ describe('Gatekeeper workflow hardening', () => {
 				id: 'core',
 				baseDomain: 'core',
 				files: [
-					'src/lib/presenters/invitation-presenter.ts',
+					'src/lib/invitation/page-data.ts',
 					'src/pages/[eventType]/[slug].astro',
 				],
 			};
@@ -324,7 +324,7 @@ describe('Gatekeeper workflow hardening', () => {
 				id: 'core',
 				baseDomain: 'core',
 				files: [
-					'src/lib/presenters/invitation-presenter.ts',
+					'src/lib/invitation/page-data.ts',
 					'src/pages/[eventType]/[slug].astro',
 				],
 			};
@@ -354,7 +354,7 @@ describe('Gatekeeper workflow hardening', () => {
 		`);
 
 		expect(result.titleSource).toBe('deterministic');
-		expect(result.header).toBe('feat(core): implement invitation presenter-driven route');
+		expect(result.header).toBe('feat(core): implement invitation page-data route');
 	});
 
 	it('falls back to deterministic titles when AI returns an invalid subject', () => {
@@ -365,7 +365,7 @@ describe('Gatekeeper workflow hardening', () => {
 				baseDomain: 'core',
 				files: [
 					'docs/core/architecture.md',
-					'src/lib/presenters/invitation-presenter.ts',
+					'src/lib/invitation/page-data.ts',
 					'src/pages/[eventType]/[slug].astro',
 				],
 			};
@@ -402,7 +402,7 @@ describe('Gatekeeper workflow hardening', () => {
 		`);
 
 		expect(result.titleSource).toBe('deterministic');
-		expect(result.finalSubject).toBe('implement invitation presenter-driven route');
+		expect(result.finalSubject).toBe('implement invitation page-data route');
 	});
 
 	it('derives commitlint diff context for grouped atomic commits', () => {

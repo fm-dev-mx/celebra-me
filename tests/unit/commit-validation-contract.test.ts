@@ -178,7 +178,7 @@ docs(gov-plans-archive): archive ximena-overhaul plan files
 	it('rejects ellipsis in commit body path bullets', () => {
 		const files = [
 			'src/lib/rsvp/repositories/guest.repository.ts',
-			'src/lib/rsvp/services/dashboard-guest-query.service.ts',
+			'src/lib/rsvp/services/dashboard-guests.service.ts',
 		];
 		const result = lintMessage(
 			`
@@ -203,14 +203,14 @@ refactor(auth): standardize guest repository flows
 	it('accepts full relative paths in commit body path bullets', () => {
 		const files = [
 			'src/lib/rsvp/repositories/guest.repository.ts',
-			'src/lib/rsvp/services/dashboard-guest-query.service.ts',
+			'src/lib/rsvp/services/dashboard-guests.service.ts',
 		];
 		const result = lintMessage(
 			`
 refactor(auth): standardize guest repository flows
 
 - src/lib/rsvp/repositories/guest.repository.ts: Align guest repository to/for guest persistence logic
-- src/lib/rsvp/services/dashboard-guest-query.service.ts: Align dashboard service to/for query orchestration
+- src/lib/rsvp/services/dashboard-guests.service.ts: Align dashboard service to/for guest orchestration
 			`,
 			{
 				COMMITLINT_STAGED_FILES: files.join('\n'),

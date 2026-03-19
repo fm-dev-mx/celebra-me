@@ -102,7 +102,7 @@ function createPresenterLikeFiles(worktree: string) {
 		'docs/core/architecture.md',
 		'docs/core/project-conventions.md',
 		'src/components/invitation/InvitationSections.astro',
-		'src/lib/presenters/invitation-presenter.ts',
+		'src/lib/invitation/page-data.ts',
 		'src/pages/[eventType]/[slug].astro',
 		'tests/unit/invitation.presenter.test.ts',
 	];
@@ -403,7 +403,7 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 			}).stdout.trim();
 
 			expect(afterScaffoldHead).toBe(beforeHead);
-			expect(scaffold.header).toBe('feat(core): implement invitation presenter-driven route');
+			expect(scaffold.header).toBe('feat(core): implement invitation page-data route');
 			expect(scaffold.titleSource).toBe('deterministic');
 			for (const line of scaffold.body as string[]) {
 				expect(line.length).toBeLessThanOrEqual(100);
@@ -427,7 +427,7 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 			const subject = runCommand('git', ['log', '-1', '--format=%s'], {
 				cwd: worktree,
 			}).stdout.trim();
-			expect(subject).toBe('feat(core): implement invitation presenter-driven route');
+			expect(subject).toBe('feat(core): implement invitation page-data route');
 		});
 	});
 });
