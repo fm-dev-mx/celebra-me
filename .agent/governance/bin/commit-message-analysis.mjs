@@ -12,15 +12,19 @@ const AREA_WEIGHTS = {
 };
 
 const VERB_PRIORITY = [
-	'implement',
-	'refactor',
+	'decouple',
+	'inject',
+	'extract',
+	'isolate',
+	'unify',
+	'normalize',
+	'deprecate',
 	'align',
-	'clarify',
-	'document',
+	'harden',
+	'refactor',
 	'remove',
 	'rename',
-	'harden',
-	'update',
+	'implement',
 ];
 const SUBJECT_PROCESS_LANGUAGE =
 	/\b(record|scope|apply changes|process|misc|tmp|temp|things|stuff)\b/i;
@@ -175,10 +179,10 @@ function pickChangeVerb({ kind, area, clusterKind }) {
 		if (kind === 'delete') return 'remove';
 		return 'update';
 	}
-	if (area === 'docs') return 'clarify';
-	if (area === 'test') return kind === 'add' ? 'add' : 'refine';
+	if (area === 'docs') return 'align';
+	if (area === 'test') return kind === 'add' ? 'implement' : 'align';
 	if (area === 'script' || area === 'config') return 'harden';
-	if (area === 'asset') return kind === 'add' ? 'add' : 'update';
+	if (area === 'asset') return kind === 'add' ? 'implement' : 'align';
 	if (kind === 'add') return 'implement';
 	return 'align';
 }
@@ -367,9 +371,9 @@ function buildFileBulletDescription(fileFact, options = {}) {
 
 	return statusAwareText(
 		fact.status,
-		`add ${normalizedStem || 'file'} implementation`,
-		`modify ${normalizedStem || 'file'} implementation`,
-		`remove ${normalizedStem || 'file'} implementation`,
+		`Implement ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
+		`Align ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
+		`Remove ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
 	);
 }
 
