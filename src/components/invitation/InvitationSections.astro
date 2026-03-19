@@ -10,10 +10,10 @@ import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro
 import Quote from '@/components/invitation/Quote.astro';
 import RSVP from '@/components/invitation/RSVP';
 import ThankYou from '@/components/invitation/ThankYou.astro';
-import type { InvitationPagePresenter } from '@/lib/presenters/invitation-presenter';
+import type { InvitationPageData } from '@/lib/invitation/page-data';
 
 interface Props {
-	presenter: InvitationPagePresenter;
+	presenter: InvitationPageData;
 }
 
 const { presenter } = Astro.props;

@@ -4,7 +4,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { presentInvitationPage } from '@/lib/presenters/invitation-presenter';
+import { prepareInvitationPageData } from '@/lib/invitation/page-data';
 import { getInvitationContextByInviteId, trackInvitationView } from '@/lib/rsvp/service';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
@@ -51,7 +51,7 @@ if (inviteId) {
 	}
 }
 
-const presenter = presentInvitationPage({
+const presenter = prepareInvitationPageData({
 	eventEntry,
 	slug: slug as string,
 	guestContext,
