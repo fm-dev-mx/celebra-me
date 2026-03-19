@@ -1,11 +1,11 @@
 import { GET as getEvents, POST as createEvent } from '@/pages/api/dashboard/admin/events';
 import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventId]';
-import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
-import { listAdminEvents, createEventAdmin, updateEventAdmin } from '@/lib/rsvp/service';
-import { ApiError } from '@/lib/rsvp/errors';
+import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { listAdminEvents, createEventAdmin, updateEventAdmin } from '@/lib/rsvp/services/event-admin.service';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/authorization', () => ({
+jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
@@ -15,18 +15,18 @@ jest.mock('@/lib/rsvp/service', () => ({
 	updateEventAdmin: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/admin-rate-limit', () => ({
+jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 }));
 
-jest.mock('@/lib/rsvp/csrf', () => ({
+jest.mock('@/lib/rsvp/security/csrf', () => ({
 	validateCsrfToken: jest.fn(), // No hace nada, no lanza error
 	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false), // Siempre validar CSRF
 	getCsrfTokenFromCookies: jest.fn().mockReturnValue(null), // No hay token en cookie
 	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null), // No hay token en header
 }));
 
-jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
+jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true as never), // Siempre permite
 }));
 

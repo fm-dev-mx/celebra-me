@@ -1,4 +1,4 @@
-import { publishGuestStreamEvent, subscribeGuestStreamEvent } from '@/lib/rsvp/stream';
+import { publishGuestStreamEvent, subscribeGuestStreamEvent } from '@/lib/rsvp/core/stream';
 
 describe('rsvp stream bus', () => {
 	it('publishes events to subscribers of the same event id', () => {

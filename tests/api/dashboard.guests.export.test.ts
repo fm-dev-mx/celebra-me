@@ -1,9 +1,9 @@
 import { GET } from '@/pages/api/dashboard/guests/export.csv';
-import { requireHostSession } from '@/lib/rsvp/auth';
-import { listDashboardGuests } from '@/lib/rsvp/service';
+import { requireHostSession } from '@/lib/rsvp/auth/auth';
+import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
 import { createMockRequest } from './rsvp.helpers';
 
-jest.mock('@/lib/rsvp/auth', () => ({
+jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
 }));
 

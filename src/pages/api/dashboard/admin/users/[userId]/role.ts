@@ -1,11 +1,11 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/admin-rate-limit';
-import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/csrf';
-import { canChangeUserRole } from '@/lib/rsvp/admin-protection';
-import { validateBodyOrRespond } from '@/lib/rsvp/validation';
-import { errorResponse, forbidden, jsonResponse } from '@/lib/rsvp/http';
-import { changeUserRoleAdmin } from '@/lib/rsvp/service';
+import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import { validateCsrfToken, shouldSkipCsrfValidation } from '@/lib/rsvp/security/csrf';
+import { canChangeUserRole } from '@/lib/rsvp/security/admin-protection';
+import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { errorResponse, forbidden, jsonResponse } from '@/lib/rsvp/core/http';
+import { changeUserRoleAdmin } from '@/lib/rsvp/services/user-admin.service';
 import { UpdateUserRoleSchema, UuidSchema } from '@/lib/schemas';
 
 export const PATCH: APIRoute = async ({ request, params, cookies }) => {

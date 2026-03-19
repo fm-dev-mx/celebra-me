@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp/auth';
-import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/http';
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
-import { validateBody } from '@/utils/api-utils';
+import { requireHostSession } from '@/lib/rsvp/auth/auth';
+import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { validateBody } from '@utils/api-utils';
 import { z } from 'zod';
 
 const BulkImportSchema = z.object({

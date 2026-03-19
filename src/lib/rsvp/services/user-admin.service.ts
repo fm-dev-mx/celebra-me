@@ -1,13 +1,10 @@
-import {
-	findAppUserRoleByUserIdService,
-	listUserRolesService,
-	upsertUserRoleService,
-} from '@/lib/rsvp/repository';
-import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp/types';
-import { listAuthUsers } from '@/lib/rsvp/auth-api';
+import { findAppUserRoleByUserIdService, listUserRolesService } from '@/lib/rsvp/repositories/role-membership.repository';
+import { upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
+import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp/core/types';
+import { listAuthUsers } from '@/lib/rsvp/auth/auth-api';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { randomBytes } from 'node:crypto';
-import { sanitize } from '@/lib/rsvp/utils';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 export async function listAdminUsers(input?: {
 	page?: number;

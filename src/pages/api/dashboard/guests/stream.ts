@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp/auth';
-import { ApiError } from '@/lib/rsvp/errors';
-import { badRequest, errorResponse } from '@/lib/rsvp/http';
-import { listDashboardGuests } from '@/lib/rsvp/service';
-import { subscribeGuestStreamEvent, type DashboardGuestStreamEvent } from '@/lib/rsvp/stream';
+import { requireHostSession } from '@/lib/rsvp/auth/auth';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { badRequest, errorResponse } from '@/lib/rsvp/core/http';
+import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
+import { subscribeGuestStreamEvent, type DashboardGuestStreamEvent } from '@/lib/rsvp/core/stream';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';

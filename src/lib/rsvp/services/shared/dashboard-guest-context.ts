@@ -1,10 +1,7 @@
-import {
-	findEventById,
-	findEventByIdService,
-	findGuestById,
-	findGuestByIdService,
-} from '@/lib/rsvp/repository';
-import { ApiError } from '@/lib/rsvp/errors';
+import { findEventById } from '@/lib/rsvp/repositories/event.repository';
+import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findGuestById, findGuestByIdService } from '@/lib/rsvp/repositories/guest.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 
 export async function getEventAccessOrThrow(eventId: string, hostAccessToken: string) {

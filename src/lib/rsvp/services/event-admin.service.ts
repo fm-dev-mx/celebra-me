@@ -1,13 +1,9 @@
-import {
-	createEventService,
-	findEventByIdService,
-	listAllEventsService,
-	updateEventService,
-} from '@/lib/rsvp/repository';
-import type { AdminEventListItemDTO, EventRecord } from '@/lib/rsvp/types';
-import { ApiError } from '@/lib/rsvp/errors';
+import { createEventService, updateEventService } from '@/lib/rsvp/repositories/event.repository';
+import { findEventByIdService, listAllEventsService, findEventsForHost } from '@/lib/rsvp/repositories/event.repository';
+import type { AdminEventListItemDTO, EventRecord } from '@/lib/rsvp/core/types';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
-import { sanitize } from '@/lib/rsvp/utils';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 function toAdminEventDto(event: EventRecord): AdminEventListItemDTO {
 	return {
@@ -103,4 +99,12 @@ export async function updateEventAdmin(input: {
 	});
 
 	return toAdminEventDto(event);
+}
+
+export async function listHostEvents(input: {
+	hostUserId: string;
+	hostAccessToken: string;
+}): Promise<EventRecord[]> {
+	void input.hostUserId;
+	return findEventsForHost(input.hostAccessToken);
 }

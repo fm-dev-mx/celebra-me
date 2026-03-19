@@ -1,27 +1,27 @@
 import { GET as getUsers } from '@/pages/api/dashboard/admin/users';
 import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[userId]/role';
-import { requireAdminStrongSession } from '@/lib/rsvp/authorization';
-import { listAdminUsers, changeUserRoleAdmin } from '@/lib/rsvp/service';
-import { ApiError } from '@/lib/rsvp/errors';
+import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { listAdminUsers, changeUserRoleAdmin } from '@/lib/rsvp/services/user-admin.service';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from './rsvp.helpers';
 
 // Mock funciones de seguridad admin
-jest.mock('@/lib/rsvp/admin-rate-limit', () => ({
+jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 }));
 
-jest.mock('@/lib/rsvp/csrf', () => ({
+jest.mock('@/lib/rsvp/security/csrf', () => ({
 	validateCsrfToken: jest.fn(),
 	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false),
 	getCsrfTokenFromCookies: jest.fn().mockReturnValue(null),
 	getCsrfTokenFromHeader: jest.fn().mockReturnValue(null),
 }));
 
-jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
+jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true as never),
 }));
 
-jest.mock('@/lib/rsvp/authorization', () => ({
+jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
@@ -30,7 +30,7 @@ jest.mock('@/lib/rsvp/service', () => ({
 	changeUserRoleAdmin: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/admin-protection', () => ({
+jest.mock('@/lib/rsvp/security/admin-protection', () => ({
 	canChangeUserRole: jest.fn().mockResolvedValue({ allowed: true }),
 }));
 

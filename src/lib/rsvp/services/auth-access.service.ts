@@ -1,13 +1,9 @@
-import {
-	findUserRoleService,
-	listMembershipsForHost,
-	redeemClaimCodeRpc,
-	upsertUserRoleService,
-} from '@/lib/rsvp/repository';
-import { ApiError } from '@/lib/rsvp/errors';
+import { findUserRoleService, listMembershipsForHost, upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
+import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { createHash } from 'node:crypto';
-import { getEnv } from '@/utils/env';
-import { sanitize } from '@/lib/rsvp/utils';
+import { getEnv } from '@utils/env';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 function hashClaimCode(rawCode: string): string {
 	const pepper = getEnv('RSVP_CLAIM_CODE_PEPPER') || 'default-pepper';

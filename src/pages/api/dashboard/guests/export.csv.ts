@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp/auth';
-import { badRequest, csvResponse, errorResponse } from '@/lib/rsvp/http';
-import { listDashboardGuests } from '@/lib/rsvp/service';
+import { requireHostSession } from '@/lib/rsvp/auth/auth';
+import { badRequest, csvResponse, errorResponse } from '@/lib/rsvp/core/http';
+import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';

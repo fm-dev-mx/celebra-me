@@ -1,23 +1,15 @@
-import {
-	createGuestInvitation,
-	deleteGuestById,
-	findEventById,
-	findEventByIdService,
-	findEventsForHost,
-	findGuestsByEvent,
-	findGuestByPhone,
-	findMembershipByEventForHost,
-	updateGuestById,
-} from '@/lib/rsvp/repository';
+import { createGuestInvitation, deleteGuestById, findGuestsByEvent, findGuestByPhone, updateGuestById } from '@/lib/rsvp/repositories/guest.repository';
+import { findEventById } from '@/lib/rsvp/repositories/event.repository';
+import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import type {
 	AttendanceStatus,
 	DashboardGuestListResponse,
 	DashboardGuestMutationResponse,
-	EventRecord,
-} from '@/lib/rsvp/types';
-import { ApiError } from '@/lib/rsvp/errors';
-import { publishGuestStreamEvent } from '@/lib/rsvp/stream';
-import { mapSupabaseErrorToApiError } from '@/lib/rsvp/supabase-errors';
+} from '@/lib/rsvp/core/types';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
+import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import {
 	getEventAccessOrThrow,
@@ -26,8 +18,8 @@ import {
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/utils';
-import { generateShortId } from '@/utils/ids';
+import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { generateShortId } from '@utils/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
@@ -107,13 +99,7 @@ export async function listDashboardGuests(input: {
 	};
 }
 
-export async function listHostEvents(input: {
-	hostUserId: string;
-	hostAccessToken: string;
-}): Promise<EventRecord[]> {
-	void input.hostUserId;
-	return findEventsForHost(input.hostAccessToken);
-}
+
 
 export async function createDashboardGuest(input: {
 	eventId: string;

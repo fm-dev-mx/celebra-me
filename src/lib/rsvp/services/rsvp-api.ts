@@ -1,4 +1,4 @@
-import { fetchJSON, type ApiResult } from '../api-client-shared';
+import { fetchJSON, type ApiResult } from '@/lib/api-client-shared';
 
 export interface RsvpPayload {
 	attendanceStatus: 'confirmed' | 'declined';

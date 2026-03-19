@@ -1,5 +1,5 @@
-import { createAuditLog } from '@/lib/rsvp/repository';
-import { sanitize } from '@/lib/rsvp/utils';
+import { createAuditLog } from '@/lib/rsvp/repositories/audit.repository';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 export async function logAdminAction(input: {
 	actorId: string;

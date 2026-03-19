@@ -1,8 +1,8 @@
-import { findGuestByInviteIdPublic, updateGuestByInviteIdPublic } from '@/lib/rsvp/repository';
-import type { AttendanceStatus, GuestRSVPSubmitDTO } from '@/lib/rsvp/types';
-import { ApiError } from '@/lib/rsvp/errors';
-import { publishGuestStreamEvent } from '@/lib/rsvp/stream';
-import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/utils';
+import { findGuestByInviteIdPublic, updateGuestByInviteIdPublic } from '@/lib/rsvp/repositories/guest.repository';
+import type { AttendanceStatus, GuestRSVPSubmitDTO } from '@/lib/rsvp/core/types';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
+import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 
 export async function submitGuestRsvpByInviteId(
 	inviteId: string,

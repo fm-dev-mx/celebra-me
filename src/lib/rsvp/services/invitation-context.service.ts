@@ -1,13 +1,9 @@
-import {
-	findEventByInvitationPublic,
-	findEventBySlugService,
-	findGuestByInviteIdPublic,
-	findGuestByShortIdPublic,
-} from '@/lib/rsvp/repository';
-import type { AttendanceStatus, EventRecord, GuestInvitationRecord } from '@/lib/rsvp/types';
-import { ApiError } from '@/lib/rsvp/errors';
+import { findEventByInvitationPublic, findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
+import { findGuestByInviteIdPublic, findGuestByShortIdPublic } from '@/lib/rsvp/repositories/guest.repository';
+import type { AttendanceStatus, EventRecord, GuestInvitationRecord } from '@/lib/rsvp/core/types';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { buildInviteUrl, isUuid } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { sanitize } from '@/lib/rsvp/utils';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 function toInvitationContext(
 	invitation: GuestInvitationRecord,

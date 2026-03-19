@@ -1,17 +1,11 @@
-import {
-	createClaimCodeService,
-	disableClaimCodeService,
-	findClaimCodeByIdService,
-	findClaimCodeRecordByKeyService,
-	listClaimCodesService,
-	updateClaimCodeService,
-} from '@/lib/rsvp/repository';
-import type { ClaimCodeDTO, ClaimCodeStatus } from '@/lib/rsvp/types';
-import { ApiError } from '@/lib/rsvp/errors';
+import { createClaimCodeService, disableClaimCodeService, findClaimCodeByIdService } from '@/lib/rsvp/repositories/claim-code.repository';
+import { findClaimCodeRecordByKeyService, listClaimCodesService, updateClaimCodeService } from '@/lib/rsvp/repositories/claim-code.repository';
+import type { ClaimCodeDTO, ClaimCodeStatus } from '@/lib/rsvp/core/types';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import { normalizeClaimCode } from '@/lib/rsvp/services/auth-access.service';
 import { createHash, randomBytes } from 'node:crypto';
-import { getEnv } from '@/utils/env';
-import { sanitize } from '@/lib/rsvp/utils';
+import { getEnv } from '@utils/env';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 function hashClaimCode(rawCode: string): string {
 	const pepper = getEnv('RSVP_CLAIM_CODE_PEPPER') || 'default-pepper';

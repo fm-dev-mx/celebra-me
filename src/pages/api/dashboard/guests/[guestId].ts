@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { getSessionContextFromRequest } from '@/lib/rsvp/auth';
-import { ApiError } from '@/lib/rsvp/errors';
-import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/http';
-import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
-import { deleteDashboardGuest, updateDashboardGuest } from '@/lib/rsvp/service';
-import type { AttendanceStatus } from '@/lib/rsvp/types';
+import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { deleteDashboardGuest, updateDashboardGuest } from '@/lib/rsvp/services/dashboard-guests.service';
+import type { AttendanceStatus } from '@/lib/rsvp/core/types';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';

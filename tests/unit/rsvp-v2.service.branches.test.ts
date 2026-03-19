@@ -1,53 +1,50 @@
-import {
-	claimEventForUser,
-	claimEventForUserByClaimCode,
-	createDashboardGuest,
-	getInvitationContextByInviteId,
-	listDashboardGuests,
-	markGuestShared,
-	resolveLegacyTokenToCanonicalUrl,
-	submitGuestRsvpByInviteId,
-	trackInvitationView,
-	updateDashboardGuest,
-} from '@/lib/rsvp/service';
-import * as repo from '@/lib/rsvp/repository';
+import { claimEventForUser, claimEventForUserByClaimCode } from '@/lib/rsvp/services/auth-access.service';
+import { createDashboardGuest, listDashboardGuests, markGuestShared, updateDashboardGuest } from '@/lib/rsvp/services/dashboard-guests.service';
+import { getInvitationContextByInviteId, resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp/services/invitation-context.service';
+import { submitGuestRsvpByInviteId, trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
+import * as eventRepo from '@/lib/rsvp/repositories/event.repository';
+import * as guestRepo from '@/lib/rsvp/repositories/guest.repository';
+import * as membershipRepo from '@/lib/rsvp/repositories/role-membership.repository';
+import * as claimRepo from '@/lib/rsvp/repositories/claim-code.repository';
 
-jest.mock('@/lib/rsvp/repository');
+jest.mock('@/lib/rsvp/repositories/event.repository');
+jest.mock('@/lib/rsvp/repositories/guest.repository');
+jest.mock('@/lib/rsvp/repositories/role-membership.repository');
+jest.mock('@/lib/rsvp/repositories/claim-code.repository');
 
 describe('rsvp service branches', () => {
-	const findEventByIdMock = repo.findEventById as jest.MockedFunction<typeof repo.findEventById>;
-	const findEventByIdServiceMock = repo.findEventByIdService as jest.MockedFunction<
-		typeof repo.findEventByIdService
+	const findEventByIdMock = eventRepo.findEventById as jest.MockedFunction<typeof eventRepo.findEventById>;
+	const findEventByIdServiceMock = eventRepo.findEventByIdService as jest.MockedFunction<
+		typeof eventRepo.findEventByIdService
 	>;
-	const findEventBySlugServiceMock = repo.findEventBySlugService as jest.MockedFunction<
-		typeof repo.findEventBySlugService
+	const findEventBySlugServiceMock = eventRepo.findEventBySlugService as jest.MockedFunction<
+		typeof eventRepo.findEventBySlugService
 	>;
-	const findGuestsByEventMock = repo.findGuestsByEvent as jest.MockedFunction<
-		typeof repo.findGuestsByEvent
+	const findGuestsByEventMock = guestRepo.findGuestsByEvent as jest.MockedFunction<
+		typeof guestRepo.findGuestsByEvent
 	>;
-	const createGuestInvitationMock = repo.createGuestInvitation as jest.MockedFunction<
-		typeof repo.createGuestInvitation
+	const createGuestInvitationMock = guestRepo.createGuestInvitation as jest.MockedFunction<
+		typeof guestRepo.createGuestInvitation
 	>;
-	const findGuestByIdMock = repo.findGuestById as jest.MockedFunction<typeof repo.findGuestById>;
-	const findGuestByIdServiceMock = repo.findGuestByIdService as jest.MockedFunction<
-		typeof repo.findGuestByIdService
+	const findGuestByIdMock = guestRepo.findGuestById as jest.MockedFunction<typeof guestRepo.findGuestById>;
+	const findGuestByIdServiceMock = guestRepo.findGuestByIdService as jest.MockedFunction<
+		typeof guestRepo.findGuestByIdService
 	>;
-	const findGuestByInviteIdPublicMock = repo.findGuestByInviteIdPublic as jest.MockedFunction<
-		typeof repo.findGuestByInviteIdPublic
+	const findGuestByInviteIdPublicMock = guestRepo.findGuestByInviteIdPublic as jest.MockedFunction<
+		typeof guestRepo.findGuestByInviteIdPublic
 	>;
-	const findGuestByShortIdPublicMock = repo.findGuestByShortIdPublic as jest.MockedFunction<
-		typeof repo.findGuestByShortIdPublic
+	const findGuestByShortIdPublicMock = guestRepo.findGuestByShortIdPublic as jest.MockedFunction<
+		typeof guestRepo.findGuestByShortIdPublic
 	>;
-	const findEventByInvitationPublicMock = repo.findEventByInvitationPublic as jest.MockedFunction<
-		typeof repo.findEventByInvitationPublic
+	const findEventByInvitationPublicMock = eventRepo.findEventByInvitationPublic as jest.MockedFunction<
+		typeof eventRepo.findEventByInvitationPublic
 	>;
-	const redeemClaimCodeRpcMock = repo.redeemClaimCodeRpc as jest.MockedFunction<
-		typeof repo.redeemClaimCodeRpc
+	const redeemClaimCodeRpcMock = claimRepo.redeemClaimCodeRpc as jest.MockedFunction<
+		typeof claimRepo.redeemClaimCodeRpc
 	>;
-	const findMembershipByEventForHostMock =
-		repo.findMembershipByEventForHost as jest.MockedFunction<
-			typeof repo.findMembershipByEventForHost
-		>;
+	const findMembershipByEventForHostMock = membershipRepo.findMembershipByEventForHost as jest.MockedFunction<
+		typeof membershipRepo.findMembershipByEventForHost
+	>;
 
 	const baseEvent = {
 		id: 'evt-1',
