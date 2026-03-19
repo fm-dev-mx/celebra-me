@@ -4,29 +4,35 @@
 
 .theme-preset--jewelry-box {
 	// 💎 Color Architecture: Gold, Pearl & Glass
-	--color-surface-primary: #{primitives.$base-gold-50};
-	--color-surface-primary-rgb:
+	--color-surface-primary: var(--color-surface-primary-override, #{primitives.$base-gold-50});
+	--color-surface-primary-rgb: var(
+		--color-surface-primary-rgb-override,
 		#{color.channel(primitives.$base-gold-50, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-gold-50, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-gold-50, 'blue', $space: rgb)};
-	--color-surface-soft: #{primitives.$base-neutral-50};
-	--color-surface-dark: #{primitives.$base-neutral-900};
-	--color-surface-dark-rgb:
+		#{color.channel(primitives.$base-gold-50, 'blue', $space: rgb)}
+	);
+	--color-surface-soft: var(--color-surface-soft-override, #{primitives.$base-neutral-50});
+	--color-surface-dark: var(--color-surface-dark-override, #{primitives.$base-neutral-900});
+	--color-surface-dark-rgb: var(
+		--color-surface-dark-rgb-override,
 		#{color.channel(primitives.$base-neutral-900, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-neutral-900, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-neutral-900, 'blue', $space: rgb)};
+		#{color.channel(primitives.$base-neutral-900, 'blue', $space: rgb)}
+	);
 
 	// Actions & Emphasis
-	--color-action-primary: var(--color-surface-dark);
-	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb:
+	--color-action-primary: var(--color-action-primary-override, var(--color-surface-dark));
+	--color-action-accent: var(--color-action-accent-override, #{primitives.$base-gold-500});
+	--color-action-accent-rgb: var(
+		--color-action-accent-rgb-override,
 		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
-	--color-text-primary: var(--color-surface-dark);
-	--color-text-emphasis: #{primitives.$base-gold-800};
-	--color-text-on-dark: #{primitives.$base-gold-500};
-	--color-text-on-light: #{primitives.$base-neutral-700};
+		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)}
+	);
+	--color-text-primary: var(--color-text-primary-override, var(--color-surface-dark));
+	--color-text-emphasis: var(--color-text-emphasis-override, #{primitives.$base-gold-800});
+	--color-text-on-dark: var(--color-text-on-dark-override, #{primitives.$base-gold-500});
+	--color-text-on-light: var(--color-text-on-light-override, #{primitives.$base-neutral-700});
 
 	// Glassmorphism UI
 	--color-glass-bg: rgb(255 255 255 / 45%);

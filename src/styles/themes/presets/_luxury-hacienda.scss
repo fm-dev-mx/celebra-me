@@ -6,35 +6,40 @@
 	// ---------------------------------------------------------------------
 	// Core semantic tokens (single source of truth for the preset palette)
 	// ---------------------------------------------------------------------
-	--color-text-primary: #{primitives.$base-coffee-900};
-	--color-text-primary-rgb:
+	--color-text-primary: var(--color-text-primary-override, #{primitives.$base-coffee-900});
+	--color-text-primary-rgb: var(
+		--color-text-primary-rgb-override,
 		#{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
-	--color-text-secondary: #{color.adjust(
-			primitives.$base-coffee-900,
-			$lightness: 15%,
-			$space: hsl
-		)};
-	--color-text-emphasis: #{primitives.$base-gold-500};
-	--color-text-on-dark: #{primitives.$base-parchment-100};
+		#{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)}
+	);
+	--color-text-secondary: var(
+		--color-text-secondary-override,
+		#{color.adjust(primitives.$base-coffee-900, $lightness: 15%, $space: hsl)}
+	);
+	--color-text-emphasis: var(--color-text-emphasis-override, #{primitives.$base-gold-500});
+	--color-text-on-dark: var(--color-text-on-dark-override, #{primitives.$base-parchment-100});
 
 	// Kept for semantic parity across presets, even if currently not consumed.
-	--color-text-on-light: #{primitives.$base-parchment-500};
-	--color-surface-primary: #{primitives.$base-parchment-100};
-	--color-surface-primary-rgb:
+	--color-text-on-light: var(--color-text-on-light-override, #{primitives.$base-parchment-500});
+	--color-surface-primary: var(--color-surface-primary-override, #{primitives.$base-parchment-100});
+	--color-surface-primary-rgb: var(
+		--color-surface-primary-rgb-override,
 		#{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)};
-	--color-surface-dark: var(--color-text-primary);
-	--color-surface-dark-rgb: var(--color-text-primary-rgb);
-	--color-action-primary: var(--color-text-primary);
-	--color-action-primary-rgb: var(--color-text-primary-rgb);
-	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb:
+		#{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)}
+	);
+	--color-surface-dark: var(--color-surface-dark-override, var(--color-text-primary));
+	--color-surface-dark-rgb: var(--color-surface-dark-rgb-override, var(--color-text-primary-rgb));
+	--color-action-primary: var(--color-action-primary-override, var(--color-text-primary));
+	--color-action-primary-rgb: var(--color-action-primary-rgb-override, var(--color-text-primary-rgb));
+	--color-action-accent: var(--color-action-accent-override, #{primitives.$base-gold-500});
+	--color-action-accent-rgb: var(
+		--color-action-accent-rgb-override,
 		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
 		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
+		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)}
+	);
 	--color-border-subtle: rgb(var(--color-text-primary-rgb), 0.1);
 	--color-border-emphasis: var(--color-action-accent);
 	--color-frame-bg: linear-gradient(

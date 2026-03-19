@@ -7,20 +7,20 @@
 
 .theme-preset--jewelry-box-wedding {
 	// 💎 Layer 1 & 2: Surface Architecture
-	--color-surface-primary: #fefcf9; // Soft Ivory
-	--color-surface-primary-rgb: 254, 252, 249;
-	--color-surface-soft: #fdfbf7;
-	--color-surface-dark: #333; // Charcoal Grey
-	--color-surface-dark-rgb: 51, 51, 51;
+	--color-surface-primary: var(--color-surface-primary-override, #fefcf9); // Soft Ivory
+	--color-surface-primary-rgb: var(--color-surface-primary-rgb-override, 254, 252, 249);
+	--color-surface-soft: var(--color-surface-soft-override, #fdfbf7);
+	--color-surface-dark: var(--color-surface-dark-override, #333); // Charcoal Grey
+	--color-surface-dark-rgb: var(--color-surface-dark-rgb-override, 51, 51, 51);
 
 	// 💎 Layer 3: Actions & Emphasis
-	--color-action-primary: var(--color-surface-dark);
-	--color-action-accent: #e5c387; // Champagne Gold
-	--color-action-accent-rgb: 229, 195, 135;
-	--color-text-primary: var(--color-surface-dark);
-	--color-text-emphasis: #b88e44; // Deeper gold for readability
-	--color-text-on-dark: #e5c387;
-	--color-text-on-light: #4a4a4a;
+	--color-action-primary: var(--color-action-primary-override, var(--color-surface-dark));
+	--color-action-accent: var(--color-action-accent-override, #e5c387); // Champagne Gold
+	--color-action-accent-rgb: var(--color-action-accent-rgb-override, 229, 195, 135);
+	--color-text-primary: var(--color-text-primary-override, var(--color-surface-dark));
+	--color-text-emphasis: var(--color-text-emphasis-override, #b88e44); // Deeper gold for readability
+	--color-text-on-dark: var(--color-text-on-dark-override, #e5c387);
+	--color-text-on-light: var(--color-text-on-light-override, #4a4a4a);
 
 	// ✨ Glassmorphism & Effects
 	--color-glass-bg: rgb(255 252 249 / 65%);

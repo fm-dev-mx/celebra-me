@@ -1,0 +1,35 @@
+// src/styles/layout/_event-wrapper.scss
+
+.event-theme-wrapper {
+	// Standard mapping: Legacy variables now point to modern semantic tokens
+	// This ensures backward compatibility for components using var(--color-primary)
+	--color-primary: var(--color-surface-primary);
+	--color-primary-rgb: var(--color-surface-primary-rgb);
+	--color-accent: var(--color-action-accent);
+	--color-accent-rgb: var(--color-action-accent-rgb);
+
+	// ✉️ Envelope Dynamic Theming
+	// Uses data-attributes injected by InvitationPagePresenter
+	&[data-env-state='ready'] {
+		--env-bg: var(--color-surface-dark); 
+		--env-paper-bg: var(--color-surface-primary);
+		--env-details-color: var(--color-text-primary);
+	}
+
+	// Preset-specific envelope overrides
+	&[data-env-variant^='jewelry-box'] {
+		--env-name-font: var(--font-display-elegant);
+		--env-name-fill: transparent;
+	}
+
+	&[data-env-variant='luxury-hacienda'] {
+		--env-name-font: var(--font-display-hacienda);
+		--env-paper-bg: #f4e9d9;
+		--env-details-color: #3e2b1e;
+	}
+
+	&[data-env-variant='top-premium-floral'] {
+		--env-paper-bg: var(--color-surface-primary);
+		--env-details-color: var(--color-surface-dark);
+	}
+}
