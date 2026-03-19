@@ -210,4 +210,109 @@ describe('Gatekeeper plan-aware workflow', () => {
 		]);
 		expect(scaffold.fullMessage).toContain('Plan-Id: commit-workflow-fixture');
 	});
+
+	it('skips completed units during commit planning discovery', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const commitMapPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/commit-map.json',
+			);
+			const commitMap = JSON.parse(String(readFileSync(commitMapPath, 'utf8')));
+			// Mark the only unit as completed
+			commitMap.units[0].status = 'completed';
+			// Add a new planned unit that also matches
+			commitMap.units.push({
+				id: 'add-new-feature',
+				phaseId: '01-refactor',
+				status: 'planned',
+				domain: 'core',
+				type: 'feat',
+				subject: {
+					verb: 'implement',
+					target: 'new invitation feature',
+				},
+				purpose: 'add a new feature to the invitation system',
+				include: ['src/lib/invitation/**'],
+				allowRelated: ['tests/**'],
+				correctionPolicy: 'absorb-compatible',
+			});
+			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
+		});
+		try {
+			const result = runNodeJson(`
+				import { discoverCommitPlanning } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(discoverCommitPlanning({
+					repoRootPath: ${JSON.stringify(repoRoot)},
+					planId: 'commit-workflow-fixture',
+					diffEntries: [
+						{ path: 'src/lib/invitation/page-data.ts', status: 'M' },
+						{ path: 'tests/support/invitation-presenter.fixture.ts', status: 'M' },
+					],
+				})));
+			`);
+
+			expect(result.status).toBe('matched_unit');
+			expect(result.recommendedUnit.id).toBe('add-new-feature');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects allowRelated wildcard "*" during plan validation', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const commitMapPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/commit-map.json',
+			);
+			const commitMap = JSON.parse(String(readFileSync(commitMapPath, 'utf8')));
+			commitMap.units[0].allowRelated = ['*'];
+			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
+		});
+		try {
+			const result = runNodeJson(`
+				import { loadValidatedCommitPlan } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(loadValidatedCommitPlan('commit-workflow-fixture', ${JSON.stringify(repoRoot)})));
+			`);
+			expect(result.ok).toBe(false);
+			expect(result.errors.join('\n')).toContain('must not use wildcard "*"');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('warns when include patterns of different units semantically overlap', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const commitMapPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/commit-map.json',
+			);
+			const commitMap = JSON.parse(String(readFileSync(commitMapPath, 'utf8')));
+			commitMap.units.push({
+				id: 'overlapping-unit',
+				phaseId: '01-refactor',
+				status: 'planned',
+				domain: 'core',
+				type: 'refactor',
+				subject: {
+					verb: 'align',
+					target: 'invitation presenter layers',
+				},
+				purpose: 'test semantic overlap detection',
+				include: ['src/lib/invitation/page-data.ts'],
+				allowRelated: [],
+				correctionPolicy: 'absorb-compatible',
+			});
+			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
+		});
+		try {
+			const result = runNodeJson(`
+				import { loadValidatedCommitPlan } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(loadValidatedCommitPlan('commit-workflow-fixture', ${JSON.stringify(repoRoot)})));
+			`);
+			expect(result.ok).toBe(false);
+			expect(result.errors.join('\n')).toContain('semantically overlapping');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
+	});
 });
