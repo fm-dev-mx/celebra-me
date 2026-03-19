@@ -69,31 +69,39 @@ fallback resolution order is:
    node .agent/governance/bin/gatekeeper-workflow.mjs commit --domain <domain-id>
    ```
 
-   **CRITICAL: Atomicity & Precision Protocol**
-   Commit messages must strictly follow this mathematical contract. Before proceeding to commit, the AI agent MUST perform this Chain of Thought:
+   **CRITICAL: Atomicity & Precision Protocol** Commit messages must strictly follow this
+   mathematical contract. Before proceeding to commit, the AI agent MUST perform this Chain of
+   Thought:
 
    **1. Atomicity Verification ("Split or Die")**
    - Read the staged diff for the current domain.
-   - Count the isolated logical intents. If `Intents > 1` (e.g., mixing a bugfix with a refactor), you MUST ABORT the commit phase. Inform the user of the atomicity violation and request a manual breakdown (`git reset` and `git add -p`).
-   
+   - Count the isolated logical intents. If `Intents > 1` (e.g., mixing a bugfix with a refactor),
+     you MUST ABORT the commit phase. Inform the user of the atomicity violation and request a
+     manual breakdown (`git reset` and `git add -p`).
+
    **2. Strategic Title Dominance**
-   - Rank the architectural impact of the staged files (Core Logic > UI > Tests > Docs). The commit title (`type(scope): subject`) MUST reflect ONLY the #1 ranked intent.
+   - Rank the architectural impact of the staged files (Core Logic > UI > Tests > Docs). The commit
+     title (`type(scope): subject`) MUST reflect ONLY the #1 ranked intent.
    - **Stoplist (Banned Verbs)**: `update`, `fix`, `change`, `modify`, `improve`, `add`.
-   - **Required Verbs**: `decouple`, `inject`, `extract`, `isolate`, `unify`, `normalize`, `deprecate`, `align`, `harden`.
-   
+   - **Required Verbs**: `decouple`, `inject`, `extract`, `isolate`, `unify`, `normalize`,
+     `deprecate`, `align`, `harden`.
+
    **3. Rigid File Formula (1:1 Mapping)**
    - The body MUST have exactly `Total_Bullets == Total_Changed_Files`.
    - Paths MUST be full relative paths (`...` is forbidden).
    - Bullet descriptions MUST strictly follow this syntactic formula:
      `[Technical Action Verb] [Specific Entity Modified] to/for [Architectural Purpose]`
-   - *Example*: `- src/utils/email.ts: Inject nodemailer wrapper to decouple transport from UI layer.`
-   - No generic filler text or bookkeeping descriptions allowed. Shorten descriptions if needed to satisfy line-length limits, but never shorten the path or omit the architectural purpose.
+   - _Example_:
+     `- src/utils/email.ts: Inject nodemailer wrapper to decouple transport from UI layer.`
+   - No generic filler text or bookkeeping descriptions allowed. Shorten descriptions if needed to
+     satisfy line-length limits, but never shorten the path or omit the architectural purpose.
    - Deleted files use the deleted path; renamed files use the new path and mention the old path.
 
    Quick validation pass before executing `commit`:
    - [ ] Is it a single logical intent?
    - [ ] Does the title use a precision architectural verb from the allowed list?
-   - [ ] Does every single file have exactly one bullet following the `[Action] [Entity] to [Purpose]` formula?
+   - [ ] Does every single file have exactly one bullet following the
+         `[Action] [Entity] to [Purpose]` formula?
    - [ ] Are all lines under the length limit?
 
 6. Re-run `pnpm gatekeeper:workflow:inspect` for the remaining staged set. When no staged files
