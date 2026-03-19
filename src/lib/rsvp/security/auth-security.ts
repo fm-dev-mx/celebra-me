@@ -1,6 +1,6 @@
-import { ApiError } from './errors';
-import { checkRateLimit } from './rate-limit-provider';
-import { sanitize } from '@/lib/rsvp/utils';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;

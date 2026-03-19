@@ -1,7 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { getEnv } from '@/utils/env';
-import { normalizeAppRole } from './roles';
-import type { AppUserRole } from './types';
+import { getEnv } from '@utils/env';
+import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
+import type { AppUserRole } from '@/lib/rsvp/core/types';
 
 interface TrustedDevicePayload {
 	sub: string;

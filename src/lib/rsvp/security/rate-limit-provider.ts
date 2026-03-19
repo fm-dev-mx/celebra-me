@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { getEnv } from '@/utils/env';
+import { getEnv } from '@utils/env';
 
 interface RateLimitBackend {
 	allow(key: string, maxHits: number, windowSec: number): Promise<boolean>;

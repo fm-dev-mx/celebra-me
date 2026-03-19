@@ -2,7 +2,7 @@
  * @deprecated Use `checkRateLimit` from `rateLimitProvider.ts`.
  * This shim remains for one transition cycle and mirrors the prior signature.
  */
-import { checkRateLimit as checkRateLimitProvider } from './rate-limit-provider';
+import { checkRateLimit as checkRateLimitProvider } from '@/lib/rsvp/security/rate-limit-provider';
 
 export async function checkRateLimit(
 	key: string,

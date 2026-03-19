@@ -3,8 +3,8 @@
  * Protege contra brute force y DoS attacks
  */
 
-import { checkRateLimit, hashIp } from './rate-limit-provider';
-import { ApiError } from './errors';
+import { checkRateLimit, hashIp } from '@/lib/rsvp/security/rate-limit-provider';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 interface RateLimitConfig {
 	maxHits: number;

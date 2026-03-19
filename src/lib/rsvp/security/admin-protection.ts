@@ -3,8 +3,8 @@
  * Previene que el sistema quede sin administradores
  */
 
-import { listUserRolesService } from './repository';
-import type { AppUserRole } from './types';
+import { listUserRolesService } from '@/lib/rsvp/repositories/role-membership.repository';
+import type { AppUserRole } from '@/lib/rsvp/core/types';
 
 /**
  * Verifica si se puede cambiar el rol de un usuario sin dejar

@@ -1,4 +1,4 @@
-import { isValidEmail, validateLoginForm, validateRegisterForm } from '../../src/lib/rsvp/login-ui';
+import { isValidEmail, validateLoginForm, validateRegisterForm } from '@/lib/rsvp/auth/login-ui';
 
 describe('Authentication Validation Logic (Spanish UI)', () => {
 	describe('isValidEmail', () => {
