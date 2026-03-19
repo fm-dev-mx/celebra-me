@@ -1,0 +1,28 @@
+{
+  "planId": "commit-workflow-fixture",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "units": [
+    {
+      "id": "retire-invitation-layers",
+      "phaseId": "01-refactor",
+      "status": "planned",
+      "domain": "core",
+      "type": "refactor",
+      "subject": {
+        "verb": "retire",
+        "target": "invitation presenter layers"
+      },
+      "purpose": "collapse presenter indirection into page-data assembly",
+      "include": [
+        "src/lib/invitation/page-data.ts",
+        "src/lib/presenters/invitation-presenter.ts",
+        "src/pages/[eventType]/[slug].astro"
+      ],
+      "allowRelated": [
+        "tests/**"
+      ],
+      "correctionPolicy": "absorb-compatible"
+    }
+  ]
+}

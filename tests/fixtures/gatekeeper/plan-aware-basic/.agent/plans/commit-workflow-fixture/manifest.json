@@ -1,0 +1,23 @@
+{
+  "id": "commit-workflow-fixture",
+  "title": "Commit Workflow Fixture",
+  "status": "PENDING",
+  "completion": 0,
+  "created": "2026-03-19",
+  "updated": "2026-03-19",
+  "estimatedDuration": "1 phase / ~1 hour",
+  "owner": "system-agent",
+  "phases": [
+    {
+      "id": "01-refactor",
+      "title": "Refactor",
+      "file": "phases/01-refactor.md",
+      "status": "PENDING",
+      "completion": 0,
+      "weight": 100
+    }
+  ],
+  "tags": [
+    "governance"
+  ]
+}

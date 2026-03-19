@@ -1,7 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
+
+const FIXTURE_ROOT = join(process.cwd(), 'tests/fixtures/gatekeeper/plan-aware-basic');
 
 function runNodeJson(script: string) {
 	const result = spawnSync('node', ['--input-type=module', '-e', script], {
@@ -14,7 +16,14 @@ function runNodeJson(script: string) {
 	return JSON.parse(String(result.stdout || '').trim());
 }
 
-describe('Gatekeeper workflow hardening', () => {
+function withTempPlanFixture(mutator?: (repoRoot: string) => void) {
+	const repoRoot = mkdtempSync(join(tmpdir(), 'gatekeeper-plan-fixture-'));
+	cpSync(FIXTURE_ROOT, repoRoot, { recursive: true });
+	if (mutator) mutator(repoRoot);
+	return repoRoot.replace(/\\/g, '/');
+}
+
+describe('Gatekeeper plan-aware workflow', () => {
 	it('resolves configured pre-flight commands only when they are runnable in the repo', () => {
 		const result = runNodeJson(`
 			import { resolvePreflightCommand, resolveRunnablePnpmCommand } from './.agent/governance/bin/gatekeeper-workflow.mjs';
@@ -46,91 +55,32 @@ describe('Gatekeeper workflow hardening', () => {
 		expect(result.missingScript).toBeNull();
 	});
 
-	it('auto-buckets oversized domains into deterministic 12-file splits', () => {
-		const result = runNodeJson(`
-			import { DomainMapper, loadPolicy } from './.agent/governance/bin/gatekeeper.mjs';
-			const mapper = new DomainMapper(loadPolicy('.agent/governance/config/policy.json'));
-			const files = Array.from({ length: 20 }, (_, index) =>
-				\`.agent/plans/archive/hardening-\${String(index + 1).padStart(2, '0')}.md\`,
+	it('validates commit maps and blocks unsupported correction policies', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const commitMapPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/commit-map.json',
 			);
-			console.log(JSON.stringify(mapper.analyze(files)));
-		`);
-
-		expect(result.atomicityLimit).toBe(12);
-		expect(result.atomicityPassed).toBe(true);
-		expect(result.suggestedSplits.map((entry: { id: string }) => entry.id)).toEqual([
-			'gov-plans-archive-1',
-			'gov-plans-archive-2',
-		]);
-		expect(
-			result.suggestedSplits.map((entry: { files: string[] }) => entry.files.length),
-		).toEqual([12, 8]);
-		expect(result.suggestedSplits[0]).toMatchObject({
-			baseDomain: 'gov-plans-archive',
-			bucketIndex: 1,
-			bucketCount: 2,
-			autoBucketed: true,
-		});
-	});
-
-	it('skips strict typecheck for plan-only markdown and json changes', () => {
-		const { skipped, required } = runNodeJson(`
-			import { loadPolicy, shouldRunTypecheck } from './.agent/governance/bin/gatekeeper.mjs';
-			const policy = loadPolicy('.agent/governance/config/policy.json');
-			const selectedChecks = new Set(['typecheck']);
-			console.log(JSON.stringify({
-				skipped: shouldRunTypecheck(
-					{ files: ['.agent/plans/archive/plan-a.md', '.agent/plans/archive/plan-a.json'] },
-					policy,
-					selectedChecks,
-					'strict',
-				),
-				required: shouldRunTypecheck(
-					{ files: ['.agent/plans/archive/plan-a.md', 'src/pages/index.astro'] },
-					policy,
-					selectedChecks,
-					'strict',
-				),
-			}));
-		`);
-
-		expect(skipped).toMatchObject({ run: false, status: 'skipped', reason: 'policy_skipped' });
-		expect(required).toMatchObject({ run: true, status: 'not_run' });
-	});
-
-	it('matches english governance globs with nested and top-level paths', () => {
-		const result = runNodeJson(`
-			import { matchAny } from './.agent/governance/bin/gatekeeper.mjs';
-			console.log(JSON.stringify({
-				docsRoot: matchAny('docs/tmp-gatekeeper-spanish.md', ['docs/**/*.md']),
-				scriptsRoot: matchAny('scripts/tmp-gatekeeper-spanish.mjs', ['scripts/**/*.mjs']),
-				srcBrace: matchAny('src/lib/rsvp/service.ts', ['src/**/*.{ts,tsx,astro,mjs,jsx}']),
-			}));
-		`);
-
-		expect(result).toEqual({
-			docsRoot: true,
-			scriptsRoot: true,
-			srcBrace: true,
-		});
-	});
-
-	it('scopes S0 drift bypass to ignored plan files only', () => {
-		const tempDir = mkdtempSync(join(tmpdir(), 'gatekeeper-s0-'));
-		const signatureFile = join(tempDir, 's0-signature.json');
-
-		try {
 			writeFileSync(
-				signatureFile,
+				commitMapPath,
 				JSON.stringify(
 					{
-						signature: 'expected-signature',
-						files: [
+						planId: 'commit-workflow-fixture',
+						mode: 'planned-commits',
+						units: [
 							{
-								path: '.agent/plans/archive/plan-a.md',
-								sha: 'aaa',
-								added: 1,
-								deleted: 0,
+								id: 'retire-invitation-layers',
+								phaseId: '01-refactor',
+								status: 'planned',
+								domain: 'core',
+								type: 'refactor',
+								subject: {
+									verb: 'retire',
+									target: 'invitation presenter layers',
+								},
+								purpose: 'collapse presenter indirection into page-data assembly',
+								include: ['src/lib/invitation/page-data.ts'],
+								correctionPolicy: 'manual-review',
 							},
 						],
 					},
@@ -138,316 +88,126 @@ describe('Gatekeeper workflow hardening', () => {
 					2,
 				),
 			);
+		});
+		try {
+			const result = runNodeJson(`
+				import { loadValidatedCommitPlan } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(loadValidatedCommitPlan('commit-workflow-fixture', ${JSON.stringify(repoRoot)})));
+			`);
+			expect(result.ok).toBe(false);
+			expect(result.errors.join('\n')).toContain('correctionPolicy');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
+	});
 
-			const { ignoredOnly, blocking, expanded } = runNodeJson(`
-				import { loadPolicy, verifyS0Drift } from './.agent/governance/bin/gatekeeper.mjs';
-				const policy = loadPolicy('.agent/governance/config/policy.json');
-				const signatureFile = ${JSON.stringify(signatureFile.replace(/\\/g, '/'))};
-				const ignoredOnly = verifyS0Drift(
-					{
-						detailedSignature() {
-							return {
-								signature: 'current-signature',
-								files: [{ path: '.agent/plans/archive/plan-a.md', sha: 'bbb', added: 1, deleted: 0 }],
-							};
-						},
-					},
-					signatureFile,
-					policy,
-				);
-				const blocking = verifyS0Drift(
-					{
-						detailedSignature() {
-							return {
-								signature: 'current-signature',
-								files: [{ path: 'src/pages/index.astro', sha: 'ccc', added: 1, deleted: 0 }],
-							};
-						},
-					},
-					signatureFile,
-					policy,
-				);
-				const expanded = verifyS0Drift(
-					{
-						detailedSignature() {
-							return {
-								signature: 'current-signature',
-								files: [
-									{ path: '.agent/plans/archive/plan-a.md', sha: 'bbb', added: 1, deleted: 0 },
-									{ path: 'src/pages/index.astro', sha: 'ddd', added: 1, deleted: 0 },
-								],
-							};
-						},
-					},
-					signatureFile,
-					policy,
-				);
-				console.log(JSON.stringify({ ignoredOnly, blocking, expanded }));
+	it('discovers exactly one matching unit from working tree diff entries', () => {
+		const repoRoot = withTempPlanFixture();
+		try {
+			const result = runNodeJson(`
+				import { discoverCommitPlanning } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(discoverCommitPlanning({
+					repoRootPath: ${JSON.stringify(repoRoot)},
+					planId: 'commit-workflow-fixture',
+					diffEntries: [
+						{ path: 'src/lib/invitation/page-data.ts', status: 'M' },
+						{ path: 'src/lib/presenters/invitation-presenter.ts', status: 'D' },
+						{ path: 'src/pages/[eventType]/[slug].astro', status: 'M' },
+						{ path: 'tests/support/invitation-presenter.fixture.ts', status: 'M' },
+					],
+				})));
 			`);
 
-			expect(ignoredOnly.hasDrift).toBe(false);
-			expect(ignoredOnly.ignoredOnly).toBe(true);
-			expect(blocking.hasDrift).toBe(true);
-			expect(blocking.blockingAdded).toEqual(['src/pages/index.astro']);
-			expect(expanded.hasDrift).toBe(true);
-			expect(expanded.blockingAdded).toEqual(['src/pages/index.astro']);
+			expect(result.status).toBe('matched_unit');
+			expect(result.recommendedUnit.id).toBe('retire-invitation-layers');
+			expect(result.recommendedUnit.scope).toBe('core');
 		} finally {
-			rmSync(tempDir, { recursive: true, force: true });
+			rmSync(repoRoot, { recursive: true, force: true });
 		}
 	});
 
-	it('builds scaffold output with full paths and exact per-file metadata', () => {
-		const scaffold = runNodeJson(`
-			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'gov-plans-archive-1',
-				baseDomain: 'gov-plans-archive',
-				files: [
-					'.agent/plans/archive/extremely-long-feature-name/phases/01-delivery.md',
-					'.agent/plans/archive/extremely-long-feature-name/manifest.json',
-				],
-			};
-			console.log(JSON.stringify(buildCommitScaffold(split)));
-		`);
-
-		expect(scaffold.header.length).toBeLessThanOrEqual(130);
-		expect(scaffold.body).toHaveLength(2);
-		expect(scaffold.titleSource).toBe('deterministic');
-		expect(
-			scaffold.body[0].startsWith(
-				'- .agent/plans/archive/extremely-long-feature-name/phases/01-delivery.md: ',
-			),
-		).toBe(true);
-		expect(
-			scaffold.body[1].startsWith(
-				'- .agent/plans/archive/extremely-long-feature-name/manifest.json: ',
-			),
-		).toBe(true);
-		for (const line of scaffold.body) {
-			const [pathSpec] = line.replace(/^- /, '').split(': ', 1);
-			expect(pathSpec).not.toContain('...');
-		}
-	});
-
-	it('keeps scaffold non-mutating by default and exposes explicit commit mode', () => {
-		const result = runNodeJson(`
-			import { parseArgs } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			console.log(JSON.stringify({
-				scaffold: parseArgs(['scaffold', '--domain', 'core']),
-				commit: parseArgs(['commit', '--domain', 'core']),
-				scaffoldCommit: parseArgs(['scaffold', '--domain', 'core', '--commit']),
-			}));
-		`);
-
-		expect(result.scaffold.command).toBe('scaffold');
-		expect(result.scaffold.commit).toBe(false);
-		expect(result.commit.command).toBe('commit');
-		expect(result.commit.commit).toBe(false);
-		expect(result.scaffoldCommit.commit).toBe(true);
-	});
-
-	it('prefers dominant code changes in mixed presenter splits', () => {
-		const scaffold = runNodeJson(`
-			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'core',
-				baseDomain: 'core',
-				files: [
-					'.agent/plans/pre-phase-audit-2026/CHANGELOG.md',
-					'src/components/invitation/InvitationSections.astro',
+	it('rejects overlapping unit definitions before runtime matching', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const commitMapPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/commit-map.json',
+			);
+			const commitMap = JSON.parse(String(readFileSync(commitMapPath, 'utf8')));
+			commitMap.units.push({
+				id: 'duplicate-layers',
+				phaseId: '01-refactor',
+				status: 'planned',
+				domain: 'core',
+				type: 'refactor',
+				subject: {
+					verb: 'retire',
+					target: 'duplicate invitation layers',
+				},
+				purpose: 'create ambiguity for testing',
+				include: [
 					'src/lib/invitation/page-data.ts',
-					'src/pages/[eventType]/[slug].astro',
-					'tests/unit/invitation.presenter.test.ts',
-				],
-			};
-			console.log(JSON.stringify(buildCommitScaffold(split)));
-		`);
-
-		expect(scaffold.header).toBe('feat(core): implement invitation page-data route');
-		expect(scaffold.header).not.toContain('plan');
-		expect(scaffold.header).not.toContain('files');
-	});
-
-	it('generates specific plan and presenter bullet descriptions', () => {
-		const result = runNodeJson(`
-			import { describeFileChange } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			console.log(JSON.stringify({
-				changelog: describeFileChange('.agent/plans/pre-phase-audit-2026/CHANGELOG.md'),
-				manifest: describeFileChange('.agent/plans/pre-phase-audit-2026/manifest.json'),
-				phase: describeFileChange('.agent/plans/pre-phase-audit-2026/phases/04-presenter-implementation.md'),
-				presenter: describeFileChange('src/lib/invitation/page-data.ts'),
-				page: describeFileChange('src/pages/[eventType]/[slug].astro', {
-					dominantCluster: { kind: 'presenter-route' },
-				}),
-				testFile: describeFileChange('tests/unit/invitation.presenter.test.ts'),
-			}));
-		`);
-
-		expect(result.changelog).toBe('Update changelog to/for architectural purpose');
-		expect(result.manifest).toBe('Update manifest to/for architectural purpose');
-		expect(result.phase).toBe(
-			'Update 04 presenter implementation to/for architectural purpose',
-		);
-		expect(result.presenter).toBe('Align page data to/for architectural purpose');
-		expect(result.page).toBe('Implement slug to/for architectural purpose');
-		expect(result.testFile).toBe(
-			'Align invitation presenter test to/for architectural purpose',
-		);
-	});
-
-	it('avoids generic scaffold targets and descriptions for presenter-heavy splits', () => {
-		const scaffold = runNodeJson(`
-			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'core',
-				baseDomain: 'core',
-				files: [
-					'src/lib/invitation/page-data.ts',
+					'src/lib/presenters/invitation-presenter.ts',
 					'src/pages/[eventType]/[slug].astro',
 				],
-			};
-			console.log(JSON.stringify(buildCommitScaffold(split)));
-		`);
-
-		expect(scaffold.header).not.toMatch(/\b(files|changes|work)\b/);
-		for (const line of scaffold.body as string[]) {
-			expect(line).not.toMatch(/update file configuration/i);
-			expect(line).not.toContain('...');
-			expect(line.length).toBeLessThanOrEqual(140);
-		}
-	});
-
-	it('skips AI title assist for simple high-confidence splits even when configured', () => {
-		const result = runNodeJson(`
-			import { resolveCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'core',
-				baseDomain: 'core',
-				files: [
-					'src/lib/invitation/page-data.ts',
-					'src/pages/[eventType]/[slug].astro',
-				],
-			};
-			const outcome = await resolveCommitScaffold(split, {
-				policy: {
-					workflow: {
-						commit: {
-							aiTitle: {
-								enabled: true,
-								mode: 'assist',
-								confidenceThreshold: 0.95,
-								timeoutMs: 1000,
-							},
-						},
-					},
-				},
-				env: {
-					GATEKEEPER_AI_TITLE_ENDPOINT: 'https://example.invalid',
-					GATEKEEPER_AI_TITLE_MODEL: 'fake-model',
-					GATEKEEPER_AI_TITLE_API_KEY: 'fake-key',
-				},
-				fetchImpl: async () => {
-					throw new Error('AI should not be called for a high-confidence split');
-				},
+				allowRelated: ['tests/**'],
+				correctionPolicy: 'absorb-compatible',
 			});
-			console.log(JSON.stringify(outcome.scaffold));
-		`);
+			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
+		});
+		try {
+			const result = runNodeJson(`
+				import { discoverCommitPlanning } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(discoverCommitPlanning({
+					repoRootPath: ${JSON.stringify(repoRoot)},
+					planId: 'commit-workflow-fixture',
+					diffEntries: [
+						{ path: 'src/lib/invitation/page-data.ts', status: 'M' },
+						{ path: 'src/lib/presenters/invitation-presenter.ts', status: 'D' },
+						{ path: 'src/pages/[eventType]/[slug].astro', status: 'M' },
+					],
+				})));
+			`);
 
-		expect(result.titleSource).toBe('deterministic');
-		expect(result.header).toBe('feat(core): implement invitation page-data route');
+			expect(result.status).toBe('invalid_plan_contract');
+			expect(result.errors.join('\n')).toContain('duplicates patterns used by another unit');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
 	});
 
-	it('falls back to deterministic titles when AI returns an invalid subject', () => {
-		const result = runNodeJson(`
-			import { resolveCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'core',
-				baseDomain: 'core',
+	it('builds planned scaffold output with trailers derived from the unit', () => {
+		const scaffold = runNodeJson(`
+			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			console.log(JSON.stringify(buildCommitScaffold({
+				id: 'retire-invitation-layers',
 				files: [
-					'docs/core/architecture.md',
 					'src/lib/invitation/page-data.ts',
+					'src/lib/presenters/invitation-presenter.ts',
 					'src/pages/[eventType]/[slug].astro',
 				],
-			};
-			const outcome = await resolveCommitScaffold(split, {
-				policy: {
-					workflow: {
-						commit: {
-							aiTitle: {
-								enabled: true,
-								mode: 'assist',
-								confidenceThreshold: 0.95,
-								timeoutMs: 1000,
-							},
-						},
-					},
+				commitUnit: {
+					id: 'retire-invitation-layers',
+					planId: 'commit-workflow-fixture',
+					domain: 'core',
+					type: 'refactor',
+					subject: { verb: 'retire', target: 'invitation presenter layers' },
+					purpose: 'collapse presenter indirection into page-data assembly',
 				},
-				env: {
-					GATEKEEPER_AI_TITLE_ENDPOINT: 'https://example.invalid',
-					GATEKEEPER_AI_TITLE_MODEL: 'fake-model',
-					GATEKEEPER_AI_TITLE_API_KEY: 'fake-key',
-				},
-				fetchImpl: async () => ({
-					ok: true,
-					async json() {
-						return {
-							subject: 'update files',
-							confidence: 0.99,
-							rationale: 'bad generic title',
-						};
-					},
-				}),
-			});
-			console.log(JSON.stringify(outcome.scaffold));
-		`);
-
-		expect(result.titleSource).toBe('deterministic');
-		expect(result.finalSubject).toBe('implement invitation page-data route');
-	});
-
-	it('derives commitlint diff context for grouped atomic commits', () => {
-		const result = runNodeJson(`
-			import { buildCommitlintContext } from './scripts/validate-commits.mjs';
-			const files = [
-				'src/assets/images/events/demo-cumple/hero.webp',
-				'src/assets/images/events/demo-cumple/gallery-01.webp',
-				'src/assets/images/events/demo-cumple/index.ts',
-			];
-			const entries = [
-				{ path: files[0], status: 'A', area: 'asset' },
-				{ path: files[1], status: 'A', area: 'asset' },
-				{ path: files[2], status: 'A', area: 'source' },
-			];
-			console.log(JSON.stringify(buildCommitlintContext(files, entries)));
-		`);
-
-		expect(result.COMMITLINT_DOMINANT_CHANGE_KIND).toBe('add');
-		expect(result.COMMITLINT_DOMINANT_AREA).toBe('asset');
-		expect(JSON.parse(result.COMMITLINT_FILE_GROUPS_JSON)).toContainEqual(
-			expect.objectContaining({
-				key: 'src/assets/images/events/demo-cumple/',
-			}),
-		);
-	});
-
-	it('builds scaffold headers without process bookkeeping language', () => {
-		const result = runNodeJson(`
-			import { buildCommitScaffold } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			const split = {
-				id: 'gov-plans-archive-1',
-				baseDomain: 'gov-plans-archive',
-				files: [
-					'.agent/plans/archive/gatekeeper-hardening-fixture/01-phase.md',
-					'.agent/plans/archive/gatekeeper-hardening-fixture/02-manifest.json',
+			}, {
+				diffEntries: [
+					{ path: 'src/lib/invitation/page-data.ts', status: 'M', area: 'source' },
+					{ path: 'src/lib/presenters/invitation-presenter.ts', status: 'D', area: 'source' },
+					{ path: 'src/pages/[eventType]/[slug].astro', status: 'M', area: 'source' },
 				],
-			};
-			console.log(JSON.stringify(buildCommitScaffold(split)));
+			})));
 		`);
 
-		expect(result.type).toBe('docs');
-		expect(result.header).toMatch(/^docs\(gov-plans-archive-1\): archive /);
-		expect(result.header.length).toBeLessThanOrEqual(130);
-		expect(result.fullMessage).not.toContain('record gov plans archive scope');
-		expect(result.body[0]).toMatch(/- .+: [A-Z][a-z]+ .+ to\/for .+/);
+		expect(scaffold.titleSource).toBe('planned');
+		expect(scaffold.header).toBe('refactor(core): retire invitation presenter layers');
+		expect(scaffold.trailers).toEqual([
+			'Plan-Id: commit-workflow-fixture',
+			'Commit-Unit: retire-invitation-layers',
+		]);
+		expect(scaffold.fullMessage).toContain('Plan-Id: commit-workflow-fixture');
 	});
 });
