@@ -69,22 +69,32 @@ fallback resolution order is:
    node .agent/governance/bin/gatekeeper-workflow.mjs commit --domain <domain-id>
    ```
 
-   Commit messages must follow this contract:
-   - Header: `type(scope): verb target`
-   - The verb must describe the dominant change, not bookkeeping such as `record ... scope`
-   - `type` and `scope` are deterministic; optional AI assistance may refine only the subject text
-   - Prefer decisive verbs such as `define`, `align`, `harden`, `extract`, `refactor`, or `clarify`
-   - Multi-file bodies must use one exact `- path: description` bullet per touched file
-   - Bullet paths must use full relative paths; `...` is not allowed
-   - Bullet descriptions must describe the specific file change, not generic bookkeeping
-   - Deleted files must use the deleted path; renamed files must use the new path and mention the old path in the description
-   - Shorten descriptions to satisfy line-length rules; never shorten the path
+   **CRITICAL: Atomicity & Precision Protocol**
+   Commit messages must strictly follow this mathematical contract. Before proceeding to commit, the AI agent MUST perform this Chain of Thought:
 
-   Quick validation pass before `commit`:
-   - confirm the title names the dominant change in the split
-   - confirm every bullet path is the exact staged relative path for one changed file only
-   - confirm every bullet description states the concrete file delta in one short clause
-   - confirm no body line exceeds the commitlint limit
+   **1. Atomicity Verification ("Split or Die")**
+   - Read the staged diff for the current domain.
+   - Count the isolated logical intents. If `Intents > 1` (e.g., mixing a bugfix with a refactor), you MUST ABORT the commit phase. Inform the user of the atomicity violation and request a manual breakdown (`git reset` and `git add -p`).
+   
+   **2. Strategic Title Dominance**
+   - Rank the architectural impact of the staged files (Core Logic > UI > Tests > Docs). The commit title (`type(scope): subject`) MUST reflect ONLY the #1 ranked intent.
+   - **Stoplist (Banned Verbs)**: `update`, `fix`, `change`, `modify`, `improve`, `add`.
+   - **Required Verbs**: `decouple`, `inject`, `extract`, `isolate`, `unify`, `normalize`, `deprecate`, `align`, `harden`.
+   
+   **3. Rigid File Formula (1:1 Mapping)**
+   - The body MUST have exactly `Total_Bullets == Total_Changed_Files`.
+   - Paths MUST be full relative paths (`...` is forbidden).
+   - Bullet descriptions MUST strictly follow this syntactic formula:
+     `[Technical Action Verb] [Specific Entity Modified] to/for [Architectural Purpose]`
+   - *Example*: `- src/utils/email.ts: Inject nodemailer wrapper to decouple transport from UI layer.`
+   - No generic filler text or bookkeeping descriptions allowed. Shorten descriptions if needed to satisfy line-length limits, but never shorten the path or omit the architectural purpose.
+   - Deleted files use the deleted path; renamed files use the new path and mention the old path.
+
+   Quick validation pass before executing `commit`:
+   - [ ] Is it a single logical intent?
+   - [ ] Does the title use a precision architectural verb from the allowed list?
+   - [ ] Does every single file have exactly one bullet following the `[Action] [Entity] to [Purpose]` formula?
+   - [ ] Are all lines under the length limit?
 
 6. Re-run `pnpm gatekeeper:workflow:inspect` for the remaining staged set. When no staged files
    remain, clean up any workflow artifacts:
