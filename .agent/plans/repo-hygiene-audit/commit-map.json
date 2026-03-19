@@ -6,7 +6,7 @@
     {
       "id": "repo-hygiene-audit-record",
       "phaseId": "01-cleanup",
-      "status": "planned",
+      "status": "completed",
       "domain": "governance",
       "type": "docs",
       "subject": {
@@ -23,7 +23,7 @@
     {
       "id": "remove-root-logs",
       "phaseId": "01-cleanup",
-      "status": "planned",
+      "status": "completed",
       "domain": "ops",
       "type": "chore",
       "subject": {
@@ -38,7 +38,7 @@
     {
       "id": "retire-orphaned-dirs",
       "phaseId": "01-cleanup",
-      "status": "planned",
+      "status": "completed",
       "domain": "ops",
       "type": "chore",
       "subject": {

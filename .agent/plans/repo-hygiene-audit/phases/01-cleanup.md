@@ -7,12 +7,12 @@ cognitive load.
 
 ## Tasks
 
-- [ ] Delete `full_test.log`, `test.log`, `test_output.txt`, `tests_out.log`, `tests_out_esm.log`
+- [x] Delete `full_test.log`, `test.log`, `test_output.txt`, `tests_out.log`, `tests_out_esm.log`
       from root. [weight: 40%]
-- [ ] Remove `tracking/` directory (orphaned README). [weight: 20%]
-- [ ] Evaluate and remove `archive/` root directory (archive contents to be moved to
+- [x] Remove `tracking/` directory (orphaned README). [weight: 20%]
+- [x] Evaluate and remove `archive/` root directory (archive contents to be moved to
       `src/content/archive` if needed). [weight: 30%]
-- [ ] Verify `.gitignore` explicitly covers all `*.log` patterns. [weight: 10%]
+- [x] Verify `.gitignore` explicitly covers all `*.log` patterns. [weight: 10%]
 
 ## Acceptance Criteria
 
