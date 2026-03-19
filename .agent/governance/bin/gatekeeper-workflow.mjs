@@ -415,14 +415,12 @@ function printArchitecturalInterventionGuidance(report, settings) {
 	}
 }
 
-function truncateText(value, maxLength, options = {}) {
+function truncateText(value, maxLength) {
 	const text = String(value || '')
 		.trim()
 		.replace(/\s+/g, ' ');
 	if (text.length <= maxLength) return text;
-	if (options.noEllipsis) return text.slice(0, maxLength);
-	if (maxLength <= 3) return text.slice(0, maxLength);
-	return `${text.slice(0, maxLength - 3).trim()}...`;
+	return text.slice(0, maxLength).trim();
 }
 
 function inferDominantFileCluster(files, diffEntries = []) {
