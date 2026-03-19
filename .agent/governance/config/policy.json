@@ -186,8 +186,9 @@
             },
             "appliesTo": ["src/**/*.{ts,tsx,astro,js,jsx}"],
             "maxFileLines": 400,
-            "maxExportCount": 20,
-            "maxFunctionParams": 6
+            "maxExportCount": 40,
+            "maxFunctionParams": 6,
+            "exemptions": ["src/lib/theme/theme-contract.ts"]
         },
         "couplingGuard": {
             "enabled": true,

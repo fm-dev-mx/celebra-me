@@ -20,6 +20,7 @@
             "src/styles/tokens/**",
             "src/styles/global/**",
             "src/styles/ui/**",
+            "src/styles/layout/**",
             "src/styles/*.scss"
         ],
         "gov-agent-config": [
@@ -59,6 +60,7 @@
         ],
         "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
         "gov-plans-comprehensive-audit": [".agent/plans/comprehensive-audit-Q1-2026/**"],
+        "gov-plans-audit-sr-2026-03": [".agent/plans/audit-SR-2026-03/**"],
         "gov-workflows": [".agent/workflows/**", "docs/DOC_STATUS.md"],
         "gov-scripts": [".agent/scripts/**"],
         "gov-infra": [
@@ -81,6 +83,7 @@
             "src/interfaces/**",
             "src/lib/**",
             "src/data/**",
+            "src/utils/**",
             "src/styles/events/**",
             "src/pages/api/*",
             "archive/**",
