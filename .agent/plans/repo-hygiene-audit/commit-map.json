@@ -53,7 +53,7 @@
     {
       "id": "sync-path-aliases",
       "phaseId": "02-config-alignment",
-      "status": "planned",
+      "status": "completed",
       "domain": "core",
       "type": "refactor",
       "subject": {

@@ -7,10 +7,10 @@ free of dead references.
 
 ## Tasks
 
-- [ ] Prune non-existent path aliases in `astro.config.mjs` (`src/core/*`, `src/backend/*`).
+- [x] Prune non-existent path aliases in `astro.config.mjs` (`src/core/*`, `src/backend/*`).
       [weight: 40%]
-- [ ] Synchronize `tsconfig.json` paths with `astro.config.mjs`. [weight: 40%]
-- [ ] Simplify redundant aliases (e.g., `@assets` vs `@images`). [weight: 20%]
+- [x] Synchronize `tsconfig.json` paths with `astro.config.mjs`. [weight: 40%]
+- [x] Simplify redundant aliases (e.g., `@assets` vs `@images`). [weight: 20%]
 
 ## Acceptance Criteria
 
