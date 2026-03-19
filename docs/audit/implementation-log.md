@@ -328,8 +328,8 @@
   - **Archive Metadata**: Added explicit `[ARCHIVED]` headers with reason, date, and replacement
     coverage.
   - **Legacy Reference Remediation**:
-    - Replaced `write_to_file` guidance with direct editing flow (`apply_patch`/editor) in
-      `prompt-to-workflow.md`.
+    - Replaced `write_to_file` guidance with direct editing flow (`apply_patch`/editor) in the
+      now-retired `prompt-to-workflow.md` workflow.
     - Updated source of truth path `.agent/ARCHITECTURE.md` -> `docs/ARCHITECTURE.md` in
       `gatekeeper-commit.md`.
     - Replaced direct commit instructions (`git add .`/`git commit`) with gatekeeper-driven flow in
