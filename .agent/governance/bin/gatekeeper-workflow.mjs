@@ -101,6 +101,7 @@ function parseArgs(argv) {
 		sessionFile: null,
 		s0File: null,
 		json: false,
+		dryRun: false,
 	};
 	for (let index = 1; index < argv.length; index += 1) {
 		const token = argv[index];
@@ -110,6 +111,7 @@ function parseArgs(argv) {
 		if (token === '--session-file') args.sessionFile = argv[index + 1] || args.sessionFile;
 		if (token === '--s0-file') args.s0File = argv[index + 1] || args.s0File;
 		if (token === '--json') args.json = true;
+		if (token === '--dry-run') args.dryRun = true;
 	}
 	return normalizeArtifactPaths(args);
 }
@@ -495,8 +497,10 @@ function inspectCommand(args) {
 		diffEntries,
 	});
 	const payload = buildSession(args, diffEntries, commitPlanning);
-	writeSession(args, payload);
 	if (commitPlanning.status === 'empty_change_set') cleanupArtifacts(args);
+	if (!args.dryRun) {
+		writeSession(args, payload);
+	}
 	if (args.json) {
 		console.log(
 			JSON.stringify(
@@ -536,6 +540,13 @@ function stageCommand(args) {
 		fail(`Session is invalid (${validation.reason}). Re-run inspect.`);
 	}
 	const currentEntries = assertWorkingTreeMatchesSession(session);
+	const sessionAgeMinutes =
+		(Date.now() - new Date(session.createdAt).getTime()) / 60000;
+	if (sessionAgeMinutes > 5) {
+		console.log(
+			`⚠️  Session is ${Math.round(sessionAgeMinutes)} minutes old. Working tree may have drifted.`,
+		);
+	}
 	const matchedUnit = ensureSelectedUnit(session, args);
 	const unitEntries = currentEntries.filter((entry) => matchedUnit.files.includes(entry.path));
 	const stagedSpecs = pathSpecsForEntries(getStagedDiffEntries());

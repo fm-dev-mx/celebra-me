@@ -115,7 +115,10 @@ function discoverCommitPlanning({ repoRootPath, diffEntries = [], planId }) {
 		};
 	}
 
-	const matches = loadedPlan.plan.units
+	const pendingUnits = loadedPlan.plan.units.filter(
+		(unit) => unit.status !== 'completed',
+	);
+	const matches = pendingUnits
 		.map((unit) => ({ unit, match: matchDiffEntriesToUnit(unit, normalizedEntries) }))
 		.filter((entry) => entry.match.ok)
 		.map((entry) => materializeUnit(loadedPlan.plan, entry.unit, entry.match));

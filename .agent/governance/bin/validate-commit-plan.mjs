@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { createHash } from 'crypto';
 
 import { normalizePath } from './commit-message-analysis.mjs';
+import { matchAny } from './gatekeeper.mjs';
 
 const DEFAULT_PLAN_ROOT = '.agent/plans';
 const DEFAULT_COMMIT_MAP = 'commit-map.json';
@@ -21,6 +22,7 @@ const ALLOWED_TYPES = new Set([
 	'revert',
 ]);
 const ALLOWED_CORRECTION_POLICIES = new Set(['absorb-compatible']);
+const MAX_TARGET_LENGTH = 50;
 const GENERIC_TARGETS = new Set([
 	'change',
 	'changes',
@@ -113,6 +115,16 @@ function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes) {
 	if (!unit.purpose) errors.push(`units[${unitIndex}].purpose is required`);
 	if (!unit.include.length)
 		errors.push(`units[${unitIndex}].include must contain at least one path`);
+	if (unit.allowRelated.includes('*')) {
+		errors.push(
+			`units[${unitIndex}].allowRelated must not use wildcard "*"; list explicit patterns`,
+		);
+	}
+	if (unit.subject.target.length > MAX_TARGET_LENGTH) {
+		errors.push(
+			`units[${unitIndex}].subject.target exceeds ${MAX_TARGET_LENGTH} characters (${unit.subject.target.length})`,
+		);
+	}
 	if (!ALLOWED_CORRECTION_POLICIES.has(unit.correctionPolicy)) {
 		errors.push(
 			`units[${unitIndex}].correctionPolicy must be one of: ${Array.from(ALLOWED_CORRECTION_POLICIES).join(', ')}`,
@@ -160,6 +172,8 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest }) {
 		errors.push(...validateUnit(unit, manifestPhaseIds, index, duplicateIncludes));
 	}
 
+	errors.push(...detectPatternSubsumption(normalizedUnits));
+
 	return {
 		ok: errors.length === 0,
 		errors,
@@ -174,6 +188,29 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest }) {
 					units: normalizedUnits,
 				},
 	};
+}
+
+function detectPatternSubsumption(units) {
+	const errors = [];
+	const activeUnits = units.filter((unit) => unit.status !== 'completed');
+	for (let i = 0; i < activeUnits.length; i += 1) {
+		for (let j = i + 1; j < activeUnits.length; j += 1) {
+			const unitA = activeUnits[i];
+			const unitB = activeUnits[j];
+			const aSubsumesB = unitB.include.some((pattern) =>
+				matchAny(pattern, unitA.include),
+			);
+			const bSubsumesA = unitA.include.some((pattern) =>
+				matchAny(pattern, unitB.include),
+			);
+			if (aSubsumesB || bSubsumesA) {
+				errors.push(
+					`units "${unitA.id}" and "${unitB.id}" have semantically overlapping include patterns`,
+				);
+			}
+		}
+	}
+	return errors;
 }
 
 function loadValidatedCommitPlan(planId, repoRootPath) {

@@ -417,7 +417,11 @@ function buildFileBulletDescription(fileFact, options = {}) {
 		purpose = fallbackPurposes[fact.area] || 'architectural consistency';
 	}
 
-	return `${verb} ${normalizedStem || 'entity'} to/for ${purpose}`;
+	const VERB_STARTERS =
+		/^(add|align|break|collapse|create|establish|harden|implement|initialize|merge|modernize|normalize|prune|remove|resolve|retire|sync|validate)\b/i;
+	const connector =
+		/^[a-z]/.test(purpose) && VERB_STARTERS.test(purpose) ? 'to' : 'for';
+	return `${verb} ${normalizedStem || 'entity'} ${connector} ${purpose}`;
 }
 
 function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
