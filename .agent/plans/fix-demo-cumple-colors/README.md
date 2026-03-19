@@ -14,7 +14,7 @@
 
 ### In Scope
 
-- Update `src/lib/presenters/invitation-presenter.ts` to inject all necessary color aliases from `PRESET_COLOR_MAP`.
+- Update the invitation page assembly layer (`src/lib/invitation/page-data.ts`) to inject all necessary color aliases from `PRESET_COLOR_MAP`.
 - Update `src/lib/adapters/event.ts` to pass the full color map to the theme configuration.
 - Align `color-tokens.ts` mappings for the `luxury-hacienda` preset.
 - Visual verification to ensure parity with the pre-refactor state (commit `ac797e...`).
