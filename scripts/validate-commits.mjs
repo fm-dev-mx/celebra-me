@@ -100,9 +100,14 @@ function getCommitDiffEntries(commitHash) {
 
 function buildCommitlintContext(files, diffEntries) {
 	const normalizedFiles = files.map(normalizePath);
+	const summary = summarizeDiffEntries(diffEntries);
+	const groups = suggestFileGroups(normalizedFiles);
 	return {
 		COMMITLINT_STAGED_FILES: normalizedFiles.join('\n'),
 		COMMITLINT_DIFF_JSON: JSON.stringify(diffEntries),
+		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify(groups),
+		COMMITLINT_DOMINANT_CHANGE_KIND: summary.dominantKind,
+		COMMITLINT_DOMINANT_AREA: summary.dominantArea,
 	};
 }
 

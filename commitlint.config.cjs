@@ -25,6 +25,9 @@ try {
 const FORBIDDEN_VOCABULARY =
 	/\b(wip|fix stuff|misc|various|tmp|temp|quick fix|minor changes|small fix|tweaks|improvements|adjustments|stuff|things)\b/i;
 
+const SUBJECT_PROCESS_LANGUAGE =
+	/\b(record|scope|apply changes|process|misc|tmp|temp|things|stuff)\b/i;
+
 const GENERIC_TARGETS = new Set([
 	'change',
 	'changes',
@@ -70,6 +73,11 @@ module.exports = {
 		'body-leading-blank': [2, 'always'],
 		'no-forbidden-vocabulary': [2, 'always'],
 		'subject-target-required': [2, 'always'],
+		'no-process-language': [2, 'always'],
+		'body-path-coverage': [2, 'always'],
+		'no-ellipsis-in-body': [2, 'always'],
+		'subject-kind-align': [2, 'always'],
+		'body-formula-compliance': [2, 'always'],
 	},
 	plugins: [
 		{
@@ -105,6 +113,65 @@ module.exports = {
 						meaningfulWords.length > 0,
 						'subject target is too generic; name the concrete thing that changed',
 					];
+				},
+				'no-process-language': (parsed) => {
+					const subject = parsed.subject || '';
+					if (SUBJECT_PROCESS_LANGUAGE.test(subject)) {
+						return [false, 'subject must describe the change'];
+					}
+					return [true];
+				},
+				'body-path-coverage': (parsed) => {
+					const stagedFiles = (process.env.COMMITLINT_STAGED_FILES || '')
+						.split('\n')
+						.filter(Boolean);
+					const body = parsed.body || '';
+					const missing = stagedFiles.filter((file) => !body.includes(file));
+					if (missing.length > 0) {
+						return [
+							false,
+							`commit body bullets must use exact changed file path (missing: ${missing.join(', ')})`,
+						];
+					}
+					return [true];
+				},
+				'no-ellipsis-in-body': (parsed) => {
+					const body = parsed.body || '';
+					if (body.includes('...')) {
+						return [false, 'ellipsis (...) is not allowed in commit body path bullets'];
+					}
+					return [true];
+				},
+				'subject-kind-align': (parsed) => {
+					const dominantKind = process.env.COMMITLINT_DOMINANT_CHANGE_KIND;
+					const subject = (parsed.subject || '').toLowerCase();
+					if (dominantKind === 'rename' && !subject.startsWith('rename')) {
+						if (subject.startsWith('remove') || subject.startsWith('delete')) {
+							return [
+								false,
+								`subject verb "${subject.split(' ')[0]}" does not match dominant rename changes; use "rename"`,
+							];
+						}
+					}
+					return [true];
+				},
+				'body-formula-compliance': (parsed) => {
+					const body = parsed.body || '';
+					const lines = body
+						.split('\n')
+						.map((l) => l.trim())
+						.filter((line) => line.startsWith('- '));
+					for (const line of lines) {
+						// Formula: - path: [Verb] [Entity] to/for [Purpose]
+						const formula = /^- .+: [A-Z][a-z]+ .+ to\/for .+/;
+						if (!formula.test(line)) {
+							return [
+								false,
+								`bullet "${line}" does not follow the "[Verb] [Entity] to/for [Purpose]" formula`,
+							];
+						}
+					}
+					return [true];
 				},
 			},
 		},
