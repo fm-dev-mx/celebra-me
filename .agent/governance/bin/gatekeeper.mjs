@@ -636,16 +636,23 @@ class Snapshot {
 		let files = [];
 		let src = 'git index';
 		if (s0File && existsSync(s0File)) {
-			files = uniq(parseList(readFileSync(s0File, 'utf8')));
+			const raw = readFileSync(s0File, 'utf8');
+			try {
+				const parsed = JSON.parse(raw);
+				if (Array.isArray(parsed?.files)) {
+					files = uniq(parsed.files.map(np).filter(Boolean));
+				} else {
+					files = uniq(parseList(raw));
+				}
+			} catch {
+				files = uniq(parseList(raw));
+			}
 			src = s0File;
 		}
 		if (!files.length) {
 			try {
 				files = uniq(
-					parseList(
-						run('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=d'])
-							.stdout,
-					),
+					parseList(run('git', ['diff', '--cached', '--name-only', '-z']).stdout),
 				);
 			} catch (e) {
 				const env = process.env.GATEKEEPER_STAGED_FILES;

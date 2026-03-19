@@ -32,6 +32,7 @@
         "gatekeeper:workflow:inspect": "node .agent/governance/bin/gatekeeper-workflow.mjs inspect",
         "gatekeeper:workflow:autofix": "node .agent/governance/bin/gatekeeper-workflow.mjs autofix",
         "gatekeeper:workflow:cleanup": "node .agent/governance/bin/gatekeeper-workflow.mjs cleanup",
+        "gatekeeper:plans:validate": "node .agent/governance/bin/validate-commit-plan.mjs",
         "gatekeeper:commit-ready": "node .agent/governance/bin/gatekeeper-commit-ready.mjs",
         "gatekeeper:commit-ready:create": "node .agent/governance/bin/gatekeeper-commit-ready.mjs --create-branch",
         "gatekeeper:validate-msg": "node .agent/governance/bin/validate-commit-msg.mjs",

@@ -1,46 +1,37 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
+import { createHash } from 'crypto';
 import {
 	existsSync,
 	mkdirSync,
-	readFileSync,
 	renameSync,
+	readFileSync,
 	rmSync,
 	unlinkSync,
 	writeFileSync,
 } from 'fs';
 import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
 
-import { loadPolicy } from './gatekeeper.mjs';
 import {
-	buildDeterministicSubject,
 	buildFileBulletDescription,
 	collectFileFacts,
 	normalizePath,
-	rankDominantChange,
-	validateSubjectFragment,
 } from './commit-message-analysis.mjs';
 import {
-	hasAiTitleConfig,
-	requestAiTitleAssist,
-	shouldUseAiTitleAssist,
-} from './ai-title-assist.mjs';
+	buildPlannedSubject,
+	discoverCommitPlanning,
+	loadValidatedCommitPlan,
+	resolveCommitUnit,
+} from './commit-plan.mjs';
 import { buildCommitlintContext } from '../../../scripts/validate-commits.mjs';
 
-const MAX_ATTEMPTS = 3;
-const SESSION_VERSION = 2;
+const SESSION_VERSION = 4;
 const DEFAULT_POLICY_FILE = '.agent/governance/config/policy.json';
 const DEFAULT_SESSION_BASENAME = 'gatekeeper-session.json';
-const DEFAULT_S0_BASENAME = 'gatekeeper-s0.txt';
-const DEFAULT_S0_SIGNATURE_BASENAME = 'gatekeeper-s0-signature.json';
-const DEFAULT_TTL_MINUTES = 30;
-const GATEKEEPER_BIN = resolve(dirname(fileURLToPath(import.meta.url)), 'gatekeeper.mjs');
-const WORKFLOW_REPORT_PROFILE = 'workflow';
-const ROUTE_REPORT_PROFILE = 'route';
-const BULLET_MAX_LENGTH = 140;
+const DEFAULT_S0_BASENAME = 'gatekeeper-s0.json';
 const HEADER_MAX_LENGTH = 130;
+const BULLET_MAX_LENGTH = 140;
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
@@ -48,7 +39,9 @@ function run(cmd, args, options = {}) {
 		encoding: 'utf8',
 		shell: options.shell ?? isWin,
 		stdio: options.stdio ?? 'pipe',
-		...options,
+		env: options.env || process.env,
+		cwd: options.cwd || process.cwd(),
+		input: options.input,
 	});
 	if (result.error) throw result.error;
 	return {
@@ -63,67 +56,28 @@ function fail(message) {
 	process.exit(1);
 }
 
-function parseArgs(argv) {
-	const args = {
-		command: argv[0] || 'inspect',
-		domain: null,
-		policyFile: DEFAULT_POLICY_FILE,
-		sessionFile: null,
-		s0File: null,
-		s0SignatureFile: null,
-		ttlMinutes: null,
-		noAutoBranch: false,
-		commit: false,
-		json: false,
-	};
-	for (let i = 1; i < argv.length; i += 1) {
-		const token = argv[i];
-		if (token === '--domain') args.domain = argv[i + 1] || null;
-		if (token === '--policy') args.policyFile = argv[i + 1] || args.policyFile;
-		if (token === '--session-file') args.sessionFile = argv[i + 1] || args.sessionFile;
-		if (token === '--s0-file') args.s0File = argv[i + 1] || args.s0File;
-		if (token === '--s0-signature-file')
-			args.s0SignatureFile = argv[i + 1] || args.s0SignatureFile;
-		if (token === '--ttl-minutes') args.ttlMinutes = Number(argv[i + 1] || DEFAULT_TTL_MINUTES);
-		if (token === '--no-auto-branch') args.noAutoBranch = true;
-		if (token === '--commit') args.commit = true;
-		if (token === '--json') args.json = true;
-	}
-	return normalizeArtifactPaths(args);
-}
-
-function parseReport(raw) {
-	const txt = String(raw || '').trim();
-	const start = txt.indexOf('{');
-	const end = txt.lastIndexOf('}');
-	if (start < 0 || end < 0 || end <= start) {
-		throw new Error('Gatekeeper report JSON was not found in output.');
-	}
-	return JSON.parse(txt.slice(start, end + 1));
-}
-
 function repoRoot() {
 	const result = run('git', ['rev-parse', '--show-toplevel']);
-	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect repository root.');
-	return result.stdout.trim();
-}
-
-function currentBranch() {
-	const result = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
-	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect current branch.');
-	return result.stdout.trim();
-}
-
-function currentHead() {
-	const result = run('git', ['rev-parse', 'HEAD']);
-	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect HEAD SHA.');
+	if (result.status !== 0) fail('Unable to detect repository root.');
 	return result.stdout.trim();
 }
 
 function gitDir() {
 	const result = run('git', ['rev-parse', '--git-dir']);
-	if (result.status !== 0 || !result.stdout.trim()) fail('Unable to detect git directory.');
-	return resolve(result.stdout.trim());
+	if (result.status !== 0) fail('Unable to detect git directory.');
+	return resolve(repoRoot(), result.stdout.trim());
+}
+
+function currentBranch() {
+	const result = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+	if (result.status !== 0) fail('Unable to detect current branch.');
+	return result.stdout.trim();
+}
+
+function currentHead() {
+	const result = run('git', ['rev-parse', 'HEAD']);
+	if (result.status !== 0) fail('Unable to detect HEAD SHA.');
+	return result.stdout.trim();
 }
 
 function defaultArtifactPath(basename) {
@@ -135,8 +89,29 @@ function normalizeArtifactPaths(args) {
 		...args,
 		sessionFile: args.sessionFile || defaultArtifactPath(DEFAULT_SESSION_BASENAME),
 		s0File: args.s0File || defaultArtifactPath(DEFAULT_S0_BASENAME),
-		s0SignatureFile: args.s0SignatureFile || defaultArtifactPath(DEFAULT_S0_SIGNATURE_BASENAME),
 	};
+}
+
+function parseArgs(argv) {
+	const args = {
+		command: argv[0] || 'inspect',
+		plan: null,
+		unit: null,
+		policyFile: DEFAULT_POLICY_FILE,
+		sessionFile: null,
+		s0File: null,
+		json: false,
+	};
+	for (let index = 1; index < argv.length; index += 1) {
+		const token = argv[index];
+		if (token === '--plan') args.plan = argv[index + 1] || null;
+		if (token === '--unit') args.unit = argv[index + 1] || null;
+		if (token === '--policy') args.policyFile = argv[index + 1] || args.policyFile;
+		if (token === '--session-file') args.sessionFile = argv[index + 1] || args.sessionFile;
+		if (token === '--s0-file') args.s0File = argv[index + 1] || args.s0File;
+		if (token === '--json') args.json = true;
+	}
+	return normalizeArtifactPaths(args);
 }
 
 function writeAtomicJson(file, payload) {
@@ -145,56 +120,139 @@ function writeAtomicJson(file, payload) {
 	if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
 	const temp = `${target}.tmp`;
 	writeFileSync(temp, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+	if (existsSync(target)) rmSync(target, { force: true });
 	renameSync(temp, target);
 }
 
-function writeAtomicText(file, text) {
-	const target = resolve(file);
-	const parent = dirname(target);
-	if (!existsSync(parent)) mkdirSync(parent, { recursive: true });
-	const temp = `${target}.tmp`;
-	writeFileSync(temp, text, 'utf8');
-	renameSync(temp, target);
+function loadJsonFile(file) {
+	if (!existsSync(file)) return null;
+	return JSON.parse(readFileSync(file, 'utf8'));
 }
 
-function loadSession(sessionFile) {
-	if (!existsSync(sessionFile)) return null;
-	try {
-		return JSON.parse(readFileSync(sessionFile, 'utf8'));
-	} catch {
-		return { invalid: true, invalidReason: 'session_corrupted' };
-	}
-}
-
-function cleanupArtifacts({ sessionFile, s0File, s0SignatureFile }) {
-	for (const file of [sessionFile, s0File, s0SignatureFile]) {
+function cleanupArtifacts(args) {
+	for (const file of [args.sessionFile, args.s0File]) {
 		try {
-			if (existsSync(file)) {
-				if (file.endsWith('.json')) unlinkSync(file);
-				else rmSync(file, { force: true });
-			}
+			if (existsSync(file)) unlinkSync(file);
 		} catch {
-			/* ignore cleanup failures */
+			/* ignore */
 		}
 	}
 }
 
-function workflowSettings(policy, args) {
-	return {
-		ttlMinutes:
-			args.ttlMinutes ?? Number(policy.workflow?.session?.ttlMinutes || DEFAULT_TTL_MINUTES),
-		autoRefresh: policy.workflow?.session?.autoRefresh !== false,
-		preflightChecks: policy.workflow?.inspect?.preflightChecks || ['governance', 'adu'],
-		heavyChecks: policy.workflow?.inspect?.heavyChecks || [
-			'governance',
-			'lint',
-			'typecheck',
-			'security',
-			'adu',
-		],
-		preflightCommand: resolvePreflightCommand(policy),
-		aiTitle: policy.workflow?.commit?.aiTitle || {},
-	};
+function normalizeDiffEntries(entries = []) {
+	return entries
+		.map((entry) => ({
+			path: normalizePath(entry.path),
+			oldPath: normalizePath(entry.oldPath || ''),
+			status: String(entry.status || 'M').toUpperCase(),
+			area: String(entry.area || '').trim() || undefined,
+		}))
+		.filter((entry) => entry.path)
+		.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function parseNameStatusZ(raw) {
+	const tokens = String(raw || '')
+		.split('\0')
+		.filter(Boolean);
+	const entries = [];
+	for (let index = 0; index < tokens.length; ) {
+		const rawStatus = tokens[index++] || 'M';
+		const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
+		if (status === 'R') {
+			const oldPath = normalizePath(tokens[index++] || '');
+			const path = normalizePath(tokens[index++] || '');
+			if (path) entries.push({ path, oldPath, status });
+			continue;
+		}
+		const path = normalizePath(tokens[index++] || '');
+		if (path) entries.push({ path, oldPath: '', status });
+	}
+	return entries;
+}
+
+function getTrackedWorkingTreeEntries() {
+	const hasHead = run('git', ['rev-parse', '--verify', 'HEAD']).status === 0;
+	if (!hasHead) return [];
+	const result = run('git', [
+		'diff',
+		'--name-status',
+		'--find-renames',
+		'--diff-filter=ACDMR',
+		'-z',
+		'HEAD',
+	]);
+	if (result.status !== 0) fail('Unable to read working tree diff.');
+	return parseNameStatusZ(result.stdout);
+}
+
+function getUntrackedEntries() {
+	const result = run('git', ['ls-files', '--others', '--exclude-standard', '-z']);
+	if (result.status !== 0) fail('Unable to read untracked files.');
+	return String(result.stdout || '')
+		.split('\0')
+		.map((entry) => normalizePath(entry))
+		.filter(Boolean)
+		.map((path) => ({ path, oldPath: '', status: 'A' }));
+}
+
+function enrichEntries(entries) {
+	const facts = collectFileFacts(
+		entries.map((entry) => entry.path),
+		entries,
+	);
+	const factsByPath = new Map(facts.map((fact) => [fact.path, fact]));
+	return entries.map((entry) => ({
+		...entry,
+		area: factsByPath.get(entry.path)?.area || 'source',
+	}));
+}
+
+function dedupeEntries(entries) {
+	const byPath = new Map();
+	for (const entry of entries) byPath.set(entry.path, entry);
+	return Array.from(byPath.values()).sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function getWorkingTreeDiffEntries() {
+	const tracked = getTrackedWorkingTreeEntries();
+	const untracked = getUntrackedEntries();
+	return normalizeDiffEntries(enrichEntries(dedupeEntries([...tracked, ...untracked])));
+}
+
+function getStagedDiffEntries() {
+	const result = run('git', [
+		'diff',
+		'--cached',
+		'--name-status',
+		'--find-renames',
+		'--diff-filter=ACDMR',
+		'-z',
+	]);
+	if (result.status !== 0) fail('Unable to read staged diff entries.');
+	return normalizeDiffEntries(enrichEntries(parseNameStatusZ(result.stdout)));
+}
+
+function signatureForEntries(entries) {
+	return createHash('sha256')
+		.update(
+			JSON.stringify(
+				(entries || []).map((entry) => ({
+					path: entry.path,
+					oldPath: entry.oldPath || '',
+					status: entry.status,
+				})),
+			),
+		)
+		.digest('hex');
+}
+
+function resolveRunnablePnpmCommand(command, repoScripts) {
+	const trimmed = String(command || '').trim();
+	if (!trimmed) return null;
+	if (!trimmed.startsWith('pnpm ')) return trimmed;
+	const scriptName = trimmed.slice(5);
+	return repoScripts[scriptName] ? trimmed : null;
 }
 
 function packageScripts(repoRootPath) {
@@ -206,692 +264,251 @@ function packageScripts(repoRootPath) {
 	}
 }
 
-function resolveRunnablePnpmCommand(command, repoScripts) {
-	const trimmed = String(command || '').trim();
-	if (!trimmed) return null;
-	if (!trimmed.startsWith('pnpm ')) return trimmed;
-	const scriptName = trimmed.slice(5);
-	return repoScripts[scriptName] ? trimmed : null;
-}
-
 function resolvePreflightCommand(policy) {
-	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
 	const repoScripts = packageScripts(repoRoot());
+	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
 	const configuredCommand = resolveRunnablePnpmCommand(configured, repoScripts);
 	if (configuredCommand) return configuredCommand;
-
-	for (const command of policy.workflow?.inspect?.preflightFallbacks || []) {
-		const resolvedCommand = resolveRunnablePnpmCommand(command, repoScripts);
-		if (resolvedCommand) return resolvedCommand;
+	for (const fallback of policy.workflow?.inspect?.preflightFallbacks || []) {
+		const resolved = resolveRunnablePnpmCommand(fallback, repoScripts);
+		if (resolved) return resolved;
 	}
 	if (repoScripts.ci) return 'pnpm ci';
 	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
 	return 'pnpm lint && pnpm type-check && pnpm test';
 }
 
-function checksCsv(checks) {
-	return (checks || []).join(',');
-}
-
-function gatekeeperArgs(opts) {
-	const {
-		checks = ['governance'],
-		mode = 'quick',
-		reportProfile = WORKFLOW_REPORT_PROFILE,
-		policyFile = DEFAULT_POLICY_FILE,
-		sessionFile,
-		sessionInvalidReason,
-		s0SignatureFile,
-		noAutoBranch,
-	} = opts;
-	const checksValue = Array.isArray(checks) ? checksCsv(checks) : checks;
-	const args = [
-		GATEKEEPER_BIN,
-		'--policy',
-		policyFile,
-		'--mode',
-		mode,
-		'--report-json',
-		'--report-profile',
-		reportProfile,
-	];
-	if (checksValue) args.push('--checks', checksValue);
-	args.push('--require-complete-report');
-
-	if (checksValue && checksValue.split(',').includes('security'))
-		args.push('--secret-scan-staged');
-	if (sessionFile) args.push('--session-file', sessionFile);
-	if (sessionInvalidReason) args.push('--session-invalid-reason', sessionInvalidReason);
-	if (s0SignatureFile && existsSync(s0SignatureFile))
-		args.push('--s0-signature-file', s0SignatureFile);
-	if (noAutoBranch) args.push('--no-auto-branch');
-	return args;
-}
-
-function runGatekeeper(options) {
-	const result = run('node', gatekeeperArgs(options));
+function buildSession(args, diffEntries, commitPlanning) {
+	const now = new Date().toISOString();
 	return {
-		status: result.status,
-		report: parseReport(result.stdout),
-		stderr: result.stderr.trim(),
+		version: SESSION_VERSION,
+		createdAt: now,
+		refreshedAt: now,
+		repoRoot: repoRoot(),
+		branch: currentBranch(),
+		head: currentHead(),
+		planId: args.plan,
+		changeSetSignature: signatureForEntries(diffEntries),
+		diffEntries,
+		commitPlanning,
+		selectedUnitId: null,
 	};
 }
 
-function sessionAgeMinutes(session) {
-	const refreshedAt = new Date(session?.refreshedAt || session?.createdAt || 0).getTime();
-	if (!refreshedAt) return Infinity;
-	return (Date.now() - refreshedAt) / 60000;
-}
-
-function structuralSessionValidation(session, args, settings) {
+function validateSession(session, args) {
 	if (!session) return { ok: false, reason: 'session_missing' };
-	if (session.invalid) return { ok: false, reason: session.invalidReason || 'session_corrupted' };
 	if (session.version !== SESSION_VERSION)
 		return { ok: false, reason: 'session_version_mismatch' };
 	if (session.repoRoot !== repoRoot()) return { ok: false, reason: 'session_repo_mismatch' };
 	if (session.branch !== currentBranch()) return { ok: false, reason: 'session_branch_changed' };
 	if (session.head !== currentHead()) return { ok: false, reason: 'session_head_changed' };
-	if (sessionAgeMinutes(session) > Number(settings.ttlMinutes || DEFAULT_TTL_MINUTES)) {
-		if (settings.autoRefresh) return { ok: true, stale: true };
-		return { ok: false, reason: 'session_expired' };
+	if (args.plan && session.planId !== args.plan)
+		return { ok: false, reason: 'session_plan_mismatch' };
+	return { ok: true };
+}
+
+function assertWorkingTreeMatchesSession(session) {
+	const currentEntries = getWorkingTreeDiffEntries();
+	const currentSignature = signatureForEntries(currentEntries);
+	if (currentSignature !== session.changeSetSignature) {
+		fail('Working tree changed after inspect. Re-run gatekeeper-workflow inspect --plan <id>.');
 	}
-	return { ok: true, stale: false };
+	return currentEntries;
 }
 
-function buildSessionPayload(report, args, settings, options = {}) {
-	const now = new Date().toISOString();
-	const splits = report?.adu?.suggestedSplits || [];
-	return {
-		version: SESSION_VERSION,
-		createdAt: options.createdAt || now,
-		refreshedAt: now,
-		repoRoot: repoRoot(),
-		branch: currentBranch(),
-		head: currentHead(),
-		ttlMinutes: settings.ttlMinutes,
-		reportProfile: WORKFLOW_REPORT_PROFILE,
-		mode: options.mode || 'quick',
-		staged: report.staged,
-		inspectionCacheKey:
-			options.inspectionCacheKey || report?.staged?.detailedSignature?.signature || '',
-		effectiveChecks: options.effectiveChecks || checksCsv(settings.heavyChecks),
-		preflightReport: options.preflightReport || null,
-		suggestedSplits: splits,
-		workflowRoute: report.workflowRoute,
-		route: report.route,
-		autoFixCommands: report.autoFixCommands || [],
-		fullReport: report,
-	};
+function pathSpecsForEntries(entries) {
+	const values = new Set();
+	for (const entry of entries || []) {
+		if (entry.oldPath) values.add(entry.oldPath);
+		if (entry.path) values.add(entry.path);
+	}
+	return Array.from(values).sort((left, right) => left.localeCompare(right));
 }
 
-function refreshSessionFile(session, args, settings, options = {}) {
-	const refreshed = {
-		...session,
-		refreshedAt: new Date().toISOString(),
-		ttlMinutes: settings.ttlMinutes,
-		repoRoot: repoRoot(),
-		branch: currentBranch(),
-		head: currentHead(),
-		preflightReport: options.preflightReport ?? session.preflightReport ?? null,
-	};
-	writeAtomicJson(args.sessionFile, refreshed);
-	return refreshed;
-}
-
-function reportCacheKey(report) {
-	return report?.staged?.detailedSignature?.signature || '';
-}
-
-function matchingSessionReport(session, preflightReport, effectiveChecks) {
-	if (!session?.fullReport) return false;
-	return (
-		session.effectiveChecks === effectiveChecks &&
-		session.inspectionCacheKey === reportCacheKey(preflightReport)
-	);
-}
-
-function ensureSplit(session, domain) {
-	const split = (session?.suggestedSplits || []).find((entry) => entry.id === domain);
-	if (!split) fail(`Domain "${domain}" was not found in the saved session.`);
-	return split;
-}
-
-function groupedReasons(report) {
-	return {
-		unmappedFiles: report?.adu?.unmappedFiles || [],
-		blockingFindings: report?.blockingFindings || [],
-		s0Drift: report?.s0Drift?.hasDrift ? report.s0Drift : null,
-		sessionInvalidReason: report?.session?.invalidReason || null,
-	};
-}
-
-function inferredPlanDomain(file) {
-	const normalized = normalizePath(file);
-	const match = normalized.match(/^\.agent\/plans\/([^/]+)\//);
-	if (!match) return null;
-	return `gov-plans-${match[1]}`;
-}
-
-function printArchitecturalInterventionGuidance(report, settings) {
-	const reasons = groupedReasons(report);
-	console.log('⛔ Architectural intervention required before staging or committing.');
-	console.log(`🔎 Recommended pre-flight: ${settings.preflightCommand}`);
-	if (reasons.unmappedFiles.length) {
-		console.log('• Unmapped files:');
-		for (const file of reasons.unmappedFiles) {
-			console.log(`  - ${file}`);
-		}
-		const suggested = inferredPlanDomain(reasons.unmappedFiles[0]);
-		if (suggested) {
-			console.log(
-				`  Action: add domain "${suggested}" to .agent/governance/config/domain-map.json and re-run inspect.`,
-			);
-		} else {
-			console.log(
-				'  Action: add a matching domain entry in .agent/governance/config/domain-map.json and re-run inspect.',
-			);
+function assertExactFiles(expectedFiles, actualEntries, label) {
+	const actualFiles = actualEntries
+		.map((entry) => entry.path)
+		.sort((left, right) => left.localeCompare(right));
+	const normalizedExpected = [...expectedFiles]
+		.map(normalizePath)
+		.sort((left, right) => left.localeCompare(right));
+	if (normalizedExpected.length !== actualFiles.length) {
+		fail(`${label} drift detected. Re-run inspect and stage the planned unit again.`);
+	}
+	for (let index = 0; index < normalizedExpected.length; index += 1) {
+		if (normalizedExpected[index] !== actualFiles[index]) {
+			fail(`${label} drift detected. Re-run inspect and stage the planned unit again.`);
 		}
 	}
-	if (reasons.blockingFindings.length) {
-		console.log('• Blocking findings:');
-		for (const finding of reasons.blockingFindings.slice(0, 5)) {
-			console.log(
-				`  - ${finding.ruleId || finding.id || 'finding'}: ${finding.message || 'resolve the reported issue'}`,
-			);
-		}
-		console.log(
-			'  Action: resolve the blocking findings, stage intentionally, and re-run inspect.',
-		);
-	}
-	if (reasons.s0Drift) {
-		console.log('• S0 drift:');
-		console.log('  Action: run cleanup, restage the intended split, and restart the workflow.');
-	}
-	if (reasons.sessionInvalidReason) {
-		console.log('• Session state:');
-		console.log(
-			`  Action: session invalid because ${reasons.sessionInvalidReason}; run cleanup and re-run inspect.`,
-		);
-	}
 }
 
-function truncateText(value, maxLength) {
-	const text = String(value || '')
-		.trim()
-		.replace(/\s+/g, ' ');
-	if (text.length <= maxLength) return text;
-	return text.slice(0, maxLength).trim();
+function loadActiveUnit(planId, unitId) {
+	const loadedPlan = loadValidatedCommitPlan(planId, repoRoot());
+	if (!loadedPlan.ok) {
+		fail((loadedPlan.errors || ['Unable to load commit plan.']).join('\n'));
+	}
+	const unit = resolveCommitUnit(loadedPlan.plan, unitId);
+	if (!unit) fail(`Commit unit "${unitId}" was not found in plan "${planId}".`);
+	return { plan: loadedPlan.plan, unit };
 }
 
-function inferDominantFileCluster(files, diffEntries = []) {
-	const fileFacts = collectFileFacts(files, diffEntries);
-	const dominantChange = rankDominantChange(fileFacts, { fallbackTarget: 'change set' });
+function buildCommitlintUnitContext(unit, files) {
 	return {
-		kind: dominantChange.kind,
-		target: dominantChange.target,
-		confidence: dominantChange.confidence,
+		planId: unit.planId,
+		unitId: unit.id,
+		verb: unit.subject.verb,
+		target: unit.subject.target,
+		purpose: unit.purpose,
+		files,
+		domain: unit.domain,
 	};
-}
-
-function describeFileChange(file, splitContext = {}) {
-	const diffEntries = splitContext.diffEntries || [];
-	const fileFacts = collectFileFacts([file], diffEntries);
-	return buildFileBulletDescription(fileFacts[0], {
-		dominantChange: splitContext.dominantChange || splitContext.dominantCluster || null,
-		repoRootPath: splitContext.repoRootPath || repoRoot(),
-	});
 }
 
 function formatBulletLine(filePath, description) {
-	const bulletPrefix = `- ${filePath}: `;
-	const remainingLength = BULLET_MAX_LENGTH - bulletPrefix.length;
-	if (remainingLength < 10) {
-		throw new Error(
-			`Path "${filePath}" leaves too little room for a specific body description within ${BULLET_MAX_LENGTH} characters.`,
-		);
+	const prefix = `- ${filePath}: `;
+	const remaining = BULLET_MAX_LENGTH - prefix.length;
+	if (remaining < 20) {
+		throw new Error(`Path "${filePath}" is too long for the commit body line limit.`);
 	}
-	if (bulletPrefix.length + description.length > BULLET_MAX_LENGTH) {
-		return `${bulletPrefix}${truncateText(description, remainingLength)}`;
-	}
-	return `${bulletPrefix}${description}`;
-}
-
-function getNumstatForPath(filePath) {
-	const result = run('git', ['diff', '--cached', '--numstat', '--', filePath]);
-	if (result.status !== 0) return { additions: 0, deletions: 0 };
-	const line = String(result.stdout || '')
-		.split(/\r?\n/)
-		.map((entry) => entry.trim())
-		.find(Boolean);
-	if (!line) return { additions: 0, deletions: 0 };
-	const [additions, deletions] = line.split('\t');
-	const parseCount = (value) => (value === '-' ? 0 : Number(value || 0));
-	return {
-		additions: parseCount(additions),
-		deletions: parseCount(deletions),
-	};
-}
-
-function getStagedDiffEntries() {
-	const result = run('git', ['diff', '--cached', '--name-status', '--find-renames']);
-	if (result.status !== 0) fail('Unable to read staged diff entries.');
-	return String(result.stdout || '')
-		.split(/\r?\n/)
-		.map((line) => line.trim())
-		.filter(Boolean)
-		.map((line) => {
-			const parts = line.split('\t').filter(Boolean);
-			const rawStatus = parts[0] || 'M';
-			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
-			const oldPath = status === 'R' ? normalizePath(parts[1] || '') : '';
-			const path = normalizePath(parts[status === 'R' ? 2 : 1] || parts[parts.length - 1]);
-			const stats = getNumstatForPath(path || oldPath);
-			return {
-				path,
-				oldPath,
-				status,
-				area: collectFileFacts([path || oldPath])[0]?.area || 'source',
-				additions: stats.additions,
-				deletions: stats.deletions,
-			};
-		});
+	const normalizedDescription = String(description || '')
+		.trim()
+		.replace(/\s+/g, ' ');
+	const safeDescription =
+		prefix.length + normalizedDescription.length > BULLET_MAX_LENGTH
+			? normalizedDescription.slice(0, remaining).trim()
+			: normalizedDescription;
+	return `${prefix}${safeDescription}`;
 }
 
 function buildCommitScaffold(split, options = {}) {
-	const repoRootPath = options.repoRootPath || repoRoot();
-	const diffEntries = options.diffEntries || [];
-	const fileFacts = collectFileFacts(split.files, diffEntries);
-	const dominantChange = rankDominantChange(fileFacts, {
-		fallbackTarget: split.baseDomain || split.id || 'change set',
-	});
-	const deterministic = buildDeterministicSubject({
-		scope: split.id,
-		fileFacts,
-		dominantChange,
-	});
+	const diffEntries = normalizeDiffEntries(options.diffEntries || []);
+	const files = [...(split.files || [])]
+		.map(normalizePath)
+		.sort((left, right) => left.localeCompare(right));
+	if (!split.commitUnit) throw new Error('Planned commit scaffold requires commitUnit.');
+	const fileFacts = collectFileFacts(files, diffEntries);
+	const subject = buildPlannedSubject(split.commitUnit);
+	const header = `${split.commitUnit.type}(${split.commitUnit.domain}): ${subject}`;
+	if (header.length > HEADER_MAX_LENGTH) {
+		throw new Error(
+			`Commit header exceeds ${HEADER_MAX_LENGTH} characters for unit "${split.commitUnit.id}".`,
+		);
+	}
 	const body = fileFacts.map((fact) =>
 		formatBulletLine(
 			fact.path,
 			buildFileBulletDescription(fact, {
-				dominantChange,
-				repoRootPath,
+				purpose: split.commitUnit.purpose,
 			}),
 		),
 	);
+	const trailers = [`Plan-Id: ${split.commitUnit.planId}`, `Commit-Unit: ${split.commitUnit.id}`];
 	return {
-		type: deterministic.type,
-		scope: split.id,
-		subject: deterministic.subject,
-		baseSubject: deterministic.subject,
-		finalSubject: deterministic.subject,
-		header: deterministic.header,
-		headerLength: deterministic.header.length,
+		type: split.commitUnit.type,
+		scope: split.commitUnit.domain,
+		subject,
+		header,
+		headerLength: header.length,
 		body,
-		fullMessage: `${deterministic.header}\n\n${body.join('\n')}`,
-		titleSource: 'deterministic',
-		titleConfidence: deterministic.confidence,
-		meaningfulAreaCount: dominantChange.meaningfulAreaCount,
-		dominantChange,
-		fileFacts,
+		trailers,
+		titleSource: 'planned',
+		fullMessage: `${header}\n\n${body.join('\n')}\n\n${trailers.join('\n')}`,
 	};
 }
 
-function getRawDiff(files, maxChars) {
-	if (!files || !files.length) return '';
-	const result = run('git', ['diff', '--cached', '--unified=1', '--no-color', '--', ...files]);
-	if (result.status !== 0) return '';
-	return truncateText(String(result.stdout || '').trim(), maxChars, { noEllipsis: false });
-}
-
-function buildAiTitlePayload(scaffold, policy, diffEntries) {
-	const aiConfig = policy?.workflow?.commit?.aiTitle || {};
-	const maxFiles = Number(aiConfig.maxFiles || 12);
-	const maxSnippetChars = Number(aiConfig.maxSnippetChars || 3000);
-	const files = scaffold.fileFacts.slice(0, maxFiles).map((fact) => fact.path);
-	const rawDiff = getRawDiff(files, maxSnippetChars);
-	return {
-		type: scaffold.type,
-		scope: scaffold.scope,
-		baseSubject: scaffold.baseSubject,
-		dominantChange: scaffold.dominantChange,
-		files: scaffold.fileFacts.slice(0, maxFiles).map((fact) => ({
-			path: fact.path,
-			oldPath: fact.oldPath || undefined,
-			status: fact.status,
-			area: fact.area,
-			additions: fact.additions,
-			deletions: fact.deletions,
-		})),
-		diffEntries,
-		rawDiff,
-		constraints: {
-			language: 'English',
-			maxHeaderLength: HEADER_MAX_LENGTH,
-			format: 'verb target',
-			strongVerbRequired: true,
-			concreteTargetRequired: true,
-			noProcessLanguage: true,
-			instructions:
-				'Read rawDiff. Output must include "subject" string and an array of "bullets" objects. Each bullet must have "path" and "description". Bullet description MUST strictly follow the formula "[Technical Action Verb] [Specific Entity Modified] to/for [Architectural Purpose]" where Purpose is an actual high-level reason derived from the diff, not just repeating the entity name.',
-		},
-	};
-}
-
-async function resolveCommitScaffold(split, options = {}) {
-	const repoRootPath = options.repoRootPath || repoRoot();
-	const diffEntries =
-		options.diffEntries ||
-		getStagedDiffEntries().filter((entry) =>
-			split.files.map(normalizePath).includes(entry.path),
-		);
-	const deterministicScaffold = buildCommitScaffold(split, {
-		repoRootPath,
-		diffEntries,
-	});
-	const policy = options.policy || loadPolicy(options.policyFile || DEFAULT_POLICY_FILE);
-	if (
-		!hasAiTitleConfig(policy, options.env || process.env) ||
-		!shouldUseAiTitleAssist(policy, {
-			confidence: deterministicScaffold.titleConfidence,
-			meaningfulAreaCount: deterministicScaffold.meaningfulAreaCount,
-		})
-	) {
-		return { scaffold: deterministicScaffold, deterministicScaffold };
-	}
-
-	const env = options.env || process.env;
-	const aiPayload = buildAiTitlePayload(deterministicScaffold, policy, diffEntries);
-	const controller = new AbortController();
-	const timeoutMs = Number(policy?.workflow?.commit?.aiTitle?.timeoutMs || 4000);
-	const timeout = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const aiResult = await requestAiTitleAssist(aiPayload, {
-			fetchImpl: options.fetchImpl,
-			endpoint: env.GATEKEEPER_AI_TITLE_ENDPOINT,
-			model: env.GATEKEEPER_AI_TITLE_MODEL,
-			apiKey: env.GATEKEEPER_AI_TITLE_API_KEY,
-			signal: controller.signal,
-		});
-		const validation = validateSubjectFragment(aiResult.subject, {
-			type: deterministicScaffold.type,
-			scope: deterministicScaffold.scope,
-			maxHeaderLength: HEADER_MAX_LENGTH,
-		});
-		if (!validation.ok) {
-			return { scaffold: deterministicScaffold, deterministicScaffold };
-		}
-		const header = `${deterministicScaffold.type}(${deterministicScaffold.scope}): ${validation.subject}`;
-
-		let aiBody = [];
-		if (aiResult.bullets && Array.isArray(aiResult.bullets)) {
-			for (const b of aiResult.bullets) {
-				if (typeof b === 'object' && b.path && b.description) {
-					aiBody.push(formatBulletLine(b.path, b.description));
-				} else if (typeof b === 'string') {
-					aiBody.push(b.startsWith('- ') ? b : `- ${b}`);
-				}
-			}
-		}
-
-		if (aiBody.length === 0) aiBody = deterministicScaffold.body;
-
-		return {
-			scaffold: {
-				...deterministicScaffold,
-				header,
-				headerLength: header.length,
-				body: aiBody,
-				fullMessage: `${header}\n\n${aiBody.join('\n')}`,
-				titleSource: 'ai-assisted',
-				finalSubject: validation.subject,
-				aiTitleConfidence: aiResult.confidence,
-				aiTitleRationale: aiResult.rationale,
-			},
-			deterministicScaffold,
-		};
-	} catch {
-		return { scaffold: deterministicScaffold, deterministicScaffold };
-	} finally {
-		clearTimeout(timeout);
-	}
-}
-
-function validateGeneratedCommitMessage(message, split, diffEntries = null) {
-	const files = split.files.map(normalizePath);
-	const commitDiffEntries = (diffEntries || getStagedDiffEntries()).filter((entry) =>
-		files.includes(entry.path),
-	);
+function validateGeneratedCommitMessage(message, unit, files, diffEntries) {
+	const unitContext = buildCommitlintUnitContext(unit, files);
 	const result = run('npx', ['commitlint'], {
-		input: `${message.trim()}\n`,
+		input: `${String(message || '').trim()}\n`,
 		env: {
 			...process.env,
-			...buildCommitlintContext(files, commitDiffEntries),
+			...buildCommitlintContext(files, diffEntries, unitContext),
 		},
 	});
 	return {
 		ok: result.status === 0,
 		output: [result.stdout, result.stderr].filter(Boolean).join('\n').trim(),
+		env: {
+			...buildCommitlintContext(files, diffEntries, unitContext),
+		},
 	};
 }
 
-function stagedFilesFromIndex() {
-	const result = run('git', ['diff', '--cached', '--name-only', '-z']);
-	if (result.status !== 0) fail('Unable to read staged files.');
-	return String(result.stdout || '')
-		.split('\0')
-		.map((value) => value.trim())
-		.filter(Boolean);
+function writeSession(args, payload) {
+	writeAtomicJson(args.sessionFile, payload);
 }
 
-function signS0(args) {
-	run(
-		'node',
-		[
-			GATEKEEPER_BIN,
-			'--policy',
-			args.policyFile,
-			'--write-s0-signature',
-			'--s0-file',
-			args.s0File,
-			'--s0-signature-file',
-			args.s0SignatureFile,
-			'--no-auto-branch',
-		],
-		{ stdio: 'inherit' },
-	);
+function writeS0(args, payload) {
+	writeAtomicJson(args.s0File, payload);
 }
 
-function validateSessionAgainstCurrentIndex(session, args, settings, preflightReport) {
-	const validation = structuralSessionValidation(session, args, settings);
-	if (!validation.ok) return validation;
-	const expected =
-		session?.staged?.detailedSignature?.signature || session?.inspectionCacheKey || '';
-	const current = reportCacheKey(preflightReport);
-	if (expected !== current) return { ok: false, reason: 'session_signature_changed' };
-	return validation;
+function loadS0(args) {
+	return loadJsonFile(args.s0File);
+}
+
+function ensureSelectedUnit(session, args) {
+	if (!args.unit) fail(`The ${args.command} command requires --unit <id>.`);
+	if (session.commitPlanning?.status !== 'matched_unit') {
+		fail(
+			`Inspect did not resolve an executable unit. Current status: ${session.commitPlanning?.status || 'unknown'}.`,
+		);
+	}
+	const recommended = session.commitPlanning.recommendedUnit;
+	if (!recommended || recommended.id !== args.unit) {
+		fail(`Commit unit "${args.unit}" is not the inspected executable unit for this session.`);
+	}
+	return recommended;
+}
+
+function loadCommitContext(args) {
+	const session = loadJsonFile(args.sessionFile);
+	const sessionValidation = validateSession(session, args);
+	if (!sessionValidation.ok) {
+		cleanupArtifacts(args);
+		fail(`Session is invalid (${sessionValidation.reason}). Re-run inspect.`);
+	}
+	const s0 = loadS0(args);
+	if (!s0) fail('S0 artifact not found. Re-run stage for the selected unit.');
+	if (s0.planId !== session.planId || s0.unitId !== args.unit) {
+		fail('S0 artifact does not match the selected plan/unit. Re-run stage.');
+	}
+	const stagedEntries = getStagedDiffEntries();
+	const stagedSignature = signatureForEntries(stagedEntries);
+	if (stagedSignature !== s0.stagedSignature) {
+		fail('Staged set drift detected. Run cleanup, inspect, and stage again.');
+	}
+	assertExactFiles(s0.files || [], stagedEntries, 'Staged set');
+	const { unit } = loadActiveUnit(session.planId, args.unit);
+	unit.planId = session.planId;
+	if (s0.unitHash !== unit.hash) {
+		fail('Commit unit definition changed after staging. Re-run inspect and stage again.');
+	}
+	return { session, s0, unit, stagedEntries };
 }
 
 function inspectCommand(args) {
-	const policy = loadPolicy(args.policyFile);
-	const settings = workflowSettings(policy, args);
-	const session = loadSession(args.sessionFile);
-	const effectiveChecks = checksCsv(settings.heavyChecks);
-	const preflight = runGatekeeper({
-		mode: 'quick',
-		reportProfile: WORKFLOW_REPORT_PROFILE,
-		checks: settings.preflightChecks,
-		policyFile: args.policyFile,
-		sessionFile: args.sessionFile,
-		noAutoBranch: args.noAutoBranch,
+	if (!args.plan) fail('Pure plan-aware workflow requires inspect --plan <id>.');
+	const diffEntries = getWorkingTreeDiffEntries();
+	const commitPlanning = discoverCommitPlanning({
+		repoRootPath: repoRoot(),
+		planId: args.plan,
+		diffEntries,
 	});
-	const preflightReport = preflight.report;
-	if (preflightReport?.routeReasons?.includes('empty_staged_set')) {
-		cleanupArtifacts(args);
-		if (args.json) {
-			console.log(JSON.stringify(preflightReport, null, 2));
-			return;
-		}
-		console.log('ℹ️ No staged files detected. Cleaned stale Gatekeeper workflow artifacts.');
-		return;
-	}
-
-	const validation = structuralSessionValidation(session, args, settings);
-	if (validation.ok && matchingSessionReport(session, preflightReport, effectiveChecks)) {
-		refreshSessionFile(session, args, settings, { preflightReport });
-		if (args.json) {
-			console.log(JSON.stringify(session.fullReport, null, 2));
-			return;
-		}
-		console.log(`🧭 workflowRoute=${session.workflowRoute} route=${session.route} (cached)`);
-		console.log(`📦 Suggested splits: ${(session.suggestedSplits || []).length}`);
-		console.log(`🗂️ Session file: ${args.sessionFile}`);
-		if (session.workflowRoute === 'architectural_intervention') {
-			printArchitecturalInterventionGuidance(session.fullReport || preflightReport, settings);
-		}
-		return;
-	}
-
-	const { report } = runGatekeeper({
-		mode: 'quick',
-		reportProfile: WORKFLOW_REPORT_PROFILE,
-		checks: settings.heavyChecks,
-		policyFile: args.policyFile,
-		sessionFile: args.sessionFile,
-		noAutoBranch: args.noAutoBranch,
-	});
-	writeAtomicJson(
-		args.sessionFile,
-		buildSessionPayload(report, args, settings, {
-			createdAt: session?.createdAt,
-			effectiveChecks,
-			inspectionCacheKey: reportCacheKey(preflightReport),
-			preflightReport,
-		}),
-	);
-	if (args.json) {
-		console.log(JSON.stringify(report, null, 2));
-		return;
-	}
-	console.log(`🧭 workflowRoute=${report.workflowRoute} route=${report.route}`);
-	console.log(`📦 Suggested splits: ${(report.adu?.suggestedSplits || []).length}`);
-	console.log(`🗂️ Session file: ${args.sessionFile}`);
-	if (report.workflowRoute === 'architectural_intervention') {
-		printArchitecturalInterventionGuidance(report, settings);
-	}
-}
-
-function autofixCommand(args) {
-	const policy = loadPolicy(args.policyFile);
-	const settings = workflowSettings(policy, args);
-	const autoFixChecks = settings.heavyChecks.filter((check) => check !== 'typecheck');
-	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-		console.log(`\nAttempt ${attempt}/${MAX_ATTEMPTS}`);
-		const { report } = runGatekeeper({
-			mode: 'quick',
-			reportProfile: WORKFLOW_REPORT_PROFILE,
-			checks: autoFixChecks,
-			policyFile: args.policyFile,
-			sessionFile: args.sessionFile,
-			noAutoBranch: args.noAutoBranch,
-		});
-		if (report.workflowRoute === 'proceed_adu') {
-			writeAtomicJson(
-				args.sessionFile,
-				buildSessionPayload(report, args, settings, {
-					inspectionCacheKey: reportCacheKey(report),
-					effectiveChecks: checksCsv(autoFixChecks),
-				}),
-			);
-			console.log('✅ Gatekeeper autofix path converged. Run inspect or stage a domain.');
-			return;
-		}
-		const fixCommands = report.autoFixCommands || [];
-		if (!fixCommands.length) {
-			cleanupArtifacts(args);
-			fail(
-				`Gatekeeper workflow route is "${report.workflowRoute}" and no auto-fix commands are available.`,
-			);
-		}
-		let allFixesOk = true;
-		for (const command of fixCommands) {
-			console.log(`🛠️ Running auto-fix: ${command}`);
-			const parts = command.split(' ').filter(Boolean);
-			const result = run(parts[0], parts.slice(1), { stdio: 'inherit' });
-			if (result.status !== 0) allFixesOk = false;
-		}
-		if (!allFixesOk) {
-			cleanupArtifacts(args);
-			fail('One or more auto-fix commands failed.');
-		}
-	}
-
-	const { report } = runGatekeeper({
-		mode: 'strict',
-		reportProfile: WORKFLOW_REPORT_PROFILE,
-		checks: settings.heavyChecks,
-		policyFile: args.policyFile,
-		sessionFile: args.sessionFile,
-		noAutoBranch: args.noAutoBranch,
-	});
-	writeAtomicJson(
-		args.sessionFile,
-		buildSessionPayload(report, args, settings, {
-			inspectionCacheKey: reportCacheKey(report),
-			effectiveChecks: checksCsv(settings.heavyChecks),
-		}),
-	);
-	if (report.workflowRoute !== 'proceed_adu') {
-		cleanupArtifacts(args);
-		fail('Gatekeeper did not converge to proceed_adu after max attempts.');
-	}
-	console.log('✅ Autofix finished with a final strict verification pass.');
-}
-
-function stageCommand(args) {
-	if (!args.domain) fail('The stage command requires --domain <id>.');
-	const policy = loadPolicy(args.policyFile);
-	const settings = workflowSettings(policy, args);
-	const session = loadSession(args.sessionFile);
-	const preflight = runGatekeeper({
-		mode: 'quick',
-		reportProfile: ROUTE_REPORT_PROFILE,
-		checks: settings.preflightChecks,
-		policyFile: args.policyFile,
-		sessionFile: args.sessionFile,
-		noAutoBranch: args.noAutoBranch,
-	});
-	const validation = validateSessionAgainstCurrentIndex(
-		session,
-		args,
-		settings,
-		preflight.report,
-	);
-	if (!validation.ok) {
-		cleanupArtifacts(args);
-		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
-	}
-	if (session.workflowRoute !== 'proceed_adu') {
-		fail(
-			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before staging.`,
-		);
-	}
-	refreshSessionFile(session, args, settings, {
-		preflightReport: session?.preflightReport || null,
-	});
-	const split = ensureSplit(session, args.domain);
-	run('git', ['reset', '-q', 'HEAD', '--', '.'], { stdio: 'inherit' });
-	run('git', ['add', '--', ...split.files], { stdio: 'inherit' });
-	writeAtomicText(args.s0File, `${split.files.join('\n')}\n`);
-	signS0(args);
+	const payload = buildSession(args, diffEntries, commitPlanning);
+	writeSession(args, payload);
+	if (commitPlanning.status === 'empty_change_set') cleanupArtifacts(args);
 	if (args.json) {
 		console.log(
 			JSON.stringify(
 				{
-					domain: split.id,
-					baseDomain: split.baseDomain || split.id,
-					files: split.files,
-					s0File: args.s0File,
-					s0SignatureFile: args.s0SignatureFile,
+					workflowRoute:
+						commitPlanning.status === 'matched_unit'
+							? 'proceed_commit_unit'
+							: 'blocked',
+					routeReasons: commitPlanning.errors || [],
+					changeSetSignature: payload.changeSetSignature,
+					diffEntries,
+					commitPlanning,
 				},
 				null,
 				2,
@@ -899,150 +516,165 @@ function stageCommand(args) {
 		);
 		return;
 	}
-	console.log(`✅ Staged domain "${split.id}" with ${split.files.length} file(s).`);
-	console.log(`📄 S0 file: ${args.s0File}`);
-	console.log(`🔐 S0 signature: ${args.s0SignatureFile}`);
+	console.log(`🧭 commitPlanning=${commitPlanning.status}`);
+	console.log(`🗂️ Changed files: ${diffEntries.length}`);
+	console.log(`📄 Session file: ${args.sessionFile}`);
+	if (commitPlanning.recommendedUnit) {
+		console.log(`🗺️ Selected unit: ${commitPlanning.recommendedUnit.id}`);
+	}
+	if (commitPlanning.errors?.length) {
+		for (const error of commitPlanning.errors) console.log(`- ${error}`);
+	}
 }
 
-async function scaffoldCommand(args) {
-	if (!args.domain) fail('The scaffold command requires --domain <id>.');
-	const policy = loadPolicy(args.policyFile);
-	const settings = workflowSettings(policy, args);
-	const session = loadSession(args.sessionFile);
-	const validation = structuralSessionValidation(session, args, settings);
+function stageCommand(args) {
+	if (!args.plan || !args.unit) fail('The stage command requires --plan <id> --unit <id>.');
+	const session = loadJsonFile(args.sessionFile);
+	const validation = validateSession(session, args);
 	if (!validation.ok) {
 		cleanupArtifacts(args);
-		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
+		fail(`Session is invalid (${validation.reason}). Re-run inspect.`);
 	}
-	if (session.workflowRoute !== 'proceed_adu') {
-		fail(
-			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before scaffolding.`,
-		);
+	const currentEntries = assertWorkingTreeMatchesSession(session);
+	const matchedUnit = ensureSelectedUnit(session, args);
+	const unitEntries = currentEntries.filter((entry) => matchedUnit.files.includes(entry.path));
+	const stagedSpecs = pathSpecsForEntries(getStagedDiffEntries());
+	if (stagedSpecs.length) {
+		run('git', ['reset', '-q', 'HEAD', '--', ...stagedSpecs], { stdio: 'inherit' });
 	}
-	refreshSessionFile(session, args, settings, {
-		preflightReport: session?.preflightReport || null,
+	const unitSpecs = pathSpecsForEntries(unitEntries);
+	if (!unitSpecs.length) fail(`Commit unit "${args.unit}" did not resolve any stageable files.`);
+	run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
+	const stagedEntries = getStagedDiffEntries();
+	assertExactFiles(matchedUnit.files, stagedEntries, 'Staged unit');
+	const stagedSignature = signatureForEntries(stagedEntries);
+	const s0Payload = {
+		version: 1,
+		planId: args.plan,
+		unitId: args.unit,
+		files: matchedUnit.files,
+		changeSetSignature: session.changeSetSignature,
+		stagedSignature,
+		unitHash: matchedUnit.hash,
+	};
+	writeS0(args, s0Payload);
+	writeSession(args, {
+		...session,
+		refreshedAt: new Date().toISOString(),
+		selectedUnitId: args.unit,
 	});
-	const split = ensureSplit(session, args.domain);
-	const diffEntries = getStagedDiffEntries().filter((entry) =>
-		split.files.map(normalizePath).includes(entry.path),
+	if (args.json) {
+		console.log(JSON.stringify(s0Payload, null, 2));
+		return;
+	}
+	console.log(
+		`✅ Staged plan "${args.plan}" unit "${args.unit}" with ${matchedUnit.files.length} file(s).`,
 	);
-	const resolved = await resolveCommitScaffold(split, {
-		policy,
-		repoRootPath: repoRoot(),
-		diffEntries,
-	});
-	let scaffold = resolved.scaffold;
-	let validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
-	if (!validationResult.ok && scaffold.titleSource === 'ai-assisted') {
-		scaffold = resolved.deterministicScaffold;
-		validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
-	}
-	if (!validationResult.ok) {
+	console.log(`📄 S0 file: ${args.s0File}`);
+}
+
+function scaffoldCommand(args) {
+	if (!args.unit) fail('The scaffold command requires --unit <id>.');
+	const { session, unit, stagedEntries } = loadCommitContext(args);
+	unit.planId = session.planId;
+	const files = stagedEntries.map((entry) => entry.path);
+	const scaffold = buildCommitScaffold(
+		{
+			id: unit.id,
+			files,
+			commitUnit: unit,
+		},
+		{ diffEntries: stagedEntries },
+	);
+	const validation = validateGeneratedCommitMessage(
+		scaffold.fullMessage,
+		unit,
+		files,
+		stagedEntries,
+	);
+	if (!validation.ok) {
 		fail(
-			`Generated scaffold does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
+			`Generated scaffold does not satisfy commitlint:\n${validation.output || 'unknown validation failure'}`,
 		);
 	}
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
 		return;
 	}
-
-	console.log('📝 Commit message generated:');
 	console.log(scaffold.fullMessage);
-	if (args.commit) {
-		console.log(
-			'\n⚠️ --commit is deprecated; use "gatekeeper-workflow commit --domain <id>" instead.',
-		);
-		executeCommit(scaffold.fullMessage);
-	}
 }
 
-function executeCommit(message) {
-	console.log('\n🔄 Executing git commit...');
-	const tempFile = `.git/COMMIT_EDITMSG_${Date.now()}`;
-	writeFileSync(tempFile, message, 'utf8');
-	const result = run('git', ['commit', '-F', tempFile]);
+function executeCommit(message, env) {
+	const tempFile = resolve(gitDir(), `COMMIT_EDITMSG_${Date.now()}.txt`);
+	writeFileSync(tempFile, `${String(message || '').trim()}\n`, 'utf8');
+	const result = run('git', ['commit', '-F', tempFile], { env, stdio: 'pipe' });
 	try {
 		unlinkSync(tempFile);
 	} catch {
-		/* ignore temp cleanup errors */
+		/* ignore */
 	}
 	if (result.status !== 0) {
+		console.error(result.stdout);
 		console.error(result.stderr);
-		fail('Git commit failed. Check the message format.');
+		fail('Git commit failed.');
 	}
-	console.log('✅ Commit created successfully.');
 }
 
-async function commitCommand(args) {
-	if (!args.domain) fail('The commit command requires --domain <id>.');
-	const policy = loadPolicy(args.policyFile);
-	const settings = workflowSettings(policy, args);
-	const session = loadSession(args.sessionFile);
-	const validation = structuralSessionValidation(session, args, settings);
-	if (!validation.ok) {
-		cleanupArtifacts(args);
-		fail(`Session is invalid (${validation.reason}). Re-run gatekeeper-workflow inspect.`);
-	}
-	if (session.workflowRoute !== 'proceed_adu') {
-		fail(
-			`Session workflowRoute is "${session.workflowRoute}". Resolve the workflow blockers and re-run inspect before committing.`,
-		);
-	}
-	const split = ensureSplit(session, args.domain);
-	const diffEntries = getStagedDiffEntries().filter((entry) =>
-		split.files.map(normalizePath).includes(entry.path),
+function commitCommand(args) {
+	if (!args.unit) fail('The commit command requires --unit <id>.');
+	const { session, unit, stagedEntries } = loadCommitContext(args);
+	unit.planId = session.planId;
+	const files = stagedEntries.map((entry) => entry.path);
+	const scaffold = buildCommitScaffold(
+		{
+			id: unit.id,
+			files,
+			commitUnit: unit,
+		},
+		{ diffEntries: stagedEntries },
 	);
-	const resolved = await resolveCommitScaffold(split, {
-		policy,
-		repoRootPath: repoRoot(),
-		diffEntries,
-	});
-	let scaffold = resolved.scaffold;
-	let validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
-	if (!validationResult.ok && scaffold.titleSource === 'ai-assisted') {
-		scaffold = resolved.deterministicScaffold;
-		validationResult = validateGeneratedCommitMessage(scaffold.fullMessage, split, diffEntries);
-	}
-	if (!validationResult.ok) {
+	const validation = validateGeneratedCommitMessage(
+		scaffold.fullMessage,
+		unit,
+		files,
+		stagedEntries,
+	);
+	if (!validation.ok) {
 		fail(
-			`Generated commit message does not satisfy commitlint:\n${validationResult.output || 'unknown validation failure'}`,
+			`Generated commit message does not satisfy commitlint:\n${validation.output || 'unknown validation failure'}`,
 		);
 	}
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
 		return;
 	}
-	console.log('📝 Commit message validated:');
-	console.log(scaffold.fullMessage);
-	executeCommit(scaffold.fullMessage);
+	executeCommit(scaffold.fullMessage, {
+		...process.env,
+		...validation.env,
+	});
+	cleanupArtifacts(args);
+	console.log('✅ Commit created successfully.');
 }
 
 function syncS0Command(args) {
-	if (!existsSync(args.s0File)) fail(`S0 file not found: ${args.s0File}`);
-	const originalFiles = readFileSync(args.s0File, 'utf8')
-		.split(/\r?\n/)
-		.map((line) => line.trim())
-		.filter(Boolean)
-		.sort((a, b) => a.localeCompare(b));
-	const currentFiles = stagedFilesFromIndex().sort((a, b) => a.localeCompare(b));
-	if (originalFiles.length !== currentFiles.length) {
-		fail('Current staged set no longer matches the original S0 scope.');
-	}
-	for (let i = 0; i < originalFiles.length; i += 1) {
-		if (originalFiles[i] !== currentFiles[i]) {
-			fail('Current staged set no longer matches the original S0 scope.');
-		}
-	}
-	signS0(args);
-	if (!args.json) {
-		console.log(`🔐 Refreshed S0 signature: ${args.s0SignatureFile}`);
-	}
+	const s0 = loadS0(args);
+	if (!s0) fail(`S0 file not found: ${args.s0File}`);
+	const stagedEntries = getStagedDiffEntries();
+	assertExactFiles(s0.files || [], stagedEntries, 'S0');
+	writeS0(args, {
+		...s0,
+		stagedSignature: signatureForEntries(stagedEntries),
+	});
+	if (!args.json) console.log(`🔐 Refreshed S0 signature in ${args.s0File}`);
 }
 
 function cleanupCommand(args) {
 	cleanupArtifacts(args);
 	if (!args.json) console.log('🧹 Cleaned Gatekeeper workflow session artifacts.');
+}
+
+function autofixCommand() {
+	fail('Autofix was removed from the pure plan-aware Gatekeeper workflow.');
 }
 
 async function main() {
@@ -1051,23 +683,23 @@ async function main() {
 		case 'inspect':
 			inspectCommand(args);
 			return;
-		case 'autofix':
-			autofixCommand(args);
-			return;
 		case 'stage':
 			stageCommand(args);
 			return;
 		case 'scaffold':
-			await scaffoldCommand(args);
+			scaffoldCommand(args);
 			return;
 		case 'commit':
-			await commitCommand(args);
+			commitCommand(args);
 			return;
 		case 'sync-s0':
 			syncS0Command(args);
 			return;
 		case 'cleanup':
 			cleanupCommand(args);
+			return;
+		case 'autofix':
+			autofixCommand();
 			return;
 		default:
 			fail(`Unknown gatekeeper-workflow command: ${args.command}`);
@@ -1085,25 +717,15 @@ if (isMain) {
 }
 
 export {
-	autofixCommand,
 	buildCommitScaffold,
 	cleanupCommand,
-	describeFileChange as fileDescription,
+	commitCommand,
 	inspectCommand,
 	parseArgs,
-	printArchitecturalInterventionGuidance,
-	resolveCommitScaffold,
 	resolvePreflightCommand,
-	runGatekeeper,
-	scaffoldCommand,
-	commitCommand,
 	resolveRunnablePnpmCommand,
-	describeFileChange,
-	inferDominantFileCluster,
-	validateGeneratedCommitMessage,
-	sessionAgeMinutes,
+	scaffoldCommand,
 	stageCommand,
-	structuralSessionValidation,
 	syncS0Command,
-	workflowSettings,
+	validateGeneratedCommitMessage,
 };

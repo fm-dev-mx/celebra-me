@@ -60,9 +60,6 @@
         ],
         "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
         "gov-plans-comprehensive-audit": [".agent/plans/comprehensive-audit-Q1-2026/**"],
-        "gov-plans-audit-sr-2026-03": [".agent/plans/audit-SR-2026-03/**"],
-        "gov-plans-fix-demo-cumple-colors": [".agent/plans/fix-demo-cumple-colors/**"],
-        "gov-plans-project-simplification": [".agent/plans/project-simplification/**"],
         "gov-workflows": [".agent/workflows/**", "docs/DOC_STATUS.md"],
         "gov-scripts": [".agent/scripts/**"],
         "gov-infra": [

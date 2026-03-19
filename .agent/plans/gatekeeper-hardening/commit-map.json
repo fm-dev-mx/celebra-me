@@ -1,0 +1,114 @@
+{
+  "planId": "gatekeeper-hardening",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "units": [
+    {
+      "id": "gatekeeper-core-modernization",
+      "phaseId": "01-hardening-verification",
+      "status": "planned",
+      "domain": "governance",
+      "type": "refactor",
+      "subject": {
+        "verb": "modernize",
+        "target": "gatekeeper workflow and plan-aware commit logic"
+      },
+      "purpose": "harden commit validation contract and improve workflow script reliability",
+      "include": [
+        ".agent/governance/bin/*.mjs",
+        ".agent/governance/config/*.json",
+        ".husky/pre-commit",
+        "commitlint.config.cjs",
+        "package.json",
+        "scripts/validate-commits.mjs"
+      ],
+      "allowRelated": [
+        ".agent/plans/gatekeeper-hardening/**"
+      ],
+      "correctionPolicy": "absorb-compatible"
+    },
+    {
+      "id": "gatekeeper-hardening-verification",
+      "phaseId": "01-hardening-verification",
+      "status": "planned",
+      "domain": "governance",
+      "type": "test",
+      "subject": {
+        "verb": "harden",
+        "target": "gatekeeper verification suite"
+      },
+      "purpose": "add regression tests and fixtures for plan-aware selection and validation",
+      "include": [
+        "tests/integration/gatekeeper-workflow.integration.test.ts",
+        "tests/unit/commit-validation-contract.test.ts",
+        "tests/unit/gatekeeper-workflow-hardening.test.ts",
+        "tests/fixtures/gatekeeper/**"
+      ],
+      "allowRelated": [
+        ".agent/plans/gatekeeper-hardening/**"
+      ],
+      "correctionPolicy": "absorb-compatible"
+    },
+    {
+      "id": "system-doc-alignment",
+      "phaseId": "01-hardening-verification",
+      "status": "planned",
+      "domain": "governance",
+      "type": "docs",
+      "subject": {
+        "verb": "align",
+        "target": "governance documents and status"
+      },
+      "purpose": "sync git-governance and doc-status with modernized workflow",
+      "include": [
+        "docs/**",
+        ".agent/plans/README.md",
+        ".agent/workflows/gatekeeper-commit.md"
+      ],
+      "allowRelated": [
+        "scripts/README.md",
+        ".agent/plans/gatekeeper-hardening/**"
+      ],
+      "correctionPolicy": "absorb-compatible"
+    },
+    {
+      "id": "legacy-plan-archive",
+      "phaseId": "01-hardening-verification",
+      "status": "planned",
+      "domain": "governance",
+      "type": "docs",
+      "subject": {
+        "verb": "archive",
+        "target": "legacy and completed plans"
+      },
+      "purpose": "migrate completed plan records to archive folder for historical hygiene",
+      "include": [
+        ".agent/plans/archive/**",
+        ".agent/plans/audit-SR-2026-03/**",
+        ".agent/plans/fix-demo-cumple-colors/**",
+        ".agent/plans/project-simplification/**"
+      ],
+      "allowRelated": [
+        ".agent/plans/gatekeeper-hardening/**"
+      ],
+      "correctionPolicy": "absorb-compatible"
+    },
+    {
+      "id": "gatekeeper-hardening-record",
+      "phaseId": "01-hardening-verification",
+      "status": "planned",
+      "domain": "governance",
+      "type": "docs",
+      "subject": {
+        "verb": "add",
+        "target": "gatekeeper hardening plan record"
+      },
+      "purpose": "establish plan record for hardening phase",
+      "include": [
+        ".agent/plans/gatekeeper-hardening/**"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible"
+    }
+  ]
+}

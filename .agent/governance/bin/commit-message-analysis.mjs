@@ -18,7 +18,9 @@ const VERB_PRIORITY = [
 	'isolate',
 	'unify',
 	'normalize',
+	'retire',
 	'deprecate',
+	'prune',
 	'align',
 	'harden',
 	'refactor',
@@ -396,7 +398,10 @@ function buildFileBulletDescription(fileFact, options = {}) {
 	});
 	const verb = rawVerb.charAt(0).toUpperCase() + rawVerb.slice(1);
 
-	let purpose = options.dominantChange?.target || 'architectural purpose';
+	let purpose =
+		String(options.purpose || '').trim() ||
+		options.dominantChange?.target ||
+		'architectural purpose';
 	const purposeLower = purpose.toLowerCase();
 	const stemLower = normalizedStem.toLowerCase();
 

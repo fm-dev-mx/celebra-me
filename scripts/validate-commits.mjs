@@ -1,44 +1,57 @@
 #!/usr/bin/env node
 
-import { dirname } from 'path';
-import { spawnSync } from 'child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
-import { tmpdir } from 'os';
+import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
+import { spawnSync } from 'child_process';
 import process from 'process';
+
 import {
 	classifyCommitFileArea,
 	normalizePath,
 	summarizeDiffEntries,
 } from '../.agent/governance/bin/commit-message-analysis.mjs';
-
-const POLICY_PATH = '.agent/governance/config/policy.json';
+import {
+	loadValidatedCommitPlan,
+	matchDiffEntriesToUnit,
+	resolveCommitUnit,
+} from '../.agent/governance/bin/commit-plan.mjs';
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
 	const result = spawnSync(cmd, args, {
 		encoding: 'utf8',
 		stdio: 'pipe',
-		shell: isWin,
-		...options,
+		shell: options.shell ?? isWin,
+		env: options.env || process.env,
+		cwd: options.cwd || process.cwd(),
 	});
 	if (result.error) throw result.error;
 	return {
 		status: result.status ?? 1,
-		stdout: (result.stdout || '').trim(),
-		stderr: (result.stderr || '').trim(),
+		stdout: String(result.stdout || '').trim(),
+		stderr: String(result.stderr || '').trim(),
 	};
 }
 
-function atomicityLimit() {
-	if (!existsSync(POLICY_PATH)) return 12;
-	try {
-		const policy = JSON.parse(readFileSync(POLICY_PATH, 'utf8'));
-		const value = Number(policy?.atomicity?.defaultLimit || 12);
-		return Number.isFinite(value) && value > 0 ? Math.floor(value) : 12;
-	} catch {
-		return 12;
+function parseNameStatusZ(raw) {
+	const tokens = String(raw || '')
+		.split('\0')
+		.filter(Boolean);
+	const entries = [];
+	for (let index = 0; index < tokens.length; ) {
+		const rawStatus = tokens[index++] || 'M';
+		const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
+		if (status === 'R') {
+			const oldPath = normalizePath(tokens[index++] || '');
+			const path = normalizePath(tokens[index++] || '');
+			if (path) entries.push({ path, oldPath, status });
+			continue;
+		}
+		const path = normalizePath(tokens[index++] || '');
+		if (path) entries.push({ path, oldPath: '', status });
 	}
+	return entries;
 }
 
 function getCommitMessage(commitHash) {
@@ -48,75 +61,74 @@ function getCommitMessage(commitHash) {
 	return { full: full.stdout, subject: subject.stdout || '' };
 }
 
-function getCommitFiles(commitHash) {
-	const files = run('git', ['show', '--name-only', '--format=', commitHash]);
-	return files.stdout
-		? files.stdout
-				.split('\n')
-				.map((f) => f.trim())
-				.filter(Boolean)
-		: [];
+function getCommitDiffEntries(commitHash) {
+	const diff = run('git', [
+		'show',
+		'--name-status',
+		'--format=',
+		'--find-renames',
+		'-z',
+		commitHash,
+	]);
+	return parseNameStatusZ(diff.stdout).map((entry) => ({
+		...entry,
+		area: classifyCommitFileArea(entry.path),
+	}));
 }
 
-function classifyGroupKind(files) {
-	const areas = new Set(files.map((file) => classifyCommitFileArea(file)));
-	if (areas.size === 1) return `${Array.from(areas)[0]}-group`;
-	return 'mixed-group';
+function getCommitFiles(commitHash) {
+	return getCommitDiffEntries(commitHash).map((entry) => entry.path);
+}
+
+function trailerValue(message, key) {
+	const match = String(message || '').match(new RegExp(`^${key}:\\s*(.+)$`, 'mi'));
+	return match ? match[1].trim() : '';
 }
 
 function suggestFileGroups(files) {
 	const groups = new Map();
 	for (const file of files.map(normalizePath)) {
-		const dir = normalizePath(dirname(file));
-		const key = dir === '.' ? file : `${dir}/`;
+		const key = file.includes('/') ? `${file.split('/').slice(0, -1).join('/')}/` : file;
 		if (!groups.has(key)) groups.set(key, []);
 		groups.get(key).push(file);
 	}
-	return Array.from(groups.entries())
-		.map(([key, groupFiles]) => ({
-			key,
-			files: groupFiles.sort((a, b) => a.localeCompare(b)),
-			kind: classifyGroupKind(groupFiles),
-		}))
-		.sort((a, b) => a.key.localeCompare(b.key));
+	return Array.from(groups.entries()).map(([key, groupedFiles]) => ({
+		key,
+		files: groupedFiles.sort((left, right) => left.localeCompare(right)),
+		kind: `${classifyCommitFileArea(groupedFiles[0])}-group`,
+	}));
 }
 
-function getCommitDiffEntries(commitHash) {
-	const diff = run('git', ['show', '--name-status', '--format=', '--find-renames', commitHash]);
-	if (!diff.stdout) return [];
-	return diff.stdout
-		.split('\n')
-		.map((line) => line.trim())
-		.filter(Boolean)
-		.map((line) => {
-			const parts = line.split('\t').filter(Boolean);
-			const rawStatus = parts[0] || 'M';
-			const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
-			const oldPath = status === 'R' ? normalizePath(parts[1] || '') : '';
-			const path = normalizePath(parts[status === 'R' ? 2 : parts.length - 1]);
-			return { path, oldPath, status, area: classifyCommitFileArea(path) };
-		});
-}
-
-function buildCommitlintContext(files, diffEntries) {
+function buildCommitlintContext(files, diffEntries, unitContext = null) {
 	const normalizedFiles = files.map(normalizePath);
 	const summary = summarizeDiffEntries(diffEntries);
-	const groups = suggestFileGroups(normalizedFiles);
-	return {
+	const env = {
 		COMMITLINT_STAGED_FILES: normalizedFiles.join('\n'),
 		COMMITLINT_DIFF_JSON: JSON.stringify(diffEntries),
-		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify(groups),
+		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify(suggestFileGroups(normalizedFiles)),
 		COMMITLINT_DOMINANT_CHANGE_KIND: summary.dominantKind,
 		COMMITLINT_DOMINANT_AREA: summary.dominantArea,
 	};
+	if (unitContext?.unitId) {
+		env.COMMITLINT_PLAN_ID = String(unitContext.planId || '');
+		env.COMMITLINT_UNIT_ID = String(unitContext.unitId || '');
+		env.COMMITLINT_UNIT_VERB = String(unitContext.verb || '');
+		env.COMMITLINT_UNIT_TARGET = String(unitContext.target || '');
+		env.COMMITLINT_UNIT_PURPOSE = String(unitContext.purpose || '');
+		env.COMMITLINT_UNIT_FILES_JSON = JSON.stringify(
+			(unitContext.files || []).map(normalizePath),
+		);
+		env.COMMITLINT_UNIT_DOMAIN = String(unitContext.domain || '');
+	}
+	return env;
 }
 
-function validateCommitMessage(message, commitHash, files, diffEntries) {
+function validateCommitMessage(message, commitHash, files, diffEntries, unitContext) {
 	const tmpDir = mkdtempSync(join(tmpdir(), 'commitlint-'));
 	const tmpFile = join(tmpDir, `${commitHash}.txt`);
 	try {
 		writeFileSync(tmpFile, `${message.trim()}\n`, 'utf8');
-		const commitlintEnv = buildCommitlintContext(files, diffEntries);
+		const commitlintEnv = buildCommitlintContext(files, diffEntries, unitContext);
 		const result = run('npx', ['commitlint', '--edit', tmpFile], {
 			env: {
 				...process.env,
@@ -141,23 +153,52 @@ function validateCommitMessage(message, commitHash, files, diffEntries) {
 	}
 }
 
-function validateAtomicity(files) {
-	const limit = atomicityLimit();
-	if (files.length > limit) {
-		const groups = suggestFileGroups(files);
-		const areaCount = new Set(files.map((file) => classifyCommitFileArea(file))).size;
-		if (groups.length <= limit && areaCount <= 2) {
-			return {
-				ok: true,
-				message: `Grouped ${files.length} files into ${groups.length} coherent paths for atomicity.`,
-			};
-		}
+function resolveUnitContext(message, diffEntries) {
+	const planId = trailerValue(message, 'Plan-Id');
+	const unitId = trailerValue(message, 'Commit-Unit');
+	if (!planId || !unitId) {
 		return {
 			ok: false,
-			message: `Commit touches ${files.length} files (max ${limit} for ADU policy).`,
+			reason: 'missing_trailers',
+			error: 'Planned commits must include Plan-Id and Commit-Unit trailers.',
 		};
 	}
-	return { ok: true };
+	const loadedPlan = loadValidatedCommitPlan(planId, process.cwd());
+	if (!loadedPlan.ok) {
+		return {
+			ok: false,
+			reason: loadedPlan.reason || 'invalid_plan_contract',
+			error: (loadedPlan.errors || []).join('\n') || `Unable to load plan "${planId}".`,
+		};
+	}
+	const unit = resolveCommitUnit(loadedPlan.plan, unitId);
+	if (!unit) {
+		return {
+			ok: false,
+			reason: 'unit_not_found',
+			error: `Commit unit "${unitId}" was not found in plan "${planId}".`,
+		};
+	}
+	const match = matchDiffEntriesToUnit(unit, diffEntries);
+	if (!match.ok) {
+		return {
+			ok: false,
+			reason: 'unit_mismatch',
+			error: `Commit files do not match planned unit "${unitId}".`,
+		};
+	}
+	return {
+		ok: true,
+		unitContext: {
+			planId,
+			unitId,
+			verb: unit.subject.verb,
+			target: unit.subject.target,
+			purpose: unit.purpose,
+			files: diffEntries.map((entry) => entry.path),
+			domain: unit.domain,
+		},
+	};
 }
 
 function validateCommit(commitHash) {
@@ -168,31 +209,28 @@ function validateCommit(commitHash) {
 		return false;
 	}
 
-	const files = getCommitFiles(commitHash);
 	const diffEntries = getCommitDiffEntries(commitHash);
-	console.log(`  Subject: ${commit.subject}`);
-	const conventional = validateCommitMessage(commit.full, commitHash, files, diffEntries);
+	const files = getCommitFiles(commitHash);
+	const resolvedContext = resolveUnitContext(commit.full, diffEntries);
+	if (!resolvedContext.ok) {
+		console.error(`  ❌ ${resolvedContext.error}`);
+		return false;
+	}
+
+	const conventional = validateCommitMessage(
+		commit.full,
+		commitHash,
+		files,
+		diffEntries,
+		resolvedContext.unitContext,
+	);
 	if (!conventional.ok) {
-		console.error('  ❌ Conventional Commit validation failed');
+		console.error('  ❌ Commit validation failed');
 		if (conventional.output) console.error(`  ${conventional.output}`);
 		return false;
 	}
 
-	if (/^Merge\s/i.test(commit.subject)) {
-		console.error('  ❌ Merge commit detected in PR range');
-		return false;
-	}
-	if (/\b(wip|draft|work in progress)\b/i.test(commit.subject)) {
-		console.error('  ❌ WIP/draft markers are not allowed');
-		return false;
-	}
-
-	const atomicity = validateAtomicity(files);
-	if (!atomicity.ok) {
-		console.error(`  ❌ ${atomicity.message}`);
-		return false;
-	}
-
+	console.log(`  Subject: ${commit.subject}`);
 	console.log('  ✅ Commit valid');
 	return true;
 }
@@ -204,15 +242,11 @@ function main() {
 		process.exit(1);
 	}
 
-	console.log('Running ADU commit validation');
-	console.log(`Range: ${baseSha}..${headSha}`);
-
 	const commitsOutput = run('git', ['log', '--format=%H', `${baseSha}..${headSha}`]);
 	if (commitsOutput.status !== 0) {
 		console.error('❌ Unable to list commits in the provided range');
 		process.exit(1);
 	}
-
 	const hashes = commitsOutput.stdout ? commitsOutput.stdout.split('\n').filter(Boolean) : [];
 	if (!hashes.length) {
 		console.log('No commits found in range');
@@ -223,12 +257,11 @@ function main() {
 	for (const hash of hashes) {
 		if (!validateCommit(hash)) allValid = false;
 	}
-
 	if (!allValid) {
-		console.error('\n❌ ADU validation failed');
+		console.error('\n❌ Planned commit validation failed');
 		process.exit(1);
 	}
-	console.log('\n✅ All commits passed ADU validation');
+	console.log('\n✅ All commits passed planned validation');
 }
 
 const isMain =
