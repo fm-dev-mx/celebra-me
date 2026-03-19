@@ -76,16 +76,16 @@
 
 ### Active Plans
 
-- [audit-SR-2026-03](../.agent/plans/audit-SR-2026-03/README.md) - `IN-PROGRESS`, strategic audit plan with one remaining naming/alignment phase.
-- [fix-demo-cumple-colors](../.agent/plans/fix-demo-cumple-colors/README.md) - `IN-PROGRESS`, visual validation handoff after the invitation assembly simplification.
-- [project-simplification](../.agent/plans/project-simplification/README.md) - `IN-PROGRESS`, active simplification and de-engineering implementation record.
+- No active plans currently remain at the top level under `.agent/plans/`.
 
 ### Archived Plans
 
 - [comprehensive-audit-Q1-2026](../.agent/plans/archive/comprehensive-audit-Q1-2026/README.md)
+- [audit-SR-2026-03](../.agent/plans/archive/audit-SR-2026-03/README.md) - `ARCHIVED`, technical audit and follow-on remediation record closed during archive review.
 - [error-remediation-evolution](../.agent/plans/archive/error-remediation-evolution/README.md) -
   `ARCHIVED`, systematic hardening of diagnostic automation and zero-loop remediation.
 - [event-transformation-gerardo](../.agent/plans/archive/event-transformation-gerardo/README.md)
+- [fix-demo-cumple-colors](../.agent/plans/archive/fix-demo-cumple-colors/README.md) - `ARCHIVED`, demo color regression fix plan closed after review of stale visual-validation metadata.
 - [gatekeeper-commit-message-hardening](../.agent/plans/archive/gatekeeper-commit-message-hardening/README.md)
 - [gatekeeper-optimization](../.agent/plans/archive/gatekeeper-optimization/README.md)
 - [gatekeeper-workflow-commit-fixes](../.agent/plans/archive/gatekeeper-workflow-commit-fixes/README.md)
@@ -93,6 +93,7 @@
 - [master-finalization-2026](../.agent/plans/archive/master-finalization-2026/README.md)
 - [post-alignment-remediation-2026-03](../.agent/plans/archive/post-alignment-remediation-2026-03/README.md)
 - [pre-phase-audit-2026](../.agent/plans/archive/pre-phase-audit-2026/README.md)
+- [project-simplification](../.agent/plans/archive/project-simplification/README.md) - `ARCHIVED`, simplification and de-engineering implementation record closed after verification cleanup.
 - [real-xv-invitation](../.agent/plans/archive/real-xv-invitation/README.md) - `ARCHIVED`, Ximena
   Meza Trasviña XV Editorial Finalization.
 - [quinceanera-demo-creation](../.agent/plans/archive/quinceanera-demo-creation/README.md)
