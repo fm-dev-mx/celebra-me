@@ -172,7 +172,14 @@ function summarizeDiffEntries(entries) {
 function pickChangeVerb({ kind, area, clusterKind }) {
 	if (kind === 'delete') return 'remove';
 	if (kind === 'rename') return 'rename';
-	if (clusterKind === 'presenter-route' || clusterKind === 'presenter') return 'implement';
+	if (
+		clusterKind === 'presenter-route' ||
+		clusterKind === 'presenter' ||
+		clusterKind === 'page-data-route' ||
+		clusterKind === 'page-data'
+	) {
+		return 'implement';
+	}
 	if (clusterKind === 'invitation-route') return 'refactor';
 	if (area === 'plan' || clusterKind === 'plan') {
 		if (kind === 'add') return 'add';
@@ -193,6 +200,25 @@ function rankSpecificClusters(fileFacts, fallbackTarget) {
 	const allTests = fileFacts.length > 0 && fileFacts.every((fact) => fact.area === 'test');
 	const allDocs = fileFacts.length > 0 && fileFacts.every((fact) => fact.area === 'docs');
 
+	if (
+		paths.includes('src/lib/invitation/page-data.ts') &&
+		paths.some((file) => file.startsWith('src/pages/[eventType]/'))
+	) {
+		return {
+			kind: 'page-data-route',
+			target: 'invitation page-data route',
+			score: 145,
+			confidence: 0.94,
+		};
+	}
+	if (paths.includes('src/lib/invitation/page-data.ts')) {
+		return {
+			kind: 'page-data',
+			target: 'invitation page data',
+			score: 135,
+			confidence: 0.88,
+		};
+	}
 	if (
 		paths.some((file) => file.startsWith('src/lib/presenters/')) &&
 		paths.some((file) => file.startsWith('src/pages/'))
