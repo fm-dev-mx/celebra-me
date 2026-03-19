@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { rsvpApi } from '@/lib/rsvp/rsvp-api';
+import { rsvpApi } from '@/lib/rsvp/services/rsvp-api';
 import '@/styles/invitation/_rsvp.scss';
 
 type ConfirmationMode = 'api' | 'whatsapp' | 'both';

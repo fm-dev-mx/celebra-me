@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
-import { ApiError } from '@/lib/rsvp/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/http';
-import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
-import { trackInvitationView } from '@/lib/rsvp/service';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';

@@ -1,5 +1,5 @@
 import { GET } from '@/pages/api/invitacion/resolve';
-import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp/service';
+import { resolveLegacyTokenToCanonicalUrl } from '@/lib/rsvp/services/invitation-context.service';
 
 jest.mock('@/lib/rsvp/service', () => ({
 	resolveLegacyTokenToCanonicalUrl: jest.fn(),

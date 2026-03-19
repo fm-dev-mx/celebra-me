@@ -1,7 +1,7 @@
 import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
-import type { getInvitationContextByInviteId } from '@/lib/rsvp/service';
+import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 

@@ -1,13 +1,13 @@
 import { POST } from '@/pages/api/invitacion/[inviteId]/rsvp';
-import { submitGuestRsvpByInviteId } from '@/lib/rsvp/service';
-import { checkRateLimit } from '@/lib/rsvp/rate-limit-provider';
+import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from './rsvp.helpers';
 
 jest.mock('@/lib/rsvp/service', () => ({
 	submitGuestRsvpByInviteId: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/rate-limit-provider', () => ({
+jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
