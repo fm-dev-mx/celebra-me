@@ -46,7 +46,7 @@
         "target": "orphaned tracking and redundant archive dirs"
       },
       "purpose": "eliminate obsolete directories that contain no active project data",
-      "include": ["tracking/**", "archive/**"],
+      "include": ["tracking/**", "archive/**", "src/content/archive/**"],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible"
     },
