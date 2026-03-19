@@ -1,7 +1,7 @@
-import { redeemClaimCodeRpc } from '@/lib/rsvp/repository';
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
+import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
-jest.mock('@/lib/rsvp/supabase', () => ({
+jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
 }));
 

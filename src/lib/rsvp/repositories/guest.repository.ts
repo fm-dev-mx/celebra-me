@@ -1,4 +1,4 @@
-import type { GuestInvitationRecord } from '@/lib/rsvp/types';
+import type { GuestInvitationRecord } from '@/lib/rsvp/core/types';
 import {
 	type CreateGuestInput,
 	type GuestFilters,

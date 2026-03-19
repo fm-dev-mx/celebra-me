@@ -3,7 +3,7 @@
  * Previene conflictos de ediciones concurrentes
  */
 
-import { conflict } from './http';
+import { conflict } from '@/lib/rsvp/core/http';
 
 export interface Versioned {
 	_version?: string;

@@ -8,7 +8,7 @@ import type {
 	GuestInvitationAuditRecord,
 	GuestInvitationRecord,
 	ResponseSource,
-} from '@/lib/rsvp/types';
+} from '@/lib/rsvp/core/types';
 
 export interface GuestFilters {
 	eventId: string;

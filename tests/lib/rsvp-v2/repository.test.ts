@@ -1,14 +1,9 @@
-import {
-	appendGuestAuditPublic,
-	createGuestInvitation,
-	findEventById,
-	findGuestById,
-	findGuestByInviteIdPublic,
-	updateGuestByInviteIdPublic,
-} from '@/lib/rsvp/repository';
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
+import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository';
+import { findEventById } from '@/lib/rsvp/repositories/event.repository';
+import { createGuestInvitation, findGuestById, findGuestByInviteIdPublic, updateGuestByInviteIdPublic } from '@/lib/rsvp/repositories/guest.repository';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
-jest.mock('@/lib/rsvp/supabase', () => ({
+jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
 }));
 

@@ -1,5 +1,5 @@
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
-import type { EventRecord } from '@/lib/rsvp/types';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { EventRecord } from '@/lib/rsvp/core/types';
 import {
 	EVENT_COLUMNS,
 	EVENT_MUTATION_COLUMNS,

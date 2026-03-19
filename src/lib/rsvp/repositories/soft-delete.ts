@@ -3,8 +3,8 @@
  * Permite "eliminar" registros sin borrarlos permanentemente
  */
 
-import { supabaseRestRequest } from './supabase';
-import type { EventRecord } from './types';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { EventRecord } from '@/lib/rsvp/core/types';
 
 /**
  * Realiza soft delete de un evento usando la función RPC

@@ -1,4 +1,4 @@
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 export interface RequestOptions {
 	authToken?: string;

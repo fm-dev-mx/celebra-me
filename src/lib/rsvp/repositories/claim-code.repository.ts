@@ -1,5 +1,5 @@
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
-import type { ClaimCodeRecord } from '@/lib/rsvp/types';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { ClaimCodeRecord } from '@/lib/rsvp/core/types';
 import { type ClaimCodeRow, toClaimCodeRecord } from '@/lib/rsvp/repositories/shared/rows';
 
 export async function findClaimCodeRecordService(input: {

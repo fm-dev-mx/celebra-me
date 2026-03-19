@@ -1,5 +1,5 @@
-import { supabaseRestRequest } from '@/lib/rsvp/supabase';
-import type { GuestInvitationAuditRecord } from '@/lib/rsvp/types';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import type { GuestInvitationAuditRecord } from '@/lib/rsvp/core/types';
 import { type GuestAuditRow, toGuestAuditRecord } from '@/lib/rsvp/repositories/shared/rows';
 
 export async function appendGuestAuditByHost(
