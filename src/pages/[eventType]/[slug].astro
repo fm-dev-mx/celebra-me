@@ -65,7 +65,8 @@ const presenter = presentInvitationPage({
 	hideHeader={true}
 	className={presenter.layout.className}
 >
-	<main class={presenter.wrapper.className} style={presenter.wrapper.style}>
+	<style is:inline lang="scss" set:html={presenter.wrapper.scopedStyles} />
+	<main class={presenter.wrapper.className} {...presenter.wrapper.dataAttributes}>
 		<!-- Scripts -->
 		<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
 			// Legacy Token Resolution
@@ -129,7 +130,10 @@ const presenter = presentInvitationPage({
 
 		<InvitationSections presenter={presenter} />
 
-		<Footer eventSlug={presenter.footer.eventSlug} showEnvelope={presenter.footer.showEnvelope} />
+		<Footer
+			eventSlug={presenter.footer.eventSlug}
+			showEnvelope={presenter.footer.showEnvelope}
+		/>
 
 		{presenter.music && (
 			<MusicPlayer
