@@ -9,7 +9,7 @@ Remove content-specific branching (checking for `ximena-meza-trasvina`) inside g
 ## 🛠️ Actions
 
 1. **Schema Extension**: Update `src/lib/schemas/content/hero.schema.ts` to include an optional `layoutVariant` or `renderStyle` field.
-2. **Presenter Refactor**: Locate hardcoded logic in `src/lib/presenters/invitation-presenter.ts` (line 121):
+2. **Invitation Assembly Refactor**: Locate hardcoded logic in `src/lib/invitation/page-data.ts`:
 
 ```typescript
 className: input.slug === 'ximena-meza-trasvina' ? 'layout--ximena-premium' : undefined,

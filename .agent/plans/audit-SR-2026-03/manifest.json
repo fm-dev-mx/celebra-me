@@ -1,9 +1,9 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "id": "audit-SR-2026-03",
+    "id": "audit-sr-2026-03",
     "title": "Technical Audit & Strategic Planning - Q1 2026",
     "status": "IN_PROGRESS",
-    "completionPercentage": 35,
+    "completion": 35,
     "created": "2026-03-18",
     "updated": "2026-03-18",
     "estimatedDuration": "1 phase / ~1 day",

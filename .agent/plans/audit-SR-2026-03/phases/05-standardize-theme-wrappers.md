@@ -9,7 +9,7 @@ Architecture logic to handle variable mapping.
 
 ## 🛠️ Actions
 
-1. **Logic Separation**: Refactor `buildWrapperStyle` in `invitation-presenter.ts` to return an
+1. **Logic Separation**: Refactor the invitation page data wrapper assembly in `page-data.ts` to return an
    object of **logical keys** instead of a raw CSS string.
 2. **Attribute Mapping**: Apply these keys as data-attributes (e.g.,
    `data-theme-envelope="primary"`).

@@ -19,7 +19,7 @@ guidelines in `.agent/skills/` and `docs/core/`.
 
 ### 2. Logic Leakage in Presenter Layer (P2)
 
-- **Root Cause**: `InvitationPagePresenter` contains hardcoded slug logic (`ximena-meza-trasvina`)
+- **Root Cause**: The former invitation page presenter layer contained hardcoded slug logic (`ximena-meza-trasvina`)
   for switching layout variants.
 - **Impact**: Tight coupling between business logic and specific event content. Prevents linear
   scaling of the platform; each new premium event requires code changes instead of configuration.

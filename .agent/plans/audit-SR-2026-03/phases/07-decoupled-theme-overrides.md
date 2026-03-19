@@ -19,7 +19,7 @@ entirely in JSON without creating new SCSS files.
 <div data-event-slug="ximena-meza" class="theme-preset--jewelry-box"></div>
 ```
 
-1. **Presenter Injection**: Enhance `src/lib/presenters/invitation-presenter.ts` to generate a
+1. **Invitation Assembly Injection**: Enhance `src/lib/invitation/page-data.ts` to generate a
    scoped CSS block from JSON tokens:
 
 ```css
