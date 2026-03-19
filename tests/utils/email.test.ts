@@ -1,4 +1,4 @@
-import { sendEmail } from '@/utils/email';
+import { sendEmail } from '@utils/email';
 import nodemailer from 'nodemailer';
 
 // Mock nodemailer

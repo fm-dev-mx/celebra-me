@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { getEnv, resetEnvCacheForTests } from '@/utils/env';
+import { getEnv, resetEnvCacheForTests } from '@utils/env';
 
 describe('getEnv', () => {
 	const originalCwd = process.cwd();
