@@ -89,14 +89,23 @@ function buildWrapperData(
 		'data-event-slug': eventSlug,
 	};
 
-	const overrides: Record<string, string> = {
-		'--color-surface-primary-override': theme.primaryColor,
-		'--color-surface-primary-rgb-override': theme.colors.primaryRgb,
-	};
+	const overrides: Record<string, string> = {};
 
-	if (theme.accentColor) {
-		overrides['--color-action-accent-override'] = theme.accentColor;
-		overrides['--color-action-accent-rgb-override'] = theme.colors.accentRgb;
+	if (theme.tokens) {
+		for (const [key, value] of Object.entries(theme.tokens)) {
+			const kebabKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+			overrides[`--color-${kebabKey}-override`] = value;
+		}
+	}
+
+	if (theme.colors) {
+		for (const [key, value] of Object.entries(theme.colors)) {
+			if (key.endsWith('Rgb')) {
+				const baseName = key.replace(/Rgb$/, '');
+				const kebabKey = baseName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+				overrides[`--color-${kebabKey}-rgb-override`] = value;
+			}
+		}
 	}
 
 	if (envelope.enabled && envelope.data) {

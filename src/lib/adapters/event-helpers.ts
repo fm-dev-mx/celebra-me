@@ -49,8 +49,14 @@ export function pickVariant<T extends readonly string[]>(
 	allowed: T,
 	fallback: T[number],
 ): T[number] {
-	if (!candidate) return fallback;
-	if ((allowed as readonly string[]).includes(candidate)) return candidate as T[number];
+	if (!candidate) {
+		console.log(`[ThemeVariant] No candidate for ${scope}, using fallback: ${fallback}`);
+		return fallback;
+	}
+	if ((allowed as readonly string[]).includes(candidate)) {
+		console.log(`[ThemeVariant] Match for ${scope}: ${candidate}`);
+		return candidate as T[number];
+	}
 	console.warn(
 		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Fallback applied: "${fallback}".`,
 	);

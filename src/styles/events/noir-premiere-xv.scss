@@ -4,19 +4,19 @@
 	--noir-premiere-editorial-shadow: 0 40px 100px rgb(0 0 0 / 50%);
 	--gold-metallic: linear-gradient(
 		135deg,
-		#d4af37 0%,
-		#f9f6f2 40%,
+		var(--color-action-accent) 0%,
+		var(--color-text-on-dark) 40%,
 		#c5a059 55%,
 		#8a6d3b 70%,
-		#d4af37 100%
+		var(--color-action-accent) 100%
 	);
 	--gold-glow: 0 0 20px rgb(212 175 55 / 25%);
 
 	background:
 		radial-gradient(circle at 10% 10%, rgb(212 175 55 / 8%) 0%, transparent 40%),
 		radial-gradient(circle at 90% 90%, rgb(197 160 89 / 5%) 0%, transparent 40%),
-		linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
-	color: #f9f6f2;
+		linear-gradient(180deg, var(--color-surface-dark) 0%, var(--color-surface-dark) 100%);
+	color: var(--color-text-on-dark);
 	min-height: 100svh;
 	padding-bottom: env(safe-area-inset-bottom, 0);
 
@@ -270,7 +270,7 @@
 
 	// Phase 03: Structural Redesign
 	.family[data-variant='editorial'] {
-		--family-bg: radial-gradient(circle at bottom right, #0d0d0d, #050505);
+		--family-bg: radial-gradient(circle at bottom right, var(--color-surface-dark), var(--color-surface-dark));
 		--family-panel-bg: rgb(255 255 255 / 2%);
 		--family-panel-border: rgb(212 175 55 / 15%);
 		--family-panel-shadow: 0 40px 100px rgb(0 0 0 / 60%);
@@ -292,7 +292,7 @@
 			font-family: var(--font-display);
 			font-size: clamp(2.4rem, 6vw, 4.8rem);
 			color: transparent;
-			background: linear-gradient(135deg, #f9f6f2 0%, #d4af37 50%, #f9f6f2 100%);
+			background: linear-gradient(135deg, var(--color-text-on-dark) 0%, var(--color-action-accent) 50%, var(--color-text-on-dark) 100%);
 			background-clip: text;
 			margin-top: 1.2rem;
 			letter-spacing: -0.01em;
@@ -392,7 +392,7 @@
 		.family__name {
 			font-family: var(--font-display);
 			font-size: clamp(1.2rem, 3.5vw, 1.55rem);
-			color: #f9f6f2;
+			color: var(--color-text-on-dark);
 			white-space: normal; // FORCED FIX: Overrides base nowrap
 			text-wrap: balance;
 			line-height: 1.2;
@@ -445,7 +445,7 @@
 	}
 
 	.gallery-section[data-variant='editorial'] {
-		background: #050505;
+		background: var(--color-surface-dark);
 		padding-block: clamp(4rem, 8vw, 6rem);
 
 		.gallery-section__title {
@@ -866,7 +866,7 @@
 	}
 
 	.itinerary[data-variant='editorial'] {
-		background: #0d0d0d;
+		background: var(--color-surface-dark);
 		padding-block: clamp(5rem, 10vw, 8rem);
 
 		.itinerary__title {
@@ -884,7 +884,7 @@
 		.itinerary__item-label {
 			font-family: var(--font-display);
 			font-size: 1.6rem;
-			color: #f9f6f2;
+			color: var(--color-text-on-dark);
 		}
 
 		.itinerary__item-icon-wrapper {
@@ -919,7 +919,7 @@
 	}
 
 	.event-location[data-variant='editorial'] {
-		background: #050505;
+		background: var(--color-surface-dark);
 		padding-block: clamp(6rem, 15vw, 12rem);
 		position: relative;
 		overflow: hidden;
@@ -946,7 +946,7 @@
 			font-family: var(--font-display);
 			font-size: clamp(3.5rem, 9vw, 6.5rem);
 			color: transparent;
-			background: linear-gradient(135deg, #f9f6f2 0%, #c5a059 45%, #8a6d3b 55%, #f9f6f2 100%);
+			background: linear-gradient(135deg, var(--color-text-on-dark) 0%, #c5a059 45%, #8a6d3b 55%, var(--color-text-on-dark) 100%);
 			background-clip: text;
 			text-transform: uppercase;
 			letter-spacing: -0.03em;
@@ -1056,7 +1056,7 @@
 		}
 
 		.event-location__card-content-place {
-			color: #f9f6f2;
+			color: var(--color-text-on-dark);
 			font-family: var(--font-display);
 			font-size: 2.4rem;
 			margin-bottom: 0.75rem;
@@ -1208,7 +1208,7 @@
 		// Title — uses .countdown-title in actual DOM
 		.countdown-title {
 			font-family: var(--font-display);
-			background: linear-gradient(to right, #f9f6f2 0%, #c5a059 50%, #f9f6f2 100%);
+			background: linear-gradient(to right, var(--color-text-on-dark) 0%, #c5a059 50%, var(--color-text-on-dark) 100%);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
 			font-size: clamp(2rem, 5vw, 3.5rem);
@@ -1451,7 +1451,7 @@
 	}
 
 	.thank-you-section[data-variant='editorial'] {
-		background: #050505; // Deep noir background matching other sections
+		background: var(--color-surface-dark); // Deep noir background matching other sections
 		position: relative;
 
 		// The "Aura" behind the portrait
@@ -1502,11 +1502,11 @@
 				border-radius: 50%;
 				background: linear-gradient(
 					135deg,
-					#f9f6f2 0%,
+					var(--color-text-on-dark) 0%,
 					#c5a059 25%,
 					#4a3a1f 50%,
 					#c5a059 75%,
-					#f9f6f2 100%
+					var(--color-text-on-dark) 100%
 				);
 				z-index: -1;
 				box-shadow: 0 10px 30px rgb(0 0 0 / 60%);
@@ -1572,7 +1572,7 @@
 		.closing-name {
 			font-family: var(--font-display);
 			font-size: clamp(3rem, 8vw, 5rem);
-			background: linear-gradient(135deg, #f9f6f2 0%, #c5a059 50%, #f9f6f2 100%);
+			background: linear-gradient(135deg, var(--color-text-on-dark) 0%, #c5a059 50%, var(--color-text-on-dark) 100%);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
 			filter: drop-shadow(0 10px 20px rgb(0 0 0 / 50%));

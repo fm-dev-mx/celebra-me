@@ -23,7 +23,10 @@ export interface ThemeConfig {
 	colors: {
 		primaryRgb: string;
 		accentRgb: string;
+		[key: string]: string; // Allow dynamic semantic tokens
 	};
+	// Raw hex semantic tokens
+	tokens: Record<string, string>;
 }
 
 export interface HeroViewModel {

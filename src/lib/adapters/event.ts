@@ -18,7 +18,7 @@ import {
 	type ItineraryVariant,
 	type SharedSectionVariant,
 } from '@/lib/theme/theme-contract';
-import { resolveColorToken } from '@/lib/theme/color-tokens';
+import { resolveColorToken, PRESET_COLOR_MAP } from '@/lib/theme/color-tokens';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import {
 	pickVariant,
@@ -64,16 +64,28 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 		? normalizedPreset
 		: 'structured';
 
+	const presetMap = PRESET_COLOR_MAP[normalizedPreset] || PRESET_COLOR_MAP['jewelry-box'];
+	const rawTokens: Record<string, string> = { ...presetMap };
+	const rgbColors: { primaryRgb: string; accentRgb: string; [key: string]: string } = {
+		primaryRgb: primaryColorRgb,
+		accentRgb: accentColorRgb,
+	};
+
+	// Generate RGB equivalents for all properties
+	for (const [key, value] of Object.entries(rawTokens)) {
+		if (value.startsWith('#')) {
+			rgbColors[`${key}Rgb`] = hexToRgb(value);
+		}
+	}
+
 	const theme: ThemeConfig = {
 		primaryColor: primaryColorHex,
 		accentColor: accentColorHex,
 		fontFamily: data.theme.fontFamily,
 		preset: normalizedPreset,
 		themeClass: `theme-preset--${normalizedPreset}`,
-		colors: {
-			primaryRgb: primaryColorRgb,
-			accentRgb: accentColorRgb,
-		},
+		tokens: rawTokens,
+		colors: rgbColors,
 	};
 
 	const heroBg = requireAsset(eventSlug, data.hero.backgroundImage, data.title);
