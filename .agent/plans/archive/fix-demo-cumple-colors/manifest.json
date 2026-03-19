@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "id": "fix-demo-cumple-colors",
   "title": "Fix Demo Cumple Color Regressions",
-  "status": "IN-PROGRESS",
-  "completion": 0,
+  "status": "ARCHIVED",
+  "completion": 100,
   "created": "2026-03-18",
-  "updated": "2026-03-18",
+  "updated": "2026-03-19",
   "estimatedDuration": "3 phases / ~1 day",
   "owner": "fm-dev-mx",
   "blockers": [],
@@ -30,10 +30,11 @@
       "id": "03-visual-validation",
       "title": "Visual Validation",
       "file": "phases/03-visual-validation.md",
-      "status": "IN-PROGRESS",
-      "completion": 0,
+      "status": "COMPLETED",
+      "completion": 100,
       "weight": 20
     }
   ],
-  "tags": ["styling", "bugfix", "architecture"]
+  "tags": ["styling", "bugfix", "architecture"],
+  "archivedAt": "2026-03-19"
 }

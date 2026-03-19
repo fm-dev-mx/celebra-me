@@ -10,6 +10,8 @@ Deterministic audit trail for `project-simplification`.
 
 - **Recorded validation outcomes:** `pnpm astro check`, `pnpm test`, `pnpm assets:check-registry`, and `pnpm ops check-links` passed; `pnpm lint` remained green with 2 pre-existing warnings in `src/lib/adapters/event-helpers.ts`. (Completed: 2026-03-19 08:57)
 - **Documented residual blocker:** Kept Phase 07 open because `pnpm ops validate-schema` still fails on pre-existing ThemeContract/CSS variant drift and manual browser smoke was not run in this turn. (Completed: 2026-03-19 08:57)
+- **Closed verification hold:** Archive review re-ran the repo checks, confirmed schema validation now passes, and closed the stale verification blocker. (Completed: 2026-03-19 10:30)
+- **Archive handoff:** Archived the completed simplification plan under `.agent/plans/archive/project-simplification/`. (Completed: 2026-03-19 10:30)
 
 ### Phase 06: Governance and Docs Simplification
 

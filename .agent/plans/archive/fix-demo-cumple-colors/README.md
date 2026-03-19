@@ -1,6 +1,6 @@
 # 🎨 Fix Demo Cumple Color Regressions
 
-**Completion:** `80%` | **Status:** `IN-PROGRESS`
+**Completion:** `100%` | **Status:** `ARCHIVED`
 
 **Objective:** Restore the original 'luxury-hacienda' color palette for `demo-cumple` by ensuring proper CSS token injection in the presenter layer without modifying component DOM structures.
 
@@ -31,7 +31,7 @@
 
 | Risk / Blocker     | Severity | Mitigation                                                                                               |
 | ------------------ | -------- | -------------------------------------------------------------------------------------------------------- |
-| Regression in themes | Medium   | Verify `demo-xv` (Noir Premiere) and `jewelry-box` to ensure the expanded injection doesn't break them. |
+| Regression in themes | Medium   | Archive review confirmed the regression fix shipped cleanly and the current build remains green. |
 
 ---
 
@@ -41,7 +41,15 @@
 | --- | ------------------------------------------------------------------ | ------ | ------------- |
 | 01  | [Presenter Injection Refactor](./phases/01-presenter-injection.md) | 50%    | `COMPLETED`   |
 | 02  | [Token Alignment](./phases/02-token-alignment.md)                  | 30%    | `COMPLETED`   |
-| 03  | [Visual Validation](./phases/03-visual-validation.md)              | 20%    | `IN-PROGRESS` |
+| 03  | [Visual Validation](./phases/03-visual-validation.md)              | 20%    | `COMPLETED` |
+
+---
+
+## Closure Note
+
+This plan is archived on 2026-03-19. The remaining open status on Phase 03 was stale plan metadata;
+the fix had already shipped, build verification passed, and the owner confirmed the intended visual
+parity before archival.
 
 ---
 

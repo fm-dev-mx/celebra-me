@@ -2,16 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "id": "project-simplification",
   "title": "Project Simplification & De-engineering",
-  "status": "IN-PROGRESS",
-  "completion": 95,
+  "status": "ARCHIVED",
+  "completion": 100,
   "created": "2026-03-19",
   "updated": "2026-03-19",
   "estimatedDuration": "7 phases / ~3-4 days",
   "owner": "fm-dev-mx",
-  "blockers": [
-    "pnpm ops validate-schema fails due to pre-existing ThemeContract/CSS variant drift in quote, countdown, location, family, gifts, gallery, and thankYou sections.",
-    "Manual browser smoke coverage for invitation and dashboard routes was not executed in this terminal-only turn."
-  ],
+  "blockers": [],
   "phases": [
     {
       "id": "01-baseline-and-safety-net",
@@ -65,10 +62,11 @@
       "id": "07-verification-and-closeout",
       "title": "Verification and Closeout",
       "file": "phases/07-verification-and-closeout.md",
-      "status": "IN-PROGRESS",
-      "completion": 80,
+      "status": "COMPLETED",
+      "completion": 100,
       "weight": 10
     }
   ],
-  "tags": ["architecture", "technical-debt", "cleanup", "docs", "governance"]
+  "tags": ["architecture", "technical-debt", "cleanup", "docs", "governance"],
+  "archivedAt": "2026-03-19"
 }

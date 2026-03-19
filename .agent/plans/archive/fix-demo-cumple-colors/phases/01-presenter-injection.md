@@ -14,7 +14,7 @@ The current invitation page assembly layer only overrides `--color-surface-prima
 
 ---
 
-## 🛠️ Execution Tasks [STATUS: PENDING]
+## 🛠️ Execution Tasks [STATUS: COMPLETED]
 
 ### Update Adapter Payload
 

@@ -22,9 +22,7 @@
         "package.json",
         "scripts/validate-commits.mjs"
       ],
-      "allowRelated": [
-        ".agent/plans/gatekeeper-hardening/**"
-      ],
+      "allowRelated": [],
       "correctionPolicy": "absorb-compatible"
     },
     {
@@ -44,9 +42,7 @@
         "tests/unit/gatekeeper-workflow-hardening.test.ts",
         "tests/fixtures/gatekeeper/**"
       ],
-      "allowRelated": [
-        ".agent/plans/gatekeeper-hardening/**"
-      ],
+      "allowRelated": [],
       "correctionPolicy": "absorb-compatible"
     },
     {
@@ -66,8 +62,7 @@
         ".agent/workflows/gatekeeper-commit.md"
       ],
       "allowRelated": [
-        "scripts/README.md",
-        ".agent/plans/gatekeeper-hardening/**"
+        "scripts/README.md"
       ],
       "correctionPolicy": "absorb-compatible"
     },

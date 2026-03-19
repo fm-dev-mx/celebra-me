@@ -1,0 +1,145 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "planId": "project-simplification",
+    "mode": "planned-commits",
+    "defaultFallback": "domain-heuristic",
+    "units": [
+        {
+            "id": "baseline-verification",
+            "phaseId": "01-baseline-and-safety-net",
+            "status": "planned",
+            "domain": "test",
+            "type": "test",
+            "scope": "test",
+            "subject": {
+                "verb": "align",
+                "target": "simplification verification coverage"
+            },
+            "purpose": "capture the current simplification baseline and regression safety net",
+            "include": ["tests/**"],
+            "allowRelated": [".agent/plans/project-simplification/**", "docs/**"],
+            "correctionPolicy": "absorb-compatible"
+        },
+        {
+            "id": "retire-invitation-layers",
+            "phaseId": "02-invitation-surface-simplification",
+            "status": "planned",
+            "domain": "core",
+            "type": "refactor",
+            "scope": "core",
+            "subject": {
+                "verb": "retire",
+                "target": "invitation presenter layers"
+            },
+            "purpose": "collapse presenter and render-plan indirection into page-data assembly",
+            "include": [
+                "src/lib/invitation/page-data.ts",
+                "src/lib/invitation/render-plan.ts",
+                "src/lib/presenters/invitation-presenter.ts",
+                "src/pages/[eventType]/[slug].astro",
+                "src/components/invitation/**",
+                "tests/unit/invitation.presenter.test.ts"
+            ],
+            "allowRelated": ["docs/**", ".agent/plans/project-simplification/**"],
+            "correctionPolicy": "absorb-compatible"
+        },
+        {
+            "id": "retire-rsvp-forwarders",
+            "phaseId": "03-rsvp-module-consolidation",
+            "status": "planned",
+            "domain": "auth",
+            "type": "refactor",
+            "scope": "auth",
+            "subject": {
+                "verb": "retire",
+                "target": "rsvp forwarding services"
+            },
+            "purpose": "collapse RSVP service indirection behind the top-level auth service surface",
+            "include": [
+                "src/lib/rsvp/**",
+                "src/pages/api/auth/**",
+                "src/pages/api/dashboard/**",
+                "src/pages/api/invitacion/**",
+                "tests/api/**",
+                "tests/lib/rsvp/**"
+            ],
+            "allowRelated": ["docs/**", ".agent/plans/project-simplification/**"],
+            "correctionPolicy": "absorb-compatible"
+        },
+        {
+            "id": "prune-theme-fragments",
+            "phaseId": "04-style-and-theme-pruning",
+            "status": "planned",
+            "domain": "theme",
+            "type": "style",
+            "scope": "theme",
+            "subject": {
+                "verb": "prune",
+                "target": "obsolete theme fragments"
+            },
+            "purpose": "remove inactive theme fragments and keep route styling ownership coherent",
+            "include": ["src/styles/**"],
+            "allowRelated": ["docs/**", ".agent/plans/project-simplification/**"],
+            "correctionPolicy": "absorb-compatible"
+        },
+        {
+            "id": "prune-dead-ui-assets",
+            "phaseId": "05-dead-code-assets-and-dependencies",
+            "status": "planned",
+            "domain": "ui",
+            "type": "refactor",
+            "scope": "ui",
+            "subject": {
+                "verb": "prune",
+                "target": "dead ui assets and wrappers"
+            },
+            "purpose": "remove unreferenced UI wrappers and duplicated static assets",
+            "include": [
+                "src/components/common/**",
+                "src/components/layout/**",
+                "src/components/typography/**",
+                "src/components/ui/**",
+                "src/assets/**"
+            ],
+            "allowRelated": ["docs/**", ".agent/plans/project-simplification/**"],
+            "correctionPolicy": "spawn-followup"
+        },
+        {
+            "id": "align-governance-docs",
+            "phaseId": "06-governance-and-docs-simplification",
+            "status": "planned",
+            "domain": "gov-workflows",
+            "type": "docs",
+            "scope": "gov-workflows",
+            "subject": {
+                "verb": "align",
+                "target": "governance guidance"
+            },
+            "purpose": "sync workflow and documentation guidance with the simplified governance baseline",
+            "include": [
+                ".agent/workflows/**",
+                ".agent/README.md",
+                ".agent/GATEKEEPER_RULES.md",
+                "docs/**"
+            ],
+            "allowRelated": [".agent/plans/project-simplification/**"],
+            "correctionPolicy": "absorb-compatible"
+        },
+        {
+            "id": "record-plan-progress",
+            "phaseId": "07-verification-and-closeout",
+            "status": "planned",
+            "domain": "gov-plans-project-simplification",
+            "type": "docs",
+            "scope": "gov-plans-project-simplification",
+            "subject": {
+                "verb": "align",
+                "target": "project simplification plan records"
+            },
+            "purpose": "keep the active plan directory in sync with implementation progress and verification state",
+            "include": [".agent/plans/project-simplification/**"],
+            "allowRelated": ["docs/**"],
+            "correctionPolicy": "absorb-compatible"
+        }
+    ]
+}
