@@ -8,6 +8,7 @@ import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
 import {
 	AssetSchema,
 	baseEventFieldsSchema,
+	ColorTokenSchema,
 	countdownSchema,
 	musicSchema,
 	navigationSchema,
@@ -57,11 +58,13 @@ export const eventContentSchema = baseEventFieldsSchema.extend({
 			stampText: z.string().optional(),
 			stampYear: z.string().optional(),
 			tooltipText: z.string().optional(),
-			closedPalette: z.object({
-				primary: z.string().regex(/^#/, 'Must be a hex color'),
-				accent: z.string().regex(/^#/, 'Must be a hex color'),
-				background: z.string().regex(/^#/, 'Must be a hex color'),
-			}),
+			closedPalette: z
+				.object({
+					primary: ColorTokenSchema.optional(),
+					accent: ColorTokenSchema.optional(),
+					background: ColorTokenSchema.optional(),
+				})
+				.optional(),
 			variant: z.enum(THEME_PRESETS).optional(),
 		})
 		.optional(),

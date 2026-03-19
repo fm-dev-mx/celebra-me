@@ -36,6 +36,7 @@ export interface HeroViewModel {
 	backgroundImage: ImageAsset;
 	portrait?: ImageAsset;
 	variant?: ThemePreset;
+	layoutVariant?: string;
 }
 
 export interface Coordinate {

@@ -4,44 +4,27 @@
     "title": "Demo - Alberto 60 Años",
     "description": "Demo oficial: celebración estilo Luxury Hacienda para cumpleaños de Don Alberto.",
     "theme": {
-        "primaryColor": "#2C1E12",
-        "accentColor": "#C5A028",
-        "fontFamily": "serif",
         "preset": "luxury-hacienda"
     },
     "sectionStyles": {
         "quote": {
-            "variant": "luxury-hacienda",
             "fontStyle": "serif",
             "animation": "fade"
         },
         "countdown": {
-            "variant": "luxury-hacienda",
             "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "variant": "luxury-hacienda",
             "mapStyle": "dark",
             "showFlourishes": true
         },
-        "gifts": {
-            "variant": "luxury-hacienda"
-        },
-        "itinerary": {
-            "variant": "luxury-hacienda"
-        },
-        "gallery": {
-            "variant": "luxury-hacienda"
-        },
-        "thankYou": {
-            "variant": "luxury-hacienda"
-        },
-        "family": {
-            "variant": "luxury-hacienda"
-        },
+        "gifts": {},
+        "itinerary": {},
+        "gallery": {},
+        "thankYou": {},
+        "family": {},
         "rsvp": {
-            "variant": "luxury-hacienda",
             "labels": {
                 "name": "Nombre de los invitados *",
                 "guestCount": "Número de asistentes",
@@ -241,7 +224,6 @@
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "envelope": {
-        "variant": "luxury-hacienda",
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "monogram",
@@ -251,9 +233,7 @@
         "microcopy": "Haga clic para desvelar",
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
-            "primary": "#2C1E12",
-            "accent": "#C5A028",
-            "background": "#FDF5E6"
+            "primary": "surfaceDark"
         }
     },
     "sharing": {

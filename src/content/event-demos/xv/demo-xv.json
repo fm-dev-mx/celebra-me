@@ -4,44 +4,30 @@
     "title": "XV Años - Demo Invitación",
     "description": "Acompáñanos a celebrar estos XV años de ensueño.",
     "theme": {
-        "primaryColor": "#d4af37",
-        "accentColor": "#111111",
+        "primaryColor": "actionAccent",
+        "accentColor": "surfaceDark",
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
     "sectionStyles": {
         "quote": {
-            "variant": "jewelry-box",
             "fontStyle": "script",
             "animation": "bounce"
         },
         "countdown": {
-            "variant": "jewelry-box",
             "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "variant": "jewelry-box",
             "mapStyle": "colorful",
             "showFlourishes": true
         },
-        "family": {
-            "variant": "jewelry-box"
-        },
-        "gallery": {
-            "variant": "jewelry-box"
-        },
-        "gifts": {
-            "variant": "jewelry-box"
-        },
-        "itinerary": {
-            "variant": "jewelry-box"
-        },
-        "thankYou": {
-            "variant": "jewelry-box"
-        },
+        "family": {},
+        "gallery": {},
+        "gifts": {},
+        "itinerary": {},
+        "thankYou": {},
         "rsvp": {
-            "variant": "jewelry-box",
             "labels": {
                 "name": "Nombre completo *",
                 "guestCount": "Número total de asistentes",
@@ -270,9 +256,8 @@
         "sealIcon": "heart",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
-            "primary": "#d4af37",
-            "accent": "#4a4a4a",
-            "background": "#fdf8f0"
+            "primary": "actionAccent",
+            "accent": "surfaceDark"
         }
     },
     "sharing": {

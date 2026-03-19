@@ -118,7 +118,7 @@ const EVENT_ASSET_MODULES = (discoverEventModules() || {}) as Record<
 
 /**
  * Helper to extract slug from path:
- * "../../assets/images/events/ximena-meza-trasvina/index.ts" -> "ximena-meza-trasvina"
+ * "../../assets/images/events/example-event/index.ts" -> "example-event"
  */
 const getSlugFromPath = (path: string) => path.split('/').slice(-2, -1)[0];
 

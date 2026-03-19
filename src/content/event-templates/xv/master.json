@@ -3,38 +3,28 @@
     "title": "Plantilla Cliente XV",
     "description": "Plantilla base para invitaciones reales de XV años en producción.",
     "theme": {
-        "primaryColor": "#d4af37",
-        "accentColor": "#1a1a1a",
+        "primaryColor": "actionAccent",
+        "accentColor": "surfaceDark",
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
     "sectionStyles": {
         "quote": {
-            "variant": "jewelry-box",
             "fontStyle": "script",
             "animation": "fade"
         },
         "countdown": {
-            "variant": "jewelry-box",
             "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "variant": "jewelry-box",
             "mapStyle": "colorful",
             "showFlourishes": true
         },
-        "gallery": {
-            "variant": "jewelry-box"
-        },
-        "itinerary": {
-            "variant": "jewelry-box"
-        },
-        "gifts": {
-            "variant": "jewelry-box"
-        },
+        "gallery": {},
+        "itinerary": {},
+        "gifts": {},
         "rsvp": {
-            "variant": "jewelry-box",
             "labels": {
                 "name": "Nombre completo *",
                 "attendance": "¿Asistirás al evento? *",
@@ -42,9 +32,7 @@
                 "confirmButton": "Confirmar asistencia"
             }
         },
-        "thankYou": {
-            "variant": "jewelry-box"
-        }
+        "thankYou": {}
     },
     "hero": {
         "name": "Nombre de la Festejada",
@@ -176,9 +164,8 @@
         "sealIcon": "heart",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
-            "primary": "#d4af37",
-            "accent": "#4a4a4a",
-            "background": "#fdf8f0"
+            "primary": "actionAccent",
+            "accent": "surfaceDark"
         }
     },
     "sharing": {

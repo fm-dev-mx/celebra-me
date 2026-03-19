@@ -18,6 +18,7 @@ import {
 	type ItineraryVariant,
 	type SharedSectionVariant,
 } from '@/lib/theme/theme-contract';
+import { resolveColorToken } from '@/lib/theme/color-tokens';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import {
 	pickVariant,
@@ -36,8 +37,13 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 	const isDemo = data.isDemo ?? false;
 	const normalizedPreset = pickPreset(data.theme.preset);
 
-	const primaryColorRgb = hexToRgb(data.theme.primaryColor);
-	const accentColorRgb = hexToRgb(data.theme.accentColor || '#333333');
+	const primaryColorHex = resolveColorToken(
+		data.theme.primaryColor || 'primary',
+		normalizedPreset,
+	);
+	const accentColorHex = resolveColorToken(data.theme.accentColor || 'accent', normalizedPreset);
+	const primaryColorRgb = hexToRgb(primaryColorHex);
+	const accentColorRgb = hexToRgb(accentColorHex);
 	const itineraryFallback = (
 		(ITINERARY_VARIANTS as readonly string[]).includes(normalizedPreset)
 			? normalizedPreset
@@ -48,10 +54,19 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 			? normalizedPreset
 			: 'standard'
 	) as SharedSectionVariant;
+	const quoteFallback = (QUOTE_VARIANTS as readonly string[]).includes(normalizedPreset)
+		? normalizedPreset
+		: 'elegant';
+	const countdownFallback = (COUNTDOWN_VARIANTS as readonly string[]).includes(normalizedPreset)
+		? normalizedPreset
+		: 'minimal';
+	const locationFallback = (LOCATION_VARIANTS as readonly string[]).includes(normalizedPreset)
+		? normalizedPreset
+		: 'structured';
 
 	const theme: ThemeConfig = {
-		primaryColor: data.theme.primaryColor,
-		accentColor: data.theme.accentColor,
+		primaryColor: primaryColorHex,
+		accentColor: accentColorHex,
 		fontFamily: data.theme.fontFamily,
 		preset: normalizedPreset,
 		themeClass: `theme-preset--${normalizedPreset}`,
@@ -78,6 +93,7 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 			THEME_PRESETS,
 			normalizedPreset,
 		),
+		layoutVariant: data.hero.layoutVariant,
 	};
 
 	const showEnvelope = !!(data.envelope && !data.envelope.disabled);
@@ -100,9 +116,18 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 							normalizedPreset,
 						),
 						colors: {
-							background: data.envelope.closedPalette.background,
-							primary: data.envelope.closedPalette.primary,
-							accent: data.envelope.closedPalette.accent,
+							background: resolveColorToken(
+								data.envelope.closedPalette?.background || 'surfacePrimary',
+								normalizedPreset,
+							),
+							primary: resolveColorToken(
+								data.envelope.closedPalette?.primary || 'actionPrimary',
+								normalizedPreset,
+							),
+							accent: resolveColorToken(
+								data.envelope.closedPalette?.accent || 'actionAccent',
+								normalizedPreset,
+							),
 						},
 					}
 				: undefined,
@@ -189,9 +214,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 						...data.quote,
 						variant: pickVariant(
 							'sectionStyles.quote.variant',
-							data.sectionStyles?.quote?.variant,
+							data.sectionStyles?.quote?.variant ?? quoteFallback,
 							QUOTE_VARIANTS,
-							'elegant',
+							quoteFallback,
 						),
 						animation: data.sectionStyles?.quote?.animation,
 					}
@@ -203,9 +228,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 							eventDate: data.hero.date,
 							variant: pickVariant(
 								'sectionStyles.countdown.variant',
-								data.sectionStyles?.countdown?.variant,
+								data.sectionStyles?.countdown?.variant ?? countdownFallback,
 								COUNTDOWN_VARIANTS,
-								'minimal',
+								countdownFallback,
 							),
 							showParticles: data.sectionStyles?.countdown?.showParticles,
 						}
@@ -216,9 +241,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 				indications: locationIndications,
 				variant: pickVariant(
 					'sectionStyles.location.variant',
-					data.sectionStyles?.location?.variant,
+					data.sectionStyles?.location?.variant ?? locationFallback,
 					LOCATION_VARIANTS,
-					'structured',
+					locationFallback,
 				),
 				mapStyle: data.sectionStyles?.location?.mapStyle,
 				showFlourishes: data.sectionStyles?.location?.showFlourishes,
@@ -234,9 +259,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 						celebrantName: data.hero.name,
 						variant: pickVariant(
 							'sectionStyles.family.variant',
-							data.sectionStyles?.family?.variant,
+							data.sectionStyles?.family?.variant ?? sharedSectionFallback,
 							SHARED_SECTION_VARIANTS,
-							'standard',
+							sharedSectionFallback,
 						),
 					}
 				: undefined,
@@ -247,9 +272,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 							items: galleryItems,
 							variant: pickVariant(
 								'sectionStyles.gallery.variant',
-								data.sectionStyles?.gallery?.variant,
+								data.sectionStyles?.gallery?.variant ?? sharedSectionFallback,
 								SHARED_SECTION_VARIANTS,
-								'standard',
+								sharedSectionFallback,
 							),
 						}
 					: undefined,
@@ -298,9 +323,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 							...data.gifts,
 							variant: pickVariant(
 								'sectionStyles.gifts.variant',
-								data.sectionStyles?.gifts?.variant,
+								data.sectionStyles?.gifts?.variant ?? sharedSectionFallback,
 								SHARED_SECTION_VARIANTS,
-								'standard',
+								sharedSectionFallback,
 							),
 						}
 					: undefined,
@@ -310,9 +335,9 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 						image: thankYouImage,
 						variant: pickVariant(
 							'sectionStyles.thankYou.variant',
-							data.sectionStyles?.thankYou?.variant,
+							data.sectionStyles?.thankYou?.variant ?? sharedSectionFallback,
 							SHARED_SECTION_VARIANTS,
-							'standard',
+							sharedSectionFallback,
 						),
 					}
 				: undefined,

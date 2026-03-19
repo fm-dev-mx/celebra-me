@@ -4,10 +4,7 @@
     "title": "La Noche Premiere de Ximena",
     "description": "Una celebración editorial donde el brillo de los quince años se encuentra con la elegancia Noir. Sé parte de la historia de Ximena.",
     "theme": {
-        "primaryColor": "#FBEDED",
-        "accentColor": "#D4A5A5",
-        "fontFamily": "serif",
-        "preset": "top-premium-xv-ximena"
+        "preset": "top-premium-floral"
     },
     "sectionStyles": {
         "countdown": {
@@ -50,6 +47,7 @@
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
+        "layoutVariant": "ximena-premium",
         "variant": "editorial"
     },
     "location": {
@@ -233,7 +231,6 @@
             "type": "interlude",
             "image": "interlude02",
             "alt": "Seda dorada fluyendo en un ambiente Noir",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -244,7 +241,6 @@
             "type": "interlude",
             "image": "interlude03",
             "alt": "Tiara de diamantes sobre terciopelo negro",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -255,7 +251,6 @@
             "type": "interlude",
             "image": "interlude01",
             "alt": "Detalle editorial de alta moda",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -266,7 +261,6 @@
             "type": "interlude",
             "image": "gallery09",
             "alt": "Brillo dorado cinematográfico",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -277,7 +271,6 @@
             "type": "interlude",
             "image": "gallery10",
             "alt": "Explosión artística de destellos dorados",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -288,7 +281,6 @@
             "type": "interlude",
             "image": "gallery15",
             "alt": "Detalles editoriales en oro y perlas",
-            "variant": "top-premium-xv-ximena",
             "height": "screen"
         },
         {
@@ -314,9 +306,7 @@
         "microcopy": "Abre Tu Invitación",
         "variant": "editorial",
         "closedPalette": {
-            "primary": "#D4A5A5",
-            "accent": "#5E4B4B",
-            "background": "#FBEDED"
+            "accent": "surfaceDark"
         }
     },
     "sharing": {

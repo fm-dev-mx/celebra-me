@@ -4,44 +4,27 @@
     "title": "Demo - Sofía & Alejandro",
     "description": "Demo oficial de boda con dirección editorial premium para Sofía y Alejandro.",
     "theme": {
-        "primaryColor": "#F7F3EE",
-        "accentColor": "#C9A46A",
-        "fontFamily": "serif",
         "preset": "jewelry-box-wedding"
     },
     "sectionStyles": {
         "quote": {
-            "variant": "jewelry-box-wedding",
             "fontStyle": "script",
             "animation": "fade"
         },
         "countdown": {
-            "variant": "jewelry-box-wedding",
             "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
-            "variant": "jewelry-box-wedding",
             "mapStyle": "minimal",
             "showFlourishes": true
         },
-        "gifts": {
-            "variant": "jewelry-box-wedding"
-        },
-        "itinerary": {
-            "variant": "jewelry-box-wedding"
-        },
-        "gallery": {
-            "variant": "jewelry-box-wedding"
-        },
-        "thankYou": {
-            "variant": "jewelry-box-wedding"
-        },
-        "family": {
-            "variant": "jewelry-box-wedding"
-        },
+        "gifts": {},
+        "itinerary": {},
+        "gallery": {},
+        "thankYou": {},
+        "family": {},
         "rsvp": {
-            "variant": "jewelry-box-wedding",
             "labels": {
                 "name": "Nombres de los invitados *",
                 "guestCount": "Pases solicitados",
@@ -54,8 +37,7 @@
         "secondaryName": "Alejandro",
         "label": "¡Nos Casamos!",
         "date": "2026-12-12T18:00:00.000Z",
-        "backgroundImage": "hero",
-        "variant": "jewelry-box-wedding"
+        "backgroundImage": "hero"
     },
     "location": {
         "venueName": "Ex Hacienda de Mendocinas",
@@ -254,19 +236,13 @@
         "footerText": "Estamos ansiosos de compartir este día con ustedes."
     },
     "envelope": {
-        "variant": "jewelry-box-wedding",
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
         "documentLabel": "M & S",
         "stampText": "BODA REAL",
         "stampYear": "2026",
-        "microcopy": "Toca para abrir nuestra invitación",
-        "closedPalette": {
-            "primary": "#FEFCF9",
-            "accent": "#E5C387",
-            "background": "#FDFBF7"
-        }
+        "microcopy": "Toca para abrir nuestra invitación"
     },
     "navigation": [
         { "label": "Historia", "href": "#quote-section" },

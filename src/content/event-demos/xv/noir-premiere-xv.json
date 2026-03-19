@@ -4,39 +4,24 @@
     "title": "Noir Premiere XV",
     "description": "Una invitacion editorial donde la elegancia noir y el brillo dorado presentan una noche de quince anos con presencia cinematografica.",
     "theme": {
-        "primaryColor": "#0D0D0D",
-        "accentColor": "#D4AF37",
-        "fontFamily": "serif",
-        "preset": "jewelry-box"
+        "primaryColor": "surfaceDark",
+        "preset": "editorial"
     },
     "sectionStyles": {
         "countdown": {
-            "variant": "editorial",
             "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
-            "variant": "editorial",
             "mapStyle": "dark",
             "showFlourishes": true
         },
-        "family": {
-            "variant": "editorial"
-        },
-        "gallery": {
-            "variant": "editorial"
-        },
-        "gifts": {
-            "variant": "editorial"
-        },
-        "itinerary": {
-            "variant": "editorial"
-        },
-        "thankYou": {
-            "variant": "editorial"
-        },
+        "family": {},
+        "gallery": {},
+        "gifts": {},
+        "itinerary": {},
+        "thankYou": {},
         "rsvp": {
-            "variant": "editorial",
             "labels": {
                 "name": "Tu nombre en la lista *",
                 "guestCount": "Numero de acompanantes",
@@ -49,8 +34,7 @@
         "label": "Edicion Editorial",
         "date": "2026-09-19T20:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait",
-        "variant": "editorial"
+        "portrait": "portrait"
     },
     "location": {
         "venueName": "Maison Lumiere Eventos",
@@ -233,7 +217,6 @@
             "type": "interlude",
             "image": "interlude02",
             "alt": "Seda dorada fluyendo en un ambiente noir",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -244,7 +227,6 @@
             "type": "interlude",
             "image": "interlude03",
             "alt": "Tiara y texturas sobre terciopelo oscuro",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -255,7 +237,6 @@
             "type": "interlude",
             "image": "interlude01",
             "alt": "Detalle editorial de alta moda",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -266,7 +247,6 @@
             "type": "interlude",
             "image": "gallery09",
             "alt": "Brillo dorado cinematografico",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -277,7 +257,6 @@
             "type": "interlude",
             "image": "gallery10",
             "alt": "Explosion de destellos en la pista",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -288,7 +267,6 @@
             "type": "interlude",
             "image": "gallery15",
             "alt": "Detalles de perlas, oro y textura editorial",
-            "variant": "editorial",
             "height": "screen"
         },
         {
@@ -312,11 +290,9 @@
         "sealStyle": "wax",
         "sealIcon": "flower",
         "microcopy": "Abre Tu Invitacion",
-        "variant": "editorial",
         "closedPalette": {
-            "primary": "#D4AF37",
-            "accent": "#0D0D0D",
-            "background": "#F9F6F2"
+            "primary": "actionAccent",
+            "accent": "surfaceDark"
         }
     },
     "sharing": {

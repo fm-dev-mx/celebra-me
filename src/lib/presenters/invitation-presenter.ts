@@ -20,8 +20,9 @@ export interface InvitationPagePresenter {
 	};
 	wrapper: {
 		className: string;
-		style: string;
 		showEnvelope: boolean;
+		dataAttributes: Record<string, string>;
+		scopedStyles: string;
 	};
 	header: {
 		eventName: string;
@@ -78,25 +79,43 @@ function resolveHeroImageSrc(hero: InvitationViewModel['hero']): string {
 		: hero.backgroundImage.src.src;
 }
 
-function buildWrapperStyle(
+function buildWrapperData(
 	theme: InvitationViewModel['theme'],
 	envelope: InvitationViewModel['envelope'],
-): string {
-	const variables = {
-		'color-primary': theme.primaryColor,
-		'color-primary-rgb': theme.colors.primaryRgb,
-		'color-accent': theme.accentColor || '#333',
-		'color-accent-rgb': theme.colors.accentRgb,
-		'env-bg':
-			envelope.data?.colors.background ||
-			'radial-gradient(circle at center, #1b2735 0%, #090a0f 100%)',
-		'env-primary': envelope.data?.colors.primary || theme.primaryColor,
-		'env-accent': envelope.data?.colors.accent || theme.accentColor || '#d4af37',
+	eventSlug: string,
+): { dataAttributes: Record<string, string>; scopedStyles: string } {
+	const dataAttributes: Record<string, string> = {
+		'data-theme-preset': theme.preset || 'base',
+		'data-event-slug': eventSlug,
 	};
 
-	return Object.entries(variables)
-		.map(([key, value]) => `--${key}: ${value}`)
-		.join('; ');
+	const overrides: Record<string, string> = {
+		'--color-surface-primary-override': theme.primaryColor,
+		'--color-surface-primary-rgb-override': theme.colors.primaryRgb,
+	};
+
+	if (theme.accentColor) {
+		overrides['--color-action-accent-override'] = theme.accentColor;
+		overrides['--color-action-accent-rgb-override'] = theme.colors.accentRgb;
+	}
+
+	if (envelope.enabled && envelope.data) {
+		const { colors } = envelope.data;
+		if (colors.background) overrides['--env-bg'] = colors.background;
+		if (colors.primary) overrides['--env-primary'] = colors.primary;
+		if (colors.accent) overrides['--env-accent'] = colors.accent;
+
+		dataAttributes['data-env-state'] = 'ready';
+		dataAttributes['data-env-variant'] = envelope.data.variant || theme.preset || 'base';
+	}
+
+	const overrideStyles = Object.entries(overrides)
+		.map(([key, value]) => `${key}: ${value};`)
+		.join(' ');
+
+	const scopedStyles = `[data-event-slug="${eventSlug}"] { ${overrideStyles} }`;
+
+	return { dataAttributes, scopedStyles };
 }
 
 export function presentInvitationPage(input: {
@@ -118,7 +137,7 @@ export function presentInvitationPage(input: {
 			title: guestName ? `Invitación para ${guestName}` : viewModel.title,
 			description: viewModel.description || '',
 			image: resolveHeroImageSrc(hero),
-			className: input.slug === 'ximena-meza-trasvina' ? 'layout--ximena-premium' : undefined,
+			className: hero.layoutVariant ? `layout--${hero.layoutVariant}` : undefined,
 		},
 		wrapper: {
 			className: [
@@ -129,7 +148,7 @@ export function presentInvitationPage(input: {
 			]
 				.filter(Boolean)
 				.join(' '),
-			style: buildWrapperStyle(theme, envelope),
+			...buildWrapperData(theme, envelope, viewModel.id),
 			showEnvelope,
 		},
 		header: {
@@ -174,7 +193,7 @@ export function presentInvitationPage(input: {
 				}
 			: undefined,
 		footer: {
-			eventSlug: viewModel.id,
+			eventSlug: input.slug,
 			showEnvelope,
 		},
 		music: music

@@ -11,4 +11,5 @@ export const heroSchema = z.object({
 	backgroundImage: AssetSchema,
 	portrait: AssetSchema.optional(),
 	variant: z.enum(THEME_PRESETS).optional(),
+	layoutVariant: z.string().optional(),
 });
