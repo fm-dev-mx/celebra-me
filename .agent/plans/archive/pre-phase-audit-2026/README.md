@@ -29,7 +29,7 @@ Architecture, BFF Decoupling).
 > migration path in [`docs/core/content-schema.md`](../../docs/core/content-schema.md).
 >
 > **Phase 04 Outcome:** Invitation page derivation now flows through
-> [`src/lib/presenters/invitation-presenter.ts`](../../src/lib/presenters/invitation-presenter.ts)
+> [`src/lib/invitation/page-data.ts`](../../src/lib/invitation/page-data.ts)
 > and [`src/components/invitation/InvitationSections.astro`](../../src/components/invitation/InvitationSections.astro),
 > reducing [`src/pages/[eventType]/[slug].astro`](../../src/pages/[eventType]/[slug].astro) from
 > 316 LOC to 129 LOC. Verification passed with `pnpm exec astro check`, `npx astro build`, and

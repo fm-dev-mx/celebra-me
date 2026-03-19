@@ -51,7 +51,7 @@ This audit evaluates the codebase against the project's core architectural pilla
 - **Minimalist Solution (MVI)**:
   - **Presenter Layer**: Move all presentation-specific logic (CSS variable mapping, section
     visibility logic, guest context normalization) into a
-    `src/lib/presenters/invitation-presenter.ts`.
+    `src/lib/invitation/page-data.ts`.
   - **Dumb Pages**: Refactor `.astro` pages to simply call the presenter and pass the resulting
     "View Model" to components.
 

@@ -11,7 +11,7 @@ fulfilling the BFF (Backend-for-Frontend) architecture pattern.
 ## 🛠️ Step-by-Step Implementation
 
 1.  **Define Presenter Blueprint**:
-    - Create `src/lib/presenters/invitation-presenter.ts`.
+    - Create `src/lib/invitation/page-data.ts`.
     - Extract logic for:
       - CSS variable mapping.
       - Section visibility rules (Render Plan).
@@ -27,7 +27,7 @@ fulfilling the BFF (Backend-for-Frontend) architecture pattern.
 
 ## Implemented
 
-- Added `src/lib/presenters/invitation-presenter.ts` as the route-facing presenter that composes the
+- Added `src/lib/invitation/page-data.ts` as the route-facing invitation assembly module that composes the
   existing adapter, render plan, guest context, and theme token derivation into a typed page-ready
   contract.
 - Added `src/components/invitation/InvitationSections.astro` to move section switching/render-plan

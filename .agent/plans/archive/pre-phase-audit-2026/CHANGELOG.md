@@ -75,7 +75,7 @@
 
 ### Changed
 
-- Implemented the Phase 04 presenter layer with `src/lib/presenters/invitation-presenter.ts` and
+- Implemented the Phase 04 invitation assembly layer with `src/lib/invitation/page-data.ts` and
   `src/components/invitation/InvitationSections.astro`.
 - Refactored `src/pages/[eventType]/[slug].astro` into route orchestration plus presenter-driven
   rendering, removing inline CSS token derivation from the page.
