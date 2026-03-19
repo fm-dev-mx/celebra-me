@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-03-17 **Next Review:** 2026-04-16 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-19 **Next Review:** 2026-04-18 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -71,19 +71,14 @@
 - [auto-fix.md](../.agent/workflows/auto-fix.md)
 - [error-remediation.md](../.agent/workflows/error-remediation.md)
 - [gatekeeper-commit.md](../.agent/workflows/gatekeeper-commit.md)
-- [prompt-to-workflow.md](../.agent/workflows/prompt-to-workflow.md)
 - [system-doc-alignment.md](../.agent/workflows/system-doc-alignment.md)
 - [theme-architecture-governance.md](../.agent/workflows/theme-architecture-governance.md)
 
 ### Active Plans
 
-- [align-system-docs](../.agent/plans/align-system-docs/README.md) - `COMPLETED`, top-level plan
-  pending archive handoff after the prior system documentation alignment run.
-- [system-doc-alignment-resync-2026-03](../.agent/plans/system-doc-alignment-resync-2026-03/README.md) -
-  `COMPLETED`, residual dashboard resync plan that corrected post-run inventory and status drift.
-- [system-doc-semantic-alignment-2026-03](../.agent/plans/system-doc-semantic-alignment-2026-03/README.md) -
-  `COMPLETED`, semantic documentation alignment plan covering evergreen docs, dashboard state, and
-  historical framing safeguards.
+- [audit-SR-2026-03](../.agent/plans/audit-SR-2026-03/README.md) - `IN-PROGRESS`, strategic audit plan with one remaining naming/alignment phase.
+- [fix-demo-cumple-colors](../.agent/plans/fix-demo-cumple-colors/README.md) - `IN-PROGRESS`, visual validation handoff after the invitation assembly simplification.
+- [project-simplification](../.agent/plans/project-simplification/README.md) - `IN-PROGRESS`, active simplification and de-engineering implementation record.
 
 ### Archived Plans
 
@@ -129,10 +124,7 @@
 ## Next Review Queue
 
 1. Keep `docs/DOC_STATUS.md` synchronized whenever plans move between active and archive.
-2. Archive `align-system-docs` once owner-approved archival handoff is ready.
-3. Archive `system-doc-alignment-resync-2026-03` once owner-approved archival handoff is ready.
-4. Archive `system-doc-semantic-alignment-2026-03` once owner-approved archival handoff is ready.
-5. Re-verify plan inventory whenever new top-level plan directories are created under
+2. Re-verify plan inventory whenever new top-level plan directories are created under
    `.agent/plans/`.
-6. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
+3. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
