@@ -36,8 +36,12 @@ describe('presentInvitationPage', () => {
 		expect(presenter.layout.title).toBe('Invitación para Mariana Soto');
 		expect(presenter.layout.className).toBe('layout--ximena-premium');
 		expect(presenter.wrapper.className).toContain('event-theme-wrapper--sealed');
-		expect(presenter.wrapper.style).toContain('--color-primary:');
-		expect(presenter.wrapper.style).toContain('--env-bg:');
+		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('top-premium-floral');
+		expect(presenter.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
+		expect(presenter.wrapper.dataAttributes['data-env-state']).toBe('ready');
+		expect(presenter.wrapper.scopedStyles).toContain(
+			'[data-event-slug="ximena-meza-trasvina"]',
+		);
 		expect(presenter.hero.guestName).toBe('Mariana Soto');
 		expect(presenter.envelope?.guestName).toBe('Mariana Soto');
 		expect(presenter.rsvp?.guestCap).toBe(4);
