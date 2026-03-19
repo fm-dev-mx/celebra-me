@@ -1,6 +1,7 @@
 import { z } from 'astro:content';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { VALID_COLOR_TOKENS } from '@/lib/theme/color-tokens';
 
 const secureUrlSchema = z
 	.string()
@@ -35,9 +36,20 @@ export const AssetSchema = z.preprocess(
 
 export type ContentAssetSource = z.infer<typeof AssetSchema>;
 
+const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
+
+export const ColorTokenSchema = z
+	.string()
+	.refine((value) => hexRegex.test(value) || VALID_COLOR_TOKENS.includes(value), {
+		message: 'Must be a valid hex color (#RGB or #RRGGBB) or a recognized semantic token.',
+	})
+	.describe(
+		'A hex color (starting with #) or a semantic token like "primary", "accent", "background"',
+	);
+
 export const themeSchema = z.object({
-	primaryColor: z.string().regex(/^#/, 'Must be a hex color'),
-	accentColor: z.string().regex(/^#/, 'Must be a hex color').optional(),
+	primaryColor: ColorTokenSchema.optional(),
+	accentColor: ColorTokenSchema.optional(),
 	fontFamily: z.enum(['serif', 'sans']).default('serif'),
 	preset: z.enum(THEME_PRESETS).optional(),
 });

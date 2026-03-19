@@ -33,6 +33,14 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
 
+	const emailTheme = {
+		primary: '#c5a059',
+		text: '#333333',
+		border: '#eeeeee',
+		background: '#fdfcfb',
+		muted: '#999999',
+	};
+
 	const mailOptions = {
 		from: `"Celebra-me Concierge" <${user}>`,
 		to: recipient,
@@ -53,16 +61,16 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 			Enviado desde el sistema Concierge de Celebra-me
 		`,
 		html: `
-			<div style="font-family: sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-				<h2 style="color: #c5a059; border-bottom: 2px solid #fdfcfb; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
+			<div style="font-family: sans-serif; color: ${emailTheme.text}; max-width: 600px; border: 1px solid ${emailTheme.border}; padding: 20px; border-radius: 8px;">
+				<h2 style="color: ${emailTheme.primary}; border-bottom: 2px solid ${emailTheme.background}; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
 				<p><strong>De:</strong> ${data.name} (${data.email})</p>
 				<p><strong>Teléfono:</strong> ${data.phone || 'N/A'}</p>
 				<p><strong>Tipo de Evento:</strong> ${data.type || 'General'}</p>
-				<div style="background: #fdfcfb; padding: 15px; border-radius: 4px; border-left: 4px solid #c5a059; margin: 20px 0;">
+				<div style="background: ${emailTheme.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${emailTheme.primary}; margin: 20px 0;">
 					<p style="margin: 0; font-style: italic;">"${data.message}"</p>
 				</div>
-				<hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-				<p style="font-size: 12px; color: #999;">Esta es una notificación automática de Celebra-me.com</p>
+				<hr style="border: 0; border-top: 1px solid ${emailTheme.border}; margin: 20px 0;" />
+				<p style="font-size: 12px; color: ${emailTheme.muted};">Esta es una notificación automática de Celebra-me.com</p>
 			</div>
 		`,
 	};
