@@ -347,12 +347,6 @@ function inferCommitType(fileFacts) {
 	return 'feat';
 }
 
-function statusAwareText(status, addText, modifyText, deleteText) {
-	if (status === 'A') return addText;
-	if (status === 'D') return deleteText;
-	return modifyText;
-}
-
 function buildRenameDescription(baseText, oldPath) {
 	if (!oldPath) return `rename implementation and ${baseText}`;
 	return `rename from ${oldPath} and ${baseText}`;
@@ -369,12 +363,30 @@ function buildFileBulletDescription(fileFact, options = {}) {
 		return buildRenameDescription(renamedBase, fact.oldPath);
 	}
 
-	return statusAwareText(
-		fact.status,
-		`Implement ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
-		`Align ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
-		`Remove ${normalizedStem || 'entity'} to/for ${options.dominantChange?.target || 'architectural purpose'}`,
-	);
+	const rawVerb = pickChangeVerb({
+		kind: normalizeChangeKind(fact.status),
+		area: fact.area,
+		clusterKind: options.dominantChange?.kind || 'generic',
+	});
+	const verb = rawVerb.charAt(0).toUpperCase() + rawVerb.slice(1);
+
+	let purpose = options.dominantChange?.target || 'architectural purpose';
+	const purposeLower = purpose.toLowerCase();
+	const stemLower = normalizedStem.toLowerCase();
+
+	if (purposeLower === stemLower || purposeLower.includes(stemLower)) {
+		const fallbackPurposes = {
+			docs: 'governance alignment',
+			test: 'workflow coverage',
+			plan: 'architectural planning',
+			style: 'theme consistency',
+			config: 'system stabilization',
+			script: 'automation hardening',
+		};
+		purpose = fallbackPurposes[fact.area] || 'architectural consistency';
+	}
+
+	return `${verb} ${normalizedStem || 'entity'} to/for ${purpose}`;
 }
 
 function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
@@ -392,7 +404,7 @@ function buildDeterministicSubject({ scope, fileFacts, dominantChange }) {
 	const prefixLength = `${commitType}(${scope}): `.length;
 	const maxSubjectLength = Math.max(10, 130 - prefixLength);
 	if (
-		scope === 'gov-plans-archive' &&
+		scope?.startsWith('gov-plans-archive') &&
 		clusterKind === 'plan' &&
 		dominantKind !== 'delete' &&
 		dominantKind !== 'rename'

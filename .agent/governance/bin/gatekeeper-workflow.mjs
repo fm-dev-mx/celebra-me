@@ -574,7 +574,7 @@ function buildAiTitlePayload(scaffold, policy, diffEntries) {
 			concreteTargetRequired: true,
 			noProcessLanguage: true,
 			instructions:
-				'Read rawDiff. Output must include "subject" string and an array of "bullets" objects. Each bullet must have "path" and "description".',
+				'Read rawDiff. Output must include "subject" string and an array of "bullets" objects. Each bullet must have "path" and "description". Bullet description MUST strictly follow the formula "[Technical Action Verb] [Specific Entity Modified] to/for [Architectural Purpose]" where Purpose is an actual high-level reason derived from the diff, not just repeating the entity name.',
 		},
 	};
 }
