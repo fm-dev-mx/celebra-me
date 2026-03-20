@@ -19,6 +19,7 @@ import {
 	normalizePath,
 } from './commit-message-analysis.mjs';
 import {
+	buildPlannedHeader,
 	buildPlannedSubject,
 	discoverCommitPlanning,
 	loadValidatedCommitPlan,
@@ -390,7 +391,14 @@ function buildCommitScaffold(split, options = {}) {
 	if (!split.commitUnit) throw new Error('Planned commit scaffold requires commitUnit.');
 	const fileFacts = collectFileFacts(files, diffEntries);
 	const subject = buildPlannedSubject(split.commitUnit);
-	const header = `${split.commitUnit.type}(${split.commitUnit.domain}): ${subject}`;
+	const canonicalHeader = buildPlannedHeader(split.commitUnit);
+	const plannedHeader = String(split.commitUnit.messagePreview?.header || '').trim();
+	if (plannedHeader && plannedHeader !== canonicalHeader) {
+		throw new Error(
+			`Commit unit "${split.commitUnit.id}" defines a non-canonical messagePreview.header. Expected "${canonicalHeader}".`,
+		);
+	}
+	const header = plannedHeader || canonicalHeader;
 	if (header.length > HEADER_MAX_LENGTH) {
 		throw new Error(
 			`Commit header exceeds ${HEADER_MAX_LENGTH} characters for unit "${split.commitUnit.id}".`,
@@ -540,8 +548,7 @@ function stageCommand(args) {
 		fail(`Session is invalid (${validation.reason}). Re-run inspect.`);
 	}
 	const currentEntries = assertWorkingTreeMatchesSession(session);
-	const sessionAgeMinutes =
-		(Date.now() - new Date(session.createdAt).getTime()) / 60000;
+	const sessionAgeMinutes = (Date.now() - new Date(session.createdAt).getTime()) / 60000;
 	if (sessionAgeMinutes > 5) {
 		console.log(
 			`⚠️  Session is ${Math.round(sessionAgeMinutes)} minutes old. Working tree may have drifted.`,

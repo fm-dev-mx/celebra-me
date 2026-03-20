@@ -74,6 +74,27 @@ function materializeUnit(plan, unit, match) {
 	};
 }
 
+function unitReadyForGatekeeper(unit) {
+	return ['ready', 'revised-after-gatekeeper', 'completed'].includes(
+		String(unit?.status || '').trim(),
+	);
+}
+
+function blockingUnitStatuses(plan) {
+	return (plan?.units || [])
+		.filter((unit) => unit.status !== 'completed')
+		.filter((unit) => !unitReadyForGatekeeper(unit))
+		.map((unit) => `${unit.id} (${unit.status})`);
+}
+
+function planReadyForGatekeeper(plan) {
+	const review = plan?.commitStrategyReview;
+	return (
+		Boolean(String(review?.readyForGatekeeperAt || '').trim()) &&
+		blockingUnitStatuses(plan).length === 0
+	);
+}
+
 function discoverCommitPlanning({ repoRootPath, diffEntries = [], planId }) {
 	const normalizedEntries = normalizeDiffEntries(diffEntries);
 	if (!planId) {
@@ -114,10 +135,26 @@ function discoverCommitPlanning({ repoRootPath, diffEntries = [], planId }) {
 			errors: loadedPlan.errors || [],
 		};
 	}
+	if (!planReadyForGatekeeper(loadedPlan.plan)) {
+		const blockingUnits = blockingUnitStatuses(loadedPlan.plan);
+		return {
+			status: 'commit_strategy_not_ready',
+			planningMode: 'blocked',
+			planId,
+			planFile: loadedPlan.plan.file,
+			matchedUnits: [],
+			recommendedUnit: null,
+			ambiguousUnits: [],
+			unmatchedFiles: normalizedEntries.map((entry) => entry.path),
+			errors: [
+				blockingUnits.length
+					? `Plan "${planId}" is not ready for gatekeeper. Promote active units to ready or revised-after-gatekeeper before rerunning inspect (blocking: ${blockingUnits.join(', ')}).`
+					: `Plan "${planId}" has not completed its final commit-strategy review. Update commitStrategyReview and rerun inspect.`,
+			],
+		};
+	}
 
-	const pendingUnits = loadedPlan.plan.units.filter(
-		(unit) => unit.status !== 'completed',
-	);
+	const pendingUnits = loadedPlan.plan.units.filter((unit) => unit.status !== 'completed');
 	const matches = pendingUnits
 		.map((unit) => ({ unit, match: matchDiffEntriesToUnit(unit, normalizedEntries) }))
 		.filter((entry) => entry.match.ok)
@@ -172,9 +209,14 @@ function buildPlannedSubject(unit) {
 	return `${unit.subject.verb} ${unit.subject.target}`.trim();
 }
 
+function buildPlannedHeader(unit) {
+	return `${unit.type}(${unit.domain}): ${buildPlannedSubject(unit)}`;
+}
+
 export {
 	DEFAULT_COMMIT_MAP,
 	DEFAULT_PLAN_ROOT,
+	buildPlannedHeader,
 	buildPlannedSubject,
 	discoverCommitPlanning,
 	listCommitPlanIds,

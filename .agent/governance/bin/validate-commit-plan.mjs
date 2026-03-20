@@ -22,7 +22,17 @@ const ALLOWED_TYPES = new Set([
 	'revert',
 ]);
 const ALLOWED_CORRECTION_POLICIES = new Set(['absorb-compatible']);
+const ALLOWED_UNIT_STATUSES = new Set([
+	'planned',
+	'draft',
+	'locked',
+	'ready',
+	'revised-after-gatekeeper',
+	'completed',
+]);
 const MAX_TARGET_LENGTH = 50;
+const HEADER_MAX_LENGTH = 130;
+const BODY_LINE_MAX_LENGTH = 140;
 const GENERIC_TARGETS = new Set([
 	'change',
 	'changes',
@@ -51,6 +61,15 @@ function normalizePatternList(values) {
 	return (values || []).map((value) => normalizePath(value)).filter(Boolean);
 }
 
+function buildCanonicalCommitHeader(unit) {
+	const subject = `${unit.subject.verb} ${unit.subject.target}`.trim();
+	return `${unit.type}(${unit.domain}): ${subject}`;
+}
+
+function unitStatusReadyForGatekeeper(status) {
+	return ['ready', 'revised-after-gatekeeper', 'completed'].includes(String(status || '').trim());
+}
+
 function normalizeUnit(rawUnit = {}) {
 	const subject = {
 		verb: String(rawUnit.subject?.verb || '')
@@ -73,6 +92,9 @@ function normalizeUnit(rawUnit = {}) {
 		include,
 		allowRelated,
 		correctionPolicy: String(rawUnit.correctionPolicy || '').trim(),
+		messagePreview: normalizeMessagePreview(
+			rawUnit.messagePreview || rawUnit.commitMessage || null,
+		),
 		hash: sha256(
 			JSON.stringify({
 				id: rawUnit.id,
@@ -84,9 +106,29 @@ function normalizeUnit(rawUnit = {}) {
 				include,
 				allowRelated,
 				correctionPolicy: rawUnit.correctionPolicy,
+				messagePreview: rawUnit.messagePreview || rawUnit.commitMessage || null,
 			}),
 		),
 	};
+}
+
+function normalizeMessagePreview(rawPreview) {
+	if (!rawPreview) return null;
+	const header = String(rawPreview.header || '').trim();
+	const body = Array.isArray(rawPreview.body)
+		? rawPreview.body.map((entry) => String(entry || '').trim()).filter(Boolean)
+		: [];
+	return {
+		header,
+		body,
+	};
+}
+
+function isIsoDateLike(value) {
+	const text = String(value || '').trim();
+	if (!text) return false;
+	const timestamp = Date.parse(text);
+	return !Number.isNaN(timestamp);
 }
 
 function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes) {
@@ -105,6 +147,11 @@ function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes) {
 	if (!ALLOWED_TYPES.has(unit.type)) {
 		errors.push(
 			`units[${unitIndex}].type must be one of: ${Array.from(ALLOWED_TYPES).join(', ')}`,
+		);
+	}
+	if (!ALLOWED_UNIT_STATUSES.has(unit.status)) {
+		errors.push(
+			`units[${unitIndex}].status must be one of: ${Array.from(ALLOWED_UNIT_STATUSES).join(', ')}`,
 		);
 	}
 	if (!unit.subject.verb) errors.push(`units[${unitIndex}].subject.verb is required`);
@@ -130,6 +177,32 @@ function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes) {
 			`units[${unitIndex}].correctionPolicy must be one of: ${Array.from(ALLOWED_CORRECTION_POLICIES).join(', ')}`,
 		);
 	}
+	if (unit.messagePreview) {
+		if (!unit.messagePreview.header) {
+			errors.push(
+				`units[${unitIndex}].messagePreview.header must be non-empty when provided`,
+			);
+		}
+		if (unit.messagePreview.header.length > HEADER_MAX_LENGTH) {
+			errors.push(
+				`units[${unitIndex}].messagePreview.header exceeds ${HEADER_MAX_LENGTH} characters`,
+			);
+		}
+		for (let bodyIndex = 0; bodyIndex < unit.messagePreview.body.length; bodyIndex += 1) {
+			const line = unit.messagePreview.body[bodyIndex];
+			if (line.length > BODY_LINE_MAX_LENGTH) {
+				errors.push(
+					`units[${unitIndex}].messagePreview.body[${bodyIndex}] exceeds ${BODY_LINE_MAX_LENGTH} characters`,
+				);
+			}
+		}
+		const canonicalHeader = buildCanonicalCommitHeader(unit);
+		if (unit.messagePreview.header && unit.messagePreview.header !== canonicalHeader) {
+			errors.push(
+				`units[${unitIndex}].messagePreview.header must exactly equal "${canonicalHeader}"`,
+			);
+		}
+	}
 	if (duplicateIncludes.length) {
 		errors.push(
 			`units[${unitIndex}].include duplicates patterns used by another unit: ${duplicateIncludes.join(', ')}`,
@@ -153,6 +226,43 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest }) {
 	if (String(rawPlan.mode || '').trim() !== 'planned-commits') {
 		errors.push('commit-map.json mode must be "planned-commits"');
 	}
+	const planIsCompleted =
+		String(manifest.status || '')
+			.trim()
+			.toUpperCase() === 'COMPLETED';
+	const review = rawPlan.commitStrategyReview || null;
+	if (!planIsCompleted) {
+		if (!review || typeof review !== 'object') {
+			errors.push(
+				'commit-map.json must define commitStrategyReview for plans whose manifest status is not COMPLETED',
+			);
+		} else {
+			if (!isIsoDateLike(review.draftedAt)) {
+				errors.push('commitStrategyReview.draftedAt must be a valid ISO timestamp');
+			}
+			if (review.reviewedAt && !isIsoDateLike(review.reviewedAt)) {
+				errors.push('commitStrategyReview.reviewedAt must be a valid ISO timestamp');
+			}
+			if (review.readyForGatekeeperAt && !isIsoDateLike(review.readyForGatekeeperAt)) {
+				errors.push(
+					'commitStrategyReview.readyForGatekeeperAt must be a valid ISO timestamp',
+				);
+			}
+			if (
+				(review.reviewedAt || review.readyForGatekeeperAt) &&
+				!String(review.notes || '').trim()
+			) {
+				errors.push(
+					'commitStrategyReview.notes is required once the final commit review has started',
+				);
+			}
+			if (review.readyForGatekeeperAt && !review.reviewedAt) {
+				errors.push(
+					'commitStrategyReview.reviewedAt is required before readyForGatekeeperAt can be set',
+				);
+			}
+		}
+	}
 	if (!Array.isArray(rawPlan.units) || rawPlan.units.length === 0) {
 		errors.push('commit-map.json must define at least one unit');
 	}
@@ -172,6 +282,18 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest }) {
 		errors.push(...validateUnit(unit, manifestPhaseIds, index, duplicateIncludes));
 	}
 
+	if (!planIsCompleted && review?.readyForGatekeeperAt) {
+		const blockingUnits = normalizedUnits
+			.filter((unit) => unit.status !== 'completed')
+			.filter((unit) => !unitStatusReadyForGatekeeper(unit.status))
+			.map((unit) => `${unit.id} (${unit.status})`);
+		if (blockingUnits.length) {
+			errors.push(
+				`commitStrategyReview.readyForGatekeeperAt requires every active unit to be ready, revised-after-gatekeeper, or completed (blocking: ${blockingUnits.join(', ')})`,
+			);
+		}
+	}
+
 	errors.push(...detectPatternSubsumption(normalizedUnits));
 
 	return {
@@ -185,6 +307,8 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest }) {
 					file: resolve(planDir, DEFAULT_COMMIT_MAP),
 					manifestFile: resolve(planDir, DEFAULT_MANIFEST),
 					mode: 'planned-commits',
+					commitStrategyReview: review,
+					manifestStatus: String(manifest.status || '').trim(),
 					units: normalizedUnits,
 				},
 	};
@@ -197,12 +321,8 @@ function detectPatternSubsumption(units) {
 		for (let j = i + 1; j < activeUnits.length; j += 1) {
 			const unitA = activeUnits[i];
 			const unitB = activeUnits[j];
-			const aSubsumesB = unitB.include.some((pattern) =>
-				matchAny(pattern, unitA.include),
-			);
-			const bSubsumesA = unitA.include.some((pattern) =>
-				matchAny(pattern, unitB.include),
-			);
+			const aSubsumesB = unitB.include.some((pattern) => matchAny(pattern, unitA.include));
+			const bSubsumesA = unitA.include.some((pattern) => matchAny(pattern, unitB.include));
 			if (aSubsumesB || bSubsumesA) {
 				errors.push(
 					`units "${unitA.id}" and "${unitB.id}" have semantically overlapping include patterns`,
@@ -298,4 +418,5 @@ export {
 	loadValidatedCommitPlan,
 	normalizeUnit,
 	validateCommitPlanDocument,
+	buildCanonicalCommitHeader,
 };
