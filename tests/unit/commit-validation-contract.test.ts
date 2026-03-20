@@ -35,22 +35,6 @@ function lintMessage(
 function buildEnv(files: string[]) {
 	return {
 		COMMITLINT_STAGED_FILES: files.join('\n'),
-		COMMITLINT_DIFF_JSON: JSON.stringify(
-			files.map((file) => ({
-				path: file,
-				status: 'M',
-				area: 'source',
-			})),
-		),
-		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify([
-			{
-				key: 'src/lib/invitation/',
-				files,
-				kind: 'source-group',
-			},
-		]),
-		COMMITLINT_DOMINANT_CHANGE_KIND: 'modify',
-		COMMITLINT_DOMINANT_AREA: 'source',
 		COMMITLINT_PLAN_ID: 'commit-workflow-fixture',
 		COMMITLINT_UNIT_ID: 'retire-invitation-layers',
 		COMMITLINT_UNIT_VERB: 'retire',
@@ -71,8 +55,12 @@ describe('Commit validation contract', () => {
 			`
 refactor(core): retire invitation presenter layers
 
-- src/lib/invitation/page-data.ts: Align page data to collapse presenter indirection into page-data assembly
-- src/lib/presenters/invitation-presenter.ts: Remove invitation presenter to collapse presenter indirection into page-data assembly
+- collapse presenter indirection into page-data assembly
+- keep route rendering aligned with the same refactor
+
+Files:
+- src/lib/invitation/page-data.ts
+- src/lib/presenters/invitation-presenter.ts
 			`,
 			buildEnv(files),
 		);
@@ -92,8 +80,12 @@ refactor(core): retire invitation presenter layers
 			`
 refactor(core): align invitation page data
 
-- src/lib/invitation/page-data.ts: Align page data to collapse presenter indirection into page-data assembly
-- src/lib/presenters/invitation-presenter.ts: Remove invitation presenter to collapse presenter indirection into page-data assembly
+- collapse presenter indirection into page-data assembly
+- keep route rendering aligned with the same refactor
+
+Files:
+- src/lib/invitation/page-data.ts
+- src/lib/presenters/invitation-presenter.ts
 
 Plan-Id: commit-workflow-fixture
 Commit-Unit: retire-invitation-layers
@@ -116,8 +108,12 @@ Commit-Unit: retire-invitation-layers
 			`
 refactor(auth): retire invitation presenter layers
 
-- src/lib/invitation/page-data.ts: Align page data to collapse presenter indirection into page-data assembly
-- src/lib/presenters/invitation-presenter.ts: Remove invitation presenter to collapse presenter indirection into page-data assembly
+- collapse presenter indirection into page-data assembly
+- keep route rendering aligned with the same refactor
+
+Files:
+- src/lib/invitation/page-data.ts
+- src/lib/presenters/invitation-presenter.ts
 
 Plan-Id: commit-workflow-fixture
 Commit-Unit: retire-invitation-layers
@@ -140,8 +136,12 @@ Commit-Unit: retire-invitation-layers
 			`
 refactor(core): retire invitation presenter layers
 
-- src/lib/invitation/page-data.ts: Align page data to collapse presenter indirection into page-data assembly
-- src/lib/presenters/invitation-presenter.ts: Remove invitation presenter to collapse presenter indirection into page-data assembly
+- collapse presenter indirection into page-data assembly
+- keep route rendering aligned with the same refactor
+
+Files:
+- src/lib/invitation/page-data.ts
+- src/lib/presenters/invitation-presenter.ts
 
 Plan-Id: commit-workflow-fixture
 Commit-Unit: retire-invitation-layers

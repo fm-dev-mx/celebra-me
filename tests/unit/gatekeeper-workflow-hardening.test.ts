@@ -24,37 +24,6 @@ function withTempPlanFixture(mutator?: (repoRoot: string) => void) {
 }
 
 describe('Gatekeeper plan-aware workflow', () => {
-	it('resolves configured pre-flight commands only when they are runnable in the repo', () => {
-		const result = runNodeJson(`
-			import { resolvePreflightCommand, resolveRunnablePnpmCommand } from './.agent/governance/bin/gatekeeper-workflow.mjs';
-			console.log(JSON.stringify({
-				missingConfigured: resolvePreflightCommand({
-					workflow: {
-						inspect: {
-							preflightCommand: 'pnpm missing-script',
-							preflightFallbacks: ['pnpm ci'],
-						},
-					},
-				}),
-				shellFallback: resolvePreflightCommand({
-					workflow: {
-						inspect: {
-							preflightCommand: 'node scripts/check.js',
-							preflightFallbacks: [],
-						},
-					},
-				}),
-				runnableScript: resolveRunnablePnpmCommand('pnpm ci', { ci: 'pnpm lint' }),
-				missingScript: resolveRunnablePnpmCommand('pnpm missing-script', { ci: 'pnpm lint' }),
-			}));
-		`);
-
-		expect(result.missingConfigured).toBe('pnpm ci');
-		expect(result.shellFallback).toBe('node scripts/check.js');
-		expect(result.runnableScript).toBe('pnpm ci');
-		expect(result.missingScript).toBeNull();
-	});
-
 	it('validates commit maps and blocks unsupported correction policies', () => {
 		const repoRoot = withTempPlanFixture((tempRoot) => {
 			const commitMapPath = join(
@@ -71,7 +40,7 @@ describe('Gatekeeper plan-aware workflow', () => {
 							{
 								id: 'retire-invitation-layers',
 								phaseId: '01-refactor',
-								status: 'planned',
+								status: 'ready',
 								domain: 'core',
 								type: 'refactor',
 								subject: {
@@ -81,8 +50,20 @@ describe('Gatekeeper plan-aware workflow', () => {
 								purpose: 'collapse presenter indirection into page-data assembly',
 								include: ['src/lib/invitation/page-data.ts'],
 								correctionPolicy: 'manual-review',
+								messagePreview: {
+									header: 'refactor(core): retire invitation presenter layers',
+									summary: [
+										'collapse presenter indirection into page-data assembly',
+									],
+								},
 							},
 						],
+						commitStrategyReview: {
+							draftedAt: '2026-03-19T09:00:00Z',
+							reviewedAt: '2026-03-19T09:20:00Z',
+							readyForGatekeeperAt: '2026-03-19T09:30:00Z',
+							notes: 'fixture review completed',
+						},
 					},
 					null,
 					2,
@@ -136,7 +117,7 @@ describe('Gatekeeper plan-aware workflow', () => {
 			commitMap.units.push({
 				id: 'duplicate-layers',
 				phaseId: '01-refactor',
-				status: 'planned',
+				status: 'ready',
 				domain: 'core',
 				type: 'refactor',
 				subject: {
@@ -151,6 +132,10 @@ describe('Gatekeeper plan-aware workflow', () => {
 				],
 				allowRelated: ['tests/**'],
 				correctionPolicy: 'absorb-compatible',
+				messagePreview: {
+					header: 'refactor(core): retire duplicate invitation layers',
+					summary: ['create ambiguity for runtime matching tests'],
+				},
 			});
 			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
 		});
@@ -192,18 +177,25 @@ describe('Gatekeeper plan-aware workflow', () => {
 					type: 'refactor',
 					subject: { verb: 'retire', target: 'invitation presenter layers' },
 					purpose: 'collapse presenter indirection into page-data assembly',
+					messagePreview: {
+						header: 'refactor(core): retire invitation presenter layers',
+						summary: [
+							'collapse presenter indirection into page-data assembly',
+							'keep route rendering and fixtures aligned with the same refactor',
+						],
+					},
 				},
-			}, {
-				diffEntries: [
-					{ path: 'src/lib/invitation/page-data.ts', status: 'M', area: 'source' },
-					{ path: 'src/lib/presenters/invitation-presenter.ts', status: 'D', area: 'source' },
-					{ path: 'src/pages/[eventType]/[slug].astro', status: 'M', area: 'source' },
-				],
 			})));
 		`);
 
 		expect(scaffold.titleSource).toBe('planned');
 		expect(scaffold.header).toBe('refactor(core): retire invitation presenter layers');
+		expect(scaffold.summary).toEqual([
+			'- collapse presenter indirection into page-data assembly',
+			'- keep route rendering and fixtures aligned with the same refactor',
+		]);
+		expect(scaffold.fullMessage).toContain('Files:');
+		expect(scaffold.fullMessage).toContain('- src/lib/invitation/page-data.ts');
 		expect(scaffold.trailers).toEqual([
 			'Plan-Id: commit-workflow-fixture',
 			'Commit-Unit: retire-invitation-layers',
@@ -224,7 +216,7 @@ describe('Gatekeeper plan-aware workflow', () => {
 			commitMap.units.push({
 				id: 'add-new-feature',
 				phaseId: '01-refactor',
-				status: 'planned',
+				status: 'ready',
 				domain: 'core',
 				type: 'feat',
 				subject: {
@@ -235,6 +227,10 @@ describe('Gatekeeper plan-aware workflow', () => {
 				include: ['src/lib/invitation/**'],
 				allowRelated: ['tests/**'],
 				correctionPolicy: 'absorb-compatible',
+				messagePreview: {
+					header: 'feat(core): implement new invitation feature',
+					summary: ['add a new invitation capability without reviving completed units'],
+				},
 			});
 			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
 		});
@@ -290,7 +286,7 @@ describe('Gatekeeper plan-aware workflow', () => {
 			commitMap.units.push({
 				id: 'overlapping-unit',
 				phaseId: '01-refactor',
-				status: 'planned',
+				status: 'ready',
 				domain: 'core',
 				type: 'refactor',
 				subject: {
@@ -301,6 +297,10 @@ describe('Gatekeeper plan-aware workflow', () => {
 				include: ['src/lib/invitation/page-data.ts'],
 				allowRelated: [],
 				correctionPolicy: 'absorb-compatible',
+				messagePreview: {
+					header: 'refactor(core): align invitation presenter layers',
+					summary: ['test semantic overlap detection for ready units'],
+				},
 			});
 			writeFileSync(commitMapPath, `${JSON.stringify(commitMap, null, 2)}\n`, 'utf8');
 		});

@@ -1,28 +1,39 @@
 {
-  "planId": "commit-workflow-fixture",
-  "mode": "planned-commits",
-  "defaultFallback": "none",
-  "units": [
-    {
-      "id": "retire-invitation-layers",
-      "phaseId": "01-refactor",
-      "status": "planned",
-      "domain": "core",
-      "type": "refactor",
-      "subject": {
-        "verb": "retire",
-        "target": "invitation presenter layers"
-      },
-      "purpose": "collapse presenter indirection into page-data assembly",
-      "include": [
-        "src/lib/invitation/page-data.ts",
-        "src/lib/presenters/invitation-presenter.ts",
-        "src/pages/[eventType]/[slug].astro"
-      ],
-      "allowRelated": [
-        "tests/**"
-      ],
-      "correctionPolicy": "absorb-compatible"
-    }
-  ]
+    "planId": "commit-workflow-fixture",
+    "mode": "planned-commits",
+    "defaultFallback": "none",
+    "commitStrategyReview": {
+        "draftedAt": "2026-03-19T09:00:00Z",
+        "reviewedAt": "2026-03-19T09:20:00Z",
+        "readyForGatekeeperAt": "2026-03-19T09:30:00Z",
+        "notes": "Fixture plan is ready for one-unit gatekeeper execution."
+    },
+    "units": [
+        {
+            "id": "retire-invitation-layers",
+            "phaseId": "01-refactor",
+            "status": "ready",
+            "domain": "core",
+            "type": "refactor",
+            "subject": {
+                "verb": "retire",
+                "target": "invitation presenter layers"
+            },
+            "purpose": "collapse presenter indirection into page-data assembly",
+            "include": [
+                "src/lib/invitation/page-data.ts",
+                "src/lib/presenters/invitation-presenter.ts",
+                "src/pages/[eventType]/[slug].astro"
+            ],
+            "allowRelated": ["tests/**"],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "refactor(core): retire invitation presenter layers",
+                "summary": [
+                    "collapse presenter indirection into page-data assembly",
+                    "keep route rendering and fixtures aligned with the same refactor"
+                ]
+            }
+        }
+    ]
 }

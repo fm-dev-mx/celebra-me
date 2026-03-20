@@ -179,6 +179,12 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 				).stdout,
 			);
 			expect(scaffold.header).toBe('refactor(core): retire invitation presenter layers');
+			expect(scaffold.summary).toEqual([
+				'- collapse presenter indirection into page-data assembly',
+				'- keep route rendering and fixtures aligned with the same refactor',
+			]);
+			expect(scaffold.fullMessage).toContain('Files:');
+			expect(scaffold.fullMessage).toContain('- src/lib/invitation/page-data.ts');
 			expect(scaffold.fullMessage).toContain('Plan-Id: commit-workflow-fixture');
 			expect(scaffold.fullMessage).toContain('Commit-Unit: retire-invitation-layers');
 		});
@@ -216,6 +222,8 @@ describeWorkflowIntegration('Gatekeeper workflow integration', () => {
 				cwd: worktree,
 			}).stdout;
 			expect(subject).toBe('refactor(core): retire invitation presenter layers');
+			expect(body).toContain('Files:');
+			expect(body).toContain('- src/lib/invitation/page-data.ts');
 			expect(body).toContain('Plan-Id: commit-workflow-fixture');
 			expect(body).toContain('Commit-Unit: retire-invitation-layers');
 		});
