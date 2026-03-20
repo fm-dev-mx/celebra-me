@@ -154,4 +154,18 @@
 		rgb(255 255 255 / 0%) 60%,
 		rgb(255 255 255 / 0%) 100%
 	);
+
+	// Premium Metallic Gradients
+	--gold-metallic: linear-gradient(
+		135deg,
+		#d4af37 0%,
+		#f9f6f2 40%,
+		#c5a059 55%,
+		#8a6d3b 70%,
+		#d4af37 100%
+	);
+	--gold-glow: 0 0 20px rgb(212 175 55 / 25%);
+
+	// Layout Specifics
+	--container-max-width-lg: 1280px;
 }

@@ -115,4 +115,18 @@
 	--jewelry-box-thank-you-frame-size-desktop: 300px;
 	--jewelry-box-thank-you-image-fit: cover;
 	--jewelry-box-thank-you-image-position: center;
+
+	// Premium Metallic Gradients
+	--gold-metallic: linear-gradient(
+		135deg,
+		#d4a5a5 0%,
+		#fbeded 40%,
+		#b88a8a 55%,
+		#8c6b6b 70%,
+		#d4a5a5 100%
+	);
+	--gold-glow: 0 0 20px rgb(212 165 165 / 25%);
+
+	// Layout Specifics
+	--container-max-width-lg: 1280px;
 }

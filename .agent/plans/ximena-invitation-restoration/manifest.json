@@ -1,0 +1,35 @@
+{
+  "id": "ximena-invitation-restoration",
+  "title": "Restoration of Ximena Meza Trasviña Invitation (Premium High-Fidelity)",
+  "status": "DRAFT",
+  "completion": 0,
+  "created": "2026-03-20T12:44:00Z",
+  "updated": "2026-03-20T12:44:00Z",
+  "owner": "Antigravity",
+  "phases": [
+    {
+      "id": "01-recovery-audit",
+      "title": "Recovery Audit & Diagnostic",
+      "status": "COMPLETED",
+      "updated": "2026-03-20T13:00:00Z"
+    },
+    {
+      "id": "02-asset-restoration",
+      "title": "Asset Restoration & Content Fixes",
+      "status": "PENDING",
+      "updated": "2026-03-20T12:44:00Z"
+    },
+    {
+      "id": "03-variant-centralization",
+      "title": "Editorial Variant Centralization",
+      "status": "PENDING",
+      "updated": "2026-03-20T12:44:00Z"
+    },
+    {
+      "id": "04-validation-cleanup",
+      "title": "Validation & Global SCSS Clean-up",
+      "status": "PENDING",
+      "updated": "2026-03-20T12:44:00Z"
+    }
+  ]
+}
