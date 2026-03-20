@@ -3,15 +3,18 @@
 import '@/styles/invitation/_footer.scss';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	eventSlug?: string;
 	showEnvelope?: boolean;
+	variant?: SharedSectionVariant;
 }
 
-const { eventSlug, showEnvelope = false } = Astro.props;
+const { eventSlug, showEnvelope = false, variant = 'standard' } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
-const logoVariant = 'footer'; // Unified white variant for consistency
+const isEditorialFooter = variant === 'editorial';
+const logoVariant = isEditorialFooter ? 'footer' : 'xv';
 
 // Define contact details
 const contactNumber = '526681167477';
@@ -19,13 +22,19 @@ const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital
 const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
-<footer class="invitation-footer">
+<footer
+	class:list={[
+		'invitation-footer',
+	]}
+	data-variant={variant}
+>
 	<div class:list={['footer-content', { 'footer-content--with-replay': hasReplay }]}>
 		<div class="footer-info">
 			<p class="powered-by">Powered by</p>
 			<Logo
 				variant={logoVariant}
 				altText="Celebra-me"
+				class:list={[{ 'footer-brand-logo': isEditorialFooter }]}
 			/>
 		</div>
 		
@@ -41,7 +50,12 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 					alt="WhatsApp"
 					width={24}
 					height={24}
-					class:list={['w-6 h-6']}
+					class:list={[
+						{
+							'footer-action__icon-media': isEditorialFooter,
+							'w-6 h-6': !isEditorialFooter,
+						},
+					]}
 				/>
 				Contáctanos
 			</a>

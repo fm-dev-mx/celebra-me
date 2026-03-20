@@ -40,6 +40,7 @@ export const sectionStylesSchema = z
 		gallery: z.object({ variant: z.enum(SHARED_SECTION_VARIANTS).optional() }).optional(),
 		itinerary: z.object({ variant: z.enum(ITINERARY_VARIANTS).optional() }).optional(),
 		thankYou: z.object({ variant: z.enum(SHARED_SECTION_VARIANTS).optional() }).optional(),
+		footer: z.object({ variant: z.enum(SHARED_SECTION_VARIANTS).optional() }).optional(),
 		rsvp: rsvpSectionStyleSchema,
 	})
 	.optional();

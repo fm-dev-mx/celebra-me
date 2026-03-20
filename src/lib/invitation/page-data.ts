@@ -2,6 +2,7 @@ import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
+import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
@@ -65,6 +66,7 @@ export interface InvitationPageData {
 	footer: {
 		eventSlug: string;
 		showEnvelope: boolean;
+		variant: SharedSectionVariant;
 	};
 	music?:
 		| (NonNullable<InvitationViewModel['music']> & {
@@ -204,6 +206,11 @@ export function prepareInvitationPageData(input: {
 	const showEnvelope = envelope.enabled;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
+	const footerVariant: SharedSectionVariant =
+		input.eventEntry.data.sectionStyles?.footer?.variant ??
+		(theme.preset === 'jewelry-box' || theme.preset === 'luxury-hacienda' || theme.preset === 'editorial'
+			? theme.preset
+			: 'standard');
 
 	return {
 		eventSlug: viewModel.id,
@@ -270,6 +277,7 @@ export function prepareInvitationPageData(input: {
 		footer: {
 			eventSlug: input.slug,
 			showEnvelope,
+			variant: footerVariant,
 		},
 		music: music
 			? {

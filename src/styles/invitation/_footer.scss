@@ -78,10 +78,9 @@
 	align-items: center;
 	gap: 0.5rem;
 
-	.logo {
+	:global(.logo) {
 		transform: scale(0.7);
 		transform-origin: center;
-		filter: brightness(0) opacity(0.4); // Dark & subtle for light themes
 	}
 
 	p {
@@ -186,114 +185,112 @@
 	}
 }
 
-// Editorial & Top Premium Overrides
-.event-theme-wrapper[data-theme-preset^='top-premium'],
-.event-theme-wrapper[data-theme-preset='editorial'] {
-	.invitation-footer {
-		padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
-		background-color: #050505 !important;
-		background-image: linear-gradient(
-			180deg,
-			rgb(var(--color-surface-dark-rgb), 0) 0%,
-			rgb(var(--color-surface-dark-rgb), 0.8) 100%
-		) !important;
-		border-top: 1px solid rgb(212 175 55 / 40%) !important;
+.invitation-footer[data-variant='editorial'] {
+	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+	background-color: #050505 !important;
+	background-image: linear-gradient(
+		180deg,
+		rgb(var(--color-surface-dark-rgb), 0) 0%,
+		rgb(var(--color-surface-dark-rgb), 0.8) 100%
+	) !important;
+	border-top: 1px solid rgb(212 175 55 / 40%) !important;
+	opacity: 100% !important;
+	backdrop-filter: blur(12px) !important;
+	box-shadow: 0 -10px 40px rgb(0 0 0 / 50%) !important;
+
+	.footer-content {
+		display: flex !important;
+		flex-flow: row wrap !important;
+		align-items: center !important;
+		justify-content: center !important;
+		gap: 1.5rem 4rem !important; // Increased GAP to match spread feel
+		max-width: 70rem !important;
+		margin: 0 auto !important;
 		opacity: 100% !important;
-		backdrop-filter: blur(12px) !important;
-		box-shadow: 0 -10px 40px rgb(0 0 0 / 50%) !important;
 
-		.footer-content {
-			display: flex !important;
-			flex-flow: row wrap !important;
-			align-items: center !important;
-			justify-content: center !important;
-			gap: 1.5rem 4rem !important;
-			max-width: 70rem !important;
-			margin: 0 auto !important;
-			opacity: 100% !important;
+		@include mixins.respond-to(md) {
+			gap: 1rem 6rem !important; // Even more spread on large screens
+		}
+	}
 
-			@include mixins.respond-to(md) {
-				gap: 1rem 6rem !important;
-			}
+	.footer-info {
+		display: flex !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		gap: 1rem !important;
+
+		.powered-by {
+			display: block !important;
+			margin: 0 !important;
+			font-size: 0.65rem !important;
+			font-weight: 500 !important;
+			letter-spacing: 0.25em !important;
+			text-transform: uppercase !important;
+			color: rgb(249 246 242 / 70%) !important; // Explicit cream color
 		}
 
-		.footer-info {
-			display: flex !important;
-			flex-direction: row !important;
-			align-items: center !important;
-			gap: 1rem !important;
-
-			.powered-by {
-				display: block !important;
-				margin: 0 !important;
-				font-size: 0.65rem !important;
-				font-weight: 500 !important;
-				letter-spacing: 0.25em !important;
-				text-transform: uppercase !important;
-				color: rgb(249 246 242 / 70%) !important;
-			}
-
-			.logo {
-				width: 8.5rem !important;
+		.footer-brand-logo {
+			:global(&.logo) {
+				width: 8.5rem !important; // Slightly larger logo
 				height: auto !important;
 				transform: none !important;
 				filter: brightness(1.2) !important;
 			}
 		}
+	}
 
-		.whatsapp-button {
-			display: inline-flex !important;
-			align-items: center !important;
-			gap: 0.75rem !important;
-			padding: 0.65rem 1.75rem !important;
-			border-radius: 999px !important;
-			border: 1px solid rgb(212 175 55 / 50%) !important;
-			background: rgb(255 255 255 / 3%) !important;
-			color: #d4af37 !important;
-			font-family: tokens.$font-ui !important;
-			font-size: 0.68rem !important;
-			font-weight: 600 !important;
-			letter-spacing: 0.18em !important;
-			text-transform: uppercase !important;
-			transition: all 0.3s ease !important;
+	.whatsapp-button {
+		display: inline-flex !important;
+		align-items: center !important;
+		gap: 0.75rem !important;
+		padding: 0.65rem 1.75rem !important;
+		border-radius: 999px !important;
+		border: 1px solid rgb(212 175 55 / 50%) !important; // Gold border
+		background: rgb(255 255 255 / 3%) !important;
+		color: #d4af37 !important; // Gold text
+		font-family: tokens.$font-ui !important;
+		font-size: 0.68rem !important;
+		font-weight: 600 !important;
+		letter-spacing: 0.18em !important;
+		text-transform: uppercase !important;
+		transition: all 0.3s ease !important;
 
-			img {
-				width: 1.1rem !important;
-				height: 1.1rem !important;
-				opacity: 100% !important;
-				filter: brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
-					hue-rotate(352deg) brightness(91%) contrast(83%) !important;
-			}
-
-			&:hover {
-				border-color: #d4af37 !important;
-				background: rgb(212 175 55 / 15%) !important;
-				color: #f9f6f2 !important;
-				transform: scale(1.05) translateY(-2px) !important;
-				box-shadow: 0 5px 20px rgb(212 175 55 / 20%) !important;
-			}
+		.footer-action__icon-media {
+			width: 1.1rem !important;
+			height: 1.1rem !important;
+			opacity: 100% !important;
+			filter: brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
+				hue-rotate(352deg) brightness(91%) contrast(83%) !important; // Match #d4af37 gold
 		}
 
-		.footer__replay-link {
-			display: inline-flex !important;
-			align-items: center !important;
-			gap: 0.5rem !important;
-			font-family: tokens.$font-ui !important;
-			font-size: 0.65rem !important;
-			letter-spacing: 0.18em !important;
-			text-transform: uppercase !important;
-			color: rgb(249 246 242 / 70%) !important;
-			background: transparent !important;
-			border: none !important;
-			cursor: pointer !important;
-			padding: 0.5rem !important;
-			transition: all 0.3s ease !important;
+		&:hover {
+			border-color: #d4af37 !important;
+			background: rgb(212 175 55 / 15%) !important;
+			color: #f9f6f2 !important;
+			transform: scale(1.05) translateY(-2px) !important;
+			box-shadow: 0 5px 20px rgb(212 175 55 / 20%) !important;
+		}
+	}
 
-			&:hover {
-				color: #d4af37 !important;
-				opacity: 100% !important;
-				transform: translateX(3px) !important;
-			}
+	.footer__replay-link {
+		display: inline-flex !important;
+		align-items: center !important;
+		gap: 0.5rem !important;
+		font-family: tokens.$font-ui !important;
+		font-size: 0.65rem !important;
+		letter-spacing: 0.18em !important;
+		text-transform: uppercase !important;
+		color: rgb(249 246 242 / 70%) !important; // Explicit cream
+		background: transparent !important;
+		border: none !important;
+		cursor: pointer !important;
+		padding: 0.5rem !important;
+		transition: all 0.3s ease !important;
+
+		&:hover {
+			color: #d4af37 !important;
+			opacity: 100% !important;
+			transform: translateX(3px) !important;
 		}
 	}
 }
