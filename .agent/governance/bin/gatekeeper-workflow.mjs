@@ -13,11 +13,7 @@ import {
 } from 'fs';
 import { dirname, resolve } from 'path';
 
-import {
-	buildFileBulletDescription,
-	collectFileFacts,
-	normalizePath,
-} from './commit-message-analysis.mjs';
+import { collectFileFacts, normalizePath } from './commit-message-analysis.mjs';
 import {
 	buildPlannedHeader,
 	buildPlannedSubject,
@@ -27,12 +23,9 @@ import {
 } from './commit-plan.mjs';
 import { buildCommitlintContext } from '../../../scripts/validate-commits.mjs';
 
-const SESSION_VERSION = 4;
-const DEFAULT_POLICY_FILE = '.agent/governance/config/policy.json';
+const SESSION_VERSION = 5;
 const DEFAULT_SESSION_BASENAME = 'gatekeeper-session.json';
 const DEFAULT_S0_BASENAME = 'gatekeeper-s0.json';
-const HEADER_MAX_LENGTH = 130;
-const BULLET_MAX_LENGTH = 140;
 
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
@@ -98,7 +91,6 @@ function parseArgs(argv) {
 		command: argv[0] || 'inspect',
 		plan: null,
 		unit: null,
-		policyFile: DEFAULT_POLICY_FILE,
 		sessionFile: null,
 		s0File: null,
 		json: false,
@@ -108,7 +100,6 @@ function parseArgs(argv) {
 		const token = argv[index];
 		if (token === '--plan') args.plan = argv[index + 1] || null;
 		if (token === '--unit') args.unit = argv[index + 1] || null;
-		if (token === '--policy') args.policyFile = argv[index + 1] || args.policyFile;
 		if (token === '--session-file') args.sessionFile = argv[index + 1] || args.sessionFile;
 		if (token === '--s0-file') args.s0File = argv[index + 1] || args.s0File;
 		if (token === '--json') args.json = true;
@@ -250,37 +241,6 @@ function signatureForEntries(entries) {
 		.digest('hex');
 }
 
-function resolveRunnablePnpmCommand(command, repoScripts) {
-	const trimmed = String(command || '').trim();
-	if (!trimmed) return null;
-	if (!trimmed.startsWith('pnpm ')) return trimmed;
-	const scriptName = trimmed.slice(5);
-	return repoScripts[scriptName] ? trimmed : null;
-}
-
-function packageScripts(repoRootPath) {
-	try {
-		const pkg = JSON.parse(readFileSync(resolve(repoRootPath, 'package.json'), 'utf8'));
-		return pkg?.scripts || {};
-	} catch {
-		return {};
-	}
-}
-
-function resolvePreflightCommand(policy) {
-	const repoScripts = packageScripts(repoRoot());
-	const configured = String(policy.workflow?.inspect?.preflightCommand || '').trim();
-	const configuredCommand = resolveRunnablePnpmCommand(configured, repoScripts);
-	if (configuredCommand) return configuredCommand;
-	for (const fallback of policy.workflow?.inspect?.preflightFallbacks || []) {
-		const resolved = resolveRunnablePnpmCommand(fallback, repoScripts);
-		if (resolved) return resolved;
-	}
-	if (repoScripts.ci) return 'pnpm ci';
-	if (repoScripts['turbo-all']) return 'pnpm turbo-all';
-	return 'pnpm lint && pnpm type-check && pnpm test';
-}
-
 function buildSession(args, diffEntries, commitPlanning) {
 	const now = new Date().toISOString();
 	return {
@@ -300,13 +260,15 @@ function buildSession(args, diffEntries, commitPlanning) {
 
 function validateSession(session, args) {
 	if (!session) return { ok: false, reason: 'session_missing' };
-	if (session.version !== SESSION_VERSION)
+	if (session.version !== SESSION_VERSION) {
 		return { ok: false, reason: 'session_version_mismatch' };
+	}
 	if (session.repoRoot !== repoRoot()) return { ok: false, reason: 'session_repo_mismatch' };
 	if (session.branch !== currentBranch()) return { ok: false, reason: 'session_branch_changed' };
 	if (session.head !== currentHead()) return { ok: false, reason: 'session_head_changed' };
-	if (args.plan && session.planId !== args.plan)
+	if (args.plan && session.planId !== args.plan) {
 		return { ok: false, reason: 'session_plan_mismatch' };
+	}
 	return { ok: true };
 }
 
@@ -350,6 +312,9 @@ function loadActiveUnit(planId, unitId) {
 	if (!loadedPlan.ok) {
 		fail((loadedPlan.errors || ['Unable to load commit plan.']).join('\n'));
 	}
+	if (loadedPlan.plan.location !== 'active') {
+		fail(`Plan "${planId}" is archived and cannot be used for new gatekeeper execution.`);
+	}
 	const unit = resolveCommitUnit(loadedPlan.plan, unitId);
 	if (!unit) fail(`Commit unit "${unitId}" was not found in plan "${planId}".`);
 	return { plan: loadedPlan.plan, unit };
@@ -367,62 +332,40 @@ function buildCommitlintUnitContext(unit, files) {
 	};
 }
 
-function formatBulletLine(filePath, description) {
-	const prefix = `- ${filePath}: `;
-	const remaining = BULLET_MAX_LENGTH - prefix.length;
-	if (remaining < 20) {
-		throw new Error(`Path "${filePath}" is too long for the commit body line limit.`);
-	}
-	const normalizedDescription = String(description || '')
-		.trim()
-		.replace(/\s+/g, ' ');
-	const safeDescription =
-		prefix.length + normalizedDescription.length > BULLET_MAX_LENGTH
-			? normalizedDescription.slice(0, remaining).trim()
-			: normalizedDescription;
-	return `${prefix}${safeDescription}`;
-}
-
-function buildCommitScaffold(split, options = {}) {
-	const diffEntries = normalizeDiffEntries(options.diffEntries || []);
+function buildCommitScaffold(split) {
 	const files = [...(split.files || [])]
 		.map(normalizePath)
 		.sort((left, right) => left.localeCompare(right));
 	if (!split.commitUnit) throw new Error('Planned commit scaffold requires commitUnit.');
-	const fileFacts = collectFileFacts(files, diffEntries);
 	const subject = buildPlannedSubject(split.commitUnit);
-	const canonicalHeader = buildPlannedHeader(split.commitUnit);
+	const header = buildPlannedHeader(split.commitUnit);
 	const plannedHeader = String(split.commitUnit.messagePreview?.header || '').trim();
-	if (plannedHeader && plannedHeader !== canonicalHeader) {
+	const summaryLines = Array.isArray(split.commitUnit.messagePreview?.summary)
+		? split.commitUnit.messagePreview.summary.map((line) => `- ${String(line || '').trim()}`)
+		: [];
+	if (plannedHeader && plannedHeader !== header) {
 		throw new Error(
-			`Commit unit "${split.commitUnit.id}" defines a non-canonical messagePreview.header. Expected "${canonicalHeader}".`,
+			`Commit unit "${split.commitUnit.id}" defines a non-canonical messagePreview.header. Expected "${header}".`,
 		);
 	}
-	const header = plannedHeader || canonicalHeader;
-	if (header.length > HEADER_MAX_LENGTH) {
+	if (!summaryLines.length) {
 		throw new Error(
-			`Commit header exceeds ${HEADER_MAX_LENGTH} characters for unit "${split.commitUnit.id}".`,
+			`Commit unit "${split.commitUnit.id}" must define messagePreview.summary before scaffold generation.`,
 		);
 	}
-	const body = fileFacts.map((fact) =>
-		formatBulletLine(
-			fact.path,
-			buildFileBulletDescription(fact, {
-				purpose: split.commitUnit.purpose,
-			}),
-		),
-	);
+	const fileLines = files.map((file) => `- ${file}`);
+	const bodySections = [summaryLines.join('\n'), ['Files:', ...fileLines].join('\n')];
 	const trailers = [`Plan-Id: ${split.commitUnit.planId}`, `Commit-Unit: ${split.commitUnit.id}`];
 	return {
 		type: split.commitUnit.type,
 		scope: split.commitUnit.domain,
 		subject,
 		header,
-		headerLength: header.length,
-		body,
+		summary: summaryLines,
+		files: fileLines,
 		trailers,
 		titleSource: 'planned',
-		fullMessage: `${header}\n\n${body.join('\n')}\n\n${trailers.join('\n')}`,
+		fullMessage: `${header}\n\n${bodySections.join('\n\n')}\n\n${trailers.join('\n')}`,
 	};
 }
 
@@ -548,12 +491,6 @@ function stageCommand(args) {
 		fail(`Session is invalid (${validation.reason}). Re-run inspect.`);
 	}
 	const currentEntries = assertWorkingTreeMatchesSession(session);
-	const sessionAgeMinutes = (Date.now() - new Date(session.createdAt).getTime()) / 60000;
-	if (sessionAgeMinutes > 5) {
-		console.log(
-			`⚠️  Session is ${Math.round(sessionAgeMinutes)} minutes old. Working tree may have drifted.`,
-		);
-	}
 	const matchedUnit = ensureSelectedUnit(session, args);
 	const unitEntries = currentEntries.filter((entry) => matchedUnit.files.includes(entry.path));
 	const stagedSpecs = pathSpecsForEntries(getStagedDiffEntries());
@@ -596,14 +533,11 @@ function scaffoldCommand(args) {
 	const { session, unit, stagedEntries } = loadCommitContext(args);
 	unit.planId = session.planId;
 	const files = stagedEntries.map((entry) => entry.path);
-	const scaffold = buildCommitScaffold(
-		{
-			id: unit.id,
-			files,
-			commitUnit: unit,
-		},
-		{ diffEntries: stagedEntries },
-	);
+	const scaffold = buildCommitScaffold({
+		id: unit.id,
+		files,
+		commitUnit: unit,
+	});
 	const validation = validateGeneratedCommitMessage(
 		scaffold.fullMessage,
 		unit,
@@ -643,14 +577,11 @@ function commitCommand(args) {
 	const { session, unit, stagedEntries } = loadCommitContext(args);
 	unit.planId = session.planId;
 	const files = stagedEntries.map((entry) => entry.path);
-	const scaffold = buildCommitScaffold(
-		{
-			id: unit.id,
-			files,
-			commitUnit: unit,
-		},
-		{ diffEntries: stagedEntries },
-	);
+	const scaffold = buildCommitScaffold({
+		id: unit.id,
+		files,
+		commitUnit: unit,
+	});
 	const validation = validateGeneratedCommitMessage(
 		scaffold.fullMessage,
 		unit,
@@ -691,10 +622,6 @@ function cleanupCommand(args) {
 	if (!args.json) console.log('🧹 Cleaned Gatekeeper workflow session artifacts.');
 }
 
-function autofixCommand() {
-	fail('Autofix was removed from the pure plan-aware Gatekeeper workflow.');
-}
-
 async function main() {
 	const args = parseArgs(process.argv.slice(2));
 	switch (args.command) {
@@ -715,9 +642,6 @@ async function main() {
 			return;
 		case 'cleanup':
 			cleanupCommand(args);
-			return;
-		case 'autofix':
-			autofixCommand();
 			return;
 		default:
 			fail(`Unknown gatekeeper-workflow command: ${args.command}`);
@@ -740,8 +664,6 @@ export {
 	commitCommand,
 	inspectCommand,
 	parseArgs,
-	resolvePreflightCommand,
-	resolveRunnablePnpmCommand,
 	scaffoldCommand,
 	stageCommand,
 	syncS0Command,

@@ -28,6 +28,34 @@ function trailerValue(parsed, key) {
 	return match ? match[1].trim() : '';
 }
 
+function parseBodySections(parsed) {
+	const lines = String(parsed.body || '')
+		.split(/\r?\n/)
+		.map((line) => line.trimEnd());
+	const filesIndex = lines.findIndex((line) => line.trim() === 'Files:');
+	const summaryLines = (filesIndex >= 0 ? lines.slice(0, filesIndex) : lines)
+		.map((line) => line.trim())
+		.filter(Boolean);
+	const fileLines = (filesIndex >= 0 ? lines.slice(filesIndex + 1) : [])
+		.map((line) => line.trim())
+		.filter(Boolean);
+	return {
+		hasFilesSection: filesIndex >= 0,
+		summaryLines,
+		fileLines,
+		summaryBullets: summaryLines.filter((line) => line.startsWith('- ')),
+		fileEntries: fileLines
+			.filter((line) => line.startsWith('- '))
+			.map((line) => line.slice(2).trim()),
+	};
+}
+
+function legacyBodyHasExpectedFiles(parsed, expectedFiles) {
+	if (!Array.isArray(expectedFiles) || expectedFiles.length === 0) return true;
+	const body = parsed.body || '';
+	return expectedFiles.every((file) => body.includes(file));
+}
+
 module.exports = {
 	extends: ['@commitlint/config-conventional'],
 	rules: {
@@ -60,13 +88,15 @@ module.exports = {
 		'no-forbidden-vocabulary': [2, 'always'],
 		'subject-target-required': [2, 'always'],
 		'no-process-language': [2, 'always'],
-		'body-path-coverage': [2, 'always'],
-		'no-ellipsis-in-body': [2, 'always'],
+		'planned-summary-required': [2, 'always'],
+		'planned-summary-no-file-paths': [2, 'always'],
+		'planned-files-section-required': [2, 'always'],
+		'planned-files-section-coverage': [2, 'always'],
+		'planned-files-section-no-extras': [2, 'always'],
 		'planned-trailers-required': [2, 'always'],
 		'planned-trailers-match-context': [2, 'always'],
 		'planned-scope-matches-domain': [2, 'always'],
 		'subject-matches-unit': [2, 'always'],
-		'unit-file-coverage': [2, 'always'],
 		'unit-no-extra-files': [2, 'always'],
 	},
 	plugins: [
@@ -103,23 +133,83 @@ module.exports = {
 					}
 					return [true];
 				},
-				'body-path-coverage': (parsed) => {
-					const stagedFiles = (process.env.COMMITLINT_STAGED_FILES || '')
-						.split('\n')
-						.filter(Boolean);
-					const body = parsed.body || '';
-					const missing = stagedFiles.filter((file) => !body.includes(file));
+				'planned-summary-required': (parsed) => {
+					const sections = parseBodySections(parsed);
+					if (
+						sections.summaryBullets.length > 0 &&
+						sections.summaryLines.length === sections.summaryBullets.length
+					) {
+						return [true];
+					}
+					const expectedFiles = JSON.parse(
+						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
+					);
+					if (legacyBodyHasExpectedFiles(parsed, expectedFiles)) return [true];
+					return [
+						false,
+						'planned commits must include semantic summary bullets before Files:',
+					];
+				},
+				'planned-summary-no-file-paths': (parsed) => {
+					const sections = parseBodySections(parsed);
+					if (!sections.hasFilesSection) return [true];
+					const pathLikeSummary = sections.summaryBullets.find((line) =>
+						/(?:\.?[\w-]+\/)+[\w.-]+/.test(line),
+					);
+					return [
+						!pathLikeSummary,
+						'summary bullets must not contain file paths; use the Files: section for traceability',
+					];
+				},
+				'planned-files-section-required': (parsed) => {
+					const sections = parseBodySections(parsed);
+					const expectedFiles = JSON.parse(
+						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
+					);
+					if (sections.hasFilesSection && sections.fileEntries.length > 0) return [true];
+					if (legacyBodyHasExpectedFiles(parsed, expectedFiles)) return [true];
+					return [
+						false,
+						'planned commits must include a Files: section with exact file bullets',
+					];
+				},
+				'planned-files-section-coverage': (parsed) => {
+					const expectedFiles = JSON.parse(
+						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
+					);
+					if (!Array.isArray(expectedFiles) || expectedFiles.length === 0) return [true];
+					const sections = parseBodySections(parsed);
+					if (!sections.hasFilesSection) {
+						if (legacyBodyHasExpectedFiles(parsed, expectedFiles)) return [true];
+						return [
+							false,
+							`planned commit must cover every planned unit file (missing Files: section for ${expectedFiles.join(', ')})`,
+						];
+					}
+					const missing = expectedFiles.filter(
+						(file) => !sections.fileEntries.includes(file),
+					);
 					if (!missing.length) return [true];
 					return [
 						false,
-						`commit body bullets must use exact changed file path (missing: ${missing.join(', ')})`,
+						`Files: section must cover every planned unit file (missing: ${missing.join(', ')})`,
 					];
 				},
-				'no-ellipsis-in-body': (parsed) => {
-					if ((parsed.body || '').includes('...')) {
-						return [false, 'ellipsis (...) is not allowed in commit body path bullets'];
-					}
-					return [true];
+				'planned-files-section-no-extras': (parsed) => {
+					const expectedFiles = JSON.parse(
+						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
+					);
+					if (!Array.isArray(expectedFiles) || expectedFiles.length === 0) return [true];
+					const sections = parseBodySections(parsed);
+					if (!sections.hasFilesSection) return [true];
+					const extras = sections.fileEntries.filter(
+						(file) => !expectedFiles.includes(file),
+					);
+					if (!extras.length) return [true];
+					return [
+						false,
+						`Files: section must not include files outside the planned unit (extra: ${extras.join(', ')})`,
+					];
 				},
 				'planned-trailers-required': (parsed) => {
 					const planId = trailerValue(parsed, 'Plan-Id');
@@ -168,19 +258,6 @@ module.exports = {
 					return [
 						actual === expected,
 						`subject must match planned commit unit subject "${expected}"`,
-					];
-				},
-				'unit-file-coverage': (parsed) => {
-					const expectedFiles = JSON.parse(
-						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
-					);
-					if (!Array.isArray(expectedFiles) || expectedFiles.length === 0) return [true];
-					const body = parsed.body || '';
-					const missing = expectedFiles.filter((file) => !body.includes(file));
-					if (!missing.length) return [true];
-					return [
-						false,
-						`commit body must cover every planned unit file (missing: ${missing.join(', ')})`,
 					];
 				},
 				'unit-no-extra-files': () => {

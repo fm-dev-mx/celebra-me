@@ -9,7 +9,6 @@ import process from 'process';
 import {
 	classifyCommitFileArea,
 	normalizePath,
-	summarizeDiffEntries,
 } from '../.agent/governance/bin/commit-message-analysis.mjs';
 import {
 	loadValidatedCommitPlan,
@@ -76,38 +75,15 @@ function getCommitDiffEntries(commitHash) {
 	}));
 }
 
-function getCommitFiles(commitHash) {
-	return getCommitDiffEntries(commitHash).map((entry) => entry.path);
-}
-
 function trailerValue(message, key) {
 	const match = String(message || '').match(new RegExp(`^${key}:\\s*(.+)$`, 'mi'));
 	return match ? match[1].trim() : '';
 }
 
-function suggestFileGroups(files) {
-	const groups = new Map();
-	for (const file of files.map(normalizePath)) {
-		const key = file.includes('/') ? `${file.split('/').slice(0, -1).join('/')}/` : file;
-		if (!groups.has(key)) groups.set(key, []);
-		groups.get(key).push(file);
-	}
-	return Array.from(groups.entries()).map(([key, groupedFiles]) => ({
-		key,
-		files: groupedFiles.sort((left, right) => left.localeCompare(right)),
-		kind: `${classifyCommitFileArea(groupedFiles[0])}-group`,
-	}));
-}
-
-function buildCommitlintContext(files, diffEntries, unitContext = null) {
+function buildCommitlintContext(files, _diffEntries, unitContext = null) {
 	const normalizedFiles = files.map(normalizePath);
-	const summary = summarizeDiffEntries(diffEntries);
 	const env = {
 		COMMITLINT_STAGED_FILES: normalizedFiles.join('\n'),
-		COMMITLINT_DIFF_JSON: JSON.stringify(diffEntries),
-		COMMITLINT_FILE_GROUPS_JSON: JSON.stringify(suggestFileGroups(normalizedFiles)),
-		COMMITLINT_DOMINANT_CHANGE_KIND: summary.dominantKind,
-		COMMITLINT_DOMINANT_AREA: summary.dominantArea,
 	};
 	if (unitContext?.unitId) {
 		env.COMMITLINT_PLAN_ID = String(unitContext.planId || '');
@@ -210,7 +186,7 @@ function validateCommit(commitHash) {
 	}
 
 	const diffEntries = getCommitDiffEntries(commitHash);
-	const files = getCommitFiles(commitHash);
+	const files = diffEntries.map((entry) => entry.path);
 	const resolvedContext = resolveUnitContext(commit.full, diffEntries);
 	if (!resolvedContext.ok) {
 		console.error(`  ❌ ${resolvedContext.error}`);
@@ -275,7 +251,5 @@ export {
 	buildCommitlintContext,
 	classifyCommitFileArea as classifyFileArea,
 	getCommitDiffEntries,
-	suggestFileGroups,
-	summarizeDiffEntries,
 	validateCommit,
 };

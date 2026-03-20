@@ -135,6 +135,21 @@ function discoverCommitPlanning({ repoRootPath, diffEntries = [], planId }) {
 			errors: loadedPlan.errors || [],
 		};
 	}
+	if (loadedPlan.plan.location === 'archive' || loadedPlan.plan.historicalPlan) {
+		return {
+			status: 'plan_archived',
+			planningMode: 'blocked',
+			planId,
+			planFile: loadedPlan.plan.file,
+			matchedUnits: [],
+			recommendedUnit: null,
+			ambiguousUnits: [],
+			unmatchedFiles: normalizedEntries.map((entry) => entry.path),
+			errors: [
+				`Plan "${planId}" is archived and cannot be used for new gatekeeper execution.`,
+			],
+		};
+	}
 	if (!planReadyForGatekeeper(loadedPlan.plan)) {
 		const blockingUnits = blockingUnitStatuses(loadedPlan.plan);
 		return {

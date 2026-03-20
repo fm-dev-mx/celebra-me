@@ -38,13 +38,7 @@
         "inspect": {
             "preflightChecks": ["governance", "adu"],
             "heavyChecks": ["governance", "lint", "typecheck", "security", "adu"],
-            "typecheckSkipPatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"],
-            "preflightCommand": "pnpm ci",
-            "preflightFallbacks": [
-                "pnpm turbo-all",
-                "pnpm ci",
-                "pnpm lint && pnpm type-check && pnpm test"
-            ]
+            "typecheckSkipPatterns": [".agent/plans/**/*.md", ".agent/plans/**/*.json"]
         },
         "commit": {
             "aiTitle": {
@@ -276,8 +270,7 @@
             "triggers": [
                 ".agent/governance/bin/gatekeeper.mjs",
                 ".agent/governance/bin/gatekeeper-workflow.mjs",
-                ".agent/governance/bin/gatekeeper-commit-ready.mjs",
-                "scripts/validate-commits.cjs",
+                "scripts/validate-commits.mjs",
                 ".agent/governance/config/domain-map.json",
                 "commitlint.config.cjs",
                 ".agent/governance/config/policy.json"
