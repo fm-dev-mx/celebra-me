@@ -8,3 +8,4 @@
  */
 export * as DemoGerardoSesenta from './gerardo-sesenta';
 export * as DemoXv from './demo-xv';
+export * as NoirPremiereXv from './noir-premiere-xv';

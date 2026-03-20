@@ -23,7 +23,14 @@ const { renderPlan, sections, personalizedAccess, rsvp, themePreset } = presente
 {
 	renderPlan.map((block) => {
 		if (block.type === 'interlude') {
-			return <Interlude image={block.image} alt={block.alt} height={block.height} variant={themePreset} />;
+			return (
+				<Interlude
+					image={block.image}
+					alt={block.alt}
+					height={block.height}
+					variant={block.variant ?? themePreset}
+				/>
+			);
 		}
 
 		if (block.type === 'personalized-access' && personalizedAccess) {

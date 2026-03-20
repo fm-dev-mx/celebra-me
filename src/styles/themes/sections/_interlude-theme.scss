@@ -12,8 +12,8 @@
 
 	.invitation-interlude__image {
 		filter: saturate(0.92) contrast(1.1) brightness(0.8);
-		transform: scale(1.1) translateY(var(--interlude-parallax-offset, 0));
-		transition: transform 0.1s linear;
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.2);
+		transition: transform 1.8s tokens.$ease-premium;
 		will-change: transform;
 	}
 
@@ -35,6 +35,6 @@
 	}
 
 	&:hover .invitation-interlude__image {
-		filter: saturate(1) contrast(1.1) brightness(0.9);
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.05);
 	}
 }

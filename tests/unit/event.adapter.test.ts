@@ -88,4 +88,19 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
+
+	it('preserves explicit interlude variants for editorial content blocks', () => {
+		const event = {
+			id: 'event-demos/xv/noir-premiere-xv',
+			data: loadFixture('src/content/event-demos/xv/noir-premiere-xv.json'),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.theme.preset).toBe('editorial');
+		expect(viewModel.contentBlocks?.find((block) => block.type === 'interlude')).toMatchObject({
+			type: 'interlude',
+			variant: 'editorial',
+		});
+	});
 });

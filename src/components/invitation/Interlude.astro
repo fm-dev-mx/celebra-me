@@ -40,7 +40,8 @@ const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 			const updateParallax = () => {
 				for (const interlude of interludes) {
 					if (!(interlude instanceof HTMLElement)) continue;
-					if (!interlude.dataset.variant?.includes('premium')) continue;
+					const variant = interlude.dataset.variant ?? '';
+					if (!variant.includes('premium') && variant !== 'editorial') continue;
 
 					const rect = interlude.getBoundingClientRect();
 					const viewportCenter = window.innerHeight / 2;

@@ -1,0 +1,159 @@
+@use 'sass:color';
+@use '../../tokens' as tokens;
+
+.theme-preset--editorial {
+	--color-surface-primary: var(--color-surface-primary-override, #050505);
+	--color-surface-primary-rgb: var(
+		--color-surface-primary-rgb-override,
+		#{color.channel(#050505, 'red', $space: rgb)},
+		#{color.channel(#050505, 'green', $space: rgb)},
+		#{color.channel(#050505, 'blue', $space: rgb)}
+	);
+	--color-surface-soft: var(--color-surface-soft-override, #1a1a1a);
+	--color-surface-soft-rgb: var(
+		--color-surface-soft-rgb-override,
+		#{color.channel(#1a1a1a, 'red', $space: rgb)},
+		#{color.channel(#1a1a1a, 'green', $space: rgb)},
+		#{color.channel(#1a1a1a, 'blue', $space: rgb)}
+	);
+	--color-surface-dark: var(--color-surface-dark-override, #0d0d0d);
+	--color-surface-dark-rgb: var(
+		--color-surface-dark-rgb-override,
+		#{color.channel(#0d0d0d, 'red', $space: rgb)},
+		#{color.channel(#0d0d0d, 'green', $space: rgb)},
+		#{color.channel(#0d0d0d, 'blue', $space: rgb)}
+	);
+
+	--color-action-primary: var(--color-action-primary-override, #f9f6f2);
+	--color-action-primary-rgb: var(
+		--color-action-primary-rgb-override,
+		#{color.channel(#f9f6f2, 'red', $space: rgb)},
+		#{color.channel(#f9f6f2, 'green', $space: rgb)},
+		#{color.channel(#f9f6f2, 'blue', $space: rgb)}
+	);
+	--color-action-accent: var(--color-action-accent-override, #d4af37);
+	--color-action-accent-rgb: var(
+		--color-action-accent-rgb-override,
+		#{color.channel(#d4af37, 'red', $space: rgb)},
+		#{color.channel(#d4af37, 'green', $space: rgb)},
+		#{color.channel(#d4af37, 'blue', $space: rgb)}
+	);
+
+	--color-text-primary: var(--color-text-primary-override, #f9f6f2);
+	--color-text-primary-rgb: var(
+		--color-text-primary-rgb-override,
+		#{color.channel(#f9f6f2, 'red', $space: rgb)},
+		#{color.channel(#f9f6f2, 'green', $space: rgb)},
+		#{color.channel(#f9f6f2, 'blue', $space: rgb)}
+	);
+	--color-text-emphasis: var(--color-text-emphasis-override, #d4af37);
+	--color-text-secondary: var(--color-text-secondary-override, rgb(249 246 242 / 72%));
+	--color-text-secondary-rgb: var(
+		--color-text-secondary-rgb-override,
+		#{color.channel(#f9f6f2, 'red', $space: rgb)},
+		#{color.channel(#f9f6f2, 'green', $space: rgb)},
+		#{color.channel(#f9f6f2, 'blue', $space: rgb)}
+	);
+	--color-text-on-dark: var(--color-text-on-dark-override, #f9f6f2);
+	--color-text-on-light: var(--color-text-on-light-override, #1a1a1a);
+
+	--color-border-subtle: rgb(var(--color-action-accent-rgb) / 0.12);
+	--color-glass-bg: rgb(26 26 26 / 45%);
+	--color-glass-bg-accent: rgb(212 175 55 / 8%);
+	--color-glass-border: rgb(212 175 55 / 30%);
+	--color-glass-shadow: rgb(212 175 55 / 15%);
+	--glass-blur: 16px;
+	--glass-saturate: 180%;
+
+	--font-display: var(--font-display-elegant, #{tokens.$font-display-elegant});
+	--font-label: 'Cinzel Variable', serif;
+	--font-body: #{tokens.$font-body};
+	--font-calligraphy: 'Pinyon Script', cursive;
+	--font-label-tracking: 0.28em;
+
+	--shadow-premium: 0 24px 60px rgb(0 0 0 / 55%), 0 12px 30px rgb(212 175 55 / 10%);
+	--container-max-width-lg: 1280px;
+
+	--hero-card-bg: linear-gradient(160deg, rgb(18 18 18 / 88%) 0%, rgb(6 6 6 / 98%) 100%);
+	--hero-card-border-hairline: rgb(212 175 55 / 32%);
+	--hero-card-shadow-ambient: 0 36px 84px rgb(0 0 0 / 62%);
+	--hero-title-color-start: #f9f6f2;
+	--hero-title-color-mid: #fff;
+	--hero-title-color-end: #d4af37;
+	--hero-badge-bg: rgb(255 255 255 / 6%);
+	--hero-badge-border: rgb(212 175 55 / 45%);
+	--hero-badge-text: #f9f6f2;
+	--hero-label-color: var(--color-action-accent);
+	--hero-divider-color: rgb(212 175 55 / 65%);
+
+	--family-bg: radial-gradient(circle at bottom right, #0d0d0d, #050505);
+	--family-border: rgb(212 175 55 / 18%);
+	--family-text-primary: #f9f6f2;
+	--family-text-muted: rgb(255 255 255 / 60%);
+	--family-accent: var(--color-action-accent);
+	--family-shadow: 0 40px 100px rgb(0 0 0 / 60%);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(212 175 55 / 65%) 50%,
+		transparent 100%
+	);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(212 175 55 / 6%) 100%
+	);
+
+	--jewelry-box-gallery-section-bg: #050505;
+	--jewelry-box-gallery-card-bg: rgb(255 255 255 / 3%);
+	--jewelry-box-gallery-card-radius: 0;
+	--jewelry-box-gallery-card-padding: 0;
+	--jewelry-box-gallery-image-radius: 0;
+	--jewelry-box-gallery-title-font: var(--font-display);
+	--jewelry-box-gallery-title-color: var(--color-text-primary);
+	--jewelry-box-gallery-subtitle-color: rgb(249 246 242 / 72%);
+	--jewelry-box-gallery-caption-bg: rgb(5 5 5 / 88%);
+	--jewelry-box-gallery-caption-color: var(--color-text-primary);
+	--jewelry-box-gallery-caption-font: var(--font-label);
+	--jewelry-box-gallery-caption-size: 0.72rem;
+	--jewelry-box-gallery-caption-letter-spacing: 0.18em;
+
+	--jewelry-box-countdown-value-size-mobile: clamp(3rem, 12vw, 4.5rem);
+	--jewelry-box-countdown-value-size-desktop: clamp(4.2rem, 8vw, 6rem);
+	--jewelry-box-countdown-label-letter-spacing: 0.35em;
+	--jewelry-box-countdown-label-opacity: 1;
+
+	--jewelry-box-thank-you-frame-size-mobile: 260px;
+	--jewelry-box-thank-you-frame-size-desktop: 320px;
+	--jewelry-box-thank-you-image-fit: cover;
+	--jewelry-box-thank-you-image-position: center;
+	--thank-you-closing-text-transform: none;
+	--thank-you-photo-frame-shadow:
+		inset 0 0 0 2px rgb(var(--color-action-accent-rgb) / 40%),
+		inset 0 0 20px rgb(var(--color-surface-primary-rgb) / 80%),
+		0 30px 60px -15px rgb(0 0 0 / 90%),
+		0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
+
+	--color-error-field: 166, 46, 46;
+	--color-error-text: rgb(218 126 126);
+	--color-error-rgb: 166, 46, 46;
+	--color-error: rgb(var(--color-error-rgb));
+
+	--light-sweep: linear-gradient(
+		-45deg,
+		rgb(255 255 255 / 0%) 0%,
+		rgb(255 255 255 / 0%) 40%,
+		rgb(255 255 255 / 18%) 50%,
+		rgb(255 255 255 / 0%) 60%,
+		rgb(255 255 255 / 0%) 100%
+	);
+	--gold-metallic: linear-gradient(
+		135deg,
+		#d4af37 0%,
+		#f9f6f2 40%,
+		#c5a059 55%,
+		#8a6d3b 70%,
+		#d4af37 100%
+	);
+	--gold-glow: 0 0 20px rgb(212 175 55 / 25%);
+}

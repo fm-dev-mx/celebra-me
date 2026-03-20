@@ -199,6 +199,7 @@ export type ContentBlock =
 			image: ImageAsset;
 			alt: string;
 			height: 'screen' | 'tall';
+			variant?: SharedSectionVariant;
 	  };
 
 export interface InvitationViewModel {

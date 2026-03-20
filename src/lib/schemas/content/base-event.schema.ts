@@ -1,5 +1,6 @@
 import { z } from 'astro:content';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { SHARED_SECTION_VARIANTS } from '@/lib/theme/theme-variants';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { locationSchema } from '@/lib/schemas/content/location.schema';
 import { familySchema } from '@/lib/schemas/content/family.schema';
@@ -111,6 +112,7 @@ export const eventContentSchema = baseEventFieldsSchema.extend({
 					image: AssetSchema,
 					alt: z.string().optional(),
 					height: z.enum(['screen', 'tall']).default('screen'),
+					variant: z.enum(SHARED_SECTION_VARIANTS).optional(),
 				}),
 			]),
 		)

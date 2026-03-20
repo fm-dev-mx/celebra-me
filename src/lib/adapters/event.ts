@@ -207,6 +207,12 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 					image,
 					alt: block.alt || `Interludio de ${data.title}`,
 					height: block.height,
+					variant: pickVariant(
+						'contentBlocks.interlude.variant',
+						block.variant ?? sharedSectionFallback,
+						SHARED_SECTION_VARIANTS,
+						sharedSectionFallback,
+					),
 				},
 			];
 		},

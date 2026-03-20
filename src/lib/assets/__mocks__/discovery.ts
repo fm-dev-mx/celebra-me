@@ -14,5 +14,6 @@ const assetStub = {
 
 export const discoverEventModules = jest.fn(() => ({
 	'../../assets/images/events/demo-xv/index.ts': assetStub,
+	'../../assets/images/events/noir-premiere-xv/index.ts': assetStub,
 	'../../assets/images/events/ximena-meza-trasvina/index.ts': assetStub,
 }));

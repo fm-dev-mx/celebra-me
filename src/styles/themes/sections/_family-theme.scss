@@ -3,14 +3,10 @@
 /* --- FAMILY SECTION THEMES --- */
 
 .family[data-variant='editorial'] {
-	--family-bg: radial-gradient(
-		circle at bottom right,
-		var(--color-surface-primary),
-		var(--color-surface-soft)
-	);
-	--family-panel-bg: rgb(var(--color-surface-primary-rgb) / 40%);
+	--family-bg: radial-gradient(circle at bottom right, #0d0d0d, #050505);
+	--family-panel-bg: rgb(255 255 255 / 2%);
 	--family-panel-border: rgb(var(--color-action-accent-rgb) / 15%);
-	--family-panel-shadow: 0 40px 100px rgb(var(--color-surface-dark-rgb) / 10%);
+	--family-panel-shadow: 0 40px 100px rgb(0 0 0 / 60%);
 
 	background: var(--family-bg);
 	padding-block: clamp(5rem, 12vw, 10rem);
@@ -60,8 +56,10 @@
 		padding: 2px;
 		background: var(--gold-metallic);
 		box-shadow:
-			0 30px 60px rgb(var(--color-surface-dark-rgb) / 15%),
-			inset 0 0 0 1px rgb(255 255 255 / 10%);
+			0 40px 100px rgb(0 0 0 / 50%),
+			0 0 30px rgb(0 0 0 / 40%);
+		transform: rotate(-1.5deg);
+		transition: all 0.8s ease;
 		position: relative;
 		overflow: hidden;
 
@@ -72,7 +70,7 @@
 			z-index: 5;
 			border-radius: inherit;
 			box-shadow:
-				inset 0 0 40px rgb(var(--color-surface-primary-rgb) / 40%),
+				inset 0 0 40px rgb(0 0 0 / 60%),
 				inset 0 0 10px rgb(var(--color-action-accent-rgb) / 20%);
 			pointer-events: none;
 		}
@@ -134,7 +132,7 @@
 	.family__item-name,
 	.family__name {
 		font-family: var(--font-display);
-		font-size: clamp(1.4rem, 4vw, 2.2rem);
+		font-size: clamp(1.2rem, 3.5vw, 1.55rem);
 		color: var(--color-text-primary);
 		white-space: normal;
 		text-wrap: balance;
