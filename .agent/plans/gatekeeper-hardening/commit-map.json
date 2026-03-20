@@ -84,7 +84,6 @@
       "purpose": "sync git-governance and doc-status with modernized workflow",
       "include": [
         "docs/**",
-        ".agent/plans/README.md",
         ".agent/workflows/gatekeeper-commit.md"
       ],
       "allowRelated": [
@@ -118,6 +117,10 @@
         ".agent/plans/project-simplification/**",
         ".agent/plans/audit-SR-2026-03/**",
         ".agent/plans/fix-demo-cumple-colors/**",
+        ".agent/plans/noir-premiere-restoration/**",
+        ".agent/plans/gatekeeper-commit-lifecycle-standardization/**",
+        ".agent/plans/README.md",
+        ".agent/workflows/auto-fix.md",
         "tmp/**"
       ],
       "allowRelated": [

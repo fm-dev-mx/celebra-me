@@ -163,7 +163,7 @@ change may proceed without redesigning the plan.
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "refactor(core): retire legacy presenter layers",
-        "body": [
+        "summary": [
           "collapse route-only indirection into page-data assembly",
           "keep related tests and docs inside the same implementation intent"
         ]
@@ -217,15 +217,16 @@ The timestamps may be equal for small changes, but they must reflect the real li
 
 ### Message preview rules
 
-`messagePreview` is optional, but recommended.
+`messagePreview` is required for active executable plans.
 
 If present:
 
 - `header` must already satisfy commitlint length and format constraints
 - `header` must exactly equal `type(domain): verb target`
 - `header` becomes the exact planned header that `gatekeeper-workflow` must honor
-- `body` is advisory context for the plan review and must not replace the workflow-generated
-  one-bullet-per-file output contract
+- `summary` must contain one to four semantic bullets
+- `summary` must not contain file paths
+- `summary` becomes the exact semantic body that `gatekeeper-workflow` must honor
 
 ### Domain and scope
 
@@ -307,13 +308,13 @@ returns exactly one of:
 - `matched_unit`
 - `unit_ambiguity`
 - `unit_mismatch`
+- `plan_archived`
 - `plan_not_found`
 - `invalid_plan_contract`
 - `commit_strategy_not_ready`
 - `empty_change_set`
 
-`inspect` is the primary entrypoint. `gatekeeper:commit-ready` may exist as a convenience wrapper,
-but it does not define a separate planning mode.
+`inspect` is the primary entrypoint.
 
 ### Stage
 
@@ -329,8 +330,8 @@ node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit
 node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --unit <unit-id>
 ```
 
-`scaffold` is non-mutating. It builds the exact planned subject, deterministic file bullets, and
-required trailers.
+`scaffold` is non-mutating. It builds the exact planned header, semantic summary bullets, `Files:`
+inventory, and required trailers.
 
 ### Commit
 
@@ -377,10 +378,18 @@ not need to become manifest statuses if the plan records them in `commit-map.jso
 
 When a plan is complete:
 
-1. update `manifest.json` to `COMPLETED`
+1. finish the implementation and closure notes
 2. finish closure notes in `CHANGELOG.md`
 3. move the directory to `.agent/plans/archive/`
-4. mark `status: ARCHIVED`
+4. mark the archived `manifest.json` status as `ARCHIVED`
 5. stop using its `commit-map.json` for new execution
 
 Archived plans are historical only. If more work is needed, create a new active plan.
+
+## Continuous Hygiene
+
+- `.agent/plans/` should contain only active plans and `README.md`
+- completed or superseded plans should be archived during normal close-out, not during ad hoc
+  cleanup
+- before starting a new plan, audit the active root for plans that are already complete, replaced,
+  or otherwise obsolete

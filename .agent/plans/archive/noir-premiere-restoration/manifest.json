@@ -1,0 +1,45 @@
+{
+    "id": "noir-premiere-restoration",
+    "title": "Noir Premiere XV Jewelry Box Restoration",
+    "status": "ARCHIVED",
+    "completion": 100,
+    "created": "2026-03-20",
+    "updated": "2026-03-20",
+    "estimatedDuration": "4 phases / ~0.5 day",
+    "owner": "fm-dev-mx",
+    "phases": [
+        {
+            "id": "01-diagnostic-lock-and-composition-reset",
+            "title": "Diagnostic Lock and Composition Reset",
+            "file": "phases/01-diagnostic-lock-and-composition-reset.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 20
+        },
+        {
+            "id": "02-content-and-variant-restoration",
+            "title": "Content and Variant Restoration",
+            "file": "phases/02-content-and-variant-restoration.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 30
+        },
+        {
+            "id": "03-event-scss-realignment",
+            "title": "Event SCSS Realignment",
+            "file": "phases/03-event-scss-realignment.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 35
+        },
+        {
+            "id": "04-visual-verification-and-isolation-audit",
+            "title": "Visual Verification and Isolation Audit",
+            "file": "phases/04-visual-verification-and-isolation-audit.md",
+            "status": "COMPLETED",
+            "completion": 100,
+            "weight": 15
+        }
+    ],
+    "tags": ["theme", "xv", "visual-regression", "jewelry-box", "demo-restoration"]
+}
