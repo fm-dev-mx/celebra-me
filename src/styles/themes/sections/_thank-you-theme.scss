@@ -2,6 +2,125 @@
 @use '../../global/mixins' as mixins;
 
 // ==========================================================================
+// EDITORIAL THANK YOU
+// ==========================================================================
+
+.thank-you-section[data-variant='editorial'] {
+	background: radial-gradient(
+		circle at center,
+		var(--color-surface-soft) 0%,
+		var(--color-surface-primary) 100%
+	);
+	padding-block: clamp(6rem, 15vw, 10rem);
+	position: relative;
+	overflow: hidden;
+
+	&::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 60%;
+		height: 80%;
+		background: radial-gradient(circle, rgb(var(--color-action-accent-rgb) / 8%) 0%, transparent 70%);
+		pointer-events: none;
+		filter: blur(40px);
+		z-index: 0;
+	}
+
+	.thank-you-content {
+		position: relative;
+		z-index: 2;
+	}
+
+	.photo-frame {
+		width: clamp(260px, 40vw, 320px);
+		height: clamp(260px, 40vw, 320px);
+		border-radius: 50%;
+		background: var(--color-surface-dark);
+		box-shadow:
+			inset 0 0 0 2px rgb(var(--color-action-accent-rgb) / 40%),
+			inset 0 0 20px rgb(var(--color-surface-primary-rgb) / 80%),
+			0 45px 100px rgb(var(--color-surface-dark-rgb) / 10%);
+		position: relative;
+		overflow: visible;
+		margin-bottom: 3rem;
+		transition: transform 0.8s tokens.$ease-premium;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -8px;
+			border-radius: 50%;
+			background: var(--gold-metallic);
+			z-index: -1;
+			animation: thank-you-border-shimmer 8s linear infinite;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 6px;
+			border-radius: 50%;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 35%);
+			pointer-events: none;
+			z-index: 3;
+		}
+
+		&:hover {
+			transform: translateY(-8px) scale(1.02);
+		}
+
+		.photo-image {
+			width: 100%;
+			height: 100%;
+			border-radius: 50%;
+			object-fit: cover;
+			clip-path: circle(calc(50% - 6px) at 50% 50%);
+			transition: all 1.2s tokens.$ease-premium;
+			filter: contrast(1.02) brightness(0.95);
+		}
+	}
+
+	.thank-you-message {
+		font-family: var(--font-body);
+		color: var(--color-text-secondary);
+		font-size: 1.15rem;
+		line-height: 1.8;
+		max-width: 600px;
+		margin-inline: auto;
+
+		.drop-cap {
+			font-family: var(--font-display);
+			color: var(--color-action-accent);
+			font-size: 3.5rem;
+			line-height: 1;
+			margin-right: 0.2ch;
+			float: left;
+			text-shadow: 0 0 15px rgb(var(--color-action-accent-rgb) / 20%);
+		}
+	}
+
+	.closing-name {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 8vw, 6rem);
+		background: var(--gold-metallic);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		margin-top: 1.5rem;
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
+	}
+}
+
+@keyframes thank-you-border-shimmer {
+	0% { background-position: 0% 50%; background-size: 200% 200%; }
+	50% { background-position: 100% 50%; background-size: 200% 200%; }
+	100% { background-position: 0% 50%; background-size: 200% 200%; }
+}
+
+// ==========================================================================
 // JEWELRY BOX THANK YOU (XV / Wedding Premium)
 // ==========================================================================
 

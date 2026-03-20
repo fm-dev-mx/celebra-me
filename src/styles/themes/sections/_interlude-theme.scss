@@ -1,0 +1,40 @@
+@use '../../tokens' as tokens;
+
+// ==========================================================================
+// INTERLUDE SECTION THEMES
+// ==========================================================================
+
+.invitation-interlude[data-variant='editorial'] {
+	--interlude-overlay-opacity: 0.28;
+
+	overflow: hidden;
+	position: relative;
+
+	.invitation-interlude__image {
+		filter: saturate(0.92) contrast(1.1) brightness(0.8);
+		transform: scale(1.1) translateY(var(--interlude-parallax-offset, 0));
+		transition: transform 0.1s linear;
+		will-change: transform;
+	}
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-surface-dark-rgb) / 16%) 0%,
+				transparent 40%,
+				rgb(var(--color-surface-dark-rgb) / 32%) 100%
+			),
+			radial-gradient(circle at 20% 20%, rgb(var(--color-surface-primary-rgb) / 24%) 0%, transparent 34%);
+		pointer-events: none;
+		z-index: 1;
+		opacity: var(--interlude-overlay-opacity);
+	}
+
+	&:hover .invitation-interlude__image {
+		filter: saturate(1) contrast(1.1) brightness(0.9);
+	}
+}

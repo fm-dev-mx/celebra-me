@@ -2,6 +2,192 @@
 
 /* --- FAMILY SECTION THEMES --- */
 
+.family[data-variant='editorial'] {
+	--family-bg: radial-gradient(
+		circle at bottom right,
+		var(--color-surface-primary),
+		var(--color-surface-soft)
+	);
+	--family-panel-bg: rgb(var(--color-surface-primary-rgb) / 40%);
+	--family-panel-border: rgb(var(--color-action-accent-rgb) / 15%);
+	--family-panel-shadow: 0 40px 100px rgb(var(--color-surface-dark-rgb) / 10%);
+
+	background: var(--family-bg);
+	padding-block: clamp(5rem, 12vw, 10rem);
+	position: relative;
+	overflow: hidden;
+
+	.family__eyebrow {
+		font-family: var(--font-label);
+		letter-spacing: 0.35em;
+		color: var(--family-accent);
+		text-transform: uppercase;
+		font-weight: 500;
+	}
+
+	.family__title {
+		font-family: var(--font-display);
+		font-size: clamp(2.4rem, 6vw, 4.8rem);
+		color: transparent;
+		background: linear-gradient(
+			135deg,
+			var(--color-text-primary) 0%,
+			var(--color-action-accent) 50%,
+			var(--color-text-primary) 100%
+		);
+		background-clip: text;
+		margin-top: 1.2rem;
+		letter-spacing: -0.01em;
+	}
+
+	.family__panel {
+		display: grid;
+		grid-template-columns: 0.85fr 1.15fr;
+		gap: clamp(2.5rem, 8vw, 8rem);
+		align-items: center;
+		background: var(--family-panel-bg);
+		border: 1px solid var(--family-panel-border);
+		backdrop-filter: blur(12px);
+		padding: clamp(1.5rem, 5vw, 4rem);
+		border-radius: 24px;
+		box-shadow: var(--family-panel-shadow);
+		margin-top: 3rem;
+	}
+
+	.family__media-frame {
+		border-radius: 400px 400px 24px 24px;
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 45%);
+		padding: 2px;
+		background: var(--gold-metallic);
+		box-shadow:
+			0 30px 60px rgb(var(--color-surface-dark-rgb) / 15%),
+			inset 0 0 0 1px rgb(255 255 255 / 10%);
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 5;
+			border-radius: inherit;
+			box-shadow:
+				inset 0 0 40px rgb(var(--color-surface-primary-rgb) / 40%),
+				inset 0 0 10px rgb(var(--color-action-accent-rgb) / 20%);
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border: 1px solid rgb(255 255 255 / 15%);
+			border-radius: inherit;
+			pointer-events: none;
+			z-index: 6;
+		}
+
+		&:hover {
+			transform: rotate(0deg) scale(1.02);
+		}
+
+		img {
+			border-radius: 394px 394px 21px 21px;
+			filter: contrast(1.1) saturate(1.1) brightness(0.9);
+			mix-blend-mode: normal;
+		}
+	}
+
+	.family__content {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+		gap: 4rem 3rem;
+	}
+
+	.family__group {
+		border-left: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+		padding-left: 2rem;
+		position: relative;
+		min-width: 0;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: -1px;
+			top: 0;
+			height: 24px;
+			width: 1px;
+			background: var(--family-accent);
+		}
+	}
+
+	.family__group-title {
+		font-family: var(--font-label);
+		font-size: 0.8rem;
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		color: var(--family-accent);
+		margin-bottom: 1.5rem;
+		opacity: 90%;
+	}
+
+	.family__item-name,
+	.family__name {
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 4vw, 2.2rem);
+		color: var(--color-text-primary);
+		white-space: normal;
+		text-wrap: balance;
+		line-height: 1.2;
+		margin-bottom: 0.4rem;
+		letter-spacing: 0.01em;
+		overflow-wrap: break-word;
+	}
+
+	.family__item-relation,
+	.family__meta {
+		font-family: var(--font-label);
+		font-size: 0.72rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--color-text-secondary);
+	}
+
+	.family__connector {
+		font-size: 2.2rem;
+		margin: 0.5rem 0;
+		color: var(--family-accent);
+		opacity: 80%;
+		font-family: var(--font-calligraphy);
+	}
+
+	@media (width <= 860px) {
+		padding-block: 4rem;
+
+		.family__panel {
+			grid-template-columns: 1fr;
+			gap: 3rem;
+			padding: 2rem 1.5rem;
+			margin-top: 2rem;
+		}
+
+		.family__content {
+			grid-template-columns: 1fr;
+			gap: 3rem;
+		}
+
+		.family__media-frame {
+			width: 90%;
+			margin-inline: auto;
+			transform: rotate(0);
+		}
+
+		.family__group {
+			padding-left: 1.5rem;
+		}
+	}
+}
+
 .family[data-variant='jewelry-box'] {
 	--family-bg: radial-gradient(circle at 50% -20%, #fffdfc 0%, var(--color-surface-primary) 100%);
 	--family-panel-bg: rgb(var(--color-surface-primary-rgb), 0.82);

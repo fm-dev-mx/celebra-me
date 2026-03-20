@@ -1,5 +1,72 @@
 @use '../../tokens' as tokens;
 
+// ==========================================================================
+// EDITORIAL ITINERARY
+// ==========================================================================
+
+.itinerary[data-variant='editorial'] {
+	--itinerary-bg: radial-gradient(
+		circle at center,
+		var(--color-surface-soft) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--itinerary-accent: var(--color-action-accent);
+
+	background: var(--itinerary-bg);
+	padding-block: clamp(5rem, 12vw, 10rem);
+
+	.itinerary__title {
+		font-family: var(--font-display);
+		font-size: clamp(2.5rem, 6vw, 4.8rem);
+		color: var(--color-text-primary);
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
+	}
+
+	.itinerary__item-time {
+		font-family: var(--font-label);
+		color: var(--itinerary-accent);
+		font-size: 0.8rem;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+
+	.itinerary__item-label {
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+		color: var(--color-text-primary);
+		text-transform: uppercase;
+		margin-top: 0.2rem;
+	}
+
+	.itinerary__item-icon-wrapper {
+		background: var(--color-surface-soft);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+		box-shadow: 0 10px 25px rgb(var(--color-surface-dark-rgb) / 8%);
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -2px;
+			background: var(--gold-metallic);
+			z-index: -1;
+			opacity: 40%;
+		}
+	}
+
+	.itinerary__item-icon-inner {
+		color: var(--itinerary-accent);
+		filter: var(--gold-glow);
+	}
+
+	.itinerary__animated-line-container svg path {
+		stroke: var(--itinerary-accent);
+		opacity: 35%;
+	}
+}
+
 // 🏛️ LUXURY HACIENDA: Editorial, classic, warm textures
 .itinerary[data-variant='luxury-hacienda'] {
 	--itinerary-bg: radial-gradient(

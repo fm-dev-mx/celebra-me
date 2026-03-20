@@ -1,6 +1,249 @@
 @use '../../tokens' as tokens;
 
 // ==========================================================================
+// EDITORIAL HERO
+// ==========================================================================
+
+.invitation-hero[data-variant='editorial'] {
+	--hero-overlay: linear-gradient(
+		180deg,
+		rgb(var(--color-surface-primary-rgb) / 32%) 0%,
+		transparent 40%,
+		rgb(var(--color-surface-primary-rgb) / 12%) 100%
+	);
+
+	height: 100svh;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: clamp(1.5rem, 5vw, 4rem);
+	overflow: hidden;
+
+	.invitation-hero__background {
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: var(--hero-overlay);
+			z-index: 1;
+		}
+
+		img {
+			filter: grayscale(0.2) contrast(1.1) brightness(0.85);
+			transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+		}
+	}
+
+	.invitation-hero__content {
+		position: relative;
+		z-index: 10;
+		width: 100%;
+		max-width: var(--container-max-width-lg);
+		margin: 0 auto;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-template-areas:
+			'label label'
+			'title portrait';
+		gap: 2rem;
+		align-items: center;
+		height: 100%;
+	}
+
+	.invitation-hero__label {
+		grid-area: label;
+		justify-self: center;
+		font-family: var(--font-label);
+		font-size: clamp(0.7rem, 2vw, 0.9rem);
+		letter-spacing: 0.4em;
+		color: var(--hero-label-color);
+		text-transform: uppercase;
+		margin-bottom: 2vh;
+		position: relative;
+		z-index: 10;
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			width: 30px;
+			height: 1px;
+			background: currentcolor;
+			opacity: 40%;
+		}
+
+		&::before {
+			right: 110%;
+		}
+
+		&::after {
+			left: 110%;
+		}
+	}
+
+	.invitation-hero__title {
+		grid-area: title;
+		font-family: var(--font-display);
+		font-size: clamp(4.5rem, 14vw, 12rem);
+		line-height: 0.85;
+		color: var(--color-text-primary);
+		text-transform: uppercase;
+		margin: 0;
+		z-index: 2;
+		mix-blend-mode: overlay;
+		pointer-events: none;
+		transform: translateX(-5%) translateY(-10%);
+	}
+
+	.invitation-hero__portrait {
+		grid-area: portrait;
+		justify-self: end;
+		width: min(100%, 420px);
+		aspect-ratio: 0.75;
+		border-radius: 220px 220px 24px 24px;
+		overflow: hidden;
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
+		box-shadow:
+			0 30px 60px rgb(var(--color-surface-dark-rgb) / 20%),
+			inset 0 0 0 1px rgb(255 255 255 / 15%);
+		position: relative;
+		z-index: 1;
+		transition: transform 0.8s tokens.$ease-premium;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				135deg,
+				transparent 0%,
+				rgb(255 255 255 / 10%) 45%,
+				transparent 55%
+			);
+			background-size: 200% 200%;
+			background-position: -100% -100%;
+			z-index: 2;
+			transition: background-position 0.8s tokens.$ease-premium;
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			box-shadow:
+				inset 0 0 80px rgb(var(--color-surface-primary-rgb) / 30%),
+				inset 0 0 20px rgb(var(--color-action-accent-rgb) / 15%);
+			pointer-events: none;
+			z-index: 3;
+		}
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			object-position: center 15%;
+			filter: contrast(1.1) brightness(1.05) saturate(1.1);
+			transition: transform 1.5s tokens.$ease-premium;
+		}
+
+		&:hover {
+			transform: translateY(-8px) scale(1.01);
+
+			&::before {
+				background-position: 100% 100%;
+			}
+
+			img {
+				transform: scale(1.08);
+			}
+		}
+	}
+
+	.invitation-hero__divider {
+		display: none;
+	}
+
+	.invitation-hero__details {
+		position: absolute;
+		bottom: clamp(25rem, 18vh, 18vh);
+		left: 0;
+		right: 0;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: clamp(1rem, 4vw, 4rem);
+		padding: 1rem;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-surface-primary-rgb) / 85%),
+			transparent
+		);
+		backdrop-filter: blur(4px);
+		z-index: 5;
+
+		@media (width >= 860px) {
+			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
+			bottom: clamp(5rem, 5vw, 5vw);
+		}
+
+		p span {
+			font-family: var(--font-label);
+			font-size: clamp(0.75rem, 1.8vw, 1rem);
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: var(--color-text-primary);
+		}
+
+		.calligraphy-accent {
+			font-family: var(--font-body);
+			font-style: italic;
+			text-transform: lowercase;
+			opacity: 70%;
+			letter-spacing: 0;
+			margin-right: 0.5ch;
+		}
+	}
+
+	@media (width <= 860px) {
+		padding: 1rem;
+
+		.invitation-hero__content {
+			grid-template-areas:
+				'label'
+				'portrait'
+				'title';
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.invitation-hero__title {
+			font-size: clamp(4rem, 18vw, 7rem);
+			text-align: center;
+			transform: translateY(-20%);
+			mix-blend-mode: normal;
+			text-shadow: 0 4px 12px rgb(var(--color-surface-primary-rgb) / 60%);
+			margin-bottom: 12vh;
+		}
+
+		.invitation-hero__portrait {
+			justify-self: center;
+			width: 85%;
+			margin-top: -2vh;
+		}
+
+		.invitation-hero__details {
+			flex-direction: column;
+			gap: 0.5rem;
+			align-items: center;
+			padding: 2rem 0;
+		}
+	}
+}
+
+// ==========================================================================
 // JEWELRY BOX HERO
 // ==========================================================================
 
