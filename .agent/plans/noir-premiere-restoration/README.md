@@ -2,6 +2,13 @@
 
 **Completion:** `100%` | **Status:** `READY_FOR_COMMIT`
 
+## Commit Strategy Status
+
+- `drafted`: yes
+- `final review completed`: yes
+- `gatekeeper ready`: yes
+- source of truth: `./commit-map.json`
+
 **Objective:** Restore `xv/noir-premiere-xv` so it matches the visual result of commit
 `ac797e8c2a4d3b25e74ce668c171aa7b9960212f` as closely as possible, while preserving the current
 post-restructure architecture and without leaking demo-specific fixes into unrelated demos.
@@ -66,8 +73,8 @@ post-restructure architecture and without leaking demo-specific fixes into unrel
   - use `jewelry-box` as the preset layer,
   - keep `editorial` as the section-level variant where the demo needs its cinematic layout,
   - keep noir-specific color refinements inside `src/styles/events/noir-premiere-xv.scss`.
-- Restore Noir content and event SCSS from that commit’s behavior first, then adapt only the
-  minimum required details for compatibility with the current runtime.
+- Restore Noir content and event SCSS from that commit’s behavior first, then adapt only the minimum
+  required details for compatibility with the current runtime.
 - Do **not** introduce a new shared `editorial` preset in this fix. That would broaden scope and
   harden a shared path used only by Noir’s current regression, while the target commit already
   proves the old composition model is sufficient.
@@ -76,16 +83,16 @@ post-restructure architecture and without leaking demo-specific fixes into unrel
 
 ## 🧭 Implemented File Modifications
 
-| File | Why it changes |
-| --- | --- |
+| File                                               | Why it changes                                                                                                                                                                                         |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `src/content/event-demos/xv/noir-premiere-xv.json` | Restored Noir content composition to the `ac797e8` baseline and authored `sectionStyles.footer.variant = "editorial"` so the footer follows the same section-variant contract as the rest of the demo. |
-| `src/styles/events/noir-premiere-xv.scss` | Restored the Noir event stylesheet to the visual behavior of `ac797e8`. |
-| `src/components/invitation/Footer.astro` | Removed slug-specific editorial branching and switched the footer to a `variant`-driven API. |
-| `src/styles/invitation/_footer.scss` | Replaced the slug-specific editorial footer selector with `.invitation-footer[data-variant='editorial']`. |
-| `src/lib/invitation/page-data.ts` | Added footer variant delivery through the presenter so the page-level footer behaves like any other themed section. |
-| `src/lib/schemas/content/section-styles.schema.ts` | Added `sectionStyles.footer.variant` to the content contract. |
-| `src/pages/[eventType]/[slug].astro` | Passed the presenter footer variant into the invitation footer component. |
-| `.agent/plans/noir-premiere-restoration/**` | Tracks execution, validation, and commit preparation. |
+| `src/styles/events/noir-premiere-xv.scss`          | Restored the Noir event stylesheet to the visual behavior of `ac797e8`.                                                                                                                                |
+| `src/components/invitation/Footer.astro`           | Removed slug-specific editorial branching and switched the footer to a `variant`-driven API.                                                                                                           |
+| `src/styles/invitation/_footer.scss`               | Replaced the slug-specific editorial footer selector with `.invitation-footer[data-variant='editorial']`.                                                                                              |
+| `src/lib/invitation/page-data.ts`                  | Added footer variant delivery through the presenter so the page-level footer behaves like any other themed section.                                                                                    |
+| `src/lib/schemas/content/section-styles.schema.ts` | Added `sectionStyles.footer.variant` to the content contract.                                                                                                                                          |
+| `src/pages/[eventType]/[slug].astro`               | Passed the presenter footer variant into the invitation footer component.                                                                                                                              |
+| `.agent/plans/noir-premiere-restoration/**`        | Tracks execution, validation, and commit preparation.                                                                                                                                                  |
 
 ### Explicit Non-Changes
 
@@ -105,22 +112,22 @@ kept architectural rather than demo-specific:
 
 ## ⚠️ Risks and Mitigations
 
-| Risk | Severity | Mitigation |
-| --- | --- | --- |
-| Restoring `jewelry-box` preset could make noir text inherit light-theme tokens again. | High | Phase 03 restores the event stylesheet from `ac797e8` first and only introduces semantic aliases if the current runtime truly requires them. |
-| Envelope or music styling could drift if the preset/variant mapping is not made explicit in content. | Medium | Phase 02 restores the target commit’s Noir content contract and Phase 04 validates envelope/interlude mood against the baseline. |
-| Fixing Noir could accidentally change Ximena or other editorial sections. | Medium | Scope all styling changes to `.event--noir-premiere-xv` and avoid shared section partial edits. |
+| Risk                                                                                                 | Severity | Mitigation                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Restoring `jewelry-box` preset could make noir text inherit light-theme tokens again.                | High     | Phase 03 restores the event stylesheet from `ac797e8` first and only introduces semantic aliases if the current runtime truly requires them. |
+| Envelope or music styling could drift if the preset/variant mapping is not made explicit in content. | Medium   | Phase 02 restores the target commit’s Noir content contract and Phase 04 validates envelope/interlude mood against the baseline.             |
+| Fixing Noir could accidentally change Ximena or other editorial sections.                            | Medium   | Scope all styling changes to `.event--noir-premiere-xv` and avoid shared section partial edits.                                              |
 
 ---
 
 ## 🗺️ Phase Index
 
-| # | Phase | Weight | Status |
-| --- | --- | --- | --- |
-| 01 | [Diagnostic Lock and Composition Reset](./phases/01-diagnostic-lock-and-composition-reset.md) | 20% | `COMPLETED` |
-| 02 | [Content and Variant Restoration](./phases/02-content-and-variant-restoration.md) | 30% | `COMPLETED` |
-| 03 | [Event SCSS Realignment](./phases/03-event-scss-realignment.md) | 35% | `COMPLETED` |
-| 04 | [Visual Verification and Isolation Audit](./phases/04-visual-verification-and-isolation-audit.md) | 15% | `COMPLETED` |
+| #   | Phase                                                                                             | Weight | Status      |
+| --- | ------------------------------------------------------------------------------------------------- | ------ | ----------- |
+| 01  | [Diagnostic Lock and Composition Reset](./phases/01-diagnostic-lock-and-composition-reset.md)     | 20%    | `COMPLETED` |
+| 02  | [Content and Variant Restoration](./phases/02-content-and-variant-restoration.md)                 | 30%    | `COMPLETED` |
+| 03  | [Event SCSS Realignment](./phases/03-event-scss-realignment.md)                                   | 35%    | `COMPLETED` |
+| 04  | [Visual Verification and Isolation Audit](./phases/04-visual-verification-and-isolation-audit.md) | 15%    | `COMPLETED` |
 
 ---
 
@@ -134,8 +141,8 @@ kept architectural rather than demo-specific:
   - preset for palette and semantic roles,
   - section variants for layout/section treatment,
   - event-local SCSS only for demo-specific refinement.
-- Shared invitation theme behavior is only changed where it improves architectural consistency:
-  the footer now consumes a section-style variant instead of a slug exception.
+- Shared invitation theme behavior is only changed where it improves architectural consistency: the
+  footer now consumes a section-style variant instead of a slug exception.
 - No regression is introduced to `xv/ximena-meza-trasvina`, `xv/demo-xv`, or `cumple/demo-cumple`.
 
 ---
@@ -155,12 +162,11 @@ kept architectural rather than demo-specific:
 
 Recommended commit sequence for the currently staged work:
 
-1. `docs(agent): finalize noir premiere restoration plan`
-2. `refactor(invitation): drive footer styling from section variants`
-3. `fix(theme): restore noir premiere xv jewelry-box baseline`
+1. `docs(docs): document noir restoration execution and commit sequence`
+2. `refactor(invitation): drive invitation footer styling from section variants`
+3. `fix(theme): restore noir premiere xv baseline styling`
 
-These messages and file groupings are recorded in
-`./commit-map.json` so `gatekeeper-commit` can execute without recomputing the split.
+These messages and file groupings are recorded in `./commit-map.json` so `gatekeeper-commit` can
+execute without recomputing the split.
 
-For a no-analysis execution path, use
-`./GATEKEEPER_READY.md`.
+For a no-analysis execution path, use `./GATEKEEPER_READY.md`.
