@@ -12,7 +12,7 @@
     {
       "id": "theme-hardening",
       "phaseId": "03-variant-centralization",
-      "status": "ready",
+      "status": "completed",
       "domain": "styles",
       "type": "fix",
       "subject": {
@@ -39,7 +39,7 @@
     {
       "id": "variant-centralization",
       "phaseId": "03-variant-centralization",
-      "status": "ready",
+      "status": "completed",
       "domain": "styles",
       "type": "refactor",
       "subject": {
@@ -82,7 +82,8 @@
         "src/assets/images/events/ximena-meza-trasvina/index.ts"
       ],
       "allowRelated": [
-        "src/assets/images/events/ximena-meza-trasvina/**",
+        "src/assets/images/events/ximena-meza-trasvina/*",
+        "src/assets/images/events/ximena-meza-trasvina/**/*",
         ".agent/plans/ximena-invitation-restoration/**"
       ],
       "correctionPolicy": "absorb-compatible",

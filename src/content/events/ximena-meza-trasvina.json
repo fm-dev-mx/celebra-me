@@ -2,7 +2,7 @@
     "eventType": "xv",
     "isDemo": false,
     "title": "La Noche Premiere de Ximena",
-    "description": "Una celebración editorial donde el brillo de los quince años se encuentra con la elegancia Noir. Sé parte de la historia de Ximena.",
+    "description": "Una celebración editorial donde la elegancia floral y el brillo del rose gold presentan una noche de quince años inolvidable.",
     "theme": {
         "preset": "top-premium-floral"
     },
@@ -132,7 +132,7 @@
                 "type": "bank",
                 "title": "Fondo de Ahorro",
                 "bankName": "BBVA México",
-                "accountHolder": "PENDIENTE",
+                "accountHolder": "Christian J. Trasviña V.",
                 "clabe": "0000 0000 0000 0000 00",
                 "accountNumber": "0000000000"
             },
@@ -201,26 +201,11 @@
         "footerText": "Los Mochis, Sinaloa."
     },
     "navigation": [
-        {
-            "label": "Inicio",
-            "href": "#inicio"
-        },
-        {
-            "label": "Gala",
-            "href": "#event-location"
-        },
-        {
-            "label": "Galería",
-            "href": "#galeria"
-        },
-        {
-            "label": "Regalos",
-            "href": "#regalos"
-        },
-        {
-            "label": "RSVP",
-            "href": "#rsvp"
-        }
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Gala", "href": "#event-location" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Regalos", "href": "#regalos" },
+        { "label": "RSVP", "href": "#rsvp" }
     ],
     "contentBlocks": [
         {
@@ -229,8 +214,8 @@
         },
         {
             "type": "interlude",
-            "image": "interlude02",
-            "alt": "Seda dorada fluyendo en un ambiente Noir",
+            "image": "gallery04",
+            "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
             "height": "screen"
         },
         {
@@ -239,8 +224,8 @@
         },
         {
             "type": "interlude",
-            "image": "interlude03",
-            "alt": "Tiara de diamantes sobre terciopelo negro",
+            "image": "gallery11",
+            "alt": "Jardín privado iluminado para la gala",
             "height": "screen"
         },
         {
@@ -250,7 +235,7 @@
         {
             "type": "interlude",
             "image": "interlude01",
-            "alt": "Detalle editorial de alta moda",
+            "alt": "Detalle editorial de texturas y perlas",
             "height": "screen"
         },
         {
@@ -260,7 +245,7 @@
         {
             "type": "interlude",
             "image": "gallery09",
-            "alt": "Brillo dorado cinematográfico",
+            "alt": "Brillo rose metal cinematográfico",
             "height": "screen"
         },
         {
@@ -270,7 +255,7 @@
         {
             "type": "interlude",
             "image": "gallery10",
-            "alt": "Explosión artística de destellos dorados",
+            "alt": "Explosión artística de destellos en el jardín",
             "height": "screen"
         },
         {
@@ -280,7 +265,7 @@
         {
             "type": "interlude",
             "image": "gallery15",
-            "alt": "Detalles editoriales en oro y perlas",
+            "alt": "Detalles editoriales en seda y luz floral",
             "height": "screen"
         },
         {
@@ -290,8 +275,8 @@
         {
             "type": "interlude",
             "image": "interludeNew01",
-            "alt": "Último retrato editorial",
-            "variant": "top-premium-xv-ximena",
+            "alt": "Retrato editorial final",
+            "variant": "editorial",
             "height": "screen"
         },
         {

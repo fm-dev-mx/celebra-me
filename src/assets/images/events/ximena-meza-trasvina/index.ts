@@ -8,9 +8,13 @@ import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
 import gallery05 from './gallery-05.webp';
+import gallery06 from './gallery-06.webp';
 import gallery07 from './gallery-07.webp';
+import gallery08 from './gallery-08.webp';
 import gallery09 from './gallery-09.webp';
 import gallery10 from './gallery-10.webp';
+import gallery11 from './gallery-11.webp';
+import gallery12 from './gallery-12.webp';
 import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
 import interlude03 from './interlude-03.webp';
@@ -23,28 +27,28 @@ export const assets = {
 	portrait,
 	family,
 	familyAlt,
-	jardin: gallery03, // Using dedicated venue shot
+	jardin: gallery03, // Using dedicated garden venue shot
 	signature,
 	gallery: [
-		gallery01, // 0 -> gallery01
-		gallery02, // 1 -> gallery02
-		gallery03, // 2 -> gallery03
-		gallery04, // 3 -> gallery04
-		gallery05, // 4 -> gallery05
-		gallery05, // 5 -> gallery06 (fallback)
-		gallery07, // 6 -> gallery07
-		gallery07, // 7 -> gallery08 (fallback)
-		gallery09, // 8 -> gallery09
-		gallery10, // 9 -> gallery10
-		undefined, // 10 -> gallery11
-		undefined, // 11 -> gallery12
-		undefined, // 12 -> gallery13
-		undefined, // 13 -> gallery14
-		gallery15, // 14 -> gallery15
+		gallery01, // 01
+		gallery02, // 02
+		gallery03, // 03
+		gallery04, // 04
+		gallery05, // 05
+		gallery06, // 06
+		gallery07, // 07
+		gallery08, // 08
+		gallery09, // 09
+		gallery10, // 10
+		gallery11, // 11
+		gallery12, // 12
+		undefined, // 13
+		undefined, // 14
+		gallery15, // 15 (Matches JSON "gallery15")
 	],
-	interlude01,
-	interlude02,
-	interlude03,
+	interlude01, // Still available (Noir-style detail)
+	interlude02, // Still available
+	interlude03, // Still available
 	interludeNew01,
 	thankYouPortrait,
 };
