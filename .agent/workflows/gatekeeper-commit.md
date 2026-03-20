@@ -46,6 +46,7 @@ If no plan exists yet:
    - `unit_mismatch`: stop, update the plan or align the change set, then rerun `inspect`
    - `invalid_plan_contract`: stop and fix `commit-map.json`
    - `commit_strategy_not_ready`: stop and complete the final commit review in the plan
+   - `plan_archived`: stop and create or select an active plan; archived plans are historical only
    - `plan_not_found`: stop and create or select the correct active plan
    - `empty_change_set`: nothing to do
 
@@ -86,8 +87,6 @@ If no plan exists yet:
   whenever the finding changes intent, file boundaries, or commit purpose.
 - If a workflow finding is purely operational and does not change the unit’s intent, file
   boundaries, or explanation, fix the issue and rerun `inspect` without redesigning the plan.
-- Treat `pnpm gatekeeper:commit-ready` only as a convenience wrapper around `inspect`, not as a
-  separate planning flow.
 
 ## Output Contract
 
@@ -95,7 +94,8 @@ The workflow-generated commit must contain:
 
 - an exact planned header from the unit when `messagePreview.header` is provided
 - that header must still equal the canonical unit subject: `type(domain): verb target`
-- one body bullet per changed file
+- one to four semantic summary bullets from `messagePreview.summary`
+- a `Files:` section with one exact changed file path per bullet
 - these trailers:
 
 ```text

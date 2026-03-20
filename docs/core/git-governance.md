@@ -54,17 +54,19 @@ pnpm gatekeeper:workflow:cleanup
 - already-written work uses a retroactive plan before commit
 - `gatekeeper-commit` is a validator and executor, not a planner
 - the working tree must represent one material unit at commit time
-- `pnpm gatekeeper:commit-ready` is only a convenience wrapper around `inspect`
+- completed plans move to `.agent/plans/archive/` and stop being executable
 
 ## Guarantees
 
 - there is no commit fallback to domain heuristics
 - `scope` is derived from the unit `domain`
+- the commit body uses semantic summary bullets plus a dedicated `Files:` section
 - every planned commit carries `Plan-Id` and `Commit-Unit` trailers
 - CI reconstructs the selected unit from those trailers
 - staged-set drift blocks the commit instead of being auto-healed
 - plans that are not ready for gatekeeper are blocked before commit execution
 - active plans with draft or locked units are not executable even if the review metadata exists
+- archived plans remain available for historical validation but are blocked from new execution
 
 ## Non-Goals
 
