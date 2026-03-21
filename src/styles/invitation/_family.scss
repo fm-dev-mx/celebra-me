@@ -37,6 +37,8 @@
 		z-index: 2;
 		margin-bottom: var(--family-header-margin, clamp(2.5rem, 5vw, 4rem));
 		text-align: center;
+
+		--family-reveal-delay: 0s;
 	}
 
 	&__header-inner {
@@ -96,6 +98,8 @@
 	&__media {
 		position: relative;
 		margin: 0;
+
+		--family-reveal-delay: 0.08s;
 	}
 
 	&__media-frame {
@@ -105,7 +109,7 @@
 		border-radius: 10px;
 		overflow: hidden;
 		border: 1px solid var(--family-border, rgb(var(--color-text-primary-rgb), 0.2));
-		background: rgb(17 12 9);
+		background: var(--family-media-bg, rgb(17 12 9));
 		box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
 
 		img {
@@ -311,14 +315,6 @@
 		transform: none;
 	}
 
-	&__header {
-		--family-reveal-delay: 0s;
-	}
-
-	&__media {
-		--family-reveal-delay: 0.08s;
-	}
-
 	&__group--spouse {
 		--family-reveal-delay: 0.16s;
 	}
@@ -364,9 +360,9 @@
 @media (prefers-reduced-motion: reduce) {
 	.family {
 		&__reveal {
-			opacity: 100% !important;
-			transform: none !important;
-			transition: none !important;
+			opacity: 100%;
+			transform: none;
+			transition: none;
 		}
 
 		&__group + .family__group::before {

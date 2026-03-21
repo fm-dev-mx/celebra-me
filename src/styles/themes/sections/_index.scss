@@ -2,6 +2,10 @@
 // Export all section-specific theme styles
 
 @forward 'tokens';
+@forward 'family-tokens';
+@forward 'gallery-tokens';
+@forward 'rsvp-tokens';
+@forward 'hero-tokens';
 @forward 'base-theme';
 @forward 'hero-theme';
 @forward 'quote-theme';

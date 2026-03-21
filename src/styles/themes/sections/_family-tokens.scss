@@ -1,0 +1,53 @@
+// src/styles/themes/sections/_family-tokens.scss
+// Canonical token contract for Family section
+
+@use '../../tokens' as tokens;
+
+:root {
+	// Background & Surface
+	--family-bg: var(--section-bg);
+	--family-panel-bg: rgb(var(--color-surface-primary-rgb), 0.82);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(255 255 255 / 0%) 0%,
+		rgb(var(--color-action-accent-rgb), 0.06) 100%
+	);
+
+	// Borders & Dividers
+	--family-border: rgb(var(--color-action-accent-rgb), 0.24);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--color-action-accent-rgb), 0.35),
+		transparent
+	);
+	--family-panel-border: var(--family-border);
+
+	// Accent
+	--family-accent: var(--color-action-accent);
+
+	// Typography
+	--family-title-font: var(--font-display);
+	--family-title-size: clamp(2.4rem, 6vw, 4.8rem);
+	--family-title-max-width: 15ch;
+	--family-meta-size: 0.72rem;
+	--family-meta-letter-spacing: 0.18em;
+
+	// Spacing
+	--family-header-margin: 3rem;
+	--family-group-padding-block: clamp(1rem, 2.1vw, 1.4rem);
+	--family-group-title-margin-bottom: 1.7rem;
+	--family-panel-gap: clamp(2.5rem, 8vw, 8rem);
+	--family-content-max-width: 32rem;
+	--family-media-column: 0.85fr;
+	--family-content-column: 1.15fr;
+
+	// Effects
+	--family-shadow: 0 20px 46px rgb(91 67 41 / 18%);
+	--family-panel-shadow: var(--family-shadow);
+	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
+
+	// Text Colors
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb), 0.7);
+}

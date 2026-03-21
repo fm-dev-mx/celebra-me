@@ -4,10 +4,10 @@
     "defaultFallback": "none",
     "commitStrategyReview": {
         "draftedAt": "2026-03-21T18:00:00Z",
-        "reviewedAt": "2026-03-21T18:45:00Z",
-        "readyForGatekeeperAt": "2026-03-21T18:45:00Z",
+        "reviewedAt": "2026-03-21T12:58:00Z",
+        "readyForGatekeeperAt": "2026-03-21T12:58:00Z",
         "status": "APPROVED",
-        "notes": "Consolidated into single unit for staged changes. Pre-existing lint errors acknowledged but outside scope."
+        "notes": "All phases completed. Pre-existing lint errors (517) acknowledged but outside scope - require separate cleanup effort."
     },
     "units": [
         {
@@ -32,10 +32,15 @@
                 "src/styles/dashboard/_shell.scss",
                 "src/styles/global/_functions.scss",
                 "src/styles/global/_mixins.scss",
+                "src/styles/invitation/_family.scss",
                 "src/styles/invitation/_hero.scss",
                 "src/styles/invitation/_rsvp.scss",
-                "src/styles/themes/sections/_tokens.scss",
-                "src/styles/tokens/_semantic.scss"
+                "src/styles/themes/sections/_family-tokens.scss",
+                "src/styles/themes/sections/_gallery-tokens.scss",
+                "src/styles/themes/sections/_hero-tokens.scss",
+                "src/styles/themes/sections/_index.scss",
+                "src/styles/themes/sections/_rsvp-tokens.scss",
+                "src/styles/themes/sections/_tokens.scss"
             ],
             "allowRelated": [],
             "correctionPolicy": "absorb-compatible",
@@ -43,9 +48,9 @@
                 "header": "refactor(ui): optimize SCSS architecture with token consolidation",
                 "summary": [
                     "eliminate duplicate Sass variable definitions across mixins and functions",
-                    "add semantic tokens for error states and section-specific CSS variables",
+                    "add canonical section token contracts for family, gallery, hero, and rsvp",
                     "replace hardcoded rgb values with CSS variables in components",
-                    "add SCSS linting rules and create comprehensive styleguide"
+                    "update styleguide documentation"
                 ]
             }
         }

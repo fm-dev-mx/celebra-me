@@ -1,14 +1,19 @@
 // src/styles/themes/sections/_tokens.scss
+// Canonical section token contracts
+
+@use '../../tokens' as tokens;
+@forward 'family-tokens';
+@forward 'gallery-tokens';
+@forward 'rsvp-tokens';
+@forward 'hero-tokens';
 
 /**
  * Section Token Contract - Celebra-me Ecosystem
  *
- * Defines the standard set of CSS variables that every section section
+ * Defines the standard set of CSS variables that every section
  * supports. This allows presets to "skin" any section without knowledge
  * of its internal markup.
  */
-
-@use '../../tokens' as tokens;
 
 :root {
 	// ---------------------------------------------------------------------

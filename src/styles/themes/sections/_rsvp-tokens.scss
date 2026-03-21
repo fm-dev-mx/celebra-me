@@ -1,0 +1,56 @@
+// src/styles/themes/sections/_rsvp-tokens.scss
+// Canonical token contract for RSVP section
+
+@use '../../tokens' as tokens;
+
+:root {
+	// Background & Glass Effect
+	--rsvp-bg: var(--color-surface-dark);
+	--color-glass-bg: rgb(var(--color-surface-primary-rgb), 0.24);
+	--color-glass-border: rgb(var(--color-action-accent-rgb), 0.28);
+	--color-glass-shadow: rgb(var(--color-action-accent-rgb), 0.18);
+	--shadow-premium:
+		0 18px 40px rgb(var(--color-action-primary-rgb), 0.18), 0 8px 18px rgb(0 0 0 / 16%);
+
+	// Label
+	--rsvp-label-color: var(--color-text-secondary);
+	--rsvp-label-letter-spacing: 0.03em;
+
+	// Field
+	--rsvp-field-bg: rgb(var(--color-surface-primary-rgb), 0.5);
+	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb), 0.95);
+	--rsvp-field-border: var(--color-glass-border);
+	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb), 0.42);
+	--rsvp-radius-card: 4px;
+	--rsvp-radius-field: 2px;
+
+	// Radio
+	--rsvp-radio-bg: rgb(var(--color-surface-primary-rgb), 0.45);
+	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb), 0.74);
+	--rsvp-radio-border: rgb(var(--color-action-accent-rgb), 0.25);
+	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.18);
+	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.78);
+	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb), 0.3);
+
+	// Button
+	--rsvp-button-color: var(--color-action-accent);
+	--rsvp-button-color-hover: var(--color-surface-dark);
+	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
+	--rsvp-button-filter-hover: saturate(1.08);
+	--rsvp-button-shadow-rest:
+		0 10px 22px rgb(var(--color-action-primary-rgb), 0.34),
+		0 1px 0 rgb(var(--color-action-accent-rgb), 0.24);
+	--rsvp-button-shadow-hover:
+		0 14px 28px rgb(var(--color-action-primary-rgb), 0.42),
+		0 0 18px rgb(var(--color-action-accent-rgb), 0.2);
+
+	// Error
+	--color-error-field: rgb(166 46 46);
+	--color-error-text: rgb(138 32 32);
+	--rsvp-error-bg: rgb(var(--color-error-rgb), 0.1);
+	--rsvp-error-border: rgb(var(--color-error-rgb), 0.28);
+
+	// Emojis
+	--rsvp-emoji-yes: '✓';
+	--rsvp-emoji-no: '✗';
+}

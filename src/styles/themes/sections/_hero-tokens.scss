@@ -1,0 +1,75 @@
+// src/styles/themes/sections/_hero-tokens.scss
+// Canonical token contract for Hero section
+
+@use '../../tokens' as tokens;
+
+:root {
+	// Overlay
+	--hero-overlay: rgb(0 0 0 / 40%);
+	--hero-overlay-gradient: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgb(0 0 0 / 20%) 50%,
+		rgb(0 0 0 / 60%) 100%
+	);
+
+	// Typography
+	--hero-title-size: clamp(4rem, 12vw, 8rem);
+	--hero-label-color: var(--color-action-accent);
+	--hero-label-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+
+	// Image Filters
+	--hero-image-filter: grayscale(0.3) brightness(0.85);
+	--hero-portrait-filter: contrast(1.1) saturate(1.1) brightness(0.9);
+
+	// Content Card (Jewelry Box)
+	--hero-card-bg-overlay: radial-gradient(
+		circle at center,
+		rgb(255 255 255 / 78%) 0%,
+		rgb(255 255 255 / 56%) 52%,
+		rgb(250 247 241 / 46%) 100%
+	);
+	--hero-card-bg: var(--color-surface-primary);
+	--hero-card-shadow-contact: 0 34px 72px -18px rgb(0 0 0 / 42%);
+	--hero-card-shadow-ambient:
+		inset 0 0 0 1px rgb(255 255 255 / 54%),
+		inset 0 0 28px rgb(var(--color-action-accent-rgb) / 7%);
+
+	// Content Card (Luxury Hacienda)
+	--hero-card-border-old-gold-start: rgb(212 175 55);
+	--hero-card-border-old-gold-mid: rgb(189 151 68);
+	--hero-card-border-old-gold-end: rgb(165 127 56);
+	--hero-card-border-hairline: rgb(255 235 194 / 20%);
+
+	// Title Gradient (Luxury Hacienda)
+	--hero-title-color-start: var(--color-text-primary);
+	--hero-title-color-mid: var(--color-action-accent);
+	--hero-title-color-end: var(--color-surface-dark);
+	--hero-title-shadow-near: 0 3px 10px rgb(0 0 0 / 55%);
+	--hero-title-shadow-far: 0 8px 24px rgb(0 0 0 / 35%);
+
+	// Divider
+	--hero-divider-color: var(--color-action-accent);
+
+	// Meta
+	--hero-meta-color: var(--color-text-on-dark);
+	--hero-meta-font: var(--font-label);
+
+	// Badge (Luxury Hacienda)
+	--hero-badge-bg: rgb(var(--color-surface-primary-rgb), 0.9);
+	--hero-badge-text: var(--color-text-primary);
+	--hero-badge-border: rgb(var(--color-action-accent-rgb), 0.35);
+	--hero-badge-shadow:
+		0 8px 20px rgb(0 0 0 / 25%), inset 0 1px 0 rgb(255 236 202 / 22%),
+		inset 0 -1px 0 rgb(34 23 14 / 74%);
+
+	// Light Sweep Animation
+	--light-sweep: linear-gradient(
+		115deg,
+		transparent 20%,
+		rgb(255 255 255 / 25%) 40%,
+		rgb(255 255 255 / 50%) 50%,
+		rgb(255 255 255 / 25%) 60%,
+		transparent 80%
+	);
+}
