@@ -1,0 +1,52 @@
+@use '../../tools/functions' as tools;
+@use '../primitives/type' as primitive-type;
+
+$semantic-type: (
+	font: (
+		display: primitive-type.font(display-elegant),
+		display-formal: primitive-type.font(display-formal),
+		display-elegant: primitive-type.font(display-elegant),
+		display-hacienda: primitive-type.font(display-hacienda),
+		calligraphy: primitive-type.font(calligraphy),
+		body: primitive-type.font(body),
+		body-hacienda: primitive-type.font(body-hacienda),
+		ui: primitive-type.font(ui),
+		label: primitive-type.font(display-formal),
+	),
+	size: (
+		h1: primitive-type.size(h1),
+		h2: primitive-type.size(h2),
+		h3: primitive-type.size(h3),
+		body: primitive-type.size(body),
+		ui: primitive-type.size(ui),
+	),
+	weight: (
+		light: primitive-type.weight(light),
+		regular: primitive-type.weight(regular),
+		medium: primitive-type.weight(medium),
+		semibold: primitive-type.weight(semibold),
+		bold: primitive-type.weight(bold),
+	),
+	tracking: (
+		tight: primitive-type.tracking(tight),
+		normal: primitive-type.tracking(normal),
+		wide: primitive-type.tracking(wide),
+		extra-wide: primitive-type.tracking(extra-wide),
+	),
+);
+
+@function font($token) {
+	@return tools.token($semantic-type, font, $token);
+}
+
+@function size($token) {
+	@return tools.token($semantic-type, size, $token);
+}
+
+@function weight($token) {
+	@return tools.token($semantic-type, weight, $token);
+}
+
+@function tracking($token) {
+	@return tools.token($semantic-type, tracking, $token);
+}

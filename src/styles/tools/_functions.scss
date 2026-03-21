@@ -1,0 +1,26 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'sass:meta';
+
+@function token($source, $keys...) {
+	$token-value: $source;
+
+	@each $key in $keys {
+		@if meta.type-of($token-value) != 'map' or not map.has-key($token-value, $key) {
+			@error "Unknown token path: #{meta.inspect($keys)}";
+		}
+
+		$token-value: map.get($token-value, $key);
+	}
+
+	@return $token-value;
+}
+
+@function rgb-channels($value) {
+	@if meta.type-of($value) != 'color' {
+		@return $value;
+	}
+
+	@return #{color.channel($value, 'red', $space: rgb)}, #{color.channel($value, 'green', $space: rgb)},
+		#{color.channel($value, 'blue', $space: rgb)};
+}

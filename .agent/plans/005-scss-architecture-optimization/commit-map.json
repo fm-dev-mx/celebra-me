@@ -22,12 +22,9 @@
             },
             "purpose": "point legacy token files to new modular architecture and cleanup duplicate variable definitions",
             "include": [
-                ".agent/governance/config/domain-map.json",
                 ".agent/governance/bin/gatekeeper.mjs",
                 ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "docs/core/git-governance.md",
-                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
-                ".agent/plans/005-scss-architecture-optimization/manifest.json",
                 ".stylelintrc.json",
                 "src/styles/tokens/_motion.scss",
                 "src/styles/tokens/_primitives.scss",
@@ -64,6 +61,8 @@
             },
             "purpose": "implement high-level design contract through Sass modules and CSS variables",
             "include": [
+                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
+                ".agent/governance/config/domain-map.json",
                 "src/styles/tokens/contracts/_core.scss",
                 "src/styles/tools/_functions.scss",
                 "src/styles/tokens/primitives/_color.scss",

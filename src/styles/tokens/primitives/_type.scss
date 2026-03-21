@@ -1,0 +1,49 @@
+@use '../../tools/functions' as tools;
+
+$primitive-type: (
+	font: (
+		display-formal: ('Cinzel', serif),
+		display-elegant: ('Playfair Display', serif),
+		display-hacienda: ('Cormorant Garamond', serif),
+		calligraphy: ('Pinyon Script', cursive),
+		body: ('EB Garamond', georgia, serif),
+		body-hacienda: ('EB Garamond', serif),
+		ui: ('Montserrat', system-ui, sans-serif),
+	),
+	size: (
+		h1: clamp(2.5rem, 8vw, 5rem),
+		h2: clamp(1.8rem, 5vw, 3rem),
+		h3: clamp(1.4rem, 3vw, 2rem),
+		body: clamp(1rem, 1.2vw, 1.25rem),
+		ui: 0.9rem,
+	),
+	weight: (
+		light: 300,
+		regular: 400,
+		medium: 500,
+		semibold: 600,
+		bold: 700,
+	),
+	tracking: (
+		tight: -0.02em,
+		normal: 0,
+		wide: 0.1em,
+		extra-wide: 0.25em,
+	),
+);
+
+@function font($token) {
+	@return tools.token($primitive-type, font, $token);
+}
+
+@function size($token) {
+	@return tools.token($primitive-type, size, $token);
+}
+
+@function weight($token) {
+	@return tools.token($primitive-type, weight, $token);
+}
+
+@function tracking($token) {
+	@return tools.token($primitive-type, tracking, $token);
+}

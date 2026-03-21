@@ -1,0 +1,29 @@
+@use '../../tools/functions' as tools;
+
+$primitive-motion: (
+	ease: (
+		in: cubic-bezier(0.4, 0, 1, 1),
+		out: cubic-bezier(0, 0, 0.2, 1),
+		in-out: cubic-bezier(0.4, 0, 0.2, 1),
+		snappy: cubic-bezier(0.25, 1, 0.5, 1),
+		premium: cubic-bezier(0.16, 1, 0.3, 1),
+		overshoot: cubic-bezier(0.3, 1.5, 0.7, 1),
+		bouncy: cubic-bezier(0.68, -0.55, 0.27, 1.55),
+	),
+	duration: (
+		fast: 0.1s,
+		snappy: 0.2s,
+		standard: 0.4s,
+		slower: 0.6s,
+		premium: 1s,
+		reveal: 1.6s,
+	),
+);
+
+@function ease($token) {
+	@return tools.token($primitive-motion, ease, $token);
+}
+
+@function duration($token) {
+	@return tools.token($primitive-motion, duration, $token);
+}

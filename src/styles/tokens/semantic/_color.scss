@@ -1,0 +1,53 @@
+@use 'sass:color';
+@use '../../tools/functions' as tools;
+@use '../primitives/color' as primitive-color;
+
+$semantic-color: (
+	surface: (
+		primary: primitive-color.color(parchment, 100),
+		secondary: primitive-color.color(coffee, 100),
+		soft: primitive-color.color(neutral, 50),
+		elevated: primitive-color.color(neutral, 0),
+		canvas: primitive-color.color(coffee, 900),
+		dark: primitive-color.color(coffee, 900),
+	),
+	text: (
+		primary: primitive-color.color(coffee, 900),
+		secondary: primitive-color.color(coffee, 700),
+		emphasis: primitive-color.color(gold, 700),
+		on-dark: primitive-color.color(parchment, 100),
+		on-light: primitive-color.color(coffee, 900),
+		muted: color.change(primitive-color.color(coffee, 900), $alpha: 0.65),
+	),
+	action: (
+		primary: primitive-color.color(coffee, 900),
+		accent: primitive-color.color(gold, 500),
+		secondary: primitive-color.color(coffee, 800),
+	),
+	border: (
+		subtle: color.change(primitive-color.color(coffee, 900), $alpha: 0.1),
+		premium: color.change(primitive-color.color(gold, 500), $alpha: 0.3),
+		emphasis: primitive-color.color(gold, 500),
+	),
+	neutral: (
+		subtle: primitive-color.color(neutral, 100),
+		muted: primitive-color.color(neutral, 400),
+		base: primitive-color.color(neutral, 700),
+		emphasis: primitive-color.color(neutral, 900),
+	),
+	state: (
+		error: primitive-color.color(special, error),
+		success: primitive-color.color(forest, 800),
+		warning: primitive-color.color(amber, 600),
+	),
+	special: (
+		whatsapp: primitive-color.color(special, whatsapp),
+		wax-seal: primitive-color.color(special, wax-red),
+		reserved: primitive-color.color(plum, 700),
+		white: primitive-color.color(neutral, 0),
+	),
+);
+
+@function color($group, $token) {
+	@return tools.token($semantic-color, $group, $token);
+}

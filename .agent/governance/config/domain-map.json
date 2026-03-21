@@ -18,6 +18,7 @@
         "theme": [
             "src/styles/themes/**",
             "src/styles/tokens/**",
+            "src/styles/tools/**",
             "src/styles/global/**",
             "src/styles/ui/**",
             "src/styles/layout/**",

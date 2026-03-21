@@ -1,0 +1,14 @@
+@use '../../tools/functions' as tools;
+@use '../primitives/spacing' as primitive-space;
+
+$semantic-space: (
+	container-padding: primitive-space.space(6),
+	section-gap: primitive-space.space(16),
+	component-gap: primitive-space.space(6),
+	element-gap: primitive-space.space(4),
+	text-gap: primitive-space.space(2),
+);
+
+@function spacing($token) {
+	@return tools.token($semantic-space, $token);
+}

@@ -1,0 +1,28 @@
+@use '../../tools/functions' as tools;
+@use '../primitives/motion' as primitive-motion;
+
+$semantic-motion: (
+	ease: (
+		standard: primitive-motion.ease(in-out),
+		snappy: primitive-motion.ease(snappy),
+		premium: primitive-motion.ease(premium),
+		overshoot: primitive-motion.ease(overshoot),
+		bouncy: primitive-motion.ease(bouncy),
+	),
+	duration: (
+		fast: primitive-motion.duration(fast),
+		snappy: primitive-motion.duration(snappy),
+		standard: primitive-motion.duration(standard),
+		slower: primitive-motion.duration(slower),
+		premium: primitive-motion.duration(premium),
+		reveal: primitive-motion.duration(reveal),
+	),
+);
+
+@function ease($token) {
+	@return tools.token($semantic-motion, ease, $token);
+}
+
+@function duration($token) {
+	@return tools.token($semantic-motion, duration, $token);
+}
