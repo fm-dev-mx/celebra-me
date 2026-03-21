@@ -4,9 +4,9 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-21T14:27:00Z",
-    "reviewedAt": "2026-03-21T16:05:00Z",
-    "readyForGatekeeperAt": "2026-03-21T16:05:00Z",
-    "notes": "Unit 1 completed. Proceeding with Unit 2: Post-Mortem Template. Removed duplicate include of commit-map.json."
+    "reviewedAt": "2026-03-21T16:12:00Z",
+    "readyForGatekeeperAt": "2026-03-21T16:12:00Z",
+    "notes": "Units 1-2 completed. Proceeding with Unit 3: Backlog Cleanup."
   },
   "units": [
     {
@@ -36,7 +36,7 @@
     {
       "id": "post-mortem-template",
       "phaseId": "02-post-mortem-templates",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "feat",
       "subject": {
@@ -45,8 +45,7 @@
       },
       "purpose": "ensure lessons learned are captured before archiving complex plans",
       "include": [
-        ".agent/plans/templates/post-mortem.md",
-        ".agent/plans/001-plan-archival-governance/commit-map.json"
+        ".agent/plans/templates/post-mortem.md"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
@@ -72,7 +71,8 @@
       "include": [
         ".agent/plans/theme-governance/**",
         ".agent/plans/branch-protection/**",
-        ".agent/plans/archive/**"
+        ".agent/plans/archive/**",
+        ".agent/plans/001-plan-archival-governance/commit-map.json"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
