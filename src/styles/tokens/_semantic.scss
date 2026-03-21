@@ -46,6 +46,10 @@ $color-text-muted: var(--color-text-muted, rgba(primitives.$base-coffee-900, 0.6
 $color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
 $color-glass-border: var(--color-glass-border, rgb(var(--color-surface-primary-rgb), 0.2));
 
+// Glassmorphism
+$color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
+$color-glass-border: var(--color-glass-border, rgb(var(--color-surface-primary-rgb), 0.2));
+
 // Shadows
 $shadow-subtle: var(--shadow-subtle, 0 4px 15px rgb(0 0 0 / 10%));
 $shadow-emphasis: var(--shadow-emphasis, 0 10px 30px rgb(0 0 0 / 20%));
@@ -54,3 +58,9 @@ $shadow-premium: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
 // Special Roles
 $color-whatsapp: primitives.$base-whatsapp;
 $color-wax-seal: primitives.$base-wax-red;
+
+// Theme-driven Image Filters
+$theme-image-filter-hero: var(--theme-image-filter-hero, none);
+$theme-image-filter-portrait: var(--theme-image-filter-portrait, none);
+$theme-image-filter-gallery: var(--theme-image-filter-gallery, none);
+$theme-image-filter-interlude: var(--theme-image-filter-interlude, none);

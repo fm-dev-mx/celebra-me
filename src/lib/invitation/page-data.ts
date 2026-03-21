@@ -14,6 +14,7 @@ export type InvitationRenderPlanItem =
 
 export interface InvitationPageData {
 	eventSlug: string;
+	isDemo: boolean;
 	themePreset: ThemeConfig['preset'];
 	layout: {
 		title: string;
@@ -214,6 +215,7 @@ export function prepareInvitationPageData(input: {
 
 	return {
 		eventSlug: viewModel.id,
+		isDemo: input.eventEntry.data.isDemo ?? false,
 		themePreset: theme.preset,
 		layout: {
 			title: guestName ? `Invitación para ${guestName}` : viewModel.title,

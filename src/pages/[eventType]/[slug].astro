@@ -65,6 +65,8 @@ const presenter = prepareInvitationPageData({
 	image={presenter.layout.image}
 	hideHeader={true}
 	className={presenter.layout.className}
+	isDemo={presenter.isDemo}
+	themeMode="dark"
 >
 	<style is:inline lang="scss" set:html={presenter.wrapper.scopedStyles} />
 	<main class={presenter.wrapper.className} {...presenter.wrapper.dataAttributes}>

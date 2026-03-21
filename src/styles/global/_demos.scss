@@ -1,0 +1,16 @@
+@use '../tokens' as tokens;
+
+/**
+ * Global Demo Overrides
+ * Styles in this file only apply to invitations where isDemo: true.
+ * Use this to avoid per-demo SCSS files for common branding needs.
+ */
+
+.is-demo {
+	// Common Demo branding (e.g., specific header tweaks)
+	.header-base {
+		// Example: Demo header can be slightly more opaque or have a badge
+	}
+
+	// Placeholder for global demo behaviors
+}
