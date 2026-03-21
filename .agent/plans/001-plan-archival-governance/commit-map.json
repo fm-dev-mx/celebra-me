@@ -1,0 +1,84 @@
+{
+  "planId": "001-plan-archival-governance",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-21T14:27:00Z"
+  },
+  "units": [
+    {
+      "id": "archival-standardization",
+      "phaseId": "01-archival-standardization",
+      "status": "draft",
+      "domain": "governance",
+      "type": "docs",
+      "subject": {
+        "verb": "standardize",
+        "target": "plan archival rules"
+      },
+      "purpose": "define sequential naming (001-) and YYYY-MM structure for archived plans to prevent clutter",
+      "include": [
+        ".agent/plans/README.md"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "docs(governance): standardize plan archival rules",
+        "summary": [
+          "define YYYY-MM structure for archived plans to prevent clutter",
+          "update planning framework documentation"
+        ]
+      }
+    },
+    {
+      "id": "post-mortem-template",
+      "phaseId": "02-post-mortem-templates",
+      "status": "draft",
+      "domain": "governance",
+      "type": "feat",
+      "subject": {
+        "verb": "add",
+        "target": "post-mortem template"
+      },
+      "purpose": "ensure lessons learned are captured before archiving complex plans",
+      "include": [
+        ".agent/plans/templates/post-mortem.md"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "feat(governance): add post-mortem template",
+        "summary": [
+          "ensure lessons learned are captured before archiving complex plans",
+          "provide lightweight structure for closure notes"
+        ]
+      }
+    },
+    {
+      "id": "backlog-cleanup",
+      "phaseId": "03-backlog-cleanup",
+      "status": "draft",
+      "domain": "governance",
+      "type": "chore",
+      "subject": {
+        "verb": "archive",
+        "target": "completed plans"
+      },
+      "purpose": "move theme-governance and branch-protection to the archive",
+      "include": [
+        ".agent/plans/theme-governance/**",
+        ".agent/plans/branch-protection/**",
+        ".agent/plans/archive/**"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(governance): archive completed plans",
+        "summary": [
+          "move theme-governance and branch-protection to the archive",
+          "apply YYYY-MM organization structure"
+        ]
+      }
+    }
+  ]
+}
