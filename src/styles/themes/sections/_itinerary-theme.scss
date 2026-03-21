@@ -5,15 +5,12 @@
 // ==========================================================================
 
 .itinerary[data-variant='editorial'] {
-	--itinerary-bg: #0d0d0d;
-	--itinerary-accent: var(--color-action-accent);
-
-	background: var(--itinerary-bg);
-	padding-block: clamp(5rem, 10vw, 8rem);
+	background: var(--itinerary-bg, var(--section-bg));
+	padding-block: var(--section-padding-block);
 
 	.itinerary__title {
-		font-family: var(--font-display);
-		font-size: clamp(2.5rem, 6vw, 4.5rem);
+		font-family: var(--section-title-font);
+		font-size: var(--section-title-size);
 	}
 
 	.itinerary__item-time {
@@ -30,7 +27,7 @@
 	}
 
 	.itinerary__item-icon-wrapper {
-		background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+		background: var(--section-card-bg, tokens.$color-surface-soft);
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
 		box-shadow:
 			0 10px 20px rgb(0 0 0 / 60%),

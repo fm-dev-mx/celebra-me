@@ -6,7 +6,7 @@
 // ==========================================================================
 
 .thank-you-section[data-variant='editorial'] {
-	background: #050505;
+	background: var(--thank-you-bg, #050505);
 	padding-block: clamp(6rem, 15vw, 10rem);
 	position: relative;
 	overflow: hidden;
@@ -35,10 +35,16 @@
 	}
 
 	.photo-frame {
-		width: clamp(260px, 40vw, 320px);
-		height: clamp(260px, 40vw, 320px);
+		width: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+		height: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+
+		@media (width >= 768px) {
+			width: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+			height: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+		}
+
 		border-radius: 50%;
-		background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+		background: linear-gradient(135deg, tokens.$color-surface-soft, tokens.$color-surface-primary);
 		box-shadow: var(--thank-you-photo-frame-shadow);
 		position: relative;
 		overflow: visible;
@@ -51,14 +57,7 @@
 			position: absolute;
 			inset: -8px;
 			border-radius: 50%;
-			background: linear-gradient(
-				135deg,
-				#f9f6f2 0%,
-				#c5a059 25%,
-				#4a3a1f 50%,
-				#c5a059 75%,
-				#f9f6f2 100%
-			);
+			background: var(--gold-metallic);
 			z-index: -1;
 			box-shadow: 0 10px 30px rgb(0 0 0 / 60%);
 			opacity: 90%;
@@ -118,7 +117,7 @@
 	.closing-name {
 		font-family: var(--font-display);
 		font-size: clamp(3rem, 8vw, 5rem);
-		background: linear-gradient(135deg, #f9f6f2 0%, #c5a059 50%, #f9f6f2 100%);
+		background: var(--gold-metallic);
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		margin-top: 1rem;

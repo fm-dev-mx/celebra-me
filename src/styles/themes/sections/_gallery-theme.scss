@@ -4,41 +4,16 @@
 /* --- GALLERY: EDITORIAL VARIANT --- */
 
 .gallery-section[data-variant='editorial'] {
-	--gallery-section-bg: #050505;
-	--gallery-title-font: var(--font-display);
-	--gallery-title-transform: uppercase;
-	--gallery-title-size: clamp(2.8rem, 8vw, 6rem);
-	--gallery-title-letter-spacing: -0.02em;
-	--gallery-subtitle-font: var(--font-label);
-	--gallery-subtitle-size: 0.82rem;
-	--gallery-subtitle-color: var(--color-action-accent);
-	--gallery-subtitle-letter-spacing: 0.32em;
-	--gallery-item-bg: rgb(255 255 255 / 22%);
-	--gallery-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
-	--gallery-item-radius: 0;
-	--gallery-item-padding: 0;
-	--gallery-item-shadow: 0 42px 90px rgb(var(--color-surface-dark-rgb) / 12%);
-	--gallery-item-hover-transform: translateY(-10px) scale(1.02);
-	--gallery-item-hover-border-color: var(--color-action-accent);
-	--gallery-item-image-radius: 0;
-	--gallery-caption-font: var(--font-label);
-	--gallery-caption-color: var(--color-text-on-dark);
-	--gallery-caption-size: 0.72rem;
-	--gallery-caption-letter-spacing: 0.18em;
-	--gallery-caption-bg: rgb(var(--color-surface-dark-rgb) / 88%);
-	--gallery-caption-padding: 0.6rem 1rem;
-	--gallery-caption-radius: 0;
-
-	background: var(--gallery-section-bg);
-	padding-block: clamp(4rem, 8vw, 6rem);
+	background: var(--gallery-section-bg, var(--section-bg));
+	padding-block: var(--section-padding-block);
 
 	.gallery-section__header {
 		margin-bottom: clamp(3rem, 8vw, 6rem);
 	}
 
 	.gallery-section__title {
-		font-family: var(--font-display);
-		font-size: clamp(2.5rem, 6vw, 4.5rem);
+		font-family: var(--section-title-font);
+		font-size: var(--section-title-size);
 		line-height: 0.9;
 		color: var(--color-text-primary);
 		opacity: 96%;
@@ -130,10 +105,10 @@
 	--gallery-title-font: var(--gallery-title-font);
 	--gallery-title-color: var(--gallery-title-color);
 	--gallery-title-transform: uppercase;
-	--gallery-title-size: clamp(2.35rem, 5vw, 3.85rem);
+	--gallery-title-size: var(--section-title-size);
 	--gallery-title-letter-spacing: 0.22rem;
-	--gallery-subtitle-font: 'Cormorant Garamond', serif;
-	--gallery-subtitle-size: clamp(1.05rem, 2.2vw, 1.32rem);
+	--gallery-subtitle-font: var(--section-subtitle-font, 'Cormorant Garamond', serif);
+	--gallery-subtitle-size: var(--section-subtitle-size);
 	--gallery-subtitle-color: var(--gallery-subtitle-color);
 	--gallery-subtitle-letter-spacing: 0.06em;
 	--gallery-item-bg: var(--gallery-card-bg);
@@ -341,12 +316,12 @@
 			box-shadow: 0 18px 40px rgb(0 0 0 / 56%), 0 0 16px rgb(var(--color-action-accent-rgb), 0.08);
 		}
 	}
-}
 
-.gallery-section[data-variant='luxury-hacienda'] {
 	.gallery-lightbox {
 		&__content img {
 			box-shadow: 0 20px 56px rgb(0 0 0 / 78%);
 		}
 	}
 }
+
+

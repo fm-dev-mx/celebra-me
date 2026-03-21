@@ -1,6 +1,7 @@
 // src/styles/themes/sections/_index.scss
 // Export all section-specific theme styles
 
+@forward 'tokens';
 @forward 'base-theme';
 @forward 'hero-theme';
 @forward 'quote-theme';

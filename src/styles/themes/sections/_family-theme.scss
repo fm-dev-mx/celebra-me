@@ -3,20 +3,15 @@
 /* --- FAMILY SECTION THEMES --- */
 
 .family[data-variant='editorial'] {
-	--family-bg: radial-gradient(circle at bottom right, #0d0d0d, #050505);
-	--family-panel-bg: rgb(255 255 255 / 2%);
-	--family-panel-border: rgb(var(--color-action-accent-rgb) / 15%);
-	--family-panel-shadow: 0 40px 100px rgb(0 0 0 / 60%);
-
-	background: var(--family-bg);
-	padding-block: clamp(5rem, 12vw, 10rem);
+	background: var(--family-bg, radial-gradient(circle at bottom right, #0d0d0d, #050505));
+	padding-block: var(--section-padding-block);
 	position: relative;
 	overflow: hidden;
 
 	.family__eyebrow {
 		font-family: var(--font-label);
 		letter-spacing: 0.35em;
-		color: var(--family-accent);
+		color: var(--section-eyebrow-color);
 		text-transform: uppercase;
 		font-weight: 500;
 	}
@@ -44,7 +39,7 @@
 		background: var(--family-panel-bg);
 		border: 1px solid var(--family-panel-border);
 		backdrop-filter: blur(12px);
-		padding: clamp(1.5rem, 5vw, 4rem);
+		padding: var(--section-padding-block);
 		border-radius: 24px;
 		box-shadow: var(--family-panel-shadow);
 		margin-top: 3rem;
@@ -52,7 +47,7 @@
 
 	.family__media-frame {
 		border-radius: 400px 400px 24px 24px;
-		border: 1px solid rgb(var(--color-action-accent-rgb) / 45%);
+		border: 1px solid var(--section-card-border-alt);
 		padding: 2px;
 		background: var(--gold-metallic);
 		box-shadow:

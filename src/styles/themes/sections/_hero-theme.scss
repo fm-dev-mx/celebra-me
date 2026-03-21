@@ -5,19 +5,12 @@
 // ==========================================================================
 
 .invitation-hero[data-variant='editorial'] {
-	--hero-overlay: linear-gradient(
-		180deg,
-		rgb(var(--color-surface-primary-rgb) / 32%) 0%,
-		transparent 40%,
-		rgb(var(--color-surface-primary-rgb) / 12%) 100%
-	);
-
 	position: relative;
 	height: 100svh;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	padding: clamp(1.5rem, 5vw, 4rem);
+	padding: var(--section-padding-block);
 	overflow: hidden;
 
 	&::before {
@@ -25,10 +18,10 @@
 		position: absolute;
 		inset: 0;
 		background-image:
-			radial-gradient(1px 1px at 20px 30px, #fff, rgb(0 0 0 / 0%)),
-			radial-gradient(1.5px 1.5px at 100px 150px, #f1e4d1, rgb(0 0 0 / 0%)),
-			radial-gradient(1px 1px at 200px 300px, #fff, rgb(0 0 0 / 0%)),
-			radial-gradient(1.5px 1.5px at 150px 50px, #f1e4d1, rgb(0 0 0 / 0%));
+			radial-gradient(1px 1px at 20px 30px, tokens.$base-neutral-0, rgb(0 0 0 / 0%)),
+			radial-gradient(1.5px 1.5px at 100px 150px, tokens.$color-text-on-dark, rgb(0 0 0 / 0%)),
+			radial-gradient(1px 1px at 200px 300px, tokens.$base-neutral-0, rgb(0 0 0 / 0%)),
+			radial-gradient(1.5px 1.5px at 150px 50px, tokens.$color-text-on-dark, rgb(0 0 0 / 0%));
 		background-size: 300px 300px;
 		opacity: 15%;
 		z-index: 2;
@@ -46,7 +39,7 @@
 		}
 
 		img {
-			filter: grayscale(0.2) contrast(1.1) brightness(0.85);
+			filter: var(--hero-image-filter);
 			transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
 		}
 	}
@@ -102,7 +95,7 @@
 	.invitation-hero__title {
 		grid-area: title;
 		font-family: var(--font-display);
-		font-size: clamp(4.5rem, 14vw, 12rem);
+		font-size: var(--hero-title-size);
 		line-height: 0.85;
 		color: var(--color-text-on-dark);
 		text-transform: uppercase;
@@ -120,7 +113,7 @@
 		aspect-ratio: 0.75;
 		border-radius: 220px 220px 24px 24px;
 		overflow: hidden;
-		border: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
+		border: 1px solid var(--section-card-border-alt);
 		box-shadow:
 			0 30px 60px rgb(0 0 0 / 50%),
 			inset 0 0 0 1px rgb(255 255 255 / 5%);
@@ -132,12 +125,7 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: linear-gradient(
-				135deg,
-				transparent 0%,
-				rgb(255 255 255 / 10%) 45%,
-				transparent 55%
-			);
+			background: var(--light-sweep);
 			background-size: 200% 200%;
 			background-position: -100% -100%;
 			z-index: 2;
@@ -161,7 +149,7 @@
 			height: 100%;
 			object-fit: cover;
 			object-position: center 15%;
-			filter: contrast(1.1) brightness(1.05) saturate(1.1);
+			filter: var(--hero-portrait-filter);
 			transition: transform 1.5s tokens.$ease-premium;
 		}
 
