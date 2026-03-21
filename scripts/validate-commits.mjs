@@ -105,7 +105,7 @@ function validateCommitMessage(message, commitHash, files, diffEntries, unitCont
 	try {
 		writeFileSync(tmpFile, `${message.trim()}\n`, 'utf8');
 		const commitlintEnv = buildCommitlintContext(files, diffEntries, unitContext);
-		const result = run('npx', ['--yes', 'commitlint', '--edit', tmpFile], {
+		const result = run('pnpm', ['exec', 'commitlint', '--edit', tmpFile], {
 			env: {
 				...process.env,
 				...commitlintEnv,

@@ -37,7 +37,7 @@
         {
             "id": "static-analysis-hardening",
             "phaseId": "02-static-analysis-hardening",
-            "status": "ready",
+            "status": "completed",
             "domain": "config",
             "type": "feat",
             "subject": {
@@ -46,14 +46,15 @@
             },
             "purpose": "block inline styles, inline scripts, god objects and coupling via ESLint/Stylelint",
             "include": [
-                "eslint.config.js",
                 "package.json",
                 ".stylelintrc.json",
                 "pnpm-lock.yaml",
-                ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json",
                 ".agent/governance/config/domain-map.json"
             ],
-            "allowRelated": [],
+            "allowRelated": [
+                "eslint.config.js",
+                ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json"
+            ],
             "correctionPolicy": "absorb-compatible",
             "messagePreview": {
                 "header": "feat(config): harden code quality linters",
@@ -65,47 +66,32 @@
             }
         },
         {
-            "id": "fast-path-error-handling",
+            "id": "workflow-fast-path-optimizations",
             "phaseId": "04-fast-path-diagnostics",
             "status": "ready",
             "domain": "governance",
             "type": "feat",
             "subject": {
-                "verb": "improve",
-                "target": "diagnostics and git hygiene checks"
-            },
-            "purpose": "prevent staging dirty files and enforce dry-run linters before execution",
-            "include": [".agent/governance/bin/**/*"],
-            "allowRelated": [],
-            "correctionPolicy": "absorb-compatible",
-            "messagePreview": {
-                "header": "feat(governance): improve diagnostics and git hygiene checks",
-                "summary": [
-                    "fail fast if working tree is dirty",
-                    "mandate running static analysis locally before staging",
-                    "provide rapid diff outputs for unit mismatch errors"
-                ]
-            }
-        },
-        {
-            "id": "execution-speed",
-            "phaseId": "05-execution-speed",
-            "status": "ready",
-            "domain": "repo",
-            "type": "perf",
-            "subject": {
                 "verb": "optimize",
-                "target": "commit validation speed"
+                "target": "diagnostics and execution speed"
             },
-            "purpose": "reduce pre-commit hook execution time",
-            "include": ["scripts/validate-commits.mjs", ".husky/pre-commit"],
+            "purpose": "improve developer experience with faster feedback loops and smarter pre-commit checks",
+            "include": [
+                ".agent/governance/bin/**/*",
+                ".husky/pre-commit",
+                "scripts/validate-commits.mjs",
+                "eslint.config.js",
+                ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json"
+            ],
             "allowRelated": [],
             "correctionPolicy": "absorb-compatible",
             "messagePreview": {
-                "header": "perf(repo): optimize commit validation speed",
+                "header": "feat(governance): optimize diagnostics and execution speed",
                 "summary": [
-                    "reduce pre-commit hook execution time",
-                    "optimize node script initialization"
+                    "fail fast if working tree is dirty or lint errors exist",
+                    "reduce pre-commit hook execution time by skipping redundant steps",
+                    "optimize node script initialization using pnpm exec",
+                    "provide clear resolution paths for unit mismatch errors"
                 ]
             }
         }

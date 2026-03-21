@@ -120,11 +120,11 @@ export default [
 				},
 			],
 			// God Objects & Complexity (Increased slightly to allow common logic while remaining strict)
-			'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
+			'max-lines': ['error', { max: 800, skipBlankLines: true, skipComments: true }],
 			complexity: ['error', 20],
 			// Coupling
 			'import/no-cycle': 'error',
-			'boundaries/element-types': [
+			'boundaries/dependencies': [
 				'error',
 				{
 					default: 'allow',

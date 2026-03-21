@@ -478,7 +478,17 @@ function inspectCommand(args) {
 		console.log(`🗺️ Selected unit: ${commitPlanning.recommendedUnit.id}`);
 	}
 	if (commitPlanning.errors?.length) {
+		console.log('\n❌ Blocked units:');
 		for (const error of commitPlanning.errors) console.log(`- ${error}`);
+	}
+	if (commitPlanning.unmatchedFiles?.length) {
+		console.log('\n⚠️  Unmapped files in working tree:');
+		for (const file of commitPlanning.unmatchedFiles) {
+			console.log(`- ${file}`);
+		}
+		console.log(
+			'\n💡 Resolution: Add these files to your commit-map.json using the plan-authoring workflow.',
+		);
 	}
 }
 
@@ -499,6 +509,16 @@ function stageCommand(args) {
 	}
 	const unitSpecs = pathSpecsForEntries(unitEntries);
 	if (!unitSpecs.length) fail(`Commit unit "${args.unit}" did not resolve any stageable files.`);
+
+	// MANDATE: local linting check before staging (using pnpm exec eslint directly to target only the unit files)
+	console.log('🔍 Pre-staging hygiene check: Checking for code quality violations...');
+	const lintResult = run('pnpm', ['exec', 'eslint', ...unitSpecs], { stdio: 'pipe' });
+	if (lintResult.status !== 0) {
+		console.log(lintResult.stdout);
+		console.error(lintResult.stderr);
+		fail('Local linting failed. Fix all errors before staging files.');
+	}
+
 	run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
 	const stagedEntries = getStagedDiffEntries();
 	assertExactFiles(matchedUnit.files, stagedEntries, 'Staged unit');

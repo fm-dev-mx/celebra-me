@@ -18,13 +18,11 @@ fi
 GIT_DIR=$(git rev-parse --git-dir)
 S0_FILE="$GIT_DIR/gatekeeper-s0.json"
 
-echo "🔧 Running lint-staged..."
-pnpm lint-staged
-
 if [ -f "$S0_FILE" ]; then
   echo "🔍 Gatekeeper S0 mode detected"
   node .agent/governance/bin/gatekeeper-workflow.mjs sync-s0 --s0-file "$S0_FILE"
 fi
 
+# Gatekeeper strict checks (this includes linting and type-checking in Phase 1)
 echo "🛡️ Running Gatekeeper strict checks..."
 pnpm gatekeeper --mode strict --secret-scan-staged --require-complete-report
