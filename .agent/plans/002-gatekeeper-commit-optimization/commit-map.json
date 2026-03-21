@@ -68,7 +68,7 @@
         {
             "id": "workflow-fast-path-optimizations",
             "phaseId": "04-fast-path-diagnostics",
-            "status": "ready",
+            "status": "completed",
             "domain": "governance",
             "type": "feat",
             "subject": {
