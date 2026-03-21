@@ -4,13 +4,15 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-21T14:55:00Z",
-    "notes": "Expanded to cover static analysis rules, token-economy workflow separation, and runtime optimization."
+    "notes": "Expanded to cover static analysis rules, token-economy workflow separation, and runtime optimization.",
+    "reviewedAt": "2026-03-21T15:55:32Z",
+    "readyForGatekeeperAt": "2026-03-21T15:55:32Z"
   },
   "units": [
     {
       "id": "workflow-splitting",
       "phaseId": "01-workflow-splitting",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "docs",
       "subject": {
@@ -22,7 +24,9 @@
         ".agent/workflows/gatekeeper-commit.md",
         ".agent/workflows/plan-authoring.md"
       ],
-      "allowRelated": [],
+      "allowRelated": [
+        ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json"
+      ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "docs(governance): split gatekeeper workflow definitions",
@@ -35,7 +39,7 @@
     {
       "id": "static-analysis-hardening",
       "phaseId": "02-static-analysis-hardening",
-      "status": "draft",
+      "status": "ready",
       "domain": "config",
       "type": "feat",
       "subject": {
@@ -54,7 +58,7 @@
         "header": "feat(config): harden code quality linters",
         "summary": [
           "block inline styles, inline scripts, god objects and coupling",
-          "enforce strict language policy: English for code/docs, Spanish for UI",
+          "enforce strict language policy for code and documentation",
           "hook strict rules into husky lint-staged pipeline"
         ]
       }
@@ -62,7 +66,7 @@
     {
       "id": "fast-path-error-handling",
       "phaseId": "04-fast-path-diagnostics",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "feat",
       "subject": {
@@ -87,7 +91,7 @@
     {
       "id": "execution-speed",
       "phaseId": "05-execution-speed",
-      "status": "draft",
+      "status": "ready",
       "domain": "repo",
       "type": "perf",
       "subject": {

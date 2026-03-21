@@ -3,12 +3,12 @@ description: Pure plan-aware Gatekeeper commit workflow.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-03-20
+last_reviewed: 2026-03-21
 ---
 
 # Gatekeeper Commit Routine
 
-Use this workflow when you are ready to commit implementation work.
+Use this workflow when you are ready to commit implementation work. This is the "dumb/fast" commit runner loop. Do not use this for plan authoring or architectural lifting.
 
 ## Preconditions
 
@@ -16,14 +16,8 @@ Use this workflow when you are ready to commit implementation work.
 - that plan includes a valid `commit-map.json`
 - `pnpm gatekeeper:plans:validate -- --plan <plan-id>` passes
 - that plan has already completed its final commit-strategy review
-- that plan is marked ready for gatekeeper execution
 - the target unit has already been defined in the plan
 - the working tree has been reduced to exactly one material commit unit
-
-If no plan exists yet:
-
-- create a micro-plan before implementation for small new work
-- create a retroactive plan before commit for work that already exists in the working tree
 
 ## Routine
 
@@ -47,12 +41,11 @@ If no plan exists yet:
 
 4. Read the result:
    - `matched_unit`: continue
-   - `unit_ambiguity`: stop, use `git diff --staged --name-only` to locate overlaps, update the plan, then rerun `inspect`
-   - `unit_mismatch`: stop and **recalibrate**. Run `pnpm gatekeeper:workflow:inspect --json` or `git diff --staged --name-only` to pinpoint unmapped files. Surgically add these absolute paths to the target unit's `include` array in `commit-map.json`. Refresh `commitStrategyReview.reviewedAt`, then rerun `inspect`.
-   - `invalid_plan_contract`: stop and fix `commit-map.json`
-   - `commit_strategy_not_ready`: stop and complete the final commit review in the plan
-   - `plan_archived`: stop and create or select an active plan; archived plans are historical only
-   - `plan_not_found`: stop and create or select the correct active plan
+   - `unit_mismatch` / `unit_ambiguity`: Stop. Abort and run the `plan-authoring` workflow to fix the constraints and update the plan. Do not attempt to fix it inline here.
+   - `invalid_plan_contract`: stop and fix `commit-map.json` using the `plan-authoring` workflow.
+   - `commit_strategy_not_ready`: stop and complete the final commit review in the plan.
+   - `plan_archived`: stop and select an active plan.
+   - `plan_not_found`: stop and create or select the correct active plan.
    - `empty_change_set`: nothing to do
 
 5. Stage the exact planned unit from the working tree:
@@ -82,18 +75,12 @@ If no plan exists yet:
 ## Rules
 
 - **CRITICAL - Tool Hangs**: Always use non-interactive flags (e.g., `--yes`) for `npx` calls. If `stage`, `scaffold` or `commit` hangs indefinitely, DO NOT retry blindly. Cancel the execution and use an explicit fallback: assemble the full message dynamically from `commit-map.json` and use `git commit -F <temp-file>`.
-- **Match Diagnostics**: Use direct `git status` or `git diff --staged` to diagnose file drift instantly instead of token-heavy verbose logging.
+- Use direct `git status` or `git diff --staged` to diagnose file drift instantly instead of token-heavy verbose logging.
 - Do not pre-stage files manually as the primary selection mechanism.
-- Do not use `--domain` for commit planning.
-- Do not edit `.git/gatekeeper-session.json` or `.git/gatekeeper-s0.json` by hand.
 - Do not use this workflow to invent or reinterpret the commit structure. The plan owns that intent.
 - Do not enter the workflow with multiple material units mixed in the same working tree.
 - If the working tree changes after `inspect`, rerun `inspect`.
 - If the staged set changes after `stage`, rerun `cleanup`, `inspect`, and `stage`.
-- If `inspect` reports drift or ambiguity, update the plan and `commit-map.json` before continuing
-  whenever the finding changes intent, file boundaries, or commit purpose.
-- If a workflow finding is purely operational and does not change the unit’s intent, file
-  boundaries, or explanation, fix the issue and rerun `inspect` without redesigning the plan.
 
 ## Output Contract
 
@@ -109,8 +96,3 @@ The workflow-generated commit must contain:
 Plan-Id: <plan-id>
 Commit-Unit: <unit-id>
 ```
-
-## References
-
-- [Planning Governance Framework](../plans/README.md)
-- [Git Governance](../../docs/core/git-governance.md)
