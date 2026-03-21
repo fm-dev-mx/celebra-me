@@ -27,48 +27,53 @@ If no plan exists yet:
 
 ## Routine
 
-1. Validate the plan contract:
+1. **Pre-Flight Git Hygiene**: Ensure the Git index is pristine to avoid `unit_mismatch` errors.
+
+   ```bash
+   git stash list; git clean -dn; git status --porcelain
+   ```
+
+2. Validate the plan contract:
 
    ```bash
    pnpm gatekeeper:plans:validate -- --plan <plan-id>
    ```
 
-2. Inspect the current working tree against the active plan:
+3. Inspect the current working tree against the active plan:
 
    ```bash
    pnpm gatekeeper:workflow:inspect -- --plan <plan-id>
    ```
 
-3. Read the result:
+4. Read the result:
    - `matched_unit`: continue
-   - `unit_ambiguity`: stop, update the plan or narrow the working tree change set, then rerun
-     `inspect`
-   - `unit_mismatch`: stop, update the plan or align the change set, then rerun `inspect`
+   - `unit_ambiguity`: stop, use `git diff --staged --name-only` to locate overlaps, update the plan, then rerun `inspect`
+   - `unit_mismatch`: stop and **recalibrate**. Run `pnpm gatekeeper:workflow:inspect --json` or `git diff --staged --name-only` to pinpoint unmapped files. Surgically add these absolute paths to the target unit's `include` array in `commit-map.json`. Refresh `commitStrategyReview.reviewedAt`, then rerun `inspect`.
    - `invalid_plan_contract`: stop and fix `commit-map.json`
    - `commit_strategy_not_ready`: stop and complete the final commit review in the plan
    - `plan_archived`: stop and create or select an active plan; archived plans are historical only
    - `plan_not_found`: stop and create or select the correct active plan
    - `empty_change_set`: nothing to do
 
-4. Stage the exact planned unit from the working tree:
+5. Stage the exact planned unit from the working tree:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit <unit-id>
    ```
 
-5. Preview the commit message:
+6. Preview the commit message:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --unit <unit-id>
    ```
 
-6. Create the commit:
+7. Create the commit:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs commit --unit <unit-id>
    ```
 
-7. If you abort the flow or the staged set drifts, clean up and restart:
+8. Clean up and restart (if you abort or the staged set drifts):
 
    ```bash
    pnpm gatekeeper:workflow:cleanup
@@ -76,6 +81,8 @@ If no plan exists yet:
 
 ## Rules
 
+- **CRITICAL - Tool Hangs**: Always use non-interactive flags (e.g., `--yes`) for `npx` calls. If `stage`, `scaffold` or `commit` hangs indefinitely, DO NOT retry blindly. Cancel the execution and use an explicit fallback: assemble the full message dynamically from `commit-map.json` and use `git commit -F <temp-file>`.
+- **Match Diagnostics**: Use direct `git status` or `git diff --staged` to diagnose file drift instantly instead of token-heavy verbose logging.
 - Do not pre-stage files manually as the primary selection mechanism.
 - Do not use `--domain` for commit planning.
 - Do not edit `.git/gatekeeper-session.json` or `.git/gatekeeper-s0.json` by hand.
