@@ -1,0 +1,47 @@
+
+// src/styles/themes/sections/_tokens.scss
+
+/**
+ * Section Token Contract - Celebra-me Ecosystem
+ * 
+ * Defines the standard set of CSS variables that every section section 
+ * supports. This allows presets to "skin" any section without knowledge 
+ * of its internal markup.
+ */
+
+@use '../../tokens' as tokens;
+
+:root {
+	// ---------------------------------------------------------------------
+	// Global Section Defaults
+	// ---------------------------------------------------------------------
+	--section-bg: var(--color-surface-primary);
+	--section-text: var(--color-text-primary);
+	--section-accent: var(--color-action-accent);
+	
+	// Spacing
+	--section-padding-block: clamp(4rem, 10vw, 8rem);
+	--section-gap: 4rem;
+
+	// Typography
+	--section-title-font: var(--font-display);
+	--section-title-size: clamp(2.5rem, 7vw, 5rem);
+	--section-title-color: var(--color-text-primary);
+	--section-subtitle-font: var(--font-label);
+	--section-subtitle-size: 0.85rem;
+	--section-subtitle-color: var(--color-action-accent);
+	--section-eyebrow-color: var(--color-action-accent);
+
+	// Hero Specific (Large Display)
+	--hero-title-size: clamp(4rem, 12vw, 10rem);
+	--hero-label-color: var(--color-text-on-dark);
+	--hero-image-filter: var(--theme-image-filter-hero, none);
+	--hero-portrait-filter: var(--theme-image-filter-portrait, none);
+
+	// Cards & Panels
+	--section-card-bg: var(--color-surface-elevated);
+	--section-card-border: var(--color-border-subtle);
+	--section-card-border-alt: rgb(var(--color-action-accent-rgb) / 40%);
+	--section-border-subtle: rgb(var(--color-action-accent-rgb) / 15%);
+	--section-card-shadow: var(--shadow-subtle);
+}

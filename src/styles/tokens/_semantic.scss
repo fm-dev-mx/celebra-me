@@ -20,6 +20,7 @@ $color-text-on-dark: var(--color-text-on-dark, primitives.$base-parchment-100);
 $color-surface-primary: var(--color-surface-primary, primitives.$base-parchment-100);
 $color-surface-primary-rgb: var(--color-surface-primary-rgb, 245, 245, 220);
 $color-surface-secondary: var(--color-surface-secondary, primitives.$base-coffee-100);
+$color-surface-soft: var(--color-surface-soft, primitives.$base-neutral-50);
 $color-surface-elevated: var(--color-surface-elevated, primitives.$base-neutral-50);
 $color-surface-canvas: var(--color-surface-canvas, primitives.$base-coffee-900);
 $color-surface-dark: var(--color-surface-dark, primitives.$base-coffee-900);
@@ -41,10 +42,6 @@ $color-neutral-muted: var(--color-neutral-muted, primitives.$base-neutral-400);
 $color-neutral-base: var(--color-neutral-base, primitives.$base-neutral-700);
 $color-neutral-emphasis: var(--color-neutral-emphasis, primitives.$base-neutral-900);
 $color-text-muted: var(--color-text-muted, rgba(primitives.$base-coffee-900, 0.65));
-
-// Glassmorphism
-$color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
-$color-glass-border: var(--color-glass-border, rgb(var(--color-surface-primary-rgb), 0.2));
 
 // Glassmorphism
 $color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
