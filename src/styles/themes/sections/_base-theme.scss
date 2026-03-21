@@ -126,18 +126,82 @@
 	--color-border-subtle: rgb(var(--color-action-accent-rgb), 0.1);
 }
 
+// EDITORIAL BASE
+.theme-preset--editorial {
+	background:
+		radial-gradient(circle at 10% 10%, rgb(212 175 55 / 8%) 0%, transparent 40%),
+		radial-gradient(circle at 90% 90%, rgb(197 160 89 / 5%) 0%, transparent 40%),
+		linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
+	color: var(--color-text-primary);
+	min-height: 100svh;
+	padding-bottom: env(safe-area-inset-bottom, 0);
+
+	@media (width >= 768px) {
+		padding-bottom: env(safe-area-inset-bottom, 0);
+	}
+
+	&.has-motion {
+		[class*='__reveal'] {
+			opacity: 0%;
+			transform: translateY(40px);
+			transition:
+				opacity 1.4s cubic-bezier(0.23, 1, 0.32, 1),
+				transform 1.6s cubic-bezier(0.23, 1, 0.32, 1);
+			will-change: opacity, transform;
+		}
+
+		&.is-visible {
+			[class*='__reveal'] {
+				opacity: 100%;
+				transform: translateY(0);
+			}
+		}
+
+		// Sequential entry for lists
+		.family__item,
+		.itinerary__item,
+		.gift-card {
+			@for $i from 1 through 10 {
+				&:nth-child(#{$i}) {
+					transition-delay: #{$i * 0.2s};
+				}
+			}
+		}
+	}
+
+	// Layer management
+	.family,
+	.gallery-section,
+	.countdown-section,
+	.gifts-section,
+	.rsvp,
+	.thank-you-section,
+	.event-location,
+	.itinerary {
+		position: relative;
+		z-index: 2;
+	}
+}
+
 // ==========================================================================
 // IMAGE FILTERS & UTILITIES
 // ==========================================================================
 
+.invitation-hero__background img {
+	filter: var(--theme-image-filter-hero, none);
+}
+
+.invitation-hero__portrait img {
+	filter: var(--theme-image-filter-portrait, none);
+}
+
+.photo-image {
+	filter: var(--theme-image-filter-portrait, none);
+}
+
+// Preset-specific layout adjustments (only scale/transforms)
 .theme-preset--luxury-hacienda {
 	.invitation-hero__background img {
-		filter: sepia(0.35) contrast(1.3) brightness(0.85) saturate(1.15);
 		transform: scale(1.02);
-	}
-
-	.photo-image,
-	.invitation-hero__portrait img {
-		filter: sepia(0.25) contrast(1.1) brightness(1.05);
 	}
 }

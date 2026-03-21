@@ -45,3 +45,13 @@
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
 	--header-nav-filter-transparent: none;
 }
+
+// EDITORIAL PRESET
+.header-base[data-variant='editorial'] {
+	--header-bg: transparent;
+	--header-bg-scrolled: rgba(#{tokens.$color-surface-dark-rgb}, 0.85);
+
+	.event-header__title {
+		display: none;
+	}
+}

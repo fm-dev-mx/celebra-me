@@ -132,10 +132,12 @@
 		background-position: 0% 50%;
 		background-size: 200% 200%;
 	}
+
 	50% {
 		background-position: 100% 50%;
 		background-size: 200% 200%;
 	}
+
 	100% {
 		background-position: 0% 50%;
 		background-size: 200% 200%;
@@ -155,8 +157,8 @@
 	padding: 10rem 2rem;
 
 	.photo-frame {
-		width: var(--jewelry-box-thank-you-frame-size-mobile);
-		height: var(--jewelry-box-thank-you-frame-size-mobile);
+		width: var(--thank-you-frame-size-mobile);
+		height: var(--thank-you-frame-size-mobile);
 		background: var(--color-glass-bg);
 		border: 1px solid var(--color-glass-border);
 		border-radius: 12px;
@@ -165,14 +167,14 @@
 		padding: 12px;
 
 		@include mixins.respond-to(sm) {
-			width: var(--jewelry-box-thank-you-frame-size-desktop);
-			height: var(--jewelry-box-thank-you-frame-size-desktop);
+			width: var(--thank-you-frame-size-desktop);
+			height: var(--thank-you-frame-size-desktop);
 		}
 
 		.photo-image {
 			border-radius: 8px;
-			object-fit: var(--jewelry-box-thank-you-image-fit);
-			object-position: var(--jewelry-box-thank-you-image-position);
+			object-fit: var(--thank-you-image-fit);
+			object-position: var(--thank-you-image-position);
 			padding: 0.4rem;
 		}
 	}

@@ -41,7 +41,7 @@
 		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		line-height: 0.9;
 		color: var(--color-text-primary);
-		opacity: 0.96;
+		opacity: 96%;
 	}
 
 	.gallery-section__subtitle {
@@ -103,14 +103,14 @@
 			}
 
 			.gallery-grid__caption {
-				opacity: 1;
+				opacity: 100%;
 				transform: translateY(0);
 			}
 		}
 	}
 
 	.gallery-grid__caption {
-		opacity: 0;
+		opacity: 0%;
 		transform: translateY(10px);
 		transition: all 0.5s tokens.$ease-premium;
 		background: var(--gallery-caption-bg);
@@ -126,21 +126,21 @@
 /* --- GALLERY: JEWELRY BOX VARIANT --- */
 
 .gallery-section[data-variant='jewelry-box'] {
-	--gallery-section-bg: var(--jewelry-box-gallery-section-bg);
-	--gallery-title-font: var(--jewelry-box-gallery-title-font);
-	--gallery-title-color: var(--jewelry-box-gallery-title-color);
+	--gallery-section-bg: var(--gallery-section-bg);
+	--gallery-title-font: var(--gallery-title-font);
+	--gallery-title-color: var(--gallery-title-color);
 	--gallery-title-transform: uppercase;
 	--gallery-title-size: clamp(2.35rem, 5vw, 3.85rem);
 	--gallery-title-letter-spacing: 0.22rem;
 	--gallery-subtitle-font: 'Cormorant Garamond', serif;
 	--gallery-subtitle-size: clamp(1.05rem, 2.2vw, 1.32rem);
-	--gallery-subtitle-color: var(--jewelry-box-gallery-subtitle-color);
+	--gallery-subtitle-color: var(--gallery-subtitle-color);
 	--gallery-subtitle-letter-spacing: 0.06em;
-	--gallery-item-bg: var(--jewelry-box-gallery-card-bg);
+	--gallery-item-bg: var(--gallery-card-bg);
 	--gallery-item-border: 1px solid var(--color-glass-border);
 	--gallery-item-border-color: var(--color-glass-border);
-	--gallery-item-radius: var(--jewelry-box-gallery-card-radius);
-	--gallery-item-padding: var(--jewelry-box-gallery-card-padding);
+	--gallery-item-radius: var(--gallery-card-radius);
+	--gallery-item-padding: var(--gallery-card-padding);
 	--gallery-item-shadow: var(--shadow-premium);
 	--gallery-item-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 	--gallery-item-emphasis-transform: translateY(-6px) scale(1.01);
@@ -149,13 +149,13 @@
 	--gallery-item-hover-border-color: var(--color-action-accent);
 	--gallery-item-emphasis-shadow: 0 22px 42px var(--color-glass-shadow);
 	--gallery-item-hover-shadow: 0 25px 45px var(--color-glass-shadow);
-	--gallery-item-image-radius: var(--jewelry-box-gallery-image-radius);
+	--gallery-item-image-radius: var(--gallery-image-radius);
 	--gallery-overlay-emphasis-opacity: 0.95;
 	--gallery-overlay-hover-opacity: 1;
-	--gallery-caption-font: var(--jewelry-box-gallery-caption-font);
-	--gallery-caption-color: var(--jewelry-box-gallery-caption-color);
-	--gallery-caption-size: var(--jewelry-box-gallery-caption-size);
-	--gallery-caption-letter-spacing: var(--jewelry-box-gallery-caption-letter-spacing);
+	--gallery-caption-font: var(--gallery-caption-font);
+	--gallery-caption-color: var(--gallery-caption-color);
+	--gallery-caption-size: var(--gallery-caption-size);
+	--gallery-caption-letter-spacing: var(--gallery-caption-letter-spacing);
 	--gallery-caption-bg: transparent;
 	--gallery-caption-padding: 0.45rem 0.75rem;
 	--gallery-caption-radius: 999px;

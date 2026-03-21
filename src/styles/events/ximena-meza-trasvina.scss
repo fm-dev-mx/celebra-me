@@ -5,15 +5,6 @@
 // ==========================================================================
 
 .event--ximena-meza-trasvina {
-	// Base overrides
-	background:
-		radial-gradient(circle at 10% 10%, rgb(var(--color-action-accent-rgb) / 8%) 0%, transparent 40%),
-		radial-gradient(circle at 90% 90%, rgb(var(--color-action-accent-rgb) / 5%) 0%, transparent 40%),
-		linear-gradient(180deg, var(--color-surface-dark) 0%, #050505 100%);
-	color: var(--color-text-primary);
-	min-height: 100svh;
-	padding-bottom: env(safe-area-inset-bottom, 0);
-
 	// Signature override (Unique to Ximena)
 	.editorial-signature {
 		font-family: var(--font-display);
@@ -21,7 +12,7 @@
 		color: var(--color-action-accent);
 		text-align: center;
 		margin-top: 2rem;
-		opacity: 0.9;
+		opacity: 90%;
 		filter: drop-shadow(0 10px 20px rgb(0 0 0 / 20%));
 	}
 }
