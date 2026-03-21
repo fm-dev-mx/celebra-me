@@ -35,4 +35,7 @@ The regression was caused by a partial migration where:
 
 ## Plan ID
 
-`ximena-invitation-restoration`
+`004-ximena-invitation-restoration`
+
+---
+*Maintained under the chronological archival governance rule `001-plan-archival-governance`.*

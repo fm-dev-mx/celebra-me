@@ -1,5 +1,5 @@
 {
-  "planId": "ximena-invitation-restoration",
+  "planId": "004-ximena-invitation-restoration",
   "mode": "planned-commits",
   "defaultFallback": "none",
   "commitStrategyReview": {
@@ -25,7 +25,7 @@
         "src/styles/themes/presets/_jewelry-box.scss"
       ],
       "allowRelated": [
-        ".agent/plans/ximena-invitation-restoration/**"
+        ".agent/plans/004-ximena-invitation-restoration/**"
       ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
@@ -54,7 +54,7 @@
       "allowRelated": [
         "src/styles/events/ximena-meza-trasvina.scss",
         "src/styles/events/noir-premiere-xv.scss",
-        ".agent/plans/ximena-invitation-restoration/**"
+        ".agent/plans/004-ximena-invitation-restoration/**"
       ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
@@ -84,7 +84,7 @@
       "allowRelated": [
         "src/assets/images/events/ximena-meza-trasvina/*",
         "src/assets/images/events/ximena-meza-trasvina/**/*",
-        ".agent/plans/ximena-invitation-restoration/**"
+        ".agent/plans/004-ximena-invitation-restoration/**"
       ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
