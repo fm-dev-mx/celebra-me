@@ -371,7 +371,7 @@ function buildCommitScaffold(split) {
 
 function validateGeneratedCommitMessage(message, unit, files, diffEntries) {
 	const unitContext = buildCommitlintUnitContext(unit, files);
-	const result = run('npx', ['commitlint'], {
+	const result = run('npx', ['--yes', 'commitlint'], {
 		input: `${String(message || '').trim()}\n`,
 		env: {
 			...process.env,
