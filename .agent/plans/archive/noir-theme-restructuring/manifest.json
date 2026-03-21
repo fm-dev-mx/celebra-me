@@ -1,0 +1,17 @@
+{
+  "id": "noir-theme-restructuring",
+  "title": "Noir Premiere XV Theme Restructuring & Centralization",
+  "status": "DRAFT",
+  "completion": 0,
+  "created": "2026-03-20T16:15:00Z",
+  "updated": "2026-03-20T16:15:00Z",
+  "owner": "Antigravity",
+  "phases": [
+    {
+      "id": "01-restructuring-execution",
+      "title": "Theme Restructuring Execution",
+      "status": "COMPLETED",
+      "updated": "2026-03-20T16:15:00Z"
+    }
+  ]
+}

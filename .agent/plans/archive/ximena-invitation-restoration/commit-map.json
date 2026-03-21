@@ -1,0 +1,100 @@
+{
+  "planId": "ximena-invitation-restoration",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-20T12:50:00Z",
+    "reviewedAt": "2026-03-20T14:05:00Z",
+    "readyForGatekeeperAt": "2026-03-20T14:10:00Z",
+    "notes": "Verified that all editorial variants are centralized and Ximena is restored."
+  },
+  "units": [
+    {
+      "id": "theme-hardening",
+      "phaseId": "03-variant-centralization",
+      "status": "completed",
+      "domain": "styles",
+      "type": "fix",
+      "subject": {
+        "verb": "harden",
+        "target": "premium theme tokens"
+      },
+      "purpose": "add premium metallic and layout tokens provided for the jewelry box aesthetic",
+      "include": [
+        "src/styles/themes/presets/_top-premium-floral.scss",
+        "src/styles/themes/presets/_jewelry-box.scss"
+      ],
+      "allowRelated": [
+        ".agent/plans/ximena-invitation-restoration/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "fix(styles): harden premium theme tokens",
+        "summary": [
+          "add --gold-metallic and --gold-glow to floral and jewelry presets",
+          "define --container-max-width-lg for consistent editorial layouts"
+        ]
+      }
+    },
+    {
+      "id": "variant-centralization",
+      "phaseId": "03-variant-centralization",
+      "status": "completed",
+      "domain": "styles",
+      "type": "refactor",
+      "subject": {
+        "verb": "centralize",
+        "target": "editorial section variants"
+      },
+      "purpose": "move hardcoded editorial styles from event-specific SCSS to the theme system",
+      "include": [
+        "src/styles/themes/sections/*.scss",
+        "src/styles/themes/sections/_interlude-theme.scss"
+      ],
+      "allowRelated": [
+        "src/styles/events/ximena-meza-trasvina.scss",
+        "src/styles/events/noir-premiere-xv.scss",
+        ".agent/plans/ximena-invitation-restoration/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(styles): centralize editorial section variants",
+        "summary": [
+          "migrate hardcoded editorial logic from event SCSS to theme system",
+          "generalize styles using CSS variables for cross-preset compatibility",
+          "create centralized interlude-theme for shared imagery sections"
+        ]
+      }
+    },
+    {
+      "id": "content-restoration",
+      "phaseId": "02-asset-restoration",
+      "status": "ready",
+      "domain": "content",
+      "type": "fix",
+      "subject": {
+        "verb": "restore",
+        "target": "Ximena Meza Trasviña content and assets"
+      },
+      "purpose": "remove Valentina Noir placeholders and point to correct Floral aesthetic assets",
+      "include": [
+        "src/content/events/ximena-meza-trasvina.json",
+        "src/assets/images/events/ximena-meza-trasvina/index.ts"
+      ],
+      "allowRelated": [
+        "src/assets/images/events/ximena-meza-trasvina/*",
+        "src/assets/images/events/ximena-meza-trasvina/**/*",
+        ".agent/plans/ximena-invitation-restoration/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "fix(content): restore Ximena Meza Trasviña content and assets",
+        "summary": [
+          "replace Noir-style placeholders with floral assets",
+          "align content description with Top Premium Floral theme",
+          "update asset registry with restored gallery components"
+        ]
+      }
+    }
+  ]
+}

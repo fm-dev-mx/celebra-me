@@ -1,0 +1,23 @@
+{
+  "id": "theme-governance",
+  "title": "Theme Architecture Governance & Generic Tokenization",
+  "status": "READY",
+  "completion": 100,
+  "created": "2026-03-20T17:00:00Z",
+  "updated": "2026-03-21T00:22:00Z",
+  "owner": "Antigravity",
+  "phases": [
+    {
+      "id": "01-generic-tokenization",
+      "title": "Generic Token Normalization",
+      "status": "COMPLETED",
+      "updated": "2026-03-21T00:22:00Z"
+    },
+    {
+      "id": "02-theme-section-decoupling",
+      "title": "Theme Section Decoupling",
+      "status": "COMPLETED",
+      "updated": "2026-03-21T00:22:00Z"
+    }
+  ]
+}
