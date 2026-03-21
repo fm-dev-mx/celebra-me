@@ -25,6 +25,9 @@
         "scss/at-extend-no-missing-placeholder": true,
         "shorthand-property-no-redundant-values": true,
         "length-zero-no-unit": true,
-        "no-descending-specificity": null
+        "no-descending-specificity": null,
+        "declaration-no-important": true,
+        "max-empty-lines": 2,
+        "no-duplicate-selectors": true
     }
 }

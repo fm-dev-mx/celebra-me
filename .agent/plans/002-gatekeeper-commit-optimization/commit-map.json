@@ -1,117 +1,113 @@
 {
-  "planId": "002-gatekeeper-commit-optimization",
-  "mode": "planned-commits",
-  "defaultFallback": "none",
-  "commitStrategyReview": {
-    "draftedAt": "2026-03-21T14:55:00Z",
-    "notes": "Expanded to cover static analysis rules, token-economy workflow separation, and runtime optimization.",
-    "reviewedAt": "2026-03-21T15:55:32Z",
-    "readyForGatekeeperAt": "2026-03-21T15:55:32Z"
-  },
-  "units": [
-    {
-      "id": "workflow-splitting",
-      "phaseId": "01-workflow-splitting",
-      "status": "ready",
-      "domain": "governance",
-      "type": "docs",
-      "subject": {
-        "verb": "split",
-        "target": "gatekeeper workflow definitions"
-      },
-      "purpose": "separate plan authoring from fast-execution commit running to save agent tokens",
-      "include": [
-        ".agent/workflows/gatekeeper-commit.md",
-        ".agent/workflows/plan-authoring.md"
-      ],
-      "allowRelated": [
-        ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json"
-      ],
-      "correctionPolicy": "absorb-compatible",
-      "messagePreview": {
-        "header": "docs(governance): split gatekeeper workflow definitions",
-        "summary": [
-          "separate plan authoring from fast-execution commit running",
-          "optimize prompt to save LLM tokens during recursive executions"
-        ]
-      }
+    "planId": "002-gatekeeper-commit-optimization",
+    "mode": "planned-commits",
+    "defaultFallback": "none",
+    "commitStrategyReview": {
+        "draftedAt": "2026-03-21T14:55:00Z",
+        "notes": "Expanded to cover static analysis rules, token-economy workflow separation, and runtime optimization.",
+        "reviewedAt": "2026-03-21T15:55:32Z",
+        "readyForGatekeeperAt": "2026-03-21T15:55:32Z"
     },
-    {
-      "id": "static-analysis-hardening",
-      "phaseId": "02-static-analysis-hardening",
-      "status": "ready",
-      "domain": "config",
-      "type": "feat",
-      "subject": {
-        "verb": "harden",
-        "target": "code quality linters"
-      },
-      "purpose": "block inline styles, inline scripts, god objects and coupling via ESLint/Stylelint",
-      "include": [
-        ".eslintrc.cjs",
-        "package.json",
-        ".stylelintrc.json"
-      ],
-      "allowRelated": [],
-      "correctionPolicy": "absorb-compatible",
-      "messagePreview": {
-        "header": "feat(config): harden code quality linters",
-        "summary": [
-          "block inline styles, inline scripts, god objects and coupling",
-          "enforce strict language policy for code and documentation",
-          "hook strict rules into husky lint-staged pipeline"
-        ]
-      }
-    },
-    {
-      "id": "fast-path-error-handling",
-      "phaseId": "04-fast-path-diagnostics",
-      "status": "ready",
-      "domain": "governance",
-      "type": "feat",
-      "subject": {
-        "verb": "improve",
-        "target": "diagnostics and git hygiene checks"
-      },
-      "purpose": "prevent staging dirty files and enforce dry-run linters before execution",
-      "include": [
-        ".agent/governance/bin/**/*"
-      ],
-      "allowRelated": [],
-      "correctionPolicy": "absorb-compatible",
-      "messagePreview": {
-        "header": "feat(governance): improve diagnostics and git hygiene checks",
-        "summary": [
-          "fail fast if working tree is dirty",
-          "mandate running static analysis locally before staging",
-          "provide rapid diff outputs for unit mismatch errors"
-        ]
-      }
-    },
-    {
-      "id": "execution-speed",
-      "phaseId": "05-execution-speed",
-      "status": "ready",
-      "domain": "repo",
-      "type": "perf",
-      "subject": {
-        "verb": "optimize",
-        "target": "commit validation speed"
-      },
-      "purpose": "reduce pre-commit hook execution time",
-      "include": [
-        "scripts/validate-commits.mjs",
-        ".husky/pre-commit"
-      ],
-      "allowRelated": [],
-      "correctionPolicy": "absorb-compatible",
-      "messagePreview": {
-        "header": "perf(repo): optimize commit validation speed",
-        "summary": [
-          "reduce pre-commit hook execution time",
-          "optimize node script initialization"
-        ]
-      }
-    }
-  ]
+    "units": [
+        {
+            "id": "workflow-splitting",
+            "phaseId": "01-workflow-splitting",
+            "status": "completed",
+            "domain": "governance",
+            "type": "docs",
+            "subject": {
+                "verb": "split",
+                "target": "gatekeeper workflow definitions"
+            },
+            "purpose": "separate plan authoring from fast-execution commit running to save agent tokens",
+            "include": [
+                ".agent/workflows/gatekeeper-commit.md",
+                ".agent/workflows/plan-authoring.md"
+            ],
+            "allowRelated": [".agent/plans/002-gatekeeper-commit-optimization/commit-map.json"],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "docs(governance): split gatekeeper workflow definitions",
+                "summary": [
+                    "separate plan authoring from fast-execution commit running",
+                    "optimize prompt to save LLM tokens during recursive executions"
+                ]
+            }
+        },
+        {
+            "id": "static-analysis-hardening",
+            "phaseId": "02-static-analysis-hardening",
+            "status": "ready",
+            "domain": "config",
+            "type": "feat",
+            "subject": {
+                "verb": "harden",
+                "target": "code quality linters"
+            },
+            "purpose": "block inline styles, inline scripts, god objects and coupling via ESLint/Stylelint",
+            "include": [
+                "eslint.config.js",
+                "package.json",
+                ".stylelintrc.json",
+                "pnpm-lock.yaml",
+                ".agent/plans/002-gatekeeper-commit-optimization/commit-map.json",
+                ".agent/governance/config/domain-map.json"
+            ],
+            "allowRelated": [],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "feat(config): harden code quality linters",
+                "summary": [
+                    "block inline styles, inline scripts, god objects and coupling",
+                    "enforce strict language policy for code and documentation",
+                    "hook strict rules into husky lint-staged pipeline"
+                ]
+            }
+        },
+        {
+            "id": "fast-path-error-handling",
+            "phaseId": "04-fast-path-diagnostics",
+            "status": "ready",
+            "domain": "governance",
+            "type": "feat",
+            "subject": {
+                "verb": "improve",
+                "target": "diagnostics and git hygiene checks"
+            },
+            "purpose": "prevent staging dirty files and enforce dry-run linters before execution",
+            "include": [".agent/governance/bin/**/*"],
+            "allowRelated": [],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "feat(governance): improve diagnostics and git hygiene checks",
+                "summary": [
+                    "fail fast if working tree is dirty",
+                    "mandate running static analysis locally before staging",
+                    "provide rapid diff outputs for unit mismatch errors"
+                ]
+            }
+        },
+        {
+            "id": "execution-speed",
+            "phaseId": "05-execution-speed",
+            "status": "ready",
+            "domain": "repo",
+            "type": "perf",
+            "subject": {
+                "verb": "optimize",
+                "target": "commit validation speed"
+            },
+            "purpose": "reduce pre-commit hook execution time",
+            "include": ["scripts/validate-commits.mjs", ".husky/pre-commit"],
+            "allowRelated": [],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "perf(repo): optimize commit validation speed",
+                "summary": [
+                    "reduce pre-commit hook execution time",
+                    "optimize node script initialization"
+                ]
+            }
+        }
+    ]
 }

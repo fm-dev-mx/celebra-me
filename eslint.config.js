@@ -3,6 +3,8 @@ import tseslint from 'typescript-eslint';
 import astroParser from 'astro-eslint-parser';
 import eslintPluginAstro from 'eslint-plugin-astro';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintPluginImport from 'eslint-plugin-import';
+import eslintPluginBoundaries from 'eslint-plugin-boundaries';
 import globals from 'globals';
 
 export default [
@@ -81,6 +83,32 @@ export default [
 	// Project-wide rules (reasonable defaults)
 	// ------------------------------------------------------------
 	{
+		plugins: {
+			import: eslintPluginImport,
+			boundaries: eslintPluginBoundaries,
+		},
+		settings: {
+			'import/resolver': {
+				typescript: true,
+			},
+			'boundaries/elements': [
+				{
+					type: 'domain',
+					pattern: 'src/lib/rsvp/services/*',
+					mode: 'folder',
+				},
+				{
+					type: 'adapter',
+					pattern: 'src/lib/adapters/*',
+					mode: 'folder',
+				},
+				{
+					type: 'page',
+					pattern: 'src/pages/*',
+					mode: 'folder',
+				},
+			],
+		},
 		rules: {
 			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
 			'prettier/prettier': [
@@ -89,6 +117,48 @@ export default [
 					endOfLine: 'auto',
 					tabWidth: 4,
 					useTabs: true,
+				},
+			],
+			// God Objects & Complexity (Increased slightly to allow common logic while remaining strict)
+			'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
+			complexity: ['error', 20],
+			// Coupling
+			'import/no-cycle': 'error',
+			'boundaries/element-types': [
+				'error',
+				{
+					default: 'allow',
+					rules: [
+						{
+							from: 'domain',
+							disallow: ['page'],
+						},
+						{
+							from: 'adapter',
+							disallow: ['page'],
+						},
+					],
+				},
+			],
+			// Language Governance (Enforce English / Disallow Spanish accents)
+			'id-match': ['error', '^[a-zA-Z0-9_$]+$', { properties: false }],
+			// Block Inline Styles & Scripts
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: 'JSXAttribute[name.name="style"]',
+					message:
+						'Inline styles style={} are strictly forbidden. Use CSS classes instead.',
+				},
+				{
+					selector: 'JSXElement[openingElement.name.name="script"]',
+					message:
+						'Inline <script> tags in JSX are forbidden. Use separate files or idiomatic Astro scripts.',
+				},
+				{
+					selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+					message:
+						'dangerouslySetInnerHTML is forbidden for security and architectural reasons.',
 				},
 			],
 		},
