@@ -4,9 +4,9 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-21T14:27:00Z",
-    "reviewedAt": "2026-03-21T16:12:00Z",
-    "readyForGatekeeperAt": "2026-03-21T16:12:00Z",
-    "notes": "Units 1-2 completed. Proceeding with Unit 3: Backlog Cleanup."
+    "reviewedAt": "2026-03-21T16:25:00Z",
+    "readyForGatekeeperAt": "2026-03-21T16:25:00Z",
+    "notes": "Plan 001 implementation complete. Closing metadata."
   },
   "units": [
     {
@@ -60,7 +60,7 @@
     {
       "id": "backlog-cleanup",
       "phaseId": "03-backlog-cleanup",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "chore",
       "subject": {
@@ -71,8 +71,7 @@
       "include": [
         ".agent/plans/theme-governance/**",
         ".agent/plans/branch-protection/**",
-        ".agent/plans/archive/**",
-        ".agent/plans/001-plan-archival-governance/commit-map.json"
+        ".agent/plans/archive/**"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
@@ -81,6 +80,31 @@
         "summary": [
           "move theme-governance and branch-protection to the archive",
           "apply YYYY-MM organization structure"
+        ]
+      }
+    },
+    {
+      "id": "plan-closure",
+      "phaseId": "03-backlog-cleanup",
+      "status": "ready",
+      "domain": "governance",
+      "type": "docs",
+      "subject": {
+        "verb": "close",
+        "target": "archival governance plan"
+      },
+      "purpose": "mark the plan as completed in metadata after successful execution",
+      "include": [
+        ".agent/plans/001-plan-archival-governance/manifest.json",
+        ".agent/plans/001-plan-archival-governance/commit-map.json"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "docs(governance): close archival governance plan",
+        "summary": [
+          "mark plan and phases as completed",
+          "finalize plan lifecycle"
         ]
       }
     }
