@@ -4,15 +4,15 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-21T14:27:00Z",
-    "reviewedAt": "2026-03-21T15:52:00Z",
-    "readyForGatekeeperAt": "2026-03-21T15:52:00Z",
-    "notes": "Standardized archival rules and sequential naming. Updated commit-map to include itself in the first unit to avoid mismatch."
+    "reviewedAt": "2026-03-21T16:05:00Z",
+    "readyForGatekeeperAt": "2026-03-21T16:05:00Z",
+    "notes": "Unit 1 completed. Proceeding with Unit 2: Post-Mortem Template. Removed duplicate include of commit-map.json."
   },
   "units": [
     {
       "id": "archival-standardization",
       "phaseId": "01-archival-standardization",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "docs",
       "subject": {
@@ -21,8 +21,7 @@
       },
       "purpose": "define sequential naming (001-) and YYYY-MM structure for archived plans to prevent clutter",
       "include": [
-        ".agent/plans/README.md",
-        ".agent/plans/001-plan-archival-governance/commit-map.json"
+        ".agent/plans/README.md"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
@@ -46,7 +45,8 @@
       },
       "purpose": "ensure lessons learned are captured before archiving complex plans",
       "include": [
-        ".agent/plans/templates/post-mortem.md"
+        ".agent/plans/templates/post-mortem.md",
+        ".agent/plans/001-plan-archival-governance/commit-map.json"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
