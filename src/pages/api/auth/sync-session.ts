@@ -10,7 +10,11 @@ import {
 	clearMfaSessionCookie,
 } from '@/lib/rsvp/auth/cookies';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
-import { assertSameOrigin, enforceAuthRateLimit, sanitizeToken } from '@/lib/rsvp/security/auth-security';
+import {
+	assertSameOrigin,
+	enforceAuthRateLimit,
+	sanitizeToken,
+} from '@/lib/rsvp/security/auth-security';
 import { getHostSessionFromRequest, getSupabaseUserByAccessToken } from '@/lib/rsvp/auth/auth';
 import { createTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';

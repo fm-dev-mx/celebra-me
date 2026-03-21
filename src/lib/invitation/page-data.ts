@@ -209,7 +209,9 @@ export function prepareInvitationPageData(input: {
 	const guestName = input.guestContext?.guest.fullName;
 	const footerVariant: SharedSectionVariant =
 		input.eventEntry.data.sectionStyles?.footer?.variant ??
-		(theme.preset === 'jewelry-box' || theme.preset === 'luxury-hacienda' || theme.preset === 'editorial'
+		(theme.preset === 'jewelry-box' ||
+		theme.preset === 'luxury-hacienda' ||
+		theme.preset === 'editorial'
 			? theme.preset
 			: 'standard');
 

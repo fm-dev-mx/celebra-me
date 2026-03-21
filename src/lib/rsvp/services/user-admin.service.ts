@@ -1,4 +1,7 @@
-import { findAppUserRoleByUserIdService, listUserRolesService } from '@/lib/rsvp/repositories/role-membership.repository';
+import {
+	findAppUserRoleByUserIdService,
+	listUserRolesService,
+} from '@/lib/rsvp/repositories/role-membership.repository';
 import { upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
 import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp/core/types';
 import { listAuthUsers } from '@/lib/rsvp/auth/auth-api';

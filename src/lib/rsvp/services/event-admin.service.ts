@@ -1,5 +1,9 @@
 import { createEventService, updateEventService } from '@/lib/rsvp/repositories/event.repository';
-import { findEventByIdService, listAllEventsService, findEventsForHost } from '@/lib/rsvp/repositories/event.repository';
+import {
+	findEventByIdService,
+	listAllEventsService,
+	findEventsForHost,
+} from '@/lib/rsvp/repositories/event.repository';
 import type { AdminEventListItemDTO, EventRecord } from '@/lib/rsvp/core/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';

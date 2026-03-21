@@ -1,4 +1,10 @@
-import { createGuestInvitation, deleteGuestById, findGuestsByEvent, findGuestByPhone, updateGuestById } from '@/lib/rsvp/repositories/guest.repository';
+import {
+	createGuestInvitation,
+	deleteGuestById,
+	findGuestsByEvent,
+	findGuestByPhone,
+	updateGuestById,
+} from '@/lib/rsvp/repositories/guest.repository';
 import { findEventById } from '@/lib/rsvp/repositories/event.repository';
 import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
@@ -98,8 +104,6 @@ export async function listDashboardGuests(input: {
 		updatedAt: new Date().toISOString(),
 	};
 }
-
-
 
 export async function createDashboardGuest(input: {
 	eventId: string;

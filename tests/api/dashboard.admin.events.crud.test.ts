@@ -1,7 +1,11 @@
 import { GET as getEvents, POST as createEvent } from '@/pages/api/dashboard/admin/events';
 import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventId]';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { listAdminEvents, createEventAdmin, updateEventAdmin } from '@/lib/rsvp/services/event-admin.service';
+import {
+	listAdminEvents,
+	createEventAdmin,
+	updateEventAdmin,
+} from '@/lib/rsvp/services/event-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from './rsvp.helpers';
 

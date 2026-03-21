@@ -17,7 +17,11 @@ import {
 	sanitizeClaimCode,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
-import { claimEventForUserByClaimCode, ensureUserRole, isSuperAdminEmail } from '@/lib/rsvp/services/auth-access.service';
+import {
+	claimEventForUserByClaimCode,
+	ensureUserRole,
+	isSuperAdminEmail,
+} from '@/lib/rsvp/services/auth-access.service';
 import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
 
 function sanitize(value: unknown, maxLen = 200): string {

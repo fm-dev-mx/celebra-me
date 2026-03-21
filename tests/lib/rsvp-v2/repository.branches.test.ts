@@ -2,7 +2,13 @@ import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository
 import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import { incrementClaimCodeUsageService } from '@/lib/rsvp/repositories/claim-code.repository';
-import { createGuestInvitation, findGuestByIdService, findGuestsByEvent, updateGuestById, updateGuestByInviteIdPublic } from '@/lib/rsvp/repositories/guest.repository';
+import {
+	createGuestInvitation,
+	findGuestByIdService,
+	findGuestsByEvent,
+	updateGuestById,
+	updateGuestByInviteIdPublic,
+} from '@/lib/rsvp/repositories/guest.repository';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 

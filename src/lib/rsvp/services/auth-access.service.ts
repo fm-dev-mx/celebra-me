@@ -1,4 +1,8 @@
-import { findUserRoleService, listMembershipsForHost, upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
+import {
+	findUserRoleService,
+	listMembershipsForHost,
+	upsertUserRoleService,
+} from '@/lib/rsvp/repositories/role-membership.repository';
 import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createHash } from 'node:crypto';

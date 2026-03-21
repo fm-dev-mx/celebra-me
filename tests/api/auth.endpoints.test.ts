@@ -4,7 +4,10 @@ import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import { buildAuthSessionDto } from '@/lib/rsvp/services/auth-access.service';
-import { claimEventForUserByClaimCode, ensureUserRole } from '@/lib/rsvp/services/auth-access.service';
+import {
+	claimEventForUserByClaimCode,
+	ensureUserRole,
+} from '@/lib/rsvp/services/auth-access.service';
 import { getHostSessionFromRequest } from '@/lib/rsvp/auth/auth';
 import { createMockRequest } from './rsvp.helpers';
 

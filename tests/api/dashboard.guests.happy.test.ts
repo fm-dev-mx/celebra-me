@@ -2,7 +2,13 @@ import { GET, POST } from '@/pages/api/dashboard/guests';
 import { PATCH, DELETE } from '@/pages/api/dashboard/guests/[guestId]';
 import { POST as markShared } from '@/pages/api/dashboard/guests/[guestId]/mark-shared';
 import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp/auth/auth';
-import { createDashboardGuest, deleteDashboardGuest, listDashboardGuests, markGuestShared, updateDashboardGuest } from '@/lib/rsvp/services/dashboard-guests.service';
+import {
+	createDashboardGuest,
+	deleteDashboardGuest,
+	listDashboardGuests,
+	markGuestShared,
+	updateDashboardGuest,
+} from '@/lib/rsvp/services/dashboard-guests.service';
 import { createMockRequest } from './rsvp.helpers';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({

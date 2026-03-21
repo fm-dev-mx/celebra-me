@@ -1,5 +1,9 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { requireSessionContext, type SessionContext, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth/auth';
+import {
+	requireSessionContext,
+	type SessionContext,
+	resolveAccessTokenFromRequest,
+} from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
 import { getEnv } from '@utils/env';
