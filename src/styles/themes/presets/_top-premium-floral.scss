@@ -129,4 +129,12 @@
 
 	// Layout Specifics
 	--container-max-width-lg: 1280px;
+
+	// ---------------------------------------------------------------------
+	// Image filter tokens
+	// ---------------------------------------------------------------------
+	--theme-image-filter-hero: none;
+	--theme-image-filter-portrait: none;
+	--theme-image-filter-gallery: none;
+	--theme-image-filter-interlude: none;
 }

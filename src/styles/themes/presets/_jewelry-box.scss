@@ -60,10 +60,10 @@
 	// ---------------------------------------------------------------------
 	// Countdown section tokens
 	// ---------------------------------------------------------------------
-	--jewelry-box-countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
-	--jewelry-box-countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
-	--jewelry-box-countdown-label-letter-spacing: 0.25em;
-	--jewelry-box-countdown-label-opacity: 0.8;
+	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
+	--countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
+	--countdown-label-letter-spacing: 0.25em;
+	--countdown-label-opacity: 0.8;
 
 	// ---------------------------------------------------------------------
 	// Family section tokens
@@ -116,31 +116,31 @@
 	// ---------------------------------------------------------------------
 	// Gallery tokens
 	// ---------------------------------------------------------------------
-	--jewelry-box-gallery-section-bg: radial-gradient(
+	--gallery-section-bg: radial-gradient(
 		circle at 50% 50%,
 		rgb(var(--color-action-accent-rgb), 0.05) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--jewelry-box-gallery-card-bg: var(--color-glass-bg);
-	--jewelry-box-gallery-card-radius: 12px;
-	--jewelry-box-gallery-card-padding: 10px;
-	--jewelry-box-gallery-image-radius: 4px;
-	--jewelry-box-gallery-title-font: var(--font-display);
-	--jewelry-box-gallery-title-color: var(--color-action-accent);
-	--jewelry-box-gallery-subtitle-color: rgb(var(--color-surface-dark-rgb), 0.72);
-	--jewelry-box-gallery-caption-bg: rgb(255 255 255 / 90%);
-	--jewelry-box-gallery-caption-color: var(--color-action-accent);
-	--jewelry-box-gallery-caption-font: 'Cormorant Garamond', serif;
-	--jewelry-box-gallery-caption-size: 0.8rem;
-	--jewelry-box-gallery-caption-letter-spacing: 0.04em;
+	--gallery-card-bg: var(--color-glass-bg);
+	--gallery-card-radius: 12px;
+	--gallery-card-padding: 10px;
+	--gallery-image-radius: 4px;
+	--gallery-title-font: var(--font-display);
+	--gallery-title-color: var(--color-action-accent);
+	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb), 0.72);
+	--gallery-caption-bg: rgb(255 255 255 / 90%);
+	--gallery-caption-color: var(--color-action-accent);
+	--gallery-caption-font: 'Cormorant Garamond', serif;
+	--gallery-caption-size: 0.8rem;
+	--gallery-caption-letter-spacing: 0.04em;
 
 	// ---------------------------------------------------------------------
 	// Thank-you section tokens
 	// ---------------------------------------------------------------------
-	--jewelry-box-thank-you-frame-size-mobile: 220px;
-	--jewelry-box-thank-you-frame-size-desktop: 280px;
-	--jewelry-box-thank-you-image-fit: contain;
-	--jewelry-box-thank-you-image-position: center;
+	--thank-you-frame-size-mobile: 220px;
+	--thank-you-frame-size-desktop: 280px;
+	--thank-you-image-fit: contain;
+	--thank-you-image-position: center;
 
 	// 🎨 Texture & Light Effects (Ultra-Premium)
 	--texture-silk:

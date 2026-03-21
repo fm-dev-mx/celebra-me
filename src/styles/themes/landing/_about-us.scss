@@ -8,22 +8,22 @@
 
 // Background Overlay Gradients
 $about-bg-gradient-1: var(
-	--landing-about-bg-gradient-1,
+	--about-bg-gradient-1,
 	rgb(var(--color-primary-rgb, 197, 160, 89), 0.12)
 );
 $about-bg-gradient-2: var(
-	--landing-about-bg-gradient-2,
+	--about-bg-gradient-2,
 	rgb(var(--color-primary-rgb, 197, 160, 89), 0.1)
 );
 $about-bg-gradient-3: var(
-	--landing-about-bg-gradient-3,
+	--about-bg-gradient-3,
 	rgb(var(--color-white-rgb, 255, 255, 255), 0.15)
 );
-$about-noise-opacity: var(--landing-about-noise-opacity, 0.04);
+$about-noise-opacity: var(--about-noise-opacity, 0.04);
 
 // Title Underline Effect
 $about-underline-gradient: var(
-	--landing-about-underline-gradient,
+	--about-underline-gradient,
 	linear-gradient(
 		90deg,
 		rgb(var(--color-accent-rgb), 0.8) 0%,
@@ -31,11 +31,11 @@ $about-underline-gradient: var(
 		transparent 100%
 	)
 );
-$about-underline-shine-color: var(--landing-about-underline-shine-color, rgb(255 255 255 / 60%));
+$about-underline-shine-color: var(--about-underline-shine-color, rgb(255 255 255 / 60%));
 
 // Image Wrapper Styles
 $about-image-wrapper-bg: var(
-	--landing-about-image-wrapper-bg,
+	--about-image-wrapper-bg,
 	linear-gradient(
 		135deg,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
@@ -44,18 +44,18 @@ $about-image-wrapper-bg: var(
 	)
 );
 $about-image-wrapper-shadow: var(
-	--landing-about-image-wrapper-shadow,
+	--about-image-wrapper-shadow,
 	0 40px 80px -20px rgb(0 0 0 / 20%),
 	0 15px 40px -15px rgb(var(--color-primary-rgb, 197, 160, 89), 0.15)
 );
 
 // Image Frame
 $about-image-frame-border: var(
-	--landing-about-image-frame-border,
+	--about-image-frame-border,
 	rgb(var(--color-white-rgb, 255, 255, 255), 0.35)
 );
 $about-image-frame-bg: var(
-	--landing-about-image-frame-bg,
+	--about-image-frame-bg,
 	linear-gradient(
 		135deg,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.12) 0%,
@@ -66,25 +66,25 @@ $about-image-frame-bg: var(
 );
 
 // Image Glow Effect
-$about-image-glow-color: var(--landing-about-image-glow-color, rgb(var(--color-accent-rgb), 0.18));
+$about-image-glow-color: var(--about-image-glow-color, rgb(var(--color-accent-rgb), 0.18));
 
 // Image Decoration (floating accent element)
 $about-decoration-border: var(
-	--landing-about-decoration-border,
+	--about-decoration-border,
 	rgb(var(--color-accent-rgb), 0.35)
 );
 $about-decoration-bg: var(
-	--landing-about-decoration-bg,
+	--about-decoration-bg,
 	linear-gradient(135deg, rgb(var(--color-accent-rgb), 0.16) 0%, rgb(255 255 255 / 2%) 100%)
 );
 $about-decoration-shadow: var(
-	--landing-about-decoration-shadow,
+	--about-decoration-shadow,
 	0 20px 40px rgb(var(--color-accent-rgb), 0.08)
 );
 
 // Value Cards
 $about-value-card-bg: var(
-	--landing-about-value-card-bg,
+	--about-value-card-bg,
 	linear-gradient(
 		140deg,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.65),
@@ -98,18 +98,18 @@ $about-value-card-bg: var(
 	)
 );
 $about-value-card-border: var(
-	--landing-about-value-card-border,
+	--about-value-card-border,
 	rgb(var(--color-white-rgb, 255, 255, 255), 0.5)
 );
 $about-value-card-shadow: var(
-	--landing-about-value-card-shadow,
+	--about-value-card-shadow,
 	0 40px 80px -40px rgb(0 0 0 / 25%),
 	0 15px 35px -25px rgb(var(--color-primary-rgb, 197, 160, 89), 0.15)
 );
 
 // Value Card Hover
 $about-value-card-hover-bg: var(
-	--landing-about-value-card-hover-bg,
+	--about-value-card-hover-bg,
 	linear-gradient(
 		140deg,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.9),
@@ -123,21 +123,21 @@ $about-value-card-hover-bg: var(
 	)
 );
 $about-value-card-hover-border: var(
-	--landing-about-value-card-hover-border,
+	--about-value-card-hover-border,
 	rgb(var(--color-primary-rgb), 0.4)
 );
 
 // Value Icon Wrapper
-$about-value-icon-bg: var(--landing-about-value-icon-bg, rgb(var(--color-primary-rgb), 0.08));
-$about-value-icon-color: var(--landing-value-icon-color, var(--color-primary));
-$about-value-icon-border: var(--landing-value-icon-border, rgb(var(--color-primary-rgb), 0.2));
-$about-value-icon-hover-bg: var(--landing-value-icon-hover-bg, var(--color-primary));
+$about-value-icon-bg: var(--about-value-icon-bg, rgb(var(--color-primary-rgb), 0.08));
+$about-value-icon-color: var(--value-icon-color, var(--color-primary));
+$about-value-icon-border: var(--value-icon-border, rgb(var(--color-primary-rgb), 0.2));
+$about-value-icon-hover-bg: var(--value-icon-hover-bg, var(--color-primary));
 
 // Sparkle Animation Colors
-$about-sparkle-color: var(--landing-about-sparkle-color, var(--color-accent));
+$about-sparkle-color: var(--about-sparkle-color, var(--color-accent));
 
 // Animation Timing
-$about-ease-luxury: var(--landing-about-ease-luxury, cubic-bezier(0.19, 1, 0.22, 1));
-$about-ease-slow: var(--landing-about-ease-slow, cubic-bezier(0.22, 0.61, 0.36, 1));
-$about-glint-angle: var(--landing-about-glint-angle, 45deg);
-$about-animation-duration: var(--landing-about-animation-duration, 10s);
+$about-ease-luxury: var(--about-ease-luxury, cubic-bezier(0.19, 1, 0.22, 1));
+$about-ease-slow: var(--about-ease-slow, cubic-bezier(0.22, 0.61, 0.36, 1));
+$about-glint-angle: var(--about-glint-angle, 45deg);
+$about-animation-duration: var(--about-animation-duration, 10s);

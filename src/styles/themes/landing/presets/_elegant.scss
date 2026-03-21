@@ -6,22 +6,23 @@
  * Este es el tema por defecto de Celebra-me
  */
 
+@use 'sass:color';
 @use '../../../tokens/primitives' as primitives;
 
 .theme-preset--elegant {
-	// Color Architecture: Standard Brand Palette (Direct Primitive Mapping)
+	// Color Architecture: Standard Brand Palette
 	--color-text-primary: #{primitives.$base-coffee-900};
-	--color-text-primary-rgb: 75, 54, 33; // #4B3621
+	--color-text-primary-rgb: #{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
 	--color-text-secondary: #{primitives.$base-coffee-700};
 	--color-text-emphasis: #{primitives.$base-gold-700};
 	--color-text-on-dark: #{primitives.$base-parchment-100};
 	--color-surface-primary: #{primitives.$base-parchment-100};
-	--color-surface-primary-rgb: 245, 245, 220; // #F5F5DC
+	--color-surface-primary-rgb: #{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)}, #{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)}, #{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)};
 	--color-surface-dark: #{primitives.$base-coffee-900};
-	--color-surface-dark-rgb: 75, 54, 33; // #3E2B1A
+	--color-surface-dark-rgb: #{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
 	--color-action-primary: #{primitives.$base-coffee-900};
 	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb: 212, 175, 55; // #D4AF37
+	--color-action-accent-rgb: #{color.channel(primitives.$base-gold-500, 'red', $space: rgb)}, #{color.channel(primitives.$base-gold-500, 'green', $space: rgb)}, #{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
 
 	// Specific fixes for Contact Form
 	--color-border-subtle: rgb(75 54 33 / 10%); // Based on coffee-900
@@ -40,92 +41,92 @@
 	// ==========================================
 
 	// Services Section
-	--landing-services-card-bg: rgb(255 255 255 / 70%);
-	--landing-services-card-backdrop-blur: 10px;
-	--landing-services-card-border: rgb(255 255 255 / 50%);
-	--landing-services-card-hover-transform: translateY(-8px);
-	--landing-services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
-	--landing-services-image-overlay-bg: linear-gradient(to top, rgb(0 0 0 / 40%), transparent);
-	--landing-services-image-overlay-opacity: 0.6;
-	--landing-services-image-filter-default: grayscale(100%);
-	--landing-services-image-filter-hover: grayscale(0%);
-	--landing-services-icon-wrapper-bg: var(--color-bg-primary, #{primitives.$base-neutral-0});
-	--landing-services-icon-wrapper-color: #{primitives.$base-gold-500};
-	--landing-services-icon-wrapper-shadow: 0 4px 10px rgb(0 0 0 / 5%);
-	--landing-services-heading-accent-color: #{primitives.$base-gold-500};
-	--landing-services-title-color: var(--color-text-primary);
-	--landing-services-description-color: var(--color-text-secondary);
-	--landing-services-cta-color: #{primitives.$base-gold-500};
-	--landing-services-card-transition-duration: 0.4s;
-	--landing-services-card-stagger-delay: 100ms;
+	--services-card-bg: rgb(255 255 255 / 70%);
+	--services-card-backdrop-blur: 10px;
+	--services-card-border: rgb(255 255 255 / 50%);
+	--services-card-hover-transform: translateY(-8px);
+	--services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
+	--services-image-overlay-bg: linear-gradient(to top, rgb(0 0 0 / 40%), transparent);
+	--services-image-overlay-opacity: 0.6;
+	--services-image-filter-default: grayscale(100%);
+	--services-image-filter-hover: grayscale(0%);
+	--services-icon-wrapper-bg: var(--color-bg-primary, #{primitives.$base-neutral-0});
+	--services-icon-wrapper-color: #{primitives.$base-gold-500};
+	--services-icon-wrapper-shadow: 0 4px 10px rgb(0 0 0 / 5%);
+	--services-heading-accent-color: #{primitives.$base-gold-500};
+	--services-title-color: var(--color-text-primary);
+	--services-description-color: var(--color-text-secondary);
+	--services-cta-color: #{primitives.$base-gold-500};
+	--services-card-transition-duration: 0.4s;
+	--services-card-stagger-delay: 100ms;
 
 	// Header Section
-	--landing-header-bg-transparent: transparent;
-	--landing-header-bg-scrolled: rgb(15 23 42 / 95%); // Dark blue from FAQ/Footer
-	--landing-header-text-transparent: #{primitives.$base-neutral-0};
-	--landing-header-text-scrolled: #{primitives.$base-parchment-100};
-	--landing-header-accent-scrolled: #{primitives.$base-gold-500};
-	--landing-header-shadow-scrolled: 0 4px 20px rgb(0 0 0 / 30%);
-	--landing-header-backdrop-blur: 12px;
+	--header-bg-transparent: transparent;
+	--header-bg-scrolled: rgb(15 23 42 / 95%); // Dark blue from FAQ/Footer
+	--header-text-transparent: #{primitives.$base-neutral-0};
+	--header-text-scrolled: #{primitives.$base-parchment-100};
+	--header-accent-scrolled: #{primitives.$base-gold-500};
+	--header-shadow-scrolled: 0 4px 20px rgb(0 0 0 / 30%);
+	--header-backdrop-blur: 12px;
 
 	// About Us Section
-	--landing-about-noise-opacity: 0.04;
-	--landing-about-underline-shine-color: rgb(255 255 255 / 60%);
-	--landing-about-image-wrapper-bg: linear-gradient(
+	--about-noise-opacity: 0.04;
+	--about-underline-shine-color: rgb(255 255 255 / 60%);
+	--about-image-wrapper-bg: linear-gradient(
 		135deg,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.05) 50%,
 		rgb(var(--color-white-rgb, 255, 255, 255), 0.02) 100%
 	);
-	--landing-about-image-wrapper-shadow:
+	--about-image-wrapper-shadow:
 		0 40px 80px -20px rgb(0 0 0 / 20%),
 		0 15px 40px -15px rgb(var(--color-primary-rgb, 197, 160, 89), 0.15);
-	--landing-about-image-frame-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.35);
-	--landing-about-image-glow-color: rgb(var(--color-accent-rgb), 0.18);
-	--landing-about-decoration-border: rgb(var(--color-accent-rgb), 0.35);
-	--landing-about-decoration-shadow: 0 20px 40px rgb(var(--color-accent-rgb), 0.08);
-	--landing-about-value-card-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.5);
-	--landing-about-value-card-hover-border: rgb(var(--color-primary-rgb), 0.4);
-	--landing-about-value-icon-bg: rgb(var(--color-primary-rgb), 0.08);
-	--landing-about-value-icon-color: var(--color-primary);
-	--landing-about-value-icon-border: rgb(var(--color-primary-rgb), 0.2);
-	--landing-about-value-icon-hover-bg: var(--color-primary);
-	--landing-about-sparkle-color: var(--color-accent);
-	--landing-about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
-	--landing-about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
-	--landing-about-glint-angle: 45deg;
-	--landing-about-animation-duration: 10s;
+	--about-image-frame-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.35);
+	--about-image-glow-color: rgb(var(--color-accent-rgb), 0.18);
+	--about-decoration-border: rgb(var(--color-accent-rgb), 0.35);
+	--about-decoration-shadow: 0 20px 40px rgb(var(--color-accent-rgb), 0.08);
+	--about-value-card-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.5);
+	--about-value-card-hover-border: rgb(var(--color-primary-rgb), 0.4);
+	--about-value-icon-bg: rgb(var(--color-primary-rgb), 0.08);
+	--about-value-icon-color: var(--color-primary);
+	--about-value-icon-border: rgb(var(--color-primary-rgb), 0.2);
+	--about-value-icon-hover-bg: var(--color-primary);
+	--about-sparkle-color: var(--color-accent);
+	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
+	--about-glint-angle: 45deg;
+	--about-animation-duration: 10s;
 
 	// Pricing Section
-	--landing-pricing-section-bg: var(--color-background);
-	--landing-pricing-noise-opacity: 0.03;
-	--landing-pricing-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
-	--landing-pricing-card-backdrop-blur: 10px;
-	--landing-pricing-card-border: rgb(var(--color-primary-rgb, 197, 160, 89), 0.2);
-	--landing-pricing-card-border-radius: 4px;
-	--landing-pricing-card-hover-transform: translateY(-10px);
-	--landing-pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
-	--landing-pricing-premium-bg: rgb(var(--color-secondary-rgb, 44, 62, 80), 0.02);
-	--landing-pricing-premium-border: var(--color-primary);
-	--landing-pricing-premium-shadow: 0 0 20px rgb(var(--color-primary-rgb, 197, 160, 89), 0.1);
-	--landing-pricing-premium-scale: 1.05;
-	--landing-pricing-premium-badge-bg: var(--color-primary);
-	--landing-pricing-elite-bg: rgb(15 23 42 / 90%);
-	--landing-pricing-elite-border: var(--color-primary-light);
-	--landing-pricing-elite-shadow: 0 20px 50px rgb(0 0 0 / 20%);
-	--landing-pricing-elite-text-color: white;
-	--landing-pricing-elite-accent-color: var(--color-primary-light);
-	--landing-pricing-tier-name-color: var(--color-secondary);
-	--landing-pricing-tier-desc-color: var(--color-text);
-	--landing-pricing-tier-price-color: var(--color-secondary);
-	--landing-pricing-tier-currency-color: var(--color-primary);
-	--landing-pricing-feature-highlight-bg: rgb(var(--color-primary-rgb, 197, 160, 89), 0.1);
-	--landing-pricing-feature-highlight-color: var(--color-primary-dark);
-	--landing-pricing-cta-border: var(--color-primary);
-	--landing-pricing-cta-color: var(--color-primary);
-	--landing-pricing-cta-hover-bg: rgb(var(--color-primary-rgb, 197, 160, 89), 0.05);
-	--landing-pricing-card-border-glow: var(--color-primary);
-	--landing-pricing-glint-gradient: linear-gradient(
+	--pricing-section-bg: var(--color-background);
+	--pricing-noise-opacity: 0.03;
+	--pricing-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
+	--pricing-card-backdrop-blur: 10px;
+	--pricing-card-border: rgb(var(--color-primary-rgb, 197, 160, 89), 0.2);
+	--pricing-card-border-radius: 4px;
+	--pricing-card-hover-transform: translateY(-10px);
+	--pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
+	--pricing-premium-bg: rgb(var(--color-secondary-rgb, 44, 62, 80), 0.02);
+	--pricing-premium-border: var(--color-primary);
+	--pricing-premium-shadow: 0 0 20px rgb(var(--color-primary-rgb, 197, 160, 89), 0.1);
+	--pricing-premium-scale: 1.05;
+	--pricing-premium-badge-bg: var(--color-primary);
+	--pricing-elite-bg: rgb(15 23 42 / 90%);
+	--pricing-elite-border: var(--color-primary-light);
+	--pricing-elite-shadow: 0 20px 50px rgb(0 0 0 / 20%);
+	--pricing-elite-text-color: white;
+	--pricing-elite-accent-color: var(--color-primary-light);
+	--pricing-tier-name-color: var(--color-secondary);
+	--pricing-tier-desc-color: var(--color-text);
+	--pricing-tier-price-color: var(--color-secondary);
+	--pricing-tier-currency-color: var(--color-primary);
+	--pricing-feature-highlight-bg: rgb(var(--color-primary-rgb, 197, 160, 89), 0.1);
+	--pricing-feature-highlight-color: var(--color-primary-dark);
+	--pricing-cta-border: var(--color-primary);
+	--pricing-cta-color: var(--color-primary);
+	--pricing-cta-hover-bg: rgb(var(--color-primary-rgb, 197, 160, 89), 0.05);
+	--pricing-card-border-glow: var(--color-primary);
+	--pricing-glint-gradient: linear-gradient(
 		90deg,
 		transparent,
 		rgb(255 255 255 / 40%),
@@ -133,144 +134,144 @@
 	);
 
 	// FAQ Section
-	--landing-faq-section-bg: #0f172a;
-	--landing-faq-section-color: white;
-	--landing-faq-noise-opacity: 0.1;
-	--landing-faq-item-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.03);
-	--landing-faq-item-backdrop-blur: 10px;
-	--landing-faq-item-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.05);
-	--landing-faq-item-border-radius: 2px;
-	--landing-faq-item-hover-bg: rgb(255 255 255 / 5%);
-	--landing-faq-item-hover-border: rgb(var(--color-primary-rgb), 0.3);
-	--landing-faq-item-open-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.07);
-	--landing-faq-item-open-border: var(--color-primary);
-	--landing-faq-item-open-shadow: 0 30px 60px rgb(0 0 0 / 30%);
-	--landing-faq-pretitle-color: var(--color-primary);
-	--landing-faq-title-color: var(--color-primary-light);
-	--landing-faq-subtitle-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
-	--landing-faq-question-color: var(--color-primary-light);
-	--landing-faq-question-hover-color: white;
-	--landing-faq-answer-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
-	--landing-faq-chevron-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.3);
-	--landing-faq-chevron-open-color: var(--color-primary);
-	--landing-faq-transition-duration: 0.5s;
-	--landing-faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
+	--faq-section-bg: #0f172a;
+	--faq-section-color: white;
+	--faq-noise-opacity: 0.1;
+	--faq-item-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.03);
+	--faq-item-backdrop-blur: 10px;
+	--faq-item-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.05);
+	--faq-item-border-radius: 2px;
+	--faq-item-hover-bg: rgb(255 255 255 / 5%);
+	--faq-item-hover-border: rgb(var(--color-primary-rgb), 0.3);
+	--faq-item-open-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.07);
+	--faq-item-open-border: var(--color-primary);
+	--faq-item-open-shadow: 0 30px 60px rgb(0 0 0 / 30%);
+	--faq-pretitle-color: var(--color-primary);
+	--faq-title-color: var(--color-primary-light);
+	--faq-subtitle-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
+	--faq-question-color: var(--color-primary-light);
+	--faq-question-hover-color: white;
+	--faq-answer-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
+	--faq-chevron-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.3);
+	--faq-chevron-open-color: var(--color-primary);
+	--faq-transition-duration: 0.5s;
+	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
 
 	// Footer Section
-	--landing-footer-section-bg: #0f172a;
-	--landing-footer-section-color: white;
-	--landing-footer-noise-opacity: 0.05;
-	--landing-footer-slogan-opacity: 0.7;
-	--landing-footer-slogan-color: white;
-	--landing-footer-group-title-color: var(--color-primary-light);
-	--landing-footer-link-color: white;
-	--landing-footer-link-opacity: 0.6;
-	--landing-footer-link-hover-opacity: 1;
-	--landing-footer-link-hover-color: var(--color-primary-light);
-	--landing-footer-social-bg: rgb(255 255 255 / 10%);
-	--landing-footer-social-border: rgb(255 255 255 / 10%);
-	--landing-footer-social-color: white;
-	--landing-footer-social-hover-bg: var(--color-primary);
-	--landing-footer-social-hover-border: var(--color-primary);
-	--landing-footer-social-hover-shadow: 0 10px 20px
+	--footer-section-bg: #0f172a;
+	--footer-section-color: white;
+	--footer-noise-opacity: 0.05;
+	--footer-slogan-opacity: 0.7;
+	--footer-slogan-color: white;
+	--footer-group-title-color: var(--color-primary-light);
+	--footer-link-color: white;
+	--footer-link-opacity: 0.6;
+	--footer-link-hover-opacity: 1;
+	--footer-link-hover-color: var(--color-primary-light);
+	--footer-social-bg: rgb(255 255 255 / 10%);
+	--footer-social-border: rgb(255 255 255 / 10%);
+	--footer-social-color: white;
+	--footer-social-hover-bg: var(--color-primary);
+	--footer-social-hover-border: var(--color-primary);
+	--footer-social-hover-shadow: 0 10px 20px
 		rgb(var(--color-primary-rgb, 197, 160, 89), 0.2);
-	--landing-footer-bottom-border: rgb(255 255 255 / 10%);
-	--landing-footer-copyright-opacity: 0.5;
-	--landing-footer-legal-opacity: 0.5;
-	--landing-footer-transition-duration: 0.3s;
-	--landing-footer-transition-easing: ease;
+	--footer-bottom-border: rgb(255 255 255 / 10%);
+	--footer-copyright-opacity: 0.5;
+	--footer-legal-opacity: 0.5;
+	--footer-transition-duration: 0.3s;
+	--footer-transition-easing: ease;
 
 	// Contact Section
-	--landing-contact-section-bg: var(--color-background);
-	--landing-contact-section-color: var(--color-secondary);
-	--landing-contact-texture-opacity: 0.03;
-	--landing-contact-pretitle-color: var(--color-text-emphasis);
-	--landing-contact-title-color: var(--color-text-primary);
-	--landing-contact-divider-bg: var(--color-border-emphasis);
-	--landing-contact-info-title-color: var(--color-text-primary);
-	--landing-contact-info-description-color: var(--color-text-secondary);
-	--landing-contact-info-footer-color: var(--color-text-secondary);
-	--landing-contact-channel-bg: var(--color-surface-primary);
-	--landing-contact-channel-border: var(--color-border-subtle);
-	--landing-contact-channel-shadow: var(--shadow-subtle);
-	--landing-contact-channel-icon-bg: var(--color-surface-secondary);
-	--landing-contact-channel-icon-color: var(--color-action-accent);
-	--landing-contact-channel-label-color: rgb(var(--color-text-secondary-rgb), 0.6);
-	--landing-contact-channel-value-color: var(--color-text-primary);
-	--landing-contact-channel-hover-border: var(--color-border-emphasis);
-	--landing-contact-channel-hover-transform: translateY(-3px);
-	--landing-contact-channel-hover-shadow: var(--shadow-emphasis);
-	--landing-contact-channel-icon-hover-bg: var(--color-action-accent);
-	--landing-contact-channel-icon-hover-color: white;
-	--landing-contact-form-bg: rgb(var(--color-surface-primary-rgb), 0.7);
-	--landing-contact-form-backdrop-blur: 20px;
-	--landing-contact-form-border: var(--color-border-subtle);
-	--landing-contact-form-shadow: var(--shadow-emphasis);
-	--landing-contact-form-accent-line: var(--color-border-emphasis);
-	--landing-contact-input-border: var(--color-border-subtle);
-	--landing-contact-input-color: var(--color-text-primary);
-	--landing-contact-input-focus-border: var(--color-action-accent);
-	--landing-contact-label-color: rgb(var(--color-text-secondary-rgb), 0.5);
-	--landing-contact-label-focus-color: var(--color-action-accent);
-	--landing-contact-submit-bg: var(--color-action-primary);
-	--landing-contact-submit-color: var(--color-text-on-dark);
-	--landing-contact-submit-hover-bg: var(--color-action-accent);
-	--landing-contact-submit-hover-transform: translateY(-2px);
-	--landing-contact-submit-hover-shadow: var(--shadow-subtle);
+	--contact-section-bg: var(--color-background);
+	--contact-section-color: var(--color-secondary);
+	--contact-texture-opacity: 0.03;
+	--contact-pretitle-color: var(--color-text-emphasis);
+	--contact-title-color: var(--color-text-primary);
+	--contact-divider-bg: var(--color-border-emphasis);
+	--contact-info-title-color: var(--color-text-primary);
+	--contact-info-description-color: var(--color-text-secondary);
+	--contact-info-footer-color: var(--color-text-secondary);
+	--contact-channel-bg: var(--color-surface-primary);
+	--contact-channel-border: var(--color-border-subtle);
+	--contact-channel-shadow: var(--shadow-subtle);
+	--contact-channel-icon-bg: var(--color-surface-secondary);
+	--contact-channel-icon-color: var(--color-action-accent);
+	--contact-channel-label-color: rgb(var(--color-text-secondary-rgb), 0.6);
+	--contact-channel-value-color: var(--color-text-primary);
+	--contact-channel-hover-border: var(--color-border-emphasis);
+	--contact-channel-hover-transform: translateY(-3px);
+	--contact-channel-hover-shadow: var(--shadow-emphasis);
+	--contact-channel-icon-hover-bg: var(--color-action-accent);
+	--contact-channel-icon-hover-color: white;
+	--contact-form-bg: rgb(var(--color-surface-primary-rgb), 0.7);
+	--contact-form-backdrop-blur: 20px;
+	--contact-form-border: var(--color-border-subtle);
+	--contact-form-shadow: var(--shadow-emphasis);
+	--contact-form-accent-line: var(--color-border-emphasis);
+	--contact-input-border: var(--color-border-subtle);
+	--contact-input-color: var(--color-text-primary);
+	--contact-input-focus-border: var(--color-action-accent);
+	--contact-label-color: rgb(var(--color-text-secondary-rgb), 0.5);
+	--contact-label-focus-color: var(--color-action-accent);
+	--contact-submit-bg: var(--color-action-primary);
+	--contact-submit-color: var(--color-text-on-dark);
+	--contact-submit-hover-bg: var(--color-action-accent);
+	--contact-submit-hover-transform: translateY(-2px);
+	--contact-submit-hover-shadow: var(--shadow-subtle);
 
 	// Supplemental for remediation
-	--landing-contact-bg-override: transparent;
-	--landing-contact-padding-override: 0;
-	--landing-contact-box-shadow-override: none;
+	--contact-bg-override: transparent;
+	--contact-padding-override: 0;
+	--contact-box-shadow-override: none;
 
 	// Testimonials Section
-	--landing-testimonials-title-font: var(--font-display, 'Playfair Display', serif);
-	--landing-testimonials-title-color: var(--color-text-primary, #333);
-	--landing-testimonials-title-letter-spacing: -0.02em;
-	--landing-testimonials-title-weight: 500;
-	--landing-testimonials-title-underline-bg: linear-gradient(
+	--testimonials-title-font: var(--font-display, 'Playfair Display', serif);
+	--testimonials-title-color: var(--color-text-primary, #333);
+	--testimonials-title-letter-spacing: -0.02em;
+	--testimonials-title-weight: 500;
+	--testimonials-title-underline-bg: linear-gradient(
 		90deg,
 		transparent,
 		var(--color-accent, #{primitives.$base-gold-500}),
 		transparent
 	);
-	--landing-testimonials-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
-	--landing-testimonials-card-backdrop-blur: 12px;
-	--landing-testimonials-card-border: rgb(var(--color-primary-rgb, 212, 175, 55), 0.15);
-	--landing-testimonials-card-border-radius: 2px;
-	--landing-testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
-	--landing-testimonials-card-transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-	--landing-testimonials-card-accent-bg: linear-gradient(
+	--testimonials-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
+	--testimonials-card-backdrop-blur: 12px;
+	--testimonials-card-border: rgb(var(--color-primary-rgb, 212, 175, 55), 0.15);
+	--testimonials-card-border-radius: 2px;
+	--testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
+	--testimonials-card-transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	--testimonials-card-accent-bg: linear-gradient(
 		90deg,
 		transparent,
 		var(--color-accent, #{primitives.$base-gold-500}),
 		transparent
 	);
-	--landing-testimonials-card-accent-opacity: 0.3;
-	--landing-testimonials-card-hover-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.95);
-	--landing-testimonials-card-hover-border: rgb(var(--color-primary-rgb, 212, 175, 55), 0.4);
-	--landing-testimonials-card-hover-shadow: 0 25px 50px -20px
+	--testimonials-card-accent-opacity: 0.3;
+	--testimonials-card-hover-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.95);
+	--testimonials-card-hover-border: rgb(var(--color-primary-rgb, 212, 175, 55), 0.4);
+	--testimonials-card-hover-shadow: 0 25px 50px -20px
 		rgb(var(--color-primary-rgb, 212, 175, 55), 0.15);
-	--landing-testimonials-card-hover-transform: translateY(-8px);
-	--landing-testimonials-quote-icon-color: var(--color-accent, #{primitives.$base-gold-500});
-	--landing-testimonials-quote-icon-opacity: 0.08;
-	--landing-testimonials-quote-icon-hover-opacity: 0.15;
-	--landing-testimonials-quote-icon-hover-transform: scale(1.1) rotate(-5deg);
-	--landing-testimonials-text-font: var(--font-display, serif);
-	--landing-testimonials-text-size: 1.15rem;
-	--landing-testimonials-text-line-height: 1.8;
-	--landing-testimonials-text-color: var(--color-text, #1a1a1a);
-	--landing-testimonials-text-style: italic;
-	--landing-testimonials-author-name-weight: 700;
-	--landing-testimonials-author-name-transform: uppercase;
-	--landing-testimonials-author-name-letter-spacing: 0.2em;
-	--landing-testimonials-author-name-size: 0.85rem;
-	--landing-testimonials-author-name-color: var(--color-accent, #{primitives.$base-gold-500});
-	--landing-testimonials-author-role-size: 0.7rem;
-	--landing-testimonials-author-role-transform: uppercase;
-	--landing-testimonials-author-role-letter-spacing: 0.15em;
-	--landing-testimonials-author-role-color: var(--color-text-light, #666);
-	--landing-testimonials-footer-border: rgb(0 0 0 / 5%);
+	--testimonials-card-hover-transform: translateY(-8px);
+	--testimonials-quote-icon-color: var(--color-accent, #{primitives.$base-gold-500});
+	--testimonials-quote-icon-opacity: 0.08;
+	--testimonials-quote-icon-hover-opacity: 0.15;
+	--testimonials-quote-icon-hover-transform: scale(1.1) rotate(-5deg);
+	--testimonials-text-font: var(--font-display, serif);
+	--testimonials-text-size: 1.15rem;
+	--testimonials-text-line-height: 1.8;
+	--testimonials-text-color: var(--color-text, #1a1a1a);
+	--testimonials-text-style: italic;
+	--testimonials-author-name-weight: 700;
+	--testimonials-author-name-transform: uppercase;
+	--testimonials-author-name-letter-spacing: 0.2em;
+	--testimonials-author-name-size: 0.85rem;
+	--testimonials-author-name-color: var(--color-accent, #{primitives.$base-gold-500});
+	--testimonials-author-role-size: 0.7rem;
+	--testimonials-author-role-transform: uppercase;
+	--testimonials-author-role-letter-spacing: 0.15em;
+	--testimonials-author-role-color: var(--color-text-light, #666);
+	--testimonials-footer-border: rgb(0 0 0 / 5%);
 
 	// Base Theme Styles
 	background-color: var(--color-surface-primary);

@@ -7,46 +7,46 @@
 @use '../../tokens/primitives' as primitives;
 
 // Card Background & Glassmorphism
-$services-card-bg: var(--landing-services-card-bg, rgb(255 255 255 / 70%));
-$services-card-backdrop-blur: var(--landing-services-card-backdrop-blur, 10px);
-$services-card-border: var(--landing-services-card-border, rgb(255 255 255 / 50%));
+$services-card-bg: var(--services-card-bg, rgb(255 255 255 / 70%));
+$services-card-backdrop-blur: var(--services-card-backdrop-blur, 10px);
+$services-card-border: var(--services-card-border, rgb(255 255 255 / 50%));
 
 // Card Hover Effects
-$services-card-hover-transform: var(--landing-services-card-hover-transform, translateY(-8px));
+$services-card-hover-transform: var(--services-card-hover-transform, translateY(-8px));
 $services-card-hover-shadow: var(
-	--landing-services-card-hover-shadow,
+	--services-card-hover-shadow,
 	0 20px 40px -5px rgb(0 0 0 / 15%)
 );
 
 // Image Overlay
 $services-image-overlay-bg: var(
-	--landing-services-image-overlay-bg,
+	--services-image-overlay-bg,
 	linear-gradient(to top, rgb(0 0 0 / 40%), transparent)
 );
-$services-image-overlay-opacity: var(--landing-services-image-overlay-opacity, 0.6);
-$services-image-filter-default: var(--landing-services-image-filter-default, grayscale(100%));
-$services-image-filter-hover: var(--landing-services-image-filter-hover, grayscale(0%));
+$services-image-overlay-opacity: var(--services-image-overlay-opacity, 0.6);
+$services-image-filter-default: var(--services-image-filter-default, grayscale(100%));
+$services-image-filter-hover: var(--services-image-filter-hover, grayscale(0%));
 
 // Icon Container
 $services-icon-wrapper-bg: var(
-	--landing-services-icon-wrapper-bg,
+	--services-icon-wrapper-bg,
 	var(--color-bg-primary, primitives.$base-neutral-0)
 );
-$services-icon-wrapper-color: var(--landing-services-icon-wrapper-color, primitives.$base-gold-500);
+$services-icon-wrapper-color: var(--services-icon-wrapper-color, primitives.$base-gold-500);
 $services-icon-wrapper-shadow: var(
-	--landing-services-icon-wrapper-shadow,
+	--services-icon-wrapper-shadow,
 	0 4px 10px rgb(0 0 0 / 5%)
 );
 
 // Typography
 $services-heading-accent-color: var(
-	--landing-services-heading-accent-color,
+	--services-heading-accent-color,
 	primitives.$base-gold-500
 );
-$services-title-color: var(--landing-services-title-color, var(--color-text-primary));
-$services-description-color: var(--landing-services-description-color, var(--color-text-secondary));
-$services-cta-color: var(--landing-services-cta-color, primitives.$base-gold-500);
+$services-title-color: var(--services-title-color, var(--color-text-primary));
+$services-description-color: var(--services-description-color, var(--color-text-secondary));
+$services-cta-color: var(--services-cta-color, primitives.$base-gold-500);
 
 // Animation
-$services-card-transition-duration: var(--landing-services-card-transition-duration, 0.4s);
-$services-card-stagger-delay: var(--landing-services-card-stagger-delay, 100ms);
+$services-card-transition-duration: var(--services-card-transition-duration, 0.4s);
+$services-card-stagger-delay: var(--services-card-stagger-delay, 100ms);
