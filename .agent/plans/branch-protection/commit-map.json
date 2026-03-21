@@ -1,0 +1,40 @@
+{
+  "planId": "branch-protection",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-20T21:07:00Z",
+    "reviewedAt": "2026-03-20T21:08:00Z",
+    "readyForGatekeeperAt": "2026-03-20T21:09:00Z",
+    "notes": "Verified that pre-commit and pre-push hooks block main/develop."
+  },
+  "units": [
+    {
+      "id": "husky-branch-protection",
+      "phaseId": "01-apply-hooks",
+      "status": "ready",
+      "domain": "ops",
+      "type": "chore",
+      "subject": {
+        "verb": "implement",
+        "target": "branch protection for main & develop"
+      },
+      "purpose": "prevent accidental direct commits and pushes to main integration branches",
+      "include": [
+        ".husky/pre-commit",
+        ".husky/pre-push",
+        ".agent/plans/branch-protection/manifest.json",
+        ".agent/plans/branch-protection/commit-map.json"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(ops): implement branch protection for main & develop",
+        "summary": [
+          "Block commits to 'main' and 'develop' branches in pre-commit hook",
+          "Block pushes to 'main' and 'develop' branches in pre-push hook",
+          "Add SKIP_BRANCH_PROTECTION bypass environment variable"
+        ]
+      }
+    }
+  ]
+}
