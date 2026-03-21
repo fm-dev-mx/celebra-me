@@ -4,147 +4,48 @@
     "defaultFallback": "none",
     "commitStrategyReview": {
         "draftedAt": "2026-03-21T18:00:00Z",
-        "reviewedAt": "2026-03-21T18:30:00Z",
-        "readyForGatekeeperAt": "2026-03-21T18:30:00Z",
+        "reviewedAt": "2026-03-21T18:45:00Z",
+        "readyForGatekeeperAt": "2026-03-21T18:45:00Z",
         "status": "APPROVED",
-        "notes": "Splitting previous monolithic commit into atomic units after user feedback."
+        "notes": "Consolidated into single unit for staged changes. Pre-existing lint errors acknowledged but outside scope."
     },
     "units": [
         {
-            "id": "archival-003",
+            "id": "scss-architecture-optimization",
             "phaseId": "01-governance-baseline",
-            "status": "ready",
-            "domain": "docs",
-            "type": "chore",
-            "subject": {
-                "verb": "archive",
-                "target": "Plan 003 and initialize Plan 005 metadata"
-            },
-            "purpose": "clean up archived plans and establish active plan metadata",
-            "include": [
-                ".agent/plans/005-scss-architecture-optimization/manifest.json",
-                ".agent/plans/005-scss-architecture-optimization/phases/*.md",
-                ".agent/plans/archive/2026-03/003-theme-architecture-validation/**"
-            ],
-            "allowRelated": [],
-            "correctionPolicy": "absorb-compatible",
-            "messagePreview": {
-                "header": "chore(docs): archive Plan 003 and initialize Plan 005 metadata",
-                "summary": [
-                    "move completed and inconsistent Plan 003 to dated archive",
-                    "initialize Plan 005 manifest and phase tracking",
-                    "cleanup plan directory structure"
-                ]
-            }
-        },
-        {
-            "id": "global-style-compliance",
-            "phaseId": "01-governance-baseline",
-            "status": "ready",
-            "domain": "ui",
-            "type": "style",
-            "subject": {
-                "verb": "apply",
-                "target": "global lint and formatting compliance fixes"
-            },
-            "purpose": "establish a clean code quality baseline across the codebase",
-            "include": [
-                ".stylelintrc.json",
-                "src/lib/**/*",
-                "src/pages/**/*",
-                "tests/**/*"
-            ],
-            "allowRelated": [],
-            "correctionPolicy": "absorb-compatible",
-            "messagePreview": {
-                "header": "style(ui): apply global lint and formatting compliance fixes",
-                "summary": [
-                    "fix Prettier formatting across lib, pages, and tests",
-                    "resolve minor ESLint violations and style inconsistencies",
-                    "standardize Stylelint recursive rules configuration"
-                ]
-            }
-        },
-        {
-            "id": "token-contract-definition",
-            "phaseId": "02-token-unification",
             "status": "ready",
             "domain": "ui",
             "type": "refactor",
             "subject": {
-                "verb": "define",
-                "target": "canonical section token contract"
+                "verb": "optimize",
+                "target": "SCSS architecture with token consolidation"
             },
-            "purpose": "establish a structured contract for all section themes using semantic tokens",
+            "purpose": "eliminate duplicate variables, consolidate tokens, remove hardcoded values, and add SCSS linting rules",
             "include": [
+                ".agent/plans/005-scss-architecture-optimization/CHANGELOG.md",
+                ".agent/plans/005-scss-architecture-optimization/EXECUTION.md",
+                ".agent/plans/005-scss-architecture-optimization/README.md",
+                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
+                ".agent/plans/005-scss-architecture-optimization/manifest.json",
+                ".stylelintrc.json",
+                "docs/STYLEGUIDE.md",
+                "src/styles/dashboard/_shell.scss",
+                "src/styles/global/_functions.scss",
+                "src/styles/global/_mixins.scss",
+                "src/styles/invitation/_hero.scss",
+                "src/styles/invitation/_rsvp.scss",
                 "src/styles/themes/sections/_tokens.scss",
                 "src/styles/tokens/_semantic.scss"
             ],
             "allowRelated": [],
             "correctionPolicy": "absorb-compatible",
             "messagePreview": {
-                "header": "refactor(ui): define canonical section token contract",
+                "header": "refactor(ui): optimize SCSS architecture with token consolidation",
                 "summary": [
-                    "create _tokens.scss with section padding and card roles",
-                    "add --section-eyebrow-color and --section-border-subtle semantic tokens",
-                    "align semantic color definitions with jewelry-box aesthetic"
-                ]
-            }
-        },
-        {
-            "id": "theme-standardization",
-            "phaseId": "02-token-unification",
-            "status": "ready",
-            "domain": "ui",
-            "type": "refactor",
-            "subject": {
-                "verb": "standardize",
-                "target": "section themes using canonical tokens"
-            },
-            "purpose": "apply section tokens to themes and centralize editorial variants",
-            "include": [
-                "src/styles/themes/sections/_*-theme.scss",
-                "src/styles/themes/sections/_index.scss",
-                "src/styles/themes/presets/_editorial.scss"
-            ],
-            "allowRelated": [
-                "src/styles/events/noir-premiere-xv.scss"
-            ],
-            "correctionPolicy": "absorb-compatible",
-            "messagePreview": {
-                "header": "refactor(ui): standardize section themes using canonical tokens",
-                "summary": [
-                    "modernize Hero, Family, RSVP, and Countdown themes with tokens",
-                    "centralize noir-premiere-xv styles into editorial variants",
-                    "remove hardcoded RGB values and duplicate selectors",
-                    "delete legacy standalone event SCSS"
-                ]
-            }
-        },
-        {
-            "id": "redundancy-elimination",
-            "phaseId": "03-redundancy-elimination",
-            "status": "ready",
-            "domain": "ui",
-            "type": "refactor",
-            "subject": {
-                "verb": "eliminate",
-                "target": "duplicate Sass variable definitions"
-            },
-            "purpose": "remove duplicated variables across _mixins.scss, _variables.scss, and _functions.scss",
-            "include": [
-                "src/styles/global/_mixins.scss",
-                "src/styles/global/_variables.scss",
-                "src/styles/global/_functions.scss"
-            ],
-            "allowRelated": [],
-            "correctionPolicy": "absorb-compatible",
-            "messagePreview": {
-                "header": "refactor(ui): eliminate duplicate Sass variable definitions",
-                "summary": [
-                    "consolidate $transitions-by-component to single source",
-                    "remove duplicated $breakpoints from mixins and functions",
-                    "unify $border-radius, $z-index, $backdrop-blurs definitions"
+                    "eliminate duplicate Sass variable definitions across mixins and functions",
+                    "add semantic tokens for error states and section-specific CSS variables",
+                    "replace hardcoded rgb values with CSS variables in components",
+                    "add SCSS linting rules and create comprehensive styleguide"
                 ]
             }
         }

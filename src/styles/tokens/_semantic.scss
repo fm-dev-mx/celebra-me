@@ -55,9 +55,18 @@ $shadow-premium: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
 // Special Roles
 $color-whatsapp: primitives.$base-whatsapp;
 $color-wax-seal: primitives.$base-wax-red;
+$color-white: var(--color-white, 255 255 255);
 
 // Theme-driven Image Filters
 $theme-image-filter-hero: var(--theme-image-filter-hero, none);
 $theme-image-filter-portrait: var(--theme-image-filter-portrait, none);
 $theme-image-filter-gallery: var(--theme-image-filter-gallery, none);
 $theme-image-filter-interlude: var(--theme-image-filter-interlude, none);
+
+// Error States
+$color-error: var(--color-error, 239, 68, 68);
+$color-error-rgb: var(--color-error-rgb, 255, 77, 77);
+$color-error-field: var(--color-error-field, 220, 38, 38);
+$color-error-bg: var(--color-error-bg, rgb(217 48 37 / 10%));
+$rsvp-error-bg: var(--rsvp-error-bg, rgb(217 48 37 / 10%));
+$rsvp-error-border: var(--rsvp-error-border, rgb(217 48 37 / 28%));

@@ -3,41 +3,7 @@
 @use 'sass:map';
 @use 'sass:color';
 @use '../tokens' as tokens;
-
-$backdrop-blurs: (
-	xs: blur(2px),
-	sm: blur(4px),
-	md: blur(8px),
-	lg: blur(12px),
-	xl: blur(16px),
-);
-$breakpoints: (
-	xs: 375px,
-	sm: 640px,
-	md: 768px,
-	lg: 1024px,
-	xl: 1280px,
-	xxl: 1536px,
-);
-$z-index: (
-	behind: -1,
-	default: 1,
-	header: 10,
-	navbutton: 15,
-	modal: 12,
-	tooltip: 10,
-	highest: 14,
-	music: 10,
-);
-$border-radius: (
-	small: 0.25rem,
-	modal-button: 0.25rem,
-	default: 0.5rem,
-	card: 0.75rem,
-	container: 1rem,
-	button: 1.5rem,
-	oval: 9999px,
-);
+@use 'variables' as vars;
 
 @function color($group, $shade: 'default') {
 	$color-map: (
@@ -81,19 +47,19 @@ $border-radius: (
 }
 
 @function blur($size) {
-	@return map.get($backdrop-blurs, $size);
+	@return map.get(vars.$backdrop-blurs, $size);
 }
 
 @function breakpoint($size) {
-	@return map.get($breakpoints, $size);
+	@return map.get(vars.$breakpoints, $size);
 }
 
 @function z-index($layer) {
-	@return map.get($z-index, $layer);
+	@return map.get(vars.$z-index, $layer);
 }
 
 @function border-radius($component) {
-	@return map.get($border-radius, $component);
+	@return map.get(vars.$border-radius, $component);
 }
 
 @function linear-gradient-divider($color-rgb-var, $opacity: 0.3) {

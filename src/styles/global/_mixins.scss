@@ -4,60 +4,16 @@
 @use 'sass:color';
 @use 'functions' as funcs;
 @use '../tokens' as tokens;
-
-$transitions-by-component: (
-	button: (
-		duration: tokens.$duration-snappy,
-		timing: tokens.$ease-in-out,
-	),
-	card: (
-		duration: tokens.$duration-standard,
-		timing: tokens.$ease-snappy,
-	),
-	card-item: (
-		duration: tokens.$duration-standard,
-		timing: tokens.$ease-overshoot,
-	),
-	header: (
-		duration: tokens.$duration-premium,
-		timing: tokens.$ease-in-out,
-	),
-	menu: (
-		duration: tokens.$duration-snappy,
-		timing: tokens.$ease-snappy,
-	),
-	modal: (
-		duration: tokens.$duration-snappy,
-		timing: tokens.$ease-bouncy,
-	),
-	section-nav-button: (
-		duration: tokens.$duration-standard,
-		timing: ease-in-out,
-	),
-	whatsapp-button: (
-		duration: tokens.$duration-standard,
-		timing: ease-in-out,
-	),
-	whatsapp-button-after: (
-		duration: tokens.$duration-standard,
-		timing: tokens.$ease-overshoot,
-	),
-);
-$breakpoints: (
-	xs: 375px,
-	sm: 640px,
-	md: 768px,
-	lg: 1024px,
-	xl: 1280px,
-	xxl: 1536px,
-);
+@use 'variables' as vars;
 
 /// Applies a transition based on component settings.
 @mixin transition($component) {
-	$settings: map.get($transitions-by-component, $component);
+	$transition-settings: map.get(vars.$transitions-by-component, $component);
 
-	@if $settings {
-		transition: all map.get($settings, duration) map.get($settings, timing);
+	@if $transition-settings {
+		transition: all
+			map.get($transition-settings, duration)
+			map.get($transition-settings, timing);
 	} @else {
 		@warn "No transition settings found for `#{$component}`. Using default transition.";
 
@@ -73,8 +29,8 @@ $breakpoints: (
 
 /// Media query mixin for a given breakpoint key.
 @mixin respond-to($breakpoint) {
-	@if map.has-key($breakpoints, $breakpoint) {
-		@media (min-width: #{map.get($breakpoints, $breakpoint)}) {
+	@if map.has-key(vars.$breakpoints, $breakpoint) {
+		@media (min-width: #{map.get(vars.$breakpoints, $breakpoint)}) {
 			@content;
 		}
 	} @else {
@@ -126,9 +82,9 @@ $typography-scale: (
 
 @mixin typography($variant) {
 	@if map.has-key($typography-scale, $variant) {
-		$styles: map.get($typography-scale, $variant);
+		$typography-styles: map.get($typography-scale, $variant);
 
-		@each $property, $value in $styles {
+		@each $property, $value in $typography-styles {
 			#{$property}: $value;
 		}
 	} @else {
