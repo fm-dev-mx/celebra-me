@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createHash } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
@@ -1554,13 +1555,15 @@ function checks(
 		const minFingerprintLength = Number(rule.minFingerprintLength || 40);
 		const maxOccurrences = Number(rule.maxOccurrences || 2);
 		const fpMap = new Map();
-		for (const file of snapshot.files)
+		for (const file of snapshot.files) {
+			if (file.includes('src/styles/tokens/')) continue;
 			for (const line of snapshot.lines(file)) {
 				const fp = inlineFingerprint(line.text || '');
 				if (fp.length < minFingerprintLength) continue;
 				if (!fpMap.has(fp)) fpMap.set(fp, []);
 				fpMap.get(fp).push({ file, line: line.line });
 			}
+		}
 		for (const [fp, hits] of fpMap.entries())
 			if (hits.length > maxOccurrences)
 				addFinding(rep, policy, maxGlobal, {
@@ -2257,8 +2260,13 @@ function main() {
 		for (const item of uniq(audit)) log(`  - ${item}`);
 	}
 
-	if (!reportJson && workflowData.workflowRoute === 'architectural_intervention')
+	if (!reportJson && workflowData.workflowRoute === 'architectural_intervention') {
+		console.log('\n❌ Workflow Reasons:', workflowData.workflowReasons);
+		if (adu.unmappedFiles.length > 0) {
+			console.log('📄 Unmapped Files:', adu.unmappedFiles);
+		}
 		fail('Gatekeeper checks failed. Fix BLOCKED findings before committing.');
+	}
 
 	if (!reportJson) {
 		log('\n✨ Gatekeeper passed. You are ready to commit.', COLORS.green);

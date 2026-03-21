@@ -512,11 +512,28 @@ function stageCommand(args) {
 
 	// MANDATE: local linting check before staging (using pnpm exec eslint directly to target only the unit files)
 	console.log('🔍 Pre-staging hygiene check: Checking for code quality violations...');
-	const lintResult = run('pnpm', ['exec', 'eslint', ...unitSpecs], { stdio: 'pipe' });
-	if (lintResult.status !== 0) {
-		console.log(lintResult.stdout);
-		console.error(lintResult.stderr);
-		fail('Local linting failed. Fix all errors before staging files.');
+	const existingUnitSpecs = unitSpecs.filter((file) => existsSync(resolve(repoRoot(), file)));
+	if (existingUnitSpecs.length) {
+		const jsFiles = existingUnitSpecs.filter((f) => /\.(ts|tsx|js|jsx|astro|mjs|cjs)$/.test(f));
+		const scssFiles = existingUnitSpecs.filter((f) => /\.scss$/.test(f));
+
+		if (jsFiles.length) {
+			const lintResult = run('pnpm', ['exec', 'eslint', ...jsFiles], { stdio: 'pipe' });
+			if (lintResult.status !== 0) {
+				console.log(lintResult.stdout);
+				console.error(lintResult.stderr);
+				fail('Local ESLint failed. Fix all errors before staging files.');
+			}
+		}
+
+		if (scssFiles.length) {
+			const lintResult = run('pnpm', ['exec', 'stylelint', ...scssFiles], { stdio: 'pipe' });
+			if (lintResult.status !== 0) {
+				console.log(lintResult.stdout);
+				console.error(lintResult.stderr);
+				fail('Local Stylelint failed. Fix all errors before staging files.');
+			}
+		}
 	}
 
 	run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });

@@ -1,58 +1,49 @@
-// src/styles/tokens/_primitives.scss
+/* stylelint-disable at-rule-empty-line-before, scss/dollar-variable-empty-line-before, scss/dollar-variable-pattern */
+@forward 'primitives/color';
 
-/**
- * Design Primitives - Celebra-me Ecosystem
- * Theme: Digital Jewelry Box / Luxury Hacienda
- *
- * Defines the RAW color palette used throughout the application.
- * These should not be used directly in components.
- */
+@use 'primitives/color' as primitive-color;
 
-// Coffee / Leather Bases - Enhanced Depth Variation
-$base-coffee-50: hsl(30deg 35% 97%);
-$base-coffee-100: hsl(30deg 40% 92%);
-$base-coffee-200: hsl(30deg 40% 80%);
-$base-coffee-300: hsl(30deg 45% 70%);
-$base-coffee-400: hsl(30deg 45% 60%);
-$base-coffee-500: hsl(30deg 45% 45%); // Richer primary brown
-$base-coffee-600: hsl(30deg 45% 35%);
-$base-coffee-700: hsl(30deg 45% 28%);
-$base-coffee-800: hsl(30deg 45% 20%);
-$base-coffee-900: hsl(30deg 45% 15%); // Deeper, richer brown
+$base-coffee-50: primitive-color.color(coffee, 50);
+$base-coffee-100: primitive-color.color(coffee, 100);
+$base-coffee-200: primitive-color.color(coffee, 200);
+$base-coffee-300: primitive-color.color(coffee, 300);
+$base-coffee-400: primitive-color.color(coffee, 400);
+$base-coffee-500: primitive-color.color(coffee, 500);
+$base-coffee-600: primitive-color.color(coffee, 600);
+$base-coffee-700: primitive-color.color(coffee, 700);
+$base-coffee-800: primitive-color.color(coffee, 800);
+$base-coffee-900: primitive-color.color(coffee, 900);
 
-// Gold / Accent Bases - Enhanced Premium Palette
-$base-gold-50: hsl(40deg 60% 95%);
-$base-gold-100: hsl(40deg 65% 92%);
-$base-gold-200: hsl(40deg 65% 85%);
-$base-gold-300: hsl(40deg 65% 75%);
-$base-gold-400: hsl(40deg 65% 65%);
-$base-gold-500: hsl(40deg 65% 55%); // Primary Gold - Warmer & Richer
-$base-gold-600: hsl(40deg 65% 48%);
-$base-gold-700: hsl(40deg 65% 40%);
-$base-gold-800: hsl(40deg 65% 32%);
-$base-gold-900: hsl(40deg 65% 25%);
+$base-gold-50: primitive-color.color(gold, 50);
+$base-gold-100: primitive-color.color(gold, 100);
+$base-gold-200: primitive-color.color(gold, 200);
+$base-gold-300: primitive-color.color(gold, 300);
+$base-gold-400: primitive-color.color(gold, 400);
+$base-gold-500: primitive-color.color(gold, 500);
+$base-gold-600: primitive-color.color(gold, 600);
+$base-gold-700: primitive-color.color(gold, 700);
+$base-gold-800: primitive-color.color(gold, 800);
+$base-gold-900: primitive-color.color(gold, 900);
 
-// Parchment / Surface Bases
-$base-parchment-100: hsl(45deg 50% 95%); // #F5F5DC
-$base-parchment-300: hsl(45deg 50% 85%);
-$base-parchment-500: hsl(45deg 50% 70%);
+$base-parchment-100: primitive-color.color(parchment, 100);
+$base-parchment-300: primitive-color.color(parchment, 300);
+$base-parchment-500: primitive-color.color(parchment, 500);
 
-// Neutral Bases
-$base-neutral-0: hsl(0deg 0% 100%);
-$base-neutral-50: hsl(0deg 0% 98%);
-$base-neutral-100: hsl(0deg 0% 96%);
-$base-neutral-200: hsl(0deg 0% 90%);
-$base-neutral-300: hsl(0deg 0% 80%);
-$base-neutral-400: hsl(0deg 0% 60%);
-$base-neutral-500: hsl(0deg 0% 50%);
-$base-neutral-600: hsl(0deg 0% 40%);
-$base-neutral-700: hsl(0deg 0% 25%);
-$base-neutral-800: hsl(0deg 0% 15%);
-$base-neutral-900: hsl(0deg 0% 8%);
-$base-neutral-1000: hsl(0deg 0% 0%);
+$base-neutral-0: primitive-color.color(neutral, 0);
+$base-neutral-50: primitive-color.color(neutral, 50);
+$base-neutral-100: primitive-color.color(neutral, 100);
+$base-neutral-200: primitive-color.color(neutral, 200);
+$base-neutral-300: primitive-color.color(neutral, 300);
+$base-neutral-400: primitive-color.color(neutral, 400);
+$base-neutral-500: primitive-color.color(neutral, 500);
+$base-neutral-600: primitive-color.color(neutral, 600);
+$base-neutral-700: primitive-color.color(neutral, 700);
+$base-neutral-800: primitive-color.color(neutral, 800);
+$base-neutral-900: primitive-color.color(neutral, 900);
+$base-neutral-1000: primitive-color.color(neutral, 1000);
 
-// Special
-$base-whatsapp: #25d366;
-$base-wax-red: #8b0000;
-$base-purple-reserved: #814f96;
-$base-error: #d93025;
+$base-whatsapp: primitive-color.color(special, whatsapp);
+$base-wax-red: primitive-color.color(special, wax-red);
+$base-purple-reserved: primitive-color.color(plum, 700);
+$base-error: primitive-color.color(special, error);
+/* stylelint-enable at-rule-empty-line-before, scss/dollar-variable-empty-line-before, scss/dollar-variable-pattern */

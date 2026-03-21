@@ -21,6 +21,7 @@
             "src/styles/global/**",
             "src/styles/ui/**",
             "src/styles/layout/**",
+            "src/styles/common/**",
             "src/styles/*.scss"
         ],
         "gov-agent-config": [

@@ -1,26 +1,18 @@
-/**
- * Motion Tokens - Celebra-me Ecosystem
- * Standardized durations and easings for premium interactions.
- */
+@use 'primitives/motion' as primitive-motion;
 
-// Easings
-$ease-in: cubic-bezier(0.4, 0, 1, 1);
-$ease-out: cubic-bezier(0, 0, 0.2, 1);
-$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-$ease-snappy: cubic-bezier(0.25, 1, 0.5, 1);
-$ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
-$ease-overshoot: cubic-bezier(0.3, 1.5, 0.7, 1);
-$ease-bouncy: cubic-bezier(0.68, -0.55, 0.27, 1.55);
-
-// Durations
-$duration-fast: 0.1s;
-$duration-snappy: 0.2s;
-$duration-standard: 0.4s;
-$duration-slower: 0.6s;
-$duration-premium: 1s;
-$duration-reveal: 1.6s;
-
-// Combined Transitions
+$ease-in: primitive-motion.ease(in);
+$ease-out: primitive-motion.ease(out);
+$ease-in-out: primitive-motion.ease(in-out);
+$ease-snappy: primitive-motion.ease(snappy);
+$ease-premium: primitive-motion.ease(premium);
+$ease-overshoot: primitive-motion.ease(overshoot);
+$ease-bouncy: primitive-motion.ease(bouncy);
+$duration-fast: primitive-motion.duration(fast);
+$duration-snappy: primitive-motion.duration(snappy);
+$duration-standard: primitive-motion.duration(standard);
+$duration-slower: primitive-motion.duration(slower);
+$duration-premium: primitive-motion.duration(premium);
+$duration-reveal: primitive-motion.duration(reveal);
 $transition-standard: all $duration-standard $ease-in-out;
 $transition-premium: all $duration-premium $ease-premium;
 $transition-snappy: all $duration-snappy $ease-snappy;

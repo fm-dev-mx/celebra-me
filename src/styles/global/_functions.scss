@@ -1,28 +1,8 @@
-// src/styles/global/_functions.scss
-
 @use 'sass:map';
-@use 'sass:color';
-@use '../tokens' as tokens;
 @use 'variables' as vars;
-
-@function color($group, $shade: 'default') {
-	@return map.get(map.get(vars.$colors, $group), $shade);
-}
-
-@function blur($size) {
-	@return map.get(vars.$backdrop-blurs, $size);
-}
-
-@function breakpoint($size) {
-	@return map.get(vars.$breakpoints, $size);
-}
 
 @function z-index($layer) {
 	@return map.get(vars.$z-index, $layer);
-}
-
-@function border-radius($component) {
-	@return map.get(vars.$border-radius, $component);
 }
 
 @function linear-gradient-divider($color-rgb-var, $opacity: 0.3) {
@@ -34,7 +14,6 @@
 	);
 }
 
-/// Creates a color with opacity from a CSS variable containing RGB channels.
 @function glass-surface($color-rgb-var, $opacity: 0.8) {
 	@return rgb(var(#{$color-rgb-var}), #{$opacity});
 }

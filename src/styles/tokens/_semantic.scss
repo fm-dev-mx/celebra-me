@@ -1,72 +1,51 @@
-// src/styles/tokens/_semantic.scss
+@use '../tools/functions' as tools;
+@use 'semantic/color' as semantic-color;
+@use 'semantic/surface' as semantic-surface;
 
-/**
- * Semantic Tokens - Celebra-me Ecosystem
- * Theme: Digital Jewelry Box / Luxury Hacienda
- *
- * Defines the PURPOSE-DRIVEN roles for colors. Use these in components
- * to ensure theme-ability and visual consistency.
- */
-@use 'primitives' as primitives;
-
-// Text Roles
-$color-text-primary: var(--color-text-primary, primitives.$base-coffee-900);
-$color-text-primary-rgb: var(--color-text-primary-rgb, 58, 40, 25);
-$color-text-secondary: var(--color-text-secondary, primitives.$base-coffee-700);
-$color-text-emphasis: var(--color-text-emphasis, primitives.$base-gold-700);
-$color-text-on-dark: var(--color-text-on-dark, primitives.$base-parchment-100);
-
-// Surface Roles
-$color-surface-primary: var(--color-surface-primary, primitives.$base-parchment-100);
-$color-surface-primary-rgb: var(--color-surface-primary-rgb, 245, 245, 220);
-$color-surface-secondary: var(--color-surface-secondary, primitives.$base-coffee-100);
-$color-surface-soft: var(--color-surface-soft, primitives.$base-neutral-50);
-$color-surface-elevated: var(--color-surface-elevated, primitives.$base-neutral-50);
-$color-surface-canvas: var(--color-surface-canvas, primitives.$base-coffee-900);
-$color-surface-dark: var(--color-surface-dark, primitives.$base-coffee-900);
-$color-surface-dark-rgb: var(--color-surface-dark-rgb, 58, 40, 25);
-
-// Action Roles
-$color-action-primary: var(--color-action-primary, primitives.$base-coffee-900);
-$color-action-accent: var(--color-action-accent, primitives.$base-gold-500);
-$color-action-accent-rgb: var(--color-action-accent-rgb, 220, 180, 60);
-
-// Borders & Dividers
-$color-border-subtle: var(--color-border-subtle, rgba(primitives.$base-coffee-900, 0.1));
-$color-border-premium: var(--color-border-premium, rgba(primitives.$base-gold-500, 0.3));
-$color-border-emphasis: var(--color-border-emphasis, primitives.$base-gold-500);
-
-// Neutral Roles
-$color-neutral-subtle: var(--color-neutral-subtle, primitives.$base-neutral-100);
-$color-neutral-muted: var(--color-neutral-muted, primitives.$base-neutral-400);
-$color-neutral-base: var(--color-neutral-base, primitives.$base-neutral-700);
-$color-neutral-emphasis: var(--color-neutral-emphasis, primitives.$base-neutral-900);
-$color-text-muted: var(--color-text-muted, rgba(primitives.$base-coffee-900, 0.65));
-
-// Glassmorphism
-$color-glass-bg: var(--color-glass-bg, rgb(var(--color-surface-primary-rgb), 0.1));
-$color-glass-border: var(--color-glass-border, rgb(var(--color-surface-primary-rgb), 0.2));
-
-// Shadows
-$shadow-subtle: var(--shadow-subtle, 0 4px 15px rgb(0 0 0 / 10%));
-$shadow-emphasis: var(--shadow-emphasis, 0 10px 30px rgb(0 0 0 / 20%));
-$shadow-premium: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
-
-// Special Roles
-$color-whatsapp: primitives.$base-whatsapp;
-$color-wax-seal: primitives.$base-wax-red;
-$color-white: var(--color-white, 255 255 255);
-
-// Theme-driven Image Filters
+$color-text-primary: semantic-color.color(text, primary);
+$color-text-primary-rgb: tools.rgb-channels(semantic-color.color(text, primary));
+$color-text-secondary: semantic-color.color(text, secondary);
+$color-text-emphasis: semantic-color.color(text, emphasis);
+$color-text-on-dark: semantic-color.color(text, on-dark);
+$color-text-on-light: semantic-color.color(text, on-light);
+$color-text-muted: semantic-color.color(text, muted);
+$color-surface-primary: semantic-color.color(surface, primary);
+$color-surface-primary-rgb: tools.rgb-channels(semantic-color.color(surface, primary));
+$color-surface-secondary: semantic-color.color(surface, secondary);
+$color-surface-soft: semantic-color.color(surface, soft);
+$color-surface-elevated: semantic-color.color(surface, elevated);
+$color-surface-canvas: semantic-color.color(surface, canvas);
+$color-surface-dark: semantic-color.color(surface, dark);
+$color-surface-dark-rgb: tools.rgb-channels(semantic-color.color(surface, dark));
+$color-action-primary: semantic-color.color(action, primary);
+$color-action-primary-rgb: tools.rgb-channels(semantic-color.color(action, primary));
+$color-action-secondary: semantic-color.color(action, secondary);
+$color-action-accent: semantic-color.color(action, accent);
+$color-action-accent-rgb: tools.rgb-channels(semantic-color.color(action, accent));
+$color-border-subtle: semantic-color.color(border, subtle);
+$color-border-premium: semantic-color.color(border, premium);
+$color-border-emphasis: semantic-color.color(border, emphasis);
+$color-neutral-subtle: semantic-color.color(neutral, subtle);
+$color-neutral-muted: semantic-color.color(neutral, muted);
+$color-neutral-base: semantic-color.color(neutral, base);
+$color-neutral-emphasis: semantic-color.color(neutral, emphasis);
+$color-glass-bg: semantic-surface.surface(glass, bg);
+$color-glass-border: semantic-surface.surface(glass, border);
+$color-glass-shadow: semantic-surface.surface(glass, shadow);
+$shadow-subtle: semantic-surface.surface(shadow, subtle);
+$shadow-emphasis: semantic-surface.surface(shadow, emphasis);
+$shadow-premium: semantic-surface.surface(shadow, premium);
+$color-whatsapp: semantic-color.color(special, whatsapp);
+$color-wax-seal: semantic-color.color(special, wax-seal);
+$color-white: semantic-color.color(special, white);
+$color-error: semantic-color.color(state, error);
+$color-error-rgb: tools.rgb-channels(semantic-color.color(state, error));
+$color-error-field: rgb(166 46 46);
+$color-error-text: rgb(138 32 32);
+$color-error-bg: rgb(from semantic-color.color(state, error) r g b / 10%);
+$rsvp-error-bg: rgb(from semantic-color.color(state, error) r g b / 10%);
+$rsvp-error-border: rgb(from semantic-color.color(state, error) r g b / 28%);
 $theme-image-filter-hero: var(--theme-image-filter-hero, none);
 $theme-image-filter-portrait: var(--theme-image-filter-portrait, none);
 $theme-image-filter-gallery: var(--theme-image-filter-gallery, none);
 $theme-image-filter-interlude: var(--theme-image-filter-interlude, none);
-
-// Error States
-$color-error: var(--color-error, 239, 68, 68);
-$color-error-rgb: var(--color-error-rgb, 255, 77, 77);
-$color-error-field: var(--color-error-field, 220, 38, 38);
-$color-error-bg: var(--color-error-bg, rgb(217 48 37 / 10%));
-$rsvp-error-bg: var(--rsvp-error-bg, rgb(217 48 37 / 10%));
-$rsvp-error-border: var(--rsvp-error-border, rgb(217 48 37 / 28%));

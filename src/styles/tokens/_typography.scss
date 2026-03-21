@@ -1,33 +1,23 @@
-/**
- * Typography Tokens - Celebra-me Ecosystem
- * Defines fonts, sizes, and weights for universal use.
- */
+@use 'semantic/type' as semantic-type;
 
-// Font Stacks
-$font-display-formal: 'Cinzel', serif;
-$font-display-elegant: 'Playfair Display', serif;
-$font-display-hacienda: 'Cormorant Garamond', serif;
-$font-calligraphy: 'Pinyon Script', cursive;
-$font-body: 'EB Garamond', georgia, serif;
-$font-body-hacienda: 'EB Garamond', serif;
-$font-ui: 'Montserrat', system-ui, sans-serif;
-
-// Fluid Scale (Shared)
-$font-size-h1: clamp(2.5rem, 8vw, 5rem);
-$font-size-h2: clamp(1.8rem, 5vw, 3rem);
-$font-size-h3: clamp(1.4rem, 3vw, 2rem);
-$font-size-body: clamp(1rem, 1.2vw, 1.25rem);
-$font-size-ui: 0.9rem;
-
-// Weights
-$font-weight-light: 300;
-$font-weight-regular: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-
-// Letter Spacing
-$letter-spacing-tight: -0.02em;
-$letter-spacing-normal: 0;
-$letter-spacing-wide: 0.1em;
-$letter-spacing-extra-wide: 0.25em;
+$font-display-formal: semantic-type.font(display-formal);
+$font-display-elegant: semantic-type.font(display-elegant);
+$font-display-hacienda: semantic-type.font(display-hacienda);
+$font-calligraphy: semantic-type.font(calligraphy);
+$font-body: semantic-type.font(body);
+$font-body-hacienda: semantic-type.font(body-hacienda);
+$font-ui: semantic-type.font(ui);
+$font-size-h1: semantic-type.size(h1);
+$font-size-h2: semantic-type.size(h2);
+$font-size-h3: semantic-type.size(h3);
+$font-size-body: semantic-type.size(body);
+$font-size-ui: semantic-type.size(ui);
+$font-weight-light: semantic-type.weight(light);
+$font-weight-regular: semantic-type.weight(regular);
+$font-weight-medium: semantic-type.weight(medium);
+$font-weight-semibold: semantic-type.weight(semibold);
+$font-weight-bold: semantic-type.weight(bold);
+$letter-spacing-tight: semantic-type.tracking(tight);
+$letter-spacing-normal: semantic-type.tracking(normal);
+$letter-spacing-wide: semantic-type.tracking(wide);
+$letter-spacing-extra-wide: semantic-type.tracking(extra-wide);

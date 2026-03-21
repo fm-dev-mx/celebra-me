@@ -1,38 +1,26 @@
-// src/styles/tokens/_spacing.scss
+@use 'primitives/spacing' as primitive-space;
+@use 'semantic/spacing' as semantic-space;
 
-/**
- * Spacing Tokens - Celebra-me Ecosystem
- * 8px grid system (0.5rem base unit)
- * Use these tokens for consistent spacing throughout the application.
- */
-
-// Base spacing unit (8px = 0.5rem)
 $spacing-unit: 0.5rem;
-
-// Spacing scale (8px grid)
-$spacing-0: 0;
-$spacing-1: calc($spacing-unit * 0.5); // 4px
-$spacing-2: $spacing-unit; // 8px
-$spacing-3: calc($spacing-unit * 1.5); // 12px
-$spacing-4: calc($spacing-unit * 2); // 16px
-$spacing-5: calc($spacing-unit * 2.5); // 20px
-$spacing-6: calc($spacing-unit * 3); // 24px
-$spacing-8: calc($spacing-unit * 4); // 32px
-$spacing-10: calc($spacing-unit * 5); // 40px
-$spacing-12: calc($spacing-unit * 6); // 48px
-$spacing-16: calc($spacing-unit * 8); // 64px
-$spacing-20: calc($spacing-unit * 10); // 80px
-$spacing-24: calc($spacing-unit * 12); // 96px
-$spacing-32: calc($spacing-unit * 16); // 128px
-
-// Semantic spacing roles
-$spacing-container-padding: $spacing-6;
-$spacing-section-gap: $spacing-16;
-$spacing-component-gap: $spacing-6;
-$spacing-element-gap: $spacing-4;
-$spacing-text-gap: $spacing-2;
-
-// Responsive spacing map
+$spacing-0: primitive-space.space(0);
+$spacing-1: primitive-space.space(1);
+$spacing-2: primitive-space.space(2);
+$spacing-3: primitive-space.space(3);
+$spacing-4: primitive-space.space(4);
+$spacing-5: primitive-space.space(5);
+$spacing-6: primitive-space.space(6);
+$spacing-8: primitive-space.space(8);
+$spacing-10: primitive-space.space(10);
+$spacing-12: primitive-space.space(12);
+$spacing-16: primitive-space.space(16);
+$spacing-20: primitive-space.space(20);
+$spacing-24: primitive-space.space(24);
+$spacing-32: primitive-space.space(32);
+$spacing-container-padding: semantic-space.spacing(container-padding);
+$spacing-section-gap: semantic-space.spacing(section-gap);
+$spacing-component-gap: semantic-space.spacing(component-gap);
+$spacing-element-gap: semantic-space.spacing(element-gap);
+$spacing-text-gap: semantic-space.spacing(text-gap);
 $spacing-responsive: (
 	mobile: (
 		container: $spacing-4,

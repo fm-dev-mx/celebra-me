@@ -1,7 +1,8 @@
 # Git Governance: Plan-Aware Commit Execution
 
 **Status:** Active  
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-03-21  
+**Change Note:** Design Token duplication exemption added to Gatekeeper checks to allow for modular token definitions that naturally contain repetitive variable assignments (false positive suppression).
 
 ## Overview
 
