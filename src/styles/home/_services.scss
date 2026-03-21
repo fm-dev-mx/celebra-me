@@ -32,7 +32,7 @@
 			transform: translateX(-50%);
 			width: 60px;
 			height: 3px;
-			background-color: var(--landing-services-heading-accent-color);
+			background-color: var(--services-heading-accent-color);
 		}
 	}
 
@@ -66,12 +66,12 @@
 		width: 100%; // Full width relative to container
 		border-radius: 1.5rem;
 		overflow: hidden;
-		background: var(--landing-services-card-bg);
-		backdrop-filter: blur(var(--landing-services-card-backdrop-blur)); // Glassmorphism
-		border: 1px solid var(--landing-services-card-border);
+		background: var(--services-card-bg);
+		backdrop-filter: blur(var(--services-card-backdrop-blur)); // Glassmorphism
+		border: 1px solid var(--services-card-border);
 		transition:
-			transform var(--landing-services-card-transition-duration) ease,
-			box-shadow var(--landing-services-card-transition-duration) ease;
+			transform var(--services-card-transition-duration) ease,
+			box-shadow var(--services-card-transition-duration) ease;
 
 		// Initial Animation State
 		opacity: 0%;
@@ -83,11 +83,11 @@
 
 		// Hover Effects (Desktop mainly)
 		&:hover {
-			transform: var(--landing-services-card-hover-transform);
-			box-shadow: var(--landing-services-card-hover-shadow);
+			transform: var(--services-card-hover-transform);
+			box-shadow: var(--services-card-hover-shadow);
 
 			.services__image {
-				filter: var(--landing-services-image-filter-hover);
+				filter: var(--services-image-filter-hover);
 				transform: scale(1.05);
 			}
 
@@ -133,15 +133,15 @@
 		transition:
 			filter 0.5s ease,
 			transform 0.7s ease;
-		filter: var(--landing-services-image-filter-default);
+		filter: var(--services-image-filter-default);
 	}
 
 	&__overlay {
 		position: absolute;
 		inset: 0;
-		background: var(--landing-services-image-overlay-bg);
-		opacity: var(--landing-services-image-overlay-opacity);
-		transition: opacity var(--landing-services-card-transition-duration) ease;
+		background: var(--services-image-overlay-bg);
+		opacity: var(--services-image-overlay-opacity);
+		transition: opacity var(--services-card-transition-duration) ease;
 	}
 
 	&__content {
@@ -159,9 +159,9 @@
 		height: 3rem;
 		padding: 0.6rem;
 		border-radius: 50%;
-		background-color: var(--landing-services-icon-wrapper-bg);
-		color: var(--landing-services-icon-wrapper-color);
-		box-shadow: var(--landing-services-icon-wrapper-shadow);
+		background-color: var(--services-icon-wrapper-bg);
+		color: var(--services-icon-wrapper-color);
+		box-shadow: var(--services-icon-wrapper-shadow);
 		margin-top: -3rem; // Overlap effect
 		position: relative;
 		z-index: 2;
@@ -170,20 +170,20 @@
 	&__icon {
 		width: 100%;
 		height: 100%;
-		transition: transform var(--landing-services-card-transition-duration) ease;
+		transition: transform var(--services-card-transition-duration) ease;
 	}
 
 	&__title {
 		@include mixins.typography(h3);
 
 		margin: 0;
-		color: var(--landing-services-title-color);
+		color: var(--services-title-color);
 	}
 
 	&__description {
 		@include mixins.typography(body-small);
 
-		color: var(--landing-services-description-color);
+		color: var(--services-description-color);
 		margin-bottom: 1.5rem;
 		line-height: 1.6;
 	}
@@ -193,11 +193,11 @@
 
 		@include mixins.typography(button);
 
-		color: var(--landing-services-cta-color);
+		color: var(--services-cta-color);
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		transition: color var(--landing-services-card-transition-duration) ease;
+		transition: color var(--services-card-transition-duration) ease;
 	}
 
 	&__cta-icon {

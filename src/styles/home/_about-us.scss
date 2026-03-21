@@ -17,17 +17,17 @@
 		background:
 			radial-gradient(
 				100% 100% at 0% 0%,
-				var(--landing-about-bg-gradient-1) 0%,
+				var(--about-bg-gradient-1) 0%,
 				transparent 70%
 			),
 			radial-gradient(
 				100% 100% at 100% 100%,
-				var(--landing-about-bg-gradient-2) 0%,
+				var(--about-bg-gradient-2) 0%,
 				transparent 70%
 			),
 			radial-gradient(
 				60% 60% at 50% 50%,
-				var(--landing-about-bg-gradient-3) 0%,
+				var(--about-bg-gradient-3) 0%,
 				transparent 90%
 			);
 		z-index: 0;
@@ -37,7 +37,7 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			opacity: var(--landing-about-noise-opacity);
+			opacity: var(--about-noise-opacity);
 			pointer-events: none;
 			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			mix-blend-mode: overlay;
@@ -84,7 +84,7 @@
 	&__underline {
 		width: clamp(100px, 15vw, 180px);
 		height: 2px;
-		background: var(--landing-about-underline-gradient);
+		background: var(--about-underline-gradient);
 		margin-top: clamp(1rem, 2vw, 2rem);
 		position: relative;
 		border-radius: 999px;
@@ -97,7 +97,7 @@
 			left: 0;
 			width: 30%;
 			height: 4px;
-			background: var(--landing-about-underline-shine-color);
+			background: var(--about-underline-shine-color);
 			filter: blur(2px);
 			opacity: 60%;
 			animation: underline-shine 3s infinite linear;
@@ -166,10 +166,10 @@
 		aspect-ratio: 4 / 5;
 		border-radius: 2.5rem;
 		overflow: hidden;
-		background: var(--landing-about-image-wrapper-bg);
-		box-shadow: var(--landing-about-image-wrapper-shadow);
-		animation: floating-luxury var(--landing-about-animation-duration)
-			var(--landing-about-ease-slow) infinite alternate;
+		background: var(--about-image-wrapper-bg);
+		box-shadow: var(--about-image-wrapper-shadow);
+		animation: floating-luxury var(--about-animation-duration)
+			var(--about-ease-slow) infinite alternate;
 
 		@media (width <= 992px) {
 			max-width: 340px;
@@ -192,8 +192,8 @@
 		position: absolute;
 		inset: 16px;
 		border-radius: 1.6rem;
-		border: 1px solid var(--landing-about-image-frame-border);
-		background: var(--landing-about-image-frame-bg);
+		border: 1px solid var(--about-image-frame-border);
+		background: var(--about-image-frame-bg);
 		box-shadow:
 			inset 0 0 30px rgb(var(--color-white-rgb, 255, 255, 255), 0.05),
 			0 0 0 1px rgb(var(--color-white-rgb, 255, 255, 255), 0.05);
@@ -206,7 +206,7 @@
 		inset: -10%;
 		background: radial-gradient(
 			50% 50% at 70% 20%,
-			var(--landing-about-image-glow-color) 0%,
+			var(--about-image-glow-color) 0%,
 			transparent 65%
 		);
 		mix-blend-mode: screen;
@@ -221,10 +221,10 @@
 		right: -28px;
 		width: 170px;
 		height: 170px;
-		border: 1px solid var(--landing-about-decoration-border);
+		border: 1px solid var(--about-decoration-border);
 		border-radius: 2rem;
-		background: var(--landing-about-decoration-bg);
-		box-shadow: var(--landing-about-decoration-shadow);
+		background: var(--about-decoration-bg);
+		box-shadow: var(--about-decoration-shadow);
 		z-index: 0;
 		opacity: 70%;
 	}
@@ -249,18 +249,18 @@
 
 	&__value-card {
 		position: relative;
-		background: var(--landing-about-value-card-bg);
+		background: var(--about-value-card-bg);
 		backdrop-filter: blur(24px);
-		border: 1px solid var(--landing-about-value-card-border);
+		border: 1px solid var(--about-value-card-border);
 		padding: clamp(2rem, 3vh, 3rem) 2rem;
 		border-radius: 2rem;
 		text-align: center;
-		box-shadow: var(--landing-about-value-card-shadow);
+		box-shadow: var(--about-value-card-shadow);
 		transition:
-			transform 0.8s var(--landing-about-ease-luxury),
-			box-shadow 0.8s var(--landing-about-ease-luxury),
-			background 0.8s var(--landing-about-ease-luxury),
-			border-color 0.8s var(--landing-about-ease-luxury);
+			transform 0.8s var(--about-ease-luxury),
+			box-shadow 0.8s var(--about-ease-luxury),
+			background 0.8s var(--about-ease-luxury),
+			border-color 0.8s var(--about-ease-luxury);
 		overflow: hidden;
 
 		&::after {
@@ -268,7 +268,7 @@
 			position: absolute;
 			inset: 0;
 			background: linear-gradient(
-				var(--landing-about-glint-angle),
+				var(--about-glint-angle),
 				transparent 0%,
 				rgb(255 255 255 / 0%) 40%,
 				rgb(255 255 255 / 40%) 50%,
@@ -276,25 +276,25 @@
 				transparent 100%
 			);
 			transform: translateX(-100%) skewX(-20deg);
-			transition: transform 0.8s var(--landing-about-ease-luxury);
+			transition: transform 0.8s var(--about-ease-luxury);
 			pointer-events: none;
 			z-index: 3;
 		}
 
 		&:hover {
 			transform: translateY(-8px) scale(1.02);
-			background: var(--landing-about-value-card-hover-bg);
+			background: var(--about-value-card-hover-bg);
 			box-shadow:
 				0 30px 60px -20px rgb(0 0 0 / 20%),
 				0 15px 35px -25px rgb(var(--color-primary-rgb), 0.2);
-			border-color: var(--landing-about-value-card-hover-border);
+			border-color: var(--about-value-card-hover-border);
 
 			&::after {
 				transform: translateX(100%) skewX(-20deg);
 			}
 
 			.about-us__value-icon-wrapper {
-				background: var(--landing-about-value-icon-hover-bg);
+				background: var(--about-value-icon-hover-bg);
 				color: white;
 				transform: translateY(-4px) scale(1.05);
 				box-shadow: 0 10px 20px -5px rgb(var(--color-primary-rgb), 0.3);
@@ -305,18 +305,18 @@
 	&__value-icon-wrapper {
 		width: 4.5rem;
 		height: 4.5rem;
-		background: var(--landing-about-value-icon-bg);
-		color: var(--landing-about-value-icon-color);
+		background: var(--about-value-icon-bg);
+		color: var(--about-value-icon-color);
 		border-radius: 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		margin: 0 auto clamp(0.75rem, 1.5vh, 1.5rem);
-		border: 1px solid var(--landing-about-value-icon-border);
+		border: 1px solid var(--about-value-icon-border);
 		box-shadow:
 			inset 0 0 15px rgb(var(--color-primary-rgb), 0.05),
 			0 10px 20px -10px rgb(0 0 0 / 5%);
-		transition: all 0.5s var(--landing-about-ease-luxury);
+		transition: all 0.5s var(--about-ease-luxury);
 
 		@media (width <= 640px) {
 			width: 3.5rem;
@@ -338,7 +338,7 @@
 		path {
 			stroke-dasharray: 100;
 			stroke-dashoffset: 100;
-			transition: stroke-dashoffset 2s var(--landing-about-ease-luxury);
+			transition: stroke-dashoffset 2s var(--about-ease-luxury);
 			transition-delay: calc(var(--animation-delay, 0ms) + 400ms);
 		}
 	}
@@ -378,9 +378,9 @@
 	transform: translateY(30px) scale(0.96);
 	filter: blur(8px);
 	transition:
-		opacity 1.2s var(--landing-about-ease-luxury),
-		transform 1.4s var(--landing-about-ease-luxury),
-		filter 1.5s var(--landing-about-ease-slow);
+		opacity 1.2s var(--about-ease-luxury),
+		transform 1.4s var(--about-ease-luxury),
+		filter 1.5s var(--about-ease-slow);
 	transition-delay: var(--animation-delay, 0ms);
 
 	&.is-visible {
@@ -475,7 +475,7 @@
 	position: absolute;
 	width: 12px;
 	height: 12px;
-	background: var(--landing-about-sparkle-color);
+	background: var(--about-sparkle-color);
 	clip-path: polygon(
 		50% 0%,
 		61% 35%,
