@@ -8,14 +8,14 @@
 
 ## Core Rules
 
-- Every active executable plan lives directly under `.agent/plans/<plan-id>/`.
+- Every active executable plan lives directly under `.agent/plans/<NNN-plan-id>/` where `NNN` is a 3-digit sequential prefix.
 - Every active executable plan must include:
   - `README.md`
   - `CHANGELOG.md`
   - `manifest.json`
   - `commit-map.json`
   - `phases/`
-- Archived plans move to `.agent/plans/archive/` and become read-only by convention.
+- Archived plans move to `.agent/plans/archive/YYYY-MM/<plan-id>/` and become read-only by convention.
 - `.agent/plans/README.md` owns the `commit-map.json` contract.
 - `gatekeeper-workflow`, `commitlint`, hooks, and CI validate or execute the contract; they do not
   define intent.
@@ -28,7 +28,7 @@
 ## Mandatory Structure
 
 ```text
-.agent/plans/{plan-id}/
+.agent/plans/{NNN-plan-id}/
 ├── README.md
 ├── CHANGELOG.md
 ├── manifest.json
@@ -378,11 +378,13 @@ not need to become manifest statuses if the plan records them in `commit-map.jso
 
 When a plan is complete:
 
-1. finish the implementation and closure notes
-2. finish closure notes in `CHANGELOG.md`
-3. move the directory to `.agent/plans/archive/`
-4. mark the archived `manifest.json` status as `ARCHIVED`
-5. stop using its `commit-map.json` for new execution
+1. Finish the implementation and closure notes in `README.md`.
+2. Finish closure notes in `CHANGELOG.md`.
+3. If the plan took > 1 week or faced significant technical challenges, complete a `post-mortem.md` using the [template](templates/post-mortem.md).
+4. Move the directory to `.agent/plans/archive/YYYY-MM/<plan-id>/` where `YYYY-MM` is the completion month.
+5. Mark the archived `manifest.json` status as `ARCHIVED`.
+6. Update the root `.agent/plans/README.md` if any global rules were changed.
+7. Stop using its `commit-map.json` for new execution.
 
 Archived plans are historical only. If more work is needed, create a new active plan.
 

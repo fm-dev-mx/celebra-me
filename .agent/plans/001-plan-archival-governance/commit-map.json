@@ -3,13 +3,16 @@
   "mode": "planned-commits",
   "defaultFallback": "none",
   "commitStrategyReview": {
-    "draftedAt": "2026-03-21T14:27:00Z"
+    "draftedAt": "2026-03-21T14:27:00Z",
+    "reviewedAt": "2026-03-21T15:52:00Z",
+    "readyForGatekeeperAt": "2026-03-21T15:52:00Z",
+    "notes": "Standardized archival rules and sequential naming. Updated commit-map to include itself in the first unit to avoid mismatch."
   },
   "units": [
     {
       "id": "archival-standardization",
       "phaseId": "01-archival-standardization",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "docs",
       "subject": {
@@ -18,7 +21,8 @@
       },
       "purpose": "define sequential naming (001-) and YYYY-MM structure for archived plans to prevent clutter",
       "include": [
-        ".agent/plans/README.md"
+        ".agent/plans/README.md",
+        ".agent/plans/001-plan-archival-governance/commit-map.json"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
@@ -33,7 +37,7 @@
     {
       "id": "post-mortem-template",
       "phaseId": "02-post-mortem-templates",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "feat",
       "subject": {
@@ -57,7 +61,7 @@
     {
       "id": "backlog-cleanup",
       "phaseId": "03-backlog-cleanup",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "chore",
       "subject": {
