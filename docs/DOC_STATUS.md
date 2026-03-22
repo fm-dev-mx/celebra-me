@@ -20,10 +20,10 @@
 
 | Document                                                | Status                 | Last Reviewed |
 | :------------------------------------------------------ | :--------------------- | :------------ |
-| [architecture.md](./core/architecture.md)               | Active source of truth | 2026-02-15    |
+| [architecture.md](./core/architecture.md)               | Active source of truth | 2026-03-22    |
 | [content-schema.md](./core/content-schema.md)           | Active source of truth | 2026-03-17    |
 | [git-governance.md](./core/git-governance.md)           | Active source of truth | 2026-03-15    |
-| [project-conventions.md](./core/project-conventions.md) | Active source of truth | 2026-03-03    |
+| [project-conventions.md](./core/project-conventions.md) | Active source of truth | 2026-03-22    |
 | [premium-ux-vision.md](./core/premium-ux-vision.md)     | Active reference       | 2026-03-06    |
 | [testing-strategy.md](./core/testing-strategy.md)       | Active source of truth | 2026-03-03    |
 
@@ -77,7 +77,8 @@
 ### Active Plans
 
 - [010-runtime-and-doc-simplification](../.agent/plans/010-runtime-and-doc-simplification/README.md)
-  - active parity-preserving simplification pass over invitation runtime, dashboard boundaries, and evergreen docs; toolchain validation remains pending due the current local Node runtime issue.
+  - active safe dead-code retirement and evergreen runtime/documentation reconciliation pass;
+    toolchain validation remains pending due the current local Node runtime issue.
 
 ### Archived Plans
 

@@ -68,7 +68,9 @@ This matches Astro's hybrid model and the repository's current route structure.
 - The active invitation route uses `src/lib/invitation/page-data.ts` to normalize page-ready data
   from adapters, theme contracts, and guest context before `.astro` rendering.
 - When route logic becomes non-trivial, prefer a feature-owned `page-data.ts` or equivalent module
-  over reintroducing `src/lib/presenters/**`.
+  over reintroducing a global route-assembly layer.
+- Retire compatibility helpers once their runtime consumers are gone; a helper kept alive only by an
+  isolated legacy test is no longer part of the active architecture.
 
 ---
 
@@ -110,9 +112,8 @@ The active server-only hubs in the repository are:
 
 Historical note:
 
-- Historical only: older documentation and audit logs may reference `src/lib/presenters/**`,
-  `src/utils/server/**`, or `src/pages/api/_lib/**`; those paths are not active architectural hubs
-  in the current tree.
+- Historical only: older documentation and audit logs may reference retired route-assembly or
+  legacy server-helper paths; those paths are not active architectural hubs in the current tree.
 
 ### 5.3 Global Logic
 

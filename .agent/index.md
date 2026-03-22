@@ -7,8 +7,8 @@ agent working in this repository.
 
 1. Read [`README.md`](./README.md).
 2. Read [`GATEKEEPER_RULES.md`](./GATEKEEPER_RULES.md).
-3. Read [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md) for current repository and documentation
-   state.
+3. Read [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md) for current repository, active-plan, and
+   documentation state.
 4. Load only the relevant skill, workflow, and domain docs for the active task.
 
 ## Mandatory Rules
@@ -43,7 +43,8 @@ agent working in this repository.
 
 ## Canonical Docs in `docs/`
 
-- [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md): current documentation and plan inventory
+- [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md): current documentation dashboard and active plan
+  inventory
 - [`../docs/core/project-conventions.md`](../docs/core/project-conventions.md): project-wide coding
   and structure conventions
 - [`../docs/core/architecture.md`](../docs/core/architecture.md): high-level architecture and

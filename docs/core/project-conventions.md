@@ -76,6 +76,8 @@ hooks or `PascalCase` types from inside the file.
 - These modules may compose adapters and pure helpers, but they should return page-ready props
   instead of framework-specific side effects.
 - Astro page files should stay focused on routing, redirects, data fetching, and rendering.
+- When an internal compatibility hook or helper loses all runtime consumers, delete it and migrate
+  any surviving tests to the active surface instead of preserving a legacy API indefinitely.
 
 ---
 
