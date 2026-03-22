@@ -4,39 +4,39 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-22T09:20:00Z",
-    "reviewedAt": "2026-03-22T16:40:00Z",
-    "notes": "Collapsed the active worktree into one executable unit so gatekeeper can process the current governance, plan, and SCSS refactor set without ambiguity.",
-    "readyForGatekeeperAt": "2026-03-22T16:40:00Z"
+    "reviewedAt": "2026-03-22T17:35:00Z",
+    "notes": "Consolidated the worktree into a single executable unit covering invitation components, system tokens, and plan metadata updates. This allows gatekeeper to proceed with the entire refactor set.",
+    "readyForGatekeeperAt": "2026-03-22T17:35:00Z"
   },
   "units": [
     {
-      "id": "stabilize-plan-aware-scss-governance",
-      "phaseId": "04-cleanup-and-finalization",
+      "id": "refactor-invitation-scss-tokenization",
+      "phaseId": "03-component-tokenization",
       "status": "ready",
-      "domain": "governance",
+      "domain": "invitation",
       "type": "refactor",
       "subject": {
-        "verb": "stabilize",
-        "target": "plan-aware SCSS governance"
+        "verb": "refactor",
+        "target": "invitation SCSS architecture to CSS variables"
       },
-      "purpose": "align the current governance, planning, and SCSS refactor work into one executable gatekeeper unit",
+      "purpose": "complete tokenization of invitation components and stabilize system tokens and plan metadata",
       "include": [
-        ".agent/governance/bin/**",
-        ".agent/plans/**",
-        ".agent/workflows/**",
-        "docs/**",
-        "package.json",
-        "src/styles/**",
-        "tests/unit/**"
+        "src/styles/invitation/*.scss",
+        "src/styles/components/actions/_whatsapp-button.scss",
+        "src/styles/tokens/**",
+        "src/styles/themes/presets/**",
+        "src/styles/themes/landing/presets/**",
+        ".agent/plans/008-scss-architecture-optimization/**"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
-        "header": "refactor(governance): stabilize plan-aware SCSS governance",
+        "header": "refactor(invitation): refactor invitation SCSS architecture to CSS variables",
         "summary": [
-          "align gatekeeper planning checks with the active authoring workflow",
-          "reconcile plan artifacts with the current SCSS restructuring worktree",
-          "keep the styling refactor set executable as one gatekeeper unit"
+          "replace SCSS primitives and variables with semantic CSS tokens across all invitation components",
+          "preserve 'Jewelry Box' aesthetic via theme-aware CSS variables",
+          "stabilize system and semantic token layers and remove redundant assets",
+          "synchronize Plan 008 metadata with the current implementation state"
         ]
       }
     }
