@@ -246,7 +246,7 @@
 	margin-bottom: 2rem;
 	padding-left: 0.5rem;
 
-	.dashboard-guests__status {
+	.dashboard-status {
 		font-family: $font-ui;
 		font-size: 0.8rem;
 		color: rgba($color-text-secondary, 0.9);
@@ -1108,10 +1108,6 @@
 	}
 }
 
-/* Modal & Form Aliases (Bridging to Generic Dashboard Styles) */
-// Legacy modal styles removed in favor of global dashboard-modal classes
-// .dashboard-guests__modal and related were refactored to .dashboard-modal
-
 /* Category Checkboxes */
 .category-checkboxes {
 	display: grid;
@@ -1284,102 +1280,6 @@
 	}
 }
 
-.dashboard-modal {
-	background: white;
-	border-radius: 24px;
-	box-shadow: $shadow-premium;
-	width: min(600px, 95vw);
-	max-height: 90vh;
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	overflow: hidden;
-	animation: modalScaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-
-	&--full {
-		width: 100vw;
-		height: 100vh;
-		max-height: 100vh;
-		border-radius: 0;
-		position: fixed;
-		inset: 0;
-		z-index: 2000;
-
-		@media (width >= 992px) {
-			width: min(800px, 90vw);
-			height: auto;
-			max-height: 90vh;
-			border-radius: 24px;
-			position: relative;
-			inset: auto;
-		}
-	}
-
-	&__header {
-		padding: 1.5rem 2rem;
-		border-bottom: 1px solid rgba($color-border-subtle, 0.5);
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background: rgb(white, 0.82);
-		backdrop-filter: blur(12px);
-		position: sticky;
-		top: 0;
-		z-index: 10;
-
-		h3 {
-			margin: 0;
-			font-family: $font-display-elegant;
-			font-size: 1.5rem;
-			color: $color-text-emphasis;
-		}
-	}
-
-	&__content {
-		padding: 2rem;
-		overflow-y: auto;
-		flex: 1;
-
-		@media (width <= 480px) {
-			padding: 1.5rem 1.25rem;
-		}
-	}
-
-	&__footer {
-		padding: 1.5rem 2rem;
-		border-top: 1px solid rgba($color-border-subtle, 0.5);
-		background: rgb(white, 0.9);
-		backdrop-filter: blur(12px);
-		position: sticky;
-		bottom: 5rem;
-		z-index: 10;
-		display: flex;
-		justify-content: flex-end;
-		gap: 1rem;
-
-		@media (width <= 480px) {
-			padding: 1.25rem;
-			flex-direction: column-reverse;
-
-			button {
-				width: 100%;
-			}
-		}
-	}
-}
-
-@keyframes modalScaleUp {
-	from {
-		opacity: 0%;
-		transform: scale(0.95) translateY(10px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: scale(1) translateY(0);
-	}
-}
-
 @keyframes modalFadeInUp {
 	from {
 		opacity: 0%;
@@ -1392,17 +1292,7 @@
 	}
 }
 
-@keyframes modalScaleUp {
-	from {
-		opacity: 0%;
-		transform: scale(0.95);
-	}
-
-	to {
-		opacity: 100%;
-		transform: scale(1);
-	}
-} /* Gamification & Celebratory Effects */
+/* Gamification & Celebratory Effects */
 .celebrate-success {
 	animation: successGlow 1.5s ease;
 	position: relative;
@@ -1490,57 +1380,4 @@
 		font-weight: $font-weight-medium;
 		text-align: right;
 	}
-}
-
-// ============================================================================
-// Legacy Class Aliases (DEPRECATED)
-// These classes are kept for backward compatibility but should not be used
-// in new code. Use the dashboard-common classes instead.
-// ============================================================================
-
-/// @deprecated Use .dashboard-error instead
-.dashboard-guests__error {
-	color: $color-wax-seal;
-	font-size: 0.875rem;
-	padding: 0.75rem;
-	background: rgba($color-wax-seal, 0.1);
-	border: 1px solid rgba($color-wax-seal, 0.3);
-	border-radius: 8px;
-	margin: 0.5rem 0;
-}
-
-/// @deprecated Use .dashboard-status instead
-.dashboard-guests__status {
-	font-size: 0.875rem;
-	color: $color-text-secondary;
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.5rem 0;
-}
-
-/// @deprecated Use .dashboard-modal-backdrop instead
-.dashboard-guests__modal-backdrop {
-	position: fixed;
-	inset: 0;
-	background: rgb(0 0 0 / 60%);
-	backdrop-filter: blur(4px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
-	padding: 1rem;
-}
-
-/// @deprecated Use .dashboard-modal instead
-.dashboard-guests__modal {
-	background: white;
-	border-radius: 24px;
-	box-shadow: $shadow-premium;
-	width: min(600px, 95vw);
-	max-height: 90vh;
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	overflow: hidden;
 }

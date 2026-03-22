@@ -40,39 +40,6 @@
 }
 
 // ==============================
-// Modal System
-// ==============================
-
-.dashboard-modal-backdrop {
-	position: fixed;
-	inset: 0;
-	background: rgb(0 0 0 / 60%);
-	backdrop-filter: blur(4px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
-	padding: 1rem;
-}
-
-.dashboard-modal {
-	background: white;
-	border-radius: 24px;
-	box-shadow: $shadow-premium;
-	width: min(600px, 95vw);
-	max-height: 90vh;
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	overflow: hidden;
-
-	&--confirm {
-		max-width: 400px;
-		text-align: center;
-	}
-}
-
-// ==============================
 // Loading States
 // ==============================
 

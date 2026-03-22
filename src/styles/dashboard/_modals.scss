@@ -94,6 +94,11 @@ body.modal-open {
 		padding: 0.5rem;
 		margin: 0 -0.5rem; // Adjust for scrollbar
 	}
+
+	&--confirm {
+		max-width: 400px;
+		text-align: center;
+	}
 }
 
 .dashboard-modal-close {
