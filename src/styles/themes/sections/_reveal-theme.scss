@@ -1,38 +1,42 @@
 @use 'sass:color';
 @use '../../tokens' as tokens;
-@use '../../tokens/primitives' as primitives;
+@use '../../tokens/system/color' as sys-color;
 
 // ==========================================================================
 // JEWELRY BOX REVEAL (Envelope & Seal)
 // ==========================================================================
 
 .envelope-wrapper[data-variant='jewelry-box'] {
-	background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+	background: radial-gradient(
+		circle at center,
+		#{sys-color.$sys-color-slate-900} 0%,
+		#{sys-color.$sys-color-onyx-950} 100%
+	);
 
 	// Override hooks — paper surface
-	--env-paper-bg: #{primitives.$base-neutral-0};
+	--env-paper-bg: #{sys-color.$sys-color-neutral-0};
 	--env-paper-border: rgb(0 0 0 / 6%);
-	--env-card-bg: #{primitives.$base-neutral-0};
+	--env-card-bg: #{sys-color.$sys-color-neutral-0};
 	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 10%);
-	--env-details-color: #{primitives.$base-neutral-600};
-	--env-seal-pulse-color: #{primitives.$base-gold-500};
+	--env-details-color: #{sys-color.$sys-color-neutral-600};
+	--env-seal-pulse-color: #{sys-color.$sys-color-gold-500};
 
 	// Override hooks — name gradient (gold shimmer)
 	--env-name-gradient: linear-gradient(
 		75deg,
-		#{primitives.$base-gold-700} 0%,
-		#{primitives.$base-gold-500} 45%,
-		#{primitives.$base-gold-200} 50%,
-		#{primitives.$base-gold-500} 55%,
-		#{primitives.$base-gold-700} 100%
+		#{sys-color.$sys-color-gold-700} 0%,
+		#{sys-color.$sys-color-gold-500} 45%,
+		#{sys-color.$sys-color-gold-200} 50%,
+		#{sys-color.$sys-color-gold-500} 55%,
+		#{sys-color.$sys-color-gold-700} 100%
 	);
 
 	// Override hooks — seal
 	--env-seal-gradient: radial-gradient(
 		circle at 35% 35%,
-		#{primitives.$base-gold-200},
-		#{primitives.$base-gold-500},
-		#{primitives.$base-gold-900}
+		#{sys-color.$sys-color-gold-200},
+		#{sys-color.$sys-color-gold-500},
+		#{sys-color.$sys-color-gold-900}
 	);
 
 	.envelope-pocket {
@@ -57,7 +61,7 @@
 		}
 
 		.envelope-card__monogram {
-			color: primitives.$base-gold-700;
+			color: sys-color.$sys-color-gold-700;
 			opacity: 80%;
 		}
 
@@ -72,8 +76,8 @@
 			font-family: var(--font-display-elegant);
 			background: linear-gradient(
 				45deg,
-				primitives.$base-gold-700,
-				primitives.$base-gold-500
+				sys-color.$sys-color-gold-700,
+				sys-color.$sys-color-gold-500
 			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
@@ -83,7 +87,7 @@
 
 	.envelope-tease {
 		.envelope-microcopy {
-			color: primitives.$base-neutral-400;
+			color: sys-color.$sys-color-neutral-400;
 			letter-spacing: 0.15em;
 		}
 	}
@@ -110,6 +114,7 @@
 // LUXURY HACIENDA REVEAL (Envelope & Seal)
 // ==========================================================================
 
+/* stylelint-disable color-no-hex, declaration-no-important -- Art-directed luxury-hacienda decorative values: intentional metallic palette and blend-mode overrides */
 .envelope-wrapper[data-variant='luxury-hacienda'] {
 	// ==========================================================================
 	// ADU-7: Radical Old West Document (Boceto de Carta)
@@ -261,7 +266,7 @@
 			.envelope-microcopy {
 				font-family: var(--font-body-hacienda, var(--font-body-narrative));
 				font-style: italic;
-				color: rgba(primitives.$base-coffee-700, 0.7);
+				color: color.change(sys-color.$sys-color-coffee-700, $alpha: 0.7);
 				margin-top: 0.5rem;
 			}
 		}
@@ -360,7 +365,7 @@
 
 		.envelope-card__label,
 		.envelope-card__details {
-			color: primitives.$base-parchment-500;
+			color: sys-color.$sys-color-parchment-500;
 			text-transform: uppercase;
 			letter-spacing: 0.15em;
 			font-weight: 600;
@@ -429,3 +434,4 @@
 		}
 	}
 }
+/* stylelint-enable color-no-hex, declaration-no-important */
