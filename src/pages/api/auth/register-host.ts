@@ -68,78 +68,19 @@ export const POST: APIRoute = async ({ request, url }) => {
 			assertValidPassword(chosenPassword);
 		}
 
-		let accessToken = '';
-		let refreshToken = '';
-		let userId = '';
-		let userEmail = email;
-		try {
-			const signed = await signUpWithPassword({
-				email,
-				password: chosenPassword,
-			});
-			// Supabase returns { user: { id } } if confirmation is OFF,
-			// but might return the user object directly { id } if confirmation is ON.
-			userId = sanitize(signed.user?.id || (signed as { id?: string }).id, 120);
-			userEmail = sanitize(
-				signed.user?.email || (signed as { email?: string }).email || email,
-				320,
-			).toLowerCase();
-			accessToken = signed.access_token || '';
-			refreshToken = signed.refresh_token || '';
-		} catch {
-			const existing = await findAuthUserByEmail({
-				email,
-			});
-			if (!existing) {
-				throw new ApiError(
-					409,
-					'conflict',
-					'No se pudo completar el registro. Verifica los datos o intenta iniciar sesión.',
-				);
-			}
-			userId = existing.id;
-			userEmail = existing.email || email;
-		}
-
-		if (!userId) {
-			throw new ApiError(409, 'conflict', 'No se pudo resolver el usuario para el registro.');
-		}
+		const { userId, userEmail, accessToken, refreshToken } = await resolveUser(
+			email,
+			chosenPassword,
+		);
 
 		if (claimCode) {
-			try {
-				await claimEventForUserByClaimCode({
-					userId,
-					claimCode,
-				});
-			} catch (claimError) {
-				console.error('[Register Host] Claim code error:', claimError);
-				if (claimError instanceof ApiError) {
-					throw new ApiError(
-						claimError.status,
-						claimError.code,
-						`El código de invitación no es válido o ya fue usado. ${claimError.message}`,
-					);
-				}
-				throw new ApiError(
-					400,
-					'bad_request',
-					`Error al procesar el código de invitación. ${claimError instanceof Error ? claimError.message : 'Detalles no disponibles'}`,
-				);
-			}
-		}
-		try {
+			await claimEventAndRole(userId, userEmail, claimCode);
+		} else {
 			await ensureUserRole({
 				userId,
 				email: userEmail,
 				defaultRole: 'host_client',
 			});
-		} catch (roleError) {
-			console.error('[Register Host] Error ensuring user role:', roleError);
-			throw new ApiError(
-				500,
-				'internal_error',
-				'Error al configurar los permisos de usuario.',
-			);
 		}
 
 		if (method === 'magic_link') {
@@ -184,3 +125,60 @@ export const POST: APIRoute = async ({ request, url }) => {
 		return errorResponse(error);
 	}
 };
+
+async function resolveUser(email: string, chosenPassword: string) {
+	try {
+		const signed = await signUpWithPassword({
+			email,
+			password: chosenPassword,
+		});
+
+		return {
+			userId: sanitize(signed.user?.id || (signed as { id?: string }).id, 120),
+			userEmail: sanitize(
+				signed.user?.email || (signed as { email?: string }).email || email,
+				320,
+			).toLowerCase(),
+			accessToken: signed.access_token || '',
+			refreshToken: signed.refresh_token || '',
+		};
+	} catch {
+		const existing = await findAuthUserByEmail({ email });
+		if (!existing) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'No se pudo completar el registro. Verifica los datos o intenta iniciar sesión.',
+			);
+		}
+		return {
+			userId: existing.id,
+			userEmail: existing.email || email,
+			accessToken: '',
+			refreshToken: '',
+		};
+	}
+}
+
+async function claimEventAndRole(userId: string, userEmail: string, claimCode: string) {
+	try {
+		await claimEventForUserByClaimCode({ userId, claimCode });
+		await ensureUserRole({
+			userId,
+			email: userEmail,
+			defaultRole: 'host_client',
+		});
+	} catch (error) {
+		console.error('[Register Host] Post-registration error:', error);
+		if (error instanceof ApiError) {
+			throw new ApiError(
+				error.status,
+				error.code,
+				error.status === 400
+					? `El código de invitación no es válido o ya fue usado. ${error.message}`
+					: error.message,
+			);
+		}
+		throw error;
+	}
+}

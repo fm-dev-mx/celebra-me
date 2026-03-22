@@ -14,6 +14,7 @@ import Hero from '@/components/invitation/Hero.astro';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
+import EnvelopeSyncBehavior from '@/components/behavior/EnvelopeSyncBehavior';
 
 // --- Page Logic (Adapter Pattern) ---
 const { eventType, slug } = Astro.params;
@@ -70,15 +71,7 @@ const presenter = prepareInvitationPageData({
 >
 	<style is:inline lang="scss" set:html={presenter.wrapper.scopedStyles} />
 	<main class={presenter.wrapper.className} {...presenter.wrapper.dataAttributes}>
-		{presenter.wrapper.showEnvelope && (
-			<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
-				// Sync unlock
-				const key = `envelope-opened-${eventSlug}`;
-				if (localStorage.getItem(key) === 'true') {
-					document.body.classList.add('invitation-revealed');
-				}
-			</script>
-		)}
+		{presenter.wrapper.showEnvelope && <EnvelopeSyncBehavior client:only="react" eventSlug={presenter.eventSlug} />}
 
 		<!-- Components -->
 		{

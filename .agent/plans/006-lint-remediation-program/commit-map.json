@@ -76,7 +76,7 @@
     {
       "id": "ui-components-remediation",
       "phaseId": "02-astro-script-extraction",
-      "status": "ready",
+      "status": "completed",
       "domain": "ui",
       "type": "refactor",
       "correctionPolicy": "absorb-compatible",
@@ -107,7 +107,7 @@
     {
       "id": "invitation-components-remediation",
       "phaseId": "02-astro-script-extraction",
-      "status": "ready",
+      "status": "completed",
       "domain": "invitation",
       "type": "refactor",
       "correctionPolicy": "absorb-compatible",
@@ -142,7 +142,7 @@
     {
       "id": "admin-components-remediation",
       "phaseId": "02-astro-script-extraction",
-      "status": "ready",
+      "status": "completed",
       "domain": "admin",
       "type": "refactor",
       "correctionPolicy": "absorb-compatible",
@@ -166,7 +166,7 @@
     {
       "id": "logic-remediation",
       "phaseId": "02-astro-script-extraction",
-      "status": "ready",
+      "status": "completed",
       "domain": "core",
       "type": "refactor",
       "correctionPolicy": "absorb-compatible",
@@ -178,9 +178,12 @@
       "include": [
         "src/lib/adapters/event-helpers.ts",
         "src/lib/adapters/event.ts",
+        "src/lib/adapters/event-view-models.ts",
         "src/lib/invitation/page-data.ts",
         "src/middleware.ts",
-        "tests/api/rsvp.helpers.ts"
+        "tests/api/rsvp.helpers.ts",
+        "docs/domains/rsvp/architecture.md",
+        "docs/domains/theme/architecture.md"
       ],
       "messagePreview": {
         "header": "refactor(core): remediate core logic type safety",
@@ -205,6 +208,9 @@
         "src/pages/dashboard/mfa-setup.astro",
         "src/pages/index.astro",
         "src/pages/login.astro"
+      ],
+      "allowRelated": [
+        ".agent/plans/006-lint-remediation-program/commit-map.json"
       ],
       "messagePreview": {
         "header": "refactor(ui): remediate root and auth pages logic",
