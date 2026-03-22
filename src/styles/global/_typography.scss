@@ -19,13 +19,6 @@
 	font-size: 1.4em;
 }
 
-.calligraphy-ampersand {
-	@include calligraphy-base;
-
-	font-size: 1.8em;
-	opacity: 90%;
-}
-
 /* Font Utility Classes — Core 5 System */
 .font-heading-elegant {
 	font-family: tokens.$font-display-elegant;
