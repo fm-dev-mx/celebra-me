@@ -140,7 +140,6 @@ export interface FamilyGroup {
 
 export interface WhatsAppConfig {
 	phone: string;
-	messageTemplate?: string;
 	confirmedTemplate?: string;
 	declinedTemplate?: string;
 	omitTitle?: boolean;
@@ -270,10 +269,12 @@ export interface InvitationViewModel {
 			confirmationMode: 'api' | 'whatsapp' | 'both';
 			whatsappConfig?: WhatsAppConfig;
 			variant?: SharedSectionVariant;
-			nameLabel?: string;
-			guestCountLabel?: string;
-			attendanceLabel?: string;
-			buttonLabel?: string;
+			labels?: {
+				name?: string;
+				guestCount?: string;
+				attendance?: string;
+				confirmButton?: string;
+			};
 		};
 		gifts?: {
 			title?: string;

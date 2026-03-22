@@ -98,7 +98,8 @@
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5210000000000",
-            "messageTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s)."
+            "confirmedTemplate": "Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).",
+            "declinedTemplate": "Hola, soy {name}. Lamentablemente no podré asistir a {title}."
         }
     },
     "quote": {

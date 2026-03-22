@@ -323,16 +323,7 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 								SHARED_SECTION_VARIANTS,
 								sharedSectionFallback,
 							),
-							nameLabel:
-								data.sectionStyles?.rsvp?.labels?.name ??
-								data.sectionStyles?.rsvp?.legacy?.nameLabel,
-							guestCountLabel:
-								data.sectionStyles?.rsvp?.labels?.guestCount ??
-								data.sectionStyles?.rsvp?.legacy?.guestCountLabel,
-							attendanceLabel: data.sectionStyles?.rsvp?.labels?.attendance,
-							buttonLabel:
-								data.sectionStyles?.rsvp?.labels?.confirmButton ??
-								data.sectionStyles?.rsvp?.legacy?.buttonLabel,
+							labels: data.sectionStyles?.rsvp?.labels,
 						}
 					: undefined,
 			gifts:

@@ -1,14 +1,10 @@
-import {
-	findEventByInvitationPublic,
-	findEventBySlugService,
-} from '@/lib/rsvp/repositories/event.repository';
+import { findEventByInvitationPublic } from '@/lib/rsvp/repositories/event.repository';
 import {
 	findGuestByInviteIdPublic,
 	findGuestByShortIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import type { AttendanceStatus, EventRecord, GuestInvitationRecord } from '@/lib/rsvp/core/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { buildInviteUrl, isUuid } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 function toInvitationContext(
@@ -90,27 +86,4 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
 
 	return toInvitationContext(invitation, event);
-}
-
-export async function resolveLegacyTokenToCanonicalUrl(input: {
-	eventSlug: string;
-	token: string;
-	origin: string;
-}): Promise<string | null> {
-	const safeEventSlug = sanitize(input.eventSlug, 120);
-	const safeToken = sanitize(input.token, 2048);
-
-	const event = await findEventBySlugService(safeEventSlug);
-	if (!event) return null;
-	if (!safeToken) return null;
-
-	let v2Guest: GuestInvitationRecord | null = null;
-	if (isUuid(safeToken)) {
-		v2Guest = await findGuestByInviteIdPublic(safeToken);
-	} else if (safeToken.length <= 12) {
-		v2Guest = await findGuestByShortIdPublic(safeToken);
-	}
-
-	if (!v2Guest) return null;
-	return buildInviteUrl(input.origin, v2Guest.inviteId);
 }

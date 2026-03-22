@@ -199,7 +199,8 @@
         "confirmationMode": "both",
         "whatsappConfig": {
             "phone": "5216681167477",
-            "messageTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta: {attendance}. Asistentes: {guestCount}."
+            "confirmedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta. Asistiremos {guestCount} persona(s).",
+            "declinedTemplate": "Hola, soy {name}. Ya registré mi RSVP para tu fiesta, pero no podré asistir."
         }
     },
     "quote": {
