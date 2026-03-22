@@ -1,9 +1,23 @@
 ---
+name: system-doc-alignment
 description: Keep `.agent/`, `docs/`, and active plan records aligned with the live repository tree.
 lifecycle: evergreen
 domain: governance
 owner: system-agent
 last_reviewed: 2026-03-19
+when_to_use:
+    - Documentation, governance references, or plan inventories may be stale
+    - Repository structure changed and source-of-truth docs may need resynchronization
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Current repository tree, docs inventory, and active plan state
+outputs:
+    - Aligned documentation and governance records
+related_docs:
+    - docs/DOC_STATUS.md
+    - docs/core/project-conventions.md
 ---
 
 # System Doc Alignment

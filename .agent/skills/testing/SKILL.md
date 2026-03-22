@@ -3,6 +3,20 @@ name: testing
 description:
     Write and maintain tests for Celebra-me using Jest, React Testing Library, and Playwright.
     Covers unit tests, component tests, schema validation, and E2E patterns.
+domain: quality
+when_to_use:
+    - Adding or updating automated tests
+    - Choosing regression coverage for a code change
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Source code changes, risk areas, and existing test suites
+outputs:
+    - Test strategy, test patterns, and framework-specific guidance
+related_docs:
+    - docs/core/testing-strategy.md
+    - docs/core/project-conventions.md
 ---
 
 # Testing

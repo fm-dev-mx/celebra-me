@@ -3,6 +3,20 @@ name: documentation-governance
 description:
     Standardize the creation, maintenance, and structure of documentation in 'Celebra-me', ensuring
     alignment between code and docs.
+domain: governance
+when_to_use:
+    - Creating, reorganizing, or updating project documentation
+    - Preventing documentation drift between docs, code, and plans
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Markdown source-of-truth files, dashboards, and governance references
+outputs:
+    - Documentation structure guidance and alignment rules
+related_docs:
+    - docs/DOC_STATUS.md
+    - docs/core/project-conventions.md
 ---
 
 # Documentation Governance

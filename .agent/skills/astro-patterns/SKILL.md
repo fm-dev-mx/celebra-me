@@ -3,6 +3,20 @@ name: astro-patterns
 description:
     Apply idiomatic Astro patterns to optimize performance, maintainability, and leverage framework
     features correctly. Covers Content Collections, BFF data fetching, and Image Optimization.
+domain: frontend-platform
+when_to_use:
+    - Editing Astro pages, components, collections, or client boundaries
+    - Reviewing SSR, hydration, and content-loading patterns
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Astro pages, components, content collections, and rendering constraints
+outputs:
+    - Framework-aligned architecture guidance and implementation constraints
+related_docs:
+    - docs/core/architecture.md
+    - docs/core/project-conventions.md
 ---
 
 # Astro Patterns

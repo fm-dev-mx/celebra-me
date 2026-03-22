@@ -3,6 +3,20 @@ name: animation-motion
 description:
     Create elegant minimalist animations using GPU-accelerated properties, Jewelry Box aesthetic
     patterns, and accessibility-aware motion design.
+domain: frontend
+when_to_use:
+    - Designing or modifying transitions, reveals, or animated interactions
+    - Reviewing motion performance or reduced-motion handling
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Components, SCSS animations, and interaction requirements
+outputs:
+    - Motion design rules, performance-safe animation guidance, and reduced-motion accommodations
+related_docs:
+    - docs/core/project-conventions.md
+    - docs/domains/theme/architecture.md
 ---
 
 # 🎬 Animation & Motion Skill

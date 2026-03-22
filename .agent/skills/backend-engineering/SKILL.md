@@ -3,6 +3,21 @@ name: backend-engineering
 description:
     Standardize the development of server-side logic, API routes, data validation, and external
     service integration (Supabase, Email) for Celebra-me.
+domain: backend
+when_to_use:
+    - Updating API routes, services, repositories, or server-side validation
+    - Reviewing external integrations or server-only code paths
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - API handlers, service layers, repositories, schemas, and integration code
+outputs:
+    - Layer-safe backend guidance and implementation constraints
+related_docs:
+    - docs/core/architecture.md
+    - docs/domains/rsvp/architecture.md
+    - docs/domains/rsvp/database.md
 ---
 
 # Backend Engineering

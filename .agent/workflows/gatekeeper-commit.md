@@ -1,9 +1,24 @@
 ---
+name: gatekeeper-commit
 description: Pure plan-aware Gatekeeper commit workflow.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
 last_reviewed: 2026-03-22
+when_to_use:
+    - Implementation is complete and an active plan is ready for governed commit execution
+    - The worktree has been reduced to a single material commit unit
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+    - Complete plan-authoring for the active plan
+inputs:
+    - Active plan metadata, reduced worktree, and target commit unit
+outputs:
+    - Validated governed commit execution sequence
+related_docs:
+    - docs/core/git-governance.md
+    - docs/DOC_STATUS.md
 ---
 
 # Gatekeeper Commit Routine

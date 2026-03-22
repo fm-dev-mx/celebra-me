@@ -1,9 +1,23 @@
 ---
+name: plan-authoring
 description: Code analysis and declarative commit-map planning
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
 last_reviewed: 2026-03-22
+when_to_use:
+    - A change needs commit planning before or after implementation
+    - An active plan must be updated to match the current implementation reality
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Requirements, code changes, active plan files, and commit-map boundaries
+outputs:
+    - Executable active plan with validated commit strategy metadata
+related_docs:
+    - docs/core/git-governance.md
+    - docs/DOC_STATUS.md
 ---
 
 # Plan Authoring Workflow

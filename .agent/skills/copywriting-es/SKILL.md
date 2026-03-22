@@ -3,6 +3,19 @@ name: copywriting-es
 description:
     Maintain consistent tone and style for Spanish-language digital invitation copy. Covers
     formal/warm tone, event-specific vocabulary, courtesy formulas, and common UI patterns.
+domain: content
+when_to_use:
+    - Writing or revising visible UI text in Spanish
+    - Reviewing invitation copy, labels, helper text, or error messages
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - User-facing Spanish copy, invitation content, and UI messaging
+outputs:
+    - Tone-consistent Spanish copy guidance aligned with repository language rules
+related_docs:
+    - docs/core/project-conventions.md
 ---
 
 # Copywriting ES

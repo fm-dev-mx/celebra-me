@@ -1,0 +1,98 @@
+{
+    "planId": "009-agent-governance-onboarding",
+    "mode": "planned-commits",
+    "defaultFallback": "none",
+    "commitStrategyReview": {
+        "draftedAt": "2026-03-22T00:00:00Z",
+        "reviewedAt": "2026-03-22T19:00:00Z",
+        "readyForGatekeeperAt": "2026-03-22T19:00:00Z",
+        "notes": "Three atomic units. Each commit maps to a single dominant intent. domain-map.json included in allowRelated of unit 1 as prerequisite for index.md mapping."
+    },
+    "units": [
+        {
+            "id": "establish-universal-entrypoint",
+            "phaseId": "01-entrypoint-setup",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "establish",
+                "target": "universal agent entrypoint and discovery index"
+            },
+            "purpose": "define the canonical loading protocol and neutral discovery index for repository-portable agents",
+            "include": [".agent/README.md", ".agent/index.md"],
+            "allowRelated": ["docs/**", ".agent/governance/config/domain-map.json"],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "docs(docs): establish universal agent entrypoint and discovery index",
+                "summary": [
+                    "define universal loading protocol in README.md with precedence and fallback rules",
+                    "create index.md as the neutral discovery index for skills, workflows, and canonical docs",
+                    "add minimal load matrix and ambiguity handling guidelines"
+                ]
+            }
+        },
+        {
+            "id": "register-capability-metadata",
+            "phaseId": "02-capability-registration",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "register",
+                "target": "structured metadata for skills and workflows"
+            },
+            "purpose": "add when_to_use, preconditions, inputs, outputs, and related_docs frontmatter to all agent capabilities",
+            "include": [
+                ".agent/skills/accessibility/SKILL.md",
+                ".agent/skills/animation-motion/SKILL.md",
+                ".agent/skills/astro-patterns/SKILL.md",
+                ".agent/skills/backend-engineering/SKILL.md",
+                ".agent/skills/copywriting-es/SKILL.md",
+                ".agent/skills/documentation-governance/SKILL.md",
+                ".agent/skills/frontend-design/SKILL.md",
+                ".agent/skills/seo-metadata/SKILL.md",
+                ".agent/skills/testing/SKILL.md",
+                ".agent/skills/theme-architecture/SKILL.md",
+                ".agent/workflows/error-remediation.md",
+                ".agent/workflows/gatekeeper-commit.md",
+                ".agent/workflows/plan-authoring.md",
+                ".agent/workflows/system-doc-alignment.md",
+                ".agent/workflows/theme-architecture-governance.md"
+            ],
+            "allowRelated": ["docs/**", ".agent/plans/009-agent-governance-onboarding/**"],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "docs(docs): register structured metadata for skills and workflows",
+                "summary": [
+                    "add when_to_use, preconditions, inputs, outputs, and related_docs to all skill frontmatter",
+                    "add name and structured metadata blocks to all workflow frontmatter",
+                    "enable discovery-index-driven loading for all agent capabilities"
+                ]
+            }
+        },
+        {
+            "id": "align-documentation-status",
+            "phaseId": "03-documentation-status",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "align",
+                "target": "documentation status and governance rules"
+            },
+            "purpose": "update DOC_STATUS.md to reflect the new agent governance structure and entrypoint hierarchy",
+            "include": ["docs/DOC_STATUS.md"],
+            "allowRelated": [".agent/workflows/**"],
+            "correctionPolicy": "absorb-compatible",
+            "messagePreview": {
+                "header": "docs(docs): align documentation status and governance rules",
+                "summary": [
+                    "update workflow listing to reflect current inventory",
+                    "add governance rules for entrypoint hierarchy and provider-portable design",
+                    "renumber documentation rules to accommodate new agent governance entries"
+                ]
+            }
+        }
+    ]
+}

@@ -3,6 +3,20 @@ name: frontend-design
 description:
     Create distinctive, production-grade frontend interfaces using 3-Layer Color Architecture,
     Jewelry Box aesthetic, and premium typography systems.
+domain: frontend
+when_to_use:
+    - Designing or revising visual presentation, composition, typography, or layout
+    - Evaluating whether an invitation UI feels premium and theme-coherent
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Visual requirements, page layouts, components, and theme context
+outputs:
+    - Design-direction guidance for premium invitation interfaces
+related_docs:
+    - docs/core/premium-ux-vision.md
+    - docs/domains/theme/typography.md
 ---
 
 # Frontend Design

@@ -4,6 +4,20 @@ description:
     Ensure digital invitations are accessible to all guests, including people with visual, motor, or
     cognitive disabilities. Apply WCAG 2.1 AA compliance standards to Astro components, SCSS styles,
     and dynamic content.
+domain: frontend
+when_to_use:
+    - Updating interactive UI, forms, or navigation
+    - Reviewing semantic HTML, contrast, focus, or motion behavior
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Astro components, React islands, SCSS styles, and visible UI copy
+outputs:
+    - Accessibility-safe implementation guidance and remediation steps
+related_docs:
+    - docs/core/project-conventions.md
+    - docs/core/testing-strategy.md
 ---
 
 # Accessibility

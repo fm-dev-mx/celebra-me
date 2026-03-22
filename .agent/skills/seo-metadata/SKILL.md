@@ -3,6 +3,19 @@ name: seo-metadata
 description:
     Implement SEO and Open Graph metadata for digital invitations. Ensure attractive social media
     previews when invitations are shared on WhatsApp, Facebook, and Instagram.
+domain: growth
+when_to_use:
+    - Creating or updating invitation pages with share metadata
+    - Reviewing Open Graph, Twitter, or structured page metadata
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Page metadata, invitation routes, assets, and social sharing requirements
+outputs:
+    - Metadata requirements and implementation guidance for discoverability and sharing
+related_docs:
+    - docs/core/project-conventions.md
 ---
 
 # SEO & Open Graph Metadata

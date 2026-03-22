@@ -3,6 +3,20 @@ name: theme-architecture
 description:
     Manage the technical implementation of the 3-Layer Color Architecture, Theme Presets (`.scss`),
     and Design Tokens in Celebra-me.
+domain: frontend
+when_to_use:
+    - Editing SCSS tokens, presets, theme sections, or component styling architecture
+    - Reviewing theme consistency, token usage, or preset isolation
+preconditions:
+    - Read .agent/README.md
+    - Read .agent/GATEKEEPER_RULES.md
+inputs:
+    - Theme SCSS files, design tokens, presets, and section styles
+outputs:
+    - Implementation guidance for theme-safe SCSS architecture
+related_docs:
+    - docs/domains/theme/architecture.md
+    - docs/domains/theme/typography.md
 ---
 
 # Theme Architecture
