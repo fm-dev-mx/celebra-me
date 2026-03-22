@@ -19,152 +19,165 @@ const DEFAULT_REPORT = {
 	autoFixable: false,
 };
 
+const TS_REGEX = /([\w./-]+):(\d+):(\d+)\s+-\s+error\s+(TS\d+):\s+(.+)/;
+const ESLINT_REGEX = /(\d+):(\d+)\s+(error|warning)\s+(.+?)\s+([a-z-]+(?:\/[a-z-]+)*)/i;
+const STYLELINT_REGEX = /(\d+):(\d+)\s+✖\s+(.+?)\s+([a-z-]+)/;
+const FAIL_FILE_REGEX = /FAIL\s+([\w./-]+)/;
+const EXPECT_REGEX = /Expected:\s*(.+?)\r?\n\s*Received:\s*(.+?)\r?\n/m;
+const GENERIC_ERROR_REGEX = /(SyntaxError|TypeError|Error):\s*(.+?)\r?\n/;
+const COVERAGE_TRACE_REGEX = /([\w./\\]+):(\d+):(\d+)\r?\n\s+\(cov_/;
+const STACK_TRACE_REGEX = /at\s+.*?\s+\(?([a-zA-Z]:\\[\w.\-\\]+|[\w./-]+):(\d+):(\d+)\)?/;
+const ASTRO_TRACE_REGEX = /src\/[\w./-]+:(\d+):(\d+)/;
+
+function buildReport() {
+	return { ...DEFAULT_REPORT };
+}
+
+function parseTypescript(log, lines) {
+	const match = log.match(TS_REGEX);
+	if (!match) return null;
+
+	const report = buildReport();
+	report.tool = 'typescript';
+	report.type = 'type-error';
+	report.file = path.resolve(match[1]);
+	report.line = parseInt(match[2], 10);
+	report.column = parseInt(match[3], 10);
+	report.message = `[${match[4]}] ${match[5]}`;
+	report.snippet = extractSnippet(lines, log.indexOf(match[0]));
+	return report;
+}
+
+function parseEslint(log, lines) {
+	if (!log.includes('eslint') && !log.match(ESLINT_REGEX)) return null;
+
+	const fileLine = lines.find((line) => line.startsWith('c:\\') || line.startsWith('/'));
+	const match = log.match(ESLINT_REGEX);
+	if (!match || !fileLine) return null;
+
+	const report = buildReport();
+	report.tool = 'eslint';
+	report.type = 'lint-error';
+	report.file = fileLine.trim();
+	report.line = parseInt(match[1], 10);
+	report.column = parseInt(match[2], 10);
+	report.message = `[${match[5]}] ${match[4]}`;
+	report.snippet = extractSnippet(lines, log.indexOf(match[0]));
+	return report;
+}
+
+function parseStylelint(log, lines) {
+	if (!log.includes('stylelint')) return null;
+
+	const report = buildReport();
+	report.tool = 'stylelint';
+	report.type = 'style-error';
+
+	const match = log.match(STYLELINT_REGEX);
+	if (!match) return report;
+
+	report.line = parseInt(match[1], 10);
+	report.column = parseInt(match[2], 10);
+	report.message = `[${match[4]}] ${match[3]}`;
+	const fileLine = lines.find((line) => line.endsWith('.scss') || line.endsWith('.css'));
+	if (fileLine) report.file = fileLine.trim();
+	report.snippet = extractSnippet(lines, log.indexOf(match[0]));
+	return report;
+}
+
+function parseTestFailure(log, lines) {
+	if (!log.includes('FAIL ') || (!log.includes('tests/') && !log.includes('e2e/'))) {
+		return null;
+	}
+
+	const report = buildReport();
+	report.tool = log.includes('playwright') ? 'playwright' : 'jest';
+	report.type = 'test-failure';
+
+	const fileMatch = log.match(FAIL_FILE_REGEX);
+	if (fileMatch) report.file = path.resolve(fileMatch[1]);
+
+	const expectMatch = log.match(EXPECT_REGEX);
+	if (expectMatch) {
+		report.message = `Assertion failed: Expected ${expectMatch[1].trim()}, Received ${expectMatch[2].trim()}`;
+	} else {
+		const errorMatch = log.match(GENERIC_ERROR_REGEX);
+		if (errorMatch) report.message = `[${errorMatch[1]}] ${errorMatch[2].trim()}`;
+	}
+
+	const sourceTrace = log.match(COVERAGE_TRACE_REGEX) || log.match(STACK_TRACE_REGEX);
+	if (sourceTrace) {
+		report.file = report.file || path.resolve(sourceTrace[1]);
+		report.line = parseInt(sourceTrace[2], 10);
+		report.column = parseInt(sourceTrace[3], 10);
+	}
+
+	report.snippet = extractSnippet(lines, log.indexOf('FAIL '));
+	if (report.message.match(/is not defined|Cannot find name|Missing semicolon/i)) {
+		report.complexity = 'trivial';
+		report.autoFixable = false;
+	}
+
+	return report;
+}
+
+function parseAstro(log, lines) {
+	if (!log.includes('astro build') && !log.includes('AstroError') && !log.includes('Hydration')) {
+		return null;
+	}
+
+	const report = buildReport();
+	report.tool = 'astro';
+	report.type = log.includes('hydration') ? 'astro-hydration' : 'astro-build';
+
+	const messageMatch = log.match(/AstroError:\s+(.+)/);
+	if (messageMatch) report.message = messageMatch[1];
+
+	const traceMatch = log.match(ASTRO_TRACE_REGEX);
+	if (traceMatch) {
+		report.file = path.resolve(traceMatch[0].split(':')[0]);
+		report.line = parseInt(traceMatch[1], 10);
+		report.column = parseInt(traceMatch[2], 10);
+	}
+
+	report.snippet = extractSnippet(
+		lines,
+		log.indexOf('AstroError') > -1 ? log.indexOf('AstroError') : 0,
+	);
+	return report;
+}
+
+function parseRuntimeFallback(log, lines) {
+	const match = log.match(STACK_TRACE_REGEX);
+	if (!match) return null;
+
+	const report = buildReport();
+	report.type = 'runtime';
+	report.file = match[1];
+	report.line = parseInt(match[2], 10);
+	report.column = parseInt(match[3], 10);
+	report.message = lines.find((line) => line.includes('Error:')) || 'Runtime error detected';
+	report.snippet = extractSnippet(lines, log.indexOf(match[0]));
+	return report;
+}
+
 function parseLog(log) {
-	const report = { ...DEFAULT_REPORT };
 	const lines = log.split('\n');
+	const parsers = [
+		parseTypescript,
+		parseEslint,
+		parseStylelint,
+		parseTestFailure,
+		parseAstro,
+		parseRuntimeFallback,
+	];
 
-	// 1. TypeScript (tsc / astro check)
-	// Example: src/components/RSVP.tsx:45:12 - error TS2322: Type 'string' is not assignable to type 'number'.
-	const tsRegex = /([\w./-]+):(\d+):(\d+)\s+-\s+error\s+(TS\d+):\s+(.+)/;
-	const tsMatch = log.match(tsRegex);
-	if (tsMatch) {
-		report.tool = 'typescript';
-		report.type = 'type-error';
-		report.file = path.resolve(tsMatch[1]);
-		report.line = parseInt(tsMatch[2], 10);
-		report.column = parseInt(tsMatch[3], 10);
-		report.message = `[${tsMatch[4]}] ${tsMatch[5]}`;
-		report.snippet = extractSnippet(lines, log.indexOf(tsMatch[0]));
-		return report;
+	for (const parser of parsers) {
+		const parsed = parser(log, lines);
+		if (parsed) return parsed;
 	}
 
-	// 2. ESLint
-	// Example: c:\Code\celebra-me\src\pages\index.astro
-	//   14:1  error  Unexpected var, use let or const instead  no-var
-	const eslintRegex = /(\d+):(\d+)\s+(error|warning)\s+(.+?)\s+([a-z-]+(?:\/[a-z-]+)*)/i;
-	if (log.includes('eslint') || log.match(eslintRegex)) {
-		// Try to find file above it
-		const fileLine = lines.find((l) => l.startsWith('c:\\') || l.startsWith('/'));
-		const lintMatch = log.match(eslintRegex);
-		if (lintMatch && fileLine) {
-			report.tool = 'eslint';
-			report.type = 'lint-error';
-			report.file = fileLine.trim();
-			report.line = parseInt(lintMatch[1], 10);
-			report.column = parseInt(lintMatch[2], 10);
-			report.message = `[${lintMatch[5]}] ${lintMatch[4]}`;
-			report.snippet = extractSnippet(lines, log.indexOf(lintMatch[0]));
-			return report;
-		}
-	}
-
-	// 3. Stylelint
-	// Example: src/styles/_global.scss
-	//  12:3  ✖  Expected a trailing semicolon  declaration-block-trailing-semicolon
-	if (log.includes('stylelint')) {
-		report.tool = 'stylelint';
-		report.type = 'style-error';
-		const stylelintRegex = /(\d+):(\d+)\s+✖\s+(.+?)\s+([a-z-]+)/;
-		const match = log.match(stylelintRegex);
-		if (match) {
-			report.line = parseInt(match[1], 10);
-			report.column = parseInt(match[2], 10);
-			report.message = `[${match[4]}] ${match[3]}`;
-			// Extract file loosely
-			const fileLine = lines.find((l) => l.endsWith('.scss') || l.endsWith('.css'));
-			if (fileLine) report.file = fileLine.trim();
-			report.snippet = extractSnippet(lines, log.indexOf(match[0]));
-		}
-		return report;
-	}
-
-	// 4. Jest / Playwright
-	// Example: FAIL tests/unit/event.adapter.test.ts
-	if (log.includes('FAIL ') && (log.includes('tests/') || log.includes('e2e/'))) {
-		report.tool = log.includes('playwright') ? 'playwright' : 'jest';
-		report.type = 'test-failure';
-
-		// Find the root failing test file
-		const fileMatch = log.match(/FAIL\s+([\w./-]+)/);
-		if (fileMatch) report.file = path.resolve(fileMatch[1]);
-
-		// Try standard assertion failures
-		const expectMatch = log.match(/Expected:\s*(.+?)\r?\n\s*Received:\s*(.+?)\r?\n/m);
-		if (expectMatch) {
-			report.message = `Assertion failed: Expected ${expectMatch[1].trim()}, Received ${expectMatch[2].trim()}`;
-		} else {
-			// Try catching SyntaxError or generic Error within the block
-			const errMatch = log.match(/(SyntaxError|TypeError|Error):\s*(.+?)\r?\n/);
-			if (errMatch) {
-				report.message = `[${errMatch[1]}] ${errMatch[2].trim()}`;
-			}
-		}
-
-		// Try to find the exact line in source code (not internal node_modules)
-		const srcLineMatch = log.match(/([\w./\\]+):(\d+):(\d+)\r?\n\s+\(cov_/);
-		if (srcLineMatch) {
-			report.file = path.resolve(srcLineMatch[1]);
-			report.line = parseInt(srcLineMatch[2], 10);
-			report.column = parseInt(srcLineMatch[3], 10);
-		} else {
-			const lineMatch = log.match(
-				/at\s+.*?\s+\(?([a-zA-Z]:\\[\w.\-\\]+|[\w./-]+):(\d+):(\d+)\)?/,
-			);
-			if (lineMatch) {
-				report.line = parseInt(lineMatch[2], 10);
-				report.column = parseInt(lineMatch[3], 10);
-				if (!report.file) report.file = lineMatch[1];
-			}
-		}
-
-		report.snippet = extractSnippet(lines, log.indexOf('FAIL '));
-
-		// Example check for trivial fixes (e.g. typos, unused vars caught by lint, etc)
-		if (
-			report.message &&
-			report.message.match(/is not defined|Cannot find name|Missing semicolon/i)
-		) {
-			report.complexity = 'trivial';
-			report.autoFixable = false; // Requires logic but is trivial
-		}
-
-		return report;
-	}
-
-	// 5. Astro Build / Hydration
-	if (log.includes('astro build') || log.includes('AstroError') || log.includes('Hydration')) {
-		report.tool = 'astro';
-		report.type = log.includes('hydration') ? 'astro-hydration' : 'astro-build';
-
-		const astroMsg = log.match(/AstroError:\s+(.+)/);
-		if (astroMsg) report.message = astroMsg[1];
-
-		// Often traces look like: at Component (src/components/foo.astro:4:12)
-		const traceMatch = log.match(/src\/[\w./-]+:(\d+):(\d+)/);
-		if (traceMatch) {
-			report.file = path.resolve(traceMatch[0].split(':')[0]);
-			report.line = parseInt(traceMatch[1], 10);
-			report.column = parseInt(traceMatch[2], 10);
-		}
-		report.snippet = extractSnippet(
-			lines,
-			log.indexOf('AstroError') > -1 ? log.indexOf('AstroError') : 0,
-		);
-		return report;
-	}
-
-	// Fallback: Try to find ANY file path in a stack trace
-	const genericTrace = log.match(/at\s+.*?\s+\(?([a-zA-Z]:\\[\w.\-\\]+|[\w./-]+):(\d+):(\d+)\)?/);
-	if (genericTrace) {
-		report.type = 'runtime';
-		report.file = genericTrace[1];
-		report.line = parseInt(genericTrace[2], 10);
-		report.column = parseInt(genericTrace[3], 10);
-		report.message = lines.find((l) => l.includes('Error:')) || 'Runtime error detected';
-		report.snippet = extractSnippet(lines, log.indexOf(genericTrace[0]));
-		return report;
-	}
-
+	const report = buildReport();
 	report.message = 'Unknown error format. Could not classify.';
 	return report;
 }

@@ -145,9 +145,8 @@ function containsFilePathLikeText(line) {
 	return FILE_PATH_PATTERN.test(String(line || '').trim());
 }
 
-function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes, options = {}) {
+function validateUnitIdentity(unit, unitIndex, manifestPhaseIds, historicalPlan) {
 	const errors = [];
-	const historicalPlan = Boolean(options.historicalPlan);
 
 	if (!unit.id) errors.push(`units[${unitIndex}].id is required`);
 	if (!unit.phaseId) errors.push(`units[${unitIndex}].phaseId is required`);
@@ -175,11 +174,30 @@ function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes, opti
 			`units[${unitIndex}].status must be one of the active lifecycle values: ${Array.from(ACTIVE_UNIT_STATUSES).join(', ')}`,
 		);
 	}
+
+	return errors;
+}
+
+function validateUnitSubject(unit, unitIndex) {
+	const errors = [];
+
 	if (!unit.subject.verb) errors.push(`units[${unitIndex}].subject.verb is required`);
 	if (!unit.subject.target) errors.push(`units[${unitIndex}].subject.target is required`);
 	if (GENERIC_TARGETS.has(unit.subject.target.toLowerCase())) {
 		errors.push(`units[${unitIndex}].subject.target is too generic`);
 	}
+	if (unit.subject.target.length > MAX_TARGET_LENGTH) {
+		errors.push(
+			`units[${unitIndex}].subject.target exceeds ${MAX_TARGET_LENGTH} characters (${unit.subject.target.length})`,
+		);
+	}
+
+	return errors;
+}
+
+function validateUnitScope(unit, unitIndex, duplicateIncludes) {
+	const errors = [];
+
 	if (!unit.purpose) errors.push(`units[${unitIndex}].purpose is required`);
 	if (!unit.include.length) {
 		errors.push(`units[${unitIndex}].include must contain at least one path`);
@@ -189,86 +207,85 @@ function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes, opti
 			`units[${unitIndex}].allowRelated must not use wildcard "*"; list explicit patterns`,
 		);
 	}
-	if (unit.subject.target.length > MAX_TARGET_LENGTH) {
-		errors.push(
-			`units[${unitIndex}].subject.target exceeds ${MAX_TARGET_LENGTH} characters (${unit.subject.target.length})`,
-		);
-	}
 	if (!ALLOWED_CORRECTION_POLICIES.has(unit.correctionPolicy)) {
 		errors.push(
 			`units[${unitIndex}].correctionPolicy must be one of: ${Array.from(ALLOWED_CORRECTION_POLICIES).join(', ')}`,
 		);
-	}
-	if (!historicalPlan) {
-		if (!unit.messagePreview) {
-			errors.push(`units[${unitIndex}].messagePreview is required for active plans`);
-		} else {
-			if (!unit.messagePreview.header) {
-				errors.push(
-					`units[${unitIndex}].messagePreview.header must be non-empty when provided`,
-				);
-			}
-			if (unit.messagePreview.header.length > HEADER_MAX_LENGTH) {
-				errors.push(
-					`units[${unitIndex}].messagePreview.header exceeds ${HEADER_MAX_LENGTH} characters`,
-				);
-			}
-			if (!unit.messagePreview.summary.length) {
-				errors.push(
-					`units[${unitIndex}].messagePreview.summary must contain at least one bullet`,
-				);
-			}
-			if (unit.messagePreview.summary.length > MAX_SUMMARY_LINES) {
-				errors.push(
-					`units[${unitIndex}].messagePreview.summary must not exceed ${MAX_SUMMARY_LINES} bullets`,
-				);
-			}
-			for (
-				let summaryIndex = 0;
-				summaryIndex < unit.messagePreview.summary.length;
-				summaryIndex += 1
-			) {
-				const line = unit.messagePreview.summary[summaryIndex];
-				if (line.length > SUMMARY_LINE_MAX_LENGTH) {
-					errors.push(
-						`units[${unitIndex}].messagePreview.summary[${summaryIndex}] exceeds ${SUMMARY_LINE_MAX_LENGTH} characters`,
-					);
-				}
-				if (containsFilePathLikeText(line)) {
-					errors.push(
-						`units[${unitIndex}].messagePreview.summary[${summaryIndex}] must not contain file paths`,
-					);
-				}
-			}
-			const canonicalHeader = buildCanonicalCommitHeader(unit);
-			if (unit.messagePreview.header && unit.messagePreview.header !== canonicalHeader) {
-				errors.push(
-					`units[${unitIndex}].messagePreview.header must exactly equal "${canonicalHeader}"`,
-				);
-			}
-		}
 	}
 	if (duplicateIncludes.length) {
 		errors.push(
 			`units[${unitIndex}].include duplicates patterns used by another unit: ${duplicateIncludes.join(', ')}`,
 		);
 	}
+
 	return errors;
 }
 
-function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, location }) {
+function validateMessagePreview(unit, unitIndex) {
 	const errors = [];
-	const manifestPhaseIds = new Set(
-		(manifest.phases || []).map((phase) => String(phase.id || '').trim()),
-	);
-	const unitIds = new Set();
-	const includeOwners = new Map();
-	const normalizedUnits = (rawPlan.units || []).map((rawUnit) => normalizeUnit(rawUnit));
-	const manifestStatus = String(manifest.status || '')
-		.trim()
-		.toUpperCase();
-	const historicalPlan =
-		HISTORICAL_MANIFEST_STATUSES.has(manifestStatus) || location === 'archive';
+
+	if (!unit.messagePreview) {
+		errors.push(`units[${unitIndex}].messagePreview is required for active plans`);
+		return errors;
+	}
+
+	if (!unit.messagePreview.header) {
+		errors.push(`units[${unitIndex}].messagePreview.header must be non-empty when provided`);
+	}
+	if (unit.messagePreview.header.length > HEADER_MAX_LENGTH) {
+		errors.push(
+			`units[${unitIndex}].messagePreview.header exceeds ${HEADER_MAX_LENGTH} characters`,
+		);
+	}
+	if (!unit.messagePreview.summary.length) {
+		errors.push(`units[${unitIndex}].messagePreview.summary must contain at least one bullet`);
+	}
+	if (unit.messagePreview.summary.length > MAX_SUMMARY_LINES) {
+		errors.push(
+			`units[${unitIndex}].messagePreview.summary must not exceed ${MAX_SUMMARY_LINES} bullets`,
+		);
+	}
+
+	for (
+		let summaryIndex = 0;
+		summaryIndex < unit.messagePreview.summary.length;
+		summaryIndex += 1
+	) {
+		const line = unit.messagePreview.summary[summaryIndex];
+		if (line.length > SUMMARY_LINE_MAX_LENGTH) {
+			errors.push(
+				`units[${unitIndex}].messagePreview.summary[${summaryIndex}] exceeds ${SUMMARY_LINE_MAX_LENGTH} characters`,
+			);
+		}
+		if (containsFilePathLikeText(line)) {
+			errors.push(
+				`units[${unitIndex}].messagePreview.summary[${summaryIndex}] must not contain file paths`,
+			);
+		}
+	}
+
+	const canonicalHeader = buildCanonicalCommitHeader(unit);
+	if (unit.messagePreview.header && unit.messagePreview.header !== canonicalHeader) {
+		errors.push(
+			`units[${unitIndex}].messagePreview.header must exactly equal "${canonicalHeader}"`,
+		);
+	}
+
+	return errors;
+}
+
+function validateUnit(unit, manifestPhaseIds, unitIndex, duplicateIncludes, options = {}) {
+	const historicalPlan = Boolean(options.historicalPlan);
+	return [
+		...validateUnitIdentity(unit, unitIndex, manifestPhaseIds, historicalPlan),
+		...validateUnitSubject(unit, unitIndex),
+		...validateUnitScope(unit, unitIndex, duplicateIncludes),
+		...(historicalPlan ? [] : validateMessagePreview(unit, unitIndex)),
+	];
+}
+
+function validateCommitPlanHeader(rawPlan, planId) {
+	const errors = [];
 
 	if (String(rawPlan.planId || '').trim() !== planId) {
 		errors.push(`commit-map.json planId must match plan directory name "${planId}"`);
@@ -277,41 +294,45 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 		errors.push('commit-map.json mode must be "planned-commits"');
 	}
 
-	const review = rawPlan.commitStrategyReview || null;
-	if (!historicalPlan) {
-		if (!review || typeof review !== 'object') {
-			errors.push('commit-map.json must define commitStrategyReview for active plans');
-		} else {
-			if (!isIsoDateLike(review.draftedAt)) {
-				errors.push('commitStrategyReview.draftedAt must be a valid ISO timestamp');
-			}
-			if (review.reviewedAt && !isIsoDateLike(review.reviewedAt)) {
-				errors.push('commitStrategyReview.reviewedAt must be a valid ISO timestamp');
-			}
-			if (review.readyForGatekeeperAt && !isIsoDateLike(review.readyForGatekeeperAt)) {
-				errors.push(
-					'commitStrategyReview.readyForGatekeeperAt must be a valid ISO timestamp',
-				);
-			}
-			if (
-				(review.reviewedAt || review.readyForGatekeeperAt) &&
-				!String(review.notes || '').trim()
-			) {
-				errors.push(
-					'commitStrategyReview.notes is required once the final commit review has started',
-				);
-			}
-			if (review.readyForGatekeeperAt && !review.reviewedAt) {
-				errors.push(
-					'commitStrategyReview.reviewedAt is required before readyForGatekeeperAt can be set',
-				);
-			}
-		}
+	return errors;
+}
+
+function validateCommitStrategyReview(review, historicalPlan) {
+	const errors = [];
+
+	if (historicalPlan) return errors;
+	if (!review || typeof review !== 'object') {
+		errors.push('commit-map.json must define commitStrategyReview for active plans');
+		return errors;
 	}
 
-	if (!Array.isArray(rawPlan.units) || rawPlan.units.length === 0) {
-		errors.push('commit-map.json must define at least one unit');
+	if (!isIsoDateLike(review.draftedAt)) {
+		errors.push('commitStrategyReview.draftedAt must be a valid ISO timestamp');
 	}
+	if (review.reviewedAt && !isIsoDateLike(review.reviewedAt)) {
+		errors.push('commitStrategyReview.reviewedAt must be a valid ISO timestamp');
+	}
+	if (review.readyForGatekeeperAt && !isIsoDateLike(review.readyForGatekeeperAt)) {
+		errors.push('commitStrategyReview.readyForGatekeeperAt must be a valid ISO timestamp');
+	}
+	if ((review.reviewedAt || review.readyForGatekeeperAt) && !String(review.notes || '').trim()) {
+		errors.push(
+			'commitStrategyReview.notes is required once the final commit review has started',
+		);
+	}
+	if (review.readyForGatekeeperAt && !review.reviewedAt) {
+		errors.push(
+			'commitStrategyReview.reviewedAt is required before readyForGatekeeperAt can be set',
+		);
+	}
+
+	return errors;
+}
+
+function validateNormalizedUnits(normalizedUnits, manifestPhaseIds, historicalPlan) {
+	const errors = [];
+	const unitIds = new Set();
+	const includeOwners = new Map();
 
 	for (let index = 0; index < normalizedUnits.length; index += 1) {
 		const unit = normalizedUnits[index];
@@ -325,6 +346,7 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 			if (includeOwners.has(pattern)) duplicateIncludes.push(pattern);
 			else includeOwners.set(pattern, unit.id);
 		}
+
 		errors.push(
 			...validateUnit(unit, manifestPhaseIds, index, duplicateIncludes, {
 				historicalPlan,
@@ -332,17 +354,47 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 		);
 	}
 
-	if (!historicalPlan && review?.readyForGatekeeperAt) {
-		const blockingUnits = normalizedUnits
-			.filter((unit) => unit.status !== 'completed')
-			.filter((unit) => !unitStatusReadyForGatekeeper(unit.status))
-			.map((unit) => `${unit.id} (${unit.status})`);
-		if (blockingUnits.length) {
-			errors.push(
+	return errors;
+}
+
+function validateGatekeeperReadiness(normalizedUnits, review, historicalPlan) {
+	if (historicalPlan || !review?.readyForGatekeeperAt) return [];
+
+	const blockingUnits = normalizedUnits
+		.filter((unit) => unit.status !== 'completed')
+		.filter((unit) => !unitStatusReadyForGatekeeper(unit.status))
+		.map((unit) => `${unit.id} (${unit.status})`);
+
+	return blockingUnits.length
+		? [
 				`commitStrategyReview.readyForGatekeeperAt requires every active unit to be ready, revised-after-gatekeeper, or completed (blocking: ${blockingUnits.join(', ')})`,
-			);
-		}
+			]
+		: [];
+}
+
+function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, location }) {
+	const errors = [];
+	const manifestPhaseIds = new Set(
+		(manifest.phases || []).map((phase) => String(phase.id || '').trim()),
+	);
+	const normalizedUnits = (rawPlan.units || []).map((rawUnit) => normalizeUnit(rawUnit));
+	const manifestStatus = String(manifest.status || '')
+		.trim()
+		.toUpperCase();
+	const historicalPlan =
+		HISTORICAL_MANIFEST_STATUSES.has(manifestStatus) || location === 'archive';
+
+	const review = rawPlan.commitStrategyReview || null;
+
+	errors.push(...validateCommitPlanHeader(rawPlan, planId));
+	errors.push(...validateCommitStrategyReview(review, historicalPlan));
+
+	if (!Array.isArray(rawPlan.units) || rawPlan.units.length === 0) {
+		errors.push('commit-map.json must define at least one unit');
 	}
+
+	errors.push(...validateNormalizedUnits(normalizedUnits, manifestPhaseIds, historicalPlan));
+	errors.push(...validateGatekeeperReadiness(normalizedUnits, review, historicalPlan));
 
 	errors.push(...detectPatternSubsumption(normalizedUnits, historicalPlan));
 

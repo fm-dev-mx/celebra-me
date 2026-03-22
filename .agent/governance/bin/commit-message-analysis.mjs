@@ -17,46 +17,54 @@ function stemOf(file) {
 function classifyCommitFileArea(file) {
 	const normalized = normalizePath(file).toLowerCase();
 	if (!normalized) return 'source';
-	if (normalized.startsWith('.agent/plans/')) return 'plan';
-	if (normalized.startsWith('src/styles/') || /\.(scss|css)$/i.test(normalized)) return 'style';
-	if (
-		normalized.startsWith('docs/') ||
-		normalized.endsWith('.md') ||
-		normalized.endsWith('.mdx')
-	) {
-		return 'docs';
+
+	const rules = [
+		['plan', () => normalized.startsWith('.agent/plans/')],
+		['style', () => normalized.startsWith('src/styles/') || /\.(scss|css)$/i.test(normalized)],
+		[
+			'docs',
+			() =>
+				normalized.startsWith('docs/') ||
+				normalized.endsWith('.md') ||
+				normalized.endsWith('.mdx'),
+		],
+		[
+			'test',
+			() =>
+				normalized.startsWith('tests/') ||
+				normalized.includes('.test.') ||
+				normalized.includes('.spec.'),
+		],
+		[
+			'asset',
+			() =>
+				normalized.startsWith('src/assets/') ||
+				/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(normalized),
+		],
+		[
+			'script',
+			() =>
+				normalized.startsWith('scripts/') ||
+				normalized.startsWith('.agent/') ||
+				normalized.endsWith('.mjs') ||
+				normalized.endsWith('.sh'),
+		],
+		[
+			'config',
+			() =>
+				normalized.endsWith('.json') ||
+				normalized.endsWith('.yml') ||
+				normalized.endsWith('.yaml') ||
+				normalized.endsWith('.toml') ||
+				normalized.endsWith('.ini') ||
+				normalized.endsWith('.cjs'),
+		],
+	];
+
+	for (const [area, matches] of rules) {
+		if (matches()) return area;
 	}
-	if (
-		normalized.startsWith('tests/') ||
-		normalized.includes('.test.') ||
-		normalized.includes('.spec.')
-	) {
-		return 'test';
-	}
-	if (
-		normalized.startsWith('src/assets/') ||
-		/\.(png|jpe?g|webp|gif|svg|ico|avif)$/i.test(normalized)
-	) {
-		return 'asset';
-	}
-	if (
-		normalized.startsWith('scripts/') ||
-		normalized.startsWith('.agent/') ||
-		normalized.endsWith('.mjs') ||
-		normalized.endsWith('.sh')
-	) {
-		return 'script';
-	}
-	if (
-		normalized.endsWith('.json') ||
-		normalized.endsWith('.yml') ||
-		normalized.endsWith('.yaml') ||
-		normalized.endsWith('.toml') ||
-		normalized.endsWith('.ini') ||
-		normalized.endsWith('.cjs')
-	) {
-		return 'config';
-	}
+
 	return 'source';
 }
 
