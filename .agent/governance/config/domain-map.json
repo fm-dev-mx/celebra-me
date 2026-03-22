@@ -100,6 +100,7 @@
             "src/components/ui/**",
             "src/components/home/**",
             "src/components/layout/**",
+            "src/components/behavior/**",
             "src/assets/**"
         ],
         "docs": ["docs/**", ".agent/docs/**"],

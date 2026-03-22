@@ -31,7 +31,8 @@
         ".agent/plans/006-lint-remediation-program/phases/03-inline-style-elimination.md",
         ".agent/plans/006-lint-remediation-program/phases/04-complexity-reduction.md",
         ".agent/plans/006-lint-remediation-program/phases/05-governance-tooling-hardening.md",
-        ".agent/plans/006-lint-remediation-program/phases/06-final-validation-and-commit-planning.md"
+        ".agent/plans/006-lint-remediation-program/phases/06-final-validation-and-commit-planning.md",
+        ".agent/governance/config/domain-map.json"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
