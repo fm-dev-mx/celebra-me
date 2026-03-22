@@ -12,4 +12,4 @@ inventory and entrypoint hierarchy rules.
 
 ## Status
 
-Complete. All files staged.
+Complete. Archived as historical record after close-out alignment.

@@ -13,4 +13,4 @@ neutral discovery index.
 
 ## Status
 
-Complete. All files staged.
+Complete. Archived as historical record after close-out alignment.

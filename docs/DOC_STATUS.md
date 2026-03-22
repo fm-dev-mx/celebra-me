@@ -76,11 +76,12 @@
 
 ### Active Plans
 
-- [008-scss-architecture-optimization](../.agent/plans/008-scss-architecture-optimization/README.md)
-  - active gatekeeper execution plan for the current governance and SCSS refactor worktree.
+No top-level executable plans are currently open under `.agent/plans/`.
 
 ### Archived Plans
 
+- [008-scss-architecture-optimization](../.agent/plans/archive/2026-03/008-scss-architecture-optimization/README.md) - `ARCHIVED`, SCSS architecture refactor plan closed under the monthly archive structure.
+- [009-agent-governance-onboarding](../.agent/plans/archive/2026-03/009-agent-governance-onboarding/README.md) - `ARCHIVED`, retroactive agent governance onboarding record closed after inventory alignment.
 - [comprehensive-audit-Q1-2026](../.agent/plans/archive/comprehensive-audit-Q1-2026/README.md)
 - [audit-SR-2026-03](../.agent/plans/archive/audit-SR-2026-03/README.md) - `ARCHIVED`, technical audit and follow-on remediation record closed during archive review.
 - [error-remediation-evolution](../.agent/plans/archive/error-remediation-evolution/README.md) -

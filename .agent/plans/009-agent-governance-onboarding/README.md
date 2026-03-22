@@ -1,4 +1,4 @@
-# Plan 008 — Agent Governance Onboarding
+# Plan 009 — Agent Governance Onboarding
 
 ## Objective
 
@@ -17,7 +17,7 @@ and documentation status alignment.
 
 ## Status
 
-Implementation is complete. All changes are staged and ready for gatekeeper-commit.
+Archived on 2026-03-22 after retroactive plan capture and documentation inventory alignment.
 
 ## Commit Strategy
 

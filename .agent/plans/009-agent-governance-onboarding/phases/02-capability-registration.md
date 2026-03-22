@@ -13,4 +13,4 @@ agent skills and workflows so they can be discovered and loaded programmatically
 
 ## Status
 
-Complete. All files staged.
+Complete. Archived as historical record after close-out alignment.
