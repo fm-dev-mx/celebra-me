@@ -1,272 +1,185 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { useGuests } from '@/components/dashboard/guests/use-guests';
-import { useGuestMutations } from '@/components/dashboard/guests/use-guest-mutations';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import type { DashboardGuestItem } from '@/components/dashboard/guests/types';
+import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
+import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
+import { guestsApi } from '@/lib/dashboard/guests-api';
+
+jest.mock('@/lib/dashboard/guests-api', () => ({
+	guestsApi: {
+		listEvents: jest.fn(),
+		list: jest.fn(),
+		create: jest.fn(),
+		update: jest.fn(),
+		delete: jest.fn(),
+		markShared: jest.fn(),
+		bulkImport: jest.fn(),
+		exportCsv: jest.fn(),
+	},
+}));
 
 class MockEventSource {
 	addEventListener = jest.fn();
 	close = jest.fn();
 	onerror: (() => void) | null = null;
 
-	constructor(public url: string) {}
+	constructor(
+		public url: string,
+		public options?: EventSourceInit,
+	) {}
 }
 
-describe('useGuests hook', () => {
-	const originalFetch = global.fetch;
+const mockedGuestsApi = guestsApi as jest.Mocked<typeof guestsApi>;
+
+const sampleGuest: DashboardGuestItem = {
+	guestId: 'guest-123',
+	inviteId: 'invite-123',
+	fullName: 'Test Guest',
+	phone: '5551234567',
+	email: null,
+	tags: [],
+	metadata: {},
+	maxAllowedAttendees: 4,
+	attendanceStatus: 'pending',
+	attendeeCount: 0,
+	guestMessage: '',
+	deliveryStatus: 'generated',
+	firstViewedAt: null,
+	respondedAt: null,
+	waShareUrl: 'https://wa.me/123',
+	shareText: 'Share text',
+	updatedAt: '2026-03-22T00:00:00.000Z',
+};
+
+const sampleTotals = {
+	totalInvitations: 1,
+	totalPeople: 4,
+	pendingInvitations: 1,
+	pendingPeople: 4,
+	confirmedInvitations: 0,
+	confirmedPeople: 0,
+	declinedInvitations: 0,
+	declinedPeople: 0,
+	viewed: 0,
+};
+
+describe('active guest dashboard hooks', () => {
 	const originalEventSource = (global as unknown as { EventSource?: unknown }).EventSource;
 
 	beforeEach(() => {
 		(global as unknown as { EventSource: unknown }).EventSource = MockEventSource;
 		jest.clearAllMocks();
+		window.localStorage.clear();
 	});
 
 	afterEach(() => {
-		global.fetch = originalFetch;
 		(global as unknown as { EventSource?: unknown }).EventSource = originalEventSource;
 		jest.restoreAllMocks();
 	});
 
-	it('returns initial state correctly', () => {
-		const { result } = renderHook(() => useGuests({ eventId: '' }));
-
-		expect(result.current.items).toEqual([]);
-		expect(result.current.loading).toBe(false);
-		expect(result.current.error).toBe('');
-		expect(result.current.realtimeState).toBe('fallback');
-	});
-
-	it('sets loading state while fetching', async () => {
-		let resolveFetch: (value: unknown) => void;
-		const fetchPromise = new Promise((resolve) => {
-			resolveFetch = resolve;
+	it('loads events and guest list through useGuestDashboardRealtime', async () => {
+		mockedGuestsApi.listEvents.mockResolvedValue({
+			items: [{ id: 'event-123', title: 'XV Ximena', slug: 'ximena', eventType: 'xv' }],
+		});
+		mockedGuestsApi.list.mockResolvedValue({
+			eventId: 'event-123',
+			items: [sampleGuest],
+			totals: sampleTotals,
+			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
-		global.fetch = jest.fn().mockReturnValue(fetchPromise);
+		const onNotification = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardRealtime({
+				initialEventId: 'event-123',
+				search: '',
+				status: 'all',
+				onNotification,
+			}),
+		);
 
-		const { result } = renderHook(() => useGuests({ eventId: 'event-123' }));
+		await waitFor(() => {
+			expect(result.current.items).toEqual([sampleGuest]);
+		});
 
-		expect(result.current.loading).toBe(true);
+		expect(mockedGuestsApi.listEvents).toHaveBeenCalledTimes(1);
+		expect(mockedGuestsApi.list).toHaveBeenCalledWith({
+			eventId: 'event-123',
+			search: '',
+			status: 'all',
+		});
+		expect(result.current.hostEvents).toHaveLength(1);
+		expect(result.current.eventId).toBe('event-123');
+		expect(result.current.inviteBaseUrl).toBe(window.location.origin);
+		expect(result.current.error).toBe('');
+	});
+
+	it('creates guests through useGuestDashboardActions and refreshes the active runtime', async () => {
+		mockedGuestsApi.create.mockResolvedValue({
+			...sampleGuest,
+			fullName: 'Created Guest',
+		});
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [sampleGuest],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		act(() => {
+			result.current.openCreateModal();
+		});
 
 		await act(async () => {
-			resolveFetch!({
-				ok: true,
-				status: 200,
-				json: async () => ({
-					items: [],
-					totals: {
-						totalInvitations: 0,
-						totalPeople: 0,
-						pendingInvitations: 0,
-						pendingPeople: 0,
-						confirmedInvitations: 0,
-						confirmedPeople: 0,
-						declinedInvitations: 0,
-						declinedPeople: 0,
-						viewed: 0,
-					},
-					updatedAt: new Date().toISOString(),
-				}),
+			await result.current.handleSubmit({
+				fullName: 'Created Guest',
+				maxAllowedAttendees: 4,
 			});
 		});
 
-		expect(result.current.loading).toBe(false);
-	});
-
-	it('sets error state on failed fetch', async () => {
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: false,
-			status: 500,
-			json: async () => ({ message: 'Server error' }),
+		expect(mockedGuestsApi.create).toHaveBeenCalledWith({
+			eventId: 'event-123',
+			fullName: 'Created Guest',
+			maxAllowedAttendees: 4,
 		});
-
-		const { result } = renderHook(() => useGuests({ eventId: 'event-123' }));
-
-		await waitFor(() => {
-			expect(result.current.error).toBe('Server error');
+		expect(loadGuests).toHaveBeenCalled();
+		expect(result.current.notification).toEqual({
+			message: 'Invitado Created Guest correctamente.',
+			type: 'success',
 		});
-
-		expect(result.current.loading).toBe(false);
 	});
 
-	it('does not fetch when eventId is empty', async () => {
-		const fetchSpy = jest.spyOn(global, 'fetch');
+	it('confirms guest deletion through useGuestDashboardActions', async () => {
+		mockedGuestsApi.delete.mockResolvedValue({ message: 'Deleted successfully' });
 
-		const { result } = renderHook(() => useGuests({ eventId: '' }));
-
-		await act(async () => {
-			await Promise.resolve();
-		});
-
-		expect(fetchSpy).not.toHaveBeenCalled();
-		expect(result.current.items).toEqual([]);
-	});
-});
-
-describe('useGuestMutations hook', () => {
-	const originalFetch = global.fetch;
-
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
-
-	afterEach(() => {
-		global.fetch = originalFetch;
-		jest.restoreAllMocks();
-	});
-
-	it('returns initial loading state as false', () => {
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
 		const { result } = renderHook(() =>
-			useGuestMutations({
+			useGuestDashboardActions({
 				eventId: 'event-123',
-				onSuccess: jest.fn(),
-				onError: jest.fn(),
-				onRefresh: jest.fn(),
+				items: [sampleGuest],
+				loadGuests,
+				setItems,
 			}),
 		);
 
-		expect(result.current.loading).toBe(false);
-	});
-
-	it('calls onSuccess callback on successful create', async () => {
-		const onSuccess = jest.fn();
-		const onRefresh = jest.fn();
-
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: true,
-			status: 201,
-			json: async () => ({
-				item: {
-					guestId: 'guest-123',
-					fullName: 'Test Guest',
-					attendanceStatus: 'pending',
-				},
-			}),
+		act(() => {
+			result.current.requestDelete(sampleGuest);
 		});
-
-		const { result } = renderHook(() =>
-			useGuestMutations({
-				eventId: 'event-123',
-				onSuccess,
-				onRefresh,
-			}),
-		);
 
 		await act(async () => {
-			await result.current.createGuest({ fullName: 'Test Guest' });
+			await result.current.handleDeleteConfirm();
 		});
 
-		expect(onSuccess).toHaveBeenCalledWith('Invitado Test Guest guardado correctamente.');
-		expect(onRefresh).toHaveBeenCalled();
-	});
-
-	it('calls onError callback on failed create', async () => {
-		const onError = jest.fn();
-
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: false,
-			status: 400,
-			json: async () => ({ message: 'Validation error' }),
+		expect(mockedGuestsApi.delete).toHaveBeenCalledWith('guest-123');
+		expect(loadGuests).toHaveBeenCalled();
+		expect(result.current.notification).toEqual({
+			message: 'Invitado Test Guest eliminado con éxito.',
+			type: 'success',
 		});
-
-		const { result } = renderHook(() =>
-			useGuestMutations({
-				eventId: 'event-123',
-				onError,
-			}),
-		);
-
-		await act(async () => {
-			await result.current.createGuest({ fullName: '' });
-		});
-
-		expect(onError).toHaveBeenCalled();
-	});
-
-	it('calls onSuccess callback on successful update', async () => {
-		const onSuccess = jest.fn();
-		const onRefresh = jest.fn();
-
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: async () => ({
-				item: {
-					guestId: 'guest-123',
-					fullName: 'Updated Guest',
-					attendanceStatus: 'confirmed',
-				},
-			}),
-		});
-
-		const { result } = renderHook(() =>
-			useGuestMutations({
-				eventId: 'event-123',
-				onSuccess,
-				onRefresh,
-			}),
-		);
-
-		await act(async () => {
-			await result.current.updateGuest('guest-123', { fullName: 'Updated Guest' });
-		});
-
-		expect(onSuccess).toHaveBeenCalledWith('Invitado Updated Guest actualizado correctamente.');
-		expect(onRefresh).toHaveBeenCalled();
-	});
-
-	it('calls onSuccess callback on successful delete', async () => {
-		const onSuccess = jest.fn();
-		const onRefresh = jest.fn();
-
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: async () => ({ message: 'Deleted successfully' }),
-		});
-
-		const { result } = renderHook(() =>
-			useGuestMutations({
-				eventId: 'event-123',
-				onSuccess,
-				onRefresh,
-			}),
-		);
-
-		await act(async () => {
-			await result.current.deleteGuest('guest-123');
-		});
-
-		expect(onSuccess).toHaveBeenCalledWith('Invitado eliminado con éxito.');
-		expect(onRefresh).toHaveBeenCalled();
-	});
-
-	it('calls onSuccess callback on successful markShared', async () => {
-		const onSuccess = jest.fn();
-		const onRefresh = jest.fn();
-
-		global.fetch = jest.fn().mockResolvedValue({
-			ok: true,
-			status: 200,
-			json: async () => ({
-				item: {
-					guestId: 'guest-123',
-					deliveryStatus: 'shared',
-				},
-			}),
-		});
-
-		const { result } = renderHook(() =>
-			useGuestMutations({
-				eventId: 'event-123',
-				onSuccess,
-				onRefresh,
-			}),
-		);
-
-		await act(async () => {
-			await result.current.markShared('guest-123');
-		});
-
-		expect(onSuccess).toHaveBeenCalledWith('¡Invitación compartida! 🎉');
-		expect(onRefresh).toHaveBeenCalled();
 	});
 });
