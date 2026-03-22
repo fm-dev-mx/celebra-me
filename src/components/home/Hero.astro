@@ -5,7 +5,6 @@
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import HeroParallaxBehavior from '@/components/behavior/HeroParallaxBehavior';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
@@ -28,7 +27,7 @@ const avatar3 = getCommonAsset('avatar3');
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title">
 	<!-- 1. Background Layer -->
-	<div class="hero-prime__bg parallax-bg">
+	<div class="hero-prime__bg">
 		<!-- Priority Image (Lazy load off for LCP) -->
 		<Image
 			src={data.backgroundImage.desktopUrl}
@@ -108,4 +107,29 @@ const avatar3 = getCommonAsset('avatar3');
 		/>
 	</div>
 </section>
-<HeroParallaxBehavior client:load />
+<script>
+	const hero = document.getElementById('inicio');
+	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (hero && !shouldReduceMotion) {
+		const background = hero.querySelector('.hero-prime__bg');
+		const media = background?.querySelectorAll('img, video') ?? [];
+
+		const handleMouseMove = (event: MouseEvent) => {
+			const moveX = (event.clientX - window.innerWidth / 2) / 50;
+			const moveY = (event.clientY - window.innerHeight / 2) / 50;
+			media.forEach((element) => {
+				(element as HTMLElement).style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+			});
+		};
+
+		const handleMouseLeave = () => {
+			media.forEach((element) => {
+				(element as HTMLElement).style.transform = 'scale(1.1) translate(0, 0)';
+			});
+		};
+
+		hero.addEventListener('mousemove', (event) => handleMouseMove(event as MouseEvent));
+		hero.addEventListener('mouseleave', handleMouseLeave);
+	}
+</script>

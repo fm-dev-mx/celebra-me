@@ -151,11 +151,6 @@ export default [
 						'Inline styles style={} are strictly forbidden. Use CSS classes instead.',
 				},
 				{
-					selector: 'JSXElement[openingElement.name.name="script"]',
-					message:
-						'Inline <script> tags in JSX are forbidden. Use separate files or idiomatic Astro scripts.',
-				},
-				{
 					selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
 					message:
 						'dangerouslySetInnerHTML is forbidden for security and architectural reasons.',
@@ -236,6 +231,33 @@ export default [
 			// Tests may use console in debugging; keep warn but allow log if you want.
 			// If you prefer strict, leave as-is.
 			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+		},
+	},
+	// ------------------------------------------------------------
+	// React-specific: block inline scripts in JSX (TSX)
+	// (Astro files are allowed to use idiomatic <script> tags)
+	// ------------------------------------------------------------
+	{
+		files: ['**/*.tsx'],
+		rules: {
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: 'JSXAttribute[name.name="style"]',
+					message:
+						'Inline styles style={} are strictly forbidden. Use CSS classes instead.',
+				},
+				{
+					selector: 'JSXElement[openingElement.name.name="script"]',
+					message:
+						'Inline <script> tags in JSX are forbidden. Use separate files or idiomatic Astro scripts.',
+				},
+				{
+					selector: 'JSXAttribute[name.name="dangerouslySetInnerHTML"]',
+					message:
+						'dangerouslySetInnerHTML is forbidden for security and architectural reasons.',
+				},
+			],
 		},
 	},
 ];
