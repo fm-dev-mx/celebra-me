@@ -381,6 +381,19 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 	const manifestStatus = String(manifest.status || '')
 		.trim()
 		.toUpperCase();
+	const activeHistoricalManifest =
+		location === 'active' && HISTORICAL_MANIFEST_STATUSES.has(manifestStatus);
+	if (activeHistoricalManifest) {
+		errors.push(
+			`Active plan "${planId}" must not use historical manifest status "${manifestStatus}". Archive the plan instead of keeping it under .agent/plans/.`,
+		);
+		return {
+			ok: false,
+			reason: 'historical_plan_in_active_root',
+			errors,
+			plan: null,
+		};
+	}
 	const historicalPlan =
 		HISTORICAL_MANIFEST_STATUSES.has(manifestStatus) || location === 'archive';
 
@@ -400,6 +413,7 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 
 	return {
 		ok: errors.length === 0,
+		reason: errors.length ? 'invalid_plan_contract' : null,
 		errors,
 		plan: errors.length
 			? null
@@ -538,5 +552,6 @@ export {
 	buildCanonicalCommitHeader,
 	loadValidatedCommitPlan,
 	normalizeUnit,
+	resolvePlanDirectory,
 	validateCommitPlanDocument,
 };

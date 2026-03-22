@@ -3,26 +3,25 @@ description: Code analysis and declarative commit-map planning
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-03-21
+last_reviewed: 2026-03-22
 ---
 
 # Plan Authoring Workflow
 
-Use this workflow exclusively for analyzing code, identifying the dominant intent, writing
-`.agent/plans/<plan-id>/commit-map.json`, and doing the heavy architectural lifting. This acts as
-the "think" phase, entirely separate from the "do/commit" phase.
+Use this workflow for the thinking and authoring side of commit planning. It owns code analysis,
+intent mapping, `commit-map.json`, lifecycle readiness, and preflight validation before
+`gatekeeper-commit` runs.
 
 ## Preconditions
 
 - You are handling a feature, fix, or architectural change that needs properly structured commits.
-- All code changes are actively in the working directory (or you are about to map intent before
-  starting small work).
+- You are either drafting the commit strategy before implementation, or stabilizing the final
+  strategy after implementation.
 
 ## Strict Rule: Code Quality Before Planning
 
-**Key Rule:** This workflow strictly requires the codebase to pass all static analysis checks
-_before_ the intent is mapped. Ensure code architecture stabilizes before commit boundaries are
-defined.
+`pnpm lint` must pass before finalizing the commit strategy. Do not freeze boundaries around code
+that is still failing architecture or static analysis rules.
 
 Run:
 
@@ -30,26 +29,98 @@ Run:
 pnpm lint
 ```
 
-If the linter fails (e.g., God objects, inline styles, coupling, missing English docs/code), fix the
-code first. Do NOT proceed to write the `commit-map.json` until `pnpm lint` passes 100%.
+If lint fails, fix the code first. Do not finalize `commit-map.json` while architecture is still
+unstable.
+
+## Three Authoring Moments
+
+### 1. Draft the Commit Strategy Before Implementation
+
+Create or refresh `.agent/plans/<plan-id>/commit-map.json` before implementation begins.
+
+This draft must define:
+
+- the dominant intent per unit
+- expected `include` boundaries
+- any justified `allowRelated` files
+- canonical planned headers and semantic summaries
+
+### 2. Run the Final Strategy Review After Implementation
+
+After implementation, update the plan to reflect reality.
+
+The final review must confirm:
+
+- actual files still match the intended units
+- headers and purposes still describe the dominant intent
+- unit boundaries still reflect the implemented architecture
+- internal documentation and code remain in English
+
+Record the final review in `commitStrategyReview`:
+
+- set `reviewedAt`
+- set `notes`
+
+### 3. Mark the Plan Gatekeeper-Ready Before Commit Execution
+
+Before `gatekeeper-commit`, the plan must be executable without reinterpretation.
+
+This means:
+
+- `commitStrategyReview.readyForGatekeeperAt` is set
+- executable units use `ready` or `revised-after-gatekeeper`
+- active executable plans do not keep units marked `completed`
+- active plans under `.agent/plans/<plan-id>/` do not use historical manifest statuses
+
+`COMPLETED` and `ARCHIVED` are historical-only manifest states. If the plan is still under
+`.agent/plans/<plan-id>/`, it remains active and non-historical until all planned commits are
+finished and the directory is archived.
 
 ## Routine
 
-1. **Analyze Code/Requirements:** Review the feature request or the currently modified files.
-2. **Identify Intent:** Determine the domain, verb, and purpose for each logical unit of work.
-3. **Map Units (`commit-map.json`):** Create or update the `.agent/plans/<plan-id>/commit-map.json`
-   file. Each unit must map precisely to files (using absolute paths or globs in the `include`
-   array).
-4. **Enforce Constraints:** Ensure the code and documentation adhere to architectural rules:
-   - All code (variables, components, props) and internal documentation MUST be in English.
-   - Spanish is strictly reserved for the UI / copywriting.
-5. **Finalize:** Refresh `commitStrategyReview.reviewedAt` to the current UTC timestamp when the
-   plan is finalized.
+1. Analyze the code or requirements and identify dominant implementation intents.
+2. Create or update `.agent/plans/<plan-id>/commit-map.json`.
+3. Map each unit precisely using `include` globs and narrowly scoped `allowRelated` patterns.
+4. Enforce authoring constraints:
+   - all code and internal documentation must remain in English
+   - Spanish is reserved for user-facing copy
+   - do not introduce extra units or wrappers unless they reduce real ambiguity
+5. Run the planning-side validation sequence:
+
+```bash
+pnpm lint
+pnpm gatekeeper:plans:validate -- --plan <plan-id>
+pnpm gatekeeper:plans:doctor -- --plan <plan-id>
+```
+
+6. Resolve every `plans:doctor` finding before using `gatekeeper-commit`.
+
+## Doctor Expectations
+
+`pnpm gatekeeper:plans:doctor -- --plan <plan-id>` is the last required step of this workflow.
+
+It checks:
+
+- structural plan validity
+- active vs historical lifecycle misuse
+- commit strategy readiness
+- working-tree coverage against the plan
+- dirty index and mixed staged/unstaged drift
+
+Default output is compact. Use:
+
+- `--json` for machine consumption
+- `--verbose` for full file detail
 
 ## Output
 
-A valid, structured `.agent/plans/<plan-id>/commit-map.json` that is strictly compliant with the
-codebase constraints.
+A valid and executable active plan:
 
-Once the plan is created and code passes static analysis, proceed to the Gatekeeper Commit workflow
-to securely commit changes.
+- `commit-map.json` matches the implemented intent
+- `commitStrategyReview.reviewedAt`, `notes`, and `readyForGatekeeperAt` are coherent
+- the current worktree passes `plans:doctor`
+
+## Close-Out Rule
+
+Archival is a separate close-out step after commit execution. Do not mark active plans as
+`COMPLETED` or `ARCHIVED` before the gatekeeper execution sequence is finished.

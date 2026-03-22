@@ -3,70 +3,60 @@ description: Pure plan-aware Gatekeeper commit workflow.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
-last_reviewed: 2026-03-21
+last_reviewed: 2026-03-22
 ---
 
 # Gatekeeper Commit Routine
 
-Use this workflow when you are ready to commit implementation work. This is the "dumb/fast" commit runner loop. Do not use this for plan authoring or architectural lifting.
+Use this workflow only when implementation is already planned and the active plan is gatekeeper
+ready. This is the dumb and fast execution loop. It does not repair planning mistakes inline.
 
 ## Preconditions
 
 - the work belongs to an active plan under `.agent/plans/<plan-id>/`
-- that plan includes a valid `commit-map.json`
-- `pnpm gatekeeper:plans:validate -- --plan <plan-id>` passes
-- that plan has already completed its final commit-strategy review
-- the target unit has already been defined in the plan
+- `plan-authoring` has already completed the planning-side validation sequence
+- the target unit is already defined in the plan
 - the working tree has been reduced to exactly one material commit unit
+- the git index is pristine before execution starts
 
 ## Routine
 
-1. **Pre-Flight Git Hygiene**: Ensure the Git index is pristine to avoid `unit_mismatch` errors.
+1. Confirm pre-flight git hygiene:
 
    ```bash
-   git stash list; git clean -dn; git status --porcelain
+   git status --porcelain
+   git diff --name-only --cached
    ```
 
-2. Validate the plan contract:
-
-   ```bash
-   pnpm gatekeeper:plans:validate -- --plan <plan-id>
-   ```
-
-3. Inspect the current working tree against the active plan:
+2. Inspect the current working tree against the active plan:
 
    ```bash
    pnpm gatekeeper:workflow:inspect -- --plan <plan-id>
    ```
 
-4. Read the result:
+3. Read the result:
    - `matched_unit`: continue
-   - `unit_mismatch` / `unit_ambiguity`: Stop. Abort and run the `plan-authoring` workflow to fix the constraints and update the plan. Do not attempt to fix it inline here.
-   - `invalid_plan_contract`: stop and fix `commit-map.json` using the `plan-authoring` workflow.
-   - `commit_strategy_not_ready`: stop and complete the final commit review in the plan.
-   - `plan_archived`: stop and select an active plan.
-   - `plan_not_found`: stop and create or select the correct active plan.
-   - `empty_change_set`: nothing to do
+   - anything else: stop and return to `plan-authoring`
 
-5. Stage the exact planned unit from the working tree:
+4. Stage the exact planned unit from the working tree:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit <unit-id>
    ```
 
-6. Preview the commit message:
+5. Preview the commit message:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --unit <unit-id>
    ```
 
-7. Create the commit:
+6. Create the commit:
 
    ```bash
    node .agent/governance/bin/gatekeeper-workflow.mjs commit --unit <unit-id>
    ```
 
-8. Clean up and restart (if you abort or the staged set drifts):
+7. Clean up and restart only if you abort or drift invalidates the session:
 
    ```bash
    pnpm gatekeeper:workflow:cleanup
@@ -74,13 +64,29 @@ Use this workflow when you are ready to commit implementation work. This is the 
 
 ## Rules
 
-- **CRITICAL - Tool Hangs**: Always use non-interactive flags (e.g., `--yes`) for `npx` calls. If `stage`, `scaffold` or `commit` hangs indefinitely, DO NOT retry blindly. Cancel the execution and use an explicit fallback: assemble the full message dynamically from `commit-map.json` and use `git commit -F <temp-file>`.
-- Use direct `git status` or `git diff --staged` to diagnose file drift instantly instead of token-heavy verbose logging.
+- Do not use this workflow for plan repair, lifecycle repair, or commit-map redesign.
+- `inspect` is the only runtime preflight that creates session state.
+- Use `pnpm gatekeeper:workflow:inspect -- --plan <plan-id> --json` for machine-friendly output.
+- Use `--verbose` only when you need full file detail.
+- `stage` does not run local ESLint or Stylelint by default. Use `--verify-local` only when you
+  explicitly want local per-unit verification.
+- Use direct `git status` or `git diff --staged` to diagnose drift instead of verbose workflow
+  output.
 - Do not pre-stage files manually as the primary selection mechanism.
-- Do not use this workflow to invent or reinterpret the commit structure. The plan owns that intent.
+- Do not use this workflow to invent or reinterpret the commit structure. The plan owns that
+  intent.
 - Do not enter the workflow with multiple material units mixed in the same working tree.
 - If the working tree changes after `inspect`, rerun `inspect`.
 - If the staged set changes after `stage`, rerun `cleanup`, `inspect`, and `stage`.
+
+## Diagnose Manually Only When Needed
+
+These commands are not part of the normal loop, but they remain valid for manual diagnosis:
+
+```bash
+git stash list
+git clean -dn
+```
 
 ## Output Contract
 

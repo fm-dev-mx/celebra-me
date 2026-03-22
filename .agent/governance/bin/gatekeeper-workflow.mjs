@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-
-import { spawnSync } from 'child_process';
-import { createHash } from 'crypto';
 import {
 	existsSync,
 	mkdirSync,
@@ -13,7 +10,7 @@ import {
 } from 'fs';
 import { dirname, resolve } from 'path';
 
-import { collectFileFacts, normalizePath } from './commit-message-analysis.mjs';
+import { normalizePath } from './commit-message-analysis.mjs';
 import {
 	buildPlannedHeader,
 	buildPlannedSubject,
@@ -22,28 +19,16 @@ import {
 	resolveCommitUnit,
 } from './commit-plan.mjs';
 import { buildCommitlintContext } from '../../../scripts/validate-commits.mjs';
+import {
+	getStagedDiffEntries,
+	getWorkingTreeDiffEntries,
+	run,
+	signatureForEntries,
+} from './repo-diff-state.mjs';
 
 const SESSION_VERSION = 5;
 const DEFAULT_SESSION_BASENAME = 'gatekeeper-session.json';
 const DEFAULT_S0_BASENAME = 'gatekeeper-s0.json';
-
-function run(cmd, args, options = {}) {
-	const isWin = process.platform === 'win32';
-	const result = spawnSync(cmd, args, {
-		encoding: 'utf8',
-		shell: options.shell ?? isWin,
-		stdio: options.stdio ?? 'pipe',
-		env: options.env || process.env,
-		cwd: options.cwd || process.cwd(),
-		input: options.input,
-	});
-	if (result.error) throw result.error;
-	return {
-		status: result.status ?? 1,
-		stdout: String(result.stdout || ''),
-		stderr: String(result.stderr || ''),
-	};
-}
 
 function fail(message) {
 	console.error(`❌ ${message}`);
@@ -94,6 +79,8 @@ function parseArgs(argv) {
 		sessionFile: null,
 		s0File: null,
 		json: false,
+		verbose: false,
+		verifyLocal: false,
 		dryRun: false,
 	};
 	for (let index = 1; index < argv.length; index += 1) {
@@ -103,6 +90,8 @@ function parseArgs(argv) {
 		if (token === '--session-file') args.sessionFile = argv[index + 1] || args.sessionFile;
 		if (token === '--s0-file') args.s0File = argv[index + 1] || args.s0File;
 		if (token === '--json') args.json = true;
+		if (token === '--verbose') args.verbose = true;
+		if (token === '--verify-local') args.verifyLocal = true;
 		if (token === '--dry-run') args.dryRun = true;
 	}
 	return normalizeArtifactPaths(args);
@@ -131,114 +120,6 @@ function cleanupArtifacts(args) {
 			/* ignore */
 		}
 	}
-}
-
-function normalizeDiffEntries(entries = []) {
-	return entries
-		.map((entry) => ({
-			path: normalizePath(entry.path),
-			oldPath: normalizePath(entry.oldPath || ''),
-			status: String(entry.status || 'M').toUpperCase(),
-			area: String(entry.area || '').trim() || undefined,
-		}))
-		.filter((entry) => entry.path)
-		.sort((left, right) => left.path.localeCompare(right.path));
-}
-
-function parseNameStatusZ(raw) {
-	const tokens = String(raw || '')
-		.split('\0')
-		.filter(Boolean);
-	const entries = [];
-	for (let index = 0; index < tokens.length; ) {
-		const rawStatus = tokens[index++] || 'M';
-		const status = rawStatus.startsWith('R') ? 'R' : rawStatus[0];
-		if (status === 'R') {
-			const oldPath = normalizePath(tokens[index++] || '');
-			const path = normalizePath(tokens[index++] || '');
-			if (path) entries.push({ path, oldPath, status });
-			continue;
-		}
-		const path = normalizePath(tokens[index++] || '');
-		if (path) entries.push({ path, oldPath: '', status });
-	}
-	return entries;
-}
-
-function getTrackedWorkingTreeEntries() {
-	const hasHead = run('git', ['rev-parse', '--verify', 'HEAD']).status === 0;
-	if (!hasHead) return [];
-	const result = run('git', [
-		'diff',
-		'--name-status',
-		'--find-renames',
-		'--diff-filter=ACDMR',
-		'-z',
-		'HEAD',
-	]);
-	if (result.status !== 0) fail('Unable to read working tree diff.');
-	return parseNameStatusZ(result.stdout);
-}
-
-function getUntrackedEntries() {
-	const result = run('git', ['ls-files', '--others', '--exclude-standard', '-z']);
-	if (result.status !== 0) fail('Unable to read untracked files.');
-	return String(result.stdout || '')
-		.split('\0')
-		.map((entry) => normalizePath(entry))
-		.filter(Boolean)
-		.map((path) => ({ path, oldPath: '', status: 'A' }));
-}
-
-function enrichEntries(entries) {
-	const facts = collectFileFacts(
-		entries.map((entry) => entry.path),
-		entries,
-	);
-	const factsByPath = new Map(facts.map((fact) => [fact.path, fact]));
-	return entries.map((entry) => ({
-		...entry,
-		area: factsByPath.get(entry.path)?.area || 'source',
-	}));
-}
-
-function dedupeEntries(entries) {
-	const byPath = new Map();
-	for (const entry of entries) byPath.set(entry.path, entry);
-	return Array.from(byPath.values()).sort((left, right) => left.path.localeCompare(right.path));
-}
-
-function getWorkingTreeDiffEntries() {
-	const tracked = getTrackedWorkingTreeEntries();
-	const untracked = getUntrackedEntries();
-	return normalizeDiffEntries(enrichEntries(dedupeEntries([...tracked, ...untracked])));
-}
-
-function getStagedDiffEntries() {
-	const result = run('git', [
-		'diff',
-		'--cached',
-		'--name-status',
-		'--find-renames',
-		'--diff-filter=ACDMR',
-		'-z',
-	]);
-	if (result.status !== 0) fail('Unable to read staged diff entries.');
-	return normalizeDiffEntries(enrichEntries(parseNameStatusZ(result.stdout)));
-}
-
-function signatureForEntries(entries) {
-	return createHash('sha256')
-		.update(
-			JSON.stringify(
-				(entries || []).map((entry) => ({
-					path: entry.path,
-					oldPath: entry.oldPath || '',
-					status: entry.status,
-				})),
-			),
-		)
-		.digest('hex');
 }
 
 function buildSession(args, diffEntries, commitPlanning) {
@@ -439,6 +320,51 @@ function loadCommitContext(args) {
 	return { session, s0, unit, stagedEntries };
 }
 
+function buildInspectPayload(payload, diffEntries, commitPlanning) {
+	return {
+		workflowRoute: commitPlanning.status === 'matched_unit' ? 'proceed_commit_unit' : 'blocked',
+		routeReasons: commitPlanning.errors || [],
+		changeSetSignature: payload.changeSetSignature,
+		diffEntries,
+		commitPlanning,
+	};
+}
+
+function printList(label, values) {
+	if (!values?.length) return;
+	console.log(`${label}:`);
+	for (const value of values) console.log(`- ${value}`);
+}
+
+function shouldPrintInspectHint(commitPlanning, sampleUnmatchedFiles) {
+	return (
+		(commitPlanning.summary?.unmatchedFileCount || 0) > sampleUnmatchedFiles.length ||
+		Boolean(commitPlanning.errors?.length)
+	);
+}
+
+function printInspectResult(args, diffEntries, commitPlanning) {
+	const sampleUnmatchedFiles = args.verbose
+		? commitPlanning.unmatchedFiles || []
+		: commitPlanning.summary?.sampleUnmatchedFiles || [];
+	console.log(`status=${commitPlanning.status}`);
+	console.log(
+		`changed=${commitPlanning.summary?.changedFileCount || diffEntries.length} matched=${commitPlanning.summary?.matchedUnitCount || 0} unmatched=${commitPlanning.summary?.unmatchedFileCount || 0}`,
+	);
+	if (commitPlanning.recommendedUnit) {
+		console.log(`unit=${commitPlanning.recommendedUnit.id}`);
+	}
+	printList('errors', commitPlanning.errors || []);
+	printList('sampleUnmatchedFiles', sampleUnmatchedFiles);
+	if (args.verbose) {
+		console.log(`sessionFile=${args.sessionFile}`);
+		return;
+	}
+	if (shouldPrintInspectHint(commitPlanning, sampleUnmatchedFiles)) {
+		console.log('Use --verbose or --json for full details.');
+	}
+}
+
 function inspectCommand(args) {
 	if (!args.plan) fail('Pure plan-aware workflow requires inspect --plan <id>.');
 	const diffEntries = getWorkingTreeDiffEntries();
@@ -454,42 +380,11 @@ function inspectCommand(args) {
 	}
 	if (args.json) {
 		console.log(
-			JSON.stringify(
-				{
-					workflowRoute:
-						commitPlanning.status === 'matched_unit'
-							? 'proceed_commit_unit'
-							: 'blocked',
-					routeReasons: commitPlanning.errors || [],
-					changeSetSignature: payload.changeSetSignature,
-					diffEntries,
-					commitPlanning,
-				},
-				null,
-				2,
-			),
+			JSON.stringify(buildInspectPayload(payload, diffEntries, commitPlanning), null, 2),
 		);
 		return;
 	}
-	console.log(`🧭 commitPlanning=${commitPlanning.status}`);
-	console.log(`🗂️ Changed files: ${diffEntries.length}`);
-	console.log(`📄 Session file: ${args.sessionFile}`);
-	if (commitPlanning.recommendedUnit) {
-		console.log(`🗺️ Selected unit: ${commitPlanning.recommendedUnit.id}`);
-	}
-	if (commitPlanning.errors?.length) {
-		console.log('\n❌ Blocked units:');
-		for (const error of commitPlanning.errors) console.log(`- ${error}`);
-	}
-	if (commitPlanning.unmatchedFiles?.length) {
-		console.log('\n⚠️  Unmapped files in working tree:');
-		for (const file of commitPlanning.unmatchedFiles) {
-			console.log(`- ${file}`);
-		}
-		console.log(
-			'\n💡 Resolution: Add these files to your commit-map.json using the plan-authoring workflow.',
-		);
-	}
+	printInspectResult(args, diffEntries, commitPlanning);
 }
 
 function stageCommand(args) {
@@ -510,28 +405,33 @@ function stageCommand(args) {
 	const unitSpecs = pathSpecsForEntries(unitEntries);
 	if (!unitSpecs.length) fail(`Commit unit "${args.unit}" did not resolve any stageable files.`);
 
-	// MANDATE: local linting check before staging (using pnpm exec eslint directly to target only the unit files)
-	console.log('🔍 Pre-staging hygiene check: Checking for code quality violations...');
-	const existingUnitSpecs = unitSpecs.filter((file) => existsSync(resolve(repoRoot(), file)));
-	if (existingUnitSpecs.length) {
-		const jsFiles = existingUnitSpecs.filter((f) => /\.(ts|tsx|js|jsx|astro|mjs|cjs)$/.test(f));
-		const scssFiles = existingUnitSpecs.filter((f) => /\.scss$/.test(f));
+	if (args.verifyLocal) {
+		console.log('Running local unit verification...');
+		const existingUnitSpecs = unitSpecs.filter((file) => existsSync(resolve(repoRoot(), file)));
+		if (existingUnitSpecs.length) {
+			const jsFiles = existingUnitSpecs.filter((f) =>
+				/\.(ts|tsx|js|jsx|astro|mjs|cjs)$/.test(f),
+			);
+			const scssFiles = existingUnitSpecs.filter((f) => /\.scss$/.test(f));
 
-		if (jsFiles.length) {
-			const lintResult = run('pnpm', ['exec', 'eslint', ...jsFiles], { stdio: 'pipe' });
-			if (lintResult.status !== 0) {
-				console.log(lintResult.stdout);
-				console.error(lintResult.stderr);
-				fail('Local ESLint failed. Fix all errors before staging files.');
+			if (jsFiles.length) {
+				const lintResult = run('pnpm', ['exec', 'eslint', ...jsFiles], { stdio: 'pipe' });
+				if (lintResult.status !== 0) {
+					console.log(lintResult.stdout);
+					console.error(lintResult.stderr);
+					fail('Local ESLint failed. Fix all errors before staging files.');
+				}
 			}
-		}
 
-		if (scssFiles.length) {
-			const lintResult = run('pnpm', ['exec', 'stylelint', ...scssFiles], { stdio: 'pipe' });
-			if (lintResult.status !== 0) {
-				console.log(lintResult.stdout);
-				console.error(lintResult.stderr);
-				fail('Local Stylelint failed. Fix all errors before staging files.');
+			if (scssFiles.length) {
+				const lintResult = run('pnpm', ['exec', 'stylelint', ...scssFiles], {
+					stdio: 'pipe',
+				});
+				if (lintResult.status !== 0) {
+					console.log(lintResult.stdout);
+					console.error(lintResult.stderr);
+					fail('Local Stylelint failed. Fix all errors before staging files.');
+				}
 			}
 		}
 	}

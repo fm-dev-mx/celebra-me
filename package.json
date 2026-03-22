@@ -32,6 +32,7 @@
         "gatekeeper:workflow:inspect": "node .agent/governance/bin/gatekeeper-workflow.mjs inspect",
         "gatekeeper:workflow:cleanup": "node .agent/governance/bin/gatekeeper-workflow.mjs cleanup",
         "gatekeeper:plans:validate": "node .agent/governance/bin/validate-commit-plan.mjs",
+        "gatekeeper:plans:doctor": "node .agent/governance/bin/doctor-commit-plan.mjs",
         "gatekeeper:validate-msg": "node .agent/governance/bin/validate-commit-msg.mjs",
         "governance": "node .agent/governance/bin/governance.mjs",
         "assets:check-registry": "node scripts/check-event-assets.cjs",

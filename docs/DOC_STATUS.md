@@ -1,6 +1,6 @@
 # Documentation Status Dashboard
 
-**Last Updated:** 2026-03-19 **Next Review:** 2026-04-18 **Maintainer:** Workflow Governance System
+**Last Updated:** 2026-03-22 **Next Review:** 2026-04-21 **Maintainer:** Workflow Governance System
 
 ---
 
@@ -9,8 +9,8 @@
 - Links: `pnpm ops check-links` passing as of 2026-03-10.
 - Staleness: `pnpm ops find-stale 180` passing as of 2026-03-10.
 - Schema parity: `pnpm ops validate-schema` passing with zero warnings as of 2026-03-10.
-- Verification: `pnpm astro check` passed with 0 errors, 0 warnings, and 0 hints; `pnpm lint` passed
-  with 0 warnings and 0 errors.
+- Verification: `pnpm astro check` passed with 0 errors, 0 warnings, and 0 hints; `pnpm lint`
+  remains the required preflight before finalizing any active commit strategy.
 - Active plan inventory: top-level plans are tracked below exactly as they exist under
   `.agent/plans/`, excluding `archive/`.
 
@@ -76,7 +76,8 @@
 
 ### Active Plans
 
-- No active plans currently remain at the top level under `.agent/plans/`.
+- [008-scss-architecture-optimization](../.agent/plans/008-scss-architecture-optimization/README.md)
+  - active gatekeeper execution plan for the current governance and SCSS refactor worktree.
 
 ### Archived Plans
 
@@ -129,3 +130,5 @@
    `.agent/plans/`.
 3. Run `pnpm ops check-links` and `pnpm ops validate-schema` for every documentation or theme
    governance PR.
+4. Keep planning workflow documentation synchronized whenever `plans:doctor` or gatekeeper
+   preflight rules change.

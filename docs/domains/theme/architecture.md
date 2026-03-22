@@ -12,6 +12,9 @@ The invitation theme system is contract-driven and section-based.
 - **Preset application**: class-scoped presets (`.theme-preset--*`), not `:root` injection
 - **Editorial Aesthetic**: Support for full-bleed, high-fashion layout variants (`editorial`) and
   event-specific premium overrides.
+- **Planning preflight**: theme architecture changes that touch active plans or gatekeeper routing
+  must complete `pnpm lint`, `pnpm gatekeeper:plans:validate`, and `pnpm gatekeeper:plans:doctor`
+  before `gatekeeper:workflow inspect`.
 
 ## Contract Ownership
 
@@ -180,4 +183,4 @@ as a fallback to preserve existing content behavior during migration.
 
 ---
 
-**Last Updated:** 2026-03-16 (Phase 03 Q1 2026 Audit Sync)
+**Last Updated:** 2026-03-22 (Planning preflight and theme governance sync)

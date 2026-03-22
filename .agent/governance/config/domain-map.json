@@ -20,6 +20,7 @@
             "src/styles/tokens/**",
             "src/styles/tools/**",
             "src/styles/global/**",
+            "src/styles/home/**",
             "src/styles/ui/**",
             "src/styles/layout/**",
             "src/styles/common/**",

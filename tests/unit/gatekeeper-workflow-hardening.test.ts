@@ -203,16 +203,35 @@ describe('Gatekeeper plan-aware workflow', () => {
 		expect(scaffold.fullMessage).toContain('Plan-Id: commit-workflow-fixture');
 	});
 
-	it('skips completed units during commit planning discovery', () => {
+	it('parses inspect verbosity and stage verification flags', () => {
+		const args = runNodeJson(`
+			import { parseArgs } from './.agent/governance/bin/gatekeeper-workflow.mjs';
+			console.log(JSON.stringify(parseArgs([
+				'stage',
+				'--plan',
+				'commit-workflow-fixture',
+				'--unit',
+				'retire-invitation-layers',
+				'--verify-local',
+				'--verbose',
+			])));
+		`);
+
+		expect(args.command).toBe('stage');
+		expect(args.plan).toBe('commit-workflow-fixture');
+		expect(args.unit).toBe('retire-invitation-layers');
+		expect(args.verifyLocal).toBe(true);
+		expect(args.verbose).toBe(true);
+	});
+
+	it('blocks active executable plans that still contain completed units', () => {
 		const repoRoot = withTempPlanFixture((tempRoot) => {
 			const commitMapPath = join(
 				tempRoot,
 				'.agent/plans/commit-workflow-fixture/commit-map.json',
 			);
 			const commitMap = JSON.parse(String(readFileSync(commitMapPath, 'utf8')));
-			// Mark the only unit as completed
 			commitMap.units[0].status = 'completed';
-			// Add a new planned unit that also matches
 			commitMap.units.push({
 				id: 'add-new-feature',
 				phaseId: '01-refactor',
@@ -247,8 +266,30 @@ describe('Gatekeeper plan-aware workflow', () => {
 				})));
 			`);
 
-			expect(result.status).toBe('matched_unit');
-			expect(result.recommendedUnit.id).toBe('add-new-feature');
+			expect(result.status).toBe('commit_strategy_not_ready');
+			expect(result.errors.join('\n')).toContain('must not contain completed units');
+		} finally {
+			rmSync(repoRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects active-root plans that already use historical manifest statuses', () => {
+		const repoRoot = withTempPlanFixture((tempRoot) => {
+			const manifestPath = join(
+				tempRoot,
+				'.agent/plans/commit-workflow-fixture/manifest.json',
+			);
+			const manifest = JSON.parse(String(readFileSync(manifestPath, 'utf8')));
+			manifest.status = 'COMPLETED';
+			writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+		});
+		try {
+			const result = runNodeJson(`
+				import { loadValidatedCommitPlan } from './.agent/governance/bin/commit-plan.mjs';
+				console.log(JSON.stringify(loadValidatedCommitPlan('commit-workflow-fixture', ${JSON.stringify(repoRoot)})));
+			`);
+			expect(result.ok).toBe(false);
+			expect(result.reason).toBe('historical_plan_in_active_root');
 		} finally {
 			rmSync(repoRoot, { recursive: true, force: true });
 		}
