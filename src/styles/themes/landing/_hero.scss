@@ -4,7 +4,7 @@
  * Hero Section Semantic Tokens
  * Thematic properties for hero overlay, mesh gradients, and title effects
  */
-@use '../../tokens/primitives' as primitives;
+/* stylelint-disable scss/dollar-variable-pattern */
 
 // Hero Overlay
 $hero-overlay-alpha: var(--hero-overlay-alpha, 0.4);
@@ -14,20 +14,21 @@ $hero-overlay-gradient: var(
 );
 
 // Mesh Gradient Colors (for hero backgrounds)
-$hero-mesh-color-1: var(--hero-mesh-color-1, rgba(primitives.$base-gold-300, 0.2));
-$hero-mesh-color-2: var(--hero-mesh-color-2, rgba(primitives.$base-coffee-200, 0.15));
-$hero-mesh-color-3: var(--hero-mesh-color-3, rgba(primitives.$base-parchment-100, 0.3));
+$hero-mesh-color-1: var(--hero-mesh-color-1, rgb(var(--color-action-accent-rgb) / 20%));
+$hero-mesh-color-2: var(--hero-mesh-color-2, rgb(var(--color-surface-secondary-rgb) / 15%));
+$hero-mesh-color-3: var(--hero-mesh-color-3, rgb(var(--color-surface-primary-rgb) / 30%));
 
 // Title Typography Effects
 $hero-title-text-shadow: var(--hero-title-text-shadow, 0 2px 20px rgb(0 0 0 / 30%));
-$hero-title-color: var(--hero-title-color, primitives.$base-neutral-0);
+$hero-title-color: var(--hero-title-color, var(--color-text-on-dark));
 $hero-subtitle-color: var(--hero-subtitle-color, rgb(255 255 255 / 90%));
 
 // CTA Button Styles
-$hero-cta-bg: var(--hero-cta-bg, primitives.$base-gold-500);
-$hero-cta-color: var(--hero-cta-color, primitives.$base-coffee-900);
-$hero-cta-hover-bg: var(--hero-cta-hover-bg, primitives.$base-gold-400);
+$hero-cta-bg: var(--hero-cta-bg, var(--color-action-accent));
+$hero-cta-color: var(--hero-cta-color, var(--color-surface-dark));
+$hero-cta-hover-bg: var(--hero-cta-hover-bg, var(--color-primary-dark, var(--color-action-accent)));
 $hero-cta-shadow: var(--hero-cta-shadow, 0 10px 30px rgb(0 0 0 / 20%));
 
 // Scroll Indicator
 $hero-scroll-indicator-color: var(--hero-scroll-indicator-color, rgb(255 255 255 / 60%));
+/* stylelint-enable scss/dollar-variable-pattern */

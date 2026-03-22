@@ -25,7 +25,6 @@
                 ".agent/governance/bin/gatekeeper.mjs",
                 ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "docs/core/git-governance.md",
-                ".stylelintrc.json",
                 "src/styles/tokens/_motion.scss",
                 "src/styles/tokens/_primitives.scss",
                 "src/styles/tokens/_semantic.scss",
@@ -61,8 +60,6 @@
             },
             "purpose": "implement high-level design contract through Sass modules and CSS variables",
             "include": [
-                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
-                ".agent/governance/config/domain-map.json",
                 "src/styles/tokens/contracts/_core.scss",
                 "src/styles/tools/_functions.scss",
                 "src/styles/tokens/primitives/_color.scss",
@@ -99,6 +96,9 @@
             },
             "purpose": "migrate section themes to use new CSS variable tokens and remove deprecated token files",
             "include": [
+                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
+                ".agent/governance/config/domain-map.json",
+                ".stylelintrc.json",
                 "src/styles/themes/sections/_family-theme.scss",
                 "src/styles/themes/sections/_family-tokens.scss",
                 "src/styles/themes/sections/_gallery-theme.scss",

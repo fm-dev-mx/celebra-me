@@ -1,22 +1,33 @@
 // src/styles/layout/_event-wrapper.scss
 
 .event-theme-wrapper {
-	// Standard mapping: Legacy variables now point to modern semantic tokens
-	// This ensures backward compatibility for components using var(--color-primary)
 	--color-primary: var(--color-surface-primary);
 	--color-primary-rgb: var(--color-surface-primary-rgb);
 	--color-accent: var(--color-action-accent);
 	--color-accent-rgb: var(--color-action-accent-rgb);
+	--section-bg: var(--color-surface-primary);
+	--section-text: var(--color-text-primary);
+	--section-accent: var(--color-action-accent);
+	--section-padding-block: clamp(4rem, 10vw, 8rem);
+	--section-gap: 4rem;
+	--section-title-font: var(--font-display);
+	--section-title-size: clamp(2.5rem, 7vw, 5rem);
+	--section-title-color: var(--color-text-primary);
+	--section-subtitle-font: var(--font-label);
+	--section-subtitle-size: 0.85rem;
+	--section-subtitle-color: var(--color-action-accent);
+	--section-card-bg: var(--color-surface-soft);
+	--section-card-radius: 4px;
+	--section-border-subtle: var(--color-border-subtle);
+	--section-card-border-alt: rgb(var(--color-action-accent-rgb), 30%);
+	--section-eyebrow-color: var(--section-accent);
 
-	// ✉️ Envelope Dynamic Theming
-	// Uses data-attributes injected by invitation page data assembly
 	&[data-env-state='ready'] {
-		--env-bg: var(--color-surface-dark); 
+		--env-bg: var(--color-surface-dark);
 		--env-paper-bg: var(--color-surface-primary);
 		--env-details-color: var(--color-text-primary);
 	}
 
-	// Preset-specific envelope overrides
 	&[data-env-variant^='jewelry-box'] {
 		--env-name-font: var(--font-display-elegant);
 		--env-name-fill: transparent;

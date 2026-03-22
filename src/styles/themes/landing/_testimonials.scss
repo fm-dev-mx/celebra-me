@@ -4,9 +4,6 @@
  * Testimonials Section Semantic Tokens
  * Thematic properties for testimonial cards and typography
  */
-
-@use '../../tokens/primitives' as primitives;
-
 // Section Title
 $testimonials-title-font: var(
 	--testimonials-title-font,
@@ -20,7 +17,7 @@ $testimonials-title-underline-bg: var(
 	linear-gradient(
 		90deg,
 		transparent,
-		var(--color-accent, #{primitives.$base-gold-500}),
+		var(--color-accent, var(--color-action-accent)),
 		transparent
 	)
 );
@@ -51,7 +48,7 @@ $testimonials-card-accent-bg: var(
 	linear-gradient(
 		90deg,
 		transparent,
-		var(--color-accent, #{primitives.$base-gold-500}),
+		var(--color-accent, var(--color-action-accent)),
 		transparent
 	)
 );
@@ -78,7 +75,7 @@ $testimonials-card-hover-transform: var(
 // Quote Icon
 $testimonials-quote-icon-color: var(
 	--testimonials-quote-icon-color,
-	var(--color-accent, #{primitives.$base-gold-500})
+	var(--color-accent, var(--color-action-accent))
 );
 $testimonials-quote-icon-opacity: var(--testimonials-quote-icon-opacity, 0.08);
 $testimonials-quote-icon-hover-opacity: var(--testimonials-quote-icon-hover-opacity, 0.15);
@@ -104,7 +101,7 @@ $testimonials-author-name-letter-spacing: var(
 $testimonials-author-name-size: var(--testimonials-author-name-size, 0.85rem);
 $testimonials-author-name-color: var(
 	--testimonials-author-name-color,
-	var(--color-accent, #{primitives.$base-gold-500})
+	var(--color-accent, var(--color-action-accent))
 );
 
 // Author Role

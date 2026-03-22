@@ -428,11 +428,11 @@
 		border: 1px solid rgb(129 79 150 / 20%);
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: -15%, $space: hsl);
+			color: color-mix(in srgb, var(--color-reserved, rgb(129 79 150)) 85%, black);
 			font-weight: 500;
 		}
 	}
@@ -628,11 +628,11 @@
 		border: 1px solid rgb(129 79 150 / 20%);
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: -15%, $space: hsl);
+			color: color-mix(in srgb, var(--color-reserved, rgb(129 79 150)) 85%, black);
 			font-weight: 500;
 		}
 	}
@@ -860,11 +860,11 @@
 		border: 1px solid rgb(129 79 150 / 20%);
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: -10%, $space: hsl);
+			color: color-mix(in srgb, var(--color-reserved, rgb(129 79 150)) 90%, black);
 		}
 	}
 }
@@ -1023,11 +1023,11 @@
 		border: 1px solid #dcd0ff;
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: -10%, $space: hsl);
+			color: color-mix(in srgb, var(--color-reserved, rgb(129 79 150)) 90%, black);
 		}
 	}
 }
@@ -1259,7 +1259,7 @@
 		border: 1px solid rgb(129 79 150 / 30%);
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 		}
 	}
 }
@@ -1603,12 +1603,12 @@
 		border: 1px solid rgb(129 79 150 / 40%);
 
 		.event-location__indication-icon {
-			color: tokens.$base-purple-reserved;
+			color: var(--color-reserved, rgb(129 79 150));
 			filter: drop-shadow(0 0 8px rgb(129 79 150 / 30%));
 		}
 
 		.event-location__indication-text {
-			color: color.adjust(tokens.$base-purple-reserved, $lightness: 25%, $space: hsl);
+			color: color-mix(in srgb, var(--color-reserved, rgb(129 79 150)) 75%, white);
 			font-weight: 600;
 		}
 	}

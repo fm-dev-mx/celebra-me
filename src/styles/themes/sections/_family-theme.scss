@@ -1,9 +1,49 @@
 @use '../../global/mixins' as mixins;
 
+.family {
+	--family-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-action-accent-rgb) / 5%) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--family-panel-bg: rgb(var(--color-surface-primary-rgb) / 82%);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(255 255 255 / 0%) 0%,
+		rgb(var(--color-action-accent-rgb) / 6%) 100%
+	);
+	--family-border: var(--color-glass-border);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--color-action-accent) 50%,
+		transparent 100%
+	);
+	--family-panel-border: var(--family-border);
+	--family-accent: var(--color-action-accent);
+	--family-title-max-width: 15ch;
+	--family-meta-size: 0.72rem;
+	--family-meta-letter-spacing: 0.18em;
+	--family-header-margin: 3rem;
+	--family-group-padding-block: clamp(1rem, 2.1vw, 1.4rem);
+	--family-group-title-margin-bottom: 1.7rem;
+	--family-panel-gap: clamp(2.5rem, 8vw, 8rem);
+	--family-content-max-width: 32rem;
+	--family-media-column: 0.85fr;
+	--family-content-column: 1.15fr;
+	--family-shadow: var(--shadow-premium);
+	--family-panel-shadow: var(--family-shadow);
+	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 60%);
+	--family-name-font: var(--font-display);
+	--family-group-title-font: var(--font-display);
+}
+
 /* --- FAMILY SECTION THEMES --- */
 
 .family[data-variant='editorial'] {
-	background: var(--family-bg, radial-gradient(circle at bottom right, #0d0d0d, #050505));
+	background: var(--family-bg, radial-gradient(circle at bottom right, var(--color-surface-dark), var(--color-surface-dark)));
 	padding-block: var(--section-padding-block);
 	position: relative;
 	overflow: hidden;
@@ -182,7 +222,7 @@
 }
 
 .family[data-variant='jewelry-box'] {
-	--family-bg: radial-gradient(circle at 50% -20%, #fffdfc 0%, var(--color-surface-primary) 100%);
+	--family-bg: radial-gradient(circle at 50% -20%, var(--color-surface-primary) 0%, var(--color-surface-primary) 100%);
 	--family-panel-bg: rgb(var(--color-surface-primary-rgb), 0.82);
 	--family-border: rgb(var(--color-action-accent-rgb), 0.24);
 	--family-text-primary: var(--color-surface-dark);
@@ -194,7 +234,7 @@
 		rgb(var(--color-action-accent-rgb), 0.35),
 		transparent
 	);
-	--family-shadow: 0 20px 46px rgb(91 67 41 / 18%);
+	--family-shadow: 0 20px 46px rgb(var(--color-surface-dark-rgb) / 18%);
 	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
 
 	.family__bg-texture {

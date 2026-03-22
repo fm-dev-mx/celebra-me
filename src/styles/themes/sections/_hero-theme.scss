@@ -1,5 +1,54 @@
 @use '../../tokens' as tokens;
 
+.invitation-hero {
+	--hero-overlay: rgb(0 0 0 / 40%);
+	--hero-overlay-gradient: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgb(0 0 0 / 20%) 50%,
+		rgb(0 0 0 / 60%) 100%
+	);
+	--hero-title-size: clamp(4rem, 12vw, 8rem);
+	--hero-label-color: var(--color-text-emphasis);
+	--hero-label-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+	--hero-image-filter: grayscale(0.3) brightness(0.85);
+	--hero-portrait-filter: contrast(1.1) saturate(1.1) brightness(0.9);
+	--hero-card-bg-overlay: radial-gradient(
+		circle at center,
+		rgb(255 255 255 / 78%) 0%,
+		rgb(255 255 255 / 56%) 52%,
+		rgb(250 247 241 / 46%) 100%
+	);
+	--hero-card-bg: var(--color-glass-bg);
+	--hero-card-shadow-contact: 0 34px 72px -18px rgb(0 0 0 / 42%);
+	--hero-card-shadow-ambient: var(--shadow-premium);
+	--hero-card-border-old-gold-start: rgb(212 175 55);
+	--hero-card-border-old-gold-mid: rgb(189 151 68);
+	--hero-card-border-old-gold-end: rgb(165 127 56);
+	--hero-card-border-hairline: var(--color-glass-border);
+	--hero-title-color-start: var(--color-action-accent);
+	--hero-title-color-mid: var(--color-white, white);
+	--hero-title-color-end: var(--color-action-accent);
+	--hero-title-shadow-near: 0 3px 10px rgb(0 0 0 / 55%);
+	--hero-title-shadow-far: 0 8px 24px rgb(0 0 0 / 35%);
+	--hero-divider-color: var(--color-action-accent);
+	--hero-meta-color: var(--color-text-on-dark);
+	--hero-badge-bg: var(--color-glass-bg);
+	--hero-badge-text: var(--color-action-accent);
+	--hero-badge-border: var(--color-action-accent);
+	--hero-badge-shadow:
+		0 8px 20px rgb(0 0 0 / 25%), inset 0 1px 0 rgb(255 236 202 / 22%),
+		inset 0 -1px 0 rgb(34 23 14 / 74%);
+	--light-sweep: linear-gradient(
+		115deg,
+		transparent 20%,
+		rgb(255 255 255 / 25%) 40%,
+		rgb(255 255 255 / 50%) 50%,
+		rgb(255 255 255 / 25%) 60%,
+		transparent 80%
+	);
+}
+
 // ==========================================================================
 // EDITORIAL HERO
 // ==========================================================================
@@ -336,12 +385,12 @@
 		font-weight: 400;
 		background: linear-gradient(
 			180deg,
-			#fff7df 0%,
-			#f5d98c 16%,
+			var(--color-surface-secondary) 0%,
+			var(--color-surface-soft) 16%,
 			var(--color-action-accent) 40%,
-			#a06f26 60%,
-			#f1d48c 84%,
-			#fff7df 100%
+			var(--color-action-primary) 60%,
+			var(--color-surface-soft) 84%,
+			var(--color-surface-secondary) 100%
 		);
 		background-size: 100% 200%;
 		background-clip: text;
