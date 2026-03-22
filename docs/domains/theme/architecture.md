@@ -99,8 +99,12 @@ These files are lazy-loaded only for the matching event route.
 - Missing preset => default preset
 - Invalid preset in production => explicit error (no silent fallback)
 - Invalid section variant => warning + fallback
+- **Adapter Modularization**: ViewModel builders are extracted to `src/lib/adapters/event-view-models.ts` to improve maintainability and keep the core adapter focused on context resolution.
+- **Strict Rendering Contracts**: `InvitationSections.astro` utilizes `ComponentProps` for each rendered branch to guarantee that dynamic component instantiation remains type-safe and consistent with domain definitions.
 
-## Governance Notes
+### Component Logic Extraction
+
+As of 2026-03-22, complex invitation components such as RSVP have undergone logic extraction. Form fields are now isolated in `RSVPFormFields.tsx` and data adapters are modularized. This separation ensures that the main rendering paths remain lightweight and that business logic can be tested independently of the UI structure.
 
 - Do not add variant literals directly in components/adapters/schema.
 - Update `theme-contract.ts` first, then consume from it.

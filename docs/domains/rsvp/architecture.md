@@ -10,6 +10,7 @@ The RSVP module supports:
 - guest-side personalized invitation access and RSVP submission,
 - realtime dashboard refresh through SSE,
 - strong session and MFA protections for sensitive operations.
+- automated ViewModel adaptation for multi-tenant invitations.
 
 The active stack is:
 
@@ -174,3 +175,9 @@ boundaries.
 - `src/pages/api/invitacion/[inviteId]/view.ts`
 - `src/pages/dashboard/invitados.astro`
 - `src/lib/rsvp/**`
+
+## Design Patterns
+
+- **Separation of Concerns**: RSVP logic is decoupled from UI presentation. Logic resides in `RSVPLogic.ts` (shared state and validation) while components in `RSVPComponents.tsx` and `RSVPFormFields.tsx` handle rendering.
+- **Type-Safe Domain Adapters**: Event data is transformed via adapters (`src/lib/adapters/event.ts`) into a common `InvitationViewModel` to ensure consistent rendering across different event types.
+- **Hardenened Middleware**: Security middleware (`src/middleware.ts`) enforces guest access bounds and host session persistence using type-safe resolution.

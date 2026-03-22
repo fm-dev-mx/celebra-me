@@ -50,11 +50,11 @@ export function pickVariant<T extends readonly string[]>(
 	fallback: T[number],
 ): T[number] {
 	if (!candidate) {
-		console.log(`[ThemeVariant] No candidate for ${scope}, using fallback: ${fallback}`);
+		console.info(`[ThemeVariant] No candidate for ${scope}, using fallback: ${fallback}`);
 		return fallback;
 	}
 	if ((allowed as readonly string[]).includes(candidate)) {
-		console.log(`[ThemeVariant] Match for ${scope}: ${candidate}`);
+		console.info(`[ThemeVariant] Match for ${scope}: ${candidate}`);
 		return candidate as T[number];
 	}
 	console.warn(

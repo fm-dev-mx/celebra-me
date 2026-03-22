@@ -144,6 +144,104 @@ function buildWrapperData(
 	};
 }
 
+function resolveFooterVariant(
+	eventEntry: EventContentEntry,
+	themePreset: ThemeConfig['preset'],
+): SharedSectionVariant {
+	const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
+	if (configuredVariant) return configuredVariant;
+
+	return themePreset === 'jewelry-box' ||
+		themePreset === 'luxury-hacienda' ||
+		themePreset === 'editorial'
+		? themePreset
+		: 'standard';
+}
+
+function buildLayoutData(
+	viewModel: InvitationViewModel,
+	hero: InvitationViewModel['hero'],
+	guestName: string | undefined,
+) {
+	return {
+		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
+		description: viewModel.description || '',
+		image: resolveHeroImageSrc(hero),
+		className: hero.layoutVariant ? `layout--${hero.layoutVariant}` : undefined,
+	};
+}
+
+function buildWrapper(
+	theme: InvitationViewModel['theme'],
+	envelope: InvitationViewModel['envelope'],
+	eventScopeClass: string,
+	eventSlug: string,
+) {
+	const showEnvelope = envelope.enabled;
+	return {
+		className: [
+			'event-theme-wrapper',
+			eventScopeClass,
+			theme.themeClass,
+			showEnvelope ? 'event-theme-wrapper--sealed' : '',
+		]
+			.filter(Boolean)
+			.join(' '),
+		...buildWrapperData(theme, envelope, eventSlug),
+		showEnvelope,
+	};
+}
+
+function buildEnvelopeData(
+	showEnvelope: boolean,
+	envelope: InvitationViewModel['envelope'],
+	hero: InvitationViewModel['hero'],
+	locationSection: InvitationViewModel['sections']['location'],
+	eventSlug: string,
+	guestName: string | undefined,
+) {
+	if (!showEnvelope || !envelope.data) return undefined;
+
+	return {
+		...envelope.data,
+		name: hero.name,
+		date: hero.date,
+		city: locationSection?.city || '',
+		eventSlug,
+		guestName,
+	};
+}
+
+function buildRsvpData(
+	rsvpSection: InvitationViewModel['sections']['rsvp'],
+	hero: InvitationViewModel['hero'],
+	guestContext: InvitationGuestContext | null | undefined,
+) {
+	if (!rsvpSection) return undefined;
+
+	return {
+		...rsvpSection,
+		celebrantName: hero.name,
+		guestCap: guestContext?.guest.maxAllowedAttendees || rsvpSection.guestCap,
+		initialGuestData: guestContext
+			? {
+					fullName: guestContext.guest.fullName,
+					maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+					inviteId: guestContext.inviteId,
+				}
+			: undefined,
+	};
+}
+
+function buildPersonalizedAccess(guestContext: InvitationGuestContext | null | undefined) {
+	if (!guestContext) return undefined;
+
+	return {
+		guestName: guestContext.guest.fullName,
+		maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+	};
+}
+
 function hasRenderableSection(
 	viewModel: InvitationViewModel,
 	section: keyof InvitationViewModel['sections'],
@@ -204,39 +302,18 @@ export function prepareInvitationPageData(input: {
 	const viewModel = adaptEvent(input.eventEntry);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
-	const showEnvelope = envelope.enabled;
+	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
+	const showEnvelope = wrapper.showEnvelope;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
-	const footerVariant: SharedSectionVariant =
-		input.eventEntry.data.sectionStyles?.footer?.variant ??
-		(theme.preset === 'jewelry-box' ||
-		theme.preset === 'luxury-hacienda' ||
-		theme.preset === 'editorial'
-			? theme.preset
-			: 'standard');
+	const footerVariant = resolveFooterVariant(input.eventEntry, theme.preset);
 
 	return {
 		eventSlug: viewModel.id,
 		isDemo: input.eventEntry.data.isDemo ?? false,
 		themePreset: theme.preset,
-		layout: {
-			title: guestName ? `Invitación para ${guestName}` : viewModel.title,
-			description: viewModel.description || '',
-			image: resolveHeroImageSrc(hero),
-			className: hero.layoutVariant ? `layout--${hero.layoutVariant}` : undefined,
-		},
-		wrapper: {
-			className: [
-				'event-theme-wrapper',
-				eventScopeClass,
-				theme.themeClass,
-				showEnvelope ? 'event-theme-wrapper--sealed' : '',
-			]
-				.filter(Boolean)
-				.join(' '),
-			...buildWrapperData(theme, envelope, viewModel.id),
-			showEnvelope,
-		},
+		layout: buildLayoutData(viewModel, hero, guestName),
+		wrapper,
 		header: {
 			eventName: hero.name,
 			theme,
@@ -248,36 +325,17 @@ export function prepareInvitationPageData(input: {
 			time: heroTime,
 			guestName,
 		},
-		envelope:
-			showEnvelope && envelope.data
-				? {
-						...envelope.data,
-						name: hero.name,
-						date: hero.date,
-						city: sections.location?.city || '',
-						eventSlug: viewModel.id,
-						guestName,
-					}
-				: undefined,
+		envelope: buildEnvelopeData(
+			showEnvelope,
+			envelope,
+			hero,
+			sections.location,
+			viewModel.id,
+			guestName,
+		),
 		sections,
-		rsvp: sections.rsvp && {
-			...sections.rsvp,
-			celebrantName: hero.name,
-			guestCap: input.guestContext?.guest.maxAllowedAttendees || sections.rsvp.guestCap,
-			initialGuestData: input.guestContext
-				? {
-						fullName: input.guestContext.guest.fullName,
-						maxAllowedAttendees: input.guestContext.guest.maxAllowedAttendees,
-						inviteId: input.guestContext.inviteId,
-					}
-				: undefined,
-		},
-		personalizedAccess: input.guestContext
-			? {
-					guestName: input.guestContext.guest.fullName,
-					maxAllowedAttendees: input.guestContext.guest.maxAllowedAttendees,
-				}
-			: undefined,
+		rsvp: buildRsvpData(sections.rsvp, hero, input.guestContext),
+		personalizedAccess: buildPersonalizedAccess(input.guestContext),
 		footer: {
 			eventSlug: input.slug,
 			showEnvelope,
