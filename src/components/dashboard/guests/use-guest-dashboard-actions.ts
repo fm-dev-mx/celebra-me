@@ -71,7 +71,7 @@ export const useGuestDashboardActions = ({
 		setIsNextActionActive(false);
 	}, []);
 
-	const requestDelete = useCallback((guest: DashboardGuestItem) => {
+	const requestDelete = useCallback(async (guest: DashboardGuestItem) => {
 		setGuestToDelete(guest);
 		setDeleteConfirmOpen(true);
 	}, []);
@@ -233,6 +233,18 @@ export const useGuestDashboardActions = ({
 		[eventId, loadGuests],
 	);
 
+	const handleExport = useCallback(async () => {
+		try {
+			await guestsApi.exportCsv(eventId);
+		} catch (err) {
+			console.error('[GuestDashboard] Export error:', err);
+			setNotification({
+				message: 'Error al exportar invitados.',
+				type: 'warning',
+			});
+		}
+	}, [eventId]);
+
 	return {
 		celebratingGuestId,
 		closeDeleteConfirm,
@@ -245,6 +257,7 @@ export const useGuestDashboardActions = ({
 		editingGuest,
 		guestToDelete,
 		handleDeleteConfirm,
+		handleExport,
 		handleImport,
 		handleMarkShared,
 		handlePostpone,

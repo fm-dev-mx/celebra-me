@@ -6,7 +6,7 @@
         "draftedAt": "2026-03-22T20:05:00Z",
         "reviewedAt": "2026-03-22T22:00:00Z",
         "notes": "Verified simplification of invitation route assembly, dashboard runtime consolidation, and hero parallax. Adjusted eslint.config.js to support idiomatic Astro scripts and updated evergreen docs status.",
-        "readyForGatekeeperAt": "2026-03-22T22:01:00Z"
+        "readyForGatekeeperAt": "2026-03-22T22:31:00Z"
     },
     "units": [
         {

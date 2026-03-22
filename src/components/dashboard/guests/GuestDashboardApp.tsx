@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import { Confetti } from '@/components/ui/Confetti';
 import { useShortcuts } from '@/hooks/use-shortcuts';
-import { guestsApi } from '@/lib/dashboard/guests-api';
 import GuestDashboardHeader from './GuestDashboardHeader';
 import GuestDeleteConfirmModal from './GuestDeleteConfirmModal';
 import GuestFilters from './GuestFilters';
@@ -11,7 +10,6 @@ import GuestMobileDock from './GuestMobileDock';
 import GuestTable from './GuestTable';
 import ImportMagic from './ImportMagic';
 import Toast from './Toast';
-import type { DashboardGuestItem } from './types';
 import { useGuestDashboardActions, type GuestFormPayload } from './use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from './use-guest-dashboard-realtime';
 import '@/styles/dashboard/_guests.scss';
@@ -59,6 +57,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		editingGuest,
 		guestToDelete,
 		handleDeleteConfirm,
+		handleExport,
 		handleImport,
 		handleMarkShared,
 		handlePostpone,
@@ -168,17 +167,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onStatusChange={setStatus}
 					onRefreshClick={loadGuests}
 					onCreateClick={openCreateModal}
-					onExportClick={async () => {
-						try {
-							await guestsApi.exportCsv(eventId);
-						} catch (err) {
-							console.error('[GuestDashboard] Export error:', err);
-							setNotification({
-								message: 'Error al exportar invitados.',
-								type: 'warning',
-							});
-						}
-					}}
+					onExportClick={handleExport}
 					onImportClick={openImportModal}
 				/>
 
@@ -191,7 +180,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					celebratingGuestId={celebratingGuestId}
 					highlightedGuestId={highlightedGuestId}
 					onEdit={openEditModal}
-					onDelete={async (item: DashboardGuestItem) => requestDelete(item)}
+					onDelete={requestDelete}
 					onMarkShared={handleMarkShared}
 				/>
 

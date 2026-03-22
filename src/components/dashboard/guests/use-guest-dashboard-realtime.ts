@@ -35,6 +35,17 @@ interface UseGuestDashboardRealtimeOptions {
 	onNotification: (notification: NotificationPayload) => void;
 }
 
+function getErrorMessage(error: unknown, fallback: string): string {
+	return error instanceof Error ? error.message : fallback;
+}
+
+function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventItem[]) {
+	const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
+	const candidates = [initialEventId, storedEventId, hostEvents[0]?.id || ''].filter(Boolean);
+
+	return candidates.find((candidate) => hostEvents.some((event) => event.id === candidate));
+}
+
 export const useGuestDashboardRealtime = ({
 	initialEventId,
 	search,
@@ -56,44 +67,30 @@ export const useGuestDashboardRealtime = ({
 
 	const loadEvents = useCallback(async () => {
 		try {
-			console.info('[GuestDashboard] Loading events...');
 			const data = await guestsApi.listEvents();
-			console.info('[GuestDashboard] Events loaded:', data.items.length);
 			setHostEvents(data.items);
-			const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
-			const candidates = [initialEventId, storedEventId, data.items[0]?.id || ''].filter(
-				Boolean,
-			);
-			const nextEventId = candidates.find((candidate) =>
-				data.items.some((event) => event.id === candidate),
-			);
+			const nextEventId = resolvePreferredEventId(initialEventId, data.items);
 			if (nextEventId && nextEventId !== eventId) {
-				console.info('[GuestDashboard] Setting eventId:', nextEventId);
 				setEventId(nextEventId);
 			}
-		} catch (err) {
-			const message = err instanceof Error ? err.message : 'No se pudieron cargar eventos.';
-			setError(message);
+		} catch (error) {
+			setError(getErrorMessage(error, 'No se pudieron cargar eventos.'));
 		}
 	}, [eventId, initialEventId]);
 
 	const loadGuests = useCallback(async () => {
 		if (!eventId) {
-			console.info('[GuestDashboard] No eventId, skipping loadGuests');
 			return;
 		}
 		setLoading(true);
 		setError('');
 		try {
-			console.info('[GuestDashboard] Loading guests for event:', eventId);
 			const data = await guestsApi.list({ eventId, search, status });
 			setItems(data.items);
 			setTotals(data.totals);
 			setUpdatedAt(data.updatedAt);
-		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : 'Error de red al cargar invitados.';
-			setError(message);
+		} catch (error) {
+			setError(getErrorMessage(error, 'Error de red al cargar invitados.'));
 		} finally {
 			setLoading(false);
 		}
