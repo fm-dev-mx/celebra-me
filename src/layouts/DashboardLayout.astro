@@ -1,5 +1,6 @@
 ---
 import '@/styles/dashboard.scss';
+import DashboardTopbarBehavior from '@/components/behavior/DashboardTopbarBehavior';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
@@ -59,44 +60,6 @@ const navItems: DashboardNavItem[] = [
 			</div>
 		</div>
 
-		<script is:inline>
-			(() => {
-				const topbar = document.querySelector('.dashboard-topbar');
-				if (!topbar) return;
-
-				let lastScrollY = window.scrollY;
-				let isHidden = false;
-				const SCROLL_THRESHOLD = 100;
-
-				const handleScroll = () => {
-					const currentScrollY = window.scrollY;
-
-					// Scrolled shadow effect
-					if (currentScrollY > 20) {
-						topbar.classList.add('dashboard-topbar--scrolled');
-					} else {
-						topbar.classList.remove('dashboard-topbar--scrolled');
-					}
-
-					// Hide/Show logic
-					if (currentScrollY > SCROLL_THRESHOLD) {
-						if (currentScrollY > lastScrollY && !isHidden) {
-							topbar.classList.add('dashboard-topbar--hidden');
-							isHidden = true;
-						} else if (currentScrollY < lastScrollY && isHidden) {
-							topbar.classList.remove('dashboard-topbar--hidden');
-							isHidden = false;
-						}
-					} else {
-						topbar.classList.remove('dashboard-topbar--hidden');
-						isHidden = false;
-					}
-
-					lastScrollY = currentScrollY;
-				};
-
-				window.addEventListener('scroll', handleScroll, { passive: true });
-			})();
-		</script>
+		<DashboardTopbarBehavior client:load />
 	</body>
 </html>
