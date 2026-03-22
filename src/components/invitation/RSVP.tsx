@@ -8,23 +8,8 @@ type AttendanceStatus = 'confirmed' | 'declined' | null;
 
 interface WhatsAppConfig {
 	phone: string;
-
-	/**
-	 * Backward-compatible single template.
-	 * Supported placeholders: {name}, {guestCount}, {title}
-	 */
-	messageTemplate?: string;
-
-	/**
-	 * Preferred: split templates by status.
-	 * Supported placeholders: {name}, {guestCount}, {title}
-	 */
 	confirmedTemplate?: string;
 	declinedTemplate?: string;
-
-	/**
-	 * If true, default templates omit {title}.
-	 */
 	omitTitle?: boolean;
 }
 
@@ -33,10 +18,12 @@ interface RSVPProps {
 	celebrantName?: string;
 	guestCap: number;
 	confirmationMessage: string;
-	nameLabel?: string;
-	attendanceLabel?: string;
-	guestCountLabel?: string;
-	buttonLabel?: string;
+	labels?: {
+		name?: string;
+		guestCount?: string;
+		attendance?: string;
+		confirmButton?: string;
+	};
 	showDietaryField?: boolean;
 	dietaryLabel?: string;
 	dietaryPlaceholder?: string;
@@ -55,10 +42,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	celebrantName,
 	guestCap,
 	confirmationMessage,
-	nameLabel = 'Nombre completo *',
-	attendanceLabel = '¿Asistirás al evento? *',
-	guestCountLabel = 'Número total de asistentes',
-	buttonLabel = 'Confirmar',
+	labels,
 	showDietaryField = false,
 	dietaryLabel = 'Alergias o restricciones alimentarias',
 	dietaryPlaceholder = 'Ej. Vegetariano, alergia al maní...',
@@ -94,6 +78,10 @@ const RSVP: React.FC<RSVPProps> = ({
 
 	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
 	const supportsPlusOnes = effectiveGuestCap > 1;
+	const nameLabel = labels?.name ?? 'Nombre completo *';
+	const guestCountLabel = labels?.guestCount ?? 'Número total de asistentes';
+	const attendanceLabel = labels?.attendance ?? '¿Asistirás al evento? *';
+	const buttonLabel = labels?.confirmButton ?? 'Confirmar';
 
 	// WhatsApp CTA should appear only after submit + confirmed status + mode allows it + phone present
 	const showWhatsAppCta =
@@ -121,7 +109,6 @@ const RSVP: React.FC<RSVPProps> = ({
 
 		const isConfirmed = attendanceStatus === 'confirmed';
 
-		// Prefer split templates; fallback to legacy messageTemplate; then fallback to defaults.
 		const omitTitleByDefault = Boolean(whatsappConfig.omitTitle);
 
 		const defaultConfirmedTemplate = omitTitleByDefault
@@ -134,7 +121,6 @@ const RSVP: React.FC<RSVPProps> = ({
 
 		const template =
 			(isConfirmed ? whatsappConfig.confirmedTemplate : whatsappConfig.declinedTemplate) ??
-			whatsappConfig.messageTemplate ??
 			(isConfirmed ? defaultConfirmedTemplate : defaultDeclinedTemplate);
 
 		// Normalize guestCount: confirmed => min 1; declined => 0

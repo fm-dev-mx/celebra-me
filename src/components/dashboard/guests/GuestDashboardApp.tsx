@@ -182,8 +182,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onImportClick={openImportModal}
 				/>
 
-				{loading && <p className="dashboard-guests__status">Procesando...</p>}
-				{error && <p className="dashboard-guests__error">{error}</p>}
+				{loading && <p className="dashboard-status">Procesando...</p>}
+				{error && <p className="dashboard-error">{error}</p>}
 
 				<GuestTable
 					items={sortedItems}

@@ -65,11 +65,11 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 
 			<div className="dashboard-guests__meta-bar">
 				{updatedAt && (
-					<span className="dashboard-guests__status">
+					<span className="dashboard-status">
 						<span>🕒</span> Actualizado: {new Date(updatedAt).toLocaleString('es-MX')}
 					</span>
 				)}
-				<span className="dashboard-guests__status">
+				<span className="dashboard-status">
 					<span>📡</span> Streaming:{' '}
 					{realtimeState === 'connected' ? '✅ Conectado' : '🔄 Reconectando'}
 				</span>

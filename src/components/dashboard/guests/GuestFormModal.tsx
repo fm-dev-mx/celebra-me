@@ -307,9 +307,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							</div>
 						)}
 
-						{localError && (
-							<div className="dashboard-guests__error">⚠️ {localError}</div>
-						)}
+						{localError && <div className="dashboard-error">⚠️ {localError}</div>}
 					</form>
 				</div>
 
