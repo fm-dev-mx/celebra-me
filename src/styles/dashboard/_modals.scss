@@ -30,7 +30,7 @@ body.modal-open {
 .dashboard-modal {
 	width: min(650px, 95vw);
 	background: $color-surface-primary;
-	border: 1px solid rgb($color-action-accent / 30%);
+	border: 1px solid rgba($color-action-accent, 0.3);
 	border-radius: 12px;
 	padding: clamp(1.2rem, 3vw, 2.5rem);
 	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
@@ -45,7 +45,7 @@ body.modal-open {
 		content: '';
 		position: absolute;
 		inset: 0.5rem;
-		border: 1px solid rgb($color-action-accent / 15%);
+		border: 1px solid rgba($color-action-accent, 0.15);
 		pointer-events: none;
 		border-radius: 8px;
 	}

@@ -23,6 +23,7 @@
             "src/styles/ui/**",
             "src/styles/layout/**",
             "src/styles/common/**",
+            "src/styles/components/**",
             "src/styles/*.scss"
         ],
         "gov-agent-config": [

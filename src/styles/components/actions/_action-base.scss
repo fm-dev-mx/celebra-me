@@ -1,8 +1,11 @@
 /* src/styles/components/actions/_action-base.scss */
-@use '../../tokens/primitives' as primitives;
-@use '../../tokens/semantic' as semantic;
 
 .action-base {
+	--action-bg: transparent;
+	--action-fg: inherit;
+	--action-hover-bg: var(--action-bg);
+	--action-hover-shadow: var(--shadow-emphasis, 0 10px 20px -5px rgb(0 0 0 / 20%));
+
 	display: inline-block;
 	padding: 0.75rem 2rem;
 	border-radius: 999px;
@@ -13,62 +16,54 @@
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	cursor: pointer;
 	border: 2px solid transparent;
+	background-color: var(--action-bg);
+	color: var(--action-fg);
 
-	// Colors
 	&--primary {
-		background-color: var(--color-action-primary, primitives.$base-gold-500);
-		color: var(--color-action-primary-content, primitives.$base-coffee-900);
-
-		&:hover {
-			background-color: var(--color-action-primary-hover, primitives.$base-gold-400);
-			transform: translateY(-2px);
-			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 20%);
-		}
+		--action-bg: var(--color-action-accent);
+		--action-fg: var(--color-surface-dark);
+		--action-hover-bg: var(--color-primary-dark, var(--color-action-accent));
 	}
 
 	&--secondary {
-		background-color: var(--color-action-secondary, primitives.$base-coffee-800);
-		color: var(--color-action-secondary-content, primitives.$base-neutral-0);
-
-		&:hover {
-			background-color: var(--color-action-secondary-hover, primitives.$base-coffee-700);
-			transform: translateY(-2px);
-			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 20%);
-		}
+		--action-bg: var(--color-action-primary);
+		--action-fg: var(--color-text-on-dark);
+		--action-hover-bg: var(--color-action-secondary, var(--color-action-primary));
 	}
 
 	&--white {
-		background-color: white;
-		color: primitives.$base-coffee-900;
-
-		&:hover {
-			background-color: primitives.$base-neutral-100;
-			transform: translateY(-2px);
-			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
-		}
+		--action-bg: var(--color-white, white);
+		--action-fg: var(--color-text-primary);
+		--action-hover-bg: var(--color-neutral-subtle);
+		--action-hover-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
 	}
 
-	// Variants
+	&:hover {
+		background-color: var(--action-hover-bg);
+		transform: translateY(-2px);
+		box-shadow: var(--action-hover-shadow);
+	}
+
 	&--outline {
 		background-color: transparent;
 
 		&.action-base--primary {
-			border-color: var(--color-action-primary, primitives.$base-gold-500);
-			color: var(--color-action-primary, primitives.$base-gold-500);
+			border-color: var(--color-action-accent);
+			color: var(--color-action-accent);
 
 			&:hover {
-				background-color: var(--color-action-primary, primitives.$base-gold-500);
-				color: var(--color-action-primary-content, primitives.$base-coffee-900);
+				background-color: var(--color-action-accent);
+				color: var(--color-surface-dark);
 			}
 		}
 
 		&.action-base--secondary {
-			border-color: var(--color-action-secondary, primitives.$base-coffee-800);
-			color: var(--color-action-secondary, primitives.$base-coffee-800);
+			border-color: var(--color-action-primary);
+			color: var(--color-action-primary);
 
 			&:hover {
-				background-color: var(--color-action-secondary, primitives.$base-coffee-800);
-				color: var(--color-action-secondary-content, primitives.$base-neutral-0);
+				background-color: var(--color-action-primary);
+				color: var(--color-text-on-dark);
 			}
 		}
 
@@ -76,8 +71,8 @@
 			color: white;
 
 			&:hover {
-				background-color: white;
-				color: primitives.$base-coffee-900;
+				background-color: var(--color-white, white);
+				color: var(--color-text-primary);
 			}
 		}
 	}
@@ -94,11 +89,11 @@
 		}
 
 		&.action-base--primary {
-			color: var(--color-action-primary, primitives.$base-gold-500);
+			color: var(--color-action-accent);
 		}
 
 		&.action-base--secondary {
-			color: var(--color-action-secondary, primitives.$base-coffee-800);
+			color: var(--color-action-primary);
 		}
 
 		&.action-base--white {

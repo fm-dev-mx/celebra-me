@@ -34,7 +34,6 @@
                 "src/styles/global/_mixins.scss",
                 "src/styles/global/_functions.scss",
                 "src/styles/global.scss",
-                "src/styles/common/_action-icon.scss",
                 "src/styles/invitation/_variables.scss"
             ],
             "allowRelated": [],
@@ -96,9 +95,6 @@
             },
             "purpose": "migrate section themes to use new CSS variable tokens and remove deprecated token files",
             "include": [
-                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
-                ".agent/governance/config/domain-map.json",
-                ".stylelintrc.json",
                 "src/styles/themes/sections/_family-theme.scss",
                 "src/styles/themes/sections/_family-tokens.scss",
                 "src/styles/themes/sections/_gallery-theme.scss",
@@ -142,10 +138,12 @@
             },
             "purpose": "replace raw hex and rgb values with semantic token references",
             "include": [
+                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
+                ".agent/governance/config/domain-map.json",
+                ".stylelintrc.json",
                 "src/styles/ui/_status-pages.scss",
                 "src/styles/components/actions/_action-base.scss",
-                "src/styles/dashboard/_modals.scss",
-                "src/styles/global/_demos.scss"
+                "src/styles/dashboard/_modals.scss"
             ],
             "allowRelated": [],
             "correctionPolicy": "absorb-compatible",
