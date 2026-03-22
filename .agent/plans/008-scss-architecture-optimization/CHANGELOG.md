@@ -4,7 +4,8 @@ All notable changes to this plan will be documented in this file.
 
 ## [Unreleased]
 
-### Changed
+### Added
 
-- Reauthored the plan around atomic commit units instead of one catch-all gatekeeper unit.
-- Split governance, plan archival, theme-surface, and consumer migration work into separate units.
+- Initial plan structure and manifest.
+- Implementation phases definitions.
+- Commit strategy draft.
