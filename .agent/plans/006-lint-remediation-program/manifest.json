@@ -1,0 +1,51 @@
+{
+  "id": "006-lint-remediation-program",
+  "title": "Repository Lint Remediation Program",
+  "status": "READY_FOR_COMMITS",
+  "completion": 95,
+  "created": "2026-03-21T18:10:00Z",
+  "updated": "2026-03-22T02:20:00Z",
+  "owner": "Antigravity",
+  "notes": [
+    "Plan scaffold finalized. All remediation work is completed and staged in the working directory.",
+    "Ready for atomic commits via Gatekeeper workflow."
+  ],
+  "phases": [
+    {
+      "id": "01-lint-baseline-triage",
+      "title": "Lint Baseline Triage",
+      "status": "COMPLETED",
+      "updated": "2026-03-21T18:35:00Z"
+    },
+    {
+      "id": "02-astro-script-extraction",
+      "title": "Astro Script Extraction",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T02:20:00Z"
+    },
+    {
+      "id": "03-inline-style-elimination",
+      "title": "Inline Style Elimination",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T02:20:00Z"
+    },
+    {
+      "id": "04-complexity-reduction",
+      "title": "Complexity Reduction",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T02:20:00Z"
+    },
+    {
+      "id": "05-governance-tooling-hardening",
+      "title": "Governance Tooling Hardening",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T02:20:00Z"
+    },
+    {
+      "id": "06-final-validation-and-commit-planning",
+      "title": "Final Validation and Commit Planning",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T02:20:00Z"
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "planId": "006-lint-remediation-program",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-22T02:10:00Z",
+    "reviewedAt": "2026-03-22T02:15:00Z",
+    "readyForGatekeeperAt": "2026-03-22T02:15:00Z",
+    "status": "APPROVED",
+    "notes": "Divided into atomic units for sequential lint remediation and behavior extraction."
+  },
+  "units": [
+    {
+      "id": "plan-scaffolding",
+      "phaseId": "01-lint-baseline-triage",
+      "status": "ready",
+      "domain": "governance",
+      "type": "chore",
+      "subject": {
+        "verb": "initialize",
+        "target": "lint remediation program plan"
+      },
+      "purpose": "create the plan structure and phases for the repository-wide linting initiative",
+      "include": [
+        ".agent/plans/006-lint-remediation-program/CHANGELOG.md",
+        ".agent/plans/006-lint-remediation-program/README.md",
+        ".agent/plans/006-lint-remediation-program/manifest.json",
+        ".agent/plans/006-lint-remediation-program/commit-map.json",
+        ".agent/plans/006-lint-remediation-program/phases/01-lint-baseline-triage.md",
+        ".agent/plans/006-lint-remediation-program/phases/02-astro-script-extraction.md",
+        ".agent/plans/006-lint-remediation-program/phases/03-inline-style-elimination.md",
+        ".agent/plans/006-lint-remediation-program/phases/04-complexity-reduction.md",
+        ".agent/plans/006-lint-remediation-program/phases/05-governance-tooling-hardening.md",
+        ".agent/plans/006-lint-remediation-program/phases/06-final-validation-and-commit-planning.md"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(governance): initialize lint remediation program plan",
+        "summary": [
+          "scaffold plan metadata and phase definitions",
+          "define roadmap for automated linting and behavioral extraction"
+        ]
+      }
+    },
+    {
+      "id": "governance-hardening",
+      "phaseId": "05-governance-tooling-hardening",
+      "status": "ready",
+      "domain": "governance",
+      "type": "refactor",
+      "subject": {
+        "verb": "harden",
+        "target": "linting and validation tooling"
+      },
+      "purpose": "improve commit message analysis, plan validation, and error classification",
+      "include": [
+        ".agent/governance/bin/commit-message-analysis.mjs",
+        ".agent/governance/bin/validate-commit-plan.mjs",
+        ".agent/scripts/error-classifier.mjs"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(governance): harden linting and validation tooling",
+        "summary": [
+          "refactor commit message analysis script for better accuracy",
+          "improve plan validation logic",
+          "add script for error classification and remediation tracking"
+        ]
+      }
+    },
+    {
+      "id": "behavior-extraction",
+      "phaseId": "02-astro-script-extraction",
+      "status": "ready",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "extract",
+        "target": "interactive behaviors from Astro components"
+      },
+      "purpose": "move client-side logic from Astro scripts to dedicated React behavior components for better testability and type safety",
+      "include": [
+        "src/components/behavior/DashboardTopbarBehavior.tsx",
+        "src/components/behavior/EnvelopeSyncBehavior.tsx",
+        "src/components/behavior/EventLocationBehavior.tsx",
+        "src/components/behavior/FamilyBehavior.tsx",
+        "src/components/behavior/FooterReplayBehavior.tsx",
+        "src/components/behavior/GiftsBehavior.tsx",
+        "src/components/behavior/HeaderBaseBehavior.tsx",
+        "src/components/behavior/HeroParallaxBehavior.tsx",
+        "src/components/behavior/InterludeParallaxBehavior.tsx",
+        "src/components/behavior/LandingPageBehavior.tsx",
+        "src/components/behavior/LoginFlowBehavior.tsx",
+        "src/components/behavior/MfaSetupBehavior.tsx",
+        "src/components/behavior/PricingBehavior.tsx",
+        "src/components/behavior/RevealOnIntersect.tsx"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): extract interactive behaviors from Astro components",
+        "summary": [
+          "migrate inline Astro scripts to behavior-only React components",
+          "standardize event handling and state management for invitation interactions",
+          "improve type safety for client-side state transitions"
+        ]
+      }
+    },
+    {
+      "id": "component-remediation",
+      "phaseId": "02-astro-script-extraction",
+      "status": "ready",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "remediate",
+        "target": "component script boundaries and types"
+      },
+      "purpose": "update Astro components to use extracted behaviors and resolve type mismatches",
+      "include": [
+        "src/components/common/HeaderBase.astro",
+        "src/components/common/OptimizedImage.astro",
+        "src/components/common/icons/Icon.astro",
+        "src/components/dashboard/guests/GuestFormModal.tsx",
+        "src/components/home/AboutUs.astro",
+        "src/components/home/Hero.astro",
+        "src/components/home/Pricing.astro",
+        "src/components/home/Services.astro",
+        "src/components/invitation/Countdown.astro",
+        "src/components/invitation/EventLocation.astro",
+        "src/components/invitation/Family.astro",
+        "src/components/invitation/Footer.astro",
+        "src/components/invitation/Gifts.astro",
+        "src/components/invitation/Interlude.astro",
+        "src/components/invitation/InvitationSections.astro",
+        "src/components/invitation/Quote.astro",
+        "src/components/invitation/RSVP.tsx",
+        "src/components/invitation/TimelineList.tsx",
+        "src/components/layout/Section.astro",
+        "src/components/ui/Confetti.tsx",
+        "src/layouts/DashboardLayout.astro"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): remediate component script boundaries and types",
+        "summary": [
+          "integrate behavior components into Astro templates",
+          "fix type errors in invitation and dashboard components",
+          "clean up unused scripts and redundant props"
+        ]
+      }
+    },
+    {
+      "id": "core-standardization",
+      "phaseId": "04-complexity-reduction",
+      "status": "ready",
+      "domain": "core",
+      "type": "refactor",
+      "subject": {
+        "verb": "standardize",
+        "target": "data adapters and middleware"
+      },
+      "purpose": "unify data fetching patterns and middleware logic",
+      "include": [
+        "src/lib/adapters/event-helpers.ts",
+        "src/lib/adapters/event.ts",
+        "src/lib/invitation/page-data.ts",
+        "src/middleware.ts"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(core): standardize data adapters and middleware",
+        "summary": [
+          "unify event data helper methods",
+          "standardize middleware authentication and redirect logic",
+          "improve type definitions for invitation page data"
+        ]
+      }
+    },
+    {
+      "id": "page-remediation",
+      "phaseId": "02-astro-script-extraction",
+      "status": "ready",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "refactor",
+        "target": "page-level data fetching and hydration"
+      },
+      "purpose": "optimize page-level scripts and hydration boundaries",
+      "include": [
+        "src/pages/[eventType]/[slug].astro",
+        "src/pages/api/auth/register-host.ts",
+        "src/pages/dashboard/mfa-setup.astro",
+        "src/pages/index.astro",
+        "src/pages/login.astro"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): refactor page-level data fetching and hydration",
+        "summary": [
+          "remediate script blocks in top-level pages",
+          "update API routes for consistency with new adapter logic",
+          "improve MFA setup and login flow hydration"
+        ]
+      }
+    },
+    {
+      "id": "style-test-remediation",
+      "phaseId": "01-lint-baseline-triage",
+      "status": "ready",
+      "domain": "api",
+      "type": "refactor",
+      "subject": {
+        "verb": "remediate",
+        "target": "global styles and test helpers"
+      },
+      "purpose": "apply style lints and fix test helper types",
+      "include": [
+        "src/styles/global.scss",
+        "src/styles/ui/_confetti.scss",
+        "tests/api/rsvp.helpers.ts"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(api): remediate global styles and test helpers",
+        "summary": [
+          "fix type errors in RSVP test helpers",
+          "apply stylelint fixes to global and component SCSS",
+          "standardize confetti animation styling"
+        ]
+      }
+    }
+  ]
+}
