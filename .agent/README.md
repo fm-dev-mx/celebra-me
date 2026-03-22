@@ -1,10 +1,32 @@
 # Agent Entry Point — Celebra-me
 
-This folder defines the **operational rules and conventions** used by automated agents (and humans)
-working on the Celebra-me repository.
+This file is the **universal agent entrypoint** for the Celebra-me repository.
 
-The documents in `.agent/` are **versioned, authoritative, and executable in intent**. They exist to
-keep the project consistent, safe, and aligned with its current architecture.
+Any agent, regardless of provider or runtime, must start here before acting on the repository.
+
+The documents in `.agent/` are **versioned, authoritative, and executable in intent**. They exist
+to keep the project consistent, safe, and aligned with its current architecture.
+
+---
+
+## Universal Agent Protocol
+
+Agents must follow this loading routine:
+
+1. Read this file first.
+2. Read `.agent/index.md` for the discovery index, available skills, workflows, and canonical docs.
+3. Load mandatory rules before acting:
+   - `.agent/README.md`
+   - `.agent/GATEKEEPER_RULES.md`
+4. Load only the smallest additional context required for the task:
+   - relevant skill under `.agent/skills/*/SKILL.md`
+   - relevant workflow under `.agent/workflows/*.md`
+   - canonical docs under `docs/` when the task crosses architecture or domain boundaries
+5. If documentation is missing or incomplete, apply the fallback rules in this file and report the
+   assumption.
+
+Agents must not require `.codex/`, global skills, or provider-specific bootstrapping to understand
+this repository.
 
 ---
 
@@ -17,6 +39,9 @@ When making decisions, agents must follow this order of precedence:
 3. **`docs/*` documentation** (architecture and context)
 
 Generic best practices must **never override** rules defined in this folder.
+
+`docs/DOC_STATUS.md` is a status dashboard and discovery aid. It is **not** the operational
+entrypoint.
 
 ---
 
@@ -41,11 +66,40 @@ Agents must not silently invent rules.
 Agents must:
 
 1. Read this file first.
-2. Load the relevant `.agent/*` documents before acting.
-3. Apply rules conservatively and pragmatically.
-4. Prefer small, safe fixes over large refactors.
+2. Use `.agent/index.md` to choose the minimal relevant context.
+3. Load the relevant `.agent/*` documents before acting.
+4. Apply rules conservatively and pragmatically.
+5. Prefer small, safe fixes over large refactors.
 
 Agents must not introduce new conventions or architectural rules.
+
+### Selecting Skills
+
+Skills are reusable capability guides under `.agent/skills/*/SKILL.md`.
+
+Load a skill only when the task clearly matches its domain, for example:
+
+- UI or visual changes: `frontend-design`, `theme-architecture`, `accessibility`
+- Astro component or data-flow work: `astro-patterns`
+- API, validation, or integrations: `backend-engineering`
+- copy or UX text: `copywriting-es`
+- tests: `testing`
+- docs maintenance: `documentation-governance`
+
+When multiple skills are relevant, load the smallest useful set and avoid broad context loading by
+default.
+
+### Selecting Workflows
+
+Workflows are operational sequences under `.agent/workflows/*.md`.
+
+Load a workflow when the task is process-heavy or governance-sensitive, for example:
+
+- error recovery or failing checks: `error-remediation`
+- commit planning: `plan-authoring`
+- commit execution under governance: `gatekeeper-commit`
+- documentation resynchronization: `system-doc-alignment`
+- theme governance or section abstraction: `theme-architecture-governance`
 
 ---
 
@@ -53,7 +107,7 @@ Agents must not introduce new conventions or architectural rules.
 
 ### `GATEKEEPER_RULES.md`
 
-**Operational contract for agent behavior.**
+**Mandatory operational contract for agent behavior.**
 
 Defines:
 
@@ -98,6 +152,22 @@ It should not be loaded by default for simple or local fixes.
 
 ---
 
+## Minimal Load Matrix
+
+Use this matrix to avoid overloading context:
+
+| Task Type | Required Load |
+| :-------- | :------------ |
+| Visual or UI change | `README` + `GATEKEEPER_RULES.md` + relevant skill(s): `frontend-design`, `theme-architecture`, `accessibility` |
+| Backend, schema, or API work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
+| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `gatekeeper-commit` + governance docs |
+| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `docs/DOC_STATUS.md`, then expand surgically |
+
+If a task is still ambiguous after that minimum load, expand to the nearest relevant workflow or
+domain doc rather than scanning the entire repository.
+
+---
+
 ## Ambiguity Handling
 
 When encountering ambiguity or conflicting signals, agents must:
@@ -107,6 +177,20 @@ When encountering ambiguity or conflicting signals, agents must:
 - report the ambiguity and the chosen approach.
 
 Blocking is preferred over guessing.
+
+---
+
+## Missing or Provider-Specific Integration
+
+This repository is intentionally **repo-portable**.
+
+- `.agent/` is the only required in-repo agent contract.
+- Provider-specific integrations are optional and external.
+- Agents must not instruct users to mirror `.agent/` into `.codex/` or any other provider-specific
+  directory as a repository requirement.
+
+If a provider supports native skills or custom bootstrapping, that integration may be added outside
+the repository without changing the repository contract.
 
 ---
 
