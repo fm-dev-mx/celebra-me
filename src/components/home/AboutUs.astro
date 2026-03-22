@@ -3,6 +3,7 @@
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
+import RevealOnIntersect from '@/components/behavior/RevealOnIntersect';
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 // import type { IconNames } from '@/core/types/ui/iconNames.type';
@@ -112,47 +113,10 @@ const aboutToast = getCommonAsset('aboutToast');
 		/>
 	</div>
 </Section>
-
-<script>
-	const observerOptions = {
-		root: null,
-		rootMargin: '-5% 0px',
-		threshold: 0.15
-	};
-
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-				const target = entry.target;
-				target.classList.add('is-visible');
-
-				// Optional: add performance hint
-				if (target instanceof HTMLElement) {
-					target.style.willChange = 'opacity, transform, filter';
-				}
-
-				// stop observing once visible for better performance
-				observer.unobserve(target);
-
-				// Clean up performance hint after animation ends
-				setTimeout(() => {
-					if (target instanceof HTMLElement) {
-						target.style.willChange = 'auto';
-					}
-				}, 2000);
-			}
-		});
-	}, observerOptions);
-
-	const animatedElements = document.querySelectorAll('.animate-on-scroll');
-	animatedElements.forEach((el) => {
-		if (el instanceof HTMLElement) {
-			const delay = el.dataset.delay;
-			if (delay) {
-				el.style.setProperty('--animation-delay', delay);
-			}
-		}
-
-		observer.observe(el);
-	});
-</script>
+<RevealOnIntersect
+	client:load
+	selector=".animate-on-scroll"
+	rootMargin="-5% 0px"
+	threshold={0.15}
+	setAnimationDelayFromData={true}
+/>

@@ -33,22 +33,20 @@ const getBgUrl = (bg?: string | ImageMetadata) => {
 
 const desktopBgStyle = backgroundImageDesktop ? getBgUrl(backgroundImageDesktop) : 'none';
 const mobileBgStyle = backgroundImageMobile ? getBgUrl(backgroundImageMobile) : 'none';
-const sectionStyle = `--section-bg-desktop: ${desktopBgStyle}; --section-bg-mobile: ${mobileBgStyle};`;
 ---
 
 <section
 	id={id}
 	class:list={[padding, relative, { 'w-full': fullWidth, 'h-full': fullHeight }, className]}
-	style={sectionStyle}
 >
 	{backgroundEffect && <div class={backgroundEffect} />}
-	<style>
+	<style lang="scss" define:vars={{ desktopBgStyle, mobileBgStyle }}>
 		section {
-			background-image: var(--section-bg-desktop);
+			background-image: var(--desktopBgStyle);
 		}
 		@media (max-width: 640px) {
 			section {
-				background-image: var(--section-bg-mobile) !important;
+				background-image: var(--mobileBgStyle) !important;
 			}
 		}
 	</style>

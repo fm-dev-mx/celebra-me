@@ -5,6 +5,7 @@
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
+import HeroParallaxBehavior from '@/components/behavior/HeroParallaxBehavior';
 import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
@@ -107,34 +108,4 @@ const avatar3 = getCommonAsset('avatar3');
 		/>
 	</div>
 </section>
-
-<script>
-	// 1. Mouse Move Parallax Effect
-	const hero = document.getElementById('inicio');
-	const bg = hero?.querySelector('.parallax-bg');
-
-	if (hero && bg) {
-		hero.addEventListener('mousemove', (e) => {
-			const { clientX, clientY } = e;
-			const { innerWidth, innerHeight } = window;
-
-			// Calculate movement (subtle)
-			const moveX = (clientX - innerWidth / 2) / 50;
-			const moveY = (clientY - innerHeight / 2) / 50;
-
-			// Apply transform to the image/video within the bg div
-			const media = bg.querySelectorAll('img, video');
-			media.forEach((el) => {
-				(el as HTMLElement).style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
-			});
-		});
-
-		// Reset on mouse leave
-		hero.addEventListener('mouseleave', () => {
-			const media = bg.querySelectorAll('img, video');
-			media.forEach((el) => {
-				(el as HTMLElement).style.transform = `scale(1.1) translate(0, 0)`;
-			});
-		});
-	}
-</script>
+<HeroParallaxBehavior client:load />

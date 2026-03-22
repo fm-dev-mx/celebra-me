@@ -5,20 +5,32 @@ interface ConfettiPiece {
 	id: number;
 	x: number;
 	y: number;
-	color: string;
-	size: number;
 	rotation: number;
 	vx: number;
 	vy: number;
+	colorClass: string;
+	sizeClass: string;
+	shapeClass: string;
 }
 
-const COLORS = [
-	'var(--color-action-accent)',
-	'var(--color-surface-primary)',
-	'var(--color-text-emphasis)',
-	'var(--color-text-on-dark)',
-	'var(--color-neutral-subtle)',
-];
+const COLOR_CLASSES = [
+	'confetti-piece--accent',
+	'confetti-piece--surface',
+	'confetti-piece--emphasis',
+	'confetti-piece--contrast',
+	'confetti-piece--neutral',
+] as const;
+
+const SIZE_CLASSES = [
+	'confetti-piece--xs',
+	'confetti-piece--sm',
+	'confetti-piece--md',
+	'confetti-piece--lg',
+] as const;
+
+const SHAPE_CLASSES = ['confetti-piece--round', 'confetti-piece--square'] as const;
+
+const pickRandom = <T,>(items: readonly T[]): T => items[Math.floor(Math.random() * items.length)];
 
 export const Confetti: React.FC<{ active: boolean; onComplete: () => void }> = ({
 	active,
@@ -32,11 +44,12 @@ export const Confetti: React.FC<{ active: boolean; onComplete: () => void }> = (
 				id: Math.random(),
 				x: 50, // Center
 				y: 50,
-				color: COLORS[Math.floor(Math.random() * COLORS.length)],
-				size: Math.random() * 8 + 4,
 				rotation: Math.random() * 360,
 				vx: (Math.random() - 0.5) * 40,
 				vy: (Math.random() - 0.8) * 40,
+				colorClass: pickRandom(COLOR_CLASSES),
+				sizeClass: pickRandom(SIZE_CLASSES),
+				shapeClass: pickRandom(SHAPE_CLASSES),
 			}));
 			setPieces(newPieces);
 			const timer = setTimeout(() => {
@@ -68,17 +81,7 @@ export const Confetti: React.FC<{ active: boolean; onComplete: () => void }> = (
 					}}
 					exit={{ opacity: 0 }}
 					transition={{ duration: 2, ease: 'easeOut' }}
-					style={{
-						position: 'fixed',
-						top: 0,
-						left: 0,
-						width: p.size,
-						height: p.size,
-						backgroundColor: p.color,
-						zIndex: 9999,
-						pointerEvents: 'none',
-						borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-					}}
+					className={`confetti-piece ${p.colorClass} ${p.sizeClass} ${p.shapeClass}`}
 				/>
 			))}
 		</AnimatePresence>

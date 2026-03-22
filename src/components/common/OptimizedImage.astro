@@ -13,7 +13,6 @@ interface Props {
 }
 
 const { imagePath, alt, rounded = '', width = 350, height = 350, class: className } = Astro.props;
-const fallbackStyle = `width: ${width}px; height: ${height}px;`;
 
 const resolveSrc = (input: ImageMetadata | string | ImageAsset | null | undefined) => {
 	if (!input) return null;
@@ -49,20 +48,22 @@ const finalSrc = resolveSrc(imagePath);
 			/>
 		)
 	) : (
-		<div
-			class:list={['optimized-image__fallback', rounded, className]}
-			style={fallbackStyle}
-		>
+		<div class:list={['optimized-image__fallback', rounded, className]}>
 			<span class="optimized-image__fallback-label">{alt}</span>
 		</div>
 	)
 }
 
-<style lang="scss">
+<style
+	lang="scss"
+	define:vars={{ fallbackWidth: `${width}px`, fallbackHeight: `${height}px` }}
+>
 	.optimized-image__fallback {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: var(--fallbackWidth);
+		height: var(--fallbackHeight);
 		background: var(--color-surface-secondary);
 		border: 1px solid var(--color-border-subtle);
 		color: var(--color-text-secondary);

@@ -5,6 +5,7 @@
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import OptimizedImage from '@components/common/OptimizedImage.astro';
+import RevealOnIntersect from '@/components/behavior/RevealOnIntersect';
 // Import the robust Icon component that uses SVG paths
 import Icon from '@components/common/icons/Icon.astro';
 
@@ -81,31 +82,10 @@ const serviceImages: Record<string, ImageAsset> = {
 		</div>
 	</Container>
 </Section>
-
-<script>
-	// IntersectionObserver for staggered entrance animations
-	const observerOptions = {
-		root: null,
-		rootMargin: '0px',
-		threshold: 0.15
-	};
-
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-				entry.target.classList.add('is-visible');
-				observer.unobserve(entry.target);
-			}
-		});
-	}, observerOptions);
-
-	const cards = document.querySelectorAll('.services__card');
-	cards.forEach((card) => {
-		const delay = card.getAttribute('data-delay');
-		if (delay) {
-			(card as HTMLElement).style.setProperty('--animation-delay', delay);
-		}
-
-		observer.observe(card);
-	});
-</script>
+<RevealOnIntersect
+	client:load
+	selector=".services__card"
+	rootMargin="0px"
+	threshold={0.15}
+	setAnimationDelayFromData={true}
+/>

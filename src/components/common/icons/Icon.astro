@@ -153,7 +153,6 @@ const icons: Record<
 
 const SelectedIcon = icons[name];
 const fallbackSize = typeof size === 'number' ? `${size}px` : size;
-const fallbackStyle = fallbackSize ? `width: ${fallbackSize}; height: ${fallbackSize};` : undefined;
 
 // Combine classes: 'universal-icon' is always required
 const combinedClass = ['universal-icon', className].filter(Boolean).join(' ');
@@ -163,14 +162,18 @@ const combinedClass = ['universal-icon', className].filter(Boolean).join(' ');
 	SelectedIcon ? (
 		<SelectedIcon size={size} className={combinedClass} />
 	) : (
-		<div
-			class:list={[
-				'universal-icon--fallback',
-				className,
-			]}
-			style={fallbackStyle}
-		>
+		<div class:list={['universal-icon--fallback', className]}>
 			{name?.charAt(0) || '?'}
 		</div>
 	)
 }
+
+<style lang="scss" define:vars={{ fallbackSize: fallbackSize ?? '1em' }}>
+	.universal-icon--fallback {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--fallbackSize);
+		height: var(--fallbackSize);
+	}
+</style>
