@@ -1,3 +1,7 @@
+// Compatibility shim:
+// - Keeps the existing `tokens.$color-*` authoring API available to dashboard/global/theme SCSS.
+// - Does not publish runtime CSS variables; canonical runtime contracts now live in `tokens/semantic/*`.
+
 @use '../tools/functions' as tools;
 @use 'semantic/color' as semantic-color;
 @use 'semantic/surface' as semantic-surface;
@@ -5,6 +9,7 @@
 $color-text-primary: semantic-color.color(text, primary);
 $color-text-primary-rgb: tools.rgb-channels(semantic-color.color(text, primary));
 $color-text-secondary: semantic-color.color(text, secondary);
+$color-text-secondary-rgb: tools.rgb-channels(semantic-color.color(text, secondary));
 $color-text-emphasis: semantic-color.color(text, emphasis);
 $color-text-on-dark: semantic-color.color(text, on-dark);
 $color-text-on-light: semantic-color.color(text, on-light);
@@ -12,6 +17,7 @@ $color-text-muted: semantic-color.color(text, muted);
 $color-surface-primary: semantic-color.color(surface, primary);
 $color-surface-primary-rgb: tools.rgb-channels(semantic-color.color(surface, primary));
 $color-surface-secondary: semantic-color.color(surface, secondary);
+$color-surface-secondary-rgb: tools.rgb-channels(semantic-color.color(surface, secondary));
 $color-surface-soft: semantic-color.color(surface, soft);
 $color-surface-elevated: semantic-color.color(surface, elevated);
 $color-surface-canvas: semantic-color.color(surface, canvas);
@@ -20,6 +26,7 @@ $color-surface-dark-rgb: tools.rgb-channels(semantic-color.color(surface, dark))
 $color-action-primary: semantic-color.color(action, primary);
 $color-action-primary-rgb: tools.rgb-channels(semantic-color.color(action, primary));
 $color-action-secondary: semantic-color.color(action, secondary);
+$color-action-secondary-rgb: tools.rgb-channels(semantic-color.color(action, secondary));
 $color-action-accent: semantic-color.color(action, accent);
 $color-action-accent-rgb: tools.rgb-channels(semantic-color.color(action, accent));
 $color-border-subtle: semantic-color.color(border, subtle);
@@ -36,15 +43,16 @@ $shadow-subtle: semantic-surface.surface(shadow, subtle);
 $shadow-emphasis: semantic-surface.surface(shadow, emphasis);
 $shadow-premium: semantic-surface.surface(shadow, premium);
 $color-whatsapp: semantic-color.color(special, whatsapp);
+$color-whatsapp-rgb: tools.rgb-channels(semantic-color.color(special, whatsapp));
 $color-wax-seal: semantic-color.color(special, wax-seal);
 $color-white: semantic-color.color(special, white);
 $color-error: semantic-color.color(state, error);
 $color-error-rgb: tools.rgb-channels(semantic-color.color(state, error));
-$color-error-field: rgb(166 46 46);
-$color-error-text: rgb(138 32 32);
-$color-error-bg: rgb(from semantic-color.color(state, error) r g b / 10%);
-$rsvp-error-bg: rgb(from semantic-color.color(state, error) r g b / 10%);
-$rsvp-error-border: rgb(from semantic-color.color(state, error) r g b / 28%);
+$color-error-field: var(--color-error-field, rgb(166 46 46));
+$color-error-text: var(--color-error-text, rgb(138 32 32));
+$color-error-bg: var(--rsvp-error-bg, rgb(from semantic-color.color(state, error) r g b / 10%));
+$rsvp-error-bg: var(--rsvp-error-bg, rgb(from semantic-color.color(state, error) r g b / 10%));
+$rsvp-error-border: var(--rsvp-error-border, rgb(from semantic-color.color(state, error) r g b / 28%));
 $theme-image-filter-hero: var(--theme-image-filter-hero, none);
 $theme-image-filter-portrait: var(--theme-image-filter-portrait, none);
 $theme-image-filter-gallery: var(--theme-image-filter-gallery, none);

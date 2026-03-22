@@ -50,6 +50,8 @@ $semantic-color: (
 );
 
 // 2. CSS Variable Bridge (Semantic Layer)
+// Publish a `-rgb` companion only for tokens that have active composition use
+// in components/presets (alpha, overlays, glass, shadows, gradients).
 :root {
 	--color-surface-primary: #{sys.$sys-color-parchment-100};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
@@ -83,6 +85,8 @@ $semantic-color: (
 	--color-neutral-emphasis: #{sys.$sys-color-neutral-900};
 	--color-error: #{sys.$sys-color-error};
 	--color-error-rgb: #{tools.rgb-channels(sys.$sys-color-error)};
+	--color-whatsapp: #{sys.$sys-color-whatsapp};
+	--color-whatsapp-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
 }
 
 @function color($group, $token) {
