@@ -12,7 +12,7 @@
     {
       "id": "rebase-plan-governance",
       "phaseId": "01-rebase-and-scope-lock",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "docs",
       "subject": {
@@ -43,7 +43,7 @@
     {
       "id": "retire-dashboard-legacy-hooks",
       "phaseId": "03-dashboard-legacy-retirement",
-      "status": "ready",
+      "status": "completed",
       "domain": "runtime",
       "type": "refactor",
       "subject": {
@@ -74,7 +74,7 @@
     {
       "id": "prune-safe-dead-runtime-surface",
       "phaseId": "04-safe-runtime-pruning",
-      "status": "ready",
+      "status": "completed",
       "domain": "runtime",
       "type": "refactor",
       "subject": {
@@ -101,7 +101,7 @@
     {
       "id": "align-evergreen-runtime-docs",
       "phaseId": "05-evergreen-doc-reconciliation",
-      "status": "ready",
+      "status": "completed",
       "domain": "runtime",
       "type": "docs",
       "subject": {
