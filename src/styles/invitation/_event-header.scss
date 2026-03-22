@@ -1,5 +1,4 @@
 @use 'sass:color';
-@use '../global/functions' as funcs;
 @use '../tokens' as tokens;
 @use '../tokens/primitives' as primitives;
 
@@ -144,10 +143,7 @@
 		font-family: var(--font-display);
 		font-weight: 300;
 		letter-spacing: 0.28em;
-		color: var(
-			--header-wedding-title-color,
-			funcs.glass-surface('--color-text-primary-rgb', 0.9)
-		);
+		color: var(--header-wedding-title-color, rgb(var(--color-text-primary-rgb), 0.9));
 		text-shadow: none;
 	}
 

@@ -28,31 +28,3 @@
 
 // Testimonials Section Tokens
 @forward 'testimonials' as testimonials-*;
-
-// Re-export all tokens with landing- prefix for CSS custom properties
-@mixin landing-theme-variables {
-	--hero-overlay-alpha: 0.4;
-	--hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
-	--services-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 70%);
-	--services-card-border: rgb(var(--color-white-rgb, 255, 255, 255), 50%);
-	--services-card-hover-transform: translateY(-8px);
-	--services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
-	--about-noise-opacity: 0.04;
-	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
-	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
-	--pricing-card-border-radius: 4px;
-	--pricing-premium-scale: 1.05;
-	--pricing-elite-bg: rgb(15 23 42 / 90%);
-	--faq-section-bg: var(--color-surface-canvas);
-	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
-	--footer-section-bg: var(--color-surface-canvas);
-	--footer-slogan-opacity: 0.7;
-	--contact-texture-opacity: 0.03;
-	--contact-divider-bg: var(--color-border-emphasis);
-	--contact-channel-hover-transform: translateY(-3px);
-	--contact-form-backdrop-blur: 20px;
-	--contact-submit-hover-transform: translateY(-2px);
-	--testimonials-card-border-radius: 2px;
-	--testimonials-card-hover-transform: translateY(-8px);
-	--testimonials-quote-icon-opacity: 0.08;
-}

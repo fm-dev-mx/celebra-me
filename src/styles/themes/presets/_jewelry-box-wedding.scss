@@ -1,5 +1,4 @@
 @use '../../tokens/index' as tokens;
-@use '../../global/functions' as funcs;
 
 /* --- PRESET: Jewelry Box Wedding --- */
 
@@ -42,7 +41,12 @@
 		rgb(229 195 135 / 8%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--family-divider: #{funcs.linear-gradient-divider('--color-action-accent-rgb', 0.3)};
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb), 0.3) 50%,
+		transparent 100%
+	);
 	--family-name-font: var(--font-display);
 	--family-group-title-font: var(--font-display);
 	--family-accent: var(--color-action-accent);

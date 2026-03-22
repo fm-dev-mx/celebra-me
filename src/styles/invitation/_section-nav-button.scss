@@ -1,7 +1,5 @@
 @use '../tokens' as tokens;
-@use '@/styles/global/functions' as functions;
 @use '@/styles/global/mixins' as mixins;
-@use '@/styles/global/animations' as animations;
 
 .nav-button-container {
 	position: absolute;
@@ -12,7 +10,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	z-index: functions.z-index('navButton');
+	z-index: 15;
 	pointer-events: none; /* Let clicks pass through except on the button */
 }
 
@@ -26,7 +24,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	color: var(--color-text-on-dark, tokens.$color-text-on-dark);
-	z-index: functions.z-index('navButton');
+		z-index: 15;
 	text-decoration: none;
 	transition: all 0.3s ease;
 	animation: pulseChevron 2s infinite ease-in-out;

@@ -2,7 +2,6 @@
 @use 'sass:color';
 @use '../tokens' as tokens;
 @use '@/styles/global/mixins' as mixins;
-@use '@/styles/global/animations' as animations;
 
 .event-location {
 	min-height: 100svh;

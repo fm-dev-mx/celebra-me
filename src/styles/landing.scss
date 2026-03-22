@@ -1,10 +1,6 @@
 @use 'themes/landing/presets';
-@use 'themes/landing' as landing;
+@use 'themes/landing';
 @use 'home/landing-page';
 @use 'home/pricing';
 @use 'home/faq';
 @use 'home/footer';
-
-.theme-preset--elegant {
-	@include landing.landing-theme-variables;
-}
