@@ -1,0 +1,35 @@
+{
+  "id": "008-scss-architecture-optimization",
+  "title": "SCSS Architecture Optimization",
+  "status": "IN_PROGRESS",
+  "completion": 0,
+  "created": "2026-03-22T09:15:00Z",
+  "updated": "2026-03-22T17:15:00Z",
+  "owner": "Codex",
+  "phases": [
+    {
+      "id": "01-foundation-restructuring",
+      "title": "Plan Reconciliation",
+      "status": "PLANNING",
+      "updated": "2026-03-22T17:15:00Z"
+    },
+    {
+      "id": "02-theme-engine-refactor",
+      "title": "Governance Preflight Hardening",
+      "status": "PLANNING",
+      "updated": "2026-03-22T17:15:00Z"
+    },
+    {
+      "id": "03-component-tokenization",
+      "title": "Theme Surface Simplification",
+      "status": "PLANNING",
+      "updated": "2026-03-22T17:15:00Z"
+    },
+    {
+      "id": "04-cleanup-and-finalization",
+      "title": "Consumer Semantic Migration",
+      "status": "PLANNING",
+      "updated": "2026-03-22T17:15:00Z"
+    }
+  ]
+}

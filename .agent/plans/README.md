@@ -2,7 +2,7 @@
 
 > Source of truth for creating, executing, tracking, and archiving plans in `celebra-me`.
 
-**Last Updated:** 2026-03-20  
+**Last Updated:** 2026-03-22  
 **Authority:** `.agent/README.md`  
 **Scope:** `.agent/plans/`
 
@@ -16,6 +16,7 @@
   - `commit-map.json`
   - `phases/`
 - Archived plans move to `.agent/plans/archive/YYYY-MM/<plan-id>/` and become read-only by convention.
+- Active plans under `.agent/plans/<NNN-plan-id>/` must not use historical manifest statuses.
 - `.agent/plans/README.md` owns the `commit-map.json` contract.
 - `gatekeeper-workflow`, `commitlint`, hooks, and CI validate or execute the contract; they do not
   define intent.
@@ -24,6 +25,7 @@
 - Every non-completed executable plan must define a commit strategy before implementation begins.
 - Every non-completed executable plan must review and lock that strategy before `gatekeeper-commit`
   is used.
+- Archival is a separate close-out step after commit execution, not part of gatekeeper readiness.
 
 ## Mandatory Structure
 
@@ -108,13 +110,16 @@ That review must confirm:
 `gatekeeper-commit` is only for plans whose commit strategy has already been reviewed and marked
 ready.
 
-For non-completed plans, readiness is expressed in `commit-map.json` through:
+For active plans, readiness is expressed in `commit-map.json` through:
 
 - top-level `commitStrategyReview.readyForGatekeeperAt`
 - unit-level statuses promoted from `draft` / `locked` to `ready` or `revised-after-gatekeeper`
 
-If readiness is missing, or any active unit still remains in `draft` / `locked`, then
-`gatekeeper-workflow` must block instead of inferring intent.
+If readiness is missing, any active unit still remains in `draft` / `locked`, or any active unit is
+already marked `completed`, then gatekeeper execution must block instead of inferring intent.
+
+Active executable plans must remain non-historical while they are still under `.agent/plans/`.
+`COMPLETED` and `ARCHIVED` are historical-only manifest states and belong in the archive path.
 
 ### Update the Plan When Gatekeeper Finds Drift
 
@@ -209,11 +214,17 @@ Once the plan is ready for `gatekeeper-commit`, it must also record:
 
 - `readyForGatekeeperAt`
 
+`notes` is mandatory whenever `reviewedAt` or `readyForGatekeeperAt` is present.
+
 The timestamps may be equal for small changes, but they must reflect the real lifecycle:
 
 - draft strategy exists before implementation
 - final review closes before gatekeeper execution
 - readiness only exists once the active units are executable without reinterpretation
+
+If a unit has already been committed, that state belongs in archival/history management, not in an
+otherwise executable active plan. Re-issue the remaining work as `ready` or
+`revised-after-gatekeeper` units before running gatekeeper again.
 
 ### Message preview rules
 
@@ -290,11 +301,24 @@ Scratch files, disposable debugging, and throwaway experiments stay outside the 
 
 ## Workflow Contract
 
+### Planning-side validation
+
+Before `gatekeeper-commit`, run:
+
+```bash
+pnpm lint
+pnpm gatekeeper:plans:validate -- --plan <plan-id>
+pnpm gatekeeper:plans:doctor -- --plan <plan-id>
+```
+
+`plans:doctor` is the final planning-side preflight. It validates lifecycle readiness, dirty index
+state, multi-unit drift, and coverage gaps before the runtime session starts.
+
 Before `inspect`:
 
-- run `pnpm gatekeeper:plans:validate -- --plan <plan-id>`
 - make sure the working tree contains exactly one material commit unit
 - remove or isolate unrelated scratch files and unrelated untracked files
+- keep the git index pristine
 
 ### Inspect
 
@@ -314,7 +338,8 @@ returns exactly one of:
 - `commit_strategy_not_ready`
 - `empty_change_set`
 
-`inspect` is the primary entrypoint.
+Use `inspect --json` for machine consumption and `inspect --verbose` only when you need full file
+detail. Default human output is intentionally compact.
 
 ### Stage
 
@@ -323,6 +348,9 @@ node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit
 ```
 
 `stage` stages exactly one unit from the working tree and writes `gatekeeper-s0.json`.
+
+Use `stage --verify-local` only when you explicitly want per-unit local ESLint/Stylelint execution.
+Normal gatekeeper execution does not rerun those tools by default.
 
 ### Scaffold
 
@@ -347,6 +375,8 @@ node .agent/governance/bin/gatekeeper-workflow.mjs commit --unit <unit-id>
   - owns plan and `commit-map.json` contract
 - `.agent/governance/bin/validate-commit-plan.mjs`
   - validates the contract before runtime execution
+- `.agent/governance/bin/doctor-commit-plan.mjs`
+  - validates readiness, lifecycle, worktree coverage, and index hygiene before runtime execution
 - `.agent/governance/bin/gatekeeper-workflow.mjs`
   - inspect, stage, scaffold, commit, cleanup
 - `commitlint.config.cjs`
@@ -373,6 +403,9 @@ Each `phaseId` used in `commit-map.json` must exist in `manifest.json`.
 
 `manifest.json` may keep its current high-level status model. Commit-strategy lifecycle states do
 not need to become manifest statuses if the plan records them in `commit-map.json`.
+
+Active root plans must not use `COMPLETED` or `ARCHIVED`. Those states are historical and belong in
+archived plan directories.
 
 ## Archiving
 

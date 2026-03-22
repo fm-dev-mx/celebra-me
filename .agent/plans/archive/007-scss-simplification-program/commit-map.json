@@ -3,13 +3,14 @@
   "mode": "planned-commits",
   "defaultFallback": "none",
   "commitStrategyReview": {
-    "draftedAt": "2026-03-22T00:00:00Z"
+    "draftedAt": "2026-03-22T00:00:00Z",
+    "reviewedAt": "2026-03-22T15:36:30.9313847Z"
   },
   "units": [
     {
       "id": "lock-canonical-style-contract",
       "phaseId": "01-contract-and-helper-boundaries",
-      "status": "draft",
+      "status": "completed",
       "domain": "ui",
       "type": "refactor",
       "subject": {
@@ -40,7 +41,7 @@
     {
       "id": "reduce-global-authoring-layer",
       "phaseId": "02-global-layer-reduction",
-      "status": "draft",
+      "status": "completed",
       "domain": "ui",
       "type": "refactor",
       "subject": {
@@ -72,7 +73,7 @@
     {
       "id": "thin-theme-preset-surface",
       "phaseId": "03-theme-surface-simplification",
-      "status": "draft",
+      "status": "completed",
       "domain": "ui",
       "type": "refactor",
       "subject": {
@@ -84,6 +85,7 @@
         "src/styles/themes/presets/**",
         "src/styles/themes/landing/**",
         "src/styles/themes/sections/**",
+        "src/styles/landing.scss",
         "src/styles/layout/_event-wrapper.scss"
       ],
       "allowRelated": [
@@ -103,7 +105,7 @@
     {
       "id": "migrate-style-consumers",
       "phaseId": "04-consumer-canonicalization",
-      "status": "draft",
+      "status": "completed",
       "domain": "ui",
       "type": "refactor",
       "subject": {
@@ -112,6 +114,7 @@
       },
       "purpose": "update component and page styles to consume canonical semantic variables instead of legacy aliases",
       "include": [
+        "src/styles/common/**",
         "src/styles/home/**",
         "src/styles/invitation/**",
         "src/styles/dashboard/**",

@@ -46,6 +46,14 @@ Recent audit findings show that the main complexity risks are not the core token
 - [03-theme-surface-simplification]
 - [04-consumer-canonicalization]
 
+## Execution Notes
+
+- `token()` remains the canonical Sass map accessor and `rgb-channels()` remains allowed only for bounded `*-rgb` CSS contract output.
+- `global/_mixins.scss` no longer owns breakpoints or authoring typography presets; those maps now live in canonical token files and mixins consume them.
+- `themes/landing/*` wrapper files that only mirrored runtime CSS variables were removed; `landing.scss` now imports presets and real consumers directly.
+- Theme presets were thinned so assignment stays in presets while reusable section behavior stays in section/theme layers.
+- Legacy aliases were reduced, but `--color-surface`, `--color-border`, and `--ff-heading` remain as explicit temporary bridges because current Astro pages still consume them outside migrated SCSS files.
+
 ## Constraints
 
 - all existing entrypoints must keep compiling

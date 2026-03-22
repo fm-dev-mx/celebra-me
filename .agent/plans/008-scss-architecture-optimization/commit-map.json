@@ -1,0 +1,138 @@
+{
+  "planId": "008-scss-architecture-optimization",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-22T09:20:00Z",
+    "reviewedAt": "2026-03-22T17:15:00Z",
+    "notes": "Separated the original mixed worktree into atomic plan documentation, governance preflight, theme surface, and consumer migration units.",
+    "readyForGatekeeperAt": "2026-03-22T17:15:00Z"
+  },
+  "units": [
+    {
+      "id": "reconcile-scss-plan-documents",
+      "phaseId": "01-foundation-restructuring",
+      "status": "ready",
+      "domain": "plans",
+      "type": "docs",
+      "subject": {
+        "verb": "reconcile",
+        "target": "scss plan documents"
+      },
+      "purpose": "archive the completed 007 plan and author 008 around atomic SCSS refactor units",
+      "include": [
+        ".agent/plans/007-scss-simplification-program/**",
+        ".agent/plans/008-scss-architecture-optimization/**",
+        ".agent/plans/archive/007-scss-simplification-program/**",
+        ".agent/plans/README.md"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "docs(plans): reconcile scss plan documents",
+        "summary": [
+          "archive the completed 007 scss plan from the active root",
+          "rewrite plan 008 around atomic governance and style units",
+          "keep the plan inventory aligned with active and archived plan state"
+        ]
+      }
+    },
+    {
+      "id": "add-plan-doctor-preflight",
+      "phaseId": "02-theme-engine-refactor",
+      "status": "ready",
+      "domain": "governance",
+      "type": "build",
+      "subject": {
+        "verb": "add",
+        "target": "plan doctor preflight"
+      },
+      "purpose": "introduce planning-side gatekeeper preflight checks and synchronize the required governance documentation",
+      "include": [
+        ".agent/governance/bin/**",
+        ".agent/governance/config/domain-map.json",
+        ".agent/workflows/gatekeeper-commit.md",
+        ".agent/workflows/plan-authoring.md",
+        "docs/DOC_STATUS.md",
+        "docs/core/git-governance.md",
+        "docs/domains/theme/architecture.md",
+        "package.json",
+        "tests/unit/gatekeeper-workflow-hardening.test.ts",
+        "tests/unit/plan-doctor.test.ts"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "build(governance): add plan doctor preflight",
+        "summary": [
+          "add planning preflight checks for lifecycle readiness and worktree coverage",
+          "synchronize governance workflows and documentation with the new preflight order",
+          "extend domain mapping and tests for the stricter gatekeeper flow"
+        ]
+      }
+    },
+    {
+      "id": "thin-theme-surface",
+      "phaseId": "03-component-tokenization",
+      "status": "ready",
+      "domain": "styles",
+      "type": "refactor",
+      "subject": {
+        "verb": "thin",
+        "target": "theme surface ownership"
+      },
+      "purpose": "reduce wrapper theme layers and keep preset ownership focused on semantic variable assignment",
+      "include": [
+        "src/styles/global.scss",
+        "src/styles/landing.scss",
+        "src/styles/layout/_event-wrapper.scss",
+        "src/styles/themes/**",
+        "src/styles/tokens/_spacing.scss",
+        "src/styles/tokens/_typography.scss",
+        "src/styles/tokens/contracts/_core.scss",
+        "src/styles/tools/_functions.scss"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(styles): thin theme surface ownership",
+        "summary": [
+          "remove low-value landing theme wrapper files from the runtime surface",
+          "keep presets and shared contracts aligned to semantic variable ownership",
+          "preserve landing theme behavior while reducing theme indirection"
+        ]
+      }
+    },
+    {
+      "id": "migrate-style-consumers",
+      "phaseId": "04-cleanup-and-finalization",
+      "status": "ready",
+      "domain": "styles",
+      "type": "refactor",
+      "subject": {
+        "verb": "migrate",
+        "target": "style consumers to semantic tokens"
+      },
+      "purpose": "update consumer-facing style modules to use semantic tokens, explicit mixins, and lint-compliant dashboard interactions",
+      "include": [
+        "src/styles/common/**",
+        "src/styles/components/**",
+        "src/styles/dashboard/**",
+        "src/styles/global/_mixins.scss",
+        "src/styles/home/**",
+        "src/styles/invitation/**",
+        "src/styles/layout/_header-base.scss"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(styles): migrate style consumers to semantic tokens",
+        "summary": [
+          "replace consumer-side legacy color usage with semantic token consumption",
+          "standardize explicit mixin imports and responsive layout helpers",
+          "bring dashboard and invitation styles in line with project lint rules"
+        ]
+      }
+    }
+  ]
+}

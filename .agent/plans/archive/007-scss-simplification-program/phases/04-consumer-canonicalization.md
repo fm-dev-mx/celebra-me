@@ -23,3 +23,9 @@ Normalize component consumption and document the simplified rules contributors s
 - touched consumers use canonical semantic variables
 - import patterns are consistent
 - plan docs reflect any intentional compatibility bridges left in place
+
+## Outcome
+
+- Touched landing, invitation, dashboard, layout, and shared consumers now prefer canonical semantic variables such as `--color-surface-*`, `--color-text-*`, `--color-action-*`, and `--color-border-*`.
+- Touched SCSS files no longer depend on `@use ... as *`.
+- Remaining compatibility bridges are documented and constrained to non-migrated Astro consumers outside the SCSS refactor surface.

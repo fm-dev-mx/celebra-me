@@ -24,3 +24,10 @@ system.
 - globals are no longer a competing token source
 - breakpoints and typography have one authoritative definition
 - wildcard Sass imports are removed from touched files
+
+## Outcome
+
+- Breakpoint ownership moved into `src/styles/tokens/_spacing.scss`.
+- Authoring typography preset ownership moved into `src/styles/tokens/_typography.scss`.
+- `src/styles/global/_mixins.scss` now delegates to those canonical maps instead of defining parallel values.
+- Wildcard Sass imports were removed from touched consumers, keeping namespaced access explicit.

@@ -23,3 +23,10 @@ Define the canonical SCSS contract and the allowed helper surface before impleme
 - canonical variable families are documented
 - helper policy is explicit
 - no new alias families are introduced
+
+## Outcome
+
+- Canonical semantic families remain the source of truth for surface, text, action, border, font, spacing, and motion variables.
+- `token()` remains the minimal approved Sass accessor and `rgb-channels()` remains scoped to emitting bounded `*-rgb` contract values.
+- Legacy aliases were reduced and explicitly bounded as compatibility bridges only.
+- `--color-surface`, `--color-border`, and `--ff-heading` were retained as temporary bridges because active Astro pages still consume them.

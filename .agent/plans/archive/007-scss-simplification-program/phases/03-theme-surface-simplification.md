@@ -24,3 +24,10 @@ clearer boundaries.
 - preset ownership is narrower and documented
 - low-value wrappers are reduced or removed
 - no preset file acts as a full page-local design system without explicit justification
+
+## Outcome
+
+- `themes/landing/*` wrapper files that only mirrored runtime custom properties were removed.
+- `src/styles/landing.scss` now imports presets and landing consumers directly.
+- `src/styles/themes/presets/_editorial.scss` was reduced to preset assignment instead of owning page-level behavior.
+- `src/styles/layout/_event-wrapper.scss` no longer republishes broad legacy color aliases and stays focused on section contract variables.
