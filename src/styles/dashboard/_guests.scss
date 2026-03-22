@@ -11,24 +11,24 @@
 	}
 }
 
-@mixin tactile-button-shadow($base-color, $shadow-alpha) {
+@mixin tactile-button-shadow($button-color, $shadow-alpha) {
 	box-shadow:
-		0 4px 0 #{color.adjust($base-color, $lightness: -15%)},
-		0 8px 16px rgba($base-color, $shadow-alpha);
+		0 4px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 8px 16px rgba($button-color, $shadow-alpha);
 }
 
-@mixin tactile-button-hover($base-color, $shadow-alpha) {
-	background: color.adjust($base-color, $lightness: -5%);
+@mixin tactile-button-hover($button-color, $shadow-alpha) {
+	background: color.adjust($button-color, $lightness: -5%);
 	box-shadow:
-		0 6px 0 #{color.adjust($base-color, $lightness: -15%)},
-		0 12px 24px rgba($base-color, $shadow-alpha);
+		0 6px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 12px 24px rgba($button-color, $shadow-alpha);
 }
 
-@mixin tactile-button-active($base-color, $shadow-alpha) {
+@mixin tactile-button-active($button-color, $shadow-alpha) {
 	transform: translateY(2px);
 	box-shadow:
-		0 2px 0 #{color.adjust($base-color, $lightness: -15%)},
-		0 4px 8px rgba($base-color, $shadow-alpha);
+		0 2px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 4px 8px rgba($button-color, $shadow-alpha);
 }
 
 .dashboard-guests {
@@ -175,18 +175,18 @@
 	background: tokens.$color-text-emphasis;
 	color: white;
 
-	@include tactile-button-shadow(tokens.$base-gold-700, 0.25);
+	@include tactile-button-shadow(tokens.$color-text-emphasis, 0.25);
 
 	&:hover {
-		background: color.adjust(tokens.$base-gold-700, $lightness: 5%);
+		background: color.adjust(tokens.$color-text-emphasis, $lightness: 5%);
 		transform: translateY(-2px);
 		box-shadow:
-			0 6px 0 #{color.adjust(tokens.$base-gold-700, $lightness: -15%)},
+			0 6px 0 #{color.adjust(tokens.$color-text-emphasis, $lightness: -15%)},
 			0 12px 24px rgba(tokens.$color-text-emphasis, 0.35);
 	}
 
 	&:active {
-		@include tactile-button-active(tokens.$base-gold-700, 0.2);
+		@include tactile-button-active(tokens.$color-text-emphasis, 0.2);
 	}
 
 	&--danger {
@@ -623,7 +623,7 @@
 	width: 100%;
 	background: rgb(255 255 255 / 85%);
 	backdrop-filter: blur(12px) saturate(180%);
-	border-top: 1px solid rgba(tokens.$base-gold-300, 0.3);
+	border-top: 1px solid rgba(tokens.$color-action-accent, 0.3);
 	padding: 0.75rem 1rem env(safe-area-inset-bottom);
 	z-index: 9999;
 	justify-content: space-around;
@@ -672,7 +672,7 @@
 			background: linear-gradient(
 				135deg,
 				tokens.$color-text-emphasis,
-				#{color.adjust(tokens.$base-gold-700, $lightness: -10%)}
+				#{color.adjust(tokens.$color-text-emphasis, $lightness: -10%)}
 			);
 			width: 64px;
 			height: 64px;

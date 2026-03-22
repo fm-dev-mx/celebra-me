@@ -363,7 +363,7 @@
 	}
 
 	&:hover {
-		background: #{color.adjust(tokens.$base-gold-700, $lightness: 5%)};
+		background: #{color.adjust(tokens.$color-text-emphasis, $lightness: 5%)};
 		transform: translateY(-1px);
 		box-shadow: 0 6px 15px rgba(tokens.$color-text-emphasis, 0.4);
 	}

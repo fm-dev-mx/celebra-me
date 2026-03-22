@@ -117,7 +117,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--contact-channel-icon-bg, var(--color-action-accent-rgb, 0.1));
+		background: var(--contact-channel-icon-bg, rgb(var(--color-action-accent-rgb) / 10%));
 		color: var(--contact-channel-icon-color, var(--color-action-accent));
 		border-radius: 50%;
 		transition: all 0.4s ease;
