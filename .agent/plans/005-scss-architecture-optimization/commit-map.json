@@ -13,7 +13,7 @@
         {
             "id": "baseline-consolidation",
             "phaseId": "01-governance-baseline",
-            "status": "ready",
+            "status": "completed",
             "domain": "ui",
             "type": "refactor",
             "subject": {
@@ -22,8 +22,6 @@
             },
             "purpose": "point legacy token files to new modular architecture and cleanup duplicate variable definitions",
             "include": [
-                ".agent/governance/bin/gatekeeper.mjs",
-                ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "docs/core/git-governance.md",
                 "src/styles/tokens/_motion.scss",
                 "src/styles/tokens/_primitives.scss",
@@ -50,7 +48,7 @@
         {
             "id": "modular-token-definition",
             "phaseId": "03-token-unification",
-            "status": "ready",
+            "status": "completed",
             "domain": "ui",
             "type": "refactor",
             "subject": {
@@ -86,7 +84,7 @@
         {
             "id": "theme-architecture-migration",
             "phaseId": "03-token-unification",
-            "status": "ready",
+            "status": "completed",
             "domain": "ui",
             "type": "refactor",
             "subject": {
@@ -129,7 +127,7 @@
         {
             "id": "component-tokenization",
             "phaseId": "04-hardcoded-value-elimination",
-            "status": "ready",
+            "status": "completed",
             "domain": "ui",
             "type": "refactor",
             "subject": {
@@ -138,9 +136,6 @@
             },
             "purpose": "replace raw hex and rgb values with semantic token references",
             "include": [
-                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
-                ".agent/governance/config/domain-map.json",
-                ".stylelintrc.json",
                 "src/styles/ui/_status-pages.scss",
                 "src/styles/components/actions/_action-base.scss",
                 "src/styles/dashboard/_modals.scss"
@@ -159,7 +154,7 @@
         {
             "id": "metadata-finalization",
             "phaseId": "05-pattern-standardization",
-            "status": "ready",
+            "status": "completed",
             "domain": "governance",
             "type": "docs",
             "subject": {
@@ -168,6 +163,11 @@
             },
             "purpose": "record completion of architectural optimization",
             "include": [
+                ".agent/plans/005-scss-architecture-optimization/commit-map.json",
+                ".agent/plans/005-scss-architecture-optimization/manifest.json",
+                ".stylelintrc.json",
+                ".agent/governance/bin/gatekeeper.mjs",
+                ".agent/governance/bin/gatekeeper-workflow.mjs",
                 ".agent/plans/005-scss-architecture-optimization/CHANGELOG.md",
                 ".agent/plans/005-scss-architecture-optimization/EXECUTION.md",
                 ".agent/plans/005-scss-architecture-optimization/README.md"

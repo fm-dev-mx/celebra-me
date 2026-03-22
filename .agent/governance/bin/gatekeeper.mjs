@@ -2261,9 +2261,8 @@ function main() {
 	}
 
 	if (!reportJson && workflowData.workflowRoute === 'architectural_intervention') {
-		console.log('\n❌ Workflow Reasons:', workflowData.workflowReasons);
 		if (adu.unmappedFiles.length > 0) {
-			console.log('📄 Unmapped Files:', adu.unmappedFiles);
+			console.log('\n📄 Unmapped Files detected in working tree:', adu.unmappedFiles);
 		}
 		fail('Gatekeeper checks failed. Fix BLOCKED findings before committing.');
 	}
