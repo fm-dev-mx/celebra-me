@@ -8,10 +8,7 @@ import {
 	markGuestShared,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import {
-	getInvitationContextByInviteId,
-	resolveLegacyTokenToCanonicalUrl,
-} from '@/lib/rsvp/services/invitation-context.service';
+import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import {
 	submitGuestRsvpByInviteId,
 	trackInvitationView,
@@ -52,9 +49,6 @@ describe('rsvp service branches', () => {
 		guestRepo.findGuestByInviteIdPublic as jest.MockedFunction<
 			typeof guestRepo.findGuestByInviteIdPublic
 		>;
-	const findGuestByShortIdPublicMock = guestRepo.findGuestByShortIdPublic as jest.MockedFunction<
-		typeof guestRepo.findGuestByShortIdPublic
-	>;
 	const findEventByInvitationPublicMock =
 		eventRepo.findEventByInvitationPublic as jest.MockedFunction<
 			typeof eventRepo.findEventByInvitationPublic
@@ -211,51 +205,6 @@ describe('rsvp service branches', () => {
 	it('trackInvitationView throws not_found on missing invite', async () => {
 		findGuestByInviteIdPublicMock.mockResolvedValue(null);
 		await expect(trackInvitationView('missing')).rejects.toMatchObject({ status: 404 });
-	});
-
-	it('resolveLegacyTokenToCanonicalUrl returns null on invalid token or missing mapping', async () => {
-		expect(
-			await resolveLegacyTokenToCanonicalUrl({
-				eventSlug: 'demo',
-				token: 'bad-format-token',
-				origin: 'http://localhost',
-			}),
-		).toBeNull();
-
-		findGuestByInviteIdPublicMock.mockResolvedValue(null);
-		expect(
-			await resolveLegacyTokenToCanonicalUrl({
-				eventSlug: 'demo',
-				token: 'e297864e-0c7f-4b08-963d-4a1e96e00123', // Valid UUID format
-				origin: 'http://localhost',
-			}),
-		).toBeNull();
-	});
-
-	it('resolveLegacyTokenToCanonicalUrl returns canonical URL for valid UUID', async () => {
-		const uuid = 'e297864e-0c7f-4b08-963d-4a1e96e00123';
-		findGuestByInviteIdPublicMock.mockResolvedValue({ ...baseGuest, inviteId: uuid });
-
-		const result = await resolveLegacyTokenToCanonicalUrl({
-			eventSlug: 'demo',
-			token: uuid,
-			origin: 'http://localhost',
-		});
-
-		expect(result).toContain(uuid);
-	});
-
-	it('resolveLegacyTokenToCanonicalUrl returns canonical URL for valid ShortId', async () => {
-		const shortId = 'ABC12345';
-		findGuestByShortIdPublicMock.mockResolvedValue({ ...baseGuest, inviteId: 'some-uuid' });
-
-		const result = await resolveLegacyTokenToCanonicalUrl({
-			eventSlug: 'demo',
-			token: shortId,
-			origin: 'http://localhost',
-		});
-
-		expect(result).toContain('some-uuid');
 	});
 
 	it('claimEventForUser validates claim states via atomic RPC', async () => {

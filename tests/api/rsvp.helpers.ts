@@ -7,31 +7,6 @@ export function buildBasicAuthHeader(user = ADMIN_USER, password = ADMIN_PASSWOR
 	return `Basic ${Buffer.from(`${user}:${password}`, 'utf8').toString('base64')}`;
 }
 
-export function getMockEvents() {
-	return [
-		{
-			id: EVENT_SLUG,
-			data: {
-				eventType: 'cumple',
-				rsvp: {
-					guestCap: 5,
-					whatsappConfig: {
-						phone: '5216681167477',
-						messageTemplate: 'Hola {name}, te comparto tu invitación: {inviteUrl}',
-					},
-					guests: [
-						{
-							guestId: 'fam-mendoza-001',
-							displayName: 'Viridiana Mendoza',
-							maxAllowedAttendees: 4,
-						},
-					],
-				},
-			},
-		},
-	];
-}
-
 export function createMockRequest(
 	payload?: unknown,
 	headers?: Record<string, string>,
