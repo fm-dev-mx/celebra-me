@@ -14,9 +14,7 @@ import Hero from '@/components/invitation/Hero.astro';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
-import EnvelopeSyncBehavior from '@/components/behavior/EnvelopeSyncBehavior';
 
-// --- Page Logic (Adapter Pattern) ---
 const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
 const eventOverrideStyles = import.meta.glob('/src/styles/events/*.scss');
@@ -53,7 +51,7 @@ if (inviteId) {
 	}
 }
 
-const presenter = prepareInvitationPageData({
+const pageData = prepareInvitationPageData({
 	eventEntry,
 	slug: slug as string,
 	guestContext,
@@ -61,65 +59,64 @@ const presenter = prepareInvitationPageData({
 ---
 
 <Layout
-	title={presenter.layout.title}
-	description={presenter.layout.description}
-	image={presenter.layout.image}
+	title={pageData.layout.title}
+	description={pageData.layout.description}
+	image={pageData.layout.image}
 	hideHeader={true}
-	className={presenter.layout.className}
-	isDemo={presenter.isDemo}
+	className={pageData.layout.className}
+	isDemo={pageData.isDemo}
 	themeMode="dark"
 >
-	<style is:inline lang="scss" set:html={presenter.wrapper.scopedStyles} />
-	<main class={presenter.wrapper.className} {...presenter.wrapper.dataAttributes}>
-		{presenter.wrapper.showEnvelope && <EnvelopeSyncBehavior client:only="react" eventSlug={presenter.eventSlug} />}
+	<style is:inline lang="scss" set:html={pageData.wrapper.scopedStyles} />
+	<main class={pageData.wrapper.className} {...pageData.wrapper.dataAttributes}>
 
 		<!-- Components -->
 		{
-			presenter.envelope && (
+			pageData.envelope && (
 				<EnvelopeReveal
 					client:load
-					name={presenter.envelope.name}
-					date={presenter.envelope.date}
-					city={presenter.envelope.city}
-					sealStyle={presenter.envelope.sealStyle}
-					sealIcon={presenter.envelope.sealIcon as 'boot' | 'heart' | 'monogram' | 'flower' | undefined}
-					microcopy={presenter.envelope.microcopy}
-					documentLabel={presenter.envelope.documentLabel}
-					stampText={presenter.envelope.stampText}
-					stampYear={presenter.envelope.stampYear}
-					tooltipText={presenter.envelope.tooltipText}
-					eventSlug={presenter.envelope.eventSlug}
-					variant={presenter.envelope.variant}
-					guestName={presenter.envelope.guestName}
+					name={pageData.envelope.name}
+					date={pageData.envelope.date}
+					city={pageData.envelope.city}
+					sealStyle={pageData.envelope.sealStyle}
+					sealIcon={pageData.envelope.sealIcon as 'boot' | 'heart' | 'monogram' | 'flower' | undefined}
+					microcopy={pageData.envelope.microcopy}
+					documentLabel={pageData.envelope.documentLabel}
+					stampText={pageData.envelope.stampText}
+					stampYear={pageData.envelope.stampYear}
+					tooltipText={pageData.envelope.tooltipText}
+					eventSlug={pageData.envelope.eventSlug}
+					variant={pageData.envelope.variant}
+					guestName={pageData.envelope.guestName}
 				/>
 			)
 		}
 
 		<EventHeader
-			eventName={presenter.header.eventName}
-			theme={presenter.header.theme}
-			links={presenter.header.links}
-			variant={presenter.header.variant}
+			eventName={pageData.header.eventName}
+			theme={pageData.header.theme}
+			links={pageData.header.links}
+			variant={pageData.header.variant}
 		/>
 
-		<Hero {...presenter.hero} />
+		<Hero {...pageData.hero} />
 
-		<InvitationSections presenter={presenter} />
+		<InvitationSections pageData={pageData} />
 
 		<Footer
-			eventSlug={presenter.footer.eventSlug}
-			showEnvelope={presenter.footer.showEnvelope}
-			variant={presenter.footer.variant}
+			eventSlug={pageData.footer.eventSlug}
+			showEnvelope={pageData.footer.showEnvelope}
+			variant={pageData.footer.variant}
 		/>
 
-		{presenter.music && (
+		{pageData.music && (
 			<MusicPlayer
 				client:idle
-				url={presenter.music.url}
-				autoPlay={presenter.music.autoPlay}
-				title={presenter.music.title}
-				revealMode={presenter.music.revealMode}
-				variant={presenter.music.variant}
+				url={pageData.music.url}
+				autoPlay={pageData.music.autoPlay}
+				title={pageData.music.title}
+				revealMode={pageData.music.revealMode}
+				variant={pageData.music.variant}
 			/>
 		)}
 	</main>

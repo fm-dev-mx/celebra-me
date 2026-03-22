@@ -73,6 +73,11 @@ const EnvelopeReveal: FC<Props> = ({
 
 	const controls = useAnimation();
 
+	const revealInvitation = () => {
+		document.body.style.overflow = 'auto';
+		document.body.classList.add('invitation-revealed');
+	};
+
 	// Lazy audio initialization — avoids re-creating on every render
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const getAudio = () => {
@@ -102,8 +107,7 @@ const EnvelopeReveal: FC<Props> = ({
 
 		if (shouldReduceMotion) {
 			setPhase('exit');
-			document.body.style.overflow = 'auto';
-			document.body.classList.add('invitation-revealed');
+			revealInvitation();
 			return;
 		}
 
@@ -117,8 +121,7 @@ const EnvelopeReveal: FC<Props> = ({
 		// Phase 3: Total exit to reveal invitation content
 		setTimeout(() => {
 			setPhase('exit');
-			document.body.style.overflow = 'auto';
-			document.body.classList.add('invitation-revealed');
+			revealInvitation();
 		}, PHASE_DELAY_EXIT);
 	};
 
@@ -156,7 +159,7 @@ const EnvelopeReveal: FC<Props> = ({
 				document.body.style.overflow = 'auto';
 			};
 		} else if (phase === 'exit') {
-			document.body.classList.add('invitation-revealed');
+			revealInvitation();
 		}
 
 		return () => {

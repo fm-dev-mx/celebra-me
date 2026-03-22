@@ -14,7 +14,7 @@ import type { InvitationPageData } from '@/lib/invitation/page-data';
 import type { ComponentProps } from 'astro/types';
 
 interface Props {
-	presenter: InvitationPageData;
+	pageData: InvitationPageData;
 }
 
 type RenderDescriptor =
@@ -30,8 +30,8 @@ type RenderDescriptor =
 	| { kind: 'thankYou'; props: ComponentProps<typeof ThankYou> }
 	| { kind: 'personalized-access'; props: ComponentProps<typeof PersonalizedAccess> };
 
-const { presenter } = Astro.props;
-const { renderPlan, sections, personalizedAccess, rsvp, themePreset } = presenter;
+const { pageData } = Astro.props;
+const { renderPlan, sections, personalizedAccess, rsvp, themePreset } = pageData;
 
 const renderInterlude = (
 	block: Extract<(typeof renderPlan)[number], { type: 'interlude' }>,

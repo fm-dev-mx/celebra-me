@@ -1637,8 +1637,8 @@ function checks(
 
 function lint(files, reportJson, rep, policy, maxGlobal) {
 	if (!reportJson) log('\n🔍 Running linters on staged files...', COLORS.blue);
-	const js = files.filter((f) => /\.(js|ts|tsx|astro)$/.test(f));
-	const scss = files.filter((f) => /\.(scss|css)$/.test(f));
+	const js = files.filter((f) => /\.(js|ts|tsx|astro)$/.test(f) && existsSync(f));
+	const scss = files.filter((f) => /\.(scss|css)$/.test(f) && existsSync(f));
 	let bad = false;
 	const details = [];
 

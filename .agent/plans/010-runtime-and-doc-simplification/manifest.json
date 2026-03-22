@@ -1,0 +1,41 @@
+{
+    "id": "010-runtime-and-doc-simplification",
+    "title": "Runtime and Documentation Simplification",
+    "status": "ACTIVE",
+    "completion": 80,
+    "created": "2026-03-22T20:00:00Z",
+    "updated": "2026-03-22T20:45:00Z",
+    "owner": "Codex",
+    "phases": [
+        {
+            "id": "01-preflight-and-scope-lock",
+            "title": "Preflight and Scope Lock",
+            "status": "ACTIVE",
+            "updated": "2026-03-22T20:10:00Z"
+        },
+        {
+            "id": "02-invitation-and-behavior-simplification",
+            "title": "Invitation and Behavior Simplification",
+            "status": "ACTIVE",
+            "updated": "2026-03-22T20:30:00Z"
+        },
+        {
+            "id": "03-dashboard-runtime-consolidation",
+            "title": "Dashboard Runtime Consolidation",
+            "status": "ACTIVE",
+            "updated": "2026-03-22T20:35:00Z"
+        },
+        {
+            "id": "04-evergreen-documentation-reconciliation",
+            "title": "Evergreen Documentation Reconciliation",
+            "status": "ACTIVE",
+            "updated": "2026-03-22T20:40:00Z"
+        },
+        {
+            "id": "05-validation-and-closeout",
+            "title": "Validation and Closeout",
+            "status": "ACTIVE",
+            "updated": "2026-03-22T20:45:00Z"
+        }
+    ]
+}
