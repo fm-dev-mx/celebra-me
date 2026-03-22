@@ -1,0 +1,16 @@
+// Easing
+$sys-ease-in: cubic-bezier(0.4, 0, 1, 1);
+$sys-ease-out: cubic-bezier(0, 0, 0.2, 1);
+$sys-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$sys-ease-snappy: cubic-bezier(0.25, 1, 0.5, 1);
+$sys-ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+$sys-ease-overshoot: cubic-bezier(0.3, 1.5, 0.7, 1);
+$sys-ease-bouncy: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+// Duration
+$sys-duration-fast: 0.1s;
+$sys-duration-snappy: 0.2s;
+$sys-duration-standard: 0.4s;
+$sys-duration-slower: 0.6s;
+$sys-duration-premium: 1s;
+$sys-duration-reveal: 1.6s;

@@ -1,0 +1,28 @@
+// Fonts
+$sys-font-display-formal: ('Cinzel', serif);
+$sys-font-display-elegant: ('Playfair Display', serif);
+$sys-font-display-hacienda: ('Cormorant Garamond', serif);
+$sys-font-calligraphy: ('Pinyon Script', cursive);
+$sys-font-body: ('EB Garamond', georgia, serif);
+$sys-font-body-hacienda: ('EB Garamond', serif);
+$sys-font-ui: ('Montserrat', system-ui, sans-serif);
+
+// Sizes
+$sys-size-h1: clamp(2.5rem, 8vw, 5rem);
+$sys-size-h2: clamp(1.8rem, 5vw, 3rem);
+$sys-size-h3: clamp(1.4rem, 3vw, 2rem);
+$sys-size-body: clamp(1rem, 1.2vw, 1.25rem);
+$sys-size-ui: 0.9rem;
+
+// Weights
+$sys-weight-light: 300;
+$sys-weight-regular: 400;
+$sys-weight-medium: 500;
+$sys-weight-semibold: 600;
+$sys-weight-bold: 700;
+
+// Tracking
+$sys-tracking-tight: -0.02em;
+$sys-tracking-normal: 0;
+$sys-tracking-wide: 0.1em;
+$sys-tracking-extra-wide: 0.25em;
