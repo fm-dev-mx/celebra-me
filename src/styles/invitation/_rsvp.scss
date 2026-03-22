@@ -16,7 +16,7 @@
 	border-radius: var(--rsvp-radius-card, 24px);
 	overflow: hidden;
 
-	--rsvp-label-color: var(--color-text-secondary, var(--color-primary-dark));
+	--rsvp-label-color: var(--color-text-secondary, var(--color-action-primary));
 	--rsvp-label-letter-spacing: 0.012em;
 	--rsvp-field-bg: rgb(var(--color-surface-primary-rgb), 0.5);
 	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb), 0.9);
@@ -383,7 +383,7 @@
 		&-submessage {
 			font-family: var(--font-body);
 			font-size: 1rem;
-			color: var(--color-text-secondary, var(--color-dark));
+			color: var(--color-text-secondary, var(--color-surface-dark));
 			opacity: 78%;
 		}
 	}

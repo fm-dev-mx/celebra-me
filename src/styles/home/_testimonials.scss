@@ -1,4 +1,4 @@
-@use '../global/mixins' as *;
+@use '../global/mixins' as mixins;
 
 .testimonials {
 	&__title-text {
@@ -29,11 +29,11 @@
 		gap: 2rem;
 		padding: 4rem 0;
 
-		@include respond-to('md') {
+		@include mixins.respond-to('md') {
 			grid-template-columns: repeat(2, 1fr);
 		}
 
-		@include respond-to('lg') {
+		@include mixins.respond-to('lg') {
 			grid-template-columns: repeat(3, 1fr);
 		}
 	}

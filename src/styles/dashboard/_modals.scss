@@ -1,4 +1,5 @@
-@use '../tokens' as *;
+@use '../tokens' as tokens;
+/* stylelint-disable declaration-no-important */
 
 body.modal-open {
 	overflow: hidden !important;
@@ -29,8 +30,8 @@ body.modal-open {
 
 .dashboard-modal {
 	width: min(650px, 95vw);
-	background: $color-surface-primary;
-	border: 1px solid rgba($color-action-accent, 0.3);
+	background: tokens.$color-surface-primary;
+	border: 1px solid rgba(tokens.$color-action-accent, 0.3);
 	border-radius: 12px;
 	padding: clamp(1.2rem, 3vw, 2.5rem);
 	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
@@ -45,18 +46,18 @@ body.modal-open {
 		content: '';
 		position: absolute;
 		inset: 0.5rem;
-		border: 1px solid rgba($color-action-accent, 0.15);
+		border: 1px solid rgba(tokens.$color-action-accent, 0.15);
 		pointer-events: none;
 		border-radius: 8px;
 	}
 
 	h3 {
-		font-family: $font-display-elegant; // Cinzel
-		color: $color-text-emphasis;
+		font-family: tokens.$font-display-elegant; // Cinzel
+		color: tokens.$color-text-emphasis;
 		font-size: clamp(1.3rem, 3vw, 1.8rem);
 		margin: 0 0 1.5rem;
 		text-align: center;
-		letter-spacing: $letter-spacing-tight;
+		letter-spacing: tokens.$letter-spacing-tight;
 	}
 
 	&__description {
@@ -108,13 +109,13 @@ body.modal-open {
 	background: none;
 	border: none;
 	font-size: 1.8rem;
-	color: $color-text-secondary;
+	color: tokens.$color-text-secondary;
 	cursor: pointer;
 	z-index: 10;
 	transition: color 0.2s ease;
 
 	&:hover {
-		color: $color-text-emphasis;
+		color: tokens.$color-text-emphasis;
 	}
 }
 
@@ -124,7 +125,7 @@ body.modal-open {
 	gap: var(--spacing-md);
 	margin-top: 2.5rem;
 	padding-top: 1.5rem;
-	border-top: 1px solid $color-border-subtle;
+	border-top: 1px solid tokens.$color-border-subtle;
 
 	@media (width <= 480px) {
 		flex-direction: column-reverse;
@@ -145,30 +146,30 @@ body.modal-open {
 	label {
 		font-size: 0.75rem;
 		text-transform: uppercase;
-		letter-spacing: $letter-spacing-wide;
-		color: $color-text-secondary;
-		font-weight: $font-weight-bold;
+		letter-spacing: tokens.$letter-spacing-wide;
+		color: tokens.$color-text-secondary;
+		font-weight: tokens.$font-weight-bold;
 	}
 
 	input,
 	select,
 	textarea {
 		padding: 0.75rem 1rem;
-		border: 1px solid $color-border-subtle;
+		border: 1px solid tokens.$color-border-subtle;
 		border-radius: 6px;
 		font-size: 1rem;
-		background: #fff;
-		color: $color-text-primary;
+		background: rgb(255 255 255);
+		color: tokens.$color-text-primary;
 		transition: all 0.2s ease;
 
 		&:focus {
 			outline: none;
-			border-color: $color-action-accent;
-			box-shadow: 0 0 0 3px rgba($color-action-accent, 0.1);
+			border-color: tokens.$color-action-accent;
+			box-shadow: 0 0 0 3px rgba(tokens.$color-action-accent, 0.1);
 		}
 
 		&:disabled {
-			background: $color-neutral-subtle;
+			background: tokens.$color-neutral-subtle;
 			cursor: not-allowed;
 		}
 	}
@@ -224,7 +225,7 @@ body.modal-open {
 	gap: var(--spacing-md);
 	margin-top: 2.5rem;
 	padding-top: 1.5rem;
-	border-top: 1px solid $color-border-subtle;
+	border-top: 1px solid tokens.$color-border-subtle;
 
 	@media (width <= 480px) {
 		flex-direction: column-reverse;
@@ -259,3 +260,5 @@ body.modal-open {
 		transform: translateY(0) scale(1);
 	}
 }
+
+

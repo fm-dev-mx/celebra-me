@@ -1,74 +1,27 @@
 @use 'sass:map';
 @use '../tokens' as tokens;
-
-$breakpoints: (
-	xs: 480px,
-	sm: 640px,
-	md: 768px,
-	lg: 992px,
-	xl: 1200px,
-);
+@use '../tokens/spacing' as spacing-tokens;
+@use '../tokens/typography' as typography-tokens;
 
 @mixin respond-to($breakpoint) {
-	@if map.has-key($breakpoints, $breakpoint) {
-		@media (min-width: #{map.get($breakpoints, $breakpoint)}) {
+	@if map.has-key(spacing-tokens.$breakpoints, $breakpoint) {
+		@media (min-width: #{map.get(spacing-tokens.$breakpoints, $breakpoint)}) {
 			@content;
 		}
 	} @else {
-		@error "Breakpoint `#{$breakpoint}` does not exist in \$breakpoints.";
+		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
 	}
 }
 
-$typography-scale: (
-	display-2: (
-		font-family: var(--font-display),
-		font-size: 2.5rem,
-		font-weight: 600,
-		line-height: 1.1,
-		letter-spacing: -0.02em,
-	),
-	h3: (
-		font-family: var(--font-display),
-		font-size: 1.5rem,
-		font-weight: 600,
-		line-height: 1.25,
-	),
-	h4: (
-		font-family: var(--font-display),
-		font-size: 1.25rem,
-		font-weight: 600,
-		line-height: 1.3,
-	),
-	body-large: (
-		font-family: var(--font-body),
-		font-size: 1.15rem,
-		font-weight: 400,
-		line-height: 1.6,
-	),
-	body-small: (
-		font-family: var(--font-body),
-		font-size: 0.95rem,
-		font-weight: 400,
-		line-height: 1.6,
-	),
-	button: (
-		font-family: var(--font-body),
-		font-size: 0.9rem,
-		font-weight: 600,
-		letter-spacing: 0.05em,
-		text-transform: uppercase,
-	),
-);
-
 @mixin typography($variant) {
-	@if map.has-key($typography-scale, $variant) {
-		$typography-styles: map.get($typography-scale, $variant);
+	@if map.has-key(typography-tokens.$authoring-scale, $variant) {
+		$typography-styles: map.get(typography-tokens.$authoring-scale, $variant);
 
 		@each $property, $value in $typography-styles {
 			#{$property}: $value;
 		}
 	} @else {
-		@error "Typography variant `#{$variant}` is not defined.";
+		@error "Typography variant `#{$variant}` is not defined in tokens.$authoring-scale.";
 	}
 }
 

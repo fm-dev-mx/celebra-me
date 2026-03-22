@@ -1,14 +1,44 @@
 @use 'sass:color';
-@use '../tokens' as *;
+@use '../tokens' as tokens;
+
+@mixin status-pill-variant($background, $text, $border, $dot) {
+	background: $background;
+	color: $text;
+	border: 1px solid $border;
+
+	.status-pill__dot {
+		background: $dot;
+	}
+}
+
+@mixin tactile-button-shadow($base-color, $shadow-alpha) {
+	box-shadow:
+		0 4px 0 #{color.adjust($base-color, $lightness: -15%)},
+		0 8px 16px rgba($base-color, $shadow-alpha);
+}
+
+@mixin tactile-button-hover($base-color, $shadow-alpha) {
+	background: color.adjust($base-color, $lightness: -5%);
+	box-shadow:
+		0 6px 0 #{color.adjust($base-color, $lightness: -15%)},
+		0 12px 24px rgba($base-color, $shadow-alpha);
+}
+
+@mixin tactile-button-active($base-color, $shadow-alpha) {
+	transform: translateY(2px);
+	box-shadow:
+		0 2px 0 #{color.adjust($base-color, $lightness: -15%)},
+		0 4px 8px rgba($base-color, $shadow-alpha);
+}
 
 .dashboard-guests {
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: var(--spacing-xl) clamp(var(--spacing-md), 5vw, var(--spacing-xl));
-	background-color: $color-surface-primary;
+	background-color: tokens.$color-surface-primary;
 	min-height: calc(100vh - 64px); // Adjust for topbar
-	color: $color-text-primary;
-	font-family: $font-ui;
+	color: tokens.$color-text-primary;
+	font-family: tokens.$font-ui;
 	overflow-x: hidden; // Prevent horizontal scroll
 	box-sizing: border-box;
 }
@@ -21,9 +51,9 @@
 	padding: 1.5rem;
 	background: rgb(white, 0.03);
 	backdrop-filter: blur(12px);
-	border: 1px solid rgba($color-action-accent, 0.15);
+	border: 1px solid rgba(tokens.$color-action-accent, 0.15);
 	border-radius: 20px;
-	box-shadow: $shadow-premium;
+	box-shadow: tokens.$shadow-premium;
 	position: relative;
 	overflow: hidden;
 
@@ -40,7 +70,7 @@
 		left: 0;
 		width: 100%;
 		height: 4px;
-		background: linear-gradient(90deg, transparent, $color-action-accent, transparent);
+		background: linear-gradient(90deg, transparent, tokens.$color-action-accent, transparent);
 	}
 
 	@media (width >= 768px) {
@@ -50,12 +80,12 @@
 	}
 
 	h1 {
-		font-family: $font-display-elegant;
-		color: $color-text-emphasis;
+		font-family: tokens.$font-display-elegant;
+		color: tokens.$color-text-emphasis;
 		font-size: clamp(1.8rem, 4vw, 2.5rem);
 		margin: 0;
-		letter-spacing: $letter-spacing-tight;
-		text-shadow: 0 2px 10px rgba($color-text-emphasis, 0.1);
+		letter-spacing: tokens.$letter-spacing-tight;
+		text-shadow: 0 2px 10px rgba(tokens.$color-text-emphasis, 0.1);
 	}
 
 	.header-event-selector {
@@ -72,34 +102,34 @@
 		label {
 			font-size: 0.75rem;
 			text-transform: uppercase;
-			letter-spacing: $letter-spacing-extra-wide;
-			color: rgba($color-text-secondary, 0.8);
-			font-weight: $font-weight-bold;
+			letter-spacing: tokens.$letter-spacing-extra-wide;
+			color: rgba(tokens.$color-text-secondary, 0.8);
+			font-weight: tokens.$font-weight-bold;
 		}
 
 		select {
 			appearance: none;
 			padding: 0.85rem 2.8rem 0.85rem 1.25rem;
-			border: 1px solid rgba($color-action-accent, 0.3);
+			border: 1px solid rgba(tokens.$color-action-accent, 0.3);
 			border-radius: 12px;
 			background: rgb(white, 0.05);
 			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23dcb43c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 			background-repeat: no-repeat;
 			background-position: right 1rem center;
 			background-size: 1.2rem;
-			color: $color-text-primary;
-			font-family: $font-ui;
+			color: tokens.$color-text-primary;
+			font-family: tokens.$font-ui;
 			font-size: 0.95rem;
-			font-weight: $font-weight-medium;
-			box-shadow: $shadow-subtle;
+			font-weight: tokens.$font-weight-medium;
+			box-shadow: tokens.$shadow-subtle;
 			transition: all 0.3s ease;
 			cursor: pointer;
 
 			&:focus {
-				border-color: $color-action-accent;
+				border-color: tokens.$color-action-accent;
 				outline: none;
 				background-color: rgb(white, 0.12);
-				box-shadow: 0 0 0 4px rgba($color-action-accent, 0.15);
+				box-shadow: 0 0 0 4px rgba(tokens.$color-action-accent, 0.15);
 			}
 		}
 	}
@@ -110,13 +140,13 @@
 .btn-secondary,
 .btn-accent {
 	font-family: inherit;
-	font-weight: $font-weight-bold;
+	font-weight: tokens.$font-weight-bold;
 	padding: 0.85rem 2rem;
 	border-radius: 8px;
 	cursor: pointer;
 	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	text-transform: uppercase;
-	letter-spacing: $letter-spacing-wide;
+	letter-spacing: tokens.$letter-spacing-wide;
 	font-size: 0.85rem;
 	border: 1px solid transparent;
 	display: inline-flex;
@@ -142,74 +172,63 @@
 }
 
 .btn-primary {
-	background: $color-text-emphasis;
+	background: tokens.$color-text-emphasis;
 	color: white;
-	box-shadow:
-		0 4px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
-		0 8px 16px rgba($color-text-emphasis, 0.25);
+
+	@include tactile-button-shadow(tokens.$base-gold-700, 0.25);
 
 	&:hover {
-		background: #{color.adjust($base-gold-700, $lightness: 5%)};
+		background: color.adjust(tokens.$base-gold-700, $lightness: 5%);
 		transform: translateY(-2px);
 		box-shadow:
-			0 6px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
-			0 12px 24px rgba($color-text-emphasis, 0.35);
+			0 6px 0 #{color.adjust(tokens.$base-gold-700, $lightness: -15%)},
+			0 12px 24px rgba(tokens.$color-text-emphasis, 0.35);
 	}
 
 	&:active {
-		transform: translateY(2px);
-		box-shadow:
-			0 2px 0 #{color.adjust($base-gold-700, $lightness: -15%)},
-			0 4px 8px rgba($color-text-emphasis, 0.2);
+		@include tactile-button-active(tokens.$base-gold-700, 0.2);
 	}
 
 	&--danger {
-		background: $color-wax-seal;
-		box-shadow:
-			0 4px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
-			0 8px 16px rgba($color-wax-seal, 0.2);
+		background: tokens.$color-wax-seal;
+
+		@include tactile-button-shadow(tokens.$color-wax-seal, 0.2);
 
 		&:hover {
-			background: color.adjust($color-wax-seal, $lightness: -5%);
-			box-shadow:
-				0 6px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
-				0 12px 24px rgba($color-wax-seal, 0.3);
+			@include tactile-button-hover(tokens.$color-wax-seal, 0.3);
 		}
 
 		&:active {
-			transform: translateY(2px);
-			box-shadow:
-				0 2px 0 #{color.adjust($color-wax-seal, $lightness: -15%)},
-				0 4px 8px rgba($color-wax-seal, 0.2);
+			@include tactile-button-active(tokens.$color-wax-seal, 0.2);
 		}
 	}
 }
 
 .btn-secondary {
 	background: transparent;
-	border: 1px solid $color-border-emphasis;
-	color: $color-text-emphasis;
+	border: 1px solid tokens.$color-border-emphasis;
+	color: tokens.$color-text-emphasis;
 
 	&:hover {
-		background: rgba($color-action-accent, 0.05);
-		transform: translateY(-1px);
+		background: color.scale(tokens.$color-action-accent, $alpha: -95%);
+		transform: translate3d(0, -1px, 0);
 	}
 }
 
 .btn-accent {
-	background: $color-surface-primary;
-	border: 1px solid $color-action-accent;
-	color: $color-action-accent;
+	background: tokens.$color-surface-primary;
+	border: 1px solid tokens.$color-action-accent;
+	color: tokens.$color-action-accent;
 
 	&:hover {
-		background: rgba($color-action-accent, 0.1);
-		border-color: $color-text-emphasis;
+		background: rgba(tokens.$color-action-accent, 0.1);
+		border-color: tokens.$color-text-emphasis;
 	}
 }
 
 .btn-icon {
-	background: $color-surface-secondary;
-	border: 1px solid $color-border-subtle;
+	background: tokens.$color-surface-secondary;
+	border: 1px solid tokens.$color-border-subtle;
 	padding: 0.6rem;
 	border-radius: 8px;
 	cursor: pointer;
@@ -218,23 +237,23 @@
 	align-items: center;
 	justify-content: center;
 	transition: all 0.2s ease;
-	color: $color-text-primary;
+	color: tokens.$color-text-primary;
 	min-width: 44px;
 	min-height: 44px;
 
 	&:hover {
-		background: $color-neutral-subtle;
-		border-color: $color-border-emphasis;
+		background: tokens.$color-neutral-subtle;
+		border-color: tokens.$color-border-emphasis;
 		transform: translateY(-2px);
-		color: $color-text-emphasis;
+		color: tokens.$color-text-emphasis;
 	}
 
 	&--danger {
-		color: $color-wax-seal;
+		color: tokens.$color-wax-seal;
 
 		&:hover {
-			background: rgba($color-wax-seal, 0.1);
-			border-color: $color-wax-seal;
+			background: rgba(tokens.$color-wax-seal, 0.1);
+			border-color: tokens.$color-wax-seal;
 		}
 	}
 }
@@ -247,20 +266,20 @@
 	padding-left: 0.5rem;
 
 	.dashboard-status {
-		font-family: $font-ui;
+		font-family: tokens.$font-ui;
 		font-size: 0.8rem;
-		color: rgba($color-text-secondary, 0.9);
-		background: rgba($color-surface-secondary, 0.4);
+		color: rgba(tokens.$color-text-secondary, 0.9);
+		background: rgba(tokens.$color-surface-secondary, 0.4);
 		padding: 0.5rem 1rem;
 		border-radius: 100px;
-		border: 1px solid rgba($color-border-subtle, 0.5);
+		border: 1px solid rgba(tokens.$color-border-subtle, 0.5);
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
 		transition: all 0.2s ease;
 
 		&:hover {
-			background: rgba($color-surface-secondary, 0.6);
+			background: rgba(tokens.$color-surface-secondary, 0.6);
 			transform: translateY(-1px);
 		}
 	}
@@ -270,8 +289,8 @@
 	background: white;
 	border-radius: 16px;
 	padding: 1.25rem;
-	border: 1px solid rgba($color-border-subtle, 0.8);
-	box-shadow: $shadow-subtle;
+	border: 1px solid rgba(tokens.$color-border-subtle, 0.8);
+	box-shadow: tokens.$shadow-subtle;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
@@ -290,10 +309,10 @@
 	flex-direction: column;
 	gap: 1.25rem;
 	margin-bottom: 2.5rem;
-	background: rgba($color-surface-secondary, 0.3);
+	background: rgba(tokens.$color-surface-secondary, 0.3);
 	padding: 1.5rem;
 	border-radius: 20px;
-	border: 1px solid rgba($color-border-subtle, 0.3);
+	border: 1px solid rgba(tokens.$color-border-subtle, 0.3);
 
 	@media (width <= 480px) {
 		padding: 1.25rem 1rem;
@@ -318,28 +337,28 @@
 		label {
 			font-size: 0.7rem;
 			text-transform: uppercase;
-			letter-spacing: $letter-spacing-wide;
-			color: rgba($color-text-secondary, 0.7);
-			font-weight: $font-weight-bold;
+			letter-spacing: tokens.$letter-spacing-wide;
+			color: rgba(tokens.$color-text-secondary, 0.7);
+			font-weight: tokens.$font-weight-bold;
 		}
 
 		input[type='search'],
 		select {
 			appearance: none;
 			padding: 0.85rem 1.25rem;
-			border: 1px solid rgba($color-border-subtle, 0.6);
+			border: 1px solid rgba(tokens.$color-border-subtle, 0.6);
 			border-radius: 12px;
 			background: white;
-			color: $color-text-primary;
-			font-family: $font-ui;
+			color: tokens.$color-text-primary;
+			font-family: tokens.$font-ui;
 			font-size: 0.95rem;
 			transition: all 0.3s ease;
 			box-shadow: inset 0 2px 4px rgb(0 0 0 / 2%);
 
 			&:focus {
-				border-color: $color-action-accent;
+				border-color: tokens.$color-action-accent;
 				outline: none;
-				box-shadow: 0 0 0 4px rgba($color-action-accent, 0.1);
+				box-shadow: 0 0 0 4px rgba(tokens.$color-action-accent, 0.1);
 			}
 		}
 
@@ -385,7 +404,7 @@
 
 .dashboard-guests__stat {
 	background: white;
-	border: 1px solid $color-border-subtle;
+	border: 1px solid tokens.$color-border-subtle;
 	border-radius: 12px;
 	padding: var(--spacing-lg);
 	display: flex;
@@ -393,7 +412,7 @@
 	align-items: center;
 	text-align: center;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: $shadow-subtle;
+	box-shadow: tokens.$shadow-subtle;
 	position: relative;
 	overflow: hidden;
 
@@ -404,15 +423,15 @@
 		left: 0;
 		width: 100%;
 		height: 4px;
-		background: $color-action-accent;
+		background: tokens.$color-action-accent;
 		opacity: 0%;
 		transition: opacity 0.3s ease;
 	}
 
 	&:hover {
 		transform: translateY(-4px);
-		box-shadow: $shadow-emphasis;
-		border-color: rgba($color-action-accent, 0.3);
+		box-shadow: tokens.$shadow-emphasis;
+		border-color: rgba(tokens.$color-action-accent, 0.3);
 
 		&::after {
 			opacity: 100%;
@@ -420,9 +439,9 @@
 	}
 
 	strong {
-		font-family: $font-display-elegant;
+		font-family: tokens.$font-display-elegant;
 		font-size: 2.5rem;
-		color: $color-text-emphasis;
+		color: tokens.$color-text-emphasis;
 		line-height: 1.2;
 		margin-bottom: 0.25rem;
 	}
@@ -433,9 +452,9 @@
 		gap: 0.4rem;
 
 		small {
-			color: $color-text-secondary;
+			color: tokens.$color-text-secondary;
 			font-size: 1.1rem;
-			font-family: $font-ui;
+			font-family: tokens.$font-ui;
 			white-space: nowrap;
 		}
 	}
@@ -443,21 +462,21 @@
 	span {
 		font-size: 0.75rem;
 		text-transform: uppercase;
-		letter-spacing: $letter-spacing-wide;
-		color: $color-text-secondary;
-		font-weight: $font-weight-semibold;
+		letter-spacing: tokens.$letter-spacing-wide;
+		color: tokens.$color-text-secondary;
+		font-weight: tokens.$font-weight-semibold;
 	}
 }
 
 /* Progress Card */
 .dashboard-guests__progress-card {
 	padding: 1.5rem;
-	background: rgba($color-surface-primary, 0.03);
+	background: rgba(tokens.$color-surface-primary, 0.03);
 	backdrop-filter: blur(12px);
-	border: 1px solid rgba($color-action-accent, 0.15);
+	border: 1px solid rgba(tokens.$color-action-accent, 0.15);
 	border-radius: 20px;
 	margin-bottom: 2.5rem;
-	box-shadow: $shadow-premium;
+	box-shadow: tokens.$shadow-premium;
 	width: 100%;
 	box-sizing: border-box;
 	position: relative;
@@ -477,7 +496,7 @@
 
 	h3 {
 		font-size: 0.85rem;
-		color: $color-action-accent;
+		color: tokens.$color-action-accent;
 		margin: 0;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
@@ -492,8 +511,8 @@
 .progress-percentage {
 	font-size: 1.75rem;
 	font-weight: 800;
-	color: $color-text-primary;
-	font-family: $font-display-elegant;
+	color: tokens.$color-text-primary;
+	font-family: tokens.$font-display-elegant;
 
 	@media (width >= 640px) {
 		font-size: 2.25rem;
@@ -513,14 +532,14 @@
 	height: 100%;
 	background: linear-gradient(
 		90deg,
-		$color-action-accent,
-		$color-text-primary,
-		$color-action-accent
+		tokens.$color-action-accent,
+		tokens.$color-text-primary,
+		tokens.$color-action-accent
 	);
 	background-size: 200% 100%;
 	animation: shimmer 3s infinite linear;
 	border-radius: 100px;
-	box-shadow: 0 0 15px rgba($color-action-accent, 0.4);
+	box-shadow: 0 0 15px rgba(tokens.$color-action-accent, 0.4);
 }
 
 @keyframes shimmer {
@@ -539,14 +558,14 @@
 	transform: translateX(-50%);
 	font-size: 1.2rem;
 	pointer-events: none;
-	text-shadow: 0 0 10px $color-action-accent;
+	text-shadow: 0 0 10px tokens.$color-action-accent;
 }
 
 .progress-footer {
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
-	color: rgba($color-text-primary, 0.7);
+	color: rgba(tokens.$color-text-primary, 0.7);
 	font-size: 0.9rem;
 
 	p {
@@ -570,12 +589,12 @@
 
 .completion-badge {
 	align-self: flex-start;
-	color: $color-action-accent;
+	color: tokens.$color-action-accent;
 	font-weight: 700;
-	background: rgba($color-action-accent, 0.15);
+	background: rgba(tokens.$color-action-accent, 0.15);
 	padding: 6px 12px;
 	border-radius: 100px;
-	border: 1px solid rgba($color-action-accent, 0.3);
+	border: 1px solid rgba(tokens.$color-action-accent, 0.3);
 	font-size: 0.8rem;
 	display: flex;
 	align-items: center;
@@ -585,10 +604,10 @@
 /* Invitation Numbering */
 .invitation-number,
 .guest-card__number {
-	font-family: $font-ui;
-	font-weight: $font-weight-bold;
-	color: $color-text-secondary;
-	background: $color-neutral-subtle;
+	font-family: tokens.$font-ui;
+	font-weight: tokens.$font-weight-bold;
+	color: tokens.$color-text-secondary;
+	background: tokens.$color-neutral-subtle;
 	padding: 2px 6px;
 	border-radius: 4px;
 	font-size: 0.75rem;
@@ -604,7 +623,7 @@
 	width: 100%;
 	background: rgb(255 255 255 / 85%);
 	backdrop-filter: blur(12px) saturate(180%);
-	border-top: 1px solid rgba($base-gold-300, 0.3);
+	border-top: 1px solid rgba(tokens.$base-gold-300, 0.3);
 	padding: 0.75rem 1rem env(safe-area-inset-bottom);
 	z-index: 9999;
 	justify-content: space-around;
@@ -628,7 +647,7 @@
 		background: none;
 		border: none;
 		padding: 0.5rem;
-		color: $color-text-secondary;
+		color: tokens.$color-text-secondary;
 		cursor: pointer;
 		transition: all 0.2s ease;
 		position: relative;
@@ -645,21 +664,21 @@
 		.dock-label {
 			font-size: 0.65rem;
 			text-transform: uppercase;
-			font-weight: $font-weight-bold;
+			font-weight: tokens.$font-weight-bold;
 			letter-spacing: 0.5px;
 		}
 
 		&--main {
 			background: linear-gradient(
 				135deg,
-				$color-text-emphasis,
-				#{color.adjust($base-gold-700, $lightness: -10%)}
+				tokens.$color-text-emphasis,
+				#{color.adjust(tokens.$base-gold-700, $lightness: -10%)}
 			);
 			width: 64px;
 			height: 64px;
 			border-radius: 50%;
 			margin-top: -2.5rem;
-			box-shadow: 0 8px 20px rgba($color-text-emphasis, 0.4);
+			box-shadow: 0 8px 20px rgba(tokens.$color-text-emphasis, 0.4);
 			color: white;
 			border: 4px solid white;
 
@@ -704,10 +723,10 @@
 /* Responsive Table Wrapper */
 .dashboard-guests__table-wrap {
 	background: white;
-	border: 1px solid $color-border-subtle;
+	border: 1px solid tokens.$color-border-subtle;
 	border-radius: 16px;
 	padding: 0;
-	box-shadow: $shadow-subtle;
+	box-shadow: tokens.$shadow-subtle;
 	overflow: hidden;
 }
 
@@ -720,7 +739,7 @@
 	}
 
 	thead {
-		background: $color-neutral-subtle;
+		background: tokens.$color-neutral-subtle;
 
 		@media (width <= 992px) {
 			display: none; // Hide headers on mobile/tablet card view
@@ -730,20 +749,20 @@
 	th {
 		text-transform: uppercase;
 		font-size: 0.7rem;
-		letter-spacing: $letter-spacing-wide;
-		color: $color-text-secondary;
-		border-bottom: 1px solid $color-border-subtle;
+		letter-spacing: tokens.$letter-spacing-wide;
+		color: tokens.$color-text-secondary;
+		border-bottom: 1px solid tokens.$color-border-subtle;
 		padding: 1.25rem 1.5rem;
 		text-align: left;
-		font-weight: $font-weight-bold;
+		font-weight: tokens.$font-weight-bold;
 	}
 
 	tbody tr {
 		transition: background-color 0.2s ease;
-		border-bottom: 1px solid $color-border-subtle;
+		border-bottom: 1px solid tokens.$color-border-subtle;
 
 		&:hover {
-			background-color: rgba($color-action-accent, 0.03);
+			background-color: rgba(tokens.$color-action-accent, 0.03);
 		}
 
 		&.row-shared {
@@ -752,11 +771,11 @@
 
 			&:hover {
 				opacity: 100%;
-				background-color: rgba($color-action-accent, 0.03);
+				background-color: rgba(tokens.$color-action-accent, 0.03);
 			}
 
 			.guest-info__name {
-				color: $color-text-secondary;
+				color: tokens.$color-text-secondary;
 			}
 		}
 
@@ -786,9 +805,9 @@
 				display: block;
 				font-size: 0.65rem;
 				text-transform: uppercase;
-				color: $color-text-secondary;
+				color: tokens.$color-text-secondary;
 				margin-bottom: 0.25rem;
-				font-weight: $font-weight-bold;
+				font-weight: tokens.$font-weight-bold;
 			}
 		}
 	}
@@ -801,20 +820,20 @@
 	gap: 0.2rem;
 
 	&__name {
-		font-family: $font-display-elegant;
+		font-family: tokens.$font-display-elegant;
 		font-size: 1.15rem;
-		color: $color-text-emphasis;
-		font-weight: $font-weight-medium;
+		color: tokens.$color-text-emphasis;
+		font-weight: tokens.$font-weight-medium;
 	}
 
 	&__phone {
 		font-size: 0.85rem;
-		color: $color-text-secondary;
+		color: tokens.$color-text-secondary;
 	}
 
 	&__email {
 		font-size: 0.75rem;
-		color: $color-neutral-base;
+		color: tokens.$color-neutral-base;
 		font-style: italic;
 	}
 }
@@ -827,7 +846,7 @@
 	padding: 0.4rem 1rem;
 	border-radius: 30px;
 	font-size: 0.75rem;
-	font-weight: $font-weight-semibold;
+	font-weight: tokens.$font-weight-semibold;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 
@@ -838,33 +857,30 @@
 	}
 
 	&--pending {
-		background: #fffbeb;
-		color: #92400e;
-		border: 1px solid #fde68a;
-
-		.status-pill__dot {
-			background: #d97706;
-		}
+		@include status-pill-variant(
+			rgb(255 251 235),
+			rgb(146 64 14),
+			rgb(253 230 138),
+			rgb(217 119 6)
+		);
 	}
 
 	&--confirmed {
-		background: #f0fdf4;
-		color: #166534;
-		border: 1px solid #bbf7d0;
-
-		.status-pill__dot {
-			background: #22c55e;
-		}
+		@include status-pill-variant(
+			rgb(240 253 244),
+			rgb(22 101 52),
+			rgb(187 247 208),
+			rgb(34 197 94)
+		);
 	}
 
 	&--declined {
-		background: #fef2f2;
-		color: #991b1b;
-		border: 1px solid #fecaca;
-
-		.status-pill__dot {
-			background: #ef4444;
-		}
+		@include status-pill-variant(
+			rgb(254 242 242),
+			rgb(153 27 27),
+			rgb(254 202 202),
+			rgb(239 68 68)
+		);
 	}
 }
 
@@ -876,17 +892,17 @@
 
 	&__current {
 		font-size: 1.1rem;
-		font-weight: $font-weight-bold;
-		color: $color-text-primary;
+		font-weight: tokens.$font-weight-bold;
+		color: tokens.$color-text-primary;
 	}
 
 	&__separator {
-		color: $color-neutral-muted;
+		color: tokens.$color-neutral-muted;
 		font-size: 0.8rem;
 	}
 
 	&__max {
-		color: $color-text-secondary;
+		color: tokens.$color-text-secondary;
 		font-size: 0.85rem;
 	}
 }
@@ -900,7 +916,7 @@
 	@media (width <= 992px) {
 		margin-top: var(--spacing-md);
 		padding-top: var(--spacing-md);
-		border-top: 1px solid $color-border-subtle;
+		border-top: 1px solid tokens.$color-border-subtle;
 		justify-content: flex-end;
 	}
 }
@@ -914,18 +930,18 @@
 	border-radius: 6px;
 	border: 1px solid transparent;
 	font-size: 0.85rem;
-	font-weight: $font-weight-medium;
+	font-weight: tokens.$font-weight-medium;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	min-height: 44px;
 	min-width: 44px;
-	background: $color-text-emphasis;
+	background: tokens.$color-text-emphasis;
 	color: white;
-	box-shadow: 0 2px 8px rgba($color-text-emphasis, 0.2);
+	box-shadow: 0 2px 8px rgba(tokens.$color-text-emphasis, 0.2);
 
 	&:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba($color-text-emphasis, 0.3);
+		box-shadow: 0 4px 12px rgba(tokens.$color-text-emphasis, 0.3);
 	}
 
 	&:disabled {
@@ -934,11 +950,11 @@
 	}
 
 	&--sending {
-		background: rgba($color-text-emphasis, 0.8);
+		background: rgba(tokens.$color-text-emphasis, 0.8);
 	}
 
 	&--delivered {
-		background: #22c55e;
+		background: rgb(34 197 94);
 		box-shadow: 0 0 12px rgb(34 197 94 / 30%);
 	}
 
@@ -954,26 +970,26 @@
 }
 
 /* Button Icons (Tactile/Game-like) */
-.btn-icon {
+.dashboard-guests__actions .btn-icon {
 	width: 44px;
 	height: 44px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: white;
-	border: 1px solid rgba($color-border-subtle, 0.8);
+	border: 1px solid rgba(tokens.$color-border-subtle, 0.8);
 	border-radius: 12px;
 	cursor: pointer;
 	transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-	box-shadow: $shadow-subtle;
+	box-shadow: tokens.$shadow-subtle;
 	font-size: 1.2rem;
 	padding: 0;
 
 	&:hover:not(:disabled) {
-		background: rgba($color-action-accent, 0.05);
-		border-color: rgba($color-action-accent, 0.3);
+		background: rgba(tokens.$color-action-accent, 0.05);
+		border-color: rgba(tokens.$color-action-accent, 0.3);
 		transform: translateY(-2px);
-		box-shadow: $shadow-emphasis;
+		box-shadow: tokens.$shadow-emphasis;
 	}
 
 	&:active:not(:disabled) {
@@ -987,11 +1003,11 @@
 	}
 
 	&--danger {
-		color: #ef4444;
+		color: rgb(239 68 68);
 
 		&:hover:not(:disabled) {
-			background: #fef2f2;
-			border-color: #fecaca;
+			background: rgb(254 242 242);
+			border-color: rgb(254 202 202);
 		}
 	}
 }
@@ -1007,21 +1023,21 @@
 	}
 }
 
-.guest-card {
+.dashboard-guests__cards .guest-card {
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing-sm);
 	padding: var(--spacing-lg);
 	background: white;
-	border: 1px solid $color-border-subtle;
+	border: 1px solid tokens.$color-border-subtle;
 	border-radius: 12px;
-	box-shadow: $shadow-subtle;
+	box-shadow: tokens.$shadow-subtle;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	margin-bottom: var(--spacing-sm);
 
 	&:hover {
-		box-shadow: $shadow-emphasis;
-		border-color: rgba($color-action-accent, 0.3);
+		box-shadow: tokens.$shadow-emphasis;
+		border-color: rgba(tokens.$color-action-accent, 0.3);
 		transform: translateY(-2px);
 	}
 
@@ -1036,7 +1052,7 @@
 		}
 
 		.guest-card__name {
-			color: $color-text-secondary;
+			color: tokens.$color-text-secondary;
 		}
 	}
 
@@ -1048,10 +1064,10 @@
 	}
 
 	&__name {
-		font-family: $font-display-elegant;
+		font-family: tokens.$font-display-elegant;
 		font-size: 1.1rem;
-		color: $color-text-emphasis;
-		font-weight: $font-weight-medium;
+		color: tokens.$color-text-emphasis;
+		font-weight: tokens.$font-weight-medium;
 	}
 
 	&__contact {
@@ -1059,7 +1075,7 @@
 		flex-direction: column;
 		gap: 0.25rem;
 		font-size: 0.85rem;
-		color: $color-text-secondary;
+		color: tokens.$color-text-secondary;
 	}
 
 	&__tags {
@@ -1073,8 +1089,8 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: var(--spacing-sm);
 		padding: var(--spacing-sm) 0;
-		border-top: 1px solid $color-border-subtle;
-		border-bottom: 1px solid $color-border-subtle;
+		border-top: 1px solid tokens.$color-border-subtle;
+		border-bottom: 1px solid tokens.$color-border-subtle;
 
 		@media (width <= 480px) {
 			grid-template-columns: repeat(2, 1fr);
@@ -1094,8 +1110,8 @@
 		font-size: 0.65rem;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: $color-text-secondary;
-		font-weight: $font-weight-semibold;
+		color: tokens.$color-text-secondary;
+		font-weight: tokens.$font-weight-semibold;
 	}
 
 	&__actions {
@@ -1121,7 +1137,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	font-size: 0.9rem;
-	color: $color-text-primary;
+	color: tokens.$color-text-primary;
 	cursor: pointer;
 	padding: 0.4rem 0.6rem;
 	border-radius: 4px;
@@ -1129,25 +1145,25 @@
 	transition: all 0.2s ease;
 
 	&:hover {
-		background: rgba($color-action-accent, 0.05);
-		border-color: rgba($color-action-accent, 0.2);
+		background: rgba(tokens.$color-action-accent, 0.05);
+		border-color: rgba(tokens.$color-action-accent, 0.2);
 	}
 
 	input[type='checkbox'] {
 		width: 16px;
 		height: 16px;
 		cursor: pointer;
-		accent-color: $color-text-emphasis;
+		accent-color: tokens.$color-text-emphasis;
 	}
 }
 
 /* Discrete Validation Messages */
 .field-error {
 	display: block;
-	color: $color-wax-seal;
+	color: tokens.$color-wax-seal;
 	font-size: 0.75rem;
 	margin-top: 0.25rem;
-	font-weight: $font-weight-medium;
+	font-weight: tokens.$font-weight-medium;
 	animation: slideDown 0.2s ease-out;
 }
 
@@ -1180,35 +1196,35 @@
 		justify-content: center;
 		padding: 0.75rem var(--spacing-sm);
 		background: white;
-		border: 1px solid $color-border-subtle;
+		border: 1px solid tokens.$color-border-subtle;
 		border-radius: 10px;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		font-size: 0.9rem;
-		font-weight: $font-weight-medium;
-		color: $color-text-primary;
+		font-weight: tokens.$font-weight-medium;
+		color: tokens.$color-text-primary;
 		text-align: center;
-		box-shadow: $shadow-subtle;
+		box-shadow: tokens.$shadow-subtle;
 
 		&:hover {
-			border-color: rgba($color-action-accent, 0.5);
-			background: rgba($color-action-accent, 0.02);
+			border-color: rgba(tokens.$color-action-accent, 0.5);
+			background: rgba(tokens.$color-action-accent, 0.02);
 			transform: translateY(-2px);
 		}
 	}
 
 	input:checked + &__content {
-		background: rgba($color-action-accent, 0.08);
-		border-color: $color-action-accent;
-		color: $color-text-emphasis;
-		box-shadow: 0 4px 12px rgba($color-action-accent, 0.1);
-		font-weight: $font-weight-bold;
+		background: rgba(tokens.$color-action-accent, 0.08);
+		border-color: tokens.$color-action-accent;
+		color: tokens.$color-text-emphasis;
+		box-shadow: 0 4px 12px rgba(tokens.$color-action-accent, 0.1);
+		font-weight: tokens.$font-weight-bold;
 
 		&::after {
 			content: '✓';
 			position: absolute;
 			top: -6px;
 			right: -6px;
-			background: $color-text-emphasis;
+			background: tokens.$color-text-emphasis;
 			color: white;
 			width: 18px;
 			height: 18px;
@@ -1317,17 +1333,17 @@
 
 @keyframes successGlow {
 	0% {
-		box-shadow: 0 0 0 0 rgba($color-action-accent, 0.4);
-		background: rgba($color-action-accent, 0.05);
+		box-shadow: 0 0 0 0 rgba(tokens.$color-action-accent, 0.4);
+		background: rgba(tokens.$color-action-accent, 0.05);
 	}
 
 	50% {
-		box-shadow: 0 0 20px 5px rgba($color-action-accent, 0.2);
-		background: rgba($color-action-accent, 0.1);
+		box-shadow: 0 0 20px 5px rgba(tokens.$color-action-accent, 0.2);
+		background: rgba(tokens.$color-action-accent, 0.1);
 	}
 
 	100% {
-		box-shadow: 0 0 0 0 rgba($color-action-accent, 0);
+		box-shadow: 0 0 0 0 rgba(tokens.$color-action-accent, 0);
 		background: transparent;
 	}
 }
@@ -1345,39 +1361,41 @@
 .session-progress {
 	margin-top: var(--spacing-sm);
 	padding: var(--spacing-xs) var(--spacing-sm);
-	background: rgba($color-action-accent, 0.05);
+	background: rgba(tokens.$color-action-accent, 0.05);
 	border-radius: 8px;
-	border: 1px solid rgba($color-action-accent, 0.1);
+	border: 1px solid rgba(tokens.$color-action-accent, 0.1);
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 
 	&__label {
 		font-size: 0.75rem;
-		font-weight: $font-weight-bold;
-		color: $color-action-accent;
+		font-weight: tokens.$font-weight-bold;
+		color: tokens.$color-action-accent;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
 
 	&__bar-container {
 		height: 6px;
-		background: rgba($color-text-secondary, 0.1);
+		background: rgba(tokens.$color-text-secondary, 0.1);
 		border-radius: 3px;
 		overflow: hidden;
 	}
 
 	&__bar {
 		height: 100%;
-		background: $color-action-accent;
+		background: tokens.$color-action-accent;
 		transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-		box-shadow: 0 0 8px rgba($color-action-accent, 0.3);
+		box-shadow: 0 0 8px rgba(tokens.$color-action-accent, 0.3);
 	}
 
 	&__count {
 		font-size: 0.85rem;
-		color: $color-text-primary;
-		font-weight: $font-weight-medium;
+		color: tokens.$color-text-primary;
+		font-weight: tokens.$font-weight-medium;
 		text-align: right;
 	}
 }
+
+

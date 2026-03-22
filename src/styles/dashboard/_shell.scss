@@ -1,4 +1,4 @@
-@use '../tokens' as *;
+@use '../tokens' as tokens;
 @use 'sass:color';
 
 .dashboard-shell-body {
@@ -13,7 +13,7 @@
 			rgb(var(--color-surface-dark-rgb), 0.05),
 			transparent 40%
 		),
-		var(--color-surface-primary, #{$color-surface-primary});
+		var(--color-surface-primary, #{tokens.$color-surface-primary});
 	min-height: 100vh;
 }
 
@@ -21,17 +21,17 @@
 	display: grid;
 	grid-template-columns: 280px minmax(0, 1fr);
 	min-height: 100vh;
-	color: $color-text-primary;
+	color: tokens.$color-text-primary;
 }
 
 /* --- Premium Sidebar --- */
 .dashboard-sidebar {
 	padding: 0;
-	background: $color-surface-dark;
-	color: $color-text-on-dark;
+	background: tokens.$color-surface-dark;
+	color: tokens.$color-text-on-dark;
 	box-shadow: 4px 0 24px rgb(0 0 0 / 20%);
 	z-index: 20;
-	border-right: 1px solid rgba($color-action-accent, 0.2);
+	border-right: 1px solid rgba(tokens.$color-action-accent, 0.2);
 }
 
 .dashboard-sidebar__brand {
@@ -40,15 +40,15 @@
 	align-items: center;
 	padding: 0 2rem;
 	background: rgb(0 0 0 / 20%);
-	border-bottom: 1px solid rgba($color-action-accent, 0.3);
+	border-bottom: 1px solid rgba(tokens.$color-action-accent, 0.3);
 	position: relative;
 
 	a {
-		color: $color-text-emphasis;
+		color: tokens.$color-text-emphasis;
 		text-decoration: none;
-		font-family: $font-display-formal; // Cinzel
+		font-family: tokens.$font-display-formal; // Cinzel
 		font-size: 1.1rem;
-		font-weight: $font-weight-bold;
+		font-weight: tokens.$font-weight-bold;
 		letter-spacing: 0.25em;
 		text-transform: uppercase;
 		text-shadow: 0 2px 4px rgb(0 0 0 / 30%);
@@ -71,7 +71,7 @@
 		left: 0;
 		width: 100%;
 		height: 1px;
-		background: linear-gradient(90deg, transparent, $color-action-accent, transparent);
+		background: linear-gradient(90deg, transparent, tokens.$color-action-accent, transparent);
 	}
 }
 
@@ -94,18 +94,18 @@
 	color: rgb(var(--color-white-rgb, 255 255 255) / 70%);
 	text-decoration: none;
 	border-radius: 10px;
-	font-family: $font-ui;
+	font-family: tokens.$font-ui;
 	font-size: 0.9rem;
-	font-weight: $font-weight-medium;
+	font-weight: tokens.$font-weight-medium;
 	letter-spacing: 0.05em;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	border: 1px solid transparent;
 
 	&.active {
-		background: rgba($color-action-accent, 0.15);
+		background: rgba(tokens.$color-action-accent, 0.15);
 		color: rgb(var(--color-white-rgb, 255 255 255));
-		border-color: rgba($color-action-accent, 0.3);
-		box-shadow: inset 0 0 12px rgba($color-action-accent, 0.1);
+		border-color: rgba(tokens.$color-action-accent, 0.3);
+		box-shadow: inset 0 0 12px rgba(tokens.$color-action-accent, 0.1);
 	}
 
 	&:hover:not(.active) {
@@ -128,9 +128,9 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 0 2.5rem;
-	background: rgba($color-surface-primary, 0.82);
+	background: rgba(tokens.$color-surface-primary, 0.82);
 	backdrop-filter: blur(16px) saturate(180%);
-	border-bottom: 1px solid rgba($color-action-accent, 0.2);
+	border-bottom: 1px solid rgba(tokens.$color-action-accent, 0.2);
 	position: sticky;
 	top: 0;
 	z-index: 100;
@@ -144,16 +144,16 @@
 	}
 
 	&--scrolled {
-		background: rgba($color-surface-primary, 0.95);
+		background: rgba(tokens.$color-surface-primary, 0.95);
 		box-shadow: 0 8px 32px rgb(0 0 0 / 10%);
 	}
 
 	h1 {
 		margin: 0;
-		font-family: $font-display-elegant; // Playfair
+		font-family: tokens.$font-display-elegant; // Playfair
 		font-size: 1.5rem;
-		color: $color-text-emphasis;
-		letter-spacing: $letter-spacing-tight;
+		color: tokens.$color-text-emphasis;
+		letter-spacing: tokens.$letter-spacing-tight;
 	}
 }
 
@@ -161,7 +161,7 @@
 .dashboard-guests__toolbar {
 	margin-bottom: 2rem;
 	padding-bottom: 1.5rem;
-	border-bottom: 1px solid rgba($color-action-accent, 0.1);
+	border-bottom: 1px solid rgba(tokens.$color-action-accent, 0.1);
 
 	.dashboard-guests__title-area {
 		display: flex;
@@ -177,10 +177,10 @@
 
 		h1 {
 			margin: 0;
-			font-family: $font-display-elegant;
+			font-family: tokens.$font-display-elegant;
 			font-size: 2.25rem;
-			color: $color-text-primary;
-			letter-spacing: $letter-spacing-tight;
+			color: tokens.$color-text-primary;
+			letter-spacing: tokens.$letter-spacing-tight;
 		}
 	}
 }
@@ -196,32 +196,32 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.15em;
-		color: rgba($color-text-secondary, 0.6);
+			color: rgba(tokens.$color-text-secondary, 0.6);
 	}
 
 	select {
 		appearance: none;
 		background: rgb(255 255 255 / 60%);
-		border: 1px solid rgba($color-action-accent, 0.15);
+		border: 1px solid rgba(tokens.$color-action-accent, 0.15);
 		border-radius: 12px;
 		padding: 0.75rem 1.25rem;
-		font-family: $font-ui;
+		font-family: tokens.$font-ui;
 		font-size: 0.9rem;
-		color: $color-text-primary;
+		color: tokens.$color-text-primary;
 		cursor: pointer;
 		transition: all 0.3s ease;
-		box-shadow: $shadow-subtle;
+		box-shadow: tokens.$shadow-subtle;
 
 		&:hover {
-			border-color: rgba($color-action-accent, 0.4);
+			border-color: rgba(tokens.$color-action-accent, 0.4);
 			background: rgb(var(--color-white-rgb, 255 255 255));
-			box-shadow: $shadow-emphasis;
+			box-shadow: tokens.$shadow-emphasis;
 		}
 
 		&:focus {
 			outline: none;
-			border-color: $color-text-emphasis;
-			box-shadow: 0 0 0 4px rgba($color-text-emphasis, 0.1);
+			border-color: tokens.$color-text-emphasis;
+			box-shadow: 0 0 0 4px rgba(tokens.$color-text-emphasis, 0.1);
 		}
 	}
 }
@@ -238,7 +238,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.6rem;
-	font-weight: $font-weight-bold;
+	font-weight: tokens.$font-weight-bold;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 
@@ -258,12 +258,12 @@
 }
 
 .btn-primary {
-	background: $color-text-emphasis;
+	background: tokens.$color-text-emphasis;
 	color: white;
-	box-shadow: 0 4px 12px rgba($color-text-emphasis, 0.3);
+	box-shadow: 0 4px 12px rgba(tokens.$color-text-emphasis, 0.3);
 
 	&:hover {
-		box-shadow: 0 6px 20px rgba($color-text-emphasis, 0.4);
+		box-shadow: 0 6px 20px rgba(tokens.$color-text-emphasis, 0.4);
 	}
 }
 
@@ -274,16 +274,16 @@
 	padding: 0;
 	margin: 0.25rem 0 0;
 	font-size: 0.75rem;
-	font-family: $font-ui;
+	font-family: tokens.$font-ui;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
-	color: rgba($color-text-secondary, 0.6);
+	color: rgba(tokens.$color-text-secondary, 0.6);
 }
 
 .dashboard-breadcrumbs li + li::before {
 	content: '•';
 	margin-right: 0.5rem;
-	color: rgba($color-action-accent, 0.4);
+	color: rgba(tokens.$color-action-accent, 0.4);
 }
 
 /* --- Premium User Menu --- */
@@ -326,30 +326,30 @@
 	font-size: 0.6rem;
 	font-weight: 800;
 	letter-spacing: 0.15em;
-	color: $color-text-secondary;
+	color: tokens.$color-text-secondary;
 	text-transform: uppercase;
 }
 
 .dashboard-user-menu__email {
 	font-size: 0.8rem;
-	color: $color-text-secondary;
-	font-weight: $font-weight-medium;
+	color: tokens.$color-text-secondary;
+	font-weight: tokens.$font-weight-medium;
 }
 
 .dashboard-user-menu button {
-	background: $color-text-emphasis;
+	background: tokens.$color-text-emphasis;
 	color: white;
 	border: none;
 	border-radius: 100px;
 	padding: 0.5rem 1rem;
-	font-family: $font-ui;
+	font-family: tokens.$font-ui;
 	font-size: 0.7rem;
-	font-weight: $font-weight-bold;
+	font-weight: tokens.$font-weight-bold;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	cursor: pointer;
 	transition: all 0.3s ease;
-	box-shadow: 0 4px 10px rgba($color-text-emphasis, 0.3);
+	box-shadow: 0 4px 10px rgba(tokens.$color-text-emphasis, 0.3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -363,9 +363,9 @@
 	}
 
 	&:hover {
-		background: #{color.adjust($base-gold-700, $lightness: 5%)};
+		background: #{color.adjust(tokens.$base-gold-700, $lightness: 5%)};
 		transform: translateY(-1px);
-		box-shadow: 0 6px 15px rgba($color-text-emphasis, 0.4);
+		box-shadow: 0 6px 15px rgba(tokens.$color-text-emphasis, 0.4);
 	}
 
 	&:active {
@@ -424,7 +424,7 @@
 
 	.dashboard-sidebar {
 		border-right: 0;
-		border-bottom: 1px solid rgba($color-action-accent, 0.2);
+		border-bottom: 1px solid rgba(tokens.$color-action-accent, 0.2);
 	}
 
 	.dashboard-sidebar__brand {
@@ -465,3 +465,5 @@ body.modal-open {
 	position: fixed;
 	width: 100%;
 }
+
+

@@ -1,5 +1,6 @@
-@use '../global/mixins' as *;
+@use '../global/mixins' as mixins;
 @use '../tokens' as tokens;
+/* stylelint-disable declaration-no-important */
 
 .header-base {
 	--header-height: 100px;
@@ -93,7 +94,7 @@
 		align-items: center;
 		justify-content: space-between;
 
-		@include respond-to(md) {
+		@include mixins.respond-to(md) {
 			padding: 0 6rem;
 		}
 	}
@@ -110,7 +111,7 @@
 	&__desktop-nav {
 		display: none;
 
-		@include respond-to(lg) {
+		@include mixins.respond-to(lg) {
 			display: block;
 		}
 	}
@@ -123,10 +124,10 @@
 		background: transparent;
 		border: none;
 		cursor: pointer;
-		color: var(--color-primary);
+		color: var(--color-action-accent);
 		display: block;
 
-		@include respond-to(md) {
+		@include mixins.respond-to(md) {
 			display: none;
 		}
 
@@ -181,14 +182,14 @@
 	&__link {
 		font-family: var(--font-display);
 		font-size: 1.75rem;
-		color: var(--color-primary-light);
+		color: var(--color-text-on-dark);
 		text-decoration: none;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		transition: color 0.3s ease;
 
 		&:hover {
-			color: var(--color-primary);
+			color: var(--color-action-accent);
 		}
 	}
 }

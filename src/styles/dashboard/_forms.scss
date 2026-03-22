@@ -15,7 +15,7 @@
 	padding: 0.55rem 0.65rem;
 	border-radius: 0.45rem;
 	border: 1px solid rgb(var(--color-surface-dark-rgb), 0.25);
-	background: #fff;
+	background: rgb(255 255 255);
 }
 
 .dashboard-actions {
@@ -29,13 +29,14 @@
 	padding: 0.56rem 0.78rem;
 	border-radius: 0.45rem;
 	border: 1px solid rgb(var(--color-action-accent-rgb), 0.4);
-	background: #fff;
+	background: rgb(255 255 255);
 	cursor: pointer;
 }
 
 .dashboard-form-help {
 	font-size: 0.75rem;
-	color: var(--color-text-tertiary);
+	color: var(--color-text-muted);
 	margin: 0.25rem 0 0;
 	font-style: italic;
 }
+

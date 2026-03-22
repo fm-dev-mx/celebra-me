@@ -1,5 +1,5 @@
 /* src/styles/dashboard/_toast.scss */
-@use '../tokens' as *;
+@use '../tokens' as tokens;
 
 .dashboard-toast {
 	position: fixed;
@@ -14,7 +14,7 @@
 	gap: 0.9rem;
 	border-radius: 18px;
 	color: rgb(245 245 245 / 92%);
-	font-family: $font-display-elegant;
+	font-family: tokens.$font-display-elegant;
 
 	// Glass body
 	background:
@@ -136,3 +136,5 @@
 		}
 	}
 }
+
+

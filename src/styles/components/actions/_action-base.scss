@@ -22,7 +22,7 @@
 	&--primary {
 		--action-bg: var(--color-action-accent);
 		--action-fg: var(--color-surface-dark);
-		--action-hover-bg: var(--color-primary-dark, var(--color-action-accent));
+		--action-hover-bg: var(--color-action-primary);
 	}
 
 	&--secondary {

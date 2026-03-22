@@ -35,7 +35,7 @@
 					0 0 8px
 						var(
 							--itinerary-line-color,
-							var(--color-primary, tokens.$color-action-primary)
+							var(--color-action-primary, tokens.$color-action-primary)
 						)
 				);
 			}

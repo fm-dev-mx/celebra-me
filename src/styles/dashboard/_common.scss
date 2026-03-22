@@ -2,7 +2,7 @@
 // Dashboard-wide utility classes for cross-module consistency
 // These classes replace the leaky .dashboard-guests__* classes
 
-@use '../tokens' as *;
+@use '../tokens' as tokens;
 
 // ==============================
 // Status & Error Messages
@@ -10,31 +10,31 @@
 
 .dashboard-status {
 	font-size: 0.875rem;
-	color: $color-text-secondary;
+	color: tokens.$color-text-secondary;
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.5rem 0;
 
 	&--loading {
-		color: $color-action-accent;
+		color: tokens.$color-action-accent;
 	}
 
 	&--success {
-		color: $color-action-accent;
+		color: tokens.$color-action-accent;
 	}
 
 	&--warning {
-		color: $color-wax-seal;
+		color: tokens.$color-wax-seal;
 	}
 }
 
 .dashboard-error {
-	color: $color-wax-seal;
+	color: tokens.$color-wax-seal;
 	font-size: 0.875rem;
 	padding: 0.75rem;
-	background: rgba($color-wax-seal, 0.1);
-	border: 1px solid rgba($color-wax-seal, 0.3);
+	background: rgba(tokens.$color-wax-seal, 0.1);
+	border: 1px solid rgba(tokens.$color-wax-seal, 0.3);
 	border-radius: 8px;
 	margin: 0.5rem 0;
 }
@@ -49,15 +49,15 @@
 	justify-content: center;
 	gap: 0.5rem;
 	padding: 2rem;
-	color: $color-text-secondary;
+	color: tokens.$color-text-secondary;
 	font-size: 0.875rem;
 }
 
 .dashboard-spinner {
 	width: 1.5rem;
 	height: 1.5rem;
-	border: 2px solid rgba($color-action-accent, 0.2);
-	border-top-color: $color-action-accent;
+	border: 2px solid rgba(tokens.$color-action-accent, 0.2);
+	border-top-color: tokens.$color-action-accent;
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 }
@@ -112,5 +112,7 @@
 .dashboard-confirm-message {
 	text-align: center;
 	margin-bottom: var(--spacing-xl, 2rem);
-	color: $color-text-secondary;
+	color: tokens.$color-text-secondary;
 }
+
+
