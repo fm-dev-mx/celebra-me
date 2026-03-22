@@ -118,8 +118,12 @@ As of 2026-03-22, complex invitation components such as RSVP have undergone logi
 
 ## Semantic Token Governance
 
-Base semantic tokens live in `src/styles/tokens/_semantic.scss` and are surfaced globally through
-`src/styles/global.scss`.
+Canonical runtime token publication now lives in `src/styles/tokens/semantic/` and is surfaced
+globally through `src/styles/global.scss`.
+
+`src/styles/tokens/_semantic.scss` remains in the repo only as a temporary authoring compatibility
+shim for legacy `tokens.$color-*` consumers. It is not the runtime source of truth and must not be
+used for new token publication.
 
 As of 2026-03-16 Phase 03, `src/styles/global.scss` also defines the canonical runtime typography
 and glass-role variables consumed by preset-sensitive invitation surfaces, including:
@@ -139,6 +143,20 @@ Phase 06 standardized these additional semantic roles for component-level stylin
 - `--color-surface-canvas`
 - `--color-border-premium`
 - `--color-text-muted`
+
+As of 2026-03-22 Plan 008 closeout:
+
+- `src/styles/global.scss` no longer imports `src/styles/tokens/contracts/_core.scss`.
+- `src/styles/themes/sections/_reveal-theme.scss` no longer depends on `src/styles/tokens/primitives/color`.
+- The legacy `src/styles/tokens/contracts/_core.scss` and `src/styles/tokens/primitives/**` files have been removed because they no longer have active runtime or test consumers.
+
+Decorative exceptions:
+
+- Preset and section theme files may retain hardcoded ornamental gradients, shadows, or metallic
+  accents when those values are intentionally art-directed and do not represent reusable semantic
+  roles.
+- Reusable palette, typography, surface, glass, spacing, and motion contracts must still flow
+  through `tokens/system`, `tokens/semantic`, or runtime `var(--*)` contracts.
 
 Component rules:
 
@@ -183,4 +201,4 @@ as a fallback to preserve existing content behavior during migration.
 
 ---
 
-**Last Updated:** 2026-03-22 (Planning preflight and theme governance sync)
+**Last Updated:** 2026-03-22 (Plan 008 closeout and compatibility-shim governance)
