@@ -1,51 +1,27 @@
 @use 'sass:color';
-@use '../../tokens' as tokens;
+@use '../../tools/functions' as tools;
+@use '../../tokens/system/color' as sys;
 
 .theme-preset--top-premium-floral {
-	--color-surface-primary: var(--color-surface-primary-override, #fbeded);
-	--color-surface-primary-rgb: var(
-		--color-surface-primary-rgb-override,
-		#{color.channel(#fbeded, 'red', $space: rgb)},
-		#{color.channel(#fbeded, 'green', $space: rgb)},
-		#{color.channel(#fbeded, 'blue', $space: rgb)}
-	);
-	--color-surface-soft: var(--color-surface-soft-override, #fff);
-	--color-surface-dark: var(--color-surface-dark-override, #5e4b4b);
-	--color-surface-dark-rgb: var(
-		--color-surface-dark-rgb-override,
-		#{color.channel(#5e4b4b, 'red', $space: rgb)},
-		#{color.channel(#5e4b4b, 'green', $space: rgb)},
-		#{color.channel(#5e4b4b, 'blue', $space: rgb)}
-	);
-	--color-action-primary: var(--color-action-primary-override, #d4a5a5);
-	--color-action-primary-rgb: var(
-		--color-action-primary-rgb-override,
-		#{color.channel(#d4a5a5, 'red', $space: rgb)},
-		#{color.channel(#d4a5a5, 'green', $space: rgb)},
-		#{color.channel(#d4a5a5, 'blue', $space: rgb)}
-	);
-	--color-action-accent: var(--color-action-accent-override, #d4a5a5);
-	--color-action-accent-rgb: var(
-		--color-action-accent-rgb-override,
-		#{color.channel(#d4a5a5, 'red', $space: rgb)},
-		#{color.channel(#d4a5a5, 'green', $space: rgb)},
-		#{color.channel(#d4a5a5, 'blue', $space: rgb)}
-	);
-	--color-text-primary: var(--color-text-primary-override, #5e4b4b);
-	--color-text-primary-rgb: var(
-		--color-text-primary-rgb-override,
-		#{color.channel(#5e4b4b, 'red', $space: rgb)},
-		#{color.channel(#5e4b4b, 'green', $space: rgb)},
-		#{color.channel(#5e4b4b, 'blue', $space: rgb)}
-	);
-	--color-text-emphasis: var(--color-text-emphasis-override, #d4a5a5);
-	--color-text-secondary: var(--color-text-secondary-override, rgb(94 75 75 / 78%));
-	--color-text-on-dark: var(--color-text-on-dark-override, #fbeded);
-	--color-border-subtle: rgb(212 165 165 / 18%);
-	--color-glass-bg: rgb(255 255 255 / 48%);
-	--color-glass-bg-accent: rgb(212 165 165 / 10%);
-	--color-glass-border: rgb(212 165 165 / 30%);
-	--color-glass-shadow: rgb(94 75 75 / 18%);
+	--color-surface-primary: #{sys.$sys-color-floral-50};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-50)};
+	--color-surface-soft: #{sys.$sys-color-neutral-0};
+	--color-surface-dark: #{sys.$sys-color-taupe-500};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-taupe-500)};
+	--color-action-primary: #{sys.$sys-color-floral-300};
+	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-300)};
+	--color-action-accent: #{sys.$sys-color-floral-300};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-floral-300)};
+	--color-text-primary: #{sys.$sys-color-taupe-500};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-taupe-500)};
+	--color-text-emphasis: #{sys.$sys-color-floral-300};
+	--color-text-secondary: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.78)};
+	--color-text-on-dark: #{sys.$sys-color-floral-50};
+	--color-border-subtle: #{color.change(sys.$sys-color-floral-300, $alpha: 0.18)};
+	--color-glass-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.48)};
+	--color-glass-bg-accent: #{color.change(sys.$sys-color-floral-300, $alpha: 0.1)};
+	--color-glass-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.3)};
+	--color-glass-shadow: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.18)};
 	--glass-blur: 18px;
 	--glass-saturate: 175%;
 	--font-display: 'Bodoni Moda Variable', serif;
@@ -53,18 +29,18 @@
 	--font-body: 'Montserrat Variable', sans-serif;
 	--font-calligraphy: 'The Nautigal', cursive;
 	--font-label-tracking: 0.28em;
-	--shadow-premium: 0 24px 56px rgb(94 75 75 / 14%), 0 14px 30px rgb(212 165 165 / 16%);
-	--hero-card-bg: linear-gradient(160deg, rgb(255 255 255 / 78%) 0%, rgb(251 237 237 / 42%) 100%);
-	--hero-card-border-hairline: rgb(212 165 165 / 32%);
-	--hero-card-shadow-ambient: 0 30px 80px rgb(94 75 75 / 24%), 0 12px 32px rgb(212 165 165 / 12%);
-	--hero-title-color-start: #fbeded;
-	--hero-title-color-mid: #fff;
-	--hero-title-color-end: #d4a5a5;
-	--hero-badge-bg: rgb(255 255 255 / 42%);
-	--hero-badge-border: rgb(212 165 165 / 50%);
-	--hero-badge-text: #5e4b4b;
-	--hero-label-color: #d4a5a5;
-	--hero-divider-color: rgb(212 165 165 / 70%);
+	--shadow-premium: 0 24px 56px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.14)}, 0 14px 30px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
+	--hero-card-bg: linear-gradient(160deg, #{color.change(sys.$sys-color-neutral-0, $alpha: 0.78)} 0%, #{color.change(sys.$sys-color-floral-50, $alpha: 0.42)} 100%);
+	--hero-card-border-hairline: #{color.change(sys.$sys-color-floral-300, $alpha: 0.32)};
+	--hero-card-shadow-ambient: 0 30px 80px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.24)}, 0 12px 32px #{color.change(sys.$sys-color-floral-300, $alpha: 0.12)};
+	--hero-title-color-start: #{sys.$sys-color-floral-50};
+	--hero-title-color-mid: #{sys.$sys-color-neutral-0};
+	--hero-title-color-end: #{sys.$sys-color-floral-300};
+	--hero-badge-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.42)};
+	--hero-badge-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.5)};
+	--hero-badge-text: #{sys.$sys-color-taupe-500};
+	--hero-label-color: #{sys.$sys-color-floral-300};
+	--hero-divider-color: #{color.change(sys.$sys-color-floral-300, $alpha: 0.7)};
 	--light-sweep: linear-gradient(
 		-45deg,
 		rgb(255 255 255 / 0%) 0%,
@@ -75,35 +51,35 @@
 	);
 	--family-bg: radial-gradient(
 		circle at 50% 20%,
-		rgb(255 255 255 / 65%) 0%,
-		rgb(251 237 237 / 82%) 100%
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.65)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.82)} 100%
 	);
-	--family-border: rgb(212 165 165 / 18%);
-	--family-text-primary: #5e4b4b;
-	--family-text-muted: rgb(94 75 75 / 68%);
-	--family-accent: #d4a5a5;
+	--family-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.18)};
+	--family-text-primary: #{sys.$sys-color-taupe-500};
+	--family-text-muted: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.68)};
+	--family-accent: #{sys.$sys-color-floral-300};
 	--family-shadow: var(--shadow-premium);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(212 165 165 / 92%) 50%,
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.92)} 50%,
 		transparent 100%
 	);
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
-		rgb(212 165 165 / 6%) 100%
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.06)} 100%
 	);
-	--jewelry-box-gallery-section-bg: linear-gradient(180deg, #fff 0%, #fbeded 100%);
-	--jewelry-box-gallery-card-bg: rgb(255 255 255 / 50%);
+	--jewelry-box-gallery-section-bg: linear-gradient(180deg, #{sys.$sys-color-neutral-0} 0%, #{sys.$sys-color-floral-50} 100%);
+	--jewelry-box-gallery-card-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
 	--jewelry-box-gallery-card-radius: 0;
 	--jewelry-box-gallery-card-padding: 0;
 	--jewelry-box-gallery-image-radius: 0;
 	--jewelry-box-gallery-title-font: var(--font-display);
-	--jewelry-box-gallery-title-color: #5e4b4b;
-	--jewelry-box-gallery-subtitle-color: rgb(94 75 75 / 72%);
-	--jewelry-box-gallery-caption-bg: rgb(94 75 75 / 90%);
-	--jewelry-box-gallery-caption-color: #fbeded;
+	--jewelry-box-gallery-title-color: #{sys.$sys-color-taupe-500};
+	--jewelry-box-gallery-subtitle-color: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.72)};
+	--jewelry-box-gallery-caption-bg: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.9)};
+	--jewelry-box-gallery-caption-color: #{sys.$sys-color-floral-50};
 	--jewelry-box-gallery-caption-font: 'Cormorant Garamond', serif;
 	--jewelry-box-gallery-caption-size: 0.82rem;
 	--jewelry-box-gallery-caption-letter-spacing: 0.15em;
@@ -119,13 +95,13 @@
 	// Premium Metallic Gradients
 	--gold-metallic: linear-gradient(
 		135deg,
-		#d4a5a5 0%,
-		#fbeded 40%,
-		#b88a8a 55%,
-		#8c6b6b 70%,
-		#d4a5a5 100%
+		#{sys.$sys-color-floral-300} 0%,
+		#{sys.$sys-color-floral-50} 40%,
+		#{sys.$sys-color-floral-500} 55%,
+		#{sys.$sys-color-floral-700} 70%,
+		#{sys.$sys-color-floral-300} 100%
 	);
-	--gold-glow: 0 0 20px rgb(212 165 165 / 25%);
+	--gold-glow: 0 0 20px #{color.change(sys.$sys-color-floral-300, $alpha: 0.25)};
 
 	// Layout Specifics
 	--container-max-width-lg: 1280px;

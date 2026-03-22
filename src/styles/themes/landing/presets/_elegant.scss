@@ -7,31 +7,32 @@
  */
 
 @use 'sass:color';
-@use '../../../tokens/primitives' as primitives;
+@use '../../../tools/functions' as tools;
+@use '../../../tokens/system/color' as sys;
 /* stylelint-disable color-no-hex */
 
 .theme-preset--elegant {
 	// Color Architecture: Standard Brand Palette
-	--color-text-primary: #{primitives.$base-coffee-900};
-	--color-text-primary-rgb: #{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
-	--color-text-secondary: #{primitives.$base-coffee-700};
-	--color-text-emphasis: #{primitives.$base-gold-700};
-	--color-text-on-dark: #{primitives.$base-parchment-100};
-	--color-surface-primary: #{primitives.$base-parchment-100};
-	--color-surface-primary-rgb: #{color.channel(primitives.$base-parchment-100, 'red', $space: rgb)}, #{color.channel(primitives.$base-parchment-100, 'green', $space: rgb)}, #{color.channel(primitives.$base-parchment-100, 'blue', $space: rgb)};
-	--color-surface-dark: #{primitives.$base-coffee-900};
-	--color-surface-dark-rgb: #{color.channel(primitives.$base-coffee-900, 'red', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'green', $space: rgb)}, #{color.channel(primitives.$base-coffee-900, 'blue', $space: rgb)};
-	--color-action-primary: #{primitives.$base-coffee-900};
-	--color-action-accent: #{primitives.$base-gold-500};
-	--color-action-accent-rgb: #{color.channel(primitives.$base-gold-500, 'red', $space: rgb)}, #{color.channel(primitives.$base-gold-500, 'green', $space: rgb)}, #{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)};
+	--color-text-primary: #{sys.$sys-color-coffee-900};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-text-secondary: #{sys.$sys-color-coffee-700};
+	--color-text-emphasis: #{sys.$sys-color-gold-700};
+	--color-text-on-dark: #{sys.$sys-color-parchment-100};
+	--color-surface-primary: #{sys.$sys-color-parchment-100};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--color-surface-dark: #{sys.$sys-color-coffee-900};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-action-primary: #{sys.$sys-color-coffee-900};
+	--color-action-accent: #{sys.$sys-color-gold-500};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
 
 	// Specific fixes for Contact Form
-	--color-border-subtle: rgb(75 54 33 / 10%); // Based on coffee-900
-	--color-border-emphasis: #{primitives.$base-gold-500};
+	--color-border-subtle: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.1)};
+	--color-border-emphasis: #{sys.$sys-color-gold-500};
 
 	// Glassmorphism default
-	--color-glass-bg: rgb(245 245 220 / 10%); // parchment-100 rgb
-	--color-glass-border: rgb(245 245 220 / 20%);
+	--color-glass-bg: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.1)};
+	--color-glass-border: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.2)};
 
 	// Shadows
 	--shadow-subtle: 0 4px 15px rgb(0 0 0 / 10%);
@@ -53,22 +54,22 @@
 	--services-image-overlay-opacity: 0.6;
 	--services-image-filter-default: grayscale(100%);
 	--services-image-filter-hover: grayscale(0%);
-	--services-icon-wrapper-bg: var(--color-surface-primary, #{primitives.$base-neutral-0});
-	--services-icon-wrapper-color: #{primitives.$base-gold-500};
+	--services-icon-wrapper-bg: #{sys.$sys-color-neutral-0};
+	--services-icon-wrapper-color: #{sys.$sys-color-gold-500};
 	--services-icon-wrapper-shadow: 0 4px 10px rgb(0 0 0 / 5%);
-	--services-heading-accent-color: #{primitives.$base-gold-500};
+	--services-heading-accent-color: #{sys.$sys-color-gold-500};
 	--services-title-color: var(--color-text-primary);
 	--services-description-color: var(--color-text-secondary);
-	--services-cta-color: #{primitives.$base-gold-500};
+	--services-cta-color: #{sys.$sys-color-gold-500};
 	--services-card-transition-duration: 0.4s;
 	--services-card-stagger-delay: 100ms;
 
 	// Header Section
 	--header-bg-transparent: transparent;
-	--header-bg-scrolled: rgb(15 23 42 / 95%); // Dark blue from FAQ/Footer
-	--header-text-transparent: #{primitives.$base-neutral-0};
-	--header-text-scrolled: #{primitives.$base-parchment-100};
-	--header-accent-scrolled: #{primitives.$base-gold-500};
+	--header-bg-scrolled: #0f172a; // Keeping specific dark blue for landing
+	--header-text-transparent: #{sys.$sys-color-neutral-0};
+	--header-text-scrolled: #{sys.$sys-color-parchment-100};
+	--header-accent-scrolled: #{sys.$sys-color-gold-500};
 	--header-shadow-scrolled: 0 4px 20px rgb(0 0 0 / 30%);
 	--header-backdrop-blur: 12px;
 
@@ -77,22 +78,22 @@
 	--about-underline-shine-color: rgb(255 255 255 / 60%);
 	--about-image-wrapper-bg: linear-gradient(
 		135deg,
-		rgb(var(--color-white-rgb, 255, 255, 255), 0.4) 0%,
-		rgb(var(--color-white-rgb, 255, 255, 255), 0.05) 50%,
-		rgb(var(--color-white-rgb, 255, 255, 255), 0.02) 100%
+		rgb(255 255 255 / 40%) 0%,
+		rgb(255 255 255 / 5%) 50%,
+		rgb(255 255 255 / 2%) 100%
 	);
 	--about-image-wrapper-shadow:
 		0 40px 80px -20px rgb(0 0 0 / 20%),
-		0 15px 40px -15px rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.15);
-	--about-image-frame-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.35);
-	--about-image-glow-color: rgb(var(--color-action-accent-rgb), 0.18);
-	--about-decoration-border: rgb(var(--color-action-accent-rgb), 0.35);
-	--about-decoration-shadow: 0 20px 40px rgb(var(--color-action-accent-rgb), 0.08);
-	--about-value-card-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.5);
-	--about-value-card-hover-border: rgb(var(--color-action-accent-rgb), 0.4);
-	--about-value-icon-bg: rgb(var(--color-action-accent-rgb), 0.08);
+		0 15px 40px -15px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
+	--about-image-frame-border: rgb(255 255 255 / 35%);
+	--about-image-glow-color: #{color.change(sys.$sys-color-gold-400, $alpha: 0.18)};
+	--about-decoration-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.35)};
+	--about-decoration-shadow: 0 20px 40px #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
+	--about-value-card-border: rgb(255 255 255 / 50%);
+	--about-value-card-hover-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.4)};
+	--about-value-icon-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
 	--about-value-icon-color: var(--color-action-accent);
-	--about-value-icon-border: rgb(var(--color-action-accent-rgb), 0.2);
+	--about-value-icon-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
 	--about-value-icon-hover-bg: var(--color-action-accent);
 	--about-sparkle-color: var(--color-action-accent);
 	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
@@ -103,15 +104,15 @@
 	// Pricing Section
 	--pricing-section-bg: var(--color-surface-primary);
 	--pricing-noise-opacity: 0.03;
-	--pricing-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
+	--pricing-card-bg: rgb(255 255 255 / 70%);
 	--pricing-card-backdrop-blur: 10px;
-	--pricing-card-border: rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.2);
+	--pricing-card-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
 	--pricing-card-border-radius: 4px;
 	--pricing-card-hover-transform: translateY(-10px);
 	--pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
-	--pricing-premium-bg: rgb(var(--color-surface-dark-rgb, 44, 62, 80), 0.02);
+	--pricing-premium-bg: rgb(44 62 80 / 2%);
 	--pricing-premium-border: var(--color-action-accent);
-	--pricing-premium-shadow: 0 0 20px rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.1);
+	--pricing-premium-shadow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
 	--pricing-premium-scale: 1.05;
 	--pricing-premium-badge-bg: var(--color-action-accent);
 	--pricing-elite-bg: rgb(15 23 42 / 90%);
@@ -123,11 +124,11 @@
 	--pricing-tier-desc-color: var(--color-text-primary);
 	--pricing-tier-price-color: var(--color-surface-dark);
 	--pricing-tier-currency-color: var(--color-action-accent);
-	--pricing-feature-highlight-bg: rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.1);
+	--pricing-feature-highlight-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
 	--pricing-feature-highlight-color: var(--color-action-primary);
 	--pricing-cta-border: var(--color-action-accent);
 	--pricing-cta-color: var(--color-action-accent);
-	--pricing-cta-hover-bg: rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.05);
+	--pricing-cta-hover-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.05)};
 	--pricing-card-border-glow: var(--color-action-accent);
 	--pricing-glint-gradient: linear-gradient(
 		90deg,
@@ -140,22 +141,22 @@
 	--faq-section-bg: #0f172a;
 	--faq-section-color: white;
 	--faq-noise-opacity: 0.1;
-	--faq-item-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.03);
+	--faq-item-bg: rgb(255 255 255 / 3%);
 	--faq-item-backdrop-blur: 10px;
-	--faq-item-border: rgb(var(--color-white-rgb, 255, 255, 255), 0.05);
+	--faq-item-border: rgb(255 255 255 / 5%);
 	--faq-item-border-radius: 2px;
 	--faq-item-hover-bg: rgb(255 255 255 / 5%);
-	--faq-item-hover-border: rgb(var(--color-action-accent-rgb), 0.3);
-	--faq-item-open-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.07);
+	--faq-item-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
+	--faq-item-open-bg: rgb(255 255 255 / 7%);
 	--faq-item-open-border: var(--color-action-accent);
 	--faq-item-open-shadow: 0 30px 60px rgb(0 0 0 / 30%);
 	--faq-pretitle-color: var(--color-action-accent);
 	--faq-title-color: var(--color-surface-secondary);
-	--faq-subtitle-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.7);
+	--faq-subtitle-color: rgb(255 255 255 / 70%);
 	--faq-question-color: var(--color-surface-secondary);
 	--faq-question-hover-color: white;
-	--faq-answer-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
-	--faq-chevron-color: rgb(var(--color-white-rgb, 255, 255, 255), 0.3);
+	--faq-answer-color: rgb(255 255 255 / 60%);
+	--faq-chevron-color: rgb(255 255 255 / 30%);
 	--faq-chevron-open-color: var(--color-action-accent);
 	--faq-transition-duration: 0.5s;
 	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
@@ -176,8 +177,7 @@
 	--footer-social-color: white;
 	--footer-social-hover-bg: var(--color-action-accent);
 	--footer-social-hover-border: var(--color-action-accent);
-	--footer-social-hover-shadow: 0 10px 20px
-		rgb(var(--color-action-accent-rgb, 197, 160, 89), 0.2);
+	--footer-social-hover-shadow: 0 10px 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
 	--footer-bottom-border: rgb(255 255 255 / 10%);
 	--footer-copyright-opacity: 0.5;
 	--footer-legal-opacity: 0.5;
@@ -222,11 +222,6 @@
 	--contact-submit-hover-transform: translateY(-2px);
 	--contact-submit-hover-shadow: var(--shadow-subtle);
 
-	// Supplemental for remediation
-	--contact-bg-override: transparent;
-	--contact-padding-override: 0;
-	--contact-box-shadow-override: none;
-
 	// Testimonials Section
 	--testimonials-title-font: var(--font-display, 'Playfair Display', serif);
 	--testimonials-title-color: var(--color-text-primary, #333);
@@ -235,28 +230,27 @@
 	--testimonials-title-underline-bg: linear-gradient(
 		90deg,
 		transparent,
-		var(--color-action-accent, #{primitives.$base-gold-500}),
+		var(--color-action-accent, #{sys.$sys-color-gold-500}),
 		transparent
 	);
-	--testimonials-card-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.6);
+	--testimonials-card-bg: rgb(255 255 255 / 60%);
 	--testimonials-card-backdrop-blur: 12px;
-	--testimonials-card-border: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+	--testimonials-card-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
 	--testimonials-card-border-radius: 2px;
 	--testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
 	--testimonials-card-transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 	--testimonials-card-accent-bg: linear-gradient(
 		90deg,
 		transparent,
-		var(--color-action-accent, #{primitives.$base-gold-500}),
+		var(--color-action-accent, #{sys.$sys-color-gold-500}),
 		transparent
 	);
 	--testimonials-card-accent-opacity: 0.3;
-	--testimonials-card-hover-bg: rgb(var(--color-white-rgb, 255, 255, 255), 0.95);
-	--testimonials-card-hover-border: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.4);
-	--testimonials-card-hover-shadow: 0 25px 50px -20px
-		rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+	--testimonials-card-hover-bg: rgb(255 255 255 / 95%);
+	--testimonials-card-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.4)};
+	--testimonials-card-hover-shadow: 0 25px 50px -20px #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
 	--testimonials-card-hover-transform: translateY(-8px);
-	--testimonials-quote-icon-color: var(--color-action-accent, #{primitives.$base-gold-500});
+	--testimonials-quote-icon-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
 	--testimonials-quote-icon-opacity: 0.08;
 	--testimonials-quote-icon-hover-opacity: 0.15;
 	--testimonials-quote-icon-hover-transform: scale(1.1) rotate(-5deg);
@@ -269,12 +263,10 @@
 	--testimonials-author-name-transform: uppercase;
 	--testimonials-author-name-letter-spacing: 0.2em;
 	--testimonials-author-name-size: 0.85rem;
-	--testimonials-author-name-color: var(--color-action-accent, #{primitives.$base-gold-500});
+	--testimonials-author-name-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
 	--testimonials-author-role-size: 0.7rem;
 	--testimonials-author-role-transform: uppercase;
 	--testimonials-author-role-letter-spacing: 0.15em;
 	--testimonials-author-role-color: var(--color-text-muted, #666);
-	--testimonials-footer-border: rgb(0 0 0 / 5%);
-
 }
 

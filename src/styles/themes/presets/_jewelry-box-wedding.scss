@@ -1,35 +1,38 @@
-@use '../../tokens/index' as tokens;
+@use 'sass:color';
+@use '../../tools/functions' as tools;
+@use '../../tokens/system/color' as sys;
+@use '../../tokens/system/type' as sys-type;
 
 /* --- PRESET: Jewelry Box Wedding --- */
 
 .theme-preset--jewelry-box-wedding {
 	// 💎 Layer 1 & 2: Surface Architecture
-	--color-surface-primary: var(--color-surface-primary-override, #fefcf9); // Soft Ivory
-	--color-surface-primary-rgb: var(--color-surface-primary-rgb-override, 254, 252, 249);
-	--color-surface-soft: var(--color-surface-soft-override, #fdfbf7);
-	--color-surface-dark: var(--color-surface-dark-override, #333); // Charcoal Grey
-	--color-surface-dark-rgb: var(--color-surface-dark-rgb-override, 51, 51, 51);
+	--color-surface-primary: #{sys.$sys-color-champagne-50};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-champagne-50)};
+	--color-surface-soft: #{sys.$sys-color-neutral-0};
+	--color-surface-dark: #{sys.$sys-color-neutral-800};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-800)};
 
 	// 💎 Layer 3: Actions & Emphasis
-	--color-action-primary: var(--color-action-primary-override, var(--color-surface-dark));
-	--color-action-accent: var(--color-action-accent-override, #e5c387); // Champagne Gold
-	--color-action-accent-rgb: var(--color-action-accent-rgb-override, 229, 195, 135);
-	--color-text-primary: var(--color-text-primary-override, var(--color-surface-dark));
-	--color-text-emphasis: var(--color-text-emphasis-override, #b88e44); // Deeper gold for readability
-	--color-text-on-dark: var(--color-text-on-dark-override, #e5c387);
-	--color-text-on-light: var(--color-text-on-light-override, #4a4a4a);
+	--color-action-primary: var(--color-surface-dark);
+	--color-action-accent: #{sys.$sys-color-champagne-300};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-champagne-300)};
+	--color-text-primary: var(--color-surface-dark);
+	--color-text-emphasis: #{sys.$sys-color-gold-700};
+	--color-text-on-dark: #{sys.$sys-color-champagne-300};
+	--color-text-on-light: #{sys.$sys-color-neutral-700};
 
 	// ✨ Glassmorphism & Effects
-	--color-glass-bg: rgb(255 252 249 / 65%);
-	--color-glass-border: rgb(229 195 135 / 35%);
-	--color-glass-shadow: rgb(184 142 68 / 12%);
+	--color-glass-bg: #{color.change(sys.$sys-color-champagne-50, $alpha: 0.65)};
+	--color-glass-border: #{color.change(sys.$sys-color-champagne-300, $alpha: 0.35)};
+	--color-glass-shadow: #{color.change(sys.$sys-color-gold-700, $alpha: 0.12)};
 	--glass-blur: 12px;
 	--glass-saturate: 160%;
 
 	// 🖋️ Typography
-	--font-display: #{tokens.$font-display-elegant};
-	--font-body: #{tokens.$font-body};
-	--font-calligraphy: 'Pinyon Script', cursive;
+	--font-display: #{sys-type.$sys-font-display-elegant};
+	--font-body: #{sys-type.$sys-font-ui};
+	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
 
 	// 🎨 Premium Details
 	--shadow-premium: 0 20px 40px var(--color-glass-shadow), 0 8px 16px rgb(0 0 0 / 4%);
@@ -38,7 +41,7 @@
 	// Component Specific Overrides
 	--family-bg: radial-gradient(
 		circle at 50% 50%,
-		rgb(229 195 135 / 8%) 0%,
+		#{color.change(sys.$sys-color-champagne-300, $alpha: 0.08)} 0%,
 		var(--color-surface-primary) 100%
 	);
 	--family-divider: linear-gradient(

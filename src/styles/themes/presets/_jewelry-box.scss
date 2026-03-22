@@ -1,38 +1,24 @@
 @use 'sass:color';
-@use '../../tokens' as tokens;
-@use '../../tokens/primitives' as primitives;
+@use '../../tools/functions' as tools;
+@use '../../tokens/system/color' as sys;
+@use '../../tokens/system/type' as sys-type;
 
 .theme-preset--jewelry-box {
 	// 💎 Color Architecture: Gold, Pearl & Glass
-	--color-surface-primary: var(--color-surface-primary-override, #{primitives.$base-gold-50});
-	--color-surface-primary-rgb: var(
-		--color-surface-primary-rgb-override,
-		#{color.channel(primitives.$base-gold-50, 'red', $space: rgb)},
-		#{color.channel(primitives.$base-gold-50, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-gold-50, 'blue', $space: rgb)}
-	);
-	--color-surface-soft: var(--color-surface-soft-override, #{primitives.$base-neutral-50});
-	--color-surface-dark: var(--color-surface-dark-override, #{primitives.$base-neutral-900});
-	--color-surface-dark-rgb: var(
-		--color-surface-dark-rgb-override,
-		#{color.channel(primitives.$base-neutral-900, 'red', $space: rgb)},
-		#{color.channel(primitives.$base-neutral-900, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-neutral-900, 'blue', $space: rgb)}
-	);
+	--color-surface-primary: #{sys.$sys-color-gold-50};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-gold-50)};
+	--color-surface-soft: #{sys.$sys-color-neutral-50};
+	--color-surface-dark: #{sys.$sys-color-neutral-900};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-900)};
 
 	// Actions & Emphasis
-	--color-action-primary: var(--color-action-primary-override, var(--color-surface-dark));
-	--color-action-accent: var(--color-action-accent-override, #{primitives.$base-gold-500});
-	--color-action-accent-rgb: var(
-		--color-action-accent-rgb-override,
-		#{color.channel(primitives.$base-gold-500, 'red', $space: rgb)},
-		#{color.channel(primitives.$base-gold-500, 'green', $space: rgb)},
-		#{color.channel(primitives.$base-gold-500, 'blue', $space: rgb)}
-	);
-	--color-text-primary: var(--color-text-primary-override, var(--color-surface-dark));
-	--color-text-emphasis: var(--color-text-emphasis-override, #{primitives.$base-gold-800});
-	--color-text-on-dark: var(--color-text-on-dark-override, #{primitives.$base-gold-500});
-	--color-text-on-light: var(--color-text-on-light-override, #{primitives.$base-neutral-700});
+	--color-action-primary: var(--color-surface-dark);
+	--color-action-accent: #{sys.$sys-color-gold-500};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+	--color-text-primary: var(--color-surface-dark);
+	--color-text-emphasis: #{sys.$sys-color-gold-800};
+	--color-text-on-dark: #{sys.$sys-color-gold-500};
+	--color-text-on-light: #{sys.$sys-color-neutral-700};
 
 	// Glassmorphism UI
 	--color-glass-bg: rgb(255 255 255 / 45%);
@@ -42,9 +28,9 @@
 	--glass-saturate: 180%;
 
 	// Typography & Semantic Overrides
-	--font-display: #{tokens.$font-display-elegant};
-	--font-body: #{tokens.$font-body};
-	--font-calligraphy: 'Pinyon Script', cursive;
+	--font-display: #{sys-type.$sys-font-display-elegant};
+	--font-body: #{sys-type.$sys-font-ui};
+	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
 
 	// Component Specifics
 	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgb(0 0 0 / 5%);
@@ -106,7 +92,7 @@
 	--hero-card-border-hairline: var(--color-glass-border);
 	--hero-card-shadow-ambient: var(--shadow-premium);
 	--hero-title-color-start: var(--color-action-accent);
-	--hero-title-color-mid: #fff;
+	--hero-title-color-mid: rgb(255 255 255);
 	--hero-title-color-end: var(--color-action-accent);
 	--hero-badge-bg: var(--color-glass-bg);
 	--hero-badge-border: var(--color-action-accent);
@@ -130,7 +116,7 @@
 	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb), 0.72);
 	--gallery-caption-bg: rgb(255 255 255 / 90%);
 	--gallery-caption-color: var(--color-action-accent);
-	--gallery-caption-font: 'Cormorant Garamond', serif;
+	--gallery-caption-font: #{sys-type.$sys-font-display-hacienda};
 	--gallery-caption-size: 0.8rem;
 	--gallery-caption-letter-spacing: 0.04em;
 
@@ -158,11 +144,11 @@
 	// Premium Metallic Gradients
 	--gold-metallic: linear-gradient(
 		135deg,
-		#d4af37 0%,
-		#f9f6f2 40%,
-		#c5a059 55%,
-		#8a6d3b 70%,
-		#d4af37 100%
+		#{sys.$sys-color-gold-500} 0%,
+		#{sys.$sys-color-gold-100} 40%,
+		#{sys.$sys-color-gold-400} 55%,
+		#{sys.$sys-color-gold-700} 70%,
+		#{sys.$sys-color-gold-500} 100%
 	);
 	--gold-glow: 0 0 20px rgb(212 175 55 / 25%);
 
