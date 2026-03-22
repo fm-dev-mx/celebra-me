@@ -32,6 +32,7 @@
             ".agent/governance/config/**",
             ".agent/GATEKEEPER_RULES.md",
             ".agent/README.md",
+            ".agent/index.md",
             ".agent/*.html"
         ],
         "gov-skills": [".agent/skills/**"],
