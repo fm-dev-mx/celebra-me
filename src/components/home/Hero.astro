@@ -107,6 +107,7 @@ const avatar3 = getCommonAsset('avatar3');
 		/>
 	</div>
 </section>
+<!-- Keep premium hero motion local instead of depending on a separate behavior wrapper. -->
 <script>
 	const hero = document.getElementById('inicio');
 	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
