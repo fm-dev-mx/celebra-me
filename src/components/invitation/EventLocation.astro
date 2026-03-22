@@ -5,6 +5,7 @@
 */
 import '@/styles/invitation/_event-location.scss';
 import '@/styles/invitation/_section-nav-button.scss';
+import EventLocationBehavior from '@/components/behavior/EventLocationBehavior';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
@@ -94,17 +95,4 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 	</div>
 
 </section>
-
-<script>
-	import { initCopyButtons, revealIOSOnly } from '@utils/ui';
-	import { createIntersectionObserver } from '@utils/animations';
-
-	// Initialize UI behaviors
-	initCopyButtons();
-	revealIOSOnly();
-
-	// Animations: Trigger card animations on scroll
-	createIntersectionObserver('.event-location__card', (target) => {
-		target.classList.add('is-visible');
-	});
-</script>
+<EventLocationBehavior client:load />

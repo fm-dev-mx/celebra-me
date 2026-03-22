@@ -1,6 +1,7 @@
 ---
 // src/components/invitation/Gifts.astro
 import '@/styles/invitation/_gifts.scss';
+import GiftsBehavior from '@/components/behavior/GiftsBehavior';
 
 interface GiftStore {
 	type: 'store';
@@ -143,42 +144,5 @@ const ICON_MAP = {
 		</div>
 	</div>
 </section>
-
-<script>
-	import { createIntersectionObserver } from '@utils/animations';
-
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-	if (!prefersReducedMotion) {
-		document.querySelectorAll('.gifts-section').forEach((section) => {
-			section.classList.add('has-motion');
-		});
-
-		createIntersectionObserver('.gifts-section.has-motion', (target) => {
-			target.classList.add('is-visible');
-		});
-	}
-
-	// Copy functionality
-	const copyButtons = document.querySelectorAll('.copy-button');
-	copyButtons.forEach((button) => {
-		button.addEventListener('click', () => {
-			const clabe = button.getAttribute('data-clabe');
-			const labelCopy = button.getAttribute('data-label-copy') || 'Copiar';
-			const labelCopied = button.getAttribute('data-label-copied') || '¡Copiado!';
-
-			if (clabe) {
-				const normalizedClabe = clabe.replace(/\s+/g, '');
-				navigator.clipboard.writeText(normalizedClabe).then(() => {
-					button.textContent = labelCopied;
-					button.classList.add('copy-button--success');
-					setTimeout(() => {
-						button.textContent = labelCopy;
-						button.classList.remove('copy-button--success');
-					}, 2000);
-				});
-			}
-		});
-	});
-</script>
+<GiftsBehavior client:load />
 

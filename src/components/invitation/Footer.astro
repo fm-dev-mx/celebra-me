@@ -1,6 +1,7 @@
 ---
 // src/components/invitation/Footer.astro
 import '@/styles/invitation/_footer.scss';
+import FooterReplayBehavior from '@/components/behavior/FooterReplayBehavior';
 import Logo from '@/components/ui/Logo.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
@@ -73,12 +74,6 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 		)}
 	</div>
 	{hasReplay && (
-		<script is:inline>
-			document.querySelector('.footer__replay-link')?.addEventListener('click', function() {
-				const slug = this.dataset.slug;
-				localStorage.removeItem(`envelope-opened-${slug}`);
-				location.reload();
-			});
-		</script>
+		<FooterReplayBehavior client:load />
 	)}
 </footer>

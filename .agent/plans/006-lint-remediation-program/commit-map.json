@@ -127,6 +127,7 @@
         "src/components/invitation/Quote.astro",
         "src/components/invitation/RSVP.tsx",
         "src/components/invitation/RSVPComponents.tsx",
+        "src/components/invitation/RSVPFormFields.tsx",
         "src/components/invitation/RSVPLogic.ts",
         "src/components/invitation/TimelineList.tsx"
       ],

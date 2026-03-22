@@ -119,9 +119,7 @@ const TimelineList: React.FC<TimelineListProps> = ({ items, variant }) => {
 						stroke="var(--itinerary-line-color, var(--color-text-emphasis))"
 						strokeWidth="2"
 						strokeDasharray="100"
-						style={{
-							pathLength: scaleY,
-						}}
+						pathLength={scaleY}
 					/>
 				</svg>
 			</div>
