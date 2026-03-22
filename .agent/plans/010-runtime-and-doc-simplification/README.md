@@ -1,11 +1,12 @@
 # Runtime and Documentation Simplification
 
-**Completion:** `80%` | **Status:** `ACTIVE`
+**Completion:** `85%` | **Status:** `ACTIVE`
 
-**Objective:** Reduce active runtime and documentation complexity without changing public routes,
-API contracts, RSVP behavior, or the premium invitation/landing experience.
+**Objective:** Retire provably dead active-runtime surface, repair plan/documentation drift, and
+leave the live invitation/dashboard architecture simpler without changing public routes, API
+contracts, or the premium experience.
 
-**Estimated Duration:** 5 phases / ~1-2 days
+**Estimated Duration:** 6 phases / ~1-2 days
 **Owner:** Codex
 **Created:** 2026-03-22
 
@@ -15,17 +16,20 @@ API contracts, RSVP behavior, or the premium invitation/landing experience.
 
 ### In Scope
 
-- Invitation route-facing assembly and owner-local behavior cleanup
-- Dashboard guest runtime consolidation across active client wrappers and hooks
-- Active premium style indirection pruning where visual output remains equivalent
-- Evergreen documentation reconciliation with the current runtime surface
-- Creation of an executable active plan under `.agent/plans/010-runtime-and-doc-simplification/`
+- Rebase of the active `010` plan so its lifecycle and commit strategy match the real repository
+  state
+- Safe retirement of dashboard guest hooks with no runtime consumers
+- Test migration away from legacy hook APIs toward active dashboard hooks
+- Evergreen documentation reconciliation with the current `src/lib/invitation/page-data.ts`
+  boundary and the live active-plan inventory
+- Safe runtime pruning only when a file or helper has no real runtime consumer or has become a
+  dangling dependency
 
 ### Out of Scope
 
 - Public route, API, asset registry, or content-schema breaking changes
-- Archive-wide plan cleanup
-- Visual redesign or premium aesthetic downgrade
+- Archive-wide cleanup outside of active-reference drift
+- Premium visual redesign or motion-quality downgrade
 - Gatekeeper readiness while `node.exe` / `pnpm` remain unavailable in the local environment
 
 ---
@@ -34,10 +38,10 @@ API contracts, RSVP behavior, or the premium invitation/landing experience.
 
 | Risk / Constraint | Severity | Mitigation |
 | --- | --- | --- |
-| Runtime simplification accidentally changes invitation reveal flow | High | Keep route contracts and reveal conditions unchanged; simplify only single-owner behavior wrappers |
-| Dashboard cleanup regresses CRUD or realtime behavior | High | Preserve `src/pages/api/**` contracts and keep guest list actions inside existing runtime boundaries |
-| Docs drift persists after runtime cleanup | Medium | Update evergreen docs in the same pass as code changes |
-| Node tooling unavailable in the current environment | High | Leave validation and gatekeeper readiness as the only open closeout item |
+| Dead-code cleanup accidentally removes live dashboard behavior | High | Retire only files with no runtime consumers and migrate tests to active hooks in the same pass |
+| Docs remain misleading after runtime cleanup | High | Update evergreen architecture, conventions, index, and status dashboard together |
+| Plan governance drifts from implementation reality | High | Rebase `manifest.json`, `commit-map.json`, phase files, and changelog before any gatekeeper step |
+| Node tooling unavailable in the current environment | High | Keep validation and readiness as the only remaining closeout item |
 
 ---
 
@@ -45,11 +49,12 @@ API contracts, RSVP behavior, or the premium invitation/landing experience.
 
 | # | Phase | Weight | Status |
 | --- | --- | --- | --- |
-| 01 | [Preflight and Scope Lock](./phases/01-preflight-and-scope-lock.md) | 15% | `COMPLETED` |
-| 02 | [Invitation and Behavior Simplification](./phases/02-invitation-and-behavior-simplification.md) | 25% | `COMPLETED` |
-| 03 | [Dashboard Runtime Consolidation](./phases/03-dashboard-runtime-consolidation.md) | 25% | `COMPLETED` |
-| 04 | [Evergreen Documentation Reconciliation](./phases/04-evergreen-documentation-reconciliation.md) | 20% | `COMPLETED` |
-| 05 | [Validation and Closeout](./phases/05-validation-and-closeout.md) | 15% | `ACTIVE` |
+| 01 | [Rebase and Scope Lock](./phases/01-rebase-and-scope-lock.md) | 10% | `COMPLETED` |
+| 02 | [Dead Surface Inventory](./phases/02-dead-surface-inventory.md) | 10% | `COMPLETED` |
+| 03 | [Dashboard Legacy Retirement](./phases/03-dashboard-legacy-retirement.md) | 25% | `COMPLETED` |
+| 04 | [Safe Runtime Pruning](./phases/04-safe-runtime-pruning.md) | 10% | `COMPLETED` |
+| 05 | [Evergreen Documentation Reconciliation](./phases/05-evergreen-doc-reconciliation.md) | 25% | `COMPLETED` |
+| 06 | [Validation and Gatekeeper Closeout](./phases/06-validation-and-gatekeeper-closeout.md) | 20% | `ACTIVE` |
 
 ---
 
@@ -59,13 +64,13 @@ Four commit units remain the intended execution boundary for this plan:
 
 | Unit | Phase | Intent |
 | --- | --- | --- |
-| `simplify-invitation-route-assembly` | 02 | remove single-owner invitation behavior indirection and keep page assembly close to the route |
-| `consolidate-dashboard-runtime-boundaries` | 03 | reduce dashboard guest runtime orchestration complexity without changing API contracts |
-| `prune-active-premium-style-indirection` | 02 | simplify active style ownership tied to owner-local premium interactions |
-| `align-evergreen-runtime-docs` | 04 | update active docs and status surfaces to match the live architecture |
+| `rebase-plan-governance` | 01 | correct the active plan lifecycle, phase model, and gatekeeper readiness to reflect the real repo state |
+| `retire-dashboard-legacy-hooks` | 03 | remove guest hooks that survive only through a legacy test surface and migrate coverage to active hooks |
+| `prune-safe-dead-runtime-surface` | 04 | repair dangling runtime surface and retire only objectively unused or broken internal dependencies |
+| `align-evergreen-runtime-docs` | 05 | update active docs and status surfaces to match the live architecture and active plan inventory |
 
-Gatekeeper readiness is intentionally deferred until validation commands can run in a healthy Node
-environment.
+All units remain below gatekeeper-ready state until the Node toolchain can run the required
+validation commands successfully.
 
 ---
 

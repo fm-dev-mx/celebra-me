@@ -1,41 +1,47 @@
 {
-    "id": "010-runtime-and-doc-simplification",
-    "title": "Runtime and Documentation Simplification",
-    "status": "ACTIVE",
-    "completion": 25,
-    "created": "2026-03-22T20:00:00Z",
-    "updated": "2026-03-22T22:30:00Z",
-    "owner": "Codex",
-    "phases": [
-        {
-            "id": "01-preflight-and-scope-lock",
-            "title": "Preflight and Scope Lock",
-            "status": "ACTIVE",
-            "updated": "2026-03-22T20:10:00Z"
-        },
-        {
-            "id": "02-invitation-and-behavior-simplification",
-            "title": "Invitation and Behavior Simplification",
-            "status": "ACTIVE",
-            "updated": "2026-03-22T20:30:00Z"
-        },
-        {
-            "id": "03-dashboard-runtime-consolidation",
-            "title": "Dashboard Runtime Consolidation",
-            "status": "ACTIVE",
-            "updated": "2026-03-22T20:35:00Z"
-        },
-        {
-            "id": "04-evergreen-documentation-reconciliation",
-            "title": "Evergreen Documentation Reconciliation",
-            "status": "ACTIVE",
-            "updated": "2026-03-22T20:40:00Z"
-        },
-        {
-            "id": "05-validation-and-closeout",
-            "title": "Validation and Closeout",
-            "status": "ACTIVE",
-            "updated": "2026-03-22T20:45:00Z"
-        }
-    ]
+  "id": "010-runtime-and-doc-simplification",
+  "title": "Runtime and Documentation Simplification",
+  "status": "ACTIVE",
+  "completion": 85,
+  "created": "2026-03-22T20:00:00Z",
+  "updated": "2026-03-22T23:40:00Z",
+  "owner": "Codex",
+  "phases": [
+    {
+      "id": "01-rebase-and-scope-lock",
+      "title": "Rebase and Scope Lock",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T23:20:00Z"
+    },
+    {
+      "id": "02-dead-surface-inventory",
+      "title": "Dead Surface Inventory",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T23:25:00Z"
+    },
+    {
+      "id": "03-dashboard-legacy-retirement",
+      "title": "Dashboard Legacy Retirement",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T23:30:00Z"
+    },
+    {
+      "id": "04-safe-runtime-pruning",
+      "title": "Safe Runtime Pruning",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T23:34:00Z"
+    },
+    {
+      "id": "05-evergreen-doc-reconciliation",
+      "title": "Evergreen Documentation Reconciliation",
+      "status": "COMPLETED",
+      "updated": "2026-03-22T23:38:00Z"
+    },
+    {
+      "id": "06-validation-and-gatekeeper-closeout",
+      "title": "Validation and Gatekeeper Closeout",
+      "status": "ACTIVE",
+      "updated": "2026-03-22T23:40:00Z"
+    }
+  ]
 }
