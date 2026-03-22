@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use '../../tokens' as tokens;
+/* stylelint-disable color-no-hex */
 
 /**
  * Editorial Theme Preset
@@ -61,10 +62,6 @@
 		transparent 100%
 	);
 
-	background: var(--editorial-global-bg);
-	color: var(--color-text-primary);
-	min-height: 100svh;
-
 	// ==========================================================================
 	// 3. SECTION CONTRACT OVERRIDES
 	// ==========================================================================
@@ -106,35 +103,4 @@
 	--rsvp-button-shadow-rest: 0 10px 25px rgb(var(--color-action-accent-rgb) / 20%);
 	--rsvp-button-color-hover: var(--color-surface-dark);
 
-	// ==========================================================================
-	// 4. MOTION & DEPTH
-	// ==========================================================================
-
-	&.has-motion {
-		[class*='__reveal'] {
-			opacity: 0%;
-			transform: translateY(40px);
-			transition:
-				opacity 1.4s cubic-bezier(0.23, 1, 0.32, 1),
-				transform 1.6s cubic-bezier(0.23, 1, 0.32, 1);
-			will-change: opacity, transform;
-		}
-
-		&.is-visible {
-			[class*='__reveal'] {
-				opacity: 100%;
-				transform: translateY(0);
-			}
-		}
-
-		.family__item,
-		.itinerary__item,
-		.gift-card {
-			@for $i from 1 through 10 {
-				&:nth-child(#{$i}) {
-					transition-delay: #{$i * 0.2s};
-				}
-			}
-		}
-	}
 }

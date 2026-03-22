@@ -1,10 +1,6 @@
 // src/styles/layout/_event-wrapper.scss
 
 .event-theme-wrapper {
-	--color-primary: var(--color-surface-primary);
-	--color-primary-rgb: var(--color-surface-primary-rgb);
-	--color-accent: var(--color-action-accent);
-	--color-accent-rgb: var(--color-action-accent-rgb);
 	--section-bg: var(--color-surface-primary);
 	--section-text: var(--color-text-primary);
 	--section-accent: var(--color-action-accent);
@@ -35,8 +31,8 @@
 
 	&[data-env-variant='luxury-hacienda'] {
 		--env-name-font: var(--font-display-hacienda);
-		--env-paper-bg: #f4e9d9;
-		--env-details-color: #3e2b1e;
+		--env-paper-bg: rgb(244 233 217);
+		--env-details-color: rgb(62 43 30);
 	}
 
 	&[data-env-variant='top-premium-floral'] {

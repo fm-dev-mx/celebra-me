@@ -1,6 +1,14 @@
 @use 'primitives/spacing' as primitive-space;
 @use 'semantic/spacing' as semantic-space;
 
+// Canonical authoring breakpoints consumed by global authoring mixins.
+$breakpoints: (
+	xs: 480px,
+	sm: 640px,
+	md: 768px,
+	lg: 992px,
+	xl: 1200px,
+);
 $spacing-unit: 0.5rem;
 $spacing-0: primitive-space.space(0);
 $spacing-1: primitive-space.space(1);

@@ -8,6 +8,7 @@
 @use '../semantic/surface' as semantic-surface;
 
 :root {
+	// Canonical semantic color contract.
 	--color-surface-primary: #{semantic-color.color(surface, primary)};
 	--color-surface-primary-rgb: #{tools.rgb-channels(semantic-color.color(surface, primary))};
 	--color-surface-secondary: #{semantic-color.color(surface, secondary)};
@@ -29,7 +30,6 @@
 	--color-text-on-dark: #{semantic-color.color(text, on-dark)};
 	--color-text-on-light: #{semantic-color.color(text, on-light)};
 	--color-text-muted: #{semantic-color.color(text, muted)};
-	--color-text-light: #{semantic-color.color(neutral, muted)};
 	--color-text-tertiary: #{semantic-color.color(text, muted)};
 	--color-text: var(--color-text-primary);
 	--color-action-primary: #{semantic-color.color(action, primary)};
@@ -38,6 +38,8 @@
 	--color-action-secondary-rgb: #{tools.rgb-channels(semantic-color.color(action, secondary))};
 	--color-action-accent: #{semantic-color.color(action, accent)};
 	--color-action-accent-rgb: #{tools.rgb-channels(semantic-color.color(action, accent))};
+
+	// Temporary bridges for legacy consumers. Do not add new aliases here.
 	--color-primary: var(--color-action-accent);
 	--color-primary-rgb: var(--color-action-accent-rgb);
 	--color-primary-dark: var(--color-action-primary);
@@ -45,13 +47,12 @@
 	--color-accent: var(--color-action-accent);
 	--color-accent-rgb: var(--color-action-accent-rgb);
 	--color-secondary: var(--color-surface-dark);
-	--color-secondary-rgb: var(--color-surface-dark-rgb);
 	--color-dark: var(--color-surface-dark);
 	--color-border-subtle: #{semantic-color.color(border, subtle)};
 	--color-border-premium: #{semantic-color.color(border, premium)};
 	--color-border-emphasis: #{semantic-color.color(border, emphasis)};
-	--color-border-soft: #{semantic-color.color(border, subtle)};
 	--color-border: var(--color-border-subtle);
+	--color-border-soft: #{semantic-color.color(border, subtle)};
 	--color-neutral-subtle: #{semantic-color.color(neutral, subtle)};
 	--color-neutral-muted: #{semantic-color.color(neutral, muted)};
 	--color-neutral-base: #{semantic-color.color(neutral, base)};
@@ -73,13 +74,13 @@
 	--font-display-formal: #{semantic-type.font(display-formal)};
 	--font-display-elegant: #{semantic-type.font(display-elegant)};
 	--font-display-hacienda: #{semantic-type.font(display-hacienda)};
+	--ff-heading: var(--font-display);
 	--font-calligraphy: #{semantic-type.font(calligraphy)};
 	--font-body-narrative: #{semantic-type.font(body)};
 	--font-body: #{semantic-type.font(ui)};
 	--font-body-hacienda: #{semantic-type.font(body-hacienda)};
 	--font-ui: #{semantic-type.font(ui)};
 	--font-label: #{semantic-type.font(label)};
-	--ff-heading: var(--font-display);
 	--spacing-0: #{primitive-space.space(0)};
 	--spacing-1: #{primitive-space.space(1)};
 	--spacing-2: #{primitive-space.space(2)};

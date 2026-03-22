@@ -73,7 +73,7 @@
 	--itinerary-item-label-font: var(--font-heading-formal);
 	--itinerary-item-desc-color: var(--color-text-secondary);
 	--itinerary-icon-bg: var(--color-surface-primary);
-	--itinerary-icon-border: 1px solid var(--color-border-soft);
+	--itinerary-icon-border: 1px solid var(--color-border-subtle);
 	--itinerary-icon-color: var(--color-action-primary);
 	--itinerary-icon-shadow: 0 4px 15px rgb(0 0 0 / 5%);
 
@@ -106,7 +106,7 @@
 		transparent 70%
 	);
 	--itinerary-line-color: var(--color-action-primary);
-	--itinerary-line-shadow: 0 0 15px var(--color-primary);
+	--itinerary-line-shadow: 0 0 15px var(--color-action-primary);
 	--itinerary-line-opacity: 0.4;
 	--itinerary-item-time-color: var(--color-action-primary);
 	--itinerary-item-label-color: var(--color-action-primary);

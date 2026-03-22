@@ -2,6 +2,7 @@
 @use 'sass:map';
 @use 'sass:meta';
 
+// Minimal map accessor for canonical token modules. Keep this helper small.
 @function token($source, $keys...) {
 	$token-value: $source;
 
@@ -16,6 +17,7 @@
 	@return $token-value;
 }
 
+// Reserved for CSS contracts that still need split rgb channels.
 @function rgb-channels($value) {
 	@if meta.type-of($value) != 'color' {
 		@return $value;

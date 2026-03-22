@@ -2,12 +2,12 @@
 
 /**
  * Landing Page Presets - Index
- * Exporta todos los presets disponibles para landing pages
+ * Exports all presets available for landing pages
  */
 
 // Elegant Theme (Default) - Coffee/Gold/Parchment
 @forward 'elegant';
 
 // Dark Mode Theme (Experimental)
-// Descomenta la siguiente línea para activar soporte de dark mode:
+// Uncomment the next line to enable dark mode support:
 // @forward 'dark-mode';
