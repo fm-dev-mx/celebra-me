@@ -4,10 +4,10 @@
   "defaultFallback": "none",
   "commitStrategyReview": {
     "draftedAt": "2026-03-22T02:10:00Z",
-    "reviewedAt": "2026-03-22T02:15:00Z",
-    "readyForGatekeeperAt": "2026-03-22T02:15:00Z",
+    "reviewedAt": "2026-03-22T02:45:00Z",
+    "readyForGatekeeperAt": "2026-03-22T02:45:00Z",
     "status": "APPROVED",
-    "notes": "Divided into atomic units for sequential lint remediation and behavior extraction."
+    "notes": "Plan 006 is fully authored. Codebase passes lint and type-check. All behaviors extracted and mapped to atomic units."
   },
   "units": [
     {
@@ -214,7 +214,7 @@
       "id": "style-test-remediation",
       "phaseId": "01-lint-baseline-triage",
       "status": "ready",
-      "domain": "api",
+      "domain": "ui",
       "type": "refactor",
       "subject": {
         "verb": "remediate",
@@ -223,19 +223,19 @@
       "purpose": "apply style lints and fix test helper types",
       "include": [
         "src/styles/global.scss",
-        "src/styles/ui/_confetti.scss",
         "tests/api/rsvp.helpers.ts"
       ],
       "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
-        "header": "refactor(api): remediate global styles and test helpers",
+        "header": "refactor(ui): remediate global styles and test helpers",
         "summary": [
           "fix type errors in RSVP test helpers",
           "apply stylelint fixes to global and component SCSS",
-          "standardize confetti animation styling"
+          "ensure visual consistency across core styles"
         ]
       }
     }
   ]
 }
+
