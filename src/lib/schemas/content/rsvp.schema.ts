@@ -1,22 +1,5 @@
 import { z } from 'astro:content';
 
-export interface LegacyRsvpLabels {
-	/** @deprecated Use `labels.name` instead. */
-	nameLabel?: string;
-	/** @deprecated Use `labels.guestCount` instead. */
-	guestCountLabel?: string;
-	/** @deprecated Use `labels.confirmButton` instead. */
-	buttonLabel?: string;
-}
-
-const legacyRsvpLabelsSchema: z.ZodType<LegacyRsvpLabels | undefined> = z
-	.object({
-		nameLabel: z.string().optional(),
-		guestCountLabel: z.string().optional(),
-		buttonLabel: z.string().optional(),
-	})
-	.optional();
-
 export const rsvpSectionStyleSchema = z
 	.object({
 		variant: z.string().default('standard'),
@@ -28,7 +11,6 @@ export const rsvpSectionStyleSchema = z
 				confirmButton: z.string().optional(),
 			})
 			.optional(),
-		legacy: legacyRsvpLabelsSchema,
 	})
 	.optional();
 
@@ -55,7 +37,6 @@ export const rsvpSchema = z
 		whatsappConfig: z
 			.object({
 				phone: z.string(),
-				messageTemplate: z.string().optional(),
 				confirmedTemplate: z.string().optional(),
 				declinedTemplate: z.string().optional(),
 				omitTitle: z.boolean().optional(),

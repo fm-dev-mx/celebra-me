@@ -70,26 +70,6 @@ const presenter = prepareInvitationPageData({
 >
 	<style is:inline lang="scss" set:html={presenter.wrapper.scopedStyles} />
 	<main class={presenter.wrapper.className} {...presenter.wrapper.dataAttributes}>
-		<!-- Scripts -->
-		<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
-			// Legacy Token Resolution
-			const legacyToken = new URLSearchParams(window.location.search).get('t');
-			if (legacyToken) {
-				const params = new URLSearchParams({
-					eventSlug,
-					token: legacyToken,
-				});
-				fetch(`/api/invitacion/resolve?${params.toString()}`)
-					.then((response) => (response.ok ? response.json() : null))
-					.then((payload) => {
-						if (payload?.canonicalUrl) {
-							window.location.replace(payload.canonicalUrl);
-						}
-					})
-					.catch(() => { /* silent fallback */ });
-			}
-		</script>
-
 		{presenter.wrapper.showEnvelope && (
 			<script is:inline define:vars={{ eventSlug: presenter.eventSlug }}>
 				// Sync unlock
