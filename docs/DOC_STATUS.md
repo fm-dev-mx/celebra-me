@@ -68,9 +68,9 @@
 
 ### Evergreen
 
-- [auto-fix.md](../.agent/workflows/auto-fix.md)
 - [error-remediation.md](../.agent/workflows/error-remediation.md)
 - [gatekeeper-commit.md](../.agent/workflows/gatekeeper-commit.md)
+- [plan-authoring.md](../.agent/workflows/plan-authoring.md)
 - [system-doc-alignment.md](../.agent/workflows/system-doc-alignment.md)
 - [theme-architecture-governance.md](../.agent/workflows/theme-architecture-governance.md)
 
@@ -114,12 +114,18 @@
 1. Markdown sources of truth must live in one of these locations: `docs/core/`, `docs/domains/`,
    `docs/architecture/`, `docs/audit/`, or `.agent/`.
 2. `docs/DOC_STATUS.md` is the only allowed root-level dashboard exception under `docs/`.
-3. Local README files under `scripts/`, `tests/`, and `src/styles/events/` are allowed as
+3. `.agent/README.md` is the universal agent entrypoint, and `.agent/index.md` is the neutral
+   discovery index for repository-portable agents.
+4. `docs/DOC_STATUS.md` is a status dashboard and must not be treated as the primary operational
+   entrypoint for agents.
+5. Provider-specific agent integrations are optional and must not be required for understanding the
+   repository.
+6. Local README files under `scripts/`, `tests/`, and `src/styles/events/` are allowed as
    directory-scoped operational docs and are not mirrored here unless they become project-wide
    sources of truth.
-4. Use `kebab-case.md` for all documentation files except standard repository files such as
+7. Use `kebab-case.md` for all documentation files except standard repository files such as
    `README.md`, `CHANGELOG.md`, and `CONTRIBUTING.md`.
-5. Gatekeeper and documentation mappings are configured from `.agent/governance/config/policy.json`.
+8. Gatekeeper and documentation mappings are configured from `.agent/governance/config/policy.json`.
 
 ---
 
