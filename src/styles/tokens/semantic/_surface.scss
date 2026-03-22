@@ -1,6 +1,7 @@
 @use '../../tools/functions' as tools;
-@use '../primitives/elevation' as primitive-elevation;
+@use '../system/elevation' as sys;
 
+// 1. SCSS Map for internal tools/legacy
 $semantic-surface: (
 	glass: (
 		bg: rgb(255 255 255 / 45%),
@@ -10,11 +11,23 @@ $semantic-surface: (
 		saturate: 180%,
 	),
 	shadow: (
-		subtle: primitive-elevation.shadow(subtle),
-		emphasis: primitive-elevation.shadow(emphasis),
-		premium: primitive-elevation.shadow(premium),
+		subtle: sys.$sys-shadow-subtle,
+		emphasis: sys.$sys-shadow-emphasis,
+		premium: sys.$sys-shadow-premium,
 	),
 );
+
+// 2. CSS Variable Bridge (Semantic Layer)
+:root {
+	--color-glass-bg: rgb(255 255 255 / 45%);
+	--color-glass-border: rgb(212 175 55 / 30%);
+	--color-glass-shadow: rgb(212 175 55 / 15%);
+	--glass-blur: 16px;
+	--glass-saturate: 180%;
+	--shadow-subtle: #{sys.$sys-shadow-subtle};
+	--shadow-emphasis: #{sys.$sys-shadow-emphasis};
+	--shadow-premium: #{sys.$sys-shadow-premium};
+}
 
 @function surface($group, $token) {
 	@return tools.token($semantic-surface, $group, $token);

@@ -1,39 +1,59 @@
 @use '../../tools/functions' as tools;
-@use '../primitives/type' as primitive-type;
+@use '../system/type' as sys;
 
+// 1. SCSS Map for internal tools/legacy
 $semantic-type: (
 	font: (
-		display: primitive-type.font(display-elegant),
-		display-formal: primitive-type.font(display-formal),
-		display-elegant: primitive-type.font(display-elegant),
-		display-hacienda: primitive-type.font(display-hacienda),
-		calligraphy: primitive-type.font(calligraphy),
-		body: primitive-type.font(body),
-		body-hacienda: primitive-type.font(body-hacienda),
-		ui: primitive-type.font(ui),
-		label: primitive-type.font(display-formal),
+		display: sys.$sys-font-display-elegant,
+		display-formal: sys.$sys-font-display-formal,
+		display-elegant: sys.$sys-font-display-elegant,
+		display-hacienda: sys.$sys-font-display-hacienda,
+		calligraphy: sys.$sys-font-calligraphy,
+		body: sys.$sys-font-body,
+		body-hacienda: sys.$sys-font-body-hacienda,
+		ui: sys.$sys-font-ui,
+		label: sys.$sys-font-display-formal,
 	),
 	size: (
-		h1: primitive-type.size(h1),
-		h2: primitive-type.size(h2),
-		h3: primitive-type.size(h3),
-		body: primitive-type.size(body),
-		ui: primitive-type.size(ui),
+		h1: sys.$sys-size-h1,
+		h2: sys.$sys-size-h2,
+		h3: sys.$sys-size-h3,
+		body: sys.$sys-size-body,
+		ui: sys.$sys-size-ui,
 	),
 	weight: (
-		light: primitive-type.weight(light),
-		regular: primitive-type.weight(regular),
-		medium: primitive-type.weight(medium),
-		semibold: primitive-type.weight(semibold),
-		bold: primitive-type.weight(bold),
+		light: sys.$sys-weight-light,
+		regular: sys.$sys-weight-regular,
+		medium: sys.$sys-weight-medium,
+		semibold: sys.$sys-weight-semibold,
+		bold: sys.$sys-weight-bold,
 	),
 	tracking: (
-		tight: primitive-type.tracking(tight),
-		normal: primitive-type.tracking(normal),
-		wide: primitive-type.tracking(wide),
-		extra-wide: primitive-type.tracking(extra-wide),
+		tight: sys.$sys-tracking-tight,
+		normal: sys.$sys-tracking-normal,
+		wide: sys.$sys-tracking-wide,
+		extra-wide: sys.$sys-tracking-extra-wide,
 	),
 );
+
+// 2. CSS Variable Bridge (Semantic Layer)
+:root {
+	--font-display: #{sys.$sys-font-display-elegant};
+	--font-display-formal: #{sys.$sys-font-display-formal};
+	--font-display-elegant: #{sys.$sys-font-display-elegant};
+	--font-display-hacienda: #{sys.$sys-font-display-hacienda};
+	--font-calligraphy: #{sys.$sys-font-calligraphy};
+	--font-body: #{sys.$sys-font-ui};
+	--font-body-narrative: #{sys.$sys-font-body};
+	--font-body-hacienda: #{sys.$sys-font-body-hacienda};
+	--font-ui: #{sys.$sys-font-ui};
+	--font-label: #{sys.$sys-font-display-formal};
+	--font-size-h1: #{sys.$sys-size-h1};
+	--font-size-h2: #{sys.$sys-size-h2};
+	--font-size-h3: #{sys.$sys-size-h3};
+	--font-size-body: #{sys.$sys-size-body};
+	--font-size-ui: #{sys.$sys-size-ui};
+}
 
 @function font($token) {
 	@return tools.token($semantic-type, font, $token);

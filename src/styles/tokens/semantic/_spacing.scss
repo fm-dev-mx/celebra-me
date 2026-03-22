@@ -1,13 +1,37 @@
 @use '../../tools/functions' as tools;
-@use '../primitives/spacing' as primitive-space;
+@use '../system/spacing' as sys;
 
+// 1. SCSS Map for internal tools/legacy
 $semantic-space: (
-	container-padding: primitive-space.space(6),
-	section-gap: primitive-space.space(16),
-	component-gap: primitive-space.space(6),
-	element-gap: primitive-space.space(4),
-	text-gap: primitive-space.space(2),
+	container-padding: sys.$sys-spacing-6,
+	section-gap: sys.$sys-spacing-16,
+	component-gap: sys.$sys-spacing-6,
+	element-gap: sys.$sys-spacing-4,
+	text-gap: sys.$sys-spacing-2,
 );
+
+// 2. CSS Variable Bridge (Semantic Layer)
+:root {
+	--spacing-0: #{sys.$sys-spacing-0};
+	--spacing-1: #{sys.$sys-spacing-1};
+	--spacing-2: #{sys.$sys-spacing-2};
+	--spacing-3: #{sys.$sys-spacing-3};
+	--spacing-4: #{sys.$sys-spacing-4};
+	--spacing-5: #{sys.$sys-spacing-5};
+	--spacing-6: #{sys.$sys-spacing-6};
+	--spacing-8: #{sys.$sys-spacing-8};
+	--spacing-10: #{sys.$sys-spacing-10};
+	--spacing-12: #{sys.$sys-spacing-12};
+	--spacing-16: #{sys.$sys-spacing-16};
+	--spacing-20: #{sys.$sys-spacing-20};
+	--spacing-24: #{sys.$sys-spacing-24};
+	--spacing-32: #{sys.$sys-spacing-32};
+	--spacing-container-padding: #{sys.$sys-spacing-6};
+	--spacing-section-gap: #{sys.$sys-spacing-16};
+	--spacing-component-gap: #{sys.$sys-spacing-6};
+	--spacing-element-gap: #{sys.$sys-spacing-4};
+	--spacing-text-gap: #{sys.$sys-spacing-2};
+}
 
 @function spacing($token) {
 	@return tools.token($semantic-space, $token);

@@ -1,23 +1,41 @@
 @use '../../tools/functions' as tools;
-@use '../primitives/motion' as primitive-motion;
+@use '../system/motion' as sys;
 
+// 1. SCSS Map for internal tools/legacy
 $semantic-motion: (
 	ease: (
-		standard: primitive-motion.ease(in-out),
-		snappy: primitive-motion.ease(snappy),
-		premium: primitive-motion.ease(premium),
-		overshoot: primitive-motion.ease(overshoot),
-		bouncy: primitive-motion.ease(bouncy),
+		standard: sys.$sys-ease-in-out,
+		snappy: sys.$sys-ease-snappy,
+		premium: sys.$sys-ease-premium,
+		overshoot: sys.$sys-ease-overshoot,
+		bouncy: sys.$sys-ease-bouncy,
 	),
 	duration: (
-		fast: primitive-motion.duration(fast),
-		snappy: primitive-motion.duration(snappy),
-		standard: primitive-motion.duration(standard),
-		slower: primitive-motion.duration(slower),
-		premium: primitive-motion.duration(premium),
-		reveal: primitive-motion.duration(reveal),
+		fast: sys.$sys-duration-fast,
+		snappy: sys.$sys-duration-snappy,
+		standard: sys.$sys-duration-standard,
+		slower: sys.$sys-duration-slower,
+		premium: sys.$sys-duration-premium,
+		reveal: sys.$sys-duration-reveal,
 	),
 );
+
+// 2. CSS Variable Bridge (Semantic Layer)
+:root {
+	--duration-fast: #{sys.$sys-duration-fast};
+	--duration-snappy: #{sys.$sys-duration-snappy};
+	--duration-standard: #{sys.$sys-duration-standard};
+	--duration-slower: #{sys.$sys-duration-slower};
+	--duration-premium: #{sys.$sys-duration-premium};
+	--duration-reveal: #{sys.$sys-duration-reveal};
+	--ease-standard: #{sys.$sys-ease-in-out};
+	--ease-snappy: #{sys.$sys-ease-snappy};
+	--ease-premium: #{sys.$sys-ease-premium};
+	--ease-overshoot: #{sys.$sys-ease-overshoot};
+	--ease-bouncy: #{sys.$sys-ease-bouncy};
+	--transition-snappy: all var(--duration-snappy) var(--ease-standard);
+	--transition-standard: all var(--duration-standard) var(--ease-standard);
+}
 
 @function ease($token) {
 	@return tools.token($semantic-motion, ease, $token);

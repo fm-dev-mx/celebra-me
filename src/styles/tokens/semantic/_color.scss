@@ -1,52 +1,89 @@
 @use 'sass:color';
 @use '../../tools/functions' as tools;
-@use '../primitives/color' as primitive-color;
+@use '../system/color' as sys;
 
+// 1. SCSS Map for internal tools/legacy
 $semantic-color: (
 	surface: (
-		primary: primitive-color.color(parchment, 100),
-		secondary: primitive-color.color(coffee, 100),
-		soft: primitive-color.color(neutral, 50),
-		elevated: primitive-color.color(neutral, 0),
-		canvas: primitive-color.color(coffee, 900),
-		dark: primitive-color.color(coffee, 900),
+		primary: sys.$sys-color-parchment-100,
+		secondary: sys.$sys-color-coffee-100,
+		soft: sys.$sys-color-neutral-50,
+		elevated: sys.$sys-color-neutral-0,
+		canvas: sys.$sys-color-coffee-900,
+		dark: sys.$sys-color-coffee-900,
 	),
 	text: (
-		primary: primitive-color.color(coffee, 900),
-		secondary: primitive-color.color(coffee, 700),
-		emphasis: primitive-color.color(gold, 700),
-		on-dark: primitive-color.color(parchment, 100),
-		on-light: primitive-color.color(coffee, 900),
-		muted: color.change(primitive-color.color(coffee, 900), $alpha: 0.65),
+		primary: sys.$sys-color-coffee-900,
+		secondary: sys.$sys-color-coffee-700,
+		emphasis: sys.$sys-color-gold-700,
+		on-dark: sys.$sys-color-parchment-100,
+		on-light: sys.$sys-color-coffee-900,
+		muted: color.change(sys.$sys-color-coffee-900, $alpha: 0.65),
 	),
 	action: (
-		primary: primitive-color.color(coffee, 900),
-		accent: primitive-color.color(gold, 500),
-		secondary: primitive-color.color(coffee, 800),
+		primary: sys.$sys-color-coffee-900,
+		accent: sys.$sys-color-gold-500,
+		secondary: sys.$sys-color-coffee-800,
 	),
 	border: (
-		subtle: color.change(primitive-color.color(coffee, 900), $alpha: 0.1),
-		premium: color.change(primitive-color.color(gold, 500), $alpha: 0.3),
-		emphasis: primitive-color.color(gold, 500),
+		subtle: color.change(sys.$sys-color-coffee-900, $alpha: 0.1),
+		premium: color.change(sys.$sys-color-gold-500, $alpha: 0.3),
+		emphasis: sys.$sys-color-gold-500,
 	),
 	neutral: (
-		subtle: primitive-color.color(neutral, 100),
-		muted: primitive-color.color(neutral, 400),
-		base: primitive-color.color(neutral, 700),
-		emphasis: primitive-color.color(neutral, 900),
+		subtle: sys.$sys-color-neutral-100,
+		muted: sys.$sys-color-neutral-400,
+		base: sys.$sys-color-neutral-700,
+		emphasis: sys.$sys-color-neutral-900,
 	),
 	state: (
-		error: primitive-color.color(special, error),
-		success: primitive-color.color(forest, 800),
-		warning: primitive-color.color(amber, 600),
+		error: sys.$sys-color-error,
+		success: sys.$sys-color-forest-800,
+		warning: sys.$sys-color-amber-600,
 	),
 	special: (
-		whatsapp: primitive-color.color(special, whatsapp),
-		wax-seal: primitive-color.color(special, wax-red),
-		reserved: primitive-color.color(plum, 700),
-		white: primitive-color.color(neutral, 0),
+		whatsapp: sys.$sys-color-whatsapp,
+		wax-seal: sys.$sys-color-wax-red,
+		reserved: sys.$sys-color-plum-700,
+		white: sys.$sys-color-neutral-0,
 	),
 );
+
+// 2. CSS Variable Bridge (Semantic Layer)
+:root {
+	--color-surface-primary: #{sys.$sys-color-parchment-100};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--color-surface-secondary: #{sys.$sys-color-coffee-100};
+	--color-surface-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-100)};
+	--color-surface-soft: #{sys.$sys-color-neutral-50};
+	--color-surface-elevated: #{sys.$sys-color-neutral-0};
+	--color-surface-canvas: #{sys.$sys-color-coffee-900};
+	--color-surface-dark: #{sys.$sys-color-coffee-900};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-text-primary: #{sys.$sys-color-coffee-900};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-text-secondary: #{sys.$sys-color-coffee-700};
+	--color-text-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-700)};
+	--color-text-emphasis: #{sys.$sys-color-gold-700};
+	--color-text-on-dark: #{sys.$sys-color-parchment-100};
+	--color-text-on-light: #{sys.$sys-color-coffee-900};
+	--color-text-muted: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.65)};
+	--color-action-primary: #{sys.$sys-color-coffee-900};
+	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-action-secondary: #{sys.$sys-color-coffee-800};
+	--color-action-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-800)};
+	--color-action-accent: #{sys.$sys-color-gold-500};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+	--color-border-subtle: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.1)};
+	--color-border-premium: #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
+	--color-border-emphasis: #{sys.$sys-color-gold-500};
+	--color-neutral-subtle: #{sys.$sys-color-neutral-100};
+	--color-neutral-muted: #{sys.$sys-color-neutral-400};
+	--color-neutral-base: #{sys.$sys-color-neutral-700};
+	--color-neutral-emphasis: #{sys.$sys-color-neutral-900};
+	--color-error: #{sys.$sys-color-error};
+	--color-error-rgb: #{tools.rgb-channels(sys.$sys-color-error)};
+}
 
 @function color($group, $token) {
 	@return tools.token($semantic-color, $group, $token);
