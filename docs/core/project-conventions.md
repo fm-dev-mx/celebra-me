@@ -19,8 +19,8 @@ Astro promotes the following conventional folders, though you may extend them if
   section/feature.
 - `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
 - `.agent/governance/` — Quality control scripts and policies.
-- `src/lib/presenters/` — Route-facing presenter modules that assemble page-ready view models from
-  adapters, content, and server context.
+- `src/lib/<feature>/page-data.ts` — Route-facing page assembly modules kept inside the owning
+  feature.
 
 These conventions help align the repo with widely used Astro layouts without enforcing unnecessary
 rigidity.
@@ -44,9 +44,9 @@ This minimizes risk in case-sensitive environments (like Vercel). (`/src/pages` 
 - Assets & Documentation: `kebab-case.extension` (e.g. `bg-hero.jpg`, `intro-guide.md`)
 - Styles: `kebab-case.scss`
 
-Supporting TypeScript modules such as hooks, interfaces, repositories, presenters, and shared
-helpers follow the `Utilities & Logic` rule even when they export `camelCase` hooks or `PascalCase`
-types from inside the file.
+Supporting TypeScript modules such as hooks, interfaces, repositories, route-facing page assembly
+modules, and shared helpers follow the `Utilities & Logic` rule even when they export `camelCase`
+hooks or `PascalCase` types from inside the file.
 
 ### 2.3 Routes & URLs
 
@@ -68,12 +68,13 @@ types from inside the file.
 - This ensures clean separation between framework (Astro/Pages) and logic (Lib).
 - This makes boundaries explicit without inventing unnecessary folders.
 
-### 3.3 Presenters (`src/lib/presenters/`)
+### 3.3 Route-Facing Page Assembly Modules
 
-- Use presenters when an Astro route needs derived view state from multiple sources (content,
-  guest/session context, render plans, theme tokens).
-- Presenters may compose adapters and pure helpers, but they should return page-ready props instead
-  of framework-specific side effects.
+- Use feature-owned page assembly modules when an Astro route needs derived view state from multiple
+  sources such as content, guest/session context, render plans, or theme tokens.
+- The current invitation route uses `src/lib/invitation/page-data.ts` as that assembly boundary.
+- These modules may compose adapters and pure helpers, but they should return page-ready props
+  instead of framework-specific side effects.
 - Astro page files should stay focused on routing, redirects, data fetching, and rendering.
 
 ---

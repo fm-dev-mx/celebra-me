@@ -52,7 +52,8 @@ This matches Astro's hybrid model and the repository's current route structure.
 ### 3.2 Layouts (`src/layouts/**`)
 
 - Layouts define shared page structure only.
-- They must not absorb domain logic that belongs in presenters, services, or route handlers.
+- They must not absorb domain logic that belongs in route-facing assembly modules, services, or
+  route handlers.
 
 ### 3.3 Components (`src/components/**`)
 
@@ -60,12 +61,14 @@ This matches Astro's hybrid model and the repository's current route structure.
 - React islands are used for interactive dashboard and RSVP experiences.
 - Components must not access secrets or server-only integrations directly.
 
-### 3.4 Presenters (`src/lib/presenters/**`)
+### 3.4 Route-Facing Assembly Modules
 
-- Presenters assemble page-ready data for complex invitation routes.
-- They normalize page props from adapters, render-plan helpers, and server context before `.astro`
-  pages render.
-- View-model derivation should move into presenters when route logic becomes non-trivial.
+- Route-facing assembly should live close to the owning feature instead of behind a global
+  presenter layer.
+- The active invitation route uses `src/lib/invitation/page-data.ts` to normalize page-ready data
+  from adapters, theme contracts, and guest context before `.astro` rendering.
+- When route logic becomes non-trivial, prefer a feature-owned `page-data.ts` or equivalent module
+  over reintroducing `src/lib/presenters/**`.
 
 ---
 
@@ -102,13 +105,14 @@ The active server-only hubs in the repository are:
 - `src/lib/dashboard/**` for typed dashboard API clients and DTO helpers
 - `src/lib/assets/**` for asset registry and discovery
 - `src/lib/content/**` and `src/lib/adapters/**` for event/content resolution and normalization
-- `src/lib/presenters/**` for route-facing view-model assembly
+- `src/lib/invitation/page-data.ts` for invitation route-facing page assembly
 - `src/utils/**` for shared utilities such as invitation-link and environment helpers
 
 Historical note:
 
-- Historical only: older documentation and audit logs may reference `src/utils/server/**` or
-  `src/pages/api/_lib/**`; those paths are not active architectural hubs in the current tree.
+- Historical only: older documentation and audit logs may reference `src/lib/presenters/**`,
+  `src/utils/server/**`, or `src/pages/api/_lib/**`; those paths are not active architectural hubs
+  in the current tree.
 
 ### 5.3 Global Logic
 

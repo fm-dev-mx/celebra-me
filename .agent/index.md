@@ -46,7 +46,8 @@ agent working in this repository.
 - [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md): current documentation and plan inventory
 - [`../docs/core/project-conventions.md`](../docs/core/project-conventions.md): project-wide coding
   and structure conventions
-- [`../docs/core/architecture.md`](../docs/core/architecture.md): high-level architecture
+- [`../docs/core/architecture.md`](../docs/core/architecture.md): high-level architecture and
+  active route-facing assembly boundaries
 - [`../docs/core/testing-strategy.md`](../docs/core/testing-strategy.md): testing strategy
 - [`../docs/domains/theme/architecture.md`](../docs/domains/theme/architecture.md): theme system
   source of truth

@@ -76,7 +76,8 @@
 
 ### Active Plans
 
-No top-level executable plans are currently open under `.agent/plans/`.
+- [010-runtime-and-doc-simplification](../.agent/plans/010-runtime-and-doc-simplification/README.md)
+  - active parity-preserving simplification pass over invitation runtime, dashboard boundaries, and evergreen docs; toolchain validation remains pending due the current local Node runtime issue.
 
 ### Archived Plans
 
