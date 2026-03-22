@@ -1,4 +1,4 @@
-@use 'primitives/spacing' as primitive-space;
+@use 'system/spacing' as sys;
 @use 'semantic/spacing' as semantic-space;
 
 // Canonical authoring breakpoints consumed by global authoring mixins.
@@ -10,20 +10,20 @@ $breakpoints: (
 	xl: 1200px,
 );
 $spacing-unit: 0.5rem;
-$spacing-0: primitive-space.space(0);
-$spacing-1: primitive-space.space(1);
-$spacing-2: primitive-space.space(2);
-$spacing-3: primitive-space.space(3);
-$spacing-4: primitive-space.space(4);
-$spacing-5: primitive-space.space(5);
-$spacing-6: primitive-space.space(6);
-$spacing-8: primitive-space.space(8);
-$spacing-10: primitive-space.space(10);
-$spacing-12: primitive-space.space(12);
-$spacing-16: primitive-space.space(16);
-$spacing-20: primitive-space.space(20);
-$spacing-24: primitive-space.space(24);
-$spacing-32: primitive-space.space(32);
+$spacing-0: sys.$sys-spacing-0;
+$spacing-1: sys.$sys-spacing-1;
+$spacing-2: sys.$sys-spacing-2;
+$spacing-3: sys.$sys-spacing-3;
+$spacing-4: sys.$sys-spacing-4;
+$spacing-5: sys.$sys-spacing-5;
+$spacing-6: sys.$sys-spacing-6;
+$spacing-8: sys.$sys-spacing-8;
+$spacing-10: sys.$sys-spacing-10;
+$spacing-12: sys.$sys-spacing-12;
+$spacing-16: sys.$sys-spacing-16;
+$spacing-20: sys.$sys-spacing-20;
+$spacing-24: sys.$sys-spacing-24;
+$spacing-32: sys.$sys-spacing-32;
 $spacing-container-padding: semantic-space.spacing(container-padding);
 $spacing-section-gap: semantic-space.spacing(section-gap);
 $spacing-component-gap: semantic-space.spacing(component-gap);
