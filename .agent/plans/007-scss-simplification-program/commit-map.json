@@ -1,0 +1,137 @@
+{
+  "planId": "007-scss-simplification-program",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-22T00:00:00Z"
+  },
+  "units": [
+    {
+      "id": "lock-canonical-style-contract",
+      "phaseId": "01-contract-and-helper-boundaries",
+      "status": "draft",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "lock",
+        "target": "canonical SCSS contract and helper boundaries"
+      },
+      "purpose": "define which contract variables and Sass helpers are authoritative and deprecate legacy aliases",
+      "include": [
+        "src/styles/tokens/contracts/_core.scss",
+        "src/styles/tools/_functions.scss",
+        "src/styles/tokens/_semantic.scss",
+        "src/styles/tokens/_index.scss"
+      ],
+      "allowRelated": [
+        "docs/**",
+        ".agent/plans/007-scss-simplification-program/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): lock canonical SCSS contract and helper boundaries",
+        "summary": [
+          "keep token lookup helpers that prevent duplicated Sass map access",
+          "deprecate legacy contract aliases in favor of semantic custom properties",
+          "document the minimal helper surface allowed in the styling system"
+        ]
+      }
+    },
+    {
+      "id": "reduce-global-authoring-layer",
+      "phaseId": "02-global-layer-reduction",
+      "status": "draft",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "reduce",
+        "target": "global SCSS authoring layer duplication"
+      },
+      "purpose": "remove parallel breakpoint and typography definitions that compete with the token system",
+      "include": [
+        "src/styles/global/_mixins.scss",
+        "src/styles/global/_typography.scss",
+        "src/styles/global.scss",
+        "src/styles/tokens/**",
+        "src/styles/tools/**"
+      ],
+      "allowRelated": [
+        "docs/**",
+        ".agent/plans/007-scss-simplification-program/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): reduce global SCSS authoring layer duplication",
+        "summary": [
+          "move shared authoring rules toward the canonical token and tools layers",
+          "remove duplicated breakpoint and typography ownership from globals",
+          "keep only mixins that provide real reusable authoring value"
+        ]
+      }
+    },
+    {
+      "id": "thin-theme-preset-surface",
+      "phaseId": "03-theme-surface-simplification",
+      "status": "draft",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "thin",
+        "target": "theme preset and wrapper surface area"
+      },
+      "purpose": "restrict presets to variable assignment and remove low-value wrapper layers",
+      "include": [
+        "src/styles/themes/presets/**",
+        "src/styles/themes/landing/**",
+        "src/styles/themes/sections/**",
+        "src/styles/layout/_event-wrapper.scss"
+      ],
+      "allowRelated": [
+        "docs/**",
+        ".agent/plans/007-scss-simplification-program/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): thin theme preset and wrapper surface area",
+        "summary": [
+          "separate token assignment from selector-based component behavior",
+          "remove wrapper files that only mirror runtime custom properties",
+          "preserve existing presets while simplifying their ownership boundaries"
+        ]
+      }
+    },
+    {
+      "id": "migrate-style-consumers",
+      "phaseId": "04-consumer-canonicalization",
+      "status": "draft",
+      "domain": "ui",
+      "type": "refactor",
+      "subject": {
+        "verb": "migrate",
+        "target": "style consumers to canonical semantic variables"
+      },
+      "purpose": "update component and page styles to consume canonical semantic variables instead of legacy aliases",
+      "include": [
+        "src/styles/home/**",
+        "src/styles/invitation/**",
+        "src/styles/dashboard/**",
+        "src/styles/components/**",
+        "src/styles/layout/**"
+      ],
+      "allowRelated": [
+        "docs/**",
+        "tests/**",
+        ".agent/plans/007-scss-simplification-program/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(ui): migrate style consumers to canonical semantic variables",
+        "summary": [
+          "replace legacy contract aliases with semantic token consumption",
+          "standardize module imports and remove wildcard Sass usage",
+          "document the simplified contribution rules for future SCSS changes"
+        ]
+      }
+    }
+  ]
+}

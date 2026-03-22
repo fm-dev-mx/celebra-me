@@ -1,0 +1,35 @@
+{
+  "id": "007-scss-simplification-program",
+  "title": "SCSS Simplification Program",
+  "status": "PLANNED",
+  "completion": 0,
+  "created": "2026-03-22T00:00:00Z",
+  "updated": "2026-03-22T00:00:00Z",
+  "owner": "Codex",
+  "phases": [
+    {
+      "id": "01-contract-and-helper-boundaries",
+      "title": "Contract and Helper Boundaries",
+      "status": "PLANNED",
+      "updated": "2026-03-22T00:00:00Z"
+    },
+    {
+      "id": "02-global-layer-reduction",
+      "title": "Global Layer Reduction",
+      "status": "PLANNED",
+      "updated": "2026-03-22T00:00:00Z"
+    },
+    {
+      "id": "03-theme-surface-simplification",
+      "title": "Theme Surface Simplification",
+      "status": "PLANNED",
+      "updated": "2026-03-22T00:00:00Z"
+    },
+    {
+      "id": "04-consumer-canonicalization",
+      "title": "Consumer Canonicalization and Documentation",
+      "status": "PLANNED",
+      "updated": "2026-03-22T00:00:00Z"
+    }
+  ]
+}
