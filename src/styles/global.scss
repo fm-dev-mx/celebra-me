@@ -2,8 +2,29 @@
 @use 'global/animations';
 @use 'components/icons';
 @use 'components/logo';
-@use 'tokens/contracts/core';
+@use 'tools/functions' as tools;
+@use 'tokens/semantic/color';
+@use 'tokens/semantic/motion';
+@use 'tokens/semantic/spacing';
+@use 'tokens/semantic/surface';
+@use 'tokens/semantic/type';
+@use 'tokens/system/color' as sys-color;
 @use 'ui/status-pages';
+
+:root {
+	--color-surface: var(--color-surface-primary);
+	--color-white: #{sys-color.$sys-color-neutral-0};
+	--color-white-rgb: #{tools.rgb-channels(sys-color.$sys-color-neutral-0)};
+	--spacing-xs: var(--spacing-2);
+	--spacing-sm: var(--spacing-4);
+	--spacing-md: var(--spacing-6);
+	--spacing-lg: var(--spacing-8);
+	--spacing-xl: var(--spacing-12);
+	--spacing-2xl: var(--spacing-16);
+	--spacing-3xl: var(--spacing-20);
+	--spacing-4xl: var(--spacing-24);
+	--spacing-5xl: var(--spacing-32);
+}
 
 *,
 *::before,
