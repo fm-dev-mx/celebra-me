@@ -65,9 +65,7 @@
 	margin-bottom: 0.5rem;
 	opacity: 0%;
 	transform: translateY(20px);
-	transition:
-		opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
-		transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+	transition: all 1s var(--ease-premium);
 
 	&:last-child {
 		margin-bottom: 0;
@@ -96,7 +94,7 @@
 }
 
 .quote-author {
-	font-family: tokens.$font-display-elegant;
+	font-family: var(--font-display);
 	font-size: clamp(0.9rem, 3vw, 1.1rem);
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
@@ -106,7 +104,9 @@
 @media (prefers-reduced-motion: reduce) {
 	.quote-line {
 		opacity: 100%;
+		/* stylelint-disable-next-line declaration-no-important */
 		transform: none !important;
+		/* stylelint-disable-next-line declaration-no-important */
 		transition: none !important;
 	}
 }

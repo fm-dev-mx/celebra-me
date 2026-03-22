@@ -4,7 +4,7 @@
 	position: relative;
 	min-height: 100svh;
 	overflow: hidden;
-	background: var(--color-surface-dark, tokens.$color-surface-dark);
+	background: var(--color-surface-dark);
 
 	&[data-height='tall'] {
 		min-height: 80svh;
@@ -33,11 +33,11 @@
 		position: absolute;
 		inset: 0;
 		background:
-			linear-gradient(180deg, rgb(14 11 8 / 10%) 0%, rgb(14 11 8 / 22%) 100%),
+			linear-gradient(180deg, rgb(var(--color-surface-dark-rgb), 0.1) 0%, rgb(var(--color-surface-dark-rgb), 0.22) 100%),
 			radial-gradient(
 				circle at center,
 				transparent 24%,
-				rgb(14 11 8 / var(--interlude-overlay-opacity, 10%)) 100%
+				rgb(var(--color-surface-dark-rgb), var(--interlude-overlay-opacity, 10%)) 100%
 			);
 		pointer-events: none;
 	}

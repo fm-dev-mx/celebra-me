@@ -1,6 +1,5 @@
 // src/styles/invitation/_envelope-reveal.scss
 @use '../tokens' as tokens;
-@use '../tokens/primitives' as primitives;
 
 // Seal dimensions and safe zone
 $envelope-seal-size: 76px;
@@ -13,27 +12,27 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 // ==========================================================================
 .envelope-wrapper {
 	// ── Surface Hooks ──
-	--env-paper-bg: #{tokens.$color-surface-primary};
-	--env-paper-border: #{tokens.$color-glass-border};
+	--env-paper-bg: var(--color-surface-primary);
+	--env-paper-border: var(--color-glass-border);
 	--env-paper-radius: 20px;
-	--env-card-bg: #{primitives.$base-neutral-0};
+	--env-card-bg: var(--color-white);
 	--env-card-radius: 8px;
-	--env-card-shadow: #{tokens.$shadow-subtle};
+	--env-card-shadow: var(--shadow-subtle);
 
 	// ── Text Hooks ──
-	--env-name-font: #{tokens.$font-display-elegant};
-	--env-details-color: #{tokens.$color-text-primary};
-	--env-seal-icon-color: rgb(60 40 10 / 65%);
+	--env-name-font: var(--font-display);
+	--env-details-color: var(--color-text-primary);
+	--env-seal-icon-color: rgb(var(--color-surface-dark-rgb), 0.65);
 
 	// ── Seal Hooks ──
 	--env-seal-size: 52px;
 	--env-seal-gradient: radial-gradient(
 		circle at 35% 35%,
-		#{tokens.$base-gold-300},
-		#{tokens.$color-action-accent},
-		#{tokens.$color-surface-dark}
+		rgb(var(--color-action-accent-rgb), 1.5),
+		var(--color-action-accent),
+		var(--color-surface-dark)
 	);
-	--env-seal-pulse-color: #{tokens.$color-action-accent};
+	--env-seal-pulse-color: var(--color-action-accent);
 
 	// ── Flap Hooks ──
 	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
@@ -46,7 +45,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	background: var(--env-bg, radial-gradient(circle at center, #1b2735 0%, #090a0f 100%));
+	background: var(--env-bg, radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%));
 	perspective: 2500px;
 }
 
@@ -110,7 +109,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	z-index: 4;
 	transform-origin: top;
 	box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
-	transition: transform tokens.$duration-reveal tokens.$ease-in-out;
+	transition: transform var(--duration-reveal, 2s) var(--ease-in-out);
 	border-bottom: 1px solid rgb(255 255 255 / 40%);
 
 	&.is-open {
@@ -126,7 +125,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	background: var(--env-card-bg);
 	border-radius: var(--env-card-radius);
 	z-index: 2;
-	transition: transform tokens.$duration-reveal 0.3s tokens.$ease-out;
+	transition: transform var(--duration-reveal, 2s) 0.3s var(--ease-out);
 	box-shadow: var(--env-card-shadow);
 
 	&.is-rising {
@@ -155,11 +154,11 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 			--env-name-gradient,
 			linear-gradient(
 				75deg,
-				#{tokens.$color-surface-dark} 0%,
-				#{tokens.$color-action-accent} 45%,
-				#{tokens.$base-gold-300} 50%,
-				#{tokens.$color-action-accent} 55%,
-				#{tokens.$color-surface-dark} 100%
+				var(--color-surface-dark) 0%,
+				var(--color-action-accent) 45%,
+				var(--color-action-accent) 50%,
+				var(--color-action-accent) 55%,
+				var(--color-surface-dark) 100%
 			)
 		);
 		background-size: 200% auto;
@@ -182,9 +181,9 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 	.envelope-tease__guest-name {
 		margin-top: 0.5rem;
-		font-family: tokens.$font-ui;
+		font-family: var(--font-body);
 		font-size: clamp(0.75rem, 3vw, 0.95rem);
-		font-weight: tokens.$font-weight-semibold;
+		font-weight: 600;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		color: var(--env-details-color);
@@ -192,7 +191,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 		&::before {
 			content: 'Para: ';
-			font-weight: tokens.$font-weight-light;
+			font-weight: 300;
 			opacity: 70%;
 		}
 
@@ -221,14 +220,14 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		background: linear-gradient(
 			to right,
 			transparent,
-			tokens.$color-border-subtle,
+			var(--color-border-subtle),
 			transparent
 		);
 		margin-bottom: 1rem;
 	}
 
 	.envelope-details {
-		font-family: tokens.$font-body;
+		font-family: var(--font-body);
 		font-size: 0.8rem;
 		letter-spacing: 0.01rem;
 		text-transform: uppercase;
@@ -238,10 +237,10 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 	.envelope-microcopy {
 		margin-top: 0.75rem;
-		font-family: tokens.$font-body;
+		font-family: var(--font-body);
 		font-size: clamp(0.5rem, 2vw, 0.65rem);
-		letter-spacing: tokens.$letter-spacing-wide;
-		color: tokens.$color-text-secondary;
+		letter-spacing: 0.1em;
+		color: var(--color-text-secondary);
 		text-transform: uppercase;
 	}
 
@@ -268,25 +267,25 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 // ── Inside Card Personalized Section ──
 .envelope-card__guest-personalized {
-	margin-top: tokens.$spacing-4;
-	padding-top: tokens.$spacing-4;
+	margin-top: 1rem;
+	padding-top: 1rem;
 	border-top: 1px solid rgb(0 0 0 / 5%);
 	text-align: center;
 
 	.personalized-label {
-		font-family: tokens.$font-body;
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: tokens.$color-text-secondary;
+		color: var(--color-text-secondary);
 		margin-bottom: 0.25rem;
 	}
 
 	.personalized-name {
-		font-family: tokens.$font-display-elegant;
+		font-family: var(--font-display);
 		font-size: clamp(1.4rem, 5vw, 2rem);
-		font-weight: tokens.$font-weight-regular;
-		color: tokens.$color-text-primary;
+		font-weight: 400;
+		color: var(--color-text-primary);
 		line-height: 1.2;
 		display: block;
 
@@ -371,7 +370,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	margin-bottom: 0; // Reset previous margin
 	background: rgb(0 0 0 / 50%);
 	color: rgb(255 255 255 / 55%);
-	font-family: tokens.$font-ui;
+	font-family: var(--font-body);
 	font-size: 0.75rem;
 	font-weight: 600;
 	text-transform: uppercase;

@@ -14,18 +14,18 @@
 	z-index: 1000;
 
 	&__prompt {
-		font-family: tokens.$font-body;
-		font-size: tokens.$font-size-ui;
-		font-weight: tokens.$font-weight-regular;
-		letter-spacing: tokens.$letter-spacing-tight;
-		color: tokens.$color-text-primary;
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		color: var(--color-text-primary);
 		background: rgb(var(--color-surface-primary-rgb), 0.88);
 		backdrop-filter: blur(10px);
 		padding: 0.5rem 1rem;
 		border-radius: 1rem;
 		border: 1px solid rgb(var(--color-surface-dark-rgb), 0.16);
-		box-shadow: 0 6px 20px rgb(0 0 0 / 14%);
-		animation: musicPlayerFadeInSlide tokens.$duration-slower tokens.$ease-premium;
+		box-shadow: var(--shadow-standard);
+		animation: musicPlayerFadeInSlide var(--duration-slower) var(--ease-premium);
 		white-space: nowrap;
 
 		&::before {
@@ -49,11 +49,11 @@
 		border: none;
 		border-radius: 50%;
 		cursor: pointer;
-		transition: tokens.$transition-snappy;
+		transition: var(--transition-snappy);
 		outline: none;
 
 		&:focus-visible {
-			outline: 2px solid tokens.$color-action-accent;
+			outline: 2px solid var(--color-action-accent);
 			outline-offset: 3px;
 		}
 
@@ -71,9 +71,9 @@
 			height: 3.25rem;
 			background: rgb(var(--color-surface-secondary-rgb), 0.9);
 			backdrop-filter: blur(12px);
-			color: tokens.$color-action-primary;
+			color: var(--color-action-primary);
 			border: 1px solid rgb(var(--color-surface-dark-rgb), 0.2);
-			box-shadow: 0 10px 24px rgb(0 0 0 / 20%);
+			box-shadow: var(--shadow-standard);
 
 			svg {
 				filter: drop-shadow(0 1px 1px rgb(0 0 0 / 20%));
@@ -86,7 +86,7 @@
 				border-radius: 50%;
 				border: 1px solid rgb(var(--color-action-accent-rgb), 0.45);
 				opacity: 0%;
-				transition: tokens.$transition-snappy;
+				transition: var(--transition-snappy);
 			}
 
 			&:hover::after {

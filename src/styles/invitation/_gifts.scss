@@ -1,7 +1,7 @@
 @use '../tokens' as tokens;
 
 .gifts-section {
-	padding: var(--spacing-xl) var(--spacing-md);
+	padding: var(--spacing-section-gap, 8rem) var(--spacing-md);
 	position: relative;
 	overflow: hidden;
 
@@ -13,22 +13,26 @@
 
 	&__header {
 		margin-bottom: var(--spacing-xl);
-		animation: fadeInUp tokens.$duration-premium tokens.$ease-out forwards;
+		animation: fadeInUp var(--duration-premium) var(--ease-premium) forwards;
 	}
 
 	&__title {
-		font-size: tokens.$font-size-h1;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5vw, 3rem);
 		margin-bottom: var(--spacing-md);
 		text-transform: uppercase;
-		letter-spacing: tokens.$letter-spacing-wide;
+		letter-spacing: 0.15em;
+		color: var(--color-text-emphasis);
 	}
 
 	&__subtitle {
+		font-family: var(--font-body);
 		font-size: 1.25rem;
 		line-height: 1.6;
 		max-width: 600px;
 		margin: 0 auto;
 		opacity: 90%;
+		color: var(--color-text-primary);
 	}
 }
 
@@ -42,18 +46,25 @@
 .gift-card {
 	border-radius: 12px;
 	padding: var(--spacing-xl) var(--spacing-lg);
-	transition: tokens.$transition-snappy;
+	transition: var(--transition-snappy);
 	position: relative;
 	overflow: hidden;
+	background: var(--color-glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--color-glass-border);
+	box-shadow: var(--shadow-subtle);
 
 	&:hover {
 		transform: translateY(-10px);
+		box-shadow: var(--shadow-premium);
+		border-color: var(--color-action-accent);
 	}
 
 	&__icon {
 		width: 48px;
 		height: 48px;
 		margin: 0 auto var(--spacing-lg);
+		color: var(--color-action-accent);
 
 		svg {
 			width: 100%;
@@ -62,27 +73,38 @@
 	}
 
 	&__title {
+		font-family: var(--font-display);
 		font-size: 1.5rem;
 		margin-bottom: var(--spacing-lg);
+		color: var(--color-text-primary);
 	}
 
 	&__description {
+		font-family: var(--font-body);
 		font-size: 1.1rem;
 		line-height: 1.5;
 		margin-top: -0.5rem;
 		opacity: 90%;
+		color: var(--color-text-secondary);
 	}
 
 	&__button {
 		display: inline-block;
 		padding: 0.75rem 1.5rem;
 		background: transparent;
-		border: 1px solid;
+		border: 1px solid var(--color-action-accent);
+		color: var(--color-action-accent);
+		font-family: var(--font-body);
 		font-size: 1.1rem;
 		text-decoration: none;
 		border-radius: 4px;
-		transition: tokens.$transition-snappy;
+		transition: var(--transition-snappy);
 		cursor: pointer;
+
+		&:hover {
+			background: var(--color-action-accent);
+			color: var(--color-surface-primary);
+		}
 	}
 }
 
@@ -91,15 +113,18 @@
 	padding: var(--spacing-md);
 	border-radius: 8px;
 	margin-bottom: var(--spacing-lg);
+	background: rgb(var(--color-surface-primary-rgb), 0.3);
 
 	&__item {
 		margin-bottom: 0.5rem;
 		font-size: 1rem;
+		color: var(--color-text-primary);
 
 		strong {
 			font-size: 0.8rem;
 			text-transform: uppercase;
 			margin-right: 0.5rem;
+			color: var(--color-text-secondary);
 		}
 	}
 
@@ -114,31 +139,37 @@
 }
 
 .clabe-number {
-	font-family: monospace;
-	background: rgb(255 255 255 / 10%);
+	font-family: var(--font-mono, monospace);
+	background: rgb(var(--color-text-primary-rgb), 0.05);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 0.9rem;
 	letter-spacing: 0.05em;
+	color: var(--color-text-primary);
 }
 
 .copy-button {
-	border: none;
+	border: 1px solid var(--color-action-accent);
+	background: transparent;
+	color: var(--color-action-accent);
 	padding: 6px 16px;
 	border-radius: 4px;
 	font-size: 0.8rem;
 	cursor: pointer;
-	transition: tokens.$transition-snappy;
+	transition: var(--transition-snappy);
 	white-space: nowrap;
 	flex-shrink: 0;
 
 	&:hover {
-		filter: brightness(1.2);
+		background: var(--color-action-accent);
+		color: var(--color-surface-primary);
 	}
 
 	&--success {
-		background: rgb(40 167 69);
-		color: white;
+		background: var(--color-success, hsl(134deg 61% 41%));
+		border-color: var(--color-success, hsl(134deg 61% 41%));
+		color: var(--color-success, green);
+		fill: var(--color-success, green);
 	}
 }
 

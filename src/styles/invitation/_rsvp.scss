@@ -11,7 +11,7 @@
 	position: relative;
 	width: 90vw;
 	max-width: 550px;
-	margin: tokens.$spacing-section-gap auto;
+	margin: var(--spacing-section-gap, 8rem) auto;
 	padding: 2.5rem 1.5rem;
 	border-radius: var(--rsvp-radius-card, 24px);
 	overflow: hidden;
@@ -30,7 +30,7 @@
 	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb), 0.22);
 	--rsvp-button-shadow-rest: 0 5px 16px rgb(var(--color-text-primary-rgb), 0.24);
 	--rsvp-button-shadow-hover: 0 9px 24px rgb(var(--color-text-primary-rgb), 0.3);
-	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
+	--rsvp-button-bg-hover: var(--color-action-primary-hover, rgb(var(--color-action-primary-rgb), 0.9));
 	--rsvp-button-filter-hover: none;
 
 	// Glassmorphism Base
@@ -42,7 +42,7 @@
 		inset 0 0 0 1px rgb(255 255 255 / 10%);
 
 	@include mixins.respond-to(md) {
-		padding: 3.5rem tokens.$spacing-component-gap;
+		padding: 3.5rem var(--spacing-component-gap, 2.5rem);
 	}
 
 	// Decorative light glint
@@ -66,7 +66,7 @@
 		margin-bottom: 2rem;
 		font-family: var(--font-display);
 		font-size: 2rem;
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		color: var(--color-action-accent);
 		letter-spacing: 1px;
 
 		&::after {
@@ -74,7 +74,7 @@
 			display: block;
 			width: 60px;
 			height: 1px;
-			background: var(--color-action-accent, tokens.$color-action-accent);
+			background: var(--color-action-accent);
 			margin: 0.75rem auto 0;
 			opacity: 60%;
 		}
@@ -113,11 +113,7 @@
 			font-family: var(--font-body);
 			font-size: 1rem;
 			color: var(--color-text-primary);
-			transition:
-				background-color tokens.$duration-snappy tokens.$ease-out,
-				border-color tokens.$duration-snappy tokens.$ease-out,
-				box-shadow tokens.$duration-snappy tokens.$ease-out,
-				color tokens.$duration-snappy tokens.$ease-out;
+			transition: all var(--duration-snappy) var(--ease-out);
 
 			&:focus {
 				outline: none;
@@ -128,11 +124,11 @@
 			}
 
 			&:focus-visible {
-				outline: 2px solid var(--color-action-accent, tokens.$color-action-accent);
+				outline: 2px solid var(--color-action-accent);
 				outline-offset: 2px;
 				box-shadow:
-					0 0 0 2px rgb(var(--color-surface-primary-rgb, 245, 245, 220), 0.95),
-					0 0 0 5px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.45);
+					0 0 0 2px rgb(var(--color-surface-primary-rgb), 0.95),
+					0 0 0 5px rgb(var(--color-action-accent-rgb), 0.45);
 			}
 
 			&::placeholder {
@@ -168,7 +164,7 @@
 			margin-top: 0.25rem;
 			margin-left: 0.25rem;
 
-			@include mixins.animate-in(fade-up, tokens.$duration-standard);
+			@include mixins.animate-in(fade-up, var(--duration-standard));
 		}
 	}
 
@@ -189,17 +185,13 @@
 			border: 1px solid var(--rsvp-radio-border);
 			border-radius: var(--rsvp-radius-field, 12px);
 			cursor: pointer;
-			transition:
-				background-color tokens.$duration-snappy tokens.$ease-out,
-				border-color tokens.$duration-snappy tokens.$ease-out,
-				color tokens.$duration-snappy tokens.$ease-out,
-				outline-color tokens.$duration-snappy tokens.$ease-out;
+			transition: all var(--duration-snappy) var(--ease-out);
 			font-family: var(--font-body);
 			font-size: 0.95rem;
 
 			input {
 				cursor: pointer;
-				accent-color: var(--color-action-accent, tokens.$color-action-accent);
+				accent-color: var(--color-action-accent);
 			}
 
 			&:has(input:checked) {
@@ -214,7 +206,7 @@
 			}
 
 			&:focus-within {
-				outline: 2px solid var(--color-action-accent, tokens.$color-action-accent);
+				outline: 2px solid var(--color-action-accent);
 				outline-offset: 2px;
 			}
 		}
@@ -256,7 +248,7 @@
 		letter-spacing: var(--rsvp-label-letter-spacing);
 		opacity: 92%;
 		margin-left: 4px;
-		margin-bottom: tokens.$spacing-2;
+		margin-bottom: 0.5rem;
 		padding: 0;
 	}
 
@@ -266,8 +258,8 @@
 
 	&__button {
 		margin-top: 1rem;
-		background: var(--color-action-primary, tokens.$color-action-primary);
-		color: var(--color-text-on-dark, tokens.$color-text-on-dark);
+		background: var(--color-action-primary);
+		color: var(--color-text-on-dark);
 		border: none;
 		border-radius: var(--rsvp-radius-field, 12px);
 		padding: 1rem;
@@ -276,12 +268,7 @@
 		font-weight: 500;
 		letter-spacing: 1px;
 		cursor: pointer;
-		transition:
-			transform tokens.$duration-snappy tokens.$ease-out,
-			box-shadow tokens.$duration-snappy tokens.$ease-out,
-			filter tokens.$duration-snappy tokens.$ease-out,
-			background-color tokens.$duration-snappy tokens.$ease-out,
-			color tokens.$duration-snappy tokens.$ease-out;
+		transition: all var(--duration-snappy) var(--ease-out);
 		box-shadow: var(--rsvp-button-shadow-rest);
 
 		&:hover:not(:disabled) {
@@ -301,11 +288,11 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-action-accent, tokens.$color-action-accent);
+			outline: 2px solid var(--color-action-accent);
 			outline-offset: 3px;
 			box-shadow:
-				0 0 0 2px rgb(var(--color-surface-primary-rgb, 245, 245, 220), 0.95),
-				0 0 0 6px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.45);
+				0 0 0 2px rgb(var(--color-surface-primary-rgb), 0.95),
+				0 0 0 6px rgb(var(--color-action-accent-rgb), 0.45);
 		}
 
 		&--loading {
@@ -324,7 +311,7 @@
 				top: calc(50% - 10px);
 				left: calc(50% - 10px);
 				border: 2px solid rgb(255 255 255 / 30%);
-				border-top-color: var(--color-text-on-dark, tokens.$color-text-on-dark);
+				border-top-color: var(--color-text-on-dark);
 				border-radius: 50%;
 				animation: rsvp-spin 0.8s linear infinite;
 			}
@@ -340,7 +327,7 @@
 		}
 
 		&-text {
-			transition: opacity tokens.$duration-snappy tokens.$ease-out;
+			transition: opacity var(--duration-snappy) var(--ease-out);
 		}
 	}
 
@@ -366,15 +353,15 @@
 		&-message {
 			font-family: var(--font-display);
 			font-size: 1.5rem;
-			color: var(--color-text-primary, tokens.$color-text-primary);
+			color: var(--color-text-primary);
 			line-height: 1.4;
 			margin-bottom: 1.5rem;
 		}
 
 		&-name {
-			font-family: tokens.$font-display-elegant;
+			font-family: var(--font-display);
 			color: var(--color-action-accent);
-			font-weight: tokens.$font-weight-regular;
+			font-weight: 400;
 			display: inline-block;
 			padding: 0 0.25rem;
 			border-bottom: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
@@ -397,7 +384,7 @@
 		align-items: center;
 		gap: 0.85rem;
 
-		@include mixins.animate-in(fade-up, tokens.$duration-standard, 0.2s);
+		@include mixins.animate-in(fade-up, var(--duration-standard), 0.2s);
 	}
 
 	&__contact-text {
@@ -421,10 +408,7 @@
 		font-size: 0.95rem;
 		font-weight: 550;
 		text-decoration: none;
-		transition:
-			background-color tokens.$duration-standard tokens.$ease-out,
-			transform tokens.$duration-snappy tokens.$ease-out,
-			box-shadow tokens.$duration-standard tokens.$ease-out;
+		transition: all var(--duration-standard) var(--ease-out);
 		backdrop-filter: blur(8px);
 		box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
 
@@ -445,7 +429,7 @@
 
 		svg {
 			opacity: 92%;
-			transition: transform tokens.$duration-standard tokens.$ease-out;
+			transition: transform var(--duration-standard) var(--ease-out);
 		}
 
 		&:hover svg {
@@ -487,6 +471,43 @@
 			font-size: 0.95rem;
 			line-height: 1.6;
 			color: var(--color-text-secondary);
+		}
+	}
+}
+
+@keyframes rsvp-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rsvp {
+		&__field {
+			input[type='text'],
+			input[type='number'],
+			textarea {
+				transition: none;
+			}
+		}
+
+		&__radio-group label {
+			transition: none;
+		}
+
+		&__button {
+			transition: none;
+
+			&:hover:not(:disabled),
+			&:active:not(:disabled) {
+				transform: none;
+				filter: none;
+			}
+
+			&--loading::after {
+				animation: none;
+				border-top-color: var(--color-action-accent);
+			}
 		}
 	}
 }

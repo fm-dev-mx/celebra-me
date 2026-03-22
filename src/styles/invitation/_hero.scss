@@ -9,7 +9,7 @@
 	justify-content: flex-end;
 	align-items: center;
 	overflow: hidden;
-	color: tokens.$color-text-on-dark;
+	color: var(--hero-badge-text, white);
 	text-align: center;
 
 	&__background {
@@ -34,28 +34,28 @@
 			width: 100%;
 			height: 100%;
 			background:
-				radial-gradient(circle at center, transparent 20%, var(--hero-overlay) 100%),
-				var(--hero-overlay-gradient);
+				radial-gradient(circle at center, transparent 20%, var(--hero-overlay, rgb(0 0 0 / 40%)) 100%),
+				var(--hero-overlay-gradient, transparent);
 		}
 	}
 
 	&__content {
-		animation: heroContentReveal tokens.$duration-reveal tokens.$ease-premium 0.5s forwards;
+		animation: heroContentReveal var(--duration-reveal) var(--ease-premium) 0.5s forwards;
 	}
 
 	&__label {
 		display: block;
-		font-family: var(--font-display-elegant, serif);
+		font-family: var(--font-display, serif);
 		font-size: 1.1rem;
 		text-transform: uppercase;
 		letter-spacing: 0.3em;
 		margin-bottom: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.8s forwards;
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 0.8s forwards;
 	}
 
 	&__title {
-		font-family: var(--font-display-elegant, serif);
+		font-family: var(--font-display, serif);
 		font-size: clamp(2.2rem, 8vw, 4rem);
 		font-weight: 300;
 		margin: 0.5rem 0;
@@ -65,44 +65,44 @@
 		// 🌟 Refined Specular Glint
 		background: linear-gradient(
 			110deg,
-			var(--color-action-accent, tokens.$color-action-accent) 35%,
-			tokens.$color-text-on-dark 50%,
-			var(--color-action-accent, tokens.$color-action-accent) 65%
+			var(--color-action-accent) 35%,
+			var(--color-text-on-dark) 50%,
+			var(--color-action-accent) 65%
 		);
 		background-size: 250% auto;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
-			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
-			specularGlint 8s ease-in-out infinite;
+			fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1s forwards,
+			specularGlint 8s var(--ease-standard, ease-in-out) infinite;
 	}
 
 	&__nickname-badge {
 		opacity: 0%;
-		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1.2s forwards;
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1.2s forwards;
 
 		span {
 			background: linear-gradient(
 				110deg,
-				tokens.$color-text-on-dark 35%,
-				tokens.$base-neutral-0 50%,
-				tokens.$color-text-on-dark 65%
+				var(--color-text-on-dark) 35%,
+				var(--color-white, white) 50%,
+				var(--color-text-on-dark) 65%
 			);
 			background-size: 250% auto;
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
-			animation: specularGlint 8s ease-in-out infinite;
+			animation: specularGlint 8s var(--ease-standard, ease-in-out) infinite;
 		}
 	}
 
 	&__divider {
 		width: 60px;
 		height: 1px;
-		background: tokens.$color-action-accent;
+		background: var(--color-action-accent);
 		margin: 1.5rem auto;
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: growLine tokens.$duration-premium tokens.$ease-premium 1.2s forwards;
+		animation: growLine var(--duration-premium) var(--ease-premium) 1.2s forwards;
 	}
 
 	&__details {
@@ -110,7 +110,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1.4s forwards;
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1.4s forwards;
 	}
 
 	&__date {
@@ -142,7 +142,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeIn 1.5s tokens.$ease-out 2.5s forwards;
+		animation: fadeIn 1.5s var(--ease-out, ease-out) 2.5s forwards;
 		color: var(--hero-scroll-indicator-color, rgb(255 255 255 / 70%));
 		pointer-events: none;
 	}
@@ -172,17 +172,17 @@
 		max-width: 800px;
 		margin: 0 auto;
 		z-index: 10;
-		animation: heroContentReveal tokens.$duration-reveal tokens.$ease-premium 0.5s forwards;
+		animation: heroContentReveal var(--duration-reveal) var(--ease-premium) 0.5s forwards;
 	}
 
 	.invitation-hero__title {
-		font-family: tokens.$font-display-elegant;
-		font-weight: tokens.$font-weight-regular;
+		font-family: var(--font-display);
+		font-weight: 400;
 
 		// More dramatic shimmer for the protagonist
 		animation:
-			fadeInSlideUp 1.2s tokens.$ease-out 0.8s forwards,
-			specularGlint 6s ease-in-out infinite;
+			fadeInSlideUp 1.2s var(--ease-out, ease-out) 0.8s forwards,
+			specularGlint 6s var(--ease-standard, ease-in-out) infinite;
 	}
 }
 
@@ -321,17 +321,17 @@ body.invitation-revealed .event-theme-wrapper--sealed {
 	}
 
 	.invitation-hero__label {
-		animation: fadeInSlideUp 0.7s ease-out 0.58s forwards;
+		animation: fadeInSlideUp 0.7s var(--ease-out, ease-out) 0.58s forwards;
 	}
 
 	.invitation-hero__title {
 		animation:
-			fadeInSlideUp 0.95s ease-out 0.8s forwards,
-			specularGlint 8s ease-in-out 1.8s infinite;
+			fadeInSlideUp 0.95s var(--ease-out, ease-out) 0.8s forwards,
+			specularGlint 8s var(--ease-standard, ease-in-out) 1.8s infinite;
 	}
 
 	.invitation-hero__nickname-badge {
-		animation: fadeInSlideUp 0.75s ease-out 1.02s forwards;
+		animation: fadeInSlideUp 0.75s var(--ease-out, ease-out) 1.02s forwards;
 	}
 
 	.invitation-hero__divider {
@@ -339,11 +339,11 @@ body.invitation-revealed .event-theme-wrapper--sealed {
 	}
 
 	.invitation-hero__details {
-		animation: fadeInSlideUp 0.8s ease-out 1.48s forwards;
+		animation: fadeInSlideUp 0.8s var(--ease-out, ease-out) 1.48s forwards;
 	}
 
 	.invitation-hero__scroll-indicator {
-		animation: fadeIn 1.5s ease-out 2.35s forwards;
+		animation: fadeIn 1.5s var(--ease-out, ease-out) 2.35s forwards;
 	}
 
 	.invitation-hero__scroll-chevron {

@@ -12,11 +12,11 @@
 	);
 	backdrop-filter: blur(var(--glass-blur, 4px));
 	padding: 0.75rem 1rem;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-body);
 	color: var(--color-text-primary);
 	opacity: 60%;
-	font-size: tokens.$font-size-ui;
-	border-top: 1px solid var(--color-glass-border, tokens.$color-border-subtle);
+	font-size: 0.85rem;
+	border-top: 1px solid var(--color-border-subtle);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -35,7 +35,7 @@
 	max-width: 42rem;
 	min-width: 0;
 	opacity: 80%;
-	transition: tokens.$transition-snappy;
+	transition: var(--transition-snappy);
 
 	&:hover {
 		opacity: 100%;
@@ -97,7 +97,7 @@
 	font-size: 0.65rem;
 	opacity: 60%;
 	font-weight: 300;
-	letter-spacing: tokens.$letter-spacing-wide;
+	letter-spacing: 0.15em;
 	text-transform: uppercase;
 
 	@include mixins.respond-to(xs) {
@@ -118,12 +118,12 @@
 	color: rgb(var(--color-text-primary-rgb), 0.5);
 	padding: 0.35rem 0.75rem;
 	border-radius: 99px;
-	border: 1px solid tokens.$color-border-subtle;
-	transition: tokens.$transition-snappy;
-	font-family: tokens.$font-ui;
+	border: 1px solid var(--color-border-subtle);
+	transition: var(--transition-snappy);
+	font-family: var(--font-body);
 	font-size: 0.65rem;
 	text-transform: uppercase;
-	letter-spacing: tokens.$letter-spacing-wide;
+	letter-spacing: 0.1em;
 
 	svg,
 	img {
@@ -160,16 +160,16 @@
 	justify-content: center;
 	max-width: 100%;
 	text-align: center;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-body);
 	font-size: 0.65rem;
-	letter-spacing: tokens.$letter-spacing-wide;
+	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: var(--color-text-secondary, tokens.$color-text-secondary);
+	color: var(--color-text-secondary);
 	opacity: 80%;
 	background: none;
 	border: none;
 	cursor: pointer;
-	transition: opacity tokens.$duration-snappy tokens.$ease-premium;
+	transition: opacity var(--duration-snappy) var(--ease-premium);
 	padding: 0.5rem;
 	white-space: normal;
 	overflow-wrap: anywhere;
@@ -179,21 +179,22 @@
 	}
 
 	&:focus-visible {
-		outline: 1px solid var(--color-action-accent, tokens.$color-action-accent);
+		outline: 1px solid var(--color-action-accent);
 		outline-offset: 4px;
 		opacity: 80%;
 	}
 }
 
+/* stylelint-disable declaration-no-important */
 .invitation-footer[data-variant='editorial'] {
 	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
-	background-color: #050505 !important;
+	background-color: var(--color-surface-dark) !important;
 	background-image: linear-gradient(
 		180deg,
 		rgb(var(--color-surface-dark-rgb), 0) 0%,
 		rgb(var(--color-surface-dark-rgb), 0.8) 100%
 	) !important;
-	border-top: 1px solid rgb(212 175 55 / 40%) !important;
+	border-top: 1px solid rgb(var(--color-action-accent-rgb), 0.4) !important;
 	opacity: 100% !important;
 	backdrop-filter: blur(12px) !important;
 	box-shadow: 0 -10px 40px rgb(0 0 0 / 50%) !important;
@@ -226,7 +227,7 @@
 			font-weight: 500 !important;
 			letter-spacing: 0.25em !important;
 			text-transform: uppercase !important;
-			color: rgb(249 246 242 / 70%) !important; // Explicit cream color
+			color: var(--color-text-on-dark) !important;
 		}
 
 		.footer-brand-logo {
@@ -245,30 +246,33 @@
 		gap: 0.75rem !important;
 		padding: 0.65rem 1.75rem !important;
 		border-radius: 999px !important;
-		border: 1px solid rgb(212 175 55 / 50%) !important; // Gold border
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.5) !important;
 		background: rgb(255 255 255 / 3%) !important;
-		color: #d4af37 !important; // Gold text
-		font-family: tokens.$font-ui !important;
+		color: var(--color-action-accent) !important;
+		font-family: var(--font-body) !important;
 		font-size: 0.68rem !important;
 		font-weight: 600 !important;
 		letter-spacing: 0.18em !important;
 		text-transform: uppercase !important;
-		transition: all 0.3s ease !important;
+		transition: var(--transition-standard) !important;
 
 		.footer-action__icon-media {
 			width: 1.1rem !important;
 			height: 1.1rem !important;
 			opacity: 100% !important;
-			filter: brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
-				hue-rotate(352deg) brightness(91%) contrast(83%) !important; // Match #d4af37 gold
+			filter: var(
+				--filter-gold,
+				brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
+					hue-rotate(352deg) brightness(91%) contrast(83%)
+			) !important;
 		}
 
 		&:hover {
-			border-color: #d4af37 !important;
-			background: rgb(212 175 55 / 15%) !important;
-			color: #f9f6f2 !important;
+			border-color: var(--color-action-accent) !important;
+			background: rgb(var(--color-action-accent-rgb), 0.15) !important;
+			color: var(--color-text-on-dark) !important;
 			transform: scale(1.05) translateY(-2px) !important;
-			box-shadow: 0 5px 20px rgb(212 175 55 / 20%) !important;
+			box-shadow: 0 5px 20px rgb(var(--color-action-accent-rgb), 0.2) !important;
 		}
 	}
 
@@ -276,21 +280,22 @@
 		display: inline-flex !important;
 		align-items: center !important;
 		gap: 0.5rem !important;
-		font-family: tokens.$font-ui !important;
+		font-family: var(--font-body) !important;
 		font-size: 0.65rem !important;
 		letter-spacing: 0.18em !important;
 		text-transform: uppercase !important;
-		color: rgb(249 246 242 / 70%) !important; // Explicit cream
+		color: var(--color-text-on-dark) !important;
 		background: transparent !important;
 		border: none !important;
 		cursor: pointer !important;
 		padding: 0.5rem !important;
-		transition: all 0.3s ease !important;
+		transition: var(--transition-standard) !important;
 
 		&:hover {
-			color: #d4af37 !important;
+			color: var(--color-action-accent) !important;
 			opacity: 100% !important;
 			transform: translateX(3px) !important;
 		}
 	}
 }
+/* stylelint-enable declaration-no-important */

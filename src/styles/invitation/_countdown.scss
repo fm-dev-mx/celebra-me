@@ -41,7 +41,7 @@
 	// Entrance animation (content only)
 	opacity: 0%;
 	transform: translateY(20px);
-	transition: tokens.$transition-premium;
+	transition: all var(--duration-premium, 0.4s) var(--ease-premium, cubic-bezier(0.16, 1, 0.3, 1));
 
 	.countdown-section.is-visible & {
 		opacity: 100%;
@@ -54,11 +54,11 @@
 }
 
 .countdown-title {
-	font-family: tokens.$font-display-formal;
-	font-size: tokens.$font-size-h1;
-	color: tokens.$color-surface-dark;
+	font-family: var(--font-display);
+	font-size: var(--font-size-h1);
+	color: var(--color-surface-dark);
 	margin-bottom: 1.5rem;
-	letter-spacing: tokens.$letter-spacing-wide;
+	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
 
@@ -72,7 +72,7 @@
 	.subtitle-line {
 		height: 1px;
 		width: 40px;
-		background-color: tokens.$color-action-accent;
+		background-color: var(--color-action-accent);
 		display: none;
 
 		@include mixins.respond-to(sm) {
@@ -81,11 +81,11 @@
 	}
 
 	.event-date {
-		font-family: tokens.$font-display-formal;
+		font-family: var(--font-display);
 		font-size: 0.9rem;
 		text-transform: uppercase;
-		letter-spacing: tokens.$letter-spacing-extra-wide;
-		color: tokens.$color-text-primary;
+		letter-spacing: 0.22em;
+		color: var(--color-text-primary);
 	}
 }
 
@@ -115,9 +115,9 @@
 	opacity: 0%;
 	transform: translateY(15px);
 	transition:
-		opacity tokens.$duration-slower tokens.$ease-out,
-		transform tokens.$duration-slower tokens.$ease-out,
-		border-color tokens.$duration-snappy tokens.$ease-in;
+		opacity var(--duration-slower) var(--ease-out),
+		transform var(--duration-slower) var(--ease-out),
+		border-color var(--duration-snappy) var(--ease-in);
 
 	@for $i from 0 through 3 {
 		&[data-index='#{$i}'] {
@@ -157,12 +157,12 @@
 }
 
 .countdown__value {
-	font-family: tokens.$font-display-formal;
+	font-family: var(--font-display);
 	font-size: clamp(1.8rem, 6vw, 2.6rem);
-	color: tokens.$color-text-primary;
+	color: var(--color-text-primary);
 	font-weight: 700;
 	line-height: 1;
-	letter-spacing: tokens.$letter-spacing-wide;
+	letter-spacing: 0.1em;
 
 	@include mixins.respond-to(sm) {
 		font-size: clamp(2.8rem, 6vw, 3.5rem);
@@ -170,11 +170,11 @@
 }
 
 .countdown__label {
-	font-family: tokens.$font-display-formal;
+	font-family: var(--font-display);
 	font-size: 0.65rem;
 	text-transform: uppercase;
-	letter-spacing: tokens.$letter-spacing-wide;
-	color: tokens.$color-text-primary;
+	letter-spacing: 0.1em;
+	color: var(--color-text-primary);
 	opacity: 60%;
 
 	@include mixins.respond-to(sm) {
@@ -187,10 +187,10 @@
 }
 
 .countdown-invitation-text {
-	font-family: tokens.$font-body;
+	font-family: var(--font-body);
 	font-size: 1.25rem;
 	font-style: italic;
-	color: tokens.$color-text-primary;
+	color: var(--color-text-primary);
 	opacity: 80%;
 }
 
@@ -212,6 +212,10 @@
 	}
 
 	.countdown__value {
+		/* stylelint-disable-next-line declaration-no-important */
 		transition: none !important;
+		/* stylelint-disable-next-line declaration-no-important */
+		background: none !important;
+		border: none;
 	}
 }

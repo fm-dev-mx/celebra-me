@@ -1,6 +1,5 @@
 @use 'sass:color';
 @use '../tokens' as tokens;
-@use '../tokens/primitives' as primitives;
 
 /*
  * Block: .event-header
@@ -11,12 +10,12 @@
 .event-header {
 	// Branding / Breadcrumbs
 	&__title {
-		font-family: var(--font-display, tokens.$font-display-elegant);
+		font-family: var(--font-display);
 		font-size: 1.25rem;
-		font-weight: tokens.$font-weight-bold;
+		font-weight: 700;
 		text-decoration: none;
 		color: var(--color-action-accent);
-		transition: tokens.$transition-snappy;
+		transition: var(--transition-snappy);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -49,12 +48,12 @@
 
 	&__action-btn {
 		text-decoration: none;
-		font-family: tokens.$font-ui;
+		font-family: var(--font-body);
 		font-size: 0.85rem;
-		font-weight: tokens.$font-weight-semibold;
+		font-weight: 600;
 		padding: 0.5rem 1.25rem;
 		border-radius: 4px;
-		transition: tokens.$transition-snappy;
+		transition: var(--transition-snappy);
 		color: var(--header-nav-color);
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
@@ -68,21 +67,21 @@
 			background: linear-gradient(
 				145deg,
 				var(--color-action-accent) 0%,
-				#{color.adjust(primitives.$base-gold-500, $lightness: -10%, $space: hsl)} 100%
+				var(--color-action-primary) 100%
 			);
-			color: var(--color-text-primary);
+			color: var(--color-text-on-dark);
 			border-radius: 2px;
-			box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
+			box-shadow: var(--shadow-subtle);
 			border: 1px solid rgb(255 255 255 / 10%);
 
 			&:hover {
 				background: linear-gradient(
 					145deg,
-					#{color.adjust(primitives.$base-gold-500, $lightness: 5%, $space: hsl)} 0%,
-					var(--color-action-accent) 100%
+					var(--color-action-accent) 50%,
+					var(--color-action-primary) 100%
 				);
 				transform: translateY(-1px);
-				color: var(--color-text-primary);
+				color: var(--color-text-on-dark);
 				box-shadow: var(--header-luxury-cta-glow, 0 4px 12px var(--color-glass-shadow));
 			}
 		}
@@ -95,21 +94,21 @@
 	width: 100%;
 
 	a {
-		font-family: tokens.$font-display-formal;
+		font-family: var(--font-display);
 		font-size: 1.8rem;
-		color: tokens.$color-text-primary;
+		color: var(--color-text-primary);
 		text-decoration: none;
 		display: block;
 		padding: 15px 0;
-		border-bottom: 1px solid tokens.$color-border-subtle;
-		transition: tokens.$transition-snappy;
+		border-bottom: 1px solid var(--color-border-subtle);
+		transition: var(--transition-snappy);
 
 		&:last-child {
 			border-bottom: none;
 		}
 
 		&:hover {
-			color: tokens.$color-action-accent;
+			color: var(--color-action-accent);
 		}
 	}
 }
@@ -119,17 +118,17 @@
  * Uses variables defined in _header-theme.scss which change based on theme preset
  */
 
-/*
- * Theme-aware contrast enforcement
- * Uses variables defined in _header-theme.scss
- */
 .header-base--transparent {
 	.event-header__title,
 	.event-header__action-btn:not(.event-header__action-btn--cta) {
-		opacity: 80%;
+		/* stylelint-disable declaration-no-important */
 		color: var(--header-nav-color-transparent) !important;
 		text-shadow: var(--header-nav-shadow-transparent) !important;
 		filter: var(--header-nav-filter-transparent) !important;
+		background: none !important;
+		border: none !important;
+		box-shadow: none !important;
+		/* stylelint-enable declaration-no-important */
 	}
 }
 
@@ -158,7 +157,7 @@
 
 // Hide header until the envelope reveal completes (when enabled)
 :global(.event-theme-wrapper--sealed) #event-header {
-	transition: opacity tokens.$duration-slower tokens.$ease-in-out;
+	transition: opacity var(--duration-slower) var(--ease-in-out);
 }
 
 :global(body:not(.invitation-revealed)) .event-theme-wrapper--sealed #event-header {

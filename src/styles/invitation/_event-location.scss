@@ -38,10 +38,10 @@
 	}
 
 	&__card-title {
-		font-family: tokens.$font-ui; /* Montserrat for a clean secondary label */
-		font-size: 0.5rem;
-		color: hsl(43deg 30% 45% / 70%);
-		letter-spacing: 5px;
+		font-family: var(--font-body); /* Using font-body for UI label */
+		font-size: 0.85rem;
+		color: var(--color-text-secondary);
+		letter-spacing: 0.25em;
 		text-transform: uppercase;
 		margin-bottom: 0.5rem;
 		font-weight: 600;
@@ -61,17 +61,17 @@
 		.flourish-line {
 			width: 30px;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, tokens.$color-action-accent);
+			background: linear-gradient(90deg, transparent, var(--color-action-accent));
 
 			&:last-child {
-				background: linear-gradient(-90deg, transparent, tokens.$color-action-accent);
+				background: linear-gradient(-90deg, transparent, var(--color-action-accent));
 			}
 		}
 
 		.flourish-diamond {
 			width: 6px;
 			height: 6px;
-			background: tokens.$color-action-accent;
+			background: var(--color-action-accent);
 			transform: rotate(45deg);
 		}
 	}
@@ -84,10 +84,7 @@
 	&__card {
 		padding: 2.5rem 1.5rem;
 		border-radius: 4px;
-		transition:
-			transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
-			box-shadow 0.5s cubic-bezier(0.25, 1, 0.5, 1),
-			filter 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+		transition: all var(--duration-premium) var(--ease-premium);
 		width: 100%;
 		display: flex;
 		flex-direction: column;
@@ -95,7 +92,7 @@
 		opacity: 0%;
 
 		&.is-visible {
-			animation: fadeInUp 0.8s ease-out forwards;
+			animation: fadeInUp var(--duration-premium) var(--ease-out) forwards;
 		}
 
 		position: relative;
@@ -114,26 +111,22 @@
 		/* Subtle Hover Effect */
 		&:hover {
 			transform: translateY(-4px);
-			box-shadow:
-				0 20px 45px hsl(0deg 0% 0% / 8%),
-				0 8px 20px hsl(43deg 55% 55% / 10%);
+			box-shadow: var(--shadow-premium);
 		}
 	}
 
 	&__card-image-outer-frame {
 		width: 100%;
 		border-radius: 2px;
-		background: var(--color-frame-bg, tokens.$color-action-accent);
+		background: var(--color-action-accent);
 		padding: 2px;
-		box-shadow:
-			0 10px 30px -10px rgb(0 0 0 / 30%),
-			inset 0 0 1px rgb(255 255 255 / 50%);
+		box-shadow: var(--shadow-standard);
 		margin-bottom: 2rem;
 	}
 
 	&__card-image-inner-frame {
 		border-radius: 2px;
-		background: white;
+		background: var(--color-white);
 		padding: 8px;
 		overflow: hidden;
 		position: relative;
@@ -167,37 +160,37 @@
 	}
 
 	&__card-content-place {
-		font-family: tokens.$font-display-elegant; /* Playfair Display */
+		font-family: var(--font-display);
 		font-size: 1.9rem;
-		color: tokens.$color-text-primary;
+		color: var(--color-text-primary);
 		margin-bottom: 1.5rem;
 		line-height: 1.1;
 		letter-spacing: -0.5px;
 	}
 
 	&__card-content-date {
-		font-family: tokens.$font-calligraphy; /* Pinyon Script */
+		font-family: var(--font-calligraphy);
 		font-size: clamp(1rem, 6vw, 1.3rem);
-		color: tokens.$color-action-accent;
+		color: var(--color-action-accent);
 		margin-bottom: 0.5rem;
 		white-space: nowrap; /* Ensure single line */
 		display: block;
 	}
 
 	&__card-content-hour {
-		font-family: tokens.$font-ui;
+		font-family: var(--font-body);
 		font-size: clamp(0.7rem, 2vw, 1rem);
-		letter-spacing: 6px;
+		letter-spacing: 0.35em;
 		font-weight: 500;
 		text-transform: uppercase;
-		color: tokens.$color-neutral-muted;
+		color: var(--color-text-secondary);
 		margin-bottom: 2.5rem;
 		display: block;
 	}
 
 	&__card-content-address {
 		font-size: 0.85rem;
-		color: tokens.$color-neutral-base;
+		color: var(--color-text-primary);
 		line-height: 1.6;
 		display: flex;
 		align-items: center;
@@ -214,13 +207,10 @@
 	&__card-content-copy-button {
 		background: transparent;
 		border: none;
-		color: tokens.$color-action-accent;
+		color: var(--color-action-accent);
 		cursor: pointer;
 		padding: 4px;
-		transition:
-			opacity 0.3s ease,
-			transform 0.3s ease,
-			color 0.3s ease;
+		transition: all var(--duration-snappy) var(--ease-standard);
 		opacity: 60%;
 
 		&:hover {
@@ -229,7 +219,7 @@
 		}
 
 		&.copy-success {
-			color: tokens.$color-action-accent;
+			color: var(--color-action-accent);
 			opacity: 100%;
 		}
 	}
@@ -260,7 +250,7 @@
 	&__card-content-itinerary-dot {
 		width: 4px;
 		height: 4px;
-		background: var(--color-action-accent, tokens.$color-action-accent);
+		background: var(--color-action-accent);
 		border-radius: 50%;
 		display: block;
 		opacity: 60%;
@@ -269,14 +259,14 @@
 
 	&__card-content-itinerary-label {
 		font-size: 0.9rem;
-		color: tokens.$color-neutral-base;
+		color: var(--color-text-secondary);
 		text-align: left;
 	}
 
 	&__card-content-itinerary-time {
 		margin-left: auto;
 		font-size: 0.85rem;
-		color: tokens.$color-neutral-muted;
+		color: var(--color-text-secondary);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
@@ -301,24 +291,20 @@
 		justify-content: center;
 		gap: 0.6rem;
 		padding: 1rem 1.4rem;
-		font-family: tokens.$font-ui;
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		font-weight: 600;
-		letter-spacing: 2px;
+		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		text-decoration: none;
 		border-radius: 4px;
-		transition:
-			background 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-			border-color 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-			box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-			filter 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+		transition: all var(--duration-snappy) var(--ease-premium);
 		position: relative;
 		overflow: hidden;
-		background: var(--color-action-accent, tokens.$color-action-accent); /* Standard gold */
+		background: var(--color-action-accent); /* Standard gold */
 		backdrop-filter: blur(12px);
 		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
-		color: var(--color-text-primary, tokens.$color-text-primary);
+		color: var(--color-text-primary);
 
 		/* Shimmer overlay */
 		&::before {
@@ -328,7 +314,7 @@
 			left: -100%;
 			width: 100%;
 			height: 100%;
-			background: linear-gradient(90deg, transparent, hsl(43deg 55% 55% / 15%), transparent);
+			background: linear-gradient(90deg, transparent, rgb(255 255 255 / 15%), transparent);
 			transition: 0s;
 			pointer-events: none;
 		}
@@ -345,9 +331,8 @@
 		}
 
 		&:hover {
-			background: hsl(43deg 55% 55% / 8%);
-			border-color: hsl(43deg 55% 55% / 60%);
-			box-shadow: 0 0 25px hsl(43deg 55% 55% / 15%);
+			filter: brightness(1.05);
+			box-shadow: 0 0 25px rgb(var(--color-action-accent-rgb), 0.15);
 		}
 
 		&:hover::before {
@@ -362,44 +347,39 @@
 
 		&--maps,
 		&--waze {
-			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
-			color: #f9f6f2; // Fixed: Ensuring text is visible on dark
-			border-color: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
+			background: rgb(var(--color-action-accent-rgb), 0.1);
+			color: var(--color-text-primary); 
+			border-color: rgb(var(--color-action-accent-rgb), 0.5);
 			backdrop-filter: blur(12px);
 		}
 
 		&--maps:hover,
 		&--waze:hover {
-			background: rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
+			background: rgb(var(--color-action-accent-rgb), 0.2);
 			border-color: var(--color-action-accent);
-			box-shadow: 0 8px 25px rgb(212 175 55 / 25%);
-		}
-
-		&--waze:hover {
-			/* On hover: subtle cyan glow inspired by Waze brand, while preserving gold luxury aesthetic */
-			box-shadow: 0 8px 25px hsl(199deg 85% 50% / 15%);
+			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb), 0.25);
 		}
 
 		&--primary {
-			background: var(--color-action-accent, tokens.$color-action-accent);
-			color: var(--color-surface-primary, tokens.$color-surface-primary);
+			background: var(--color-action-accent);
+			color: var(--color-surface-primary);
 			border-color: transparent;
 		}
 
 		&--primary:hover {
 			filter: brightness(0.9);
-			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb), 0.3);
 		}
 
 		&--apple {
-			background: hsl(0deg 0% 98% / 90%);
-			color: tokens.$color-text-primary;
-			border-color: hsl(0deg 0% 80% / 50%);
+			background: var(--color-white);
+			color: var(--color-text-primary);
+			border-color: var(--color-border-subtle);
 		}
 
 		&--apple:hover {
-			background: hsl(0deg 0% 95% / 100%);
-			box-shadow: 0 4px 15px hsl(0deg 0% 0% / 10%);
+			background: var(--color-surface-soft);
+			box-shadow: var(--shadow-subtle);
 		}
 
 		svg {
@@ -422,7 +402,7 @@
 		height: 1px;
 		background: radial-gradient(
 			circle,
-			var(--color-action-accent, tokens.$color-action-accent) 0%,
+			var(--color-action-accent) 0%,
 			transparent 70%
 		);
 		opacity: 30%;
@@ -433,7 +413,7 @@
 		display: grid;
 		gap: 2.5rem;
 		padding: 3rem 2rem;
-		background: rgb(255 252 240 / 50%);
+		background: rgb(var(--color-surface-primary-rgb), 0.5);
 		backdrop-filter: blur(10px);
 		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
 		position: relative;
@@ -455,7 +435,7 @@
 		text-align: center;
 		padding: 1rem;
 		border-radius: 8px;
-		transition: all 0.3s ease;
+		transition: all var(--duration-standard) var(--ease-standard);
 
 		@include mixins.respond-to(sm) {
 			flex-direction: row;
@@ -465,7 +445,7 @@
 	}
 
 	&__indication-icon {
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		color: var(--color-action-accent);
 		opacity: 90%;
 		flex-shrink: 0;
 		font-size: 1.5rem; /* Larger but fine */
@@ -479,8 +459,8 @@
 
 	&__indication-text {
 		margin: 0;
-		color: tokens.$color-neutral-base;
-		font-family: tokens.$font-body;
+		color: var(--color-text-primary);
+		font-family: var(--font-body);
 		font-size: 1.1rem;
 		line-height: 1.6;
 		letter-spacing: 0.5px;
@@ -496,9 +476,9 @@
 	}
 
 	&__signature-text {
-		font-family: tokens.$font-calligraphy;
+		font-family: var(--font-calligraphy);
 		font-size: 2.5rem;
-		color: var(--color-action-accent, tokens.$color-action-accent);
+		color: var(--color-action-accent);
 	}
 
 	&__signature-line {
@@ -507,7 +487,7 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			var(--color-action-accent, tokens.$color-action-accent),
+			var(--color-action-accent),
 			transparent
 		);
 	}
@@ -528,5 +508,6 @@
 
 /* Utility to hide elements initially but allow JS to reveal them */
 .u-hidden-initially {
+	/* stylelint-disable-next-line declaration-no-important */
 	display: none !important;
 }

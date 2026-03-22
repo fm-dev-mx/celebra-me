@@ -3,29 +3,29 @@
 // src/styles/invitation/_typography.scss
 
 // Headings (Primary Titles)
-$font-heading-elegant: tokens.$font-display-elegant !default;
-$font-heading-formal: tokens.$font-display-formal !default;
-$font-heading-modern: tokens.$font-ui !default;
+$font-heading-elegant: var(--font-display) !default;
+$font-heading-formal: var(--font-display) !default;
+$font-heading-modern: var(--font-body) !default;
 
 // Subtitles & Formal Text
-$font-subtitle-refined: tokens.$font-display-elegant !default;
-$font-subtitle-classic: tokens.$font-body !default;
+$font-subtitle-refined: var(--font-display) !default;
+$font-subtitle-classic: var(--font-body) !default;
 
 // Body copy
-$font-body: tokens.$font-body !default;
+$font-body: var(--font-body) !default;
 
 // Decorative Fonts
-$font-decorative-cursive: 'Great Vibes', cursive !default;
-$font-decorative-dancing: 'Dancing Script', cursive !default;
-$font-decorative-calligraphy: tokens.$font-calligraphy !default;
-$font-decorative-display: 'Abril Fatface', serif !default;
+$font-decorative-cursive: var(--font-calligraphy) !default;
+$font-decorative-dancing: var(--font-calligraphy) !default;
+$font-decorative-calligraphy: var(--font-calligraphy) !default;
+$font-decorative-display: var(--font-display) !default;
 
 // Document Default Fonts
-$font-default: $font-body !default;
-$font-special-title: $font-decorative-calligraphy !default;
+$font-default: var(--font-body) !default;
+$font-special-title: var(--font-calligraphy) !default;
 
 // Additional Texts (buttons, captions, footer)
-$font-button: $font-heading-modern !default;
-$font-caption: $font-body !default;
-$font-footer: $font-body !default;
-$font-emphasis: $font-decorative-display !default;
+$font-button: var(--font-body) !default;
+$font-caption: var(--font-body) !default;
+$font-footer: var(--font-body) !default;
+$font-emphasis: var(--font-display) !default;

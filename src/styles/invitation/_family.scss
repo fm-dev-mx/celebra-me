@@ -8,8 +8,8 @@
 	position: relative;
 	padding: clamp(5.5rem, 9vw, 8.5rem) 0;
 	overflow: clip;
-	background: var(--family-bg, var(--color-surface-primary, tokens.$color-surface-primary));
-	color: var(--family-text-primary, var(--color-text-primary, tokens.$color-text-primary));
+	background: var(--family-bg, var(--color-surface-primary));
+	color: var(--family-text-primary, var(--color-text-primary));
 
 	&__bg-texture {
 		position: absolute;
@@ -51,14 +51,14 @@
 		width: 60px;
 		height: 2px;
 		margin-top: 1.5rem;
-		background: var(--family-accent);
+		background: var(--family-accent, var(--color-action-accent));
 		opacity: 40%;
 	}
 
 	&__eyebrow {
 		display: block;
 		margin-bottom: 0.75rem;
-		font-family: var(--font-ui, tokens.$font-ui);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
@@ -70,7 +70,7 @@
 		margin: 0;
 		font-family: var(
 			--family-group-title-font,
-			var(--font-display, tokens.$font-display-elegant)
+			var(--font-display)
 		);
 		font-size: clamp(2rem, 4.8vw, 3.3rem);
 		line-height: 1.1;
@@ -88,7 +88,7 @@
 		border-radius: 14px;
 		border: 1px solid var(--family-border, rgb(var(--color-text-primary-rgb), 0.16));
 		background: var(--family-panel-bg, rgb(var(--color-surface-primary-rgb), 0.7));
-		box-shadow: var(--family-shadow, 0 18px 40px rgb(0 0 0 / 12%));
+		box-shadow: var(--family-shadow, var(--shadow-subtle));
 	}
 
 	&__panel--no-media {
@@ -109,7 +109,7 @@
 		border-radius: 10px;
 		overflow: hidden;
 		border: 1px solid var(--family-border, rgb(var(--color-text-primary-rgb), 0.2));
-		background: var(--family-media-bg, rgb(17 12 9));
+		background: var(--family-media-bg, hsl(23deg 20% 6%));
 		box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
 
 		img {
@@ -134,7 +134,7 @@
 		position: absolute;
 		width: 24px;
 		height: 24px;
-		border: 2px solid var(--family-accent);
+		border: 2px solid var(--family-accent, var(--color-action-accent));
 		pointer-events: none;
 		z-index: 3;
 		opacity: 60%;
@@ -217,7 +217,7 @@
 		margin: 0 0 0.9rem;
 		font-family: var(
 			--family-group-title-font,
-			var(--font-display, tokens.$font-display-formal)
+			var(--font-display)
 		);
 		font-size: clamp(1rem, 2vw, 1.3rem);
 		text-transform: uppercase;
@@ -250,7 +250,7 @@
 
 	&__name {
 		margin: 0;
-		font-family: var(--family-name-font, var(--font-display, tokens.$font-display-elegant));
+		font-family: var(--family-name-font, var(--font-display));
 		font-size: var(--family-name-size, clamp(1.3rem, 3vw, 1.9rem));
 		line-height: 1.15;
 		letter-spacing: 0.02em;
@@ -271,7 +271,7 @@
 
 	&__meta {
 		display: block;
-		font-family: var(--font-ui, tokens.$font-ui);
+		font-family: var(--font-body);
 		font-size: var(--family-meta-size, 0.72rem);
 		text-transform: uppercase;
 		letter-spacing: var(--family-meta-letter-spacing, 0.18em);
@@ -283,7 +283,7 @@
 		align-items: center;
 		justify-content: flex-start;
 		margin: var(--family-connector-margin, 0.1rem 0);
-		font-family: var(--font-calligraphy, tokens.$font-calligraphy);
+		font-family: var(--font-calligraphy);
 		font-size: var(--family-connector-size, 1.9rem);
 		line-height: 1;
 		color: var(--family-accent, var(--color-action-accent));
@@ -300,8 +300,8 @@
 
 	&.has-motion &__reveal {
 		transition:
-			opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-			transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+			opacity 0.65s var(--ease-premium),
+			transform 0.65s var(--ease-premium);
 		transition-delay: var(--family-reveal-delay, 0s);
 	}
 
