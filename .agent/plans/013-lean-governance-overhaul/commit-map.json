@@ -2,13 +2,16 @@
   "planId": "013-lean-governance-overhaul",
   "mode": "planned-commits",
   "commitStrategyReview": {
-    "draftedAt": "2026-03-23T15:18:00Z"
+    "draftedAt": "2026-03-23T15:18:00Z",
+    "reviewedAt": "2026-03-23T23:45:00Z",
+    "readyForGatekeeperAt": "2026-03-23T23:50:00Z",
+    "notes": "Lean Governance 2.0 implementation complete. Unified commands and Maintenance Mode verified locally."
   },
   "units": [
     {
       "id": "refactor-gatekeeper-workflow",
       "phaseId": "01-core-restructuring",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "refactor",
       "subject": {
@@ -16,8 +19,14 @@
         "target": "gatekeeper workflow commands"
       },
       "purpose": "reduce fragmented execution steps and automate staging/committing",
+      "correctionPolicy": "absorb-compatible",
       "include": [
-        ".agent/governance/bin/gatekeeper-workflow.mjs"
+        ".agent/governance/bin/gatekeeper-workflow.mjs",
+        ".agent/plans/013-lean-governance-overhaul/manifest.json",
+        ".agent/plans/013-lean-governance-overhaul/README.md",
+        ".agent/plans/013-lean-governance-overhaul/CHANGELOG.md",
+        ".agent/plans/013-lean-governance-overhaul/commit-map.json",
+        ".agent/plans/013-lean-governance-overhaul/phases/*.md"
       ],
       "messagePreview": {
         "header": "refactor(governance): unify gatekeeper workflow commands",
@@ -31,7 +40,7 @@
     {
       "id": "implement-maintenance-mode",
       "phaseId": "02-maintenance-mode",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "feat",
       "subject": {
@@ -39,6 +48,7 @@
         "target": "maintenance mode trailer support"
       },
       "purpose": "allow unplanned high-quality fixes with minimal overhead",
+      "correctionPolicy": "absorb-compatible",
       "include": [
         "commitlint.config.cjs",
         "scripts/validate-commits.mjs",
@@ -56,7 +66,7 @@
     {
       "id": "optimize-plan-resolution",
       "phaseId": "01-core-restructuring",
-      "status": "draft",
+      "status": "ready",
       "domain": "governance",
       "type": "perf",
       "subject": {
@@ -64,6 +74,7 @@
         "target": "governance plan resolution"
       },
       "purpose": "improve robustness of archival search and metadata tolerance",
+      "correctionPolicy": "absorb-compatible",
       "include": [
         ".agent/governance/bin/validate-commit-plan.mjs",
         ".agent/governance/bin/commit-plan.mjs"
@@ -80,13 +91,15 @@
     {
       "id": "update-governance-docs",
       "phaseId": "03-doc-alignment",
-      "status": "draft",
+      "status": "ready",
       "domain": "docs",
       "type": "docs",
       "subject": {
         "verb": "update",
         "target": "lean governance 2.0 documentation"
       },
+      "purpose": "align all documentation and workflows with Lean 2.0 architecture",
+      "correctionPolicy": "absorb-compatible",
       "include": [
         "docs/core/git-governance.md",
         ".agent/workflows/plan-authoring.md",

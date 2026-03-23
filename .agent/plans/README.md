@@ -2,21 +2,25 @@
 
 > Source of truth for creating, executing, tracking, and archiving plans in `celebra-me`.
 
-**Last Updated:** 2026-03-22  
+<<<<<<< Updated upstream
+**Last Updated:** 2026-03-20  
+=======
+**Last Updated:** 2026-03-23  
+>>>>>>> Stashed changes
 **Authority:** `.agent/README.md`  
 **Scope:** `.agent/plans/`
 
 ## Core Rules
 
-- Every active executable plan lives directly under `.agent/plans/<NNN-plan-id>/` where `NNN` is a 3-digit sequential prefix.
+<<<<<<< Updated upstream
+- Every active executable plan lives directly under `.agent/plans/<plan-id>/`.
 - Every active executable plan must include:
   - `README.md`
   - `CHANGELOG.md`
   - `manifest.json`
   - `commit-map.json`
   - `phases/`
-- Archived plans move to `.agent/plans/archive/YYYY-MM/<plan-id>/` and become read-only by convention.
-- Active plans under `.agent/plans/<NNN-plan-id>/` must not use historical manifest statuses.
+- Archived plans move to `.agent/plans/archive/` and become read-only by convention.
 - `.agent/plans/README.md` owns the `commit-map.json` contract.
 - `gatekeeper-workflow`, `commitlint`, hooks, and CI validate or execute the contract; they do not
   define intent.
@@ -25,41 +29,38 @@
 - Every non-completed executable plan must define a commit strategy before implementation begins.
 - Every non-completed executable plan must review and lock that strategy before `gatekeeper-commit`
   is used.
-- Archival is a separate close-out step after commit execution, not part of gatekeeper readiness.
+=======
+- Every active executable plan lives under `.agent/plans/<NNN-plan-id>/`.
+- Mandatory files: `README.md`, `CHANGELOG.md`, `manifest.json`, `commit-map.json`, `phases/`.
+- **Maintenance Mode**: Small, unplanned fixes (chore, docs, fix) can bypass the plan system by using the `Maintenance: true` trailer in the commit body.
+- **Unified Execution**: Use `pnpm gatekeeper:commit` for an atomic, one-step commit process.
+- **Graceful Archival**: Completed plans move to `archive/YYYY-MM/`. Recursive search ensures push-time validation still works.
+>>>>>>> Stashed changes
 
 ## Mandatory Structure
 
 ```text
-.agent/plans/{NNN-plan-id}/
+.agent/plans/{plan-id}/
 ├── README.md
 ├── CHANGELOG.md
 ├── manifest.json
 ├── commit-map.json
 ├── phases/
 │   ├── 01-{phase-name}.md
-│   ├── 02-{phase-name}.md
 │   └── ...
-└── post-mortem.md    # optional
 ```
 
 ## Commit Planning Contract
 
-### Purpose
+`commit-map.json` is the source of truth for planned commit intent.
 
-`commit-map.json` is the only source of truth for commit intent in the Gatekeeper commit workflow.
-
-This means:
-
-- the plan owns the commit unit
-- the unit owns the subject
-- the workflow stages and commits exactly one unit
-- commitlint validates conformance to that unit
-- CI reconstructs the same unit from commit trailers
-
-There is no commit-planning fallback to domain heuristics.
+- The plan owns the commit unit.
+- The unit owns the subject and message.
+- `gatekeeper:commit` automates the execution (inspect + stage + commit).
 
 ## Commit Strategy Lifecycle
 
+<<<<<<< Updated upstream
 ### Draft the Commit Strategy
 
 Every executable plan must create a preliminary `commit-map.json` before implementation work begins.
@@ -110,16 +111,13 @@ That review must confirm:
 `gatekeeper-commit` is only for plans whose commit strategy has already been reviewed and marked
 ready.
 
-For active plans, readiness is expressed in `commit-map.json` through:
+For non-completed plans, readiness is expressed in `commit-map.json` through:
 
 - top-level `commitStrategyReview.readyForGatekeeperAt`
 - unit-level statuses promoted from `draft` / `locked` to `ready` or `revised-after-gatekeeper`
 
-If readiness is missing, any active unit still remains in `draft` / `locked`, or any active unit is
-already marked `completed`, then gatekeeper execution must block instead of inferring intent.
-
-Active executable plans must remain non-historical while they are still under `.agent/plans/`.
-`COMPLETED` and `ARCHIVED` are historical-only manifest states and belong in the archive path.
+If readiness is missing, or any active unit still remains in `draft` / `locked`, then
+`gatekeeper-workflow` must block instead of inferring intent.
 
 ### Update the Plan When Gatekeeper Finds Drift
 
@@ -214,17 +212,11 @@ Once the plan is ready for `gatekeeper-commit`, it must also record:
 
 - `readyForGatekeeperAt`
 
-`notes` is mandatory whenever `reviewedAt` or `readyForGatekeeperAt` is present.
-
 The timestamps may be equal for small changes, but they must reflect the real lifecycle:
 
 - draft strategy exists before implementation
 - final review closes before gatekeeper execution
 - readiness only exists once the active units are executable without reinterpretation
-
-If a unit has already been committed, that state belongs in archival/history management, not in an
-otherwise executable active plan. Re-issue the remaining work as `ready` or
-`revised-after-gatekeeper` units before running gatekeeper again.
 
 ### Message preview rules
 
@@ -301,24 +293,11 @@ Scratch files, disposable debugging, and throwaway experiments stay outside the 
 
 ## Workflow Contract
 
-### Planning-side validation
-
-Before `gatekeeper-commit`, run:
-
-```bash
-pnpm lint
-pnpm gatekeeper:plans:validate -- --plan <plan-id>
-pnpm gatekeeper:plans:doctor -- --plan <plan-id>
-```
-
-`plans:doctor` is the final planning-side preflight. It validates lifecycle readiness, dirty index
-state, multi-unit drift, and coverage gaps before the runtime session starts.
-
 Before `inspect`:
 
+- run `pnpm gatekeeper:plans:validate -- --plan <plan-id>`
 - make sure the working tree contains exactly one material commit unit
 - remove or isolate unrelated scratch files and unrelated untracked files
-- keep the git index pristine
 
 ### Inspect
 
@@ -338,8 +317,7 @@ returns exactly one of:
 - `commit_strategy_not_ready`
 - `empty_change_set`
 
-Use `inspect --json` for machine consumption and `inspect --verbose` only when you need full file
-detail. Default human output is intentionally compact.
+`inspect` is the primary entrypoint.
 
 ### Stage
 
@@ -348,9 +326,6 @@ node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit
 ```
 
 `stage` stages exactly one unit from the working tree and writes `gatekeeper-s0.json`.
-
-Use `stage --verify-local` only when you explicitly want per-unit local ESLint/Stylelint execution.
-Normal gatekeeper execution does not rerun those tools by default.
 
 ### Scaffold
 
@@ -375,8 +350,6 @@ node .agent/governance/bin/gatekeeper-workflow.mjs commit --unit <unit-id>
   - owns plan and `commit-map.json` contract
 - `.agent/governance/bin/validate-commit-plan.mjs`
   - validates the contract before runtime execution
-- `.agent/governance/bin/doctor-commit-plan.mjs`
-  - validates readiness, lifecycle, worktree coverage, and index hygiene before runtime execution
 - `.agent/governance/bin/gatekeeper-workflow.mjs`
   - inspect, stage, scaffold, commit, cleanup
 - `commitlint.config.cjs`
@@ -403,21 +376,26 @@ Each `phaseId` used in `commit-map.json` must exist in `manifest.json`.
 
 `manifest.json` may keep its current high-level status model. Commit-strategy lifecycle states do
 not need to become manifest statuses if the plan records them in `commit-map.json`.
-
-Active root plans must not use `COMPLETED` or `ARCHIVED`. Those states are historical and belong in
-archived plan directories.
+=======
+1. **Draft**: Create `commit-map.json` before implementation.
+2. **Review**: Update the plan after implementation to reflect reality.
+3. **Doctor**: Run `pnpm gatekeeper:plans:doctor -- --plan <plan-id>` to verify readiness.
+4. **Execute**: Run `pnpm gatekeeper:commit -- --plan <plan-id>`.
+>>>>>>> Stashed changes
 
 ## Archiving
 
-When a plan is complete:
+When a plan is fully committed:
+1. Finish notes in `README.md` and `CHANGELOG.md`.
+2. Move the directory to `.agent/plans/archive/YYYY-MM/<plan-id>/`.
+3. Mark `manifest.json` as `ARCHIVED`.
 
-1. Finish the implementation and closure notes in `README.md`.
-2. Finish closure notes in `CHANGELOG.md`.
-3. If the plan took > 1 week or faced significant technical challenges, complete a `post-mortem.md` using the [template](templates/post-mortem.md).
-4. Move the directory to `.agent/plans/archive/YYYY-MM/<plan-id>/` where `YYYY-MM` is the completion month.
-5. Mark the archived `manifest.json` status as `ARCHIVED`.
-6. Update the root `.agent/plans/README.md` if any global rules were changed.
-7. Stop using its `commit-map.json` for new execution.
+<<<<<<< Updated upstream
+1. finish the implementation and closure notes
+2. finish closure notes in `CHANGELOG.md`
+3. move the directory to `.agent/plans/archive/`
+4. mark the archived `manifest.json` status as `ARCHIVED`
+5. stop using its `commit-map.json` for new execution
 
 Archived plans are historical only. If more work is needed, create a new active plan.
 
@@ -428,3 +406,6 @@ Archived plans are historical only. If more work is needed, create a new active 
   cleanup
 - before starting a new plan, audit the active root for plans that are already complete, replaced,
   or otherwise obsolete
+=======
+Archived plans are historical only and are resolved recursively by the governance system.
+>>>>>>> Stashed changes

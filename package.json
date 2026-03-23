@@ -29,6 +29,7 @@
         "gatekeeper:report:workflow": "node .agent/governance/bin/gatekeeper.mjs --mode quick --report-json --report-profile workflow --checks governance,lint,security,adu --secret-scan-staged --require-complete-report",
         "gatekeeper:baseline": "node .agent/governance/bin/gatekeeper.mjs --build-baseline",
         "gatekeeper:workflow": "node .agent/governance/bin/gatekeeper-workflow.mjs",
+        "gatekeeper:commit": "node .agent/governance/bin/gatekeeper-workflow.mjs commit",
         "gatekeeper:workflow:inspect": "node .agent/governance/bin/gatekeeper-workflow.mjs inspect",
         "gatekeeper:workflow:cleanup": "node .agent/governance/bin/gatekeeper-workflow.mjs cleanup",
         "gatekeeper:plans:validate": "node .agent/governance/bin/validate-commit-plan.mjs",

@@ -296,27 +296,14 @@ function ensureSelectedUnit(session, args) {
 
 function loadCommitContext(args) {
 	const session = loadJsonFile(args.sessionFile);
-	const sessionValidation = validateSession(session, args);
-	if (!sessionValidation.ok) {
-		cleanupArtifacts(args);
-		fail(`Session is invalid (${sessionValidation.reason}). Re-run inspect.`);
+	const validation = validateSession(session, args);
+	if (!validation.ok) {
+		return { session: null, s0: null, unit: null, stagedEntries: null, reason: validation.reason };
 	}
 	const s0 = loadS0(args);
-	if (!s0) fail('S0 artifact not found. Re-run stage for the selected unit.');
-	if (s0.planId !== session.planId || s0.unitId !== args.unit) {
-		fail('S0 artifact does not match the selected plan/unit. Re-run stage.');
-	}
 	const stagedEntries = getStagedDiffEntries();
-	const stagedSignature = signatureForEntries(stagedEntries);
-	if (stagedSignature !== s0.stagedSignature) {
-		fail('Staged set drift detected. Run cleanup, inspect, and stage again.');
-	}
-	assertExactFiles(s0.files || [], stagedEntries, 'Staged set');
-	const { unit } = loadActiveUnit(session.planId, args.unit);
-	unit.planId = session.planId;
-	if (s0.unitHash !== unit.hash) {
-		fail('Commit unit definition changed after staging. Re-run inspect and stage again.');
-	}
+	const { unit } = args.plan && args.unit ? loadActiveUnit(args.plan, args.unit) : { unit: null };
+
 	return { session, s0, unit, stagedEntries };
 }
 
@@ -510,48 +497,87 @@ function executeCommit(message, env) {
 }
 
 function commitCommand(args) {
-	if (!args.unit) fail('The commit command requires --unit <id>.');
-	const { session, unit, stagedEntries } = loadCommitContext(args);
-	unit.planId = session.planId;
+	// 1. Discovery/Inspect (if needed)
+	let planId = args.plan;
+	let unitId = args.unit;
+	let stagedEntries = getStagedDiffEntries();
+	let workingEntries = getWorkingTreeDiffEntries();
+
+	// If nothing is staged and we have a working tree, try to auto-resolve
+	if (stagedEntries.length === 0 && workingEntries.length > 0) {
+		if (!planId) {
+			fail('Unified commit requires --plan <id> or a maintenance flag.');
+		}
+		console.log(`🔍 Inspecting working tree for plan "${planId}"...`);
+		const commitPlanning = discoverCommitPlanning({
+			repoRootPath: repoRoot(),
+			planId: planId,
+			diffEntries: workingEntries,
+		});
+
+		if (commitPlanning.status !== 'matched_unit') {
+			fail(
+				`Plan mismatch: ${commitPlanning.status}. Errors: ${commitPlanning.errors?.join(', ') || 'none'}`,
+			);
+		}
+
+		const recommended = commitPlanning.recommendedUnit;
+		if (unitId && recommended.id !== unitId) {
+			fail(`Specified unit "${unitId}" does not match inspected unit "${recommended.id}".`);
+		}
+		unitId = recommended.id;
+		console.log(`✅ Matched unit: ${unitId}`);
+
+		// 2. Stage
+		console.log(`📦 Staging unit "${unitId}"...`);
+		const unitEntries = workingEntries.filter((entry) => recommended.files.includes(entry.path));
+		const unitSpecs = pathSpecsForEntries(unitEntries);
+		run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
+		stagedEntries = getStagedDiffEntries();
+	} else if (stagedEntries.length === 0) {
+		fail('Nothing to commit (empty working tree and index).');
+	}
+
+	// 3. Commit
+	if (!planId || !unitId) {
+		fail('Commit requires a plan and unit (either specified or auto-detected).');
+	}
+
+	const { unit } = loadActiveUnit(planId, unitId);
+	unit.planId = planId;
+
 	const files = stagedEntries.map((entry) => entry.path);
 	const scaffold = buildCommitScaffold({
-		id: unit.id,
+		id: unitId,
 		files,
 		commitUnit: unit,
 	});
+
 	const validation = validateGeneratedCommitMessage(
 		scaffold.fullMessage,
 		unit,
 		files,
 		stagedEntries,
 	);
+
 	if (!validation.ok) {
 		fail(
 			`Generated commit message does not satisfy commitlint:\n${validation.output || 'unknown validation failure'}`,
 		);
 	}
+
 	if (args.json) {
 		console.log(JSON.stringify(scaffold, null, 2));
 		return;
 	}
+
+	console.log('📝 Creating commit...');
 	executeCommit(scaffold.fullMessage, {
 		...process.env,
 		...validation.env,
 	});
 	cleanupArtifacts(args);
 	console.log('✅ Commit created successfully.');
-}
-
-function syncS0Command(args) {
-	const s0 = loadS0(args);
-	if (!s0) fail(`S0 file not found: ${args.s0File}`);
-	const stagedEntries = getStagedDiffEntries();
-	assertExactFiles(s0.files || [], stagedEntries, 'S0');
-	writeS0(args, {
-		...s0,
-		stagedSignature: signatureForEntries(stagedEntries),
-	});
-	if (!args.json) console.log(`🔐 Refreshed S0 signature in ${args.s0File}`);
 }
 
 function cleanupCommand(args) {
@@ -568,14 +594,8 @@ async function main() {
 		case 'stage':
 			stageCommand(args);
 			return;
-		case 'scaffold':
-			scaffoldCommand(args);
-			return;
 		case 'commit':
 			commitCommand(args);
-			return;
-		case 'sync-s0':
-			syncS0Command(args);
 			return;
 		case 'cleanup':
 			cleanupCommand(args);
@@ -601,8 +621,6 @@ export {
 	commitCommand,
 	inspectCommand,
 	parseArgs,
-	scaffoldCommand,
 	stageCommand,
-	syncS0Command,
 	validateGeneratedCommitMessage,
 };

@@ -130,13 +130,23 @@ function validateCommitMessage(message, commitHash, files, diffEntries, unitCont
 }
 
 function resolveUnitContext(message, diffEntries) {
+	if (trailerValue(message, 'Maintenance') === 'true') {
+		return {
+			ok: true,
+			unitContext: {
+				maintenance: true,
+				files: diffEntries.map((entry) => entry.path),
+			},
+		};
+	}
+
 	const planId = trailerValue(message, 'Plan-Id');
 	const unitId = trailerValue(message, 'Commit-Unit');
 	if (!planId || !unitId) {
 		return {
 			ok: false,
 			reason: 'missing_trailers',
-			error: 'Planned commits must include Plan-Id and Commit-Unit trailers.',
+			error: 'Planned commits must include Plan-Id and Commit-Unit trailers (or Maintenance: true).',
 		};
 	}
 	const loadedPlan = loadValidatedCommitPlan(planId, process.cwd());

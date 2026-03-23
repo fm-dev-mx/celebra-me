@@ -1,23 +1,9 @@
 ---
-name: error-remediation
 description: Technical error diagnosis and surgical remediation.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
 last_reviewed: 2026-03-15
-when_to_use:
-    - A terminal command, test, or gatekeeper run is failing
-    - A fix requires structured diagnosis with bounded retry behavior
-preconditions:
-    - Read .agent/README.md
-    - Read .agent/GATEKEEPER_RULES.md
-inputs:
-    - Failing command output, classifier results, and affected files
-outputs:
-    - Diagnosed root cause, minimal fix, and verification outcome
-related_docs:
-    - docs/core/testing-strategy.md
-    - docs/core/architecture.md
 ---
 
 # 🔎 Error-Diagnosis & Remediation

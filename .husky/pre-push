@@ -19,7 +19,8 @@ else
     fi
 
     if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
-      BASE_SHA=$(git rev-list --max-parents=0 "$local_sha" | tail -n 1)
+      # New branch: try to find base against main or develop first
+      BASE_SHA=$(git merge-base "$local_sha" origin/main 2>/dev/null || git merge-base "$local_sha" origin/develop 2>/dev/null || git rev-list --max-parents=0 "$local_sha" | tail -n 1)
     else
       BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
     fi

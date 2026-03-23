@@ -1,23 +1,9 @@
 ---
-name: theme-architecture-governance
 description: Governance and consistency workflow for theme abstraction and documentation.
 lifecycle: evergreen
 domain: governance
 owner: workflow-governance
 last_reviewed: 2026-02-15
-when_to_use:
-    - Theme abstraction, presets, or section-level styling rules are being changed
-    - A theme-related change needs architecture or documentation validation
-preconditions:
-    - Read .agent/README.md
-    - Read .agent/GATEKEEPER_RULES.md
-inputs:
-    - Theme presets, section styles, invitation variants, and theme documentation
-outputs:
-    - Theme-governance validation criteria and required follow-up actions
-related_docs:
-    - docs/domains/theme/architecture.md
-    - docs/domains/theme/typography.md
 ---
 
 # 🏛️ Workflow: Theme Architecture Governance

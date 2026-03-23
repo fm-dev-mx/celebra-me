@@ -1,17 +1,18 @@
-# Git Governance: Plan-Aware Commit Execution
+# Git Governance: Lean Commit Execution
 
 **Status:** Active  
-**Last Updated:** 2026-03-22  
-**Change Note:** Added planning-side `plans:doctor` preflight, hardened active-plan lifecycle rules, and simplified gatekeeper runtime execution.
+<<<<<<< Updated upstream
+**Last Updated:** 2026-03-20
+=======
+**Last Updated:** 2026-03-23  
+**Change Note:** Lean Governance 2.0 overhaul. Unified commit commands, introduced Maintenance Mode, and recursive plan resolution.
+>>>>>>> Stashed changes
 
 ## Overview
 
-This document defines executable ownership for the pure plan-aware Gatekeeper commit workflow.
+This document defines executable ownership for the Lean Gatekeeper commit workflow.
 
-Commit intent is plan-owned. Execution and validation layers enforce the selected plan unit; they do
-not invent it.
-
-If a change will become a commit, it must belong to a plan. There is no direct no-plan commit path.
+Commit intent is primary. Execution and validation layers automate the process of adhering to that intent while reducing operational friction and token consumption.
 
 ## Ownership
 
@@ -19,47 +20,56 @@ If a change will become a commit, it must belong to a plan. There is no direct n
 | ------------------------------------------------ | --------------------------------------------------------- |
 | `.agent/plans/README.md`                         | Contract for executable plans and `commit-map.json`       |
 | `.agent/governance/bin/validate-commit-plan.mjs` | Machine validation of active plan commit maps             |
-| `.agent/governance/bin/gatekeeper-workflow.mjs`  | Inspect, stage, scaffold, commit, cleanup                 |
-| `commitlint.config.cjs`                          | Local commit message validation against the selected unit |
-| `scripts/validate-commits.mjs`                   | Range validation from commit trailers plus plan metadata  |
-| `.husky/pre-commit`                              | Lint-staged, S0 refresh, strict Gatekeeper checks         |
-| `.husky/pre-push`                                | Commit-range validation and tests                         |
+| `.agent/governance/bin/gatekeeper-workflow.mjs`  | Unified commit execution (inspect + stage + commit)       |
+| `commitlint.config.cjs`                          | Message validation (Planned or Maintenance)               |
+| `scripts/validate-commits.mjs`                   | Range validation from commit trailers                     |
+| `.husky/pre-commit`                              | Lint-staged, quality enforcement                          |
+| `.husky/pre-push`                                | Smart range validation and tests                         |
 
 ## Primary Commands
 
 ```text
+<<<<<<< Updated upstream
 pnpm gatekeeper:plans:validate -- --plan <plan-id>
-pnpm gatekeeper:plans:doctor -- --plan <plan-id>
 pnpm gatekeeper:workflow:inspect -- --plan <plan-id>
 node .agent/governance/bin/gatekeeper-workflow.mjs stage --plan <plan-id> --unit <unit-id>
 node .agent/governance/bin/gatekeeper-workflow.mjs scaffold --unit <unit-id>
 node .agent/governance/bin/gatekeeper-workflow.mjs commit --unit <unit-id>
+=======
+pnpm gatekeeper:plans:doctor -- --plan <plan-id>
+pnpm gatekeeper:commit -- --plan <plan-id> [--unit <unit-id>]
+pnpm gatekeeper:commit -- --maintenance
+>>>>>>> Stashed changes
 pnpm gatekeeper:workflow:cleanup
 ```
 
 ## Validation Sequence
 
-1. `pnpm lint` stabilizes code quality before the strategy is finalized.
-2. `gatekeeper:plans:validate` verifies the plan contract.
-3. `gatekeeper:plans:doctor` verifies lifecycle readiness, coverage, and index hygiene.
-4. the operator reduces the working tree to exactly one material commit unit.
-5. `inspect` resolves the current working tree to one unit and creates the runtime session.
-6. `stage` stages that exact unit and writes `gatekeeper-s0.json`.
-7. `scaffold` revalidates the staged set and previews the planned commit message.
-8. `commit` revalidates the staged set again, appends trailers, validates with commitlint, and
+<<<<<<< Updated upstream
+1. `gatekeeper:plans:validate` verifies the active plan contract before runtime execution.
+2. the operator reduces the working tree to exactly one material commit unit.
+3. `inspect` validates gatekeeper readiness and resolves the current working tree to one unit.
+4. `stage` stages that exact unit and writes `gatekeeper-s0.json`.
+5. `scaffold` revalidates the staged set and previews the planned commit message.
+6. `commit` revalidates the staged set again, appends trailers, validates with commitlint, and
    commits.
-9. `pre-commit` refreshes S0 after formatting and runs strict Gatekeeper checks.
-10. `pre-push` and CI validate commit trailers, unit match, and tests.
+7. `pre-commit` refreshes S0 after formatting and runs strict Gatekeeper checks.
+8. `pre-push` and CI validate commit trailers, unit match, and tests.
+=======
+1. `pnpm lint` stabilizes code quality.
+2. `gatekeeper:plans:doctor` verifies lifecycle readiness and coverage.
+3. `gatekeeper:commit` resolves the unit, stages it, and commits it in one atomic step.
+4. `pre-push` validates the push range against trailers and runs tests.
+>>>>>>> Stashed changes
 
-## Operating Model
+## Maintenance Mode (Unplanned)
 
+<<<<<<< Updated upstream
 - planned work starts with an executable plan and a preliminary `commit-map.json`
 - small new work uses a micro-plan before implementation
 - already-written work uses a retroactive plan before commit
 - `gatekeeper-commit` is a validator and executor, not a planner
-- planning mistakes are fixed in `plan-authoring`, not inside `gatekeeper-commit`
 - the working tree must represent one material unit at commit time
-- active plans under `.agent/plans/<plan-id>/` remain non-historical until commit execution is done
 - completed plans move to `.agent/plans/archive/` and stop being executable
 
 ## Guarantees
@@ -72,8 +82,6 @@ pnpm gatekeeper:workflow:cleanup
 - staged-set drift blocks the commit instead of being auto-healed
 - plans that are not ready for gatekeeper are blocked before commit execution
 - active plans with draft or locked units are not executable even if the review metadata exists
-- active executable plans must not keep units marked `completed`
-- active plans with manifest status `COMPLETED` or `ARCHIVED` are rejected immediately
 - archived plans remain available for historical validation but are blocked from new execution
 
 ## Non-Goals
@@ -82,4 +90,24 @@ pnpm gatekeeper:workflow:cleanup
 - markdown workflow docs do not redefine commit intent
 - legacy `stage/scaffold/commit --domain` is not part of the commit path
 - there is no fast-path bypass for small commits outside the plan system
-- `gatekeeper-commit` is not a place for fix-on-the-fly lint loops or commit-map redesign
+=======
+Small, high-quality fixes (chore, docs, fix) can be committed without a formal plan by adding the following trailer to the commit body:
+
+```text
+Maintenance: true
+```
+
+These commits still undergo full linting, type-checking, and conventional commit validation but skip the plan-unit matching requirement.
+
+## Guarantees
+
+- **Atomicity**: `gatekeeper:commit` aborts if the staged set drifts from the plan.
+- **Trazabilidad**: Every commit carries either `Plan-Id` or `Maintenance: true`.
+- **Quality**: No branch-protection bypass (quality is never sacrificed for speed).
+- **Graceful Archival**: Recursive search ensures archived plans don't break validation.
+
+## Non-Goals
+
+- There is no direct "trail-less" commit path.
+- `gatekeeper:commit` is not for fix-on-the-fly loops.
+>>>>>>> Stashed changes

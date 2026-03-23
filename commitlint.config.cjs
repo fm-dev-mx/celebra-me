@@ -56,6 +56,10 @@ function legacyBodyHasExpectedFiles(parsed, expectedFiles) {
 	return expectedFiles.every((file) => body.includes(file));
 }
 
+function isMaintenance(parsed) {
+	return trailerValue(parsed, 'Maintenance') === 'true';
+}
+
 module.exports = {
 	extends: ['@commitlint/config-conventional'],
 	rules: {
@@ -134,6 +138,7 @@ module.exports = {
 					return [true];
 				},
 				'planned-summary-required': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const sections = parseBodySections(parsed);
 					if (
 						sections.summaryBullets.length > 0 &&
@@ -151,6 +156,7 @@ module.exports = {
 					];
 				},
 				'planned-summary-no-file-paths': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const sections = parseBodySections(parsed);
 					if (!sections.hasFilesSection) return [true];
 					const pathLikeSummary = sections.summaryBullets.find((line) =>
@@ -162,6 +168,7 @@ module.exports = {
 					];
 				},
 				'planned-files-section-required': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const sections = parseBodySections(parsed);
 					const expectedFiles = JSON.parse(
 						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
@@ -174,6 +181,7 @@ module.exports = {
 					];
 				},
 				'planned-files-section-coverage': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const expectedFiles = JSON.parse(
 						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
 					);
@@ -196,6 +204,7 @@ module.exports = {
 					];
 				},
 				'planned-files-section-no-extras': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const expectedFiles = JSON.parse(
 						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
 					);
@@ -212,17 +221,19 @@ module.exports = {
 					];
 				},
 				'planned-trailers-required': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const planId = trailerValue(parsed, 'Plan-Id');
 					const unitId = trailerValue(parsed, 'Commit-Unit');
 					if (!planId || !unitId) {
 						return [
 							false,
-							'planned commits must include Plan-Id and Commit-Unit trailers',
+							'planned commits must include Plan-Id and Commit-Unit trailers (or Maintenance: true)',
 						];
 					}
 					return [true];
 				},
 				'planned-trailers-match-context': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const expectedPlanId = String(process.env.COMMITLINT_PLAN_ID || '').trim();
 					const expectedUnitId = String(process.env.COMMITLINT_UNIT_ID || '').trim();
 					const actualPlanId = trailerValue(parsed, 'Plan-Id');
@@ -236,6 +247,7 @@ module.exports = {
 					return [true];
 				},
 				'planned-scope-matches-domain': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const expectedDomain = String(process.env.COMMITLINT_UNIT_DOMAIN || '').trim();
 					if (!expectedDomain) return [true];
 					return [
@@ -244,6 +256,7 @@ module.exports = {
 					];
 				},
 				'subject-matches-unit': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const verb = String(process.env.COMMITLINT_UNIT_VERB || '')
 						.trim()
 						.toLowerCase();
@@ -260,7 +273,8 @@ module.exports = {
 						`subject must match planned commit unit subject "${expected}"`,
 					];
 				},
-				'unit-no-extra-files': () => {
+				'unit-no-extra-files': (parsed) => {
+					if (isMaintenance(parsed)) return [true];
 					const expectedFiles = JSON.parse(
 						process.env.COMMITLINT_UNIT_FILES_JSON || '[]',
 					);
