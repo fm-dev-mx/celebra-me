@@ -77,7 +77,9 @@
         "docs/archive/audit/**",
         "docs/archive/architecture/**"
       ],
-      "allowRelated": [],
+      "allowRelated": [
+        ".agent/plans/011-project-audit-and-pruning/commit-map.json"
+      ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "chore(governance): archive historical audits and architecture",
@@ -102,7 +104,9 @@
         "docs/DOC_STATUS.md",
         "docs/domains/security/status.md"
       ],
-      "allowRelated": [],
+      "allowRelated": [
+        ".agent/plans/011-project-audit-and-pruning/commit-map.json"
+      ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "docs(documentation): update status dashboard and security domain",
@@ -130,7 +134,9 @@
         ".agent/skills/documentation-governance/SKILL.md",
         ".agent/workflows/**"
       ],
-      "allowRelated": [],
+      "allowRelated": [
+        ".agent/plans/011-project-audit-and-pruning/commit-map.json"
+      ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "refactor(governance): align agent core coordination",
