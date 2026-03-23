@@ -70,7 +70,7 @@
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.6",
-        "@astrojs/react": "4.4.2",
+        "@astrojs/react": "5.0.1",
         "@astrojs/sitemap": "^3.7.1",
         "@commitlint/cli": "^20.4.1",
         "@commitlint/config-conventional": "^20.4.1",
