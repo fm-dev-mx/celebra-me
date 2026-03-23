@@ -12,7 +12,7 @@
     {
       "id": "initialize-plan-011",
       "phaseId": "01-pruning-execution",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "chore",
       "subject": {
@@ -36,7 +36,7 @@
     {
       "id": "archive-plan-010",
       "phaseId": "01-pruning-execution",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "chore",
       "subject": {
@@ -63,7 +63,7 @@
     {
       "id": "archive-legacy-documentation",
       "phaseId": "01-pruning-execution",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "chore",
       "subject": {
@@ -92,7 +92,7 @@
     {
       "id": "update-doc-dashboard",
       "phaseId": "01-pruning-execution",
-      "status": "ready",
+      "status": "completed",
       "domain": "documentation",
       "type": "docs",
       "subject": {
@@ -120,7 +120,7 @@
     {
       "id": "align-agent-governance",
       "phaseId": "01-pruning-execution",
-      "status": "ready",
+      "status": "completed",
       "domain": "governance",
       "type": "refactor",
       "subject": {
