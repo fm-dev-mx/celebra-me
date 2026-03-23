@@ -45,10 +45,11 @@
       },
       "purpose": "relocate finished plan data to historical storage",
       "include": [
-        ".agent/plans/010-runtime-and-doc-simplification/**"
+        ".agent/plans/010-runtime-and-doc-simplification/**",
+        ".agent/plans/archive/2026-03/010-runtime-and-doc-simplification/**"
       ],
       "allowRelated": [
-        ".agent/plans/archive/2026-03/010-runtime-and-doc-simplification/**"
+        ".agent/plans/011-project-audit-and-pruning/commit-map.json"
       ],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
@@ -72,12 +73,11 @@
       "purpose": "preserve legacy context while keeping docs/ root focused on active state",
       "include": [
         "docs/audit/**",
-        "docs/architecture/**"
-      ],
-      "allowRelated": [
+        "docs/architecture/**",
         "docs/archive/audit/**",
         "docs/archive/architecture/**"
       ],
+      "allowRelated": [],
       "correctionPolicy": "absorb-compatible",
       "messagePreview": {
         "header": "chore(governance): archive historical audits and architecture",
