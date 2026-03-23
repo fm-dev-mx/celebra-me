@@ -5,30 +5,34 @@ set -e
 # No branch protection on push, allowed for 'main' and 'develop'
 # (The commit validation and tests below still apply)
 
-echo "🧪 Running commit-range validation before push..."
-validated=0
-ZERO_SHA="0000000000000000000000000000000000000000"
+if [ "$SKIP_BRANCH_PROTECTION" = "true" ]; then
+  echo "⚠️  Bypassing commit validation and tests (SKIP_BRANCH_PROTECTION=true)..."
+else
+  echo "🧪 Running commit-range validation before push..."
+  validated=0
+  ZERO_SHA="0000000000000000000000000000000000000000"
 
-while read local_ref local_sha remote_ref remote_sha
-do
-  if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
-    continue
+  while read local_ref local_sha remote_ref remote_sha
+  do
+    if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
+      continue
+    fi
+
+    if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
+      BASE_SHA=$(git rev-list --max-parents=0 "$local_sha" | tail -n 1)
+    else
+      BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
+    fi
+
+    if [ -n "$BASE_SHA" ]; then
+      node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
+      validated=1
+    fi
+  done
+
+  if [ "$validated" -eq 0 ]; then
+    echo "ℹ️ No push range detected for commit validation."
   fi
 
-  if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
-    BASE_SHA=$(git rev-list --max-parents=0 "$local_sha" | tail -n 1)
-  else
-    BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
-  fi
-
-  if [ -n "$BASE_SHA" ]; then
-    node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
-    validated=1
-  fi
-done
-
-if [ "$validated" -eq 0 ]; then
-  echo "ℹ️ No push range detected for commit validation."
+  pnpm test
 fi
-
-pnpm test

@@ -1,0 +1,27 @@
+{
+  "id": "013-lean-governance-overhaul",
+  "title": "Lean Governance 2.0: Structural Overhaul",
+  "description": "Simplify governance workflows by unifying commands, reducing redundancy, and introducing maintenance mode.",
+  "status": "IN_PROGRESS",
+  "completion": 0,
+  "created": "2026-03-23T15:15:00Z",
+  "updated": "2026-03-23T15:15:00Z",
+  "owner": "antigravity",
+  "phases": [
+    {
+      "id": "01-core-restructuring",
+      "title": "Core Governance Restructuring",
+      "description": "Unify gatekeeper-workflow commands and simplify plan resolution."
+    },
+    {
+      "id": "02-maintenance-mode",
+      "title": "Maintenance Mode Implementation",
+      "description": "Add support for unplanned commits via the Maintenance trailer."
+    },
+    {
+      "id": "03-doc-alignment",
+      "title": "Documentation Alignment",
+      "description": "Update all governance and workflow documentation to reflect the new processes."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "planId": "013-lean-governance-overhaul",
+  "mode": "planned-commits",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-23T15:18:00Z"
+  },
+  "units": [
+    {
+      "id": "refactor-gatekeeper-workflow",
+      "phaseId": "01-core-restructuring",
+      "status": "draft",
+      "domain": "governance",
+      "type": "refactor",
+      "subject": {
+        "verb": "unify",
+        "target": "gatekeeper workflow commands"
+      },
+      "purpose": "reduce fragmented execution steps and automate staging/committing",
+      "include": [
+        ".agent/governance/bin/gatekeeper-workflow.mjs"
+      ],
+      "messagePreview": {
+        "header": "refactor(governance): unify gatekeeper workflow commands",
+        "summary": [
+          "combine inspect, stage, and commit into a single atomic operation",
+          "remove legacy scaffold command and redundant manual steps",
+          "automate staging logic to reduce operational friction"
+        ]
+      }
+    },
+    {
+      "id": "implement-maintenance-mode",
+      "phaseId": "02-maintenance-mode",
+      "status": "draft",
+      "domain": "governance",
+      "type": "feat",
+      "subject": {
+        "verb": "implement",
+        "target": "maintenance mode trailer support"
+      },
+      "purpose": "allow unplanned high-quality fixes with minimal overhead",
+      "include": [
+        "commitlint.config.cjs",
+        "scripts/validate-commits.mjs",
+        ".husky/pre-push"
+      ],
+      "messagePreview": {
+        "header": "feat(governance): implement maintenance mode trailer support",
+        "summary": [
+          "add Maintenance: true trailer to bypass plan-mapping requirements",
+          "update commitlint to recognize maintenance commits as valid",
+          "ensure pre-push validation honors the maintenance bypass signal"
+        ]
+      }
+    },
+    {
+      "id": "optimize-plan-resolution",
+      "phaseId": "01-core-restructuring",
+      "status": "draft",
+      "domain": "governance",
+      "type": "perf",
+      "subject": {
+        "verb": "optimize",
+        "target": "governance plan resolution"
+      },
+      "purpose": "improve robustness of archival search and metadata tolerance",
+      "include": [
+        ".agent/governance/bin/validate-commit-plan.mjs",
+        ".agent/governance/bin/commit-plan.mjs"
+      ],
+      "messagePreview": {
+        "header": "perf(governance): optimize governance plan resolution",
+        "summary": [
+          "implement recursive archival search to fix 'Plan not found' errors",
+          "relax lifecycle enforcement for completed plans in root during push",
+          "remove legacy aliases and redundant validation checks"
+        ]
+      }
+    },
+    {
+      "id": "update-governance-docs",
+      "phaseId": "03-doc-alignment",
+      "status": "draft",
+      "domain": "docs",
+      "type": "docs",
+      "subject": {
+        "verb": "update",
+        "target": "lean governance 2.0 documentation"
+      },
+      "include": [
+        "docs/core/git-governance.md",
+        ".agent/workflows/plan-authoring.md",
+        ".agent/workflows/gatekeeper-commit.md",
+        ".agent/plans/README.md"
+      ],
+      "messagePreview": {
+        "header": "docs(docs): update lean governance 2.0 documentation",
+        "summary": [
+          "align core git-governance documentation with Lean 2.0 architecture",
+          "simplify plan-authoring and gatekeeper-commit workflow guides",
+          "document the new maintenance mode and unified command usage"
+        ]
+      }
+    }
+  ]
+}

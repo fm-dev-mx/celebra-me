@@ -457,9 +457,22 @@ function resolvePlanDirectory(planId, repoRootPath) {
 	if (existsSync(activeDir)) {
 		return { planDir: activeDir, location: 'active' };
 	}
-	const archiveDir = resolve(repoRootPath, DEFAULT_ARCHIVE_ROOT, planId);
-	if (existsSync(archiveDir)) {
-		return { planDir: archiveDir, location: 'archive' };
+	const archiveRoot = resolve(repoRootPath, DEFAULT_ARCHIVE_ROOT);
+	if (existsSync(archiveRoot)) {
+		const archiveDir = resolve(archiveRoot, planId);
+		if (existsSync(archiveDir)) {
+			return { planDir: archiveDir, location: 'archive' };
+		}
+		// Search for plan nested in date subfolders
+		const children = readdirSync(archiveRoot, { withFileTypes: true });
+		for (const entry of children) {
+			if (entry.isDirectory()) {
+				const nestedDir = resolve(archiveRoot, entry.name, planId);
+				if (existsSync(nestedDir)) {
+					return { planDir: nestedDir, location: 'archive' };
+				}
+			}
+		}
 	}
 	return null;
 }
