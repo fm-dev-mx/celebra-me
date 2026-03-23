@@ -267,8 +267,15 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 	const manifestStatus = String(manifest.status || '')
 		.trim()
 		.toUpperCase();
+
 	const historicalPlan =
 		HISTORICAL_MANIFEST_STATUSES.has(manifestStatus) || location === 'archive';
+
+	if (location === 'active' && HISTORICAL_MANIFEST_STATUSES.has(manifestStatus)) {
+		console.warn(
+			`⚠️  Notice: Active plan "${planId}" uses historical manifest status "${manifestStatus}". Consider archiving the plan instead of keeping it under .agent/plans/.`,
+		);
+	}
 
 	if (String(rawPlan.planId || '').trim() !== planId) {
 		errors.push(`commit-map.json planId must match plan directory name "${planId}"`);
@@ -340,30 +347,8 @@ function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, locati
 		if (blockingUnits.length) {
 			errors.push(
 				`commitStrategyReview.readyForGatekeeperAt requires every active unit to be ready, revised-after-gatekeeper, or completed (blocking: ${blockingUnits.join(', ')})`,
-<<<<<<< Updated upstream
 			);
 		}
-=======
-			]
-		: [];
-}
-
-function validateCommitPlanDocument({ planId, planDir, rawPlan, manifest, location }) {
-	const errors = [];
-	const manifestPhaseIds = new Set(
-		(manifest.phases || []).map((phase) => String(phase.id || '').trim()),
-	);
-	const normalizedUnits = (rawPlan.units || []).map((rawUnit) => normalizeUnit(rawUnit));
-	const manifestStatus = String(manifest.status || '')
-		.trim()
-		.toUpperCase();
-	const activeHistoricalManifest =
-		location === 'active' && HISTORICAL_MANIFEST_STATUSES.has(manifestStatus);
-	if (activeHistoricalManifest) {
-		console.warn(
-			`⚠️  Notice: Active plan "${planId}" uses historical manifest status "${manifestStatus}". Consider archiving the plan instead of keeping it under .agent/plans/.`,
-		);
->>>>>>> Stashed changes
 	}
 
 	errors.push(...detectPatternSubsumption(normalizedUnits, historicalPlan));
@@ -413,11 +398,6 @@ function resolvePlanDirectory(planId, repoRootPath) {
 	if (existsSync(activeDir)) {
 		return { planDir: activeDir, location: 'active' };
 	}
-<<<<<<< Updated upstream
-	const archiveDir = resolve(repoRootPath, DEFAULT_ARCHIVE_ROOT, planId);
-	if (existsSync(archiveDir)) {
-		return { planDir: archiveDir, location: 'archive' };
-=======
 
 	const archiveRoot = resolve(repoRootPath, DEFAULT_ARCHIVE_ROOT);
 	if (!existsSync(archiveRoot)) return null;
@@ -437,7 +417,6 @@ function resolvePlanDirectory(planId, repoRootPath) {
 				return { planDir: nestedDir, location: 'archive' };
 			}
 		}
->>>>>>> Stashed changes
 	}
 
 	return null;
