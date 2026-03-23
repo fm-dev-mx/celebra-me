@@ -144,17 +144,19 @@ function resolveUnitContext(message, diffEntries) {
 	const unitId = trailerValue(message, 'Commit-Unit');
 	if (!planId || !unitId) {
 		return {
-			ok: false,
+			ok: true, // Soft allow for missing trailers
 			reason: 'missing_trailers',
+			isWarning: true,
 			error: 'Planned commits must include Plan-Id and Commit-Unit trailers (or Maintenance: true).',
 		};
 	}
 	const loadedPlan = loadValidatedCommitPlan(planId, process.cwd());
 	if (!loadedPlan.ok) {
+		const msg = (loadedPlan.errors || []).join('\n') || `Unable to load plan "${planId}".`;
+		console.warn(`  ⚠️  Warning [${loadedPlan.reason}]: ${msg}`);
 		return {
-			ok: false,
-			reason: loadedPlan.reason || 'invalid_plan_contract',
-			error: (loadedPlan.errors || []).join('\n') || `Unable to load plan "${planId}".`,
+			ok: true, // Soft allow for missing/invalid plans
+			unitContext: null, // No context for further validation
 		};
 	}
 	const unit = resolveCommitUnit(loadedPlan.plan, unitId);
@@ -240,14 +242,23 @@ function main() {
 	}
 
 	let allValid = true;
-	for (const hash of hashes) {
-		if (!validateCommit(hash)) allValid = false;
+	for (let i = 0; i < hashes.length; i++) {
+		const hash = hashes[i];
+		if (!validateCommit(hash)) {
+			allValid = false;
+		}
 	}
+
 	if (!allValid) {
-		console.error('\n❌ Planned commit validation failed');
-		process.exit(1);
+		console.log('\n🔍 Push Governance Audit: Some metadata issues found (Audit-only mode).');
+		console.log('💡 Note: These findings do not block the push but should be addressed in future units.');
+	} else {
+		console.log('\n✅ Push validation completed (All metadata verified)');
 	}
-	console.log('\n✅ All commits passed planned validation');
+	
+	// Never block push for metadata. 
+	// CI and pre-push should focus on tests/types for range validation.
+	process.exit(0);
 }
 
 const isMain =

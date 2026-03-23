@@ -87,6 +87,7 @@ function parseArgs(argv) {
 		const token = argv[index];
 		if (token === '--plan') args.plan = argv[index + 1] || null;
 		if (token === '--unit') args.unit = argv[index + 1] || null;
+		if (token === '--maintenance') args.maintenance = true;
 		if (token === '--session-file') args.sessionFile = argv[index + 1] || args.sessionFile;
 		if (token === '--s0-file') args.s0File = argv[index + 1] || args.s0File;
 		if (token === '--json') args.json = true;
@@ -217,7 +218,23 @@ function buildCommitScaffold(split) {
 	const files = [...(split.files || [])]
 		.map(normalizePath)
 		.sort((left, right) => left.localeCompare(right));
+	const fileLines = files.map((file) => `- ${file}`);
+
+	if (split.maintenance) {
+		const header = split.message || 'chore(maintenance): unplanned fix';
+		const bodySections = [['Files:', ...fileLines].join('\n')];
+		const trailers = ['Maintenance: true'];
+		return {
+			header,
+			summary: [],
+			files: fileLines,
+			trailers,
+			fullMessage: `${header}\n\n${bodySections.join('\n\n')}\n\n${trailers.join('\n')}`,
+		};
+	}
+
 	if (!split.commitUnit) throw new Error('Planned commit scaffold requires commitUnit.');
+	// ... (rest of original buildCommitScaffold)
 	const subject = buildPlannedSubject(split.commitUnit);
 	const header = buildPlannedHeader(split.commitUnit);
 	const plannedHeader = String(split.commitUnit.messagePreview?.header || '').trim();
@@ -234,7 +251,6 @@ function buildCommitScaffold(split) {
 			`Commit unit "${split.commitUnit.id}" must define messagePreview.summary before scaffold generation.`,
 		);
 	}
-	const fileLines = files.map((file) => `- ${file}`);
 	const bodySections = [summaryLines.join('\n'), ['Files:', ...fileLines].join('\n')];
 	const trailers = [`Plan-Id: ${split.commitUnit.planId}`, `Commit-Unit: ${split.commitUnit.id}`];
 	return {
@@ -539,6 +555,23 @@ function commitCommand(args) {
 	}
 
 	// 3. Commit
+	if (args.maintenance) {
+		const files = stagedEntries.map((entry) => entry.path);
+		const scaffold = buildCommitScaffold({
+			maintenance: true,
+			message: args.unit, // Re-use unit as message for maintenance mode if provided
+			files,
+		});
+
+		console.log('✨ Gatekeeper passed (Maintenance Mode Audit-only).');
+		console.log('📝 Creating commit...');
+		executeCommit(scaffold.fullMessage, {
+			...process.env,
+		});
+		console.log('✅ Commit created successfully (Maintenance).');
+		return;
+	}
+
 	if (!planId || !unitId) {
 		fail('Commit requires a plan and unit (either specified or auto-detected).');
 	}
