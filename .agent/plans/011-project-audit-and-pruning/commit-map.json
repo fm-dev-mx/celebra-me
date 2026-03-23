@@ -1,0 +1,145 @@
+{
+  "planId": "011-project-audit-and-pruning",
+  "mode": "planned-commits",
+  "defaultFallback": "none",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-22T17:17:00Z",
+    "reviewedAt": "2026-03-23T08:25:00Z",
+    "readyForGatekeeperAt": "2026-03-23T08:25:00Z",
+    "notes": "Plan revised to enforce stricter atomicity for plan initialization, archival, and documentation alignment units."
+  },
+  "units": [
+    {
+      "id": "initialize-plan-011",
+      "phaseId": "01-pruning-execution",
+      "status": "ready",
+      "domain": "governance",
+      "type": "chore",
+      "subject": {
+        "verb": "initialize",
+        "target": "plan 011 for audit and pruning"
+      },
+      "purpose": "establish the operational baseline for current audit and archival tasks",
+      "include": [
+        ".agent/plans/011-project-audit-and-pruning/**"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(governance): initialize plan 011 for audit and pruning",
+        "summary": [
+          "define mission and commit strategy for repository audit pruning",
+          "capture initial project context for historical and active doc alignment"
+        ]
+      }
+    },
+    {
+      "id": "archive-plan-010",
+      "phaseId": "01-pruning-execution",
+      "status": "ready",
+      "domain": "governance",
+      "type": "chore",
+      "subject": {
+        "verb": "archive",
+        "target": "completed Plan 010"
+      },
+      "purpose": "relocate finished plan data to historical storage",
+      "include": [
+        ".agent/plans/010-runtime-and-doc-simplification/**"
+      ],
+      "allowRelated": [
+        ".agent/plans/archive/2026-03/010-runtime-and-doc-simplification/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(governance): archive completed Plan 010",
+        "summary": [
+          "move runtime and documentation simplification plan to 2026-03 archive",
+          "set final status to ARCHIVED in plan manifest"
+        ]
+      }
+    },
+    {
+      "id": "archive-legacy-documentation",
+      "phaseId": "01-pruning-execution",
+      "status": "ready",
+      "domain": "governance",
+      "type": "chore",
+      "subject": {
+        "verb": "archive",
+        "target": "historical audits and architecture"
+      },
+      "purpose": "preserve legacy context while keeping docs/ root focused on active state",
+      "include": [
+        "docs/audit/**",
+        "docs/architecture/**"
+      ],
+      "allowRelated": [
+        "docs/archive/audit/**",
+        "docs/archive/architecture/**"
+      ],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "chore(governance): archive historical audits and architecture",
+        "summary": [
+          "move system audits and refactor proposals to archival storage",
+          "ensure legacy guidance does not compete for attention with active sources of truth"
+        ]
+      }
+    },
+    {
+      "id": "update-doc-dashboard",
+      "phaseId": "01-pruning-execution",
+      "status": "ready",
+      "domain": "documentation",
+      "type": "docs",
+      "subject": {
+        "verb": "update",
+        "target": "status dashboard and security domain"
+      },
+      "purpose": "reflect new archival paths and initialize security posture tracking",
+      "include": [
+        "docs/DOC_STATUS.md",
+        "docs/domains/security/status.md"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "docs(documentation): update status dashboard and security domain",
+        "summary": [
+          "relink archived audits in DOC_STATUS.md",
+          "add security domain status tracking for RSVP posture",
+          "ensure dashboard matches current filesystem reality"
+        ]
+      }
+    },
+    {
+      "id": "align-agent-governance",
+      "phaseId": "01-pruning-execution",
+      "status": "ready",
+      "domain": "governance",
+      "type": "refactor",
+      "subject": {
+        "verb": "align",
+        "target": "agent core coordination"
+      },
+      "purpose": "standardize documentation synchronization and planning rules",
+      "include": [
+        ".agent/README.md",
+        ".agent/index.md",
+        ".agent/skills/documentation-governance/SKILL.md",
+        ".agent/workflows/**"
+      ],
+      "allowRelated": [],
+      "correctionPolicy": "absorb-compatible",
+      "messagePreview": {
+        "header": "refactor(governance): align agent core coordination",
+        "summary": [
+          "link documentation governance to system-doc-alignment workflow",
+          "strengthen plan authoring and gatekeeper commit contracts",
+          "standardize archival expectations for agents"
+        ]
+      }
+    }
+  ]
+}

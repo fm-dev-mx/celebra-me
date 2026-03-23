@@ -1,0 +1,16 @@
+{
+  "id": "011-project-audit-and-pruning",
+  "title": "Project Audit and Pruning",
+  "status": "ACTIVE",
+  "completion": 0,
+  "created": "2026-03-22T17:15:00Z",
+  "updated": "2026-03-22T17:15:00Z",
+  "owner": "Agent",
+  "phases": [
+    {
+      "id": "01-pruning-execution",
+      "title": "Pruning Execution",
+      "status": "ACTIVE"
+    }
+  ]
+}
