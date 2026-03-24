@@ -17,9 +17,12 @@ This workflow automates the inspection, staging, and committing of code changes 
 
    _The command handles inspection, staging, and committing in one step._
 
-2. If the command fails due to drift:
-   - Run `pnpm gatekeeper:workflow:cleanup`.
-   - Update the plan or fix the working tree.
+## Troubleshooting
+
+If the command fails due to drift:
+
+- Run `pnpm gatekeeper:workflow:cleanup`.
+- Update the plan or fix the working tree.
 
 ## Maintenance Mode (Fast-Track)
 

@@ -100,7 +100,7 @@ function getUntrackedEntries() {
 		.map((path) => ({ path, oldPath: '', status: 'A' }));
 }
 
-function getUnstagedTrackedEntries() {
+function getUnstagedTrackedEntries(options = {}) {
 	const result = run('git', [
 		'diff',
 		'--name-status',
@@ -111,16 +111,18 @@ function getUnstagedTrackedEntries() {
 	if (result.status !== 0) {
 		throw new Error('Unable to read unstaged diff entries.');
 	}
-	return normalizeDiffEntries(enrichEntries(parseNameStatusZ(result.stdout)));
+	const entries = parseNameStatusZ(result.stdout);
+	return normalizeDiffEntries(options.enrich ? enrichEntries(entries) : entries);
 }
 
-function getWorkingTreeDiffEntries() {
+function getWorkingTreeDiffEntries(options = {}) {
 	const tracked = getTrackedWorkingTreeEntries();
 	const untracked = getUntrackedEntries();
-	return normalizeDiffEntries(enrichEntries(dedupeEntries([...tracked, ...untracked])));
+	const entries = dedupeEntries([...tracked, ...untracked]);
+	return normalizeDiffEntries(options.enrich ? enrichEntries(entries) : entries);
 }
 
-function getStagedDiffEntries() {
+function getStagedDiffEntries(options = {}) {
 	const result = run('git', [
 		'diff',
 		'--cached',
@@ -132,7 +134,8 @@ function getStagedDiffEntries() {
 	if (result.status !== 0) {
 		throw new Error('Unable to read staged diff entries.');
 	}
-	return normalizeDiffEntries(enrichEntries(parseNameStatusZ(result.stdout)));
+	const entries = parseNameStatusZ(result.stdout);
+	return normalizeDiffEntries(options.enrich ? enrichEntries(entries) : entries);
 }
 
 function signatureForEntries(entries) {

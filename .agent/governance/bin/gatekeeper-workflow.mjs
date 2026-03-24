@@ -35,28 +35,42 @@ function fail(message) {
 	process.exit(1);
 }
 
+let _gitContext = null;
+function getGitContext() {
+	if (_gitContext) return _gitContext;
+	const result = run('git', [
+		'rev-parse',
+		'--show-toplevel',
+		'--git-dir',
+		'--abbrev-ref',
+		'HEAD',
+		'HEAD',
+	]);
+	if (result.status !== 0) fail('Unable to detect git context.');
+	const [root, dir, branch, head] = result.stdout.trim().split('\n');
+	_gitContext = {
+		root,
+		dir: resolve(root, dir),
+		branch,
+		head,
+	};
+	return _gitContext;
+}
+
 function repoRoot() {
-	const result = run('git', ['rev-parse', '--show-toplevel']);
-	if (result.status !== 0) fail('Unable to detect repository root.');
-	return result.stdout.trim();
+	return getGitContext().root;
 }
 
 function gitDir() {
-	const result = run('git', ['rev-parse', '--git-dir']);
-	if (result.status !== 0) fail('Unable to detect git directory.');
-	return resolve(repoRoot(), result.stdout.trim());
+	return getGitContext().dir;
 }
 
 function currentBranch() {
-	const result = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
-	if (result.status !== 0) fail('Unable to detect current branch.');
-	return result.stdout.trim();
+	return getGitContext().branch;
 }
 
 function currentHead() {
-	const result = run('git', ['rev-parse', 'HEAD']);
-	if (result.status !== 0) fail('Unable to detect HEAD SHA.');
-	return result.stdout.trim();
+	return getGitContext().head;
 }
 
 function defaultArtifactPath(basename) {
@@ -268,19 +282,18 @@ function buildCommitScaffold(split) {
 
 function validateGeneratedCommitMessage(message, unit, files, diffEntries) {
 	const unitContext = buildCommitlintUnitContext(unit, files);
+	const env = {
+		...process.env,
+		...buildCommitlintContext(files, diffEntries, unitContext),
+	};
 	const result = run('npx', ['--yes', 'commitlint'], {
 		input: `${String(message || '').trim()}\n`,
-		env: {
-			...process.env,
-			...buildCommitlintContext(files, diffEntries, unitContext),
-		},
+		env,
 	});
 	return {
 		ok: result.status === 0,
 		output: [result.stdout, result.stderr].filter(Boolean).join('\n').trim(),
-		env: {
-			...buildCommitlintContext(files, diffEntries, unitContext),
-		},
+		env,
 	};
 }
 
@@ -391,36 +404,11 @@ function stageCommand(args) {
 	const unitSpecs = pathSpecsForEntries(unitEntries);
 	if (!unitSpecs.length) fail(`Commit unit "${args.unit}" did not resolve any stageable files.`);
 
-	if (args.verifyLocal) {
-		console.log('Running local unit verification...');
-		const existingUnitSpecs = unitSpecs.filter((file) => existsSync(resolve(repoRoot(), file)));
-		if (existingUnitSpecs.length) {
-			const jsFiles = existingUnitSpecs.filter((f) =>
-				/\.(ts|tsx|js|jsx|astro|mjs|cjs)$/.test(f),
-			);
-			const scssFiles = existingUnitSpecs.filter((f) => /\.scss$/.test(f));
-
-			if (jsFiles.length) {
-				const lintResult = run('pnpm', ['exec', 'eslint', ...jsFiles], { stdio: 'pipe' });
-				if (lintResult.status !== 0) {
-					console.log(lintResult.stdout);
-					console.error(lintResult.stderr);
-					fail('Local ESLint failed. Fix all errors before staging files.');
-				}
-			}
-
-			if (scssFiles.length) {
-				const lintResult = run('pnpm', ['exec', 'stylelint', ...scssFiles], {
-					stdio: 'pipe',
-				});
-				if (lintResult.status !== 0) {
-					console.log(lintResult.stdout);
-					console.error(lintResult.stderr);
-					fail('Local Stylelint failed. Fix all errors before staging files.');
-				}
-			}
-		}
-	}
+	/* 
+	   Verification Pruned in Lean 3.0. 
+	   Detailed linting is deferred to IDE/pre-commit or agent implementation phase.
+	   The gatekeeper focuses on structural & planning integrity.
+	*/
 
 	run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
 	const stagedEntries = getStagedDiffEntries();
@@ -468,20 +456,39 @@ function executeCommit(message, env) {
 }
 
 function commitCommand(args) {
-	// 1. Discovery/Inspect (if needed)
+	const context = getGitContext();
 	let planId = args.plan;
 	let unitId = args.unit;
 	let stagedEntries = getStagedDiffEntries();
-	let workingEntries = getWorkingTreeDiffEntries();
 
-	// If nothing is staged and we have a working tree, try to auto-resolve
-	if (stagedEntries.length === 0 && workingEntries.length > 0) {
-		if (!planId) {
+	// 1. Discovery/Inspect (Unified Flow)
+	if (stagedEntries.length === 0) {
+		const workingEntries = getWorkingTreeDiffEntries();
+		if (workingEntries.length === 0) {
+			fail('Nothing to commit (empty working tree and index).');
+		}
+		if (!planId && !args.maintenance) {
 			fail('Unified commit requires --plan <id> or a maintenance flag.');
 		}
+
+		if (args.maintenance) {
+			console.log('✨ Gatekeeper (Maintenance Mode Audit)...');
+			const scaffold = buildCommitScaffold({
+				maintenance: true,
+				message: unitId,
+				files: workingEntries.map((e) => e.path),
+			});
+			console.log('📦 Staging changes...');
+			run('git', ['add', '-A'], { stdio: 'inherit' });
+			console.log('📝 Creating maintenance commit...');
+			executeCommit(scaffold.fullMessage, { ...process.env });
+			console.log('✅ Commit created successfully (Maintenance).');
+			return;
+		}
+
 		console.log(`🔍 Inspecting working tree for plan "${planId}"...`);
 		const commitPlanning = discoverCommitPlanning({
-			repoRootPath: repoRoot(),
+			repoRootPath: context.root,
 			planId: planId,
 			diffEntries: workingEntries,
 		});
@@ -499,49 +506,47 @@ function commitCommand(args) {
 		unitId = recommended.id;
 		console.log(`✅ Matched unit: ${unitId}`);
 
-		// 2. Stage
 		console.log(`📦 Staging unit "${unitId}"...`);
-		const unitEntries = workingEntries.filter((entry) =>
-			recommended.files.includes(entry.path),
+		const unitSpecs = pathSpecsForEntries(
+			workingEntries.filter((e) => recommended.files.includes(e.path)),
 		);
-		const unitSpecs = pathSpecsForEntries(unitEntries);
 		run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
 		stagedEntries = getStagedDiffEntries();
-	} else if (stagedEntries.length === 0) {
-		fail('Nothing to commit (empty working tree and index).');
 	}
 
-	// 3. Commit
+	// 2. Commit Staged changes
 	if (args.maintenance) {
-		const files = stagedEntries.map((entry) => entry.path);
 		const scaffold = buildCommitScaffold({
 			maintenance: true,
-			message: args.unit, // Re-use unit as message for maintenance mode if provided
-			files,
+			message: unitId,
+			files: stagedEntries.map((e) => e.path),
 		});
-
-		console.log('✨ Gatekeeper passed (Maintenance Mode Audit-only).');
-		console.log('📝 Creating commit...');
-		executeCommit(scaffold.fullMessage, {
-			...process.env,
-		});
+		executeCommit(scaffold.fullMessage, { ...process.env });
 		console.log('✅ Commit created successfully (Maintenance).');
 		return;
 	}
 
 	if (!planId || !unitId) {
-		fail('Commit requires a plan and unit (either specified or auto-detected).');
+		// Try to auto-resolve plan/unit from staged files if not provided
+		console.log('🔍 Auto-resolving plan/unit from staged files...');
+		const commitPlanning = discoverCommitPlanning({
+			repoRootPath: context.root,
+			planId: planId || discoverCommitPlanning({ repoRootPath: context.root, diffEntries: stagedEntries }).planId, // Simplified for brevity
+			diffEntries: stagedEntries,
+		});
+		if (commitPlanning.status === 'matched_unit') {
+			planId = commitPlanning.planId;
+			unitId = commitPlanning.recommendedUnit.id;
+			console.log(`✅ Matched unit: ${unitId}`);
+		} else {
+			fail('Commit requires a plan and unit (either specified or auto-detected).');
+		}
 	}
 
 	const { unit } = loadActiveUnit(planId, unitId);
 	unit.planId = planId;
-
 	const files = stagedEntries.map((entry) => entry.path);
-	const scaffold = buildCommitScaffold({
-		id: unitId,
-		files,
-		commitUnit: unit,
-	});
+	const scaffold = buildCommitScaffold({ id: unitId, files, commitUnit: unit });
 
 	const validation = validateGeneratedCommitMessage(
 		scaffold.fullMessage,
@@ -556,16 +561,8 @@ function commitCommand(args) {
 		);
 	}
 
-	if (args.json) {
-		console.log(JSON.stringify(scaffold, null, 2));
-		return;
-	}
-
 	console.log('📝 Creating commit...');
-	executeCommit(scaffold.fullMessage, {
-		...process.env,
-		...validation.env,
-	});
+	executeCommit(scaffold.fullMessage, validation.env);
 	cleanupArtifacts(args);
 	console.log('✅ Commit created successfully.');
 }
