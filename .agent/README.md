@@ -4,8 +4,8 @@ This file is the **universal agent entrypoint** for the Celebra-me repository.
 
 Any agent, regardless of provider or runtime, must start here before acting on the repository.
 
-The documents in `.agent/` are **versioned, authoritative, and executable in intent**. They exist
-to keep the project consistent, safe, and aligned with its current architecture.
+The documents in `.agent/` are **versioned, authoritative, and executable in intent**. They exist to
+keep the project consistent, safe, and aligned with its current architecture.
 
 ---
 
@@ -79,7 +79,7 @@ Load a skill only when the task clearly matches its domain, for example:
 - API, validation, or integrations: `backend-engineering`
 - copy or UX text: `copywriting-es`
 - tests: `testing`
-- docs maintenance: `documentation-governance`
+- docs maintenance: `documentation-governance` (loads `system-doc-alignment`)
 
 When multiple skills are relevant, load the smallest useful set and avoid broad context loading by
 default.
@@ -93,7 +93,7 @@ Load a workflow when the task is process-heavy or governance-sensitive, for exam
 - error recovery or failing checks: `error-remediation`
 - commit planning: `plan-authoring`
 - commit planning under governance: `plan-authoring`
-- documentation resynchronization: `system-doc-alignment`
+- documentation resynchronization or Sync Contract enforcement: `system-doc-alignment`
 - theme governance or section abstraction: `theme-architecture-governance`
 
 ---
@@ -151,12 +151,13 @@ It should not be loaded by default for simple or local fixes.
 
 Use this matrix to avoid overloading context:
 
-| Task Type | Required Load |
-| :-------- | :------------ |
-| Visual or UI change | `README` + `GATEKEEPER_RULES.md` + relevant skill(s): `frontend-design`, `theme-architecture`, `accessibility` |
-| Backend, schema, or API work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
-| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` + governance docs |
-| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `docs/core/project-conventions.md`, then expand surgically |
+| Task Type                         | Required Load                                                                                                  |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| Visual or UI change               | `README` + `GATEKEEPER_RULES.md` + relevant skill(s): `frontend-design`, `theme-architecture`, `accessibility` |
+| Backend, schema, or API work      | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs            |
+| Documentation or governance drift | `README` + `GATEKEEPER_RULES.md` + `documentation-governance` + `system-doc-alignment`                         |
+| Planning or commit governance     | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` + governance docs                                          |
+| Ambiguous task                    | `README` + `GATEKEEPER_RULES.md` + `docs/core/project-conventions.md`, then expand surgically                  |
 
 If a task is still ambiguous after that minimum load, expand to the nearest relevant workflow or
 domain doc rather than scanning the entire repository.
@@ -195,9 +196,9 @@ Agent output should be:
 
 - **Concise by default**
 - More detailed only when:
-    - fixing critical issues,
-    - explaining non-obvious decisions,
-    - reporting ambiguity or fallback behavior.
+  - fixing critical issues,
+  - explaining non-obvious decisions,
+  - reporting ambiguity or fallback behavior.
 
 Clarity is preferred over verbosity.
 

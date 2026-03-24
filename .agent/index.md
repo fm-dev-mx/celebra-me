@@ -26,7 +26,7 @@ agent working in this repository.
 | [`backend-engineering`](./skills/backend-engineering/SKILL.md)           | API routes, services, validation, and integrations                         |
 | [`commit-planner`](./skills/commit-planner/SKILL.md)                     | atomic commit partitioning and repository-specific commit message planning |
 | [`copywriting-es`](./skills/copywriting-es/SKILL.md)                     | Spanish UI and invitation copy standards                                   |
-| [`documentation-governance`](./skills/documentation-governance/SKILL.md) | documentation structure, drift prevention, and governance                  |
+| [`documentation-governance`](./skills/documentation-governance/SKILL.md) | thin loader for the active doc integrity workflow and Sync Contract        |
 | [`frontend-design`](./skills/frontend-design/SKILL.md)                   | premium visual design direction and composition                            |
 | [`seo-metadata`](./skills/seo-metadata/SKILL.md)                         | SEO, Open Graph, and social sharing metadata                               |
 | [`testing`](./skills/testing/SKILL.md)                                   | unit, integration, and E2E testing guidance                                |
@@ -34,12 +34,12 @@ agent working in this repository.
 
 ## Available Workflows
 
-| Workflow                                                                        | Use When                                                                       |
-| :------------------------------------------------------------------------------ | :----------------------------------------------------------------------------- |
-| [`error-remediation`](./workflows/error-remediation.md)                         | a command, test, or validation check is failing and needs structured diagnosis |
-| [`plan-authoring`](./workflows/plan-authoring.md)                               | implementation or commit units need planning and validation                    |
-| [`system-doc-alignment`](./workflows/system-doc-alignment.md)                   | `.agent/`, `docs/`, or plan records may be stale                               |
-| [`theme-architecture-governance`](./workflows/theme-architecture-governance.md) | theme abstraction or section-level theme consistency must be validated         |
+| Workflow                                                                        | Use When                                                                                |
+| :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| [`error-remediation`](./workflows/error-remediation.md)                         | a command, test, or validation check is failing and needs structured diagnosis          |
+| [`plan-authoring`](./workflows/plan-authoring.md)                               | implementation or commit units need planning and validation                             |
+| [`system-doc-alignment`](./workflows/system-doc-alignment.md)                   | `.agent/`, `docs/`, or plan records may be stale, or the Sync Contract must be enforced |
+| [`theme-architecture-governance`](./workflows/theme-architecture-governance.md) | theme abstraction or section-level theme consistency must be validated                  |
 
 ## Canonical Docs in `docs/`
 
@@ -54,13 +54,14 @@ agent working in this repository.
 
 ## Minimal Load Matrix
 
-| Task Type                     | Minimum Context                                                                                                                       |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| Visual or UI work             | `README` + `GATEKEEPER_RULES.md` + `frontend-design` + `theme-architecture`; add `accessibility` when interaction or contrast changes |
-| Backend or data work          | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs                                   |
-| Testing or regression work    | `README` + `GATEKEEPER_RULES.md` + `testing` + the feature skill involved                                                             |
-| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` + `commit-planner`                                                                |
-| Ambiguous task                | `README` + `GATEKEEPER_RULES.md` + `project-conventions`, then narrow                                                                 |
+| Task Type                         | Minimum Context                                                                                                                       |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| Visual or UI work                 | `README` + `GATEKEEPER_RULES.md` + `frontend-design` + `theme-architecture`; add `accessibility` when interaction or contrast changes |
+| Backend or data work              | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs                                   |
+| Documentation or governance drift | `README` + `GATEKEEPER_RULES.md` + `documentation-governance` + `system-doc-alignment`                                                |
+| Testing or regression work        | `README` + `GATEKEEPER_RULES.md` + `testing` + the feature skill involved                                                             |
+| Planning or commit governance     | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` + `commit-planner`                                                                |
+| Ambiguous task                    | `README` + `GATEKEEPER_RULES.md` + `project-conventions`, then narrow                                                                 |
 
 ## Portability Rule
 
