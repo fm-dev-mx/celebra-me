@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
 import { gatekeeperReadinessIssues } from './commit-plan.mjs';
-import { matchAny } from './gatekeeper.mjs';
+import { matchAny } from './commit-message-analysis.mjs';
 import {
 	DEFAULT_COMMIT_MAP,
 	DEFAULT_MANIFEST,

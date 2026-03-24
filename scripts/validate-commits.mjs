@@ -251,12 +251,14 @@ function main() {
 
 	if (!allValid) {
 		console.log('\n🔍 Push Governance Audit: Some metadata issues found (Audit-only mode).');
-		console.log('💡 Note: These findings do not block the push but should be addressed in future units.');
+		console.log(
+			'💡 Note: These findings do not block the push but should be addressed in future units.',
+		);
 	} else {
 		console.log('\n✅ Push validation completed (All metadata verified)');
 	}
-	
-	// Never block push for metadata. 
+
+	// Never block push for metadata.
 	// CI and pre-push should focus on tests/types for range validation.
 	process.exit(0);
 }

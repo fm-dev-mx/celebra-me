@@ -292,9 +292,7 @@ function writeS0(args, payload) {
 	writeAtomicJson(args.s0File, payload);
 }
 
-function loadS0(args) {
-	return loadJsonFile(args.s0File);
-}
+
 
 function ensureSelectedUnit(session, args) {
 	if (!args.unit) fail(`The ${args.command} command requires --unit <id>.`);
@@ -308,19 +306,6 @@ function ensureSelectedUnit(session, args) {
 		fail(`Commit unit "${args.unit}" is not the inspected executable unit for this session.`);
 	}
 	return recommended;
-}
-
-function loadCommitContext(args) {
-	const session = loadJsonFile(args.sessionFile);
-	const validation = validateSession(session, args);
-	if (!validation.ok) {
-		return { session: null, s0: null, unit: null, stagedEntries: null, reason: validation.reason };
-	}
-	const s0 = loadS0(args);
-	const stagedEntries = getStagedDiffEntries();
-	const { unit } = args.plan && args.unit ? loadActiveUnit(args.plan, args.unit) : { unit: null };
-
-	return { session, s0, unit, stagedEntries };
 }
 
 function buildInspectPayload(payload, diffEntries, commitPlanning) {
@@ -468,34 +453,6 @@ function stageCommand(args) {
 	console.log(`📄 S0 file: ${args.s0File}`);
 }
 
-function scaffoldCommand(args) {
-	if (!args.unit) fail('The scaffold command requires --unit <id>.');
-	const { session, unit, stagedEntries } = loadCommitContext(args);
-	unit.planId = session.planId;
-	const files = stagedEntries.map((entry) => entry.path);
-	const scaffold = buildCommitScaffold({
-		id: unit.id,
-		files,
-		commitUnit: unit,
-	});
-	const validation = validateGeneratedCommitMessage(
-		scaffold.fullMessage,
-		unit,
-		files,
-		stagedEntries,
-	);
-	if (!validation.ok) {
-		fail(
-			`Generated scaffold does not satisfy commitlint:\n${validation.output || 'unknown validation failure'}`,
-		);
-	}
-	if (args.json) {
-		console.log(JSON.stringify(scaffold, null, 2));
-		return;
-	}
-	console.log(scaffold.fullMessage);
-}
-
 function executeCommit(message, env) {
 	const tempFile = resolve(gitDir(), `COMMIT_EDITMSG_${Date.now()}.txt`);
 	writeFileSync(tempFile, `${String(message || '').trim()}\n`, 'utf8');
@@ -546,7 +503,9 @@ function commitCommand(args) {
 
 		// 2. Stage
 		console.log(`📦 Staging unit "${unitId}"...`);
-		const unitEntries = workingEntries.filter((entry) => recommended.files.includes(entry.path));
+		const unitEntries = workingEntries.filter((entry) =>
+			recommended.files.includes(entry.path),
+		);
 		const unitSpecs = pathSpecsForEntries(unitEntries);
 		run('git', ['add', '-A', '--', ...unitSpecs], { stdio: 'inherit' });
 		stagedEntries = getStagedDiffEntries();
@@ -649,7 +608,6 @@ if (isMain) {
 }
 
 export {
-	buildCommitScaffold,
 	cleanupCommand,
 	commitCommand,
 	inspectCommand,

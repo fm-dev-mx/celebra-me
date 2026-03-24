@@ -88,4 +88,34 @@ function collectFileFacts(files, diffEntries = []) {
 	});
 }
 
-export { classifyCommitFileArea, collectFileFacts, normalizePath };
+function expandBraces(pattern) {
+	const normalized = normalizePath(pattern);
+	const match = normalized.match(/\{([^{}]+)\}/);
+	if (!match) return [normalized];
+	const variants = match[1]
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+	return variants.flatMap((variant) =>
+		expandBraces(
+			`${normalized.slice(0, match.index)}${variant}${normalized.slice((match.index || 0) + match[0].length)}`,
+		),
+	);
+}
+
+function globRe(g) {
+	const e = normalizePath(g)
+		.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+		.replace(/\*\*\//g, '::DS_DIR::')
+		.replace(/\*\*/g, '::D::')
+		.replace(/\*/g, '[^/]*')
+		.replace(/::DS_DIR::/g, '(?:.*/)?')
+		.replace(/::D::/g, '.*');
+	return new RegExp(`^${e}$`);
+}
+
+function matchAny(p, gs = []) {
+	return (gs || []).some((g) => expandBraces(g).some((variant) => globRe(variant).test(p)));
+}
+
+export { classifyCommitFileArea, collectFileFacts, normalizePath, matchAny };

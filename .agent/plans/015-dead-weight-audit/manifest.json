@@ -1,0 +1,36 @@
+{
+    "id": "015-dead-weight-audit",
+    "name": "Project-Wide Dead Weight Audit",
+    "description": "Systematic identification and removal of redundant files, dead code, and obsolete documentation across the entire repository.",
+    "status": "IN_PROGRESS",
+    "author": "Antigravity",
+    "complexity": "HIGH",
+    "lifecycle": "EPHEMERAL",
+    "phases": [
+        {
+            "id": "audit",
+            "name": "Audit & Inventory",
+            "status": "IN_PROGRESS",
+            "description": "Perform recursive analysis of all directories to find unused artifacts."
+        },
+        {
+            "id": "governance-cleanup",
+            "name": "Governance & Docs Cleanup",
+            "status": "PLANNED",
+            "description": "Prune obsolete governance scripts and documents."
+        },
+        {
+            "id": "style-cleanup",
+            "name": "Style & UI Cleanup",
+            "status": "PLANNED",
+            "description": "Prune unused SCSS tokens, legacy styles, and dead components."
+        },
+        {
+            "id": "test-cleanup",
+            "name": "Test & Script Cleanup",
+            "status": "PLANNED",
+            "description": "Prune stale tests and obsolete utility scripts."
+        }
+    ],
+    "dependencies": ["013-lean-governance-overhaul"]
+}

@@ -1,0 +1,44 @@
+{
+    "planId": "015-dead-weight-audit",
+    "units": [
+        {
+            "id": "audit-governance",
+            "domain": "governance",
+            "type": "chore",
+            "purpose": "prune obsolete governance scripts and legacy configs",
+            "include": [],
+            "messagePreview": {
+                "header": "chore(governance): prune obsolete scripts and legacy configs",
+                "summary": [
+                    "remove legacy ximena-overhaul artifacts",
+                    "delete unused gatekeeper shim scripts"
+                ]
+            }
+        },
+        {
+            "id": "audit-docs",
+            "domain": "docs",
+            "type": "docs",
+            "purpose": "prune obsolete architecture and status documents",
+            "include": [],
+            "messagePreview": {
+                "header": "docs(docs): prune obsolete architecture and status documents",
+                "summary": ["remove stale project roadmaps", "delete fragmented domain status docs"]
+            }
+        },
+        {
+            "id": "audit-styles",
+            "domain": "ui",
+            "type": "refactor",
+            "purpose": "prune unused styles and legacy SCSS tokens",
+            "include": [],
+            "messagePreview": {
+                "header": "refactor(styles): prune unused styles and legacy tokens",
+                "summary": [
+                    "remove legacy color palette definitions",
+                    "delete orphaned component style fragments"
+                ]
+            }
+        }
+    ]
+}

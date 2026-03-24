@@ -4,15 +4,18 @@ description: Unified atomic commit workflow using Plan-Id and Commit-Unit traile
 
 # Gatekeeper Commit Routine (Lean 2.0)
 
-This workflow automates the inspection, staging, and committing of code changes based on an approved `commit-map.json`.
+This workflow automates the inspection, staging, and committing of code changes based on an approved
+`commit-map.json`.
 
 ## Routine
 
 1. Execute the unified commit command:
+
    ```bash
    pnpm gatekeeper:commit -- --plan <plan-id> [--unit <unit-id>]
    ```
-   *The command handles inspection, staging, and committing in one step.*
+
+   _The command handles inspection, staging, and committing in one step._
 
 2. If the command fails due to drift:
    - Run `pnpm gatekeeper:workflow:cleanup`.
@@ -31,6 +34,7 @@ For small fixes (chore, docs, fix) that don't need a plan:
 ## Output Contract
 
 The commit must contain:
+
 - Header: `type(scope): verb target`
 - Summary: Semantic bullets.
 - Section: `Files:` list.

@@ -1,8 +1,7 @@
 import { readdirSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
 
-import { matchAny } from './gatekeeper.mjs';
-import { normalizePath } from './commit-message-analysis.mjs';
+import { matchAny, normalizePath } from './commit-message-analysis.mjs';
 import {
 	DEFAULT_COMMIT_MAP,
 	DEFAULT_PLAN_ROOT,
