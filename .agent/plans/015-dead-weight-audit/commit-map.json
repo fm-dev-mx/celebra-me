@@ -13,7 +13,7 @@
 			"phaseId": "governance-cleanup",
 			"domain": "governance",
 			"type": "chore",
-			"status": "ready",
+			"status": "completed",
 			"subject": {
 				"verb": "prune",
 				"target": "obsolete governance scripts"
@@ -35,7 +35,7 @@
 			"phaseId": "governance-cleanup",
 			"domain": "docs",
 			"type": "docs",
-			"status": "ready",
+			"status": "completed",
 			"subject": {
 				"verb": "prune",
 				"target": "obsolete domain documents"
@@ -57,7 +57,7 @@
 			"phaseId": "test-cleanup",
 			"domain": "ops",
 			"type": "chore",
-			"status": "ready",
+			"status": "completed",
 			"subject": {
 				"verb": "prune",
 				"target": "redundant operational scripts"

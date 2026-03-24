@@ -3,6 +3,7 @@
     "name": "Project-Wide Dead Weight Audit",
     "description": "Systematic identification and removal of redundant files, dead code, and obsolete documentation across the entire repository.",
     "status": "IN_PROGRESS",
+    "updatedAt": "2026-03-24T12:50:00Z",
     "author": "Antigravity",
     "complexity": "HIGH",
     "lifecycle": "EPHEMERAL",
@@ -32,5 +33,6 @@
             "description": "Prune stale tests and obsolete utility scripts."
         }
     ],
-    "dependencies": ["013-lean-governance-overhaul"]
+    "dependencies": ["013-lean-governance-overhaul"],
+    "notes": "Governance and doc cleanup units were executed via maintenance commits during the Lean 2.0/3.0 transition."
 }
