@@ -21,7 +21,7 @@ surface with the live repository tree.
 ## Success Criteria
 
 1. Active code and asset trees contain no verified orphan files from the audit set.
-2. Active docs stop referencing `DOC_STATUS`, removed governance runners, `smoke-test`, and other missing
-   commands or files.
+2. Active docs stop referencing `DOC_STATUS`, removed governance runners, `smoke-test`, and other
+   missing commands or files.
 3. The repository exposes a working `pnpm test` command and passes the validation commands used for
    this remediation.
