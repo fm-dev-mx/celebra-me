@@ -9,17 +9,12 @@ const __dirname = path.dirname(__filename);
 // Centralized mapping of available ops commands
 const SCRIPTS = {
 	'check-links': 'check-links.mjs',
-	'find-stale': 'find-stale.mjs',
-	'rotate-credentials': 'rotate-credentials.mjs',
-	'sync-runner': 'sync-runner.mjs',
 	'optimize-assets': 'optimize-assets.mjs',
 	'smoke-test': 'smoke-test.mjs',
 	'validate-schema': 'validate-schema.mjs',
 	'validate-event-parity': 'validate-event-parity.mjs',
 	'validate-commits': 'validate-commits.mjs',
 	'new-invitation': 'new-invitation.mjs',
-	'remove-env-from-history': 'remove-env-from-history.mjs',
-	'rsvp-db-remote-runbook': 'rsvp-db-remote-runbook.mjs',
 };
 
 const args = process.argv.slice(2);

@@ -1,44 +1,78 @@
 {
-    "planId": "015-dead-weight-audit",
-    "units": [
-        {
-            "id": "audit-governance",
-            "domain": "governance",
-            "type": "chore",
-            "purpose": "prune obsolete governance scripts and legacy configs",
-            "include": [],
-            "messagePreview": {
-                "header": "chore(governance): prune obsolete scripts and legacy configs",
-                "summary": [
-                    "remove legacy ximena-overhaul artifacts",
-                    "delete unused gatekeeper shim scripts"
-                ]
-            }
-        },
-        {
-            "id": "audit-docs",
-            "domain": "docs",
-            "type": "docs",
-            "purpose": "prune obsolete architecture and status documents",
-            "include": [],
-            "messagePreview": {
-                "header": "docs(docs): prune obsolete architecture and status documents",
-                "summary": ["remove stale project roadmaps", "delete fragmented domain status docs"]
-            }
-        },
-        {
-            "id": "audit-styles",
-            "domain": "ui",
-            "type": "refactor",
-            "purpose": "prune unused styles and legacy SCSS tokens",
-            "include": [],
-            "messagePreview": {
-                "header": "refactor(styles): prune unused styles and legacy tokens",
-                "summary": [
-                    "remove legacy color palette definitions",
-                    "delete orphaned component style fragments"
-                ]
-            }
-        }
-    ]
+	"planId": "015-dead-weight-audit",
+	"mode": "planned-commits",
+	"commitStrategyReview": {
+		"draftedAt": "2026-03-24T09:47:00Z",
+		"reviewedAt": "2026-03-24T09:47:00Z",
+		"readyForGatekeeperAt": "2026-03-24T12:00:00Z",
+		"notes": "Plan 015 initiated to prune redundant artifacts identified in the audit phase."
+	},
+	"units": [
+		{
+			"id": "audit-governance",
+			"phaseId": "governance-cleanup",
+			"domain": "governance",
+			"type": "chore",
+			"status": "ready",
+			"subject": {
+				"verb": "prune",
+				"target": "obsolete governance scripts"
+			},
+			"purpose": "prune obsolete governance scripts and legacy configs",
+			"include": ["scripts/cli.mjs"],
+			"allowRelated": [],
+			"correctionPolicy": "absorb-compatible",
+			"messagePreview": {
+				"header": "chore(governance): prune obsolete governance scripts",
+				"summary": [
+					"remove legacy ximena-overhaul artifacts from cli dispatcher",
+					"cleanup stale script mappings in cli.mjs"
+				]
+			}
+		},
+		{
+			"id": "audit-docs",
+			"phaseId": "governance-cleanup",
+			"domain": "docs",
+			"type": "docs",
+			"status": "ready",
+			"subject": {
+				"verb": "prune",
+				"target": "obsolete domain documents"
+			},
+			"purpose": "prune obsolete architecture and status documents",
+			"include": ["docs/domains/assets", "docs/domains/security"],
+			"allowRelated": [],
+			"correctionPolicy": "absorb-compatible",
+			"messagePreview": {
+				"header": "docs(docs): prune obsolete domain documents",
+				"summary": [
+					"remove empty asset and security domain directories",
+					"cleanup fragmented doc structure"
+				]
+			}
+		},
+		{
+			"id": "audit-styles",
+			"phaseId": "style-cleanup",
+			"domain": "ui",
+			"type": "refactor",
+			"status": "ready",
+			"subject": {
+				"verb": "prune",
+				"target": "unused scss fragments"
+			},
+			"purpose": "prune unused styles and legacy SCSS tokens",
+			"include": ["src/styles/landing.scss"],
+			"allowRelated": [],
+			"correctionPolicy": "absorb-compatible",
+			"messagePreview": {
+				"header": "refactor(ui): prune unused scss fragments",
+				"summary": [
+					"remove legacy color palette definitions",
+					"delete orphaned landing style fragments"
+				]
+			}
+		}
+	]
 }
