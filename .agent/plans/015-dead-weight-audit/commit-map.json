@@ -53,24 +53,28 @@
 			}
 		},
 		{
-			"id": "audit-styles",
-			"phaseId": "style-cleanup",
-			"domain": "ui",
-			"type": "refactor",
+			"id": "audit-scripts",
+			"phaseId": "test-cleanup",
+			"domain": "ops",
+			"type": "chore",
 			"status": "ready",
 			"subject": {
 				"verb": "prune",
-				"target": "unused scss fragments"
+				"target": "redundant operational scripts"
 			},
-			"purpose": "prune unused styles and legacy SCSS tokens",
-			"include": ["src/styles/landing.scss"],
+			"purpose": "prune redundant operational tools (smoke-test, assets optimization)",
+			"include": [
+				"scripts/optimize-event-images.mjs",
+				"scripts/check-links.mjs",
+				"scripts/smoke-test.mjs"
+			],
 			"allowRelated": [],
 			"correctionPolicy": "absorb-compatible",
 			"messagePreview": {
-				"header": "refactor(ui): prune unused scss fragments",
+				"header": "chore(ops): prune redundant operational scripts",
 				"summary": [
-					"remove legacy color palette definitions",
-					"delete orphaned landing style fragments"
+					"remove legacy smoke-test.mjs script",
+					"delete orphaned asset and link checking tools"
 				]
 			}
 		}
