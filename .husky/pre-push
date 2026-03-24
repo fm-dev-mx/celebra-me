@@ -31,7 +31,6 @@ else
     fi
   done
 
-  # Tests and Type-checks are moved to CI or manual run (pnpm gatekeeper:commit)
-  # to keep the push routine extremely lean (Lean 2.0).
+  # Tests and type-checks stay in CI or manual runs to keep this hook lean.
   # pnpm test
 fi

@@ -66,8 +66,7 @@ After alignment:
 
 - [ ] Run full build/test suite if necessary.
 - [ ] Stage only the files for one coherent ADU (no mixed-intent commits).
-- [ ] Execute `.agent/workflows/gatekeeper-commit.md` (`--mode strict` for code changes,
-      `--mode quick` for doc-only updates).
+- [ ] Prepare one coherent commit using the standard repository workflow.
 - [ ] Set governance phase explicitly when needed (`--enforce-phase 1|2|3`) to match rollout policy.
 
 ---

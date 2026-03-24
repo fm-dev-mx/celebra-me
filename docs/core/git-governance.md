@@ -1,72 +1,36 @@
-# Git Governance: Lean Commit Execution
+# Git Governance: Commit Validation
 
 **Status:** Active  
-**Last Updated:** 2026-03-23  
-**Change Note:** Lean Governance 2.0 overhaul. Unified commit commands, introduced Maintenance Mode, and recursive plan resolution.
+**Last Updated:** 2026-03-24  
+**Change Note:** Removed the plan-aware commit runner and standardized the repository on generic commit validation.
 
 ## Overview
 
-This document defines executable ownership for the Lean Gatekeeper commit workflow.
+This document defines the active commit-validation workflow for the repository.
 
-Commit intent is primary. Execution and validation layers automate the process of adhering to that intent while reducing operational friction and token consumption.
+The repository relies on conventional commits, branch protection, local hooks, and PR validation. Planning records under `.agent/plans/` remain useful for human coordination, but commits are no longer staged or created through a dedicated governance runner.
 
 ## Ownership
 
-| Owner                                            | Responsibility                                            |
-| ------------------------------------------------ | --------------------------------------------------------- |
-| `.agent/plans/README.md`                         | Contract for executable plans and `commit-map.json`       |
-| `.agent/governance/bin/validate-commit-plan.mjs` | Machine validation of active plan commit maps             |
-| `.agent/governance/bin/gatekeeper-workflow.mjs`  | Unified commit execution (inspect + stage + commit)       |
-| `commitlint.config.cjs`                          | Message validation (Planned or Maintenance)               |
-| `scripts/validate-commits.mjs`                   | Range validation from commit trailers                     |
-| `.husky/pre-commit`                              | Lint-staged, quality enforcement                          |
-| `.husky/pre-push`                                | Smart range validation and tests                         |
+| Owner | Responsibility |
+| --- | --- |
+| `.agent/plans/README.md` | Planning contract for `commit-map.json` records |
+| `commitlint.config.cjs` | Commit message validation and quality rules |
+| `scripts/validate-commits.mjs` | Audit-only validation for commit ranges |
+| `.husky/pre-commit` | Branch protection and local linting |
+| `.husky/pre-push` | Audit-only commit-range validation before push |
+| `.github/workflows/commit-validation.yml` | Pull request commit validation and docs link checks |
 
-## Primary Commands
+## Active Validation Sequence
 
-```text
-pnpm gatekeeper:plans:doctor -- --plan <plan-id>
-pnpm gatekeeper:commit -- --plan <plan-id> [--unit <unit-id>]
-pnpm gatekeeper:commit -- --maintenance
-pnpm gatekeeper:workflow:cleanup
-```
-
-## Validation Sequence
-
-1. `pnpm lint` stabilizes code quality.
-2. `gatekeeper:plans:doctor` verifies lifecycle readiness and coverage.
-3. `gatekeeper:commit` resolves the unit, stages it, and commits it in one atomic step.
-4. `pre-push` validates the push range against trailers and runs tests.
-
-## Maintenance Mode (Unplanned)
-
-Small, high-quality fixes (chore, docs, fix) can be committed without a formal plan by adding the following trailer to the commit body:
-
-```text
-Maintenance: true
-```
-
-These commits still undergo full linting, type-checking, and conventional commit validation but skip the plan-unit matching requirement.
+1. `pre-commit` blocks direct commits to protected branches unless explicitly bypassed and runs `pnpm lint`.
+2. `commit-msg` runs `commitlint` against the pending commit message.
+3. `pre-push` validates the pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
+4. CI re-runs commit-range validation and documentation link checks for pull requests.
 
 ## Guarantees
 
-- Commit intent is derived from the approved `commit-map.json`.
-- Units are atomic; `gatekeeper:commit` ensures no partial or over-staged leaks.
-- Smart range validation in `pre-push` handles feature branches and re-validation efficiently.
-- Metadata is strictly enforced for planned work, but soft lifecycle rules allow historical review.
-
-## Architecture
-
-```mermaid
-graph TD
-    A[Working Tree] -->|pnpm gatekeeper:commit| B(Unified Executor)
-    B --> C{Planned or Maint?}
-    C -->|Planned| D[Commit Map Match]
-    C -->|Maint| E[Maintenance Trailer]
-    D --> F[Atomic Staging]
-    E --> F
-    F --> G[Gatekeeper Check]
-    G --> H[Git Commit]
-    H --> I[Husky pre-push]
-    I --> J[Push to Remote]
-```
+- Commit messages must follow conventional-commit structure.
+- Subjects must describe the actual change with a concrete target.
+- Push-time range validation stays non-blocking so developers still get feedback without hidden automation side effects.
+- Branch protection remains in place for `main` and `develop`.

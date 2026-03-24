@@ -4,7 +4,6 @@
   "commitStrategyReview": {
     "draftedAt": "2026-03-24T18:00:00Z",
     "reviewedAt": "2026-03-24T18:00:00Z",
-    "readyForGatekeeperAt": "2026-03-24T18:05:00Z",
     "notes": "Plan 016 supersedes the unfinished audit intent from plan 015 and groups the cleanup into runtime, asset, and governance documentation units."
   },
   "units": [

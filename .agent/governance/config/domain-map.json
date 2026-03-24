@@ -55,14 +55,7 @@
             "docs/core/git-governance.md"
         ],
         "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
-        "gov-plans-gatekeeper": [".agent/plans/gatekeeper-optimization/**"],
         "gov-plans-retheme-ximena-rose-gold": [".agent/plans/retheme-ximena-rose-gold/**"],
-        "gov-plans-gatekeeper-commit-message-hardening": [
-            ".agent/plans/gatekeeper-commit-message-hardening/**"
-        ],
-        "gov-plans-gatekeeper-workflow-commit-fixes": [
-            ".agent/plans/gatekeeper-workflow-commit-fixes/**"
-        ],
         "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
         "gov-plans-comprehensive-audit": [".agent/plans/comprehensive-audit-Q1-2026/**"],
         "gov-plans-all": [".agent/plans/**"],

@@ -11,4 +11,4 @@ Execute the surgical removal of zombie docs and archival of Plan 010.
 - [x] Relocate legacy audits and architecture proposals into `docs/archive/`.
 - [x] Update `docs/DOC_STATUS.md` with new archive paths and statuses.
 - [x] Define commit strategy in `commit-map.json`.
-- [ ] Execute Gatekeeper commits.
+- [ ] Execute the remaining commits through the standard repository workflow.

@@ -92,7 +92,7 @@ Load a workflow when the task is process-heavy or governance-sensitive, for exam
 
 - error recovery or failing checks: `error-remediation`
 - commit planning: `plan-authoring`
-- commit execution under governance: `gatekeeper-commit`
+- commit planning under governance: `plan-authoring`
 - documentation resynchronization: `system-doc-alignment`
 - theme governance or section abstraction: `theme-architecture-governance`
 
@@ -155,7 +155,7 @@ Use this matrix to avoid overloading context:
 | :-------- | :------------ |
 | Visual or UI change | `README` + `GATEKEEPER_RULES.md` + relevant skill(s): `frontend-design`, `theme-architecture`, `accessibility` |
 | Backend, schema, or API work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
-| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `gatekeeper-commit` + governance docs |
+| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` + governance docs |
 | Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `docs/core/project-conventions.md`, then expand surgically |
 
 If a task is still ambiguous after that minimum load, expand to the nearest relevant workflow or

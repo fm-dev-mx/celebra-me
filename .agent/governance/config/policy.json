@@ -220,7 +220,6 @@
             "requiredPaths": [
                 ".agent/governance/config/policy.json",
                 ".agent/governance/config/baseline.json",
-                ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "commitlint.config.cjs"
             ]
         },
@@ -268,7 +267,6 @@
         {
             "id": "git-governance-sync",
             "triggers": [
-                ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "scripts/validate-commits.mjs",
                 ".agent/governance/config/domain-map.json",
                 "commitlint.config.cjs",

@@ -1,4 +1,4 @@
-name: Gatekeeper Commit ADU
+name: Commit Validation ADU
 
 on:
     pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
     validate-commits:
-        name: Validate ADU Commits
+        name: Validate PR Commits
         runs-on: ubuntu-latest
 
         steps:
@@ -27,9 +27,9 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Validate commit messages and atomicity
+            - name: Validate commit messages
               run: |
-                  echo "Validating ADU commits for PR #${{ github.event.pull_request.number }}"
+                  echo "Validating commits for PR #${{ github.event.pull_request.number }}"
                   BASE_SHA="${{ github.event.pull_request.base.sha }}"
                   HEAD_SHA="${{ github.event.pull_request.head.sha }}"
                   echo "Base SHA: $BASE_SHA"

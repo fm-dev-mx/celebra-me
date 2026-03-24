@@ -2,23 +2,19 @@
 description: Declarative commit planning and manifest management.
 ---
 
-# Plan Authoring Workflow (Lean 2.0)
+# Plan Authoring Workflow
 
-Plan authoring defines a declarative roadmap for tasks. The `commit-map.json` is the executable contract.
+Plan authoring defines a declarative roadmap for tasks. The `commit-map.json` is the executable contract for planning and traceability, not an automated commit runner.
 
 ## Routine
 
-1. **Initialize Plan**: Create directory and files in `.agent/plans/`.
-2. **Define Units**: Specify `id`, `domain`, `type`, `include`, and `messagePreview`.
-3. **Get Review**: Update `reviewedAt` and `readyForGatekeeperAt`.
-4. **Execute**: use `pnpm gatekeeper:commit` to implement.
-
-## Maintenance Mode
-
-Small fixes or infrastructures that don't need a plan can use the **Maintenance** path with the `Maintenance: true` trailer.
+1. **Initialize Plan**: create the directory and files in `.agent/plans/`.
+2. **Define Units**: specify `id`, `domain`, `type`, `include`, and `messagePreview`.
+3. **Review**: update `draftedAt`, `reviewedAt`, and notes as the plan matures.
+4. **Implement**: carry out the work with the standard repository workflow and conventional commits.
 
 ## Standards
 
-- **Atomic**: One change per unit.
-- **Explicit**: Clear file boundaries.
+- **Atomic**: one coherent change per unit.
+- **Explicit**: clear file boundaries.
 - **Accurate**: precise summaries.

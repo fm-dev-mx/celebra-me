@@ -35,8 +35,7 @@ agent working in this repository.
 
 | Workflow | Use When |
 | :------- | :------- |
-| [`error-remediation`](./workflows/error-remediation.md) | a command, test, or gatekeeper check is failing and needs structured diagnosis |
-| [`gatekeeper-commit`](./workflows/gatekeeper-commit.md) | a plan-ready change is being committed under governance rules |
+| [`error-remediation`](./workflows/error-remediation.md) | a command, test, or validation check is failing and needs structured diagnosis |
 | [`plan-authoring`](./workflows/plan-authoring.md) | implementation or commit units need planning and validation |
 | [`system-doc-alignment`](./workflows/system-doc-alignment.md) | `.agent/`, `docs/`, or plan records may be stale |
 | [`theme-architecture-governance`](./workflows/theme-architecture-governance.md) | theme abstraction or section-level theme consistency must be validated |
@@ -59,7 +58,7 @@ agent working in this repository.
 | Visual or UI work | `README` + `GATEKEEPER_RULES.md` + `frontend-design` + `theme-architecture`; add `accessibility` when interaction or contrast changes |
 | Backend or data work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
 | Testing or regression work | `README` + `GATEKEEPER_RULES.md` + `testing` + the feature skill involved |
-| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `gatekeeper-commit` |
+| Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` |
 | Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `project-conventions`, then narrow |
 
 ## Portability Rule

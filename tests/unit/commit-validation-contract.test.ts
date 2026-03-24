@@ -3,10 +3,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 
-function lintMessage(
-	message: string,
-	env: Record<string, string> = {},
-): { status: number; stdout: string; stderr: string } {
+function lintMessage(message: string): { status: number; stdout: string; stderr: string } {
 	const tempDir = mkdtempSync(join(tmpdir(), 'commitlint-contract-'));
 	const tempFile = join(tempDir, 'COMMIT_EDITMSG');
 	writeFileSync(tempFile, `${message.trim()}\n`, 'utf8');
@@ -17,10 +14,7 @@ function lintMessage(
 			cwd: process.cwd(),
 			encoding: 'utf8',
 			shell: process.platform === 'win32',
-			env: {
-				...process.env,
-				...env,
-			},
+			env: process.env,
 		});
 		return {
 			status: result.status ?? 1,
@@ -32,123 +26,24 @@ function lintMessage(
 	}
 }
 
-function buildEnv(files: string[]) {
-	return {
-		COMMITLINT_STAGED_FILES: files.join('\n'),
-		COMMITLINT_PLAN_ID: 'commit-workflow-fixture',
-		COMMITLINT_UNIT_ID: 'retire-invitation-layers',
-		COMMITLINT_UNIT_VERB: 'retire',
-		COMMITLINT_UNIT_TARGET: 'invitation presenter layers',
-		COMMITLINT_UNIT_PURPOSE: 'collapse presenter indirection into page-data assembly',
-		COMMITLINT_UNIT_FILES_JSON: JSON.stringify(files),
-		COMMITLINT_UNIT_DOMAIN: 'core',
-	};
-}
-
 describe('Commit validation contract', () => {
-	it('rejects missing plan trailers', () => {
-		const files = [
-			'src/lib/invitation/page-data.ts',
-			'src/lib/presenters/invitation-presenter.ts',
-		];
-		const result = lintMessage(
-			`
-refactor(core): retire invitation presenter layers
-
-- collapse presenter indirection into page-data assembly
-- keep route rendering aligned with the same refactor
-
-Files:
-- src/lib/invitation/page-data.ts
-- src/lib/presenters/invitation-presenter.ts
-			`,
-			buildEnv(files),
-		);
-
-		expect(result.status).not.toBe(0);
-		expect(`${result.stdout}\n${result.stderr}`).toContain(
-			'planned commits must include Plan-Id and Commit-Unit trailers',
-		);
-	});
-
-	it('rejects subjects that do not match the selected commit unit', () => {
-		const files = [
-			'src/lib/invitation/page-data.ts',
-			'src/lib/presenters/invitation-presenter.ts',
-		];
-		const result = lintMessage(
-			`
-refactor(core): align invitation page data
-
-- collapse presenter indirection into page-data assembly
-- keep route rendering aligned with the same refactor
-
-Files:
-- src/lib/invitation/page-data.ts
-- src/lib/presenters/invitation-presenter.ts
-
-Plan-Id: commit-workflow-fixture
-Commit-Unit: retire-invitation-layers
-			`,
-			buildEnv(files),
-		);
-
-		expect(result.status).not.toBe(0);
-		expect(`${result.stdout}\n${result.stderr}`).toContain(
-			'subject must match planned commit unit subject',
-		);
-	});
-
-	it('rejects scope drift relative to the selected domain', () => {
-		const files = [
-			'src/lib/invitation/page-data.ts',
-			'src/lib/presenters/invitation-presenter.ts',
-		];
-		const result = lintMessage(
-			`
-refactor(auth): retire invitation presenter layers
-
-- collapse presenter indirection into page-data assembly
-- keep route rendering aligned with the same refactor
-
-Files:
-- src/lib/invitation/page-data.ts
-- src/lib/presenters/invitation-presenter.ts
-
-Plan-Id: commit-workflow-fixture
-Commit-Unit: retire-invitation-layers
-			`,
-			buildEnv(files),
-		);
-
-		expect(result.status).not.toBe(0);
-		expect(`${result.stdout}\n${result.stderr}`).toContain(
-			'scope must match planned unit domain "core"',
-		);
-	});
-
-	it('accepts valid planned commit messages with trailers', () => {
-		const files = [
-			'src/lib/invitation/page-data.ts',
-			'src/lib/presenters/invitation-presenter.ts',
-		];
-		const result = lintMessage(
-			`
-refactor(core): retire invitation presenter layers
-
-- collapse presenter indirection into page-data assembly
-- keep route rendering aligned with the same refactor
-
-Files:
-- src/lib/invitation/page-data.ts
-- src/lib/presenters/invitation-presenter.ts
-
-Plan-Id: commit-workflow-fixture
-Commit-Unit: retire-invitation-layers
-			`,
-			buildEnv(files),
-		);
+	it('accepts conventional commits with a concrete target', () => {
+		const result = lintMessage('refactor(core): retire invitation presenter layers');
 
 		expect(result.status).toBe(0);
+	});
+
+	it('rejects overly generic subjects', () => {
+		const result = lintMessage('refactor(core): update files');
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('subject target is too generic');
+	});
+
+	it('rejects process-language subjects', () => {
+		const result = lintMessage('chore(core): record changes');
+
+		expect(result.status).not.toBe(0);
+		expect(`${result.stdout}\n${result.stderr}`).toContain('subject must describe the change');
 	});
 });
