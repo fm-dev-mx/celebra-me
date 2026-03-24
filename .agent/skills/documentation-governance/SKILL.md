@@ -15,7 +15,7 @@ inputs:
 outputs:
     - Documentation structure guidance and alignment rules
 related_docs:
-    - docs/DOC_STATUS.md
+    - .agent/index.md
     - docs/core/project-conventions.md
 ---
 
@@ -29,14 +29,13 @@ This skill governs the **lifecycle and structure of documentation**. Its primary
 
 ## Documentation Structure (`docs/`)
 
-| Directory/File                     | Content Type                                                                             |
-| :--------------------------------- | :--------------------------------------------------------------------------------------- |
-| `docs/core/`                       | Evergreen architecture and cross-cutting policy docs.                                    |
-| `docs/domains/`                    | Domain docs for RSVP, theme, assets, content, security, and similar bounded areas.       |
-| `docs/architecture/`               | ADRs, architecture proposals, and evolution plans.                                       |
-| `docs/audit/`                      | Audit reports, historical logs, and gap analyses.                                        |
-| `docs/DOC_STATUS.md`               | **Source of Truth** for documentation health, active workflows, and active plans.        |
-| `docs/audit/implementation-log.md` | Historical execution log. Legacy path references are allowed when explicitly historical. |
+| Directory/File      | Content Type                                                                       |
+| :------------------ | :--------------------------------------------------------------------------------- |
+| `docs/core/`        | Evergreen architecture and cross-cutting policy docs.                              |
+| `docs/domains/`     | Domain docs for RSVP, theme, content, and similar bounded areas.                   |
+| `docs/archive/`     | Historical reports, superseded audits, and archived notes.                         |
+| `.agent/index.md`   | Active discovery index for workflows, skills, and canonical document entrypoints.  |
+| `.agent/plans/**`   | Active and archived executable plan records.                                       |
 
 ## Workflow Metadata Standards
 
@@ -58,18 +57,17 @@ When modifying code, you **MUST** update the corresponding documentation in the 
 
 1. **Business Logic Change**:
     - _If_ it changes the behavior described in an ADR or the Architecture doc.
-    - _Action_: Update `docs/core/architecture.md`, the matching `docs/domains/**` doc, or create a
-      new ADR under `docs/architecture/`.
+    - _Action_: Update `docs/core/architecture.md` and the matching `docs/domains/**` doc.
 
 2. **File Structure Change**:
     - _If_ moving core modules (e.g., `src/lib/rsvp` -> `src/lib/rsvp`).
-    - _Action_: Update `docs/core/architecture.md` and any affected dashboard entry in
-      `docs/DOC_STATUS.md`.
+    - _Action_: Update `docs/core/architecture.md`, `.agent/index.md`, and any affected active
+      plan record under `.agent/plans/`.
 
 3. **New Feature**:
     - _Action_: Create the doc under the correct subtree (`docs/domains/` for feature docs,
-      `docs/architecture/` for ADRs/proposals, `docs/audit/` for reports) and register it in
-      `docs/DOC_STATUS.md` when it becomes an active source of truth.
+      `docs/core/` for cross-cutting policy, `docs/archive/` for historical reports) and link it
+      from `.agent/index.md` when it becomes an active source of truth.
 
 ## Diagram Standards
 
@@ -106,7 +104,7 @@ When using Agent Mode artifacts (`task.md`, `implementation_plan.md`):
 
 Before considering a documentation task "Done":
 
-- [ ] Is the doc linked in `docs/DOC_STATUS.md`? (If new)
+- [ ] Is the doc linked from `.agent/index.md` or the relevant active source-of-truth doc? (If new)
 - [ ] Does it have a clear "Last Updated" date?
 - [ ] Are code references (filenames, variable names) accurate to the current codebase?
-- [ ] Is the doc stored in the correct subtree (`core`, `domains`, `architecture`, or `audit`)?
+- [ ] Is the doc stored in the correct subtree (`core`, `domains`, `archive`, or `.agent/`)?

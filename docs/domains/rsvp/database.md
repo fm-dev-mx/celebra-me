@@ -54,13 +54,6 @@ Create a new migration:
 pnpm db:migrate:new <migration_name>
 ```
 
-Remote runbook helper:
-
-```bash
-pnpm ops rsvp-db-remote-runbook
-# optional: pnpm ops rsvp-db-remote-runbook --project-ref <project_ref>
-```
-
 ## Staging / Production workflow
 
 1. Ensure remote project is linked (`supabase link --project-ref <ref>`).

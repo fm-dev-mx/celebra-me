@@ -46,7 +46,7 @@ This document outlines the testing philosophy and standards for the Celebra-me p
 pnpm test
 
 # Run a specific test file
-pnpm test tests/api/auth.test.ts
+pnpm test -- tests/api/auth.test.ts
 
 # Run E2E tests
 npx playwright test

@@ -1,0 +1,32 @@
+{
+  "id": "016-dead-weight-remediation",
+  "name": "Dead Weight Remediation",
+  "description": "Prune verified dead code and assets, then reconcile documentation and governance references surfaced by the repository dead weight audit.",
+  "status": "IN_PROGRESS",
+  "updatedAt": "2026-03-24T18:00:00Z",
+  "author": "Codex",
+  "complexity": "MEDIUM",
+  "lifecycle": "EPHEMERAL",
+  "phases": [
+    {
+      "id": "runtime-prune",
+      "name": "Runtime Prune",
+      "status": "IN_PROGRESS",
+      "description": "Remove unused components, helpers, and orphaned content outside the production tree."
+    },
+    {
+      "id": "asset-prune",
+      "name": "Asset Prune",
+      "status": "PLANNED",
+      "description": "Delete verified orphaned images and public icons after cross-checking local registries and text references."
+    },
+    {
+      "id": "docs-governance-reconcile",
+      "name": "Docs & Governance Reconcile",
+      "status": "PLANNED",
+      "description": "Update active docs and governance references so they match the current CLI, workflow, and test surfaces."
+    }
+  ],
+  "dependencies": ["013-lean-governance-overhaul"],
+  "notes": "Supersedes the unfinished cleanup intent from 015-dead-weight-audit without altering archived or historical plan state."
+}

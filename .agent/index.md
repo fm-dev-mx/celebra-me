@@ -7,8 +7,8 @@ agent working in this repository.
 
 1. Read [`README.md`](./README.md).
 2. Read [`GATEKEEPER_RULES.md`](./GATEKEEPER_RULES.md).
-3. Read [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md) for current repository, active-plan, and
-   documentation state.
+3. Read [`../docs/core/project-conventions.md`](../docs/core/project-conventions.md) for the active
+   repository conventions and structure.
 4. Load only the relevant skill, workflow, and domain docs for the active task.
 
 ## Mandatory Rules
@@ -43,8 +43,6 @@ agent working in this repository.
 
 ## Canonical Docs in `docs/`
 
-- [`../docs/DOC_STATUS.md`](../docs/DOC_STATUS.md): current documentation dashboard and active plan
-  inventory
 - [`../docs/core/project-conventions.md`](../docs/core/project-conventions.md): project-wide coding
   and structure conventions
 - [`../docs/core/architecture.md`](../docs/core/architecture.md): high-level architecture and
@@ -62,7 +60,7 @@ agent working in this repository.
 | Backend or data work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
 | Testing or regression work | `README` + `GATEKEEPER_RULES.md` + `testing` + the feature skill involved |
 | Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `gatekeeper-commit` |
-| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `DOC_STATUS`, then narrow |
+| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `project-conventions`, then narrow |
 
 ## Portability Rule
 

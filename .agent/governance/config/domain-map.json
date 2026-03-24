@@ -66,7 +66,7 @@
         "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
         "gov-plans-comprehensive-audit": [".agent/plans/comprehensive-audit-Q1-2026/**"],
         "gov-plans-all": [".agent/plans/**"],
-        "gov-workflows": [".agent/workflows/**", "docs/DOC_STATUS.md"],
+        "gov-workflows": [".agent/workflows/**", ".agent/index.md", ".agent/README.md"],
         "gov-scripts": [".agent/scripts/**"],
         "gov-infra": [
             ".husky/**",

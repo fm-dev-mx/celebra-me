@@ -220,7 +220,7 @@
             "requiredPaths": [
                 ".agent/governance/config/policy.json",
                 ".agent/governance/config/baseline.json",
-                ".agent/governance/bin/gatekeeper.mjs",
+                ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "commitlint.config.cjs"
             ]
         },
@@ -258,17 +258,16 @@
                 "src/pages/api/invitacion/**",
                 "src/middleware.ts"
             ],
-            "requiredAny": ["docs/domains/rsvp/architecture.md", "docs/domains/rsvp/status.md"]
+            "requiredAny": ["docs/domains/rsvp/architecture.md", "docs/domains/rsvp/database.md"]
         },
         {
             "id": "workflow-status-sync",
             "triggers": [".agent/workflows/**"],
-            "requiredAll": ["docs/DOC_STATUS.md"]
+            "requiredAll": [".agent/index.md", ".agent/README.md"]
         },
         {
             "id": "git-governance-sync",
             "triggers": [
-                ".agent/governance/bin/gatekeeper.mjs",
                 ".agent/governance/bin/gatekeeper-workflow.mjs",
                 "scripts/validate-commits.mjs",
                 ".agent/governance/config/domain-map.json",

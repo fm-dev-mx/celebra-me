@@ -40,11 +40,6 @@ When making decisions, agents must follow this order of precedence:
 
 Generic best practices must **never override** rules defined in this folder.
 
-`docs/DOC_STATUS.md` is a status dashboard and discovery aid. It is **not** the operational
-entrypoint.
-
----
-
 ## Missing or Incomplete Documentation
 
 Agents may encounter branches or states where one or more referenced documents are missing.
@@ -161,7 +156,7 @@ Use this matrix to avoid overloading context:
 | Visual or UI change | `README` + `GATEKEEPER_RULES.md` + relevant skill(s): `frontend-design`, `theme-architecture`, `accessibility` |
 | Backend, schema, or API work | `README` + `GATEKEEPER_RULES.md` + `backend-engineering` or `astro-patterns` + relevant domain docs |
 | Planning or commit governance | `README` + `GATEKEEPER_RULES.md` + `plan-authoring` or `gatekeeper-commit` + governance docs |
-| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `docs/DOC_STATUS.md`, then expand surgically |
+| Ambiguous task | `README` + `GATEKEEPER_RULES.md` + `docs/core/project-conventions.md`, then expand surgically |
 
 If a task is still ambiguous after that minimum load, expand to the nearest relevant workflow or
 domain doc rather than scanning the entire repository.
@@ -253,9 +248,7 @@ The current documentation taxonomy is:
 
 - `docs/core/` for evergreen architecture and policy
 - `docs/domains/` for domain- or feature-specific docs
-- `docs/architecture/` for proposals and evolution plans
-- `docs/audit/` for reports, inventories, and historical findings
-- `docs/DOC_STATUS.md` as the dashboard exception at the docs root
+- `docs/archive/` for historical reports, audits, and superseded notes
 
-Historical logs may exist under `docs/audit/` and can retain legacy path references when clearly
+Historical logs may exist under `docs/archive/` and can retain legacy path references when clearly
 marked as historical context.

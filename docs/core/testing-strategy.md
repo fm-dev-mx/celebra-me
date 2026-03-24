@@ -12,7 +12,7 @@ To maintain high quality and developer velocity, this project leverages **Husky*
 | Unit Tests      | Jest                         | Pure functions, utilities     |
 | Component Tests | Jest + React Testing Library | React components              |
 | Schema Tests    | Jest + Zod                   | Content collection validation |
-| Smoke Tests     | Node.js script               | Build artifact verification   |
+| Build Validation | Astro build                 | Route and asset verification  |
 | E2E Tests       | Playwright (future)          | Full user flows               |
 
 ## Running Tests
@@ -46,11 +46,10 @@ Coverage reports are generated in the `coverage/` directory:
 - `coverage/lcov-report/index.html` — Open in browser for detailed view
 - `coverage/lcov.info` — For CI integration
 
-### Smoke Test (after build)
+### Build Validation
 
 ```bash
 pnpm build
-pnpm ops smoke-test
 ```
 
 ## Test File Organization
@@ -184,7 +183,7 @@ Object.defineProperty(global, 'import', {
 
 | Component Type               | Why                                                           | Alternative                  |
 | ---------------------------- | ------------------------------------------------------------- | ---------------------------- |
-| Astro components (`.astro`)  | Server-rendered, no runtime JS                                | Smoke test or E2E            |
+| Astro components (`.astro`)  | Server-rendered, no runtime JS                                | Build validation or E2E      |
 | SCSS visual output           | Can't verify visual rendering                                 | Visual regression            |
 | Full page layouts            | Complex hydration                                             | E2E tests                    |
 | API routes (`src/pages/api`) | Supported via handler-level tests with mocked request/context | Jest integration-style tests |
@@ -198,15 +197,13 @@ Object.defineProperty(global, 'import', {
 | Content schemas             | 90%+     | —       |
 | Static components           | Optional | —       |
 
-## Smoke Test Checks
+## Build Validation Focus
 
-The enhanced `scripts/smoke-test.mjs` verifies:
+Use `pnpm build` as the post-change route and asset validation step when a task affects:
 
-1. **Required Files** — `index.html`, invitation pages, `_astro/` directory
-2. **Asset Bundles** — CSS and JS files in `_astro/`
-3. **Meta Tags** — `<title>`, description, Open Graph, viewport
-4. **SEO Files** — `robots.txt`, `sitemap-index.xml`
-5. **Optimized Images** — WebP/AVIF presence
+1. **Required routes** — invitation pages, dashboard routes, and generated output
+2. **Asset bundling** — CSS, JS, and optimized image output
+3. **Metadata** — `<title>`, description, Open Graph, and generated SEO artifacts
 
 ## CI/CD Integration
 

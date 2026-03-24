@@ -11,6 +11,7 @@
         "preview": "pnpm serve .vercel/output/static",
         "start": "astro preview",
         "astro": "astro",
+        "test": "jest",
         "type-check": "astro check",
         "turbo-all": "pnpm lint && pnpm type-check && pnpm test",
         "ci": "pnpm type-check && pnpm lint && pnpm test",

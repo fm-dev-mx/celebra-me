@@ -31,12 +31,13 @@ If a required path is missing, stop and report it.
 2. Compare active docs against live source, active plans, and executable owners.
 3. Create or update a dedicated plan under `.agent/plans/` when the work is more than a trivial doc fix.
 4. Prefer consolidation over adding new workflow documents.
-5. Update `docs/DOC_STATUS.md` whenever active plan inventory changes.
+5. Update `.agent/index.md`, `.agent/README.md`, or the affected active plan records whenever
+   workflow inventory or entrypoint guidance changes.
 6. After edits, run the relevant verification commands:
    - `pnpm astro check`
    - `pnpm lint`
    - `pnpm ops validate-schema`
-   - `pnpm ops check-links`
+   - `pnpm test -- --runInBand` when test-facing or runtime contracts changed
 
 ## Guardrails
 

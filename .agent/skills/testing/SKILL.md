@@ -51,7 +51,7 @@ tests/
 | `pnpm test -- --verbose`     | Verbose output          |
 | `pnpm test -- --watch`       | Watch mode              |
 | `pnpm test -- --coverage`    | Coverage report         |
-| `node scripts/smoke-test.js` | Post-build verification |
+| `pnpm build`                 | Build validation        |
 
 ## Test File Conventions
 
@@ -244,21 +244,15 @@ describe('Event Schema', () => {
 
 | Component Type              | Reason                         | Alternative       |
 | --------------------------- | ------------------------------ | ----------------- |
-| Astro components (`.astro`) | Server-rendered, no runtime JS | Smoke test or E2E |
+| Astro components (`.astro`) | Server-rendered, no runtime JS | Build validation or E2E |
 | SCSS visual output          | Can't verify visual rendering  | Visual regression |
 | Full page layouts           | Complex hydration              | E2E tests         |
 | API routes                  | Need server context            | Integration tests |
 | Browser-specific APIs       | Need real browser              | E2E tests         |
 
-## Smoke Test Checks
+## Build Validation
 
-The `scripts/smoke-test.js` validates build output:
-
-1. **Required Files** — `index.html`, invitation pages, `_astro/`
-2. **Asset Bundles** — CSS and JS files present
-3. **Meta Tags** — `<title>`, description, Open Graph, viewport
-4. **SEO Files** — `robots.txt`, `sitemap-index.xml`
-5. **Optimized Images** — WebP/AVIF presence
+Use `pnpm build` when a change affects route assembly, static assets, or metadata generation.
 
 ## E2E Testing (Future)
 
@@ -300,7 +294,7 @@ Before submitting a PR:
 - [ ] New utilities have corresponding tests
 - [ ] React components with state have tests
 - [ ] Coverage does not decrease
-- [ ] Smoke test passes after build
+- [ ] Build validation passes when route assembly or assets changed
 - [ ] No console errors in tests
 
 ## Coverage Thresholds

@@ -91,8 +91,9 @@ This project uses **automated agents** (e.g. a Gatekeeper) as part of the develo
 Start here if you are using agents:
 
 - `.agent/README.md`
+- `.agent/index.md`
 - `.agent/GATEKEEPER_RULES.md`
-- `.agent/PROJECT_CONVENTIONS.md`
+- `docs/core/project-conventions.md`
 
 ---
 
@@ -157,7 +158,7 @@ Run checks locally before committing:
 
 ```bash
 pnpm lint
-pnpm format
+pnpm exec prettier --check .
 pnpm type-check
 ```
 
@@ -175,13 +176,6 @@ pnpm test
 
 ```bash
 pnpm test -- --coverage
-```
-
-### Smoke Test (post-build)
-
-```bash
-pnpm build
-pnpm ops smoke-test
 ```
 
 For detailed testing documentation, see
@@ -204,12 +198,6 @@ pnpm db:migrate:new <migration_name>
 
 Operational guide: [`docs/domains/rsvp/database.md`](docs/domains/rsvp/database.md)
 
-Remote runbook helper:
-
-```bash
-pnpm ops rsvp-db-remote-runbook
-```
-
 ---
 
 ## Documentation
@@ -217,7 +205,6 @@ pnpm ops rsvp-db-remote-runbook
 - **Architecture**: `docs/core/architecture.md`
 - **RSVP DB Operations**: `docs/domains/rsvp/database.md`
 - **RSVP UI Operation (Admin Panel)**: `docs/domains/rsvp/database.md#client-facing-ui-operation`
-- **RSVP Operational Status**: `docs/domains/rsvp/status.md`
 - **Agent Rules**: `.agent/`
 
 Documentation is expected to evolve alongside the codebase.

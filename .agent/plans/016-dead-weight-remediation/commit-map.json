@@ -1,0 +1,127 @@
+{
+  "planId": "016-dead-weight-remediation",
+  "mode": "planned-commits",
+  "commitStrategyReview": {
+    "draftedAt": "2026-03-24T18:00:00Z",
+    "reviewedAt": "2026-03-24T18:00:00Z",
+    "readyForGatekeeperAt": "2026-03-24T18:05:00Z",
+    "notes": "Plan 016 supersedes the unfinished audit intent from plan 015 and groups the cleanup into runtime, asset, and governance documentation units."
+  },
+  "units": [
+    {
+      "id": "prune-runtime-dead-surface",
+      "phaseId": "runtime-prune",
+      "status": "ready",
+      "domain": "runtime",
+      "type": "chore",
+      "subject": {
+        "verb": "prune",
+        "target": "dead runtime surface"
+      },
+      "purpose": "remove unused components, dormant helpers, and orphaned non-collection content",
+      "correctionPolicy": "absorb-compatible",
+      "include": [
+        "src/components/common/actions/ActionWrapper.astro",
+        "src/components/common/actions/SocialMediaLinks.astro",
+        "src/components/dashboard/guests/WhatsAppInviteButton.tsx",
+        "src/assets/images/events/index.ts",
+        "src/content/archive/demo-gerardo-sesenta.json",
+        "src/lib/env-validation.ts",
+        "src/lib/rsvp/auth/mfa-setup.ts",
+        "src/lib/rsvp/core/http-client.ts",
+        "src/lib/rsvp/repositories/optimistic-lock.ts",
+        "src/lib/rsvp/repositories/soft-delete.ts",
+        "src/lib/rsvp/security/idempotency.ts",
+        "src/lib/rsvp/security/security-log.ts",
+        "tests/lib/rsvp-v2/mfa-setup.test.ts",
+        "tests/unit/event-assets-audit.test.ts"
+      ],
+      "messagePreview": {
+        "header": "chore(runtime): prune dead runtime surface",
+        "summary": [
+          "remove unused components and dormant RSVP helpers with no production reachability",
+          "delete orphaned archived content outside Astro collections",
+          "replace the stale asset audit test with coverage for the current event asset contract"
+        ]
+      }
+    },
+    {
+      "id": "prune-orphan-assets",
+      "phaseId": "asset-prune",
+      "status": "ready",
+      "domain": "assets",
+      "type": "chore",
+      "subject": {
+        "verb": "prune",
+        "target": "orphaned asset files"
+      },
+      "purpose": "delete unreferenced local images and public icons confirmed by the audit",
+      "correctionPolicy": "absorb-compatible",
+      "include": [
+        "public/icons/githubIcon.svg",
+        "public/icons/linkedInIcon.svg",
+        "src/assets/images/about/bg-about-desktop.jpg",
+        "src/assets/images/about/bg-about-mobile.jpg",
+        "src/assets/images/contact/bg-contact-desktop.jpg",
+        "src/assets/images/contact/bg-contact-mobile.jpg",
+        "src/assets/images/events/ximena-meza-trasvina/jardin.webp",
+        "src/assets/images/footer/dark-mode-rectangular-logo200x100.png",
+        "src/assets/images/testimonials/**"
+      ],
+      "messagePreview": {
+        "header": "chore(assets): prune orphaned asset files",
+        "summary": [
+          "delete unused backgrounds, footer artwork, and public social icons",
+          "remove the orphaned Ximena event image not imported by the live asset registry",
+          "retire the unused testimonial photo set from the source tree"
+        ]
+      }
+    },
+    {
+      "id": "reconcile-active-governance-docs",
+      "phaseId": "docs-governance-reconcile",
+      "status": "ready",
+      "domain": "docs",
+      "type": "docs",
+      "subject": {
+        "verb": "reconcile",
+        "target": "active governance docs"
+      },
+      "purpose": "align active documentation, scripts, and governance config with current commands and entrypoints",
+      "correctionPolicy": "absorb-compatible",
+      "include": [
+        ".agent/README.md",
+        ".agent/index.md",
+        ".agent/plans/016-dead-weight-remediation/CHANGELOG.md",
+        ".agent/plans/016-dead-weight-remediation/README.md",
+        ".agent/plans/016-dead-weight-remediation/commit-map.json",
+        ".agent/plans/016-dead-weight-remediation/manifest.json",
+        ".agent/plans/016-dead-weight-remediation/phases/01-runtime-prune.md",
+        ".agent/plans/016-dead-weight-remediation/phases/02-asset-prune.md",
+        ".agent/plans/016-dead-weight-remediation/phases/03-docs-governance-reconcile.md",
+        ".agent/plans/README.md",
+        ".agent/skills/documentation-governance/SKILL.md",
+        ".agent/skills/testing/SKILL.md",
+        ".agent/workflows/system-doc-alignment.md",
+        ".agent/governance/bin/ai-title-assist.mjs",
+        ".agent/governance/config/policy.json",
+        ".agent/governance/config/domain-map.json",
+        "docs/core/testing-strategy.md",
+        "docs/domains/rsvp/database.md",
+        "README.md",
+        "package.json",
+        "scripts/README.md",
+        "scripts/cli.mjs",
+        "tests/README.md"
+      ],
+      "messagePreview": {
+        "header": "docs(docs): reconcile active governance docs",
+        "summary": [
+          "align active docs, governance config, and live plan records with current commands and entrypoints",
+          "restore a working test command in package scripts and align test guidance around it",
+          "document the current workflow and asset validation entrypoints without rewriting archived records"
+        ]
+      }
+    }
+  ]
+}
