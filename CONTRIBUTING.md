@@ -36,19 +36,21 @@ Please follow these steps to have your contribution considered by the maintainer
 
 1. Fork the repository.
 2. Create a branch from the `main` branch for your feature (`git checkout -b feature-name`).
-    > [!IMPORTANT] Direct commits to the `main` branch are blocked by a Git hook. Always use a
-    > feature branch.
+   > [!IMPORTANT] Direct commits to the `main` branch are blocked by a Git hook. Always use a
+   > feature branch.
 3. Make your changes, ensuring that you follow the coding style guidelines (below).
 4. Commit your changes (`git commit -m 'feat: add some feature'`).
-    > [!NOTE] We use **Conventional Commits** (e.g., `feat:`, `fix:`, `chore:`). Commits are
-    > validated using **Commitlint**.
+   > [!NOTE] We use **Conventional Commits** with a required scope. See
+   > [`docs/core/git-governance.md`](docs/core/git-governance.md) for the full commit policy,
+   > including atomic-commit expectations and commit-body guidance.
 5. Push to the branch (`git push origin feature-name`).
-    > [!TIP] A `pre-push` hook will run type-checking and tests to ensure stability before
-    > uploading.
+   > [!TIP] A `pre-push` hook runs audit-only commit validation so you can review commit-quality
+   > warnings before opening a pull request.
 6. Create a new pull request, following the pull request template provided.
 
 > [!NOTE] This project uses **Husky** and **lint-staged** to ensure code quality. A pre-commit hook
-> will automatically run linting and formatting on your staged files.
+> blocks direct commits to protected branches and runs staged-file checks before the commit is
+> created.
 
 ### Coding Style
 
@@ -59,7 +61,8 @@ Please follow these coding standards:
 - **Linting**: Use ESLint for identifying and reporting on patterns in JavaScript. The configuration
   is already set up in `eslint.config.js` (ESLint flat config).
 - **Type Safety**: Ensure type safety with TypeScript.
-- **Commit Messages**: Follow conventional commits for your commit messages.
+- **Commit Messages**: Follow the commit policy in
+  [`docs/core/git-governance.md`](docs/core/git-governance.md).
 
 ### Development Environment
 
@@ -68,28 +71,28 @@ To set up the development environment:
 1. Ensure you have the latest LTS version of Node.js installed.
 2. Use pnpm as the package manager. Install pnpm if you don't have it installed:
 
-    ```bash
-    pnpm install -g pnpm
-    ```
+   ```bash
+   pnpm install -g pnpm
+   ```
 
 3. Clone the repository:
 
-    ```bash
-    git clone https://github.com/fm-dev-mx/celebra-me.git
-    cd celebra-me
-    ```
+   ```bash
+   git clone https://github.com/fm-dev-mx/celebra-me.git
+   cd celebra-me
+   ```
 
 4. Install dependencies:
 
-    ```bash
-    pnpm install
-    ```
+   ```bash
+   pnpm install
+   ```
 
 5. Run the development server:
 
-    ```bash
-    pnpm dev
-    ```
+   ```bash
+   pnpm dev
+   ```
 
 ### Testing Requirements
 
@@ -97,28 +100,28 @@ Before submitting a pull request, ensure:
 
 1. **All tests pass**:
 
-    ```bash
-    pnpm test
-    ```
+   ```bash
+   pnpm test
+   ```
 
 2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to
    verify:
 
-    ```bash
-    pnpm test -- --coverage
-    ```
+   ```bash
+   pnpm test -- --coverage
+   ```
 
 3. **Linting passes**:
 
-    ```bash
-    pnpm lint
-    ```
+   ```bash
+   pnpm lint
+   ```
 
 4. **Types are valid**:
 
-    ```bash
-    pnpm type-check
-    ```
+   ```bash
+   pnpm type-check
+   ```
 
 For detailed testing guidelines, see
 [`docs/core/testing-strategy.md`](docs/core/testing-strategy.md).

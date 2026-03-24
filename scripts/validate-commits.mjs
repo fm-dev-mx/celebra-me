@@ -6,6 +6,12 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import process from 'process';
 
+const MULTI_FILE_BODY_THRESHOLD = 3;
+const BROAD_COMMIT_THRESHOLD = 10;
+const TOP_LEVEL_AREAS = new Set(['src', 'docs', 'tests', 'supabase', 'public', '.github']);
+const ROOT_CONFIG_PATTERN =
+	/^(?:package\.json|pnpm-lock\.yaml|tsconfig(?:\..+)?\.json|eslint\.config\.js|commitlint\.config\.cjs|astro\.config\.mjs|jest\.config\.cjs|playwright\.config\.ts|vercel\.json|README\.md|CONTRIBUTING\.md)$/;
+
 function run(cmd, args, options = {}) {
 	const isWin = process.platform === 'win32';
 	const result = spawnSync(cmd, args, {
@@ -54,6 +60,91 @@ function validateCommitMessage(message, commitHash) {
 	}
 }
 
+function getCommitBody(fullMessage) {
+	const lines = String(fullMessage || '').split(/\r?\n/);
+	const bodyLines = lines.slice(1);
+
+	while (bodyLines.length > 0 && !bodyLines[0].trim()) {
+		bodyLines.shift();
+	}
+
+	while (bodyLines.length > 0 && !bodyLines.at(-1)?.trim()) {
+		bodyLines.pop();
+	}
+
+	return bodyLines.join('\n').trim();
+}
+
+function hasBulletStructuredBody(body) {
+	return body.split(/\r?\n/).some((line) => /^\s*[-*]\s+\S+/.test(line));
+}
+
+function getChangedFiles(commitHash) {
+	const result = run('git', [
+		'diff-tree',
+		'--no-commit-id',
+		'--name-only',
+		'--root',
+		'-r',
+		commitHash,
+	]);
+	if (result.status !== 0) return [];
+	return result.stdout
+		? result.stdout
+				.split('\n')
+				.map((line) => line.trim())
+				.filter(Boolean)
+		: [];
+}
+
+function classifyPathArea(filePath) {
+	const normalizedPath = String(filePath || '').replace(/\\/g, '/');
+	const [topLevel] = normalizedPath.split('/');
+	if (!topLevel) return 'unknown';
+	if (TOP_LEVEL_AREAS.has(topLevel)) return topLevel;
+	if (!normalizedPath.includes('/') && ROOT_CONFIG_PATTERN.test(normalizedPath))
+		return 'root-config';
+	if (!normalizedPath.includes('/')) return 'repo-root';
+	return 'other';
+}
+
+function collectAuditWarnings(commit) {
+	const changedFiles = getChangedFiles(commit.hash);
+	const body = getCommitBody(commit.full);
+	const changedAreas = [...new Set(changedFiles.map(classifyPathArea))];
+	const warnings = [];
+
+	if (changedFiles.length >= MULTI_FILE_BODY_THRESHOLD && !body) {
+		warnings.push(
+			`commit touches ${changedFiles.length} files but has no body; describe the relevant file or module changes`,
+		);
+	}
+
+	if (
+		changedFiles.length >= MULTI_FILE_BODY_THRESHOLD &&
+		body &&
+		!hasBulletStructuredBody(body)
+	) {
+		warnings.push(
+			`commit touches ${changedFiles.length} files but the body is not bullet-structured; use bullets per file or coherent module`,
+		);
+	}
+
+	if (changedAreas.length >= 3) {
+		warnings.push(
+			`commit spans multiple repository areas (${changedAreas.join(', ')}); check that it is still atomic`,
+		);
+	}
+
+	if (changedFiles.length >= BROAD_COMMIT_THRESHOLD) {
+		warnings.push(
+			`commit changes ${changedFiles.length} files; this is likely too broad for an atomic commit`,
+		);
+	}
+
+	return { changedFiles, warnings };
+}
+
 function validateCommit(commitHash) {
 	console.log(`\nChecking commit: ${commitHash}`);
 	const commit = getCommitMessage(commitHash);
@@ -69,7 +160,16 @@ function validateCommit(commitHash) {
 		return false;
 	}
 
+	const audit = collectAuditWarnings({ ...commit, hash: commitHash });
+
 	console.log(`  Subject: ${commit.subject}`);
+	if (audit.warnings.length > 0) {
+		for (const warning of audit.warnings) {
+			console.warn(`  ⚠️  ${warning}`);
+		}
+		console.log('  ⚠️  Commit passed hard validation with audit warnings');
+		return false;
+	}
 	console.log('  ✅ Commit valid');
 	return true;
 }

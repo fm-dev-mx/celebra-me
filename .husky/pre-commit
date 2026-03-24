@@ -16,4 +16,4 @@ if [ "$current_branch" = "main" ] || [ "$current_branch" = "develop" ]; then
 fi
 
 echo "🛡️ Running pre-commit checks..."
-pnpm lint
+pnpm lint-staged
