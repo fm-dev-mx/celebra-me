@@ -531,7 +531,10 @@ function commitCommand(args) {
 		console.log('🔍 Auto-resolving plan/unit from staged files...');
 		const commitPlanning = discoverCommitPlanning({
 			repoRootPath: context.root,
-			planId: planId || discoverCommitPlanning({ repoRootPath: context.root, diffEntries: stagedEntries }).planId, // Simplified for brevity
+			planId:
+				planId ||
+				discoverCommitPlanning({ repoRootPath: context.root, diffEntries: stagedEntries })
+					.planId, // Simplified for brevity
 			diffEntries: stagedEntries,
 		});
 		if (commitPlanning.status === 'matched_unit') {
