@@ -23,13 +23,16 @@ This workflow automates the inspection, staging, and committing of code changes 
 
 ## Maintenance Mode (Fast-Track)
 
-For small fixes (chore, docs, fix) that don't need a plan:
+For small fixes (chore, docs, fix) that don't need a formal plan:
 
-1. Create a conventional commit manually or via CLI.
-2. Add the following trailer to the body:
-   ```text
-   Maintenance: true
+1. Stage your changes as usual.
+2. Run the maintenance commit command:
+
+   ```bash
+   pnpm gatekeeper:commit -- --maintenance --unit "type(scope): message"
    ```
+
+_This performs an audit-only pass and automatically appends the `Maintenance: true` trailer._
 
 ## Output Contract
 

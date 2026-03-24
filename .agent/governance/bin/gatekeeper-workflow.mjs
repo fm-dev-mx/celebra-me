@@ -292,8 +292,6 @@ function writeS0(args, payload) {
 	writeAtomicJson(args.s0File, payload);
 }
 
-
-
 function ensureSelectedUnit(session, args) {
 	if (!args.unit) fail(`The ${args.command} command requires --unit <id>.`);
 	if (session.commitPlanning?.status !== 'matched_unit') {
