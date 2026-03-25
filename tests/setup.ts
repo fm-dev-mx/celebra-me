@@ -70,10 +70,22 @@ if (typeof global.Headers === 'undefined' && typeof globalThis.Headers !== 'unde
 
 /**
  * Environment variables for tests.
- * Note: `import.meta.env` is a Vite/Astro compile-time construct and cannot be
- * reliably "globally" mocked at runtime. Prefer a small env accessor in your
- * app code that falls back to `process.env` in Node/test environments.
+ * Standardizing import.meta.env mock for Vite/Astro compatibility in Jest.
  */
+Object.defineProperty(global, 'import', {
+	value: {
+		meta: {
+			env: {
+				SENDGRID_API_KEY: 'test-api-key',
+				EMAIL_TO: 'test@example.com',
+				EMAIL_FROM: 'noreply@test.com',
+				...process.env,
+			},
+		},
+	},
+	configurable: true,
+});
+
 process.env.GMAIL_USER ??= 'test@gmail.com';
 process.env.GMAIL_PASS ??= 'test-pass';
 process.env.CONTACT_FORM_RECIPIENT_EMAIL ??= 'recipient@test.com';
