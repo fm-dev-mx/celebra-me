@@ -5,7 +5,7 @@ import {
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
 import { GET as getInvitationContext } from '@/pages/api/invitacion/[inviteId]/context';
 import { POST as postInvitationRsvp } from '@/pages/api/invitacion/[inviteId]/rsvp';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 describe('RSVP v2 endpoint baseline', () => {
 	it('rejects dashboard list without host session', async () => {

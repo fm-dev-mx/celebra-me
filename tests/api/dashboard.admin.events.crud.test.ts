@@ -7,7 +7,7 @@ import {
 	updateEventAdmin,
 } from '@/lib/rsvp/services/event-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),

@@ -3,7 +3,7 @@ import { GET as getDashboardGuests } from '@/pages/api/dashboard/guests';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireHostSession, getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { buildHostLoginRedirect } from '@/lib/rsvp/auth/login';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),

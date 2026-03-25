@@ -2,7 +2,7 @@ import { GET } from '@/pages/api/dashboard/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { listHostEvents } from '@/lib/rsvp/services/event-admin.service';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),

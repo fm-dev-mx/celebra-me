@@ -3,7 +3,7 @@ import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[user
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { listAdminUsers, changeUserRoleAdmin } from '@/lib/rsvp/services/user-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 // Mock funciones de seguridad admin
 jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({

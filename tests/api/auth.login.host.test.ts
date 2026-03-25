@@ -3,7 +3,7 @@ import { POST as loginHost } from '@/pages/api/auth/login-host';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as rateLimitProvider from '@/lib/rsvp/security/rate-limit-provider';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),

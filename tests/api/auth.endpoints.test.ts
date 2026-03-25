@@ -9,7 +9,7 @@ import {
 	ensureUserRole,
 } from '@/lib/rsvp/services/auth-access.service';
 import { getHostSessionFromRequest } from '@/lib/rsvp/auth/auth';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),

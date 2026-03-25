@@ -2,6 +2,7 @@ import { GET, POST } from '@/pages/api/dashboard/guests';
 import { PATCH, DELETE } from '@/pages/api/dashboard/guests/[guestId]';
 import { POST as markShared } from '@/pages/api/dashboard/guests/[guestId]/mark-shared';
 import { getSessionContextFromRequest, requireHostSession } from '@/lib/rsvp/auth/auth';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	createDashboardGuest,
 	deleteDashboardGuest,
@@ -9,14 +10,14 @@ import {
 	markGuestShared,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
 	getSessionContextFromRequest: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	listDashboardGuests: jest.fn(),
 	createDashboardGuest: jest.fn(),
 	updateDashboardGuest: jest.fn(),
@@ -185,5 +186,26 @@ describe('dashboard guests happy path', () => {
 			request: createMockRequest(),
 		} as never);
 		expect(deleteResp.status).toBe(200);
+	});
+
+	it('returns 403 when host tries to access another owner event', async () => {
+		getSessionContextFromRequestMock.mockResolvedValue({
+			userId: 'host-a',
+			email: 'a@test.com',
+			accessToken: 'token-a',
+			role: 'host_client',
+			isSuperAdmin: false,
+		});
+		listDashboardGuestsMock.mockRejectedValue(
+			new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.'),
+		);
+
+		const response = await GET({
+			request: createMockRequest(),
+			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-b'),
+		} as never);
+		expect(response.status).toBe(403);
+		const body = (await response.json()) as { error: { code: string } };
+		expect(body.error.code).toBe('forbidden');
 	});
 });

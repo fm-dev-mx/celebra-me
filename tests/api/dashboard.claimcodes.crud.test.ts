@@ -11,7 +11,7 @@ import {
 	disableClaimCodeAdmin,
 } from '@/lib/rsvp/services/claim-code-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 // Mock funciones de seguridad admin
 jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({

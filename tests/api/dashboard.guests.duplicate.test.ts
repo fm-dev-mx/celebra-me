@@ -6,7 +6,7 @@ import {
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 import { mockAdminSecurityPass } from '../helpers/mock-admin-security';
 
 // Mock funciones de seguridad

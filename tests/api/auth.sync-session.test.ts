@@ -1,7 +1,7 @@
 import type { APIContext } from 'astro';
 import { POST as syncSession } from '@/pages/api/auth/sync-session';
 import * as auth from '@/lib/rsvp/auth/auth';
-import { createMockRequest } from './rsvp.helpers';
+import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	getHostSessionFromRequest: jest.fn(),
