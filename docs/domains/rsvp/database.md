@@ -1,178 +1,123 @@
-# RSVP Database (Supabase)
+# RSVP Database Operations
 
-This document defines how RSVP database schema is created, evolved, and operated for `celebra-me`.
+**Last Updated:** 2026-03-24
+
+This document describes the active Supabase schema and operational workflow for the RSVP domain.
 
 ## Scope
 
-The RSVP backend persists data in Supabase through PostgREST using `SUPABASE_SERVICE_ROLE_KEY`. The
-schema includes:
+The RSVP backend persists data in Supabase and is implemented through the repositories and services
+under `src/lib/rsvp/**`.
 
-- `public.rsvp_records`
-- `public.rsvp_audit_log`
-- `public.rsvp_channel_log`
-- `public.host_profiles` (v2)
-- `public.events` (v2)
-- `public.guest_invitations` (v2)
-- `public.guest_invitation_audit` (v2)
+Current tables documented by the live code and migrations include:
 
-## Migration strategy
+- `host_profiles`
+- `events`
+- `guest_invitations`
+- `guest_invitation_audit`
+- `app_user_roles`
+- `event_memberships`
+- `event_claim_codes`
+- legacy compatibility tables: `rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`
 
-Schema changes are versioned in `supabase/migrations` and applied in order.
+## Migration Baseline
 
-Current baseline:
+Current migrations under `supabase/migrations/`:
 
 - `20260215000100_rsvp_init.sql`
 - `20260215000200_rsvp_hardening.sql`
 - `20260215000300_rsvp_v2_core.sql`
 - `20260215000400_rsvp_v2_rls.sql`
+- `20260215000500_rsvp_v2_audit_atomicity.sql`
+- `20260215000600_rsvp_v2_auth_claims_membership.sql`
+- `20260215000700_rsvp_v2_claim_code_global_unique.sql`
+- `20260215000800_superadmin_hardening.sql`
+- `20260215000900_claim_code_atomic_rpc.sql`
+- `20260216095500_add_manual_entry_source.sql`
+- `20260216133000_make_phone_nullable.sql`
+- `20260220000000_add_soft_delete.sql`
+- `20260221000000_add_soft_delete_columns.sql`
+- `20260225000000_dashboard_optimization.sql`
+- `20260226000000_add_short_id.sql`
+- `20260226000001_touch_schema.sql`
 
-Do not apply ad-hoc SQL directly in production without creating a migration file first.
+Do not patch production with ad-hoc SQL outside a migration unless the change is part of a
+controlled incident response.
 
-## Local workflow
+## Local Workflow
 
 Prerequisites:
 
-- Docker running
-- Supabase CLI available in PATH (`supabase ...`)
+- Docker
+- Supabase CLI available on `PATH`
 
 Commands:
 
 ```bash
 pnpm db:start
 pnpm db:push
-```
-
-Reset local database:
-
-```bash
 pnpm db:reset:local
-```
-
-Create a new migration:
-
-```bash
 pnpm db:migrate:new <migration_name>
 ```
 
-## Staging / Production workflow
+## Active URL Patterns Backed By The Schema
 
-1. Ensure remote project is linked (`supabase link --project-ref <ref>`).
-2. Apply migrations:
+- direct invite URL: `/{eventType}/{slug}/invitado?invite={inviteId}`
+- short invite URL: `/{eventType}/{slug}/i/{shortId}`
+- guest APIs: `/api/invitacion/:inviteId/context`, `/rsvp`, `/view`
+- host dashboard page: `/dashboard/invitados`
+- host dashboard APIs: `/api/dashboard/**`
 
-```bash
-pnpm db:push
-```
+The live tree does not expose `/admin/rsvp` or `/api/rsvp/*` as active operational surfaces.
 
-3. Run RSVP API smoke tests:
+## Data Model Notes
 
-- submit confirmed RSVP
-- submit declined RSVP
-- admin list and CSV export
-- channel telemetry event
+### Canonical Host Dashboard Model
 
-SQL verification queries:
+`events` + `guest_invitations` is the active model for dashboard guest management.
 
-- `supabase/verification/rsvp_schema_checks.sql`
+- `events.owner_user_id` maps host ownership to `auth.users(id)`.
+- `guest_invitations.invite_id` is the public invitation identifier used by the guest APIs.
+- `guest_invitations.short_id` supports short invitation URLs.
+- `guest_invitation_audit` stores lifecycle events such as `created`, `viewed`, `shared`, and RSVP
+  state changes.
 
-### Connectivity note (Windows environments)
+### Legacy Compatibility Tables
 
-If CLI commands fail with `127.0.0.1:9` proxy errors, clear proxy variables for the current session
-before running Supabase commands:
+`rsvp_records`, `rsvp_audit_log`, and `rsvp_channel_log` remain in the schema for compatibility and
+transition support. They are not the primary dashboard source of truth.
 
-```powershell
-$env:ALL_PROXY=''; $env:HTTP_PROXY=''; $env:HTTPS_PROXY=''; $env:GIT_HTTP_PROXY=''; $env:GIT_HTTPS_PROXY='';
-```
+## Security Model
 
-## Data model notes
+- RLS is enabled for the v2 tables.
+- Public guest flows are invite-scoped and run through server APIs.
+- Elevated dashboard operations depend on authenticated session state plus repository-level auth and
+  MFA safeguards.
+- Service-role access is still present in parts of the implementation and remains a documented
+  tradeoff in the current codebase.
 
-### v2 guest management model
+## Environment Variables
 
-`events` + `guest_invitations` is the canonical model for host dashboard guest management.
-
-- `events.owner_user_id` maps ownership to `auth.users(id)`.
-- `guest_invitations.invite_id` is the public UUID used in `/invitacion/{inviteId}`.
-- `guest_invitation_audit` stores lifecycle events (`created`, `viewed`, `status_changed`, etc).
-
-Legacy tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`) remain in place during
-transition and are not removed by v2 migrations.
-
-### `rsvp_records`
-
-- `store_key` is primary key and conflict key for upsert.
-- `rsvp_id` is unique business id.
-- Business check enforced in DB:
-    - `declined` requires `attendee_count = 0`
-    - `confirmed` requires `attendee_count >= 1`
-- `last_updated_at` is maintained by trigger as safety net.
-
-### `rsvp_audit_log`
-
-- References `rsvp_records(rsvp_id)` with `on delete cascade`.
-
-### `rsvp_channel_log`
-
-- References `rsvp_records(rsvp_id)` with `on delete cascade`.
-
-## Security model
-
-RLS is enabled and forced on all RSVP tables.
-
-- `anon`: denied
-- `authenticated`: denied
-- access is backend-only using `SUPABASE_SERVICE_ROLE_KEY`
-
-This protects RSVP data from accidental client-side exposure.
-
-For v2 tables:
-
-- `events`: authenticated users can CRUD only rows where `owner_user_id = auth.uid()`.
-- `guest_invitations`: authenticated users can CRUD only invitations belonging to their own events.
-- `guest_invitation_audit`: authenticated users can read only audit events tied to owned events.
-
-## Client-facing UI operation
-
-The non-technical RSVP workflow is available from:
-
-- `/admin/rsvp` (Basic Auth required)
-
-From this panel, operators can:
-
-- Load personalized invitation links from configured guests in event content.
-- Copy/open a generic event link.
-- Open WhatsApp deeplinks with prefilled invitation message.
-- Monitor RSVP responses and export CSV in the same screen.
-
-Admin-only link generation API used by the panel:
-
-- `GET /api/rsvp/invitations?eventSlug=<slug>` (Basic Auth required)
-
-New host dashboard (v2):
-
-- `/dashboard/invitados` (Supabase Auth required)
-- APIs under `/api/dashboard/guests/*`
-- Guest public APIs under `/api/invitacion/*`
-
-## Required environment variables
+The repo currently types and documents these RSVP/Supabase-related variables:
 
 - `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `PUBLIC_SUPABASE_URL`
+- `PUBLIC_SUPABASE_ANON_KEY`
 - `RSVP_TOKEN_SECRET`
-- `RSVP_ADMIN_USER`
-- `RSVP_ADMIN_PASSWORD`
+- `RSVP_CLAIM_CODE_PEPPER`
+- `TRUST_DEVICE_SECRET`
+- `TRUST_DEVICE_MAX_AGE_DAYS`
 
-## Rollback checklist (basic)
+Legacy compatibility variables such as `RSVP_ADMIN_USER` and `RSVP_ADMIN_PASSWORD` still exist in
+`src/env.d.ts` and `.env.example`, but they do not correspond to an active `/admin/rsvp` route in
+the live tree.
 
-1. Identify last migration that introduced issue.
-2. Create a new forward-fix migration (preferred) instead of manual revert.
-3. If rollback is unavoidable:
+## Suggested Verification
 
-- snapshot affected tables
-- run targeted SQL revert in controlled window
-- re-run RSVP smoke tests
-- verify admin/export responses and data integrity
+Use current tests that map to the live surface, for example:
 
-## Operational checks
-
-- `pnpm test -- --runInBand tests/api/rsvp.context.test.ts tests/api/rsvp.post-canonical.test.ts tests/api/rsvp.channel.test.ts tests/api/rsvp.admin.test.ts tests/api/rsvp.export.test.ts tests/api/rsvp.invitations.test.ts`
-- Verify `/api/rsvp/admin`, `/api/rsvp/export.csv`, and `/api/rsvp/invitations` require Basic Auth
-- Confirm data remains after process restart
+```bash
+pnpm test -- tests/api/dashboard.guests.happy.test.ts tests/api/dashboard.guests.export.test.ts tests/api/invitacion.context.happy.test.ts tests/api/invitacion.rsvp.happy.test.ts
+```

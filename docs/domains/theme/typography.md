@@ -1,47 +1,44 @@
 # Typography System
 
-This document defines the active typography stack and how it is loaded.
+**Last Updated:** 2026-03-24
 
-## Loaded Fonts (Runtime)
+This document defines the active typography stack loaded by `src/layouts/Layout.astro`.
 
-`src/layouts/Layout.astro` loads eight families:
+## Loaded Runtime Families
 
-1. Cinzel (`@fontsource-variable/cinzel`)
-2. Playfair Display (`@fontsource-variable/playfair-display`)
-3. Pinyon Script (`@fontsource/pinyon-script`)
-4. EB Garamond (`@fontsource-variable/eb-garamond`)
-5. Montserrat (`@fontsource-variable/montserrat`)
-6. Cormorant Garamond (`@fontsource-variable/cormorant-garamond`)
-7. Special Elite (`@fontsource/special-elite`)
-8. Rye (`@fontsource/rye`)
+`Layout.astro` currently loads ten font families:
+
+1. Cinzel
+2. Playfair Display
+3. Pinyon Script
+4. EB Garamond
+5. Montserrat
+6. Cormorant Garamond
+7. Bodoni Moda
+8. The Nautigal
+9. Special Elite
+10. Rye
 
 ## Core Roles
 
-Primary tokens still map to the Core 5 roles:
-
 - Display Formal: Cinzel
 - Display Elegant: Playfair Display
-- Calligraphy: Pinyon Script
+- Display Hacienda: Cormorant Garamond
+- Display Editorial: Bodoni Moda
+- Calligraphy: Pinyon Script and The Nautigal
 - Body Narrative: EB Garamond
 - UI/Functional: Montserrat
-
-Additional families (`Cormorant Garamond`, `Special Elite`, `Rye`) are loaded for preset-specific
-accents and fallback stylization.
+- Accent/ornamental fallbacks: Special Elite and Rye
 
 ## Token Sources
 
-- SCSS token source: `src/styles/tokens/_typography.scss`
-- Global CSS variables: `src/styles/global.scss`
-
-## Usage Rules
-
-- Use token-based CSS variables (`--font-*`) in component/theme styles.
-- Do not hardcode raw font family names in section styles.
-- If adding/removing loaded fonts, update both this doc and `Layout.astro` in the same PR.
+- Authoring aliases: `src/styles/tokens/_typography.scss`
+- Semantic/runtime type tokens: `src/styles/tokens/semantic/_type.scss`
+- Runtime CSS variables consumed by components: `src/styles/global.scss`
 
 ## Runtime Variable Surface
 
-The runtime typography variables exposed by `src/styles/global.scss` now include:
+Current runtime typography variables include:
 
 - `--font-display`
 - `--font-display-formal`
@@ -53,9 +50,9 @@ The runtime typography variables exposed by `src/styles/global.scss` now include
 - `--font-body-hacienda`
 - `--font-ui`
 
-Preset-sensitive invitation sections should consume these CSS variables instead of direct
-`tokens.$font-*` values when the chosen preset can change the rendered font stack at runtime.
+## Usage Rules
 
----
-
-**Last Updated:** 2026-03-16 (Phase 03 Q1 2026 Audit Sync)
+- Use the `--font-*` CSS variables in theme-sensitive component styles.
+- Do not hardcode raw font-family declarations inside invitation section styles when a runtime token
+  already exists.
+- If the loaded font list changes, update this doc and `src/layouts/Layout.astro` in the same task.

@@ -1,413 +1,77 @@
 # Content Collections
 
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-24
 
-This document was moved from the docs root during the March 10, 2026 system-wide alignment audit to
-live under the `content` domain taxonomy.
+Celebra-me uses Astro content collections for routable events, showcase demos, and internal
+templates.
 
-Content collections are the foundation of Celebra-me's event system. Each invitation is defined as a
-JSON file, validated by a Zod schema at build time, and rendered dynamically through Astro's content
-collection API.
+## Source of Truth
 
-## Overview
+- Collection registration: `src/content/config.ts`
+- Canonical schema assembly: `src/lib/schemas/content/base-event.schema.ts`
+- Related modular schemas: `src/lib/schemas/content/**`
+- Routable collection resolution: `src/lib/content/events.ts`
 
-**Purpose**: Define and configure digital invitations with type-safe, validated data structures.
+## Active Collections
 
-**Key Features**:
+| Collection        | Path                             | Purpose                        |
+| ----------------- | -------------------------------- | ------------------------------ |
+| `events`          | `src/content/events/**`          | live routable events           |
+| `event-demos`     | `src/content/event-demos/**`     | public showcase demos          |
+| `event-templates` | `src/content/event-templates/**` | internal templates and masters |
 
-- **Type Safety**: Full TypeScript support with Zod schema validation
-- **Build-time Validation**: Errors caught before deployment
-- **Multi-event Support**: Quinceaneras, Weddings, Baptisms, Birthdays
-- **Theme Integration**: Connects to the Aesthetic Presets system
-- **Asset Management**: Seamless integration with AssetRegistry
+Only `events` and `event-demos` are routable through the public invitation routes.
 
-**Collection Layout**:
+## Event Type Contract
 
-- `src/content/events/*.json` for live routable events
-- `src/content/event-demos/**.json` for public showcase demos
-- `src/content/event-templates/**.json` for internal master templates
+The active event types come from `src/lib/theme/theme-contract.ts`:
 
----
+- `xv`
+- `boda`
+- `bautizo`
+- `cumple`
 
-## Event Types
+## Theme Contract
 
-### Quinceanera (`xv`)
+Theme presets come from `src/lib/theme/theme-contract.ts`:
 
-Quinceanera celebrations marking a young woman's 15th birthday.
+- `jewelry-box`
+- `jewelry-box-wedding`
+- `luxury-hacienda`
+- `top-premium-floral`
+- `editorial`
 
-**Characteristics**:
+Section variant enums come from `src/lib/theme/theme-variants.ts`.
 
-- Formal, milestone celebration
-- Typically uses `jewelry-box` preset for elegance
-- Full ceremony/reception structure common
-- Extended family and godparents featured prominently
+## Routing Rules
 
-### Wedding (`boda`)
+Public invitation routes resolve as:
 
-Wedding celebrations for couples.
+- `/{eventType}/{slug}`
+- `/{eventType}/{slug}/invitado?invite={inviteId}`
+- `/{eventType}/{slug}/i/{shortId}`
 
-### Baptism (`bautizo`)
+`src/lib/content/events.ts` resolves live events first and then public demos by slug and
+`eventType`.
 
-Religious ceremonies for infant or adult baptism.
+## Asset Expectations
 
-### Birthday (`cumple`)
+Event-specific source assets live under `src/assets/images/events/<slug>/`.
 
-Birthday celebrations for all ages.
-
----
-
-## Schema Reference
-
-### Core Fields
-
-#### `eventType` (required)
-
-**Type**: `enum['xv' | 'boda' | 'bautizo' | 'cumple']`
-
-Determines the route and default styling for the invitation.
-
-#### `title` (required)
-
-**Type**: `string`
-
-SEO title and internal reference for the event.
-
-#### `description` (optional)
-
-**Type**: `string`
-
-Brief description for SEO and meta tags. Keep under 160 characters.
-
-#### `isDemo` (optional)
-
-**Type**: `boolean`
-
-Marks the event as a demo/example for testing and showcasing.
-
----
-
-### Theme Configuration
-
-#### `theme` (required)
-
-**Type**: `object`
-
-Core visual configuration connecting to the design system.
-
-```json
-{
-	"theme": {
-		"primaryColor": "#d4af37",
-		"accentColor": "#111111",
-		"fontFamily": "serif",
-		"preset": "jewelry-box"
-	}
-}
-```
-
-**Properties**:
-
-| Property       | Type                                       | Required | Description            |
-| -------------- | ------------------------------------------ | -------- | ---------------------- |
-| `primaryColor` | `string (hex)`                             | Yes      | Main brand color       |
-| `accentColor`  | `string (hex)`                             | No       | Secondary accent color |
-| `fontFamily`   | `enum['serif' \| 'sans']`                  | No       | Base font family       |
-| `preset`       | `enum['jewelry-box' \| 'luxury-hacienda']` | No       | Aesthetic preset       |
-
----
-
-### Section Styles
-
-#### `sectionStyles` (optional)
-
-**Type**: `object`
-
-Per-section theme customization. Allows each section to have a unique visual treatment.
-
-```json
-{
-	"sectionStyles": {
-		"quote": {
-			"variant": "jewelry-box",
-			"fontStyle": "script",
-			"animation": "bounce"
-		},
-		"countdown": {
-			"variant": "minimal",
-			"numberStyle": "thin",
-			"showParticles": false
-		}
-	}
-}
-```
-
-**Available Sections and Variants**:
-
-| Section     | Available Variants                                                             | Default      |
-| ----------- | ------------------------------------------------------------------------------ | ------------ |
-| `quote`     | `elegant`, `modern`, `minimal`, `floral`, `jewelry-box`, `luxury-hacienda`     | `elegant`    |
-| `countdown` | `minimal`, `vibrant`, `classic`, `modern`, `jewelry-box`, `luxury-hacienda`    | `minimal`    |
-| `location`  | `structured`, `organic`, `minimal`, `luxury`, `jewelry-box`, `luxury-hacienda` | `structured` |
-| `family`    | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
-| `gifts`     | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
-| `gallery`   | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
-| `thankYou`  | `standard`, `jewelry-box`, `luxury-hacienda`                                   | `standard`   |
-
----
-
-### Hero Section
-
-#### `hero` (required)
-
-**Type**: `object`
-
-Main invitation header with celebrant information.
-
-```json
-{
-	"hero": {
-		"name": "Lucía García",
-		"nickname": "Lucy",
-		"date": "2026-04-25T18:00:00.000Z",
-		"backgroundImage": "hero",
-		"portrait": "portrait"
-	}
-}
-```
-
-**Properties**:
-
-| Property          | Type                | Required | Description                        |
-| ----------------- | ------------------- | -------- | ---------------------------------- |
-| `name`            | `string`            | Yes      | Full name of the celebrated person |
-| `nickname`        | `string`            | No       | Informal name or nickname          |
-| `date`            | `string (ISO 8601)` | Yes      | Event date and time                |
-| `backgroundImage` | `string`            | Yes      | Asset key for hero background      |
-| `portrait`        | `string`            | No       | Asset key for celebrant portrait   |
-
----
-
-### Location Section
-
-#### `location` (required)
-
-**Type**: `object`
-
-Venue information with support for ceremony and reception.
-
-```json
-{
-	"location": {
-		"venueName": "Quinta Las Flores",
-		"address": "Av. Real de Catorce 123, Monterrey, N.L.",
-		"city": "Monterrey",
-		"ceremony": {
-			"venueEvent": "Ceremonia",
-			"venueName": "Parroquia de la Sagrada Familia",
-			"address": "Avenida Ayuntamiento s/n",
-			"date": "25 de abril de 2026",
-			"time": "6:00 PM",
-			"coordinates": { "lat": 25.6816, "lng": -100.252 }
-		},
-		"reception": {
-			"venueEvent": "Recepción",
-			"venueName": "Quinta Las Flores",
-			"time": "8:00 PM",
-			"itinerary": [{ "icon": "waltz", "label": "Vals", "time": "9:00 PM" }]
-		}
-	}
-}
-```
-
----
-
-### Family Section
-
-#### `family` (optional)
-
-**Type**: `object`
-
-Family and godparent information.
-
-```json
-{
-	"family": {
-		"parents": {
-			"father": "Sr. Roberto Pérez",
-			"mother": "Sra. Esthela de Pérez"
-		},
-		"spouse": "Nombre del Cónyuge",
-		"children": [{ "name": "Hijo 1", "role": "optional" }],
-		"godparents": [{ "name": "Sr. Juan Carlos", "role": "Padrino de Honor" }],
-		"featuredImage": "family"
-	}
-}
-```
-
----
-
-### RSVP Section
-
-#### `rsvp` (optional)
-
-**Type**: `object`
-
-Guest confirmation form configuration.
-
-```json
-{
-	"rsvp": {
-		"title": "¿Vienes a celebrar conmigo?",
-		"guestCap": 2,
-		"confirmationMessage": "¡Gracias por confirmar! Te esperamos."
-	}
-}
-```
-
----
-
-### Gifts Section
-
-#### `gifts` (optional)
-
-**Type**: `array`
-
-Gift registry options using discriminated union types.
-
-```json
-{
-	"gifts": [
-		{
-			"type": "store",
-			"name": "Liverpool",
-			"url": "https://mesaderegalos.liverpool.com.mx/"
-		},
-		{
-			"type": "bank",
-			"bankName": "BBVA México",
-			"accountHolder": "Nombre del Titular",
-			"clabe": "0121 8001 2345 6789 01"
-		},
-		{
-			"type": "paypal",
-			"url": "https://paypal.me/username"
-		},
-		{
-			"type": "cash",
-			"text": "Contaremos con una tómbola para sobres..."
-		}
-	]
-}
-```
-
----
-
-### Additional Sections
-
-- **quote**: Inspirational message from the celebrated person
-- **thankYou**: Closing gratitude message
-- **music**: Background music configuration
-- **gallery**: Photo gallery with captions
-- **envelope**: Animated envelope reveal
-- **itinerary**: Event timeline/schedule
-- **countdown**: Countdown timer customization
-- **navigation**: Custom navigation links
-
-See the full schema in `src/content/config.ts` for complete details.
-
----
-
-## Asset Integration
-
-Routable event collections work with the AssetRegistry system for image management.
-
-### File Naming Convention
-
-Place images in: `src/assets/images/events/{event-slug}/`
-
-**Required Files**:
-
-- `hero.webp` - Main cover image
-- `portrait.webp` - Celebrant portrait
-- `jardin.webp` - Venue/location photo
-- `signature.webp` - Decorative element
-- `gallery-01.webp` through `gallery-11.webp` - Gallery images
-
-**Asset Key Mapping**:
-
-- `"hero"` maps to `hero.webp`
-- `"gallery01"` maps to `gallery-01.webp`
-- `"portrait"` maps to `portrait.webp`
-
-### AssetRegistry Connection
-
-```typescript
-const heroAsset = getEventAsset('event-slug', 'hero');
-// Returns: { src: 'hero.webp', alt: 'Event Display Name' }
-```
-
----
-
-## Route Generation
-
-Public invitation routes remain `/{eventType}/{slug}`.
-
-- Live events resolve from `src/content/events/*.json` by slug.
-- Public demos resolve through the event content resolver and keep their existing public slugs.
-- Templates in `src/content/event-templates/` are intentionally non-routable.
-
-**Example live file**: `src/content/events/mi-xv-2026.json` with `"eventType": "xv"`
-
-**Generated route**: `/xv/mi-xv-2026`
-
----
+When a route depends on local event assets, keep the asset exports in
+`src/assets/images/events/<slug>/index.ts` so the discovery/registry helpers can consume them
+consistently.
 
 ## Validation
 
-### Build-time Validation
-
 ```bash
-pnpm check    # TypeScript validation
-pnpm build    # Full build with content validation
+pnpm type-check
+pnpm ops validate-schema
+pnpm build
 ```
 
-### Common Validation Errors
+## Related Docs
 
-| Error                | Cause                  | Solution                 |
-| -------------------- | ---------------------- | ------------------------ |
-| `Required`           | Missing required field | Add the missing field    |
-| `Invalid enum value` | Variant doesn't exist  | Use a valid variant name |
-| `Invalid datetime`   | Date format incorrect  | Use ISO 8601 format      |
-| `Invalid url`        | Malformed URL          | Ensure proper URL format |
-
----
-
-## Best Practices
-
-### Content Guidelines
-
-1. **Use Semantic Slugs**: `xv-maria-2026` instead of `event1`
-2. **Optimize Images**: Use WebP format, max 500KB per image
-3. **Write Descriptions**: Keep under 160 characters for SEO
-4. **Date Format**: Use ISO 8601 with timezone
-
-### Section Configuration
-
-1. **Start Simple**: Use default variants initially
-2. **Theme Consistency**: Match sectionStyles to theme.preset
-3. **Test All Sections**: Enable sections one by one
-
-### Asset Management
-
-1. **Follow Naming Convention**: Lowercase, kebab-case
-2. **Optimize Before Adding**: Compress images
-3. **Test Asset Loading**: Verify all images display
-
----
-
-## Related Documentation
-
-- `docs/domains/assets/management.md` - Asset management and registration
-- `docs/domains/theme/architecture.md` - Theme variants and customization
-- `docs/core/architecture.md` - System architecture overview
-- `src/content/config.ts` - Zod schema definition
+- `docs/core/content-schema.md`
+- `docs/domains/content/event-governance.md`
+- `docs/domains/theme/architecture.md`
