@@ -1,0 +1,100 @@
+{
+    "planId": "017-system-doc-alignment",
+    "mode": "planned-commits",
+    "commitStrategyReview": {
+        "draftedAt": "2026-03-24T23:00:00Z",
+        "reviewedAt": "2026-03-24T23:00:00Z",
+        "notes": "Keep the work grouped by documentation/governance surface so the audit remains reviewable and non-behavioral."
+    },
+    "units": [
+        {
+            "id": "align-agent-governance-surface",
+            "phaseId": "governance-discovery",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "align",
+                "target": "agent governance surface"
+            },
+            "purpose": "reconcile `.agent/` discovery docs and governance config with current workflows, plans, and ownership paths",
+            "correctionPolicy": "absorb-compatible",
+            "include": [
+                ".agent/README.md",
+                ".agent/index.md",
+                ".agent/plans/README.md",
+                ".agent/governance/config/baseline.json",
+                ".agent/governance/config/domain-map.json",
+                ".agent/governance/config/policy.json"
+            ],
+            "messagePreview": {
+                "header": "docs(agent): align governance discovery surface",
+                "summary": [
+                    "remove stale plan buckets and dead ownership globs",
+                    "sync discovery docs with current workflows and portability rules",
+                    "keep governance config pointed at real repo paths"
+                ]
+            }
+        },
+        {
+            "id": "reconcile-repo-and-domain-docs",
+            "phaseId": "repo-domain-docs",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "reconcile",
+                "target": "repo and domain docs"
+            },
+            "purpose": "update repo entry docs, testing guidance, content docs, theme docs, and RSVP docs to match the live tree",
+            "correctionPolicy": "absorb-compatible",
+            "include": [
+                "README.md",
+                "scripts/README.md",
+                "tests/README.md",
+                "docs/core/architecture.md",
+                "docs/core/project-conventions.md",
+                "docs/core/testing-strategy.md",
+                "docs/domains/content/collections.md",
+                "docs/domains/content/event-governance.md",
+                "docs/domains/rsvp/architecture.md",
+                "docs/domains/rsvp/database.md",
+                "docs/domains/theme/typography.md"
+            ],
+            "messagePreview": {
+                "header": "docs(repo): reconcile active documentation",
+                "summary": [
+                    "update commands, prerequisites, and structure references to match the live repo",
+                    "correct stale RSVP routes and migration references",
+                    "sync theme and content docs with the current contract"
+                ]
+            }
+        },
+        {
+            "id": "archive-historical-docs",
+            "phaseId": "archive-closeout",
+            "status": "ready",
+            "domain": "docs",
+            "type": "docs",
+            "subject": {
+                "verb": "archive",
+                "target": "historical doc surface"
+            },
+            "purpose": "move roadmap-heavy material out of active docs and close the audit plan",
+            "correctionPolicy": "absorb-compatible",
+            "include": [
+                "docs/archive/**",
+                "docs/core/premium-ux-vision.md",
+                ".agent/plans/017-system-doc-alignment/**"
+            ],
+            "messagePreview": {
+                "header": "docs(archive): move historical planning material",
+                "summary": [
+                    "archive non-evergreen roadmap documentation under docs/archive",
+                    "record the audit changelog and final state",
+                    "move the completed plan under .agent/plans/archive"
+                ]
+            }
+        }
+    ]
+}
