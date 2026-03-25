@@ -1,63 +1,62 @@
-# Celebra-me: Testing Standards & Guidelines
+# Celebra-me Testing Guide
 
-This document outlines the testing philosophy and standards for the Celebra-me project.
+This directory contains the automated test suites for the public site, invitation flows, dashboard
+flows, and supporting libraries.
 
-## 1. Core Principles
+## Principles
 
-- **Reliability First**: Tests must be deterministic. Avoid flaky tests by properly mocking external
-  services (Supabase, Mailer).
-- **English Documentation**: All technical docs, test names, and comments within `tests/` must be in
-  English.
-- **Spanish UI Validation**: Since the application is for a Spanish-speaking audience, E2E tests
-  must verify that labels, placeholders, and error messages are in Spanish.
+- Tests should be deterministic and isolate external systems with mocks or fixtures.
+- Test names, comments, and supporting docs in `tests/` stay in English.
+- UI-facing assertions should validate Spanish copy when they cover user-visible text.
 
-## 2. Testing Layers
+## Current Test Layout
 
-### Unit Tests (`Jest`)
+```text
+tests/
+├── api/          # API handlers for auth, dashboard, and invitacion flows
+├── components/   # React island/component tests
+├── content/      # Content-schema validation tests
+├── e2e/          # Playwright scenarios and premium invitation audits
+├── fixtures/     # Fixture repos and governance test fixtures
+├── helpers/      # Shared test-only helpers
+├── integration/  # Cross-module integration tests such as middleware
+├── lib/          # Library and service-layer tests
+├── mocks/        # Shared mocks
+├── unit/         # Pure unit tests
+├── utils/        # Utility helper tests
+├── setup.ts      # Global Jest setup
+└── sanity.test.ts
+```
 
-- Located in `tests/unit/` and `src/**/*.test.ts`.
-- Focus on pure functions (validators, data transformers).
-- **Goal**: Verify logic without side effects.
+## Active Test Layers
 
-### API/Integration Tests (`Jest`)
+| Layer       | Primary Tooling              | Current Scope                                           |
+| ----------- | ---------------------------- | ------------------------------------------------------- |
+| Unit        | Jest                         | helpers, adapters, validation, commit/tooling contracts |
+| Component   | Jest + React Testing Library | interactive React islands and client helpers            |
+| API         | Jest                         | `src/pages/api/**` request/response behavior            |
+| Integration | Jest                         | middleware and multi-module flows                       |
+| Content     | Jest + Zod                   | content collection and schema contracts                 |
+| E2E         | Playwright                   | login scenarios and invitation UX audits                |
 
-- Located in `tests/api/` and `tests/integration/`.
-- Focus on API routes and middleware.
-- Use `fetch` mocking or lightweight Supabase wrappers.
-- **Goal**: Verify that API endpoints return correct status codes and data structures.
-
-### End-to-End Tests (`Playwright`)
-
-- Located in `tests/e2e/`.
-- Focus on critical user journeys (Login, Registration, MFA).
-- **Goal**: Verify that the entire stack works together and the UI is correct.
-
-## 3. Naming Conventions
-
-- **Test files**: `[feature].[type].test.ts` (e.g., `auth.register.test.ts`).
-- **Test descriptions**: Use the standard `describe`/`it` or `describe`/`test` blocks.
-- **Descriptions format**: `Scenario: [description]`, `Method: [description]`,
-  `should [expected behavior]`.
-
-## 4. Running Tests
+## Commands
 
 ```bash
-# Run all unit and integration tests
 pnpm test
-
-# Run a specific test file
-pnpm test -- tests/api/auth.test.ts
-
-# Run E2E tests
-npx playwright test
+pnpm test -- --coverage
+pnpm test -- tests/api/auth.endpoints.test.ts
+pnpm exec playwright test
 ```
 
-## 5. UI Localization Assertions
+## Naming Guidance
 
-When testing UI elements, use descriptive Spanish strings:
+- Keep file names descriptive and feature-first, such as `dashboard.guests.happy.test.ts`.
+- Use `describe`/`it` or `describe`/`test`.
+- Prefer scenario-oriented descriptions that state the expected behavior.
 
-```typescript
-// Example Playwright assertion
-await expect(page.getByLabel('Correo electrónico')).toBeVisible();
-await expect(page.locator('.auth-status')).toContainText('La contraseña es demasiado débil');
-```
+## Fixture Guidance
+
+- Put reusable repo fixtures under `tests/fixtures/`.
+- Keep mocks and helpers under `tests/mocks/` and `tests/helpers/`.
+- When a test relies on a real route pattern, mirror the current public surface instead of legacy
+  aliases.
