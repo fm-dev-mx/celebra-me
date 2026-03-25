@@ -1,0 +1,44 @@
+{
+    "commits": [
+        {
+            "id": "move-rsvp-helpers",
+            "message": "refactor(tests): move misplaced rsvp helpers to global helpers",
+            "description": "Relocates tests/api/rsvp.helpers.ts to tests/helpers/api-mocks.ts and updates all dependent imports to align with project testing standards.",
+            "files": [
+                "tests/helpers/api-mocks.ts",
+                "tests/api/auth.endpoints.test.ts",
+                "tests/api/auth.login.host.test.ts",
+                "tests/api/auth.register.host.test.ts",
+                "tests/api/auth.sync-session.test.ts",
+                "tests/api/invitacion.context.happy.test.ts",
+                "tests/api/invitacion.rsvp.happy.test.ts",
+                "tests/api/rsvp-v2.endpoints.test.ts",
+                "tests/api/rsvp.helpers.ts"
+            ]
+        },
+        {
+            "id": "relocate-sanity-test",
+            "message": "refactor(tests): relocate sanity test to unit directory",
+            "description": "Moves tests/sanity.test.ts to tests/unit/sanity.test.ts to keep the tests root lean and consistent with the layer-based organization.",
+            "files": ["tests/unit/sanity.test.ts", "tests/sanity.test.ts"]
+        },
+        {
+            "id": "modernize-style-boundaries",
+            "message": "feat(tests): modernize style-boundaries governance with dynamic discovery",
+            "description": "Updates the style-boundaries test to dynamically discover invitation-facing components via globbing instead of relying on a hardcoded list, ensuring better protection against future technical debt.",
+            "files": ["tests/unit/style-boundaries.test.ts"]
+        },
+        {
+            "id": "add-theme-delivery-test",
+            "message": "feat(tests): add theme delivery integration test",
+            "description": "Introduces a new integration test that validates the 3-Layer Theme delivery, ensuring content-level preset selections correctly translate to CSS variable injections in the rendered HTML.",
+            "files": ["tests/integration/theme-delivery.test.ts"]
+        },
+        {
+            "id": "add-rsvp-e2e-flow",
+            "message": "feat(tests): add full-flow RSVP E2E scenario",
+            "description": "Adds a comprehensive Playwright scenario covering the end-to-end guest journey: viewing a personalized invitation, selecting attendance, and receiving a confirmation message.",
+            "files": ["tests/e2e/rsvp-v2-full-flow.spec.ts"]
+        }
+    ]
+}
