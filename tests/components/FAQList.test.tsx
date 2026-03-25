@@ -1,7 +1,8 @@
 // tests/components/FAQList.test.tsx
 // Component tests for FAQList (Accordion Version)
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import FAQList from '@/components/ui/FAQList';
 import '@testing-library/jest-dom';
 
@@ -36,7 +37,8 @@ describe('FAQList Component (Accordion)', () => {
 	});
 
 	describe('Interactions', () => {
-		it('should toggle aria-expanded when clicked', () => {
+		it('should toggle aria-expanded when clicked', async () => {
+			const user = userEvent.setup();
 			render(<FAQList faqs={sampleFaqs} />);
 			const firstQuestion = screen.getByText(sampleFaqs[0].question);
 			const button = firstQuestion.closest('button');
@@ -44,22 +46,23 @@ describe('FAQList Component (Accordion)', () => {
 			if (!button) throw new Error('Button not found');
 
 			// Click to open
-			fireEvent.click(button);
+			await user.click(button);
 			expect(button).toHaveAttribute('aria-expanded', 'true');
 
 			// Click to close
-			fireEvent.click(button);
+			await user.click(button);
 			expect(button).toHaveAttribute('aria-expanded', 'false');
 		});
 
-		it('should only allow one item to be open at once', () => {
+		it('should only allow one item to be open at once', async () => {
+			const user = userEvent.setup();
 			render(<FAQList faqs={sampleFaqs} />);
 			const buttons = screen.getAllByRole('button');
 
-			fireEvent.click(buttons[0]);
+			await user.click(buttons[0]);
 			expect(buttons[0]).toHaveAttribute('aria-expanded', 'true');
 
-			fireEvent.click(buttons[1]);
+			await user.click(buttons[1]);
 			expect(buttons[0]).toHaveAttribute('aria-expanded', 'false');
 			expect(buttons[1]).toHaveAttribute('aria-expanded', 'true');
 		});
