@@ -2,190 +2,110 @@
 
 ![Celebra-me Logo](public/icons/favicon.svg)
 
-**Celebra-me** is a web platform for the **creation and sale of custom digital invitations**. It
-provides a **fully managed service**: clients share their event details, and Celebra-me handles the
-design, customization, and delivery of a polished digital invitation.
+Celebra-me is an Astro-based web platform for premium digital invitations. The repository contains
+the public marketing site, invitation rendering engine, host dashboard, and the RSVP/admin APIs that
+support event operations.
 
-The platform is built to deliver **high-performance, responsive invitations** that can be easily
-shared across digital channels.
+## Stack
 
----
+- Astro 5
+- TypeScript
+- React islands
+- SCSS
+- Supabase
+- Jest and Playwright
+- pnpm
+- Vercel
 
-## About Celebra-me
+## Prerequisites
 
-Celebra-me is not a DIY invitation builder.
-
-Instead, it operates as a **design-led, curated service** where each invitation is created and
-customized by the Celebra-me team. This approach ensures consistent quality, visual coherence, and a
-professional result for every event.
-
----
-
-## Features
-
-- **Custom Digital Invitations** Personalized invitations for events such as weddings, quinceañeras,
-  birthdays, and more.
-
-- **Fully Managed Process** Design and customization are handled by Celebra-me, not end users.
-
-- **Responsive by Default** Invitations are optimized for mobile, tablet, and desktop.
-
-- **Digital Delivery** Invitations are shared easily via messaging apps, email, or social platforms.
-
----
-
-## Tech Stack
-
-The project uses a modern, performance-oriented stack:
-
-- **Framework**: [Astro](https://astro.build/) — component-based, island architecture.
-- **Language**: [TypeScript](https://www.typescriptlang.org/) — static typing for reliability.
-- **Styling**: **SCSS** — the only supported styling system (no Tailwind).
-- **Package Manager**: [pnpm](https://pnpm.io/)
-- **Linting**: ESLint
-- **Formatting**: Prettier
-- **Deployment**: Vercel
-
----
-
-## Project Structure
-
-The repository follows standard Astro conventions:
-
-```plaintext
-celebra-me/
-├── public/
-│   ├── icons/                # Favicons and shared icons
-│   └── images/               # Static images
-├── src/
-│   ├── components/           # Reusable UI components (presentation-only)
-│   ├── layouts/              # Page layouts
-│   ├── pages/                # File-based routing and API endpoints
-│   ├── content/              # Astro content collections
-│   ├── lib/                  # Core libraries (Universal Asset Registry)
-│   ├── styles/               # SCSS (tokens/, themes/, components/)
-│   ├── utils/                # Shared utilities
-│   └── env.d.ts              # Environment variable typings
-├── .agent/                   # Agent rules and conventions
-├── docs/                     # Architecture and technical documentation
-├── astro.config.mjs
-├── package.json
-├── tsconfig.json
-├── vercel.json
-└── README.md
-```
-
-The structure prioritizes **clarity, simplicity, and deploy safety**, avoiding unnecessary
-architectural layers.
-
----
-
-## Automation & Agents
-
-This project uses **automated agents** (e.g. a Gatekeeper) as part of the development workflow.
-
-- Operational rules and conventions live in `.agent/`.
-- These documents are **versioned and authoritative** for agent behavior.
-- Agents are expected to follow existing conventions and apply **safe, pragmatic fixes**.
-
-Start here if you are using agents:
-
-- `.agent/README.md`
-- `.agent/index.md`
-- `.agent/GATEKEEPER_RULES.md`
-- `docs/core/project-conventions.md`
-
----
+- Node.js `>=20.19.0`
+- pnpm `10.x`
 
 ## Getting Started
 
-### Prerequisites
-
-- **Node.js** v18+
-- **pnpm**
-
-### Installation
-
 ```bash
-git clone https://github.com/fm-dev-mx/celebra-me.git
-cd celebra-me
 pnpm install
-```
-
-### Environment Variables
-
-```bash
-cp .env.example .env.local
-```
-
-Update `.env.local` with the required values. All environment variables must be typed in
-`src/env.d.ts`.
-
-### Development
-
-```bash
 pnpm dev
 ```
 
-The app will be available at `http://localhost:4321`.
+Create `.env.local` from `.env.example` before using auth, email, or Supabase-backed flows.
 
----
+## Core Scripts
 
-## Build & Deployment
+| Command              | Purpose                                              |
+| -------------------- | ---------------------------------------------------- |
+| `pnpm dev`           | start the Astro dev server                           |
+| `pnpm build`         | run `astro check` and build production output        |
+| `pnpm start`         | preview the Astro app locally                        |
+| `pnpm preview`       | serve the Vercel static output                       |
+| `pnpm type-check`    | run `astro check`                                    |
+| `pnpm lint`          | run ESLint across the repository                     |
+| `pnpm test`          | run the Jest suite                                   |
+| `pnpm ci`            | run type-check, lint, and tests                      |
+| `pnpm ops <command>` | run repository ops tooling through `scripts/cli.mjs` |
 
-### Production Build
+## Ops CLI
 
-```bash
-pnpm build
+`pnpm ops` dispatches to the scripts under `scripts/`:
+
+- `optimize-assets`
+- `validate-schema`
+- `validate-event-parity`
+- `validate-commits`
+- `new-invitation`
+
+## Repository Layout
+
+```text
+celebra-me/
+├── .agent/                  # Agent entrypoints, workflows, plan governance, governance config
+├── docs/                    # Evergreen docs (`core/`, `domains/`) and `archive/`
+├── public/                  # Public static assets
+├── scripts/                 # Operational CLI scripts and script docs
+├── src/
+│   ├── assets/              # Source images and icons consumed through the asset pipeline
+│   ├── components/          # Astro components and React islands
+│   ├── content/             # Astro content collections (`events`, `event-demos`, `event-templates`)
+│   ├── data/                # Static marketing and supporting data modules
+│   ├── hooks/               # Shared React hooks
+│   ├── interfaces/          # Shared TS interfaces
+│   ├── layouts/             # Layout shells for public pages and dashboard pages
+│   ├── lib/                 # Domain logic, adapters, services, repositories, theme contracts
+│   ├── pages/               # Public routes, invitation routes, dashboard routes, and API routes
+│   ├── styles/              # Global, dashboard, landing, invitation, and theme SCSS
+│   ├── utils/               # Shared helpers
+│   ├── env.d.ts             # Environment variable typings
+│   └── middleware.ts        # Auth and request-boundary middleware
+├── supabase/                # Migrations and local database support
+└── tests/                   # Jest and Playwright test suites
 ```
 
-### Deployment
+## Application Surfaces
 
-The project is deployed on **Vercel**. Configuration lives in `vercel.json`.
+### Public Routes
 
-For manual deployment:
+- Marketing pages under `src/pages/*.astro`
+- Invitation routes under `src/pages/[eventType]/[slug]*`
 
-```bash
-pnpm add -g vercel
-vercel --prod
-```
+### Dashboard Routes
 
----
+- `/dashboard/invitados`
+- `/dashboard/admin`
+- `/dashboard/eventos`
+- `/dashboard/usuarios`
+- `/dashboard/claimcodes`
+- `/dashboard/mfa-setup`
 
-## Code Quality
+### API Routes
 
-Run checks locally before committing:
+- Auth APIs under `src/pages/api/auth/**`
+- Dashboard APIs under `src/pages/api/dashboard/**`
+- Guest invitation APIs under `src/pages/api/invitacion/[inviteId]/**`
 
-```bash
-pnpm lint
-pnpm exec prettier --check .
-pnpm type-check
-```
+## Database Workflow
 
----
-
-## Testing
-
-Run the test suite:
-
-```bash
-pnpm test
-```
-
-### Coverage Report
-
-```bash
-pnpm test -- --coverage
-```
-
-For detailed testing documentation, see
-[`docs/core/testing-strategy.md`](docs/core/testing-strategy.md).
-
----
-
-## Database Migrations (Supabase)
-
-RSVP database schema is managed with versioned Supabase migrations in `supabase/migrations`.
+Supabase schema changes are versioned under `supabase/migrations`.
 
 Useful commands:
 
@@ -196,31 +116,28 @@ pnpm db:reset:local
 pnpm db:migrate:new <migration_name>
 ```
 
-Operational guide: [`docs/domains/rsvp/database.md`](docs/domains/rsvp/database.md)
-
----
+See `docs/domains/rsvp/database.md` for operational details.
 
 ## Documentation
 
-- **Architecture**: `docs/core/architecture.md`
-- **RSVP DB Operations**: `docs/domains/rsvp/database.md`
-- **RSVP UI Operation (Admin Panel)**: `docs/domains/rsvp/database.md#client-facing-ui-operation`
-- **Agent Rules**: `.agent/`
+- `docs/core/architecture.md`
+- `docs/core/project-conventions.md`
+- `docs/core/testing-strategy.md`
+- `docs/domains/content/collections.md`
+- `docs/domains/rsvp/architecture.md`
+- `docs/domains/theme/architecture.md`
+- `docs/archive/` for historical material
 
-Documentation is expected to evolve alongside the codebase.
+## Agent Entry Points
 
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
+- `.agent/README.md`
+- `.agent/index.md`
+- `.agent/GATEKEEPER_RULES.md`
+- `.agent/workflows/system-doc-alignment.md`
 
 ## Maintainer
 
 Francisco Mendoza
 
-- GitHub: [https://github.com/fm-dev-mx](https://github.com/fm-dev-mx)
-- LinkedIn:
-  [https://www.linkedin.com/in/francisco-mendoza-ordn/](https://www.linkedin.com/in/francisco-mendoza-ordn/)
+- GitHub: [fm-dev-mx](https://github.com/fm-dev-mx)
+- LinkedIn: [francisco-mendoza-ordn](https://www.linkedin.com/in/francisco-mendoza-ordn/)

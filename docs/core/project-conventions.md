@@ -176,13 +176,16 @@ Not all situations fit the conventions. If a change requires deviating:
 When adding a new event to the platform, follow the AssetRegistry pattern to ensure type safety,
 centralized management, and consistency:
 
-1. **Create event directory** in `src/assets/images/events/{event-slug}/`
-2. **Add required images** (hero.webp, portrait.webp, jardin.webp, signature.webp, gallery-01.webp
-   through gallery-11.webp)
-3. **Export assets** from `src/assets/images/events/{event-slug}/index.ts` so the dynamic discovery
-   pipeline can register them automatically
-4. **Verify registration** by running `pnpm assets:check-registry` and `pnpm exec astro check`
+1. **Scaffold the invitation content** with `pnpm ops new-invitation <slug> --eventType <type>` or
+   by creating the content file under the correct collection.
+2. **Create event assets** in `src/assets/images/events/{event-slug}/` when the event uses local
+   routed media.
+3. **Export event assets** from `src/assets/images/events/{event-slug}/index.ts` so discovery and
+   registry helpers can consume them consistently.
+4. **Verify the content and theme contract** by running `pnpm ops validate-schema`,
+   `pnpm type-check`, and `pnpm build`.
 
-For complete step-by-step instructions, refer to `docs/domains/assets/management.md`.
+For the active content contract, refer to `docs/domains/content/collections.md` and
+`docs/domains/content/event-governance.md`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

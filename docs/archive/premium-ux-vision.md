@@ -1,4 +1,7 @@
-# 🎨 Premium UX Vision — Celebra-me Ecosystem
+# Premium UX Vision — Historical Archive
+
+> Historical document archived on 2026-03-24. Retained for roadmap and aesthetic context only. The
+> active sources of truth live under `docs/core/` and `docs/domains/`.
 
 ## 1. The Vision
 
@@ -38,8 +41,8 @@ duplication:
 - **Presets Directory:** `src/styles/themes/presets/` contains entry points for each aesthetic.
 - **Scoping:** Each preset wraps styles in a `.theme-preset--{name}` class.
 - **Available Presets:**
-    - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
-    - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
+  - `jewelry-box` — Glassmorphism, Gold/Silver, Serif (XV, Wedding)
+  - `luxury-hacienda` — Leather, Cognac, Aged Gold (Birthday, Corporate)
 - **Integration:** Driven by the `preset` field in `src/content/config.ts` and detailed in
   [domains/theme/architecture.md](../domains/theme/architecture.md).
 
@@ -93,10 +96,10 @@ All invitation assets (images, logos, signatures) are managed via a deterministi
 ### Phase 2: Expansion (Current Focus)
 
 - **60th Birthday Invitation (Gerardo "Jefe Botas")**
-    - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
-    - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
+  - _Goal:_ Validate engine flexibility for different demographics/aesthetics.
+  - _Challenge:_ "Luxury Hacienda" theme (Leather/Cognac/Gold) vs. XV Pink/Gold.
 - **Multi-Event Support**
-    - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
+  - _Goal:_ Seamless routing for Wedding, Baptism, and Corporate events.
 
 ---
 

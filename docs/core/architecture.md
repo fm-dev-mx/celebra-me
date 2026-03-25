@@ -30,8 +30,8 @@ Celebra-me follows these guiding principles:
   - side effects,
   - protected operations,
   - integrations requiring secrets.
-- Current realtime behavior uses **Server-Sent Events (SSE)** via
-  `/api/dashboard/guests/stream` for near-real-time host dashboard updates.
+- Current realtime behavior uses **Server-Sent Events (SSE)** via `/api/dashboard/guests/stream` for
+  near-real-time host dashboard updates.
 
 This matches Astro's hybrid model and the repository's current route structure.
 
@@ -63,8 +63,8 @@ This matches Astro's hybrid model and the repository's current route structure.
 
 ### 3.4 Route-Facing Assembly Modules
 
-- Route-facing assembly should live close to the owning feature instead of behind a global
-  presenter layer.
+- Route-facing assembly should live close to the owning feature instead of behind a global presenter
+  layer.
 - The active invitation route uses `src/lib/invitation/page-data.ts` to normalize page-ready data
   from adapters, theme contracts, and guest context before `.astro` rendering.
 - When route logic becomes non-trivial, prefer a feature-owned `page-data.ts` or equivalent module
@@ -112,8 +112,8 @@ The active server-only hubs in the repository are:
 
 Historical note:
 
-- Historical only: older documentation and audit logs may reference retired route-assembly or
-  legacy server-helper paths; those paths are not active architectural hubs in the current tree.
+- Historical only: older documentation and audit logs may reference retired route-assembly or legacy
+  server-helper paths; those paths are not active architectural hubs in the current tree.
 
 ### 5.3 Global Logic
 
@@ -240,7 +240,7 @@ Silent divergence is discouraged.
 Invitation-specific assets are registered through the **Universal Asset Registry**.
 
 - **Location**: `src/lib/assets/asset-registry.ts`
-- **Documentation**: `docs/domains/assets/management.md`
+- **Documentation**: `docs/domains/content/collections.md`
 - **Mechanism**: components consume semantic keys via registry/discovery helpers instead of raw
   filesystem paths
 
@@ -288,12 +288,10 @@ The active guest-facing patterns are:
 - `/api/invitacion/:inviteId/context`
 - `/api/invitacion/:inviteId/rsvp`
 - `/api/invitacion/:inviteId/view`
-- `/api/invitacion/resolve`
 
 Historical note:
 
 - Older documents may reference `/invitation/{inviteId}` or `/api/invitation/*`. Those patterns are
   no longer the current public contract.
 
-Detailed RSVP design and constraints are documented in
-`docs/domains/rsvp/architecture.md`.
+Detailed RSVP design and constraints are documented in `docs/domains/rsvp/architecture.md`.
