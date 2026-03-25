@@ -7,31 +7,46 @@ function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 }
 
+function getFilesRecursively(dir: string, extensions: string[]): string[] {
+	const absoluteDir = path.join(projectRoot, dir);
+	if (!fs.existsSync(absoluteDir)) return [];
+
+	return fs
+		.readdirSync(absoluteDir, { recursive: true })
+		.filter((file): file is string => typeof file === 'string')
+		.filter((file) => extensions.some((ext) => file.endsWith(ext)))
+		.map((file) => path.join(dir, file).replace(/\\/g, '/'));
+}
+
 describe('Style boundary governance', () => {
 	it('invitation-facing components do not hardcode hex colors in Astro or TSX files', () => {
-		const files = [
+		const invitationFiles = getFilesRecursively('src/components/invitation', [
+			'.astro',
+			'.tsx',
+		]);
+		const pageFiles = getFilesRecursively('src/pages/[eventType]/[slug]', ['.astro']);
+
+		const commonFiles = [
 			'src/components/common/GoogleMap.astro',
 			'src/components/common/OptimizedImage.astro',
-			'src/components/invitation/PersonalizedAccess.astro',
-			'src/components/invitation/TimelineList.tsx',
 			'src/components/ui/Confetti.tsx',
-			'src/pages/[eventType]/[slug]/invitado.astro',
 		];
 
-		for (const file of files) {
+		const allFiles = [...invitationFiles, ...pageFiles, ...commonFiles];
+
+		for (const file of allFiles) {
 			expect(read(file)).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
 		}
 	});
 
 	it('styling-only Astro components avoid style define:vars blocks', () => {
-		const files = [
-			'src/components/common/OptimizedImage.astro',
-			'src/components/common/icons/Icon.astro',
-			'src/components/layout/Section.astro',
-			'src/pages/[eventType]/[slug].astro',
-		];
+		const commonFiles = getFilesRecursively('src/components/common', ['.astro']);
+		const layoutFiles = getFilesRecursively('src/components/layout', ['.astro']);
+		const rootPages = ['src/pages/[eventType]/[slug].astro'];
 
-		for (const file of files) {
+		const allFiles = [...commonFiles, ...layoutFiles, ...rootPages];
+
+		for (const file of allFiles) {
 			expect(read(file)).not.toMatch(/<style[^>]*define:vars=/);
 		}
 	});
@@ -44,13 +59,13 @@ describe('Style boundary governance', () => {
 	});
 
 	it('invitation components avoid direct section-theme imports', () => {
-		const quote = read('src/components/invitation/Quote.astro');
-		const countdown = read('src/components/invitation/Countdown.astro');
-		const location = read('src/components/invitation/EventLocation.astro');
+		const invitationAstroFiles = getFilesRecursively('src/components/invitation', ['.astro']);
 
-		expect(quote).not.toContain('themes/sections/_quote-theme.scss');
-		expect(countdown).not.toContain('themes/sections/_countdown-theme.scss');
-		expect(location).not.toContain('themes/sections/_location-theme.scss');
+		for (const file of invitationAstroFiles) {
+			const content = read(file);
+			// Should not import specific section themes directly
+			expect(content).not.toMatch(/themes\/sections\/_[a-z-]+\.scss/);
+		}
 	});
 
 	it('dashboard guests styles live under dashboard domain', () => {
