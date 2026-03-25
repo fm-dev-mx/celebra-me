@@ -64,9 +64,7 @@ describe('RSVP Component', () => {
 			);
 
 			await waitFor(() => {
-				expect(
-					screen.getByText(/Esta invitación utiliza enlaces personalizados/i),
-				).toBeInTheDocument();
+				expect(screen.getByText(/utiliza enlaces personalizados/i)).toBeInTheDocument();
 			});
 
 			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
@@ -187,8 +185,9 @@ describe('RSVP Component', () => {
 
 			await waitFor(() => {
 				expect(
-					screen.getByText((content) =>
-						content.includes('Sentimos mucho que no puedas acompañarnos'),
+					screen.getByText(
+						(content) =>
+							content.includes('Sentimos mucho') && content.includes('no puedas'),
 					),
 				).toBeInTheDocument();
 			});

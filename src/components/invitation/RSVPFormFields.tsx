@@ -87,25 +87,27 @@ export function AttendanceField(props: {
 		>
 			<legend className="rsvp__legend">{attendanceLabel}</legend>
 			<div className="rsvp__radio-group" ref={attendanceRef}>
-				<label>
+				<label htmlFor="attendance-yes">
 					<input
 						type="radio"
+						id="attendance-yes"
 						name="attendance"
 						checked={attendanceStatus === 'confirmed'}
 						onChange={() => onAttendanceChange('confirmed')}
 						onBlur={() => onBlur('attendance')}
 					/>
-					S\u00ed, asistir\u00e9
+					Sí, asistiré
 				</label>
-				<label>
+				<label htmlFor="attendance-no">
 					<input
 						type="radio"
+						id="attendance-no"
 						name="attendance"
 						checked={attendanceStatus === 'declined'}
 						onChange={() => onAttendanceChange('declined')}
 						onBlur={() => onBlur('attendance')}
 					/>
-					No podr\u00e9 asistir
+					No podré asistir
 				</label>
 			</div>
 			{touched.attendance && errors.attendance && (
