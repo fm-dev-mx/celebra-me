@@ -38,8 +38,9 @@ $semantic-color: (
 	),
 	state: (
 		error: sys.$sys-color-error,
-		success: sys.$sys-color-forest-800,
+		success: sys.$sys-color-whatsapp,
 		warning: sys.$sys-color-amber-600,
+		info: sys.$sys-color-gold-500,
 	),
 	special: (
 		whatsapp: sys.$sys-color-whatsapp,
@@ -85,6 +86,12 @@ $semantic-color: (
 	--color-neutral-emphasis: #{sys.$sys-color-neutral-900};
 	--color-error: #{sys.$sys-color-error};
 	--color-error-rgb: #{tools.rgb-channels(sys.$sys-color-error)};
+	--color-success: #{sys.$sys-color-whatsapp};
+	--color-success-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
+	--color-warning: #{sys.$sys-color-amber-600};
+	--color-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-600)};
+	--color-info: #{sys.$sys-color-gold-500};
+	--color-info-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
 	--color-whatsapp: #{sys.$sys-color-whatsapp};
 	--color-whatsapp-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
 }
