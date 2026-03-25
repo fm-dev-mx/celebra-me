@@ -37,7 +37,9 @@ describe('Commit validation contract', () => {
 		const result = lintMessage('refactor(core): update files');
 
 		expect(result.status).not.toBe(0);
-		expect(`${result.stdout}\n${result.stderr}`).toContain('subject target is too generic');
+		expect(`${result.stdout}\n${result.stderr}`).toContain(
+			'subject must include a concrete target after the verb',
+		);
 	});
 
 	it('rejects process-language subjects', () => {
