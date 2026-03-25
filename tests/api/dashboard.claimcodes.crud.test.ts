@@ -33,11 +33,12 @@ jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
 	listClaimCodesAdmin: jest.fn(),
 	createClaimCodeAdmin: jest.fn(),
 	updateClaimCodeAdmin: jest.fn(),
 	disableClaimCodeAdmin: jest.fn(),
+	deleteClaimCodeAdmin: jest.fn(),
 }));
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<

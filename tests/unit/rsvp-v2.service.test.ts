@@ -4,7 +4,7 @@ import {
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 
-jest.mock('@/lib/rsvp/repositories/repository');
+jest.mock('@/lib/rsvp/repositories/guest.repository');
 
 const findGuestByInviteIdPublicMock = findGuestByInviteIdPublic as jest.MockedFunction<
 	typeof findGuestByInviteIdPublic

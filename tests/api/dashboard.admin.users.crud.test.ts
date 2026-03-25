@@ -25,7 +25,7 @@ jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	listAdminUsers: jest.fn(),
 	changeUserRoleAdmin: jest.fn(),
 }));

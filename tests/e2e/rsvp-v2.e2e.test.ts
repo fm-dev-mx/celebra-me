@@ -25,18 +25,18 @@ test.describe('RSVP v2 Flow', () => {
 		await expect(rsvpSection).toBeVisible();
 
 		// 4. Fill RSVP Form
-		// Attendance radio
-		const willAttend = page.getByLabel('Confirmar asistencia');
+		// Attendance radio - use the text "Sí, asistiré" which is more reliable
+		const willAttend = page.locator('#attendance-yes');
 		await willAttend.check();
 
 		// Guest count / names
-		const guestCount = page.locator('select[name="attendeeCount"]');
+		const guestCount = page.locator('#guestCount');
 		if (await guestCount.isVisible()) {
-			await guestCount.selectOption('2');
+			await guestCount.fill('2');
 		}
 
 		// Message
-		const guestMessage = page.locator('textarea[name="guestMessage"]');
+		const guestMessage = page.locator('#notes');
 		if (await guestMessage.isVisible()) {
 			await guestMessage.fill('¡Gracias por la invitación! Ahí estaremos.');
 		}

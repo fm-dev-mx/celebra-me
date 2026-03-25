@@ -11,9 +11,15 @@ jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/event-admin.service', () => ({
 	listAdminEvents: jest.fn(),
+}));
+
+jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	listAdminUsers: jest.fn(),
+}));
+
+jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
 	listClaimCodesAdmin: jest.fn(),
 }));
 

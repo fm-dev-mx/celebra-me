@@ -8,7 +8,7 @@ jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/event-admin.service', () => ({
 	listHostEvents: jest.fn(),
 }));
 

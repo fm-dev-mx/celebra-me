@@ -1,7 +1,7 @@
 import { claimEventForUserByClaimCode } from '@/lib/rsvp/services/auth-access.service';
 import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
 
-jest.mock('@/lib/rsvp/repositories/repository');
+jest.mock('@/lib/rsvp/repositories/claim-code.repository');
 
 const redeemClaimCodeRpcMock = redeemClaimCodeRpc as jest.MockedFunction<typeof redeemClaimCodeRpc>;
 

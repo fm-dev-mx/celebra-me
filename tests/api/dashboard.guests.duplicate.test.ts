@@ -16,7 +16,7 @@ jest.mock('@/lib/rsvp/auth/auth', () => ({
 	getSessionContextFromRequest: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	createDashboardGuest: jest.fn(),
 	updateDashboardGuest: jest.fn(),
 }));

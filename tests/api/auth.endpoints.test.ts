@@ -18,12 +18,15 @@ jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	findAuthUserByEmail: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/service', () => ({
+jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
 	buildAuthSessionDto: jest.fn(),
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
-	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 	isSuperAdminEmail: jest.fn(() => false),
+}));
+
+jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
+	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 }));
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
