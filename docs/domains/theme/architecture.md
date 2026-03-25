@@ -99,12 +99,19 @@ These files are lazy-loaded only for the matching event route.
 - Missing preset => default preset
 - Invalid preset in production => explicit error (no silent fallback)
 - Invalid section variant => warning + fallback
-- **Adapter Modularization**: ViewModel builders are extracted to `src/lib/adapters/event-view-models.ts` to improve maintainability and keep the core adapter focused on context resolution.
-- **Strict Rendering Contracts**: `InvitationSections.astro` utilizes `ComponentProps` for each rendered branch to guarantee that dynamic component instantiation remains type-safe and consistent with domain definitions.
+- **Adapter Modularization**: ViewModel builders are extracted to
+  `src/lib/adapters/event-view-models.ts` to improve maintainability and keep the core adapter
+  focused on context resolution.
+- **Strict Rendering Contracts**: `InvitationSections.astro` utilizes `ComponentProps` for each
+  rendered branch to guarantee that dynamic component instantiation remains type-safe and consistent
+  with domain definitions.
 
 ### Component Logic Extraction
 
-As of 2026-03-22, complex invitation components such as RSVP have undergone logic extraction. Form fields are now isolated in `RSVPFormFields.tsx` and data adapters are modularized. This separation ensures that the main rendering paths remain lightweight and that business logic can be tested independently of the UI structure.
+As of 2026-03-22, complex invitation components such as RSVP have undergone logic extraction. Form
+fields are now isolated in `RSVPFormFields.tsx` and data adapters are modularized. This separation
+ensures that the main rendering paths remain lightweight and that business logic can be tested
+independently of the UI structure.
 
 - Do not add variant literals directly in components/adapters/schema.
 - Update `theme-contract.ts` first, then consume from it.
@@ -144,16 +151,20 @@ Phase 06 standardized these additional semantic roles for component-level stylin
 As of 2026-03-22 Plan 008 closeout:
 
 - `src/styles/global.scss` no longer imports `src/styles/tokens/contracts/_core.scss`.
-- `src/styles/themes/sections/_reveal-theme.scss` no longer depends on `src/styles/tokens/primitives/color`.
-- The legacy `src/styles/tokens/contracts/_core.scss` and `src/styles/tokens/primitives/**` files have been removed because they no longer have active runtime or test consumers.
+- `src/styles/themes/sections/_reveal-theme.scss` no longer depends on
+  `src/styles/tokens/primitives/color`.
+- The legacy `src/styles/tokens/contracts/_core.scss` and `src/styles/tokens/primitives/**` files
+  have been removed because they no longer have active runtime or test consumers.
 
 Decorative exceptions:
 
-- Preset and section theme files may retain hardcoded ornamental gradients, shadows, or metallic
-  accents when those values are intentionally art-directed and do not represent reusable semantic
-  roles.
-- Reusable palette, typography, surface, glass, spacing, and motion contracts must still flow
-  through `tokens/system`, `tokens/semantic`, or runtime `var(--*)` contracts.
+- **Art-Directed Patterns**: Preset and section theme files may retain hardcoded ornamental values
+  (gradients, complex SVG data-URIs) ONLY when those values are intentionally non-reusable and part
+  of a specific artistic direction (e.g., a leather texture for one specific variant).
+- **Mandatory Semantic Bridge**: Reusable aesthetic markers (Gold accents, Glassmorphism, Premium
+  Shadows) must use semantic tokens from `src/styles/tokens/semantic/`.
+- **Promotion Rule**: If an "ornamental" value is reused in more than two sections, it MUST be
+  promoted to a semantic token.
 
 Component rules:
 
@@ -178,6 +189,20 @@ The theme system integrates with Astro Content Collections. Content is now parti
 
 Runtime resolution in `src/lib/content/events.ts` ensures that theme presets and section variants
 are correctly mapped regardless of the source collection.
+
+## Aesthetic Specifications
+
+### Jewelry Box Baseline
+
+The **Jewelry Box** aesthetic represents the elite tier of Celebra-me invitations.
+
+- **Primary Palette**: Uses Champagne/Gold semantic tokens (`--color-action-accent`).
+- **Surface Layer**: Mandatory Glassmorphism (`--color-glass-bg`, `--glass-blur: 12px`,
+  `--glass-saturate: 160%`).
+- **Typography**: Display Elegant (`Cinzel` or `Playfair Display`) paired with Calligraphy
+  (`Pinyon Script`).
+- **Accents**: Fine 1px gold borders (`--border-fine-gold`) and premium floating shadows
+  (`--shadow-premium`).
 
 ## Schema Architecture
 

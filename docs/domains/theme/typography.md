@@ -50,6 +50,16 @@ Current runtime typography variables include:
 - `--font-body-hacienda`
 - `--font-ui`
 
+## Performance & Budget
+
+Loading multiple font families impacts page load performance and Cumulative Layout Shift (CLS).
+
+- **Family Cap**: The current stack is limited to **10 families**.
+- **Audit Requirement**: Any new family added to `Layout.astro` must be justified by a premium theme
+  (e.g., Jewelry Box, Luxury Hacienda).
+- **Fallbacks**: Always provide generic fallbacks (`serif`, `sans-serif`) in the CSS variables to
+  prevent invisible text during loading.
+
 ## Usage Rules
 
 - Use the `--font-*` CSS variables in theme-sensitive component styles.

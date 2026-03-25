@@ -1,22 +1,22 @@
 ---
 name: theme-architecture
 description:
-    Manage the technical implementation of the 3-Layer Color Architecture, Theme Presets (`.scss`),
-    and Design Tokens in Celebra-me.
+  Manage the technical implementation of the 3-Layer Color Architecture, Theme Presets (`.scss`),
+  and Design Tokens in Celebra-me.
 domain: frontend
 when_to_use:
-    - Editing SCSS tokens, presets, theme sections, or component styling architecture
-    - Reviewing theme consistency, token usage, or preset isolation
+  - Editing SCSS tokens, presets, theme sections, or component styling architecture
+  - Reviewing theme consistency, token usage, or preset isolation
 preconditions:
-    - Read .agent/README.md
-    - Read .agent/GATEKEEPER_RULES.md
+  - Read .agent/README.md
+  - Read .agent/GATEKEEPER_RULES.md
 inputs:
-    - Theme SCSS files, design tokens, presets, and section styles
+  - Theme SCSS files, design tokens, presets, and section styles
 outputs:
-    - Implementation guidance for theme-safe SCSS architecture
+  - Implementation guidance for theme-safe SCSS architecture
 related_docs:
-    - docs/domains/theme/architecture.md
-    - docs/domains/theme/typography.md
+  - docs/domains/theme/architecture.md
+  - docs/domains/theme/typography.md
 ---
 
 # Theme Architecture
@@ -38,14 +38,14 @@ Themes are defined by **CSS Variables** injected at the root level via a class.
 ```scss
 // ✅ CORRECT: Only variables
 .theme-preset--my-theme {
-	--color-surface-primary: #fff;
-	--font-display: 'Cinzel', serif;
+  --color-surface-primary: #fff;
+  --font-display: 'Cinzel', serif;
 }
 
 // ❌ INCORRECT: Direct styles
 .theme-preset--my-theme .card {
-	// FORBIDDEN
-	background: red;
+  // FORBIDDEN
+  background: red;
 }
 ```
 
@@ -58,17 +58,17 @@ respond to `[data-variant]`.
 
 ```scss
 .quote-section {
-	// Base styles...
+  // Base styles...
 
-	&[data-variant='jewelry-box'] {
-		// Specific overrides for this variant
-		background-color: var(--color-surface-primary);
-		border: 1px solid var(--color-border-subtle);
-	}
+  &[data-variant='jewelry-box'] {
+    // Specific overrides for this variant
+    background-color: var(--color-surface-primary);
+    border: 1px solid var(--color-border-subtle);
+  }
 
-	&[data-variant='luxury-hacienda'] {
-		background-image: url('/textures/leather.jpg');
-	}
+  &[data-variant='luxury-hacienda'] {
+    background-image: url('/textures/leather.jpg');
+  }
 }
 ```
 
@@ -85,15 +85,20 @@ Always use semantic tokens found in `src/styles/tokens/`. Never hardcode hex val
 
 ## Integration with Astro
 
-### Config (`src/content/config.ts`)
+### Config & Schemas
 
-New variants **MUST** be registered in the Zod schema before use.
+New variants **MUST** be registered in the **Theme Contract** first, then mapped in the modular
+schema before use.
+
+**Location**: `src/lib/theme/theme-variants.ts` (Literal Definitions) **Location**:
+`src/lib/schemas/content/section-styles.schema.ts` (Zod Enforcement)
 
 ```typescript
-quote: z.object({
-	variant: z.enum(['elegant', 'modern', 'jewelry-box', 'new-variant']),
-	// ...
-});
+// 1. Update Contract (theme-variants.ts)
+export const QUOTE_VARIANTS = [... , 'new-variant'] as const;
+
+// 2. Schema will automatically consume it via enum(QUOTE_VARIANTS)
+// inside src/lib/schemas/content/section-styles.schema.ts
 ```
 
 ### Usage in Components
@@ -103,13 +108,13 @@ Components accept a `variant` prop and apply it as a data attribute.
 ```astro
 ---
 interface Props {
-	variant: 'elegant' | 'jewelry-box';
+  variant: 'elegant' | 'jewelry-box';
 }
 const { variant } = Astro.props;
 ---
 
 <section class="quote-section" data-variant={variant}>
-	<slot />
+  <slot />
 </section>
 ```
 
