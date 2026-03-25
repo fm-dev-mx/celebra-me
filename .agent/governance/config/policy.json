@@ -105,7 +105,7 @@
                 "3": "block"
             },
             "appliesTo": ["src/components/**", "src/pages/**/*.astro", "src/pages/**/*.tsx"],
-            "exemptions": ["src/pages/api/**", "src/pages/admin/**"]
+            "exemptions": ["src/pages/api/**"]
         },
         "themePresetIsolation": {
             "enabled": true,
@@ -139,7 +139,7 @@
                 "3": "block"
             },
             "appliesTo": ["src/**/*.astro", "src/**/*.tsx"],
-            "exemptions": ["src/pages/admin/**", "src/components/common/Icon.astro"]
+            "exemptions": ["src/components/common/Icon.astro"]
         },
         "inlineScriptPolicy": {
             "enabled": true,
@@ -155,7 +155,6 @@
                 "src/pages/[eventType]/[slug].astro",
                 "src/components/common/HeaderBase.astro",
                 "src/components/invitation/Footer.astro",
-                "src/pages/admin/rsvp.astro",
                 "src/layouts/DashboardLayout.astro"
             ]
         },

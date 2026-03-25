@@ -1,113 +1,103 @@
 {
     "domains": {
-        "invitation": [
-            "src/components/invitation/**",
-            "src/pages/[eventType]/**",
-            "src/layouts/Layout.astro",
-            "src/styles/invitation/**"
-        ],
-        "auth": [
-            "src/lib/rsvp/**",
-            "src/lib/rsvp/services/**",
-            "src/lib/rsvp/repositories/**",
-            "src/pages/login.astro",
-            "src/pages/api/auth/**",
-            "src/pages/api/invitacion/**",
-            "src/middleware.ts"
-        ],
-        "theme": [
-            "src/styles/themes/**",
-            "src/styles/tokens/**",
-            "src/styles/tools/**",
-            "src/styles/global/**",
-            "src/styles/home/**",
-            "src/styles/ui/**",
-            "src/styles/layout/**",
-            "src/styles/common/**",
-            "src/styles/components/**",
-            "src/styles/*.scss"
-        ],
-        "gov-agent-config": [
-            ".agent/governance/bin/**",
-            ".agent/governance/config/**",
-            ".agent/GATEKEEPER_RULES.md",
-            ".agent/README.md",
-            ".agent/index.md",
-            ".agent/*.html"
-        ],
-        "gov-skills": [".agent/skills/**"],
-        "gov-plans-archive": [".agent/plans/README.md", ".agent/plans/archive/**"],
-        "gov-plans-invitation": [
-            ".agent/plans/real-xv-invitation/**",
-            ".agent/plans/wedding-finalization/**",
-            ".agent/plans/ximena-overhaul/**",
-            ".agent/plans/quinceanera-demo-creation/**"
-        ],
-        "gov-tooling": [
-            "scripts/**",
-            "commitlint.config.cjs",
-            "eslint.config.js",
-            ".markdownlintignore",
-            ".markdownlint.json",
-            ".prettierrc.mjs",
-            ".stylelintrc.json",
-            ".editorconfig",
-            "docs/core/git-governance.md"
-        ],
-        "gov-plans-remediation": [".agent/plans/error-remediation-evolution/**"],
-        "gov-plans-retheme-ximena-rose-gold": [".agent/plans/retheme-ximena-rose-gold/**"],
-        "gov-plans-pre-audit-2026": [".agent/plans/pre-phase-audit-2026/**"],
-        "gov-plans-comprehensive-audit": [".agent/plans/comprehensive-audit-Q1-2026/**"],
-        "gov-plans-all": [".agent/plans/**"],
-        "gov-workflows": [".agent/workflows/**", ".agent/index.md", ".agent/README.md"],
-        "gov-scripts": [".agent/scripts/**"],
-        "gov-infra": [
-            ".husky/**",
-            ".github/**",
-            ".vscode/**",
-            "package.json",
-            "pnpm-lock.yaml",
-            ".gitignore",
-            "astro.config.mjs",
-            "tsconfig.json",
-            ".npmrc"
-        ],
         "core": [
+            "README.md",
+            "CONTRIBUTING.md",
             "src/content/config.ts",
             "src/content/events/**",
             "src/content/event-demos/**",
             "src/content/event-templates/**",
+            "src/data/**",
             "src/hooks/**",
             "src/interfaces/**",
             "src/lib/**",
-            "src/data/**",
             "src/utils/**",
-            "src/styles/events/**",
-            "src/pages/api/*",
-            "archive/**",
-            "*.md"
+            "src/styles/events/**"
         ],
         "ui": [
             "src/pages/index.astro",
             "src/pages/404.astro",
             "src/pages/under-construction.astro",
+            "src/components/behavior/**",
             "src/components/common/**",
-            "src/components/ui/**",
             "src/components/home/**",
             "src/components/layout/**",
-            "src/components/behavior/**",
+            "src/components/typography/**",
+            "src/components/ui/**",
             "src/assets/**"
         ],
-        "docs": ["docs/**", ".agent/docs/**"],
-        "test": ["tests/**", "**/*.test.*", "**/*.spec.*", "jest.config.*", "playwright.config.*"],
+        "invitation": [
+            "src/components/invitation/**",
+            "src/pages/[eventType]/**",
+            "src/layouts/Layout.astro",
+            "src/lib/invitation/**",
+            "src/styles/invitation/**"
+        ],
+        "auth": [
+            "src/lib/rsvp/auth/**",
+            "src/lib/rsvp/core/**",
+            "src/lib/rsvp/repositories/**",
+            "src/lib/rsvp/security/**",
+            "src/lib/rsvp/services/**",
+            "src/middleware.ts",
+            "src/pages/login.astro",
+            "src/pages/api/auth/**",
+            "src/pages/api/invitacion/**"
+        ],
         "admin": [
-            "src/pages/admin/**",
             "src/layouts/DashboardLayout.astro",
-            "src/components/admin/**",
             "src/components/dashboard/**",
-            "src/pages/api/dashboard/**",
             "src/pages/dashboard/**",
+            "src/pages/api/dashboard/**",
             "src/styles/dashboard/**"
+        ],
+        "theme": [
+            "src/lib/theme/**",
+            "src/lib/schemas/content/**",
+            "src/styles/themes/**",
+            "src/styles/tokens/**",
+            "src/styles/tools/**",
+            "src/styles/global/**",
+            "src/styles/home/**",
+            "src/styles/layout/**",
+            "src/styles/common/**",
+            "src/styles/components/**",
+            "src/styles/ui/**",
+            "src/styles/*.scss"
+        ],
+        "docs": ["docs/**"],
+        "test": ["tests/**", "**/*.test.*", "**/*.spec.*", "jest.config.*", "playwright.config.*"],
+        "gov-config": [
+            ".agent/governance/config/**",
+            ".agent/GATEKEEPER_RULES.md",
+            ".agent/README.md",
+            ".agent/index.md"
+        ],
+        "gov-skills": [".agent/skills/**"],
+        "gov-workflows": [".agent/workflows/**"],
+        "gov-plans": [".agent/plans/README.md", ".agent/plans/archive/**"],
+        "gov-tooling": [
+            "scripts/**",
+            "commitlint.config.cjs",
+            "eslint.config.js",
+            ".markdownlint.json",
+            ".markdownlintignore",
+            ".prettierrc.mjs",
+            ".stylelintrc.json",
+            ".editorconfig",
+            "docs/core/git-governance.md"
+        ],
+        "gov-infra": [
+            ".github/**",
+            ".husky/**",
+            ".vscode/**",
+            "astro.config.mjs",
+            "package.json",
+            "pnpm-lock.yaml",
+            "tsconfig.json",
+            "vercel.json",
+            ".npmrc",
+            ".gitignore"
         ]
     },
     "defaultDomain": "core"

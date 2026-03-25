@@ -1,20 +1,28 @@
 # Plan Governance & Executable Commit Maps
 
-This directory contains the declarative roadmap for the project's evolution.
+This directory holds the active executable plan record, if one exists, plus the plan archive.
 
-## Core Rules
+## Active Plan Contract
 
-1. **Single Source of Truth**: the active `commit-map.json` is the current planning authority.
-2. **Atomic Planning**: define work in coherent units with explicit file boundaries.
-3. **Archival**: completed plans move to `archive/`.
+An active plan lives at `.agent/plans/<plan-id>/` and should contain:
 
-## Workflow
+- `README.md`: intent, scope, and success criteria
+- `manifest.json`: lifecycle and phase status
+- `commit-map.json`: commit unit source of truth
+- `CHANGELOG.md`: audit trail for the plan
+- `phases/*.md`: short phase notes when the work benefits from explicit sequencing
 
-### 1. Planning
-Define units and message previews in `commit-map.json`.
+`commit-map.json` is the planning authority. Do not invent `task.md`, `implementation_plan.md`, or
+parallel planning structures.
 
-### 2. Implementation
-Execute the planned work with the repository's normal branch, hook, and commitlint workflow.
+## Lifecycle
 
-### 3. Archival
-Move completed plans to `.agent/plans/archive/YYYY-MM/` and update the manifest to `COMPLETED`.
+1. Create the active plan record under `.agent/plans/<plan-id>/`.
+2. Execute the work while updating the plan record as needed.
+3. When complete, move the full record to `.agent/plans/archive/YYYY-MM/<plan-id>/` and mark the
+   manifest as `COMPLETED`.
+
+## Archive Rule
+
+Completed plans remain available only under `.agent/plans/archive/`. The root of `.agent/plans/`
+should stay lean so discovery reflects the currently active work.
