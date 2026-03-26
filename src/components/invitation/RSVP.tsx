@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { rsvpApi } from '@/lib/rsvp/services/rsvp-api';
+import { rsvpApi } from '@/lib/client/rsvp-api';
 import '@/styles/invitation/_rsvp.scss';
 import {
 	resolveLabels,

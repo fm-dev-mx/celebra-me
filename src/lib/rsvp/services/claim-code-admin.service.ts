@@ -8,11 +8,11 @@ import {
 	listClaimCodesService,
 	updateClaimCodeService,
 } from '@/lib/rsvp/repositories/claim-code.repository';
-import type { ClaimCodeDTO, ClaimCodeStatus } from '@/lib/rsvp/core/types';
+import type { ClaimCodeDTO, ClaimCodeStatus } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { normalizeClaimCode } from '@/lib/rsvp/services/auth-access.service';
 import { createHash, randomBytes } from 'node:crypto';
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 function hashClaimCode(rawCode: string): string {
@@ -80,7 +80,7 @@ export async function createClaimCodeAdmin(input: {
 	maxUses?: number;
 }): Promise<{ plainCode: string; item: ClaimCodeDTO }> {
 	const eventId = sanitize(input.eventId, 120);
-	if (!eventId) throw new ApiError(400, 'bad_request', 'eventId es obligatorio.');
+	if (!eventId) throw new ApiError(400, 'bad_request', 'eventId is required.');
 
 	const plainCode = generateClaimCode(14);
 	const maxUses = Math.max(1, Math.min(10000, Math.trunc(input.maxUses ?? 1)));
@@ -108,10 +108,10 @@ export async function updateClaimCodeAdmin(input: {
 	maxUses?: number;
 }): Promise<ClaimCodeDTO> {
 	const claimCodeId = sanitize(input.claimCodeId, 120);
-	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId es obligatorio.');
+	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId is required.');
 
 	const existing = await findClaimCodeByIdService(claimCodeId);
-	if (!existing) throw new ApiError(404, 'not_found', 'Claim code no encontrado.');
+	if (!existing) throw new ApiError(404, 'not_found', 'Claim code not found.');
 
 	const updated = await updateClaimCodeService({
 		claimCodeId,
@@ -127,7 +127,7 @@ export async function updateClaimCodeAdmin(input: {
 
 export async function disableClaimCodeAdmin(input: { claimCodeId: string }): Promise<ClaimCodeDTO> {
 	const claimCodeId = sanitize(input.claimCodeId, 120);
-	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId es obligatorio.');
+	if (!claimCodeId) throw new ApiError(400, 'bad_request', 'claimCodeId is required.');
 
 	const updated = await disableClaimCodeService(claimCodeId);
 	return toClaimCodeDto(updated);
@@ -137,7 +137,7 @@ export async function validateClaimCodeAdmin(input: { claimCode: string }): Prom
 	const claim = await findClaimCodeRecordByKeyService({
 		codeKey: hashClaimCode(input.claimCode),
 	});
-	if (!claim) throw new ApiError(404, 'not_found', 'Claim code no encontrado.');
+	if (!claim) throw new ApiError(404, 'not_found', 'Claim code not found.');
 
 	return toClaimCodeDto({
 		id: claim.id,

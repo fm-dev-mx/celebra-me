@@ -1,7 +1,7 @@
-import type { EventRecord } from '@/lib/rsvp/core/types';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { normalizePhone, sanitize } from '@/lib/rsvp/core/utils';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 import { generateInvitationLink } from '@utils/invitation-link';
 
 export interface BuildShareMessageInput {

@@ -3,7 +3,7 @@ import {
 	isValidEmail,
 	validateLoginForm,
 	validateRegisterForm,
-} from '@/lib/rsvp/auth/login-ui';
+} from '@/lib/client/auth/login-ui';
 
 describe('rsvp login UI helpers', () => {
 	it('validates email format', () => {

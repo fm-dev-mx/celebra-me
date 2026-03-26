@@ -10,9 +10,9 @@ import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import type {
 	AttendanceStatus,
-	DashboardGuestListResponse,
 	DashboardGuestMutationResponse,
-} from '@/lib/rsvp/core/types';
+} from '@/interfaces/rsvp/domain.interface';
+import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
@@ -25,7 +25,7 @@ import {
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
-import { generateShortId } from '@utils/ids';
+import { generateShortId } from '@/lib/server/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
@@ -78,9 +78,9 @@ export async function listDashboardGuests(input: {
 
 		const serviceEvent = await findEventByIdService(input.eventId);
 		if (serviceEvent) {
-			throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
+			throw new ApiError(403, 'forbidden', 'Access to the requested event is denied.');
 		}
-		throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+		throw new ApiError(404, 'not_found', 'Event not found.');
 	}
 
 	const guests = await findGuestsByEvent(
@@ -119,13 +119,13 @@ export async function createDashboardGuest(input: {
 	const event = await getEventAccessOrThrow(input.eventId, input.hostAccessToken);
 
 	const fullName = sanitize(input.fullName, 140);
-	if (!fullName) throw new ApiError(400, 'bad_request', 'Nombre completo es obligatorio.');
+	if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 
 	const phone = input.phone ? normalizePhone(input.phone) : undefined;
 	if (phone) {
 		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
 		if (existing) {
-			throw new ApiError(409, 'conflict', 'Este telefono ya esta registrado en este evento.');
+			throw new ApiError(409, 'conflict', 'This phone number is already registered for this event.');
 		}
 	}
 
@@ -213,10 +213,10 @@ export async function updateDashboardGuest(input: {
 			: existing.maxAllowedAttendees;
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
-		throw new ApiError(400, 'bad_request', 'Confirmado requiere al menos un asistente.');
+		throw new ApiError(400, 'bad_request', 'Confirmed attendance requires at least one attendee.');
 	}
 	if (nextAttendeeCount > nextCap) {
-		throw new ApiError(400, 'bad_request', `El maximo permitido es ${nextCap}.`);
+		throw new ApiError(400, 'bad_request', `The maximum allowed value is ${nextCap}.`);
 	}
 
 	let updated;
@@ -232,7 +232,7 @@ export async function updateDashboardGuest(input: {
 				throw new ApiError(
 					409,
 					'conflict',
-					'Este telefono ya esta registrado en este evento.',
+					'This phone number is already registered for this event.',
 				);
 			}
 		}

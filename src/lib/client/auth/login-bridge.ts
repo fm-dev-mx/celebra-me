@@ -1,11 +1,11 @@
-/** src/lib/rsvp/login-bridge.ts */
+/** Client-side bridge for the login/register shell. */
 import {
 	getMethodHelpText,
 	isValidEmail,
 	validateLoginForm,
 	validateRegisterForm,
-} from '@/lib/rsvp/auth/login-ui';
-import { authBridgeApi } from '@/lib/rsvp/auth/auth-bridge-api';
+} from '@/lib/client/auth/login-ui';
+import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
 
 export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');

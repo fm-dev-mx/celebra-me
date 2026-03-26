@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { initLoginFlow } from '@/lib/rsvp/auth/login-bridge';
+import { initLoginFlow } from '@/lib/client/auth/login-bridge';
 
 /**
  * Behavior-only component for the Login page.

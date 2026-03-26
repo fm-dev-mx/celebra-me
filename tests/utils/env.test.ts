@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { getEnv, resetEnvCacheForTests } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 
 describe('getEnv', () => {
 	const originalCwd = process.cwd();
@@ -19,7 +19,6 @@ describe('getEnv', () => {
 	});
 
 	beforeEach(() => {
-		resetEnvCacheForTests();
 		delete process.env.RSVP_ADMIN_USER;
 		delete process.env.RSVP_ADMIN_PASSWORD;
 	});

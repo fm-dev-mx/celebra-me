@@ -1,7 +1,7 @@
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { normalizeAppRole, isSuperAdminRole } from '@/lib/rsvp/auth/roles';
-import type { AppUserRole } from '@/lib/rsvp/core/types';
+import type { AppUserRole } from '@/interfaces/auth/session.interface';
 
 export interface HostSession {
 	userId: string;
@@ -93,7 +93,7 @@ export async function getSupabaseUserByAccessToken(
 	const supabaseUrl = getEnv('SUPABASE_URL');
 	const anonKey = getEnv('SUPABASE_ANON_KEY');
 	if (!supabaseUrl || !anonKey) {
-		throw new Error('SUPABASE_URL y SUPABASE_ANON_KEY son obligatorias para dashboard auth.');
+		throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required for dashboard auth.');
 	}
 
 	const response = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/user`, {
@@ -143,7 +143,7 @@ export async function getSessionContextFromRequest(
 export async function requireHostSession(request: Request): Promise<HostSession> {
 	const session = await getHostSessionFromRequest(request);
 	if (!session) {
-		throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 	}
 	return session;
 }
@@ -151,7 +151,7 @@ export async function requireHostSession(request: Request): Promise<HostSession>
 export async function requireSessionContext(request: Request): Promise<SessionContext> {
 	const context = await getSessionContextFromRequest(request);
 	if (!context) {
-		throw new ApiError(401, 'unauthorized', 'No autorizado.');
+		throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 	}
 	return context;
 }

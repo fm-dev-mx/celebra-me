@@ -6,7 +6,7 @@ import {
 } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 
 function sanitize(value: unknown, maxLen = 4096): string {
 	if (typeof value !== 'string') return '';
@@ -50,7 +50,7 @@ export async function requireAuthenticatedSession(request: Request): Promise<Ses
 export async function requireAdminSession(request: Request): Promise<SessionContext> {
 	const session = await requireSessionContext(request);
 	if (!session.isSuperAdmin) {
-		throw new ApiError(403, 'forbidden', 'No autorizado para administración global.');
+		throw new ApiError(403, 'forbidden', 'Not authorized for global administration.');
 	}
 	return session;
 }
@@ -59,7 +59,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 	const session = await requireSessionContext(request);
 
 	if (!session.isSuperAdmin) {
-		throw new ApiError(403, 'forbidden', 'No autorizado para administración global.');
+		throw new ApiError(403, 'forbidden', 'Not authorized for global administration.');
 	}
 
 	const accessToken = resolveAccessTokenFromRequest(request);
@@ -77,7 +77,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 		throw new ApiError(
 			403,
 			'forbidden',
-			'Se requiere autenticación de segundo factor (MFA) para acceder a este recurso.',
+			'Second-factor authentication (MFA) is required to access this resource.',
 		);
 	}
 
@@ -86,7 +86,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 		throw new ApiError(
 			403,
 			'forbidden',
-			'Se requiere autenticación fuerte (MFA o dispositivo de confianza).',
+			'Strong authentication is required (MFA or a trusted device).',
 		);
 	}
 
@@ -102,7 +102,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 		throw new ApiError(
 			403,
 			'forbidden',
-			'Dispositivo de confianza inválido o expirado. Por favor autentíquese nuevamente.',
+			'Trusted device token is invalid or expired. Please authenticate again.',
 		);
 	}
 

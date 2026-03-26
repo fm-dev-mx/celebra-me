@@ -1,7 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
-import type { AppUserRole } from '@/lib/rsvp/core/types';
+import type { AppUserRole } from '@/interfaces/auth/session.interface';
 
 interface TrustedDevicePayload {
 	sub: string;
@@ -31,9 +31,9 @@ function getSecret(): string {
 	const secret = sanitize(getEnv('TRUST_DEVICE_SECRET'), 512);
 	if (!secret) {
 		throw new Error(
-			'TRUST_DEVICE_SECRET no está configurada. ' +
-				'Por favor, configura esta variable de entorno. ' +
-				'Genera un valor seguro con: openssl rand -hex 32',
+			'TRUST_DEVICE_SECRET is not configured. ' +
+				'Set this environment variable before using trusted devices. ' +
+				'Generate a secure value with: openssl rand -hex 32',
 		);
 	}
 	return secret;

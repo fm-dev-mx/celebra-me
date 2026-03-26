@@ -1,19 +1,23 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
-import { sendEmail } from '@utils/email';
-import { successResponse, errorResponse, validateBody } from '@utils/api-utils';
+import { sendEmail } from '@/lib/server/email';
+import { ApiError } from '@/lib/rsvp/core/errors';
+import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
+import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 
 const contactSchema = z.object({
-	name: z.string().min(6, 'El nombre es obligatorio'),
-	email: z.email('El formato del correo electrónico no es válido'),
-	message: z.string().min(10, 'El mensaje es obligatorio'),
+	name: z.string().min(6, 'Name is required.'),
+	email: z.email('Email format is invalid.'),
+	message: z.string().min(10, 'Message is required.'),
 });
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		const { name, email, message } = await validateBody(request, contactSchema);
+		const body = await validateBodyOrRespond(request, contactSchema);
+		if (body instanceof Response) return body;
+		const { name, email, message } = body;
 
-		// Process email sending
+		// Send the contact request email through the server mailer.
 		const success = await sendEmail({
 			name,
 			email,
@@ -22,15 +26,10 @@ export const POST: APIRoute = async ({ request }) => {
 		});
 
 		if (success) {
-			return successResponse({ message: 'Mensaje enviado con éxito' });
-		} else {
-			return errorResponse('Error al enviar el correo', { status: 500 });
+			return successResponse({ message: 'Message sent successfully.' });
 		}
+		return errorResponse(new ApiError(500, 'internal_error', 'Failed to send email.'));
 	} catch (error) {
-		console.error('API Error:', error);
-		if (error instanceof Error && error.message.includes('Validación fallida')) {
-			return errorResponse(error.message, { status: 400, error });
-		}
-		return errorResponse('Error interno del servidor', { error });
+		return errorResponse(error);
 	}
 };

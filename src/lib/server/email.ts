@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { getEnv } from './env';
+import { getEnv } from '@/lib/server/env';
 
 export interface EmailPayload {
 	name: string;

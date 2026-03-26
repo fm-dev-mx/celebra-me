@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GuestPostConfirmActions from './GuestPostConfirmActions';
-import { rsvpApi } from '@/lib/rsvp/services/rsvp-api';
+import { rsvpApi } from '@/lib/client/rsvp-api';
 
 interface GuestRSVPFormProps {
 	inviteId: string;

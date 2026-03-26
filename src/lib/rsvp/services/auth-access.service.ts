@@ -6,7 +6,7 @@ import {
 import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createHash } from 'node:crypto';
-import { getEnv } from '@utils/env';
+import { getEnv } from '@/lib/server/env';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 function hashClaimCode(rawCode: string): string {
@@ -70,20 +70,20 @@ export async function claimEventForUserByClaimCode(input: {
 
 	if (!result.success) {
 		const errorMessages: Record<string, string> = {
-			invalid_code: 'Claim code invalido.',
-			inactive: 'Claim code desactivado.',
-			expired: 'Claim code expirado.',
-			exhausted: 'Claim code agotado.',
+			invalid_code: 'Claim code is invalid.',
+			inactive: 'Claim code is inactive.',
+			expired: 'Claim code has expired.',
+			exhausted: 'Claim code has been exhausted.',
 		};
 		throw new ApiError(
 			403,
 			'forbidden',
-			errorMessages[result.errorCode || ''] || 'Error al canjear el codigo.',
+			errorMessages[result.errorCode || ''] || 'Failed to redeem the claim code.',
 		);
 	}
 
 	if (!result.eventId) {
-		throw new ApiError(500, 'internal_error', 'Error inesperado: no se recibio event_id');
+		throw new ApiError(500, 'internal_error', 'Unexpected error: event_id was not returned.');
 	}
 
 	return {

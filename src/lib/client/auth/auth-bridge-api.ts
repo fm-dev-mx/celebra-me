@@ -1,10 +1,7 @@
 /**
- * src/lib/rsvp/auth-bridge-api.ts
- *
  * Client-side API abstraction for authentication endpoints.
  * Centralizes login, register, and logout fetch calls so that
- * UI bridges (login-bridge.ts, logout-client.ts) never call
- * fetch() directly.
+ * UI bridges never call fetch() directly.
  */
 
 export interface AuthLoginPayload {
@@ -45,7 +42,7 @@ class AuthBridgeApi {
 		const data = await parseJsonSafe(response);
 
 		if (!response.ok) {
-			throw new Error(data.message || 'No se pudo iniciar sesion.');
+			throw new Error(data.message || 'Unable to sign in.');
 		}
 
 		return data;
@@ -61,7 +58,7 @@ class AuthBridgeApi {
 		const data = await parseJsonSafe(response);
 
 		if (!response.ok) {
-			throw new Error(data.message || 'No se pudo registrar.');
+			throw new Error(data.message || 'Unable to register.');
 		}
 
 		return data;

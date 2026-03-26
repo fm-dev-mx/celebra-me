@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const FILES_IN_PRIORITY = ['.env.local', '.env'];
-let fileEnvCache: Record<string, string> | null = null;
 
 function parseEnvFile(content: string): Record<string, string> {
 	const parsed: Record<string, string> = {};
@@ -27,7 +26,6 @@ function parseEnvFile(content: string): Record<string, string> {
 }
 
 function loadFileEnvOnce(): Record<string, string> {
-	if (fileEnvCache) return fileEnvCache;
 	const merged: Record<string, string> = {};
 	const cwd = process.cwd();
 	for (const fileName of FILES_IN_PRIORITY) {
@@ -46,7 +44,6 @@ function loadFileEnvOnce(): Record<string, string> {
 			// Ignore unreadable env files; process.env remains source of truth.
 		}
 	}
-	fileEnvCache = merged;
 	return merged;
 }
 
@@ -60,8 +57,4 @@ export const getEnv = (key: string): string => {
 	if (process.env.NODE_ENV === 'test') return '';
 	const fileEnv = loadFileEnvOnce();
 	return fileEnv[key] ?? '';
-};
-
-export const resetEnvCacheForTests = (): void => {
-	fileEnvCache = null;
 };
