@@ -1,0 +1,103 @@
+---
+---
+
+<div class="contact-card" data-contact-form>
+	<form class="contact-form" novalidate>
+		<div class="input-group">
+			<input
+				type="text"
+				id="contact-name"
+				name="name"
+				class="input-group__input"
+				required
+				placeholder=" "
+			/>
+			<label for="contact-name" class="input-group__label">Nombre completo</label>
+		</div>
+
+		<div class="input-group">
+			<input
+				type="email"
+				id="contact-email"
+				name="email"
+				class="input-group__input"
+				required
+				placeholder=" "
+			/>
+			<label for="contact-email" class="input-group__label">Correo electrónico</label>
+		</div>
+
+		<div class="input-group">
+			<textarea
+				id="contact-message"
+				name="message"
+				class="input-group__input input-group__input--textarea"
+				required
+				placeholder=" "
+			></textarea>
+			<label for="contact-message" class="input-group__label">Detalles de su evento</label>
+		</div>
+
+		<button type="submit" class="submit-btn" data-submit-label>
+			Solicitar asesoría
+		</button>
+
+		<p class="form-feedback form-feedback--success" data-feedback-success hidden>
+			Solicitud enviada. Un asesor le contactará a la brevedad.
+		</p>
+		<p class="form-feedback form-feedback--error" data-feedback-error hidden>
+			Ocurrió un error. Por favor, intente de nuevo.
+		</p>
+	</form>
+</div>
+
+<script>
+	const root = document.querySelector('[data-contact-form]');
+	const form = root?.querySelector('.contact-form');
+	const submitLabel = root?.querySelector('[data-submit-label]');
+	const successMessage = root?.querySelector('[data-feedback-success]');
+	const errorMessage = root?.querySelector('[data-feedback-error]');
+
+	if (form instanceof HTMLFormElement && submitLabel) {
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+
+			successMessage?.setAttribute('hidden', '');
+			errorMessage?.setAttribute('hidden', '');
+
+			const submitButton = form.querySelector('button[type="submit"]');
+			if (submitButton instanceof HTMLButtonElement) {
+				submitButton.disabled = true;
+			}
+			submitLabel.textContent = 'Enviando solicitud...';
+
+			try {
+				const formData = new FormData(form);
+				const payload = Object.fromEntries(formData.entries());
+
+				const response = await fetch('/api/contact', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(payload),
+				});
+
+				if (!response.ok) {
+					throw new Error('No se pudo enviar la solicitud.');
+				}
+
+				form.reset();
+				successMessage?.removeAttribute('hidden');
+			} catch (error) {
+				console.error('Error al enviar contacto:', error);
+				errorMessage?.removeAttribute('hidden');
+			} finally {
+				if (submitButton instanceof HTMLButtonElement) {
+					submitButton.disabled = false;
+				}
+				submitLabel.textContent = 'Solicitar asesoría';
+			}
+		});
+	}
+</script>

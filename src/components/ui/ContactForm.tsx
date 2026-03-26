@@ -1,25 +1,24 @@
-import { useState, type FC, type SubmitEvent } from 'react';
+import type { FC, SubmitEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { rsvpApi, type ContactPayload } from '@/lib/client/rsvp-api';
+import type { ContactPayload } from '@/lib/client/rsvp-api';
+import { useContactSubmission } from '@/hooks/use-contact-submission';
 
 const ContactForm: FC = () => {
-	const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+	const { submitting, error, submitted, submitContact, resetContactSubmission } =
+		useContactSubmission();
 
 	const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		setStatus('submitting');
+		resetContactSubmission();
 
 		try {
 			const formData = new FormData(e.currentTarget);
 			const data = Object.fromEntries(formData.entries()) as unknown as ContactPayload;
 
-			await rsvpApi.submitContact(data);
-
-			setStatus('success');
+			await submitContact(data);
 			e.currentTarget.reset();
-		} catch (error) {
-			console.error('Submission error:', error);
-			setStatus('error');
+		} catch {
+			// The hook preserves the current error state for the feedback message.
 		}
 	};
 
@@ -67,12 +66,12 @@ const ContactForm: FC = () => {
 					</label>
 				</div>
 
-				<button type="submit" className="submit-btn" disabled={status === 'submitting'}>
-					{status === 'submitting' ? 'Enviando Solicitud...' : 'Solicitar Asesoría'}
+				<button type="submit" className="submit-btn" disabled={submitting}>
+					{submitting ? 'Enviando Solicitud...' : 'Solicitar Asesoría'}
 				</button>
 
 				<AnimatePresence>
-					{status === 'success' && (
+					{submitted && (
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -81,13 +80,13 @@ const ContactForm: FC = () => {
 							Solicitud enviada. Un asesor le contactará a la brevedad.
 						</motion.p>
 					)}
-					{status === 'error' && (
+					{error && (
 						<motion.p
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
 							className="form-feedback form-feedback--error"
 						>
-							Ocurrió un error. Por favor, intente de nuevo.
+							{error}
 						</motion.p>
 					)}
 				</AnimatePresence>

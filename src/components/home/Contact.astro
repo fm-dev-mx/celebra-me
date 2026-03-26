@@ -1,6 +1,6 @@
 ---
 // src/sections/Contact.astro
-import ContactForm from '@components/ui/ContactForm.tsx';
+import ContactForm from '@components/ui/ContactForm.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
@@ -66,7 +66,7 @@ const { data } = Astro.props;
 
 			<!-- Contact Form Component -->
 			<div class="contact-form-wrapper">
-				<ContactForm client:visible />
+				<ContactForm />
 			</div>
 		</div>
 

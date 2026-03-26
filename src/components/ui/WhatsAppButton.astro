@@ -1,0 +1,30 @@
+---
+import Icon from '@/components/common/Icon.astro';
+
+interface Props {
+	className?: string;
+	phone?: string;
+	message?: string;
+	label?: string;
+}
+
+const {
+	className = '',
+	phone = '5215500000000',
+	message = '¡Hola! Me gustaría recibir información sobre las invitaciones digitales premium.',
+	label = 'Crea tu invitación',
+} = Astro.props;
+
+const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+---
+
+<a
+	href={whatsappUrl}
+	target="_blank"
+	rel="noopener noreferrer"
+	class:list={['whatsapp-button', className]}
+	aria-label="Contactar por WhatsApp"
+>
+	<Icon name="WhatsApp" size={20} />
+	{label}
+</a>

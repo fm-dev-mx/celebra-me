@@ -1,0 +1,37 @@
+---
+interface Testimonial {
+	name: string;
+	text: string;
+	role?: string;
+}
+
+interface Props {
+	title?: string;
+	testimonials: Testimonial[];
+}
+
+const { testimonials = [] } = Astro.props;
+
+if (!testimonials.length) {
+	return null;
+}
+---
+
+<div class="testimonials">
+	<div class="testimonials__grid">
+		{
+			testimonials.map((testimonial) => (
+				<article class="testimonials__card">
+					<span class="testimonials__quote-icon">“</span>
+					<p class="testimonials__text">“{testimonial.text}”</p>
+					<div class="testimonials__footer">
+						<span class="testimonials__name">{testimonial.name}</span>
+						{testimonial.role && (
+							<span class="testimonials__role">{testimonial.role}</span>
+						)}
+					</div>
+				</article>
+			))
+		}
+	</div>
+</div>

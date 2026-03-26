@@ -1,6 +1,6 @@
 ---
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import FAQList from '@components/ui/FAQList.tsx';
+import FAQList from '@components/ui/FAQList.astro';
 
 import type { FAQData } from '@/interfaces/ui/sections/landing-page.interface';
 
@@ -25,8 +25,7 @@ const { data } = Astro.props;
 			</p>
 		</header>
 
-		<!-- FAQ List Component (React component with client-side rendering) -->
-		<FAQList client:visible faqs={data.faqs} />
+		<FAQList faqs={data.faqs} />
 
 		<!-- Scroll Action to return to contact section -->
 		<div class="faq-footer">

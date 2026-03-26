@@ -5,7 +5,7 @@
  */
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getCommonAsset } from '@/lib/assets/asset-registry';
 import { Image } from 'astro:assets';
@@ -71,7 +71,6 @@ const avatar3 = getCommonAsset('avatar3');
 		<!-- Actions (Stagger 3) -->
 		<div class="hero-prime__actions stagger-3">
 			<WhatsAppButton
-				client:idle
 				className="shine-effect"
 				phone={data.whatsappPhone}
 				message={data.whatsappMessage}
@@ -112,25 +111,29 @@ const avatar3 = getCommonAsset('avatar3');
 	const hero = document.getElementById('inicio');
 	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	if (hero && !shouldReduceMotion) {
+	if (hero instanceof HTMLElement && !shouldReduceMotion) {
 		const background = hero.querySelector('.hero-prime__bg');
-		const media = background?.querySelectorAll('img, video') ?? [];
+		const media = Array.from(background?.querySelectorAll('img, video') ?? []);
 
-		const handleMouseMove = (event: MouseEvent) => {
+		const applyTransform = (moveX, moveY) => {
+			media.forEach((element) => {
+				if (element instanceof HTMLElement) {
+					element.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+				}
+			});
+		};
+
+		const handleMouseMove = (event) => {
 			const moveX = (event.clientX - window.innerWidth / 2) / 50;
 			const moveY = (event.clientY - window.innerHeight / 2) / 50;
-			media.forEach((element) => {
-				(element as HTMLElement).style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
-			});
+			applyTransform(moveX, moveY);
 		};
 
 		const handleMouseLeave = () => {
-			media.forEach((element) => {
-				(element as HTMLElement).style.transform = 'scale(1.1) translate(0, 0)';
-			});
+			applyTransform(0, 0);
 		};
 
-		hero.addEventListener('mousemove', (event) => handleMouseMove(event as MouseEvent));
+		hero.addEventListener('mousemove', handleMouseMove);
 		hero.addEventListener('mouseleave', handleMouseLeave);
 	}
 </script>

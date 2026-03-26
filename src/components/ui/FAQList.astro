@@ -1,0 +1,88 @@
+---
+interface FAQ {
+	question: string;
+	answer: string;
+}
+
+interface Props {
+	faqs: FAQ[];
+}
+
+const { faqs = [] } = Astro.props;
+
+if (!faqs.length) {
+	return null;
+}
+---
+
+<div class="faq-list-container" data-faq-list>
+	{
+		faqs.map((faq, index) => (
+			<div class="faq-item" data-faq-item>
+				<button
+					class="faq-question-btn"
+					type="button"
+					aria-expanded="false"
+					aria-controls={`faq-answer-${index}`}
+				>
+					<span class="question-text">{faq.question}</span>
+					<span class="chevron-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
+							<path d="m6 9 6 6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+						</svg>
+					</span>
+				</button>
+				<div
+					id={`faq-answer-${index}`}
+					class="faq-answer-wrapper"
+					hidden
+				>
+					<div class="faq-answer-content">
+						<p class="answer-text">{faq.answer}</p>
+					</div>
+				</div>
+			</div>
+		))
+	}
+</div>
+
+<script>
+	const faqList = document.querySelector('[data-faq-list]');
+
+	if (faqList) {
+		const items = Array.from(faqList.querySelectorAll('[data-faq-item]'));
+
+		items.forEach((item) => {
+			const button = item.querySelector('.faq-question-btn');
+			const answer = item.querySelector('.faq-answer-wrapper');
+
+			if (!(button instanceof HTMLButtonElement) || !(answer instanceof HTMLElement)) {
+				return;
+			}
+
+			button.addEventListener('click', () => {
+				const isOpen = button.getAttribute('aria-expanded') === 'true';
+
+				items.forEach((otherItem) => {
+					const otherButton = otherItem.querySelector('.faq-question-btn');
+					const otherAnswer = otherItem.querySelector('.faq-answer-wrapper');
+
+					if (
+						otherButton instanceof HTMLButtonElement &&
+						otherAnswer instanceof HTMLElement
+					) {
+						otherButton.setAttribute('aria-expanded', 'false');
+						otherAnswer.hidden = true;
+						otherItem.classList.remove('is-open');
+					}
+				});
+
+				if (!isOpen) {
+					button.setAttribute('aria-expanded', 'true');
+					answer.hidden = false;
+					item.classList.add('is-open');
+				}
+			});
+		});
+	}
+</script>

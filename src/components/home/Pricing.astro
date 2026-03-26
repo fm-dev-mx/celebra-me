@@ -1,6 +1,5 @@
 ---
 // src/components/home/Pricing.astro
-import PricingBehavior from '@/components/behavior/PricingBehavior';
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
 
 interface Props {
@@ -75,4 +74,53 @@ const { data } = Astro.props;
 		</div>
 	</div>
 </section>
-<PricingBehavior client:load />
+<script>
+	const pricingObserver = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (!entry.isIntersecting) {
+					return;
+				}
+				entry.target.classList.add('is-visible');
+				pricingObserver.unobserve(entry.target);
+			});
+		},
+		{
+			threshold: 0.1,
+			rootMargin: '0px 0px -100px 0px',
+		},
+	);
+
+	document.querySelectorAll('.pricing-card').forEach((card) => pricingObserver.observe(card));
+
+	document.querySelectorAll('.feature-item').forEach((item) => {
+		if (!(item instanceof HTMLElement)) {
+			return;
+		}
+
+		const highlight = () => {
+			const feature = item.dataset.feature;
+			if (!feature) {
+				return;
+			}
+
+			document
+				.querySelectorAll(`.feature-item[data-feature="${feature}"]`)
+				.forEach((element) => element.classList.add('is-highlighted'));
+		};
+
+		const unhighlight = () => {
+			const feature = item.dataset.feature;
+			if (!feature) {
+				return;
+			}
+
+			document
+				.querySelectorAll(`.feature-item[data-feature="${feature}"]`)
+				.forEach((element) => element.classList.remove('is-highlighted'));
+		};
+
+		item.addEventListener('mouseenter', highlight);
+		item.addEventListener('mouseleave', unhighlight);
+	});
+</script>

@@ -3,7 +3,7 @@
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
 import SectionTitle from '@components/typography/SectionTitle.astro';
-import TestimonialsCarousel from '@components/ui/TestimonialsCarousel.tsx';
+import TestimonialsCarousel from '@components/ui/TestimonialsCarousel.astro';
 
 import type { TestimonialsData } from '@/interfaces/ui/sections/landing-page.interface';
 
@@ -26,7 +26,6 @@ const { data } = Astro.props;
 		<SectionTitle color="text-secondary-dark" extraClass="testimonials__title-text">
 			{data.title}
 		</SectionTitle>
-		<!-- React TestimonialsCarousel component with client:visible directive for lazy loading -->
-		<TestimonialsCarousel {...data} client:visible />
+		<TestimonialsCarousel {...data} />
 	</Container>
 </Section>
