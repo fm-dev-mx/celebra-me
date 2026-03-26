@@ -52,7 +52,7 @@ import MfaSetupBehavior from '@/components/behavior/MfaSetupBehavior';
 							<p id="mfa-hint" class="auth-hint">Introduce el código de 6 dígitos de tu app de autenticación.</p>
 						</div>
 
-						<button id="verify-mfa" class="auth-submit">Verificar y Activar</button>
+						<button id="verify-mfa" type="button" class="auth-submit">Verificar y Activar</button>
 						<p id="mfa-status" class="auth-status" role="status"></p>
 					</div>
 				</div>
@@ -60,35 +60,6 @@ import MfaSetupBehavior from '@/components/behavior/MfaSetupBehavior';
 		</article>
 	</section>
 
-	<style>
-		.qr-placeholder {
-			background: white;
-			padding: 2rem;
-			border-radius: 1rem;
-			margin: 1.5rem 0;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			min-height: 250px;
-			color: var(--color-surface-dark);
-			text-align: center;
-		}
-
-		.loader {
-			border-top: 3px solid var(--color-action-accent);
-			border-radius: 50%;
-			width: 30px;
-			height: 30px;
-			animation: spin 1s linear infinite;
-			margin-bottom: 1rem;
-		}
-
-		@keyframes spin {
-			0% { transform: rotate(0deg); }
-			100% { transform: rotate(360deg); }
-		}
-	</style>
 
 	<MfaSetupBehavior client:only="react" />
 </Layout>
