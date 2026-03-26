@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type AttendanceStatus } from './RSVPLogic';
+import { type AttendanceStatus } from './rsvp-logic';
 
 export function NameField(props: {
 	nameLocked: boolean;

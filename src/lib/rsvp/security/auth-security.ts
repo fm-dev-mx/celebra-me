@@ -23,29 +23,29 @@ export function sanitizeClaimCode(value: unknown): string {
 
 export function assertValidEmail(email: string): void {
 	if (!email || !EMAIL_PATTERN.test(email)) {
-		throw new ApiError(400, 'bad_request', 'Correo electrónico inválido.');
+		throw new ApiError(400, 'bad_request', 'Email address is invalid.');
 	}
 }
 
 export function assertValidPassword(password: string): void {
 	if (!password) {
-		throw new ApiError(400, 'bad_request', 'Password es obligatoria.');
+		throw new ApiError(400, 'bad_request', 'Password is required.');
 	}
 	if (password.length < 8 || password.length > 200) {
-		throw new ApiError(400, 'bad_request', 'Password debe tener entre 8 y 200 caracteres.');
+		throw new ApiError(400, 'bad_request', 'Password must be between 8 and 200 characters.');
 	}
 }
 
 export function assertValidClaimCode(claimCode: string): void {
 	if (!claimCode || !CLAIM_CODE_PATTERN.test(claimCode)) {
-		throw new ApiError(400, 'bad_request', 'claimCode inválido.');
+		throw new ApiError(400, 'bad_request', 'Claim code is invalid.');
 	}
 }
 
 export function assertSameOrigin(request: Request, expectedOrigin: string): void {
 	const origin = sanitize(request.headers.get('origin'), 512);
 	if (origin && origin !== expectedOrigin) {
-		throw new ApiError(403, 'forbidden', 'Origen inválido.');
+		throw new ApiError(403, 'forbidden', 'Origin is invalid.');
 	}
 
 	const referer = sanitize(request.headers.get('referer'), 1024);
@@ -53,10 +53,10 @@ export function assertSameOrigin(request: Request, expectedOrigin: string): void
 		try {
 			const refererOrigin = new URL(referer).origin;
 			if (refererOrigin !== expectedOrigin) {
-				throw new ApiError(403, 'forbidden', 'Origen inválido.');
+				throw new ApiError(403, 'forbidden', 'Origin is invalid.');
 			}
 		} catch {
-			throw new ApiError(403, 'forbidden', 'Referer inválido.');
+			throw new ApiError(403, 'forbidden', 'Referer is invalid.');
 		}
 	}
 }
@@ -86,7 +86,7 @@ export async function enforceAuthRateLimit(input: {
 		throw new ApiError(
 			429,
 			'rate_limited',
-			'Demasiados intentos. Intenta nuevamente más tarde.',
+			'Too many attempts. Try again later.',
 		);
 	}
 }

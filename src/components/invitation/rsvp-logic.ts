@@ -1,4 +1,4 @@
-// --- Types ---
+// Shared RSVP state types.
 
 export type AttendanceStatus = 'confirmed' | 'declined' | null;
 
@@ -25,7 +25,7 @@ export interface ValidationContext {
 	effectiveGuestCap: number;
 }
 
-// --- Helpers ---
+// RSVP form helpers.
 
 export function resolveLabels(labels?: {
 	name?: string;
@@ -34,7 +34,6 @@ export function resolveLabels(labels?: {
 	confirmButton?: string;
 }): ResolvedLabels {
 	return {
-		// Use Unicode for Spanish to avoid gatekeeper comment detection
 		nameLabel: labels?.name ?? 'Nombre completo \u002a',
 		guestCountLabel: labels?.guestCount ?? 'N\u00famero total de asistentes',
 		attendanceLabel: labels?.attendance ?? '\u00bfAsistir\u00e1s al evento? \u002a',

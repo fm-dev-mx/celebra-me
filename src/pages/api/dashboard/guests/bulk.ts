@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
+import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import { validateBody } from '@utils/api-utils';
 import { z } from 'zod';
 
 const BulkImportSchema = z.object({
@@ -20,13 +20,14 @@ const BulkImportSchema = z.object({
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// 1. Verificar sesión (patrón rsvp)
+		// 1. Validate the authenticated host session.
 		const session = await requireHostSession(request);
 
-		// 2. Validar cuerpo
-		const body = await validateBody(request, BulkImportSchema);
+		// 2. Validate the request body.
+		const body = await validateBodyOrRespond(request, BulkImportSchema);
+		if (body instanceof Response) return body;
 
-		// 3. Verificar propiedad del evento usando REST
+		// 3. Verify event ownership before importing guests.
 		const events = await supabaseRestRequest<Array<{ id: string }>>({
 			pathWithQuery: `events?id=eq.${body.eventId}&owner_user_id=eq.${session.userId}&select=id`,
 			method: 'GET',
@@ -34,10 +35,10 @@ export const POST: APIRoute = async ({ request }) => {
 		});
 
 		if (events.length === 0) {
-			return forbidden('Evento no encontrado o no tienes permisos.');
+			return forbidden('Event not found or access denied.');
 		}
 
-		// 4. Llamar RPC (POST a /rpc/name)
+		// 4. Call the bulk upsert RPC.
 		const data = await supabaseRestRequest({
 			pathWithQuery: `rpc/upsert_guests_v1`,
 			method: 'POST',
@@ -50,7 +51,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		return jsonResponse({
 			data,
-			message: 'Importación completada con éxito.',
+			message: 'Import completed successfully.',
 		});
 	} catch (err) {
 		console.error('[BulkImport] Error:', err);

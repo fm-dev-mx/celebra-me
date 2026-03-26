@@ -1,13 +1,12 @@
 /**
- * Utilidades de validación de requests
- * Proporciona funciones helper para validar datos de entrada con Zod
+ * Request validation helpers built on top of Zod.
  */
 
 import { z } from 'zod';
 import { badRequest } from '@/lib/rsvp/core/http';
 
 /**
- * Resultados de validación
+ * Successful validation result.
  */
 export interface ValidationResult<T> {
 	success: true;
@@ -25,7 +24,7 @@ export interface ValidationError {
 export type ValidationOutcome<T> = ValidationResult<T> | ValidationError;
 
 /**
- * Extrae los mensajes de error de una excepción de Zod
+ * Maps a ZodError into the shared validation error shape.
  */
 function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
 	return error.issues.map((issue) => ({
@@ -35,8 +34,7 @@ function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
 }
 
 /**
- * Valida el body de una request contra un schema de Zod
- * @returns Data validada o error de validación
+ * Validates a request body against a Zod schema.
  */
 export async function validateBody<T>(
 	request: Request,
@@ -86,8 +84,7 @@ export async function validateBody<T>(
 }
 
 /**
- * Valida el body de una request y retorna Response de error si falla
- * Útil para usar directamente en handlers de API
+ * Validates a request body and returns an error Response when validation fails.
  */
 export async function validateBodyOrRespond<T>(
 	request: Request,
@@ -104,7 +101,7 @@ export async function validateBodyOrRespond<T>(
 }
 
 /**
- * Valida query params contra un schema de Zod
+ * Validates query params against a Zod schema.
  */
 export function validateQuery<T>(
 	searchParams: URLSearchParams,
@@ -132,7 +129,7 @@ export function validateQuery<T>(
 }
 
 /**
- * Valida query params y retorna Response si falla
+ * Validates query params and returns a Response when validation fails.
  */
 export function validateQueryOrRespond<T>(
 	searchParams: URLSearchParams,
@@ -149,8 +146,7 @@ export function validateQueryOrRespond<T>(
 }
 
 /**
- * Valida un objeto contra un schema de Zod
- * Útil para validar datos ya parseados
+ * Validates an already parsed value against a Zod schema.
  */
 export function validate<T>(data: unknown, schema: z.ZodSchema<T>): ValidationOutcome<T> {
 	const result = schema.safeParse(data);
@@ -169,12 +165,12 @@ export function validate<T>(data: unknown, schema: z.ZodSchema<T>): ValidationOu
 }
 
 /**
- * Valida y retorna error si falla
+ * Validates data and throws when validation fails.
  */
 export function validateOrThrow<T>(
 	data: unknown,
 	schema: z.ZodSchema<T>,
-	errorMessage = 'Error de validación',
+	errorMessage = 'Validation error',
 ): T {
 	const result = validate(data, schema);
 
@@ -187,7 +183,7 @@ export function validateOrThrow<T>(
 }
 
 /**
- * Convierte errores de Zod a formato de API
+ * Converts Zod validation errors into the shared API error payload.
  */
 export function formatZodErrors(error: z.ZodError): Record<string, unknown> {
 	return {

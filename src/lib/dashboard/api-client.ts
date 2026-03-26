@@ -3,13 +3,13 @@ import {
 	type ApiResult,
 	type ApiResponse,
 	type ApiErrorResponse,
-} from '../api-client-shared';
+} from '@/lib/api-client-shared';
 
 export { type ApiResult, type ApiResponse, type ApiErrorResponse };
 
 /**
- * Obtiene el token CSRF del meta tag
- * El servidor debe incluir: <meta name="csrf-token" content="TOKEN">
+ * Reads the CSRF token from the page metadata.
+ * The server must include: <meta name="csrf-token" content="TOKEN">
  */
 function getCsrfToken(): string | undefined {
 	if (typeof document === 'undefined') return undefined;
@@ -26,8 +26,8 @@ export class DashboardApiClient {
 	}
 
 	/**
-	 * Prepara headers para requests que modifican estado
-	 * Incluye CSRF token automáticamente
+	 * Prepares headers for state-changing requests.
+	 * Adds the CSRF token automatically when present.
 	 */
 	private prepareMutationHeaders(init?: RequestInit): Record<string, string> {
 		const csrfToken = getCsrfToken();
@@ -39,7 +39,7 @@ export class DashboardApiClient {
 			headers['X-CSRF-Token'] = csrfToken;
 		}
 
-		// Merge custom headers from init
+		// Preserve explicit caller headers while keeping the default mutation headers.
 		if (init?.headers) {
 			const initHeaders = init.headers as Record<string, string>;
 			Object.assign(headers, initHeaders);

@@ -7,15 +7,15 @@
 import type { ImageMetadata } from 'astro';
 
 // Common Assets
-import avatar1 from '../../assets/images/hero/avatar1.png';
-import avatar2 from '../../assets/images/hero/avatar2.png';
-import avatar3 from '../../assets/images/hero/avatar3.png';
-import serviceXv from '../../assets/images/services/xv.png';
-import serviceWedding from '../../assets/images/services/wedding.png';
-import serviceBaptism from '../../assets/images/services/baptism.png';
-import serviceCumple from '../../assets/images/services/cumple.png';
-import headerLogo from '../../assets/images/header/horizontal-logo150x56.png';
-import partyToast from '../../assets/images/about/party-toast-premium.png';
+import avatar1 from '@images/hero/avatar1.png';
+import avatar2 from '@images/hero/avatar2.png';
+import avatar3 from '@images/hero/avatar3.png';
+import serviceXv from '@images/services/xv.png';
+import serviceWedding from '@images/services/wedding.png';
+import serviceBaptism from '@images/services/baptism.png';
+import serviceCumple from '@images/services/cumple.png';
+import headerLogo from '@images/header/horizontal-logo150x56.png';
+import partyToast from '@images/about/party-toast-premium.png';
 
 /**
  * Represents a processed image asset.
@@ -104,7 +104,7 @@ interface Registry {
 	common: CommonAssets;
 }
 
-import { discoverEventModules } from './discovery';
+import { discoverEventModules } from '@/lib/assets/discovery';
 
 // --- DYNAMIC DISCOVERY ---
 

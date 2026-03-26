@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await requireHostSession(request);
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
-		if (!eventId) return badRequest('eventId es obligatorio.');
+		if (!eventId) return badRequest('eventId is required.');
 
 		const data = await listDashboardGuests({
 			eventId,

@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ params, request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -30,11 +30,11 @@ export const POST: APIRoute = async ({ params, request, url }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+			throw new ApiError(429, 'rate_limited', 'Too many requests.');
 		}
 
 		const guestId = sanitize(params.guestId, 120);
-		if (!guestId) return badRequest('guestId es obligatorio.');
+		if (!guestId) return badRequest('guestId is required.');
 
 		const result = await markGuestShared({
 			guestId,

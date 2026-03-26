@@ -17,8 +17,8 @@ import {
 } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { type EventContentEntry } from '@/lib/content/events';
-import { pickVariant, resolveAsset, requireAsset } from './event-helpers';
-import type { AdaptationContext } from './event';
+import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
+import type { AdaptationContext } from '@/lib/adapters/event';
 import { resolveColorToken } from '@/lib/theme/color-tokens';
 
 export function buildHero(context: AdaptationContext): HeroViewModel {

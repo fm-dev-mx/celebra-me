@@ -41,7 +41,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 			return jsonResponse({
 				ok: true,
-				message: 'Revisa tu correo para iniciar sesión con Magic Link.',
+				message: 'Check your email to sign in with a magic link.',
 			});
 		}
 
@@ -54,11 +54,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 				password,
 			});
 		} catch {
-			throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+			throw new ApiError(401, 'unauthorized', 'Invalid credentials.');
 		}
 		const payload = {
 			ok: true,
-			message: 'Inicio de sesión exitoso.',
+			message: 'Sign-in completed successfully.',
 			next: '/dashboard/invitados',
 		};
 
@@ -75,7 +75,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		});
 	} catch (error: unknown) {
 		if (error instanceof SyntaxError) {
-			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
+			return errorResponse(new ApiError(400, 'bad_request', 'Invalid JSON.'));
 		}
 		return errorResponse(error);
 	}

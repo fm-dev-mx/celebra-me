@@ -1,10 +1,10 @@
 /**
  * CSRF (Cross-Site Request Forgery) Protection
  *
- * Implementación basada en tokens sincronizados (Synchronizer Token Pattern)
- * - Token CSRF generado en el servidor y almacenado en cookie
- * - Cliente debe leer la cookie y enviar el token en header X-CSRF-Token
- * - Servidor valida que el token coincida
+ * Synchronizer token pattern implementation.
+ * - The server generates a CSRF token and stores a hash in a cookie.
+ * - The client sends the raw token in the X-CSRF-Token header.
+ * - The server validates that both tokens match.
  */
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -15,28 +15,27 @@ const CSRF_HEADER_NAME = 'x-csrf-token';
 const TOKEN_LENGTH = 32;
 
 /**
- * Genera un token CSRF criptográficamente seguro
+ * Generates a cryptographically secure CSRF token.
  */
 export function generateCsrfToken(): string {
 	return randomBytes(TOKEN_LENGTH).toString('base64url');
 }
 
 /**
- * Hashea un token para almacenamiento seguro
+ * Hashes a CSRF token before storing it.
  */
 function hashToken(token: string): string {
 	return createHash('sha256').update(token).digest('base64url');
 }
 
 /**
- * Crea y almacena un nuevo token CSRF en cookies
- * Debe llamarse al iniciar sesión o al cargar una página con formularios
+ * Creates and stores a fresh CSRF token in cookies.
  */
 export function setCsrfToken(cookies: AstroCookies): string {
 	const token = generateCsrfToken();
 	const hashedToken = hashToken(token);
 
-	// Cookie segura para producción
+	// Restrict cookie transport in production.
 	const isProduction = process.env.NODE_ENV === 'production';
 
 	cookies.set(CSRF_COOKIE_NAME, hashedToken, {
@@ -44,71 +43,67 @@ export function setCsrfToken(cookies: AstroCookies): string {
 		secure: isProduction,
 		sameSite: 'strict',
 		path: '/',
-		maxAge: 60 * 60 * 24, // 24 horas
+		maxAge: 60 * 60 * 24, // 24 hours
 	});
 
 	return token;
 }
 
 /**
- * Obtiene el token CSRF hasheado de las cookies
+ * Reads the hashed CSRF token from cookies.
  */
 export function getCsrfTokenFromCookies(cookies: AstroCookies): string | undefined {
 	return cookies.get(CSRF_COOKIE_NAME)?.value;
 }
 
 /**
- * Obtiene el token CSRF del header de la request
+ * Reads the raw CSRF token from the request header.
  */
 export function getCsrfTokenFromHeader(request: Request): string | undefined {
 	return request.headers.get(CSRF_HEADER_NAME)?.trim() || undefined;
 }
 
 /**
- * Valida que el token CSRF del header coincida con el de la cookie
- * @throws Error si los tokens no coinciden o faltan
+ * Validates the request CSRF token against the cookie token.
  */
 export function validateCsrfToken(request: Request, cookies: AstroCookies): void {
-	// Solo validar para métodos que modifican estado
+	// Only enforce CSRF for state-changing methods.
 	const method = request.method.toUpperCase();
 	if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-		return; // GET, HEAD, OPTIONS no requieren CSRF
+		return; // GET, HEAD, and OPTIONS do not mutate state.
 	}
 
-	// En desarrollo, permitir requests sin CSRF token (para facilitar testing)
-	// En producción, siempre requerir CSRF
+	// Development keeps a looser policy to simplify local testing.
 	const isProduction = process.env.NODE_ENV === 'production';
 
 	const cookieToken = getCsrfTokenFromCookies(cookies);
 	const headerToken = getCsrfTokenFromHeader(request);
 
-	// Si no hay token en cookie, el usuario no tiene sesión activa
-	// Esto está bien, la autenticación se maneja por otro lado
+	// No cookie token usually means there is no authenticated session yet.
 	if (!cookieToken) {
 		return;
 	}
 
-	// Si hay token en cookie pero no en header, es un intento de CSRF
+	// A missing header token while a cookie token exists is suspicious.
 	if (!headerToken) {
 		if (isProduction) {
-			throw new Error('CSRF token faltante');
+			throw new Error('Missing CSRF token');
 		}
-		// En desarrollo, loggear warning pero permitir
-		console.warn('⚠️  CSRF token faltante en desarrollo');
+		console.warn('Missing CSRF token in development mode');
 		return;
 	}
 
-	// Validar que los tokens coinciden
+	// Compare the hashed request token with the stored cookie hash.
 	const hashedHeaderToken = hashToken(headerToken);
 
-	// Usar comparación de tiempo constante para prevenir timing attacks
+	// Use constant-time comparison to reduce timing side channels.
 	if (!timingSafeEqual(cookieToken, hashedHeaderToken)) {
-		throw new Error('CSRF token inválido');
+		throw new Error('Invalid CSRF token');
 	}
 }
 
 /**
- * Comparación de tiempo constante para prevenir timing attacks
+ * Constant-time string comparison helper.
  */
 function timingSafeEqual(a: string, b: string): boolean {
 	if (a.length !== b.length) {
@@ -124,52 +119,37 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 /**
- * Elimina el token CSRF de las cookies
- * Útil al cerrar sesión
+ * Removes the CSRF token cookie.
  */
 export function clearCsrfToken(cookies: AstroCookies): void {
 	cookies.delete(CSRF_COOKIE_NAME, { path: '/' });
 }
 
 /**
- * Genera un meta tag con el token CSRF para el cliente
- * El cliente debe leer este valor y enviarlo en requests
+ * Generates a meta tag containing the raw CSRF token for the client.
  */
 export function generateCsrfMetaTag(token: string): string {
 	return `<meta name="csrf-token" content="${token}">`;
 }
 
 /**
- * Middleware para validar CSRF en Astro
- * Uso en middleware.ts:
- *
- * import { csrfMiddleware } from '@/lib/rsvp/security/csrf';
- *
- * export const onRequest = defineMiddleware((context, next) => {
- *   // ... otra lógica de middleware ...
- *
- *   // Validar CSRF para requests que modifican estado
- *   csrfMiddleware(context);
- *
- *   return next();
- * });
+ * Astro middleware helper for CSRF validation.
  */
 export function csrfMiddleware(context: { request: Request; cookies: AstroCookies }): void {
 	try {
 		validateCsrfToken(context.request, context.cookies);
 	} catch (error) {
-		// Loggear el error pero dejar que el manejador de errores de Astro lo maneje
+		// Preserve centralized error handling while keeping a server log.
 		console.error('CSRF validation failed:', error);
 		throw error;
 	}
 }
 
 /**
- * Verifica si una ruta debe omitir validación CSRF
- * Útil para webhooks o APIs que usan otros métodos de autenticación
+ * Returns true when a path should bypass CSRF validation.
  */
 export function shouldSkipCsrfValidation(pathname: string): boolean {
-	// Rutas que no requieren CSRF (webhooks, APIs con autenticación alternativa)
+	// Webhooks and externally authenticated integrations do not use CSRF.
 	const skipPaths = ['/api/webhook', '/api/stripe', '/api/supabase'];
 
 	return skipPaths.some((path) => pathname.startsWith(path));

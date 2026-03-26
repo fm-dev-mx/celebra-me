@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			throw new ApiError(
 				400,
 				'bad_request',
-				isAdhocAdmin ? 'email es obligatorio.' : 'email y claimCode son obligatorios.',
+				isAdhocAdmin ? 'email is required.' : 'email and claimCode are required.',
 			);
 		}
 		if (claimCode) assertValidClaimCode(claimCode);
@@ -94,8 +94,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			ok: true,
 			message:
 				method === 'magic_link'
-					? 'Cuenta creada. Revisa tu correo para ingresar con Magic Link.'
-					: 'Cuenta creada correctamente.',
+					? 'Account created. Check your email to continue with a magic link.'
+					: 'Account created successfully.',
 			next: '/dashboard/invitados',
 		};
 
@@ -120,7 +120,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		});
 	} catch (error: unknown) {
 		if (error instanceof SyntaxError) {
-			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
+			return errorResponse(new ApiError(400, 'bad_request', 'Invalid JSON.'));
 		}
 		return errorResponse(error);
 	}
@@ -148,7 +148,7 @@ async function resolveUser(email: string, chosenPassword: string) {
 			throw new ApiError(
 				409,
 				'conflict',
-				'No se pudo completar el registro. Verifica los datos o intenta iniciar sesión.',
+				'Unable to complete registration. Verify the data or try signing in.',
 			);
 		}
 		return {
@@ -175,7 +175,7 @@ async function claimEventAndRole(userId: string, userEmail: string, claimCode: s
 				error.status,
 				error.code,
 				error.status === 400
-					? `El código de invitación no es válido o ya fue usado. ${error.message}`
+					? `The invitation code is invalid or has already been used. ${error.message}`
 					: error.message,
 			);
 		}

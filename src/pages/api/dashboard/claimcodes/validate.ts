@@ -11,14 +11,14 @@ function sanitize(value: unknown, maxLen = 256): string {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// Rate limiting: 30 req/min para validaciones
+		// Rate limiting: 30 req/min for validation calls.
 		await requireAdminRateLimit(request, 'claimcodes:validate');
 		await requireAdminStrongSession(request);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 		const claimCode = sanitize(body.claimCode as string);
-		if (!claimCode) return badRequest('claimCode es obligatorio.');
+		if (!claimCode) return badRequest('claimCode is required.');
 		const item = await validateClaimCodeAdmin({ claimCode });
 		return jsonResponse({ item });
 	} catch (error) {

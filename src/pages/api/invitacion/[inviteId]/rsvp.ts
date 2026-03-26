@@ -15,7 +15,7 @@ function getIp(request: Request): string {
 export const POST: APIRoute = async ({ params, request }) => {
 	try {
 		const inviteId = sanitize(params.inviteId, 100);
-		if (!inviteId) return badRequest('inviteId es obligatorio.');
+		if (!inviteId) return badRequest('inviteId is required.');
 
 		// Validate basic request structure before rate limiting
 		const contentType = request.headers.get('content-type');
@@ -33,7 +33,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			return errorResponse(new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.'));
+			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
 		}
 
 		let rawText: string;
@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			body.attendanceStatus === 'confirmed' || body.attendanceStatus === 'declined'
 				? body.attendanceStatus
 				: null;
-		if (!attendanceStatus) return badRequest('attendanceStatus invalido.');
+		if (!attendanceStatus) return badRequest('attendanceStatus is invalid.');
 
 		const attendeeCount = typeof body.attendeeCount === 'number' ? body.attendeeCount : 0;
 		const guestMessage = sanitize(body.guestMessage as string, 500);
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			attendeeCount,
 			guestMessage,
 		});
-		return successResponse({ message: 'RSVP guardado.', ...result });
+		return successResponse({ message: 'RSVP saved.', ...result });
 	} catch (error) {
 		return errorResponse(error);
 	}

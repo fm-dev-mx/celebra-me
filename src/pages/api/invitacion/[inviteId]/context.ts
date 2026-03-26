@@ -18,7 +18,7 @@ function getIp(request: Request): string {
 export const GET: APIRoute = async ({ params, request }) => {
 	try {
 		const inviteId = sanitize(params.inviteId, 100);
-		if (!inviteId) return badRequest('inviteId es obligatorio.');
+		if (!inviteId) return badRequest('inviteId is required.');
 
 		const ip = getIp(request);
 		const allowed = await checkRateLimit({
@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			return errorResponse(new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.'));
+			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
 		}
 
 		const context = await getInvitationContextByInviteId(inviteId);

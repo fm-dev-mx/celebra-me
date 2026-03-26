@@ -23,7 +23,7 @@ const CONSTRAINT_MAPPINGS: ConstraintMapping[] = [
 	{
 		constraintName: 'guest_invitations_event_phone_unique',
 		errorCode: 'conflict_duplicate_phone',
-		userMessage: 'Ya existe un invitado con ese número de teléfono en este evento.',
+		userMessage: 'A guest with that phone number already exists for this event.',
 		httpStatus: 409,
 	},
 ];
@@ -77,13 +77,13 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 	}
 
 	if (errorMessage.includes('23505')) {
-		return new ApiError(409, 'conflict', 'Ya existe un registro con los mismos datos.', {
+		return new ApiError(409, 'conflict', 'A record with the same data already exists.', {
 			errorCode: 'conflict_unique_violation',
 		});
 	}
 
 	if (errorMessage.includes('PGRST')) {
-		return new ApiError(400, 'bad_request', 'Error en la solicitud a la base de datos.', {
+		return new ApiError(400, 'bad_request', 'Invalid database request.', {
 			errorCode: 'postgrest_error',
 		});
 	}
@@ -91,7 +91,7 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 	return new ApiError(
 		500,
 		'internal_error',
-		'Error interno del servidor al procesar la solicitud.',
+		'Internal server error while processing the request.',
 		{ originalError: errorMessage },
 	);
 }

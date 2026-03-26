@@ -42,7 +42,7 @@ export function csvResponse(content: string, fileName: string): Response {
 }
 
 export function unauthorizedResponse(): Response {
-	return errorResponse(new ApiError(401, 'unauthorized', 'No autorizado.'));
+	return errorResponse(new ApiError(401, 'unauthorized', 'Unauthorized.'));
 }
 
 export function badRequest(message: string): Response {
@@ -94,7 +94,7 @@ export function errorResponse(error: unknown): Response {
 		? error.message
 		: typeof error === 'string'
 			? error
-			: 'Error interno del servidor.';
+			: 'Internal server error.';
 
 	const errorCode = isEmptyObject ? 'bad_request' : 'internal_error';
 	const status = isEmptyObject ? 400 : 500;

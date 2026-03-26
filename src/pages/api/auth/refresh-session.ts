@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		});
 
 		const refreshToken = sanitize(getCookieValue(request, 'sb-refresh-token'));
-		if (!refreshToken) throw new ApiError(401, 'unauthorized', 'Sesión no renovable.');
+		if (!refreshToken) throw new ApiError(401, 'unauthorized', 'Session cannot be refreshed.');
 
 		const refreshed = await refreshAccessToken({ refreshToken });
 		const headers = new Headers({ 'Content-Type': 'application/json' });

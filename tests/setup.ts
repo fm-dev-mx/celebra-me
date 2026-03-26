@@ -163,7 +163,7 @@ function safeJson(value: unknown): string {
 	}
 }
 
-jest.mock('@/lib/assets/discovery');
+jest.mock('@/lib/assets/discovery', () => jest.requireActual('./mocks/assets/discovery'));
 
 // Mock framer-motion to avoid issues in JSDOM and suppress motion prop leakage warnings
 jest.mock('framer-motion', () => {

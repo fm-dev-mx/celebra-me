@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { SyntheticEvent } from 'react';
-import { type AttendanceStatus } from './RSVPLogic';
+import { type AttendanceStatus } from './rsvp-logic';
 import { NameField, AttendanceField, ConfirmedFields } from './RSVPFormFields';
 
-export * from './RSVPLogic';
+export * from './rsvp-logic';
 
 // --- Sub-components ---
 

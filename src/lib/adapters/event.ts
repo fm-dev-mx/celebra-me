@@ -1,4 +1,4 @@
-import type { InvitationViewModel, ThemeConfig } from './types';
+import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import {
 	ITINERARY_VARIANTS,
 	SHARED_SECTION_VARIANTS,
@@ -11,7 +11,7 @@ import {
 } from '@/lib/theme/theme-contract';
 import { resolveColorToken, PRESET_COLOR_MAP } from '@/lib/theme/color-tokens';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
-import { pickPreset, hexToRgb } from './event-helpers';
+import { pickPreset, hexToRgb } from '@/lib/adapters/event-helpers';
 import {
 	buildHero,
 	buildEnvelope,

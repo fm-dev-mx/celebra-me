@@ -1,6 +1,5 @@
 /**
- * Rate limiting para endpoints administrativos
- * Protege contra brute force y DoS attacks
+ * Rate limiting for administrative endpoints.
  */
 
 import { checkRateLimit, hashIp } from '@/lib/rsvp/security/rate-limit-provider';
@@ -11,24 +10,24 @@ interface RateLimitConfig {
 	windowSec: number;
 }
 
-// Configuración por tipo de operación
+// Limits by operation category.
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
-	// Listados - más permisivo
+	// Listing operations are the least restrictive.
 	'admin:list': { maxHits: 60, windowSec: 60 }, // 60 req/min
 
-	// Creación - moderado
+	// Create operations are moderately restricted.
 	'admin:create': { maxHits: 20, windowSec: 60 }, // 20 req/min
 
-	// Actualizaciones - moderado
+	// Update operations are moderately restricted.
 	'admin:update': { maxHits: 30, windowSec: 60 }, // 30 req/min
 
-	// Eliminaciones - restrictivo
+	// Delete operations are intentionally tighter.
 	'admin:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
 
-	// Cambios de rol - muy restrictivo
+	// Role changes are the most sensitive mutation.
 	'admin:role': { maxHits: 5, windowSec: 60 }, // 5 req/min
 
-	// Claim codes - moderado
+	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },
 	'claimcodes:create': { maxHits: 20, windowSec: 60 },
 	'claimcodes:update': { maxHits: 30, windowSec: 60 },
@@ -37,10 +36,10 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 };
 
 /**
- * Extrae IP del request considerando proxies
+ * Extracts the request IP while accounting for proxy headers.
  */
 function extractClientIp(request: Request): string {
-	// En Vercel, usar el header x-forwarded-for
+	// Vercel forwards the original IP through x-forwarded-for.
 	const forwarded = request.headers.get('x-forwarded-for');
 	if (forwarded) {
 		return forwarded.split(',')[0].trim();
@@ -51,16 +50,12 @@ function extractClientIp(request: Request): string {
 		return realIp;
 	}
 
-	// Fallback
+	// Fallback when no trusted IP header is present.
 	return 'unknown';
 }
 
 /**
- * Aplica rate limiting a operaciones administrativas
- * @param request - Request de Astro
- * @param operation - Tipo de operación (ej: 'admin:list', 'admin:role')
- * @param userId - ID del usuario (opcional, para rate limiting por usuario)
- * @throws ApiError 429 si se excede el límite
+ * Applies rate limiting to an administrative operation.
  */
 export async function requireAdminRateLimit(
 	request: Request,
@@ -69,15 +64,15 @@ export async function requireAdminRateLimit(
 ): Promise<void> {
 	const config = RATE_LIMITS[operation];
 	if (!config) {
-		throw new Error(`Configuración de rate limiting no encontrada para: ${operation}`);
+		throw new Error(`Missing rate-limit configuration for operation: ${operation}`);
 	}
 
 	const ip = extractClientIp(request);
 
-	// Usar userId si está disponible, sino IP
+	// Prefer user-level throttling when a user id is available.
 	const entityId = userId || hashIp(ip);
 
-	// Mapear operación a namespace
+	// Operations currently share the same dashboard namespace.
 	const namespace = operation.startsWith('claimcodes:') ? 'dashboard' : 'dashboard';
 
 	const allowed = await checkRateLimit({
@@ -92,18 +87,12 @@ export async function requireAdminRateLimit(
 		throw new ApiError(
 			429,
 			'rate_limited',
-			`Demasiadas peticiones. Por favor, espera ${config.windowSec} segundos antes de intentar de nuevo.`,
+			`Too many requests. Wait ${config.windowSec} seconds before retrying.`,
 		);
 	}
 }
 
 /**
- * Middleware para aplicar rate limiting a endpoints admin
- * Uso en API routes:
- *
- * export const GET: APIRoute = async ({ request }) => {
- *   await requireAdminRateLimit(request, 'admin:list');
- *   // ... resto del handler
- * };
+ * Default export for route-level admin throttling.
  */
 export { requireAdminRateLimit as default };

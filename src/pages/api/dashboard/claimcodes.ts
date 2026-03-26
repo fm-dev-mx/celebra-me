@@ -14,7 +14,7 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
-		// Rate limiting: 60 req/min para listados
+		// Rate limiting: 60 req/min for list operations.
 		await requireAdminRateLimit(request, 'claimcodes:list');
 		await requireAdminStrongSession(request);
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
@@ -27,14 +27,14 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// Rate limiting: 20 req/min para creación
+		// Rate limiting: 20 req/min for create operations.
 		await requireAdminRateLimit(request, 'claimcodes:create');
 		const session = await requireAdminStrongSession(request);
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 		const eventId = sanitize(body.eventId as string, 120);
-		if (!eventId) return badRequest('eventId es obligatorio.');
+		if (!eventId) return badRequest('eventId is required.');
 		const created = await createClaimCodeAdmin({
 			eventId,
 			expiresAt:

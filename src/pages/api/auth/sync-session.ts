@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const currentSession = await getHostSessionFromRequest(request);
 		if (!currentSession) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 
 		const bodyResult = await parseJsonBody(request);
@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const elevatedUser = await getSupabaseUserByAccessToken(elevatedAccessToken);
 		if (!elevatedUser || elevatedUser.id !== currentSession.userId) {
-			throw new ApiError(403, 'forbidden', 'Token de elevación inválido.');
+			throw new ApiError(403, 'forbidden', 'Elevated token is invalid.');
 		}
 
 		const hasMfa = hasMfaEvidence({
@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			amr: elevatedUser.amr,
 		});
 		if (!hasMfa) {
-			throw new ApiError(403, 'forbidden', 'La sesión no tiene verificación MFA.');
+			throw new ApiError(403, 'forbidden', 'The session does not contain MFA verification.');
 		}
 
 		const headers = new Headers({ 'Content-Type': 'application/json' });
@@ -85,7 +85,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 		});
 	} catch (error: unknown) {
 		if (error instanceof SyntaxError) {
-			return errorResponse(new ApiError(400, 'bad_request', 'JSON inválido.'));
+			return errorResponse(new ApiError(400, 'bad_request', 'Invalid JSON.'));
 		}
 		return errorResponse(error);
 	}

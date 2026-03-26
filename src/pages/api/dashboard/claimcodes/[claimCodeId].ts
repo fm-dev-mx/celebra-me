@@ -14,11 +14,11 @@ function sanitize(value: unknown, maxLen = 200): string {
 
 export const PATCH: APIRoute = async ({ request, params }) => {
 	try {
-		// Rate limiting: 30 req/min para actualizaciones
+		// Rate limiting: 30 req/min for update operations.
 		await requireAdminRateLimit(request, 'claimcodes:update');
 		await requireAdminStrongSession(request);
 		const claimCodeId = sanitize(params.claimCodeId, 120);
-		if (!claimCodeId) return badRequest('claimCodeId es obligatorio.');
+		if (!claimCodeId) return badRequest('claimCodeId is required.');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
@@ -36,11 +36,11 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
 export const DELETE: APIRoute = async ({ request, params }) => {
 	try {
-		// Rate limiting: 10 req/min para eliminaciones
+		// Rate limiting: 10 req/min for delete operations.
 		await requireAdminRateLimit(request, 'claimcodes:delete');
 		await requireAdminStrongSession(request);
 		const claimCodeId = sanitize(params.claimCodeId, 120);
-		if (!claimCodeId) return badRequest('claimCodeId es obligatorio.');
+		if (!claimCodeId) return badRequest('claimCodeId is required.');
 		const item = await disableClaimCodeAdmin({ claimCodeId });
 		return jsonResponse({ item });
 	} catch (error) {
