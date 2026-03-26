@@ -4,7 +4,6 @@ import Logo from '@/components/ui/Logo.astro';
 import { resolveNextPath } from '@/lib/rsvp/auth/login';
 import '@/styles/auth.scss';
 import '@styles/auth/_login.scss';
-import LoginFlowBehavior from '@/components/behavior/LoginFlowBehavior';
 
 const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
 ---
@@ -154,6 +153,9 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
 		</article>
 	</section>
-
-	<LoginFlowBehavior client:only="react" />
 </Layout>
+<script type="module">
+	import { initLoginFlow } from '@/lib/client/auth/login-bridge';
+
+	initLoginFlow();
+</script>
