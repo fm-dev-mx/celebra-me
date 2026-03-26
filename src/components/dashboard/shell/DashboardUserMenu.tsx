@@ -8,11 +8,12 @@ interface DashboardUserMenuProps {
 
 const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel }) => {
 	const [busy, setBusy] = useState(false);
+	const visibleRoleLabel = roleLabel === 'ADMIN' ? 'Administrador' : 'Anfitrión';
 
 	return (
 		<div className="dashboard-user-menu">
 			<div className="dashboard-user-menu__meta">
-				<span className="dashboard-user-menu__role">{roleLabel}</span>
+				<span className="dashboard-user-menu__role">{visibleRoleLabel}</span>
 				<span className="dashboard-user-menu__email" title={email}>
 					{email
 						? email.length > 15

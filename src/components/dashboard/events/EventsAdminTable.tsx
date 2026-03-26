@@ -1,12 +1,13 @@
-import React, { useEffect, useState, type SyntheticEvent } from 'react';
+import React, { useState } from 'react';
 import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
-import { adminApi } from '@/lib/dashboard/admin-api';
+import EventConfirmDialog from '@/components/dashboard/events/EventConfirmDialog';
+import EventFormModal from '@/components/dashboard/events/EventFormModal';
+import { getEventStatusLabel, getEventTypeLabel, useEventsAdmin } from '@/hooks/use-events-admin';
 import type { CreateEventDTO, UpdateEventDTO } from '@/lib/dashboard/dto/events';
 
 const EventsAdminTable: React.FC = () => {
-	const [items, setItems] = useState<AdminEventListItemDTO[]>([]);
-	const [error, setError] = useState('');
-	const [loading, setLoading] = useState(false);
+	const { items, error, loading, createEvent, updateEvent, archiveEvent, publishEvent } =
+		useEventsAdmin();
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [editingEvent, setEditingEvent] = useState<AdminEventListItemDTO | null>(null);
@@ -24,46 +25,19 @@ const EventsAdminTable: React.FC = () => {
 		onConfirm: async () => {},
 	});
 
-	const loadEvents = async () => {
-		setLoading(true);
-		setError('');
-		try {
-			const result = await adminApi.listEvents();
-			setItems(result.items);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error inesperado.');
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		void loadEvents();
-	}, []);
-
 	const handleCreate = async (payload: CreateEventDTO | UpdateEventDTO) => {
-		try {
-			// For create, we need all required fields
-			if (!payload.title || !payload.slug || !payload.eventType) {
-				throw new Error('title, slug y eventType son obligatorios.');
-			}
-			await adminApi.createEvent(payload as CreateEventDTO);
-			setCreateModalOpen(false);
-			await loadEvents();
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al crear evento.');
+		if (!payload.title || !payload.slug || !payload.eventType) {
+			throw new Error('Título, slug y tipo de evento son obligatorios.');
 		}
+
+		await createEvent(payload as CreateEventDTO);
+		setCreateModalOpen(false);
 	};
 
 	const handleUpdate = async (eventId: string, payload: UpdateEventDTO) => {
-		try {
-			await adminApi.updateEvent(eventId, payload);
-			setEditModalOpen(false);
-			setEditingEvent(null);
-			await loadEvents();
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al actualizar evento.');
-		}
+		await updateEvent(eventId, payload);
+		setEditModalOpen(false);
+		setEditingEvent(null);
 	};
 
 	const handleArchive = async (eventId: string) => {
@@ -72,11 +46,10 @@ const EventsAdminTable: React.FC = () => {
 			title: 'Archivar Evento',
 			message:
 				'¿Estás seguro de que deseas archivar este evento? Los datos se conservarán pero no será visible para los invitados.',
-			confirmLabel: 'Archivar Evento',
+			confirmLabel: 'Archivar evento',
 			variant: 'danger',
 			onConfirm: async () => {
-				await adminApi.archiveEvent(eventId);
-				await loadEvents();
+				await archiveEvent(eventId);
 				setConfirmModal((prev) => ({ ...prev, open: false }));
 			},
 		});
@@ -88,11 +61,10 @@ const EventsAdminTable: React.FC = () => {
 			title: 'Publicar Evento',
 			message:
 				'¿Deseas publicar este evento? Será visible para los hosts asignados y se podrán generar invitaciones.',
-			confirmLabel: 'Publicar Ahora',
+			confirmLabel: 'Publicar ahora',
 			variant: 'primary',
 			onConfirm: async () => {
-				await adminApi.publishEvent(eventId);
-				await loadEvents();
+				await publishEvent(eventId);
 				setConfirmModal((prev) => ({ ...prev, open: false }));
 			},
 		});
@@ -115,7 +87,7 @@ const EventsAdminTable: React.FC = () => {
 						<th>Slug</th>
 						<th>Tipo</th>
 						<th>Estado</th>
-						<th>Owner</th>
+						<th>Responsable</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
@@ -124,10 +96,10 @@ const EventsAdminTable: React.FC = () => {
 						<tr key={item.id}>
 							<td>{item.title}</td>
 							<td>{item.slug}</td>
-							<td>{item.eventType}</td>
+							<td>{getEventTypeLabel(item.eventType)}</td>
 							<td>
 								<span className={`dashboard-badge dashboard-badge--${item.status}`}>
-									{item.status}
+									{getEventStatusLabel(item.status)}
 								</span>
 							</td>
 							<td>{item.ownerUserId.slice(0, 8)}...</td>
@@ -199,175 +171,16 @@ const EventsAdminTable: React.FC = () => {
 			)}
 
 			{confirmModal.open && (
-				<div
-					className="dashboard-modal-backdrop"
-					role="dialog"
-					aria-modal="true"
-					onClick={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
-				>
-					<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-						<h3>{confirmModal.title}</h3>
-						<p className="dashboard-confirm-message">{confirmModal.message}</p>
-						<div className="dashboard-modal__actions">
-							<button
-								type="button"
-								className="btn-secondary"
-								onClick={() =>
-									setConfirmModal((prev) => ({ ...prev, open: false }))
-								}
-							>
-								Cancelar
-							</button>
-							<button
-								type="button"
-								className={`btn-primary ${confirmModal.variant === 'danger' ? 'btn-primary--danger' : ''}`}
-								onClick={confirmModal.onConfirm}
-							>
-								{confirmModal.confirmLabel || 'Confirmar'}
-							</button>
-						</div>
-					</div>
-				</div>
+				<EventConfirmDialog
+					open={confirmModal.open}
+					title={confirmModal.title}
+					message={confirmModal.message}
+					confirmLabel={confirmModal.confirmLabel}
+					variant={confirmModal.variant}
+					onCancel={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
+					onConfirm={confirmModal.onConfirm}
+				/>
 			)}
-		</div>
-	);
-};
-
-interface EventFormModalProps {
-	mode: 'create' | 'edit';
-	initialEvent?: AdminEventListItemDTO | null;
-	onClose: () => void;
-	onSubmit: (payload: CreateEventDTO | UpdateEventDTO) => Promise<void>;
-}
-
-const EventFormModal: React.FC<EventFormModalProps> = ({
-	mode,
-	initialEvent,
-	onClose,
-	onSubmit,
-}) => {
-	const [title, setTitle] = useState(initialEvent?.title || '');
-	const [slug, setSlug] = useState(initialEvent?.slug || '');
-	const [eventType, setEventType] = useState<'xv' | 'boda' | 'bautizo' | 'cumple'>(
-		initialEvent?.eventType || 'xv',
-	);
-	const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(
-		initialEvent?.status || 'draft',
-	);
-	const [busy, setBusy] = useState(false);
-	const [error, setError] = useState('');
-
-	const SLUG_REGEX = /^[a-z0-9-]+$/;
-
-	const handleSubmit = async (e: SyntheticEvent) => {
-		e.preventDefault();
-		if (busy) return;
-
-		// Validations
-		if (title.trim().length < 3) {
-			setError('El título debe tener al menos 3 caracteres.');
-			return;
-		}
-		if (!SLUG_REGEX.test(slug)) {
-			setError('El slug solo puede contener letras minúsculas, números y guiones.');
-			return;
-		}
-
-		setBusy(true);
-		setError('');
-		try {
-			await onSubmit({ title: title.trim(), slug: slug.trim(), eventType, status });
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al guardar evento.');
-		} finally {
-			setBusy(false);
-		}
-	};
-
-	return (
-		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
-			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-				<h3>{mode === 'create' ? 'Nuevo Evento' : 'Editar Evento'}</h3>
-				<form onSubmit={handleSubmit} className="dashboard-form-grid">
-					<div className="dashboard-form-field">
-						<label htmlFor="event-title">Título</label>
-						<input
-							id="event-title"
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							placeholder="Ej. Mi Boda Increíble"
-							required
-							disabled={busy}
-						/>
-					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="event-slug">Slug (URL)</label>
-						<input
-							id="event-slug"
-							value={slug}
-							onChange={(e) => setSlug(e.target.value.toLowerCase())}
-							placeholder="ej-mi-boda-2024"
-							required
-							disabled={busy}
-							pattern="[a-z0-9-]+"
-						/>
-						<p className="dashboard-form-help">
-							Solo letras minúsculas, números y guiones.
-						</p>
-					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="event-type">Tipo de evento</label>
-						<select
-							id="event-type"
-							value={eventType}
-							onChange={(e) =>
-								setEventType(e.target.value as 'xv' | 'boda' | 'bautizo' | 'cumple')
-							}
-							disabled={busy}
-							required
-						>
-							<option value="xv">XV Años</option>
-							<option value="boda">Boda</option>
-							<option value="cumple">Cumpleaños</option>
-							{eventType === 'bautizo' && <option value="bautizo">Bautizo</option>}
-						</select>
-						<p className="dashboard-form-help">
-							Bautizo permanece compatible en backend, pero se oculta del flujo normal
-							hasta contar con una plantilla premium aprobada.
-						</p>
-					</div>
-					<div className="dashboard-form-field">
-						<label htmlFor="event-status">Estado</label>
-						<select
-							id="event-status"
-							value={status}
-							onChange={(e) =>
-								setStatus(e.target.value as 'draft' | 'published' | 'archived')
-							}
-							disabled={busy}
-							required
-						>
-							<option value="draft">Borrador</option>
-							<option value="published">Publicado</option>
-							<option value="archived">Archivado</option>
-						</select>
-					</div>
-					{error && <p className="dashboard-error dashboard-error--full">{error}</p>}
-					<div className="dashboard-modal__actions dashboard-modal__actions--full">
-						<button
-							type="button"
-							className="btn-secondary"
-							onClick={onClose}
-							disabled={busy}
-						>
-							Cancelar
-						</button>
-						<button type="submit" className="btn-primary" disabled={busy}>
-							{busy ? 'Guardando...' : 'Guardar'}
-						</button>
-					</div>
-				</form>
-			</div>
 		</div>
 	);
 };

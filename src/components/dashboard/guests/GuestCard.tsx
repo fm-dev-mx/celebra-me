@@ -1,5 +1,5 @@
 import React from 'react';
-import ShareAction from './ShareAction';
+import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestCardProps {
@@ -110,7 +110,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<button
 					type="button"
 					className="btn-icon"
-					title="Copiar Link"
+					title="Copiar enlace"
+					aria-label={`Copiar enlace de invitación de ${item.fullName}`}
 					onClick={async () => {
 						await navigator.clipboard.writeText(inviteUrl);
 					}}
@@ -121,6 +122,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					type="button"
 					className="btn-icon"
 					title="Editar"
+					aria-label={`Editar invitado ${item.fullName}`}
 					onClick={() => onEdit(item)}
 				>
 					✏️
@@ -129,6 +131,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					type="button"
 					className="btn-icon btn-icon--danger"
 					title="Eliminar"
+					aria-label={`Eliminar invitado ${item.fullName}`}
 					onClick={() => onDelete(item)}
 				>
 					🗑️

@@ -1,56 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import type { AdminUserListItemDTO } from '@/interfaces/dashboard/admin.interface';
+import React from 'react';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
-import { adminApi } from '@/lib/dashboard/admin-api';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
+import { useUsersAdmin } from '@/hooks/use-users-admin';
 
 const UsersAdminTable: React.FC = () => {
-	const [items, setItems] = useState<AdminUserListItemDTO[]>([]);
-	const [error, setError] = useState('');
-	const [loading, setLoading] = useState(false);
-
-	const load = async () => {
-		setLoading(true);
-		setError('');
-		try {
-			const result = await adminApi.listUsers();
-			setItems(result.items);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error inesperado.');
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		void load();
-	}, []);
-
-	const handleRoleChange = async (userId: string, newRole: AppUserRole) => {
-		try {
-			// Check if this is the last super_admin
-			const superAdminCount = items.filter((item) => item.role === 'super_admin').length;
-			const currentUser = items.find((item) => item.id === userId);
-
-			if (
-				currentUser?.role === 'super_admin' &&
-				newRole === 'host_client' &&
-				superAdminCount <= 1
-			) {
-				alert('No se puede eliminar el último super_admin del sistema.');
-				return;
-			}
-
-			await adminApi.updateUserRole(userId, { role: newRole });
-			await load();
-		} catch (err) {
-			alert(err instanceof Error ? err.message : 'No se pudo actualizar rol.');
-		}
-	};
+	const { items, error, loading, updatingUserId, updateUserRole } = useUsersAdmin();
 
 	return (
 		<div className="dashboard-card">
-			<h2>Usuarios del Sistema</h2>
+			<h2>Usuarios del sistema</h2>
 			{error && <p className="dashboard-error">{error}</p>}
 			{loading && <p className="dashboard-status">Cargando...</p>}
 			<table className="dashboard-table">
@@ -70,12 +28,13 @@ const UsersAdminTable: React.FC = () => {
 									value={item.role}
 									onChange={(event) => {
 										const role = event.target.value as AppUserRole;
-										void handleRoleChange(item.id, role);
+										void updateUserRole(item.id, role);
 									}}
-									disabled={loading}
+									disabled={loading || updatingUserId === item.id}
+									aria-label={`Rol de ${item.email}`}
 								>
-									<option value="host_client">HOST</option>
-									<option value="super_admin">ADMIN</option>
+									<option value="host_client">Anfitrión</option>
+									<option value="super_admin">Administrador</option>
 								</select>
 							</td>
 							<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>

@@ -152,7 +152,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			>
 				<div className="dashboard-modal__header">
 					<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
-					<button className="btn-close" onClick={onClose} aria-label="Cerrar modal">
+					<button
+						type="button"
+						className="btn-close"
+						onClick={onClose}
+						aria-label="Cerrar modal"
+					>
 						✕
 					</button>
 				</div>

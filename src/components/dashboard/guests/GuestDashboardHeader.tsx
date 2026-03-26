@@ -1,11 +1,11 @@
 import React from 'react';
-import GuestProgressCard from './GuestProgressCard';
-import GuestStatsCards from './GuestStatsCards';
+import GuestProgressCard from '@/components/dashboard/guests/GuestProgressCard';
+import GuestStatsCards from '@/components/dashboard/guests/GuestStatsCards';
 import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
-import type { RealtimeState } from './use-guest-dashboard-realtime';
+import type { RealtimeState } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 
 interface HostEventItem {
 	id: string;
@@ -47,7 +47,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 		<>
 			<div className="dashboard-guests__toolbar">
 				<div className="dashboard-guests__title-area">
-					<h1>Dashboard de invitados</h1>
+					<h1>Panel de invitados</h1>
 					<div className="header-event-selector">
 						<label htmlFor="active-event">Evento activo</label>
 						<select
@@ -73,7 +73,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 					</span>
 				)}
 				<span className="dashboard-status">
-					<span>📡</span> Streaming:{' '}
+					<span>📡</span> Tiempo real:{' '}
 					{realtimeState === 'connected' ? '✅ Conectado' : '🔄 Reconectando'}
 				</span>
 			</div>
@@ -89,11 +89,12 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 			<div className="dashboard-guests__quick-actions">
 				{pendingGeneratedCount > 0 && (
 					<button
+						type="button"
 						className="btn-primary btn--shiny"
 						disabled={loading}
 						onClick={onOpenNextAction}
 					>
-						🚀 Enviar Siguiente ({pendingGeneratedCount} pendientes)
+						🚀 Enviar siguiente ({pendingGeneratedCount} pendientes)
 					</button>
 				)}
 			</div>

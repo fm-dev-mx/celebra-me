@@ -26,7 +26,12 @@ const GuestDeleteConfirmModal: React.FC<GuestDeleteConfirmModalProps> = ({
 			>
 				<div className="dashboard-modal__header">
 					<h3 id="delete-modal-title">Confirmar eliminación</h3>
-					<button className="btn-close" onClick={onClose} aria-label="Cerrar modal">
+					<button
+						type="button"
+						className="btn-close"
+						onClick={onClose}
+						aria-label="Cerrar modal"
+					>
 						&times;
 					</button>
 				</div>

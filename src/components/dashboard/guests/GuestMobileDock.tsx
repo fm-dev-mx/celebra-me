@@ -22,12 +22,13 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 
 	return createPortal(
 		<div className="dashboard-guests__mobile-dock">
-			<button className="dock-item" onClick={onCreate}>
+			<button type="button" className="dock-item" onClick={onCreate}>
 				<span className="dock-icon">➕</span>
 				<span className="dock-label">Nuevo</span>
 			</button>
 
 			<button
+				type="button"
 				className="dock-item dock-item--main"
 				disabled={loading || !hasPendingGenerated}
 				onClick={onOpenNextAction}
@@ -38,6 +39,7 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 
 			<div className="dock-item dock-item--filter">
 				<select
+					aria-label="Filtrar invitados por estado"
 					value={status}
 					onChange={(event) => onStatusChange(event.target.value as typeof status)}
 				>

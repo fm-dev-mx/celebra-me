@@ -1,43 +1,28 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
-import { adminApi } from '@/lib/dashboard/admin-api';
+import type { CreateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
 import type { EventListItemDTO } from '@/lib/dashboard/dto/events';
 
 interface ClaimCodeFormModalProps {
-	onCreate: (payload: {
-		eventId: string;
-		maxUses: number;
-		expiresAt: string | null;
-	}) => Promise<void>;
+	events: EventListItemDTO[];
+	loading: boolean;
+	onCreate: (payload: CreateClaimCodeDTO) => Promise<void>;
 }
 
-const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => {
-	const [events, setEvents] = useState<EventListItemDTO[]>([]);
+const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ events, loading, onCreate }) => {
 	const [eventId, setEventId] = useState('');
 	const [maxUses, setMaxUses] = useState(1);
 	const [expiresAt, setExpiresAt] = useState('');
 	const [busy, setBusy] = useState(false);
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
 	useEffect(() => {
-		const loadEvents = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const result = await adminApi.listEvents();
-				setEvents(result.items);
-				if (result.items.length > 0 && !eventId) {
-					setEventId(result.items[0].id);
-				}
-			} catch (err) {
-				setError(err instanceof Error ? err.message : 'No se pudieron cargar eventos.');
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		void loadEvents();
-	}, [eventId]);
+		if (events.length > 0 && !eventId) {
+			setEventId(events[0].id);
+		}
+		if (events.length === 0 && eventId) {
+			setEventId('');
+		}
+	}, [eventId, events]);
 
 	const handleSubmit = async (event: SyntheticEvent) => {
 		event.preventDefault();
@@ -54,7 +39,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 			setMaxUses(1);
 			setExpiresAt('');
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al crear claim code.');
+			setError(err instanceof Error ? err.message : 'Error al crear el código de acceso.');
 		} finally {
 			setBusy(false);
 		}
@@ -121,7 +106,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({ onCreate }) => 
 					className="btn-primary"
 					disabled={busy || !eventId || events.length === 0}
 				>
-					{busy ? 'Generando...' : 'Generar Claim Code'}
+					{busy ? 'Generando...' : 'Generar código de acceso'}
 				</button>
 			</div>
 		</form>

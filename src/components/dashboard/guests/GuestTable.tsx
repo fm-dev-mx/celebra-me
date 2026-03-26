@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import GuestCard from './GuestCard';
-import ShareAction from './ShareAction';
-import { generateInvitationLink } from '@utils/invitation-link';
+import GuestCard from '@/components/dashboard/guests/GuestCard';
+import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { generateInvitationLink } from '@/utils/invitation-link';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];
@@ -217,7 +217,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										<button
 											type="button"
 											className={`btn-icon ${copiedGuestId === item.guestId ? 'btn-icon--active' : ''}`}
-											title="Copiar Link"
+											title="Copiar enlace"
+											aria-label={`Copiar enlace de invitación de ${item.fullName}`}
 											onClick={async () => {
 												await navigator.clipboard.writeText(inviteUrl);
 												setCopiedGuestId(item.guestId);
@@ -241,6 +242,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 											type="button"
 											className="btn-icon"
 											title="Editar"
+											aria-label={`Editar invitado ${item.fullName}`}
 											onClick={() => onEdit(item)}
 										>
 											✏️
@@ -249,6 +251,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 											type="button"
 											className="btn-icon btn-icon--danger"
 											title="Eliminar"
+											aria-label={`Eliminar invitado ${item.fullName}`}
 											onClick={() => onDelete(item)}
 										>
 											🗑️

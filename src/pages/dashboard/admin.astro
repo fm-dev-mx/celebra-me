@@ -12,9 +12,9 @@ const pageData = await prepareDashboardAdminPageData();
 	title="Panel de Administración"
 >
 	<section class="dashboard-card">
-		<h2>Administración Global</h2>
+		<h2>Administración global</h2>
 		<p>
-			Usa la navegación lateral para gestionar claim codes, eventos y usuarios.
+			Usa la navegación lateral para gestionar códigos de acceso, eventos y usuarios.
 		</p>
 	</section>
 
@@ -30,7 +30,7 @@ const pageData = await prepareDashboardAdminPageData();
 			<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
 		</div>
 		<div class="dashboard-stat-card">
-			<h3>Claim Codes</h3>
+			<h3>Códigos de acceso</h3>
 			<p class="dashboard-stat-number">{pageData.stats.claimCodes}</p>
 			<p class="dashboard-stat-subtext">{pageData.stats.activeClaimCodes} activos</p>
 			<a href="/dashboard/claimcodes" class="dashboard-stat-link">Gestionar →</a>

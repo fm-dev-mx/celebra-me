@@ -1,6 +1,5 @@
 ---
 import '@/styles/dashboard.scss';
-import DashboardTopbarBehavior from '@/components/behavior/DashboardTopbarBehavior';
 import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
@@ -26,8 +25,8 @@ const { csrfToken } = Astro.locals;
 
 const navItems: DashboardNavItem[] = [
 	{ label: 'Invitados', href: '/dashboard/invitados' },
-	{ label: 'Admin', href: '/dashboard/admin', adminOnly: true },
-	{ label: 'Claim Codes', href: '/dashboard/claimcodes', adminOnly: true },
+	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
+	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },
 	{ label: 'Eventos', href: '/dashboard/eventos', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
 ];
@@ -58,7 +57,37 @@ const navItems: DashboardNavItem[] = [
 				</main>
 			</div>
 		</div>
-
-		<DashboardTopbarBehavior client:load />
 	</body>
 </html>
+<script>
+	const topbar = document.querySelector('.dashboard-topbar');
+
+	if (topbar instanceof HTMLElement) {
+		let lastScrollY = window.scrollY;
+		let isHidden = false;
+		const scrollThreshold = 50;
+
+		const handleScroll = () => {
+			const currentScrollY = window.scrollY;
+
+			topbar.classList.toggle('dashboard-topbar--scrolled', currentScrollY > 20);
+
+			if (currentScrollY > scrollThreshold) {
+				if (currentScrollY > lastScrollY && !isHidden) {
+					topbar.classList.add('dashboard-topbar--hidden');
+					isHidden = true;
+				} else if (currentScrollY < lastScrollY && isHidden) {
+					topbar.classList.remove('dashboard-topbar--hidden');
+					isHidden = false;
+				}
+			} else {
+				topbar.classList.remove('dashboard-topbar--hidden');
+				isHidden = false;
+			}
+
+			lastScrollY = currentScrollY;
+		};
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
+	}
+</script>

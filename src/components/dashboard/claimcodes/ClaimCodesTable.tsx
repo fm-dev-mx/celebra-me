@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
-import { adminApi } from '@/lib/dashboard/admin-api';
+import type { UpdateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
 
 interface ClaimCodesTableProps {
 	items: ClaimCodeDTO[];
 	onDisable: (claimCodeId: string) => Promise<void>;
-	onRefresh: () => Promise<void>;
+	onUpdate: (claimCodeId: string, payload: UpdateClaimCodeDTO) => Promise<void>;
 }
 
 interface EditModalState {
@@ -18,7 +18,22 @@ interface EditModalState {
 	error: string;
 }
 
-const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onRefresh }) => {
+function getClaimCodeStatusLabel(status: ClaimCodeDTO['status']) {
+	switch (status) {
+		case 'active':
+			return 'Activo';
+		case 'disabled':
+			return 'Desactivado';
+		case 'expired':
+			return 'Vencido';
+		case 'used_up':
+			return 'Agotado';
+		default:
+			return status;
+	}
+}
+
+const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onUpdate }) => {
 	const [editModal, setEditModal] = useState<EditModalState>({
 		open: false,
 		item: null,
@@ -58,17 +73,17 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 
 		setEditModal({ ...editModal, busy: true, error: '' });
 		try {
-			await adminApi.updateClaimCode(editModal.item.id, {
+			await onUpdate(editModal.item.id, {
 				active: editModal.active,
 				expiresAt: editModal.expiresAt ? new Date(editModal.expiresAt).toISOString() : null,
 				maxUses: editModal.maxUses,
 			});
 			closeEditModal();
-			await onRefresh();
 		} catch (err) {
 			setEditModal({
 				...editModal,
-				error: err instanceof Error ? err.message : 'Error al actualizar claim code.',
+				error:
+					err instanceof Error ? err.message : 'Error al actualizar el código de acceso.',
 				busy: false,
 			});
 		}
@@ -97,7 +112,7 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 									<span
 										className={`dashboard-badge dashboard-badge--${item.status}`}
 									>
-										{item.status}
+										{getClaimCodeStatusLabel(item.status)}
 									</span>
 								</td>
 								<td>
@@ -132,7 +147,7 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 						))}
 						{items.length === 0 && (
 							<tr>
-								<td colSpan={6}>Sin claim codes registrados.</td>
+								<td colSpan={6}>No hay códigos de acceso registrados.</td>
 							</tr>
 						)}
 					</tbody>
@@ -142,7 +157,7 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onR
 			{editModal.open && editModal.item && (
 				<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
 					<div className="dashboard-modal">
-						<h3>Editar Claim Code</h3>
+						<h3>Editar código de acceso</h3>
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();

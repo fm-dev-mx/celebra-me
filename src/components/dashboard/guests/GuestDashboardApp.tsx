@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
+import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
+import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
+import GuestFilters from '@/components/dashboard/guests/GuestFilters';
+import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
+import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
+import GuestTable from '@/components/dashboard/guests/GuestTable';
+import ImportMagic from '@/components/dashboard/guests/ImportMagic';
+import Toast from '@/components/dashboard/guests/Toast';
+import {
+	useGuestDashboardActions,
+	type GuestFormPayload,
+} from '@/components/dashboard/guests/use-guest-dashboard-actions';
+import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { Confetti } from '@/components/ui/Confetti';
 import { useShortcuts } from '@/hooks/use-shortcuts';
-import GuestDashboardHeader from './GuestDashboardHeader';
-import GuestDeleteConfirmModal from './GuestDeleteConfirmModal';
-import GuestFilters from './GuestFilters';
-import GuestFormModal from './GuestFormModal';
-import GuestMobileDock from './GuestMobileDock';
-import GuestTable from './GuestTable';
-import ImportMagic from './ImportMagic';
-import Toast from './Toast';
-import { useGuestDashboardActions, type GuestFormPayload } from './use-guest-dashboard-actions';
-import { useGuestDashboardRealtime } from './use-guest-dashboard-realtime';
 import '@/styles/dashboard/_guests.scss';
 
 interface GuestDashboardAppProps {

@@ -1,67 +1,34 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
-import { adminApi } from '@/lib/dashboard/admin-api';
+import React from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
-import ClaimCodesTable from './ClaimCodesTable';
-import ClaimCodeFormModal from './ClaimCodeFormModal';
+import ClaimCodeFormModal from '@/components/dashboard/claimcodes/ClaimCodeFormModal';
+import ClaimCodesTable from '@/components/dashboard/claimcodes/ClaimCodesTable';
+import { useClaimCodesAdmin } from '@/hooks/use-claim-codes-admin';
 
 const ClaimCodesApp: React.FC = () => {
-	const [items, setItems] = useState<ClaimCodeDTO[]>([]);
-	const [error, setError] = useState('');
-	const [lastPlainCode, setLastPlainCode] = useState('');
-	const [loading, setLoading] = useState(false);
-
-	const load = useCallback(async () => {
-		setError('');
-		setLoading(true);
-		try {
-			const result = await adminApi.listClaimCodes();
-			setItems(result.items);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error inesperado.');
-		} finally {
-			setLoading(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		void load();
-	}, [load]);
-
-	const handleCreate = async (payload: {
-		eventId: string;
-		maxUses: number;
-		expiresAt: string | null;
-	}) => {
-		setError('');
-		try {
-			const result = await adminApi.createClaimCode(payload);
-			setLastPlainCode(result.plainCode);
-			await load();
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'No se pudo crear claim code.');
-		}
-	};
-
-	const handleDisable = async (claimCodeId: string) => {
-		try {
-			await adminApi.disableClaimCode(claimCodeId);
-			await load();
-		} catch (err) {
-			throw new Error(
-				err instanceof Error ? err.message : 'No se pudo desactivar claim code.',
-			);
-		}
-	};
+	const {
+		items,
+		events,
+		error,
+		lastPlainCode,
+		loading,
+		eventsLoading,
+		createClaimCode,
+		updateClaimCode,
+		disableClaimCode,
+	} = useClaimCodesAdmin();
 
 	return (
 		<section className="dashboard-main">
 			<div className="dashboard-card">
-				<h2>Generar Claim Code</h2>
+				<h2>Generar código de acceso</h2>
 				<p>
-					El código plano se muestra una sola vez. Guarda el valor al momento de creación.
+					El código plano se muestra una sola vez. Guarda el valor al momento de crearlo.
 				</p>
-				<ClaimCodeFormModal onCreate={handleCreate} />
+				<ClaimCodeFormModal
+					events={events}
+					loading={eventsLoading}
+					onCreate={createClaimCode}
+				/>
 				{lastPlainCode && (
 					<p>
 						Código generado (copia ahora): <strong>{lastPlainCode}</strong>
@@ -71,7 +38,11 @@ const ClaimCodesApp: React.FC = () => {
 			</div>
 
 			{loading && <p className="dashboard-status">Cargando...</p>}
-			<ClaimCodesTable items={items} onDisable={handleDisable} onRefresh={load} />
+			<ClaimCodesTable
+				items={items}
+				onDisable={disableClaimCode}
+				onUpdate={updateClaimCode}
+			/>
 		</section>
 	);
 };

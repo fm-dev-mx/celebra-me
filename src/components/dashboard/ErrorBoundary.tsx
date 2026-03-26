@@ -43,13 +43,13 @@ export class ErrorBoundary extends Component<Props, State> {
 								{this.state.error.message}
 								{this.state.error.stack && (
 									<>
-										{'\n\nStack:'}
+										{'\n\nPila:'}
 										{this.state.error.stack}
 									</>
 								)}
 								{this.state.errorInfo?.componentStack && (
 									<>
-										{'\n\nComponent Stack:'}
+										{'\n\nPila del componente:'}
 										{this.state.errorInfo.componentStack}
 									</>
 								)}
