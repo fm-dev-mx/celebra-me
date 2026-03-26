@@ -1,24 +1,11 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdminSession } from '@/lib/rsvp/auth/authorization';
-import { listAdminEvents } from '@/lib/rsvp/services/event-admin.service';
-import { listAdminUsers } from '@/lib/rsvp/services/user-admin.service';
-import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
+import { prepareDashboardAdminPageData } from '@/lib/dashboard/admin-page-data';
 
 await requireAdminSession(Astro.request);
 
-const [events, users, claimCodes] = await Promise.all([
-	listAdminEvents(),
-	listAdminUsers(),
-	listClaimCodesAdmin({}),
-]);
-
-const stats = {
-	events: events.length,
-	users: users.length,
-	claimCodes: claimCodes.length,
-	activeClaimCodes: claimCodes.filter((c) => c.status === 'active').length,
-};
+const pageData = await prepareDashboardAdminPageData();
 ---
 
 <DashboardLayout
@@ -34,18 +21,18 @@ const stats = {
 	<div class="dashboard-stats-grid">
 		<div class="dashboard-stat-card">
 			<h3>Eventos</h3>
-			<p class="dashboard-stat-number">{stats.events}</p>
+			<p class="dashboard-stat-number">{pageData.stats.events}</p>
 			<a href="/dashboard/eventos" class="dashboard-stat-link">Ver eventos →</a>
 		</div>
 		<div class="dashboard-stat-card">
 			<h3>Usuarios</h3>
-			<p class="dashboard-stat-number">{stats.users}</p>
+			<p class="dashboard-stat-number">{pageData.stats.users}</p>
 			<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
 		</div>
 		<div class="dashboard-stat-card">
 			<h3>Claim Codes</h3>
-			<p class="dashboard-stat-number">{stats.claimCodes}</p>
-			<p class="dashboard-stat-subtext">{stats.activeClaimCodes} activos</p>
+			<p class="dashboard-stat-number">{pageData.stats.claimCodes}</p>
+			<p class="dashboard-stat-subtext">{pageData.stats.activeClaimCodes} activos</p>
 			<a href="/dashboard/claimcodes" class="dashboard-stat-link">Gestionar →</a>
 		</div>
 	</div>

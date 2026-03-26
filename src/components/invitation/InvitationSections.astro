@@ -11,200 +11,44 @@ import Quote from '@/components/invitation/Quote.astro';
 import RSVP from '@/components/invitation/RSVP';
 import ThankYou from '@/components/invitation/ThankYou.astro';
 import type { InvitationPageData } from '@/lib/invitation/page-data';
-import type { ComponentProps } from 'astro/types';
+import {
+	buildInvitationSectionRenderDescriptors,
+	type InvitationSectionRenderDescriptor,
+} from '@/lib/invitation/section-render-data';
 
 interface Props {
 	pageData: InvitationPageData;
 }
 
-type RenderDescriptor =
-	| { kind: 'interlude'; props: ComponentProps<typeof Interlude> }
-	| { kind: 'quote'; props: ComponentProps<typeof Quote> }
-	| { kind: 'family'; props: ComponentProps<typeof Family> }
-	| { kind: 'gallery'; props: ComponentProps<typeof Gallery> }
-	| { kind: 'countdown'; props: ComponentProps<typeof Countdown> }
-	| { kind: 'location'; props: ComponentProps<typeof EventLocation> }
-	| { kind: 'itinerary'; props: ComponentProps<typeof Itinerary> }
-	| { kind: 'rsvp'; props: ComponentProps<typeof RSVP> }
-	| { kind: 'gifts'; props: ComponentProps<typeof Gifts> }
-	| { kind: 'thankYou'; props: ComponentProps<typeof ThankYou> }
-	| { kind: 'personalized-access'; props: ComponentProps<typeof PersonalizedAccess> };
-
 const { pageData } = Astro.props;
-const { renderPlan, sections, personalizedAccess, rsvp, themePreset } = pageData;
-
-const renderInterlude = (
-	block: Extract<(typeof renderPlan)[number], { type: 'interlude' }>,
-): RenderDescriptor => ({
-	kind: 'interlude',
-	props: {
-		image: block.image,
-		alt: block.alt,
-		height: block.height,
-		variant: block.variant ?? themePreset,
-	},
-});
-
-const renderSection = (section: string) => {
-	switch (section) {
-		case 'quote':
-			return sections.quote
-				? {
-						kind: 'quote',
-						props: {
-							text: sections.quote.text,
-							author: sections.quote.author,
-							variant: sections.quote.variant,
-							animation: sections.quote.animation,
-						},
-					}
-				: null;
-		case 'family':
-			return sections.family
-				? {
-						kind: 'family',
-						props: {
-							parents: sections.family.parents,
-							spouse: sections.family.spouse,
-							children: sections.family.children,
-							godparents: sections.family.godparents,
-							groups: sections.family.groups,
-							featuredImage: sections.family.featuredImage,
-							labels: sections.family.labels,
-							celebrantName: sections.family.celebrantName,
-							variant: sections.family.variant,
-						},
-					}
-				: null;
-		case 'gallery':
-			return sections.gallery
-				? {
-						kind: 'gallery',
-						props: {
-							title: sections.gallery.title,
-							subtitle: sections.gallery.subtitle,
-							items: sections.gallery.items,
-							variant: sections.gallery.variant,
-						},
-					}
-				: null;
-		case 'countdown':
-			return sections.countdown
-				? {
-						kind: 'countdown',
-						props: {
-							eventDate: sections.countdown.eventDate,
-							title: sections.countdown.title,
-							subtitlePrefix: sections.countdown.subtitlePrefix,
-							footerText: sections.countdown.footerText,
-							variant: sections.countdown.variant,
-							showParticles: sections.countdown.showParticles,
-						},
-					}
-				: null;
-		case 'location':
-			return sections.location
-				? {
-						kind: 'location',
-						props: {
-							ceremony: sections.location.ceremony,
-							reception: sections.location.reception,
-							indications: sections.location.indications,
-							variant: sections.location.variant,
-							mapStyle: sections.location.mapStyle,
-							showFlourishes: sections.location.showFlourishes,
-						},
-					}
-				: null;
-		case 'itinerary':
-			return sections.itinerary
-				? {
-						kind: 'itinerary',
-						props: {
-							title: sections.itinerary.title,
-							items: sections.itinerary.items,
-							variant: sections.itinerary.variant,
-						},
-					}
-				: null;
-		case 'rsvp':
-			return rsvp ? { kind: 'rsvp', props: rsvp } : null;
-		case 'gifts':
-			return sections.gifts
-				? {
-						kind: 'gifts',
-						props: {
-							gifts: sections.gifts.items,
-							title: sections.gifts.title,
-							subtitle: sections.gifts.subtitle,
-							variant: sections.gifts.variant,
-						},
-					}
-				: null;
-		case 'thankYou':
-			return sections.thankYou
-				? {
-						kind: 'thankYou',
-						props: {
-							message: sections.thankYou.message,
-							closingName: sections.thankYou.closingName,
-							image: sections.thankYou.image,
-							variant: sections.thankYou.variant,
-						},
-					}
-				: null;
-		default:
-			return null;
-	}
-};
-
-const renderBlock = (block: (typeof renderPlan)[number]) => {
-	if (block.type === 'interlude') return renderInterlude(block);
-
-	if (block.type === 'personalized-access') {
-		return personalizedAccess
-			? {
-					kind: 'personalized-access',
-					props: {
-						guestName: personalizedAccess.guestName,
-						maxAllowedAttendees: personalizedAccess.maxAllowedAttendees,
-					},
-				}
-			: null;
-	}
-
-	return renderSection(block.section);
-};
+const renderDescriptors = buildInvitationSectionRenderDescriptors(pageData);
 ---
 
 {
-	renderPlan.map((block) => {
-		const resolved = renderBlock(block) as RenderDescriptor | null;
-		if (!resolved) return null;
-
-		switch (resolved.kind) {
+	renderDescriptors.map((descriptor: InvitationSectionRenderDescriptor) => {
+		switch (descriptor.kind) {
 			case 'interlude':
-				return <Interlude {...resolved.props} />;
+				return <Interlude {...descriptor.props} />;
 			case 'quote':
-				return <Quote {...resolved.props} />;
+				return <Quote {...descriptor.props} />;
 			case 'family':
-				return <Family {...resolved.props} />;
+				return <Family {...descriptor.props} />;
 			case 'gallery':
-				return <Gallery {...resolved.props} />;
+				return <Gallery {...descriptor.props} />;
 			case 'countdown':
-				return <Countdown {...resolved.props} />;
+				return <Countdown {...descriptor.props} />;
 			case 'location':
-				return <EventLocation {...resolved.props} />;
+				return <EventLocation {...descriptor.props} />;
 			case 'itinerary':
-				return <Itinerary {...resolved.props} />;
+				return <Itinerary {...descriptor.props} />;
 			case 'rsvp':
-				return <RSVP client:visible {...resolved.props} />;
+				return <RSVP client:visible {...descriptor.props} />;
 			case 'gifts':
-				return <Gifts {...resolved.props} />;
+				return <Gifts {...descriptor.props} />;
 			case 'thankYou':
-				return <ThankYou {...resolved.props} />;
+				return <ThankYou {...descriptor.props} />;
 			case 'personalized-access':
-				return <PersonalizedAccess {...resolved.props} />;
+				return <PersonalizedAccess {...descriptor.props} />;
 			default:
 				return null;
 		}
