@@ -1,4 +1,5 @@
 ---
+import '@styles/invitation/_hero.scss';
 interface Props {
 	eventTitle: string;
 	guestName: string;
@@ -18,11 +19,3 @@ const { eventTitle, guestName } = Astro.props as Props;
 	</div>
 </section>
 
-<style>
-	.guest-invitation-hero {
-		max-width: 780px;
-		margin: 0 auto;
-		padding: 1rem 1.25rem;
-		text-align: center;
-	}
-</style>

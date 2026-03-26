@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import Layout from '@/layouts/Layout.astro';
+import '@styles/invitation/_invitado-page.scss';
 import GuestInvitationHero from '@/components/invitation/GuestInvitationHero.astro';
 import GuestRSVPForm from '@/components/invitation/GuestRSVPForm';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
@@ -86,28 +87,3 @@ const pageDescription = context ? `Te invitamos a: ${context.eventTitle}. Por fa
 	</main>
 </Layout>
 
-<style>
-	.guest-invitation-page {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 1rem;
-        min-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-	}
-
-	.guest-invitation-page__error {
-		padding: 2rem;
-		border: 1px solid var(--color-border-premium);
-		border-radius: 16px;
-        background: var(--color-glass-bg);
-        backdrop-filter: blur(10px);
-        text-align: center;
-	}
-
-    .guest-invitation-page__error h1 {
-        color: var(--color-text-emphasis);
-        margin-bottom: 1rem;
-    }
-</style>

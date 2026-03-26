@@ -34,7 +34,11 @@
 			width: 100%;
 			height: 100%;
 			background:
-				radial-gradient(circle at center, transparent 20%, var(--hero-overlay, rgb(0 0 0 / 40%)) 100%),
+				radial-gradient(
+					circle at center,
+					transparent 20%,
+					var(--hero-overlay, rgb(0 0 0 / 40%)) 100%
+				),
 				var(--hero-overlay-gradient, transparent);
 		}
 	}
@@ -167,6 +171,11 @@
 
 // ── Guest Prototype Hero Variant ──
 .guest-invitation-hero {
+	max-width: 780px;
+	margin: 0 auto;
+	padding: 1rem 1.25rem;
+	text-align: center;
+
 	.invitation-hero__content {
 		width: 100%; // Default to full width, themes will constrain
 		max-width: 800px;
