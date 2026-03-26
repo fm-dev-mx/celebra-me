@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { ClaimCodeRecord } from '@/lib/rsvp/core/types';
+import type { ClaimCodeRecord } from '@/interfaces/rsvp/domain.interface';
 import { type ClaimCodeRow, toClaimCodeRecord } from '@/lib/rsvp/repositories/shared/rows';
 
 export async function findClaimCodeRecordService(input: {
@@ -99,7 +99,7 @@ export async function createClaimCodeService(input: {
 			created_by: input.createdBy,
 		},
 	});
-	if (!rows[0]) throw new Error('No se pudo crear claim code.');
+	if (!rows[0]) throw new Error('Failed to create claim code.');
 	return toClaimCodeRecord(rows[0]);
 }
 
@@ -121,7 +121,7 @@ export async function updateClaimCodeService(input: {
 		prefer: 'return=representation',
 		body,
 	});
-	if (!rows[0]) throw new Error('No se pudo actualizar claim code.');
+	if (!rows[0]) throw new Error('Failed to update claim code.');
 	return toClaimCodeRecord(rows[0]);
 }
 
@@ -172,7 +172,7 @@ export async function redeemClaimCodeRpc(input: { userId: string; codeKey: strin
 		if (!result) {
 			console.error('[RedeemClaimCode] No response from RPC, rows:', rows);
 			throw new Error(
-				'No se recibio respuesta del RPC redeem_claim_code. La funcion puede no existir o estar mal configurada.',
+				'No response received from redeem_claim_code RPC. The function may be missing or misconfigured.',
 			);
 		}
 
@@ -185,7 +185,7 @@ export async function redeemClaimCodeRpc(input: { userId: string; codeKey: strin
 	} catch (error) {
 		console.error('[RedeemClaimCode] RPC call failed:', error);
 		throw new Error(
-			`Error al llamar a redeem_claim_code: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+			`Failed to call redeem_claim_code: ${error instanceof Error ? error.message : 'Unknown error'}`,
 		);
 	}
 }

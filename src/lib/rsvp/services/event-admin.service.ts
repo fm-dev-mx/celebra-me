@@ -4,7 +4,8 @@ import {
 	listAllEventsService,
 	findEventsForHost,
 } from '@/lib/rsvp/repositories/event.repository';
-import type { AdminEventListItemDTO, EventRecord } from '@/lib/rsvp/core/types';
+import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
@@ -40,14 +41,14 @@ export async function createEventAdmin(input: {
 	const status = input.status || 'draft';
 
 	if (!title || !slug || !eventType) {
-		throw new ApiError(400, 'bad_request', 'title, slug y eventType son obligatorios.');
+		throw new ApiError(400, 'bad_request', 'title, slug, and eventType are required.');
 	}
 
 	if (!['xv', 'boda', 'bautizo', 'cumple'].includes(eventType)) {
 		throw new ApiError(
 			400,
 			'bad_request',
-			'eventType debe ser uno de: xv, boda, bautizo, cumple',
+			'eventType must be one of: xv, boda, bautizo, cumple',
 		);
 	}
 
@@ -80,10 +81,10 @@ export async function updateEventAdmin(input: {
 	actorUserId: string;
 }): Promise<AdminEventListItemDTO> {
 	const eventId = sanitize(input.eventId, 120);
-	if (!eventId) throw new ApiError(400, 'bad_request', 'eventId es obligatorio.');
+	if (!eventId) throw new ApiError(400, 'bad_request', 'eventId is required.');
 
 	const existing = await findEventByIdService(eventId);
-	if (!existing) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	if (!existing) throw new ApiError(404, 'not_found', 'Event not found.');
 
 	const event = await updateEventService({
 		eventId,

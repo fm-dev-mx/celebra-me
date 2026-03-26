@@ -1,4 +1,4 @@
-import { dashboardApi, type ApiResult } from './api-client';
+import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type {
 	CreateEventDTO,
 	UpdateEventDTO,
@@ -18,7 +18,7 @@ import type {
 	ClaimCodeCreateResponse,
 	ClaimCodesListResponse,
 } from './dto/claimcodes';
-import type { ClaimCodeDTO } from '@/lib/rsvp/core/types';
+import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 
 export class AdminApi {
 	private handleResponse<T>(result: ApiResult<T>): T {

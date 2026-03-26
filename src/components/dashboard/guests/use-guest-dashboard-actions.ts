@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 type ModalMode = 'create' | 'edit';
 

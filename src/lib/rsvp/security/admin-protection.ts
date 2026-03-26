@@ -1,49 +1,43 @@
 /**
- * Protección para el último super_admin
- * Previene que el sistema quede sin administradores
+ * Protects the final remaining super admin account.
  */
 
 import { listUserRolesService } from '@/lib/rsvp/repositories/role-membership.repository';
-import type { AppUserRole } from '@/lib/rsvp/core/types';
+import type { AppUserRole } from '@/interfaces/auth/session.interface';
 
 /**
- * Verifica si se puede cambiar el rol de un usuario sin dejar
- * al sistema sin super_admins
- *
- * @param targetUserId - ID del usuario cuyo rol se va a cambiar
- * @param newRole - Nuevo rol propuesto
- * @returns true si el cambio es seguro, false si dejaría el sistema sin admins
+ * Verifies that changing a user's role will not leave the system without a super admin.
  */
 export async function canChangeUserRole(
 	targetUserId: string,
 	newRole: AppUserRole,
 ): Promise<{ allowed: boolean; reason?: string }> {
-	// Si el nuevo rol es super_admin, siempre permitir (promoción)
+	// Promotions to super_admin are always safe.
 	if (newRole === 'super_admin') {
 		return { allowed: true };
 	}
 
-	// Obtener todos los roles actuales
+	// Load the current role assignments.
 	const allRoles = await listUserRolesService();
 
-	// Contar super_admins actuales
+	// Count active super admins.
 	const superAdmins = allRoles.filter((r) => r.role === 'super_admin');
 	const superAdminCount = superAdmins.length;
 
-	// Encontrar el rol actual del target
+	// Resolve the current role for the target user.
 	const targetCurrentRole = allRoles.find((r) => r.userId === targetUserId)?.role;
 
-	// Si el usuario no es super_admin, no hay problema
+	// No risk if the target user is not currently a super admin.
 	if (targetCurrentRole !== 'super_admin') {
 		return { allowed: true };
 	}
 
-	// Si es super_admin y estamos cambiando a host_client,
-	// verificar que quede al menos otro super_admin
+	// Demoting the final super admin would lock the system out of global admin access.
 	if (superAdminCount <= 1) {
 		return {
 			allowed: false,
-			reason: 'No se puede eliminar el último super_admin del sistema. Por favor, designa otro super_admin primero.',
+			reason:
+				'The final super_admin cannot be removed. Assign another super_admin first.',
 		};
 	}
 
@@ -51,8 +45,7 @@ export async function canChangeUserRole(
 }
 
 /**
- * Verifica si hay múltiples super_admins en el sistema
- * Útil para mostrar advertencias en la UI
+ * Returns true when the system currently has more than one super admin.
  */
 export async function hasMultipleSuperAdmins(): Promise<boolean> {
 	const allRoles = await listUserRolesService();
@@ -61,7 +54,7 @@ export async function hasMultipleSuperAdmins(): Promise<boolean> {
 }
 
 /**
- * Obtiene el número actual de super_admins
+ * Returns the current number of super admins.
  */
 export async function getSuperAdminCount(): Promise<number> {
 	const allRoles = await listUserRolesService();

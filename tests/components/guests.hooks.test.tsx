@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { DashboardGuestItem } from '@/components/dashboard/guests/types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { guestsApi } from '@/lib/dashboard/guests-api';

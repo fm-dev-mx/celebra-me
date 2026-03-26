@@ -2,7 +2,7 @@ import {
 	findGuestByInviteIdPublic,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
-import type { AttendanceStatus, GuestRSVPSubmitDTO } from '@/lib/rsvp/core/types';
+import type { AttendanceStatus, GuestRSVPSubmitDTO } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
@@ -12,23 +12,23 @@ export async function submitGuestRsvpByInviteId(
 	payload: GuestRSVPSubmitDTO,
 ): Promise<{ attendanceStatus: AttendanceStatus; attendeeCount: number; respondedAt: string }> {
 	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
-	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	const attendanceStatus = payload.attendanceStatus;
 	if (attendanceStatus !== 'confirmed' && attendanceStatus !== 'declined') {
-		throw new ApiError(400, 'bad_request', 'Estado de asistencia invalido.');
+		throw new ApiError(400, 'bad_request', 'Attendance status is invalid.');
 	}
 
 	const safeCount = toSafeAttendeeCount(payload.attendeeCount);
 	const attendeeCount = attendanceStatus === 'declined' ? 0 : safeCount;
 	if (attendanceStatus === 'confirmed' && attendeeCount < 1) {
-		throw new ApiError(400, 'bad_request', 'Confirmado requiere al menos 1 asistente.');
+		throw new ApiError(400, 'bad_request', 'Confirmed attendance requires at least 1 attendee.');
 	}
 	if (attendeeCount > invitation.maxAllowedAttendees) {
 		throw new ApiError(
 			400,
 			'bad_request',
-			`El limite para esta invitacion es ${invitation.maxAllowedAttendees}.`,
+			`The limit for this invitation is ${invitation.maxAllowedAttendees}.`,
 		);
 	}
 
@@ -58,7 +58,7 @@ export async function submitGuestRsvpByInviteId(
 
 export async function trackInvitationView(inviteId: string): Promise<void> {
 	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
-	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	const now = new Date().toISOString();
 	await updateGuestByInviteIdPublic(inviteId, {

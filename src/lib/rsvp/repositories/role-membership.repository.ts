@@ -1,5 +1,9 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { AppUserRole, AppUserRoleRecord, EventMembershipRecord } from '@/lib/rsvp/core/types';
+import type {
+	AppUserRole,
+	AppUserRoleRecord,
+	EventMembershipRecord,
+} from '@/interfaces/auth/session.interface';
 import {
 	type EventMembershipRow,
 	type UserRoleRow,

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DashboardGuestListResponse } from './types';
+import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestStatsCardsProps {
 	totals: DashboardGuestListResponse['totals'];

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
-import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
+import type {
+	DashboardGuestItem,
+	DashboardGuestListResponse,
+} from '@/interfaces/dashboard/guest.interface';
 
 interface HostEventItem {
 	id: string;

@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { EventRecord } from '@/lib/rsvp/core/types';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	EVENT_COLUMNS,
 	EVENT_MUTATION_COLUMNS,
@@ -89,7 +89,7 @@ export async function createEventService(input: {
 			status: input.status || 'draft',
 		},
 	});
-	if (!rows[0]) throw new Error('No se pudo crear evento.');
+	if (!rows[0]) throw new Error('Failed to create event.');
 	return toEventRecord(rows[0]);
 }
 
@@ -113,6 +113,6 @@ export async function updateEventService(input: {
 		prefer: 'return=representation',
 		body,
 	});
-	if (!rows[0]) throw new Error('Evento no encontrado.');
+	if (!rows[0]) throw new Error('Event not found.');
 	return toEventRecord(rows[0]);
 }

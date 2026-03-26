@@ -1,11 +1,11 @@
-import { dashboardApi, type ApiResult } from './api-client';
-import type { DashboardGuestItem } from '@/components/dashboard/guests/types';
+import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type {
 	GuestsListResponse,
 	BulkImportDTO,
 	CreateGuestDTO,
 	UpdateGuestDTO,
-} from './dto/guests';
+} from '@/lib/dashboard/dto/guests';
 
 export class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>): T {

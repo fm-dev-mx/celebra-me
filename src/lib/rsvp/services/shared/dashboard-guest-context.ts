@@ -10,9 +10,9 @@ export async function getEventAccessOrThrow(eventId: string, hostAccessToken: st
 
 	const serviceEvent = await findEventByIdService(eventId);
 	if (serviceEvent) {
-		throw new ApiError(403, 'forbidden', 'Sin acceso al evento solicitado.');
+		throw new ApiError(403, 'forbidden', 'Access to the requested event is denied.');
 	}
-	throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	throw new ApiError(404, 'not_found', 'Event not found.');
 }
 
 export async function getGuestAccessOrThrow(guestId: string, hostAccessToken: string) {
@@ -21,9 +21,9 @@ export async function getGuestAccessOrThrow(guestId: string, hostAccessToken: st
 
 	const serviceGuest = await findGuestByIdService(guestId);
 	if (serviceGuest) {
-		throw new ApiError(403, 'forbidden', 'Sin acceso al invitado solicitado.');
+		throw new ApiError(403, 'forbidden', 'Access to the requested guest is denied.');
 	}
-	throw new ApiError(404, 'not_found', 'Invitado no encontrado.');
+	throw new ApiError(404, 'not_found', 'Guest not found.');
 }
 
 export async function getEventPresentationData(eventId: string, hostAccessToken: string) {

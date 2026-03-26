@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestFormModalProps {
 	open: boolean;

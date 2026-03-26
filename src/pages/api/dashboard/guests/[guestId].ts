@@ -7,7 +7,7 @@ import {
 	deleteDashboardGuest,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import type { AttendanceStatus } from '@/lib/rsvp/core/types';
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';
@@ -29,7 +29,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -39,11 +39,11 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+			throw new ApiError(429, 'rate_limited', 'Too many requests.');
 		}
 
 		const guestId = sanitize(params.guestId, 120);
-		if (!guestId) return badRequest('guestId es obligatorio.');
+		if (!guestId) return badRequest('guestId is required.');
 
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
@@ -78,7 +78,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -88,11 +88,11 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+			throw new ApiError(429, 'rate_limited', 'Too many requests.');
 		}
 
 		const guestId = sanitize(params.guestId, 120);
-		if (!guestId) return badRequest('guestId es obligatorio.');
+		if (!guestId) return badRequest('guestId is required.');
 
 		await deleteDashboardGuest({
 			guestId,
@@ -103,7 +103,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 		return jsonResponse({
 			source: 'mutation',
 			updatedAt: new Date().toISOString(),
-			message: 'Invitado eliminado.',
+			message: 'Guest deleted.',
 		});
 	} catch (error) {
 		return errorResponse(error);

@@ -1,4 +1,4 @@
-import type { DashboardGuestListResponse } from '@/components/dashboard/guests/types';
+import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 
 export type GuestsListResponse = DashboardGuestListResponse;
 

@@ -1,4 +1,8 @@
-import type { EventRecord, GuestInvitationDTO, GuestInvitationRecord } from '@/lib/rsvp/core/types';
+import type {
+	EventRecord,
+	GuestInvitationDTO,
+	GuestInvitationRecord,
+} from '@/interfaces/rsvp/domain.interface';
 import {
 	buildShareMessage,
 	buildWhatsAppShareUrl,

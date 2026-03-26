@@ -1,14 +1,16 @@
 import type {
 	AttendanceStatus,
-	AppUserRole,
-	AppUserRoleRecord,
 	ClaimCodeRecord,
 	EventRecord,
-	EventMembershipRecord,
 	GuestInvitationAuditRecord,
 	GuestInvitationRecord,
 	ResponseSource,
-} from '@/lib/rsvp/core/types';
+} from '@/interfaces/rsvp/domain.interface';
+import type {
+	AppUserRole,
+	AppUserRoleRecord,
+	EventMembershipRecord,
+} from '@/interfaces/auth/session.interface';
 
 export interface GuestFilters {
 	eventId: string;

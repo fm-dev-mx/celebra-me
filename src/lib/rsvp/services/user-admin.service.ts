@@ -3,7 +3,8 @@ import {
 	listUserRolesService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
 import { upsertUserRoleService } from '@/lib/rsvp/repositories/role-membership.repository';
-import type { AdminUserListItemDTO, AppUserRole } from '@/lib/rsvp/core/types';
+import type { AdminUserListItemDTO } from '@/interfaces/dashboard/admin.interface';
+import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import { listAuthUsers } from '@/lib/rsvp/auth/auth-api';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { randomBytes } from 'node:crypto';

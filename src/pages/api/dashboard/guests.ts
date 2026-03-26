@@ -7,7 +7,7 @@ import {
 	createDashboardGuest,
 	listDashboardGuests,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import type { AttendanceStatus } from '@/lib/rsvp/core/types';
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';
@@ -30,13 +30,13 @@ export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const search = sanitize(url.searchParams.get('search'), 120);
 		const status = parseStatus(sanitize(url.searchParams.get('status'), 20));
 
-		if (!eventId) return badRequest('eventId es obligatorio.');
+		if (!eventId) return badRequest('eventId is required.');
 
 		const data = await listDashboardGuests({
 			eventId,
@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -65,7 +65,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			windowSec: 60,
 		});
 		if (!allowed) {
-			throw new ApiError(429, 'rate_limited', 'Demasiadas solicitudes.');
+			throw new ApiError(429, 'rate_limited', 'Too many requests.');
 		}
 
 		const bodyResult = await parseJsonBody(request);
@@ -79,7 +79,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
 		if (!eventId || !fullName) {
-			return badRequest('eventId y fullName son obligatorios.');
+			return badRequest('eventId and fullName are required.');
 		}
 
 		const result = await createDashboardGuest({

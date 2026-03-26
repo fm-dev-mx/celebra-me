@@ -3,7 +3,11 @@ import {
 	findGuestByInviteIdPublic,
 	findGuestByShortIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
-import type { AttendanceStatus, EventRecord, GuestInvitationRecord } from '@/lib/rsvp/core/types';
+import type {
+	AttendanceStatus,
+	EventRecord,
+	GuestInvitationRecord,
+} from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
@@ -52,13 +56,13 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	};
 }> {
 	const safeInviteId = sanitize(inviteId, 64);
-	if (!safeInviteId) throw new ApiError(400, 'bad_request', 'inviteId invalido.');
+	if (!safeInviteId) throw new ApiError(400, 'bad_request', 'inviteId is invalid.');
 
 	const invitation = await findGuestByInviteIdPublic(safeInviteId);
-	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	const event = await findEventByInvitationPublic(invitation.eventId);
-	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	if (!event) throw new ApiError(404, 'not_found', 'Event not found.');
 
 	return toInvitationContext(invitation, event);
 }
@@ -77,13 +81,13 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 	};
 }> {
 	const safeShortId = sanitize(shortId, 12);
-	if (!safeShortId) throw new ApiError(400, 'bad_request', 'short_id invalido.');
+	if (!safeShortId) throw new ApiError(400, 'bad_request', 'short_id is invalid.');
 
 	const invitation = await findGuestByShortIdPublic(safeShortId);
-	if (!invitation) throw new ApiError(404, 'not_found', 'Invitacion no encontrada.');
+	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	const event = await findEventByInvitationPublic(invitation.eventId);
-	if (!event) throw new ApiError(404, 'not_found', 'Evento no encontrado.');
+	if (!event) throw new ApiError(404, 'not_found', 'Event not found.');
 
 	return toInvitationContext(invitation, event);
 }

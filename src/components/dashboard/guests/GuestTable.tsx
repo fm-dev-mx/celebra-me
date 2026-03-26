@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import GuestCard from './GuestCard';
 import ShareAction from './ShareAction';
 import { generateInvitationLink } from '@utils/invitation-link';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];

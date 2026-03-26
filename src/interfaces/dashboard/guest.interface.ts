@@ -1,14 +1,13 @@
-export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
-export type DeliveryStatus = 'generated' | 'shared';
+import type { AttendanceStatus, DeliveryStatus } from '@/interfaces/rsvp/domain.interface';
 
 export interface DashboardGuestItem {
 	guestId: string;
 	inviteId: string;
 	fullName: string;
 	phone: string;
-	email: string | null;
+	email?: string | null;
 	tags: string[];
-	metadata: Record<string, unknown>;
+	metadata?: Record<string, unknown>;
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface ImportMagicProps {
 	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<void>;

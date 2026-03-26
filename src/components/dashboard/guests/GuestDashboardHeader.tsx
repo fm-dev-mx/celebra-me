@@ -1,7 +1,10 @@
 import React from 'react';
 import GuestProgressCard from './GuestProgressCard';
 import GuestStatsCards from './GuestStatsCards';
-import type { DashboardGuestItem, DashboardGuestListResponse } from './types';
+import type {
+	DashboardGuestItem,
+	DashboardGuestListResponse,
+} from '@/interfaces/dashboard/guest.interface';
 import type { RealtimeState } from './use-guest-dashboard-realtime';
 
 interface HostEventItem {

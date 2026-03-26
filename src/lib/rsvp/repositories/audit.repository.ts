@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { GuestInvitationAuditRecord } from '@/lib/rsvp/core/types';
+import type { GuestInvitationAuditRecord } from '@/interfaces/rsvp/domain.interface';
 import { type GuestAuditRow, toGuestAuditRecord } from '@/lib/rsvp/repositories/shared/rows';
 
 export async function appendGuestAuditByHost(
@@ -41,7 +41,7 @@ export async function appendGuestAuditPublic(
 			payload,
 		},
 	});
-	if (!rows[0]) throw new Error('No se pudo registrar auditoria.');
+	if (!rows[0]) throw new Error('Failed to write audit entry.');
 	return toGuestAuditRecord(rows[0]);
 }
 

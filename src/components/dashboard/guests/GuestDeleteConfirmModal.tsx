@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestDeleteConfirmModalProps {
 	guestToDelete: DashboardGuestItem | null;

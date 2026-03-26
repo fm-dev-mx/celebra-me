@@ -1,6 +1,6 @@
 import React from 'react';
 import ShareAction from './ShareAction';
-import type { DashboardGuestItem } from './types';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestCardProps {
 	item: DashboardGuestItem;

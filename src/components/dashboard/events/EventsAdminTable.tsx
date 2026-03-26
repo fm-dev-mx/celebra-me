@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type SyntheticEvent } from 'react';
-import type { AdminEventListItemDTO } from '@/lib/rsvp/core/types';
+import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type { CreateEventDTO, UpdateEventDTO } from '@/lib/dashboard/dto/events';
 
