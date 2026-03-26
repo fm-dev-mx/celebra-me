@@ -1,18 +1,15 @@
-import React, { useEffect, useRef, useState, type SyntheticEvent } from 'react';
+import React from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { rsvpApi } from '@/lib/client/rsvp-api';
+import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import '@/styles/invitation/_rsvp.scss';
 import {
 	resolveLabels,
-	normalizeGuestCount,
 	buildWhatsAppUrl,
-	validateRsvpForm,
 	LockedPreview,
 	SubmittedState,
 	RsvpFormView,
-	type AttendanceStatus,
 	type WhatsAppConfig,
-} from './RSVPComponents';
+} from '@/components/invitation/RSVPComponents';
 
 interface RSVPProps {
 	title: string;
@@ -54,161 +51,43 @@ const RSVP: React.FC<RSVPProps> = ({
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
-
-	const [name, setName] = useState(initialGuestData?.fullName || '');
-	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
-	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
-	const [notes, setNotes] = useState('');
-	const [dietary, setDietary] = useState('');
-	const [nameLocked, setNameLocked] = useState(!!initialGuestData?.fullName);
-	const [contextGuestCap, setContextGuestCap] = useState<number>(
-		Number(initialGuestData?.maxAllowedAttendees || guestCap),
-	);
-	const [rsvpId, setRsvpId] = useState('');
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [submitted, setSubmitted] = useState(false);
-	const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-		'idle',
-	);
-	const [errors, setErrors] = useState<Record<string, string>>({});
-	const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-	const nameRef = useRef<HTMLInputElement>(null);
-	const attendanceRef = useRef<HTMLDivElement>(null);
-	const guestCountRef = useRef<HTMLInputElement>(null);
-
-	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
-	const supportsPlusOnes = effectiveGuestCap > 1;
+	const {
+		name,
+		attendanceStatus,
+		attendeeCount,
+		notes,
+		dietary,
+		nameLocked,
+		effectiveGuestCap,
+		supportsPlusOnes,
+		isSubmitting,
+		submitted,
+		submitStatus,
+		errors,
+		touched,
+		nameRef,
+		attendanceRef,
+		guestCountRef,
+		setName,
+		setAttendanceStatus,
+		setAttendeeCount,
+		setNotes,
+		setDietary,
+		handleBlur,
+		handleSubmit,
+		handleWhatsAppClick,
+		validate,
+	} = useRsvpSubmission({
+		guestCap,
+		initialGuestData,
+		prefersReducedMotion: Boolean(prefersReducedMotion),
+	});
 	const labels_resolved = resolveLabels(labels);
-
 	const showWhatsAppCta =
 		submitted &&
 		attendanceStatus === 'confirmed' &&
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
-		!!whatsappConfig?.phone;
-
-	useEffect(() => {
-		if (initialGuestData) {
-			if (initialGuestData.fullName) {
-				setName(initialGuestData.fullName);
-				setNameLocked(true);
-			}
-			if (initialGuestData.maxAllowedAttendees) {
-				setContextGuestCap(initialGuestData.maxAllowedAttendees);
-			}
-		} else {
-			setNameLocked(false);
-		}
-	}, [initialGuestData]);
-
-	const validate = () => {
-		const newErrors = validateRsvpForm({
-			name,
-			nameLocked,
-			attendanceStatus,
-			attendeeCount,
-			supportsPlusOnes,
-			effectiveGuestCap,
-		});
-		setErrors(newErrors);
-		return newErrors;
-	};
-
-	const handleBlur = (field: string) => {
-		setTouched((prev) => ({ ...prev, [field]: true }));
-		validate();
-	};
-
-	const handleSubmit = async (e: SyntheticEvent) => {
-		e.preventDefault();
-		setSubmitStatus('loading');
-
-		const validationErrors = validate();
-		const errorKeys = Object.keys(validationErrors);
-
-		if (errorKeys.length > 0) {
-			setSubmitStatus('error');
-			setTouched({
-				name: true,
-				attendance: true,
-				guestCount: true,
-			});
-
-			const firstError = errorKeys[0];
-
-			const refMap: Record<string, React.RefObject<HTMLElement | null>> = {
-				name: nameRef as React.RefObject<HTMLElement | null>,
-				attendance: attendanceRef as React.RefObject<HTMLElement | null>,
-				guestCount: guestCountRef as React.RefObject<HTMLElement | null>,
-			};
-
-			const targetRef = refMap[firstError];
-			if (targetRef?.current) {
-				targetRef.current.scrollIntoView({
-					behavior: prefersReducedMotion ? 'auto' : 'smooth',
-					block: 'center',
-				});
-
-				if (firstError === 'attendance') {
-					const firstRadio = targetRef.current.querySelector(
-						'input[type="radio"]',
-					) as HTMLInputElement | null;
-					firstRadio?.focus();
-				} else {
-					(targetRef.current as HTMLElement).focus();
-				}
-			}
-
-			return;
-		}
-
-		setIsSubmitting(true);
-
-		try {
-			const normalizedCount = normalizeGuestCount(
-				attendanceStatus,
-				attendeeCount,
-				supportsPlusOnes,
-			);
-
-			if (!initialGuestData?.inviteId) {
-				setSubmitStatus('error');
-				setErrors((prev) => ({
-					...prev,
-					global: 'Esta invitaci\u00f3n requiere un enlace personalizado.',
-				}));
-				return;
-			}
-
-			const payload = {
-				attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
-				attendeeCount: normalizedCount,
-				guestMessage: notes,
-			};
-
-			const data = await rsvpApi.submitRsvp(initialGuestData.inviteId, payload);
-			if (data.rsvpId) setRsvpId(data.rsvpId);
-
-			setSubmitStatus('success');
-			setTimeout(() => setSubmitted(true), 500);
-		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';
-			setSubmitStatus('error');
-			setErrors((prev) => ({ ...prev, global: message }));
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
-
-	const handleWhatsAppClick = async () => {
-		if (!rsvpId) return;
-		try {
-			await rsvpApi.trackAction(rsvpId, 'clicked', 'whatsapp');
-		} catch {
-			// telemetry
-		}
-	};
+		Boolean(whatsappConfig?.phone);
 
 	if (!hasPersonalizedInvite) {
 		return <LockedPreview title={title} variant={variant} />;

@@ -1,10 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import type { SyntheticEvent } from 'react';
-import { type AttendanceStatus } from './rsvp-logic';
-import { NameField, AttendanceField, ConfirmedFields } from './RSVPFormFields';
+import type { RefObject, SyntheticEvent } from 'react';
+import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
+import {
+	AttendanceField,
+	ConfirmedFields,
+	NameField,
+} from '@/components/invitation/RSVPFormFields';
 
-export * from './rsvp-logic';
+export * from '@/components/invitation/rsvp-logic';
 
 // --- Sub-components ---
 
@@ -150,9 +154,9 @@ export function RsvpFormView(props: {
 	notes: string;
 	isSubmitting: boolean;
 	submitStatus: 'idle' | 'loading' | 'success' | 'error';
-	nameRef: React.RefObject<HTMLInputElement | null>;
-	attendanceRef: React.RefObject<HTMLDivElement | null>;
-	guestCountRef: React.RefObject<HTMLInputElement | null>;
+	nameRef: RefObject<HTMLInputElement | null>;
+	attendanceRef: RefObject<HTMLDivElement | null>;
+	guestCountRef: RefObject<HTMLInputElement | null>;
 	onSubmit: (e: SyntheticEvent) => void;
 	onNameChange: (value: string) => void;
 	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;

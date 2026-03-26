@@ -40,7 +40,8 @@ const GuestPostConfirmActions: React.FC<GuestPostConfirmActionsProps> = ({
 }) => {
 	const calendarLink = buildGoogleCalendarLink({ eventTitle, startIso, endIso });
 	const phone = (hostWhatsAppPhone || '').replace(/[^\d]/g, '');
-	const message = `Hola, soy ${guestName}. Mi respuesta es: ${attendanceStatus}.`;
+	const attendanceLabel = attendanceStatus === 'confirmed' ? 'confirmada' : 'rechazada';
+	const message = `Hola, soy ${guestName}. Mi respuesta quedó ${attendanceLabel}.`;
 	const whatsappLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : '';
 
 	return (
@@ -50,7 +51,7 @@ const GuestPostConfirmActions: React.FC<GuestPostConfirmActionsProps> = ({
 			</a>
 			{whatsappLink && (
 				<a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-					Enviar confirmacion por WhatsApp
+					Enviar confirmación por WhatsApp
 				</a>
 			)}
 		</div>

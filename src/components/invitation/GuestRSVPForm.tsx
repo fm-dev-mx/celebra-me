@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import GuestPostConfirmActions from './GuestPostConfirmActions';
-import { rsvpApi } from '@/lib/client/rsvp-api';
+import GuestPostConfirmActions from '@/components/invitation/GuestPostConfirmActions';
+import { useGuestRsvp } from '@/hooks/use-guest-rsvp';
 
 interface GuestRSVPFormProps {
 	inviteId: string;
@@ -27,25 +27,19 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 	eventStartIso,
 	eventEndIso,
 }) => {
+	const { submitting, error, submitted, markInviteViewed, submitGuestRsvp } = useGuestRsvp(
+		inviteId,
+		initialStatus !== 'pending',
+	);
 	const [attendanceStatus, setAttendanceStatus] = useState<'confirmed' | 'declined'>(
 		initialStatus === 'declined' ? 'declined' : 'confirmed',
 	);
 	const [attendeeCount, setAttendeeCount] = useState(Math.max(1, initialAttendeeCount || 1));
 	const [guestMessage, setGuestMessage] = useState(initialGuestMessage || '');
-	const [submitting, setSubmitting] = useState(false);
-	const [submitted, setSubmitted] = useState(initialStatus !== 'pending');
-	const [error, setError] = useState('');
 
 	useEffect(() => {
-		const run = async () => {
-			try {
-				await rsvpApi.markViewed(inviteId);
-			} catch {
-				// non-blocking view telemetry
-			}
-		};
-		void run();
-	}, [inviteId]);
+		void markInviteViewed();
+	}, [markInviteViewed]);
 
 	return (
 		<section className="guest-rsvp-form">
@@ -53,19 +47,15 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 			<form
 				onSubmit={async (event) => {
 					event.preventDefault();
-					setSubmitting(true);
-					setError('');
+
 					try {
-						await rsvpApi.submitRsvp(inviteId, {
+						await submitGuestRsvp({
 							attendanceStatus,
 							attendeeCount: attendanceStatus === 'declined' ? 0 : attendeeCount,
 							guestMessage,
 						});
-						setSubmitted(true);
-					} catch (err) {
-						setError(err instanceof Error ? err.message : 'Error al guardar RSVP.');
-					} finally {
-						setSubmitting(false);
+					} catch {
+						// The hook keeps the current error state for the form.
 					}
 				}}
 			>
@@ -81,7 +71,7 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 							checked={attendanceStatus === 'confirmed'}
 							onChange={() => setAttendanceStatus('confirmed')}
 						/>
-						Si asistire
+						Sí asistiré
 					</label>
 					<label>
 						<input
@@ -90,12 +80,12 @@ const GuestRSVPForm: React.FC<GuestRSVPFormProps> = ({
 							checked={attendanceStatus === 'declined'}
 							onChange={() => setAttendanceStatus('declined')}
 						/>
-						No podre asistir
+						No podré asistir
 					</label>
 				</div>
 				{attendanceStatus === 'confirmed' && (
 					<label>
-						Numero de asistentes (maximo {maxAllowedAttendees})
+						Número de asistentes (máximo {maxAllowedAttendees})
 						<input
 							type="number"
 							min={1}

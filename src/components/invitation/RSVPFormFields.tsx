@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type AttendanceStatus } from './rsvp-logic';
+import type { RefObject } from 'react';
+import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
 export function NameField(props: {
 	nameLocked: boolean;
@@ -8,7 +9,7 @@ export function NameField(props: {
 	errors: Record<string, string>;
 	nameLabel: string;
 	name: string;
-	nameRef: React.RefObject<HTMLInputElement | null>;
+	nameRef: RefObject<HTMLInputElement | null>;
 	prefersReducedMotion: boolean;
 	onNameChange: (value: string) => void;
 	onBlur: (field: string) => void;
@@ -59,7 +60,7 @@ export function AttendanceField(props: {
 	errors: Record<string, string>;
 	attendanceLabel: string;
 	attendanceStatus: AttendanceStatus;
-	attendanceRef: React.RefObject<HTMLDivElement | null>;
+	attendanceRef: RefObject<HTMLDivElement | null>;
 	prefersReducedMotion: boolean;
 	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
 	onBlur: (field: string) => void;
@@ -127,7 +128,7 @@ export function ConfirmedFields(props: {
 	errors: Record<string, string>;
 	guestCountLabel: string;
 	effectiveGuestCap: number;
-	guestCountRef: React.RefObject<HTMLInputElement | null>;
+	guestCountRef: RefObject<HTMLInputElement | null>;
 	attendeeCount: number | string;
 	showDietaryField: boolean;
 	dietaryLabel: string;
