@@ -8,7 +8,7 @@
  */
 
 import HeaderBase from '@components/common/HeaderBase.astro';
-import NavBarMobile from '@components/ui/header/NavBarMobile.tsx';
+import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
 import '@styles/invitation/_event-header.scss';
 
 export interface Props {
@@ -57,8 +57,7 @@ const {
 		}
 	</div>
 
-	<!-- SLOT: Premium Mobile Nav (React) -->
 	<div slot="mobile-nav-premium">
-		<NavBarMobile client:load links={links} headerId="event-header" />
+		<NavBarMobile links={links} headerId="event-header" />
 	</div>
 </HeaderBase>

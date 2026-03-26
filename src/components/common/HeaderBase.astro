@@ -10,7 +10,6 @@
  */
 
 import '@styles/layout/_header-base.scss';
-import HeaderBaseBehavior from '@/components/behavior/HeaderBaseBehavior';
 
 export interface Props {
     transparentOnHero?: boolean;
@@ -78,4 +77,51 @@ const {
         </div>
     )}
 </header>
-<HeaderBaseBehavior client:load headerId={headerId} transparentOnHero={transparentOnHero} />
+<script define:vars={{ headerId, transparentOnHero }}>
+	const header = document.getElementById(headerId);
+
+	if (header instanceof HTMLElement) {
+		let lastScrollY = window.scrollY;
+		const scrollThreshold = 50;
+		const hideThreshold = 100;
+
+		const setScrolledState = (isScrolledPastHero) => {
+			header.classList.toggle('header-base--scrolled', isScrolledPastHero);
+
+			const isMenuOpenNow = header.classList.contains('header-base--menu-open');
+
+			if (transparentOnHero && !isMenuOpenNow) {
+				header.classList.toggle('header-base--transparent', !isScrolledPastHero);
+			} else {
+				header.classList.remove('header-base--transparent');
+			}
+		};
+
+		const handleScroll = () => {
+			const currentScrollY = window.scrollY;
+			const isScrolledPastHero = currentScrollY > scrollThreshold;
+
+			setScrolledState(isScrolledPastHero);
+
+			const isMenuOpenNow = header.classList.contains('header-base--menu-open');
+			if (isMenuOpenNow) {
+				header.classList.remove('header-base--hidden');
+				lastScrollY = currentScrollY;
+				return;
+			}
+
+			const isScrollingDown = currentScrollY > lastScrollY;
+
+			if (currentScrollY > hideThreshold && isScrollingDown) {
+				header.classList.add('header-base--hidden');
+			} else {
+				header.classList.remove('header-base--hidden');
+			}
+
+			lastScrollY = currentScrollY;
+		};
+
+		handleScroll();
+		window.addEventListener('scroll', handleScroll, { passive: true });
+	}
+</script>

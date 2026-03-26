@@ -1,0 +1,117 @@
+---
+interface NavLink {
+	label: string;
+	href: string;
+}
+
+interface Props {
+	headerId: string;
+	links?: NavLink[];
+}
+
+const { headerId, links = [] } = Astro.props;
+const menuId = `${headerId}-mobile-menu`;
+---
+
+<div data-nav-mobile data-header-id={headerId}>
+	<button
+		type="button"
+		class="header-base__mobile-toggle"
+		aria-label="Abrir menú"
+		aria-expanded="false"
+		aria-controls={menuId}
+		data-nav-mobile-toggle
+	>
+		<div class="hamburger">
+			<span class="hamburger__line"></span>
+			<span class="hamburger__line"></span>
+			<span class="hamburger__line"></span>
+		</div>
+	</button>
+
+	<div class="header-base__mobile-overlay" hidden data-nav-mobile-overlay></div>
+
+	<nav
+		id={menuId}
+		class="header-base__mobile-menu"
+		hidden
+		data-nav-mobile-menu
+		aria-label="Navegación móvil"
+	>
+		<div class="mobile-nav-links">
+			{
+				links.map((link) => (
+					<a href={link.href} class="mobile-nav-links__link" data-nav-mobile-link>
+						{link.label}
+					</a>
+				))
+			}
+		</div>
+
+		<div class="mobile-nav-footer">
+			<div class="mobile-nav-footer__divider"></div>
+			<p class="mobile-nav-footer__copy">CELEBRA-ME © 2026</p>
+		</div>
+	</nav>
+</div>
+
+<script>
+	const navRoots = Array.from(document.querySelectorAll('[data-nav-mobile]'));
+
+	navRoots.forEach((root) => {
+		if (!(root instanceof HTMLElement)) {
+			return;
+		}
+
+		const headerId = root.dataset.headerId;
+		const header = headerId ? document.getElementById(headerId) : null;
+		const toggle = root.querySelector('[data-nav-mobile-toggle]');
+		const menu = root.querySelector('[data-nav-mobile-menu]');
+		const overlay = root.querySelector('[data-nav-mobile-overlay]');
+		const links = Array.from(root.querySelectorAll('[data-nav-mobile-link]'));
+
+		if (
+			!(toggle instanceof HTMLButtonElement) ||
+			!(menu instanceof HTMLElement) ||
+			!(overlay instanceof HTMLElement)
+		) {
+			return;
+		}
+
+		const closeMenu = () => {
+			toggle.setAttribute('aria-expanded', 'false');
+			toggle.setAttribute('aria-label', 'Abrir menú');
+			menu.hidden = true;
+			overlay.hidden = true;
+			header?.classList.remove('header-base--menu-open');
+			document.body.style.overflow = '';
+		};
+
+		const openMenu = () => {
+			toggle.setAttribute('aria-expanded', 'true');
+			toggle.setAttribute('aria-label', 'Cerrar menú');
+			menu.hidden = false;
+			overlay.hidden = false;
+			header?.classList.add('header-base--menu-open');
+			document.body.style.overflow = 'hidden';
+		};
+
+		toggle.addEventListener('click', () => {
+			const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+			if (isOpen) {
+				closeMenu();
+			} else {
+				openMenu();
+			}
+		});
+
+		overlay.addEventListener('click', closeMenu);
+		links.forEach((link) => link.addEventListener('click', closeMenu));
+
+		window.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+				closeMenu();
+			}
+		});
+	});
+</script>

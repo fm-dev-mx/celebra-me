@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { NavBarProps } from '../../../interfaces/ui/components/nav-bar.interface';
+import type { NavBarProps } from '@/interfaces/ui/components/nav-bar.interface';
 
 const NavBarMobile: React.FC<NavBarProps> = ({ headerId, links = [] }) => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +29,7 @@ const NavBarMobile: React.FC<NavBarProps> = ({ headerId, links = [] }) => {
 		<>
 			{/* Hamburger Button */}
 			<button
+				type="button"
 				onClick={toggleMenu}
 				className="header-base__mobile-toggle"
 				aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
