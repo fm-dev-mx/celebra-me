@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import ContactForm from '../../src/components/ui/ContactForm';
+import ContactForm from '@/components/ui/ContactForm';
 
 describe('ContactForm Component', () => {
 	it('should render all form fields', () => {

@@ -240,6 +240,18 @@ export default [
 	{
 		files: ['**/*.tsx'],
 		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['./*', '../*'],
+							message:
+								'Usa el alias @/* en componentes TSX; no se permiten imports relativos.',
+						},
+					],
+				},
+			],
 			'no-restricted-syntax': [
 				'error',
 				{
