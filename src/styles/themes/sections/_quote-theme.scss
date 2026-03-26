@@ -93,13 +93,13 @@
 	// Vibrant gradient background with particles effect
 	background: linear-gradient(
 		135deg,
-		#ffecd2 0%,
-		#fcb69f 25%,
-		#ff9a9e 50%,
-		#fecfef 75%,
-		#fecfef 100%
+		var(--color-surface-secondary) 0%,
+		var(--color-surface-primary) 25%,
+		var(--color-action-primary) 50%,
+		var(--color-action-secondary) 75%,
+		var(--color-action-secondary) 100%
 	);
-	color: #2d2d2d;
+	color: var(--color-text-primary);
 	position: relative;
 	overflow: hidden;
 
@@ -117,7 +117,7 @@
 	// Modern decorative dividers - stars/sparkles
 	.quote-divider-top,
 	.quote-divider-bottom {
-		color: #ff6b9d;
+		color: var(--color-action-accent);
 		width: 250px;
 
 		svg {
@@ -137,8 +137,8 @@
 			position: absolute;
 			top: 50%;
 			transform: translateY(-50%);
-			color: #ffd700;
-			text-shadow: 0 0 10px rgb(255 215 0 / 50%);
+			color: var(--color-action-primary);
+			text-shadow: 0 0 10px rgb(var(--color-action-primary-rgb) / 50%);
 		}
 
 		&::before {
@@ -196,8 +196,8 @@
 		font-size: clamp(1.8rem, 6vw, 3rem);
 		line-height: 1.4;
 		font-style: normal;
-		color: #4a4a4a;
-		text-shadow: 2px 2px 4px rgb(255 255 255 / 50%);
+		color: var(--color-text-primary);
+		text-shadow: 2px 2px 4px rgb(var(--color-surface-elevated-rgb) / 50%);
 	}
 
 	// Modern author styling
@@ -208,7 +208,7 @@
 	.quote-ornament {
 		width: 60px;
 		height: 2px;
-		background: linear-gradient(90deg, transparent, #ff6b9d, transparent);
+		background: linear-gradient(90deg, transparent, var(--color-action-accent), transparent);
 		opacity: 60%;
 	}
 
@@ -217,7 +217,7 @@
 		font-size: clamp(1rem, 3vw, 1.3rem);
 		text-transform: none;
 		letter-spacing: 0.1em;
-		color: #ff6b9d;
+		color: var(--color-action-accent);
 		font-weight: 500;
 	}
 
@@ -243,7 +243,7 @@
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,
-		#fdf8f0 50%,
+		var(--color-surface-soft) 50%,
 		var(--color-surface-primary) 100%
 	);
 	position: relative;
@@ -255,7 +255,7 @@
 		inset: 0;
 		opacity: 10%;
 		pointer-events: none;
-		background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66-3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm20-46c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm32 71c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-34-54c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-28 69c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm66-70c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm42 42c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-59 54c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm12-92c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm60 40c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm6 60c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z' fill='#d4af37' fill-opacity='0.08'/%3E%3C/svg%3E");
+		background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66-3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-43c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm20-46c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm32 71c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-34-54c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-28 69c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm66-70c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm42 42c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm-59 54c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm12-92c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm60 40c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zm6 60c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z' fill='%23#{str-slice(inspect(tokens.$color-action-accent), 2)}' fill-opacity='0.08'/%3E%3C/svg%3E");
 	}
 
 	.quote-divider-top,
@@ -320,8 +320,8 @@
 
 .quote-section[data-variant='minimal'] {
 	// Clean light background
-	background-color: #fafafa;
-	color: #333;
+	background-color: var(--color-surface-soft);
+	color: var(--color-text-primary);
 
 	// No decorative dividers
 	.quote-divider-top,
@@ -336,7 +336,7 @@
 		font-size: clamp(1.4rem, 4vw, 2rem);
 		line-height: 1.6;
 		font-style: normal;
-		color: #555;
+		color: var(--color-text-secondary);
 		max-width: 700px;
 		margin: 0 auto;
 	}
@@ -355,7 +355,7 @@
 		font-size: 0.9rem;
 		text-transform: uppercase;
 		letter-spacing: 0.3em;
-		color: #999;
+		color: var(--color-neutral-muted);
 		font-weight: 400;
 	}
 
@@ -375,8 +375,13 @@
 
 .quote-section[data-variant='floral'] {
 	// Soft floral-inspired gradient
-	background: linear-gradient(180deg, #fff9f0 0%, #fff5f5 50%, #faf0e6 100%);
-	color: #5d4e37;
+	background: linear-gradient(
+		180deg,
+		var(--color-surface-elevated) 0%,
+		var(--color-surface-primary) 50%,
+		var(--color-surface-secondary) 100%
+	);
+	color: var(--color-text-primary);
 	position: relative;
 
 	// Subtle floral pattern overlay
@@ -392,7 +397,7 @@
 	// Floral decorative dividers
 	.quote-divider-top,
 	.quote-divider-bottom {
-		color: #c9a96e;
+		color: var(--color-action-accent);
 		width: 220px;
 
 		svg {
@@ -426,7 +431,7 @@
 		font-size: clamp(1.7rem, 5vw, 2.5rem);
 		line-height: 1.5;
 		font-style: italic;
-		color: #6b5b4f;
+		color: var(--color-text-secondary);
 	}
 
 	// Floral ornament
@@ -439,7 +444,7 @@
 		&::before {
 			content: '❀';
 			font-size: 1.5rem;
-			color: #c9a96e;
+			color: var(--color-action-accent);
 			opacity: 80%;
 		}
 	}
@@ -449,7 +454,7 @@
 		font-size: clamp(1rem, 3vw, 1.2rem);
 		text-transform: none;
 		letter-spacing: 0.15em;
-		color: #8b7355;
+		color: var(--color-text-muted);
 		font-style: italic;
 	}
 
@@ -568,8 +573,10 @@
 @media (prefers-reduced-motion: reduce) {
 	.quote-section[data-variant] .quote-line {
 		opacity: 100%;
+		/* stylelint-disable declaration-no-important */
 		transform: none !important;
 		transition: none !important;
 		animation: none !important;
+		/* stylelint-enable declaration-no-important */
 	}
 }

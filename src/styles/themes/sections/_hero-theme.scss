@@ -1,6 +1,6 @@
 @use '../../tokens' as tokens;
 
-.invitation-hero {
+:where(.invitation-hero) {
 	--hero-overlay: rgb(0 0 0 / 40%);
 	--hero-overlay-gradient: linear-gradient(
 		to bottom,
@@ -68,7 +68,11 @@
 		inset: 0;
 		background-image:
 			radial-gradient(1px 1px at 20px 30px, tokens.$color-white, rgb(0 0 0 / 0%)),
-			radial-gradient(1.5px 1.5px at 100px 150px, tokens.$color-text-on-dark, rgb(0 0 0 / 0%)),
+			radial-gradient(
+				1.5px 1.5px at 100px 150px,
+				tokens.$color-text-on-dark,
+				rgb(0 0 0 / 0%)
+			),
 			radial-gradient(1px 1px at 200px 300px, tokens.$color-white, rgb(0 0 0 / 0%)),
 			radial-gradient(1.5px 1.5px at 150px 50px, tokens.$color-text-on-dark, rgb(0 0 0 / 0%));
 		background-size: 300px 300px;
@@ -89,7 +93,7 @@
 
 		img {
 			filter: var(--hero-image-filter);
-			transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+			transition: transform var(--duration-standard) var(--ease-premium);
 		}
 	}
 

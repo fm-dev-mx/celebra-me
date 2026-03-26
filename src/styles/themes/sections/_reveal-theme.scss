@@ -122,30 +122,44 @@
 	// ==========================================================================
 
 	// Override hooks — surface (High-End Cardstock)
-	--env-paper-bg: #f8f5f2; // Pristine Bone White
+	--env-paper-bg: var(--color-surface-elevated); // Pristine Bone White
 	--env-paper-border: rgb(0 0 0 / 8%);
 	--env-paper-radius: 4px; // Sharp, formal corners
-	--env-card-bg: #1a1a1a; // Deep Charcoal
+	--env-card-bg: var(--color-surface-dark); // Deep Charcoal
 	--env-card-radius: 2px;
 	--env-card-shadow: 0 20px 50px rgb(0 0 0 / 40%);
 
 	// Override hooks — name (Formal Foil Stamped)
 	--env-name-font: var(--font-display-formal);
-	--env-name-gradient: linear-gradient(135deg, #d4af37 0%, #f9e4b7 50%, #d4af37 100%);
+	--env-name-gradient: linear-gradient(
+		135deg,
+		var(--color-action-accent) 0%,
+		var(--color-surface-secondary) 50%,
+		var(--color-action-accent) 100%
+	);
 	--env-name-fill: transparent;
 	--env-name-animation: goldshimmer 8s linear infinite;
 
 	// Override hooks — details
-	--env-details-color: #1a1a1a;
+	--env-details-color: var(--color-surface-dark);
 
 	// Override hooks — seal (Aged Gold Coin)
 	--env-seal-size: 78px;
-	--env-seal-icon-color: rgb(26 26 26 / 80%);
-	--env-seal-gradient: radial-gradient(circle at 35% 30%, #f9e4b7 0%, #d4af37 40%, #b8860b 100%);
-	--env-seal-pulse-color: rgb(212 175 55 / 30%);
+	--env-seal-icon-color: rgb(var(--color-surface-dark-rgb) / 80%);
+	--env-seal-gradient: radial-gradient(
+		circle at 35% 30%,
+		var(--color-surface-secondary) 0%,
+		var(--color-action-accent) 40%,
+		var(--color-surface-canvas) 100%
+	);
+	--env-seal-pulse-color: rgb(var(--color-action-accent-rgb) / 30%);
 
-	background: #121212; // Solid minimalist background
-	background-image: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 3%) 0%, transparent 70%);
+	background: var(--color-surface-dark); // Solid minimalist background
+	background-image: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-surface-elevated-rgb) / 3%) 0%,
+		transparent 70%
+	);
 
 	.envelope-container {
 		width: 100%;
@@ -284,7 +298,7 @@
 			display: block;
 			font-family: var(--font-ui);
 			font-size: clamp(0.6rem, 2vw, 0.75rem);
-			color: #1a1a1a;
+			color: var(--color-surface-dark);
 			letter-spacing: 0.4em; // Broad tracking for luxury
 			margin-bottom: 1rem;
 			font-weight: 600;
@@ -296,13 +310,13 @@
 			display: inline-block; // Ensure it wraps content properly
 			font-size: clamp(1.8rem, 7vw, 2.8rem);
 			letter-spacing: 0.05em;
-			color: #1a1a1a;
+			color: var(--color-surface-dark);
 			font-family: var(--font-display-formal);
 			font-weight: 400;
 
 			&::after {
 				content: '';
-				background: #d4af37;
+				background: var(--color-action-accent);
 				width: 30px;
 				height: 2px;
 				position: absolute;
@@ -322,7 +336,7 @@
 
 		// Double Border Effect
 		// Gold Leaf Inner Border
-		border: 1px solid #d4af37;
+		border: 1px solid var(--color-action-accent);
 		padding: 1.5rem;
 
 		&::after {
@@ -373,7 +387,12 @@
 		}
 
 		.rivet {
-			background: radial-gradient(circle at 35% 35%, #f9e4b7, #d4af37 60%, #b8860b);
+			background: radial-gradient(
+				circle at 35% 35%,
+				var(--color-surface-secondary),
+				var(--color-action-accent) 60%,
+				var(--color-surface-canvas)
+			);
 			box-shadow:
 				0 2px 5px rgb(0 0 0 / 30%),
 				inset 0 1px 1px rgb(255 255 255 / 40%);
@@ -403,7 +422,7 @@
 		}
 
 		.seal-visual {
-			border: 2px solid #d4af37;
+			border: 2px solid var(--color-action-accent);
 			box-shadow:
 				0 15px 35px rgb(0 0 0 / 40%),
 				inset 0 0 10px rgb(0 0 0 / 20%);

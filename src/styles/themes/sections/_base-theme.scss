@@ -70,7 +70,7 @@
 		text-transform: uppercase;
 		padding: 0.75rem 2rem;
 		border-radius: 4px;
-		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		transition: all var(--duration-snappy) var(--ease-premium);
 		position: relative;
 		overflow: hidden;
 		letter-spacing: 0.05em;
@@ -136,7 +136,7 @@
 	background:
 		radial-gradient(circle at 10% 10%, rgb(212 175 55 / 8%) 0%, transparent 40%),
 		radial-gradient(circle at 90% 90%, rgb(197 160 89 / 5%) 0%, transparent 40%),
-		linear-gradient(180deg, #0d0d0d 0%, #050505 100%);
+		linear-gradient(180deg, var(--color-surface-dark) 0%, var(--color-surface-canvas) 100%);
 	color: var(--color-text-primary);
 	min-height: 100svh;
 	padding-bottom: env(safe-area-inset-bottom, 0);
@@ -150,8 +150,8 @@
 			opacity: 0%;
 			transform: translateY(40px);
 			transition:
-				opacity 1.4s cubic-bezier(0.23, 1, 0.32, 1),
-				transform 1.6s cubic-bezier(0.23, 1, 0.32, 1);
+				opacity var(--duration-reveal) var(--ease-premium),
+				transform var(--duration-reveal) var(--ease-premium);
 			will-change: opacity, transform;
 		}
 
@@ -203,5 +203,3 @@
 .photo-image {
 	filter: var(--theme-image-filter-portrait, none);
 }
-
-

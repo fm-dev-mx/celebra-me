@@ -323,7 +323,7 @@
 		font-family: Poppins, Montserrat, sans-serif;
 		font-size: clamp(2rem, 8vw, 4rem);
 		font-weight: 800;
-		color: #fff;
+		color: var(--color-surface-elevated);
 		text-shadow: 0 4px 8px rgb(0 0 0 / 20%);
 		letter-spacing: 0.05em;
 		text-transform: none;
@@ -335,7 +335,7 @@
 			font-family: Poppins, sans-serif;
 			font-size: 1.1rem;
 			font-weight: 500;
-			color: rgb(255 255 255 / 95%);
+			color: var(--color-text-on-dark);
 			text-transform: uppercase;
 			letter-spacing: 0.2em;
 		}
@@ -343,7 +343,7 @@
 		.subtitle-line {
 			width: 50px;
 			height: 3px;
-			background: linear-gradient(90deg, transparent, #ffd93d, transparent);
+			background: linear-gradient(90deg, transparent, var(--color-info), transparent);
 			display: block;
 
 			@include mixins.respond-to(sm) {
@@ -383,7 +383,7 @@
 		font-family: Poppins, Montserrat, sans-serif;
 		font-size: clamp(2.5rem, 8vw, 5rem);
 		font-weight: 800;
-		color: #fff;
+		color: var(--color-surface-elevated);
 		text-shadow: 0 4px 8px rgb(0 0 0 / 30%);
 		letter-spacing: 0.02em;
 	}
@@ -422,7 +422,7 @@
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,
-		#fdf8f0 50%,
+		var(--color-surface-soft) 50%,
 		var(--color-surface-primary) 100%
 	);
 	position: relative;
@@ -538,7 +538,12 @@
 
 .countdown-section[data-variant='classic'] {
 	// Rich dark background with gold accents
-	background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+	background: linear-gradient(
+		180deg,
+		var(--color-surface-dark) 0%,
+		var(--color-surface-canvas) 50%,
+		var(--color-surface-dark) 100%
+	);
 	position: relative;
 	overflow: hidden;
 
@@ -575,9 +580,9 @@
 	// Ornate title
 	.countdown-title {
 		font-family: 'Playfair Display', 'Cormorant Garamond', serif;
-		font-size: clamp(1.8rem, 6vw, 3rem);
+		font-size: clamp(1.8rem, 6vw, 3.5rem);
 		font-weight: 400;
-		color: #d4af37;
+		color: var(--color-action-accent);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
@@ -596,7 +601,12 @@
 		.subtitle-line {
 			width: 60px;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, #d4af37, transparent);
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-action-accent),
+				transparent
+			);
 			display: block;
 		}
 	}
@@ -632,7 +642,7 @@
 		font-family: 'Playfair Display', serif;
 		font-size: clamp(2.2rem, 6vw, 4rem);
 		font-weight: 400;
-		color: #d4af37;
+		color: var(--color-action-accent);
 		letter-spacing: 0.05em;
 	}
 
@@ -666,7 +676,7 @@
 
 .countdown-section[data-variant='modern'] {
 	// Clean light background
-	background: #f8f9fa;
+	background: var(--color-surface-soft);
 	position: relative;
 
 	// Geometric accent shapes
@@ -677,7 +687,7 @@
 		left: 0;
 		right: 0;
 		height: 200px;
-		background: linear-gradient(180deg, #2d3436 0%, transparent 100%);
+		background: linear-gradient(180deg, var(--color-surface-dark) 0%, transparent 100%);
 		opacity: 5%;
 		pointer-events: none;
 	}
@@ -692,7 +702,7 @@
 		font-family: Inter, 'Helvetica Neue', sans-serif;
 		font-size: clamp(1.6rem, 5vw, 2.5rem);
 		font-weight: 700;
-		color: #2d3436;
+		color: var(--color-text-primary);
 		letter-spacing: -0.02em;
 		text-transform: none;
 	}
@@ -703,7 +713,7 @@
 			font-family: Inter, sans-serif;
 			font-size: 0.9rem;
 			font-weight: 500;
-			color: #636e72;
+			color: var(--color-text-secondary);
 			letter-spacing: 0.05em;
 			text-transform: uppercase;
 		}
@@ -711,14 +721,14 @@
 		.subtitle-line {
 			width: 40px;
 			height: 2px;
-			background: #b2bec3;
+			background: var(--color-neutral-muted);
 			display: block;
 		}
 	}
 
 	// Clean geometric segments
 	.countdown__segment {
-		background: #fff;
+		background: var(--color-surface-elevated);
 		border: none;
 		padding: 2rem 1rem;
 		border-radius: 12px;
@@ -744,7 +754,7 @@
 		font-family: 'SF Mono', Monaco, Inconsolata, monospace;
 		font-size: clamp(2.2rem, 6vw, 3.5rem);
 		font-weight: 600;
-		color: #2d3436;
+		color: var(--color-text-primary);
 		letter-spacing: -0.02em;
 	}
 
@@ -755,7 +765,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: #b2bec3;
+		color: var(--color-neutral-muted);
 
 		@include mixins.respond-to(sm) {
 			font-size: 0.75rem;
@@ -767,7 +777,7 @@
 		font-family: Inter, sans-serif;
 		font-size: 1.1rem;
 		font-weight: 400;
-		color: #636e72;
+		color: var(--color-text-secondary);
 	}
 }
 
@@ -828,7 +838,7 @@
 		background: linear-gradient(
 			90deg,
 			tokens.$color-action-accent 0%,
-			#fff 50%,
+			var(--color-surface-elevated) 50%,
 			tokens.$color-action-accent 100%
 		);
 		background-size: 200% auto;
@@ -866,9 +876,9 @@
 				height: 6px;
 				background: radial-gradient(
 					circle at 30% 30%,
-					#fff 0%,
+					var(--color-surface-elevated) 0%,
 					tokens.$color-action-accent 70%,
-					#000 100%
+					var(--color-surface-dark) 100%
 				);
 				border-radius: 50%;
 				transform: translate(-50%, -50%);
@@ -897,9 +907,9 @@
 		position: relative;
 		overflow: hidden;
 		transition:
-			transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-			border-color 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-			box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+			transform var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-premium),
+			box-shadow var(--duration-standard) var(--ease-premium);
 		will-change: transform;
 
 		// Metallic Gold Double Trim
@@ -932,9 +942,9 @@
 			height: 5px;
 			background: radial-gradient(
 				circle at 30% 30%,
-				#fff 0%,
+				var(--color-surface-elevated) 0%,
 				tokens.$color-action-accent 70%,
-				#000 100%
+				var(--color-surface-dark) 100%
 			);
 			border-radius: 50%;
 			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
@@ -970,7 +980,7 @@
 				0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 
 			.countdown__value {
-				color: #fff;
+				color: var(--color-surface-elevated);
 				text-shadow: 0 0 15px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.8);
 			}
 		}

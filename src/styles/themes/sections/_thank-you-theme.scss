@@ -6,7 +6,7 @@
 // ==========================================================================
 
 .thank-you-section[data-variant='editorial'] {
-	background: var(--thank-you-bg, #050505);
+	background: var(--color-surface-dark);
 	padding-block: clamp(6rem, 15vw, 10rem);
 	position: relative;
 	overflow: hidden;
@@ -44,12 +44,16 @@
 		}
 
 		border-radius: 50%;
-		background: linear-gradient(135deg, tokens.$color-surface-soft, tokens.$color-surface-primary);
+		background: linear-gradient(
+			135deg,
+			tokens.$color-surface-soft,
+			tokens.$color-surface-primary
+		);
 		box-shadow: var(--thank-you-photo-frame-shadow);
 		position: relative;
 		overflow: visible;
 		margin-bottom: 2rem;
-		transition: transform 0.8s tokens.$ease-premium;
+		transition: transform var(--duration-premium) var(--ease-premium);
 		animation: none;
 
 		&::before {
@@ -59,7 +63,7 @@
 			border-radius: 50%;
 			background: var(--gold-metallic);
 			z-index: -1;
-			box-shadow: 0 10px 30px rgb(0 0 0 / 60%);
+			box-shadow: var(--shadow-premium);
 			opacity: 90%;
 			animation: thank-you-border-shimmer 8s linear infinite;
 			filter: none;
@@ -91,8 +95,8 @@
 			object-fit: cover;
 			clip-path: circle(calc(50% - 6px) at 50% 50%);
 			transition:
-				transform 1.2s tokens.$ease-premium,
-				filter 1.2s tokens.$ease-premium;
+				transform var(--duration-reveal) var(--ease-premium),
+				filter var(--duration-reveal) var(--ease-premium);
 			filter: contrast(1.02) brightness(0.95);
 		}
 	}
@@ -122,7 +126,7 @@
 		-webkit-text-fill-color: transparent;
 		margin-top: 1rem;
 		text-transform: var(--thank-you-closing-text-transform, none);
-		filter: drop-shadow(0 10px 20px rgb(0 0 0 / 50%));
+		filter: drop-shadow(var(--shadow-premium));
 	}
 }
 
@@ -205,7 +209,7 @@
 // ==========================================================================
 
 .thank-you-section[data-variant='luxury-hacienda'] {
-	background: linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, #12100e 100%);
+	background: linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, var(--color-surface-dark) 100%);
 	background-blend-mode: overlay;
 
 	&::before {
@@ -227,7 +231,11 @@
 		// Heavy Beveled Gold Frame
 		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.5);
 		border-radius: 4px;
-		background: linear-gradient(135deg, #1a1510 0%, #2a2018 100%);
+		background: linear-gradient(
+			135deg,
+			var(--color-surface-canvas) 0%,
+			var(--color-surface-dark) 100%
+		);
 		padding: 8px;
 		box-shadow:
 			0 20px 50px rgb(0 0 0 / 90%),
@@ -283,9 +291,9 @@
 			height: 6px;
 			background: radial-gradient(
 				circle at 30% 30%,
-				#fff 0%,
+				var(--color-surface-elevated) 0%,
 				var(--color-action-accent) 70%,
-				#000 100%
+				var(--color-surface-dark) 100%
 			);
 			border-radius: 50%;
 			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
@@ -357,7 +365,7 @@
 		background: linear-gradient(
 			90deg,
 			var(--color-action-accent) 0%,
-			#fff 50%,
+			var(--color-surface-elevated) 50%,
 			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;

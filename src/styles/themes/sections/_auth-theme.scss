@@ -1,9 +1,22 @@
 .auth-shell[data-variant='dark'] {
-	background-color: #080808;
+	background-color: var(--color-surface-dark);
 	background-image:
-		radial-gradient(circle at 50% 35%, rgb(255 255 255 / 5%), transparent 52%),
-		radial-gradient(circle at 50% 120%, rgb(0 0 0 / 55%), transparent 60%),
-		linear-gradient(180deg, #080808 0%, #0d0d0d 55%, #111 100%);
+		radial-gradient(
+			circle at 50% 35%,
+			rgb(var(--color-surface-elevated-rgb) / 5%),
+			transparent 52%
+		),
+		radial-gradient(
+			circle at 50% 120%,
+			rgb(var(--color-surface-dark-rgb) / 55%),
+			transparent 60%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-surface-dark) 0%,
+			var(--color-surface-canvas) 55%,
+			var(--color-surface-dark) 100%
+		);
 }
 
 /* Skeleton for future auth variants */
