@@ -1,0 +1,217 @@
+---
+interface Props {
+	inviteId: string;
+	eventTitle: string;
+	guestName: string;
+	maxAllowedAttendees: number;
+	initialStatus: 'pending' | 'confirmed' | 'declined';
+	initialAttendeeCount: number;
+	initialGuestMessage: string;
+	hostWhatsAppPhone?: string;
+	eventStartIso?: string;
+	eventEndIso?: string;
+}
+
+const {
+	inviteId,
+	eventTitle,
+	guestName,
+	maxAllowedAttendees,
+	initialStatus,
+	initialAttendeeCount,
+	initialGuestMessage,
+	hostWhatsAppPhone,
+	eventStartIso,
+	eventEndIso,
+} = Astro.props;
+
+const initialAttendanceStatus = initialStatus === 'declined' ? 'declined' : 'confirmed';
+const initialSubmitted = initialStatus !== 'pending';
+const phone = (hostWhatsAppPhone || '').replace(/[^\d]/g, '');
+const initialAttendanceLabel = initialAttendanceStatus === 'confirmed' ? 'confirmada' : 'rechazada';
+const whatsAppMessage = `Hola, soy ${guestName}. Mi respuesta quedó ${initialAttendanceLabel}.`;
+const whatsAppLink = phone
+	? `https://wa.me/${phone}?text=${encodeURIComponent(whatsAppMessage)}`
+	: '';
+const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${
+	eventStartIso
+		? new Date(eventStartIso)
+				.toISOString()
+				.replace(/[-:]/g, '')
+				.replace(/\.\d{3}Z$/, 'Z')
+		: ''
+}/${
+	eventEndIso
+		? new Date(eventEndIso)
+				.toISOString()
+				.replace(/[-:]/g, '')
+				.replace(/\.\d{3}Z$/, 'Z')
+		: ''
+}`;
+---
+
+<section
+	class="guest-rsvp-form"
+	data-guest-rsvp
+	data-invite-id={inviteId}
+	data-guest-name={guestName}
+	data-initial-status={initialAttendanceStatus}
+	data-max-attendees={maxAllowedAttendees}
+>
+	<h2>Confirma tu asistencia</h2>
+	<form data-guest-rsvp-form>
+		<div class="guest-rsvp-form__personalized-welcome">
+			<p class="personalized-label">Especialmente para:</p>
+			<strong class="personalized-name">{guestName}</strong>
+		</div>
+		<div class="guest-rsvp-form__row">
+			<label>
+				<input
+					type="radio"
+					name="attendanceStatus"
+					value="confirmed"
+					checked={initialAttendanceStatus === 'confirmed'}
+				/>
+				Sí, asistiré
+			</label>
+			<label>
+				<input
+					type="radio"
+					name="attendanceStatus"
+					value="declined"
+					checked={initialAttendanceStatus === 'declined'}
+				/>
+				No podré asistir
+			</label>
+		</div>
+		<label data-guest-count-wrap hidden={initialAttendanceStatus === 'declined'}>
+			Número de asistentes (máximo {maxAllowedAttendees})
+			<input
+				type="number"
+				name="attendeeCount"
+				min="1"
+				max={maxAllowedAttendees}
+				value={Math.max(1, initialAttendeeCount || 1)}
+			/>
+		</label>
+		<label>
+			Mensaje para el festejado (opcional)
+			<textarea name="guestMessage" rows="4">{initialGuestMessage}</textarea>
+		</label>
+		<p class="guest-rsvp-form__error" data-guest-rsvp-error hidden></p>
+		<button type="submit" data-guest-rsvp-submit>
+			{initialSubmitted ? 'Actualizar respuesta' : 'Confirmar asistencia'}
+		</button>
+	</form>
+
+	<div class="guest-post-confirm-actions" data-guest-rsvp-actions hidden={!initialSubmitted}>
+		<a href={calendarLink} target="_blank" rel="noopener noreferrer">
+			Agregar al calendario
+		</a>
+		{whatsAppLink && (
+			<a href={whatsAppLink} target="_blank" rel="noopener noreferrer" data-guest-whatsapp-link>
+				Enviar confirmación por WhatsApp
+			</a>
+		)}
+	</div>
+</section>
+
+<script>
+	const guestRsvpRoots = Array.from(document.querySelectorAll('[data-guest-rsvp]'));
+
+	guestRsvpRoots.forEach((root) => {
+		if (!(root instanceof HTMLElement)) {
+			return;
+		}
+
+		const inviteId = root.dataset.inviteId;
+		const guestName = root.dataset.guestName || 'Invitado';
+		const form = root.querySelector('[data-guest-rsvp-form]');
+		const guestCountWrap = root.querySelector('[data-guest-count-wrap]');
+		const errorNode = root.querySelector('[data-guest-rsvp-error]');
+		const actions = root.querySelector('[data-guest-rsvp-actions]');
+		const submitButton = root.querySelector('[data-guest-rsvp-submit]');
+		const whatsappLink = root.querySelector('[data-guest-whatsapp-link]');
+
+		if (
+			!(form instanceof HTMLFormElement) ||
+			!(guestCountWrap instanceof HTMLElement) ||
+			!(errorNode instanceof HTMLElement) ||
+			!(actions instanceof HTMLElement) ||
+			!(submitButton instanceof HTMLButtonElement) ||
+			!inviteId
+		) {
+			return;
+		}
+
+		fetch(`/api/invitacion/${encodeURIComponent(inviteId)}/view`, { method: 'POST' }).catch(() => {});
+
+		const syncGuestCountVisibility = () => {
+			const selected = form.querySelector('input[name="attendanceStatus"]:checked');
+			const shouldShow = selected instanceof HTMLInputElement && selected.value === 'confirmed';
+			guestCountWrap.hidden = !shouldShow;
+		};
+
+		form.querySelectorAll('input[name="attendanceStatus"]').forEach((input) => {
+			input.addEventListener('change', syncGuestCountVisibility);
+		});
+
+		syncGuestCountVisibility();
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			errorNode.hidden = true;
+			errorNode.textContent = '';
+			submitButton.disabled = true;
+
+			try {
+				const formData = new FormData(form);
+				const attendanceStatus = String(formData.get('attendanceStatus') || 'confirmed');
+				const attendeeCount =
+					attendanceStatus === 'declined'
+						? 0
+						: Number(formData.get('attendeeCount') || 1);
+				const guestMessage = String(formData.get('guestMessage') || '');
+
+				const response = await fetch(
+					`/api/invitacion/${encodeURIComponent(inviteId)}/rsvp`,
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							attendanceStatus,
+							attendeeCount,
+							guestMessage,
+						}),
+					},
+				);
+
+				if (!response.ok) {
+					throw new Error('No se pudo guardar la confirmación.');
+				}
+
+				actions.hidden = false;
+				submitButton.textContent = 'Actualizar respuesta';
+
+				if (whatsappLink instanceof HTMLAnchorElement) {
+					const attendanceLabel =
+						attendanceStatus === 'confirmed' ? 'confirmada' : 'rechazada';
+					const url = new URL(whatsappLink.href);
+					url.searchParams.set(
+						'text',
+						`Hola, soy ${guestName}. Mi respuesta quedó ${attendanceLabel}.`,
+					);
+					whatsappLink.href = url.toString();
+				}
+			} catch (error) {
+				errorNode.textContent =
+					error instanceof Error ? error.message : 'Error al guardar RSVP.';
+				errorNode.hidden = false;
+			} finally {
+				submitButton.disabled = false;
+			}
+		});
+	});
+</script>

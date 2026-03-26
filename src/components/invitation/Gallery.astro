@@ -2,7 +2,7 @@
 // src/components/invitation/Gallery.astro
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import PhotoGallery from './PhotoGallery';
+import PhotoGallery from './PhotoGallery.astro';
 import '@/styles/invitation/_gallery.scss';
 
 interface GalleryItem {
@@ -29,6 +29,6 @@ if (!items || items.length === 0) return null;
 			{subtitle && <p class="gallery-section__subtitle">{subtitle}</p>}
 		</header>
 
-		<PhotoGallery client:visible items={items} variant={variant} />
+		<PhotoGallery items={items} variant={variant} />
 	</div>
 </section>

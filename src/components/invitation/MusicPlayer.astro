@@ -1,0 +1,142 @@
+---
+import Icon from '@/components/common/Icon.astro';
+import '@/styles/invitation/_music-player.scss';
+
+interface Props {
+	url: string;
+	autoPlay?: boolean;
+	title?: string;
+	revealMode?: 'envelope' | 'immediate';
+	variant?: string;
+}
+
+const {
+	url,
+	autoPlay = false,
+	title = 'Música de fondo',
+	revealMode = 'envelope',
+	variant,
+} = Astro.props;
+---
+
+<div
+	class="music-player"
+	data-music-player
+	data-auto-play={autoPlay ? 'true' : 'false'}
+	data-reveal-mode={revealMode}
+	data-variant={variant}
+>
+	<audio src={url} loop preload="auto" data-music-audio></audio>
+
+	<span class="music-player__prompt" data-music-prompt>Toca para escuchar música</span>
+
+	<div class="music-player__controls">
+		<button
+			type="button"
+			class="music-player__button music-player__button--play music-player__button--pulsing"
+			data-music-toggle
+			aria-label={title}
+		>
+			<span data-icon-play><Icon name="Play" size={24} /></span>
+			<span data-icon-pause hidden><Icon name="Pause" size={24} /></span>
+		</button>
+	</div>
+</div>
+
+<script>
+	const players = Array.from(document.querySelectorAll('[data-music-player]'));
+
+	players.forEach((player) => {
+		if (!(player instanceof HTMLElement)) {
+			return;
+		}
+
+		const audio = player.querySelector('[data-music-audio]');
+		const prompt = player.querySelector('[data-music-prompt]');
+		const toggle = player.querySelector('[data-music-toggle]');
+		const playIcon = player.querySelector('[data-icon-play]');
+		const pauseIcon = player.querySelector('[data-icon-pause]');
+		const autoPlay = player.dataset.autoPlay === 'true';
+		const revealMode = player.dataset.revealMode || 'envelope';
+
+		if (
+			!(audio instanceof HTMLAudioElement) ||
+			!(toggle instanceof HTMLButtonElement) ||
+			!(playIcon instanceof HTMLElement) ||
+			!(pauseIcon instanceof HTMLElement)
+		) {
+			return;
+		}
+
+		let isPlaying = false;
+		let dismissTimer;
+
+		const syncState = () => {
+			playIcon.hidden = isPlaying;
+			pauseIcon.hidden = !isPlaying;
+			toggle.classList.toggle('music-player__button--pulsing', !isPlaying);
+			toggle.setAttribute('aria-label', isPlaying ? 'Pausar música' : 'Música de fondo');
+			if (prompt instanceof HTMLElement) {
+				prompt.hidden = isPlaying;
+			}
+		};
+
+		const hidePromptLater = () => {
+			if (!(prompt instanceof HTMLElement)) {
+				return;
+			}
+			window.clearTimeout(dismissTimer);
+			dismissTimer = window.setTimeout(() => {
+				prompt.hidden = true;
+			}, 5000);
+		};
+
+		if (autoPlay) {
+			const firstInteraction = () => {
+				audio.play().then(() => {
+					isPlaying = true;
+					syncState();
+				}).catch(() => {});
+				document.removeEventListener('click', firstInteraction);
+				document.removeEventListener('touchstart', firstInteraction);
+			};
+
+			document.addEventListener('click', firstInteraction, { once: true });
+			document.addEventListener('touchstart', firstInteraction, { once: true });
+		}
+
+		if (revealMode === 'immediate' || document.body.classList.contains('invitation-revealed')) {
+			hidePromptLater();
+		} else {
+			const observer = new MutationObserver(() => {
+				if (document.body.classList.contains('invitation-revealed')) {
+					hidePromptLater();
+					observer.disconnect();
+				}
+			});
+
+			observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+		}
+
+		toggle.addEventListener('click', async () => {
+			if (isPlaying) {
+				audio.pause();
+				isPlaying = false;
+			} else {
+				try {
+					await audio.play();
+					isPlaying = true;
+				} catch (error) {
+					console.warn('No se pudo reproducir el audio:', error);
+				}
+			}
+
+			syncState();
+			if (prompt instanceof HTMLElement && isPlaying) {
+				prompt.hidden = true;
+			}
+		});
+
+		syncState();
+	});
+</script>

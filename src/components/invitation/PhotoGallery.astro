@@ -1,0 +1,157 @@
+---
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+
+interface GalleryItem {
+	image: ImageMetadata | ImageAsset;
+	caption?: string;
+}
+
+interface Props {
+	items: GalleryItem[];
+	variant?: string;
+}
+
+const { items, variant = 'standard' } = Astro.props;
+
+type NestedSrc = {
+	src: string;
+};
+
+const hasNestedSrc = (value: unknown): value is NestedSrc =>
+	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
+
+const getSrc = (image: ImageMetadata | ImageAsset): string => {
+	if ('src' in image) {
+		const src = image.src as unknown;
+		if (typeof src === 'string') return src;
+		if (hasNestedSrc(src)) return src.src;
+	}
+
+	return (image as ImageMetadata).src;
+};
+
+const getLayoutClass = (index: number, galleryVariant?: string): string => {
+	if (galleryVariant === 'luxury-hacienda') {
+		if (index === 0) return 'gallery-grid__item--feature';
+		if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
+		return 'gallery-grid__item--standard';
+	}
+
+	if (galleryVariant === 'jewelry-box' || galleryVariant === 'organic') {
+		if (index % 5 === 0) return 'gallery-grid__item--feature';
+		if (index % 3 === 0) return 'gallery-grid__item--wide';
+		return 'gallery-grid__item--standard';
+	}
+
+	return 'gallery-grid__item--standard';
+};
+---
+
+<div class="gallery-grid" data-gallery data-variant={variant}>
+	{
+		items.map((item, index) => (
+			<div
+				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
+				data-gallery-item
+				data-gallery-index={index}
+				data-gallery-src={getSrc(item.image)}
+				data-gallery-caption={item.caption ?? ''}
+				tabindex="0"
+				role="button"
+				aria-label={item.caption || `Ver imagen ${index + 1}`}
+			>
+				<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
+				{item.caption && (
+					<div class="gallery-grid__overlay">
+						<p class="gallery-grid__caption">{item.caption}</p>
+					</div>
+				)}
+			</div>
+		))
+	}
+</div>
+
+<div class="gallery-lightbox" data-gallery-lightbox hidden role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
+	<button type="button" class="gallery-lightbox__close" data-gallery-close aria-label="Cerrar galería">
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		>
+			<line x1="18" y1="6" x2="6" y2="18" />
+			<line x1="6" y1="6" x2="18" y2="18" />
+		</svg>
+	</button>
+
+	<div class="gallery-lightbox__content" data-gallery-content>
+		<img src="" alt="" data-gallery-image />
+		<div class="gallery-lightbox__footer" data-gallery-footer hidden>
+			<p data-gallery-footer-text></p>
+		</div>
+	</div>
+</div>
+
+<script>
+	const gallery = document.querySelector('[data-gallery]');
+	const lightbox = document.querySelector('[data-gallery-lightbox]');
+	const lightboxImage = lightbox?.querySelector('[data-gallery-image]');
+	const lightboxFooter = lightbox?.querySelector('[data-gallery-footer]');
+	const lightboxFooterText = lightbox?.querySelector('[data-gallery-footer-text]');
+	const closeButton = lightbox?.querySelector('[data-gallery-close]');
+	const content = lightbox?.querySelector('[data-gallery-content]');
+
+	if (
+		gallery &&
+		lightbox instanceof HTMLElement &&
+		lightboxImage instanceof HTMLImageElement &&
+		lightboxFooter instanceof HTMLElement &&
+		lightboxFooterText instanceof HTMLElement &&
+		closeButton instanceof HTMLButtonElement &&
+		content instanceof HTMLElement
+	) {
+		const closeLightbox = () => {
+			lightbox.hidden = true;
+			document.body.style.overflow = '';
+		};
+
+		const openLightbox = (item) => {
+			if (!(item instanceof HTMLElement)) {
+				return;
+			}
+
+			lightboxImage.src = item.dataset.gallerySrc || '';
+			lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
+
+			const caption = item.dataset.galleryCaption || '';
+			lightboxFooterText.textContent = caption;
+			lightboxFooter.hidden = !caption;
+
+			lightbox.hidden = false;
+			document.body.style.overflow = 'hidden';
+		};
+
+		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+			item.addEventListener('click', () => openLightbox(item));
+			item.addEventListener('keydown', (event) => {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					openLightbox(item);
+				}
+			});
+		});
+
+		closeButton.addEventListener('click', closeLightbox);
+		lightbox.addEventListener('click', closeLightbox);
+		content.addEventListener('click', (event) => event.stopPropagation());
+		window.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && !lightbox.hidden) {
+				closeLightbox();
+			}
+		});
+	}
+</script>

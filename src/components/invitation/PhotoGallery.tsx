@@ -214,6 +214,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ items, variant = 'standard'
 						aria-label="Vista ampliada de la imagen"
 					>
 						<button
+							type="button"
 							className="gallery-lightbox__close"
 							onClick={closeLightbox}
 							aria-label="Cerrar galería"

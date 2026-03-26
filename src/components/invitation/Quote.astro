@@ -1,7 +1,6 @@
 ---
 // src/components/invitation/Quote.astro
 import '@/styles/invitation/_quote.scss';
-import RevealOnIntersect from '@/components/behavior/RevealOnIntersect';
 import type { QuoteAnimation, QuoteVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
@@ -50,5 +49,13 @@ const { text, author, variant = 'elegant', animation = 'fade' } = Astro.props;
 		</div>
 	</div>
 </section>
-<RevealOnIntersect client:load selector=".quote-line" threshold={0.2} />
+<script type="module">
+	import { createIntersectionObserver } from '@/utils/animations';
+
+	createIntersectionObserver(
+		'.quote-line',
+		(target) => target.classList.add('is-visible'),
+		{ threshold: 0.2 },
+	);
+</script>
 

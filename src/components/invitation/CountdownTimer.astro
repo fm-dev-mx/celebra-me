@@ -1,0 +1,91 @@
+---
+interface Props {
+	eventDate: string;
+}
+
+const { eventDate } = Astro.props;
+
+const targetDate = new Date(eventDate);
+const difference = targetDate.getTime() - Date.now();
+const initialTimeLeft =
+	difference > 0
+		? {
+				days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+				hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+				minutes: Math.floor((difference / 1000 / 60) % 60),
+				seconds: Math.floor((difference / 1000) % 60),
+			}
+		: { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+const segments = [
+	{ key: 'days', label: 'Días', value: initialTimeLeft.days },
+	{ key: 'hours', label: 'Horas', value: initialTimeLeft.hours },
+	{ key: 'minutes', label: 'Minutos', value: initialTimeLeft.minutes },
+	{ key: 'seconds', label: 'Segundos', value: initialTimeLeft.seconds },
+];
+---
+
+<div class="countdown__timer" data-countdown data-event-date={eventDate}>
+	{
+		segments.map((segment, index) => (
+			<div class="countdown__segment" data-index={index}>
+				<div class="countdown__value-wrapper">
+					<span class="rivet rivet--tl"></span>
+					<span class="rivet rivet--tr"></span>
+					<span class="rivet rivet--bl"></span>
+					<span class="rivet rivet--br"></span>
+					<span
+						class="countdown__value"
+						data-countdown-value={segment.key}
+						data-value={segment.value.toString().padStart(2, '0')}
+					>
+						{segment.value.toString().padStart(2, '0')}
+					</span>
+				</div>
+				<span class="countdown__label">{segment.label}</span>
+			</div>
+		))
+	}
+</div>
+
+<script>
+	const countdownRoots = Array.from(document.querySelectorAll('[data-countdown]'));
+
+	countdownRoots.forEach((root) => {
+		if (!(root instanceof HTMLElement)) {
+			return;
+		}
+
+		const eventDate = root.dataset.eventDate;
+		if (!eventDate) {
+			return;
+		}
+
+		const updateCountdown = () => {
+			const difference = new Date(eventDate).getTime() - Date.now();
+			const values =
+				difference > 0
+					? {
+							days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+							hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+							minutes: Math.floor((difference / 1000 / 60) % 60),
+							seconds: Math.floor((difference / 1000) % 60),
+						}
+					: { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+			Object.entries(values).forEach(([key, value]) => {
+				const element = root.querySelector(`[data-countdown-value="${key}"]`);
+				if (!(element instanceof HTMLElement)) {
+					return;
+				}
+
+				const paddedValue = value.toString().padStart(2, '0');
+				element.textContent = paddedValue;
+				element.dataset.value = paddedValue;
+			});
+		};
+
+		updateCountdown();
+		window.setInterval(updateCountdown, 1000);
+	});
+</script>

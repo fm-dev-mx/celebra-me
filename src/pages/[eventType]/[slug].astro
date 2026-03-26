@@ -11,9 +11,9 @@ import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
 import Footer from '@/components/invitation/Footer.astro';
 import Hero from '@/components/invitation/Hero.astro';
-import MusicPlayer from '@/components/invitation/MusicPlayer';
+import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
-import EnvelopeReveal from '@/components/invitation/EnvelopeReveal';
+import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 
 const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
@@ -74,7 +74,6 @@ const pageData = prepareInvitationPageData({
 		{
 			pageData.envelope && (
 				<EnvelopeReveal
-					client:load
 					name={pageData.envelope.name}
 					date={pageData.envelope.date}
 					city={pageData.envelope.city}
@@ -111,7 +110,6 @@ const pageData = prepareInvitationPageData({
 
 		{pageData.music && (
 			<MusicPlayer
-				client:idle
 				url={pageData.music.url}
 				autoPlay={pageData.music.autoPlay}
 				title={pageData.music.title}

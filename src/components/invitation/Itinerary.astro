@@ -1,7 +1,7 @@
 ---
 // src/components/invitation/Itinerary.astro
 import '@/styles/invitation/_itinerary.scss';
-import TimelineList from './TimelineList';
+import TimelineList from './TimelineList.astro';
 
 interface ItineraryItemData {
 	icon:
@@ -52,7 +52,7 @@ const { title = "Itinerario", items, variant } = Astro.props;
 		<div class="itinerary__timeline">
 			<div class="itinerary__line" aria-hidden="true"></div>
 
-			<TimelineList client:visible items={items} variant={variant} />
+			<TimelineList items={items} variant={variant} />
 
 			<div class="itinerary__line-end" aria-hidden="true"></div>
 		</div>

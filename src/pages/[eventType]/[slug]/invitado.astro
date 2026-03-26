@@ -4,7 +4,7 @@ export const prerender = false;
 import Layout from '@/layouts/Layout.astro';
 import '@styles/invitation/_invitado-page.scss';
 import GuestInvitationHero from '@/components/invitation/GuestInvitationHero.astro';
-import GuestRSVPForm from '@/components/invitation/GuestRSVPForm';
+import GuestRSVPForm from '@/components/invitation/GuestRSVPForm.astro';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 
@@ -72,7 +72,6 @@ const pageDescription = context ? `Te invitamos a: ${context.eventTitle}. Por fa
 				<>
 					<GuestInvitationHero eventTitle={context.eventTitle} guestName={context.guest.fullName} />
 					<GuestRSVPForm
-						client:load
 						inviteId={context.inviteId}
 						eventTitle={context.eventTitle}
 						guestName={context.guest.fullName}

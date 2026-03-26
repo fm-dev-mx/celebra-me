@@ -1,0 +1,242 @@
+---
+import Icon from '@/components/common/icons/Icon.astro';
+
+interface Props {
+	name: string;
+	date: string;
+	city: string;
+	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
+	sealIcon?: 'boot' | 'heart' | 'monogram' | 'flower';
+	microcopy: string;
+	documentLabel?: string;
+	stampText?: string;
+	stampYear?: string;
+	eventSlug: string;
+	tooltipText?: string;
+	variant?: string;
+	guestName?: string;
+}
+
+const {
+	name,
+	date,
+	city,
+	sealStyle,
+	sealIcon = 'monogram',
+	microcopy,
+	documentLabel,
+	stampText,
+	stampYear,
+	eventSlug,
+	tooltipText = 'Abre el sobre',
+	variant,
+	guestName,
+} = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+});
+
+const sealIconMap = {
+	boot: 'Boot',
+	heart: 'HeartSeal',
+	monogram: 'MonogramSeal',
+	flower: 'FlowerSeal',
+} as const;
+---
+
+<div
+	class="envelope-wrapper"
+	data-envelope
+	data-event-slug={eventSlug}
+	data-tooltip-text={tooltipText}
+	data-variant={variant}
+>
+	<div class="envelope-container">
+		<div class="envelope-base"></div>
+
+		<div class="envelope-card" data-envelope-card>
+			<div class="rivet rivet--tl"></div>
+			<div class="rivet rivet--tr"></div>
+			<div class="rivet rivet--bl"></div>
+			<div class="rivet rivet--br"></div>
+			<div class="envelope-card__content">
+				<div class="envelope-card__header">
+					<div class="envelope-card__monogram">
+						<Icon
+							name={sealIconMap[sealIcon]}
+							class={`seal-icon seal-icon--${sealIcon}`}
+						/>
+					</div>
+				</div>
+				<div class="envelope-card__body">
+					<span class="envelope-card__label">{documentLabel || 'Invitación'}</span>
+					<h2 class="envelope-card__name">{name}</h2>
+					{guestName && (
+						<div class="envelope-card__guest-personalized">
+							<p class="personalized-label">Especialmente para:</p>
+							<strong class="personalized-name">{guestName}</strong>
+						</div>
+					)}
+				</div>
+				<div class="envelope-card__footer">
+					<p class="envelope-card__details">{formattedDate} • {city}</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="envelope-pocket"></div>
+		<div class="envelope-flap" data-envelope-flap></div>
+
+		<div class="envelope-tease">
+			<div class="envelope-tease__interactive-content" data-envelope-content>
+				{stampText && (
+					<div class="envelope-stamp-area">
+						<div class="envelope-stamp">
+							<span>{stampText}</span>
+							{stampYear && <small>{stampYear}</small>}
+						</div>
+					</div>
+				)}
+
+				<div class="tease-header">
+					{documentLabel && (
+						<span class="envelope-manifest-label">{documentLabel}</span>
+					)}
+					<h2 class="envelope-name">{name}</h2>
+					{guestName && (
+						<p class="envelope-tease__guest-name">{guestName}</p>
+					)}
+				</div>
+
+				<div class="envelope-seal-zone">
+					<button
+						type="button"
+						class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
+						data-envelope-open
+						aria-label="Abrir sobre de la invitación"
+					>
+						<div class="seal-visual">
+							<Icon
+								name={sealIconMap[sealIcon]}
+								class={`seal-icon seal-icon--${sealIcon}`}
+							/>
+						</div>
+						<div class="seal-pulse"></div>
+						<span class="envelope-tooltip" data-envelope-tooltip hidden>
+							{tooltipText}
+						</span>
+					</button>
+				</div>
+
+				<div class="tease-content-bottom">
+					<div class="tease-divider"></div>
+					<p class="envelope-details">{formattedDate} • {city}</p>
+					{microcopy && <p class="envelope-microcopy">{microcopy}</p>}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	const PHASE_DELAY_RISING = 800;
+	const PHASE_DELAY_EXIT = 3500;
+
+	const envelopes = Array.from(document.querySelectorAll('[data-envelope]'));
+
+	envelopes.forEach((root) => {
+		if (!(root instanceof HTMLElement)) {
+			return;
+		}
+
+		const eventSlug = root.dataset.eventSlug;
+		const openButton = root.querySelector('[data-envelope-open]');
+		const flap = root.querySelector('[data-envelope-flap]');
+		const card = root.querySelector('[data-envelope-card]');
+		const tooltip = root.querySelector('[data-envelope-tooltip]');
+
+		if (
+			!(openButton instanceof HTMLButtonElement) ||
+			!(flap instanceof HTMLElement) ||
+			!(card instanceof HTMLElement) ||
+			!(tooltip instanceof HTMLElement) ||
+			!eventSlug
+		) {
+			return;
+		}
+
+		let phase = 'closed';
+		const params = new URLSearchParams(window.location.search);
+		const storageKey = `envelope-opened-${eventSlug}`;
+
+		const revealInvitation = () => {
+			document.body.style.overflow = 'auto';
+			document.body.classList.add('invitation-revealed');
+			root.hidden = true;
+		};
+
+		const syncPhase = () => {
+			flap.classList.toggle('is-open', phase !== 'closed');
+			card.classList.toggle('is-rising', phase === 'rising');
+
+			if (phase === 'exit') {
+				revealInvitation();
+			} else {
+				document.body.style.overflow = 'hidden';
+			}
+		};
+
+		if (params.get('skipEnvelope') === 'true') {
+			phase = 'exit';
+		} else if (params.get('forceEnvelope') !== 'true' && localStorage.getItem(storageKey) === 'true') {
+			phase = 'exit';
+		}
+
+		syncPhase();
+
+		if (phase === 'exit') {
+			return;
+		}
+
+		window.setTimeout(() => {
+			if (phase === 'closed') {
+				tooltip.hidden = false;
+			}
+		}, 1500);
+
+		const audio = new Audio(
+			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
+		);
+
+		openButton.addEventListener('click', async () => {
+			if (phase !== 'closed') {
+				return;
+			}
+
+			tooltip.hidden = true;
+			audio.volume = 0.4;
+			try {
+				await audio.play();
+			} catch (error) {
+				console.warn('No se pudo reproducir el sonido del sobre:', error);
+			}
+
+			localStorage.setItem(storageKey, 'true');
+			phase = 'opening';
+			syncPhase();
+
+			window.setTimeout(() => {
+				phase = 'rising';
+				syncPhase();
+			}, PHASE_DELAY_RISING);
+
+			window.setTimeout(() => {
+				phase = 'exit';
+				syncPhase();
+			}, PHASE_DELAY_EXIT);
+		});
+	});
+</script>
