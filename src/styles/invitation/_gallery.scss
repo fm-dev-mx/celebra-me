@@ -79,8 +79,7 @@
 	--gallery-caption-radius: 0;
 	--gallery-lightbox-bg: rgb(0 0 0 / 90%);
 	--gallery-lightbox-close-color: var(--color-action-accent);
-	--gallery-lightbox-image-border: 2px solid
-		rgb(var(--color-action-accent-rgb), 0.3);
+	--gallery-lightbox-image-border: 2px solid rgb(var(--color-action-accent-rgb), 0.3);
 	--gallery-lightbox-image-radius: 4px;
 	--gallery-lightbox-footer-font: var(--font-body);
 	--gallery-lightbox-footer-color: var(--color-text-on-dark);
@@ -250,13 +249,19 @@
 .gallery-lightbox {
 	position: fixed;
 	inset: 0;
-	z-index: 1000;
+	z-index: 20000;
 	background: var(--gallery-lightbox-bg);
 	backdrop-filter: blur(10px);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 2rem;
+
+	// ADU-31: Ensure the [hidden] attribute is respected despite display: flex
+	&[hidden] {
+		/* stylelint-disable-next-line declaration-no-important */
+		display: none !important;
+	}
 
 	&__close {
 		position: absolute;

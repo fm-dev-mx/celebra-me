@@ -14,21 +14,27 @@ interface Props {
 
 const { items, variant = 'standard' } = Astro.props;
 
-type NestedSrc = {
-	src: string;
-};
-
+// Types for Image source resolution
+type NestedSrc = { src: string };
 const hasNestedSrc = (value: unknown): value is NestedSrc =>
 	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
 
-const getSrc = (image: ImageMetadata | ImageAsset): string => {
-	if ('src' in image) {
-		const src = image.src as unknown;
-		if (typeof src === 'string') return src;
-		if (hasNestedSrc(src)) return src.src;
+const getSrc = (image: ImageMetadata | ImageAsset | string): string => {
+	if (typeof image === 'string') return image;
+
+	if (image && typeof image === 'object') {
+		if ('src' in image) {
+			const src = image.src as unknown;
+			if (typeof src === 'string') return src;
+			if (hasNestedSrc(src)) return src.src;
+		}
+
+		if ('src' in (image as any)) {
+			return (image as any).src;
+		}
 	}
 
-	return (image as ImageMetadata).src;
+	return String(image);
 };
 
 const getLayoutClass = (index: number, galleryVariant?: string): string => {
@@ -119,8 +125,14 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 			document.body.style.overflow = '';
 		};
 
-		const openLightbox = (item) => {
+		const openLightbox = (item: HTMLElement) => {
 			if (!(item instanceof HTMLElement)) {
+				return;
+			}
+
+			// ADU-31: Surgical Guard - Only allow gallery interaction after envelope is revealed
+			if (!document.body.classList.contains('invitation-revealed')) {
+				console.warn('[Gallery] Suppressing lightbox trigger: Envelope still active.');
 				return;
 			}
 
@@ -136,11 +148,12 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 		};
 
 		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
-			item.addEventListener('click', () => openLightbox(item));
-			item.addEventListener('keydown', (event) => {
+			const htmlItem = item as HTMLElement;
+			htmlItem.addEventListener('click', () => openLightbox(htmlItem));
+			htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
 				if (event.key === 'Enter' || event.key === ' ') {
 					event.preventDefault();
-					openLightbox(item);
+					openLightbox(htmlItem);
 				}
 			});
 		});
@@ -148,7 +161,7 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 		closeButton.addEventListener('click', closeLightbox);
 		lightbox.addEventListener('click', closeLightbox);
 		content.addEventListener('click', (event) => event.stopPropagation());
-		window.addEventListener('keydown', (event) => {
+		window.addEventListener('keydown', (event: KeyboardEvent) => {
 			if (event.key === 'Escape' && !lightbox.hidden) {
 				closeLightbox();
 			}
