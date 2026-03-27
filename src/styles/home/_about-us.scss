@@ -15,21 +15,9 @@
 		position: absolute;
 		inset: 0;
 		background:
-			radial-gradient(
-				100% 100% at 0% 0%,
-				var(--about-bg-gradient-1) 0%,
-				transparent 70%
-			),
-			radial-gradient(
-				100% 100% at 100% 100%,
-				var(--about-bg-gradient-2) 0%,
-				transparent 70%
-			),
-			radial-gradient(
-				60% 60% at 50% 50%,
-				var(--about-bg-gradient-3) 0%,
-				transparent 90%
-			);
+			radial-gradient(100% 100% at 0% 0%, var(--about-bg-gradient-1) 0%, transparent 70%),
+			radial-gradient(100% 100% at 100% 100%, var(--about-bg-gradient-2) 0%, transparent 70%),
+			radial-gradient(60% 60% at 50% 50%, var(--about-bg-gradient-3) 0%, transparent 90%);
 		z-index: 0;
 		opacity: 98%;
 
@@ -168,8 +156,8 @@
 		overflow: hidden;
 		background: var(--about-image-wrapper-bg);
 		box-shadow: var(--about-image-wrapper-shadow);
-		animation: floating-luxury var(--about-animation-duration)
-			var(--about-ease-slow) infinite alternate;
+		animation: floating-luxury var(--about-animation-duration) var(--about-ease-slow) infinite
+			alternate;
 
 		@media (width <= 992px) {
 			max-width: 340px;
@@ -374,20 +362,26 @@
 
 // Animations
 .animate-on-scroll {
-	opacity: 0%;
-	transform: translateY(30px) scale(0.96);
-	filter: blur(8px);
+	opacity: 100%;
+	transform: translateY(0) scale(1);
+	filter: blur(0);
 	transition:
 		opacity 1.2s var(--about-ease-luxury),
 		transform 1.4s var(--about-ease-luxury),
 		filter 1.5s var(--about-ease-slow);
 	transition-delay: var(--animation-delay, 0ms);
+}
 
-	&.is-visible {
-		opacity: 100%;
-		transform: translateY(0) scale(1);
-		filter: blur(0);
-	}
+.about-us--motion-ready .animate-on-scroll {
+	opacity: 0%;
+	transform: translateY(30px) scale(0.96);
+	filter: blur(8px);
+}
+
+.about-us--motion-ready .animate-on-scroll.is-visible {
+	opacity: 100%;
+	transform: translateY(0) scale(1);
+	filter: blur(0);
 }
 
 // Stagger delays handled via global .animate-on-scroll
