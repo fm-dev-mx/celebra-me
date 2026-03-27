@@ -62,8 +62,7 @@
 		color: var(--footer-link-color);
 		text-decoration: none;
 		opacity: var(--footer-link-opacity);
-		transition: all var(--footer-transition-duration)
-			var(--footer-transition-easing);
+		transition: all var(--footer-transition-duration) var(--footer-transition-easing);
 		font-size: 0.95rem;
 
 		&:hover {
@@ -90,8 +89,7 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		transition: all var(--footer-transition-duration)
-			var(--footer-transition-easing);
+		transition: all var(--footer-transition-duration) var(--footer-transition-easing);
 		border: 1px solid var(--footer-social-border);
 
 		&:hover {
