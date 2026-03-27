@@ -73,10 +73,6 @@
 			transform var(--services-card-transition-duration) ease,
 			box-shadow var(--services-card-transition-duration) ease;
 
-		// Initial Animation State
-		opacity: 0%;
-		transform: translateY(30px);
-
 		@include mixins.respond-to(md) {
 			// flex: auto; // Reset flex for grid - Removed as width: 100% handles it
 		}
@@ -102,11 +98,6 @@
 			.services__icon {
 				transform: scale(1.1);
 			}
-		}
-
-		&.is-visible {
-			animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-			animation-delay: var(--animation-delay, 0ms);
 		}
 	}
 
@@ -205,6 +196,16 @@
 		height: 1.25rem;
 		transition: transform 0.3s ease;
 	}
+}
+
+.services--motion-ready .services__card {
+	opacity: 0%;
+	transform: translateY(30px);
+}
+
+.services--motion-ready .services__card.is-visible {
+	animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+	animation-delay: var(--animation-delay, 0ms);
 }
 
 // Keyframes

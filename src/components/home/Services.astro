@@ -83,15 +83,22 @@ const serviceImages: Record<string, ImageAsset> = {
 <script type="module">
 	import { createIntersectionObserver } from '@/utils/animations';
 
+	const servicesSection = document.querySelector('.services');
+	const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 	document.querySelectorAll('.services__card').forEach((element) => {
 		if (element instanceof HTMLElement && element.dataset.delay) {
 			element.style.setProperty('--animation-delay', element.dataset.delay);
 		}
 	});
 
-	createIntersectionObserver(
-		'.services__card',
-		(target) => target.classList.add('is-visible'),
-		{ rootMargin: '0px', threshold: 0.15 },
-	);
+	if (servicesSection instanceof HTMLElement && !shouldReduceMotion) {
+		servicesSection.classList.add('services--motion-ready');
+
+		createIntersectionObserver(
+			'.services--motion-ready .services__card',
+			(target) => target.classList.add('is-visible'),
+			{ rootMargin: '0px', threshold: 0.15 },
+		);
+	}
 </script>
