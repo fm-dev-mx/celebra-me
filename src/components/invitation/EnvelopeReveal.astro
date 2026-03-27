@@ -211,7 +211,12 @@ const sealIconMap = {
 			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
 		);
 
-		openButton.addEventListener('click', async () => {
+		openButton.addEventListener('click', async (event) => {
+			if (event) {
+				event.stopPropagation();
+				event.preventDefault();
+			}
+
 			if (phase !== 'closed') {
 				return;
 			}

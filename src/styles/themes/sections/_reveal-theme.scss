@@ -454,3 +454,115 @@
 	}
 }
 /* stylelint-enable color-no-hex, declaration-no-important */
+
+// ==========================================================================
+// EDITORIAL REVEAL (Envelope & Seal)
+// For top-premium-floral / editorial themes.
+// Dark charcoal backdrop with rose-gold shimmer.
+// ==========================================================================
+
+.envelope-wrapper[data-variant='editorial'] {
+	background: radial-gradient(
+		circle at center,
+		#{sys-color.$sys-color-taupe-700} 0%,
+		#{sys-color.$sys-color-onyx-950} 100%
+	);
+
+	// Override hooks — paper surface (warm white)
+	--env-paper-bg: #{sys-color.$sys-color-floral-50};
+	--env-paper-border: #{color.change(sys-color.$sys-color-floral-300, $alpha: 0.2)};
+	--env-card-bg: #{sys-color.$sys-color-neutral-0};
+	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 12%);
+	--env-details-color: #{sys-color.$sys-color-taupe-500};
+	--env-seal-pulse-color: #{sys-color.$sys-color-floral-300};
+
+	// Override hooks — name gradient (rose-gold shimmer)
+	--env-name-gradient: linear-gradient(
+		75deg,
+		#{sys-color.$sys-color-taupe-500} 0%,
+		#{sys-color.$sys-color-floral-300} 45%,
+		#{sys-color.$sys-color-floral-50} 50%,
+		#{sys-color.$sys-color-floral-300} 55%,
+		#{sys-color.$sys-color-taupe-500} 100%
+	);
+	--env-name-font: var(--font-display);
+	--env-name-fill: transparent;
+
+	// Override hooks — seal (rose-gold coin)
+	--env-seal-gradient: radial-gradient(
+		circle at 35% 35%,
+		#{sys-color.$sys-color-floral-50},
+		#{sys-color.$sys-color-floral-300},
+		#{sys-color.$sys-color-taupe-500}
+	);
+
+	.envelope-pocket {
+		box-shadow:
+			inset 0 30px 60px rgb(0 0 0 / 2%),
+			0 -5px 15px rgb(0 0 0 / 3%);
+	}
+
+	.envelope-card {
+		&.is-rising {
+			box-shadow: 0 50px 100px rgb(255 255 255 / 30%);
+		}
+
+		// Clean modern look
+		&::before,
+		&::after {
+			display: none;
+		}
+
+		.envelope-card__content {
+			padding: 2rem;
+		}
+
+		.envelope-card__monogram {
+			color: sys-color.$sys-color-floral-300;
+			opacity: 70%;
+		}
+
+		.envelope-card__label {
+			font-family: var(--font-body);
+			letter-spacing: 0.2em;
+			color: var(--color-text-secondary);
+			font-size: 0.7rem;
+		}
+
+		.envelope-card__name {
+			font-family: var(--font-display);
+			background: linear-gradient(
+				45deg,
+				sys-color.$sys-color-taupe-500,
+				sys-color.$sys-color-floral-300
+			);
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			font-size: clamp(1.4rem, 4vw, 2.2rem);
+		}
+	}
+
+	.envelope-tease {
+		.envelope-microcopy {
+			color: sys-color.$sys-color-neutral-400;
+			letter-spacing: 0.15em;
+		}
+	}
+
+	.seal-visual {
+		box-shadow:
+			0 12px 24px rgb(0 0 0 / 30%),
+			inset 0 -4px 10px rgb(0 0 0 / 20%),
+			inset 0 4px 10px rgb(255 255 255 / 40%);
+
+		&::before {
+			box-shadow: inset 0 0 20px rgb(0 0 0 / 20%);
+		}
+
+		.seal-icon {
+			color: rgb(0 0 0 / 25%);
+			filter: drop-shadow(1px 1px 0 rgb(255 255 255 / 15%));
+			mix-blend-mode: normal;
+		}
+	}
+}

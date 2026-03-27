@@ -45,8 +45,14 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	background: var(--env-bg, radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%));
+	background: var(
+		--env-bg,
+		radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%)
+	);
 	perspective: 2500px;
+	transition:
+		opacity 0.6s var(--ease-out, ease-out),
+		transform 1.2s var(--ease-in-out, ease-in-out);
 }
 
 .envelope-container {
@@ -125,13 +131,81 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	background: var(--env-card-bg);
 	border-radius: var(--env-card-radius);
 	z-index: 2;
-	transition: transform var(--duration-reveal, 2s) 0.3s var(--ease-out);
+	transition:
+		transform var(--duration-reveal, 2s) 0.3s var(--ease-out),
+		opacity 0.3s var(--ease-out);
 	box-shadow: var(--env-card-shadow);
+	overflow: hidden;
+
+	// Card content hidden until actively rising (prevents text bleed-through)
+	opacity: 0%;
 
 	&.is-rising {
+		opacity: 100%;
 		transform: var(--env-card-rising-transform, translateY(-60%) scale(1.04));
 		box-shadow: var(--env-card-shadow);
 	}
+}
+
+// ── Card Inner Structure (Base Styles) ──
+.envelope-card__content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	height: 100%;
+	padding: 1.5rem;
+	gap: 0.75rem;
+}
+
+.envelope-card__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.envelope-card__monogram {
+	width: 48px;
+	height: 48px;
+	color: var(--color-action-accent);
+	opacity: 60%;
+}
+
+.envelope-card__body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.envelope-card__label {
+	font-family: var(--font-body);
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	color: var(--color-text-secondary);
+}
+
+.envelope-card__name {
+	font-family: var(--font-display);
+	font-size: clamp(1.2rem, 4vw, 2rem);
+	font-weight: 400;
+	color: var(--color-text-primary);
+	line-height: 1.15;
+	margin: 0;
+}
+
+.envelope-card__footer {
+	margin-top: auto;
+}
+
+.envelope-card__details {
+	font-family: var(--font-body);
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--color-text-secondary);
 }
 
 .envelope-tease {
@@ -217,12 +291,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	.tease-divider {
 		width: 60px;
 		height: 1px;
-		background: linear-gradient(
-			to right,
-			transparent,
-			var(--color-border-subtle),
-			transparent
-		);
+		background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
 		margin-bottom: 1rem;
 	}
 
@@ -484,8 +553,25 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	}
 }
 
+// ── Astro-Rendered Transition Layer ──
+// The Astro version doesn't have Framer Motion, so it relies on CSS transitions.
+// Content fades out when the flap opens, and the wrapper slides/fades on reveal.
+
+.envelope-tease__interactive-content {
+	transition: opacity 0.4s var(--ease-out, ease-out);
+}
+
+// When flap opens, fade out the front-face tease content
+.envelope-wrapper:has(.envelope-flap.is-open) .envelope-tease__interactive-content {
+	opacity: 0%;
+	pointer-events: none;
+}
+
+// Wrapper exit — triggered when body gets 'invitation-revealed' class
 // Safety net: ensure wrapper never blocks interactions after reveal completes.
 // Covers edge cases where AnimatePresence exit doesn't fully unmount the element.
 body.invitation-revealed .envelope-wrapper {
+	opacity: 0%;
+	transform: translateY(-100%);
 	pointer-events: none;
 }
