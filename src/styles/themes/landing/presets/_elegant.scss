@@ -75,6 +75,15 @@
 
 	// About Us Section
 	--about-noise-opacity: 0.04;
+	--about-bg-gradient-1: #{color.change(sys.$sys-color-gold-400, $alpha: 0.14)};
+	--about-bg-gradient-2: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.08)};
+	--about-bg-gradient-3: #{color.change(sys.$sys-color-parchment-300, $alpha: 0.7)};
+	--about-underline-gradient: linear-gradient(
+		90deg,
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)},
+		#{color.change(sys.$sys-color-gold-500, $alpha: 0.95)},
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)}
+	);
 	--about-underline-shine-color: rgb(255 255 255 / 60%);
 	--about-image-wrapper-bg: linear-gradient(
 		135deg,
@@ -82,14 +91,37 @@
 		rgb(255 255 255 / 5%) 50%,
 		rgb(255 255 255 / 2%) 100%
 	);
+	--about-image-frame-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.16)},
+		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.04)}
+	);
 	--about-image-wrapper-shadow:
 		0 40px 80px -20px rgb(0 0 0 / 20%),
 		0 15px 40px -15px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
 	--about-image-frame-border: rgb(255 255 255 / 35%);
 	--about-image-glow-color: #{color.change(sys.$sys-color-gold-400, $alpha: 0.18)};
 	--about-decoration-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.35)};
+	--about-decoration-bg: linear-gradient(
+		135deg,
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.18)},
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)}
+	);
 	--about-decoration-shadow: 0 20px 40px #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
+	--about-value-card-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.72)},
+		#{color.change(sys.$sys-color-parchment-300, $alpha: 0.42)}
+	);
 	--about-value-card-border: rgb(255 255 255 / 50%);
+	--about-value-card-shadow:
+		0 20px 50px -28px rgb(0 0 0 / 18%),
+		0 10px 24px -20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
+	--about-value-card-hover-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)},
+		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.78)}
+	);
 	--about-value-card-hover-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.4)};
 	--about-value-icon-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
 	--about-value-icon-color: var(--color-action-accent);
@@ -248,7 +280,8 @@
 	--testimonials-card-accent-opacity: 0.3;
 	--testimonials-card-hover-bg: rgb(255 255 255 / 95%);
 	--testimonials-card-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.4)};
-	--testimonials-card-hover-shadow: 0 25px 50px -20px #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
+	--testimonials-card-hover-shadow: 0 25px 50px -20px
+		#{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
 	--testimonials-card-hover-transform: translateY(-8px);
 	--testimonials-quote-icon-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
 	--testimonials-quote-icon-opacity: 0.08;
@@ -269,4 +302,3 @@
 	--testimonials-author-role-letter-spacing: 0.15em;
 	--testimonials-author-role-color: var(--color-text-muted, #666);
 }
-

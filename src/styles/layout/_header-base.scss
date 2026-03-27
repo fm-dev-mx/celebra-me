@@ -127,7 +127,7 @@
 		color: var(--color-action-accent);
 		display: block;
 
-		@include mixins.respond-to(md) {
+		@include mixins.respond-to(lg) {
 			display: none;
 		}
 
@@ -154,6 +154,14 @@
 		background-color: rgb(0 0 0 / 60%);
 		backdrop-filter: blur(8px);
 		z-index: 1005;
+
+		&[hidden] {
+			display: none !important;
+		}
+
+		@include mixins.respond-to(lg) {
+			display: none !important;
+		}
 	}
 
 	&__mobile-menu {
@@ -170,6 +178,14 @@
 		flex-direction: column;
 		padding: 8rem 2rem 3rem;
 		box-shadow: -10px 0 30px rgb(0 0 0 / 50%);
+
+		&[hidden] {
+			display: none !important;
+		}
+
+		@include mixins.respond-to(lg) {
+			display: none !important;
+		}
 	}
 }
 

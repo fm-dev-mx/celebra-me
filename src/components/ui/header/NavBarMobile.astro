@@ -88,12 +88,25 @@ const menuId = `${headerId}-mobile-menu`;
 		};
 
 		const openMenu = () => {
+			if (desktopQuery.matches) {
+				closeMenu();
+				return;
+			}
+
 			toggle.setAttribute('aria-expanded', 'true');
 			toggle.setAttribute('aria-label', 'Cerrar menú');
 			menu.hidden = false;
 			overlay.hidden = false;
 			header?.classList.add('header-base--menu-open');
 			document.body.style.overflow = 'hidden';
+		};
+
+		const desktopQuery = window.matchMedia('(min-width: 992px)');
+
+		const syncForViewport = () => {
+			if (desktopQuery.matches) {
+				closeMenu();
+			}
 		};
 
 		toggle.addEventListener('click', () => {
@@ -113,5 +126,13 @@ const menuId = `${headerId}-mobile-menu`;
 				closeMenu();
 			}
 		});
+
+		syncForViewport();
+
+		if (typeof desktopQuery.addEventListener === 'function') {
+			desktopQuery.addEventListener('change', syncForViewport);
+		} else if (typeof desktopQuery.addListener === 'function') {
+			desktopQuery.addListener(syncForViewport);
+		}
 	});
 </script>
