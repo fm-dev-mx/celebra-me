@@ -20,6 +20,7 @@ if (!faqs.length) {
 		faqs.map((faq, index) => (
 			<div class="faq-item" data-faq-item>
 				<button
+					id={`faq-question-${index}`}
 					class="faq-question-btn"
 					type="button"
 					aria-expanded="false"
@@ -36,9 +37,14 @@ if (!faqs.length) {
 					id={`faq-answer-${index}`}
 					class="faq-answer-wrapper"
 					hidden
+					role="region"
+					aria-hidden="true"
+					aria-labelledby={`faq-question-${index}`}
 				>
-					<div class="faq-answer-content">
-						<p class="answer-text">{faq.answer}</p>
+					<div class="faq-answer-inner">
+						<div class="faq-answer-content">
+							<p class="answer-text">{faq.answer}</p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -51,8 +57,24 @@ if (!faqs.length) {
 
 	if (faqList) {
 		const items = Array.from(faqList.querySelectorAll('[data-faq-item]'));
+		const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		items.forEach((item) => {
+		const setAnswerInteractivity = (answer, isInteractive) => {
+			if ('inert' in answer) {
+				answer.inert = !isInteractive;
+			}
+		};
+
+		const clearCloseTimer = (answer) => {
+			const closeTimer = answer.dataset.closeTimer;
+
+			if (closeTimer) {
+				window.clearTimeout(Number(closeTimer));
+				delete answer.dataset.closeTimer;
+			}
+		};
+
+		const closeItem = (item, immediate = false) => {
 			const button = item.querySelector('.faq-question-btn');
 			const answer = item.querySelector('.faq-answer-wrapper');
 
@@ -60,27 +82,66 @@ if (!faqs.length) {
 				return;
 			}
 
+			button.setAttribute('aria-expanded', 'false');
+			answer.setAttribute('aria-hidden', 'true');
+			setAnswerInteractivity(answer, false);
+			item.classList.remove('is-open');
+			clearCloseTimer(answer);
+
+			if (immediate || shouldReduceMotion) {
+				answer.hidden = true;
+				return;
+			}
+
+			answer.hidden = false;
+			answer.dataset.closeTimer = String(
+				window.setTimeout(() => {
+					if (!item.classList.contains('is-open')) {
+						answer.hidden = true;
+					}
+
+					delete answer.dataset.closeTimer;
+				}, 400),
+			);
+		};
+
+		const openItem = (item) => {
+			const button = item.querySelector('.faq-question-btn');
+			const answer = item.querySelector('.faq-answer-wrapper');
+
+			if (!(button instanceof HTMLButtonElement) || !(answer instanceof HTMLElement)) {
+				return;
+			}
+
+			clearCloseTimer(answer);
+			answer.hidden = false;
+			setAnswerInteractivity(answer, true);
+
+			requestAnimationFrame(() => {
+				button.setAttribute('aria-expanded', 'true');
+				answer.setAttribute('aria-hidden', 'false');
+				item.classList.add('is-open');
+			});
+		};
+
+		items.forEach((item) => {
+			const button = item.querySelector('.faq-question-btn');
+
+			if (!(button instanceof HTMLButtonElement)) {
+				return;
+			}
+
+			closeItem(item, true);
+
 			button.addEventListener('click', () => {
-				const isOpen = button.getAttribute('aria-expanded') === 'true';
+				const shouldOpen = button.getAttribute('aria-expanded') !== 'true';
 
 				items.forEach((otherItem) => {
-					const otherButton = otherItem.querySelector('.faq-question-btn');
-					const otherAnswer = otherItem.querySelector('.faq-answer-wrapper');
-
-					if (
-						otherButton instanceof HTMLButtonElement &&
-						otherAnswer instanceof HTMLElement
-					) {
-						otherButton.setAttribute('aria-expanded', 'false');
-						otherAnswer.hidden = true;
-						otherItem.classList.remove('is-open');
-					}
+					closeItem(otherItem);
 				});
 
-				if (!isOpen) {
-					button.setAttribute('aria-expanded', 'true');
-					answer.hidden = false;
-					item.classList.add('is-open');
+				if (shouldOpen) {
+					openItem(item);
 				}
 			});
 		});
