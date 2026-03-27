@@ -11,7 +11,7 @@ export default defineConfig({
 	// The base URL for the site.
 	site:
 		process.env.NODE_ENV === 'development'
-			? 'http://localhost:4321'
+			? 'http://127.0.0.1:4321'
 			: 'https://celebra-me.vercel.app',
 
 	integrations: [react(), sitemap(), robotsTxt()],
