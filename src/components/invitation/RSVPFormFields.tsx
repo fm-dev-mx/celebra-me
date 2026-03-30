@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RefObject } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
