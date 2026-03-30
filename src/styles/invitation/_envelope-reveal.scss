@@ -38,6 +38,36 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
 	--env-flap-height: 52%;
 
+	// ── Geometry Hooks (Improvement 1) ──
+	--env-pocket-clip: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+	--env-crease-color: rgb(0 0 0 / 5%);
+	--env-crease-highlight-alpha: 10%;
+
+	// ── Shadow Hooks (Improvement 2) ──
+	--env-shadow-contact: 0 1px 3px rgb(0 0 0 / 8%);
+	--env-shadow-lift: 0 8px 24px rgb(0 0 0 / 12%);
+	--env-shadow-ambient: 0 32px 64px rgb(0 0 0 / 25%);
+	--env-pocket-inner-shadow: inset 0 4px 12px rgb(0 0 0 / 6%);
+
+	// ── Surface Hooks (Improvement 3) ──
+	--env-flap-brightness: 1.02;
+	--env-pocket-brightness: 0.97;
+	--env-base-vignette-color: rgb(0 0 0 / 8%);
+	--env-card-texture-opacity: 4%;
+	--env-edge-highlight: rgb(255 255 255 / 15%);
+
+	// ── Motion Hooks (Improvement 4) ──
+	--env-card-friction-delay: 150ms;
+	--env-seal-break-scale: 1.15;
+
+	// ── Typography Hooks (Improvement 5) ──
+	--env-name-deboss-shadow: 0 -1px 0 rgb(0 0 0 / 12%), 0 1px 0 rgb(255 255 255 / 20%);
+	--env-name-stroke-color: transparent;
+	--env-name-shimmer-speed: 6s;
+	--env-details-weight: 500;
+	--env-details-tracking: 0.18em;
+	--env-divider-ornament: '◆';
+
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
@@ -89,6 +119,22 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	position: absolute;
 	inset: 0;
 	z-index: 1;
+	box-shadow: var(--env-shadow-ambient);
+
+	// Improvement 3: Ambient occlusion vignette
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: radial-gradient(
+			ellipse at center,
+			transparent 50%,
+			var(--env-base-vignette-color) 100%
+		);
+		pointer-events: none;
+		z-index: 0;
+	}
 }
 
 .envelope-pocket {
@@ -97,10 +143,26 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	position: absolute;
 	inset: 0;
 	z-index: 3;
-	clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0% 100%);
-	box-shadow:
-		inset 0 30px 60px rgb(0 0 0 / 2%),
-		0 -5px 15px rgb(0 0 0 / 3%);
+	clip-path: var(--env-pocket-clip);
+	filter: brightness(var(--env-pocket-brightness));
+	box-shadow: var(--env-pocket-inner-shadow), var(--env-shadow-contact);
+
+	// Improvement 1: Crease line at pocket fold
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 5%;
+		right: 5%;
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			transparent 10%,
+			var(--env-crease-color) 50%,
+			transparent 90%
+		);
+		pointer-events: none;
+	}
 }
 
 .envelope-flap {
@@ -112,16 +174,37 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	width: 100%;
 	height: var(--env-flap-height);
 	clip-path: var(--env-flap-clip);
-	z-index: 4;
+	z-index: 105; // Raised to be above tease background (100) but below seal (110+)
 	transform-origin: top;
-	box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
+	filter: brightness(var(--env-flap-brightness));
+	box-shadow: var(--env-shadow-lift);
+	animation: none; // Default: CSS transition, variants may switch to keyframes
 	transition: transform var(--duration-reveal, 2s) var(--ease-in-out);
-	border-bottom: 1px solid rgb(255 255 255 / 40%);
+
+	// Improvement 1: Specular edge highlight on fold crest
+	border-bottom: 1px solid var(--env-edge-highlight);
+
+	// Improvement 1: Crease line at flap fold
+	&::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 15%;
+		right: 15%;
+		height: 1px;
+		background: linear-gradient(to right, transparent, var(--env-crease-color), transparent);
+		pointer-events: none;
+	}
 
 	&.is-open {
 		transform: var(--env-flap-open-transform, rotateX(170deg));
 		z-index: 0;
 		box-shadow: none;
+		filter: none;
+
+		&::after {
+			opacity: 0%;
+		}
 	}
 }
 
@@ -132,9 +215,9 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	border-radius: var(--env-card-radius);
 	z-index: 2;
 	transition:
-		transform var(--duration-reveal, 2s) 0.3s var(--ease-out),
+		transform var(--duration-reveal, 2s) var(--env-card-friction-delay) var(--ease-out),
 		opacity 0.3s var(--ease-out);
-	box-shadow: var(--env-card-shadow);
+	box-shadow: var(--env-shadow-contact), var(--env-card-shadow);
 	overflow: hidden;
 
 	// Card content hidden until actively rising (prevents text bleed-through)
@@ -142,8 +225,8 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 	&.is-rising {
 		opacity: 100%;
-		transform: var(--env-card-rising-transform, translateY(-60%) scale(1.04));
-		box-shadow: var(--env-card-shadow);
+		transform: var(--env-card-rising-transform, translateY(-60%) rotate(-1deg) scale(1.04));
+		box-shadow: var(--env-shadow-lift), var(--env-card-shadow);
 	}
 }
 
@@ -157,6 +240,8 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	height: 100%;
 	padding: 1.5rem;
 	gap: 0.75rem;
+	overflow-y: auto; // Protection against long content
+	max-height: 100%;
 }
 
 .envelope-card__header {
@@ -211,14 +296,21 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 .envelope-tease {
 	position: absolute;
 	inset: 0;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: space-between;
-	z-index: 100;
+	z-index: auto; // Removed 100 to allow children to escape stacking context
 	pointer-events: none;
 	text-align: center;
-	padding: 2rem 2rem 1.5rem;
+
+	// Layout distribution for interactive content
+	.envelope-tease__interactive-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+		height: 100%;
+		padding: 2rem 2rem 1.5rem;
+		transition: opacity 0.4s var(--ease-out, ease-out);
+		z-index: 100; // Front face background layer
+	}
 
 	.envelope-name {
 		font-family: var(--env-name-font);
@@ -235,10 +327,19 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 				var(--color-surface-dark) 100%
 			)
 		);
-		background-size: 200% auto;
+		background-size: 300% auto;
 		background-clip: text;
 		-webkit-text-fill-color: var(--env-name-fill, transparent);
-		animation: var(--env-name-animation, goldShimmer 5s linear infinite);
+		animation: var(
+			--env-name-animation,
+			goldShimmer var(--env-name-shimmer-speed) linear infinite
+		);
+		position: relative;
+		z-index: 110; // On top of flap
+
+		// Improvement 5: Debossed foil + edge stroke for depth
+		text-shadow: var(--env-name-deboss-shadow);
+		-webkit-text-stroke: 0.3px var(--env-name-stroke-color);
 		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
 	}
 
@@ -251,6 +352,8 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		pointer-events: auto;
 		min-height: $envelope-seal-size;
 		padding: 0.5rem 0;
+		position: relative;
+		z-index: 120; // On top of flap (105)
 	}
 
 	.envelope-tease__guest-name {
@@ -286,29 +389,46 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		flex-direction: column;
 		align-items: center;
 		padding-top: 4rem;
+		position: relative;
+		z-index: 110;
 	}
 
 	.tease-divider {
-		width: 60px;
+		width: 80px;
 		height: 1px;
 		background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
 		margin-bottom: 1rem;
+		position: relative;
+
+		// Improvement 5: Ornamental center glyph
+		&::after {
+			content: var(--env-divider-ornament);
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 0.45rem;
+			color: var(--env-details-color);
+			opacity: 50%;
+			padding: 0 8px;
+			background: var(--env-paper-bg, transparent);
+		}
 	}
 
 	.envelope-details {
 		font-family: var(--font-body);
 		font-size: 0.8rem;
-		letter-spacing: 0.01rem;
+		letter-spacing: var(--env-details-tracking);
 		text-transform: uppercase;
 		color: var(--env-details-color);
-		font-weight: 400;
+		font-weight: var(--env-details-weight);
 	}
 
 	.envelope-microcopy {
 		margin-top: 0.75rem;
 		font-family: var(--font-body);
 		font-size: clamp(0.5rem, 2vw, 0.65rem);
-		letter-spacing: 0.1em;
+		letter-spacing: 0.15em;
 		color: var(--color-text-secondary);
 		text-transform: uppercase;
 	}
@@ -399,6 +519,21 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 @keyframes goldShimmer {
 	to {
 		background-position: 200% center;
+	}
+}
+
+// Improvement 4: Staged flap opening — fast initial swing, gentle deceleration
+@keyframes flapOpen {
+	0% {
+		transform: rotateX(0deg);
+	}
+
+	50% {
+		transform: rotateX(100deg);
+	}
+
+	100% {
+		transform: rotateX(170deg);
 	}
 }
 
@@ -524,8 +659,8 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		width: 32px;
 		height: 32px;
 		color: var(--env-seal-icon-color);
-		mix-blend-mode: multiply;
-		opacity: 90%;
+		mix-blend-mode: normal; // Changed from multiply for better visibility
+		opacity: 100%;
 		filter: drop-shadow(0 1px 0 rgb(255 255 255 / 50%)) drop-shadow(0 -1px 0 rgb(0 0 0 / 15%));
 	}
 }
@@ -535,7 +670,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		opacity: 0%;
 	}
 
-	// Disable all infinite animations
+	// Disable all infinite and staged animations
 	.envelope-name {
 		animation: none;
 	}
@@ -546,10 +681,21 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 	.envelope-flap {
 		transition: none;
+		animation: none;
+		filter: none;
 	}
 
 	.envelope-card {
 		transition: none;
+	}
+
+	.envelope-pocket,
+	.envelope-base {
+		filter: none;
+	}
+
+	.envelope-tease__guest-name {
+		animation: none;
 	}
 }
 
@@ -557,9 +703,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 // The Astro version doesn't have Framer Motion, so it relies on CSS transitions.
 // Content fades out when the flap opens, and the wrapper slides/fades on reveal.
 
-.envelope-tease__interactive-content {
-	transition: opacity 0.4s var(--ease-out, ease-out);
-}
+// Deleted: moved into .envelope-tease__interactive-content for better encapsulation
 
 // When flap opens, fade out the front-face tease content
 .envelope-wrapper:has(.envelope-flap.is-open) .envelope-tease__interactive-content {

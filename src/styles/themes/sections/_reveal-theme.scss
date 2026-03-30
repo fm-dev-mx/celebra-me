@@ -13,13 +13,15 @@
 		#{sys-color.$sys-color-onyx-950} 100%
 	);
 
-	// Override hooks — paper surface
-	--env-paper-bg: #{sys-color.$sys-color-neutral-0};
+	// Override hooks — paper surface (warm ivory stationery)
+	--env-paper-bg: #{color.mix(sys-color.$sys-color-gold-200, sys-color.$sys-color-neutral-0, 6%)};
 	--env-paper-border: rgb(0 0 0 / 6%);
+	--env-paper-radius: 5px;
 	--env-card-bg: #{sys-color.$sys-color-neutral-0};
 	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 10%);
 	--env-details-color: #{sys-color.$sys-color-neutral-600};
 	--env-seal-pulse-color: #{sys-color.$sys-color-gold-500};
+	--env-seal-size: 68px;
 
 	// Override hooks — name gradient (gold shimmer)
 	--env-name-gradient: linear-gradient(
@@ -39,15 +41,65 @@
 		#{sys-color.$sys-color-gold-900}
 	);
 
-	.envelope-pocket {
+	// ── Improvement 1: Jewelry Box geometry — subtle golden crease ──
+	--env-crease-color: #{color.change(sys-color.$sys-color-gold-500, $alpha: 0.15)};
+	--env-crease-highlight-alpha: 20%;
+	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%);
+	--env-pocket-clip: polygon(0 48%, 50% 52%, 100% 48%, 100% 100%, 0 100%);
+
+	// ── Improvement 2: Soft multi-layer shadows (delicate stationery) ──
+	--env-shadow-contact: 0 1px 2px rgb(0 0 0 / 6%);
+	--env-shadow-lift: 0 6px 18px rgb(0 0 0 / 10%);
+	--env-shadow-ambient: 0 40px 80px rgb(0 0 0 / 30%);
+	--env-pocket-inner-shadow: inset 0 3px 8px rgb(0 0 0 / 4%);
+
+	// ── Improvement 3: Living surfaces — warm light response ──
+	--env-flap-brightness: 1.03;
+	--env-pocket-brightness: 0.975;
+	--env-base-vignette-color: rgb(0 0 0 / 6%);
+	--env-edge-highlight: #{color.change(sys-color.$sys-color-gold-200, $alpha: 0.3)};
+
+	// ── Improvement 4: Motion refinement ──
+	--env-card-friction-delay: 180ms;
+
+	// ── Improvement 5: Premium typography ──
+	--env-name-deboss-shadow:
+		0 -1px 0 #{color.change(sys-color.$sys-color-gold-900, $alpha: 0.2)},
+		0 1px 0 rgb(255 255 255 / 30%);
+	--env-name-stroke-color: #{color.change(sys-color.$sys-color-gold-300, $alpha: 0.15)};
+	--env-name-shimmer-speed: 8s;
+	--env-details-weight: 500;
+	--env-details-tracking: 0.2em;
+	--env-divider-ornament: '✦';
+
+	// ── Structural Depth: Base vignette ──
+	.envelope-base {
 		box-shadow:
-			inset 0 30px 60px rgb(0 0 0 / 2%),
-			0 -5px 15px rgb(0 0 0 / 3%);
+			var(--env-shadow-ambient),
+			inset 0 0 60px rgb(0 0 0 / 4%);
+	}
+
+	// ── Structural Depth: Pocket fold ──
+	.envelope-pocket {
+		box-shadow: var(--env-pocket-inner-shadow), var(--env-shadow-contact);
+	}
+
+	// ── Structural Depth: Flap with staged animation ──
+	.envelope-flap {
+		filter: brightness(var(--env-flap-brightness)) drop-shadow(0 2px 4px rgb(0 0 0 / 8%));
+
+		&.is-open {
+			animation: flapOpen tokens.$duration-reveal tokens.$ease-premium forwards;
+			transition: none;
+			filter: none;
+		}
 	}
 
 	.envelope-card {
 		&.is-rising {
-			box-shadow: 0 50px 100px rgb(255 255 255 / 40%);
+			box-shadow:
+				var(--env-shadow-lift),
+				0 50px 100px rgb(255 255 255 / 40%);
 		}
 
 		// Clean modern look, no stitching
@@ -85,10 +137,32 @@
 		}
 	}
 
+	// ── Content Hierarchy & Visual Guidance ──
 	.envelope-tease {
+		.envelope-name {
+			font-size: clamp(2rem, 9vw, 3.2rem);
+			filter: drop-shadow(0 3px 8px rgb(0 0 0 / 12%));
+		}
+
+		.envelope-details {
+			opacity: 70%;
+			font-size: 0.7rem;
+		}
+
 		.envelope-microcopy {
 			color: sys-color.$sys-color-neutral-400;
 			letter-spacing: 0.15em;
+			opacity: 60%;
+			font-size: 0.6rem;
+		}
+
+		.tease-divider {
+			background: linear-gradient(
+				to right,
+				transparent,
+				#{sys-color.$sys-color-gold-500},
+				transparent
+			);
 		}
 	}
 
@@ -154,6 +228,35 @@
 	);
 	--env-seal-pulse-color: rgb(var(--color-action-accent-rgb) / 30%);
 
+	// ── Improvement 1: Hacienda geometry — bold crease, sharp folds ──
+	--env-crease-color: rgb(0 0 0 / 10%);
+	--env-crease-highlight-alpha: 12%;
+	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
+	--env-pocket-clip: polygon(0 48%, 50% 53%, 100% 48%, 100% 100%, 0 100%);
+
+	// ── Improvement 2: Heavy shadows (thick cardstock feel) ──
+	--env-shadow-contact: 0 2px 4px rgb(0 0 0 / 12%);
+	--env-shadow-lift: 0 10px 28px rgb(0 0 0 / 18%);
+	--env-shadow-ambient: 0 36px 72px rgb(0 0 0 / 35%);
+	--env-pocket-inner-shadow: inset 0 5px 14px rgb(0 0 0 / 8%);
+
+	// ── Improvement 3: Warm surfaces — leather-bound weight ──
+	--env-flap-brightness: 1.015;
+	--env-pocket-brightness: 0.965;
+	--env-base-vignette-color: rgb(0 0 0 / 10%);
+	--env-edge-highlight: rgb(255 255 255 / 10%);
+
+	// ── Improvement 4: Motion ──
+	--env-card-friction-delay: 200ms;
+
+	// ── Improvement 5: Engraved typography ──
+	--env-name-deboss-shadow: -1px -1px 1px rgb(0 0 0 / 25%), 1px 1px 1px rgb(255 255 255 / 12%);
+	--env-name-stroke-color: transparent;
+	--env-name-shimmer-speed: 8s;
+	--env-details-weight: 600;
+	--env-details-tracking: 0.22em;
+	--env-divider-ornament: '·';
+
 	background: var(--color-surface-dark); // Solid minimalist background
 	background-image: radial-gradient(
 		circle at 50% 50%,
@@ -197,7 +300,6 @@
 
 		border-bottom: 1px solid rgb(0 0 0 / 5%);
 		box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
-		z-index: 10;
 		background-color: var(--env-paper-bg) !important;
 
 		&.is-open {
@@ -224,18 +326,9 @@
 		align-items: center;
 		text-align: center;
 		height: 100%;
-		z-index: 100;
 		background: none; // Container itself is transparent
 
-		// The interactive wrapper becomes the solid front panel
-		> div {
-			width: 100%;
-			height: 100%;
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
-			align-items: center;
-
+		.envelope-tease__interactive-content {
 			// Opaque Front Panel (Hides holes and card text)
 			background-color: var(--env-paper-bg);
 			background-image: var(--env-paper-texture), none;
@@ -251,7 +344,6 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			z-index: 15;
 			padding: 1rem 0;
 			pointer-events: auto;
 		}
@@ -468,13 +560,15 @@
 		#{sys-color.$sys-color-onyx-950} 100%
 	);
 
-	// Override hooks — paper surface (warm white)
+	// Override hooks — paper surface (warm white stationery)
 	--env-paper-bg: #{sys-color.$sys-color-floral-50};
 	--env-paper-border: #{color.change(sys-color.$sys-color-floral-300, $alpha: 0.2)};
+	--env-paper-radius: 5px;
 	--env-card-bg: #{sys-color.$sys-color-neutral-0};
 	--env-card-shadow: 0 4px 20px rgb(0 0 0 / 12%);
 	--env-details-color: #{sys-color.$sys-color-taupe-500};
 	--env-seal-pulse-color: #{sys-color.$sys-color-floral-300};
+	--env-seal-size: 68px;
 
 	// Override hooks — name gradient (rose-gold shimmer)
 	--env-name-gradient: linear-gradient(
@@ -496,15 +590,64 @@
 		#{sys-color.$sys-color-taupe-500}
 	);
 
-	.envelope-pocket {
+	// ── Improvement 1: Editorial geometry — minimal creases ──
+	--env-crease-color: rgb(0 0 0 / 3%);
+	--env-crease-highlight-alpha: 8%;
+	--env-pocket-clip: polygon(0 49%, 50% 51%, 100% 49%, 100% 100%, 0 100%);
+
+	// ── Improvement 2: Gentle shadows (editorial restraint) ──
+	--env-shadow-contact: 0 1px 2px rgb(0 0 0 / 5%);
+	--env-shadow-lift: 0 6px 16px rgb(0 0 0 / 8%);
+	--env-shadow-ambient: 0 36px 70px rgb(0 0 0 / 25%);
+	--env-pocket-inner-shadow: inset 0 3px 8px rgb(0 0 0 / 3%);
+
+	// ── Improvement 3: Living surfaces — clean, minimal ──
+	--env-flap-brightness: 1.02;
+	--env-pocket-brightness: 0.98;
+	--env-base-vignette-color: rgb(0 0 0 / 5%);
+	--env-edge-highlight: #{color.change(sys-color.$sys-color-floral-300, $alpha: 0.2)};
+
+	// ── Improvement 4: Motion ──
+	--env-card-friction-delay: 160ms;
+
+	// ── Improvement 5: Rose-gold typography ──
+	--env-name-deboss-shadow:
+		0 -1px 0 #{color.change(sys-color.$sys-color-taupe-500, $alpha: 0.15)},
+		0 1px 0 rgb(255 255 255 / 25%);
+	--env-name-stroke-color: #{color.change(sys-color.$sys-color-floral-300, $alpha: 0.1)};
+	--env-name-shimmer-speed: 7s;
+	--env-details-weight: 500;
+	--env-details-tracking: 0.18em;
+	--env-divider-ornament: '·';
+
+	// ── Structural Depth: Base vignette ──
+	.envelope-base {
 		box-shadow:
-			inset 0 30px 60px rgb(0 0 0 / 2%),
-			0 -5px 15px rgb(0 0 0 / 3%);
+			var(--env-shadow-ambient),
+			inset 0 0 60px rgb(0 0 0 / 4%);
+	}
+
+	// ── Structural Depth: Pocket fold ──
+	.envelope-pocket {
+		box-shadow: var(--env-pocket-inner-shadow), var(--env-shadow-contact);
+	}
+
+	// ── Structural Depth: Flap with staged animation ──
+	.envelope-flap {
+		filter: brightness(var(--env-flap-brightness)) drop-shadow(0 2px 4px rgb(0 0 0 / 8%));
+
+		&.is-open {
+			animation: flapOpen tokens.$duration-reveal tokens.$ease-premium forwards;
+			transition: none;
+			filter: none;
+		}
 	}
 
 	.envelope-card {
 		&.is-rising {
-			box-shadow: 0 50px 100px rgb(255 255 255 / 30%);
+			box-shadow:
+				var(--env-shadow-lift),
+				0 50px 100px rgb(255 255 255 / 30%);
 		}
 
 		// Clean modern look
@@ -542,10 +685,32 @@
 		}
 	}
 
+	// ── Content Hierarchy & Visual Guidance ──
 	.envelope-tease {
+		.envelope-name {
+			font-size: clamp(2rem, 9vw, 3.2rem);
+			filter: drop-shadow(0 3px 8px rgb(0 0 0 / 12%));
+		}
+
+		.envelope-details {
+			opacity: 70%;
+			font-size: 0.7rem;
+		}
+
 		.envelope-microcopy {
 			color: sys-color.$sys-color-neutral-400;
 			letter-spacing: 0.15em;
+			opacity: 60%;
+			font-size: 0.6rem;
+		}
+
+		.tease-divider {
+			background: linear-gradient(
+				to right,
+				transparent,
+				#{sys-color.$sys-color-floral-300},
+				transparent
+			);
 		}
 	}
 

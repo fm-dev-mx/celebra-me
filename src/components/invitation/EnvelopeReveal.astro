@@ -50,6 +50,7 @@ const sealIconMap = {
 <div
 	class="envelope-wrapper"
 	data-envelope
+	data-phase="closed"
 	data-event-slug={eventSlug}
 	data-tooltip-text={tooltipText}
 	data-variant={variant}
@@ -142,10 +143,11 @@ const sealIconMap = {
 </div>
 
 <script>
-	const PHASE_DELAY_RISING = 800;
+	const PHASE_DELAY_RISING = 1000;
 	const PHASE_DELAY_EXIT = 3500;
+	const EXIT_ANIMATION_DELAY = 1200;
 
-	const envelopes = Array.from(document.querySelectorAll('[data-envelope]'));
+	const envelopes = document.querySelectorAll('[data-envelope]');
 
 	envelopes.forEach((root) => {
 		if (!(root instanceof HTMLElement)) {
@@ -156,13 +158,12 @@ const sealIconMap = {
 		const openButton = root.querySelector('[data-envelope-open]');
 		const flap = root.querySelector('[data-envelope-flap]');
 		const card = root.querySelector('[data-envelope-card]');
-		const tooltip = root.querySelector('[data-envelope-tooltip]');
+		const tooltip = root.querySelector('[data-envelope-tooltip]') as HTMLElement | null;
 
 		if (
 			!(openButton instanceof HTMLButtonElement) ||
 			!(flap instanceof HTMLElement) ||
 			!(card instanceof HTMLElement) ||
-			!(tooltip instanceof HTMLElement) ||
 			!eventSlug
 		) {
 			return;
@@ -175,10 +176,15 @@ const sealIconMap = {
 		const revealInvitation = () => {
 			document.body.style.overflow = 'auto';
 			document.body.classList.add('invitation-revealed');
-			root.hidden = true;
+			
+			// Allow exit animation to complete before hiding
+			window.setTimeout(() => {
+				root.hidden = true;
+			}, EXIT_ANIMATION_DELAY);
 		};
 
 		const syncPhase = () => {
+			root.dataset.phase = phase;
 			flap.classList.toggle('is-open', phase !== 'closed');
 			card.classList.toggle('is-rising', phase === 'rising');
 
@@ -189,10 +195,15 @@ const sealIconMap = {
 			}
 		};
 
-		if (params.get('skipEnvelope') === 'true') {
+		const skipEnvelope = params.get('skipEnvelope') === 'true';
+		const forceEnvelope = params.get('forceEnvelope') === 'true';
+		const wasOpened = localStorage.getItem(storageKey) === 'true';
+
+		if (skipEnvelope || (!forceEnvelope && wasOpened)) {
 			phase = 'exit';
-		} else if (params.get('forceEnvelope') !== 'true' && localStorage.getItem(storageKey) === 'true') {
-			phase = 'exit';
+			root.hidden = true;
+			document.body.style.overflow = 'auto';
+			document.body.classList.add('invitation-revealed');
 		}
 
 		syncPhase();
@@ -202,7 +213,7 @@ const sealIconMap = {
 		}
 
 		window.setTimeout(() => {
-			if (phase === 'closed') {
+			if (phase === 'closed' && tooltip) {
 				tooltip.hidden = false;
 			}
 		}, 1500);
@@ -221,12 +232,12 @@ const sealIconMap = {
 				return;
 			}
 
-			tooltip.hidden = true;
+			if (tooltip) tooltip.hidden = true;
 			audio.volume = 0.4;
 			try {
 				await audio.play();
 			} catch (error) {
-				console.warn('No se pudo reproducir el sonido del sobre:', error);
+				console.warn('Audio play blocked:', error);
 			}
 
 			localStorage.setItem(storageKey, 'true');
