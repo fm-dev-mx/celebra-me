@@ -16,22 +16,25 @@
 	&__prompt {
 		font-family: var(--font-body);
 		font-size: 0.85rem;
-		font-weight: 400;
-		letter-spacing: -0.01em;
-		color: var(--color-text-primary);
-		background: rgb(var(--color-surface-primary-rgb), 0.88);
-		backdrop-filter: blur(10px);
-		padding: 0.5rem 1rem;
-		border-radius: 1rem;
-		border: 1px solid rgb(var(--color-surface-dark-rgb), 0.16);
-		box-shadow: var(--shadow-standard);
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: tokens.$sys-color-gold-900;
+		background: rgb(tokens.$sys-color-neutral-0, 0.65);
+		backdrop-filter: blur(12px);
+		padding: 0.6rem 1.25rem;
+		border-radius: 2rem;
+		border: 1px solid tokens.$sys-color-gold-200;
+		box-shadow:
+			0 4px 12px rgb(tokens.$sys-color-gold-900, 0.08),
+			inset 0 0 0 1px rgb(tokens.$sys-color-neutral-0, 0.5);
 		animation: musicPlayerFadeInSlide var(--duration-slower) var(--ease-premium);
 		white-space: nowrap;
 
 		&::before {
 			content: '♪';
 			margin-right: 0.5rem;
-			opacity: 60%;
+			color: tokens.$sys-color-gold-600;
 		}
 	}
 
@@ -67,43 +70,49 @@
 		}
 
 		&--play {
-			width: 3.25rem;
-			height: 3.25rem;
-			background: rgb(var(--color-surface-secondary-rgb), 0.9);
-			backdrop-filter: blur(12px);
-			color: var(--color-action-primary);
-			border: 1px solid rgb(var(--color-surface-dark-rgb), 0.2);
-			box-shadow: var(--shadow-standard);
+			width: 3.5rem;
+			height: 3.5rem;
+			background: radial-gradient(
+				circle at 30% 30%,
+				tokens.$sys-color-neutral-0 0%,
+				tokens.$sys-color-gold-50 100%
+			);
+			color: tokens.$sys-color-gold-700;
+			border: 1px solid tokens.$sys-color-gold-400;
+			box-shadow:
+				0 8px 24px rgb(tokens.$sys-color-gold-900, 0.12),
+				inset 0 1px 0 tokens.$sys-color-neutral-0;
 
 			svg {
-				filter: drop-shadow(0 1px 1px rgb(0 0 0 / 20%));
+				filter: drop-shadow(0 1px 1px rgb(tokens.$sys-color-gold-900, 0.2));
 			}
 
 			&::after {
 				content: '';
 				position: absolute;
-				inset: -4px;
+				inset: -3px;
 				border-radius: 50%;
-				border: 1px solid rgb(var(--color-action-accent-rgb), 0.45);
-				opacity: 0%;
+				border: 1.5px solid tokens.$sys-color-gold-300;
+				opacity: 40%;
 				transition: var(--transition-snappy);
 			}
 
 			&:hover::after {
 				opacity: 100%;
+				transform: scale(1.05);
 			}
 		}
 
 		&--pulsing {
-			animation: musicPlayerPulse 2.5s ease-in-out infinite;
+			animation: musicPlayerPulse 3s ease-in-out infinite;
 
 			&::before {
 				content: '';
 				position: absolute;
-				inset: -6px;
+				inset: -8px;
 				border-radius: 50%;
-				border: 1px solid rgb(var(--color-action-accent-rgb), 0.4);
-				animation: musicPlayerRingPulse 2.5s ease-in-out infinite;
+				border: 1px solid tokens.$sys-color-gold-200;
+				animation: musicPlayerRingPulse 3s ease-in-out infinite;
 			}
 		}
 	}
@@ -159,23 +168,24 @@
 @keyframes musicPlayerPulse {
 	0%,
 	100% {
-		box-shadow: 0 8px 18px rgb(0 0 0 / 16%);
+		box-shadow: 0 8px 18px rgb(tokens.$sys-color-gold-900, 0.1);
+		transform: scale(1);
 	}
 
 	50% {
-		box-shadow: 0 10px 24px rgb(var(--color-action-accent-rgb), 0.3);
+		box-shadow: 0 12px 28px rgb(tokens.$sys-color-gold-500, 0.25);
+		transform: scale(1.04);
 	}
 }
 
 @keyframes musicPlayerRingPulse {
-	0%,
-	100% {
+	0% {
 		transform: scale(1);
-		opacity: 45%;
+		opacity: 80%;
 	}
 
-	50% {
-		transform: scale(1.14);
+	100% {
+		transform: scale(1.4);
 		opacity: 0%;
 	}
 }

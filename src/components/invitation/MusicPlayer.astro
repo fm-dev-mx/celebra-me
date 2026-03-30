@@ -51,6 +51,7 @@ const {
 			return;
 		}
 
+		const invitationRoot = player.closest('[data-event-slug]');
 		const audio = player.querySelector('[data-music-audio]');
 		const prompt = player.querySelector('[data-music-prompt]');
 		const toggle = player.querySelector('[data-music-toggle]');
@@ -69,7 +70,7 @@ const {
 		}
 
 		let isPlaying = false;
-		let dismissTimer;
+		let dismissTimer: number | undefined = undefined;
 
 		const syncState = () => {
 			playIcon.hidden = isPlaying;
@@ -91,31 +92,50 @@ const {
 			}, 5000);
 		};
 
-		if (autoPlay) {
-			const firstInteraction = () => {
+		// Music Playback Orchestration
+		const startAudio = () => {
+			if (!isPlaying) {
 				audio.play().then(() => {
 					isPlaying = true;
 					syncState();
-				}).catch(() => {});
-				document.removeEventListener('click', firstInteraction);
-				document.removeEventListener('touchstart', firstInteraction);
-			};
+				}).catch(() => {
+					// Audio blocked or pending - user can still use manual toggle
+				});
+			}
+		};
 
-			document.addEventListener('click', firstInteraction, { once: true });
-			document.addEventListener('touchstart', firstInteraction, { once: true });
+		if (autoPlay) {
+			if (revealMode === 'envelope') {
+				// Wait for the envelope reveal to complete
+				window.addEventListener('envelope:opened', startAudio, { once: true });
+			} else {
+				// Legacy/Immediate mode - trigger on first visit interaction
+				document.addEventListener('click', startAudio, { once: true });
+				document.addEventListener('touchstart', startAudio, { once: true });
+			}
 		}
 
-		if (revealMode === 'immediate' || document.body.classList.contains('invitation-revealed')) {
+		const isInvitationRevealed = () =>
+			invitationRoot instanceof HTMLElement
+				? invitationRoot.dataset.revealState === 'revealed'
+				: true;
+
+		if (revealMode === 'immediate' || isInvitationRevealed()) {
 			hidePromptLater();
 		} else {
 			const observer = new MutationObserver(() => {
-				if (document.body.classList.contains('invitation-revealed')) {
+				if (isInvitationRevealed()) {
 					hidePromptLater();
 					observer.disconnect();
 				}
 			});
 
-			observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+			if (invitationRoot instanceof HTMLElement) {
+				observer.observe(invitationRoot, {
+					attributes: true,
+					attributeFilter: ['data-reveal-state'],
+				});
+			}
 		}
 
 		toggle.addEventListener('click', async () => {
