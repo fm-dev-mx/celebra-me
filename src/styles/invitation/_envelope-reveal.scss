@@ -18,6 +18,11 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	--env-card-bg: var(--color-white);
 	--env-card-radius: 8px;
 	--env-card-shadow: var(--shadow-subtle);
+	--env-card-border: rgb(0 0 0 / 6%);
+	--env-card-opening-opacity: 24%;
+	--env-card-opening-transform: translateY(-8%) scale(0.98);
+	--env-card-rising-opacity: 100%;
+	--env-card-rising-transform: translateY(-60%) rotate(-1deg) scale(1.04);
 
 	// ── Text Hooks ──
 	--env-name-font: var(--font-display);
@@ -33,34 +38,40 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		var(--color-surface-dark)
 	);
 	--env-seal-pulse-color: var(--color-action-accent);
+	--env-seal-radius: 50%;
+	--env-seal-before-radius: 48% 52% 49% 51% / 52% 48% 51% 49%;
+	--env-seal-rotation: 0deg;
+	--env-seal-border-width: 0;
+	--env-seal-border-color: transparent;
+	--env-seal-icon-size: 32px;
 
 	// ── Flap Hooks ──
 	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
 	--env-flap-height: 52%;
 
-	// ── Geometry Hooks (Improvement 1) ──
+	// ── Geometry Hooks ──
 	--env-pocket-clip: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
 	--env-crease-color: rgb(0 0 0 / 5%);
 	--env-crease-highlight-alpha: 10%;
 
-	// ── Shadow Hooks (Improvement 2) ──
+	// ── Shadow Hooks ──
 	--env-shadow-contact: 0 1px 3px rgb(0 0 0 / 8%);
 	--env-shadow-lift: 0 8px 24px rgb(0 0 0 / 12%);
 	--env-shadow-ambient: 0 32px 64px rgb(0 0 0 / 25%);
 	--env-pocket-inner-shadow: inset 0 4px 12px rgb(0 0 0 / 6%);
 
-	// ── Surface Hooks (Improvement 3) ──
+	// ── Surface Hooks ──
 	--env-flap-brightness: 1.02;
 	--env-pocket-brightness: 0.97;
 	--env-base-vignette-color: rgb(0 0 0 / 8%);
 	--env-card-texture-opacity: 4%;
 	--env-edge-highlight: rgb(255 255 255 / 15%);
 
-	// ── Motion Hooks (Improvement 4) ──
+	// ── Motion Hooks ──
 	--env-card-friction-delay: 150ms;
 	--env-seal-break-scale: 1.15;
 
-	// ── Typography Hooks (Improvement 5) ──
+	// ── Typography Hooks ──
 	--env-name-deboss-shadow: 0 -1px 0 rgb(0 0 0 / 12%), 0 1px 0 rgb(255 255 255 / 20%);
 	--env-name-stroke-color: transparent;
 	--env-name-shimmer-speed: 6s;
@@ -121,7 +132,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	z-index: 1;
 	box-shadow: var(--env-shadow-ambient);
 
-	// Improvement 3: Ambient occlusion vignette
+	// Ambient occlusion vignette
 	&::after {
 		content: '';
 		position: absolute;
@@ -147,7 +158,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	filter: brightness(var(--env-pocket-brightness));
 	box-shadow: var(--env-pocket-inner-shadow), var(--env-shadow-contact);
 
-	// Improvement 1: Crease line at pocket fold
+	// Crease line at pocket fold
 	&::after {
 		content: '';
 		position: absolute;
@@ -181,10 +192,10 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	animation: none; // Default: CSS transition, variants may switch to keyframes
 	transition: transform var(--duration-reveal, 2s) var(--ease-in-out);
 
-	// Improvement 1: Specular edge highlight on fold crest
+	// Specular edge highlight on fold crest
 	border-bottom: 1px solid var(--env-edge-highlight);
 
-	// Improvement 1: Crease line at flap fold
+	// Crease line at flap fold
 	&::after {
 		content: '';
 		position: absolute;
@@ -195,39 +206,25 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		background: linear-gradient(to right, transparent, var(--env-crease-color), transparent);
 		pointer-events: none;
 	}
-
-	&.is-open {
-		transform: var(--env-flap-open-transform, rotateX(170deg));
-		z-index: 0;
-		box-shadow: none;
-		filter: none;
-
-		&::after {
-			opacity: 0%;
-		}
-	}
 }
 
 .envelope-card {
 	position: absolute;
 	inset: 10% 14%;
 	background: var(--env-card-bg);
+	border: 1px solid var(--env-card-border);
 	border-radius: var(--env-card-radius);
-	z-index: 2;
+	z-index: 4;
 	transition:
 		transform var(--duration-reveal, 2s) var(--env-card-friction-delay) var(--ease-out),
-		opacity 0.3s var(--ease-out);
+		opacity 0.3s var(--ease-out),
+		box-shadow 0.4s var(--ease-out);
 	box-shadow: var(--env-shadow-contact), var(--env-card-shadow);
 	overflow: hidden;
+	transform: translateY(0) scale(0.96);
 
 	// Card content hidden until actively rising (prevents text bleed-through)
 	opacity: 0%;
-
-	&.is-rising {
-		opacity: 100%;
-		transform: var(--env-card-rising-transform, translateY(-60%) rotate(-1deg) scale(1.04));
-		box-shadow: var(--env-shadow-lift), var(--env-card-shadow);
-	}
 }
 
 // ── Card Inner Structure (Base Styles) ──
@@ -296,20 +293,21 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 .envelope-tease {
 	position: absolute;
 	inset: 0;
-	z-index: auto; // Removed 100 to allow children to escape stacking context
+	z-index: 110;
 	pointer-events: none;
 	text-align: center;
 
 	// Layout distribution for interactive content
 	.envelope-tease__interactive-content {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: space-between;
+		width: 100%;
 		height: 100%;
 		padding: 2rem 2rem 1.5rem;
 		transition: opacity 0.4s var(--ease-out, ease-out);
-		z-index: 100; // Front face background layer
 	}
 
 	.envelope-name {
@@ -337,7 +335,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		position: relative;
 		z-index: 110; // On top of flap
 
-		// Improvement 5: Debossed foil + edge stroke for depth
+		// Debossed foil + edge stroke for depth
 		text-shadow: var(--env-name-deboss-shadow);
 		-webkit-text-stroke: 0.3px var(--env-name-stroke-color);
 		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
@@ -400,7 +398,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		margin-bottom: 1rem;
 		position: relative;
 
-		// Improvement 5: Ornamental center glyph
+		// Ornamental center glyph
 		&::after {
 			content: var(--env-divider-ornament);
 			position: absolute;
@@ -522,7 +520,7 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	}
 }
 
-// Improvement 4: Staged flap opening — fast initial swing, gentle deceleration
+// Staged flap opening — fast initial swing, gentle deceleration
 @keyframes flapOpen {
 	0% {
 		transform: rotateX(0deg);
@@ -539,6 +537,9 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 
 .envelope-seal-button {
 	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	z-index: 110;
 	margin-top: 1rem;
 	background: none;
@@ -557,10 +558,38 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		position: absolute;
 		inset: -12px;
 		border: 2px solid var(--env-seal-pulse-color);
-		border-radius: 50%;
+		border-radius: var(--env-seal-radius);
 		opacity: 0%;
 		pointer-events: none;
 		animation: sealPulse 2s infinite;
+	}
+
+	&--wax {
+		--env-seal-radius: 50%;
+		--env-seal-before-radius: 48% 52% 49% 51% / 52% 48% 51% 49%;
+		--env-seal-rotation: 0deg;
+	}
+
+	&--ribbon {
+		--env-seal-radius: 18px;
+		--env-seal-before-radius: 18px;
+		--env-seal-rotation: -4deg;
+		--env-seal-border-width: 1px;
+		--env-seal-border-color: rgb(255 255 255 / 26%);
+	}
+
+	&--flower {
+		--env-seal-radius: 42% 58% 46% 54% / 48% 40% 60% 52%;
+		--env-seal-before-radius: 38% 62% 44% 56% / 54% 42% 58% 46%;
+		--env-seal-rotation: 6deg;
+	}
+
+	&--monogram {
+		--env-seal-radius: 50%;
+		--env-seal-before-radius: 50%;
+		--env-seal-border-width: 2px;
+		--env-seal-border-color: rgb(255 255 255 / 22%);
+		--env-seal-icon-size: 28px;
 	}
 }
 
@@ -632,10 +661,12 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 }
 
 .seal-visual {
+	position: relative;
 	width: var(--env-seal-size);
 	height: var(--env-seal-size);
 	background: var(--env-seal-gradient);
-	border-radius: 50%;
+	border-radius: var(--env-seal-radius);
+	border: var(--env-seal-border-width) solid var(--env-seal-border-color);
 	box-shadow:
 		0 8px 16px rgb(0 0 0 / 40%),
 		inset 0 -2px 6px rgb(0 0 0 / 30%),
@@ -643,21 +674,23 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
+	transform: rotate(var(--env-seal-rotation));
 
 	&::before {
 		content: '';
 		position: absolute;
 		inset: -8px;
 		background: inherit;
-		border-radius: 48% 52% 49% 51% / 52% 48% 51% 49%;
+		border-radius: var(--env-seal-before-radius);
 		z-index: -1;
 		filter: blur(1px);
 		box-shadow: inset 0 0 10px rgb(0 0 0 / 20%);
 	}
 
 	.seal-icon {
-		width: 32px;
-		height: 32px;
+		width: var(--env-seal-icon-size);
+		height: var(--env-seal-icon-size);
 		color: var(--env-seal-icon-color);
 		mix-blend-mode: normal; // Changed from multiply for better visibility
 		opacity: 100%;
@@ -703,18 +736,67 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 // The Astro version doesn't have Framer Motion, so it relies on CSS transitions.
 // Content fades out when the flap opens, and the wrapper slides/fades on reveal.
 
-// Deleted: moved into .envelope-tease__interactive-content for better encapsulation
-
 // When flap opens, fade out the front-face tease content
-.envelope-wrapper:has(.envelope-flap.is-open) .envelope-tease__interactive-content {
+.envelope-wrapper[data-phase='closed'] .envelope-tease__interactive-content {
+	opacity: 100%;
+	pointer-events: auto;
+}
+
+.envelope-wrapper[data-phase='opening'] .envelope-tease__interactive-content {
+	opacity: 35%;
+	pointer-events: none;
+}
+
+.envelope-wrapper[data-phase='rising'] .envelope-tease__interactive-content,
+.envelope-wrapper[data-phase='exit'] .envelope-tease__interactive-content {
 	opacity: 0%;
 	pointer-events: none;
 }
 
-// Wrapper exit — triggered when body gets 'invitation-revealed' class
+.envelope-wrapper[data-phase='closed'] .envelope-flap {
+	transform: rotateX(0deg);
+	z-index: 105;
+	box-shadow: var(--env-shadow-lift);
+	filter: brightness(var(--env-flap-brightness));
+}
+
+.envelope-wrapper[data-phase='opening'] .envelope-flap,
+.envelope-wrapper[data-phase='rising'] .envelope-flap,
+.envelope-wrapper[data-phase='exit'] .envelope-flap {
+	transform: var(--env-flap-open-transform, rotateX(170deg));
+	z-index: 0;
+	box-shadow: none;
+	filter: none;
+
+	&::after {
+		opacity: 0%;
+	}
+}
+
+.envelope-wrapper[data-phase='opening'] .envelope-card {
+	opacity: var(--env-card-opening-opacity);
+	transform: var(--env-card-opening-transform);
+	box-shadow: var(--env-shadow-contact), var(--env-card-shadow);
+}
+
+.envelope-wrapper[data-phase='rising'] .envelope-card,
+.envelope-wrapper[data-phase='exit'] .envelope-card {
+	opacity: var(--env-card-rising-opacity);
+	transform: var(--env-card-rising-transform);
+	box-shadow: var(--env-shadow-lift), var(--env-card-shadow);
+}
+
+.envelope-wrapper[data-phase='rising'] .envelope-pocket,
+.envelope-wrapper[data-phase='exit'] .envelope-pocket {
+	box-shadow:
+		inset 0 4px 12px rgb(0 0 0 / 6%),
+		0 2px 12px rgb(0 0 0 / 8%);
+}
+
+// Wrapper exit — triggered when the invitation root reveal state becomes revealed
 // Safety net: ensure wrapper never blocks interactions after reveal completes.
 // Covers edge cases where AnimatePresence exit doesn't fully unmount the element.
-body.invitation-revealed .envelope-wrapper {
+.event-theme-wrapper[data-reveal-state='revealed'] .envelope-wrapper {
 	opacity: 0%;
 	transform: translateY(-100%);
 	pointer-events: none;
