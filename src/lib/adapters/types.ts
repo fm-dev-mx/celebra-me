@@ -171,8 +171,6 @@ export interface EnvelopeViewModel {
 		variant?: ThemePreset;
 		colors: {
 			background: string;
-			primary: string;
-			accent: string;
 		};
 	};
 }

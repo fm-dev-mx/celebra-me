@@ -103,7 +103,7 @@ function renderInterlude(
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageData.themePreset,
+			variant: block.variant ?? pageData.themePreset ?? 'standard',
 		},
 	};
 }

@@ -103,6 +103,7 @@ function buildWrapperData(
 	const dataAttributes: Record<string, string> = {
 		'data-theme-preset': theme.preset || 'base',
 		'data-event-slug': eventSlug,
+		'data-reveal-state': envelope.enabled ? 'sealed' : 'revealed',
 	};
 
 	const overrides: Record<string, string> = {};
@@ -127,11 +128,6 @@ function buildWrapperData(
 	if (envelope.enabled && envelope.data) {
 		const { colors } = envelope.data;
 		if (colors.background) overrides['--env-bg'] = colors.background;
-		if (colors.primary) overrides['--env-primary'] = colors.primary;
-		if (colors.accent) overrides['--env-accent'] = colors.accent;
-
-		dataAttributes['data-env-state'] = 'ready';
-		dataAttributes['data-env-variant'] = envelope.data.variant || theme.preset || 'base';
 	}
 
 	const overrideStyles = Object.entries(overrides)
@@ -179,12 +175,7 @@ function buildWrapper(
 ) {
 	const showEnvelope = envelope.enabled;
 	return {
-		className: [
-			'event-theme-wrapper',
-			eventScopeClass,
-			theme.themeClass,
-			showEnvelope ? 'event-theme-wrapper--sealed' : '',
-		]
+		className: ['event-theme-wrapper', eventScopeClass, theme.themeClass]
 			.filter(Boolean)
 			.join(' '),
 		...buildWrapperData(theme, envelope, eventSlug),
