@@ -143,9 +143,10 @@ const sealIconMap = {
 </div>
 
 <script>
-	const PHASE_DELAY_RISING = 1000;
-	const PHASE_DELAY_EXIT = 3500;
+	const PHASE_DELAY_RISING = 900;
+	const PHASE_DELAY_EXIT = 2400;
 	const EXIT_ANIMATION_DELAY = 1200;
+	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1200;
 
 	const envelopes = document.querySelectorAll('[data-envelope]');
 
@@ -155,6 +156,9 @@ const sealIconMap = {
 		}
 
 		const eventSlug = root.dataset.eventSlug;
+		const invitationRoot =
+			root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
+			root.closest('.event-theme-wrapper[data-event-slug]');
 		const openButton = root.querySelector('[data-envelope-open]');
 		const flap = root.querySelector('[data-envelope-flap]');
 		const card = root.querySelector('[data-envelope-card]');
@@ -170,23 +174,53 @@ const sealIconMap = {
 		}
 
 		let phase = 'closed';
+		let hasRevealed = false;
+		const timers = new Set<number>();
 		const params = new URLSearchParams(window.location.search);
 		const storageKey = `envelope-opened-${eventSlug}`;
 
+		const schedule = (callback: () => void, delay: number) => {
+			const timerId = window.setTimeout(() => {
+				timers.delete(timerId);
+				callback();
+			}, delay);
+			timers.add(timerId);
+			return timerId;
+		};
+
+		const clearTimers = () => {
+			timers.forEach((timerId) => window.clearTimeout(timerId));
+			timers.clear();
+		};
+
 		const revealInvitation = () => {
+			if (hasRevealed) {
+				return;
+			}
+
+			hasRevealed = true;
+			clearTimers();
 			document.body.style.overflow = 'auto';
-			document.body.classList.add('invitation-revealed');
-			
+			if (invitationRoot instanceof HTMLElement) {
+				invitationRoot.dataset.revealState = 'revealed';
+			}
+
+			// Dispatch event for other components (like MusicPlayer)
+			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
+
 			// Allow exit animation to complete before hiding
-			window.setTimeout(() => {
+			schedule(() => {
 				root.hidden = true;
 			}, EXIT_ANIMATION_DELAY);
 		};
 
-		const syncPhase = () => {
+		const setPhase = (nextPhase: 'closed' | 'opening' | 'rising' | 'exit') => {
+			if (hasRevealed && nextPhase !== 'exit') {
+				return;
+			}
+
+			phase = nextPhase;
 			root.dataset.phase = phase;
-			flap.classList.toggle('is-open', phase !== 'closed');
-			card.classList.toggle('is-rising', phase === 'rising');
 
 			if (phase === 'exit') {
 				revealInvitation();
@@ -203,16 +237,19 @@ const sealIconMap = {
 			phase = 'exit';
 			root.hidden = true;
 			document.body.style.overflow = 'auto';
-			document.body.classList.add('invitation-revealed');
+			if (invitationRoot instanceof HTMLElement) {
+				invitationRoot.dataset.revealState = 'revealed';
+			}
+			hasRevealed = true;
 		}
 
-		syncPhase();
+		root.dataset.phase = phase;
 
 		if (phase === 'exit') {
 			return;
 		}
 
-		window.setTimeout(() => {
+		schedule(() => {
 			if (phase === 'closed' && tooltip) {
 				tooltip.hidden = false;
 			}
@@ -222,7 +259,7 @@ const sealIconMap = {
 			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
 		);
 
-		openButton.addEventListener('click', async (event) => {
+		openButton.addEventListener('click', (event) => {
 			if (event) {
 				event.stopPropagation();
 				event.preventDefault();
@@ -234,25 +271,44 @@ const sealIconMap = {
 
 			if (tooltip) tooltip.hidden = true;
 			audio.volume = 0.4;
-			try {
-				await audio.play();
-			} catch (error) {
+			void audio.play().catch((error) => {
 				console.warn('Audio play blocked:', error);
-			}
+			});
 
 			localStorage.setItem(storageKey, 'true');
-			phase = 'opening';
-			syncPhase();
+			clearTimers();
+			setPhase('opening');
 
-			window.setTimeout(() => {
-				phase = 'rising';
-				syncPhase();
+			schedule(() => {
+				if (phase === 'opening') {
+					setPhase('rising');
+				}
 			}, PHASE_DELAY_RISING);
 
-			window.setTimeout(() => {
-				phase = 'exit';
-				syncPhase();
+			schedule(() => {
+				if (phase === 'opening' || phase === 'rising') {
+					setPhase('exit');
+				}
 			}, PHASE_DELAY_EXIT);
+
+			schedule(() => {
+				if (!hasRevealed) {
+					setPhase('exit');
+				}
+			}, FAILSAFE_REVEAL_DELAY);
 		});
+
+		window.addEventListener(
+			'pagehide',
+			() => {
+				clearTimers();
+				if (audio) {
+					audio.pause();
+					audio.src = '';
+					audio.load();
+				}
+			},
+			{ once: true },
+		);
 	});
 </script>
