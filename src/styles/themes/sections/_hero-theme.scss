@@ -448,8 +448,7 @@
 }
 
 // Support for Revealed/Sealed Animation in Jewelry Box
-body.invitation-revealed
-	.theme-preset--jewelry-box.event-theme-wrapper--sealed
+.theme-preset--jewelry-box.event-theme-wrapper[data-reveal-state='revealed']
 	.invitation-hero[data-variant='jewelry-box']
 	.invitation-hero__title {
 	animation:

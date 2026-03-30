@@ -292,7 +292,7 @@
 }
 
 // Envelope-gated reveal: keep hero dormant until the seal is broken
-.event-theme-wrapper--sealed {
+.event-theme-wrapper[data-reveal-state='sealed'] {
 	.invitation-hero__content {
 		opacity: 0%;
 		transform: translateY(40px);
@@ -324,7 +324,7 @@
 	}
 }
 
-body.invitation-revealed .event-theme-wrapper--sealed {
+.event-theme-wrapper[data-reveal-state='revealed'] {
 	.invitation-hero__content {
 		animation: heroContentReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 	}

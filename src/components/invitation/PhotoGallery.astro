@@ -120,6 +120,7 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 		closeButton instanceof HTMLButtonElement &&
 		content instanceof HTMLElement
 	) {
+		const invitationRoot = gallery.closest('[data-event-slug]');
 		const closeLightbox = () => {
 			lightbox.hidden = true;
 			document.body.style.overflow = '';
@@ -131,7 +132,10 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 			}
 
 			// ADU-31: Surgical Guard - Only allow gallery interaction after envelope is revealed
-			if (!document.body.classList.contains('invitation-revealed')) {
+			if (
+				invitationRoot instanceof HTMLElement &&
+				invitationRoot.dataset.revealState !== 'revealed'
+			) {
 				console.warn('[Gallery] Suppressing lightbox trigger: Envelope still active.');
 				return;
 			}
