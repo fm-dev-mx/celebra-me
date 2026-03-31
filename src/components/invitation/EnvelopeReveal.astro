@@ -15,6 +15,8 @@ interface Props {
 	tooltipText?: string;
 	variant?: string;
 	guestName?: string;
+	titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
+	detailMaterial?: 'debossed' | 'standard';
 }
 
 const {
@@ -28,9 +30,11 @@ const {
 	stampText,
 	stampYear,
 	eventSlug,
-	tooltipText = 'Abre el sobre',
+	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
 	guestName,
+	titleMaterial = 'standard',
+	detailMaterial = 'standard',
 } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
@@ -74,41 +78,38 @@ const sealIconMap = {
 				</div>
 				<div class="envelope-card__body">
 					<span class="envelope-card__label">{documentLabel || 'Invitación'}</span>
-					<h2 class="envelope-card__name">{name}</h2>
+					<h2 class="envelope-card__name" data-material={titleMaterial}>{name}</h2>
 					{guestName && (
 						<div class="envelope-card__guest-personalized">
 							<p class="personalized-label">Especialmente para:</p>
-							<strong class="personalized-name">{guestName}</strong>
+							<strong class="personalized-name" data-material={titleMaterial}>{guestName}</strong>
 						</div>
 					)}
 				</div>
 				<div class="envelope-card__footer">
-					<p class="envelope-card__details">{formattedDate} • {city}</p>
+					<p class="envelope-card__details" data-material={detailMaterial}>{formattedDate} • {city}</p>
 				</div>
 			</div>
 		</div>
 
 		<div class="envelope-pocket"></div>
-		<div class="envelope-flap" data-envelope-flap></div>
+		<div class="envelope-flap" data-envelope-flap>
+			<div class="envelope-flap-shadow"></div>
+		</div>
 
 		<div class="envelope-tease">
 			<div class="envelope-tease__interactive-content" data-envelope-content>
-				{stampText && (
-					<div class="envelope-stamp-area">
-						<div class="envelope-stamp">
-							<span>{stampText}</span>
-							{stampYear && <small>{stampYear}</small>}
-						</div>
-					</div>
-				)}
-
 				<div class="tease-header">
+					{stampText && (
+						<div class="envelope-stamp-area">
+							<div class="envelope-stamp">
+								<span>{stampText}</span>
+								{stampYear && <small>{stampYear}</small>}
+							</div>
+						</div>
+					)}
 					{documentLabel && (
 						<span class="envelope-manifest-label">{documentLabel}</span>
-					)}
-					<h2 class="envelope-name">{name}</h2>
-					{guestName && (
-						<p class="envelope-tease__guest-name">{guestName}</p>
 					)}
 				</div>
 
@@ -119,13 +120,13 @@ const sealIconMap = {
 						data-envelope-open
 						aria-label="Abrir sobre de la invitación"
 					>
-						<div class="seal-visual">
+						<div class="envelope-seal-button__visual">
 							<Icon
 								name={sealIconMap[sealIcon]}
 								class={`seal-icon seal-icon--${sealIcon}`}
 							/>
 						</div>
-						<div class="seal-pulse"></div>
+						<div class="envelope-seal-button__pulse"></div>
 						<span class="envelope-tooltip" data-envelope-tooltip hidden>
 							{tooltipText}
 						</span>
@@ -133,20 +134,35 @@ const sealIconMap = {
 				</div>
 
 				<div class="tease-content-bottom">
-					<div class="tease-divider"></div>
-					<p class="envelope-details">{formattedDate} • {city}</p>
-					{microcopy && <p class="envelope-microcopy">{microcopy}</p>}
+					<h2 class="envelope-name" data-material={titleMaterial}>{name}</h2>
+					{guestName && (
+						<div class="envelope-guest-personalized">
+							<p class="personalized-label">Especialmente para:</p>
+							<strong class="personalized-name" data-material={titleMaterial}>{guestName}</strong>
+						</div>
+					)}
+					<div class="tease-details-group">
+						<div class="tease-divider"></div>
+						<p class="envelope-details" data-material={detailMaterial}>{formattedDate} • {city}</p>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	{microcopy && (
+		<div class="envelope-external-instruction" data-envelope-microcopy>
+			<p>{microcopy}</p>
+			<div class="instruction-line"></div>
+		</div>
+	)}
 </div>
 
 <script>
-	const PHASE_DELAY_RISING = 900;
-	const PHASE_DELAY_EXIT = 2400;
-	const EXIT_ANIMATION_DELAY = 1200;
-	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1200;
+	const PHASE_DELAY_RISING = 1100; // Increased to let the flap breathe
+	const PHASE_DELAY_EXIT = 2800; // Increased to allow the card to fully settle
+	const EXIT_ANIMATION_DELAY = 1400;
+	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1500;
 
 	const envelopes = document.querySelectorAll('[data-envelope]');
 

@@ -1,164 +1,140 @@
-// src/styles/invitation/_envelope-reveal.scss
 @use '../tokens' as tokens;
 
-// Seal dimensions and safe zone
-$envelope-seal-size: 76px;
-$envelope-seal-gap: 1rem;
-$envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap});
+$seal-size: 56px;
+$transition-slow: 1.2s;
+$transition-base: 0.35s;
+$ease: var(--ease-out, ease-out);
+$ease-smooth: var(--ease-in-out, ease-in-out);
+$ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
-// ==========================================================================
-// Theme Hook Variables
-// Variants override these via [data-variant] selectors.
-// ==========================================================================
+@mixin paper-surface {
+	background: var(--env-paper-bg, var(--color-surface-primary)) var(--env-paper-gradient, none);
+	border: 1px solid var(--env-paper-border, var(--color-glass-border));
+	border-radius: var(--env-paper-radius, 20px);
+	position: relative;
+	overflow: hidden;
+
+	// Physical Materiality: High-resolution grain overlay
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(--env-paper-grain, none);
+		background-size: 250px;
+		opacity: var(--env-paper-grain-opacity, 5%);
+		mix-blend-mode: var(--env-paper-grain-blend, var(--env-paper-blend, soft-light));
+		pointer-events: none;
+	}
+}
+
 .envelope-wrapper {
-	// ── Surface Hooks ──
+	// -- Aesthetic Tokens (to be populated by theme) --
+	--env-bg: radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%);
 	--env-paper-bg: var(--color-surface-primary);
+	--env-paper-gradient: linear-gradient(
+		135deg,
+		rgb(255 255 255 / 100%) 0%,
+		rgb(var(--color-surface-secondary-rgb), 0.35) 100%
+	);
 	--env-paper-border: var(--color-glass-border);
 	--env-paper-radius: 20px;
 	--env-card-bg: var(--color-white);
-	--env-card-radius: 8px;
-	--env-card-shadow: var(--shadow-subtle);
+	--env-card-radius: 10px;
 	--env-card-border: rgb(0 0 0 / 6%);
-	--env-card-opening-opacity: 24%;
-	--env-card-opening-transform: translateY(-8%) scale(0.98);
-	--env-card-rising-opacity: 100%;
-	--env-card-rising-transform: translateY(-60%) rotate(-1deg) scale(1.04);
-
-	// ── Text Hooks ──
-	--env-name-font: var(--font-display);
-	--env-details-color: var(--color-text-primary);
-	--env-seal-icon-color: rgb(var(--color-surface-dark-rgb), 0.65);
-
-	// ── Seal Hooks ──
-	--env-seal-size: 52px;
-	--env-seal-gradient: radial-gradient(
+	--env-shadow-soft: 0 8px 24px rgb(0 0 0 / 12%);
+	--env-shadow-deep: 0 32px 64px rgb(0 0 0 / 25%);
+	--env-seal-bg: radial-gradient(
 		circle at 35% 35%,
-		rgb(var(--color-action-accent-rgb), 1.5),
+		rgb(var(--color-action-accent-rgb), 1),
 		var(--color-action-accent),
 		var(--color-surface-dark)
 	);
-	--env-seal-pulse-color: var(--color-action-accent);
-	--env-seal-radius: 50%;
-	--env-seal-before-radius: 48% 52% 49% 51% / 52% 48% 51% 49%;
-	--env-seal-rotation: 0deg;
-	--env-seal-border-width: 0;
-	--env-seal-border-color: transparent;
-	--env-seal-icon-size: 32px;
-
-	// ── Flap Hooks ──
-	--env-flap-clip: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
-	--env-flap-height: 52%;
-
-	// ── Geometry Hooks ──
-	--env-pocket-clip: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-	--env-crease-color: rgb(0 0 0 / 5%);
-	--env-crease-highlight-alpha: 10%;
-
-	// ── Shadow Hooks ──
-	--env-shadow-contact: 0 1px 3px rgb(0 0 0 / 8%);
-	--env-shadow-lift: 0 8px 24px rgb(0 0 0 / 12%);
-	--env-shadow-ambient: 0 32px 64px rgb(0 0 0 / 25%);
-	--env-pocket-inner-shadow: inset 0 4px 12px rgb(0 0 0 / 6%);
-
-	// ── Surface Hooks ──
-	--env-flap-brightness: 1.02;
-	--env-pocket-brightness: 0.97;
-	--env-base-vignette-color: rgb(0 0 0 / 8%);
-	--env-card-texture-opacity: 4%;
-	--env-edge-highlight: rgb(255 255 255 / 15%);
-
-	// ── Motion Hooks ──
-	--env-card-friction-delay: 150ms;
-	--env-seal-break-scale: 1.15;
-
-	// ── Typography Hooks ──
-	--env-name-deboss-shadow: 0 -1px 0 rgb(0 0 0 / 12%), 0 1px 0 rgb(255 255 255 / 20%);
-	--env-name-stroke-color: transparent;
-	--env-name-shimmer-speed: 6s;
-	--env-details-weight: 500;
-	--env-details-tracking: 0.18em;
-	--env-divider-ornament: '◆';
+	--env-seal-icon-color: rgb(var(--color-surface-dark-rgb), 0.65);
+	--env-name-font: var(--font-display);
+	--env-name-gradient: none;
+	--env-name-animation: none;
+	--env-details-color: var(--color-text-primary);
+	--env-paper-grain-opacity: 0.04;
+	--env-paper-grain-blend: soft-light;
+	--env-flap-rotation: 170deg;
 
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	gap: 2rem;
 	overflow: hidden;
-	background: var(
-		--env-bg,
-		radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%)
-	);
-	perspective: 2500px;
+	background: var(--env-bg);
+	perspective: 2000px;
 	transition:
-		opacity 0.6s var(--ease-out, ease-out),
-		transform 1.2s var(--ease-in-out, ease-in-out);
+		opacity 0.6s $ease,
+		transform $transition-slow $ease-smooth;
 }
 
 .envelope-container {
 	position: relative;
 	width: min(92%, 520px);
-	aspect-ratio: 16/12;
-
-	// Limit height on landscape/wide screens
+	aspect-ratio: 16 / 12;
 	max-height: min(85vh, 600px);
 	transform-style: preserve-3d;
-	filter: drop-shadow(0 50px 100px rgb(0 0 0 / 80%));
+
+	// Main shadow moved to ::after for GPU efficiency
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow: 0 40px 80px rgb(0 0 0 / 55%);
+		opacity: 100%;
+		transition: opacity $transition-base $ease;
+	}
 }
 
-%paper-texture {
-	background-color: var(--env-paper-bg);
-	background-image:
-		var(
-			--env-paper-texture,
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncG type='linear' slope='0.1' intercept='0.9'/%3E%3CfeFuncB type='linear' slope='0.1' intercept='0.9'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E")
-		),
-		linear-gradient(
-			135deg,
-			rgb(255 255 255 / 100%) 0%,
-			rgb(var(--color-surface-secondary-rgb), 0.4) 100%
-		);
-	background-blend-mode: var(--env-paper-blend, multiply, normal);
-	border-radius: var(--env-paper-radius);
-	border: 1px solid var(--env-paper-border);
-}
-
-.envelope-base {
-	@extend %paper-texture;
+.envelope-base,
+.envelope-pocket,
+.envelope-flap {
+	@include paper-surface;
 
 	position: absolute;
 	inset: 0;
-	z-index: 1;
-	box-shadow: var(--env-shadow-ambient);
+}
 
-	// Ambient occlusion vignette
+.envelope-base {
+	z-index: 1;
+
+	// Base persistent shadow
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		box-shadow: var(--env-shadow-deep);
+		transition: opacity $transition-base $ease;
+		z-index: -1;
+	}
+
 	&::after {
 		content: '';
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background: radial-gradient(
-			ellipse at center,
-			transparent 50%,
-			var(--env-base-vignette-color) 100%
-		);
+		background: radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 8%) 100%);
 		pointer-events: none;
-		z-index: 0;
 	}
 }
 
 .envelope-pocket {
-	@extend %paper-texture;
-
-	position: absolute;
-	inset: 0;
 	z-index: 3;
-	clip-path: var(--env-pocket-clip);
-	filter: brightness(var(--env-pocket-brightness));
-	box-shadow: var(--env-pocket-inner-shadow), var(--env-shadow-contact);
+	clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+	box-shadow:
+		inset 0 4px 12px rgb(0 0 0 / 6%),
+		0 1px 3px rgb(0 0 0 / 8%);
 
-	// Crease line at pocket fold
 	&::after {
 		content: '';
 		position: absolute;
@@ -169,33 +145,32 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		background: linear-gradient(
 			to right,
 			transparent 10%,
-			var(--env-crease-color) 50%,
+			rgb(0 0 0 / 5%) 50%,
 			transparent 90%
 		);
-		pointer-events: none;
 	}
 }
 
 .envelope-flap {
-	@extend %paper-texture;
-
-	position: absolute;
 	top: 0;
-	left: 0;
-	width: 100%;
-	height: var(--env-flap-height);
-	clip-path: var(--env-flap-clip);
-	z-index: 105; // Raised to be above tease background (100) but below seal (110+)
+	height: 52%;
+	z-index: 5;
+	clip-path: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
 	transform-origin: top;
-	filter: brightness(var(--env-flap-brightness));
-	box-shadow: var(--env-shadow-lift);
-	animation: none; // Default: CSS transition, variants may switch to keyframes
-	transition: transform var(--duration-reveal, 2s) var(--ease-in-out);
+	transition: transform $transition-slow $ease-smooth;
+	border-bottom: 1px solid rgb(255 255 255 / 15%);
 
-	// Specular edge highlight on fold crest
-	border-bottom: 1px solid var(--env-edge-highlight);
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow: var(--env-shadow-soft);
+		opacity: 100%;
+		transition: opacity $transition-base $ease;
+	}
 
-	// Crease line at flap fold
 	&::after {
 		content: '';
 		position: absolute;
@@ -203,45 +178,71 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		left: 15%;
 		right: 15%;
 		height: 1px;
-		background: linear-gradient(to right, transparent, var(--env-crease-color), transparent);
-		pointer-events: none;
+		background: linear-gradient(to right, transparent, rgb(0 0 0 / 5%), transparent);
+	}
+
+	// Dynamic Volumetric Shadow: Simulates light distance from the viewer
+	.envelope-flap-shadow {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: rgb(0 0 0 / 45%);
+		border-radius: inherit;
+		filter: blur(20px);
+		opacity: 0%;
+		transform: scale(0.9) translateY(0);
+		transition:
+			opacity $transition-slow $ease-premium,
+			transform $transition-slow $ease-premium,
+			filter $transition-slow $ease-premium;
 	}
 }
 
 .envelope-card {
 	position: absolute;
 	inset: 10% 14%;
+	z-index: 4;
 	background: var(--env-card-bg);
 	border: 1px solid var(--env-card-border);
 	border-radius: var(--env-card-radius);
-	z-index: 4;
-	transition:
-		transform var(--duration-reveal, 2s) var(--env-card-friction-delay) var(--ease-out),
-		opacity 0.3s var(--ease-out),
-		box-shadow 0.4s var(--ease-out);
-	box-shadow: var(--env-shadow-contact), var(--env-card-shadow);
+	box-shadow:
+		0 1px 3px rgb(0 0 0 / 8%),
+		0 8px 24px rgb(0 0 0 / 10%);
 	overflow: hidden;
-	transform: translateY(0) scale(0.96);
-
-	// Card content hidden until actively rising (prevents text bleed-through)
 	opacity: 0%;
+	transform: translateY(0) scale(0.96);
+	transition:
+		transform $transition-slow 150ms $ease,
+		opacity $transition-base $ease;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		box-shadow:
+			0 1px 3px rgb(0 0 0 / 8%),
+			0 8px 24px rgb(0 0 0 / 10%);
+		opacity: 100%;
+		transition: opacity $transition-base $ease;
+	}
 }
 
-// ── Card Inner Structure (Base Styles) ──
 .envelope-card__content {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	text-align: center;
 	height: 100%;
 	padding: 1.5rem;
 	gap: 0.75rem;
-	overflow-y: auto; // Protection against long content
-	max-height: 100%;
+	text-align: center;
+	overflow-y: auto;
 }
 
-.envelope-card__header {
+.envelope-card__header,
+.envelope-card__body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -254,397 +255,431 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 	opacity: 60%;
 }
 
-.envelope-card__body {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.25rem;
+.envelope-card__label,
+.envelope-card__details,
+.personalized-label {
+	font-family: var(--font-body);
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--color-text-secondary);
 }
 
-.envelope-card__label {
-	font-family: var(--font-body);
-	font-size: 0.7rem;
-	text-transform: uppercase;
-	letter-spacing: 0.15em;
-	color: var(--color-text-secondary);
+.envelope-card__name,
+.personalized-name,
+.envelope-name {
+	font-family: var(--env-name-font);
+	line-height: 1.15;
+	margin: 0;
+	color: var(--color-text-primary);
 }
 
 .envelope-card__name {
-	font-family: var(--font-display);
 	font-size: clamp(1.2rem, 4vw, 2rem);
-	font-weight: 400;
-	color: var(--color-text-primary);
-	line-height: 1.15;
-	margin: 0;
 }
 
-.envelope-card__footer {
-	margin-top: auto;
+.envelope-name {
+	display: flex;
+	position: relative;
+	align-items: flex-end;
+	justify-content: center;
+	font-size: clamp(1rem, 4vw, 1.8rem);
+	background: var(--env-name-gradient, currentColor);
+	background-size: 300% auto;
+	background-clip: text;
+	-webkit-text-fill-color: var(--env-name-fill, transparent);
+	text-shadow: var(--env-name-shadow, none);
+	animation: var(--env-name-animation, none);
 }
 
-.envelope-card__details {
-	font-family: var(--font-body);
-	font-size: 0.7rem;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	color: var(--color-text-secondary);
-}
-
-.envelope-tease {
-	position: absolute;
-	inset: 0;
-	z-index: 110;
-	pointer-events: none;
-	text-align: center;
-
-	// Layout distribution for interactive content
-	.envelope-tease__interactive-content {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		height: 100%;
-		padding: 2rem 2rem 1.5rem;
-		transition: opacity 0.4s var(--ease-out, ease-out);
-	}
-
-	.envelope-name {
-		font-family: var(--env-name-font);
-		font-size: clamp(1.8rem, 8vw, 2.8rem);
-		line-height: 1.1;
-		background: var(
-			--env-name-gradient,
-			linear-gradient(
-				75deg,
-				var(--color-surface-dark) 0%,
-				var(--color-action-accent) 45%,
-				var(--color-action-accent) 50%,
-				var(--color-action-accent) 55%,
-				var(--color-surface-dark) 100%
-			)
-		);
-		background-size: 300% auto;
-		background-clip: text;
-		-webkit-text-fill-color: var(--env-name-fill, transparent);
-		animation: var(
-			--env-name-animation,
-			goldShimmer var(--env-name-shimmer-speed) linear infinite
-		);
-		position: relative;
-		z-index: 110; // On top of flap
-
-		// Debossed foil + edge stroke for depth
-		text-shadow: var(--env-name-deboss-shadow);
-		-webkit-text-stroke: 0.3px var(--env-name-stroke-color);
-		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
-	}
-
-	// Seal zone - flex item that holds the seal in the middle
-	.envelope-seal-zone {
-		flex: 0 1 auto;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		pointer-events: auto;
-		min-height: $envelope-seal-size;
-		padding: 0.5rem 0;
-		position: relative;
-		z-index: 120; // On top of flap (105)
-	}
-
-	.envelope-tease__guest-name {
-		margin-top: 0.5rem;
-		font-family: var(--font-body);
-		font-size: clamp(0.75rem, 3vw, 0.95rem);
-		font-weight: 600;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
-		color: var(--env-details-color);
-		opacity: 85%;
-
-		&::before {
-			content: 'Para: ';
-			font-weight: 300;
-			opacity: 70%;
-		}
-
-		// 🌟 Specular Glint for the name
-		background: linear-gradient(
-			110deg,
-			transparent 40%,
-			rgb(255 255 255 / 40%) 50%,
-			transparent 60%
-		);
-		background-size: 200% auto;
-		background-clip: text;
-		animation: specularGlint 6s ease-in-out infinite;
-	}
-
-	.tease-content-bottom {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding-top: 4rem;
-		position: relative;
-		z-index: 110;
-	}
-
-	.tease-divider {
-		width: 80px;
-		height: 1px;
-		background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
-		margin-bottom: 1rem;
-		position: relative;
-
-		// Ornamental center glyph
-		&::after {
-			content: var(--env-divider-ornament);
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			font-size: 0.45rem;
-			color: var(--env-details-color);
-			opacity: 50%;
-			padding: 0 8px;
-			background: var(--env-paper-bg, transparent);
-		}
-	}
-
-	.envelope-details {
-		font-family: var(--font-body);
-		font-size: 0.8rem;
-		letter-spacing: var(--env-details-tracking);
-		text-transform: uppercase;
-		color: var(--env-details-color);
-		font-weight: var(--env-details-weight);
-	}
-
-	.envelope-microcopy {
-		margin-top: 0.75rem;
-		font-family: var(--font-body);
-		font-size: clamp(0.5rem, 2vw, 0.65rem);
-		letter-spacing: 0.15em;
-		color: var(--color-text-secondary);
-		text-transform: uppercase;
-	}
-
-	@media (width >= 540px) {
-		.envelope-details {
-			font-size: 1rem;
-		}
-
-		.envelope-microcopy {
-			font-size: 0.78rem;
-		}
-	}
-
-	@media (width >= 768px) {
-		.envelope-details {
-			font-size: 1.2rem;
-		}
-
-		.envelope-microcopy {
-			font-size: 0.85rem;
-		}
-	}
-}
-
-// ── Inside Card Personalized Section ──
 .envelope-card__guest-personalized {
 	margin-top: 1rem;
 	padding-top: 1rem;
 	border-top: 1px solid rgb(0 0 0 / 5%);
 	text-align: center;
 
-	.personalized-label {
-		font-family: var(--font-body);
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--color-text-secondary);
-		margin-bottom: 0.25rem;
-	}
-
 	.personalized-name {
-		font-family: var(--font-display);
-		font-size: clamp(1.4rem, 5vw, 2rem);
-		font-weight: 400;
-		color: var(--color-text-primary);
-		line-height: 1.2;
 		display: block;
-
-		// Subtle elegant shadow
+		font-size: clamp(1.35rem, 5vw, 2rem);
 		text-shadow: 0 1px 1px rgb(255 255 255 / 80%);
 	}
 }
 
-// Landscape mode adjustments
+.envelope-tease {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	text-align: center;
+	pointer-events: none;
+}
+
+.envelope-tease__interactive-content {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	padding: 1.5rem 1.5rem 1.85rem;
+	transition: opacity $transition-base $ease;
+}
+
+.tease-header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: min(100%, 24rem);
+	margin: 0 auto;
+	text-align: center;
+	transform: translateY(var(--env-tease-header-y, 0));
+}
+
+.tease-content-bottom {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	gap: 0.15rem;
+	transform: translateY(var(--env-tease-footer-y, 0));
+}
+
+// Removed fragmented .envelope-name (consolidated above)
+
+.envelope-seal-zone {
+	position: absolute;
+	left: 50%;
+	top: 52%;
+	transform: translate(-50%, -50%);
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: auto;
+	min-height: $seal-size;
+}
+
+.tease-details-group {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.75rem;
+	text-wrap: nowrap;
+}
+
+.tease-divider {
+	position: relative;
+	width: 80px;
+	height: 1px;
+	margin-bottom: 1rem;
+	background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
+
+	&::after {
+		content: '◆';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 0.45rem;
+		color: var(--env-details-color);
+		opacity: 50%;
+		padding: 0 8px;
+		background: var(--env-paper-bg);
+	}
+}
+
+.envelope-details {
+	margin: 0;
+	max-width: min(100%, 19rem);
+	font-family: var(--font-body);
+	font-size: 0.8rem;
+	font-weight: 500;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	text-align: center;
+	color: var(--env-details-color);
+}
+
+.envelope-external-instruction {
+	position: relative;
+	z-index: 1000;
+	text-align: center;
+	color: var(--color-white, rgb(255 255 255));
+	opacity: 55%;
+	filter: drop-shadow(0 2px 4px rgb(0 0 0 / 20%));
+	transition:
+		opacity 0.8s $ease,
+		transform 0.8s $ease,
+		filter 0.8s $ease;
+
+	p {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.75rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.25em;
+	}
+
+	.instruction-line {
+		width: 24px;
+		height: 1px;
+		margin: 0.75rem auto 0;
+		background: currentcolor;
+		opacity: 30%;
+	}
+}
+
+.envelope-seal-button {
+	position: relative;
+	z-index: 20;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 1rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--color-action-accent);
+		outline-offset: 8px;
+		border-radius: 50%;
+	}
+
+	.envelope-seal-button__pulse {
+		position: absolute;
+		inset: -12px;
+		border: 2px solid var(--color-action-accent);
+		border-radius: 50%;
+		opacity: 0%;
+		pointer-events: none;
+		animation: sealPulse 2s infinite;
+	}
+}
+
+.envelope-seal-button__visual {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: $seal-size;
+	height: $seal-size;
+	flex-shrink: 0;
+	background: var(--env-seal-bg);
+	border-radius: 50%;
+	box-shadow:
+		0 8px 16px rgb(0 0 0 / 40%),
+		inset 0 -2px 6px rgb(0 0 0 / 30%),
+		inset 0 2px 8px rgb(255 255 255 / 50%);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: -8px;
+		z-index: -1;
+		background: inherit;
+		border-radius: inherit;
+		filter: blur(1px);
+		box-shadow: inset 0 0 10px rgb(0 0 0 / 20%);
+	}
+
+	.seal-icon {
+		width: 32px;
+		height: 32px;
+		color: var(--env-seal-icon-color);
+		filter: drop-shadow(0 1px 0 rgb(255 255 255 / 50%)) drop-shadow(0 -1px 0 rgb(0 0 0 / 15%));
+	}
+}
+
+.envelope-tooltip {
+	position: absolute;
+	top: 50%;
+	right: 100%;
+	margin-right: 1.25rem;
+	padding: 0.75rem 1.15rem;
+	transform: translateY(-50%);
+	transform-origin: right center;
+	white-space: nowrap;
+	pointer-events: none;
+	background: var(--color-glass-bg);
+	backdrop-filter: blur(var(--glass-blur, 12px));
+	color: var(--color-text-primary);
+	border: 1px solid var(--color-glass-border);
+	border-radius: 12px;
+	box-shadow: var(--shadow-premium);
+	font-family: var(--font-body);
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		right: -6px;
+		transform: translateY(-50%);
+		border-style: solid;
+		border-width: 6px 0 6px 6px;
+		border-color: transparent transparent transparent var(--color-glass-border);
+	}
+}
+
+/* Estados */
+.envelope-wrapper[data-phase='closed'] {
+	.envelope-tease__interactive-content {
+		opacity: 100%;
+		pointer-events: auto;
+	}
+
+	.envelope-flap {
+		transform: rotateX(0deg);
+	}
+}
+
+.envelope-wrapper[data-phase='opening'] {
+	.envelope-tease__interactive-content {
+		opacity: 35%;
+		pointer-events: none;
+	}
+
+	.envelope-flap {
+		transform: rotateX(var(--env-flap-rotation));
+		transition-timing-function: $ease-premium;
+		z-index: 0;
+
+		&::before {
+			opacity: 0%;
+		}
+
+		.envelope-flap-shadow {
+			opacity: 100%;
+			transform: scale(1.1) translateY(40px);
+			filter: blur(45px);
+		}
+	}
+
+	.envelope-card {
+		opacity: 24%;
+		transform: translateY(-8%) scale(0.98);
+	}
+}
+
+.envelope-wrapper[data-phase='rising'],
+.envelope-wrapper[data-phase='exit'] {
+	.envelope-tease__interactive-content,
+	.envelope-external-instruction {
+		opacity: 0%;
+		pointer-events: none;
+	}
+
+	.envelope-flap {
+		transform: rotateX(var(--env-flap-rotation));
+		z-index: 0;
+
+		&::before {
+			opacity: 0%;
+		}
+
+		.envelope-flap-shadow {
+			opacity: 0%;
+		}
+	}
+
+	.envelope-card {
+		opacity: 100%;
+		transform: translateY(-60%) rotate(-1deg) scale(1.04);
+		transition-timing-function: $ease-premium;
+
+		&::after {
+			opacity: 100%;
+		}
+	}
+}
+
+.event-theme-wrapper[data-reveal-state='revealed'] .envelope-wrapper {
+	opacity: 0%;
+	transform: translateY(-100%);
+	pointer-events: none;
+}
+
+/* Variantes mínimas del sello (Aesthetic Overrides moved to Reveal Theme) */
+
+/* Responsive */
+@media (width <= 767px) {
+	.envelope-tease__interactive-content {
+		padding: 1.5rem 1.35rem 1.6rem;
+	}
+
+	.tease-header {
+		max-width: 100%;
+		padding-bottom: 1.6rem;
+	}
+
+	.envelope-details {
+		max-width: 17rem;
+	}
+}
+
 @media (orientation: landscape) and (height <= 500px) {
 	.envelope-container {
 		width: min(70%, 450px);
 		max-height: 80vh;
 	}
 
-	.envelope-tease {
+	.envelope-tease__interactive-content {
 		padding: 1rem 1.5rem;
+	}
 
-		.envelope-name {
-			font-size: clamp(1.2rem, 5vw, 1.8rem);
-		}
+	.envelope-name {
+		font-size: clamp(1.2rem, 5vw, 1.8rem);
+	}
+}
 
-		.envelope-seal-zone {
-			padding: 0.25rem 0;
-		}
+@media (width <= 767px) {
+	.envelope-tooltip {
+		top: calc(100% + 24px);
+		left: 50%;
+		right: auto;
+		margin-right: 0;
+		transform: translateX(-50%);
+		backdrop-filter: blur(8px);
 
-		.tease-divider {
-			margin-bottom: 0.5rem;
-		}
-
-		.envelope-microcopy {
-			margin-top: 0.5rem;
+		&::after {
+			inset: -6px 50% auto auto;
+			transform: translateX(50%);
+			border-width: 0 6px 6px;
+			border-color: transparent transparent var(--color-glass-border);
 		}
 	}
 
-	.seal-visual {
-		width: 56px;
-		height: 56px;
+	.envelope-seal-zone {
+		top: 48%; // Lift seal slightly to prevent name overlap
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.envelope-wrapper.is-opened {
+		opacity: 0%;
+	}
+
+	.envelope-name,
+	.envelope-seal-button__pulse {
+		animation: none;
+	}
+
+	.envelope-flap,
+	.envelope-card {
+		transition: none;
 	}
 }
 
 @keyframes goldShimmer {
 	to {
 		background-position: 200% center;
-	}
-}
-
-// Staged flap opening — fast initial swing, gentle deceleration
-@keyframes flapOpen {
-	0% {
-		transform: rotateX(0deg);
-	}
-
-	50% {
-		transform: rotateX(100deg);
-	}
-
-	100% {
-		transform: rotateX(170deg);
-	}
-}
-
-.envelope-seal-button {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 110;
-	margin-top: 1rem;
-	background: none;
-	border: none;
-	padding: 0;
-	cursor: pointer;
-
-	// Accessibility: visible focus ring for keyboard users
-	&:focus-visible {
-		outline: 2px solid var(--env-seal-pulse-color);
-		outline-offset: 8px;
-		border-radius: 50%;
-	}
-
-	.seal-pulse {
-		position: absolute;
-		inset: -12px;
-		border: 2px solid var(--env-seal-pulse-color);
-		border-radius: var(--env-seal-radius);
-		opacity: 0%;
-		pointer-events: none;
-		animation: sealPulse 2s infinite;
-	}
-
-	&--wax {
-		--env-seal-radius: 50%;
-		--env-seal-before-radius: 48% 52% 49% 51% / 52% 48% 51% 49%;
-		--env-seal-rotation: 0deg;
-	}
-
-	&--ribbon {
-		--env-seal-radius: 18px;
-		--env-seal-before-radius: 18px;
-		--env-seal-rotation: -4deg;
-		--env-seal-border-width: 1px;
-		--env-seal-border-color: rgb(255 255 255 / 26%);
-	}
-
-	&--flower {
-		--env-seal-radius: 42% 58% 46% 54% / 48% 40% 60% 52%;
-		--env-seal-before-radius: 38% 62% 44% 56% / 54% 42% 58% 46%;
-		--env-seal-rotation: 6deg;
-	}
-
-	&--monogram {
-		--env-seal-radius: 50%;
-		--env-seal-before-radius: 50%;
-		--env-seal-border-width: 2px;
-		--env-seal-border-color: rgb(255 255 255 / 22%);
-		--env-seal-icon-size: 28px;
-	}
-}
-
-// Tooltip - appears to the LEFT of the seal (vertically centered)
-.envelope-tooltip {
-	position: absolute;
-	right: 100%; // Move to the left of the button
-	top: 50%;
-	transform: translateY(-50%);
-	margin-right: 1rem; // Space between tooltip and seal
-	margin-bottom: 0; // Reset previous margin
-	background: rgb(0 0 0 / 50%);
-	color: rgb(255 255 255 / 55%);
-	font-family: var(--font-body);
-	font-size: 0.75rem;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.6rem 0.9rem;
-	border-radius: 8px;
-	box-shadow: 1px 2px 4px rgb(0 0 0 / 15%);
-	white-space: nowrap;
-	pointer-events: none;
-	border: 1px solid rgb(62 43 30 / 10%);
-	transform-origin: right center;
-
-	// The Arrow (pointing right) - matching paper
-	&::after {
-		content: '';
-		position: absolute;
-		top: 50%;
-		right: -6px; // Position half-outside to create the point
-		transform: translateY(-50%);
-		border-width: 6px 0 6px 6px; // Triangle pointing right
-		border-style: solid;
-		border-color: transparent transparent transparent rgb(0 0 0 / 50%);
-	}
-
-	@media (width <= 370px) {
-		font-size: 0.75rem;
-		padding: 0.5rem 0.75rem;
-		right: auto;
-		left: 50%;
-		top: calc(100% + 12px);
-		transform: translate(-50%, 0);
-		margin-right: 0;
-
-		// Arrow points up to the seal
-		&::after {
-			top: -6px;
-			right: 50%;
-			transform: translateX(50%);
-			border-width: 0 6px 6px;
-			border-color: transparent transparent rgb(0 0 0 / 50%);
-		}
 	}
 }
 
@@ -658,146 +693,4 @@ $envelope-seal-safe-zone: calc(#{$envelope-seal-size} / 2 + #{$envelope-seal-gap
 		transform: scale(1.4);
 		opacity: 0%;
 	}
-}
-
-.seal-visual {
-	position: relative;
-	width: var(--env-seal-size);
-	height: var(--env-seal-size);
-	background: var(--env-seal-gradient);
-	border-radius: var(--env-seal-radius);
-	border: var(--env-seal-border-width) solid var(--env-seal-border-color);
-	box-shadow:
-		0 8px 16px rgb(0 0 0 / 40%),
-		inset 0 -2px 6px rgb(0 0 0 / 30%),
-		inset 0 2px 8px rgb(255 255 255 / 50%);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	transform: rotate(var(--env-seal-rotation));
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: -8px;
-		background: inherit;
-		border-radius: var(--env-seal-before-radius);
-		z-index: -1;
-		filter: blur(1px);
-		box-shadow: inset 0 0 10px rgb(0 0 0 / 20%);
-	}
-
-	.seal-icon {
-		width: var(--env-seal-icon-size);
-		height: var(--env-seal-icon-size);
-		color: var(--env-seal-icon-color);
-		mix-blend-mode: normal; // Changed from multiply for better visibility
-		opacity: 100%;
-		filter: drop-shadow(0 1px 0 rgb(255 255 255 / 50%)) drop-shadow(0 -1px 0 rgb(0 0 0 / 15%));
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.envelope-wrapper.is-opened {
-		opacity: 0%;
-	}
-
-	// Disable all infinite and staged animations
-	.envelope-name {
-		animation: none;
-	}
-
-	.seal-pulse {
-		animation: none;
-	}
-
-	.envelope-flap {
-		transition: none;
-		animation: none;
-		filter: none;
-	}
-
-	.envelope-card {
-		transition: none;
-	}
-
-	.envelope-pocket,
-	.envelope-base {
-		filter: none;
-	}
-
-	.envelope-tease__guest-name {
-		animation: none;
-	}
-}
-
-// ── Astro-Rendered Transition Layer ──
-// The Astro version doesn't have Framer Motion, so it relies on CSS transitions.
-// Content fades out when the flap opens, and the wrapper slides/fades on reveal.
-
-// When flap opens, fade out the front-face tease content
-.envelope-wrapper[data-phase='closed'] .envelope-tease__interactive-content {
-	opacity: 100%;
-	pointer-events: auto;
-}
-
-.envelope-wrapper[data-phase='opening'] .envelope-tease__interactive-content {
-	opacity: 35%;
-	pointer-events: none;
-}
-
-.envelope-wrapper[data-phase='rising'] .envelope-tease__interactive-content,
-.envelope-wrapper[data-phase='exit'] .envelope-tease__interactive-content {
-	opacity: 0%;
-	pointer-events: none;
-}
-
-.envelope-wrapper[data-phase='closed'] .envelope-flap {
-	transform: rotateX(0deg);
-	z-index: 105;
-	box-shadow: var(--env-shadow-lift);
-	filter: brightness(var(--env-flap-brightness));
-}
-
-.envelope-wrapper[data-phase='opening'] .envelope-flap,
-.envelope-wrapper[data-phase='rising'] .envelope-flap,
-.envelope-wrapper[data-phase='exit'] .envelope-flap {
-	transform: var(--env-flap-open-transform, rotateX(170deg));
-	z-index: 0;
-	box-shadow: none;
-	filter: none;
-
-	&::after {
-		opacity: 0%;
-	}
-}
-
-.envelope-wrapper[data-phase='opening'] .envelope-card {
-	opacity: var(--env-card-opening-opacity);
-	transform: var(--env-card-opening-transform);
-	box-shadow: var(--env-shadow-contact), var(--env-card-shadow);
-}
-
-.envelope-wrapper[data-phase='rising'] .envelope-card,
-.envelope-wrapper[data-phase='exit'] .envelope-card {
-	opacity: var(--env-card-rising-opacity);
-	transform: var(--env-card-rising-transform);
-	box-shadow: var(--env-shadow-lift), var(--env-card-shadow);
-}
-
-.envelope-wrapper[data-phase='rising'] .envelope-pocket,
-.envelope-wrapper[data-phase='exit'] .envelope-pocket {
-	box-shadow:
-		inset 0 4px 12px rgb(0 0 0 / 6%),
-		0 2px 12px rgb(0 0 0 / 8%);
-}
-
-// Wrapper exit — triggered when the invitation root reveal state becomes revealed
-// Safety net: ensure wrapper never blocks interactions after reveal completes.
-// Covers edge cases where AnimatePresence exit doesn't fully unmount the element.
-.event-theme-wrapper[data-reveal-state='revealed'] .envelope-wrapper {
-	opacity: 0%;
-	transform: translateY(-100%);
-	pointer-events: none;
 }

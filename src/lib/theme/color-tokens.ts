@@ -53,6 +53,7 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		actionPrimary: '#2C1E12', // Matches $base-coffee-900
 		actionAccent: '#C5A028',
 		surfaceDark: '#2C1E12',
+		surfaceElevated: '#3D2B1E', // Added for contrast in reveal/panels
 		surfaceSoft: '#FFFFFF',
 		textPrimary: '#2C1E12',
 		primary: '#F5F5DC', // ALIGNED TO SURFACE

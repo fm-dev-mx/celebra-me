@@ -17,6 +17,8 @@
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
 	--color-surface-dark: var(--color-text-primary);
 	--color-surface-dark-rgb: var(--color-text-primary-rgb);
+	--color-surface-elevated: #{sys.$sys-color-coffee-800};
+	--color-surface-elevated-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-800)};
 	--color-action-primary: var(--color-text-primary);
 	--color-action-primary-rgb: var(--color-text-primary-rgb);
 	--color-action-accent: #{sys.$sys-color-gold-500};
@@ -142,11 +144,7 @@
 	// ---------------------------------------------------------------------
 	// Header tokens
 	// ---------------------------------------------------------------------
-	--header-bg-scrolled: linear-gradient(
-		180deg,
-		rgb(26 17 11 / 98%) 0%,
-		rgb(38 26 18 / 95%) 100%
-	);
+	--header-bg-scrolled: linear-gradient(180deg, rgb(26 17 11 / 98%) 0%, rgb(38 26 18 / 95%) 100%);
 	--header-border-scrolled: 1px solid rgb(212 175 95 / 25%);
 	--header-nav-color: rgb(240 212 157 / 90%);
 	--header-nav-hover: rgb(251 240 217 / 100%);
