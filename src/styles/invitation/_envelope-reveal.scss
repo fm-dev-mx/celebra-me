@@ -1,6 +1,7 @@
 @use '../tokens' as tokens;
+@use '../global/mixins' as mixins;
 
-$seal-size: 56px;
+$seal-size: var(--env-seal-size, 56px);
 $transition-slow: 1.2s;
 $transition-base: 0.35s;
 $ease: var(--ease-out, ease-out);
@@ -58,6 +59,9 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	--env-paper-grain-opacity: 0.04;
 	--env-paper-grain-blend: soft-light;
 	--env-flap-rotation: 170deg;
+	--env-flap-blur: 20px;
+	--env-flap-shadow-bg: rgb(var(--color-surface-dark-rgb), 0.45);
+	--env-shadow-volume: 0 40px 80px rgb(var(--color-surface-dark-rgb), 0.55);
 
 	position: fixed;
 	inset: 0;
@@ -77,9 +81,10 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 .envelope-container {
 	position: relative;
-	width: min(92%, 520px);
-	aspect-ratio: 16 / 12;
-	max-height: min(85vh, 600px);
+	container-type: inline-size;
+	width: clamp(min(320px, 92vw), 50vw, 840px);
+	aspect-ratio: var(--env-aspect-ratio, 1.4);
+	max-height: var(--env-max-height, min(85vh, 700px));
 	transform-style: preserve-3d;
 
 	// Main shadow moved to ::after for GPU efficiency
@@ -89,7 +94,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		inset: 0;
 		z-index: -1;
 		border-radius: inherit;
-		box-shadow: 0 40px 80px rgb(0 0 0 / 55%);
+		box-shadow: var(--env-shadow-volume);
 		opacity: 100%;
 		transition: opacity $transition-base $ease;
 	}
@@ -186,9 +191,9 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		position: absolute;
 		inset: 0;
 		z-index: -1;
-		background: rgb(0 0 0 / 45%);
+		background: var(--env-flap-shadow-bg);
 		border-radius: inherit;
-		filter: blur(20px);
+		filter: blur(var(--env-flap-blur));
 		opacity: 0%;
 		transform: scale(0.9) translateY(0);
 		transition:
@@ -275,21 +280,52 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 }
 
 .envelope-card__name {
-	font-size: clamp(1.2rem, 4vw, 2rem);
+	font-size: clamp(1.2rem, 8cqw, 2rem);
 }
 
 .envelope-name {
 	display: flex;
 	position: relative;
-	align-items: flex-end;
+	align-items: center;
 	justify-content: center;
-	font-size: clamp(1rem, 4vw, 1.8rem);
+	padding: 0;
+	margin: 0.25rem 0 0.85rem;
+	font-size: clamp(1rem, 6.5cqw, 1.8rem);
+	text-wrap: balance;
+	width: 100%;
+	max-width: 90cqw;
 	background: var(--env-name-gradient, currentColor);
 	background-size: 300% auto;
 	background-clip: text;
 	-webkit-text-fill-color: var(--env-name-fill, transparent);
 	text-shadow: var(--env-name-shadow, none);
 	animation: var(--env-name-animation, none);
+}
+
+.envelope-stamp {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 0.25rem 0.7rem;
+	margin-bottom: 0;
+
+	span {
+		font-size: 0.74rem;
+		letter-spacing: 0.22em;
+		font-weight: 500;
+	}
+
+	small {
+		font-size: 0.6rem;
+		opacity: 60%;
+		letter-spacing: 0.05em;
+
+		&::before {
+			content: '|';
+			margin-right: 0.65rem;
+			opacity: 40%;
+		}
+	}
 }
 
 .envelope-card__guest-personalized {
@@ -300,7 +336,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 	.personalized-name {
 		display: block;
-		font-size: clamp(1.35rem, 5vw, 2rem);
+		font-size: clamp(1.35rem, 10cqw, 2rem);
 		text-shadow: 0 1px 1px rgb(255 255 255 / 80%);
 	}
 }
@@ -309,8 +345,11 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	position: absolute;
 	inset: 0;
 	z-index: 10;
-	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	pointer-events: none;
+	padding: 1.5rem;
 }
 
 .envelope-tease__interactive-content {
@@ -321,7 +360,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	align-items: center;
 	width: 100%;
 	height: 100%;
-	padding: 1.5rem 1.5rem 1.85rem;
 	transition: opacity $transition-base $ease;
 }
 
@@ -329,29 +367,50 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	width: min(100%, 24rem);
+	justify-content: flex-end;
+	width: 100%;
+	max-width: 94cqw;
 	margin: 0 auto;
 	text-align: center;
-	transform: translateY(var(--env-tease-header-y, 0));
+	flex: 1;
+	gap: 0.35rem;
+	padding-bottom: 1rem;
 }
 
 .tease-content-bottom {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: flex-start;
 	width: 100%;
-	gap: 0.15rem;
-	transform: translateY(var(--env-tease-footer-y, 0));
+	max-width: 94cqw;
+	gap: 0.55rem;
+	flex: 1;
+	padding-top: 1.5rem;
 }
 
 // Removed fragmented .envelope-name (consolidated above)
 
+.envelope-guest-personalized {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.15rem;
+	width: 100%;
+	max-width: 88cqw;
+
+	.personalized-name {
+		font-size: clamp(1.1rem, 6.5cqw, 1.6rem);
+		text-wrap: balance;
+		text-align: center;
+	}
+}
+
 .envelope-seal-zone {
-	position: absolute;
-	left: 50%;
-	top: 52%;
-	transform: translate(-50%, -50%);
+	position: relative;
+	left: auto;
+	top: auto;
+	transform: none;
 	z-index: 20;
 	display: flex;
 	align-items: center;
@@ -364,13 +423,13 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 0.75rem;
-	text-wrap: nowrap;
+	gap: 0.5rem;
+	width: 100%;
 }
 
 .tease-divider {
 	position: relative;
-	width: 80px;
+	width: 8.5rem;
 	height: 1px;
 	margin-bottom: 1rem;
 	background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
@@ -390,8 +449,9 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 }
 
 .envelope-details {
-	margin: 0;
-	max-width: min(100%, 19rem);
+	margin: 0 auto;
+	width: 100%;
+	max-width: 90cqw;
 	font-family: var(--font-body);
 	font-size: 0.8rem;
 	font-weight: 500;
@@ -496,35 +556,55 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 .envelope-tooltip {
 	position: absolute;
-	top: 50%;
-	right: 100%;
-	margin-right: 1.25rem;
-	padding: 0.75rem 1.15rem;
-	transform: translateY(-50%);
-	transform-origin: right center;
+	bottom: 100%;
+	top: auto;
+	left: 50%;
+	transform: translateX(-50%) translateY(-1.25rem);
+	padding: 0.6rem 1rem;
 	white-space: nowrap;
 	pointer-events: none;
-	background: var(--color-glass-bg);
+	background: var(--env-tooltip-bg, var(--color-glass-bg));
 	backdrop-filter: blur(var(--glass-blur, 12px));
 	color: var(--color-text-primary);
-	border: 1px solid var(--color-glass-border);
+	border: 1px solid var(--env-tooltip-border, var(--color-glass-border));
 	border-radius: 12px;
 	box-shadow: var(--shadow-premium);
 	font-family: var(--font-body);
-	font-size: 0.7rem;
-	font-weight: 700;
+	font-size: 0.5rem;
+	font-weight: 500;
 	text-transform: uppercase;
-	letter-spacing: 0.15em;
+	letter-spacing: 0.05em;
+	opacity: 95%;
+	z-index: 100;
 
 	&::after {
 		content: '';
 		position: absolute;
-		top: 50%;
-		right: -6px;
-		transform: translateY(-50%);
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
 		border-style: solid;
-		border-width: 6px 0 6px 6px;
-		border-color: transparent transparent transparent var(--color-glass-border);
+		border-width: 6px 6px 0;
+		border-color: var(--env-tooltip-border, var(--color-glass-border)) transparent transparent
+			transparent;
+	}
+
+	@include mixins.respond-below(md) {
+		top: auto;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-1.25rem);
+		padding: 0.75rem 1.15rem;
+		font-size: 0.7rem;
+
+		&::after {
+			bottom: auto;
+			top: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			border-width: 6px 6px 0;
+			border-color: var(--color-glass-border) transparent transparent transparent;
+		}
 	}
 }
 
@@ -609,22 +689,54 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 /* Variantes mínimas del sello (Aesthetic Overrides moved to Reveal Theme) */
 
 /* Responsive */
-@media (width <= 767px) {
+@include mixins.respond-below(md) {
 	.envelope-tease__interactive-content {
-		padding: 1.5rem 1.35rem 1.6rem;
+		padding: 0.8rem 0.4rem 0.4rem;
+	}
+
+	.envelope-container {
+		width: min(88vw, 340px);
+
+		--env-aspect-ratio: 0.82; // Slightly wider for better name containment
+		--env-max-height: min(75vh, 540px);
+		--env-seal-size: 40px;
 	}
 
 	.tease-header {
 		max-width: 100%;
-		padding-bottom: 1.6rem;
+		padding-bottom: 0.35rem;
+	}
+
+	.envelope-name {
+		margin-top: 0.35rem;
+		margin-bottom: 0.55rem;
+		font-size: clamp(1.25rem, 5.8vw, 1.75rem);
+	}
+
+	.envelope-stamp {
+		padding: 0.2rem 0.58rem;
+	}
+
+	.tease-divider {
+		width: 7rem;
+	}
+
+	.tease-content-bottom {
+		gap: 0.35rem;
 	}
 
 	.envelope-details {
-		max-width: 17rem;
+		max-width: 15.5rem;
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
+	}
+
+	.envelope-external-instruction {
+		display: none;
 	}
 }
 
-@media (orientation: landscape) and (height <= 500px) {
+@include mixins.short-viewport {
 	.envelope-container {
 		width: min(70%, 450px);
 		max-height: 80vh;
@@ -639,29 +751,31 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	}
 }
 
-@media (width <= 767px) {
-	.envelope-tooltip {
-		top: calc(100% + 24px);
-		left: 50%;
-		right: auto;
-		margin-right: 0;
-		transform: translateX(-50%);
-		backdrop-filter: blur(8px);
+// Removed empty md breakpoint
 
-		&::after {
-			inset: -6px 50% auto auto;
-			transform: translateX(50%);
-			border-width: 0 6px 6px;
-			border-color: transparent transparent var(--color-glass-border);
-		}
+@include mixins.respond-below(sm) {
+	.envelope-container {
+		width: min(88vw, 320px);
+
+		--env-aspect-ratio: 6 / 5;
+		--env-seal-size: 30px;
 	}
 
-	.envelope-seal-zone {
-		top: 48%; // Lift seal slightly to prevent name overlap
+	.tease-header {
+		padding-bottom: 0.5rem;
+	}
+
+	.tease-content-bottom {
+		gap: 0.25rem;
+	}
+
+	.envelope-details {
+		font-size: 0.62rem;
+		max-width: 12.5rem;
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.envelope-wrapper.is-opened {
 		opacity: 0%;
 	}
@@ -677,12 +791,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	}
 }
 
-@keyframes goldShimmer {
-	to {
-		background-position: 200% center;
-	}
-}
-
 @keyframes sealPulse {
 	0% {
 		transform: scale(0.9);
@@ -692,5 +800,15 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	100% {
 		transform: scale(1.4);
 		opacity: 0%;
+	}
+}
+
+@keyframes goldshimmer {
+	0% {
+		background-position: 0% center;
+	}
+
+	100% {
+		background-position: 200% center;
 	}
 }
