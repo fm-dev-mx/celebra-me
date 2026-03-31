@@ -233,7 +233,8 @@
         "microcopy": "Haga clic para desvelar",
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
-            "primary": "surfaceDark"
+            "primary": "surfacePrimary",
+            "background": "surfaceDark"
         }
     },
     "sharing": {

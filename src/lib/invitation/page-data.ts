@@ -45,6 +45,8 @@ export interface InvitationPageData {
 				eventSlug: string;
 				guestName?: string;
 				name: string;
+				titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
+				detailMaterial?: 'debossed' | 'standard';
 		  })
 		| undefined;
 	sections: InvitationViewModel['sections'];
@@ -200,6 +202,14 @@ function buildEnvelopeData(
 		city: locationSection?.city || '',
 		eventSlug,
 		guestName,
+		titleMaterial: (envelope.data.variant === 'luxury-hacienda' ||
+		envelope.data.variant === 'jewelry-box' ||
+		envelope.data.variant === 'jewelry-box-wedding'
+			? 'foil-gold'
+			: 'standard') as 'foil-gold' | 'debossed' | 'standard',
+		detailMaterial: (envelope.data.variant === 'luxury-hacienda' ? 'debossed' : 'standard') as
+			| 'debossed'
+			| 'standard',
 	};
 }
 
