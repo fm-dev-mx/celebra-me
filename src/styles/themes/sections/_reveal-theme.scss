@@ -15,8 +15,8 @@
 	);
 
 	--env-paper-bg: #{color.mix(sys-color.$sys-color-gold-200, sys-color.$sys-color-neutral-0, 6%)};
-	--env-paper-border: rgb(0 0 0 / 6%);
-	--env-shadow-ambient: 0 60px 120px rgb(0 0 0 / 14%);
+	--env-paper-border: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.06)};
+	--env-shadow-ambient: 0 60px 120px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.14)};
 	--env-card-bg: #{sys-color.$sys-color-neutral-0};
 	--env-details-color: #{sys-color.$sys-color-neutral-600};
 	--env-seal-pulse-color: #{sys-color.$sys-color-gold-500};
@@ -26,7 +26,7 @@
 		#{sys-color.$sys-color-gold-500},
 		#{sys-color.$sys-color-gold-900}
 	);
-	--env-seal-icon-color: rgb(0 0 0 / 20%);
+	--env-seal-icon-color: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)};
 	--env-name-gradient: linear-gradient(
 		75deg,
 		#{sys-color.$sys-color-gold-700} 0%,
@@ -36,7 +36,9 @@
 		#{sys-color.$sys-color-gold-700} 100%
 	);
 	--env-name-shadow:
-		0 -1px 0 rgb(0 0 0 / 15%), 0 1px 0 rgb(255 255 255 / 10%), 0 2px 4px rgb(0 0 0 / 12%);
+		0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.15)},
+		0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.1)},
+		0 2px 4px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.12)};
 	--env-name-animation: goldshimmer 6s linear infinite;
 }
 
@@ -53,7 +55,7 @@
 			sys-color.$sys-color-neutral-0,
 			82%
 		)};
-	--env-paper-border: rgb(146 107 58 / 18%);
+	--env-paper-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.18)};
 	--env-paper-grain: #{ornamental.$paper-grain-felt};
 	--env-paper-blend: soft-light;
 	--env-card-bg: #{color.mix(
@@ -61,11 +63,12 @@
 			sys-color.$sys-color-neutral-0,
 			58%
 		)};
-	--env-shadow-ambient: 0 40px 100px rgb(19 12 7 / 20%); // Diffused for Luxury Hacienda warmth
-	--env-shadow-lift: 0 15px 45px rgb(33 21 14 / 12%);
-	--env-pocket-inner-shadow: inset 0 4px 12px rgb(60 39 22 / 8%);
-	--env-crease-color: rgb(88 58 35 / 9%);
-	--env-edge-highlight: rgb(255 247 234 / 35%);
+	--env-shadow-ambient: 0 40px 100px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)};
+	--env-shadow-lift: 0 15px 45px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.12)};
+	--env-pocket-inner-shadow: inset 0 4px 12px
+		#{color.change(sys-color.$sys-color-coffee-800, $alpha: 0.08)};
+	--env-crease-color: #{color.change(sys-color.$sys-color-coffee-800, $alpha: 0.09)};
+	--env-edge-highlight: #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.35)};
 
 	// ── Geometry Overrides (Curved Signature) ──
 	--env-flap-path: polygon(0 0, 100% 0, 100% 12%, 50% 100%, 0 12%);
@@ -83,10 +86,13 @@
 		#{sys-color.$sys-color-coffee-800} 100%
 	);
 	--env-name-animation: goldshimmer 8s ease-in-out infinite alternate;
-	--env-deboss-depth-1: 0 -1.5px 0.5px rgb(0 0 0 / 22%);
-	--env-deboss-depth-2: 0 1px 0 rgb(255 255 255 / 25%);
+	--env-name-weight: 600;
+	--env-name-spacing: 0.05em;
+	--env-deboss-depth-1: 0 -1.5px 0.5px
+		#{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.22)};
+	--env-deboss-depth-2: 0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.25)};
 
-	// ── Layout Relocation ──
+	// ── Hook Conversions (Abstracted Layout Variables) ──
 	--env-tease-header-y: 0;
 	--env-tease-footer-y: 0;
 	--env-seal-apex-y: 52%;
@@ -95,14 +101,28 @@
 	--env-header-width: min(100%, 21rem);
 	--env-header-text-align: center;
 	--env-name-offset-x: 0;
-	--env-name-rotation: 0;
+	--env-name-rotation: 0deg;
 	--env-details-offset-x: 0;
 	--env-details-max-width: 18.5rem;
 	--env-details-text-align: center;
-	--env-details-rotation: 0;
+	--env-details-rotation: 0deg;
 	--env-stamp-justify: center;
 	--env-stamp-offset-x: 0;
 	--env-label-offset-x: 0;
+	--env-divider-margin-left: 0;
+	--env-label-font: #{sys-type.$sys-font-display-hacienda};
+	--env-stamp-font: #{sys-type.$sys-font-display-hacienda};
+	--env-stamp-bg: linear-gradient(
+		135deg,
+		#{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.82)},
+		#{color.change(sys-color.$sys-color-coffee-200, $alpha: 0.44)}
+	);
+	--env-stamp-border: 1px solid #{color.change(sys-color.$sys-color-coffee-600, $alpha: 0.24)};
+	--env-stamp-opacity: 82%;
+	--env-stamp-shadow: 0 8px 18px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.1)};
+	--env-microcopy-color: #{color.change(sys-color.$sys-color-coffee-800, $alpha: 0.72)};
+	--env-microcopy-margin-top: 0.45rem;
+	--env-microcopy-padding-left: 0;
 
 	// ── Seal Overrides (Bronce Hacienda) ──
 	--env-seal-gradient: radial-gradient(
@@ -113,8 +133,10 @@
 		#{sys-color.$sys-color-coffee-900} 100%
 	);
 	--env-seal-shadow:
-		0 12px 24px rgb(29 18 11 / 42%), inset 0 -4px 9px rgb(17 10 6 / 34%),
-		inset 0 3px 10px rgb(255 244 222 / 38%), 0 0 0 1px rgb(205 160 92 / 24%);
+		0 12px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.42)},
+		inset 0 -4px 9px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.34)},
+		inset 0 3px 10px #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.38)},
+		0 0 0 1px #{color.change(sys-color.$sys-color-gold-500, $alpha: 0.24)};
 	--env-seal-icon-color: #{color.mix(
 			sys-color.$sys-color-gold-100,
 			sys-color.$sys-color-champagne-50,
@@ -126,158 +148,15 @@
 			45%
 		)};
 
-	// ── Specialized Selectors ──
-	.envelope-stamp-area {
-		display: flex;
-		justify-content: var(--env-stamp-justify);
-		width: 100%;
-		transform: translateX(var(--env-stamp-offset-x));
-		margin-bottom: 0.35rem;
-	}
-
-	.envelope-manifest-label {
-		display: block;
-		font-family: #{sys-type.$sys-font-display-hacienda};
-		letter-spacing: 0.25em;
-		font-weight: 500;
-		font-size: 0.72rem;
-		opacity: 35%;
-		text-transform: uppercase;
-		transform: translateX(var(--env-label-offset-x));
-	}
-
-	.envelope-name {
-		opacity: 100%;
-		font-weight: 600;
-		letter-spacing: 0.05em;
-		text-shadow: var(--env-deboss-depth-1), var(--env-deboss-depth-2);
-	}
-
-	.envelope-stamp {
-		font-family: #{sys-type.$sys-font-display-hacienda};
-		border: 1px solid rgb(132 97 56 / 24%);
-		background: linear-gradient(135deg, rgb(255 248 236 / 82%), rgb(224 205 178 / 44%));
-		border-radius: 999px;
-		opacity: 82%;
-		box-shadow: 0 8px 18px rgb(44 28 17 / 10%);
-
-		span {
-			font-size: 0.74rem;
-			letter-spacing: 0.22em;
-			font-weight: 500;
-		}
-
-		small {
-			font-size: 0.6rem;
-			opacity: 60%;
-			letter-spacing: 0.05em;
-
-			&::before {
-				content: '|';
-				margin-right: 0.65rem;
-				opacity: 40%;
-			}
-		}
-	}
-
-	.tease-divider {
-		margin-left: 0;
-	}
-
-	.envelope-microcopy {
-		margin-top: 0.45rem;
-		padding-left: 0;
-		text-align: center;
-		color: rgb(84 61 40 / 72%);
-	}
-
 	@include mixins.respond-below(md) {
 		--env-tease-header-y: -0.85rem;
 		--env-tease-footer-y: 0.2rem;
 		--env-seal-apex-y: 45.5%;
 		--env-header-width: min(100%, 19rem);
-		--env-name-offset-x: 0;
-		--env-name-rotation: 0deg;
-		--env-details-offset-x: 0;
 		--env-details-max-width: min(100%, 18rem);
-		--env-details-text-align: center;
-		--env-details-rotation: 0deg;
-		--env-stamp-offset-x: 0;
-		--env-label-offset-x: 0;
-
-		.envelope-stamp-area,
-		.tease-content-bottom {
-			justify-content: center;
-			align-items: center;
-			transform: none;
-		}
-
-		.envelope-manifest-label,
-		.envelope-microcopy {
-			transform: none;
-			text-align: center;
-			padding-left: 0;
-		}
-
-		.envelope-name {
-			opacity: 100%;
-		}
-
-		.envelope-stamp {
-			box-shadow: 0 6px 12px rgb(44 28 17 / 8%);
-		}
-
-		.tease-divider {
-			margin-left: 0;
-		}
-
-		.envelope-tooltip {
-			--env-tooltip-bg: rgb(255 250 242 / 96%);
-			--env-tooltip-border: rgb(146 107 58 / 16%);
-
-			box-shadow: 0 8px 18px rgb(41 25 12 / 10%);
-		}
-	}
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Seal Variants (Decoupled from Base)
-   ────────────────────────────────────────────────────────────────────────── */
-
-.envelope-seal-button--ribbon .envelope-seal-button__visual {
-	border-radius: var(--env-seal-radius, 18px);
-}
-
-.envelope-seal-button--flower .envelope-seal-button__visual {
-	border-radius: var(--env-seal-radius, 42% 58% 46% 54% / 48% 40% 60% 52%);
-}
-
-.envelope-seal-button--monogram .envelope-seal-button__visual {
-	border: var(--env-seal-border, 1px solid rgb(255 255 255 / 22%));
-	box-shadow:
-		var(--env-seal-shadow, none),
-		inset 0 0 0 1px rgb(255 255 255 / 10%);
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Premium Typography Utilities
-   ────────────────────────────────────────────────────────────────────────── */
-
-.envelope-name,
-.envelope-card__name {
-	&[data-material='foil-gold'] {
-		--env-name-gradient: #{ornamental.$foil-gold-gradient};
-
-		background: var(--env-name-gradient);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 1px 1px rgb(0 0 0 / 20%));
-	}
-
-	&[data-material='debossed'] {
-		text-shadow:
-			var(--env-deboss-depth-1, 0 -1px 0 rgb(0 0 0 / 20%)),
-			var(--env-deboss-depth-2, 0 1px 0 rgb(255 255 255 / 30%));
+		--env-stamp-shadow: 0 6px 12px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.08)};
+		--env-tooltip-bg: #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.96)};
+		--env-tooltip-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.16)};
 	}
 }
 
@@ -300,7 +179,7 @@
 		#{sys-color.$sys-color-floral-300},
 		#{sys-color.$sys-color-taupe-500}
 	);
-	--env-seal-icon-color: rgb(0 0 0 / 25%);
+	--env-seal-icon-color: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.25)};
 	--env-name-gradient: linear-gradient(
 		75deg,
 		#{sys-color.$sys-color-taupe-500} 0%,
