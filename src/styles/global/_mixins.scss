@@ -13,6 +13,30 @@
 	}
 }
 
+@mixin respond-below($breakpoint) {
+	@if map.has-key(spacing-tokens.$breakpoints, $breakpoint) {
+		$max-width: map.get(spacing-tokens.$breakpoints, $breakpoint) - 1px;
+
+		@media (max-width: #{$max-width}) {
+			@content;
+		}
+	} @else {
+		@error "Breakpoint `#{$breakpoint}` does not exist in tokens.$breakpoints.";
+	}
+}
+
+@mixin reduced-motion {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+@mixin short-viewport($max-height: 500px) {
+	@media (orientation: landscape) and (height <= #{$max-height}) {
+		@content;
+	}
+}
+
 @mixin typography($variant) {
 	@if map.has-key(typography-tokens.$authoring-scale, $variant) {
 		$typography-styles: map.get(typography-tokens.$authoring-scale, $variant);

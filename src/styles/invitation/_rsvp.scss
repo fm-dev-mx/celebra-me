@@ -30,7 +30,10 @@
 	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb), 0.22);
 	--rsvp-button-shadow-rest: 0 5px 16px rgb(var(--color-text-primary-rgb), 0.24);
 	--rsvp-button-shadow-hover: 0 9px 24px rgb(var(--color-text-primary-rgb), 0.3);
-	--rsvp-button-bg-hover: var(--color-action-primary-hover, rgb(var(--color-action-primary-rgb), 0.9));
+	--rsvp-button-bg-hover: var(
+		--color-action-primary-hover,
+		rgb(var(--color-action-primary-rgb), 0.9)
+	);
 	--rsvp-button-filter-hover: none;
 
 	// Glassmorphism Base
@@ -481,44 +484,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.rsvp {
-		&__field {
-			input[type='text'],
-			input[type='number'],
-			textarea {
-				transition: none;
-			}
-		}
-
-		&__radio-group label {
-			transition: none;
-		}
-
-		&__button {
-			transition: none;
-
-			&:hover:not(:disabled),
-			&:active:not(:disabled) {
-				transform: none;
-				filter: none;
-			}
-
-			&--loading::after {
-				animation: none;
-				border-top-color: var(--color-action-accent);
-			}
-		}
-	}
-}
-
-@keyframes rsvp-spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
+@include mixins.reduced-motion {
 	.rsvp {
 		&__field {
 			input[type='text'],
