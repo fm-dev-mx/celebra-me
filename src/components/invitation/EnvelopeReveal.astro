@@ -81,7 +81,7 @@ const sealIconMap = {
 					<h2 class="envelope-card__name" data-material={titleMaterial}>{name}</h2>
 					{guestName && (
 						<div class="envelope-card__guest-personalized">
-							<p class="personalized-label">Especialmente para:</p>
+							<p class="personalized-label">Entrega especial para:</p>
 							<strong class="personalized-name" data-material={titleMaterial}>{guestName}</strong>
 						</div>
 					)}
@@ -135,16 +135,16 @@ const sealIconMap = {
 
 				<div class="tease-content-bottom">
 					<h2 class="envelope-name" data-material={titleMaterial}>{name}</h2>
-					{guestName && (
-						<div class="envelope-guest-personalized">
-							<p class="personalized-label">Especialmente para:</p>
-							<strong class="personalized-name" data-material={titleMaterial}>{guestName}</strong>
-						</div>
-					)}
 					<div class="tease-details-group">
 						<div class="tease-divider"></div>
 						<p class="envelope-details" data-material={detailMaterial}>{formattedDate} • {city}</p>
 					</div>
+					{guestName && (
+						<div class="envelope-guest-personalized">
+							<p class="personalized-label">Entrega especial para:</p>
+							<strong class="personalized-name">{guestName}</strong>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
