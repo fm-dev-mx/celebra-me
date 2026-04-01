@@ -50,15 +50,15 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		background: '#F5F3EC',
 	},
 	'premiere-rose-plum': {
-		surfacePrimary: '#FAF2F4', // Porcelain Rose
-		actionPrimary: '#9B5D6B', // Rose Couture
-		actionAccent: '#C9A86C', // Old Gold
-		surfaceDark: '#2D242E', // Nocturnal Plum
+		surfacePrimary: '#F7ECEE', // Soft Botanical Blush
+		actionPrimary: '#D4A5A5', // Warm Blush Pink
+		actionAccent: '#D4AF37', // Champagne Gold
+		surfaceDark: '#443636', // Architectural Mocha
 		surfaceSoft: '#FFFFFF',
-		textPrimary: '#2D242E',
-		primary: '#FAF2F4',
-		accent: '#C9A86C',
-		background: '#FAF2F4',
+		textPrimary: '#443636',
+		primary: '#F7ECEE',
+		accent: '#D4AF37',
+		background: '#F7ECEE',
 	},
 	'jewelry-box': {
 		surfacePrimary: '#FDF7F2',

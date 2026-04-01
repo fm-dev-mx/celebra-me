@@ -219,27 +219,27 @@
 );
 @include premiere-preset(
 	'.theme-preset--premiere-rose-plum',
-	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 82%),
-	// surface-primary (Rose Poudre Profundo)
-	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 90%),
-	// surface-soft (Blanco Rosado)
-	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-500, 45%),
-	// surface-dark (Ciruela Elegante)
-	color.mix(sys.$sys-color-rose-400, sys.$sys-color-neutral-0, 55%),
-	// action-primary (Rosa Profundo)
-	color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-400, 45%),
-	// action-accent (Ciruela Adulta)
-	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-500, 50%),
-	// text-primary
-	sys.$sys-color-champagne-50,
-	// text-on-dark
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-floral-300, 88%),
+	// surface-primary (Soft Botanical Blush)
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-floral-50, 96%),
+	// surface-soft (Luminous Porcelain)
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 20%),
+	// surface-dark (Architectural Mocha)
+	color.mix(sys.$sys-color-floral-300, sys.$sys-color-neutral-0, 75%),
+	// action-primary (Warm Blush Pink)
 	sys.$sys-color-champagne-500,
-	// metal-mid (Old Gold Genuino)
+	// action-accent (Champagne Gold)
+	sys.$sys-color-taupe-700,
+	// text-primary (Deep Espresso)
+	sys.$sys-color-champagne-50,
+	// text-on-dark (Champagne White)
+	sys.$sys-color-champagne-300,
+	// metal-mid (Brushed Gold)
 	sys.$sys-color-champagne-700,
-	// metal-deep (Gold Profundo Noble)
+	// metal-deep (Burnished Bronze)
 	sys.$sys-color-champagne-200,
-	// metal-edge (Brillo Sutil)
-	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-700, 52%),
+	// metal-edge (Glinting Highlight)
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 25%),
 	// env-shell-start
 	sys.$sys-color-onyx-950 // env-shell-end
 );
@@ -297,16 +297,12 @@
 	);
 }
 
-// ✨ TOP PREMIUM REFINEMENTS: Rose Plum Nocturnal Editorial
+// ✨ TOP PREMIUM REFINEMENTS: Blush & Champagne Couture
 .theme-preset--premiere-rose-plum {
 	--shadow-premium:
 		0 2px 4px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.08)},
 		0 12px 32px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.12)},
-		0 32px 72px
-			#{color.change(
-				color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-500, 50%),
-				$alpha: 0.14
-			)};
+		0 32px 72px #{color.change(sys.$sys-color-floral-500, $alpha: 0.14)};
 	--hero-card-shadow-ambient:
 		0 40px 100px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.22)},
 		0 15px 40px #{color.change(sys.$sys-color-champagne-500, $alpha: 0.18)};
@@ -315,27 +311,28 @@
 	--glass-saturate: 185%;
 	--hero-card-border-hairline: linear-gradient(
 		135deg,
-		#{color.change(
-				color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-500, 50%),
-				$alpha: 0.5
-			)}
-			0%,
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.55)} 0%,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.15)} 50%,
 		#{color.change(sys.$sys-color-champagne-500, $alpha: 0.7)} 100%
 	);
 	--family-bg: linear-gradient(
 		160deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.75)} 0%,
-		#{color.change(sys.$sys-color-rose-300, $alpha: 0.92)} 100%
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.8)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.96)} 100%
 	);
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
-		#{color.change(sys.$sys-color-plum-400, $alpha: 0.06)} 100%
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.08)} 100%
 	);
 	--location-card-bg: linear-gradient(
 		165deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)} 0%,
-		#{color.change(sys.$sys-color-rose-300, $alpha: 0.96)} 100%
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.94)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.98)} 100%
+	);
+	--countdown-bg: linear-gradient(
+		165deg,
+		#{color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 15%)} 0%,
+		#{color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 5%)} 100%
 	);
 }

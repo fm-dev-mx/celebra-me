@@ -233,7 +233,6 @@
 		flex-direction: row;
 		justify-content: center;
 		gap: clamp(1rem, 4vw, 4rem);
-		padding: 1rem;
 		background: linear-gradient(
 			90deg,
 			transparent,
@@ -348,6 +347,7 @@
 			font-size: clamp(3.2rem, 14vw, 8.5rem);
 			text-align: center;
 			mix-blend-mode: normal;
+			margin-bottom: 20svh;
 			z-index: 10;
 			text-shadow:
 				0 10px 40px rgb(var(--color-surface-dark-rgb) / 80%),
@@ -356,7 +356,7 @@
 		}
 
 		.invitation-hero__details {
-			bottom: 6svh;
+			bottom: 50svh;
 			background: linear-gradient(
 				90deg,
 				transparent,
