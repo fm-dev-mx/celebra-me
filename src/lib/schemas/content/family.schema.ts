@@ -1,4 +1,5 @@
 import { z } from 'astro:content';
+import { FAMILY_LAYOUT_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const familySchema = z
@@ -39,6 +40,6 @@ export const familySchema = z
 			)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
-		layoutVariant: z.string().optional(),
+		layoutVariant: z.enum(FAMILY_LAYOUT_VARIANTS).optional(),
 	})
 	.optional();

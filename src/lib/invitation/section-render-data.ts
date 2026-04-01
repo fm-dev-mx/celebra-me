@@ -1,5 +1,6 @@
 import type { InvitationPageData, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
 import type { ContentSectionKey } from '@/lib/adapters/types';
+import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 type QuoteProps = {
 	text: NonNullable<InvitationPageData['sections']['quote']>['text'];
@@ -91,7 +92,7 @@ export type InvitationSectionRenderDescriptor =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
-				variant: string;
+				variant: SharedSectionVariant;
 			};
 	  }
 	| { kind: 'quote'; props: QuoteProps }

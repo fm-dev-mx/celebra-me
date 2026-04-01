@@ -1,5 +1,5 @@
 import { z } from 'astro:content';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import { HERO_LAYOUT_VARIANTS, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const heroSchema = z.object({
@@ -11,6 +11,5 @@ export const heroSchema = z.object({
 	backgroundImage: AssetSchema,
 	portrait: AssetSchema.optional(),
 	variant: z.enum(THEME_PRESETS).optional(),
-	layoutVariant: z.string().optional(),
-	focalPoint: z.string().optional(),
+	layoutVariant: z.enum(HERO_LAYOUT_VARIANTS).optional(),
 });

@@ -1,8 +1,10 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	CountdownVariant,
+	FamilyLayoutVariant,
 	IndicationIconName,
 	IndicationStyleVariant,
+	HeroLayoutVariant,
 	ItineraryVariant,
 	LocationMapStyle,
 	LocationVariant,
@@ -41,7 +43,7 @@ export interface HeroViewModel {
 	portraitAlt?: ImageAsset;
 	family?: ImageAsset;
 	variant?: ThemePreset;
-	layoutVariant?: string;
+	layoutVariant?: HeroLayoutVariant;
 }
 
 export interface Coordinate {
@@ -248,7 +250,7 @@ export interface InvitationViewModel {
 			labels?: FamilyLabels;
 			celebrantName: string;
 			variant?: SharedSectionVariant;
-			layoutVariant?: string;
+			layoutVariant?: FamilyLayoutVariant;
 		};
 		gallery?: {
 			title: string;

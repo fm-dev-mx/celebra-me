@@ -3,6 +3,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { HeroLayoutVariant, ThemePreset } from '@/lib/theme/theme-contract';
 import '@/styles/invitation/_hero.scss';
 
 interface Props {
@@ -15,10 +16,9 @@ interface Props {
 	venueName: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
-	variant?: string;
-	layoutVariant?: string;
+	variant?: ThemePreset;
+	layoutVariant?: HeroLayoutVariant;
 	guestName?: string;
-	focalPoint?: string;
 }
 
 const {
@@ -31,10 +31,9 @@ const {
 	venueName,
 	backgroundImage,
 	portrait,
-	variant = 'standard',
+	variant,
 	layoutVariant,
 	guestName,
-	focalPoint,
 } = Astro.props;
 
 // Distinguish between ImageAsset (wrapper with .src) and ImageMetadata (Astro object)
@@ -61,7 +60,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 ---
 
 <section id="inicio" class="invitation-hero" data-variant={variant} data-layout-variant={layoutVariant}>
-	<div class="invitation-hero__background" style={focalPoint ? `--hero-bg-position: ${focalPoint}` : undefined}>
+	<div class="invitation-hero__background">
 		<Image
 			src={bgSrc}
 			alt={name}

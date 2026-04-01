@@ -5,6 +5,7 @@ import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import FamilyDecorations from './FamilyDecorations.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { FamilyLayoutVariant, SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	parents?: {
@@ -40,7 +41,8 @@ interface Props {
 		childrenTitle?: string;
 		parentsTitle?: string;
 	};
-	variant?: string;
+	variant?: SharedSectionVariant;
+	layoutVariant?: FamilyLayoutVariant;
 }
 
 interface FamilyEntry {
