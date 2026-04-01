@@ -8,14 +8,43 @@
 .invitation-interlude[data-variant^='premiere-'] {
 	--interlude-overlay-opacity: 0.28;
 
+	// Safer defaults for portrait editorial photography.
+	// Keep the face visible and avoid excessive crop.
+	--interlude-image-scale: 1.02;
+	--interlude-image-hover-scale: 1.05;
+
 	overflow: hidden;
 	position: relative;
 
 	.invitation-interlude__image {
 		filter: saturate(0.92) contrast(1.1) brightness(0.8);
-		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.2);
 		transition: transform 1.8s tokens.$ease-premium;
 		will-change: transform;
+	}
+
+	// On very wide screens the portrait image gets cropped hard.
+	// Lift the focal point more aggressively.
+	@media (aspect-ratio >= 16 / 9) {
+		--interlude-focal-y: 9%;
+		--interlude-image-scale: 1.01;
+		--interlude-image-hover-scale: 1.03;
+	}
+
+	@media (aspect-ratio >= 21 / 9) {
+		--interlude-focal-y: 7%;
+		--interlude-image-scale: 1;
+		--interlude-image-hover-scale: 1.02;
+	}
+
+	// Portrait and narrow screens can tolerate a slightly lower focal point.
+	@media (aspect-ratio <= 4 / 5) {
+		--interlude-focal-y: 18%;
+		--interlude-image-scale: 1.03;
+		--interlude-image-hover-scale: 1.05;
+	}
+
+	@media (aspect-ratio <= 9 / 16) {
+		--interlude-focal-y: 22%;
 	}
 
 	&::before {
@@ -39,7 +68,16 @@
 		opacity: var(--interlude-overlay-opacity);
 	}
 
-	&:hover .invitation-interlude__image {
-		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.05);
+	// Hover only where hover actually exists.
+	@media (hover: hover) and (pointer: fine) {
+		&:hover .invitation-interlude__image {
+			transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
+				scale(var(--interlude-image-hover-scale));
+		}
+	}
+
+	// Avoid unnecessary zoom behavior on touch devices.
+	@media (hover: none), (pointer: coarse) {
+		--interlude-image-hover-scale: var(--interlude-image-scale);
 	}
 }

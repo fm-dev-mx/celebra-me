@@ -281,7 +281,7 @@
         }
     },
     "music": {
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1775084991/mi-nina-hermosa_zqi8ry.m4a",
         "autoPlay": true,
         "title": "Música de fondo: Edición Premiere",
         "revealMode": "envelope"

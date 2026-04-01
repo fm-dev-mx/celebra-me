@@ -32,11 +32,7 @@
 
 			path {
 				filter: drop-shadow(
-					0 0 8px
-						var(
-							--itinerary-line-color,
-							var(--color-action-primary)
-						)
+					0 0 8px var(--itinerary-line-color, var(--color-action-primary))
 				);
 			}
 		}
@@ -77,10 +73,7 @@
 			background: linear-gradient(
 				to var(--direction, right),
 				transparent,
-				var(
-					--itinerary-line-color,
-					var(--color-action-primary)
-				)
+				var(--itinerary-line-color, var(--color-action-primary))
 			);
 
 			&:last-child {
@@ -91,16 +84,9 @@
 		.flourish-diamond {
 			width: 8px;
 			height: 8px;
-			background: var(
-				--itinerary-line-color,
-				var(--color-action-primary)
-			);
+			background: var(--itinerary-line-color, var(--color-action-primary));
 			transform: rotate(45deg);
-			box-shadow: 0 0 10px
-				var(
-					--itinerary-line-color,
-					var(--color-action-primary)
-				);
+			box-shadow: 0 0 10px var(--itinerary-line-color, var(--color-action-primary));
 		}
 	}
 
@@ -181,10 +167,7 @@
 		font-size: 0.95rem;
 		text-transform: uppercase;
 		letter-spacing: 0.25em;
-		color: var(
-			--itinerary-item-time-color,
-			var(--color-action-primary)
-		);
+		color: var(--itinerary-item-time-color, var(--color-action-primary));
 		font-weight: 500;
 		margin-bottom: 0.5rem;
 	}
@@ -234,10 +217,7 @@
 	&__item-icon-inner {
 		width: 28px;
 		height: 28px;
-		color: var(
-			--itinerary-icon-color,
-			var(--color-action-primary)
-		);
+		color: var(--itinerary-icon-color, var(--color-action-primary));
 		display: flex;
 		align-items: center;
 		justify-content: center;

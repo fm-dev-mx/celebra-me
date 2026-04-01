@@ -6,6 +6,9 @@
 
 .itinerary[data-variant='editorial'],
 .itinerary[data-variant^='premiere-'] {
+	--itinerary-line-color: var(--color-action-primary);
+	--itinerary-accent: var(--color-action-accent);
+
 	background: var(--itinerary-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 
@@ -53,9 +56,10 @@
 	}
 
 	.itinerary__animated-line-container svg path {
-		stroke: var(--itinerary-accent);
+		stroke: var(--itinerary-line-color, var(--color-action-primary));
+		stroke-width: 2;
+		opacity: 60%;
 		filter: none;
-		opacity: 40%;
 	}
 }
 
