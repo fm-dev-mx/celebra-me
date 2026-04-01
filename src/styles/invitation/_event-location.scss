@@ -89,12 +89,7 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		opacity: 0%;
-
-		&.is-visible {
-			animation: fadeInUp var(--duration-premium) var(--ease-out) forwards;
-		}
-
+		opacity: 100%;
 		position: relative;
 		overflow: hidden;
 
@@ -113,6 +108,19 @@
 			transform: translateY(-4px);
 			box-shadow: var(--shadow-premium);
 		}
+	}
+
+	&.has-motion &__card {
+		will-change: transform, box-shadow;
+	}
+
+	&.has-motion.is-visible &__card--ceremony {
+		animation: fadeInUpSoft var(--duration-premium) var(--ease-out) both;
+	}
+
+	&.has-motion.is-visible &__card--reception {
+		animation: fadeInUpSoft var(--duration-premium) var(--ease-out) both;
+		animation-delay: 0.1s;
 	}
 
 	&__card-image-outer-frame {
@@ -348,7 +356,7 @@
 		&--maps,
 		&--waze {
 			background: rgb(var(--color-action-accent-rgb), 0.1);
-			color: var(--color-text-primary); 
+			color: var(--color-text-primary);
 			border-color: rgb(var(--color-action-accent-rgb), 0.5);
 			backdrop-filter: blur(12px);
 		}
@@ -400,11 +408,7 @@
 
 	&__divider {
 		height: 1px;
-		background: radial-gradient(
-			circle,
-			var(--color-action-accent) 0%,
-			transparent 70%
-		);
+		background: radial-gradient(circle, var(--color-action-accent) 0%, transparent 70%);
 		opacity: 30%;
 		margin-bottom: 4rem;
 	}
@@ -484,12 +488,7 @@
 	&__signature-line {
 		width: 60px;
 		height: 1px;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			var(--color-action-accent),
-			transparent
-		);
+		background: linear-gradient(90deg, transparent, var(--color-action-accent), transparent);
 	}
 }
 
@@ -506,8 +505,30 @@
 	}
 }
 
+@keyframes fadeInUpSoft {
+	from {
+		opacity: 85%;
+		transform: translateY(12px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
 /* Utility to hide elements initially but allow JS to reveal them */
 .u-hidden-initially {
 	/* stylelint-disable-next-line declaration-no-important */
 	display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.event-location {
+		&__card {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+			transition: none;
+		}
+	}
 }
