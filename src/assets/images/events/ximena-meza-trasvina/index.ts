@@ -2,11 +2,11 @@ import type { ImageMetadata } from 'astro';
 
 import type { EventAssets } from '@/lib/assets/asset-registry';
 
+import portrait from './portrait.webp';
 import portraitAlt from './portrait-alt.webp';
 import family from './family.webp';
 import signature from './signature.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
-import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
@@ -30,13 +30,13 @@ type EventModuleAssets = Partial<EventAssets> & {
 
 export const assets: EventModuleAssets = {
 	hero: heroBackground,
-	portrait: gallery01,
+	portrait: portrait,
 	portraitAlt,
 	family,
 	jardin: gallery03,
 	signature,
 	gallery: [
-		gallery01,
+		portrait,
 		gallery02,
 		gallery03,
 		gallery04,
