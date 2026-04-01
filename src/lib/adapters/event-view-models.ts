@@ -69,6 +69,18 @@ export function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 								data.envelope.closedPalette?.background || 'surfacePrimary',
 								normalizedPreset,
 							),
+							primary: data.envelope.closedPalette?.primary
+								? resolveColorToken(
+										data.envelope.closedPalette.primary,
+										normalizedPreset,
+									)
+								: undefined,
+							accent: data.envelope.closedPalette?.accent
+								? resolveColorToken(
+										data.envelope.closedPalette.accent,
+										normalizedPreset,
+									)
+								: undefined,
 						},
 					}
 				: undefined,

@@ -130,6 +130,8 @@ function buildWrapperData(
 	if (envelope.enabled && envelope.data) {
 		const { colors } = envelope.data;
 		if (colors.background) overrides['--env-bg'] = colors.background;
+		if (colors.primary) overrides['--env-primary'] = colors.primary;
+		if (colors.accent) overrides['--env-accent'] = colors.accent;
 	}
 
 	const overrideStyles = Object.entries(overrides)

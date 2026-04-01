@@ -38,6 +38,8 @@ export interface HeroViewModel {
 	venueName: string;
 	backgroundImage: ImageAsset;
 	portrait?: ImageAsset;
+	portraitAlt?: ImageAsset;
+	family?: ImageAsset;
 	variant?: ThemePreset;
 	layoutVariant?: string;
 }
@@ -171,6 +173,8 @@ export interface EnvelopeViewModel {
 		variant?: ThemePreset;
 		colors: {
 			background: string;
+			primary?: string;
+			accent?: string;
 		};
 	};
 }
