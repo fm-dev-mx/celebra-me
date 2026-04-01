@@ -11,4 +11,8 @@ export const THEME_PRESETS = [
 export type EventType = (typeof EVENT_TYPES)[number];
 export type ThemePreset = (typeof THEME_PRESETS)[number];
 
+export const LOCATION_VARIANT_PRESET_COMPATIBILITY = {
+	editorial: ['editorial', 'top-premium-floral'],
+} as const satisfies Partial<Record<string, readonly ThemePreset[]>>;
+
 export * from './theme-variants';

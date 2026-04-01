@@ -121,6 +121,40 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
+	it('rejects unsupported preset and location variant pairings', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				theme: {
+					primaryColor: '#d4af37',
+					fontFamily: 'serif',
+					preset: 'jewelry-box',
+				},
+				sectionStyles: {
+					location: { variant: 'editorial' },
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
+	it('allows editorial location styling when the floral preset publishes the required tokens', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				theme: {
+					primaryColor: '#d4af37',
+					fontFamily: 'serif',
+					preset: 'top-premium-floral',
+				},
+				sectionStyles: {
+					location: { variant: 'editorial' },
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+	});
+
 	it('rejects invalid internal asset keys in event content', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
