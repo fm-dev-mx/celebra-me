@@ -1,5 +1,12 @@
 // src/lib/theme/theme-variants.ts
 
+const PREMIERE_VARIANT_FAMILY = [
+	'premiere-floral',
+	'premiere-ivory-gold',
+	'premiere-sage-gold',
+	'premiere-rose-plum',
+] as const;
+
 export const QUOTE_VARIANTS = [
 	'elegant',
 	'modern',
@@ -8,7 +15,7 @@ export const QUOTE_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
+	...PREMIERE_VARIANT_FAMILY,
 	'editorial',
 ] as const;
 
@@ -20,7 +27,7 @@ export const COUNTDOWN_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
+	...PREMIERE_VARIANT_FAMILY,
 	'editorial',
 ] as const;
 
@@ -32,7 +39,7 @@ export const LOCATION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
+	...PREMIERE_VARIANT_FAMILY,
 	'editorial',
 ] as const;
 
@@ -41,7 +48,7 @@ export const SHARED_SECTION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
+	...PREMIERE_VARIANT_FAMILY,
 	'editorial',
 ] as const;
 
@@ -50,7 +57,7 @@ export const ITINERARY_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
+	...PREMIERE_VARIANT_FAMILY,
 	'editorial',
 ] as const;
 
