@@ -2,13 +2,7 @@ import type { LocationVariant } from './theme-variants';
 
 export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple'] as const;
 
-export const CLIENT_PREVIEW_THEME_PRESETS = [
-	'premiere-ivory-gold',
-	'premiere-sage-gold',
-	'premiere-rose-plum',
-] as const;
-
-export const PREMIERE_THEME_PRESETS = ['premiere-floral', ...CLIENT_PREVIEW_THEME_PRESETS] as const;
+export const PREMIERE_THEME_PRESETS = ['premiere-floral'] as const;
 
 export const THEME_PRESETS = [
 	'jewelry-box',

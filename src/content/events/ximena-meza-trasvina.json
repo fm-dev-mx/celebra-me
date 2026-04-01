@@ -4,39 +4,17 @@
     "title": "La Noche Premiere de Ximena",
     "description": "Una celebración editorial donde la elegancia floral y el brillo del rose gold presentan una noche de quince años inolvidable.",
     "theme": {
-        "preset": "premiere-ivory-gold"
+        "preset": "premiere-floral"
     },
     "sectionStyles": {
         "countdown": {
-            "variant": "premiere-floral",
-            "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
-            "variant": "premiere-floral",
             "mapStyle": "dark",
             "showFlourishes": true
         },
-        "family": {
-            "variant": "premiere-floral"
-        },
-        "gallery": {
-            "variant": "premiere-floral"
-        },
-        "gifts": {
-            "variant": "premiere-floral"
-        },
-        "itinerary": {
-            "variant": "premiere-floral"
-        },
-        "thankYou": {
-            "variant": "premiere-floral"
-        },
-        "footer": {
-            "variant": "premiere-floral"
-        },
         "rsvp": {
-            "variant": "premiere-floral",
             "labels": {
                 "name": "Tu nombre en la lista *",
                 "guestCount": "Número de acompañantes",
@@ -50,8 +28,7 @@
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "layoutVariant": "premium-portrait",
-        "variant": "premiere-floral"
+        "layoutVariant": "premium-portrait"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
@@ -201,7 +178,6 @@
             "type": "interlude",
             "image": "gallery04",
             "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
-            "variant": "premiere-floral",
             "height": "screen",
             "focalPoint": "center 15%"
         },
@@ -213,7 +189,6 @@
             "type": "interlude",
             "image": "gallery12",
             "alt": "Jardín privado iluminado para la gala",
-            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -224,7 +199,6 @@
             "type": "interlude",
             "image": "interlude01",
             "alt": "Detalle editorial de texturas y perlas",
-            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -235,7 +209,6 @@
             "type": "interlude",
             "image": "gallery09",
             "alt": "Brillo rose metal cinematográfico",
-            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -246,7 +219,6 @@
             "type": "interlude",
             "image": "gallery10",
             "alt": "Explosión artística de destellos en el jardín",
-            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -261,7 +233,6 @@
             "type": "interlude",
             "image": "interludeNew01",
             "alt": "Retrato editorial final",
-            "variant": "premiere-floral",
             "height": "screen",
             "focalPoint": "center 20%"
         },
@@ -275,7 +246,6 @@
         "sealStyle": "wax",
         "sealIcon": "flower",
         "microcopy": "Abre Tu Invitación",
-        "variant": "premiere-floral",
         "closedPalette": {
             "accent": "surfaceDark"
         }
@@ -283,8 +253,7 @@
     "music": {
         "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1775084991/mi-nina-hermosa_zqi8ry.m4a",
         "autoPlay": true,
-        "title": "Música de fondo: Edición Premiere",
-        "revealMode": "envelope"
+        "title": "Música de fondo: Edición Premiere"
     },
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}"

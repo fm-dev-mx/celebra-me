@@ -17,7 +17,6 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 
 const { eventType, slug } = Astro.params;
 const inviteId = Astro.url.searchParams.get('invite');
-const previewTheme = Astro.url.searchParams.get('previewTheme');
 const eventOverrideStyles = import.meta.glob('/src/styles/events/*.scss');
 
 const eventEntry = await getRoutableEventEntry(slug as string, eventType as string);
@@ -31,9 +30,6 @@ if (eventType !== canonicalEventType) {
 	const canonicalUrl = new URL(`/${canonicalEventType}/${slug as string}`, Astro.url);
 	if (inviteId) {
 		canonicalUrl.searchParams.set('invite', inviteId);
-	}
-	if (previewTheme) {
-		canonicalUrl.searchParams.set('previewTheme', previewTheme);
 	}
 	return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search, 301);
 }
@@ -59,7 +55,6 @@ const pageData = prepareInvitationPageData({
 	eventEntry,
 	slug: slug as string,
 	guestContext,
-	previewTheme,
 });
 ---
 

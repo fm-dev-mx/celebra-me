@@ -1,11 +1,6 @@
 // src/lib/theme/theme-variants.ts
 
-const PREMIERE_VARIANT_FAMILY = [
-	'premiere-floral',
-	'premiere-ivory-gold',
-	'premiere-sage-gold',
-	'premiere-rose-plum',
-] as const;
+const PREMIERE_VARIANT_FAMILY = ['premiere-floral'] as const;
 
 export const QUOTE_VARIANTS = [
 	'elegant',

@@ -27,39 +27,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		accent: '#D4A5A5', // Legacy/Default theme accent
 		background: '#FBEDED',
 	},
-	'premiere-ivory-gold': {
-		surfacePrimary: '#FFFDF9',
-		actionPrimary: '#C5A059',
-		actionAccent: '#A6894B',
-		surfaceDark: '#2D241E',
-		surfaceSoft: '#FFFFFF',
-		textPrimary: '#2D241E',
-		primary: '#FFFDF9',
-		accent: '#A6894B',
-		background: '#FFFDF9',
-	},
-	'premiere-sage-gold': {
-		surfacePrimary: '#F5F3EC', // Porcelain Sage
-		actionPrimary: '#8A9682', // Architectural Sage
-		actionAccent: '#D1B680', // Champagne Metal
-		surfaceDark: '#3E453C', // Charcoal Botanical
-		surfaceSoft: '#FFFFFF',
-		textPrimary: '#3E453C',
-		primary: '#F5F3EC',
-		accent: '#D1B680',
-		background: '#F5F3EC',
-	},
-	'premiere-rose-plum': {
-		surfacePrimary: '#F7ECEE', // Soft Botanical Blush
-		actionPrimary: '#D4A5A5', // Warm Blush Pink
-		actionAccent: '#D4AF37', // Champagne Gold
-		surfaceDark: '#443636', // Architectural Mocha
-		surfaceSoft: '#FFFFFF',
-		textPrimary: '#443636',
-		primary: '#F7ECEE',
-		accent: '#D4AF37',
-		background: '#F7ECEE',
-	},
 	'jewelry-box': {
 		surfacePrimary: '#FDF7F2',
 		actionPrimary: '#1B2735',
