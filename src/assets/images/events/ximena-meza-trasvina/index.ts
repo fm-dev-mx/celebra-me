@@ -10,19 +10,17 @@ import thankYouPortrait from './thank-you-portrait.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
-import gallery05 from './ai/gallery-05.png';
-import gallery06 from './ai/gallery-06.png';
-import gallery07 from './ai/gallery-07.png';
-import gallery08 from './ai/gallery-08.png';
-import gallery09 from './ai/gallery-09.png';
-import gallery10 from './ai/gallery-10.png';
-import gallery11 from './ai/gallery-11.png';
-import gallery12 from './ai/gallery-12.png';
-import interlude01 from './ai/interlude-01.png';
-import interlude02 from './ai/interlude-02.png';
-import interlude03 from './ai/interlude-03.png';
-import interlude04 from './ai/interlude-04.png';
-import heroBackground from './ai/hero-background.png';
+import gallery05 from './ai/gallery-05.webp';
+import gallery06 from './ai/gallery-06.webp';
+import gallery07 from './ai/gallery-07.webp';
+import gallery08 from './ai/gallery-08.webp';
+import gallery09 from './ai/gallery-09.webp';
+import gallery10 from './gallery-10.webp';
+import gallery12 from './gallery-12.webp';
+import interlude01 from './ai/interlude-01.webp';
+import interlude02 from './ai/interlude-02.webp';
+import interlude04 from './interlude-04.webp';
+import heroBackground from './ai/hero-background.webp';
 
 type EventModuleAssets = Partial<EventAssets> & {
 	gallery?: ImageMetadata[];
@@ -46,12 +44,11 @@ export const assets: EventModuleAssets = {
 		gallery08,
 		gallery09,
 		gallery10,
-		gallery11,
 		gallery12,
 	],
+	gallery12,
 	interlude01,
 	interlude02,
-	interlude03,
 	interludeNew01: interlude04,
 	thankYouPortrait,
 };

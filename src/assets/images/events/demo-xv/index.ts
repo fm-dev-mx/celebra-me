@@ -14,7 +14,6 @@ import gallery07 from './gallery-07.webp';
 import gallery08 from './gallery-08.webp';
 import gallery09 from './gallery-09.webp';
 import gallery10 from './gallery-10.webp';
-import gallery11 from './gallery-11.webp';
 import gallery12 from './gallery-12.webp';
 
 export const assets = {
@@ -35,7 +34,6 @@ export const assets = {
 		gallery08,
 		gallery09,
 		gallery10,
-		gallery11,
 		gallery12,
 	],
 };
