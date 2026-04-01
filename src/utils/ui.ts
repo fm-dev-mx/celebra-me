@@ -24,12 +24,26 @@ export async function copyToClipboard(text: string, button: HTMLElement): Promis
 
 		// Visual feedback
 		const originalContent = button.innerHTML;
+		const originalAriaLabel = button.getAttribute('aria-label');
+		const originalTitle = button.getAttribute('title');
 		button.innerHTML = '<span class="copy-success">✓</span>';
 		button.classList.add('copy-success');
+		button.setAttribute('aria-label', 'Dirección copiada');
+		button.setAttribute('title', 'Dirección copiada');
 
 		setTimeout(() => {
 			button.innerHTML = originalContent;
 			button.classList.remove('copy-success');
+			if (originalAriaLabel) {
+				button.setAttribute('aria-label', originalAriaLabel);
+			} else {
+				button.removeAttribute('aria-label');
+			}
+			if (originalTitle) {
+				button.setAttribute('title', originalTitle);
+			} else {
+				button.removeAttribute('title');
+			}
 		}, 2000);
 	} catch (err) {
 		console.error('Failed to copy text: ', err);
@@ -44,8 +58,9 @@ export async function copyToClipboard(text: string, button: HTMLElement): Promis
 export function initCopyButtons(
 	selector: string = '.copy-button',
 	dataAttr: string = 'data-address',
+	root: ParentNode = document,
 ) {
-	const copyButtons = document.querySelectorAll(selector);
+	const copyButtons = root.querySelectorAll(selector);
 	copyButtons.forEach((button) => {
 		button.addEventListener('click', async () => {
 			const text = button.getAttribute(dataAttr);
@@ -60,9 +75,9 @@ export function initCopyButtons(
  * Reveals elements flagged as "iOS only".
  * @param selector CSS selector for the elements.
  */
-export function revealIOSOnly(selector: string = '[data-apple-link]') {
+export function revealIOSOnly(selector: string = '[data-apple-link]', root: ParentNode = document) {
 	if (isIOS()) {
-		const elements = document.querySelectorAll(selector);
+		const elements = root.querySelectorAll(selector);
 		elements.forEach((el) => {
 			(el as HTMLElement).classList.remove('u-hidden-initially');
 			(el as HTMLElement).style.display = 'flex';

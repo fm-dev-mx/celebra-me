@@ -1,4 +1,5 @@
 import type { InvitationPageData, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
+import type { ContentSectionKey } from '@/lib/adapters/types';
 
 type QuoteProps = {
 	text: NonNullable<InvitationPageData['sections']['quote']>['text'];
@@ -42,6 +43,10 @@ type LocationProps = {
 	variant: NonNullable<InvitationPageData['sections']['location']>['variant'];
 	mapStyle: NonNullable<InvitationPageData['sections']['location']>['mapStyle'];
 	showFlourishes: NonNullable<InvitationPageData['sections']['location']>['showFlourishes'];
+	nextSectionLink?: {
+		href: string;
+		label?: string;
+	};
 };
 
 type ItineraryProps = {
@@ -65,6 +70,18 @@ type ThankYouProps = {
 };
 
 type InterludeBlock = Extract<InvitationRenderPlanItem, { type: 'interlude' }>;
+
+const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {
+	quote: { href: '#quote-section', label: 'Mensaje' },
+	family: { href: '#family-section', label: 'Familia' },
+	gallery: { href: '#galeria', label: 'Galería' },
+	countdown: { href: '#countdown', label: 'Cuenta regresiva' },
+	location: { href: '#event-location', label: 'Ubicación' },
+	itinerary: { href: '#itinerary', label: 'Itinerario' },
+	rsvp: { href: '#rsvp', label: 'Pases y Confirmación' },
+	gifts: { href: '#regalos', label: 'Regalos' },
+	thankYou: { href: '#thank-you-section', label: 'Despedida' },
+};
 
 export type InvitationSectionRenderDescriptor =
 	| {
@@ -111,6 +128,7 @@ function renderInterlude(
 function renderSection(
 	pageData: InvitationPageData,
 	section: string,
+	nextSectionLink?: LocationProps['nextSectionLink'],
 ): InvitationSectionRenderDescriptor | null {
 	const { sections, rsvp } = pageData;
 
@@ -181,6 +199,7 @@ function renderSection(
 							variant: sections.location.variant,
 							mapStyle: sections.location.mapStyle,
 							showFlourishes: sections.location.showFlourishes,
+							nextSectionLink,
 						},
 					}
 				: null;
@@ -229,6 +248,8 @@ function renderSection(
 function renderBlock(
 	pageData: InvitationPageData,
 	block: InvitationRenderPlanItem,
+	index: number,
+	renderPlan: InvitationRenderPlanItem[],
 ): InvitationSectionRenderDescriptor | null {
 	if (block.type === 'interlude') {
 		return renderInterlude(pageData, block);
@@ -246,13 +267,33 @@ function renderBlock(
 			: null;
 	}
 
-	return renderSection(pageData, block.section);
+	const nextSectionLink =
+		block.type === 'section' && block.section === 'location'
+			? findNextSectionLink(renderPlan, index)
+			: undefined;
+
+	return renderSection(pageData, block.section, nextSectionLink);
 }
 
 export function buildInvitationSectionRenderDescriptors(
 	pageData: InvitationPageData,
 ): InvitationSectionRenderDescriptor[] {
 	return pageData.renderPlan
-		.map((block) => renderBlock(pageData, block))
+		.map((block, index) => renderBlock(pageData, block, index, pageData.renderPlan))
 		.filter((block): block is InvitationSectionRenderDescriptor => Boolean(block));
+}
+
+function findNextSectionLink(
+	renderPlan: InvitationRenderPlanItem[],
+	index: number,
+): LocationProps['nextSectionLink'] {
+	for (let nextIndex = index + 1; nextIndex < renderPlan.length; nextIndex += 1) {
+		const block = renderPlan[nextIndex];
+		if (block.type !== 'section') continue;
+
+		const target = SECTION_NAV_TARGETS[block.section];
+		if (target) return target;
+	}
+
+	return undefined;
 }
