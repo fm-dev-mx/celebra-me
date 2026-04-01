@@ -76,13 +76,13 @@
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "Etiqueta: <strong>Gala Noir (Negro, champagne y acentos metalicos)</strong>"
+                "text": "Etiqueta: Gala Noir (Negro, champagne y acentos metalicos)"
             },
             {
                 "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
-                "text": "Favor de confirmar antes del <strong>12 de septiembre</strong>."
+                "text": "Favor de confirmar antes del 12 de septiembre."
             }
         ]
     },
