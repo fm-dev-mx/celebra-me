@@ -73,4 +73,23 @@ describe('Style boundary governance', () => {
 		expect(dashboardApp).toContain('@/styles/dashboard/_guests.scss');
 		expect(dashboardApp).not.toContain('@/styles/invitation/_dashboard-guests.scss');
 	});
+
+	it('footer theme ownership stays out of the base invitation stylesheet', () => {
+		const footerBase = read('src/styles/invitation/_footer.scss');
+		const footerTheme = read('src/styles/themes/sections/_footer-theme.scss');
+		const baseSectionFiles = [
+			'src/styles/invitation/_footer.scss',
+			'src/styles/invitation/_event-location.scss',
+			'src/styles/invitation/_thank-you.scss',
+		];
+
+		expect(footerBase).not.toContain("[data-variant='editorial']");
+		expect(footerBase).not.toContain('premiere-floral');
+		expect(footerTheme).toContain("[data-variant='editorial']");
+		expect(footerTheme).toContain("[data-variant='premiere-floral']");
+
+		for (const file of baseSectionFiles) {
+			expect(read(file)).not.toContain('premiere-floral');
+		}
+	});
 });
