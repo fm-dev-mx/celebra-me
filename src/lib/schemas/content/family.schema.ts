@@ -20,6 +20,7 @@ export const familySchema = z
 				spouseRole: z.string().optional(),
 				childrenTitle: z.string().optional(),
 				parentsTitle: z.string().optional(),
+				godparentsTitle: z.string().optional(),
 			})
 			.optional(),
 		spouse: z.string().optional(),
@@ -40,6 +41,7 @@ export const familySchema = z
 			)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
+		focalPoint: z.string().optional(),
 		layoutVariant: z.enum(FAMILY_LAYOUT_VARIANTS).optional(),
 	})
 	.optional();

@@ -19,6 +19,7 @@ type FamilyProps = {
 	labels: NonNullable<InvitationPageData['sections']['family']>['labels'];
 	celebrantName: NonNullable<InvitationPageData['sections']['family']>['celebrantName'];
 	variant: NonNullable<InvitationPageData['sections']['family']>['variant'];
+	focalPoint: NonNullable<InvitationPageData['sections']['family']>['focalPoint'];
 	layoutVariant: NonNullable<InvitationPageData['sections']['family']>['layoutVariant'];
 };
 
@@ -68,6 +69,7 @@ type ThankYouProps = {
 	message: NonNullable<InvitationPageData['sections']['thankYou']>['message'];
 	closingName: NonNullable<InvitationPageData['sections']['thankYou']>['closingName'];
 	image: NonNullable<InvitationPageData['sections']['thankYou']>['image'];
+	focalPoint: NonNullable<InvitationPageData['sections']['thankYou']>['focalPoint'];
 	variant: NonNullable<InvitationPageData['sections']['thankYou']>['variant'];
 };
 
@@ -93,6 +95,7 @@ export type InvitationSectionRenderDescriptor =
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
 				variant: SharedSectionVariant;
+				focalPoint?: string;
 			};
 	  }
 	| { kind: 'quote'; props: QuoteProps }
@@ -123,6 +126,7 @@ function renderInterlude(
 			alt: block.alt,
 			height: block.height,
 			variant: block.variant ?? pageData.themePreset ?? 'standard',
+			focalPoint: block.focalPoint,
 		},
 	};
 }
@@ -161,6 +165,7 @@ function renderSection(
 							labels: sections.family.labels,
 							celebrantName: sections.family.celebrantName,
 							variant: sections.family.variant,
+							focalPoint: sections.family.focalPoint,
 							layoutVariant: sections.family.layoutVariant,
 						},
 					}
@@ -239,6 +244,7 @@ function renderSection(
 							message: sections.thankYou.message,
 							closingName: sections.thankYou.closingName,
 							image: sections.thankYou.image,
+							focalPoint: sections.thankYou.focalPoint,
 							variant: sections.thankYou.variant,
 						},
 					}

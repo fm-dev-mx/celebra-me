@@ -202,7 +202,8 @@
             "image": "gallery04",
             "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
             "variant": "premiere-floral",
-            "height": "screen"
+            "height": "screen",
+            "focalPoint": "center 15%"
         },
         {
             "type": "section",
@@ -261,7 +262,8 @@
             "image": "interludeNew01",
             "alt": "Retrato editorial final",
             "variant": "premiere-floral",
-            "height": "screen"
+            "height": "screen",
+            "focalPoint": "center 20%"
         },
         {
             "type": "section",

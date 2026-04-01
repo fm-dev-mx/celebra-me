@@ -24,6 +24,7 @@ export const contentBlocksSchema = z
 				alt: z.string().optional(),
 				height: z.enum(['screen', 'tall']).default('screen'),
 				variant: z.enum(SHARED_SECTION_VARIANTS).optional(),
+				focalPoint: z.string().optional(),
 			}),
 		]),
 	)

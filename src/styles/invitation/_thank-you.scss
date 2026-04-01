@@ -82,7 +82,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: var(--thank-you-image-fit, cover);
-		object-position: var(--thank-you-image-position, center);
+		object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
 		border-radius: 50%;
 		transition: all var(--duration-premium) var(--ease-premium);
 		background: rgb(255 255 255 / 35%);

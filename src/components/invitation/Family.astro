@@ -44,6 +44,7 @@ interface Props {
 	};
 	variant?: SharedSectionVariant;
 	layoutVariant?: FamilyLayoutVariant;
+	focalPoint?: string;
 }
 
 interface FamilyEntry {
@@ -71,6 +72,7 @@ const {
 	celebrantName,
 	labels,
 	variant = 'standard',
+	focalPoint,
 } = Astro.props;
 
 const resolvedLabels = {
@@ -174,6 +176,11 @@ if (godparents && godparents.length > 0) {
 	class="family"
 	data-variant={variant}
 >
+	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
+		.family {
+			--family-focal-point: var(--focalPoint);
+		}
+	</style>
 	<div class="family__bg-texture" aria-hidden="true"></div>
 	<FamilyDecorations variant={variant} component="bg" />
 

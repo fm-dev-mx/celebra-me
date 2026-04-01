@@ -9,9 +9,10 @@ interface Props {
 	alt: string;
 	height?: 'screen' | 'tall';
 	variant?: SharedSectionVariant;
+	focalPoint?: string;
 }
 
-const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
+const { image, alt, height = 'screen', variant = 'standard', focalPoint } = Astro.props;
 ---
 
 <section
@@ -20,6 +21,11 @@ const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 	data-height={height}
 	aria-label={alt}
 >
+	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
+		.invitation-interlude {
+			--interlude-focal-point: var(--focalPoint);
+		}
+	</style>
 	<div class="invitation-interlude__media">
 		<OptimizedImage
 			imagePath={image}

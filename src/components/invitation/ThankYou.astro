@@ -9,9 +9,10 @@ interface Props {
 	closingName: string;
 	image?: string | ImageAsset;
 	variant?: string;
+	focalPoint?: string;
 }
 
-const { message, closingName, image, variant = 'standard' } = Astro.props;
+const { message, closingName, image, variant = 'standard', focalPoint } = Astro.props;
 ---
 
 <section
@@ -19,6 +20,11 @@ const { message, closingName, image, variant = 'standard' } = Astro.props;
 	class="thank-you-section"
 	data-variant={variant}
 >
+	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
+		.thank-you-section {
+			--thank-you-focal-point: var(--focalPoint);
+		}
+	</style>
 	<div class="thank-you-content">
 		{
 			image && (

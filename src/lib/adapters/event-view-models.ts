@@ -157,6 +157,7 @@ export function buildContentBlocks(context: AdaptationContext): ContentBlock[] |
 		alt?: string;
 		height?: string;
 		variant?: string;
+		focalPoint?: string;
 	}>;
 
 	return rawBlocks?.flatMap((block): ContentBlock[] => {
@@ -180,6 +181,7 @@ export function buildContentBlocks(context: AdaptationContext): ContentBlock[] |
 						SHARED_SECTION_VARIANTS,
 						sharedSectionFallback,
 					),
+					focalPoint: block.focalPoint,
 				},
 			];
 		}
@@ -276,6 +278,7 @@ function buildFamilySection(
 		godparents: data.family.godparents,
 		groups: data.family.groups,
 		featuredImage: familyImage,
+		focalPoint: data.family.focalPoint,
 		celebrantName: data.hero.name,
 		variant: pickVariant(
 			'sectionStyles.family.variant',
@@ -373,6 +376,7 @@ function buildThankYouSection(
 	return {
 		...data.thankYou,
 		image: thankYouImage,
+		focalPoint: data.thankYou.focalPoint,
 		variant: pickVariant(
 			'sectionStyles.thankYou.variant',
 			data.sectionStyles?.thankYou?.variant ?? sharedSectionFallback,

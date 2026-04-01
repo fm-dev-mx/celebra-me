@@ -66,6 +66,7 @@ export const thankYouSchema = z
 		message: z.string(),
 		closingName: z.string(),
 		image: AssetSchema.optional(),
+		focalPoint: z.string().optional(),
 	})
 	.optional();
 

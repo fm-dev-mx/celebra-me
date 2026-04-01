@@ -129,6 +129,7 @@ export interface FamilyLabels {
 	spouseRole?: string;
 	childrenTitle?: string;
 	parentsTitle?: string;
+	godparentsTitle?: string;
 }
 
 export interface FamilyMember {
@@ -203,6 +204,7 @@ export type ContentBlock =
 			alt: string;
 			height: 'screen' | 'tall';
 			variant?: SharedSectionVariant;
+			focalPoint?: string;
 	  };
 
 export interface InvitationViewModel {
@@ -247,6 +249,7 @@ export interface InvitationViewModel {
 			godparents?: FamilyMember[];
 			groups?: FamilyGroup[];
 			featuredImage?: ImageAsset;
+			focalPoint?: string;
 			labels?: FamilyLabels;
 			celebrantName: string;
 			variant?: SharedSectionVariant;
@@ -291,6 +294,7 @@ export interface InvitationViewModel {
 			message: string;
 			closingName: string;
 			image?: ImageAsset;
+			focalPoint?: string;
 			variant?: SharedSectionVariant;
 		};
 	};

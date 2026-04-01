@@ -6,6 +6,13 @@
 	overflow: hidden;
 	background: var(--color-surface-dark);
 
+	// Default focal-point system.
+	// Start with the face higher in the frame because the source image is portrait.
+	--interlude-focal-x: 50%;
+	--interlude-focal-y: 14%;
+	--interlude-image-scale: 1;
+	--interlude-image-hover-scale: 1.03;
+
 	&[data-height='tall'] {
 		min-height: 80svh;
 	}
@@ -21,11 +28,38 @@
 	&__image {
 		display: block;
 		object-fit: cover;
-		object-position: center;
+		object-position: var(--interlude-focal-x) var(--interlude-focal-y);
+		transform-origin: var(--interlude-focal-x) var(--interlude-focal-y);
 		filter: saturate(0.96) contrast(1.02);
-		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0) scale(1.01);
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
+			scale(var(--interlude-image-scale));
 		will-change: transform;
 		transition: transform 120ms linear;
+		backface-visibility: hidden;
+	}
+
+	// Wide landscape screens crop much more vertically.
+	// Move the focal point upward to keep the face visible.
+	@media (min-aspect-ratio: 16 / 9) {
+		--interlude-focal-y: 10%;
+	}
+
+	@media (min-aspect-ratio: 21 / 9) {
+		--interlude-focal-y: 8%;
+	}
+
+	// Standard laptop / tablet landscape.
+	@media (max-aspect-ratio: 16 / 9) and (min-aspect-ratio: 4 / 3) {
+		--interlude-focal-y: 12%;
+	}
+
+	// Portrait / tall screens need a less aggressive upward focus.
+	@media (max-aspect-ratio: 4 / 5) {
+		--interlude-focal-y: 18%;
+	}
+
+	@media (max-aspect-ratio: 9 / 16) {
+		--interlude-focal-y: 22%;
 	}
 
 	&::after {
