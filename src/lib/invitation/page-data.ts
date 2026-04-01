@@ -1,8 +1,15 @@
 import { adaptEvent } from '@/lib/adapters/event';
+import { pickPreset } from '@/lib/adapters/event-helpers';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
+import {
+	CLIENT_PREVIEW_THEME_PRESETS,
+	PREMIERE_THEME_PRESETS,
+	type SharedSectionVariant,
+	type ThemePreset,
+} from '@/lib/theme/theme-contract';
+import { type ContentBlockData } from '@/lib/schemas/content/content-block.schema';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
@@ -129,6 +136,9 @@ function buildWrapperData(
 
 	if (envelope.enabled && envelope.data) {
 		const { colors } = envelope.data;
+		if (envelope.data.variant) {
+			dataAttributes['data-env-variant'] = envelope.data.variant;
+		}
 		if (colors.background) overrides['--env-bg'] = colors.background;
 		if (colors.primary) overrides['--env-primary'] = colors.primary;
 		if (colors.accent) overrides['--env-accent'] = colors.accent;
@@ -151,11 +161,17 @@ function resolveFooterVariant(
 	const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
 	if (configuredVariant) return configuredVariant;
 
-	return themePreset === 'jewelry-box' ||
+	if (
+		themePreset === 'jewelry-box' ||
+		themePreset === 'jewelry-box-wedding' ||
 		themePreset === 'luxury-hacienda' ||
-		themePreset === 'editorial'
-		? themePreset
-		: 'standard';
+		themePreset === 'editorial' ||
+		(themePreset && (PREMIERE_THEME_PRESETS as readonly string[]).includes(themePreset))
+	) {
+		return themePreset;
+	}
+
+	return 'standard';
 }
 
 function buildLayoutData(
@@ -301,15 +317,17 @@ export function prepareInvitationPageData(input: {
 	eventEntry: EventContentEntry;
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
+	previewTheme?: string | null;
 }): InvitationPageData {
-	const viewModel = adaptEvent(input.eventEntry);
+	const eventEntry = applyPreviewTheme(input.eventEntry, input.previewTheme);
+	const viewModel = adaptEvent(eventEntry);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
 	const showEnvelope = wrapper.showEnvelope;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
-	const footerVariant = resolveFooterVariant(input.eventEntry, theme.preset);
+	const footerVariant = resolveFooterVariant(eventEntry, theme.preset);
 
 	return {
 		eventSlug: viewModel.id,
@@ -354,4 +372,129 @@ export function prepareInvitationPageData(input: {
 			hasGuestContext: Boolean(input.guestContext),
 		}),
 	};
+}
+
+function resolvePreviewTheme(
+	eventEntry: EventContentEntry,
+	previewTheme: string | null | undefined,
+): ThemePreset | undefined {
+	if (!previewTheme) return undefined;
+
+	if (!(CLIENT_PREVIEW_THEME_PRESETS as readonly string[]).includes(previewTheme)) {
+		return undefined;
+	}
+
+	const sourcePreset = eventEntry.data.theme.preset;
+	if (!sourcePreset || !(PREMIERE_THEME_PRESETS as readonly string[]).includes(sourcePreset)) {
+		return undefined;
+	}
+
+	return pickPreset(previewTheme);
+}
+
+function applyPreviewTheme(
+	eventEntry: EventContentEntry,
+	previewTheme: string | null | undefined,
+): EventContentEntry {
+	const resolvedPreviewTheme = resolvePreviewTheme(eventEntry, previewTheme);
+	if (!resolvedPreviewTheme) return eventEntry;
+
+	return {
+		...eventEntry,
+		data: {
+			...eventEntry.data,
+			theme: {
+				...eventEntry.data.theme,
+				preset: resolvedPreviewTheme,
+			},
+			sectionStyles: eventEntry.data.sectionStyles
+				? {
+						...eventEntry.data.sectionStyles,
+						countdown: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.countdown,
+							resolvedPreviewTheme,
+						),
+						location: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.location,
+							resolvedPreviewTheme,
+						),
+						family: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.family,
+							resolvedPreviewTheme,
+						),
+						gallery: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.gallery,
+							resolvedPreviewTheme,
+						),
+						gifts: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.gifts,
+							resolvedPreviewTheme,
+						),
+						itinerary: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.itinerary,
+							resolvedPreviewTheme,
+						),
+						thankYou: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.thankYou,
+							resolvedPreviewTheme,
+						),
+						footer: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.footer,
+							resolvedPreviewTheme,
+						),
+						rsvp: rewritePreviewVariant(
+							eventEntry.data.sectionStyles.rsvp,
+							resolvedPreviewTheme,
+						),
+					}
+				: undefined,
+			hero: {
+				...eventEntry.data.hero,
+				variant: rewritePremiereVariantValue(
+					eventEntry.data.hero.variant,
+					resolvedPreviewTheme,
+				),
+			},
+			envelope: eventEntry.data.envelope
+				? {
+						...eventEntry.data.envelope,
+						variant: rewritePremiereVariantValue(
+							eventEntry.data.envelope.variant,
+							resolvedPreviewTheme,
+						),
+					}
+				: eventEntry.data.envelope,
+			contentBlocks: eventEntry.data.contentBlocks?.map((block: ContentBlockData) =>
+				block.type === 'interlude'
+					? {
+							...block,
+							variant: rewritePremiereVariantValue(
+								block.variant,
+								resolvedPreviewTheme,
+							),
+						}
+					: block,
+			),
+		},
+	} as EventContentEntry;
+}
+
+function rewritePremiereVariantValue(
+	value: string | undefined,
+	previewTheme: ThemePreset,
+): ThemePreset | string | undefined {
+	if (!value) return value;
+	return (PREMIERE_THEME_PRESETS as readonly string[]).includes(value) ? previewTheme : value;
+}
+
+function rewritePreviewVariant<T extends { variant?: string } | undefined>(
+	value: T,
+	previewTheme: ThemePreset,
+): T {
+	if (!value?.variant) return value;
+
+	return {
+		...value,
+		variant: rewritePremiereVariantValue(value.variant, previewTheme),
+	} as T;
 }

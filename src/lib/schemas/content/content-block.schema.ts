@@ -28,3 +28,5 @@ export const contentBlocksSchema = z
 		]),
 	)
 	.optional();
+
+export type ContentBlockData = NonNullable<z.infer<typeof contentBlocksSchema>>[number];

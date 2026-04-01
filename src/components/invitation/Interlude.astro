@@ -40,7 +40,7 @@ const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 				if (
 					!variant.includes('premium') &&
 					variant !== 'editorial' &&
-					variant !== 'premiere-floral'
+					!variant.startsWith('premiere-')
 				) {
 					continue;
 				}
