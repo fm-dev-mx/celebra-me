@@ -1,64 +1,112 @@
 ---
 // Custom Google Map component with CSS filter styling.
 interface Props {
-    lat: number;
-    lng: number;
-    zoom?: number;
-    title?: string;
+	lat: number;
+	lng: number;
+	zoom?: number;
+	title?: string;
+	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+	variant?: string;
 }
+
+const { lat, lng, zoom = 15, title, mapStyle = 'dark', variant = 'structured' } = Astro.props;
 ---
-<div class="google-map-container">
-    <iframe
-        width="100%"
-        height="100%"
-        src={`https://maps.google.com/maps?q=${Astro.props.lat},${Astro.props.lng}&z=${Astro.props.zoom || 15}&output=embed`}
-        title={Astro.props.title}
-        aria-label={Astro.props.title}
-        loading="lazy"
-    >
-    </iframe>
-    <div class="map-overlay" aria-hidden="true"></div>
+<div class="google-map-container" data-map-style={mapStyle} data-variant={variant}>
+	<iframe
+		width="100%"
+		height="100%"
+		src={`https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`}
+		title={title}
+		aria-label={title}
+		loading="lazy"
+	>
+	</iframe>
+	<div class="map-overlay" aria-hidden="true"></div>
 </div>
 
 <style lang="scss">
-    .google-map-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        border-radius: var(--radius-md, 8px); // Use design token if available, fallback to 8px
-        background-color: var(--color-surface-secondary);
-        isolation: isolate; // Create a new stacking context
+	.google-map-container {
+		--map-frame-filter: saturate(0.82) contrast(0.96) brightness(0.92);
+		--map-surface: var(--color-surface-secondary);
+		--map-border: var(--color-border-subtle);
+		--map-shadow: inset 0 0 20px rgb(var(--color-surface-dark-rgb), 0.08);
+		--map-overlay: linear-gradient(180deg, rgb(var(--color-surface-primary-rgb), 0.04), transparent);
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		border-radius: var(--radius-md, 8px);
+		background-color: var(--map-surface);
+		isolation: isolate;
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: 0;
-            // The "Jewelry Box" aesthetic filter:
-            // Grayscale: Removes color
-            // Sepia: Adds the antique tone
-            // Contrast: Softens the blacks
-            filter: grayscale(100%) sepia(20%) contrast(0.9);
-            transition: filter 0.3s ease;
-            mix-blend-mode: multiply; /* Optional: blends with background if needed, but filter is safer */
-        }
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: 0;
+			filter: var(--map-frame-filter);
+			transition: filter var(--duration-standard, 400ms) var(--ease-standard, ease);
+		}
 
-        // Overlay to prevent accidental scroll hijacking and add texture if needed
-        .map-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; // Let clicks pass through to iframe if desired, or toggle on click
-            box-shadow: inset 0 0 20px rgb(var(--color-surface-dark-rgb), 0.1);
-            border: 1px solid var(--color-border-subtle);
-            border-radius: inherit;
-        }
+		.map-overlay {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+			box-shadow: var(--map-shadow);
+			border: 1px solid var(--map-border);
+			border-radius: inherit;
+			background: var(--map-overlay);
+		}
 
-        &:hover iframe {
-            // Optional: Bring back some color on hover if desired, or just slight clear up
-            // filter: grayscale(80%) sepia(10%);
-        }
-    }
+		&[data-map-style='minimal'] {
+			--map-frame-filter: grayscale(0.18) contrast(0.92) brightness(1.02);
+			--map-overlay: linear-gradient(180deg, rgb(var(--color-surface-primary-rgb), 0.02), transparent);
+		}
+
+		&[data-map-style='colorful'] {
+			--map-frame-filter: saturate(1.05) contrast(1) brightness(0.98);
+			--map-overlay: linear-gradient(
+				180deg,
+				rgb(var(--color-action-accent-rgb), 0.04),
+				transparent 45%
+			);
+		}
+
+		&[data-map-style='satellite'] {
+			--map-frame-filter: saturate(0.9) contrast(1.08) brightness(0.88);
+			--map-overlay: linear-gradient(180deg, rgb(var(--color-surface-dark-rgb), 0.08), transparent);
+		}
+
+		&[data-map-style='dark'] {
+			--map-frame-filter: grayscale(0.12) contrast(1.02) brightness(0.82);
+			--map-overlay: linear-gradient(180deg, rgb(var(--color-surface-dark-rgb), 0.1), transparent);
+		}
+
+		&[data-variant='jewelry-box'],
+		&[data-variant='jewelry-box-wedding'] {
+			--map-frame-filter: grayscale(0.22) sepia(0.18) contrast(0.96) brightness(0.9);
+			--map-border: rgb(var(--color-action-accent-rgb), 0.3);
+			--map-shadow:
+				inset 0 0 20px rgb(var(--color-surface-dark-rgb), 0.14),
+				inset 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.08);
+			--map-overlay: linear-gradient(
+				180deg,
+				rgb(var(--color-action-accent-rgb), 0.08),
+				transparent 42%
+			);
+		}
+
+		&[data-variant='luxury-hacienda'] {
+			--map-frame-filter: sepia(0.24) saturate(0.88) contrast(0.94) brightness(0.9);
+			--map-border: rgb(var(--color-action-accent-rgb), 0.28);
+			--map-overlay: linear-gradient(
+				180deg,
+				rgb(var(--color-surface-dark-rgb), 0.1),
+				rgb(var(--color-action-accent-rgb), 0.04)
+			);
+		}
+
+		&:hover iframe {
+			filter: saturate(1.02) contrast(1.01) brightness(0.98);
+		}
+	}
 </style>

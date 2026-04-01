@@ -24,25 +24,35 @@ interface VenueData {
 	coordinates?: {
 		lat: number;
 		lng: number;
-		};
+	};
 }
 
 interface Props {
 	venue: VenueData;
 	type: 'ceremony' | 'reception';
 	variant?: string;
+	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
+	showFlourishes?: boolean;
 }
 
-const { venue, type, variant = 'structured' } = Astro.props;
+const {
+	venue,
+	type,
+	variant = 'structured',
+	mapStyle = 'dark',
+	showFlourishes = true,
+} = Astro.props;
 ---
 
 <div class="event-location__card-wrapper">
 	<h3 class="event-location__card-title">{venue.venueEvent}</h3>
-	<div class="event-location__card-flourish" aria-hidden="true">
-		<span class="flourish-line"></span>
-		<span class="flourish-diamond"></span>
-		<span class="flourish-line"></span>
-	</div>
+	{showFlourishes && (
+		<div class="event-location__card-flourish" aria-hidden="true">
+			<span class="flourish-line"></span>
+			<span class="flourish-diamond"></span>
+			<span class="flourish-line"></span>
+		</div>
+	)}
 	<article class={`event-location__card event-location__card--${type}`}>
 		<div class="event-location__card-image-outer-frame">
 			<div class="event-location__card-image-inner-frame">
@@ -52,6 +62,8 @@ const { venue, type, variant = 'structured' } = Astro.props;
 							lat={venue.coordinates.lat}
 							lng={venue.coordinates.lng}
 							title={venue.venueName}
+							mapStyle={mapStyle}
+							variant={variant}
 						/>
 					) : (
 						<OptimizedImage

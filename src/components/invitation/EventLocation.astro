@@ -2,9 +2,8 @@
 /*
   EventLocation Component
   Displays modern, interactive cards for the event venues.
-*/
+ */
 import '@/styles/invitation/_event-location.scss';
-import '@/styles/invitation/_section-nav-button.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
@@ -35,7 +34,6 @@ interface VenueData {
 	};
 }
 
-
 interface Indication {
 	iconName: IndicationIconName;
 	styleVariant: IndicationStyleVariant;
@@ -49,6 +47,10 @@ interface Props {
 	variant?: LocationVariant;
 	mapStyle?: LocationMapStyle;
 	showFlourishes?: boolean;
+	nextSectionLink?: {
+		href: string;
+		label?: string;
+	};
 }
 
 const {
@@ -57,16 +59,33 @@ const {
 	indications,
 	variant = 'structured',
 	mapStyle = 'dark',
-	showFlourishes = true
+	showFlourishes = true,
+	nextSectionLink,
 } = Astro.props;
 
 const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 ---
 
-<section class="event-location" id="event-location" data-variant={variant} data-map-style={mapStyle} data-show-flourishes={showFlourishes}>
+<section class="event-location" id="event-location" data-variant={variant}>
 	<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
-		{ceremony && <VenueCard venue={ceremony} type="ceremony" variant={variant} />}
-		{reception && <VenueCard venue={reception} type="reception" variant={variant} />}
+		{ceremony && (
+			<VenueCard
+				venue={ceremony}
+				type="ceremony"
+				variant={variant}
+				mapStyle={mapStyle}
+				showFlourishes={showFlourishes}
+			/>
+		)}
+		{reception && (
+			<VenueCard
+				venue={reception}
+				type="reception"
+				variant={variant}
+				mapStyle={mapStyle}
+				showFlourishes={showFlourishes}
+			/>
+		)}
 	</div>
 
 	{indications && indications.length > 0 && (
@@ -81,7 +100,7 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 							<div class="event-location__indication-icon">
 								<Icon name={indication.iconName} size={24} />
 							</div>
-							<p class="event-location__indication-text" set:html={indication.text} />
+							<p class="event-location__indication-text">{indication.text}</p>
 						</div>
 					);
 				})}
@@ -89,28 +108,42 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 		</div>
 	)}
 
-	<div class="nav-button-container">
-		<SectionNavButton href="#rsvp" class="event-location" section="Pases y Confirmación" />
-	</div>
+	{nextSectionLink && (
+		<div class="nav-button-container">
+			<SectionNavButton
+				href={nextSectionLink.href}
+				class="event-location"
+				section={nextSectionLink.label}
+			/>
+		</div>
+	)}
 
 </section>
 <script type="module">
 	import { initCopyButtons, revealIOSOnly } from '@/utils/ui';
-	import { createIntersectionObserver } from '@/utils/animations';
+	const section = document.currentScript?.previousElementSibling;
 
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (section instanceof HTMLElement && section.matches('.event-location')) {
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	initCopyButtons();
-	revealIOSOnly();
+		initCopyButtons('.copy-button', 'data-address', section);
+		revealIOSOnly('[data-apple-link]', section);
 
-	if (!prefersReducedMotion) {
-		document.querySelectorAll('.event-location').forEach((section) => {
+		if (!prefersReducedMotion) {
 			section.classList.add('has-motion');
-		});
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							section.classList.add('is-visible');
+							observer.unobserve(entry.target);
+						}
+					});
+				},
+				{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+			);
 
-		createIntersectionObserver(
-			'.event-location.has-motion',
-			(target) => target.classList.add('is-visible'),
-		);
+			observer.observe(section);
+		}
 	}
 </script>
