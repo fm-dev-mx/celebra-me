@@ -1,54 +1,57 @@
-import hero from './hero.webp';
-import portrait from './portrait.webp';
-import family from './family-editorial.png';
-import familyAlt from './family.webp';
+import type { ImageMetadata } from 'astro';
+
+import type { EventAssets } from '@/lib/assets/asset-registry';
+
+import portraitAlt from './portrait-alt.webp';
+import family from './family.webp';
 import signature from './signature.webp';
+import thankYouPortrait from './thank-you-portrait.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
-import gallery05 from './gallery-05.webp';
-import gallery06 from './gallery-06.webp';
-import gallery07 from './gallery-07.webp';
-import gallery08 from './gallery-08.webp';
-import gallery09 from './gallery-09.webp';
-import gallery10 from './gallery-10.webp';
-import gallery11 from './gallery-11.webp';
-import gallery12 from './gallery-12.webp';
-import interlude01 from './interlude-01.webp';
-import interlude02 from './interlude-02.webp';
-import interlude03 from './interlude-03.webp';
-import gallery15 from './gallery-15.webp';
-import interludeNew01 from './interlude-04.webp';
-import thankYouPortrait from './thank-you-portrait.webp';
+import gallery05 from './ai/gallery-05.png';
+import gallery06 from './ai/gallery-06.png';
+import gallery07 from './ai/gallery-07.png';
+import gallery08 from './ai/gallery-08.png';
+import gallery09 from './ai/gallery-09.png';
+import gallery10 from './ai/gallery-10.png';
+import gallery11 from './ai/gallery-11.png';
+import gallery12 from './ai/gallery-12.png';
+import interlude01 from './ai/interlude-01.png';
+import interlude02 from './ai/interlude-02.png';
+import interlude03 from './ai/interlude-03.png';
+import interlude04 from './ai/interlude-04.png';
+import heroBackground from './ai/hero-background.png';
 
-export const assets = {
-	hero,
-	portrait,
+type EventModuleAssets = Partial<EventAssets> & {
+	gallery?: ImageMetadata[];
+};
+
+export const assets: EventModuleAssets = {
+	hero: heroBackground,
+	portrait: gallery01,
+	portraitAlt,
 	family,
-	familyAlt,
-	jardin: gallery03, // Using dedicated garden venue shot
+	jardin: gallery03,
 	signature,
 	gallery: [
-		gallery01, // 01
-		gallery02, // 02
-		gallery03, // 03
-		gallery04, // 04
-		gallery05, // 05
-		gallery06, // 06
-		gallery07, // 07
-		gallery08, // 08
-		gallery09, // 09
-		gallery10, // 10
-		gallery11, // 11
-		gallery12, // 12
-		undefined, // 13
-		undefined, // 14
-		gallery15, // 15 (Matches JSON "gallery15")
+		gallery01,
+		gallery02,
+		gallery03,
+		gallery04,
+		gallery05,
+		gallery06,
+		gallery07,
+		gallery08,
+		gallery09,
+		gallery10,
+		gallery11,
+		gallery12,
 	],
-	interlude01, // Still available (Noir-style detail)
-	interlude02, // Still available
-	interlude03, // Still available
-	interludeNew01,
+	interlude01,
+	interlude02,
+	interlude03,
+	interludeNew01: interlude04,
 	thankYouPortrait,
 };

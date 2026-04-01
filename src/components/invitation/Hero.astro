@@ -16,6 +16,7 @@ interface Props {
 	backgroundImage: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
 	variant?: string;
+	layoutVariant?: string;
 	guestName?: string;
 }
 
@@ -30,6 +31,7 @@ const {
 	backgroundImage,
 	portrait,
 	variant = 'standard',
+	layoutVariant,
 	guestName,
 } = Astro.props;
 
@@ -56,7 +58,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 });
 ---
 
-<section id="inicio" class="invitation-hero" data-variant={variant}>
+<section id="inicio" class="invitation-hero" data-variant={variant} data-layout-variant={layoutVariant}>
 	<div class="invitation-hero__background">
 		<Image
 			src={bgSrc}

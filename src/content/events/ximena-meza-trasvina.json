@@ -43,7 +43,7 @@
     },
     "hero": {
         "name": "Ximena Meza Trasviña",
-        "label": "Edición Aniversario",
+        "label": "Mis XV Años",
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
@@ -224,7 +224,7 @@
         },
         {
             "type": "interlude",
-            "image": "gallery11",
+            "image": "gallery12",
             "alt": "Jardín privado iluminado para la gala",
             "height": "screen"
         },
@@ -261,12 +261,6 @@
         {
             "type": "section",
             "section": "gifts"
-        },
-        {
-            "type": "interlude",
-            "image": "gallery15",
-            "alt": "Detalles editoriales en seda y luz floral",
-            "height": "screen"
         },
         {
             "type": "section",

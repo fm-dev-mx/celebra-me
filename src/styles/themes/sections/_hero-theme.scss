@@ -161,7 +161,7 @@
 
 	.invitation-hero__portrait {
 		grid-area: portrait;
-		justify-self: end;
+		justify-self: center;
 		width: min(100%, 420px);
 		aspect-ratio: 0.75;
 		border-radius: 220px 220px 24px 24px;
@@ -298,6 +298,85 @@
 			gap: 0.5rem;
 			align-items: center;
 			padding: 2rem 0;
+		}
+	}
+
+	// ── Ximena Premium Layout Variant ──
+	// Specifically designed to cover the face of the background image
+	&[data-layout-variant='ximena-premium'] {
+		.invitation-hero__background img {
+			object-position: center 22%; // Calibrado para la cara de Ximena
+			transition:
+				object-position 0.8s tokens.$ease-premium,
+				transform 1s tokens.$ease-premium;
+		}
+
+		.invitation-hero__content {
+			display: grid;
+			grid-template-areas: 'hero-stack';
+			place-items: center;
+			padding: 0;
+			max-width: none;
+			height: 100svh;
+		}
+
+		.invitation-hero__label,
+		.invitation-hero__portrait,
+		.invitation-hero__title {
+			grid-area: hero-stack;
+		}
+
+		.invitation-hero__label {
+			align-self: flex-start;
+			margin-top: 8svh;
+			z-index: 20;
+		}
+
+		.invitation-hero__portrait {
+			align-self: center;
+			margin-top: -24svh; // Sube para cubrir la cara del background
+			width: min(88%, 440px);
+			z-index: 5;
+			transform: scale(1.02);
+			filter: brightness(1.05) contrast(1.02);
+			box-shadow:
+				0 40px 100px rgb(0 0 0 / 80%),
+				inset 0 0 0 1.5px rgb(255 255 255 / 15%);
+		}
+
+		.invitation-hero__title {
+			align-self: center;
+			margin-top: 24svh; // Baja para no obstruir el retrato
+			font-size: clamp(3.2rem, 14vw, 8.5rem);
+			text-align: center;
+			mix-blend-mode: normal;
+			z-index: 10;
+			text-shadow:
+				0 10px 40px rgb(0 0 0 / 90%),
+				0 0 30px rgb(var(--color-action-accent-rgb) / 30%);
+			transform: none;
+		}
+
+		.invitation-hero__details {
+			bottom: 6svh;
+			background: linear-gradient(90deg, transparent, rgb(0 0 0 / 65%), transparent);
+			border: none;
+		}
+
+		@media (width <= 860px) {
+			.invitation-hero__portrait {
+				width: 90%;
+				margin-top: -26svh;
+			}
+
+			.invitation-hero__title {
+				margin-top: 22svh;
+				font-size: clamp(3rem, 18vw, 6.5rem);
+			}
+
+			.invitation-hero__label {
+				margin-top: 10svh;
+			}
 		}
 	}
 }

@@ -29,6 +29,7 @@ export interface ImageAsset {
 export const EVENT_KEYS = [
 	'hero',
 	'portrait',
+	'portraitAlt',
 	'family',
 	'ceremony',
 	'reception',
@@ -131,6 +132,7 @@ const EVENT_REGISTRY: Record<string, EventAssets> = Object.entries(EVENT_ASSET_M
 		const assets: Partial<EventAssets> = {
 			hero: rawAssets.hero,
 			portrait: rawAssets.portrait,
+			portraitAlt: rawAssets.portraitAlt,
 			family: rawAssets.family,
 			ceremony: rawAssets.ceremony,
 			reception: rawAssets.reception,
