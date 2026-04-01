@@ -29,10 +29,18 @@
 	--font-body: 'Montserrat Variable', sans-serif;
 	--font-calligraphy: 'The Nautigal', cursive;
 	--font-label-tracking: 0.28em;
-	--shadow-premium: 0 24px 56px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.14)}, 0 14px 30px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
-	--hero-card-bg: linear-gradient(160deg, #{color.change(sys.$sys-color-neutral-0, $alpha: 0.78)} 0%, #{color.change(sys.$sys-color-floral-50, $alpha: 0.42)} 100%);
+	--shadow-premium:
+		0 24px 56px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.14)},
+		0 14px 30px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
+	--hero-card-bg: linear-gradient(
+		160deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.78)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.42)} 100%
+	);
 	--hero-card-border-hairline: #{color.change(sys.$sys-color-floral-300, $alpha: 0.32)};
-	--hero-card-shadow-ambient: 0 30px 80px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.24)}, 0 12px 32px #{color.change(sys.$sys-color-floral-300, $alpha: 0.12)};
+	--hero-card-shadow-ambient:
+		0 30px 80px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.24)},
+		0 12px 32px #{color.change(sys.$sys-color-floral-300, $alpha: 0.12)};
 	--hero-title-color-start: #{sys.$sys-color-floral-50};
 	--hero-title-color-mid: #{sys.$sys-color-neutral-0};
 	--hero-title-color-end: #{sys.$sys-color-floral-300};
@@ -70,7 +78,29 @@
 		transparent 0%,
 		#{color.change(sys.$sys-color-floral-300, $alpha: 0.06)} 100%
 	);
-	--jewelry-box-gallery-section-bg: linear-gradient(180deg, #{sys.$sys-color-neutral-0} 0%, #{sys.$sys-color-floral-50} 100%);
+	--location-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.96)} 100%
+	);
+	--location-card-bg: linear-gradient(
+		165deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.98)} 100%
+	);
+	--location-indication-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.52)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.18)} 100%
+	);
+	--location-accent: var(--color-action-accent);
+	--location-nav-button-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
+	--location-nav-button-color: var(--color-text-primary);
+	--jewelry-box-gallery-section-bg: linear-gradient(
+		180deg,
+		#{sys.$sys-color-neutral-0} 0%,
+		#{sys.$sys-color-floral-50} 100%
+	);
 	--jewelry-box-gallery-card-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
 	--jewelry-box-gallery-card-radius: 0;
 	--jewelry-box-gallery-card-padding: 0;

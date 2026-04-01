@@ -44,8 +44,16 @@
 	// ==========================================================================
 
 	--editorial-global-bg:
-		radial-gradient(circle at 10% 10%, #{color.change(sys.$sys-color-gold-500, $alpha: 0.08)} 0%, transparent 40%),
-		radial-gradient(circle at 90% 90%, #{color.change(sys.$sys-color-gold-400, $alpha: 0.05)} 0%, transparent 40%),
+		radial-gradient(
+			circle at 10% 10%,
+			#{color.change(sys.$sys-color-gold-500, $alpha: 0.08)} 0%,
+			transparent 40%
+		),
+		radial-gradient(
+			circle at 90% 90%,
+			#{color.change(sys.$sys-color-gold-400, $alpha: 0.05)} 0%,
+			transparent 40%
+		),
 		linear-gradient(180deg, #{sys.$sys-color-onyx-900} 0%, #{sys.$sys-color-onyx-950} 100%);
 	--gold-metallic: linear-gradient(
 		135deg,
@@ -75,10 +83,18 @@
 		transparent 40%,
 		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.12)} 100%
 	);
-	--hero-card-bg: linear-gradient(160deg, #{color.change(sys.$sys-color-onyx-800, $alpha: 0.88)} 0%, #{color.change(sys.$sys-color-onyx-950, $alpha: 0.98)} 100%);
+	--hero-card-bg: linear-gradient(
+		160deg,
+		#{color.change(sys.$sys-color-onyx-800, $alpha: 0.88)} 0%,
+		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.98)} 100%
+	);
 
 	// Family Section
-	--family-bg: radial-gradient(circle at bottom right, #{sys.$sys-color-onyx-900}, #{sys.$sys-color-onyx-950});
+	--family-bg: radial-gradient(
+		circle at bottom right,
+		#{sys.$sys-color-onyx-900},
+		#{sys.$sys-color-onyx-950}
+	);
 	--family-panel-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)};
 
 	// Gallery Section
@@ -87,8 +103,19 @@
 
 	// Location Section
 	--location-bg: #{sys.$sys-color-onyx-950};
-	--location-card-bg: linear-gradient(165deg, #{color.change(sys.$sys-color-onyx-700, $alpha: 0.95)}, #{color.change(sys.$sys-color-onyx-950, $alpha: 0.98)});
-	--location-indication-bg: linear-gradient(180deg, #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)} 0%, transparent 100%);
+	--location-card-bg: linear-gradient(
+		165deg,
+		#{color.change(sys.$sys-color-onyx-700, $alpha: 0.95)},
+		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.98)}
+	);
+	--location-indication-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)} 0%,
+		transparent 100%
+	);
+	--location-accent: var(--color-action-accent);
+	--location-nav-button-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)};
+	--location-nav-button-color: var(--color-text-primary);
 
 	// Countdown Section
 	--countdown-bg: var(--color-surface-dark);
