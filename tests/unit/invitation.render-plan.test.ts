@@ -30,7 +30,6 @@ describe('buildInvitationRenderPlan', () => {
 			'countdown',
 			'interlude',
 			'gifts',
-			'interlude',
 			'personalized-access',
 			'rsvp',
 			'interlude',

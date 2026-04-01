@@ -34,11 +34,10 @@ describe('prepareInvitationPageData', () => {
 		});
 
 		expect(presenter.layout.title).toBe('Invitación para Mariana Soto');
-		expect(presenter.layout.className).toBe('layout--ximena-premium');
-		expect(presenter.wrapper.className).toContain('event-theme-wrapper--sealed');
+		expect(presenter.layout.className).toBe('layout--premium-portrait');
 		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('top-premium-floral');
 		expect(presenter.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
-		expect(presenter.wrapper.dataAttributes['data-env-state']).toBe('ready');
+		expect(presenter.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
 		expect(presenter.wrapper.scopedStyles).toContain(
 			'[data-event-slug="ximena-meza-trasvina"]',
 		);
