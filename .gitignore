@@ -74,6 +74,18 @@ astro/types.d.ts
 /supabase/.temp/
 
 
+# --- AI AGENTS & TOOLING ------------------------------------------------------
+# Local-only agent state and configuration
+.agent/
+_agent/
+.agents/
+_agents/
+.antigravity/
+.gemini/
+*.agent.md
+agent.json
+
+
 # --- SYSTEM FILES -------------------------------------------------------------
 # Operating system specific files
 .DS_Store
