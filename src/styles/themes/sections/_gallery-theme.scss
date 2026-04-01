@@ -83,7 +83,7 @@
 /* --- GALLERY: EDITORIAL VARIANT --- */
 
 .gallery-section[data-variant='editorial'],
-.gallery-section[data-variant='premiere-floral'] {
+.gallery-section[data-variant^='premiere-'] {
 	background: var(--gallery-section-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 

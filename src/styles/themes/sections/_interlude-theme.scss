@@ -5,7 +5,7 @@
 // ==========================================================================
 
 .invitation-interlude[data-variant='editorial'],
-.invitation-interlude[data-variant='premiere-floral'] {
+.invitation-interlude[data-variant^='premiere-'] {
 	--interlude-overlay-opacity: 0.28;
 
 	overflow: hidden;

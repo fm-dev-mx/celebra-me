@@ -54,7 +54,7 @@
 // ==========================================================================
 
 .invitation-hero[data-variant='editorial'],
-.invitation-hero[data-variant='premiere-floral'] {
+.invitation-hero[data-variant^='premiere-'] {
 	position: relative;
 	height: 100svh;
 	display: flex;

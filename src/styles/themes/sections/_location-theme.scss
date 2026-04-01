@@ -12,7 +12,7 @@
 // ==========================================================================
 
 .event-location[data-variant='editorial'],
-.event-location[data-variant='premiere-floral'] {
+.event-location[data-variant^='premiere-'] {
 	background: var(--location-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 	position: relative;

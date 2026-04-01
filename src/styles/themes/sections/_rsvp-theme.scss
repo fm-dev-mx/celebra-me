@@ -44,7 +44,7 @@
 // ==========================================================================
 
 .rsvp[data-variant='editorial'],
-.rsvp[data-variant='premiere-floral'] {
+.rsvp[data-variant^='premiere-'] {
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);

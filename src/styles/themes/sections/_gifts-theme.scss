@@ -4,7 +4,7 @@
 /* --- GIFTS: EDITORIAL VARIANT --- */
 
 .gifts-section[data-variant='editorial'],
-.gifts-section[data-variant='premiere-floral'] {
+.gifts-section[data-variant^='premiere-'] {
 	background: var(--gifts-section-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
