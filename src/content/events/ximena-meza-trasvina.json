@@ -47,18 +47,19 @@
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "layoutVariant": "ximena-premium",
+        "layoutVariant": "premium-portrait",
+        "focalPoint": "center 22%",
         "variant": "editorial"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
-        "address": "Los Mochis, Sinaloa",
+        "address": "Av Chihuahua 2979, Los Mochis, Sin.",
         "city": "Los Mochis",
         "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
         "reception": {
             "venueEvent": "Celebración",
             "venueName": "D'Galaz Alberca y Eventos",
-            "address": "Los Mochis, Sinaloa",
+            "address": "Av Chihuahua 2979, Los Mochis, Sin.",
             "date": "11 de abril de 2026",
             "time": "8:00 PM",
             "mapUrl": "https://www.google.com/maps/search/?api=1&query=D%27Galaz+Alberca+y+Eventos+Los+Mochis",
@@ -71,13 +72,13 @@
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "Etiqueta: <strong>Gala Rose & Gold (Dusty Rose / Rose Gold)</strong>"
+                "text": "Etiqueta: Gala Rose & Gold (Dusty Rose / Rose Gold)"
             },
             {
                 "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
-                "text": "Favor de confirmar antes del <strong>4 de abril</strong>."
+                "text": "Favor de confirmar antes del 4 de abril."
             }
         ]
     },
