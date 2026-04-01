@@ -1,15 +1,16 @@
 import { z } from 'astro:content';
-import { LOCATION_VARIANT_PRESET_COMPATIBILITY, THEME_PRESETS } from '@/lib/theme/theme-contract';
-import { SHARED_SECTION_VARIANTS } from '@/lib/theme/theme-variants';
+import { LOCATION_VARIANT_PRESET_COMPATIBILITY } from '@/lib/theme/theme-contract';
+import { contentBlocksSchema } from '@/lib/schemas/content/content-block.schema';
+import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
+import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
+import { itinerarySchema } from '@/lib/schemas/content/itinerary.schema';
 import { locationSchema } from '@/lib/schemas/content/location.schema';
 import { familySchema } from '@/lib/schemas/content/family.schema';
 import { rsvpSchema } from '@/lib/schemas/content/rsvp.schema';
 import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
 import {
-	AssetSchema,
 	baseEventFieldsSchema,
-	ColorTokenSchema,
 	countdownSchema,
 	musicSchema,
 	navigationSchema,
@@ -19,18 +20,6 @@ import {
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { sectionStylesSchema } from '@/lib/schemas/content/section-styles.schema';
-
-const CONTENT_SECTION_KEYS = [
-	'quote',
-	'countdown',
-	'location',
-	'family',
-	'itinerary',
-	'gallery',
-	'rsvp',
-	'gifts',
-	'thankYou',
-] as const;
 
 export const eventContentSchema = baseEventFieldsSchema
 	.extend({
@@ -43,86 +32,17 @@ export const eventContentSchema = baseEventFieldsSchema
 		thankYou: thankYouSchema,
 		music: musicSchema,
 		sections: sectionsSchema,
-		gallery: z
-			.object({
-				title: z.string().default('Galería'),
-				subtitle: z.string().optional(),
-				items: z.array(z.object({ image: AssetSchema, caption: z.string().optional() })),
-			})
-			.optional(),
-		envelope: z
-			.object({
-				disabled: z.boolean().optional().default(false),
-				sealStyle: z.enum(['wax', 'ribbon', 'flower', 'monogram']).default('wax'),
-				sealIcon: z
-					.enum(['boot', 'heart', 'monogram', 'flower', 'special-edition'])
-					.optional(),
-				microcopy: z.string().default('Toca para abrir mi invitación'),
-				documentLabel: z.string().optional(),
-				stampText: z.string().optional(),
-				stampYear: z.string().optional(),
-				tooltipText: z.string().optional(),
-				closedPalette: z
-					.object({
-						primary: ColorTokenSchema.optional(),
-						accent: ColorTokenSchema.optional(),
-						background: ColorTokenSchema.optional(),
-					})
-					.optional(),
-				variant: z.enum(THEME_PRESETS).optional(),
-			})
-			.optional(),
-		itinerary: z
-			.object({
-				title: z.string().default('Itinerario'),
-				items: z.array(
-					z.object({
-						icon: z.enum([
-							'waltz',
-							'dinner',
-							'toast',
-							'cake',
-							'party',
-							'ceremony',
-							'doll',
-							'church',
-							'reception',
-							'music',
-							'photo',
-							'boot',
-							'heel',
-							'western-hat',
-							'taco',
-							'tuba',
-							'accordion',
-						]),
-						label: z.string(),
-						description: z.string().optional(),
-						time: z.string(),
-					}),
-				),
-			})
-			.optional(),
+		gallery: gallerySchema,
+		envelope: envelopeSchema,
+		itinerary: itinerarySchema,
 		gifts: giftsSchema,
 		countdown: countdownSchema,
 		navigation: navigationSchema,
-		contentBlocks: z
-			.array(
-				z.discriminatedUnion('type', [
-					z.object({ type: z.literal('section'), section: z.enum(CONTENT_SECTION_KEYS) }),
-					z.object({
-						type: z.literal('interlude'),
-						image: AssetSchema,
-						alt: z.string().optional(),
-						height: z.enum(['screen', 'tall']).default('screen'),
-						variant: z.enum(SHARED_SECTION_VARIANTS).optional(),
-					}),
-				]),
-			)
-			.optional(),
+		contentBlocks: contentBlocksSchema,
 		sharing: sharingSchema,
 	})
 	.superRefine((value, ctx) => {
+		// Cross-field rule: editorial location styling depends on compatible preset token delivery.
 		const locationVariant = value.sectionStyles?.location?.variant;
 		const themePreset = value.theme.preset;
 

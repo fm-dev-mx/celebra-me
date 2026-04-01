@@ -4,9 +4,13 @@ import {
 	INDICATION_ICON_NAMES,
 	INDICATION_STYLE_VARIANTS,
 } from '@/lib/theme/theme-contract';
+import { itineraryItemSchema } from '@/lib/schemas/content/itinerary.schema';
 import { AssetSchema, countdownSchema } from '@/lib/schemas/content/shared.schema';
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
+const plainTextSchema = z
+	.string()
+	.refine((value) => !/[<>]/.test(value), 'Location indication text must be plain text.');
 
 const venueSchema = z.object({
 	venueEvent: z.string(),
@@ -37,24 +41,8 @@ export const locationSchema = z.object({
 			venueEvent: z.string().default('Recepción'),
 			itinerary: z
 				.array(
-					z.object({
-						icon: z.enum([
-							'waltz',
-							'dinner',
-							'toast',
-							'cake',
-							'party',
-							'ceremony',
-							'doll',
-							'boot',
-							'heel',
-							'western-hat',
-							'taco',
-							'tuba',
-							'accordion',
-						]),
-						label: z.string(),
-						time: z.string(),
+					itineraryItemSchema.omit({
+						description: true,
 					}),
 				)
 				.optional(),
@@ -67,7 +55,7 @@ export const locationSchema = z.object({
 				icon: z.enum(INDICATION_ICON_KEYS),
 				iconName: z.enum(INDICATION_ICON_NAMES).optional(),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
-				text: z.string(),
+				text: plainTextSchema,
 			}),
 		)
 		.optional(),

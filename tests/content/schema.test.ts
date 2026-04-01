@@ -121,6 +121,26 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
+	it('rejects HTML in location indications text', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				location: {
+					venueName: 'Test Venue',
+					address: 'Test Address',
+					city: 'Test City',
+					indications: [
+						{
+							icon: 'crown',
+							text: '<strong>Solo adultos</strong>',
+						},
+					],
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects unsupported preset and location variant pairings', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
