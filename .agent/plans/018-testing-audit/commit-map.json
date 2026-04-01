@@ -39,6 +39,16 @@
             "message": "feat(tests): add full-flow RSVP E2E scenario",
             "description": "Adds a comprehensive Playwright scenario covering the end-to-end guest journey: viewing a personalized invitation, selecting attendance, and receiving a confirmation message.",
             "files": ["tests/e2e/rsvp-v2-full-flow.spec.ts"]
+        },
+        {
+            "id": "prune-and-modernize-utilities",
+            "message": "refactor(tests): prune dead weight and modernize testing utilities",
+            "description": "Removes obsolete tests, refactors FAQ component test to use user-event, and cleans up global setup mocks in tests/setup.ts.",
+            "files": [
+                "tests/unit/sanity.test.ts",
+                "tests/components/FAQList.test.tsx",
+                "tests/setup.ts"
+            ]
         }
     ]
 }

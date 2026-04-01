@@ -39,6 +39,14 @@ debt, and fulfill critical coverage gaps in the 3-Layer Theme and RSVP v2 domain
   correctly trigger the expected CSS variable injections.
 - **RSVP v2 E2E**: Verify the "Happy Path" guest flow using Playwright.
 
+### Pruning & Modernizing Utilities
+
+- **Prune Dead Weight**: Remove `tests/unit/sanity.test.ts` (replaced by layered unit tests).
+- **Modernize Component Tests**: Refactor `tests/components/FAQList.test.tsx` to use
+  `@testing-library/user-event` and resolve console warnings.
+- **Clean Environment Mocks**: Optimize `tests/setup.ts` by removing duplicated or obsolete mocks
+  for `import.meta.env` and Audio API.
+
 ## Verification Plan
 
 ### Automated Tests

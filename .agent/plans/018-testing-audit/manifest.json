@@ -2,7 +2,7 @@
     "id": "018-testing-audit",
     "title": "System Testing Utility & Dead-Weight Audit",
     "description": "Optimize testing infrastructure by removing dead weight, filling coverage gaps, and strengthening governance.",
-    "status": "PLANNING",
+    "status": "READY",
     "phases": [
         {
             "id": "refactor",

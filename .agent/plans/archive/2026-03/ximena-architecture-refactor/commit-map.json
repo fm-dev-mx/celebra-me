@@ -1,0 +1,31 @@
+{
+    "commits": [
+        {
+            "scope": "hero",
+            "description": "feat(hero): decouple generic architecture and add focalPoint string support to schema",
+            "files": [
+                "src/lib/schemas/content/hero.schema.ts",
+                "src/components/invitation/Hero.astro"
+            ]
+        },
+        {
+            "scope": "theme",
+            "description": "refactor(theme): remove ximena rigid overrides and implement premium-portrait scaling",
+            "files": ["src/styles/themes/sections/_hero-theme.scss"]
+        },
+        {
+            "scope": "theme",
+            "description": "refactor(theme): purge explicit measurements from baseline jewelry preset",
+            "files": [
+                "src/styles/themes/presets/_top-premium-floral.scss",
+                "src/styles/themes/sections/_countdown-theme.scss",
+                "src/styles/themes/sections/_thank-you-theme.scss"
+            ]
+        },
+        {
+            "scope": "event",
+            "description": "chore(event): migrate ximena layout payload to decoupled portrait standard",
+            "files": ["src/content/events/ximena-meza-trasvina.json"]
+        }
+    ]
+}
