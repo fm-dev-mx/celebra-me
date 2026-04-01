@@ -1,7 +1,7 @@
 @use 'sass:color';
 @use '../tokens' as tokens;
 @use '../tokens/system/color' as sys-color;
-@use '../tokens/system/typography' as sys-type;
+@use '../tokens/system/type' as sys-type;
 @use '../tokens/semantic/ornamental' as ornamental;
 @use '../global/mixins' as mixins;
 
@@ -50,11 +50,14 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	--env-card-radius: 10px;
 	--env-card-border: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.06)};
 	--env-shadow-soft: 0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.12)};
+
 	.envelope-tooltip {
 		--env-tooltip-bg: #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.96)};
 		--env-tooltip-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.16)};
+
 		box-shadow: 0 8px 18px #{color.change(sys-color.$sys-color-coffee-900, $alpha: 0.1)};
 	}
+
 	--env-shadow-deep: 0 32px 64px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.25)};
 	--env-seal-bg: radial-gradient(
 		circle at 35% 35%,
@@ -139,13 +142,17 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background: radial-gradient(ellipse at center, transparent 55%, #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.08)} 100%);
+		background: radial-gradient(
+			ellipse at center,
+			transparent 55%,
+			#{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.08)} 100%
+		);
 		pointer-events: none;
 	}
 }
 
 .envelope-pocket {
-	z-index: 3;
+	z-index: 4;
 	clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
 	box-shadow:
 		inset 0 4px 12px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.06)},
@@ -194,7 +201,12 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		left: 15%;
 		right: 15%;
 		height: 1px;
-		background: linear-gradient(to right, transparent, #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.05)}, transparent);
+		background: linear-gradient(
+			to right,
+			transparent,
+			#{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.05)},
+			transparent
+		);
 	}
 
 	// Dynamic Volumetric Shadow: Simulates light distance from the viewer
@@ -217,7 +229,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 .envelope-card {
 	position: absolute;
 	inset: 10% 14%;
-	z-index: 4;
+	z-index: 3; // Initially behind the pocket
 	background: var(--env-card-bg);
 	border: 1px solid var(--env-card-border);
 	border-radius: var(--env-card-radius);
@@ -226,7 +238,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.1)};
 	overflow: hidden;
 	opacity: 0%;
-	transform: translateY(0) scale(0.96);
+	transform: translateY(0) scale(0.96) translateZ(0);
 	transition:
 		transform $transition-slow 150ms $ease,
 		opacity $transition-base $ease;
@@ -288,6 +300,30 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	line-height: 1.15;
 	margin: 0;
 	color: var(--color-text-primary);
+
+	&[data-material='foil-gold'] {
+		--env-name-gradient: var(
+			--foil-gold-gradient,
+			linear-gradient(75deg, transparent 0%, transparent 100%)
+		);
+
+		background: var(--env-name-gradient);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		filter: drop-shadow(0 1px 1px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)});
+	}
+
+	&[data-material='debossed'] {
+		text-shadow:
+			var(
+				--env-deboss-depth-1,
+				0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)}
+			),
+			var(
+				--env-deboss-depth-2,
+				0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.3)}
+			);
+	}
 }
 
 .envelope-card__name {
@@ -329,6 +365,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	border-radius: var(--env-stamp-radius, 999px);
 	opacity: var(--env-stamp-opacity, 100%);
 	box-shadow: var(--env-stamp-shadow, none);
+
 	.envelope-stamp {
 		box-shadow: 0 6px 12px #{color.change(sys-color.$sys-color-coffee-900, $alpha: 0.08)};
 	}
@@ -380,8 +417,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	position: relative;
 	display: grid;
 	grid-template-rows: 1fr auto 1fr;
-	justify-items: center;
-	align-items: stretch;
+	place-items: stretch center;
 	width: 100%;
 	height: 100%;
 	transition: opacity $transition-base $ease;
@@ -615,7 +651,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		width: 32px;
 		height: 32px;
 		color: var(--env-seal-icon-color);
-		filter: drop-shadow(0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.5)}) drop-shadow(0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.15)});
+		filter: drop-shadow(0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.5)})
+			drop-shadow(0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.15)});
 	}
 }
 
@@ -700,7 +737,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	.envelope-flap {
 		transform: rotateX(var(--env-flap-rotation));
 		transition-timing-function: $ease-premium;
-		z-index: 0;
+		z-index: 2; // Moves behind card but stays in front of base
 
 		&::before {
 			opacity: 0%;
@@ -715,7 +752,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 	.envelope-card {
 		opacity: 24%;
-		transform: translateY(-8%) scale(0.98);
+		transform: translateY(-8%) scale(0.98) translateZ(5px);
+		z-index: 10;
 	}
 }
 
@@ -729,7 +767,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 	.envelope-flap {
 		transform: rotateX(var(--env-flap-rotation));
-		z-index: 0;
+		z-index: 2;
 
 		&::before {
 			opacity: 0%;
@@ -742,7 +780,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 	.envelope-card {
 		opacity: 100%;
-		transform: translateY(-60%) rotate(-1deg) scale(1.04);
+		transform: translateY(-60%) rotate(-1deg) scale(1.04) translateZ(20px);
+		z-index: 100; // Final layers above everything
 		transition:
 			transform $transition-rise $ease-premium,
 			opacity $transition-rise $ease;
@@ -769,6 +808,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 	.envelope-container {
 		width: min(88vw, 340px);
+
 		--env-aspect-ratio: 0.75; // Significantly taller for mobile breathing room
 		--env-max-height: min(78vh, 580px);
 		--env-seal-size: 40px;
@@ -827,6 +867,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 @include mixins.respond-below(sm) {
 	.envelope-container {
 		width: min(88vw, 320px);
+
 		--env-aspect-ratio: 0.8; // Safer boundary for 320px devices
 		--env-seal-size: 30px;
 	}
@@ -896,7 +937,10 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 }
 
 .envelope-seal-button--monogram .envelope-seal-button__visual {
-	border: var(--env-seal-border, 1px solid #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.22)});
+	border: var(
+		--env-seal-border,
+		1px solid #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.22)}
+	);
 	box-shadow:
 		var(--env-seal-shadow, none),
 		inset 0 0 0 1px #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.1)};
@@ -905,22 +949,3 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 /* ─────────────────────────────────────────────────────────────────────────────
    Premium Typography Utilities
    ────────────────────────────────────────────────────────────────────────── */
-
-.envelope-name,
-.envelope-card__name,
-.personalized-name {
-	&[data-material='foil-gold'] {
-		--env-name-gradient: var(--foil-gold-gradient, linear-gradient(75deg, transparent 0%, transparent 100%));
-
-		background: var(--env-name-gradient);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 1px 1px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)});
-	}
-
-	&[data-material='debossed'] {
-		text-shadow:
-			var(--env-deboss-depth-1, 0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)}),
-			var(--env-deboss-depth-2, 0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.3)});
-	}
-}
