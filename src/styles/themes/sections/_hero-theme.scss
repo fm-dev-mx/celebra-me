@@ -53,7 +53,8 @@
 // EDITORIAL HERO
 // ==========================================================================
 
-.invitation-hero[data-variant='editorial'] {
+.invitation-hero[data-variant='editorial'],
+.invitation-hero[data-variant='premiere-floral'] {
 	position: relative;
 	height: 100svh;
 	display: flex;
@@ -317,8 +318,7 @@
 				'label label'
 				'title portrait';
 			grid-template-columns: 1fr 1fr;
-			align-items: center;
-			justify-items: center;
+			place-items: center center;
 			padding: 0;
 			max-width: var(--container-max-width-lg);
 			height: 100svh;

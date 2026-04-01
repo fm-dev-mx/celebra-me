@@ -38,7 +38,7 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `jewelry-box`
 - `jewelry-box-wedding`
 - `luxury-hacienda`
-- `top-premium-floral`
+- `premiere-floral`
 - `editorial`
 
 Section variant enums come from `src/lib/theme/theme-variants.ts`.

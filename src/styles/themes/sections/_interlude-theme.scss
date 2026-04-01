@@ -4,7 +4,8 @@
 // INTERLUDE SECTION THEMES
 // ==========================================================================
 
-.invitation-interlude[data-variant='editorial'] {
+.invitation-interlude[data-variant='editorial'],
+.invitation-interlude[data-variant='premiere-floral'] {
 	--interlude-overlay-opacity: 0.28;
 
 	overflow: hidden;
@@ -28,7 +29,11 @@
 				transparent 40%,
 				rgb(var(--color-surface-dark-rgb) / 32%) 100%
 			),
-			radial-gradient(circle at 20% 20%, rgb(var(--color-surface-primary-rgb) / 24%) 0%, transparent 34%);
+			radial-gradient(
+				circle at 20% 20%,
+				rgb(var(--color-surface-primary-rgb) / 24%) 0%,
+				transparent 34%
+			);
 		pointer-events: none;
 		z-index: 1;
 		opacity: var(--interlude-overlay-opacity);

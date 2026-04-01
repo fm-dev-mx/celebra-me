@@ -28,7 +28,7 @@ Current presets:
 - `jewelry-box`
 - `jewelry-box-wedding`
 - `luxury-hacienda`
-- `top-premium-floral`
+- `premiere-floral`
 - `editorial`
 
 Do not introduce ad-hoc preset names or section-variant literals directly in content files.

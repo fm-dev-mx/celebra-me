@@ -49,9 +49,10 @@ describe('adaptEvent', () => {
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.theme.preset).toBe('top-premium-floral');
+		expect(viewModel.theme.preset).toBe('premiere-floral');
 		expect(viewModel.sections.location?.ceremony).toBeUndefined();
 		expect(viewModel.sections.location?.reception?.venueName).toBe("D'Galaz Alberca y Eventos");
+		expect(viewModel.sections.family?.layoutVariant).toBe('premium-mask');
 		expect(viewModel.contentBlocks?.[0]).toMatchObject({
 			type: 'section',
 			section: 'location',

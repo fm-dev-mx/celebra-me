@@ -42,7 +42,8 @@
 
 /* --- FAMILY SECTION THEMES --- */
 
-.family[data-variant='editorial'] {
+.family[data-variant='editorial'],
+.family[data-variant='premiere-floral'] {
 	background: var(
 		--family-bg,
 		radial-gradient(

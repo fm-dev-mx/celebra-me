@@ -8,7 +8,7 @@ export const QUOTE_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'top-premium-floral',
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -20,7 +20,7 @@ export const COUNTDOWN_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'top-premium-floral',
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -32,7 +32,7 @@ export const LOCATION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'top-premium-floral',
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -41,7 +41,7 @@ export const SHARED_SECTION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'top-premium-floral',
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -50,9 +50,12 @@ export const ITINERARY_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'top-premium-floral',
+	'premiere-floral',
 	'editorial',
 ] as const;
+
+export const HERO_LAYOUT_VARIANTS = ['premium-portrait'] as const;
+export const FAMILY_LAYOUT_VARIANTS = ['premium-mask'] as const;
 
 export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite'] as const;
 export const QUOTE_ANIMATIONS = ['fade', 'bounce', 'elastic', 'none'] as const;
@@ -83,6 +86,8 @@ export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
 export type LocationVariant = (typeof LOCATION_VARIANTS)[number];
 export type SharedSectionVariant = (typeof SHARED_SECTION_VARIANTS)[number];
 export type ItineraryVariant = (typeof ITINERARY_VARIANTS)[number];
+export type HeroLayoutVariant = (typeof HERO_LAYOUT_VARIANTS)[number];
+export type FamilyLayoutVariant = (typeof FAMILY_LAYOUT_VARIANTS)[number];
 export type LocationMapStyle = (typeof LOCATION_MAP_STYLES)[number];
 export type QuoteAnimation = (typeof QUOTE_ANIMATIONS)[number];
 export type QuoteFontStyle = (typeof QUOTE_FONT_STYLES)[number];

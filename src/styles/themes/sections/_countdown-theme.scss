@@ -10,7 +10,8 @@
 // EDITORIAL COUNTDOWN
 // ==========================================================================
 
-.countdown-section[data-variant='editorial'] {
+.countdown-section[data-variant='editorial'],
+.countdown-section[data-variant='premiere-floral'] {
 	background: var(--countdown-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);

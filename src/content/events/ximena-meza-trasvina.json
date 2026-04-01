@@ -4,36 +4,39 @@
     "title": "La Noche Premiere de Ximena",
     "description": "Una celebración editorial donde la elegancia floral y el brillo del rose gold presentan una noche de quince años inolvidable.",
     "theme": {
-        "preset": "top-premium-floral"
+        "preset": "premiere-floral"
     },
     "sectionStyles": {
         "countdown": {
-            "variant": "editorial",
+            "variant": "premiere-floral",
             "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
-            "variant": "editorial",
+            "variant": "premiere-floral",
             "mapStyle": "dark",
             "showFlourishes": true
         },
         "family": {
-            "variant": "editorial"
+            "variant": "premiere-floral"
         },
         "gallery": {
-            "variant": "editorial"
+            "variant": "premiere-floral"
         },
         "gifts": {
-            "variant": "editorial"
+            "variant": "premiere-floral"
         },
         "itinerary": {
-            "variant": "editorial"
+            "variant": "premiere-floral"
         },
         "thankYou": {
-            "variant": "editorial"
+            "variant": "premiere-floral"
+        },
+        "footer": {
+            "variant": "premiere-floral"
         },
         "rsvp": {
-            "variant": "editorial",
+            "variant": "premiere-floral",
             "labels": {
                 "name": "Tu nombre en la lista *",
                 "guestCount": "Número de acompañantes",
@@ -48,8 +51,7 @@
         "backgroundImage": "hero",
         "portrait": "portrait",
         "layoutVariant": "premium-portrait",
-        "focalPoint": "center 22%",
-        "variant": "editorial"
+        "variant": "premiere-floral"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
@@ -100,12 +102,6 @@
         ],
         "featuredImage": "family",
         "layoutVariant": "premium-mask"
-    },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true
     },
     "gallery": {
         "title": "Galería Editorial",
@@ -218,6 +214,7 @@
             "type": "interlude",
             "image": "gallery04",
             "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -228,6 +225,7 @@
             "type": "interlude",
             "image": "gallery12",
             "alt": "Jardín privado iluminado para la gala",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -238,6 +236,7 @@
             "type": "interlude",
             "image": "interlude01",
             "alt": "Detalle editorial de texturas y perlas",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -248,6 +247,7 @@
             "type": "interlude",
             "image": "gallery09",
             "alt": "Brillo rose metal cinematográfico",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -258,6 +258,7 @@
             "type": "interlude",
             "image": "gallery10",
             "alt": "Explosión artística de destellos en el jardín",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -272,7 +273,7 @@
             "type": "interlude",
             "image": "interludeNew01",
             "alt": "Retrato editorial final",
-            "variant": "editorial",
+            "variant": "premiere-floral",
             "height": "screen"
         },
         {
@@ -285,7 +286,7 @@
         "sealStyle": "wax",
         "sealIcon": "flower",
         "microcopy": "Abre Tu Invitación",
-        "variant": "editorial",
+        "variant": "premiere-floral",
         "closedPalette": {
             "accent": "surfaceDark"
         }

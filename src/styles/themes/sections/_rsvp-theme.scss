@@ -43,7 +43,8 @@
 // EDITORIAL RSVP
 // ==========================================================================
 
-.rsvp[data-variant='editorial'] {
+.rsvp[data-variant='editorial'],
+.rsvp[data-variant='premiere-floral'] {
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);

@@ -4,7 +4,8 @@
 // EDITORIAL ITINERARY
 // ==========================================================================
 
-.itinerary[data-variant='editorial'] {
+.itinerary[data-variant='editorial'],
+.itinerary[data-variant='premiere-floral'] {
 	background: var(--itinerary-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 

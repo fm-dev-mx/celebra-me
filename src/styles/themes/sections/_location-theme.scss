@@ -11,7 +11,8 @@
 // EDITORIAL LOCATION
 // ==========================================================================
 
-.event-location[data-variant='editorial'] {
+.event-location[data-variant='editorial'],
+.event-location[data-variant='premiere-floral'] {
 	background: var(--location-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 	position: relative;

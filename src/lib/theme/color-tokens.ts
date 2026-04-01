@@ -16,9 +16,10 @@ export type ColorToken = (typeof COLOR_TOKENS)[keyof typeof COLOR_TOKENS];
 export const VALID_COLOR_TOKENS = Object.values(COLOR_TOKENS) as string[];
 
 export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
-	'top-premium-floral': {
+	'premiere-floral': {
 		surfacePrimary: '#FBEDED',
 		actionPrimary: '#D4A5A5',
+		actionAccent: '#D4A5A5',
 		surfaceDark: '#5E4B4B',
 		surfaceSoft: '#FFFFFF',
 		textPrimary: '#5E4B4B',

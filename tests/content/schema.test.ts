@@ -94,6 +94,35 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('enforces typed hero and family layout variants', () => {
+		const validResult = eventSchema.safeParse(
+			createMinimalEvent({
+				hero: {
+					name: 'Test Name',
+					date: '2026-01-01T00:00:00.000Z',
+					backgroundImage: 'https://example.com/hero.jpg',
+					layoutVariant: 'premium-portrait',
+				},
+				family: {
+					layoutVariant: 'premium-mask',
+				},
+			}),
+		);
+		const invalidResult = eventSchema.safeParse(
+			createMinimalEvent({
+				hero: {
+					name: 'Test Name',
+					date: '2026-01-01T00:00:00.000Z',
+					backgroundImage: 'https://example.com/hero.jpg',
+					layoutVariant: 'broken-layout',
+				},
+			}),
+		);
+
+		expect(validResult.success).toBe(true);
+		expect(invalidResult.success).toBe(false);
+	});
+
 	it('supports typed location indications with explicit iconName and styleVariant', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
@@ -164,7 +193,7 @@ describe('Event content schema (real contract)', () => {
 				theme: {
 					primaryColor: '#d4af37',
 					fontFamily: 'serif',
-					preset: 'top-premium-floral',
+					preset: 'premiere-floral',
 				},
 				sectionStyles: {
 					location: { variant: 'editorial' },

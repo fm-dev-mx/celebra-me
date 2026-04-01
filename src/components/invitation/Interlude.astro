@@ -2,12 +2,13 @@
 import '@/styles/invitation/_interlude.scss';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	image: ImageAsset;
 	alt: string;
 	height?: 'screen' | 'tall';
-	variant?: string;
+	variant?: SharedSectionVariant;
 }
 
 const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
@@ -36,7 +37,11 @@ const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 				}
 
 				const variant = interlude.dataset.variant ?? '';
-				if (!variant.includes('premium') && variant !== 'editorial') {
+				if (
+					!variant.includes('premium') &&
+					variant !== 'editorial' &&
+					variant !== 'premiere-floral'
+				) {
 					continue;
 				}
 

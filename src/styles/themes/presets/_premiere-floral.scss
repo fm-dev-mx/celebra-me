@@ -2,7 +2,7 @@
 @use '../../tools/functions' as tools;
 @use '../../tokens/system/color' as sys;
 
-.theme-preset--top-premium-floral {
+.theme-preset--premiere-floral {
 	--color-surface-primary: #{sys.$sys-color-floral-50};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-50)};
 	--color-surface-soft: #{sys.$sys-color-neutral-0};
@@ -96,9 +96,6 @@
 	--location-accent: var(--color-action-accent);
 	--location-nav-button-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
 	--location-nav-button-color: var(--color-text-primary);
-
-
-	// Premium Metallic Gradients
 	--gold-metallic: linear-gradient(
 		135deg,
 		#{sys.$sys-color-floral-300} 0%,
@@ -108,13 +105,7 @@
 		#{sys.$sys-color-floral-300} 100%
 	);
 	--gold-glow: 0 0 20px #{color.change(sys.$sys-color-floral-300, $alpha: 0.25)};
-
-	// Layout Specifics
 	--container-max-width-lg: 1280px;
-
-	// ---------------------------------------------------------------------
-	// Image filter tokens
-	// ---------------------------------------------------------------------
 	--theme-image-filter-hero: none;
 	--theme-image-filter-portrait: none;
 	--theme-image-filter-gallery: none;

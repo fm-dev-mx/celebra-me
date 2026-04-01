@@ -5,7 +5,8 @@
 // EDITORIAL THANK YOU
 // ==========================================================================
 
-.thank-you-section[data-variant='editorial'] {
+.thank-you-section[data-variant='editorial'],
+.thank-you-section[data-variant='premiere-floral'] {
 	background: var(--color-surface-dark);
 	padding-block: clamp(6rem, 15vw, 10rem);
 	position: relative;
