@@ -43,7 +43,14 @@
 /* --- FAMILY SECTION THEMES --- */
 
 .family[data-variant='editorial'] {
-	background: var(--family-bg, radial-gradient(circle at bottom right, var(--color-surface-dark), var(--color-surface-dark)));
+	background: var(
+		--family-bg,
+		radial-gradient(
+			circle at bottom right,
+			var(--color-surface-dark),
+			var(--color-surface-dark)
+		)
+	);
 	padding-block: var(--section-padding-block);
 	position: relative;
 	overflow: hidden;
@@ -222,7 +229,11 @@
 }
 
 .family[data-variant='jewelry-box'] {
-	--family-bg: radial-gradient(circle at 50% -20%, var(--color-surface-primary) 0%, var(--color-surface-primary) 100%);
+	--family-bg: radial-gradient(
+		circle at 50% -20%,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-primary) 100%
+	);
 	--family-panel-bg: rgb(var(--color-surface-primary-rgb), 0.82);
 	--family-border: rgb(var(--color-action-accent-rgb), 0.24);
 	--family-text-primary: var(--color-surface-dark);
@@ -402,6 +413,58 @@
 	@include mixins.respond-to(lg) {
 		.family__content {
 			justify-self: end;
+		}
+	}
+}
+
+/* --- LAYOUT VARIANTS --- */
+
+.family[data-layout='premium-mask'] {
+	// 1. Fluid Flexbox instead of rigid grid
+	.family__panel {
+		display: flex;
+		flex-direction: column;
+	}
+
+	// 2. 3-Layer Color Architecture token shadows instead of raw black
+	.family__media-frame {
+		box-shadow:
+			0 40px 100px rgb(var(--color-surface-dark-rgb) / 40%),
+			0 0 30px rgb(var(--color-action-accent-rgb) / 20%);
+
+		img {
+			// 3. Organic mask and GPU-accelerated motion
+			mask-image: linear-gradient(to bottom, black 85%, transparent);
+			transform: translateZ(0);
+			transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+		}
+
+		&:hover img {
+			transform: translateZ(0) scale(1.02);
+		}
+	}
+
+	// 4. Premium --gold-metallic text gradient
+	.family__title {
+		background: var(--gold-metallic);
+		background-clip: text;
+		color: transparent;
+	}
+
+	@include mixins.respond-to(lg) {
+		.family__panel {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.family__media {
+			flex: 0 0 45%;
+		}
+
+		.family__content {
+			flex: 1;
+			padding-left: 2rem;
 		}
 	}
 }

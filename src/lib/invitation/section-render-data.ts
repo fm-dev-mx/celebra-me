@@ -18,6 +18,7 @@ type FamilyProps = {
 	labels: NonNullable<InvitationPageData['sections']['family']>['labels'];
 	celebrantName: NonNullable<InvitationPageData['sections']['family']>['celebrantName'];
 	variant: NonNullable<InvitationPageData['sections']['family']>['variant'];
+	layoutVariant: NonNullable<InvitationPageData['sections']['family']>['layoutVariant'];
 };
 
 type GalleryProps = {
@@ -159,6 +160,7 @@ function renderSection(
 							labels: sections.family.labels,
 							celebrantName: sections.family.celebrantName,
 							variant: sections.family.variant,
+							layoutVariant: sections.family.layoutVariant,
 						},
 					}
 				: null;

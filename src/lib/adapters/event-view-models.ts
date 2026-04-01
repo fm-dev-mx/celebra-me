@@ -283,6 +283,7 @@ function buildFamilySection(
 			SHARED_SECTION_VARIANTS,
 			sharedSectionFallback,
 		),
+		layoutVariant: data.family.layoutVariant,
 	};
 }
 

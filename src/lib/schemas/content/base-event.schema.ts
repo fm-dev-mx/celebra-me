@@ -1,5 +1,8 @@
 import { z } from 'astro:content';
-import { LOCATION_VARIANT_PRESET_COMPATIBILITY } from '@/lib/theme/theme-contract';
+import {
+	LOCATION_VARIANT_PRESET_COMPATIBILITY,
+	type ThemePreset,
+} from '@/lib/theme/theme-contract';
 import { contentBlocksSchema } from '@/lib/schemas/content/content-block.schema';
 import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
@@ -48,7 +51,9 @@ export const eventContentSchema = baseEventFieldsSchema
 
 		if (!locationVariant || !themePreset) return;
 
-		const allowedPresets = LOCATION_VARIANT_PRESET_COMPATIBILITY[locationVariant];
+		const allowedPresets = (
+			LOCATION_VARIANT_PRESET_COMPATIBILITY as Record<string, readonly ThemePreset[]>
+		)[locationVariant];
 		if (!allowedPresets || allowedPresets.includes(themePreset)) return;
 
 		ctx.addIssue({

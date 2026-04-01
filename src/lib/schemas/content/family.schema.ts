@@ -39,5 +39,6 @@ export const familySchema = z
 			)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
+		layoutVariant: z.string().optional(),
 	})
 	.optional();

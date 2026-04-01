@@ -90,7 +90,7 @@
         "labels": {
             "sectionTitle": "El Círculo de Luz",
             "sectionSubtitle": "Círculo Íntimo",
-            "parentsTitle": "Con la bendición de mis padres"
+            "parentsTitle": "Con la bendición de"
         },
         "godparents": [
             {
@@ -98,7 +98,8 @@
                 "role": "Madrina de honor"
             }
         ],
-        "featuredImage": "family"
+        "featuredImage": "family",
+        "layoutVariant": "premium-mask"
     },
     "sections": {
         "countdown": true,

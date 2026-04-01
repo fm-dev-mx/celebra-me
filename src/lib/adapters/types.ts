@@ -248,6 +248,7 @@ export interface InvitationViewModel {
 			labels?: FamilyLabels;
 			celebrantName: string;
 			variant?: SharedSectionVariant;
+			layoutVariant?: string;
 		};
 		gallery?: {
 			title: string;
