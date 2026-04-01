@@ -79,4 +79,58 @@ describe('Theme Delivery Integration', () => {
 		expect(styles).toContain('--env-primary: #333333;');
 		expect(pageData.wrapper.dataAttributes['data-env-variant']).toBe('jewelry-box');
 	});
+
+	it('should allow previewTheme to override only the delivered preset for premiere-family invitations', () => {
+		const ximenaEvent = {
+			...mockEventBase,
+			id: 'events/ximena-meza-trasvina',
+			data: {
+				...mockEventBase.data,
+				eventType: 'xv',
+				title: 'Ximena',
+				theme: {
+					preset: 'premiere-ivory-gold',
+				},
+				hero: {
+					name: 'Ximena',
+					date: '2026-04-11T20:00:00.000Z',
+					backgroundImage: '/assets/hero.jpg',
+					variant: 'premiere-floral',
+				},
+				location: {
+					city: 'Los Mochis',
+					venueName: 'Venue',
+				},
+				sectionStyles: {
+					location: {
+						variant: 'premiere-floral',
+					},
+					footer: {
+						variant: 'premiere-floral',
+					},
+				},
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					microcopy: 'Abrir',
+					variant: 'premiere-floral',
+					closedPalette: {
+						accent: 'surfaceDark',
+					},
+				},
+			} as any,
+		};
+
+		const pageData = prepareInvitationPageData({
+			eventEntry: ximenaEvent as EventContentEntry,
+			slug: 'ximena-meza-trasvina',
+			previewTheme: 'premiere-sage-gold',
+		});
+
+		expect(pageData.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-sage-gold');
+		expect(pageData.header.variant).toBe('premiere-sage-gold');
+		expect(pageData.envelope?.variant).toBe('premiere-sage-gold');
+		expect(pageData.footer.variant).toBe('premiere-sage-gold');
+		expect(pageData.sections.location?.variant).toBe('premiere-sage-gold');
+	});
 });

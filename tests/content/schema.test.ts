@@ -193,7 +193,7 @@ describe('Event content schema (real contract)', () => {
 				theme: {
 					primaryColor: '#d4af37',
 					fontFamily: 'serif',
-					preset: 'premiere-floral',
+					preset: 'premiere-sage-gold',
 				},
 				sectionStyles: {
 					location: { variant: 'editorial' },
