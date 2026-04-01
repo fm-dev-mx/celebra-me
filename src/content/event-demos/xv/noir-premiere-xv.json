@@ -104,12 +104,6 @@
         ],
         "featuredImage": "family"
     },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true
-    },
     "gallery": {
         "title": "Galeria Editorial",
         "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",

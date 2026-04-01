@@ -18,7 +18,6 @@ import {
 	musicSchema,
 	navigationSchema,
 	quoteSchema,
-	sectionsSchema,
 	sharingSchema,
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
@@ -34,7 +33,6 @@ export const eventContentSchema = baseEventFieldsSchema
 		quote: quoteSchema,
 		thankYou: thankYouSchema,
 		music: musicSchema,
-		sections: sectionsSchema,
 		gallery: gallerySchema,
 		envelope: envelopeSchema,
 		itinerary: itinerarySchema,

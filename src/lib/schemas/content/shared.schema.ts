@@ -77,15 +77,6 @@ export const musicSchema = z
 	})
 	.optional();
 
-export const sectionsSchema = z
-	.object({
-		countdown: z.boolean().default(true),
-		rsvp: z.boolean().default(true),
-		gifts: z.boolean().default(false),
-		gallery: z.boolean().default(false),
-	})
-	.optional();
-
 export const countdownSchema = z
 	.object({
 		title: z.string().default('¡Falta muy poco!'),

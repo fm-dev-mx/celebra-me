@@ -71,12 +71,6 @@
             }
         ]
     },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true
-    },
     "gallery": {
         "title": "Galería",
         "subtitle": "Momentos especiales",

@@ -225,7 +225,7 @@ function buildQuoteSection(context: AdaptationContext) {
 
 function buildCountdownSection(context: AdaptationContext) {
 	const { data, countdownFallback } = context;
-	if (!data.sections?.countdown || !data.countdown) return undefined;
+	if (!data.countdown) return undefined;
 
 	return {
 		...data.countdown,
@@ -292,7 +292,7 @@ function buildGallerySection(
 	galleryItems: NonNullable<InvitationViewModel['sections']['gallery']>['items'],
 ) {
 	const { data, sharedSectionFallback } = context;
-	if (!data.sections?.gallery || !data.gallery) return undefined;
+	if (!data.gallery) return undefined;
 
 	return {
 		...data.gallery,
@@ -332,7 +332,7 @@ function resolveCelebrantName(data: EventContentEntry['data']) {
 
 function buildRsvpSection(context: AdaptationContext) {
 	const { data, eventSlug, sharedSectionFallback } = context;
-	if (!data.sections?.rsvp || !data.rsvp) return undefined;
+	if (!data.rsvp) return undefined;
 
 	return {
 		...data.rsvp,
@@ -350,7 +350,7 @@ function buildRsvpSection(context: AdaptationContext) {
 
 function buildGiftsSection(context: AdaptationContext) {
 	const { data, sharedSectionFallback } = context;
-	if (!data.sections?.gifts || !data.gifts) return undefined;
+	if (!data.gifts) return undefined;
 
 	return {
 		...data.gifts,

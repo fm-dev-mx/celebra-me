@@ -104,12 +104,6 @@
         ],
         "featuredImage": "family"
     },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true
-    },
     "gallery": {
         "title": "Galería",
         "subtitle": "Recuerdos antes del gran día",

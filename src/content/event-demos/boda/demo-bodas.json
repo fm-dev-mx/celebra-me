@@ -77,14 +77,6 @@
             }
         ]
     },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true,
-        "family": true,
-        "itinerary": true
-    },
     "rsvp": {
         "title": "¿Nos acompañan a celebrar nuestro amor?",
         "guestCap": 10,

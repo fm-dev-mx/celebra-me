@@ -71,14 +71,6 @@
             }
         ]
     },
-    "sections": {
-        "countdown": true,
-        "rsvp": true,
-        "gifts": true,
-        "gallery": true,
-        "family": true,
-        "itinerary": true
-    },
     "gallery": {
         "title": "Legado de Vida",
         "subtitle": "Un recorrido por seis décadas de historia",
