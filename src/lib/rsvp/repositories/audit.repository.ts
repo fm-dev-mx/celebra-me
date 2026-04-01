@@ -41,7 +41,7 @@ export async function appendGuestAuditPublic(
 			payload,
 		},
 	});
-	if (!rows[0]) throw new Error('Failed to write audit entry.');
+	if (!rows[0]) throw new Error('No se pudo registrar auditoría.');
 	return toGuestAuditRecord(rows[0]);
 }
 
