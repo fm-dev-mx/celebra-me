@@ -18,6 +18,7 @@ interface Props {
 	variant?: string;
 	layoutVariant?: string;
 	guestName?: string;
+	focalPoint?: string;
 }
 
 const {
@@ -33,6 +34,7 @@ const {
 	variant = 'standard',
 	layoutVariant,
 	guestName,
+	focalPoint,
 } = Astro.props;
 
 // Distinguish between ImageAsset (wrapper with .src) and ImageMetadata (Astro object)
@@ -59,7 +61,7 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 ---
 
 <section id="inicio" class="invitation-hero" data-variant={variant} data-layout-variant={layoutVariant}>
-	<div class="invitation-hero__background">
+	<div class="invitation-hero__background" style={focalPoint ? `--hero-bg-position: ${focalPoint}` : undefined}>
 		<Image
 			src={bgSrc}
 			alt={name}

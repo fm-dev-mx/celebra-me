@@ -301,39 +301,37 @@
 		}
 	}
 
-	// ── Ximena Premium Layout Variant ──
-	// Specifically designed to cover the face of the background image
-	&[data-layout-variant='ximena-premium'] {
+	// ── Premium Portrait Layout Variant ──
+	// A decoupled variant designed to gracefully overlay titles on centered hero portraits
+	&[data-layout-variant='premium-portrait'] {
 		.invitation-hero__background img {
-			object-position: center 22%; // Calibrado para la cara de Ximena
+			object-position: var(--hero-bg-position, center);
 			transition:
 				object-position 0.8s tokens.$ease-premium,
 				transform 1s tokens.$ease-premium;
 		}
 
 		.invitation-hero__content {
-			display: flex;
-			flex-direction: column;
+			display: grid;
+			grid-template-areas:
+				'label label'
+				'title portrait';
+			grid-template-columns: 1fr 1fr;
 			align-items: center;
-			justify-content: flex-start;
+			justify-items: center;
 			padding: 0;
-			max-width: none;
+			max-width: var(--container-max-width-lg);
 			height: 100svh;
 		}
 
-		// Reset inherited grid properties
-		.invitation-hero__label,
-		.invitation-hero__portrait,
-		.invitation-hero__title {
-			grid-area: auto;
-		}
-
 		.invitation-hero__label {
+			grid-area: label;
 			margin-top: 10svh;
 			z-index: 20;
 		}
 
 		.invitation-hero__portrait {
+			grid-area: portrait;
 			margin-top: 2svh;
 			width: min(88%, 440px);
 			border-radius: 50% 50% 12px 12px / 20% 20% 12px 12px;
@@ -346,8 +344,7 @@
 		}
 
 		.invitation-hero__title {
-			margin-top: -16svh; // Pushes title up to slightly overlap the portrait
-			margin-bottom: auto;
+			grid-area: title;
 			font-size: clamp(3.2rem, 14vw, 8.5rem);
 			text-align: center;
 			mix-blend-mode: normal;
@@ -355,6 +352,7 @@
 			text-shadow:
 				0 10px 40px rgb(var(--color-surface-dark-rgb) / 80%),
 				0 0 30px rgb(var(--color-action-accent-rgb) / 30%);
+			transform: translateX(10%);
 		}
 
 		.invitation-hero__details {
@@ -370,6 +368,15 @@
 		}
 
 		@media (width <= 860px) {
+			.invitation-hero__content {
+				grid-template-areas:
+					'label'
+					'portrait'
+					'title';
+				grid-template-columns: 1fr;
+				align-content: start;
+			}
+
 			.invitation-hero__label {
 				margin-top: 12svh;
 			}
@@ -380,7 +387,7 @@
 			}
 
 			.invitation-hero__title {
-				margin-top: -12svh;
+				transform: translateY(-20%);
 				font-size: clamp(3rem, 18vw, 6.5rem);
 			}
 		}

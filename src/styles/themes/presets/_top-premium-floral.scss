@@ -96,31 +96,7 @@
 	--location-accent: var(--color-action-accent);
 	--location-nav-button-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
 	--location-nav-button-color: var(--color-text-primary);
-	--jewelry-box-gallery-section-bg: linear-gradient(
-		180deg,
-		#{sys.$sys-color-neutral-0} 0%,
-		#{sys.$sys-color-floral-50} 100%
-	);
-	--jewelry-box-gallery-card-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
-	--jewelry-box-gallery-card-radius: 0;
-	--jewelry-box-gallery-card-padding: 0;
-	--jewelry-box-gallery-image-radius: 0;
-	--jewelry-box-gallery-title-font: var(--font-display);
-	--jewelry-box-gallery-title-color: #{sys.$sys-color-taupe-500};
-	--jewelry-box-gallery-subtitle-color: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.72)};
-	--jewelry-box-gallery-caption-bg: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.9)};
-	--jewelry-box-gallery-caption-color: #{sys.$sys-color-floral-50};
-	--jewelry-box-gallery-caption-font: 'Cormorant Garamond', serif;
-	--jewelry-box-gallery-caption-size: 0.82rem;
-	--jewelry-box-gallery-caption-letter-spacing: 0.15em;
-	--jewelry-box-countdown-value-size-mobile: clamp(3rem, 12vw, 4.6rem);
-	--jewelry-box-countdown-value-size-desktop: clamp(4.5rem, 8vw, 6.5rem);
-	--jewelry-box-countdown-label-letter-spacing: 0.28em;
-	--jewelry-box-countdown-label-opacity: 0.84;
-	--jewelry-box-thank-you-frame-size-mobile: 240px;
-	--jewelry-box-thank-you-frame-size-desktop: 300px;
-	--jewelry-box-thank-you-image-fit: cover;
-	--jewelry-box-thank-you-image-position: center;
+
 
 	// Premium Metallic Gradients
 	--gold-metallic: linear-gradient(
