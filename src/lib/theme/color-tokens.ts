@@ -28,37 +28,37 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		background: '#FBEDED',
 	},
 	'premiere-ivory-gold': {
-		surfacePrimary: '#FCF7F0',
-		actionPrimary: '#D0B075',
-		actionAccent: '#B8914D',
-		surfaceDark: '#5B4F43',
+		surfacePrimary: '#FFFDF9',
+		actionPrimary: '#C5A059',
+		actionAccent: '#A6894B',
+		surfaceDark: '#2D241E',
 		surfaceSoft: '#FFFFFF',
-		textPrimary: '#5B4F43',
-		primary: '#FCF7F0',
-		accent: '#B8914D',
-		background: '#FCF7F0',
+		textPrimary: '#2D241E',
+		primary: '#FFFDF9',
+		accent: '#A6894B',
+		background: '#FFFDF9',
 	},
 	'premiere-sage-gold': {
-		surfacePrimary: '#F5F3EC',
-		actionPrimary: '#A8B09A',
-		actionAccent: '#BA9A58',
-		surfaceDark: '#4E574B',
+		surfacePrimary: '#F5F3EC', // Porcelain Sage
+		actionPrimary: '#8A9682', // Architectural Sage
+		actionAccent: '#D1B680', // Champagne Metal
+		surfaceDark: '#3E453C', // Charcoal Botanical
 		surfaceSoft: '#FFFFFF',
-		textPrimary: '#4E574B',
+		textPrimary: '#3E453C',
 		primary: '#F5F3EC',
-		accent: '#BA9A58',
+		accent: '#D1B680',
 		background: '#F5F3EC',
 	},
 	'premiere-rose-plum': {
-		surfacePrimary: '#F9EEF2',
-		actionPrimary: '#B98D9E',
-		actionAccent: '#7A5A6C',
-		surfaceDark: '#5C4654',
-		surfaceSoft: '#FFFDFE',
-		textPrimary: '#5C4654',
-		primary: '#F9EEF2',
-		accent: '#7A5A6C',
-		background: '#F9EEF2',
+		surfacePrimary: '#FAF2F4', // Porcelain Rose
+		actionPrimary: '#9B5D6B', // Rose Couture
+		actionAccent: '#C9A86C', // Old Gold
+		surfaceDark: '#2D242E', // Nocturnal Plum
+		surfaceSoft: '#FFFFFF',
+		textPrimary: '#2D242E',
+		primary: '#FAF2F4',
+		accent: '#C9A86C',
+		background: '#FAF2F4',
 	},
 	'jewelry-box': {
 		surfacePrimary: '#FDF7F2',

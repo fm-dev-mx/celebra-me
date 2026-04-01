@@ -40,6 +40,7 @@ interface Props {
 		spouseRole?: string;
 		childrenTitle?: string;
 		parentsTitle?: string;
+		godparentsTitle?: string;
 	};
 	variant?: SharedSectionVariant;
 	layoutVariant?: FamilyLayoutVariant;
@@ -79,6 +80,7 @@ const resolvedLabels = {
 	spouseRole: labels?.spouseRole ?? 'Esposa',
 	childrenTitle: labels?.childrenTitle ?? 'Nuestros Hijos',
 	parentsTitle: labels?.parentsTitle ?? 'Con la bendición de',
+	godparentsTitle: labels?.godparentsTitle ?? 'Padrinos',
 };
 
 const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
@@ -167,7 +169,11 @@ if (godparents && godparents.length > 0) {
 }
 ---
 
-<section id="family-section" class="family" data-variant={variant}>
+<section
+	id="family-section"
+	class="family"
+	data-variant={variant}
+>
 	<div class="family__bg-texture" aria-hidden="true"></div>
 	<FamilyDecorations variant={variant} component="bg" />
 
@@ -184,7 +190,12 @@ if (godparents && godparents.length > 0) {
 			{featuredImage && (
 				<figure class="family__media family__reveal">
 					<div class="family__media-frame">
-						<OptimizedImage imagePath={imagePath} alt={celebrantName} width={600} height={800} />
+						<OptimizedImage
+							imagePath={imagePath}
+							alt={celebrantName}
+							width={600}
+							height={800}
+						/>
 						<FamilyDecorations variant={variant} component="frame" />
 					</div>
 				</figure>

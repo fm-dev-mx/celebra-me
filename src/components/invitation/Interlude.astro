@@ -14,7 +14,12 @@ interface Props {
 const { image, alt, height = 'screen', variant = 'standard' } = Astro.props;
 ---
 
-<section class="invitation-interlude" data-variant={variant} data-height={height} aria-label={alt}>
+<section
+	class="invitation-interlude"
+	data-variant={variant}
+	data-height={height}
+	aria-label={alt}
+>
 	<div class="invitation-interlude__media">
 		<OptimizedImage
 			imagePath={image}

@@ -167,46 +167,175 @@
 );
 @include premiere-preset(
 	'.theme-preset--premiere-ivory-gold',
-	sys.$sys-color-champagne-50,
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-parchment-100, 82%),
+	// surface-primary (Richer Ivory)
 	sys.$sys-color-neutral-0,
-	sys.$sys-color-coffee-700,
-	sys.$sys-color-champagne-300,
-	sys.$sys-color-gold-500,
-	sys.$sys-color-coffee-700,
-	sys.$sys-color-champagne-50,
+	// surface-soft
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 25%),
+	// surface-dark (Espresso)
+	color.mix(sys.$sys-color-champagne-300, sys.$sys-color-neutral-0, 85%),
+	// action-primary (Fine Champagne)
 	sys.$sys-color-champagne-500,
-	sys.$sys-color-gold-700,
-	sys.$sys-color-gold-500,
-	sys.$sys-color-coffee-700,
-	sys.$sys-color-onyx-950
+	// action-accent (Champagne Gold)
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-onyx-950, 25%),
+	// text-primary
+	sys.$sys-color-champagne-50,
+	// text-on-dark
+	sys.$sys-color-champagne-300,
+	// metal-mid
+	sys.$sys-color-champagne-700,
+	// metal-deep
+	sys.$sys-color-champagne-200,
+	// metal-edge
+	sys.$sys-color-taupe-700,
+	// env-shell-start
+	sys.$sys-color-onyx-950 // env-shell-end
 );
 @include premiere-preset(
 	'.theme-preset--premiere-sage-gold',
-	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-forest-200, 92%),
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-floral-50, 85%),
+	// surface-primary (Porcelain Blush)
 	sys.$sys-color-neutral-0,
-	color.mix(sys.$sys-color-forest-800, sys.$sys-color-taupe-500, 42%),
-	color.mix(sys.$sys-color-forest-200, sys.$sys-color-neutral-0, 72%),
+	// surface-soft
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-rose-500, 35%),
+	// surface-dark (Architectural Mocha/Rose)
+	sys.$sys-color-floral-300,
+	// action-primary (Blush Pink)
 	sys.$sys-color-champagne-500,
-	color.mix(sys.$sys-color-forest-800, sys.$sys-color-taupe-500, 42%),
+	// action-accent (Champagne Gold)
+	color.mix(sys.$sys-color-taupe-700, sys.$sys-color-rose-500, 25%),
+	// text-primary (Espresso with a touch of rose)
 	sys.$sys-color-champagne-50,
+	// text-on-dark (Champagne White)
 	sys.$sys-color-champagne-300,
-	sys.$sys-color-gold-700,
-	sys.$sys-color-champagne-500,
-	color.mix(sys.$sys-color-forest-800, sys.$sys-color-taupe-700, 40%),
-	sys.$sys-color-onyx-950
+	// metal-mid (Gold)
+	sys.$sys-color-champagne-700,
+	// metal-deep (Burnished Gold)
+	sys.$sys-color-champagne-200,
+	// metal-edge (Glinting Gold)
+	sys.$sys-color-taupe-700,
+	// env-shell-start
+	sys.$sys-color-onyx-950 // env-shell-end
 );
 @include premiere-preset(
 	'.theme-preset--premiere-rose-plum',
-	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 88%),
-	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 96%),
-	color.mix(sys.$sys-color-plum-700, sys.$sys-color-taupe-500, 52%),
-	color.mix(sys.$sys-color-rose-500, sys.$sys-color-neutral-0, 68%),
-	color.mix(sys.$sys-color-plum-700, sys.$sys-color-rose-500, 42%),
-	color.mix(sys.$sys-color-plum-700, sys.$sys-color-taupe-500, 52%),
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 82%),
+	// surface-primary (Rose Poudre Profundo)
+	color.mix(sys.$sys-color-neutral-0, sys.$sys-color-rose-300, 90%),
+	// surface-soft (Blanco Rosado)
+	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-500, 45%),
+	// surface-dark (Ciruela Elegante)
+	color.mix(sys.$sys-color-rose-400, sys.$sys-color-neutral-0, 55%),
+	// action-primary (Rosa Profundo)
+	color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-400, 45%),
+	// action-accent (Ciruela Adulta)
+	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-500, 50%),
+	// text-primary
 	sys.$sys-color-champagne-50,
-	sys.$sys-color-rose-500,
-	sys.$sys-color-plum-700,
-	sys.$sys-color-champagne-300,
-	color.mix(sys.$sys-color-plum-700, sys.$sys-color-taupe-700, 55%),
-	sys.$sys-color-onyx-950
+	// text-on-dark
+	sys.$sys-color-champagne-500,
+	// metal-mid (Old Gold Genuino)
+	sys.$sys-color-champagne-700,
+	// metal-deep (Gold Profundo Noble)
+	sys.$sys-color-champagne-200,
+	// metal-edge (Brillo Sutil)
+	color.mix(sys.$sys-color-plum-400, sys.$sys-color-taupe-700, 52%),
+	// env-shell-start
+	sys.$sys-color-onyx-950 // env-shell-end
 );
+
+// ✨ TOP PREMIUM REFINEMENTS: Botanical Couture & Private Lounge
+.theme-preset--premiere-sage-gold {
+	--shadow-premium:
+		0 2px 4px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.08)},
+		0 12px 32px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.12)},
+		0 32px 72px #{color.change(sys.$sys-color-floral-500, $alpha: 0.14)};
+	--hero-card-shadow-ambient:
+		0 40px 100px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.22)},
+		0 15px 40px #{color.change(sys.$sys-color-champagne-500, $alpha: 0.18)};
+	--color-glass-bg: #{color.change(sys.$sys-color-floral-50, $alpha: 0.52)};
+	--glass-blur: 22px;
+	--hero-card-border-hairline: linear-gradient(
+		135deg,
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.6)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.2)} 50%,
+		#{color.change(sys.$sys-color-champagne-500, $alpha: 0.8)} 100%
+	);
+	--family-bg: linear-gradient(
+		160deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.8)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.95)} 100%
+	);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.08)} 100%
+	);
+	--location-card-bg: linear-gradient(
+		165deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.94)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.98)} 100%
+	);
+}
+
+// ✨ TOP PREMIUM REFINEMENTS: Ivory & Champagne Editorial Luxury
+.theme-preset--premiere-ivory-gold {
+	--shadow-premium:
+		0 2px 4px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.08)},
+		0 12px 32px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.12)},
+		0 32px 72px #{color.change(sys.$sys-color-champagne-500, $alpha: 0.14)};
+	--hero-card-shadow-ambient:
+		0 40px 100px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.22)},
+		0 15px 40px #{color.change(sys.$sys-color-champagne-500, $alpha: 0.18)};
+	--color-glass-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.55)};
+	--glass-blur: 24px;
+	--hero-card-border-hairline: linear-gradient(
+		135deg,
+		#{color.change(sys.$sys-color-champagne-500, $alpha: 0.6)} 0%,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.2)} 50%,
+		#{color.change(sys.$sys-color-champagne-500, $alpha: 0.8)} 100%
+	);
+}
+
+// ✨ TOP PREMIUM REFINEMENTS: Rose Plum Nocturnal Editorial
+.theme-preset--premiere-rose-plum {
+	--shadow-premium:
+		0 2px 4px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.08)},
+		0 12px 32px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.12)},
+		0 32px 72px
+			#{color.change(
+				color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-500, 50%),
+				$alpha: 0.14
+			)};
+	--hero-card-shadow-ambient:
+		0 40px 100px #{color.change(sys.$sys-color-taupe-700, $alpha: 0.22)},
+		0 15px 40px #{color.change(sys.$sys-color-champagne-500, $alpha: 0.18)};
+	--color-glass-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.52)};
+	--glass-blur: 24px;
+	--glass-saturate: 185%;
+	--hero-card-border-hairline: linear-gradient(
+		135deg,
+		#{color.change(
+				color.mix(sys.$sys-color-plum-400, sys.$sys-color-rose-500, 50%),
+				$alpha: 0.5
+			)}
+			0%,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.15)} 50%,
+		#{color.change(sys.$sys-color-champagne-500, $alpha: 0.7)} 100%
+	);
+	--family-bg: linear-gradient(
+		160deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.75)} 0%,
+		#{color.change(sys.$sys-color-rose-300, $alpha: 0.92)} 100%
+	);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		#{color.change(sys.$sys-color-plum-400, $alpha: 0.06)} 100%
+	);
+	--location-card-bg: linear-gradient(
+		165deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)} 0%,
+		#{color.change(sys.$sys-color-rose-300, $alpha: 0.96)} 100%
+	);
+}

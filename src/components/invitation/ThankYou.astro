@@ -14,7 +14,11 @@ interface Props {
 const { message, closingName, image, variant = 'standard' } = Astro.props;
 ---
 
-<section id="thank-you-section" class="thank-you-section" data-variant={variant}>
+<section
+	id="thank-you-section"
+	class="thank-you-section"
+	data-variant={variant}
+>
 	<div class="thank-you-content">
 		{
 			image && (

@@ -118,22 +118,9 @@
         ]
     },
     "gifts": {
-        "title": "Mesa de Regalos",
-        "subtitle": "Tu generosidad ilumina esta celebración.",
+        "title": "Detalles para Celebrar",
+        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
         "items": [
-            {
-                "type": "store",
-                "title": "Mesa de Regalos Liverpool",
-                "url": "https://www.liverpool.com.mx/tienda/mesa-de-regalos/placeholder-ximena-xv"
-            },
-            {
-                "type": "bank",
-                "title": "Fondo de Ahorro",
-                "bankName": "BBVA México",
-                "accountHolder": "Christian J. Trasviña V.",
-                "clabe": "0000 0000 0000 0000 00",
-                "accountNumber": "0000000000"
-            },
             {
                 "type": "cash",
                 "title": "Lluvia de Sobres",

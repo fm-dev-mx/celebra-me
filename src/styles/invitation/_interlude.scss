@@ -33,7 +33,11 @@
 		position: absolute;
 		inset: 0;
 		background:
-			linear-gradient(180deg, rgb(var(--color-surface-dark-rgb), 0.1) 0%, rgb(var(--color-surface-dark-rgb), 0.22) 100%),
+			linear-gradient(
+				180deg,
+				rgb(var(--color-surface-dark-rgb), 0.1) 0%,
+				rgb(var(--color-surface-dark-rgb), 0.22) 100%
+			),
 			radial-gradient(
 				circle at center,
 				transparent 24%,
