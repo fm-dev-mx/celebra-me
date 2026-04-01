@@ -129,27 +129,22 @@ const getSlugFromPath = (path: string) => path.split('/').slice(-2, -1)[0];
 const EVENT_REGISTRY: Record<string, EventAssets> = Object.entries(EVENT_ASSET_MODULES).reduce(
 	(acc, [path, rawAssets]) => {
 		const slug = getSlugFromPath(path);
-		const assets: Partial<EventAssets> = {
-			hero: rawAssets.hero,
-			portrait: rawAssets.portrait,
-			portraitAlt: rawAssets.portraitAlt,
-			family: rawAssets.family,
-			ceremony: rawAssets.ceremony,
-			reception: rawAssets.reception,
-			jardin: rawAssets.jardin,
-			signature: rawAssets.signature,
-			interlude01: rawAssets.interlude01,
-			interlude02: rawAssets.interlude02,
-			interlude03: rawAssets.interlude03,
-			interludeNew01: rawAssets.interludeNew01,
-			thankYouPortrait: rawAssets.thankYouPortrait,
-		};
+		const assets: Partial<EventAssets> = {};
 
-		// Map gallery array to flat keys (gallery01...gallery15)
+		// Map explicit EVENT_KEYS if present in rawAssets
+		EVENT_KEYS.forEach((key) => {
+			if (rawAssets[key]) {
+				assets[key] = rawAssets[key] as ImageMetadata;
+			}
+		});
+
+		// Map gallery array to flat keys (gallery01...gallery15) if not already explicitly defined
 		if (Array.isArray(rawAssets.gallery)) {
 			rawAssets.gallery.forEach((img: ImageMetadata | undefined, index: number) => {
 				const key = `gallery${String(index + 1).padStart(2, '0')}` as EventAssetKey;
-				assets[key] = img;
+				if (!assets[key]) {
+					assets[key] = img;
+				}
 			});
 		}
 
