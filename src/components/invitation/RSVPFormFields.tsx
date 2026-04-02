@@ -63,6 +63,7 @@ export function PhoneField(props: {
 	showPhoneField: boolean;
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
+	phoneLabel: string;
 	phone: string;
 	phoneRef: RefObject<HTMLInputElement | null>;
 	prefersReducedMotion: boolean;
@@ -73,6 +74,7 @@ export function PhoneField(props: {
 		showPhoneField,
 		touched,
 		errors,
+		phoneLabel,
 		phone,
 		phoneRef,
 		prefersReducedMotion,
@@ -105,7 +107,7 @@ export function PhoneField(props: {
 				aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
 			/>
 			<label htmlFor="phone" className="rsvp__label">
-				Teléfono de contacto *
+				{phoneLabel}
 			</label>
 			<div className="rsvp__field-line" />
 			{touched.phone && errors.phone && (

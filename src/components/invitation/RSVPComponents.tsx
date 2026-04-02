@@ -140,6 +140,7 @@ export function RsvpFormView(props: {
 	guestCountLabel: string;
 	attendanceLabel: string;
 	buttonLabel: string;
+	phoneLabel: string;
 	name: string;
 	phone: string;
 	showPhoneField: boolean;

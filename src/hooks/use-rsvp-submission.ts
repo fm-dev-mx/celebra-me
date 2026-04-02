@@ -63,7 +63,10 @@ export function useRsvpSubmission({
 
 	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
 	const supportsPlusOnes = effectiveGuestCap > 1;
-	const phoneRequired = !initialGuestData?.inviteId && accessMode === 'hybrid';
+	// Show phone field for public/hybrid access RSVPs
+	const showPhoneField = !initialGuestData?.inviteId && accessMode === 'hybrid';
+	// Make it optional even if shown (reduce friction)
+	const phoneRequired = false;
 
 	useEffect(() => {
 		if (initialGuestData) {
@@ -244,6 +247,7 @@ export function useRsvpSubmission({
 	return {
 		name,
 		phone,
+		showPhoneField,
 		phoneRequired,
 		attendanceStatus,
 		attendeeCount,

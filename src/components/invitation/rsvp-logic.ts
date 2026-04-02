@@ -12,6 +12,7 @@ export interface WhatsAppConfig {
 export interface ResolvedLabels {
 	nameLabel: string;
 	guestCountLabel: string;
+	phoneLabel: string;
 	attendanceLabel: string;
 	buttonLabel: string;
 }
@@ -38,6 +39,7 @@ export function resolveLabels(labels?: {
 	return {
 		nameLabel: labels?.name ?? 'Nombre completo \u002a',
 		guestCountLabel: labels?.guestCount ?? 'N\u00famero total de asistentes',
+		phoneLabel: 'Tel\u00e9fono de contacto',
 		attendanceLabel: labels?.attendance ?? '\u00bfAsistir\u00e1s al evento? \u002a',
 		buttonLabel: labels?.confirmButton ?? 'Confirmar',
 	};
@@ -99,13 +101,11 @@ export function validateRsvpForm({
 	if (!nameLocked && !name.trim()) {
 		errors.name = 'Por favor, escribe tu nombre completo.';
 	}
-	if (phoneRequired) {
-		const normalizedPhone = normalizePhoneInput(phone);
-		if (!normalizedPhone) {
-			errors.phone = 'Por favor, escribe tu teléfono.';
-		} else if (normalizedPhone.length !== 10) {
-			errors.phone = 'Escribe un teléfono de 10 dígitos.';
-		}
+	const normalizedPhone = normalizePhoneInput(phone);
+	if (phoneRequired && !normalizedPhone) {
+		errors.phone = 'Por favor, escribe tu tel\u00e9fono.';
+	} else if (normalizedPhone && normalizedPhone.length !== 10) {
+		errors.phone = 'Escribe un tel\u00e9fono de 10 d\u00edgitos.';
 	}
 	if (!attendanceStatus) {
 		errors.attendance = 'Por favor, selecciona si asistir\u00e1s.';

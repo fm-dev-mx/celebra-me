@@ -56,7 +56,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	const {
 		name,
 		phone,
-		phoneRequired,
+		showPhoneField,
 		attendanceStatus,
 		attendeeCount,
 		notes,
@@ -134,9 +134,10 @@ const RSVP: React.FC<RSVPProps> = ({
 			guestCountLabel={labels_resolved.guestCountLabel}
 			attendanceLabel={labels_resolved.attendanceLabel}
 			buttonLabel={labels_resolved.buttonLabel}
+			phoneLabel={labels_resolved.phoneLabel}
 			name={name}
 			phone={phone}
-			showPhoneField={phoneRequired}
+			showPhoneField={showPhoneField}
 			touched={touched}
 			errors={errors}
 			attendanceStatus={attendanceStatus}
