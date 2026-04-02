@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import {
 	COUNTDOWN_NUMBER_STYLES,
 	COUNTDOWN_VARIANTS,

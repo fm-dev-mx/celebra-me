@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import { HERO_LAYOUT_VARIANTS, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 

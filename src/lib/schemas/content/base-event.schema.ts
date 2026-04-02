@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import {
 	LOCATION_VARIANT_PRESET_COMPATIBILITY,
 	type ThemePreset,

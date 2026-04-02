@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import {
 	INDICATION_ICON_KEYS,
 	INDICATION_ICON_NAMES,

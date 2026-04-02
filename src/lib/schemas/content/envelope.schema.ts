@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
 

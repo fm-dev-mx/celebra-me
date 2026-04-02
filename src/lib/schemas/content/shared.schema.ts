@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
 import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { VALID_COLOR_TOKENS } from '@/lib/theme/color-tokens';

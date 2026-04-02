@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'zod';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const gallerySchema = z
