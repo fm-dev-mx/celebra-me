@@ -35,9 +35,9 @@
 	--gallery-item-border-color: rgb(var(--color-text-primary-rgb), 0.08);
 	--gallery-item-shadow: 0 6px 18px rgb(0 0 0 / 7%);
 	--gallery-item-backdrop-filter: none;
-	--gallery-item-transform: translateY(0) scale(1);
-	--gallery-item-emphasis-transform: translateY(-2px) scale(1.004);
-	--gallery-item-hover-transform: translateY(-4px) scale(1.008);
+	--gallery-item-transform: none;
+	--gallery-item-emphasis-transform: none;
+	--gallery-item-hover-transform: none;
 	--gallery-item-emphasis-border-color: var(--gallery-item-border-color);
 	--gallery-item-hover-border-color: var(--gallery-item-emphasis-border-color);
 	--gallery-item-emphasis-shadow: 0 10px 26px rgb(0 0 0 / 11%);
@@ -148,7 +148,6 @@
 		backdrop-filter: var(--gallery-item-backdrop-filter);
 		transform: var(--gallery-item-transform);
 		transition:
-			transform var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 			border-color var(--gallery-item-transition-duration) ease,
 			box-shadow var(--gallery-item-transition-duration) ease;
 
@@ -164,8 +163,6 @@
 			mix-blend-mode: var(--gallery-item-image-base-blend);
 			transition:
 				filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
-				transform var(--gallery-item-transition-duration)
-					var(--gallery-item-transition-ease),
 				mix-blend-mode var(--gallery-item-transition-duration) ease;
 		}
 
