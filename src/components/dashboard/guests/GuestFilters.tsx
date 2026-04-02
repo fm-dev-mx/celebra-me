@@ -10,6 +10,7 @@ interface GuestFiltersProps {
 	onRefreshClick: () => void;
 	onExportClick: () => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
+	createDisabled?: boolean;
 }
 
 const GuestFilters: React.FC<GuestFiltersProps> = ({
@@ -22,6 +23,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	onRefreshClick,
 	onExportClick,
 	searchInputRef,
+	createDisabled,
 }) => {
 	return (
 		<div className="dashboard-guests__filters">
@@ -67,7 +69,12 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				>
 					🔄 Actualizar
 				</button>
-				<button type="button" onClick={onCreateClick} className="btn-primary">
+				<button
+					type="button"
+					onClick={onCreateClick}
+					className="btn-primary"
+					disabled={createDisabled}
+				>
 					+ Nuevo invitado
 				</button>
 			</div>

@@ -174,6 +174,15 @@ export const useGuestDashboardActions = ({
 
 	const handleSubmit = useCallback(
 		async (payload: GuestFormPayload, stayOpen?: boolean) => {
+			if (!eventId && modalMode === 'create') {
+				console.error('[GuestDashboard] Cannot create guest: eventId is missing.');
+				setNotification({
+					message: 'Error: No se ha seleccionado un evento válido.',
+					type: 'warning',
+				});
+				return;
+			}
+
 			let savedItem: DashboardGuestItem | null = null;
 			try {
 				if (modalMode === 'create') {

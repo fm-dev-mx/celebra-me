@@ -172,6 +172,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onCreateClick={openCreateModal}
 					onExportClick={handleExport}
 					onImportClick={openImportModal}
+					createDisabled={!eventId}
 				/>
 
 				{loading && <p className="dashboard-status">Procesando...</p>}
