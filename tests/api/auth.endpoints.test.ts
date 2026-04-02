@@ -236,7 +236,40 @@ describe('auth endpoints', () => {
 	});
 
 	it('logout endpoint clears session cookie', async () => {
-		const response = await logout({} as never);
+		const response = await logout({
+			request: createMockRequest(
+				undefined,
+				{
+					Origin: 'http://localhost',
+					Referer: 'http://localhost/dashboard/invitados',
+					Host: 'localhost:4321',
+				},
+				'http://localhost:4321/api/auth/logout',
+			),
+			url: new URL('http://localhost:4321/api/auth/logout'),
+		} as never);
+
 		expect(response.status).toBe(200);
+		const setCookieHeader = response.headers.get('set-cookie') || '';
+		expect(setCookieHeader).toContain('sb-access-token=');
+		expect(setCookieHeader).toContain('sb-refresh-token=');
+	});
+
+	it('logout endpoint rejects cross-origin requests', async () => {
+		const response = await logout({
+			request: createMockRequest(
+				undefined,
+				{
+					Origin: 'https://attacker.example',
+					Host: 'localhost:4321',
+				},
+				'http://localhost:4321/api/auth/logout',
+			),
+			url: new URL('http://localhost:4321/api/auth/logout'),
+		} as never);
+
+		expect(response.status).toBe(403);
+		const body = await response.json();
+		expect(body.error.code).toBe('forbidden');
 	});
 });

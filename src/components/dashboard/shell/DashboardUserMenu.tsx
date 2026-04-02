@@ -8,6 +8,7 @@ interface DashboardUserMenuProps {
 
 const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel }) => {
 	const [busy, setBusy] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 	const visibleRoleLabel = roleLabel === 'ADMIN' ? 'Administrador' : 'Anfitrión';
 
 	return (
@@ -28,7 +29,13 @@ const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel 
 				disabled={busy}
 				onClick={async () => {
 					setBusy(true);
-					await logoutAndRedirect('/');
+					setErrorMessage('');
+					try {
+						await logoutAndRedirect('/login');
+					} catch {
+						setErrorMessage('No se pudo cerrar la sesión. Inténtalo de nuevo.');
+						setBusy(false);
+					}
 				}}
 			>
 				{busy ? (
@@ -41,6 +48,11 @@ const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel 
 					<span className="btn-text">Cerrar sesión</span>
 				)}
 			</button>
+			{errorMessage ? (
+				<p className="dashboard-user-menu__error" role="alert" aria-live="polite">
+					{errorMessage}
+				</p>
+			) : null}
 		</div>
 	);
 };

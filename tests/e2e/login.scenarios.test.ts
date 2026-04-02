@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+const hostLogin = process.env.PLAYWRIGHT_HOST_LOGIN;
+const hostPassword = process.env.PLAYWRIGHT_HOST_PASSWORD;
+
 test.describe('Authentication UI Scenarios (Spanish)', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto('/login');
@@ -46,6 +49,30 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		await page.goto('/dashboard/invitados');
 
 		// Should be redirected to /login
+		await expect(page).toHaveURL(/\/login/);
+	});
+
+	test('Scenario: Login, logout, and return to login screen', async ({ page }) => {
+		test.skip(
+			!hostLogin || !hostPassword,
+			'Requires PLAYWRIGHT_HOST_LOGIN and PLAYWRIGHT_HOST_PASSWORD.',
+		);
+
+		await page.fill('#login-email', hostLogin!);
+		await page.fill('#login-password', hostPassword!);
+		await page.click('#login-submit');
+
+		await expect(page).toHaveURL(/\/dashboard\/invitados/);
+		await page.click('.btn-pill-logout');
+
+		await expect(page).toHaveURL(/\/login/);
+		await expect(page.locator('#login-submit')).toContainText('Continuar');
+
+		await page.goto('/login');
+		await expect(page).toHaveURL(/\/login/);
+		await expect(page.locator('#login-submit')).toContainText('Continuar');
+
+		await page.goto('/dashboard/invitados');
 		await expect(page).toHaveURL(/\/login/);
 	});
 });
