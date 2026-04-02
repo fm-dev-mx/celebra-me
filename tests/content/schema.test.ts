@@ -150,6 +150,23 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
+	it('accepts hybrid RSVP access mode in event content', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					guestCap: 3,
+					accessMode: 'hybrid',
+					confirmationMessage: 'Gracias por confirmar',
+					showDietaryField: false,
+					confirmationMode: 'api',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+	});
+
 	it('rejects HTML in location indications text', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

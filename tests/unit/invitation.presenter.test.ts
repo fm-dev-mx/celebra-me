@@ -127,4 +127,29 @@ describe('prepareInvitationPageData', () => {
 			'thankYou',
 		]);
 	});
+
+	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv',
+			data: {
+				...fixture,
+				rsvp: {
+					...fixture.rsvp,
+					accessMode: 'hybrid',
+				},
+			},
+		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
+
+		const presenter = prepareInvitationPageData({
+			eventEntry: event,
+			slug: 'demo-xv',
+		});
+
+		expect(presenter.personalizedAccess).toBeUndefined();
+		expect(presenter.rsvp?.initialGuestData).toBeUndefined();
+		expect(presenter.rsvp?.accessMode).toBe('hybrid');
+		expect(presenter.rsvp?.eventType).toBe('xv');
+		expect(presenter.rsvp?.eventSlug).toBe('demo-xv');
+	});
 });

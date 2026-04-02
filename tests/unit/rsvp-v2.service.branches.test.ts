@@ -11,6 +11,7 @@ import {
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import {
 	submitGuestRsvpByInviteId,
+	submitGuestRsvpByPublicEvent,
 	trackInvitationView,
 } from '@/lib/rsvp/services/rsvp-submission.service';
 import * as eventRepo from '@/lib/rsvp/repositories/event.repository';
@@ -39,6 +40,10 @@ describe('rsvp service branches', () => {
 	const createGuestInvitationMock = guestRepo.createGuestInvitation as jest.MockedFunction<
 		typeof guestRepo.createGuestInvitation
 	>;
+	const createGuestInvitationPublicMock =
+		guestRepo.createGuestInvitationPublic as jest.MockedFunction<
+			typeof guestRepo.createGuestInvitationPublic
+		>;
 	const findGuestByIdMock = guestRepo.findGuestById as jest.MockedFunction<
 		typeof guestRepo.findGuestById
 	>;
@@ -49,6 +54,12 @@ describe('rsvp service branches', () => {
 		guestRepo.findGuestByInviteIdPublic as jest.MockedFunction<
 			typeof guestRepo.findGuestByInviteIdPublic
 		>;
+	const findGuestByPhoneMock = guestRepo.findGuestByPhone as jest.MockedFunction<
+		typeof guestRepo.findGuestByPhone
+	>;
+	const updateGuestByIdServiceMock = guestRepo.updateGuestByIdService as jest.MockedFunction<
+		typeof guestRepo.updateGuestByIdService
+	>;
 	const findEventByInvitationPublicMock =
 		eventRepo.findEventByInvitationPublic as jest.MockedFunction<
 			typeof eventRepo.findEventByInvitationPublic
@@ -88,6 +99,7 @@ describe('rsvp service branches', () => {
 		lastViewedAt: null,
 		respondedAt: null,
 		lastResponseSource: 'link' as const,
+		entrySource: 'dashboard' as const,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
@@ -200,6 +212,97 @@ describe('rsvp service branches', () => {
 				attendeeCount: 0,
 			}),
 		).rejects.toMatchObject({ status: 400 });
+	});
+
+	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
+		findGuestByPhoneMock.mockResolvedValue(baseGuest);
+		updateGuestByIdServiceMock.mockResolvedValue({
+			...baseGuest,
+			attendanceStatus: 'confirmed',
+			attendeeCount: 2,
+			lastResponseSource: 'generic_link',
+			entrySource: 'dashboard',
+			respondedAt: new Date().toISOString(),
+		});
+
+		const result = await submitGuestRsvpByPublicEvent({
+			event: baseEvent,
+			fullName: 'Guest',
+			phone: '6680000000',
+			maxAllowedAttendees: 3,
+			payload: {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 2,
+				guestMessage: 'Nos vemos',
+			},
+		});
+
+		expect(findGuestByPhoneMock).toHaveBeenCalledWith('evt-1', '6680000000');
+		expect(createGuestInvitationPublicMock).not.toHaveBeenCalled();
+		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				guestId: 'guest-1',
+				attendanceStatus: 'confirmed',
+				attendeeCount: 2,
+				lastResponseSource: 'generic_link',
+			}),
+		);
+		expect(result.entrySource).toBe('dashboard');
+	});
+
+	it('submitGuestRsvpByPublicEvent creates a generic public guest when the phone is new', async () => {
+		findGuestByPhoneMock.mockResolvedValue(null);
+		createGuestInvitationPublicMock.mockResolvedValue({
+			...baseGuest,
+			id: 'guest-2',
+			inviteId: 'invite-2',
+			fullName: 'Mariana Soto',
+			phone: '6681112233',
+			maxAllowedAttendees: 3,
+			entrySource: 'generic_public',
+		});
+		updateGuestByIdServiceMock.mockResolvedValue({
+			...baseGuest,
+			id: 'guest-2',
+			inviteId: 'invite-2',
+			fullName: 'Mariana Soto',
+			phone: '6681112233',
+			maxAllowedAttendees: 3,
+			attendanceStatus: 'confirmed',
+			attendeeCount: 3,
+			lastResponseSource: 'generic_link',
+			entrySource: 'generic_public',
+			respondedAt: new Date().toISOString(),
+		});
+
+		const result = await submitGuestRsvpByPublicEvent({
+			event: baseEvent,
+			fullName: 'Mariana Soto',
+			phone: '(668) 111-2233',
+			maxAllowedAttendees: 3,
+			payload: {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 3,
+				guestMessage: 'Ahí estaremos',
+			},
+		});
+
+		expect(createGuestInvitationPublicMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				eventId: 'evt-1',
+				fullName: 'Mariana Soto',
+				phone: '6681112233',
+				maxAllowedAttendees: 3,
+				entrySource: 'generic_public',
+			}),
+		);
+		expect(updateGuestByIdServiceMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				guestId: 'guest-2',
+				lastResponseSource: 'generic_link',
+			}),
+		);
+		expect(result.entrySource).toBe('generic_public');
 	});
 
 	it('trackInvitationView throws not_found on missing invite', async () => {

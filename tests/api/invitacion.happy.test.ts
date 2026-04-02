@@ -68,6 +68,9 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 			attendanceStatus: 'confirmed',
 			attendeeCount: 2,
 			respondedAt: new Date().toISOString(),
+			inviteId: 'invite-1',
+			guestId: 'guest-1',
+			entrySource: 'dashboard',
 		});
 
 		const response = await rsvp({

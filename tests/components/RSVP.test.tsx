@@ -7,8 +7,11 @@ import RSVP from '@/components/invitation/RSVP';
 
 describe('RSVP Component', () => {
 	const defaultProps = {
+		eventType: 'xv' as const,
+		eventSlug: 'demo-xv',
 		title: '¿Vienes a celebrar conmigo?',
 		guestCap: 2,
+		accessMode: 'personalized-only' as const,
 		confirmationMessage: '¡Gracias por confirmar! Te esperamos con mucha emoción.',
 		initialGuestData: {
 			inviteId: 'mock-invite-id',
@@ -57,8 +60,11 @@ describe('RSVP Component', () => {
 		it('shows a locked preview when no personalized inviteId is provided', async () => {
 			render(
 				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv"
 					title="¿Vienes a celebrar conmigo?"
 					guestCap={2}
+					accessMode="personalized-only"
 					confirmationMessage="Gracias"
 				/>,
 			);
@@ -68,6 +74,24 @@ describe('RSVP Component', () => {
 			});
 
 			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
+		});
+
+		it('unlocks the form for hybrid public RSVP and requires the phone field', async () => {
+			render(
+				<RSVP
+					eventType="xv"
+					eventSlug="demo-xv"
+					title="¿Vienes a celebrar conmigo?"
+					guestCap={2}
+					accessMode="hybrid"
+					confirmationMessage="Gracias"
+				/>,
+			);
+
+			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
+			expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
+			expect(screen.queryByText(/utiliza enlaces personalizados/i)).not.toBeInTheDocument();
 		});
 	});
 

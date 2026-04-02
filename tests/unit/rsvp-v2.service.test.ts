@@ -34,6 +34,7 @@ describe('rsvp service unit', () => {
 			lastViewedAt: null,
 			respondedAt: null,
 			lastResponseSource: 'link',
+			entrySource: 'dashboard',
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		});
@@ -53,6 +54,7 @@ describe('rsvp service unit', () => {
 			lastViewedAt: null,
 			respondedAt: new Date().toISOString(),
 			lastResponseSource: 'link',
+			entrySource: 'dashboard',
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		});
