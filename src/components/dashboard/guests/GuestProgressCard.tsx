@@ -33,7 +33,7 @@ const GuestProgressCard: React.FC<GuestProgressCardProps> = ({
 			<div className="progress-header">
 				<div>
 					<h3>Entrega de invitaciones</h3>
-					<p className="progress-kicker">Seguimiento editorial de envíos y respuestas</p>
+					<p className="progress-kicker">Seguimiento de envíos y respuestas</p>
 				</div>
 				<span className="progress-percentage">{deliveryPercentage}%</span>
 			</div>
