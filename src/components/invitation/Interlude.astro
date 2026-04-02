@@ -58,7 +58,8 @@ const { image, alt, height = 'screen', variant = 'standard', focalPoint } = Astr
 
 				const rect = interlude.getBoundingClientRect();
 				const viewportCenter = window.innerHeight / 2;
-				const offset = (rect.top + rect.height / 2 - viewportCenter) * -0.08;
+				const parallaxStrength = variant.startsWith('premiere-') ? -0.045 : -0.08;
+				const offset = (rect.top + rect.height / 2 - viewportCenter) * parallaxStrength;
 
 				interlude.style.setProperty(
 					'--interlude-parallax-offset',

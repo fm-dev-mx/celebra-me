@@ -10,15 +10,15 @@
 
 	// Safer defaults for portrait editorial photography.
 	// Keep the face visible and avoid excessive crop.
-	--interlude-image-scale: 1.02;
-	--interlude-image-hover-scale: 1.05;
+	--interlude-image-scale: 1.015;
+	--interlude-image-hover-scale: 1.018;
 
 	overflow: hidden;
 	position: relative;
 
 	.invitation-interlude__image {
 		filter: saturate(0.92) contrast(1.1) brightness(0.8);
-		transition: transform 1.8s tokens.$ease-premium;
+		transition: filter 260ms ease-out;
 		will-change: transform;
 	}
 
@@ -27,20 +27,20 @@
 	@media (aspect-ratio >= 16 / 9) {
 		--interlude-focal-y: 9%;
 		--interlude-image-scale: 1.01;
-		--interlude-image-hover-scale: 1.03;
+		--interlude-image-hover-scale: 1.014;
 	}
 
 	@media (aspect-ratio >= 21 / 9) {
 		--interlude-focal-y: 7%;
 		--interlude-image-scale: 1;
-		--interlude-image-hover-scale: 1.02;
+		--interlude-image-hover-scale: 1.01;
 	}
 
 	// Portrait and narrow screens can tolerate a slightly lower focal point.
 	@media (aspect-ratio <= 4 / 5) {
 		--interlude-focal-y: 18%;
-		--interlude-image-scale: 1.03;
-		--interlude-image-hover-scale: 1.05;
+		--interlude-image-scale: 1.02;
+		--interlude-image-hover-scale: 1.02;
 	}
 
 	@media (aspect-ratio <= 9 / 16) {
@@ -73,6 +73,7 @@
 		&:hover .invitation-interlude__image {
 			transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
 				scale(var(--interlude-image-hover-scale));
+			filter: saturate(0.96) contrast(1.12) brightness(0.84);
 		}
 	}
 

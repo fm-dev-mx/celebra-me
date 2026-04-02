@@ -34,7 +34,7 @@
 		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
 			scale(var(--interlude-image-scale));
 		will-change: transform;
-		transition: transform 1200ms linear;
+		transition: filter 260ms ease-out;
 		backface-visibility: hidden;
 	}
 
@@ -78,5 +78,11 @@
 				rgb(var(--color-surface-dark-rgb), var(--interlude-overlay-opacity, 10%)) 100%
 			);
 		pointer-events: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.invitation-interlude__image {
+		transition: none;
 	}
 }
