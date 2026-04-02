@@ -46,13 +46,52 @@ $color-whatsapp: semantic-color.color(special, whatsapp);
 $color-whatsapp-rgb: tools.rgb-channels(semantic-color.color(special, whatsapp));
 $color-wax-seal: semantic-color.color(special, wax-seal);
 $color-white: semantic-color.color(special, white);
+$color-success: semantic-color.color(state, success);
+$color-success-rgb: tools.rgb-channels(semantic-color.color(state, success));
+$color-success-bg: semantic-color.color(state, success-bg);
+$color-success-border: semantic-color.color(state, success-border);
+$color-success-text: semantic-color.color(state, success-text);
+$color-warning: semantic-color.color(state, warning);
+$color-warning-rgb: tools.rgb-channels(semantic-color.color(state, warning));
+$color-warning-bg: semantic-color.color(state, warning-bg);
+$color-warning-border: semantic-color.color(state, warning-border);
+$color-warning-text: semantic-color.color(state, warning-text);
+$color-danger: semantic-color.color(state, danger);
+$color-danger-rgb: tools.rgb-channels(semantic-color.color(state, danger));
+$color-danger-bg: semantic-color.color(state, danger-bg);
+$color-danger-border: semantic-color.color(state, danger-border);
+$color-danger-text: semantic-color.color(state, danger-text);
+$color-info: semantic-color.color(state, info);
+$color-info-rgb: tools.rgb-channels(semantic-color.color(state, info));
+$color-info-bg: semantic-color.color(state, info-bg);
+$color-info-border: semantic-color.color(state, info-border);
+$color-info-text: semantic-color.color(state, info-text);
 $color-error: semantic-color.color(state, error);
 $color-error-rgb: tools.rgb-channels(semantic-color.color(state, error));
-$color-error-field: var(--color-error-field, rgb(166 46 46));
-$color-error-text: var(--color-error-text, rgb(138 32 32));
-$color-error-bg: var(--rsvp-error-bg, rgb(from semantic-color.color(state, error) r g b / 10%));
-$rsvp-error-bg: var(--rsvp-error-bg, rgb(from semantic-color.color(state, error) r g b / 10%));
-$rsvp-error-border: var(--rsvp-error-border, rgb(from semantic-color.color(state, error) r g b / 28%));
+$color-error-field: var(
+	--color-error-field,
+	var(--color-error, #{semantic-color.color(state, error)})
+);
+$color-error-text: var(
+	--color-error-text,
+	var(--color-danger-text, #{semantic-color.color(state, danger-text)})
+);
+$color-error-bg: var(
+	--color-error-bg,
+	var(--rsvp-error-bg, #{semantic-color.color(state, danger-bg)})
+);
+$color-error-border: var(
+	--color-error-border,
+	var(--rsvp-error-border, #{semantic-color.color(state, danger-border)})
+);
+$rsvp-error-bg: var(
+	--rsvp-error-bg,
+	var(--color-error-bg, #{semantic-color.color(state, danger-bg)})
+);
+$rsvp-error-border: var(
+	--rsvp-error-border,
+	var(--color-error-border, #{semantic-color.color(state, danger-border)})
+);
 $theme-image-filter-hero: var(--theme-image-filter-hero, none);
 $theme-image-filter-portrait: var(--theme-image-filter-portrait, none);
 $theme-image-filter-gallery: var(--theme-image-filter-gallery, none);
