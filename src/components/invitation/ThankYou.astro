@@ -53,11 +53,12 @@ const { message, closingName, image, variant = 'standard', focalPoint } = Astro.
 			<p class="thank-you-message">
 				<span class="drop-cap">{message.charAt(0)}</span>{message.slice(1)}
 			</p>
-			<div class="signature-block">
-				<p class="closing-name">
-					{closingName}
-				</p>
-			</div>
+		</div>
+
+		<div class="signature-block">
+			<p class="closing-name">
+				{closingName}
+			</p>
 		</div>
 
 		<footer class="thank-you-footer">

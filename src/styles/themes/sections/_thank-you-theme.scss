@@ -115,14 +115,30 @@
 	}
 
 	.closing-name {
-		font-family: var(--font-display);
-		font-size: clamp(3rem, 8vw, 5rem);
+		font-family: var(--font-calligraphy, cursive);
+		font-size: clamp(3.5rem, 10vw, 6rem);
 		background: var(--gold-metallic);
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		margin-top: 1rem;
-		text-transform: var(--thank-you-closing-text-transform, none);
+		margin-top: 0;
+		line-height: 1;
+		font-weight: 400;
+		padding-bottom: 0.2em;
+		text-transform: none;
 		filter: drop-shadow(var(--shadow-premium));
+		animation: thank-you-shimmer 8s linear infinite;
+	}
+}
+
+@keyframes thank-you-shimmer {
+	0% {
+		filter: brightness(1);
+	}
+	50% {
+		filter: brightness(1.2);
+	}
+	100% {
+		filter: brightness(1);
 	}
 }
 

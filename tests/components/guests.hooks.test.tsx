@@ -153,6 +153,59 @@ describe('active guest dashboard hooks', () => {
 		});
 	});
 
+	it('shows a sync warning when the host has no visible events', async () => {
+		mockedGuestsApi.listEvents.mockResolvedValue({
+			items: [],
+		});
+
+		const onNotification = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardRealtime({
+				initialEventId: '',
+				search: '',
+				status: 'all',
+				onNotification,
+			}),
+		);
+
+		await waitFor(() => {
+			expect(result.current.error).toContain('No hay eventos asignados');
+		});
+
+		expect(mockedGuestsApi.list).not.toHaveBeenCalled();
+		expect(result.current.hostEvents).toEqual([]);
+	});
+
+	it('shows a visibility error when the requested event is not in the host list', async () => {
+		mockedGuestsApi.listEvents.mockResolvedValue({
+			items: [
+				{ id: 'event-999', title: 'Otro Evento', slug: 'otro-evento', eventType: 'xv' },
+			],
+		});
+		mockedGuestsApi.list.mockResolvedValue({
+			eventId: 'event-999',
+			items: [sampleGuest],
+			totals: sampleTotals,
+			updatedAt: '2026-03-22T00:00:00.000Z',
+		});
+
+		const onNotification = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardRealtime({
+				initialEventId: 'event-123',
+				search: '',
+				status: 'all',
+				onNotification,
+			}),
+		);
+
+		await waitFor(() => {
+			expect(result.current.error).toContain('El evento solicitado no esta disponible');
+		});
+
+		expect(result.current.eventId).toBe('event-999');
+	});
+
 	it('confirms guest deletion through useGuestDashboardActions', async () => {
 		mockedGuestsApi.delete.mockResolvedValue({ message: 'Deleted successfully' });
 

@@ -118,9 +118,9 @@
 }
 
 .signature-block {
-	opacity: 0%;
-	transform: translateY(10px);
-	animation: signatureReveal var(--duration-reveal, 2s) var(--ease-out) 1.2s forwards;
+	opacity: 100%;
+	transform: translateY(0);
+	animation: signatureReveal var(--duration-reveal, 1.5s) var(--ease-out) 0.5s both;
 }
 
 .closing-name {

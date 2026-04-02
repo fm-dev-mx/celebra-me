@@ -85,8 +85,8 @@
         "layoutVariant": "premium-mask"
     },
     "gallery": {
-        "title": "Galería Editorial",
-        "subtitle": "Un recorrido visual por la esencia y el brillo de Ximena.",
+        "title": "Editorial Premiere",
+        "subtitle": "Un recorrido visual por la esencia, el brillo y la elegancia de Ximena.",
         "items": [
             { "image": "gallery01", "caption": "Portada Premiere." },
             { "image": "gallery02", "caption": "El Baile de la Noche." },
@@ -118,7 +118,7 @@
     },
     "thankYou": {
         "message": "Gracias por ser parte de este capítulo. Su presencia es el brillo que completa mi historia.",
-        "closingName": "Ximena",
+        "closingName": "Ximena Meza Trasviña",
         "image": "thankYouPortrait"
     },
     "itinerary": {

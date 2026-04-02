@@ -138,4 +138,24 @@
 	--theme-image-filter-portrait: none;
 	--theme-image-filter-gallery: none;
 	--theme-image-filter-interlude: none;
+
+	// Section Overrides: Gallery
+	--gallery-title-font: var(--font-display);
+	--gallery-title-size: clamp(3rem, 8vw, 5rem);
+	--gallery-title-letter-spacing: 0.12em;
+	--gallery-title-color: var(--color-text-primary);
+	--gallery-subtitle-font: var(--font-label);
+	--gallery-subtitle-size: clamp(0.95rem, 2vw, 1.25rem);
+	--gallery-subtitle-color: var(--color-action-accent);
+	--gallery-subtitle-transform: uppercase;
+	--gallery-subtitle-letter-spacing: 0.3em;
+	--gallery-subtitle-opacity: 0.9;
+
+	.gallery-section__title {
+		background: var(--gold-metallic);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		filter: drop-shadow(0 2px 4px rgb(var(--color-surface-dark-rgb), 0.1));
+	}
 }

@@ -50,6 +50,16 @@ function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventIt
 	return candidates.find((candidate) => hostEvents.some((event) => event.id === candidate));
 }
 
+function resolveEventsLoadError(initialEventId: string, hostEvents: HostEventItem[]) {
+	if (hostEvents.length === 0) {
+		return 'No hay eventos asignados a esta cuenta. Si la invitacion existe en contenido, falta sincronizar la tabla events o la membresia del host.';
+	}
+	if (initialEventId && !hostEvents.some((event) => event.id === initialEventId)) {
+		return 'El evento solicitado no esta disponible para esta cuenta o no existe en la base sincronizada.';
+	}
+	return '';
+}
+
 export const useGuestDashboardRealtime = ({
 	initialEventId,
 	search,
@@ -62,7 +72,8 @@ export const useGuestDashboardRealtime = ({
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState('');
+	const [eventsError, setEventsError] = useState('');
+	const [guestsError, setGuestsError] = useState('');
 	const [realtimeState, setRealtimeState] = useState<RealtimeState>('fallback');
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
 	const reconnectTimerRef = useRef<number | null>(null);
@@ -74,11 +85,13 @@ export const useGuestDashboardRealtime = ({
 			const data = await guestsApi.listEvents();
 			setHostEvents(data.items);
 			const nextEventId = resolvePreferredEventId(initialEventId, data.items);
+			const eventsError = resolveEventsLoadError(initialEventId, data.items);
+			setEventsError(eventsError);
 			if (nextEventId && nextEventId !== eventId) {
 				setEventId(nextEventId);
 			}
 		} catch (error) {
-			setError(getErrorMessage(error, 'No se pudieron cargar eventos.'));
+			setEventsError(getErrorMessage(error, 'No se pudieron cargar eventos.'));
 		}
 	}, [eventId, initialEventId]);
 
@@ -87,14 +100,14 @@ export const useGuestDashboardRealtime = ({
 			return;
 		}
 		setLoading(true);
-		setError('');
+		setGuestsError('');
 		try {
 			const data = await guestsApi.list({ eventId, search, status });
 			setItems(data.items);
 			setTotals(data.totals);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
-			setError(getErrorMessage(error, 'Error de red al cargar invitados.'));
+			setGuestsError(getErrorMessage(error, 'Error de red al cargar invitados.'));
 		} finally {
 			setLoading(false);
 		}
@@ -183,7 +196,7 @@ export const useGuestDashboardRealtime = ({
 	}, [loadGuests, realtimeState]);
 
 	return {
-		error,
+		error: eventsError || guestsError,
 		eventId,
 		hostEvents,
 		inviteBaseUrl,
