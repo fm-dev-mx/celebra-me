@@ -268,12 +268,11 @@ export interface InvitationViewModel {
 		};
 		rsvp?: {
 			eventSlug: string;
+			eventType: 'xv' | 'boda' | 'bautizo' | 'cumple';
 			title: string;
 			guestCap: number;
+			accessMode: 'personalized-only' | 'hybrid';
 			confirmationMessage: string;
-			showDietaryField: boolean;
-			dietaryLabel?: string;
-			dietaryPlaceholder?: string;
 			confirmationMode: 'api' | 'whatsapp' | 'both';
 			whatsappConfig?: WhatsAppConfig;
 			variant?: SharedSectionVariant;

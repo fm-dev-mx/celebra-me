@@ -1,3 +1,5 @@
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+
 /**
  * Generates a secure, environment-aware URL for guest invitations.
  *
@@ -8,7 +10,7 @@
  */
 export function generateInvitationLink(params: {
 	origin: string;
-	eventType: string;
+	eventType: EventRecord['eventType'];
 	eventSlug: string;
 	inviteId: string;
 	shortId?: string;
@@ -20,8 +22,8 @@ export function generateInvitationLink(params: {
 		return `${baseUrl}/${eventType}/${eventSlug}/i/${shortId}`;
 	}
 
-	const type = encodeURIComponent(eventType || 'evento');
-	const slug = encodeURIComponent(eventSlug || 'invitacion');
+	const type = encodeURIComponent(eventType);
+	const slug = encodeURIComponent(eventSlug);
 	const invite = encodeURIComponent(inviteId);
 
 	return `${baseUrl}/${type}/${slug}/invitado?invite=${invite}`;

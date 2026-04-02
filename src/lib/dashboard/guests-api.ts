@@ -1,5 +1,6 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import type {
 	GuestsListResponse,
 	BulkImportDTO,
@@ -66,10 +67,15 @@ export class GuestsApi {
 	}
 
 	async listEvents(): Promise<{
-		items: { id: string; title: string; slug: string; eventType: string }[];
+		items: { id: string; title: string; slug: string; eventType: EventRecord['eventType'] }[];
 	}> {
 		const result = await dashboardApi.get<{
-			items: { id: string; title: string; slug: string; eventType: string }[];
+			items: {
+				id: string;
+				title: string;
+				slug: string;
+				eventType: EventRecord['eventType'];
+			}[];
 		}>('/api/dashboard/events');
 		return this.handleResponse(result);
 	}

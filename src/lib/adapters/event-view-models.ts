@@ -16,7 +16,6 @@ import {
 	type IndicationIconKey,
 } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
-import { type EventContentEntry } from '@/lib/content/events';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
 import type { AdaptationContext } from '@/lib/adapters/event';
 import { resolveColorToken } from '@/lib/theme/color-tokens';
@@ -324,15 +323,6 @@ function buildItinerarySection(context: AdaptationContext) {
 	};
 }
 
-function resolveCelebrantName(data: EventContentEntry['data']) {
-	return (
-		data.hero.nickname ||
-		(data.hero.secondaryName
-			? `${data.hero.name} & ${data.hero.secondaryName}`
-			: data.hero.name.split(' ')[0])
-	);
-}
-
 function buildRsvpSection(context: AdaptationContext) {
 	const { data, eventSlug, sharedSectionFallback } = context;
 	if (!data.rsvp) return undefined;
@@ -340,7 +330,7 @@ function buildRsvpSection(context: AdaptationContext) {
 	return {
 		...data.rsvp,
 		eventSlug,
-		celebrantName: resolveCelebrantName(data),
+		eventType: data.eventType,
 		variant: pickVariant(
 			'sectionStyles.rsvp.variant',
 			data.sectionStyles?.rsvp?.variant ?? sharedSectionFallback,
