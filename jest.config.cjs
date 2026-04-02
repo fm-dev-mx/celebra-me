@@ -56,6 +56,7 @@ module.exports = {
 		// Astro virtual modules (tests)
 		'^astro:content$': '<rootDir>/tests/mocks/astro-content.ts',
 		'^astro:middleware$': '<rootDir>/tests/mocks/astro-middleware.ts',
+		'^astro/loaders$': '<rootDir>/tests/mocks/astro-loaders.ts',
 	},
 
 	// Correct glob patterns (no regex syntax here)
