@@ -72,8 +72,10 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 			expect(validateRegisterForm(baseInput)).toBeNull();
 		});
 
-		test('should return null even without claimCode (deferred to backend)', () => {
-			expect(validateRegisterForm({ ...baseInput, claimCode: '' })).toBeNull();
+		test('should require claimCode for registration', () => {
+			expect(validateRegisterForm({ ...baseInput, claimCode: '' })).toBe(
+				'Ingresa tu claimCode para continuar.',
+			);
 		});
 
 		test('should cascade errors from login validation', () => {

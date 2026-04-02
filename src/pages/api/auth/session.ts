@@ -11,25 +11,28 @@ import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository
 async function buildDebugPayload(
 	dto: Awaited<ReturnType<typeof buildAuthSessionDto>>,
 	sessionSnapshot: NonNullable<Awaited<ReturnType<typeof getSessionDebugSnapshotFromRequest>>>,
+	requestedSlug: string,
 ) {
-	const expectedEvent = await findEventBySlugService('ximena-meza-trasvina');
+	const normalizedRequestedSlug = requestedSlug.trim();
+	const requestedEvent = normalizedRequestedSlug
+		? await findEventBySlugService(normalizedRequestedSlug)
+		: null;
 	const payload = {
 		...dto,
 		debug: {
 			hasAccessToken: sessionSnapshot?.hasAccessToken ?? true,
 			tokenSource: sessionSnapshot?.tokenSource ?? 'cookie',
 			reason: sessionSnapshot?.reason ?? 'session_role_resolved',
-			expectedEventSlug: 'ximena-meza-trasvina',
-			expectedEventExistsInDb: Boolean(expectedEvent),
-			expectedEventId: expectedEvent?.id || null,
-			expectedEventOwnerUserId: expectedEvent?.ownerUserId || null,
-			hasVisibleMembershipForExpectedSlug: Boolean(
-				expectedEvent &&
-				dto.memberships.some((membership) => membership.eventId === expectedEvent.id),
-			),
-			hasOwnedEventForExpectedSlug: Boolean(
-				expectedEvent && expectedEvent.ownerUserId === dto.userId,
-			),
+			membershipCount: dto.memberships.length,
+			membershipEventIds: dto.memberships.map((membership) => membership.eventId),
+			requestedSlugCheck: normalizedRequestedSlug
+				? {
+						requestedSlug: normalizedRequestedSlug,
+						slugExistsInDb: Boolean(requestedEvent),
+						eventId: requestedEvent?.id || null,
+						ownerUserId: requestedEvent?.ownerUserId || null,
+					}
+				: null,
 		},
 	};
 	console.log('[auth/session][debug]', {
@@ -37,9 +40,8 @@ async function buildDebugPayload(
 		email: dto.email,
 		role: dto.role,
 		memberships: dto.memberships.length,
-		expectedEventId: payload.debug.expectedEventId,
-		hasVisibleMembershipForExpectedSlug: payload.debug.hasVisibleMembershipForExpectedSlug,
-		hasOwnedEventForExpectedSlug: payload.debug.hasOwnedEventForExpectedSlug,
+		requestedSlug: normalizedRequestedSlug || null,
+		requestedEventId: payload.debug.requestedSlugCheck?.eventId || null,
 	});
 	return payload;
 }
@@ -49,6 +51,7 @@ export const GET: APIRoute = async ({ request }) => {
 		const url = new URL(request.url);
 		const debugEnabled =
 			process.env.NODE_ENV !== 'production' && url.searchParams.get('debug') === '1';
+		const requestedSlug = url.searchParams.get('slug') || '';
 		const sessionSnapshot = debugEnabled
 			? await getSessionDebugSnapshotFromRequest(request)
 			: null;
@@ -73,7 +76,7 @@ export const GET: APIRoute = async ({ request }) => {
 		if (!debugEnabled) {
 			return jsonResponse(dto);
 		}
-		const payload = await buildDebugPayload(dto, sessionSnapshot!);
+		const payload = await buildDebugPayload(dto, sessionSnapshot!, requestedSlug);
 		return jsonResponse(payload);
 	} catch (error) {
 		return errorResponse(error);

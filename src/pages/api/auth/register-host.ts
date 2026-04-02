@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
-import { findAuthUserByEmail, sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth/auth-api';
+import { sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -23,6 +23,7 @@ import {
 	isSuperAdminEmail,
 } from '@/lib/rsvp/services/auth-access.service';
 import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
+import { findExistingAuthUserByEmail } from '@/lib/rsvp/services/auth-identifier.service';
 
 function sanitize(value: unknown, maxLen = 200): string {
 	if (typeof value !== 'string') return '';
@@ -38,7 +39,6 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const body = bodyResult;
 
 		const email = normalizeEmail(body.email as string);
-		void sanitize(body.eventSlug as string, 120);
 		const claimCode = sanitizeClaimCode(body.claimCode as string);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
 		assertValidEmail(email);
@@ -143,7 +143,7 @@ async function resolveUser(email: string, chosenPassword: string) {
 			refreshToken: signed.refresh_token || '',
 		};
 	} catch {
-		const existing = await findAuthUserByEmail({ email });
+		const existing = await findExistingAuthUserByEmail(email);
 		if (!existing) {
 			throw new ApiError(
 				409,

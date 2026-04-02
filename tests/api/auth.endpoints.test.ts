@@ -3,6 +3,7 @@ import { POST as registerHost } from '@/pages/api/auth/register-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
+import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import { buildAuthSessionDto } from '@/lib/rsvp/services/auth-access.service';
 import {
 	claimEventForUserByClaimCode,
@@ -19,8 +20,6 @@ jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
-	findAuthUserByEmail: jest.fn(),
-	findAuthUserByLoginIdentifier: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
@@ -43,6 +42,11 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventBySlugService: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
+	resolvePasswordAuthEmail: jest.fn(),
+	findExistingAuthUserByEmail: jest.fn(),
+}));
+
 describe('auth endpoints', () => {
 	const signInWithPasswordMock = authApi.signInWithPassword as jest.MockedFunction<
 		typeof authApi.signInWithPassword
@@ -53,6 +57,10 @@ describe('auth endpoints', () => {
 	const sendMagicLinkMock = authApi.sendMagicLink as jest.MockedFunction<
 		typeof authApi.sendMagicLink
 	>;
+	const resolvePasswordAuthEmailMock =
+		authIdentifierService.resolvePasswordAuthEmail as jest.MockedFunction<
+			typeof authIdentifierService.resolvePasswordAuthEmail
+		>;
 	const claimEventForUserByClaimCodeMock = claimEventForUserByClaimCode as jest.MockedFunction<
 		typeof claimEventForUserByClaimCode
 	>;
@@ -76,6 +84,7 @@ describe('auth endpoints', () => {
 	});
 
 	it('login-host supports password and magic link', async () => {
+		resolvePasswordAuthEmailMock.mockResolvedValue('host@test.com');
 		signInWithPasswordMock.mockResolvedValue({
 			access_token: 'token-123',
 			refresh_token: 'refresh',
@@ -122,31 +131,6 @@ describe('auth endpoints', () => {
 			}),
 			url: new URL('http://localhost/api/auth/register-host'),
 		} as never);
-		expect(response.status).toBe(200);
-	});
-
-	it('register-host keeps backward compatibility when eventSlug is sent', async () => {
-		signUpWithPasswordMock.mockResolvedValue({
-			access_token: 'token-legacy',
-			user: { id: 'u-legacy', email: 'legacy@test.com' },
-		});
-		claimEventForUserByClaimCodeMock.mockResolvedValue({
-			eventId: 'evt-legacy',
-			membershipRole: 'owner',
-		});
-		ensureUserRoleMock.mockResolvedValue('host_client');
-
-		const response = await registerHost({
-			request: createMockRequest({
-				method: 'password',
-				email: 'legacy@test.com',
-				password: 'Pass123!',
-				eventSlug: 'demo-event',
-				claimCode: 'CLAIM123',
-			}),
-			url: new URL('http://localhost/api/auth/register-host'),
-		} as never);
-
 		expect(response.status).toBe(200);
 	});
 
@@ -222,9 +206,9 @@ describe('auth endpoints', () => {
 		findEventBySlugServiceMock.mockResolvedValue({
 			id: 'evt-1',
 			ownerUserId: 'u1',
-			slug: 'ximena-meza-trasvina',
+			slug: 'fixture-event',
 			eventType: 'xv',
-			title: 'XV Ximena',
+			title: 'Fixture Event',
 			status: 'published',
 			publishedAt: null,
 			createdAt: '2026-01-01',
@@ -235,15 +219,20 @@ describe('auth endpoints', () => {
 			request: createMockRequest(
 				undefined,
 				undefined,
-				'http://localhost/api/auth/session?debug=1',
+				'http://localhost/api/auth/session?debug=1&slug=fixture-event',
 			),
 		} as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);
-		expect(body.debug.expectedEventSlug).toBe('ximena-meza-trasvina');
-		expect(body.debug.hasOwnedEventForExpectedSlug).toBe(true);
-		expect(body.debug.hasVisibleMembershipForExpectedSlug).toBe(true);
+		expect(body.debug.membershipCount).toBe(1);
+		expect(body.debug.membershipEventIds).toEqual(['evt-1']);
+		expect(body.debug.requestedSlugCheck).toEqual({
+			requestedSlug: 'fixture-event',
+			slugExistsInDb: true,
+			eventId: 'evt-1',
+			ownerUserId: 'u1',
+		});
 	});
 
 	it('logout endpoint clears session cookie', async () => {

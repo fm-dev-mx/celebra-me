@@ -1,11 +1,7 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
-import {
-	findAuthUserByLoginIdentifier,
-	sendMagicLink,
-	signInWithPassword,
-} from '@/lib/rsvp/auth/auth-api';
+import { sendMagicLink, signInWithPassword } from '@/lib/rsvp/auth/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -21,6 +17,7 @@ import {
 	normalizeLoginIdentifier,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
+import { resolvePasswordAuthEmail } from '@/lib/rsvp/services/auth-identifier.service';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
@@ -62,13 +59,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const password = sanitizePassword(body.password as string);
 		assertValidPassword(password);
-		let authEmail = identifier;
-		if (!identifier.includes('@')) {
-			const authUser = await findAuthUserByLoginIdentifier({ identifier });
-			if (!authUser?.email) {
-				throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
-			}
-			authEmail = authUser.email;
+		const authEmail = await resolvePasswordAuthEmail(identifier);
+		if (!authEmail) {
+			throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
 		}
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
 		try {

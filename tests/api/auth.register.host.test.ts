@@ -2,11 +2,11 @@ import type { APIContext } from 'astro';
 import { POST as registerHost } from '@/pages/api/auth/register-host';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authAccessService from '@/lib/rsvp/services/auth-access.service';
+import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signUpWithPassword: jest.fn(),
-	findAuthUserByEmail: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
 
@@ -20,9 +20,13 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	generateTemporaryPassword: jest.fn(() => 'TempPass!123'),
 }));
 
+jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
+	findExistingAuthUserByEmail: jest.fn(),
+}));
+
 describe('API: /api/auth/register-host', () => {
 	const signUpMock = authApi.signUpWithPassword as jest.Mock;
-	const findUserMock = authApi.findAuthUserByEmail as jest.Mock;
+	const findUserMock = authIdentifierService.findExistingAuthUserByEmail as jest.Mock;
 	const isSuperAdminMock = authAccessService.isSuperAdminEmail as jest.Mock;
 	const claimEventMock = authAccessService.claimEventForUserByClaimCode as jest.Mock;
 	const ensureRoleMock = authAccessService.ensureUserRole as jest.Mock;
@@ -92,6 +96,23 @@ describe('API: /api/auth/register-host', () => {
 				email: 'stranger@test.com',
 				password: 'password123',
 				// No claimCode
+			}),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(400);
+		const data = await response.json();
+		expect(data.error.message).toContain('claimCode');
+	});
+
+	it('Scenario: Legacy eventSlug no longer replaces claimCode', async () => {
+		isSuperAdminMock.mockReturnValue(false);
+
+		const response = await registerHost({
+			request: createMockRequest({
+				email: 'legacy@test.com',
+				password: 'password123',
+				eventSlug: 'demo-event',
 			}),
 			url: new URL('http://localhost/api/auth/register-host'),
 		} as unknown as APIContext);

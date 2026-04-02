@@ -20,12 +20,14 @@ export interface AuthSessionDebugDTO {
 	hasAccessToken: boolean;
 	tokenSource: 'authorization' | 'cookie' | 'none';
 	reason: 'missing_access_token' | 'invalid_supabase_user' | 'session_role_resolved';
-	expectedEventSlug: string;
-	expectedEventExistsInDb: boolean;
-	expectedEventId: string | null;
-	expectedEventOwnerUserId: string | null;
-	hasVisibleMembershipForExpectedSlug: boolean;
-	hasOwnedEventForExpectedSlug: boolean;
+	membershipCount: number;
+	membershipEventIds: string[];
+	requestedSlugCheck?: {
+		requestedSlug: string;
+		slugExistsInDb: boolean;
+		eventId: string | null;
+		ownerUserId: string | null;
+	} | null;
 }
 
 export interface AuthSessionDTO {

@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { POST as loginHost } from '@/pages/api/auth/login-host';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
+import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import * as rateLimitProvider from '@/lib/rsvp/security/rate-limit-provider';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -8,22 +9,27 @@ import { createMockRequest } from '../helpers/api-mocks';
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
-	findAuthUserByLoginIdentifier: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
+	resolvePasswordAuthEmail: jest.fn(),
+}));
+
 describe('API: /api/auth/login-host', () => {
 	const signInMock = authApi.signInWithPassword as jest.Mock;
 	const sendMagicMock = authApi.sendMagicLink as jest.Mock;
-	const findAuthUserByLoginIdentifierMock = authApi.findAuthUserByLoginIdentifier as jest.Mock;
+	const resolvePasswordAuthEmailMock =
+		authIdentifierService.resolvePasswordAuthEmail as jest.Mock;
 	const checkRateLimitMock = rateLimitProvider.checkRateLimit as jest.Mock;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		checkRateLimitMock.mockResolvedValue(true);
+		resolvePasswordAuthEmailMock.mockImplementation(async (identifier: string) => identifier);
 	});
 
 	it('Scenario: Successful Password Login', async () => {
@@ -65,11 +71,7 @@ describe('API: /api/auth/login-host', () => {
 	});
 
 	it('Scenario: Successful Alias Password Login', async () => {
-		findAuthUserByLoginIdentifierMock.mockResolvedValue({
-			id: 'user-001',
-			email: 'ximena_meza@clientes.celebra.invalid',
-			login_alias: 'ximena_meza',
-		});
+		resolvePasswordAuthEmailMock.mockResolvedValue('ximena_meza@clientes.celebra.invalid');
 		signInMock.mockResolvedValue({
 			access_token: 'secret-token-123',
 			user: { id: 'user-001', email: 'ximena_meza@clientes.celebra.invalid' },
@@ -85,9 +87,7 @@ describe('API: /api/auth/login-host', () => {
 		} as unknown as APIContext);
 
 		expect(response.status).toBe(200);
-		expect(findAuthUserByLoginIdentifierMock).toHaveBeenCalledWith({
-			identifier: 'ximena_meza',
-		});
+		expect(resolvePasswordAuthEmailMock).toHaveBeenCalledWith('ximena_meza');
 		expect(signInMock).toHaveBeenCalledWith({
 			email: 'ximena_meza@clientes.celebra.invalid',
 			password: 'ximenameza2026',
