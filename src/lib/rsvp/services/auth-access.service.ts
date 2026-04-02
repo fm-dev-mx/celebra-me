@@ -47,18 +47,6 @@ export async function ensureUserRole(input: {
 	return upserted.role;
 }
 
-export async function claimEventForUser(input: {
-	userId: string;
-	eventSlug: string;
-	claimCode: string;
-}): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
-	void sanitize(input.eventSlug, 120);
-	return claimEventForUserByClaimCode({
-		userId: input.userId,
-		claimCode: input.claimCode,
-	});
-}
-
 export async function claimEventForUserByClaimCode(input: {
 	userId: string;
 	claimCode: string;

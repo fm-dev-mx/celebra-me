@@ -5,8 +5,7 @@ export const prerender = false;
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { prepareInvitationPageData } from '@/lib/invitation/page-data';
-import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
+import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
 import Footer from '@/components/invitation/Footer.astro';
@@ -42,13 +41,17 @@ if (eventOverrideImporter) {
 // Guest Context Retrieval
 let guestContext = null;
 if (inviteId) {
-	try {
-		guestContext = await getInvitationContextByInviteId(inviteId);
-		// Telemetry: Record that the invitation was viewed
-		void trackInvitationView(inviteId);
-	} catch (e) {
-		console.error('[Personalization] Failed to load guest context:', e);
+	const personalization = await resolveRoutePersonalization({
+		inviteId,
+		currentPathWithQuery: Astro.url.pathname + Astro.url.search,
+		routeEventType: canonicalEventType,
+		routeSlug: slug as string,
+		routeIsDemo: Boolean(eventEntry.data.isDemo),
+	});
+	if (personalization.redirectPath) {
+		return Astro.redirect(personalization.redirectPath, 302);
 	}
+	guestContext = personalization.guestContext;
 }
 
 const pageData = prepareInvitationPageData({
