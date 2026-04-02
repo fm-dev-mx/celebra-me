@@ -8,9 +8,7 @@ import { itineraryItemSchema } from '@/lib/schemas/content/itinerary.schema';
 import { AssetSchema, countdownSchema } from '@/lib/schemas/content/shared.schema';
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
-const plainTextSchema = z
-	.string()
-	.refine((value) => !/[<>]/.test(value), 'Location indication text must be plain text.');
+const richTextSchema = z.string();
 
 const venueSchema = z.object({
 	venueEvent: z.string(),
@@ -55,7 +53,7 @@ export const locationSchema = z.object({
 				icon: z.enum(INDICATION_ICON_KEYS),
 				iconName: z.enum(INDICATION_ICON_NAMES).optional(),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
-				text: plainTextSchema,
+				text: richTextSchema,
 			}),
 		)
 		.optional(),
