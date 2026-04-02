@@ -83,7 +83,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 					className="btn-primary"
 					disabled={createDisabled}
 				>
-					Nuevo invitado
+					Agregar Invitado
 				</button>
 			</div>
 		</div>
