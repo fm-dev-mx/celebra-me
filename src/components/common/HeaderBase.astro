@@ -33,7 +33,7 @@ const {
     class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''} ${
         logoVariant === 'static' ? 'header-base--logo-static' : 'header-base--logo-adaptive'
     }`}
-    data-variant={variant}
+    data-variant={variant} data-header-id={headerId} data-transparent-on-hero={String(transparentOnHero)}
 >
     <div class="header-base__container">
         <!-- Slot: Logo (Adaptive logic lives in parent) -->
@@ -77,15 +77,17 @@ const {
         </div>
     )}
 </header>
-<script define:vars={{ headerId, transparentOnHero }}>
-	const header = document.getElementById(headerId);
+<script>
+	const header = document.querySelector('.header-base');
 
 	if (header instanceof HTMLElement) {
+		// headerId is available on header.dataset.headerId if needed
+		const transparentOnHero = header.dataset.transparentOnHero === 'true';
 		let lastScrollY = window.scrollY;
 		const scrollThreshold = 50;
 		const hideThreshold = 100;
 
-		const setScrolledState = (isScrolledPastHero) => {
+		const setScrolledState = (isScrolledPastHero: boolean) => {
 			header.classList.toggle('header-base--scrolled', isScrolledPastHero);
 
 			const isMenuOpenNow = header.classList.contains('header-base--menu-open');

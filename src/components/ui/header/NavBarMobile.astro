@@ -129,10 +129,6 @@ const menuId = `${headerId}-mobile-menu`;
 
 		syncForViewport();
 
-		if (typeof desktopQuery.addEventListener === 'function') {
-			desktopQuery.addEventListener('change', syncForViewport);
-		} else if (typeof desktopQuery.addListener === 'function') {
-			desktopQuery.addListener(syncForViewport);
-		}
+		desktopQuery.addEventListener('change', syncForViewport);
 	});
 </script>
