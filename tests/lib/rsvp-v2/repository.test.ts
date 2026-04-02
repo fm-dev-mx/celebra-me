@@ -8,6 +8,8 @@ import {
 	createGuestInvitation,
 	findGuestById,
 	findGuestByInviteIdPublic,
+	findGuestByPhone,
+	softDeleteGuestById,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
@@ -156,10 +158,16 @@ describe('rsvp repository', () => {
 		] as never);
 		const byInvite = await findGuestByInviteIdPublic('invite-1');
 		expect(byInvite?.id).toBe('guest-1');
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
 
 		supabaseRestRequestMock.mockResolvedValueOnce([] as never);
 		const byId = await findGuestById('guest-404', 'token');
 		expect(byId).toBeNull();
+		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
 
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
@@ -173,5 +181,27 @@ describe('rsvp repository', () => {
 		] as never);
 		const audit = await appendGuestAuditPublic('guest-1', 'viewed', { source: 'test' });
 		expect(audit.eventType).toBe('viewed');
+	});
+
+	it('filters soft-deleted guests in phone lookups and soft deletes via patch', async () => {
+		supabaseRestRequestMock.mockResolvedValueOnce([]);
+		await findGuestByPhone('evt-1', '6680000000', 'token');
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+
+		supabaseRestRequestMock.mockResolvedValueOnce([] as never);
+		await softDeleteGuestById('guest-1', 'token');
+		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
+			expect.objectContaining({
+				method: 'PATCH',
+				pathWithQuery: expect.stringContaining('id=eq.guest-1&deleted_at=is.null'),
+				body: expect.objectContaining({
+					deleted_at: expect.any(String),
+				}),
+				authToken: 'token',
+				prefer: 'return=minimal',
+			}),
+		);
 	});
 });

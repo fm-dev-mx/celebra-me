@@ -66,6 +66,9 @@ describe('rsvp repository branches', () => {
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
 			'attendance_status=eq.confirmed',
 		);
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
 	});
 
 	it('throws when create/update/public update/audit responses are empty', async () => {

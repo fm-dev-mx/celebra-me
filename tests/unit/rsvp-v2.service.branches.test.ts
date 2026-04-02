@@ -4,6 +4,7 @@ import {
 } from '@/lib/rsvp/services/auth-access.service';
 import {
 	createDashboardGuest,
+	deleteDashboardGuest,
 	listDashboardGuests,
 	markGuestShared,
 	updateDashboardGuest,
@@ -66,6 +67,9 @@ describe('rsvp service branches', () => {
 	>;
 	const updateGuestByIdServiceMock = guestRepo.updateGuestByIdService as jest.MockedFunction<
 		typeof guestRepo.updateGuestByIdService
+	>;
+	const softDeleteGuestByIdMock = guestRepo.softDeleteGuestById as jest.MockedFunction<
+		typeof guestRepo.softDeleteGuestById
 	>;
 	const findEventByInvitationPublicMock =
 		eventRepo.findEventByInvitationPublic as jest.MockedFunction<
@@ -198,6 +202,29 @@ describe('rsvp service branches', () => {
 				guestId: 'guest-missing',
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
+			}),
+		).rejects.toMatchObject({ status: 404 });
+	});
+
+	it('deleteDashboardGuest soft deletes active guests and treats deleted guests as missing', async () => {
+		findGuestByIdMock.mockResolvedValueOnce(baseGuest);
+		softDeleteGuestByIdMock.mockResolvedValueOnce(undefined);
+
+		await expect(
+			deleteDashboardGuest({
+				guestId: 'guest-1',
+				hostAccessToken: 'token',
+			}),
+		).resolves.toBeUndefined();
+		expect(softDeleteGuestByIdMock).toHaveBeenCalledWith('guest-1', 'token');
+
+		findGuestByIdMock.mockResolvedValueOnce(null);
+		findGuestByIdServiceMock.mockResolvedValueOnce(null);
+
+		await expect(
+			deleteDashboardGuest({
+				guestId: 'guest-1',
+				hostAccessToken: 'token',
 			}),
 		).rejects.toMatchObject({ status: 404 });
 	});
