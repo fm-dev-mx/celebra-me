@@ -15,8 +15,6 @@ interface Props {
 	tooltipText?: string;
 	variant?: string;
 	guestName?: string;
-	titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
-	detailMaterial?: 'debossed' | 'standard';
 	isOrganic?: boolean;
 }
 
@@ -34,9 +32,6 @@ const {
 	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
 	guestName,
-	titleMaterial = 'standard',
-	detailMaterial = 'standard',
-	isOrganic = false,
 } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
@@ -80,16 +75,16 @@ const sealIconMap = {
 				</div>
 				<div class="envelope-card__body">
 					<span class="envelope-card__label">{documentLabel || 'Invitación'}</span>
-					<h2 class="envelope-card__name" data-material={titleMaterial} data-organic={isOrganic}>{name}</h2>
+					<h2 class="envelope-card__name">{name}</h2>
 					{guestName && (
 						<div class="envelope-card__guest-personalized">
 							<p class="personalized-label">Entrega especial para:</p>
-							<strong class="personalized-name" data-material={titleMaterial}>{guestName}</strong>
+							<strong class="personalized-name">{guestName}</strong>
 						</div>
 					)}
 				</div>
 				<div class="envelope-card__footer">
-					<p class="envelope-card__details" data-material={detailMaterial}>{formattedDate} • {city}</p>
+					<p class="envelope-card__details">{formattedDate} • {city}</p>
 				</div>
 			</div>
 		</div>
@@ -136,10 +131,10 @@ const sealIconMap = {
 				</div>
 
 				<div class="tease-content-bottom">
-					<h2 class="envelope-name" data-material={titleMaterial} data-organic={isOrganic}>{name}</h2>
+					<h2 class="envelope-name">{name}</h2>
 					<div class="tease-details-group">
 						<div class="tease-divider"></div>
-						<p class="envelope-details" data-material={detailMaterial}>{formattedDate} • {city}</p>
+						<p class="envelope-details">{formattedDate} • {city}</p>
 					</div>
 					{guestName && (
 						<div class="envelope-guest-personalized">

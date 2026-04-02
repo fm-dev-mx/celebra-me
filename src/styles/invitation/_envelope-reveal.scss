@@ -36,8 +36,17 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 }
 
 .envelope-wrapper {
-	// -- Aesthetic Tokens (to be populated by theme) --
+	// ==========================================================================
+	// 1. AESTHETIC CONTRACT (Variables meant to be overridden by themes)
+	// ==========================================================================
+
+	// --- Atmosphere & Background ---
 	--env-bg: radial-gradient(circle at center, hsl(213deg 32% 16%) 0%, hsl(230deg 25% 5%) 100%);
+	--env-shadow-ambient: 0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.12)};
+	--env-shadow-deep: 0 32px 64px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.25)};
+	--env-shadow-volume: 0 45px 95px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.42)};
+
+	// --- Paper & Materiality ---
 	--env-paper-bg: var(--color-surface-primary);
 	--env-paper-gradient: linear-gradient(
 		135deg,
@@ -46,37 +55,56 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	);
 	--env-paper-border: var(--color-glass-border);
 	--env-paper-radius: 20px;
+	--env-paper-grain-opacity: 0.04;
+	--env-paper-grain-blend: soft-light;
+
+	// --- Flip & Animation Hooks ---
+	--env-flap-rotation: 170deg;
+	--env-flap-blur: 24px;
+	--env-flap-shadow-bg: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.35)};
+
+	// --- Card (The Invitation inside) ---
 	--env-card-bg: var(--color-white);
 	--env-card-radius: 10px;
 	--env-card-border: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.06)};
-	--env-shadow-soft: 0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.12)};
 
-	.envelope-tooltip {
-		--env-tooltip-bg: #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.96)};
-		--env-tooltip-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.16)};
-
-		box-shadow: 0 8px 18px #{color.change(sys-color.$sys-color-coffee-900, $alpha: 0.1)};
-	}
-
-	--env-shadow-deep: 0 32px 64px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.25)};
+	// --- Seal (The Interactive Button) ---
+	--env-seal-size: 56px;
 	--env-seal-bg: radial-gradient(
 		circle at 35% 35%,
 		rgb(var(--color-action-accent-rgb), 1),
 		var(--color-action-accent),
 		var(--color-surface-dark)
 	);
-	--env-seal-icon-color: rgb(var(--color-surface-dark-rgb), 0.65);
+	--env-seal-icon-color: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.65)};
+	--env-seal-pulse-color: var(--color-action-accent);
+
+	// --- Typography & Details ---
 	--env-name-font: var(--font-display);
 	--env-name-font-organic: var(--font-calligraphy, var(--font-display));
 	--env-name-gradient: none;
 	--env-name-animation: none;
+	--env-name-shadow: none;
+	--env-name-weight: inherit;
+	--env-name-spacing: normal;
 	--env-details-color: var(--color-text-primary);
-	--env-paper-grain-opacity: 0.04;
-	--env-paper-grain-blend: soft-light;
-	--env-flap-rotation: 170deg;
-	--env-flap-blur: 24px;
-	--env-flap-shadow-bg: rgb(var(--color-surface-dark-rgb), 0.35);
-	--env-shadow-volume: 0 45px 95px rgb(var(--color-surface-dark-rgb), 0.42);
+	--env-microcopy-color: var(--color-white);
+	--env-microcopy-opacity: 0.55;
+
+	// --- Layout Hooks (Fine-grained positioning) ---
+	--env-tease-header-y: 0;
+	--env-tease-footer-y: 0;
+	--env-header-align: center;
+	--env-header-justify: flex-end;
+	--env-header-width: 100%;
+	--env-header-text-align: center;
+	--env-name-justify: center;
+	--env-details-max-width: 90cqw;
+	--env-details-text-align: center;
+
+	// ==========================================================================
+	// 2. CORE COMPONENT STYLES
+	// ==========================================================================
 
 	position: fixed;
 	inset: 0;
@@ -92,6 +120,13 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	transition:
 		opacity 0.6s $ease,
 		transform $transition-slow $ease-smooth;
+
+	.envelope-tooltip {
+		--env-tooltip-bg: #{color.change(sys-color.$sys-color-champagne-50, $alpha: 0.96)};
+		--env-tooltip-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.16)};
+
+		box-shadow: 0 8px 18px #{color.change(sys-color.$sys-color-coffee-900, $alpha: 0.1)};
+	}
 }
 
 .envelope-container {
@@ -101,9 +136,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	aspect-ratio: var(--env-aspect-ratio, 1.35);
 	max-height: var(--env-max-height, min(55vh, 300px));
 	transform-style: preserve-3d;
-	border-radius: var(--env-paper-radius, 20px); // Fixes rectangular shadow and alignment
+	border-radius: var(--env-paper-radius);
 
-	// Main shadow moved to ::after for GPU efficiency
 	&::after {
 		content: '';
 		position: absolute;
@@ -128,7 +162,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 .envelope-base {
 	z-index: 1;
 
-	// Base persistent shadow
 	&::before {
 		content: '';
 		position: absolute;
@@ -170,7 +203,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		background: linear-gradient(
 			to right,
 			transparent 10%,
-			rgb(0 0 0 / 5%) 50%,
+			#{color.change(sys-color.$sys-color-neutral-400, $alpha: 0.05)} 50%,
 			transparent 90%
 		);
 	}
@@ -183,7 +216,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	clip-path: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
 	transform-origin: top;
 	transition: transform $transition-slow $ease-smooth;
-	border-bottom: 1px solid #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.15)};
+	border-bottom: 1px solid var(--env-paper-border);
+	filter: drop-shadow(0 1px 0 var(--env-edge-highlight, transparent));
 
 	&::before {
 		content: '';
@@ -231,13 +265,11 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 .envelope-card {
 	position: absolute;
 	inset: 10% 14%;
-	z-index: 3; // Initially behind the pocket
+	z-index: 3;
 	background: var(--env-card-bg);
 	border: 1px solid var(--env-card-border);
 	border-radius: var(--env-card-radius);
-	box-shadow:
-		0 1px 3px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.08)},
-		0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.1)};
+	box-shadow: var(--env-shadow-ambient);
 	overflow: hidden;
 	opacity: 0%;
 	transform: translateY(0) scale(0.96) translateZ(0);
@@ -251,10 +283,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		inset: 0;
 		z-index: -1;
 		border-radius: inherit;
-		box-shadow:
-			0 1px 3px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.08)},
-			0 8px 24px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.1)};
-		opacity: 100%;
+		box-shadow: var(--env-shadow-ambient);
+		opacity: 90%;
 		transition: opacity $transition-base $ease;
 	}
 }
@@ -271,18 +301,11 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	overflow-y: auto;
 }
 
-.envelope-card__header,
-.envelope-card__body {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
 .envelope-card__monogram {
 	width: 48px;
 	height: 48px;
-	color: var(--color-action-accent);
-	opacity: 60%;
+	color: var(--env-details-color);
+	opacity: 45%;
 }
 
 .envelope-card__label,
@@ -293,43 +316,9 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	font-family: var(--env-name-font);
 	line-height: 1.15;
 	margin: 0;
-	color: var(--color-text-primary);
-	-webkit-text-fill-color: currentcolor; // Fallback for visibility
+	color: var(--env-name-color);
+	-webkit-text-fill-color: currentcolor;
 	transition: font-size 0.3s ease;
-
-	&[data-material='foil-gold'] {
-		--env-name-gradient: var(
-			--foil-gold-gradient,
-			linear-gradient(75deg, transparent 0%, transparent 100%)
-		);
-
-		background: var(--env-name-gradient);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 1px 1px #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)});
-	}
-
-	&[data-material='debossed'] {
-		text-shadow:
-			var(
-				--env-deboss-depth-1,
-				0 -1px 0 #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.2)}
-			),
-			var(
-				--env-deboss-depth-2,
-				0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.3)}
-			);
-	}
-}
-
-.envelope-card__name {
-	font-size: clamp(1.4rem, 10cqw, 2.5rem);
-
-	&[data-organic='true'] {
-		font-family: var(--env-name-font-organic);
-		font-size: clamp(2rem, 12cqw, 3.5rem);
-		line-height: 1;
-	}
 }
 
 .envelope-name {
@@ -340,14 +329,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	padding: 0;
 	margin: 0.25rem 0;
 	font-size: clamp(1rem, 7cqw, 2.2rem);
-
-	&[data-organic='true'] {
-		font-family: var(--env-name-font-organic);
-		font-size: clamp(1.8rem, 11cqw, 3.2rem);
-		line-height: 0.9;
-		font-weight: 400;
-	}
-
 	text-wrap: balance;
 	width: 100%;
 	max-width: 90cqw;
@@ -361,13 +342,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	opacity: var(--env-name-opacity, 100%);
 	transform: translateX(var(--env-name-offset-x, 0)) rotate(var(--env-name-rotation, 0deg));
 	animation: var(--env-name-animation, none);
-
-	// If gradient is explicitly 'none', don't use transparent fill
-	@at-root [data-env-variant] & {
-		&:not([data-material='foil-gold']) {
-			-webkit-text-fill-color: currentcolor;
-		}
-	}
 }
 
 .envelope-stamp {
@@ -382,10 +356,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	border-radius: var(--env-stamp-radius, 999px);
 	opacity: var(--env-stamp-opacity, 100%);
 	box-shadow: var(--env-stamp-shadow, none);
-
-	.envelope-stamp {
-		box-shadow: 0 6px 12px #{color.change(sys-color.$sys-color-coffee-900, $alpha: 0.08)};
-	}
 
 	span {
 		font-size: 0.74rem;
@@ -433,11 +403,11 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 .envelope-tease__interactive-content {
 	position: relative;
 	display: grid;
-	grid-template-rows: 1fr auto 1.3fr; // Gives 30% more vertical room to bottom content
+	grid-template-rows: 1fr auto 1.3fr;
 	place-items: stretch center;
 	width: 100%;
 	height: 100%;
-	padding-bottom: 1.5rem; // Safe zone from paper bottom edge
+	padding-bottom: 1.5rem;
 	transition: opacity $transition-base $ease;
 }
 
@@ -445,13 +415,13 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	display: flex;
 	flex-direction: column;
 	align-items: var(--env-header-align, center);
-	justify-content: var(--env-header-justify, flex-end); /* Locks to bottom of its grid area */
+	justify-content: var(--env-header-justify, flex-end);
 	width: var(--env-header-width, 100%);
 	max-width: 82cqw;
 	margin: 0 auto;
 	text-align: var(--env-header-text-align, center);
 	gap: 0.35rem;
-	padding-bottom: 3.5rem; /* Exclusive safety zone for tooltip */
+	padding-bottom: 3.5rem;
 	transform: translateY(var(--env-tease-header-y, 0));
 }
 
@@ -480,16 +450,14 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: flex-start; /* Locks to top of its grid area */
+	justify-content: flex-start;
 	width: 100%;
 	max-width: 82cqw;
-	gap: 0.4rem; // Balanced spacing
-	padding-top: 1.5rem; // Buffer from seal
-	padding-bottom: 2rem; // Ensures organic "inside" containment
+	gap: 0.4rem;
+	padding-top: 1.5rem;
+	padding-bottom: 2rem;
 	transform: translateY(var(--env-tease-footer-y, 0));
 }
-
-// Removed fragmented .envelope-name (consolidated above)
 
 .envelope-guest-personalized {
 	display: flex;
@@ -522,16 +490,13 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 .envelope-seal-zone {
 	position: relative;
-	left: auto;
-	top: auto;
-	transform: none;
 	z-index: 20;
 	display: flex;
 	align-self: center;
 	align-items: center;
 	justify-content: center;
 	pointer-events: auto;
-	min-height: $seal-size;
+	min-height: var(--env-seal-size);
 }
 
 .tease-details-group {
@@ -546,7 +511,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	position: relative;
 	width: 7.5rem;
 	height: 1px;
-	margin-left: var(--env-divider-margin-left, auto);
+	margin: 0 auto;
 	margin-bottom: 0.2rem;
 	background: linear-gradient(to right, transparent, var(--color-border-subtle), transparent);
 
@@ -567,15 +532,15 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 .envelope-details {
 	margin: 0 auto;
 	width: 100%;
-	max-width: var(--env-details-max-width, 90cqw);
+	max-width: var(--env-details-max-width);
 	font-family: var(--font-body);
 	font-size: clamp(0.7rem, 3cqw, 0.84rem);
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
-	text-align: var(--env-details-text-align, center);
+	text-align: var(--env-details-text-align);
 	opacity: 65%;
 	color: var(--env-details-color);
-	transform: translateX(var(--env-details-offset-x, 0)) rotate(var(--env-details-rotation, 0deg));
+	transform: translateX(var(--env-details-offset-x)) rotate(var(--env-details-rotation, 0deg));
 }
 
 .envelope-external-instruction {
@@ -893,10 +858,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 }
 
 @include mixins.respond-to(md) {
-	.envelope-name[data-material='standard'] {
-		font-size: clamp(1.4rem, 5vw, 3rem);
-	}
-
 	.envelope-guest-personalized {
 		.personalized-label {
 			font-size: 0.61rem;
