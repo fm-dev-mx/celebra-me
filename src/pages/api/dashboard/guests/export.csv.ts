@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 			'responded_at',
 			'updated_at',
 			'tags',
-			'guest_message',
+			'guest_comment',
 		];
 
 		const rows = data.items.map((item) =>
@@ -52,7 +52,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 				item.respondedAt ?? '',
 				item.updatedAt,
 				(item.tags || []).join('; '),
-				item.guestMessage,
+				item.guestComment,
 			]
 				.map((value) => `"${String(value).replace(/"/g, '""')}"`)
 				.join(','),

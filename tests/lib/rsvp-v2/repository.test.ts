@@ -69,11 +69,6 @@ describe('rsvp repository', () => {
 	it('creates and updates guests through expected repository contracts', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
-				entry_source: 'dashboard',
-			},
-		] as never);
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
 				id: 'guest-1',
 				invite_id: 'invite-1',
 				event_id: 'evt-1',
@@ -82,10 +77,12 @@ describe('rsvp repository', () => {
 				max_allowed_attendees: 2,
 				attendance_status: 'pending',
 				attendee_count: 0,
-				guest_message: '',
+				guest_comment: '',
 				delivery_status: 'generated',
 				first_viewed_at: null,
 				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
 				responded_at: null,
 				last_response_source: 'link',
 				created_at: '2026-01-01T00:00:00.000Z',
@@ -105,11 +102,6 @@ describe('rsvp repository', () => {
 
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
-				entry_source: 'dashboard',
-			},
-		] as never);
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
 				id: 'guest-1',
 				invite_id: 'invite-1',
 				event_id: 'evt-1',
@@ -118,10 +110,12 @@ describe('rsvp repository', () => {
 				max_allowed_attendees: 2,
 				attendance_status: 'confirmed',
 				attendee_count: 2,
-				guest_message: 'ok',
+				guest_comment: 'ok',
 				delivery_status: 'shared',
 				first_viewed_at: null,
 				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
 				responded_at: null,
 				last_response_source: 'link',
 				created_at: '2026-01-01T00:00:00.000Z',
@@ -146,10 +140,12 @@ describe('rsvp repository', () => {
 				max_allowed_attendees: 2,
 				attendance_status: 'pending',
 				attendee_count: 0,
-				guest_message: '',
+				guest_comment: '',
 				delivery_status: 'generated',
 				first_viewed_at: null,
 				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
 				responded_at: null,
 				last_response_source: 'link',
 				created_at: '2026-01-01T00:00:00.000Z',

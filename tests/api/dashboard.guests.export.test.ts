@@ -51,6 +51,8 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					attendeeCount: 2,
 					guestComment: 'Linea 1\nLinea 2',
 					deliveryStatus: 'shared',
+					viewPercentage: 0,
+					isViewed: false,
 					firstViewedAt: null,
 					respondedAt: null,
 					waShareUrl: '',
@@ -85,5 +87,6 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 		expect(response.headers.get('content-type')).toContain('text/csv');
 		expect(body).toContain('"Ana, ""Mendoza"""');
 		expect(body).toContain('"Linea 1');
+		expect(body).toContain('guest_comment');
 	});
 });

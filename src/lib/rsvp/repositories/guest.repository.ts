@@ -163,7 +163,7 @@ async function updateGuestRecord(
 				TABLE,
 				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
 				filter,
-				normalizedBody,
+				adaptGuestUpdateBodyForSchema(body, { supportsGenericSources: false }),
 				toGuestRecord,
 				getGuestMutationOptions(hostAccessToken),
 			);

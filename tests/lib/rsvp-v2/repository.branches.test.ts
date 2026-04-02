@@ -43,10 +43,12 @@ describe('rsvp repository branches', () => {
 				max_allowed_attendees: 2,
 				attendance_status: 'pending',
 				attendee_count: 0,
-				guest_message: '',
+				guest_comment: '',
 				delivery_status: 'generated',
 				first_viewed_at: null,
 				last_viewed_at: null,
+				view_percentage: 0,
+				is_viewed: false,
 				responded_at: null,
 				last_response_source: 'link',
 				created_at: new Date().toISOString(),
@@ -162,10 +164,12 @@ describe('rsvp repository branches', () => {
 					max_allowed_attendees: 2,
 					attendance_status: 'pending',
 					attendee_count: 0,
-					guest_message: '',
+					guest_comment: '',
 					delivery_status: 'generated',
 					first_viewed_at: null,
 					last_viewed_at: null,
+					view_percentage: 0,
+					is_viewed: false,
 					responded_at: null,
 					last_response_source: 'link',
 					created_at: new Date().toISOString(),
@@ -189,10 +193,12 @@ describe('rsvp repository branches', () => {
 					max_allowed_attendees: 2,
 					attendance_status: 'confirmed',
 					attendee_count: 2,
-					guest_message: 'Hola',
+					guest_comment: 'Hola',
 					delivery_status: 'generated',
 					first_viewed_at: null,
 					last_viewed_at: null,
+					view_percentage: 100,
+					is_viewed: true,
 					responded_at: new Date().toISOString(),
 					last_response_source: 'link',
 					created_at: new Date().toISOString(),
@@ -215,14 +221,14 @@ describe('rsvp repository branches', () => {
 
 		await updateGuestByInviteIdPublic('invite-1', {
 			last_response_source: 'generic_link',
-			guest_message: 'Hola',
+			guest_comment: 'Hola',
 		});
 
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
 			expect.objectContaining({
 				method: 'POST',
 				pathWithQuery: expect.stringContaining(
-					'select=id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id',
+					'select=id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,created_at,updated_at,tags,short_id',
 				),
 				body: expect.not.objectContaining({
 					entry_source: expect.anything(),
