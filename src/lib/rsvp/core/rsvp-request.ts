@@ -48,8 +48,8 @@ export async function parsePublicGuestRsvpRequest(
 
 	const fullName = sanitize(body.fullName as string, 140);
 	const phone = normalizePhone(sanitize(body.phone as string, 40));
-	if (!fullName || !phone) {
-		return badRequest('fullName and phone are required.');
+	if (!fullName) {
+		return badRequest('fullName is required.');
 	}
 
 	return {

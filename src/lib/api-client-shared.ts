@@ -78,6 +78,24 @@ export async function fetchJSON<T>(
 				return data;
 			}
 
+			// Handle Astro/Supabase style error response: { success: false, error: { message } }
+			if (
+				typeof data === 'object' &&
+				data !== null &&
+				'error' in data &&
+				typeof data.error === 'object' &&
+				data.error !== null &&
+				'message' in data.error
+			) {
+				return {
+					ok: false,
+					status: response.status,
+					code: (data.error as any).code || 'http_error',
+					message: String((data.error as any).message),
+					details: (data.error as any).details,
+				};
+			}
+
 			const errorMessage =
 				typeof data === 'object' && data !== null && 'message' in data
 					? String(data.message)

@@ -17,6 +17,7 @@ import type {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
 import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 
 type InviteRsvpIdentity = {
 	inviteId: string;
@@ -59,6 +60,7 @@ function clampGuestCap(raw: number) {
 
 function validatePhone(phone: string) {
 	const normalizedPhone = normalizePhone(phone);
+	if (!normalizedPhone) return '';
 	if (!/^\d{10}$/.test(normalizedPhone)) {
 		throw new ApiError(400, 'bad_request', 'Phone must contain 10 digits.');
 	}
@@ -66,37 +68,43 @@ function validatePhone(phone: string) {
 }
 
 export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTarget> {
-	if (isInviteIdentity(identity)) {
-		const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
-		if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
-		return {
-			event: null,
-			invitation,
-		};
-	}
+	try {
+		if (isInviteIdentity(identity)) {
+			const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
+			if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
+			return {
+				event: null,
+				invitation,
+			};
+		}
 
-	const fullName = sanitize(identity.fullName, 140);
-	if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
+		const fullName = sanitize(identity.fullName, 140);
+		if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 
-	const phone = validatePhone(identity.phone);
-	const existingInvitation = await findGuestByPhone(identity.event.id, phone);
-	if (existingInvitation) {
+		const phone = validatePhone(identity.phone);
+		if (phone) {
+			const existingInvitation = await findGuestByPhone(identity.event.id, phone);
+			if (existingInvitation) {
+				return {
+					event: identity.event,
+					invitation: existingInvitation,
+				};
+			}
+		}
+
 		return {
 			event: identity.event,
-			invitation: existingInvitation,
+			createInput: {
+				eventId: identity.event.id,
+				fullName,
+				phone: phone || (null as unknown as string),
+				maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
+				entrySource: 'generic_public',
+			},
 		};
+	} catch (error) {
+		throw mapSupabaseErrorToApiError(error);
 	}
-
-	return {
-		event: identity.event,
-		createInput: {
-			eventId: identity.event.id,
-			fullName,
-			phone,
-			maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
-			entrySource: 'generic_public',
-		},
-	};
 }
 
 export async function persistRsvpResponse(
