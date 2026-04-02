@@ -114,15 +114,23 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/No podré asistir/i));
 
 			expect(screen.getByLabelText(/No podré asistir/i)).toBeChecked();
+			// Guest count should still be hidden
 			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
+			// Notes should now be visible
+			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
 		});
 
-		it('should show notes textarea when "Yes" is selected', async () => {
+		it('should show notes textarea when "Yes" or "No" is selected', async () => {
 			const user = userEvent.setup();
-			render(<RSVP {...defaultProps} />);
+			const { rerender } = render(<RSVP {...defaultProps} />);
 
+			// Test Yes
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
 
+			// Reset and test No
+			rerender(<RSVP {...defaultProps} />);
+			await user.click(screen.getByLabelText(/No podré asistir/i));
 			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
 		});
 

@@ -219,7 +219,7 @@ export function ConfirmedFields(props: {
 		onBlur,
 	} = props;
 
-	if (attendanceStatus !== 'confirmed') return null;
+	if (!attendanceStatus) return null;
 
 	return (
 		<AnimatePresence>
@@ -234,7 +234,7 @@ export function ConfirmedFields(props: {
 				transition={prefersReducedMotion ? { duration: 0 } : undefined}
 				className="rsvp__extra-fields"
 			>
-				{supportsPlusOnes && (
+				{attendanceStatus === 'confirmed' && supportsPlusOnes && (
 					<div
 						className={`rsvp__field ${
 							touched.guestCount && errors.guestCount ? 'rsvp__field--error' : ''
@@ -265,7 +265,7 @@ export function ConfirmedFields(props: {
 					<label htmlFor="notes">Notas</label>
 					<textarea
 						id="notes"
-						placeholder="Escribe un mensaje para Ximena..."
+						placeholder={`Escribe un mensaje para Ximena...`}
 						rows={2}
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}

@@ -41,7 +41,7 @@ export function resolveLabels(labels?: {
 		guestCountLabel: labels?.guestCount ?? 'N\u00famero total de asistentes',
 		phoneLabel: 'Tel\u00e9fono de contacto',
 		attendanceLabel: labels?.attendance ?? '\u00bfAsistir\u00e1s al evento? \u002a',
-		buttonLabel: labels?.confirmButton ?? 'Confirmar',
+		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
 	};
 }
 

@@ -18,7 +18,7 @@
             "labels": {
                 "name": "Tu nombre",
                 "guestCount": "Acompañantes",
-                "confirmButton": "Reservar mi lugar"
+                "confirmButton": "Confirmar asistencia"
             }
         }
     },
