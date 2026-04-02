@@ -10,6 +10,7 @@ import {
 	getGuestInviteUrl,
 	getGuestVisibleTags,
 } from '@/components/dashboard/guests/guest-presenter';
+import { MessageIcon } from '@/components/common/icons/ui';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];
@@ -132,6 +133,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						<tr>
 							<th>No.</th>
 							<th>Nombre / Contacto</th>
+							<th>Nota</th>
 							<th>Estado</th>
 							<th>Asistentes</th>
 							<th>Entrega</th>
@@ -179,7 +181,23 @@ const GuestTable: React.FC<GuestTableProps> = ({
 											</span>
 										</div>
 									</td>
-									<td data-label="Categorías">
+									<td data-label="Nota">
+										{item.guestComment ? (
+											<div className="tooltip-trigger">
+												<div
+													className={`guest-note-indicator ${item.guestComment ? 'guest-note-indicator--active' : ''}`}
+												>
+													<MessageIcon size={20} />
+												</div>
+												<div className="tooltip-content">
+													{item.guestComment}
+												</div>
+											</div>
+										) : (
+											<span className="tag tag--subtle">—</span>
+										)}
+									</td>
+									<td data-label="Estado">
 										<div className="dashboard-guests__tags">
 											{visibleTags.length > 0 ? (
 												visibleTags.map((tag) => (

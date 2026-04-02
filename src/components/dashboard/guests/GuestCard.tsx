@@ -8,6 +8,7 @@ import {
 	getGuestVisibleTags,
 	getGuestAttendanceLabel,
 } from '@/components/dashboard/guests/guest-presenter';
+import { MessageIcon } from '@/components/common/icons/ui';
 
 const EditGlyph = () => (
 	<svg
@@ -101,6 +102,16 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							{tag}
 						</span>
 					))}
+				</div>
+			)}
+
+			{item.guestComment && (
+				<div className="guest-card__comment animate-pop-in">
+					<div className="guest-card__comment-label">
+						<MessageIcon size={16} />
+						<span>Nota del Invitado</span>
+					</div>
+					<p className="guest-card__comment-text">{item.guestComment}</p>
 				</div>
 			)}
 
