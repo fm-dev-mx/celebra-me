@@ -8,6 +8,7 @@ import {
 	markGuestShared,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
+import { listHostEvents } from '@/lib/rsvp/services/event-admin.service';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import {
 	submitGuestRsvpByInviteId,
@@ -33,6 +34,12 @@ describe('rsvp service branches', () => {
 	>;
 	const findEventBySlugServiceMock = eventRepo.findEventBySlugService as jest.MockedFunction<
 		typeof eventRepo.findEventBySlugService
+	>;
+	const findEventsByOwnerMock = eventRepo.findEventsByOwner as jest.MockedFunction<
+		typeof eventRepo.findEventsByOwner
+	>;
+	const findEventsForHostMock = eventRepo.findEventsForHost as jest.MockedFunction<
+		typeof eventRepo.findEventsForHost
 	>;
 	const findGuestsByEventMock = guestRepo.findGuestsByEvent as jest.MockedFunction<
 		typeof guestRepo.findGuestsByEvent
@@ -71,6 +78,9 @@ describe('rsvp service branches', () => {
 		membershipRepo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof membershipRepo.findMembershipByEventForHost
 		>;
+	const listMembershipsForHostMock = membershipRepo.listMembershipsForHost as jest.MockedFunction<
+		typeof membershipRepo.listMembershipsForHost
+	>;
 
 	const baseEvent = {
 		id: 'evt-1',
@@ -107,8 +117,11 @@ describe('rsvp service branches', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		findEventByIdMock.mockResolvedValue(baseEvent);
+		findEventsByOwnerMock.mockResolvedValue([baseEvent]);
+		findEventsForHostMock.mockResolvedValue([baseEvent]);
 		findEventBySlugServiceMock.mockResolvedValue(baseEvent);
 		findGuestsByEventMock.mockResolvedValue([baseGuest]);
+		listMembershipsForHostMock.mockResolvedValue([]);
 	});
 
 	it('listDashboardGuests throws forbidden when service role finds event but host token does not', async () => {
@@ -346,5 +359,53 @@ describe('rsvp service branches', () => {
 			claimCode: 'legacy-code',
 		});
 		expect(redeemClaimCodeRpcMock).toHaveBeenCalled();
+	});
+
+	it('listHostEvents merges owner, visible, and membership-backed events without duplicates', async () => {
+		findEventsByOwnerMock.mockResolvedValue([
+			{
+				...baseEvent,
+				id: 'evt-owner',
+				createdAt: '2026-04-01T10:00:00.000Z',
+			},
+		]);
+		findEventsForHostMock.mockResolvedValue([
+			{
+				...baseEvent,
+				id: 'evt-superadmin',
+				title: 'Admin Visible',
+				createdAt: '2026-04-03T10:00:00.000Z',
+			},
+		]);
+		listMembershipsForHostMock.mockResolvedValue([
+			{
+				id: 'membership-1',
+				eventId: 'evt-member',
+				userId: 'host-1',
+				membershipRole: 'manager',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+		]);
+		findEventByIdMock.mockResolvedValueOnce(null);
+		findEventByIdServiceMock.mockResolvedValueOnce({
+			...baseEvent,
+			id: 'evt-member',
+			title: 'Membership Event',
+			createdAt: '2026-04-02T10:00:00.000Z',
+		});
+
+		const result = await listHostEvents({
+			hostUserId: 'host-1',
+			hostAccessToken: 'token',
+		});
+
+		expect(result.map((event) => event.id)).toEqual([
+			'evt-superadmin',
+			'evt-member',
+			'evt-owner',
+		]);
+		expect(findEventByIdMock).toHaveBeenCalledWith('evt-member', 'token');
+		expect(findEventByIdServiceMock).toHaveBeenCalledWith('evt-member');
 	});
 });

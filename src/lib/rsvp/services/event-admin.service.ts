@@ -1,9 +1,15 @@
-import { createEventService, updateEventService } from '@/lib/rsvp/repositories/event.repository';
+import {
+	createEventService,
+	findEventById,
+	updateEventService,
+} from '@/lib/rsvp/repositories/event.repository';
 import {
 	findEventByIdService,
+	findEventsByOwner,
 	listAllEventsService,
 	findEventsForHost,
 } from '@/lib/rsvp/repositories/event.repository';
+import { listMembershipsForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -110,6 +116,30 @@ export async function listHostEvents(input: {
 	hostUserId: string;
 	hostAccessToken: string;
 }): Promise<EventRecord[]> {
-	void input.hostUserId;
-	return findEventsForHost(input.hostAccessToken);
+	const [ownerEvents, visibleEvents, memberships] = await Promise.all([
+		findEventsByOwner(input.hostUserId, input.hostAccessToken),
+		findEventsForHost(input.hostAccessToken),
+		listMembershipsForHost(input.hostAccessToken),
+	]);
+
+	const eventsById = new Map<string, EventRecord>();
+	for (const event of [...ownerEvents, ...visibleEvents]) {
+		eventsById.set(event.id, event);
+	}
+
+	for (const membership of memberships) {
+		if (eventsById.has(membership.eventId)) continue;
+
+		const membershipEvent =
+			(await findEventById(membership.eventId, input.hostAccessToken)) ??
+			(await findEventByIdService(membership.eventId));
+
+		if (membershipEvent) {
+			eventsById.set(membershipEvent.id, membershipEvent);
+		}
+	}
+
+	return [...eventsById.values()].sort(
+		(left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
+	);
 }

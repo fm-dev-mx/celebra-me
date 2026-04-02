@@ -28,7 +28,7 @@ describe('GET /api/dashboard/events', () => {
 		expect(response.status).toBe(401);
 	});
 
-	it('returns host-owned events', async () => {
+	it('returns host-visible events', async () => {
 		requireHostSessionMock.mockResolvedValue({
 			userId: 'host-1',
 			email: 'host@test.com',

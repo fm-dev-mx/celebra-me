@@ -7,7 +7,7 @@
     },
     "scripts": {
         "dev": "astro dev",
-        "build": "astro check && astro build",
+        "build": "pnpm validate:event-parity && astro check && astro build",
         "preview": "pnpm serve .vercel/output/static",
         "start": "astro preview",
         "astro": "astro",
@@ -15,8 +15,8 @@
         "test:e2e": "playwright test",
         "test:e2e:landing": "playwright test tests/e2e/landing.page.regressions.spec.ts",
         "type-check": "astro check",
-        "turbo-all": "pnpm lint && pnpm validate:ui-governance && pnpm type-check && pnpm test && pnpm test:e2e",
-        "ci": "pnpm type-check && pnpm lint && pnpm validate:ui-governance && pnpm test && pnpm test:e2e",
+        "turbo-all": "pnpm lint && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm type-check && pnpm test && pnpm test:e2e",
+        "ci": "pnpm type-check && pnpm lint && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm test && pnpm test:e2e",
         "lint": "eslint .",
         "validate:ui-governance": "node scripts/validate-ui-governance.mjs",
         "lint-staged": "lint-staged",
@@ -27,7 +27,8 @@
         "db:reset:local": "supabase db reset",
         "db:start": "supabase start",
         "db:stop": "supabase stop",
-        "ops": "node scripts/cli.mjs"
+        "ops": "node scripts/cli.mjs",
+        "validate:event-parity": "node scripts/validate-event-parity.mjs --allowMissingDb"
     },
     "dependencies": {
         "@astrojs/vercel": "9.0.5",

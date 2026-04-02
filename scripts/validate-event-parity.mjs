@@ -10,6 +10,18 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
 const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple']);
 
+function isPlaceholderEnvValue(value) {
+	const normalized = String(value || '')
+		.trim()
+		.toLowerCase();
+	return (
+		normalized === '' ||
+		normalized.includes('your-supabase-url') ||
+		normalized.includes('your-supabase-service-role-key') ||
+		normalized.includes('changeme')
+	);
+}
+
 function loadEnvFile(relativePath) {
 	const envPath = path.join(PROJECT_ROOT, relativePath);
 	if (!fs.existsSync(envPath)) return;
@@ -179,7 +191,7 @@ Options:
 
 	warnings.forEach((warning) => console.warn(warning));
 
-	if (!supabaseUrl || !serviceRoleKey) {
+	if (isPlaceholderEnvValue(supabaseUrl) || isPlaceholderEnvValue(serviceRoleKey)) {
 		const message =
 			'[DB] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to validate DB parity.';
 		if (values.allowMissingDb) {

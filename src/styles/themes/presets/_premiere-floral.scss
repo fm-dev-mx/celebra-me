@@ -32,6 +32,8 @@
 	--shadow-premium:
 		0 24px 56px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.14)},
 		0 14px 30px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
+	--rsvp-emoji-yes: '✨';
+	--rsvp-emoji-no: '😔';
 	--hero-card-bg: linear-gradient(
 		160deg,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.78)} 0%,

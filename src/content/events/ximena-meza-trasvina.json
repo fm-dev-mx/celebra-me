@@ -113,7 +113,7 @@
         "title": "Confirma Tu Asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "Tu lugar en esta edición ha sido reservado. ¡Nos vemos en la noche!",
+        "confirmationMessage": "¡Nos vemos en la fiesta!",
         "confirmationMode": "api"
     },
     "thankYou": {

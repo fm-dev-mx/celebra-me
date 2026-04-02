@@ -16,8 +16,58 @@ import {
 	updateSingle,
 	deleteByQuery,
 } from '@/lib/rsvp/repositories/shared/operations';
+import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const TABLE = 'guest_invitations';
+
+function isGuestSchemaErrorMessage(message: string) {
+	return (
+		message.includes('PGRST204') ||
+		message.includes('42703') ||
+		message.includes('entry_source')
+	);
+}
+
+async function supportsGenericRsvpSources(hostAccessToken?: string): Promise<boolean> {
+	try {
+		await supabaseRestRequest<Array<{ entry_source?: string }>>({
+			pathWithQuery: `${TABLE}?select=entry_source&limit=1`,
+			...getGuestMutationOptions(hostAccessToken),
+		});
+		return true;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		if (isGuestSchemaErrorMessage(message)) {
+			return false;
+		}
+		throw error;
+	}
+}
+
+function adaptGuestInsertInputForSchema(
+	input: CreateGuestInput,
+	options: { supportsGenericSources: boolean },
+): CreateGuestInput {
+	if (options.supportsGenericSources) return input;
+	return {
+		...input,
+		entrySource: 'dashboard',
+	};
+}
+
+function adaptGuestUpdateBodyForSchema(
+	body: Record<string, unknown>,
+	options: { supportsGenericSources: boolean },
+): Record<string, unknown> {
+	if (options.supportsGenericSources) return body;
+
+	const nextBody = { ...body };
+	if (nextBody.last_response_source === 'generic_link') {
+		nextBody.last_response_source = 'link';
+	}
+	delete nextBody.entry_source;
+	return nextBody;
+}
 
 function buildGuestInsertBody(
 	input: CreateGuestInput,
@@ -55,11 +105,17 @@ async function insertGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
+	const supportsGenericSources = await supportsGenericRsvpSources(hostAccessToken);
+	const normalizedInput = adaptGuestInsertInputForSchema(input, { supportsGenericSources });
+	const initialColumns = supportsGenericSources
+		? GUEST_COLUMNS
+		: GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
+
 	try {
 		return await insertSingle(
 			TABLE,
-			GUEST_COLUMNS,
-			buildGuestInsertBody(input, true, true),
+			initialColumns,
+			buildGuestInsertBody(normalizedInput, true, supportsGenericSources),
 			toGuestRecord,
 			getGuestMutationOptions(hostAccessToken),
 		);
@@ -75,18 +131,13 @@ async function insertGuestInvitation(
 			return insertSingle(
 				TABLE,
 				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
-				buildGuestInsertBody(input, !isMissingShortId, !isMissingEntrySource),
+				buildGuestInsertBody(normalizedInput, !isMissingShortId, !isMissingEntrySource),
 				toGuestRecord,
 				getGuestMutationOptions(hostAccessToken),
 			);
 		}
 
-		// Handle check constraint violation for newer entry sources (generic_public)
-		if (
-			message.includes('23514') &&
-			message.includes('entry_source_check') &&
-			input.entrySource === 'generic_public'
-		) {
+		if (message.includes('23514') && input.entrySource === 'generic_public') {
 			console.warn(
 				'[Repository] Retrying INSERT with legacy entry_source fallback (dashboard).',
 			);
@@ -102,12 +153,18 @@ async function updateGuestRecord(
 	body: Record<string, unknown>,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
+	const supportsGenericSources = await supportsGenericRsvpSources(hostAccessToken);
+	const normalizedBody = adaptGuestUpdateBodyForSchema(body, { supportsGenericSources });
+	const initialColumns = supportsGenericSources
+		? GUEST_COLUMNS
+		: GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
+
 	try {
 		return await updateSingle(
 			TABLE,
-			GUEST_COLUMNS,
+			initialColumns,
 			filter,
-			body,
+			normalizedBody,
 			toGuestRecord,
 			getGuestMutationOptions(hostAccessToken),
 		);
@@ -123,18 +180,14 @@ async function updateGuestRecord(
 				TABLE,
 				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
 				filter,
-				body,
+				normalizedBody,
 				toGuestRecord,
 				getGuestMutationOptions(hostAccessToken),
 			);
 		}
 
-		// Handle check constraint violation for newer sources (generic_link) in older tables
 		if (message.includes('23514')) {
-			if (
-				message.includes('last_response_source_check') &&
-				body.last_response_source === 'generic_link'
-			) {
+			if (body.last_response_source === 'generic_link') {
 				console.warn(
 					'[Repository] Retrying UPDATE with legacy response source fallback (link).',
 				);
@@ -144,7 +197,7 @@ async function updateGuestRecord(
 					hostAccessToken,
 				);
 			}
-			if (message.includes('entry_source_check') && body.entry_source === 'generic_public') {
+			if (body.entry_source === 'generic_public') {
 				console.warn(
 					'[Repository] Retrying UPDATE with legacy entry source fallback (dashboard).',
 				);

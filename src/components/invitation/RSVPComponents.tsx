@@ -80,22 +80,20 @@ export function SubmittedState(props: {
 				<h2 className="rsvp__greeting-message">
 					{attendanceStatus === 'confirmed' ? (
 						<>
-							\u00a1Gracias, <strong className="rsvp__greeting-name">{name}</strong>!
+							Gracias, <strong className="rsvp__greeting-name">{name}</strong>
 							<br />
 							{confirmationMessage}
 						</>
 					) : (
 						<>
-							Sentimos mucho que no puedas acompa\u00f1arnos. <br />
+							Sentimos mucho que no puedas acompañarnos. <br />
 							Gracias por avisarnos,{' '}
 							<strong className="rsvp__greeting-name">{name}</strong>.
 						</>
 					)}
 				</h2>
 
-				<p className="rsvp__greeting-submessage">
-					Tu confirmaci\u00f3n ha sido registrada.
-				</p>
+				<p className="rsvp__greeting-submessage">Tu confirmación ha sido registrada.</p>
 
 				{showWhatsAppCta && (
 					<div className="rsvp__contact-host">
