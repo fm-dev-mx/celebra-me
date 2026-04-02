@@ -199,9 +199,9 @@ export async function getSessionDebugSnapshotFromRequest(
 			hasAccessToken: true,
 			tokenSource,
 			reason: 'session_role_resolved',
-			userId: snapshot.context.userId,
-			email: snapshot.context.email,
-			role: snapshot.context.role,
+			userId: snapshot.context?.userId,
+			email: snapshot.context?.email,
+			role: snapshot.context?.role,
 		});
 	}
 	return snapshot;
