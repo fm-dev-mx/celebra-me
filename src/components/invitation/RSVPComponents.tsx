@@ -170,8 +170,10 @@ export function RsvpFormView(props: {
 		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
-				<NameField {...props} />
-				<PhoneField {...props} />
+				<div className="rsvp__grid">
+					<NameField {...props} />
+					<PhoneField {...props} />
+				</div>
 				<AttendanceField {...props} />
 				<ConfirmedFields {...props} />
 				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">

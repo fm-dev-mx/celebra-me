@@ -28,23 +28,28 @@ export function NameField(props: {
 
 	return (
 		<motion.div
-			className={`rsvp__field ${touched.name && errors.name ? 'rsvp__field--error' : ''}`}
+			className={`rsvp__field rsvp__field--floating ${
+				touched.name && errors.name ? 'rsvp__field--error' : ''
+			} ${name ? 'rsvp__field--has-value' : ''}`}
 			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
 			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
 			viewport={prefersReducedMotion ? undefined : { once: true }}
 		>
-			<label htmlFor="name">{nameLabel}</label>
 			<input
 				ref={nameRef}
 				type="text"
 				id="name"
-				placeholder="Escribe tu nombre"
+				placeholder=" "
 				value={name}
 				onChange={(e) => onNameChange(e.target.value)}
 				onBlur={() => onBlur('name')}
 				aria-invalid={!!(touched.name && errors.name)}
 				aria-describedby={touched.name && errors.name ? 'name-error' : undefined}
 			/>
+			<label htmlFor="name" className="rsvp__label">
+				{nameLabel}
+			</label>
+			<div className="rsvp__field-line" />
 			{touched.name && errors.name && (
 				<p className="rsvp__field-error" id="name-error" role="alert">
 					{errors.name}
@@ -78,26 +83,31 @@ export function PhoneField(props: {
 
 	return (
 		<motion.div
-			className={`rsvp__field ${touched.phone && errors.phone ? 'rsvp__field--error' : ''}`}
+			className={`rsvp__field rsvp__field--floating ${
+				touched.phone && errors.phone ? 'rsvp__field--error' : ''
+			} ${phone ? 'rsvp__field--has-value' : ''}`}
 			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
 			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
 			viewport={prefersReducedMotion ? undefined : { once: true }}
 			transition={prefersReducedMotion ? undefined : { delay: 0.05 }}
 		>
-			<label htmlFor="phone">Teléfono de contacto *</label>
 			<input
 				ref={phoneRef}
 				type="tel"
 				id="phone"
 				inputMode="numeric"
 				autoComplete="tel"
-				placeholder="10 dígitos"
+				placeholder=" "
 				value={phone}
 				onChange={(e) => onPhoneChange(e.target.value)}
 				onBlur={() => onBlur('phone')}
 				aria-invalid={!!(touched.phone && errors.phone)}
 				aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
 			/>
+			<label htmlFor="phone" className="rsvp__label">
+				Teléfono de contacto *
+			</label>
+			<div className="rsvp__field-line" />
 			{touched.phone && errors.phone && (
 				<p className="rsvp__field-error" id="phone-error" role="alert">
 					{errors.phone}
@@ -140,7 +150,7 @@ export function AttendanceField(props: {
 		>
 			<legend className="rsvp__legend">{attendanceLabel}</legend>
 			<div className="rsvp__radio-group" ref={attendanceRef}>
-				<label htmlFor="attendance-yes">
+				<label htmlFor="attendance-yes" className="rsvp__radio-card">
 					<input
 						type="radio"
 						id="attendance-yes"
@@ -148,10 +158,12 @@ export function AttendanceField(props: {
 						checked={attendanceStatus === 'confirmed'}
 						onChange={() => onAttendanceChange('confirmed')}
 						onBlur={() => onBlur('attendance')}
+						className="sr-only"
 					/>
-					Sí, asistiré
+					<span className="rsvp__radio-indicator" />
+					<span className="rsvp__radio-label">Sí, asistiré</span>
 				</label>
-				<label htmlFor="attendance-no">
+				<label htmlFor="attendance-no" className="rsvp__radio-card">
 					<input
 						type="radio"
 						id="attendance-no"
@@ -159,8 +171,10 @@ export function AttendanceField(props: {
 						checked={attendanceStatus === 'declined'}
 						onChange={() => onAttendanceChange('declined')}
 						onBlur={() => onBlur('attendance')}
+						className="sr-only"
 					/>
-					No podré asistir
+					<span className="rsvp__radio-indicator" />
+					<span className="rsvp__radio-label">No podré asistir</span>
 				</label>
 			</div>
 			{touched.attendance && errors.attendance && (
