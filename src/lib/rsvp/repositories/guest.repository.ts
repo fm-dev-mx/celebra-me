@@ -4,6 +4,8 @@ import {
 	type GuestFilters,
 	GUEST_COLUMNS,
 	GUEST_COLUMNS_WITHOUT_SHORT_ID,
+	GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE,
+	GUEST_COLUMNS_MINIMAL,
 	type UpdateGuestInput,
 	toGuestRecord,
 } from '@/lib/rsvp/repositories/shared/rows';
@@ -17,23 +19,36 @@ import {
 
 const TABLE = 'guest_invitations';
 
-function buildGuestInsertBody(input: CreateGuestInput, includeShortId: boolean) {
+function buildGuestInsertBody(
+	input: CreateGuestInput,
+	includeShortId: boolean,
+	includeEntrySource: boolean,
+) {
 	const body: Record<string, unknown> = {
 		event_id: input.eventId,
 		full_name: input.fullName,
 		phone: input.phone,
 		max_allowed_attendees: input.maxAllowedAttendees,
 		tags: input.tags,
-		entry_source: input.entrySource ?? 'dashboard',
 	};
 	if (includeShortId && input.shortId) {
 		body.short_id = input.shortId;
+	}
+	if (includeEntrySource) {
+		body.entry_source = input.entrySource ?? 'dashboard';
 	}
 	return body;
 }
 
 function getGuestMutationOptions(hostAccessToken?: string) {
 	return hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true as const };
+}
+
+function getGuestReturnColumns(isMissingShortId: boolean, isMissingEntrySource: boolean) {
+	if (isMissingShortId && isMissingEntrySource) return GUEST_COLUMNS_MINIMAL;
+	if (isMissingShortId) return GUEST_COLUMNS_WITHOUT_SHORT_ID;
+	if (isMissingEntrySource) return GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
+	return GUEST_COLUMNS;
 }
 
 async function insertGuestInvitation(
@@ -44,41 +59,105 @@ async function insertGuestInvitation(
 		return await insertSingle(
 			TABLE,
 			GUEST_COLUMNS,
-			buildGuestInsertBody(input, true),
+			buildGuestInsertBody(input, true, true),
 			toGuestRecord,
 			getGuestMutationOptions(hostAccessToken),
 		);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : '';
-		if (message.includes('PGRST204') || message.includes('short_id')) {
-			console.warn(
-				'[Repository] PGRST204 detected, falling back to insertion without short_id.',
-			);
+		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
+		const isMissingShortId = message.includes('short_id');
+		const isMissingEntrySource = message.includes('entry_source');
+
+		// Handle missing schema columns
+		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
+			console.warn(`[Repository] Retrying INSERT with safe columns: ${message}`);
 			return insertSingle(
 				TABLE,
-				GUEST_COLUMNS_WITHOUT_SHORT_ID,
-				buildGuestInsertBody(input, false),
+				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
+				buildGuestInsertBody(input, !isMissingShortId, !isMissingEntrySource),
 				toGuestRecord,
 				getGuestMutationOptions(hostAccessToken),
 			);
 		}
+
+		// Handle check constraint violation for newer entry sources (generic_public)
+		if (
+			message.includes('23514') &&
+			message.includes('entry_source_check') &&
+			input.entrySource === 'generic_public'
+		) {
+			console.warn(
+				'[Repository] Retrying INSERT with legacy entry_source fallback (dashboard).',
+			);
+			return insertGuestInvitation({ ...input, entrySource: 'dashboard' }, hostAccessToken);
+		}
+
 		throw error;
 	}
 }
 
-function updateGuestRecord(
+async function updateGuestRecord(
 	filter: string,
 	body: Record<string, unknown>,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	return updateSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		filter,
-		body,
-		toGuestRecord,
-		getGuestMutationOptions(hostAccessToken),
-	);
+	try {
+		return await updateSingle(
+			TABLE,
+			GUEST_COLUMNS,
+			filter,
+			body,
+			toGuestRecord,
+			getGuestMutationOptions(hostAccessToken),
+		);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
+		const isMissingShortId = message.includes('short_id');
+		const isMissingEntrySource = message.includes('entry_source');
+
+		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
+			console.warn(`[Repository] Retrying UPDATE with safe columns: ${message}`);
+			return updateSingle(
+				TABLE,
+				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
+				filter,
+				body,
+				toGuestRecord,
+				getGuestMutationOptions(hostAccessToken),
+			);
+		}
+
+		// Handle check constraint violation for newer sources (generic_link) in older tables
+		if (message.includes('23514')) {
+			if (
+				message.includes('last_response_source_check') &&
+				body.last_response_source === 'generic_link'
+			) {
+				console.warn(
+					'[Repository] Retrying UPDATE with legacy response source fallback (link).',
+				);
+				return updateGuestRecord(
+					filter,
+					{ ...body, last_response_source: 'link' },
+					hostAccessToken,
+				);
+			}
+			if (message.includes('entry_source_check') && body.entry_source === 'generic_public') {
+				console.warn(
+					'[Repository] Retrying UPDATE with legacy entry source fallback (dashboard).',
+				);
+				return updateGuestRecord(
+					filter,
+					{ ...body, entry_source: 'dashboard' },
+					hostAccessToken,
+				);
+			}
+		}
+
+		throw error;
+	}
 }
 
 function buildGuestUpdateBody(input: {
@@ -201,28 +280,46 @@ export async function findGuestByEventAndNamePublic(
 	);
 }
 
+async function findGuestSingleSafe(
+	filter: string,
+	options: { authToken?: string; useServiceRole?: boolean },
+): Promise<GuestInvitationRecord | null> {
+	try {
+		return await findSingle(TABLE, filter, GUEST_COLUMNS, toGuestRecord, options);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
+		const isMissingShortId = message.includes('short_id');
+		const isMissingEntrySource = message.includes('entry_source');
+
+		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
+			console.warn(`[Repository] Retrying SELECT with safe columns: ${message}`);
+			return findSingle(
+				TABLE,
+				filter,
+				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
+				toGuestRecord,
+				options,
+			);
+		}
+		throw error;
+	}
+}
+
 export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`invite_id=eq.${encodeURIComponent(inviteId)}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
+	return findGuestSingleSafe(`invite_id=eq.${encodeURIComponent(inviteId)}`, {
+		useServiceRole: true,
+	});
 }
 
 export async function findGuestByShortIdPublic(
 	shortId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`short_id=eq.${encodeURIComponent(shortId)}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
+	return findGuestSingleSafe(`short_id=eq.${encodeURIComponent(shortId)}`, {
+		useServiceRole: true,
+	});
 }
 
 export async function findGuestByPhone(
@@ -230,11 +327,8 @@ export async function findGuestByPhone(
 	phone: string,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
+	return findGuestSingleSafe(
 		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
 		{
 			authToken: hostAccessToken,
 			useServiceRole: !hostAccessToken,

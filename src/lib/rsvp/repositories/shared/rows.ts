@@ -122,6 +122,10 @@ export const GUEST_COLUMNS =
 	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
 export const GUEST_COLUMNS_WITHOUT_SHORT_ID =
 	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags';
+export const GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE =
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+export const GUEST_COLUMNS_MINIMAL =
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
