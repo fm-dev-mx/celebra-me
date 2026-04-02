@@ -1,91 +1,110 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface GuestProgressCardProps {
-	totalPeople: number;
-	confirmedPeople: number;
-	sessionCount: number;
+	totalInvitations: number;
+	sharedInvitations: number;
+	confirmedInvitations: number;
+	declinedInvitations: number;
+	sessionSharedCount: number;
 }
 
 const GuestProgressCard: React.FC<GuestProgressCardProps> = ({
-	totalPeople,
-	confirmedPeople,
-	sessionCount,
+	totalInvitations,
+	sharedInvitations,
+	confirmedInvitations,
+	declinedInvitations,
+	sessionSharedCount,
 }) => {
-	const total = totalPeople;
-	const shared = confirmedPeople;
-	const percentage = total > 0 ? Math.round((shared / total) * 100) : 0;
-
-	// Milestones for sparkle effect
-	const showSparkle = percentage >= 50;
-	const isComplete = percentage === 100;
-
-	// Session goal constant
-	const SESSION_GOAL = 10;
-	const sessionPercentage = Math.min((sessionCount / SESSION_GOAL) * 100, 100);
+	const prefersReducedMotion = useReducedMotion();
+	const deliveryPercentage =
+		totalInvitations > 0 ? Math.round((sharedInvitations / totalInvitations) * 100) : 0;
+	const respondedInvitations = confirmedInvitations + declinedInvitations;
+	const responsePercentage =
+		totalInvitations > 0 ? Math.round((respondedInvitations / totalInvitations) * 100) : 0;
+	const isDeliveryComplete = totalInvitations > 0 && sharedInvitations === totalInvitations;
+	const sessionLabel =
+		sessionSharedCount > 0
+			? `${sessionSharedCount} entrega${sessionSharedCount === 1 ? '' : 's'} registrada${sessionSharedCount === 1 ? '' : 's'}`
+			: 'Sin entregas registradas en esta sesión';
 
 	return (
 		<article className="dashboard-guests__progress-card">
 			<div className="progress-header">
-				<h3>Progreso de Envío</h3>
-				<span className="progress-percentage">{percentage}%</span>
+				<div>
+					<h3>Entrega de invitaciones</h3>
+					<p className="progress-kicker">Seguimiento editorial de envíos y respuestas</p>
+				</div>
+				<span className="progress-percentage">{deliveryPercentage}%</span>
 			</div>
 
-			<div className="progress-track">
+			<div
+				className="progress-track"
+				role="progressbar"
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={deliveryPercentage}
+				aria-label="Progreso de invitaciones entregadas"
+			>
 				<motion.div
 					className="progress-fill"
-					initial={{ width: 0 }}
-					animate={{ width: `${percentage}%` }}
-					transition={{ duration: 1, ease: 'easeOut' }}
+					initial={prefersReducedMotion ? false : { width: 0 }}
+					animate={{ width: `${deliveryPercentage}%` }}
+					transition={
+						prefersReducedMotion ? { duration: 0 } : { duration: 0.7, ease: 'easeOut' }
+					}
 				/>
-				{showSparkle && (
-					<motion.div
-						className="progress-sparkle"
-						animate={{
-							opacity: [0, 1, 0],
-							scale: [0.8, 1.2, 0.8],
-							left: `${percentage}%`,
-						}}
-						transition={{ duration: 2, repeat: Infinity }}
-					>
-						✨
-					</motion.div>
-				)}
 			</div>
 
 			<div className="progress-footer">
 				<div className="progress-footer__info">
 					<p>
-						<strong>{shared}</strong> de {total} invitados confirmados
+						<strong>{sharedInvitations}</strong> de {totalInvitations} invitaciones
+						entregadas
 					</p>
-
-					{/* Session Progress Tracker */}
-					<div className="session-progress">
-						<span className="session-progress__label">Meta de la sesión</span>
-						<div className="session-progress__bar-container">
-							<motion.div
-								className="session-progress__bar"
-								initial={{ width: 0 }}
-								animate={{ width: `${sessionPercentage}%` }}
-								transition={{ duration: 0.8, ease: 'easeOut' }}
-							/>
-						</div>
-						<span className="session-progress__count">
-							{sessionCount} / {SESSION_GOAL} compartidos ahora
-						</span>
-					</div>
+					<p className="progress-footer__secondary">
+						<strong>{respondedInvitations}</strong> respuestas registradas (
+						{responsePercentage}
+						%)
+					</p>
 				</div>
-				{isComplete && (
-					<motion.span
-						className="completion-badge"
-						initial={{ scale: 0 }}
-						animate={{ scale: 1 }}
-						transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-					>
-						🏆 ¡Todo enviado!
-					</motion.span>
-				)}
+
+				<div className="session-progress">
+					<span className="session-progress__label">Sesión actual</span>
+					<div className="session-progress__bar-container" aria-hidden="true">
+						<motion.div
+							className="session-progress__bar"
+							initial={prefersReducedMotion ? false : { width: 0 }}
+							animate={{
+								width: `${Math.min(
+									sharedInvitations > 0
+										? (sessionSharedCount / Math.max(sharedInvitations, 1)) *
+												100
+										: 0,
+									100,
+								)}%`,
+							}}
+							transition={
+								prefersReducedMotion
+									? { duration: 0 }
+									: { duration: 0.6, ease: 'easeOut' }
+							}
+						/>
+					</div>
+					<span className="session-progress__count">{sessionLabel}</span>
+				</div>
 			</div>
+
+			{isDeliveryComplete && (
+				<motion.span
+					className="completion-badge"
+					initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35 }}
+				>
+					Entrega completa
+				</motion.span>
+			)}
 		</article>
 	);
 };

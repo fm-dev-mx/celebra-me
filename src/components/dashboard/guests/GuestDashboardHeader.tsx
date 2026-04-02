@@ -43,6 +43,12 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	const pendingGeneratedCount = items.filter(
 		(item) => item.deliveryStatus === 'generated',
 	).length;
+	const realtimeLabel =
+		realtimeState === 'connected'
+			? 'Conexión estable'
+			: realtimeState === 'reconnecting'
+				? 'Reconectando'
+				: 'Modo de respaldo';
 
 	return (
 		<>
@@ -70,19 +76,22 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 			<div className="dashboard-guests__meta-bar">
 				{updatedAt && (
 					<span className="dashboard-status">
-						<span>🕒</span> Actualizado: {new Date(updatedAt).toLocaleString('es-MX')}
+						<span className="dashboard-status__eyebrow">Última sincronización</span>
+						<span>{new Date(updatedAt).toLocaleString('es-MX')}</span>
 					</span>
 				)}
 				<span className="dashboard-status">
-					<span>📡</span> Tiempo real:{' '}
-					{realtimeState === 'connected' ? '✅ Conectado' : '🔄 Reconectando'}
+					<span className="dashboard-status__eyebrow">Estado en vivo</span>
+					<span>{realtimeLabel}</span>
 				</span>
 			</div>
 
 			<GuestProgressCard
-				totalPeople={totals.totalPeople}
-				confirmedPeople={totals.confirmedPeople}
-				sessionCount={shareSessionCount}
+				totalInvitations={totals.totalInvitations}
+				sharedInvitations={totals.sharedInvitations}
+				confirmedInvitations={totals.confirmedInvitations}
+				declinedInvitations={totals.declinedInvitations}
+				sessionSharedCount={shareSessionCount}
 			/>
 
 			<GuestStatsCards totals={totals} />
@@ -91,11 +100,11 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 				{pendingGeneratedCount > 0 && (
 					<button
 						type="button"
-						className="btn-primary btn--shiny"
+						className="btn-primary"
 						disabled={loading}
 						onClick={onOpenNextAction}
 					>
-						🚀 Enviar siguiente ({pendingGeneratedCount} pendientes)
+						Continuar entrega ({pendingGeneratedCount} pendientes)
 					</button>
 				)}
 			</div>
