@@ -131,4 +131,10 @@
 	--rsvp-radio-selected-border: var(--color-action-accent);
 	--rsvp-button-shadow-rest: 0 10px 25px #{color.change(sys.$sys-color-gold-500, $alpha: 0.2)};
 	--rsvp-button-color-hover: var(--color-surface-dark);
+
+	// Section Contract Overrides for RSVP
+	--section-title-font: var(--font-display);
+	--section-title-size: clamp(1.8rem, 5vw, 2.8rem);
+	--section-subtitle-font: var(--font-label);
+	--section-subtitle-size: 0.78rem;
 }

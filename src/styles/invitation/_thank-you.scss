@@ -49,9 +49,9 @@
 	position: relative;
 	width: 220px;
 	height: 220px;
-	border: 2px solid var(--color-glass-border);
+	border: 0.5px solid var(--color-glass-border);
 	border-radius: 50%;
-	padding: 8px;
+	padding: 0.5px;
 	background: var(--color-glass-bg);
 	box-shadow: var(--shadow-subtle);
 	overflow: hidden;

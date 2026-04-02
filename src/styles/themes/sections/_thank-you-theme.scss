@@ -45,11 +45,6 @@
 		}
 
 		border-radius: 50%;
-		background: linear-gradient(
-			135deg,
-			tokens.$color-surface-soft,
-			tokens.$color-surface-primary
-		);
 		box-shadow: var(--thank-you-photo-frame-shadow);
 		position: relative;
 		overflow: visible;

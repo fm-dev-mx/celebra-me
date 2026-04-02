@@ -16,6 +16,7 @@ jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
 	findAuthUserByEmail: jest.fn(),
+	findAuthUserByLoginIdentifier: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/auth-access.service', () => ({

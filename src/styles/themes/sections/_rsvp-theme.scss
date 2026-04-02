@@ -1,19 +1,26 @@
 @use '../../tokens' as tokens;
+@use '../../global/mixins' as mixins;
 
 .rsvp {
 	--rsvp-bg: var(--color-surface-dark);
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
-	--color-glass-border: rgb(var(--color-action-accent-rgb) / 18%);
-	--color-glass-shadow: rgb(var(--color-action-accent-rgb) / 18%);
-	--shadow-premium:
-		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%), 0 8px 18px rgb(0 0 0 / 16%);
+	--color-glass-border: var(--color-border-premium, rgb(var(--color-action-accent-rgb) / 18%));
+	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 18%));
+	--shadow-premium: var(
+		--shadow-premium,
+		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%),
+		0 8px 18px rgb(0 0 0 / 16%)
+	);
 	--rsvp-label-color: var(--color-text-secondary);
 	--rsvp-label-letter-spacing: 0.03em;
-	--rsvp-field-bg: rgb(var(--color-surface-primary-rgb) / 50%);
-	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb) / 95%);
+	--rsvp-field-bg: var(--color-surface-soft, rgb(var(--color-surface-primary-rgb) / 50%));
+	--rsvp-field-bg-focus: var(
+		--color-surface-elevated,
+		rgb(var(--color-surface-primary-rgb) / 95%)
+	);
 	--rsvp-field-border: var(--color-glass-border);
-	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb) / 42%);
-	--rsvp-radius-card: 4px;
+	--rsvp-placeholder-color: var(--color-text-muted, rgb(var(--color-text-primary-rgb) / 42%));
+	--rsvp-radius-card: var(--section-card-radius, 4px);
 	--rsvp-radius-field: 2px;
 	--rsvp-radio-bg: rgb(var(--color-surface-primary-rgb) / 45%);
 	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
@@ -44,7 +51,7 @@
 // ==========================================================================
 
 .rsvp[data-variant='editorial'],
-.rsvp[data-variant^='premiere-'] {
+.rsvp[data-variant='premiere-floral'] {
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
@@ -56,6 +63,7 @@
 	border: 1px solid var(--color-glass-border);
 	border-radius: var(--section-card-radius, 4px);
 	backdrop-filter: blur(var(--glass-blur, 12px));
+	box-shadow: var(--shadow-premium);
 
 	&::before {
 		content: '';
@@ -63,10 +71,26 @@
 		inset: 0;
 		background: radial-gradient(
 			circle at 15% 15%,
-			rgb(var(--color-action-accent-rgb) / 8%) 0%,
+			rgb(var(--color-action-accent-rgb) / 12%) 0%,
 			transparent 40%
 		);
 		pointer-events: none;
+	}
+
+	// Premium metallic glint
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 1px;
+		background: var(
+			--gold-metallic,
+			linear-gradient(90deg, transparent, var(--color-action-accent), transparent)
+		);
+		opacity: 60%;
+		z-index: 2;
 	}
 
 	.rsvp__title {
@@ -92,7 +116,7 @@
 		background: var(--rsvp-field-bg);
 		border: 1px solid var(--rsvp-field-border);
 		border-radius: 2px;
-		color: var(--color-surface-elevated);
+		color: var(--color-text-primary, var(--color-surface-elevated));
 		font-family: var(--font-body);
 
 		&:focus {
@@ -208,6 +232,192 @@
 			max-width: 42rem;
 			margin-inline: auto;
 		}
+	}
+
+	// 💎 TOP PREMIUM: Premiere Floral Specific Overrides (Ximena Meza)
+	.theme-preset--premiere-floral & {
+		backdrop-filter: blur(25px) saturate(200%);
+		border: 0.5px solid rgb(var(--color-action-accent-rgb) / 25%);
+		background-color: rgb(var(--color-surface-primary-rgb) / 32%);
+
+		// Cinematic Depth: Vignette & Inner Glow
+		&::before {
+			background: radial-gradient(
+				circle at center,
+				transparent 20%,
+				rgb(var(--color-surface-primary-rgb) / 15%) 100%
+			);
+			opacity: 60%;
+		}
+
+		&::after {
+			border-color: rgb(var(--color-action-accent-rgb) / 28%);
+			background: linear-gradient(
+				to right,
+				transparent,
+				var(--color-action-accent),
+				transparent
+			);
+			height: 0.5px;
+			inset: 12px;
+			opacity: 45%;
+		}
+
+		// Editorial Grid: Staggered side-by-side on desktop
+		.rsvp__grid {
+			display: flex;
+			flex-direction: column;
+			gap: 2.2rem;
+
+			@include mixins.respond-to(md) {
+				display: grid;
+				grid-template-columns: 1.35fr 1fr;
+				gap: 2.8rem;
+				align-items: flex-end;
+			}
+		}
+
+		.rsvp__title {
+			font-family: var(--font-display);
+			font-weight: 300;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			font-size: 2.1rem;
+			margin-bottom: 3.5rem;
+		}
+
+		// Cinematic Floating Labels
+		.rsvp__field--floating {
+			position: relative;
+			padding-top: 1.25rem;
+
+			& input {
+				border: none;
+				border-bottom: 0.5px solid rgb(var(--color-action-accent-rgb) / 24%);
+				padding: 0.65rem 0.25rem;
+				font-size: 1.15rem;
+				background: transparent;
+				width: 100%;
+				transition: border-color 0.4s var(--ease-premium);
+			}
+
+			& input:focus {
+				outline: none;
+				border-bottom-color: var(--color-action-accent);
+			}
+
+			& .rsvp__label {
+				position: absolute;
+				top: 1.8rem;
+				left: 0.25rem;
+				font-family: var(--font-display); // Bodoni Moda
+				font-size: 1.1rem;
+				text-transform: none;
+				letter-spacing: 0.01em;
+				color: rgb(var(--color-text-primary-rgb) / 45%);
+				pointer-events: none;
+				transition: all 0.4s var(--ease-premium);
+				transform-origin: top left;
+			}
+
+			// Float state
+			&.rsvp__field--has-value .rsvp__label,
+			& input:focus + .rsvp__label {
+				top: 0;
+				transform: scale(0.72);
+				color: var(--color-action-accent);
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				font-family: var(--font-label);
+				font-weight: 600;
+			}
+
+			& .rsvp__field-line {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				height: 0.5px;
+				background: var(--color-action-accent);
+				transform: scaleX(0);
+				transition: transform 0.6s var(--ease-premium);
+				transform-origin: center;
+			}
+
+			& input:focus ~ & .rsvp__field-line {
+				transform: scaleX(1);
+			}
+		}
+
+		// Calligraphic Accents
+		.rsvp__legend {
+			font-family: var(--font-calligraphy);
+			text-transform: lowercase;
+			font-size: 1.6rem;
+			letter-spacing: 0;
+			opacity: 65%;
+			margin-bottom: 1.25rem;
+		}
+
+		.rsvp__radio-group .rsvp__radio-card {
+			background: rgb(var(--color-surface-primary-rgb) / 12%);
+			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 18%);
+			border-radius: 2px;
+			padding: 1.25rem;
+			transition: all 0.4s var(--ease-premium);
+
+			&:hover {
+				background: rgb(var(--color-surface-primary-rgb) / 20%);
+			}
+
+			&:has(input:checked) {
+				background: rgb(var(--color-action-accent-rgb) / 8%);
+				border-color: var(--color-action-accent);
+				box-shadow: 0 8px 24px rgb(var(--color-action-accent-rgb) / 12%);
+			}
+		}
+
+		// Foil-Press Button
+		.rsvp__button {
+			margin-top: 1.5rem;
+			background: var(--gold-metallic);
+			color: var(--color-text-on-dark);
+			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 45%);
+			letter-spacing: 0.32em;
+			font-size: 0.9rem;
+			box-shadow: 0 15px 35px rgb(var(--color-action-primary-rgb) / 25%);
+			animation: shimmer 8s linear infinite;
+			background-size: 200% 100%;
+			font-weight: 600;
+
+			// Engraved micro-effect
+			text-shadow:
+				0 -0.5px 0 rgb(0 0 0 / 40%),
+				0 0.5px 0 rgb(255 255 255 / 15%);
+
+			// Reset standard editorial sliding backround
+			&::before {
+				display: none;
+			}
+
+			&:hover:not(:disabled) {
+				transform: translateY(-4px) scale(1.015);
+				box-shadow: 0 22px 45px rgb(var(--color-action-primary-rgb) / 35%);
+				color: var(--color-text-on-dark); // Keep text visible
+				filter: brightness(1.1); // Subtle luxury glow instead of vanish
+			}
+		}
+
+		// Silk texture overlay
+		background-image:
+			radial-gradient(
+				circle at top left,
+				rgb(var(--color-action-accent-rgb) / 12%),
+				transparent 40%
+			),
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+		background-blend-mode: overlay;
+		opacity: 99%;
 	}
 }
 
@@ -342,19 +552,23 @@
 .rsvp[data-variant='jewelry-box'] {
 	--rsvp-emoji-yes: '💎';
 	--rsvp-emoji-no: '💌';
-	--color-glass-bg: rgb(255 255 255 / 45%);
-	--color-glass-border: rgb(var(--color-action-accent-rgb), 0.3);
-	--color-glass-shadow: rgb(var(--color-action-accent-rgb), 0.15);
-	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgb(0 0 0 / 5%);
+	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));
+	--color-glass-border: var(--color-glass-border, rgb(var(--color-action-accent-rgb), 0.3));
+	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb), 0.15));
+	--shadow-premium: var(
+		--shadow-premium,
+		0 15px 35px var(--color-glass-shadow),
+		0 5px 15px rgb(0 0 0 / 5%)
+	);
 	--rsvp-label-color: var(--color-text-on-light, rgb(var(--color-text-primary-rgb), 0.78));
 	--rsvp-label-letter-spacing: 0.018em;
-	--rsvp-field-bg: rgb(255 255 255 / 55%);
-	--rsvp-field-bg-focus: rgb(255 255 255 / 85%);
-	--rsvp-field-border: rgb(var(--color-action-accent-rgb), 0.25);
-	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb), 0.38);
+	--rsvp-field-bg: var(--color-surface-soft, rgb(255 255 255 / 55%));
+	--rsvp-field-bg-focus: var(--color-surface-elevated, rgb(255 255 255 / 85%));
+	--rsvp-field-border: var(--color-glass-border);
+	--rsvp-placeholder-color: var(--color-text-muted, rgb(var(--color-text-primary-rgb), 0.38));
 	--rsvp-radio-bg: rgb(255 255 255 / 48%);
 	--rsvp-radio-bg-hover: rgb(255 255 255 / 68%);
-	--rsvp-radio-border: rgb(var(--color-action-accent-rgb), 0.2);
+	--rsvp-radio-border: var(--color-glass-border);
 	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.12);
 	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.55);
 	--rsvp-button-shadow-rest:
@@ -365,7 +579,7 @@
 		0 0 14px rgb(var(--color-action-accent-rgb), 0.14);
 	--rsvp-button-bg-hover: rgb(var(--color-surface-dark-rgb), 0.88);
 	--rsvp-button-filter-hover: none;
-	--rsvp-radius-card: 20px;
+	--rsvp-radius-card: var(--section-card-radius, 20px);
 	--rsvp-radius-field: 14px;
 
 	.rsvp__title {

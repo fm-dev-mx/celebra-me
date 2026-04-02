@@ -8,6 +8,7 @@ import { createMockRequest } from '../helpers/api-mocks';
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
+	findAuthUserByLoginIdentifier: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
@@ -17,6 +18,7 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 describe('API: /api/auth/login-host', () => {
 	const signInMock = authApi.signInWithPassword as jest.Mock;
 	const sendMagicMock = authApi.sendMagicLink as jest.Mock;
+	const findAuthUserByLoginIdentifierMock = authApi.findAuthUserByLoginIdentifier as jest.Mock;
 	const checkRateLimitMock = rateLimitProvider.checkRateLimit as jest.Mock;
 
 	beforeEach(() => {
@@ -62,6 +64,36 @@ describe('API: /api/auth/login-host', () => {
 		expect(data.error.code).toBe('unauthorized');
 	});
 
+	it('Scenario: Successful Alias Password Login', async () => {
+		findAuthUserByLoginIdentifierMock.mockResolvedValue({
+			id: 'user-001',
+			email: 'ximena_meza@clientes.celebra.invalid',
+			login_alias: 'ximena_meza',
+		});
+		signInMock.mockResolvedValue({
+			access_token: 'secret-token-123',
+			user: { id: 'user-001', email: 'ximena_meza@clientes.celebra.invalid' },
+		});
+
+		const response = await loginHost({
+			request: createMockRequest({
+				email: 'ximena_meza',
+				password: 'ximenameza2026',
+				method: 'password',
+			}),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+
+		expect(response.status).toBe(200);
+		expect(findAuthUserByLoginIdentifierMock).toHaveBeenCalledWith({
+			identifier: 'ximena_meza',
+		});
+		expect(signInMock).toHaveBeenCalledWith({
+			email: 'ximena_meza@clientes.celebra.invalid',
+			password: 'ximenameza2026',
+		});
+	});
+
 	it('Scenario: Successful Magic Link Request', async () => {
 		sendMagicMock.mockResolvedValue({});
 
@@ -84,7 +116,7 @@ describe('API: /api/auth/login-host', () => {
 		);
 	});
 
-	it('Scenario: Missing Email Error', async () => {
+	it('Scenario: Missing Login Identifier Error', async () => {
 		const response = await loginHost({
 			request: createMockRequest({
 				method: 'password',

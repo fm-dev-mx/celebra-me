@@ -1,11 +1,20 @@
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
-import { GET as getUsers } from '@/pages/api/dashboard/admin/users';
+import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { GET as getClaimCodes } from '@/pages/api/dashboard/claimcodes';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { listAdminEvents } from '@/lib/rsvp/services/event-admin.service';
-import { listAdminUsers } from '@/lib/rsvp/services/user-admin.service';
+import { listAdminUsers, createAdminUser } from '@/lib/rsvp/services/user-admin.service';
 import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
+
+jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
+	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
+}));
+
+jest.mock('@/lib/rsvp/security/csrf', () => ({
+	validateCsrfToken: jest.fn(),
+	shouldSkipCsrfValidation: jest.fn().mockReturnValue(false),
+}));
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
@@ -17,6 +26,7 @@ jest.mock('@/lib/rsvp/services/event-admin.service', () => ({
 
 jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	listAdminUsers: jest.fn(),
+	createAdminUser: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
@@ -28,6 +38,7 @@ const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFu
 >;
 const listAdminEventsMock = listAdminEvents as jest.MockedFunction<typeof listAdminEvents>;
 const listAdminUsersMock = listAdminUsers as jest.MockedFunction<typeof listAdminUsers>;
+const createAdminUserMock = createAdminUser as jest.MockedFunction<typeof createAdminUser>;
 const listClaimCodesAdminMock = listClaimCodesAdmin as jest.MockedFunction<
 	typeof listClaimCodesAdmin
 >;
@@ -35,15 +46,31 @@ const listClaimCodesAdminMock = listClaimCodesAdmin as jest.MockedFunction<
 function createMockRequest(
 	payload?: unknown,
 	headers?: Record<string, string>,
-): Pick<Request, 'json' | 'headers'> {
+	url = 'http://localhost/api/test',
+): Pick<Request, 'json' | 'text' | 'headers' | 'url'> {
+	const defaultHeaders: Record<string, string> = {
+		'Content-Type': 'application/json',
+		...(headers ?? {}),
+	};
+
 	return {
+		url,
 		json: async () => payload,
+		text: async () => {
+			if (payload === undefined || payload === null) {
+				return '';
+			}
+			if (typeof payload === 'string') {
+				return payload;
+			}
+			return JSON.stringify(payload);
+		},
 		headers: {
 			get: (name: string) => {
-				const key = Object.keys(headers ?? {}).find(
+				const key = Object.keys(defaultHeaders).find(
 					(headerName) => headerName.toLowerCase() === name.toLowerCase(),
 				);
-				return key ? (headers?.[key] ?? null) : null;
+				return key ? (defaultHeaders[key] ?? null) : null;
 			},
 		} as Headers,
 	};
@@ -74,6 +101,22 @@ describe('Admin API Strong Session Guard', () => {
 			const response = await getUsers({
 				request: createMockRequest(),
 				url: new URL('http://localhost/api/dashboard/admin/users'),
+			} as never);
+			expect(response.status).toBe(403);
+		});
+
+		it('POST /api/dashboard/admin/users returns 403', async () => {
+			requireAdminStrongSessionMock.mockRejectedValue(
+				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
+			);
+
+			const response = await createUser({
+				request: createMockRequest(
+					{ role: 'host_client' },
+					undefined,
+					'http://localhost/api/dashboard/admin/users',
+				),
+				cookies: {},
 			} as never);
 			expect(response.status).toBe(403);
 		});
@@ -143,6 +186,37 @@ describe('Admin API Strong Session Guard', () => {
 			expect(response.status).toBe(200);
 			const body = await response.json();
 			expect(body.items).toHaveLength(1);
+		});
+
+		it('POST /api/dashboard/admin/users returns 201', async () => {
+			requireAdminStrongSessionMock.mockResolvedValue({
+				userId: 'admin-1',
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+			createAdminUserMock.mockResolvedValue({
+				item: {
+					id: 'user-2',
+					email: 'cliente-ab12cd34@clientes.celebra.invalid',
+					role: 'host_client',
+					createdAt: new Date().toISOString(),
+				},
+				credentials: {
+					temporaryPassword: 'TempPass123!aA1',
+				},
+			});
+
+			const response = await createUser({
+				request: createMockRequest(
+					{ role: 'host_client' },
+					undefined,
+					'http://localhost/api/dashboard/admin/users',
+				),
+				cookies: {},
+			} as never);
+			expect(response.status).toBe(201);
 		});
 	});
 
