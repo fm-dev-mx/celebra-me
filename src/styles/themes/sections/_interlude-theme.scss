@@ -82,3 +82,15 @@
 		--interlude-image-hover-scale: var(--interlude-image-scale);
 	}
 }
+
+.invitation-interlude[data-variant='premiere-floral'] {
+	--interlude-image-hover-scale: var(--interlude-image-scale);
+
+	@media (hover: hover) and (pointer: fine) {
+		&:hover .invitation-interlude__image {
+			transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
+				scale(var(--interlude-image-scale));
+			filter: saturate(0.92) contrast(1.1) brightness(0.8);
+		}
+	}
+}

@@ -61,7 +61,6 @@
 			z-index: -1;
 			box-shadow: var(--shadow-premium);
 			opacity: 90%;
-			animation: thank-you-border-shimmer 8s linear infinite;
 			filter: none;
 		}
 
@@ -126,7 +125,42 @@
 		padding-bottom: 0.2em;
 		text-transform: none;
 		filter: drop-shadow(var(--shadow-premium));
-		animation: thank-you-shimmer 8s linear infinite;
+	}
+}
+
+.thank-you-section[data-variant='premiere-floral'] {
+	.photo-frame {
+		transition: box-shadow 220ms ease-out;
+
+		&::before {
+			background: radial-gradient(
+				circle at 30% 30%,
+				rgb(var(--color-action-accent-rgb) / 24%) 0%,
+				rgb(var(--color-action-accent-rgb) / 12%) 48%,
+				rgb(var(--color-action-accent-rgb) / 8%) 100%
+			);
+			opacity: 100%;
+		}
+
+		&:hover {
+			transform: none;
+			box-shadow:
+				0 20px 48px rgb(var(--color-surface-dark-rgb) / 12%),
+				0 0 0 1px rgb(var(--color-action-accent-rgb) / 10%);
+		}
+
+		&:hover .photo-image {
+			transform: none;
+			filter: contrast(1.03) brightness(0.97);
+		}
+
+		.photo-image {
+			transition: filter 220ms ease-out;
+		}
+	}
+
+	.closing-name {
+		animation: none;
 	}
 }
 

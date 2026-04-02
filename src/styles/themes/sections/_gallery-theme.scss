@@ -178,10 +178,8 @@
 
 	.gallery-grid__caption {
 		opacity: 0%;
-		transform: translateY(10px);
-		transition:
-			opacity var(--duration-standard) var(--ease-premium),
-			transform var(--duration-standard) var(--ease-premium);
+		transform: none;
+		transition: opacity var(--duration-standard) var(--ease-premium);
 		background: var(--gallery-caption-bg);
 		backdrop-filter: blur(8px);
 		bottom: 1rem;

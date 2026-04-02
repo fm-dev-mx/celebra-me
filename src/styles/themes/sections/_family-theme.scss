@@ -229,6 +229,34 @@
 	}
 }
 
+.family[data-variant='premiere-floral'] {
+	.family__media-frame {
+		transform: none;
+		transition:
+			box-shadow 220ms ease-out,
+			border-color 220ms ease-out;
+
+		&:hover {
+			transform: none;
+			box-shadow:
+				0 30px 70px rgb(0 0 0 / 42%),
+				0 0 18px rgb(0 0 0 / 18%);
+		}
+	}
+}
+
+.family[data-variant='premiere-floral'][data-layout='premium-mask'] {
+	.family__media-frame {
+		img {
+			transition: none;
+		}
+
+		&:hover img {
+			transform: translateZ(0);
+		}
+	}
+}
+
 .family[data-variant='jewelry-box'] {
 	--family-bg: radial-gradient(
 		circle at 50% -20%,

@@ -94,7 +94,6 @@
 
 		img {
 			filter: var(--hero-image-filter);
-			transition: transform var(--duration-standard) var(--ease-premium);
 		}
 	}
 
@@ -183,7 +182,6 @@
 			background-size: 200% 200%;
 			background-position: -100% -100%;
 			z-index: 2;
-			transition: background-position 0.8s tokens.$ease-premium;
 			pointer-events: none;
 		}
 
@@ -204,14 +202,13 @@
 			object-fit: cover;
 			object-position: center 15%;
 			filter: var(--hero-portrait-filter);
-			transition: transform 1.5s tokens.$ease-premium;
 		}
 
 		&:hover {
 			transform: translateY(-3px) scale(1.012);
 
 			&::before {
-				background-position: 100% 100%;
+				background-position: -100% -100%;
 			}
 
 			img {
@@ -390,6 +387,47 @@
 				transform: translateY(-20%);
 				font-size: clamp(3rem, 18vw, 6.5rem);
 			}
+		}
+	}
+}
+
+.invitation-hero[data-variant='premiere-floral'] {
+	&::before {
+		animation: none;
+		opacity: 6%;
+	}
+
+	.invitation-hero__portrait {
+		transition: box-shadow 220ms ease-out;
+
+		&::before {
+			content: none;
+		}
+
+		img {
+			transition: filter 220ms ease-out;
+		}
+
+		&:hover {
+			transform: none;
+			box-shadow:
+				0 32px 72px rgb(0 0 0 / 44%),
+				inset 0 0 0 1px rgb(255 255 255 / 8%);
+
+			img {
+				transform: none;
+				filter: contrast(1.04) saturate(1.04) brightness(0.92);
+			}
+		}
+	}
+
+	&[data-layout-variant='premium-portrait'] {
+		.invitation-hero__background img {
+			transition: none;
+		}
+
+		.invitation-hero__portrait {
+			transform: scale(1.005);
 		}
 	}
 }
