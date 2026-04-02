@@ -1,5 +1,9 @@
 import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository';
-import { findEventById } from '@/lib/rsvp/repositories/event.repository';
+import {
+	findEventById,
+	findEventsByOwner,
+	findEventsForHost,
+} from '@/lib/rsvp/repositories/event.repository';
 import {
 	createGuestInvitation,
 	findGuestById,
@@ -25,6 +29,9 @@ describe('rsvp repository', () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([]);
 		const none = await findEventById('evt-1', 'token');
 		expect(none).toBeNull();
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
 
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
@@ -43,7 +50,26 @@ describe('rsvp repository', () => {
 		expect(found?.ownerUserId).toBe('host-1');
 	});
 
+	it('filters soft-deleted events in host-facing queries', async () => {
+		supabaseRestRequestMock.mockResolvedValue([] as never);
+
+		await findEventsByOwner('host-1', 'token');
+		await findEventsForHost('token');
+
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+	});
+
 	it('creates and updates guests through expected repository contracts', async () => {
+		supabaseRestRequestMock.mockResolvedValueOnce([
+			{
+				entry_source: 'dashboard',
+			},
+		] as never);
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
 				id: 'guest-1',
@@ -75,6 +101,11 @@ describe('rsvp repository', () => {
 		);
 		expect(created.id).toBe('guest-1');
 
+		supabaseRestRequestMock.mockResolvedValueOnce([
+			{
+				entry_source: 'dashboard',
+			},
+		] as never);
 		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
 				id: 'guest-1',

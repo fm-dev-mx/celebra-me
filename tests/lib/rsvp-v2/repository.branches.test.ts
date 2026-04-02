@@ -1,6 +1,14 @@
 import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository';
-import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
-import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
+import {
+	findEventByIdService,
+	findEventBySlugService,
+	findEventByInvitationPublic,
+	listAllEventsService,
+} from '@/lib/rsvp/repositories/event.repository';
+import {
+	findMembershipByEventForHost,
+	listMembershipsForHost,
+} from '@/lib/rsvp/repositories/role-membership.repository';
 import { incrementClaimCodeUsageService } from '@/lib/rsvp/repositories/claim-code.repository';
 import {
 	createGuestInvitation,
@@ -9,7 +17,6 @@ import {
 	updateGuestById,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
-import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
@@ -89,7 +96,7 @@ describe('rsvp repository branches', () => {
 			'Failed to update guest_invitations',
 		);
 		await expect(appendGuestAuditPublic('g', 'viewed', {})).rejects.toThrow(
-			'No se pudo registrar auditoria.',
+			'No se pudo registrar auditoría.',
 		);
 	});
 
@@ -97,8 +104,29 @@ describe('rsvp repository branches', () => {
 		supabaseRestRequestMock.mockResolvedValue([] as never);
 		expect(await findEventByIdService('evt')).toBeNull();
 		expect(await findEventBySlugService('slug')).toBeNull();
+		expect(await findEventByInvitationPublic('evt')).toBeNull();
+		expect(await listAllEventsService()).toEqual([]);
 		expect(await findGuestByIdService('guest')).toBeNull();
 		expect(await findMembershipByEventForHost('evt', 'token')).toBeNull();
+		expect(await listMembershipsForHost('token')).toEqual([]);
+		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[2]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[3]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[5]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
+		expect(supabaseRestRequestMock.mock.calls[6]?.[0]?.pathWithQuery).toContain(
+			'deleted_at=is.null',
+		);
 	});
 
 	it('increments claim usage with provided count', async () => {

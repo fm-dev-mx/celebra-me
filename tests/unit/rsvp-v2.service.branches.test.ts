@@ -8,7 +8,7 @@ import {
 	markGuestShared,
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import { listHostEvents } from '@/lib/rsvp/services/event-admin.service';
+import { listHostEvents, listHostEventsWithDebug } from '@/lib/rsvp/services/event-admin.service';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import {
 	submitGuestRsvpByInviteId,
@@ -407,5 +407,38 @@ describe('rsvp service branches', () => {
 		]);
 		expect(findEventByIdMock).toHaveBeenCalledWith('evt-member', 'token');
 		expect(findEventByIdServiceMock).toHaveBeenCalledWith('evt-member');
+	});
+
+	it('listHostEventsWithDebug reports slug sync and unresolved memberships', async () => {
+		findEventsByOwnerMock.mockResolvedValue([]);
+		findEventsForHostMock.mockResolvedValue([]);
+		listMembershipsForHostMock.mockResolvedValue([
+			{
+				id: 'membership-1',
+				eventId: 'evt-hidden',
+				userId: 'host-1',
+				membershipRole: 'manager',
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			},
+		]);
+		findEventByIdMock.mockResolvedValueOnce(null);
+		findEventByIdServiceMock.mockResolvedValueOnce(null);
+		findEventBySlugServiceMock.mockResolvedValueOnce({
+			...baseEvent,
+			id: 'evt-ximena',
+			slug: 'ximena-meza-trasvina',
+			ownerUserId: 'other-host',
+		});
+
+		const result = await listHostEventsWithDebug({
+			hostUserId: 'host-1',
+			hostAccessToken: 'token',
+			expectedSlug: 'ximena-meza-trasvina',
+		});
+
+		expect(result.events).toEqual([]);
+		expect(result.debug.slugCheck.slugExistsInDb).toBe(true);
+		expect(result.debug.unresolvedMembershipEventIds).toEqual(['evt-hidden']);
 	});
 });
