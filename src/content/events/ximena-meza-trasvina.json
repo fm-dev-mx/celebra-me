@@ -67,14 +67,18 @@
             "mother": "Christian Jasiela Trasviña Valenzuela"
         },
         "labels": {
-            "sectionTitle": "El Círculo de Luz",
+            "sectionTitle": "Mi Familia",
             "sectionSubtitle": "Círculo Íntimo",
             "parentsTitle": "Con la bendición de"
         },
         "godparents": [
             {
-                "name": "Karla Gabriela Montoya Valenzuela",
+                "name": "Abigail Limón Villalobos",
                 "role": "Madrina de honor"
+            },
+            {
+                "name": "Eduardo Arredondo Valenzuela",
+                "role": "Padrino de honor"
             }
         ],
         "featuredImage": "family",
