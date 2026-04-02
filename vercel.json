@@ -1,9 +1,9 @@
 {
     "version": 2,
     "framework": "astro",
-    "buildCommand": "astro build",
+    "buildCommand": "pnpm build",
     "devCommand": "astro dev",
-    "installCommand": "pnpm install",
+    "installCommand": "corepack enable && corepack install && pnpm install --no-frozen-lockfile",
     "routes": [
         {
             "src": "^/_astro/(.*)$",
