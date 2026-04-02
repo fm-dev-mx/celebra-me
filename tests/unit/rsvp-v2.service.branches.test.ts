@@ -106,6 +106,8 @@ describe('rsvp service branches', () => {
 		attendeeCount: 0,
 		guestComment: '',
 		deliveryStatus: 'generated' as const,
+		viewPercentage: 0,
+		isViewed: false,
 		firstViewedAt: null,
 		lastViewedAt: null,
 		respondedAt: null,

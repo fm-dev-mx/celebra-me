@@ -141,6 +141,8 @@ describe('dashboard guests happy path', () => {
 				attendeeCount: 2,
 				guestComment: '',
 				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
 				firstViewedAt: null,
 				respondedAt: null,
 				waShareUrl: '',

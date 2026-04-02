@@ -43,6 +43,8 @@ const sampleGuest: DashboardGuestItem = {
 	attendeeCount: 0,
 	guestComment: '',
 	deliveryStatus: 'generated',
+	viewPercentage: 0,
+	isViewed: false,
 	firstViewedAt: null,
 	respondedAt: null,
 	waShareUrl: 'https://wa.me/123',
