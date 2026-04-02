@@ -100,10 +100,10 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 
 		const response = await trackView({
 			params: { inviteId: 'invite-1' },
-			request: createMockRequest(undefined, { 'x-real-ip': '127.0.0.1' }),
+			request: createMockRequest({}, { 'x-real-ip': '127.0.0.1' }),
 		} as never);
 
 		expect(response.status).toBe(200);
-		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1');
+		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1', undefined);
 	});
 });
