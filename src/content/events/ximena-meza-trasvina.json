@@ -51,13 +51,13 @@
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "El color rosa está reservado exclusivamente para la quinceañera."
+                "text": "Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>"
             },
             {
                 "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
-                "text": "Favor de confirmar antes del 8 de abril."
+                "text": "Protocolo RSVP <strong>Favor de confirmar antes del 8 de abril</strong>"
             }
         ]
     },
@@ -127,38 +127,33 @@
             {
                 "icon": "reception",
                 "label": "Recepción",
-                "time": "7:00 PM",
+                "time": "8:00 PM",
                 "description": "Los primeros en llegar."
             },
+
             {
                 "icon": "waltz",
                 "label": "Vals",
-                "time": "8:00 PM",
+                "time": "10:00 PM",
                 "description": "Un baile que marca esta noche."
-            },
-            {
-                "icon": "dinner",
-                "label": "Cena",
-                "time": "9:00 PM",
-                "description": "Acompañados de buena mesa."
             },
             {
                 "icon": "toast",
                 "label": "Brindis",
-                "time": "10:00 PM",
+                "time": "10:30 PM",
                 "description": "Para celebrar esta nueva etapa."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "11:00 PM",
+                "description": "Acompañados de buena mesa."
             },
             {
                 "icon": "cake",
                 "label": "Pastel",
-                "time": "10:45 PM",
-                "description": "El momento más dulce."
-            },
-            {
-                "icon": "party",
-                "label": "Fiesta",
                 "time": "11:30 PM",
-                "description": "¡Que no pare la música!"
+                "description": "El momento más dulce."
             }
         ]
     },
