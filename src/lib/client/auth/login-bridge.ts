@@ -1,5 +1,6 @@
 /** Client-side bridge for the login/register shell. */
 import {
+	type AuthMethod,
 	getMethodHelpText,
 	isValidEmail,
 	isValidLoginIdentifier,
@@ -7,6 +8,21 @@ import {
 	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
+
+export function getLoginQueryPrefill(search: string): {
+	method: AuthMethod | null;
+	email: string;
+	hasPasswordParam: boolean;
+} {
+	const params = new URLSearchParams(search);
+	const methodValue = params.get('method');
+	const email = params.get('email')?.trim() || '';
+	return {
+		method: methodValue === 'password' || methodValue === 'magic_link' ? methodValue : null,
+		email,
+		hasPasswordParam: params.has('password'),
+	};
+}
 
 export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');
@@ -24,10 +40,14 @@ export function initLoginFlow() {
 	const registerMethodHelp = document.getElementById('register-method-help');
 	const loginPasswordWrap = document.getElementById('login-password-wrap');
 	const registerPasswordWrap = document.getElementById('register-password-wrap');
+	const loginEmailInput = document.getElementById('login-email') as HTMLInputElement | null;
+	const loginPasswordInput = document.getElementById('login-password') as HTMLInputElement | null;
 	const loginSubmit = document.getElementById('login-submit');
 	const registerSubmit = document.getElementById('register-submit');
 
 	let isSubmitting = false;
+	const loginQueryPrefill =
+		typeof window === 'undefined' ? null : getLoginQueryPrefill(window.location.search);
 
 	const setStatus = (message: string, tone = 'info', shouldFocus = false) => {
 		if (!statusEl) return;
@@ -109,6 +129,21 @@ export function initLoginFlow() {
 		focusFirstInput(panel);
 	};
 
+	const hydrateLoginFromQuery = () => {
+		if (!loginQueryPrefill) return;
+		if (loginMethod && loginQueryPrefill.method) {
+			loginMethod.value = loginQueryPrefill.method;
+		}
+		if (loginEmailInput && loginQueryPrefill.email) {
+			loginEmailInput.value = loginQueryPrefill.email;
+		}
+		if (loginQueryPrefill.hasPasswordParam && typeof window !== 'undefined') {
+			const url = new URL(window.location.href);
+			url.searchParams.delete('password');
+			window.history.replaceState({}, '', url.toString());
+		}
+	};
+
 	const validateLoginClient = (payload: import('./login-ui').LoginFormState) => {
 		const genericError = validateLoginForm(payload);
 		if (!genericError) return null;
@@ -164,13 +199,10 @@ export function initLoginFlow() {
 			if (isSubmitting) return;
 			clearFieldErrors();
 
-			const emailEl = document.getElementById('login-email') as HTMLInputElement | null;
-			const passwordEl = document.getElementById('login-password') as HTMLInputElement | null;
-
 			const payload = {
 				method: (loginMethod?.value as import('./login-ui').AuthMethod) || 'password',
-				email: emailEl?.value || '',
-				password: passwordEl?.value || '',
+				email: loginEmailInput?.value || '',
+				password: loginPasswordInput?.value || '',
 			};
 			const validationError = validateLoginClient(payload);
 			if (validationError) {
@@ -253,8 +285,19 @@ export function initLoginFlow() {
 	}
 
 	// Initialize UI
+	hydrateLoginFromQuery();
 	updateMethodUI('login');
 	updateMethodUI('register');
 	switchTab('login');
-	setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
+	if (loginQueryPrefill?.hasPasswordParam) {
+		setStatus(
+			'Por seguridad ignoramos la contrasena enviada en la URL. Escríbela en el campo para continuar.',
+			'info',
+		);
+		if (loginPasswordInput) {
+			loginPasswordInput.focus();
+		}
+	} else {
+		setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
+	}
 }
