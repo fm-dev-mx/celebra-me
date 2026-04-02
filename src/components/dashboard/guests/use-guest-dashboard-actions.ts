@@ -90,9 +90,14 @@ export const useGuestDashboardActions = ({
 				message: `Invitado ${guestToDelete.fullName} eliminado con éxito.`,
 				type: 'success',
 			});
-		} catch {
+		} catch (error) {
+			const shouldShowDebugMessage =
+				typeof window !== 'undefined' &&
+				new URLSearchParams(window.location.search).get('debug') === '1' &&
+				error instanceof Error &&
+				error.message;
 			setNotification({
-				message: 'Error al eliminar invitado.',
+				message: shouldShowDebugMessage ? error.message : 'Error al eliminar invitado.',
 				type: 'warning',
 			});
 		} finally {

@@ -1,8 +1,8 @@
 import {
 	createGuestInvitation,
-	deleteGuestById,
 	findGuestsByEvent,
 	findGuestByPhone,
+	softDeleteGuestById,
 	updateGuestById,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { findEventById } from '@/lib/rsvp/repositories/event.repository';
@@ -320,7 +320,7 @@ export async function deleteDashboardGuest(input: {
 		});
 	}
 
-	await deleteGuestById(input.guestId, input.hostAccessToken);
+	await softDeleteGuestById(input.guestId, input.hostAccessToken);
 	publishGuestStreamEvent({
 		type: 'guest_updated',
 		eventId: existing.eventId,

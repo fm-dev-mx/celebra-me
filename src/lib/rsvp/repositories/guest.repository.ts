@@ -19,6 +19,7 @@ import {
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const TABLE = 'guest_invitations';
+const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
 
 function isGuestSchemaErrorMessage(message: string) {
 	return (
@@ -248,7 +249,7 @@ export async function findGuestsByEvent(
 	filters: GuestFilters,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord[]> {
-	const queryParts = [`event_id=eq.${encodeURIComponent(filters.eventId)}`];
+	const queryParts = [`event_id=eq.${encodeURIComponent(filters.eventId)}`, ACTIVE_GUEST_FILTER];
 	if (filters.status && filters.status !== 'all') {
 		if (filters.status === 'viewed') {
 			queryParts.push('first_viewed_at=not.is.null');
@@ -283,15 +284,27 @@ export async function findGuestById(
 	guestId: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(TABLE, `id=eq.${encodeURIComponent(guestId)}`, GUEST_COLUMNS, toGuestRecord, {
-		authToken: hostAccessToken,
-	});
+	return findSingle(
+		TABLE,
+		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		GUEST_COLUMNS,
+		toGuestRecord,
+		{
+			authToken: hostAccessToken,
+		},
+	);
 }
 
 export async function findGuestByIdService(guestId: string): Promise<GuestInvitationRecord | null> {
-	return findSingle(TABLE, `id=eq.${encodeURIComponent(guestId)}`, '*', toGuestRecord, {
-		useServiceRole: true,
-	});
+	return findSingle(
+		TABLE,
+		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		'*',
+		toGuestRecord,
+		{
+			useServiceRole: true,
+		},
+	);
 }
 
 export async function updateGuestById(
@@ -317,6 +330,18 @@ export async function updateGuestByIdService(
 export async function deleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
 	return deleteByQuery(TABLE, `id=eq.${encodeURIComponent(guestId)}`, {
 		authToken: hostAccessToken,
+	});
+}
+
+export async function softDeleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
+	await supabaseRestRequest({
+		pathWithQuery: `${TABLE}?id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+		method: 'PATCH',
+		body: {
+			deleted_at: new Date().toISOString(),
+		},
+		authToken: hostAccessToken,
+		prefer: 'return=minimal',
 	});
 }
 
@@ -362,17 +387,23 @@ async function findGuestSingleSafe(
 export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(`invite_id=eq.${encodeURIComponent(inviteId)}`, {
-		useServiceRole: true,
-	});
+	return findGuestSingleSafe(
+		`invite_id=eq.${encodeURIComponent(inviteId)}&${ACTIVE_GUEST_FILTER}`,
+		{
+			useServiceRole: true,
+		},
+	);
 }
 
 export async function findGuestByShortIdPublic(
 	shortId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(`short_id=eq.${encodeURIComponent(shortId)}`, {
-		useServiceRole: true,
-	});
+	return findGuestSingleSafe(
+		`short_id=eq.${encodeURIComponent(shortId)}&${ACTIVE_GUEST_FILTER}`,
+		{
+			useServiceRole: true,
+		},
+	);
 }
 
 export async function findGuestByPhone(
@@ -381,7 +412,7 @@ export async function findGuestByPhone(
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord | null> {
 	return findGuestSingleSafe(
-		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}`,
+		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
 		{
 			authToken: hostAccessToken,
 			useServiceRole: !hostAccessToken,
@@ -402,7 +433,7 @@ export async function findGuestByLegacyIdentityPublic(input: {
 }): Promise<GuestInvitationRecord | null> {
 	return findSingle(
 		TABLE,
-		`legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}`,
+		`legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}&${ACTIVE_GUEST_FILTER}`,
 		GUEST_COLUMNS,
 		toGuestRecord,
 		{ useServiceRole: true },
