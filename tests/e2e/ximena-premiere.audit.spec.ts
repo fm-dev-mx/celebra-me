@@ -109,4 +109,18 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 			path: path.join(viewportDir, `section-${safeName}.png`),
 		});
 	}
+
+	const rsvpSection = page.locator('#rsvp');
+	await rsvpSection.scrollIntoViewIfNeeded();
+	await page.getByLabel('Sí, asistiré').click();
+	await page.waitForTimeout(200);
+	await rsvpSection.screenshot({
+		path: path.join(viewportDir, 'section-rsvp-confirmed-selected.png'),
+	});
+
+	await page.getByLabel('No podré asistir').click();
+	await page.waitForTimeout(200);
+	await rsvpSection.screenshot({
+		path: path.join(viewportDir, 'section-rsvp-declined-selected.png'),
+	});
 }

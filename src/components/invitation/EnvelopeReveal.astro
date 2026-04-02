@@ -17,6 +17,7 @@ interface Props {
 	guestName?: string;
 	titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
 	detailMaterial?: 'debossed' | 'standard';
+	isOrganic?: boolean;
 }
 
 const {
@@ -35,6 +36,7 @@ const {
 	guestName,
 	titleMaterial = 'standard',
 	detailMaterial = 'standard',
+	isOrganic = false,
 } = Astro.props;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
@@ -78,7 +80,7 @@ const sealIconMap = {
 				</div>
 				<div class="envelope-card__body">
 					<span class="envelope-card__label">{documentLabel || 'Invitación'}</span>
-					<h2 class="envelope-card__name" data-material={titleMaterial}>{name}</h2>
+					<h2 class="envelope-card__name" data-material={titleMaterial} data-organic={isOrganic}>{name}</h2>
 					{guestName && (
 						<div class="envelope-card__guest-personalized">
 							<p class="personalized-label">Entrega especial para:</p>
@@ -134,7 +136,7 @@ const sealIconMap = {
 				</div>
 
 				<div class="tease-content-bottom">
-					<h2 class="envelope-name" data-material={titleMaterial}>{name}</h2>
+					<h2 class="envelope-name" data-material={titleMaterial} data-organic={isOrganic}>{name}</h2>
 					<div class="tease-details-group">
 						<div class="tease-divider"></div>
 						<p class="envelope-details" data-material={detailMaterial}>{formattedDate} • {city}</p>

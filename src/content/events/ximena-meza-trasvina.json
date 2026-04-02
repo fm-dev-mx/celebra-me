@@ -57,7 +57,7 @@
                 "icon": "envelope",
                 "iconName": "Envelope",
                 "styleVariant": "default",
-                "text": "Protocolo RSVP <strong>Favor de confirmar antes del 8 de abril</strong>"
+                "text": "<strong>Favor de confirmar antes del 8 de abril</strong>"
             }
         ]
     },

@@ -92,4 +92,23 @@ describe('Style boundary governance', () => {
 			expect(read(file)).not.toContain('premiere-floral');
 		}
 	});
+
+	it('rsvp theme ownership stays out of the base invitation stylesheet', () => {
+		const rsvpBase = read('src/styles/invitation/_rsvp.scss');
+		const rsvpTheme = read('src/styles/themes/sections/_rsvp-theme.scss');
+
+		expect(rsvpBase).not.toContain("[data-variant='premiere-floral']");
+		expect(rsvpBase).not.toContain("[data-variant='editorial']");
+		expect(rsvpTheme).toContain("[data-variant='premiere-floral']");
+		expect(rsvpTheme).toContain("[data-variant='editorial']");
+	});
+
+	it('rsvp source tree does not keep redundant component or sourcemap artifacts', () => {
+		expect(
+			fs.existsSync(path.join(projectRoot, 'src/components/invitation/GuestRSVPForm.tsx')),
+		).toBe(false);
+		expect(fs.existsSync(path.join(projectRoot, 'src/styles/invitation/_rsvp.css.map'))).toBe(
+			false,
+		);
+	});
 });

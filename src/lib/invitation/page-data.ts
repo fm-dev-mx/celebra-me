@@ -47,6 +47,7 @@ export interface InvitationPageData {
 				name: string;
 				titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
 				detailMaterial?: 'debossed' | 'standard';
+				isOrganic?: boolean;
 		  })
 		| undefined;
 	sections: InvitationViewModel['sections'];
@@ -221,6 +222,13 @@ function buildEnvelopeData(
 		detailMaterial: (envelope.data.variant === 'luxury-hacienda' ? 'debossed' : 'standard') as
 			| 'debossed'
 			| 'standard',
+		isOrganic:
+			envelope.data.variant === 'jewelry-box' ||
+			envelope.data.variant === 'jewelry-box-wedding' ||
+			envelope.data.variant === 'luxury-hacienda' ||
+			envelope.data.variant === 'editorial' ||
+			envelope.data.variant === 'premiere-floral' ||
+			envelope.data.variant === 'noir-premiere',
 	};
 }
 

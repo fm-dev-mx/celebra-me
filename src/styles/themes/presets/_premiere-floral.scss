@@ -4,7 +4,7 @@
 
 .theme-preset--premiere-floral {
 	--color-surface-primary: #{sys.$sys-color-floral-50};
-	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-50)};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-500)};
 	--color-surface-soft: #{sys.$sys-color-neutral-0};
 	--color-surface-dark: #{sys.$sys-color-taupe-500};
 	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-taupe-500)};
@@ -12,6 +12,8 @@
 	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-floral-300)};
 	--color-action-accent: #{sys.$sys-color-floral-300};
 	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-floral-300)};
+	--color-gold-500: #{sys.$sys-color-gold-500};
+	--color-gold-500-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
 	--color-text-primary: #{sys.$sys-color-taupe-500};
 	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-taupe-500)};
 	--color-text-emphasis: #{sys.$sys-color-floral-300};
@@ -139,6 +141,36 @@
 	--theme-image-filter-portrait: none;
 	--theme-image-filter-gallery: none;
 	--theme-image-filter-interlude: none;
+
+	// 💎 TOP PREMIUM: RSVP Radio Button Overrides - usar dorado para mejor visibilidad
+	--rsvp-radio-selected-border: var(--color-gold-500);
+	--rsvp-radio-selected-shadow:
+		0 0 0 2px rgb(var(--color-gold-500-rgb) / 30%),
+		0 8px 24px rgb(var(--color-gold-500-rgb) / 18%);
+	--rsvp-radio-indicator-selected: var(--color-gold-500);
+	--rsvp-radio-glow: 0 0 12px rgb(var(--color-gold-500-rgb) / 45%);
+	--rsvp-panel-top-line: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-gold-500-rgb) / 18%) 18%,
+		rgb(var(--color-action-accent-rgb) / 58%) 50%,
+		rgb(var(--color-gold-500-rgb) / 18%) 82%,
+		transparent 100%
+	);
+	--rsvp-panel-bottom-line: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb) / 14%) 22%,
+		rgb(var(--color-gold-500-rgb) / 42%) 50%,
+		rgb(var(--color-action-accent-rgb) / 14%) 78%,
+		transparent 100%
+	);
+	--rsvp-title-highlight: linear-gradient(
+		135deg,
+		rgb(var(--color-action-accent-rgb) / 72%) 0%,
+		rgb(var(--color-gold-500-rgb) / 92%) 45%,
+		rgb(var(--color-action-accent-rgb) / 74%) 100%
+	);
 
 	// Section Overrides: Gallery
 	--gallery-title-font: var(--font-display);

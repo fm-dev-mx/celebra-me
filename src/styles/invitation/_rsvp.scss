@@ -5,7 +5,6 @@
  */
 
 @use '../global/mixins' as mixins;
-@use '../tokens' as tokens;
 
 .rsvp {
 	--rsvp-bg: var(--color-surface-dark);
@@ -34,16 +33,27 @@
 	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb) / 18%);
 	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb) / 78%);
 	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 30%);
+	--rsvp-radio-indicator-border: var(--rsvp-radio-border);
+	--rsvp-radio-indicator-bg: transparent;
+	--rsvp-radio-indicator-dot: var(--color-action-accent);
+	--rsvp-radio-label-color: rgb(var(--color-text-primary-rgb) / 70%);
+	--rsvp-radio-label-color-selected: var(--color-text-primary);
+	--rsvp-radio-focus-ring: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 16%);
 	--rsvp-button-color: var(--color-action-accent);
 	--rsvp-button-color-hover: var(--color-surface-dark);
-	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb) / 90%);
-	--rsvp-button-filter-hover: saturate(1.08);
+	--rsvp-button-bg: transparent;
+	--rsvp-button-bg-hover: var(--color-action-accent);
+	--rsvp-button-bg-loading: rgb(var(--color-action-accent-rgb) / 10%);
+	--rsvp-button-bg-success: var(--color-action-accent);
+	--rsvp-button-filter-hover: none;
 	--rsvp-button-shadow-rest:
 		0 10px 22px rgb(var(--color-action-primary-rgb) / 34%),
 		0 1px 0 rgb(var(--color-action-accent-rgb) / 24%);
 	--rsvp-button-shadow-hover:
 		0 14px 28px rgb(var(--color-action-primary-rgb) / 42%),
 		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);
+	--rsvp-button-shadow-loading: 0 4px 15px rgb(var(--color-action-primary-rgb) / 15%);
+	--rsvp-button-shadow-success: 0 0 30px rgb(var(--color-action-accent-rgb) / 40%);
 	--color-error-field: rgb(166 46 46);
 	--color-error-text: rgb(138 32 32);
 	--rsvp-error-bg: rgb(var(--color-error-rgb) / 10%);
@@ -109,7 +119,11 @@
 			font-family: var(--font-body);
 			font-size: 1.05rem;
 			color: var(--color-text-primary);
-			transition: all var(--duration-standard) var(--ease-premium);
+			transition:
+				background-color var(--duration-standard) var(--ease-premium),
+				border-color var(--duration-standard) var(--ease-premium),
+				box-shadow var(--duration-standard) var(--ease-premium),
+				color var(--duration-standard) var(--ease-premium);
 
 			&:focus {
 				outline: none;
@@ -135,12 +149,48 @@
 			border: 1px solid var(--rsvp-radio-border);
 			border-radius: 4px;
 			padding: 1.1rem;
-			transition: all var(--duration-standard) var(--ease-premium);
+			transition:
+				background-color var(--duration-standard) var(--ease-premium),
+				border-color var(--duration-standard) var(--ease-premium),
+				box-shadow var(--duration-standard) var(--ease-premium),
+				transform var(--duration-standard) var(--ease-premium);
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			gap: 0.8rem;
 			cursor: pointer;
+			position: relative;
+
+			&:hover {
+				background: var(--rsvp-radio-bg-hover);
+				border-color: var(--rsvp-radio-selected-border);
+			}
+
+			&:focus-within {
+				outline: none;
+				box-shadow: var(--rsvp-radio-focus-ring);
+			}
+
+			input:focus-visible + .rsvp__radio-indicator {
+				box-shadow: var(--rsvp-radio-focus-ring);
+			}
+
+			input:checked + .rsvp__radio-indicator,
+			&:has(input:checked) .rsvp__radio-indicator {
+				border-color: var(--rsvp-radio-selected-border);
+				background: var(--rsvp-radio-indicator-dot);
+			}
+
+			input:checked + .rsvp__radio-indicator::after,
+			&:has(input:checked) .rsvp__radio-indicator::after {
+				transform: scale(1);
+			}
+
+			input:checked + .rsvp__radio-indicator + .rsvp__radio-label,
+			&:has(input:checked) .rsvp__radio-label {
+				color: var(--rsvp-radio-label-color-selected);
+				font-weight: 600;
+			}
 
 			&:has(input:checked) {
 				background: var(--rsvp-radio-selected-bg);
@@ -150,6 +200,42 @@
 		}
 	}
 
+	&__radio-indicator {
+		flex-shrink: 0;
+		width: 1.15rem;
+		height: 1.15rem;
+		border: 1.5px solid var(--rsvp-radio-indicator-border);
+		border-radius: 50%;
+		position: relative;
+		background: var(--rsvp-radio-indicator-bg);
+		transition:
+			background-color var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-premium),
+			box-shadow var(--duration-standard) var(--ease-premium),
+			transform var(--duration-standard) var(--ease-premium);
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 3px;
+			border-radius: 50%;
+			background: var(--rsvp-field-bg-focus);
+			transform: scale(0);
+			transition: transform var(--duration-standard) var(--ease-premium);
+		}
+	}
+
+	&__radio-label {
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		letter-spacing: 0.02em;
+		text-transform: none;
+		color: var(--rsvp-radio-label-color);
+		transition:
+			color var(--duration-standard) var(--ease-premium),
+			opacity var(--duration-standard) var(--ease-premium);
+	}
+
 	&__button {
 		display: inline-flex;
 		align-items: center;
@@ -157,7 +243,7 @@
 		width: 100%;
 		padding: 1.1rem 2.2rem;
 		color: var(--rsvp-button-color);
-		background: transparent;
+		background: var(--rsvp-button-bg);
 		border: 1px solid var(--rsvp-field-border);
 		font-family: var(--font-label);
 		font-size: 0.85rem;
@@ -165,12 +251,17 @@
 		text-transform: uppercase;
 		letter-spacing: 0.22em;
 		border-radius: var(--rsvp-radius-field);
-		transition: all var(--duration-standard) var(--ease-premium);
+		transition:
+			background-color var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-premium),
+			box-shadow var(--duration-standard) var(--ease-premium),
+			color var(--duration-standard) var(--ease-premium),
+			filter var(--duration-standard) var(--ease-premium),
+			opacity var(--duration-standard) var(--ease-premium),
+			transform var(--duration-standard) var(--ease-premium);
 		position: relative;
-		overflow: hidden;
 		cursor: pointer;
 
-		// 💎 TOP PREMIUM: Global fix for generic blue & abrupt states
 		&:focus,
 		&:focus-visible {
 			outline: none;
@@ -180,52 +271,39 @@
 		&:active:not(:disabled) {
 			transform: translateY(-1px) scale(0.985);
 			filter: brightness(0.9);
-			transition: all 0.1s var(--ease-premium);
-			background: rgb(var(--color-action-accent-rgb) / 5%); // Prevent default blue
+			transition-duration: 0.1s;
+			background: rgb(var(--color-action-accent-rgb) / 5%);
 		}
 
 		&--loading {
 			cursor: wait;
-			opacity: 0.85;
+			opacity: 85%;
 			pointer-events: none;
-			background-size: 200% 100%;
-			animation: shimmer 1.5s infinite linear;
 			transform: scale(0.98);
-			box-shadow: 0 4px 15px rgb(var(--color-action-primary-rgb) / 15%);
-			
+			background: var(--rsvp-button-bg-loading);
+			box-shadow: var(--rsvp-button-shadow-loading);
+
 			& .rsvp__button-text {
 				letter-spacing: 0.2em;
-				opacity: 0.7;
+				opacity: 70%;
 			}
 		}
 
 		&--success {
-			background: var(--color-action-accent);
+			background: var(--rsvp-button-bg-success);
 			border-color: var(--color-action-accent);
 			color: var(--color-surface-primary);
-			box-shadow: 0 0 30px rgb(var(--color-action-accent-rgb) / 40%);
+			box-shadow: var(--rsvp-button-shadow-success);
 			pointer-events: none;
 		}
 
 		&:hover:not(:disabled) {
 			color: var(--rsvp-button-color-hover);
 			border-color: var(--color-action-accent);
+			background: var(--rsvp-button-bg-hover);
 			transform: translateY(-2px);
 			box-shadow: var(--rsvp-button-shadow-hover);
-
-			&::before {
-				transform: translateX(0);
-			}
-		}
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: var(--color-action-accent);
-			transform: translateX(-101%);
-			transition: transform var(--duration-standard) var(--ease-premium);
-			z-index: -1;
+			filter: var(--rsvp-button-filter-hover);
 		}
 	}
 
@@ -237,8 +315,14 @@
 			font-size: 3rem;
 			margin-bottom: 1rem;
 			display: block;
-			&[data-response='yes']::before { content: var(--rsvp-emoji-yes); }
-			&[data-response='no']::before { content: var(--rsvp-emoji-no); }
+
+			&[data-response='yes']::before {
+				content: var(--rsvp-emoji-yes);
+			}
+
+			&[data-response='no']::before {
+				content: var(--rsvp-emoji-no);
+			}
 		}
 
 		&-message {
@@ -247,16 +331,4 @@
 			line-height: 1.4;
 		}
 	}
-}
-
-@keyframes glint-ray {
-	0% { transform: translate(-30%, -30%) rotate(0deg); opacity: 0; }
-	10% { opacity: 0.6; }
-	90% { opacity: 0.6; }
-	100% { transform: translate(30%, 30%) rotate(5deg); opacity: 0; }
-}
-
-@keyframes shimmer {
-	0% { background-position: -200% 0; }
-	100% { background-position: 200% 0; }
 }

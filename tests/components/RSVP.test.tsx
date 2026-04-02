@@ -39,10 +39,11 @@ describe('RSVP Component', () => {
 		});
 
 		it('should render attendance radio buttons', () => {
-			render(<RSVP {...defaultProps} />);
+			const { container } = render(<RSVP {...defaultProps} />);
 
 			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/No podré asistir/i)).toBeInTheDocument();
+			expect(container.querySelectorAll('.rsvp__radio-indicator')).toHaveLength(2);
 		});
 
 		it('should render the confirm button', () => {
@@ -103,6 +104,17 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Sí, asistiré/i)).toBeChecked();
+		});
+
+		it('should mark the decline option as checked when selected', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...defaultProps} />);
+
+			await user.click(screen.getByLabelText(/No podré asistir/i));
+
+			expect(screen.getByLabelText(/No podré asistir/i)).toBeChecked();
+			expect(screen.queryByLabelText(/Número total de asistentes/i)).not.toBeInTheDocument();
 		});
 
 		it('should show notes textarea when "Yes" is selected', async () => {
@@ -184,6 +196,37 @@ describe('RSVP Component', () => {
 	});
 
 	describe('Form Submission', () => {
+		it('should switch the submit button to loading before the request resolves', async () => {
+			const user = userEvent.setup();
+			let resolveFetch: ((value: unknown) => void) | undefined;
+			global.fetch = jest.fn(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					}),
+			) as jest.Mock;
+
+			const { container } = render(<RSVP {...defaultProps} />);
+
+			await user.type(screen.getByLabelText(/Nombre completo/i), 'Test User');
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			const button = container.querySelector('.rsvp__button');
+			expect(button).toHaveClass('rsvp__button--loading');
+
+			resolveFetch?.({
+				ok: true,
+				json: async () => ({ rsvpId: 'mock-rsvp-id' }),
+			});
+
+			await waitFor(() => {
+				expect(
+					screen.getByText((content) => content.includes('¡Gracias por confirmar!')),
+				).toBeInTheDocument();
+			});
+		});
+
 		it('should show confirmation message on successful "Yes" submission', async () => {
 			const user = userEvent.setup();
 			render(<RSVP {...defaultProps} />);

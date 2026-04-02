@@ -167,6 +167,7 @@
 		filter: grayscale(0.2) contrast(1.1) brightness(0.9);
 		will-change: transform;
 		backface-visibility: hidden;
+		border-radius: 10px 10px 0 0;
 	}
 
 	.event-location__card-content {
@@ -261,8 +262,9 @@
 		border: none;
 		padding: 0;
 		display: grid;
+		margin-bottom: 2rem;
 		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 2rem;
+		gap: 1rem;
 
 		&::before {
 			display: none;
@@ -272,15 +274,17 @@
 	.event-location__indication-item {
 		background: var(--location-indication-bg);
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
-		border-radius: 4px;
-		padding: 3rem 2.5rem;
+		border-radius: 16px;
+		padding: 0 2.5rem;
 		flex-direction: column;
-		gap: 1.5rem;
+		justify-content: center;
+		gap: 0.1rem;
 		text-align: center;
 		transition: all 0.5s tokens.$ease-premium;
 		position: relative;
 		overflow: hidden;
-		box-shadow: 
+		height: 250px;
+		box-shadow:
 			0 10px 30px -10px rgb(var(--color-surface-dark-rgb) / 5%),
 			inset 0 0 40px rgb(var(--color-action-accent-rgb) / 3%);
 
@@ -301,7 +305,7 @@
 			background: rgb(var(--color-surface-primary-rgb) / 40%);
 			border-color: rgb(var(--color-action-accent-rgb) / 30%);
 			transform: translateY(-8px);
-			box-shadow: 
+			box-shadow:
 				0 30px 60px -15px rgb(0 0 0 / 10%),
 				0 0 30px rgb(var(--color-action-accent-rgb) / 8%);
 		}
@@ -318,11 +322,10 @@
 
 	.event-location__indication-icon {
 		background: var(--gold-metallic);
-		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		font-size: 2.4rem;
-		opacity: 1;
+		opacity: 100%;
 		transition: all 0.6s tokens.$ease-premium;
 		filter: drop-shadow(0 2px 4px rgb(var(--color-action-accent-rgb) / 15%));
 	}

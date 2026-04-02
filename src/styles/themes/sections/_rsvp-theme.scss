@@ -52,6 +52,7 @@
 
 .rsvp[data-variant='editorial'],
 .rsvp[data-variant='premiere-floral'] {
+	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
@@ -64,34 +65,6 @@
 	border-radius: var(--section-card-radius, 4px);
 	backdrop-filter: blur(var(--glass-blur, 12px));
 	box-shadow: var(--shadow-premium);
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(
-			circle at 15% 15%,
-			rgb(var(--color-action-accent-rgb) / 12%) 0%,
-			transparent 40%
-		);
-		pointer-events: none;
-	}
-
-	// Premium metallic glint
-	&::after {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 1px;
-		background: var(
-			--gold-metallic,
-			linear-gradient(90deg, transparent, var(--color-action-accent), transparent)
-		);
-		opacity: 60%;
-		z-index: 2;
-	}
 
 	.rsvp__title {
 		font-family: var(--section-title-font);
@@ -130,6 +103,7 @@
 		display: flex;
 		gap: 1rem;
 		margin-top: 0.5rem;
+		color: var(--color-text-primary);
 
 		.rsvp__radio-card {
 			flex: 1;
@@ -296,13 +270,13 @@
 		}
 	}
 
-	// 💎 TOP PREMIUM: Premiere Floral Specific Overrides (Ximena Meza)
-	.theme-preset--premiere-floral & {
+	// 💎 TOP PREMIUM: Premiere Floral Specific Overrides
+	.rsvp[data-variant='premiere-floral'] {
 		backdrop-filter: blur(28px) saturate(210%);
 		border: 0.5px solid rgb(var(--color-action-accent-rgb) / 28%);
 		background-color: rgb(var(--color-surface-dark-rgb) / 45%);
 		color: var(--color-text-on-dark);
-		box-shadow: 
+		box-shadow:
 			var(--shadow-premium),
 			inset 0 0 100px rgb(var(--color-surface-dark-rgb) / 20%),
 			inset 0 0 2px 1px rgb(var(--color-action-accent-rgb) / 12%);
@@ -311,7 +285,7 @@
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: 
+			background:
 				radial-gradient(
 					circle at center,
 					transparent 0%,
@@ -411,7 +385,7 @@
 				font-family: var(--font-label);
 				font-weight: 600;
 			}
-			
+
 			& input {
 				color: var(--color-text-on-dark);
 			}
@@ -445,16 +419,18 @@
 
 		.rsvp__radio-group .rsvp__radio-card {
 			background: rgb(var(--color-surface-dark-rgb) / 15%);
-			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
+			border: 0.5px solid rgb(var(--color-gold-500-rgb) / 25%);
 			border-radius: 4px;
 			padding: 1.4rem;
 			backdrop-filter: blur(8px);
+			transition: all 0.4s var(--ease-premium);
 
 			.rsvp__radio-indicator {
-				border-color: rgb(var(--color-action-accent-rgb) / 35%);
+				border-color: rgb(var(--color-gold-500-rgb) / 45%);
 				background: rgb(var(--color-surface-dark-rgb) / 40%);
 				width: 1.25rem;
 				height: 1.25rem;
+				transition: all 0.4s var(--ease-premium);
 			}
 
 			.rsvp__radio-label {
@@ -462,19 +438,27 @@
 				color: rgb(var(--color-text-primary-rgb) / 50%);
 				font-size: 1.1rem;
 				letter-spacing: 0.04em;
+				transition: all 0.4s var(--ease-premium);
+			}
+
+			&:hover {
+				background: rgb(var(--color-gold-500-rgb) / 8%);
+				border-color: rgb(var(--color-gold-500-rgb) / 45%);
 			}
 
 			&:has(input:checked) {
-				background: rgb(var(--color-action-accent-rgb) / 6%);
-				border-color: var(--color-action-accent);
-				box-shadow: 
-					0 12px 30px rgb(var(--color-action-accent-rgb) / 12%),
-					inset 0 0 10px rgb(var(--color-action-accent-rgb) / 5%);
-				
+				background: rgb(var(--color-gold-500-rgb) / 12%);
+				border-color: var(--color-gold-500);
+				box-shadow:
+					0 12px 30px rgb(var(--color-gold-500-rgb) / 18%),
+					inset 0 0 10px rgb(var(--color-gold-500-rgb) / 8%),
+					var(--rsvp-radio-glow, 0 0 12px rgb(var(--color-gold-500-rgb) / 35%));
+
 				.rsvp__radio-indicator {
 					background: var(--gold-metallic);
-					border-color: var(--color-action-accent);
-					
+					border-color: var(--color-gold-500);
+					box-shadow: 0 0 10px rgb(var(--color-gold-500-rgb) / 50%);
+
 					&::after {
 						background: var(--color-surface-dark);
 						inset: 4px;
@@ -482,8 +466,9 @@
 				}
 
 				.rsvp__radio-label {
-					color: var(--color-action-accent);
+					color: var(--color-gold-500);
 					opacity: 1;
+					font-weight: 500;
 				}
 			}
 		}

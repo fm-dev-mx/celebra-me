@@ -6,165 +6,330 @@ interface Props {
 }
 
 const { maxAllowedAttendees, guestName } = Astro.props;
+
+const seatsLabel =
+	maxAllowedAttendees === 1 ? 'Lugar reservado' : 'Lugares reservados';
+
+const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees} ${seatsLabel.toLowerCase()}.`;
 ---
 
-<section class="personalized-access">
+<section class="personalized-access" aria-labelledby="personalized-access-title">
 	<div class="personalized-access__container">
-		<div class="access-card">
-			<div class="access-card__header">
-				<div class="access-card__ring"></div>
-				<h3 class="access-card__title">Pase de Acceso</h3>
-			</div>
-			<div class="access-card__content">
-				<div class="access-card__item">
-					<span class="label">Para</span>
-					<span class="value">{guestName}</span>
+		<article class="access-card" aria-label={accessAriaLabel}>
+			<header class="access-card__header">
+				<span class="access-card__eyebrow">Invitación personalizada</span>
+				<div class="access-card__seal" aria-hidden="true"></div>
+				<h3 id="personalized-access-title" class="access-card__title">
+					Pase de acceso
+				</h3>
+				<p class="access-card__subtitle">
+					Este pase identifica a tu invitado y el número de lugares reservados.
+				</p>
+			</header>
+
+			<div class="access-card__body">
+				<div class="access-card__field">
+					<span class="access-card__label">Invitado</span>
+					<strong class="access-card__guest">{guestName}</strong>
 				</div>
-				<div class="access-card__divider"></div>
-				<div class="access-card__item access-card__item--large">
-					<span class="label">Lugares Reservados</span>
-					<span class="value">{maxAllowedAttendees}</span>
+
+				<div class="access-card__divider" aria-hidden="true"></div>
+
+				<div class="access-card__quota">
+					<span class="access-card__label">{seatsLabel}</span>
+					<div class="access-card__count-frame">
+						<span class="access-card__count">{maxAllowedAttendees}</span>
+					</div>
 				</div>
 			</div>
-			<div class="access-card__footer">
-				<p>Por favor confirma tu asistencia en la sección de RSVP al final.</p>
-			</div>
-		</div>
+
+			<footer class="access-card__footer">
+				<p>
+					Confirma tu asistencia en la sección de RSVP al final de la
+					invitación.
+				</p>
+			</footer>
+		</article>
 	</div>
 </section>
 
 <style lang="scss">
 	.personalized-access {
-		padding: 3rem 1.5rem;
+		padding: clamp(2.75rem, 7vw, 4.5rem) 1.25rem;
 		background: transparent;
-		display: flex;
-		justify-content: center;
+
+		&__container {
+			width: min(100%, 32rem);
+			margin-inline: auto;
+		}
 	}
 
 	.access-card {
-		background: var(--color-surface-elevated);
-		border-radius: 4px;
-		box-shadow: var(--hero-card-shadow-ambient, var(--shadow-premium));
-		border: 1px solid var(--hero-card-border-hairline, var(--color-border-premium));
-		width: 100%;
-		max-width: 450px;
-		overflow: hidden;
 		position: relative;
+		width: 100%;
+		overflow: hidden;
+		isolation: isolate;
+		border-radius: 0.875rem;
+		border: 1px solid
+			var(--hero-card-border-hairline, var(--color-border-premium));
+		background:
+			linear-gradient(
+				180deg,
+				rgb(255 255 255 / 38%) 0%,
+				transparent 26%,
+				rgb(255 255 255 / 14%) 100%
+			),
+			var(--family-texture-image, none),
+			var(--color-surface-elevated);
+		background-position: center;
+		background-size: auto, cover, auto;
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 65%),
+			inset 0 0 0 1px rgb(255 255 255 / 12%),
+			0 18px 50px rgb(25 18 24 / 14%),
+			var(--hero-card-shadow-ambient, var(--shadow-premium));
 
-		&::before, &::after {
+		&::before {
 			content: '';
 			position: absolute;
-			width: 24px;
-			height: 24px;
-			background: var(--color-surface-canvas);
-			border-radius: 50%;
-			top: 50%;
-			transform: translateY(-50%);
-			z-index: 2;
+			inset: 0.625rem;
+			border: 1px solid rgb(255 255 255 / 52%);
+			border-radius: 0.625rem;
+			pointer-events: none;
+			z-index: 0;
 		}
 
-		&::before { left: -12px; }
-		&::after { right: -12px; }
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background:
+				radial-gradient(
+					circle at top center,
+					rgb(255 255 255 / 34%),
+					transparent 38%
+				),
+				linear-gradient(180deg, transparent 0%, rgb(255 255 255 / 10%) 100%);
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		> * {
+			position: relative;
+			z-index: 1;
+		}
 
 		&__header {
-			background: var(--hero-card-bg, var(--color-surface-canvas));
-			padding: 2rem 1.5rem;
-			color: var(--color-text-emphasis);
+			padding: 2.25rem 1.75rem 1.5rem;
 			text-align: center;
-			position: relative;
-			border-bottom: 1px solid var(--hero-card-border-hairline);
+			display: grid;
+			gap: 0.75rem;
+		}
 
+		&__eyebrow {
+			font-family: var(--font-body, serif);
+			font-size: 0.68rem;
+			line-height: 1;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--color-text-muted);
+		}
+
+		&__seal {
+			width: 3.75rem;
+			aspect-ratio: 1;
+			margin-inline: auto;
+			position: relative;
+			border-radius: 50%;
+			border: 1px solid var(--color-action-accent);
+			box-shadow:
+				inset 0 0 0 0.35rem rgb(255 255 255 / 46%),
+				0 10px 24px rgb(25 18 24 / 8%);
+			opacity: 0.9;
+
+			&::before,
 			&::after {
 				content: '';
 				position: absolute;
-				bottom: 0;
-				left: 10%;
-				right: 10%;
-				height: 1px;
-				background: var(--hero-divider-color);
+				inset: 50%;
+				transform: translate(-50%, -50%);
+				border-radius: 50%;
 			}
-		}
 
-		&__ring {
-			width: 40px;
-			height: 40px;
-			border: 1px solid var(--color-action-accent);
-			border-radius: 50%;
-			margin: 0 auto 1rem;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			opacity: 0.8;
+			&::before {
+				width: 0.4rem;
+				height: 0.4rem;
+				background: var(--color-action-accent);
+				box-shadow: 0 0 0 0.35rem rgb(255 255 255 / 48%);
+			}
 
 			&::after {
-				content: 'H';
-				font-family: var(--font-display, serif);
-				font-size: 1.2rem;
+				width: 1.6rem;
+				height: 1.6rem;
+				border: 1px solid rgb(255 255 255 / 56%);
 			}
 		}
 
 		&__title {
+			margin: 0;
 			font-family: var(--font-display, serif);
-			font-size: 1.5rem;
+			font-size: clamp(1.35rem, 2vw + 1rem, 1.9rem);
+			font-weight: 500;
+			line-height: 1.1;
+			letter-spacing: 0.18em;
 			text-transform: uppercase;
-			letter-spacing: 4px;
 			color: var(--color-text-emphasis);
 		}
 
-		&__content {
-			padding: 3rem 2rem;
-			display: flex;
-			flex-direction: column;
-			gap: 2rem;
-			background-image: var(--family-texture-image);
-			background-opacity: 0.05;
+		&__subtitle {
+			max-width: 20rem;
+			margin: 0 auto;
+			font-family: var(--font-body, serif);
+			font-size: 0.85rem;
+			line-height: 1.6;
+			color: var(--color-text-secondary);
 		}
 
-		&__item {
-			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
+		&__body {
+			padding: 1.5rem 1.75rem 2rem;
+			display: grid;
+			gap: 1.5rem;
+		}
+
+		&__field,
+		&__quota {
+			display: grid;
+			gap: 0.625rem;
 			text-align: center;
+			justify-items: center;
+		}
 
-			.label {
-				font-size: 0.8rem;
-				text-transform: uppercase;
-				color: var(--color-text-muted);
-				letter-spacing: 2px;
-				font-family: var(--font-body);
-			}
+		&__label {
+			font-family: var(--font-body, serif);
+			font-size: 0.72rem;
+			line-height: 1.2;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+			color: var(--color-text-muted);
+		}
 
-			.value {
-				font-size: 1.75rem;
-				font-family: var(--font-display);
-				color: var(--color-text-primary);
-			}
-
-			&--large {
-				.value {
-					font-size: 3.5rem;
-					color: var(--color-text-emphasis);
-					line-height: 1;
-				}
-			}
+		&__guest {
+			margin: 0;
+			max-width: 16ch;
+			font-family: var(--font-display, serif);
+			font-size: clamp(1.9rem, 4vw + 1rem, 2.6rem);
+			font-weight: 400;
+			line-height: 0.95;
+			color: var(--color-text-primary);
+			text-wrap: balance;
+			overflow-wrap: anywhere;
 		}
 
 		&__divider {
+			position: relative;
 			height: 1px;
-			background: var(--hero-divider-color);
-			margin: 0.5rem 0;
-			opacity: 0.3;
+			margin: 0.25rem 0;
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--hero-divider-color) 18%,
+				var(--hero-divider-color) 82%,
+				transparent 100%
+			);
+			opacity: 0.9;
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 0.55rem;
+				height: 0.55rem;
+				transform: translate(-50%, -50%) rotate(45deg);
+				background: var(--color-surface-elevated);
+				border: 1px solid var(--hero-divider-color);
+				box-shadow: 0 0 0 0.2rem rgb(255 255 255 / 28%);
+			}
+		}
+
+		&__count-frame {
+			min-width: 8.5rem;
+			padding: 1rem 1.5rem 1.1rem;
+			border-radius: 1.125rem;
+			border: 1px solid rgb(255 255 255 / 54%);
+			background: linear-gradient(
+				180deg,
+				rgb(255 255 255 / 44%),
+				rgb(255 255 255 / 12%)
+			);
+			box-shadow:
+				inset 0 1px 0 rgb(255 255 255 / 70%),
+				0 12px 30px rgb(25 18 24 / 8%);
+		}
+
+		&__count {
+			display: block;
+			font-family: var(--font-display, serif);
+			font-size: clamp(3.25rem, 9vw, 4.75rem);
+			line-height: 0.85;
+			color: var(--color-text-emphasis);
 		}
 
 		&__footer {
-			padding: 1.5rem;
-			background: rgba(var(--color-text-primary-rgb), 0.03);
-			border-top: 1px solid var(--color-border-subtle);
+			padding: 1.25rem 1.75rem 1.75rem;
 			text-align: center;
-			font-size: 0.9rem;
-			color: var(--color-text-secondary);
-			font-family: var(--font-body);
-			font-style: italic;
+			border-top: 1px solid rgb(255 255 255 / 42%);
+			background: linear-gradient(
+				180deg,
+				rgb(255 255 255 / 8%),
+				rgb(255 255 255 / 16%)
+			);
+
+			p {
+				max-width: 22rem;
+				margin: 0 auto;
+				font-family: var(--font-body, serif);
+				font-size: 0.9rem;
+				line-height: 1.65;
+				color: var(--color-text-secondary);
+				font-style: italic;
+			}
+		}
+	}
+
+	@media (max-width: 480px) {
+		.access-card {
+			border-radius: 0.75rem;
+
+			&::before {
+				inset: 0.5rem;
+				border-radius: 0.5rem;
+			}
+
+			&__header {
+				padding: 2rem 1.25rem 1.35rem;
+			}
+
+			&__body {
+				padding: 1.35rem 1.25rem 1.75rem;
+			}
+
+			&__footer {
+				padding: 1.15rem 1.25rem 1.5rem;
+			}
+
+			&__title {
+				letter-spacing: 0.14em;
+			}
+
+			&__guest {
+				max-width: 13ch;
+			}
+
+			&__count-frame {
+				min-width: 7.5rem;
+				padding-inline: 1.25rem;
+			}
 		}
 	}
 </style>
