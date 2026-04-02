@@ -99,7 +99,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	container-type: inline-size;
 	width: clamp(min(320px, 92vw), 45vw, 720px);
 	aspect-ratio: var(--env-aspect-ratio, 1.35);
-	max-height: var(--env-max-height, min(85vh, 600px));
+	max-height: var(--env-max-height, min(55vh, 300px));
 	transform-style: preserve-3d;
 	border-radius: var(--env-paper-radius, 20px); // Fixes rectangular shadow and alignment
 
@@ -287,14 +287,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 .envelope-card__label,
 .envelope-card__details,
-.personalized-label {
-	font-family: var(--font-body);
-	font-size: 0.72rem;
-	text-transform: uppercase;
-	letter-spacing: 0.14em;
-	color: var(--color-text-secondary);
-}
-
 .envelope-card__name,
 .personalized-name,
 .envelope-name {
@@ -509,9 +501,8 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	margin-top: 0.85rem; // Buffer from the details divider
 
 	.personalized-label {
-		font-family: var(--font-body);
-		font-size: 0.6rem;
-		text-transform: uppercase;
+		font-family: var(--font-display);
+		font-size: 0.65rem;
 		letter-spacing: 0.2em;
 		color: var(--env-details-color);
 		opacity: 60%;
@@ -578,7 +569,7 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	width: 100%;
 	max-width: var(--env-details-max-width, 90cqw);
 	font-family: var(--font-body);
-	font-size: clamp(0.6rem, 2.5cqw, 0.74rem);
+	font-size: clamp(0.7rem, 3cqw, 0.84rem);
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	text-align: var(--env-details-text-align, center);
@@ -685,11 +676,9 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 
 .envelope-tooltip {
 	position: absolute;
-	bottom: 100%;
-	top: auto;
-	left: 50%;
-	transform: translateX(-50%) translateY(clamp(-1.5rem, -2.5vh, -1rem));
-	margin-bottom: 0.5rem; // Additional safe zone spacing
+	inset: 50% calc(100% + 0.75rem) auto auto;
+	transform: translateY(-50%);
+	margin-bottom: 0;
 	padding: 0.6rem 1rem;
 	white-space: nowrap;
 	pointer-events: none;
@@ -710,35 +699,34 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	&::after {
 		content: '';
 		position: absolute;
-		top: 100%;
-		left: 50%;
-		margin-top: -6px; // Overlaps nicely into the tooltip box
-		transform: translateX(-50%) rotate(45deg);
+		top: 50%;
+		left: 100%;
 		width: 10px;
 		height: 10px;
+		margin-top: 0;
+		transform: translate(-50%, -50%) rotate(45deg);
 		background: var(--env-tooltip-bg, var(--color-glass-bg));
+		border-top: 1px solid var(--env-tooltip-border, var(--color-glass-border));
 		border-right: 1px solid var(--env-tooltip-border, var(--color-glass-border));
-		border-bottom: 1px solid var(--env-tooltip-border, var(--color-glass-border));
-		border-top: none;
+		border-bottom: none;
 		border-left: none;
 	}
 
 	@include mixins.respond-below(md) {
-		top: auto;
-		bottom: 100%;
-		left: 50%;
+		inset: auto auto 100% 50%;
 		transform: translateX(-50%) translateY(-1rem);
+		margin-bottom: 0.5rem;
 		padding: 0.75rem 1.15rem;
 		font-size: 0.65rem;
 
 		&::after {
-			bottom: auto;
 			top: 100%;
 			left: 50%;
-			margin-top: -6px;
-			transform: translateX(-50%) rotate(45deg);
-			border-width: 0 1px 1px 0;
-			border-color: var(--env-tooltip-border, var(--color-glass-border));
+			transform: translate(-50%, -50%) rotate(45deg);
+			border-top: none;
+			border-left: none;
+			border-right: 1px solid var(--env-tooltip-border, var(--color-glass-border));
+			border-bottom: 1px solid var(--env-tooltip-border, var(--color-glass-border));
 		}
 	}
 }
@@ -865,12 +853,6 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 		padding-top: 1.25rem;
 	}
 
-	.envelope-details {
-		max-width: 15.5rem;
-		font-size: 0.72rem;
-		letter-spacing: 0.12em;
-	}
-
 	.envelope-external-instruction {
 		display: block; // Keep visible even on mobile as requested
 		margin-top: 1rem;
@@ -908,10 +890,27 @@ $ease-premium: cubic-bezier(0.34, 1.56, 0.64, 1); // Inertial Spring Effect
 	.tease-content-bottom {
 		gap: 0.25rem;
 	}
+}
 
-	.envelope-details {
-		font-size: 0.65rem;
-		max-width: 12.5rem;
+@include mixins.respond-to(md) {
+	.envelope-name[data-material='standard'] {
+		font-size: clamp(1.4rem, 5vw, 3rem);
+	}
+
+	.envelope-guest-personalized {
+		.personalized-label {
+			font-size: 0.61rem;
+			translate: 0 -15.5rem;
+		}
+
+		.personalized-name {
+			font-size: 0.9rem;
+			translate: 0 -15.5rem;
+		}
+	}
+
+	.envelope-tooltip {
+		font-size: 0.5rem;
 	}
 }
 

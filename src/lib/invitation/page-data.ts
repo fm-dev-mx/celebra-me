@@ -318,8 +318,9 @@ export function prepareInvitationPageData(input: {
 	eventEntry: EventContentEntry;
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
+	previewTheme?: string;
 }): InvitationPageData {
-	const viewModel = adaptEvent(input.eventEntry);
+	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
