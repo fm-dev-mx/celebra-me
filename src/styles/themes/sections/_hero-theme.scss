@@ -208,14 +208,14 @@
 		}
 
 		&:hover {
-			transform: translateY(-8px) scale(1.01);
+			transform: translateY(-3px) scale(1.012);
 
 			&::before {
 				background-position: 100% 100%;
 			}
 
 			img {
-				transform: scale(1.08);
+				transform: scale(1.02);
 			}
 		}
 	}
@@ -335,7 +335,7 @@
 			width: min(88%, 440px);
 			border-radius: 50% 50% 12px 12px / 20% 20% 12px 12px;
 			z-index: 5;
-			transform: scale(1.02);
+			transform: scale(1.01);
 			filter: brightness(1.05) contrast(1.02);
 			box-shadow:
 				var(--shadow-premium, 0 40px 100px rgb(var(--color-surface-dark-rgb) / 75%)),

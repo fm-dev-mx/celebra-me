@@ -76,12 +76,12 @@
 		}
 
 		&:hover {
-			transform: translateY(-5px) scale(1.02);
+			transform: translateY(-2px) scale(1.005);
 		}
 
 		&:hover .photo-image {
-			transform: scale(1.08);
-			filter: contrast(1.05) brightness(1.05);
+			transform: scale(1.015);
+			filter: contrast(1.03) brightness(1);
 		}
 
 		.photo-image {
@@ -134,9 +134,11 @@
 	0% {
 		filter: brightness(1);
 	}
+
 	50% {
 		filter: brightness(1.2);
 	}
+
 	100% {
 		filter: brightness(1);
 	}
