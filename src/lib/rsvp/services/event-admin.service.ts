@@ -131,24 +131,21 @@ export async function listHostEvents(input: {
 	hostUserId: string;
 	hostAccessToken: string;
 }): Promise<EventRecord[]> {
-	const result = await listHostEventsWithDebug({
-		...input,
-		expectedSlug: '',
-	});
+	const result = await listHostEventsWithDebug(input);
 	return result.events;
 }
 
 export async function listHostEventsWithDebug(input: {
 	hostUserId: string;
 	hostAccessToken: string;
-	expectedSlug?: string;
+	requestedSlug?: string;
 }): Promise<{ events: EventRecord[]; debug: DashboardEventListDebug }> {
-	const expectedSlug = sanitize(input.expectedSlug || '', 120);
-	const [ownerEvents, visibleEvents, memberships, expectedSlugEvent] = await Promise.all([
+	const requestedSlug = sanitize(input.requestedSlug || '', 120);
+	const [ownerEvents, visibleEvents, memberships, requestedSlugEvent] = await Promise.all([
 		findEventsByOwner(input.hostUserId, input.hostAccessToken),
 		findEventsForHost(input.hostAccessToken),
 		listMembershipsForHost(input.hostAccessToken),
-		expectedSlug ? findEventBySlugService(expectedSlug) : Promise.resolve(null),
+		requestedSlug ? findEventBySlugService(requestedSlug) : Promise.resolve(null),
 	]);
 
 	const eventsById = new Map<string, EventRecord>();
@@ -198,13 +195,15 @@ export async function listHostEventsWithDebug(input: {
 			})),
 			membershipResolvedEvents: membershipResolvedEvents.map(toDashboardEventItem),
 			unresolvedMembershipEventIds,
-			slugCheck: {
-				expectedSlug,
-				slugExistsInDb: Boolean(expectedSlugEvent),
-				eventId: expectedSlugEvent?.id || null,
-				ownerUserId: expectedSlugEvent?.ownerUserId || null,
-				title: expectedSlugEvent?.title || null,
-			},
+			requestedSlugCheck: requestedSlug
+				? {
+						requestedSlug,
+						slugExistsInDb: Boolean(requestedSlugEvent),
+						eventId: requestedSlugEvent?.id || null,
+						ownerUserId: requestedSlugEvent?.ownerUserId || null,
+						title: requestedSlugEvent?.title || null,
+					}
+				: null,
 		},
 	};
 }

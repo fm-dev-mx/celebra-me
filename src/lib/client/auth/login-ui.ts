@@ -65,7 +65,9 @@ export function validateRegisterForm(input: RegisterFormState): string | null {
 		return 'Ingresa tu contrasena para continuar con este metodo.';
 	}
 
-	// In rsvp, claimCode is handled by the backend.
-	// The mandatory check is removed to allow Superadmins to skip it.
+	if (!normalize(input.claimCode)) {
+		return 'Ingresa tu claimCode para continuar.';
+	}
+
 	return null;
 }

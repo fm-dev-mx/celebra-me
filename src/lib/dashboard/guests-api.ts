@@ -102,9 +102,13 @@ export class GuestsApi {
 	}
 
 	async listEvents(): Promise<DashboardEventListResponse> {
-		const path = shouldRequestDashboardDebug()
-			? '/api/dashboard/events?debug=1'
-			: '/api/dashboard/events';
+		let path = '/api/dashboard/events';
+		if (shouldRequestDashboardDebug()) {
+			const params = new URLSearchParams({ debug: '1' });
+			const slug = new URLSearchParams(window.location.search).get('slug');
+			if (slug) params.set('slug', slug);
+			path = `/api/dashboard/events?${params.toString()}`;
+		}
 		const result = await dashboardApi.get<DashboardEventListResponse>(path);
 		return this.handleResponse(result, 'events.list');
 	}

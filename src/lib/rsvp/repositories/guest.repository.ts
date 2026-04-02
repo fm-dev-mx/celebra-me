@@ -414,16 +414,3 @@ export async function updateGuestByInviteIdPublic(
 ): Promise<GuestInvitationRecord> {
 	return updateGuestRecord(`invite_id=eq.${encodeURIComponent(inviteId)}`, body);
 }
-
-export async function findGuestByLegacyIdentityPublic(input: {
-	eventSlug: string;
-	guestId: string;
-}): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`legacy_event_slug=eq.${encodeURIComponent(input.eventSlug)}&legacy_guest_id=eq.${encodeURIComponent(input.guestId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
-}

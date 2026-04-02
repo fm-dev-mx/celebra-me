@@ -181,13 +181,7 @@ describe('active guest dashboard hooks', () => {
 				memberships: [],
 				membershipResolvedEvents: [],
 				unresolvedMembershipEventIds: [],
-				slugCheck: {
-					expectedSlug: 'ximena-meza-trasvina',
-					slugExistsInDb: false,
-					eventId: null,
-					ownerUserId: null,
-					title: null,
-				},
+				requestedSlugCheck: null,
 			},
 		});
 
@@ -202,7 +196,7 @@ describe('active guest dashboard hooks', () => {
 		);
 
 		await waitFor(() => {
-			expect(result.current.error).toContain('no existe en la base activa');
+			expect(result.current.error).toContain('No hay eventos asignados');
 		});
 
 		expect(mockedGuestsApi.list).not.toHaveBeenCalled();
@@ -270,13 +264,7 @@ describe('active guest dashboard hooks', () => {
 				],
 				membershipResolvedEvents: [],
 				unresolvedMembershipEventIds: ['evt-hidden'],
-				slugCheck: {
-					expectedSlug: 'ximena-meza-trasvina',
-					slugExistsInDb: true,
-					eventId: 'evt-ximena',
-					ownerUserId: 'other-host',
-					title: 'XV Ximena',
-				},
+				requestedSlugCheck: null,
 			},
 		});
 

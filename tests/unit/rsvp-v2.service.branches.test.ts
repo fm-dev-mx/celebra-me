@@ -1,7 +1,4 @@
-import {
-	claimEventForUser,
-	claimEventForUserByClaimCode,
-} from '@/lib/rsvp/services/auth-access.service';
+import { claimEventForUserByClaimCode } from '@/lib/rsvp/services/auth-access.service';
 import {
 	createDashboardGuest,
 	deleteDashboardGuest,
@@ -373,21 +370,6 @@ describe('rsvp service branches', () => {
 		});
 	});
 
-	it('claimEventForUser wrapper remains compatible', async () => {
-		redeemClaimCodeRpcMock.mockResolvedValue({
-			success: true,
-			eventId: 'evt-1',
-			membershipRole: 'owner',
-			errorCode: null,
-		});
-		await claimEventForUser({
-			userId: 'host-2',
-			eventSlug: 'legacy-slug',
-			claimCode: 'legacy-code',
-		});
-		expect(redeemClaimCodeRpcMock).toHaveBeenCalled();
-	});
-
 	it('listHostEvents merges owner, visible, and membership-backed events without duplicates', async () => {
 		findEventsByOwnerMock.mockResolvedValue([
 			{
@@ -436,7 +418,7 @@ describe('rsvp service branches', () => {
 		expect(findEventByIdServiceMock).toHaveBeenCalledWith('evt-member');
 	});
 
-	it('listHostEventsWithDebug reports slug sync and unresolved memberships', async () => {
+	it('listHostEventsWithDebug reports requested slug diagnostics and unresolved memberships', async () => {
 		findEventsByOwnerMock.mockResolvedValue([]);
 		findEventsForHostMock.mockResolvedValue([]);
 		listMembershipsForHostMock.mockResolvedValue([
@@ -454,18 +436,18 @@ describe('rsvp service branches', () => {
 		findEventBySlugServiceMock.mockResolvedValueOnce({
 			...baseEvent,
 			id: 'evt-ximena',
-			slug: 'ximena-meza-trasvina',
+			slug: 'fixture-event',
 			ownerUserId: 'other-host',
 		});
 
 		const result = await listHostEventsWithDebug({
 			hostUserId: 'host-1',
 			hostAccessToken: 'token',
-			expectedSlug: 'ximena-meza-trasvina',
+			requestedSlug: 'fixture-event',
 		});
 
 		expect(result.events).toEqual([]);
-		expect(result.debug.slugCheck.slugExistsInDb).toBe(true);
+		expect(result.debug.requestedSlugCheck?.slugExistsInDb).toBe(true);
 		expect(result.debug.unresolvedMembershipEventIds).toEqual(['evt-hidden']);
 	});
 });

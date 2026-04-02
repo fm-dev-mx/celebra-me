@@ -26,7 +26,7 @@ export interface DashboardEventSessionDebug {
 }
 
 export interface DashboardEventSlugDebug {
-	expectedSlug: string;
+	requestedSlug: string;
 	slugExistsInDb: boolean;
 	eventId: string | null;
 	ownerUserId: string | null;
@@ -45,7 +45,7 @@ export interface DashboardEventListDebug {
 	}>;
 	membershipResolvedEvents: DashboardEventListItem[];
 	unresolvedMembershipEventIds: string[];
-	slugCheck: DashboardEventSlugDebug;
+	requestedSlugCheck: DashboardEventSlugDebug | null;
 }
 
 export interface DashboardEventListResponse {

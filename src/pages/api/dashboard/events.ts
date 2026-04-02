@@ -10,6 +10,7 @@ export const GET: APIRoute = async ({ request }) => {
 		const url = new URL(request.url);
 		const debugEnabled =
 			process.env.NODE_ENV !== 'production' && url.searchParams.get('debug') === '1';
+		const requestedSlug = url.searchParams.get('slug') || '';
 		const sessionSnapshot = await getSessionDebugSnapshotFromRequest(request);
 		if (!sessionSnapshot.context) {
 			throw new ApiError(
@@ -33,7 +34,7 @@ export const GET: APIRoute = async ({ request }) => {
 			const result = await listHostEventsWithDebug({
 				hostUserId: sessionSnapshot.context.userId,
 				hostAccessToken: sessionSnapshot.context.accessToken,
-				expectedSlug: 'ximena-meza-trasvina',
+				requestedSlug,
 			});
 			const debug = {
 				...result.debug,
@@ -54,7 +55,7 @@ export const GET: APIRoute = async ({ request }) => {
 				visibleEvents: debug.visibleEvents.length,
 				memberships: debug.memberships.length,
 				unresolvedMembershipEventIds: debug.unresolvedMembershipEventIds,
-				slugCheck: debug.slugCheck,
+				requestedSlugCheck: debug.requestedSlugCheck,
 				items: result.events.map((event) => event.id),
 			});
 			payload = {

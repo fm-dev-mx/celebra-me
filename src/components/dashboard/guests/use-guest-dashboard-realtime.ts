@@ -78,14 +78,14 @@ function resolveEventsLoadError(
 		if (debug?.session.reason !== 'session_role_resolved') {
 			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
 		}
-		if (debug?.slugCheck.slugExistsInDb === false) {
-			return `El evento ${debug.slugCheck.expectedSlug} no existe en la base activa. Revisa la sincronizacion de la tabla events.`;
-		}
 		if (debug?.memberships.length && debug.unresolvedMembershipEventIds.length) {
 			return 'La cuenta tiene membresias, pero el dashboard no puede resolver sus eventos. Revisa RLS o migraciones en Supabase.';
 		}
-		if (debug?.slugCheck.slugExistsInDb) {
-			return 'La sesion actual no tiene ownership ni membership sobre el evento ximena-meza-trasvina.';
+		if (debug?.requestedSlugCheck?.slugExistsInDb === false) {
+			return `El evento ${debug.requestedSlugCheck.requestedSlug} no existe en la base activa. Revisa la sincronizacion de la tabla events.`;
+		}
+		if (debug?.requestedSlugCheck?.slugExistsInDb) {
+			return 'La sesion actual no tiene ownership ni membership sobre el evento solicitado.';
 		}
 		return 'No hay eventos asignados a esta cuenta. Si la invitacion existe en contenido, falta sincronizar la tabla events o la membresia del host.';
 	}

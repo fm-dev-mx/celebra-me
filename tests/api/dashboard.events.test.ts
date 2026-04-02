@@ -89,9 +89,9 @@ describe('GET /api/dashboard/events', () => {
 				{
 					id: 'evt-1',
 					ownerUserId: 'host-1',
-					slug: 'ximena-meza-trasvina',
+					slug: 'fixture-event',
 					eventType: 'xv',
-					title: 'XV Ximena',
+					title: 'Fixture Event',
 					status: 'published',
 					publishedAt: null,
 					createdAt: new Date().toISOString(),
@@ -113,12 +113,12 @@ describe('GET /api/dashboard/events', () => {
 				memberships: [],
 				membershipResolvedEvents: [],
 				unresolvedMembershipEventIds: [],
-				slugCheck: {
-					expectedSlug: 'ximena-meza-trasvina',
+				requestedSlugCheck: {
+					requestedSlug: 'fixture-event',
 					slugExistsInDb: true,
 					eventId: 'evt-1',
 					ownerUserId: 'host-1',
-					title: 'XV Ximena',
+					title: 'Fixture Event',
 				},
 			},
 		});
@@ -127,7 +127,7 @@ describe('GET /api/dashboard/events', () => {
 			request: createMockRequest(
 				undefined,
 				undefined,
-				'http://localhost/api/dashboard/events?debug=1',
+				'http://localhost/api/dashboard/events?debug=1&slug=fixture-event',
 			),
 		} as never);
 		const body = (await response.json()) as { debug?: { session?: { email: string | null } } };

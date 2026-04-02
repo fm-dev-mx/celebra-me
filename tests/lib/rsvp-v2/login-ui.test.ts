@@ -45,7 +45,7 @@ describe('rsvp login UI helpers', () => {
 		).toBeNull();
 	});
 
-	it('allows register form with empty optional claim fields', () => {
+	it('requires claimCode for register form submissions', () => {
 		expect(
 			validateRegisterFormUi({
 				method: 'password',
@@ -53,7 +53,7 @@ describe('rsvp login UI helpers', () => {
 				password: 'Pass123!',
 				claimCode: '',
 			}),
-		).toBeNull();
+		).toBe('Ingresa tu claimCode para continuar.');
 	});
 
 	it('returns clear helper text per auth method', () => {
