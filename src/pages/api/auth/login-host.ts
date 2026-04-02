@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
-import { sendMagicLink, signInWithPassword } from '@/lib/rsvp/auth/auth-api';
+import {
+	findAuthUserByLoginIdentifier,
+	sendMagicLink,
+	signInWithPassword,
+} from '@/lib/rsvp/auth/auth-api';
 import {
 	buildIdleActivityCookie,
 	buildRefreshTokenCookie,
@@ -10,9 +14,11 @@ import {
 import {
 	assertSameOrigin,
 	assertValidEmail,
+	assertValidLoginIdentifier,
 	assertValidPassword,
 	enforceAuthRateLimit,
 	normalizeEmail,
+	normalizeLoginIdentifier,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
 
@@ -24,17 +30,18 @@ export const POST: APIRoute = async ({ request, url }) => {
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 
-		const email = normalizeEmail(body.email as string);
+		const identifier = normalizeLoginIdentifier(body.email as string);
 		const method = body.method === 'magic_link' ? 'magic_link' : 'password';
-		assertValidEmail(email);
-		await enforceAuthRateLimit({
-			request,
-			entityId: `login:${email}`,
-			maxHits: 8,
-			windowSec: 60,
-		});
 
 		if (method === 'magic_link') {
+			const email = normalizeEmail(body.email as string);
+			assertValidEmail(email);
+			await enforceAuthRateLimit({
+				request,
+				entityId: `login:${email}`,
+				maxHits: 8,
+				windowSec: 60,
+			});
 			await sendMagicLink({
 				email,
 				redirectTo: `${url.origin}/dashboard/invitados`,
@@ -45,12 +52,28 @@ export const POST: APIRoute = async ({ request, url }) => {
 			});
 		}
 
+		assertValidLoginIdentifier(identifier);
+		await enforceAuthRateLimit({
+			request,
+			entityId: `login:${identifier}`,
+			maxHits: 8,
+			windowSec: 60,
+		});
+
 		const password = sanitizePassword(body.password as string);
 		assertValidPassword(password);
+		let authEmail = identifier;
+		if (!identifier.includes('@')) {
+			const authUser = await findAuthUserByLoginIdentifier({ identifier });
+			if (!authUser?.email) {
+				throw new ApiError(401, 'unauthorized', 'Credenciales inválidas.');
+			}
+			authEmail = authUser.email;
+		}
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
 		try {
 			auth = await signInWithPassword({
-				email,
+				email: authEmail,
 				password,
 			});
 		} catch {

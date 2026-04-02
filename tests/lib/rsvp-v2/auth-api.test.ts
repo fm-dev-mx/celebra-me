@@ -1,5 +1,7 @@
 import {
+	createAuthUserByAdmin,
 	findAuthUserByEmail,
+	findAuthUserByLoginIdentifier,
 	sendMagicLink,
 	signInWithPassword,
 	signUpWithPassword,
@@ -52,7 +54,7 @@ describe('rsvp authApi', () => {
 		expect(signup.user?.id).toBe('u2');
 	});
 
-	it('sends magic link and finds auth user by email', async () => {
+	it('sends magic link and finds auth users by email or login alias', async () => {
 		global.fetch = jest
 			.fn()
 			.mockResolvedValueOnce({
@@ -62,7 +64,25 @@ describe('rsvp authApi', () => {
 			.mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
-					users: [{ id: 'u-admin', email: 'admin@test.com' }],
+					users: [
+						{
+							id: 'u-admin',
+							email: 'admin@test.com',
+							user_metadata: { login_alias: 'admin' },
+						},
+					],
+				}),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					users: [
+						{
+							id: 'u-admin',
+							email: 'admin@test.com',
+							user_metadata: { login_alias: 'admin' },
+						},
+					],
 				}),
 			}) as typeof fetch;
 
@@ -73,8 +93,57 @@ describe('rsvp authApi', () => {
 		const user = await findAuthUserByEmail({
 			email: 'admin@test.com',
 		});
+		const userByAlias = await findAuthUserByLoginIdentifier({
+			identifier: 'admin',
+		});
 
 		expect(magic.message_id).toBe('msg-1');
 		expect(user?.id).toBe('u-admin');
+		expect(userByAlias?.login_alias).toBe('admin');
+	});
+
+	it('creates auth users through the admin API with the service role key', async () => {
+		global.fetch = jest.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				user: {
+					id: 'u-created',
+					email: 'created@test.com',
+					created_at: '2026-04-01T00:00:00.000Z',
+					user_metadata: { login_alias: 'ximena_meza' },
+				},
+			}),
+		}) as typeof fetch;
+
+		const user = await createAuthUserByAdmin({
+			email: 'created@test.com',
+			password: 'TempPass123!',
+			loginAlias: 'ximena_meza',
+		});
+
+		expect(global.fetch).toHaveBeenCalledWith(
+			'https://project.supabase.co/auth/v1/admin/users',
+			expect.objectContaining({
+				method: 'POST',
+				headers: expect.objectContaining({
+					apikey: 'service',
+					Authorization: 'Bearer service',
+				}),
+				body: JSON.stringify({
+					email: 'created@test.com',
+					password: 'TempPass123!',
+					email_confirm: true,
+					user_metadata: {
+						login_alias: 'ximena_meza',
+					},
+				}),
+			}),
+		);
+		expect(user).toEqual({
+			id: 'u-created',
+			email: 'created@test.com',
+			created_at: '2026-04-01T00:00:00.000Z',
+			login_alias: 'ximena_meza',
+		});
 	});
 });

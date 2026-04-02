@@ -58,20 +58,20 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 					<div class="auth-field">
 						<label for="login-method">Como quieres entrar</label>
 						<select id="login-method" name="method">
-							<option value="password">Email + contrasena</option>
+							<option value="password">Correo o usuario + contrasena</option>
 							<option value="magic_link">Magic Link</option>
 						</select>
 						<p id="login-method-help" class="auth-hint" aria-live="polite"></p>
 					</div>
 
 					<div class="auth-field">
-						<label for="login-email">Correo electronico</label>
+						<label for="login-email">Correo electronico o usuario</label>
 						<input
 							id="login-email"
 							name="email"
-							type="email"
-							autocomplete="email"
-							placeholder="tu-correo@ejemplo.com"
+							type="text"
+							autocomplete="username"
+							placeholder="tu-correo@ejemplo.com o ximena_meza"
 						/>
 						<p id="login-email-error" class="field-error" aria-live="polite"></p>
 					</div>

@@ -11,7 +11,9 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		await expect(page.locator('#tab-register')).toContainText('Soy cliente nuevo');
 
 		// Check labels (accents might be missing in DOM as per inspection)
-		await expect(page.locator('label[for="login-email"]')).toContainText('Correo');
+		await expect(page.locator('label[for="login-email"]')).toContainText(
+			'Correo electronico o usuario',
+		);
 		await expect(page.locator('label[for="login-password"]')).toContainText('Contrasena');
 
 		await expect(page.locator('#login-submit')).toContainText('Continuar');
@@ -37,7 +39,7 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		// Verify Spanish error message
 		const status = page.locator('#auth-status');
 		await expect(status).toBeVisible();
-		await expect(status).toContainText('Escribe un correo valido');
+		await expect(status).toContainText('Escribe tu correo o usuario');
 	});
 
 	test('Scenario: Access restricted dashboard without session', async ({ page }) => {

@@ -8,6 +8,13 @@ interface AuthApiOptions {
 	useServiceRole?: boolean;
 }
 
+export interface AuthAdminUser {
+	id: string;
+	email?: string;
+	created_at?: string;
+	login_alias?: string;
+}
+
 function getSupabaseUrl(): string {
 	const value = getEnv('SUPABASE_URL');
 	if (!value) throw new Error('SUPABASE_URL no configurada.');
@@ -42,6 +49,21 @@ async function authRequest<T>(options: AuthApiOptions): Promise<T> {
 		throw new Error(`Supabase auth error (${response.status}).`);
 	}
 	return (await response.json()) as T;
+}
+
+function mapAuthAdminUser(user: {
+	id: string;
+	email?: string;
+	created_at?: string;
+	user_metadata?: Record<string, unknown>;
+}): AuthAdminUser {
+	const rawAlias = user.user_metadata?.login_alias;
+	return {
+		id: user.id,
+		email: user.email,
+		created_at: user.created_at,
+		login_alias: typeof rawAlias === 'string' ? rawAlias.trim().toLowerCase() : undefined,
+	};
 }
 
 export async function signInWithPassword(input: { email: string; password: string }): Promise<{
@@ -99,10 +121,15 @@ export async function sendMagicLink(input: {
 	});
 }
 
-export async function findAuthUserByEmail(input: {
-	email: string;
-}): Promise<{ id: string; email?: string } | null> {
-	const response = await authRequest<{ users?: Array<{ id: string; email?: string }> }>({
+export async function findAuthUserByEmail(input: { email: string }): Promise<AuthAdminUser | null> {
+	const response = await authRequest<{
+		users?: Array<{
+			id: string;
+			email?: string;
+			created_at?: string;
+			user_metadata?: Record<string, unknown>;
+		}>;
+	}>({
 		path: 'admin/users?page=1&per_page=1000',
 		method: 'GET',
 		useServiceRole: true,
@@ -111,21 +138,91 @@ export async function findAuthUserByEmail(input: {
 	const user = (response.users || []).find(
 		(item) => (item.email || '').trim().toLowerCase() === wanted,
 	);
-	return user ? { id: user.id, email: user.email } : null;
+	return user ? mapAuthAdminUser(user) : null;
+}
+
+export async function findAuthUserByLoginIdentifier(input: {
+	identifier: string;
+}): Promise<AuthAdminUser | null> {
+	const response = await authRequest<{
+		users?: Array<{
+			id: string;
+			email?: string;
+			created_at?: string;
+			user_metadata?: Record<string, unknown>;
+		}>;
+	}>({
+		path: 'admin/users?page=1&per_page=1000',
+		method: 'GET',
+		useServiceRole: true,
+	});
+	const wanted = input.identifier.trim().toLowerCase();
+	const user = (response.users || []).find((item) => {
+		const mapped = mapAuthAdminUser(item);
+		return (
+			mapped.login_alias === wanted || (mapped.email || '').trim().toLowerCase() === wanted
+		);
+	});
+	return user ? mapAuthAdminUser(user) : null;
 }
 
 export async function listAuthUsers(input?: {
 	page?: number;
 	perPage?: number;
-}): Promise<Array<{ id: string; email?: string; created_at?: string }>> {
+}): Promise<AuthAdminUser[]> {
 	const page = input?.page && input.page > 0 ? input.page : 1;
 	const perPage = input?.perPage && input.perPage > 0 ? Math.min(input.perPage, 1000) : 200;
 	const response = await authRequest<{
-		users?: Array<{ id: string; email?: string; created_at?: string }>;
+		users?: Array<{
+			id: string;
+			email?: string;
+			created_at?: string;
+			user_metadata?: Record<string, unknown>;
+		}>;
 	}>({
 		path: `admin/users?page=${page}&per_page=${perPage}`,
 		method: 'GET',
 		useServiceRole: true,
 	});
-	return response.users || [];
+	return (response.users || []).map(mapAuthAdminUser);
+}
+
+export async function createAuthUserByAdmin(input: {
+	email: string;
+	password: string;
+	loginAlias?: string;
+}): Promise<AuthAdminUser> {
+	const response = await authRequest<{
+		user?:
+			| {
+					id: string;
+					email?: string;
+					created_at?: string;
+					user_metadata?: Record<string, unknown>;
+			  }
+			| undefined;
+		id?: string;
+		email?: string;
+		created_at?: string;
+		user_metadata?: Record<string, unknown>;
+	}>({
+		path: 'admin/users',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			email: input.email,
+			password: input.password,
+			email_confirm: true,
+			user_metadata: input.loginAlias
+				? {
+						login_alias: input.loginAlias,
+					}
+				: undefined,
+		},
+	});
+	const user = response.user || response;
+	if (!user.id) {
+		throw new Error('Supabase auth error: created user id was not returned.');
+	}
+	return mapAuthAdminUser(user);
 }

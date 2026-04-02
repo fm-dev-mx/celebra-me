@@ -4,8 +4,13 @@ import { sanitize } from '@/lib/rsvp/core/utils';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;
+const LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
 
 export function normalizeEmail(value: unknown): string {
+	return sanitize(value, 320).toLowerCase();
+}
+
+export function normalizeLoginIdentifier(value: unknown): string {
 	return sanitize(value, 320).toLowerCase();
 }
 
@@ -24,6 +29,23 @@ export function sanitizeClaimCode(value: unknown): string {
 export function assertValidEmail(email: string): void {
 	if (!email || !EMAIL_PATTERN.test(email)) {
 		throw new ApiError(400, 'bad_request', 'El correo electrónico es inválido.');
+	}
+}
+
+export function isValidLoginAlias(value: string): boolean {
+	return LOGIN_ALIAS_PATTERN.test(value);
+}
+
+export function assertValidLoginIdentifier(identifier: string): void {
+	if (!identifier) {
+		throw new ApiError(400, 'bad_request', 'El usuario de acceso es inválido.');
+	}
+	if (identifier.includes('@')) {
+		assertValidEmail(identifier);
+		return;
+	}
+	if (!isValidLoginAlias(identifier)) {
+		throw new ApiError(400, 'bad_request', 'El usuario de acceso es inválido.');
 	}
 }
 

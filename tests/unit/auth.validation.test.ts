@@ -1,5 +1,6 @@
 import {
 	isValidEmail,
+	isValidLoginIdentifier,
 	validateLoginForm,
 	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
@@ -37,9 +38,20 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 			).toBeNull();
 		});
 
-		test('should return Spanish error for invalid email', () => {
+		test('should accept a valid alias for password login', () => {
+			expect(isValidLoginIdentifier('ximena_meza')).toBe(true);
+			expect(
+				validateLoginForm({
+					...baseInput,
+					email: 'ximena_meza',
+					password: 'ximenameza2026',
+				}),
+			).toBeNull();
+		});
+
+		test('should return Spanish error for invalid login identifier', () => {
 			const result = validateLoginForm({ ...baseInput, email: 'invalid' });
-			expect(result).toBe('Escribe un correo valido para continuar.');
+			expect(result).toBe('Escribe un correo o usuario valido para continuar.');
 		});
 
 		test('should return Spanish error for missing password in password method', () => {

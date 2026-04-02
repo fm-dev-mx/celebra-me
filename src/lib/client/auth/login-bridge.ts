@@ -2,6 +2,7 @@
 import {
 	getMethodHelpText,
 	isValidEmail,
+	isValidLoginIdentifier,
 	validateLoginForm,
 	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
@@ -111,9 +112,21 @@ export function initLoginFlow() {
 	const validateLoginClient = (payload: import('./login-ui').LoginFormState) => {
 		const genericError = validateLoginForm(payload);
 		if (!genericError) return null;
-		if (!payload.email.trim() || !isValidEmail(payload.email)) {
+		if (!payload.email.trim()) {
+			const message =
+				payload.method === 'magic_link'
+					? 'Escribe un correo valido para continuar.'
+					: 'Escribe tu correo o usuario para continuar.';
+			setFieldError('login-email', message);
+			return message;
+		}
+		if (payload.method === 'magic_link' && !isValidEmail(payload.email)) {
 			setFieldError('login-email', 'Escribe un correo valido para continuar.');
 			return 'Escribe un correo valido para continuar.';
+		}
+		if (payload.method === 'password' && !isValidLoginIdentifier(payload.email)) {
+			setFieldError('login-email', 'Escribe un correo o usuario valido para continuar.');
+			return 'Escribe un correo o usuario valido para continuar.';
 		}
 		if (payload.method === 'password' && !payload.password.trim()) {
 			setFieldError(

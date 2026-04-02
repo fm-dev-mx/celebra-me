@@ -1,6 +1,7 @@
 import {
 	getMethodHelpText,
 	isValidEmail,
+	isValidLoginIdentifier,
 	validateLoginForm,
 	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
@@ -9,6 +10,12 @@ describe('rsvp login UI helpers', () => {
 	it('validates email format', () => {
 		expect(isValidEmail('host@test.com')).toBe(true);
 		expect(isValidEmail('host@test')).toBe(false);
+	});
+
+	it('validates login identifiers for password access', () => {
+		expect(isValidLoginIdentifier('host@test.com')).toBe(true);
+		expect(isValidLoginIdentifier('ximena_meza')).toBe(true);
+		expect(isValidLoginIdentifier('xx')).toBe(false);
 	});
 
 	it('validates login form based on selected method', () => {
@@ -25,6 +32,14 @@ describe('rsvp login UI helpers', () => {
 				method: 'magic_link',
 				email: 'host@test.com',
 				password: '',
+			}),
+		).toBeNull();
+
+		expect(
+			validateLoginForm({
+				method: 'password',
+				email: 'ximena_meza',
+				password: 'ximenameza2026',
 			}),
 		).toBeNull();
 	});
