@@ -123,7 +123,7 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
-			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
 		});
 
 		it('should show error when confirm button is clicked without selection', async () => {
@@ -289,7 +289,7 @@ describe('RSVP Component', () => {
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 
 			expect(screen.getByLabelText(/Número total de asistentes/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Notas adicionales/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Notas/i)).toBeInTheDocument();
 		});
 	});
 

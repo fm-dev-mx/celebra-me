@@ -240,8 +240,8 @@ describe('auth endpoints', () => {
 			request: createMockRequest(
 				undefined,
 				{
-					Origin: 'http://localhost',
-					Referer: 'http://localhost/dashboard/invitados',
+					Origin: 'http://localhost:4321',
+					Referer: 'http://localhost:4321/dashboard/invitados',
 					Host: 'localhost:4321',
 				},
 				'http://localhost:4321/api/auth/logout',

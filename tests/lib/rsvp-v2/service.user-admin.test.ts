@@ -86,6 +86,7 @@ describe('rsvp user admin service', () => {
 			email: 'new-client@test.com',
 			role: 'host_client',
 			createdAt: '2026-04-01T00:00:00.000Z',
+			assignedEvents: [],
 		});
 		expect(result.credentials.temporaryPassword).toBe('newclienttes2026');
 		expect(logAdminActionMock).toHaveBeenCalledWith(
@@ -112,7 +113,7 @@ describe('rsvp user admin service', () => {
 				role: 'super_admin',
 				actorUserId: 'admin-1',
 			}),
-		).rejects.toMatchObject<ApiError>({
+		).rejects.toMatchObject<Partial<ApiError>>({
 			status: 409,
 			code: 'conflict',
 		});

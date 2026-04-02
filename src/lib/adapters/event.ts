@@ -112,7 +112,15 @@ export function adaptEvent(
 
 	// Create a safe context for adaptation, overriding the preset if requested
 	const adapterData = previewTheme
-		? { ...originalData, theme: { ...originalData.theme, preset: previewTheme } }
+		? {
+				...originalData,
+				theme: { ...originalData.theme, preset: previewTheme },
+				// Clear explicit variants to let the preview theme take over
+				envelope: originalData.envelope
+					? { ...originalData.envelope, variant: undefined }
+					: undefined,
+				sectionStyles: {},
+			}
 		: originalData;
 
 	const context = buildContext({ ...event, data: adapterData }, eventSlug);

@@ -1,5 +1,5 @@
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
-import { logoutAndRedirect } from '@/lib/client/auth/logout-client';
+import { logoutAndRedirect, authLogoutHelper } from '@/lib/client/auth/logout-client';
 
 jest.mock('@/lib/client/auth/auth-bridge-api', () => ({
 	authBridgeApi: {
@@ -9,31 +9,13 @@ jest.mock('@/lib/client/auth/auth-bridge-api', () => ({
 
 describe('logoutAndRedirect', () => {
 	const logoutMock = authBridgeApi.logout as jest.MockedFunction<typeof authBridgeApi.logout>;
-	const originalLocation = window.location;
 	const assignMock = jest.fn();
 	const removeItemMock = jest.fn();
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		Object.defineProperty(window, 'location', {
-			configurable: true,
-			value: {
-				assign: assignMock,
-			},
-		});
-		Object.defineProperty(window, 'localStorage', {
-			configurable: true,
-			value: {
-				removeItem: removeItemMock,
-			},
-		});
-	});
-
-	afterAll(() => {
-		Object.defineProperty(window, 'location', {
-			configurable: true,
-			value: originalLocation,
-		});
+		jest.spyOn(authLogoutHelper, 'redirect').mockImplementation(assignMock);
+		jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(removeItemMock);
 	});
 
 	it('clears local storage and redirects to /login after a successful logout', async () => {

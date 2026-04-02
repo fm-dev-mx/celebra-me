@@ -1,19 +1,24 @@
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
 import { GET as getDashboardGuests } from '@/pages/api/dashboard/guests';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { requireHostSession, getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
+import { requireHostSession, getSessionContextFromRequest, getSessionDebugSnapshotFromRequest } from '@/lib/rsvp/auth/auth';
 import { buildHostLoginRedirect } from '@/lib/rsvp/auth/login';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
 	getSessionContextFromRequest: jest.fn(),
+	getSessionDebugSnapshotFromRequest: jest.fn(),
 }));
 
 const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
 const getSessionContextFromRequestMock = getSessionContextFromRequest as jest.MockedFunction<
 	typeof getSessionContextFromRequest
 >;
+const getSessionDebugSnapshotFromRequestMock =
+	getSessionDebugSnapshotFromRequest as jest.MockedFunction<
+		typeof getSessionDebugSnapshotFromRequest
+	>;
 
 describe('dashboard auth flow', () => {
 	afterEach(() => {
@@ -25,6 +30,12 @@ describe('dashboard auth flow', () => {
 			new ApiError(401, 'unauthorized', 'No autorizado.'),
 		);
 		getSessionContextFromRequestMock.mockResolvedValue(null);
+		getSessionDebugSnapshotFromRequestMock.mockResolvedValue({
+			hasAccessToken: false,
+			tokenSource: 'none',
+			reason: 'missing_access_token',
+			context: null,
+		});
 
 		const eventsResp = await getDashboardEvents({
 			request: createMockRequest(),

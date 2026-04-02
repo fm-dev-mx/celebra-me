@@ -158,9 +158,12 @@ function buildWrapperData(
 function resolveFooterVariant(
 	eventEntry: EventContentEntry,
 	themePreset: ThemeConfig['preset'],
+	isPreview?: boolean,
 ): SharedSectionVariant {
-	const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
-	if (configuredVariant) return configuredVariant;
+	if (!isPreview) {
+		const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
+		if (configuredVariant) return configuredVariant;
+	}
 
 	if (
 		themePreset === 'jewelry-box' ||
@@ -342,7 +345,7 @@ export function prepareInvitationPageData(input: {
 	const showEnvelope = wrapper.showEnvelope;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
-	const footerVariant = resolveFooterVariant(input.eventEntry, theme.preset);
+	const footerVariant = resolveFooterVariant(input.eventEntry, theme.preset, !!input.previewTheme);
 
 	return {
 		eventSlug: viewModel.id,
