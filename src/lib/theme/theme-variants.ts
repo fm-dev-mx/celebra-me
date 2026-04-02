@@ -47,6 +47,8 @@ export const SHARED_SECTION_VARIANTS = [
 	'editorial',
 ] as const;
 
+export const INTERLUDE_PARALLAX_VARIANTS = ['editorial', ...PREMIERE_VARIANT_FAMILY] as const;
+
 export const ITINERARY_VARIANTS = [
 	'base',
 	'jewelry-box',
@@ -106,3 +108,9 @@ export const LEGACY_INDICATION_ICON_MAP: Record<IndicationIconKey, IndicationIco
 	'western-hat': 'western-hat',
 	dress: 'Gift',
 };
+
+export function supportsInterludeParallaxVariant(
+	variant: string | undefined,
+): variant is (typeof INTERLUDE_PARALLAX_VARIANTS)[number] {
+	return Boolean(variant && (INTERLUDE_PARALLAX_VARIANTS as readonly string[]).includes(variant));
+}

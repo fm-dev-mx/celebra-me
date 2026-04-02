@@ -55,16 +55,24 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 			</div>
 
 			<div className="header-actions">
-				<button type="button" onClick={onExportClick} className="btn-secondary">
+				<button
+					type="button"
+					onClick={onExportClick}
+					className="btn-secondary btn--utility"
+				>
 					Exportar CSV
 				</button>
-				<button type="button" onClick={onImportClick} className="btn-secondary">
+				<button
+					type="button"
+					onClick={onImportClick}
+					className="btn-secondary btn--utility"
+				>
 					Importar lista
 				</button>
 				<button
 					type="button"
 					onClick={onRefreshClick}
-					className="btn-secondary"
+					className="btn-secondary btn--utility"
 					title="Recargar lista"
 				>
 					Actualizar

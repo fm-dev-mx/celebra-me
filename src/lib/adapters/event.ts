@@ -74,19 +74,9 @@ function buildThemeConfig(
 
 // Moved builders to event-view-models.ts: buildHero, buildEnvelope, buildGalleryItems, etc.
 
-function buildContext(
-	event: EventContentEntry,
-	eventSlug: string,
-	previewTheme?: string,
-): AdaptationContext {
+function buildContext(event: EventContentEntry, eventSlug: string): AdaptationContext {
 	const { data } = event;
-	let normalizedPreset = pickPreset(data.theme.preset);
-
-	if (previewTheme && normalizedPreset.startsWith('premiere-')) {
-		if (previewTheme.startsWith('premiere-')) {
-			normalizedPreset = previewTheme as ThemePreset;
-		}
-	}
+	const normalizedPreset = pickPreset(data.theme.preset);
 
 	return {
 		data,
@@ -112,10 +102,10 @@ function buildContext(
 	};
 }
 
-export function adaptEvent(event: EventContentEntry, previewTheme?: string): InvitationViewModel {
+export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 	const { data, id: contentEntryId } = event;
 	const eventSlug = getContentEntrySlug(contentEntryId);
-	const context = buildContext(event, eventSlug, previewTheme);
+	const context = buildContext(event, eventSlug);
 	const theme = buildThemeConfig(data, context.normalizedPreset);
 	const hero = buildHero(context);
 	const envelope = buildEnvelope(context);
