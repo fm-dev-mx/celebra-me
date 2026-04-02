@@ -70,7 +70,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 	return (
 		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
 			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-				<h3>Importador Mágico ✨</h3>
+				<h3>Importación de invitados</h3>
 				<p className="dashboard-modal__description">
 					Pega aquí tus invitados desde Excel o Google Sheets, o arrastra un archivo CSV.
 				</p>
@@ -150,7 +150,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 							onClose();
 						}}
 					>
-						{parsing ? 'Procesando...' : 'Importar Todo'}
+						{parsing ? 'Procesando...' : 'Importar lista'}
 					</button>
 				</div>
 			</div>

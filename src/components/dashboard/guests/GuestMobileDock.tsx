@@ -5,6 +5,7 @@ interface GuestMobileDockProps {
 	loading: boolean;
 	hasPendingGenerated: boolean;
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
+	createDisabled?: boolean;
 	onCreate: () => void;
 	onOpenNextAction: () => void;
 	onStatusChange: (status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
@@ -14,6 +15,7 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 	loading,
 	hasPendingGenerated,
 	status,
+	createDisabled = false,
 	onCreate,
 	onOpenNextAction,
 	onStatusChange,
@@ -28,8 +30,13 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 
 	return createPortal(
 		<div className="dashboard-guests__mobile-dock">
-			<button type="button" className="dock-item" onClick={onCreate}>
-				<span className="dock-icon">➕</span>
+			<button
+				type="button"
+				className="dock-item"
+				onClick={onCreate}
+				disabled={createDisabled}
+			>
+				<span className="dock-icon">+</span>
 				<span className="dock-label">Nuevo</span>
 			</button>
 
@@ -39,8 +46,8 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 				disabled={loading || !hasPendingGenerated}
 				onClick={onOpenNextAction}
 			>
-				<span className="dock-icon">🚀</span>
-				<span className="dock-label">Siguiente</span>
+				<span className="dock-icon">•</span>
+				<span className="dock-label">Continuar</span>
 			</button>
 
 			<div className="dock-item dock-item--filter">
@@ -50,9 +57,10 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 					onChange={(event) => onStatusChange(event.target.value as typeof status)}
 				>
 					<option value="all">Filtrar</option>
-					<option value="pending">⏳ Pend.</option>
-					<option value="confirmed">✅ Conf.</option>
-					<option value="declined">❌ Decl.</option>
+					<option value="pending">Pendientes</option>
+					<option value="confirmed">Confirmados</option>
+					<option value="declined">Declinados</option>
+					<option value="viewed">Vistos</option>
 				</select>
 				<span className="dock-label">Estado</span>
 			</div>

@@ -47,19 +47,19 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 					onChange={(event) => onStatusChange(event.target.value as typeof status)}
 				>
 					<option value="all">Todos los invitados</option>
-					<option value="pending">⏳ Pendientes</option>
-					<option value="confirmed">✅ Confirmados</option>
-					<option value="declined">❌ Declinados</option>
-					<option value="viewed">👁️ Vistos</option>
+					<option value="pending">Pendientes</option>
+					<option value="confirmed">Confirmados</option>
+					<option value="declined">Declinados</option>
+					<option value="viewed">Vistos</option>
 				</select>
 			</div>
 
 			<div className="header-actions">
 				<button type="button" onClick={onExportClick} className="btn-secondary">
-					Exportar
+					Exportar CSV
 				</button>
 				<button type="button" onClick={onImportClick} className="btn-secondary">
-					Importar
+					Importar lista
 				</button>
 				<button
 					type="button"
@@ -67,7 +67,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 					className="btn-secondary"
 					title="Recargar lista"
 				>
-					🔄 Actualizar
+					Actualizar
 				</button>
 				<button
 					type="button"
@@ -75,7 +75,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 					className="btn-primary"
 					disabled={createDisabled}
 				>
-					+ Nuevo invitado
+					Nuevo invitado
 				</button>
 			</div>
 		</div>

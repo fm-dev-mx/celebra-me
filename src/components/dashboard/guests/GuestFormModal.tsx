@@ -276,9 +276,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											}
 											className="dashboard-form-field__input"
 										>
-											<option value="pending">⏳ Pendiente</option>
-											<option value="confirmed">✅ Confirmado</option>
-											<option value="declined">❌ Declinado</option>
+											<option value="pending">Pendiente</option>
+											<option value="confirmed">Confirmado</option>
+											<option value="declined">Declinado</option>
 										</select>
 									</div>
 									<div className="dashboard-form-field">
@@ -312,7 +312,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							</div>
 						)}
 
-						{localError && <div className="dashboard-error">⚠️ {localError}</div>}
+						{localError && <div className="dashboard-error">{localError}</div>}
 					</form>
 				</div>
 
@@ -333,7 +333,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							onClick={onPostpone}
 							disabled={saving}
 						>
-							⏭️ Posponer
+							Posponer
 						</button>
 					)}
 
@@ -360,7 +360,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							{saving
 								? 'Guardando...'
 								: isInvitationFactory
-									? '✅ Confirmar y Enviar'
+									? 'Confirmar y enviar'
 									: mode === 'create'
 										? 'Guardar'
 										: 'Actualizar'}
