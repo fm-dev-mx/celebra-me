@@ -15,8 +15,21 @@ export interface UsersListResponse {
 }
 
 export interface CreateUserDTO {
+	email?: string;
+	role: AppUserRole;
+}
+
+export interface CreateUserResponse {
+	item: UserListItemDTO;
+	credentials: {
+		temporaryPassword: string;
+	};
+}
+
+export interface CreatedUserCredentialsDTO {
 	email: string;
 	role: AppUserRole;
+	temporaryPassword: string;
 }
 
 export interface UpdateUserRoleDTO {

@@ -9,6 +9,7 @@ import type {
 	UserListItemDTO,
 	UsersListResponse,
 	CreateUserDTO,
+	CreateUserResponse,
 	UpdateUserRoleDTO,
 	UserRoleChangeResponse,
 } from './dto/users';
@@ -68,23 +69,23 @@ export class AdminApi {
 		return this.handleResponse(result);
 	}
 
-	async createUser(payload: CreateUserDTO): Promise<UserListItemDTO> {
-		const result = await dashboardApi.post<{ item: UserListItemDTO }>(
+	async createUser(payload: CreateUserDTO): Promise<CreateUserResponse> {
+		const result = await dashboardApi.post<CreateUserResponse>(
 			'/api/dashboard/admin/users',
 			payload,
 		);
-		return this.handleResponse(result).item;
+		return this.handleResponse(result);
 	}
 
 	async updateUserRole(
 		userId: string,
 		payload: UpdateUserRoleDTO,
 	): Promise<UserRoleChangeResponse> {
-		const result = await dashboardApi.patch<UserRoleChangeResponse>(
+		const result = await dashboardApi.patch<{ item: UserRoleChangeResponse }>(
 			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/role`,
 			payload,
 		);
-		return this.handleResponse(result);
+		return this.handleResponse(result).item;
 	}
 
 	// Claim Codes

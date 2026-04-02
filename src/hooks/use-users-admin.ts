@@ -2,12 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import type { AdminUserListItemDTO } from '@/interfaces/dashboard/admin.interface';
 import { adminApi } from '@/lib/dashboard/admin-api';
+import type { CreateUserDTO, CreatedUserCredentialsDTO } from '@/lib/dashboard/dto/users';
 
 export function useUsersAdmin() {
 	const [items, setItems] = useState<AdminUserListItemDTO[]>([]);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+	const [createModalOpen, setCreateModalOpen] = useState(false);
+	const [creating, setCreating] = useState(false);
+	const [createdUser, setCreatedUser] = useState<CreatedUserCredentialsDTO | null>(null);
 
 	const loadUsers = useCallback(async () => {
 		setLoading(true);
@@ -54,12 +58,52 @@ export function useUsersAdmin() {
 		[items, loadUsers],
 	);
 
+	const openCreateModal = useCallback(() => {
+		setError('');
+		setCreatedUser(null);
+		setCreateModalOpen(true);
+	}, []);
+
+	const closeCreateModal = useCallback(() => {
+		setError('');
+		setCreating(false);
+		setCreatedUser(null);
+		setCreateModalOpen(false);
+	}, []);
+
+	const createUser = useCallback(
+		async (payload: CreateUserDTO) => {
+			setCreating(true);
+			setError('');
+			try {
+				const result = await adminApi.createUser(payload);
+				setCreatedUser({
+					email: result.item.email,
+					role: result.item.role,
+					temporaryPassword: result.credentials.temporaryPassword,
+				});
+				await loadUsers();
+			} catch (err) {
+				setError(err instanceof Error ? err.message : 'No se pudo crear el usuario.');
+			} finally {
+				setCreating(false);
+			}
+		},
+		[loadUsers],
+	);
+
 	return {
 		items,
 		error,
 		loading,
 		updatingUserId,
+		createModalOpen,
+		creating,
+		createdUser,
 		updateUserRole,
+		openCreateModal,
+		closeCreateModal,
+		createUser,
 		reloadUsers: loadUsers,
 	};
 }

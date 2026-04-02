@@ -4,6 +4,8 @@
 
 import { z } from 'zod';
 
+const ADMIN_LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
+
 // =============================================================================
 // Common Schemas
 // =============================================================================
@@ -101,6 +103,29 @@ export const UpdateUserRoleSchema = z.object({
 	_version: TimestampSchema.optional(),
 });
 
+export const CreateUserSchema = z
+	.object({
+		email: z
+			.string()
+			.trim()
+			.max(320, { message: 'Email cannot exceed 320 characters' })
+			.optional()
+			.default('')
+			.transform((value) => value.toLowerCase()),
+		role: AppUserRoleSchema,
+	})
+	.refine(
+		(input) =>
+			input.email === '' ||
+			EmailSchema.safeParse(input.email).success ||
+			ADMIN_LOGIN_ALIAS_PATTERN.test(input.email),
+		{
+			path: ['email'],
+			message: 'Must be a valid email address or login alias',
+		},
+	);
+
+export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserRoleInput = z.infer<typeof UpdateUserRoleSchema>;
 
 // =============================================================================
