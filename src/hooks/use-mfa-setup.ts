@@ -5,9 +5,12 @@ import {
 	getMfaElements,
 	getMfaErrorMessage,
 	pickLatestVerifiedTotpFactor,
+	pickUnverifiedTotpFactors,
 	renderMfaPanel,
 	setMfaStatus,
+	syncMfaSession,
 } from '@/lib/client/mfa-setup';
+import { logoutAndRedirect } from '@/lib/client/auth/logout-client';
 
 export function useMfaSetup() {
 	useEffect(() => {
@@ -21,6 +24,7 @@ export function useMfaSetup() {
 			appEl,
 			qrContainer,
 			verifyButton,
+			logoutButton,
 			codeInput,
 			statusEl,
 			titleEl,
@@ -37,8 +41,17 @@ export function useMfaSetup() {
 		const supabase = createMfaClient(url, key);
 		const sessionToken = getCookie('sb-mfa-session');
 		const refreshToken = getCookie('sb-mfa-refresh');
+		let idleVerifyLabel = verifyButton.textContent || 'Verificar y activar';
 		let factorId = '';
 		let challengeId = '';
+
+		const setBusyState = (busy: boolean, label?: string) => {
+			verifyButton.disabled = busy;
+			verifyButton.textContent = label || idleVerifyLabel;
+			if (logoutButton) {
+				logoutButton.disabled = busy;
+			}
+		};
 
 		const init = async () => {
 			try {
@@ -60,6 +73,10 @@ export function useMfaSetup() {
 				}
 
 				const factorsResponse = await supabase.auth.mfa.listFactors();
+				if (factorsResponse.error) {
+					throw factorsResponse.error;
+				}
+
 				const allFactors = factorsResponse.data?.all ?? [];
 				const verifiedFactor = pickLatestVerifiedTotpFactor(allFactors);
 
@@ -69,6 +86,7 @@ export function useMfaSetup() {
 						{ qrContainer, verifyButton, titleEl, descriptionEl, hintEl },
 						'verify',
 					);
+					idleVerifyLabel = verifyButton.textContent || idleVerifyLabel;
 
 					const challengeResponse = await supabase.auth.mfa.challenge({ factorId });
 					if (challengeResponse.error) {
@@ -78,10 +96,20 @@ export function useMfaSetup() {
 					challengeId = challengeResponse.data.id;
 					setMfaStatus(
 						statusEl,
-						'Introduce tu código de verificación para continuar.',
+						'Tu cuenta ya tiene MFA activo. Aquí no se genera un QR nuevo: introduce el código actual de tu app para continuar.',
 						'info',
 					);
 					return;
+				}
+
+				const unverifiedFactors = pickUnverifiedTotpFactors(allFactors);
+				for (const factor of unverifiedFactors) {
+					const cleanupResponse = await supabase.auth.mfa.unenroll({
+						factorId: factor.id,
+					});
+					if (cleanupResponse.error) {
+						throw cleanupResponse.error;
+					}
 				}
 
 				const enrollResponse = await supabase.auth.mfa.enroll({ factorType: 'totp' });
@@ -94,7 +122,9 @@ export function useMfaSetup() {
 					{ qrContainer, verifyButton, titleEl, descriptionEl, hintEl },
 					'enroll',
 					enrollResponse.data.totp.qr_code,
+					enrollResponse.data.totp.secret,
 				);
+				idleVerifyLabel = verifyButton.textContent || idleVerifyLabel;
 				setMfaStatus(
 					statusEl,
 					'Escanea el código QR y luego introduce el código de tu app.',
@@ -113,7 +143,16 @@ export function useMfaSetup() {
 				return;
 			}
 
-			verifyButton.disabled = true;
+			if (!factorId) {
+				setMfaStatus(
+					statusEl,
+					'No se pudo preparar la verificación MFA. Recarga la página.',
+					'error',
+				);
+				return;
+			}
+
+			setBusyState(true, 'Validando acceso...');
 			setMfaStatus(statusEl, 'Validando código...', 'info');
 
 			try {
@@ -134,13 +173,24 @@ export function useMfaSetup() {
 					throw verifyResponse.error;
 				}
 
+				await syncMfaSession(
+					verifyResponse.data.access_token,
+					verifyResponse.data.refresh_token,
+				);
+
 				setMfaStatus(statusEl, 'Verificación exitosa. Redirigiendo al panel...', 'success');
-				window.location.href = '/dashboard/admin';
+				window.location.assign('/dashboard/admin');
 			} catch (error) {
 				setMfaStatus(statusEl, getMfaErrorMessage(error), 'error');
 			} finally {
-				verifyButton.disabled = false;
+				setBusyState(false);
 			}
+		};
+
+		const onLogout = async () => {
+			setBusyState(true, 'Cerrando sesión...');
+			setMfaStatus(statusEl, 'Cerrando sesión segura...', 'info');
+			await logoutAndRedirect('/login');
 		};
 
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -152,10 +202,12 @@ export function useMfaSetup() {
 
 		void init();
 		verifyButton.addEventListener('click', onVerify);
+		logoutButton?.addEventListener('click', onLogout);
 		codeInput.addEventListener('keydown', handleKeyDown);
 
 		return () => {
 			verifyButton.removeEventListener('click', onVerify);
+			logoutButton?.removeEventListener('click', onLogout);
 			codeInput.removeEventListener('keydown', handleKeyDown);
 		};
 	}, []);

@@ -11,6 +11,7 @@ export interface MfaElements {
 	appEl: HTMLElement;
 	qrContainer: HTMLElement;
 	verifyButton: HTMLButtonElement;
+	logoutButton: HTMLButtonElement | null;
 	codeInput: HTMLInputElement;
 	statusEl: HTMLElement;
 	titleEl: HTMLElement | null;
@@ -22,6 +23,7 @@ export function getMfaElements(): MfaElements | null {
 	const appEl = document.getElementById('mfa-app');
 	const qrContainer = document.getElementById('qr-container');
 	const verifyButton = document.getElementById('verify-mfa');
+	const logoutButton = document.getElementById('logout-mfa');
 	const codeInput = document.getElementById('mfa-code');
 	const statusEl = document.getElementById('mfa-status');
 	const titleEl = document.getElementById('mfa-title');
@@ -42,6 +44,7 @@ export function getMfaElements(): MfaElements | null {
 		appEl,
 		qrContainer,
 		verifyButton,
+		logoutButton: logoutButton instanceof HTMLButtonElement ? logoutButton : null,
 		codeInput,
 		statusEl,
 		titleEl,
@@ -82,6 +85,56 @@ export function pickLatestVerifiedTotpFactor(allFactors: MfaFactor[]) {
 	});
 
 	return verifiedTotp[0] || null;
+}
+
+export function pickUnverifiedTotpFactors(allFactors: MfaFactor[]) {
+	return allFactors
+		.filter((item) => item.status === 'unverified' && item.factor_type === 'totp')
+		.sort((a, b) => {
+			const aTime = Date.parse(a.created_at || '') || 0;
+			const bTime = Date.parse(b.created_at || '') || 0;
+			return bTime - aTime;
+		});
+}
+
+export function buildMfaQrImageSrc(qrCode: string) {
+	const normalized = qrCode.trim();
+	if (!normalized) {
+		return '';
+	}
+
+	if (normalized.startsWith('data:')) {
+		return normalized;
+	}
+
+	return `data:image/svg+xml;utf-8,${encodeURIComponent(normalized)}`;
+}
+
+export async function syncMfaSession(accessToken: string, refreshToken?: string) {
+	const response = await fetch('/api/auth/sync-session', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			accessToken,
+			refreshToken,
+		}),
+	});
+
+	if (response.ok) {
+		return;
+	}
+
+	try {
+		const payload = (await response.json()) as { message?: string };
+		throw new Error(
+			`sync-session: ${payload.message || 'No se pudo sincronizar la sesión MFA.'}`,
+		);
+	} catch (error) {
+		if (error instanceof Error && error.message) {
+			throw error;
+		}
+		throw new Error('sync-session: No se pudo sincronizar la sesión MFA.');
+	}
 }
 
 export function getMfaErrorMessage(error: unknown): string {
@@ -133,6 +186,7 @@ export function renderMfaPanel(
 	>,
 	variant: 'verify' | 'enroll',
 	qrCode?: string,
+	manualEntrySecret?: string,
 ) {
 	const { qrContainer, verifyButton, titleEl, descriptionEl, hintEl } = elements;
 
@@ -156,7 +210,8 @@ export function renderMfaPanel(
 		qrContainer.classList.remove('qr-placeholder--enroll');
 
 		const text = document.createElement('p');
-		text.textContent = 'Verificación en dos pasos activa. Ingresa tu código para continuar.';
+		text.textContent =
+			'Esta cuenta ya tiene la verificación activa. Ingresa el código actual de tu app para continuar.';
 		qrContainer.appendChild(text);
 		return;
 	}
@@ -178,8 +233,18 @@ export function renderMfaPanel(
 
 	if (qrCode) {
 		const image = document.createElement('img');
-		image.src = qrCode;
+		image.src = buildMfaQrImageSrc(qrCode);
 		image.alt = 'Escanea este código QR con tu app de autenticación';
 		qrContainer.appendChild(image);
+	}
+
+	if (manualEntrySecret) {
+		const helper = document.createElement('p');
+		helper.textContent = 'Si no puedes escanear el QR, registra esta clave manual en tu app:';
+		qrContainer.appendChild(helper);
+
+		const secret = document.createElement('code');
+		secret.textContent = manualEntrySecret;
+		qrContainer.appendChild(secret);
 	}
 }

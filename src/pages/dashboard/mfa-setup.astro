@@ -52,7 +52,10 @@ import MfaSetupBehavior from '@/components/behavior/MfaSetupBehavior';
 							<p id="mfa-hint" class="auth-hint">Introduce el código de 6 dígitos de tu app de autenticación.</p>
 						</div>
 
-						<button id="verify-mfa" type="button" class="auth-submit">Verificar y Activar</button>
+						<div class="auth-actions">
+							<button id="verify-mfa" type="button" class="auth-submit">Verificar y Activar</button>
+							<button id="logout-mfa" type="button" class="auth-secondary">Cerrar sesión</button>
+						</div>
 						<p id="mfa-status" class="auth-status" role="status"></p>
 					</div>
 				</div>

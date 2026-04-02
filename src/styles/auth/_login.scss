@@ -243,6 +243,37 @@
 	box-shadow: none;
 }
 
+.auth-actions {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.auth-secondary {
+	border: 1px solid var(--auth-border, var(--color-border-subtle));
+	border-radius: 0.72rem;
+	padding: 0.88rem 1rem;
+	background: transparent;
+	color: var(--auth-link-color, var(--color-text-secondary));
+	font-family: var(--font-ui);
+	font-size: 0.92rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition:
+		border-color 0.2s ease,
+		color 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.auth-secondary:hover:not(:disabled) {
+	border-color: color-mix(in srgb, var(--auth-link-color, white) 52%, transparent);
+	background: color-mix(in srgb, var(--auth-link-color, white) 7%, transparent);
+}
+
+.auth-secondary:disabled {
+	opacity: 60%;
+	cursor: not-allowed;
+}
+
 .auth-status {
 	min-height: 1.3rem;
 	padding: 0.78rem 0.9rem;
@@ -278,7 +309,8 @@
 .auth-tabs button:focus-visible,
 .auth-field input:focus-visible,
 .auth-field select:focus-visible,
-.auth-submit:focus-visible {
+.auth-submit:focus-visible,
+.auth-secondary:focus-visible {
 	outline: 2px solid var(--auth-focus-ring, rgb(var(--color-action-accent-rgb)));
 	outline-offset: 2px;
 }
@@ -321,7 +353,8 @@
 	}
 
 	.auth-tabs button,
-	.auth-submit {
+	.auth-submit,
+	.auth-secondary {
 		transition: none;
 	}
 }
