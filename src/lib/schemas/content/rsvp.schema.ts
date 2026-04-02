@@ -18,21 +18,10 @@ export const rsvpSchema = z
 	.object({
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: z.number().int().positive().default(1),
+		accessMode: z.enum(['personalized-only', 'hybrid']).default('personalized-only'),
 		confirmationMessage: z
 			.string()
 			.default('¡Gracias por confirmar! Te esperamos con mucha emoción.'),
-		showDietaryField: z.boolean().default(false),
-		dietaryLabel: z.string().optional(),
-		dietaryPlaceholder: z.string().optional(),
-		guests: z
-			.array(
-				z.object({
-					guestId: z.string().min(1),
-					displayName: z.string().min(1),
-					maxAllowedAttendees: z.number().int().positive().default(1),
-				}),
-			)
-			.optional(),
 		confirmationMode: z.enum(['api', 'whatsapp', 'both']).default('api'),
 		whatsappConfig: z
 			.object({

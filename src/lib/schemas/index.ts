@@ -173,12 +173,6 @@ export const CreateGuestSchema = z.object({
 		.max(1000, { message: 'Notes cannot exceed 1000 characters' })
 		.optional()
 		.default(''),
-
-	dietary: z
-		.string()
-		.max(500, { message: 'Dietary restrictions cannot exceed 500 characters' })
-		.optional()
-		.default(''),
 });
 
 export const UpdateGuestSchema = z.object({
@@ -203,15 +197,7 @@ export const UpdateGuestSchema = z.object({
 		.optional()
 		.default(1),
 
-	notes: z
-		.string()
-		.max(1000, { message: 'Notes cannot exceed 1000 characters' })
-		.optional(),
-
-	dietary: z
-		.string()
-		.max(500, { message: 'Dietary restrictions cannot exceed 500 characters' })
-		.optional(),
+	notes: z.string().max(1000, { message: 'Notes cannot exceed 1000 characters' }).optional(),
 
 	// Optional optimistic locking token.
 	_version: TimestampSchema.optional(),

@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
+import { parseInviteGuestRsvpRequest } from '@/lib/rsvp/core/rsvp-request';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
-
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 function getIp(request: Request): string {
@@ -17,13 +17,9 @@ export const POST: APIRoute = async ({ params, request }) => {
 		const inviteId = sanitize(params.inviteId, 100);
 		if (!inviteId) return badRequest('inviteId is required.');
 
-		// Validate basic request structure before rate limiting
-		const contentType = request.headers.get('content-type');
-		if (!contentType?.includes('application/json')) {
-			return badRequest('Content-Type must be application/json');
-		}
+		const payload = await parseInviteGuestRsvpRequest(request);
+		if (payload instanceof Response) return payload;
 
-		// Only check rate limit after basic validation passes
 		const ip = getIp(request);
 		const allowed = await checkRateLimit({
 			namespace: 'rsvp',
@@ -36,40 +32,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
 		}
 
-		let rawText: string;
-		try {
-			rawText = await request.text();
-		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Failed to read request body';
-			return badRequest(`Failed to read request body: ${message}`);
-		}
-
-		if (!rawText.trim()) {
-			return badRequest('Request body is empty');
-		}
-
-		let body: Record<string, unknown>;
-		try {
-			body = JSON.parse(rawText) as Record<string, unknown>;
-		} catch (error) {
-			const message = error instanceof Error ? error.message : 'Invalid JSON';
-			return badRequest(`Invalid JSON format: ${message}`);
-		}
-
-		const attendanceStatus =
-			body.attendanceStatus === 'confirmed' || body.attendanceStatus === 'declined'
-				? body.attendanceStatus
-				: null;
-		if (!attendanceStatus) return badRequest('attendanceStatus is invalid.');
-
-		const attendeeCount = typeof body.attendeeCount === 'number' ? body.attendeeCount : 0;
-		const guestMessage = sanitize(body.guestMessage as string, 500);
-
-		const result = await submitGuestRsvpByInviteId(inviteId, {
-			attendanceStatus,
-			attendeeCount,
-			guestMessage,
-		});
+		const result = await submitGuestRsvpByInviteId(inviteId, payload);
 		return successResponse({ message: 'RSVP saved.', ...result });
 	} catch (error) {
 		return errorResponse(error);

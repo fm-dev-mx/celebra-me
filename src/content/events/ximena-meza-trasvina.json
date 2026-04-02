@@ -112,6 +112,7 @@
     "rsvp": {
         "title": "Confirma Tu Asistencia",
         "guestCap": 4,
+        "accessMode": "hybrid",
         "confirmationMessage": "Tu lugar en esta edición ha sido reservado. ¡Nos vemos en la noche!",
         "confirmationMode": "api"
     },
@@ -162,9 +163,9 @@
         ]
     },
     "countdown": {
-        "title": "La Noche Premiere Comienza En",
-        "subtitlePrefix": "El",
-        "footerText": "Los Mochis, Sinaloa."
+        "title": "La gran noche comienza en",
+        "subtitlePrefix": "",
+        "footerText": "D'Galaz Alberca y Eventos, Los Mochis, Sinaloa"
     },
     "navigation": [
         { "label": "Inicio", "href": "#inicio" },

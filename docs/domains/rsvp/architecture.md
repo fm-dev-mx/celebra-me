@@ -1,6 +1,6 @@
 # RSVP Module Architecture
 
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-04-01
 
 This document describes the current RSVP and host-dashboard architecture in the live repository.
 
@@ -66,6 +66,7 @@ short code is available and emits the short URL when `shortId` exists.
 - `GET /api/invitacion/:inviteId/context`
 - `POST /api/invitacion/:inviteId/rsvp`
 - `POST /api/invitacion/:inviteId/view`
+- `POST /api/invitacion/public/:eventType/:slug/rsvp`
 
 There is no active `/api/invitacion/resolve` or `/api/invitation/:inviteId/*` public contract in the
 live tree.
@@ -99,11 +100,31 @@ live tree.
 4. View telemetry posts to `/api/invitacion/:inviteId/view`.
 5. RSVP submissions post to `/api/invitacion/:inviteId/rsvp`.
 
+### Hybrid Public RSVP Flow
+
+1. A landing-page visitor enters through `/{eventType}/{slug}` without an `inviteId`.
+2. The route loads event content only and renders the RSVP section in one of two modes:
+   - `personalized-only`: render the locked preview card
+   - `hybrid`: render the active RSVP form with `fullName + phone`
+3. The client posts public submissions to `/api/invitacion/public/:eventType/:slug/rsvp`.
+4. The API validates:
+   - the content entry is routable and not a demo
+   - `rsvp.accessMode === 'hybrid'`
+   - a matching published `events` row exists in Supabase
+   - rate limits by `{ slug, normalizedPhone, ip }`
+5. The service resolves the RSVP target:
+   - update the existing `guest_invitations` row when `(event_id, phone)` already exists
+   - create a new canonical `guest_invitations` row with `entry_source = 'generic_public'` when it
+     does not
+6. RSVP persistence reuses the same attendee-limit enforcement used by personalized invite
+   submissions.
+
 ## Security Notes
 
 - Client code never receives service-role credentials directly.
 - MFA is part of the elevated dashboard/session surface.
-- Public invitation APIs are invite-scoped and do not expose cross-event listings.
+- Public invitation APIs do not expose cross-event listings. Personalized APIs remain invite-scoped,
+  and hybrid public RSVP is limited to event-scoped submission only.
 - Some repository operations still use `useServiceRole: true` inside the service layer; that remains
   a documented implementation tradeoff, not the desired long-term target.
 
@@ -118,5 +139,6 @@ must not be treated as active system entrypoints.
 - `src/pages/api/auth/**`
 - `src/pages/api/dashboard/**`
 - `src/pages/api/invitacion/[inviteId]/**`
+- `src/pages/api/invitacion/public/[eventType]/[slug]/rsvp.ts`
 - `src/lib/rsvp/**`
 - `src/utils/invitation-link.ts`
