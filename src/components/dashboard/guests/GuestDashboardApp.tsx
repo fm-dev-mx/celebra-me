@@ -210,13 +210,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						message={notification.message}
 						type={notification.type}
 						onClose={() => setNotification(null)}
-						action={{
-							label: 'Actualizar',
-							onClick: () => {
-								void loadGuests();
-								setNotification(null);
-							},
-						}}
 					/>
 				)}
 

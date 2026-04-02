@@ -5,13 +5,58 @@ interface ToastProps {
 	message: string;
 	type?: 'info' | 'success' | 'warning';
 	onClose: () => void;
-	action?: {
-		label: string;
-		onClick: () => void;
-	};
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }) => {
+const CheckIcon = () => (
+	<svg
+		viewBox="0 0 24 24"
+		width="16"
+		height="16"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="3"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+	>
+		<path d="M20 6 9 17l-5-5" />
+	</svg>
+);
+
+const AlertIcon = () => (
+	<svg
+		viewBox="0 0 24 24"
+		width="16"
+		height="16"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="3"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+	>
+		<circle cx="12" cy="12" r="10" />
+		<line x1="12" y1="8" x2="12" y2="12" />
+		<line x1="12" y1="16" x2="12.01" y2="16" />
+	</svg>
+);
+
+const InfoIcon = () => (
+	<svg
+		viewBox="0 0 24 24"
+		width="16"
+		height="16"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="3"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+	>
+		<circle cx="12" cy="12" r="10" />
+		<line x1="12" y1="16" x2="12" y2="12" />
+		<line x1="12" y1="8" x2="12.01" y2="8" />
+	</svg>
+);
+
+const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose }) => {
 	const prefersReducedMotion = useReducedMotion();
 
 	useEffect(() => {
@@ -19,13 +64,13 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }
 		return () => clearTimeout(timer);
 	}, [onClose]);
 
-	const icon = type === 'success' ? 'OK' : type === 'warning' ? 'AV' : 'IN';
+	const Icon = type === 'success' ? CheckIcon : type === 'warning' ? AlertIcon : InfoIcon;
 
 	return (
 		<AnimatePresence>
 			<motion.div
 				initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-				animate={{ opacity: 1, y: 0, scale: 1 }}
+				animate={{ opacity: 1, y: 0 }}
 				exit={
 					prefersReducedMotion
 						? { opacity: 0 }
@@ -40,43 +85,25 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }
 				role="status"
 				aria-live="polite"
 			>
-				{/* Accent rail */}
-				<div className="dashboard-toast__accent" aria-hidden="true" />
-
-				{/* Icon */}
-				<div className="dashboard-toast__icon-box" aria-hidden="true">
-					<span>{icon}</span>
-				</div>
-
-				{/* Content */}
-				<div className="dashboard-toast__content">
-					<p>{message}</p>
-
-					{action && (
-						<motion.button
-							whileHover={prefersReducedMotion ? undefined : { y: -1 }}
-							whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-							type="button"
-							onClick={action.onClick}
-							className="dashboard-toast__action"
-						>
-							{action.label}
-							<span aria-hidden="true">→</span>
-						</motion.button>
-					)}
+				{/* Icon & Content */}
+				<div className="dashboard-toast__body">
+					<div className="dashboard-toast__icon">
+						<Icon />
+					</div>
+					<div className="dashboard-toast__content">
+						<p>{message}</p>
+					</div>
 				</div>
 
 				{/* Close */}
-				<motion.button
+				<button
 					type="button"
 					className="dashboard-toast__close"
 					onClick={onClose}
 					aria-label="Cerrar notificación"
-					whileHover={prefersReducedMotion ? undefined : { scale: 1.04 }}
-					whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
 				>
 					<span>×</span>
-				</motion.button>
+				</button>
 			</motion.div>
 		</AnimatePresence>
 	);
