@@ -8,10 +8,8 @@
  */
 
 .event-header {
-	// Branding / Breadcrumbs
 	&__title {
 		font-family: var(--font-display);
-		font-size: 1.25rem;
 		font-weight: 700;
 		text-decoration: none;
 		color: var(--color-action-accent);
@@ -23,6 +21,7 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		text-shadow: var(--header-nav-shadow-transparent);
+		margin-right: 2rem;
 
 		@media (width >= 768px) {
 			max-width: 400px;

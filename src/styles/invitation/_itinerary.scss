@@ -99,10 +99,10 @@
 		display: none; // Handled by TimelineList SVG
 	}
 
+	&__line-start,
 	&__line-end {
 		position: absolute;
 		left: 50%;
-		bottom: -15px;
 		transform: translateX(-50%) rotate(45deg);
 		width: 12px;
 		height: 12px;
@@ -118,6 +118,14 @@
 			background: var(--itinerary-line-color, var(--color-action-primary));
 			opacity: 80%;
 		}
+	}
+
+	&__line-start {
+		top: -15px;
+	}
+
+	&__line-end {
+		bottom: -15px;
 	}
 
 	&__items {
@@ -243,6 +251,7 @@
 			left: 2rem;
 		}
 
+		&__line-start,
 		&__line-end {
 			left: 2rem;
 			transform: translateX(-50%) rotate(45deg);
