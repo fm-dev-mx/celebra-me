@@ -4,7 +4,6 @@ import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { VALID_COLOR_TOKENS } from '@/lib/theme/color-tokens';
 
 const secureUrlSchema = z
-	.string()
 	.url()
 	.refine((value) => value.startsWith('https://'), 'External asset URLs must use HTTPS.');
 

@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import {
 	LOCATION_VARIANT_PRESET_COMPATIBILITY,
 	type ThemePreset,
@@ -55,7 +54,7 @@ export const eventContentSchema = baseEventFieldsSchema
 		if (!allowedPresets || allowedPresets.includes(themePreset)) return;
 
 		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
+			code: 'custom',
 			path: ['sectionStyles', 'location', 'variant'],
 			message: `Location variant "${locationVariant}" is only supported with presets: ${allowedPresets.join(', ')}.`,
 		});

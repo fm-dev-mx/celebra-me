@@ -9,7 +9,7 @@ export const giftsSchema = z
 				z.object({
 					type: z.literal('store'),
 					title: z.string(),
-					url: z.string().url(),
+					url: z.url(),
 					logo: z.string().optional(),
 				}),
 				z.object({
@@ -23,7 +23,7 @@ export const giftsSchema = z
 				z.object({
 					type: z.literal('paypal'),
 					title: z.string().default('PayPal'),
-					url: z.string().url(),
+					url: z.url(),
 				}),
 				z.object({
 					type: z.literal('cash'),

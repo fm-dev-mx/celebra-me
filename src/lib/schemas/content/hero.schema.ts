@@ -7,7 +7,7 @@ export const heroSchema = z.object({
 	secondaryName: z.string().optional(),
 	label: z.string().optional(),
 	nickname: z.string().optional(),
-	date: z.string().datetime(),
+	date: z.iso.datetime(),
 	backgroundImage: AssetSchema,
 	portrait: AssetSchema.optional(),
 	variant: z.enum(THEME_PRESETS).optional(),

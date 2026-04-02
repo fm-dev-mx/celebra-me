@@ -16,10 +16,10 @@ const venueSchema = z.object({
 	address: z.string(),
 	date: z.string(),
 	time: z.string(),
-	mapUrl: z.string().url().optional(),
-	appleMapsUrl: z.string().url().optional(),
-	googleMapsUrl: z.string().url().optional(),
-	wazeUrl: z.string().url().optional(),
+	mapUrl: z.url().optional(),
+	appleMapsUrl: z.url().optional(),
+	googleMapsUrl: z.url().optional(),
+	wazeUrl: z.url().optional(),
 	image: AssetSchema.optional(),
 	coordinates: locationCoordinatesSchema,
 });
@@ -28,7 +28,7 @@ export const locationSchema = z.object({
 	venueName: z.string(),
 	address: z.string(),
 	city: z.string(),
-	mapUrl: z.string().url().optional(),
+	mapUrl: z.url().optional(),
 	ceremony: venueSchema
 		.extend({
 			venueEvent: z.string().default('Ceremonia'),
