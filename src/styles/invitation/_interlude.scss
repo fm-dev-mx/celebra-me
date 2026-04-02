@@ -34,31 +34,31 @@
 		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
 			scale(var(--interlude-image-scale));
 		will-change: transform;
-		transition: transform 120ms linear;
+		transition: transform 1200ms linear;
 		backface-visibility: hidden;
 	}
 
 	// Wide landscape screens crop much more vertically.
 	// Move the focal point upward to keep the face visible.
-	@media (min-aspect-ratio: 16 / 9) {
+	@media (aspect-ratio >= 16 / 9) {
 		--interlude-focal-y: 10%;
 	}
 
-	@media (min-aspect-ratio: 21 / 9) {
+	@media (aspect-ratio >= 21 / 9) {
 		--interlude-focal-y: 8%;
 	}
 
 	// Standard laptop / tablet landscape.
-	@media (max-aspect-ratio: 16 / 9) and (min-aspect-ratio: 4 / 3) {
+	@media (aspect-ratio <= 16 / 9) and (aspect-ratio >= 4 / 3) {
 		--interlude-focal-y: 12%;
 	}
 
 	// Portrait / tall screens need a less aggressive upward focus.
-	@media (max-aspect-ratio: 4 / 5) {
+	@media (aspect-ratio <= 4 / 5) {
 		--interlude-focal-y: 18%;
 	}
 
-	@media (max-aspect-ratio: 9 / 16) {
+	@media (aspect-ratio <= 9 / 16) {
 		--interlude-focal-y: 22%;
 	}
 
