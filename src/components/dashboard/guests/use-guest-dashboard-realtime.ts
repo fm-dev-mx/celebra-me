@@ -4,6 +4,7 @@ import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
+import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
 interface HostEventItem {
@@ -43,6 +44,17 @@ function getErrorMessage(error: unknown, fallback: string): string {
 	return error instanceof Error ? error.message : fallback;
 }
 
+function getEventLoadFailureMessage(error: unknown, fallback: string): string {
+	if (error && typeof error === 'object' && 'details' in error) {
+		const debugReason = (error as { details?: { debug?: { reason?: string } } }).details?.debug
+			?.reason;
+		if (debugReason === 'missing_access_token' || debugReason === 'invalid_supabase_user') {
+			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
+		}
+	}
+	return getErrorMessage(error, fallback);
+}
+
 function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventItem[]) {
 	const storedEventId = window.localStorage.getItem('rsvp-dashboard-event-id') || '';
 	const candidates = [initialEventId, storedEventId, hostEvents[0]?.id || ''].filter(Boolean);
@@ -50,8 +62,29 @@ function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventIt
 	return candidates.find((candidate) => hostEvents.some((event) => event.id === candidate));
 }
 
-function resolveEventsLoadError(initialEventId: string, hostEvents: HostEventItem[]) {
+function shouldLogDashboardDebug(): boolean {
+	if (typeof window === 'undefined') return false;
+	return new URLSearchParams(window.location.search).get('debug') === '1';
+}
+
+function resolveEventsLoadError(
+	initialEventId: string,
+	hostEvents: HostEventItem[],
+	debug: DashboardEventListDebug | null,
+) {
 	if (hostEvents.length === 0) {
+		if (debug?.session.reason !== 'session_role_resolved') {
+			return 'El dashboard no esta autenticando al usuario esperado o la sesion no es valida.';
+		}
+		if (debug?.slugCheck.slugExistsInDb === false) {
+			return `El evento ${debug.slugCheck.expectedSlug} no existe en la base activa. Revisa la sincronizacion de la tabla events.`;
+		}
+		if (debug?.memberships.length && debug.unresolvedMembershipEventIds.length) {
+			return 'La cuenta tiene membresias, pero el dashboard no puede resolver sus eventos. Revisa RLS o migraciones en Supabase.';
+		}
+		if (debug?.slugCheck.slugExistsInDb) {
+			return 'La sesion actual no tiene ownership ni membership sobre el evento ximena-meza-trasvina.';
+		}
 		return 'No hay eventos asignados a esta cuenta. Si la invitacion existe en contenido, falta sincronizar la tabla events o la membresia del host.';
 	}
 	if (initialEventId && !hostEvents.some((event) => event.id === initialEventId)) {
@@ -74,6 +107,7 @@ export const useGuestDashboardRealtime = ({
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
 	const [guestsError, setGuestsError] = useState('');
+	const [eventsDebug, setEventsDebug] = useState<DashboardEventListDebug | null>(null);
 	const [realtimeState, setRealtimeState] = useState<RealtimeState>('fallback');
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
 	const reconnectTimerRef = useRef<number | null>(null);
@@ -84,14 +118,31 @@ export const useGuestDashboardRealtime = ({
 		try {
 			const data = await guestsApi.listEvents();
 			setHostEvents(data.items);
+			setEventsDebug(data.debug || null);
 			const nextEventId = resolvePreferredEventId(initialEventId, data.items);
-			const eventsError = resolveEventsLoadError(initialEventId, data.items);
+			const eventsError = resolveEventsLoadError(
+				initialEventId,
+				data.items,
+				data.debug || null,
+			);
 			setEventsError(eventsError);
+			if (shouldLogDashboardDebug()) {
+				console.log('[dashboard][client][loadEvents]', {
+					initialEventId,
+					hostEvents: data.items,
+					debug: data.debug || null,
+					resolvedEventId: nextEventId || '',
+					eventsError,
+				});
+			}
 			if (nextEventId && nextEventId !== eventId) {
 				setEventId(nextEventId);
 			}
 		} catch (error) {
-			setEventsError(getErrorMessage(error, 'No se pudieron cargar eventos.'));
+			if (shouldLogDashboardDebug()) {
+				console.log('[dashboard][client][loadEvents:error]', error);
+			}
+			setEventsError(getEventLoadFailureMessage(error, 'No se pudieron cargar eventos.'));
 		}
 	}, [eventId, initialEventId]);
 
@@ -107,11 +158,20 @@ export const useGuestDashboardRealtime = ({
 			setTotals(data.totals);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
+			if (shouldLogDashboardDebug()) {
+				console.log('[dashboard][client][loadGuests:error]', {
+					eventId,
+					search,
+					status,
+					error,
+					eventsDebug,
+				});
+			}
 			setGuestsError(getErrorMessage(error, 'Error de red al cargar invitados.'));
 		} finally {
 			setLoading(false);
 		}
-	}, [eventId, search, status]);
+	}, [eventId, eventsDebug, search, status]);
 
 	const connectStream = useCallback(() => {
 		if (!eventId) return () => {};
