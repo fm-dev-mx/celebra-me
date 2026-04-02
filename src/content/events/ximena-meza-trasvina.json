@@ -85,17 +85,17 @@
         "layoutVariant": "premium-mask"
     },
     "gallery": {
-        "title": "Editorial Premiere",
-        "subtitle": "Un recorrido visual por la esencia, el brillo y la elegancia de Ximena.",
+        "title": "Editorial de Ximena",
+        "subtitle": "Un recorrido visual por la esencia, el brillo y la elegancia.",
         "items": [
-            { "image": "gallery01", "caption": "Portada Premiere." },
-            { "image": "gallery02", "caption": "El Baile de la Noche." },
-            { "image": "gallery03", "caption": "Detalles en Oro & Perlas." },
-            { "image": "gallery04", "caption": "Rosas & Oro." },
-            { "image": "gallery05", "caption": "Detalles en Seda." },
-            { "image": "gallery07", "caption": "Silueta Editorial." },
-            { "image": "gallery09", "caption": "El Sobre Dorado." },
-            { "image": "gallery10", "caption": "Destellos de Alegría." }
+            { "image": "gallery01", "caption": "Mi Gran Día." },
+            { "image": "gallery02", "caption": "Preparada para Brillar." },
+            { "image": "gallery03", "caption": "Elegancia en Cada Detalle." },
+            { "image": "gallery04", "caption": "Brillo Natural." },
+            { "image": "gallery05", "caption": "Sueños en Seda." },
+            { "image": "gallery07", "caption": "Reflejo de Alegría." },
+            { "image": "gallery09", "caption": "Movimiento y Luz." },
+            { "image": "gallery10", "caption": "Actitud y Confianza." }
         ]
     },
     "gifts": {
@@ -117,7 +117,7 @@
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por ser parte de este capítulo. Su presencia es el brillo que completa mi historia.",
+        "message": "Gracias por ser parte de mis XV. Su cariño hace que este sueño brille aún más.",
         "closingName": "Ximena Meza Trasviña",
         "image": "thankYouPortrait"
     },

@@ -119,31 +119,34 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 	)}
 
 </section>
-<script type="module">
+<script>
 	import { initCopyButtons, revealIOSOnly } from '@/utils/ui';
-	const section = document.currentScript?.previousElementSibling;
 
-	if (section instanceof HTMLElement && section.matches('.event-location')) {
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const sections = document.querySelectorAll('.event-location');
 
-		initCopyButtons('.copy-button', 'data-address', section);
-		revealIOSOnly('[data-apple-link]', section);
+	sections.forEach((section) => {
+		if (section instanceof HTMLElement) {
+			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		if (!prefersReducedMotion) {
-			section.classList.add('has-motion');
-			const observer = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.isIntersecting) {
-							section.classList.add('is-visible');
-							observer.unobserve(entry.target);
-						}
-					});
-				},
-				{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
-			);
+			initCopyButtons('.copy-button', 'data-address', section);
+			revealIOSOnly('[data-apple-link]', section);
 
-			observer.observe(section);
+			if (!prefersReducedMotion) {
+				section.classList.add('has-motion');
+				const observer = new IntersectionObserver(
+					(entries) => {
+						entries.forEach((entry) => {
+							if (entry.isIntersecting) {
+								section.classList.add('is-visible');
+								observer.unobserve(entry.target);
+							}
+						});
+					},
+					{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+				);
+
+				observer.observe(section);
+			}
 		}
-	}
+	});
 </script>
