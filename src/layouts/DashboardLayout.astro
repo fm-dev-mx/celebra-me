@@ -4,6 +4,7 @@ import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astr
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
+import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 
 interface Props {
 	title: string;
@@ -36,6 +37,9 @@ const currentSectionLabel =
 			item.href === Astro.url.pathname ||
 			(item.href !== '/dashboard/invitados' && Astro.url.pathname.startsWith(`${item.href}/`)),
 	)?.label ?? title;
+
+const isProd = import.meta.env.PROD;
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 
 <!doctype html>
@@ -47,7 +51,10 @@ const currentSectionLabel =
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<link rel="alternate icon" href="/favicon.ico" />
 		<title>{title}</title>
+
+		{isProd && gaId && <GoogleAnalytics id={gaId} />}
 	</head>
+
 	<body class="theme-preset--jewelry-box dashboard-shell-body">
 		<div class="dashboard-shell">
 			<div class="dashboard-shell__backdrop" data-dashboard-backdrop aria-hidden="true"></div>

@@ -5,6 +5,7 @@ import '@/styles/global.scss';
 import Header from '@/components/home/HomeHeader.astro';
 import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
+import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 
 // Typography: Core 5 Font System (@fontsource includes font-display: swap)
 // Display Formal
@@ -55,6 +56,9 @@ const ogImage = new URL(image, Astro.url);
 
 // Canonical URL (avoid leaking dev localhost into metadata)
 const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
+
+// Google Analytics ID
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 <!doctype html>
 <html lang="es">
@@ -80,6 +84,8 @@ const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={ogImage} />
+
+		{isProd && gaId && <GoogleAnalytics id={gaId} />}
 	</head>
 	<body class:list={[className, { 'is-demo': isDemo }]} data-theme-mode={themeMode}>
 		{!hideHeader && <Header />}
