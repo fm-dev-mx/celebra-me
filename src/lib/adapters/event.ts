@@ -102,11 +102,20 @@ function buildContext(event: EventContentEntry, eventSlug: string): AdaptationCo
 	};
 }
 
-export function adaptEvent(event: EventContentEntry): InvitationViewModel {
-	const { data, id: contentEntryId } = event;
+export function adaptEvent(
+	event: EventContentEntry,
+	previewTheme?: ThemePreset,
+): InvitationViewModel {
+	const { data: originalData, id: contentEntryId } = event;
 	const eventSlug = getContentEntrySlug(contentEntryId);
-	const context = buildContext(event, eventSlug);
-	const theme = buildThemeConfig(data, context.normalizedPreset);
+
+	// Create a safe context for adaptation, overriding the preset if requested
+	const adapterData = previewTheme
+		? { ...originalData, theme: { ...originalData.theme, preset: previewTheme } }
+		: originalData;
+
+	const context = buildContext({ ...event, data: adapterData }, eventSlug);
+	const theme = buildThemeConfig(adapterData, context.normalizedPreset);
 	const hero = buildHero(context);
 	const envelope = buildEnvelope(context);
 	const galleryItems = buildGalleryItems(context);
@@ -118,20 +127,20 @@ export function adaptEvent(event: EventContentEntry): InvitationViewModel {
 
 	return {
 		id: eventSlug,
-		isDemo: data.isDemo ?? false,
-		title: data.title,
-		description: data.description,
+		isDemo: adapterData.isDemo ?? false,
+		title: adapterData.title,
+		description: adapterData.description,
 		theme,
 		hero,
 		envelope,
 		sections,
-		music: data.music
+		music: adapterData.music
 			? {
-					...data.music,
+					...adapterData.music,
 					revealMode: showEnvelope ? 'envelope' : 'immediate',
 				}
 			: undefined,
 		contentBlocks,
-		navigation: data.navigation,
+		navigation: adapterData.navigation,
 	};
 }

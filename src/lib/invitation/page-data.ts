@@ -133,7 +133,10 @@ function buildWrapperData(
 		if (envelope.data.variant) {
 			dataAttributes['data-env-variant'] = envelope.data.variant;
 		}
-		if (colors.background) overrides['--env-bg'] = colors.background;
+		if (colors.background) {
+			overrides['--env-bg'] = colors.background;
+			overrides['--env-paper-bg'] = colors.background;
+		}
 		if (colors.primary) overrides['--env-primary'] = colors.primary;
 		if (colors.accent) overrides['--env-accent'] = colors.accent;
 	}
@@ -320,7 +323,7 @@ export function prepareInvitationPageData(input: {
 	guestContext?: InvitationGuestContext | null;
 	previewTheme?: string;
 }): InvitationPageData {
-	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
+	const viewModel = adaptEvent(input.eventEntry, input.previewTheme as any);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
