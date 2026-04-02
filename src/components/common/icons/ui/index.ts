@@ -14,3 +14,4 @@ export * from './UserGroup';
 export * from './Message';
 export * from './Heart';
 export * from './Search';
+export * from './Plus';
