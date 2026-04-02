@@ -13,7 +13,6 @@ import {
 	type GuestFormPayload,
 } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
-import { Confetti } from '@/components/ui/Confetti';
 import { useShortcuts } from '@/hooks/use-shortcuts';
 import '@/styles/dashboard/_guests.scss';
 
@@ -54,7 +53,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		celebratingGuestId,
 		closeDeleteConfirm,
 		closeModal,
-		confettiActive,
 		deleteConfirmOpen,
 		editFirstGuestShortcut,
 		editingGuest,
@@ -76,7 +74,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		openImportModal,
 		openNextGeneratedGuest,
 		requestDelete,
-		setConfettiActive,
 		setImportModalOpen,
 		setNotification,
 		shareSessionCount,
@@ -147,8 +144,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
-				<Confetti active={confettiActive} onComplete={() => setConfettiActive(false)} />
-
 				<GuestDashboardHeader
 					eventId={eventId}
 					hostEvents={hostEvents}
@@ -175,7 +170,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					createDisabled={!eventId}
 				/>
 
-				{loading && <p className="dashboard-status">Procesando...</p>}
+				{loading && <p className="dashboard-status">Cargando invitados...</p>}
 				{error && <p className="dashboard-error">{error}</p>}
 
 				<GuestTable
@@ -236,6 +231,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					loading={loading}
 					hasPendingGenerated={items.some((item) => item.deliveryStatus === 'generated')}
 					status={status}
+					createDisabled={!eventId}
 					onCreate={openCreateModal}
 					onOpenNextAction={openNextGeneratedGuest}
 					onStatusChange={setStatus}

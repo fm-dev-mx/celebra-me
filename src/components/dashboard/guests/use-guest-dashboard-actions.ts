@@ -39,7 +39,6 @@ export const useGuestDashboardActions = ({
 	const [notification, setNotification] = useState<NotificationPayload | null>(null);
 	const [shareSessionCount, setShareSessionCount] = useState(0);
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
-	const [confettiActive, setConfettiActive] = useState(false);
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
 	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -116,9 +115,8 @@ export const useGuestDashboardActions = ({
 			try {
 				await guestsApi.markShared(item.guestId);
 				setShareSessionCount((prev) => prev + 1);
-				setConfettiActive(true);
 				setNotification({
-					message: '¡Invitación compartida! 🎉',
+					message: 'Entrega registrada correctamente.',
 					type: 'success',
 				});
 				setCelebratingGuestId(item.guestId);
@@ -263,7 +261,6 @@ export const useGuestDashboardActions = ({
 		celebratingGuestId,
 		closeDeleteConfirm,
 		closeModal,
-		confettiActive,
 		deleteConfirmOpen,
 		editFirstGuestShortcut: () => {
 			if (items.length > 0) openEditModal(items[0]);
@@ -287,7 +284,6 @@ export const useGuestDashboardActions = ({
 		openImportModal: () => setImportModalOpen(true),
 		openNextGeneratedGuest,
 		requestDelete,
-		setConfettiActive,
 		setImportModalOpen,
 		setNotification,
 		shareSessionCount,
