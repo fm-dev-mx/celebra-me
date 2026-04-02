@@ -2,26 +2,47 @@
 @use '../tokens' as tokens;
 
 .dashboard-toast {
+	--dashboard-toast-accent: var(--dashboard-state-info);
+	--dashboard-toast-border: var(--dashboard-state-info-border);
+	--dashboard-toast-text: var(--dashboard-text-inverse);
+
 	position: fixed;
 	bottom: 2rem;
 	right: 2rem;
-	z-index: 1100;
+	z-index: var(--dashboard-z-toast);
 	min-width: 240px;
 	max-width: 400px;
 	padding: 0.65rem 0.85rem;
 	border-radius: 8px;
-	color: rgb(255 255 255 / 95%);
+	color: var(--dashboard-toast-text);
 	font-family: tokens.$font-ui;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-
-	// Ultra-discrete glass
-	background: rgb(20 20 20 / 85%);
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--dashboard-toast-accent) 24%, rgb(18 18 18 / 94%)),
+		rgb(18 18 18 / 94%)
+	);
 	backdrop-filter: blur(8px);
-	border: 1px solid rgb(255 255 255 / 10%);
-	box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+	border: 1px solid color-mix(in srgb, var(--dashboard-toast-border) 80%, transparent);
+	box-shadow: 0 8px 24px color-mix(in srgb, var(--dashboard-toast-accent) 18%, rgb(0 0 0 / 25%));
+
+	&--success {
+		--dashboard-toast-accent: var(--dashboard-state-success);
+		--dashboard-toast-border: var(--dashboard-state-success-border);
+	}
+
+	&--warning {
+		--dashboard-toast-accent: var(--dashboard-state-warning);
+		--dashboard-toast-border: var(--dashboard-state-warning-border);
+	}
+
+	&--info {
+		--dashboard-toast-accent: var(--dashboard-state-info);
+		--dashboard-toast-border: var(--dashboard-state-info-border);
+	}
 
 	&__body {
 		display: flex;
@@ -35,19 +56,8 @@
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-		opacity: 90%;
-
-		.dashboard-toast--success & {
-			color: rgb(74 222 128); // Success green
-		}
-
-		.dashboard-toast--warning & {
-			color: rgb(250 204 21); // Warning yellow
-		}
-
-		.dashboard-toast--info & {
-			color: rgb(214 199 173); // Neutral gold/cream
-		}
+		opacity: 95%;
+		color: var(--dashboard-toast-accent);
 	}
 
 	&__content {
@@ -68,14 +78,14 @@
 		display: grid;
 		place-items: center;
 		cursor: pointer;
-		color: rgb(255 255 255 / 40%);
+		color: color-mix(in srgb, var(--dashboard-toast-text) 40%, transparent);
 		transition: color 0.2s ease;
 		padding: 0;
 		margin: 0;
 		flex: 0 0 auto;
 
 		&:hover {
-			color: rgb(255 255 255 / 90%);
+			color: color-mix(in srgb, var(--dashboard-toast-text) 90%, transparent);
 		}
 
 		span {

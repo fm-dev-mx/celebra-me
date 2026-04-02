@@ -8,78 +8,86 @@ body.modal-open {
 }
 
 // ==========================================================================
-// DASHBOARD MODAL SYSTEM (Jewelry Box Aesthetic)
+// DASHBOARD MODAL SYSTEM
 // ==========================================================================
 
 .dashboard-modal-backdrop {
 	position: fixed !important;
 	inset: 0 !important;
-	width: 100vw !important;
-	height: 100dvh !important;
-	z-index: 9999 !important;
-	background: rgb(26 26 26 / 45%);
-	backdrop-filter: blur(12px) saturate(180%);
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	width: 100vw;
+	height: 100dvh;
 	padding: var(--spacing-xl);
 	overflow: hidden;
 	overscroll-behavior: contain;
 	touch-action: none;
+	background: var(--dashboard-surface-overlay);
+	backdrop-filter: blur(12px) saturate(180%);
+	z-index: var(--dashboard-z-modal-backdrop) !important;
 }
 
 .dashboard-modal {
-	width: min(650px, 95vw);
-	background: tokens.$color-surface-primary;
-	border: 1px solid rgba(tokens.$color-action-accent, 0.3);
-	border-radius: 12px;
-	padding: clamp(1.2rem, 3vw, 2.5rem);
-	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
 	position: relative;
-	max-height: min(calc(100dvh - 40px), 850px);
+	z-index: var(--dashboard-z-modal) !important;
 	display: flex;
 	flex-direction: column;
+	width: min(650px, 95vw);
+	min-width: 0;
+	max-height: min(calc(100dvh - 40px), 850px);
+	padding: clamp(1.2rem, 3vw, 2.5rem);
+	border: 1px solid var(--dashboard-border-premium);
+	border-radius: 12px;
+	background:
+		linear-gradient(
+			180deg,
+			var(--dashboard-surface-card-strong),
+			var(--dashboard-surface-card-soft)
+		),
+		var(--dashboard-surface-page);
+	box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
 	animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-	// Inner frame for Jewelry Box look
 	&::before {
 		content: '';
 		position: absolute;
 		inset: 0.5rem;
-		border: 1px solid rgba(tokens.$color-action-accent, 0.15);
-		pointer-events: none;
+		border: 1px solid var(--dashboard-brand-border);
 		border-radius: 8px;
+		pointer-events: none;
 	}
 
 	h3 {
-		font-family: tokens.$font-display-elegant; // Cinzel
-		color: tokens.$color-text-emphasis;
-		font-size: clamp(1.3rem, 3vw, 1.8rem);
 		margin: 0 0 1.5rem;
+		color: var(--dashboard-text-brand);
 		text-align: center;
+		font-family: tokens.$font-display-elegant;
+		font-size: clamp(1.3rem, 3vw, 1.8rem);
 		letter-spacing: tokens.$letter-spacing-tight;
 	}
 
 	&__description {
 		margin-bottom: 1.5rem;
-		color: var(--color-text-secondary);
+		color: var(--dashboard-text-secondary);
 		text-align: center;
 	}
 
 	&__confirm-text {
-		text-align: center;
 		margin-bottom: 1rem;
-		color: var(--color-text-secondary);
+		color: var(--dashboard-text-secondary);
+		text-align: center;
 	}
 
 	&__confirm-warning {
+		color: var(--dashboard-state-danger-text);
 		text-align: center;
 		font-size: 0.85rem;
-		color: var(--color-wax-seal);
 	}
 
 	&__file-actions {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 1rem;
 		margin-bottom: 2rem;
 
@@ -88,28 +96,30 @@ body.modal-open {
 		}
 	}
 
-	// Content container to allow internal scroll if needed
 	&__content {
-		flex: 1;
+		flex: 1 1 auto;
+		min-height: 0;
 		overflow-y: auto;
+		overscroll-behavior: contain;
 		padding: 0.5rem;
-		margin: 0 -0.5rem; // Adjust for scrollbar
+		margin: 0 -0.5rem;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	&--confirm {
 		width: min(440px, 95vw);
-		text-align: center;
 		padding: 1.5rem;
+		text-align: center;
 
 		&::before {
-			display: none; // Remove ornate inner frame for confirmation modals
+			display: none;
 		}
 
 		h3 {
+			margin-bottom: 1rem;
 			font-family: tokens.$font-ui;
 			font-size: 1.25rem;
 			font-weight: 600;
-			margin-bottom: 1rem;
 		}
 
 		.dashboard-modal__content {
@@ -146,24 +156,41 @@ body.modal-open {
 		}
 
 		.dashboard-modal__footer .btn-secondary {
-			background: rgb(245 245 245);
-			border: 1px solid rgb(0 0 0 / 10%);
-			color: rgb(75 75 75);
+			background: var(--dashboard-surface-elevated);
+			border: 1px solid var(--dashboard-border-subtle);
+			color: var(--dashboard-text-primary);
 		}
 
 		.dashboard-modal__footer .btn-secondary:hover {
-			background: rgb(240 240 240);
-			border-color: rgb(0 0 0 / 15%);
+			background: var(--dashboard-surface-card-strong);
+			border-color: var(--dashboard-border-strong);
 		}
 
 		.dashboard-modal__footer .btn-primary--danger {
-			background: rgb(153 27 27);
-			color: white;
+			background: var(--dashboard-state-danger);
+			color: var(--dashboard-text-inverse);
 		}
 
 		.dashboard-modal__footer .btn-primary--danger:hover {
-			background: rgb(127 29 29);
+			background: color-mix(in srgb, var(--dashboard-state-danger) 88%, black);
 		}
+	}
+}
+
+.dashboard-modal-close,
+.dashboard-modal__header .btn-close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	color: var(--dashboard-text-secondary);
+	cursor: pointer;
+	line-height: 1;
+	transition: color 0.2s ease;
+
+	&:hover {
+		color: var(--dashboard-text-brand);
 	}
 }
 
@@ -171,32 +198,59 @@ body.modal-open {
 	position: absolute;
 	top: 1rem;
 	right: 1.2rem;
-	background: none;
-	border: none;
+	z-index: 1;
 	font-size: 1.8rem;
-	color: tokens.$color-text-secondary;
-	cursor: pointer;
-	z-index: 10;
-	transition: color 0.2s ease;
+}
 
-	&:hover {
-		color: tokens.$color-text-emphasis;
+.dashboard-modal--full {
+	width: min(850px, 98vw);
+}
+
+.dashboard-modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+
+	h3 {
+		margin: 0;
+		text-align: left;
+	}
+
+	.btn-close {
+		font-size: 1.5rem;
 	}
 }
 
-.dashboard-modal__actions {
+.dashboard-modal__actions,
+.dashboard-modal__footer {
 	display: flex;
 	justify-content: flex-end;
 	gap: var(--spacing-md);
 	margin-top: 2.5rem;
 	padding-top: 1.5rem;
-	border-top: 1px solid tokens.$color-border-subtle;
+	border-top: 1px solid var(--dashboard-border-subtle);
 
 	@media (width <= 480px) {
 		flex-direction: column-reverse;
 
 		button {
 			width: 100%;
+		}
+	}
+}
+
+.dashboard-modal__footer {
+	.footer-actions {
+		display: flex;
+		flex: 1;
+		justify-content: flex-end;
+		gap: 0.75rem;
+
+		button {
+			flex: 1;
+			max-width: 200px;
 		}
 	}
 }
@@ -209,32 +263,35 @@ body.modal-open {
 	margin-bottom: var(--spacing-md);
 
 	label {
+		color: var(--dashboard-text-secondary);
 		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: tokens.$letter-spacing-wide;
-		color: tokens.$color-text-secondary;
 		font-weight: tokens.$font-weight-bold;
+		letter-spacing: tokens.$letter-spacing-wide;
+		text-transform: uppercase;
 	}
 
 	input,
 	select,
 	textarea {
 		padding: 0.75rem 1rem;
-		border: 1px solid tokens.$color-border-subtle;
+		border: 1px solid var(--dashboard-border-subtle);
 		border-radius: 6px;
+		background: var(--dashboard-surface-elevated);
+		color: var(--dashboard-text-primary);
 		font-size: 1rem;
-		background: rgb(255 255 255);
-		color: tokens.$color-text-primary;
-		transition: all 0.2s ease;
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease,
+			background-color 0.2s ease;
 
 		&:focus {
 			outline: none;
-			border-color: tokens.$color-action-accent;
-			box-shadow: 0 0 0 3px rgba(tokens.$color-action-accent, 0.1);
+			border-color: var(--dashboard-brand-primary);
+			box-shadow: 0 0 0 3px rgb(var(--dashboard-brand-primary-rgb) / 12%);
 		}
 
 		&:disabled {
-			background: tokens.$color-neutral-subtle;
+			background: var(--dashboard-surface-inset);
 			cursor: not-allowed;
 		}
 	}
@@ -249,71 +306,12 @@ body.modal-open {
 	}
 }
 
-.dashboard-modal--full {
-	width: min(850px, 98vw);
-}
-
-.dashboard-modal__header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1.5rem;
-
-	h3 {
-		margin: 0;
-		text-align: left;
-	}
-
-	.btn-close {
-		font-size: 1.5rem;
-		background: none;
-		border: none;
-		cursor: pointer;
-		color: var(--color-text-secondary);
-		transition: color 0.2s ease;
-
-		&:hover {
-			color: var(--color-text-emphasis);
-		}
-	}
-}
-
 .dashboard-form-section {
 	margin-top: 1rem;
 	padding-top: 1.5rem;
-	border-top: 1px solid rgb(0 0 0 / 5%);
+	border-top: 1px solid var(--dashboard-border-subtle);
 }
 
-.dashboard-modal__footer {
-	display: flex;
-	justify-content: flex-end;
-	gap: var(--spacing-md);
-	margin-top: 2.5rem;
-	padding-top: 1.5rem;
-	border-top: 1px solid tokens.$color-border-subtle;
-
-	@media (width <= 480px) {
-		flex-direction: column-reverse;
-
-		button {
-			width: 100%;
-		}
-	}
-
-	.footer-actions {
-		display: flex;
-		gap: 0.75rem;
-		flex: 1;
-		justify-content: flex-end;
-
-		button {
-			flex: 1;
-			max-width: 200px;
-		}
-	}
-}
-
-// Animations used in modals
 @keyframes slideUp {
 	from {
 		opacity: 0%;

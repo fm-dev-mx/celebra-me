@@ -2,24 +2,35 @@
 @use 'sass:color';
 
 .dashboard-shell-body {
-	--dashboard-shell-veil: rgb(var(--color-surface-dark-rgb) / 52%);
-	--dashboard-surface-panel: var(--color-glass-bg);
-	--dashboard-surface-elevated: rgb(var(--color-white-rgb) / 86%);
-	--dashboard-border-premium: var(--color-glass-border);
+	--dashboard-shell-veil: var(--dashboard-surface-overlay);
+	--dashboard-shell-panel: var(--dashboard-surface-panel);
+	--dashboard-shell-elevated: var(--dashboard-surface-card);
+	--dashboard-shell-border-premium: var(--dashboard-border-premium);
 	--dashboard-shadow-premium: var(--shadow-premium);
+
+	/* Layer scale */
+	--dashboard-z-base: 0;
+	--dashboard-z-content: 1;
+	--dashboard-z-topbar: 10;
+	--dashboard-z-backdrop: 40;
+	--dashboard-z-sidebar: 50;
+	--dashboard-z-mobile-dock: 60;
+	--dashboard-z-modal-backdrop: 70;
+	--dashboard-z-modal: 80;
+	--dashboard-z-toast: 90;
 
 	background:
 		radial-gradient(
 			circle at top right,
-			rgb(var(--color-action-accent-rgb), 0.08),
+			rgb(var(--dashboard-brand-accent-rgb) / 8%),
 			transparent 40%
 		),
 		radial-gradient(
 			circle at bottom left,
-			rgb(var(--color-surface-dark-rgb), 0.05),
+			rgb(var(--color-surface-dark-rgb) / 5%),
 			transparent 40%
 		),
-		var(--color-surface-primary, #{tokens.$color-surface-primary});
+		var(--dashboard-surface-page, #{tokens.$color-surface-primary});
 	min-height: 100vh;
 }
 
@@ -27,11 +38,13 @@
 	display: grid;
 	grid-template-columns: 280px minmax(0, 1fr);
 	min-height: 100vh;
-	color: tokens.$color-text-primary;
 	position: relative;
+	isolation: isolate;
+	color: var(--dashboard-text-primary);
 }
 
 .dashboard-shell__backdrop {
+	display: none;
 	position: fixed;
 	inset: 0;
 	background: var(--dashboard-shell-veil);
@@ -39,44 +52,45 @@
 	opacity: 0%;
 	pointer-events: none;
 	transition: opacity 0.28s ease;
-	z-index: 30;
+	z-index: var(--dashboard-z-backdrop);
 }
 
 /* --- Premium Sidebar --- */
 .dashboard-sidebar {
+	position: relative;
 	padding: 0;
 	background:
-		linear-gradient(180deg, rgb(var(--color-surface-dark-rgb) / 94%), rgb(18 16 12 / 96%)),
-		var(--color-surface-dark);
-	color: tokens.$color-text-on-dark;
+		linear-gradient(180deg, var(--dashboard-surface-sidebar-strong), rgb(18 16 12 / 96%)),
+		var(--dashboard-surface-sidebar);
+	color: var(--dashboard-text-inverse);
 	box-shadow: 4px 0 24px rgb(0 0 0 / 20%);
-	z-index: 20;
-	border-right: 1px solid var(--dashboard-border-premium);
+	border-right: 1px solid var(--dashboard-shell-border-premium);
+	z-index: var(--dashboard-z-base);
 }
 
 .dashboard-sidebar__brand {
-	height: 80px;
+	position: relative;
 	display: flex;
 	align-items: center;
+	height: 80px;
 	padding: 0 2rem;
 	background: rgb(0 0 0 / 20%);
-	border-bottom: 1px solid var(--dashboard-border-premium);
-	position: relative;
+	border-bottom: 1px solid var(--dashboard-shell-border-premium);
 
 	a {
-		color: tokens.$color-text-emphasis;
+		display: block;
+		color: var(--dashboard-text-brand);
+		text-align: center;
 		text-decoration: none;
-		font-family: tokens.$font-display-formal; // Cinzel
+		text-transform: uppercase;
+		white-space: normal;
+		word-break: break-all;
+		line-height: 1.2;
+		font-family: tokens.$font-display-formal;
 		font-size: 1.1rem;
 		font-weight: tokens.$font-weight-bold;
 		letter-spacing: 0.25em;
-		text-transform: uppercase;
 		text-shadow: 0 2px 4px rgb(0 0 0 / 30%);
-		white-space: normal;
-		word-break: break-all;
-		text-align: center;
-		display: block;
-		line-height: 1.2;
 
 		@media (width <= 480px) {
 			font-size: 0.9rem;
@@ -87,11 +101,9 @@
 	&::after {
 		content: '';
 		position: absolute;
-		bottom: -1px;
-		left: 0;
-		width: 100%;
+		inset: auto 0 -1px;
 		height: 1px;
-		background: linear-gradient(90deg, transparent, tokens.$color-action-accent, transparent);
+		background: linear-gradient(90deg, transparent, var(--dashboard-brand-accent), transparent);
 	}
 }
 
@@ -100,89 +112,98 @@
 }
 
 .dashboard-sidebar ul {
-	list-style: none;
-	padding: 0;
-	margin: 0;
 	display: grid;
 	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
 }
 
 .dashboard-sidebar a {
 	display: flex;
 	align-items: center;
 	padding: 0.85rem 1.25rem;
-	color: rgb(var(--color-white-rgb, 255 255 255) / 70%);
-	text-decoration: none;
+	border: 1px solid transparent;
 	border-radius: 10px;
+	color: color-mix(in srgb, var(--dashboard-text-inverse) 72%, transparent);
+	text-decoration: none;
 	font-family: tokens.$font-ui;
 	font-size: 0.9rem;
 	font-weight: tokens.$font-weight-medium;
 	letter-spacing: 0.05em;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	border: 1px solid transparent;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease,
+		border-color 0.3s ease,
+		box-shadow 0.3s ease,
+		transform 0.3s ease;
 
 	&.active {
-		background: rgb(var(--color-action-accent-rgb) / 14%);
-		color: rgb(var(--color-white-rgb, 255 255 255));
-		border-color: var(--dashboard-border-premium);
+		background: var(--dashboard-brand-accent-soft);
+		color: var(--dashboard-text-inverse);
+		border-color: var(--dashboard-shell-border-premium);
 		box-shadow:
-			inset 0 0 12px rgb(var(--color-action-accent-rgb) / 10%),
+			inset 0 0 12px rgb(var(--dashboard-brand-accent-rgb) / 10%),
 			0 12px 28px rgb(0 0 0 / 12%);
 	}
 
 	&:hover:not(.active) {
-		background: rgb(var(--color-white-rgb, 255 255 255) / 5%);
-		color: rgb(var(--color-white-rgb, 255 255 255));
+		background: color-mix(in srgb, var(--dashboard-text-inverse) 8%, transparent);
+		color: var(--dashboard-text-inverse);
 		transform: translateX(4px);
 	}
 }
 
 /* --- Premium Topbar & Content --- */
 .dashboard-shell__content {
+	position: relative;
+	z-index: var(--dashboard-z-content);
 	display: flex;
 	flex-direction: column;
+	min-width: 0;
 	background: transparent;
 }
 
 .dashboard-topbar {
-	min-height: 80px;
+	position: sticky;
+	top: 0;
+	z-index: var(--dashboard-z-topbar);
 	display: flex;
 	align-items: center;
 	gap: 1rem;
+	min-height: 80px;
 	padding: 1rem 2.5rem;
-	background: rgb(var(--color-white-rgb) / 72%);
+	background: var(--dashboard-surface-card);
 	backdrop-filter: blur(18px) saturate(170%);
-	border-bottom: 1px solid var(--dashboard-border-premium);
-	position: sticky;
-	top: 0;
-	z-index: 100;
+	border-bottom: 1px solid var(--dashboard-shell-border-premium);
 	box-shadow: 0 8px 32px rgb(var(--color-surface-dark-rgb) / 6%);
 	transition:
 		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-		background 0.3s ease;
+		background-color 0.3s ease,
+		box-shadow 0.3s ease;
 
 	&--hidden {
 		transform: translateY(-100%);
 	}
 
 	&--scrolled {
-		background: rgb(var(--color-white-rgb) / 86%);
+		background: var(--dashboard-surface-card-strong);
 		box-shadow: 0 8px 32px rgb(0 0 0 / 10%);
 	}
 
 	&__menu-button {
 		display: none;
-		width: 48px;
-		height: 48px;
-		padding: 0;
-		border-radius: 999px;
-		border: 1px solid var(--dashboard-border-premium);
-		background: rgb(var(--color-white-rgb) / 65%);
-		color: var(--color-text-emphasis);
 		align-items: center;
 		justify-content: center;
 		flex-direction: column;
 		gap: 4px;
+		width: 48px;
+		height: 48px;
+		padding: 0;
+		border: 1px solid var(--dashboard-shell-border-premium);
+		border-radius: 999px;
+		background: var(--dashboard-shell-elevated);
+		color: var(--dashboard-text-brand);
 		cursor: pointer;
 		box-shadow: var(--dashboard-shadow-premium);
 	}
@@ -198,22 +219,23 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
+		min-width: 0;
 	}
 
 	&__eyebrow {
+		color: color-mix(in srgb, var(--dashboard-text-secondary) 78%, transparent);
 		font-size: 0.7rem;
 		font-family: tokens.$font-ui;
 		font-weight: tokens.$font-weight-bold;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgba(tokens.$color-text-secondary, 0.78);
 	}
 
 	h1 {
 		margin: 0;
-		font-family: tokens.$font-display-elegant; // Playfair
+		color: var(--dashboard-text-brand);
+		font-family: tokens.$font-display-elegant;
 		font-size: clamp(1.3rem, 2vw, 1.7rem);
-		color: tokens.$color-text-emphasis;
 		letter-spacing: tokens.$letter-spacing-tight;
 	}
 }
@@ -222,12 +244,12 @@
 .dashboard-guests__toolbar {
 	margin-bottom: 2rem;
 	padding-bottom: 1.5rem;
-	border-bottom: 1px solid rgba(tokens.$color-action-accent, 0.1);
+	border-bottom: 1px solid color-mix(in srgb, var(--dashboard-brand-accent) 14%, transparent);
 
 	.dashboard-guests__title-area {
 		display: flex;
-		justify-content: space-between;
 		align-items: flex-end;
+		justify-content: space-between;
 		gap: 2rem;
 
 		@media (width <= 768px) {
@@ -238,9 +260,9 @@
 
 		h1 {
 			margin: 0;
+			color: var(--dashboard-text-primary);
 			font-family: tokens.$font-display-elegant;
 			font-size: 2.25rem;
-			color: tokens.$color-text-primary;
 			letter-spacing: tokens.$letter-spacing-tight;
 		}
 	}
@@ -253,55 +275,62 @@
 	min-width: 280px;
 
 	label {
+		color: color-mix(in srgb, var(--dashboard-text-secondary) 60%, transparent);
 		font-size: 0.65rem;
 		font-weight: 800;
-		text-transform: uppercase;
 		letter-spacing: 0.15em;
-		color: rgba(tokens.$color-text-secondary, 0.6);
+		text-transform: uppercase;
 	}
 
 	select {
 		appearance: none;
-		background: rgb(255 255 255 / 60%);
-		border: 1px solid rgba(tokens.$color-action-accent, 0.15);
-		border-radius: 12px;
+		cursor: pointer;
 		padding: 0.75rem 1.25rem;
+		border: 1px solid var(--dashboard-border-premium);
+		border-radius: 12px;
+		background: var(--dashboard-surface-card);
+		box-shadow: tokens.$shadow-subtle;
+		color: var(--dashboard-text-primary);
 		font-family: tokens.$font-ui;
 		font-size: 0.9rem;
-		color: tokens.$color-text-primary;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: tokens.$shadow-subtle;
+		transition:
+			border-color 0.3s ease,
+			background-color 0.3s ease,
+			box-shadow 0.3s ease;
 
 		&:hover {
-			border-color: rgba(tokens.$color-action-accent, 0.4);
-			background: rgb(var(--color-white-rgb, 255 255 255));
+			background: var(--dashboard-surface-card-strong);
+			border-color: var(--dashboard-brand-border-strong);
 			box-shadow: tokens.$shadow-emphasis;
 		}
 
 		&:focus {
 			outline: none;
-			border-color: tokens.$color-text-emphasis;
-			box-shadow: 0 0 0 4px rgba(tokens.$color-text-emphasis, 0.1);
+			border-color: var(--dashboard-brand-primary);
+			box-shadow: 0 0 0 4px rgb(var(--dashboard-brand-primary-rgb) / 12%);
 		}
 	}
 }
 
-/* --- Premium Buttons (Tactile/Game-like) --- */
+/* --- Premium Buttons --- */
 .btn-primary,
 .btn-accent,
 .btn-secondary {
 	position: relative;
-	transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-	cursor: pointer;
-	border: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 0.6rem;
+	border: none;
+	cursor: pointer;
 	font-weight: tokens.$font-weight-bold;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
+	transition:
+		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+		box-shadow 0.2s ease,
+		opacity 0.2s ease,
+		background-color 0.2s ease;
 
 	&:hover {
 		transform: translateY(-2px);
@@ -319,55 +348,54 @@
 }
 
 .btn-primary {
-	background: tokens.$color-text-emphasis;
-	color: white;
-	box-shadow: 0 4px 12px rgba(tokens.$color-text-emphasis, 0.3);
+	background: var(--dashboard-brand-primary);
+	color: var(--dashboard-text-inverse);
+	box-shadow: 0 4px 12px rgb(var(--dashboard-brand-primary-rgb) / 24%);
 
 	&:hover {
-		box-shadow: 0 6px 20px rgba(tokens.$color-text-emphasis, 0.4);
+		box-shadow: 0 6px 20px rgb(var(--dashboard-brand-primary-rgb) / 34%);
 	}
 }
 
 .dashboard-breadcrumbs ol {
-	list-style: none;
 	display: flex;
 	gap: 0.5rem;
-	padding: 0;
 	margin: 0.25rem 0 0;
+	padding: 0;
+	list-style: none;
+	color: color-mix(in srgb, var(--dashboard-text-secondary) 60%, transparent);
 	font-size: 0.75rem;
 	font-family: tokens.$font-ui;
-	text-transform: uppercase;
 	letter-spacing: 0.1em;
-	color: rgba(tokens.$color-text-secondary, 0.6);
+	text-transform: uppercase;
 }
 
 .dashboard-breadcrumbs li + li::before {
 	content: '•';
 	margin-right: 0.5rem;
-	color: rgba(tokens.$color-action-accent, 0.4);
+	color: color-mix(in srgb, var(--dashboard-brand-accent) 40%, transparent);
 }
 
 /* --- Premium User Menu --- */
 .dashboard-user-menu {
 	display: flex;
 	flex-direction: column;
-	margin: 0 auto;
 	gap: 1rem;
+	margin: 0 auto;
 	max-width: 100%;
 	flex-shrink: 1;
 
 	@media (width <= 480px) {
-		gap: 0.5rem;
-		padding: 0.6rem 0.6rem 0.6rem 0.8rem;
-		flex-direction: column;
-		border-radius: 20px;
 		width: 100%;
 		max-width: 260px;
 		align-items: center;
+		gap: 0.5rem;
+		padding: 0.6rem 0.6rem 0.6rem 0.8rem;
+		border-radius: 20px;
 
 		.dashboard-user-menu__meta {
-			text-align: center;
 			margin-bottom: 0.25rem;
+			text-align: center;
 		}
 
 		button {
@@ -384,49 +412,53 @@
 }
 
 .dashboard-user-menu__role {
+	color: var(--dashboard-text-secondary);
 	font-size: 0.6rem;
 	font-weight: 800;
 	letter-spacing: 0.15em;
-	color: tokens.$color-text-secondary;
 	text-transform: uppercase;
 }
 
 .dashboard-user-menu__email {
+	color: var(--dashboard-text-secondary);
 	font-size: 0.8rem;
-	color: tokens.$color-text-secondary;
 	font-weight: tokens.$font-weight-medium;
 }
 
 .dashboard-user-menu button {
-	background: tokens.$color-text-emphasis;
-	color: white;
-	border: none;
-	border-radius: 100px;
-	padding: 0.5rem 1rem;
-	font-family: tokens.$font-ui;
-	font-size: 0.7rem;
-	font-weight: tokens.$font-weight-bold;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 4px 10px rgba(tokens.$color-text-emphasis, 0.3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-width: 110px;
 	flex-shrink: 0;
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 100px;
+	background: var(--dashboard-brand-primary);
+	box-shadow: 0 4px 10px rgb(var(--dashboard-brand-primary-rgb) / 24%);
+	color: var(--dashboard-text-inverse);
+	cursor: pointer;
+	font-family: tokens.$font-ui;
+	font-size: 0.7rem;
+	font-weight: tokens.$font-weight-bold;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	transition:
+		transform 0.3s ease,
+		box-shadow 0.3s ease,
+		background-color 0.3s ease,
+		opacity 0.3s ease;
 
 	@media (width <= 480px) {
-		padding: 0.4rem 0.75rem;
 		min-width: 90px;
+		padding: 0.4rem 0.75rem;
 		font-size: 0.65rem;
 	}
 
 	&:hover {
-		background: #{color.adjust(tokens.$color-text-emphasis, $lightness: 5%)};
+		background: #{color.adjust(tokens.$color-action-primary, $lightness: 6%)};
 		transform: translateY(-1px);
-		box-shadow: 0 6px 15px rgba(tokens.$color-text-emphasis, 0.4);
+		box-shadow: 0 6px 15px rgb(var(--dashboard-brand-primary-rgb) / 34%);
 	}
 
 	&:active {
@@ -445,8 +477,8 @@
 		.dot {
 			width: 4px;
 			height: 4px;
-			background: white;
 			border-radius: 50%;
+			background: white;
 			animation: dotPulse 1.4s infinite ease-in-out both;
 
 			&:nth-child(1) {
@@ -473,8 +505,8 @@
 }
 
 .dashboard-main {
-	padding: 2.5rem;
 	flex: 1;
+	padding: 2.5rem;
 }
 
 /* Mobile Adjustments */
@@ -486,15 +518,15 @@
 	.dashboard-sidebar {
 		position: fixed;
 		inset: 0 auto 0 0;
+		z-index: var(--dashboard-z-sidebar);
 		width: min(82vw, 340px);
 		max-width: 340px;
 		height: 100dvh;
-		border-right: 1px solid var(--dashboard-border-premium);
-		border-bottom: 0;
+		overflow-y: auto;
 		transform: translateX(-100%);
 		transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-		z-index: 40;
-		overflow-y: auto;
+		border-right: 1px solid var(--dashboard-shell-border-premium);
+		border-bottom: 0;
 	}
 
 	.dashboard-sidebar--open {
@@ -502,30 +534,26 @@
 	}
 
 	.dashboard-sidebar__brand {
-		height: 70px;
 		justify-content: flex-start;
-		padding: 0 1.25rem;
-		min-height: 70px;
 		width: 100%;
+		min-height: 70px;
+		height: 70px;
+		padding: 0 1.25rem;
 		box-sizing: border-box;
 	}
 
 	.dashboard-topbar {
-		padding: 0.9rem 1rem;
-		gap: 0.85rem;
 		width: 100%;
 		max-width: 100vw;
-		box-sizing: border-box;
 		overflow: hidden;
 		align-items: center;
+		gap: 0.85rem;
+		padding: 0.9rem 1rem;
+		box-sizing: border-box;
 	}
 
 	.dashboard-topbar__menu-button {
 		display: inline-flex;
-	}
-
-	.dashboard-topbar__meta {
-		min-width: 0;
 	}
 
 	.dashboard-topbar h1 {
@@ -533,11 +561,11 @@
 	}
 
 	.dashboard-main {
-		padding: 1.25rem 0.85rem 5.5rem;
 		width: 100%;
-		box-sizing: border-box;
-		overflow-x: hidden;
 		max-width: 100vw;
+		overflow-x: hidden;
+		padding: 1.25rem 0.85rem 5.5rem;
+		box-sizing: border-box;
 	}
 
 	.dashboard-shell__backdrop {
@@ -558,7 +586,7 @@
 	pointer-events: auto;
 }
 
-// Robust Scroll Lock Utility
+/* Robust Scroll Lock Utility */
 body.modal-open {
 	/* stylelint-disable-next-line declaration-no-important */
 	overflow: hidden !important;

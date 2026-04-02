@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ArrowRightIcon, UserGroupIcon } from '@/components/common/icons/ui';
 
 interface GuestMobileDockProps {
 	loading: boolean;
@@ -35,8 +36,11 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 				className="dock-item"
 				onClick={onCreate}
 				disabled={createDisabled}
+				aria-label="Crear nuevo invitado"
 			>
-				<span className="dock-icon">+</span>
+				<span className="dock-icon" aria-hidden="true">
+					<UserGroupIcon size={18} />
+				</span>
 				<span className="dock-label">Nuevo</span>
 			</button>
 
@@ -45,9 +49,12 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 				className="dock-item dock-item--main"
 				disabled={loading || !hasPendingGenerated}
 				onClick={onOpenNextAction}
+				aria-label="Abrir siguiente invitado pendiente"
 			>
-				<span className="dock-icon">•</span>
-				<span className="dock-label">Continuar</span>
+				<span className="dock-icon" aria-hidden="true">
+					<ArrowRightIcon size={18} />
+				</span>
+				<span className="dock-label">Siguiente</span>
 			</button>
 
 			<div className="dock-item dock-item--filter">

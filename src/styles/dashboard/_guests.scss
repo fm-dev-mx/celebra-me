@@ -147,18 +147,17 @@
 .btn-accent {
 	font-family: inherit;
 	font-weight: tokens.$font-weight-bold;
-	padding: 0.85rem 2rem;
+	padding: 0 2rem;
 	border-radius: 8px;
 	cursor: pointer;
 	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	text-transform: uppercase;
 	letter-spacing: tokens.$letter-spacing-wide;
-	font-size: 0.85rem;
+	font-size: clamp(0.6rem, 1vw, 0.85rem);
 	border: 1px solid transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.6rem;
 	min-height: 48px;
 	position: relative;
 	overflow: hidden;
@@ -178,57 +177,53 @@
 }
 
 .btn-primary {
-	background: tokens.$color-text-emphasis;
-	color: white;
+	background: var(--dashboard-brand-primary);
+	color: var(--dashboard-text-inverse);
 
-	@include tactile-button-shadow(tokens.$color-text-emphasis, 0.25);
+	@include tactile-button-shadow(tokens.$color-action-primary, 0.22);
 
 	&:hover {
-		background: color.adjust(tokens.$color-text-emphasis, $lightness: 5%);
-		transform: translateY(-2px);
-		box-shadow:
-			0 6px 0 #{color.adjust(tokens.$color-text-emphasis, $lightness: -15%)},
-			0 12px 24px rgba(tokens.$color-text-emphasis, 0.35);
+		@include tactile-button-hover(tokens.$color-action-primary, 0.3);
 	}
 
 	&:active {
-		@include tactile-button-active(tokens.$color-text-emphasis, 0.2);
+		@include tactile-button-active(tokens.$color-action-primary, 0.22);
 	}
 
 	&--danger {
-		background: tokens.$color-wax-seal;
+		background: var(--dashboard-state-danger);
 
-		@include tactile-button-shadow(tokens.$color-wax-seal, 0.2);
+		@include tactile-button-shadow(tokens.$color-danger, 0.2);
 
 		&:hover {
-			@include tactile-button-hover(tokens.$color-wax-seal, 0.3);
+			@include tactile-button-hover(tokens.$color-danger, 0.3);
 		}
 
 		&:active {
-			@include tactile-button-active(tokens.$color-wax-seal, 0.2);
+			@include tactile-button-active(tokens.$color-danger, 0.2);
 		}
 	}
 }
 
 .btn-secondary {
-	background: transparent;
-	border: 1px solid tokens.$color-border-emphasis;
-	color: tokens.$color-text-emphasis;
+	background: var(--dashboard-surface-elevated);
+	border-color: var(--dashboard-border-subtle);
+	color: var(--dashboard-text-primary);
 
 	&:hover {
-		background: color.scale(tokens.$color-action-accent, $alpha: -95%);
-		transform: translate3d(0, -1px, 0);
+		background: var(--dashboard-surface-card-strong);
+		border-color: var(--dashboard-border-strong);
 	}
 }
 
 .btn-accent {
-	background: tokens.$color-surface-primary;
-	border: 1px solid tokens.$color-action-accent;
-	color: tokens.$color-action-accent;
+	background: var(--dashboard-brand-accent-soft);
+	border-color: var(--dashboard-brand-border-strong);
+	color: var(--dashboard-text-brand);
 
 	&:hover {
-		background: rgba(tokens.$color-action-accent, 0.1);
-		border-color: tokens.$color-text-emphasis;
+		background: color-mix(in srgb, var(--dashboard-brand-accent) 18%, white);
+		border-color: var(--dashboard-brand-border-strong);
 	}
 }
 
@@ -291,14 +286,6 @@
 			transform: translateY(-1px);
 		}
 	}
-
-	.dashboard-status__eyebrow {
-		font-size: 0.62rem;
-		font-weight: tokens.$font-weight-bold;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: rgba(tokens.$color-text-secondary, 0.7);
-	}
 }
 
 .guest-card {
@@ -330,7 +317,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1.25rem;
-	margin-bottom: 2.5rem;
+	margin: 2rem 0;
 	background: var(--color-glass-bg);
 	padding: 1.5rem;
 	border-radius: 20px;
@@ -537,7 +524,7 @@
 
 	h3 {
 		font-size: 0.85rem;
-		color: tokens.$color-action-accent;
+		color: var(--dashboard-text-secondary);
 		margin: 0;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
@@ -579,14 +566,14 @@
 	height: 100%;
 	background: linear-gradient(
 		90deg,
-		tokens.$color-action-accent,
-		tokens.$color-text-primary,
-		tokens.$color-action-accent
+		var(--dashboard-brand-primary),
+		color-mix(in srgb, var(--dashboard-brand-accent) 36%, var(--dashboard-brand-primary)),
+		var(--dashboard-brand-primary)
 	);
 	background-size: 200% 100%;
 	animation: shimmer 3s infinite linear;
 	border-radius: 100px;
-	box-shadow: 0 0 15px rgba(tokens.$color-action-accent, 0.4);
+	box-shadow: 0 0 15px rgb(var(--dashboard-brand-primary-rgb) / 24%);
 }
 
 @keyframes shimmer {
@@ -640,12 +627,12 @@
 
 .completion-badge {
 	align-self: flex-start;
-	color: tokens.$color-action-accent;
+	color: var(--dashboard-state-success-text);
 	font-weight: 700;
-	background: rgb(var(--color-action-accent-rgb) / 12%);
+	background: var(--dashboard-state-success-bg);
 	padding: 6px 12px;
 	border-radius: 100px;
-	border: 1px solid var(--color-glass-border);
+	border: 1px solid var(--dashboard-state-success-border);
 	font-size: 0.8rem;
 	display: flex;
 	align-items: center;
@@ -676,7 +663,7 @@
 	backdrop-filter: blur(12px) saturate(180%);
 	border-top: 1px solid var(--color-glass-border);
 	padding: 0.75rem 1rem env(safe-area-inset-bottom);
-	z-index: 9999;
+	z-index: var(--dashboard-z-mobile-dock);
 	justify-content: space-around;
 	align-items: center;
 	box-shadow: 0 -4px 24px rgb(0 0 0 / 10%);
@@ -698,10 +685,11 @@
 		background: none;
 		border: none;
 		padding: 0.5rem;
-		color: tokens.$color-text-secondary;
+		color: var(--dashboard-text-secondary);
 		cursor: pointer;
 		transition: all 0.2s ease;
 		position: relative;
+		gap: 0.2rem;
 
 		&:active {
 			transform: scale(0.9);
@@ -713,7 +701,11 @@
 		}
 
 		.dock-icon {
-			font-size: 1.4rem;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 1.6rem;
+			height: 1.6rem;
 			margin-bottom: 0.25rem;
 		}
 
@@ -721,34 +713,34 @@
 			font-size: 0.65rem;
 			text-transform: uppercase;
 			font-weight: tokens.$font-weight-bold;
-			letter-spacing: 0.5px;
+			letter-spacing: 0.08em;
 		}
 
 		&--main {
+			flex-direction: row;
+			gap: 0.5rem;
+			padding: 0.85rem 1rem;
+			min-height: 56px;
+			border-radius: 999px;
+			margin-top: -1.9rem;
 			background: linear-gradient(
 				135deg,
-				tokens.$color-text-emphasis,
-				#{color.adjust(tokens.$color-text-emphasis, $lightness: -10%)}
+				var(--dashboard-brand-primary),
+				#{color.adjust(tokens.$color-action-primary, $lightness: -8%)}
 			);
-			width: 64px;
-			height: 64px;
-			border-radius: 50%;
-			margin-top: -2.5rem;
-			box-shadow: 0 8px 20px rgba(tokens.$color-text-emphasis, 0.4);
-			color: white;
-			border: 4px solid white;
+			box-shadow: 0 10px 26px rgb(var(--dashboard-brand-primary-rgb) / 28%);
+			color: var(--dashboard-text-inverse);
+			border: 1px solid color-mix(in srgb, var(--dashboard-brand-primary) 55%, white);
 
 			.dock-icon {
 				margin-bottom: 0;
-			}
-
-			.dock-label {
-				display: none;
+				width: 1.2rem;
+				height: 1.2rem;
 			}
 
 			&:disabled {
-				filter: grayscale(1);
 				opacity: 60%;
+				box-shadow: none;
 			}
 		}
 
@@ -990,28 +982,28 @@
 
 	&--pending {
 		@include status-pill-variant(
-			rgb(255 251 235),
-			rgb(146 64 14),
-			rgb(253 230 138),
-			rgb(217 119 6)
+			var(--dashboard-state-warning-bg),
+			var(--dashboard-state-warning-text),
+			var(--dashboard-state-warning-border),
+			var(--dashboard-state-warning)
 		);
 	}
 
 	&--confirmed {
 		@include status-pill-variant(
-			rgb(240 253 244),
-			rgb(22 101 52),
-			rgb(187 247 208),
-			rgb(34 197 94)
+			var(--dashboard-state-success-bg),
+			var(--dashboard-state-success-text),
+			var(--dashboard-state-success-border),
+			var(--dashboard-state-success)
 		);
 	}
 
 	&--declined {
 		@include status-pill-variant(
-			rgb(254 242 242),
-			rgb(153 27 27),
-			rgb(254 202 202),
-			rgb(239 68 68)
+			var(--dashboard-state-danger-bg),
+			var(--dashboard-state-danger-text),
+			var(--dashboard-state-danger-border),
+			var(--dashboard-state-danger)
 		);
 	}
 }
@@ -1067,13 +1059,13 @@
 	transition: all 0.2s ease;
 	min-height: 44px;
 	min-width: 44px;
-	background: var(--color-text-emphasis);
-	color: white;
-	box-shadow: 0 2px 8px rgb(var(--color-action-accent-rgb) / 18%);
+	background: var(--dashboard-brand-primary);
+	color: var(--dashboard-text-inverse);
+	box-shadow: 0 2px 8px rgb(var(--dashboard-brand-primary-rgb) / 18%);
 
 	&:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba(tokens.$color-text-emphasis, 0.3);
+		box-shadow: 0 4px 12px rgb(var(--dashboard-brand-primary-rgb) / 30%);
 	}
 
 	&:disabled {
@@ -1082,12 +1074,12 @@
 	}
 
 	&--sending {
-		background: rgba(tokens.$color-text-emphasis, 0.8);
+		background: color-mix(in srgb, var(--dashboard-brand-primary) 82%, transparent);
 	}
 
 	&--delivered {
-		background: rgb(34 197 94);
-		box-shadow: 0 0 12px rgb(34 197 94 / 30%);
+		background: var(--dashboard-state-success);
+		box-shadow: 0 0 12px color-mix(in srgb, var(--dashboard-state-success) 30%, transparent);
 	}
 
 	.share-icon {
@@ -1146,11 +1138,11 @@
 	}
 
 	&--danger {
-		color: rgb(239 68 68);
+		color: var(--dashboard-state-danger-text);
 
 		&:hover:not(:disabled) {
-			background: rgb(254 242 242);
-			border-color: rgb(254 202 202);
+			background: var(--dashboard-state-danger-bg);
+			border-color: var(--dashboard-state-danger-border);
 		}
 	}
 }
@@ -1309,7 +1301,7 @@
 /* Discrete Validation Messages */
 .field-error {
 	display: block;
-	color: tokens.$color-wax-seal;
+	color: var(--dashboard-state-danger-text);
 	font-size: 0.75rem;
 	margin-top: 0.25rem;
 	font-weight: tokens.$font-weight-medium;
@@ -1429,8 +1421,8 @@
 }
 
 .btn-secondary--postpone {
-	border: 1px dashed var(--color-border-emphasis);
-	color: var(--color-text-secondary);
+	border: 1px dashed var(--dashboard-border-strong);
+	color: var(--dashboard-text-secondary);
 }
 
 @keyframes slideDown {
@@ -1510,9 +1502,9 @@
 .session-progress {
 	margin-top: var(--spacing-sm);
 	padding: var(--spacing-xs) var(--spacing-sm);
-	background: rgb(var(--color-action-accent-rgb) / 6%);
+	background: var(--dashboard-state-info-bg);
 	border-radius: 14px;
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+	border: 1px solid var(--dashboard-state-info-border);
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -1520,7 +1512,7 @@
 	&__label {
 		font-size: 0.75rem;
 		font-weight: tokens.$font-weight-bold;
-		color: tokens.$color-action-accent;
+		color: var(--dashboard-state-info-text);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
@@ -1534,9 +1526,9 @@
 
 	&__bar {
 		height: 100%;
-		background: tokens.$color-action-accent;
+		background: var(--dashboard-state-info);
 		transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-		box-shadow: 0 0 8px rgba(tokens.$color-action-accent, 0.3);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--dashboard-state-info) 30%, transparent);
 	}
 
 	&__count {
@@ -1550,8 +1542,7 @@
 @media (prefers-reduced-motion: reduce) {
 	.progress-fill,
 	.session-progress__bar,
-	.dashboard-guests__mobile-dock,
-	.celebrate-success {
+	.dashboard-guests__mobile-dock {
 		animation: none;
 		transition: none;
 	}

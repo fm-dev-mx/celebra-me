@@ -73,19 +73,6 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 				</div>
 			</div>
 
-			<div className="dashboard-guests__meta-bar">
-				{updatedAt && (
-					<span className="dashboard-status">
-						<span className="dashboard-status__eyebrow">Última sincronización</span>
-						<span>{new Date(updatedAt).toLocaleString('es-MX')}</span>
-					</span>
-				)}
-				<span className="dashboard-status">
-					<span className="dashboard-status__eyebrow">Estado en vivo</span>
-					<span>{realtimeLabel}</span>
-				</span>
-			</div>
-
 			<GuestProgressCard
 				totalInvitations={totals.totalInvitations}
 				sharedInvitations={totals.sharedInvitations}

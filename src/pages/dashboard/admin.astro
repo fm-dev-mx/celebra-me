@@ -45,36 +45,43 @@ const pageData = await prepareDashboardAdminPageData();
 			margin-top: 2rem;
 		}
 		.dashboard-stat-card {
-			background: var(--color-surface);
-			border: 1px solid var(--color-border);
-			border-radius: 0.5rem;
+			background:
+				linear-gradient(
+					180deg,
+					var(--dashboard-surface-card-strong),
+					var(--dashboard-surface-card-soft)
+				),
+				var(--dashboard-surface-panel);
+			border: 1px solid var(--dashboard-border-premium);
+			border-radius: 1rem;
 			padding: 1.5rem;
 			transition: transform 0.2s ease;
+			box-shadow: var(--shadow-subtle);
 		}
 		.dashboard-stat-card:hover {
 			transform: translateY(-2px);
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			box-shadow: var(--shadow-emphasis);
 		}
 		.dashboard-stat-card h3 {
 			margin: 0 0 0.5rem;
 			font-size: 1rem;
-			color: var(--color-text-secondary);
+			color: var(--dashboard-text-secondary);
 			font-weight: 500;
 		}
 		.dashboard-stat-number {
 			font-size: 2.5rem;
 			font-weight: 700;
 			margin: 0.5rem 0;
-			color: var(--color-primary);
+			color: var(--dashboard-brand-primary);
 		}
 		.dashboard-stat-subtext {
 			font-size: 0.875rem;
-			color: var(--color-text-tertiary);
+			color: var(--dashboard-text-muted);
 			margin: 0.25rem 0 1rem;
 		}
 		.dashboard-stat-link {
 			display: inline-block;
-			color: var(--color-primary);
+			color: var(--dashboard-text-brand);
 			text-decoration: none;
 			font-weight: 500;
 			font-size: 0.875rem;

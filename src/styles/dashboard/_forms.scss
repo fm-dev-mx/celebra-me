@@ -14,8 +14,15 @@
 .dashboard-form-grid select {
 	padding: 0.55rem 0.65rem;
 	border-radius: 0.45rem;
-	border: 1px solid rgb(var(--color-surface-dark-rgb), 0.25);
-	background: rgb(255 255 255);
+	border: 1px solid var(--dashboard-border-subtle);
+	background: var(--dashboard-surface-elevated);
+	color: var(--dashboard-text-primary);
+
+	&:focus {
+		outline: none;
+		border-color: var(--dashboard-brand-primary);
+		box-shadow: 0 0 0 3px rgb(var(--dashboard-brand-primary-rgb) / 12%);
+	}
 }
 
 .dashboard-actions {
@@ -28,15 +35,30 @@
 .dashboard-actions button {
 	padding: 0.56rem 0.78rem;
 	border-radius: 0.45rem;
-	border: 1px solid rgb(var(--color-action-accent-rgb), 0.4);
-	background: rgb(255 255 255);
+	border: 1px solid var(--dashboard-border-subtle);
+	background: var(--dashboard-surface-elevated);
+	color: var(--dashboard-text-primary);
 	cursor: pointer;
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease,
+		transform 0.2s ease;
+
+	&:hover:not(:disabled) {
+		border-color: var(--dashboard-brand-border-strong);
+		background: var(--dashboard-surface-card-strong);
+		transform: translateY(-1px);
+	}
+
+	&:disabled {
+		opacity: 60%;
+		cursor: not-allowed;
+	}
 }
 
 .dashboard-form-help {
 	font-size: 0.75rem;
-	color: var(--color-text-muted);
+	color: var(--dashboard-text-muted);
 	margin: 0.25rem 0 0;
 	font-style: italic;
 }
-
