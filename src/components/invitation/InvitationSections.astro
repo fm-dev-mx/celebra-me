@@ -22,35 +22,45 @@ interface Props {
 
 const { pageData } = Astro.props;
 const renderDescriptors = buildInvitationSectionRenderDescriptors(pageData);
+const totalSections = renderDescriptors.length;
 ---
 
+<div id="invitation-sections-container" data-total-sections={totalSections}>
 {
-	renderDescriptors.map((descriptor: InvitationSectionRenderDescriptor) => {
-		switch (descriptor.kind) {
-			case 'interlude':
-				return <Interlude {...descriptor.props} />;
-			case 'quote':
-				return <Quote {...descriptor.props} />;
-			case 'family':
-				return <Family {...descriptor.props} />;
-			case 'gallery':
-				return <Gallery {...descriptor.props} />;
-			case 'countdown':
-				return <Countdown {...descriptor.props} />;
-			case 'location':
-				return <EventLocation {...descriptor.props} />;
-			case 'itinerary':
-				return <Itinerary {...descriptor.props} />;
-			case 'rsvp':
-				return <RSVP client:visible {...descriptor.props} />;
-			case 'gifts':
-				return <Gifts {...descriptor.props} />;
-			case 'thankYou':
-				return <ThankYou {...descriptor.props} />;
-			case 'personalized-access':
-				return <PersonalizedAccess {...descriptor.props} />;
-			default:
-				return null;
-		}
+	renderDescriptors.map((descriptor: InvitationSectionRenderDescriptor, index) => {
+		const sectionId = `section-${index}-${descriptor.kind}`;
+		return (
+			<div data-section-id={sectionId} class="invitation-section-wrapper">
+				{(() => {
+					switch (descriptor.kind) {
+						case 'interlude':
+							return <Interlude {...descriptor.props} />;
+						case 'quote':
+							return <Quote {...descriptor.props} />;
+						case 'family':
+							return <Family {...descriptor.props} />;
+						case 'gallery':
+							return <Gallery {...descriptor.props} />;
+						case 'countdown':
+							return <Countdown {...descriptor.props} />;
+						case 'location':
+							return <EventLocation {...descriptor.props} />;
+						case 'itinerary':
+							return <Itinerary {...descriptor.props} />;
+						case 'rsvp':
+							return <RSVP client:visible {...descriptor.props} />;
+						case 'gifts':
+							return <Gifts {...descriptor.props} />;
+						case 'thankYou':
+							return <ThankYou {...descriptor.props} />;
+						case 'personalized-access':
+							return <PersonalizedAccess {...descriptor.props} />;
+						default:
+							return null;
+					}
+				})()}
+			</div>
+		);
 	})
 }
+</div>

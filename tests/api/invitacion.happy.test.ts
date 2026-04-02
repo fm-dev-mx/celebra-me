@@ -50,7 +50,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 				maxAllowedAttendees: 3,
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
-				guestMessage: '',
+				guestComment: '',
 			},
 		});
 
@@ -79,7 +79,7 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 				{
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
-					guestMessage: 'Nos vemos!',
+					guestComment: 'Nos vemos!',
 				},
 				{ 'Content-Type': 'application/json' },
 			),

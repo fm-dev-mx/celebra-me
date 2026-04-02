@@ -24,8 +24,10 @@ export function toGuestDto(
 		maxAllowedAttendees: guest.maxAllowedAttendees,
 		attendanceStatus: guest.attendanceStatus,
 		attendeeCount: guest.attendeeCount,
-		guestMessage: guest.guestMessage,
+		guestComment: guest.guestComment,
 		deliveryStatus: guest.deliveryStatus,
+		viewPercentage: guest.viewPercentage,
+		isViewed: guest.isViewed,
 		firstViewedAt: guest.firstViewedAt,
 		respondedAt: guest.respondedAt,
 		waShareUrl: buildWhatsAppShareUrl({

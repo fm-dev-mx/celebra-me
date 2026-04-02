@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 
@@ -32,7 +32,15 @@ export const POST: APIRoute = async ({ params, request }) => {
 			return errorResponse(new ApiError(429, 'rate_limited', 'Too many requests.'));
 		}
 
-		await trackInvitationView(inviteId);
+		const bodyResult = await parseJsonBody(request).catch(() => ({}));
+		if (bodyResult instanceof Response) {
+			return bodyResult;
+		}
+		const body = bodyResult as Record<string, unknown>;
+		const viewPercentage =
+			typeof body?.viewPercentage === 'number' ? body.viewPercentage : undefined;
+
+		await trackInvitationView(inviteId, viewPercentage);
 		return jsonResponse({ message: 'View recorded.' });
 	} catch (error) {
 		return errorResponse(error);

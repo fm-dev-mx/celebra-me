@@ -6,6 +6,7 @@ import {
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { generateShortId } from '@/lib/server/ids';
+import type { UpdateGuestInput } from '@/lib/rsvp/repositories/shared/rows';
 import type {
 	AttendanceStatus,
 	EntrySource,
@@ -155,10 +156,11 @@ export async function persistRsvpResponse(
 	}
 
 	const respondedAt = new Date().toISOString();
-	const updateBody = {
+	const updateBody: UpdateGuestInput = {
+		guestId: invitation.id,
 		attendanceStatus,
 		attendeeCount,
-		guestMessage: sanitize(payload.guestMessage, 500),
+		guestComment: sanitize(payload.guestComment, 500),
 		respondedAt,
 		lastResponseSource: responseSource,
 	};
@@ -167,18 +169,11 @@ export async function persistRsvpResponse(
 			? await updateGuestByInviteIdPublic(invitation.inviteId, {
 					attendance_status: updateBody.attendanceStatus,
 					attendee_count: updateBody.attendeeCount,
-					guest_message: updateBody.guestMessage,
+					guest_comment: updateBody.guestComment,
 					responded_at: updateBody.respondedAt,
 					last_response_source: updateBody.lastResponseSource,
 				})
-			: await updateGuestByIdService({
-					guestId: invitation.id,
-					attendanceStatus: updateBody.attendanceStatus,
-					attendeeCount: updateBody.attendeeCount,
-					guestMessage: updateBody.guestMessage,
-					respondedAt: updateBody.respondedAt,
-					lastResponseSource: updateBody.lastResponseSource,
-				});
+			: await updateGuestByIdService(updateBody);
 
 	console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
 	publishGuestStreamEvent({
@@ -236,14 +231,24 @@ export async function submitGuestRsvpByPublicEvent(input: {
 	return persistRsvpResponse(target, input.payload, 'generic_link');
 }
 
-export async function trackInvitationView(inviteId: string): Promise<void> {
+export async function trackInvitationView(
+	inviteId: string,
+	viewPercentage?: number,
+): Promise<void> {
 	const invitation = await findGuestByInviteIdPublic(sanitize(inviteId, 64));
 	if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
 
 	const now = new Date().toISOString();
+	const nextPercentage =
+		viewPercentage !== undefined
+			? Math.max(invitation.viewPercentage, Math.min(100, Math.trunc(viewPercentage)))
+			: invitation.viewPercentage;
+
 	await updateGuestByInviteIdPublic(inviteId, {
 		first_viewed_at: invitation.firstViewedAt ?? now,
 		last_viewed_at: now,
+		is_viewed: true,
+		view_percentage: nextPercentage,
 	});
 
 	publishGuestStreamEvent({

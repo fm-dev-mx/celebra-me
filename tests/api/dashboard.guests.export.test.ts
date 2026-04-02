@@ -49,7 +49,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					maxAllowedAttendees: 2,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
-					guestMessage: 'Linea 1\nLinea 2',
+					guestComment: 'Linea 1\nLinea 2',
 					deliveryStatus: 'shared',
 					firstViewedAt: null,
 					respondedAt: null,

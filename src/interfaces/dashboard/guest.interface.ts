@@ -16,8 +16,10 @@ export interface DashboardGuestItem {
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
-	guestMessage: string;
+	guestComment: string;
 	deliveryStatus: DeliveryStatus;
+	viewPercentage: number;
+	isViewed: boolean;
 	firstViewedAt: string | null;
 	respondedAt: string | null;
 	waShareUrl: string;

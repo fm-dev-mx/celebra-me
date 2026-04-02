@@ -55,7 +55,7 @@ describe('invitation route personalization', () => {
 				maxAllowedAttendees: 3,
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
-				guestMessage: '',
+				guestComment: '',
 			},
 		});
 
@@ -103,7 +103,7 @@ describe('invitation route personalization', () => {
 				maxAllowedAttendees: 4,
 				attendanceStatus: 'pending',
 				attendeeCount: 0,
-				guestMessage: '',
+				guestComment: '',
 			},
 		});
 

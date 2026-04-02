@@ -28,7 +28,7 @@ describe('prepareInvitationPageData', () => {
 					maxAllowedAttendees: 4,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
-					guestMessage: '',
+					guestComment: '',
 				},
 			},
 		});
@@ -73,9 +73,9 @@ describe('prepareInvitationPageData', () => {
 		expect(presenter.hero.variant).toBe('editorial');
 		expect(presenter.footer.variant).toBe('editorial');
 		expect(presenter.sections.location?.variant).toBe('editorial');
-		expect(
-			presenter.renderPlan.find((item) => item.type === 'interlude')?.variant,
-		).toBe('editorial');
+		expect(presenter.renderPlan.find((item) => item.type === 'interlude')?.variant).toBe(
+			'editorial',
+		);
 	});
 
 	it('builds the default presenter for demo events without guest context', () => {

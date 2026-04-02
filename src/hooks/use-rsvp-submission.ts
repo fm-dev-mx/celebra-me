@@ -186,7 +186,7 @@ export function useRsvpSubmission({
 						phone: normalizePhoneInput(phone),
 						attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 						attendeeCount: normalizedCount,
-						guestMessage: notes,
+						guestComment: notes,
 					});
 
 					setSubmitStatus('success');
@@ -197,7 +197,7 @@ export function useRsvpSubmission({
 				const payload = {
 					attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 					attendeeCount: normalizedCount,
-					guestMessage: notes,
+					guestComment: notes,
 				};
 
 				const data = await rsvpApi.submitRsvp(initialGuestData.inviteId, payload);

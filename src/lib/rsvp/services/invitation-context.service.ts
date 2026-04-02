@@ -24,7 +24,7 @@ function toInvitationContext(
 		maxAllowedAttendees: number;
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
-		guestMessage: string;
+		guestComment: string;
 	};
 } {
 	return {
@@ -37,7 +37,7 @@ function toInvitationContext(
 			maxAllowedAttendees: invitation.maxAllowedAttendees,
 			attendanceStatus: invitation.attendanceStatus,
 			attendeeCount: invitation.attendeeCount,
-			guestMessage: invitation.guestMessage,
+			guestComment: invitation.guestComment,
 		},
 	};
 }
@@ -52,7 +52,7 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 		maxAllowedAttendees: number;
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
-		guestMessage: string;
+		guestComment: string;
 	};
 }> {
 	const safeInviteId = sanitize(inviteId, 64);
@@ -77,7 +77,7 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 		maxAllowedAttendees: number;
 		attendanceStatus: AttendanceStatus;
 		attendeeCount: number;
-		guestMessage: string;
+		guestComment: string;
 	};
 }> {
 	const safeShortId = sanitize(shortId, 12);

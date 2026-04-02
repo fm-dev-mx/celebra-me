@@ -4,7 +4,7 @@ import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 export interface RsvpPayload {
 	attendanceStatus: 'confirmed' | 'declined';
 	attendeeCount: number;
-	guestMessage?: string;
+	guestComment?: string;
 }
 
 export interface PublicRsvpPayload extends RsvpPayload {

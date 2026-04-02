@@ -36,9 +36,9 @@ test.describe('RSVP v2 Flow', () => {
 		}
 
 		// Message
-		const guestMessage = page.locator('#notes');
-		if (await guestMessage.isVisible()) {
-			await guestMessage.fill('¡Gracias por la invitación! Ahí estaremos.');
+		const guestComment = page.locator('#notes');
+		if (await guestComment.isVisible()) {
+			await guestComment.fill('¡Gracias por la invitación! Ahí estaremos.');
 		}
 
 		// 5. Submit

@@ -106,6 +106,30 @@ const pageData = prepareInvitationPageData({
 
 		<InvitationSections pageData={pageData} />
 
+		{/* Engagement Tracking Script */}
+		{
+			guestContext && (
+				<script>
+					import { initEngagementTracking } from '@/lib/invitation/engagement';
+
+					// Wait for the container to be available
+					const container = document.getElementById('invitation-sections-container');
+					if (container) {
+						const inviteId = new URLSearchParams(window.location.search).get('invite');
+						const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
+
+						if (inviteId && totalSections > 0) {
+							initEngagementTracking({
+								inviteId,
+								totalSections,
+								throttleMs: 10000 // 10 seconds throttle
+							});
+						}
+					}
+				</script>
+			)
+		}
+
 		<Footer
 			eventSlug={pageData.footer.eventSlug}
 			showEnvelope={pageData.footer.showEnvelope}

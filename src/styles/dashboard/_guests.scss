@@ -1547,3 +1547,80 @@
 		transition: none;
 	}
 }
+
+/* Engagement Mini Progress */
+.engagement-mini {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+
+	&[data-progress='0'] .engagement-mini__progress {
+		width: 0%;
+	}
+
+	&[data-progress='10'] .engagement-mini__progress {
+		width: 10%;
+	}
+
+	&[data-progress='20'] .engagement-mini__progress {
+		width: 20%;
+	}
+
+	&[data-progress='30'] .engagement-mini__progress {
+		width: 30%;
+	}
+
+	&[data-progress='40'] .engagement-mini__progress {
+		width: 40%;
+	}
+
+	&[data-progress='50'] .engagement-mini__progress {
+		width: 50%;
+	}
+
+	&[data-progress='60'] .engagement-mini__progress {
+		width: 60%;
+	}
+
+	&[data-progress='70'] .engagement-mini__progress {
+		width: 70%;
+	}
+
+	&[data-progress='80'] .engagement-mini__progress {
+		width: 80%;
+	}
+
+	&[data-progress='90'] .engagement-mini__progress {
+		width: 90%;
+	}
+
+	&[data-progress='100'] .engagement-mini__progress {
+		width: 100%;
+	}
+
+	&__bar {
+		width: 60px;
+		height: 6px;
+		background: rgba(tokens.$color-text-secondary, 0.12);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+
+	&__progress {
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			tokens.$color-action-primary,
+			tokens.$color-action-accent
+		);
+		border-radius: 3px;
+		transition: width 0.4s ease;
+	}
+
+	&__label {
+		font-size: 0.7rem;
+		font-weight: tokens.$font-weight-semibold;
+		color: tokens.$color-text-secondary;
+		min-width: 28px;
+	}
+}

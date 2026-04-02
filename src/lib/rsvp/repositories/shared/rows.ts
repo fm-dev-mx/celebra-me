@@ -36,8 +36,10 @@ export interface UpdateGuestInput {
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
-	guestMessage?: string;
+	guestComment?: string;
 	deliveryStatus?: 'generated' | 'shared';
+	viewPercentage?: number;
+	isViewed?: boolean;
 	lastResponseSource?: ResponseSource;
 	respondedAt?: string | null;
 	tags?: string[];
@@ -64,10 +66,12 @@ export type GuestRow = {
 	max_allowed_attendees: number;
 	attendance_status: AttendanceStatus;
 	attendee_count: number;
-	guest_message: string;
+	guest_comment: string;
 	delivery_status: 'generated' | 'shared';
 	first_viewed_at: string | null;
 	last_viewed_at: string | null;
+	view_percentage: number;
+	is_viewed: boolean;
 	responded_at: string | null;
 	last_response_source: ResponseSource;
 	entry_source?: EntrySource;
@@ -119,13 +123,13 @@ export const EVENT_COLUMNS =
 export const EVENT_MUTATION_COLUMNS =
 	'id,owner_user_id,slug,event_type,title,status,created_at,updated_at';
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
 export const GUEST_COLUMNS_WITHOUT_SHORT_ID =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags';
 export const GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,created_at,updated_at,tags,short_id';
 export const GUEST_COLUMNS_MINIMAL =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,created_at,updated_at,tags';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -151,10 +155,12 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		maxAllowedAttendees: row.max_allowed_attendees,
 		attendanceStatus: row.attendance_status,
 		attendeeCount: row.attendee_count,
-		guestMessage: row.guest_message,
+		guestComment: row.guest_comment,
 		deliveryStatus: row.delivery_status,
 		firstViewedAt: row.first_viewed_at,
 		lastViewedAt: row.last_viewed_at,
+		viewPercentage: row.view_percentage ?? 0,
+		isViewed: row.is_viewed ?? false,
 		respondedAt: row.responded_at,
 		lastResponseSource: row.last_response_source,
 		entrySource: row.entry_source ?? 'dashboard',

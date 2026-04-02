@@ -61,8 +61,8 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,
 			attendanceStatus: parseStatus(sanitize(body.attendanceStatus, 20)),
 			attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : undefined,
-			guestMessage:
-				body.guestMessage !== undefined ? sanitize(body.guestMessage, 500) : undefined,
+			guestComment:
+				body.guestComment !== undefined ? sanitize(body.guestComment, 500) : undefined,
 			tags: Array.isArray(body.tags)
 				? body.tags.filter((tag): tag is string => typeof tag === 'string')
 				: undefined,

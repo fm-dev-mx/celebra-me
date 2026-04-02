@@ -24,10 +24,12 @@ export interface GuestInvitationRecord {
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
-	guestMessage: string;
+	guestComment: string;
 	deliveryStatus: DeliveryStatus;
 	firstViewedAt: string | null;
 	lastViewedAt: string | null;
+	viewPercentage: number;
+	isViewed: boolean;
 	respondedAt: string | null;
 	lastResponseSource: ResponseSource;
 	entrySource?: EntrySource;
@@ -65,9 +67,11 @@ export interface GuestInvitationDTO {
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
-	guestMessage: string;
+	guestComment: string;
 	deliveryStatus: DeliveryStatus;
 	firstViewedAt: string | null;
+	viewPercentage: number;
+	isViewed: boolean;
 	respondedAt: string | null;
 	waShareUrl: string;
 	shareText: string;
@@ -88,7 +92,7 @@ export interface DashboardGuestMutationResponse {
 export interface GuestRSVPSubmitDTO {
 	attendanceStatus: 'confirmed' | 'declined';
 	attendeeCount: number;
-	guestMessage?: string;
+	guestComment?: string;
 }
 
 export type ClaimCodeStatus = 'active' | 'expired' | 'exhausted' | 'disabled';

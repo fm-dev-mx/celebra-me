@@ -25,7 +25,7 @@ function parseRsvpPayload(body: Record<string, unknown>): GuestRSVPSubmitDTO | R
 	return {
 		attendanceStatus,
 		attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : 0,
-		guestMessage: sanitize(body.guestMessage as string, 500),
+		guestComment: sanitize(body.guestComment as string, 500),
 	};
 }
 

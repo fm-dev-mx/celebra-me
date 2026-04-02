@@ -16,7 +16,7 @@ interface GuestFormModalProps {
 			maxAllowedAttendees: number;
 			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 			attendeeCount?: number;
-			guestMessage?: string;
+			guestComment?: string;
 			tags?: string[];
 		},
 		stayOpen?: boolean,
@@ -41,7 +41,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		'pending',
 	);
 	const [attendeeCount, setAttendeeCount] = useState(0);
-	const [guestMessage, setGuestMessage] = useState('');
+	const [guestComment, setGuestComment] = useState('');
 	const [tags, setTags] = useState<string[]>([]);
 	const [saving, setSaving] = useState(false);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -56,7 +56,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setMaxAllowedAttendees(1);
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
-		setGuestMessage('');
+		setGuestComment('');
 		setTags([]);
 		setFieldErrors({});
 		setLocalError('');
@@ -75,7 +75,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
-		setGuestMessage(initialGuest.guestMessage || '');
+		setGuestComment(initialGuest.guestComment || '');
 		setTags(initialGuest.tags || []);
 	}, [initialGuest, open]);
 
@@ -115,7 +115,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
-					guestMessage: mode === 'edit' ? guestMessage.trim() : undefined,
+					guestComment: mode === 'edit' ? guestComment.trim() : undefined,
 					tags,
 				},
 				stayOpen,
@@ -298,15 +298,17 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											/>
 										</div>
 										<div className="dashboard-form-field dashboard-form-field--full">
-											<label htmlFor="guestMessage">Nota o mensaje</label>
+											<label htmlFor="guestComment">
+												Comentario / Nota del invitado
+											</label>
 											<textarea
-												id="guestMessage"
-												value={guestMessage}
+												id="guestComment"
+												value={guestComment}
 												onChange={(event) =>
-													setGuestMessage(event.target.value)
+													setGuestComment(event.target.value)
 												}
 												rows={3}
-												placeholder="Alguna nota especial del invitado..."
+												placeholder="Mensaje o nota especial..."
 												className="dashboard-form-field__textarea"
 											/>
 										</div>

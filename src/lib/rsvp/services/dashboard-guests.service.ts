@@ -204,7 +204,7 @@ export async function updateDashboardGuest(input: {
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
-	guestMessage?: string;
+	guestComment?: string;
 	tags?: string[];
 }): Promise<DashboardGuestMutationResponse> {
 	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
@@ -257,9 +257,9 @@ export async function updateDashboardGuest(input: {
 				maxAllowedAttendees: nextCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,
-				guestMessage:
-					input.guestMessage !== undefined
-						? sanitize(input.guestMessage, 500)
+				guestComment:
+					input.guestComment !== undefined
+						? sanitize(input.guestComment, 500)
 						: undefined,
 				lastResponseSource: 'admin',
 				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),

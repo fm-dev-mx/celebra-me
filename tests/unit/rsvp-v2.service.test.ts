@@ -28,7 +28,7 @@ describe('rsvp service unit', () => {
 			maxAllowedAttendees: 4,
 			attendanceStatus: 'pending',
 			attendeeCount: 0,
-			guestMessage: '',
+			guestComment: '',
 			deliveryStatus: 'generated',
 			firstViewedAt: null,
 			lastViewedAt: null,
@@ -48,7 +48,7 @@ describe('rsvp service unit', () => {
 			maxAllowedAttendees: 4,
 			attendanceStatus: 'declined',
 			attendeeCount: 0,
-			guestMessage: 'No podre asistir',
+			guestComment: 'No podre asistir',
 			deliveryStatus: 'generated',
 			firstViewedAt: null,
 			lastViewedAt: null,
@@ -62,7 +62,7 @@ describe('rsvp service unit', () => {
 		const result = await submitGuestRsvpByInviteId('invite-1', {
 			attendanceStatus: 'declined',
 			attendeeCount: 3,
-			guestMessage: 'No podre asistir',
+			guestComment: 'No podre asistir',
 		});
 
 		expect(result.attendanceStatus).toBe('declined');

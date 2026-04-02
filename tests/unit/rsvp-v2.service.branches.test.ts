@@ -104,7 +104,7 @@ describe('rsvp service branches', () => {
 		maxAllowedAttendees: 2,
 		attendanceStatus: 'pending' as const,
 		attendeeCount: 0,
-		guestMessage: '',
+		guestComment: '',
 		deliveryStatus: 'generated' as const,
 		firstViewedAt: null,
 		lastViewedAt: null,
@@ -270,7 +270,7 @@ describe('rsvp service branches', () => {
 			payload: {
 				attendanceStatus: 'confirmed',
 				attendeeCount: 2,
-				guestMessage: 'Nos vemos',
+				guestComment: 'Nos vemos',
 			},
 		});
 
@@ -320,7 +320,7 @@ describe('rsvp service branches', () => {
 			payload: {
 				attendanceStatus: 'confirmed',
 				attendeeCount: 3,
-				guestMessage: 'Ahí estaremos',
+				guestComment: 'Ahí estaremos',
 			},
 		});
 

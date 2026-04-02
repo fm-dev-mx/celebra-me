@@ -132,11 +132,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						<tr>
 							<th>No.</th>
 							<th>Nombre / Contacto</th>
-							<th>Categorías</th>
 							<th>Estado</th>
 							<th>Asistentes</th>
 							<th>Entrega</th>
-							<th>Apertura</th>
+							<th>Progreso</th>
+							<th>Pase</th>
 							<th>Acciones</th>
 						</tr>
 					</thead>
@@ -218,18 +218,33 @@ const GuestTable: React.FC<GuestTableProps> = ({
 											className={`delivery-status delivery-status--${item.deliveryStatus}`}
 										>
 											{isShared ? (
-												<span>Entregada</span>
+												<span>Enviada</span>
 											) : (
 												<span>Por enviar</span>
 											)}
 										</div>
 									</td>
-									<td data-label="Apertura">
+									<td data-label="Progreso">
+										<div
+											className="engagement-mini"
+											data-progress={item.viewPercentage}
+										>
+											<div className="engagement-mini__bar">
+												<div className="engagement-mini__progress" />
+											</div>
+											<span className="engagement-mini__label">
+												{item.viewPercentage}%
+											</span>
+										</div>
+									</td>
+									<td data-label="Pase">
 										<div
 											className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}
 										>
 											{isViewed ? (
-												<span>
+												<span
+													title={`Visto: ${formatGuestDate(item.firstViewedAt)}`}
+												>
 													{
 														formatGuestDate(item.firstViewedAt).split(
 															',',

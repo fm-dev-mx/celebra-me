@@ -41,7 +41,7 @@ const sampleGuest: DashboardGuestItem = {
 	maxAllowedAttendees: 4,
 	attendanceStatus: 'pending',
 	attendeeCount: 0,
-	guestMessage: '',
+	guestComment: '',
 	deliveryStatus: 'generated',
 	firstViewedAt: null,
 	respondedAt: null,

@@ -10,7 +10,7 @@ export interface GuestFormPayload {
 	maxAllowedAttendees: number;
 	attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 	attendeeCount?: number;
-	guestMessage?: string;
+	guestComment?: string;
 	tags?: string[];
 }
 
