@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 interface ToastProps {
 	message: string;
@@ -12,20 +12,30 @@ interface ToastProps {
 }
 
 const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }) => {
+	const prefersReducedMotion = useReducedMotion();
+
 	useEffect(() => {
 		const timer = setTimeout(onClose, 5000);
 		return () => clearTimeout(timer);
 	}, [onClose]);
 
-	const icon = type === 'success' ? '✨' : type === 'warning' ? '⚠️' : 'ℹ️';
+	const icon = type === 'success' ? 'OK' : type === 'warning' ? 'AV' : 'IN';
 
 	return (
 		<AnimatePresence>
 			<motion.div
-				initial={{ opacity: 0, y: 24, scale: 0.98 }}
+				initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
 				animate={{ opacity: 1, y: 0, scale: 1 }}
-				exit={{ opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.18 } }}
-				transition={{ type: 'spring', stiffness: 520, damping: 36, mass: 0.7 }}
+				exit={
+					prefersReducedMotion
+						? { opacity: 0 }
+						: { opacity: 0, y: 10, transition: { duration: 0.18 } }
+				}
+				transition={
+					prefersReducedMotion
+						? { duration: 0 }
+						: { type: 'spring', stiffness: 420, damping: 38, mass: 0.72 }
+				}
 				className={`dashboard-toast dashboard-toast--${type}`}
 				role="status"
 				aria-live="polite"
@@ -44,8 +54,8 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }
 
 					{action && (
 						<motion.button
-							whileHover={{ y: -1 }}
-							whileTap={{ scale: 0.98 }}
+							whileHover={prefersReducedMotion ? undefined : { y: -1 }}
+							whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
 							type="button"
 							onClick={action.onClick}
 							className="dashboard-toast__action"
@@ -62,8 +72,8 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose, action }
 					className="dashboard-toast__close"
 					onClick={onClose}
 					aria-label="Cerrar notificación"
-					whileHover={{ scale: 1.06 }}
-					whileTap={{ scale: 0.95 }}
+					whileHover={prefersReducedMotion ? undefined : { scale: 1.04 }}
+					whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
 				>
 					<span>×</span>
 				</motion.button>

@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
+import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
 
 interface ShareActionProps {
 	phone: string;
@@ -81,15 +83,31 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	};
 
 	const getButtonLabel = () => {
-		if (status === 'sending') return 'Enviando...';
-		if (status === 'delivered') return 'Enviado';
-		return primaryAction === 'whatsapp' ? 'WhatsApp' : 'Compartir';
+		if (status === 'sending') return 'Enviando';
+		if (status === 'delivered') return 'Registrado';
+		if (primaryAction === 'whatsapp') return 'Enviar';
+		if (primaryAction === 'copy') return 'Copiar';
+		return 'Compartir';
 	};
 
-	const getButtonIcon = () => {
-		if (status === 'delivered') return '✓';
-		if (status === 'sending') return '⟳';
-		return primaryAction === 'whatsapp' ? '💬' : '📤';
+	const renderButtonIcon = () => {
+		if (status === 'delivered') {
+			return <span className="share-icon share-icon--state">OK</span>;
+		}
+
+		if (status === 'sending') {
+			return <span className="share-icon share-icon--state">...</span>;
+		}
+
+		if (primaryAction === 'whatsapp') {
+			return <WhatsAppIcon className="share-icon" size={16} />;
+		}
+
+		if (primaryAction === 'copy') {
+			return <CopyIcon className="share-icon" size={16} />;
+		}
+
+		return <MessageIcon className="share-icon" size={16} />;
 	};
 
 	const title =
@@ -108,7 +126,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 			title={title}
 			aria-label={title}
 		>
-			<span className="share-icon">{getButtonIcon()}</span>
+			{renderButtonIcon()}
 			<span className="share-label">{getButtonLabel()}</span>
 		</button>
 	);

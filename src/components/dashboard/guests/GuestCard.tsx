@@ -1,4 +1,5 @@
 import React from 'react';
+import { CopyIcon } from '@/components/common/icons/ui';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
@@ -7,6 +8,43 @@ import {
 	getGuestVisibleTags,
 	getGuestAttendanceLabel,
 } from '@/components/dashboard/guests/guest-presenter';
+
+const EditGlyph = () => (
+	<svg
+		viewBox="0 0 24 24"
+		width="16"
+		height="16"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="1.6"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		aria-hidden="true"
+	>
+		<path d="M12 20h9" />
+		<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+	</svg>
+);
+
+const DeleteGlyph = () => (
+	<svg
+		viewBox="0 0 24 24"
+		width="16"
+		height="16"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="1.6"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		aria-hidden="true"
+	>
+		<path d="M3 6h18" />
+		<path d="M8 6V4h8v2" />
+		<path d="M19 6l-1 14H6L5 6" />
+		<path d="M10 11v6" />
+		<path d="M14 11v6" />
+	</svg>
+);
 
 interface GuestCardProps {
 	item: DashboardGuestItem;
@@ -51,8 +89,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			</div>
 
 			<div className="guest-card__contact">
-				{item.phone && <span className="guest-card__phone">📱 {item.phone}</span>}
-				{item.email && <span className="guest-card__email">✉️ {item.email}</span>}
+				{item.phone && <span className="guest-card__phone">Tel. {item.phone}</span>}
+				{item.email && <span className="guest-card__email">{item.email}</span>}
 				<span className="tag">{formatGuestEntrySource(item)}</span>
 			</div>
 
@@ -78,16 +116,16 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__stat">
 					<span className="guest-card__stat-label">Estado</span>
 					<div className={`delivery-status delivery-status--${item.deliveryStatus}`}>
-						{isShared ? <span>✅ Enviado</span> : <span>⏳ Pendiente</span>}
+						{isShared ? <span>Entregada</span> : <span>Por enviar</span>}
 					</div>
 				</div>
 				<div className="guest-card__stat">
 					<span className="guest-card__stat-label">Visto</span>
 					<div className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}>
 						{isViewed ? (
-							<span>👁️ {formatGuestDate(item.firstViewedAt).split(',')[0]}</span>
+							<span>{formatGuestDate(item.firstViewedAt).split(',')[0]}</span>
 						) : (
-							<span>🌑 No visto</span>
+							<span>Sin apertura</span>
 						)}
 					</div>
 				</div>
@@ -110,7 +148,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						await navigator.clipboard.writeText(inviteUrl);
 					}}
 				>
-					🔗
+					<CopyIcon size={16} />
 				</button>
 				<button
 					type="button"
@@ -119,7 +157,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					aria-label={`Editar invitado ${item.fullName}`}
 					onClick={() => onEdit(item)}
 				>
-					✏️
+					<EditGlyph />
 				</button>
 				<button
 					type="button"
@@ -128,7 +166,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					aria-label={`Eliminar invitado ${item.fullName}`}
 					onClick={() => onDelete(item)}
 				>
-					🗑️
+					<DeleteGlyph />
 				</button>
 			</div>
 		</article>
