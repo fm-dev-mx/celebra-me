@@ -31,10 +31,14 @@ function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
 	const confirmedItems = items.filter((item) => item.attendanceStatus === 'confirmed');
 	const declinedItems = items.filter((item) => item.attendanceStatus === 'declined');
+	const generatedItems = items.filter((item) => item.deliveryStatus === 'generated');
+	const sharedItems = items.filter((item) => item.deliveryStatus === 'shared');
 
 	return {
 		totalInvitations: items.length,
 		totalPeople: items.reduce((acc, item) => acc + (item.maxAllowedAttendees || 0), 0),
+		generatedInvitations: generatedItems.length,
+		sharedInvitations: sharedItems.length,
 		pendingInvitations: pendingItems.length,
 		pendingPeople: pendingItems.reduce((acc, item) => acc + (item.maxAllowedAttendees || 0), 0),
 		confirmedInvitations: confirmedItems.length,

@@ -284,27 +284,15 @@ export async function findGuestById(
 	guestId: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{
-			authToken: hostAccessToken,
-		},
-	);
+	return findGuestSingleSafe(`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`, {
+		authToken: hostAccessToken,
+	});
 }
 
 export async function findGuestByIdService(guestId: string): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		'*',
-		toGuestRecord,
-		{
-			useServiceRole: true,
-		},
-	);
+	return findGuestSingleSafe(`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`, {
+		useServiceRole: true,
+	});
 }
 
 export async function updateGuestById(

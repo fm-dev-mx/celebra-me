@@ -35,6 +35,8 @@ export interface DashboardGuestListResponse {
 	totals: {
 		totalInvitations: number;
 		totalPeople: number;
+		generatedInvitations: number;
+		sharedInvitations: number;
 		pendingInvitations: number;
 		pendingPeople: number;
 		confirmedInvitations: number;
