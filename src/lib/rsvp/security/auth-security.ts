@@ -79,11 +79,25 @@ function normalizeOriginCandidate(value: string): string {
 
 function buildForwardedOrigin(request: Request): string {
 	const forwardedHost = sanitize(request.headers.get('x-forwarded-host'), 512);
+	const forwardedProto = sanitize(request.headers.get('x-forwarded-proto'), 32);
+
+	if (!forwardedHost && !forwardedProto) {
+		return '';
+	}
+
 	const host = sanitize(request.headers.get('host'), 512);
-	const forwardedProto = sanitize(request.headers.get('x-forwarded-proto'), 32) || 'https';
+	const requestProtocol = (() => {
+		try {
+			return new URL(request.url).protocol.replace(/:$/, '');
+		} catch {
+			return '';
+		}
+	})();
+
 	const resolvedHost = forwardedHost || host;
+	const resolvedProto = forwardedProto || requestProtocol || 'https';
 	if (!resolvedHost) return '';
-	return normalizeOriginCandidate(`${forwardedProto}://${resolvedHost}`);
+	return normalizeOriginCandidate(`${resolvedProto}://${resolvedHost}`);
 }
 
 export function resolveExpectedOrigin(request: Request, fallbackOrigin: string): string {
