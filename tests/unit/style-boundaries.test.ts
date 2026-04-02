@@ -107,6 +107,17 @@ describe('Style boundary governance', () => {
 		expect(
 			fs.existsSync(path.join(projectRoot, 'src/components/invitation/GuestRSVPForm.tsx')),
 		).toBe(false);
+		expect(
+			fs.existsSync(path.join(projectRoot, 'src/components/invitation/GuestRSVPForm.astro')),
+		).toBe(false);
+		expect(
+			fs.existsSync(
+				path.join(projectRoot, 'src/components/invitation/GuestInvitationHero.astro'),
+			),
+		).toBe(false);
+		expect(
+			fs.existsSync(path.join(projectRoot, 'src/styles/invitation/_invitado-page.scss')),
+		).toBe(false);
 		expect(fs.existsSync(path.join(projectRoot, 'src/styles/invitation/_rsvp.css.map'))).toBe(
 			false,
 		);

@@ -89,7 +89,7 @@ describe('Theme Delivery Integration', () => {
 				eventType: 'xv',
 				title: 'Ximena',
 				theme: {
-					preset: 'premiere-ivory-gold',
+					preset: 'premiere-floral',
 				},
 				hero: {
 					name: 'Ximena',
@@ -124,13 +124,13 @@ describe('Theme Delivery Integration', () => {
 		const pageData = prepareInvitationPageData({
 			eventEntry: ximenaEvent as EventContentEntry,
 			slug: 'ximena-meza-trasvina',
-			previewTheme: 'premiere-sage-gold',
+			previewTheme: 'editorial',
 		});
 
-		expect(pageData.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-sage-gold');
-		expect(pageData.header.variant).toBe('premiere-sage-gold');
-		expect(pageData.envelope?.variant).toBe('premiere-sage-gold');
-		expect(pageData.footer.variant).toBe('premiere-sage-gold');
-		expect(pageData.sections.location?.variant).toBe('premiere-sage-gold');
+		expect(pageData.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
+		expect(pageData.header.variant).toBe('editorial');
+		expect(pageData.envelope?.variant).toBe('editorial');
+		expect(pageData.footer.variant).toBe('editorial');
+		expect(pageData.sections.location?.variant).toBe('editorial');
 	});
 });

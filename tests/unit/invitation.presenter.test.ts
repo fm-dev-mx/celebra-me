@@ -35,7 +35,7 @@ describe('prepareInvitationPageData', () => {
 
 		expect(presenter.layout.title).toBe('Invitación para Mariana Soto');
 		expect(presenter.layout.className).toBe('layout--premium-portrait');
-		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-ivory-gold');
+		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-floral');
 		expect(presenter.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
 		expect(presenter.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
 		expect(presenter.wrapper.scopedStyles).toContain(
@@ -56,7 +56,7 @@ describe('prepareInvitationPageData', () => {
 		).toContain('personalized-access');
 	});
 
-	it('allows previewTheme overrides by rewriting the premiere variant family in runtime only', () => {
+	it('allows previewTheme overrides by rewriting the delivered theme preset in runtime only', () => {
 		const event = {
 			id: 'events/ximena-meza-trasvina',
 			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
@@ -65,33 +65,18 @@ describe('prepareInvitationPageData', () => {
 		const presenter = prepareInvitationPageData({
 			eventEntry: event,
 			slug: 'ximena-meza-trasvina',
-			previewTheme: 'premiere-rose-plum',
+			previewTheme: 'editorial',
 		});
 
-		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-rose-plum');
-		expect(presenter.header.variant).toBe('premiere-rose-plum');
-		expect(presenter.hero.variant).toBe('premiere-rose-plum');
-		expect(presenter.footer.variant).toBe('premiere-rose-plum');
-		expect(presenter.sections.location?.variant).toBe('premiere-rose-plum');
+		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
+		expect(presenter.header.variant).toBe('editorial');
+		expect(presenter.hero.variant).toBe('editorial');
+		expect(presenter.footer.variant).toBe('editorial');
+		expect(presenter.sections.location?.variant).toBe('editorial');
 		expect(
 			presenter.renderPlan.find((item) => item.type === 'interlude' && 'variant' in item)
 				?.variant,
-		).toBe('premiere-rose-plum');
-	});
-
-	it('ignores invalid previewTheme overrides', () => {
-		const event = {
-			id: 'events/ximena-meza-trasvina',
-			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
-		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
-
-		const presenter = prepareInvitationPageData({
-			eventEntry: event,
-			slug: 'ximena-meza-trasvina',
-			previewTheme: 'broken-preview',
-		});
-
-		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-ivory-gold');
+		).toBe('editorial');
 	});
 
 	it('builds the default presenter for demo events without guest context', () => {

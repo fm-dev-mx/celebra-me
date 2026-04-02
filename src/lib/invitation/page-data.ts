@@ -2,7 +2,11 @@ import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { PREMIERE_THEME_PRESETS, type SharedSectionVariant } from '@/lib/theme/theme-contract';
+import {
+	PREMIERE_THEME_PRESETS,
+	type SharedSectionVariant,
+	type ThemePreset,
+} from '@/lib/theme/theme-contract';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
@@ -237,8 +241,9 @@ function buildEnvelopeData(
 			envelope.data.variant === 'jewelry-box-wedding' ||
 			envelope.data.variant === 'luxury-hacienda' ||
 			envelope.data.variant === 'editorial' ||
-			envelope.data.variant === 'premiere-floral' ||
-			envelope.data.variant === 'noir-premiere',
+			(envelope.data.variant
+				? (PREMIERE_THEME_PRESETS as readonly string[]).includes(envelope.data.variant)
+				: false),
 	};
 }
 
@@ -328,9 +333,9 @@ export function prepareInvitationPageData(input: {
 	eventEntry: EventContentEntry;
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
-	previewTheme?: string;
+	previewTheme?: ThemePreset;
 }): InvitationPageData {
-	const viewModel = adaptEvent(input.eventEntry, input.previewTheme as any);
+	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
