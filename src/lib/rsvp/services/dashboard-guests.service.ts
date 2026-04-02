@@ -125,7 +125,11 @@ export async function createDashboardGuest(input: {
 	if (phone) {
 		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
 		if (existing) {
-			throw new ApiError(409, 'conflict', 'This phone number is already registered for this event.');
+			throw new ApiError(
+				409,
+				'conflict',
+				'This phone number is already registered for this event.',
+			);
 		}
 	}
 
@@ -143,7 +147,7 @@ export async function createDashboardGuest(input: {
 				phone: phone || undefined,
 				maxAllowedAttendees,
 				tags: input.tags,
-				short_id: generateShortId(8),
+				shortId: generateShortId(8),
 			},
 			input.hostAccessToken,
 		);
@@ -213,7 +217,11 @@ export async function updateDashboardGuest(input: {
 			: existing.maxAllowedAttendees;
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
-		throw new ApiError(400, 'bad_request', 'Confirmed attendance requires at least one attendee.');
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Confirmed attendance requires at least one attendee.',
+		);
 	}
 	if (nextAttendeeCount > nextCap) {
 		throw new ApiError(400, 'bad_request', `The maximum allowed value is ${nextCap}.`);

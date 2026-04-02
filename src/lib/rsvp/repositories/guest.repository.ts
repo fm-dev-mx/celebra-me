@@ -17,6 +17,101 @@ import {
 
 const TABLE = 'guest_invitations';
 
+function buildGuestInsertBody(input: CreateGuestInput, includeShortId: boolean) {
+	const body: Record<string, unknown> = {
+		event_id: input.eventId,
+		full_name: input.fullName,
+		phone: input.phone,
+		max_allowed_attendees: input.maxAllowedAttendees,
+		tags: input.tags,
+		entry_source: input.entrySource ?? 'dashboard',
+	};
+	if (includeShortId && input.shortId) {
+		body.short_id = input.shortId;
+	}
+	return body;
+}
+
+function getGuestMutationOptions(hostAccessToken?: string) {
+	return hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true as const };
+}
+
+async function insertGuestInvitation(
+	input: CreateGuestInput,
+	hostAccessToken?: string,
+): Promise<GuestInvitationRecord> {
+	try {
+		return await insertSingle(
+			TABLE,
+			GUEST_COLUMNS,
+			buildGuestInsertBody(input, true),
+			toGuestRecord,
+			getGuestMutationOptions(hostAccessToken),
+		);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		if (message.includes('PGRST204') || message.includes('short_id')) {
+			console.warn(
+				'[Repository] PGRST204 detected, falling back to insertion without short_id.',
+			);
+			return insertSingle(
+				TABLE,
+				GUEST_COLUMNS_WITHOUT_SHORT_ID,
+				buildGuestInsertBody(input, false),
+				toGuestRecord,
+				getGuestMutationOptions(hostAccessToken),
+			);
+		}
+		throw error;
+	}
+}
+
+function updateGuestRecord(
+	filter: string,
+	body: Record<string, unknown>,
+	hostAccessToken?: string,
+): Promise<GuestInvitationRecord> {
+	return updateSingle(
+		TABLE,
+		GUEST_COLUMNS,
+		filter,
+		body,
+		toGuestRecord,
+		getGuestMutationOptions(hostAccessToken),
+	);
+}
+
+function buildGuestUpdateBody(input: {
+	guestId?: string;
+	fullName?: string;
+	phone?: string;
+	maxAllowedAttendees?: number;
+	attendanceStatus?: UpdateGuestInput['attendanceStatus'];
+	attendeeCount?: number;
+	guestMessage?: string;
+	deliveryStatus?: UpdateGuestInput['deliveryStatus'];
+	lastResponseSource?: UpdateGuestInput['lastResponseSource'];
+	respondedAt?: string | null;
+	tags?: string[];
+}) {
+	const updateBody: Record<string, unknown> = {};
+	if (input.fullName !== undefined) updateBody.full_name = input.fullName;
+	if (input.phone !== undefined) updateBody.phone = input.phone;
+	if (input.maxAllowedAttendees !== undefined) {
+		updateBody.max_allowed_attendees = input.maxAllowedAttendees;
+	}
+	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
+	if (input.attendeeCount !== undefined) updateBody.attendee_count = input.attendeeCount;
+	if (input.guestMessage !== undefined) updateBody.guest_message = input.guestMessage;
+	if (input.deliveryStatus !== undefined) updateBody.delivery_status = input.deliveryStatus;
+	if (input.lastResponseSource !== undefined) {
+		updateBody.last_response_source = input.lastResponseSource;
+	}
+	if (input.respondedAt !== undefined) updateBody.responded_at = input.respondedAt;
+	if (input.tags !== undefined) updateBody.tags = input.tags;
+	return updateBody;
+}
+
 export async function findGuestsByEvent(
 	filters: GuestFilters,
 	hostAccessToken: string,
@@ -42,63 +137,14 @@ export async function findGuestsByEvent(
 export async function createGuestInvitationPublic(
 	input: CreateGuestInput,
 ): Promise<GuestInvitationRecord> {
-	return insertSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		{
-			event_id: input.eventId,
-			full_name: input.fullName,
-			phone: input.phone,
-			max_allowed_attendees: input.maxAllowedAttendees,
-			tags: input.tags,
-			short_id: input.short_id,
-		},
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
+	return insertGuestInvitation(input);
 }
 
 export async function createGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	try {
-		return await insertSingle(
-			TABLE,
-			GUEST_COLUMNS,
-			{
-				event_id: input.eventId,
-				full_name: input.fullName,
-				phone: input.phone,
-				max_allowed_attendees: input.maxAllowedAttendees,
-				tags: input.tags,
-				short_id: input.short_id,
-			},
-			toGuestRecord,
-			{ authToken: hostAccessToken },
-		);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		if (message.includes('PGRST204') || message.includes('short_id')) {
-			console.warn(
-				'[Repository] PGRST204 detected, falling back to insertion without short_id.',
-			);
-			return insertSingle(
-				TABLE,
-				GUEST_COLUMNS_WITHOUT_SHORT_ID,
-				{
-					event_id: input.eventId,
-					full_name: input.fullName,
-					phone: input.phone,
-					max_allowed_attendees: input.maxAllowedAttendees,
-					tags: input.tags,
-				},
-				toGuestRecord,
-				{ authToken: hostAccessToken },
-			);
-		}
-		throw error;
-	}
+	return insertGuestInvitation(input, hostAccessToken);
 }
 
 export async function findGuestById(
@@ -120,29 +166,19 @@ export async function updateGuestById(
 	input: UpdateGuestInput,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	const updateBody: Record<string, unknown> = {};
-	if (input.fullName !== undefined) updateBody.full_name = input.fullName;
-	if (input.phone !== undefined) updateBody.phone = input.phone;
-	if (input.maxAllowedAttendees !== undefined) {
-		updateBody.max_allowed_attendees = input.maxAllowedAttendees;
-	}
-	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
-	if (input.attendeeCount !== undefined) updateBody.attendee_count = input.attendeeCount;
-	if (input.guestMessage !== undefined) updateBody.guest_message = input.guestMessage;
-	if (input.deliveryStatus !== undefined) updateBody.delivery_status = input.deliveryStatus;
-	if (input.lastResponseSource !== undefined) {
-		updateBody.last_response_source = input.lastResponseSource;
-	}
-	if (input.respondedAt !== undefined) updateBody.responded_at = input.respondedAt;
-	if (input.tags !== undefined) updateBody.tags = input.tags;
-
-	return updateSingle(
-		TABLE,
-		GUEST_COLUMNS,
+	return updateGuestRecord(
 		`id=eq.${encodeURIComponent(input.guestId)}`,
-		updateBody,
-		toGuestRecord,
-		{ authToken: hostAccessToken },
+		buildGuestUpdateBody(input),
+		hostAccessToken,
+	);
+}
+
+export async function updateGuestByIdService(
+	input: UpdateGuestInput,
+): Promise<GuestInvitationRecord> {
+	return updateGuestRecord(
+		`id=eq.${encodeURIComponent(input.guestId)}`,
+		buildGuestUpdateBody(input),
 	);
 }
 
@@ -210,14 +246,7 @@ export async function updateGuestByInviteIdPublic(
 	inviteId: string,
 	body: Record<string, unknown>,
 ): Promise<GuestInvitationRecord> {
-	return updateSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		`invite_id=eq.${encodeURIComponent(inviteId)}`,
-		body,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
+	return updateGuestRecord(`invite_id=eq.${encodeURIComponent(inviteId)}`, body);
 }
 
 export async function findGuestByLegacyIdentityPublic(input: {

@@ -11,7 +11,7 @@ export interface BuildShareMessageInput {
 	fullName: string;
 	shortId?: string;
 	eventTitle?: string;
-	eventType?: string;
+	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	template?: string;
 	includeLink?: boolean;
@@ -47,7 +47,7 @@ export function buildInviteUrl(
 	origin: string,
 	id: string,
 	isShortId?: boolean,
-	eventType?: string,
+	eventType?: EventRecord['eventType'],
 	eventSlug?: string,
 ): string {
 	const resolvedOrigin = resolveOrigin(origin);

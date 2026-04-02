@@ -52,6 +52,7 @@ export function toGuestDto(
 			includeLink: false,
 		}),
 		updatedAt: guest.updatedAt,
+		entrySource: guest.entrySource ?? 'dashboard',
 		tags: guest.tags || [],
 		eventType,
 		eventSlug,
