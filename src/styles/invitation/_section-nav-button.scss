@@ -1,5 +1,5 @@
 @use '../tokens' as tokens;
-@use '@/styles/global/mixins' as mixins;
+@use '../global/mixins' as mixins;
 
 .nav-button-container {
 	position: absolute;
@@ -106,7 +106,8 @@
 }
 
 @keyframes pulseChevron {
-	0%, 100% {
+	0%,
+	100% {
 		opacity: 60%;
 		transform: translateX(-50%) translateY(0);
 	}

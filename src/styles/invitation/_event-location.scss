@@ -1,7 +1,7 @@
 /* Event Location Section - Digital Jewelry Box Aesthetic */
 @use 'sass:color';
 @use '../tokens' as tokens;
-@use '@/styles/global/mixins' as mixins;
+@use '../global/mixins' as mixins;
 
 .event-location {
 	min-height: 100svh;
