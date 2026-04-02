@@ -3,7 +3,7 @@
     "type": "module",
     "version": "0.0.1",
     "engines": {
-        "node": ">=20.19.0"
+        "node": ">=22.12.0 <23"
     },
     "scripts": {
         "dev": "astro dev",
@@ -42,25 +42,25 @@
         "@fontsource/rye": "^5.2.7",
         "@fontsource/special-elite": "^5.2.8",
         "@fontsource/the-nautigal": "^5.2.7",
-        "@supabase/supabase-js": "^2.95.3",
+        "@supabase/supabase-js": "^2.101.1",
         "@vercel/analytics": "^1.6.1",
         "@vercel/speed-insights": "^2.0.0",
-        "framer-motion": "^12.34.0",
+        "framer-motion": "^12.38.0",
         "nodemailer": "^8.0.4",
-        "react": "^19.2.3",
-        "react-dom": "^19.2.3",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
         "sharp": "^0.34.5",
         "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.6",
+        "@astrojs/check": "^0.9.8",
         "@astrojs/react": "5.0.1",
-        "@astrojs/sitemap": "^3.7.1",
-        "@commitlint/cli": "^20.4.1",
-        "@commitlint/config-conventional": "^20.4.1",
-        "@eslint/js": "^9.39.2",
+        "@astrojs/sitemap": "^3.7.2",
+        "@commitlint/cli": "^20.5.0",
+        "@commitlint/config-conventional": "^20.5.0",
+        "@eslint/js": "^9.39.4",
         "@jest/globals": "^30.3.0",
-        "@playwright/test": "^1.58.2",
+        "@playwright/test": "^1.59.1",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
@@ -68,14 +68,14 @@
         "@types/nodemailer": "7.0.11",
         "@types/react": "19.2.14",
         "@types/react-dom": "^19.2.3",
-        "astro": "5.18.1",
-        "astro-eslint-parser": "^1.2.2",
+        "astro": "6.0.6",
+        "astro-eslint-parser": "^1.4.0",
         "astro-robots-txt": "^1.0.0",
-        "eslint": "^9.39.2",
+        "eslint": "^9.39.4",
         "eslint-config-prettier": "^10.1.8",
         "eslint-import-resolver-typescript": "^4.4.4",
         "eslint-plugin-astro": "^1.6.0",
-        "eslint-plugin-boundaries": "^6.0.1",
+        "eslint-plugin-boundaries": "^6.0.2",
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-prettier": "^5.5.5",
         "globals": "^17.4.0",
@@ -86,14 +86,14 @@
         "lint-staged": "16.3.2",
         "prettier": "^3.8.1",
         "prettier-plugin-astro": "^0.14.1",
-        "sass-embedded": "^1.97.3",
+        "sass-embedded": "^1.98.0",
         "serve": "^14.2.6",
         "stylelint": "17.5.0",
         "stylelint-config-standard-scss": "^17.0.0",
         "stylelint-scss": "^7.0.0",
-        "ts-jest": "^29.4.6",
+        "ts-jest": "^29.4.9",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.53.1"
+        "typescript-eslint": "^8.58.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
@@ -101,7 +101,7 @@
         "*.{scss,css}": ["stylelint --fix", "prettier --write"],
         "*.{json,md,yml}": ["prettier --write"]
     },
-    "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937",
+    "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
     "pnpm": {
         "overrides": {
             "tar": ">=7.5.8",
@@ -112,6 +112,7 @@
             "lodash": ">=4.17.23",
             "ajv-draft-04>ajv": "8.18.0",
             "ajv@^8.0.0": "8.18.0"
-        }
+        },
+        "ignoredBuiltDependencies": ["@parcel/watcher", "esbuild", "sharp", "unrs-resolver"]
     }
 }
