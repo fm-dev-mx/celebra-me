@@ -8,9 +8,14 @@ import {
 	findEventsByOwner,
 	listAllEventsService,
 	findEventsForHost,
+	findEventBySlugService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { listMembershipsForHost } from '@/lib/rsvp/repositories/role-membership.repository';
-import type { AdminEventListItemDTO } from '@/interfaces/dashboard/admin.interface';
+import type {
+	AdminEventListItemDTO,
+	DashboardEventListDebug,
+	DashboardEventListItem,
+} from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
@@ -26,6 +31,16 @@ function toAdminEventDto(event: EventRecord): AdminEventListItemDTO {
 		ownerUserId: event.ownerUserId,
 		createdAt: event.createdAt,
 		updatedAt: event.updatedAt,
+	};
+}
+
+function toDashboardEventItem(event: EventRecord): DashboardEventListItem {
+	return {
+		id: event.id,
+		title: event.title,
+		slug: event.slug,
+		eventType: event.eventType,
+		status: event.status,
 	};
 }
 
@@ -116,10 +131,24 @@ export async function listHostEvents(input: {
 	hostUserId: string;
 	hostAccessToken: string;
 }): Promise<EventRecord[]> {
-	const [ownerEvents, visibleEvents, memberships] = await Promise.all([
+	const result = await listHostEventsWithDebug({
+		...input,
+		expectedSlug: '',
+	});
+	return result.events;
+}
+
+export async function listHostEventsWithDebug(input: {
+	hostUserId: string;
+	hostAccessToken: string;
+	expectedSlug?: string;
+}): Promise<{ events: EventRecord[]; debug: DashboardEventListDebug }> {
+	const expectedSlug = sanitize(input.expectedSlug || '', 120);
+	const [ownerEvents, visibleEvents, memberships, expectedSlugEvent] = await Promise.all([
 		findEventsByOwner(input.hostUserId, input.hostAccessToken),
 		findEventsForHost(input.hostAccessToken),
 		listMembershipsForHost(input.hostAccessToken),
+		expectedSlug ? findEventBySlugService(expectedSlug) : Promise.resolve(null),
 	]);
 
 	const eventsById = new Map<string, EventRecord>();
@@ -127,6 +156,8 @@ export async function listHostEvents(input: {
 		eventsById.set(event.id, event);
 	}
 
+	const membershipResolvedEvents: EventRecord[] = [];
+	const unresolvedMembershipEventIds: string[] = [];
 	for (const membership of memberships) {
 		if (eventsById.has(membership.eventId)) continue;
 
@@ -136,10 +167,44 @@ export async function listHostEvents(input: {
 
 		if (membershipEvent) {
 			eventsById.set(membershipEvent.id, membershipEvent);
+			membershipResolvedEvents.push(membershipEvent);
+		} else {
+			unresolvedMembershipEventIds.push(membership.eventId);
 		}
 	}
 
-	return [...eventsById.values()].sort(
+	const events = [...eventsById.values()].sort(
 		(left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt),
 	);
+	return {
+		events,
+		debug: {
+			session: {
+				hasAccessToken: true,
+				tokenSource: 'cookie',
+				reason: 'session_role_resolved',
+				userId: input.hostUserId,
+				email: null,
+				role: null,
+				isSuperAdmin: false,
+			},
+			ownerEvents: ownerEvents.map(toDashboardEventItem),
+			visibleEvents: visibleEvents.map(toDashboardEventItem),
+			memberships: memberships.map((membership) => ({
+				id: membership.id,
+				eventId: membership.eventId,
+				userId: membership.userId,
+				membershipRole: membership.membershipRole,
+			})),
+			membershipResolvedEvents: membershipResolvedEvents.map(toDashboardEventItem),
+			unresolvedMembershipEventIds,
+			slugCheck: {
+				expectedSlug,
+				slugExistsInDb: Boolean(expectedSlugEvent),
+				eventId: expectedSlugEvent?.id || null,
+				ownerUserId: expectedSlugEvent?.ownerUserId || null,
+				title: expectedSlugEvent?.title || null,
+			},
+		},
+	};
 }

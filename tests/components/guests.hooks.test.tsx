@@ -78,7 +78,15 @@ describe('active guest dashboard hooks', () => {
 
 	it('loads events and guest list through useGuestDashboardRealtime', async () => {
 		mockedGuestsApi.listEvents.mockResolvedValue({
-			items: [{ id: 'event-123', title: 'XV Ximena', slug: 'ximena', eventType: 'xv' }],
+			items: [
+				{
+					id: 'event-123',
+					title: 'XV Ximena',
+					slug: 'ximena',
+					eventType: 'xv',
+					status: 'published',
+				},
+			],
 		});
 		mockedGuestsApi.list.mockResolvedValue({
 			eventId: 'event-123',
@@ -156,6 +164,29 @@ describe('active guest dashboard hooks', () => {
 	it('shows a sync warning when the host has no visible events', async () => {
 		mockedGuestsApi.listEvents.mockResolvedValue({
 			items: [],
+			debug: {
+				session: {
+					hasAccessToken: true,
+					tokenSource: 'cookie',
+					reason: 'session_role_resolved',
+					userId: 'host-1',
+					email: 'host@test.com',
+					role: 'host_client',
+					isSuperAdmin: false,
+				},
+				ownerEvents: [],
+				visibleEvents: [],
+				memberships: [],
+				membershipResolvedEvents: [],
+				unresolvedMembershipEventIds: [],
+				slugCheck: {
+					expectedSlug: 'ximena-meza-trasvina',
+					slugExistsInDb: false,
+					eventId: null,
+					ownerUserId: null,
+					title: null,
+				},
+			},
 		});
 
 		const onNotification = jest.fn();
@@ -169,7 +200,7 @@ describe('active guest dashboard hooks', () => {
 		);
 
 		await waitFor(() => {
-			expect(result.current.error).toContain('No hay eventos asignados');
+			expect(result.current.error).toContain('no existe en la base activa');
 		});
 
 		expect(mockedGuestsApi.list).not.toHaveBeenCalled();
@@ -179,7 +210,13 @@ describe('active guest dashboard hooks', () => {
 	it('shows a visibility error when the requested event is not in the host list', async () => {
 		mockedGuestsApi.listEvents.mockResolvedValue({
 			items: [
-				{ id: 'event-999', title: 'Otro Evento', slug: 'otro-evento', eventType: 'xv' },
+				{
+					id: 'event-999',
+					title: 'Otro Evento',
+					slug: 'otro-evento',
+					eventType: 'xv',
+					status: 'published',
+				},
 			],
 		});
 		mockedGuestsApi.list.mockResolvedValue({
@@ -204,6 +241,56 @@ describe('active guest dashboard hooks', () => {
 		});
 
 		expect(result.current.eventId).toBe('event-999');
+	});
+
+	it('shows an RLS or migration error when memberships exist but their events cannot be resolved', async () => {
+		mockedGuestsApi.listEvents.mockResolvedValue({
+			items: [],
+			debug: {
+				session: {
+					hasAccessToken: true,
+					tokenSource: 'cookie',
+					reason: 'session_role_resolved',
+					userId: 'host-1',
+					email: 'host@test.com',
+					role: 'host_client',
+					isSuperAdmin: false,
+				},
+				ownerEvents: [],
+				visibleEvents: [],
+				memberships: [
+					{
+						id: 'membership-1',
+						eventId: 'evt-hidden',
+						userId: 'host-1',
+						membershipRole: 'manager',
+					},
+				],
+				membershipResolvedEvents: [],
+				unresolvedMembershipEventIds: ['evt-hidden'],
+				slugCheck: {
+					expectedSlug: 'ximena-meza-trasvina',
+					slugExistsInDb: true,
+					eventId: 'evt-ximena',
+					ownerUserId: 'other-host',
+					title: 'XV Ximena',
+				},
+			},
+		});
+
+		const onNotification = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardRealtime({
+				initialEventId: '',
+				search: '',
+				status: 'all',
+				onNotification,
+			}),
+		);
+
+		await waitFor(() => {
+			expect(result.current.error).toContain('Revisa RLS o migraciones');
+		});
 	});
 
 	it('confirms guest deletion through useGuestDashboardActions', async () => {

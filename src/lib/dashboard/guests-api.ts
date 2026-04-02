@@ -1,6 +1,6 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
 import type {
 	GuestsListResponse,
 	BulkImportDTO,
@@ -8,10 +8,45 @@ import type {
 	UpdateGuestDTO,
 } from '@/lib/dashboard/dto/guests';
 
+class DashboardApiError extends Error {
+	status: number;
+	code: string;
+	details?: unknown;
+
+	constructor(result: Extract<ApiResult<unknown>, { ok: false }>) {
+		super(result.message);
+		this.name = 'DashboardApiError';
+		this.status = result.status;
+		this.code = result.code;
+		this.details = result.details;
+	}
+}
+
+function shouldRequestDashboardDebug(): boolean {
+	if (typeof window === 'undefined') return false;
+	return new URLSearchParams(window.location.search).get('debug') === '1';
+}
+
 export class GuestsApi {
-	private handleResponse<T>(result: ApiResult<T>): T {
+	private handleResponse<T>(result: ApiResult<T>, context: string): T {
 		if (!result.ok) {
-			throw new Error(result.message);
+			if (shouldRequestDashboardDebug()) {
+				console.log('[dashboard][client][api:error]', {
+					context,
+					status: result.status,
+					code: result.code,
+					message: result.message,
+					details: result.details,
+				});
+			}
+			throw new DashboardApiError(result);
+		}
+		if (shouldRequestDashboardDebug()) {
+			console.log('[dashboard][client][api:ok]', {
+				context,
+				status: result.status,
+				data: result.data,
+			});
 		}
 		return result.data;
 	}
@@ -28,7 +63,7 @@ export class GuestsApi {
 		const result = await dashboardApi.get<GuestsListResponse>(
 			`/api/dashboard/guests?${query.toString()}`,
 		);
-		return this.handleResponse(result);
+		return this.handleResponse(result, 'guests.list');
 	}
 
 	async create(payload: CreateGuestDTO): Promise<DashboardGuestItem> {
@@ -36,7 +71,7 @@ export class GuestsApi {
 			'/api/dashboard/guests',
 			payload,
 		);
-		return this.handleResponse(result).item;
+		return this.handleResponse(result, 'guests.create').item;
 	}
 
 	async update(guestId: string, payload: UpdateGuestDTO): Promise<DashboardGuestItem> {
@@ -44,40 +79,34 @@ export class GuestsApi {
 			`/api/dashboard/guests/${encodeURIComponent(guestId)}`,
 			payload,
 		);
-		return this.handleResponse(result).item;
+		return this.handleResponse(result, 'guests.update').item;
 	}
 
 	async delete(guestId: string): Promise<{ message: string }> {
 		const result = await dashboardApi.delete<{ message: string }>(
 			`/api/dashboard/guests/${encodeURIComponent(guestId)}`,
 		);
-		return this.handleResponse(result);
+		return this.handleResponse(result, 'guests.delete');
 	}
 
 	async markShared(guestId: string): Promise<DashboardGuestItem> {
 		const result = await dashboardApi.post<{ item: DashboardGuestItem }>(
 			`/api/dashboard/guests/${encodeURIComponent(guestId)}/mark-shared`,
 		);
-		return this.handleResponse(result).item;
+		return this.handleResponse(result, 'guests.markShared').item;
 	}
 
 	async bulkImport(payload: BulkImportDTO): Promise<void> {
 		const result = await dashboardApi.post<void>('/api/dashboard/guests/bulk', payload);
-		this.handleResponse(result);
+		this.handleResponse(result, 'guests.bulkImport');
 	}
 
-	async listEvents(): Promise<{
-		items: { id: string; title: string; slug: string; eventType: EventRecord['eventType'] }[];
-	}> {
-		const result = await dashboardApi.get<{
-			items: {
-				id: string;
-				title: string;
-				slug: string;
-				eventType: EventRecord['eventType'];
-			}[];
-		}>('/api/dashboard/events');
-		return this.handleResponse(result);
+	async listEvents(): Promise<DashboardEventListResponse> {
+		const path = shouldRequestDashboardDebug()
+			? '/api/dashboard/events?debug=1'
+			: '/api/dashboard/events';
+		const result = await dashboardApi.get<DashboardEventListResponse>(path);
+		return this.handleResponse(result, 'events.list');
 	}
 
 	/**
