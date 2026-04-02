@@ -22,6 +22,13 @@ export interface SupabaseAuthUser {
 	amr?: Array<{ method?: string }>;
 }
 
+export interface SessionDebugSnapshot {
+	hasAccessToken: boolean;
+	tokenSource: 'authorization' | 'cookie' | 'none';
+	reason: 'missing_access_token' | 'invalid_supabase_user' | 'session_role_resolved';
+	context: SessionContext | null;
+}
+
 function sanitize(value: unknown, maxLen = 4096): string {
 	if (typeof value !== 'string') return '';
 	return value.trim().slice(0, maxLen);
@@ -30,6 +37,19 @@ function sanitize(value: unknown, maxLen = 4096): string {
 function getTokenFromAuthorizationHeader(authorizationHeader: string | null): string {
 	if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) return '';
 	return sanitize(authorizationHeader.slice('Bearer '.length));
+}
+
+function hasBearerAuthorizationHeader(authorizationHeader: string | null): boolean {
+	return Boolean(authorizationHeader && authorizationHeader.startsWith('Bearer '));
+}
+
+function shouldLogSessionDebug(request: Request): boolean {
+	if (process.env.NODE_ENV === 'production') return false;
+	try {
+		return new URL(request.url).searchParams.get('debug') === '1';
+	} catch {
+		return false;
+	}
 }
 
 function parseCookieHeader(cookieHeader: string | null): Record<string, string> {
@@ -84,6 +104,16 @@ export function resolveAccessTokenFromRequest(request: Request): string {
 	return getTokenFromCookieMap(parseCookieHeader(request.headers.get('cookie')));
 }
 
+export function resolveAccessTokenSourceFromRequest(
+	request: Request,
+): 'authorization' | 'cookie' | 'none' {
+	if (hasBearerAuthorizationHeader(request.headers.get('authorization'))) {
+		return 'authorization';
+	}
+	const cookieToken = getTokenFromCookieMap(parseCookieHeader(request.headers.get('cookie')));
+	return cookieToken ? 'cookie' : 'none';
+}
+
 export async function getSupabaseUserByAccessToken(
 	accessToken: string,
 ): Promise<SupabaseAuthUser | null> {
@@ -111,6 +141,72 @@ export async function getSupabaseUserByAccessToken(
 	return user;
 }
 
+export async function getSessionDebugSnapshotFromRequest(
+	request: Request,
+): Promise<SessionDebugSnapshot> {
+	const debugEnabled = shouldLogSessionDebug(request);
+	const tokenSource = resolveAccessTokenSourceFromRequest(request);
+	const accessToken = resolveAccessTokenFromRequest(request);
+	if (!accessToken) {
+		if (debugEnabled) {
+			console.log('[auth][session-debug]', {
+				hasAccessToken: false,
+				tokenSource,
+				reason: 'missing_access_token',
+			});
+		}
+		return {
+			hasAccessToken: false,
+			tokenSource,
+			reason: 'missing_access_token',
+			context: null,
+		};
+	}
+
+	const user = await getSupabaseUserByAccessToken(accessToken);
+	if (!user) {
+		if (debugEnabled) {
+			console.log('[auth][session-debug]', {
+				hasAccessToken: true,
+				tokenSource,
+				reason: 'invalid_supabase_user',
+			});
+		}
+		return {
+			hasAccessToken: true,
+			tokenSource,
+			reason: 'invalid_supabase_user',
+			context: null,
+		};
+	}
+
+	const role = normalizeAppRole(user.app_metadata?.role);
+	const snapshot = {
+		hasAccessToken: true,
+		tokenSource,
+		reason: 'session_role_resolved',
+		context: {
+			userId: user.id,
+			email: sanitize(user.email, 320),
+			accessToken,
+			role,
+			isSuperAdmin: isSuperAdminRole(role),
+			amr: user.amr,
+		},
+	};
+	if (debugEnabled) {
+		console.log('[auth][session-debug]', {
+			hasAccessToken: true,
+			tokenSource,
+			reason: 'session_role_resolved',
+			userId: snapshot.context.userId,
+			email: snapshot.context.email,
+			role: snapshot.context.role,
+		});
+	}
+	return snapshot;
+}
+
 export async function getHostSessionFromRequest(request: Request): Promise<HostSession | null> {
 	const context = await getSessionContextFromRequest(request);
 	if (!context) return null;
@@ -124,20 +220,8 @@ export async function getHostSessionFromRequest(request: Request): Promise<HostS
 export async function getSessionContextFromRequest(
 	request: Request,
 ): Promise<SessionContext | null> {
-	const accessToken = resolveAccessTokenFromRequest(request);
-	if (!accessToken) return null;
-	const user = await getSupabaseUserByAccessToken(accessToken);
-	if (!user) return null;
-	const role = normalizeAppRole(user.app_metadata?.role);
-
-	return {
-		userId: user.id,
-		email: sanitize(user.email, 320),
-		accessToken,
-		role,
-		isSuperAdmin: isSuperAdminRole(role),
-		amr: user.amr,
-	};
+	const snapshot = await getSessionDebugSnapshotFromRequest(request);
+	return snapshot.context;
 }
 
 export async function requireHostSession(request: Request): Promise<HostSession> {

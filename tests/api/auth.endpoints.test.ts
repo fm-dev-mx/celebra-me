@@ -8,7 +8,11 @@ import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,
 } from '@/lib/rsvp/services/auth-access.service';
-import { getHostSessionFromRequest } from '@/lib/rsvp/auth/auth';
+import {
+	getHostSessionFromRequest,
+	getSessionDebugSnapshotFromRequest,
+} from '@/lib/rsvp/auth/auth';
+import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
@@ -32,6 +36,11 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	getHostSessionFromRequest: jest.fn(),
+	getSessionDebugSnapshotFromRequest: jest.fn(),
+}));
+
+jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
+	findEventBySlugService: jest.fn(),
 }));
 
 describe('auth endpoints', () => {
@@ -51,8 +60,15 @@ describe('auth endpoints', () => {
 	const getHostSessionFromRequestMock = getHostSessionFromRequest as jest.MockedFunction<
 		typeof getHostSessionFromRequest
 	>;
+	const getSessionDebugSnapshotFromRequestMock =
+		getSessionDebugSnapshotFromRequest as jest.MockedFunction<
+			typeof getSessionDebugSnapshotFromRequest
+		>;
 	const buildAuthSessionDtoMock = buildAuthSessionDto as jest.MockedFunction<
 		typeof buildAuthSessionDto
+	>;
+	const findEventBySlugServiceMock = findEventBySlugService as jest.MockedFunction<
+		typeof findEventBySlugService
 	>;
 
 	afterEach(() => {
@@ -172,6 +188,62 @@ describe('auth endpoints', () => {
 			request: createMockRequest(),
 		} as never);
 		expect(response.status).toBe(200);
+	});
+
+	it('session endpoint returns debug payload when debug mode is enabled', async () => {
+		getSessionDebugSnapshotFromRequestMock.mockResolvedValue({
+			hasAccessToken: true,
+			tokenSource: 'cookie',
+			reason: 'session_role_resolved',
+			context: {
+				userId: 'u1',
+				email: 'host@test.com',
+				accessToken: 'token',
+				role: 'host_client',
+				isSuperAdmin: false,
+			},
+		});
+		buildAuthSessionDtoMock.mockResolvedValue({
+			userId: 'u1',
+			email: 'host@test.com',
+			role: 'host_client',
+			isSuperAdmin: false,
+			memberships: [
+				{
+					id: 'm1',
+					eventId: 'evt-1',
+					userId: 'u1',
+					membershipRole: 'owner',
+					createdAt: '2026-01-01',
+					updatedAt: '2026-01-01',
+				},
+			],
+		});
+		findEventBySlugServiceMock.mockResolvedValue({
+			id: 'evt-1',
+			ownerUserId: 'u1',
+			slug: 'ximena-meza-trasvina',
+			eventType: 'xv',
+			title: 'XV Ximena',
+			status: 'published',
+			publishedAt: null,
+			createdAt: '2026-01-01',
+			updatedAt: '2026-01-01',
+		});
+
+		const response = await authSession({
+			request: createMockRequest(
+				undefined,
+				undefined,
+				'http://localhost/api/auth/session?debug=1',
+			),
+		} as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(200);
+		expect(body.debug.expectedEventSlug).toBe('ximena-meza-trasvina');
+		expect(body.debug.hasOwnedEventForExpectedSlug).toBe(true);
+		expect(body.debug.hasVisibleMembershipForExpectedSlug).toBe(true);
 	});
 
 	it('logout endpoint clears session cookie', async () => {
