@@ -1,4 +1,9 @@
-import type { AttendanceStatus, DeliveryStatus } from '@/interfaces/rsvp/domain.interface';
+import type {
+	AttendanceStatus,
+	DeliveryStatus,
+	EntrySource,
+	EventRecord,
+} from '@/interfaces/rsvp/domain.interface';
 
 export interface DashboardGuestItem {
 	guestId: string;
@@ -18,7 +23,8 @@ export interface DashboardGuestItem {
 	waShareUrl: string;
 	shareText: string;
 	updatedAt: string;
-	eventType?: string;
+	entrySource?: EntrySource;
+	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;
 }

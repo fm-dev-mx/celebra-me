@@ -1,6 +1,7 @@
 import type {
 	AttendanceStatus,
 	ClaimCodeRecord,
+	EntrySource,
 	EventRecord,
 	GuestInvitationAuditRecord,
 	GuestInvitationRecord,
@@ -24,7 +25,8 @@ export interface CreateGuestInput {
 	phone?: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
-	short_id?: string;
+	shortId?: string;
+	entrySource?: EntrySource;
 }
 
 export interface UpdateGuestInput {
@@ -68,6 +70,7 @@ export type GuestRow = {
 	last_viewed_at: string | null;
 	responded_at: string | null;
 	last_response_source: ResponseSource;
+	entry_source?: EntrySource;
 	created_at: string;
 	updated_at: string;
 	tags: string[];
@@ -116,9 +119,9 @@ export const EVENT_COLUMNS =
 export const EVENT_MUTATION_COLUMNS =
 	'id,owner_user_id,slug,event_type,title,status,created_at,updated_at';
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags,short_id';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
 export const GUEST_COLUMNS_WITHOUT_SHORT_ID =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,created_at,updated_at,tags';
+	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_message,delivery_status,first_viewed_at,last_viewed_at,responded_at,last_response_source,entry_source,created_at,updated_at,tags';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -150,6 +153,7 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		lastViewedAt: row.last_viewed_at,
 		respondedAt: row.responded_at,
 		lastResponseSource: row.last_response_source,
+		entrySource: row.entry_source ?? 'dashboard',
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 		tags: row.tags || [],

@@ -1,6 +1,7 @@
 export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
 export type DeliveryStatus = 'generated' | 'shared';
-export type ResponseSource = 'link' | 'admin';
+export type ResponseSource = 'link' | 'admin' | 'generic_link';
+export type EntrySource = 'dashboard' | 'generic_public';
 
 export interface EventRecord {
 	id: string;
@@ -29,6 +30,7 @@ export interface GuestInvitationRecord {
 	lastViewedAt: string | null;
 	respondedAt: string | null;
 	lastResponseSource: ResponseSource;
+	entrySource?: EntrySource;
 	createdAt: string;
 	updatedAt: string;
 	tags?: string[];
@@ -70,6 +72,7 @@ export interface GuestInvitationDTO {
 	waShareUrl: string;
 	shareText: string;
 	updatedAt: string;
+	entrySource?: EntrySource;
 	tags?: string[];
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
