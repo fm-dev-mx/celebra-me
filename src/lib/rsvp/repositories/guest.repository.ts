@@ -21,28 +21,10 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
 
-function isGuestSchemaErrorMessage(message: string) {
-	return (
-		message.includes('PGRST204') ||
-		message.includes('42703') ||
-		message.includes('entry_source')
-	);
-}
+// [DELETED] isGuestSchemaErrorMessage replaced by standardized schema
 
-async function supportsGenericRsvpSources(hostAccessToken?: string): Promise<boolean> {
-	try {
-		await supabaseRestRequest<Array<{ entry_source?: string }>>({
-			pathWithQuery: `${TABLE}?select=entry_source&limit=1`,
-			...getGuestMutationOptions(hostAccessToken),
-		});
-		return true;
-	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		if (isGuestSchemaErrorMessage(message)) {
-			return false;
-		}
-		throw error;
-	}
+async function supportsGenericRsvpSources(_hostAccessToken?: string): Promise<boolean> {
+	return true;
 }
 
 function adaptGuestInsertInputForSchema(
@@ -221,8 +203,10 @@ function buildGuestUpdateBody(input: {
 	maxAllowedAttendees?: number;
 	attendanceStatus?: UpdateGuestInput['attendanceStatus'];
 	attendeeCount?: number;
-	guestMessage?: string;
+	guestComment?: string;
 	deliveryStatus?: UpdateGuestInput['deliveryStatus'];
+	viewPercentage?: number;
+	isViewed?: boolean;
 	lastResponseSource?: UpdateGuestInput['lastResponseSource'];
 	respondedAt?: string | null;
 	tags?: string[];
@@ -235,8 +219,10 @@ function buildGuestUpdateBody(input: {
 	}
 	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
 	if (input.attendeeCount !== undefined) updateBody.attendee_count = input.attendeeCount;
-	if (input.guestMessage !== undefined) updateBody.guest_message = input.guestMessage;
+	if (input.guestComment !== undefined) updateBody.guest_comment = input.guestComment;
 	if (input.deliveryStatus !== undefined) updateBody.delivery_status = input.deliveryStatus;
+	if (input.viewPercentage !== undefined) updateBody.view_percentage = input.viewPercentage;
+	if (input.isViewed !== undefined) updateBody.is_viewed = input.isViewed;
 	if (input.lastResponseSource !== undefined) {
 		updateBody.last_response_source = input.lastResponseSource;
 	}
