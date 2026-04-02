@@ -73,3 +73,39 @@
 	margin: 0;
 }
 
+.dashboard-assigned-events {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.dashboard-event-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.35rem 0.6rem;
+	border: 1px solid rgb(173 131 35 / 35%);
+	border-radius: 999px;
+	font-size: 0.8rem;
+}
+
+.dashboard-event-chip__remove {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: inherit;
+	padding: 0;
+	font-size: 0.7rem;
+	opacity: 70%;
+
+	&:hover {
+		opacity: 100%;
+	}
+}
+
+.dashboard-assign-event-row {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	margin-top: 0.5rem;
+}

@@ -47,6 +47,7 @@ type ResolvedRsvpTarget =
 				phone: string;
 				maxAllowedAttendees: number;
 				entrySource: EntrySource;
+				tags?: string[];
 			};
 	  };
 
@@ -100,6 +101,7 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 				phone: phone || (null as unknown as string),
 				maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
 				entrySource: 'generic_public',
+				tags: ['system:public'],
 			},
 		};
 	} catch (error) {

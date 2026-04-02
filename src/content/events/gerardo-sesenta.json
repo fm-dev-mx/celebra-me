@@ -1,0 +1,233 @@
+{
+    "eventType": "cumple",
+    "isDemo": false,
+    "title": "Gerardo Mendoza | 60 Años",
+    "description": "Una noche para celebrar el legado, la familia y los 60 años de Gerardo Mendoza en Los Mochis.",
+    "theme": {
+        "preset": "luxury-hacienda"
+    },
+    "sectionStyles": {
+        "countdown": {
+            "showParticles": false
+        },
+        "location": {
+            "mapStyle": "dark",
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Nombre del invitado *",
+                "guestCount": "Número de asistentes",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Gerardo Mendoza",
+        "label": "60 Años",
+        "nickname": "Jefe Botas",
+        "date": "2026-02-21T20:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait"
+    },
+    "location": {
+        "venueName": "Jardín De Eventos Cuatro 60",
+        "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
+        "city": "Los Mochis",
+        "mapUrl": "https://maps.app.goo.gl/KuRk4L96VD5T2GfR9",
+        "reception": {
+            "venueEvent": "Gran Festejo",
+            "venueName": "Jardín De Eventos Cuatro 60",
+            "address": "Ignacio Ramírez 460, Fátima, 81220 Los Mochis, Sin.",
+            "date": "21 de febrero de 2026",
+            "time": "8:00 PM",
+            "googleMapsUrl": "https://maps.app.goo.gl/KuRk4L96VD5T2GfR9",
+            "image": "jardin"
+        },
+        "indications": [
+            {
+                "icon": "dress",
+                "iconName": "Gift",
+                "styleVariant": "default",
+                "text": "Código de vestimenta: <strong>casual elegante</strong>"
+            },
+            {
+                "icon": "envelope",
+                "iconName": "Envelope",
+                "styleVariant": "reserved",
+                "text": "Favor de confirmar tu asistencia antes del <strong>14 de febrero</strong>"
+            }
+        ]
+    },
+    "quote": {
+        "text": "La vida se celebra mejor cuando la mesa está llena, la música suena fuerte y la familia está cerca.",
+        "author": "Gerardo Mendoza"
+    },
+    "gallery": {
+        "title": "Memorias del Festejo",
+        "subtitle": "Instantes, detalles y la esencia de una noche para recordar.",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Una entrada con carácter."
+            },
+            {
+                "image": "gallery02",
+                "caption": "El ambiente listo para recibir a la familia."
+            },
+            {
+                "image": "gallery03",
+                "caption": "Detalles que enmarcan la celebración."
+            },
+            {
+                "image": "gallery04",
+                "caption": "La noche toma forma."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Brindis, conversación y buenos recuerdos."
+            },
+            {
+                "image": "gallery06",
+                "caption": "Un cierre con sabor a fiesta."
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa de la Noche",
+        "items": [
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "8:00 PM",
+                "description": "Bienvenida y acceso al jardín."
+            },
+            {
+                "icon": "toast",
+                "label": "Brindis",
+                "time": "9:00 PM",
+                "description": "Palabras y buenos deseos para el festejado."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "9:30 PM",
+                "description": "Una mesa servida para celebrar en grande."
+            },
+            {
+                "icon": "music",
+                "label": "Música en Vivo",
+                "time": "11:00 PM",
+                "description": "La noche sube de nivel."
+            },
+            {
+                "icon": "party",
+                "label": "Baile",
+                "time": "12:00 AM",
+                "description": "Porque los 60 también se bailan."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Tu Presencia es lo Más Importante",
+        "subtitle": "Si deseas tener un detalle adicional, habrá buzón para sobres en recepción.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Gracias por acompañarnos en esta celebración tan especial."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma Tu Asistencia",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por acompañar a Gerardo en esta noche tan especial.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por ser parte de esta historia y por acompañarnos a celebrar una noche tan significativa.",
+        "closingName": "Gerardo Mendoza",
+        "image": "portrait"
+    },
+    "countdown": {
+        "title": "La celebración comienza en",
+        "subtitlePrefix": "",
+        "footerText": "Jardín De Eventos Cuatro 60, Los Mochis, Sinaloa"
+    },
+    "navigation": [
+        {
+            "label": "Inicio",
+            "href": "#inicio"
+        },
+        {
+            "label": "Ubicación",
+            "href": "#event-location"
+        },
+        {
+            "label": "Galería",
+            "href": "#galeria"
+        },
+        {
+            "label": "Regalos",
+            "href": "#regalos"
+        },
+        {
+            "label": "RSVP",
+            "href": "#rsvp"
+        }
+    ],
+    "contentBlocks": [
+        {
+            "type": "section",
+            "section": "location"
+        },
+        {
+            "type": "section",
+            "section": "itinerary"
+        },
+        {
+            "type": "section",
+            "section": "gallery"
+        },
+        {
+            "type": "section",
+            "section": "countdown"
+        },
+        {
+            "type": "section",
+            "section": "gifts"
+        },
+        {
+            "type": "section",
+            "section": "rsvp"
+        },
+        {
+            "type": "section",
+            "section": "thankYou"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "boot",
+        "documentLabel": "INVITACIÓN PRIVADA",
+        "stampText": "EST. 1966",
+        "stampYear": "2026",
+        "microcopy": "Abre el sobre para descubrir los detalles",
+        "tooltipText": "Acceder a la invitación",
+        "closedPalette": {
+            "primary": "surfacePrimary",
+            "background": "surfaceDark"
+        }
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1771003968/el-rey_sptxkp.mp3",
+        "autoPlay": false,
+        "title": "Música de fondo"
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto la invitación para celebrar los 60 años de Gerardo Mendoza. Aquí puedes ver los detalles y confirmar tu asistencia: {inviteUrl}"
+    }
+}

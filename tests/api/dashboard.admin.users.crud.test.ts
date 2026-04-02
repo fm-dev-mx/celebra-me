@@ -1,10 +1,12 @@
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
 import { PATCH as updateUserRole } from '@/pages/api/dashboard/admin/users/[userId]/role';
+import { PATCH as updateUserMembership } from '@/pages/api/dashboard/admin/users/[userId]/memberships';
 import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import {
 	listAdminUsers,
 	changeUserRoleAdmin,
 	createAdminUser,
+	updateUserEventMembershipAdmin,
 } from '@/lib/rsvp/services/user-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -33,6 +35,7 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	listAdminUsers: jest.fn(),
 	changeUserRoleAdmin: jest.fn(),
 	createAdminUser: jest.fn(),
+	updateUserEventMembershipAdmin: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/security/admin-protection', () => ({
@@ -47,6 +50,9 @@ const changeUserRoleAdminMock = changeUserRoleAdmin as jest.MockedFunction<
 	typeof changeUserRoleAdmin
 >;
 const createAdminUserMock = createAdminUser as jest.MockedFunction<typeof createAdminUser>;
+const updateUserEventMembershipAdminMock = updateUserEventMembershipAdmin as jest.MockedFunction<
+	typeof updateUserEventMembershipAdmin
+>;
 
 function createMockUrl(searchParams?: Record<string, string>): URL {
 	const url = new URL('http://localhost/api/dashboard/admin/users');
@@ -94,12 +100,14 @@ describe('Admin Users API', () => {
 					email: 'user1@test.com',
 					role: 'host_client' as const,
 					createdAt: new Date().toISOString(),
+					assignedEvents: [],
 				},
 				{
 					id: '550e8400-e29b-41d4-a716-446655440002',
 					email: 'user2@test.com',
 					role: 'super_admin' as const,
 					createdAt: new Date().toISOString(),
+					assignedEvents: [],
 				},
 			];
 			listAdminUsersMock.mockResolvedValue(mockUsers);
@@ -117,12 +125,14 @@ describe('Admin Users API', () => {
 						email: 'user1@test.com',
 						role: 'host_client',
 						createdAt: expect.any(String),
+						assignedEvents: [],
 					},
 					{
 						id: '550e8400-e29b-41d4-a716-446655440002',
 						email: 'user2@test.com',
 						role: 'super_admin',
 						createdAt: expect.any(String),
+						assignedEvents: [],
 					},
 				],
 				total: 2,
@@ -146,6 +156,7 @@ describe('Admin Users API', () => {
 					email: 'new-user@test.com',
 					role: 'host_client',
 					createdAt: '2026-04-01T00:00:00.000Z',
+					assignedEvents: [],
 				},
 				credentials: {
 					temporaryPassword: 'newusertest2026',
@@ -173,6 +184,7 @@ describe('Admin Users API', () => {
 					email: 'new-user@test.com',
 					role: 'host_client',
 					createdAt: '2026-04-01T00:00:00.000Z',
+					assignedEvents: [],
 				},
 				credentials: {
 					temporaryPassword: 'newusertest2026',
@@ -258,6 +270,7 @@ describe('Admin Users API', () => {
 					email: 'ximena_meza',
 					role: 'host_client',
 					createdAt: '2026-04-01T00:00:00.000Z',
+					assignedEvents: [],
 				},
 				credentials: {
 					temporaryPassword: 'ximenameza2026',
@@ -364,6 +377,46 @@ describe('Admin Users API', () => {
 				request,
 			} as never);
 			expect(response.status).toBe(403);
+		});
+
+		it('assigns an event membership to a user', async () => {
+			requireAdminStrongSessionMock.mockResolvedValue({
+				userId: VALID_ADMIN_ID,
+				email: 'admin@test.com',
+				accessToken: 'token',
+				role: 'super_admin',
+				isSuperAdmin: true,
+			});
+
+			updateUserEventMembershipAdminMock.mockResolvedValue({
+				userId: VALID_USER_ID,
+				eventId: '550e8400-e29b-41d4-a716-446655440099',
+				action: 'assign',
+				membershipRole: 'manager',
+				changedAt: '2026-04-01T00:00:00.000Z',
+			});
+
+			const request = createMockRequest({
+				eventId: '550e8400-e29b-41d4-a716-446655440099',
+				action: 'assign',
+				membershipRole: 'manager',
+			});
+
+			const response = await updateUserMembership({
+				params: { userId: VALID_USER_ID },
+				request,
+				cookies: {},
+			} as never);
+
+			expect(response.status).toBe(200);
+			const body = await response.json();
+			expect(body.item).toEqual({
+				userId: VALID_USER_ID,
+				eventId: '550e8400-e29b-41d4-a716-446655440099',
+				action: 'assign',
+				membershipRole: 'manager',
+				changedAt: '2026-04-01T00:00:00.000Z',
+			});
 		});
 	});
 });

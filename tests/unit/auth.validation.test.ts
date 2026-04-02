@@ -50,7 +50,7 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 		});
 
 		test('should return Spanish error for invalid login identifier', () => {
-			const result = validateLoginForm({ ...baseInput, email: 'invalid' });
+			const result = validateLoginForm({ ...baseInput, email: 'in valid' });
 			expect(result).toBe('Escribe un correo o usuario valido para continuar.');
 		});
 

@@ -1,26 +1,27 @@
+import { getLoginQueryPrefill } from '@/lib/client/auth/login-bridge';
 import {
-	getMethodHelpText,
-	isValidEmail,
-	isValidLoginIdentifier,
-	validateLoginForm,
-	validateRegisterForm,
+	getMethodHelpText as getMethodHelpTextUi,
+	isValidEmail as isValidEmailUi,
+	isValidLoginIdentifier as isValidLoginIdentifierUi,
+	validateLoginForm as validateLoginFormUi,
+	validateRegisterForm as validateRegisterFormUi,
 } from '@/lib/client/auth/login-ui';
 
 describe('rsvp login UI helpers', () => {
 	it('validates email format', () => {
-		expect(isValidEmail('host@test.com')).toBe(true);
-		expect(isValidEmail('host@test')).toBe(false);
+		expect(isValidEmailUi('host@test.com')).toBe(true);
+		expect(isValidEmailUi('host@test')).toBe(false);
 	});
 
 	it('validates login identifiers for password access', () => {
-		expect(isValidLoginIdentifier('host@test.com')).toBe(true);
-		expect(isValidLoginIdentifier('ximena_meza')).toBe(true);
-		expect(isValidLoginIdentifier('xx')).toBe(false);
+		expect(isValidLoginIdentifierUi('host@test.com')).toBe(true);
+		expect(isValidLoginIdentifierUi('ximena_meza')).toBe(true);
+		expect(isValidLoginIdentifierUi('xx')).toBe(false);
 	});
 
 	it('validates login form based on selected method', () => {
 		expect(
-			validateLoginForm({
+			validateLoginFormUi({
 				method: 'password',
 				email: 'host@test.com',
 				password: '',
@@ -28,7 +29,7 @@ describe('rsvp login UI helpers', () => {
 		).toBe('Ingresa tu contrasena para continuar con este metodo.');
 
 		expect(
-			validateLoginForm({
+			validateLoginFormUi({
 				method: 'magic_link',
 				email: 'host@test.com',
 				password: '',
@@ -36,7 +37,7 @@ describe('rsvp login UI helpers', () => {
 		).toBeNull();
 
 		expect(
-			validateLoginForm({
+			validateLoginFormUi({
 				method: 'password',
 				email: 'ximena_meza',
 				password: 'ximenameza2026',
@@ -46,7 +47,7 @@ describe('rsvp login UI helpers', () => {
 
 	it('allows register form with empty optional claim fields', () => {
 		expect(
-			validateRegisterForm({
+			validateRegisterFormUi({
 				method: 'password',
 				email: 'host@test.com',
 				password: 'Pass123!',
@@ -56,7 +57,27 @@ describe('rsvp login UI helpers', () => {
 	});
 
 	it('returns clear helper text per auth method', () => {
-		expect(getMethodHelpText('password')).toContain('Acceso inmediato');
-		expect(getMethodHelpText('magic_link')).toContain('Suele llegar');
+		expect(getMethodHelpTextUi('password')).toContain('Acceso inmediato');
+		expect(getMethodHelpTextUi('magic_link')).toContain('Suele llegar');
+	});
+
+	it('hydrates only safe login params from the query string', () => {
+		expect(
+			getLoginQueryPrefill(
+				'?method=password&email=celebra.me.com%40gmail.com&password=Testtest00%21',
+			),
+		).toEqual({
+			method: 'password',
+			email: 'celebra.me.com@gmail.com',
+			hasPasswordParam: true,
+		});
+	});
+
+	it('ignores invalid auth methods in the query string', () => {
+		expect(getLoginQueryPrefill('?method=token&email=ximena_meza')).toEqual({
+			method: null,
+			email: 'ximena_meza',
+			hasPasswordParam: false,
+		});
 	});
 });

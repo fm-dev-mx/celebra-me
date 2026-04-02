@@ -26,6 +26,7 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
 
 	// Role changes are the most sensitive mutation.
 	'admin:role': { maxHits: 5, windowSec: 60 }, // 5 req/min
+	'admin:user-membership': { maxHits: 10, windowSec: 60 }, // 10 req/min
 
 	// Claim code operations follow the same operational profile.
 	'claimcodes:list': { maxHits: 60, windowSec: 60 },

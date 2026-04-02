@@ -67,10 +67,35 @@ export async function createEventMembershipService(input: {
 			event_id: input.eventId,
 			user_id: input.userId,
 			membership_role: input.membershipRole,
+			deleted_at: null,
 		},
 	});
 	if (!rows[0]) throw new Error('No se pudo crear membresia del evento.');
 	return toMembershipRecord(rows[0]);
+}
+
+export async function listEventMembershipsService(): Promise<EventMembershipRecord[]> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: `event_memberships?select=*&${ACTIVE_MEMBERSHIP_FILTER}&order=created_at.desc`,
+		useServiceRole: true,
+	});
+	return rows.map(toMembershipRecord);
+}
+
+export async function softDeleteEventMembershipService(input: {
+	eventId: string;
+	userId: string;
+}): Promise<EventMembershipRecord | null> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: `event_memberships?event_id=eq.${encodeURIComponent(input.eventId)}&user_id=eq.${encodeURIComponent(input.userId)}&select=*`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			deleted_at: new Date().toISOString(),
+		},
+	});
+	return rows[0] ? toMembershipRecord(rows[0]) : null;
 }
 
 export async function findMembershipByEventForHost(

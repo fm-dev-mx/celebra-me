@@ -103,6 +103,18 @@ export const UpdateUserRoleSchema = z.object({
 	_version: TimestampSchema.optional(),
 });
 
+export const EventMembershipRoleSchema = z.enum(['owner', 'manager'], {
+	message: 'Invalid membership role',
+});
+
+export const UpdateUserEventMembershipSchema = z.object({
+	eventId: UuidSchema,
+	action: z.enum(['assign', 'remove'], {
+		message: 'Invalid membership action',
+	}),
+	membershipRole: EventMembershipRoleSchema.optional().default('manager'),
+});
+
 export const CreateUserSchema = z
 	.object({
 		email: z

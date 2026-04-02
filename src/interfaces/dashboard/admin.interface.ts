@@ -63,10 +63,3 @@ export interface AdminEventListItemDTO {
 	createdAt: string;
 	updatedAt: string;
 }
-
-export interface AdminUserListItemDTO {
-	id: string;
-	email: string;
-	role: AppUserRole;
-	createdAt: string;
-}

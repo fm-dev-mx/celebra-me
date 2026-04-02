@@ -176,6 +176,7 @@ describe('Admin API Strong Session Guard', () => {
 					email: 'user@test.com',
 					role: 'host_client',
 					createdAt: new Date().toISOString(),
+					assignedEvents: [],
 				},
 			]);
 
@@ -202,6 +203,7 @@ describe('Admin API Strong Session Guard', () => {
 					email: 'cliente-ab12cd34@clientes.celebra.invalid',
 					role: 'host_client',
 					createdAt: new Date().toISOString(),
+					assignedEvents: [],
 				},
 				credentials: {
 					temporaryPassword: 'TempPass123!aA1',

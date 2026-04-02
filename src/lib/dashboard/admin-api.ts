@@ -6,12 +6,13 @@ import type {
 	EventsListResponse,
 } from './dto/events';
 import type {
-	UserListItemDTO,
 	UsersListResponse,
 	CreateUserDTO,
 	CreateUserResponse,
 	UpdateUserRoleDTO,
 	UserRoleChangeResponse,
+	UpdateUserEventMembershipDTO,
+	UserEventMembershipChangeResponse,
 } from './dto/users';
 import type {
 	CreateClaimCodeDTO,
@@ -83,6 +84,17 @@ export class AdminApi {
 	): Promise<UserRoleChangeResponse> {
 		const result = await dashboardApi.patch<{ item: UserRoleChangeResponse }>(
 			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/role`,
+			payload,
+		);
+		return this.handleResponse(result).item;
+	}
+
+	async updateUserEventMembership(
+		userId: string,
+		payload: UpdateUserEventMembershipDTO,
+	): Promise<UserEventMembershipChangeResponse> {
+		const result = await dashboardApi.patch<{ item: UserEventMembershipChangeResponse }>(
+			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/memberships`,
 			payload,
 		);
 		return this.handleResponse(result).item;

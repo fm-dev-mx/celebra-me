@@ -7,6 +7,7 @@ import CreateUserModal from '@/components/dashboard/users/CreateUserModal';
 const UsersAdminTable: React.FC = () => {
 	const {
 		items,
+		events,
 		error,
 		loading,
 		updatingUserId,
@@ -14,6 +15,7 @@ const UsersAdminTable: React.FC = () => {
 		creating,
 		createdUser,
 		updateUserRole,
+		updateUserEventMembership,
 		openCreateModal,
 		closeCreateModal,
 		createUser,
@@ -34,6 +36,7 @@ const UsersAdminTable: React.FC = () => {
 					<tr>
 						<th>Acceso</th>
 						<th>Rol</th>
+						<th>Eventos asignados</th>
 						<th>Creado</th>
 					</tr>
 				</thead>
@@ -55,12 +58,76 @@ const UsersAdminTable: React.FC = () => {
 									<option value="super_admin">Administrador</option>
 								</select>
 							</td>
+							<td>
+								<div className="dashboard-assigned-events">
+									<div className="dashboard-assigned-events">
+										{item.assignedEvents.map((event) => (
+											<span
+												key={event.eventId}
+												className="dashboard-event-chip"
+											>
+												{event.title}
+												<button
+													type="button"
+													className="dashboard-event-chip__remove"
+													onClick={() => {
+														void updateUserEventMembership(item.id, {
+															eventId: event.eventId,
+															action: 'remove',
+														});
+													}}
+													disabled={loading || updatingUserId === item.id}
+													aria-label={`Quitar ${event.title} de ${item.email}`}
+												>
+													Quitar
+												</button>
+											</span>
+										))}
+										{item.assignedEvents.length === 0 && (
+											<span>Sin eventos asignados.</span>
+										)}
+									</div>
+									<div className="dashboard-assign-event-row">
+										<select
+											defaultValue=""
+											disabled={loading || updatingUserId === item.id}
+											onChange={(event) => {
+												const eventId = event.target.value;
+												if (!eventId) return;
+												void updateUserEventMembership(item.id, {
+													eventId,
+													action: 'assign',
+													membershipRole: 'manager',
+												});
+												event.currentTarget.value = '';
+											}}
+											aria-label={`Asignar evento a ${item.email}`}
+										>
+											<option value="">Asignar evento...</option>
+											{events
+												.filter(
+													(event) =>
+														!item.assignedEvents.some(
+															(assigned) =>
+																assigned.eventId === event.id,
+														),
+												)
+												.map((event) => (
+													<option key={event.id} value={event.id}>
+														{event.title} ({event.slug})
+													</option>
+												))}
+										</select>
+										<small>Se asigna como acceso de tipo manager.</small>
+									</div>
+								</div>
+							</td>
 							<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>
 						</tr>
 					))}
 					{items.length === 0 && !loading && (
 						<tr>
-							<td colSpan={3}>No hay usuarios registrados.</td>
+							<td colSpan={4}>No hay usuarios registrados.</td>
 						</tr>
 					)}
 				</tbody>

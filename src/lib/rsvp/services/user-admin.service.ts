@@ -1,9 +1,11 @@
 import {
 	findAppUserRoleByUserIdService,
+	listEventMembershipsService,
+	createEventMembershipService,
+	softDeleteEventMembershipService,
 	listUserRolesService,
 	upsertUserRoleService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
-import type { AdminUserListItemDTO } from '@/interfaces/dashboard/admin.interface';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 import {
 	createAuthUserByAdmin,
@@ -11,6 +13,8 @@ import {
 	findAuthUserByLoginIdentifier,
 	listAuthUsers,
 } from '@/lib/rsvp/auth/auth-api';
+import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
+import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { randomBytes } from 'node:crypto';
 import { sanitize } from '@/lib/rsvp/core/utils';
@@ -26,15 +30,40 @@ const GENERATED_LOGIN_DOMAIN = 'clientes.celebra.invalid';
 export async function listAdminUsers(input?: {
 	page?: number;
 	perPage?: number;
-}): Promise<AdminUserListItemDTO[]> {
-	const users = await listAuthUsers({
-		page: input?.page ?? 1,
-		perPage: input?.perPage ?? 200,
-	});
-	const roleRecords = await listUserRolesService();
+}): Promise<UserListItemDTO[]> {
+	const [users, roleRecords, memberships, events] = await Promise.all([
+		listAuthUsers({
+			page: input?.page ?? 1,
+			perPage: input?.perPage ?? 200,
+		}),
+		listUserRolesService(),
+		listEventMembershipsService(),
+		listAllEventsService(),
+	]);
 	const roleMap = new Map<string, AppUserRole>();
 	for (const item of roleRecords) {
 		roleMap.set(item.userId, item.role);
+	}
+	const eventMap = new Map(
+		events.map((event) => [
+			event.id,
+			{
+				eventId: event.id,
+				title: event.title,
+				slug: event.slug,
+			},
+		]),
+	);
+	const membershipsByUser = new Map<string, UserAssignedEventDTO[]>();
+	for (const membership of memberships) {
+		const event = eventMap.get(membership.eventId);
+		if (!event) continue;
+		const list = membershipsByUser.get(membership.userId) ?? [];
+		list.push({
+			...event,
+			membershipRole: membership.membershipRole,
+		});
+		membershipsByUser.set(membership.userId, list);
 	}
 
 	return users.map((user) => ({
@@ -42,6 +71,9 @@ export async function listAdminUsers(input?: {
 		email: sanitize(user.login_alias || user.email, 320),
 		role: roleMap.get(user.id) ?? 'host_client',
 		createdAt: user.created_at || new Date().toISOString(),
+		assignedEvents: (membershipsByUser.get(user.id) ?? []).sort((left, right) =>
+			left.title.localeCompare(right.title, 'es-MX'),
+		),
 	}));
 }
 
@@ -137,7 +169,7 @@ export async function createAdminUser(input: {
 	role: AppUserRole;
 	actorUserId: string;
 }): Promise<{
-	item: AdminUserListItemDTO;
+	item: UserListItemDTO;
 	credentials: {
 		temporaryPassword: string;
 	};
@@ -175,11 +207,12 @@ export async function createAdminUser(input: {
 		role,
 	});
 	const createdAt = authUser.created_at || roleRecord.createdAt || new Date().toISOString();
-	const item: AdminUserListItemDTO = {
+	const item: UserListItemDTO = {
 		id: authUser.id,
 		email: sanitize(authUser.login_alias || visibleLogin || authUser.email || authEmail, 320),
 		role: roleRecord.role,
 		createdAt,
+		assignedEvents: [],
 	};
 
 	await logAdminAction({
@@ -201,5 +234,79 @@ export async function createAdminUser(input: {
 		credentials: {
 			temporaryPassword,
 		},
+	};
+}
+
+export async function updateUserEventMembershipAdmin(input: {
+	userId: string;
+	eventId: string;
+	action: 'assign' | 'remove';
+	membershipRole?: 'owner' | 'manager';
+	actorUserId: string;
+}): Promise<{
+	userId: string;
+	eventId: string;
+	action: 'assign' | 'remove';
+	membershipRole: 'owner' | 'manager' | null;
+	changedAt: string;
+}> {
+	const userId = sanitize(input.userId, 120);
+	const eventId = sanitize(input.eventId, 120);
+	if (!userId || !eventId) {
+		throw new ApiError(400, 'bad_request', 'userId y eventId son requeridos.');
+	}
+
+	if (input.action === 'assign') {
+		const membershipRole = input.membershipRole === 'owner' ? 'owner' : 'manager';
+		const membership = await createEventMembershipService({
+			eventId,
+			userId,
+			membershipRole,
+		});
+
+		await logAdminAction({
+			actorId: sanitize(input.actorUserId, 120),
+			action: 'assign_event_membership',
+			targetTable: 'event_memberships',
+			targetId: membership.id,
+			oldData: null,
+			newData: membership as unknown as Record<string, unknown>,
+		});
+
+		return {
+			userId,
+			eventId,
+			action: 'assign',
+			membershipRole: membership.membershipRole,
+			changedAt: membership.updatedAt,
+		};
+	}
+
+	const removed = await softDeleteEventMembershipService({
+		eventId,
+		userId,
+	});
+	if (!removed) {
+		throw new ApiError(404, 'not_found', 'No existe una asignación activa para este evento.');
+	}
+
+	await logAdminAction({
+		actorId: sanitize(input.actorUserId, 120),
+		action: 'remove_event_membership',
+		targetTable: 'event_memberships',
+		targetId: removed.id,
+		oldData: removed as unknown as Record<string, unknown>,
+		newData: {
+			...removed,
+			deletedAt: new Date().toISOString(),
+		},
+	});
+
+	return {
+		userId,
+		eventId,
+		action: 'remove',
+		membershipRole: null,
+		changedAt: new Date().toISOString(),
 	};
 }
