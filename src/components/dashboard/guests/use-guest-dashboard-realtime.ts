@@ -4,12 +4,13 @@ import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
 interface HostEventItem {
 	id: string;
 	title: string;
 	slug: string;
-	eventType: string;
+	eventType: EventRecord['eventType'];
 }
 
 export type RealtimeState = 'connected' | 'reconnecting' | 'fallback';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface GuestMobileDockProps {
@@ -18,7 +18,13 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 	onOpenNextAction,
 	onStatusChange,
 }) => {
-	if (typeof document === 'undefined') return null;
+	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	if (!isMounted || typeof document === 'undefined') return null;
 
 	return createPortal(
 		<div className="dashboard-guests__mobile-dock">

@@ -1,6 +1,11 @@
 import React from 'react';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import {
+	formatGuestDate,
+	formatGuestEntrySource,
+	getGuestAttendanceLabel,
+} from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestCardProps {
 	item: DashboardGuestItem;
@@ -11,15 +16,6 @@ interface GuestCardProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-}
-
-function formatDate(value: string | null): string {
-	if (!value) return '-';
-	try {
-		return new Date(value).toLocaleString('es-MX');
-	} catch {
-		return value;
-	}
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -49,17 +45,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</div>
 				<div className={`status-pill status-pill--${item.attendanceStatus}`}>
 					<span className="status-pill__dot"></span>
-					{item.attendanceStatus === 'pending'
-						? 'Pendiente'
-						: item.attendanceStatus === 'confirmed'
-							? 'Confirmado'
-							: 'Declinó'}
+					{getGuestAttendanceLabel(item.attendanceStatus)}
 				</div>
 			</div>
 
 			<div className="guest-card__contact">
 				{item.phone && <span className="guest-card__phone">📱 {item.phone}</span>}
 				{item.email && <span className="guest-card__email">✉️ {item.email}</span>}
+				<span className="tag">{formatGuestEntrySource(item.entrySource)}</span>
 			</div>
 
 			{(item.tags || []).length > 0 && (
@@ -91,7 +84,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					<span className="guest-card__stat-label">Visto</span>
 					<div className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}>
 						{isViewed ? (
-							<span>👁️ {formatDate(item.firstViewedAt).split(',')[0]}</span>
+							<span>👁️ {formatGuestDate(item.firstViewedAt).split(',')[0]}</span>
 						) : (
 							<span>🌑 No visto</span>
 						)}

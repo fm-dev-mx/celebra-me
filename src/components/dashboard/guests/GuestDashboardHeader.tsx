@@ -5,13 +5,14 @@ import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import type { RealtimeState } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 
 interface HostEventItem {
 	id: string;
 	title: string;
 	slug: string;
-	eventType: string;
+	eventType: EventRecord['eventType'];
 }
 
 interface GuestDashboardHeaderProps {

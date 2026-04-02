@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { generateInvitationLink } from '@/utils/invitation-link';
+import {
+	formatGuestDate,
+	formatGuestEntrySource,
+	getGuestAttendanceLabel,
+	getGuestInviteUrl,
+} from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestTableProps {
 	items: DashboardGuestItem[];
@@ -12,15 +17,6 @@ interface GuestTableProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-}
-
-function formatDate(value: string | null): string {
-	if (!value) return '-';
-	try {
-		return new Date(value).toLocaleString('es-MX');
-	} catch {
-		return value;
-	}
 }
 
 const useIsMobile = (breakpoint = 992): boolean => {
@@ -72,14 +68,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 		);
 	}
 
-	const getInviteUrl = (item: DashboardGuestItem) =>
-		generateInvitationLink({
-			origin: inviteBaseUrl,
-			eventType: item.eventType || 'evento',
-			eventSlug: item.eventSlug || 'invitacion',
-			inviteId: item.inviteId,
-			shortId: item.shortId,
-		});
+	const getInviteUrl = (item: DashboardGuestItem) => getGuestInviteUrl(item, inviteBaseUrl);
 
 	if (isMobile) {
 		return (
@@ -145,6 +134,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										{item.email && (
 											<span className="guest-info__email">{item.email}</span>
 										)}
+										<span className="tag">
+											{formatGuestEntrySource(item.entrySource)}
+										</span>
 									</div>
 								</td>
 								<td data-label="Categorías">
@@ -161,11 +153,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										className={`status-pill status-pill--${item.attendanceStatus}`}
 									>
 										<span className="status-pill__dot"></span>
-										{item.attendanceStatus === 'pending'
-											? 'Pendiente'
-											: item.attendanceStatus === 'confirmed'
-												? 'Confirmado'
-												: 'Declinó'}
+										{getGuestAttendanceLabel(item.attendanceStatus)}
 									</div>
 								</td>
 								<td data-label="Asistentes">
@@ -196,9 +184,10 @@ const GuestTable: React.FC<GuestTableProps> = ({
 									>
 										{isViewed ? (
 											<span
-												title={`Visto el ${formatDate(item.firstViewedAt)}`}
+												title={`Visto el ${formatGuestDate(item.firstViewedAt)}`}
 											>
-												👁️ {formatDate(item.firstViewedAt).split(',')[0]}
+												👁️{' '}
+												{formatGuestDate(item.firstViewedAt).split(',')[0]}
 											</span>
 										) : (
 											<span title="No ha sido abierto">🌑 No visto</span>
