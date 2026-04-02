@@ -4,6 +4,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
+	getGuestVisibleTags,
 	getGuestAttendanceLabel,
 } from '@/components/dashboard/guests/guest-presenter';
 
@@ -52,12 +53,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			<div className="guest-card__contact">
 				{item.phone && <span className="guest-card__phone">📱 {item.phone}</span>}
 				{item.email && <span className="guest-card__email">✉️ {item.email}</span>}
-				<span className="tag">{formatGuestEntrySource(item.entrySource)}</span>
+				<span className="tag">{formatGuestEntrySource(item)}</span>
 			</div>
 
-			{(item.tags || []).length > 0 && (
+			{getGuestVisibleTags(item).length > 0 && (
 				<div className="guest-card__tags">
-					{(item.tags || []).map((tag) => (
+					{getGuestVisibleTags(item).map((tag) => (
 						<span key={tag} className="tag">
 							{tag}
 						</span>

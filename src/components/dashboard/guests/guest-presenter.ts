@@ -10,8 +10,14 @@ export function formatGuestDate(value: string | null): string {
 	}
 }
 
-export function formatGuestEntrySource(entrySource?: DashboardGuestItem['entrySource']) {
-	return entrySource === 'generic_public' ? 'RSVP público' : 'Invitación personalizada';
+export function formatGuestEntrySource(item: DashboardGuestItem) {
+	const isPublic =
+		item.entrySource === 'generic_public' || (item.tags ?? []).includes('system:public');
+	return isPublic ? 'RSVP público' : 'Invitación personalizada';
+}
+
+export function getGuestVisibleTags(item: DashboardGuestItem) {
+	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
 }
 
 export function getGuestAttendanceLabel(status: DashboardGuestItem['attendanceStatus']) {

@@ -7,6 +7,7 @@ import {
 	formatGuestEntrySource,
 	getGuestAttendanceLabel,
 	getGuestInviteUrl,
+	getGuestVisibleTags,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestTableProps {
@@ -134,14 +135,12 @@ const GuestTable: React.FC<GuestTableProps> = ({
 										{item.email && (
 											<span className="guest-info__email">{item.email}</span>
 										)}
-										<span className="tag">
-											{formatGuestEntrySource(item.entrySource)}
-										</span>
+										<span className="tag">{formatGuestEntrySource(item)}</span>
 									</div>
 								</td>
 								<td data-label="Categorías">
 									<div className="dashboard-guests__tags">
-										{(item.tags || []).map((tag) => (
+										{getGuestVisibleTags(item).map((tag) => (
 											<span key={tag} className="tag">
 												{tag}
 											</span>
