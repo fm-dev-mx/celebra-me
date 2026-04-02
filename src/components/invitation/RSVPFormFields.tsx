@@ -54,6 +54,59 @@ export function NameField(props: {
 	);
 }
 
+export function PhoneField(props: {
+	showPhoneField: boolean;
+	touched: Record<string, boolean>;
+	errors: Record<string, string>;
+	phone: string;
+	phoneRef: RefObject<HTMLInputElement | null>;
+	prefersReducedMotion: boolean;
+	onPhoneChange: (value: string) => void;
+	onBlur: (field: string) => void;
+}) {
+	const {
+		showPhoneField,
+		touched,
+		errors,
+		phone,
+		phoneRef,
+		prefersReducedMotion,
+		onPhoneChange,
+		onBlur,
+	} = props;
+	if (!showPhoneField) return null;
+
+	return (
+		<motion.div
+			className={`rsvp__field ${touched.phone && errors.phone ? 'rsvp__field--error' : ''}`}
+			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+			viewport={prefersReducedMotion ? undefined : { once: true }}
+			transition={prefersReducedMotion ? undefined : { delay: 0.05 }}
+		>
+			<label htmlFor="phone">Teléfono de contacto *</label>
+			<input
+				ref={phoneRef}
+				type="tel"
+				id="phone"
+				inputMode="numeric"
+				autoComplete="tel"
+				placeholder="10 dígitos"
+				value={phone}
+				onChange={(e) => onPhoneChange(e.target.value)}
+				onBlur={() => onBlur('phone')}
+				aria-invalid={!!(touched.phone && errors.phone)}
+				aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
+			/>
+			{touched.phone && errors.phone && (
+				<p className="rsvp__field-error" id="phone-error" role="alert">
+					{errors.phone}
+				</p>
+			)}
+		</motion.div>
+	);
+}
+
 export function AttendanceField(props: {
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
@@ -129,13 +182,8 @@ export function ConfirmedFields(props: {
 	effectiveGuestCap: number;
 	guestCountRef: RefObject<HTMLInputElement | null>;
 	attendeeCount: number | string;
-	showDietaryField: boolean;
-	dietaryLabel: string;
-	dietaryPlaceholder: string;
-	dietary: string;
 	notes: string;
 	onGuestCountChange: (value: string) => void;
-	onDietaryChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
 }) {
@@ -149,13 +197,8 @@ export function ConfirmedFields(props: {
 		effectiveGuestCap,
 		guestCountRef,
 		attendeeCount,
-		showDietaryField,
-		dietaryLabel,
-		dietaryPlaceholder,
-		dietary,
 		notes,
 		onGuestCountChange,
-		onDietaryChange,
 		onNotesChange,
 		onBlur,
 	} = props;
@@ -200,18 +243,6 @@ export function ConfirmedFields(props: {
 								{errors.guestCount}
 							</p>
 						)}
-					</div>
-				)}
-				{showDietaryField && (
-					<div className="rsvp__field">
-						<label htmlFor="dietary">{dietaryLabel}</label>
-						<textarea
-							id="dietary"
-							placeholder={dietaryPlaceholder}
-							rows={2}
-							value={dietary}
-							onChange={(e) => onDietaryChange(e.target.value)}
-						/>
 					</div>
 				)}
 				<div className="rsvp__field">

@@ -18,6 +18,8 @@ export interface ResolvedLabels {
 
 export interface ValidationContext {
 	name: string;
+	phone: string;
+	phoneRequired: boolean;
 	nameLocked: boolean;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number | string;
@@ -43,6 +45,10 @@ export function resolveLabels(labels?: {
 
 export function parseAttendeeCount(attendeeCount: number | string) {
 	return typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
+}
+
+export function normalizePhoneInput(phone: string) {
+	return phone.replace(/[^\d]/g, '').slice(0, 10);
 }
 
 export function buildWhatsAppUrl(params: {
@@ -80,6 +86,8 @@ export function buildWhatsAppUrl(params: {
 
 export function validateRsvpForm({
 	name,
+	phone,
+	phoneRequired,
 	nameLocked,
 	attendanceStatus,
 	attendeeCount,
@@ -90,6 +98,14 @@ export function validateRsvpForm({
 
 	if (!nameLocked && !name.trim()) {
 		errors.name = 'Por favor, escribe tu nombre completo.';
+	}
+	if (phoneRequired) {
+		const normalizedPhone = normalizePhoneInput(phone);
+		if (!normalizedPhone) {
+			errors.phone = 'Por favor, escribe tu teléfono.';
+		} else if (normalizedPhone.length !== 10) {
+			errors.phone = 'Escribe un teléfono de 10 dígitos.';
+		}
 	}
 	if (!attendanceStatus) {
 		errors.attendance = 'Por favor, selecciona si asistir\u00e1s.';

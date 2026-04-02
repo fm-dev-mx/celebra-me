@@ -2,6 +2,7 @@ import React from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import '@/styles/invitation/_rsvp.scss';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveLabels,
 	buildWhatsAppUrl,
@@ -12,9 +13,12 @@ import {
 } from '@/components/invitation/RSVPComponents';
 
 interface RSVPProps {
+	eventType: EventRecord['eventType'];
+	eventSlug: string;
 	title: string;
 	celebrantName?: string;
 	guestCap: number;
+	accessMode: 'personalized-only' | 'hybrid';
 	confirmationMessage: string;
 	labels?: {
 		name?: string;
@@ -22,9 +26,6 @@ interface RSVPProps {
 		attendance?: string;
 		confirmButton?: string;
 	};
-	showDietaryField?: boolean;
-	dietaryLabel?: string;
-	dietaryPlaceholder?: string;
 	variant?: string;
 	confirmationMode?: 'api' | 'whatsapp' | 'both';
 	whatsappConfig?: WhatsAppConfig;
@@ -36,14 +37,14 @@ interface RSVPProps {
 }
 
 const RSVP: React.FC<RSVPProps> = ({
+	eventType,
+	eventSlug,
 	title,
 	celebrantName,
 	guestCap,
+	accessMode,
 	confirmationMessage,
 	labels,
-	showDietaryField = false,
-	dietaryLabel = 'Alergias o restricciones alimentarias',
-	dietaryPlaceholder = 'Ej. Vegetariano, alergia al man\u00ed...',
 	variant,
 	confirmationMode = 'api',
 	whatsappConfig,
@@ -51,12 +52,14 @@ const RSVP: React.FC<RSVPProps> = ({
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
+	const allowPublicRsvp = !hasPersonalizedInvite && accessMode === 'hybrid';
 	const {
 		name,
+		phone,
+		phoneRequired,
 		attendanceStatus,
 		attendeeCount,
 		notes,
-		dietary,
 		nameLocked,
 		effectiveGuestCap,
 		supportsPlusOnes,
@@ -66,19 +69,23 @@ const RSVP: React.FC<RSVPProps> = ({
 		errors,
 		touched,
 		nameRef,
+		phoneRef,
 		attendanceRef,
 		guestCountRef,
 		setName,
+		setPhone,
 		setAttendanceStatus,
 		setAttendeeCount,
 		setNotes,
-		setDietary,
 		handleBlur,
 		handleSubmit,
 		handleWhatsAppClick,
 		validate,
 	} = useRsvpSubmission({
 		guestCap,
+		eventType,
+		eventSlug,
+		accessMode,
 		initialGuestData,
 		prefersReducedMotion: Boolean(prefersReducedMotion),
 	});
@@ -89,7 +96,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	if (!hasPersonalizedInvite) {
+	if (!hasPersonalizedInvite && !allowPublicRsvp) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
 
@@ -128,26 +135,29 @@ const RSVP: React.FC<RSVPProps> = ({
 			attendanceLabel={labels_resolved.attendanceLabel}
 			buttonLabel={labels_resolved.buttonLabel}
 			name={name}
+			phone={phone}
+			showPhoneField={phoneRequired}
 			touched={touched}
 			errors={errors}
 			attendanceStatus={attendanceStatus}
 			supportsPlusOnes={supportsPlusOnes}
 			effectiveGuestCap={effectiveGuestCap}
 			attendeeCount={attendeeCount}
-			showDietaryField={showDietaryField}
-			dietaryLabel={dietaryLabel}
-			dietaryPlaceholder={dietaryPlaceholder}
-			dietary={dietary}
 			notes={notes}
 			isSubmitting={isSubmitting}
 			submitStatus={submitStatus}
 			nameRef={nameRef}
+			phoneRef={phoneRef}
 			attendanceRef={attendanceRef}
 			guestCountRef={guestCountRef}
 			onSubmit={handleSubmit}
 			onNameChange={(value) => {
 				setName(value);
 				if (touched.name) validate();
+			}}
+			onPhoneChange={(value) => {
+				setPhone(value);
+				if (touched.phone) validate();
 			}}
 			onAttendanceChange={(status) => {
 				setAttendanceStatus(status);
@@ -158,7 +168,6 @@ const RSVP: React.FC<RSVPProps> = ({
 				setAttendeeCount(value);
 				if (touched.guestCount) validate();
 			}}
-			onDietaryChange={setDietary}
 			onNotesChange={setNotes}
 			onBlur={handleBlur}
 		/>

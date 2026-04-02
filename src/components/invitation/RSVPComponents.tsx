@@ -5,6 +5,7 @@ import {
 	AttendanceField,
 	ConfirmedFields,
 	NameField,
+	PhoneField,
 } from '@/components/invitation/RSVPFormFields';
 
 export * from '@/components/invitation/rsvp-logic';
@@ -29,9 +30,9 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 		<section id="rsvp" className="rsvp rsvp--locked-preview" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 			<div className="rsvp__locked-card" role="status" aria-live="polite">
-				<p className="rsvp__locked-eyebrow">Confirmaci\u00f3n personalizada</p>
+				<p className="rsvp__locked-eyebrow">Confirmación personalizada</p>
 				<p className="rsvp__locked-message">
-					Esta invitaci\u00f3n utiliza enlaces personalizados para confirmar asistencia.
+					Esta invitación utiliza enlaces personalizados para confirmar asistencia.
 				</p>
 				<p className="rsvp__locked-detail">
 					Si recibiste tu acceso directo, abre ese enlace para registrar tu respuesta.
@@ -140,27 +141,26 @@ export function RsvpFormView(props: {
 	attendanceLabel: string;
 	buttonLabel: string;
 	name: string;
+	phone: string;
+	showPhoneField: boolean;
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
 	attendanceStatus: AttendanceStatus;
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
 	attendeeCount: number | string;
-	showDietaryField: boolean;
-	dietaryLabel: string;
-	dietaryPlaceholder: string;
-	dietary: string;
 	notes: string;
 	isSubmitting: boolean;
 	submitStatus: 'idle' | 'loading' | 'success' | 'error';
 	nameRef: RefObject<HTMLInputElement | null>;
+	phoneRef: RefObject<HTMLInputElement | null>;
 	attendanceRef: RefObject<HTMLDivElement | null>;
 	guestCountRef: RefObject<HTMLInputElement | null>;
 	onSubmit: (e: SyntheticEvent) => void;
 	onNameChange: (value: string) => void;
+	onPhoneChange: (value: string) => void;
 	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
 	onGuestCountChange: (value: string) => void;
-	onDietaryChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
 }) {
@@ -171,6 +171,7 @@ export function RsvpFormView(props: {
 			<h2 className="rsvp__title">{title}</h2>
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
 				<NameField {...props} />
+				<PhoneField {...props} />
 				<AttendanceField {...props} />
 				<ConfirmedFields {...props} />
 				<div aria-live="polite" aria-atomic="true" className="rsvp__error-region">

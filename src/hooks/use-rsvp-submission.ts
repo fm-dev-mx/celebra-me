@@ -7,8 +7,10 @@ import {
 	type SyntheticEvent,
 } from 'react';
 import { rsvpApi } from '@/lib/client/rsvp-api';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	normalizeGuestCount,
+	normalizePhoneInput,
 	type AttendanceStatus,
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
@@ -21,20 +23,26 @@ interface InitialGuestData {
 
 interface UseRsvpSubmissionOptions {
 	guestCap: number;
+	eventType: EventRecord['eventType'];
+	eventSlug: string;
+	accessMode: 'personalized-only' | 'hybrid';
 	initialGuestData?: InitialGuestData;
 	prefersReducedMotion: boolean;
 }
 
 export function useRsvpSubmission({
 	guestCap,
+	eventType,
+	eventSlug,
+	accessMode,
 	initialGuestData,
 	prefersReducedMotion,
 }: UseRsvpSubmissionOptions) {
 	const [name, setName] = useState(initialGuestData?.fullName || '');
+	const [phone, setPhone] = useState('');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
-	const [dietary, setDietary] = useState('');
 	const [nameLocked, setNameLocked] = useState(Boolean(initialGuestData?.fullName));
 	const [contextGuestCap, setContextGuestCap] = useState<number>(
 		Number(initialGuestData?.maxAllowedAttendees || guestCap),
@@ -49,11 +57,13 @@ export function useRsvpSubmission({
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
 	const nameRef = useRef<HTMLInputElement>(null);
+	const phoneRef = useRef<HTMLInputElement>(null);
 	const attendanceRef = useRef<HTMLDivElement>(null);
 	const guestCountRef = useRef<HTMLInputElement>(null);
 
 	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
 	const supportsPlusOnes = effectiveGuestCap > 1;
+	const phoneRequired = !initialGuestData?.inviteId && accessMode === 'hybrid';
 
 	useEffect(() => {
 		if (initialGuestData) {
@@ -75,6 +85,8 @@ export function useRsvpSubmission({
 	const validate = useCallback(() => {
 		const newErrors = validateRsvpForm({
 			name,
+			phone,
+			phoneRequired,
 			nameLocked,
 			attendanceStatus,
 			attendeeCount,
@@ -83,7 +95,16 @@ export function useRsvpSubmission({
 		});
 		setErrors(newErrors);
 		return newErrors;
-	}, [attendanceStatus, attendeeCount, effectiveGuestCap, name, nameLocked, supportsPlusOnes]);
+	}, [
+		attendanceStatus,
+		attendeeCount,
+		effectiveGuestCap,
+		name,
+		nameLocked,
+		phone,
+		phoneRequired,
+		supportsPlusOnes,
+	]);
 
 	const handleBlur = useCallback(
 		(field: string) => {
@@ -105,6 +126,7 @@ export function useRsvpSubmission({
 				setSubmitStatus('error');
 				setTouched({
 					name: true,
+					phone: true,
 					attendance: true,
 					guestCount: true,
 				});
@@ -112,6 +134,7 @@ export function useRsvpSubmission({
 				const firstError = errorKeys[0];
 				const refMap: Record<string, RefObject<HTMLElement | null>> = {
 					name: nameRef as RefObject<HTMLElement | null>,
+					phone: phoneRef as RefObject<HTMLElement | null>,
 					attendance: attendanceRef as RefObject<HTMLElement | null>,
 					guestCount: guestCountRef as RefObject<HTMLElement | null>,
 				};
@@ -146,11 +169,25 @@ export function useRsvpSubmission({
 				);
 
 				if (!initialGuestData?.inviteId) {
-					setSubmitStatus('error');
-					setErrors((prev) => ({
-						...prev,
-						global: 'Esta invitación requiere un enlace personalizado.',
-					}));
+					if (accessMode !== 'hybrid') {
+						setSubmitStatus('error');
+						setErrors((prev) => ({
+							...prev,
+							global: 'Esta invitación requiere un enlace personalizado.',
+						}));
+						return;
+					}
+
+					await rsvpApi.submitPublicRsvp(eventType, eventSlug, {
+						fullName: name.trim(),
+						phone: normalizePhoneInput(phone),
+						attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
+						attendeeCount: normalizedCount,
+						guestMessage: notes,
+					});
+
+					setSubmitStatus('success');
+					window.setTimeout(() => setSubmitted(true), 500);
 					return;
 				}
 
@@ -177,10 +214,15 @@ export function useRsvpSubmission({
 			}
 		},
 		[
+			accessMode,
 			attendanceStatus,
 			attendeeCount,
+			eventSlug,
+			eventType,
 			initialGuestData?.inviteId,
 			notes,
+			name,
+			phone,
 			prefersReducedMotion,
 			supportsPlusOnes,
 			validate,
@@ -201,10 +243,11 @@ export function useRsvpSubmission({
 
 	return {
 		name,
+		phone,
+		phoneRequired,
 		attendanceStatus,
 		attendeeCount,
 		notes,
-		dietary,
 		nameLocked,
 		effectiveGuestCap,
 		supportsPlusOnes,
@@ -214,13 +257,14 @@ export function useRsvpSubmission({
 		errors,
 		touched,
 		nameRef,
+		phoneRef,
 		attendanceRef,
 		guestCountRef,
 		setName,
+		setPhone,
 		setAttendanceStatus,
 		setAttendeeCount,
 		setNotes,
-		setDietary,
 		handleBlur,
 		handleSubmit,
 		handleWhatsAppClick,
