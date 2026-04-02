@@ -19,6 +19,9 @@ export interface AuthRegisterPayload {
 
 export interface AuthResponse {
 	message?: string;
+	error?: {
+		message?: string;
+	};
 	next?: string;
 	[key: string]: unknown;
 }
@@ -29,6 +32,19 @@ async function parseJsonSafe(response: Response): Promise<AuthResponse> {
 	} catch {
 		return {};
 	}
+}
+
+function getErrorMessage(data: AuthResponse, fallback: string): string {
+	if (typeof data.message === 'string' && data.message.trim()) {
+		return data.message;
+	}
+
+	const nestedMessage = data.error?.message;
+	if (typeof nestedMessage === 'string' && nestedMessage.trim()) {
+		return nestedMessage;
+	}
+
+	return fallback;
 }
 
 class AuthBridgeApi {
@@ -42,7 +58,7 @@ class AuthBridgeApi {
 		const data = await parseJsonSafe(response);
 
 		if (!response.ok) {
-			throw new Error(data.message || 'Unable to sign in.');
+			throw new Error(getErrorMessage(data, 'Unable to sign in.'));
 		}
 
 		return data;
@@ -58,17 +74,23 @@ class AuthBridgeApi {
 		const data = await parseJsonSafe(response);
 
 		if (!response.ok) {
-			throw new Error(data.message || 'Unable to register.');
+			throw new Error(getErrorMessage(data, 'Unable to register.'));
 		}
 
 		return data;
 	}
 
 	async logout(): Promise<void> {
-		await fetch('/api/auth/logout', {
+		const response = await fetch('/api/auth/logout', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
+			credentials: 'same-origin',
 		});
+
+		if (!response.ok) {
+			const data = await parseJsonSafe(response);
+			throw new Error(getErrorMessage(data, 'Unable to sign out.'));
+		}
 	}
 }
 
