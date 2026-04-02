@@ -38,11 +38,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		items,
 		loading,
 		loadGuests,
-		realtimeState,
 		setEventId,
 		setItems,
 		totals,
-		updatedAt,
 	} = useGuestDashboardRealtime({
 		initialEventId,
 		search,
@@ -140,10 +138,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					hostEvents={hostEvents}
 					items={items}
 					loading={loading}
-					realtimeState={realtimeState}
 					shareSessionCount={shareSessionCount}
 					totals={totals}
-					updatedAt={updatedAt}
 					onEventChange={setEventId}
 					onOpenNextAction={openNextGeneratedGuest}
 				/>

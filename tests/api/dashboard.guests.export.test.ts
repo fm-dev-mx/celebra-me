@@ -55,6 +55,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					respondedAt: null,
 					waShareUrl: '',
 					shareText: '',
+					tags: [],
 					updatedAt: new Date().toISOString(),
 				},
 			],

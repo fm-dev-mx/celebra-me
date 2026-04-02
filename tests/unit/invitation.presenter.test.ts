@@ -74,8 +74,7 @@ describe('prepareInvitationPageData', () => {
 		expect(presenter.footer.variant).toBe('editorial');
 		expect(presenter.sections.location?.variant).toBe('editorial');
 		expect(
-			presenter.renderPlan.find((item) => item.type === 'interlude' && 'variant' in item)
-				?.variant,
+			presenter.renderPlan.find((item) => item.type === 'interlude')?.variant,
 		).toBe('editorial');
 	});
 

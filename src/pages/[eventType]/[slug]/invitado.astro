@@ -3,15 +3,15 @@ export const prerender = false;
 
 import { buildInvitationPath } from '@/utils/invitation-link';
 
-const inviteId = Astro.url.searchParams.get('invite') || '';
 const { eventType, slug } = Astro.params;
 if (!eventType || !slug) {
 	return Astro.redirect('/404');
 }
 
-return Astro.redirect(
-	inviteId
-		? buildInvitationPath({ eventType, eventSlug: slug, inviteId })
-		: `/${eventType}/${slug}`,
-);
+const inviteId = Astro.url.searchParams.get('invite');
+const redirectPath = inviteId
+	? buildInvitationPath({ eventType, eventSlug: slug, inviteId })
+	: `/${eventType}/${slug}`;
+
+return Astro.redirect(redirectPath);
 ---

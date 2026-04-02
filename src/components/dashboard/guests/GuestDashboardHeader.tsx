@@ -6,7 +6,6 @@ import type {
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
-import type { RealtimeState } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 
 interface HostEventItem {
 	id: string;
@@ -20,10 +19,8 @@ interface GuestDashboardHeaderProps {
 	hostEvents: HostEventItem[];
 	items: DashboardGuestItem[];
 	loading: boolean;
-	realtimeState: RealtimeState;
 	shareSessionCount: number;
 	totals: DashboardGuestListResponse['totals'];
-	updatedAt: string;
 	onEventChange: (eventId: string) => void;
 	onOpenNextAction: () => void;
 }
@@ -33,22 +30,14 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	hostEvents,
 	items,
 	loading,
-	realtimeState,
 	shareSessionCount,
 	totals,
-	updatedAt,
 	onEventChange,
 	onOpenNextAction,
 }) => {
 	const pendingGeneratedCount = items.filter(
 		(item) => item.deliveryStatus === 'generated',
 	).length;
-	const realtimeLabel =
-		realtimeState === 'connected'
-			? 'Conexión estable'
-			: realtimeState === 'reconnecting'
-				? 'Reconectando'
-				: 'Modo de respaldo';
 
 	return (
 		<>

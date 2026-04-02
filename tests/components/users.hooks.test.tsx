@@ -38,6 +38,7 @@ describe('users admin hook', () => {
 				email: 'cliente-ab12cd34',
 				role: 'host_client',
 				createdAt: '2026-04-01T00:00:00.000Z',
+				assignedEvents: [],
 			},
 			credentials: {
 				temporaryPassword: 'clienteab12c2026',

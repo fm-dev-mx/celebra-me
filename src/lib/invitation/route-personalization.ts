@@ -1,7 +1,7 @@
 import { buildInvitationPath } from '@/utils/invitation-link';
+import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import {
 	getInvitationContextByInviteId,
-	type InvitationGuestContext,
 } from '@/lib/rsvp/services/invitation-context.service';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 

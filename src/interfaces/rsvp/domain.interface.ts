@@ -73,7 +73,7 @@ export interface GuestInvitationDTO {
 	shareText: string;
 	updatedAt: string;
 	entrySource?: EntrySource;
-	tags?: string[];
+	tags: string[];
 	eventType?: EventRecord['eventType'];
 	eventSlug?: string;
 	shortId?: string;

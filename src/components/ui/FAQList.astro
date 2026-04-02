@@ -59,13 +59,16 @@ if (!faqs.length) {
 		const items = Array.from(faqList.querySelectorAll('[data-faq-item]'));
 		const shouldReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		const setAnswerInteractivity = (answer, isInteractive) => {
+		const setAnswerInteractivity = (
+			answer: HTMLElement & { inert?: boolean },
+			isInteractive: boolean,
+		) => {
 			if ('inert' in answer) {
 				answer.inert = !isInteractive;
 			}
 		};
 
-		const clearCloseTimer = (answer) => {
+		const clearCloseTimer = (answer: HTMLElement) => {
 			const closeTimer = answer.dataset.closeTimer;
 
 			if (closeTimer) {
@@ -74,7 +77,7 @@ if (!faqs.length) {
 			}
 		};
 
-		const closeItem = (item, immediate = false) => {
+		const closeItem = (item: Element, immediate = false) => {
 			const button = item.querySelector('.faq-question-btn');
 			const answer = item.querySelector('.faq-answer-wrapper');
 
@@ -105,7 +108,7 @@ if (!faqs.length) {
 			);
 		};
 
-		const openItem = (item) => {
+		const openItem = (item: Element) => {
 			const button = item.querySelector('.faq-question-btn');
 			const answer = item.querySelector('.faq-answer-wrapper');
 
@@ -124,7 +127,7 @@ if (!faqs.length) {
 			});
 		};
 
-		items.forEach((item) => {
+		items.forEach((item: Element) => {
 			const button = item.querySelector('.faq-question-btn');
 
 			if (!(button instanceof HTMLButtonElement)) {
@@ -136,7 +139,7 @@ if (!faqs.length) {
 			button.addEventListener('click', () => {
 				const shouldOpen = button.getAttribute('aria-expanded') !== 'true';
 
-				items.forEach((otherItem) => {
+				items.forEach((otherItem: Element) => {
 					closeItem(otherItem);
 				});
 

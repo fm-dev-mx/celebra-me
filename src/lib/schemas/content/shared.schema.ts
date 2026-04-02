@@ -34,7 +34,7 @@ export const AssetSchema = z.preprocess(
 	z.discriminatedUnion('type', [internalAssetSchema, externalAssetSchema]),
 );
 
-export type ContentAssetSource = z.infer<typeof AssetSchema>;
+export type ContentAssetSource = ReturnType<(typeof AssetSchema)['parse']>;
 
 const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
 

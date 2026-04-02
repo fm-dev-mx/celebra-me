@@ -27,7 +27,7 @@ function getClaimCodeStatusLabel(status: ClaimCodeDTO['status']) {
 			return 'Desactivado';
 		case 'expired':
 			return 'Vencido';
-		case 'used_up':
+		case 'exhausted':
 			return 'Agotado';
 		default:
 			return status;

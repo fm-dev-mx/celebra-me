@@ -187,25 +187,30 @@ export async function listAuthUsers(input?: {
 	return (response.users || []).map(mapAuthAdminUser);
 }
 
+type CreateAuthUserResponse =
+	| {
+			user:
+				| {
+						id: string;
+						email?: string;
+						created_at?: string;
+						user_metadata?: Record<string, unknown>;
+				  }
+				| undefined;
+	  }
+	| {
+			id: string;
+			email?: string;
+			created_at?: string;
+			user_metadata?: Record<string, unknown>;
+	  };
+
 export async function createAuthUserByAdmin(input: {
 	email: string;
 	password: string;
 	loginAlias?: string;
 }): Promise<AuthAdminUser> {
-	const response = await authRequest<{
-		user?:
-			| {
-					id: string;
-					email?: string;
-					created_at?: string;
-					user_metadata?: Record<string, unknown>;
-			  }
-			| undefined;
-		id?: string;
-		email?: string;
-		created_at?: string;
-		user_metadata?: Record<string, unknown>;
-	}>({
+	const response = await authRequest<CreateAuthUserResponse>({
 		path: 'admin/users',
 		method: 'POST',
 		useServiceRole: true,
@@ -220,8 +225,8 @@ export async function createAuthUserByAdmin(input: {
 				: undefined,
 		},
 	});
-	const user = response.user || response;
-	if (!user.id) {
+	const user = 'user' in response ? response.user : response;
+	if (!user || !user.id) {
 		throw new Error('Supabase auth error: created user id was not returned.');
 	}
 	return mapAuthAdminUser(user);

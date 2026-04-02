@@ -12,16 +12,14 @@ if (!shortId) {
 }
 
 try {
-	const result = await getInvitationContextByShortId(shortId);
-	void result; // TypeScript workaround for unused variable warning
+	const { eventType, eventSlug, inviteId } = await getInvitationContextByShortId(shortId);
+	const redirectPath = buildInvitationPath({
+		eventType,
+		eventSlug,
+		inviteId,
+	});
 
-	return Astro.redirect(
-		buildInvitationPath({
-			eventType: result.eventType,
-			eventSlug: result.eventSlug,
-			inviteId: result.inviteId,
-		}),
-	);
+	return Astro.redirect(redirectPath);
 } catch (error) {
 	console.error('[ShortID Resolution] Error:', error);
 	return Astro.redirect('/404');

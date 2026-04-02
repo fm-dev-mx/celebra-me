@@ -181,7 +181,7 @@ export async function getSessionDebugSnapshotFromRequest(
 	}
 
 	const role = normalizeAppRole(user.app_metadata?.role);
-	const snapshot = {
+	const snapshot: SessionDebugSnapshot = {
 		hasAccessToken: true,
 		tokenSource,
 		reason: 'session_role_resolved',

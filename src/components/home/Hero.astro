@@ -115,7 +115,7 @@ const avatar3 = getCommonAsset('avatar3');
 		const background = hero.querySelector('.hero-prime__bg');
 		const media = Array.from(background?.querySelectorAll('img, video') ?? []);
 
-		const applyTransform = (moveX, moveY) => {
+		const applyTransform = (moveX: number, moveY: number) => {
 			media.forEach((element) => {
 				if (element instanceof HTMLElement) {
 					element.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
@@ -123,7 +123,7 @@ const avatar3 = getCommonAsset('avatar3');
 			});
 		};
 
-		const handleMouseMove = (event) => {
+		const handleMouseMove = (event: MouseEvent) => {
 			const moveX = (event.clientX - window.innerWidth / 2) / 50;
 			const moveY = (event.clientY - window.innerHeight / 2) / 50;
 			applyTransform(moveX, moveY);

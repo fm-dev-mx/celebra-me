@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
-import { collections } from '@/content/config';
+import { collections } from '@/content.config';
 import {
 	LOCATION_VARIANTS,
 	QUOTE_VARIANTS,
