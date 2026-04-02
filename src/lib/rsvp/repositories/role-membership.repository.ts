@@ -11,6 +11,8 @@ import {
 	toRoleRecord,
 } from '@/lib/rsvp/repositories/shared/rows';
 
+const ACTIVE_MEMBERSHIP_FILTER = 'deleted_at=is.null';
+
 export async function upsertUserRoleService(input: {
 	userId: string;
 	role: AppUserRole;
@@ -76,7 +78,7 @@ export async function findMembershipByEventForHost(
 	hostAccessToken: string,
 ): Promise<EventMembershipRecord | null> {
 	const rows = await supabaseRestRequest<EventMembershipRow[]>({
-		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(eventId)}&limit=1`,
+		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(eventId)}&${ACTIVE_MEMBERSHIP_FILTER}&limit=1`,
 		authToken: hostAccessToken,
 	});
 	return rows[0] ? toMembershipRecord(rows[0]) : null;
@@ -86,7 +88,7 @@ export async function listMembershipsForHost(
 	hostAccessToken: string,
 ): Promise<EventMembershipRecord[]> {
 	const rows = await supabaseRestRequest<EventMembershipRow[]>({
-		pathWithQuery: 'event_memberships?select=*&order=created_at.desc',
+		pathWithQuery: `event_memberships?select=*&${ACTIVE_MEMBERSHIP_FILTER}&order=created_at.desc`,
 		authToken: hostAccessToken,
 	});
 	return rows.map(toMembershipRecord);
