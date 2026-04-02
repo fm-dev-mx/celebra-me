@@ -176,10 +176,17 @@ function buildLayoutData(
 	hero: InvitationViewModel['hero'],
 	guestName: string | undefined,
 ) {
+	const sharingImage = viewModel.sharing?.ogImage;
+	const imageSrc = sharingImage
+		? typeof sharingImage.src === 'string'
+			? sharingImage.src
+			: sharingImage.src.src
+		: resolveHeroImageSrc(hero);
+
 	return {
 		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
 		description: viewModel.description || '',
-		image: resolveHeroImageSrc(hero),
+		image: imageSrc,
 		className: hero.layoutVariant ? `layout--${hero.layoutVariant}` : undefined,
 	};
 }

@@ -20,6 +20,7 @@ import {
 	buildLocationIndications,
 	buildContentBlocks,
 	buildSections,
+	buildSharing,
 } from './event-view-models';
 
 type QuoteVariantValue = (typeof QUOTE_VARIANTS)[number];
@@ -142,5 +143,6 @@ export function adaptEvent(
 			: undefined,
 		contentBlocks,
 		navigation: adapterData.navigation,
+		sharing: buildSharing(context),
 	};
 }

@@ -79,6 +79,10 @@
             {
                 "name": "Eduardo Arredondo Valenzuela",
                 "role": "Padrino de honor"
+            },
+            {
+                "name": "Karla Gabriela Montoya Valenzuela",
+                "role": "Madrina de honor"
             }
         ],
         "featuredImage": "family",
@@ -256,6 +260,7 @@
         "title": "Música de fondo: Edición Premiere"
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}",
+        "ogImage": "portrait"
     }
 }

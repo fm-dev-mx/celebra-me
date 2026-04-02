@@ -306,4 +306,8 @@ export interface InvitationViewModel {
 	};
 	contentBlocks?: ContentBlock[];
 	navigation?: Array<{ label: string; href: string }>;
+	sharing?: {
+		whatsappTemplate?: string;
+		ogImage?: ImageAsset;
+	};
 }

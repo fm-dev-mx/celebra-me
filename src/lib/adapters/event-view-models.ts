@@ -208,6 +208,18 @@ export function buildSections(
 	};
 }
 
+export function buildSharing(context: AdaptationContext) {
+	const { data, eventSlug } = context;
+	if (!data.sharing) return undefined;
+
+	return {
+		whatsappTemplate: data.sharing.whatsappTemplate,
+		ogImage: data.sharing.ogImage
+			? resolveAsset(eventSlug, data.sharing.ogImage, data.title)
+			: undefined,
+	};
+}
+
 function buildQuoteSection(context: AdaptationContext) {
 	const { data, quoteFallback } = context;
 	if (!data.quote) return undefined;

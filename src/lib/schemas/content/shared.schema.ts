@@ -98,6 +98,7 @@ export const navigationSchema = z
 export const sharingSchema = z
 	.object({
 		whatsappTemplate: z.string().optional(),
+		ogImage: AssetSchema.optional(),
 	})
 	.optional();
 
