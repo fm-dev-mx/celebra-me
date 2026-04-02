@@ -16,8 +16,8 @@
         },
         "rsvp": {
             "labels": {
-                "name": "Tu nombre en la lista *",
-                "guestCount": "Número de acompañantes",
+                "name": "Tu nombre",
+                "guestCount": "Acompañantes",
                 "confirmButton": "Reservar mi lugar"
             }
         }
