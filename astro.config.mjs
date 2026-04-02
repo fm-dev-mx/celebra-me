@@ -12,7 +12,7 @@ export default defineConfig({
 	site:
 		process.env.NODE_ENV === 'development'
 			? 'http://127.0.0.1:4321'
-			: 'https://celebra-me.vercel.app',
+			: process.env.BASE_URL || 'https://www.celebra-me.com',
 
 	integrations: [react(), sitemap(), robotsTxt()],
 	image: {
