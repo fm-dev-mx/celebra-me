@@ -17,7 +17,8 @@ templates.
 - Live event slugs should be semantic and client-specific.
 - Demo slugs should clearly read as showcase content, such as `demo-xv`.
 - Template files should use stable editorial names such as `master.json`.
-- Keep routable content free of duplicate slugs across the same `eventType`.
+- Keep routable content free of duplicate slugs across all public collections, regardless of
+  `eventType`.
 
 ## Theme Governance
 

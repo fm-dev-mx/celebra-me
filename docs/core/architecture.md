@@ -44,7 +44,8 @@ This matches Astro's hybrid model and the repository's current route structure.
 - Astro pages define public routes using file-based routing.
 - Public invitation rendering lives under:
   - `src/pages/[eventType]/[slug].astro`
-  - `src/pages/[eventType]/[slug]/invitado.astro`
+  - `src/pages/[eventType]/[slug]/invitado.astro` as a compatibility redirect to the canonical
+    invite URL
   - `src/pages/[eventType]/[slug]/i/[shortId].astro`
 - Host dashboard pages live under `src/pages/dashboard/**`.
 - API routes live under `src/pages/api/**`.
@@ -283,7 +284,7 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 
 The active guest-facing patterns are:
 
-- `/{eventType}/{slug}/invitado?invite={inviteId}` for direct personalized access
+- `/{eventType}/{slug}?invite={inviteId}` for direct personalized access
 - `/{eventType}/{slug}/i/{shortId}` for short-link resolution
 - `/api/invitacion/:inviteId/context`
 - `/api/invitacion/:inviteId/rsvp`

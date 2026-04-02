@@ -8,6 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
+const ROUTABLE_CONTENT_DIRS = [
+	path.join(PROJECT_ROOT, 'src', 'content', 'events'),
+	path.join(PROJECT_ROOT, 'src', 'content', 'event-demos'),
+];
 const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple']);
 
 function isPlaceholderEnvValue(value) {
@@ -56,6 +60,37 @@ function normalizeEvent(row) {
 
 function entryKey(eventType, slug) {
 	return `${eventType}:${slug}`;
+}
+
+function collectRoutableSlugConflicts() {
+	const slugOwners = new Map();
+	const conflicts = [];
+
+	for (const dir of ROUTABLE_CONTENT_DIRS) {
+		if (!fs.existsSync(dir)) continue;
+
+		const files = fs.readdirSync(dir, { recursive: true }).filter((file) => {
+			return typeof file === 'string' && file.endsWith('.json');
+		});
+
+		for (const file of files) {
+			const fullPath = path.join(dir, file);
+			const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+			const slug = path.basename(file, '.json');
+			const eventType = String(parsed.eventType || '').trim();
+			const owner = `${eventType}:${path.relative(PROJECT_ROOT, fullPath).replace(/\\/g, '/')}`;
+
+			const existing = slugOwners.get(slug);
+			if (existing && existing !== owner) {
+				conflicts.push({ slug, first: existing, second: owner });
+				continue;
+			}
+
+			slugOwners.set(slug, owner);
+		}
+	}
+
+	return conflicts;
 }
 
 async function fetchDbEvents(supabaseUrl, serviceRoleKey) {
@@ -178,6 +213,15 @@ Options:
 
 	loadEnvFile('.env.local');
 	loadEnvFile('.env');
+
+	const slugConflicts = collectRoutableSlugConflicts();
+	if (slugConflicts.length > 0) {
+		console.error('[Content] Duplicate routable slugs detected across public collections.');
+		for (const conflict of slugConflicts) {
+			console.error(`  • ${conflict.slug}: ${conflict.first} <-> ${conflict.second}`);
+		}
+		process.exit(1);
+	}
 
 	const supabaseUrl = process.env.SUPABASE_URL || '';
 	const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';

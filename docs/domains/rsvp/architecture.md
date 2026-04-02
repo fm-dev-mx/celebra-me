@@ -27,7 +27,7 @@ The RSVP domain covers:
 ### Guest-Facing Pages
 
 - `/{eventType}/{slug}`
-- `/{eventType}/{slug}/invitado?invite={inviteId}`
+- `/{eventType}/{slug}?invite={inviteId}`
 - `/{eventType}/{slug}/i/{shortId}`
 
 `generateInvitationLink()` in `src/utils/invitation-link.ts` emits the direct guest URL when no

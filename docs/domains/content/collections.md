@@ -48,7 +48,7 @@ Section variant enums come from `src/lib/theme/theme-variants.ts`.
 Public invitation routes resolve as:
 
 - `/{eventType}/{slug}`
-- `/{eventType}/{slug}/invitado?invite={inviteId}`
+- `/{eventType}/{slug}?invite={inviteId}`
 - `/{eventType}/{slug}/i/{shortId}`
 
 `src/lib/content/events.ts` resolves live events first and then public demos by slug and
@@ -57,6 +57,9 @@ Public invitation routes resolve as:
 ## Asset Expectations
 
 Event-specific source assets live under `src/assets/images/events/<slug>/`.
+
+Routable slugs must remain globally unique across `events` and `event-demos`. The public route,
+asset discovery, and invitation override layers assume a single owner per slug.
 
 When a route depends on local event assets, keep the asset exports in
 `src/assets/images/events/<slug>/index.ts` so the discovery/registry helpers can consume them

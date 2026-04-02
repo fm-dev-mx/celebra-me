@@ -63,7 +63,7 @@ pnpm db:migrate:new <migration_name>
 
 ## Active URL Patterns Backed By The Schema
 
-- direct invite URL: `/{eventType}/{slug}/invitado?invite={inviteId}`
+- direct invite URL: `/{eventType}/{slug}?invite={inviteId}`
 - short invite URL: `/{eventType}/{slug}/i/{shortId}`
 - landing RSVP URL: `/{eventType}/{slug}`
 - guest APIs: `/api/invitacion/:inviteId/context`, `/rsvp`, `/view`
