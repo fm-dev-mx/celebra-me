@@ -61,6 +61,8 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 			totals: {
 				totalInvitations: 1,
 				totalPeople: 1,
+				generatedInvitations: 0,
+				sharedInvitations: 1,
 				pendingInvitations: 0,
 				pendingPeople: 0,
 				confirmedInvitations: 1,

@@ -53,6 +53,8 @@ const sampleGuest: DashboardGuestItem = {
 const sampleTotals = {
 	totalInvitations: 1,
 	totalPeople: 4,
+	generatedInvitations: 1,
+	sharedInvitations: 0,
 	pendingInvitations: 1,
 	pendingPeople: 4,
 	confirmedInvitations: 0,

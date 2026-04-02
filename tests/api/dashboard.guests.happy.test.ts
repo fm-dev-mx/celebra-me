@@ -67,6 +67,8 @@ describe('dashboard guests happy path', () => {
 			totals: {
 				totalInvitations: 0,
 				totalPeople: 0,
+				generatedInvitations: 0,
+				sharedInvitations: 0,
 				pendingInvitations: 0,
 				pendingPeople: 0,
 				confirmedInvitations: 0,
