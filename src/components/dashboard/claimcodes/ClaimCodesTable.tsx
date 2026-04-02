@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import type { ClaimCodeDTO } from '@/interfaces/rsvp/domain.interface';
 import type { UpdateClaimCodeDTO } from '@/lib/dashboard/dto/claimcodes';
 
@@ -155,92 +156,99 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onU
 			</div>
 
 			{editModal.open && editModal.item && (
-				<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
-					<div className="dashboard-modal">
-						<h3>Editar código de acceso</h3>
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								void handleEditSubmit();
-							}}
-						>
-							<div className="dashboard-form-field">
-								<label htmlFor="claim-edit-active">Activo</label>
-								<select
-									id="claim-edit-active"
-									value={editModal.active ? 'true' : 'false'}
-									onChange={(e) =>
-										setEditModal({
-											...editModal,
-											active: e.target.value === 'true',
-										})
-									}
-									disabled={editModal.busy}
-								>
-									<option value="true">Activo</option>
-									<option value="false">Inactivo</option>
-								</select>
-							</div>
-							<div className="dashboard-form-field">
-								<label htmlFor="claim-edit-max-uses">Usos máximos</label>
-								<input
-									id="claim-edit-max-uses"
-									type="number"
-									min={Math.max(1, editModal.item.usedCount)}
-									max={10000}
-									value={editModal.maxUses}
-									onChange={(e) =>
-										setEditModal({
-											...editModal,
-											maxUses: Number.parseInt(e.target.value) || 1,
-										})
-									}
-									disabled={editModal.busy}
-									required
-								/>
-								<p className="dashboard-form-help">
-									Mínimo {editModal.item.usedCount} (ya usados), máximo 10000
-								</p>
-							</div>
-							<div className="dashboard-form-field">
-								<label htmlFor="claim-edit-expires">Expira en (opcional)</label>
-								<input
-									id="claim-edit-expires"
-									type="datetime-local"
-									value={editModal.expiresAt}
-									onChange={(e) =>
-										setEditModal({ ...editModal, expiresAt: e.target.value })
-									}
-									min={new Date().toISOString().slice(0, 16)}
-									disabled={editModal.busy}
-								/>
-								<p className="dashboard-form-help">Deja vacío para que no expire</p>
-							</div>
-							{editModal.error && (
-								<p className="dashboard-error dashboard-error--full">
-									{editModal.error}
-								</p>
-							)}
-							<div className="dashboard-modal__actions dashboard-modal__actions--full">
-								<button
-									type="button"
-									className="btn-secondary"
-									onClick={closeEditModal}
-									disabled={editModal.busy}
-								>
-									Cancelar
-								</button>
-								<button
-									type="submit"
-									className="btn-primary"
-									disabled={editModal.busy}
-								>
-									{editModal.busy ? 'Guardando...' : 'Guardar'}
-								</button>
-							</div>
-						</form>
+				<DashboardModalPortal>
+					<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true">
+						<div className="dashboard-modal">
+							<h3>Editar código de acceso</h3>
+							<form
+								onSubmit={(e) => {
+									e.preventDefault();
+									void handleEditSubmit();
+								}}
+							>
+								<div className="dashboard-form-field">
+									<label htmlFor="claim-edit-active">Activo</label>
+									<select
+										id="claim-edit-active"
+										value={editModal.active ? 'true' : 'false'}
+										onChange={(e) =>
+											setEditModal({
+												...editModal,
+												active: e.target.value === 'true',
+											})
+										}
+										disabled={editModal.busy}
+									>
+										<option value="true">Activo</option>
+										<option value="false">Inactivo</option>
+									</select>
+								</div>
+								<div className="dashboard-form-field">
+									<label htmlFor="claim-edit-max-uses">Usos máximos</label>
+									<input
+										id="claim-edit-max-uses"
+										type="number"
+										min={Math.max(1, editModal.item.usedCount)}
+										max={10000}
+										value={editModal.maxUses}
+										onChange={(e) =>
+											setEditModal({
+												...editModal,
+												maxUses: Number.parseInt(e.target.value) || 1,
+											})
+										}
+										disabled={editModal.busy}
+										required
+									/>
+									<p className="dashboard-form-help">
+										Mínimo {editModal.item.usedCount} (ya usados), máximo 10000
+									</p>
+								</div>
+								<div className="dashboard-form-field">
+									<label htmlFor="claim-edit-expires">Expira en (opcional)</label>
+									<input
+										id="claim-edit-expires"
+										type="datetime-local"
+										value={editModal.expiresAt}
+										onChange={(e) =>
+											setEditModal({
+												...editModal,
+												expiresAt: e.target.value,
+											})
+										}
+										min={new Date().toISOString().slice(0, 16)}
+										disabled={editModal.busy}
+									/>
+									<p className="dashboard-form-help">
+										Deja vacío para que no expire
+									</p>
+								</div>
+								{editModal.error && (
+									<p className="dashboard-error dashboard-error--full">
+										{editModal.error}
+									</p>
+								)}
+								<div className="dashboard-modal__actions dashboard-modal__actions--full">
+									<button
+										type="button"
+										className="btn-secondary"
+										onClick={closeEditModal}
+										disabled={editModal.busy}
+									>
+										Cancelar
+									</button>
+									<button
+										type="submit"
+										className="btn-primary"
+										disabled={editModal.busy}
+									>
+										{editModal.busy ? 'Guardando...' : 'Guardar'}
+									</button>
+								</div>
+							</form>
+						</div>
 					</div>
-				</div>
+				</DashboardModalPortal>
 			)}
 		</>
 	);

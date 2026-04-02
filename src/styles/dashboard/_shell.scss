@@ -588,8 +588,9 @@
 
 /* Robust Scroll Lock Utility */
 body.modal-open {
-	/* stylelint-disable-next-line declaration-no-important */
+	/* stylelint-disable declaration-no-important */
 	overflow: hidden !important;
-	position: fixed;
-	width: 100%;
+	height: 100vh !important;
+	touch-action: none;
+	/* stylelint-enable declaration-no-important */
 }

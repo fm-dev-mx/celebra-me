@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface ImportMagicProps {
@@ -68,93 +69,103 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose }) => {
 	};
 
 	return (
-		<div className="dashboard-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
-			<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
-				<h3>Importación de invitados</h3>
-				<p className="dashboard-modal__description">
-					Pega aquí tus invitados desde Excel o Google Sheets, o arrastra un archivo CSV.
-				</p>
+		<DashboardModalPortal>
+			<div
+				className="dashboard-modal-backdrop"
+				role="dialog"
+				aria-modal="true"
+				onClick={onClose}
+			>
+				<div className="dashboard-modal" onClick={(e) => e.stopPropagation()}>
+					<h3>Importación de invitados</h3>
+					<p className="dashboard-modal__description">
+						Pega aquí tus invitados desde Excel o Google Sheets, o arrastra un archivo
+						CSV.
+					</p>
 
-				<textarea
-					value={text}
-					onPaste={handlePaste}
-					onChange={(e) => {
-						setText(e.target.value);
-						parseContent(e.target.value);
-					}}
-					placeholder="Ejemplo: Juan Perez  6671234567"
-					rows={8}
-					className="dashboard-form-field__textarea dashboard-form-field__textarea--import"
-				/>
-
-				<div className="dashboard-modal__file-actions">
-					<input
-						type="file"
-						accept=".csv"
-						ref={fileInputRef}
-						className="hidden-input"
-						onChange={handleFileChange}
-					/>
-					<button
-						type="button"
-						className="btn-secondary"
-						onClick={() => fileInputRef.current?.click()}
-					>
-						Subir CSV
-					</button>
-				</div>
-
-				{preview.length > 0 && (
-					<div className="import-magic-modal__preview">
-						<h4>Vista previa ({preview.length} invitados)</h4>
-						<table className="dashboard-guests__table">
-							<thead>
-								<tr>
-									<th>Nombre</th>
-									<th>Teléfono</th>
-									<th>Email</th>
-								</tr>
-							</thead>
-							<tbody>
-								{preview.slice(0, 10).map((p, i) => (
-									<tr key={i}>
-										<td data-label="Nombre">{p.fullName}</td>
-										<td data-label="Teléfono">
-											{p.phone || (
-												<span className="text-warning">Revisar</span>
-											)}
-										</td>
-										<td data-label="Email">{p.email || '-'}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-						{preview.length > 10 && (
-							<p className="dashboard-form-help">...y {preview.length - 10} más</p>
-						)}
-					</div>
-				)}
-
-				<div className="dashboard-modal__actions">
-					<button type="button" className="btn-secondary" onClick={onClose}>
-						Cancelar
-					</button>
-					<button
-						type="button"
-						className="btn-primary"
-						disabled={preview.length === 0 || parsing}
-						onClick={async () => {
-							setParsing(true);
-							await onImport(preview);
-							setParsing(false);
-							onClose();
+					<textarea
+						value={text}
+						onPaste={handlePaste}
+						onChange={(e) => {
+							setText(e.target.value);
+							parseContent(e.target.value);
 						}}
-					>
-						{parsing ? 'Procesando...' : 'Importar lista'}
-					</button>
+						placeholder="Ejemplo: Juan Perez  6671234567"
+						rows={8}
+						className="dashboard-form-field__textarea dashboard-form-field__textarea--import"
+					/>
+
+					<div className="dashboard-modal__file-actions">
+						<input
+							type="file"
+							accept=".csv"
+							ref={fileInputRef}
+							className="hidden-input"
+							onChange={handleFileChange}
+						/>
+						<button
+							type="button"
+							className="btn-secondary"
+							onClick={() => fileInputRef.current?.click()}
+						>
+							Subir CSV
+						</button>
+					</div>
+
+					{preview.length > 0 && (
+						<div className="import-magic-modal__preview">
+							<h4>Vista previa ({preview.length} invitados)</h4>
+							<table className="dashboard-guests__table">
+								<thead>
+									<tr>
+										<th>Nombre</th>
+										<th>Teléfono</th>
+										<th>Email</th>
+									</tr>
+								</thead>
+								<tbody>
+									{preview.slice(0, 10).map((p, i) => (
+										<tr key={i}>
+											<td data-label="Nombre">{p.fullName}</td>
+											<td data-label="Teléfono">
+												{p.phone || (
+													<span className="text-warning">Revisar</span>
+												)}
+											</td>
+											<td data-label="Email">{p.email || '-'}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+							{preview.length > 10 && (
+								<p className="dashboard-form-help">
+									...y {preview.length - 10} más
+								</p>
+							)}
+						</div>
+					)}
+
+					<div className="dashboard-modal__actions">
+						<button type="button" className="btn-secondary" onClick={onClose}>
+							Cancelar
+						</button>
+						<button
+							type="button"
+							className="btn-primary"
+							disabled={preview.length === 0 || parsing}
+							onClick={async () => {
+								setParsing(true);
+								await onImport(preview);
+								setParsing(false);
+								onClose();
+							}}
+						>
+							{parsing ? 'Procesando...' : 'Importar lista'}
+						</button>
+					</div>
 				</div>
 			</div>
-		</div>
+		</DashboardModalPortal>
 	);
 };
 

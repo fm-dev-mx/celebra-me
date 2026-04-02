@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestFormModalProps {
@@ -138,237 +139,239 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	};
 
 	return (
-		<div
-			className="dashboard-modal-backdrop"
-			role="dialog"
-			aria-modal="true"
-			onClick={(e) => {
-				if (e.target === e.currentTarget) onClose();
-			}}
-		>
+		<DashboardModalPortal>
 			<div
-				className="dashboard-modal dashboard-modal--full"
-				onClick={(e) => e.stopPropagation()}
+				className="dashboard-modal-backdrop"
+				role="dialog"
+				aria-modal="true"
+				onClick={(e) => {
+					if (e.target === e.currentTarget) onClose();
+				}}
 			>
-				<div className="dashboard-modal__header">
-					<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
-					<button
-						type="button"
-						className="btn-close"
-						onClick={onClose}
-						aria-label="Cerrar modal"
-					>
-						✕
-					</button>
-				</div>
-				<div className="dashboard-modal__content">
-					<form
-						id="guest-form"
-						className="dashboard-form-grid"
-						onSubmit={(event) => {
-							event.preventDefault();
-							void handleFormSubmit(false);
-						}}
-					>
-						<div className="dashboard-form-field">
-							<label htmlFor="fullName">Nombre completo</label>
-							<input
-								id="fullName"
-								ref={nameInputRef}
-								value={fullName}
-								onChange={(event) => setFullName(event.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										e.preventDefault();
-										phoneInputRef.current?.focus();
-									}
-								}}
-								required
-								placeholder="Ej. Juan Pérez"
-								autoFocus
-							/>
-							{fieldErrors.fullName && (
-								<span className="field-error">{fieldErrors.fullName}</span>
-							)}
-						</div>
-						<div className="dashboard-form-field">
-							<label htmlFor="phone">Teléfono (WhatsApp)</label>
-							<input
-								id="phone"
-								ref={phoneInputRef}
-								value={phone}
-								onChange={(event) => {
-									const val = event.target.value.replace(/[^\d+ ]/g, '');
-									setPhone(val);
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										e.preventDefault();
-										// No auto-focus next since limit is now radio cards
-									}
-								}}
-								placeholder="Opcional (10 dígitos)"
-							/>
-							{fieldErrors.phone && (
-								<span className="field-error">{fieldErrors.phone}</span>
-							)}
-						</div>
-
-						<div className="dashboard-form-field dashboard-form-field--full">
-							<label htmlFor="maxAllowedAttendees">
-								¿Cuántos acompañantes permite?
-							</label>
-							<div className="radio-cards-container radio-cards-container--compact">
-								{[1, 2, 3, 4, 5, 10].map((num) => (
-									<label key={num} className="radio-card">
-										<input
-											type="radio"
-											name="maxAllowedAttendees"
-											value={num}
-											checked={maxAllowedAttendees === num}
-											onChange={() => setMaxAllowedAttendees(num)}
-										/>
-										<div className="radio-card__content">
-											{num === 10 ? '10+' : num}
-										</div>
-									</label>
-								))}
-							</div>
-						</div>
-						<div className="dashboard-form-field dashboard-form-field--full">
-							<label>Categorías (opcional)</label>
-							<div className="radio-cards-container radio-cards-container--tags">
-								{PREDEFINED_TAGS.map((tag) => (
-									<label key={tag} className="radio-card">
-										<input
-											type="checkbox"
-											className="hidden-input"
-											checked={tags.includes(tag)}
-											onChange={(e) => {
-												if (e.target.checked) {
-													setTags([...tags, tag]);
-												} else {
-													setTags(tags.filter((t) => t !== tag));
-												}
-											}}
-										/>
-										<div className="radio-card__content">{tag}</div>
-									</label>
-								))}
-							</div>
-						</div>
-
-						{mode === 'edit' && (
-							<div className="dashboard-form-section dashboard-form-field--full">
-								<div className="dashboard-form-grid dashboard-form-grid--nested">
-									<div className="dashboard-form-field">
-										<label htmlFor="attendanceStatus">Estado de RSVP</label>
-										<select
-											id="attendanceStatus"
-											value={attendanceStatus}
-											onChange={(event) =>
-												setAttendanceStatus(
-													event.target.value as
-														| 'pending'
-														| 'confirmed'
-														| 'declined',
-												)
-											}
-											className="dashboard-form-field__input"
-										>
-											<option value="pending">Pendiente</option>
-											<option value="confirmed">Confirmado</option>
-											<option value="declined">Declinado</option>
-										</select>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor="attendeeCount">Asistentes reales</label>
-										<input
-											id="attendeeCount"
-											type="number"
-											min={0}
-											max={maxAllowedAttendees}
-											value={attendeeCount}
-											onChange={(event) =>
-												setAttendeeCount(Number(event.target.value))
-											}
-											className="dashboard-form-field__input"
-										/>
-									</div>
-									<div className="dashboard-form-field dashboard-form-field--full">
-										<label htmlFor="guestMessage">Nota o mensaje</label>
-										<textarea
-											id="guestMessage"
-											value={guestMessage}
-											onChange={(event) =>
-												setGuestMessage(event.target.value)
-											}
-											rows={3}
-											placeholder="Alguna nota especial del invitado..."
-											className="dashboard-form-field__textarea"
-										/>
-									</div>
-								</div>
-							</div>
-						)}
-
-						{localError && <div className="dashboard-error">{localError}</div>}
-					</form>
-				</div>
-
-				<div className="dashboard-modal__footer">
-					<button
-						type="button"
-						className="btn-secondary btn-secondary--modal"
-						onClick={onClose}
-						disabled={saving}
-					>
-						Cancelar
-					</button>
-
-					{isInvitationFactory && onPostpone && (
+				<div
+					className="dashboard-modal dashboard-modal--full"
+					onClick={(e) => e.stopPropagation()}
+				>
+					<div className="dashboard-modal__header">
+						<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
 						<button
 							type="button"
-							className="btn-secondary btn-secondary--postpone"
-							onClick={onPostpone}
+							className="btn-close"
+							onClick={onClose}
+							aria-label="Cerrar modal"
+						>
+							✕
+						</button>
+					</div>
+					<div className="dashboard-modal__content">
+						<form
+							id="guest-form"
+							className="dashboard-form-grid"
+							onSubmit={(event) => {
+								event.preventDefault();
+								void handleFormSubmit(false);
+							}}
+						>
+							<div className="dashboard-form-field">
+								<label htmlFor="fullName">Nombre completo</label>
+								<input
+									id="fullName"
+									ref={nameInputRef}
+									value={fullName}
+									onChange={(event) => setFullName(event.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') {
+											e.preventDefault();
+											phoneInputRef.current?.focus();
+										}
+									}}
+									required
+									placeholder="Ej. Juan Pérez"
+									autoFocus
+								/>
+								{fieldErrors.fullName && (
+									<span className="field-error">{fieldErrors.fullName}</span>
+								)}
+							</div>
+							<div className="dashboard-form-field">
+								<label htmlFor="phone">Teléfono (WhatsApp)</label>
+								<input
+									id="phone"
+									ref={phoneInputRef}
+									value={phone}
+									onChange={(event) => {
+										const val = event.target.value.replace(/[^\d+ ]/g, '');
+										setPhone(val);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') {
+											e.preventDefault();
+											// No auto-focus next since limit is now radio cards
+										}
+									}}
+									placeholder="Opcional (10 dígitos)"
+								/>
+								{fieldErrors.phone && (
+									<span className="field-error">{fieldErrors.phone}</span>
+								)}
+							</div>
+
+							<div className="dashboard-form-field dashboard-form-field--full">
+								<label htmlFor="maxAllowedAttendees">
+									¿Cuántos acompañantes permite?
+								</label>
+								<div className="radio-cards-container radio-cards-container--compact">
+									{[1, 2, 3, 4, 5, 10].map((num) => (
+										<label key={num} className="radio-card">
+											<input
+												type="radio"
+												name="maxAllowedAttendees"
+												value={num}
+												checked={maxAllowedAttendees === num}
+												onChange={() => setMaxAllowedAttendees(num)}
+											/>
+											<div className="radio-card__content">
+												{num === 10 ? '10+' : num}
+											</div>
+										</label>
+									))}
+								</div>
+							</div>
+							<div className="dashboard-form-field dashboard-form-field--full">
+								<label>Categorías (opcional)</label>
+								<div className="radio-cards-container radio-cards-container--tags">
+									{PREDEFINED_TAGS.map((tag) => (
+										<label key={tag} className="radio-card">
+											<input
+												type="checkbox"
+												className="hidden-input"
+												checked={tags.includes(tag)}
+												onChange={(e) => {
+													if (e.target.checked) {
+														setTags([...tags, tag]);
+													} else {
+														setTags(tags.filter((t) => t !== tag));
+													}
+												}}
+											/>
+											<div className="radio-card__content">{tag}</div>
+										</label>
+									))}
+								</div>
+							</div>
+
+							{mode === 'edit' && (
+								<div className="dashboard-form-section dashboard-form-field--full">
+									<div className="dashboard-form-grid dashboard-form-grid--nested">
+										<div className="dashboard-form-field">
+											<label htmlFor="attendanceStatus">Estado de RSVP</label>
+											<select
+												id="attendanceStatus"
+												value={attendanceStatus}
+												onChange={(event) =>
+													setAttendanceStatus(
+														event.target.value as
+															| 'pending'
+															| 'confirmed'
+															| 'declined',
+													)
+												}
+												className="dashboard-form-field__input"
+											>
+												<option value="pending">Pendiente</option>
+												<option value="confirmed">Confirmado</option>
+												<option value="declined">Declinado</option>
+											</select>
+										</div>
+										<div className="dashboard-form-field">
+											<label htmlFor="attendeeCount">Asistentes reales</label>
+											<input
+												id="attendeeCount"
+												type="number"
+												min={0}
+												max={maxAllowedAttendees}
+												value={attendeeCount}
+												onChange={(event) =>
+													setAttendeeCount(Number(event.target.value))
+												}
+												className="dashboard-form-field__input"
+											/>
+										</div>
+										<div className="dashboard-form-field dashboard-form-field--full">
+											<label htmlFor="guestMessage">Nota o mensaje</label>
+											<textarea
+												id="guestMessage"
+												value={guestMessage}
+												onChange={(event) =>
+													setGuestMessage(event.target.value)
+												}
+												rows={3}
+												placeholder="Alguna nota especial del invitado..."
+												className="dashboard-form-field__textarea"
+											/>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{localError && <div className="dashboard-error">{localError}</div>}
+						</form>
+					</div>
+
+					<div className="dashboard-modal__footer">
+						<button
+							type="button"
+							className="btn-secondary btn-secondary--modal"
+							onClick={onClose}
 							disabled={saving}
 						>
-							Posponer
+							Cancelar
 						</button>
-					)}
 
-					<div className="footer-actions">
-						{mode === 'create' && (
+						{isInvitationFactory && onPostpone && (
 							<button
 								type="button"
-								className="btn-accent"
+								className="btn-secondary btn-secondary--postpone"
 								disabled={saving}
-								onClick={(e) => {
-									e.preventDefault();
-									void handleFormSubmit(true);
-								}}
+								onClick={onPostpone}
 							>
-								{saving ? '...' : 'Guardar y Nuevo'}
+								Posponer
 							</button>
 						)}
-						<button
-							type="submit"
-							form="guest-form"
-							className="btn-primary"
-							disabled={saving}
-						>
-							{saving
-								? 'Guardando...'
-								: isInvitationFactory
-									? 'Confirmar y enviar'
-									: mode === 'create'
-										? 'Guardar'
-										: 'Actualizar'}
-						</button>
+
+						<div className="footer-actions">
+							{mode === 'create' && (
+								<button
+									type="button"
+									className="btn-accent"
+									disabled={saving}
+									onClick={(e) => {
+										e.preventDefault();
+										void handleFormSubmit(true);
+									}}
+								>
+									{saving ? '...' : 'Guardar y Nuevo'}
+								</button>
+							)}
+							<button
+								type="submit"
+								form="guest-form"
+								className="btn-primary"
+								disabled={saving}
+							>
+								{saving
+									? 'Guardando...'
+									: isInvitationFactory
+										? 'Confirmar y enviar'
+										: mode === 'create'
+											? 'Guardar'
+											: 'Actualizar'}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</DashboardModalPortal>
 	);
 };
 

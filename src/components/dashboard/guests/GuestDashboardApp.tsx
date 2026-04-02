@@ -103,15 +103,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	useEffect(() => {
 		const isAnyModalOpen = modalOpen || deleteConfirmOpen || importModalOpen;
 
-		if (isAnyModalOpen) {
-			document.body.classList.add('modal-open');
-		} else {
-			document.body.classList.remove('modal-open');
-			document.body.style.overflow = '';
-			document.body.style.position = '';
-			document.body.style.top = '';
-		}
-
 		const handleEscape = (event: KeyboardEvent) => {
 			if (event.key === 'Escape' && isAnyModalOpen) {
 				closeModal();

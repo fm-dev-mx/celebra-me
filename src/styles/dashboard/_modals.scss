@@ -1,12 +1,6 @@
 @use '../tokens' as tokens;
 /* stylelint-disable declaration-no-important */
 
-body.modal-open {
-	overflow: hidden !important;
-	height: 100vh !important;
-	touch-action: none;
-}
-
 // ==========================================================================
 // DASHBOARD MODAL SYSTEM
 // ==========================================================================
