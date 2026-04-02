@@ -5,7 +5,7 @@
 // ==========================================================================
 
 .itinerary[data-variant='editorial'],
-.itinerary[data-variant^='premiere-'] {
+.itinerary[data-variant='premiere-floral'] {
 	--itinerary-line-color: var(--color-action-primary);
 	--itinerary-accent: var(--color-action-accent);
 
@@ -15,6 +15,11 @@
 	.itinerary__title {
 		font-family: var(--section-title-font);
 		font-size: var(--section-title-size);
+		color: var(--color-text-secondary);
+	}
+
+	.itinerary__header-flourish {
+		color: var(--color-text-emphasis);
 	}
 
 	.itinerary__item-time {
@@ -60,6 +65,10 @@
 		stroke-width: 2;
 		opacity: 60%;
 		filter: none;
+	}
+
+	.itinerary__item-description {
+		color: var(--color-text-secondary);
 	}
 }
 

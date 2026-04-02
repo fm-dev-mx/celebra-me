@@ -6,8 +6,8 @@
 // ==========================================================================
 
 .thank-you-section[data-variant='editorial'],
-.thank-you-section[data-variant^='premiere-'] {
-	background: var(--color-surface-dark);
+.thank-you-section[data-variant='premiere-floral'] {
+	background: var(--color-surface-primary);
 	padding-block: clamp(6rem, 15vw, 10rem);
 	position: relative;
 	overflow: hidden;
