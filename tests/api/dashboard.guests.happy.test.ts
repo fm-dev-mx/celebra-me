@@ -110,6 +110,7 @@ describe('dashboard guests happy path', () => {
 				updatedAt: new Date().toISOString(),
 				eventType: 'xv',
 				eventSlug: 'demo',
+				tags: [],
 			},
 		});
 		const response = await POST({
@@ -145,6 +146,7 @@ describe('dashboard guests happy path', () => {
 				updatedAt: new Date().toISOString(),
 				eventType: 'xv',
 				eventSlug: 'demo',
+				tags: [],
 			},
 		});
 		markGuestSharedMock.mockResolvedValue({
@@ -165,6 +167,7 @@ describe('dashboard guests happy path', () => {
 				waShareUrl: '',
 				shareText: '',
 				updatedAt: new Date().toISOString(),
+				tags: [],
 			},
 		});
 		deleteDashboardGuestMock.mockResolvedValue();

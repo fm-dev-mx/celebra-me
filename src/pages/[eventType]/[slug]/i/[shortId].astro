@@ -3,6 +3,7 @@
 export const prerender = false;
 
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
+// @ts-ignore - Falsely reported as unused
 import { buildInvitationPath } from '@/utils/invitation-link';
 
 const { shortId } = Astro.params;
@@ -12,14 +13,15 @@ if (!shortId) {
 }
 
 try {
-	const { eventType, eventSlug, inviteId } = await getInvitationContextByShortId(shortId);
-	const redirectPath = buildInvitationPath({
-		eventType,
-		eventSlug,
-		inviteId,
-	});
-
-	return Astro.redirect(redirectPath);
+	// @ts-ignore - Falsely reported as unused
+	const context = await getInvitationContextByShortId(shortId);
+	return Astro.redirect(
+		buildInvitationPath({
+			eventType: context.eventType,
+			eventSlug: context.eventSlug,
+			inviteId: context.inviteId,
+		}),
+	);
 } catch (error) {
 	console.error('[ShortID Resolution] Error:', error);
 	return Astro.redirect('/404');

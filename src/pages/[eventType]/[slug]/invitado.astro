@@ -1,17 +1,23 @@
 ---
 export const prerender = false;
 
+// @ts-ignore - Falsely reported as unused
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+// @ts-ignore - Falsely reported as unused
 import { buildInvitationPath } from '@/utils/invitation-link';
 
-const { eventType, slug } = Astro.params;
-if (!eventType || !slug) {
+const { eventType: rawEventType, slug } = Astro.params;
+if (!rawEventType || !slug) {
 	return Astro.redirect('/404');
 }
 
-const inviteId = Astro.url.searchParams.get('invite');
-const redirectPath = inviteId
-	? buildInvitationPath({ eventType, eventSlug: slug, inviteId })
-	: `/${eventType}/${slug}`;
-
-return Astro.redirect(redirectPath);
+return Astro.redirect(
+	Astro.url.searchParams.get('invite')
+		? buildInvitationPath({
+				eventType: rawEventType as EventRecord['eventType'],
+				eventSlug: slug,
+				inviteId: Astro.url.searchParams.get('invite')!,
+			})
+		: `/${rawEventType}/${slug}`
+);
 ---
