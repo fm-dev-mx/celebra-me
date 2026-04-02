@@ -30,6 +30,12 @@ const navItems: DashboardNavItem[] = [
 	{ label: 'Eventos', href: '/dashboard/eventos', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
 ];
+const currentSectionLabel =
+	navItems.find(
+		(item) =>
+			item.href === Astro.url.pathname ||
+			(item.href !== '/dashboard/invitados' && Astro.url.pathname.startsWith(`${item.href}/`)),
+	)?.label ?? title;
 ---
 
 <!doctype html>
@@ -44,7 +50,9 @@ const navItems: DashboardNavItem[] = [
 	</head>
 	<body class="theme-preset--jewelry-box dashboard-shell-body">
 		<div class="dashboard-shell">
+			<div class="dashboard-shell__backdrop" data-dashboard-backdrop aria-hidden="true"></div>
 			<DashboardSidebar
+				sidebarId="dashboard-sidebar"
 				items={navItems}
 				currentPath={Astro.url.pathname}
 				userEmail={session.email}
@@ -52,6 +60,25 @@ const navItems: DashboardNavItem[] = [
 				isAdmin={session.isSuperAdmin}
 			/>
 			<div class="dashboard-shell__content">
+				<header class="dashboard-topbar">
+					<button
+						type="button"
+						class="dashboard-topbar__menu-button"
+						data-dashboard-menu-toggle
+						aria-controls="dashboard-sidebar"
+						aria-expanded="false"
+					>
+						<span class="dashboard-topbar__menu-line"></span>
+						<span class="dashboard-topbar__menu-line"></span>
+						<span class="dashboard-topbar__menu-line"></span>
+						<span class="sr-only">Abrir navegación del panel</span>
+					</button>
+
+					<div class="dashboard-topbar__meta">
+						<span class="dashboard-topbar__eyebrow">Celebra-me Panel</span>
+						<h1>{currentSectionLabel}</h1>
+					</div>
+				</header>
 				<main class="dashboard-main">
 					<slot />
 				</main>
@@ -61,6 +88,47 @@ const navItems: DashboardNavItem[] = [
 </html>
 <script>
 	const topbar = document.querySelector('.dashboard-topbar');
+	const sidebar = document.getElementById('dashboard-sidebar');
+	const menuButton = document.querySelector('[data-dashboard-menu-toggle]');
+	const backdrop = document.querySelector('[data-dashboard-backdrop]');
+
+	const closeDashboardNav = () => {
+		if (!(sidebar instanceof HTMLElement) || !(menuButton instanceof HTMLButtonElement)) {
+			return;
+		}
+
+		sidebar.classList.remove('dashboard-sidebar--open');
+		menuButton.setAttribute('aria-expanded', 'false');
+		document.body.classList.remove('dashboard-shell-body--nav-open');
+	};
+
+	if (
+		sidebar instanceof HTMLElement &&
+		menuButton instanceof HTMLButtonElement &&
+		backdrop instanceof HTMLElement
+	) {
+		const toggleDashboardNav = () => {
+			const isOpen = sidebar.classList.toggle('dashboard-sidebar--open');
+			menuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			document.body.classList.toggle('dashboard-shell-body--nav-open', isOpen);
+		};
+
+		menuButton.addEventListener('click', toggleDashboardNav);
+		backdrop.addEventListener('click', closeDashboardNav);
+		sidebar.querySelectorAll('a').forEach((link) => {
+			link.addEventListener('click', closeDashboardNav);
+		});
+		window.addEventListener('resize', () => {
+			if (window.innerWidth > 992) {
+				closeDashboardNav();
+			}
+		});
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				closeDashboardNav();
+			}
+		});
+	}
 
 	if (topbar instanceof HTMLElement) {
 		let lastScrollY = window.scrollY;

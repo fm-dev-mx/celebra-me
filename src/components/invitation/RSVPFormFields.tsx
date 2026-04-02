@@ -262,10 +262,10 @@ export function ConfirmedFields(props: {
 					</div>
 				)}
 				<div className="rsvp__field">
-					<label htmlFor="notes">Notas adicionales</label>
+					<label htmlFor="notes">Notas</label>
 					<textarea
 						id="notes"
-						placeholder="Alguna nota para nosotros..."
+						placeholder="Escribe un mensaje para Ximena..."
 						rows={2}
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}

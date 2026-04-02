@@ -7,13 +7,19 @@ interface Props {
 	isAdmin: boolean;
 	userEmail: string;
 	roleLabel: 'ADMIN' | 'HOST';
+	sidebarId?: string;
 }
 
-const { items, currentPath, isAdmin, userEmail, roleLabel } = Astro.props as Props;
+const { items, currentPath, isAdmin, userEmail, roleLabel, sidebarId = 'dashboard-sidebar' } =
+	Astro.props as Props;
 const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 ---
 
-<aside class="dashboard-sidebar" aria-label="Navegación de dashboard">
+<aside
+	id={sidebarId}
+	class="dashboard-sidebar"
+	aria-label="Navegación de dashboard"
+>
 	<div class="dashboard-sidebar__brand">
 		<a href="/dashboard/invitados">Celebra.me Panel</a>
 	</div>
