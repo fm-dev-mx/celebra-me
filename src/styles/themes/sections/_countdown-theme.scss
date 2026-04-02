@@ -11,7 +11,10 @@
 // ==========================================================================
 
 .countdown-section[data-variant='editorial'],
-.countdown-section[data-variant^='premiere-'] {
+.countdown-section[data-variant='premiere-floral'] {
+	--countdown-editorial-segment-shadow-hover:
+		0 30px 60px rgb(0 0 0 / 40%), 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
+
 	background: var(--countdown-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
@@ -85,9 +88,7 @@
 			transform: translateY(-8px);
 			border-color: var(--section-card-border-alt);
 			background: rgb(255 255 255 / 6%);
-			box-shadow:
-				0 30px 60px rgb(0 0 0 / 40%),
-				0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
+			box-shadow: var(--countdown-editorial-segment-shadow-hover);
 		}
 	}
 
@@ -102,7 +103,7 @@
 	.countdown__value {
 		font-family: var(--font-display);
 		color: var(--color-text-on-dark);
-		font-size: var(--countdown-value-size-mobile);
+		font-size: 2rem;
 		line-height: 1;
 		padding: 0;
 		margin: 0;
@@ -125,7 +126,11 @@
 		color: rgb(var(--color-text-primary-rgb) / 60%);
 		font-family: var(--font-body);
 		letter-spacing: 0.1em;
+		font-size: 1rem;
+		font-weight: 100;
+		max-inline-size: 25ch;
 		margin-top: 4rem;
+		margin-inline: auto;
 	}
 
 	@media (width >= 860px) {
@@ -272,6 +277,14 @@
 // ==========================================================================
 
 .countdown-section[data-variant='vibrant'] {
+	--countdown-vibrant-font: var(--font-body, Poppins, Montserrat, sans-serif);
+	--countdown-vibrant-segment-shadow:
+		0 8px 32px rgb(0 0 0 / 20%), inset 0 0 20px rgb(255 255 255 / 10%);
+	--countdown-vibrant-segment-shadow-hover:
+		0 12px 40px rgb(0 0 0 / 30%), 0 0 30px rgb(255 217 61 / 30%);
+	--countdown-vibrant-title-shadow: 0 4px 8px rgb(0 0 0 / 20%);
+	--countdown-vibrant-value-shadow: 0 4px 8px rgb(0 0 0 / 30%);
+
 	// Vibrant gradient background with depth
 	background: linear-gradient(
 		135deg,
@@ -321,11 +334,11 @@
 
 	// Bold playful title
 	.countdown-title {
-		font-family: Poppins, Montserrat, sans-serif;
+		font-family: var(--countdown-vibrant-font);
 		font-size: clamp(2rem, 8vw, 4rem);
 		font-weight: 800;
 		color: var(--color-surface-elevated);
-		text-shadow: 0 4px 8px rgb(0 0 0 / 20%);
+		text-shadow: var(--countdown-vibrant-title-shadow);
 		letter-spacing: 0.05em;
 		text-transform: none;
 	}
@@ -333,7 +346,7 @@
 	// Vibrant date display with decorative lines
 	.countdown-subtitle {
 		.event-date {
-			font-family: Poppins, sans-serif;
+			font-family: var(--countdown-vibrant-font);
 			font-size: 1.1rem;
 			font-weight: 500;
 			color: var(--color-text-on-dark);
@@ -360,17 +373,13 @@
 		border: 2px solid rgb(255 255 255 / 30%);
 		padding: 2.5rem 1rem;
 		border-radius: 20px;
-		box-shadow:
-			0 8px 32px rgb(0 0 0 / 20%),
-			inset 0 0 20px rgb(255 255 255 / 10%);
+		box-shadow: var(--countdown-vibrant-segment-shadow);
 		transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
 		&:hover {
 			transform: translateY(-8px) scale(1.02);
 			border-color: rgb(255 217 61 / 60%);
-			box-shadow:
-				0 12px 40px rgb(0 0 0 / 30%),
-				0 0 30px rgb(255 217 61 / 30%);
+			box-shadow: var(--countdown-vibrant-segment-shadow-hover);
 		}
 
 		@include mixins.respond-to(sm) {
@@ -381,11 +390,11 @@
 
 	// Bold impactful numbers
 	.countdown__value {
-		font-family: Poppins, Montserrat, sans-serif;
+		font-family: var(--countdown-vibrant-font);
 		font-size: clamp(2.5rem, 8vw, 5rem);
 		font-weight: 800;
 		color: var(--color-surface-elevated);
-		text-shadow: 0 4px 8px rgb(0 0 0 / 30%);
+		text-shadow: var(--countdown-vibrant-value-shadow);
 		letter-spacing: 0.02em;
 	}
 
@@ -405,7 +414,7 @@
 
 	// Vibrant footer
 	.countdown-invitation-text {
-		font-family: Poppins, sans-serif;
+		font-family: var(--countdown-vibrant-font);
 		font-size: 1.3rem;
 		font-weight: 500;
 		color: rgb(255 255 255 / 95%);
@@ -676,6 +685,11 @@
 // ==========================================================================
 
 .countdown-section[data-variant='modern'] {
+	--countdown-modern-font: var(--font-body, Inter, 'Helvetica Neue', sans-serif);
+	--countdown-modern-segment-shadow: 0 4px 6px rgb(0 0 0 / 5%), 0 10px 20px rgb(0 0 0 / 8%);
+	--countdown-modern-segment-shadow-hover:
+		0 8px 12px rgb(0 0 0 / 8%), 0 20px 40px rgb(0 0 0 / 10%);
+
 	// Clean light background
 	background: var(--color-surface-soft);
 	position: relative;
@@ -700,7 +714,7 @@
 
 	// Modern sans-serif title
 	.countdown-title {
-		font-family: Inter, 'Helvetica Neue', sans-serif;
+		font-family: var(--countdown-modern-font);
 		font-size: clamp(1.6rem, 5vw, 2.5rem);
 		font-weight: 700;
 		color: var(--color-text-primary);
@@ -711,7 +725,7 @@
 	// Modern date
 	.countdown-subtitle {
 		.event-date {
-			font-family: Inter, sans-serif;
+			font-family: var(--countdown-modern-font);
 			font-size: 0.9rem;
 			font-weight: 500;
 			color: var(--color-text-secondary);
@@ -733,16 +747,12 @@
 		border: none;
 		padding: 2rem 1rem;
 		border-radius: 12px;
-		box-shadow:
-			0 4px 6px rgb(0 0 0 / 5%),
-			0 10px 20px rgb(0 0 0 / 8%);
+		box-shadow: var(--countdown-modern-segment-shadow);
 		transition: all 0.3s ease;
 
 		&:hover {
 			transform: translateY(-5px);
-			box-shadow:
-				0 8px 12px rgb(0 0 0 / 8%),
-				0 20px 40px rgb(0 0 0 / 10%);
+			box-shadow: var(--countdown-modern-segment-shadow-hover);
 		}
 
 		@include mixins.respond-to(sm) {
@@ -775,7 +785,7 @@
 
 	// Modern footer
 	.countdown-invitation-text {
-		font-family: Inter, sans-serif;
+		font-family: var(--countdown-modern-font);
 		font-size: 1.1rem;
 		font-weight: 400;
 		color: var(--color-text-secondary);
