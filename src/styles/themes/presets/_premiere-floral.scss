@@ -83,12 +83,13 @@
 	--location-bg: linear-gradient(
 		180deg,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 0%,
-		#{color.change(sys.$sys-color-floral-50, $alpha: 0.96)} 100%
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.5)} 50%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.8)} 100%
 	);
 	--location-card-bg: linear-gradient(
 		165deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)} 0%,
-		#{color.change(sys.$sys-color-floral-50, $alpha: 0.98)} 100%
+		#{sys.$sys-color-neutral-0} 0%,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 100%
 	);
 	--location-indication-bg: linear-gradient(
 		180deg,
@@ -153,7 +154,6 @@
 
 	.gallery-section__title {
 		background: var(--gold-metallic);
-		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		filter: drop-shadow(0 2px 4px rgb(var(--color-surface-dark-rgb), 0.1));

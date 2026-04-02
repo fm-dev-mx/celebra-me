@@ -201,8 +201,10 @@
 	}
 
 	.event-location__card-content-address {
+		font-family: var(--font-label);
 		color: rgb(var(--color-text-primary-rgb) / 60%);
-		font-size: 0.95rem;
+		font-size: 0.85rem;
+		letter-spacing: 0.12em;
 		justify-content: center;
 		border-top: 1px solid rgb(var(--color-text-primary-rgb) / 5%);
 		padding-top: 2rem;
