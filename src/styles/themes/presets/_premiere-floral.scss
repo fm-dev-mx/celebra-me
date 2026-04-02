@@ -92,12 +92,12 @@
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 100%
 	);
 	--location-indication-bg: linear-gradient(
-		180deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.52)} 0%,
-		#{color.change(sys.$sys-color-floral-50, $alpha: 0.18)} 100%
+		165deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.95)} 0%,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.85)} 100%
 	);
 	--location-accent: var(--color-action-accent);
-	--location-nav-button-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.5)};
+	--location-nav-button-bg: #{color.change(sys.$sys-color-floral-500, $alpha: 0.1)};
 	--location-nav-button-color: var(--color-text-primary);
 	--gold-metallic: linear-gradient(
 		135deg,

@@ -126,16 +126,78 @@
 		}
 	}
 
-	.rsvp__radio-group label {
-		background: var(--rsvp-radio-bg);
-		border: 1px solid var(--rsvp-radio-border);
-		border-radius: 2px;
-		color: rgb(var(--color-text-primary-rgb) / 70%);
+	.rsvp__radio-group {
+		display: flex;
+		gap: 1rem;
+		margin-top: 0.5rem;
 
-		&:has(input:checked) {
-			background: var(--rsvp-radio-selected-bg);
-			border-color: var(--rsvp-radio-selected-border);
-			color: var(--color-surface-dark);
+		.rsvp__radio-card {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			padding: 1rem;
+			background: var(--rsvp-radio-bg);
+			border: 1px solid var(--rsvp-radio-border);
+			border-radius: var(--rsvp-radius-field, 2px);
+			color: rgb(var(--color-text-primary-rgb) / 70%);
+			cursor: pointer;
+			transition: all var(--duration-standard) var(--ease-premium);
+
+			&:hover {
+				background: var(--rsvp-radio-bg-hover);
+				border-color: var(--color-action-accent);
+			}
+
+			&:has(input:checked) {
+				background: var(--rsvp-radio-selected-bg);
+				border-color: var(--rsvp-radio-selected-border);
+				box-shadow: var(--rsvp-radio-selected-shadow);
+				color: var(--color-text-primary);
+
+				.rsvp__radio-indicator {
+					border-color: var(--color-action-accent);
+					background: var(--color-action-accent);
+
+					&::after {
+						transform: scale(1);
+						background: var(--color-surface-primary);
+					}
+				}
+
+				.rsvp__radio-label {
+					color: var(--color-action-accent);
+					font-weight: 600;
+				}
+			}
+		}
+
+		.rsvp__radio-indicator {
+			flex-shrink: 0;
+			width: 1.15rem;
+			height: 1.15rem;
+			border: 1.5px solid var(--rsvp-radio-border);
+			border-radius: 50%;
+			position: relative;
+			transition: all var(--duration-standard) var(--ease-premium);
+			background: transparent;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 3px;
+				background: var(--color-action-accent);
+				border-radius: 50%;
+				transform: scale(0);
+				transition: transform var(--duration-standard) var(--ease-premium);
+			}
+		}
+
+		.rsvp__radio-label {
+			font-family: var(--font-body);
+			font-size: 0.9rem;
+			letter-spacing: 0.02em;
+			text-transform: none;
 		}
 	}
 
@@ -236,30 +298,48 @@
 
 	// 💎 TOP PREMIUM: Premiere Floral Specific Overrides (Ximena Meza)
 	.theme-preset--premiere-floral & {
-		backdrop-filter: blur(25px) saturate(200%);
-		border: 0.5px solid rgb(var(--color-action-accent-rgb) / 25%);
-		background-color: rgb(var(--color-surface-primary-rgb) / 32%);
+		backdrop-filter: blur(28px) saturate(210%);
+		border: 0.5px solid rgb(var(--color-action-accent-rgb) / 28%);
+		background-color: rgb(var(--color-surface-dark-rgb) / 45%);
+		color: var(--color-text-on-dark);
+		box-shadow: 
+			var(--shadow-premium),
+			inset 0 0 100px rgb(var(--color-surface-dark-rgb) / 20%),
+			inset 0 0 2px 1px rgb(var(--color-action-accent-rgb) / 12%);
 
-		// Cinematic Depth: Vignette & Inner Glow
 		&::before {
-			background: radial-gradient(
-				circle at center,
-				transparent 20%,
-				rgb(var(--color-surface-primary-rgb) / 15%) 100%
-			);
-			opacity: 60%;
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: 
+				radial-gradient(
+					circle at center,
+					transparent 0%,
+					rgb(var(--color-surface-dark-rgb) / 10%) 70%,
+					rgb(var(--color-surface-dark-rgb) / 25%) 100%
+				),
+				url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			background-blend-mode: overlay;
+			opacity: 45%;
+			pointer-events: none;
+			z-index: 0;
 		}
 
 		&::after {
-			border-color: rgb(var(--color-action-accent-rgb) / 28%);
+			content: '';
+			position: absolute;
+			left: 12px;
+			right: 12px;
+			top: 0;
+			height: 0.5px;
 			background: linear-gradient(
 				to right,
-				transparent,
-				var(--color-action-accent),
-				transparent
+				transparent 45%,
+				var(--color-action-accent) 50%,
+				transparent 55%
 			);
-			height: 0.5px;
-			inset: 12px;
+			pointer-events: none;
+			z-index: 1;
 			opacity: 45%;
 		}
 
@@ -331,6 +411,10 @@
 				font-family: var(--font-label);
 				font-weight: 600;
 			}
+			
+			& input {
+				color: var(--color-text-on-dark);
+			}
 
 			& .rsvp__field-line {
 				position: absolute;
@@ -360,20 +444,47 @@
 		}
 
 		.rsvp__radio-group .rsvp__radio-card {
-			background: rgb(var(--color-surface-primary-rgb) / 12%);
-			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 18%);
-			border-radius: 2px;
-			padding: 1.25rem;
-			transition: all 0.4s var(--ease-premium);
+			background: rgb(var(--color-surface-dark-rgb) / 15%);
+			border: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
+			border-radius: 4px;
+			padding: 1.4rem;
+			backdrop-filter: blur(8px);
 
-			&:hover {
-				background: rgb(var(--color-surface-primary-rgb) / 20%);
+			.rsvp__radio-indicator {
+				border-color: rgb(var(--color-action-accent-rgb) / 35%);
+				background: rgb(var(--color-surface-dark-rgb) / 40%);
+				width: 1.25rem;
+				height: 1.25rem;
+			}
+
+			.rsvp__radio-label {
+				font-family: var(--font-display);
+				color: rgb(var(--color-text-primary-rgb) / 50%);
+				font-size: 1.1rem;
+				letter-spacing: 0.04em;
 			}
 
 			&:has(input:checked) {
-				background: rgb(var(--color-action-accent-rgb) / 8%);
+				background: rgb(var(--color-action-accent-rgb) / 6%);
 				border-color: var(--color-action-accent);
-				box-shadow: 0 8px 24px rgb(var(--color-action-accent-rgb) / 12%);
+				box-shadow: 
+					0 12px 30px rgb(var(--color-action-accent-rgb) / 12%),
+					inset 0 0 10px rgb(var(--color-action-accent-rgb) / 5%);
+				
+				.rsvp__radio-indicator {
+					background: var(--gold-metallic);
+					border-color: var(--color-action-accent);
+					
+					&::after {
+						background: var(--color-surface-dark);
+						inset: 4px;
+					}
+				}
+
+				.rsvp__radio-label {
+					color: var(--color-action-accent);
+					opacity: 1;
+				}
 			}
 		}
 

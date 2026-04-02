@@ -272,13 +272,17 @@
 	.event-location__indication-item {
 		background: var(--location-indication-bg);
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
-		padding: 2.5rem;
+		border-radius: 4px;
+		padding: 3rem 2.5rem;
 		flex-direction: column;
 		gap: 1.5rem;
 		text-align: center;
 		transition: all 0.5s tokens.$ease-premium;
 		position: relative;
 		overflow: hidden;
+		box-shadow: 
+			0 10px 30px -10px rgb(var(--color-surface-dark-rgb) / 5%),
+			inset 0 0 40px rgb(var(--color-action-accent-rgb) / 3%);
 
 		&::after {
 			content: '';
@@ -287,54 +291,62 @@
 			left: 50%;
 			width: 40px;
 			height: 1px;
-			background: var(--color-action-accent);
+			background: var(--gold-metallic);
 			transform: translateX(-50%) scaleX(0);
 			transition: transform 0.6s ease;
-			opacity: 50%;
+			opacity: 70%;
 		}
 
 		&:hover {
-			background: rgb(var(--color-text-primary-rgb) / 4%);
+			background: rgb(var(--color-surface-primary-rgb) / 40%);
 			border-color: rgb(var(--color-action-accent-rgb) / 30%);
-			transform: translateY(-5px);
+			transform: translateY(-8px);
+			box-shadow: 
+				0 30px 60px -15px rgb(0 0 0 / 10%),
+				0 0 30px rgb(var(--color-action-accent-rgb) / 8%);
 		}
 
 		&:hover::after {
-			transform: translateX(-50%) scaleX(1);
+			transform: translateX(-50%) scaleX(2.5);
 		}
 
 		&:hover .event-location__indication-icon {
 			transform: scale(1.1);
-			filter: drop-shadow(0 0 10px rgb(var(--color-action-accent-rgb) / 40%));
+			filter: drop-shadow(0 0 10px rgb(var(--color-action-accent-rgb) / 30%));
 		}
 	}
 
 	.event-location__indication-icon {
-		color: var(--location-accent);
-		font-size: 2.2rem;
-		opacity: 80%;
-		filter: none;
+		background: var(--gold-metallic);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		font-size: 2.4rem;
+		opacity: 1;
 		transition: all 0.6s tokens.$ease-premium;
+		filter: drop-shadow(0 2px 4px rgb(var(--color-action-accent-rgb) / 15%));
 	}
 
 	.event-location__indication-text {
 		font-family: var(--font-label);
-		font-size: 0.72rem;
-		letter-spacing: 0.25em;
+		font-size: 0.7rem;
+		letter-spacing: 0.28em;
 		text-transform: uppercase;
-		color: rgb(var(--color-text-primary-rgb) / 65%);
-		line-height: 2;
+		color: rgb(var(--color-text-primary-rgb) / 50%);
+		line-height: 2.2;
 
 		strong {
 			color: var(--color-text-primary);
 			font-family: var(--font-display);
-			font-size: 1.15rem;
+			font-size: 1.25rem;
 			display: block;
-			margin-top: 0.6rem;
-			letter-spacing: 0.02em;
+			margin-top: 0.75rem;
+			letter-spacing: -0.01em;
 			text-transform: none;
 			background: none;
 			-webkit-text-fill-color: initial;
+			font-weight: normal;
+			line-height: 1.3;
 		}
 	}
 }
