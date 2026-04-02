@@ -9,22 +9,20 @@ repository's high standards and **Lean Governance 2.0**.
 
 A high-quality prompt reduces cycles and prevents "hallucinations". Use this structure:
 
-| Element        | Purpose                               | Example                                                                          |
-| :------------- | :------------------------------------ | :------------------------------------------------------------------------------- |
-| **Context**    | Set the stage. Why are we doing this? | "Following Plan 018 (Testing Audit), we need to simplify the API tests."         |
-| **Action**     | Precise technical command.            | "Remove `tests/api/legacy-auth.test.ts` and merge its 2 valid cases into `...`." |
-| **Constraint** | Boundary conditions.                  | "Do not use external libraries; keep it vanilla JS. Avoid overengineering."      |
+| Element    | Purpose                               | Example                                                                     |
+| :--------- | :------------------------------------ | :-------------------------------------------------------------------------- |
+| Context    | Set the stage. Why are we doing this? | "Following the theme color variants plan, we need to simplify the palette." |
+| Action     | Precise technical command.            | "Remove `src/styles/themes/_legacy.scss` and merge its 2 valid cases..."    |
+| Constraint | Boundary conditions.                  | "Do not use external libraries; keep it vanilla JS. Avoid overengineering." |
 
 ---
 
-## 2) Using Workflows
+## 2) Planning First
 
-The repository has built-in slash commands (Workflows) in `.agent/workflows/`. Use them!
-
-- **`/plan-authoring`**: Use this for any non-trivial feature or refactor. It ensures we have a
-  record of _what_ will happen before it happens.
-- **`/error-remediation`**: If you see a wall of red in the terminal, don't just say "fix this". Use
-  the workflow to guide the agent through a logical diagnosis.
+Before executing any complex task, ensure you have an active plan under `.agent/plans/`. If you are
+starting a new feature, work with the agent to create a new plan directory (e.g.,
+`.agent/plans/<plan-id>/`) containing a `README.md`, `manifest.json`, and any necessary `phases/` or
+`CHANGELOG.md` files.
 
 ---
 

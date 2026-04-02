@@ -148,7 +148,7 @@ judgment.
 
 | Owner                                     | Responsibility                                                      |
 | ----------------------------------------- | ------------------------------------------------------------------- |
-| `.agent/plans/README.md`                  | Planning contract for `commit-map.json` records                     |
+| `.agent/plans/README.md`                  | Planning index and contract for all implementation phases           |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                         |
 | `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges |
 | `.husky/pre-commit`                       | Branch protection and staged-file checks                            |

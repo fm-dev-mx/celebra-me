@@ -59,7 +59,7 @@ Create `.env.local` from `.env.example` before using auth, email, or Supabase-ba
 
 ```text
 celebra-me/
-├── .agent/                  # Agent entrypoints, workflows, plan governance, governance config
+├── .agent/                  # Agentic governance, plan index, and domain-specific skills
 ├── docs/                    # Evergreen docs (`core/`, `domains/`) and `archive/`
 ├── public/                  # Public static assets
 ├── scripts/                 # Operational CLI scripts and script docs
@@ -128,12 +128,9 @@ See `docs/domains/rsvp/database.md` for operational details.
 - `docs/domains/theme/architecture.md`
 - `docs/archive/` for historical material
 
-## Agent Entry Points
-
-- `.agent/README.md`
-- `.agent/index.md`
-- `.agent/GATEKEEPER_RULES.md`
-- `.agent/workflows/system-doc-alignment.md`
+- `.agent/plans/README.md` (active plan index)
+- `.agent/skills/` (domain-specific agentic capabilities)
+- `.agent/plans/<plan-id>/README.md` (individual implementation plan)
 
 ## Maintainer
 

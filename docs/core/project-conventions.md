@@ -15,8 +15,9 @@ They are not architectural mandates; they are **shared agreements**.
 Astro promotes the following conventional folders, though you may extend them if necessary:
 
 - `docs/` — Permanent documentation (Architecture, Domains, UX).
-- `.agent/plans/` — Modular implementation plans and detailed specifications for each
-  section/feature.
+- `.agent/plans/` — Modular implementation plans. Each plan has its own directory containing a
+  `README.md`, `manifest.json`, and optional `phases/` or `CHANGELOG.md`. Completed plans are
+  archived under `archive/<yyyy-mm>/<plan-id>/`.
 - `.agent/skills/` — Agentic capabilities and domain-specific knowledge.
 - `.agent/governance/` — Quality control scripts and policies.
 - `src/lib/<feature>/page-data.ts` — Route-facing page assembly modules kept inside the owning
