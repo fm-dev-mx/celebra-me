@@ -1,6 +1,7 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { sanitize } from '@/lib/rsvp/core/utils';
+import { getEnv } from '@/lib/server/env';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;
@@ -68,9 +69,35 @@ export function assertValidClaimCode(claimCode: string): void {
 	}
 }
 
+function normalizeOriginCandidate(value: string): string {
+	try {
+		return new URL(value).origin;
+	} catch {
+		return '';
+	}
+}
+
+function buildForwardedOrigin(request: Request): string {
+	const forwardedHost = sanitize(request.headers.get('x-forwarded-host'), 512);
+	const host = sanitize(request.headers.get('host'), 512);
+	const forwardedProto = sanitize(request.headers.get('x-forwarded-proto'), 32) || 'https';
+	const resolvedHost = forwardedHost || host;
+	if (!resolvedHost) return '';
+	return normalizeOriginCandidate(`${forwardedProto}://${resolvedHost}`);
+}
+
+export function resolveExpectedOrigin(request: Request, fallbackOrigin: string): string {
+	const configuredBaseUrl = sanitize(getEnv('BASE_URL'), 1024);
+	const configuredOrigin = configuredBaseUrl ? normalizeOriginCandidate(configuredBaseUrl) : '';
+	const forwardedOrigin = buildForwardedOrigin(request);
+	const requestOrigin = normalizeOriginCandidate(request.url);
+	return forwardedOrigin || requestOrigin || configuredOrigin || fallbackOrigin;
+}
+
 export function assertSameOrigin(request: Request, expectedOrigin: string): void {
+	const resolvedExpectedOrigin = resolveExpectedOrigin(request, expectedOrigin);
 	const origin = sanitize(request.headers.get('origin'), 512);
-	if (origin && origin !== expectedOrigin) {
+	if (origin && origin !== resolvedExpectedOrigin) {
 		throw new ApiError(403, 'forbidden', 'El origen es inválido.');
 	}
 
@@ -78,7 +105,7 @@ export function assertSameOrigin(request: Request, expectedOrigin: string): void
 	if (referer) {
 		try {
 			const refererOrigin = new URL(referer).origin;
-			if (refererOrigin !== expectedOrigin) {
+			if (refererOrigin !== resolvedExpectedOrigin) {
 				throw new ApiError(403, 'forbidden', 'El origen es inválido.');
 			}
 		} catch {
