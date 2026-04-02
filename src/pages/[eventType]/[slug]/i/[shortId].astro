@@ -3,6 +3,7 @@
 export const prerender = false;
 
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
+import { buildInvitationPath } from '@/utils/invitation-link';
 
 const { shortId } = Astro.params;
 
@@ -14,9 +15,13 @@ try {
 	const result = await getInvitationContextByShortId(shortId);
 	void result; // TypeScript workaround for unused variable warning
 
-	// Canonical URL now points to the landing page with the invite parameter
-	// Pattern: /{eventType}/{slug}?invite={inviteId}
-	return Astro.redirect(`/${result.eventType}/${result.eventSlug}?invite=${result.inviteId}`);
+	return Astro.redirect(
+		buildInvitationPath({
+			eventType: result.eventType,
+			eventSlug: result.eventSlug,
+			inviteId: result.inviteId,
+		}),
+	);
 } catch (error) {
 	console.error('[ShortID Resolution] Error:', error);
 	return Astro.redirect('/404');

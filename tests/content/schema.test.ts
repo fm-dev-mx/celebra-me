@@ -167,7 +167,7 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it('rejects HTML in location indications text', () => {
+	it('accepts rich text in location indications text', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				location: {
@@ -184,7 +184,7 @@ describe('Event content schema (real contract)', () => {
 			}),
 		);
 
-		expect(result.success).toBe(false);
+		expect(result.success).toBe(true);
 	});
 
 	it('rejects unsupported preset and location variant pairings', () => {
@@ -210,7 +210,7 @@ describe('Event content schema (real contract)', () => {
 				theme: {
 					primaryColor: '#d4af37',
 					fontFamily: 'serif',
-					preset: 'premiere-sage-gold',
+					preset: 'premiere-floral',
 				},
 				sectionStyles: {
 					location: { variant: 'editorial' },

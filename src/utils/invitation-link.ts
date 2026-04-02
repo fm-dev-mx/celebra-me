@@ -1,9 +1,38 @@
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 
+type InvitationPathParams = {
+	eventType: EventRecord['eventType'];
+	eventSlug: string;
+};
+
+type DirectInvitationPathParams = InvitationPathParams & {
+	inviteId: string;
+};
+
+type ShortInvitationPathParams = InvitationPathParams & {
+	shortId: string;
+};
+
+export function buildInvitationPath(params: DirectInvitationPathParams): string {
+	const type = encodeURIComponent(params.eventType);
+	const slug = encodeURIComponent(params.eventSlug);
+	const invite = encodeURIComponent(params.inviteId);
+
+	return `/${type}/${slug}?invite=${invite}`;
+}
+
+export function buildShortInvitationPath(params: ShortInvitationPathParams): string {
+	const type = encodeURIComponent(params.eventType);
+	const slug = encodeURIComponent(params.eventSlug);
+	const shortId = encodeURIComponent(params.shortId);
+
+	return `/${type}/${slug}/i/${shortId}`;
+}
+
 /**
  * Generates a secure, environment-aware URL for guest invitations.
  *
- * Pattern: {origin}/{eventType}/{eventSlug}/invitado?invite={inviteId}
+ * Pattern: {origin}/{eventType}/{eventSlug}?invite={inviteId}
  *
  * @param params invitation context
  * @returns absolute URL
@@ -19,12 +48,8 @@ export function generateInvitationLink(params: {
 	const baseUrl = origin.replace(/\/+$/, '');
 
 	if (shortId) {
-		return `${baseUrl}/${eventType}/${eventSlug}/i/${shortId}`;
+		return `${baseUrl}${buildShortInvitationPath({ eventType, eventSlug, shortId })}`;
 	}
 
-	const type = encodeURIComponent(eventType);
-	const slug = encodeURIComponent(eventSlug);
-	const invite = encodeURIComponent(inviteId);
-
-	return `${baseUrl}/${type}/${slug}/invitado?invite=${invite}`;
+	return `${baseUrl}${buildInvitationPath({ eventType, eventSlug, inviteId })}`;
 }
