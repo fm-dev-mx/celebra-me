@@ -53,7 +53,7 @@ export default defineConfig({
 	output: 'server',
 	adapter: vercel({
 		webAnalytics: { enabled: true },
-		maxDuration: 8, // Max duration for serverless functions in seconds
+		maxDuration: 30, // Increase limit for serverless functions
 		imageService: true, // Enable Vercel's image optimization for local images
 		imagesConfig: {
 			sizes: [320, 640, 960, 1200, 1800],

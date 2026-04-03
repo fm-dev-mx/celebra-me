@@ -126,7 +126,8 @@ export async function parseJsonBody(request: Request): Promise<Record<string, un
 	}
 
 	if (!rawText.trim()) {
-		return badRequest('Request body is empty');
+		// Return empty object for empty body instead of failing with 400
+		return {};
 	}
 
 	try {
