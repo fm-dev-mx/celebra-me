@@ -14,6 +14,10 @@ function encodeSse(event: DashboardGuestStreamEvent): string {
 	return `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`;
 }
 
+export const config = {
+	runtime: 'edge',
+};
+
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await requireHostSession(request);

@@ -198,11 +198,21 @@ export const useGuestDashboardRealtime = ({
 			setRealtimeState('connected');
 		});
 
-		source.onerror = () => {
+		source.onerror = (e) => {
 			source.close();
 			setRealtimeState('fallback');
+			if (shouldLogDashboardDebug()) {
+				console.log('[dashboard][client][stream:error]', e);
+			}
 			const nextAttempt = reconnectAttemptRef.current + 1;
 			reconnectAttemptRef.current = nextAttempt;
+			// Only retry up to 10 times to prevent infinite loops on permanent schema/auth errors.
+			if (nextAttempt > 10) {
+				setGuestsError(
+					'El sistema de actualizaciones en tiempo real ha fallado tras varios intentos. Revisa tu conexión o contacta a soporte.',
+				);
+				return;
+			}
 			const backoff = Math.min(10000, [1000, 2000, 5000, 10000][nextAttempt - 1] ?? 10000);
 			reconnectTimerRef.current = window.setTimeout(() => {
 				setRealtimeState('reconnecting');
