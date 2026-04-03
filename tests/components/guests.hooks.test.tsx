@@ -17,17 +17,6 @@ jest.mock('@/lib/dashboard/guests-api', () => ({
 	},
 }));
 
-class MockEventSource {
-	addEventListener = jest.fn();
-	close = jest.fn();
-	onerror: (() => void) | null = null;
-
-	constructor(
-		public url: string,
-		public options?: EventSourceInit,
-	) {}
-}
-
 const mockedGuestsApi = guestsApi as jest.Mocked<typeof guestsApi>;
 
 const sampleGuest: DashboardGuestItem = {
@@ -67,16 +56,12 @@ const sampleTotals = {
 };
 
 describe('active guest dashboard hooks', () => {
-	const originalEventSource = (global as unknown as { EventSource?: unknown }).EventSource;
-
 	beforeEach(() => {
-		(global as unknown as { EventSource: unknown }).EventSource = MockEventSource;
 		jest.clearAllMocks();
 		window.localStorage.clear();
 	});
 
 	afterEach(() => {
-		(global as unknown as { EventSource?: unknown }).EventSource = originalEventSource;
 		jest.restoreAllMocks();
 	});
 
@@ -99,13 +84,11 @@ describe('active guest dashboard hooks', () => {
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
-		const onNotification = jest.fn();
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: 'event-123',
 				search: '',
 				status: 'all',
-				onNotification,
 			}),
 		);
 
@@ -187,13 +170,11 @@ describe('active guest dashboard hooks', () => {
 			},
 		});
 
-		const onNotification = jest.fn();
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: '',
 				search: '',
 				status: 'all',
-				onNotification,
 			}),
 		);
 
@@ -224,13 +205,11 @@ describe('active guest dashboard hooks', () => {
 			updatedAt: '2026-03-22T00:00:00.000Z',
 		});
 
-		const onNotification = jest.fn();
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: 'event-123',
 				search: '',
 				status: 'all',
-				onNotification,
 			}),
 		);
 
@@ -270,13 +249,11 @@ describe('active guest dashboard hooks', () => {
 			},
 		});
 
-		const onNotification = jest.fn();
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: '',
 				search: '',
 				status: 'all',
-				onNotification,
 			}),
 		);
 

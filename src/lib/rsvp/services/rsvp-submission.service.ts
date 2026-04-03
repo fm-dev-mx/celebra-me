@@ -16,7 +16,6 @@ import type {
 	ResponseSource,
 } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
 import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 
@@ -176,12 +175,6 @@ export async function persistRsvpResponse(
 			: await updateGuestByIdService(updateBody);
 
 	console.info(`[rsvp] Success: RSVP submitted for invite ${updated.inviteId}`);
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: updated.eventId,
-		guestId: updated.id,
-		updatedAt: updated.updatedAt,
-	});
 
 	return {
 		attendanceStatus: updated.attendanceStatus,
@@ -249,12 +242,5 @@ export async function trackInvitationView(
 		last_viewed_at: now,
 		is_viewed: true,
 		view_percentage: nextPercentage,
-	});
-
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: invitation.eventId,
-		guestId: invitation.id,
-		updatedAt: now,
 	});
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import type {
 	DashboardGuestItem,
@@ -14,7 +14,7 @@ interface HostEventItem {
 	eventType: EventRecord['eventType'];
 }
 
-export type RealtimeState = 'connected' | 'reconnecting' | 'fallback';
+export type RealtimeState = 'connected' | 'fallback';
 
 const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	totalInvitations: 0,
@@ -30,18 +30,13 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	viewed: 0,
 };
 
-interface NotificationPayload {
-	message: string;
-	type: 'info' | 'success' | 'warning';
-}
-
 interface UseGuestDashboardRealtimeOptions {
 	initialEventId: string;
 	search: 'all' | string;
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
-	onNotification: (notification: NotificationPayload) => void;
 }
 
+const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
 function getErrorMessage(error: unknown, fallback: string): string {
 	return error instanceof Error ? error.message : fallback;
 }
@@ -99,7 +94,6 @@ export const useGuestDashboardRealtime = ({
 	initialEventId,
 	search,
 	status,
-	onNotification,
 }: UseGuestDashboardRealtimeOptions) => {
 	const [eventId, setEventId] = useState<string>(initialEventId || '');
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
@@ -112,9 +106,6 @@ export const useGuestDashboardRealtime = ({
 	const [eventsDebug, setEventsDebug] = useState<DashboardEventListDebug | null>(null);
 	const [realtimeState, setRealtimeState] = useState<RealtimeState>('fallback');
 	const [inviteBaseUrl, setInviteBaseUrl] = useState('');
-	const reconnectTimerRef = useRef<number | null>(null);
-	const refreshDebounceRef = useRef<number | null>(null);
-	const reconnectAttemptRef = useRef(0);
 
 	const loadEvents = useCallback(async () => {
 		try {
@@ -175,55 +166,20 @@ export const useGuestDashboardRealtime = ({
 		}
 	}, [eventId, eventsDebug, search, status]);
 
-	const connectStream = useCallback(() => {
+	const setupPolling = useCallback(() => {
 		if (!eventId) return () => {};
-		const streamUrl = `/api/dashboard/guests/stream?eventId=${encodeURIComponent(eventId)}`;
-		const source = new EventSource(streamUrl, { withCredentials: true });
-		setRealtimeState('reconnecting');
 
-		const scheduleRefresh = () => {
-			if (refreshDebounceRef.current) window.clearTimeout(refreshDebounceRef.current);
-			refreshDebounceRef.current = window.setTimeout(() => {
-				void loadGuests();
-			}, 350);
-		};
+		// Initial connection simulated.
+		setRealtimeState('connected');
 
-		source.addEventListener('guest_updated', () => {
-			onNotification({ message: 'Cambios detectados en los invitados.', type: 'info' });
-			scheduleRefresh();
-		});
-
-		source.addEventListener('heartbeat', () => {
-			reconnectAttemptRef.current = 0;
-			setRealtimeState('connected');
-		});
-
-		source.onerror = (e) => {
-			source.close();
-			setRealtimeState('fallback');
-			if (shouldLogDashboardDebug()) {
-				console.log('[dashboard][client][stream:error]', e);
-			}
-			const nextAttempt = reconnectAttemptRef.current + 1;
-			reconnectAttemptRef.current = nextAttempt;
-			// Only retry up to 10 times to prevent infinite loops on permanent schema/auth errors.
-			if (nextAttempt > 10) {
-				setGuestsError(
-					'El sistema de actualizaciones en tiempo real ha fallado tras varios intentos. Revisa tu conexión o contacta a soporte.',
-				);
-				return;
-			}
-			const backoff = Math.min(10000, [1000, 2000, 5000, 10000][nextAttempt - 1] ?? 10000);
-			reconnectTimerRef.current = window.setTimeout(() => {
-				setRealtimeState('reconnecting');
-				connectStream();
-			}, backoff);
-		};
+		const pollId = window.setInterval(() => {
+			void loadGuests();
+		}, DASHBOARD_POLLING_INTERVAL_MS);
 
 		return () => {
-			source.close();
+			window.clearInterval(pollId);
 		};
-	}, [eventId, loadGuests, onNotification]);
+	}, [eventId, loadGuests]);
 
 	useEffect(() => {
 		void loadEvents();
@@ -251,21 +207,11 @@ export const useGuestDashboardRealtime = ({
 	}, [eventId]);
 
 	useEffect(() => {
-		const disconnect = connectStream();
+		const cleanup = setupPolling();
 		return () => {
-			disconnect();
-			if (reconnectTimerRef.current) window.clearTimeout(reconnectTimerRef.current);
-			if (refreshDebounceRef.current) window.clearTimeout(refreshDebounceRef.current);
+			cleanup();
 		};
-	}, [connectStream]);
-
-	useEffect(() => {
-		if (realtimeState !== 'fallback') return;
-		const id = window.setInterval(() => {
-			void loadGuests();
-		}, 45000);
-		return () => window.clearInterval(id);
-	}, [loadGuests, realtimeState]);
+	}, [setupPolling]);
 
 	return {
 		error: eventsError || guestsError,

@@ -14,7 +14,6 @@ import type {
 } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { publishGuestStreamEvent } from '@/lib/rsvp/core/stream';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import {
@@ -180,12 +179,6 @@ export async function createDashboardGuest(input: {
 		});
 	}
 
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: event.id,
-		guestId: created.id,
-		updatedAt: item.updatedAt,
-	});
 	return {
 		item,
 		updatedAt: item.updatedAt,
@@ -292,12 +285,6 @@ export async function updateDashboardGuest(input: {
 		presentation.template,
 	);
 
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: updated.eventId,
-		guestId: updated.id,
-		updatedAt: item.updatedAt,
-	});
 	return {
 		item,
 		updatedAt: item.updatedAt,
@@ -325,12 +312,6 @@ export async function deleteDashboardGuest(input: {
 	}
 
 	await softDeleteGuestById(input.guestId, input.hostAccessToken);
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: existing.eventId,
-		guestId: existing.id,
-		updatedAt: new Date().toISOString(),
-	});
 }
 
 export async function markGuestShared(input: {
@@ -370,12 +351,6 @@ export async function markGuestShared(input: {
 		});
 	}
 
-	publishGuestStreamEvent({
-		type: 'guest_updated',
-		eventId: updated.eventId,
-		guestId: updated.id,
-		updatedAt: item.updatedAt,
-	});
 	return {
 		item,
 		updatedAt: item.updatedAt,

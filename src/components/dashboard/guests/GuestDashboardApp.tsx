@@ -26,10 +26,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		'all',
 	);
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const [notificationSeed, setNotificationSeed] = useState<{
-		message: string;
-		type: 'info' | 'success' | 'warning';
-	} | null>(null);
 	const {
 		error,
 		eventId,
@@ -45,7 +41,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		initialEventId,
 		search,
 		status,
-		onNotification: setNotificationSeed,
 	});
 	const {
 		celebratingGuestId,
@@ -81,12 +76,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		loadGuests,
 		setItems,
 	});
-
-	useEffect(() => {
-		if (notificationSeed) {
-			setNotification(notificationSeed);
-		}
-	}, [notificationSeed, setNotification]);
 
 	useShortcuts(
 		{
