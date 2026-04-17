@@ -35,24 +35,26 @@ Create `.env.local` from `.env.example` before using auth, email, or Supabase-ba
 
 ## Core Scripts
 
-| Command              | Purpose                                              |
-| -------------------- | ---------------------------------------------------- |
-| `pnpm dev`           | start the Astro dev server                           |
-| `pnpm build`         | run `astro check` and build production output        |
-| `pnpm start`         | preview the Astro app locally                        |
-| `pnpm preview`       | preview the Astro app locally                        |
-| `pnpm type-check`    | run `astro check`                                    |
-| `pnpm lint`          | run ESLint across the repository                     |
-| `pnpm lint:styles`   | run Stylelint across SCSS sources                    |
-| `pnpm test`          | run the Jest suite                                   |
-| `pnpm ci`            | run type-check, lint, SCSS lint, and tests           |
-| `pnpm ops <command>` | run repository ops tooling through `scripts/cli.mjs` |
+| Command                    | Purpose                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `pnpm dev`                 | start the Astro dev server                                                          |
+| `pnpm build`               | run event parity validation, `astro check`, and build output                        |
+| `pnpm start`               | preview the Astro app locally                                                       |
+| `pnpm preview`             | preview the Astro app locally                                                       |
+| `pnpm type-check`          | run `astro check`                                                                   |
+| `pnpm lint`                | run ESLint across the repository                                                    |
+| `pnpm lint:styles`         | audit all SCSS sources with Stylelint                                               |
+| `pnpm lint:styles:changed` | lint only changed stylesheet files                                                  |
+| `pnpm test`                | run the Jest suite                                                                  |
+| `pnpm run ci`              | run type-check, ESLint, changed-stylelint, governance, parity, unit, and e2e checks |
+| `pnpm ops <command>`       | run repository ops tooling through `scripts/cli.mjs`                                |
 
 ## Ops CLI
 
 `pnpm ops` dispatches to the scripts under `scripts/`:
 
 - `optimize-assets`
+- `check-links`
 - `validate-schema`
 - `validate-event-parity`
 - `validate-commits`
@@ -62,7 +64,6 @@ Create `.env.local` from `.env.example` before using auth, email, or Supabase-ba
 
 ```text
 celebra-me/
-├── .agent/                  # Agentic governance, plan index, and domain-specific skills
 ├── docs/                    # Evergreen docs (`core/`, `domains/`) and `archive/`
 ├── public/                  # Public static assets
 ├── scripts/                 # Operational CLI scripts and script docs
@@ -126,17 +127,13 @@ See `docs/domains/rsvp/database.md` for operational details.
 
 ## Documentation
 
+- `docs/core/agent-interaction.md`
 - `docs/core/architecture.md`
 - `docs/core/project-conventions.md`
-- `docs/core/testing-strategy.md`
 - `docs/domains/content/collections.md`
 - `docs/domains/rsvp/architecture.md`
 - `docs/domains/theme/architecture.md`
 - `docs/archive/` for historical material
-
-- `.agent/plans/README.md` (active plan index)
-- `.agent/skills/` (domain-specific agentic capabilities)
-- `.agent/plans/<plan-id>/README.md` (individual implementation plan)
 
 ## Maintainer
 

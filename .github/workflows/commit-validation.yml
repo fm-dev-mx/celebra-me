@@ -21,7 +21,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v6
               with:
-                  node-version: '20'
+                  node-version: '22.12.0'
                   cache: 'pnpm'
 
             - name: Install dependencies
@@ -45,10 +45,16 @@ jobs:
                   node scripts/validate-commits.mjs "$BASE_SHA" "$HEAD_SHA"
 
             - name: Documentation link integrity
+              env:
+                  VALIDATION_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  VALIDATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: pnpm ops check-links
 
             - name: Install Playwright browser
               run: pnpm exec playwright install --with-deps chromium
 
             - name: Required validation suite
-              run: pnpm ci
+              env:
+                  VALIDATION_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  VALIDATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: pnpm run ci

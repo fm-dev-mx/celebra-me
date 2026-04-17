@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 // Centralized mapping of available ops commands
 const SCRIPTS = {
 	'optimize-assets': 'optimize-assets.mjs',
+	'check-links': 'check-links.mjs',
 	'validate-schema': 'validate-schema.mjs',
 	'validate-event-parity': 'validate-event-parity.mjs',
 	'validate-commits': 'validate-commits.mjs',

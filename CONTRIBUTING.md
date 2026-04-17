@@ -60,7 +60,8 @@ Please follow these coding standards:
   `.prettierrc.mjs`.
 - **Linting**: Use ESLint for identifying and reporting on patterns in JavaScript. The configuration
   is already set up in `eslint.config.js` (ESLint flat config).
-- **SCSS Linting**: Use Stylelint for SCSS quality checks via `pnpm lint:styles`.
+- **SCSS Linting**: Use `pnpm lint:styles:changed` for required changed-file checks and
+  `pnpm lint:styles` for full-repository audits.
 - **Type Safety**: Ensure type safety with TypeScript.
 - **Commit Messages**: Follow the commit policy in
   [`docs/core/git-governance.md`](docs/core/git-governance.md).
@@ -69,7 +70,7 @@ Please follow these coding standards:
 
 To set up the development environment:
 
-1. Ensure you have the latest LTS version of Node.js installed.
+1. Install Node.js `22.12.0` or any Node.js `22.x` release compatible with `>=22.12.0 <23`.
 2. Use pnpm as the package manager. Install pnpm if you don't have it installed:
 
    ```bash
@@ -102,11 +103,14 @@ To set up the development environment:
 
 Before submitting a pull request, ensure:
 
-1. **All tests pass**:
+1. **Run the required validation suite**:
 
    ```bash
-   pnpm test
+   pnpm run ci
    ```
+
+   This command is the authoritative pre-PR gate for contributor work. It runs type-checking,
+   ESLint, changed-file Stylelint, UI governance, event parity, unit tests, and e2e checks.
 
 2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to
    verify:
@@ -115,26 +119,26 @@ Before submitting a pull request, ensure:
    pnpm test -- --coverage
    ```
 
-3. **Linting passes**:
+3. **Documentation links stay valid when docs change**:
 
    ```bash
-   pnpm lint
+   pnpm ops check-links
    ```
 
-4. **SCSS linting passes**:
+   Run this when your pull request touches Markdown files. The GitHub PR workflow also runs it
+   against changed Markdown files.
+
+4. **Use the full Stylelint audit when you are paying down stylesheet debt**:
 
    ```bash
    pnpm lint:styles
    ```
 
-5. **Types are valid**:
+   This is an audit command for the repository-wide SCSS baseline. It is intentionally broader than
+   the required changed-file Stylelint gate in `pnpm run ci`.
 
-   ```bash
-   pnpm type-check
-   ```
-
-For detailed testing guidelines, see
-[`docs/core/testing-strategy.md`](docs/core/testing-strategy.md).
+For detailed repository conventions, see
+[`docs/core/project-conventions.md`](docs/core/project-conventions.md).
 
 ## Thank You
 

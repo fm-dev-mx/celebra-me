@@ -14,6 +14,7 @@ owns the command inventory.
 
 | Command                          | Canonical Script                    | Purpose                                                                               |
 | -------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------- |
+| `pnpm ops check-links`           | `scripts/check-links.mjs`           | validate relative links inside changed Markdown files                                 |
 | `pnpm ops optimize-assets`       | `scripts/optimize-assets.mjs`       | optimize and copy the current demo asset set into the expected invitation asset slots |
 | `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`       | compare centralized theme-contract variants against section-theme selectors           |
 | `pnpm ops validate-event-parity` | `scripts/validate-event-parity.mjs` | compare content events against the Supabase `events` table                            |
@@ -34,6 +35,7 @@ Documentation should point to these source files instead of duplicating executab
 
 ```bash
 pnpm ops --help
+pnpm ops check-links
 pnpm ops validate-schema
 pnpm ops validate-event-parity --allowMissingDb
 pnpm ops validate-commits HEAD~5 HEAD
