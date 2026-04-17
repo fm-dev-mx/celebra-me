@@ -8,7 +8,7 @@ support event operations.
 
 ## Stack
 
-- Astro 5
+- Astro 6
 - TypeScript
 - React islands
 - SCSS
@@ -19,8 +19,10 @@ support event operations.
 
 ## Prerequisites
 
-- Node.js `>=20.19.0`
+- Node.js `>=22.12.0 <23`
 - pnpm `10.x`
+- Supabase CLI for local database workflows (`db:start`, `db:push`, `db:reset:local`,
+  `db:migrate:new`)
 
 ## Getting Started
 
@@ -38,11 +40,12 @@ Create `.env.local` from `.env.example` before using auth, email, or Supabase-ba
 | `pnpm dev`           | start the Astro dev server                           |
 | `pnpm build`         | run `astro check` and build production output        |
 | `pnpm start`         | preview the Astro app locally                        |
-| `pnpm preview`       | serve the Vercel static output                       |
+| `pnpm preview`       | preview the Astro app locally                        |
 | `pnpm type-check`    | run `astro check`                                    |
 | `pnpm lint`          | run ESLint across the repository                     |
+| `pnpm lint:styles`   | run Stylelint across SCSS sources                    |
 | `pnpm test`          | run the Jest suite                                   |
-| `pnpm ci`            | run type-check, lint, and tests                      |
+| `pnpm ci`            | run type-check, lint, SCSS lint, and tests           |
 | `pnpm ops <command>` | run repository ops tooling through `scripts/cli.mjs` |
 
 ## Ops CLI
@@ -115,6 +118,9 @@ pnpm db:push
 pnpm db:reset:local
 pnpm db:migrate:new <migration_name>
 ```
+
+These commands require the Supabase CLI to be installed locally and authenticated as needed for your
+environment.
 
 See `docs/domains/rsvp/database.md` for operational details.
 

@@ -3,8 +3,6 @@
  * Mantiene la intención del middleware sin dependencias externas/estado global.
  */
 
-import { jest } from '@jest/globals';
-
 /**
  * Helper para mockear funciones de seguridad en tests de endpoints admin.
  * Mantiene la intención del middleware sin dependencias externas/estado global.

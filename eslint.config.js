@@ -2,7 +2,6 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import astroParser from 'astro-eslint-parser';
 import eslintPluginAstro from 'eslint-plugin-astro';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginBoundaries from 'eslint-plugin-boundaries';
 import globals from 'globals';
@@ -58,12 +57,6 @@ export default [
 	})),
 
 	// ------------------------------------------------------------
-	// Prettier integration
-	// Keep it global, but we'll selectively disable for .astro if needed
-	// ------------------------------------------------------------
-	eslintPluginPrettierRecommended,
-
-	// ------------------------------------------------------------
 	// Global language options
 	// ------------------------------------------------------------
 	{
@@ -111,14 +104,6 @@ export default [
 		},
 		rules: {
 			'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
-			'prettier/prettier': [
-				'error',
-				{
-					endOfLine: 'auto',
-					tabWidth: 4,
-					useTabs: true,
-				},
-			],
 			// God Objects & Complexity (Increased slightly to allow common logic while remaining strict)
 			'max-lines': ['error', { max: 800, skipBlankLines: true, skipComments: true }],
 			complexity: ['error', 20],
@@ -185,10 +170,6 @@ export default [
 		},
 		rules: {
 			'astro/no-unused-css-selector': 'warn',
-
-			// Prettier + Astro can be noisy depending on plugin version.
-			// Keep it off for .astro (you're already formatting via prettier-plugin-astro).
-			'prettier/prettier': 'off',
 		},
 	},
 

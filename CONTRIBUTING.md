@@ -60,6 +60,7 @@ Please follow these coding standards:
   `.prettierrc.mjs`.
 - **Linting**: Use ESLint for identifying and reporting on patterns in JavaScript. The configuration
   is already set up in `eslint.config.js` (ESLint flat config).
+- **SCSS Linting**: Use Stylelint for SCSS quality checks via `pnpm lint:styles`.
 - **Type Safety**: Ensure type safety with TypeScript.
 - **Commit Messages**: Follow the commit policy in
   [`docs/core/git-governance.md`](docs/core/git-governance.md).
@@ -75,20 +76,23 @@ To set up the development environment:
    pnpm install -g pnpm
    ```
 
-3. Clone the repository:
+3. Install the Supabase CLI if you plan to run the local database workflows (`pnpm db:start`,
+   `pnpm db:push`, `pnpm db:reset:local`, `pnpm db:migrate:new`).
+
+4. Clone the repository:
 
    ```bash
    git clone https://github.com/fm-dev-mx/celebra-me.git
    cd celebra-me
    ```
 
-4. Install dependencies:
+5. Install dependencies:
 
    ```bash
    pnpm install
    ```
 
-5. Run the development server:
+6. Run the development server:
 
    ```bash
    pnpm dev
@@ -117,7 +121,13 @@ Before submitting a pull request, ensure:
    pnpm lint
    ```
 
-4. **Types are valid**:
+4. **SCSS linting passes**:
+
+   ```bash
+   pnpm lint:styles
+   ```
+
+5. **Types are valid**:
 
    ```bash
    pnpm type-check
