@@ -2,7 +2,7 @@
 @use '../../tools/functions' as tools;
 @use '../system/color' as sys;
 
-// 1. SCSS Map for internal tools/legacy
+// 1. Semantic SCSS Map
 $semantic-color: (
 	surface: (
 		primary: sys.$sys-color-parchment-100,

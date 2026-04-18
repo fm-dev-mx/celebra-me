@@ -1,7 +1,7 @@
 @use '../../tools/functions' as tools;
 @use '../system/elevation' as sys;
 
-// 1. SCSS Map for internal tools/legacy
+// 1. Semantic SCSS Map
 $semantic-surface: (
 	glass: (
 		bg: rgb(255 255 255 / 45%),

@@ -7,9 +7,6 @@ export const COLOR_TOKENS = {
 	surfaceDark: 'surfaceDark',
 	surfaceSoft: 'surfaceSoft',
 	textPrimary: 'textPrimary',
-	primary: 'primary',
-	accent: 'accent',
-	background: 'background',
 } as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[keyof typeof COLOR_TOKENS];
@@ -23,9 +20,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		surfaceDark: '#5E4B4B',
 		surfaceSoft: '#FFFFFF',
 		textPrimary: '#5E4B4B',
-		primary: '#FBEDED', // Legacy/Default theme primary
-		accent: '#D4A5A5', // Legacy/Default theme accent
-		background: '#FBEDED',
 	},
 	'jewelry-box': {
 		surfacePrimary: '#FDF7F2',
@@ -34,9 +28,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		surfaceDark: '#1B2735',
 		surfaceSoft: '#FFFFFF',
 		textPrimary: '#1B2735',
-		primary: '#FDF7F2',
-		accent: '#D4AF37',
-		background: '#FDF7F2',
 	},
 	'jewelry-box-wedding': {
 		surfacePrimary: '#fefcf9',
@@ -45,9 +36,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		surfaceDark: '#333333',
 		surfaceSoft: '#fdfbf7',
 		textPrimary: '#333333',
-		primary: '#fefcf9',
-		accent: '#e5c387',
-		background: '#fefcf9',
 	},
 	'luxury-hacienda': {
 		surfacePrimary: '#F5F5DC', // Matches $base-parchment-100
@@ -57,9 +45,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		surfaceElevated: '#3D2B1E', // Added for contrast in reveal/panels
 		surfaceSoft: '#FFFFFF',
 		textPrimary: '#2C1E12',
-		primary: '#F5F5DC', // ALIGNED TO SURFACE
-		accent: '#C5A028',
-		background: '#F5F5DC',
 	},
 	editorial: {
 		surfacePrimary: '#050505',
@@ -68,9 +53,6 @@ export const PRESET_COLOR_MAP: Record<ThemePreset, Record<string, string>> = {
 		surfaceDark: '#0D0D0D',
 		surfaceSoft: '#1A1A1A',
 		textPrimary: '#F9F6F2',
-		primary: '#050505', // ALIGNED TO SURFACE
-		accent: '#D4AF37',
-		background: '#050505',
 	},
 };
 
@@ -90,11 +72,6 @@ export function resolveColorToken(
 	if (token in presetMap) {
 		return presetMap[token];
 	}
-
-	// Semantic fallbacks
-	if (token === 'primary') return presetMap.surfacePrimary || presetMap.primary;
-	if (token === 'accent') return presetMap.actionPrimary || presetMap.accent;
-	if (token === 'background') return presetMap.surfacePrimary || presetMap.background;
 
 	return fallback;
 }
