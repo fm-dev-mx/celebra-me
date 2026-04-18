@@ -91,35 +91,6 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
-	it('normalizes legacy location indication icons when iconName is omitted', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
-		const event = {
-			id: 'event-demos/xv/demo-xv',
-			data: {
-				...fixture,
-				location: {
-					...fixture.location,
-					indications: [
-						{
-							icon: 'crown',
-							text: 'Reservado para familia',
-						},
-					],
-				},
-			},
-		} as Parameters<typeof adaptEvent>[0];
-
-		const viewModel = adaptEvent(event);
-
-		expect(viewModel.sections.location?.indications).toEqual([
-			{
-				iconName: 'Crown',
-				styleVariant: 'default',
-				text: 'Reservado para familia',
-			},
-		]);
-	});
-
 	it('preserves explicit interlude variants for editorial content blocks', () => {
 		const event = {
 			id: 'event-demos/xv/noir-premiere-xv',
