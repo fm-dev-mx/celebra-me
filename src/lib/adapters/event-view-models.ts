@@ -8,12 +8,10 @@ import type {
 import {
 	COUNTDOWN_VARIANTS,
 	ITINERARY_VARIANTS,
-	LEGACY_INDICATION_ICON_MAP,
 	LOCATION_VARIANTS,
 	QUOTE_VARIANTS,
 	SHARED_SECTION_VARIANTS,
 	THEME_PRESETS,
-	type IndicationIconKey,
 } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
@@ -135,10 +133,7 @@ export function buildLocationIndications(context: AdaptationContext) {
 	return data.location.indications?.map(
 		(indication: NonNullable<typeof data.location.indications>[number]) => {
 			return {
-				iconName:
-					indication.iconName ??
-					LEGACY_INDICATION_ICON_MAP[indication.icon as IndicationIconKey] ??
-					'Gift',
+				iconName: indication.iconName ?? indication.icon ?? 'Gift',
 				styleVariant: indication.styleVariant ?? 'default',
 				text: indication.text,
 			};

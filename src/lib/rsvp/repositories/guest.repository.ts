@@ -120,13 +120,6 @@ async function insertGuestInvitation(
 			);
 		}
 
-		if (message.includes('23514') && input.entrySource === 'generic_public') {
-			console.warn(
-				'[Repository] Retrying INSERT with legacy entry_source fallback (dashboard).',
-			);
-			return insertGuestInvitation({ ...input, entrySource: 'dashboard' }, hostAccessToken);
-		}
-
 		throw error;
 	}
 }
@@ -167,29 +160,6 @@ async function updateGuestRecord(
 				toGuestRecord,
 				getGuestMutationOptions(hostAccessToken),
 			);
-		}
-
-		if (message.includes('23514')) {
-			if (body.last_response_source === 'generic_link') {
-				console.warn(
-					'[Repository] Retrying UPDATE with legacy response source fallback (link).',
-				);
-				return updateGuestRecord(
-					filter,
-					{ ...body, last_response_source: 'link' },
-					hostAccessToken,
-				);
-			}
-			if (body.entry_source === 'generic_public') {
-				console.warn(
-					'[Repository] Retrying UPDATE with legacy entry source fallback (dashboard).',
-				);
-				return updateGuestRecord(
-					filter,
-					{ ...body, entry_source: 'dashboard' },
-					hostAccessToken,
-				);
-			}
 		}
 
 		throw error;

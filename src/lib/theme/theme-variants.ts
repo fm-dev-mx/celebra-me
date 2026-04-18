@@ -100,15 +100,6 @@ export type IndicationIconKey = (typeof INDICATION_ICON_KEYS)[number];
 export type IndicationIconName = (typeof INDICATION_ICON_NAMES)[number];
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
-export const LEGACY_INDICATION_ICON_MAP: Record<IndicationIconKey, IndicationIconName> = {
-	crown: 'Crown',
-	envelope: 'Envelope',
-	forbidden: 'Forbidden',
-	gift: 'Gift',
-	'western-hat': 'western-hat',
-	dress: 'Gift',
-};
-
 export function supportsInterludeParallaxVariant(
 	variant: string | undefined,
 ): variant is (typeof INTERLUDE_PARALLAX_VARIANTS)[number] {

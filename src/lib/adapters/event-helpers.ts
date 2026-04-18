@@ -10,7 +10,6 @@ import {
 import {
 	COUNTDOWN_VARIANTS,
 	ITINERARY_VARIANTS,
-	LEGACY_INDICATION_ICON_MAP,
 	LOCATION_VARIANTS,
 	QUOTE_VARIANTS,
 	SHARED_SECTION_VARIANTS,
@@ -175,5 +174,5 @@ export function adaptQuoteVariant(variant: string | undefined): string {
 }
 
 export function adaptIndicationIcon(icon: IndicationIconKey): string {
-	return LEGACY_INDICATION_ICON_MAP[icon] || icon;
+	return icon;
 }
