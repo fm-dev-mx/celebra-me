@@ -109,7 +109,7 @@ const {
 				// Wait for the envelope reveal to complete
 				window.addEventListener('envelope:opened', startAudio, { once: true });
 			} else {
-				// Legacy/Immediate mode - trigger on first visit interaction
+				// Immediate mode - trigger on first visit interaction
 				document.addEventListener('click', startAudio, { once: true });
 				document.addEventListener('touchstart', startAudio, { once: true });
 			}

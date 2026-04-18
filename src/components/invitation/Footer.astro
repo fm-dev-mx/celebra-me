@@ -14,7 +14,7 @@ interface Props {
 const { eventSlug, showEnvelope = false, variant = 'standard' } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const isEditorialFooter = variant === 'editorial';
-const logoVariant = isEditorialFooter ? 'footer' : 'xv';
+const logoVariant = isEditorialFooter ? 'footer' : 'default';
 
 // Define contact details
 const contactNumber = '526681167477';
@@ -37,7 +37,7 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 				class:list={[{ 'footer-brand-logo': isEditorialFooter }]}
 			/>
 		</div>
-		
+
 		<div class="footer-contact">
 			<a
 				class="whatsapp-button"
