@@ -31,7 +31,7 @@ export class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>, context: string): T {
 		if (!result.ok) {
 			if (shouldRequestDashboardDebug()) {
-				console.log('[dashboard][client][api:error]', {
+				console.info('[dashboard][client][api:error]', {
 					context,
 					status: result.status,
 					code: result.code,
@@ -42,7 +42,7 @@ export class GuestsApi {
 			throw new DashboardApiError(result);
 		}
 		if (shouldRequestDashboardDebug()) {
-			console.log('[dashboard][client][api:ok]', {
+			console.info('[dashboard][client][api:ok]', {
 				context,
 				status: result.status,
 				data: result.data,

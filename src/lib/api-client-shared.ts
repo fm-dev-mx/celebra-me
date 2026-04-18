@@ -87,12 +87,13 @@ export async function fetchJSON<T>(
 				data.error !== null &&
 				'message' in data.error
 			) {
+				const errorData = data.error as Record<string, unknown>;
 				return {
 					ok: false,
 					status: response.status,
-					code: (data.error as any).code || 'http_error',
-					message: String((data.error as any).message),
-					details: (data.error as any).details,
+					code: (errorData.code as string) || 'http_error',
+					message: String(errorData.message),
+					details: errorData.details,
 				};
 			}
 

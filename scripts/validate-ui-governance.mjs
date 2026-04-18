@@ -13,6 +13,7 @@ const allowedHydratedComponents = new Set([
 	'UsersAdminTable',
 	'DashboardUserMenu',
 	'MfaSetupBehavior',
+	'LoginFlowBehavior',
 	'RSVP',
 ]);
 

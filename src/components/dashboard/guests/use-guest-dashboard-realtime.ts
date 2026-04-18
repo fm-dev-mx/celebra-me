@@ -120,7 +120,7 @@ export const useGuestDashboardRealtime = ({
 			);
 			setEventsError(eventsError);
 			if (shouldLogDashboardDebug()) {
-				console.log('[dashboard][client][loadEvents]', {
+				console.info('[dashboard][client][loadEvents]', {
 					initialEventId,
 					hostEvents: data.items,
 					debug: data.debug || null,
@@ -133,7 +133,7 @@ export const useGuestDashboardRealtime = ({
 			}
 		} catch (error) {
 			if (shouldLogDashboardDebug()) {
-				console.log('[dashboard][client][loadEvents:error]', error);
+				console.info('[dashboard][client][loadEvents:error]', error);
 			}
 			setEventsError(getEventLoadFailureMessage(error, 'No se pudieron cargar eventos.'));
 		}
@@ -152,7 +152,7 @@ export const useGuestDashboardRealtime = ({
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
 			if (shouldLogDashboardDebug()) {
-				console.log('[dashboard][client][loadGuests:error]', {
+				console.info('[dashboard][client][loadGuests:error]', {
 					eventId,
 					search,
 					status,

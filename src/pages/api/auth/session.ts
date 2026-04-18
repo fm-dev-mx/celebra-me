@@ -35,7 +35,7 @@ async function buildDebugPayload(
 				: null,
 		},
 	};
-	console.log('[auth/session][debug]', {
+	console.info('[auth/session][debug]', {
 		userId: dto.userId,
 		email: dto.email,
 		role: dto.role,

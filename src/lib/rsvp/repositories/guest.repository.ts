@@ -23,7 +23,7 @@ const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
 
 // [DELETED] isGuestSchemaErrorMessage replaced by standardized schema
 
-async function supportsGenericRsvpSources(_hostAccessToken?: string): Promise<boolean> {
+async function supportsGenericRsvpSources(): Promise<boolean> {
 	return true;
 }
 
@@ -88,7 +88,7 @@ async function insertGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	const supportsGenericSources = await supportsGenericRsvpSources(hostAccessToken);
+	const supportsGenericSources = await supportsGenericRsvpSources();
 	const normalizedInput = adaptGuestInsertInputForSchema(input, { supportsGenericSources });
 	const initialColumns = supportsGenericSources
 		? GUEST_COLUMNS
@@ -136,7 +136,7 @@ async function updateGuestRecord(
 	body: Record<string, unknown>,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	const supportsGenericSources = await supportsGenericRsvpSources(hostAccessToken);
+	const supportsGenericSources = await supportsGenericRsvpSources();
 	const normalizedBody = adaptGuestUpdateBodyForSchema(body, { supportsGenericSources });
 	const initialColumns = supportsGenericSources
 		? GUEST_COLUMNS

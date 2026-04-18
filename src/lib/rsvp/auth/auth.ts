@@ -149,7 +149,7 @@ export async function getSessionDebugSnapshotFromRequest(
 	const accessToken = resolveAccessTokenFromRequest(request);
 	if (!accessToken) {
 		if (debugEnabled) {
-			console.log('[auth][session-debug]', {
+			console.info('[auth][session-debug]', {
 				hasAccessToken: false,
 				tokenSource,
 				reason: 'missing_access_token',
@@ -166,7 +166,7 @@ export async function getSessionDebugSnapshotFromRequest(
 	const user = await getSupabaseUserByAccessToken(accessToken);
 	if (!user) {
 		if (debugEnabled) {
-			console.log('[auth][session-debug]', {
+			console.info('[auth][session-debug]', {
 				hasAccessToken: true,
 				tokenSource,
 				reason: 'invalid_supabase_user',
@@ -195,7 +195,7 @@ export async function getSessionDebugSnapshotFromRequest(
 		},
 	};
 	if (debugEnabled) {
-		console.log('[auth][session-debug]', {
+		console.info('[auth][session-debug]', {
 			hasAccessToken: true,
 			tokenSource,
 			reason: 'session_role_resolved',

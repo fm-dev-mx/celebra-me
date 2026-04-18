@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ request }) => {
 					isSuperAdmin: sessionSnapshot.context.isSuperAdmin,
 				},
 			};
-			console.log('[dashboard/events][debug]', {
+			console.info('[dashboard/events][debug]', {
 				hostUserId: sessionSnapshot.context.userId,
 				tokenSource: sessionSnapshot.tokenSource,
 				ownerEvents: debug.ownerEvents.length,
