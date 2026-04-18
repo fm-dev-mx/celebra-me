@@ -204,8 +204,13 @@
 }
 
 .services--motion-ready .services__card.is-visible {
-	animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-	animation-delay: var(--animation-delay, 0ms);
+	animation: fadeInUp 0.8s var(--ease-premium, cubic-bezier(0.25, 0.46, 0.45, 0.94)) forwards;
+
+	@for $i from 1 through 6 {
+		&:nth-child(#{$i}) {
+			animation-delay: #{($i - 1) * 200}ms;
+		}
+	}
 }
 
 // Keyframes

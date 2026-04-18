@@ -27,7 +27,10 @@
 			inset: 0;
 			opacity: var(--about-noise-opacity);
 			pointer-events: none;
-			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			background-image: var(
+				--noise-texture,
+				url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")
+			);
 			mix-blend-mode: overlay;
 		}
 	}
@@ -272,9 +275,7 @@
 		&:hover {
 			transform: translateY(-8px) scale(1.02);
 			background: var(--about-value-card-hover-bg);
-			box-shadow:
-				0 30px 60px -20px rgb(0 0 0 / 20%),
-				0 15px 35px -25px rgb(var(--color-action-accent-rgb), 0.2);
+			box-shadow: var(--elevation-3, 0 30px 60px -20px rgb(0 0 0 / 20%));
 			border-color: var(--about-value-card-hover-border);
 
 			&::after {
@@ -489,21 +490,32 @@
 	&--1 {
 		top: 10%;
 		left: 10%;
-		animation: sparkle-animation 3s infinite;
 	}
 
 	&--2 {
 		bottom: 15%;
 		right: 12%;
-		animation: sparkle-animation 3.5s infinite 1s;
 	}
 
 	&--3 {
 		top: 20%;
 		right: 20%;
-		animation: sparkle-animation 4s infinite 0.5s;
 		width: 8px;
 		height: 8px;
+	}
+}
+
+.is-visible .sparkle {
+	&--1 {
+		animation: sparkle-animation 3s infinite;
+	}
+
+	&--2 {
+		animation: sparkle-animation 3.5s infinite 1s;
+	}
+
+	&--3 {
+		animation: sparkle-animation 4s infinite 0.5s;
 	}
 }
 

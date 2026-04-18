@@ -55,7 +55,7 @@ test.describe('RSVP v2 Flow', () => {
 			const guestCount = page.locator('#guestCount');
 			await guestCount.waitFor({ state: 'visible', timeout: 1000 });
 			await guestCount.fill('2');
-		} catch (e) {
+		} catch {
 			// Guest count is optional and might be hidden based on Cap=1
 		}
 
@@ -64,7 +64,7 @@ test.describe('RSVP v2 Flow', () => {
 			const guestComment = page.locator('#notes');
 			await guestComment.waitFor({ state: 'visible', timeout: 1000 });
 			await guestComment.fill('¡Gracias por la invitación! Ahí estaremos.');
-		} catch (e) {
+		} catch {
 			// Notes section is conditionally animated
 		}
 
