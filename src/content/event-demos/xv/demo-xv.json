@@ -189,6 +189,7 @@
     "rsvp": {
         "title": "¿Vienes a celebrar conmigo?",
         "guestCap": 2,
+        "accessMode": "hybrid",
         "confirmationMessage": "¡Gracias por confirmar! Te esperamos con mucha emoción.",
         "confirmationMode": "both",
         "whatsappConfig": {

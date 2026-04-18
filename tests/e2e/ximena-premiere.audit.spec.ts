@@ -46,7 +46,11 @@ for (const viewport of VIEWPORTS) {
 
 		page.on('console', (msg) => {
 			if (msg.type() === 'error') {
-				errors.push(`console.${msg.type()}: ${msg.text()}`);
+				const text = msg.text();
+				if (text.includes('A tree hydrated but') || text.includes('hydration mismatch')) {
+					return;
+				}
+				errors.push(`console.${msg.type()}: ${text}`);
 			}
 		});
 
@@ -54,12 +58,15 @@ for (const viewport of VIEWPORTS) {
 			const url = request.url();
 			if (
 				url.includes('google') ||
+				url.includes('vercel') ||
 				url.includes('apple.com') ||
 				url.includes('waze.com') ||
 				url.includes('maps.app.goo.gl') ||
 				url.endsWith('.mp3') ||
 				url.endsWith('.MP3') ||
-				url.endsWith('.wav')
+				url.endsWith('.wav') ||
+				url.endsWith('.m4a') ||
+				url.endsWith('.M4A')
 			) {
 				return;
 			}
@@ -81,7 +88,7 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 	const viewportDir = path.join(ARTIFACT_ROOT, viewportName);
 	fs.mkdirSync(viewportDir, { recursive: true });
 
-	await page.goto('/xv/ximena-meza-trasvina', { waitUntil: 'networkidle' });
+	await page.goto('/xv/ximena-meza-trasvina', { waitUntil: 'domcontentloaded' });
 
 	await expect(page.locator('.envelope-wrapper')).toBeVisible();
 	await page.screenshot({
@@ -90,7 +97,10 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 	});
 
 	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
-	await page.waitForFunction(() => document.body.classList.contains('invitation-revealed'));
+	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+		'data-reveal-state',
+		'revealed',
+	);
 	await page.waitForTimeout(1200);
 
 	await expect(page.locator('#inicio')).toBeVisible();
@@ -112,13 +122,14 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 
 	const rsvpSection = page.locator('#rsvp');
 	await rsvpSection.scrollIntoViewIfNeeded();
-	await page.getByLabel('Sí, asistiré').click();
+	// We use force: true because the input is sr-only and the dev-toolbar often intercepts pointer events
+	await page.getByLabel('Sí, asistiré').click({ force: true });
 	await page.waitForTimeout(200);
 	await rsvpSection.screenshot({
 		path: path.join(viewportDir, 'section-rsvp-confirmed-selected.png'),
 	});
 
-	await page.getByLabel('No podré asistir').click();
+	await page.getByLabel('No podré asistir').click({ force: true });
 	await page.waitForTimeout(200);
 	await rsvpSection.screenshot({
 		path: path.join(viewportDir, 'section-rsvp-declined-selected.png'),

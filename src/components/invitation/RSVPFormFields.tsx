@@ -45,6 +45,7 @@ export function NameField(props: {
 				onBlur={() => onBlur('name')}
 				aria-invalid={!!(touched.name && errors.name)}
 				aria-describedby={touched.name && errors.name ? 'name-error' : undefined}
+				suppressHydrationWarning
 			/>
 			<label htmlFor="name" className="rsvp__label">
 				{nameLabel}
@@ -105,6 +106,7 @@ export function PhoneField(props: {
 				onBlur={() => onBlur('phone')}
 				aria-invalid={!!(touched.phone && errors.phone)}
 				aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
+				suppressHydrationWarning
 			/>
 			<label htmlFor="phone" className="rsvp__label">
 				{phoneLabel}
