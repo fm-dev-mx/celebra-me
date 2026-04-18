@@ -4,6 +4,13 @@
     "buildCommand": "pnpm build",
     "devCommand": "astro dev",
     "installCommand": "corepack enable && corepack install && pnpm install --no-frozen-lockfile",
+    "redirects": [
+        {
+            "source": "/:eventType/:slug/invitado",
+            "destination": "/:eventType/:slug",
+            "permanent": true
+        }
+    ],
     "routes": [
         {
             "src": "^/_astro/(.*)$",
