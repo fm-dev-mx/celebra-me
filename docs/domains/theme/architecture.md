@@ -217,9 +217,10 @@ Content schemas are modularized under `src/lib/schemas/content/`:
 - `section-styles.schema.ts`: Section styling configuration
 - `shared.schema.ts`: Asset, theme, and shared primitives
 
-Legacy RSVP labels (`nameLabel`, `guestCountLabel`, `buttonLabel`) now live under
-`sectionStyles.rsvp.legacy` with `@deprecated` JSDoc annotations. Adapters read the legacy namespace
-as a fallback to preserve existing content behavior during migration.
+Legacy RSVP labels (`nameLabel`, `guestCountLabel`, `confirmButton`) are defined natively under
+`rsvp.schema.ts` as standard string options within the `labels` object to preserve existing content
+behavior during migration, without requiring a `.legacy` namespace or explicit `@deprecated` JS doc
+extraction during normal content mapping.
 
 ---
 
