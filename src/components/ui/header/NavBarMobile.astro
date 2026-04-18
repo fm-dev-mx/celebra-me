@@ -7,10 +7,24 @@ interface NavLink {
 interface Props {
 	headerId: string;
 	links?: NavLink[];
+	loginLink?: string;
+	ctaLink?: string;
+	loginLabel?: string;
+	ctaLabel?: string;
 }
 
-const { headerId, links = [] } = Astro.props;
+import Logo from '@components/ui/Logo.astro';
+
+const {
+	headerId,
+	links = [],
+	loginLink,
+	ctaLink,
+	loginLabel = 'Iniciar sesión',
+	ctaLabel = 'Crear Invitación',
+} = Astro.props;
 const menuId = `${headerId}-mobile-menu`;
+const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 ---
 
 <div data-nav-mobile data-header-id={headerId}>
@@ -40,8 +54,12 @@ const menuId = `${headerId}-mobile-menu`;
 	>
 		<div class="mobile-nav-links">
 			{
-				links.map((link) => (
-					<a href={link.href} class="mobile-nav-links__link" data-nav-mobile-link>
+				links.map((link, index) => (
+					<a
+						href={link.href}
+						class:list={['mobile-nav-links__link', staggerClass(index)]}
+						data-nav-mobile-link
+					>
 						{link.label}
 					</a>
 				))
@@ -50,7 +68,42 @@ const menuId = `${headerId}-mobile-menu`;
 
 		<div class="mobile-nav-footer">
 			<div class="mobile-nav-footer__divider"></div>
-			<p class="mobile-nav-footer__copy">CELEBRA-ME © 2026</p>
+			{
+				(loginLink || ctaLink) && (
+					<div class="mobile-nav-actions">
+						{loginLink && (
+							<a
+								href={loginLink}
+								class:list={['mobile-nav-actions__login', staggerClass(links.length)]}
+								data-nav-mobile-link
+							>
+								{loginLabel}
+							</a>
+						)}
+						{ctaLink && (
+							<a
+								href={ctaLink}
+								class:list={['mobile-nav-actions__cta', staggerClass(links.length + 1)]}
+								data-nav-mobile-link
+							>
+								<span aria-hidden="true">✦</span>
+								{ctaLabel}
+							</a>
+						)}
+					</div>
+				)
+			}
+
+			<div class="mobile-nav-signature">
+				<a
+					href="/"
+					class:list={['mobile-nav-signature__logo', staggerClass(links.length + 2)]}
+					data-nav-mobile-link
+				>
+					<Logo variant="gold" class="logo-img" />
+				</a>
+				<p class="mobile-nav-footer__copy">CELEBRA-ME © 2026</p>
+			</div>
 		</div>
 	</nav>
 </div>
@@ -83,7 +136,9 @@ const menuId = `${headerId}-mobile-menu`;
 			toggle.setAttribute('aria-label', 'Abrir menú');
 			menu.hidden = true;
 			overlay.hidden = true;
-			header?.classList.remove('header-base--menu-open');
+			if (header) {
+				header.classList.remove('header-base--menu-open');
+			}
 			document.body.style.overflow = '';
 		};
 
@@ -97,7 +152,9 @@ const menuId = `${headerId}-mobile-menu`;
 			toggle.setAttribute('aria-label', 'Cerrar menú');
 			menu.hidden = false;
 			overlay.hidden = false;
-			header?.classList.add('header-base--menu-open');
+			if (header) {
+				header.classList.add('header-base--menu-open');
+			}
 			document.body.style.overflow = 'hidden';
 		};
 

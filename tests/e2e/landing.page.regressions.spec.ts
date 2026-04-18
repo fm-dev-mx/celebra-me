@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.describe('Landing page regressions', () => {
+	const expectedNavLabels = ['Demos', 'Servicios', 'Planes', 'Nosotros'];
+	const loginHref = '/login?next=%2Fdashboard%2Finvitados';
+	const loginLabel = 'Iniciar sesión';
+	const ctaHref = '#contacto';
+
 	const scrollLandingHeader = async (page: Page) => {
 		await page.evaluate(() => window.scrollTo(0, 320));
 		await expect
@@ -10,6 +15,7 @@ test.describe('Landing page regressions', () => {
 				}),
 			)
 			.toBe(true);
+		await expect(page.locator('#home-header')).not.toHaveAttribute('data-scrolled', /.+/);
 	};
 
 	test('keeps the correct navigation at mobile and tablet breakpoints', async ({ page }) => {
@@ -18,22 +24,38 @@ test.describe('Landing page regressions', () => {
 			{ width: 768, height: 1024 },
 		]) {
 			await page.setViewportSize(viewport);
-			await page.goto('/', { waitUntil: 'domcontentloaded' });
+			await page.goto('/', { waitUntil: 'load' });
 
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
 			await expect(page.locator('.services__card').first()).toBeVisible();
 			await expect(page.locator('#nosotros .about-us__content')).toBeVisible();
+
+			await page.locator('[data-nav-mobile-toggle]').click();
+			await expect(page.locator('[data-nav-mobile-menu]')).toBeVisible();
+			await expect(page.locator('.mobile-nav-links__link')).toHaveText(expectedNavLabels);
+			await expect(page.locator('.mobile-nav-actions__login')).toHaveText(loginLabel);
+			await expect(page.locator('.mobile-nav-actions__login')).toHaveAttribute(
+				'href',
+				loginHref,
+			);
+			await expect(page.locator('.mobile-nav-actions__cta')).toHaveAttribute('href', ctaHref);
+			await expect(page.locator('#home-header')).toHaveClass(/header-base--menu-open/);
+			await expect(page.locator('#home-header')).not.toHaveAttribute('data-menu-open', /.+/);
 		}
 	});
 
 	test('keeps the desktop navigation visible and readable on desktop', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
-		await page.goto('/', { waitUntil: 'domcontentloaded' });
+		await page.goto('/', { waitUntil: 'load' });
 		await scrollLandingHeader(page);
 
 		await expect(page.locator('.header-base__desktop-nav')).toBeVisible();
 		await expect(page.locator('[data-nav-mobile-toggle]')).toBeHidden();
+		await expect(page.locator('.home-nav__link')).toHaveText(expectedNavLabels);
+		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
+		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
+		await expect(page.locator('.home-nav-actions__cta')).toHaveAttribute('href', ctaHref);
 
 		const navLinkStyles = await page
 			.locator('.home-nav__link')
@@ -43,6 +65,7 @@ test.describe('Landing page regressions', () => {
 				return {
 					color: styles.color,
 					opacity: styles.opacity,
+					borderBottomColor: styles.borderBottomColor,
 				};
 			});
 
@@ -57,13 +80,14 @@ test.describe('Landing page regressions', () => {
 
 		expect(navLinkStyles.opacity).toBe('1');
 		expect(navLinkStyles.color).not.toBe('rgba(0, 0, 0, 0)');
+		expect(navLinkStyles.borderBottomColor).not.toBe('rgba(0, 0, 0, 0)');
 		expect(ctaStyles.opacity).toBe('1');
 		expect(ctaStyles.color).not.toBe(ctaStyles.backgroundColor);
 	});
 
 	test('keeps the FAQ accordion stable while toggling', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/', { waitUntil: 'domcontentloaded' });
+		await page.goto('/', { waitUntil: 'load' });
 
 		const faqItem = page.locator('.faq-item').first();
 		const faqButton = faqItem.locator('.faq-question-btn');
@@ -102,7 +126,7 @@ test.describe('Landing page regressions', () => {
 
 	test('closes the mobile menu when resizing up to desktop', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto('/', { waitUntil: 'domcontentloaded' });
+		await page.goto('/', { waitUntil: 'load' });
 
 		const toggle = page.locator('[data-nav-mobile-toggle]');
 		const menu = page.locator('[data-nav-mobile-menu]');

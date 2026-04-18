@@ -14,26 +14,20 @@ import '@styles/layout/_header-base.scss';
 export interface Props {
     transparentOnHero?: boolean;
     headerId?: string;
-    logoVariant?: 'adaptive' | 'static';
-    hideMobileToggle?: boolean;
     variant?: string;
 }
 
 const {
     transparentOnHero = true,
     headerId = 'main-header',
-    logoVariant = 'adaptive',
-    hideMobileToggle = false,
     variant = 'standard',
 } = Astro.props;
 ---
 
 <header
     id={headerId}
-    class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''} ${
-        logoVariant === 'static' ? 'header-base--logo-static' : 'header-base--logo-adaptive'
-    }`}
-    data-variant={variant} data-header-id={headerId} data-transparent-on-hero={String(transparentOnHero)}
+    class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''}`}
+    data-variant={variant}
 >
     <div class="header-base__container">
         <!-- Slot: Logo (Adaptive logic lives in parent) -->
@@ -46,84 +40,54 @@ const {
             <slot name="desktop-nav" />
         </nav>
 
-        <!-- Mobile Menu Toggle -->
-        {!hideMobileToggle && (
-            <button
-                id={`${headerId}-toggle`}
-                class="header-base__mobile-toggle"
-                type="button"
-                aria-label="Alternar navegacion"
-                aria-controls={`${headerId}-overlay`}
-                aria-expanded="false"
-            >
-                <div class="hamburger">
-                    <span class="hamburger__line"></span>
-                    <span class="hamburger__line"></span>
-                    <span class="hamburger__line"></span>
-                </div>
-            </button>
-        )}
-
-        <!-- Slot for Premium Mobile Nav (React/etc) -->
+        <!-- Slot for shared Astro mobile navigation -->
         <slot name="mobile-nav-premium" />
     </div>
-
-    <!-- Mobile Overlay -->
-    {!hideMobileToggle && (
-        <div id={`${headerId}-overlay`} class="header-base__mobile-overlay" aria-hidden="true">
-            <nav class="header-base__mobile-menu" aria-label="Navegacion movil">
-                <slot name="mobile-nav-content" />
-            </nav>
-        </div>
-    )}
 </header>
-<script>
-	const header = document.querySelector('.header-base');
+
+<script define:vars={{ headerId, transparentOnHero }}>
+	/**
+	 * Shared header behavior:
+	 * - shrink on scroll
+	 * - hero transparency toggle
+	 * - auto-hide while scrolling down
+	 */
+	const header = document.getElementById(headerId);
 
 	if (header instanceof HTMLElement) {
-		// headerId is available on header.dataset.headerId if needed
-		const transparentOnHero = header.dataset.transparentOnHero === 'true';
+		const isTransparentConfigured = transparentOnHero;
 		let lastScrollY = window.scrollY;
-		const scrollThreshold = 50;
-		const hideThreshold = 100;
+		const SCROLL_THRESHOLD = 50;
+		const HIDE_THRESHOLD = 100;
 
-		const setScrolledState = (isScrolledPastHero: boolean) => {
+		const updateHeaderState = () => {
+			const currentScrollY = window.scrollY;
+			const isScrolledPastHero = currentScrollY > SCROLL_THRESHOLD;
+			const isMenuOpen = header.classList.contains('header-base--menu-open');
+
 			header.classList.toggle('header-base--scrolled', isScrolledPastHero);
 
-			const isMenuOpenNow = header.classList.contains('header-base--menu-open');
-
-			if (transparentOnHero && !isMenuOpenNow) {
+			if (isTransparentConfigured && !isMenuOpen) {
 				header.classList.toggle('header-base--transparent', !isScrolledPastHero);
 			} else {
 				header.classList.remove('header-base--transparent');
 			}
-		};
 
-		const handleScroll = () => {
-			const currentScrollY = window.scrollY;
-			const isScrolledPastHero = currentScrollY > scrollThreshold;
-
-			setScrolledState(isScrolledPastHero);
-
-			const isMenuOpenNow = header.classList.contains('header-base--menu-open');
-			if (isMenuOpenNow) {
+			if (isMenuOpen) {
 				header.classList.remove('header-base--hidden');
-				lastScrollY = currentScrollY;
-				return;
-			}
-
-			const isScrollingDown = currentScrollY > lastScrollY;
-
-			if (currentScrollY > hideThreshold && isScrollingDown) {
-				header.classList.add('header-base--hidden');
 			} else {
-				header.classList.remove('header-base--hidden');
+				const isScrollingDown = currentScrollY > lastScrollY;
+				header.classList.toggle(
+					'header-base--hidden',
+					currentScrollY > HIDE_THRESHOLD && isScrollingDown,
+				);
 			}
 
 			lastScrollY = currentScrollY;
 		};
 
-		handleScroll();
-		window.addEventListener('scroll', handleScroll, { passive: true });
+		updateHeaderState();
+		window.addEventListener('scroll', updateHeaderState, { passive: true });
 	}
 </script>
+

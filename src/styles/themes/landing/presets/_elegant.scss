@@ -18,6 +18,7 @@
 	--color-text-secondary: #{sys.$sys-color-coffee-700};
 	--color-text-emphasis: #{sys.$sys-color-gold-700};
 	--color-text-on-dark: #{sys.$sys-color-parchment-100};
+	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
 	--color-surface-primary: #{sys.$sys-color-parchment-100};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
 	--color-surface-dark: #{sys.$sys-color-coffee-900};
@@ -66,12 +67,19 @@
 
 	// Header Section
 	--header-bg-transparent: transparent;
-	--header-bg-scrolled: #0f172a; // Keeping specific dark blue for landing
+	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 92%);
 	--header-text-transparent: #{sys.$sys-color-neutral-0};
 	--header-text-scrolled: #{sys.$sys-color-parchment-100};
 	--header-accent-scrolled: #{sys.$sys-color-gold-500};
-	--header-shadow-scrolled: 0 4px 20px rgb(0 0 0 / 30%);
+	--header-shadow-scrolled: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
 	--header-backdrop-blur: 12px;
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
+	--header-border-scrolled: var(--border-fine-gold, 1px solid var(--color-glass-border));
+	--header-cta-glow: 0 0 20px rgb(var(--color-action-accent-rgb) / 20%);
+	--mobile-drawer-bg: rgb(var(--color-surface-dark-rgb) / 95%);
+	--mobile-drawer-border: var(--color-glass-border);
+	--mobile-drawer-link-hover: var(--color-action-accent);
+	--mobile-drawer-footer-copy: rgb(var(--color-text-on-dark-rgb) / 40%);
 
 	// About Us Section
 	--about-noise-opacity: 0.04;
