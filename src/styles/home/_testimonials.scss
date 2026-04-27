@@ -1,6 +1,8 @@
 @use '../global/mixins' as mixins;
 
 .testimonials {
+	padding: var(--spacing-xl) 0;
+
 	&__title-text {
 		font-family: var(--testimonials-title-font);
 		font-size: clamp(2.5rem, 5vw, 3.5rem);
@@ -26,8 +28,7 @@
 	&__grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		gap: 2rem;
-		padding: 4rem 0;
+		gap: var(--spacing-component-gap);
 
 		@include mixins.respond-to('md') {
 			grid-template-columns: repeat(2, 1fr);
@@ -43,7 +44,7 @@
 		backdrop-filter: blur(var(--testimonials-card-backdrop-blur));
 		border: 1px solid var(--testimonials-card-border);
 		border-radius: var(--testimonials-card-border-radius);
-		padding: 3rem 2.5rem;
+		padding: var(--spacing-12) var(--spacing-10);
 		position: relative;
 		overflow: hidden;
 		box-shadow: var(--testimonials-card-shadow);
@@ -91,7 +92,7 @@
 		font-size: var(--testimonials-text-size);
 		line-height: var(--testimonials-text-line-height);
 		color: var(--testimonials-text-color);
-		margin-bottom: 2.5rem;
+		margin-bottom: var(--spacing-10);
 		font-style: var(--testimonials-text-style);
 		position: relative;
 		z-index: 1;
@@ -102,7 +103,7 @@
 		display: flex;
 		flex-direction: column;
 		border-top: 1px solid var(--testimonials-footer-border);
-		padding-top: 2rem;
+		padding-top: var(--spacing-8);
 	}
 
 	&__name {

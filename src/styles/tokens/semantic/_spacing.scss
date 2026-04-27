@@ -4,7 +4,7 @@
 // 1. Semantic SCSS Map
 $semantic-space: (
 	container-padding: sys.$sys-spacing-6,
-	section-gap: sys.$sys-spacing-16,
+	section-gap: sys.$sys-spacing-24,
 	component-gap: sys.$sys-spacing-6,
 	element-gap: sys.$sys-spacing-4,
 	text-gap: sys.$sys-spacing-2,
@@ -27,7 +27,7 @@ $semantic-space: (
 	--spacing-24: #{sys.$sys-spacing-24};
 	--spacing-32: #{sys.$sys-spacing-32};
 	--spacing-container-padding: #{sys.$sys-spacing-6};
-	--spacing-section-gap: #{sys.$sys-spacing-16};
+	--spacing-section-gap: #{sys.$sys-spacing-24};
 	--spacing-component-gap: #{sys.$sys-spacing-6};
 	--spacing-element-gap: #{sys.$sys-spacing-4};
 	--spacing-text-gap: #{sys.$sys-spacing-2};
