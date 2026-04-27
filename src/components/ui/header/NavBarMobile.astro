@@ -13,7 +13,6 @@ interface Props {
 	ctaLabel?: string;
 }
 
-import Logo from '@components/ui/Logo.astro';
 
 const {
 	headerId,
@@ -95,13 +94,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 			}
 
 			<div class="mobile-nav-signature">
-				<a
-					href="/"
-					class:list={['mobile-nav-signature__logo', staggerClass(links.length + 2)]}
-					data-nav-mobile-link
-				>
-					<Logo variant="gold" class="logo-img" />
-				</a>
 				<p class="mobile-nav-footer__copy">CELEBRA-ME © 2026</p>
 			</div>
 		</div>

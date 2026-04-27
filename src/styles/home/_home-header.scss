@@ -31,7 +31,7 @@
 }
 
 .home-header__logo--white {
-	filter: brightness(0) invert(1) drop-shadow(0 2px 4px var(--shadow-subtle));
+	filter: brightness(0) invert(1);
 }
 
 .home-header__desktop {
@@ -49,15 +49,15 @@
 	align-items: center;
 
 	&__link {
-		text-decoration: none;
-		color: var(--home-header-nav-color);
-		opacity: 100%;
-		font-family: var(--font-ui);
-		font-weight: var(--home-header-nav-weight, #{tokens.$font-weight-medium});
-		font-size: 0.95rem;
-		letter-spacing: tokens.$letter-spacing-wide;
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 300;
+		letter-spacing: 0.22em;
 		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--color-noir-text);
 		position: relative;
+		width: fit-content;
 		padding: var(--spacing-xs) 0;
 		transition: var(--transition-snappy);
 		text-shadow: var(--home-header-nav-shadow, none);
@@ -65,22 +65,22 @@
 		&::after {
 			content: '';
 			position: absolute;
-			bottom: 0;
+			bottom: -4px;
 			left: 0;
 			width: 100%;
-			height: 2px;
+			height: 1px;
+			background: var(--home-header-nav-underline, currentcolor);
 			transform: scaleX(0);
-			transform-origin: center;
-			background-color: var(--home-header-nav-underline, currentcolor);
-			transition: transform var(--duration-standard) var(--ease-standard);
+			transform-origin: left;
+			transition: transform 0.4s tokens.$ease-premium;
 		}
 
 		&:hover::after {
-			transform: scaleX(1);
+			transform: scaleX(0.3);
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
+			outline: 2px solid var(--color-noir-accent);
 			outline-offset: 4px;
 		}
 	}
@@ -92,55 +92,41 @@
 	gap: var(--spacing-md);
 
 	&__login {
-		color: var(--home-header-login-color, var(--color-text-secondary));
-		opacity: 100%;
-		text-decoration: underline;
-		font-size: 0.9rem;
+		color: var(--color-noir-accent);
+		text-decoration: none;
+		font-size: 0.85rem;
 		text-transform: uppercase;
-		font-weight: tokens.$font-weight-regular;
+		letter-spacing: 0.15em;
+		font-weight: 300;
 		transition: var(--transition-snappy);
 		padding: var(--spacing-sm);
-		text-shadow: var(--home-header-login-shadow, none);
 
 		&:hover {
-			opacity: 80%;
-		}
-
-		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
-			outline-offset: 4px;
+			color: var(--color-noir-text);
 		}
 	}
 
 	&__cta {
-		background-color: var(--home-header-cta-bg, var(--color-action-accent));
-		color: var(--home-header-cta-color, var(--color-action-primary));
-		opacity: 100%;
-		padding: var(--spacing-sm) var(--spacing-xl);
-		border-radius: 50px;
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 		text-decoration: none;
-		font-weight: tokens.$font-weight-semibold;
-		font-size: 0.9rem;
-		transition: var(--transition-snappy);
-		box-shadow: var(--shadow-subtle);
-		position: relative;
-		overflow: hidden;
+		color: var(--color-noir-text);
+		padding: var(--spacing-sm) var(--spacing-xl);
+		background: rgb(255 255 255 / 5%);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgb(255 255 255 / 20%);
+		border-radius: 999px;
+		box-shadow: 0 4px 15px rgb(0 0 0 / 10%);
 
 		&:hover {
-			transform: translateY(-2px) scale(1.02);
-			background: linear-gradient(
-				120deg,
-				color-mix(in srgb, var(--home-header-cta-bg) 88%, white 12%) 0%,
-				var(--home-header-cta-bg) 48%,
-				color-mix(in srgb, var(--home-header-cta-bg) 82%, black 18%) 100%
-			);
-			color: var(--color-text-on-dark);
-			box-shadow: var(--header-cta-glow, none), var(--shadow-premium);
-		}
-
-		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
-			outline-offset: 4px;
+			transform: translateY(-2px);
+			background: rgb(255 255 255 / 12%);
+			color: var(--color-noir-text);
+			border-color: rgb(255 255 255 / 40%);
+			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
 }
@@ -148,14 +134,14 @@
 // --- Specific State Overrides (Refactored to use Semantic Tokens) ---
 
 :global(.header-base) {
-	--home-header-nav-color: var(--color-action-primary);
-	--home-header-nav-weight: var(--font-weight-medium);
+	--home-header-nav-color: var(--color-noir-text, var(--color-action-primary));
+	--home-header-nav-weight: 300;
 	--home-header-nav-shadow: none;
 	--home-header-nav-underline: currentcolor;
-	--home-header-login-color: var(--color-text-secondary);
+	--home-header-login-color: var(--color-noir-text, var(--color-text-secondary));
 	--home-header-login-shadow: none;
-	--home-header-cta-bg: var(--color-action-accent);
-	--home-header-cta-color: var(--color-action-primary);
+	--home-header-cta-bg: var(--color-noir-text, var(--color-action-accent));
+	--home-header-cta-color: var(--color-noir-bg, var(--color-action-primary));
 
 	transition:
 		background-color var(--duration-standard) var(--ease-premium),
@@ -165,12 +151,10 @@
 }
 
 :global(.header-base--transparent) {
-	--home-header-nav-color: var(--header-text-transparent);
-	--home-header-nav-weight: var(--font-weight-bold);
+	--home-header-nav-color: var(--color-noir-text);
+	--home-header-nav-weight: 300;
 	--home-header-nav-shadow: var(--header-nav-shadow-transparent);
-	--home-header-nav-underline: var(--header-text-transparent);
-	--home-header-login-color: var(--header-text-transparent);
-	--home-header-login-shadow: var(--header-nav-shadow-transparent);
+	--home-header-nav-underline: var(--color-noir-text);
 }
 
 :global(.header-base--transparent .home-header__logo--white) {
@@ -184,14 +168,10 @@
 }
 
 :global(.header-base--scrolled) {
-	--home-header-nav-color: var(--header-text-scrolled);
-	--home-header-nav-weight: var(--font-weight-semibold);
+	--home-header-nav-color: var(--color-noir-text);
+	--home-header-nav-weight: 300;
 	--home-header-nav-shadow: none;
-	--home-header-nav-underline: var(--header-accent-scrolled);
-	--home-header-login-color: var(--header-text-scrolled);
-	--home-header-login-shadow: none;
-	--home-header-cta-bg: var(--header-accent-scrolled);
-	--home-header-cta-color: var(--color-action-primary);
+	--home-header-nav-underline: var(--color-noir-text);
 }
 
 :global(.header-base--scrolled .home-header__logo--white) {
@@ -202,9 +182,4 @@
 :global(.header-base--scrolled .home-header__logo--gold) {
 	opacity: 100%;
 	visibility: visible;
-}
-
-// Ensure hover states respect the new tokens
-.home-nav__link:hover {
-	opacity: 100%;
 }
