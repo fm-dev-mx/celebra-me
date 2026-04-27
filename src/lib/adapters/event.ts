@@ -115,10 +115,6 @@ export function adaptEvent(
 		? {
 				...originalData,
 				theme: { ...originalData.theme, preset: previewTheme },
-				// Clear explicit variants to let the preview theme take over
-				envelope: originalData.envelope
-					? { ...originalData.envelope, variant: undefined }
-					: undefined,
 				sectionStyles: {},
 			}
 		: originalData;

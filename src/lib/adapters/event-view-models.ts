@@ -55,17 +55,14 @@ export function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 						stampText: data.envelope.stampText,
 						stampYear: data.envelope.stampYear,
 						tooltipText: data.envelope.tooltipText,
-						variant: pickVariant(
-							'envelope.variant',
-							data.envelope.variant ?? normalizedPreset,
-							THEME_PRESETS,
-							normalizedPreset,
-						),
+						variant: normalizedPreset,
 						colors: {
-							background: resolveColorToken(
-								data.envelope.closedPalette?.background || 'surfacePrimary',
-								normalizedPreset,
-							),
+							background: data.envelope.closedPalette?.background
+								? resolveColorToken(
+										data.envelope.closedPalette.background,
+										normalizedPreset,
+									)
+								: undefined,
 							primary: data.envelope.closedPalette?.primary
 								? resolveColorToken(
 										data.envelope.closedPalette.primary,

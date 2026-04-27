@@ -175,7 +175,7 @@ export interface EnvelopeViewModel {
 		tooltipText?: string;
 		variant?: ThemePreset;
 		colors: {
-			background: string;
+			background?: string;
 			primary?: string;
 			accent?: string;
 		};

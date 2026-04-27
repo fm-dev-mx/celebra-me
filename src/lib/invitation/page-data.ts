@@ -49,9 +49,6 @@ export interface InvitationPageData {
 				eventSlug: string;
 				guestName?: string;
 				name: string;
-				titleMaterial?: 'foil-gold' | 'debossed' | 'standard';
-				detailMaterial?: 'debossed' | 'standard';
-				isOrganic?: boolean;
 		  })
 		| undefined;
 	sections: InvitationViewModel['sections'];
@@ -134,14 +131,11 @@ function buildWrapperData(
 
 	if (envelope.enabled && envelope.data) {
 		const { colors } = envelope.data;
-		if (envelope.data.variant) {
-			dataAttributes['data-env-variant'] = envelope.data.variant;
-		}
 		if (colors.background) {
 			overrides['--env-bg'] = colors.background;
 			overrides['--env-paper-bg'] = colors.background;
 		}
-		if (colors.primary) overrides['--env-primary'] = colors.primary;
+		if (colors.primary) overrides['--env-text-primary'] = colors.primary;
 		if (colors.accent) overrides['--env-accent'] = colors.accent;
 	}
 
@@ -231,22 +225,6 @@ function buildEnvelopeData(
 		city: locationSection?.city || '',
 		eventSlug,
 		guestName,
-		titleMaterial: (envelope.data.variant === 'luxury-hacienda' ||
-		envelope.data.variant === 'jewelry-box' ||
-		envelope.data.variant === 'jewelry-box-wedding'
-			? 'foil-gold'
-			: 'standard') as 'foil-gold' | 'debossed' | 'standard',
-		detailMaterial: (envelope.data.variant === 'luxury-hacienda' ? 'debossed' : 'standard') as
-			| 'debossed'
-			| 'standard',
-		isOrganic:
-			envelope.data.variant === 'jewelry-box' ||
-			envelope.data.variant === 'jewelry-box-wedding' ||
-			envelope.data.variant === 'luxury-hacienda' ||
-			envelope.data.variant === 'editorial' ||
-			(envelope.data.variant
-				? (PREMIERE_THEME_PRESETS as readonly string[]).includes(envelope.data.variant)
-				: false),
 	};
 }
 
@@ -345,7 +323,11 @@ export function prepareInvitationPageData(input: {
 	const showEnvelope = wrapper.showEnvelope;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
-	const footerVariant = resolveFooterVariant(input.eventEntry, theme.preset, !!input.previewTheme);
+	const footerVariant = resolveFooterVariant(
+		input.eventEntry,
+		theme.preset,
+		!!input.previewTheme,
+	);
 
 	return {
 		eventSlug: viewModel.id,

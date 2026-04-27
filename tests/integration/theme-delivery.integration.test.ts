@@ -64,7 +64,6 @@ describe('Theme Delivery Integration', () => {
 						background: '#f0f0f0',
 						primary: '#333333',
 					},
-					variant: 'jewelry-box',
 				},
 			},
 		};
@@ -76,8 +75,36 @@ describe('Theme Delivery Integration', () => {
 
 		const styles = pageData.wrapper.scopedStyles;
 		expect(styles).toContain('--env-bg: #f0f0f0;');
-		expect(styles).toContain('--env-primary: #333333;');
-		expect(pageData.wrapper.dataAttributes['data-env-variant']).toBe('jewelry-box');
+		expect(styles).toContain('--env-paper-bg: #f0f0f0;');
+		expect(styles).toContain('--env-text-primary: #333333;');
+		expect(pageData.wrapper.dataAttributes['data-env-variant']).toBeUndefined();
+	});
+
+	it('should not inject envelope background overrides without an explicit closed palette background', () => {
+		const mockEventWithEnvelope = {
+			...mockEventBase,
+			data: {
+				...mockEventBase.data,
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					microcopy: 'Abrir',
+					closedPalette: {
+						primary: '#333333',
+					},
+				},
+			},
+		};
+
+		const pageData = prepareInvitationPageData({
+			eventEntry: mockEventWithEnvelope as EventContentEntry,
+			slug: 'boda-demo',
+		});
+
+		const styles = pageData.wrapper.scopedStyles;
+		expect(styles).not.toContain('--env-bg:');
+		expect(styles).not.toContain('--env-paper-bg:');
+		expect(styles).toContain('--env-text-primary: #333333;');
 	});
 
 	it('should allow previewTheme to override only the delivered preset for premiere-family invitations', () => {
@@ -113,7 +140,6 @@ describe('Theme Delivery Integration', () => {
 					disabled: false,
 					sealStyle: 'wax',
 					microcopy: 'Abrir',
-					variant: 'premiere-floral',
 					closedPalette: {
 						accent: 'surfaceDark',
 					},

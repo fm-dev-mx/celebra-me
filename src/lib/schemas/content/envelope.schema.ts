@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { ColorTokenSchema } from '@/lib/schemas/content/shared.schema';
 
 export const envelopeSchema = z
@@ -19,6 +18,5 @@ export const envelopeSchema = z
 				background: ColorTokenSchema.optional(),
 			})
 			.optional(),
-		variant: z.enum(THEME_PRESETS).optional(),
 	})
 	.optional();
