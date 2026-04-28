@@ -64,6 +64,10 @@ $semantic-color: (
 		reserved: sys.$sys-color-plum-700,
 		white: sys.$sys-color-neutral-0,
 	),
+	envelope: (
+		paper-ivory: #{color.mix(sys.$sys-color-gold-200, sys.$sys-color-neutral-0, 6%)},
+		seal-gold: sys.$sys-color-gold-500,
+	),
 );
 
 // 2. CSS Variable Bridge (Semantic Layer)
@@ -131,6 +135,12 @@ $semantic-color: (
 	--color-info-text: #{sys.$sys-color-slate-800};
 	--color-whatsapp: #{sys.$sys-color-whatsapp};
 	--color-whatsapp-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
+	--color-envelope-paper-ivory: #{color.mix(
+			sys.$sys-color-gold-200,
+			sys.$sys-color-neutral-0,
+			6%
+		)};
+	--color-envelope-seal-gold: #{sys.$sys-color-gold-500};
 }
 
 @function color($group, $token) {

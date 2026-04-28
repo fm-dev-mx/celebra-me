@@ -5,10 +5,10 @@
 .envelope-wrapper[data-variant='jewelry-box-wedding'] {
 	--env-bg: radial-gradient(
 		circle at center,
-		var(--color-surface-dark) 0%,
-		var(--color-surface-canvas) 100%
+		var(--color-surface-primary) 0%,
+		var(--color-surface-primary) 100%
 	);
-	--env-paper-bg: #{color.mix(sys-color.$sys-color-gold-200, sys-color.$sys-color-neutral-0, 6%)};
+	--env-paper-bg: var(--color-envelope-paper-ivory);
 	--env-paper-border: #{color.change(sys-color.$sys-color-gold-500, $alpha: 0.22)};
 	--env-card-bg: var(--color-surface-primary);
 	--env-text-primary: var(--color-action-primary);
@@ -34,39 +34,25 @@
 }
 
 .envelope-wrapper[data-variant='editorial'] {
-	--env-bg:
-		radial-gradient(
-			circle at 50% 44%,
-			#{color.change(sys-color.$sys-color-gold-500, $alpha: 0.16)} 0%,
-			transparent 22%
-		),
-		linear-gradient(
-			180deg,
-			#{sys-color.$sys-color-onyx-950} 0%,
-			#{color.mix(sys-color.$sys-color-onyx-950, sys-color.$sys-color-coffee-900, 78%)} 100%
-		);
-	--env-paper-bg: #{color.mix(
-			sys-color.$sys-color-onyx-950,
-			sys-color.$sys-color-coffee-900,
-			88%
-		)};
-	--env-paper-border: #{color.change(sys-color.$sys-color-gold-500, $alpha: 0.32)};
-	--env-card-bg: #{color.mix(sys-color.$sys-color-neutral-0, sys-color.$sys-color-gold-100, 86%)};
-	--env-text-primary: #{sys-color.$sys-color-gold-300};
-	--env-text-secondary: #{color.mix(
-			sys-color.$sys-color-gold-200,
-			sys-color.$sys-color-neutral-50,
-			72%
-		)};
-	--env-accent: #{sys-color.$sys-color-gold-500};
-	--env-seal-icon: #{color.change(sys-color.$sys-color-onyx-950, $alpha: 0.7)};
+	--env-bg: radial-gradient(
+		circle at center,
+		var(--color-surface-dark) 0%,
+		var(--color-surface-canvas) 100%
+	);
+	--env-paper-bg: color-mix(in srgb, var(--color-surface-dark) 85%, var(--color-action-accent));
+	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 45%, transparent);
+	--env-card-bg: color-mix(in srgb, var(--color-white) 92%, var(--color-action-accent));
+	--env-text-primary: var(--color-action-accent);
+	--env-text-secondary: color-mix(in srgb, var(--color-action-accent) 72%, var(--color-white));
+	--env-accent: var(--color-action-accent);
+	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
 }
 
 .envelope-wrapper[data-variant='premiere-floral'] {
 	--env-bg: radial-gradient(
 		circle at center,
-		#{sys-color.$sys-color-taupe-700} 0%,
-		#{sys-color.$sys-color-onyx-950} 100%
+		var(--color-surface-primary) 0%,
+		var(--color-surface-soft) 100%
 	);
 	--env-paper-bg: #{sys-color.$sys-color-floral-50};
 	--env-paper-border: #{color.change(sys-color.$sys-color-floral-300, $alpha: 0.22)};

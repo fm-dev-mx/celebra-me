@@ -59,10 +59,6 @@ const sealIconMap = {
 		<div class="envelope-base"></div>
 
 		<div class="envelope-card" data-envelope-card>
-			<div class="rivet rivet--tl"></div>
-			<div class="rivet rivet--tr"></div>
-			<div class="rivet rivet--bl"></div>
-			<div class="rivet rivet--br"></div>
 			<div class="envelope-card__content">
 				<div class="envelope-card__header">
 					<div class="envelope-card__monogram">
@@ -87,6 +83,7 @@ const sealIconMap = {
 				</div>
 			</div>
 		</div>
+
 
 		<div class="envelope-pocket"></div>
 		<div class="envelope-flap" data-envelope-flap>
@@ -159,6 +156,10 @@ const sealIconMap = {
 	const PHASE_DELAY_EXIT = 2800; // Increased to allow the card to fully settle
 	const EXIT_ANIMATION_DELAY = 1400;
 	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1500;
+	const ASSETS = {
+		OPEN_SOUND:
+			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
+	};
 
 	const envelopes = document.querySelectorAll('[data-envelope]');
 
@@ -185,61 +186,36 @@ const sealIconMap = {
 			return;
 		}
 
-		let phase = 'closed';
+		let phase: 'closed' | 'opening' | 'rising' | 'exit' = 'closed';
 		let hasRevealed = false;
-		const timers = new Set<number>();
+		const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 		const params = new URLSearchParams(window.location.search);
 		const storageKey = `envelope-opened-${eventSlug}`;
 
-		const schedule = (callback: () => void, delay: number) => {
-			const timerId = window.setTimeout(() => {
-				timers.delete(timerId);
-				callback();
-			}, delay);
-			timers.add(timerId);
-			return timerId;
-		};
-
-		const clearTimers = () => {
-			timers.forEach((timerId) => window.clearTimeout(timerId));
-			timers.clear();
-		};
-
 		const revealInvitation = () => {
-			if (hasRevealed) {
-				return;
-			}
-
+			if (hasRevealed) return;
 			hasRevealed = true;
-			clearTimers();
 			document.body.style.overflow = 'auto';
 			if (invitationRoot instanceof HTMLElement) {
 				invitationRoot.dataset.revealState = 'revealed';
 			}
-
-			// Dispatch event for other components (like MusicPlayer)
 			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
-
-			// Allow exit animation to complete before hiding
-			schedule(() => {
+			setTimeout(() => {
 				root.hidden = true;
 			}, EXIT_ANIMATION_DELAY);
 		};
 
 		const setPhase = (nextPhase: 'closed' | 'opening' | 'rising' | 'exit') => {
-			if (hasRevealed && nextPhase !== 'exit') {
-				return;
-			}
-
+			if (hasRevealed && nextPhase !== 'exit') return;
 			phase = nextPhase;
 			root.dataset.phase = phase;
-
-			if (phase === 'exit') {
-				revealInvitation();
-			} else {
-				document.body.style.overflow = 'hidden';
-			}
+			if (phase === 'exit') revealInvitation();
+			else document.body.style.overflow = 'hidden';
 		};
+
+		// Inject timings for CSS sync
+		root.style.setProperty('--env-transition-rise', `${PHASE_DELAY_RISING}ms`);
+		root.style.setProperty('--env-transition-exit', `${PHASE_DELAY_EXIT}ms`);
 
 		const skipEnvelope = params.get('skipEnvelope') === 'true';
 		const forceEnvelope = params.get('forceEnvelope') === 'true';
@@ -261,63 +237,45 @@ const sealIconMap = {
 			return;
 		}
 
-		schedule(() => {
-			if (phase === 'closed' && tooltip) {
-				tooltip.hidden = false;
-			}
+		setTimeout(() => {
+			if (phase === 'closed' && tooltip) tooltip.hidden = false;
 		}, 1500);
 
-		const audio = new Audio(
-			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
-		);
+		const audio = new Audio(ASSETS.OPEN_SOUND);
 
-		openButton.addEventListener('click', (event) => {
-			if (event) {
-				event.stopPropagation();
-				event.preventDefault();
-			}
+		openButton.addEventListener('click', async (event) => {
+			event?.stopPropagation();
+			event?.preventDefault();
 
-			if (phase !== 'closed') {
-				return;
-			}
+			if (phase !== 'closed' || hasRevealed) return;
 
 			if (tooltip) tooltip.hidden = true;
 			audio.volume = 0.4;
-			void audio.play().catch((error) => {
-				console.warn('Audio play blocked:', error);
-			});
+			void audio.play().catch(() => {});
 
-			localStorage.setItem(storageKey, 'true');
-			clearTimers();
-			setPhase('opening');
+		localStorage.setItem(storageKey, 'true');
+		setPhase('opening');
 
-			schedule(() => {
-				if (phase === 'opening') {
-					setPhase('rising');
-				}
-			}, PHASE_DELAY_RISING);
+		// Failsafe to ensure exit phase triggers even if animations desync
+		setTimeout(() => {
+			if (!hasRevealed && phase !== 'exit') {
+				setPhase('exit');
+			}
+		}, FAILSAFE_REVEAL_DELAY);
 
-			schedule(() => {
-				if (phase === 'opening' || phase === 'rising') {
-					setPhase('exit');
-				}
-			}, PHASE_DELAY_EXIT);
+		await wait(PHASE_DELAY_RISING);
+		if ((phase as string) === 'opening') setPhase('rising');
 
-			schedule(() => {
-				if (!hasRevealed) {
-					setPhase('exit');
-				}
-			}, FAILSAFE_REVEAL_DELAY);
+		await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
+		if ((phase as string) === 'rising') setPhase('exit');
 		});
 
 		window.addEventListener(
 			'pagehide',
 			() => {
-				clearTimers();
 				if (audio) {
 					audio.pause();
 					audio.src = '';
-					audio.load();
 				}
 			},
 			{ once: true },
