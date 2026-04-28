@@ -66,6 +66,7 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 	--env-font-display: var(--font-display);
 
 	// --- Shared physical construction. ---
+	--flap-height: 50%; // Matches .envelope-flap height
 	--env-seal-size: 56px;
 
 	// ==========================================================================
@@ -176,14 +177,26 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 
 .envelope-flap {
 	top: 0;
-	height: 52%;
+	height: 50%;
 	z-index: 5;
-	clip-path: polygon(0 0, 100% 0, 50% 100%, 50% 100%);
+	clip-path: polygon(
+		0% 0%,
+		100% 0%,
+		98% 10%,
+		88% 68%,
+		70% 88%,
+		55% 98%,
+		45% 98%,
+		30% 88%,
+		12% 68%,
+		2% 10%
+	);
 	transform-origin: top;
 	transition: transform var(--duration-reveal) var(--ease-premium);
-	background: var(--env-paper-bg);
-	border-bottom: 1px solid var(--env-paper-border);
-	filter: drop-shadow(0 12px 22px color-mix(in srgb, var(--color-surface-dark) 16%, transparent));
+	background:
+		linear-gradient(to bottom, rgb(255 255 255 / 15%), rgb(0 0 0 / 5%)), var(--env-paper-bg);
+	border-bottom: 0; /* Removed in favor of ::before pseudo-layer depth */
+	filter: drop-shadow(0 14px 28px color-mix(in srgb, var(--color-surface-dark) 18%, transparent));
 
 	&::before {
 		content: '';
@@ -459,10 +472,12 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 }
 
 .envelope-seal-zone {
-	position: relative;
+	position: absolute;
+	top: calc(var(--flap-height, 50%) + 2%); /* Positioned 2% below flap (defaults to 50% height) */
+	left: 50%;
+	transform: translate(-50%, -50%);
 	z-index: 20;
 	display: flex;
-	align-self: center;
 	align-items: center;
 	justify-content: center;
 	pointer-events: auto;
@@ -704,7 +719,7 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 
 	.envelope-card {
 		opacity: 24%;
-		transform: translateY(-8%) scale(0.98) translateZ(5px);
+		transform: translateY(-8%) scale(0.98) translateZ(50px);
 		z-index: 10;
 	}
 }
@@ -732,7 +747,7 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 
 	.envelope-card {
 		opacity: 100%;
-		transform: translateY(-60%) rotate(-1deg) scale(1.04) translateZ(20px);
+		transform: translateY(-60%) rotate(-1deg) scale(1.04) translateZ(60px);
 		z-index: 100; // Final layers above everything
 		transition:
 			transform $transition-rise var(--ease-premium),
@@ -833,14 +848,13 @@ $ease-premium: cubic-bezier(0.22, 1, 0.36, 1); // Quintic - Weighted & Sophistic
 
 @include mixins.respond-to(md) {
 	.envelope-guest-personalized {
+		/* Removed translate: 0 -15.5rem from children: redundant offset handled by parent flex gap */
 		.personalized-label {
 			font-size: 0.61rem;
-			translate: 0 -15.5rem;
 		}
 
 		.personalized-name {
 			font-size: 0.9rem;
-			translate: 0 -15.5rem;
 		}
 	}
 
