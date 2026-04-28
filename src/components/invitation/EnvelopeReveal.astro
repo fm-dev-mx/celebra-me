@@ -6,7 +6,7 @@ interface Props {
 	date: string;
 	city: string;
 	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
-	sealIcon?: 'boot' | 'heart' | 'monogram' | 'flower';
+	sealIcon?: 'boot' | 'heart' | 'monogram' | 'flower' | 'special-edition';
 	microcopy: string;
 	documentLabel?: string;
 	stampText?: string;
@@ -33,18 +33,24 @@ const {
 	guestName,
 } = Astro.props;
 
-const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+const formattedDate = new Intl.DateTimeFormat('es-MX', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
-});
+	timeZone: 'UTC',
+}).format(new Date(date));
+const envelopeDetails = `${formattedDate} • ${city}`;
+const cardLabel = documentLabel || 'Invitación';
 
 const sealIconMap = {
 	boot: 'Boot',
 	heart: 'HeartSeal',
 	monogram: 'MonogramSeal',
 	flower: 'FlowerSeal',
+	'special-edition': 'Diamond',
 } as const;
+
+const sealIconName = sealIconMap[sealIcon];
 ---
 
 <div
@@ -52,7 +58,6 @@ const sealIconMap = {
 	data-envelope
 	data-phase="closed"
 	data-event-slug={eventSlug}
-	data-tooltip-text={tooltipText}
 	data-variant={variant}
 >
 	<div class="envelope-container">
@@ -60,30 +65,21 @@ const sealIconMap = {
 
 		<div class="envelope-card" data-envelope-card>
 			<div class="envelope-card__content">
-				<div class="envelope-card__header">
-					<div class="envelope-card__monogram">
-						<Icon
-							name={sealIconMap[sealIcon]}
-							class={`seal-icon seal-icon--${sealIcon}`}
-						/>
+				<Icon
+					name={sealIconName}
+					class={`seal-icon seal-icon--${sealIcon} envelope-card__monogram`}
+				/>
+				<span class="envelope-card__label">{cardLabel}</span>
+				<h2 class="envelope-card__name">{name}</h2>
+				{guestName && (
+					<div class="envelope-card__guest-personalized">
+						<p class="personalized-label">Entrega especial para:</p>
+						<strong class="personalized-name">{guestName}</strong>
 					</div>
-				</div>
-				<div class="envelope-card__body">
-					<span class="envelope-card__label">{documentLabel || 'Invitación'}</span>
-					<h2 class="envelope-card__name">{name}</h2>
-					{guestName && (
-						<div class="envelope-card__guest-personalized">
-							<p class="personalized-label">Entrega especial para:</p>
-							<strong class="personalized-name">{guestName}</strong>
-						</div>
-					)}
-				</div>
-				<div class="envelope-card__footer">
-					<p class="envelope-card__details">{formattedDate} • {city}</p>
-				</div>
+				)}
+				<p class="envelope-card__details">{envelopeDetails}</p>
 			</div>
 		</div>
-
 
 		<div class="envelope-pocket"></div>
 		<div class="envelope-flap" data-envelope-flap>
@@ -91,8 +87,8 @@ const sealIconMap = {
 		</div>
 
 		<div class="envelope-tease">
-			<div class="envelope-tease__interactive-content" data-envelope-content>
-				<div class="tease-header">
+			<div class="envelope-tease__interactive-content">
+				<div class="envelope-zone envelope-zone--stamp">
 					{stampText && (
 						<div class="envelope-stamp-area">
 							<div class="envelope-stamp">
@@ -106,7 +102,7 @@ const sealIconMap = {
 					)}
 				</div>
 
-				<div class="envelope-seal-zone">
+				<div class="envelope-zone envelope-zone--seal">
 					<button
 						type="button"
 						class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
@@ -115,7 +111,7 @@ const sealIconMap = {
 					>
 						<div class="envelope-seal-button__visual">
 							<Icon
-								name={sealIconMap[sealIcon]}
+								name={sealIconName}
 								class={`seal-icon seal-icon--${sealIcon}`}
 							/>
 						</div>
@@ -126,11 +122,11 @@ const sealIconMap = {
 					</button>
 				</div>
 
-				<div class="tease-content-bottom">
+				<div class="envelope-zone envelope-zone--identity">
 					<h2 class="envelope-name">{name}</h2>
 					<div class="tease-details-group">
 						<div class="tease-divider"></div>
-						<p class="envelope-details">{formattedDate} • {city}</p>
+						<p class="envelope-details">{envelopeDetails}</p>
 					</div>
 					{guestName && (
 						<div class="envelope-guest-personalized">
@@ -152,16 +148,11 @@ const sealIconMap = {
 </div>
 
 <script>
-	const PHASE_DELAY_RISING = 1100; // Increased to let the flap breathe
-	const PHASE_DELAY_EXIT = 2800; // Increased to allow the card to fully settle
+	const PHASE_DELAY_RISING = 1100;
+	const PHASE_DELAY_EXIT = 2800;
 	const EXIT_ANIMATION_DELAY = 1400;
 	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1500;
-	const ASSETS = {
-		OPEN_SOUND:
-			'https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav',
-	};
-
-	const envelopes = document.querySelectorAll('[data-envelope]');
+const envelopes = document.querySelectorAll('[data-envelope]');
 
 	envelopes.forEach((root) => {
 		if (!(root instanceof HTMLElement)) {
@@ -173,16 +164,9 @@ const sealIconMap = {
 			root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
 			root.closest('.event-theme-wrapper[data-event-slug]');
 		const openButton = root.querySelector('[data-envelope-open]');
-		const flap = root.querySelector('[data-envelope-flap]');
-		const card = root.querySelector('[data-envelope-card]');
 		const tooltip = root.querySelector('[data-envelope-tooltip]') as HTMLElement | null;
 
-		if (
-			!(openButton instanceof HTMLButtonElement) ||
-			!(flap instanceof HTMLElement) ||
-			!(card instanceof HTMLElement) ||
-			!eventSlug
-		) {
+		if (!(openButton instanceof HTMLButtonElement) || !eventSlug) {
 			return;
 		}
 
@@ -213,7 +197,6 @@ const sealIconMap = {
 			else document.body.style.overflow = 'hidden';
 		};
 
-		// Inject timings for CSS sync
 		root.style.setProperty('--env-transition-rise', `${PHASE_DELAY_RISING}ms`);
 		root.style.setProperty('--env-transition-exit', `${PHASE_DELAY_EXIT}ms`);
 
@@ -241,11 +224,11 @@ const sealIconMap = {
 			if (phase === 'closed' && tooltip) tooltip.hidden = false;
 		}, 1500);
 
-		const audio = new Audio(ASSETS.OPEN_SOUND);
+		const audio = new Audio('https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav');
 
 		openButton.addEventListener('click', async (event) => {
-			event?.stopPropagation();
-			event?.preventDefault();
+	event.stopPropagation();
+	event.preventDefault();
 
 			if (phase !== 'closed' || hasRevealed) return;
 
@@ -253,30 +236,27 @@ const sealIconMap = {
 			audio.volume = 0.4;
 			void audio.play().catch(() => {});
 
-		localStorage.setItem(storageKey, 'true');
-		setPhase('opening');
+			localStorage.setItem(storageKey, 'true');
+			setPhase('opening');
 
-		// Failsafe to ensure exit phase triggers even if animations desync
-		setTimeout(() => {
-			if (!hasRevealed && phase !== 'exit') {
-				setPhase('exit');
-			}
-		}, FAILSAFE_REVEAL_DELAY);
+			setTimeout(() => {
+				if (!hasRevealed && phase !== 'exit') {
+					setPhase('exit');
+				}
+			}, FAILSAFE_REVEAL_DELAY);
 
-		await wait(PHASE_DELAY_RISING);
-		if ((phase as string) === 'opening') setPhase('rising');
+			await wait(PHASE_DELAY_RISING);
+			if (phase === 'opening') setPhase('rising');
 
-		await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
-		if ((phase as string) === 'rising') setPhase('exit');
+			await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
+			if (phase === 'rising') setPhase('exit');
 		});
 
 		window.addEventListener(
 			'pagehide',
 			() => {
-				if (audio) {
-					audio.pause();
-					audio.src = '';
-				}
+				audio.pause();
+				audio.src = '';
 			},
 			{ once: true },
 		);
