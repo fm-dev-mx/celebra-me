@@ -1,44 +1,60 @@
+@use 'sass:color';
+@use '../tokens/system/color' as sys-color;
 @use '../global/mixins' as mixins;
 
 .envelope-wrapper {
 	--env-bg: radial-gradient(
 		circle at center,
-		var(--color-surface-dark),
+		#{color.mix(sys-color.$sys-color-coffee-800, sys-color.$sys-color-coffee-900, 18%)} 0%,
 		var(--color-surface-canvas)
 	);
-	--env-paper-bg: var(--color-envelope-paper-ivory);
-	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 22%, transparent);
-	--env-card-bg: var(--color-white);
-	--env-text-primary: var(--color-text-primary);
-	--env-text-secondary: var(--color-text-secondary, var(--color-text-primary));
-	--env-accent: var(--color-action-accent);
+	--env-paper-bg: #{color.mix(
+			sys-color.$sys-color-parchment-50,
+			sys-color.$sys-color-floral-50,
+			8%
+		)};
+	--env-paper-border: #{color.change(sys-color.$sys-color-gold-500, $alpha: 0.2)};
+	--env-card-bg: #{color.mix(sys-color.$sys-color-neutral-0, sys-color.$sys-color-floral-50, 6%)};
+	--env-text-primary: #{color.mix(
+			sys-color.$sys-color-coffee-900,
+			sys-color.$sys-color-coffee-800,
+			12%
+		)};
+	--env-text-secondary: #{color.mix(
+			sys-color.$sys-color-coffee-700,
+			sys-color.$sys-color-gold-400,
+			22%
+		)};
+	--env-accent: #{color.mix(sys-color.$sys-color-gold-500, sys-color.$sys-color-gold-600, 12%)};
 	--env-seal-bg: radial-gradient(
-		circle at 35% 35%,
-		var(--color-envelope-seal-gold),
-		var(--env-accent),
-		var(--color-surface-dark)
+		circle at 32% 28%,
+		#{sys-color.$sys-color-gold-200} 0%,
+		#{sys-color.$sys-color-gold-400} 42%,
+		#{sys-color.$sys-color-gold-700} 100%
 	);
-	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 55%, transparent);
+	--env-seal-icon: #{color.mix(sys-color.$sys-color-coffee-900, transparent, 70%)};
 	--env-font-display: var(--font-display);
 	--env-tooltip-bg: color-mix(in srgb, var(--color-white) 94%, transparent);
 	--env-tooltip-border: color-mix(in srgb, var(--env-accent) 18%, transparent);
 	--env-tooltip-shadow: 0 8px 18px color-mix(in srgb, var(--color-surface-dark) 10%, transparent);
 	--env-shadow-container:
-		0 42px 90px color-mix(in srgb, var(--color-surface-dark) 38%, transparent),
-		0 10px 24px color-mix(in srgb, var(--color-surface-dark) 16%, transparent);
-	--env-shadow-card: 0 16px 32px color-mix(in srgb, var(--color-surface-dark) 18%, transparent);
+		0 42px 90px color-mix(in srgb, var(--color-surface-dark) 34%, transparent),
+		0 10px 24px color-mix(in srgb, var(--color-surface-dark) 14%, transparent);
+	--env-shadow-card:
+		0 18px 36px color-mix(in srgb, var(--color-surface-dark) 16%, transparent),
+		0 2px 0 color-mix(in srgb, var(--color-white) 50%, transparent) inset;
 	--env-shadow-seal:
-		0 8px 16px color-mix(in srgb, var(--color-surface-dark) 40%, transparent),
-		inset 0 -2px 6px color-mix(in srgb, var(--color-surface-dark) 30%, transparent),
-		inset 0 2px 8px color-mix(in srgb, var(--color-white) 50%, transparent);
+		0 10px 18px color-mix(in srgb, var(--color-surface-dark) 34%, transparent),
+		inset 0 -2px 7px color-mix(in srgb, var(--color-surface-dark) 28%, transparent),
+		inset 0 2px 8px color-mix(in srgb, var(--color-white) 42%, transparent);
 	--env-container-width: clamp(320px, 45vw, 720px);
 	--env-container-ratio: 1.35;
-	--env-container-max-height: min(55vh, 300px);
-	--env-grid: 38% 28% 34%;
-	--env-zone-width: 82cqw;
-	--env-seal-size: 56px;
-	--env-title-size: clamp(1rem, 7cqw, 2.2rem);
-	--env-title-mobile-size: clamp(1.25rem, 5.8vw, 1.75rem);
+	--env-container-max-height: min(55vh, 400px);
+	--env-grid: 35% 25% 40%;
+	--env-zone-width: 85cqw;
+	--env-seal-size: 58px;
+	--env-title-size: clamp(1.4rem, 8cqw, 2.25rem);
+	--env-title-mobile-size: clamp(1.5rem, 7cqw, 1.85rem);
 
 	position: fixed;
 	inset: 0;
@@ -82,7 +98,12 @@
 	inset: 0;
 	overflow: hidden;
 	background:
-		linear-gradient(135deg, rgb(255 255 255 / 16%), rgb(0 0 0 / 6%)), var(--env-paper-bg);
+		linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--color-white) 16%, transparent),
+			color-mix(in srgb, var(--color-surface-dark) 6%, transparent)
+		),
+		var(--env-paper-bg);
 	border: 1px solid var(--env-paper-border);
 	border-radius: inherit;
 
@@ -92,8 +113,16 @@
 		inset: 0;
 		z-index: 1;
 		background:
-			radial-gradient(circle at 50% 0%, rgb(255 255 255 / 18%), transparent 42%),
-			linear-gradient(to bottom, rgb(0 0 0 / 0%), rgb(0 0 0 / 4%));
+			radial-gradient(
+				circle at 50% 0%,
+				color-mix(in srgb, var(--color-white) 18%, transparent),
+				transparent 42%
+			),
+			linear-gradient(
+				to bottom,
+				transparent,
+				color-mix(in srgb, var(--color-surface-dark) 4%, transparent)
+			);
 		pointer-events: none;
 	}
 }
@@ -181,11 +210,19 @@
 		opacity var(--duration-standard) var(--ease-standard);
 }
 
-.envelope-card__content {
+// Flex column layout
+.envelope-card__content,
+.envelope-zone--stamp,
+.envelope-zone--identity,
+.tease-details-group,
+.guest-personalized {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+}
+
+.envelope-card__content {
 	height: 100%;
 	gap: 0.65rem;
 	padding: 1.5rem;
@@ -238,22 +275,18 @@
 .envelope-details {
 	max-width: 90cqw;
 	margin: 0;
-	font-size: clamp(0.62rem, 3cqw, 0.78rem);
-	letter-spacing: 0.16em;
+	font-size: 0.72rem;
+	letter-spacing: 0.22em;
 	opacity: 62%;
 }
 
-.envelope-card__guest-personalized,
-.envelope-guest-personalized {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.25rem;
+.guest-personalized {
 	width: 100%;
+	gap: 0.25rem;
 	text-align: center;
 }
 
-.envelope-card__guest-personalized {
+.envelope-card .guest-personalized {
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
 	border-top: 1px solid color-mix(in srgb, var(--color-surface-dark) 5%, transparent);
@@ -272,8 +305,8 @@
 
 .personalized-name {
 	font-size: clamp(0.95rem, 5cqw, 1.3rem);
-	font-weight: 500;
 	font-style: italic;
+	font-weight: 500;
 	color: var(--env-text-secondary);
 	opacity: 85%;
 }
@@ -310,27 +343,15 @@
 	text-align: center;
 }
 
-.envelope-zone--stamp,
-.envelope-zone--identity,
-.envelope-zone--seal,
-.tease-details-group {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.envelope-zone--stamp,
-.envelope-zone--identity,
-.tease-details-group {
-	flex-direction: column;
-}
-
 .envelope-zone--stamp {
 	grid-area: stamp;
 	gap: 0.35rem;
 }
 
 .envelope-zone--seal {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	grid-area: seal;
 	z-index: 20;
 	min-height: var(--env-seal-size);
@@ -395,15 +416,15 @@
 .envelope-manifest-label {
 	display: block;
 	font-family: var(--font-body);
-	font-size: 0.72rem;
+	font-size: 0.65rem;
 	font-weight: 500;
-	letter-spacing: 0.25em;
+	letter-spacing: 0.45em;
 	text-align: center;
 	text-transform: uppercase;
 	opacity: 35%;
 }
 
-.envelope-guest-personalized {
+.envelope-tease .guest-personalized {
 	max-width: 88cqw;
 	margin-top: 0.85rem;
 }
@@ -440,9 +461,9 @@
 	p {
 		margin: 0;
 		font-family: var(--font-body);
-		font-size: 0.75rem;
+		font-size: 0.65rem;
 		font-weight: 500;
-		letter-spacing: 0.25em;
+		letter-spacing: 0.45em;
 		text-transform: uppercase;
 	}
 }
@@ -475,8 +496,8 @@
 
 .envelope-seal-button__pulse {
 	position: absolute;
-	inset: -12px;
-	border: 2px solid var(--env-accent);
+	inset: -10px;
+	border: 1px solid color-mix(in srgb, var(--env-accent) 60%, transparent);
 	border-radius: 50%;
 	opacity: 0%;
 	pointer-events: none;
@@ -491,19 +512,9 @@
 	width: var(--env-seal-size);
 	height: var(--env-seal-size);
 	background: var(--env-seal-bg);
+	border: 1px solid color-mix(in srgb, var(--color-white) 18%, transparent);
 	border-radius: 50%;
 	box-shadow: var(--env-shadow-seal);
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: -8px;
-		z-index: -1;
-		background: inherit;
-		border-radius: inherit;
-		filter: blur(1px);
-		box-shadow: inset 0 0 10px color-mix(in srgb, var(--color-surface-dark) 20%, transparent);
-	}
 
 	.seal-icon {
 		width: 32px;
@@ -526,7 +537,7 @@
 	backdrop-filter: blur(var(--glass-blur, 12px));
 	color: var(--color-text-tooltip);
 	font-family: var(--font-body);
-	font-size: 0.5rem;
+	font-size: 0.65rem;
 	font-weight: 500;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
@@ -579,7 +590,7 @@
 
 	.envelope-card {
 		z-index: 10;
-		opacity: 24%;
+		opacity: 0%;
 		transform: translateY(-8%) scale(0.98) translateZ(50px);
 	}
 }
@@ -626,8 +637,9 @@
 }
 
 .envelope-seal-button--monogram .envelope-seal-button__visual {
-	border: 1px solid color-mix(in srgb, var(--color-white) 22%, transparent);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-white) 10%, transparent);
+	box-shadow:
+		var(--env-shadow-seal),
+		inset 0 0 0 1px color-mix(in srgb, var(--color-white) 10%, transparent);
 }
 
 @include mixins.respond-below(md) {
@@ -697,6 +709,23 @@
 	}
 }
 
+@include mixins.respond-to(md) {
+	@include mixins.respond-below(lg) {
+		.envelope-wrapper {
+			--env-container-width: 65vw;
+			--env-container-max-height: 400px;
+		}
+
+		.envelope-card {
+			inset: 8% 10%;
+		}
+
+		.envelope-tease__interactive-content {
+			padding: 1rem;
+		}
+	}
+}
+
 @include mixins.respond-below(sm) {
 	.envelope-wrapper {
 		--env-container-width: min(88vw, 320px);
@@ -710,7 +739,7 @@
 }
 
 @include mixins.respond-to(md) {
-	.envelope-guest-personalized {
+	.envelope-tease .guest-personalized {
 		.personalized-label {
 			font-size: 0.61rem;
 		}
@@ -734,12 +763,12 @@
 
 @keyframes sealPulse {
 	0% {
-		opacity: 40%;
+		opacity: 28%;
 		transform: scale(0.9);
 	}
 
 	100% {
 		opacity: 0%;
-		transform: scale(1.4);
+		transform: scale(1.32);
 	}
 }

@@ -18,28 +18,120 @@
 	--env-tooltip-shadow: var(--shadow-premium);
 	--env-shadow-container: var(--shadow-premium);
 	--env-shadow-card: 0 16px 32px var(--color-glass-shadow);
-	--env-shadow-seal:
-		0 10px 20px color-mix(in srgb, var(--color-surface-dark) 32%, transparent),
-		inset 0 -2px 6px color-mix(in srgb, var(--color-surface-dark) 24%, transparent),
-		inset 0 2px 8px color-mix(in srgb, var(--color-white) 48%, transparent);
 }
 
 .envelope-wrapper[data-variant='luxury-hacienda'] {
+	// Obsidian & Gold Leaf Aesthetic (Pure SCSS)
 	--env-bg: radial-gradient(
 		circle at center,
-		#{color.change(sys-color.$sys-color-gold-500, $alpha: 0.15)} 0%,
-		#{sys-color.$sys-color-coffee-900} 35%
+		#{color.mix(sys-color.$sys-color-onyx-900, sys-color.$sys-color-gold-900, 92%)} 0%,
+		#{sys-color.$sys-color-onyx-950} 100%
 	);
-	--env-paper-bg: #{sys-color.$sys-color-parchment-100};
-	--env-paper-border: #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.2)};
+	--env-paper-bg: #{sys-color.$sys-color-onyx-900};
+	--env-paper-border: #{color.mix(sys-color.$sys-color-gold-600, transparent, 30%)};
 	--env-card-bg: #{sys-color.$sys-color-parchment-100};
-	--env-text-primary: var(--color-action-primary);
-	--env-seal-icon: #{color.mix(
-			sys-color.$sys-color-parchment-100,
-			sys-color.$sys-color-coffee-100,
-			70%
+	--env-text-primary: #{sys-color.$sys-color-onyx-900};
+	--env-text-secondary: #{color.mix(
+			sys-color.$sys-color-onyx-900,
+			sys-color.$sys-color-gold-400,
+			60%
 		)};
+	--env-accent: #{sys-color.$sys-color-gold-500};
+	--env-seal-bg: radial-gradient(
+		circle at 35% 35%,
+		#{sys-color.$sys-color-gold-200} 0%,
+		#{sys-color.$sys-color-gold-500} 45%,
+		#{sys-color.$sys-color-gold-800} 100%
+	);
+	--env-seal-icon: #{color.mix(sys-color.$sys-color-onyx-950, transparent, 80%)};
 	--env-font-display: var(--font-display-hacienda);
+
+	// Tooltip & Interactive High-End Effects (Obsidian mode fixes)
+	--env-tooltip-bg: #{color.mix(
+			sys-color.$sys-color-onyx-900,
+			sys-color.$sys-color-gold-900,
+			95%
+		)};
+	--env-tooltip-border: #{color.mix(sys-color.$sys-color-gold-500, transparent, 40%)};
+	--color-text-tooltip: #{sys-color.$sys-color-gold-100};
+	--env-shadow-seal:
+		0 12px 24px #{color.change(sys-color.$sys-color-neutral-1000, $alpha: 0.6)},
+		inset 0 2px 4px #{color.change(sys-color.$sys-color-gold-200, $alpha: 0.4)};
+
+	// Typography Refinement (Using standardized scales)
+	.envelope-name {
+		font-weight: 500;
+		text-transform: uppercase;
+		color: #{sys-color.$sys-color-gold-200};
+	}
+
+	.envelope-details {
+		color: #{sys-color.$sys-color-gold-400};
+		opacity: 80%;
+	}
+
+	.envelope-manifest-label {
+		color: #{sys-color.$sys-color-gold-600};
+		opacity: 70%;
+	}
+
+	.envelope-stamp {
+		background: #{color.mix(sys-color.$sys-color-onyx-950, transparent, 40%)};
+		border-color: #{color.mix(sys-color.$sys-color-gold-500, transparent, 30%)};
+		color: #{sys-color.$sys-color-gold-100};
+	}
+
+	.envelope-external-instruction p {
+		color: #{sys-color.$sys-color-gold-200};
+		opacity: 90%;
+		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 50%));
+	}
+
+	.instruction-line {
+		background: #{sys-color.$sys-color-gold-500};
+		opacity: 40%;
+	}
+
+	.envelope-seal-button__visual {
+		border: 1px solid #{color.mix(sys-color.$sys-color-onyx-950, transparent, 20%)};
+		background: linear-gradient(
+			135deg,
+			#{sys-color.$sys-color-gold-200} 0%,
+			#{sys-color.$sys-color-gold-400} 30%,
+			#{sys-color.$sys-color-gold-600} 50%,
+			#{sys-color.$sys-color-gold-400} 70%,
+			#{sys-color.$sys-color-gold-700} 100%
+		);
+		box-shadow:
+			0 15px 35px #{color.change(sys-color.$sys-color-neutral-1000, $alpha: 0.6)},
+			inset 0 1px 1px #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.5)},
+			inset 0 -3px 8px #{color.change(sys-color.$sys-color-gold-800, $alpha: 0.4)};
+		overflow: hidden;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				-45deg,
+				transparent 45%,
+				#{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.3)} 50%,
+				transparent 55%
+			);
+			filter: blur(1px);
+		}
+
+		.seal-icon {
+			z-index: 1;
+			color: #{color.mix(sys-color.$sys-color-onyx-950, transparent, 88%)};
+			filter: drop-shadow(
+					0 1px 0 #{color.change(sys-color.$sys-color-neutral-0, $alpha: 0.4)}
+				)
+				drop-shadow(
+					0 -1px 0 #{color.change(sys-color.$sys-color-neutral-1000, $alpha: 0.2)}
+				);
+		}
+	}
 }
 
 .envelope-wrapper[data-variant='editorial'] {

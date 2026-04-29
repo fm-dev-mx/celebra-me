@@ -15,6 +15,7 @@ interface Props {
 	tooltipText?: string;
 	variant?: string;
 	guestName?: string;
+	audioUrl?: string;
 }
 
 const {
@@ -31,6 +32,7 @@ const {
 	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
 	guestName,
+	audioUrl = '',
 } = Astro.props;
 
 const formattedDate = new Intl.DateTimeFormat('es-MX', {
@@ -39,6 +41,7 @@ const formattedDate = new Intl.DateTimeFormat('es-MX', {
 	year: 'numeric',
 	timeZone: 'UTC',
 }).format(new Date(date));
+
 const envelopeDetails = `${formattedDate} • ${city}`;
 const cardLabel = documentLabel || 'Invitación';
 
@@ -59,6 +62,7 @@ const sealIconName = sealIconMap[sealIcon];
 	data-phase="closed"
 	data-event-slug={eventSlug}
 	data-variant={variant}
+	data-audio-url={audioUrl}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
@@ -71,17 +75,22 @@ const sealIconName = sealIconMap[sealIcon];
 				/>
 				<span class="envelope-card__label">{cardLabel}</span>
 				<h2 class="envelope-card__name">{name}</h2>
-				{guestName && (
-					<div class="envelope-card__guest-personalized">
-						<p class="personalized-label">Entrega especial para:</p>
-						<strong class="personalized-name">{guestName}</strong>
-					</div>
-				)}
+
+				{
+					guestName && (
+						<div class="guest-personalized">
+							<p class="personalized-label">Entrega especial para:</p>
+							<strong class="personalized-name">{guestName}</strong>
+						</div>
+					)
+				}
+
 				<p class="envelope-card__details">{envelopeDetails}</p>
 			</div>
 		</div>
 
 		<div class="envelope-pocket"></div>
+
 		<div class="envelope-flap" data-envelope-flap>
 			<div class="envelope-flap-shadow"></div>
 		</div>
@@ -89,17 +98,18 @@ const sealIconName = sealIconMap[sealIcon];
 		<div class="envelope-tease">
 			<div class="envelope-tease__interactive-content">
 				<div class="envelope-zone envelope-zone--stamp">
-					{stampText && (
-						<div class="envelope-stamp-area">
-							<div class="envelope-stamp">
-								<span>{stampText}</span>
-								{stampYear && <small>{stampYear}</small>}
+					{
+						stampText && (
+							<div class="envelope-stamp-area">
+								<div class="envelope-stamp">
+									<span>{stampText}</span>
+									{stampYear && <small>{stampYear}</small>}
+								</div>
 							</div>
-						</div>
-					)}
-					{documentLabel && (
-						<span class="envelope-manifest-label">{documentLabel}</span>
-					)}
+						)
+					}
+
+					{documentLabel && <span class="envelope-manifest-label">{documentLabel}</span>}
 				</div>
 
 				<div class="envelope-zone envelope-zone--seal">
@@ -110,10 +120,7 @@ const sealIconName = sealIconMap[sealIcon];
 						aria-label="Abrir sobre de la invitación"
 					>
 						<div class="envelope-seal-button__visual">
-							<Icon
-								name={sealIconName}
-								class={`seal-icon seal-icon--${sealIcon}`}
-							/>
+							<Icon name={sealIconName} class={`seal-icon seal-icon--${sealIcon}`} />
 						</div>
 						<div class="envelope-seal-button__pulse"></div>
 						<span class="envelope-tooltip" data-envelope-tooltip hidden>
@@ -128,135 +135,176 @@ const sealIconName = sealIconMap[sealIcon];
 						<div class="tease-divider"></div>
 						<p class="envelope-details">{envelopeDetails}</p>
 					</div>
-					{guestName && (
-						<div class="envelope-guest-personalized">
+
+{
+					guestName && (
+						<div class="guest-personalized">
 							<p class="personalized-label">Entrega especial para:</p>
 							<strong class="personalized-name">{guestName}</strong>
 						</div>
-					)}
-				</div>
+					)
+				}
+			</div>
 			</div>
 		</div>
 	</div>
 
-	{microcopy && (
-		<div class="envelope-external-instruction" data-envelope-microcopy>
-			<p>{microcopy}</p>
-			<div class="instruction-line"></div>
-		</div>
-	)}
+	{
+		microcopy && (
+			<div class="envelope-external-instruction" data-envelope-microcopy>
+				<p>{microcopy}</p>
+				<div class="instruction-line"></div>
+			</div>
+		)
+	}
 </div>
 
 <script>
+	type EnvelopePhase = 'closed' | 'opening' | 'rising' | 'exit';
+
 	const PHASE_DELAY_RISING = 1100;
 	const PHASE_DELAY_EXIT = 2800;
 	const EXIT_ANIMATION_DELAY = 1400;
-	const FAILSAFE_REVEAL_DELAY = PHASE_DELAY_EXIT + EXIT_ANIMATION_DELAY + 1500;
-const envelopes = document.querySelectorAll('[data-envelope]');
+	const TOOLTIP_DELAY = 1500;
 
-	envelopes.forEach((root) => {
-		if (!(root instanceof HTMLElement)) {
-			return;
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	const getStoredFlag = (key: string) => {
+		try {
+			return window.localStorage.getItem(key) === 'true';
+		} catch {
+			return false;
 		}
+	};
 
-		const eventSlug = root.dataset.eventSlug;
+	const setStoredFlag = (key: string) => {
+		try {
+			window.localStorage.setItem(key, 'true');
+		} catch {
+			// Storage can fail in private mode or restricted browsers.
+		}
+	};
+
+	document.querySelectorAll('[data-envelope]').forEach((root) => {
+		if (!(root instanceof HTMLElement)) return;
+
+		const { eventSlug, audioUrl = '' } = root.dataset;
+
+		if (!eventSlug) return;
+
 		const invitationRoot =
 			root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
 			root.closest('.event-theme-wrapper[data-event-slug]');
+
 		const openButton = root.querySelector('[data-envelope-open]');
-		const tooltip = root.querySelector('[data-envelope-tooltip]') as HTMLElement | null;
+		const tooltip = root.querySelector('[data-envelope-tooltip]');
 
-		if (!(openButton instanceof HTMLButtonElement) || !eventSlug) {
-			return;
-		}
+		if (!(openButton instanceof HTMLButtonElement)) return;
 
-		let phase: 'closed' | 'opening' | 'rising' | 'exit' = 'closed';
-		let hasRevealed = false;
-		const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+	let phase: EnvelopePhase = 'closed';
+	let hasRevealed = false;
+	let audio: HTMLAudioElement | null = null;
+	let tooltipTimeout: number | undefined;
+
 		const params = new URLSearchParams(window.location.search);
 		const storageKey = `envelope-opened-${eventSlug}`;
+		const shouldSkipEnvelope =
+			params.get('skipEnvelope') === 'true' ||
+			(params.get('forceEnvelope') !== 'true' && getStoredFlag(storageKey));
 
 		const revealInvitation = () => {
 			if (hasRevealed) return;
+
 			hasRevealed = true;
 			document.body.style.overflow = 'auto';
+
 			if (invitationRoot instanceof HTMLElement) {
 				invitationRoot.dataset.revealState = 'revealed';
 			}
+
 			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
-			setTimeout(() => {
+
+			window.setTimeout(() => {
 				root.hidden = true;
 			}, EXIT_ANIMATION_DELAY);
 		};
 
-		const setPhase = (nextPhase: 'closed' | 'opening' | 'rising' | 'exit') => {
-			if (hasRevealed && nextPhase !== 'exit') return;
-			phase = nextPhase;
-			root.dataset.phase = phase;
-			if (phase === 'exit') revealInvitation();
-			else document.body.style.overflow = 'hidden';
-		};
+	const setPhase = (nextPhase: EnvelopePhase) => {
+		if (hasRevealed && nextPhase !== 'exit') return;
+
+		phase = nextPhase;
+		root.dataset.phase = nextPhase;
+		document.body.style.overflow = nextPhase === 'exit' ? 'auto' : 'hidden';
+
+		if (nextPhase === 'exit') {
+			revealInvitation();
+		}
+	};
+
+	const playOpenSound = () => {
+		if (!audioUrl) return;
+
+		audio?.pause();
+		audio = new Audio(audioUrl);
+		audio.volume = 0.4;
+		void audio.play().catch(() => {});
+	};
 
 		root.style.setProperty('--env-transition-rise', `${PHASE_DELAY_RISING}ms`);
 		root.style.setProperty('--env-transition-exit', `${PHASE_DELAY_EXIT}ms`);
 
-		const skipEnvelope = params.get('skipEnvelope') === 'true';
-		const forceEnvelope = params.get('forceEnvelope') === 'true';
-		const wasOpened = localStorage.getItem(storageKey) === 'true';
-
-		if (skipEnvelope || (!forceEnvelope && wasOpened)) {
+		if (shouldSkipEnvelope) {
 			phase = 'exit';
+			hasRevealed = true;
 			root.hidden = true;
 			document.body.style.overflow = 'auto';
+
 			if (invitationRoot instanceof HTMLElement) {
 				invitationRoot.dataset.revealState = 'revealed';
 			}
-			hasRevealed = true;
-		}
 
-		root.dataset.phase = phase;
-
-		if (phase === 'exit') {
 			return;
 		}
 
-		setTimeout(() => {
-			if (phase === 'closed' && tooltip) tooltip.hidden = false;
-		}, 1500);
+		root.dataset.phase = phase;
+		document.body.style.overflow = 'hidden';
 
-		const audio = new Audio('https://res.cloudinary.com/dusxvauvj/video/upload/v1771015768/scroll-papper5s_qixwes.wav');
+	tooltipTimeout = window.setTimeout(() => {
+		if (phase === 'closed' && tooltip instanceof HTMLElement) {
+			tooltip.hidden = false;
+		}
+	}, TOOLTIP_DELAY);
 
-		openButton.addEventListener('click', async (event) => {
-	event.stopPropagation();
-	event.preventDefault();
+	openButton.addEventListener('click', async (event) => {
+		event.stopPropagation();
+		event.preventDefault();
 
-			if (phase !== 'closed' || hasRevealed) return;
+		if (phase !== 'closed' || hasRevealed) return;
 
-			if (tooltip) tooltip.hidden = true;
-			audio.volume = 0.4;
-			void audio.play().catch(() => {});
+		clearTimeout(tooltipTimeout);
 
-			localStorage.setItem(storageKey, 'true');
-			setPhase('opening');
+		if (tooltip instanceof HTMLElement) {
+			tooltip.hidden = true;
+		}
 
-			setTimeout(() => {
-				if (!hasRevealed && phase !== 'exit') {
-					setPhase('exit');
-				}
-			}, FAILSAFE_REVEAL_DELAY);
+		playOpenSound();
+		setStoredFlag(storageKey);
 
-			await wait(PHASE_DELAY_RISING);
-			if (phase === 'opening') setPhase('rising');
+		setPhase('opening');
+		await wait(PHASE_DELAY_RISING);
 
-			await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
-			if (phase === 'rising') setPhase('exit');
-		});
+		setPhase('rising');
+		await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
+
+		setPhase('exit');
+	});
 
 		window.addEventListener(
 			'pagehide',
 			() => {
-				audio.pause();
-				audio.src = '';
+				audio?.pause();
+				if (audio) audio.src = '';
+				audio = null;
 			},
 			{ once: true },
 		);
