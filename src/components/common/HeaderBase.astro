@@ -13,13 +13,13 @@ import '@styles/layout/_header-base.scss';
 
 export interface Props {
     transparentOnHero?: boolean;
-    headerId?: string;
+    headerId: string;
     variant?: string;
 }
 
 const {
     transparentOnHero = true,
-    headerId = 'main-header',
+    headerId,
     variant = 'standard',
 } = Astro.props;
 ---
@@ -28,6 +28,7 @@ const {
     id={headerId}
     class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''}`}
     data-variant={variant}
+    data-transparent={transparentOnHero.toString()}
 >
     <div class="header-base__container">
         <!-- Slot: Logo (Adaptive logic lives in parent) -->
@@ -36,7 +37,7 @@ const {
         </div>
 
         <!-- Slot: Desktop Navigation -->
-        <nav class="header-base__desktop-nav" aria-label="Navegacion principal">
+        <nav class="header-base__desktop-nav" aria-label="Navegación principal">
             <slot name="desktop-nav" />
         </nav>
 
@@ -45,43 +46,50 @@ const {
     </div>
 </header>
 
-<script define:vars={{ headerId, transparentOnHero }}>
+<script>
 	/**
 	 * Shared header behavior:
 	 * - shrink on scroll
 	 * - hero transparency toggle
 	 * - auto-hide while scrolling down
 	 */
-	const header = document.getElementById(headerId);
+	const headers = Array.from(document.querySelectorAll('.header-base'));
+	const SCROLL_THRESHOLD = 50;
+	const HIDE_THRESHOLD = 100;
 
-	if (header instanceof HTMLElement) {
-		const isTransparentConfigured = transparentOnHero;
+	if (headers.length > 0) {
 		let lastScrollY = window.scrollY;
-		const SCROLL_THRESHOLD = 50;
-		const HIDE_THRESHOLD = 100;
 
 		const updateHeaderState = () => {
 			const currentScrollY = window.scrollY;
 			const isScrolledPastHero = currentScrollY > SCROLL_THRESHOLD;
-			const isMenuOpen = header.classList.contains('header-base--menu-open');
 
-			header.classList.toggle('header-base--scrolled', isScrolledPastHero);
+			headers.forEach((header) => {
+				if (!(header instanceof HTMLElement)) {
+					return;
+				}
 
-			if (isTransparentConfigured && !isMenuOpen) {
-				header.classList.toggle('header-base--transparent', !isScrolledPastHero);
-			} else {
-				header.classList.remove('header-base--transparent');
-			}
+				const isTransparentConfigured = header.dataset.transparent === 'true';
+				const isMenuOpen = header.classList.contains('header-base--menu-open');
 
-			if (isMenuOpen) {
-				header.classList.remove('header-base--hidden');
-			} else {
-				const isScrollingDown = currentScrollY > lastScrollY;
-				header.classList.toggle(
-					'header-base--hidden',
-					currentScrollY > HIDE_THRESHOLD && isScrollingDown,
-				);
-			}
+				header.classList.toggle('header-base--scrolled', isScrolledPastHero);
+
+				if (isTransparentConfigured && !isMenuOpen) {
+					header.classList.toggle('header-base--transparent', !isScrolledPastHero);
+				} else {
+					header.classList.remove('header-base--transparent');
+				}
+
+				if (isMenuOpen) {
+					header.classList.remove('header-base--hidden');
+				} else {
+					const isScrollingDown = currentScrollY > lastScrollY;
+					header.classList.toggle(
+						'header-base--hidden',
+						currentScrollY > HIDE_THRESHOLD && isScrollingDown,
+					);
+				}
+			});
 
 			lastScrollY = currentScrollY;
 		};
@@ -90,4 +98,3 @@ const {
 		window.addEventListener('scroll', updateHeaderState, { passive: true });
 	}
 </script>
-
