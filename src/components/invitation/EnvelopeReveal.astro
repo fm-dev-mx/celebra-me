@@ -1,12 +1,16 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
+import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.astro';
+import {
+	SEAL_ICON_MAP,
+	type EnvelopeSealIcon,
+	type RevealCardData,
+} from '@/lib/invitation/reveal-card';
 
 interface Props {
 	name: string;
-	date: string;
-	city: string;
 	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
-	sealIcon?: 'boot' | 'heart' | 'monogram' | 'flower' | 'special-edition';
+	sealIcon?: EnvelopeSealIcon;
 	microcopy: string;
 	documentLabel?: string;
 	stampText?: string;
@@ -16,12 +20,11 @@ interface Props {
 	variant?: string;
 	guestName?: string;
 	audioUrl?: string;
+	card: RevealCardData;
 }
 
 const {
 	name,
-	date,
-	city,
 	sealStyle,
 	sealIcon = 'monogram',
 	microcopy,
@@ -33,27 +36,10 @@ const {
 	variant,
 	guestName,
 	audioUrl = '',
+	card,
 } = Astro.props;
 
-const formattedDate = new Intl.DateTimeFormat('es-MX', {
-	day: 'numeric',
-	month: 'long',
-	year: 'numeric',
-	timeZone: 'UTC',
-}).format(new Date(date));
-
-const envelopeDetails = `${formattedDate} • ${city}`;
-const cardLabel = documentLabel || 'Invitación';
-
-const sealIconMap = {
-	boot: 'Boot',
-	heart: 'HeartSeal',
-	monogram: 'MonogramSeal',
-	flower: 'FlowerSeal',
-	'special-edition': 'Diamond',
-} as const;
-
-const sealIconName = sealIconMap[sealIcon];
+const sealIconName = SEAL_ICON_MAP[sealIcon];
 ---
 
 <div
@@ -66,28 +52,6 @@ const sealIconName = sealIconMap[sealIcon];
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
-
-		<div class="envelope-card" data-envelope-card>
-			<div class="envelope-card__content">
-				<Icon
-					name={sealIconName}
-					class={`seal-icon seal-icon--${sealIcon} envelope-card__monogram`}
-				/>
-				<span class="envelope-card__label">{cardLabel}</span>
-				<h2 class="envelope-card__name">{name}</h2>
-
-				{
-					guestName && (
-						<div class="guest-personalized">
-							<p class="personalized-label">Entrega especial para:</p>
-							<strong class="personalized-name">{guestName}</strong>
-						</div>
-					)
-				}
-
-				<p class="envelope-card__details">{envelopeDetails}</p>
-			</div>
-		</div>
 
 		<div class="envelope-pocket"></div>
 
@@ -133,20 +97,24 @@ const sealIconName = sealIconMap[sealIcon];
 					<h2 class="envelope-name">{name}</h2>
 					<div class="tease-details-group">
 						<div class="tease-divider"></div>
-						<p class="envelope-details">{envelopeDetails}</p>
+						<p class="envelope-details">{card.details}</p>
 					</div>
 
-{
-					guestName && (
-						<div class="guest-personalized">
-							<p class="personalized-label">Entrega especial para:</p>
-							<strong class="personalized-name">{guestName}</strong>
-						</div>
-					)
-				}
-			</div>
+					{
+						guestName && (
+							<div class="guest-personalized">
+								<p class="personalized-label">Entrega especial para:</p>
+								<strong class="personalized-name">{guestName}</strong>
+							</div>
+						)
+					}
+				</div>
 			</div>
 		</div>
+	</div>
+
+	<div class="envelope-reveal-stage" data-envelope-card>
+		<InvitationRevealCard card={card} />
 	</div>
 
 	{
@@ -201,10 +169,9 @@ const sealIconName = sealIconMap[sealIcon];
 
 		if (!(openButton instanceof HTMLButtonElement)) return;
 
-	let phase: EnvelopePhase = 'closed';
-	let hasRevealed = false;
-	let audio: HTMLAudioElement | null = null;
-	let tooltipTimeout: number | undefined;
+		let phase: EnvelopePhase = 'closed';
+		let hasRevealed = false;
+		let audio: HTMLAudioElement | null = null;
 
 		const params = new URLSearchParams(window.location.search);
 		const storageKey = `envelope-opened-${eventSlug}`;
@@ -229,26 +196,26 @@ const sealIconName = sealIconMap[sealIcon];
 			}, EXIT_ANIMATION_DELAY);
 		};
 
-	const setPhase = (nextPhase: EnvelopePhase) => {
-		if (hasRevealed && nextPhase !== 'exit') return;
+		const setPhase = (nextPhase: EnvelopePhase) => {
+			if (hasRevealed && nextPhase !== 'exit') return;
 
-		phase = nextPhase;
-		root.dataset.phase = nextPhase;
-		document.body.style.overflow = nextPhase === 'exit' ? 'auto' : 'hidden';
+			phase = nextPhase;
+			root.dataset.phase = nextPhase;
+			document.body.style.overflow = nextPhase === 'exit' ? 'auto' : 'hidden';
 
-		if (nextPhase === 'exit') {
-			revealInvitation();
-		}
-	};
+			if (nextPhase === 'exit') {
+				revealInvitation();
+			}
+		};
 
-	const playOpenSound = () => {
-		if (!audioUrl) return;
+		const playOpenSound = () => {
+			if (!audioUrl) return;
 
-		audio?.pause();
-		audio = new Audio(audioUrl);
-		audio.volume = 0.4;
-		void audio.play().catch(() => {});
-	};
+			audio?.pause();
+			audio = new Audio(audioUrl);
+			audio.volume = 0.4;
+			void audio.play().catch(() => {});
+		};
 
 		root.style.setProperty('--env-transition-rise', `${PHASE_DELAY_RISING}ms`);
 		root.style.setProperty('--env-transition-exit', `${PHASE_DELAY_EXIT}ms`);
@@ -269,35 +236,35 @@ const sealIconName = sealIconMap[sealIcon];
 		root.dataset.phase = phase;
 		document.body.style.overflow = 'hidden';
 
-	tooltipTimeout = window.setTimeout(() => {
-		if (phase === 'closed' && tooltip instanceof HTMLElement) {
-			tooltip.hidden = false;
-		}
-	}, TOOLTIP_DELAY);
+		const tooltipTimeout = window.setTimeout(() => {
+			if (phase === 'closed' && tooltip instanceof HTMLElement) {
+				tooltip.hidden = false;
+			}
+		}, TOOLTIP_DELAY);
 
-	openButton.addEventListener('click', async (event) => {
-		event.stopPropagation();
-		event.preventDefault();
+		openButton.addEventListener('click', async (event) => {
+			event.stopPropagation();
+			event.preventDefault();
 
-		if (phase !== 'closed' || hasRevealed) return;
+			if (phase !== 'closed' || hasRevealed) return;
 
-		clearTimeout(tooltipTimeout);
+			clearTimeout(tooltipTimeout);
 
-		if (tooltip instanceof HTMLElement) {
-			tooltip.hidden = true;
-		}
+			if (tooltip instanceof HTMLElement) {
+				tooltip.hidden = true;
+			}
 
-		playOpenSound();
-		setStoredFlag(storageKey);
+			playOpenSound();
+			setStoredFlag(storageKey);
 
-		setPhase('opening');
-		await wait(PHASE_DELAY_RISING);
+			setPhase('opening');
+			await wait(PHASE_DELAY_RISING);
 
-		setPhase('rising');
-		await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
+			setPhase('rising');
+			await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
 
-		setPhase('exit');
-	});
+			setPhase('exit');
+		});
 
 		window.addEventListener(
 			'pagehide',

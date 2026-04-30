@@ -1,0 +1,38 @@
+---
+import Icon from '@/components/common/icons/Icon.astro';
+import { SEAL_ICON_MAP, type RevealCardData } from '@/lib/invitation/reveal-card';
+
+interface Props {
+	card: RevealCardData;
+}
+
+const { card } = Astro.props;
+
+const sealIconName = SEAL_ICON_MAP[card.sealIcon];
+---
+
+<article class="invitation-reveal-card" aria-label={card.documentLabel}>
+	<div class="invitation-reveal-card__inner">
+		<div class="invitation-reveal-card__seal" aria-hidden="true">
+			<Icon
+				name={sealIconName}
+				class={`seal-icon seal-icon--${card.sealIcon} invitation-reveal-card__seal-icon`}
+			/>
+		</div>
+
+		<p class="invitation-reveal-card__label">{card.documentLabel}</p>
+		<h2 class="invitation-reveal-card__name">{card.name}</h2>
+		<div class="invitation-reveal-card__divider" aria-hidden="true"></div>
+
+		{
+			card.guestName && (
+				<div class="invitation-reveal-card__guest">
+					<p class="invitation-reveal-card__guest-label">Entrega especial para:</p>
+					<strong class="invitation-reveal-card__guest-name">{card.guestName}</strong>
+				</div>
+			)
+		}
+
+		<p class="invitation-reveal-card__details">{card.details}</p>
+	</div>
+</article>

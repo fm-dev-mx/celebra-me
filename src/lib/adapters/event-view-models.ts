@@ -56,6 +56,7 @@ export function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 						stampYear: data.envelope.stampYear,
 						tooltipText: data.envelope.tooltipText,
 						variant: normalizedPreset,
+						card: undefined as any, // Injected downstream by page-data
 						colors: {
 							background: data.envelope.closedPalette?.background
 								? resolveColorToken(

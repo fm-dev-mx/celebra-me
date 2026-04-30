@@ -78,8 +78,6 @@ const pageData = prepareInvitationPageData({
 			pageData.envelope && (
 				<EnvelopeReveal
 					name={pageData.envelope.name}
-					date={pageData.envelope.date}
-					city={pageData.envelope.city}
 					sealStyle={pageData.envelope.sealStyle}
 					sealIcon={pageData.envelope.sealIcon}
 					microcopy={pageData.envelope.microcopy}
@@ -90,6 +88,7 @@ const pageData = prepareInvitationPageData({
 					eventSlug={pageData.envelope.eventSlug}
 					variant={pageData.envelope.variant}
 					guestName={pageData.envelope.guestName}
+					card={pageData.envelope.card}
 				/>
 			)
 		}

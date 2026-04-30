@@ -13,6 +13,7 @@ import type {
 	SharedSectionVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
+import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 
 export interface ThemeConfig {
 	primaryColor: string;
@@ -167,13 +168,14 @@ export interface EnvelopeViewModel {
 	enabled: boolean;
 	data?: {
 		sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
-		sealIcon?: 'boot' | 'heart' | 'monogram' | 'flower' | 'special-edition';
+		sealIcon?: EnvelopeSealIcon;
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;
 		stampYear?: string;
 		tooltipText?: string;
 		variant?: ThemePreset;
+		card: RevealCardData;
 		colors: {
 			background?: string;
 			primary?: string;

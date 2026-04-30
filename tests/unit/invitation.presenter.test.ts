@@ -43,6 +43,13 @@ describe('prepareInvitationPageData', () => {
 		);
 		expect(presenter.hero.guestName).toBe('Mariana Soto');
 		expect(presenter.envelope?.guestName).toBe('Mariana Soto');
+		expect(presenter.envelope?.card).toEqual({
+			documentLabel: 'Invitación',
+			name: event.data.hero.name,
+			details: '11 de abril de 2026 • Los Mochis',
+			guestName: 'Mariana Soto',
+			sealIcon: 'flower',
+		});
 		expect(presenter.rsvp?.guestCap).toBe(4);
 		expect(presenter.rsvp?.initialGuestData).toEqual({
 			fullName: 'Mariana Soto',

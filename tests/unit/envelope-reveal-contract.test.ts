@@ -8,7 +8,7 @@ describe('EnvelopeReveal content contract', () => {
 			'utf8',
 		);
 		const component = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/components/invitation/EnvelopeReveal.astro'),
+			path.resolve(process.cwd(), 'src/lib/invitation/reveal-card.ts'),
 			'utf8',
 		);
 
@@ -43,5 +43,25 @@ describe('EnvelopeReveal content contract', () => {
 		expect(stylesheet).not.toContain('.tease-header');
 		expect(stylesheet).not.toContain('.tease-content-bottom');
 		expect(stylesheet).not.toContain('.envelope-seal-zone');
+	});
+
+	it('delegates the revealed invitation card to the canonical reveal card component', () => {
+		const component = fs.readFileSync(
+			path.resolve(process.cwd(), 'src/components/invitation/EnvelopeReveal.astro'),
+			'utf8',
+		);
+		const revealCard = fs.readFileSync(
+			path.resolve(process.cwd(), 'src/components/invitation/InvitationRevealCard.astro'),
+			'utf8',
+		);
+
+		expect(component).toContain('import InvitationRevealCard');
+		expect(component).toMatch(/<InvitationRevealCard\s/);
+		expect(component).toMatch(/card={card}/);
+		expect(component).not.toContain('class="envelope-card__content"');
+		expect(revealCard).toContain('RevealCardData');
+		expect(revealCard).toContain('SEAL_ICON_MAP');
+		expect(revealCard).toContain('class="invitation-reveal-card__name"');
+		expect(revealCard).toContain('class="invitation-reveal-card__details"');
 	});
 });

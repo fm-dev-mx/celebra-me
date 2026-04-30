@@ -2,6 +2,7 @@ import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
+import { buildRevealCard, type RevealCardData } from '@/lib/invitation/reveal-card';
 import {
 	PREMIERE_THEME_PRESETS,
 	type SharedSectionVariant,
@@ -49,6 +50,7 @@ export interface InvitationPageData {
 				eventSlug: string;
 				guestName?: string;
 				name: string;
+				card: RevealCardData;
 		  })
 		| undefined;
 	sections: InvitationViewModel['sections'];
@@ -225,6 +227,14 @@ function buildEnvelopeData(
 		city: locationSection?.city || '',
 		eventSlug,
 		guestName,
+		card: buildRevealCard({
+			name: hero.name,
+			date: hero.date,
+			city: locationSection?.city || '',
+			documentLabel: envelope.data.documentLabel,
+			guestName,
+			sealIcon: envelope.data.sealIcon,
+		}),
 	};
 }
 
