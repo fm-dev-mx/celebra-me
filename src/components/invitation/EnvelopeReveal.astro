@@ -8,47 +8,47 @@ import {
 } from '@/lib/invitation/reveal-card';
 
 interface Props {
-	name: string;
-	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
-	sealIcon?: EnvelopeSealIcon;
-	microcopy: string;
-	documentLabel?: string;
-	stampText?: string;
-	stampYear?: string;
-	eventSlug: string;
-	tooltipText?: string;
-	variant?: string;
-	guestName?: string;
-	audioUrl?: string;
-	card: RevealCardData;
+  name: string;
+  sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
+  sealIcon?: EnvelopeSealIcon;
+  microcopy: string;
+  documentLabel?: string;
+  stampText?: string;
+  stampYear?: string;
+  eventSlug: string;
+  tooltipText?: string;
+  variant?: string;
+  guestName?: string;
+  audioUrl?: string;
+  card: RevealCardData;
 }
 
 const {
-	name,
-	sealStyle,
-	sealIcon = 'monogram',
-	microcopy,
-	documentLabel,
-	stampText,
-	stampYear,
-	eventSlug,
-	tooltipText = 'ACCEDER A LA INVITACIÓN',
-	variant,
-	guestName,
-	audioUrl = '',
-	card,
+  name,
+  sealStyle,
+  sealIcon = 'monogram',
+  microcopy,
+  documentLabel,
+  stampText,
+  stampYear,
+  eventSlug,
+  tooltipText = 'ACCEDER A LA INVITACIÓN',
+  variant,
+  guestName,
+  audioUrl = '',
+  card,
 } = Astro.props;
 
 const sealIconName = SEAL_ICON_MAP[sealIcon];
 ---
 
 <div
-	class="envelope-wrapper"
-	data-envelope
-	data-phase="closed"
-	data-event-slug={eventSlug}
-	data-variant={variant}
-	data-audio-url={audioUrl}
+  class="envelope-wrapper"
+  data-envelope
+  data-phase="closed"
+  data-event-slug={eventSlug}
+  data-variant={variant}
+  data-audio-url={audioUrl}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
@@ -130,12 +130,23 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 <script>
 	type EnvelopePhase = 'closed' | 'opening' | 'rising' | 'exit';
 
-	const PHASE_DELAY_RISING = 1100;
-	const PHASE_DELAY_EXIT = 2800;
-	const EXIT_ANIMATION_DELAY = 1400;
-	const TOOLTIP_DELAY = 1500;
+const DEV_SKIP_ENABLED = import.meta.env.DEV;
+const TOOLTIP_DELAY = 1500; // 1.5 seconds
+const FALLBACK_PHASE_DURATION = 900; // 0.9 seconds
 
 	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	const parseCssTimeToMs = (value: string): number => {
+		const [raw] = value.trim().split(',');
+		if (!raw) return FALLBACK_PHASE_DURATION;
+
+		const num = Number.parseFloat(raw);
+		if (!Number.isFinite(num)) return FALLBACK_PHASE_DURATION;
+
+		return raw.endsWith('ms') ? num : raw.endsWith('s') ? num * 1000 : num;
+	};
+
+	const getMotionPreference = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	const getStoredFlag = (key: string) => {
 		try {
@@ -149,40 +160,53 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 		try {
 			window.localStorage.setItem(key, 'true');
 		} catch {
-			// Storage can fail in private mode or restricted browsers.
+			// Storage can fail in private mode
 		}
 	};
 
-	document.querySelectorAll('[data-envelope]').forEach((root) => {
-		if (!(root instanceof HTMLElement)) return;
+document.querySelectorAll('[data-envelope]').forEach((root) => {
+  if (!(root instanceof HTMLElement)) return;
 
-		const { eventSlug, audioUrl = '' } = root.dataset;
+  const { eventSlug, audioUrl = '' } = root.dataset;
 
-		if (!eventSlug) return;
+  if (!eventSlug) return;
 
-		const invitationRoot =
-			root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
-			root.closest('.event-theme-wrapper[data-event-slug]');
+  const invitationRoot =
+    root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
+    root.closest('.event-theme-wrapper[data-event-slug]');
 
-		const openButton = root.querySelector('[data-envelope-open]');
-		const tooltip = root.querySelector('[data-envelope-tooltip]');
+  const openButton = root.querySelector('[data-envelope-open]');
+  const tooltip = root.querySelector('[data-envelope-tooltip]');
 
-		if (!(openButton instanceof HTMLButtonElement)) return;
+  if (!(openButton instanceof HTMLButtonElement)) return;
 
-		let phase: EnvelopePhase = 'closed';
-		let hasRevealed = false;
-		let audio: HTMLAudioElement | null = null;
+  let phase: EnvelopePhase = 'closed';
+  let hasRevealed = false;
+  let audio: HTMLAudioElement | null = null;
 
-		const params = new URLSearchParams(window.location.search);
-		const storageKey = `envelope-opened-${eventSlug}`;
-		const shouldSkipEnvelope =
-			params.get('skipEnvelope') === 'true' ||
-			(params.get('forceEnvelope') !== 'true' && getStoredFlag(storageKey));
+  const params = new URLSearchParams(window.location.search);
+  const storageKey = `envelope-opened-${eventSlug}`;
+  const isDemoInvitation =
+    invitationRoot instanceof HTMLElement
+      ? invitationRoot.dataset.isDemo === 'true'
+      : false;
+		const canUseDevSkip = DEV_SKIP_ENABLED && params.get('skipEnvelope') === 'true';
+		const shouldRespectStoredReveal =
+			!isDemoInvitation && params.get('forceEnvelope') !== 'true' && getStoredFlag(storageKey);
+		const shouldSkipEnvelope = canUseDevSkip || shouldRespectStoredReveal;
+		const shouldReduceMotion = getMotionPreference();
 
-		const revealInvitation = () => {
+		const getPhaseDuration = (phaseName: 'opening' | 'rising' | 'exit') =>
+			parseCssTimeToMs(
+				window.getComputedStyle(root).getPropertyValue(`--env-phase-${phaseName}-duration`),
+			);
+
+		const completeReveal = ({ hideDelay = getPhaseDuration('exit'), hideImmediately = false } = {}) => {
 			if (hasRevealed) return;
 
 			hasRevealed = true;
+			phase = 'exit';
+			root.dataset.phase = 'exit';
 			document.body.style.overflow = 'auto';
 
 			if (invitationRoot instanceof HTMLElement) {
@@ -191,9 +215,14 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 
 			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
+			if (hideImmediately || hideDelay <= 0) {
+				root.hidden = true;
+				return;
+			}
+
 			window.setTimeout(() => {
 				root.hidden = true;
-			}, EXIT_ANIMATION_DELAY);
+			}, hideDelay);
 		};
 
 		const setPhase = (nextPhase: EnvelopePhase) => {
@@ -204,7 +233,7 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 			document.body.style.overflow = nextPhase === 'exit' ? 'auto' : 'hidden';
 
 			if (nextPhase === 'exit') {
-				revealInvitation();
+				completeReveal();
 			}
 		};
 
@@ -217,19 +246,8 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 			void audio.play().catch(() => {});
 		};
 
-		root.style.setProperty('--env-transition-rise', `${PHASE_DELAY_RISING}ms`);
-		root.style.setProperty('--env-transition-exit', `${PHASE_DELAY_EXIT}ms`);
-
 		if (shouldSkipEnvelope) {
-			phase = 'exit';
-			hasRevealed = true;
-			root.hidden = true;
-			document.body.style.overflow = 'auto';
-
-			if (invitationRoot instanceof HTMLElement) {
-				invitationRoot.dataset.revealState = 'revealed';
-			}
-
+			completeReveal({ hideImmediately: true });
 			return;
 		}
 
@@ -255,13 +273,20 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 			}
 
 			playOpenSound();
-			setStoredFlag(storageKey);
+			if (!isDemoInvitation) {
+				setStoredFlag(storageKey);
+			}
+
+			if (shouldReduceMotion) {
+				completeReveal({ hideImmediately: true });
+				return;
+			}
 
 			setPhase('opening');
-			await wait(PHASE_DELAY_RISING);
+			await wait(getPhaseDuration('opening'));
 
 			setPhase('rising');
-			await wait(PHASE_DELAY_EXIT - PHASE_DELAY_RISING);
+			await wait(getPhaseDuration('rising'));
 
 			setPhase('exit');
 		});

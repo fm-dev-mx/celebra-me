@@ -17,6 +17,7 @@ import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
 import type { AdaptationContext } from '@/lib/adapters/event';
 import { resolveColorToken } from '@/lib/theme/color-tokens';
+import { buildRevealCard } from '@/lib/invitation/reveal-card';
 
 export function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
@@ -56,7 +57,13 @@ export function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 						stampYear: data.envelope.stampYear,
 						tooltipText: data.envelope.tooltipText,
 						variant: normalizedPreset,
-						card: undefined as any, // Injected downstream by page-data
+						card: buildRevealCard({
+							name: data.hero.name,
+							date: data.hero.date,
+							city: data.location.city,
+							documentLabel: data.envelope.documentLabel,
+							sealIcon: data.envelope.sealIcon,
+						}),
 						colors: {
 							background: data.envelope.closedPalette?.background
 								? resolveColorToken(

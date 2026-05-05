@@ -273,24 +273,6 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.invitation-hero {
-		* {
-			/* stylelint-disable-next-line declaration-no-important */
-			animation-duration: 0.01ms !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			animation-iteration-count: 1 !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			transition-duration: 0.01ms !important;
-		}
-
-		&__scroll-chevron {
-			/* stylelint-disable-next-line declaration-no-important */
-			animation: none !important;
-		}
-	}
-}
-
 // Envelope-gated reveal: keep hero dormant until the seal is broken
 .event-theme-wrapper[data-reveal-state='sealed'] {
 	.invitation-hero__content {
@@ -357,5 +339,42 @@
 
 	.invitation-hero__scroll-chevron {
 		animation: bounceDown 2s infinite;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.invitation-hero {
+		* {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation-duration: 0.01ms !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			animation-iteration-count: 1 !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			transition-duration: 0.01ms !important;
+		}
+
+		&__scroll-chevron {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+		}
+	}
+
+	.event-theme-wrapper[data-reveal-state='revealed'] {
+		.invitation-hero__content,
+		.invitation-hero__label,
+		.invitation-hero__title,
+		.invitation-hero__nickname-badge,
+		.invitation-hero__details,
+		.invitation-hero__scroll-indicator {
+			opacity: 100%;
+			transform: none;
+			animation: none;
+		}
+
+		.invitation-hero__divider {
+			opacity: 100%;
+			transform: none;
+			animation: none;
+		}
 	}
 }

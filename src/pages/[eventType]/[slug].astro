@@ -75,22 +75,22 @@ const pageData = prepareInvitationPageData({
 
 		<!-- Components -->
 		{
-			pageData.envelope && (
-				<EnvelopeReveal
-					name={pageData.envelope.name}
-					sealStyle={pageData.envelope.sealStyle}
-					sealIcon={pageData.envelope.sealIcon}
-					microcopy={pageData.envelope.microcopy}
-					documentLabel={pageData.envelope.documentLabel}
-					stampText={pageData.envelope.stampText}
-					stampYear={pageData.envelope.stampYear}
-					tooltipText={pageData.envelope.tooltipText}
-					eventSlug={pageData.envelope.eventSlug}
-					variant={pageData.envelope.variant}
-					guestName={pageData.envelope.guestName}
-					card={pageData.envelope.card}
-				/>
-			)
+  pageData.envelope && (
+    <EnvelopeReveal
+      name={pageData.envelope.name}
+      sealStyle={pageData.envelope.sealStyle}
+      sealIcon={pageData.envelope.sealIcon}
+      microcopy={pageData.envelope.microcopy}
+      documentLabel={pageData.envelope.documentLabel}
+      stampText={pageData.envelope.stampText}
+      stampYear={pageData.envelope.stampYear}
+      tooltipText={pageData.envelope.tooltipText}
+      eventSlug={pageData.envelope.eventSlug}
+      variant={pageData.envelope.variant}
+      guestName={pageData.envelope.guestName}
+      card={pageData.envelope.card}
+    />
+  )
 		}
 
 		<EventHeader

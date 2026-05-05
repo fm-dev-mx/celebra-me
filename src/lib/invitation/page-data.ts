@@ -2,11 +2,11 @@ import { adaptEvent } from '@/lib/adapters/event';
 import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { buildRevealCard, type RevealCardData } from '@/lib/invitation/reveal-card';
+import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import {
-	PREMIERE_THEME_PRESETS,
 	type SharedSectionVariant,
 	type ThemePreset,
+	THEME_PRESETS,
 } from '@/lib/theme/theme-contract';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
@@ -45,10 +45,9 @@ export interface InvitationPageData {
 	};
 	envelope?:
 		| (NonNullable<InvitationViewModel['envelope']['data']> & {
-				city: string;
-				date: string;
 				eventSlug: string;
 				guestName?: string;
+				isDemo: boolean;
 				name: string;
 				card: RevealCardData;
 		  })
@@ -105,11 +104,13 @@ function buildWrapperData(
 	theme: InvitationViewModel['theme'],
 	envelope: InvitationViewModel['envelope'],
 	eventSlug: string,
+	isDemo: boolean,
 ): { dataAttributes: Record<string, string>; scopedStyles: string } {
 	const dataAttributes: Record<string, string> = {
 		'data-theme-preset': theme.preset || 'base',
 		'data-event-slug': eventSlug,
 		'data-reveal-state': envelope.enabled ? 'sealed' : 'revealed',
+		'data-is-demo': isDemo ? 'true' : 'false',
 	};
 
 	const overrides: Record<string, string> = {};
@@ -161,13 +162,7 @@ function resolveFooterVariant(
 		if (configuredVariant) return configuredVariant;
 	}
 
-	if (
-		themePreset === 'jewelry-box' ||
-		themePreset === 'jewelry-box-wedding' ||
-		themePreset === 'luxury-hacienda' ||
-		themePreset === 'editorial' ||
-		(themePreset && (PREMIERE_THEME_PRESETS as readonly string[]).includes(themePreset))
-	) {
+	if (themePreset && (THEME_PRESETS as readonly string[]).includes(themePreset)) {
 		return themePreset;
 	}
 
@@ -199,13 +194,14 @@ function buildWrapper(
 	envelope: InvitationViewModel['envelope'],
 	eventScopeClass: string,
 	eventSlug: string,
+	isDemo: boolean,
 ) {
 	const showEnvelope = envelope.enabled;
 	return {
 		className: ['event-theme-wrapper', eventScopeClass, theme.themeClass]
 			.filter(Boolean)
 			.join(' '),
-		...buildWrapperData(theme, envelope, eventSlug),
+		...buildWrapperData(theme, envelope, eventSlug, isDemo),
 		showEnvelope,
 	};
 }
@@ -213,28 +209,22 @@ function buildWrapper(
 function buildEnvelopeData(
 	showEnvelope: boolean,
 	envelope: InvitationViewModel['envelope'],
-	hero: InvitationViewModel['hero'],
-	locationSection: InvitationViewModel['sections']['location'],
 	eventSlug: string,
 	guestName: string | undefined,
+	isDemo: boolean,
 ) {
 	if (!showEnvelope || !envelope.data) return undefined;
 
 	return {
 		...envelope.data,
-		name: hero.name,
-		date: hero.date,
-		city: locationSection?.city || '',
+		name: envelope.data.card.name,
 		eventSlug,
 		guestName,
-		card: buildRevealCard({
-			name: hero.name,
-			date: hero.date,
-			city: locationSection?.city || '',
-			documentLabel: envelope.data.documentLabel,
+		isDemo,
+		card: {
+			...envelope.data.card,
 			guestName,
-			sealIcon: envelope.data.sealIcon,
-		}),
+		},
 	};
 }
 
@@ -329,7 +319,8 @@ export function prepareInvitationPageData(input: {
 	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
 	const { theme, hero, envelope, sections, music, navigation } = viewModel;
 	const eventScopeClass = `event--${input.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
-	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id);
+	const isDemo = input.eventEntry.data.isDemo ?? false;
+	const wrapper = buildWrapper(theme, envelope, eventScopeClass, viewModel.id, isDemo);
 	const showEnvelope = wrapper.showEnvelope;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 	const guestName = input.guestContext?.guest.fullName;
@@ -341,7 +332,7 @@ export function prepareInvitationPageData(input: {
 
 	return {
 		eventSlug: viewModel.id,
-		isDemo: input.eventEntry.data.isDemo ?? false,
+		isDemo,
 		themePreset: theme.preset,
 		layout: buildLayoutData(viewModel, hero, guestName),
 		wrapper,
@@ -356,14 +347,7 @@ export function prepareInvitationPageData(input: {
 			time: heroTime,
 			guestName,
 		},
-		envelope: buildEnvelopeData(
-			showEnvelope,
-			envelope,
-			hero,
-			sections.location,
-			viewModel.id,
-			guestName,
-		),
+		envelope: buildEnvelopeData(showEnvelope, envelope, viewModel.id, guestName, isDemo),
 		sections,
 		rsvp: buildRsvpData(sections.rsvp, hero, input.guestContext),
 		personalizedAccess: buildPersonalizedAccess(input.guestContext),

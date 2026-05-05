@@ -11,9 +11,19 @@
 	--reveal-card-seal-bg: var(--env-seal-bg);
 	--reveal-card-seal-icon: var(--env-seal-icon);
 	--reveal-card-width: min(86vw, 420px);
-	--reveal-card-max-height: 72svh;
+	--reveal-card-viewport-gap: 2rem;
+	--reveal-card-safe-padding: max(1rem, env(safe-area-inset-top)) 1rem
+		max(1rem, env(safe-area-inset-bottom));
+	--reveal-card-max-height: min(
+		74svh,
+		calc(
+			100svh - var(--reveal-card-viewport-gap) - env(safe-area-inset-top) - env(
+					safe-area-inset-bottom
+				)
+		)
+	);
 	--reveal-card-enter-y: 18px;
-	--reveal-card-rest-y: 0;
+	--reveal-card-rest-y: clamp(-32px, -5svh, -16px);
 }
 
 .envelope-reveal-stage {
@@ -22,13 +32,14 @@
 	z-index: 100;
 	display: grid;
 	place-items: center;
-	padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+	padding: var(--reveal-card-safe-padding);
 	opacity: 0%;
 	pointer-events: none;
-	transform: translateY(var(--reveal-card-enter-y)) scale(0.98);
+	transform: translateY(var(--reveal-card-enter-y)) scale(0.985);
+	transform-origin: center bottom;
 	transition:
-		transform var(--env-transition-rise, 1.1s) var(--ease-premium),
-		opacity var(--env-transition-rise, 1.1s) var(--ease-standard);
+		transform var(--env-phase-rising-duration, var(--duration-reveal)) var(--ease-premium),
+		opacity var(--env-phase-rising-duration, var(--duration-reveal)) var(--ease-standard);
 }
 
 .invitation-reveal-card {
@@ -152,7 +163,7 @@
 @include mixins.respond-below(sm) {
 	.envelope-wrapper {
 		--reveal-card-width: min(88vw, 330px);
-		--reveal-card-max-height: 74svh;
+		--reveal-card-rest-y: clamp(-24px, -4svh, -10px);
 	}
 
 	.invitation-reveal-card__inner {
@@ -163,11 +174,32 @@
 @include mixins.short-viewport {
 	.envelope-wrapper {
 		--reveal-card-width: min(76vw, 380px);
-		--reveal-card-max-height: 78svh;
+		--reveal-card-viewport-gap: 1.25rem;
+		--reveal-card-max-height: min(
+			78svh,
+			calc(
+				100svh - var(--reveal-card-viewport-gap) - env(safe-area-inset-top) - env(
+						safe-area-inset-bottom
+					)
+			)
+		);
 		--reveal-card-enter-y: 10px;
+		--reveal-card-rest-y: 0;
 	}
 
 	.invitation-reveal-card__inner {
 		min-height: auto;
+	}
+}
+
+@include mixins.reduced-motion {
+	.envelope-wrapper {
+		--reveal-card-enter-y: 0;
+		--reveal-card-rest-y: 0;
+	}
+
+	.envelope-reveal-stage {
+		transition: none;
+		transform: none;
 	}
 }

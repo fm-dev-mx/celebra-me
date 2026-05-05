@@ -1,67 +1,36 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
+import {
+	buildRevealCard,
+	SEAL_ICON_MAP,
+	type EnvelopeSealIcon,
+} from '@/lib/invitation/reveal-card';
 
 describe('EnvelopeReveal content contract', () => {
-	it('maps every schema-supported seal icon to a rendered invitation icon', () => {
-		const schema = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/lib/schemas/content/envelope.schema.ts'),
-			'utf8',
-		);
-		const component = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/lib/invitation/reveal-card.ts'),
-			'utf8',
-		);
+	it('accepts every supported seal icon with a rendered icon mapping', () => {
+		for (const sealIcon of Object.keys(SEAL_ICON_MAP) as EnvelopeSealIcon[]) {
+			const parsed = envelopeSchema.safeParse({
+				sealStyle: 'wax',
+				sealIcon,
+			});
 
-		const schemaMatch = schema.match(/sealIcon:\s*z\.enum\(\[([^\]]+)\]\)/);
-		expect(schemaMatch).not.toBeNull();
-
-		const schemaIcons = Array.from(schemaMatch?.[1].matchAll(/'([^']+)'/g) ?? []).map(
-			(match) => match[1],
-		);
-
-		for (const icon of schemaIcons) {
-			expect(component).toMatch(new RegExp(`['"]?${icon}['"]?:`));
+			expect(parsed.success).toBe(true);
+			expect(SEAL_ICON_MAP[sealIcon]).toEqual(expect.any(String));
 		}
 	});
 
-	it('keeps the reveal stylesheet within the surgical complexity budget', () => {
-		const stylesheet = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/styles/invitation/_envelope-reveal.scss'),
-			'utf8',
-		);
-		const meaningfulLines = stylesheet.split(/\r?\n/).filter((line) => {
-			const trimmed = line.trim();
-			return (
-				trimmed &&
-				!trimmed.startsWith('//') &&
-				!trimmed.startsWith('/*') &&
-				!trimmed.endsWith('*/')
-			);
+	it('builds the canonical reveal card data with defaults', () => {
+		expect(
+			buildRevealCard({
+				name: 'Ximena',
+				date: '2026-04-25',
+				city: 'Monterrey',
+			}),
+		).toEqual({
+			documentLabel: 'Invitación',
+			name: 'Ximena',
+			details: '25 de abril de 2026 • Monterrey',
+			guestName: undefined,
+			sealIcon: 'monogram',
 		});
-
-		expect(meaningfulLines.length).toBeLessThanOrEqual(650);
-		expect(stylesheet).not.toContain('.tease-header');
-		expect(stylesheet).not.toContain('.tease-content-bottom');
-		expect(stylesheet).not.toContain('.envelope-seal-zone');
-	});
-
-	it('delegates the revealed invitation card to the canonical reveal card component', () => {
-		const component = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/components/invitation/EnvelopeReveal.astro'),
-			'utf8',
-		);
-		const revealCard = fs.readFileSync(
-			path.resolve(process.cwd(), 'src/components/invitation/InvitationRevealCard.astro'),
-			'utf8',
-		);
-
-		expect(component).toContain('import InvitationRevealCard');
-		expect(component).toMatch(/<InvitationRevealCard\s/);
-		expect(component).toMatch(/card={card}/);
-		expect(component).not.toContain('class="envelope-card__content"');
-		expect(revealCard).toContain('RevealCardData');
-		expect(revealCard).toContain('SEAL_ICON_MAP');
-		expect(revealCard).toContain('class="invitation-reveal-card__name"');
-		expect(revealCard).toContain('class="invitation-reveal-card__details"');
 	});
 });

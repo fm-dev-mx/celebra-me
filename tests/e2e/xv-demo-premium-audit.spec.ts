@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 const VIEWPORTS = [
 	{ name: '375x812', width: 375, height: 812 },
 	{ name: '414x896', width: 414, height: 896 },
+	{ name: '390x640', width: 390, height: 640 },
 	{ name: '768x1024', width: 768, height: 1024 },
 	{ name: '1024x768', width: 1024, height: 768 },
 	{ name: '1440x1200', width: 1440, height: 1200 },
@@ -28,11 +29,14 @@ const ARTIFACT_ROOT = path.resolve(
 	'xv-demo-premium-audit',
 	process.env.XV_AUDIT_RUN_ID || TIMESTAMP,
 );
+const CAPTURE_AUDIT_SCREENSHOTS = process.env.XV_AUDIT_SCREENSHOTS === 'true';
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60000);
 
 test.beforeAll(() => {
+	if (!CAPTURE_AUDIT_SCREENSHOTS) return;
+
 	fs.mkdirSync(ARTIFACT_ROOT, { recursive: true });
 });
 
@@ -83,30 +87,69 @@ for (const viewport of VIEWPORTS) {
 	});
 }
 
-async function captureAuditFlow(page: Page, viewportName: string) {
-	const viewportDir = path.join(ARTIFACT_ROOT, viewportName);
-	fs.mkdirSync(viewportDir, { recursive: true });
-
-	await page.goto('/xv/demo-xv?forceEnvelope=true', { waitUntil: 'domcontentloaded' });
-
-	await expect(page.locator('.envelope-wrapper')).toBeVisible();
-	await page.screenshot({
-		path: path.join(viewportDir, '00-envelope-closed.png'),
-		fullPage: true,
+test('demo reveal ignores persisted opened state by default', async ({ page }) => {
+	await page.addInitScript(() => {
+		window.localStorage.setItem('envelope-opened-demo-xv', 'true');
 	});
 
+	await page.goto('/xv/demo-xv', { waitUntil: 'domcontentloaded' });
+
+	await expect(page.locator('.envelope-wrapper')).toBeVisible();
+	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+		'data-reveal-state',
+		'sealed',
+	);
+});
+
+test('reduced motion reveal exposes the hero without a staged card transition', async ({
+	page,
+}) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.setViewportSize({ width: 390, height: 640 });
+	await page.goto('/xv/demo-xv', { waitUntil: 'domcontentloaded' });
+
 	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+
 	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
 		'data-reveal-state',
 		'revealed',
 	);
-	await page.waitForTimeout(1200);
+	await expect(page.locator('.envelope-wrapper')).toBeHidden();
+	await expect(page.locator('#inicio')).toBeVisible();
+});
+
+async function captureAuditFlow(page: Page, viewportName: string) {
+	const viewportDir = path.join(ARTIFACT_ROOT, viewportName);
+	if (CAPTURE_AUDIT_SCREENSHOTS) {
+		fs.mkdirSync(viewportDir, { recursive: true });
+	}
+
+	await page.goto('/xv/demo-xv', { waitUntil: 'domcontentloaded' });
+
+	await expect(page.locator('.envelope-wrapper')).toBeVisible();
+	if (CAPTURE_AUDIT_SCREENSHOTS) {
+		await page.screenshot({
+			path: path.join(viewportDir, '00-envelope-closed.png'),
+			fullPage: true,
+		});
+	}
+
+	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+	await waitForRevealCardInsideViewport(page);
+
+	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+		'data-reveal-state',
+		'revealed',
+	);
 
 	await expect(page.locator('#inicio')).toBeVisible();
-	await page.screenshot({
-		path: path.join(viewportDir, '01-full-page-revealed.png'),
-		fullPage: true,
-	});
+	if (CAPTURE_AUDIT_SCREENSHOTS) {
+		await waitForStableElementBox(page, '#inicio');
+		await page.screenshot({
+			path: path.join(viewportDir, '01-full-page-revealed.png'),
+			fullPage: true,
+		});
+	}
 
 	for (const selector of SECTION_SELECTORS) {
 		const safeName = selector.replaceAll('#', '');
@@ -119,9 +162,48 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 				return family?.classList.contains('is-visible');
 			});
 		}
-		await page.waitForTimeout(350);
-		await section.screenshot({
-			path: path.join(viewportDir, `section-${safeName}.png`),
-		});
+		await waitForStableElementBox(page, selector);
+		if (CAPTURE_AUDIT_SCREENSHOTS) {
+			await section.screenshot({
+				path: path.join(viewportDir, `section-${safeName}.png`),
+			});
+		}
 	}
+}
+
+async function waitForRevealCardInsideViewport(page: Page) {
+	await page.waitForFunction(() => {
+		const card = document.querySelector('.invitation-reveal-card');
+		if (!card) return false;
+
+		const box = card.getBoundingClientRect();
+		return (
+			box.width > 0 &&
+			box.height > 0 &&
+			box.top >= 0 &&
+			box.left >= 0 &&
+			box.bottom <= window.innerHeight &&
+			box.right <= window.innerWidth
+		);
+	});
+}
+
+async function waitForStableElementBox(page: Page, selector: string) {
+	await page.waitForFunction(async (targetSelector) => {
+		const element = document.querySelector(targetSelector);
+		if (!element) return false;
+
+		const first = element.getBoundingClientRect();
+		await new Promise((resolve) => requestAnimationFrame(resolve));
+		const second = element.getBoundingClientRect();
+
+		return (
+			first.width > 0 &&
+			first.height > 0 &&
+			Math.abs(first.top - second.top) < 1 &&
+			Math.abs(first.left - second.left) < 1 &&
+			Math.abs(first.width - second.width) < 1 &&
+			Math.abs(first.height - second.height) < 1
+		);
+	}, selector);
 }

@@ -102,6 +102,16 @@ describe('prepareInvitationPageData', () => {
 		expect(presenter.personalizedAccess).toBeUndefined();
 		expect(presenter.rsvp?.initialGuestData).toBeUndefined();
 		expect(presenter.header.links).toEqual(fixture.navigation);
+		expect(presenter.envelope?.isDemo).toBe(true);
+		expect(presenter.envelope).not.toHaveProperty('city');
+		expect(presenter.envelope).not.toHaveProperty('date');
+		expect(presenter.envelope?.card).toEqual({
+			documentLabel: 'Invitación',
+			name: fixture.hero.name,
+			details: '25 de abril de 2026 • Monterrey',
+			guestName: undefined,
+			sealIcon: 'heart',
+		});
 		expect(
 			presenter.renderPlan.map((item) =>
 				item.type === 'section' ? item.section : item.type,
