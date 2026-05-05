@@ -42,20 +42,20 @@
         "@fontsource/pinyon-script": "^5.2.8",
         "@fontsource/special-elite": "^5.2.8",
         "@fontsource/the-nautigal": "^5.2.7",
-        "@supabase/supabase-js": "^2.105.1",
+        "@supabase/supabase-js": "^2.105.3",
         "@vercel/analytics": "^2.0.1",
         "@vercel/speed-insights": "^2.0.0",
         "framer-motion": "^12.38.0",
-        "nodemailer": "^8.0.5",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "zod": "^4.3.6"
+        "nodemailer": "^8.0.7",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
+        "zod": "^4.4.3"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.8",
+        "@astrojs/check": "^0.9.9",
         "@astrojs/react": "5.0.4",
         "@astrojs/sitemap": "^3.7.2",
-        "@commitlint/cli": "^20.5.0",
+        "@commitlint/cli": "^20.5.3",
         "@commitlint/config-conventional": "^20.5.3",
         "@eslint/js": "^9.39.4",
         "@playwright/test": "^1.59.1",
@@ -71,16 +71,16 @@
         "astro-robots-txt": "^1.0.0",
         "eslint": "^9.39.4",
         "eslint-import-resolver-typescript": "^4.4.4",
-        "eslint-plugin-astro": "^1.6.0",
+        "eslint-plugin-astro": "^1.7.0",
         "eslint-plugin-boundaries": "^6.0.2",
         "eslint-plugin-import": "2.32.0",
-        "globals": "^17.4.0",
+        "globals": "^17.6.0",
         "husky": "^9.1.7",
         "identity-obj-proxy": "^3.0.0",
         "jest": "^30.3.0",
         "jest-environment-jsdom": "^30.3.0",
         "lint-staged": "16.4.0",
-        "prettier": "^3.8.1",
+        "prettier": "^3.8.3",
         "prettier-plugin-astro": "^0.14.1",
         "sass-embedded": "^1.99.0",
         "sharp": "^0.34.5",
@@ -88,7 +88,7 @@
         "stylelint-config-standard-scss": "^17.0.0",
         "ts-jest": "^29.4.9",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.58.0"
+        "typescript-eslint": "^8.59.2"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
@@ -96,7 +96,7 @@
         "*.{scss,css}": ["stylelint --fix", "prettier --write"],
         "*.{json,md,yml,yaml}": ["prettier --write"]
     },
-    "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+    "packageManager": "pnpm@10.33.3+sha512.a19744364a7e248b92657a4ca5973f9354d21caf982579674b1c539f32c7420c47138ad8b1254df07aba9bc782d9b3029e3db34d5dbff974326eb74dac8ff489",
     "pnpm": {
         "overrides": {
             "tar": ">=7.5.8",
