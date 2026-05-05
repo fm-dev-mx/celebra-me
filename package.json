@@ -42,7 +42,7 @@
         "@fontsource/pinyon-script": "^5.2.8",
         "@fontsource/special-elite": "^5.2.8",
         "@fontsource/the-nautigal": "^5.2.7",
-        "@supabase/supabase-js": "^2.101.1",
+        "@supabase/supabase-js": "^2.105.1",
         "@vercel/analytics": "^2.0.1",
         "@vercel/speed-insights": "^2.0.0",
         "framer-motion": "^12.38.0",
