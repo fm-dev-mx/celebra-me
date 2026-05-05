@@ -32,6 +32,7 @@ coverage/
 
 # Ignore generated files
 astro/types.d.ts
+pnpm-lock.yaml
 
 # Ignore Astro files as they cause parsing errors in some environments
 **/*.astro
