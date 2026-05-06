@@ -1,7 +1,5 @@
 // src/lib/theme/theme-variants.ts
 
-const PREMIERE_VARIANT_FAMILY = ['premiere-floral'] as const;
-
 export const QUOTE_VARIANTS = [
 	'elegant',
 	'modern',
@@ -10,7 +8,7 @@ export const QUOTE_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	...PREMIERE_VARIANT_FAMILY,
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -22,7 +20,7 @@ export const COUNTDOWN_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	...PREMIERE_VARIANT_FAMILY,
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -34,7 +32,7 @@ export const LOCATION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	...PREMIERE_VARIANT_FAMILY,
+	'premiere-floral',
 	'editorial',
 ] as const;
 
@@ -43,18 +41,18 @@ export const SHARED_SECTION_VARIANTS = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	...PREMIERE_VARIANT_FAMILY,
+	'premiere-floral',
 	'editorial',
 ] as const;
 
-export const INTERLUDE_PARALLAX_VARIANTS = ['editorial', ...PREMIERE_VARIANT_FAMILY] as const;
+export const INTERLUDE_PARALLAX_VARIANTS = ['editorial', 'premiere-floral'] as const;
 
 export const ITINERARY_VARIANTS = [
 	'base',
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	...PREMIERE_VARIANT_FAMILY,
+	'premiere-floral',
 	'editorial',
 ] as const;
 
