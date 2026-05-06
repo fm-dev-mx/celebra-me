@@ -1,69 +1,35 @@
-// src/lib/theme/theme-variants.ts
+// ==========================================
+// PREMIUM THEMES - Single source of truth
+// ==========================================
 
-export const QUOTE_VARIANTS = [
-	'elegant',
-	'modern',
-	'minimal',
-	'floral',
+export const PREMIUM_THEMES = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'luxury-hacienda',
-	'premiere-floral',
 	'editorial',
+	'premiere-floral',
 ] as const;
 
-export const COUNTDOWN_VARIANTS = [
-	'minimal',
-	'vibrant',
-	'classic',
-	'modern',
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'premiere-floral',
-	'editorial',
-] as const;
+export type PremiumTheme = (typeof PREMIUM_THEMES)[number];
 
-export const LOCATION_VARIANTS = [
-	'structured',
-	'organic',
-	'minimal',
-	'luxury',
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'premiere-floral',
-	'editorial',
-] as const;
+// ==========================================
+// SPECIALIZED VARIANTS
+// Logic-specific variants that don't depend on the general preset
+// ==========================================
 
-export const SHARED_SECTION_VARIANTS = [
-	'standard',
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'premiere-floral',
-	'editorial',
-] as const;
-
-export const INTERLUDE_PARALLAX_VARIANTS = ['editorial', 'premiere-floral'] as const;
-
-export const ITINERARY_VARIANTS = [
-	'base',
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'premiere-floral',
-	'editorial',
-] as const;
-
+// Layout variants (used by explicit configuration in content)
 export const HERO_LAYOUT_VARIANTS = ['premium-portrait'] as const;
 export const FAMILY_LAYOUT_VARIANTS = ['premium-mask'] as const;
 
+// Map styles (independent of event theme)
 export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite'] as const;
+
+// Typography and animation styles
 export const QUOTE_ANIMATIONS = ['fade', 'bounce', 'elastic', 'none'] as const;
 export const QUOTE_FONT_STYLES = ['serif', 'script', 'sans'] as const;
 export const COUNTDOWN_NUMBER_STYLES = ['thin', 'bold', 'monospace'] as const;
 
+// Indications and iconography
 export const INDICATION_ICON_KEYS = [
 	'crown',
 	'envelope',
@@ -83,11 +49,10 @@ export const INDICATION_ICON_NAMES = [
 
 export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;
 
-export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
-export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
-export type LocationVariant = (typeof LOCATION_VARIANTS)[number];
-export type SharedSectionVariant = (typeof SHARED_SECTION_VARIANTS)[number];
-export type ItineraryVariant = (typeof ITINERARY_VARIANTS)[number];
+// ==========================================
+// DERIVED TYPES
+// ==========================================
+
 export type HeroLayoutVariant = (typeof HERO_LAYOUT_VARIANTS)[number];
 export type FamilyLayoutVariant = (typeof FAMILY_LAYOUT_VARIANTS)[number];
 export type LocationMapStyle = (typeof LOCATION_MAP_STYLES)[number];
@@ -98,8 +63,9 @@ export type IndicationIconKey = (typeof INDICATION_ICON_KEYS)[number];
 export type IndicationIconName = (typeof INDICATION_ICON_NAMES)[number];
 export type IndicationStyleVariant = (typeof INDICATION_STYLE_VARIANTS)[number];
 
-export function supportsInterludeParallaxVariant(
-	variant: string | undefined,
-): variant is (typeof INTERLUDE_PARALLAX_VARIANTS)[number] {
-	return Boolean(variant && (INTERLUDE_PARALLAX_VARIANTS as readonly string[]).includes(variant));
-}
+// Legacy types - all sections now use PremiumTheme
+export type QuoteVariant = PremiumTheme;
+export type CountdownVariant = PremiumTheme;
+export type LocationVariant = PremiumTheme;
+export type SharedSectionVariant = PremiumTheme;
+export type ItineraryVariant = PremiumTheme;
