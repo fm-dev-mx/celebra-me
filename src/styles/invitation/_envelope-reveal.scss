@@ -37,9 +37,7 @@
 	--env-seal-size: 58px;
 	--env-title-size: clamp(1.4rem, 8cqw, 2.25rem);
 	--env-title-mobile-size: clamp(1.5rem, 7cqw, 1.85rem);
-	--env-phase-opening-duration: var(--duration-reveal);
-	--env-phase-rising-duration: var(--duration-reveal);
-	--env-phase-exit-duration: var(--duration-premium);
+	--env-phase-exit-duration: var(--duration-long);
 
 	position: fixed;
 	inset: 0;
@@ -53,7 +51,7 @@
 	background: var(--env-bg);
 	perspective: 2000px;
 	transition:
-		opacity var(--duration-snappy) var(--ease-standard),
+		opacity var(--duration-long) var(--ease-standard),
 		transform var(--env-phase-exit-duration) var(--ease-premium);
 
 	&[hidden] {
@@ -155,7 +153,6 @@
 	border-bottom: 0;
 	filter: drop-shadow(0 14px 28px color-mix(in srgb, var(--color-surface-dark) 18%, transparent));
 	transform-origin: top;
-	transition: transform var(--env-phase-opening-duration) var(--ease-premium);
 
 	&::after {
 		content: '';
@@ -177,10 +174,6 @@
 	filter: blur(28px);
 	opacity: 0%;
 	transform: scale(0.9);
-	transition:
-		opacity var(--env-phase-opening-duration) var(--ease-premium),
-		transform var(--env-phase-opening-duration) var(--ease-premium),
-		filter var(--env-phase-opening-duration) var(--ease-premium);
 }
 
 .envelope-zone--stamp,
@@ -243,15 +236,6 @@
 	position: absolute;
 	inset: 0;
 	z-index: 10;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 1.5rem;
-	pointer-events: none;
-}
-
-.envelope-tease__interactive-content {
-	position: relative;
 	display: grid;
 	grid-template-rows: var(--env-grid);
 	grid-template-areas:
@@ -259,10 +243,7 @@
 		'seal'
 		'identity';
 	place-items: center;
-	width: 100%;
-	height: 100%;
 	padding: 1.5rem;
-	transition: opacity var(--duration-standard) var(--ease-standard);
 }
 
 .envelope-zone {
@@ -488,8 +469,8 @@
 	}
 }
 
-.envelope-wrapper[data-phase='closed'] {
-	.envelope-tease__interactive-content {
+.envelope-wrapper:not(.is-opening) {
+	.envelope-tease {
 		opacity: 100%;
 		pointer-events: auto;
 	}
@@ -499,39 +480,52 @@
 	}
 }
 
-.envelope-wrapper[data-phase='opening'] {
-	.envelope-tease__interactive-content {
-		opacity: 35%;
+.envelope-wrapper.is-opening {
+	.envelope-tease,
+	.envelope-external-instruction {
 		pointer-events: none;
+		animation: envFadeOut var(--duration-standard) forwards var(--ease-standard);
 	}
 
 	.envelope-flap {
 		z-index: 2;
-		transform: rotateX(170deg);
+		animation: envFlapOpen var(--duration-reveal) forwards var(--ease-premium);
 	}
 
 	.envelope-flap-shadow {
+		animation: envShadowDrop var(--duration-reveal) forwards var(--ease-premium);
+	}
+}
+
+@keyframes envFlapOpen {
+	100% {
+		transform: rotateX(170deg);
+	}
+}
+
+@keyframes envFadeOut {
+	100% {
+		opacity: 0%;
+	}
+}
+
+@keyframes envShadowDrop {
+	0% {
+		filter: blur(28px);
+		opacity: 0%;
+		transform: scale(0.9);
+	}
+
+	40% {
 		filter: blur(45px);
 		opacity: 100%;
 		transform: scale(1.1) translateY(40px);
 	}
-}
 
-.envelope-wrapper[data-phase='rising'],
-.envelope-wrapper[data-phase='exit'] {
-	.envelope-tease__interactive-content,
-	.envelope-external-instruction {
+	100% {
+		filter: blur(45px);
 		opacity: 0%;
-		pointer-events: none;
-	}
-
-	.envelope-flap {
-		z-index: 2;
-		transform: rotateX(170deg);
-	}
-
-	.envelope-flap-shadow {
-		opacity: 0%;
+		transform: scale(1.1) translateY(40px);
 	}
 }
 
@@ -566,7 +560,7 @@
 		--env-title-size: var(--env-title-mobile-size);
 	}
 
-	.envelope-tease__interactive-content {
+	.envelope-tease {
 		padding: 0.8rem 0.4rem 0.4rem;
 	}
 
@@ -617,7 +611,7 @@
 		--env-title-size: clamp(1.2rem, 5vw, 1.8rem);
 	}
 
-	.envelope-tease__interactive-content {
+	.envelope-tease {
 		padding: 1rem 1.5rem;
 	}
 }
@@ -629,7 +623,7 @@
 			--env-container-max-height: 400px;
 		}
 
-		.envelope-tease__interactive-content {
+		.envelope-tease {
 			padding: 1rem;
 		}
 	}
@@ -662,17 +656,6 @@
 @include mixins.reduced-motion {
 	.envelope-seal-button__pulse {
 		animation: none;
-	}
-
-	.envelope-wrapper {
-		--env-phase-opening-duration: 1ms;
-		--env-phase-rising-duration: 1ms;
-		--env-phase-exit-duration: 1ms;
-	}
-
-	.envelope-flap,
-	.envelope-reveal-stage {
-		transition: none;
 	}
 }
 

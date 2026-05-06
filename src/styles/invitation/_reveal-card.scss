@@ -37,9 +37,6 @@
 	pointer-events: none;
 	transform: translateY(var(--reveal-card-enter-y)) scale(0.985);
 	transform-origin: center bottom;
-	transition:
-		transform var(--env-phase-rising-duration, var(--duration-reveal)) var(--ease-premium),
-		opacity var(--env-phase-rising-duration, var(--duration-reveal)) var(--ease-standard);
 }
 
 .invitation-reveal-card {
@@ -152,9 +149,18 @@
 	line-height: 1.6;
 }
 
-.envelope-wrapper[data-phase='rising'],
-.envelope-wrapper[data-phase='exit'] {
+.envelope-wrapper.is-opening {
 	.envelope-reveal-stage {
+		pointer-events: auto;
+		animation: envCardRise var(--duration-reveal) forwards var(--ease-premium);
+
+		// Wait for envelope flap to open
+		animation-delay: var(--duration-reveal);
+	}
+}
+
+@keyframes envCardRise {
+	100% {
 		opacity: 100%;
 		transform: translateY(var(--reveal-card-rest-y)) scale(1);
 	}
@@ -199,7 +205,9 @@
 	}
 
 	.envelope-reveal-stage {
-		transition: none;
+		/* stylelint-disable-next-line declaration-no-important */
+		animation: none !important;
+		opacity: 100%;
 		transform: none;
 	}
 }

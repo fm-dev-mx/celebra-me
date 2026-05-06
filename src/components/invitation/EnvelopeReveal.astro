@@ -8,51 +8,50 @@ import {
 } from '@/lib/invitation/reveal-card';
 
 interface Props {
-  name: string;
-  sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
-  sealIcon?: EnvelopeSealIcon;
-  microcopy: string;
-  documentLabel?: string;
-  stampText?: string;
-  stampYear?: string;
-  eventSlug: string;
-  tooltipText?: string;
-  variant?: string;
-  guestName?: string;
-  audioUrl?: string;
-  card: RevealCardData;
+	name: string;
+	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
+	sealIcon?: EnvelopeSealIcon;
+	microcopy: string;
+	documentLabel?: string;
+	stampText?: string;
+	stampYear?: string;
+	eventSlug: string;
+	tooltipText?: string;
+	variant?: string;
+	guestName?: string;
+	audioUrl?: string;
+	card: RevealCardData;
 }
 
 const {
-  name,
-  sealStyle,
-  sealIcon = 'monogram',
-  microcopy,
-  documentLabel,
-  stampText,
-  stampYear,
-  eventSlug,
-  tooltipText = 'ACCEDER A LA INVITACIÓN',
-  variant,
-  guestName,
-  audioUrl = '',
-  card,
+	name,
+	sealStyle,
+	sealIcon = 'monogram',
+	microcopy,
+	documentLabel,
+	stampText,
+	stampYear,
+	eventSlug,
+	tooltipText = 'ACCEDER A LA INVITACIÓN',
+	variant,
+	guestName,
+	audioUrl = '',
+	card,
 } = Astro.props;
 
 const sealIconName = SEAL_ICON_MAP[sealIcon];
+const isDev = import.meta.env.DEV;
 ---
 
-<div
-  class="envelope-wrapper"
-  data-envelope
-  data-phase="closed"
-  data-event-slug={eventSlug}
-  data-variant={variant}
-  data-audio-url={audioUrl}
+<ds-envelope-reveal
+	class="envelope-wrapper"
+	data-event-slug={eventSlug}
+	data-variant={variant}
+	data-audio-url={audioUrl}
+	data-dev-skip={isDev ? 'true' : 'false'}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
-
 		<div class="envelope-pocket"></div>
 
 		<div class="envelope-flap" data-envelope-flap>
@@ -60,55 +59,50 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 		</div>
 
 		<div class="envelope-tease">
-			<div class="envelope-tease__interactive-content">
-				<div class="envelope-zone envelope-zone--stamp">
-					{
-						stampText && (
-							<div class="envelope-stamp-area">
-								<div class="envelope-stamp">
-									<span>{stampText}</span>
-									{stampYear && <small>{stampYear}</small>}
-								</div>
-							</div>
-						)
-					}
-
-					{documentLabel && <span class="envelope-manifest-label">{documentLabel}</span>}
-				</div>
-
-				<div class="envelope-zone envelope-zone--seal">
-					<button
-						type="button"
-						class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
-						data-envelope-open
-						aria-label="Abrir sobre de la invitación"
-					>
-						<div class="envelope-seal-button__visual">
-							<Icon name={sealIconName} class={`seal-icon seal-icon--${sealIcon}`} />
+			<div class="envelope-zone--stamp">
+				{
+					stampText && (
+						<div class="envelope-stamp">
+							<span>{stampText}</span>
+							{stampYear && <small>{stampYear}</small>}
 						</div>
-						<div class="envelope-seal-button__pulse"></div>
-						<span class="envelope-tooltip" data-envelope-tooltip hidden>
-							{tooltipText}
-						</span>
-					</button>
-				</div>
+					)
+				}
+				{documentLabel && <span class="envelope-manifest-label">{documentLabel}</span>}
+			</div>
 
-				<div class="envelope-zone envelope-zone--identity">
-					<h2 class="envelope-name">{name}</h2>
-					<div class="tease-details-group">
-						<div class="tease-divider"></div>
-						<p class="envelope-details">{card.details}</p>
+			<div class="envelope-zone--seal">
+				<button
+					type="button"
+					class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
+					data-envelope-open
+					aria-label="Abrir sobre de la invitación"
+				>
+					<div class="envelope-seal-button__visual">
+						<Icon name={sealIconName} class={`seal-icon seal-icon--${sealIcon}`} />
 					</div>
+					<div class="envelope-seal-button__pulse"></div>
+					<span class="envelope-tooltip" data-envelope-tooltip hidden>
+						{tooltipText}
+					</span>
+				</button>
+			</div>
 
-					{
-						guestName && (
-							<div class="guest-personalized">
-								<p class="personalized-label">Entrega especial para:</p>
-								<strong class="personalized-name">{guestName}</strong>
-							</div>
-						)
-					}
+			<div class="envelope-zone--identity">
+				<h2 class="envelope-name">{name}</h2>
+				<div class="tease-details-group">
+					<div class="tease-divider"></div>
+					<p class="envelope-details">{card.details}</p>
 				</div>
+
+				{
+					guestName && (
+						<div class="guest-personalized">
+							<p class="personalized-label">Entrega especial para:</p>
+							<strong class="personalized-name">{guestName}</strong>
+						</div>
+					)
+				}
 			</div>
 		</div>
 	</div>
@@ -125,180 +119,99 @@ const sealIconName = SEAL_ICON_MAP[sealIcon];
 			</div>
 		)
 	}
-</div>
+</ds-envelope-reveal>
 
 <script>
-	type EnvelopePhase = 'closed' | 'opening' | 'rising' | 'exit';
+	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
 
-const DEV_SKIP_ENABLED = import.meta.env.DEV;
-const TOOLTIP_DELAY = 1500; // 1.5 seconds
-const FALLBACK_PHASE_DURATION = 900; // 0.9 seconds
+	class DsEnvelopeReveal extends HTMLElement {
+		connectedCallback() {
+			const { eventSlug, audioUrl } = this.dataset;
+			if (!eventSlug) return;
 
-	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+			const invitationRoot =
+				this.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
+				this.closest('.event-theme-wrapper[data-event-slug]');
 
-	const parseCssTimeToMs = (value: string): number => {
-		const [raw] = value.trim().split(',');
-		if (!raw) return FALLBACK_PHASE_DURATION;
+			const isDemoInvitation = invitationRoot instanceof HTMLElement ? invitationRoot.dataset.isDemo === 'true' : false;
+			const devSkipEnabled = this.dataset.devSkip === 'true';
 
-		const num = Number.parseFloat(raw);
-		if (!Number.isFinite(num)) return FALLBACK_PHASE_DURATION;
+			const manager = new RevealManager({
+				eventSlug,
+				audioUrl: audioUrl || '',
+				isDemoInvitation,
+				devSkipEnabled,
+			});
 
-		return raw.endsWith('ms') ? num : raw.endsWith('s') ? num * 1000 : num;
-	};
+			const openButton = this.querySelector('[data-envelope-open]');
+			const tooltip = this.querySelector('[data-envelope-tooltip]');
+			const revealCard = this.querySelector('[data-envelope-card]');
+			let hasRevealed = false;
 
-	const getMotionPreference = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			const completeReveal = () => {
+				if (hasRevealed) return;
+				hasRevealed = true;
 
-	const getStoredFlag = (key: string) => {
-		try {
-			return window.localStorage.getItem(key) === 'true';
-		} catch {
-			return false;
-		}
-	};
+				document.body.style.overflow = 'auto';
 
-	const setStoredFlag = (key: string) => {
-		try {
-			window.localStorage.setItem(key, 'true');
-		} catch {
-			// Storage can fail in private mode
-		}
-	};
+				if (invitationRoot instanceof HTMLElement) {
+					invitationRoot.dataset.revealState = 'revealed';
+				}
 
-document.querySelectorAll('[data-envelope]').forEach((root) => {
-  if (!(root instanceof HTMLElement)) return;
+				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
-  const { eventSlug, audioUrl = '' } = root.dataset;
+				// Hide after exit animation
+				window.setTimeout(() => { this.hidden = true; }, 2200);
+			};
 
-  if (!eventSlug) return;
-
-  const invitationRoot =
-    root.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
-    root.closest('.event-theme-wrapper[data-event-slug]');
-
-  const openButton = root.querySelector('[data-envelope-open]');
-  const tooltip = root.querySelector('[data-envelope-tooltip]');
-
-  if (!(openButton instanceof HTMLButtonElement)) return;
-
-  let phase: EnvelopePhase = 'closed';
-  let hasRevealed = false;
-  let audio: HTMLAudioElement | null = null;
-
-  const params = new URLSearchParams(window.location.search);
-  const storageKey = `envelope-opened-${eventSlug}`;
-  const isDemoInvitation =
-    invitationRoot instanceof HTMLElement
-      ? invitationRoot.dataset.isDemo === 'true'
-      : false;
-		const canUseDevSkip = DEV_SKIP_ENABLED && params.get('skipEnvelope') === 'true';
-		const shouldRespectStoredReveal =
-			!isDemoInvitation && params.get('forceEnvelope') !== 'true' && getStoredFlag(storageKey);
-		const shouldSkipEnvelope = canUseDevSkip || shouldRespectStoredReveal;
-		const shouldReduceMotion = getMotionPreference();
-
-		const getPhaseDuration = (phaseName: 'opening' | 'rising' | 'exit') =>
-			parseCssTimeToMs(
-				window.getComputedStyle(root).getPropertyValue(`--env-phase-${phaseName}-duration`),
-			);
-
-		const completeReveal = ({ hideDelay = getPhaseDuration('exit'), hideImmediately = false } = {}) => {
-			if (hasRevealed) return;
-
-			hasRevealed = true;
-			phase = 'exit';
-			root.dataset.phase = 'exit';
-			document.body.style.overflow = 'auto';
-
-			if (invitationRoot instanceof HTMLElement) {
-				invitationRoot.dataset.revealState = 'revealed';
-			}
-
-			window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
-
-			if (hideImmediately || hideDelay <= 0) {
-				root.hidden = true;
-				return;
-			}
-
-			window.setTimeout(() => {
-				root.hidden = true;
-			}, hideDelay);
-		};
-
-		const setPhase = (nextPhase: EnvelopePhase) => {
-			if (hasRevealed && nextPhase !== 'exit') return;
-
-			phase = nextPhase;
-			root.dataset.phase = nextPhase;
-			document.body.style.overflow = nextPhase === 'exit' ? 'auto' : 'hidden';
-
-			if (nextPhase === 'exit') {
+			if (manager.shouldSkipEnvelope()) {
 				completeReveal();
-			}
-		};
-
-		const playOpenSound = () => {
-			if (!audioUrl) return;
-
-			audio?.pause();
-			audio = new Audio(audioUrl);
-			audio.volume = 0.4;
-			void audio.play().catch(() => {});
-		};
-
-		if (shouldSkipEnvelope) {
-			completeReveal({ hideImmediately: true });
-			return;
-		}
-
-		root.dataset.phase = phase;
-		document.body.style.overflow = 'hidden';
-
-		const tooltipTimeout = window.setTimeout(() => {
-			if (phase === 'closed' && tooltip instanceof HTMLElement) {
-				tooltip.hidden = false;
-			}
-		}, TOOLTIP_DELAY);
-
-		openButton.addEventListener('click', async (event) => {
-			event.stopPropagation();
-			event.preventDefault();
-
-			if (phase !== 'closed' || hasRevealed) return;
-
-			clearTimeout(tooltipTimeout);
-
-			if (tooltip instanceof HTMLElement) {
-				tooltip.hidden = true;
-			}
-
-			playOpenSound();
-			if (!isDemoInvitation) {
-				setStoredFlag(storageKey);
-			}
-
-			if (shouldReduceMotion) {
-				completeReveal({ hideImmediately: true });
+				this.hidden = true;
 				return;
 			}
 
-			setPhase('opening');
-			await wait(getPhaseDuration('opening'));
+			// Initial setup
+			document.body.style.overflow = 'hidden';
 
-			setPhase('rising');
-			await wait(getPhaseDuration('rising'));
+			const tooltipTimeout = window.setTimeout(() => {
+				if (tooltip instanceof HTMLElement) {
+					tooltip.hidden = false;
+				}
+			}, 1500);
 
-			setPhase('exit');
-		});
+			openButton?.addEventListener('click', (event) => {
+				event.stopPropagation();
+				event.preventDefault();
 
-		window.addEventListener(
-			'pagehide',
-			() => {
-				audio?.pause();
-				if (audio) audio.src = '';
-				audio = null;
-			},
-			{ once: true },
-		);
-	});
+				if (hasRevealed) return;
+
+				clearTimeout(tooltipTimeout);
+				if (tooltip instanceof HTMLElement) tooltip.hidden = true;
+
+				manager.playOpenSound();
+				manager.setStoredFlag();
+
+				if (getMotionPreference()) {
+					completeReveal();
+					this.hidden = true;
+					return;
+				}
+
+				this.classList.add('is-opening');
+
+				// Wait for card rising animation to finish before triggering exit
+				if (revealCard instanceof HTMLElement) {
+					revealCard.addEventListener('animationend', (e) => {
+						if (e.animationName.includes('envCardRise')) {
+							completeReveal();
+						}
+					}, { once: true });
+				} else {
+					window.setTimeout(completeReveal, 2000);
+				}
+			});
+		}
+	}
+
+	customElements.define('ds-envelope-reveal', DsEnvelopeReveal);
 </script>
