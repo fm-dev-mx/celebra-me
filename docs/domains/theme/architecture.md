@@ -10,14 +10,16 @@ The invitation theme system is contract-driven and section-based.
 - **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
 - **Rendering**: invitation sections use `data-variant` selectors
 - **Preset application**: class-scoped presets (`.theme-preset--*`), not `:root` injection
-- **Editorial Aesthetic**: Support for full-bleed, high-fashion layout variants (`editorial`) and
-  event-specific premium overrides.
+- **Editorial Aesthetic**: Support for full-bleed, high-fashion layout variants (`editorial`
+  invitation preset) and event-specific premium overrides.
+- **Landing Aesthetic**: Landing pages use `jewelry-box-landing` preset (coffee/gold/parchment
+  palette) decoupled from invitation themes.
 
 ## Contract Ownership
 
 `theme-contract.ts` defines canonical tuples and exported union types:
 
-- `THEME_PRESETS`
+- `PREMIUM_THEMES` (invitation themes only)
 - `QUOTE_VARIANTS`
 - `COUNTDOWN_VARIANTS`
 - `LOCATION_VARIANTS`
@@ -37,6 +39,47 @@ Styles are split by domain/layout:
 - `src/styles/auth.scss`: auth preset scope
 
 This avoids loading invitation section themes in non-invitation routes.
+
+## Landing Presets
+
+Landing pages (index, 404, under-construction) use a separate, landing-only preset system decoupled
+from invitation themes:
+
+- **Preset Location**: `src/styles/themes/landing/presets/`
+- **Active Preset**: `jewelry-box-landing` (replaces legacy `elegant` and conflicting `editorial`
+  names)
+- **Application**: Applied via `.theme-preset--jewelry-box-landing` class on the body element
+- **Decoupling**: Landing presets are not part of `PREMIUM_THEMES` and do not use `PRESET_COLOR_MAP`
+  (invitation-only)
+
+### Migration History
+
+- Legacy `elegant` identifier was replaced by `editorial`, which conflicted with the invitation
+  `editorial` preset
+- Current `jewelry-box-landing` aligns with the premium "Jewelry Box" aesthetic and avoids naming
+  collisions
+
+### Landing-Specific Token Groups
+
+The `jewelry-box-landing` preset exposes several token groups that are **not** published at `:root`
+by the semantic layer and serve as landing-page composition primitives:
+
+| Token                            | Value                     | Purpose                                                      |
+| -------------------------------- | ------------------------- | ------------------------------------------------------------ |
+| `--color-surface-dark-slate`     | `$sys-color-slate-900`    | Shared dark surface for FAQ, Footer                          |
+| `--color-surface-dark-slate-rgb` | RGB channels of slate-900 | Alpha composition on dark surfaces                           |
+| `--color-text-on-dark-slate`     | `$sys-color-neutral-0`    | Text on slate-900 surfaces                                   |
+| `--color-text-on-dark-slate-rgb` | RGB channels of neutral-0 | Alpha composition for text on slate                          |
+| `--color-overlay-light`          | `$sys-color-neutral-0`    | Glassmorphism overlay primitive                              |
+| `--color-overlay-light-rgb`      | RGB channels of neutral-0 | Primary glass alpha composition                              |
+| `--color-faq-bg`                 | `$sys-color-slate-900`    | FAQ section background — matches Footer surface for cohesion |
+
+> [!NOTE] `--color-text-on-dark-rgb` (parchment-100 channels) **is** published at `:root` in
+> `src/styles/tokens/semantic/_color.scss`. It does not need to be redeclared in the preset.
+>
+> Section-specific tokens such as `--faq-section-bg`, `--footer-section-bg` etc. are the **only**
+> composition interface for component stylesheets — components must not reference the raw token
+> group above directly.
 
 ## Section Theme Strategy
 
@@ -224,4 +267,4 @@ extraction during normal content mapping.
 
 ---
 
-**Last Updated:** 2026-03-22 (Plan 008 closeout and compatibility-shim governance)
+**Last Updated:** 2026-05-06 (Landing preset rename to jewelry-box-landing, documentation update)

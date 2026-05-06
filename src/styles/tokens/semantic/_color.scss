@@ -89,6 +89,7 @@ $semantic-color: (
 	--color-text-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-700)};
 	--color-text-emphasis: #{sys.$sys-color-gold-700};
 	--color-text-on-dark: #{sys.$sys-color-parchment-100};
+	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
 	--color-text-on-light: #{sys.$sys-color-coffee-900};
 	--color-text-muted: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.65)};
 	--color-action-primary: #{sys.$sys-color-coffee-900};
