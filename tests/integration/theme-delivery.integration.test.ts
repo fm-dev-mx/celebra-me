@@ -19,7 +19,6 @@ describe('Theme Delivery Integration', () => {
 		isDemo: false,
 		theme: {
 			preset: 'luxury-hacienda',
-			primaryColor: 'accent',
 		},
 		hero: {
 			name: 'Celebrant',
@@ -38,7 +37,7 @@ describe('Theme Delivery Integration', () => {
 		},
 	} as EventContentEntry['data'];
 
-	it('should correctly inject CSS variable overrides from theme tokens', () => {
+	it('should deliver preset identity without injecting preset color overrides', () => {
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: makeEventEntry(baseData),
 			slug: 'boda-demo',
@@ -48,20 +47,18 @@ describe('Theme Delivery Integration', () => {
 		expect(pageContext.wrapper.dataAttributes['data-event-slug']).toBe('evt-123');
 
 		const styles = pageContext.wrapper.scopedStyles;
-		expect(styles).toContain('[data-event-slug="evt-123"]');
-
-		expect(styles).toContain('--color-surface-primary-override: #F5F5DC;');
-		expect(styles).toContain('--color-action-primary-override: #2C1E12;');
+		expect(styles).not.toContain('--color-surface-primary-override:');
+		expect(styles).not.toContain('--color-action-primary-override:');
 	});
 
-	it('should include envelope color overrides when envelope is enabled', () => {
+	it('should include envelope semantic color overrides when envelope is enabled', () => {
 		const data = {
 			...baseData,
 			envelope: {
 				enabled: true,
 				closedPalette: {
-					background: '#f0f0f0',
-					primary: '#333333',
+					background: 'surfaceDark',
+					primary: 'surfacePrimary',
 				},
 			},
 		} as EventContentEntry['data'];
@@ -72,9 +69,9 @@ describe('Theme Delivery Integration', () => {
 		});
 
 		const styles = pageContext.wrapper.scopedStyles;
-		expect(styles).toContain('--env-bg: #f0f0f0;');
-		expect(styles).toContain('--env-paper-bg: #f0f0f0;');
-		expect(styles).toContain('--env-text-primary: #333333;');
+		expect(styles).toContain('--env-bg: var(--color-surface-dark);');
+		expect(styles).toContain('--env-paper-bg: var(--color-surface-dark);');
+		expect(styles).toContain('--env-text-primary: var(--color-surface-primary);');
 		expect(pageContext.wrapper.dataAttributes['data-env-variant']).toBeUndefined();
 	});
 
@@ -86,7 +83,7 @@ describe('Theme Delivery Integration', () => {
 				sealStyle: 'wax',
 				microcopy: 'Abrir',
 				closedPalette: {
-					primary: '#333333',
+					primary: 'surfacePrimary',
 				},
 			},
 		} as EventContentEntry['data'];
@@ -99,7 +96,7 @@ describe('Theme Delivery Integration', () => {
 		const styles = pageContext.wrapper.scopedStyles;
 		expect(styles).not.toContain('--env-bg:');
 		expect(styles).not.toContain('--env-paper-bg:');
-		expect(styles).toContain('--env-text-primary: #333333;');
+		expect(styles).toContain('--env-text-primary: var(--color-surface-primary);');
 	});
 
 	it('should allow previewTheme to override only the delivered preset for premiere-family invitations', () => {

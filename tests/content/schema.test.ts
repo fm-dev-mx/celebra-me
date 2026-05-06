@@ -17,12 +17,29 @@ const eventSchema = resolvedSchema as {
 	safeParse: (value: unknown) => { success: boolean };
 };
 
+const contentRoots = [
+	'src/content/events',
+	'src/content/event-demos',
+	'src/content/event-templates',
+];
+
+function getJsonContentFiles(root: string): string[] {
+	return fs
+		.readdirSync(root, { recursive: true, withFileTypes: true })
+		.filter(
+			(entry) =>
+				entry.isFile() &&
+				entry.name.endsWith('.json') &&
+				!entry.name.endsWith('.assets.json'),
+		)
+		.map((entry) => path.join(entry.parentPath, entry.name));
+}
+
 function createMinimalEvent(overrides = {}) {
 	return {
 		eventType: 'xv',
 		title: 'Test Event',
 		theme: {
-			primaryColor: '#ffffff',
 			fontFamily: 'serif',
 			preset: 'jewelry-box',
 		},
@@ -42,16 +59,42 @@ function createMinimalEvent(overrides = {}) {
 
 describe('Event content schema (real contract)', () => {
 	it('validates all real event content files', () => {
-		const eventsDir = path.resolve(process.cwd(), 'src/content/events');
-		const files = fs
-			.readdirSync(eventsDir)
-			.filter((file) => file.endsWith('.json') && !file.endsWith('.assets.json'));
+		for (const contentRoot of contentRoots) {
+			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
+			for (const file of files) {
+				const raw = fs.readFileSync(file, 'utf8');
+				const parsed = JSON.parse(raw);
+				const result = eventSchema.safeParse(parsed);
+				expect(result.success).toBe(true);
+			}
+		}
+	});
 
-		for (const file of files) {
-			const raw = fs.readFileSync(path.join(eventsDir, file), 'utf8');
-			const parsed = JSON.parse(raw);
-			const result = eventSchema.safeParse(parsed);
-			expect(result.success).toBe(true);
+	it('keeps deprecated theme color fields out of real event content files', () => {
+		for (const contentRoot of contentRoots) {
+			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
+			for (const file of files) {
+				const raw = fs.readFileSync(file, 'utf8');
+				const parsed = JSON.parse(raw);
+				expect(parsed.theme?.primaryColor).toBeUndefined();
+				expect(parsed.theme?.accentColor).toBeUndefined();
+			}
+		}
+	});
+
+	it('keeps raw hex envelope palette values out of real event content files', () => {
+		for (const contentRoot of contentRoots) {
+			const files = getJsonContentFiles(path.resolve(process.cwd(), contentRoot));
+			for (const file of files) {
+				const raw = fs.readFileSync(file, 'utf8');
+				const parsed = JSON.parse(raw);
+				const palette = parsed.envelope?.closedPalette ?? {};
+				expect(
+					Object.values(palette).some(
+						(value) => typeof value === 'string' && value.startsWith('#'),
+					),
+				).toBe(false);
+			}
 		}
 	});
 
@@ -60,7 +103,6 @@ describe('Event content schema (real contract)', () => {
 			const result = eventSchema.safeParse(
 				createMinimalEvent({
 					theme: {
-						primaryColor: '#d4af37',
 						fontFamily: 'serif',
 						preset,
 					},
@@ -74,7 +116,6 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				theme: {
-					primaryColor: '#d4af37',
 					fontFamily: 'serif',
 					preset: 'broken-preset',
 				},
@@ -82,6 +123,38 @@ describe('Event content schema (real contract)', () => {
 					quote: { variant: 'broken-quote' },
 					location: { variant: 'broken-location' },
 					rsvp: { variant: 'broken-rsvp' },
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects deprecated theme color fields', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				theme: {
+					fontFamily: 'serif',
+					preset: 'jewelry-box',
+					primaryColor: '#d4af37',
+					accentColor: 'surfaceDark',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects raw hex envelope palette values', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				envelope: {
+					disabled: false,
+					sealStyle: 'wax',
+					microcopy: 'Abrir',
+					closedPalette: {
+						background: '#0D0D0D',
+					},
 				},
 			}),
 		);

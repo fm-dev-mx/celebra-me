@@ -12,26 +12,19 @@ import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
 import '@styles/invitation/_event-header.scss';
 
 export interface Props {
-    eventName?: string;
-    theme?: {
-        primaryColor: string;
-        accentColor?: string;
-        fontDisplay?: string;
-    };
-    links: { // Made required to enforce passing data
-        label: string;
-        href: string
-    }[];
-    variant?: string;
+	eventName?: string;
+	links: {
+		label: string;
+		href: string;
+	}[];
+	variant?: string;
 }
 
 const {
-    eventName = 'Mi Evento', // Generic default
-    links = [],
-    variant = 'standard'
+	eventName = 'Mi Evento',
+	links,
+	variant = 'standard',
 } = Astro.props;
-
-
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>

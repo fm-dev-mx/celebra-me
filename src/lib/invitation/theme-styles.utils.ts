@@ -20,19 +20,6 @@ export function generateThemeScopedStyles(
 
 	const overrides: Record<string, string> = {};
 
-	for (const [key, value] of Object.entries(theme.tokens)) {
-		const kebabKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-		overrides[`--color-${kebabKey}-override`] = value;
-	}
-
-	for (const [key, value] of Object.entries(theme.colors)) {
-		if (key.endsWith('Rgb')) {
-			const baseName = key.replace(/Rgb$/, '');
-			const kebabKey = baseName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-			overrides[`--color-${kebabKey}-rgb-override`] = value;
-		}
-	}
-
 	if (showEnvelope && envelope.data) {
 		const { colors } = envelope.data;
 		if (colors.background) {

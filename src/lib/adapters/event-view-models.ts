@@ -9,7 +9,7 @@ import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
 import type { AdaptationContext } from '@/lib/adapters/event';
-import { resolveColorToken } from '@/lib/theme/color-tokens';
+import { resolveColorRole } from '@/lib/theme/color-tokens';
 import { buildRevealCard } from '@/lib/invitation/reveal-card';
 
 export function buildHero(context: AdaptationContext): HeroViewModel {
@@ -59,22 +59,13 @@ export function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 						}),
 						colors: {
 							background: data.envelope.closedPalette?.background
-								? resolveColorToken(
-										data.envelope.closedPalette.background,
-										normalizedPreset,
-									)
+								? resolveColorRole(data.envelope.closedPalette.background)
 								: undefined,
 							primary: data.envelope.closedPalette?.primary
-								? resolveColorToken(
-										data.envelope.closedPalette.primary,
-										normalizedPreset,
-									)
+								? resolveColorRole(data.envelope.closedPalette.primary)
 								: undefined,
 							accent: data.envelope.closedPalette?.accent
-								? resolveColorToken(
-										data.envelope.closedPalette.accent,
-										normalizedPreset,
-									)
+								? resolveColorRole(data.envelope.closedPalette.accent)
 								: undefined,
 						},
 					}

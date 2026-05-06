@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
 import { EVENT_TYPES, PREMIUM_THEMES } from '@/lib/theme/theme-contract';
-import { VALID_COLOR_TOKENS } from '@/lib/theme/color-tokens';
+import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 
 const secureUrlSchema = z
 	.url()
@@ -35,23 +35,18 @@ export const AssetSchema = z.preprocess(
 
 export type ContentAssetSource = ReturnType<(typeof AssetSchema)['parse']>;
 
-const hexRegex = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
-
 export const ColorTokenSchema = z
-	.string()
-	.refine((value) => hexRegex.test(value) || VALID_COLOR_TOKENS.includes(value), {
-		message: 'Must be a valid hex color (#RGB or #RRGGBB) or a recognized semantic token.',
+	.enum(COLOR_TOKENS, {
+		error: 'Must be a recognized semantic color role.',
 	})
-	.describe(
-		'A hex color (starting with #) or a semantic token like "primary", "accent", "background"',
-	);
+	.describe('A semantic color role such as "surfacePrimary" or "actionAccent".');
 
-export const themeSchema = z.object({
-	primaryColor: ColorTokenSchema.optional(),
-	accentColor: ColorTokenSchema.optional(),
-	fontFamily: z.enum(['serif', 'sans']).default('serif'),
-	preset: z.enum(PREMIUM_THEMES).optional(),
-});
+export const themeSchema = z
+	.object({
+		fontFamily: z.enum(['serif', 'sans']).default('serif'),
+		preset: z.enum(PREMIUM_THEMES).optional(),
+	})
+	.strict();
 
 export const quoteSchema = z
 	.object({

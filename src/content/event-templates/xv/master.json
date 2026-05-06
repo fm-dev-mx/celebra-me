@@ -3,8 +3,6 @@
     "title": "Plantilla Cliente XV",
     "description": "Plantilla base para invitaciones reales de XV años en producción.",
     "theme": {
-        "primaryColor": "actionAccent",
-        "accentColor": "surfaceDark",
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },

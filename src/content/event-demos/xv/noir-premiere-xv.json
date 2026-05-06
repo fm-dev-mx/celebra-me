@@ -4,8 +4,6 @@
     "title": "Noir Premiere XV",
     "description": "Una invitacion editorial donde la elegancia noir y el brillo dorado presentan una noche de quince anos con presencia cinematografica.",
     "theme": {
-        "primaryColor": "#0D0D0D",
-        "accentColor": "#D4AF37",
         "fontFamily": "serif",
         "preset": "editorial"
     },
@@ -310,9 +308,9 @@
         "sealIcon": "flower",
         "microcopy": "Abre Tu Invitacion",
         "closedPalette": {
-            "primary": "#D4AF37",
-            "accent": "#D4AF37",
-            "background": "#0D0D0D"
+            "primary": "actionAccent",
+            "accent": "actionAccent",
+            "background": "surfaceDark"
         }
     },
     "sharing": {

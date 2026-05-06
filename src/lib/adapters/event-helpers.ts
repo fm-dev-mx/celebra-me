@@ -59,21 +59,6 @@ export function pickPreset(candidate: string | undefined): ThemePreset {
 	return PREMIUM_THEMES[0];
 }
 
-export function hexToRgb(hex: string): string {
-	hex = hex.replace(/^#/, '');
-	if (hex.length === 3) {
-		hex = hex
-			.split('')
-			.map((char) => char + char)
-			.join('');
-	}
-	const bigint = parseInt(hex, 16);
-	const r = (bigint >> 16) & 255;
-	const g = (bigint >> 8) & 255;
-	const b = bigint & 255;
-	return `${r}, ${g}, ${b}`;
-}
-
 export function resolveAsset(
 	eventSlug: string,
 	source: AssetSource | string | undefined,

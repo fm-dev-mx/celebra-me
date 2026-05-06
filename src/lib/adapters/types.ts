@@ -16,20 +16,9 @@ import type {
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 
 export interface ThemeConfig {
-	primaryColor: string;
-	accentColor?: string;
-	fontFamily: 'serif' | 'sans';
 	preset?: ThemePreset;
 	// Derived CSS class for the body/wrapper
 	themeClass: string;
-	// Processed RGB values for CSS variables
-	colors: {
-		primaryRgb: string;
-		accentRgb: string;
-		[key: string]: string; // Allow dynamic semantic tokens
-	};
-	// Raw hex semantic tokens
-	tokens: Record<string, string>;
 }
 
 export interface HeroViewModel {

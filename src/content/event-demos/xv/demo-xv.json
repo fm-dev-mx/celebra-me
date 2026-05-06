@@ -4,8 +4,6 @@
     "title": "XV Años - Demo Invitación",
     "description": "Acompáñanos a celebrar estos XV años de ensueño.",
     "theme": {
-        "primaryColor": "actionAccent",
-        "accentColor": "surfaceDark",
         "fontFamily": "serif",
         "preset": "jewelry-box"
     },
