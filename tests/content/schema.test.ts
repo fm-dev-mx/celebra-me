@@ -2,12 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { collections } from '@/content.config';
-import {
-	LOCATION_VARIANTS,
-	QUOTE_VARIANTS,
-	SHARED_SECTION_VARIANTS,
-	THEME_PRESETS,
-} from '@/lib/theme/theme-contract';
+import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
 
 const resolvedSchema =
 	typeof collections.events.schema === 'function'
@@ -61,7 +56,7 @@ describe('Event content schema (real contract)', () => {
 	});
 
 	it('accepts all theme presets from ThemeContract', () => {
-		for (const preset of THEME_PRESETS) {
+		for (const preset of PREMIUM_THEMES) {
 			const result = eventSchema.safeParse(
 				createMinimalEvent({
 					theme: {
@@ -127,9 +122,9 @@ describe('Event content schema (real contract)', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				sectionStyles: {
-					quote: { variant: QUOTE_VARIANTS[0] },
-					location: { variant: LOCATION_VARIANTS[0] },
-					rsvp: { variant: SHARED_SECTION_VARIANTS[0] },
+					quote: { variant: PREMIUM_THEMES[0] },
+					location: { variant: PREMIUM_THEMES[0] },
+					rsvp: { variant: PREMIUM_THEMES[0] },
 				},
 				location: {
 					venueName: 'Test Venue',

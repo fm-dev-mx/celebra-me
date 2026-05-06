@@ -1,0 +1,312 @@
+// src/styles/themes/landing/presets/_editorial.scss
+
+/**
+ * Editorial Theme - Landing Page Preset
+ * Coffee/gold/parchment theme for the landing page
+ * This is the default Celebra-me theme
+ */
+
+@use 'sass:color';
+@use '../../../tools/functions' as tools;
+@use '../../../tokens/system/color' as sys;
+/* stylelint-disable color-no-hex */
+
+.theme-preset--editorial {
+	// Color Architecture: Standard Brand Palette
+	--color-text-primary: #{sys.$sys-color-coffee-900};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-text-secondary: #{sys.$sys-color-coffee-700};
+	--color-text-emphasis: #{sys.$sys-color-gold-700};
+	--color-text-on-dark: #{sys.$sys-color-parchment-100};
+	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--color-surface-primary: #{sys.$sys-color-parchment-100};
+	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--color-surface-dark: #{sys.$sys-color-coffee-900};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-action-primary: #{sys.$sys-color-coffee-900};
+	--color-action-accent: #{sys.$sys-color-gold-500};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+
+	// Specific fixes for Contact Form
+	--color-border-subtle: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.1)};
+	--color-border-emphasis: #{sys.$sys-color-gold-500};
+
+	// Glassmorphism default
+	--color-glass-bg: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.1)};
+	--color-glass-border: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.2)};
+
+	// Shadows
+	--shadow-subtle: 0 4px 15px rgb(0 0 0 / 10%);
+	--shadow-emphasis: 0 10px 30px rgb(0 0 0 / 20%);
+	--hero-overlay-alpha: 0.4;
+	--hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
+
+	// ==========================================
+	// Landing Page Section-Specific Tokens
+	// ==========================================
+
+	// Services Section
+	--services-card-bg: rgb(255 255 255 / 70%);
+	--services-card-backdrop-blur: 10px;
+	--services-card-border: rgb(255 255 255 / 50%);
+	--services-card-hover-transform: translateY(-8px);
+	--services-card-hover-shadow: 0 20px 40px -5px rgb(0 0 0 / 15%);
+	--services-image-overlay-bg: linear-gradient(to top, rgb(0 0 0 / 40%), transparent);
+	--services-image-overlay-opacity: 0.6;
+	--services-image-filter-default: grayscale(100%);
+	--services-image-filter-hover: grayscale(0%);
+	--services-icon-wrapper-bg: #{sys.$sys-color-neutral-0};
+	--services-icon-wrapper-color: #{sys.$sys-color-gold-500};
+	--services-icon-wrapper-shadow: 0 4px 10px rgb(0 0 0 / 5%);
+	--services-heading-accent-color: #{sys.$sys-color-gold-500};
+	--services-title-color: var(--color-text-primary);
+	--services-description-color: var(--color-text-secondary);
+	--services-cta-color: #{sys.$sys-color-gold-500};
+	--services-card-transition-duration: 0.4s;
+	--services-card-stagger-delay: 100ms;
+
+	// Header Section
+	--header-bg-transparent: transparent;
+	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 92%);
+	--header-text-transparent: #{sys.$sys-color-neutral-0};
+	--header-text-scrolled: #{sys.$sys-color-parchment-100};
+	--header-accent-scrolled: #{sys.$sys-color-gold-500};
+	--header-shadow-scrolled: var(--shadow-premium, 0 16px 36px rgb(0 0 0 / 14%));
+	--header-backdrop-blur: 12px;
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
+	--header-border-scrolled: var(--border-fine-gold, 1px solid var(--color-glass-border));
+	--header-cta-glow: 0 0 20px rgb(var(--color-action-accent-rgb) / 20%);
+	--mobile-drawer-bg: rgb(var(--color-surface-dark-rgb) / 95%);
+	--mobile-drawer-border: var(--color-glass-border);
+	--mobile-drawer-link-hover: var(--color-action-accent);
+	--mobile-drawer-footer-copy: rgb(var(--color-text-on-dark-rgb) / 40%);
+
+	// About Us Section
+	--about-noise-opacity: 0.04;
+	--about-bg-gradient-1: #{color.change(sys.$sys-color-gold-400, $alpha: 0.14)};
+	--about-bg-gradient-2: #{color.change(sys.$sys-color-coffee-900, $alpha: 0.08)};
+	--about-bg-gradient-3: #{color.change(sys.$sys-color-parchment-300, $alpha: 0.7)};
+	--about-underline-gradient: linear-gradient(
+		90deg,
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)},
+		#{color.change(sys.$sys-color-gold-500, $alpha: 0.95)},
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.15)}
+	);
+	--about-underline-shine-color: rgb(255 255 255 / 60%);
+	--about-image-wrapper-bg: linear-gradient(
+		135deg,
+		rgb(255 255 255 / 40%) 0%,
+		rgb(255 255 255 / 5%) 50%,
+		rgb(255 255 255 / 2%) 100%
+	);
+	--about-image-frame-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.16)},
+		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.04)}
+	);
+	--about-image-wrapper-shadow:
+		0 40px 80px -20px rgb(0 0 0 / 20%),
+		0 15px 40px -15px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
+	--about-image-frame-border: rgb(255 255 255 / 35%);
+	--about-image-glow-color: #{color.change(sys.$sys-color-gold-400, $alpha: 0.18)};
+	--about-decoration-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.35)};
+	--about-decoration-bg: linear-gradient(
+		135deg,
+		#{color.change(sys.$sys-color-gold-400, $alpha: 0.18)},
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)}
+	);
+	--about-decoration-shadow: 0 20px 40px #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
+	--about-value-card-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.72)},
+		#{color.change(sys.$sys-color-parchment-300, $alpha: 0.42)}
+	);
+	--about-value-card-border: rgb(255 255 255 / 50%);
+	--about-value-card-shadow:
+		0 20px 50px -28px rgb(0 0 0 / 18%),
+		0 10px 24px -20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
+	--about-value-card-hover-bg: linear-gradient(
+		180deg,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.92)},
+		#{color.change(sys.$sys-color-parchment-100, $alpha: 0.78)}
+	);
+	--about-value-card-hover-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.4)};
+	--about-value-icon-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.08)};
+	--about-value-icon-color: var(--color-action-accent);
+	--about-value-icon-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
+	--about-value-icon-hover-bg: var(--color-action-accent);
+	--about-sparkle-color: var(--color-action-accent);
+	--about-ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+	--about-ease-slow: cubic-bezier(0.22, 0.61, 0.36, 1);
+	--about-glint-angle: 45deg;
+	--about-animation-duration: 10s;
+
+	// Pricing Section
+	--pricing-section-bg: var(--color-surface-primary);
+	--pricing-noise-opacity: 0.03;
+	--pricing-card-bg: rgb(255 255 255 / 70%);
+	--pricing-card-backdrop-blur: 10px;
+	--pricing-card-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
+	--pricing-card-border-radius: 4px;
+	--pricing-card-hover-transform: translateY(-10px);
+	--pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
+	--pricing-premium-bg: rgb(44 62 80 / 2%);
+	--pricing-premium-border: var(--color-action-accent);
+	--pricing-premium-shadow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
+	--pricing-premium-scale: 1.05;
+	--pricing-premium-badge-bg: var(--color-action-accent);
+	--pricing-elite-bg: rgb(15 23 42 / 90%);
+	--pricing-elite-border: var(--color-surface-secondary);
+	--pricing-elite-shadow: 0 20px 50px rgb(0 0 0 / 20%);
+	--pricing-elite-text-color: white;
+	--pricing-elite-accent-color: var(--color-surface-secondary);
+	--pricing-tier-name-color: var(--color-surface-dark);
+	--pricing-tier-desc-color: var(--color-text-primary);
+	--pricing-tier-price-color: var(--color-surface-dark);
+	--pricing-tier-currency-color: var(--color-action-accent);
+	--pricing-feature-highlight-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
+	--pricing-feature-highlight-color: var(--color-action-primary);
+	--pricing-cta-border: var(--color-action-accent);
+	--pricing-cta-color: var(--color-action-accent);
+	--pricing-cta-hover-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.05)};
+	--pricing-card-border-glow: var(--color-action-accent);
+	--pricing-glint-gradient: linear-gradient(
+		90deg,
+		transparent,
+		rgb(255 255 255 / 40%),
+		transparent
+	);
+
+	// FAQ Section
+	--faq-section-bg: #0f172a;
+	--faq-section-color: white;
+	--faq-noise-opacity: 0.1;
+	--faq-item-bg: rgb(255 255 255 / 3%);
+	--faq-item-backdrop-blur: 10px;
+	--faq-item-border: rgb(255 255 255 / 5%);
+	--faq-item-border-radius: 2px;
+	--faq-item-hover-bg: rgb(255 255 255 / 5%);
+	--faq-item-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
+	--faq-item-open-bg: rgb(255 255 255 / 7%);
+	--faq-item-open-border: var(--color-action-accent);
+	--faq-item-open-shadow: 0 30px 60px rgb(0 0 0 / 30%);
+	--faq-pretitle-color: var(--color-action-accent);
+	--faq-title-color: var(--color-surface-secondary);
+	--faq-subtitle-color: rgb(255 255 255 / 70%);
+	--faq-question-color: var(--color-surface-secondary);
+	--faq-question-hover-color: white;
+	--faq-answer-color: rgb(255 255 255 / 60%);
+	--faq-chevron-color: rgb(255 255 255 / 30%);
+	--faq-chevron-open-color: var(--color-action-accent);
+	--faq-transition-duration: 0.5s;
+	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
+
+	// Footer Section
+	--footer-section-bg: #0f172a;
+	--footer-section-color: white;
+	--footer-noise-opacity: 0.05;
+	--footer-slogan-opacity: 0.7;
+	--footer-slogan-color: white;
+	--footer-group-title-color: var(--color-surface-secondary);
+	--footer-link-color: white;
+	--footer-link-opacity: 0.6;
+	--footer-link-hover-opacity: 1;
+	--footer-link-hover-color: var(--color-surface-secondary);
+	--footer-social-bg: rgb(255 255 255 / 10%);
+	--footer-social-border: rgb(255 255 255 / 10%);
+	--footer-social-color: white;
+	--footer-social-hover-bg: var(--color-action-accent);
+	--footer-social-hover-border: var(--color-action-accent);
+	--footer-social-hover-shadow: 0 10px 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
+	--footer-bottom-border: rgb(255 255 255 / 10%);
+	--footer-copyright-opacity: 0.5;
+	--footer-legal-opacity: 0.5;
+	--footer-transition-duration: 0.3s;
+	--footer-transition-easing: ease;
+
+	// Contact Section
+	--contact-section-bg: var(--color-surface-primary);
+	--contact-section-color: var(--color-surface-dark);
+	--contact-texture-opacity: 0.03;
+	--contact-pretitle-color: var(--color-text-emphasis);
+	--contact-title-color: var(--color-text-primary);
+	--contact-divider-bg: var(--color-border-emphasis);
+	--contact-info-title-color: var(--color-text-primary);
+	--contact-info-description-color: var(--color-text-secondary);
+	--contact-info-footer-color: var(--color-text-secondary);
+	--contact-channel-bg: var(--color-surface-primary);
+	--contact-channel-border: var(--color-border-subtle);
+	--contact-channel-shadow: var(--shadow-subtle);
+	--contact-channel-icon-bg: var(--color-surface-secondary);
+	--contact-channel-icon-color: var(--color-action-accent);
+	--contact-channel-label-color: rgb(var(--color-text-secondary-rgb), 0.6);
+	--contact-channel-value-color: var(--color-text-primary);
+	--contact-channel-hover-border: var(--color-border-emphasis);
+	--contact-channel-hover-transform: translateY(-3px);
+	--contact-channel-hover-shadow: var(--shadow-emphasis);
+	--contact-channel-icon-hover-bg: var(--color-action-accent);
+	--contact-channel-icon-hover-color: white;
+	--contact-form-bg: rgb(var(--color-surface-primary-rgb), 0.7);
+	--contact-form-backdrop-blur: 20px;
+	--contact-form-border: var(--color-border-subtle);
+	--contact-form-shadow: var(--shadow-emphasis);
+	--contact-form-accent-line: var(--color-border-emphasis);
+	--contact-input-border: var(--color-border-subtle);
+	--contact-input-color: var(--color-text-primary);
+	--contact-input-focus-border: var(--color-action-accent);
+	--contact-label-color: rgb(var(--color-text-secondary-rgb), 0.5);
+	--contact-label-focus-color: var(--color-action-accent);
+	--contact-submit-bg: var(--color-action-primary);
+	--contact-submit-color: var(--color-text-on-dark);
+	--contact-submit-hover-bg: var(--color-action-accent);
+	--contact-submit-hover-transform: translateY(-2px);
+	--contact-submit-hover-shadow: var(--shadow-subtle);
+
+	// Testimonials Section
+	--testimonials-title-font: var(--font-display, 'Playfair Display', serif);
+	--testimonials-title-color: var(--color-text-primary, #333);
+	--testimonials-title-letter-spacing: -0.02em;
+	--testimonials-title-weight: 500;
+	--testimonials-title-underline-bg: linear-gradient(
+		90deg,
+		transparent,
+		var(--color-action-accent, #{sys.$sys-color-gold-500}),
+		transparent
+	);
+	--testimonials-card-bg: rgb(255 255 255 / 60%);
+	--testimonials-card-backdrop-blur: 12px;
+	--testimonials-card-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
+	--testimonials-card-border-radius: 2px;
+	--testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
+	--testimonials-card-transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	--testimonials-card-accent-bg: linear-gradient(
+		90deg,
+		transparent,
+		var(--color-action-accent, #{sys.$sys-color-gold-500}),
+		transparent
+	);
+	--testimonials-card-accent-opacity: 0.3;
+	--testimonials-card-hover-bg: rgb(255 255 255 / 95%);
+	--testimonials-card-hover-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.4)};
+	--testimonials-card-hover-shadow: 0 25px 50px -20px
+		#{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
+	--testimonials-card-hover-transform: translateY(-8px);
+	--testimonials-quote-icon-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
+	--testimonials-quote-icon-opacity: 0.08;
+	--testimonials-quote-icon-hover-opacity: 0.15;
+	--testimonials-quote-icon-hover-transform: scale(1.1) rotate(-5deg);
+	--testimonials-text-font: var(--font-display, serif);
+	--testimonials-text-size: 1.15rem;
+	--testimonials-text-line-height: 1.8;
+	--testimonials-text-color: var(--color-text, #1a1a1a);
+	--testimonials-text-style: italic;
+	--testimonials-author-name-weight: 700;
+	--testimonials-author-name-transform: uppercase;
+	--testimonials-author-name-letter-spacing: 0.2em;
+	--testimonials-author-name-size: 0.85rem;
+	--testimonials-author-name-color: var(--color-action-accent, #{sys.$sys-color-gold-500});
+	--testimonials-author-role-size: 0.7rem;
+	--testimonials-author-role-transform: uppercase;
+	--testimonials-author-role-letter-spacing: 0.15em;
+	--testimonials-author-role-color: var(--color-text-muted, #666);
+}

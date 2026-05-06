@@ -10,7 +10,7 @@ interface Props {
 	animation?: QuoteAnimation;
 }
 
-const { text, author, variant = 'elegant', animation = 'fade' } = Astro.props;
+const { text, author, variant = 'editorial', animation = 'fade' } = Astro.props;
 ---
 
 <section id="quote-section" class="quote-section" data-variant={variant} data-animation={animation}>

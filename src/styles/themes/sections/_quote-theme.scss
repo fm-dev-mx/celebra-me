@@ -1,239 +1,10 @@
 // src/styles/themes/sections/_quote-theme.scss
 // Theme-specific styles for Quote Section
-// Supports: elegant (default), modern, minimal, floral
+// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
 
 @use '../../tokens' as tokens;
 @use 'sass:meta';
 @use 'sass:string';
-
-// ==========================================================================
-// ELEGANT VARIANT (Default - Classic/Formal Style)
-// Best for: Weddings, formal birthdays, anniversaries
-// Characteristics: Serif fonts, gold accents, subtle animations
-// ==========================================================================
-
-.quote-section[data-variant='elegant'] {
-	background-color: var(--color-surface-dark, tokens.$color-surface-dark);
-	background-image:
-		radial-gradient(
-			ellipse at center,
-			rgb(var(--color-text-primary-rgb, 75, 54, 33), 0.4) 0%,
-			transparent 80%
-		),
-		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3Cfilter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E");
-	background-blend-mode: soft-light, overlay;
-	color: var(--color-text-on-dark);
-
-	&::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(circle at center, transparent 0%, rgb(0 0 0 / 40%) 100%);
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	.quote-container {
-		position: relative;
-		z-index: 1;
-	}
-
-	// Classic dividers with curves
-	.quote-divider-top,
-	.quote-divider-bottom {
-		color: var(--color-action-accent);
-		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 30%));
-		width: 200px;
-
-		svg {
-			width: 100%;
-			height: 35px;
-		}
-	}
-
-	// Elegant serif typography
-	.quote-content {
-		font-family: var(--font-body-narrative); // EB Garamond
-		font-weight: 500;
-		font-size: clamp(1.6rem, 5.5vw, 2.4rem);
-		line-height: 1.5;
-		font-style: italic;
-		letter-spacing: -0.01em;
-	}
-
-	// Subtle ornament for author
-	.quote-ornament {
-		width: 40px;
-		height: 1px;
-		background: currentcolor;
-		opacity: 30%;
-	}
-
-	.quote-author {
-		font-family: var(--font-display-formal);
-		font-size: clamp(0.9rem, 3vw, 1.1rem);
-		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		font-style: normal;
-	}
-
-	// Smooth fade-in animation
-	.quote-line {
-		transition:
-			opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
-			transform 1s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-}
-
-// ==========================================================================
-// MODERN VARIANT (Youthful/Dynamic Style)
-// Best for: XV Años, modern weddings, birthday parties
-// Characteristics: Script fonts, vibrant gradients, bouncy animations
-// ==========================================================================
-
-.quote-section[data-variant='modern'] {
-	// Vibrant gradient background with particles effect
-	background: linear-gradient(
-		135deg,
-		var(--color-surface-secondary) 0%,
-		var(--color-surface-primary) 25%,
-		var(--color-action-primary) 50%,
-		var(--color-action-secondary) 75%,
-		var(--color-action-secondary) 100%
-	);
-	color: var(--color-text-primary);
-	position: relative;
-	overflow: hidden;
-
-	// Decorative floating shapes
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background-image:
-			radial-gradient(circle at 20% 30%, rgb(255 154 158 / 30%) 0%, transparent 40%),
-			radial-gradient(circle at 80% 70%, rgb(254 207 239 / 40%) 0%, transparent 40%);
-		pointer-events: none;
-	}
-
-	// Modern decorative dividers - stars/sparkles
-	.quote-divider-top,
-	.quote-divider-bottom {
-		color: var(--color-action-accent);
-		width: 250px;
-
-		svg {
-			filter: drop-shadow(0 2px 4px rgb(255 107 157 / 30%));
-		}
-
-		// Replace the path with star-like decorations
-		path {
-			display: none;
-		}
-
-		// Add sparkle decorations
-		&::before,
-		&::after {
-			content: '✦';
-			font-size: 1.5rem;
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			color: var(--color-action-primary);
-			text-shadow: 0 0 10px rgb(var(--color-action-primary-rgb) / 50%);
-		}
-
-		&::before {
-			left: 30%;
-		}
-
-		&::after {
-			right: 30%;
-		}
-	}
-
-	.quote-divider-top {
-		margin-bottom: 2.5rem;
-
-		// Central decorative element
-		svg {
-			display: none;
-		}
-
-		&::before {
-			content: '❋';
-			font-size: 2rem;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
-
-		&::after {
-			display: none;
-		}
-	}
-
-	.quote-divider-bottom {
-		margin-top: 2.5rem;
-
-		svg {
-			display: none;
-		}
-
-		&::before {
-			content: '❋';
-			font-size: 2rem;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
-
-		&::after {
-			display: none;
-		}
-	}
-
-	// Script typography for modern feel
-	.quote-content {
-		font-family: 'Pinyon Script', cursive;
-		font-weight: 600;
-		font-size: clamp(1.8rem, 6vw, 3rem);
-		line-height: 1.4;
-		font-style: normal;
-		color: var(--color-text-primary);
-		text-shadow: 2px 2px 4px rgb(var(--color-surface-elevated-rgb) / 50%);
-	}
-
-	// Modern author styling
-	.quote-author-container {
-		gap: 1.5rem;
-	}
-
-	.quote-ornament {
-		width: 60px;
-		height: 2px;
-		background: linear-gradient(90deg, transparent, var(--color-action-accent), transparent);
-		opacity: 60%;
-	}
-
-	.quote-author {
-		font-family: Montserrat, sans-serif;
-		font-size: clamp(1rem, 3vw, 1.3rem);
-		text-transform: none;
-		letter-spacing: 0.1em;
-		color: var(--color-action-accent);
-		font-weight: 500;
-	}
-
-	// Bouncy/elastic animation
-	.quote-line {
-		transition:
-			opacity 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55),
-			transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-		&.is-visible {
-			animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-		}
-	}
-}
 
 // ==========================================================================
 // JEWELRY BOX VARIANT (Luxury/Refined Style)
@@ -315,160 +86,6 @@
 }
 
 // ==========================================================================
-// MINIMAL VARIANT (Clean/Simple Style)
-// Best for: Corporate events, minimal weddings
-// Characteristics: Sans-serif fonts, clean lines, no decorations
-// ==========================================================================
-
-.quote-section[data-variant='minimal'] {
-	// Clean light background
-	background-color: var(--color-surface-soft);
-	color: var(--color-text-primary);
-
-	// No decorative dividers
-	.quote-divider-top,
-	.quote-divider-bottom {
-		display: none;
-	}
-
-	// Clean sans-serif typography
-	.quote-content {
-		font-family: Inter, 'Helvetica Neue', sans-serif;
-		font-weight: 300;
-		font-size: clamp(1.4rem, 4vw, 2rem);
-		line-height: 1.6;
-		font-style: normal;
-		color: var(--color-text-secondary);
-		max-width: 700px;
-		margin: 0 auto;
-	}
-
-	// Minimal author styling
-	.quote-author-container {
-		margin-top: 3rem;
-	}
-
-	.quote-ornament {
-		display: none;
-	}
-
-	.quote-author {
-		font-family: Inter, sans-serif;
-		font-size: 0.9rem;
-		text-transform: uppercase;
-		letter-spacing: 0.3em;
-		color: var(--color-neutral-muted);
-		font-weight: 400;
-	}
-
-	// Simple fade animation
-	.quote-line {
-		transition:
-			opacity 0.6s ease-out,
-			transform 0.6s ease-out;
-	}
-}
-
-// ==========================================================================
-// FLORAL VARIANT (Romantic/Nature Style)
-// Best for: Garden weddings, spring events, outdoor celebrations
-// Characteristics: Floral decorations, soft colors, gentle animations
-// ==========================================================================
-
-.quote-section[data-variant='floral'] {
-	// Soft floral-inspired gradient
-	background: linear-gradient(
-		180deg,
-		var(--color-surface-elevated) 0%,
-		var(--color-surface-primary) 50%,
-		var(--color-surface-secondary) 100%
-	);
-	color: var(--color-text-primary);
-	position: relative;
-
-	// Subtle floral pattern overlay
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-2 0-3 1-4 3 0 2 1 3 3 4 2 0 3-1 4-3 0-2-1-3-3-4zm0 8c-1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2z' fill='%23d4af37' fill-opacity='0.05'/%3E%3C/svg%3E");
-		pointer-events: none;
-		opacity: 50%;
-	}
-
-	// Floral decorative dividers
-	.quote-divider-top,
-	.quote-divider-bottom {
-		color: var(--color-action-accent);
-		width: 220px;
-
-		svg {
-			height: 40px;
-		}
-
-		// Add floral decorations
-		&::before,
-		&::after {
-			content: '🌸';
-			font-size: 1.2rem;
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			opacity: 70%;
-		}
-
-		&::before {
-			left: 25%;
-		}
-
-		&::after {
-			right: 25%;
-		}
-	}
-
-	// Elegant script for romantic feel
-	.quote-content {
-		font-family: 'Cormorant Garamond', 'Playfair Display', serif;
-		font-weight: 400;
-		font-size: clamp(1.7rem, 5vw, 2.5rem);
-		line-height: 1.5;
-		font-style: italic;
-		color: var(--color-text-secondary);
-	}
-
-	// Floral ornament
-	.quote-ornament {
-		width: 30px;
-		height: 30px;
-		background: none;
-		position: relative;
-
-		&::before {
-			content: '❀';
-			font-size: 1.5rem;
-			color: var(--color-action-accent);
-			opacity: 80%;
-		}
-	}
-
-	.quote-author {
-		font-family: 'Cormorant Garamond', serif;
-		font-size: clamp(1rem, 3vw, 1.2rem);
-		text-transform: none;
-		letter-spacing: 0.15em;
-		color: var(--color-text-muted);
-		font-style: italic;
-	}
-
-	// Gentle fade animation
-	.quote-line {
-		transition:
-			opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1),
-			transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-}
-
-// ==========================================================================
 // LUXURY HACIENDA VARIANT (Masculine/Rustic/Elite)
 // Best for: Formal adult birthdays, hacienda-style weddings
 // Characteristics: Serif Hacienda fonts, leather textures, cognac tones
@@ -535,24 +152,86 @@
 }
 
 // ==========================================================================
-// ANIMATION KEYFRAMES
+// EDITORIAL & PREMIERE-FLORAL VARIANTS
 // ==========================================================================
 
-@keyframes bounce-in {
-	0% {
-		opacity: 0%;
-		transform: translateY(30px) scale(0.9);
+.quote-section[data-variant='editorial'],
+.quote-section[data-variant='premiere-floral'] {
+	background-color: var(--color-surface-dark, tokens.$color-surface-dark);
+	background-image:
+		radial-gradient(
+			ellipse at center,
+			rgb(var(--color-text-primary-rgb, 75, 54, 33), 0.4) 0%,
+			transparent 80%
+		),
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E");
+	background-blend-mode: soft-light, overlay;
+	color: var(--color-text-on-dark);
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(circle at center, transparent 0%, rgb(0 0 0 / 40%) 100%);
+		pointer-events: none;
+		z-index: 0;
 	}
 
-	50% {
-		transform: translateY(-10px) scale(1.02);
+	.quote-container {
+		position: relative;
+		z-index: 1;
 	}
 
-	100% {
-		opacity: 100%;
-		transform: translateY(0) scale(1);
+	// Classic dividers with curves
+	.quote-divider-top,
+	.quote-divider-bottom {
+		color: var(--color-action-accent);
+		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 30%));
+		width: 200px;
+
+		svg {
+			width: 100%;
+			height: 35px;
+		}
+	}
+
+	// Elegant serif typography
+	.quote-content {
+		font-family: var(--font-body-narrative); // EB Garamond
+		font-weight: 500;
+		font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+		line-height: 1.5;
+		font-style: italic;
+		letter-spacing: -0.01em;
+	}
+
+	// Subtle ornament for author
+	.quote-ornament {
+		width: 40px;
+		height: 1px;
+		background: currentcolor;
+		opacity: 30%;
+	}
+
+	.quote-author {
+		font-family: var(--font-display-formal);
+		font-size: clamp(0.9rem, 3vw, 1.1rem);
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-style: normal;
+	}
+
+	// Smooth fade-in animation
+	.quote-line {
+		transition:
+			opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
+
+// ==========================================================================
+// ANIMATION KEYFRAMES
+// ==========================================================================
 
 @keyframes premium-fade-up {
 	0% {

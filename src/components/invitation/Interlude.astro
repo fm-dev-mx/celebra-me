@@ -37,39 +37,31 @@ const { image, alt, height = 'screen', variant = 'standard', focalPoint } = Astr
 	</div>
 </section>
 <script>
-	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-	const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
 
-	if (!prefersReducedMotion && interludes.length > 0) {
-		const updateParallax = () => {
-			for (const interlude of interludes) {
-				if (!(interlude instanceof HTMLElement)) {
-					continue;
-				}
+if (!prefersReducedMotion && interludes.length > 0) {
+  const updateParallax = () => {
+    for (const interlude of interludes) {
+      if (!(interlude instanceof HTMLElement)) {
+        continue;
+      }
 
-				const variant = interlude.dataset.variant ?? '';
-				if (
-					!variant.includes('premium') &&
-					variant !== 'editorial' &&
-					!variant.startsWith('premiere-')
-				) {
-					continue;
-				}
+      const variant = interlude.dataset.variant || 'standard';
+      const rect = interlude.getBoundingClientRect();
+      const viewportCenter = window.innerHeight / 2;
+      const parallaxStrength = variant.startsWith('premiere-') ? -0.045 : -0.08;
+      const offset = (rect.top + rect.height / 2 - viewportCenter) * parallaxStrength;
 
-				const rect = interlude.getBoundingClientRect();
-				const viewportCenter = window.innerHeight / 2;
-				const parallaxStrength = variant.startsWith('premiere-') ? -0.045 : -0.08;
-				const offset = (rect.top + rect.height / 2 - viewportCenter) * parallaxStrength;
+      interlude.style.setProperty(
+        '--interlude-parallax-offset',
+        `${offset.toFixed(2)}px`,
+      );
+    }
+  };
 
-				interlude.style.setProperty(
-					'--interlude-parallax-offset',
-					`${offset.toFixed(2)}px`,
-				);
-			}
-		};
-
-		updateParallax();
-		window.addEventListener('scroll', updateParallax, { passive: true });
-		window.addEventListener('resize', updateParallax);
-	}
+  updateParallax();
+  window.addEventListener('scroll', updateParallax, { passive: true });
+  window.addEventListener('resize', updateParallax);
+}
 </script>

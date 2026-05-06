@@ -4,7 +4,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { type SharedSectionVariant, SHARED_SECTION_VARIANTS } from '@/lib/theme/theme-contract';
+import { PREMIUM_THEMES, type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
@@ -42,7 +42,7 @@ export interface InvitationPageContext {
 				card: RevealCardData;
 		  })
 		| undefined;
-	footerVariant: SharedSectionVariant;
+	footerVariant: ThemePreset;
 }
 
 const DEFAULT_SECTION_ORDER: Array<keyof InvitationViewModel['sections']> = [
@@ -107,18 +107,18 @@ function resolveFooterVariant(
 	eventEntry: EventContentEntry,
 	themePreset: ThemeConfig['preset'],
 	isPreview: boolean,
-): SharedSectionVariant {
+): ThemePreset {
 	if (!isPreview) {
 		const configuredVariant = eventEntry.data.sectionStyles?.footer?.variant;
 		if (configuredVariant) return configuredVariant;
 	}
 
 	// Preview themes should override event-specific footer styles without mutating content data.
-	if (themePreset && (SHARED_SECTION_VARIANTS as readonly string[]).includes(themePreset)) {
-		return themePreset as SharedSectionVariant;
+	if (themePreset && (PREMIUM_THEMES as readonly string[]).includes(themePreset)) {
+		return themePreset as ThemePreset;
 	}
 
-	return 'standard';
+	return PREMIUM_THEMES[0];
 }
 
 function hasRenderableSection(

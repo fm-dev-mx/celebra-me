@@ -1,6 +1,7 @@
 import type { InvitationPageContext, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
 import type { ContentSectionKey } from '@/lib/adapters/types';
-import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
+import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import type { ThemePreset } from '@/lib/theme/theme-contract';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -42,7 +43,7 @@ export type InvitationSectionRenderDescriptor =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
-				variant: SharedSectionVariant;
+				variant: ThemePreset;
 				focalPoint?: string;
 			};
 	  }
@@ -78,7 +79,7 @@ function renderInterlude(
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageContext.viewModel.theme.preset ?? 'standard',
+			variant: block.variant ?? pageContext.viewModel.theme.preset ?? PREMIUM_THEMES[0],
 			focalPoint: block.focalPoint,
 		},
 	};
