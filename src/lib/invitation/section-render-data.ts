@@ -1,18 +1,11 @@
-import type { InvitationPageData, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
+import type { InvitationPageContext, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
 import type { ContentSectionKey } from '@/lib/adapters/types';
 import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
-type Sections = InvitationPageData['sections'];
+type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
 type RenderableSectionKey = Extract<InvitationRenderPlanItem, { type: 'section' }>['section'];
 type InterludeBlock = Extract<InvitationRenderPlanItem, { type: 'interlude' }>;
-
-type QuoteProps = SectionData<'quote'>;
-type FamilyProps = SectionData<'family'>;
-type GalleryProps = SectionData<'gallery'>;
-type CountdownProps = SectionData<'countdown'>;
-type ItineraryProps = SectionData<'itinerary'>;
-type ThankYouProps = SectionData<'thankYou'>;
 
 type LocationProps = SectionData<'location'> & {
 	nextSectionLink?: {
@@ -26,10 +19,8 @@ type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 };
 
 type PersonalizedAccessProps = {
-	guestName: NonNullable<InvitationPageData['personalizedAccess']>['guestName'];
-	maxAllowedAttendees: NonNullable<
-		InvitationPageData['personalizedAccess']
-	>['maxAllowedAttendees'];
+	guestName: string;
+	maxAllowedAttendees: number;
 };
 
 const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {
@@ -46,7 +37,7 @@ const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; lab
 
 export type InvitationSectionRenderDescriptor =
 	| {
-			kind: 'interlude';
+			component: 'interlude';
 			props: {
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
@@ -55,73 +46,126 @@ export type InvitationSectionRenderDescriptor =
 				focalPoint?: string;
 			};
 	  }
-	| { kind: 'quote'; props: QuoteProps }
-	| { kind: 'family'; props: FamilyProps }
-	| { kind: 'gallery'; props: GalleryProps }
-	| { kind: 'countdown'; props: CountdownProps }
-	| { kind: 'location'; props: LocationProps }
-	| { kind: 'itinerary'; props: ItineraryProps }
-	| { kind: 'rsvp'; props: NonNullable<InvitationPageData['rsvp']> }
-	| { kind: 'gifts'; props: GiftsProps }
-	| { kind: 'thankYou'; props: ThankYouProps }
-	| { kind: 'personalized-access'; props: PersonalizedAccessProps };
+	| { component: 'quote'; props: SectionData<'quote'> }
+	| { component: 'family'; props: SectionData<'family'> }
+	| { component: 'gallery'; props: SectionData<'gallery'> }
+	| { component: 'countdown'; props: SectionData<'countdown'> }
+	| { component: 'location'; props: LocationProps }
+	| { component: 'itinerary'; props: SectionData<'itinerary'> }
+	| {
+			component: 'rsvp';
+			props: SectionData<'rsvp'> & {
+				celebrantName: string;
+				guestCap: number;
+				initialGuestData?: {
+					fullName: string;
+					maxAllowedAttendees: number;
+					inviteId: string;
+				};
+			};
+	  }
+	| { component: 'gifts'; props: GiftsProps }
+	| { component: 'thankYou'; props: SectionData<'thankYou'> }
+	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
 function renderInterlude(
-	pageData: InvitationPageData,
+	pageContext: InvitationPageContext,
 	block: InterludeBlock,
 ): InvitationSectionRenderDescriptor {
 	return {
-		kind: 'interlude',
+		component: 'interlude',
 		props: {
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageData.themePreset ?? 'standard',
+			variant: block.variant ?? pageContext.viewModel.theme.preset ?? 'standard',
 			focalPoint: block.focalPoint,
 		},
 	};
 }
 
 function renderPersonalizedAccess(
-	pageData: InvitationPageData,
+	pageContext: InvitationPageContext,
 ): InvitationSectionRenderDescriptor | null {
-	const personalizedAccess = pageData.personalizedAccess;
+	const guestContext = pageContext.guestContext;
 
-	if (!personalizedAccess) return null;
+	if (!guestContext) return null;
 
 	return {
-		kind: 'personalized-access',
+		component: 'personalized-access',
 		props: {
-			guestName: personalizedAccess.guestName,
-			maxAllowedAttendees: personalizedAccess.maxAllowedAttendees,
+			guestName: guestContext.guest.fullName,
+			maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+		},
+	};
+}
+
+function renderRsvpSection(
+	pageContext: InvitationPageContext,
+): InvitationSectionRenderDescriptor | null {
+	const { sections, hero } = pageContext.viewModel;
+
+	if (!sections.rsvp) return null;
+
+	const guestContext = pageContext.guestContext;
+
+	return {
+		component: 'rsvp',
+		props: {
+			...sections.rsvp,
+			celebrantName: hero.name,
+			guestCap: guestContext?.guest.maxAllowedAttendees ?? sections.rsvp.guestCap,
+			initialGuestData: guestContext
+				? {
+						fullName: guestContext.guest.fullName,
+						maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+						inviteId: guestContext.inviteId,
+					}
+				: undefined,
+		},
+	};
+}
+
+function renderGiftsSection(sections: Sections): InvitationSectionRenderDescriptor | null {
+	if (!sections.gifts) return null;
+
+	const { items: gifts, ...rest } = sections.gifts;
+
+	return {
+		component: 'gifts',
+		props: {
+			...rest,
+			gifts,
 		},
 	};
 }
 
 function renderSection(
-	pageData: InvitationPageData,
+	pageContext: InvitationPageContext,
 	section: RenderableSectionKey,
 	nextSectionLink?: LocationProps['nextSectionLink'],
 ): InvitationSectionRenderDescriptor | null {
-	const { sections, rsvp } = pageData;
+	const { sections } = pageContext.viewModel;
 
 	switch (section) {
 		case 'quote':
-			return sections.quote ? { kind: 'quote', props: sections.quote } : null;
+			return sections.quote ? { component: 'quote', props: sections.quote } : null;
 
 		case 'family':
-			return sections.family ? { kind: 'family', props: sections.family } : null;
+			return sections.family ? { component: 'family', props: sections.family } : null;
 
 		case 'gallery':
-			return sections.gallery ? { kind: 'gallery', props: sections.gallery } : null;
+			return sections.gallery ? { component: 'gallery', props: sections.gallery } : null;
 
 		case 'countdown':
-			return sections.countdown ? { kind: 'countdown', props: sections.countdown } : null;
+			return sections.countdown
+				? { component: 'countdown', props: sections.countdown }
+				: null;
 
 		case 'location':
 			return sections.location
 				? {
-						kind: 'location',
+						component: 'location',
 						props: {
 							...sections.location,
 							nextSectionLink,
@@ -130,79 +174,65 @@ function renderSection(
 				: null;
 
 		case 'itinerary':
-			return sections.itinerary ? { kind: 'itinerary', props: sections.itinerary } : null;
+			return sections.itinerary
+				? { component: 'itinerary', props: sections.itinerary }
+				: null;
 
 		case 'rsvp':
-			return rsvp ? { kind: 'rsvp', props: rsvp } : null;
+			return renderRsvpSection(pageContext);
 
-		case 'gifts': {
-			if (!sections.gifts) return null;
-
-			const { items: gifts, ...rest } = sections.gifts;
-
-			return {
-				kind: 'gifts',
-				props: {
-					...rest,
-					gifts,
-				},
-			};
-		}
+		case 'gifts':
+			return renderGiftsSection(sections);
 
 		case 'thankYou':
-			return sections.thankYou ? { kind: 'thankYou', props: sections.thankYou } : null;
-
-		default:
-			return null;
+			return sections.thankYou ? { component: 'thankYou', props: sections.thankYou } : null;
 	}
 }
 
 function renderBlock(
-	pageData: InvitationPageData,
+	pageContext: InvitationPageContext,
 	block: InvitationRenderPlanItem,
 	index: number,
 	renderPlan: InvitationRenderPlanItem[],
 ): InvitationSectionRenderDescriptor | null {
 	switch (block.type) {
 		case 'interlude':
-			return renderInterlude(pageData, block);
+			return renderInterlude(pageContext, block);
 
 		case 'personalized-access':
-			return renderPersonalizedAccess(pageData);
+			return renderPersonalizedAccess(pageContext);
 
 		case 'section': {
 			const nextSectionLink =
 				block.section === 'location' ? findNextSectionLink(renderPlan, index) : undefined;
 
-			return renderSection(pageData, block.section, nextSectionLink);
+			return renderSection(pageContext, block.section, nextSectionLink);
 		}
-
-		default:
-			return null;
 	}
 }
 
+// Personalized access should feel attached to the human message, preferably just after Quote.
 function prioritizePersonalizedAccess(
 	descriptors: InvitationSectionRenderDescriptor[],
 ): InvitationSectionRenderDescriptor[] {
 	const personalizedAccess = descriptors.find(
-		(descriptor) => descriptor.kind === 'personalized-access',
+		(descriptor) => descriptor.component === 'personalized-access',
 	);
 
 	if (!personalizedAccess) return descriptors;
 
 	const rest: InvitationSectionRenderDescriptor[] = descriptors.filter(
-		(descriptor) => descriptor.kind !== 'personalized-access',
+		(descriptor) => descriptor.component !== 'personalized-access',
 	);
 
-	const quoteIndex = rest.findIndex((descriptor) => descriptor.kind === 'quote');
+	const quoteIndex = rest.findIndex((descriptor) => descriptor.component === 'quote');
 
 	if (quoteIndex !== -1) {
 		rest.splice(quoteIndex + 1, 0, personalizedAccess);
 		return rest;
 	}
 
-	const firstContentIndex = rest.findIndex((descriptor) => descriptor.kind !== 'interlude');
+	const firstContentIndex = rest.findIndex((descriptor) => descriptor.component !== 'interlude');
 
 	rest.splice(firstContentIndex === -1 ? 0 : firstContentIndex, 0, personalizedAccess);
 
@@ -210,10 +240,10 @@ function prioritizePersonalizedAccess(
 }
 
 export function buildInvitationSectionRenderDescriptors(
-	pageData: InvitationPageData,
+	pageContext: InvitationPageContext,
 ): InvitationSectionRenderDescriptor[] {
-	const descriptors = pageData.renderPlan
-		.map((block, index) => renderBlock(pageData, block, index, pageData.renderPlan))
+	const descriptors = pageContext.renderPlan
+		.map((block, index) => renderBlock(pageContext, block, index, pageContext.renderPlan))
 		.filter((block): block is InvitationSectionRenderDescriptor => block !== null);
 
 	return prioritizePersonalizedAccess(descriptors);

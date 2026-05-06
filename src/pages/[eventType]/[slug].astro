@@ -4,7 +4,7 @@ export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { prepareInvitationPageData } from '@/lib/invitation/page-data';
+import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/invitation.scss';
@@ -38,7 +38,6 @@ if (eventOverrideImporter) {
 	await eventOverrideImporter();
 }
 
-// Guest Context Retrieval
 let guestContext = null;
 if (inviteId) {
 	const personalization = await resolveRoutePersonalization({
@@ -54,63 +53,61 @@ if (inviteId) {
 	guestContext = personalization.guestContext;
 }
 
-const pageData = prepareInvitationPageData({
+const page = prepareInvitationPageContext({
 	eventEntry,
 	slug: slug as string,
 	guestContext,
 });
+const { viewModel } = page;
 ---
 
 <Layout
-	title={pageData.layout.title}
-	description={pageData.layout.description}
-	image={pageData.layout.image}
+	title={page.layout.title}
+	description={page.layout.description}
+	image={page.layout.image}
 	hideHeader={true}
-	className={pageData.layout.className}
-	isDemo={pageData.isDemo}
+	className={page.layout.className}
+	isDemo={viewModel.isDemo}
 	themeMode="dark"
 >
-	<style is:inline lang="scss" set:html={pageData.wrapper.scopedStyles} />
-	<main class={pageData.wrapper.className} {...pageData.wrapper.dataAttributes}>
+	<style is:inline lang="scss" set:html={page.wrapper.scopedStyles} />
+	<main class={page.wrapper.className} {...page.wrapper.dataAttributes}>
 
-		<!-- Components -->
 		{
-  pageData.envelope && (
-    <EnvelopeReveal
-      name={pageData.envelope.name}
-      sealStyle={pageData.envelope.sealStyle}
-      sealIcon={pageData.envelope.sealIcon}
-      microcopy={pageData.envelope.microcopy}
-      documentLabel={pageData.envelope.documentLabel}
-      stampText={pageData.envelope.stampText}
-      stampYear={pageData.envelope.stampYear}
-      tooltipText={pageData.envelope.tooltipText}
-      eventSlug={pageData.envelope.eventSlug}
-      variant={pageData.envelope.variant}
-      guestName={pageData.envelope.guestName}
-      card={pageData.envelope.card}
-    />
-  )
+			page.envelope && (
+				<EnvelopeReveal
+					name={page.envelope.name}
+					sealStyle={page.envelope.sealStyle}
+					sealIcon={page.envelope.sealIcon}
+					microcopy={page.envelope.microcopy}
+					documentLabel={page.envelope.documentLabel}
+					stampText={page.envelope.stampText}
+					stampYear={page.envelope.stampYear}
+					tooltipText={page.envelope.tooltipText}
+					eventSlug={page.envelope.eventSlug}
+					variant={page.envelope.variant}
+					guestName={page.envelope.guestName}
+					card={page.envelope.card}
+				/>
+			)
 		}
 
 		<EventHeader
-			eventName={pageData.header.eventName}
-			theme={pageData.header.theme}
-			links={pageData.header.links}
-			variant={pageData.header.variant}
+			eventName={viewModel.hero.name}
+			theme={viewModel.theme}
+			links={viewModel.navigation ?? []}
+			variant={viewModel.theme.preset}
 		/>
 
-		<Hero {...pageData.hero} />
+		<Hero {...viewModel.hero} time={page.heroTime} guestName={page.guestName} />
 
-		<InvitationSections pageData={pageData} />
+		<InvitationSections pageContext={page} />
 
-		{/* Engagement Tracking Script */}
 		{
 			guestContext && (
 				<script>
 					import { initEngagementTracking } from '@/lib/invitation/engagement';
 
-					// Wait for the container to be available
 					const container = document.getElementById('invitation-sections-container');
 					if (container) {
 						const inviteId = new URLSearchParams(window.location.search).get('invite');
@@ -120,7 +117,7 @@ const pageData = prepareInvitationPageData({
 							initEngagementTracking({
 								inviteId,
 								totalSections,
-								throttleMs: 10000 // 10 seconds throttle
+								throttleMs: 10000
 							});
 						}
 					}
@@ -129,18 +126,18 @@ const pageData = prepareInvitationPageData({
 		}
 
 		<Footer
-			eventSlug={pageData.footer.eventSlug}
-			showEnvelope={pageData.footer.showEnvelope}
-			variant={pageData.footer.variant}
+			eventSlug={viewModel.id}
+			showEnvelope={page.wrapper.showEnvelope}
+			variant={page.footerVariant}
 		/>
 
-		{pageData.music && (
+		{viewModel.music && (
 			<MusicPlayer
-				url={pageData.music.url}
-				autoPlay={pageData.music.autoPlay}
-				title={pageData.music.title}
-				revealMode={pageData.music.revealMode}
-				variant={pageData.music.variant}
+				url={viewModel.music.url}
+				autoPlay={viewModel.music.autoPlay}
+				title={viewModel.music.title}
+				revealMode={viewModel.music.revealMode}
+				variant={viewModel.theme.preset}
 			/>
 		)}
 	</main>

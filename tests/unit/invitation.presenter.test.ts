@@ -1,21 +1,28 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { prepareInvitationPageData } from '@/lib/invitation/page-data';
+import {
+	type InvitationRenderPlanItem,
+	prepareInvitationPageContext,
+} from '@/lib/invitation/page-data';
+
+function describeRenderPlan(items: InvitationRenderPlanItem[]): string[] {
+	return items.map((item) => (item.type === 'section' ? item.section : item.type));
+}
 
 function loadFixture(relativePath: string) {
 	const filePath = path.resolve(process.cwd(), relativePath);
 	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-describe('prepareInvitationPageData', () => {
-	it('builds a personalized presenter for premium invitation routes', () => {
+describe('prepareInvitationPageContext', () => {
+	it('builds a personalized context for premium invitation routes', () => {
 		const event = {
 			id: 'events/ximena-meza-trasvina',
 			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
-		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
-		const presenter = prepareInvitationPageData({
+		const context = prepareInvitationPageContext({
 			eventEntry: event,
 			slug: 'ximena-meza-trasvina',
 			guestContext: {
@@ -33,90 +40,80 @@ describe('prepareInvitationPageData', () => {
 			},
 		});
 
-		expect(presenter.layout.title).toBe('Invitación para Mariana Soto');
-		expect(presenter.layout.className).toBe('layout--premium-portrait');
-		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-floral');
-		expect(presenter.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
-		expect(presenter.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
-		expect(presenter.wrapper.scopedStyles).toContain(
-			'[data-event-slug="ximena-meza-trasvina"]',
-		);
-		expect(presenter.hero.guestName).toBe('Mariana Soto');
-		expect(presenter.envelope?.guestName).toBe('Mariana Soto');
-		expect(presenter.envelope?.card).toEqual({
+		expect(context.layout.title).toBe('Invitación para Mariana Soto');
+		expect(context.layout.className).toBe('layout--premium-portrait');
+		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-floral');
+		expect(context.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
+		expect(context.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');
+		expect(context.wrapper.scopedStyles).toContain('[data-event-slug="ximena-meza-trasvina"]');
+
+		expect(context.guestName).toBe('Mariana Soto');
+		expect(context.heroTime).toBe('8:00 PM');
+		expect(context.envelope?.guestName).toBe('Mariana Soto');
+		expect(context.envelope?.card).toEqual({
 			documentLabel: 'Invitación',
 			name: event.data.hero.name,
 			details: '11 de abril de 2026 • Los Mochis',
 			guestName: 'Mariana Soto',
 			sealIcon: 'flower',
 		});
-		expect(presenter.rsvp?.guestCap).toBe(4);
-		expect(presenter.rsvp?.initialGuestData).toEqual({
-			fullName: 'Mariana Soto',
-			maxAllowedAttendees: 4,
-			inviteId: 'invite-123',
-		});
-		expect(
-			presenter.renderPlan.map((item) =>
-				item.type === 'section' ? item.section : item.type,
-			),
-		).toContain('personalized-access');
+
+		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
 	});
 
 	it('allows previewTheme overrides by rewriting the delivered theme preset in runtime only', () => {
 		const event = {
 			id: 'events/ximena-meza-trasvina',
 			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
-		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
-		const presenter = prepareInvitationPageData({
+		const context = prepareInvitationPageContext({
 			eventEntry: event,
 			slug: 'ximena-meza-trasvina',
 			previewTheme: 'editorial',
 		});
 
-		expect(presenter.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
-		expect(presenter.header.variant).toBe('editorial');
-		expect(presenter.hero.variant).toBe('editorial');
-		expect(presenter.footer.variant).toBe('editorial');
-		expect(presenter.sections.location?.variant).toBe('editorial');
-		expect(presenter.renderPlan.find((item) => item.type === 'interlude')?.variant).toBe(
-			'editorial',
+		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
+		expect(context.viewModel.theme.preset).toBe('editorial');
+		expect(context.viewModel.hero.variant).toBe('editorial');
+		expect(context.envelope?.variant).toBe('editorial');
+		expect(context.footerVariant).toBe('editorial');
+		expect(context.viewModel.sections.location?.variant).toBe('editorial');
+		expect(context.renderPlan).toContainEqual(
+			expect.objectContaining({
+				type: 'interlude',
+				variant: 'editorial',
+			}),
 		);
 	});
 
-	it('builds the default presenter for demo events without guest context', () => {
+	it('builds the default context for demo events without guest context', () => {
 		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv',
 			data: fixture,
-		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
-		const presenter = prepareInvitationPageData({
+		const context = prepareInvitationPageContext({
 			eventEntry: event,
 			slug: 'demo-xv',
 		});
 
-		expect(presenter.layout.title).toBe(fixture.title);
-		expect(presenter.layout.description).toBe(fixture.description);
-		expect(presenter.personalizedAccess).toBeUndefined();
-		expect(presenter.rsvp?.initialGuestData).toBeUndefined();
-		expect(presenter.header.links).toEqual(fixture.navigation);
-		expect(presenter.envelope?.isDemo).toBe(true);
-		expect(presenter.envelope).not.toHaveProperty('city');
-		expect(presenter.envelope).not.toHaveProperty('date');
-		expect(presenter.envelope?.card).toEqual({
+		expect(context.layout.title).toBe(fixture.title);
+		expect(context.layout.description).toBe(fixture.description);
+		expect(context.guestContext).toBeUndefined();
+		expect(context.envelope?.isDemo).toBe(true);
+		expect(context.envelope).not.toHaveProperty('city');
+		expect(context.envelope).not.toHaveProperty('date');
+		expect(context.envelope?.card).toEqual({
 			documentLabel: 'Invitación',
 			name: fixture.hero.name,
 			details: '25 de abril de 2026 • Monterrey',
 			guestName: undefined,
 			sealIcon: 'heart',
 		});
-		expect(
-			presenter.renderPlan.map((item) =>
-				item.type === 'section' ? item.section : item.type,
-			),
-		).toEqual([
+
+		expect(describeRenderPlan(context.renderPlan)).toEqual([
 			'quote',
 			'family',
 			'gallery',
@@ -140,17 +137,18 @@ describe('prepareInvitationPageData', () => {
 					accessMode: 'hybrid',
 				},
 			},
-		} as Parameters<typeof prepareInvitationPageData>[0]['eventEntry'];
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
-		const presenter = prepareInvitationPageData({
+		const context = prepareInvitationPageContext({
 			eventEntry: event,
 			slug: 'demo-xv',
 		});
 
-		expect(presenter.personalizedAccess).toBeUndefined();
-		expect(presenter.rsvp?.initialGuestData).toBeUndefined();
-		expect(presenter.rsvp?.accessMode).toBe('hybrid');
-		expect(presenter.rsvp?.eventType).toBe('xv');
-		expect(presenter.rsvp?.eventSlug).toBe('demo-xv');
+		expect(context.guestContext).toBeUndefined();
+		expect(context.viewModel.sections.rsvp).toMatchObject({
+			accessMode: 'hybrid',
+			eventType: 'xv',
+			eventSlug: 'demo-xv',
+		});
 	});
 });
