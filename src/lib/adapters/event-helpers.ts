@@ -8,15 +8,8 @@ import {
 	type ImageAsset,
 } from '@/lib/assets/asset-registry';
 import {
-	COUNTDOWN_VARIANTS,
-	ITINERARY_VARIANTS,
-	LOCATION_VARIANTS,
-	QUOTE_VARIANTS,
-	SHARED_SECTION_VARIANTS,
-	THEME_PRESETS,
+	PREMIUM_THEMES,
 	type IndicationIconKey,
-	type ItineraryVariant,
-	type SharedSectionVariant,
 	type ThemePreset,
 } from '@/lib/theme/theme-contract';
 
@@ -48,32 +41,22 @@ export function pickVariant<T extends readonly string[]>(
 	allowed: T,
 	fallback: T[number],
 ): T[number] {
-	if (!candidate) {
-		console.info(`[ThemeVariant] No candidate for ${scope}, using fallback: ${fallback}`);
-		return fallback;
-	}
+	if (!candidate) return fallback;
+
 	if ((allowed as readonly string[]).includes(candidate)) {
-		console.info(`[ThemeVariant] Match for ${scope}: ${candidate}`);
 		return candidate as T[number];
 	}
+
 	console.warn(
-		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Fallback applied: "${fallback}".`,
+		`[ThemeVariant] Invalid variant "${candidate}" in ${scope}. Using fallback: "${fallback}".`,
 	);
 	return fallback;
 }
 
 export function pickPreset(candidate: string | undefined): ThemePreset {
-	if (!candidate) return THEME_PRESETS[0];
-	if ((THEME_PRESETS as readonly string[]).includes(candidate)) return candidate as ThemePreset;
-
-	if (runtimeEnv.PROD) {
-		throw new Error(`[ThemePreset] Invalid preset "${candidate}" in theme.preset.`);
-	}
-
-	console.warn(
-		`[ThemePreset] Invalid preset "${candidate}". Using fallback "${THEME_PRESETS[0]}".`,
-	);
-	return THEME_PRESETS[0];
+	if (!candidate) return PREMIUM_THEMES[0];
+	if ((PREMIUM_THEMES as readonly string[]).includes(candidate)) return candidate as ThemePreset;
+	return PREMIUM_THEMES[0];
 }
 
 export function hexToRgb(hex: string): string {
@@ -149,28 +132,28 @@ export function requireAsset(
 	return asset;
 }
 
-export function adaptItineraryVariant(preset: string): ItineraryVariant {
-	return (ITINERARY_VARIANTS as readonly string[]).includes(preset)
-		? (preset as ItineraryVariant)
-		: 'base';
+export function adaptItineraryVariant(preset: string): ThemePreset {
+	return (PREMIUM_THEMES as readonly string[]).includes(preset)
+		? (preset as ThemePreset)
+		: PREMIUM_THEMES[0];
 }
 
-export function adaptSharedSectionVariant(preset: string): SharedSectionVariant {
-	return (SHARED_SECTION_VARIANTS as readonly string[]).includes(preset)
-		? (preset as SharedSectionVariant)
-		: 'standard';
+export function adaptSharedSectionVariant(preset: string): ThemePreset {
+	return (PREMIUM_THEMES as readonly string[]).includes(preset)
+		? (preset as ThemePreset)
+		: PREMIUM_THEMES[0];
 }
 
 export function adaptLocationVariant(variant: string | undefined): string {
-	return pickVariant('location.variant', variant, LOCATION_VARIANTS, 'structured');
+	return pickVariant('location.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
 }
 
 export function adaptCountdownVariant(variant: string | undefined): string {
-	return pickVariant('countdown.variant', variant, COUNTDOWN_VARIANTS, 'minimal');
+	return pickVariant('countdown.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
 }
 
 export function adaptQuoteVariant(variant: string | undefined): string {
-	return pickVariant('quote.variant', variant, QUOTE_VARIANTS, 'elegant');
+	return pickVariant('quote.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
 }
 
 export function adaptIndicationIcon(icon: IndicationIconKey): string {

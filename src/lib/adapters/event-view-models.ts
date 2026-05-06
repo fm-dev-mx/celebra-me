@@ -5,14 +5,7 @@ import type {
 	ContentBlock,
 	ContentSectionKey,
 } from './types';
-import {
-	COUNTDOWN_VARIANTS,
-	ITINERARY_VARIANTS,
-	LOCATION_VARIANTS,
-	QUOTE_VARIANTS,
-	SHARED_SECTION_VARIANTS,
-	THEME_PRESETS,
-} from '@/lib/theme/theme-contract';
+import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
 import type { AdaptationContext } from '@/lib/adapters/event';
@@ -33,7 +26,7 @@ export function buildHero(context: AdaptationContext): HeroViewModel {
 		variant: pickVariant(
 			'hero.variant',
 			data.hero.variant ?? normalizedPreset,
-			THEME_PRESETS,
+			PREMIUM_THEMES,
 			normalizedPreset,
 		),
 		layoutVariant: data.hero.layoutVariant,
@@ -147,7 +140,7 @@ export function buildLocationIndications(context: AdaptationContext) {
 }
 
 export function buildContentBlocks(context: AdaptationContext): ContentBlock[] | undefined {
-	const { data, eventSlug, sharedSectionFallback } = context;
+	const { data, eventSlug, normalizedPreset } = context;
 
 	const rawBlocks = data.contentBlocks as Array<{
 		type: string;
@@ -176,9 +169,9 @@ export function buildContentBlocks(context: AdaptationContext): ContentBlock[] |
 					height: (block.height as 'screen' | 'tall') || 'tall',
 					variant: pickVariant(
 						'contentBlocks.interlude.variant',
-						block.variant ?? sharedSectionFallback,
-						SHARED_SECTION_VARIANTS,
-						sharedSectionFallback,
+						block.variant,
+						PREMIUM_THEMES,
+						normalizedPreset,
 					),
 					focalPoint: block.focalPoint,
 				},
@@ -221,23 +214,23 @@ export function buildSharing(context: AdaptationContext) {
 }
 
 function buildQuoteSection(context: AdaptationContext) {
-	const { data, quoteFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.quote) return undefined;
 
 	return {
 		...data.quote,
 		variant: pickVariant(
 			'sectionStyles.quote.variant',
-			data.sectionStyles?.quote?.variant ?? quoteFallback,
-			QUOTE_VARIANTS,
-			quoteFallback,
+			data.sectionStyles?.quote?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 		animation: data.sectionStyles?.quote?.animation,
 	};
 }
 
 function buildCountdownSection(context: AdaptationContext) {
-	const { data, countdownFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.countdown) return undefined;
 
 	return {
@@ -245,9 +238,9 @@ function buildCountdownSection(context: AdaptationContext) {
 		eventDate: data.hero.date,
 		variant: pickVariant(
 			'sectionStyles.countdown.variant',
-			data.sectionStyles?.countdown?.variant ?? countdownFallback,
-			COUNTDOWN_VARIANTS,
-			countdownFallback,
+			data.sectionStyles?.countdown?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 		showParticles: data.sectionStyles?.countdown?.showParticles,
 	};
@@ -258,7 +251,7 @@ function buildLocationSection(
 	images: ReturnType<typeof buildSectionImages>,
 	locationIndications: NonNullable<InvitationViewModel['sections']['location']>['indications'],
 ) {
-	const { data, locationFallback } = context;
+	const { data, normalizedPreset } = context;
 
 	return {
 		ceremony: images.ceremony,
@@ -266,9 +259,9 @@ function buildLocationSection(
 		indications: locationIndications,
 		variant: pickVariant(
 			'sectionStyles.location.variant',
-			data.sectionStyles?.location?.variant ?? locationFallback,
-			LOCATION_VARIANTS,
-			locationFallback,
+			data.sectionStyles?.location?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 		mapStyle: data.sectionStyles?.location?.mapStyle,
 		showFlourishes: data.sectionStyles?.location?.showFlourishes,
@@ -281,7 +274,7 @@ function buildFamilySection(
 	context: AdaptationContext,
 	familyImage: ReturnType<typeof buildSectionImages>['familyImage'],
 ) {
-	const { data, sharedSectionFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.family) return undefined;
 
 	return {
@@ -293,9 +286,9 @@ function buildFamilySection(
 		celebrantName: data.hero.name,
 		variant: pickVariant(
 			'sectionStyles.family.variant',
-			data.sectionStyles?.family?.variant ?? sharedSectionFallback,
-			SHARED_SECTION_VARIANTS,
-			sharedSectionFallback,
+			data.sectionStyles?.family?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 		layoutVariant: data.family.layoutVariant,
 	};
@@ -305,7 +298,7 @@ function buildGallerySection(
 	context: AdaptationContext,
 	galleryItems: NonNullable<InvitationViewModel['sections']['gallery']>['items'],
 ) {
-	const { data, sharedSectionFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.gallery) return undefined;
 
 	return {
@@ -313,30 +306,30 @@ function buildGallerySection(
 		items: galleryItems,
 		variant: pickVariant(
 			'sectionStyles.gallery.variant',
-			data.sectionStyles?.gallery?.variant ?? sharedSectionFallback,
-			SHARED_SECTION_VARIANTS,
-			sharedSectionFallback,
+			data.sectionStyles?.gallery?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 	};
 }
 
 function buildItinerarySection(context: AdaptationContext) {
-	const { data, itineraryFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.itinerary) return undefined;
 
 	return {
 		...data.itinerary,
 		variant: pickVariant(
 			'sectionStyles.itinerary.variant',
-			data.sectionStyles?.itinerary?.variant ?? itineraryFallback,
-			ITINERARY_VARIANTS,
-			itineraryFallback,
+			data.sectionStyles?.itinerary?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 	};
 }
 
 function buildRsvpSection(context: AdaptationContext) {
-	const { data, eventSlug, sharedSectionFallback } = context;
+	const { data, eventSlug, normalizedPreset } = context;
 	if (!data.rsvp) return undefined;
 
 	return {
@@ -345,25 +338,25 @@ function buildRsvpSection(context: AdaptationContext) {
 		eventType: data.eventType,
 		variant: pickVariant(
 			'sectionStyles.rsvp.variant',
-			data.sectionStyles?.rsvp?.variant ?? sharedSectionFallback,
-			SHARED_SECTION_VARIANTS,
-			sharedSectionFallback,
+			data.sectionStyles?.rsvp?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 		labels: data.sectionStyles?.rsvp?.labels,
 	};
 }
 
 function buildGiftsSection(context: AdaptationContext) {
-	const { data, sharedSectionFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.gifts) return undefined;
 
 	return {
 		...data.gifts,
 		variant: pickVariant(
 			'sectionStyles.gifts.variant',
-			data.sectionStyles?.gifts?.variant ?? sharedSectionFallback,
-			SHARED_SECTION_VARIANTS,
-			sharedSectionFallback,
+			data.sectionStyles?.gifts?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 	};
 }
@@ -372,7 +365,7 @@ function buildThankYouSection(
 	context: AdaptationContext,
 	thankYouImage: ReturnType<typeof buildSectionImages>['thankYouImage'],
 ) {
-	const { data, sharedSectionFallback } = context;
+	const { data, normalizedPreset } = context;
 	if (!data.thankYou) return undefined;
 
 	return {
@@ -381,9 +374,9 @@ function buildThankYouSection(
 		focalPoint: data.thankYou.focalPoint,
 		variant: pickVariant(
 			'sectionStyles.thankYou.variant',
-			data.sectionStyles?.thankYou?.variant ?? sharedSectionFallback,
-			SHARED_SECTION_VARIANTS,
-			sharedSectionFallback,
+			data.sectionStyles?.thankYou?.variant,
+			PREMIUM_THEMES,
+			normalizedPreset,
 		),
 	};
 }

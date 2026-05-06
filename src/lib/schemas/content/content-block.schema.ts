@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SHARED_SECTION_VARIANTS } from '@/lib/theme/theme-contract';
+import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const CONTENT_SECTION_KEYS = [
@@ -23,7 +23,7 @@ export const contentBlocksSchema = z
 				image: AssetSchema,
 				alt: z.string().optional(),
 				height: z.enum(['screen', 'tall']).default('screen'),
-				variant: z.enum(SHARED_SECTION_VARIANTS).optional(),
+				variant: z.enum(PREMIUM_THEMES).optional(),
 				focalPoint: z.string().optional(),
 			}),
 		]),
