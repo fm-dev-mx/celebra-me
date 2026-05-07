@@ -1,8 +1,4 @@
-@use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
-
-// Base styles for the Family section
-// Layout architecture focused on editorial performance
 
 .family {
 	position: relative;
@@ -17,13 +13,6 @@
 		pointer-events: none;
 		opacity: var(--family-texture-opacity, 8%);
 		background-image: var(--family-texture-image);
-	}
-
-	&__bg-vignette {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		opacity: 0%;
 	}
 
 	&__container {
@@ -76,6 +65,16 @@
 		max-width: var(--family-title-max-width, none);
 	}
 
+	&__message {
+		margin: var(--family-message-margin, 1.25rem 0 0);
+		max-width: var(--family-message-max-width, 42rem);
+		font-family: var(--font-body);
+		font-size: var(--family-message-size, clamp(1rem, 2vw, 1.15rem));
+		line-height: var(--family-message-line-height, 1.65);
+		color: var(--family-text-muted, rgb(var(--color-text-primary-rgb), 0.72));
+		text-wrap: pretty;
+	}
+
 	&__panel {
 		position: relative;
 		z-index: 1;
@@ -116,74 +115,6 @@
 			object-fit: cover;
 			object-position: var(--family-focal-point, center);
 			filter: var(--family-media-filter, none);
-		}
-	}
-
-	&__frame-accent {
-		position: absolute;
-		inset: var(--family-frame-inset, 10px);
-		border-radius: calc(var(--family-frame-radius, 10px) - 2px);
-		border: 1px solid var(--family-border);
-		pointer-events: none;
-		z-index: 2;
-	}
-
-	&__corner {
-		position: absolute;
-		width: 24px;
-		height: 24px;
-		border: 2px solid var(--family-accent, var(--color-action-accent));
-		pointer-events: none;
-		z-index: 3;
-		opacity: 60%;
-
-		&--tl {
-			top: 0;
-			left: 0;
-			border-right: 0;
-			border-bottom: 0;
-		}
-
-		&--tr {
-			top: 0;
-			right: 0;
-			border-left: 0;
-			border-bottom: 0;
-		}
-
-		&--bl {
-			bottom: 0;
-			left: 0;
-			border-right: 0;
-			border-top: 0;
-		}
-
-		&--br {
-			bottom: 0;
-			right: 0;
-			border-left: 0;
-			border-top: 0;
-		}
-	}
-
-	&__ledger-lines {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	&__ledger-line {
-		position: absolute;
-		background: var(--family-border);
-		opacity: 15%;
-
-		&--vertical {
-			top: 0;
-			bottom: 0;
-			left: calc(50% - 0.5px);
-			width: 1px;
-			display: var(--family-ledger-display, none);
 		}
 	}
 
@@ -233,6 +164,10 @@
 		gap: var(--family-children-gap, 0.9rem);
 	}
 
+	&__list--godparents {
+		gap: var(--family-pair-gap, clamp(1rem, 2vw, 1.35rem));
+	}
+
 	&__item {
 		display: flex;
 		flex-direction: column;
@@ -252,7 +187,8 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: var(--family-deceased-symbol-gap, 0.2em);
-		text-wrap: nowrap;
+		text-wrap: balance;
+		overflow-wrap: break-word;
 	}
 
 	&__deceased-indicator {
@@ -286,6 +222,37 @@
 		span {
 			transform: translateY(2px);
 		}
+	}
+
+	&__connector--parents {
+		width: min(100%, var(--family-parent-connector-width, 9rem));
+	}
+
+	&__pair {
+		position: relative;
+	}
+
+	&__pair-ordinal {
+		display: block;
+		font-family: var(--font-body);
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		color: var(--family-accent, var(--color-action-accent));
+	}
+
+	&__pair-members {
+		display: grid;
+		gap: var(--family-pair-member-gap, 0.7rem);
+	}
+
+	&__pair-connector {
+		display: inline-flex;
+		align-items: center;
+		color: var(--family-accent, var(--color-action-accent));
+		font-family: var(--font-calligraphy);
+		font-size: var(--family-pair-connector-size, 1.45rem);
+		font-style: italic;
+		line-height: 1;
 	}
 
 	&__reveal {

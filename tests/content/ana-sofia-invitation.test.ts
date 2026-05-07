@@ -34,6 +34,9 @@ function readAnaSofiaEvent() {
 		};
 		rsvp?: { accessMode?: string; confirmationMode?: string; guestCap?: number };
 		music?: { url?: string };
+		family?: {
+			godparents?: Array<{ name?: string; role?: string }>;
+		};
 	};
 }
 
@@ -92,6 +95,17 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 		expect(content).not.toMatch(/jewelry-box|jewelry-box-wedding|luxury-hacienda|editorial/i);
 		expect(content).not.toMatch(/Perfect|Ed Sheeran/i);
 		expect(readAnaSofiaEvent().music).toBeUndefined();
+	});
+
+	it('lists padrinos in the required paired order', () => {
+		const event = readAnaSofiaEvent();
+
+		expect(event.family?.godparents).toEqual([
+			{ name: 'Sergio Pablo García Ramos', role: 'Padrino' },
+			{ name: 'Dunelin Valdez Pacheco', role: 'Madrina' },
+			{ name: 'Evelia Parra Torres', role: 'Madrina' },
+			{ name: 'Miguel Armando Valencia Ochoa', role: 'Padrino' },
+		]);
 	});
 
 	it('exports all local optimized image files from the event asset module', () => {

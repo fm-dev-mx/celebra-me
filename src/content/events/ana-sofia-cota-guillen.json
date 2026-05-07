@@ -99,24 +99,22 @@
         },
         "godparents": [
             {
-                "name": "Miguel Armando Valencia Ochoa",
+                "name": "Sergio Pablo García Ramos",
                 "role": "Padrino"
-            },
-            {
-                "name": "Evelia Parra Torres",
-                "role": "Madrina"
             },
             {
                 "name": "Dunelin Valdez Pacheco",
                 "role": "Madrina"
             },
             {
-                "name": "Sergio Pablo García Ramos",
+                "name": "Evelia Parra Torres",
+                "role": "Madrina"
+            },
+            {
+                "name": "Miguel Armando Valencia Ochoa",
                 "role": "Padrino"
             }
         ],
-        "featuredImage": "family",
-        "focalPoint": "center 30%",
         "layoutVariant": "celestial-blue"
     },
     "gallery": {

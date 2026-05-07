@@ -41,6 +41,7 @@ interface Props {
 		childrenTitle?: string;
 		parentsTitle?: string;
 		godparentsTitle?: string;
+		sectionMessage?: string;
 	};
 	variant?: SharedSectionVariant;
 	layoutVariant?: FamilyLayoutVariant;
@@ -56,10 +57,11 @@ interface FamilyEntry {
 }
 
 interface FamilyBlock {
-	id: string; // Changed from enum to string for flexibility
+	id: string;
 	title: string;
 	entries: FamilyEntry[];
 	isChildren?: boolean;
+	isGodparents?: boolean;
 }
 
 const {
@@ -72,6 +74,7 @@ const {
 	celebrantName,
 	labels,
 	variant = 'standard',
+	layoutVariant,
 	focalPoint,
 } = Astro.props;
 
@@ -83,27 +86,44 @@ const resolvedLabels = {
 	childrenTitle: labels?.childrenTitle ?? 'Nuestros Hijos',
 	parentsTitle: labels?.parentsTitle ?? 'Con la bendición de',
 	godparentsTitle: labels?.godparentsTitle ?? 'Padrinos',
+	sectionMessage:
+		labels?.sectionMessage ??
+		'Gracias por caminar conmigo en este momento tan especial. Su amor, guía y bendición forman parte de este día que guardaré para siempre.',
 };
 
-const imagePath = featuredImage ? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string)) : undefined;
+const isTypographicVariant = variant === 'celestial-blue';
+const shouldRenderMedia = Boolean(featuredImage) && !isTypographicVariant;
+const imagePath = featuredImage
+	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
+	: undefined;
 
 const familyBlocks: FamilyBlock[] = [];
 
-// 💎 NEW: Render groups if provided (Wedding/Custom style)
+const toEntryPairs = (entries: FamilyEntry[]) => {
+	const pairs: Array<[FamilyEntry, FamilyEntry?]> = [];
+
+	for (let index = 0; index < entries.length; index += 2) {
+		pairs.push([entries[index], entries[index + 1]]);
+	}
+
+	return pairs;
+};
+
+const pairOrdinals = ['I', 'II', 'III', 'IV'];
+
 if (groups && groups.length > 0) {
 	groups.forEach((group, index) => {
 		familyBlocks.push({
 			id: `group-${index}`,
 			title: group.title,
-			entries: group.items.map(item => ({
+			entries: group.items.map((item) => ({
 				name: item.name,
 				role: item.role,
-				deceased: item.deceased
-			}))
+				deceased: item.deceased,
+			})),
 		});
 	});
 } else {
-	// Core layout logic
 	if (spouse) {
 		familyBlocks.push({
 			id: 'spouse',
@@ -163,6 +183,7 @@ if (godparents && godparents.length > 0) {
 	familyBlocks.push({
 		id: 'godparents',
 		title: resolvedLabels.godparentsTitle,
+		isGodparents: true,
 		entries: godparents.map((godparent) => ({
 			name: godparent.name,
 			role: godparent.role,
@@ -175,6 +196,7 @@ if (godparents && godparents.length > 0) {
 	id="family-section"
 	class="family"
 	data-variant={variant}
+	{...layoutVariant && { 'data-layout-variant': layoutVariant }}
 >
 	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
 		.family {
@@ -190,11 +212,12 @@ if (godparents && godparents.length > 0) {
 				<span class="family__eyebrow">{resolvedLabels.sectionSubtitle}</span>
 				<h2 class="family__title">{resolvedLabels.sectionTitle}</h2>
 				<div class="family__header-divider" aria-hidden="true"></div>
+				<p class="family__message">{resolvedLabels.sectionMessage}</p>
 			</div>
 		</header>
 
-		<div class:list={['family__panel', !featuredImage && 'family__panel--no-media']}>
-			{featuredImage && (
+		<div class:list={['family__panel', !shouldRenderMedia && 'family__panel--no-media']}>
+			{shouldRenderMedia && (
 				<figure class="family__media family__reveal">
 					<div class="family__media-frame">
 						<OptimizedImage
@@ -208,40 +231,71 @@ if (godparents && godparents.length > 0) {
 				</figure>
 			)}
 
-				<div class="family__content">
-					{familyBlocks.map((block) => (
-						<section
-							class:list={[
-								'family__group',
-								`family__group--${block.id}`,
-								'family__reveal',
-							]}
-						>
-							<h3 class="family__group-title">{block.title}</h3>
+			<div class="family__content">
+				{familyBlocks.map((block) => (
+					<section
+						class:list={[
+							'family__group',
+							`family__group--${block.id}`,
+							'family__reveal',
+						]}
+					>
+						<h3 class="family__group-title">{block.title}</h3>
+						{block.isGodparents ? (
+							<ul class="family__list family__list--godparents">
+								{toEntryPairs(block.entries).map((pair, pairIndex) => (
+									<li class="family__pair">
+										<span class="family__pair-ordinal" aria-hidden="true">
+											{pairOrdinals[pairIndex]}
+										</span>
+										<div class="family__pair-members">
+											<div class:list={['family__item', 'family__item--godparent']}>
+												<p class="family__name">
+													<span>{pair[0].name}</span>
+												</p>
+												{pair[0].role && <span class="family__meta">{pair[0].role}</span>}
+											</div>
+											{pair[1] && (
+												<>
+													<span class="family__pair-connector" aria-hidden="true">y</span>
+													<div class:list={['family__item', 'family__item--godparent']}>
+														<p class="family__name">
+															<span>{pair[1].name}</span>
+														</p>
+														{pair[1].role && <span class="family__meta">{pair[1].role}</span>}
+													</div>
+												</>
+											)}
+										</div>
+									</li>
+								))}
+							</ul>
+						) : (
 							<ul
 								class:list={[
 									'family__list',
 									block.isChildren && 'family__list--children',
 								]}
 							>
-							{block.entries.map((entry) =>
-								entry.connector ? (
-									<li class="family__connector" aria-hidden="true">
-										<span>y</span>
-									</li>
-								) : (
-									<li class:list={['family__item', entry.lead && 'family__item--lead']}>
-										<p class="family__name">
-											<span>{entry.name}</span>
-											{entry.deceased && (
-												<span class="family__deceased-indicator" aria-hidden="true">†</span>
-											)}
-										</p>
-										{entry.role && <span class="family__meta">{entry.role}</span>}
-									</li>
-								),
-							)}
-						</ul>
+								{block.entries.map((entry) =>
+									entry.connector ? (
+										<li class="family__connector family__connector--parents" aria-hidden="true">
+											<span>y</span>
+										</li>
+									) : (
+										<li class:list={['family__item', entry.lead && 'family__item--lead']}>
+											<p class="family__name">
+												<span>{entry.name}</span>
+												{entry.deceased && (
+													<span class="family__deceased-indicator" aria-hidden="true">†</span>
+												)}
+											</p>
+											{entry.role && <span class="family__meta">{entry.role}</span>}
+										</li>
+									),
+								)}
+							</ul>
+						)}
 					</section>
 				))}
 			</div>
