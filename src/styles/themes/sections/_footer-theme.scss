@@ -10,6 +10,45 @@
 	opacity: 60%;
 }
 
+.invitation-footer[data-variant='celestial-blue'] {
+	padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+	background: linear-gradient(
+		180deg,
+		rgb(var(--color-cool-ivory-rgb) / 0%) 0%,
+		var(--color-cool-ivory) 100%
+	);
+	border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+	color: rgb(var(--color-soft-graphite-rgb) / 68%);
+	opacity: 100%;
+
+	.footer-content {
+		gap: 1rem 2rem;
+	}
+
+	.powered-by,
+	.footer__replay-link,
+	.whatsapp-button {
+		font-family: var(--font-body);
+		font-size: 0.66rem;
+		font-weight: 650;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
+	.whatsapp-button {
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
+		background: rgb(var(--color-diamond-white-rgb) / 42%);
+		color: var(--color-deep-blue-graphite);
+		border-radius: 6px;
+	}
+
+	.whatsapp-button:hover {
+		background: var(--color-deep-blue-graphite);
+		border-color: var(--color-deep-blue-graphite);
+		color: var(--color-diamond-white);
+	}
+}
+
 /* stylelint-disable declaration-no-important */
 .invitation-footer[data-variant='editorial'] {
 	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;

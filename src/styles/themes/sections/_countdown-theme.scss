@@ -150,8 +150,7 @@
 // Characteristics: Glassmorphism, Playfair Display, soft gold accents
 // ==========================================================================
 
-.countdown-section[data-variant='jewelry-box'],
-.countdown-section[data-variant='celestial-blue'] {
+.countdown-section[data-variant='jewelry-box'] {
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,
@@ -260,6 +259,105 @@
 		color: var(--color-text-primary);
 		opacity: 80%;
 		margin-top: 3rem;
+	}
+}
+
+.countdown-section[data-variant='celestial-blue'] {
+	background: linear-gradient(
+		180deg,
+		var(--color-ice-blue) 0%,
+		var(--color-cool-ivory) 58%,
+		var(--color-pearl-gray) 100%
+	);
+	color: var(--color-text-primary);
+	padding-block: clamp(6rem, 10vw, 9rem);
+
+	&::before {
+		background:
+			radial-gradient(
+				circle at 50% 15%,
+				rgb(var(--color-diamond-white-rgb) / 74%) 0%,
+				transparent 42%
+			),
+			linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-liquid-silver-rgb) / 24%),
+				transparent
+			);
+	}
+
+	.countdown-texture {
+		opacity: 28%;
+		background: var(--satin-sheen);
+		background-size: 180% 100%;
+	}
+
+	.countdown-title {
+		max-width: 11ch;
+		margin-inline: auto;
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 7vw, 5.8rem);
+		font-weight: 400;
+		line-height: 0.88;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-soft-graphite);
+	}
+
+	.countdown-title::after {
+		width: 82px;
+		background: linear-gradient(90deg, transparent, var(--color-liquid-silver), transparent);
+	}
+
+	.countdown-subtitle .event-date,
+	.countdown-invitation-text {
+		font-family: var(--font-body);
+		font-style: normal;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-soft-graphite-rgb) / 58%);
+	}
+
+	.countdown__timer {
+		gap: clamp(0.65rem, 1.8vw, 1rem);
+	}
+
+	.countdown__segment {
+		background: rgb(var(--color-diamond-white-rgb) / 42%);
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 48%);
+		border-radius: 6px;
+		box-shadow: 0 14px 34px rgb(var(--color-deep-blue-graphite-rgb) / 7%);
+	}
+
+	.countdown__segment:hover {
+		border-color: rgb(var(--color-satin-blue-rgb) / 72%);
+		box-shadow: 0 18px 38px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
+	}
+
+	.countdown__value {
+		font-family: var(--font-body);
+		font-size: var(--countdown-value-size-mobile);
+		font-weight: 400;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.countdown__label {
+		font-family: var(--font-body);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: var(--countdown-label-letter-spacing);
+		color: rgb(var(--color-soft-graphite-rgb) / 64%);
+		opacity: var(--countdown-label-opacity);
+	}
+
+	@media (width >= 860px) {
+		.countdown__value {
+			font-size: var(--countdown-value-size-desktop);
+		}
 	}
 }
 

@@ -259,6 +259,104 @@
 	}
 }
 
+.gallery-section[data-variant='celestial-blue'] {
+	padding-block: clamp(6rem, 10vw, 10rem);
+	background: var(--gallery-section-bg);
+
+	--gallery-container-max-width: 1120px;
+	--gallery-grid-column-gap: clamp(0.75rem, 1.6vw, 1.15rem);
+	--gallery-grid-row-gap: clamp(0.75rem, 1.6vw, 1.15rem);
+	--gallery-grid-columns-tablet: 6;
+	--gallery-grid-columns-desktop: 12;
+	--gallery-item-aspect-ratio: 4 / 5;
+	--gallery-item-aspect-ratio-feature: 3 / 4;
+	--gallery-item-aspect-ratio-wide: 16 / 11;
+	--gallery-item-aspect-ratio-standard: 4 / 5;
+	--gallery-item-shadow: 0 12px 30px rgb(var(--color-deep-blue-graphite-rgb) / 7%);
+	--gallery-item-emphasis-shadow: 0 16px 36px rgb(var(--color-deep-blue-graphite-rgb) / 10%);
+	--gallery-item-hover-shadow: 0 20px 44px rgb(var(--color-deep-blue-graphite-rgb) / 13%);
+	--gallery-item-image-filter-rest: saturate(0.94) contrast(1.02);
+	--gallery-item-image-filter-in-view: saturate(1.02) contrast(1.03);
+	--gallery-item-image-filter-hover: saturate(1.06) contrast(1.04);
+	--gallery-item-image-scale-hover: 1.025;
+	--gallery-overlay-bg: linear-gradient(
+		to top,
+		rgb(var(--color-deep-blue-graphite-rgb) / 58%),
+		transparent 64%
+	);
+	--gallery-caption-color: var(--color-diamond-white);
+	--gallery-caption-bg: transparent;
+	--gallery-caption-radius: 0;
+	--gallery-caption-padding: 0;
+
+	.gallery-section__header {
+		display: grid;
+		gap: 0.8rem;
+		max-width: 46rem;
+		margin-inline: auto;
+		margin-bottom: clamp(3rem, 7vw, 5rem);
+	}
+
+	.gallery-section__title {
+		font-size: clamp(3.2rem, 8vw, 6.4rem);
+		font-weight: 400;
+		line-height: 0.86;
+		letter-spacing: 0.08em;
+		color: var(--gallery-title-color);
+		text-shadow: none;
+	}
+
+	.gallery-section__subtitle {
+		font-family: var(--font-body);
+		font-size: clamp(0.9rem, 1.4vw, 1.02rem);
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--gallery-subtitle-color);
+	}
+
+	.gallery-grid {
+		align-items: stretch;
+	}
+
+	.gallery-grid__item {
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 54%);
+		border-radius: var(--gallery-card-radius);
+		padding: var(--gallery-card-padding);
+		background: var(--gallery-card-bg);
+		backdrop-filter: var(--gallery-item-backdrop-filter);
+	}
+
+	.gallery-grid__item::after {
+		inset: var(--gallery-card-padding);
+		border-color: rgb(var(--color-diamond-white-rgb) / 26%);
+		border-radius: var(--gallery-image-radius);
+	}
+
+	.gallery-grid__caption {
+		font-family: var(--font-body);
+		font-size: 0.82rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	@media (width >= 1024px) {
+		.gallery-grid__item--feature {
+			grid-column: span 5;
+			grid-row: span 2;
+		}
+
+		.gallery-grid__item--wide {
+			grid-column: span 7;
+		}
+
+		.gallery-grid__item--standard {
+			grid-column: span 4;
+		}
+	}
+}
+
 /* --- GALLERY: LUXURY HACIENDA VARIANT --- */
 
 .gallery-section[data-variant='luxury-hacienda'] {

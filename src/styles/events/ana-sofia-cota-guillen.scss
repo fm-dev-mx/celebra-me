@@ -1,18 +1,9 @@
 .event--ana-sofia-cota-guillen.theme-preset--celestial-blue {
-	// Event-specific art direction (Image Filters)
+	// Event-specific art direction (image filters only).
 	--theme-image-filter-hero: saturate(1.08) contrast(1.02);
 	--theme-image-filter-portrait: saturate(1.04) contrast(1.02);
 	--theme-image-filter-gallery: saturate(1.04);
 	--theme-image-filter-interlude: saturate(1.05) contrast(1.02);
-}
-
-.event--ana-sofia-cota-guillen .invitation-hero__content {
-	backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-}
-
-.event--ana-sofia-cota-guillen .invitation-hero__title,
-.event--ana-sofia-cota-guillen .gallery-section__title {
-	text-shadow: 0 8px 28px rgb(var(--color-surface-dark-rgb) / 28%);
 }
 
 .event--ana-sofia-cota-guillen .invitation-interlude__image,

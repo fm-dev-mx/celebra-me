@@ -145,3 +145,65 @@
 		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
 	}
 }
+
+.itinerary[data-variant='celestial-blue'] {
+	padding-block: clamp(6rem, 10vw, 9rem);
+	background: linear-gradient(
+		180deg,
+		var(--color-cool-ivory) 0%,
+		rgb(var(--color-pearl-gray-rgb) / 48%) 100%
+	);
+
+	--itinerary-line-color: var(--color-liquid-silver);
+	--itinerary-line-shadow: none;
+	--itinerary-line-opacity: 0.72;
+	--itinerary-item-time-color: var(--color-satin-blue);
+	--itinerary-item-label-color: var(--color-deep-blue-graphite);
+	--itinerary-item-label-font: var(--font-display);
+	--itinerary-item-desc-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--itinerary-icon-bg: rgb(var(--color-ice-blue-rgb) / 78%);
+	--itinerary-icon-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 72%);
+	--itinerary-icon-color: var(--color-satin-blue);
+	--itinerary-icon-shadow: 0 8px 18px rgb(var(--color-deep-blue-graphite-rgb) / 8%);
+
+	.itinerary__title {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 6vw, 5rem);
+		font-weight: 400;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.itinerary__item-time {
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		color: var(--itinerary-item-time-color);
+	}
+
+	.itinerary__item-label {
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		filter: none;
+		font-family: var(--itinerary-item-label-font);
+		font-size: clamp(1.65rem, 3vw, 2.25rem);
+		font-weight: 400;
+		color: var(--itinerary-item-label-color);
+	}
+
+	.itinerary__item-description {
+		font-family: var(--font-body);
+		color: var(--itinerary-item-desc-color);
+	}
+
+	.itinerary__item-icon-wrapper {
+		background: var(--itinerary-icon-bg);
+		border: var(--itinerary-icon-border);
+		box-shadow: var(--itinerary-icon-shadow);
+	}
+
+	.itinerary__item-icon-inner {
+		color: var(--itinerary-icon-color);
+		filter: none;
+	}
+}

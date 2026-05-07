@@ -298,6 +298,144 @@
 	}
 }
 
+.family[data-variant='celestial-blue'] {
+	padding-block: clamp(6rem, 10vw, 10rem);
+	background: var(--family-bg);
+
+	.family__header {
+		max-width: 56rem;
+		margin-inline: auto;
+		text-align: left;
+	}
+
+	.family__eyebrow,
+	.family__group-title,
+	.family__meta {
+		font-family: var(--font-body);
+		font-weight: 650;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
+	.family__eyebrow {
+		color: var(--color-satin-blue);
+	}
+
+	.family__title {
+		max-width: 12ch;
+		font-family: var(--font-display);
+		font-size: clamp(3.4rem, 7vw, 5.8rem);
+		font-weight: 400;
+		line-height: 0.9;
+		color: var(--color-deep-blue-graphite);
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+	}
+
+	.family__header-divider {
+		width: 96px;
+		background: linear-gradient(90deg, var(--color-liquid-silver), transparent);
+	}
+
+	.family__panel {
+		display: grid;
+		grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+		gap: clamp(2rem, 6vw, 5rem);
+		align-items: center;
+		max-width: 62rem;
+		margin: clamp(3rem, 7vw, 5rem) auto 0;
+		padding: 0;
+		background: transparent;
+		border: none;
+		box-shadow: none;
+	}
+
+	.family__content {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(2rem, 4vw, 3rem);
+		max-width: 32rem;
+		opacity: 100%;
+	}
+
+	.family__media-frame {
+		padding: 8px;
+		background: rgb(var(--color-diamond-white-rgb) / 58%);
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
+		border-radius: 8px;
+		box-shadow: var(--shadow-editorial, var(--shadow-premium));
+		transform: none;
+	}
+
+	.family__media-frame img {
+		border-radius: 2px;
+		filter: var(--theme-image-filter-gallery, saturate(1.02) contrast(1.02));
+	}
+
+	.family__reveal {
+		opacity: 100%;
+		transform: none;
+		transition: none;
+	}
+
+	.family__group {
+		padding: 0 0 0 1.4rem;
+		border-left: 1px solid rgb(var(--color-liquid-silver-rgb) / 72%);
+	}
+
+	.family__group::before {
+		background: var(--color-satin-blue);
+	}
+
+	.family__group-title {
+		margin-bottom: 1.15rem;
+		color: rgb(var(--color-soft-graphite-rgb) / 58%);
+		font-size: 0.72rem;
+	}
+
+	.family__name {
+		font-family: var(--font-display);
+		font-size: clamp(1.45rem, 3vw, 2.1rem);
+		font-weight: 400;
+		line-height: 1.05;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.family__connector {
+		font-family: var(--font-display);
+		font-style: italic;
+		color: var(--color-satin-blue);
+	}
+
+	@media (width <= 860px) {
+		.family__header {
+			text-align: center;
+		}
+
+		.family__title {
+			margin-inline: auto;
+		}
+
+		.family__header-divider {
+			margin-inline: auto;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-liquid-silver),
+				transparent
+			);
+		}
+
+		.family__panel {
+			grid-template-columns: 1fr;
+		}
+
+		.family__content {
+			max-width: none;
+		}
+	}
+}
+
 .family[data-variant='luxury-hacienda'] {
 	--family-panel-gap: clamp(2rem, 4.8vw, 4.2rem);
 	--family-title-max-width: 15ch;

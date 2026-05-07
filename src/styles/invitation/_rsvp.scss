@@ -39,12 +39,19 @@
 	--rsvp-radio-label-color: rgb(var(--color-text-primary-rgb) / 70%);
 	--rsvp-radio-label-color-selected: var(--color-text-primary);
 	--rsvp-radio-focus-ring: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 16%);
+	--rsvp-radio-columns: 1fr 1fr;
+	--rsvp-radio-card-justify: center;
 	--rsvp-button-color: var(--color-action-accent);
 	--rsvp-button-color-hover: var(--color-surface-dark);
 	--rsvp-button-bg: transparent;
 	--rsvp-button-bg-hover: var(--color-action-accent);
+	--rsvp-button-border: var(--rsvp-field-border);
+	--rsvp-button-border-hover: var(--color-action-accent);
+	--rsvp-button-radius: var(--rsvp-radius-field);
 	--rsvp-button-bg-loading: rgb(var(--color-action-accent-rgb) / 10%);
 	--rsvp-button-bg-success: var(--color-action-accent);
+	--rsvp-button-border-success: var(--color-action-accent);
+	--rsvp-button-color-success: var(--color-surface-primary);
 	--rsvp-button-filter-hover: none;
 	--rsvp-button-shadow-rest:
 		0 10px 22px rgb(var(--color-action-primary-rgb) / 34%),
@@ -60,6 +67,14 @@
 	--rsvp-error-border: rgb(var(--color-error-rgb) / 28%);
 	--rsvp-emoji-yes: '✓';
 	--rsvp-emoji-no: '😔';
+	--rsvp-title-font: var(--font-display);
+	--rsvp-title-color: var(--color-action-accent);
+	--rsvp-title-size: 2.2rem;
+	--rsvp-title-margin: 0 0 2.5rem;
+	--rsvp-title-line-height: normal;
+	--rsvp-title-font-style: normal;
+	--rsvp-title-font-weight: inherit;
+	--rsvp-title-letter-spacing: 0;
 
 	position: relative;
 	width: calc(100% - 2rem);
@@ -74,15 +89,15 @@
 	box-shadow: var(--shadow-premium);
 	color: var(--color-text-primary);
 
-	@include mixins.respond-to(md) {
-		padding: 4.5rem;
-	}
-
 	&__title {
-		font-family: var(--font-display);
-		color: var(--color-action-accent);
-		font-size: 2.2rem;
-		margin-bottom: 2.5rem;
+		margin: var(--rsvp-title-margin);
+		font-family: var(--rsvp-title-font);
+		font-size: var(--rsvp-title-size);
+		font-style: var(--rsvp-title-font-style);
+		font-weight: var(--rsvp-title-font-weight);
+		line-height: var(--rsvp-title-line-height);
+		letter-spacing: var(--rsvp-title-letter-spacing);
+		color: var(--rsvp-title-color);
 		text-align: center;
 	}
 
@@ -140,7 +155,7 @@
 
 	&__radio-group {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: var(--rsvp-radio-columns);
 		gap: 1.2rem;
 		margin: 1rem 0;
 
@@ -156,7 +171,7 @@
 				transform var(--duration-standard) var(--ease-premium);
 			display: flex;
 			align-items: center;
-			justify-content: center;
+			justify-content: var(--rsvp-radio-card-justify);
 			gap: 0.8rem;
 			cursor: pointer;
 			position: relative;
@@ -244,13 +259,13 @@
 		padding: 1.1rem 2.2rem;
 		color: var(--rsvp-button-color);
 		background: var(--rsvp-button-bg);
-		border: 1px solid var(--rsvp-field-border);
+		border: 1px solid var(--rsvp-button-border);
 		font-family: var(--font-label);
 		font-size: 0.85rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.22em;
-		border-radius: var(--rsvp-radius-field);
+		border-radius: var(--rsvp-button-radius);
 		transition:
 			background-color var(--duration-standard) var(--ease-premium),
 			border-color var(--duration-standard) var(--ease-premium),
@@ -291,15 +306,15 @@
 
 		&--success {
 			background: var(--rsvp-button-bg-success);
-			border-color: var(--color-action-accent);
-			color: var(--color-surface-primary);
+			border-color: var(--rsvp-button-border-success);
+			color: var(--rsvp-button-color-success);
 			box-shadow: var(--rsvp-button-shadow-success);
 			pointer-events: none;
 		}
 
 		&:hover:not(:disabled) {
 			color: var(--rsvp-button-color-hover);
-			border-color: var(--color-action-accent);
+			border-color: var(--rsvp-button-border-hover);
 			background: var(--rsvp-button-bg-hover);
 			transform: translateY(-2px);
 			box-shadow: var(--rsvp-button-shadow-hover);

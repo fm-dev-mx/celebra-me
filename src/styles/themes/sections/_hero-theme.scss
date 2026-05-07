@@ -578,6 +578,158 @@
 	}
 }
 
+.invitation-hero[data-variant='celestial-blue'] {
+	justify-content: center;
+	min-height: 100svh;
+	background: var(--color-surface-dark);
+	color: var(--color-text-on-dark);
+
+	.invitation-hero__background {
+		&::after {
+			background: var(--hero-overlay);
+		}
+
+		img {
+			filter: var(--theme-image-filter-hero, saturate(1.02) contrast(1.02));
+			object-position: center 30%;
+		}
+	}
+
+	.invitation-hero__content {
+		display: grid;
+		grid-template-rows: 1fr auto auto auto;
+		align-content: end;
+		justify-items: start;
+		width: min(100%, var(--container-max-width-lg));
+		max-width: none;
+		min-height: 100svh;
+		margin: 0 auto;
+		padding: clamp(6rem, 12svh, 9rem) clamp(1.35rem, 6vw, 5rem) clamp(5rem, 9svh, 7rem);
+		background: transparent;
+		backdrop-filter: none;
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.invitation-hero__content::before,
+	.invitation-hero__content::after {
+		content: none;
+	}
+
+	.invitation-hero__label {
+		margin: 0 0 clamp(0.7rem, 1.6vw, 1rem);
+		font-family: var(--font-ui);
+		font-size: clamp(0.66rem, 1.2vw, 0.78rem);
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.28em;
+		color: var(--hero-label-color);
+		text-shadow: 0 2px 12px rgb(var(--color-surface-dark-rgb) / 48%);
+	}
+
+	.invitation-hero__title {
+		max-width: min(9.2ch, 78vw);
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(4rem, 14vw, 9.4rem);
+		font-weight: 400;
+		line-height: 0.86;
+		letter-spacing: 0;
+		text-align: left;
+		text-transform: none;
+		background: linear-gradient(
+			115deg,
+			var(--hero-title-color-start) 0%,
+			var(--hero-title-color-mid) 46%,
+			var(--hero-title-color-end) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		filter: drop-shadow(0 18px 38px rgb(var(--color-surface-dark-rgb) / 48%));
+		-webkit-text-stroke: 0;
+		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards;
+	}
+
+	.invitation-hero__portrait {
+		display: none;
+	}
+
+	.invitation-hero__divider {
+		width: clamp(7rem, 18vw, 14rem);
+		height: 1px;
+		margin: clamp(1.4rem, 3vw, 2rem) 0;
+		background: linear-gradient(
+			90deg,
+			var(--color-liquid-silver),
+			rgb(var(--color-diamond-white-rgb) / 68%),
+			transparent
+		);
+		opacity: 72%;
+	}
+
+	.invitation-hero__divider::after {
+		content: none;
+	}
+
+	.invitation-hero__details {
+		align-items: flex-start;
+		gap: 0.34rem;
+		color: var(--color-text-on-dark);
+	}
+
+	.invitation-hero__date,
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		margin: 0;
+		font-family: var(--font-ui);
+		font-size: clamp(0.78rem, 1.45vw, 0.92rem);
+		font-style: normal;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-diamond-white-rgb) / 82%);
+		text-shadow: 0 2px 10px rgb(var(--color-surface-dark-rgb) / 58%);
+	}
+
+	.calligraphy-accent {
+		font-family: var(--font-display);
+		font-size: 1em;
+		font-style: italic;
+		color: var(--color-satin-blue);
+	}
+
+	.invitation-hero__scroll-indicator {
+		color: rgb(var(--color-diamond-white-rgb) / 58%);
+	}
+
+	@media (width >= 900px) {
+		.invitation-hero__content {
+			padding-left: clamp(5rem, 10vw, 9rem);
+		}
+
+		.invitation-hero__title {
+			max-width: 8.6ch;
+		}
+	}
+
+	@media (width <= 560px) {
+		.invitation-hero__background img {
+			object-position: 60% 28%;
+		}
+
+		.invitation-hero__content {
+			padding-block-end: 5.75rem;
+		}
+
+		.invitation-hero__title {
+			max-width: 8ch;
+			font-size: clamp(3.5rem, 18vw, 5.8rem);
+		}
+	}
+}
+
 // Support for Revealed/Sealed Animation in Jewelry Box
 .theme-preset--jewelry-box.event-theme-wrapper[data-reveal-state='revealed']
 	.invitation-hero[data-variant='jewelry-box']
@@ -588,6 +740,12 @@
 	animation:
 		fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.7s forwards,
 		gold-foil 8s tokens.$ease-in-out infinite;
+}
+
+.theme-preset--celestial-blue.event-theme-wrapper[data-reveal-state='revealed']
+	.invitation-hero[data-variant='celestial-blue']
+	.invitation-hero__title {
+	animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.7s forwards;
 }
 
 // ==========================================================================
