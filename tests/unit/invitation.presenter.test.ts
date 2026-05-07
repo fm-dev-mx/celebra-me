@@ -41,7 +41,7 @@ describe('prepareInvitationPageContext', () => {
 		});
 
 		expect(context.layout.title).toBe('Invitación para Mariana Soto');
-		expect(context.layout.className).toBe('layout--premium-portrait');
+		expect(context.layout.className).toBe('layout--premiere-floral');
 		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('premiere-floral');
 		expect(context.wrapper.dataAttributes['data-event-slug']).toBe('ximena-meza-trasvina');
 		expect(context.wrapper.dataAttributes['data-reveal-state']).toBe('sealed');

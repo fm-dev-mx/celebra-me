@@ -169,10 +169,10 @@ describe('Event content schema (real contract)', () => {
 					name: 'Test Name',
 					date: '2026-01-01T00:00:00.000Z',
 					backgroundImage: 'https://example.com/hero.jpg',
-					layoutVariant: 'premium-portrait',
+					layoutVariant: 'celestial-blue',
 				},
 				family: {
-					layoutVariant: 'premium-mask',
+					layoutVariant: 'celestial-blue',
 				},
 			}),
 		);

@@ -50,7 +50,7 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 			hero: {
 				name: 'Ana Sofía Cota Guillen',
 				date: '2026-05-24T01:00:00.000Z',
-				layoutVariant: 'premium-portrait',
+				layoutVariant: 'celestial-blue',
 			},
 			rsvp: {
 				accessMode: 'hybrid',
