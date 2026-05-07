@@ -35,6 +35,9 @@ importers:
       '@fontsource-variable/eb-garamond':
         specifier: ^5.2.7
         version: 5.2.7
+      '@fontsource-variable/instrument-sans':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource-variable/montserrat':
         specifier: ^5.2.8
         version: 5.2.8
@@ -850,6 +853,9 @@ packages:
 
   '@fontsource-variable/eb-garamond@5.2.7':
     resolution: {integrity: sha512-TbR+Pun4k5g85lgdxRNSbWka5vJgi9pzdFzFswgf7/7NRhKssvoumft1+ZGz3n91YYet96JcnjWrgPGGj6JTzg==}
+
+  '@fontsource-variable/instrument-sans@5.2.8':
+    resolution: {integrity: sha512-mTCaukbdIjjoipj2E3Q5XoZM3ZxJWdzyHevf/LG/0PHlfF9Q85pxOM7B7A9MerFyxmRzz5kVlumgIvgDSG4CPg==}
 
   '@fontsource-variable/montserrat@5.2.8':
     resolution: {integrity: sha512-d8wykq7GCKhEOlLwEuQIOK3w3qsXNxwDlH0meru4AZZzQ4/+rZyvHWKL6BBtHdmbovSHEEQDkwkD8qYUKlcFtQ==}
@@ -6242,6 +6248,8 @@ snapshots:
   '@fontsource-variable/cormorant-garamond@5.2.6': {}
 
   '@fontsource-variable/eb-garamond@5.2.7': {}
+
+  '@fontsource-variable/instrument-sans@5.2.8': {}
 
   '@fontsource-variable/montserrat@5.2.8': {}
 
