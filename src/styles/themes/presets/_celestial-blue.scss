@@ -1,74 +1,106 @@
-@use '../../tools/functions' as tools;
 @use '../../tokens/system/type' as sys-type;
 
 .theme-preset--celestial-blue {
-	// 💎 Color Architecture: Sapphire Mist (Soft & Romantic)
-	--color-surface-primary: rgb(240 250 255);
-	--color-surface-primary-rgb: 240 250 255;
-	--color-surface-soft: rgb(220 240 255);
-	--color-surface-dark: rgb(38 68 95);
-	--color-surface-dark-rgb: 38 68 95;
+	// Editorial satin palette
+	--color-satin-blue: rgb(169 216 242);
+	--color-satin-blue-rgb: 169 216 242;
+	--color-ice-blue: rgb(220 239 248);
+	--color-ice-blue-rgb: 220 239 248;
+	--color-pearl-gray: rgb(238 241 242);
+	--color-pearl-gray-rgb: 238 241 242;
+	--color-soft-graphite: rgb(31 37 41);
+	--color-soft-graphite-rgb: 31 37 41;
+	--color-cold-silver: rgb(184 195 201);
+	--color-cold-silver-rgb: 184 195 201;
+	--color-deep-blue-graphite: rgb(16 24 32);
+	--color-deep-blue-graphite-rgb: 16 24 32;
+	--color-cool-ivory: rgb(244 241 234);
+	--color-cool-ivory-rgb: 244 241 234;
+	--color-liquid-silver: rgb(200 208 212);
+	--color-liquid-silver-rgb: 200 208 212;
+	--color-diamond-white: rgb(255 255 255);
+	--color-diamond-white-rgb: 255 255 255;
 
-	// Actions & Emphasis
-	--color-action-primary: rgb(120 180 220);
-	--color-action-primary-rgb: 120 180 220;
-	--color-action-accent: rgb(160 210 240);
-	--color-action-accent-rgb: 160 210 240;
-	--color-text-primary: rgb(38 68 95);
-	--color-text-emphasis: rgb(100 160 210);
-	--color-text-on-dark: rgb(240 250 255);
-	--color-text-on-light: rgb(38 68 95);
+	// Three-layer semantic bridge
+	--color-surface-primary: var(--color-cool-ivory);
+	--color-surface-primary-rgb: var(--color-cool-ivory-rgb);
+	--color-surface-secondary: var(--color-pearl-gray);
+	--color-surface-secondary-rgb: var(--color-pearl-gray-rgb);
+	--color-surface-soft: var(--color-ice-blue);
+	--color-surface-elevated: var(--color-diamond-white);
+	--color-surface-canvas: var(--color-deep-blue-graphite);
+	--color-surface-dark: var(--color-deep-blue-graphite);
+	--color-surface-dark-rgb: var(--color-deep-blue-graphite-rgb);
+	--color-action-primary: var(--color-soft-graphite);
+	--color-action-primary-rgb: var(--color-soft-graphite-rgb);
+	--color-action-accent: var(--color-satin-blue);
+	--color-action-accent-rgb: var(--color-satin-blue-rgb);
+	--color-text-primary: var(--color-deep-blue-graphite);
+	--color-text-primary-rgb: var(--color-deep-blue-graphite-rgb);
+	--color-text-secondary: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--color-text-secondary-rgb: var(--color-soft-graphite-rgb);
+	--color-text-emphasis: var(--color-soft-graphite);
+	--color-text-on-dark: var(--color-diamond-white);
+	--color-text-on-dark-rgb: var(--color-diamond-white-rgb);
+	--color-text-on-light: var(--color-deep-blue-graphite);
+	--color-text-muted: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--color-border-subtle: rgb(var(--color-cold-silver-rgb) / 34%);
+	--color-border-premium: rgb(var(--color-liquid-silver-rgb) / 54%);
 
-	// Glassmorphism UI (Frosted Blue Glass - High Saturation)
-	--color-glass-bg: rgb(255 255 255 / 45%);
-	--color-glass-border: rgb(160 210 240 / 40%);
-	--color-glass-shadow: rgb(38 68 95 / 8%);
-	--glass-blur: 12px;
-	--glass-saturate: 200%;
-
-	// Typography: Ethereal Classic (Cinzel + EB Garamond)
-	--font-display: #{sys-type.$sys-font-display-formal};
-	--font-body: #{sys-type.$sys-font-body};
-	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
+	// Restrained glass and editorial typography
+	--color-glass-bg: rgb(var(--color-diamond-white-rgb) / 58%);
+	--color-glass-border: rgb(var(--color-liquid-silver-rgb) / 48%);
+	--color-glass-shadow: rgb(var(--color-deep-blue-graphite-rgb) / 8%);
+	--glass-blur: 8px;
+	--glass-saturate: 145%;
+	--font-display: #{sys-type.$sys-font-display-hacienda};
+	--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-calligraphy: #{sys-type.$sys-font-display-hacienda};
 
 	// Component Specifics
 	--shadow-premium:
-		0 22px 56px rgb(var(--color-action-primary-rgb) / 18%), 0 8px 24px rgb(255 255 255 / 22%);
-	--border-fine-gold: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
-	--border-image: 2px solid rgb(var(--color-action-accent-rgb) / 52%);
+		0 24px 62px rgb(var(--color-deep-blue-graphite-rgb) / 10%),
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%);
+	--shadow-editorial: 0 18px 46px rgb(var(--color-deep-blue-graphite-rgb) / 9%);
+	--border-fine-silver: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
+	--border-fine-gold: var(--border-fine-silver);
+	--border-image: 1px solid rgb(var(--color-satin-blue-rgb) / 62%);
 	--color-frame-bg: linear-gradient(
 		135deg,
-		rgb(var(--color-surface-primary-rgb) / 86%) 0%,
-		rgb(255 255 255 / 95%) 48%,
-		rgb(var(--color-action-accent-rgb) / 72%) 100%
+		rgb(var(--color-diamond-white-rgb) / 94%) 0%,
+		rgb(var(--color-pearl-gray-rgb) / 86%) 50%,
+		rgb(var(--color-ice-blue-rgb) / 72%) 100%
 	);
 
 	// ---------------------------------------------------------------------
 	// Countdown section tokens
 	// ---------------------------------------------------------------------
-	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
-	--countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
-	--countdown-label-letter-spacing: 0.25em;
-	--countdown-label-opacity: 0.8;
+	--countdown-value-size-mobile: clamp(2.25rem, 10vw, 3.4rem);
+	--countdown-value-size-desktop: clamp(3rem, 5vw, 4.4rem);
+	--countdown-label-letter-spacing: 0.22em;
+	--countdown-label-opacity: 0.7;
 
 	// ---------------------------------------------------------------------
 	// Family section tokens
 	// ---------------------------------------------------------------------
 	--family-bg: radial-gradient(
-		circle at 50% 18%,
-		rgb(255 255 255 / 70%) 0%,
-		rgb(var(--color-surface-primary-rgb) / 92%) 100%
+		circle at 50% 12%,
+		rgb(var(--color-ice-blue-rgb) / 55%) 0%,
+		var(--color-surface-primary) 64%,
+		rgb(var(--color-pearl-gray-rgb) / 72%) 100%
 	);
-	--family-texture-opacity: 0.3;
-	--family-border: rgb(var(--color-action-accent-rgb) / 28%);
-	--family-text-primary: var(--color-surface-dark);
-	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 72%);
-	--family-accent: var(--color-action-accent);
-	--family-shadow: var(--shadow-premium);
+	--family-texture-opacity: 0.16;
+	--family-border: rgb(var(--color-liquid-silver-rgb) / 42%);
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--family-accent: var(--color-satin-blue);
+	--family-shadow: var(--shadow-editorial);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--color-action-accent-rgb) / 92%) 50%,
+		rgb(var(--color-liquid-silver-rgb) / 92%) 50%,
 		transparent 100%
 	);
 	--family-name-font: var(--font-display);
@@ -82,47 +114,58 @@
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
-		rgb(var(--color-action-accent-rgb) / 3%) 100%
+		rgb(var(--color-satin-blue-rgb) / 7%) 100%
 	);
 
 	// ---------------------------------------------------------------------
 	// Hero tokens
 	// ---------------------------------------------------------------------
-	--hero-card-bg: linear-gradient(
-		160deg,
-		rgb(255 255 255 / 76%) 0%,
-		rgb(var(--color-surface-primary-rgb) / 48%) 100%
-	);
-	--hero-card-border-hairline: rgb(var(--color-action-accent-rgb) / 42%);
-	--hero-card-shadow-ambient: var(--shadow-premium);
-	--hero-title-color-start: rgb(220 243 255);
-	--hero-title-color-mid: rgb(255 255 255);
-	--hero-title-color-end: var(--color-action-accent);
-	--hero-badge-bg: rgb(255 255 255 / 46%);
-	--hero-badge-border: rgb(var(--color-action-accent-rgb) / 72%);
+	--hero-card-bg: transparent;
+	--hero-card-border-hairline: rgb(var(--color-liquid-silver-rgb) / 58%);
+	--hero-card-shadow-ambient: none;
+	--hero-title-color-start: rgb(var(--color-diamond-white-rgb) / 98%);
+	--hero-title-color-mid: var(--color-satin-blue);
+	--hero-title-color-end: rgb(var(--color-diamond-white-rgb) / 84%);
+	--hero-badge-bg: rgb(var(--color-diamond-white-rgb) / 12%);
+	--hero-badge-border: rgb(var(--color-liquid-silver-rgb) / 62%);
 	--hero-badge-text: var(--color-text-on-dark);
-	--hero-label-color: rgb(var(--color-action-accent-rgb) / 72%);
+	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 78%);
+	--hero-overlay:
+		radial-gradient(
+			circle at 68% 44%,
+			rgb(16 24 32 / 12%) 0%,
+			rgb(16 24 32 / 46%) 48%,
+			rgb(16 24 32 / 86%) 100%
+		),
+		linear-gradient(
+			90deg,
+			rgb(16 24 32 / 78%) 0%,
+			rgb(16 24 32 / 28%) 46%,
+			rgb(16 24 32 / 78%) 100%
+		),
+		linear-gradient(180deg, rgb(16 24 32 / 54%) 0%, transparent 32%, rgb(16 24 32 / 82%) 100%);
 
 	// ---------------------------------------------------------------------
 	// Gallery tokens
 	// ---------------------------------------------------------------------
 	--gallery-section-bg: radial-gradient(
-		circle at 50% 16%,
-		rgb(255 255 255 / 68%) 0%,
-		rgb(var(--color-surface-primary-rgb) / 94%) 100%
+		circle at 50% 10%,
+		rgb(var(--color-ice-blue-rgb) / 62%) 0%,
+		var(--color-surface-primary) 56%,
+		rgb(var(--color-pearl-gray-rgb) / 72%) 100%
 	);
-	--gallery-card-bg: var(--color-glass-bg);
-	--gallery-card-radius: 12px;
-	--gallery-card-padding: 10px;
-	--gallery-image-radius: 4px;
+	--gallery-card-bg: rgb(var(--color-diamond-white-rgb) / 64%);
+	--gallery-card-radius: 6px;
+	--gallery-card-padding: 7px;
+	--gallery-image-radius: 2px;
 	--gallery-title-font: var(--font-display);
-	--gallery-title-color: var(--color-action-primary);
-	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb) / 72%);
-	--gallery-caption-bg: rgb(255 255 255 / 92%);
-	--gallery-caption-color: var(--color-action-primary);
-	--gallery-caption-font: #{sys-type.$sys-font-display-hacienda};
+	--gallery-title-color: var(--color-text-primary);
+	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gallery-caption-bg: rgb(var(--color-diamond-white-rgb) / 86%);
+	--gallery-caption-color: var(--color-soft-graphite);
+	--gallery-caption-font: var(--font-body);
 	--gallery-caption-size: 0.8rem;
-	--gallery-caption-letter-spacing: 0.04em;
+	--gallery-caption-letter-spacing: 0.02em;
 
 	// ---------------------------------------------------------------------
 	// Thank-you section tokens
@@ -133,26 +176,39 @@
 	--thank-you-image-position: center;
 
 	// 🎨 Texture & Light Effects
-	--texture-silk:
-		radial-gradient(circle at 50% 50%, rgb(255 255 255 / 80%) 0%, rgb(230 245 255 / 40%) 100%),
-		url('https://www.transparenttextures.com/patterns/silk.png');
+	--texture-silk: linear-gradient(
+		115deg,
+		rgb(var(--color-diamond-white-rgb) / 72%) 0%,
+		rgb(var(--color-ice-blue-rgb) / 42%) 46%,
+		rgb(var(--color-liquid-silver-rgb) / 34%) 100%
+	);
 	--light-sweep: linear-gradient(
-		-45deg,
+		115deg,
 		rgb(255 255 255 / 0%) 0%,
-		rgb(255 255 255 / 0%) 40%,
-		rgb(255 255 255 / 40%) 50%,
-		rgb(255 255 255 / 0%) 60%,
+		rgb(255 255 255 / 0%) 44%,
+		rgb(255 255 255 / 28%) 50%,
+		rgb(255 255 255 / 0%) 56%,
 		rgb(255 255 255 / 0%) 100%
 	);
 
-	// Premium Metallic Gradients (Iridescent Silver-Blue)
-	--gold-metallic: linear-gradient(
+	// Silver/satin decorative aliases. Existing --gold-* names remain as compatibility bridges.
+	--metallic-silver: linear-gradient(
 		135deg,
-		rgb(168 200 232) 0%,
-		rgb(255 255 255) 50%,
-		rgb(120 168 216) 100%
+		var(--color-cold-silver) 0%,
+		var(--color-diamond-white) 38%,
+		var(--color-satin-blue) 54%,
+		var(--color-liquid-silver) 72%,
+		var(--color-soft-graphite) 100%
 	);
-	--gold-glow: 0 0 25px rgb(160 210 240 / 35%);
+	--satin-sheen: linear-gradient(
+		120deg,
+		rgb(var(--color-diamond-white-rgb) / 0%) 0%,
+		rgb(var(--color-diamond-white-rgb) / 34%) 46%,
+		rgb(var(--color-satin-blue-rgb) / 18%) 56%,
+		rgb(var(--color-diamond-white-rgb) / 0%) 100%
+	);
+	--gold-metallic: var(--metallic-silver);
+	--gold-glow: 0 0 18px rgb(var(--color-satin-blue-rgb) / 22%);
 
 	// Layout Specifics
 	--container-max-width-lg: 1280px;
