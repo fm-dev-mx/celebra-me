@@ -1,24 +1,5 @@
 import { z } from 'zod';
-
-export const ITINERARY_ICON_KEYS = [
-	'waltz',
-	'dinner',
-	'toast',
-	'cake',
-	'party',
-	'ceremony',
-	'doll',
-	'church',
-	'reception',
-	'music',
-	'photo',
-	'boot',
-	'heel',
-	'western-hat',
-	'taco',
-	'tuba',
-	'accordion',
-] as const;
+import { ITINERARY_ICON_KEYS } from '@/lib/adapters/types';
 
 export const itineraryItemSchema = z.object({
 	icon: z.enum(ITINERARY_ICON_KEYS),

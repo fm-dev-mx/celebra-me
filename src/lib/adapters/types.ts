@@ -55,25 +55,44 @@ export interface Ceremony {
 	coordinates?: Coordinate;
 }
 
+export const ITINERARY_ICON_KEYS = [
+	'waltz',
+	'dinner',
+	'toast',
+	'cake',
+	'party',
+	'church',
+	'reception',
+	'photo',
+	'boot',
+	'heel',
+	'western-hat',
+	'taco',
+	'tuba',
+	'accordion',
+] as const;
+
+export type ItineraryIconKey = (typeof ITINERARY_ICON_KEYS)[number];
+
+export const ITINERARY_ICON_DISPLAY_NAMES: Record<ItineraryIconKey, string> = {
+	waltz: 'Waltz',
+	dinner: 'Dinner',
+	toast: 'Toast',
+	cake: 'Cake',
+	party: 'Party',
+	church: 'Church',
+	reception: 'Reception',
+	photo: 'Photo',
+	boot: 'Boot',
+	heel: 'Heel',
+	'western-hat': 'WesternHat',
+	taco: 'Taco',
+	tuba: 'Tuba',
+	accordion: 'Accordion',
+};
+
 export interface ItineraryItem {
-	icon:
-		| 'waltz'
-		| 'dinner'
-		| 'toast'
-		| 'cake'
-		| 'party'
-		| 'ceremony'
-		| 'doll'
-		| 'church'
-		| 'reception'
-		| 'music'
-		| 'photo'
-		| 'boot'
-		| 'heel'
-		| 'western-hat'
-		| 'taco'
-		| 'tuba'
-		| 'accordion';
+	icon: ItineraryIconKey;
 	label: string;
 	description?: string;
 	time: string;

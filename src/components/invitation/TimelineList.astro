@@ -1,31 +1,15 @@
 ---
+// src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
+import type { ItineraryIconKey } from '@/lib/adapters/types';
+import { ITINERARY_ICON_DISPLAY_NAMES } from '@/lib/adapters/types';
 
-type IconType =
-	| 'waltz'
-	| 'dinner'
-	| 'toast'
-	| 'cake'
-	| 'party'
-	| 'ceremony'
-	| 'doll'
-	| 'church'
-	| 'reception'
-	| 'music'
-	| 'photo'
-	| 'boot'
-	| 'heel'
-	| 'western-hat'
-	| 'taco'
-	| 'tuba'
-	| 'accordion';
-
-interface TimelineItemData {
-	icon: IconType;
+type TimelineItemData = {
+	icon: ItineraryIconKey;
 	label: string;
 	description?: string;
 	time: string;
-}
+};
 
 interface Props {
 	items: TimelineItemData[];
@@ -33,26 +17,6 @@ interface Props {
 }
 
 const { items, variant } = Astro.props;
-
-const iconMap: Record<IconType, string> = {
-	waltz: 'Waltz',
-	dinner: 'Dinner',
-	toast: 'Toast',
-	cake: 'Cake',
-	party: 'Party',
-	ceremony: 'Church',
-	doll: 'Party',
-	church: 'Church',
-	reception: 'Reception',
-	music: 'Waltz',
-	photo: 'Photo',
-	boot: 'Boot',
-	heel: 'Heel',
-	'western-hat': 'WesternHat',
-	taco: 'Taco',
-	tuba: 'Tuba',
-	accordion: 'Accordion',
-};
 ---
 
 <div class="itinerary__items-wrapper" data-itinerary-wrapper data-variant={variant}>
@@ -65,35 +29,33 @@ const iconMap: Record<IconType, string> = {
 				stroke-dasharray="100"
 				stroke-dashoffset="100"
 				data-itinerary-line
-			></path>
+			/>
 		</svg>
 	</div>
 
 	<div class="itinerary__items">
-		{
-			items.map((item, index) => {
-				const align = index % 2 === 0 ? 'left' : 'right';
-				return (
-					<div class:list={['itinerary__item', `itinerary__item--${align}`]} data-itinerary-item>
-						<div class="itinerary__item-content">
-							<div class="itinerary__item-time">{item.time}</div>
-							<h4 class="itinerary__item-label">{item.label}</h4>
-							{item.description && (
-								<p class="itinerary__item-description">{item.description}</p>
-							)}
-						</div>
-
-						<div class="itinerary__item-icon-wrapper">
-							<div class="itinerary__item-icon-inner">
-								<Icon name={iconMap[item.icon] ?? 'Reception'} size={24} />
-							</div>
-						</div>
-
-						<div class="itinerary__item-dot" aria-hidden="true"></div>
+		{items.map((item, index) => {
+			const align = index % 2 === 0 ? 'left' : 'right';
+			return (
+				<div class:list={['itinerary__item', `itinerary__item--${align}`]} data-itinerary-item>
+					<div class="itinerary__item-content">
+						<div class="itinerary__item-time">{item.time}</div>
+						<h4 class="itinerary__item-label">{item.label}</h4>
+						{item.description && (
+							<p class="itinerary__item-description">{item.description}</p>
+						)}
 					</div>
-				);
-			})
-		}
+
+					<div class="itinerary__item-icon-wrapper">
+						<div class="itinerary__item-icon-inner">
+							<Icon name={ITINERARY_ICON_DISPLAY_NAMES[item.icon] ?? 'Reception'} size={24} />
+						</div>
+					</div>
+
+					<div class="itinerary__item-dot" aria-hidden="true" />
+				</div>
+			);
+		})}
 	</div>
 </div>
 
