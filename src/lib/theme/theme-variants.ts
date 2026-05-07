@@ -37,7 +37,8 @@ export const INDICATION_ICON_KEYS = [
 	'forbidden',
 	'gift',
 	'western-hat',
-	'dress',
+	'dressCode',
+	'calendar',
 ] as const;
 
 export const INDICATION_ICON_NAMES = [
@@ -45,7 +46,9 @@ export const INDICATION_ICON_NAMES = [
 	'Envelope',
 	'Forbidden',
 	'Gift',
-	'western-hat',
+	'WesternHat',
+	'Calendar',
+	'DressCode',
 ] as const;
 
 export const INDICATION_STYLE_VARIANTS = ['default', 'reserved'] as const;

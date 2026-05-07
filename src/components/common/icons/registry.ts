@@ -21,6 +21,8 @@ const ALIASES: Record<string, string> = {
 	tuba: 'TubaIcon',
 	accordion: 'AccordionIcon',
 	heel: 'HeelIcon',
+	dressCode: 'DressCodeIcon',
+	calendar: 'CalendarIcon',
 };
 
 export const iconRegistry: Record<string, IconComponent> = {};
