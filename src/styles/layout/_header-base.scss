@@ -113,14 +113,14 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: tokens.$spacing-3;
+		gap: 0.75rem;
 		max-width: 1400px;
 		margin: 0 auto;
-		padding: 0 tokens.$spacing-4;
+		padding: 0 2rem;
 		height: 100%;
 
 		@include mixins.respond-to(lg) {
-			padding: 0 tokens.$spacing-8;
+			padding: 0 4rem;
 		}
 	}
 
@@ -144,26 +144,12 @@
 	&__mobile-toggle {
 		position: relative;
 		z-index: 1010;
-		padding: tokens.$spacing-2;
+		padding: 0.5rem;
 		background: transparent;
 		border: none;
 		cursor: pointer;
 		color: var(--color-action-accent);
 		display: block;
-		border-radius: 999px;
-		transition:
-			color 180ms var(--header-ease),
-			background-color 180ms var(--header-ease);
-
-		&:hover,
-		&:focus-visible {
-			background-color: rgb(255 255 255 / 10%);
-		}
-
-		&:focus-visible {
-			outline: 1px solid currentcolor;
-			outline-offset: 4px;
-		}
 
 		@include mixins.respond-to(lg) {
 			display: none;
@@ -231,11 +217,7 @@
 		flex-direction: column;
 		width: 85%;
 		max-width: 380px;
-		padding: calc(var(--header-height) + #{tokens.$spacing-6}) tokens.$spacing-5
-			tokens.$spacing-6;
-		padding-bottom: max(#{tokens.$spacing-6}, env(safe-area-inset-bottom));
-		overflow-y: auto;
-		overscroll-behavior: contain;
+		padding: 8rem 2.5rem 3rem;
 		background:
 			linear-gradient(180deg, rgb(255 255 255 / 5%) 0%, transparent 20%),
 			var(--mobile-drawer-bg);
@@ -257,48 +239,6 @@
 			opacity: 100%;
 		}
 
-		@include mixins.short-viewport(500px) {
-			padding-top: calc(var(--header-height-scrolled) + #{tokens.$spacing-3});
-			padding-bottom: max(#{tokens.$spacing-4}, env(safe-area-inset-bottom));
-		}
-
-		@include mixins.respond-to(lg) {
-			display: none;
-		}
-	}
-}
-
-.header-base[data-variant='celestial-blue'] {
-	.header-base__desktop-nav {
-		@include mixins.respond-below(xl) {
-			display: none;
-		}
-
-		@include mixins.respond-to(xl) {
-			display: block;
-		}
-	}
-
-	.header-base__mobile-toggle,
-	.header-base__mobile-overlay,
-	.header-base__mobile-menu {
-		@include mixins.respond-to(lg) {
-			display: block;
-		}
-
-		@include mixins.respond-to(xl) {
-			display: none;
-		}
-	}
-
-	.header-base__mobile-menu {
-		@include mixins.respond-to(lg) {
-			display: flex;
-		}
-	}
-
-	.header-base__mobile-menu[hidden],
-	.header-base__mobile-overlay[hidden] {
 		@include mixins.respond-to(lg) {
 			display: none;
 		}
@@ -309,13 +249,8 @@
 .mobile-nav-links {
 	display: flex;
 	flex-direction: column;
-	gap: tokens.$spacing-6;
-	margin-bottom: tokens.$spacing-8;
-
-	@include mixins.short-viewport(500px) {
-		gap: tokens.$spacing-3;
-		margin-bottom: tokens.$spacing-4;
-	}
+	gap: 2rem;
+	margin-bottom: 4rem;
 
 	&__link {
 		transform: translateX(24px);
@@ -333,9 +268,6 @@
 		color: var(--color-noir-text);
 		position: relative;
 		width: fit-content;
-		min-height: 44px;
-		display: inline-flex;
-		align-items: center;
 
 		&::after {
 			content: '';
@@ -350,14 +282,8 @@
 			transition: transform 0.4s tokens.$ease-premium;
 		}
 
-		&:hover::after,
-		&:focus-visible::after {
+		&:hover::after {
 			transform: scaleX(0.3);
-		}
-
-		&:focus-visible {
-			outline: 1px solid currentcolor;
-			outline-offset: 6px;
 		}
 	}
 }
@@ -386,13 +312,8 @@
 .mobile-nav-actions {
 	display: flex;
 	flex-direction: column;
-	gap: tokens.$spacing-4;
-	margin-bottom: tokens.$spacing-6;
-
-	@include mixins.short-viewport(500px) {
-		gap: tokens.$spacing-3;
-		margin-bottom: tokens.$spacing-4;
-	}
+	gap: 1.25rem;
+	margin-bottom: 2rem;
 
 	&__login,
 	&__cta {
@@ -405,16 +326,10 @@
 		text-decoration: none;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
-		min-height: 44px;
-
-		&:focus-visible {
-			outline: 1px solid currentcolor;
-			outline-offset: 5px;
-		}
 	}
 
 	&__login {
-		padding: tokens.$spacing-3 0;
+		padding: 0.85rem 0;
 		color: rgb(255 255 255 / 60%);
 		font-size: 0.8rem;
 		border-bottom: 1px solid var(--mobile-drawer-border);
@@ -429,9 +344,9 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		gap: tokens.$spacing-3;
-		padding: tokens.$spacing-3 tokens.$spacing-5;
-		border-radius: 4px;
+		gap: 0.75rem;
+		padding: 1.1rem 1.5rem;
+		border-radius: 999px;
 		background: linear-gradient(
 			135deg,
 			var(--color-noir-text) 0%,
@@ -454,16 +369,12 @@
 
 .mobile-nav-footer {
 	margin-top: auto;
-	padding-top: tokens.$spacing-6;
-
-	@include mixins.short-viewport(500px) {
-		padding-top: tokens.$spacing-4;
-	}
+	padding-top: 2rem;
 
 	&__divider {
 		height: 1px;
 		width: 100%;
-		margin-bottom: tokens.$spacing-6;
+		margin-bottom: 3rem;
 		background: linear-gradient(
 			to right,
 			transparent,
@@ -487,8 +398,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: tokens.$spacing-4;
-	margin-top: tokens.$spacing-5;
+	gap: 1rem;
+	margin-top: 1.5rem;
 	color: var(--color-text-on-dark);
 }
 

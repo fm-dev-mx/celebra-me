@@ -8,6 +8,8 @@
 
 // Default Header Variables (Safe Fallbacks)
 :root {
+	--header-bg: var(--header-glass-bg);
+	--header-bg-scrolled: var(--header-scrolled-bg);
 	--header-nav-color: var(--color-text-primary);
 	--header-nav-color-transparent: var(--color-text-on-dark);
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%);
@@ -16,13 +18,16 @@
 
 // LUXURY HACIENDA PRESET
 .header-base[data-variant='luxury-hacienda'] {
-	--header-glass-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0);
+	--header-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0);
+	--header-bg-scrolled: var(--header-luxury-bg-scrolled);
 	--header-nav-color: var(--header-luxury-nav-color);
 	--header-nav-color-transparent: var(--header-luxury-nav-color);
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
+	--header-border-bottom: var(--header-luxury-border-scrolled);
 
 	&.header-base--scrolled {
+		border-bottom: var(--header-border-bottom);
 		box-shadow: var(--header-luxury-cta-glow);
 	}
 
@@ -35,8 +40,8 @@
 // JEWELRY BOX / CELESTIAL BLUE PRESET
 .header-base[data-variant='jewelry-box'],
 .header-base[data-variant='celestial-blue'] {
-	--header-glass-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
-	--header-scrolled-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
+	--header-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
+	--header-bg-scrolled: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
 	--header-nav-color: #{tokens.$color-surface-dark};
 	--header-nav-color-transparent: #{tokens.$color-text-on-dark};
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
@@ -44,29 +49,24 @@
 }
 
 .header-base[data-variant='celestial-blue'] {
-	--header-glass-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
-	--header-scrolled-bg: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
-	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 22%);
-	--header-shadow: 0 18px 46px rgb(var(--color-deep-blue-graphite-rgb) / 16%);
+	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
+	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
 	--header-nav-color: var(--color-diamond-white);
 	--header-nav-color-transparent: var(--color-diamond-white);
 	--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-deep-blue-graphite-rgb) / 42%);
 	--header-nav-filter-transparent: none;
-	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
-	--mobile-drawer-border: rgb(var(--color-liquid-silver-rgb) / 26%);
-	--mobile-drawer-link-hover: var(--color-satin-blue);
-	--mobile-drawer-footer-copy: rgb(var(--color-diamond-white-rgb) / 42%);
-	--mobile-drawer-shadow: -22px 0 72px rgb(var(--color-deep-blue-graphite-rgb) / 72%);
+	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 22%);
 
 	&.header-base--scrolled {
+		border-bottom: var(--header-border-bottom);
 		backdrop-filter: blur(14px);
 	}
 }
 
 // EDITORIAL PRESET
 .header-base[data-variant='editorial'] {
-	--header-glass-bg: transparent;
-	--header-scrolled-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0.85);
+	--header-bg: transparent;
+	--header-bg-scrolled: rgba(#{tokens.$color-surface-dark-rgb}, 0.85);
 
 	.event-header__title {
 		display: none;
