@@ -1,0 +1,288 @@
+{
+    "eventType": "xv",
+    "isDemo": false,
+    "title": "XV Años de Ana Sofía",
+    "description": "Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables.",
+    "theme": {
+        "preset": "jewelry-box"
+    },
+    "sectionStyles": {
+        "countdown": {
+            "showParticles": true
+        },
+        "location": {
+            "mapStyle": "minimal",
+            "showFlourishes": true
+        },
+        "family": {
+            "variant": "jewelry-box"
+        },
+        "gallery": {
+            "variant": "jewelry-box"
+        },
+        "itinerary": {
+            "variant": "jewelry-box"
+        },
+        "gifts": {
+            "variant": "jewelry-box"
+        },
+        "thankYou": {
+            "variant": "jewelry-box"
+        },
+        "rsvp": {
+            "variant": "jewelry-box",
+            "labels": {
+                "name": "Tu nombre",
+                "guestCount": "Acompañantes",
+                "attendance": "Asistencia",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Ana Sofía Cota Guillen",
+        "label": "Mis XV Años",
+        "date": "2026-05-24T01:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait",
+        "layoutVariant": "premium-portrait"
+    },
+    "location": {
+        "venueName": "Palapa Zavala's",
+        "address": "Ejido Mochis, Los Mochis, Sinaloa",
+        "city": "Los Mochis",
+        "mapUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
+        "ceremony": {
+            "venueEvent": "Misa de Acción de Gracias",
+            "venueName": "Parroquia de Nuestra Señora de Lourdes",
+            "address": "Dr. Oscar Aguilar Pereira, Nuevo Horizonte, 82234 Los Mochis, Sin.",
+            "date": "23 de mayo de 2026",
+            "time": "6:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/WkDJn3uyRxkaiPGJ6",
+            "googleMapsUrl": "https://maps.app.goo.gl/WkDJn3uyRxkaiPGJ6",
+            "image": "gallery08"
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Palapa Zavala's",
+            "address": "Ejido Mochis, Los Mochis, Sinaloa",
+            "date": "23 de mayo de 2026",
+            "time": "8:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
+            "googleMapsUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
+            "image": "jardin"
+        },
+        "indications": [
+            {
+                "icon": "forbidden",
+                "iconName": "Forbidden",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta <strong>formal</strong>. Favor de evitar el color <strong>azul cielo</strong>, reservado para la quinceañera."
+            },
+            {
+                "icon": "gift",
+                "iconName": "Gift",
+                "styleVariant": "default",
+                "text": "Tu presencia es nuestro mejor regalo. Si deseas tener un detalle, habrá <strong>lluvia de sobres</strong>."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Jesus Eduardo Cota Perez",
+            "mother": "Xiomara Karely Guillen García"
+        },
+        "labels": {
+            "sectionTitle": "Mi Familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos"
+        },
+        "godparents": [
+            {
+                "name": "Miguel Armando Valencia Ochoa",
+                "role": "Padrino"
+            },
+            {
+                "name": "Evelia Parra Torres",
+                "role": "Madrina"
+            },
+            {
+                "name": "Dunelin Valdez Pacheco",
+                "role": "Madrina"
+            },
+            {
+                "name": "Sergio Pablo García Ramos",
+                "role": "Padrino"
+            }
+        ],
+        "featuredImage": "family",
+        "focalPoint": "center 30%",
+        "layoutVariant": "premium-mask"
+    },
+    "gallery": {
+        "title": "Editorial de Ana Sofía",
+        "subtitle": "Un recuerdo en tonos de cielo, cristal y luz.",
+        "items": [
+            { "image": "gallery01", "caption": "Luz de ilusión." },
+            { "image": "gallery02", "caption": "Brillo de princesa." },
+            { "image": "gallery03", "caption": "Elegancia en azul." },
+            { "image": "gallery04", "caption": "Una tarde de ensueño." },
+            { "image": "gallery05", "caption": "Detalles que iluminan." },
+            { "image": "gallery06", "caption": "Dulce celebración." },
+            { "image": "gallery07", "caption": "Reflejo de alegría." },
+            { "image": "gallery08", "caption": "Mirada serena." },
+            { "image": "gallery09", "caption": "Un deseo por cumplir." },
+            { "image": "gallery10", "caption": "El inicio de una gran noche." }
+        ]
+    },
+    "gifts": {
+        "title": "Lluvia de Sobres",
+        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Agradecemos tu generosidad en el área de recepción."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma Tu Asistencia",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "¡Gracias por confirmar! Nos dará mucha alegría compartir esta noche contigo.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por ser parte de mis XV años. Tu cariño y compañía hacen que este día sea aún más especial.",
+        "closingName": "Ana Sofía Cota Guillen",
+        "image": "thankYouPortrait",
+        "focalPoint": "center 30%"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Misa",
+                "time": "6:00 PM",
+                "description": "Ceremonia de Acción de Gracias."
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "8:00 PM",
+                "description": "Bienvenida en Palapa Zavala's."
+            },
+            {
+                "icon": "waltz",
+                "label": "Vals",
+                "time": "9:30 PM",
+                "description": "Un momento para recordar."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "10:30 PM",
+                "description": "Compartiremos la mesa en familia."
+            },
+            {
+                "icon": "party",
+                "label": "Cierre",
+                "time": "1:00 AM",
+                "description": "Gracias por celebrar con nosotros."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "La celebración comienza en",
+        "subtitlePrefix": "",
+        "footerText": "23 de mayo de 2026, Los Mochis, Sinaloa"
+    },
+    "navigation": [
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Programa", "href": "#itinerary" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Regalos", "href": "#regalos" },
+        { "label": "RSVP", "href": "#rsvp" }
+    ],
+    "contentBlocks": [
+        {
+            "type": "section",
+            "section": "location"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery04",
+            "alt": "Ana Sofía con vestido azul cielo y detalles plateados",
+            "height": "screen",
+            "focalPoint": "center 35%"
+        },
+        {
+            "type": "section",
+            "section": "family"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery08",
+            "alt": "Retrato editorial de Ana Sofía con corona",
+            "height": "screen",
+            "focalPoint": "center 25%"
+        },
+        {
+            "type": "section",
+            "section": "itinerary"
+        },
+        {
+            "type": "interlude",
+            "image": "gallery10",
+            "alt": "Detalle de pastel con listones azules",
+            "height": "screen",
+            "focalPoint": "center 30%"
+        },
+        {
+            "type": "section",
+            "section": "gallery"
+        },
+        {
+            "type": "section",
+            "section": "countdown"
+        },
+        {
+            "type": "section",
+            "section": "gifts"
+        },
+        {
+            "type": "section",
+            "section": "rsvp"
+        },
+        {
+            "type": "interlude",
+            "image": "interludeNew01",
+            "alt": "Retrato final de Ana Sofía en tonos plata y azul",
+            "height": "screen",
+            "focalPoint": "center 30%"
+        },
+        {
+            "type": "section",
+            "section": "thankYou"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "microcopy": "Abre Tu Invitación",
+        "closedPalette": {
+            "background": "surfaceDark",
+            "primary": "surfacePrimary",
+            "accent": "actionAccent"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para los XV años de Ana Sofía: {inviteUrl}",
+        "ogImage": "portrait"
+    }
+}
