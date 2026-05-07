@@ -96,6 +96,11 @@ async function captureInvitation(page: Page, viewportName: string) {
 	);
 	expect(actionAccent).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
 
+	const surfaceDark = await wrapper.evaluate((element) =>
+		getComputedStyle(element).getPropertyValue('--color-surface-dark').trim(),
+	);
+	expect(surfaceDark).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+
 	await page.screenshot({
 		path: path.join(viewportDir, '01-full-page-revealed.png'),
 		fullPage: true,

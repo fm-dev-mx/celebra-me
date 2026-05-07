@@ -42,10 +42,16 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 };
 
 const getLayoutClass = (index: number, variant?: string): string => {
-	// Luxury Hacienda specific layout logic
+	// Layout logic shared with PhotoGallery.astro — keep in sync.
 	if (variant === 'luxury-hacienda') {
 		if (index === 0) return 'gallery-grid__item--feature';
 		if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
+		return 'gallery-grid__item--standard';
+	}
+
+	if (variant === 'celestial-blue') {
+		if (index === 0 || index === 5) return 'gallery-grid__item--feature';
+		if (index === 2 || index === 3 || index === 8) return 'gallery-grid__item--wide';
 		return 'gallery-grid__item--standard';
 	}
 
