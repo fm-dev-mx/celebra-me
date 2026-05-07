@@ -97,6 +97,14 @@ const imagePath = featuredImage
 	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
 	: undefined;
 
+const initials = celebrantName
+	.split(' ')
+	.map((part) => part[0])
+	.filter(Boolean)
+	.slice(0, 2)
+	.join('')
+	.toUpperCase();
+
 const familyBlocks: FamilyBlock[] = [];
 
 const toEntryPairs = (entries: FamilyEntry[]) => {
@@ -109,7 +117,9 @@ const toEntryPairs = (entries: FamilyEntry[]) => {
 	return pairs;
 };
 
-const pairOrdinals = ['I', 'II', 'III', 'IV'];
+const pairOrdinals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
+const getOrdinal = (index: number) => pairOrdinals[index] ?? String(index + 1);
 
 if (groups && groups.length > 0) {
 	groups.forEach((group, index) => {
@@ -217,6 +227,12 @@ if (godparents && godparents.length > 0) {
 		</header>
 
 		<div class:list={['family__panel', !shouldRenderMedia && 'family__panel--no-media']}>
+			{isTypographicVariant && (
+				<>
+					<div class="family__paper-surface" aria-hidden="true"></div>
+					<div class="family__watermark" aria-hidden="true">{initials}</div>
+				</>
+			)}
 			{shouldRenderMedia && (
 				<figure class="family__media family__reveal">
 					<div class="family__media-frame">
@@ -240,13 +256,12 @@ if (godparents && godparents.length > 0) {
 							'family__reveal',
 						]}
 					>
-						<h3 class="family__group-title">{block.title}</h3>
 						{block.isGodparents ? (
 							<ul class="family__list family__list--godparents">
 								{toEntryPairs(block.entries).map((pair, pairIndex) => (
 									<li class="family__pair">
 										<span class="family__pair-ordinal" aria-hidden="true">
-											{pairOrdinals[pairIndex]}
+											{getOrdinal(pairIndex)}
 										</span>
 										<div class="family__pair-members">
 											<div class:list={['family__item', 'family__item--godparent']}>
