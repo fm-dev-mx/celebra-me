@@ -57,6 +57,12 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	month: 'long',
 	year: 'numeric',
 });
+
+// Split name into first name and surnames for editorial three-line title.
+const nameParts = name.trim().split(' ');
+const firstName = nameParts.slice(0, 2).join(' ');
+const firstLastName = nameParts[2] ?? '';
+const secondLastName = nameParts[3] ?? '';
 ---
 
 <section
@@ -88,10 +94,25 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 		)}
 
 		<h1 class="invitation-hero__title">
-			{name}
+			<span class="invitation-hero__title-line">{firstName}</span>
+			{firstLastName && (
+				<>
+					<br />
+					<span class="invitation-hero__title-line invitation-hero__title-line--surname">{firstLastName}</span>
+				</>
+			)}
+			{secondLastName && (
+				<>
+					<br />
+					<span class="invitation-hero__title-line invitation-hero__title-line--surname">{secondLastName}</span>
+				</>
+			)}
 			{secondaryName && (
-				<span class="invitation-hero__ampersand">&</span>
-				<span class="invitation-hero__secondary-name">{secondaryName}</span>
+				<>
+					<br />
+					<span class="invitation-hero__ampersand">&</span>
+					<span class="invitation-hero__secondary-name">{secondaryName}</span>
+				</>
 			)}
 		</h1>
 

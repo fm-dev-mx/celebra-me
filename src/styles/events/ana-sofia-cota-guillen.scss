@@ -1,9 +1,39 @@
+@use '../global/mixins' as mixins;
+
 .event--ana-sofia-cota-guillen.theme-preset--celestial-blue {
-	// Event-specific art direction (image filters only).
 	--theme-image-filter-hero: saturate(1.08) contrast(1.02);
 	--theme-image-filter-portrait: saturate(1.04) contrast(1.02);
 	--theme-image-filter-gallery: saturate(1.04);
 	--theme-image-filter-interlude: saturate(1.05) contrast(1.02);
+
+	// Overlay luminosity — preserve face, crown, satin dress brightness.
+	--hero-overlay-top: rgb(16 24 32 / 5%);
+
+	// ── Responsive crop strategy ─────────────────────────────
+	// Goal: luxury editorial portrait across all canonical breakpoints.
+	// Face and crown must remain visually dominant at every size.
+	// Uses a single clamp() for gradual vertical position shift.
+
+	.invitation-hero__background img {
+		--hero-bg-position: center clamp(10%, 16vw, 30%);
+	}
+
+	@include mixins.respond-below(xs) {
+		.invitation-hero__content {
+			padding-bottom: clamp(4rem, 12svh, 6rem);
+		}
+	}
+
+	@include mixins.short-viewport {
+		// Landscape / short height: face-focused crop, prevent crowding.
+		.invitation-hero__background img {
+			--hero-bg-position: center 8%;
+		}
+
+		.invitation-hero__content {
+			padding-block: clamp(3rem, 7svh, 5rem);
+		}
+	}
 }
 
 .event--ana-sofia-cota-guillen .invitation-interlude__image,

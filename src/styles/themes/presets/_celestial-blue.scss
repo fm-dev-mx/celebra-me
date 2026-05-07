@@ -123,27 +123,13 @@
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-liquid-silver-rgb) / 58%);
 	--hero-card-shadow-ambient: none;
-	--hero-title-color-start: rgb(var(--color-diamond-white-rgb) / 98%);
+	--hero-title-color-start: rgb(var(--color-cool-ivory-rgb) / 92%);
 	--hero-title-color-mid: var(--color-satin-blue);
-	--hero-title-color-end: rgb(var(--color-diamond-white-rgb) / 84%);
+	--hero-title-color-end: rgb(var(--color-pearl-gray-rgb) / 75%);
 	--hero-badge-bg: rgb(var(--color-diamond-white-rgb) / 12%);
 	--hero-badge-border: rgb(var(--color-liquid-silver-rgb) / 62%);
 	--hero-badge-text: var(--color-text-on-dark);
-	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 78%);
-	--hero-overlay:
-		radial-gradient(
-			circle at 68% 44%,
-			rgb(16 24 32 / 12%) 0%,
-			rgb(16 24 32 / 46%) 48%,
-			rgb(16 24 32 / 86%) 100%
-		),
-		linear-gradient(
-			90deg,
-			rgb(16 24 32 / 78%) 0%,
-			rgb(16 24 32 / 28%) 46%,
-			rgb(16 24 32 / 78%) 100%
-		),
-		linear-gradient(180deg, rgb(16 24 32 / 54%) 0%, transparent 32%, rgb(16 24 32 / 82%) 100%);
+	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 58%);
 
 	// ---------------------------------------------------------------------
 	// Gallery tokens
