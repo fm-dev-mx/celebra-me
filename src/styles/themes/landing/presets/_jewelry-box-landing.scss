@@ -81,7 +81,7 @@
 
 	// Header Section
 	--header-bg-transparent: transparent;
-	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 92%);
+	--header-scrolled-bg: rgb(var(--color-surface-dark-rgb) / 92%);
 	--header-text-transparent: #{sys.$sys-color-neutral-0};
 	--header-text-scrolled: #{sys.$sys-color-parchment-100};
 	--header-accent-scrolled: #{sys.$sys-color-gold-500};

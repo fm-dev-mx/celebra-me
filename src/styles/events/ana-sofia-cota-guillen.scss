@@ -10,12 +10,27 @@
 	--hero-overlay-top: rgb(16 24 32 / 5%);
 
 	// ── Responsive crop strategy ─────────────────────────────
-	// Goal: luxury editorial portrait across all canonical breakpoints.
-	// Face and crown must remain visually dominant at every size.
-	// Uses a single clamp() for gradual vertical position shift.
+	// Goal: luxury editorial portrait across all canonical aspect ratios.
+	// Primary focus: face and crown placement.
 
-	.invitation-hero__background img {
-		--hero-bg-position: center clamp(10%, 16vw, 30%);
+	--hero-focal-x: 50%;
+	--hero-focal-y: 20%; // Default starting point for most screens
+	// Wide landscape (Desktops/Ultrawide): face crops up, so we pull image up.
+	@media (aspect-ratio >= 16 / 9) {
+		--hero-focal-y: 12%;
+	}
+
+	@media (aspect-ratio >= 21 / 9) {
+		--hero-focal-y: 8%;
+	}
+
+	// Tall portrait (Mobile): face needs to be slightly lower to breathe.
+	@media (aspect-ratio <= 3 / 4) {
+		--hero-focal-y: 26%;
+	}
+
+	@media (aspect-ratio <= 9 / 16) {
+		--hero-focal-y: 30%;
 	}
 
 	@include mixins.respond-below(xs) {
@@ -25,10 +40,8 @@
 	}
 
 	@include mixins.short-viewport {
-		// Landscape / short height: face-focused crop, prevent crowding.
-		.invitation-hero__background img {
-			--hero-bg-position: center 8%;
-		}
+		// Landscape / short height: face-focused crop, pull up significantly.
+		--hero-focal-y: 8%;
 
 		.invitation-hero__content {
 			padding-block: clamp(3rem, 7svh, 5rem);

@@ -144,8 +144,8 @@
 	// ---------------------------------------------------------------------
 	// Header tokens
 	// ---------------------------------------------------------------------
-	--header-bg-scrolled: linear-gradient(180deg, rgb(26 17 11 / 98%) 0%, rgb(38 26 18 / 95%) 100%);
-	--header-border-scrolled: 1px solid rgb(212 175 95 / 25%);
+	--header-scrolled-bg: linear-gradient(180deg, rgb(26 17 11 / 98%) 0%, rgb(38 26 18 / 95%) 100%);
+	--header-border-color: rgb(212 175 95 / 25%);
 	--header-nav-color: rgb(240 212 157 / 90%);
 	--header-nav-hover: rgb(251 240 217 / 100%);
 	--header-cta-glow: 0 8px 24px rgb(0 0 0 / 40%), 0 2px 6px rgb(198 156 81 / 20%);
