@@ -55,7 +55,7 @@
 // ==========================================================================
 
 .invitation-hero[data-variant='editorial'],
-.invitation-hero[data-variant^='premiere-'] {
+.invitation-hero[data-variant='premiere-floral'] {
 	position: relative;
 	height: 100svh;
 	display: flex;
@@ -298,98 +298,6 @@
 			padding: 2rem 0;
 		}
 	}
-
-	// ── Premium Portrait Layout Variant ──
-	// A decoupled variant designed to gracefully overlay titles on centered hero portraits
-	&[data-layout-variant='premium-portrait'] {
-		.invitation-hero__background img {
-			object-position: var(--hero-bg-position, center);
-			transition:
-				object-position 0.8s tokens.$ease-premium,
-				transform 1s tokens.$ease-premium;
-		}
-
-		.invitation-hero__content {
-			display: grid;
-			grid-template-areas:
-				'label label'
-				'title portrait';
-			grid-template-columns: 1fr 1fr;
-			place-items: center center;
-			padding: 0;
-			max-width: var(--container-max-width-lg);
-			height: 100svh;
-		}
-
-		.invitation-hero__label {
-			grid-area: label;
-			margin-top: 10svh;
-			z-index: 20;
-		}
-
-		.invitation-hero__portrait {
-			grid-area: portrait;
-			margin-top: 2svh;
-			width: min(88%, 440px);
-			border-radius: 50% 50% 12px 12px / 20% 20% 12px 12px;
-			z-index: 5;
-			transform: scale(1.01);
-			filter: brightness(1.05) contrast(1.02);
-			box-shadow:
-				var(--shadow-premium, 0 40px 100px rgb(var(--color-surface-dark-rgb) / 75%)),
-				inset 0 0 0 1.5px rgb(255 255 255 / 15%);
-		}
-
-		.invitation-hero__title {
-			grid-area: title;
-			font-size: clamp(3.2rem, 14vw, 8.5rem);
-			text-align: center;
-			mix-blend-mode: normal;
-			margin-bottom: 20svh;
-			z-index: 10;
-			text-shadow:
-				0 10px 40px rgb(var(--color-surface-dark-rgb) / 80%),
-				0 0 30px rgb(var(--color-action-accent-rgb) / 30%);
-			transform: translateX(10%);
-		}
-
-		.invitation-hero__details {
-			bottom: 50svh;
-			background: linear-gradient(
-				90deg,
-				transparent,
-				rgb(var(--color-surface-primary-rgb) / 45%),
-				transparent
-			);
-			backdrop-filter: blur(8px);
-			border: none;
-		}
-
-		@media (width <= 860px) {
-			.invitation-hero__content {
-				grid-template-areas:
-					'label'
-					'portrait'
-					'title';
-				grid-template-columns: 1fr;
-				align-content: start;
-			}
-
-			.invitation-hero__label {
-				margin-top: 12svh;
-			}
-
-			.invitation-hero__portrait {
-				width: 90%;
-				margin-top: 4svh;
-			}
-
-			.invitation-hero__title {
-				transform: translateY(-20%);
-				font-size: clamp(3rem, 18vw, 6.5rem);
-			}
-		}
-	}
 }
 
 .invitation-hero[data-variant='premiere-floral'] {
@@ -419,16 +327,6 @@
 				transform: none;
 				filter: contrast(1.04) saturate(1.04) brightness(0.92);
 			}
-		}
-	}
-
-	&[data-layout-variant='premium-portrait'] {
-		.invitation-hero__background img {
-			transition: none;
-		}
-
-		.invitation-hero__portrait {
-			transform: scale(1.005);
 		}
 	}
 }
@@ -548,7 +446,7 @@
 		opacity: 50%;
 
 		&::after {
-			content: '✨';
+			content: '\2727';
 			position: absolute;
 			top: 50%;
 			left: 50%;
@@ -614,7 +512,7 @@
 
 		img {
 			filter: var(--theme-image-filter-hero, saturate(1.02) contrast(1.02));
-			object-position: var(--hero-bg-position, center 30%);
+			object-position: center 30%;
 		}
 	}
 
@@ -776,7 +674,7 @@
 
 	@include mixins.respond-below(xs) {
 		.invitation-hero__background img {
-			object-position: var(--hero-bg-position, center 12%);
+			object-position: center 12%;
 		}
 	}
 }

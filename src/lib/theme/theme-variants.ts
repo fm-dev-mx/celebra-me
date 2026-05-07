@@ -18,9 +18,11 @@ export type PremiumTheme = (typeof PREMIUM_THEMES)[number];
 // Logic-specific variants that don't depend on the general preset
 // ==========================================
 
-// Layout variants (used by explicit configuration in content)
-export const HERO_LAYOUT_VARIANTS = ['premium-portrait'] as const;
-export const FAMILY_LAYOUT_VARIANTS = ['premium-mask'] as const;
+// Layout variants are a 1:1 subset of PREMIUM_THEMES.
+// Each theme defines its own section layout. If a new theme is added to PREMIUM_THEMES
+// and requires a custom hero or family layout, add it here too.
+export const HERO_LAYOUT_VARIANTS = ['celestial-blue', 'premiere-floral'] as const;
+export const FAMILY_LAYOUT_VARIANTS = ['celestial-blue', 'premiere-floral'] as const;
 
 // Map styles (independent of event theme)
 export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite'] as const;
