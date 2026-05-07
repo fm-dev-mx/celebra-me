@@ -28,6 +28,7 @@ Current presets:
 
 - `jewelry-box`
 - `jewelry-box-wedding`
+- `celestial-blue`
 - `luxury-hacienda`
 - `premiere-floral`
 - `editorial`

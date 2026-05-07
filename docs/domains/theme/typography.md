@@ -1,12 +1,12 @@
 # Typography System
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-05-07
 
 This document defines the active typography stack loaded by `src/layouts/Layout.astro`.
 
 ## Loaded Runtime Families
 
-`Layout.astro` currently loads nine font families:
+`Layout.astro` currently loads ten font families:
 
 1. Cinzel
 2. Playfair Display
@@ -15,8 +15,9 @@ This document defines the active typography stack loaded by `src/layouts/Layout.
 5. Montserrat
 6. Cormorant Garamond
 7. Bodoni Moda
-8. The Nautigal
-9. Special Elite
+8. Instrument Sans
+9. The Nautigal
+10. Special Elite
 
 ## Core Roles
 
@@ -26,8 +27,9 @@ This document defines the active typography stack loaded by `src/layouts/Layout.
 - Display Editorial: Bodoni Moda
 - Calligraphy: Pinyon Script and The Nautigal
 - Body Narrative: EB Garamond
-- UI/Functional: Montserrat
+- UI/Functional: Montserrat and Instrument Sans
 - Accent/ornamental fallbacks: Special Elite
+- Celestial Blue editorial pairing: Cormorant Garamond + Instrument Sans
 
 ## Token Sources
 
@@ -53,7 +55,7 @@ Current runtime typography variables include:
 
 Loading multiple font families impacts page load performance and Cumulative Layout Shift (CLS).
 
-- **Family Cap**: The current stack is limited to **9 families**.
+- **Family Cap**: The current stack is limited to **10 families**.
 - **Audit Requirement**: Any new family added to `Layout.astro` must be justified by a premium theme
   (e.g., Jewelry Box, Luxury Hacienda).
 - **Follow-up**: Font families are still imported globally today; reduce or route-scope them only
