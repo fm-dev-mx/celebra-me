@@ -12,22 +12,22 @@
 	// ── Responsive crop strategy ─────────────────────────────
 	// Goal: luxury editorial portrait across all canonical breakpoints.
 	// Face and crown must remain visually dominant at every size.
-	// Uses a single clamp() for gradual vertical position shift.
-
-	.invitation-hero__background img {
-		--hero-bg-position: center clamp(10%, 16vw, 30%);
-	}
+	// Base object-position (center 30%) inherited from celestial-blue theme.
 
 	@include mixins.respond-below(xs) {
+		.invitation-hero__background img {
+			object-position: center 12%;
+		}
+
 		.invitation-hero__content {
 			padding-bottom: clamp(4rem, 12svh, 6rem);
 		}
 	}
 
+	// Short / landscape viewport: tighter face crop, avoid crowding on small vertical space.
 	@include mixins.short-viewport {
-		// Landscape / short height: face-focused crop, prevent crowding.
 		.invitation-hero__background img {
-			--hero-bg-position: center 8%;
+			object-position: center 8%;
 		}
 
 		.invitation-hero__content {
