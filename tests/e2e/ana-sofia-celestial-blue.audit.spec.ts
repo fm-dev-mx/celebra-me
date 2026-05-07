@@ -20,7 +20,7 @@ const SECTION_SELECTORS = [
 	'#thank-you-section',
 ] as const;
 
-const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'ana-sofia-jewelry-box-audit');
+const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'ana-sofia-celestial-blue-audit');
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);
@@ -30,7 +30,7 @@ test.beforeAll(() => {
 });
 
 for (const viewport of VIEWPORTS) {
-	test(`renders Ana Sofia blue Jewelry Box invitation at ${viewport.name}`, async ({ page }) => {
+	test(`renders Ana Sofia Celestial Blue invitation at ${viewport.name}`, async ({ page }) => {
 		const errors: string[] = [];
 		const requestFailures: string[] = [];
 
@@ -79,7 +79,7 @@ async function captureInvitation(page: Page, viewportName: string) {
 
 	const wrapper = page.locator('.event-theme-wrapper');
 	await expect(wrapper).toHaveAttribute('data-event-slug', 'ana-sofia-cota-guillen');
-	await expect(wrapper).toHaveAttribute('data-theme-preset', 'jewelry-box');
+	await expect(wrapper).toHaveAttribute('data-theme-preset', 'celestial-blue');
 	await expect(page.locator('.envelope-wrapper')).toBeVisible();
 
 	await page.screenshot({

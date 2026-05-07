@@ -53,6 +53,7 @@
 .rsvp[data-variant='editorial'],
 .rsvp[data-variant='premiere-floral'] {
 	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
+
 	background: var(--rsvp-bg, var(--color-surface-dark));
 	color: var(--color-text-on-dark);
 	padding-block: var(--section-padding-block);
@@ -123,6 +124,7 @@
 				border-color: var(--color-action-accent);
 			}
 
+			/* stylelint-disable max-nesting-depth */
 			&:has(input:checked) {
 				background: var(--rsvp-radio-selected-bg);
 				border-color: var(--rsvp-radio-selected-border);
@@ -144,6 +146,7 @@
 					font-weight: 600;
 				}
 			}
+			/* stylelint-enable max-nesting-depth */
 		}
 
 		.rsvp__radio-indicator {
@@ -352,6 +355,7 @@
 				font-size: 1.15rem;
 				background: transparent;
 				width: 100%;
+				color: var(--color-text-on-dark);
 				transition: border-color 0.4s var(--ease-premium);
 			}
 
@@ -384,10 +388,6 @@
 				text-transform: uppercase;
 				font-family: var(--font-label);
 				font-weight: 600;
-			}
-
-			& input {
-				color: var(--color-text-on-dark);
 			}
 
 			& .rsvp__field-line {
@@ -446,6 +446,7 @@
 				border-color: rgb(var(--color-gold-500-rgb) / 45%);
 			}
 
+			/* stylelint-disable max-nesting-depth */
 			&:has(input:checked) {
 				background: rgb(var(--color-gold-500-rgb) / 12%);
 				border-color: var(--color-gold-500);
@@ -467,10 +468,11 @@
 
 				.rsvp__radio-label {
 					color: var(--color-gold-500);
-					opacity: 1;
+					opacity: 100%;
 					font-weight: 500;
 				}
 			}
+			/* stylelint-enable max-nesting-depth */
 		}
 
 		// Foil-Press Button
@@ -645,7 +647,8 @@
 // JEWELRY BOX RSVP
 // ==========================================================================
 
-.rsvp[data-variant='jewelry-box'] {
+.rsvp[data-variant='jewelry-box'],
+.rsvp[data-variant='celestial-blue'] {
 	--rsvp-emoji-yes: '💎';
 	--rsvp-emoji-no: '💌';
 	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));

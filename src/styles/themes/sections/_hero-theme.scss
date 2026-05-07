@@ -446,7 +446,8 @@
 // JEWELRY BOX HERO
 // ==========================================================================
 
-.invitation-hero[data-variant='jewelry-box'] {
+.invitation-hero[data-variant='jewelry-box'],
+.invitation-hero[data-variant='celestial-blue'] {
 	.invitation-hero__background::after {
 		background:
 			radial-gradient(
@@ -580,6 +581,9 @@
 // Support for Revealed/Sealed Animation in Jewelry Box
 .theme-preset--jewelry-box.event-theme-wrapper[data-reveal-state='revealed']
 	.invitation-hero[data-variant='jewelry-box']
+	.invitation-hero__title,
+.theme-preset--celestial-blue.event-theme-wrapper[data-reveal-state='revealed']
+	.invitation-hero[data-variant='celestial-blue']
 	.invitation-hero__title {
 	animation:
 		fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.7s forwards,

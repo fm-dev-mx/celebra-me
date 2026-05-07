@@ -47,7 +47,8 @@
 	}
 }
 
-.music-player[data-variant='jewelry-box'] {
+.music-player[data-variant='jewelry-box'],
+.music-player[data-variant='celestial-blue'] {
 	.music-player__prompt {
 		font-family: var(--font-body-narrative, tokens.$font-body);
 		background: linear-gradient(

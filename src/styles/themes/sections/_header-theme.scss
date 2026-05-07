@@ -32,12 +32,14 @@
 	}
 
 	.event-header__action-btn:hover {
+		/* stylelint-disable-next-line declaration-no-important */
 		color: var(--header-luxury-nav-hover) !important;
 	}
 }
 
-// JEWELRY BOX PRESET
-.header-base[data-variant='jewelry-box'] {
+// JEWELRY BOX / CELESTIAL BLUE PRESET
+.header-base[data-variant='jewelry-box'],
+.header-base[data-variant='celestial-blue'] {
 	--header-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
 	--header-bg-scrolled: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
 	--header-nav-color: #{tokens.$color-surface-dark};

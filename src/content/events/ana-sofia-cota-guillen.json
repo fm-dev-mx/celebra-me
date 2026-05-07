@@ -4,7 +4,7 @@
     "title": "XV Años de Ana Sofía",
     "description": "Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables.",
     "theme": {
-        "preset": "jewelry-box"
+        "preset": "celestial-blue"
     },
     "sectionStyles": {
         "countdown": {
@@ -15,22 +15,22 @@
             "showFlourishes": true
         },
         "family": {
-            "variant": "jewelry-box"
+            "variant": "celestial-blue"
         },
         "gallery": {
-            "variant": "jewelry-box"
+            "variant": "celestial-blue"
         },
         "itinerary": {
-            "variant": "jewelry-box"
+            "variant": "celestial-blue"
         },
         "gifts": {
-            "variant": "jewelry-box"
+            "variant": "celestial-blue"
         },
         "thankYou": {
-            "variant": "jewelry-box"
+            "variant": "celestial-blue"
         },
         "rsvp": {
-            "variant": "jewelry-box",
+            "variant": "celestial-blue",
             "labels": {
                 "name": "Tu nombre",
                 "guestCount": "Acompañantes",
@@ -121,7 +121,7 @@
         "layoutVariant": "premium-mask"
     },
     "gallery": {
-        "title": "Editorial de Ana Sofía",
+        "title": "Galería de Ana Sofía",
         "subtitle": "Un recuerdo en tonos de cielo, cristal y luz.",
         "items": [
             { "image": "gallery01", "caption": "Luz de ilusión." },
@@ -227,7 +227,7 @@
         {
             "type": "interlude",
             "image": "gallery08",
-            "alt": "Retrato editorial de Ana Sofía con corona",
+            "alt": "Retrato elegante de Ana Sofía con corona",
             "height": "screen",
             "focalPoint": "center 25%"
         },

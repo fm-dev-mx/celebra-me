@@ -8,6 +8,7 @@ export const PREMIUM_THEMES = [
 	'luxury-hacienda',
 	'editorial',
 	'premiere-floral',
+	'celestial-blue',
 ] as const;
 
 export type PremiumTheme = (typeof PREMIUM_THEMES)[number];

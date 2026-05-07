@@ -202,7 +202,8 @@
 
 /* --- GALLERY: JEWELRY BOX VARIANT --- */
 
-.gallery-section[data-variant='jewelry-box'] {
+.gallery-section[data-variant='jewelry-box'],
+.gallery-section[data-variant='celestial-blue'] {
 	--gallery-section-bg: var(--gallery-section-bg);
 	--gallery-title-font: var(--gallery-title-font);
 	--gallery-title-color: var(--gallery-title-color);

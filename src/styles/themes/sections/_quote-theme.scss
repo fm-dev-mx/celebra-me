@@ -12,7 +12,8 @@
 // Characteristics: Pinyon Script, soft gold parchment, elegant ornaments
 // ==========================================================================
 
-.quote-section[data-variant='jewelry-box'] {
+.quote-section[data-variant='jewelry-box'],
+.quote-section[data-variant='celestial-blue'] {
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,

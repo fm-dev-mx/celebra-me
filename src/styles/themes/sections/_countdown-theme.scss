@@ -150,7 +150,8 @@
 // Characteristics: Glassmorphism, Playfair Display, soft gold accents
 // ==========================================================================
 
-.countdown-section[data-variant='jewelry-box'] {
+.countdown-section[data-variant='jewelry-box'],
+.countdown-section[data-variant='celestial-blue'] {
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,

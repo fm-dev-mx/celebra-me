@@ -46,7 +46,7 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 		expect(event).toMatchObject({
 			eventType: 'xv',
 			title: 'XV Años de Ana Sofía',
-			theme: { preset: 'jewelry-box' },
+			theme: { preset: 'celestial-blue' },
 			hero: {
 				name: 'Ana Sofía Cota Guillen',
 				date: '2026-05-24T01:00:00.000Z',
@@ -89,6 +89,7 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 		const content = fs.readFileSync(contentPath, 'utf8');
 
 		expect(content).not.toMatch(/ximena-meza-trasvina|Ximena|premiere-floral/i);
+		expect(content).not.toMatch(/jewelry-box|jewelry-box-wedding|luxury-hacienda|editorial/i);
 		expect(content).not.toMatch(/Perfect|Ed Sheeran/i);
 		expect(readAnaSofiaEvent().music).toBeUndefined();
 	});

@@ -257,7 +257,8 @@
 	}
 }
 
-.family[data-variant='jewelry-box'] {
+.family[data-variant='jewelry-box'],
+.family[data-variant='celestial-blue'] {
 	--family-bg: radial-gradient(
 		circle at 50% -20%,
 		var(--color-surface-primary) 0%,

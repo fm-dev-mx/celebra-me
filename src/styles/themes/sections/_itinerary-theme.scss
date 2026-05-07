@@ -113,7 +113,8 @@
 }
 
 // 💎 JEWELRY BOX: Glassmorphic, glowing, pearl aesthetics
-.itinerary[data-variant='jewelry-box'] {
+.itinerary[data-variant='jewelry-box'],
+.itinerary[data-variant='celestial-blue'] {
 	--itinerary-bg: radial-gradient(
 		circle at center,
 		rgb(var(--color-surface-primary-rgb), 0.05) 0%,
