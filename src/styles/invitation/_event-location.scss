@@ -4,8 +4,8 @@
 @use '../global/mixins' as mixins;
 
 .event-location {
-	min-height: 100svh;
-	padding: clamp(1.5rem, 3vh, 3rem) clamp(1rem, 4vw, 2rem) clamp(10rem, 15vh, 15rem);
+	min-height: auto;
+	padding: clamp(1.5rem, 3vh, 3rem) clamp(1rem, 4vw, 2rem) clamp(4rem, 6vh, 6rem);
 	position: relative;
 	text-align: center;
 	overflow: hidden;
@@ -82,7 +82,7 @@
 	 * to reduce coupling to nesting and improve maintainability.
 	 */
 	&__card {
-		padding: 2.5rem 1.5rem;
+		padding: 0;
 		border-radius: 4px;
 		transition: all var(--duration-premium) var(--ease-premium);
 		width: 100%;
@@ -129,7 +129,7 @@
 		background: var(--color-action-accent);
 		padding: 2px;
 		box-shadow: var(--shadow-standard);
-		margin-bottom: 2rem;
+		margin-bottom: 0.75rem;
 	}
 
 	&__card-image-inner-frame {
@@ -158,20 +158,20 @@
 		text-align: center;
 		display: flex;
 		flex-direction: column;
-		flex-grow: 1; /* Pushes navigation buttons to bottom */
+		flex-grow: 1;
 	}
 
 	&__card-content-list {
 		list-style: none;
 		padding: 0;
-		margin: 0 0 2rem;
+		margin: 0 0 1rem;
 	}
 
 	&__card-content-place {
 		font-family: var(--font-display);
 		font-size: 1.9rem;
 		color: var(--color-text-primary);
-		margin-bottom: 1.5rem;
+		margin: 1rem 0;
 		line-height: 1.1;
 		letter-spacing: -0.5px;
 	}
@@ -180,7 +180,7 @@
 		font-family: var(--font-calligraphy);
 		font-size: clamp(1rem, 6vw, 1.3rem);
 		color: var(--color-action-accent);
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.4rem;
 		white-space: nowrap; /* Ensure single line */
 		display: block;
 	}
@@ -192,7 +192,7 @@
 		font-weight: 500;
 		text-transform: uppercase;
 		color: var(--color-text-secondary);
-		margin-bottom: 2.5rem;
+		margin-bottom: 1.25rem;
 		display: block;
 	}
 
@@ -398,12 +398,21 @@
 	}
 
 	&__indications-container {
-		margin-top: 8rem; /* More breathing room */
+		margin-top: clamp(2.5rem, 4vh, 3.5rem); /* More breathing room */
 		max-width: 700px;
 		margin-left: auto;
 		margin-right: auto;
 		position: relative;
-		padding-bottom: 4rem;
+	}
+
+	&__indications-heading {
+		font-family: var(--font-label);
+		font-size: 0.65rem;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-text-secondary);
+		margin-bottom: 1.5rem;
+		text-align: center;
 	}
 
 	&__divider {
@@ -432,20 +441,12 @@
 	}
 
 	&__indication-item {
-		display: flex;
-		flex-direction: column; /* Stack on mobile for more editorial feel */
-		align-items: center;
-		gap: 1rem;
-		text-align: center;
-		padding: 1rem;
-		border-radius: 8px;
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 1.2rem;
+		align-items: start;
+		padding: 0.5rem 0;
 		transition: all var(--duration-standard) var(--ease-standard);
-
-		@include mixins.respond-to(sm) {
-			flex-direction: row;
-			text-align: left;
-			gap: 1.5rem;
-		}
 	}
 
 	&__indication-icon {
@@ -455,9 +456,9 @@
 		font-size: 1.5rem; /* Larger but fine */
 
 		svg {
-			width: 28px;
-			height: 28px;
-			stroke-width: 0.8px; /* Ultra fine */
+			width: 22px;
+			height: 22px;
+			stroke-width: 0.75px; /* Ultra fine */
 		}
 	}
 
@@ -465,9 +466,14 @@
 		margin: 0;
 		color: var(--color-text-primary);
 		font-family: var(--font-body);
-		font-size: 1.1rem;
-		line-height: 1.6;
-		letter-spacing: 0.5px;
+		font-size: clamp(0.88rem, 1.2vw, 0.98rem);
+		line-height: 1.65;
+		letter-spacing: 0.01em;
+		text-align: left;
+
+		strong {
+			font-weight: 600;
+		}
 	}
 
 	&__signature-divider {

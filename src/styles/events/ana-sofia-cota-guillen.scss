@@ -3,7 +3,7 @@
 .event--ana-sofia-cota-guillen.theme-preset--celestial-blue {
 	--theme-image-filter-hero: saturate(1.08) contrast(1.02);
 	--theme-image-filter-portrait: saturate(1.04) contrast(1.02);
-	--theme-image-filter-gallery: saturate(1.04);
+	--theme-image-filter-gallery: saturate(0.9) contrast(0.8) brightness(0.7);
 	--theme-image-filter-interlude: saturate(1.05) contrast(1.02);
 
 	// Overlay luminosity — preserve face, crown, satin dress brightness.
