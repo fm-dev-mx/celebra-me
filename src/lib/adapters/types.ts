@@ -273,6 +273,7 @@ export interface InvitationViewModel {
 		};
 		itinerary?: {
 			title: string;
+			subtitle?: string;
 			items: ItineraryItem[];
 			variant?: ItineraryVariant;
 		};

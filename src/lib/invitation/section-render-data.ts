@@ -47,12 +47,19 @@ export type InvitationSectionRenderDescriptor =
 				focalPoint?: string;
 			};
 	  }
-	| { component: 'quote'; props: SectionData<'quote'> }
-	| { component: 'family'; props: SectionData<'family'> }
-	| { component: 'gallery'; props: SectionData<'gallery'> }
-	| { component: 'countdown'; props: SectionData<'countdown'> }
-	| { component: 'location'; props: LocationProps }
-	| { component: 'itinerary'; props: SectionData<'itinerary'> }
+	| { component: 'quote'; props: SectionData<'quote'> & { variant: ThemePreset } }
+	| { component: 'family'; props: SectionData<'family'> & { variant: ThemePreset } }
+	| { component: 'gallery'; props: SectionData<'gallery'> & { variant: ThemePreset } }
+	| { component: 'countdown'; props: SectionData<'countdown'> & { variant: ThemePreset } }
+	| { component: 'location'; props: LocationProps & { variant: ThemePreset } }
+	| {
+			component: 'itinerary';
+			props: SectionData<'itinerary'> & {
+				variant: ThemePreset;
+				monogram: string;
+				subtitle?: string;
+			};
+	  }
 	| {
 			component: 'rsvp';
 			props: SectionData<'rsvp'> & {
@@ -66,7 +73,7 @@ export type InvitationSectionRenderDescriptor =
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
-	| { component: 'thankYou'; props: SectionData<'thankYou'> }
+	| { component: 'thankYou'; props: SectionData<'thankYou'> & { variant: ThemePreset } }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps };
 
 function renderInterlude(
@@ -146,21 +153,28 @@ function renderSection(
 	section: RenderableSectionKey,
 	nextSectionLink?: LocationProps['nextSectionLink'],
 ): InvitationSectionRenderDescriptor | null {
-	const { sections } = pageContext.viewModel;
+	const { sections, theme } = pageContext.viewModel;
+	const variant = theme?.preset ?? PREMIUM_THEMES[0];
 
 	switch (section) {
 		case 'quote':
-			return sections.quote ? { component: 'quote', props: sections.quote } : null;
+			return sections.quote
+				? { component: 'quote', props: { ...sections.quote, variant } }
+				: null;
 
 		case 'family':
-			return sections.family ? { component: 'family', props: sections.family } : null;
+			return sections.family
+				? { component: 'family', props: { ...sections.family, variant } }
+				: null;
 
 		case 'gallery':
-			return sections.gallery ? { component: 'gallery', props: sections.gallery } : null;
+			return sections.gallery
+				? { component: 'gallery', props: { ...sections.gallery, variant } }
+				: null;
 
 		case 'countdown':
 			return sections.countdown
-				? { component: 'countdown', props: sections.countdown }
+				? { component: 'countdown', props: { ...sections.countdown, variant } }
 				: null;
 
 		case 'location':
@@ -170,14 +184,32 @@ function renderSection(
 						props: {
 							...sections.location,
 							nextSectionLink,
+							variant,
 						},
 					}
 				: null;
 
-		case 'itinerary':
+		case 'itinerary': {
+			const monogram = pageContext.viewModel.hero.name
+				.trim()
+				.split(/\s+/)
+				.filter(Boolean)
+				.slice(0, 2)
+				.map((n) => n[0])
+				.join('');
+			const subtitle = pageContext.viewModel.sections.itinerary?.subtitle;
 			return sections.itinerary
-				? { component: 'itinerary', props: sections.itinerary }
+				? {
+						component: 'itinerary',
+						props: {
+							...sections.itinerary,
+							variant,
+							monogram,
+							subtitle,
+						},
+					}
 				: null;
+		}
 
 		case 'rsvp':
 			return renderRsvpSection(pageContext);
@@ -186,7 +218,9 @@ function renderSection(
 			return renderGiftsSection(sections);
 
 		case 'thankYou':
-			return sections.thankYou ? { component: 'thankYou', props: sections.thankYou } : null;
+			return sections.thankYou
+				? { component: 'thankYou', props: { ...sections.thankYou, variant } }
+				: null;
 	}
 }
 

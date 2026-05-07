@@ -95,39 +95,6 @@
 		padding: 2rem 0;
 	}
 
-	&__line {
-		display: none; // Handled by TimelineList SVG
-	}
-
-	&__line-start,
-	&__line-end {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%) rotate(45deg);
-		width: 12px;
-		height: 12px;
-		border: 1px solid var(--itinerary-line-color, var(--color-action-primary));
-		background: var(--color-surface-primary);
-		z-index: 2;
-		box-shadow: 0 0 10px var(--color-glass-shadow);
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 2px;
-			background: var(--itinerary-line-color, var(--color-action-primary));
-			opacity: 80%;
-		}
-	}
-
-	&__line-start {
-		top: -15px;
-	}
-
-	&__line-end {
-		bottom: -15px;
-	}
-
 	&__items {
 		display: flex;
 		flex-direction: column;
@@ -236,13 +203,8 @@
 			filter: drop-shadow(0 1px 1px rgb(0 0 0 / 10%));
 		}
 	}
-
-	&__item-dot {
-		display: none;
-	}
 }
 
-// Mobile Responsive
 @media (width <= 768px) {
 	.itinerary {
 		padding: 5rem 1.5rem;

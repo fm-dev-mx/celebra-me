@@ -1,0 +1,65 @@
+---
+// src/components/invitation/ItineraryProgram.astro
+import type { ItineraryItem } from '@/lib/adapters/types';
+
+interface Props {
+	items: ItineraryItem[];
+	variant: string;
+	monogram?: string;
+}
+
+const { items, variant, monogram } = Astro.props;
+---
+<div class="itinerary__program" data-itinerary-wrapper data-variant={variant}>
+	<div class="itinerary__program-flourish" aria-hidden="true">
+		<span class="flourish-line"></span>
+		<span class="flourish-diamond"></span>
+		<span class="flourish-line"></span>
+	</div>
+	<div class="itinerary__program-panel">
+		<div class="itinerary__program-paper-surface" aria-hidden="true"></div>
+		{monogram && <div class="itinerary__program-monogram" aria-hidden="true">{monogram}</div>}
+		<ol class="itinerary__program-list">
+			{items.map((item, index) => {
+				const num = String(index + 1).padStart(2, '0');
+				return (
+					<li class="itinerary__program-row" data-itinerary-item>
+						<span class="itinerary__program-row-num" aria-hidden="true">{num}</span>
+						<time class="itinerary__program-row-time">{item.time}</time>
+						<div class="itinerary__program-row-content">
+							<h4 class="itinerary__program-row-title">{item.label}</h4>
+							{item.description && (
+								<p class="itinerary__program-row-desc">{item.description}</p>
+							)}
+						</div>
+					</li>
+				);
+			})}
+		</ol>
+	</div>
+</div>
+
+<script>
+	const wrappers = Array.from(document.querySelectorAll('[data-itinerary-wrapper]'));
+
+	wrappers.forEach((wrapper) => {
+		if (!(wrapper instanceof HTMLElement)) return;
+
+		const items = Array.from(wrapper.querySelectorAll('[data-itinerary-item]'));
+
+		if (items.length) {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							entry.target.classList.add('is-visible');
+						}
+					});
+				},
+				{ threshold: 0.15, rootMargin: '0px 0px -100px 0px' },
+			);
+
+			items.forEach((item) => observer.observe(item));
+		}
+	});
+</script>

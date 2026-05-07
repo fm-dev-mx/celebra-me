@@ -6,6 +6,7 @@ import Header from '@/components/home/HomeHeader.astro';
 import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
 import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
+import SvgFilters from '@/components/common/SvgFilters.astro';
 
 // Typography: Core 5 Font System (@fontsource includes font-display: swap)
 // Display Formal
@@ -87,6 +88,7 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<meta property="twitter:image" content={ogImage} />
 
 		{isProd && gaId && <GoogleAnalytics id={gaId} />}
+		<SvgFilters />
 	</head>
 	<body class:list={[className, { 'is-demo': isDemo }]} data-theme-mode={themeMode}>
 		{!hideHeader && <Header />}

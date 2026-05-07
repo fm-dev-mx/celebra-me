@@ -1,7 +1,7 @@
-@use '../../tokens/system/type' as sys-type;
-
 .theme-preset--celestial-blue {
-	// Editorial satin palette
+	// ---------------------------------------------------------------------
+	// Base palette
+	// ---------------------------------------------------------------------
 	--color-satin-blue: rgb(169 216 242);
 	--color-satin-blue-rgb: 169 216 242;
 	--color-ice-blue: rgb(220 239 248);
@@ -21,7 +21,9 @@
 	--color-diamond-white: rgb(255 255 255);
 	--color-diamond-white-rgb: 255 255 255;
 
-	// Three-layer semantic bridge
+	// ---------------------------------------------------------------------
+	// Semantic color bridge
+	// ---------------------------------------------------------------------
 	--color-surface-primary: var(--color-cool-ivory);
 	--color-surface-primary-rgb: var(--color-cool-ivory-rgb);
 	--color-surface-secondary: var(--color-pearl-gray);
@@ -40,26 +42,30 @@
 	--color-text-secondary: rgb(var(--color-soft-graphite-rgb) / 72%);
 	--color-text-secondary-rgb: var(--color-soft-graphite-rgb);
 	--color-text-emphasis: var(--color-soft-graphite);
+	--color-text-muted: rgb(var(--color-soft-graphite-rgb) / 64%);
 	--color-text-on-dark: var(--color-diamond-white);
 	--color-text-on-dark-rgb: var(--color-diamond-white-rgb);
 	--color-text-on-light: var(--color-deep-blue-graphite);
-	--color-text-muted: rgb(var(--color-soft-graphite-rgb) / 64%);
 	--color-border-subtle: rgb(var(--color-cold-silver-rgb) / 34%);
 	--color-border-premium: rgb(var(--color-liquid-silver-rgb) / 54%);
 
-	// Restrained glass and editorial typography
+	// ---------------------------------------------------------------------
+	// Typography
+	// ---------------------------------------------------------------------
+	--font-display: 'Cormorant Garamond', georgia, serif;
+	--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-calligraphy: 'Pinyon Script', cursive;
+
+	// ---------------------------------------------------------------------
+	// Glass, shadows and shared effects
+	// ---------------------------------------------------------------------
 	--color-glass-bg: rgb(var(--color-diamond-white-rgb) / 58%);
 	--color-glass-border: rgb(var(--color-liquid-silver-rgb) / 48%);
 	--color-glass-shadow: rgb(var(--color-deep-blue-graphite-rgb) / 8%);
 	--glass-blur: 8px;
 	--glass-saturate: 145%;
-	--font-display: #{sys-type.$sys-font-display-hacienda};
-	--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
-	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
-	--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
-	--font-calligraphy: #{sys-type.$sys-font-display-hacienda};
-
-	// Component Specifics
 	--shadow-premium:
 		0 24px 62px rgb(var(--color-deep-blue-graphite-rgb) / 10%),
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%);
@@ -75,7 +81,7 @@
 	);
 
 	// ---------------------------------------------------------------------
-	// Countdown section tokens
+	// Countdown section
 	// ---------------------------------------------------------------------
 	--countdown-value-size-mobile: clamp(2.25rem, 10vw, 3.4rem);
 	--countdown-value-size-desktop: clamp(3rem, 5vw, 4.4rem);
@@ -83,7 +89,7 @@
 	--countdown-label-opacity: 0.7;
 
 	// ---------------------------------------------------------------------
-	// Family section tokens
+	// Family section
 	// ---------------------------------------------------------------------
 	--family-bg: radial-gradient(
 		circle at 50% 12%,
@@ -118,7 +124,7 @@
 	);
 
 	// ---------------------------------------------------------------------
-	// Hero tokens
+	// Hero section
 	// ---------------------------------------------------------------------
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-liquid-silver-rgb) / 58%);
@@ -132,7 +138,7 @@
 	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 58%);
 
 	// ---------------------------------------------------------------------
-	// Gallery tokens
+	// Gallery section
 	// ---------------------------------------------------------------------
 	--gallery-section-bg: radial-gradient(
 		circle at 50% 10%,
@@ -154,14 +160,16 @@
 	--gallery-caption-letter-spacing: 0.02em;
 
 	// ---------------------------------------------------------------------
-	// Thank-you section tokens
+	// Thank-you section
 	// ---------------------------------------------------------------------
 	--thank-you-frame-size-mobile: 220px;
 	--thank-you-frame-size-desktop: 280px;
 	--thank-you-image-fit: contain;
 	--thank-you-image-position: center;
 
-	// 🎨 Texture & Light Effects
+	// ---------------------------------------------------------------------
+	// Texture and light effects
+	// ---------------------------------------------------------------------
 	--texture-silk: linear-gradient(
 		115deg,
 		rgb(var(--color-diamond-white-rgb) / 72%) 0%,
@@ -177,7 +185,9 @@
 		rgb(255 255 255 / 0%) 100%
 	);
 
-	// Silver/satin decorative aliases. Existing --gold-* names remain as compatibility bridges.
+	// ---------------------------------------------------------------------
+	// Metallic accents and compatibility aliases
+	// ---------------------------------------------------------------------
 	--metallic-silver: linear-gradient(
 		135deg,
 		var(--color-cold-silver) 0%,
@@ -196,6 +206,19 @@
 	--gold-metallic: var(--metallic-silver);
 	--gold-glow: 0 0 18px rgb(var(--color-satin-blue-rgb) / 22%);
 
-	// Layout Specifics
+	// ---------------------------------------------------------------------
+	// Layout
+	// ---------------------------------------------------------------------
 	--container-max-width-lg: 1280px;
+
+	// ---------------------------------------------------------------------
+	// Itinerary section
+	// ---------------------------------------------------------------------
+	--itinerary-paper-white: rgb(253 251 247);
+	--itinerary-cream: rgb(245 241 230);
+	--itinerary-ink-dark: rgb(26 42 58);
+	--itinerary-ink-dark-rgb: 26 42 58;
+	--itinerary-slate: rgb(44 62 80);
+	--itinerary-slate-rgb: 44 62 80;
+	--itinerary-muted-gray: rgb(127 140 141);
 }
