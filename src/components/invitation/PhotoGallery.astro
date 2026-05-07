@@ -1,6 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -19,45 +20,14 @@ type NestedSrc = { src: string };
 const hasNestedSrc = (value: unknown): value is NestedSrc =>
 	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
 
-const getSrc = (image: ImageMetadata | ImageAsset | string): string => {
-	if (typeof image === 'string') return image;
-
-	if (image && typeof image === 'object') {
-		if ('src' in image) {
-			const src = image.src as unknown;
-			if (typeof src === 'string') return src;
-			if (hasNestedSrc(src)) return src.src;
-		}
-
-		if ('src' in (image as any)) {
-			return (image as any).src;
-		}
+const getSrc = (image: ImageMetadata | ImageAsset): string => {
+	if ('src' in image) {
+		const src = image.src as unknown;
+		if (typeof src === 'string') return src;
+		if (hasNestedSrc(src)) return src.src;
 	}
 
 	return String(image);
-};
-
-// Layout logic shared with PhotoGallery.tsx — keep in sync.
-const getLayoutClass = (index: number, galleryVariant?: string): string => {
-	if (galleryVariant === 'luxury-hacienda') {
-		if (index === 0) return 'gallery-grid__item--feature';
-		if (index === 1 || index === 2 || index === 7) return 'gallery-grid__item--wide';
-		return 'gallery-grid__item--standard';
-	}
-
-	if (galleryVariant === 'celestial-blue') {
-		if (index === 0 || index === 5) return 'gallery-grid__item--feature';
-		if (index === 2 || index === 3 || index === 8) return 'gallery-grid__item--wide';
-		return 'gallery-grid__item--standard';
-	}
-
-	if (galleryVariant === 'jewelry-box' || galleryVariant === 'organic') {
-		if (index % 5 === 0) return 'gallery-grid__item--feature';
-		if (index % 3 === 0) return 'gallery-grid__item--wide';
-		return 'gallery-grid__item--standard';
-	}
-
-	return 'gallery-grid__item--standard';
 };
 ---
 
@@ -111,71 +81,73 @@ const getLayoutClass = (index: number, galleryVariant?: string): string => {
 
 <script>
 	const gallery = document.querySelector('[data-gallery]');
+	if (!gallery) return;
+
 	const lightbox = document.querySelector('[data-gallery-lightbox]');
-	const lightboxImage = lightbox?.querySelector('[data-gallery-image]');
-	const lightboxFooter = lightbox?.querySelector('[data-gallery-footer]');
-	const lightboxFooterText = lightbox?.querySelector('[data-gallery-footer-text]');
-	const closeButton = lightbox?.querySelector('[data-gallery-close]');
-	const content = lightbox?.querySelector('[data-gallery-content]');
+	if (!(lightbox instanceof HTMLElement)) return;
 
-	if (
-		gallery &&
-		lightbox instanceof HTMLElement &&
-		lightboxImage instanceof HTMLImageElement &&
-		lightboxFooter instanceof HTMLElement &&
-		lightboxFooterText instanceof HTMLElement &&
-		closeButton instanceof HTMLButtonElement &&
-		content instanceof HTMLElement
-	) {
-		const invitationRoot = gallery.closest('[data-event-slug]');
-		const closeLightbox = () => {
-			lightbox.hidden = true;
-			document.body.style.overflow = '';
-		};
+	const lightboxImage = lightbox.querySelector('[data-gallery-image]');
+	if (!(lightboxImage instanceof HTMLImageElement)) return;
 
-		const openLightbox = (item: HTMLElement) => {
-			if (!(item instanceof HTMLElement)) {
-				return;
-			}
+	const lightboxFooter = lightbox.querySelector('[data-gallery-footer]');
+	if (!(lightboxFooter instanceof HTMLElement)) return;
 
-			// ADU-31: Surgical Guard - Only allow gallery interaction after envelope is revealed
-			if (
-				invitationRoot instanceof HTMLElement &&
-				invitationRoot.dataset.revealState !== 'revealed'
-			) {
-				console.warn('[Gallery] Suppressing lightbox trigger: Envelope still active.');
-				return;
-			}
+	const lightboxFooterText = lightbox.querySelector('[data-gallery-footer-text]');
+	if (!(lightboxFooterText instanceof HTMLElement)) return;
 
-			lightboxImage.src = item.dataset.gallerySrc || '';
-			lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
+	const closeButton = lightbox.querySelector('[data-gallery-close]');
+	if (!(closeButton instanceof HTMLButtonElement)) return;
 
-			const caption = item.dataset.galleryCaption || '';
-			lightboxFooterText.textContent = caption;
-			lightboxFooter.hidden = !caption;
+	const content = lightbox.querySelector('[data-gallery-content]');
+	if (!(content instanceof HTMLElement)) return;
 
-			lightbox.hidden = false;
-			document.body.style.overflow = 'hidden';
-		};
+	const invitationRoot = gallery.closest('[data-event-slug]');
 
-		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
-			const htmlItem = item as HTMLElement;
-			htmlItem.addEventListener('click', () => openLightbox(htmlItem));
-			htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
-				if (event.key === 'Enter' || event.key === ' ') {
-					event.preventDefault();
-					openLightbox(htmlItem);
-				}
-			});
-		});
+	const closeLightbox = () => {
+		lightbox.hidden = true;
+		document.body.style.overflow = '';
+	};
 
-		closeButton.addEventListener('click', closeLightbox);
-		lightbox.addEventListener('click', closeLightbox);
-		content.addEventListener('click', (event) => event.stopPropagation());
-		window.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && !lightbox.hidden) {
-				closeLightbox();
+	const openLightbox = (item: HTMLElement) => {
+		if (
+			invitationRoot instanceof HTMLElement &&
+			invitationRoot.dataset.revealState !== 'revealed'
+		) {
+			console.warn('[Gallery] Suppressing lightbox trigger: Envelope still active.');
+			return;
+		}
+
+		lightboxImage.src = item.dataset.gallerySrc || '';
+		lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
+
+		const caption = item.dataset.galleryCaption || '';
+		lightboxFooterText.textContent = caption;
+		lightboxFooter.hidden = !caption;
+
+		lightbox.hidden = false;
+		document.body.style.overflow = 'hidden';
+	};
+
+	gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+		const htmlItem = item as HTMLElement;
+		htmlItem.addEventListener('click', () => openLightbox(htmlItem));
+		htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
+			if (event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault();
+				openLightbox(htmlItem);
 			}
 		});
-	}
+	});
+
+	closeButton.addEventListener('click', (event) => {
+		event.stopPropagation();
+		closeLightbox();
+	});
+	lightbox.addEventListener('click', closeLightbox);
+	content.addEventListener('click', (event) => event.stopPropagation());
+	window.addEventListener('keydown', (event: KeyboardEvent) => {
+		if (event.key === 'Escape' && !lightbox.hidden) {
+			closeLightbox();
+		}
+	});
 </script>

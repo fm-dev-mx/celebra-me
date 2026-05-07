@@ -22,18 +22,6 @@
 	}
 }
 
-@keyframes contentFadeIn {
-	from {
-		opacity: 0%;
-		transform: translateY(10%);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
-	}
-}
-
 @keyframes pulseChevron {
 	0%,
 	100% {
@@ -51,18 +39,6 @@
 	from {
 		opacity: 0%;
 		transform: translateY(100px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
-	}
-}
-
-@keyframes fade-up {
-	from {
-		opacity: 0%;
-		transform: translateY(10px);
 	}
 
 	to {
