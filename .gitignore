@@ -30,6 +30,7 @@ pnpm-debug.log*
 # Test output artifacts
 test_output.txt
 staged.diff
+test-results/
 coverage/
 temp/
 _tmp_*

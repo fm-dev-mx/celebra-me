@@ -157,11 +157,4 @@
 	--gallery-subtitle-transform: uppercase;
 	--gallery-subtitle-letter-spacing: 0.3em;
 	--gallery-subtitle-opacity: 0.9;
-
-	.gallery-section__title {
-		background: var(--gold-metallic);
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		filter: drop-shadow(0 2px 4px rgb(var(--color-surface-dark-rgb), 0.1));
-	}
 }

@@ -21,12 +21,6 @@ console.log('================================');
 
 const ERRORS = [];
 const WARNINGS = [];
-const IMPLICIT_BASE_VARIANTS = {
-	family: new Set(['standard']),
-	gifts: new Set(['standard']),
-	gallery: new Set(['standard']),
-	thankYou: new Set(['standard']),
-};
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
@@ -41,27 +35,23 @@ function extractContractVariants() {
 		gifts: new Set(),
 		gallery: new Set(),
 		thankYou: new Set(),
+		itinerary: new Set(),
 	};
 
 	function parseArrayConst(constName) {
-		const regex = new RegExp(`export const ${constName} = \\[([\\s\\S]*?)\\] as const;`);
+		const regex = new RegExp(
+			`export const ${constName}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as const;`,
+		);
 		const match = content.match(regex);
 		if (!match) return [];
+
 		return Array.from(match[1].matchAll(/'([^']+)'/g)).map((item) => item[1]);
 	}
 
-	const quote = parseArrayConst('QUOTE_VARIANTS');
-	const countdown = parseArrayConst('COUNTDOWN_VARIANTS');
-	const location = parseArrayConst('LOCATION_VARIANTS');
-	const shared = parseArrayConst('SHARED_SECTION_VARIANTS');
-
-	quote.forEach((variant) => variants.quote.add(variant));
-	countdown.forEach((variant) => variants.countdown.add(variant));
-	location.forEach((variant) => variants.location.add(variant));
-	shared.forEach((variant) => variants.family.add(variant));
-	shared.forEach((variant) => variants.gifts.add(variant));
-	shared.forEach((variant) => variants.gallery.add(variant));
-	shared.forEach((variant) => variants.thankYou.add(variant));
+	const themeVariants = parseArrayConst('PREMIUM_THEMES');
+	for (const key of Object.keys(variants)) {
+		themeVariants.forEach((v) => variants[key].add(v));
+	}
 
 	return variants;
 }
@@ -79,6 +69,7 @@ function extractCSSVariants() {
 		gifts: new Set(),
 		gallery: new Set(),
 		thankYou: new Set(),
+		itinerary: new Set(),
 	};
 
 	// Map CSS files to sections
@@ -90,6 +81,7 @@ function extractCSSVariants() {
 		'_gifts-theme.scss': 'gifts',
 		'_gallery-theme.scss': 'gallery',
 		'_thank-you-theme.scss': 'thankYou',
+		'_itinerary-theme.scss': 'itinerary',
 	};
 
 	for (const file of files) {
@@ -160,7 +152,16 @@ function main() {
 	console.log('Phase 3: Comparing variants...');
 
 	// Compare each section
-	const sections = ['quote', 'countdown', 'location', 'family', 'gifts', 'gallery', 'thankYou'];
+	const sections = [
+		'quote',
+		'countdown',
+		'location',
+		'family',
+		'gifts',
+		'gallery',
+		'thankYou',
+		'itinerary',
+	];
 
 	for (const section of sections) {
 		const contractSet = contractVariants[section];
@@ -174,9 +175,6 @@ function main() {
 
 		// Check for contract variants missing in CSS
 		for (const variant of contractSet) {
-			if (IMPLICIT_BASE_VARIANTS[section]?.has(variant)) {
-				continue;
-			}
 			if (!cssSet.has(variant)) {
 				WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
 			}

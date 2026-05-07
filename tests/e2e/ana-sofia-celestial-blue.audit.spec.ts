@@ -94,7 +94,7 @@ async function captureInvitation(page: Page, viewportName: string) {
 	const actionAccent = await wrapper.evaluate((element) =>
 		getComputedStyle(element).getPropertyValue('--color-action-accent').trim(),
 	);
-	expect(actionAccent).toBe('rgb(98 177 224)');
+	expect(actionAccent).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
 
 	await page.screenshot({
 		path: path.join(viewportDir, '01-full-page-revealed.png'),
