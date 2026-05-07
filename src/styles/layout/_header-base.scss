@@ -9,6 +9,8 @@
 	--header-ease: #{tokens.$ease-premium};
 
 	// 2. Dynamic State Variables (Replaces !important)
+	// --header-bg-scrolled is set by theme files (_header-theme.scss)
+	// and defaults to --header-scrolled-bg below.
 	--header-bg-current: var(--header-glass-bg);
 	--header-blur-current: var(--header-glass-blur);
 	--header-saturate-current: var(--header-glass-saturate);
@@ -81,7 +83,7 @@
 	&--scrolled {
 		height: var(--header-height-scrolled);
 
-		--header-bg-current: var(--header-scrolled-bg);
+		--header-bg-current: var(--header-bg-scrolled, var(--header-scrolled-bg));
 		--header-blur-current: 20px;
 		--header-saturate-current: 180%;
 		--header-border-current: var(--header-border-color);

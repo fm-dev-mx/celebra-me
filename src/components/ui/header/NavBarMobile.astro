@@ -134,6 +134,8 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 			document.body.style.overflow = '';
 		};
 
+		const desktopQuery = window.matchMedia('(min-width: 992px)');
+
 		const openMenu = () => {
 			if (desktopQuery.matches) {
 				closeMenu();
@@ -149,8 +151,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 			}
 			document.body.style.overflow = 'hidden';
 		};
-
-		const desktopQuery = window.matchMedia('(min-width: 992px)');
 
 		const syncForViewport = () => {
 			if (desktopQuery.matches) {
