@@ -11,7 +11,6 @@ interface Props {
 	ctaLink?: string;
 	loginLabel?: string;
 	ctaLabel?: string;
-	desktopBreakpoint?: 'lg' | 'xl';
 }
 
 
@@ -22,15 +21,12 @@ const {
 	ctaLink,
 	loginLabel = 'Iniciar sesión',
 	ctaLabel = 'Crear Invitación',
-	desktopBreakpoint = 'lg',
 } = Astro.props;
 const menuId = `${headerId}-mobile-menu`;
 const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
-// Breakpoint values must stay in sync with src/styles/tokens/_spacing.scss $breakpoints
-const desktopQueryWidth = desktopBreakpoint === 'xl' ? 1200 : 992;
 ---
 
-<div data-nav-mobile data-header-id={headerId} data-desktop-query-width={desktopQueryWidth}>
+<div data-nav-mobile data-header-id={headerId}>
 	<button
 		type="button"
 		class="header-base__mobile-toggle"
@@ -113,7 +109,6 @@ const desktopQueryWidth = desktopBreakpoint === 'xl' ? 1200 : 992;
 		}
 
 		const headerId = root.dataset.headerId;
-		const desktopQueryWidth = root.dataset.desktopQueryWidth || '992';
 		const header = headerId ? document.getElementById(headerId) : null;
 		const toggle = root.querySelector('[data-nav-mobile-toggle]');
 		const menu = root.querySelector('[data-nav-mobile-menu]');
@@ -155,7 +150,7 @@ const desktopQueryWidth = desktopBreakpoint === 'xl' ? 1200 : 992;
 			document.body.style.overflow = 'hidden';
 		};
 
-		const desktopQuery = window.matchMedia(`(min-width: ${desktopQueryWidth}px)`);
+		const desktopQuery = window.matchMedia('(min-width: 992px)');
 
 		const syncForViewport = () => {
 			if (desktopQuery.matches) {
