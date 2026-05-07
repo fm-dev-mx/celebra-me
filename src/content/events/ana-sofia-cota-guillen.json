@@ -45,7 +45,7 @@
         "date": "2026-05-24T01:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "layoutVariant": "premium-portrait"
+        "layoutVariant": "celestial-blue"
     },
     "location": {
         "venueName": "Palapa Zavala's",
@@ -117,7 +117,7 @@
         ],
         "featuredImage": "family",
         "focalPoint": "center 30%",
-        "layoutVariant": "premium-mask"
+        "layoutVariant": "celestial-blue"
     },
     "gallery": {
         "title": "Galería de Ana Sofía",

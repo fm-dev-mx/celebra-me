@@ -28,7 +28,7 @@
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "layoutVariant": "premium-portrait"
+        "layoutVariant": "premiere-floral"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
@@ -86,7 +86,7 @@
             }
         ],
         "featuredImage": "family",
-        "layoutVariant": "premium-mask"
+        "layoutVariant": "premiere-floral"
     },
     "gallery": {
         "title": "Editorial de Ximena",
