@@ -49,41 +49,40 @@
     },
     "location": {
         "venueName": "Palapa Zavala's",
-        "address": "Ejido Mochis, Los Mochis, Sinaloa",
+        "address": "Ejido Mochis, Los Mochis, Sin.",
         "city": "Los Mochis",
         "mapUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
+        "indicationsHeading": "Indicaciones",
         "ceremony": {
             "venueEvent": "Misa de Acción de Gracias",
-            "venueName": "Parroquia de Nuestra Señora de Lourdes",
-            "address": "Dr. Oscar Aguilar Pereira, Nuevo Horizonte, 82234 Los Mochis, Sin.",
+            "venueName": "Nuestra Señora de Lourdes",
+            "address": "Nuevo Horizonte, Los Mochis, Sin.",
             "date": "23 de mayo de 2026",
             "time": "6:00 PM",
             "mapUrl": "https://maps.app.goo.gl/WkDJn3uyRxkaiPGJ6",
-            "googleMapsUrl": "https://maps.app.goo.gl/WkDJn3uyRxkaiPGJ6",
-            "image": "gallery08"
+            "image": "ceremony"
         },
         "reception": {
             "venueEvent": "Recepción",
             "venueName": "Palapa Zavala's",
-            "address": "Ejido Mochis, Los Mochis, Sinaloa",
+            "address": "Ejido Mochis, Los Mochis, Sin.",
             "date": "23 de mayo de 2026",
             "time": "8:00 PM",
             "mapUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
-            "googleMapsUrl": "https://maps.app.goo.gl/1Zap316H49aywawK7",
-            "image": "jardin"
+            "image": "reception"
         },
         "indications": [
             {
-                "icon": "forbidden",
-                "iconName": "Forbidden",
+                "icon": "dressCode",
+                "iconName": "DressCode",
                 "styleVariant": "reserved",
                 "text": "Código de vestimenta <strong>formal</strong>. Favor de evitar el color <strong>azul cielo</strong>, reservado para la quinceañera."
             },
             {
-                "icon": "gift",
-                "iconName": "Gift",
+                "icon": "calendar",
+                "iconName": "Calendar",
                 "styleVariant": "default",
-                "text": "Tu presencia es nuestro mejor regalo. Si deseas tener un detalle, habrá <strong>lluvia de sobres</strong>."
+                "text": "Favor de confirmar asistencia antes del 19 de mayo."
             }
         ]
     },

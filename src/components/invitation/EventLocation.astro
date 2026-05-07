@@ -47,6 +47,7 @@ interface Props {
 	variant?: LocationVariant;
 	mapStyle?: LocationMapStyle;
 	showFlourishes?: boolean;
+	indicationsHeading?: string;
 	nextSectionLink?: {
 		href: string;
 		label?: string;
@@ -60,6 +61,7 @@ const {
 	variant = 'structured',
 	mapStyle = 'dark',
 	showFlourishes = true,
+	indicationsHeading,
 	nextSectionLink,
 } = Astro.props;
 
@@ -91,7 +93,9 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 	{indications && indications.length > 0 && (
 		<div class="event-location__indications-container">
 			<div class="event-location__divider" aria-hidden="true"></div>
-
+			{indicationsHeading && (
+				<p class="event-location__indications-heading">{indicationsHeading}</p>
+			)}
 			<div class="event-location__indications">
 				{indications.map((indication) => {
 					const isReserved = indication.styleVariant === 'reserved';
@@ -124,29 +128,31 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 
 	const sections = document.querySelectorAll('.event-location');
 
-	sections.forEach((section) => {
-		if (section instanceof HTMLElement) {
-			const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (sections.length > 0) {
+		initCopyButtons('.copy-button', 'data-address');
+		revealIOSOnly('[data-apple-link]');
 
-			initCopyButtons('.copy-button', 'data-address', section);
-			revealIOSOnly('[data-apple-link]', section);
+		sections.forEach((section) => {
+			if (section instanceof HTMLElement) {
+				const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-			if (!prefersReducedMotion) {
-				section.classList.add('has-motion');
-				const observer = new IntersectionObserver(
-					(entries) => {
-						entries.forEach((entry) => {
-							if (entry.isIntersecting) {
-								section.classList.add('is-visible');
-								observer.unobserve(entry.target);
-							}
-						});
-					},
-					{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
-				);
+				if (!prefersReducedMotion) {
+					section.classList.add('has-motion');
+					const observer = new IntersectionObserver(
+						(entries) => {
+							entries.forEach((entry) => {
+								if (entry.isIntersecting) {
+									section.classList.add('is-visible');
+									observer.unobserve(entry.target);
+								}
+							});
+						},
+						{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
+					);
 
-				observer.observe(section);
+					observer.observe(section);
+				}
 			}
-		}
-	});
+		});
+	}
 </script>
