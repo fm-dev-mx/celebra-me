@@ -10,17 +10,27 @@ interface Props {
 	width?: number;
 	height?: number;
 	class?: string;
+	loading?: 'eager' | 'lazy';
+	decoding?: 'async' | 'auto' | 'sync';
+	fetchpriority?: 'high' | 'low' | 'auto';
 }
 
-const { imagePath, alt, rounded = '', width = 350, height = 350, class: className } = Astro.props;
+const {
+	imagePath,
+	alt,
+	rounded = '',
+	width = 350,
+	height = 350,
+	class: className,
+	loading,
+	decoding,
+	fetchpriority,
+} = Astro.props;
 
 const resolveSrc = (input: ImageMetadata | string | ImageAsset | null | undefined) => {
 	if (!input) return null;
 	if (typeof input === 'object' && 'src' in input && !('width' in input)) {
-		// It's an ImageAsset (has src but not width/height like ImageMetadata)
-		// actually ImageMetadata has src, width, height, format.
-		// ImageAsset has src (string|Metadata), alt.
-		return (input as ImageAsset).src;
+		return input.src;
 	}
 	return input;
 };
@@ -37,14 +47,20 @@ const finalSrc = resolveSrc(imagePath);
 				width={width}
 				height={height}
 				class:list={[rounded, className]}
+				loading={loading}
+				decoding={decoding}
+				fetchpriority={fetchpriority}
 			/>
 		) : (
 			<Image
-				src={finalSrc as ImageMetadata}
+				src={finalSrc}
 				alt={alt}
 				width={width}
 				height={height}
 				class:list={[rounded, className]}
+				loading={loading}
+				decoding={decoding}
+				fetchpriority={fetchpriority}
 			/>
 		)
 	) : (
