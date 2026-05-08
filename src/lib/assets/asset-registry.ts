@@ -53,6 +53,7 @@ export const EVENT_KEYS = [
 	'interlude01',
 	'interlude02',
 	'interlude03',
+	'interlude04',
 	'interludeNew01',
 	'thankYouPortrait',
 ] as const;

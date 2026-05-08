@@ -122,15 +122,15 @@
         "subtitle": "Un recuerdo en tonos de cielo, cristal y luz.",
         "items": [
             { "image": "gallery01", "caption": "Luz de ilusión." },
-            { "image": "gallery02", "caption": "Brillo de princesa." },
-            { "image": "gallery03", "caption": "Elegancia en azul." },
-            { "image": "gallery04", "caption": "Una tarde de ensueño." },
-            { "image": "gallery05", "caption": "Detalles que iluminan." },
-            { "image": "gallery06", "caption": "Dulce celebración." },
-            { "image": "gallery07", "caption": "Reflejo de alegría." },
-            { "image": "gallery08", "caption": "Mirada serena." },
-            { "image": "gallery09", "caption": "Un deseo por cumplir." },
-            { "image": "gallery10", "caption": "El inicio de una gran noche." }
+            { "image": "gallery02", "caption": "Mirada de cristal." },
+            { "image": "gallery03", "caption": "Entre cielo y plata." },
+            { "image": "gallery04", "caption": "Brillo sereno." },
+            { "image": "gallery05", "caption": "Un deseo por cumplir." },
+            { "image": "gallery06", "caption": "El inicio del recuerdo." },
+            { "image": "gallery07", "caption": "Noche de cielo." },
+            { "image": "gallery08", "caption": "Silueta de princesa." },
+            { "image": "gallery09", "caption": "Luz entre mármol." },
+            { "image": "gallery10", "caption": "Corona de luz." }
         ]
     },
     "gifts": {
@@ -194,7 +194,6 @@
     },
     "countdown": {
         "title": "La celebración comienza en",
-        "subtitlePrefix": "",
         "footerText": "23 de mayo de 2026, Los Mochis, Sinaloa"
     },
     "navigation": [
@@ -212,7 +211,7 @@
         },
         {
             "type": "interlude",
-            "image": "gallery04",
+            "image": "interlude01",
             "alt": "Ana Sofía con vestido azul cielo y detalles plateados",
             "height": "screen",
             "focalPoint": "center 35%"
@@ -223,7 +222,7 @@
         },
         {
             "type": "interlude",
-            "image": "gallery08",
+            "image": "interlude02",
             "alt": "Retrato elegante de Ana Sofía con corona",
             "height": "screen",
             "focalPoint": "center 25%"
@@ -234,7 +233,7 @@
         },
         {
             "type": "interlude",
-            "image": "gallery10",
+            "image": "interlude03",
             "alt": "Detalle de pastel con listones azules",
             "height": "screen",
             "focalPoint": "center 30%"
@@ -257,7 +256,7 @@
         },
         {
             "type": "interlude",
-            "image": "interludeNew01",
+            "image": "interlude04",
             "alt": "Retrato final de Ana Sofía en tonos plata y azul",
             "height": "screen",
             "focalPoint": "center 30%"
