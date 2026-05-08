@@ -139,6 +139,7 @@ export interface FamilyLabels {
 	childrenTitle?: string;
 	parentsTitle?: string;
 	godparentsTitle?: string;
+	sectionMessage?: string;
 }
 
 export interface FamilyMember {

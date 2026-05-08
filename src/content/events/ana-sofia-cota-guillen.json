@@ -76,13 +76,13 @@
                 "icon": "dressCode",
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal</strong>. Favor de evitar el color <strong>azul cielo</strong>, reservado para la quinceañera."
+                "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
             },
             {
                 "icon": "calendar",
                 "iconName": "Calendar",
                 "styleVariant": "default",
-                "text": "Favor de confirmar asistencia antes del 19 de mayo."
+                "text": "Favor de confirmar asistencia <strong>antes del 19 de mayo</strong>."
             }
         ]
     },
@@ -94,6 +94,7 @@
         "labels": {
             "sectionTitle": "Mi Familia",
             "sectionSubtitle": "Con amor y gratitud",
+            "sectionMessage": "Hoy celebro un recuerdo que guardaré para siempre en el corazón. Gracias por estar aquí, por su cariño y por formar parte de una noche que permanecerá conmigo toda la vida.",
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos"
         },
