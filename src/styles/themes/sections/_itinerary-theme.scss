@@ -142,7 +142,6 @@
 			var(--color-action-accent) 100%
 		);
 		background-clip: text;
-		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-shadow: 0 2px 4px rgb(0 0 0 / 10%); // Safer text-shadow instead of filter
 	}
@@ -434,10 +433,10 @@
 
 	// Mobile Refinements
 	@media (width <= 640px) {
-		padding-bottom: 7rem;
+		padding-bottom: clamp(4rem, 10vw, 6rem);
 
 		.itinerary__program-panel {
-			padding: 4rem 1.8rem;
+			padding: clamp(2.5rem, 8vw, 4rem) clamp(1.25rem, 5vw, 2rem);
 		}
 
 		.itinerary__program-paper-surface {
@@ -446,22 +445,24 @@
 		}
 
 		.itinerary__program-row {
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: 1fr auto;
 			grid-template-rows: auto auto;
-			gap: 0.4rem 0.8rem;
-			padding-block: 1.6rem;
+			gap: 0.25rem 0.5rem;
+			padding-block: clamp(1.1rem, 3vw, 1.4rem);
 
 			.itinerary__program-row-num {
 				grid-column: 1;
 				grid-row: 1;
-				font-size: 0.7rem;
+				font-size: 0.65rem;
+				opacity: 35%;
 			}
 
 			.itinerary__program-row-time {
 				grid-column: 2;
 				grid-row: 1;
-				font-size: 0.7rem;
+				font-size: 0.65rem;
 				text-align: right;
+				opacity: 60%;
 			}
 
 			.itinerary__program-row-content {
@@ -471,8 +472,15 @@
 		}
 
 		.itinerary__program-row-title {
-			font-size: 2.8rem;
-			margin-bottom: 0.1rem;
+			font-size: clamp(2.2rem, 10vw, 2.6rem);
+			margin-bottom: 0.05rem;
+			line-height: 0.8;
+		}
+
+		.itinerary__program-row-desc {
+			font-size: 0.9rem;
+			line-height: 1.45;
+			color: rgb(var(--itinerary-ink-dark-rgb, 26 42 58) / 72%);
 		}
 	}
 
