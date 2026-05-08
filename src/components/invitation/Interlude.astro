@@ -15,6 +15,7 @@ interface Props {
 
 const { image, alt, height = 'screen', variant = 'standard', focalPoint, interludeIndex } =
 	Astro.props;
+const shouldPrioritizeImage = interludeIndex === 1;
 ---
 
 <section
@@ -36,6 +37,9 @@ const { image, alt, height = 'screen', variant = 'standard', focalPoint, interlu
 			width={1920}
 			height={1400}
 			class="invitation-interlude__image"
+			loading={shouldPrioritizeImage ? 'eager' : 'lazy'}
+			decoding="async"
+			fetchpriority={shouldPrioritizeImage ? 'high' : 'auto'}
 		/>
 	</div>
 </section>
