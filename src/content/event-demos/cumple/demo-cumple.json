@@ -58,7 +58,7 @@
         },
         "indications": [
             {
-                "icon": "dress",
+                "icon": "dressCode",
                 "iconName": "Gift",
                 "styleVariant": "default",
                 "text": "Código de vestimenta: Gala Hacienda"
@@ -166,7 +166,7 @@
                 "description": "Sabor tradicional de la Hacienda."
             },
             {
-                "icon": "music",
+                "icon": "accordion",
                 "label": "Mariachi y Sorpresas",
                 "time": "11:00 PM",
                 "description": "Música en vivo para celebrar."
