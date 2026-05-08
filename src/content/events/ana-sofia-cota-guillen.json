@@ -121,16 +121,16 @@
         "title": "Galería de Ana Sofía",
         "subtitle": "Un recuerdo en tonos de cielo, cristal y luz.",
         "items": [
-            { "image": "gallery01", "caption": "Luz de ilusión." },
-            { "image": "gallery02", "caption": "Mirada de cristal." },
-            { "image": "gallery03", "caption": "Entre cielo y plata." },
-            { "image": "gallery04", "caption": "Brillo sereno." },
-            { "image": "gallery05", "caption": "Un deseo por cumplir." },
-            { "image": "gallery06", "caption": "El inicio del recuerdo." },
-            { "image": "gallery07", "caption": "Noche de cielo." },
-            { "image": "gallery08", "caption": "Silueta de princesa." },
-            { "image": "gallery09", "caption": "Luz entre mármol." },
-            { "image": "gallery10", "caption": "Corona de luz." }
+            { "image": "gallery01" },
+            { "image": "gallery02" },
+            { "image": "gallery03" },
+            { "image": "gallery04" },
+            { "image": "gallery05" },
+            { "image": "gallery06" },
+            { "image": "gallery07" },
+            { "image": "gallery08" },
+            { "image": "gallery09" },
+            { "image": "gallery10" }
         ]
     },
     "gifts": {
