@@ -9,6 +9,7 @@
 
 	--interlude-focal-x: 50%;
 	--interlude-focal-y: 14%;
+	--interlude-focal-point: var(--interlude-focal-x) var(--interlude-focal-y);
 	--interlude-image-scale: 1;
 	--interlude-image-hover-scale: 1.03;
 
@@ -38,8 +39,8 @@
 	&__image {
 		display: block;
 		object-fit: cover;
-		object-position: var(--interlude-focal-x) var(--interlude-focal-y);
-		transform-origin: var(--interlude-focal-x) var(--interlude-focal-y);
+		object-position: var(--interlude-focal-point);
+		transform-origin: var(--interlude-focal-point);
 		filter: saturate(0.96) contrast(1.02);
 		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
 			scale(var(--interlude-image-scale));
@@ -49,6 +50,15 @@
 			opacity 600ms var(--ease-premium),
 			transform 600ms var(--ease-premium);
 		backface-visibility: hidden;
+	}
+
+	&[data-variant='celestial-blue'] {
+		--interlude-parallax-offset: 0;
+		--interlude-image-hover-scale: var(--interlude-image-scale);
+
+		.invitation-interlude__image {
+			transform: scale(var(--interlude-image-scale));
+		}
 	}
 
 	&.is-visible &__image {

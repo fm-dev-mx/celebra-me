@@ -21,6 +21,7 @@ const SECTION_SELECTORS = [
 ] as const;
 
 const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'ana-sofia-celestial-blue-audit');
+const RGB_VALUE_PATTERN = /^rgb\(\d+[\s,]+\d+[\s,]+\d+\)$/;
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);
@@ -94,12 +95,12 @@ async function captureInvitation(page: Page, viewportName: string) {
 	const actionAccent = await wrapper.evaluate((element) =>
 		getComputedStyle(element).getPropertyValue('--color-action-accent').trim(),
 	);
-	expect(actionAccent).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+	expect(actionAccent).toMatch(RGB_VALUE_PATTERN);
 
 	const surfaceDark = await wrapper.evaluate((element) =>
 		getComputedStyle(element).getPropertyValue('--color-surface-dark').trim(),
 	);
-	expect(surfaceDark).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+	expect(surfaceDark).toMatch(RGB_VALUE_PATTERN);
 
 	await page.screenshot({
 		path: path.join(viewportDir, '01-full-page-revealed.png'),
