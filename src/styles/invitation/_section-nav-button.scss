@@ -1,24 +1,17 @@
-@use '../tokens' as tokens;
-@use '../global/mixins' as mixins;
-
 .nav-button-container {
-	position: absolute;
+	position: relative;
 	width: 100%;
-	bottom: 0;
-	left: 0;
-	right: 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	z-index: 15;
 	pointer-events: none; /* Let clicks pass through except on the button */
+	margin-top: 1.5rem;
+	margin-bottom: 2rem;
 }
 
 .section-nav-button {
-	position: absolute;
-	left: 50%;
-	bottom: 4rem; /* Adjusted from 8rem for better visibility */
-	transform: translateX(-50%);
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -26,16 +19,15 @@
 	color: var(--color-text-on-dark);
 	z-index: 15;
 	text-decoration: none;
-	transition: all var(--duration-standard) var(--ease-standard);
-	animation: pulseChevron 2s infinite ease-in-out;
+	transition:
+		color var(--duration-standard) var(--ease-standard),
+		box-shadow var(--duration-standard) var(--ease-standard),
+		transform var(--duration-standard) var(--ease-standard);
+	animation: pulseChevronRelative 2s infinite ease-in-out;
 	pointer-events: auto;
 	min-height: auto; /* Prevent inheriting min-height from sections */
 	padding: 0.5rem 0.75rem;
 	border-radius: 0.5rem;
-
-	@include mixins.respond-to(md) {
-		bottom: 2rem;
-	}
 
 	&__text {
 		font-family: var(--font-body);
@@ -64,7 +56,7 @@
 	}
 
 	&:active {
-		transform: translateX(-50%) scale(0.95);
+		transform: scale(0.95);
 	}
 
 	&:focus-visible {
@@ -105,15 +97,15 @@
 	}
 }
 
-@keyframes pulseChevron {
+@keyframes pulseChevronRelative {
 	0%,
 	100% {
 		opacity: 60%;
-		transform: translateX(-50%) translateY(0);
+		transform: translateY(0);
 	}
 
 	50% {
 		opacity: 100%;
-		transform: translateX(-50%) translateY(5px);
+		transform: translateY(5px);
 	}
 }
