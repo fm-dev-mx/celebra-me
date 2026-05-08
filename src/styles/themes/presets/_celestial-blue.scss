@@ -83,10 +83,12 @@
 	// ---------------------------------------------------------------------
 	// Countdown section
 	// ---------------------------------------------------------------------
-	--countdown-value-size-mobile: clamp(2.25rem, 10vw, 3.4rem);
-	--countdown-value-size-desktop: clamp(3rem, 5vw, 4.4rem);
+	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);
+	--countdown-value-size-desktop: clamp(2.8rem, 4.5vw, 4rem);
 	--countdown-label-letter-spacing: 0.22em;
-	--countdown-label-opacity: 0.7;
+	--countdown-label-opacity: 1;
+	--countdown-grid-columns-mobile: 2;
+	--countdown-grid-columns-tablet: 4;
 
 	// ---------------------------------------------------------------------
 	// Family section
@@ -176,18 +178,6 @@
 		rgb(var(--color-ice-blue-rgb) / 42%) 46%,
 		rgb(var(--color-liquid-silver-rgb) / 34%) 100%
 	);
-	--light-sweep: linear-gradient(
-		115deg,
-		rgb(255 255 255 / 0%) 0%,
-		rgb(255 255 255 / 0%) 44%,
-		rgb(255 255 255 / 28%) 50%,
-		rgb(255 255 255 / 0%) 56%,
-		rgb(255 255 255 / 0%) 100%
-	);
-
-	// ---------------------------------------------------------------------
-	// Metallic accents and compatibility aliases
-	// ---------------------------------------------------------------------
 	--metallic-silver: linear-gradient(
 		135deg,
 		var(--color-cold-silver) 0%,
