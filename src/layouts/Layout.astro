@@ -30,10 +30,12 @@ import '@fontsource/the-nautigal';
 // Western/Typewriter (keep for fallback)
 import '@fontsource/special-elite/400.css';
 
+import type { ImageMetadata } from 'astro';
+
 interface Props {
 	title: string;
 	description?: string;
-	image?: string;
+	image?: string | ImageMetadata;
 	hideHeader?: boolean;
 	className?: string;
 	isDemo?: boolean;
@@ -42,8 +44,8 @@ interface Props {
 
 const {
 	title,
-	description = 'Celebra.me - Eventos inolvidables',
-	image = '/images/og-image.jpg',
+	description = 'Celebra.me - Invitaciones digitales',
+	image = '/images/og-image.webp',
 	hideHeader = false,
 	className,
 	isDemo = false,
@@ -53,8 +55,9 @@ const {
 // Environment guard: only load Vercel tooling in production
 const isProd = import.meta.env.PROD;
 
-// Ensure full URL for social sharing (absolute URL required by crawlers)
-const ogImage = new URL(image, Astro.url);
+// Handle both string URLs and Astro ImageMetadata objects
+const resolvedImageSrc = typeof image === 'string' ? image : image.src;
+const ogImage = new URL(resolvedImageSrc, isProd ? Astro.url : 'https://celebra-me.com/');
 
 // Canonical URL (avoid leaking dev localhost into metadata)
 const canonicalUrl = isProd ? Astro.url : new URL('https://celebra-me.com/');
@@ -79,13 +82,18 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImage} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:locale" content="es_MX" />
+		<meta property="og:site_name" content="Celebra.me" />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content={canonicalUrl} />
-		<meta property="twitter:title" content={title} />
-		<meta property="twitter:description" content={description} />
-		<meta property="twitter:image" content={ogImage} />
+		<meta name="twitter:url" content={canonicalUrl} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
 
 		{isProd && gaId && <GoogleAnalytics id={gaId} />}
 		<SvgFilters />
