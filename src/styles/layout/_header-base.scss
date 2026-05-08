@@ -42,6 +42,7 @@
 	left: 0;
 	width: 100%;
 	height: var(--header-height);
+	overflow-x: clip;
 	z-index: 1000;
 	transition:
 		height var(--header-transition) var(--header-ease),
@@ -115,19 +116,23 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.75rem;
+		gap: clamp(0.75rem, 2vw, 1.5rem);
 		max-width: 1400px;
 		margin: 0 auto;
-		padding: 0 2rem;
+		padding: 0 clamp(1rem, 4vw, 2rem);
 		height: 100%;
 
 		@include mixins.respond-to(lg) {
-			padding: 0 4rem;
+			padding: 0 clamp(2rem, 5vw, 4rem);
 		}
 	}
 
 	&__logo {
+		display: flex;
+		align-items: center;
+		flex: 1 1 auto;
 		height: 40px;
+		min-width: 0;
 		transition: transform 0.4s var(--header-ease);
 
 		&:hover {
@@ -137,6 +142,7 @@
 
 	&__desktop-nav {
 		display: none;
+		min-width: 0;
 
 		@include mixins.respond-to(lg) {
 			display: block;
@@ -219,7 +225,11 @@
 		flex-direction: column;
 		width: 85%;
 		max-width: 380px;
-		padding: 8rem 2.5rem 3rem;
+		max-height: 100dvh;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 8rem clamp(1.5rem, 6vw, 2.5rem) 3rem;
+		padding-bottom: max(3rem, env(safe-area-inset-bottom));
 		background:
 			linear-gradient(180deg, rgb(255 255 255 / 5%) 0%, transparent 20%),
 			var(--mobile-drawer-bg);
@@ -242,6 +252,52 @@
 		}
 
 		@include mixins.respond-to(lg) {
+			display: none;
+		}
+
+		@include mixins.short-viewport {
+			padding-top: 5.5rem;
+		}
+	}
+}
+
+// Celestial-blue variant uses xl (1200px) as the mobile-to-desktop breakpoint
+// instead of the default lg (992px). Undo base show/hide at lg, re-apply at xl.
+.header-base[data-variant='celestial-blue'] {
+	@include mixins.respond-to(lg) {
+		.header-base__desktop-nav {
+			display: none;
+		}
+		.header-base__mobile-toggle {
+			display: block;
+		}
+
+		.header-base__mobile-overlay {
+			display: block;
+			&[hidden] {
+				display: none;
+			}
+		}
+
+		.header-base__mobile-menu {
+			display: flex;
+			&[hidden] {
+				display: none;
+			}
+		}
+	}
+
+	@include mixins.respond-to(xl) {
+		.header-base__desktop-nav {
+			display: block;
+		}
+		.header-base__mobile-toggle {
+			display: none;
+		}
+		.header-base__mobile-overlay {
+			display: none;
+		}
+		.header-base__mobile-menu {
 			display: none;
 		}
 	}

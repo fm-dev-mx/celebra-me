@@ -51,11 +51,17 @@
 .header-base[data-variant='celestial-blue'] {
 	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
 	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
+	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 22%);
 	--header-nav-color: var(--color-diamond-white);
 	--header-nav-color-transparent: var(--color-diamond-white);
 	--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-deep-blue-graphite-rgb) / 42%);
 	--header-nav-filter-transparent: none;
 	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 22%);
+	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
+	--mobile-drawer-border: rgb(var(--color-liquid-silver-rgb) / 22%);
+	--mobile-drawer-link-hover: var(--color-diamond-white);
+	--mobile-drawer-footer-copy: rgb(var(--color-liquid-silver-rgb) / 62%);
+	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-deep-blue-graphite-rgb) / 70%);
 
 	&.header-base--scrolled {
 		border-bottom: var(--header-border-bottom);

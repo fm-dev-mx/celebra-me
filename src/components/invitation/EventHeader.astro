@@ -25,6 +25,9 @@ const {
 	links,
 	variant = 'standard',
 } = Astro.props;
+const RSVP_HREF = '#rsvp';
+const rsvpLink = links.find((link) => link.href === RSVP_HREF);
+const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
@@ -41,7 +44,7 @@ const {
 					href={link.href}
 					class:list={[
 						'event-header__action-btn',
-						{ 'event-header__action-btn--cta': link.href === '#rsvp' }
+						{ 'event-header__action-btn--cta': link.href === RSVP_HREF }
 					]}
 				>
 					{link.label}
@@ -51,6 +54,12 @@ const {
 	</div>
 
 	<div slot="mobile-nav-premium">
-		<NavBarMobile links={links} headerId="event-header" />
+		<NavBarMobile
+			links={mobileLinks}
+			headerId="event-header"
+			desktopBreakpoint="xl"
+			ctaLink={rsvpLink?.href}
+			ctaLabel={rsvpLink?.label}
+		/>
 	</div>
 </HeaderBase>
