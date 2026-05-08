@@ -1,5 +1,4 @@
-@use 'sass:color';
-@use '../tokens' as tokens;
+@use '../global/mixins' as mixins;
 
 /*
  * Block: .event-header
@@ -9,28 +8,36 @@
 
 .event-header {
 	&__title {
+		display: block;
 		font-family: var(--font-display);
-		font-weight: 700;
-		text-decoration: none;
-		color: var(--color-action-accent);
-		transition: var(--transition-snappy);
-		white-space: nowrap;
+		font-size: clamp(0.92rem, 3vw, 1.15rem);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		line-height: 1;
+		max-width: min(62vw, 18rem);
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: 200px;
-		letter-spacing: 0.1em;
+		white-space: nowrap;
 		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--color-action-accent);
 		text-shadow: var(--header-nav-shadow-transparent);
-		margin-right: 2rem;
+		transition: var(--transition-snappy);
 
-		@media (width >= 768px) {
-			max-width: 400px;
-			font-size: 1.5rem;
+		@include mixins.respond-to(md) {
+			font-size: clamp(1.08rem, 1.9vw, 1.45rem);
+			max-width: min(42vw, 26rem);
 		}
 
 		&:hover {
 			opacity: 100%;
 			filter: brightness(1.1);
+		}
+
+		&:focus-visible {
+			outline: 2px solid currentcolor;
+			outline-offset: 0.35rem;
 		}
 	}
 
@@ -39,27 +46,37 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-width: 0;
+		white-space: nowrap;
 
-		@media (width >= 768px) {
+		@include mixins.respond-to(md) {
 			gap: 1rem;
 		}
 	}
 
 	&__action-btn {
+		flex: 0 0 auto;
 		text-decoration: none;
 		font-family: var(--font-body);
-		font-size: 0.85rem;
+		font-size: 0.8rem;
 		font-weight: 600;
-		padding: 0.5rem 1.25rem;
+		line-height: 1;
+		padding: 0.5rem clamp(0.75rem, 1.25vw, 1.15rem);
 		border-radius: 4px;
 		transition: var(--transition-snappy);
 		color: var(--header-nav-color);
-		letter-spacing: 0.05em;
+		letter-spacing: 0.04em;
 		text-transform: uppercase;
+		white-space: nowrap;
 
 		&:hover {
 			color: var(--color-action-accent);
 			background-color: rgb(var(--color-surface-primary-rgb), 0.05);
+		}
+
+		&:focus-visible {
+			outline: 2px solid currentcolor;
+			outline-offset: 0.25rem;
 		}
 
 		&--cta {
@@ -83,31 +100,6 @@
 				color: var(--color-text-on-dark);
 				box-shadow: var(--header-luxury-cta-glow, 0 4px 12px var(--color-glass-shadow));
 			}
-		}
-	}
-}
-
-// Mobile Menu Content for Event
-.event-mobile-nav {
-	text-align: center;
-	width: 100%;
-
-	a {
-		font-family: var(--font-display);
-		font-size: 1.8rem;
-		color: var(--color-text-primary);
-		text-decoration: none;
-		display: block;
-		padding: 15px 0;
-		border-bottom: 1px solid var(--color-border-subtle);
-		transition: var(--transition-snappy);
-
-		&:last-child {
-			border-bottom: none;
-		}
-
-		&:hover {
-			color: var(--color-action-accent);
 		}
 	}
 }
