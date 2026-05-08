@@ -12,7 +12,7 @@ export const HeartbreakIcon: React.FC<IconProps> = ({ className, size = 64 }) =>
 		height={size}
 		fill="none"
 		stroke="currentColor"
-		strokeWidth="1.5"
+		strokeWidth="2"
 		strokeLinecap="round"
 		strokeLinejoin="round"
 		className={className}
@@ -20,8 +20,9 @@ export const HeartbreakIcon: React.FC<IconProps> = ({ className, size = 64 }) =>
 		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
-		<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-		<path d="m3.22 3.22 17.56 17.56" />
+		<path d="M4.42602 12.3115L12 19.8854L19.574 12.3115C21.4753 10.4101 21.4753 7.32738 19.574 5.42602C17.6726 3.52466 14.5899 3.52466 12.6885 5.42602L12 6.11456L11.3115 5.42602C9.4101 3.52466 6.32738 3.52466 4.42602 5.42602C2.52466 7.32738 2.52466 10.4101 4.42602 12.3115Z" />
+
+		<path d="M12 6L10 10L14 11L12 14" />
 	</svg>
 );
 
