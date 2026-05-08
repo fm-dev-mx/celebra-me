@@ -475,40 +475,6 @@
 			font-weight: 600;
 		}
 	}
-
-	&__signature-divider {
-		margin-top: 5rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		opacity: 60%;
-	}
-
-	&__signature-text {
-		font-family: var(--font-calligraphy);
-		font-size: 2.5rem;
-		color: var(--color-action-accent);
-	}
-
-	&__signature-line {
-		width: 60px;
-		height: 1px;
-		background: linear-gradient(90deg, transparent, var(--color-action-accent), transparent);
-	}
-}
-
-/* Subtle fade-in-up entry animation */
-@keyframes fadeInUp {
-	from {
-		opacity: 0%;
-		transform: translateY(12px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
-	}
 }
 
 @keyframes fadeInUpSoft {
@@ -521,12 +487,6 @@
 		opacity: 100%;
 		transform: translateY(0);
 	}
-}
-
-/* Utility to hide elements initially but allow JS to reveal them */
-.u-hidden-initially {
-	/* stylelint-disable-next-line declaration-no-important */
-	display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

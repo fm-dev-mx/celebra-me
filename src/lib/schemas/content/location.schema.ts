@@ -29,6 +29,7 @@ export const locationSchema = z.object({
 	address: z.string(),
 	city: z.string(),
 	mapUrl: z.url().optional(),
+	indicationsHeading: z.string().default(''),
 	ceremony: venueSchema
 		.extend({
 			venueEvent: z.string().default('Ceremonia'),

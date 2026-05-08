@@ -256,6 +256,7 @@ function buildLocationSection(
 		),
 		mapStyle: data.sectionStyles?.location?.mapStyle,
 		showFlourishes: data.sectionStyles?.location?.showFlourishes,
+		indicationsHeading: data.location.indicationsHeading ?? '',
 		city: data.location.city,
 		venueName: data.location.venueName,
 	};

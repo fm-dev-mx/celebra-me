@@ -151,4 +151,25 @@ describe('prepareInvitationPageContext', () => {
 			eventSlug: 'demo-xv',
 		});
 	});
+
+	it('passes the location indications heading through to the view model', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv',
+			data: {
+				...fixture,
+				location: {
+					...fixture.location,
+					indicationsHeading: 'Indicaciones',
+				},
+			},
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const context = prepareInvitationPageContext({
+			eventEntry: event,
+			slug: 'demo-xv',
+		});
+
+		expect(context.viewModel.sections.location?.indicationsHeading).toBe('Indicaciones');
+	});
 });

@@ -249,6 +249,7 @@ export interface InvitationViewModel {
 			variant?: LocationVariant;
 			mapStyle?: LocationMapStyle;
 			showFlourishes?: boolean;
+			indicationsHeading?: string;
 			city: string;
 			venueName: string;
 		};
