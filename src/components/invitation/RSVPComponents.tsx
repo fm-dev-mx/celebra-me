@@ -7,6 +7,8 @@ import {
 	NameField,
 	PhoneField,
 } from '@/components/invitation/RSVPFormFields';
+import { CheckSealIcon } from '@/components/common/icons/invitation/CheckSeal';
+import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak';
 
 export * from '@/components/invitation/rsvp-logic';
 
@@ -69,14 +71,13 @@ export function SubmittedState(props: {
 		<section id="rsvp" className="rsvp" data-variant={variant}>
 			<h2 className="sr-only">{title}</h2>
 			<div className="rsvp__greeting">
-				<span
-					className="rsvp__greeting-icon"
-					data-response={attendanceStatus === 'confirmed' ? 'yes' : 'no'}
-					role="img"
-					aria-label={
-						attendanceStatus === 'confirmed' ? 'Celebraci\u00f3n' : 'Agradecimiento'
-					}
-				/>
+				<div className="rsvp__greeting-icon">
+					{attendanceStatus === 'confirmed' ? (
+						<CheckSealIcon size={64} />
+					) : (
+						<HeartbreakIcon size={64} />
+					)}
+				</div>
 				<h2 className="rsvp__greeting-message">
 					{attendanceStatus === 'confirmed' ? (
 						<>

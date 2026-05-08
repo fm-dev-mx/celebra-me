@@ -65,8 +65,6 @@
 	--color-error-text: rgb(138 32 32);
 	--rsvp-error-bg: rgb(var(--color-error-rgb) / 10%);
 	--rsvp-error-border: rgb(var(--color-error-rgb) / 28%);
-	--rsvp-emoji-yes: '✓';
-	--rsvp-emoji-no: '😔';
 	--rsvp-title-font: var(--font-display);
 	--rsvp-title-color: var(--color-action-accent);
 	--rsvp-title-size: 2.2rem;
@@ -327,17 +325,10 @@
 		padding: 2rem 0;
 
 		&-icon {
-			font-size: 3rem;
 			margin-bottom: 1rem;
-			display: block;
-
-			&[data-response='yes']::before {
-				content: var(--rsvp-emoji-yes);
-			}
-
-			&[data-response='no']::before {
-				content: var(--rsvp-emoji-no);
-			}
+			display: flex;
+			justify-content: center;
+			color: var(--rsvp-title-color);
 		}
 
 		&-message {
