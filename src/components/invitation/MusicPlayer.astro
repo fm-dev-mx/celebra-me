@@ -26,7 +26,7 @@ const {
 	data-reveal-mode={revealMode}
 	data-variant={variant}
 >
-	<audio src={url} loop preload="auto" data-music-audio></audio>
+	<audio src={url} loop preload="none" data-music-audio></audio>
 
 	<span class="music-player__prompt" data-music-prompt>Toca para escuchar música</span>
 
@@ -120,22 +120,25 @@ const {
 				? invitationRoot.dataset.revealState === 'revealed'
 				: true;
 
+		// Scroll-triggered dismissal
+		const handleScrollDismiss = () => {
+			if (window.scrollY > 100 && prompt instanceof HTMLElement && !prompt.hidden) {
+				window.clearTimeout(dismissTimer);
+				dismissTimer = window.setTimeout(() => {
+					prompt.hidden = true;
+				}, 2000);
+				window.removeEventListener('scroll', handleScrollDismiss);
+			}
+		};
+
 		if (revealMode === 'immediate' || isInvitationRevealed()) {
 			hidePromptLater();
+			window.addEventListener('scroll', handleScrollDismiss, { passive: true });
 		} else {
-			const observer = new MutationObserver(() => {
-				if (isInvitationRevealed()) {
-					hidePromptLater();
-					observer.disconnect();
-				}
-			});
-
-			if (invitationRoot instanceof HTMLElement) {
-				observer.observe(invitationRoot, {
-					attributes: true,
-					attributeFilter: ['data-reveal-state'],
-				});
-			}
+			window.addEventListener('envelope:opened', () => {
+				hidePromptLater();
+				window.addEventListener('scroll', handleScrollDismiss, { passive: true });
+			}, { once: true });
 		}
 
 		toggle.addEventListener('click', async () => {
@@ -154,6 +157,7 @@ const {
 			syncState();
 			if (prompt instanceof HTMLElement && isPlaying) {
 				prompt.hidden = true;
+				window.removeEventListener('scroll', handleScrollDismiss);
 			}
 		});
 

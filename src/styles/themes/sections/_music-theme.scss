@@ -47,8 +47,7 @@
 	}
 }
 
-.music-player[data-variant='jewelry-box'],
-.music-player[data-variant='celestial-blue'] {
+.music-player[data-variant='jewelry-box'] {
 	.music-player__prompt {
 		font-family: var(--font-body-narrative, tokens.$font-body);
 		background: linear-gradient(
@@ -57,7 +56,7 @@
 			rgb(var(--color-surface-primary-rgb), 0.94) 48%,
 			rgb(var(--color-action-accent-rgb), 0.12) 100%
 		);
-		border-color: rgb(var(--color-action-accent-rgb), 0.42);
+		border-color: rgb(var(--color-action-accent-rgb), 0.1);
 		border-radius: 999px;
 		box-shadow:
 			0 10px 24px rgb(var(--color-action-accent-rgb), 0.16),
@@ -87,5 +86,49 @@
 	.music-player__button--pulsing::before {
 		border-color: rgb(var(--color-action-accent-rgb), 0.5);
 		animation-duration: 2.2s;
+	}
+}
+
+.music-player[data-variant='celestial-blue'] {
+	.music-player__prompt {
+		font-family: var(--font-display);
+		color: var(--color-text-primary);
+		background: var(--color-frame-bg);
+		border: 1px solid var(--color-border-premium);
+		border-radius: 999px;
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		box-shadow:
+			0 12px 32px rgb(var(--color-action-accent-rgb), 0.18),
+			inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 60%);
+
+		&::before {
+			color: var(--color-action-accent);
+			opacity: 100%;
+		}
+	}
+
+	.music-player__button--play {
+		background: var(--color-frame-bg);
+		border: 1px solid var(--color-border-premium);
+		color: var(--color-text-primary);
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		box-shadow:
+			0 14px 28px rgb(var(--color-action-accent-rgb), 0.22),
+			0 4px 12px rgb(0 0 0 / 12%);
+
+		&::after {
+			border-color: var(--color-action-accent);
+			opacity: 60%;
+		}
+
+		&:hover::after {
+			opacity: 100%;
+		}
+	}
+
+	.music-player__button--pulsing::before {
+		border-color: var(--color-action-accent);
+		opacity: 40%;
+		animation-duration: 2.5s;
 	}
 }
