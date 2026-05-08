@@ -121,16 +121,16 @@
         "title": "Galería de Ana Sofía",
         "subtitle": "Un recuerdo en tonos de cielo, cristal y luz.",
         "items": [
-            { "image": "gallery01" },
-            { "image": "gallery02" },
-            { "image": "gallery03" },
-            { "image": "gallery04" },
-            { "image": "gallery05" },
-            { "image": "gallery06" },
-            { "image": "gallery07" },
-            { "image": "gallery08" },
-            { "image": "gallery09" },
-            { "image": "gallery10" }
+            { "image": "gallery01", "caption": "Un momento especial capturado en luz y cristal." },
+            { "image": "gallery02", "caption": "Detalles que reflejan mi gran noche." },
+            { "image": "gallery03", "caption": "Elegancia y brillo en tonos de cielo." },
+            { "image": "gallery04", "caption": "Recuerdos que guardaré para siempre." },
+            { "image": "gallery05", "caption": "Sonrisas y sueños cumplidos." },
+            { "image": "gallery06", "caption": "Un instante de magia." },
+            { "image": "gallery07", "caption": "La belleza de cada detalle azul." },
+            { "image": "gallery08", "caption": "Disfrutando este momento inolvidable." },
+            { "image": "gallery09", "caption": "Juventud y alegría en una noche perfecta." },
+            { "image": "gallery10", "caption": "Agradecida por hacer de mis XV un sueño." }
         ]
     },
     "gifts": {

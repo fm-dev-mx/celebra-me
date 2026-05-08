@@ -15,17 +15,14 @@ interface Props {
 
 const { items, variant = 'standard' } = Astro.props;
 
-type NestedSrc = { src: string };
-const hasNestedSrc = (value: unknown): value is NestedSrc =>
-	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
-
 const getSrc = (image: ImageMetadata | ImageAsset): string => {
 	if ('src' in image) {
-		const src = image.src as unknown;
+		const src = image.src;
 		if (typeof src === 'string') return src;
-		if (hasNestedSrc(src)) return src.src;
+		if (typeof src === 'object' && src !== null && 'src' in src) {
+			return String((src as { src: unknown }).src);
+		}
 	}
-
 	return String(image);
 };
 ---
@@ -49,40 +46,13 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 					aria-label={item.caption || `Ver imagen ${index + 1}`}
 				>
 					<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
-					{item.caption && (
-						<div class="gallery-grid__overlay">
-							<p class="gallery-grid__caption">{item.caption}</p>
-						</div>
-					)}
 				</div>
 			);
 		})
 	}
 </div>
 
-<div class="gallery-lightbox" data-gallery-lightbox hidden role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
-	<button type="button" class="gallery-lightbox__close" data-gallery-close aria-label="Cerrar galería">
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="1.5"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		>
-			<line x1="18" y1="6" x2="6" y2="18" />
-			<line x1="6" y1="6" x2="18" y2="18" />
-		</svg>
-	</button>
 
-	<div class="gallery-lightbox__content" data-gallery-content>
-		<img src="" alt="" data-gallery-image />
-		<div class="gallery-lightbox__footer" data-gallery-footer hidden>
-			<p data-gallery-footer-text></p>
-		</div>
-	</div>
-</div>
 
 <script>
 	const initGallery = () => {
@@ -100,7 +70,7 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 					if (pos.marginTop) htmlItem.style.marginTop = pos.marginTop;
 					if (pos.zIndex) htmlItem.style.zIndex = String(pos.zIndex);
 				} catch (e) {
-					console.warn('[Gallery] Invalid position data:', e);
+					console.error('[Gallery] Invalid position data:', e);
 				}
 			}
 			const imgX = htmlItem.dataset.galleryImgX;
@@ -111,49 +81,7 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 			}
 		});
 
-		const lightbox = document.querySelector('[data-gallery-lightbox]');
-		if (!(lightbox instanceof HTMLElement)) return;
-
-		const lightboxImage = lightbox.querySelector<HTMLImageElement>('[data-gallery-image]');
-		const lightboxFooter = lightbox.querySelector<HTMLElement>('[data-gallery-footer]');
-		const lightboxFooterText = lightbox.querySelector<HTMLElement>('[data-gallery-footer-text]');
-		const closeButton = lightbox.querySelector<HTMLButtonElement>('[data-gallery-close]');
-		const content = lightbox.querySelector<HTMLElement>('[data-gallery-content]');
-
-		if (!lightboxImage || !lightboxFooter || !lightboxFooterText || !closeButton || !content) {
-			return;
-		}
-
 		const invitationRoot = gallery.closest('[data-event-slug]');
-		const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-		let lastFocusedElement: HTMLElement | null = null;
-
-		const getFocusableElements = () =>
-			Array.from(lightbox.querySelectorAll<HTMLElement>(focusableSelectors)).filter(
-				(el) => !el.hasAttribute('disabled') && el.offsetParent !== null
-			);
-
-		const trapFocus = (e: KeyboardEvent) => {
-			if (e.key !== 'Tab') return;
-			const focusable = getFocusableElements();
-			if (focusable.length === 0) return;
-			const first = focusable[0];
-			const last = focusable[focusable.length - 1];
-			if (e.shiftKey && document.activeElement === first) {
-				e.preventDefault();
-				last.focus();
-			} else if (!e.shiftKey && document.activeElement === last) {
-				e.preventDefault();
-				first.focus();
-			}
-		};
-
-		const closeLightbox = () => {
-			lightbox.hidden = true;
-			document.body.style.overflow = '';
-			lightbox.removeEventListener('keydown', trapFocus);
-			lastFocusedElement?.focus();
-		};
 
 		const openLightbox = (item: HTMLElement) => {
 			if (
@@ -162,19 +90,15 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 			) {
 				return;
 			}
-
-			lastFocusedElement = document.activeElement as HTMLElement;
-			lightboxImage.src = item.dataset.gallerySrc || '';
-			lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
-
-			const caption = item.dataset.galleryCaption || '';
-			lightboxFooterText.textContent = caption;
-			lightboxFooter.hidden = !caption;
-
-			lightbox.hidden = false;
-			document.body.style.overflow = 'hidden';
-			lightbox.addEventListener('keydown', trapFocus);
-			requestAnimationFrame(() => closeButton.focus());
+			document.dispatchEvent(
+				new CustomEvent('gallery:open', {
+					detail: {
+						src: item.dataset.gallerySrc || '',
+						caption: item.dataset.galleryCaption || '',
+						alt: item.getAttribute('aria-label') || ''
+					}
+				})
+			);
 		};
 
 		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
@@ -186,19 +110,6 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 					openLightbox(htmlItem);
 				}
 			});
-		});
-
-		closeButton.addEventListener('click', (event) => {
-			event.stopPropagation();
-			closeLightbox();
-		});
-		lightbox.addEventListener('click', closeLightbox);
-		content.addEventListener('click', (event) => event.stopPropagation());
-
-		window.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && !lightbox.hidden) {
-				closeLightbox();
-			}
 		});
 	};
 

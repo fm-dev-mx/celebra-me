@@ -3,6 +3,7 @@
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import PhotoGallery from './PhotoGallery.astro';
+import GalleryLightbox from './GalleryLightbox.astro';
 import '@/styles/invitation/_gallery.scss';
 
 interface GalleryItem {
@@ -32,3 +33,5 @@ if (!items || items.length === 0) return null;
 		<PhotoGallery items={items} variant={variant} />
 	</div>
 </section>
+
+<GalleryLightbox />

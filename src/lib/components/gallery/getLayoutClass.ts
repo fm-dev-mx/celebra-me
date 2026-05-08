@@ -135,7 +135,7 @@ export function getLayoutData(index: number, variant?: string) {
 	const config = layoutConfigs[variant as GalleryVariant];
 	if (!config) return null;
 	return {
-		positionDesktop: config.positionDesktop[index] || null,
-		imagePosition: config.imagePosition[index] || null,
+		positionDesktop: config.positionDesktop[index] ?? null,
+		imagePosition: config.imagePosition[index] ?? null,
 	};
 }
