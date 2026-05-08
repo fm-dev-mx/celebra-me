@@ -58,8 +58,10 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 	const initGallery = () => {
 		const gallery = document.querySelector('[data-gallery]');
 		if (!gallery) return;
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const galleryItems = Array.from(gallery.querySelectorAll('[data-gallery-item]'));
 
-		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+		galleryItems.forEach((item) => {
 			const htmlItem = item as HTMLElement;
 			const positionStr = htmlItem.dataset.galleryPosition;
 			if (positionStr) {
@@ -81,6 +83,27 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 			}
 		});
 
+		if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+			galleryItems.forEach((item) => {
+				(item as HTMLElement).dataset.inView = 'true';
+			});
+		} else {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							const item = entry.target as HTMLElement;
+							item.dataset.inView = 'true';
+							observer.unobserve(item);
+						}
+					});
+				},
+				{ threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+			);
+
+			galleryItems.forEach((item) => observer.observe(item));
+		}
+
 		const invitationRoot = gallery.closest('[data-event-slug]');
 
 		const openLightbox = (item: HTMLElement) => {
@@ -101,7 +124,7 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 			);
 		};
 
-		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+		galleryItems.forEach((item) => {
 			const htmlItem = item as HTMLElement;
 			htmlItem.addEventListener('click', () => openLightbox(htmlItem));
 			htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
