@@ -9,56 +9,67 @@ interface Props {
 	eventSlug?: string;
 	showEnvelope?: boolean;
 	variant?: SharedSectionVariant;
+	closingPhrase?: string;
 }
 
-const { eventSlug, showEnvelope = false, variant = 'standard' } = Astro.props;
+const {
+	eventSlug,
+	showEnvelope = false,
+	variant = 'standard',
+	closingPhrase,
+} = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const isEditorialFooter = variant === 'editorial';
+const isCelestialBlue = variant === 'celestial-blue';
 const logoVariant = isEditorialFooter ? 'footer' : 'default';
 
-// Define contact details
 const contactNumber = '526681167477';
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
 const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
 <footer
-	class:list={[
-		'invitation-footer',
-	]}
+	class="invitation-footer"
 	data-variant={variant}
 >
-	<div class:list={['footer-content', { 'footer-content--with-replay': hasReplay }]}>
-		<div class="footer-info">
-			<p class="powered-by">Powered by</p>
-			<Logo
-				variant={logoVariant}
-				altText="Celebra-me"
-				class:list={[{ 'footer-brand-logo': isEditorialFooter }]}
-			/>
-		</div>
+	{closingPhrase && isCelestialBlue && (
+		<p class="footer__closing-phrase">{closingPhrase}</p>
+	)}
 
-		<div class="footer-contact">
-			<a
-				class="whatsapp-button"
-				href={whatsappLink}
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				<OptimizedImage
-					imagePath="/icons/whatsappIcon.svg"
-					alt="WhatsApp"
-					width={24}
-					height={24}
-					class:list={[
-						{
-							'footer-action__icon-media': isEditorialFooter,
-							'w-6 h-6': !isEditorialFooter,
-						},
-					]}
+	{isCelestialBlue && <div class="footer__divider" aria-hidden="true"></div>}
+
+	<div class="footer__content">
+		<div class="footer__primary-row">
+			<div class="footer__info">
+				<p class="powered-by">Powered by</p>
+				<Logo
+					variant={logoVariant}
+					altText="Celebra-me"
+					class:list={[{ 'footer-brand-logo': isEditorialFooter }]}
 				/>
-				Contáctanos
-			</a>
+			</div>
+
+			<div class="footer__actions">
+				<a
+					class="whatsapp-button"
+					href={whatsappLink}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<OptimizedImage
+						imagePath="/icons/whatsappIcon.svg"
+						alt="WhatsApp"
+						width={16}
+						height={16}
+						class:list={[
+							{
+								'footer-action__icon-media': isEditorialFooter,
+							},
+						]}
+					/>
+					<span>Contáctanos</span>
+				</a>
+			</div>
 		</div>
 
 		{hasReplay && (
@@ -68,25 +79,26 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 				data-slug={eventSlug}
 				aria-label="Volver a ver la apertura del sobre"
 			>
-				✉ Volver a ver la apertura
+				Volver a ver la apertura
 			</button>
 		)}
 	</div>
-	{hasReplay && (
-		<script>
-			const replayLink = document.querySelector('.footer__replay-link');
-
-			if (replayLink instanceof HTMLElement) {
-				replayLink.addEventListener('click', () => {
-					const slug = replayLink.dataset.slug;
-					if (!slug) {
-						return;
-					}
-
-					localStorage.removeItem(`envelope-opened-${slug}`);
-					window.location.reload();
-				});
-			}
-		</script>
-	)}
 </footer>
+
+{hasReplay && (
+	<script>
+		const replayLink = document.querySelector('.footer__replay-link');
+
+		if (replayLink instanceof HTMLElement) {
+			replayLink.addEventListener('click', () => {
+				const slug = replayLink.dataset.slug;
+				if (!slug) {
+					return;
+				}
+
+				localStorage.removeItem(`envelope-opened-${slug}`);
+				window.location.reload();
+			});
+		}
+	</script>
+)}

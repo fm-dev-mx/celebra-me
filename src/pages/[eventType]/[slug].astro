@@ -30,7 +30,7 @@ if (eventType !== canonicalEventType) {
 	if (inviteId) {
 		canonicalUrl.searchParams.set('invite', inviteId);
 	}
-	return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search, 301);
+	return Astro.redirect(canonicalUrl.href, 301);
 }
 
 const eventOverrideImporter = eventOverrideStyles[`/src/styles/events/${slug as string}.scss`];
@@ -128,6 +128,7 @@ const { viewModel } = page;
 			eventSlug={viewModel.id}
 			showEnvelope={page.wrapper.showEnvelope}
 			variant={page.footerVariant}
+			closingPhrase='Con cariño'
 		/>
 
 		{viewModel.music && (
