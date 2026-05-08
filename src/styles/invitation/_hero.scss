@@ -149,9 +149,11 @@
 	// Scroll Indicator
 	&__scroll-indicator {
 		position: absolute;
-		left: 50%;
+		left: 0;
+		right: 0;
+		margin: 0 auto;
+		width: max-content;
 		bottom: 2rem;
-		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -166,6 +168,7 @@
 		font-size: 0.75rem;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
+		margin-right: -0.2em;
 	}
 
 	&__scroll-chevron {
