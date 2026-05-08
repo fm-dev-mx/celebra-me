@@ -45,7 +45,7 @@ const interludes = Array.from(document.querySelectorAll('.invitation-interlude')
 
 if (!prefersReducedMotion && interludes.length > 0) {
   const isMobile = window.innerWidth <= 768;
-const parallaxInterludes = interludes.filter((interlude) => {
+const parallaxInterludes = interludes.filter((interlude): interlude is HTMLElement => {
     return interlude instanceof HTMLElement && interlude.dataset.variant !== 'celestial-blue';
   });
   let ticking = false;
