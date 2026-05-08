@@ -283,7 +283,7 @@
     },
     "music": {
         "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1778254135/Ed_Sheeran_-_Perfect_y8moaj.m4a",
-        "autoPlay": false,
+        "autoPlay": true,
         "title": "Música de fondo"
     }
 }
