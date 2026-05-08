@@ -8,6 +8,15 @@ const VIEWPORTS = [
 	{ name: '1440x1200', width: 1440, height: 1200 },
 ] as const;
 
+const HEADER_NAV_VIEWPORTS = [
+	{ width: 1024, height: 900, mode: 'mobile' },
+	{ width: 1199, height: 900, mode: 'mobile' },
+	{ width: 1200, height: 900, mode: 'desktop' },
+	{ width: 1280, height: 900, mode: 'desktop' },
+] as const;
+
+const EXPECTED_DESKTOP_NAV_LINKS = 6;
+
 const SECTION_SELECTORS = [
 	'#inicio',
 	'#event-location',
@@ -72,15 +81,37 @@ for (const viewport of VIEWPORTS) {
 	});
 }
 
+test('keeps celestial-blue invitation header responsive across intermediate widths', async ({
+	page,
+}) => {
+	test.setTimeout(120_000);
+
+	for (const viewport of HEADER_NAV_VIEWPORTS) {
+		await page.setViewportSize({ width: viewport.width, height: viewport.height });
+		await navigateToInvitation(page);
+		await revealInvitation(page);
+		await assertHeaderMode(page, viewport.mode);
+
+		await page.evaluate(() => window.scrollTo(0, 360));
+		await expect
+			.poll(() =>
+				page.locator('#event-header').evaluate((element) => {
+					return element.classList.contains('header-base--scrolled');
+				}),
+			)
+			.toBe(true);
+		await assertHeaderMode(page, viewport.mode);
+		await assertNoHorizontalOverflow(page);
+	}
+});
+
 async function captureInvitation(page: Page, viewportName: string) {
 	const viewportDir = path.join(ARTIFACT_ROOT, viewportName);
 	fs.mkdirSync(viewportDir, { recursive: true });
 
-	await page.goto('/xv/ana-sofia-cota-guillen', { waitUntil: 'domcontentloaded' });
+	await navigateToInvitation(page);
 
 	const wrapper = page.locator('.event-theme-wrapper');
-	await expect(wrapper).toHaveAttribute('data-event-slug', 'ana-sofia-cota-guillen');
-	await expect(wrapper).toHaveAttribute('data-theme-preset', 'celestial-blue');
 	await expect(page.locator('.envelope-wrapper')).toBeVisible();
 
 	await page.screenshot({
@@ -88,9 +119,7 @@ async function captureInvitation(page: Page, viewportName: string) {
 		fullPage: true,
 	});
 
-	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
-	await expect(wrapper).toHaveAttribute('data-reveal-state', 'revealed');
-	await page.waitForTimeout(900);
+	await revealInvitation(page);
 
 	const actionAccent = await wrapper.evaluate((element) =>
 		getComputedStyle(element).getPropertyValue('--color-action-accent').trim(),
@@ -116,4 +145,74 @@ async function captureInvitation(page: Page, viewportName: string) {
 			path: path.join(viewportDir, `section-${selector.replace('#', '')}.png`),
 		});
 	}
+}
+
+async function navigateToInvitation(page: Page) {
+	await page.goto('/xv/ana-sofia-cota-guillen', { waitUntil: 'domcontentloaded' });
+
+	const wrapper = page.locator('.event-theme-wrapper');
+	await expect(wrapper).toHaveAttribute('data-event-slug', 'ana-sofia-cota-guillen');
+	await expect(wrapper).toHaveAttribute('data-theme-preset', 'celestial-blue');
+}
+
+async function revealInvitation(page: Page) {
+	const wrapper = page.locator('.event-theme-wrapper');
+
+	const revealButton = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
+	if (await revealButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
+		await revealButton.click();
+	}
+
+	await expect(wrapper).toHaveAttribute('data-reveal-state', 'revealed');
+	await page.waitForTimeout(500);
+}
+
+async function assertHeaderMode(page: Page, mode: 'mobile' | 'desktop') {
+	const desktopNav = page.locator('.header-base__desktop-nav');
+	const mobileToggle = page.locator('[data-nav-mobile-toggle]');
+
+	if (mode === 'mobile') {
+		await expect(desktopNav).toBeHidden();
+		await expect(mobileToggle).toBeVisible();
+	} else {
+		await expect(desktopNav).toBeVisible();
+		await expect(mobileToggle).toBeHidden();
+		await expect(page.locator('.event-header__action-btn')).toHaveCount(
+			EXPECTED_DESKTOP_NAV_LINKS,
+		);
+		await assertDesktopNavItemsFit(page);
+	}
+
+	await assertNoHorizontalOverflow(page);
+}
+
+async function assertDesktopNavItemsFit(page: Page) {
+	const measurements = await page.locator('.event-header__action-btn').evaluateAll((links) =>
+		links.map((link) => {
+			const element = link as HTMLElement;
+			const rect = element.getBoundingClientRect();
+			return {
+				clientWidth: element.clientWidth,
+				scrollWidth: element.scrollWidth,
+				left: rect.left,
+				right: rect.right,
+				viewportWidth: window.innerWidth,
+			};
+		}),
+	);
+
+	for (const measurement of measurements) {
+		expect(measurement.scrollWidth).toBeLessThanOrEqual(measurement.clientWidth + 1);
+		expect(measurement.left).toBeGreaterThanOrEqual(0);
+		expect(measurement.right).toBeLessThanOrEqual(measurement.viewportWidth + 1);
+	}
+}
+
+async function assertNoHorizontalOverflow(page: Page) {
+	const overflow = await page.evaluate(() => {
+		const root = document.documentElement;
+		return root.scrollWidth - window.innerWidth;
+	});
+
+	expect(overflow).toBeLessThanOrEqual(1);
 }
