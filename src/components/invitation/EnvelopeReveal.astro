@@ -148,6 +148,17 @@ const isDev = import.meta.env.DEV;
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
 
+			const scrollToHero = () => {
+				const hero = document.getElementById('inicio');
+
+				if (hero instanceof HTMLElement) {
+					hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+					return;
+				}
+
+				window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+			};
+
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
@@ -157,6 +168,9 @@ const isDev = import.meta.env.DEV;
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'revealed';
 				}
+
+				scrollToHero();
+				window.requestAnimationFrame(scrollToHero);
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
