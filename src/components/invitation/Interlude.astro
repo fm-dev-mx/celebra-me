@@ -63,5 +63,20 @@ if (!prefersReducedMotion && interludes.length > 0) {
   updateParallax();
   window.addEventListener('scroll', updateParallax, { passive: true });
   window.addEventListener('resize', updateParallax);
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        } else {
+          entry.target.classList.remove('is-visible');
+        }
+      }
+    },
+    { threshold: 0.15 },
+  );
+
+  interludes.forEach((el) => observer.observe(el));
 }
 </script>
