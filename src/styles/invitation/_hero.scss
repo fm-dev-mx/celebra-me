@@ -1,4 +1,5 @@
 @use '../tokens' as tokens;
+@use '../global/mixins' as mixins;
 
 .invitation-hero {
 	position: relative;
@@ -74,7 +75,6 @@
 			var(--color-action-accent) 65%
 		);
 		background-size: 250% auto;
-		background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
@@ -355,5 +355,18 @@
 			transform: none;
 			animation: none;
 		}
+	}
+}
+
+@include mixins.respond-below(md) {
+	.invitation-hero__title,
+	.invitation-hero__nickname-badge span {
+		background: none;
+		-webkit-text-fill-color: initial;
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1s forwards;
+	}
+
+	.invitation-hero__nickname-badge span {
+		animation-delay: 1.2s;
 	}
 }
