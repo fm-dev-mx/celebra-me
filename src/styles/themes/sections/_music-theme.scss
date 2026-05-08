@@ -16,7 +16,7 @@ $celestial-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
 
 .music-player[data-variant='luxury-hacienda'] {
 	.music-player__prompt {
-		font-family: var(--font-body-hacienda, tokens.$font-body-hacienda);
+		font-family: var(--font-body-hacienda);
 		letter-spacing: 0.02em;
 		background: $hacienda-prompt-gradient;
 		border-color: rgb(var(--color-action-accent-rgb), 0.5);
@@ -58,7 +58,7 @@ $celestial-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
 
 .music-player[data-variant='jewelry-box'] {
 	.music-player__prompt {
-		font-family: var(--font-body-narrative, tokens.$font-body);
+		font-family: var(--font-body-narrative);
 		background: $jewelry-prompt-gradient;
 		border-color: rgb(var(--color-action-accent-rgb), 0.1);
 		border-radius: 999px;
