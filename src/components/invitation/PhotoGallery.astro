@@ -1,7 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
+import { getLayoutClass, getLayoutData } from '@/lib/components/gallery/getLayoutClass';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -15,7 +15,6 @@ interface Props {
 
 const { items, variant = 'standard' } = Astro.props;
 
-// Types for Image source resolution
 type NestedSrc = { src: string };
 const hasNestedSrc = (value: unknown): value is NestedSrc =>
 	typeof value === 'object' && value !== null && 'src' in value && typeof value.src === 'string';
@@ -33,25 +32,31 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 
 <div class="gallery-grid" data-gallery data-variant={variant}>
 	{
-		items.map((item, index) => (
-			<div
-				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
-				data-gallery-item
-				data-gallery-index={index}
-				data-gallery-src={getSrc(item.image)}
-				data-gallery-caption={item.caption ?? ''}
-				tabindex="0"
-				role="button"
-				aria-label={item.caption || `Ver imagen ${index + 1}`}
-			>
-				<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
-				{item.caption && (
-					<div class="gallery-grid__overlay">
-						<p class="gallery-grid__caption">{item.caption}</p>
-					</div>
-				)}
-			</div>
-		))
+		items.map((item, index) => {
+			const data = getLayoutData(index, variant);
+			return (
+				<div
+					class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
+					data-gallery-item
+					data-gallery-index={index}
+					data-gallery-src={getSrc(item.image)}
+					data-gallery-caption={item.caption ?? ''}
+					data-gallery-position={data?.positionDesktop ? JSON.stringify(data.positionDesktop) : ''}
+					data-gallery-img-x={data?.imagePosition?.x}
+					data-gallery-img-y={data?.imagePosition?.y}
+					tabindex="0"
+					role="button"
+					aria-label={item.caption || `Ver imagen ${index + 1}`}
+				>
+					<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
+					{item.caption && (
+						<div class="gallery-grid__overlay">
+							<p class="gallery-grid__caption">{item.caption}</p>
+						</div>
+					)}
+				</div>
+			);
+		})
 	}
 </div>
 
@@ -80,74 +85,122 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 </div>
 
 <script>
-	const gallery = document.querySelector('[data-gallery]');
-	if (!gallery) return;
+	const initGallery = () => {
+		const gallery = document.querySelector('[data-gallery]');
+		if (!gallery) return;
 
-	const lightbox = document.querySelector('[data-gallery-lightbox]');
-	if (!(lightbox instanceof HTMLElement)) return;
+		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+			const htmlItem = item as HTMLElement;
+			const positionStr = htmlItem.dataset.galleryPosition;
+			if (positionStr) {
+				try {
+					const pos = JSON.parse(positionStr);
+					if (pos.column) htmlItem.style.gridColumn = pos.column;
+					if (pos.row) htmlItem.style.gridRow = pos.row;
+					if (pos.marginTop) htmlItem.style.marginTop = pos.marginTop;
+					if (pos.zIndex) htmlItem.style.zIndex = String(pos.zIndex);
+				} catch (e) {
+					console.warn('[Gallery] Invalid position data:', e);
+				}
+			}
+			const imgX = htmlItem.dataset.galleryImgX;
+			const imgY = htmlItem.dataset.galleryImgY;
+			if (imgX && imgY) {
+				const img = htmlItem.querySelector('img');
+				if (img) img.style.objectPosition = `${imgX} ${imgY}`;
+			}
+		});
 
-	const lightboxImage = lightbox.querySelector('[data-gallery-image]');
-	if (!(lightboxImage instanceof HTMLImageElement)) return;
+		const lightbox = document.querySelector('[data-gallery-lightbox]');
+		if (!(lightbox instanceof HTMLElement)) return;
 
-	const lightboxFooter = lightbox.querySelector('[data-gallery-footer]');
-	if (!(lightboxFooter instanceof HTMLElement)) return;
+		const lightboxImage = lightbox.querySelector<HTMLImageElement>('[data-gallery-image]');
+		const lightboxFooter = lightbox.querySelector<HTMLElement>('[data-gallery-footer]');
+		const lightboxFooterText = lightbox.querySelector<HTMLElement>('[data-gallery-footer-text]');
+		const closeButton = lightbox.querySelector<HTMLButtonElement>('[data-gallery-close]');
+		const content = lightbox.querySelector<HTMLElement>('[data-gallery-content]');
 
-	const lightboxFooterText = lightbox.querySelector('[data-gallery-footer-text]');
-	if (!(lightboxFooterText instanceof HTMLElement)) return;
-
-	const closeButton = lightbox.querySelector('[data-gallery-close]');
-	if (!(closeButton instanceof HTMLButtonElement)) return;
-
-	const content = lightbox.querySelector('[data-gallery-content]');
-	if (!(content instanceof HTMLElement)) return;
-
-	const invitationRoot = gallery.closest('[data-event-slug]');
-
-	const closeLightbox = () => {
-		lightbox.hidden = true;
-		document.body.style.overflow = '';
-	};
-
-	const openLightbox = (item: HTMLElement) => {
-		if (
-			invitationRoot instanceof HTMLElement &&
-			invitationRoot.dataset.revealState !== 'revealed'
-		) {
-			console.warn('[Gallery] Suppressing lightbox trigger: Envelope still active.');
+		if (!lightboxImage || !lightboxFooter || !lightboxFooterText || !closeButton || !content) {
 			return;
 		}
 
-		lightboxImage.src = item.dataset.gallerySrc || '';
-		lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
+		const invitationRoot = gallery.closest('[data-event-slug]');
+		const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+		let lastFocusedElement: HTMLElement | null = null;
 
-		const caption = item.dataset.galleryCaption || '';
-		lightboxFooterText.textContent = caption;
-		lightboxFooter.hidden = !caption;
+		const getFocusableElements = () =>
+			Array.from(lightbox.querySelectorAll<HTMLElement>(focusableSelectors)).filter(
+				(el) => !el.hasAttribute('disabled') && el.offsetParent !== null
+			);
 
-		lightbox.hidden = false;
-		document.body.style.overflow = 'hidden';
-	};
+		const trapFocus = (e: KeyboardEvent) => {
+			if (e.key !== 'Tab') return;
+			const focusable = getFocusableElements();
+			if (focusable.length === 0) return;
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		};
 
-	gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
-		const htmlItem = item as HTMLElement;
-		htmlItem.addEventListener('click', () => openLightbox(htmlItem));
-		htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'Enter' || event.key === ' ') {
-				event.preventDefault();
-				openLightbox(htmlItem);
+		const closeLightbox = () => {
+			lightbox.hidden = true;
+			document.body.style.overflow = '';
+			lightbox.removeEventListener('keydown', trapFocus);
+			lastFocusedElement?.focus();
+		};
+
+		const openLightbox = (item: HTMLElement) => {
+			if (
+				invitationRoot instanceof HTMLElement &&
+				invitationRoot.dataset.revealState !== 'revealed'
+			) {
+				return;
+			}
+
+			lastFocusedElement = document.activeElement as HTMLElement;
+			lightboxImage.src = item.dataset.gallerySrc || '';
+			lightboxImage.alt = item.dataset.galleryCaption || item.getAttribute('aria-label') || '';
+
+			const caption = item.dataset.galleryCaption || '';
+			lightboxFooterText.textContent = caption;
+			lightboxFooter.hidden = !caption;
+
+			lightbox.hidden = false;
+			document.body.style.overflow = 'hidden';
+			lightbox.addEventListener('keydown', trapFocus);
+			requestAnimationFrame(() => closeButton.focus());
+		};
+
+		gallery.querySelectorAll('[data-gallery-item]').forEach((item) => {
+			const htmlItem = item as HTMLElement;
+			htmlItem.addEventListener('click', () => openLightbox(htmlItem));
+			htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					openLightbox(htmlItem);
+				}
+			});
+		});
+
+		closeButton.addEventListener('click', (event) => {
+			event.stopPropagation();
+			closeLightbox();
+		});
+		lightbox.addEventListener('click', closeLightbox);
+		content.addEventListener('click', (event) => event.stopPropagation());
+
+		window.addEventListener('keydown', (event: KeyboardEvent) => {
+			if (event.key === 'Escape' && !lightbox.hidden) {
+				closeLightbox();
 			}
 		});
-	});
+	};
 
-	closeButton.addEventListener('click', (event) => {
-		event.stopPropagation();
-		closeLightbox();
-	});
-	lightbox.addEventListener('click', closeLightbox);
-	content.addEventListener('click', (event) => event.stopPropagation());
-	window.addEventListener('keydown', (event: KeyboardEvent) => {
-		if (event.key === 'Escape' && !lightbox.hidden) {
-			closeLightbox();
-		}
-	});
+	initGallery();
 </script>
