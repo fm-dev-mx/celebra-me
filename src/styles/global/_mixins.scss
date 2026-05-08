@@ -52,3 +52,8 @@
 @mixin animate-in($animation, $duration: tokens.$duration-standard, $delay: 0s) {
 	animation: #{$animation} #{$duration} tokens.$ease-out #{$delay} both;
 }
+
+@mixin text-gradient-clip {
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+}

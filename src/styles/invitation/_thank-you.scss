@@ -133,9 +133,10 @@
 		var(--color-action-accent) 0%,
 		var(--color-action-primary) 100%
 	);
-	background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
+
+	@include mixins.text-gradient-clip;
+
+	line-height: 1.25;
 	text-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 }
 
