@@ -36,6 +36,15 @@
 			margin-right: 0.5rem;
 			color: var(--color-action-accent);
 		}
+
+		&.is-fading-in {
+			animation: musicPlayerFadeInSlide var(--duration-standard) forwards var(--ease-standard);
+		}
+
+		&.is-fading-out {
+			animation: musicPlayerFadeOutSlide var(--duration-standard) forwards
+				var(--ease-standard);
+		}
 	}
 
 	&__controls {
@@ -187,5 +196,17 @@
 	100% {
 		transform: scale(1.4);
 		opacity: 0%;
+	}
+}
+
+@keyframes musicPlayerFadeOutSlide {
+	from {
+		opacity: 100%;
+		transform: translateY(0) scale(1);
+	}
+
+	to {
+		opacity: 0%;
+		transform: translateY(12px) scale(0.95);
 	}
 }

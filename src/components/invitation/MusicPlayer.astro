@@ -77,19 +77,31 @@ const {
 			pauseIcon.hidden = !isPlaying;
 			toggle.classList.toggle('music-player__button--pulsing', !isPlaying);
 			toggle.setAttribute('aria-label', isPlaying ? 'Pausar música' : 'Música de fondo');
-			if (prompt instanceof HTMLElement) {
-				prompt.hidden = isPlaying;
+		};
+
+		const fadeOutPrompt = () => {
+			if (!(prompt instanceof HTMLElement)) {
+				return;
 			}
+			prompt.classList.add('is-fading-out');
+			prompt.classList.remove('is-fading-in');
+			prompt.addEventListener(
+				'animationend',
+				() => {
+					if (prompt.classList.contains('is-fading-out')) {
+						prompt.hidden = true;
+						prompt.classList.remove('is-fading-out');
+					}
+				},
+				{ once: true }
+			);
 		};
 
 		const hidePromptLater = () => {
 			if (!(prompt instanceof HTMLElement)) {
 				return;
 			}
-			window.clearTimeout(dismissTimer);
-			dismissTimer = window.setTimeout(() => {
-				prompt.hidden = true;
-			}, 5000);
+			dismissTimer = window.setTimeout(fadeOutPrompt, 4000);
 		};
 
 		// Music Playback Orchestration
@@ -98,6 +110,13 @@ const {
 				audio.play().then(() => {
 					isPlaying = true;
 					syncState();
+					if (prompt instanceof HTMLElement) {
+						prompt.textContent = 'Toca para pausar';
+						prompt.classList.remove('is-fading-out');
+						prompt.classList.add('is-fading-in');
+						prompt.hidden = false;
+						hidePromptLater();
+					}
 				}).catch(() => {
 					// Audio blocked or pending - user can still use manual toggle
 				});
@@ -145,6 +164,9 @@ const {
 			if (isPlaying) {
 				audio.pause();
 				isPlaying = false;
+				if (prompt instanceof HTMLElement) {
+					prompt.textContent = 'Toca para escuchar música';
+				}
 			} else {
 				try {
 					await audio.play();
@@ -156,7 +178,7 @@ const {
 
 			syncState();
 			if (prompt instanceof HTMLElement && isPlaying) {
-				prompt.hidden = true;
+				fadeOutPrompt();
 				window.removeEventListener('scroll', handleScrollDismiss);
 			}
 		});
