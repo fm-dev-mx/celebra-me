@@ -117,9 +117,9 @@
 		font-family: var(--font-calligraphy, cursive);
 		font-size: clamp(3.5rem, 10vw, 6rem);
 		background: var(--gold-metallic);
-		background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
+
+		@include mixins.text-gradient-clip;
+
 		margin-top: 0;
 		line-height: 1;
 		font-weight: 400;
@@ -131,7 +131,7 @@
 
 .thank-you-section[data-variant='premiere-floral'] {
 	.photo-frame {
-		transition: box-shadow 220ms ease-out;
+		transition: box-shadow var(--duration-standard) var(--ease-out);
 
 		&::before {
 			background: radial-gradient(
@@ -156,7 +156,7 @@
 		}
 
 		.photo-image {
-			transition: filter 220ms ease-out;
+			transition: filter var(--duration-standard) var(--ease-out);
 		}
 	}
 
@@ -200,8 +200,7 @@
 // JEWELRY BOX THANK YOU (XV / Wedding Premium)
 // ==========================================================================
 
-.thank-you-section[data-variant='jewelry-box'],
-.thank-you-section[data-variant='celestial-blue'] {
+.thank-you-section[data-variant='jewelry-box'] {
 	background: radial-gradient(
 		circle at 50% 0%,
 		rgb(var(--color-action-accent-rgb), 0.05) 0%,
@@ -255,6 +254,322 @@
 }
 
 // ==========================================================================
+// CELESTIAL BLUE THANK YOU (Editorial Closing Frame)
+// ==========================================================================
+
+.thank-you-section[data-variant='celestial-blue'] {
+	min-height: 100svh;
+	align-items: stretch;
+	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 10%) 0%,
+			transparent 16%,
+			rgb(var(--color-diamond-white-rgb) / 28%) 48%,
+			rgb(var(--color-ice-blue-rgb) / 32%) 100%
+		),
+		radial-gradient(
+			ellipse at 80% 8%,
+			rgb(var(--color-diamond-white-rgb) / 82%) 0%,
+			rgb(var(--color-ice-blue-rgb) / 34%) 34%,
+			transparent 62%
+		),
+		radial-gradient(
+			ellipse at 8% 82%,
+			rgb(var(--color-satin-blue-rgb) / 22%) 0%,
+			transparent 48%
+		),
+		linear-gradient(
+			140deg,
+			var(--color-cool-ivory) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 92%) 52%,
+			rgb(var(--color-ice-blue-rgb) / 76%) 100%
+		);
+	color: var(--color-text-primary);
+
+	&::before {
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.34'/%3E%3C/svg%3E");
+		opacity: 4%;
+		background-color: transparent;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0;
+		height: 34%;
+		background: linear-gradient(
+			180deg,
+			transparent 0%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 8%) 100%
+		);
+		pointer-events: none;
+	}
+
+	.thank-you-editorial {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-rows: auto auto;
+		gap: clamp(2.25rem, 8vw, 4.5rem);
+		width: min(100%, 72rem);
+		margin: auto;
+	}
+
+	.thank-you-editorial__ambient {
+		position: absolute;
+		inset: -8% -8% -10%;
+		z-index: -1;
+		background:
+			radial-gradient(
+				ellipse at 70% 20%,
+				rgb(var(--color-diamond-white-rgb) / 70%) 0%,
+				transparent 38%
+			),
+			linear-gradient(
+				105deg,
+				transparent 0%,
+				rgb(var(--color-diamond-white-rgb) / 34%) 46%,
+				transparent 56%
+			);
+		filter: blur(1px);
+		pointer-events: none;
+	}
+
+	.thank-you-editorial__media {
+		justify-self: center;
+		width: min(62vw, 17rem);
+		height: auto;
+		aspect-ratio: 2 / 3;
+		margin: 0;
+	}
+
+	.thank-you-editorial__image-shell {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		border-radius: 999px 999px 0.8rem 0.8rem;
+		background: rgb(var(--color-diamond-white-rgb) / 42%);
+		box-shadow:
+			0 34px 78px rgb(var(--color-deep-blue-graphite-rgb) / 15%),
+			0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 2;
+			background:
+				linear-gradient(
+					115deg,
+					rgb(var(--color-diamond-white-rgb) / 30%) 0%,
+					transparent 34%,
+					transparent 66%,
+					rgb(var(--color-satin-blue-rgb) / 16%) 100%
+				),
+				radial-gradient(
+					ellipse at 50% 4%,
+					rgb(var(--color-diamond-white-rgb) / 42%) 0%,
+					transparent 42%
+				);
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 3;
+			border: 1px solid rgb(var(--color-diamond-white-rgb) / 58%);
+			border-radius: inherit;
+			box-shadow: inset 0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 20%);
+			pointer-events: none;
+		}
+	}
+
+	.photo-frame {
+		border: 0;
+		padding: 0;
+		background: transparent;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.photo-image,
+	.thank-you-editorial__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
+		object-fit: cover;
+		object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
+		filter: saturate(1.02) contrast(1.02) brightness(0.98);
+		transform: scale(1.01);
+		transition:
+			transform var(--duration-premium) var(--ease-premium),
+			filter var(--duration-premium) var(--ease-premium);
+	}
+
+	.thank-you-editorial__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		max-width: 33rem;
+		margin-inline: auto;
+		text-align: left;
+	}
+
+	.message-container {
+		max-width: none;
+		perspective: none;
+	}
+
+	.thank-you-message {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.42rem, 6.2vw, 2.05rem);
+		font-weight: 400;
+		line-height: 1.48;
+		letter-spacing: 0;
+		color: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+		text-wrap: pretty;
+
+		.drop-cap {
+			float: left;
+			margin: 0.08em 0.18em 0 0;
+			padding: 0;
+			font-family: var(--font-display);
+			font-size: clamp(3.3rem, 16vw, 5.25rem);
+			font-weight: 300;
+			line-height: 0.9;
+			color: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+			text-shadow:
+				0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%),
+				0 18px 36px rgb(var(--color-satin-blue-rgb) / 22%);
+		}
+	}
+
+	.signature-block {
+		margin-top: clamp(1.35rem, 5vw, 2.35rem);
+		animation: signatureReveal var(--duration-reveal, 1.5s) var(--ease-out) 0.35s both;
+	}
+
+	.closing-name {
+		margin: 0;
+		padding-block: 0.2em;
+		font-family: var(--font-calligraphy);
+		font-size: clamp(2.85rem, 13vw, 5.35rem);
+		font-weight: 400;
+		line-height: 1.25;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--color-deep-blue-graphite);
+		background: linear-gradient(
+			110deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
+			rgb(var(--color-soft-graphite-rgb) / 78%) 42%,
+			rgb(var(--color-satin-blue-rgb) / 92%) 100%
+		);
+
+		@include mixins.text-gradient-clip;
+	}
+
+	.thank-you-footer {
+		width: min(100%, 7rem);
+		margin-top: clamp(2rem, 7vw, 3.5rem);
+		padding-top: clamp(1rem, 4vw, 1.35rem);
+		border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
+		opacity: 100%;
+		color: rgb(var(--color-soft-graphite-rgb) / 42%);
+		font-family: var(--font-body);
+		font-size: 0.6rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	@include mixins.respond-to(sm) {
+		.thank-you-footer {
+			width: min(100%, 20rem);
+			font-size: 0.64rem;
+			letter-spacing: 0.18em;
+		}
+	}
+
+	@include mixins.respond-to(lg) {
+		padding-block: clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem);
+		padding-inline: clamp(2.5rem, 6vw, 6rem);
+
+		.thank-you-editorial {
+			grid-template-columns: minmax(18rem, 0.78fr) minmax(24rem, 1fr);
+			align-items: center;
+			gap: clamp(3.5rem, 7vw, 7rem);
+			min-height: clamp(41rem, 82svh, 52rem);
+		}
+
+		.thank-you-editorial__media {
+			justify-self: end;
+			width: clamp(19rem, 31vw, 28rem);
+			transform: translateY(0);
+		}
+
+		.thank-you-editorial__copy {
+			max-width: 38rem;
+			margin-inline: 0;
+			padding-top: clamp(2.5rem, 5vw, 4.5rem);
+		}
+
+		.thank-you-message {
+			font-size: clamp(1.55rem, 2.5vw, 2.2rem);
+			line-height: 1.52;
+		}
+
+		.thank-you-message .drop-cap {
+			font-size: clamp(4.4rem, 7vw, 6.4rem);
+		}
+
+		.closing-name {
+			font-size: clamp(3.25rem, 6vw, 5.25rem);
+		}
+
+		.thank-you-footer {
+			max-width: 23rem;
+		}
+	}
+
+	@include mixins.respond-to(xl) {
+		.thank-you-editorial {
+			grid-template-columns: minmax(22rem, 0.84fr) minmax(28rem, 1fr);
+		}
+
+		.thank-you-editorial__media {
+			transform: translate(1.2rem, -3rem);
+		}
+
+		.thank-you-editorial__copy {
+			transform: translateX(-1.5rem);
+		}
+
+		.closing-name {
+			font-size: clamp(3.25rem, 7vw, 6.4rem);
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.thank-you-editorial__image-shell:hover .photo-image {
+			transform: scale(1.035);
+			filter: saturate(1.04) contrast(1.04) brightness(1);
+		}
+	}
+}
+
+// ==========================================================================
 // LUXURY HACIENDA THANK YOU
 // ==========================================================================
 
@@ -293,7 +608,7 @@
 			0 0 0 2px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1); // Outer gold detail
 
 		transform: rotate(-2deg);
-		transition: transform 0.6s tokens.$ease-out;
+		transition: transform var(--duration-premium) var(--ease-premium);
 		position: relative;
 
 		// Inner Metallic Rim
@@ -419,9 +734,9 @@
 			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;
-		background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
+
+		@include mixins.text-gradient-clip;
+
 		animation: gold-shimmer 5s linear infinite;
 		text-shadow: 0 4px 10px rgb(0 0 0 / 40%);
 	}
