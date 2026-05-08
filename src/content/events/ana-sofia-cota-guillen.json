@@ -148,7 +148,7 @@
         "title": "Confirma Tu Asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "¡Gracias por confirmar! Nos dará mucha alegría compartir esta noche contigo.",
+        "confirmationMessage": "Nos dará mucha alegría compartir esta noche contigo.",
         "confirmationMode": "api"
     },
     "thankYou": {

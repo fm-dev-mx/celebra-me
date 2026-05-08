@@ -80,7 +80,8 @@ export function SubmittedState(props: {
 				<h2 className="rsvp__greeting-message">
 					{attendanceStatus === 'confirmed' ? (
 						<>
-							Gracias, <strong className="rsvp__greeting-name">{name}</strong>
+							¡Gracias por acompañarnos,{' '}
+							<strong className="rsvp__greeting-name">{name}</strong>!
 							<br />
 							{confirmationMessage}
 						</>
@@ -126,8 +127,6 @@ export function SubmittedState(props: {
 		</section>
 	);
 }
-
-// Moved fields to RSVPFormFields.tsx: NameField, AttendanceField, ConfirmedFields
 
 export function RsvpFormView(props: {
 	title: string;
