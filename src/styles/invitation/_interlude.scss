@@ -6,12 +6,21 @@
 	overflow: hidden;
 	background: var(--color-surface-dark);
 
-	// Default focal-point system.
-	// Start with the face higher in the frame because the source image is portrait.
 	--interlude-focal-x: 50%;
 	--interlude-focal-y: 14%;
 	--interlude-image-scale: 1;
 	--interlude-image-hover-scale: 1.03;
+
+	opacity: 0%;
+	transform: translate3d(0, 24px, 0);
+	transition:
+		opacity 600ms var(--ease-premium),
+		transform 600ms var(--ease-premium);
+
+	&.is-visible {
+		opacity: 100%;
+		transform: translate3d(0, 0, 0);
+	}
 
 	&[data-height='tall'] {
 		min-height: 80svh;
@@ -34,12 +43,17 @@
 		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
 			scale(var(--interlude-image-scale));
 		will-change: transform;
-		transition: filter 260ms ease-out;
+		transition:
+			filter 260ms ease-out,
+			opacity 600ms var(--ease-premium),
+			transform 600ms var(--ease-premium);
 		backface-visibility: hidden;
 	}
 
-	// Wide landscape screens crop much more vertically.
-	// Move the focal point upward to keep the face visible.
+	&.is-visible &__image {
+		opacity: 100%;
+	}
+
 	@media (aspect-ratio >= 16 / 9) {
 		--interlude-focal-y: 10%;
 	}
@@ -48,12 +62,10 @@
 		--interlude-focal-y: 8%;
 	}
 
-	// Standard laptop / tablet landscape.
 	@media (aspect-ratio <= 16 / 9) and (aspect-ratio >= 4 / 3) {
 		--interlude-focal-y: 12%;
 	}
 
-	// Portrait / tall screens need a less aggressive upward focus.
 	@media (aspect-ratio <= 4 / 5) {
 		--interlude-focal-y: 18%;
 	}
@@ -78,6 +90,22 @@
 				rgb(var(--color-surface-dark-rgb), var(--interlude-overlay-opacity, 10%)) 100%
 			);
 		pointer-events: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		opacity: 100%;
+		transform: none;
+		transition: none;
+
+		&.is-visible {
+			&__image {
+				opacity: 100%;
+			}
+		}
+
+		&__image {
+			transition: none;
+		}
 	}
 }
 
