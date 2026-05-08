@@ -10,12 +10,16 @@ function read(relativePath: string): string {
 describe('Invitation header navigation contract', () => {
 	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
 		const source = read('src/components/invitation/EventHeader.astro');
+		const event = JSON.parse(read('src/content/events/ana-sofia-cota-guillen.json')) as {
+			navigation: Array<{ label: string; href: string }>;
+		};
+		const rsvpLinks = event.navigation.filter((link) => link.href === '#rsvp');
 
-		expect(source).toMatch(/rsvpLink\s*=\s*links\.find/);
-		expect(source).toMatch(/RSVP_HREF\s*=\s*['"]#rsvp['"]/);
-		expect(source).toMatch(/href\s*===\s*RSVP_HREF/);
-		expect(source).toMatch(/mobileLinks\s*=\s*rsvpLink/);
-		expect(source).toMatch(/links\.filter/);
+		expect(rsvpLinks).toEqual([{ label: 'RSVP', href: '#rsvp' }]);
+		expect(event.navigation.at(-1)).toEqual({ label: 'RSVP', href: '#rsvp' });
+		expect(source).toContain('<HeaderBase');
+		expect(source).toContain('<NavBarMobile');
+		expect(source).toMatch(/links=\{mobileLinks\}/);
 		expect(source).toMatch(/ctaLink=\{rsvpLink\?\.href\}/);
 		expect(source).toMatch(/ctaLabel=\{'Confirmar asistencia'\}/);
 		expect(source).toMatch(/links\.map/);
@@ -53,8 +57,8 @@ describe('Invitation header navigation contract', () => {
 		const source = read('src/styles/themes/sections/_header-theme.scss');
 
 		expect(source).toMatch(/\.header-base\[data-variant=['"]celestial-blue['"]\]/);
-		expect(source).toMatch(/--header-glass-bg:/);
-		expect(source).toMatch(/--header-scrolled-bg:/);
+		expect(source).toMatch(/--header-bg:/);
+		expect(source).toMatch(/--header-bg-scrolled:/);
 		expect(source).toMatch(/--header-border-color:/);
 		expect(source).toMatch(/--mobile-drawer-bg:/);
 	});

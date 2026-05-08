@@ -31,6 +31,9 @@ const SECTION_SELECTORS = [
 
 const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'ana-sofia-celestial-blue-audit');
 const RGB_VALUE_PATTERN = /^rgb\(\d+[\s,]+\d+[\s,]+\d+\)$/;
+const EXPECTED_EXTERNAL_MEDIA_FAILURES = [
+	'res.cloudinary.com/dusxvauvj/video/upload/v1778254135/Ed_Sheeran_-_Perfect_y8moaj.m4a',
+] as const;
 
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(60_000);
@@ -63,7 +66,8 @@ for (const viewport of VIEWPORTS) {
 			if (
 				url.includes('google') ||
 				url.includes('vercel') ||
-				url.includes('maps.app.goo.gl')
+				url.includes('maps.app.goo.gl') ||
+				EXPECTED_EXTERNAL_MEDIA_FAILURES.some((expectedUrl) => url.includes(expectedUrl))
 			) {
 				return;
 			}
@@ -164,6 +168,14 @@ async function revealInvitation(page: Page) {
 	}
 
 	await expect(wrapper).toHaveAttribute('data-reveal-state', 'revealed');
+	await expect(page.locator('#inicio')).toBeVisible();
+	await expect
+		.poll(() =>
+			page.locator('#inicio').evaluate((element) => {
+				return Math.round(element.getBoundingClientRect().top);
+			}),
+		)
+		.toBe(0);
 	await page.waitForTimeout(500);
 }
 

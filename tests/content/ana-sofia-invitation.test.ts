@@ -33,7 +33,7 @@ function readAnaSofiaEvent() {
 			indications?: Array<{ icon?: string; iconName?: string; text?: string }>;
 		};
 		rsvp?: { accessMode?: string; confirmationMode?: string; guestCap?: number };
-		music?: { url?: string };
+		music?: { url?: string; autoPlay?: boolean; title?: string };
 		family?: {
 			godparents?: Array<{ name?: string; role?: string }>;
 		};
@@ -52,7 +52,7 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 			theme: { preset: 'celestial-blue' },
 			hero: {
 				name: 'Ana Sofía Cota Guillen',
-				date: '2026-05-24T01:00:00.000Z',
+				date: '2026-05-23T07:00:00.000Z',
 				layoutVariant: 'celestial-blue',
 			},
 			rsvp: {
@@ -70,7 +70,7 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 		const indicationText = event.location?.indications?.map((item) => item.text).join(' ');
 
 		expect(event.location?.ceremony).toMatchObject({
-			venueName: 'Parroquia de Nuestra Señora de Lourdes',
+			venueName: 'Nuestra Señora de Lourdes',
 			time: '6:00 PM',
 		});
 		expect(event.location?.reception).toMatchObject({
@@ -80,21 +80,24 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 		expect(event.location?.indications).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					icon: 'forbidden',
-					iconName: 'Forbidden',
+					icon: 'dressCode',
+					iconName: 'DressCode',
 				}),
 			]),
 		);
 		expect(indicationText).toContain('azul cielo');
 	});
 
-	it('keeps Ana Sofia independent from Ximena and avoids unlicensed music placeholders', () => {
+	it('keeps Ana Sofia independent from other invitation themes and configures music intentionally', () => {
 		const content = fs.readFileSync(contentPath, 'utf8');
 
 		expect(content).not.toMatch(/ximena-meza-trasvina|Ximena|premiere-floral/i);
 		expect(content).not.toMatch(/jewelry-box|jewelry-box-wedding|luxury-hacienda|editorial/i);
-		expect(content).not.toMatch(/Perfect|Ed Sheeran/i);
-		expect(readAnaSofiaEvent().music).toBeUndefined();
+		expect(readAnaSofiaEvent().music).toMatchObject({
+			url: expect.stringContaining('https://res.cloudinary.com/dusxvauvj/video/upload/'),
+			autoPlay: true,
+			title: 'Música de fondo',
+		});
 	});
 
 	it('lists padrinos in the required paired order', () => {
@@ -114,9 +117,11 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 			.readdirSync(assetDir, { withFileTypes: true })
 			.filter((entry) => entry.isFile())
 			.map((entry) => entry.name)
-			.filter((name) => /\.(webp|png|jpe?g|svg)$/i.test(name));
+			.filter((name) => /\.(webp|png|jpe?g|svg)$/i.test(name))
+			.sort();
 
 		expect(imageFiles).toEqual([
+			'ceremony.webp',
 			'family.webp',
 			'gallery-01.webp',
 			'gallery-02.webp',
@@ -129,7 +134,12 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 			'gallery-09.webp',
 			'gallery-10.webp',
 			'hero.webp',
+			'interlude-01.webp',
+			'interlude-02.webp',
+			'interlude-03.webp',
+			'interlude-04.webp',
 			'portrait.webp',
+			'reception.webp',
 			'thank-you-portrait.webp',
 		]);
 
