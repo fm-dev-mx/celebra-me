@@ -1,4 +1,5 @@
 @use '../tokens' as tokens;
+@use '../global/mixins' as mixins;
 
 .invitation-interlude {
 	position: relative;

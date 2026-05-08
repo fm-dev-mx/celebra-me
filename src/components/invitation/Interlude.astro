@@ -41,6 +41,8 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
 
 if (!prefersReducedMotion && interludes.length > 0) {
+  const isMobile = window.innerWidth <= 768;
+
   const updateParallax = () => {
     for (const interlude of interludes) {
       if (!(interlude instanceof HTMLElement)) {
@@ -60,9 +62,11 @@ if (!prefersReducedMotion && interludes.length > 0) {
     }
   };
 
-  updateParallax();
-  window.addEventListener('scroll', updateParallax, { passive: true });
-  window.addEventListener('resize', updateParallax);
+  if (!isMobile) {
+    updateParallax();
+    window.addEventListener('scroll', updateParallax, { passive: true });
+    window.addEventListener('resize', updateParallax);
+  }
 
   const observer = new IntersectionObserver(
     (entries) => {
