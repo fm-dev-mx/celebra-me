@@ -10,15 +10,18 @@ interface Props {
 	height?: 'screen' | 'tall';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
+	interludeIndex?: number;
 }
 
-const { image, alt, height = 'screen', variant = 'standard', focalPoint } = Astro.props;
+const { image, alt, height = 'screen', variant = 'standard', focalPoint, interludeIndex } =
+	Astro.props;
 ---
 
 <section
 	class="invitation-interlude"
 	data-variant={variant}
 	data-height={height}
+	data-interlude-index={interludeIndex}
 	aria-label={alt}
 >
 	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
@@ -42,13 +45,13 @@ const interludes = Array.from(document.querySelectorAll('.invitation-interlude')
 
 if (!prefersReducedMotion && interludes.length > 0) {
   const isMobile = window.innerWidth <= 768;
+const parallaxInterludes = interludes.filter((interlude) => {
+    return interlude instanceof HTMLElement && interlude.dataset.variant !== 'celestial-blue';
+  });
+  let ticking = false;
 
   const updateParallax = () => {
-    for (const interlude of interludes) {
-      if (!(interlude instanceof HTMLElement)) {
-        continue;
-      }
-
+    for (const interlude of parallaxInterludes) {
       const variant = interlude.dataset.variant || 'standard';
       const rect = interlude.getBoundingClientRect();
       const viewportCenter = window.innerHeight / 2;
@@ -60,12 +63,23 @@ if (!prefersReducedMotion && interludes.length > 0) {
         `${offset.toFixed(2)}px`,
       );
     }
+
+    ticking = false;
   };
 
-  if (!isMobile) {
-    updateParallax();
-    window.addEventListener('scroll', updateParallax, { passive: true });
-    window.addEventListener('resize', updateParallax);
+  const requestParallaxUpdate = () => {
+    if (ticking) {
+      return;
+    }
+
+    ticking = true;
+    window.requestAnimationFrame(updateParallax);
+  };
+
+  if (!isMobile && parallaxInterludes.length > 0) {
+    requestParallaxUpdate();
+    window.addEventListener('scroll', requestParallaxUpdate, { passive: true });
+    window.addEventListener('resize', requestParallaxUpdate);
   }
 
   const observer = new IntersectionObserver(

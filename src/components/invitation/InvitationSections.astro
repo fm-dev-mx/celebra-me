@@ -21,27 +21,32 @@ interface Props {
 
 const { pageContext } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
+let interludeCount = 0;
 ---
 
 <div id="invitation-sections-container" data-total-sections={sections.length}>
 	{
-		sections.map(({component, props}, index) => (
-			<div
-				data-section-id={`section-${index}-${component}`}
-				class="invitation-section-wrapper"
-			>
-				{component === 'interlude' && <Interlude {...props} />}
-				{component === 'quote' && <Quote {...props} />}
-				{component === 'family' && <Family {...props} />}
-				{component === 'gallery' && <Gallery {...props} />}
-				{component === 'countdown' && <Countdown {...props} />}
-				{component === 'location' && <EventLocation {...props} />}
-				{component === 'itinerary' && <Itinerary {...props} />}
-				{component === 'rsvp' && <RSVP client:visible {...props} />}
-				{component === 'gifts' && <Gifts {...props} />}
-				{component === 'thankYou' && <ThankYou {...props} />}
-				{component === 'personalized-access' && <PersonalizedAccess {...props} />}
-			</div>
-		))
+		sections.map(({component, props}, index) => {
+			const interludeIndex = component === 'interlude' ? ++interludeCount : undefined;
+
+			return (
+				<div
+					data-section-id={`section-${index}-${component}`}
+					class="invitation-section-wrapper"
+				>
+					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
+					{component === 'quote' && <Quote {...props} />}
+					{component === 'family' && <Family {...props} />}
+					{component === 'gallery' && <Gallery {...props} />}
+					{component === 'countdown' && <Countdown {...props} />}
+					{component === 'location' && <EventLocation {...props} />}
+					{component === 'itinerary' && <Itinerary {...props} />}
+					{component === 'rsvp' && <RSVP client:visible {...props} />}
+					{component === 'gifts' && <Gifts {...props} />}
+					{component === 'thankYou' && <ThankYou {...props} />}
+					{component === 'personalized-access' && <PersonalizedAccess {...props} />}
+				</div>
+			);
+		})
 	}
 </div>
