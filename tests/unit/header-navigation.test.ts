@@ -17,7 +17,7 @@ describe('Invitation header navigation contract', () => {
 		expect(source).toMatch(/mobileLinks\s*=\s*rsvpLink/);
 		expect(source).toMatch(/links\.filter/);
 		expect(source).toMatch(/ctaLink=\{rsvpLink\?\.href\}/);
-		expect(source).toMatch(/ctaLabel=\{rsvpLink\s*\?/);
+		expect(source).toMatch(/ctaLabel=\{'Confirmar asistencia'\}/);
 		expect(source).toMatch(/links\.map/);
 	});
 
