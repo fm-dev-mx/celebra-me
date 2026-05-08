@@ -46,7 +46,7 @@
         },
         "indications": [
             {
-                "icon": "dress",
+                "icon": "dressCode",
                 "iconName": "Gift",
                 "styleVariant": "default",
                 "text": "Código de vestimenta: <strong>casual elegante</strong>"
@@ -115,7 +115,7 @@
                 "description": "Una mesa servida para celebrar en grande."
             },
             {
-                "icon": "music",
+                "icon": "tuba",
                 "label": "Música en Vivo",
                 "time": "11:00 PM",
                 "description": "La noche sube de nivel."

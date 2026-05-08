@@ -64,7 +64,7 @@
         },
         "indications": [
             {
-                "icon": "dress",
+                "icon": "dressCode",
                 "iconName": "Gift",
                 "styleVariant": "default",
                 "text": "Código de vestimenta: Gala (Riguroso)"
