@@ -59,6 +59,16 @@
 		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 0.8s forwards;
 	}
 
+	&__personal-greeting {
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.25em;
+		color: var(--color-action-accent);
+		margin-bottom: 1rem;
+		opacity: 80%;
+	}
+
 	&__title {
 		font-family: var(--font-display, serif);
 		font-size: clamp(2.2rem, 8vw, 4rem);
