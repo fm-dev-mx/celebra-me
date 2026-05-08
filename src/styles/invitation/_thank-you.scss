@@ -134,8 +134,9 @@
 		var(--color-action-primary) 100%
 	);
 	background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
-	filter: drop-shadow(0 2px 4px rgb(0 0 0 / 10%));
+	text-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 }
 
 .thank-you-footer {

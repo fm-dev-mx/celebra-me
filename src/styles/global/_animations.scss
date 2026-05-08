@@ -188,3 +188,58 @@
 .stagger-container > *:nth-child(6) {
 	transition-delay: 0.6s;
 }
+
+// Standard Editorial/Premium Animations
+@keyframes fadeInSlideUp {
+	from {
+		opacity: 0%;
+		transform: translateY(20px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
+@keyframes gold-shimmer {
+	0% {
+		background-position: -200% center;
+	}
+
+	100% {
+		background-position: 200% center;
+	}
+}
+
+@keyframes light-sweep {
+	0% {
+		transform: translateX(-100%) skewX(-15deg);
+	}
+
+	50%,
+	100% {
+		transform: translateX(200%) skewX(-15deg);
+	}
+}
+
+@keyframes sparkle-move {
+	from {
+		background-position: 0 0;
+	}
+
+	to {
+		background-position: 300px 600px;
+	}
+}
+
+// Shimmer variations
+.animate-shimmer-text {
+	background-size: 200% auto;
+	animation: shimmer 6s linear infinite;
+}
+
+.animate-gold-shimmer {
+	background-size: 200% auto;
+	animation: gold-shimmer 5s linear infinite;
+}

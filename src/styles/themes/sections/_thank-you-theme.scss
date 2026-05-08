@@ -118,13 +118,14 @@
 		font-size: clamp(3.5rem, 10vw, 6rem);
 		background: var(--gold-metallic);
 		background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		margin-top: 0;
 		line-height: 1;
 		font-weight: 400;
 		padding-bottom: 0.2em;
 		text-transform: none;
-		filter: drop-shadow(var(--shadow-premium));
+		text-shadow: 0 4px 15px rgb(0 0 0 / 15%); // Safer alternative to filter: drop-shadow
 	}
 }
 
@@ -419,9 +420,10 @@
 		);
 		background-size: 200% auto;
 		background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation: gold-shimmer 5s linear infinite;
-		filter: drop-shadow(0 4px 10px rgb(0 0 0 / 80%));
+		text-shadow: 0 4px 10px rgb(0 0 0 / 40%);
 	}
 
 	.thank-you-footer {

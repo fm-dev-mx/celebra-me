@@ -75,6 +75,7 @@
 		);
 		background-size: 250% auto;
 		background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
 			fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1s forwards,
@@ -195,7 +196,7 @@
 	}
 }
 
-// Keyframes
+// Keyframes: Only component-specific ones remain. Shared ones are in global/_animations.scss
 @keyframes heroContentReveal {
 	from {
 		opacity: 0%;
@@ -207,18 +208,6 @@
 		opacity: 100%;
 		transform: translateY(0);
 		filter: blur(0);
-	}
-}
-
-@keyframes fadeInSlideUp {
-	from {
-		opacity: 0%;
-		transform: translateY(20px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
 	}
 }
 
@@ -260,16 +249,6 @@
 
 	60% {
 		transform: translateY(4px);
-	}
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0%;
-	}
-
-	to {
-		opacity: 100%;
 	}
 }
 

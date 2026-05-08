@@ -158,6 +158,8 @@
 		mix-blend-mode: overlay;
 		pointer-events: none;
 		transform: translateX(-5%) translateY(-10%);
+		background-clip: text;
+		background-clip: text;
 	}
 
 	.invitation-hero__portrait {
@@ -427,9 +429,9 @@
 		);
 		background-size: 100% 200%;
 		background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		text-shadow: none;
-		filter: drop-shadow(0 4px 10px rgb(0 0 0 / 24%));
+		text-shadow: 0 4px 10px rgb(0 0 0 / 24%); // Standardized shadow instead of filter
 		animation:
 			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
 			gold-foil 8s tokens.$ease-in-out infinite;
@@ -551,6 +553,10 @@
 		margin-bottom: 1.5rem;
 	}
 
+	.invitation-hero__title-wrapper {
+		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards;
+	}
+
 	.invitation-hero__title {
 		max-width: 12ch;
 		margin: 0;
@@ -570,10 +576,10 @@
 			var(--hero-title-color-end) 100%
 		);
 		background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%));
 		-webkit-text-stroke: 0;
-		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards;
+		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%); // Standardized shadow instead of filter
 	}
 
 	.invitation-hero__portrait {
@@ -776,6 +782,7 @@
 			var(--hero-title-color-mid) 48%,
 			var(--hero-title-color-end) 100%
 		);
+		background-clip: text;
 		background-clip: text;
 		color: transparent;
 		background-size: 170% auto;

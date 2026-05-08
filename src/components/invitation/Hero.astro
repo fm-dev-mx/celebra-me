@@ -36,21 +36,13 @@ const {
 	guestName,
 } = Astro.props;
 
-// Distinguish between ImageAsset (wrapper with .src) and ImageMetadata (Astro object)
-const getSrc = (image: ImageMetadata | ImageAsset): string => {
-	if ('src' in image) {
-		const src = image.src as unknown;
-		if (typeof src === 'string') return src;
-		if (src && typeof src === 'object' && 'src' in src && typeof (src as any).src === 'string') {
-			return (src as any).src;
-		}
-	}
-	// Fallback for ImageMetadata
-	return image as unknown as string;
+// Universal image resolution helper
+const resolveImage = (image: ImageMetadata | ImageAsset) => {
+	return 'src' in image ? image.src : image;
 };
 
-const bgSrc = getSrc(backgroundImage);
-const portraitSrc = portrait ? getSrc(portrait) : null;
+const bgSrc = resolveImage(backgroundImage) as any;
+const portraitSrc = portrait ? (resolveImage(portrait) as any) : null;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -58,11 +50,11 @@ const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	year: 'numeric',
 });
 
-// Split name into first name and surnames for editorial three-line title.
-const nameParts = name.trim().split(' ');
-const firstName = nameParts.slice(0, 2).join(' ');
-const firstLastName = nameParts[2] ?? '';
-const secondLastName = nameParts[3] ?? '';
+// Robust name handling for editorial layout
+const names = name.trim().split(/\s+/);
+const firstName = names.slice(0, 2).join(' ');
+const surnames = names.slice(2);
+
 ---
 
 <section
@@ -93,28 +85,24 @@ const secondLastName = nameParts[3] ?? '';
 			</div>
 		)}
 
-		<h1 class="invitation-hero__title">
-			<span class="invitation-hero__title-line">{firstName}</span>
-			{firstLastName && (
-				<>
-					<br />
-					<span class="invitation-hero__title-line invitation-hero__title-line--surname">{firstLastName}</span>
-				</>
-			)}
-			{secondLastName && (
-				<>
-					<br />
-					<span class="invitation-hero__title-line invitation-hero__title-line--surname">{secondLastName}</span>
-				</>
-			)}
-			{secondaryName && (
-				<>
-					<br />
-					<span class="invitation-hero__ampersand">&</span>
-					<span class="invitation-hero__secondary-name">{secondaryName}</span>
-				</>
-			)}
-		</h1>
+		<div class="invitation-hero__title-wrapper">
+			<h1 class="invitation-hero__title">
+				<span class="invitation-hero__title-line">{firstName}</span>
+				{surnames.map((surname) => (
+					<Fragment key={surname}>
+						<br />
+						<span class="invitation-hero__title-line invitation-hero__title-line--surname">{surname}</span>
+					</Fragment>
+				))}
+				{secondaryName && (
+					<>
+						<br />
+						<span class="invitation-hero__ampersand">&</span>
+						<span class="invitation-hero__secondary-name">{secondaryName}</span>
+					</>
+				)}
+			</h1>
+		</div>
 
 		{nickname && (
 			<div class="invitation-hero__nickname-badge">
