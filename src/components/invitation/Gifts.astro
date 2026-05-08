@@ -107,11 +107,11 @@ const ICON_MAP = {
 									<div class="bank-details">
 										<p class="bank-details__item">
 											<strong>{labels.bank}:</strong> 
-											<span class:list={[gift.bankName.includes('PENDIENTE') && 'pending']}>{gift.bankName}</span>
+											<span data-status={gift.bankName.includes('PENDIENTE') ? 'pending' : undefined}>{gift.bankName}</span>
 										</p>
 										<p class="bank-details__item">
 											<strong>{labels.titular}:</strong> 
-											<span class:list={[gift.accountHolder.includes('PENDIENTE') && 'pending']}>{gift.accountHolder}</span>
+											<span data-status={gift.accountHolder.includes('PENDIENTE') ? 'pending' : undefined}>{gift.accountHolder}</span>
 										</p>
 										<div class="bank-details__clabe-wrapper">
 											<p class="bank-details__item">

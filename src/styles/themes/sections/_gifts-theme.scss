@@ -210,7 +210,7 @@
 				color: rgb(255 255 255 / 90%);
 			}
 
-			span.pending {
+			span[data-status='pending'] {
 				font-style: italic;
 				opacity: 50%;
 				font-size: 0.85rem;
@@ -510,7 +510,6 @@
 			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;
-		background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation: gold-shimmer 5s linear infinite;
