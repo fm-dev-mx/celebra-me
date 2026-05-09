@@ -142,7 +142,8 @@
 	font-style: italic;
 	font-weight: 500;
 	color: var(--reveal-card-text-secondary);
-	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	text-transform: capitalize;
 }
 
 .invitation-reveal-card__details {

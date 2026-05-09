@@ -229,8 +229,8 @@
 	font-style: italic;
 	font-weight: 500;
 	color: var(--env-text-secondary);
-	opacity: 85%;
-	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	text-transform: capitalize;
 }
 
 .envelope-tease {
@@ -618,15 +618,13 @@
 }
 
 @include mixins.respond-to(md) {
-	@include mixins.respond-below(lg) {
-		.envelope-wrapper {
-			--env-container-width: 65vw;
-			--env-container-max-height: 400px;
-		}
+	.envelope-wrapper {
+		--env-container-width: 65vw;
+		--env-container-max-height: 400px;
+	}
 
-		.envelope-tease {
-			padding: 1rem;
-		}
+	.envelope-tease {
+		padding: 1rem;
 	}
 }
 
