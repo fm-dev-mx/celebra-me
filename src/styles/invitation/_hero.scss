@@ -59,16 +59,6 @@
 		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 0.8s forwards;
 	}
 
-	&__personal-greeting {
-		font-family: var(--font-body);
-		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.25em;
-		color: var(--color-action-accent);
-		margin-bottom: 1rem;
-		opacity: 80%;
-	}
-
 	&__title {
 		font-family: var(--font-display, serif);
 		font-size: clamp(2.2rem, 8vw, 4rem);
@@ -183,33 +173,7 @@
 	}
 }
 
-// ── Guest Prototype Hero Variant ──
-.guest-invitation-hero {
-	max-width: 780px;
-	margin: 0 auto;
-	padding: 1rem 1.25rem;
-	text-align: center;
-
-	.invitation-hero__content {
-		width: 100%; // Default to full width, themes will constrain
-		max-width: 800px;
-		margin: 0 auto;
-		z-index: 10;
-		animation: heroContentReveal var(--duration-reveal) var(--ease-premium) 0.5s forwards;
-	}
-
-	.invitation-hero__title {
-		font-family: var(--font-display);
-		font-weight: 400;
-
-		// More dramatic shimmer for the protagonist
-		animation:
-			fadeInSlideUp 1.2s var(--ease-out, ease-out) 0.8s forwards,
-			specularGlint 6s var(--ease-standard, ease-in-out) infinite;
-	}
-}
-
-// Keyframes: Only component-specific ones remain. Shared ones are in global/_animations.scss
+// Envelope-gated reveal: keep hero dormant until the seal is broken
 @keyframes heroContentReveal {
 	from {
 		opacity: 0%;
@@ -249,19 +213,12 @@
 
 @keyframes bounceDown {
 	0%,
-	20%,
-	50%,
-	80%,
 	100% {
 		transform: translateY(0);
 	}
 
 	40% {
 		transform: translateY(8px);
-	}
-
-	60% {
-		transform: translateY(4px);
 	}
 }
 
@@ -335,39 +292,30 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.invitation-hero {
-		* {
-			/* stylelint-disable-next-line declaration-no-important */
-			animation-duration: 0.01ms !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			animation-iteration-count: 1 !important;
-			/* stylelint-disable-next-line declaration-no-important */
-			transition-duration: 0.01ms !important;
-		}
-
-		&__scroll-chevron {
-			/* stylelint-disable-next-line declaration-no-important */
-			animation: none !important;
-		}
+	.invitation-hero * {
+		/* stylelint-disable-next-line declaration-no-important */
+		animation-duration: 0.01ms !important;
+		/* stylelint-disable-next-line declaration-no-important */
+		animation-iteration-count: 1 !important;
+		/* stylelint-disable-next-line declaration-no-important */
+		transition-duration: 0.01ms !important;
 	}
 
-	.event-theme-wrapper[data-reveal-state='revealed'] {
-		.invitation-hero__content,
-		.invitation-hero__label,
-		.invitation-hero__title,
-		.invitation-hero__nickname-badge,
-		.invitation-hero__details,
-		.invitation-hero__scroll-indicator {
-			opacity: 100%;
-			transform: none;
-			animation: none;
-		}
+	.invitation-hero__content,
+	.invitation-hero__label,
+	.invitation-hero__title,
+	.invitation-hero__nickname-badge,
+	.invitation-hero__details,
+	.invitation-hero__scroll-indicator {
+		opacity: 100%;
+		transform: none;
+		animation: none;
+	}
 
-		.invitation-hero__divider {
-			opacity: 100%;
-			transform: none;
-			animation: none;
-		}
+	.invitation-hero__divider {
+		opacity: 100%;
+		transform: none;
+		animation: none;
 	}
 }
 

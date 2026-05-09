@@ -8,14 +8,14 @@ import '@/styles/invitation/_hero.scss';
 
 interface Props {
 	name: string;
-	secondaryName?: string; // New prop for Wedding (Groom/Bride)
-	label?: string; // New prop for generic label
+	secondaryName?: string;
+	label?: string;
 	nickname?: string;
 	date: string;
 	time?: string;
 	venueName: string;
 	backgroundImage: ImageMetadata | ImageAsset;
-	portrait?: ImageMetadata | ImageAsset; // ADU-8: Optional celebrant portrait
+	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
 	layoutVariant?: HeroLayoutVariant;
 	guestName?: string;
@@ -41,8 +41,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	return 'src' in image ? image.src : image;
 };
 
-const bgSrc = resolveImage(backgroundImage) as any;
-const portraitSrc = portrait ? (resolveImage(portrait) as any) : null;
+const bgSrc = resolveImage(backgroundImage);
+const portraitSrc = portrait ? resolveImage(portrait) : null;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -78,12 +78,6 @@ const surnames = names.slice(2);
 
 	<div class="invitation-hero__content">
 		{label && <span class="invitation-hero__label">{label}</span>}
-
-		{guestName && (
-			<div class="invitation-hero__personal-greeting">
-				<span>¡Hola, {guestName}!</span>
-			</div>
-		)}
 
 		<div class="invitation-hero__title-wrapper">
 			<h1 class="invitation-hero__title">
