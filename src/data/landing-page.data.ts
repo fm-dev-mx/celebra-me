@@ -24,13 +24,13 @@ export const landingData: LandingPageData = {
 		title: 'Nuestros Servicios',
 		services: [
 			{
-				href: '/xv/noir-premiere-xv',
+				href: '/xv/demo-xv-editorial',
 				title: 'XV Años',
 				description: 'Invitaciones mágicas para una noche inolvidable.',
 				icon: 'CrownIcon',
 			},
 			{
-				href: '/boda/demo-bodas',
+				href: '/boda/demo-boda-jewelry-box-wedding',
 				title: 'Bodas',
 				description: 'Elegancia y distinción para el día más importante.',
 				icon: 'RingsIcon',
@@ -42,7 +42,7 @@ export const landingData: LandingPageData = {
 				icon: 'DoveIcon',
 			},
 			{
-				href: '/cumple/demo-cumple',
+				href: '/cumple/demo-cumple-luxury-hacienda',
 				title: 'Cumpleaños',
 				description: 'Demo premium para celebraciones con estilo.',
 				icon: 'StarIcon',

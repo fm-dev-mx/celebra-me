@@ -88,15 +88,15 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('builds the default context for demo events without guest context', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv',
+			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: fixture,
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv',
+			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.layout.title).toBe(fixture.title);
@@ -127,9 +127,9 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv',
+			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
 				...fixture,
 				rsvp: {
@@ -141,21 +141,21 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv',
+			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.guestContext).toBeUndefined();
 		expect(context.viewModel.sections.rsvp).toMatchObject({
 			accessMode: 'hybrid',
 			eventType: 'xv',
-			eventSlug: 'demo-xv',
+			eventSlug: 'demo-xv-jewelry-box',
 		});
 	});
 
 	it('passes the location indications heading through to the view model', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv',
+			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
 				...fixture,
 				location: {
@@ -167,7 +167,7 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv',
+			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.viewModel.sections.location?.indicationsHeading).toBe('Indicaciones');

@@ -8,7 +8,7 @@ import RSVP from '@/components/invitation/RSVP';
 describe('RSVP Component', () => {
 	const defaultProps = {
 		eventType: 'xv' as const,
-		eventSlug: 'demo-xv',
+		eventSlug: 'demo-xv-jewelry-box',
 		title: '¿Vienes a celebrar conmigo?',
 		guestCap: 2,
 		accessMode: 'personalized-only' as const,
@@ -62,7 +62,7 @@ describe('RSVP Component', () => {
 			render(
 				<RSVP
 					eventType="xv"
-					eventSlug="demo-xv"
+					eventSlug="demo-xv-jewelry-box"
 					title="¿Vienes a celebrar conmigo?"
 					guestCap={2}
 					accessMode="personalized-only"
@@ -81,7 +81,7 @@ describe('RSVP Component', () => {
 			render(
 				<RSVP
 					eventType="xv"
-					eventSlug="demo-xv"
+					eventSlug="demo-xv-jewelry-box"
 					title="¿Vienes a celebrar conmigo?"
 					guestCap={2}
 					accessMode="hybrid"

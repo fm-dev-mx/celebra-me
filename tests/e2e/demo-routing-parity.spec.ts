@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Demo Routing Parity', () => {
 	test('renders a public demo event correctly without an inviteId', async ({ page }) => {
 		// A demo event provides high-fidelity showcase without requiring personalization
-		const response = await page.goto('/xv/demo-xv?forceEnvelope=true', {
+		const response = await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		expect(response?.ok()).toBeTruthy();
@@ -31,7 +31,7 @@ test.describe('Demo Routing Parity', () => {
 		page,
 	}) => {
 		// The route personalization layer must catch errors but NOT block demo routes
-		const response = await page.goto('/xv/demo-xv?invite=invalid-demo-id', {
+		const response = await page.goto('/xv/demo-xv-jewelry-box?invite=invalid-demo-id', {
 			waitUntil: 'domcontentloaded',
 		});
 		expect(response?.ok()).toBeTruthy();

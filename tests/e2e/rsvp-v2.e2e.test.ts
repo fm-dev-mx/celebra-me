@@ -16,7 +16,7 @@ test.describe('RSVP v2 Flow', () => {
 		// 1. Visit demo invitation with mock inviteId
 		// We use the XV demo as a stable target
 		await page.goto(
-			'/xv/demo-xv?invite=00000000-0000-0000-0000-000000000000&forceEnvelope=true',
+			'/xv/demo-xv-jewelry-box?invite=00000000-0000-0000-0000-000000000000&forceEnvelope=true',
 			{
 				waitUntil: 'domcontentloaded',
 			},

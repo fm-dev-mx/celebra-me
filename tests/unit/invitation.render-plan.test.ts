@@ -39,8 +39,8 @@ describe('buildInvitationRenderPlan', () => {
 
 	it('falls back to the legacy section order when contentBlocks are absent', () => {
 		const event = {
-			id: 'event-demos/xv/demo-xv',
-			data: loadFixture('src/content/event-demos/xv/demo-xv.json'),
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);

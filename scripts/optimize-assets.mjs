@@ -3,9 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 const ASSETS_DIR = path.resolve('src/assets/images');
-const DEMO_XV_DIR = path.join(ASSETS_DIR, 'events/demo-xv');
+const DEMO_XV_DIR = path.join(ASSETS_DIR, 'events/demo-xv-jewelry-box');
 
-// Map original files to new destination names in demo-xv folder
+// Map original files to new destination names in demo-xv-jewelry-box folder
 const ASSET_MAPPING = [
 	{ src: 'hero/lucia-portrait.png', dest: 'hero.webp' },
 	{ src: 'about/lucia-family.png', dest: 'family.webp' }, // Mapping family to family generic slot

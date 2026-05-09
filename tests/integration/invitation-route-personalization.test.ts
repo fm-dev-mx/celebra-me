@@ -27,9 +27,9 @@ describe('invitation route personalization', () => {
 
 	it('redirects a valid invite to its canonical route when the route slug does not match', () => {
 		const decision = decideInvitationRouteAccess({
-			currentPathWithQuery: '/xv/demo-xv?invite=invite-1',
+			currentPathWithQuery: '/xv/demo-xv-jewelry-box?invite=invite-1',
 			routeEventType: 'xv',
-			routeSlug: 'demo-xv',
+			routeSlug: 'demo-xv-jewelry-box',
 			routeIsDemo: false,
 			inviteContext: {
 				inviteId: 'invite-1',
@@ -61,9 +61,9 @@ describe('invitation route personalization', () => {
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'invite-1',
-			currentPathWithQuery: '/xv/demo-xv?invite=invite-1',
+			currentPathWithQuery: '/xv/demo-xv-jewelry-box?invite=invite-1',
 			routeEventType: 'xv',
-			routeSlug: 'demo-xv',
+			routeSlug: 'demo-xv-jewelry-box',
 			routeIsDemo: true,
 		});
 

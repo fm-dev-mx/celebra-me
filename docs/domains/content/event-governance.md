@@ -15,7 +15,8 @@ templates.
 ## Naming Rules
 
 - Live event slugs should be semantic and client-specific.
-- Demo slugs should clearly read as showcase content, such as `demo-xv`.
+- Demo slugs should clearly read as showcase content and include the theme preset, such as
+  `demo-xv-jewelry-box` or `demo-boda-jewelry-box-wedding`.
 - Template files should use stable editorial names such as `master.json`.
 - Keep routable content free of duplicate slugs across all public collections, regardless of
   `eventType`.

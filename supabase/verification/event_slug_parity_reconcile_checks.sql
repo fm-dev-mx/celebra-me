@@ -9,7 +9,7 @@ select
 from public.events
 where slug in (
   'demo-gerardo-sesenta',
-  'demo-xv',
+  'demo-xv-jewelry-box',
   'gerardo-sesenta',
   'ximena-meza-trasvina'
 )

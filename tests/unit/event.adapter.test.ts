@@ -11,8 +11,8 @@ function loadFixture(relativePath: string) {
 describe('adaptEvent', () => {
 	it('preserves family godparents in the invitation view model', () => {
 		const event = {
-			id: 'event-demos/xv/demo-xv',
-			data: loadFixture('src/content/event-demos/xv/demo-xv.json'),
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -24,9 +24,9 @@ describe('adaptEvent', () => {
 	});
 
 	it('keeps godparents undefined when the event omits them', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv',
+			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
 				...fixture,
 				family: {
@@ -66,9 +66,9 @@ describe('adaptEvent', () => {
 	});
 
 	it('supports normalized object asset references from the schema layer', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv',
+			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
 				...fixture,
 				hero: {
@@ -93,8 +93,8 @@ describe('adaptEvent', () => {
 
 	it('preserves explicit interlude variants for editorial content blocks', () => {
 		const event = {
-			id: 'event-demos/xv/noir-premiere-xv',
-			data: loadFixture('src/content/event-demos/xv/noir-premiere-xv.json'),
+			id: 'event-demos/xv/demo-xv-editorial',
+			data: loadFixture('src/content/event-demos/xv/demo-xv-editorial.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
