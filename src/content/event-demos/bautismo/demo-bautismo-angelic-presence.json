@@ -1,0 +1,27 @@
+{
+    "eventType": "bautizo",
+    "isDemo": true,
+    "title": "Demo - Bautismo de María",
+    "description": "Demo oficial de bautismo con tema angelic-presence.",
+    "theme": {
+        "preset": "angelic-presence"
+    },
+    "hero": {
+        "name": "María",
+        "secondaryName": "Santos",
+        "label": "Bautismo",
+        "date": "2026-06-15T10:00:00.000Z",
+        "backgroundImage": "hero"
+    },
+    "location": {
+        "venueName": "Parroquia de San José",
+        "address": "Calle Principal #10",
+        "city": "Ciudad de México"
+    },
+    "rsvp": {
+        "title": "Confirma tu asistencia",
+        "guestCap": 4,
+        "confirmationMessage": "Gracias por acompañarnos en este día especial.",
+        "confirmationMode": "api"
+    }
+}

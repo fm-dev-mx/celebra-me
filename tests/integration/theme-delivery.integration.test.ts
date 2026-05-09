@@ -147,4 +147,94 @@ describe('Theme Delivery Integration', () => {
 		expect(pageContext.footerVariant).toBe('editorial');
 		expect(pageContext.viewModel.sections.location?.variant).toBe('editorial');
 	});
+
+	it('should deliver angelic-presence preset with correct wrapper attributes', () => {
+		const data = {
+			...baseData,
+			eventType: 'bautizo',
+			title: 'Bautismo Demo',
+			theme: {
+				preset: 'angelic-presence',
+			},
+			hero: {
+				name: 'María',
+				date: '2026-06-15T10:00:00.000Z',
+				backgroundImage: '/assets/hero.jpg',
+			},
+			location: {
+				city: 'Ciudad de México',
+				venueName: 'Parroquia de San José',
+			},
+		} as EventContentEntry['data'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
+			slug: 'demo-bautismo-angelic-presence',
+		});
+
+		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('angelic-presence');
+	});
+
+	it('should render exactly one theme-preset class for angelic-presence', () => {
+		const data = {
+			...baseData,
+			eventType: 'bautizo',
+			title: 'Bautismo Demo',
+			theme: {
+				preset: 'angelic-presence',
+			},
+			hero: {
+				name: 'María',
+				date: '2026-06-15T10:00:00.000Z',
+				backgroundImage: '/assets/hero.jpg',
+			},
+			location: {
+				city: 'Ciudad de México',
+				venueName: 'Parroquia de San José',
+			},
+		} as EventContentEntry['data'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry: makeEventEntry(data, 'events/demo-bautismo-angelic-presence'),
+			slug: 'demo-bautismo-angelic-presence',
+		});
+
+		const themePresetClasses = pageContext.wrapper.className
+			.split(' ')
+			.filter((c) => c.startsWith('theme-preset--'));
+		expect(themePresetClasses).toHaveLength(1);
+		expect(themePresetClasses[0]).toBe('theme-preset--angelic-presence');
+		expect(pageContext.wrapper.className).not.toContain('theme-preset--celestial-blue');
+	});
+
+	it('should not affect celestial-blue invitation through existing test coverage', () => {
+		const celestialBlueData = {
+			title: 'XV de Ana Sofía',
+			eventType: 'xv',
+			status: 'published',
+			slug: 'ana-sofia-cota-guillen',
+			isDemo: false,
+			theme: {
+				preset: 'celestial-blue',
+			},
+			hero: {
+				name: 'Ana Sofía Cota Guillen',
+				date: '2026-05-23T07:00:00.000Z',
+				backgroundImage: '/assets/hero.jpg',
+			},
+			location: {
+				city: 'Los Mochis',
+				venueName: "Palapa Zavala's",
+			},
+		} as EventContentEntry['data'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry: makeEventEntry(celestialBlueData, 'events/ana-sofia-cota-guillen'),
+			slug: 'ana-sofia-cota-guillen',
+		});
+
+		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('celestial-blue');
+		expect(pageContext.wrapper.className).toContain('theme-preset--celestial-blue');
+		expect(pageContext.wrapper.className).not.toContain('theme-preset--angelic-presence');
+	});
 });
