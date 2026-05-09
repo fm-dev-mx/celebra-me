@@ -33,7 +33,6 @@ const {
 	portrait,
 	variant,
 	layoutVariant,
-	guestName,
 } = Astro.props;
 
 // Universal image resolution helper
@@ -65,7 +64,7 @@ const surnames = names.slice(2);
 >
 	<div class="invitation-hero__background">
 		<Image
-			src={bgSrc}
+			src={bgSrc as ImageMetadata}
 			alt={name}
 			width={1920}
 			height={1080}
@@ -107,7 +106,7 @@ const surnames = names.slice(2);
 		{portraitSrc && (
 			<div class="invitation-hero__portrait">
 				<Image
-					src={portraitSrc}
+					src={portraitSrc as ImageMetadata}
 					alt={`Retrato de ${name}`}
 					width={600}
 					height={800}
