@@ -15,6 +15,8 @@ export interface ResolvedLabels {
 	phoneLabel: string;
 	attendanceLabel: string;
 	buttonLabel: string;
+	notesLabel: string;
+	notesPlaceholder: string;
 }
 
 export interface ValidationContext {
@@ -30,18 +32,35 @@ export interface ValidationContext {
 
 // RSVP form helpers.
 
-export function resolveLabels(labels?: {
-	name?: string;
-	guestCount?: string;
-	attendance?: string;
-	confirmButton?: string;
-}): ResolvedLabels {
+export function formatCelebrantName(name?: string): string {
+	if (!name) return 'el festejado';
+	const parts = name.trim().split(/\s+/);
+	if (parts.length === 1) return parts[0];
+	return `${parts[0]} ${parts[1]}`;
+}
+
+export function resolveLabels(
+	labels?: {
+		name?: string;
+		guestCount?: string;
+		attendance?: string;
+		confirmButton?: string;
+		phone?: string;
+		notesLabel?: string;
+		notesPlaceholder?: string;
+	},
+	celebrantName?: string,
+): ResolvedLabels {
 	return {
 		nameLabel: labels?.name ?? 'Nombre completo \u002a',
 		guestCountLabel: labels?.guestCount ?? 'N\u00famero total de asistentes',
-		phoneLabel: 'Tel\u00e9fono de contacto',
+		phoneLabel: labels?.phone ?? 'Tel\u00e9fono de contacto',
 		attendanceLabel: labels?.attendance ?? '\u00bfAsistir\u00e1s al evento? \u002a',
 		buttonLabel: labels?.confirmButton ?? 'Confirmar asistencia',
+		notesLabel: labels?.notesLabel ?? 'Notas',
+		notesPlaceholder:
+			labels?.notesPlaceholder ??
+			`Escribe un mensaje para ${formatCelebrantName(celebrantName)}...`,
 	};
 }
 

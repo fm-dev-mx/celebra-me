@@ -10,7 +10,8 @@ import {
 import { CheckSealIcon } from '@/components/common/icons/invitation/CheckSeal';
 import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak';
 
-export * from '@/components/invitation/rsvp-logic';
+export { buildWhatsAppUrl, resolveLabels } from '@/components/invitation/rsvp-logic';
+export type { WhatsAppConfig, AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
 // --- Sub-components ---
 
@@ -54,6 +55,8 @@ export function SubmittedState(props: {
 	showWhatsAppCta: boolean;
 	whatsAppUrl: string;
 	onWhatsAppClick: () => void;
+	confirmedMessage?: string;
+	declinedMessage?: string;
 }) {
 	const {
 		title,
@@ -65,6 +68,8 @@ export function SubmittedState(props: {
 		showWhatsAppCta,
 		whatsAppUrl,
 		onWhatsAppClick,
+		confirmedMessage = '¡Gracias por acompañarnos,',
+		declinedMessage = 'Sentimos mucho que no puedas acompañarnos.',
 	} = props;
 
 	return (
@@ -81,14 +86,14 @@ export function SubmittedState(props: {
 				<h2 className="rsvp__greeting-message">
 					{attendanceStatus === 'confirmed' ? (
 						<>
-							¡Gracias por acompañarnos,{' '}
+							{confirmedMessage}{' '}
 							<strong className="rsvp__greeting-name">{name}</strong>!
 							<br />
 							{confirmationMessage}
 						</>
 					) : (
 						<>
-							Sentimos mucho que no puedas acompañarnos. <br />
+							{declinedMessage} <br />
 							Gracias por avisarnos,{' '}
 							<strong className="rsvp__greeting-name">{name}</strong>.
 						</>
@@ -139,6 +144,8 @@ export function RsvpFormView(props: {
 	attendanceLabel: string;
 	buttonLabel: string;
 	phoneLabel: string;
+	notesLabel: string;
+	notesPlaceholder: string;
 	name: string;
 	phone: string;
 	showPhoneField: boolean;

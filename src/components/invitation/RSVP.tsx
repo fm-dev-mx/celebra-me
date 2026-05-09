@@ -24,6 +24,7 @@ interface RSVPProps {
 		guestCount?: string;
 		attendance?: string;
 		confirmButton?: string;
+		phone?: string;
 	};
 	variant?: string;
 	confirmationMode?: 'api' | 'whatsapp' | 'both';
@@ -86,9 +87,9 @@ const RSVP: React.FC<RSVPProps> = ({
 		eventSlug,
 		accessMode,
 		initialGuestData,
-		prefersReducedMotion: Boolean(prefersReducedMotion),
+		prefersReducedMotion: !!prefersReducedMotion,
 	});
-	const labels_resolved = resolveLabels(labels);
+	const labelsResolved = resolveLabels(labels, celebrantName);
 	const showWhatsAppCta =
 		submitted &&
 		attendanceStatus === 'confirmed' &&
@@ -140,13 +141,15 @@ const RSVP: React.FC<RSVPProps> = ({
 					<RsvpFormView
 						title={title}
 						variant={variant}
-						prefersReducedMotion={Boolean(prefersReducedMotion)}
+						prefersReducedMotion={!!prefersReducedMotion}
 						nameLocked={nameLocked}
-						nameLabel={labels_resolved.nameLabel}
-						guestCountLabel={labels_resolved.guestCountLabel}
-						attendanceLabel={labels_resolved.attendanceLabel}
-						buttonLabel={labels_resolved.buttonLabel}
-						phoneLabel={labels_resolved.phoneLabel}
+						nameLabel={labelsResolved.nameLabel}
+						guestCountLabel={labelsResolved.guestCountLabel}
+						attendanceLabel={labelsResolved.attendanceLabel}
+						buttonLabel={labelsResolved.buttonLabel}
+						phoneLabel={labelsResolved.phoneLabel}
+						notesLabel={labelsResolved.notesLabel}
+						notesPlaceholder={labelsResolved.notesPlaceholder}
 						name={name}
 						phone={phone}
 						showPhoneField={showPhoneField}

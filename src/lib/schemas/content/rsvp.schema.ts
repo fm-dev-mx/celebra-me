@@ -9,6 +9,9 @@ export const rsvpSectionStyleSchema = z
 				guestCount: z.string().optional(),
 				attendance: z.string().optional(),
 				confirmButton: z.string().optional(),
+				phone: z.string().optional(),
+				notesLabel: z.string().optional(),
+				notesPlaceholder: z.string().optional(),
 			})
 			.optional(),
 	})

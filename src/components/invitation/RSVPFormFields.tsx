@@ -2,6 +2,93 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { RefObject } from 'react';
 import { type AttendanceStatus } from '@/components/invitation/rsvp-logic';
 
+const FIELD_ANIMATION_BASE_DELAY = 0.05;
+const FIELD_ANIMATION_STEP = 0.05;
+
+interface FloatingFieldProps {
+	id: string;
+	type: 'text' | 'tel' | 'number';
+	inputMode?: 'numeric' | 'text' | 'tel' | undefined;
+	autoComplete?: string;
+	label: string;
+	labelSuffix?: string;
+	value: string | number;
+	placeholder?: string;
+	error: string | undefined;
+	touched: boolean;
+	prefersReducedMotion: boolean;
+	fieldRef: RefObject<HTMLInputElement | null>;
+	onChange: (value: string) => void;
+	onBlur: (field: string) => void;
+	delayIndex?: number;
+	min?: number;
+	max?: number;
+}
+
+function FloatingField({
+	id,
+	type,
+	inputMode,
+	autoComplete,
+	label,
+	labelSuffix,
+	value,
+	placeholder = ' ',
+	error,
+	touched,
+	prefersReducedMotion,
+	fieldRef,
+	onChange,
+	onBlur,
+	delayIndex = 0,
+	min,
+	max,
+}: FloatingFieldProps) {
+	const hasError = touched && error;
+	return (
+		<motion.div
+			className={`rsvp__field rsvp__field--floating ${hasError ? 'rsvp__field--error' : ''} ${
+				value ? 'rsvp__field--has-value' : ''
+			}`}
+			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+			viewport={prefersReducedMotion ? undefined : { once: true }}
+			transition={
+				prefersReducedMotion
+					? undefined
+					: { delay: FIELD_ANIMATION_BASE_DELAY + delayIndex * FIELD_ANIMATION_STEP }
+			}
+		>
+			<input
+				ref={fieldRef}
+				type={type}
+				id={id}
+				inputMode={inputMode}
+				autoComplete={autoComplete}
+				placeholder={placeholder}
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				onBlur={() => onBlur(id)}
+				aria-invalid={!!hasError}
+				aria-describedby={hasError ? `${id}-error` : undefined}
+				suppressHydrationWarning
+				min={min}
+				max={max}
+			/>
+			<label htmlFor={id} className="rsvp__label">
+				{label}
+				{labelSuffix}
+			</label>
+			<div className="rsvp__field-line" />
+			{hasError && (
+				<p className="rsvp__field-error" id={`${id}-error`} role="alert">
+					{error}
+				</p>
+			)}
+		</motion.div>
+	);
+}
+
 export function NameField(props: {
 	nameLocked: boolean;
 	touched: Record<string, boolean>;
@@ -27,36 +114,19 @@ export function NameField(props: {
 	if (nameLocked) return null;
 
 	return (
-		<motion.div
-			className={`rsvp__field rsvp__field--floating ${
-				touched.name && errors.name ? 'rsvp__field--error' : ''
-			} ${name ? 'rsvp__field--has-value' : ''}`}
-			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-			viewport={prefersReducedMotion ? undefined : { once: true }}
-		>
-			<input
-				ref={nameRef}
-				type="text"
-				id="name"
-				placeholder=" "
-				value={name}
-				onChange={(e) => onNameChange(e.target.value)}
-				onBlur={() => onBlur('name')}
-				aria-invalid={!!(touched.name && errors.name)}
-				aria-describedby={touched.name && errors.name ? 'name-error' : undefined}
-				suppressHydrationWarning
-			/>
-			<label htmlFor="name" className="rsvp__label">
-				{nameLabel}
-			</label>
-			<div className="rsvp__field-line" />
-			{touched.name && errors.name && (
-				<p className="rsvp__field-error" id="name-error" role="alert">
-					{errors.name}
-				</p>
-			)}
-		</motion.div>
+		<FloatingField
+			id="name"
+			type="text"
+			label={nameLabel}
+			value={name}
+			error={errors.name}
+			touched={touched.name}
+			prefersReducedMotion={prefersReducedMotion}
+			fieldRef={nameRef}
+			onChange={onNameChange}
+			onBlur={onBlur}
+			delayIndex={0}
+		/>
 	);
 }
 
@@ -85,39 +155,21 @@ export function PhoneField(props: {
 	if (!showPhoneField) return null;
 
 	return (
-		<motion.div
-			className={`rsvp__field rsvp__field--floating ${
-				touched.phone && errors.phone ? 'rsvp__field--error' : ''
-			} ${phone ? 'rsvp__field--has-value' : ''}`}
-			initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-			whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-			viewport={prefersReducedMotion ? undefined : { once: true }}
-			transition={prefersReducedMotion ? undefined : { delay: 0.05 }}
-		>
-			<input
-				ref={phoneRef}
-				type="tel"
-				id="phone"
-				inputMode="numeric"
-				autoComplete="tel"
-				placeholder=" "
-				value={phone}
-				onChange={(e) => onPhoneChange(e.target.value)}
-				onBlur={() => onBlur('phone')}
-				aria-invalid={!!(touched.phone && errors.phone)}
-				aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
-				suppressHydrationWarning
-			/>
-			<label htmlFor="phone" className="rsvp__label">
-				{phoneLabel}
-			</label>
-			<div className="rsvp__field-line" />
-			{touched.phone && errors.phone && (
-				<p className="rsvp__field-error" id="phone-error" role="alert">
-					{errors.phone}
-				</p>
-			)}
-		</motion.div>
+		<FloatingField
+			id="phone"
+			type="tel"
+			inputMode="numeric"
+			autoComplete="tel"
+			label={phoneLabel}
+			value={phone}
+			error={errors.phone}
+			touched={touched.phone}
+			prefersReducedMotion={prefersReducedMotion}
+			fieldRef={phoneRef}
+			onChange={onPhoneChange}
+			onBlur={onBlur}
+			delayIndex={1}
+		/>
 	);
 }
 
@@ -201,6 +253,8 @@ export function ConfirmedFields(props: {
 	guestCountRef: RefObject<HTMLInputElement | null>;
 	attendeeCount: number | string;
 	notes: string;
+	notesLabel: string;
+	notesPlaceholder: string;
 	onGuestCountChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
@@ -216,6 +270,8 @@ export function ConfirmedFields(props: {
 		guestCountRef,
 		attendeeCount,
 		notes,
+		notesLabel,
+		notesPlaceholder,
 		onGuestCountChange,
 		onNotesChange,
 		onBlur,
@@ -237,37 +293,29 @@ export function ConfirmedFields(props: {
 				className="rsvp__extra-fields"
 			>
 				{attendanceStatus === 'confirmed' && supportsPlusOnes && (
-					<div
-						className={`rsvp__field ${
-							touched.guestCount && errors.guestCount ? 'rsvp__field--error' : ''
-						}`}
-					>
-						<label htmlFor="guestCount">
-							{guestCountLabel}
-							{effectiveGuestCap <= 10 ? ` (M\u00e1x. ${effectiveGuestCap})` : ''}
-						</label>
-						<input
-							ref={guestCountRef}
-							type="number"
-							id="guestCount"
-							min="1"
-							max={effectiveGuestCap}
-							value={attendeeCount}
-							onChange={(e) => onGuestCountChange(e.target.value)}
-							onBlur={() => onBlur('guestCount')}
-						/>
-						{touched.guestCount && errors.guestCount && (
-							<p className="rsvp__field-error" role="alert">
-								{errors.guestCount}
-							</p>
-						)}
-					</div>
+					<FloatingField
+						id="guestCount"
+						type="number"
+						label={guestCountLabel}
+						labelSuffix={
+							effectiveGuestCap <= 10 ? ` (M\u00e1x. ${effectiveGuestCap})` : ''
+						}
+						value={String(attendeeCount)}
+						error={errors.guestCount}
+						touched={touched.guestCount}
+						prefersReducedMotion={prefersReducedMotion}
+						fieldRef={guestCountRef}
+						onChange={onGuestCountChange}
+						onBlur={onBlur}
+						min={1}
+						max={effectiveGuestCap}
+					/>
 				)}
 				<div className="rsvp__field">
-					<label htmlFor="notes">Notas</label>
+					<label htmlFor="notes">{notesLabel}</label>
 					<textarea
 						id="notes"
-						placeholder={`Escribe un mensaje para Ximena...`}
+						placeholder={notesPlaceholder}
 						rows={2}
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}
