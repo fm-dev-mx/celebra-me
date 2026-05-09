@@ -9,6 +9,7 @@ export const PREMIUM_THEMES = [
 	'editorial',
 	'premiere-floral',
 	'celestial-blue',
+	'angelic-presence',
 ] as const;
 
 export type PremiumTheme = (typeof PREMIUM_THEMES)[number];

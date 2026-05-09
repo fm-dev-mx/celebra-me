@@ -1,0 +1,179 @@
+.theme-preset--angelic-presence {
+	// ---------------------------------------------------------------------
+	// Base palette: "Divine Light" (White, Cream & Gold)
+	// ---------------------------------------------------------------------
+	--color-angelic-white: rgb(252 250 242);
+	--color-angelic-white-rgb: 252 250 242;
+	--color-pure-ivory: rgb(255 255 255);
+	--color-pure-ivory-rgb: 255 255 255;
+	--color-soft-sand: rgb(244 241 234);
+	--color-soft-sand-rgb: 244 241 234;
+	--color-sacred-gold: rgb(212 175 55);
+	--color-sacred-gold-rgb: 212 175 55;
+	--color-eternal-ink: rgb(45 42 38);
+	--color-eternal-ink-rgb: 45 42 38;
+	--color-ethereal-gray: rgb(220 220 215);
+	--color-ethereal-gray-rgb: 220 220 215;
+
+	// ---------------------------------------------------------------------
+	// Semantic color bridge
+	// ---------------------------------------------------------------------
+	--color-surface-primary: var(--color-angelic-white);
+	--color-surface-primary-rgb: var(--color-angelic-white-rgb);
+	--color-surface-secondary: var(--color-soft-sand);
+	--color-surface-secondary-rgb: var(--color-soft-sand-rgb);
+	--color-surface-soft: var(--color-pure-ivory);
+	--color-surface-elevated: var(--color-pure-ivory);
+	--color-surface-canvas: var(--color-eternal-ink);
+	--color-surface-dark: var(--color-eternal-ink);
+	--color-surface-dark-rgb: var(--color-eternal-ink-rgb);
+	--color-action-primary: var(--color-eternal-ink);
+	--color-action-primary-rgb: var(--color-eternal-ink-rgb);
+	--color-action-accent: var(--color-sacred-gold);
+	--color-action-accent-rgb: var(--color-sacred-gold-rgb);
+	--color-text-primary: var(--color-eternal-ink);
+	--color-text-primary-rgb: var(--color-eternal-ink-rgb);
+	--color-text-secondary: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--color-text-secondary-rgb: var(--color-eternal-ink-rgb);
+	--color-text-emphasis: var(--color-sacred-gold);
+	--color-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--color-text-on-dark: var(--color-pure-ivory);
+	--color-text-on-dark-rgb: var(--color-pure-ivory-rgb);
+	--color-text-on-light: var(--color-eternal-ink);
+	--color-border-subtle: rgb(var(--color-ethereal-gray-rgb) / 34%);
+	--color-border-premium: rgb(var(--color-sacred-gold-rgb) / 44%);
+
+	// ---------------------------------------------------------------------
+	// Typography (Sacred & Elegant)
+	// ---------------------------------------------------------------------
+	--font-display: 'Cormorant Garamond', georgia, serif;
+	--font-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-label: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-calligraphy: 'Pinyon Script', cursive;
+
+	// ---------------------------------------------------------------------
+	// Glass, shadows and shared effects
+	// ---------------------------------------------------------------------
+	--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 62%);
+	--color-glass-border: rgb(var(--color-sacred-gold-rgb) / 28%);
+	--color-glass-shadow: rgb(var(--color-eternal-ink-rgb) / 8%);
+	--glass-blur: 12px;
+	--glass-saturate: 150%;
+	--shadow-premium:
+		0 24px 62px rgb(var(--color-eternal-ink-rgb) / 12%),
+		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+	--shadow-editorial: 0 18px 46px rgb(var(--color-eternal-ink-rgb) / 10%);
+	--border-fine-gold: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
+	--border-fine-silver: 1px solid rgb(var(--color-ethereal-gray-rgb) / 58%);
+	--border-image: 1px solid rgb(var(--color-sacred-gold-rgb) / 42%);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
+		rgb(var(--color-angelic-white-rgb) / 92%) 50%,
+		rgb(var(--color-sacred-gold-rgb) / 12%) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Hero section
+	// ---------------------------------------------------------------------
+	--hero-card-bg: transparent;
+	--hero-card-border-hairline: rgb(var(--color-sacred-gold-rgb) / 28%);
+	--hero-card-shadow-ambient: none;
+	--hero-title-color-start: rgb(var(--color-eternal-ink-rgb) / 92%);
+	--hero-title-color-mid: var(--color-sacred-gold);
+	--hero-title-color-end: rgb(var(--color-eternal-ink-rgb) / 85%);
+	--hero-badge-bg: rgb(var(--color-pure-ivory-rgb) / 12%);
+	--hero-badge-border: rgb(var(--color-sacred-gold-rgb) / 42%);
+	--hero-badge-text: var(--color-text-on-dark);
+	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
+
+	// ---------------------------------------------------------------------
+	// Family section
+	// ---------------------------------------------------------------------
+	--family-bg: radial-gradient(
+		circle at 50% 12%,
+		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
+		var(--color-surface-primary) 64%,
+		rgb(var(--color-soft-sand-rgb) / 72%) 100%
+	);
+	--family-texture-opacity: 0.12;
+	--family-border: rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--family-accent: var(--color-sacred-gold);
+	--family-shadow: var(--shadow-editorial);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-sacred-gold-rgb) / 42%) 50%,
+		transparent 100%
+	);
+	--family-name-font: var(--font-display);
+	--family-group-title-font: var(--font-display);
+	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
+	--family-content-max-width: 38rem;
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Gallery section
+	// ---------------------------------------------------------------------
+	--gallery-section-bg: radial-gradient(
+		circle at 50% 10%,
+		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
+		var(--color-surface-primary) 56%,
+		rgb(var(--color-soft-sand-rgb) / 72%) 100%
+	);
+	--gallery-card-bg: rgb(var(--color-pure-ivory-rgb) / 74%);
+	--gallery-card-radius: 8px;
+	--gallery-card-padding: 8px;
+	--gallery-image-radius: 4px;
+	--gallery-title-font: var(--font-display);
+	--gallery-title-color: var(--color-text-primary);
+	--gallery-subtitle-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+
+	// ---------------------------------------------------------------------
+	// Texture and light effects
+	// ---------------------------------------------------------------------
+	--texture-silk: linear-gradient(
+		115deg,
+		rgb(var(--color-pure-ivory-rgb) / 82%) 0%,
+		rgb(var(--color-angelic-white-rgb) / 52%) 46%,
+		rgb(var(--color-sacred-gold-rgb) / 12%) 100%
+	);
+	--gold-metallic: linear-gradient(
+		135deg,
+		rgb(194 153 66) 0%,
+		rgb(255 242 196) 38%,
+		var(--color-sacred-gold) 54%,
+		rgb(181 142 54) 72%,
+		rgb(45 42 38) 100%
+	);
+	--gold-glow: 0 0 18px rgb(var(--color-sacred-gold-rgb) / 22%);
+	--light-sweep: linear-gradient(
+		120deg,
+		rgb(var(--color-pure-ivory-rgb) / 0%) 0%,
+		rgb(var(--color-pure-ivory-rgb) / 34%) 46%,
+		rgb(var(--color-sacred-gold-rgb) / 18%) 56%,
+		rgb(var(--color-pure-ivory-rgb) / 0%) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Countdown section
+	// ---------------------------------------------------------------------
+	--countdown-value-size-mobile: clamp(2.5rem, 12vw, 3.5rem);
+	--countdown-value-size-desktop: clamp(3.2rem, 5vw, 4.5rem);
+	--countdown-label-letter-spacing: 0.28em;
+
+	// ---------------------------------------------------------------------
+	// Itinerary section
+	// ---------------------------------------------------------------------
+	--itinerary-paper-white: var(--color-pure-ivory);
+	--itinerary-cream: var(--color-angelic-white);
+	--itinerary-ink-dark: var(--color-eternal-ink);
+}

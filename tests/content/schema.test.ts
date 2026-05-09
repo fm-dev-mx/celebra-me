@@ -112,6 +112,10 @@ describe('Event content schema (real contract)', () => {
 		}
 	});
 
+	it('includes angelic-presence in PREMIUM_THEMES', () => {
+		expect((PREMIUM_THEMES as readonly string[]).includes('angelic-presence')).toBe(true);
+	});
+
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
