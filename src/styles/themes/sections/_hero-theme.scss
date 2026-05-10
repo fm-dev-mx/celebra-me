@@ -422,7 +422,7 @@
 		text-shadow: 0 4px 10px rgb(0 0 0 / 24%); // Standardized shadow instead of filter
 		animation:
 			motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards,
-			gold-foil 8s tokens.$ease-in-out infinite;
+			effect-gold-shimmer 8s tokens.$ease-in-out infinite;
 		margin: 0.3rem 0;
 		-webkit-text-stroke: 0.35px rgb(255 255 255 / 18%);
 	}
@@ -1147,7 +1147,9 @@
 		background-clip: text;
 		color: transparent;
 		background-size: 170% auto;
-		animation: effect-shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
+		animation:
+			motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards,
+			effect-shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
 		margin: 0.35rem 0 0.5rem;
 	}
 
