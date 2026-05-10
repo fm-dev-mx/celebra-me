@@ -125,3 +125,25 @@ describe('Angelic presence theme isolation', () => {
 		expect(angelicContent).not.toMatch(/events[/-]/i);
 	});
 });
+
+describe('Angelic presence section coverage', () => {
+	const sectionThemeFiles = [
+		'src/styles/themes/sections/_hero-theme.scss',
+		'src/styles/themes/sections/_quote-theme.scss',
+		'src/styles/themes/sections/_family-theme.scss',
+		'src/styles/themes/sections/_gallery-theme.scss',
+		'src/styles/themes/sections/_countdown-theme.scss',
+		'src/styles/themes/sections/_location-theme.scss',
+		'src/styles/themes/sections/_itinerary-theme.scss',
+		'src/styles/themes/sections/_interlude-theme.scss',
+		'src/styles/themes/sections/_rsvp-theme.scss',
+		'src/styles/themes/sections/_thank-you-theme.scss',
+		'src/styles/themes/sections/_footer-theme.scss',
+	];
+
+	it('styles every visible baptism demo section with angelic-presence selectors', () => {
+		for (const relativePath of sectionThemeFiles) {
+			expect(readTextFile(relativePath)).toContain("data-variant='angelic-presence'");
+		}
+	});
+});

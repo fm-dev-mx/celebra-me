@@ -58,4 +58,36 @@ describe('buildInvitationRenderPlan', () => {
 			'thankYou',
 		]);
 	});
+
+	it('uses cinematic interludes in the baptism angelic presence demo', () => {
+		const event = {
+			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			data: loadFixture(
+				'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+			),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
+
+		const sectionTypes = plan.map((item) =>
+			item.type === 'section' ? item.section : item.type,
+		);
+		const interludeCount = sectionTypes.filter((t) => t === 'interlude').length;
+		const requiredSections = [
+			'quote',
+			'family',
+			'gallery',
+			'countdown',
+			'location',
+			'itinerary',
+			'rsvp',
+			'thankYou',
+		];
+
+		expect(interludeCount).toBe(2);
+		for (const section of requiredSections) {
+			expect(sectionTypes).toContain(section);
+		}
+	});
 });
