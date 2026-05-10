@@ -83,7 +83,9 @@
 		opacity: var(--testimonials-quote-icon-opacity);
 		font-family: serif;
 		line-height: 1;
-		transition: all 0.5s ease;
+		transition:
+			opacity 0.5s ease,
+			color 0.5s ease;
 		pointer-events: none;
 	}
 

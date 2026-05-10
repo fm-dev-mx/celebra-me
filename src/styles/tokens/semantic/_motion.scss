@@ -34,8 +34,17 @@ $semantic-motion: (
 	--ease-premium: #{sys.$sys-ease-premium};
 	--ease-overshoot: #{sys.$sys-ease-overshoot};
 	--ease-bouncy: #{sys.$sys-ease-bouncy};
-	--transition-snappy: all var(--duration-snappy) var(--ease-standard);
-	--transition-standard: all var(--duration-standard) var(--ease-standard);
+	--transition-snappy:
+		opacity var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard);
+	--transition-standard:
+		opacity var(--duration-standard) var(--ease-standard),
+		transform var(--duration-standard) var(--ease-standard),
+		border-color var(--duration-standard) var(--ease-standard),
+		box-shadow var(--duration-standard) var(--ease-standard),
+		background-color var(--duration-standard) var(--ease-standard);
 }
 
 @function ease($token) {

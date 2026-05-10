@@ -1,6 +1,10 @@
 // src/styles/global/_animations.scss
 
-@keyframes fadeInOut {
+// ==========================================================================
+// GLOBAL REUSABLE MOTION
+// ==========================================================================
+
+@keyframes motion-fade-in-out {
 	0% {
 		opacity: 0%;
 	}
@@ -22,7 +26,7 @@
 	}
 }
 
-@keyframes pulseChevron {
+@keyframes motion-pulse-chevron {
 	0%,
 	100% {
 		opacity: 80%;
@@ -35,7 +39,7 @@
 	}
 }
 
-@keyframes fadeIn {
+@keyframes motion-fade-in {
 	from {
 		opacity: 0%;
 		transform: translateY(100px);
@@ -47,7 +51,19 @@
 	}
 }
 
-@keyframes pulseButton {
+@keyframes motion-fade-in-up {
+	from {
+		opacity: 0%;
+		transform: translateY(20px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
+@keyframes motion-pulse-button {
 	0%,
 	100% {
 		transform: scale(1);
@@ -58,7 +74,7 @@
 	}
 }
 
-@keyframes drawStroke {
+@keyframes motion-draw-stroke {
 	from {
 		stroke-dashoffset: 100;
 	}
@@ -68,17 +84,23 @@
 	}
 }
 
-.app-icon--draw {
-	path {
-		stroke-dasharray: 100;
-		stroke-dashoffset: 100;
-		animation: drawStroke 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-		animation-delay: var(--icon-delay, 0ms);
+@keyframes motion-scale-in {
+	from {
+		opacity: 0%;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 100%;
+		transform: scale(1);
 	}
 }
 
-// Premium Texture Animations
-@keyframes shimmer {
+// ==========================================================================
+// PREMIUM TEXTURE / SHIMMER EFFECTS
+// ==========================================================================
+
+@keyframes effect-shimmer {
 	0% {
 		background-position: -200% 0;
 	}
@@ -88,7 +110,7 @@
 	}
 }
 
-@keyframes gold-pulse {
+@keyframes effect-gold-pulse {
 	0%,
 	100% {
 		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.4);
@@ -99,17 +121,60 @@
 	}
 }
 
-@keyframes lift-up {
+@keyframes effect-light-sweep {
 	0% {
-		transform: translateY(0);
+		transform: translateX(-100%) skewX(-15deg);
 	}
 
+	50%,
 	100% {
-		transform: translateY(-4px);
+		transform: translateX(200%) skewX(-15deg);
 	}
 }
 
-// Scroll-triggered animation utilities
+@keyframes effect-gold-shimmer {
+	0% {
+		background-position: -200% center;
+	}
+
+	100% {
+		background-position: 200% center;
+	}
+}
+
+@keyframes effect-sparkle-move {
+	from {
+		background-position: 0 0;
+	}
+
+	to {
+		background-position: 300px 600px;
+	}
+}
+
+@keyframes motion-spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// ==========================================================================
+// UTILITY ANIMATION CLASSES
+// ==========================================================================
+
+.app-icon--draw {
+	path {
+		stroke-dasharray: 100;
+		stroke-dashoffset: 100;
+		animation: motion-draw-stroke 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation-delay: var(--icon-delay, 0ms);
+	}
+}
+
 .animate-on-scroll {
 	opacity: 0%;
 	transform: translateY(30px);
@@ -124,34 +189,25 @@
 }
 
 .animate-fade-in {
-	animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	animation: motion-fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-up {
+	animation: motion-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scale-in {
-	animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes scaleIn {
-	from {
-		opacity: 0%;
-		transform: scale(0.9);
-	}
-
-	to {
-		opacity: 100%;
-		transform: scale(1);
-	}
+	animation: motion-scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-gold-pulse {
-	animation: gold-pulse 2s ease-in-out infinite;
+	animation: effect-gold-pulse 2s ease-in-out infinite;
 }
 
 .animate-shimmer {
-	animation: shimmer 3s ease-in-out infinite;
+	animation: effect-shimmer 3s ease-in-out infinite;
 }
 
-// Stagger children animation
 .stagger-container > * {
 	opacity: 0%;
 	transform: translateY(20px);
@@ -189,57 +245,12 @@
 	transition-delay: 0.6s;
 }
 
-// Standard Editorial/Premium Animations
-@keyframes fadeInSlideUp {
-	from {
-		opacity: 0%;
-		transform: translateY(20px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
-	}
-}
-
-@keyframes gold-shimmer {
-	0% {
-		background-position: -200% center;
-	}
-
-	100% {
-		background-position: 200% center;
-	}
-}
-
-@keyframes light-sweep {
-	0% {
-		transform: translateX(-100%) skewX(-15deg);
-	}
-
-	50%,
-	100% {
-		transform: translateX(200%) skewX(-15deg);
-	}
-}
-
-@keyframes sparkle-move {
-	from {
-		background-position: 0 0;
-	}
-
-	to {
-		background-position: 300px 600px;
-	}
-}
-
-// Shimmer variations
 .animate-shimmer-text {
 	background-size: 200% auto;
-	animation: shimmer 6s linear infinite;
+	animation: effect-shimmer 6s linear infinite;
 }
 
 .animate-gold-shimmer {
 	background-size: 200% auto;
-	animation: gold-shimmer 5s linear infinite;
+	animation: effect-gold-shimmer 5s linear infinite;
 }

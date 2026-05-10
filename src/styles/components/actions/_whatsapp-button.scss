@@ -9,7 +9,10 @@
 	color: var(--color-text-on-dark);
 	border-radius: 9999px;
 	font-weight: 500;
-	transition: all 0.3s var(--ease-standard);
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		opacity var(--duration-snappy) var(--ease-standard);
 	border: none;
 	cursor: pointer;
 	width: auto;
@@ -20,7 +23,10 @@
 	}
 
 	&:hover {
-		background-color: var(--color-whatsapp-hover, #128c7e); /* stylelint-disable-line color-no-hex */
+		background-color: var(
+			--color-whatsapp-hover,
+			#128c7e
+		); /* stylelint-disable-line color-no-hex */
 		transform: translateY(-1px);
 	}
 

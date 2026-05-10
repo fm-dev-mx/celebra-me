@@ -120,7 +120,11 @@
 		letter-spacing: 0.15em;
 		font-weight: 500;
 		font-size: 0.8rem;
-		transition: all 0.6s var(--about-ease-luxury);
+		transition:
+			background-color 0.6s var(--about-ease-luxury),
+			color 0.6s var(--about-ease-luxury),
+			border-color 0.6s var(--about-ease-luxury),
+			box-shadow 0.6s var(--about-ease-luxury);
 
 		&-icon {
 			width: 1rem;
@@ -306,7 +310,10 @@
 		box-shadow:
 			inset 0 0 15px rgb(var(--color-action-accent-rgb), 0.05),
 			0 10px 20px -10px rgb(0 0 0 / 5%);
-		transition: all 0.5s var(--about-ease-luxury);
+		transition:
+			border-color 0.5s var(--about-ease-luxury),
+			box-shadow 0.5s var(--about-ease-luxury),
+			background-color 0.5s var(--about-ease-luxury);
 
 		@include mixins.respond-below(sm) {
 			width: 3.5rem;

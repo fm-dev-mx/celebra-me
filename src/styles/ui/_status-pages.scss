@@ -38,7 +38,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 2rem;
-		animation: statusFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		animation: motion-fade-in-up var(--duration-premium) cubic-bezier(0.16, 1, 0.3, 1) forwards;
 	}
 
 	&__icon-wrapper {
@@ -142,17 +142,5 @@
 		font-size: 0.9rem;
 		color: rgb(var(--color-text-primary-rgb), 0.4);
 		letter-spacing: 0.05em;
-	}
-}
-
-@keyframes statusFadeUp {
-	from {
-		opacity: 0%;
-		transform: translateY(20px);
-	}
-
-	to {
-		opacity: 100%;
-		transform: translateY(0);
 	}
 }

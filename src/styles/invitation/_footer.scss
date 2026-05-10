@@ -127,7 +127,11 @@
 	padding: 0.4rem 0.85rem;
 	border-radius: 6px;
 	border: 1px solid var(--color-border-subtle);
-	transition: all var(--transition-snappy);
+	transition:
+		opacity var(--duration-snappy) var(--ease-standard),
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
 	font-family: var(--font-body);
 	font-size: 0.65rem;
 	font-weight: 500;
@@ -173,7 +177,9 @@
 	border: none;
 	cursor: pointer;
 	padding: 0.5rem 0.75rem;
-	transition: all var(--transition-snappy);
+	transition:
+		opacity var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
 	opacity: 65%;
 
 	&:hover {

@@ -62,7 +62,10 @@
 		color: var(--footer-link-color);
 		text-decoration: none;
 		opacity: var(--footer-link-opacity);
-		transition: all var(--footer-transition-duration) var(--footer-transition-easing);
+		transition:
+			opacity var(--footer-transition-duration) var(--footer-transition-easing),
+			color var(--footer-transition-duration) var(--footer-transition-easing),
+			transform var(--footer-transition-duration) var(--footer-transition-easing);
 		font-size: 0.95rem;
 
 		&:hover {
@@ -89,7 +92,12 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		transition: all var(--footer-transition-duration) var(--footer-transition-easing);
+		transition:
+			background-color var(--footer-transition-duration) var(--footer-transition-easing),
+			border-color var(--footer-transition-duration) var(--footer-transition-easing),
+			transform var(--footer-transition-duration) var(--footer-transition-easing),
+			box-shadow var(--footer-transition-duration) var(--footer-transition-easing),
+			color var(--footer-transition-duration) var(--footer-transition-easing);
 		border: 1px solid var(--footer-social-border);
 
 		&:hover {

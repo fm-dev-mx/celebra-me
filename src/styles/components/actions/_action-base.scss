@@ -13,7 +13,12 @@
 	font-weight: 500;
 	text-align: center;
 	text-decoration: none;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard);
 	cursor: pointer;
 	border: 2px solid transparent;
 	background-color: var(--action-bg);

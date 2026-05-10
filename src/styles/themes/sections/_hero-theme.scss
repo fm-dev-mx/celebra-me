@@ -332,16 +332,6 @@
 	}
 }
 
-@keyframes sparkle-move {
-	from {
-		background-position: 0 0;
-	}
-
-	to {
-		background-position: 300px 600px;
-	}
-}
-
 // ==========================================================================
 // JEWELRY BOX HERO
 // ==========================================================================
@@ -390,7 +380,7 @@
 			inset: 0;
 			background: var(--light-sweep);
 			background-size: 200% 100%;
-			animation: light-sweep 6s infinite tokens.$ease-in-out;
+			animation: effect-light-sweep 6s infinite tokens.$ease-in-out;
 			pointer-events: none;
 		}
 
@@ -431,7 +421,7 @@
 		-webkit-text-fill-color: transparent;
 		text-shadow: 0 4px 10px rgb(0 0 0 / 24%); // Standardized shadow instead of filter
 		animation:
-			fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards,
+			motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards,
 			gold-foil 8s tokens.$ease-in-out infinite;
 		margin: 0.3rem 0;
 		-webkit-text-stroke: 0.35px rgb(255 255 255 / 18%);
@@ -552,7 +542,7 @@
 	}
 
 	.invitation-hero__title-wrapper {
-		animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 1s forwards;
+		animation: motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards;
 	}
 
 	.invitation-hero__title {
@@ -684,7 +674,7 @@
 .theme-preset--celestial-blue.event-theme-wrapper[data-reveal-state='revealed']
 	.invitation-hero[data-variant='celestial-blue']
 	.invitation-hero__title {
-	animation: fadeInSlideUp tokens.$duration-premium tokens.$ease-out 0.7s forwards;
+	animation: motion-fade-in-up tokens.$duration-premium tokens.$ease-out 0.7s forwards;
 }
 
 // ==========================================================================
@@ -768,7 +758,7 @@
 		align-items: center;
 		min-height: 100svh;
 		padding: clamp(5rem, 10svh, 7rem) clamp(1.5rem, 4vw, 3.5rem) clamp(4rem, 8svh, 6rem);
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out) 0.5s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.5s forwards;
 	}
 
 	.invitation-hero__label {
@@ -788,7 +778,7 @@
 
 	.invitation-hero__title-wrapper {
 		grid-area: title;
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out) 0.8s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.8s forwards;
 		align-self: center;
 	}
 
@@ -1157,7 +1147,7 @@
 		background-clip: text;
 		color: transparent;
 		background-size: 170% auto;
-		animation: shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
+		animation: effect-shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
 		margin: 0.35rem 0 0.5rem;
 	}
 
@@ -1176,7 +1166,7 @@
 		background: var(--hero-divider-color);
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: growLine 1.15s tokens.$ease-premium 1.28s forwards;
+		animation: invitation-grow-line 1.15s tokens.$ease-premium 1.28s forwards;
 	}
 
 	.invitation-hero__nickname-badge {
@@ -1298,24 +1288,3 @@
 // ==========================================================================
 // KEYFRAMES
 // ==========================================================================
-
-@keyframes shimmer {
-	0% {
-		background-position: -200% 0;
-	}
-
-	100% {
-		background-position: 200% 0;
-	}
-}
-
-@keyframes light-sweep {
-	0% {
-		transform: translateX(-100%) skewX(-15deg);
-	}
-
-	50%,
-	100% {
-		transform: translateX(200%) skewX(-15deg);
-	}
-}

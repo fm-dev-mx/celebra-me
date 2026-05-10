@@ -45,7 +45,8 @@
 	}
 
 	&__content {
-		animation: heroContentReveal var(--duration-reveal) var(--ease-premium) 0.5s forwards;
+		animation: invitation-hero-content-reveal var(--duration-reveal) var(--ease-premium) 0.5s
+			forwards;
 	}
 
 	&__label {
@@ -56,7 +57,7 @@
 		letter-spacing: 0.3em;
 		margin-bottom: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 0.8s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.8s forwards;
 	}
 
 	&__title {
@@ -78,13 +79,13 @@
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		animation:
-			fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1s forwards,
-			specularGlint 8s var(--ease-standard, ease-in-out) infinite;
+			motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards,
+			invitation-specular-glint 8s var(--ease-standard, ease-in-out) infinite;
 	}
 
 	&__nickname-badge {
 		opacity: 0%;
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1.2s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1.2s forwards;
 
 		span {
 			background: linear-gradient(
@@ -96,7 +97,7 @@
 			background-size: 250% auto;
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
-			animation: specularGlint 8s var(--ease-standard, ease-in-out) infinite;
+			animation: invitation-specular-glint 8s var(--ease-standard, ease-in-out) infinite;
 		}
 	}
 
@@ -107,7 +108,7 @@
 		margin: 1.5rem auto;
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: growLine var(--duration-premium) var(--ease-premium) 1.2s forwards;
+		animation: invitation-grow-line var(--duration-premium) var(--ease-premium) 1.2s forwards;
 	}
 
 	&__details {
@@ -115,7 +116,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1.4s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1.4s forwards;
 	}
 
 	&__date {
@@ -149,7 +150,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		opacity: 0%;
-		animation: fadeIn 1.5s var(--ease-out, ease-out) 2.5s forwards;
+		animation: motion-fade-in 1.5s var(--ease-out) 2.5s forwards;
 		color: var(--hero-scroll-indicator-color, rgb(255 255 255 / 70%));
 		pointer-events: none;
 	}
@@ -164,7 +165,7 @@
 	&__scroll-chevron {
 		width: 24px;
 		height: 24px;
-		animation: bounceDown 2s infinite;
+		animation: invitation-bounce-down 2s infinite;
 
 		svg {
 			width: 100%;
@@ -174,7 +175,7 @@
 }
 
 // Envelope-gated reveal: keep hero dormant until the seal is broken
-@keyframes heroContentReveal {
+@keyframes invitation-hero-content-reveal {
 	from {
 		opacity: 0%;
 		transform: translateY(40px);
@@ -188,14 +189,14 @@
 	}
 }
 
-@keyframes growLine {
+@keyframes invitation-grow-line {
 	to {
 		opacity: 100%;
 		transform: scaleX(1);
 	}
 }
 
-@keyframes specularGlint {
+@keyframes invitation-specular-glint {
 	0%,
 	100% {
 		background-position: -150% center;
@@ -211,7 +212,7 @@
 	}
 }
 
-@keyframes bounceDown {
+@keyframes invitation-bounce-down {
 	0%,
 	100% {
 		transform: translateY(0);
@@ -257,37 +258,37 @@
 
 .event-theme-wrapper[data-reveal-state='revealed'] {
 	.invitation-hero__content {
-		animation: heroContentReveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+		animation: invitation-hero-content-reveal 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 	}
 
 	.invitation-hero__label {
-		animation: fadeInSlideUp 0.7s var(--ease-out, ease-out) 0.58s forwards;
+		animation: motion-fade-in-up 0.7s var(--ease-out) 0.58s forwards;
 	}
 
 	.invitation-hero__title {
 		animation:
-			fadeInSlideUp 0.95s var(--ease-out, ease-out) 0.8s forwards,
-			specularGlint 8s var(--ease-standard, ease-in-out) 1.8s infinite;
+			motion-fade-in-up 0.95s var(--ease-out) 0.8s forwards,
+			invitation-specular-glint 8s var(--ease-standard, ease-in-out) 1.8s infinite;
 	}
 
 	.invitation-hero__nickname-badge {
-		animation: fadeInSlideUp 0.75s var(--ease-out, ease-out) 1.02s forwards;
+		animation: motion-fade-in-up 0.75s var(--ease-out) 1.02s forwards;
 	}
 
 	.invitation-hero__divider {
-		animation: growLine 1.08s cubic-bezier(0.16, 1, 0.3, 1) 1.26s forwards;
+		animation: invitation-grow-line 1.08s cubic-bezier(0.16, 1, 0.3, 1) 1.26s forwards;
 	}
 
 	.invitation-hero__details {
-		animation: fadeInSlideUp 0.8s var(--ease-out, ease-out) 1.48s forwards;
+		animation: motion-fade-in-up 0.8s var(--ease-out) 1.48s forwards;
 	}
 
 	.invitation-hero__scroll-indicator {
-		animation: fadeIn 1.5s var(--ease-out, ease-out) 2.35s forwards;
+		animation: motion-fade-in 1.5s var(--ease-out) 2.35s forwards;
 	}
 
 	.invitation-hero__scroll-chevron {
-		animation: bounceDown 2s infinite;
+		animation: invitation-bounce-down 2s infinite;
 	}
 }
 
@@ -324,7 +325,7 @@
 	.invitation-hero__nickname-badge span {
 		background: none;
 		-webkit-text-fill-color: initial;
-		animation: fadeInSlideUp var(--duration-premium) var(--ease-out, ease-out) 1s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards;
 	}
 
 	.invitation-hero__nickname-badge span {

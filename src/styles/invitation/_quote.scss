@@ -65,7 +65,9 @@
 	margin-bottom: 0.5rem;
 	opacity: 0%;
 	transform: translateY(20px);
-	transition: all 1s var(--ease-premium);
+	transition:
+		opacity var(--duration-premium) var(--ease-premium),
+		transform var(--duration-premium) var(--ease-premium);
 
 	&:last-child {
 		margin-bottom: 0;

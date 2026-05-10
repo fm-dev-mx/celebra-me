@@ -102,7 +102,9 @@
 			0 40px 100px rgb(0 0 0 / 50%),
 			0 0 30px rgb(0 0 0 / 40%);
 		transform: rotate(-1.5deg);
-		transition: all 0.8s ease;
+		transition:
+			transform var(--duration-slower) var(--ease-standard),
+			box-shadow var(--duration-slower) var(--ease-standard);
 		position: relative;
 		overflow: hidden;
 

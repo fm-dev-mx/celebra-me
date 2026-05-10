@@ -45,7 +45,11 @@
 		box-shadow: var(--shadow-premium);
 		backdrop-filter: blur(var(--glass-blur, 12px));
 		padding: clamp(2rem, 5vw, 4rem) 2rem;
-		transition: all var(--duration-standard) var(--ease-premium);
+		transition:
+			transform,
+			border-color,
+			background-color,
+			box-shadow var(--duration-standard) var(--ease-premium);
 		position: relative;
 		overflow: hidden;
 
@@ -62,7 +66,10 @@
 			margin-bottom: 0.5rem;
 			filter: drop-shadow(0 0 12px rgb(var(--color-action-accent-rgb) / 40%));
 			position: relative;
-			transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			transition:
+				opacity,
+				transform,
+				filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 
 			&::after {
 				content: '';
@@ -129,7 +136,7 @@
 			}
 
 			.gift-card__shimmer {
-				animation: shimmer 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+				animation: gifts-shimmer-slide 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 			}
 		}
 	}
@@ -242,7 +249,11 @@
 			inset 0 0 15px rgb(var(--color-action-accent-rgb) / 8%),
 			0 10px 30px rgb(0 0 0 / 25%);
 		text-shadow: 0 0 8px rgb(var(--color-action-accent-rgb) / 40%);
-		transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+		transition:
+			border-color,
+			background-color,
+			box-shadow,
+			transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 		cursor: default;
 
 		&:hover {
@@ -270,7 +281,10 @@
 		letter-spacing: 0.22em;
 		text-decoration: none;
 		border-radius: 2px;
-		transition: all var(--duration-standard) var(--ease-premium);
+		transition:
+			color,
+			border-color,
+			box-shadow var(--duration-standard) var(--ease-premium);
 		position: relative;
 		overflow: hidden;
 		cursor: pointer;
@@ -303,16 +317,6 @@
 	}
 }
 
-@keyframes shimmer {
-	0% {
-		left: -100%;
-	}
-
-	100% {
-		left: 150%;
-	}
-}
-
 // ==========================================================================
 // GIFTS SECTION THEMES
 // ==========================================================================
@@ -341,7 +345,10 @@
 		border-radius: 12px;
 		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 		box-shadow: var(--shadow-premium);
-		transition: all 0.5s tokens.$ease-premium;
+		transition:
+			transform,
+			border-color,
+			box-shadow 0.5s tokens.$ease-premium;
 		position: relative;
 		overflow: hidden;
 
@@ -512,7 +519,7 @@
 		background-size: 200% auto;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		animation: gold-shimmer 5s linear infinite;
+		animation: effect-gold-shimmer 5s linear infinite;
 		text-shadow: 0 4px 10px rgb(0 0 0 / 40%);
 	}
 
@@ -661,12 +668,12 @@
 	}
 }
 
-@keyframes gold-shimmer-local {
+@keyframes gifts-shimmer-slide {
 	0% {
-		background-position: -200% center;
+		left: -100%;
 	}
 
 	100% {
-		background-position: 200% center;
+		left: 150%;
 	}
 }

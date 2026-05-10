@@ -9,7 +9,10 @@
 	width: var(--icon-size);
 	height: var(--icon-size);
 	border-radius: 50%;
-	transition: all 0.4s var(--icon-transition);
+	transition:
+		background-color 0.4s var(--icon-transition),
+		transform 0.4s var(--icon-transition),
+		box-shadow 0.4s var(--icon-transition);
 	overflow: hidden;
 
 	&__inner {

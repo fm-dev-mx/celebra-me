@@ -31,17 +31,23 @@
 		0 4px 8px rgba($button-color, $shadow-alpha);
 }
 
+@mixin glass-card-surface($top-alpha: 92%, $bottom-alpha: 78%, $base: var(--color-surface-soft)) {
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-white-rgb) / $top-alpha),
+			rgb(var(--color-white-rgb) / $bottom-alpha)
+		),
+		$base;
+}
+
 .dashboard-guests {
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: var(--spacing-xl) clamp(var(--spacing-md), 5vw, var(--spacing-xl));
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 54%),
-			rgb(var(--color-white-rgb) / 24%)
-		),
-		var(--color-surface-primary);
+
+	@include glass-card-surface(54%, 24%, var(--color-surface-primary));
+
 	min-height: calc(100vh - 64px); // Adjust for topbar
 	color: tokens.$color-text-primary;
 	font-family: tokens.$font-ui;
@@ -128,7 +134,10 @@
 			font-size: 0.95rem;
 			font-weight: tokens.$font-weight-medium;
 			box-shadow: tokens.$shadow-subtle;
-			transition: all 0.3s ease;
+			transition:
+				border-color var(--duration-snappy) var(--ease-standard),
+				background-color var(--duration-snappy) var(--ease-standard),
+				box-shadow var(--duration-snappy) var(--ease-standard);
 			cursor: pointer;
 
 			&:focus {
@@ -150,7 +159,6 @@
 	padding: 0 2rem;
 	border-radius: 8px;
 	cursor: pointer;
-	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	text-transform: uppercase;
 	letter-spacing: tokens.$letter-spacing-wide;
 	font-size: clamp(0.6rem, 1vw, 0.85rem);
@@ -161,6 +169,11 @@
 	min-height: 48px;
 	position: relative;
 	overflow: hidden;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard);
 
 	&::after {
 		content: '';
@@ -168,7 +181,7 @@
 		inset: 0;
 		background: linear-gradient(rgb(255 255 255 / 10%), transparent);
 		opacity: 0%;
-		transition: opacity 0.2s ease;
+		transition: opacity var(--duration-fast) var(--ease-standard);
 	}
 
 	&:hover::after {
@@ -237,7 +250,11 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	transition: all 0.2s ease;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
 	color: tokens.$color-text-primary;
 	min-width: 44px;
 	min-height: 44px;
@@ -279,7 +296,9 @@
 		gap: 0.25rem;
 		min-width: min(100%, 220px);
 		box-shadow: var(--shadow-subtle);
-		transition: all 0.2s ease;
+		transition:
+			background-color var(--duration-snappy) var(--ease-standard),
+			transform var(--duration-snappy) var(--ease-standard);
 
 		&:hover {
 			background: rgb(var(--color-white-rgb) / 70%);
@@ -289,13 +308,8 @@
 }
 
 .guest-card {
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 92%),
-			rgb(var(--color-white-rgb) / 78%)
-		),
-		var(--color-surface-soft);
+	@include glass-card-surface;
+
 	border-radius: 20px;
 	padding: 1.25rem;
 	border: 1px solid var(--color-glass-border);
@@ -303,7 +317,11 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
-	transition: all 0.2s ease;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard);
 	position: relative;
 	overflow: hidden;
 
@@ -362,7 +380,10 @@
 			color: tokens.$color-text-primary;
 			font-family: tokens.$font-ui;
 			font-size: 0.95rem;
-			transition: all 0.3s ease;
+			transition:
+				border-color var(--duration-snappy) var(--ease-standard),
+				background-color var(--duration-snappy) var(--ease-standard),
+				box-shadow var(--duration-snappy) var(--ease-standard);
 			box-shadow: inset 0 2px 4px rgb(0 0 0 / 2%);
 
 			&:focus {
@@ -413,13 +434,8 @@
 }
 
 .dashboard-guests__stat {
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 92%),
-			rgb(var(--color-white-rgb) / 78%)
-		),
-		var(--color-surface-soft);
+	@include glass-card-surface;
+
 	border: 1px solid var(--color-glass-border);
 	border-radius: 18px;
 	padding: var(--spacing-lg);
@@ -427,7 +443,11 @@
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition:
+		transform var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard),
+		background-color var(--duration-snappy) var(--ease-standard);
 	box-shadow: tokens.$shadow-subtle;
 	position: relative;
 	overflow: hidden;
@@ -493,13 +513,9 @@
 /* Progress Card */
 .dashboard-guests__progress-card {
 	padding: 1.5rem;
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 92%),
-			rgb(var(--color-white-rgb) / 78%)
-		),
-		var(--color-glass-bg);
+
+	@include glass-card-surface(92%, 78%, var(--color-glass-bg));
+
 	backdrop-filter: blur(12px);
 	border: 1px solid var(--color-glass-border);
 	border-radius: 20px;
@@ -571,19 +587,9 @@
 		var(--dashboard-brand-primary)
 	);
 	background-size: 200% 100%;
-	animation: shimmer 3s infinite linear;
+	animation: guests-progress-shimmer 3s infinite linear;
 	border-radius: 100px;
 	box-shadow: 0 0 15px rgb(var(--dashboard-brand-primary-rgb) / 24%);
-}
-
-@keyframes shimmer {
-	0% {
-		background-position: 0% 0%;
-	}
-
-	100% {
-		background-position: -200% 0%;
-	}
 }
 
 .progress-sparkle {
@@ -667,7 +673,7 @@
 	justify-content: space-around;
 	align-items: center;
 	box-shadow: 0 -8px 32px rgb(0 0 0 / 12%);
-	animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	animation: guests-dock-slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 
 	@media (width <= 992px) {
 		display: flex;
@@ -687,7 +693,10 @@
 		padding: 0.5rem;
 		color: var(--dashboard-text-secondary);
 		cursor: pointer;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		transition:
+			background-color var(--duration-snappy) var(--ease-standard),
+			color var(--duration-snappy) var(--ease-standard),
+			transform var(--duration-snappy) var(--ease-standard);
 		position: relative;
 		gap: 0.25rem;
 		border-radius: 12px;
@@ -775,25 +784,10 @@
 	}
 }
 
-@keyframes slideUp {
-	from {
-		transform: translateY(100%);
-	}
-
-	to {
-		transform: translateY(0);
-	}
-}
-
 /* Responsive Table Wrapper */
 .dashboard-guests__table-wrap {
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 92%),
-			rgb(var(--color-white-rgb) / 80%)
-		),
-		var(--color-surface-soft);
+	@include glass-card-surface(92%, 80%, var(--color-surface-soft));
+
 	border: 1px solid var(--color-glass-border);
 	border-radius: 20px;
 	padding: 0;
@@ -890,7 +884,9 @@
 	display: inline-flex;
 	cursor: help;
 	color: tokens.$color-action-accent;
-	transition: all 0.2s ease;
+	transition:
+		transform var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
 
 	&:hover {
 		transform: scale(1.1);
@@ -920,7 +916,10 @@
 	z-index: 100;
 	opacity: 0%;
 	visibility: hidden;
-	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	transition:
+		opacity var(--duration-snappy) var(--ease-premium),
+		transform var(--duration-snappy) var(--ease-premium),
+		visibility var(--duration-snappy) var(--ease-premium);
 	box-shadow: tokens.$shadow-emphasis;
 	pointer-events: none;
 	text-align: left;
@@ -947,11 +946,11 @@
 	justify-content: center;
 
 	&--active {
-		animation: pulse-badge 2.5s infinite ease-in-out;
+		animation: guests-pulse-badge 2.5s infinite ease-in-out;
 	}
 }
 
-@keyframes pulse-badge {
+@keyframes guests-pulse-badge {
 	0% {
 		filter: drop-shadow(0 0 0 rgba(tokens.$color-action-accent, 0));
 	}
@@ -1196,7 +1195,10 @@
 	font-size: 0.85rem;
 	font-weight: tokens.$font-weight-medium;
 	cursor: pointer;
-	transition: all 0.2s ease;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard);
 	min-height: 44px;
 	min-width: 44px;
 	background: var(--dashboard-brand-primary);
@@ -1255,7 +1257,11 @@
 	border: 1px solid rgba(tokens.$color-border-subtle, 0.8);
 	border-radius: 12px;
 	cursor: pointer;
-	transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard);
 	box-shadow: tokens.$shadow-subtle;
 	font-size: 1.2rem;
 	padding: 0;
@@ -1303,17 +1309,17 @@
 	flex-direction: column;
 	gap: var(--spacing-sm);
 	padding: var(--spacing-lg);
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-white-rgb) / 92%),
-			rgb(var(--color-white-rgb) / 78%)
-		),
-		var(--color-surface-soft);
+
+	@include glass-card-surface;
+
 	border: 1px solid var(--color-glass-border);
 	border-radius: 20px;
 	box-shadow: var(--shadow-premium);
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition:
+		transform var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard),
+		background-color var(--duration-snappy) var(--ease-standard);
 	margin-bottom: var(--spacing-sm);
 
 	&:hover {
@@ -1424,7 +1430,9 @@
 	padding: 0.4rem 0.6rem;
 	border-radius: 4px;
 	border: 1px solid transparent;
-	transition: all 0.2s ease;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard);
 
 	&:hover {
 		background: rgba(tokens.$color-action-accent, 0.05);
@@ -1446,7 +1454,7 @@
 	font-size: 0.75rem;
 	margin-top: 0.25rem;
 	font-weight: tokens.$font-weight-medium;
-	animation: slideDown 0.2s ease-out;
+	animation: guests-slide-down var(--duration-fast) var(--ease-out);
 }
 
 /* Radio Cards Gamification */
@@ -1480,7 +1488,11 @@
 		background: white;
 		border: 1px solid tokens.$color-border-subtle;
 		border-radius: 10px;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		transition:
+			background-color var(--duration-snappy) var(--ease-standard),
+			border-color var(--duration-snappy) var(--ease-standard),
+			box-shadow var(--duration-snappy) var(--ease-standard),
+			transform var(--duration-snappy) var(--ease-standard);
 		font-size: 0.9rem;
 		font-weight: tokens.$font-weight-medium;
 		color: tokens.$color-text-primary;
@@ -1566,7 +1578,7 @@
 	color: var(--dashboard-text-secondary);
 }
 
-@keyframes slideDown {
+@keyframes guests-slide-down {
 	from {
 		opacity: 0%;
 		transform: translateY(-4px);
@@ -1578,7 +1590,7 @@
 	}
 }
 
-@keyframes modalFadeInUp {
+@keyframes guests-modal-fade-in-up {
 	from {
 		opacity: 0%;
 		transform: translateY(20%);
@@ -1590,9 +1602,29 @@
 	}
 }
 
+@keyframes guests-dock-slide-up {
+	from {
+		transform: translateY(100%);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes guests-progress-shimmer {
+	0% {
+		background-position: 0% 0%;
+	}
+
+	100% {
+		background-position: -200% 0%;
+	}
+}
+
 /* Gamification & Celebratory Effects */
 .celebrate-success {
-	animation: successGlow 1.5s ease;
+	animation: guests-success-glow 1.5s ease;
 	position: relative;
 	overflow: hidden;
 
@@ -1609,11 +1641,11 @@
 			rgb(255 255 255 / 40%) 50%,
 			rgb(255 255 255 / 0%) 100%
 		);
-		animation: shineSwipe 1s ease-in-out;
+		animation: guests-shine-swipe 1s ease-in-out;
 	}
 }
 
-@keyframes successGlow {
+@keyframes guests-success-glow {
 	0% {
 		box-shadow: 0 0 0 0 rgba(tokens.$color-action-accent, 0.4);
 		background: rgba(tokens.$color-action-accent, 0.05);
@@ -1630,7 +1662,7 @@
 	}
 }
 
-@keyframes shineSwipe {
+@keyframes guests-shine-swipe {
 	0% {
 		left: -100%;
 	}
@@ -1683,7 +1715,8 @@
 @media (prefers-reduced-motion: reduce) {
 	.progress-fill,
 	.session-progress__bar,
-	.dashboard-guests__mobile-dock {
+	.dashboard-guests__mobile-dock,
+	.guest-note-indicator--active {
 		animation: none;
 		transition: none;
 	}
@@ -1694,50 +1727,6 @@
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-
-	&[data-progress='0'] .engagement-mini__progress {
-		width: 0%;
-	}
-
-	&[data-progress='10'] .engagement-mini__progress {
-		width: 10%;
-	}
-
-	&[data-progress='20'] .engagement-mini__progress {
-		width: 20%;
-	}
-
-	&[data-progress='30'] .engagement-mini__progress {
-		width: 30%;
-	}
-
-	&[data-progress='40'] .engagement-mini__progress {
-		width: 40%;
-	}
-
-	&[data-progress='50'] .engagement-mini__progress {
-		width: 50%;
-	}
-
-	&[data-progress='60'] .engagement-mini__progress {
-		width: 60%;
-	}
-
-	&[data-progress='70'] .engagement-mini__progress {
-		width: 70%;
-	}
-
-	&[data-progress='80'] .engagement-mini__progress {
-		width: 80%;
-	}
-
-	&[data-progress='90'] .engagement-mini__progress {
-		width: 90%;
-	}
-
-	&[data-progress='100'] .engagement-mini__progress {
-		width: 100%;
-	}
 
 	&__bar {
 		width: 60px;
@@ -1756,6 +1745,7 @@
 		);
 		border-radius: 3px;
 		transition: width 0.4s ease;
+		width: var(--eng-progress, 0%);
 	}
 
 	&__label {

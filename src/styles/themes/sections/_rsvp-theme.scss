@@ -117,7 +117,11 @@
 			border-radius: var(--rsvp-radius-field, 2px);
 			color: rgb(var(--color-text-primary-rgb) / 70%);
 			cursor: pointer;
-			transition: all var(--duration-standard) var(--ease-premium);
+			transition:
+				background-color,
+				border-color,
+				box-shadow,
+				color var(--duration-standard) var(--ease-premium);
 
 			&:hover {
 				background: var(--rsvp-radio-bg-hover);
@@ -156,7 +160,9 @@
 			border: 1.5px solid var(--rsvp-radio-border);
 			border-radius: 50%;
 			position: relative;
-			transition: all var(--duration-standard) var(--ease-premium);
+			transition:
+				border-color,
+				background-color var(--duration-standard) var(--ease-premium);
 			background: transparent;
 
 			&::after {
@@ -194,7 +200,11 @@
 		letter-spacing: 0.22em;
 		text-decoration: none;
 		border-radius: 2px;
-		transition: all var(--duration-standard) var(--ease-premium);
+		transition:
+			color,
+			border-color,
+			transform,
+			box-shadow var(--duration-standard) var(--ease-premium);
 		position: relative;
 		overflow: hidden;
 		cursor: pointer;
@@ -357,7 +367,7 @@
 			background: transparent;
 			width: 100%;
 			color: var(--color-text-on-dark);
-			transition: border-color 0.4s var(--ease-premium);
+			transition: border-color var(--duration-standard) var(--ease-premium);
 		}
 
 		& input:focus {
@@ -375,7 +385,10 @@
 			letter-spacing: 0.01em;
 			color: rgb(var(--color-text-primary-rgb) / 45%);
 			pointer-events: none;
-			transition: all 0.4s var(--ease-premium);
+			transition:
+				transform var(--duration-standard) var(--ease-premium),
+				color var(--duration-standard) var(--ease-premium),
+				letter-spacing var(--duration-standard) var(--ease-premium);
 			transform-origin: top left;
 		}
 
@@ -399,7 +412,7 @@
 			height: 0.5px;
 			background: var(--color-action-accent);
 			transform: scaleX(0);
-			transition: transform 0.6s var(--ease-premium);
+			transition: transform var(--duration-premium) var(--ease-premium);
 			transform-origin: center;
 		}
 
@@ -424,14 +437,19 @@
 		border-radius: 4px;
 		padding: 1.4rem;
 		backdrop-filter: blur(8px);
-		transition: all 0.4s var(--ease-premium);
+		transition:
+			background-color,
+			border-color,
+			box-shadow var(--duration-standard) var(--ease-premium);
 
 		.rsvp__radio-indicator {
 			border-color: rgb(var(--color-gold-500-rgb) / 45%);
 			background: rgb(var(--color-surface-dark-rgb) / 40%);
 			width: 1.25rem;
 			height: 1.25rem;
-			transition: all 0.4s var(--ease-premium);
+			transition:
+				border-color,
+				background-color var(--duration-standard) var(--ease-premium);
 		}
 
 		.rsvp__radio-label {
@@ -439,7 +457,7 @@
 			color: rgb(var(--color-text-primary-rgb) / 50%);
 			font-size: 1.1rem;
 			letter-spacing: 0.04em;
-			transition: all 0.4s var(--ease-premium);
+			transition: color var(--duration-standard) var(--ease-premium);
 		}
 
 		&:hover {
@@ -485,7 +503,7 @@
 		letter-spacing: 0.32em;
 		font-size: 0.9rem;
 		box-shadow: 0 15px 35px rgb(var(--color-action-primary-rgb) / 25%);
-		animation: shimmer 8s linear infinite;
+		animation: effect-shimmer 8s linear infinite;
 		background-size: 200% 100%;
 		font-weight: 600;
 
@@ -812,7 +830,7 @@
 				rgb(var(--color-action-accent-rgb), 0.15),
 				transparent
 			);
-			transition: left 0.6s ease-out;
+			transition: left var(--duration-premium) var(--ease-out, ease-out);
 		}
 
 		&:hover:not(:disabled) {

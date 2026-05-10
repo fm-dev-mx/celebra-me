@@ -292,7 +292,11 @@
 	--testimonials-card-border: #{color.change(sys.$sys-color-gold-500, $alpha: 0.15)};
 	--testimonials-card-border-radius: 2px;
 	--testimonials-card-shadow: 0 10px 30px -15px rgb(0 0 0 / 5%);
-	--testimonials-card-transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	--testimonials-card-transition:
+		background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 	--testimonials-card-accent-bg: linear-gradient(
 		90deg,
 		transparent,

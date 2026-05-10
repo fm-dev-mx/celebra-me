@@ -411,7 +411,7 @@
 	border-radius: 50%;
 	opacity: 0%;
 	pointer-events: none;
-	animation: sealPulse 2s infinite;
+	animation: invitation-seal-pulse 2s infinite;
 }
 
 .envelope-seal-button__visual {
@@ -485,32 +485,32 @@
 	.envelope-tease,
 	.envelope-external-instruction {
 		pointer-events: none;
-		animation: envFadeOut var(--duration-standard) forwards var(--ease-standard);
+		animation: invitation-env-fade-out var(--duration-standard) forwards var(--ease-standard);
 	}
 
 	.envelope-flap {
 		z-index: 2;
-		animation: envFlapOpen var(--duration-reveal) forwards var(--ease-premium);
+		animation: invitation-env-flap-open var(--duration-reveal) forwards var(--ease-premium);
 	}
 
 	.envelope-flap-shadow {
-		animation: envShadowDrop var(--duration-reveal) forwards var(--ease-premium);
+		animation: invitation-env-shadow-drop var(--duration-reveal) forwards var(--ease-premium);
 	}
 }
 
-@keyframes envFlapOpen {
+@keyframes invitation-env-flap-open {
 	100% {
 		transform: rotateX(170deg);
 	}
 }
 
-@keyframes envFadeOut {
+@keyframes invitation-env-fade-out {
 	100% {
 		opacity: 0%;
 	}
 }
 
-@keyframes envShadowDrop {
+@keyframes invitation-env-shadow-drop {
 	0% {
 		filter: blur(28px);
 		opacity: 0%;
@@ -658,7 +658,7 @@
 	}
 }
 
-@keyframes sealPulse {
+@keyframes invitation-seal-pulse {
 	0% {
 		opacity: 28%;
 		transform: scale(0.9);

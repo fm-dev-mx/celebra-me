@@ -108,7 +108,11 @@
 	border: 1px solid var(--contact-channel-border);
 	border-radius: 4px;
 	text-decoration: none;
-	transition: all 0.4s ease;
+	transition:
+		background-color var(--duration-standard) var(--ease-standard),
+		border-color var(--duration-standard) var(--ease-standard),
+		box-shadow var(--duration-standard) var(--ease-standard),
+		transform var(--duration-standard) var(--ease-standard);
 	box-shadow: var(--contact-channel-shadow);
 
 	.channel-icon-wrapper {
@@ -120,7 +124,10 @@
 		background: var(--contact-channel-icon-bg, rgb(var(--color-action-accent-rgb) / 10%));
 		color: var(--contact-channel-icon-color, var(--color-action-accent));
 		border-radius: 50%;
-		transition: all 0.4s ease;
+		transition:
+			background-color var(--duration-standard) var(--ease-standard),
+			color var(--duration-standard) var(--ease-standard),
+			transform var(--duration-standard) var(--ease-standard);
 		flex-shrink: 0;
 	}
 
@@ -233,7 +240,11 @@
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		pointer-events: none;
-		transition: all 0.4s ease;
+		transition:
+			top var(--duration-standard) var(--ease-standard),
+			font-size var(--duration-standard) var(--ease-standard),
+			color var(--duration-standard) var(--ease-standard),
+			font-weight var(--duration-standard) var(--ease-standard);
 	}
 
 	&__input:focus + &__label,
@@ -255,7 +266,10 @@
 	letter-spacing: 0.2em;
 	font-size: 0.9rem;
 	cursor: pointer;
-	transition: all 0.4s ease;
+	transition:
+		background-color var(--duration-standard) var(--ease-standard),
+		transform var(--duration-standard) var(--ease-standard),
+		box-shadow var(--duration-standard) var(--ease-standard);
 	border-radius: 2px;
 
 	&:hover {

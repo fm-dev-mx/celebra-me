@@ -84,7 +84,7 @@
 		object-fit: var(--thank-you-image-fit, cover);
 		object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
 		border-radius: 50%;
-		transition: all var(--duration-premium) var(--ease-premium);
+		transition: transform var(--duration-premium) var(--ease-premium);
 		background: rgb(255 255 255 / 35%);
 	}
 
