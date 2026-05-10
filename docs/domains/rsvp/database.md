@@ -131,6 +131,25 @@ The repo currently types and documents these RSVP/Supabase-related variables:
 - `TRUST_DEVICE_MAX_AGE_DAYS`
 - `REQUIRE_FRESH_MFA_FOR_ADMIN`
 
+The active runtime also uses these operational variables outside the narrow RSVP/Supabase contract:
+
+- `BASE_URL`
+- `NODE_ENV`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `RSVP_V2_DISTRIBUTED_RATELIMIT`
+- `SUPER_ADMIN_EMAILS`
+- `GMAIL_USER`
+- `GMAIL_PASS`
+- `CONTACT_FORM_RECIPIENT_EMAIL`
+- `SENDGRID_API_KEY`
+- `SENTRY_DSN`
+- `SENTRY_AUTH_TOKEN`
+- `PUBLIC_GOOGLE_ANALYTICS_ID`
+
+Keep `.env.example` and `src/env.d.ts` aligned when one of these active operational variables is
+added, renamed, or retired.
+
 Legacy compatibility variables such as `RSVP_ADMIN_USER` and `RSVP_ADMIN_PASSWORD` have been
 completely removed from `src/env.d.ts` and `.env.example` as they no longer correspond to an active
 `/admin/rsvp` route in the live tree.
