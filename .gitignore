@@ -65,7 +65,6 @@ _tmp_*
 .eslintcache
 # .editorconfig  <-- Keep tracked if you want shared IDE settings
 # .eslintrc.*    <-- Keep tracked for linting consistency
-.eslintcache
 
 
 # --- ASTRO GENERATED ----------------------------------------------------------
@@ -85,7 +84,7 @@ _agents/
 .gemini/
 *.agent.md
 agent.json
-
+opencode.json
 
 # --- SYSTEM FILES -------------------------------------------------------------
 # Operating system specific files
