@@ -129,10 +129,15 @@ The repo currently types and documents these RSVP/Supabase-related variables:
 - `RSVP_CLAIM_CODE_PEPPER`
 - `TRUST_DEVICE_SECRET`
 - `TRUST_DEVICE_MAX_AGE_DAYS`
+- `REQUIRE_FRESH_MFA_FOR_ADMIN`
 
-Legacy compatibility variables such as `RSVP_ADMIN_USER` and `RSVP_ADMIN_PASSWORD` still exist in
-`src/env.d.ts` and `.env.example`, but they do not correspond to an active `/admin/rsvp` route in
-the live tree.
+Legacy compatibility variables such as `RSVP_ADMIN_USER` and `RSVP_ADMIN_PASSWORD` have been
+completely removed from `src/env.d.ts` and `.env.example` as they no longer correspond to an active
+`/admin/rsvp` route in the live tree.
+
+Deprecated feature-flag placeholders such as `ENABLE_MFA` and `ENABLE_AUDIT_LOGS` are no longer
+typed or listed in `.env.example` because no live code consumes them. Reintroduce a feature flag
+only with a concrete runtime consumer and documentation.
 
 ## Suggested Verification
 
