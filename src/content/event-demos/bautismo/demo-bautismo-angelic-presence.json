@@ -10,11 +10,21 @@
         "family": {},
         "gallery": {},
         "itinerary": {},
+        "location": {
+            "showFlourishes": true
+        },
         "thankYou": {}
     },
+    "navigation": [
+        { "label": "Mensaje", "href": "#quote-section" },
+        { "label": "Familia", "href": "#family-section" },
+        { "label": "Galería", "href": "#gallery-section" },
+        { "label": "Ceremonia", "href": "#event-location" },
+        { "label": "Programa", "href": "#itinerary" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
     "hero": {
-        "name": "María",
-        "secondaryName": "Santos",
+        "name": "María Santos",
         "label": "Bautismo",
         "date": "2026-06-15T10:00:00.000Z",
         "backgroundImage": "hero"
@@ -29,8 +39,31 @@
             "address": "Calle Principal #10, Centro",
             "date": "15 de junio de 2026",
             "time": "10:00 AM",
-            "image": "ceremony"
-        }
+            "image": "ceremony",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20San%20Jose%20Ciudad%20de%20Mexico"
+        },
+        "reception": {
+            "venueEvent": "Celebración",
+            "venueName": "Casa Jardín Santa Clara",
+            "address": "Av. de los Encinos #24, Ciudad de México",
+            "date": "15 de junio de 2026",
+            "time": "12:00 PM",
+            "image": "reception",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Casa%20Jardin%20Santa%20Clara%20Ciudad%20de%20Mexico"
+        },
+        "indicationsHeading": "Indicaciones",
+        "indications": [
+            {
+                "icon": "calendar",
+                "iconName": "Calendar",
+                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+            },
+            {
+                "icon": "dressCode",
+                "iconName": "DressCode",
+                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+            }
+        ]
     },
     "family": {
         "parents": {
@@ -47,28 +80,28 @@
             "sectionSubtitle": "Familia",
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. El amor y las bendiciones de nuestra familia son el regalo más precious."
+            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
         }
     },
     "gallery": {
-        "title": "Galería",
-        "subtitle": "Momentos de fe y alegría",
+        "title": "Instantes de luz",
+        "subtitle": "Una memoria serena de este día sagrado",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Agua bendita"
+                "caption": "Pureza y ternura"
             },
             {
                 "image": "gallery02",
-                "caption": "Vela del bautismo"
+                "caption": "La luz del sacramento"
             },
             {
                 "image": "gallery03",
-                "caption": "Familia reunida"
+                "caption": "Bendición en familia"
             },
             {
                 "image": "gallery04",
-                "caption": "Momento sagrado"
+                "caption": "Detalles de fe"
             }
         ]
     },
@@ -77,22 +110,22 @@
         "subtitle": "Bautismo de María",
         "items": [
             {
-                "icon": "church",
-                "label": "Bienvenida",
+                "icon": "reception",
+                "label": "Llegada",
                 "time": "10:00 AM",
-                "description": "Recepción de invitados"
+                "description": "Recepción en la parroquia"
             },
             {
                 "icon": "church",
-                "label": "Ceremonia",
+                "label": "Sacramento",
                 "time": "10:30 AM",
-                "description": "Sacramento del Bautismo"
+                "description": "Bautismo de María Santos"
             },
             {
                 "icon": "reception",
-                "label": "Recepción",
+                "label": "Celebración",
                 "time": "12:00 PM",
-                "description": "Celebración con la familia"
+                "description": "Comida familiar"
             },
             {
                 "icon": "cake",
@@ -103,9 +136,9 @@
         ]
     },
     "countdown": {
-        "title": "Falta muy poco",
+        "title": "Nos acercamos con alegría",
         "subtitlePrefix": "El",
-        "footerText": "Prepárate para celebrar con nosotros"
+        "footerText": "Gracias por preparar el corazón para acompañarnos"
     },
     "quote": {
         "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
@@ -114,12 +147,37 @@
     "rsvp": {
         "title": "Confirma tu asistencia",
         "guestCap": 4,
-        "confirmationMessage": "Gracias por acompañarnos en este día especial.",
+        "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api"
     },
     "thankYou": {
-        "message": "Gracias por compartir con nosotros este momento tan especial. Tu presencia y bendiciones hacen de este día algo inolvidable.",
-        "closingName": "María",
-        "image": "thankYouPortrait"
-    }
+        "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+        "closingName": "María Santos",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 42%"
+    },
+    "contentBlocks": [
+        { "type": "section", "section": "quote" },
+        {
+            "type": "interlude",
+            "image": "interlude01",
+            "alt": "Retrato editorial de María Santos",
+            "height": "tall",
+            "focalPoint": "50% 38%"
+        },
+        { "type": "section", "section": "family" },
+        { "type": "section", "section": "gallery" },
+        {
+            "type": "interlude",
+            "image": "interlude02",
+            "alt": "Detalle luminoso del bautismo",
+            "height": "screen",
+            "focalPoint": "50% 44%"
+        },
+        { "type": "section", "section": "countdown" },
+        { "type": "section", "section": "location" },
+        { "type": "section", "section": "itinerary" },
+        { "type": "section", "section": "rsvp" },
+        { "type": "section", "section": "thankYou" }
+    ]
 }
