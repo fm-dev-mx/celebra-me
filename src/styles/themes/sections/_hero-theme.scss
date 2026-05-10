@@ -696,29 +696,35 @@
 // ==========================================================================
 
 .invitation-hero[data-variant='angelic-presence'] {
+	--hero-angelic-title-shadow: 0 12px 34px rgb(var(--color-eternal-ink-rgb) / 20%);
+
 	.invitation-hero__background {
 		&::after {
 			background:
 				radial-gradient(
-					circle at 50% 25%,
-					rgb(var(--color-sacred-gold-rgb) / 12%) 0%,
-					transparent 50%
+					circle at 52% 18%,
+					rgb(var(--color-pure-ivory-rgb) / 18%) 0%,
+					transparent 38%
 				),
 				linear-gradient(
 					180deg,
-					rgb(var(--color-pure-ivory-rgb) / 18%) 0%,
-					rgb(var(--color-eternal-ink-rgb) / 8%) 55%,
-					rgb(var(--color-eternal-ink-rgb) / 32%) 100%
+					rgb(var(--color-eternal-ink-rgb) / 4%) 0%,
+					rgb(var(--color-pure-ivory-rgb) / 24%) 42%,
+					rgb(var(--color-eternal-ink-rgb) / 28%) 100%
 				);
 		}
 
 		img {
-			filter: grayscale(0.04) brightness(0.98) sepia(0.04);
+			object-position: 50% 38%;
+			filter: grayscale(0.03) brightness(1.02) sepia(0.05);
 		}
 	}
 
 	.invitation-hero__content {
 		animation: fadeInSlideUp var(--duration-premium) var(--ease-out) 0.5s forwards;
+		align-self: end;
+		margin-bottom: clamp(4.5rem, 10vh, 7rem);
+		padding-inline: clamp(1.25rem, 4vw, 3rem);
 	}
 
 	.invitation-hero__label {
@@ -734,22 +740,20 @@
 
 	.invitation-hero__title {
 		font-family: var(--font-display);
-		font-size: clamp(3rem, 10vw, 6.5rem);
+		font-size: clamp(3.1rem, 8vw, 6rem);
 		font-weight: 400;
-		line-height: 0.88;
+		line-height: 0.92;
 		letter-spacing: 0.01em;
 		color: var(--color-eternal-ink);
 		background: linear-gradient(
 			115deg,
-			var(--color-eternal-ink) 0%,
+			rgb(var(--color-eternal-ink-rgb) / 92%) 0%,
 			var(--color-sacred-gold) 46%,
-			var(--color-eternal-ink) 100%
+			rgb(var(--color-eternal-ink-rgb) / 88%) 100%
 		);
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		text-shadow:
-			0 0 28px rgb(var(--color-sacred-gold-rgb) / 25%),
-			0 1px 4px rgb(var(--color-eternal-ink-rgb) / 28%);
+		filter: drop-shadow(var(--hero-angelic-title-shadow));
 	}
 
 	.invitation-hero__divider {
@@ -799,6 +803,14 @@
 	}
 
 	@media (width <= 540px) {
+		.invitation-hero__background img {
+			object-position: 50% 28%;
+		}
+
+		.invitation-hero__content {
+			margin-bottom: clamp(4rem, 12vh, 5.5rem);
+		}
+
 		.invitation-hero__label {
 			letter-spacing: 0.3em;
 			font-size: clamp(0.6rem, 2.5vw, 0.8rem);
@@ -817,6 +829,22 @@
 		.invitation-hero__venue {
 			font-size: clamp(0.65rem, 2.5vw, 0.85rem);
 			letter-spacing: 0.14em;
+		}
+	}
+
+	@media (width >= 768px) {
+		align-items: flex-start;
+		text-align: left;
+
+		.invitation-hero__content {
+			align-self: flex-start;
+			max-width: min(42rem, 44vw);
+			margin-left: clamp(2rem, 7vw, 7rem);
+			margin-bottom: clamp(4.5rem, 11vh, 7rem);
+		}
+
+		.invitation-hero__divider {
+			margin-inline: 0;
 		}
 	}
 }

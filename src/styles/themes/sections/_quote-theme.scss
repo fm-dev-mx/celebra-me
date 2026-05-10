@@ -251,7 +251,7 @@
 		);
 	position: relative;
 	overflow: hidden;
-	padding: clamp(5rem, 10vw, 8rem) 1.5rem;
+	padding: clamp(3.75rem, 7vw, 6rem) 1.5rem;
 
 	.quote-texture {
 		display: block;
@@ -277,12 +277,12 @@
 	.quote-content {
 		font-family: var(--font-display);
 		font-weight: 500;
-		font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+		font-size: clamp(1.35rem, 4vw, 2rem);
 		font-style: italic;
-		line-height: 1.6;
+		line-height: 1.55;
 		color: var(--color-text-primary);
 		text-shadow: 0 1px 8px var(--color-glass-shadow);
-		max-width: 680px;
+		max-width: 620px;
 		margin: 0 auto;
 	}
 

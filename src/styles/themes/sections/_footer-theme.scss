@@ -141,6 +141,54 @@
 	}
 }
 
+.invitation-footer[data-variant='angelic-presence'] {
+	padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+	background:
+		linear-gradient(180deg, rgb(var(--color-soft-sand-rgb) / 64%), var(--color-angelic-white)),
+		var(--color-angelic-white);
+	border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+	color: var(--color-eternal-ink);
+
+	.footer__content {
+		padding-block: 1rem;
+		gap: 1rem;
+	}
+
+	.footer__primary-row {
+		gap: 1.25rem;
+	}
+
+	.powered-by {
+		color: rgb(var(--color-eternal-ink-rgb) / 46%);
+		letter-spacing: 0.16em;
+	}
+
+	.whatsapp-button {
+		border-radius: 999px;
+		border-color: rgb(var(--color-sacred-gold-rgb) / 28%);
+		background: rgb(var(--color-pure-ivory-rgb) / 56%);
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		letter-spacing: 0.12em;
+		opacity: 90%;
+
+		&:hover {
+			background: var(--color-eternal-ink);
+			border-color: var(--color-eternal-ink);
+			color: var(--color-pure-ivory);
+			box-shadow: 0 12px 28px rgb(var(--color-eternal-ink-rgb) / 12%);
+		}
+	}
+
+	.footer__replay-link {
+		color: rgb(var(--color-eternal-ink-rgb) / 48%);
+		letter-spacing: 0.12em;
+
+		&:hover {
+			color: var(--color-eternal-ink);
+		}
+	}
+}
+
 .invitation-footer[data-variant='editorial'] {
 	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
 	background-color: var(--color-surface-dark);

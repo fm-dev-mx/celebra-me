@@ -642,6 +642,97 @@
 	}
 }
 
+.rsvp[data-variant='angelic-presence'] {
+	--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 72%);
+	--color-glass-border: rgb(var(--color-sacred-gold-rgb) / 26%);
+	--shadow-premium:
+		0 24px 70px -44px rgb(var(--color-eternal-ink-rgb) / 34%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 88%);
+	--rsvp-label-color: rgb(var(--color-eternal-ink-rgb) / 68%);
+	--rsvp-label-letter-spacing: 0.12em;
+	--rsvp-field-bg: rgb(var(--color-pure-ivory-rgb) / 58%);
+	--rsvp-field-bg-focus: rgb(var(--color-pure-ivory-rgb) / 92%);
+	--rsvp-field-border: rgb(var(--color-sacred-gold-rgb) / 28%);
+	--rsvp-placeholder-color: rgb(var(--color-eternal-ink-rgb) / 38%);
+	--rsvp-radio-bg: rgb(var(--color-pure-ivory-rgb) / 46%);
+	--rsvp-radio-bg-hover: rgb(var(--color-pure-ivory-rgb) / 72%);
+	--rsvp-radio-border: rgb(var(--color-sacred-gold-rgb) / 24%);
+	--rsvp-radio-selected-bg: rgb(var(--color-sacred-gold-rgb) / 12%);
+	--rsvp-radio-selected-border: rgb(var(--color-sacred-gold-rgb) / 62%);
+	--rsvp-button-color: var(--color-eternal-ink);
+	--rsvp-button-bg: rgb(var(--color-pure-ivory-rgb) / 66%);
+	--rsvp-button-bg-hover: var(--color-eternal-ink);
+	--rsvp-button-color-hover: var(--color-pure-ivory);
+	--rsvp-button-border: rgb(var(--color-sacred-gold-rgb) / 40%);
+	--rsvp-button-radius: 999px;
+	--rsvp-title-font: var(--font-display);
+	--rsvp-title-color: var(--color-sacred-gold);
+	--rsvp-title-size: clamp(2rem, 6vw, 3rem);
+	--rsvp-title-letter-spacing: 0.01em;
+	--rsvp-title-margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+
+	background:
+		radial-gradient(circle at 50% 0%, rgb(var(--color-sacred-gold-rgb) / 9%), transparent 62%),
+		var(--color-glass-bg);
+	border-radius: 8px;
+	margin-block: clamp(5rem, 10vw, 7rem);
+	padding: clamp(2.1rem, 5vw, 3rem) clamp(1.4rem, 4vw, 2.5rem);
+	backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0.45rem;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+
+	.rsvp__title {
+		font-weight: 400;
+		background: var(--gold-metallic);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.rsvp__locked-card {
+		position: relative;
+		z-index: 1;
+		padding: clamp(1.35rem, 4vw, 2rem);
+		background: rgb(var(--color-pure-ivory-rgb) / 52%);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+		border-radius: 8px;
+		box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 76%);
+	}
+
+	.rsvp__locked-eyebrow {
+		color: rgb(var(--color-sacred-gold-rgb) / 82%);
+		font-family: var(--font-label);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+	}
+
+	.rsvp__locked-message {
+		color: var(--color-eternal-ink);
+		font-family: var(--font-display);
+		font-size: clamp(1.15rem, 3vw, 1.45rem);
+		line-height: 1.35;
+	}
+
+	.rsvp__locked-detail {
+		color: rgb(var(--color-eternal-ink-rgb) / 64%);
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.rsvp__button {
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+}
+
 // ==========================================================================
 // JEWELRY BOX RSVP
 // ==========================================================================
