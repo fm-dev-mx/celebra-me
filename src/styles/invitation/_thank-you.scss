@@ -61,23 +61,6 @@
 		height: 280px;
 	}
 
-	.glimmer-effect {
-		position: absolute;
-		top: -50%;
-		left: -50%;
-		width: 200%;
-		height: 200%;
-		background: linear-gradient(
-			45deg,
-			transparent 45%,
-			rgb(255 255 255 / 80%) 50%,
-			transparent 55%
-		);
-		animation: glimmer 4s infinite linear;
-		pointer-events: none;
-		z-index: 1;
-	}
-
 	.photo-image {
 		width: 100%;
 		height: 100%;
@@ -149,16 +132,6 @@
 	font-size: 0.75rem;
 	letter-spacing: 0.15em;
 	text-transform: uppercase;
-}
-
-@keyframes glimmer {
-	from {
-		transform: rotate(0deg) translate(-50%, -50%);
-	}
-
-	to {
-		transform: rotate(360deg) translate(-50%, -50%);
-	}
 }
 
 @keyframes signatureReveal {

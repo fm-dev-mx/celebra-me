@@ -96,10 +96,6 @@
 		}
 	}
 
-	.glimmer-effect {
-		display: none;
-	}
-
 	.thank-you-message {
 		font-family: var(--font-body);
 		color: rgb(var(--color-text-primary-rgb) / 85%);
@@ -670,16 +666,13 @@
 // ==========================================================================
 
 .thank-you-section[data-variant='luxury-hacienda'] {
-	background: linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, var(--color-surface-dark) 100%);
-	background-blend-mode: overlay;
-
-	&::before {
-		background: radial-gradient(
+	background:
+		linear-gradient(135deg, rgb(30 20 15 / 98%) 0%, var(--color-surface-dark) 100%),
+		radial-gradient(
 			ellipse at center,
 			rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15) 0%,
 			transparent 70%
 		);
-	}
 
 	.thank-you-content {
 		max-width: 800px;
@@ -733,10 +726,6 @@
 
 		&:hover {
 			transform: rotate(0deg) scale(1.05);
-		}
-
-		.glimmer-effect {
-			display: none; // Remove Jewelry Box glimmer
 		}
 
 		.photo-image {

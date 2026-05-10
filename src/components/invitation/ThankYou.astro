@@ -15,7 +15,6 @@ interface Props {
 const { message, closingName, image, variant = 'standard', focalPoint } = Astro.props;
 const isCelestialBlue = variant === 'celestial-blue';
 
-// Extract logic to avoid duplication in template
 const firstLetter = message.charAt(0);
 const remainingMessage = message.slice(1);
 
@@ -73,7 +72,6 @@ const imageConfig = isCelestialBlue
 			<div class="thank-you-content">
 				{image && (
 					<div class="photo-frame">
-						<div class="glimmer-effect" />
 						<OptimizedImage
 							imagePath={image}
 							alt={closingName}
