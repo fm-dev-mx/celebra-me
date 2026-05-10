@@ -168,7 +168,7 @@ Astro content collections (`src/content/**`) are used for:
 ### Rules
 
 - Content remains logic-free.
-- Validation and typing are defined through `src/content/config.ts`.
+- Validation and typing are defined through `src/content.config.ts`.
 - Runtime behavior must not depend on undocumented ad-hoc content fields.
 
 ---

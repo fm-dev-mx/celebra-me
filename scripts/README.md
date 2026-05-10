@@ -12,14 +12,14 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                          | Canonical Script                    | Purpose                                                                               |
-| -------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------- |
-| `pnpm ops check-links`           | `scripts/check-links.mjs`           | validate relative links inside changed Markdown files                                 |
-| `pnpm ops optimize-assets`       | `scripts/optimize-assets.mjs`       | optimize and copy the current demo asset set into the expected invitation asset slots |
-| `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`       | compare centralized theme-contract variants against section-theme selectors           |
-| `pnpm ops validate-event-parity` | `scripts/validate-event-parity.mjs` | compare content events against the Supabase `events` table                            |
-| `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`      | replay commitlint and commit-audit checks across a commit range                       |
-| `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`        | scaffold a new invitation content file plus related support artifacts                 |
+| Command                          | Canonical Script                    | Purpose                                                                                                         |
+| -------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pnpm ops check-links`           | `scripts/check-links.mjs`           | validate relative links inside changed Markdown files                                                           |
+| `pnpm ops optimize-assets`       | `scripts/optimize-assets.mjs`       | optimize and copy the current demo asset set into the expected invitation asset slots                           |
+| `pnpm ops validate-schema`       | `scripts/validate-schema.mjs`       | compare centralized theme-contract variants against section-theme selectors and documented base-style fallbacks |
+| `pnpm ops validate-event-parity` | `scripts/validate-event-parity.mjs` | compare content events against the Supabase `events` table                                                      |
+| `pnpm ops validate-commits`      | `scripts/validate-commits.mjs`      | replay commitlint and commit-audit checks across a commit range                                                 |
+| `pnpm ops new-invitation`        | `scripts/new-invitation.mjs`        | scaffold a new invitation content file plus related support artifacts                                           |
 
 ## Ownership Rules
 

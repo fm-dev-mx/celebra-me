@@ -33,12 +33,13 @@ Current presets:
 - `luxury-hacienda`
 - `premiere-floral`
 - `editorial`
+- `angelic-presence`
 
 Do not introduce ad-hoc preset names or section-variant literals directly in content files.
 
 ## Schema Discipline
 
-- Shared schema stays authoritative in `src/content/config.ts` and `src/lib/schemas/content/**`.
+- Shared schema stays authoritative in `src/content.config.ts` and `src/lib/schemas/content/**`.
 - When UI or runtime supports a field, the schema and adapter layer must support it too.
 - New event types require a contract update in `src/lib/theme/theme-contract.ts` before content is
   added.

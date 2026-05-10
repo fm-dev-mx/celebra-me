@@ -41,6 +41,7 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `celestial-blue`
 - `premiere-floral`
 - `editorial`
+- `angelic-presence`
 
 Section variant enums come from `src/lib/theme/theme-variants.ts`.
 

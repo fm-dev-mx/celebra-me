@@ -5,7 +5,7 @@
 The invitation theme system is contract-driven and section-based.
 
 - **Single contract source**: `src/lib/theme/theme-contract.ts`
-- **Schema enforcement**: `src/content/config.ts` imports modular schemas from
+- **Schema enforcement**: `src/content.config.ts` imports modular schemas from
   `src/lib/schemas/content/`
 - **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
 - **Rendering**: invitation sections use `data-variant` selectors
@@ -86,9 +86,25 @@ by the semantic layer and serve as landing-page composition primitives:
 Section base styles live with components (e.g. `src/styles/invitation/_quote.scss`). Section variant
 styles live in `src/styles/themes/sections/` and are loaded through `src/styles/invitation.scss`.
 
-For `family`, `gifts`, `gallery`, and `thankYou`, the `standard` variant is satisfied by the base
-section styles. Dedicated theme selectors are only required for non-default variants such as
-`jewelry-box` and `luxury-hacienda`.
+Some valid contract variants intentionally inherit base section styles when the preset-level
+variables already provide the needed aesthetic. Dedicated theme selectors are only required when a
+section needs layout, motion, or composition changes beyond the base stylesheet.
+
+`pnpm ops validate-schema` treats the following as documented base-style fallbacks instead of drift:
+
+| Section     | Variants using base section styles                      |
+| ----------- | ------------------------------------------------------- |
+| `quote`     | `jewelry-box-wedding`                                   |
+| `countdown` | `jewelry-box-wedding`                                   |
+| `location`  | `jewelry-box`, `jewelry-box-wedding`, `luxury-hacienda` |
+| `family`    | `jewelry-box-wedding`                                   |
+| `gifts`     | `jewelry-box-wedding`, `angelic-presence`               |
+| `gallery`   | `jewelry-box-wedding`                                   |
+| `thankYou`  | `jewelry-box-wedding`                                   |
+| `itinerary` | `jewelry-box-wedding`                                   |
+
+Selectors such as `[data-variant^='premiere-']` count as coverage for matching contract variants
+like `premiere-floral`.
 
 Selector contract:
 
@@ -158,7 +174,8 @@ independently of the UI structure.
 
 - Do not add variant literals directly in components/adapters/schema.
 - Update `theme-contract.ts` first, then consume from it.
-- Run `pnpm ops validate-schema` after theme changes.
+- Run `pnpm ops validate-schema` after theme changes. New missing variant coverage should become
+  either a selector or a documented base-style fallback in `scripts/validate-schema.mjs`.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
 - Per-event editorial overhauls (e.g., `.event--ximena-meza-trasvina`) should prioritize 3-Layer
   Architecture even when using generic section variants.
@@ -168,9 +185,11 @@ independently of the UI structure.
 Canonical runtime token publication now lives in `src/styles/tokens/semantic/` and is surfaced
 globally through `src/styles/global.scss`.
 
-`src/styles/tokens/_semantic.scss` remains in the repo only as a temporary authoring compatibility
-shim for legacy `tokens.$color-*` consumers. It is not the runtime source of truth and must not be
-used for new token publication.
+`src/styles/tokens/_semantic.scss` remains in the repo only as an authoring compatibility shim for
+legacy `tokens.$color-*` consumers. It is not the runtime source of truth and must not be used for
+new token publication. New runtime semantic tokens must be added under
+`src/styles/tokens/semantic/**` and surfaced through `src/styles/global.scss` when they need to be
+available as CSS custom properties.
 
 As of 2026-03-16 Phase 03, `src/styles/global.scss` also defines the canonical runtime typography
 and glass-role variables consumed by preset-sensitive invitation surfaces, including:
@@ -255,15 +274,13 @@ Content schemas are modularized under `src/lib/schemas/content/`:
 - `hero.schema.ts`: Hero/celebrant metadata
 - `location.schema.ts`: Venue, ceremony, reception, indications
 - `family.schema.ts`: Family relationships and groups
-- `rsvp.schema.ts`: RSVP configuration + deprecated legacy labels
+- `rsvp.schema.ts`: RSVP configuration + section label overrides
 - `gifts.schema.ts`: Gift option variants
 - `section-styles.schema.ts`: Section styling configuration
 - `shared.schema.ts`: Asset, theme, and shared primitives
 
-Legacy RSVP labels (`nameLabel`, `guestCountLabel`, `confirmButton`) are defined natively under
-`rsvp.schema.ts` as standard string options within the `labels` object to preserve existing content
-behavior during migration, without requiring a `.legacy` namespace or explicit `@deprecated` JS doc
-extraction during normal content mapping.
+RSVP label overrides are defined natively under `sectionStyles.rsvp.labels` as standard string
+options in `rsvp.schema.ts`.
 
 ---
 

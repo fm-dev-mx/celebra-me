@@ -21,6 +21,17 @@ console.log('================================');
 
 const ERRORS = [];
 const WARNINGS = [];
+const EXPECTED_BASE_STYLE_FALLBACKS = {
+	quote: new Set(['jewelry-box-wedding']),
+	countdown: new Set(['jewelry-box-wedding']),
+	location: new Set(['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda']),
+	family: new Set(['jewelry-box-wedding']),
+	gifts: new Set(['jewelry-box-wedding', 'angelic-presence']),
+	gallery: new Set(['jewelry-box-wedding']),
+	thankYou: new Set(['jewelry-box-wedding']),
+	itinerary: new Set(['jewelry-box-wedding']),
+};
+const EXPECTED_FALLBACKS = [];
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
@@ -57,7 +68,7 @@ function extractContractVariants() {
 }
 
 // Extract variants from CSS files
-function extractCSSVariants() {
+function extractCSSVariants(contractVariants) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const files = fs.readdirSync(themesDir);
 
@@ -96,6 +107,16 @@ function extractCSSVariants() {
 		let match;
 		while ((match = variantRegex.exec(content)) !== null) {
 			variants[section].add(match[1]);
+		}
+
+		const variantPrefixRegex = /\[data-variant\^=['"]([^'"]+)['"]\]/g;
+		while ((match = variantPrefixRegex.exec(content)) !== null) {
+			const prefix = match[1];
+			for (const variant of contractVariants[section]) {
+				if (variant.startsWith(prefix)) {
+					variants[section].add(variant);
+				}
+			}
 		}
 	}
 
@@ -147,7 +168,7 @@ function main() {
 	const contractVariants = extractContractVariants();
 
 	console.log('Phase 2: Extracting CSS variants...');
-	const cssVariants = extractCSSVariants();
+	const cssVariants = extractCSSVariants(contractVariants);
 
 	console.log('Phase 3: Comparing variants...');
 
@@ -176,7 +197,13 @@ function main() {
 		// Check for contract variants missing in CSS
 		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
-				WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
+				if (EXPECTED_BASE_STYLE_FALLBACKS[section]?.has(variant)) {
+					EXPECTED_FALLBACKS.push(
+						`${section}: Contract variant '${variant}' intentionally uses base section styles`,
+					);
+				} else {
+					WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
+				}
 			}
 		}
 
@@ -207,6 +234,7 @@ function main() {
 	console.log('Validation complete!');
 	console.log(`Errors: ${ERRORS.length}`);
 	console.log(`Warnings: ${WARNINGS.length}`);
+	console.log(`Expected base-style fallbacks: ${EXPECTED_FALLBACKS.length}`);
 
 	if (ERRORS.length > 0) {
 		console.log('\n❌ ERRORS (must fix):');
@@ -218,6 +246,11 @@ function main() {
 		WARNINGS.forEach((warning) => console.log(`  - ${warning}`));
 	}
 
+	if (EXPECTED_FALLBACKS.length > 0) {
+		console.log('\nℹ️  Expected base-style fallbacks:');
+		EXPECTED_FALLBACKS.forEach((fallback) => console.log(`  - ${fallback}`));
+	}
+
 	if (ERRORS.length === 0 && WARNINGS.length === 0) {
 		console.log('\n✅ All checks passed! Schema is synchronized.');
 	}
@@ -227,7 +260,9 @@ function main() {
 }
 
 // Run main function
-main().catch((error) => {
+try {
+	main();
+} catch (error) {
 	console.error('❌ Validation failed:', error);
 	process.exit(1);
-});
+}
