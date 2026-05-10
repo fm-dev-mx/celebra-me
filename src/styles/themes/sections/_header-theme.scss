@@ -37,9 +37,8 @@
 	}
 }
 
-// JEWELRY BOX / CELESTIAL BLUE PRESET
-.header-base[data-variant='jewelry-box'],
-.header-base[data-variant='celestial-blue'] {
+// JEWELRY BOX
+.header-base[data-variant='jewelry-box'] {
 	--header-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
 	--header-bg-scrolled: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
 	--header-nav-color: #{tokens.$color-surface-dark};
@@ -48,6 +47,7 @@
 	--header-nav-filter-transparent: none;
 }
 
+// CELESTIAL BLUE
 .header-base[data-variant='celestial-blue'] {
 	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
 	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
@@ -127,12 +127,17 @@
 	}
 
 	.mobile-nav-actions__cta {
-		background: var(--color-sacred-gold);
-		color: var(--color-pure-ivory);
-		box-shadow: 0 4px 16px rgb(var(--color-sacred-gold-rgb) / 16%);
+		background: transparent;
+		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 55%);
+		backdrop-filter: blur(8px) saturate(140%);
+		box-shadow: 0 0 0 0 rgb(var(--color-sacred-gold-rgb) / 0%);
 
 		&:hover {
-			box-shadow: 0 6px 20px rgb(var(--color-sacred-gold-rgb) / 24%);
+			background: rgb(var(--color-sacred-gold-rgb) / 12%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 75%);
+			color: rgb(var(--color-sacred-gold-rgb) / 95%);
+			box-shadow: 0 0 12px rgb(var(--color-sacred-gold-rgb) / 18%);
 		}
 	}
 
