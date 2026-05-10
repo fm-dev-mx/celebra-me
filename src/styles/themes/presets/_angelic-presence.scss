@@ -1,3 +1,5 @@
+// Baptism palette — luminous, sacred, calm
+
 .theme-preset--angelic-presence {
 	// ---------------------------------------------------------------------
 	// Base palette: "Divine Light" (White, Cream & Gold)
@@ -8,10 +10,12 @@
 	--color-pure-ivory-rgb: 255 255 255;
 	--color-soft-sand: rgb(244 241 234);
 	--color-soft-sand-rgb: 244 241 234;
-	--color-sacred-gold: rgb(212 175 55);
-	--color-sacred-gold-rgb: 212 175 55;
-	--color-eternal-ink: rgb(45 42 38);
-	--color-eternal-ink-rgb: 45 42 38;
+
+	// Reduced saturation: champagne/antique-gold range instead of yellow gold
+	--color-sacred-gold: rgb(191 167 106);
+	--color-sacred-gold-rgb: 191 167 106;
+	--color-eternal-ink: rgb(63 58 50);
+	--color-eternal-ink-rgb: 63 58 50;
 	--color-ethereal-gray: rgb(220 220 215);
 	--color-ethereal-gray-rgb: 220 220 215;
 
@@ -75,11 +79,13 @@
 	);
 
 	// ---------------------------------------------------------------------
-	// Hero section
+	// Hero section — baptism editorial split
 	// ---------------------------------------------------------------------
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-sacred-gold-rgb) / 28%);
 	--hero-card-shadow-ambient: none;
+
+	// Less saturated gold in title: champagne/antique gold
 	--hero-title-color-start: rgb(var(--color-eternal-ink-rgb) / 92%);
 	--hero-title-color-mid: var(--color-sacred-gold);
 	--hero-title-color-end: rgb(var(--color-eternal-ink-rgb) / 85%);
@@ -87,6 +93,9 @@
 	--hero-badge-border: rgb(var(--color-sacred-gold-rgb) / 42%);
 	--hero-badge-text: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
+
+	// Baptism image filter — warm but preserves skin tones
+	--hero-image-filter: brightness(0.98) contrast(0.98) saturate(0.92) sepia(0.04);
 
 	// ---------------------------------------------------------------------
 	// Family section
