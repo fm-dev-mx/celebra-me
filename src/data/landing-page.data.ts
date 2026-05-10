@@ -36,7 +36,7 @@ export const landingData: LandingPageData = {
 				icon: 'RingsIcon',
 			},
 			{
-				href: '/under-construction',
+				href: '/bautizo/demo-bautismo-angelic-presence',
 				title: 'Bautizos',
 				description: 'Detalles tiernos para celebrar la vida.',
 				icon: 'DoveIcon',

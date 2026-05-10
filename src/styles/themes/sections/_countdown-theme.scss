@@ -2,7 +2,6 @@
 // Theme-specific styles for Countdown Section
 // Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
 
-@use 'sass:color';
 @use '../../tokens' as tokens;
 @use '../../global/mixins' as mixins;
 
@@ -730,6 +729,235 @@
 
 	100% {
 		background-position: 200% center;
+	}
+}
+
+// ==========================================================================
+// ANGELIC PRESENCE VARIANT (Baptism/Sacred)
+// Best for: Baptism demos, sacred ceremonies
+// Characteristics: Warm ivory/cream surfaces, sacred-gold accents, serene
+// ==========================================================================
+
+.countdown-section[data-variant='angelic-presence'] {
+	--countdown-grid-columns-mobile: 2;
+	--countdown-grid-columns-tablet: 4;
+	--countdown-segment-padding-mobile: clamp(1.8rem, 4vw, 2.4rem) clamp(0.75rem, 2vw, 1.25rem);
+	--countdown-segment-padding-desktop: clamp(2rem, 3vw, 2.8rem) clamp(1rem, 1.5vw, 1.75rem);
+
+	background:
+		radial-gradient(
+			circle at 50% 8%,
+			rgb(var(--color-sacred-gold-rgb) / 10%) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-angelic-white) 0%,
+			var(--color-pure-ivory) 48%,
+			var(--color-soft-sand) 100%
+		);
+	padding-block: clamp(5rem, 10vw, 8rem);
+	position: relative;
+	overflow: hidden;
+
+	.countdown-texture {
+		opacity: 8%;
+		background: var(--texture-silk);
+		background-size: 200% 100%;
+		pointer-events: none;
+	}
+
+	.countdown-container {
+		max-width: 780px;
+	}
+
+	.countdown-header {
+		margin-bottom: clamp(2.5rem, 5vw, 4rem);
+	}
+
+	.countdown-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 5.5vw, 3rem);
+		font-weight: 400;
+		color: var(--color-eternal-ink);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		margin-bottom: clamp(1rem, 2vw, 1.5rem);
+	}
+
+	.countdown-subtitle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: clamp(0.75rem, 2vw, 1.25rem);
+		margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
+
+		.subtitle-line {
+			display: none;
+			height: 1px;
+			width: clamp(28px, 5vw, 52px);
+			background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
+			flex-shrink: 0;
+
+			@media (width >= 640px) {
+				display: block;
+			}
+		}
+
+		.event-date {
+			font-family: var(--font-body);
+			font-size: clamp(0.68rem, 2vw, 0.8rem);
+			font-weight: 600;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: rgb(var(--color-eternal-ink-rgb) / 58%);
+			white-space: nowrap;
+		}
+	}
+
+	.countdown__timer {
+		gap: clamp(0.5rem, 1.5vw, 0.85rem);
+		margin-inline: auto;
+		max-width: 500px;
+
+		@media (width >= 640px) {
+			max-width: none;
+		}
+
+		@media (width <= 860px) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 0.75rem;
+		}
+	}
+
+	.countdown__segment {
+		background: rgb(var(--color-pure-ivory-rgb) / 72%);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+		border-radius: 6px;
+		box-shadow:
+			0 8px 24px rgb(var(--color-eternal-ink-rgb) / 6%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+		padding: var(--countdown-segment-padding-mobile);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		position: relative;
+		transition:
+			border-color 0.4s ease,
+			box-shadow 0.4s ease,
+			transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--color-pure-ivory-rgb) / 60%) 0%,
+				transparent 40%
+			);
+			pointer-events: none;
+		}
+
+		&:hover {
+			border-color: rgb(var(--color-sacred-gold-rgb) / 50%);
+			box-shadow:
+				0 12px 28px rgb(var(--color-eternal-ink-rgb) / 8%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+			transform: translateY(-3px);
+		}
+
+		@media (width >= 640px) {
+			border-radius: 8px;
+			padding: var(--countdown-segment-padding-desktop);
+			gap: 0.5rem;
+		}
+	}
+
+	.countdown__value-wrapper {
+		height: auto;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		margin-bottom: 0;
+		min-height: 1.1em;
+
+		@media (width >= 640px) {
+			height: auto;
+			width: 100%;
+		}
+	}
+
+	.countdown__value {
+		font-family: var(--font-display);
+		font-size: var(--countdown-value-size-mobile, clamp(2.5rem, 12vw, 3.5rem));
+		font-weight: 400;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-eternal-ink);
+		line-height: 1;
+		letter-spacing: -0.02em;
+
+		@media (width >= 860px) {
+			font-size: var(--countdown-value-size-desktop, clamp(3.2rem, 5vw, 4.5rem));
+		}
+	}
+
+	.countdown__label {
+		font-family: var(--font-body);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: var(--countdown-label-letter-spacing, 0.28em);
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 55%);
+		opacity: 100%;
+
+		@media (width >= 640px) {
+			font-size: 0.68rem;
+		}
+	}
+
+	.countdown-footer {
+		margin-top: clamp(2.5rem, 5vw, 4rem);
+		padding-top: clamp(1.5rem, 3vw, 2rem);
+		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: -1px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 40px;
+			height: 1px;
+			background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
+		}
+	}
+
+	.countdown-invitation-text {
+		font-family: var(--font-body);
+		font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+		font-style: normal;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 54%);
+		max-inline-size: 32ch;
+		margin-inline: auto;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.countdown__segment {
+			transition: none;
+
+			&:hover {
+				transform: none;
+			}
+		}
 	}
 }
 

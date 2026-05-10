@@ -6,22 +6,128 @@
     "theme": {
         "preset": "angelic-presence"
     },
+    "sectionStyles": {
+        "family": {},
+        "gallery": {},
+        "itinerary": {},
+        "thankYou": {}
+    },
     "hero": {
         "name": "María",
         "secondaryName": "Santos",
         "label": "Bautismo",
         "date": "2026-06-15T10:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1600&q=80"
     },
     "location": {
         "venueName": "Parroquia de San José",
         "address": "Calle Principal #10",
-        "city": "Ciudad de México"
+        "city": "Ciudad de México",
+        "ceremony": {
+            "venueEvent": "Ceremonia",
+            "venueName": "Parroquia de San José",
+            "address": "Calle Principal #10, Centro",
+            "date": "15 de junio de 2026",
+            "time": "10:00 AM",
+            "image": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80"
+        }
+    },
+    "family": {
+        "parents": {
+            "father": "Carlos Alberto Rodríguez",
+            "mother": "Mercedes Elena de Rodríguez"
+        },
+        "godparents": [
+            { "name": "Dr. Alejandro Gómez", "role": "Padrino" },
+            { "name": "Sra. Beatriz Mendoza", "role": "Madrina" }
+        ],
+        "featuredImage": "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80",
+        "labels": {
+            "sectionTitle": "Los que hacen este momento sagrado",
+            "sectionSubtitle": "Familia",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. El amor y las bendiciones de nuestra familia son el regalo más precious."
+        }
+    },
+    "gallery": {
+        "title": "Galería",
+        "subtitle": "Momentos de fe y alegría",
+        "items": [
+            {
+                "image": "https://images.unsplash.com/photo-1438032005730-c779502df39b?w=600&q=80",
+                "caption": "Agua bendita"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1509803874385-db7c23652552?w=600&q=80",
+                "caption": "Vela del bautismo"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&q=80",
+                "caption": "Familia reunida"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
+                "caption": "Momento sagrado"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1464699908537-0954e50791ee?w=600&q=80",
+                "caption": "Celebración"
+            },
+            {
+                "image": "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=600&q=80",
+                "caption": "Fe y amor"
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa",
+        "subtitle": "Bautismo de María",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Bienvenida",
+                "time": "10:00 AM",
+                "description": "Recepción de invitados"
+            },
+            {
+                "icon": "church",
+                "label": "Ceremonia",
+                "time": "10:30 AM",
+                "description": "Sacramento del Bautismo"
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "12:00 PM",
+                "description": "Celebración con la familia"
+            },
+            {
+                "icon": "cake",
+                "label": "Pastel",
+                "time": "1:00 PM",
+                "description": "Corte del pastel"
+            }
+        ]
+    },
+    "countdown": {
+        "title": "Falta muy poco",
+        "subtitlePrefix": "El",
+        "footerText": "Prepárate para celebrar con nosotros"
+    },
+    "quote": {
+        "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
+        "author": "Mateo 18:20"
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día especial.",
         "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir con nosotros este momento tan especial. Tu presencia y bendiciones hacen de este día algo inolvidable.",
+        "closingName": "María",
+        "image": "https://images.unsplash.com/photo-1464699908537-0954e50791ee?w=400&q=80"
     }
 }

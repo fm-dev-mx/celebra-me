@@ -294,6 +294,167 @@
 	}
 }
 
+.family[data-variant='angelic-presence'] {
+	--family-bg: radial-gradient(
+		circle at 50% 12%,
+		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
+		var(--color-surface-primary) 64%,
+		rgb(var(--color-soft-sand-rgb) / 72%) 100%
+	);
+	--family-panel-bg: rgb(var(--color-angelic-white-rgb) / 88%);
+	--family-border: rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-text-primary: var(--color-eternal-ink);
+	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--family-accent: var(--color-sacred-gold);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--color-sacred-gold-rgb) / 42%),
+		transparent
+	);
+	--family-shadow: var(--shadow-editorial);
+	--family-media-filter: sepia(0.08) contrast(1.02) brightness(1.01);
+	--family-content-max-width: 38rem;
+
+	.family__header {
+		text-align: center;
+	}
+
+	.family__eyebrow {
+		font-family: var(--font-label);
+		letter-spacing: 0.32em;
+		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		text-transform: uppercase;
+		font-weight: 500;
+		font-size: 0.72rem;
+	}
+
+	.family__title {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		font-weight: 400;
+		color: var(--color-eternal-ink);
+		letter-spacing: 0.01em;
+		margin-top: 0.8rem;
+	}
+
+	.family__header-divider {
+		width: clamp(4rem, 12vw, 8rem);
+		height: 1px;
+		margin: clamp(1rem, 2.5vw, 1.5rem) auto;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-sacred-gold-rgb) / 50%),
+			transparent
+		);
+	}
+
+	.family__message {
+		max-width: 36rem;
+		margin-inline: auto;
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+		line-height: 1.7;
+	}
+
+	.family__bg-texture {
+		opacity: var(--family-texture-opacity, 12%);
+		background-image:
+			radial-gradient(
+				circle at 30% 20%,
+				rgb(var(--color-sacred-gold-rgb) / 12%) 0%,
+				transparent 40%
+			),
+			radial-gradient(
+				circle at 75% 80%,
+				rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
+				transparent 38%
+			);
+	}
+
+	.family__group-title {
+		font-family: var(--font-label);
+		font-size: 0.7rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+	}
+
+	.family__name {
+		font-family: var(--font-display);
+		font-size: clamp(1.3rem, 3vw, 1.8rem);
+		color: var(--color-eternal-ink);
+	}
+
+	.family__meta {
+		font-family: var(--font-label);
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 60%);
+	}
+
+	.family__connector {
+		font-family: var(--font-calligraphy);
+		font-size: 1.6rem;
+		color: var(--color-sacred-gold);
+		opacity: 70%;
+	}
+
+	.family__list--godparents {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: clamp(2rem, 5vw, 3.5rem);
+		max-width: 36rem;
+		margin-inline: auto;
+	}
+
+	.family__pair {
+		display: grid;
+		gap: 1rem;
+		align-content: start;
+	}
+
+	.family__pair-ordinal {
+		font-family: var(--font-label);
+		font-size: 0.6rem;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: rgb(var(--color-sacred-gold-rgb) / 50%);
+	}
+
+	.family__item--godparent {
+		align-items: center;
+		text-align: center;
+	}
+
+	.family__item--godparent .family__name {
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 2.8vw, 2rem);
+		color: var(--color-eternal-ink);
+	}
+
+	.family__pair-connector {
+		font-family: var(--font-calligraphy);
+		font-size: 1.2rem;
+		color: var(--color-sacred-gold);
+		opacity: 60%;
+	}
+
+	@media (width <= 640px) {
+		.family__list--godparents {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+
+		.family__header-divider {
+			width: 60%;
+		}
+	}
+}
+
 .family[data-variant='celestial-blue'] {
 	--family-watermark: 'AS';
 

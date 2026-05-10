@@ -159,7 +159,6 @@
 		pointer-events: none;
 		transform: translateX(-5%) translateY(-10%);
 		background-clip: text;
-		background-clip: text;
 	}
 
 	.invitation-hero__portrait {
@@ -429,7 +428,6 @@
 		);
 		background-size: 100% 200%;
 		background-clip: text;
-		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-shadow: 0 4px 10px rgb(0 0 0 / 24%); // Standardized shadow instead of filter
 		animation:
@@ -576,7 +574,6 @@
 			var(--hero-title-color-end) 100%
 		);
 		background-clip: text;
-		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		-webkit-text-stroke: 0;
 		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%); // Standardized shadow instead of filter
@@ -693,6 +690,138 @@
 }
 
 // ==========================================================================
+// ANGELIC PRESENCE HERO
+// Baptism / Divine Light — warm ivory, cream, sand, sacred gold
+// Uses angelic-presence preset tokens already defined in _angelic-presence.scss
+// ==========================================================================
+
+.invitation-hero[data-variant='angelic-presence'] {
+	.invitation-hero__background {
+		&::after {
+			background:
+				radial-gradient(
+					circle at 50% 25%,
+					rgb(var(--color-sacred-gold-rgb) / 12%) 0%,
+					transparent 50%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--color-pure-ivory-rgb) / 18%) 0%,
+					rgb(var(--color-eternal-ink-rgb) / 8%) 55%,
+					rgb(var(--color-eternal-ink-rgb) / 32%) 100%
+				);
+		}
+
+		img {
+			filter: grayscale(0.04) brightness(0.98) sepia(0.04);
+		}
+	}
+
+	.invitation-hero__content {
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out) 0.5s forwards;
+	}
+
+	.invitation-hero__label {
+		color: rgb(var(--color-pure-ivory-rgb) / 80%);
+		letter-spacing: 0.38em;
+		font-weight: 500;
+		text-shadow: 0 2px 8px rgb(var(--color-eternal-ink-rgb) / 30%);
+	}
+
+	.invitation-hero__title-wrapper {
+		animation: fadeInSlideUp var(--duration-premium) var(--ease-out) 0.8s forwards;
+	}
+
+	.invitation-hero__title {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 10vw, 6.5rem);
+		font-weight: 400;
+		line-height: 0.88;
+		letter-spacing: 0.01em;
+		color: var(--color-eternal-ink);
+		background: linear-gradient(
+			115deg,
+			var(--color-eternal-ink) 0%,
+			var(--color-sacred-gold) 46%,
+			var(--color-eternal-ink) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-shadow:
+			0 0 28px rgb(var(--color-sacred-gold-rgb) / 25%),
+			0 1px 4px rgb(var(--color-eternal-ink-rgb) / 28%);
+	}
+
+	.invitation-hero__divider {
+		width: clamp(4rem, 10vw, 7rem);
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
+		opacity: 55%;
+		margin: clamp(1rem, 2.5vw, 1.5rem) auto;
+	}
+
+	.invitation-hero__details {
+		gap: 0.6rem;
+		color: var(--color-eternal-ink);
+	}
+
+	.invitation-hero__date,
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		font-family: var(--font-label);
+		font-size: clamp(0.72rem, 2vw, 1rem);
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 80%);
+		text-shadow: 0 1px 6px rgb(var(--color-eternal-ink-rgb) / 50%);
+	}
+
+	.invitation-hero__venue {
+		font-style: normal;
+		font-weight: 400;
+
+		.calligraphy-accent {
+			font-family: var(--font-calligraphy);
+			color: var(--color-sacred-gold);
+			font-size: 1em;
+			margin-right: 0.25rem;
+		}
+	}
+
+	.invitation-hero__scroll-indicator {
+		opacity: 50%;
+		transform: scale(0.88);
+		color: rgb(var(--color-eternal-ink-rgb) / 45%);
+	}
+
+	.invitation-hero__nickname-badge {
+		display: none;
+	}
+
+	@media (width <= 540px) {
+		.invitation-hero__label {
+			letter-spacing: 0.3em;
+			font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+		}
+
+		.invitation-hero__title {
+			font-size: clamp(2.8rem, 14vw, 4.5rem);
+		}
+
+		.invitation-hero__details {
+			gap: 0.35rem;
+		}
+
+		.invitation-hero__date,
+		.invitation-hero__time,
+		.invitation-hero__venue {
+			font-size: clamp(0.65rem, 2.5vw, 0.85rem);
+			letter-spacing: 0.14em;
+		}
+	}
+}
+
+// ==========================================================================
 // LUXURY HACIENDA HERO
 // ==========================================================================
 
@@ -782,7 +911,6 @@
 			var(--hero-title-color-mid) 48%,
 			var(--hero-title-color-end) 100%
 		);
-		background-clip: text;
 		background-clip: text;
 		color: transparent;
 		background-size: 170% auto;
