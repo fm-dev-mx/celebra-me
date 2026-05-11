@@ -206,13 +206,9 @@ if (godparents && godparents.length > 0) {
 	id="family-section"
 	class="family"
 	data-variant={variant}
+	data-focal-point={focalPoint || 'center'}
 	{...layoutVariant && { 'data-layout-variant': layoutVariant }}
 >
-	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
-		.family {
-			--family-focal-point: var(--focalPoint);
-		}
-	</style>
 	<div class="family__bg-texture" aria-hidden="true"></div>
 	<FamilyDecorations variant={variant} component="bg" />
 
@@ -317,6 +313,13 @@ if (godparents && godparents.length > 0) {
 		</div>
 	</Container>
 </section>
+
+<script>
+document.querySelectorAll<HTMLElement>('.family[data-focal-point]').forEach((section) => {
+	const focalPoint = section.dataset.focalPoint || 'center';
+	section.style.setProperty('--family-focal-point', focalPoint);
+});
+</script>
 <script>
 	import { createIntersectionObserver } from '@/utils/animations';
 

@@ -28,12 +28,8 @@ const imageConfig = isCelestialBlue
 	id="thank-you-section"
 	class="thank-you-section"
 	data-variant={variant}
+	data-focal-point={focalPoint || 'center'}
 >
-	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
-		.thank-you-section {
-			--thank-you-focal-point: var(--focalPoint);
-		}
-	</style>
 	{
 		isCelestialBlue ? (
 			<div class="thank-you-editorial">
@@ -64,7 +60,7 @@ const imageConfig = isCelestialBlue
 					</div>
 
 					<footer class="thank-you-footer">
-						<p>Digital concierge by Celebra-me</p>
+						<p>Concierge digital por Celebra-me</p>
 					</footer>
 				</div>
 			</div>
@@ -101,9 +97,16 @@ const imageConfig = isCelestialBlue
 				</div>
 
 				<footer class="thank-you-footer">
-					<p>Digital concierge by Celebra-me</p>
+					<p>Concierge digital por Celebra-me</p>
 				</footer>
 			</div>
 		)
 	}
 </section>
+
+<script>
+document.querySelectorAll<HTMLElement>('.thank-you-section[data-focal-point]').forEach((section) => {
+	const focalPoint = section.dataset.focalPoint || 'center';
+	section.style.setProperty('--thank-you-focal-point', focalPoint);
+});
+</script>

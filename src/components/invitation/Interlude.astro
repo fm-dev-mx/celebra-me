@@ -23,13 +23,9 @@ const shouldPrioritizeImage = interludeIndex === 1;
 	data-variant={variant}
 	data-height={height}
 	data-interlude-index={interludeIndex}
+	data-focal-point={focalPoint || 'center'}
 	aria-label={alt}
 >
-	<style define:vars={{ focalPoint: focalPoint || 'center' }}>
-		.invitation-interlude {
-			--interlude-focal-point: var(--focalPoint);
-		}
-	</style>
 	<div class="invitation-interlude__media">
 		<OptimizedImage
 			imagePath={image}
@@ -46,6 +42,12 @@ const shouldPrioritizeImage = interludeIndex === 1;
 <script>
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const interludes = Array.from(document.querySelectorAll('.invitation-interlude'));
+
+interludes.forEach((interlude) => {
+	if (interlude instanceof HTMLElement) {
+		interlude.style.setProperty('--interlude-focal-point', interlude.dataset.focalPoint || 'center');
+	}
+});
 
 if (!prefersReducedMotion && interludes.length > 0) {
   const isMobile = window.innerWidth <= 768;
