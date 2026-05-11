@@ -254,3 +254,77 @@
 	background-size: 200% auto;
 	animation: effect-gold-shimmer 5s linear infinite;
 }
+
+@keyframes effect-shine-swipe {
+	0% {
+		left: -100%;
+	}
+
+	100% {
+		left: 200%;
+	}
+}
+
+@keyframes effect-glow {
+	0% {
+		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb), 0.4);
+		background: rgb(var(--color-action-accent-rgb), 0.05);
+	}
+
+	50% {
+		box-shadow: 0 0 20px 5px rgb(var(--color-action-accent-rgb), 0.2);
+		background: rgb(var(--color-action-accent-rgb), 0.1);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb), 0);
+		background: transparent;
+	}
+}
+
+.animate-shine-swipe {
+	position: relative;
+	overflow: hidden;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 50%;
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			rgb(255 255 255 / 0%) 0%,
+			rgb(255 255 255 / 40%) 50%,
+			rgb(255 255 255 / 0%) 100%
+		);
+		animation: effect-shine-swipe 1s ease-in-out;
+	}
+}
+
+.animate-glow {
+	animation: effect-glow 1.5s ease;
+}
+
+.celebrate-success {
+	animation: effect-glow 1.5s ease;
+	position: relative;
+	overflow: hidden;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 50%;
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			rgb(255 255 255 / 0%) 0%,
+			rgb(255 255 255 / 40%) 50%,
+			rgb(255 255 255 / 0%) 100%
+		);
+		animation: effect-shine-swipe 1s ease-in-out;
+	}
+}

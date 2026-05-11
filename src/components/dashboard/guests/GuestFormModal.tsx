@@ -190,7 +190,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									autoFocus
 								/>
 								{fieldErrors.fullName && (
-									<span className="field-error">{fieldErrors.fullName}</span>
+									<span className="guest-field-error">
+										{fieldErrors.fullName}
+									</span>
 								)}
 							</div>
 							<div className="dashboard-form-field">
@@ -206,13 +208,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									onKeyDown={(e) => {
 										if (e.key === 'Enter') {
 											e.preventDefault();
-											// No auto-focus next since limit is now radio cards
 										}
 									}}
 									placeholder="Opcional (10 dígitos)"
 								/>
 								{fieldErrors.phone && (
-									<span className="field-error">{fieldErrors.phone}</span>
+									<span className="guest-field-error">{fieldErrors.phone}</span>
 								)}
 							</div>
 
@@ -220,9 +221,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								<label htmlFor="maxAllowedAttendees">
 									¿Cuántos acompañantes permite?
 								</label>
-								<div className="radio-cards-container radio-cards-container--compact">
+								<div className="guest-response-cards guest-response-cards--compact">
 									{[1, 2, 3, 4, 5, 10].map((num) => (
-										<label key={num} className="radio-card">
+										<label key={num} className="guest-response-card">
 											<input
 												type="radio"
 												name="maxAllowedAttendees"
@@ -230,7 +231,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 												checked={maxAllowedAttendees === num}
 												onChange={() => setMaxAllowedAttendees(num)}
 											/>
-											<div className="radio-card__content">
+											<div className="guest-response-card__content">
 												{num === 10 ? '10+' : num}
 											</div>
 										</label>
@@ -239,9 +240,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							</div>
 							<div className="dashboard-form-field dashboard-form-field--full">
 								<label>Categorías (opcional)</label>
-								<div className="radio-cards-container radio-cards-container--tags">
+								<div className="guest-response-cards guest-response-cards--tags">
 									{PREDEFINED_TAGS.map((tag) => (
-										<label key={tag} className="radio-card">
+										<label key={tag} className="guest-response-card">
 											<input
 												type="checkbox"
 												className="hidden-input"
@@ -254,7 +255,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 													}
 												}}
 											/>
-											<div className="radio-card__content">{tag}</div>
+											<div className="guest-response-card__content">
+												{tag}
+											</div>
 										</label>
 									))}
 								</div>
