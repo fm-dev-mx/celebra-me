@@ -76,12 +76,12 @@
 
 	.quote-line {
 		transition:
-			opacity tokens.$duration-premium tokens.$ease-premium,
-			transform tokens.$duration-premium tokens.$ease-premium,
-			filter tokens.$duration-premium tokens.$ease-premium;
+			opacity var(--duration-premium) var(--ease-premium),
+			transform var(--duration-premium) var(--ease-premium),
+			filter var(--duration-premium) var(--ease-premium);
 
 		&.is-visible {
-			animation: premium-fade-up 1.2s tokens.$ease-premium forwards;
+			animation: premium-fade-up 1.2s var(--ease-premium) forwards;
 		}
 	}
 }
@@ -158,7 +158,7 @@
 
 .quote-section[data-variant='editorial'],
 .quote-section[data-variant='premiere-floral'] {
-	background-color: var(--color-surface-dark, #{tokens.color(surface, dark)});
+	background-color: var(--color-surface-dark);
 	background-image:
 		radial-gradient(
 			ellipse at center,

@@ -174,7 +174,7 @@
 			inset 0 0 0 1px rgb(255 255 255 / 5%);
 		position: relative;
 		z-index: 1;
-		transition: transform 0.8s tokens.$ease-premium;
+		transition: transform 0.8s var(--ease-premium);
 
 		&::before {
 			content: '';
@@ -380,7 +380,7 @@
 			inset: 0;
 			background: var(--light-sweep);
 			background-size: 200% 100%;
-			animation: effect-light-sweep 6s infinite tokens.$ease-in-out;
+			animation: effect-light-sweep 6s infinite var(--ease-standard);
 			pointer-events: none;
 		}
 
@@ -421,8 +421,8 @@
 		-webkit-text-fill-color: transparent;
 		text-shadow: 0 4px 10px rgb(0 0 0 / 24%); // Standardized shadow instead of filter
 		animation:
-			motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards,
-			effect-gold-shimmer 8s tokens.$ease-in-out infinite;
+			motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards,
+			effect-gold-shimmer 8s var(--ease-standard) infinite;
 		margin: 0.3rem 0;
 		-webkit-text-stroke: 0.35px rgb(255 255 255 / 18%);
 	}
@@ -542,7 +542,7 @@
 	}
 
 	.invitation-hero__title-wrapper {
-		animation: motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards;
+		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards;
 	}
 
 	.invitation-hero__title {
@@ -674,7 +674,7 @@
 .theme-preset--celestial-blue.event-theme-wrapper[data-reveal-state='revealed']
 	.invitation-hero[data-variant='celestial-blue']
 	.invitation-hero__title {
-	animation: motion-fade-in-up tokens.$duration-premium tokens.$ease-out 0.7s forwards;
+	animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.7s forwards;
 }
 
 // ==========================================================================
@@ -1148,8 +1148,8 @@
 		color: transparent;
 		background-size: 170% auto;
 		animation:
-			motion-fade-in-up tokens.$duration-premium tokens.$ease-out 1s forwards,
-			effect-shimmer 6.8s tokens.$ease-in-out infinite 1.6s;
+			motion-fade-in-up var(--duration-premium) var(--ease-out) 1s forwards,
+			effect-shimmer 6.8s var(--ease-standard) infinite 1.6s;
 		margin: 0.35rem 0 0.5rem;
 	}
 
@@ -1168,7 +1168,7 @@
 		background: var(--hero-divider-color);
 		opacity: 0%;
 		transform: scaleX(0);
-		animation: invitation-grow-line 1.15s tokens.$ease-premium 1.28s forwards;
+		animation: invitation-grow-line 1.15s var(--ease-premium) 1.28s forwards;
 	}
 
 	.invitation-hero__nickname-badge {
@@ -1189,8 +1189,8 @@
 		z-index: 10;
 		letter-spacing: 0.12em;
 		transition:
-			transform tokens.$duration-snappy tokens.$ease-premium,
-			box-shadow tokens.$duration-standard tokens.$ease-premium;
+			transform var(--duration-snappy) var(--ease-premium),
+			box-shadow var(--duration-standard) var(--ease-premium);
 
 		&::before {
 			content: '';

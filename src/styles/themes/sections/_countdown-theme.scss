@@ -523,7 +523,7 @@
 	--countdown-value-wrapper-height-desktop: 5.8rem;
 
 	background: linear-gradient(135deg, rgb(45 30 20 / 98%) 0%, rgb(25 15 10 / 100%) 100%);
-	padding: 12rem tokens.$spacing-4;
+	padding: 12rem 1rem;
 	position: relative;
 	box-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
 
@@ -531,7 +531,7 @@
 	&::after {
 		content: '';
 		position: absolute;
-		inset: tokens.$spacing-8;
+		inset: 1rem;
 		border: 1px dashed rgb(var(--color-action-accent-rgb, 212, 175, 55) / 20%);
 		pointer-events: none;
 		border-radius: 4px;
@@ -547,24 +547,24 @@
 	}
 
 	.countdown-title {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display-hacienda);
 		font-size: clamp(2.2rem, 5vw, 3.5rem);
-		color: tokens.color(action, accent);
+		color: var(--color-action-accent);
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
 		text-shadow:
 			0 4px 15px rgb(0 0 0 / 80%),
 			0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
-		margin-bottom: tokens.$spacing-12;
+		margin-bottom: 3rem;
 
 		// Light Sweep Animation on Title
 		position: relative;
 		overflow: hidden;
 		background: linear-gradient(
 			90deg,
-			tokens.color(action, accent) 0%,
+			var(--color-action-accent) 0%,
 			var(--color-surface-elevated) 50%,
-			tokens.color(action, accent) 100%
+			var(--color-action-accent) 100%
 		);
 		background-size: 200% auto;
 		background-clip: text;
@@ -576,8 +576,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: tokens.$spacing-10;
-		margin-bottom: tokens.$spacing-16;
+		gap: 1rem;
+		margin-bottom: 4rem;
 
 		.subtitle-line {
 			display: block;
@@ -586,7 +586,7 @@
 			background: linear-gradient(
 				to right,
 				transparent,
-				tokens.color(action, accent),
+				var(--color-action-accent),
 				transparent
 			);
 			position: relative;
@@ -602,7 +602,7 @@
 				background: radial-gradient(
 					circle at 30% 30%,
 					var(--color-surface-elevated) 0%,
-					tokens.color(action, accent) 70%,
+					var(--color-action-accent) 70%,
 					var(--color-surface-dark) 100%
 				);
 				border-radius: 50%;
@@ -612,7 +612,7 @@
 		}
 
 		.event-date {
-			font-family: tokens.$font-display-hacienda;
+			font-family: var(--font-display-hacienda);
 			color: rgb(var(--color-surface-primary-rgb, 245, 245, 220) / 90%);
 			letter-spacing: 0.15em;
 			text-transform: uppercase;
@@ -624,7 +624,7 @@
 		background: linear-gradient(145deg, rgb(20 15 10 / 70%) 0%, rgb(0 0 0 / 90%) 100%);
 		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
 		border-radius: 4px;
-		padding: tokens.$spacing-12 tokens.$spacing-6;
+		padding: 3rem 1.5rem;
 		box-shadow:
 			inset 0 0 25px rgb(0 0 0 / 90%),
 			0 15px 35px rgb(0 0 0 / 50%),
@@ -661,7 +661,7 @@
 		}
 
 		&:hover {
-			border-color: tokens.color(action, accent);
+			border-color: var(--color-action-accent);
 			transform: translateY(-6px) scale(1.015);
 			box-shadow:
 				inset 0 0 30px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
@@ -676,10 +676,10 @@
 	}
 
 	.countdown__value {
-		font-family: tokens.$font-display-hacienda;
+		font-family: var(--font-display-hacienda);
 		font-size: clamp(3rem, 13vw, 4.8rem);
 		font-weight: 400;
-		color: tokens.color(action, accent);
+		color: var(--color-action-accent);
 		filter: drop-shadow(0 4px 4px rgb(0 0 0 / 90%));
 		position: relative;
 		z-index: 1;
@@ -693,8 +693,8 @@
 	}
 
 	.countdown__label {
-		font-family: tokens.$font-display-hacienda;
-		color: tokens.color(action, accent);
+		font-family: var(--font-display-hacienda);
+		color: var(--color-action-accent);
 		opacity: 64%;
 		letter-spacing: 0.32em;
 		font-size: 0.8rem;
@@ -705,7 +705,7 @@
 	}
 
 	.countdown-invitation-text {
-		font-family: tokens.$font-body-hacienda;
+		font-family: var(--font-body-hacienda);
 		color: rgb(var(--color-surface-primary-rgb, 245, 245, 220) / 80%);
 		font-size: 1.5rem;
 		line-height: 1.6;
@@ -720,7 +720,7 @@
 			left: -2rem;
 			top: -1rem;
 			font-size: 4rem;
-			color: tokens.color(action, accent);
+			color: var(--color-action-accent);
 			opacity: 30%;
 		}
 	}
@@ -967,10 +967,10 @@
 	.countdown-section[data-variant='luxury-hacienda'] {
 		.countdown-title {
 			animation: none;
-			background: tokens.color(action, accent);
+			background: var(--color-action-accent);
 			-webkit-text-fill-color: initial;
 			background-clip: initial;
-			color: tokens.color(action, accent);
+			color: var(--color-action-accent);
 		}
 
 		.countdown__segment {

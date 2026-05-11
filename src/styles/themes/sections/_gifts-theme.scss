@@ -348,7 +348,7 @@
 		transition:
 			transform,
 			border-color,
-			box-shadow 0.5s tokens.$ease-premium;
+			box-shadow 0.5s var(--ease-premium);
 		position: relative;
 		overflow: hidden;
 

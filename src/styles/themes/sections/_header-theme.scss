@@ -1,5 +1,3 @@
-@use '../../tokens' as tokens;
-
 /*
  * Header Component Theme Hooks
  * Defines standard CSS variables that the base Header component consumes
@@ -41,8 +39,8 @@
 .header-base[data-variant='jewelry-box'] {
 	--header-bg: rgb(var(--color-surface-primary-rgb) / 60%);
 	--header-bg-scrolled: rgb(var(--color-surface-primary-rgb) / 95%);
-	--header-nav-color: #{tokens.color(surface, dark)};
-	--header-nav-color-transparent: #{tokens.color(text, on-dark)};
+	--header-nav-color: var(--color-surface-dark);
+	--header-nav-color-transparent: var(--color-text-on-dark);
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
 	--header-nav-filter-transparent: none;
 }

@@ -6,23 +6,20 @@
 
 // LUXURY HACIENDA BASE
 .theme-preset--luxury-hacienda {
-	// Base theme styles (moved from preset file per architecture guidelines)
 	background-color: var(--color-surface-primary);
 	min-height: 100vh;
 	font-family: var(--font-body-hacienda, #{tokens.$font-body-hacienda});
 
-	// Typography overrides
 	h1,
 	h2,
 	h3,
 	h4,
 	.font-heading {
 		font-family: var(--font-display-hacienda, #{tokens.$font-display-hacienda});
-		color: var(--color-text-primary); // Default to primary (Coffee)
+		color: var(--color-text-primary);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 
-		// Handle dark sections vs specialized titles
 		.event-location[data-variant='luxury-hacienda'] &,
 		.event-quote[data-variant='luxury-hacienda'] &,
 		.event-gifts[data-variant='luxury-hacienda'] &,
@@ -36,12 +33,12 @@
 
 	.card,
 	.glass-panel {
-		background: var(--color-glass-bg, #{tokens.surface(glass, bg)});
+		background: var(--color-glass-bg);
 		border: 1px solid rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3);
 		backdrop-filter: blur(12px) saturate(180%);
 		border-radius: 4px;
 		box-shadow:
-			tokens.surface(shadow, emphasis),
+			var(--shadow-emphasis),
 			inset 0 0 20px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1);
 		position: relative;
 
@@ -124,7 +121,6 @@
 		border: 1px solid var(--color-action-accent);
 	}
 
-	// Preset-specific layout adjustments (only scale/transforms)
 	.invitation-hero__background img {
 		transform: scale(1.02);
 	}
