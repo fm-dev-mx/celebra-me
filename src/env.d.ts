@@ -12,9 +12,9 @@ interface ImportMetaEnv {
 	readonly GMAIL_USER: string;
 	readonly GMAIL_PASS: string;
 	readonly CONTACT_FORM_RECIPIENT_EMAIL: string;
-	readonly RSVP_TOKEN_SECRET: string;
 	readonly PUBLIC_SUPABASE_URL: string;
 	readonly PUBLIC_SUPABASE_ANON_KEY: string;
+	readonly PUBLIC_GOOGLE_ANALYTICS_ID: string;
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
 	readonly RSVP_CLAIM_CODE_PEPPER: string;
@@ -23,9 +23,6 @@ interface ImportMetaEnv {
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
 	readonly SUPER_ADMIN_EMAILS: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
-	readonly SENDGRID_API_KEY: string;
-	readonly SENTRY_DSN: string;
-	readonly SENTRY_AUTH_TOKEN: string;
 	readonly BASE_URL: string;
 	readonly NODE_ENV: string;
 }

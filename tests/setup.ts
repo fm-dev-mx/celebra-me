@@ -76,7 +76,6 @@ Object.defineProperty(global, 'import', {
 	value: {
 		meta: {
 			env: {
-				SENDGRID_API_KEY: 'test-api-key',
 				EMAIL_TO: 'test@example.com',
 				EMAIL_FROM: 'noreply@test.com',
 				...process.env,
