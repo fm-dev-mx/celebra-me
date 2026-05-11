@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CopyIcon } from '@/components/common/icons/ui';
+import { EditGlyph, DeleteGlyph, CheckGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -21,59 +22,6 @@ interface GuestTableProps {
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 }
-
-const EditGlyph = () => (
-	<svg
-		viewBox="0 0 24 24"
-		width="16"
-		height="16"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="1.6"
-		strokeLinecap="round"
-		strokeLinejoin="round"
-		aria-hidden="true"
-	>
-		<path d="M12 20h9" />
-		<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-	</svg>
-);
-
-const DeleteGlyph = () => (
-	<svg
-		viewBox="0 0 24 24"
-		width="16"
-		height="16"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="1.6"
-		strokeLinecap="round"
-		strokeLinejoin="round"
-		aria-hidden="true"
-	>
-		<path d="M3 6h18" />
-		<path d="M8 6V4h8v2" />
-		<path d="M19 6l-1 14H6L5 6" />
-		<path d="M10 11v6" />
-		<path d="M14 11v6" />
-	</svg>
-);
-
-const CheckGlyph = () => (
-	<svg
-		viewBox="0 0 24 24"
-		width="16"
-		height="16"
-		fill="none"
-		stroke="currentColor"
-		strokeWidth="1.8"
-		strokeLinecap="round"
-		strokeLinejoin="round"
-		aria-hidden="true"
-	>
-		<path d="m5 12 5 5L20 7" />
-	</svg>
-);
 
 const GuestTable: React.FC<GuestTableProps> = ({
 	items,
@@ -134,6 +82,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 							<th>No.</th>
 							<th>Nombre / Contacto</th>
 							<th>Nota</th>
+							<th>Categoría</th>
 							<th>Estado</th>
 							<th>Asistentes</th>
 							<th>Entrega</th>
@@ -176,37 +125,37 @@ const GuestTable: React.FC<GuestTableProps> = ({
 													{item.email}
 												</span>
 											)}
-											<span className="tag">
+											<span className="guest-tag">
 												{formatGuestEntrySource(item)}
 											</span>
 										</div>
 									</td>
 									<td data-label="Nota">
 										{item.guestComment ? (
-											<div className="tooltip-trigger">
+											<div className="guest-tooltip">
 												<div
 													className={`guest-note-indicator ${item.guestComment ? 'guest-note-indicator--active' : ''}`}
 												>
 													<MessageIcon size={20} />
 												</div>
-												<div className="tooltip-content">
+												<div className="guest-tooltip-content">
 													{item.guestComment}
 												</div>
 											</div>
 										) : (
-											<span className="tag tag--subtle">—</span>
+											<span className="guest-tag guest-tag--subtle">—</span>
 										)}
 									</td>
-									<td data-label="Estado">
+									<td data-label="Categoría">
 										<div className="dashboard-guests__tags">
 											{visibleTags.length > 0 ? (
 												visibleTags.map((tag) => (
-													<span key={tag} className="tag">
+													<span key={tag} className="guest-tag">
 														{tag}
 													</span>
 												))
 											) : (
-												<span className="tag tag--subtle">
+												<span className="guest-tag guest-tag--subtle">
 													Sin categoría
 												</span>
 											)}
@@ -294,7 +243,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												}}
 											>
 												{copiedGuestId === item.guestId ? (
-													<CheckGlyph />
+													<CheckGlyph size={16} />
 												) : (
 													<CopyIcon size={16} />
 												)}
@@ -318,7 +267,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												aria-label={`Editar invitado ${item.fullName}`}
 												onClick={() => onEdit(item)}
 											>
-												<EditGlyph />
+												<EditGlyph size={16} />
 											</button>
 											<button
 												type="button"
@@ -327,7 +276,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												aria-label={`Eliminar invitado ${item.fullName}`}
 												onClick={() => onDelete(item)}
 											>
-												<DeleteGlyph />
+												<DeleteGlyph size={16} />
 											</button>
 										</div>
 									</td>
