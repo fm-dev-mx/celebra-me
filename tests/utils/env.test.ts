@@ -19,32 +19,36 @@ describe('getEnv', () => {
 	});
 
 	beforeEach(() => {
-		delete process.env.RSVP_ADMIN_USER;
-		delete process.env.RSVP_ADMIN_PASSWORD;
+		delete process.env.CELEBRA_TEST_ENV_USER;
+		delete process.env.CELEBRA_TEST_ENV_PASSWORD;
 	});
 
 	it('prefers process.env over files', () => {
 		process.env.NODE_ENV = 'development';
-		process.env.RSVP_ADMIN_USER = 'from-process';
+		process.env.CELEBRA_TEST_ENV_USER = 'from-process';
 		process.chdir(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'RSVP_ADMIN_USER=from-file\n', 'utf8');
+		writeFileSync(join(tempRoot, '.env.local'), 'CELEBRA_TEST_ENV_USER=from-file\n', 'utf8');
 
-		expect(getEnv('RSVP_ADMIN_USER')).toBe('from-process');
+		expect(getEnv('CELEBRA_TEST_ENV_USER')).toBe('from-process');
 	});
 
 	it('loads value from .env.local when process.env is missing', () => {
 		process.env.NODE_ENV = 'development';
 		process.chdir(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'RSVP_ADMIN_PASSWORD=from-local\n', 'utf8');
+		writeFileSync(
+			join(tempRoot, '.env.local'),
+			'CELEBRA_TEST_ENV_PASSWORD=from-local\n',
+			'utf8',
+		);
 
-		expect(getEnv('RSVP_ADMIN_PASSWORD')).toBe('from-local');
+		expect(getEnv('CELEBRA_TEST_ENV_PASSWORD')).toBe('from-local');
 	});
 
 	it('does not read files in test mode', () => {
 		process.env.NODE_ENV = 'test';
 		process.chdir(tempRoot);
-		writeFileSync(join(tempRoot, '.env.local'), 'RSVP_ADMIN_USER=from-file\n', 'utf8');
+		writeFileSync(join(tempRoot, '.env.local'), 'CELEBRA_TEST_ENV_USER=from-file\n', 'utf8');
 
-		expect(getEnv('RSVP_ADMIN_USER')).toBe('');
+		expect(getEnv('CELEBRA_TEST_ENV_USER')).toBe('');
 	});
 });
