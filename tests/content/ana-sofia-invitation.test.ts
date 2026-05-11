@@ -26,7 +26,7 @@ function readAnaSofiaEvent() {
 		eventType?: string;
 		title?: string;
 		theme?: { preset?: string; primaryColor?: string; accentColor?: string };
-		hero?: { name?: string; date?: string; layoutVariant?: string };
+		hero?: { name?: string; date?: string };
 		location?: {
 			ceremony?: { venueName?: string; time?: string };
 			reception?: { venueName?: string; time?: string };
@@ -53,7 +53,6 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 			hero: {
 				name: 'Ana Sofía Cota Guillen',
 				date: '2026-05-23T07:00:00.000Z',
-				layoutVariant: 'celestial-blue',
 			},
 			rsvp: {
 				accessMode: 'hybrid',

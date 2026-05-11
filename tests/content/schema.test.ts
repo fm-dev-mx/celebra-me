@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { collections } from '@/content.config';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 const resolvedSchema =
 	typeof collections.events.schema === 'function'
@@ -99,7 +99,7 @@ describe('Event content schema (real contract)', () => {
 	});
 
 	it('accepts all theme presets from ThemeContract', () => {
-		for (const preset of PREMIUM_THEMES) {
+		for (const preset of THEME_PRESETS) {
 			const result = eventSchema.safeParse(
 				createMinimalEvent({
 					theme: {
@@ -112,8 +112,8 @@ describe('Event content schema (real contract)', () => {
 		}
 	});
 
-	it('includes angelic-presence in PREMIUM_THEMES', () => {
-		expect((PREMIUM_THEMES as readonly string[]).includes('angelic-presence')).toBe(true);
+	it('includes angelic-presence in THEME_PRESETS', () => {
+		expect((THEME_PRESETS as readonly string[]).includes('angelic-presence')).toBe(true);
 	});
 
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {
@@ -166,42 +166,13 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('enforces typed hero and family layout variants', () => {
-		const validResult = eventSchema.safeParse(
-			createMinimalEvent({
-				hero: {
-					name: 'Test Name',
-					date: '2026-01-01T00:00:00.000Z',
-					backgroundImage: 'https://example.com/hero.jpg',
-					layoutVariant: 'celestial-blue',
-				},
-				family: {
-					layoutVariant: 'celestial-blue',
-				},
-			}),
-		);
-		const invalidResult = eventSchema.safeParse(
-			createMinimalEvent({
-				hero: {
-					name: 'Test Name',
-					date: '2026-01-01T00:00:00.000Z',
-					backgroundImage: 'https://example.com/hero.jpg',
-					layoutVariant: 'broken-layout',
-				},
-			}),
-		);
-
-		expect(validResult.success).toBe(true);
-		expect(invalidResult.success).toBe(false);
-	});
-
 	it('supports typed location indications with explicit iconName and styleVariant', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
 				sectionStyles: {
-					quote: { variant: PREMIUM_THEMES[0] },
-					location: { variant: PREMIUM_THEMES[0] },
-					rsvp: { variant: PREMIUM_THEMES[0] },
+					quote: { variant: THEME_PRESETS[0] },
+					location: { variant: THEME_PRESETS[0] },
+					rsvp: { variant: THEME_PRESETS[0] },
 				},
 				location: {
 					venueName: 'Test Venue',
