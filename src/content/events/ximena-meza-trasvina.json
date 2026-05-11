@@ -27,8 +27,7 @@
         "label": "Mis XV Años",
         "date": "2026-04-11T20:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait",
-        "layoutVariant": "premiere-floral"
+        "portrait": "portrait"
     },
     "location": {
         "venueName": "D'Galaz Alberca y Eventos",
@@ -85,8 +84,7 @@
                 "role": "Madrina de honor"
             }
         ],
-        "featuredImage": "family",
-        "layoutVariant": "premiere-floral"
+        "featuredImage": "family"
     },
     "gallery": {
         "title": "Editorial de Ximena",

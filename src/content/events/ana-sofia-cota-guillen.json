@@ -44,8 +44,7 @@
         "label": "Mis XV Años",
         "date": "2026-05-23T07:00:00.000Z",
         "backgroundImage": "hero",
-        "portrait": "portrait",
-        "layoutVariant": "celestial-blue"
+        "portrait": "portrait"
     },
     "location": {
         "venueName": "Palapa Zavala's",
@@ -115,8 +114,7 @@
                 "name": "Miguel Armando Valencia Ochoa",
                 "role": "Padrino"
             }
-        ],
-        "layoutVariant": "celestial-blue"
+        ]
     },
     "gallery": {
         "title": "Galería de Ana Sofía",
