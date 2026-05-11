@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 export const rsvpSectionStyleSchema = z
 	.object({
-		variant: z.enum(PREMIUM_THEMES).optional(),
+		variant: z.enum(THEME_PRESETS).optional(),
 		labels: z
 			.object({
 				name: z.string().optional(),

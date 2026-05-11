@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { HERO_LAYOUT_VARIANTS, PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const heroSchema = z.object({
@@ -10,6 +10,5 @@ export const heroSchema = z.object({
 	date: z.iso.datetime(),
 	backgroundImage: AssetSchema,
 	portrait: AssetSchema.optional(),
-	variant: z.enum(PREMIUM_THEMES).optional(),
-	layoutVariant: z.enum(HERO_LAYOUT_VARIANTS).optional(),
+	variant: z.enum(THEME_PRESETS).optional(),
 });

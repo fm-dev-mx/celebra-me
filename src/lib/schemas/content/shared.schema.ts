@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-registry';
-import { EVENT_TYPES, PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { EVENT_TYPES, THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 
 const secureUrlSchema = z
@@ -44,7 +44,7 @@ export const ColorTokenSchema = z
 export const themeSchema = z
 	.object({
 		fontFamily: z.enum(['serif', 'sans']).default('serif'),
-		preset: z.enum(PREMIUM_THEMES).optional(),
+		preset: z.enum(THEME_PRESETS).optional(),
 	})
 	.strict();
 

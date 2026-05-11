@@ -1,18 +1,7 @@
 import { z } from 'zod';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
-
-export const CONTENT_SECTION_KEYS = [
-	'quote',
-	'countdown',
-	'location',
-	'family',
-	'itinerary',
-	'gallery',
-	'rsvp',
-	'gifts',
-	'thankYou',
-] as const;
+import { CONTENT_SECTION_KEYS } from '@/lib/adapters/types';
 
 export const contentBlocksSchema = z
 	.array(
@@ -23,7 +12,7 @@ export const contentBlocksSchema = z
 				image: AssetSchema,
 				alt: z.string().optional(),
 				height: z.enum(['screen', 'tall']).default('screen'),
-				variant: z.enum(PREMIUM_THEMES).optional(),
+				variant: z.enum(THEME_PRESETS).optional(),
 				focalPoint: z.string().optional(),
 			}),
 		]),
