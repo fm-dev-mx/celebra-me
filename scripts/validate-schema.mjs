@@ -35,7 +35,7 @@ const EXPECTED_FALLBACKS = [];
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
-	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-variants.ts');
+	const contractPath = path.join(__dirname, '..', 'src', 'lib', 'theme', 'theme-contract.ts');
 	const content = fs.readFileSync(contractPath, 'utf8');
 
 	const variants = {
@@ -59,7 +59,7 @@ function extractContractVariants() {
 		return Array.from(match[1].matchAll(/'([^']+)'/g)).map((item) => item[1]);
 	}
 
-	const themeVariants = parseArrayConst('PREMIUM_THEMES');
+	const themeVariants = parseArrayConst('THEME_PRESETS');
 	for (const key of Object.keys(variants)) {
 		themeVariants.forEach((v) => variants[key].add(v));
 	}
