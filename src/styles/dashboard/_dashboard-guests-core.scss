@@ -1,0 +1,80 @@
+@use '../tokens' as tokens;
+
+@mixin glass-card-surface($top-alpha: 92%, $bottom-alpha: 78%, $base: var(--color-surface-soft)) {
+	background:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-white-rgb) / $top-alpha),
+			rgb(var(--color-white-rgb) / $bottom-alpha)
+		),
+		$base;
+}
+
+@mixin status-pill-variant($background, $text, $border, $dot) {
+	background: $background;
+	color: $text;
+	border: 1px solid $border;
+
+	.status-pill__dot {
+		background: $dot;
+	}
+}
+
+.status-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.4rem 1rem;
+	border-radius: 30px;
+	font-size: 0.75rem;
+	font-weight: var(--font-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+
+	&__dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+	}
+
+	&--pending {
+		@include status-pill-variant(
+			var(--dashboard-state-warning-bg),
+			var(--dashboard-state-warning-text),
+			var(--dashboard-state-warning-border),
+			var(--dashboard-state-warning)
+		);
+	}
+
+	&--confirmed {
+		@include status-pill-variant(
+			var(--dashboard-state-success-bg),
+			var(--dashboard-state-success-text),
+			var(--dashboard-state-success-border),
+			var(--dashboard-state-success)
+		);
+	}
+
+	&--declined {
+		@include status-pill-variant(
+			var(--dashboard-state-danger-bg),
+			var(--dashboard-state-danger-text),
+			var(--dashboard-state-danger-border),
+			var(--dashboard-state-danger)
+		);
+	}
+}
+
+.dashboard-guests {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: var(--spacing-xl) clamp(var(--spacing-md), 5vw, var(--spacing-xl));
+
+	@include glass-card-surface(54%, 24%, var(--color-surface-primary));
+
+	min-height: calc(100vh - 64px);
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	overflow-x: hidden;
+	box-sizing: border-box;
+}

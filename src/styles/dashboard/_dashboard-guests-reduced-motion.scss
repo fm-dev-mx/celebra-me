@@ -1,0 +1,8 @@
+@media (prefers-reduced-motion: reduce) {
+	.progress-fill,
+	.dashboard-guests__mobile-dock,
+	.guest-note-indicator--active {
+		animation: none;
+		transition: none;
+	}
+}

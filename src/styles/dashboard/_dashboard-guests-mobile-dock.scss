@@ -1,0 +1,129 @@
+.dashboard-guests__mobile-dock {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background: rgb(var(--color-white-rgb) / 72%);
+	backdrop-filter: blur(24px) saturate(160%);
+	border-top: 1px solid rgb(255 255 255 / 40%);
+	padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+	z-index: var(--dashboard-z-mobile-dock);
+	justify-content: space-around;
+	align-items: center;
+	box-shadow: 0 -8px 32px rgb(0 0 0 / 12%);
+	animation: guests-dock-slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+	@media (width <= 992px) {
+		display: flex;
+	}
+
+	.dock-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background: none;
+		border: none;
+		padding: 0.5rem;
+		color: var(--dashboard-text-secondary);
+		cursor: pointer;
+		transition:
+			background-color var(--duration-snappy) var(--ease-standard),
+			color var(--duration-snappy) var(--ease-standard),
+			transform var(--duration-snappy) var(--ease-standard);
+		position: relative;
+		gap: 0.25rem;
+		border-radius: 12px;
+		min-width: 64px;
+
+		&:hover {
+			background: rgb(var(--color-surface-dark-rgb) / 5%);
+			color: var(--dashboard-brand-primary);
+		}
+
+		&:active {
+			transform: scale(0.9);
+		}
+
+		&:disabled {
+			opacity: 45%;
+			cursor: not-allowed;
+		}
+
+		.dock-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 1.6rem;
+			height: 1.6rem;
+			margin-bottom: 0.25rem;
+		}
+
+		.dock-label {
+			font-size: 0.65rem;
+			text-transform: uppercase;
+			font-weight: var(--font-weight-bold);
+			letter-spacing: 0.08em;
+		}
+
+		&--main {
+			flex-direction: row;
+			gap: 0.5rem;
+			padding: 0.85rem 1rem;
+			min-height: 56px;
+			border-radius: 999px;
+			margin-top: -1.9rem;
+			background: linear-gradient(
+				135deg,
+				var(--dashboard-brand-primary),
+				var(--dashboard-brand-accent)
+			);
+			box-shadow:
+				0 12px 32px rgb(var(--dashboard-brand-primary-rgb) / 35%),
+				0 0 0 1px rgb(255 255 255 / 20%) inset;
+			color: var(--dashboard-text-inverse);
+			border: none;
+			transform: translateY(0);
+
+			.dock-icon {
+				margin-bottom: 0;
+				width: 1.3rem;
+				height: 1.3rem;
+				filter: drop-shadow(0 2px 4px rgb(0 0 0 / 20%));
+			}
+
+			&:hover {
+				transform: translateY(-2px);
+				filter: brightness(1.1);
+				box-shadow: 0 16px 40px rgb(var(--dashboard-brand-primary-rgb) / 45%);
+			}
+
+			&:disabled {
+				opacity: 60%;
+				box-shadow: none;
+			}
+		}
+
+		&--filter {
+			position: relative;
+
+			select {
+				position: absolute;
+				inset: 0;
+				opacity: 0%;
+				cursor: pointer;
+				width: 100%;
+			}
+		}
+	}
+}
+
+@keyframes guests-dock-slide-up {
+	from {
+		transform: translateY(100%);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}

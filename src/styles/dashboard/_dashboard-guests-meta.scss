@@ -1,0 +1,30 @@
+.dashboard-guests__meta-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-bottom: 2rem;
+	padding-left: 0.15rem;
+
+	.dashboard-status {
+		font-family: var(--font-ui);
+		font-size: 0.85rem;
+		color: rgb(var(--color-text-primary-rgb), 0.9);
+		background: var(--color-glass-bg);
+		padding: 0.75rem 1rem;
+		border-radius: 18px;
+		border: 1px solid var(--color-glass-border);
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		min-width: min(100%, 220px);
+		box-shadow: var(--shadow-subtle);
+		transition:
+			background-color var(--duration-snappy) var(--ease-standard),
+			transform var(--duration-snappy) var(--ease-standard);
+
+		&:hover {
+			background: rgb(var(--color-white-rgb) / 70%);
+			transform: translateY(-1px);
+		}
+	}
+}

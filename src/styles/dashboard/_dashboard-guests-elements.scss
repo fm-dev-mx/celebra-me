@@ -1,0 +1,176 @@
+@use 'sass:color';
+@use '../tokens' as tokens;
+@use 'dashboard-guests-core' as core;
+
+.guest-tooltip {
+	position: relative;
+	display: inline-flex;
+	cursor: help;
+	color: var(--color-action-accent);
+	transition:
+		transform var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
+
+	&:hover {
+		transform: scale(1.1);
+		color: color.adjust(tokens.color(action, accent), $lightness: -10%);
+	}
+
+	&:hover .guest-tooltip-content {
+		opacity: 100%;
+		visibility: visible;
+		transform: translateX(-50%) translateY(-8px);
+	}
+}
+
+.guest-tooltip-content {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%) translateY(0);
+	background: var(--color-text-emphasis);
+	color: white;
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	font-size: 0.8rem;
+	white-space: normal;
+	width: max-content;
+	max-width: 240px;
+	z-index: 100;
+	opacity: 0%;
+	visibility: hidden;
+	transition:
+		opacity var(--duration-snappy) var(--ease-premium),
+		transform var(--duration-snappy) var(--ease-premium),
+		visibility var(--duration-snappy) var(--ease-premium);
+	box-shadow: var(--shadow-emphasis);
+	pointer-events: none;
+	text-align: left;
+	line-height: 1.5;
+	font-weight: var(--font-weight-medium);
+	font-family: var(--font-ui);
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border-width: 6px;
+		border-style: solid;
+		border-color: var(--color-text-emphasis) transparent transparent transparent;
+	}
+}
+
+.guest-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+
+	&__name {
+		font-family: var(--font-display-elegant);
+		font-size: 1.15rem;
+		color: var(--color-text-emphasis);
+		font-weight: var(--font-weight-medium);
+		text-transform: uppercase;
+	}
+
+	&__phone {
+		font-size: 0.85rem;
+		color: var(--color-text-secondary);
+	}
+
+	&__email {
+		font-size: 0.75rem;
+		color: var(--color-neutral-base);
+		font-style: italic;
+	}
+}
+
+.guest-tag {
+	display: inline-flex;
+	align-items: center;
+	width: fit-content;
+	padding: 0.32rem 0.7rem;
+	border-radius: 999px;
+	background: rgb(var(--color-action-accent-rgb) / 10%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	color: var(--color-text-emphasis);
+	font-size: 0.7rem;
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.guest-tag--subtle {
+	background: rgb(var(--color-surface-dark-rgb) / 6%);
+	border-color: rgb(var(--color-surface-dark-rgb) / 8%);
+	color: rgb(var(--color-text-secondary-rgb), 0.9);
+}
+
+.delivery-status,
+.view-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.35rem 0.8rem;
+	border-radius: 999px;
+	font-size: 0.74rem;
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.delivery-status {
+	background: rgb(var(--color-action-accent-rgb) / 10%);
+	border: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
+	color: var(--color-text-emphasis);
+}
+
+.view-status {
+	background: rgb(var(--color-surface-dark-rgb) / 5%);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
+	color: rgb(var(--color-text-secondary-rgb), 0.92);
+}
+
+.view-status--viewed {
+	background: rgb(var(--color-action-accent-rgb) / 8%);
+	border-color: rgb(var(--color-action-accent-rgb) / 14%);
+	color: var(--color-text-primary);
+}
+
+.invitation-number,
+.guest-card__number {
+	font-family: var(--font-ui);
+	font-weight: var(--font-weight-bold);
+	color: var(--color-text-secondary);
+	background: var(--color-neutral-subtle);
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	margin-right: 0.5rem;
+}
+
+.guest-note-indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&--active {
+		animation: guests-pulse-badge 2.5s infinite ease-in-out;
+	}
+}
+
+@keyframes guests-pulse-badge {
+	0% {
+		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb), 0));
+	}
+
+	50% {
+		filter: drop-shadow(0 0 6px rgb(var(--color-action-accent-rgb), 0.4));
+	}
+
+	100% {
+		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb), 0));
+	}
+}
