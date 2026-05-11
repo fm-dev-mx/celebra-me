@@ -4,7 +4,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { PREMIUM_THEMES, type ThemePreset } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
@@ -77,7 +77,7 @@ function buildLayoutData(
 		title: guestName ? `Invitación para ${guestName}` : viewModel.title,
 		description: viewModel.description || '',
 		image: imageSrc,
-		className: hero.layoutVariant ? `layout--${hero.layoutVariant}` : undefined,
+		className: `layout--${viewModel.theme.preset}`,
 	};
 }
 
@@ -114,11 +114,11 @@ function resolveFooterVariant(
 	}
 
 	// Preview themes should override event-specific footer styles without mutating content data.
-	if (themePreset && (PREMIUM_THEMES as readonly string[]).includes(themePreset)) {
+	if (themePreset && (THEME_PRESETS as readonly string[]).includes(themePreset)) {
 		return themePreset as ThemePreset;
 	}
 
-	return PREMIUM_THEMES[0];
+	return THEME_PRESETS[0];
 }
 
 function hasRenderableSection(

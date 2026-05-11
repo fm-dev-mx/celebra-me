@@ -1,7 +1,6 @@
 import type { InvitationPageContext, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
 import type { ContentSectionKey } from '@/lib/adapters/types';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -86,7 +85,7 @@ function renderInterlude(
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
-			variant: block.variant ?? pageContext.viewModel.theme.preset ?? PREMIUM_THEMES[0],
+			variant: block.variant ?? pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
 			focalPoint: block.focalPoint,
 		},
 	};
@@ -154,7 +153,7 @@ function renderSection(
 	nextSectionLink?: LocationProps['nextSectionLink'],
 ): InvitationSectionRenderDescriptor | null {
 	const { sections, theme } = pageContext.viewModel;
-	const variant = theme?.preset ?? PREMIUM_THEMES[0];
+	const variant = theme?.preset ?? THEME_PRESETS[0];
 
 	switch (section) {
 		case 'quote':
