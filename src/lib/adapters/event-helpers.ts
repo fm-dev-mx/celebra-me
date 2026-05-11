@@ -56,7 +56,9 @@ export function pickVariant<T extends readonly string[]>(
 export function pickPreset(candidate: string | undefined): ThemePreset {
 	if (!candidate) return PREMIUM_THEMES[0];
 	if ((PREMIUM_THEMES as readonly string[]).includes(candidate)) return candidate as ThemePreset;
-	return PREMIUM_THEMES[0];
+	throw new Error(
+		`[ThemePreset] Invalid preset "${candidate}". Expected one of: ${PREMIUM_THEMES.join(', ')}.`,
+	);
 }
 
 export function resolveAsset(

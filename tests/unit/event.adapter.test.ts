@@ -105,4 +105,22 @@ describe('adaptEvent', () => {
 			variant: 'editorial',
 		});
 	});
+
+	it('throws for invalid theme presets instead of silently falling back', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				theme: {
+					...fixture.theme,
+					preset: 'broken-preset',
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		expect(() => adaptEvent(event)).toThrow(
+			'[ThemePreset] Invalid preset "broken-preset". Expected one of:',
+		);
+	});
 });
