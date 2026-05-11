@@ -1,62 +1,62 @@
 @use '../tokens' as tokens;
 
 .dashboard-shell-body {
-	--dashboard-brand-primary: var(--color-action-primary, #{tokens.$color-action-primary});
-	--dashboard-brand-primary-rgb: var(
-		--color-action-primary-rgb,
-		#{tokens.$color-action-primary-rgb}
+	--dashboard-brand-primary: var(--color-action-primary, #{tokens.color(action, primary)});
+	--dashboard-brand-primary-rgb: var(--color-action-primary-rgb, var(--color-text-primary-rgb));
+	--dashboard-brand-accent: var(--color-action-accent, #{tokens.color(action, accent)});
+	--dashboard-brand-accent-rgb: var(--color-action-accent-rgb);
+	--dashboard-brand-emphasis: var(--color-text-emphasis, #{tokens.color(text, emphasis)});
+	--dashboard-brand-border: var(--color-border-premium, #{tokens.color(border, premium)});
+	--dashboard-brand-border-strong: var(
+		--color-border-emphasis,
+		#{tokens.color(border, emphasis)}
 	);
-	--dashboard-brand-accent: var(--color-action-accent, #{tokens.$color-action-accent});
-	--dashboard-brand-accent-rgb: var(
-		--color-action-accent-rgb,
-		#{tokens.$color-action-accent-rgb}
-	);
-	--dashboard-brand-emphasis: var(--color-text-emphasis, #{tokens.$color-text-emphasis});
-	--dashboard-brand-border: var(--color-border-premium, #{tokens.$color-border-premium});
-	--dashboard-brand-border-strong: var(--color-border-emphasis, #{tokens.$color-border-emphasis});
 	--dashboard-brand-accent-soft: rgb(var(--dashboard-brand-accent-rgb) / 12%);
-	--dashboard-surface-page: var(--color-surface-primary, #{tokens.$color-surface-primary});
-	--dashboard-surface-canvas: var(--color-surface-canvas, #{tokens.$color-surface-canvas});
+	--dashboard-surface-page: var(--color-surface-primary, #{tokens.color(surface, primary)});
+	--dashboard-surface-canvas: var(--color-surface-canvas, #{tokens.color(surface, canvas)});
 	--dashboard-surface-card: rgb(var(--color-white-rgb, 255 255 255) / 86%);
 	--dashboard-surface-card-strong: rgb(var(--color-white-rgb, 255 255 255) / 92%);
 	--dashboard-surface-card-soft: rgb(var(--color-white-rgb, 255 255 255) / 78%);
-	--dashboard-surface-panel: var(--color-glass-bg, #{tokens.$color-glass-bg});
-	--dashboard-surface-elevated: var(--color-surface-elevated, #{tokens.$color-surface-elevated});
-	--dashboard-surface-inset: var(--color-surface-secondary, #{tokens.$color-surface-secondary});
-	--dashboard-surface-sidebar: var(--color-surface-dark, #{tokens.$color-surface-dark});
-	--dashboard-surface-sidebar-strong: rgb(
-		var(--color-surface-dark-rgb, #{tokens.$color-surface-dark-rgb}) / 94%
-	);
-	--dashboard-surface-sidebar-soft: rgb(
-		var(--color-surface-dark-rgb, #{tokens.$color-surface-dark-rgb}) / 18%
-	);
-	--dashboard-surface-overlay: rgb(
-		var(--color-surface-dark-rgb, #{tokens.$color-surface-dark-rgb}) / 52%
-	);
-	--dashboard-text-primary: var(--color-text-primary, #{tokens.$color-text-primary});
-	--dashboard-text-secondary: var(--color-text-secondary, #{tokens.$color-text-secondary});
-	--dashboard-text-muted: var(--color-text-muted, #{tokens.$color-text-muted});
-	--dashboard-text-inverse: var(--color-text-on-dark, #{tokens.$color-text-on-dark});
-	--dashboard-text-brand: var(--color-text-emphasis, #{tokens.$color-text-emphasis});
-	--dashboard-border-subtle: var(--color-border-subtle, #{tokens.$color-border-subtle});
-	--dashboard-border-strong: var(--color-border-emphasis, #{tokens.$color-border-emphasis});
+	--dashboard-surface-panel: var(--color-glass-bg, #{tokens.surface(glass, bg)});
+	--dashboard-surface-elevated: var(--color-surface-elevated, #{tokens.color(surface, elevated)});
+	--dashboard-surface-inset: var(--color-surface-secondary, #{tokens.color(surface, secondary)});
+	--dashboard-surface-sidebar: var(--color-surface-dark, #{tokens.color(surface, dark)});
+	--dashboard-surface-sidebar-strong: rgb(var(--color-surface-dark-rgb) / 94%);
+	--dashboard-surface-sidebar-soft: rgb(var(--color-surface-dark-rgb) / 18%);
+	--dashboard-surface-overlay: rgb(var(--color-surface-dark-rgb) / 52%);
+	--dashboard-text-primary: var(--color-text-primary, #{tokens.color(text, primary)});
+	--dashboard-text-secondary: var(--color-text-secondary, #{tokens.color(text, secondary)});
+	--dashboard-text-muted: var(--color-text-muted, #{tokens.color(text, muted)});
+	--dashboard-text-inverse: var(--color-text-on-dark, #{tokens.color(text, on-dark)});
+	--dashboard-text-brand: var(--color-text-emphasis, #{tokens.color(text, emphasis)});
+	--dashboard-border-subtle: var(--color-border-subtle, #{tokens.color(border, subtle)});
+	--dashboard-border-strong: var(--color-border-emphasis, #{tokens.color(border, emphasis)});
 	--dashboard-border-premium: var(--dashboard-brand-border);
-	--dashboard-state-success: var(--color-success, #{tokens.$color-success});
-	--dashboard-state-success-bg: var(--color-success-bg, #{tokens.$color-success-bg});
-	--dashboard-state-success-border: var(--color-success-border, #{tokens.$color-success-border});
-	--dashboard-state-success-text: var(--color-success-text, #{tokens.$color-success-text});
-	--dashboard-state-warning: var(--color-warning, #{tokens.$color-warning});
-	--dashboard-state-warning-bg: var(--color-warning-bg, #{tokens.$color-warning-bg});
-	--dashboard-state-warning-border: var(--color-warning-border, #{tokens.$color-warning-border});
-	--dashboard-state-warning-text: var(--color-warning-text, #{tokens.$color-warning-text});
-	--dashboard-state-danger: var(--color-danger, #{tokens.$color-danger});
-	--dashboard-state-danger-bg: var(--color-danger-bg, #{tokens.$color-danger-bg});
-	--dashboard-state-danger-border: var(--color-danger-border, #{tokens.$color-danger-border});
-	--dashboard-state-danger-text: var(--color-danger-text, #{tokens.$color-danger-text});
-	--dashboard-state-info: var(--color-info, #{tokens.$color-info});
-	--dashboard-state-info-bg: var(--color-info-bg, #{tokens.$color-info-bg});
-	--dashboard-state-info-border: var(--color-info-border, #{tokens.$color-info-border});
-	--dashboard-state-info-text: var(--color-info-text, #{tokens.$color-info-text});
+	--dashboard-state-success: var(--color-success, #{tokens.color(state, success)});
+	--dashboard-state-success-bg: var(--color-success-bg, #{tokens.color(state, success-bg)});
+	--dashboard-state-success-border: var(
+		--color-success-border,
+		#{tokens.color(state, success-border)}
+	);
+	--dashboard-state-success-text: var(--color-success-text, #{tokens.color(state, success-text)});
+	--dashboard-state-warning: var(--color-warning, #{tokens.color(state, warning)});
+	--dashboard-state-warning-bg: var(--color-warning-bg, #{tokens.color(state, warning-bg)});
+	--dashboard-state-warning-border: var(
+		--color-warning-border,
+		#{tokens.color(state, warning-border)}
+	);
+	--dashboard-state-warning-text: var(--color-warning-text, #{tokens.color(state, warning-text)});
+	--dashboard-state-danger: var(--color-danger, #{tokens.color(state, danger)});
+	--dashboard-state-danger-bg: var(--color-danger-bg, #{tokens.color(state, danger-bg)});
+	--dashboard-state-danger-border: var(
+		--color-danger-border,
+		#{tokens.color(state, danger-border)}
+	);
+	--dashboard-state-danger-text: var(--color-danger-text, #{tokens.color(state, danger-text)});
+	--dashboard-state-info: var(--color-info, #{tokens.color(state, info)});
+	--dashboard-state-info-bg: var(--color-info-bg, #{tokens.color(state, info-bg)});
+	--dashboard-state-info-border: var(--color-info-border, #{tokens.color(state, info-border)});
+	--dashboard-state-info-text: var(--color-info-text, #{tokens.color(state, info-text)});
 }
 
 .dashboard-card {

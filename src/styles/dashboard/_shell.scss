@@ -30,7 +30,7 @@
 			rgb(var(--color-surface-dark-rgb) / 5%),
 			transparent 40%
 		),
-		var(--dashboard-surface-page, #{tokens.$color-surface-primary});
+		var(--dashboard-surface-page, #{tokens.color(surface, primary)});
 	min-height: 100vh;
 }
 
@@ -289,7 +289,7 @@
 		border: 1px solid var(--dashboard-border-premium);
 		border-radius: 12px;
 		background: var(--dashboard-surface-card);
-		box-shadow: tokens.$shadow-subtle;
+		box-shadow: tokens.surface(shadow, subtle);
 		color: var(--dashboard-text-primary);
 		font-family: tokens.$font-ui;
 		font-size: 0.9rem;
@@ -301,7 +301,7 @@
 		&:hover {
 			background: var(--dashboard-surface-card-strong);
 			border-color: var(--dashboard-brand-border-strong);
-			box-shadow: tokens.$shadow-emphasis;
+			box-shadow: tokens.surface(shadow, emphasis);
 		}
 
 		&:focus {
@@ -456,7 +456,7 @@
 	}
 
 	&:hover {
-		background: #{color.adjust(tokens.$color-action-primary, $lightness: 6%)};
+		background: #{color.adjust(tokens.color(action, primary), $lightness: 6%)};
 		transform: translateY(-1px);
 		box-shadow: 0 6px 15px rgb(var(--dashboard-brand-primary-rgb) / 34%);
 	}
