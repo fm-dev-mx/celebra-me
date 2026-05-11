@@ -5,7 +5,7 @@ import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import FamilyDecorations from './FamilyDecorations.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { FamilyLayoutVariant, SharedSectionVariant } from '@/lib/theme/theme-contract';
+import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	parents?: {
@@ -44,7 +44,6 @@ interface Props {
 		sectionMessage?: string;
 	};
 	variant?: SharedSectionVariant;
-	layoutVariant?: FamilyLayoutVariant;
 	focalPoint?: string;
 }
 
@@ -74,7 +73,6 @@ const {
 	celebrantName,
 	labels,
 	variant = 'standard',
-	layoutVariant,
 	focalPoint,
 } = Astro.props;
 
@@ -207,7 +205,6 @@ if (godparents && godparents.length > 0) {
 	class="family"
 	data-variant={variant}
 	data-focal-point={focalPoint || 'center'}
-	{...layoutVariant && { 'data-layout-variant': layoutVariant }}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
 	<FamilyDecorations variant={variant} component="bg" />

@@ -1,19 +1,18 @@
 ---
 // src/components/invitation/Quote.astro
 import '@/styles/invitation/_quote.scss';
-import type { QuoteAnimation, QuoteVariant } from '@/lib/theme/theme-contract';
+import type { QuoteVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	text: string;
 	author?: string;
 	variant?: QuoteVariant;
-	animation?: QuoteAnimation;
 }
 
-const { text, author, variant = 'editorial', animation = 'fade' } = Astro.props;
+const { text, author, variant = 'editorial' } = Astro.props;
 ---
 
-<section id="quote-section" class="quote-section" data-variant={variant} data-animation={animation}>
+<section id="quote-section" class="quote-section" data-variant={variant}>
 	<div class="quote-texture" aria-hidden="true"></div>
 	<div class="quote-container">
 		<div class="quote-divider-top" aria-hidden="true">

@@ -13,7 +13,6 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	IndicationIconName,
 	IndicationStyleVariant,
-	LocationMapStyle,
 	LocationVariant,
 } from '@/lib/theme/theme-contract';
 
@@ -45,7 +44,6 @@ interface Props {
 	reception?: VenueData;
 	indications?: Indication[];
 	variant?: LocationVariant;
-	mapStyle?: LocationMapStyle;
 	showFlourishes?: boolean;
 	indicationsHeading?: string;
 	nextSectionLink?: {
@@ -59,7 +57,6 @@ const {
 	reception,
 	indications,
 	variant = 'structured',
-	mapStyle = 'dark',
 	showFlourishes = true,
 	indicationsHeading,
 	nextSectionLink,
@@ -75,7 +72,6 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 				venue={ceremony}
 				type="ceremony"
 				variant={variant}
-				mapStyle={mapStyle}
 				showFlourishes={showFlourishes}
 			/>
 		)}
@@ -84,7 +80,6 @@ const isSingleVenue = (ceremony && !reception) || (!ceremony && reception);
 				venue={reception}
 				type="reception"
 				variant={variant}
-				mapStyle={mapStyle}
 				showFlourishes={showFlourishes}
 			/>
 		)}

@@ -31,7 +31,6 @@ interface Props {
 	venue: VenueData;
 	type: 'ceremony' | 'reception';
 	variant?: string;
-	mapStyle?: 'dark' | 'colorful' | 'minimal' | 'satellite';
 	showFlourishes?: boolean;
 }
 
@@ -39,7 +38,6 @@ const {
 	venue,
 	type,
 	variant = 'structured',
-	mapStyle = 'dark',
 	showFlourishes = true,
 } = Astro.props;
 ---
@@ -62,7 +60,6 @@ const {
 							lat={venue.coordinates.lat}
 							lng={venue.coordinates.lng}
 							title={venue.venueName}
-							mapStyle={mapStyle}
 							variant={variant}
 						/>
 					) : (
