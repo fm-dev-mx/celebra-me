@@ -1,0 +1,156 @@
+@use '../tokens' as tokens;
+@use 'sass:color';
+
+@mixin tactile-button-shadow($button-color, $shadow-alpha) {
+	box-shadow:
+		0 4px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 8px 16px rgba($button-color, $shadow-alpha);
+}
+
+@mixin tactile-button-hover($button-color, $shadow-alpha) {
+	background: color.adjust($button-color, $lightness: -5%);
+	box-shadow:
+		0 6px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 12px 24px rgba($button-color, $shadow-alpha);
+}
+
+@mixin tactile-button-active($button-color, $shadow-alpha) {
+	transform: translateY(2px);
+	box-shadow:
+		0 2px 0 #{color.adjust($button-color, $lightness: -15%)},
+		0 4px 8px rgba($button-color, $shadow-alpha);
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-accent {
+	font-family: inherit;
+	font-weight: var(--font-weight-bold);
+	padding: 0 2rem;
+	border-radius: 8px;
+	cursor: pointer;
+	text-transform: uppercase;
+	letter-spacing: var(--letter-spacing-wide);
+	font-size: clamp(0.6rem, 1vw, 0.85rem);
+	border: 1px solid transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 48px;
+	position: relative;
+	overflow: hidden;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		box-shadow var(--duration-snappy) var(--ease-standard);
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(rgb(255 255 255 / 10%), transparent);
+		opacity: 0%;
+		transition: opacity var(--duration-fast) var(--ease-standard);
+	}
+
+	&:hover::after {
+		opacity: 100%;
+	}
+}
+
+.btn-primary {
+	background: var(--dashboard-brand-primary);
+	color: var(--dashboard-text-inverse);
+
+	@include tactile-button-shadow(tokens.color(action, primary), 0.22);
+
+	&:hover {
+		@include tactile-button-hover(tokens.color(action, primary), 0.3);
+	}
+
+	&:active {
+		@include tactile-button-active(tokens.color(action, primary), 0.22);
+	}
+
+	&--danger {
+		background: var(--dashboard-state-danger);
+
+		@include tactile-button-shadow(tokens.color(state, danger), 0.2);
+
+		&:hover {
+			@include tactile-button-hover(tokens.color(state, danger), 0.3);
+		}
+
+		&:active {
+			@include tactile-button-active(tokens.color(state, danger), 0.2);
+		}
+	}
+}
+
+.btn-secondary {
+	background: var(--dashboard-surface-elevated);
+	border-color: var(--dashboard-border-subtle);
+	color: var(--dashboard-text-primary);
+
+	&:hover {
+		background: var(--dashboard-surface-card-strong);
+		border-color: var(--dashboard-border-strong);
+	}
+}
+
+.btn-accent {
+	background: var(--dashboard-brand-accent-soft);
+	border-color: var(--dashboard-brand-border-strong);
+	color: var(--dashboard-text-brand);
+
+	&:hover {
+		background: color-mix(in srgb, var(--dashboard-brand-accent) 18%, white);
+		border-color: var(--dashboard-brand-border-strong);
+	}
+}
+
+.btn-icon {
+	background: var(--color-surface-secondary);
+	border: 1px solid var(--color-border-subtle);
+	padding: 0.6rem;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 1.1rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition:
+		background-color var(--duration-snappy) var(--ease-standard),
+		border-color var(--duration-snappy) var(--ease-standard),
+		transform var(--duration-snappy) var(--ease-standard),
+		color var(--duration-snappy) var(--ease-standard);
+	color: var(--color-text-primary);
+	min-width: 44px;
+	min-height: 44px;
+
+	&:hover {
+		background: var(--color-neutral-subtle);
+		border-color: var(--color-border-emphasis);
+		transform: translateY(-2px);
+		color: var(--color-text-emphasis);
+	}
+
+	&--danger {
+		color: var(--color-wax-seal);
+
+		&:hover {
+			background: rgb(var(--color-special-wax-seal-rgb), 0.1);
+			border-color: var(--color-wax-seal);
+		}
+	}
+}
+
+.btn-secondary--modal {
+	min-width: 100px;
+}
+
+.btn-secondary--postpone {
+	border: 1px dashed var(--dashboard-border-strong);
+	color: var(--dashboard-text-secondary);
+}

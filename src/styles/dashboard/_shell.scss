@@ -311,51 +311,7 @@
 	}
 }
 
-/* --- Premium Buttons --- */
-.btn-primary,
-.btn-accent,
-.btn-secondary {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.6rem;
-	border: none;
-	cursor: pointer;
-	font-weight: var(--font-weight-bold);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	transition:
-		transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-		box-shadow 0.2s ease,
-		opacity 0.2s ease,
-		background-color 0.2s ease;
-
-	&:hover {
-		transform: translateY(-2px);
-	}
-
-	&:active {
-		transform: translateY(1px) scale(0.98);
-	}
-
-	&:disabled {
-		opacity: 60%;
-		cursor: not-allowed;
-		transform: none;
-	}
-}
-
-.btn-primary {
-	background: var(--dashboard-brand-primary);
-	color: var(--dashboard-text-inverse);
-	box-shadow: 0 4px 12px rgb(var(--dashboard-brand-primary-rgb) / 24%);
-
-	&:hover {
-		box-shadow: 0 6px 20px rgb(var(--dashboard-brand-primary-rgb) / 34%);
-	}
-}
-
+/* --- Premium Breadcrumbs --- */
 .dashboard-breadcrumbs ol {
 	display: flex;
 	gap: 0.5rem;
@@ -585,11 +541,9 @@
 	pointer-events: auto;
 }
 
-/* Robust Scroll Lock Utility */
-body.modal-open {
-	/* stylelint-disable declaration-no-important */
-	overflow: hidden !important;
-	height: 100vh !important;
+/* Scroll Lock Utility */
+.scroll-lock {
+	overflow: hidden;
+	height: 100vh;
 	touch-action: none;
-	/* stylelint-enable declaration-no-important */
 }
