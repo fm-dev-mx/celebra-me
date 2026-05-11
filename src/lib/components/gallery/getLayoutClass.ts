@@ -1,5 +1,8 @@
 export type GalleryVariant = 'luxury-hacienda' | 'celestial-blue' | 'jewelry-box' | 'standard';
 
+// Gallery layout strategies are a local subset of theme variants. Other presets intentionally
+// fall back to the standard grid while still using their preset/section color tokens.
+
 export type LayoutClass =
 	| 'gallery-grid__item--feature'
 	| 'gallery-grid__item--wide'

@@ -3,6 +3,7 @@
  */
 
 import { z } from 'zod';
+import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 
 const ADMIN_LOGIN_ALIAS_PATTERN = /^[a-z0-9._-]{3,60}$/;
 
@@ -31,7 +32,7 @@ export const TimestampSchema = z.iso.datetime({
 // Event Schemas
 // =============================================================================
 
-export const EventTypeSchema = z.enum(['xv', 'boda', 'bautizo', 'cumple'], {
+export const EventTypeSchema = z.enum(EVENT_TYPES, {
 	message: 'Invalid event type',
 });
 

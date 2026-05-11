@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-variants';
+import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
 
 export const rsvpSectionStyleSchema = z
 	.object({
