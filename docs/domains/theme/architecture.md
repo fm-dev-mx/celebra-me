@@ -4,7 +4,7 @@
 
 The invitation theme system is contract-driven and section-based.
 
-- **Single contract source**: `src/lib/theme/theme-contract.ts`
+- **Single contract facade**: `src/lib/theme/theme-contract.ts`
 - **Schema enforcement**: `src/content.config.ts` imports modular schemas from
   `src/lib/schemas/content/`
 - **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
@@ -17,7 +17,8 @@ The invitation theme system is contract-driven and section-based.
 
 ## Contract Ownership
 
-`theme-contract.ts` defines canonical tuples and exported union types:
+`theme-contract.ts` is the public import facade for theme and event contracts. It owns `EVENT_TYPES`
+and re-exports the canonical theme tuples and union types implemented in `theme-variants.ts`:
 
 - `PREMIUM_THEMES` (invitation themes only)
 - `QUOTE_VARIANTS`
@@ -26,7 +27,9 @@ The invitation theme system is contract-driven and section-based.
 - `SHARED_SECTION_VARIANTS`
 - `ITINERARY_VARIANTS`
 
-All downstream consumers must import from this module instead of duplicating literals.
+All downstream consumers must import from this module instead of duplicating literals. Schema
+modules should prefer `@/lib/theme/theme-contract` even when the underlying tuple is implemented in
+`theme-variants.ts`.
 
 ## Style Entry Points
 
@@ -173,7 +176,8 @@ ensures that the main rendering paths remain lightweight and that business logic
 independently of the UI structure.
 
 - Do not add variant literals directly in components/adapters/schema.
-- Update `theme-contract.ts` first, then consume from it.
+- Update the public theme contract surface first (`theme-contract.ts`, and `theme-variants.ts` when
+  the tuple itself changes), then consume from it.
 - Run `pnpm ops validate-schema` after theme changes. New missing variant coverage should become
   either a selector or a documented base-style fallback in `scripts/validate-schema.mjs`.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.

@@ -43,7 +43,8 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `editorial`
 - `angelic-presence`
 
-Section variant enums come from `src/lib/theme/theme-variants.ts`.
+Section variant enums are consumed through `src/lib/theme/theme-contract.ts`, which re-exports the
+canonical tuples implemented by `src/lib/theme/theme-variants.ts`.
 
 ## Routing Rules
 
