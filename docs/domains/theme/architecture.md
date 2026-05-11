@@ -18,12 +18,12 @@ The invitation theme system is contract-driven and section-based.
 ## Contract Ownership
 
 `theme-contract.ts` is the public import facade for theme and event contracts. It owns `EVENT_TYPES`
-and re-exports the canonical theme tuples and union types implemented in `theme-variants.ts`:
+and the canonical theme tuples and union types:
 
-- `PREMIUM_THEMES` (invitation themes only)
+- `THEME_PRESETS` (invitation themes only)
 
-Section variant schemas currently use `PREMIUM_THEMES` directly. All downstream consumers must
-import from this module instead of duplicating literals.
+Section variant schemas currently use `THEME_PRESETS` directly. All downstream consumers must import
+from this module instead of duplicating literals.
 
 ## Style Entry Points
 
@@ -46,7 +46,7 @@ from invitation themes:
 - **Active Preset**: `jewelry-box-landing` (replaces legacy `elegant` and conflicting `editorial`
   names)
 - **Application**: Applied via `.theme-preset--jewelry-box-landing` class on the body element
-- **Decoupling**: Landing presets are not part of `PREMIUM_THEMES` and do not use `PRESET_COLOR_MAP`
+- **Decoupling**: Landing presets are not part of `THEME_PRESETS` and do not use `PRESET_COLOR_MAP`
   (invitation-only)
 
 ### Migration History
@@ -169,9 +169,7 @@ fields are now isolated in `RSVPFormFields.tsx` and data adapters are modularize
 ensures that the main rendering paths remain lightweight and that business logic can be tested
 independently of the UI structure.
 
-- Do not add variant literals directly in components/adapters/schema.
-- Update the public theme contract surface first (`theme-contract.ts`, and `theme-variants.ts` when
-  the tuple itself changes), then consume from it.
+- Update the public theme contract surface first (`theme-contract.ts`), then consume from it.
 - Run `pnpm ops validate-schema` after theme changes. New missing variant coverage should become
   either a selector or a documented base-style fallback in `scripts/validate-schema.mjs`.
 - Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
