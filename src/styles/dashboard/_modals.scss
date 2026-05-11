@@ -56,9 +56,9 @@
 		margin: 0 0 1.5rem;
 		color: var(--dashboard-text-brand);
 		text-align: center;
-		font-family: tokens.$font-display-elegant;
+		font-family: var(--font-display-elegant);
 		font-size: clamp(1.3rem, 3vw, 1.8rem);
-		letter-spacing: tokens.$letter-spacing-tight;
+		letter-spacing: var(--letter-spacing-tight);
 	}
 
 	&__description {
@@ -111,7 +111,7 @@
 
 		h3 {
 			margin-bottom: 1rem;
-			font-family: tokens.$font-ui;
+			font-family: var(--font-ui);
 			font-size: 1.25rem;
 			font-weight: 600;
 		}
@@ -259,8 +259,8 @@
 	label {
 		color: var(--dashboard-text-secondary);
 		font-size: 0.75rem;
-		font-weight: tokens.$font-weight-bold;
-		letter-spacing: tokens.$letter-spacing-wide;
+		font-weight: var(--font-weight-bold);
+		letter-spacing: var(--letter-spacing-wide);
 		text-transform: uppercase;
 	}
 

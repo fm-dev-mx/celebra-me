@@ -1,5 +1,4 @@
 /* src/styles/dashboard/_toast.scss */
-@use '../tokens' as tokens;
 
 .dashboard-toast {
 	--dashboard-toast-accent: var(--dashboard-state-info);
@@ -15,7 +14,7 @@
 	padding: 0.65rem 0.85rem;
 	border-radius: 8px;
 	color: var(--dashboard-toast-text);
-	font-family: tokens.$font-ui;
+	font-family: var(--font-ui);
 	display: flex;
 	align-items: center;
 	justify-content: space-between;

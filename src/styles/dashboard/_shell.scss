@@ -30,7 +30,7 @@
 			rgb(var(--color-surface-dark-rgb) / 5%),
 			transparent 40%
 		),
-		var(--dashboard-surface-page, #{tokens.color(surface, primary)});
+		var(--color-surface-primary);
 	min-height: 100vh;
 }
 
@@ -86,9 +86,9 @@
 		white-space: normal;
 		word-break: break-all;
 		line-height: 1.2;
-		font-family: tokens.$font-display-formal;
+		font-family: var(--font-display-formal);
 		font-size: 1.1rem;
-		font-weight: tokens.$font-weight-bold;
+		font-weight: var(--font-weight-bold);
 		letter-spacing: 0.25em;
 		text-shadow: 0 2px 4px rgb(0 0 0 / 30%);
 
@@ -127,9 +127,9 @@
 	border-radius: 10px;
 	color: color-mix(in srgb, var(--dashboard-text-inverse) 72%, transparent);
 	text-decoration: none;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-ui);
 	font-size: 0.9rem;
-	font-weight: tokens.$font-weight-medium;
+	font-weight: var(--font-weight-medium);
 	letter-spacing: 0.05em;
 	transition:
 		background-color 0.3s ease,
@@ -224,9 +224,8 @@
 
 	&__eyebrow {
 		color: color-mix(in srgb, var(--dashboard-text-secondary) 78%, transparent);
-		font-size: 0.7rem;
-		font-family: tokens.$font-ui;
-		font-weight: tokens.$font-weight-bold;
+		font-family: var(--font-ui);
+		font-weight: var(--font-weight-bold);
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 	}
@@ -234,9 +233,9 @@
 	h1 {
 		margin: 0;
 		color: var(--dashboard-text-brand);
-		font-family: tokens.$font-display-elegant;
+		font-family: var(--font-display-elegant);
 		font-size: clamp(1.3rem, 2vw, 1.7rem);
-		letter-spacing: tokens.$letter-spacing-tight;
+		letter-spacing: var(--letter-spacing-tight);
 	}
 }
 
@@ -261,9 +260,9 @@
 		h1 {
 			margin: 0;
 			color: var(--dashboard-text-primary);
-			font-family: tokens.$font-display-elegant;
+			font-family: var(--font-display-elegant);
 			font-size: 2.25rem;
-			letter-spacing: tokens.$letter-spacing-tight;
+			letter-spacing: var(--letter-spacing-tight);
 		}
 	}
 }
@@ -289,9 +288,9 @@
 		border: 1px solid var(--dashboard-border-premium);
 		border-radius: 12px;
 		background: var(--dashboard-surface-card);
-		box-shadow: tokens.surface(shadow, subtle);
+		box-shadow: var(--shadow-subtle);
 		color: var(--dashboard-text-primary);
-		font-family: tokens.$font-ui;
+		font-family: var(--font-ui);
 		font-size: 0.9rem;
 		transition:
 			border-color 0.3s ease,
@@ -301,7 +300,7 @@
 		&:hover {
 			background: var(--dashboard-surface-card-strong);
 			border-color: var(--dashboard-brand-border-strong);
-			box-shadow: tokens.surface(shadow, emphasis);
+			box-shadow: var(--shadow-emphasis);
 		}
 
 		&:focus {
@@ -323,7 +322,7 @@
 	gap: 0.6rem;
 	border: none;
 	cursor: pointer;
-	font-weight: tokens.$font-weight-bold;
+	font-weight: var(--font-weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	transition:
@@ -365,7 +364,7 @@
 	list-style: none;
 	color: color-mix(in srgb, var(--dashboard-text-secondary) 60%, transparent);
 	font-size: 0.75rem;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-ui);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 }
@@ -422,7 +421,7 @@
 .dashboard-user-menu__email {
 	color: var(--dashboard-text-secondary);
 	font-size: 0.8rem;
-	font-weight: tokens.$font-weight-medium;
+	font-weight: var(--font-weight-medium);
 }
 
 .dashboard-user-menu button {
@@ -438,9 +437,9 @@
 	box-shadow: 0 4px 10px rgb(var(--dashboard-brand-primary-rgb) / 24%);
 	color: var(--dashboard-text-inverse);
 	cursor: pointer;
-	font-family: tokens.$font-ui;
+	font-family: var(--font-ui);
 	font-size: 0.7rem;
-	font-weight: tokens.$font-weight-bold;
+	font-weight: var(--font-weight-bold);
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	transition:
