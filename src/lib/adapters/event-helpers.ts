@@ -7,18 +7,7 @@ import {
 	type AssetSource,
 	type ImageAsset,
 } from '@/lib/assets/asset-registry';
-import {
-	PREMIUM_THEMES,
-	type IndicationIconKey,
-	type ThemePreset,
-} from '@/lib/theme/theme-contract';
-
-const runtimeEnv = {
-	PROD: process.env.NODE_ENV === 'production',
-	DEV: process.env.NODE_ENV !== 'production',
-};
-
-export { runtimeEnv };
+import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 
 function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
 	if (!source) return undefined;
@@ -54,10 +43,10 @@ export function pickVariant<T extends readonly string[]>(
 }
 
 export function pickPreset(candidate: string | undefined): ThemePreset {
-	if (!candidate) return PREMIUM_THEMES[0];
-	if ((PREMIUM_THEMES as readonly string[]).includes(candidate)) return candidate as ThemePreset;
+	if (!candidate) return THEME_PRESETS[0];
+	if ((THEME_PRESETS as readonly string[]).includes(candidate)) return candidate as ThemePreset;
 	throw new Error(
-		`[ThemePreset] Invalid preset "${candidate}". Expected one of: ${PREMIUM_THEMES.join(', ')}.`,
+		`[ThemePreset] Invalid preset "${candidate}". Expected one of: ${THEME_PRESETS.join(', ')}.`,
 	);
 }
 
@@ -117,32 +106,4 @@ export function requireAsset(
 		throw new Error(`[AssetRegistry] Required asset is missing for event "${eventSlug}".`);
 	}
 	return asset;
-}
-
-export function adaptItineraryVariant(preset: string): ThemePreset {
-	return (PREMIUM_THEMES as readonly string[]).includes(preset)
-		? (preset as ThemePreset)
-		: PREMIUM_THEMES[0];
-}
-
-export function adaptSharedSectionVariant(preset: string): ThemePreset {
-	return (PREMIUM_THEMES as readonly string[]).includes(preset)
-		? (preset as ThemePreset)
-		: PREMIUM_THEMES[0];
-}
-
-export function adaptLocationVariant(variant: string | undefined): string {
-	return pickVariant('location.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
-}
-
-export function adaptCountdownVariant(variant: string | undefined): string {
-	return pickVariant('countdown.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
-}
-
-export function adaptQuoteVariant(variant: string | undefined): string {
-	return pickVariant('quote.variant', variant, PREMIUM_THEMES, PREMIUM_THEMES[0]);
-}
-
-export function adaptIndicationIcon(icon: IndicationIconKey): string {
-	return icon;
 }

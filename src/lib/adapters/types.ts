@@ -1,14 +1,10 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	CountdownVariant,
-	FamilyLayoutVariant,
 	IndicationIconName,
 	IndicationStyleVariant,
-	HeroLayoutVariant,
 	ItineraryVariant,
-	LocationMapStyle,
 	LocationVariant,
-	QuoteAnimation,
 	QuoteVariant,
 	SharedSectionVariant,
 	ThemePreset,
@@ -33,7 +29,6 @@ export interface HeroViewModel {
 	portraitAlt?: ImageAsset;
 	family?: ImageAsset;
 	variant?: ThemePreset;
-	layoutVariant?: HeroLayoutVariant;
 }
 
 export interface Coordinate {
@@ -193,16 +188,19 @@ export interface EnvelopeViewModel {
 	};
 }
 
-export type ContentSectionKey =
-	| 'quote'
-	| 'countdown'
-	| 'location'
-	| 'family'
-	| 'itinerary'
-	| 'gallery'
-	| 'rsvp'
-	| 'gifts'
-	| 'thankYou';
+export const CONTENT_SECTION_KEYS = [
+	'quote',
+	'countdown',
+	'location',
+	'family',
+	'itinerary',
+	'gallery',
+	'rsvp',
+	'gifts',
+	'thankYou',
+] as const;
+
+export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 
 export type ContentBlock =
 	| {
@@ -233,7 +231,6 @@ export interface InvitationViewModel {
 			text: string;
 			author?: string;
 			variant?: QuoteVariant;
-			animation?: QuoteAnimation;
 		};
 		countdown?: {
 			eventDate: string;
@@ -248,7 +245,6 @@ export interface InvitationViewModel {
 			reception?: Reception;
 			indications?: Indication[];
 			variant?: LocationVariant;
-			mapStyle?: LocationMapStyle;
 			showFlourishes?: boolean;
 			indicationsHeading?: string;
 			city: string;
@@ -265,7 +261,6 @@ export interface InvitationViewModel {
 			labels?: FamilyLabels;
 			celebrantName: string;
 			variant?: SharedSectionVariant;
-			layoutVariant?: FamilyLayoutVariant;
 		};
 		gallery?: {
 			title: string;

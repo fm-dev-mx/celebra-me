@@ -5,7 +5,7 @@ import type {
 	ContentBlock,
 	ContentSectionKey,
 } from './types';
-import { PREMIUM_THEMES } from '@/lib/theme/theme-contract';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
 import type { AdaptationContext } from '@/lib/adapters/event';
@@ -26,10 +26,9 @@ export function buildHero(context: AdaptationContext): HeroViewModel {
 		variant: pickVariant(
 			'hero.variant',
 			data.hero.variant ?? normalizedPreset,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
-		layoutVariant: data.hero.layoutVariant,
 	};
 }
 
@@ -161,7 +160,7 @@ export function buildContentBlocks(context: AdaptationContext): ContentBlock[] |
 					variant: pickVariant(
 						'contentBlocks.interlude.variant',
 						block.variant,
-						PREMIUM_THEMES,
+						THEME_PRESETS,
 						normalizedPreset,
 					),
 					focalPoint: block.focalPoint,
@@ -213,10 +212,9 @@ function buildQuoteSection(context: AdaptationContext) {
 		variant: pickVariant(
 			'sectionStyles.quote.variant',
 			data.sectionStyles?.quote?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
-		animation: data.sectionStyles?.quote?.animation,
 	};
 }
 
@@ -230,10 +228,9 @@ function buildCountdownSection(context: AdaptationContext) {
 		variant: pickVariant(
 			'sectionStyles.countdown.variant',
 			data.sectionStyles?.countdown?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
-		showParticles: data.sectionStyles?.countdown?.showParticles,
 	};
 }
 
@@ -251,10 +248,9 @@ function buildLocationSection(
 		variant: pickVariant(
 			'sectionStyles.location.variant',
 			data.sectionStyles?.location?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
-		mapStyle: data.sectionStyles?.location?.mapStyle,
 		showFlourishes: data.sectionStyles?.location?.showFlourishes,
 		indicationsHeading: data.location.indicationsHeading ?? '',
 		city: data.location.city,
@@ -279,10 +275,9 @@ function buildFamilySection(
 		variant: pickVariant(
 			'sectionStyles.family.variant',
 			data.sectionStyles?.family?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
-		layoutVariant: data.family.layoutVariant,
 	};
 }
 
@@ -299,7 +294,7 @@ function buildGallerySection(
 		variant: pickVariant(
 			'sectionStyles.gallery.variant',
 			data.sectionStyles?.gallery?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
 	};
@@ -314,7 +309,7 @@ function buildItinerarySection(context: AdaptationContext) {
 		variant: pickVariant(
 			'sectionStyles.itinerary.variant',
 			data.sectionStyles?.itinerary?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
 	};
@@ -331,7 +326,7 @@ function buildRsvpSection(context: AdaptationContext) {
 		variant: pickVariant(
 			'sectionStyles.rsvp.variant',
 			data.sectionStyles?.rsvp?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
 		labels: data.sectionStyles?.rsvp?.labels,
@@ -347,7 +342,7 @@ function buildGiftsSection(context: AdaptationContext) {
 		variant: pickVariant(
 			'sectionStyles.gifts.variant',
 			data.sectionStyles?.gifts?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
 	};
@@ -367,7 +362,7 @@ function buildThankYouSection(
 		variant: pickVariant(
 			'sectionStyles.thankYou.variant',
 			data.sectionStyles?.thankYou?.variant,
-			PREMIUM_THEMES,
+			THEME_PRESETS,
 			normalizedPreset,
 		),
 	};
