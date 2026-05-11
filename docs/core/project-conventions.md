@@ -99,9 +99,7 @@ hooks or `PascalCase` types from inside the file.
 - Astro and TSX components must consume semantic CSS variables such as `--color-*`, `--shadow-*`,
   and preset-scoped section tokens instead of hardcoded hex values.
 - Add new runtime semantic tokens under `src/styles/tokens/semantic/**` and surface them through
-  `src/styles/global.scss` before adding new component-level color roles. Use
-  `src/styles/tokens/_semantic.scss` only as legacy authoring compatibility for existing
-  `tokens.$...` consumers.
+  `src/styles/global.scss` before adding new component-level color roles.
 - SCSS may keep using token files for authoring defaults, motion constants, and spacing, but runtime
   theme-sensitive invitation styles must read fonts, palette, glass, and shadow roles from semantic
   CSS variables such as `var(--font-*)`, `var(--color-*)`, and `var(--shadow-*)`.

@@ -36,7 +36,7 @@
 	}
 
 	.itinerary__item-icon-wrapper {
-		background: var(--section-card-bg, tokens.$color-surface-soft);
+		background: var(--section-card-bg, #{tokens.color(surface, soft)});
 		border: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
 		box-shadow:
 			0 10px 20px rgb(0 0 0 / 60%),

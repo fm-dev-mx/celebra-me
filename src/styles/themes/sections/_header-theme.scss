@@ -18,7 +18,7 @@
 
 // LUXURY HACIENDA PRESET
 .header-base[data-variant='luxury-hacienda'] {
-	--header-bg: rgba(#{tokens.$color-surface-dark-rgb}, 0);
+	--header-bg: rgb(var(--color-surface-dark-rgb) / 0%);
 	--header-bg-scrolled: var(--header-luxury-bg-scrolled);
 	--header-nav-color: var(--header-luxury-nav-color);
 	--header-nav-color-transparent: var(--header-luxury-nav-color);
@@ -39,10 +39,10 @@
 
 // JEWELRY BOX
 .header-base[data-variant='jewelry-box'] {
-	--header-bg: rgba(#{tokens.$color-surface-primary-rgb}, 0.6);
-	--header-bg-scrolled: rgba(#{tokens.$color-surface-primary-rgb}, 0.95);
-	--header-nav-color: #{tokens.$color-surface-dark};
-	--header-nav-color-transparent: #{tokens.$color-text-on-dark};
+	--header-bg: rgb(var(--color-surface-primary-rgb) / 60%);
+	--header-bg-scrolled: rgb(var(--color-surface-primary-rgb) / 95%);
+	--header-nav-color: #{tokens.color(surface, dark)};
+	--header-nav-color-transparent: #{tokens.color(text, on-dark)};
 	--header-nav-shadow-transparent: 0 1px 4px rgb(0 0 0 / 15%);
 	--header-nav-filter-transparent: none;
 }
@@ -72,7 +72,7 @@
 // EDITORIAL PRESET
 .header-base[data-variant='editorial'] {
 	--header-bg: transparent;
-	--header-bg-scrolled: rgba(#{tokens.$color-surface-dark-rgb}, 0.85);
+	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 85%);
 
 	.event-header__title {
 		display: none;

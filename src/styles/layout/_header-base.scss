@@ -23,7 +23,7 @@
 	--header-glass-blur: 20px;
 	--header-glass-saturate: 160%;
 	--header-scrolled-bg: rgb(0 0 0 / 92%);
-	--header-shadow: #{tokens.$shadow-emphasis};
+	--header-shadow: #{tokens.surface(shadow, emphasis)};
 	--header-border-color: rgb(255 255 255 / 10%);
 
 	// 4. Obsidian Noir Constants (Jewelry Box Architecture)
@@ -268,12 +268,14 @@
 		.header-base__desktop-nav {
 			display: none;
 		}
+
 		.header-base__mobile-toggle {
 			display: block;
 		}
 
 		.header-base__mobile-overlay {
 			display: block;
+
 			&[hidden] {
 				display: none;
 			}
@@ -281,6 +283,7 @@
 
 		.header-base__mobile-menu {
 			display: flex;
+
 			&[hidden] {
 				display: none;
 			}
@@ -291,12 +294,15 @@
 		.header-base__desktop-nav {
 			display: block;
 		}
+
 		.header-base__mobile-toggle {
 			display: none;
 		}
+
 		.header-base__mobile-overlay {
 			display: none;
 		}
+
 		.header-base__mobile-menu {
 			display: none;
 		}

@@ -21,15 +21,9 @@ The invitation theme system is contract-driven and section-based.
 and re-exports the canonical theme tuples and union types implemented in `theme-variants.ts`:
 
 - `PREMIUM_THEMES` (invitation themes only)
-- `QUOTE_VARIANTS`
-- `COUNTDOWN_VARIANTS`
-- `LOCATION_VARIANTS`
-- `SHARED_SECTION_VARIANTS`
-- `ITINERARY_VARIANTS`
 
-All downstream consumers must import from this module instead of duplicating literals. Schema
-modules should prefer `@/lib/theme/theme-contract` even when the underlying tuple is implemented in
-`theme-variants.ts`.
+Section variant schemas currently use `PREMIUM_THEMES` directly. All downstream consumers must
+import from this module instead of duplicating literals.
 
 ## Style Entry Points
 
@@ -189,14 +183,11 @@ independently of the UI structure.
 Canonical runtime token publication now lives in `src/styles/tokens/semantic/` and is surfaced
 globally through `src/styles/global.scss`.
 
-`src/styles/tokens/_semantic.scss` remains in the repo only as an authoring compatibility shim for
-legacy `tokens.$color-*` consumers. It is not the runtime source of truth and must not be used for
-new token publication. New runtime semantic tokens must be added under
-`src/styles/tokens/semantic/**` and surfaced through `src/styles/global.scss` when they need to be
-available as CSS custom properties.
+New runtime semantic tokens must be added under `src/styles/tokens/semantic/**` and surfaced through
+`src/styles/global.scss` when they need to be available as CSS custom properties.
 
-As of 2026-03-16 Phase 03, `src/styles/global.scss` also defines the canonical runtime typography
-and glass-role variables consumed by preset-sensitive invitation surfaces, including:
+`src/styles/global.scss` defines the canonical runtime typography and glass-role variables consumed
+by preset-sensitive invitation surfaces, including:
 
 - `--font-display-hacienda`
 - `--font-body-hacienda`
@@ -207,20 +198,12 @@ and glass-role variables consumed by preset-sensitive invitation surfaces, inclu
 - `--shadow-emphasis`
 - `--shadow-premium`
 
-Phase 06 standardized these additional semantic roles for component-level styling:
+The semantic layer also exposes these component-level roles:
 
 - `--color-surface-elevated`
 - `--color-surface-canvas`
 - `--color-border-premium`
 - `--color-text-muted`
-
-As of 2026-03-22 Plan 008 closeout:
-
-- `src/styles/global.scss` no longer imports `src/styles/tokens/contracts/_core.scss`.
-- `src/styles/themes/sections/_reveal-theme.scss` no longer depends on
-  `src/styles/tokens/primitives/color`.
-- The legacy `src/styles/tokens/contracts/_core.scss` and `src/styles/tokens/primitives/**` files
-  have been removed because they no longer have active runtime or test consumers.
 
 Decorative exceptions:
 

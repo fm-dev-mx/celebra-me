@@ -125,7 +125,6 @@ The repo currently types and documents these RSVP/Supabase-related variables:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `PUBLIC_SUPABASE_URL`
 - `PUBLIC_SUPABASE_ANON_KEY`
-- `RSVP_TOKEN_SECRET`
 - `RSVP_CLAIM_CODE_PEPPER`
 - `TRUST_DEVICE_SECRET`
 - `TRUST_DEVICE_MAX_AGE_DAYS`
@@ -142,21 +141,10 @@ The active runtime also uses these operational variables outside the narrow RSVP
 - `GMAIL_USER`
 - `GMAIL_PASS`
 - `CONTACT_FORM_RECIPIENT_EMAIL`
-- `SENDGRID_API_KEY`
-- `SENTRY_DSN`
-- `SENTRY_AUTH_TOKEN`
 - `PUBLIC_GOOGLE_ANALYTICS_ID`
 
 Keep `.env.example` and `src/env.d.ts` aligned when one of these active operational variables is
 added, renamed, or retired.
-
-Legacy compatibility variables such as `RSVP_ADMIN_USER` and `RSVP_ADMIN_PASSWORD` have been
-completely removed from `src/env.d.ts` and `.env.example` as they no longer correspond to an active
-`/admin/rsvp` route in the live tree.
-
-Deprecated feature-flag placeholders such as `ENABLE_MFA` and `ENABLE_AUDIT_LOGS` are no longer
-typed or listed in `.env.example` because no live code consumes them. Reintroduce a feature flag
-only with a concrete runtime consumer and documentation.
 
 ## Suggested Verification
 
