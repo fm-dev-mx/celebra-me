@@ -1,4 +1,5 @@
-import type { InvitationViewModel, HeroViewModel, EnvelopeViewModel } from './types';
+import type { InvitationViewModel, HeroViewModel, EnvelopeViewModel, Interlude } from './types';
+import type { InterludeInput } from '@/lib/schemas/content/interludes.schema';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
@@ -152,6 +153,34 @@ export function buildSharing(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.sharing.ogImage, data.title)
 			: undefined,
 	};
+}
+
+export function buildInterludes(context: AdaptationContext): Interlude[] {
+	const { data, eventSlug } = context;
+	if (!data.interludes) return [];
+
+	return data.interludes
+		.map((interlude: InterludeInput) => {
+			const resolvedImage = resolveAsset(eventSlug, interlude.image, data.title);
+			if (!resolvedImage) {
+				console.warn(
+					`[Interlude] Failed to resolve image "${interlude.image}" for event "${eventSlug}". Interlude will be skipped.`,
+				);
+				return null;
+			}
+			return {
+				afterSection: interlude.afterSection,
+				alt: interlude.alt,
+				height: interlude.height,
+				variant: interlude.variant,
+				focalPoint: interlude.focalPoint,
+				lightX: interlude.lightX,
+				lightY: interlude.lightY,
+				overlayOpacity: interlude.overlayOpacity,
+				image: resolvedImage,
+			} as Interlude;
+		})
+		.filter((i: Interlude | null): i is Interlude => i !== null);
 }
 
 function buildQuoteSection(context: AdaptationContext) {
