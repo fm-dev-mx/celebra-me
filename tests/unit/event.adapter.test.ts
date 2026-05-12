@@ -53,12 +53,7 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.location?.ceremony).toBeUndefined();
 		expect(viewModel.sections.location?.reception?.venueName).toBe("D'Galaz Alberca y Eventos");
 		expect(viewModel.sections.location?.variant).toBe('premiere-floral');
-		expect(viewModel.contentBlocks?.[0]).toMatchObject({
-			type: 'section',
-			section: 'location',
-		});
-		expect(viewModel.contentBlocks?.[1]).toMatchObject({
-			type: 'interlude',
+		expect(viewModel.interludes?.find((i) => i.afterSection === 'location')).toMatchObject({
 			height: 'screen',
 		});
 		expect(viewModel.hero.backgroundImage.src).toBe('test-file-stub');
@@ -99,8 +94,7 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(event);
 
 		expect(viewModel.theme.preset).toBe('editorial');
-		expect(viewModel.contentBlocks?.find((block) => block.type === 'interlude')).toMatchObject({
-			type: 'interlude',
+		expect(viewModel.interludes?.find((i) => i.variant === 'editorial')).toMatchObject({
 			variant: 'editorial',
 		});
 	});
