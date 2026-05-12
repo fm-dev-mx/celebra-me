@@ -150,6 +150,10 @@
         "confirmationMessage": "Nos dará mucha alegría compartir esta noche contigo.",
         "confirmationMode": "api"
     },
+    "quote": {
+        "text": "Bajo el cielo más azul, celebro un sueño que se hace realidad.",
+        "author": "Ana Sofía"
+    },
     "thankYou": {
         "message": "Gracias por ser parte de mis XV años. Tu cariño y compañía hacen que este día sea aún más especial.",
         "closingName": "Ana Sofía Cota Guillen",
@@ -203,66 +207,34 @@
         { "label": "Regalos", "href": "#regalos" },
         { "label": "RSVP", "href": "#rsvp" }
     ],
-    "contentBlocks": [
+    "interludes": [
         {
-            "type": "section",
-            "section": "location"
-        },
-        {
-            "type": "interlude",
             "image": "interlude01",
+            "afterSection": "location",
             "alt": "Ana Sofía con vestido azul cielo y detalles plateados",
             "height": "screen",
             "focalPoint": "center 35%"
         },
         {
-            "type": "section",
-            "section": "family"
-        },
-        {
-            "type": "interlude",
             "image": "interlude02",
+            "afterSection": "family",
             "alt": "Retrato elegante de Ana Sofía con corona",
             "height": "screen",
             "focalPoint": "center 25%"
         },
         {
-            "type": "section",
-            "section": "itinerary"
-        },
-        {
-            "type": "interlude",
             "image": "interlude03",
+            "afterSection": "itinerary",
             "alt": "Detalle de pastel con listones azules",
             "height": "screen",
             "focalPoint": "center 30%"
         },
         {
-            "type": "section",
-            "section": "gallery"
-        },
-        {
-            "type": "section",
-            "section": "countdown"
-        },
-        {
-            "type": "section",
-            "section": "gifts"
-        },
-        {
-            "type": "section",
-            "section": "rsvp"
-        },
-        {
-            "type": "interlude",
             "image": "interlude04",
+            "afterSection": "rsvp",
             "alt": "Retrato final de Ana Sofía en tonos plata y azul",
             "height": "screen",
             "focalPoint": "center 30%"
-        },
-        {
-            "type": "section",
-            "section": "thankYou"
         }
     ],
     "envelope": {

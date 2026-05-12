@@ -242,26 +242,18 @@
         { "label": "Galeria", "href": "#galeria" },
         { "label": "Confirmar", "href": "#rsvp" }
     ],
-    "contentBlocks": [
-        { "type": "section", "section": "quote" },
+    "interludes": [
         {
-            "type": "interlude",
             "image": "gallery04",
+            "afterSection": "quote",
             "alt": "Retrato editorial de la pareja",
             "height": "screen"
         },
-        { "type": "section", "section": "location" },
-        { "type": "section", "section": "family" },
-        { "type": "section", "section": "itinerary" },
-        { "type": "section", "section": "gallery" },
-        { "type": "section", "section": "rsvp" },
-        { "type": "section", "section": "gifts" },
         {
-            "type": "interlude",
             "image": "gallery06",
+            "afterSection": "gifts",
             "alt": "Cierre fotografico de la boda",
             "height": "screen"
-        },
-        { "type": "section", "section": "thankYou" }
+        }
     ]
 }

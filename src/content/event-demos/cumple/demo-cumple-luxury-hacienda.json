@@ -231,5 +231,19 @@
     },
     "sharing": {
         "whatsappTemplate": "Hola {name}, es un gusto invitarte a celebrar los 60 años de Don Alberto Valenzuela 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
-    }
+    },
+    "interludes": [
+        {
+            "image": "gallery01",
+            "afterSection": "family",
+            "alt": "Legado de vida Alberto Valenzuela",
+            "height": "screen"
+        },
+        {
+            "image": "gallery02",
+            "afterSection": "gifts",
+            "alt": "Celebración en la Hacienda",
+            "height": "screen"
+        }
+    ]
 }

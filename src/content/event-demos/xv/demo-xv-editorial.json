@@ -146,6 +146,10 @@
         "confirmationMessage": "Tu lugar para Noir Premiere XV ha sido reservado. Nos vemos en la gala.",
         "confirmationMode": "api"
     },
+    "quote": {
+        "text": "Con luz propia, inicio un nuevo capítulo. Gracias por ser parte de esta noche de quince años.",
+        "author": "Valentina Noir"
+    },
     "thankYou": {
         "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emocion.",
         "closingName": "Valentina",
@@ -219,87 +223,55 @@
             "href": "#rsvp"
         }
     ],
-    "contentBlocks": [
+    "interludes": [
         {
-            "type": "section",
-            "section": "location"
-        },
-        {
-            "type": "interlude",
             "image": "interlude02",
+            "afterSection": "location",
             "alt": "Seda dorada fluyendo en un ambiente noir",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "family"
-        },
-        {
-            "type": "interlude",
             "image": "interlude03",
+            "afterSection": "family",
             "alt": "Tiara y texturas sobre terciopelo oscuro",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "itinerary"
-        },
-        {
-            "type": "interlude",
             "image": "interlude01",
+            "afterSection": "itinerary",
             "alt": "Detalle editorial de alta moda",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "gallery"
-        },
-        {
-            "type": "interlude",
             "image": "gallery09",
+            "afterSection": "gallery",
             "alt": "Brillo dorado cinematografico",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "countdown"
-        },
-        {
-            "type": "interlude",
             "image": "gallery10",
+            "afterSection": "countdown",
             "alt": "Explosion de destellos en la pista",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "gifts"
-        },
-        {
-            "type": "interlude",
             "image": "gallery15",
+            "afterSection": "gifts",
             "alt": "Detalles de perlas, oro y textura editorial",
-            "variant": "editorial",
-            "height": "screen"
+            "height": "screen",
+            "variant": "editorial"
         },
         {
-            "type": "section",
-            "section": "rsvp"
-        },
-        {
-            "type": "interlude",
             "image": "interludeNew01",
+            "afterSection": "rsvp",
             "alt": "Ultimo retrato editorial",
-            "variant": "editorial",
-            "height": "screen"
-        },
-        {
-            "type": "section",
-            "section": "thankYou"
+            "height": "screen",
+            "variant": "editorial"
         }
     ],
     "envelope": {

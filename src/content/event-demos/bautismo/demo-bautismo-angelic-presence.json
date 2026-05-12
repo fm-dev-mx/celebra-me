@@ -156,28 +156,20 @@
         "image": "thankYouPortrait",
         "focalPoint": "50% 42%"
     },
-    "contentBlocks": [
-        { "type": "section", "section": "quote" },
+    "interludes": [
         {
-            "type": "interlude",
             "image": "interlude01",
+            "afterSection": "quote",
             "alt": "Retrato editorial de María Santos",
             "height": "tall",
             "focalPoint": "50% 38%"
         },
-        { "type": "section", "section": "family" },
-        { "type": "section", "section": "gallery" },
         {
-            "type": "interlude",
             "image": "interlude02",
+            "afterSection": "gallery",
             "alt": "Detalle luminoso del bautismo",
             "height": "screen",
             "focalPoint": "50% 44%"
-        },
-        { "type": "section", "section": "countdown" },
-        { "type": "section", "section": "location" },
-        { "type": "section", "section": "itinerary" },
-        { "type": "section", "section": "rsvp" },
-        { "type": "section", "section": "thankYou" }
+        }
     ]
 }

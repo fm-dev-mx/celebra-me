@@ -163,5 +163,31 @@
     },
     "sharing": {
         "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}"
-    }
+    },
+    "interludes": [
+        {
+            "image": "gallery01",
+            "afterSection": "family",
+            "alt": "Galería de momentos especiales",
+            "height": "screen"
+        },
+        {
+            "image": "gallery02",
+            "afterSection": "gallery",
+            "alt": "Recuerdos del evento",
+            "height": "screen"
+        },
+        {
+            "image": "interlude01",
+            "afterSection": "countdown",
+            "alt": "Detalle editorial de la celebración",
+            "height": "screen"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "gifts",
+            "alt": "Mesa de regalos",
+            "height": "screen"
+        }
+    ]
 }

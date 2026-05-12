@@ -118,6 +118,10 @@
         "confirmationMessage": "¡Nos vemos en la fiesta!",
         "confirmationMode": "api"
     },
+    "quote": {
+        "text": "Entre flores y sueños, llega el momento más esperado.",
+        "author": "Ximena"
+    },
     "thankYou": {
         "message": "Gracias por ser parte de mis XV. Su cariño hace que este sueño brille aún más.",
         "closingName": "Ximena Meza Trasviña",
@@ -171,76 +175,44 @@
         { "label": "Regalos", "href": "#regalos" },
         { "label": "RSVP", "href": "#rsvp" }
     ],
-    "contentBlocks": [
+    "interludes": [
         {
-            "type": "section",
-            "section": "location"
-        },
-        {
-            "type": "interlude",
             "image": "gallery04",
+            "afterSection": "location",
             "alt": "Rosas en tonos rosados y rose gold fluyendo editorialmente",
             "height": "screen",
             "focalPoint": "center 15%"
         },
         {
-            "type": "section",
-            "section": "family"
-        },
-        {
-            "type": "interlude",
             "image": "gallery12",
+            "afterSection": "family",
             "alt": "Jardín privado iluminado para la gala",
             "height": "screen"
         },
         {
-            "type": "section",
-            "section": "itinerary"
-        },
-        {
-            "type": "interlude",
             "image": "interlude01",
+            "afterSection": "itinerary",
             "alt": "Detalle editorial de texturas y perlas",
             "height": "screen"
         },
         {
-            "type": "section",
-            "section": "gallery"
-        },
-        {
-            "type": "interlude",
             "image": "gallery09",
+            "afterSection": "gallery",
             "alt": "Brillo rose metal cinematográfico",
             "height": "screen"
         },
         {
-            "type": "section",
-            "section": "countdown"
-        },
-        {
-            "type": "interlude",
             "image": "gallery10",
+            "afterSection": "countdown",
             "alt": "Explosión artística de destellos en el jardín",
             "height": "screen"
         },
         {
-            "type": "section",
-            "section": "gifts"
-        },
-        {
-            "type": "section",
-            "section": "rsvp"
-        },
-        {
-            "type": "interlude",
             "image": "interludeNew01",
+            "afterSection": "rsvp",
             "alt": "Retrato editorial final",
             "height": "screen",
             "focalPoint": "center 20%"
-        },
-        {
-            "type": "section",
-            "section": "thankYou"
         }
     ],
     "envelope": {

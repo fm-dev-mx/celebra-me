@@ -178,34 +178,18 @@
             "href": "#rsvp"
         }
     ],
-    "contentBlocks": [
+    "interludes": [
         {
-            "type": "section",
-            "section": "location"
+            "image": "gallery01",
+            "afterSection": "itinerary",
+            "alt": "Memorias del festejo Gerardo Mendoza",
+            "height": "screen"
         },
         {
-            "type": "section",
-            "section": "itinerary"
-        },
-        {
-            "type": "section",
-            "section": "gallery"
-        },
-        {
-            "type": "section",
-            "section": "countdown"
-        },
-        {
-            "type": "section",
-            "section": "gifts"
-        },
-        {
-            "type": "section",
-            "section": "rsvp"
-        },
-        {
-            "type": "section",
-            "section": "thankYou"
+            "image": "gallery02",
+            "afterSection": "gifts",
+            "alt": "Detalles de la celebración",
+            "height": "screen"
         }
     ],
     "envelope": {

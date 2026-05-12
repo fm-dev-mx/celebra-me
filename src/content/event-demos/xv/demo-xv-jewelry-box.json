@@ -254,6 +254,32 @@
             "accent": "surfaceDark"
         }
     },
+    "interludes": [
+        {
+            "image": "gallery01",
+            "afterSection": "family",
+            "alt": "Galería editorial Lucía García",
+            "height": "screen"
+        },
+        {
+            "image": "gallery02",
+            "afterSection": "gallery",
+            "alt": "Detalles de la celebración",
+            "height": "screen"
+        },
+        {
+            "image": "gallery03",
+            "afterSection": "countdown",
+            "alt": "Moments captured",
+            "height": "screen"
+        },
+        {
+            "image": "gallery04",
+            "afterSection": "gifts",
+            "alt": "Celebración inolvidable",
+            "height": "screen"
+        }
+    ],
     "sharing": {
         "whatsappTemplate": "¡Hola {name}! Te comparto tu invitación para {eventTitle}: {inviteUrl}"
     }
