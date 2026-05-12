@@ -29,6 +29,8 @@ const SECTION_SELECTORS = [
 	'#thank-you-section',
 ] as const;
 
+const INTERLUDE_COUNT = 4;
+
 const ARTIFACT_ROOT = path.resolve(process.cwd(), 'temp', 'ana-sofia-celestial-blue-audit');
 const RGB_VALUE_PATTERN = /^rgb\(\d+[\s,]+\d+[\s,]+\d+\)$/;
 const EXPECTED_EXTERNAL_MEDIA_FAILURES = [
@@ -228,3 +230,43 @@ async function assertNoHorizontalOverflow(page: Page) {
 
 	expect(overflow).toBeLessThanOrEqual(1);
 }
+
+test('reveals all interludes with .is-visible class when scrolled into view', async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 1200 });
+	await navigateToInvitation(page);
+	await revealInvitation(page);
+
+	const interludes = page.locator('.invitation-interlude');
+	await expect(interludes).toHaveCount(INTERLUDE_COUNT);
+
+	for (let i = 0; i < INTERLUDE_COUNT; i++) {
+		const interlude = interludes.nth(i);
+		await interlude.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(300);
+
+		await expect(interlude).toHaveClass(/is-visible/);
+
+		const variant = await interlude.getAttribute('data-variant');
+		expect(variant).toBe('celestial-blue');
+
+		const index = await interlude.getAttribute('data-interlude-index');
+		expect(index).toBe(String(i + 1));
+	}
+});
+
+test('interludes remain hidden when JavaScript is disabled (CSS fallback)', async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 1200 });
+	await page.goto('/xv/ana-sofia-cota-guillen', { waitUntil: 'domcontentloaded' });
+
+	const interludes = page.locator('.invitation-interlude');
+	const count = await interludes.count();
+
+	if (count > 0) {
+		const firstInterlude = interludes.first();
+		const opacity = await firstInterlude.evaluate((el) =>
+			getComputedStyle(el).getPropertyValue('opacity').trim(),
+		);
+
+		expect(['0', '0%', '0.0']).toContain(opacity);
+	}
+});

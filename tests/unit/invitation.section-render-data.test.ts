@@ -40,8 +40,8 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			component: 'location',
 			props: {
 				nextSectionLink: {
-					href: '#family-section',
-					label: 'Familia',
+					href: '#itinerary',
+					label: 'Itinerario',
 				},
 			},
 		});
@@ -87,5 +87,31 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			maxAllowedAttendees: 0,
 			inviteId: 'invite-zero',
 		});
+	});
+
+	it('includes interludes in ana-sofia-cota-guillen descriptors', () => {
+		const eventEntry = {
+			id: 'events/ana-sofia-cota-guillen',
+			data: loadFixture('src/content/events/ana-sofia-cota-guillen.json'),
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry,
+			slug: 'ana-sofia-cota-guillen',
+		});
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const components = descriptors.map((d) => d.component);
+
+		const interludeDescriptors = descriptors.filter((d) => d.component === 'interlude');
+		expect(interludeDescriptors).toHaveLength(4);
+
+		expect(components).toContain('interlude');
+		expect(components.indexOf('interlude')).toBeGreaterThan(0);
+
+		for (const interlude of interludeDescriptors) {
+			expect(interlude.props).toHaveProperty('image');
+			expect(interlude.props).toHaveProperty('variant', 'celestial-blue');
+		}
 	});
 });

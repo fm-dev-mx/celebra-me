@@ -116,12 +116,16 @@ describe('prepareInvitationPageContext', () => {
 		expect(describeRenderPlan(context.renderPlan)).toEqual([
 			'quote',
 			'family',
+			'interlude',
 			'gallery',
+			'interlude',
 			'countdown',
+			'interlude',
 			'location',
 			'itinerary',
 			'rsvp',
 			'gifts',
+			'interlude',
 			'thankYou',
 		]);
 	});

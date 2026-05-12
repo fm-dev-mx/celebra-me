@@ -9,7 +9,7 @@ function loadFixture(relativePath: string) {
 }
 
 describe('buildInvitationRenderPlan', () => {
-	it('honors Ximena contentBlocks order and inserts personalized access before RSVP', () => {
+	it('inserts interludes after their specified sections using DEFAULT_SECTION_ORDER', () => {
 		const event = {
 			id: 'events/ximena-meza-trasvina',
 			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
@@ -19,25 +19,26 @@ describe('buildInvitationRenderPlan', () => {
 		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: true });
 
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
-			'location',
-			'interlude',
+			'quote',
 			'family',
-			'interlude',
-			'itinerary',
 			'interlude',
 			'gallery',
 			'interlude',
 			'countdown',
 			'interlude',
-			'gifts',
+			'location',
+			'interlude',
+			'itinerary',
+			'interlude',
 			'personalized-access',
 			'rsvp',
 			'interlude',
+			'gifts',
 			'thankYou',
 		]);
 	});
 
-	it('falls back to the legacy section order when contentBlocks are absent', () => {
+	it('renders all interludes from the event interludes array', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
@@ -46,15 +47,25 @@ describe('buildInvitationRenderPlan', () => {
 		const viewModel = adaptEvent(event);
 		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
 
-		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
+		const sectionTypes = plan.map((item) =>
+			item.type === 'section' ? item.section : item.type,
+		);
+		const interludeCount = sectionTypes.filter((t) => t === 'interlude').length;
+
+		expect(interludeCount).toBe(4);
+		expect(sectionTypes).toEqual([
 			'quote',
 			'family',
+			'interlude',
 			'gallery',
+			'interlude',
 			'countdown',
+			'interlude',
 			'location',
 			'itinerary',
 			'rsvp',
 			'gifts',
+			'interlude',
 			'thankYou',
 		]);
 	});
@@ -89,5 +100,47 @@ describe('buildInvitationRenderPlan', () => {
 		for (const section of requiredSections) {
 			expect(sectionTypes).toContain(section);
 		}
+	});
+
+	it('includes all 4 interludes in ana-sofia-cota-guillen render plan with correct ordering', () => {
+		const event = {
+			id: 'events/ana-sofia-cota-guillen',
+			data: loadFixture('src/content/events/ana-sofia-cota-guillen.json'),
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+		const plan = buildInvitationRenderPlan(viewModel, { hasGuestContext: false });
+
+		expect(viewModel.interludes).toBeDefined();
+		expect(viewModel.interludes).toHaveLength(4);
+
+		const sectionTypes = plan.map((item) =>
+			item.type === 'section' ? item.section : item.type,
+		);
+		const interludeCount = sectionTypes.filter((t) => t === 'interlude').length;
+		expect(interludeCount).toBe(4);
+
+		const expectedOrder = [
+			'quote',
+			'family',
+			'interlude',
+			'gallery',
+			'countdown',
+			'location',
+			'interlude',
+			'itinerary',
+			'interlude',
+			'rsvp',
+			'interlude',
+			'gifts',
+			'thankYou',
+		];
+		expect(sectionTypes).toEqual(expectedOrder);
+
+		const interludes = plan.filter((item) => item.type === 'interlude');
+		expect(interludes[0]).toHaveProperty('image');
+		expect(interludes[1]).toHaveProperty('image');
+		expect(interludes[2]).toHaveProperty('image');
+		expect(interludes[3]).toHaveProperty('image');
 	});
 });
