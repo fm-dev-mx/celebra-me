@@ -71,7 +71,7 @@ describe('RSVP Component', () => {
 			);
 
 			await waitFor(() => {
-				expect(screen.getByText(/utiliza enlaces personalizados/i)).toBeInTheDocument();
+				expect(screen.getByText(/Si recibiste tu invitación directa/i)).toBeInTheDocument();
 			});
 
 			expect(screen.queryByRole('button', { name: /Confirmar/i })).not.toBeInTheDocument();
@@ -93,6 +93,43 @@ describe('RSVP Component', () => {
 			expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
 			expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
 			expect(screen.queryByText(/utiliza enlaces personalizados/i)).not.toBeInTheDocument();
+		});
+
+		const demoProps = {
+			eventType: 'xv' as const,
+			eventSlug: 'demo-xv-editorial',
+			title: 'Confirma Tu Asistencia',
+			guestCap: 4,
+			accessMode: 'personalized-only' as const,
+			confirmationMessage: 'Gracias por confirmar.',
+			isDemoPreview: true,
+		};
+
+		it('renders RSVP form for demo preview mode regardless of accessMode', async () => {
+			render(<RSVP {...demoProps} />);
+
+			await waitFor(() => {
+				expect(
+					screen.queryByText(/utiliza enlaces personalizados/i),
+				).not.toBeInTheDocument();
+			});
+			expect(screen.getByRole('button', { name: /Confirmar/i })).toBeInTheDocument();
+			expect(screen.getByText('Vista de muestra.')).toBeInTheDocument();
+		});
+
+		it('shows success state in demo preview mode after form submission', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...demoProps} />);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(
+				() => {
+					expect(screen.getByText(/Gracias por acompañarnos/i)).toBeInTheDocument();
+				},
+				{ timeout: 3000 },
+			);
 		});
 	});
 
