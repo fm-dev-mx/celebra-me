@@ -123,6 +123,7 @@ describe('prepareInvitationPageContext', () => {
 			'interlude',
 			'location',
 			'itinerary',
+			'personalized-access',
 			'rsvp',
 			'gifts',
 			'interlude',

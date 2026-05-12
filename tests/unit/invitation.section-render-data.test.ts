@@ -3,15 +3,26 @@ import path from 'node:path';
 import {
 	buildInvitationSectionRenderDescriptors,
 	type InvitationSectionRenderDescriptor,
+	DEMO_GUEST_NAME,
 } from '@/lib/invitation/section-render-data';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 
 type RsvpDescriptor = Extract<InvitationSectionRenderDescriptor, { component: 'rsvp' }>;
+type PersonalizedAccessDescriptor = Extract<
+	InvitationSectionRenderDescriptor,
+	{ component: 'personalized-access' }
+>;
 
 function isRsvpDescriptor(
 	descriptor: InvitationSectionRenderDescriptor,
 ): descriptor is RsvpDescriptor {
 	return descriptor.component === 'rsvp';
+}
+
+function isPersonalizedAccessDescriptor(
+	descriptor: InvitationSectionRenderDescriptor,
+): descriptor is PersonalizedAccessDescriptor {
+	return descriptor.component === 'personalized-access';
 }
 
 function loadFixture(relativePath: string) {
@@ -113,5 +124,72 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			expect(interlude.props).toHaveProperty('image');
 			expect(interlude.props).toHaveProperty('variant', 'celestial-blue');
 		}
+	});
+
+	function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
+		const eventEntry = {
+			id: `event-demos/xv/${fixtureSlug}`,
+			data: loadFixture(`src/content/event-demos/xv/${fixtureSlug}.json`),
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		return prepareInvitationPageContext({
+			eventEntry,
+			slug: fixtureSlug,
+			guestContext: null,
+		});
+	}
+
+	it('renders RSVP and PersonalizedAccess for demo preview without inviteId', () => {
+		const pageContext = setupDemoPageContext();
+
+		expect(pageContext.isDemoPreview).toBe(true);
+		expect(pageContext.viewModel.isDemo).toBe(true);
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const descriptorComponents = descriptors.map((d) => d.component);
+
+		expect(descriptorComponents).toContain('rsvp');
+		expect(descriptorComponents).toContain('personalized-access');
+
+		const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
+		expect(rsvpDescriptor?.props.isDemoPreview).toBe(true);
+		expect(rsvpDescriptor?.props.initialGuestData).toBeUndefined();
+
+		const personalizedAccessDescriptor = descriptors.find(isPersonalizedAccessDescriptor);
+		expect(personalizedAccessDescriptor).toBeDefined();
+		expect(personalizedAccessDescriptor?.props.isDemoPreview).toBe(true);
+		expect(personalizedAccessDescriptor?.props.guestName).toBe(DEMO_GUEST_NAME);
+	});
+
+	it('renders RSVP form for demo preview regardless of accessMode', () => {
+		const pageContext = setupDemoPageContext();
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
+
+		expect(rsvpDescriptor).toBeDefined();
+		expect(rsvpDescriptor?.props.isDemoPreview).toBe(true);
+		expect(rsvpDescriptor?.props.initialGuestData).toBeUndefined();
+	});
+
+	it('does not render personalized-access for non-demo events without inviteId', () => {
+		const eventEntry = {
+			id: 'events/ximena-meza-trasvina',
+			data: loadFixture('src/content/events/ximena-meza-trasvina.json'),
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry,
+			slug: 'ximena-meza-trasvina',
+			guestContext: null,
+		});
+
+		expect(pageContext.isDemoPreview).toBe(false);
+		expect(pageContext.viewModel.isDemo).toBe(false);
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const descriptorComponents = descriptors.map((d) => d.component);
+
+		expect(descriptorComponents).not.toContain('personalized-access');
 	});
 });
