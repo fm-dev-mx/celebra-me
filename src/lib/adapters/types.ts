@@ -1,4 +1,4 @@
-import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { ImageAsset, AssetSource } from '@/lib/assets/asset-registry';
 import type {
 	CountdownVariant,
 	IndicationIconName,
@@ -202,19 +202,23 @@ export const CONTENT_SECTION_KEYS = [
 
 export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 
-export type ContentBlock =
-	| {
-			type: 'section';
-			section: ContentSectionKey;
-	  }
-	| {
-			type: 'interlude';
-			image: ImageAsset;
-			alt: string;
-			height: 'screen' | 'tall';
-			variant?: SharedSectionVariant;
-			focalPoint?: string;
-	  };
+export interface Interlude {
+	image: ImageAsset;
+	afterSection: ContentSectionKey;
+	alt?: string;
+	height: 'screen' | 'tall';
+	variant?: SharedSectionVariant;
+	focalPoint?: string;
+}
+
+export type InterludeInput = {
+	image: AssetSource;
+	afterSection: ContentSectionKey;
+	alt?: string;
+	height: 'screen' | 'tall';
+	variant?: SharedSectionVariant;
+	focalPoint?: string;
+};
 
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
@@ -312,7 +316,7 @@ export interface InvitationViewModel {
 		title?: string;
 		revealMode: 'envelope' | 'immediate';
 	};
-	contentBlocks?: ContentBlock[];
+	interludes?: Interlude[];
 	navigation?: Array<{ label: string; href: string }>;
 	sharing?: {
 		whatsappTemplate?: string;

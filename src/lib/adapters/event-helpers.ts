@@ -70,14 +70,12 @@ export function resolveAsset(
 	}
 
 	if (!isEventAssetKey(normalizedSource.key)) {
-		throw new Error(`[AssetRegistry] Unsupported asset key "${normalizedSource.key}".`);
+		return undefined;
 	}
 
 	const metadata = getEventAsset(eventSlug, normalizedSource.key);
 	if (!metadata) {
-		throw new Error(
-			`[AssetRegistry] Missing asset "${normalizedSource.key}" for event "${eventSlug}".`,
-		);
+		return undefined;
 	}
 
 	let alt = `Imagen de ${eventTitle}`;

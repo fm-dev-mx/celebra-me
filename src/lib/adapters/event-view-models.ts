@@ -1,10 +1,4 @@
-import type {
-	InvitationViewModel,
-	HeroViewModel,
-	EnvelopeViewModel,
-	ContentBlock,
-	ContentSectionKey,
-} from './types';
+import type { InvitationViewModel, HeroViewModel, EnvelopeViewModel } from './types';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { type AssetSource } from '@/lib/assets/asset-registry';
 import { pickVariant, resolveAsset, requireAsset } from '@/lib/adapters/event-helpers';
@@ -127,49 +121,6 @@ export function buildLocationIndications(context: AdaptationContext) {
 			};
 		},
 	);
-}
-
-export function buildContentBlocks(context: AdaptationContext): ContentBlock[] | undefined {
-	const { data, eventSlug, normalizedPreset } = context;
-
-	const rawBlocks = data.contentBlocks as Array<{
-		type: string;
-		section?: string;
-		image?: AssetSource | string;
-		alt?: string;
-		height?: string;
-		variant?: string;
-		focalPoint?: string;
-	}>;
-
-	return rawBlocks?.flatMap((block): ContentBlock[] => {
-		if (block.type === 'section' && block.section) {
-			return [{ type: 'section', section: block.section as ContentSectionKey }];
-		}
-
-		if (block.type === 'interlude' && block.image) {
-			const image = resolveAsset(eventSlug, block.image, data.title);
-			if (!image) return [];
-
-			return [
-				{
-					type: 'interlude',
-					image,
-					alt: block.alt || `Interludio de ${data.title}`,
-					height: (block.height as 'screen' | 'tall') || 'tall',
-					variant: pickVariant(
-						'contentBlocks.interlude.variant',
-						block.variant,
-						THEME_PRESETS,
-						normalizedPreset,
-					),
-					focalPoint: block.focalPoint,
-				},
-			];
-		}
-
-		return [];
-	});
 }
 
 export function buildSections(
