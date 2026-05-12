@@ -88,7 +88,7 @@ const isDev = import.meta.env.DEV;
 				</button>
 			</div>
 
-			<div class="envelope-zone--identity">
+			<div class="envelope-zone--identity" aria-hidden="true">
 				<h2 class="envelope-name">{name}</h2>
 				<div class="tease-details-group">
 					<div class="tease-divider"></div>
@@ -107,7 +107,7 @@ const isDev = import.meta.env.DEV;
 		</div>
 	</div>
 
-	<div class="envelope-reveal-stage" data-envelope-card>
+	<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
 		<InvitationRevealCard card={card} />
 	</div>
 
@@ -174,8 +174,11 @@ const isDev = import.meta.env.DEV;
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
-				// Hide after exit animation
-				window.setTimeout(() => { this.hidden = true; }, 2200);
+				// Hide completely once the exit transition (CSS) is likely finished.
+				// We keep a safety timeout for the very final DOM removal, but the state is already 'revealed'.
+				window.setTimeout(() => {
+					this.hidden = true;
+				}, 2200);
 			};
 
 			if (manager.shouldSkipEnvelope()) {
@@ -211,16 +214,22 @@ const isDev = import.meta.env.DEV;
 					return;
 				}
 
+				// Trigger opening animation
 				this.classList.add('is-opening');
 
-				// Wait for card rising animation to finish before triggering exit
+				// Use animationend to detect when the card has finished rising
 				if (revealCard instanceof HTMLElement) {
-					revealCard.addEventListener('animationend', (e) => {
+					const onAnimationEnd = (e: AnimationEvent) => {
+						// Only proceed if it's the main reveal animation.
+						// We do not use `{ once: true }` here because other descendant animations might fire 'animationend' prematurely.
 						if (e.animationName.includes('envCardRise')) {
+							revealCard.removeEventListener('animationend', onAnimationEnd);
 							completeReveal();
 						}
-					}, { once: true });
+					};
+					revealCard.addEventListener('animationend', onAnimationEnd);
 				} else {
+					// Minimal fallback if DOM is missing
 					window.setTimeout(completeReveal, 2000);
 				}
 			});
