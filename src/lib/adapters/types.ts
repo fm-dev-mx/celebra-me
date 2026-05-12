@@ -209,6 +209,9 @@ export interface Interlude {
 	height: 'screen' | 'tall';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
+	lightX?: string;
+	lightY?: string;
+	overlayOpacity?: string;
 }
 
 export type InterludeInput = {
@@ -218,6 +221,9 @@ export type InterludeInput = {
 	height: 'screen' | 'tall';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
+	lightX?: string;
+	lightY?: string;
+	overlayOpacity?: string;
 };
 
 export interface InvitationViewModel {
