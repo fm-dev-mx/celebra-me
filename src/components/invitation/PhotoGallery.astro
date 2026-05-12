@@ -1,7 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import { getLayoutClass, getLayoutData } from '@/lib/components/gallery/getLayoutClass';
+import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
@@ -16,43 +16,29 @@ interface Props {
 const { items, variant = 'standard' } = Astro.props;
 
 const getSrc = (image: ImageMetadata | ImageAsset): string => {
-	if ('src' in image) {
-		const src = image.src;
-		if (typeof src === 'string') return src;
-		if (typeof src === 'object' && src !== null && 'src' in src) {
-			return String((src as { src: unknown }).src);
-		}
-	}
-	return String(image);
+	const src = image.src;
+	return typeof src === 'string' ? src : src.src;
 };
 ---
 
 <div class="gallery-grid" data-gallery data-variant={variant}>
 	{
-		items.map((item, index) => {
-			const data = getLayoutData(index, variant);
-			return (
-				<div
-					class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
-					data-gallery-item
-					data-gallery-index={index}
-					data-gallery-src={getSrc(item.image)}
-					data-gallery-caption={item.caption ?? ''}
-					data-gallery-position={data?.positionDesktop ? JSON.stringify(data.positionDesktop) : ''}
-					data-gallery-img-x={data?.imagePosition?.x}
-					data-gallery-img-y={data?.imagePosition?.y}
-					tabindex="0"
-					role="button"
-					aria-label={item.caption || `Ver imagen ${index + 1}`}
-				>
-					<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
-				</div>
-			);
-		})
+		items.map((item, index) => (
+			<div
+				class:list={['gallery-grid__item', getLayoutClass(index, variant)]}
+				data-gallery-item
+				data-gallery-index={index}
+				data-gallery-src={getSrc(item.image)}
+				data-gallery-caption={item.caption ?? ''}
+				tabindex="0"
+				role="button"
+				aria-label={item.caption || `Ver imagen ${index + 1}`}
+			>
+				<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
+			</div>
+		))
 	}
 </div>
-
-
 
 <script>
 	const initGallery = () => {
@@ -60,28 +46,6 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 		if (!gallery) return;
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		const galleryItems = Array.from(gallery.querySelectorAll('[data-gallery-item]'));
-
-		galleryItems.forEach((item) => {
-			const htmlItem = item as HTMLElement;
-			const positionStr = htmlItem.dataset.galleryPosition;
-			if (positionStr) {
-				try {
-					const pos = JSON.parse(positionStr);
-					if (pos.column) htmlItem.style.gridColumn = pos.column;
-					if (pos.row) htmlItem.style.gridRow = pos.row;
-					if (pos.marginTop) htmlItem.style.marginTop = pos.marginTop;
-					if (pos.zIndex) htmlItem.style.zIndex = String(pos.zIndex);
-				} catch (e) {
-					console.error('[Gallery] Invalid position data:', e);
-				}
-			}
-			const imgX = htmlItem.dataset.galleryImgX;
-			const imgY = htmlItem.dataset.galleryImgY;
-			if (imgX && imgY) {
-				const img = htmlItem.querySelector('img');
-				if (img) img.style.objectPosition = `${imgX} ${imgY}`;
-			}
-		});
 
 		if (prefersReducedMotion || !('IntersectionObserver' in window)) {
 			galleryItems.forEach((item) => {
@@ -138,3 +102,4 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 
 	initGallery();
 </script>
+
