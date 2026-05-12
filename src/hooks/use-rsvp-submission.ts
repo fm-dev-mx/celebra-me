@@ -14,6 +14,7 @@ import {
 	type AttendanceStatus,
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
+import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
 
 interface InitialGuestData {
 	fullName?: string;
@@ -28,6 +29,7 @@ interface UseRsvpSubmissionOptions {
 	accessMode: 'personalized-only' | 'hybrid';
 	initialGuestData?: InitialGuestData;
 	prefersReducedMotion: boolean;
+	isDemoPreview?: boolean;
 }
 
 export function useRsvpSubmission({
@@ -35,17 +37,20 @@ export function useRsvpSubmission({
 	eventType,
 	eventSlug,
 	accessMode,
-	initialGuestData,
+	initialGuestData: initialData,
 	prefersReducedMotion,
+	isDemoPreview,
 }: UseRsvpSubmissionOptions) {
-	const [name, setName] = useState(initialGuestData?.fullName || '');
+	const initialName = isDemoPreview ? DEMO_GUEST_NAME : initialData?.fullName || '';
+
+	const [name, setName] = useState(initialName);
 	const [phone, setPhone] = useState('');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
 	const [notes, setNotes] = useState('');
-	const [nameLocked, setNameLocked] = useState(Boolean(initialGuestData?.fullName));
-	const [contextGuestCap, setContextGuestCap] = useState<number>(
-		Number(initialGuestData?.maxAllowedAttendees || guestCap),
+	const [nameLocked] = useState(isDemoPreview || Boolean(initialData?.fullName));
+	const [contextGuestCap] = useState<number>(
+		Number(isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap),
 	);
 	const [rsvpId, setRsvpId] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +61,15 @@ export function useRsvpSubmission({
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+	// Track initial data viewed status - only once per mount
+	const hasMarkedViewed = useRef(false);
+	useEffect(() => {
+		if (initialData?.inviteId && !hasMarkedViewed.current && !isDemoPreview) {
+			hasMarkedViewed.current = true;
+			void rsvpApi.markViewed(initialData.inviteId).catch(() => {});
+		}
+	}, [initialData?.inviteId, isDemoPreview]);
+
 	const nameRef = useRef<HTMLInputElement>(null);
 	const phoneRef = useRef<HTMLInputElement>(null);
 	const attendanceRef = useRef<HTMLDivElement>(null);
@@ -64,26 +78,10 @@ export function useRsvpSubmission({
 	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
 	const supportsPlusOnes = effectiveGuestCap > 1;
 	// Show phone field for public/hybrid access RSVPs
-	const showPhoneField = !initialGuestData?.inviteId && accessMode === 'hybrid';
+	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
+	const showPhoneField = !isPersonalized && accessMode === 'hybrid';
 	// Make it optional even if shown (reduce friction)
 	const phoneRequired = false;
-
-	useEffect(() => {
-		if (initialGuestData) {
-			if (initialGuestData.fullName) {
-				setName(initialGuestData.fullName);
-				setNameLocked(true);
-			}
-			if (initialGuestData.maxAllowedAttendees) {
-				setContextGuestCap(initialGuestData.maxAllowedAttendees);
-			}
-			if (initialGuestData.inviteId) {
-				void rsvpApi.markViewed(initialGuestData.inviteId).catch(() => {});
-			}
-		} else {
-			setNameLocked(false);
-		}
-	}, [initialGuestData]);
 
 	const validate = useCallback(() => {
 		const newErrors = validateRsvpForm({
@@ -120,7 +118,15 @@ export function useRsvpSubmission({
 	const handleSubmit = useCallback(
 		async (event: SyntheticEvent) => {
 			event.preventDefault();
+
 			setSubmitStatus('loading');
+
+			if (isDemoPreview) {
+				await new Promise((resolve) => setTimeout(resolve, 800));
+				setSubmitStatus('success');
+				window.setTimeout(() => setSubmitted(true), 400);
+				return;
+			}
 
 			const validationErrors = validate();
 			const errorKeys = Object.keys(validationErrors);
@@ -171,7 +177,7 @@ export function useRsvpSubmission({
 					supportsPlusOnes,
 				);
 
-				if (!initialGuestData?.inviteId) {
+				if (!initialData?.inviteId) {
 					if (accessMode !== 'hybrid') {
 						setSubmitStatus('error');
 						setErrors((prev) => ({
@@ -190,7 +196,7 @@ export function useRsvpSubmission({
 					});
 
 					setSubmitStatus('success');
-					window.setTimeout(() => setSubmitted(true), 500);
+					window.setTimeout(() => setSubmitted(true), 400);
 					return;
 				}
 
@@ -200,13 +206,13 @@ export function useRsvpSubmission({
 					guestComment: notes,
 				};
 
-				const data = await rsvpApi.submitRsvp(initialGuestData.inviteId, payload);
+				const data = await rsvpApi.submitRsvp(initialData.inviteId, payload);
 				if (data.rsvpId) {
 					setRsvpId(data.rsvpId);
 				}
 
 				setSubmitStatus('success');
-				window.setTimeout(() => setSubmitted(true), 500);
+				window.setTimeout(() => setSubmitted(true), 400);
 			} catch (err) {
 				const message =
 					err instanceof Error ? err.message : 'No se pudo conectar con el servidor.';
@@ -222,7 +228,8 @@ export function useRsvpSubmission({
 			attendeeCount,
 			eventSlug,
 			eventType,
-			initialGuestData?.inviteId,
+			initialData?.inviteId,
+			isDemoPreview,
 			notes,
 			name,
 			phone,
