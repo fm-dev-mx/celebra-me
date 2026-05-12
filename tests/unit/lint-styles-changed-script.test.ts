@@ -119,7 +119,9 @@ describe('lint-styles-changed script', () => {
 			});
 
 			expect(result.status).not.toBe(0);
-			expect(`${result.stdout}\n${result.stderr}`).toContain('Unexpected hex color "#fff"');
+			const output = `${result.stdout}\n${result.stderr}`;
+			expect(output).toMatch(/#fff/);
+			expect(output).toMatch(/color-no-hex/);
 		} finally {
 			cleanupRepoFixture(repoRoot);
 		}
