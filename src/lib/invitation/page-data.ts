@@ -9,11 +9,24 @@ import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 
 export type InvitationGuestContext = Awaited<ReturnType<typeof getInvitationContextByInviteId>>;
 
+export type InterludeRenderItem = {
+	type: 'interlude';
+	image: ImageAsset;
+	alt?: string;
+	height: 'screen' | 'tall';
+	variant?: ThemePreset;
+	focalPoint?: string;
+};
+
 export type InvitationRenderPlanItem =
-	| NonNullable<InvitationViewModel['contentBlocks']>[number]
+	| {
+			type: 'section';
+			section: keyof InvitationViewModel['sections'];
+	  }
 	| {
 			type: 'personalized-access';
-	  };
+	  }
+	| InterludeRenderItem;
 
 export interface InvitationPageContext {
 	viewModel: InvitationViewModel;
@@ -113,7 +126,6 @@ function resolveFooterVariant(
 		if (configuredVariant) return configuredVariant;
 	}
 
-	// Preview themes should override event-specific footer styles without mutating content data.
 	if (themePreset && (THEME_PRESETS as readonly string[]).includes(themePreset)) {
 		return themePreset as ThemePreset;
 	}
@@ -140,6 +152,20 @@ function appendSection(
 	items.push({ type: 'section', section });
 }
 
+function interludeToRenderItem(
+	interlude: NonNullable<InvitationViewModel['interludes']>[number],
+	themePreset: ThemePreset,
+): InterludeRenderItem {
+	return {
+		type: 'interlude',
+		image: interlude.image,
+		alt: interlude.alt,
+		height: interlude.height,
+		variant: interlude.variant ?? themePreset,
+		focalPoint: interlude.focalPoint,
+	};
+}
+
 export function buildInvitationRenderPlan(
 	viewModel: InvitationViewModel,
 	options?: {
@@ -148,25 +174,18 @@ export function buildInvitationRenderPlan(
 ): InvitationRenderPlanItem[] {
 	const hasGuestContext = options?.hasGuestContext ?? false;
 	const items: InvitationRenderPlanItem[] = [];
-
-	if (viewModel.contentBlocks?.length) {
-		for (const block of viewModel.contentBlocks) {
-			if (block.type === 'interlude') {
-				items.push(block);
-				continue;
-			}
-
-			if (hasRenderableSection(viewModel, block.section)) {
-				appendSection(items, block.section, hasGuestContext);
-			}
-		}
-
-		return items;
-	}
+	const interludes = viewModel.interludes ?? [];
 
 	for (const section of DEFAULT_SECTION_ORDER) {
-		if (hasRenderableSection(viewModel, section)) {
-			appendSection(items, section, hasGuestContext);
+		if (!hasRenderableSection(viewModel, section)) continue;
+
+		appendSection(items, section, hasGuestContext);
+
+		const sectionInterludes = interludes.filter((i) => i.afterSection === section);
+		for (const interlude of sectionInterludes) {
+			items.push(
+				interludeToRenderItem(interlude, viewModel.theme.preset ?? THEME_PRESETS[0]),
+			);
 		}
 	}
 
