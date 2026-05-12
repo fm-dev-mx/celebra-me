@@ -515,61 +515,58 @@
 .countdown-section[data-variant='luxury-hacienda'] {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
-	--countdown-segment-padding-mobile: 2.6rem 1rem;
-	--countdown-segment-padding-desktop: 4rem 1.9rem;
+	--countdown-segment-padding-mobile: clamp(1.4rem, 5vw, 2rem) 0.8rem;
+	--countdown-segment-padding-desktop: clamp(2rem, 4vw, 2.8rem) clamp(1rem, 2vw, 1.45rem);
 	--countdown-value-wrapper-width-mobile: 100%;
 	--countdown-value-wrapper-width-desktop: 100%;
-	--countdown-value-wrapper-height-mobile: 4.25rem;
-	--countdown-value-wrapper-height-desktop: 5.8rem;
+	--countdown-value-wrapper-height-mobile: auto;
+	--countdown-value-wrapper-height-desktop: auto;
 
-	background: linear-gradient(135deg, rgb(45 30 20 / 98%) 0%, rgb(25 15 10 / 100%) 100%);
-	padding: 12rem 1rem;
+	background:
+		radial-gradient(
+			ellipse at 50% 18%,
+			rgb(var(--color-action-accent-rgb), 0.12),
+			transparent 42%
+		),
+		linear-gradient(145deg, rgb(48 34 24) 0%, rgb(24 17 12) 100%);
+	padding: clamp(7rem, 12vw, 10rem) 1rem;
 	position: relative;
-	box-shadow: inset 0 0 100px rgb(0 0 0 / 80%);
+	box-shadow: inset 0 0 80px rgb(0 0 0 / 58%);
 
-	// Refined Leather Stitching (Section Frame)
 	&::after {
 		content: '';
 		position: absolute;
-		inset: 1rem;
-		border: 1px dashed rgb(var(--color-action-accent-rgb, 212, 175, 55) / 20%);
+		inset: clamp(1rem, 3vw, 2rem);
+		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55) / 14%);
 		pointer-events: none;
 		border-radius: 4px;
-		opacity: 50%;
+		opacity: 72%;
 	}
 
-	// Heavy Leather Texture
 	.countdown-texture {
 		position: absolute;
 		inset: 0;
-		opacity: 20%;
+		opacity: 8%;
 		pointer-events: none;
+	}
+
+	.countdown-container {
+		max-width: 920px;
 	}
 
 	.countdown-title {
 		font-family: var(--font-display-hacienda);
-		font-size: clamp(2.2rem, 5vw, 3.5rem);
-		color: var(--color-action-accent);
+		font-size: clamp(2rem, 4.8vw, 3.25rem);
+		color: rgb(231 205 155 / 92%);
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		text-shadow:
-			0 4px 15px rgb(0 0 0 / 80%),
-			0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2);
-		margin-bottom: 3rem;
-
-		// Light Sweep Animation on Title
+		letter-spacing: 0.13em;
+		text-shadow: 0 5px 22px rgb(0 0 0 / 44%);
+		margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
 		position: relative;
 		overflow: hidden;
-		background: linear-gradient(
-			90deg,
-			var(--color-action-accent) 0%,
-			var(--color-surface-elevated) 50%,
-			var(--color-action-accent) 100%
-		);
-		background-size: 200% auto;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		animation: effect-gold-shimmer 5s linear infinite;
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		animation: none;
 	}
 
 	.countdown-subtitle {
@@ -577,12 +574,12 @@
 		align-items: center;
 		justify-content: center;
 		gap: 1rem;
-		margin-bottom: 4rem;
+		margin-bottom: clamp(3rem, 7vw, 4.4rem);
 
 		.subtitle-line {
 			display: block;
-			height: 3px;
-			width: 80px;
+			height: 1px;
+			width: clamp(54px, 10vw, 90px);
 			background: linear-gradient(
 				to right,
 				transparent,
@@ -591,44 +588,37 @@
 			);
 			position: relative;
 
-			// Central Rivet
 			&::before {
 				content: '';
 				position: absolute;
 				top: 50%;
 				left: 50%;
-				width: 6px;
-				height: 6px;
-				background: radial-gradient(
-					circle at 30% 30%,
-					var(--color-surface-elevated) 0%,
-					var(--color-action-accent) 70%,
-					var(--color-surface-dark) 100%
-				);
+				width: 4px;
+				height: 4px;
+				background: rgb(var(--color-action-accent-rgb), 0.82);
 				border-radius: 50%;
 				transform: translate(-50%, -50%);
-				box-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+				box-shadow: 0 0 10px rgb(var(--color-action-accent-rgb), 0.28);
 			}
 		}
 
 		.event-date {
-			font-family: var(--font-display-hacienda);
-			color: rgb(var(--color-surface-primary-rgb, 245, 245, 220) / 90%);
-			letter-spacing: 0.15em;
+			font-family: var(--font-body-hacienda);
+			color: rgb(241 219 177 / 82%);
+			letter-spacing: 0.16em;
 			text-transform: uppercase;
-			font-size: clamp(1rem, 2vw, 1.5rem);
+			font-size: clamp(0.72rem, 1.6vw, 0.86rem);
 		}
 	}
 
 	.countdown__segment {
-		background: linear-gradient(145deg, rgb(20 15 10 / 70%) 0%, rgb(0 0 0 / 90%) 100%);
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
-		border-radius: 4px;
-		padding: 3rem 1.5rem;
+		background: linear-gradient(180deg, rgb(61 45 32 / 76%) 0%, rgb(31 23 17 / 82%) 100%);
+		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.22);
+		border-radius: 6px;
+		padding: var(--countdown-segment-padding-mobile);
 		box-shadow:
-			inset 0 0 25px rgb(0 0 0 / 90%),
-			0 15px 35px rgb(0 0 0 / 50%),
-			0 0 10px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.1);
+			inset 0 1px 0 rgb(255 241 214 / 8%),
+			0 18px 36px rgb(0 0 0 / 28%);
 		position: relative;
 		overflow: hidden;
 		transition:
@@ -637,17 +627,15 @@
 			box-shadow var(--duration-standard) var(--ease-premium);
 		will-change: transform;
 
-		// Metallic Gold Double Trim
 		&::before {
 			content: '';
 			position: absolute;
-			inset: 2px;
-			border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.15);
+			inset: 6px;
+			border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.12);
 			pointer-events: none;
 			border-radius: 3px;
 		}
 
-		// Specular Highlight (Behind Glass)
 		&::after {
 			content: '';
 			position: absolute;
@@ -655,32 +643,35 @@
 			left: 0;
 			right: 0;
 			height: 50%;
-			background: linear-gradient(to bottom, rgb(255 255 255 / 5%) 0%, transparent 100%);
+			background: linear-gradient(to bottom, rgb(255 255 255 / 4%) 0%, transparent 100%);
 			pointer-events: none;
 			z-index: 2;
 		}
 
 		&:hover {
-			border-color: var(--color-action-accent);
-			transform: translateY(-6px) scale(1.015);
+			border-color: rgb(var(--color-action-accent-rgb), 0.4);
+			transform: translateY(-3px);
 			box-shadow:
-				inset 0 0 30px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.2),
-				0 25px 50px rgb(0 0 0 / 60%),
-				0 0 20px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.3);
+				inset 0 1px 0 rgb(255 241 214 / 12%),
+				0 24px 46px rgb(0 0 0 / 36%);
 
 			.countdown__value {
-				color: var(--color-surface-elevated);
-				text-shadow: 0 0 15px rgb(var(--color-action-accent-rgb, 212, 175, 55), 0.8);
+				color: rgb(244 221 177 / 94%);
+				text-shadow: 0 5px 18px rgb(0 0 0 / 35%);
 			}
+		}
+
+		@include mixins.respond-to(sm) {
+			padding: var(--countdown-segment-padding-desktop);
 		}
 	}
 
 	.countdown__value {
 		font-family: var(--font-display-hacienda);
-		font-size: clamp(3rem, 13vw, 4.8rem);
+		font-size: clamp(2.35rem, 11vw, 3.8rem);
 		font-weight: 400;
-		color: var(--color-action-accent);
-		filter: drop-shadow(0 4px 4px rgb(0 0 0 / 90%));
+		color: rgb(231 205 155 / 88%);
+		filter: none;
 		position: relative;
 		z-index: 1;
 		transition:
@@ -688,16 +679,16 @@
 			text-shadow 0.4s ease;
 
 		@include mixins.respond-to(sm) {
-			font-size: clamp(4.2rem, 9vw, 6.2rem);
+			font-size: clamp(3.1rem, 6vw, 4.8rem);
 		}
 	}
 
 	.countdown__label {
-		font-family: var(--font-display-hacienda);
-		color: var(--color-action-accent);
-		opacity: 64%;
-		letter-spacing: 0.32em;
-		font-size: 0.8rem;
+		font-family: var(--font-body-hacienda);
+		color: rgb(238 220 181 / 66%);
+		opacity: 100%;
+		letter-spacing: 0.24em;
+		font-size: 0.68rem;
 		text-transform: uppercase;
 		margin-top: 1rem;
 		z-index: 1;
@@ -706,22 +697,22 @@
 
 	.countdown-invitation-text {
 		font-family: var(--font-body-hacienda);
-		color: rgb(var(--color-surface-primary-rgb, 245, 245, 220) / 80%);
-		font-size: 1.5rem;
+		color: rgb(241 219 177 / 74%);
+		font-size: clamp(1rem, 2.3vw, 1.28rem);
 		line-height: 1.6;
-		max-width: 700px;
-		margin: 5rem auto 0;
+		max-width: 36rem;
+		margin: clamp(3.4rem, 7vw, 4.8rem) auto 0;
 		font-style: italic;
 		position: relative;
 
 		&::before {
 			content: '“';
 			position: absolute;
-			left: -2rem;
-			top: -1rem;
-			font-size: 4rem;
+			left: -1.8rem;
+			top: -0.9rem;
+			font-size: 3.2rem;
 			color: var(--color-action-accent);
-			opacity: 30%;
+			opacity: 24%;
 		}
 	}
 }

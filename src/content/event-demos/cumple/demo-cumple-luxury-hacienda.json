@@ -76,28 +76,28 @@
         "subtitle": "Un recorrido por seis décadas de historia",
         "items": [
             {
-                "image": "gallery01",
-                "caption": "Raíces que sostienen un gran árbol."
-            },
-            {
                 "image": "gallery02",
-                "caption": "El esfuerzo que forjó el camino."
+                "caption": "Brindis bajo la luz cálida de la Hacienda."
             },
             {
                 "image": "gallery03",
-                "caption": "Momentos de gratitud."
-            },
-            {
-                "image": "gallery04",
-                "caption": "La alegría de compartir."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Nuevas generaciones, mismo legado."
+                "caption": "Momentos de gratitud compartida."
             },
             {
                 "image": "gallery06",
                 "caption": "Celebrando la vida a plenitud."
+            },
+            {
+                "image": "gallery01",
+                "caption": "Raíces que sostienen un gran legado."
+            },
+            {
+                "image": "gallery05",
+                "caption": "Nuevas generaciones, misma historia."
+            },
+            {
+                "image": "gallery04",
+                "caption": "La tierra y la Hacienda que vieron crecer la historia."
             }
         ]
     },
@@ -234,7 +234,7 @@
     },
     "interludes": [
         {
-            "image": "gallery01",
+            "image": "jardin",
             "afterSection": "family",
             "alt": "Legado de vida Alberto Valenzuela",
             "height": "screen"
