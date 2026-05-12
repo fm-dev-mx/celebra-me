@@ -10,6 +10,9 @@ export const interludeSchema = z.object({
 	height: z.enum(['screen', 'tall']).default('screen'),
 	variant: z.enum(THEME_PRESETS).optional(),
 	focalPoint: z.string().optional(),
+	lightX: z.string().optional(),
+	lightY: z.string().optional(),
+	overlayOpacity: z.string().optional(),
 });
 
 export const interludesSchema = z.array(interludeSchema).optional();
