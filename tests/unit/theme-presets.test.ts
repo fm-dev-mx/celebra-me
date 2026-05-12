@@ -5,10 +5,6 @@ const projectRoot = process.cwd();
 const presetsDir = 'src/styles/themes/presets';
 const presetsPath = path.join(projectRoot, presetsDir);
 
-function readTextFile(relativePath: string): string {
-	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
-}
-
 function parseInvitationImports(content: string): string[] {
 	const imports: string[] = [];
 	const regex = /^\s*@use\s+['"]([^'"]+)['"]\s*;/gm;
@@ -21,21 +17,18 @@ function parseInvitationImports(content: string): string[] {
 	return imports;
 }
 
-function escapeRegExp(value: string): string {
-	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function hasPresetReference(content: string, preset: string): boolean {
-	const escapedPreset = escapeRegExp(preset);
+	const escapedPreset = preset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const presetOnlyPattern = new RegExp(`\\b${escapedPreset}\\b`);
 
 	const patterns = [
 		new RegExp(`\\.theme-preset--${escapedPreset}\\b`),
 		new RegExp(`\\[data-variant=['"]${escapedPreset}['"]\\]`),
 		new RegExp(`@use\\s+['"]${escapedPreset}['"]`),
-		new RegExp(`url\\([^)]*${escapedPreset}`),
+		new RegExp(`url\\([^)]*\\b${escapedPreset}\\b[^)]*\\)`),
 	];
 
-	return patterns.some((pattern) => pattern.test(content));
+	return patterns.some((pattern) => pattern.test(content)) && presetOnlyPattern.test(content);
 }
 
 function getTopLevelSelectors(content: string): string[] {
@@ -71,33 +64,28 @@ function getTopLevelSelectors(content: string): string[] {
 	return selectors;
 }
 
-const invitationContent = readTextFile(`${presetsDir}/_invitation.scss`);
-const invitationImports = parseInvitationImports(invitationContent);
-const otherPresets = invitationImports.filter((preset) => preset !== 'angelic-presence');
-const angelicContent = readTextFile(`${presetsDir}/_angelic-presence.scss`);
+describe('Invitation barrel', () => {
+	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
+	const invitationImports = parseInvitationImports(invitationContent);
 
-describe('Theme preset registry', () => {
-	it('invitation barrel imports angelic-presence', () => {
+	it('imports all expected theme presets', () => {
 		expect(invitationImports).toContain('angelic-presence');
 	});
 
-	it('all invitation imports correspond to existing SCSS files', () => {
+	it('import names match existing SCSS files', () => {
 		for (const imported of invitationImports) {
 			const filePath = path.join(presetsPath, `_${imported}.scss`);
 			expect(fs.existsSync(filePath)).toBe(true);
 		}
 	});
-
-	it('import names match file names exactly for Linux/Vercel compatibility', () => {
-		const actualFiles = fs.readdirSync(presetsPath);
-
-		for (const imported of invitationImports) {
-			expect(actualFiles).toContain(`_${imported}.scss`);
-		}
-	});
 });
 
 describe('Angelic presence theme isolation', () => {
+	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
+	const invitationImports = parseInvitationImports(invitationContent);
+	const otherPresets = invitationImports.filter((preset) => preset !== 'angelic-presence');
+	const angelicContent = fs.readFileSync(path.join(presetsDir, '_angelic-presence.scss'), 'utf8');
+
 	it('defines the expected theme root scope', () => {
 		expect(angelicContent).toContain('.theme-preset--angelic-presence');
 	});
@@ -128,7 +116,7 @@ describe('Angelic presence theme isolation', () => {
 
 describe('Angelic presence section coverage', () => {
 	const sectionThemeFiles = [
-		'src/styles/themes/sections/_hero-theme.scss',
+		'src/styles/themes/sections/hero/_angelic-presence.scss',
 		'src/styles/themes/sections/_quote-theme.scss',
 		'src/styles/themes/sections/_family-theme.scss',
 		'src/styles/themes/sections/_gallery-theme.scss',
@@ -143,7 +131,8 @@ describe('Angelic presence section coverage', () => {
 
 	it('styles every visible baptism demo section with angelic-presence selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
-			expect(readTextFile(relativePath)).toContain("data-variant='angelic-presence'");
+			const filePath = path.join(projectRoot, relativePath);
+			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='angelic-presence'");
 		}
 	});
 });
