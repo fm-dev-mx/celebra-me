@@ -1,5 +1,5 @@
 import type { InvitationPageContext, InvitationRenderPlanItem } from '@/lib/invitation/page-data';
-import type { ContentSectionKey } from '@/lib/adapters/types';
+import type { ContentSectionKey } from '@/lib/theme/theme-contract';
 import { THEME_PRESETS, type ThemePreset } from '@/lib/theme/theme-contract';
 
 type Sections = InvitationPageContext['viewModel']['sections'];

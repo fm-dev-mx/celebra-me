@@ -1,6 +1,19 @@
 export const EVENT_TYPES = ['xv', 'boda', 'bautizo', 'cumple'] as const;
-
 export type EventType = (typeof EVENT_TYPES)[number];
+
+export const CONTENT_SECTION_KEYS = [
+	'quote',
+	'countdown',
+	'location',
+	'family',
+	'itinerary',
+	'gallery',
+	'rsvp',
+	'gifts',
+	'thankYou',
+] as const;
+
+export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 
 // ==========================================
 // THEME PRESETS - Single source of truth
@@ -61,3 +74,43 @@ export type CountdownVariant = ThemePreset;
 export type LocationVariant = ThemePreset;
 export type SharedSectionVariant = ThemePreset;
 export type ItineraryVariant = ThemePreset;
+
+// ==========================================
+// ITINERARY TOKENS
+// ==========================================
+
+export const ITINERARY_ICON_KEYS = [
+	'waltz',
+	'dinner',
+	'toast',
+	'cake',
+	'party',
+	'church',
+	'reception',
+	'photo',
+	'boot',
+	'heel',
+	'western-hat',
+	'taco',
+	'tuba',
+	'accordion',
+] as const;
+
+export type ItineraryIconKey = (typeof ITINERARY_ICON_KEYS)[number];
+
+export const ITINERARY_ICON_DISPLAY_NAMES: Record<ItineraryIconKey, string> = {
+	waltz: 'Waltz',
+	dinner: 'Dinner',
+	toast: 'Toast',
+	cake: 'Cake',
+	party: 'Party',
+	church: 'Church',
+	reception: 'Reception',
+	photo: 'Photo',
+	boot: 'Boot',
+	heel: 'Heel',
+	'western-hat': 'WesternHat',
+	taco: 'Taco',
+	tuba: 'Tuba',
+	accordion: 'Accordion',
+};

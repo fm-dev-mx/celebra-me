@@ -1,8 +1,10 @@
 import type { ImageAsset, AssetSource } from '@/lib/assets/asset-registry';
 import type {
+	ContentSectionKey,
 	CountdownVariant,
 	IndicationIconName,
 	IndicationStyleVariant,
+	ItineraryIconKey,
 	ItineraryVariant,
 	LocationVariant,
 	QuoteVariant,
@@ -49,42 +51,6 @@ export interface Ceremony {
 	image?: ImageAsset;
 	coordinates?: Coordinate;
 }
-
-export const ITINERARY_ICON_KEYS = [
-	'waltz',
-	'dinner',
-	'toast',
-	'cake',
-	'party',
-	'church',
-	'reception',
-	'photo',
-	'boot',
-	'heel',
-	'western-hat',
-	'taco',
-	'tuba',
-	'accordion',
-] as const;
-
-export type ItineraryIconKey = (typeof ITINERARY_ICON_KEYS)[number];
-
-export const ITINERARY_ICON_DISPLAY_NAMES: Record<ItineraryIconKey, string> = {
-	waltz: 'Waltz',
-	dinner: 'Dinner',
-	toast: 'Toast',
-	cake: 'Cake',
-	party: 'Party',
-	church: 'Church',
-	reception: 'Reception',
-	photo: 'Photo',
-	boot: 'Boot',
-	heel: 'Heel',
-	'western-hat': 'WesternHat',
-	taco: 'Taco',
-	tuba: 'Tuba',
-	accordion: 'Accordion',
-};
 
 export interface ItineraryItem {
 	icon: ItineraryIconKey;
@@ -187,20 +153,6 @@ export interface EnvelopeViewModel {
 		};
 	};
 }
-
-export const CONTENT_SECTION_KEYS = [
-	'quote',
-	'countdown',
-	'location',
-	'family',
-	'itinerary',
-	'gallery',
-	'rsvp',
-	'gifts',
-	'thankYou',
-] as const;
-
-export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 
 export interface Interlude {
 	image: ImageAsset;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ITINERARY_ICON_KEYS } from '@/lib/adapters/types';
+import { ITINERARY_ICON_KEYS } from '@/lib/theme/theme-contract';
 
 export const itineraryItemSchema = z.object({
 	icon: z.enum(ITINERARY_ICON_KEYS),

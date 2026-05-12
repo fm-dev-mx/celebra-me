@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
-import { CONTENT_SECTION_KEYS } from '@/lib/adapters/types';
+import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
 export const contentBlocksSchema = z
 	.array(
