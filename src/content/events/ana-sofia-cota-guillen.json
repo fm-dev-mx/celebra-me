@@ -213,28 +213,37 @@
             "afterSection": "location",
             "alt": "Ana Sofía con vestido azul cielo y detalles plateados",
             "height": "screen",
-            "focalPoint": "center 35%"
+            "focalPoint": "50% 35%",
+            "lightX": "44%",
+            "lightY": "44%"
         },
         {
             "image": "interlude02",
             "afterSection": "family",
             "alt": "Retrato elegante de Ana Sofía con corona",
             "height": "screen",
-            "focalPoint": "center 25%"
+            "focalPoint": "50% 25%",
+            "lightX": "54%",
+            "lightY": "34%"
         },
         {
             "image": "interlude03",
             "afterSection": "itinerary",
             "alt": "Detalle de pastel con listones azules",
             "height": "screen",
-            "focalPoint": "center 30%"
+            "focalPoint": "54% 62%",
+            "lightX": "68%",
+            "lightY": "44%",
+            "overlayOpacity": "14%"
         },
         {
             "image": "interlude04",
             "afterSection": "rsvp",
             "alt": "Retrato final de Ana Sofía en tonos plata y azul",
             "height": "screen",
-            "focalPoint": "center 30%"
+            "focalPoint": "50% 34%",
+            "lightX": "42%",
+            "lightY": "42%"
         }
     ],
     "envelope": {
