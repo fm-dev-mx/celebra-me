@@ -52,15 +52,6 @@
 		backface-visibility: hidden;
 	}
 
-	&[data-variant='celestial-blue'] {
-		--interlude-parallax-offset: 0;
-		--interlude-image-hover-scale: var(--interlude-image-scale);
-
-		.invitation-interlude__image {
-			transform: scale(var(--interlude-image-scale));
-		}
-	}
-
 	&.is-visible &__image {
 		opacity: 100%;
 	}
@@ -117,11 +108,5 @@
 		&__image {
 			transition: none;
 		}
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.invitation-interlude__image {
-		transition: none;
 	}
 }

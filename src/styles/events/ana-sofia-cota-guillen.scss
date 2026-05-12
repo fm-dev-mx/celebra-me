@@ -34,26 +34,15 @@
 			padding-block: clamp(3rem, 7svh, 5rem);
 		}
 	}
+}
 
-	.invitation-interlude {
-		--interlude-image-scale: 1;
-		--interlude-overlay-opacity: 18%;
-
-		background: rgb(var(--color-deep-blue-graphite-rgb));
-	}
-
-	.invitation-interlude::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.32'/%3E%3C/svg%3E");
+// Interlude overrides — decoupled from theme preset so they survive theme changes.
+.event--ana-sofia-cota-guillen .invitation-interlude {
+	&::before {
 		opacity: 4.5%;
-		pointer-events: none;
 	}
 
-	.invitation-interlude::after {
-		z-index: 2;
+	&::after {
 		background:
 			linear-gradient(
 				180deg,
@@ -69,69 +58,9 @@
 			radial-gradient(
 				ellipse at center,
 				transparent 42%,
-				rgb(var(--color-deep-blue-graphite-rgb) / var(--interlude-overlay-opacity)) 100%
+				rgb(var(--color-deep-blue-graphite-rgb) / var(--interlude-overlay-opacity, 18%))
+					100%
 			);
-	}
-
-	.invitation-interlude[data-interlude-index='1'] {
-		--interlude-focal-point: 50% 35%;
-		--interlude-light-x: 44%;
-		--interlude-light-y: 44%;
-	}
-
-	.invitation-interlude[data-interlude-index='2'] {
-		--interlude-focal-point: 50% 25%;
-		--interlude-light-x: 54%;
-		--interlude-light-y: 34%;
-	}
-
-	.invitation-interlude[data-interlude-index='3'] {
-		--interlude-focal-point: 54% 62%;
-		--interlude-light-x: 68%;
-		--interlude-light-y: 44%;
-		--interlude-overlay-opacity: 14%;
-	}
-
-	.invitation-interlude[data-interlude-index='4'] {
-		--interlude-focal-point: 50% 34%;
-		--interlude-light-x: 42%;
-		--interlude-light-y: 42%;
-	}
-
-	@media (aspect-ratio >= 16 / 9) {
-		.invitation-interlude[data-interlude-index='1'] {
-			--interlude-focal-point: 50% 36%;
-		}
-
-		.invitation-interlude[data-interlude-index='2'] {
-			--interlude-focal-point: 50% 27%;
-		}
-
-		.invitation-interlude[data-interlude-index='3'] {
-			--interlude-focal-point: 55% 68%;
-		}
-
-		.invitation-interlude[data-interlude-index='4'] {
-			--interlude-focal-point: 50% 36%;
-		}
-	}
-
-	@media (aspect-ratio <= 4 / 5) {
-		.invitation-interlude[data-interlude-index='1'] {
-			--interlude-focal-point: 56% 35%;
-		}
-
-		.invitation-interlude[data-interlude-index='2'] {
-			--interlude-focal-point: 50% 25%;
-		}
-
-		.invitation-interlude[data-interlude-index='3'] {
-			--interlude-focal-point: 58% 30%;
-		}
-
-		.invitation-interlude[data-interlude-index='4'] {
-			--interlude-focal-point: 54% 32%;
-		}
 	}
 }
 
