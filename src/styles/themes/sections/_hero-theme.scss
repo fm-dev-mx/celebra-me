@@ -664,8 +664,13 @@
 	}
 
 	@include mixins.respond-below(xs) {
-		.invitation-hero__background img {
-			object-position: center 12%;
+		// Removed hardcoded object-position art direction
+	}
+
+	// Short / landscape viewport: avoid crowding on small vertical space.
+	@include mixins.short-viewport {
+		.invitation-hero__content {
+			padding-block: clamp(3rem, 7svh, 5rem);
 		}
 	}
 }

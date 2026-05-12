@@ -48,22 +48,26 @@
 // CELESTIAL BLUE
 .header-base[data-variant='celestial-blue'] {
 	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
-	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
-	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 22%);
+	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 14%);
 	--header-nav-color: var(--color-diamond-white);
 	--header-nav-color-transparent: var(--color-diamond-white);
-	--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-deep-blue-graphite-rgb) / 42%);
+	--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-deep-blue-graphite-rgb) / 28%);
 	--header-nav-filter-transparent: none;
-	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 22%);
-	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
-	--mobile-drawer-border: rgb(var(--color-liquid-silver-rgb) / 22%);
+	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 14%);
+	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+	--mobile-drawer-border: rgb(var(--color-liquid-silver-rgb) / 18%);
 	--mobile-drawer-link-hover: var(--color-diamond-white);
-	--mobile-drawer-footer-copy: rgb(var(--color-liquid-silver-rgb) / 62%);
-	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-deep-blue-graphite-rgb) / 70%);
+	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-deep-blue-graphite-rgb) / 65%);
+
+	.hamburger__line {
+		height: 1.5px;
+		border-radius: 6px;
+	}
 
 	&.header-base--scrolled {
 		border-bottom: var(--header-border-bottom);
-		backdrop-filter: blur(14px);
+		backdrop-filter: blur(10px);
 	}
 }
 

@@ -261,54 +261,6 @@
 	}
 }
 
-// Celestial-blue variant uses xl (1200px) as the mobile-to-desktop breakpoint
-// instead of the default lg (992px). Undo base show/hide at lg, re-apply at xl.
-.header-base[data-variant='celestial-blue'] {
-	@include mixins.respond-to(lg) {
-		.header-base__desktop-nav {
-			display: none;
-		}
-
-		.header-base__mobile-toggle {
-			display: block;
-		}
-
-		.header-base__mobile-overlay {
-			display: block;
-
-			&[hidden] {
-				display: none;
-			}
-		}
-
-		.header-base__mobile-menu {
-			display: flex;
-
-			&[hidden] {
-				display: none;
-			}
-		}
-	}
-
-	@include mixins.respond-to(xl) {
-		.header-base__desktop-nav {
-			display: block;
-		}
-
-		.header-base__mobile-toggle {
-			display: none;
-		}
-
-		.header-base__mobile-overlay {
-			display: none;
-		}
-
-		.header-base__mobile-menu {
-			display: none;
-		}
-	}
-}
-
 /* Flattened Mobile Nav Blocks */
 .mobile-nav-links {
 	display: flex;
