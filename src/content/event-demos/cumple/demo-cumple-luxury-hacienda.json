@@ -125,23 +125,28 @@
         "author": "Don Alberto"
     },
     "family": {
-        "spouse": "Maria Elena Ruiz",
+        "spouse": "María Elena Ruiz",
+        "labels": {
+            "sectionTitle": "Quienes dan sentido a mi historia",
+            "sectionSubtitle": "Legado y raíces",
+            "sectionMessage": "Gracias por ser parte de esta celebración que guardaré para siempre."
+        },
         "parents": {
-            "father": "Don Jose Valenzuela",
-            "mother": "Doña Martha Lopez",
-            "fatherDeceased": true,
+            "father": "Don José Valenzuela",
+            "mother": "Doña Martha López",
+            "fatherDeceased": false,
             "motherDeceased": true
         },
         "children": [
             { "name": "Alberto Valenzuela Jr." },
-            { "name": "Sofia Valenzuela" },
+            { "name": "Sofía Valenzuela" },
             { "name": "Ricardo Valenzuela" },
             { "name": "Elena Valenzuela" }
         ],
         "featuredImage": "family"
     },
     "thankYou": {
-        "message": "Mi mayor regalo es verlos reunidos hoy. Gracias por ser parte de mi historia y por llenar mi vida de recuerdos inolvidables.",
+        "message": "Verlos reunidos es mi mayor regalo. Gracias por ser parte de mi historia y por llenar mi vida de recuerdos inolvidables.",
         "closingName": "Alberto",
         "image": "portrait"
     },
@@ -163,7 +168,7 @@
                 "icon": "dinner",
                 "label": "Cena de Gala",
                 "time": "9:30 PM",
-                "description": "Sabor tradicional de la Hacienda."
+                "description": "Cocina de raíz, servida con la elegancia de siempre."
             },
             {
                 "icon": "accordion",
@@ -175,7 +180,7 @@
                 "icon": "party",
                 "label": "Baile y Alegría",
                 "time": "12:30 AM",
-                "description": "Hasta que el cuerpo aguante."
+                "description": "Bajo las estrellas de la Hacienda, hasta el último brindis."
             }
         ]
     },
@@ -204,8 +209,8 @@
         ]
     },
     "countdown": {
-        "title": "¡Los espero en la Hacienda!",
-        "subtitlePrefix": "Faltan",
+        "title": "Hacienda San Ignacio",
+        "subtitlePrefix": "Nos vemos el",
         "footerText": "Sesenta años de gratitud y legado."
     },
     "navigation": [
@@ -222,7 +227,7 @@
         "documentLabel": "RESERVACIÓN DE GALA",
         "stampText": "EST. 1966",
         "stampYear": "2026",
-        "microcopy": "Haga clic para desvelar",
+        "microcopy": "Descubrir la celebración",
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
