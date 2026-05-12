@@ -21,7 +21,11 @@ type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
+	isDemoPreview?: boolean;
 };
+
+export const DEMO_GUEST_NAME = 'María Fernanda Solís';
+const DEFAULT_DEMO_GUEST_CAP = 2;
 
 const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {
 	quote: { href: '#quote-section', label: 'Mensaje' },
@@ -73,6 +77,7 @@ export type InvitationSectionRenderDescriptor =
 					maxAllowedAttendees: number;
 					inviteId: string;
 				};
+				isDemoPreview?: boolean;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -101,15 +106,20 @@ function renderInterlude(
 function renderPersonalizedAccess(
 	pageContext: InvitationPageContext,
 ): InvitationSectionRenderDescriptor | null {
-	const guestContext = pageContext.guestContext;
+	const isDemoPreview = pageContext.isDemoPreview ?? false;
+	if (!isDemoPreview && !pageContext.guestContext) return null;
 
-	if (!guestContext) return null;
+	const guestContext = pageContext.guestContext;
 
 	return {
 		component: 'personalized-access',
 		props: {
-			guestName: guestContext.guest.fullName,
-			maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+			guestName: guestContext?.guest.fullName ?? DEMO_GUEST_NAME,
+			maxAllowedAttendees:
+				guestContext?.guest.maxAllowedAttendees ??
+				pageContext.viewModel.sections.rsvp?.guestCap ??
+				DEFAULT_DEMO_GUEST_CAP,
+			isDemoPreview,
 		},
 	};
 }
@@ -136,6 +146,7 @@ function renderRsvpSection(
 						inviteId: guestContext.inviteId,
 					}
 				: undefined,
+			isDemoPreview: pageContext.isDemoPreview ?? false,
 		},
 	};
 }

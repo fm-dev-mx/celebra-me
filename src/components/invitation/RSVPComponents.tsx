@@ -33,12 +33,13 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 		<section id="rsvp" className="rsvp rsvp--locked-preview" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 			<div className="rsvp__locked-card" role="status" aria-live="polite">
-				<p className="rsvp__locked-eyebrow">Confirmación personalizada</p>
+				<p className="rsvp__locked-eyebrow">Confirmación exclusiva</p>
 				<p className="rsvp__locked-message">
-					Esta invitación utiliza enlaces personalizados para confirmar asistencia.
+					Las reservas para este evento se gestionan de forma personalizada.
 				</p>
 				<p className="rsvp__locked-detail">
-					Si recibiste tu acceso directo, abre ese enlace para registrar tu respuesta.
+					Si recibiste tu invitación directa, utiliza el enlace exclusivo que te fue
+					compartido.
 				</p>
 			</div>
 		</section>
@@ -162,6 +163,7 @@ export function RsvpFormView(props: {
 	phoneRef: RefObject<HTMLInputElement | null>;
 	attendanceRef: RefObject<HTMLDivElement | null>;
 	guestCountRef: RefObject<HTMLInputElement | null>;
+	isDemoPreview?: boolean;
 	onSubmit: (e: SyntheticEvent) => void;
 	onNameChange: (value: string) => void;
 	onPhoneChange: (value: string) => void;
@@ -170,7 +172,15 @@ export function RsvpFormView(props: {
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
 }) {
-	const { title, variant, prefersReducedMotion, buttonLabel, isSubmitting, submitStatus } = props;
+	const {
+		title,
+		variant,
+		prefersReducedMotion,
+		buttonLabel,
+		isSubmitting,
+		submitStatus,
+		isDemoPreview,
+	} = props;
 
 	return (
 		<section id="rsvp" className="rsvp" data-variant={variant}>
@@ -203,6 +213,7 @@ export function RsvpFormView(props: {
 					</span>
 				</motion.button>
 			</form>
+			{isDemoPreview && <p className="rsvp__demo-footer">Vista de muestra.</p>}
 		</section>
 	);
 }

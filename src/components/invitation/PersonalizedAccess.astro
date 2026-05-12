@@ -3,9 +3,10 @@
 interface Props {
 	maxAllowedAttendees: number;
 	guestName: string;
+	isDemoPreview?: boolean;
 }
 
-const { maxAllowedAttendees, guestName } = Astro.props;
+const { maxAllowedAttendees, guestName, isDemoPreview } = Astro.props;
 
 const seatsLabel =
 	maxAllowedAttendees === 1 ? 'Lugar reservado' : 'Lugares reservados';
@@ -17,7 +18,9 @@ const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees
 	<div class="personalized-access__container">
 		<article class="access-card" aria-label={accessAriaLabel}>
 			<header class="access-card__header">
-				<span class="access-card__eyebrow">Invitación personalizada</span>
+				<span class="access-card__eyebrow">
+					{isDemoPreview ? 'Vista previa demo' : 'Invitación personalizada'}
+				</span>
 				<div class="access-card__seal" aria-hidden="true">
 					<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<!-- Minimalist Floral Ornament -->

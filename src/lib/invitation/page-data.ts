@@ -34,6 +34,7 @@ export type InvitationRenderPlanItem =
 export interface InvitationPageContext {
 	viewModel: InvitationViewModel;
 	guestContext?: InvitationGuestContext | null;
+	isDemoPreview?: boolean;
 	renderPlan: InvitationRenderPlanItem[];
 	layout: {
 		title: string;
@@ -146,9 +147,9 @@ function hasRenderableSection(
 function appendSection(
 	items: InvitationRenderPlanItem[],
 	section: keyof InvitationViewModel['sections'],
-	hasGuestContext: boolean,
+	showPersonalizedAccess: boolean,
 ): void {
-	if (section === 'rsvp' && hasGuestContext) {
+	if (section === 'rsvp' && showPersonalizedAccess) {
 		items.push({ type: 'personalized-access' });
 	}
 
@@ -176,16 +177,18 @@ export function buildInvitationRenderPlan(
 	viewModel: InvitationViewModel,
 	options?: {
 		hasGuestContext?: boolean;
+		isDemoPreview?: boolean;
 	},
 ): InvitationRenderPlanItem[] {
 	const hasGuestContext = options?.hasGuestContext ?? false;
+	const isDemoPreview = options?.isDemoPreview ?? false;
 	const items: InvitationRenderPlanItem[] = [];
 	const interludes = viewModel.interludes ?? [];
 
 	for (const section of DEFAULT_SECTION_ORDER) {
 		if (!hasRenderableSection(viewModel, section)) continue;
 
-		appendSection(items, section, hasGuestContext);
+		appendSection(items, section, hasGuestContext || isDemoPreview);
 
 		const sectionInterludes = interludes.filter((i) => i.afterSection === section);
 		for (const interlude of sectionInterludes) {
@@ -217,9 +220,12 @@ export function prepareInvitationPageContext(input: {
 	const guestName = input.guestContext?.guest.fullName;
 	const heroTime = sections.location?.reception?.time ?? sections.location?.ceremony?.time;
 
+	const isDemoPreview = isDemo && !input.guestContext;
+
 	return {
 		viewModel,
 		guestContext: input.guestContext,
+		isDemoPreview,
 		layout: buildLayoutData(viewModel, hero, guestName),
 		wrapper: {
 			className: wrapperClassName,
@@ -237,6 +243,7 @@ export function prepareInvitationPageContext(input: {
 		),
 		renderPlan: buildInvitationRenderPlan(viewModel, {
 			hasGuestContext: Boolean(input.guestContext),
+			isDemoPreview,
 		}),
 	};
 }

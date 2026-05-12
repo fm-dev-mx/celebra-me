@@ -34,6 +34,7 @@ interface RSVPProps {
 		maxAllowedAttendees?: number;
 		inviteId?: string;
 	};
+	isDemoPreview?: boolean;
 }
 
 const RSVP: React.FC<RSVPProps> = ({
@@ -49,10 +50,12 @@ const RSVP: React.FC<RSVPProps> = ({
 	confirmationMode = 'api',
 	whatsappConfig,
 	initialGuestData,
+	isDemoPreview,
 }) => {
 	const prefersReducedMotion = useReducedMotion();
 	const hasPersonalizedInvite = Boolean(initialGuestData?.inviteId);
 	const allowPublicRsvp = !hasPersonalizedInvite && accessMode === 'hybrid';
+
 	const {
 		name,
 		phone,
@@ -88,6 +91,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		accessMode,
 		initialGuestData,
 		prefersReducedMotion: !!prefersReducedMotion,
+		isDemoPreview,
 	});
 	const labelsResolved = resolveLabels(labels, celebrantName);
 	const showWhatsAppCta =
@@ -96,7 +100,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		(confirmationMode === 'both' || confirmationMode === 'whatsapp') &&
 		Boolean(whatsappConfig?.phone);
 
-	if (!hasPersonalizedInvite && !allowPublicRsvp) {
+	if (!hasPersonalizedInvite && !allowPublicRsvp && !isDemoPreview) {
 		return <LockedPreview title={title} variant={variant} />;
 	}
 
@@ -166,6 +170,7 @@ const RSVP: React.FC<RSVPProps> = ({
 						phoneRef={phoneRef}
 						attendanceRef={attendanceRef}
 						guestCountRef={guestCountRef}
+						isDemoPreview={isDemoPreview}
 						onSubmit={handleSubmit}
 						onNameChange={(value) => {
 							setName(value);
