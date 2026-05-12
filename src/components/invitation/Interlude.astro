@@ -6,14 +6,14 @@ import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	image: ImageAsset;
-	alt: string;
+	alt?: string;
 	height?: 'screen' | 'tall';
 	variant?: SharedSectionVariant;
 	focalPoint?: string;
 	interludeIndex?: number;
 }
 
-const { image, alt, height = 'screen', variant = 'standard', focalPoint, interludeIndex } =
+const { image, alt = '', height = 'screen', variant = 'standard', focalPoint, interludeIndex } =
 	Astro.props;
 const shouldPrioritizeImage = interludeIndex === 1;
 ---
