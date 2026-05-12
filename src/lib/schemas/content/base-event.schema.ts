@@ -1,4 +1,3 @@
-import { contentBlocksSchema } from '@/lib/schemas/content/content-block.schema';
 import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
 import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
@@ -7,6 +6,7 @@ import { locationSchema } from '@/lib/schemas/content/location.schema';
 import { familySchema } from '@/lib/schemas/content/family.schema';
 import { rsvpSchema } from '@/lib/schemas/content/rsvp.schema';
 import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
+import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import {
 	baseEventFieldsSchema,
 	countdownSchema,
@@ -33,6 +33,6 @@ export const eventContentSchema = baseEventFieldsSchema.extend({
 	gifts: giftsSchema,
 	countdown: countdownSchema,
 	navigation: navigationSchema,
-	contentBlocks: contentBlocksSchema,
+	interludes: interludesSchema,
 	sharing: sharingSchema,
 });

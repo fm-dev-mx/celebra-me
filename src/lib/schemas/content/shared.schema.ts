@@ -48,12 +48,10 @@ export const themeSchema = z
 	})
 	.strict();
 
-export const quoteSchema = z
-	.object({
-		text: z.string(),
-		author: z.string().optional(),
-	})
-	.optional();
+export const quoteSchema = z.object({
+	text: z.string(),
+	author: z.string().optional(),
+});
 
 export const thankYouSchema = z
 	.object({
