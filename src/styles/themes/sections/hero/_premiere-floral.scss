@@ -1,0 +1,33 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.invitation-hero[data-variant='premiere-floral'] {
+	&::before {
+		animation: none;
+		opacity: 6%;
+	}
+
+	.invitation-hero__portrait {
+		transition: box-shadow 220ms ease-out;
+
+		&::before {
+			content: none;
+		}
+
+		img {
+			transition: filter 220ms ease-out;
+		}
+
+		&:hover {
+			transform: none;
+			box-shadow:
+				0 32px 72px rgb(0 0 0 / 44%),
+				inset 0 0 0 1px rgb(255 255 255 / 8%);
+
+			img {
+				transform: none;
+				filter: contrast(1.04) saturate(1.04) brightness(0.92);
+			}
+		}
+	}
+}
