@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 const CONTENT_DIR = path.join(PROJECT_ROOT, 'src', 'content', 'events');
-const EVENT_STYLES_DIR = path.join(PROJECT_ROOT, 'src', 'styles', 'events');
 const CHECKLIST_DIR = path.join(PROJECT_ROOT, 'docs', 'domains', 'invitations', 'checklists');
 
 const DEFAULT_TEMPLATE = 'template-xv-real.json';
@@ -46,7 +45,6 @@ async function main() {
 			title: { type: 'string' },
 			template: { type: 'string', default: DEFAULT_TEMPLATE },
 			force: { type: 'boolean', default: false },
-			skipStyle: { type: 'boolean', default: false },
 		},
 		allowPositionals: true,
 		strict: false,
@@ -63,7 +61,6 @@ Options:
   --eventType <type>    Event type: xv | boda | bautizo | cumple (default: xv)
   --title <title>       Invitation title (default generated from slug)
   --template <file>     Template file from src/content/events (default: ${DEFAULT_TEMPLATE})
-  --skipStyle           Do not create src/styles/events/<slug>.scss
   --force               Overwrite existing scaffold files
   --help, -h            Show this help
 `);
@@ -89,7 +86,6 @@ Options:
 	}
 
 	ensureDir(CONTENT_DIR);
-	ensureDir(EVENT_STYLES_DIR);
 	ensureDir(CHECKLIST_DIR);
 
 	const rawTemplate = fs.readFileSync(templatePath, 'utf8');
@@ -115,13 +111,6 @@ Options:
 	writeFile(contentFilePath, `${JSON.stringify(scaffoldEvent, null, 4)}\n`, values.force);
 
 	const created = [path.relative(PROJECT_ROOT, contentFilePath)];
-
-	if (!values.skipStyle) {
-		const stylePath = path.join(EVENT_STYLES_DIR, `${slug}.scss`);
-		const styleContent = `.event--${slug} {\n\t/* Invitation-specific overrides for ${slug} */\n}\n`;
-		writeFile(stylePath, styleContent, values.force);
-		created.push(path.relative(PROJECT_ROOT, stylePath));
-	}
 
 	const assetsManifestPath = path.join(CONTENT_DIR, `${slug}.assets.json`);
 	const assetsManifest = {
@@ -157,7 +146,6 @@ Options:
 		'',
 		'## Styles',
 		'- [ ] Review shared preset impact',
-		`- [ ] Implement event-only overrides in \`src/styles/events/${slug}.scss\` (if required)`,
 		'- [ ] Run visual check against other invitations',
 		'',
 		'## Parity and Governance',
