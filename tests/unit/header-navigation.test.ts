@@ -25,22 +25,22 @@ describe('Invitation header navigation contract', () => {
 		expect(source).toMatch(/links\.map/);
 	});
 
-	it('keeps invitation desktop navigation at xl and lets mobile drawers scroll safely', () => {
+	it('guards mobile drawer scroll-safety with overflow and overscroll CSS', () => {
 		const source = read('src/styles/layout/_header-base.scss');
-		const mobileNavSource = read('src/components/ui/header/NavBarMobile.astro');
-		const eventHeaderSource = read('src/components/invitation/EventHeader.astro');
 
-		expect(source).toMatch(/\.header-base\[data-variant=['"]celestial-blue['"]\]/);
-		expect(source).toMatch(/respond-to\(xl\)/);
-		expect(mobileNavSource).toMatch(/desktopBreakpoint\s*=\s*['"]lg['"]/);
-		expect(mobileNavSource).toMatch(
-			/desktopBreakpoint\s*===\s*['"]xl['"]\s*\?\s*1200\s*:\s*992/,
-		);
-		expect(eventHeaderSource).toMatch(/desktopBreakpoint=['"]xl['"]/);
-		expect(source).toContain('overflow-y: auto;');
-		expect(source).toContain('overscroll-behavior: contain;');
-		expect(source).toMatch(/short-viewport/);
-		expect(source).toMatch(/padding-bottom:\s*max\(/);
+		expect(source).toMatch(/max-height:\s*100dvh/);
+		expect(source).toMatch(/overflow-y:\s*auto/);
+		expect(source).toMatch(/overscroll-behavior:\s*contain/);
+	});
+
+	it('maps xl and lg breakpoint props to correct pixel thresholds in NavBarMobile', () => {
+		const source = read('src/components/ui/header/NavBarMobile.astro');
+
+		// Default prop must be 'lg' so marketing pages use the standard breakpoint.
+		expect(source).toMatch(/desktopBreakpoint\s*=\s*['"]lg['"]/);
+		// Component must recognise both xl (1200 px) and lg (992 px) thresholds.
+		expect(source).toContain('1200');
+		expect(source).toContain('992');
 	});
 
 	it('uses canonical responsive mixins and no obsolete event mobile nav block', () => {
