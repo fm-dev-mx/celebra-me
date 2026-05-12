@@ -30,6 +30,6 @@ export const assets = {
 	gallery10,
 	gallery12,
 	interlude01,
-	interludeNew01: interlude04,
+	interlude04,
 	thankYouPortrait,
 };

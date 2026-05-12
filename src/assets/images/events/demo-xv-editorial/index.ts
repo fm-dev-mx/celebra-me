@@ -15,7 +15,7 @@ import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
 import interlude03 from './interlude-03.webp';
 import gallery15 from './gallery-15.webp';
-import interludeNew01 from './interlude-04.webp';
+import interlude04 from './interlude-04.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
 
 export const assets = {
@@ -45,6 +45,6 @@ export const assets = {
 	interlude01,
 	interlude02,
 	interlude03,
-	interludeNew01,
+	interlude04,
 	thankYouPortrait,
 };
