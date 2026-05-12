@@ -44,6 +44,10 @@ export type InvitationSectionRenderDescriptor =
 				height: InterludeBlock['height'];
 				variant: ThemePreset;
 				focalPoint?: string;
+				lightX?: string;
+				lightY?: string;
+				overlayOpacity?: string;
+				interludeIndex?: number;
 			};
 	  }
 	| { component: 'quote'; props: SectionData<'quote'> & { variant: ThemePreset } }
@@ -87,6 +91,9 @@ function renderInterlude(
 			height: block.height,
 			variant: block.variant ?? pageContext.viewModel.theme.preset ?? THEME_PRESETS[0],
 			focalPoint: block.focalPoint,
+			lightX: block.lightX,
+			lightY: block.lightY,
+			overlayOpacity: block.overlayOpacity,
 		},
 	};
 }

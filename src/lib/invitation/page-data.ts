@@ -16,6 +16,9 @@ export type InterludeRenderItem = {
 	height: 'screen' | 'tall';
 	variant?: ThemePreset;
 	focalPoint?: string;
+	lightX?: string;
+	lightY?: string;
+	overlayOpacity?: string;
 };
 
 export type InvitationRenderPlanItem =
@@ -163,6 +166,9 @@ function interludeToRenderItem(
 		height: interlude.height,
 		variant: interlude.variant ?? themePreset,
 		focalPoint: interlude.focalPoint,
+		lightX: interlude.lightX,
+		lightY: interlude.lightY,
+		overlayOpacity: interlude.overlayOpacity,
 	};
 }
 
