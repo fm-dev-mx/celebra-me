@@ -1,4 +1,4 @@
-import type { ImageAsset, AssetSource } from '@/lib/assets/asset-registry';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
 	ContentSectionKey,
 	CountdownVariant,
@@ -14,7 +14,7 @@ import type {
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 
 export interface ThemeConfig {
-	preset?: ThemePreset;
+	preset: ThemePreset;
 	// Derived CSS class for the body/wrapper
 	themeClass: string;
 }
@@ -28,9 +28,7 @@ export interface HeroViewModel {
 	venueName: string;
 	backgroundImage: ImageAsset;
 	portrait?: ImageAsset;
-	portraitAlt?: ImageAsset;
-	family?: ImageAsset;
-	variant?: ThemePreset;
+	variant: ThemePreset;
 }
 
 export interface Coordinate {
@@ -165,18 +163,6 @@ export interface Interlude {
 	lightY?: string;
 	overlayOpacity?: string;
 }
-
-export type InterludeInput = {
-	image: AssetSource;
-	afterSection: ContentSectionKey;
-	alt?: string;
-	height: 'screen' | 'tall';
-	variant?: SharedSectionVariant;
-	focalPoint?: string;
-	lightX?: string;
-	lightY?: string;
-	overlayOpacity?: string;
-};
 
 export interface InvitationViewModel {
 	id: string; // The event's slug/id
