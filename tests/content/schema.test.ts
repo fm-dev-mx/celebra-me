@@ -48,6 +48,10 @@ function createMinimalEvent(overrides = {}) {
 			date: '2026-01-01T00:00:00.000Z',
 			backgroundImage: 'https://example.com/hero.jpg',
 		},
+		quote: {
+			text: 'Test quote text',
+			author: 'Test Author',
+		},
 		location: {
 			venueName: 'Test Venue',
 			address: 'Test Address',
