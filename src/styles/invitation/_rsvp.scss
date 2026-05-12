@@ -337,4 +337,13 @@
 			line-height: 1.4;
 		}
 	}
+
+	&__demo-footer {
+		margin-top: 1rem;
+		text-align: center;
+		font-family: var(--font-body, serif);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		color: var(--color-text-muted, rgb(var(--color-text-primary-rgb) / 40%));
+	}
 }
