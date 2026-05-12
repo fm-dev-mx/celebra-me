@@ -86,10 +86,37 @@ $celestial-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
 			border-color: rgb(var(--color-action-accent-rgb), 0.62);
 		}
 	}
+}
 
-	.music-player__button--pulsing::before {
-		border-color: rgb(var(--color-action-accent-rgb), 0.5);
-		animation-duration: 2.2s;
+.music-player[data-variant='editorial'],
+.music-player[data-variant='premiere-floral'] {
+	.music-player__prompt {
+		background: rgb(var(--color-deep-blue-graphite-rgb) / 75%);
+		color: var(--color-liquid-silver);
+		border-color: rgb(var(--color-liquid-silver-rgb) / 30%);
+
+		&::before {
+			color: var(--color-satin-blue);
+		}
+	}
+
+	.music-player__button--play {
+		background: radial-gradient(
+			circle at 30% 30%,
+			var(--color-soft-graphite) 0%,
+			var(--color-deep-blue-graphite) 100%
+		);
+		color: var(--color-liquid-silver);
+		border-color: rgb(var(--color-liquid-silver-rgb) / 40%);
+
+		&::after {
+			border-color: rgb(var(--color-liquid-silver-rgb) / 35%);
+			opacity: 30%;
+		}
+
+		&:hover::after {
+			opacity: 80%;
+		}
 	}
 }
 
@@ -117,32 +144,32 @@ $celestial-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
 	.music-player__button--play {
 		background:
 			radial-gradient(
-				circle at 32% 22%,
-				rgb(var(--color-diamond-white-rgb) / 78%) 0%,
-				transparent 54%
+				circle at 32% 26%,
+				rgb(var(--color-diamond-white-rgb) / 15%) 0%,
+				transparent 48%
 			),
-			rgb(var(--color-diamond-white-rgb) / 48%);
-		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
-		color: rgb(var(--color-deep-blue-graphite-rgb) / 76%);
+			rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 22%);
+		color: var(--color-diamond-white);
 		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
 		box-shadow:
-			0 12px 24px rgb(var(--color-deep-blue-graphite-rgb) / 9%),
-			0 1px 0 rgb(var(--color-diamond-white-rgb) / 58%);
+			0 8px 18px rgb(var(--color-deep-blue-graphite-rgb) / 16%),
+			inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 12%);
 
 		&::after {
-			border-color: rgb(var(--color-satin-blue-rgb) / 46%);
-			opacity: 34%;
+			border-color: rgb(var(--color-liquid-silver-rgb) / 28%);
+			opacity: 24%;
 		}
 
 		&:hover::after {
-			opacity: 70%;
+			opacity: 58%;
 		}
 	}
 
 	.music-player__button--pulsing::before {
-		border-color: rgb(var(--color-satin-blue-rgb) / 42%);
-		opacity: 26%;
-		animation-duration: 3.4s;
+		border-color: rgb(var(--color-satin-blue-rgb) / 28%);
+		opacity: 18%;
+		animation-duration: 3.8s;
 	}
 
 	@media (width < 992px) {
