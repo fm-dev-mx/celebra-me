@@ -7,13 +7,9 @@
         "preset": "angelic-presence"
     },
     "sectionStyles": {
-        "family": {},
-        "gallery": {},
-        "itinerary": {},
         "location": {
             "showFlourishes": true
-        },
-        "thankYou": {}
+        }
     },
     "navigation": [
         { "label": "Mensaje", "href": "#quote-section" },
@@ -146,6 +142,7 @@
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
+        "attendanceLabel": "¿Nos acompañarás?",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api"
