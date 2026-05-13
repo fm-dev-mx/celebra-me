@@ -1,103 +1,229 @@
 .envelope-wrapper[data-variant='luxury-hacienda'] {
+	--duration-reveal: 1.8s;
 	--env-bg: radial-gradient(
-		circle at center,
-		color-mix(in srgb, var(--color-surface-dark) 92%, var(--color-action-accent)) 0%,
-		var(--color-surface-canvas) 100%
+		ellipse at 50% 30%,
+		hsl(28deg 45% 18%) 0%,
+		hsl(24deg 40% 12%) 45%,
+		hsl(20deg 35% 8%) 100%
 	);
-	--env-paper-bg: var(--color-surface-dark);
-	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 30%, transparent);
-	--env-text-primary: var(--color-action-primary);
-	--env-text-secondary: color-mix(
-		in srgb,
-		var(--color-action-primary) 60%,
-		var(--color-action-accent)
+	--env-paper-bg: linear-gradient(
+		155deg,
+		hsl(45deg 35% 94%) 0%,
+		hsl(40deg 30% 88%) 50%,
+		hsl(38deg 28% 82%) 100%
 	);
-	--env-accent: var(--color-action-accent);
+	--env-paper-border: hsl(38deg 45% 70%);
+	--env-text-primary: var(--color-text-primary);
+	--env-text-secondary: hsl(30deg 40% 35%);
+	--env-accent: hsl(38deg 45% 55%);
 	--env-seal-bg: radial-gradient(
-		circle at 35% 35%,
-		color-mix(in srgb, var(--color-action-accent) 35%, var(--color-white)) 0%,
-		var(--color-action-accent) 45%,
-		color-mix(in srgb, var(--color-action-accent) 70%, var(--color-surface-dark)) 100%
+		circle at 38% 35%,
+		hsl(40deg 60% 78%) 0%,
+		hsl(38deg 45% 55%) 35%,
+		hsl(32deg 40% 38%) 100%
 	);
-	--env-seal-icon: color-mix(in srgb, var(--color-surface-canvas) 80%, transparent);
+	--env-seal-icon: hsl(32deg 45% 28%);
 	--env-font-display: var(--font-display-hacienda);
-	--env-tooltip-bg: color-mix(in srgb, var(--color-surface-dark) 95%, var(--color-action-accent));
-	--env-tooltip-border: color-mix(in srgb, var(--color-action-accent) 40%, transparent);
-	--color-text-tooltip: var(--color-text-on-dark);
+	--env-tooltip-bg: hsl(40deg 35% 92%);
+	--env-tooltip-border: hsl(38deg 40% 65%);
+	--color-text-tooltip: hsl(28deg 40% 20%);
 	--env-shadow-seal:
-		0 12px 24px color-mix(in srgb, var(--color-surface-canvas) 60%, transparent),
-		inset 0 2px 4px color-mix(in srgb, var(--color-action-accent) 40%, transparent);
-	--reveal-card-bg: var(--color-surface-primary);
-	--reveal-card-border: color-mix(in srgb, var(--color-action-accent) 32%, transparent);
-	--reveal-card-text-primary: var(--color-action-primary);
-	--reveal-card-text-secondary: var(--color-text-emphasis);
+		0 8px 20px hsl(30deg 40% 20% / 45%), inset 0 1px 2px hsl(40deg 60% 80% / 60%),
+		inset 0 -2px 6px hsl(28deg 30% 20% / 30%);
+	--reveal-card-bg: linear-gradient(
+		160deg,
+		hsl(45deg 40% 97%) 0%,
+		hsl(42deg 35% 93%) 60%,
+		hsl(40deg 30% 88%) 100%
+	);
+	--reveal-card-border: hsl(38deg 50% 72%);
+	--reveal-card-text-primary: var(--color-text-primary);
+	--reveal-card-text-secondary: hsl(30deg 35% 40%);
 	--reveal-card-font-display: var(--font-display-hacienda);
 	--reveal-card-shadow:
-		0 18px 38px color-mix(in srgb, var(--color-surface-canvas) 34%, transparent),
-		0 2px 0 color-mix(in srgb, var(--color-white) 36%, transparent) inset;
+		0 22px 48px hsl(25deg 40% 15% / 28%), 0 1px 0 hsl(40deg 50% 90% / 80%) inset;
+
+	.envelope-container {
+		&::after {
+			box-shadow:
+				0 32px 72px hsl(20deg 40% 10% / 50%),
+				0 8px 20px hsl(20deg 40% 10% / 25%);
+		}
+	}
+
+	.envelope-base,
+	.envelope-pocket,
+	.envelope-flap {
+		background:
+			linear-gradient(
+				138deg,
+				hsl(45deg 30% 96% / 60%) 0%,
+				hsl(40deg 25% 90% / 30%) 40%,
+				transparent 70%
+			),
+			var(--env-paper-bg);
+		border-color: var(--env-paper-border);
+	}
+
+	.envelope-flap {
+		filter: drop-shadow(0 10px 24px hsl(25deg 40% 15% / 35%));
+	}
 
 	.envelope-name {
-		font-weight: 500;
+		font-weight: 600;
 		text-transform: uppercase;
-		color: var(--color-text-on-dark);
+		letter-spacing: 0.08em;
+		color: var(--color-text-primary);
+		text-shadow: 0 1px 2px hsl(30deg 30% 60% / 40%);
 	}
 
 	.envelope-details {
-		color: var(--color-action-accent);
-		opacity: 80%;
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		color: var(--env-text-secondary);
+		opacity: 75%;
 	}
 
 	.envelope-manifest-label {
-		color: var(--color-action-accent);
-		opacity: 70%;
+		font-size: 0.6rem;
+		letter-spacing: 0.35em;
+		color: var(--env-text-secondary);
+		opacity: 60%;
 	}
 
 	.envelope-stamp {
-		background: color-mix(in srgb, var(--color-surface-canvas) 40%, transparent);
-		border-color: color-mix(in srgb, var(--color-action-accent) 30%, transparent);
-		color: var(--color-text-on-dark);
+		background: hsl(40deg 30% 88% / 70%);
+		border-color: hsl(38deg 40% 65% / 40%);
+		color: var(--env-text-secondary);
+
+		span {
+			font-size: 0.68rem;
+			letter-spacing: 0.2em;
+		}
 	}
 
 	.envelope-external-instruction p {
-		color: var(--color-text-on-dark);
-		opacity: 90%;
-		filter: drop-shadow(0 2px 4px rgb(0 0 0 / 50%));
+		color: var(--env-text-secondary);
+		opacity: 85%;
+		text-shadow: 0 1px 2px hsl(30deg 30% 60% / 25%);
 	}
 
 	.instruction-line {
-		background: var(--color-action-accent);
-		opacity: 40%;
+		background: linear-gradient(
+			to right,
+			transparent,
+			var(--env-accent) 30%,
+			var(--env-accent) 70%,
+			transparent
+		);
+		opacity: 35%;
+		height: 1px;
 	}
 
 	.envelope-seal-button__visual {
-		border: 1px solid color-mix(in srgb, var(--color-surface-canvas) 20%, transparent);
+		border: 1px solid hsl(40deg 50% 75% / 50%);
 		background: var(--env-seal-bg);
 		box-shadow:
-			0 15px 35px color-mix(in srgb, var(--color-surface-canvas) 60%, transparent),
-			inset 0 1px 1px color-mix(in srgb, var(--color-white) 50%, transparent),
-			inset 0 -3px 8px color-mix(in srgb, var(--color-action-accent) 40%, transparent);
+			0 10px 28px hsl(28deg 40% 20% / 40%),
+			inset 0 2px 4px hsl(40deg 60% 85% / 70%),
+			inset 0 -2px 6px hsl(28deg 30% 25% / 40%);
 		overflow: hidden;
 
 		&::after {
 			content: '';
 			position: absolute;
 			inset: 0;
-			background: linear-gradient(
-				-45deg,
-				transparent 45%,
-				color-mix(in srgb, var(--color-white) 30%, transparent) 50%,
-				transparent 55%
+			background: radial-gradient(
+				circle at 30% 30%,
+				hsl(40deg 60% 95% / 40%) 0%,
+				transparent 50%
 			);
-			filter: blur(1px);
 		}
 
 		.seal-icon {
 			z-index: 1;
-			color: color-mix(in srgb, var(--color-surface-canvas) 88%, transparent);
-			filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--color-white) 40%, transparent))
-				drop-shadow(
-					0 -1px 0 color-mix(in srgb, var(--color-surface-canvas) 20%, transparent)
-				);
+			color: var(--env-seal-icon);
+			filter: drop-shadow(0 1px 1px hsl(40deg 60% 85% / 80%))
+				drop-shadow(0 -1px 0 hsl(28deg 30% 40% / 30%));
 		}
+	}
+
+	.envelope-seal-button--monogram .envelope-seal-button__visual {
+		box-shadow:
+			0 10px 28px hsl(28deg 40% 20% / 40%),
+			inset 0 2px 4px hsl(40deg 60% 85% / 70%),
+			inset 0 -2px 6px hsl(28deg 30% 25% / 40%),
+			inset 0 0 0 1px hsl(38deg 50% 60% / 30%);
+	}
+
+	.invitation-reveal-card {
+		background:
+			linear-gradient(145deg, hsl(45deg 35% 97% / 90%) 0%, hsl(42deg 30% 93% / 85%) 100%),
+			var(--reveal-card-bg);
+		border: 1px solid var(--reveal-card-border);
+		box-shadow: var(--reveal-card-shadow);
+		backdrop-filter: blur(8px) saturate(140%);
+	}
+
+	.invitation-reveal-card__seal {
+		background: var(--env-seal-bg);
+		border: 1px solid hsl(38deg 50% 65% / 40%);
+		box-shadow:
+			0 6px 16px hsl(28deg 40% 20% / 35%),
+			inset 0 1px 2px hsl(40deg 60% 85% / 60%),
+			inset 0 -1px 3px hsl(28deg 30% 25% / 30%);
+	}
+
+	.invitation-reveal-card__seal-icon {
+		color: var(--env-seal-icon);
+	}
+
+	.invitation-reveal-card__label {
+		font-size: 0.58rem;
+		letter-spacing: 0.3em;
+		opacity: 55%;
+	}
+
+	.invitation-reveal-card__name {
+		font-size: clamp(1.4rem, 7vw, 2.2rem);
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		color: var(--reveal-card-text-primary);
+		text-shadow: 0 1px 2px hsl(30deg 30% 50% / 20%);
+	}
+
+	.invitation-reveal-card__divider {
+		width: min(8rem, 40%);
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			transparent,
+			hsl(38deg 45% 55% / 60%) 30%,
+			hsl(38deg 45% 55% / 60%) 70%,
+			transparent
+		);
+	}
+
+	.invitation-reveal-card__guest-name {
+		font-size: clamp(1rem, 5vw, 1.5rem);
+		letter-spacing: 0.15em;
+	}
+
+	.invitation-reveal-card__details {
+		font-size: 0.65rem;
+		letter-spacing: 0.12em;
+		opacity: 70%;
+	}
+
+	.tease-divider {
+		width: 6rem;
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			transparent,
+			hsl(38deg 45% 55% / 45%) 30%,
+			hsl(38deg 45% 55% / 45%) 70%,
+			transparent
+		);
 	}
 }
