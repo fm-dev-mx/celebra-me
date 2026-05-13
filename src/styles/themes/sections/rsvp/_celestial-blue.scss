@@ -1,0 +1,245 @@
+/* stylelint-disable no-duplicate-selectors -- Preserves legacy sequential variant overrides during modular split. */
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.rsvp[data-variant='celestial-blue'] {
+	--rsvp-emoji-yes: '💎';
+	--rsvp-emoji-no: '💌';
+	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));
+	--color-glass-border: var(--color-glass-border, rgb(var(--color-action-accent-rgb), 0.3));
+	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb), 0.15));
+	--shadow-premium: var(
+		--shadow-premium,
+		0 15px 35px var(--color-glass-shadow),
+		0 5px 15px rgb(0 0 0 / 5%)
+	);
+	--rsvp-label-color: var(--color-text-on-light, rgb(var(--color-text-primary-rgb), 0.78));
+	--rsvp-label-letter-spacing: 0.018em;
+	--rsvp-field-bg: var(--color-surface-soft, rgb(255 255 255 / 55%));
+	--rsvp-field-bg-focus: var(--color-surface-elevated, rgb(255 255 255 / 85%));
+	--rsvp-field-border: var(--color-glass-border);
+	--rsvp-placeholder-color: var(--color-text-muted, rgb(var(--color-text-primary-rgb), 0.38));
+	--rsvp-radio-bg: rgb(255 255 255 / 48%);
+	--rsvp-radio-bg-hover: rgb(255 255 255 / 68%);
+	--rsvp-radio-border: var(--color-glass-border);
+	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.12);
+	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.55);
+	--rsvp-button-shadow-rest:
+		0 6px 18px rgb(var(--color-surface-dark-rgb), 0.18),
+		0 1px 0 rgb(var(--color-action-accent-rgb), 0.16);
+	--rsvp-button-shadow-hover:
+		0 10px 24px rgb(var(--color-surface-dark-rgb), 0.24),
+		0 0 14px rgb(var(--color-action-accent-rgb), 0.14);
+	--rsvp-button-bg-hover: rgb(var(--color-surface-dark-rgb), 0.88);
+	--rsvp-button-filter-hover: none;
+	--rsvp-radius-card: var(--section-card-radius, 20px);
+	--rsvp-radius-field: 14px;
+
+	.rsvp__title {
+		font-family: var(--font-calligraphy, var(--font-display));
+		color: var(--color-action-accent);
+		font-size: 2.2rem;
+		letter-spacing: 0.02em;
+		font-weight: 400;
+
+		&::after {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-action-accent) 50%,
+				transparent 100%
+			);
+			opacity: 50%;
+		}
+	}
+
+	.rsvp__button {
+		background: var(--color-surface-dark, var(--color-action-primary));
+		color: var(--color-action-accent);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.35);
+		font-family: var(--font-body);
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-action-accent-rgb), 0.15),
+				transparent
+			);
+			transition: left var(--duration-premium) var(--ease-out, ease-out);
+		}
+
+		&:hover:not(:disabled) {
+			border-color: rgb(var(--color-action-accent-rgb), 0.55);
+
+			&::before {
+				left: 100%;
+			}
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--color-action-accent);
+			outline-offset: 3px;
+			box-shadow:
+				0 0 0 2px rgb(255 255 255 / 90%),
+				0 0 0 6px rgb(var(--color-action-accent-rgb), 0.35);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rsvp__button {
+			transition: none;
+
+			&::before {
+				transition: none;
+			}
+
+			&:hover:not(:disabled) {
+				transform: none;
+			}
+		}
+	}
+}
+
+.rsvp[data-variant='celestial-blue'] {
+	max-width: min(42rem, calc(100% - 2rem));
+	margin-inline: auto;
+	padding: clamp(3rem, 8vw, 5rem) clamp(1.2rem, 5vw, 3rem);
+	background:
+		linear-gradient(
+			145deg,
+			rgb(var(--color-diamond-white-rgb) / 72%),
+			rgb(var(--color-pearl-gray-rgb) / 58%)
+		),
+		var(--color-surface-primary);
+	border: 1px solid rgb(var(--color-liquid-silver-rgb) / 54%);
+	border-radius: 8px;
+	box-shadow: var(--shadow-editorial, var(--shadow-premium));
+	color: var(--color-text-primary);
+
+	--rsvp-emoji-yes: 'Si';
+	--rsvp-emoji-no: 'No';
+	--rsvp-label-color: rgb(var(--color-soft-graphite-rgb) / 76%);
+	--rsvp-field-bg: rgb(var(--color-diamond-white-rgb) / 86%);
+	--rsvp-field-bg-focus: var(--color-diamond-white);
+	--rsvp-field-border: rgb(var(--color-liquid-silver-rgb) / 72%);
+	--rsvp-placeholder-color: rgb(var(--color-soft-graphite-rgb) / 45%);
+	--rsvp-radio-bg: rgb(var(--color-diamond-white-rgb) / 58%);
+	--rsvp-radio-bg-hover: rgb(var(--color-ice-blue-rgb) / 58%);
+	--rsvp-radio-border: rgb(var(--color-liquid-silver-rgb) / 72%);
+	--rsvp-radio-selected-bg: rgb(var(--color-satin-blue-rgb) / 22%);
+	--rsvp-radio-selected-border: var(--color-satin-blue);
+	--rsvp-radius-card: 8px;
+	--rsvp-radius-field: 6px;
+
+	.rsvp__title {
+		margin-bottom: clamp(2rem, 6vw, 3rem);
+		font-family: var(--font-display);
+		font-size: clamp(2.8rem, 7vw, 4.4rem);
+		font-style: italic;
+		font-weight: 400;
+		line-height: 0.98;
+		letter-spacing: 0;
+		color: var(--color-deep-blue-graphite);
+		text-align: center;
+	}
+
+	.rsvp__title::after {
+		background: linear-gradient(90deg, transparent, var(--color-liquid-silver), transparent);
+		opacity: 80%;
+	}
+
+	label,
+	legend,
+	.rsvp__locked-eyebrow {
+		font-family: var(--font-body);
+		font-size: 0.72rem;
+		font-weight: 650;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--rsvp-label-color);
+	}
+
+	input[type='text'],
+	input[type='number'],
+	textarea {
+		background: var(--rsvp-field-bg);
+		border: 1px solid var(--rsvp-field-border);
+		border-radius: var(--rsvp-radius-field);
+		color: var(--color-text-primary);
+		font-family: var(--font-body);
+		box-shadow: inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 70%);
+	}
+
+	input[type='text']:focus,
+	input[type='number']:focus,
+	textarea:focus {
+		background: var(--rsvp-field-bg-focus);
+		border-color: var(--color-satin-blue);
+		box-shadow: 0 0 0 3px rgb(var(--color-satin-blue-rgb) / 22%);
+	}
+
+	.rsvp__radio-card {
+		background: var(--rsvp-radio-bg);
+		border: 1px solid var(--rsvp-radio-border);
+		border-radius: var(--rsvp-radius-field);
+		color: var(--color-text-primary);
+	}
+
+	.rsvp__radio-card:hover {
+		background: var(--rsvp-radio-bg-hover);
+		border-color: var(--color-satin-blue);
+	}
+
+	.rsvp__radio-card:has(input:checked) {
+		background: var(--rsvp-radio-selected-bg);
+		border-color: var(--rsvp-radio-selected-border);
+		box-shadow: 0 0 0 2px rgb(var(--color-satin-blue-rgb) / 22%);
+	}
+
+	.rsvp__button {
+		background: var(--color-deep-blue-graphite);
+		border: 1px solid var(--color-deep-blue-graphite);
+		border-radius: 6px;
+		color: var(--color-diamond-white);
+		font-family: var(--font-body);
+		font-size: 0.78rem;
+		font-weight: 650;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		box-shadow: 0 12px 26px rgb(var(--color-deep-blue-graphite-rgb) / 18%);
+	}
+
+	.rsvp__button::before {
+		background: var(--satin-sheen);
+	}
+
+	.rsvp__button:hover:not(:disabled) {
+		background: var(--color-soft-graphite);
+		border-color: var(--color-satin-blue);
+		color: var(--color-diamond-white);
+		box-shadow: 0 16px 34px rgb(var(--color-deep-blue-graphite-rgb) / 22%);
+	}
+
+	.rsvp__button:disabled {
+		background: rgb(var(--color-soft-graphite-rgb) / 32%);
+		border-color: rgb(var(--color-soft-graphite-rgb) / 10%);
+		color: rgb(var(--color-diamond-white-rgb) / 78%);
+		opacity: 100%;
+	}
+
+	@media (width <= 480px) {
+		--rsvp-radio-columns: 1fr;
+		--rsvp-radio-card-justify: flex-start;
+	}
+}

@@ -1,0 +1,51 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
+// Default Header Variables (Safe Fallbacks)
+
+.header-base[data-variant='luxury-hacienda'] {
+	--header-bg: linear-gradient(180deg, rgb(20 14 10 / 40%) 0%, rgb(20 14 10 / 0%) 100%);
+	--header-bg-scrolled: linear-gradient(180deg, rgb(29 20 14 / 92%) 0%, rgb(42 31 22 / 88%) 100%);
+	--header-nav-color: rgb(241 223 187 / 92%);
+	--header-nav-color-transparent: rgb(241 223 187 / 92%);
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 54%), 0 1px 16px rgb(0 0 0 / 34%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 8px rgb(0 0 0 / 24%));
+	--header-border-bottom: 1px solid rgb(207 168 95 / 20%);
+
+	backdrop-filter: blur(7px);
+
+	.event-header__title {
+		color: rgb(241 223 187 / 82%);
+		text-shadow: var(--header-nav-shadow-transparent);
+	}
+
+	.event-header__nav-link {
+		font-weight: 600;
+		letter-spacing: 0.08em;
+	}
+
+	.event-header__action-btn {
+		background: rgb(88 62 36 / 68%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.45);
+		color: rgb(255 244 219 / 92%);
+		box-shadow:
+			0 8px 20px rgb(0 0 0 / 22%),
+			inset 0 1px 0 rgb(255 241 214 / 12%);
+	}
+
+	&.header-base--scrolled {
+		border-bottom: var(--header-border-bottom);
+		box-shadow:
+			0 10px 26px rgb(0 0 0 / 30%),
+			0 1px 0 rgb(255 241 214 / 8%);
+		backdrop-filter: blur(14px) saturate(130%);
+	}
+
+	.event-header__action-btn:hover {
+		/* stylelint-disable-next-line declaration-no-important */
+		color: rgb(255 245 219 / 100%) !important;
+	}
+}

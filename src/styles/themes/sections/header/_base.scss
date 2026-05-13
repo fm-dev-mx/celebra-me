@@ -1,0 +1,26 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
+// Default Header Variables (Safe Fallbacks)
+
+// LUXURY HACIENDA PRESET
+
+// JEWELRY BOX
+
+// CELESTIAL BLUE
+
+// EDITORIAL PRESET
+
+// ANGELIC PRESENCE PRESET
+
+:root {
+	--header-bg: var(--header-glass-bg);
+	--header-bg-scrolled: var(--header-scrolled-bg);
+	--header-nav-color: var(--color-text-primary);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
+}

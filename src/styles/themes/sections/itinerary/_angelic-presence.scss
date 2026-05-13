@@ -1,0 +1,99 @@
+@use '../../../tokens' as tokens;
+
+// ==========================================================================
+// EDITORIAL ITINERARY
+// ==========================================================================
+
+.itinerary[data-variant='angelic-presence'] {
+	--itinerary-bg: radial-gradient(
+		circle at 50% 8%,
+		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
+		var(--color-surface-primary) 58%,
+		rgb(var(--color-soft-sand-rgb) / 72%) 100%
+	);
+	--itinerary-line-color: rgb(var(--color-sacred-gold-rgb) / 35%);
+	--itinerary-line-shadow: 0 0 12px rgb(var(--color-sacred-gold-rgb) / 20%);
+	--itinerary-line-opacity: 0.5;
+	--itinerary-item-time-color: var(--color-sacred-gold);
+	--itinerary-item-label-color: var(--color-eternal-ink);
+	--itinerary-item-label-font: var(--font-display);
+	--itinerary-item-desc-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--itinerary-icon-bg: var(--color-angelic-white);
+	--itinerary-icon-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
+	--itinerary-icon-color: var(--color-sacred-gold);
+	--itinerary-icon-shadow: 0 4px 12px rgb(var(--color-eternal-ink-rgb) / 8%);
+
+	background: var(--itinerary-bg);
+	padding-block: clamp(4rem, 8vw, 6.5rem);
+
+	.itinerary__header {
+		text-align: center;
+		margin-bottom: clamp(2rem, 5vw, 3.5rem);
+	}
+
+	.itinerary__title {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5vw, 3.2rem);
+		font-weight: 400;
+		color: var(--color-eternal-ink);
+		letter-spacing: 0.02em;
+	}
+
+	.itinerary__subtitle {
+		font-family: var(--font-body);
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 55%);
+		margin: 0;
+	}
+
+	.itinerary__header-flourish {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: clamp(1rem, 2vw, 1.5rem);
+
+		.flourish-line {
+			height: 1px;
+			width: clamp(3rem, 8vw, 6rem);
+			background: linear-gradient(
+				to var(--direction, right),
+				transparent,
+				rgb(var(--color-sacred-gold-rgb) / 50%)
+			);
+
+			&:last-child {
+				--direction: left;
+			}
+		}
+
+		.flourish-diamond {
+			width: 5px;
+			height: 5px;
+			background: var(--color-sacred-gold);
+			transform: rotate(45deg);
+			opacity: 60%;
+		}
+	}
+
+	.itinerary__item-label {
+		background: none;
+		-webkit-text-fill-color: initial;
+		color: var(--color-eternal-ink);
+		text-shadow: none;
+	}
+
+	.itinerary__item-icon-wrapper {
+		background: var(--itinerary-icon-bg);
+		border: var(--itinerary-icon-border);
+		box-shadow: var(--itinerary-icon-shadow);
+	}
+
+	.itinerary__item-icon-inner {
+		color: var(--itinerary-icon-color);
+		filter: drop-shadow(0 0 6px rgb(var(--color-sacred-gold-rgb) / 25%));
+	}
+}

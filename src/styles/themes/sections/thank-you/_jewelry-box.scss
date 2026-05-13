@@ -1,0 +1,59 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+// ==========================================================================
+// EDITORIAL THANK YOU
+// ==========================================================================
+
+.thank-you-section[data-variant='jewelry-box'] {
+	background: radial-gradient(
+		circle at 50% 0%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	padding: 10rem 2rem;
+
+	.photo-frame {
+		width: var(--thank-you-frame-size-mobile);
+		height: var(--thank-you-frame-size-mobile);
+		background: var(--color-glass-bg);
+		border: 1px solid var(--color-glass-border);
+		border-radius: 12px;
+		box-shadow: var(--shadow-premium);
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		padding: 12px;
+
+		@include mixins.respond-to(sm) {
+			width: var(--thank-you-frame-size-desktop);
+			height: var(--thank-you-frame-size-desktop);
+		}
+
+		.photo-image {
+			border-radius: 8px;
+			object-fit: var(--thank-you-image-fit);
+			object-position: var(--thank-you-image-position);
+			padding: 0.4rem;
+		}
+	}
+
+	.thank-you-message {
+		font-family: var(--font-display);
+		color: var(--color-surface-dark);
+		background: rgb(var(--color-surface-primary-rgb), 0.4);
+		border: 1px solid var(--color-glass-border);
+		backdrop-filter: blur(8px);
+		border-radius: 12px;
+		padding: 3rem;
+		box-shadow: var(--shadow-premium);
+		line-height: 1.8;
+	}
+
+	.closing-name {
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		font-weight: 400;
+		font-size: clamp(3rem, 8vw, 5rem);
+	}
+}

@@ -1,0 +1,46 @@
+@use '../../../tokens' as tokens;
+
+$hacienda-prompt-gradient: linear-gradient(
+	140deg,
+	rgb(var(--color-surface-primary-rgb), 0.94) 0%,
+	rgb(var(--color-surface-secondary-rgb), 0.86) 55%,
+	rgb(var(--color-action-accent-rgb), 0.13) 100%
+);
+$jewelry-prompt-gradient: linear-gradient(
+	135deg,
+	rgb(255 255 255 / 92%) 0%,
+	rgb(var(--color-surface-primary-rgb), 0.94) 48%,
+	rgb(var(--color-action-accent-rgb), 0.12) 100%
+);
+$celestial-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
+
+.music-player[data-variant='editorial'] {
+	.music-player__prompt {
+		background: rgb(var(--color-deep-blue-graphite-rgb) / 75%);
+		color: var(--color-liquid-silver);
+		border-color: rgb(var(--color-liquid-silver-rgb) / 30%);
+
+		&::before {
+			color: var(--color-satin-blue);
+		}
+	}
+
+	.music-player__button--play {
+		background: radial-gradient(
+			circle at 30% 30%,
+			var(--color-soft-graphite) 0%,
+			var(--color-deep-blue-graphite) 100%
+		);
+		color: var(--color-liquid-silver);
+		border-color: rgb(var(--color-liquid-silver-rgb) / 40%);
+
+		&::after {
+			border-color: rgb(var(--color-liquid-silver-rgb) / 35%);
+			opacity: 30%;
+		}
+
+		&:hover::after {
+			opacity: 80%;
+		}
+	}
+}

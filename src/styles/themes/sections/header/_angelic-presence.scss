@@ -1,0 +1,73 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
+// Default Header Variables (Safe Fallbacks)
+
+.header-base[data-variant='angelic-presence'] {
+	--header-bg: transparent;
+	--header-bg-scrolled: rgb(var(--color-angelic-white-rgb) / 88%);
+	--header-nav-color: var(--color-eternal-ink);
+	--header-nav-color-transparent: var(--color-eternal-ink);
+	--header-nav-shadow-transparent: 0 1px 3px rgb(var(--color-eternal-ink-rgb) / 12%);
+	--header-nav-filter-transparent: none;
+	--header-border-color: rgb(var(--color-sacred-gold-rgb) / 22%);
+	--mobile-drawer-bg: rgb(var(--color-angelic-white-rgb) / 96%);
+	--mobile-drawer-blur: 24px;
+	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 18%);
+	--mobile-drawer-link-hover: var(--color-sacred-gold);
+	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 42%);
+	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-eternal-ink-rgb) / 10%);
+
+	&::before {
+		background: linear-gradient(
+			to bottom,
+			rgb(var(--color-angelic-white-rgb) / 30%) 0%,
+			rgb(var(--color-angelic-white-rgb) / 18%) 22%,
+			rgb(var(--color-angelic-white-rgb) / 8%) 42%,
+			transparent 72%
+		);
+	}
+
+	&.header-base--scrolled {
+		border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+		backdrop-filter: blur(16px) saturate(140%);
+	}
+
+	.mobile-nav-links__link {
+		color: var(--color-eternal-ink);
+
+		&:hover::after {
+			transform: scaleX(1);
+		}
+	}
+
+	.mobile-nav-actions__login {
+		color: rgb(var(--color-eternal-ink-rgb) / 50%);
+
+		&:hover {
+			color: var(--color-sacred-gold);
+		}
+	}
+
+	.mobile-nav-actions__cta {
+		background: transparent;
+		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 55%);
+		backdrop-filter: blur(8px) saturate(140%);
+		box-shadow: 0 0 0 0 rgb(var(--color-sacred-gold-rgb) / 0%);
+
+		&:hover {
+			background: rgb(var(--color-sacred-gold-rgb) / 12%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 75%);
+			color: rgb(var(--color-sacred-gold-rgb) / 95%);
+			box-shadow: 0 0 12px rgb(var(--color-sacred-gold-rgb) / 18%);
+		}
+	}
+
+	.mobile-nav-footer__copy {
+		color: rgb(var(--color-eternal-ink-rgb) / 36%);
+	}
+}

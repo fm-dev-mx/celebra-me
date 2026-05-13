@@ -1,0 +1,168 @@
+@use '../../../global/mixins' as mixins;
+@use '../../../tokens' as tokens;
+
+/* --- GIFTS: EDITORIAL VARIANT --- */
+
+.gifts-section[data-variant='luxury-hacienda'] {
+	background:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-action-accent-rgb), 0.1),
+			transparent 46%
+		),
+		linear-gradient(145deg, rgb(46 32 23) 0%, rgb(25 18 13) 100%);
+	background-blend-mode: normal;
+	padding-block: clamp(6rem, 10vw, 8.5rem);
+
+	.gifts-section__title {
+		font-family: var(--font-display);
+		color: rgb(231 205 155 / 92%);
+		text-transform: uppercase;
+		letter-spacing: 0.13em;
+		position: relative;
+		overflow: hidden;
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		animation: none;
+		text-shadow: 0 5px 18px rgb(0 0 0 / 36%);
+	}
+
+	.gifts-section__subtitle {
+		font-family: var(--font-body);
+		color: rgb(248 235 205 / 68%);
+	}
+
+	.gift-card {
+		background: rgb(63 46 35 / 62%);
+		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
+		border-radius: 7px;
+		box-shadow:
+			0 18px 42px rgb(0 0 0 / 28%),
+			inset 0 1px 0 rgb(255 241 214 / 8%);
+		transition:
+			transform var(--duration-standard) var(--ease-premium),
+			border-color var(--duration-standard) var(--ease-standard),
+			box-shadow var(--duration-standard) var(--ease-standard);
+		will-change: transform;
+
+		&::before {
+			background: linear-gradient(
+				90deg,
+				transparent,
+				var(--color-action-accent),
+				transparent
+			);
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			height: auto;
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.1);
+			border-radius: 4px;
+			background: none;
+			pointer-events: none;
+			z-index: 2;
+		}
+
+		&:hover {
+			transform: translateY(-3px);
+			border-color: rgb(var(--color-action-accent-rgb), 0.4);
+			box-shadow:
+				0 24px 50px rgb(0 0 0 / 34%),
+				inset 0 1px 0 rgb(255 241 214 / 12%);
+		}
+
+		background-image: none;
+	}
+
+	.gift-card__inner {
+		position: relative;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gift-card__icon {
+		color: rgb(224 185 112 / 86%);
+		filter: none;
+	}
+
+	.gift-card__title {
+		font-family: var(--font-display);
+		color: rgb(231 205 155 / 92%);
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-weight: 400;
+	}
+
+	.gift-card__description,
+	.gift-card__text,
+	.gift-card__detail {
+		font-family: var(--font-body);
+		color: rgb(248 235 205 / 72%);
+		line-height: 1.65;
+	}
+
+	.gift-card__button {
+		border-color: rgb(var(--color-action-accent-rgb), 0.42);
+		color: rgb(241 219 177 / 92%);
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		font-weight: 600;
+		font-family: var(--font-body-hacienda);
+		border-radius: 999px;
+
+		&:hover {
+			background: rgb(224 185 112 / 88%);
+			color: rgb(29 20 14);
+		}
+	}
+
+	.bank-details {
+		background: rgb(23 17 13 / 34%);
+		border-left: 1px solid rgb(var(--color-action-accent-rgb), 0.38);
+		border-radius: 4px;
+		font-family: var(--font-body);
+		color: rgb(248 235 205 / 78%);
+
+		strong {
+			color: rgb(224 185 112 / 86%);
+		}
+	}
+
+	.bank-details__item span,
+	.clabe-number {
+		color: rgb(248 235 205 / 86%);
+		text-shadow: none;
+	}
+
+	.clabe-number {
+		background: rgb(19 14 10 / 32%);
+		border-color: rgb(var(--color-action-accent-rgb), 0.24);
+		letter-spacing: 0.16em;
+	}
+
+	.copy-button {
+		background: rgb(224 185 112 / 88%);
+		color: rgb(29 20 14);
+		font-family: var(--font-body-hacienda);
+		letter-spacing: 0.08em;
+		border-radius: 999px;
+
+		&:hover {
+			background: rgb(241 219 177 / 94%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gift-card {
+			transition: border-color 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}

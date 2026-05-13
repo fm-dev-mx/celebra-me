@@ -1,0 +1,154 @@
+// Theme-specific styles for Quote Section
+// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
+
+@use '../../../tokens' as tokens;
+@use 'sass:meta';
+@use 'sass:string';
+
+// ==========================================================================
+// JEWELRY BOX VARIANT (Luxury/Refined Style)
+// Best for: XV Años, Premium Weddings
+// Characteristics: Pinyon Script, soft gold parchment, elegant ornaments
+// ==========================================================================
+
+.quote-section[data-variant='celestial-blue'] {
+	--quote-bloom: rgb(var(--color-ice-blue-rgb) / 15%);
+	--quote-atmosphere-light: rgb(var(--color-ice-blue-rgb) / 8%);
+
+	position: relative;
+	overflow: hidden;
+	padding-block: clamp(4.5rem, 14vh, 9rem);
+
+	// Cinematic depth without decorative noise.
+	// Cool top fade → soft central halo → restrained ivory/blue warmth at the base.
+	background:
+		linear-gradient(180deg, rgb(var(--color-ice-blue-rgb) / 7%) 0%, transparent 50%),
+		radial-gradient(
+			ellipse 70% 55% at 50% 48%,
+			rgb(var(--color-ice-blue-rgb) / 11%) 0%,
+			transparent 78%
+		),
+		radial-gradient(
+			ellipse 80% 25% at 50% 92%,
+			rgb(var(--color-cool-ivory-rgb) / 5%) 0%,
+			transparent 72%
+		),
+		var(--color-deep-blue-graphite);
+
+	.quote-texture {
+		display: block;
+		position: absolute;
+		inset: 0;
+		opacity: 4%;
+		pointer-events: none;
+		background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+		mix-blend-mode: overlay;
+	}
+
+	.quote-container {
+		position: relative;
+		z-index: 20;
+	}
+
+	.quote-divider-top {
+		display: none;
+	}
+
+	.quote-divider-bottom {
+		color: var(--color-liquid-silver);
+		width: clamp(160px, 25vw, 200px);
+		opacity: 60%;
+		filter: drop-shadow(0 0 4px var(--quote-bloom)) brightness(1.05);
+
+		svg {
+			height: clamp(20px, 3vh, 26px);
+		}
+	}
+
+	.quote-content {
+		font-family: var(--font-calligraphy);
+		font-size: clamp(1.85rem, 4.6vw, 2.95rem);
+		line-height: 1.35;
+		color: rgb(var(--color-text-on-dark-rgb) / 90%);
+		letter-spacing: -0.01em;
+		text-shadow:
+			0 2px 8px rgb(0 0 0 / 35%),
+			0 0 12px var(--quote-bloom),
+			0 0 25px rgb(var(--color-ice-blue-rgb) / 5%);
+		max-width: 780px;
+		margin: 0 auto;
+	}
+
+	.quote-author-container {
+		margin-top: clamp(2.5rem, 5vh, 3.5rem);
+		gap: 2.5rem;
+	}
+
+	.quote-ornament {
+		width: 80px;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			var(--color-liquid-silver) 50%,
+			transparent 100%
+		);
+		box-shadow: 0 0 8px var(--quote-bloom);
+		opacity: 50%;
+	}
+
+	.quote-author {
+		font-family: var(--font-display);
+		font-size: clamp(0.8rem, 1.8vw, 1rem);
+		text-transform: uppercase;
+		letter-spacing: 0.25em;
+		color: var(--color-liquid-silver);
+		font-weight: 500;
+		text-shadow: 0 2px 4px rgb(0 0 0 / 25%);
+	}
+
+	// Cinematic blend: absorbs the hero's dark tones into the quote background.
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 88%) 0%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 52%) 22%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 18%) 54%,
+			transparent 100%
+		);
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	// Cinematic fade: dark celestial blue → cool mid-tone → warm ivory.
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			0deg,
+			rgb(var(--color-surface-primary-rgb) / 35%) 0%,
+			rgb(var(--color-surface-primary-rgb) / 18%) 28%,
+			rgb(var(--color-ice-blue-rgb) / 12%) 52%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 8%) 76%,
+			transparent 100%
+		);
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	@media (width <= 480px) {
+		padding-block: 4rem;
+
+		.quote-content {
+			font-size: clamp(1.75rem, 12vw, 2.6rem);
+		}
+
+		.quote-ornament {
+			width: 60px;
+		}
+	}
+}

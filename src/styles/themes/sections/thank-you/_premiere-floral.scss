@@ -1,0 +1,162 @@
+/* stylelint-disable no-duplicate-selectors -- Preserves legacy sequential variant overrides during modular split. */
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+// ==========================================================================
+// EDITORIAL THANK YOU
+// ==========================================================================
+
+.thank-you-section[data-variant='premiere-floral'] {
+	background: var(--color-surface-primary);
+	padding-block: clamp(6rem, 15vw, 10rem);
+	position: relative;
+	overflow: hidden;
+
+	&::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 60%;
+		height: 80%;
+		background: radial-gradient(
+			circle,
+			rgb(var(--color-action-accent-rgb) / 8%) 0%,
+			transparent 70%
+		);
+		pointer-events: none;
+		filter: blur(40px);
+		z-index: 0;
+	}
+
+	.thank-you-content {
+		position: relative;
+		z-index: 2;
+	}
+
+	.photo-frame {
+		width: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+		height: var(--thank-you-frame-size-mobile, clamp(260px, 40vw, 320px));
+
+		@media (width >= 768px) {
+			width: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+			height: var(--thank-you-frame-size-desktop, clamp(260px, 40vw, 320px));
+		}
+
+		border-radius: 50%;
+		box-shadow: var(--thank-you-photo-frame-shadow);
+		position: relative;
+		overflow: visible;
+		margin-bottom: 2rem;
+		transition: transform var(--duration-premium) var(--ease-premium);
+		animation: none;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -8px;
+			border-radius: 50%;
+			background: var(--gold-metallic);
+			z-index: -1;
+			box-shadow: var(--shadow-premium);
+			opacity: 90%;
+			filter: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 6px;
+			border-radius: 50%;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 35%);
+			pointer-events: none;
+			z-index: 3;
+		}
+
+		&:hover {
+			transform: translateY(-2px) scale(1.005);
+		}
+
+		&:hover .photo-image {
+			transform: scale(1.015);
+			filter: contrast(1.03) brightness(1);
+		}
+
+		.photo-image {
+			width: 100%;
+			height: 100%;
+			border-radius: 50%;
+			object-fit: cover;
+			clip-path: circle(calc(50% - 6px) at 50% 50%);
+			transition:
+				transform var(--duration-reveal) var(--ease-premium),
+				filter var(--duration-reveal) var(--ease-premium);
+			filter: contrast(1.02) brightness(0.95);
+		}
+	}
+
+	.thank-you-message {
+		font-family: var(--font-body);
+		color: rgb(var(--color-text-primary-rgb) / 85%);
+		font-size: 1.1rem;
+		letter-spacing: 0.05em;
+
+		.drop-cap {
+			font-family: var(--font-display);
+			color: var(--color-action-accent);
+			text-shadow: 0 0 20px rgb(var(--color-action-accent-rgb) / 30%);
+		}
+	}
+
+	.closing-name {
+		font-family: var(--font-calligraphy, cursive);
+		font-size: clamp(3.5rem, 10vw, 6rem);
+		background: var(--gold-metallic);
+
+		@include mixins.text-gradient-clip;
+
+		margin-top: 0;
+		line-height: 1;
+		font-weight: 400;
+		padding-bottom: 0.2em;
+		text-transform: none;
+		text-shadow: 0 4px 15px rgb(0 0 0 / 15%); // Safer alternative to filter: drop-shadow
+	}
+}
+
+.thank-you-section[data-variant='premiere-floral'] {
+	.photo-frame {
+		transition: box-shadow var(--duration-standard) var(--ease-out);
+
+		&::before {
+			background: radial-gradient(
+				circle at 30% 30%,
+				rgb(var(--color-action-accent-rgb) / 24%) 0%,
+				rgb(var(--color-action-accent-rgb) / 12%) 48%,
+				rgb(var(--color-action-accent-rgb) / 8%) 100%
+			);
+			opacity: 100%;
+		}
+
+		&:hover {
+			transform: none;
+			box-shadow:
+				0 20px 48px rgb(var(--color-surface-dark-rgb) / 12%),
+				0 0 0 1px rgb(var(--color-action-accent-rgb) / 10%);
+		}
+
+		&:hover .photo-image {
+			transform: none;
+			filter: contrast(1.03) brightness(0.97);
+		}
+
+		.photo-image {
+			transition: filter var(--duration-standard) var(--ease-out);
+		}
+	}
+
+	.closing-name {
+		animation: none;
+	}
+}

@@ -1,0 +1,17 @@
+.envelope-wrapper[data-variant='jewelry-box-wedding'] {
+	--env-bg: radial-gradient(
+		circle at center,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-primary) 100%
+	);
+	--env-paper-bg: var(--color-envelope-paper-ivory);
+	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 22%, transparent);
+	--env-text-primary: var(--color-action-primary);
+	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 28%, transparent);
+	--env-tooltip-bg: var(--color-glass-bg);
+	--env-tooltip-border: var(--color-glass-border);
+	--env-tooltip-shadow: var(--shadow-premium);
+	--env-shadow-container: var(--shadow-premium);
+	--reveal-card-text-primary: var(--color-action-primary);
+	--reveal-card-text-secondary: var(--color-text-emphasis);
+}

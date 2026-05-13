@@ -1,0 +1,88 @@
+@use '../../../tokens' as tokens;
+
+// ==========================================================================
+// EDITORIAL ITINERARY
+// ==========================================================================
+
+.itinerary[data-variant='luxury-hacienda'] {
+	--itinerary-bg:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-action-accent-rgb), 0.08),
+			transparent 48%
+		),
+		linear-gradient(180deg, rgb(248 242 228) 0%, var(--color-surface-primary) 100%);
+	--itinerary-line-color: rgb(var(--color-action-accent-rgb), 0.38);
+	--itinerary-line-shadow: none;
+	--itinerary-line-opacity: 0.55;
+	--itinerary-item-time-color: rgb(var(--color-text-primary-rgb), 0.72);
+	--itinerary-item-label-color: var(--color-text-emphasis);
+	--itinerary-item-label-font: var(--font-heading-formal);
+	--itinerary-item-desc-color: var(--color-text-secondary);
+	--itinerary-icon-bg: rgb(250 244 229 / 86%);
+	--itinerary-icon-border: 1px solid rgb(var(--color-action-accent-rgb), 0.22);
+	--itinerary-icon-color: var(--color-action-primary);
+	--itinerary-icon-shadow: 0 8px 22px rgb(var(--color-text-primary-rgb), 0.08);
+
+	background: var(--itinerary-bg);
+	padding-block: clamp(5.5rem, 10vw, 8rem);
+
+	.itinerary__header {
+		margin-bottom: clamp(2.6rem, 6vw, 4.2rem);
+		text-align: center;
+	}
+
+	.itinerary__title {
+		font-family: var(--font-heading-hacienda, var(--font-heading-formal));
+		color: var(--color-text-emphasis);
+		font-size: clamp(2rem, 4.8vw, 3.15rem);
+		font-weight: 400;
+		letter-spacing: 0.1em;
+	}
+
+	.itinerary__header-flourish {
+		color: rgb(var(--color-action-accent-rgb), 0.55);
+		margin-top: 1rem;
+	}
+
+	.itinerary__item-time {
+		font-family: var(--font-body-hacienda);
+		color: var(--itinerary-item-time-color);
+		font-size: 0.74rem;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+	}
+
+	.itinerary__item-label {
+		font-family: var(--font-heading-hacienda, var(--font-heading-formal));
+		background: none;
+		-webkit-text-fill-color: initial;
+		color: var(--color-text-emphasis);
+		filter: none;
+		font-size: clamp(1.45rem, 3.4vw, 2.15rem);
+		font-weight: 400;
+		letter-spacing: 0.04em;
+	}
+
+	.itinerary__item-icon-wrapper {
+		background: var(--itinerary-icon-bg);
+		border: var(--itinerary-icon-border);
+		box-shadow: var(--itinerary-icon-shadow);
+	}
+
+	.itinerary__item-icon-inner {
+		color: rgb(var(--color-text-primary-rgb), 0.72);
+		filter: none;
+	}
+
+	.itinerary__item-description {
+		font-family: var(--font-body-hacienda, var(--font-body));
+		color: var(--color-text-secondary);
+		line-height: 1.6;
+	}
+
+	@media (width <= 860px) {
+		padding-block: clamp(4.6rem, 13vw, 6rem);
+	}
+}

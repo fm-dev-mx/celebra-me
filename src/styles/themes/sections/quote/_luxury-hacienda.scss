@@ -1,0 +1,75 @@
+// Theme-specific styles for Quote Section
+// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
+
+@use '../../../tokens' as tokens;
+@use 'sass:meta';
+@use 'sass:string';
+
+// ==========================================================================
+// JEWELRY BOX VARIANT (Luxury/Refined Style)
+// Best for: XV Años, Premium Weddings
+// Characteristics: Pinyon Script, soft gold parchment, elegant ornaments
+// ==========================================================================
+
+.quote-section[data-variant='luxury-hacienda'] {
+	background:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-action-accent-rgb), 0.08),
+			transparent 58%
+		),
+		linear-gradient(180deg, rgb(246 240 226) 0%, var(--color-surface-primary) 100%);
+	color: var(--color-text-primary);
+	position: relative;
+	padding: clamp(6.5rem, 12vw, 10rem) clamp(1.25rem, 4vw, 2rem);
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset-inline: clamp(1.5rem, 8vw, 7rem);
+		top: clamp(2rem, 4vw, 3.5rem);
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-action-accent-rgb), 0.28),
+			transparent
+		);
+		pointer-events: none;
+	}
+
+	.quote-content {
+		font-family: var(--font-body-hacienda, var(--font-body-narrative));
+		font-weight: 400;
+		font-size: clamp(1.55rem, 4.2vw, 2.45rem);
+		font-style: italic;
+		line-height: 1.55;
+		color: rgb(var(--color-text-primary-rgb), 0.9);
+		max-width: 820px;
+		margin: 0 auto;
+		text-shadow: 0 1px 0 rgb(255 255 255 / 52%);
+	}
+
+	.quote-author {
+		font-family: var(--font-ui);
+		color: rgb(var(--color-action-accent-rgb), 0.9);
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		font-weight: 600;
+		font-size: 0.82rem;
+	}
+
+	.quote-divider-top,
+	.quote-divider-bottom {
+		color: var(--color-action-accent);
+		opacity: 28%;
+		width: clamp(120px, 18vw, 170px);
+	}
+
+	.quote-ornament {
+		background: linear-gradient(90deg, transparent, var(--color-action-accent), transparent);
+		height: 1px;
+		width: 54px;
+		opacity: 45%;
+	}
+}

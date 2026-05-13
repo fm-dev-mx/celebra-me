@@ -1,0 +1,15 @@
+.envelope-wrapper[data-variant='premiere-floral'] {
+	--env-bg: radial-gradient(
+		circle at center,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-soft) 100%
+	);
+	--env-paper-bg: var(--color-surface-primary);
+	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 22%, transparent);
+	--env-text-primary: var(--color-text-primary);
+	--env-text-secondary: color-mix(in srgb, var(--color-text-primary) 78%, transparent);
+	--env-accent: var(--color-action-accent);
+	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 25%, transparent);
+	--env-font-display: var(--font-calligraphy);
+	--reveal-card-font-display: var(--font-calligraphy);
+}

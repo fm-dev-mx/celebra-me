@@ -1,0 +1,87 @@
+// Theme-specific styles for Quote Section
+// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
+
+@use '../../../tokens' as tokens;
+@use 'sass:meta';
+@use 'sass:string';
+
+// ==========================================================================
+// JEWELRY BOX VARIANT (Luxury/Refined Style)
+// Best for: XV Años, Premium Weddings
+// Characteristics: Pinyon Script, soft gold parchment, elegant ornaments
+// ==========================================================================
+
+// ==========================================================================
+
+// LUXURY HACIENDA VARIANT (Masculine/Rustic/Elite)
+
+// Best for: Formal adult birthdays, hacienda-style weddings
+
+// Characteristics: Serif Hacienda fonts, leather textures, cognac tones
+
+// ==========================================================================
+
+// ==========================================================================
+
+// EDITORIAL & PREMIERE-FLORAL VARIANTS
+
+// ==========================================================================
+
+// ==========================================================================
+
+// ANCELIC-PRESENCE VARIANT (Devotional/Luminous)
+
+// Best for: Baptisms, first comunions, sacred ceremonies
+
+// Characteristics: Ivory/cream backgrounds, sacred-gold accents, quiet ceremony
+
+// ==========================================================================
+
+// ==========================================================================
+
+// ANIMATION KEYFRAMES
+
+// ==========================================================================
+
+// ==========================================================================
+
+// REDUCED MOTION SUPPORT
+
+// ==========================================================================
+
+@keyframes angelic-quote-fade {
+	0% {
+		opacity: 0%;
+		transform: translateY(12px);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateY(0);
+	}
+}
+
+@keyframes premium-fade-up {
+	0% {
+		opacity: 0%;
+		transform: translateY(20px);
+		filter: blur(5px);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.quote-section[data-variant] .quote-line {
+		opacity: 100%;
+		/* stylelint-disable declaration-no-important */
+		transform: none !important;
+		transition: none !important;
+		animation: none !important;
+		/* stylelint-enable declaration-no-important */
+	}
+}

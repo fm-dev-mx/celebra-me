@@ -1,0 +1,178 @@
+/* stylelint-disable no-duplicate-selectors -- Preserves legacy sequential variant overrides during modular split. */
+@use '../../../global/mixins' as mixins;
+@use '../../../tokens' as tokens;
+
+/* --- GIFTS: EDITORIAL VARIANT --- */
+
+.gifts-section[data-variant='celestial-blue'] {
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		var(--color-surface-primary) 100%
+	);
+	padding: 8rem 2rem;
+
+	.gifts-section__title {
+		font-family: var(--font-display);
+		color: var(--color-action-accent);
+		text-transform: uppercase;
+		letter-spacing: 0.3rem;
+		font-weight: 300;
+	}
+
+	.gift-card {
+		background: var(--color-glass-bg);
+		border: 1px solid var(--color-glass-border);
+		border-radius: 12px;
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+		box-shadow: var(--shadow-premium);
+		transition:
+			transform,
+			border-color,
+			box-shadow 0.5s var(--ease-premium);
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			display: none; // Remove old gradient line
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
+			border-radius: 8px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-8px);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 25px 50px var(--color-glass-shadow);
+		}
+	}
+
+	.gift-card__icon {
+		color: var(--color-action-accent);
+		opacity: 80%;
+	}
+
+	.gift-card__title {
+		font-family: var(--font-display);
+		color: var(--color-text-primary);
+		letter-spacing: 0.15rem;
+		font-size: 1.4rem;
+	}
+
+	.gift-card__button {
+		border-color: var(--color-action-accent);
+		color: var(--color-action-accent);
+		font-family: var(--font-body);
+		border-radius: 50px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-weight: 600;
+
+		&:hover {
+			background: var(--color-action-accent);
+			color: var(--color-surface-elevated);
+		}
+	}
+
+	.bank-details {
+		background: rgb(255 255 255 / 40%);
+		border-left: 2px solid var(--color-action-accent);
+		backdrop-filter: blur(4px);
+		border-radius: 0 8px 8px 0;
+
+		strong {
+			color: var(--color-action-accent);
+		}
+	}
+
+	.copy-button {
+		background: var(--color-action-accent);
+		color: var(--color-surface-elevated);
+		border-radius: 50px;
+		font-family: var(--font-body);
+		text-transform: uppercase;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+	}
+}
+
+.gifts-section[data-variant='celestial-blue'] {
+	background: linear-gradient(
+		180deg,
+		var(--color-cool-ivory) 0%,
+		rgb(var(--color-pearl-gray-rgb) / 56%) 100%
+	);
+	padding: clamp(5.5rem, 9vw, 8rem) clamp(1rem, 4vw, 2rem);
+	color: var(--color-text-primary);
+
+	.gifts-section__header {
+		max-width: 42rem;
+		margin-inline: auto;
+	}
+
+	.gifts-section__title {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 6vw, 5rem);
+		font-weight: 400;
+		line-height: 0.92;
+		letter-spacing: 0.08em;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.gifts-section__subtitle {
+		font-family: var(--font-body);
+		font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+		color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	}
+
+	.gift-card {
+		max-width: 42rem;
+		margin-inline: auto;
+		background: rgb(var(--color-diamond-white-rgb) / 54%);
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
+		border-radius: 8px;
+		box-shadow: var(--shadow-editorial, var(--shadow-premium));
+		backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+	}
+
+	.gift-card::after {
+		inset: 12px;
+		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 28%);
+		border-radius: 4px;
+	}
+
+	.gift-card:hover {
+		transform: translateY(-3px);
+		border-color: rgb(var(--color-satin-blue-rgb) / 72%);
+		box-shadow: 0 18px 40px rgb(var(--color-deep-blue-graphite-rgb) / 12%);
+	}
+
+	.gift-card__icon {
+		color: var(--color-satin-blue);
+		filter: none;
+	}
+
+	.gift-card__title {
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.gift-card__description,
+	.gift-card__text,
+	.gift-card__detail {
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.7;
+		color: rgb(var(--color-soft-graphite-rgb) / 78%);
+	}
+}

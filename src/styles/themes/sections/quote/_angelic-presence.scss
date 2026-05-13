@@ -1,0 +1,95 @@
+// Theme-specific styles for Quote Section
+// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
+
+@use '../../../tokens' as tokens;
+@use 'sass:meta';
+@use 'sass:string';
+
+// ==========================================================================
+// JEWELRY BOX VARIANT (Luxury/Refined Style)
+// Best for: XV Años, Premium Weddings
+// Characteristics: Pinyon Script, soft gold parchment, elegant ornaments
+// ==========================================================================
+
+.quote-section[data-variant='angelic-presence'] {
+	background:
+		radial-gradient(
+			circle at 50% 0%,
+			rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
+			transparent 60%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-angelic-white) 45%,
+			var(--color-soft-sand) 100%
+		);
+	position: relative;
+	overflow: hidden;
+	padding: clamp(3.75rem, 7vw, 6rem) 1.5rem;
+
+	.quote-texture {
+		display: block;
+		position: absolute;
+		inset: 0;
+		opacity: 6%;
+		pointer-events: none;
+		background: var(--texture-silk);
+		background-size: 200% 100%;
+	}
+
+	.quote-divider-top,
+	.quote-divider-bottom {
+		color: var(--color-sacred-gold);
+		opacity: 45%;
+		width: 140px;
+
+		svg {
+			height: 28px;
+		}
+	}
+
+	.quote-content {
+		font-family: var(--font-display);
+		font-weight: 500;
+		font-size: clamp(1.35rem, 4vw, 2rem);
+		font-style: italic;
+		line-height: 1.55;
+		color: var(--color-text-primary);
+		text-shadow: 0 1px 8px var(--color-glass-shadow);
+		max-width: 620px;
+		margin: 0 auto;
+	}
+
+	.quote-author-container {
+		margin-top: 2.5rem;
+		gap: 1.25rem;
+	}
+
+	.quote-ornament {
+		width: 32px;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
+		opacity: 60%;
+	}
+
+	.quote-author {
+		font-family: var(--font-body);
+		font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.22em;
+		color: var(--color-sacred-gold);
+		font-style: normal;
+	}
+
+	.quote-line {
+		transition:
+			opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+
+		&.is-visible {
+			animation: angelic-quote-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		}
+	}
+}

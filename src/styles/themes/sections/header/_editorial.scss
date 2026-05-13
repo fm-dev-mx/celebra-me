@@ -1,0 +1,16 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
+// Default Header Variables (Safe Fallbacks)
+
+.header-base[data-variant='editorial'] {
+	--header-bg: transparent;
+	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 85%);
+
+	.event-header__title {
+		display: none;
+	}
+}

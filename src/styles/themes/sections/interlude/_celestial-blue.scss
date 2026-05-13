@@ -1,0 +1,56 @@
+@use '../../../tokens' as tokens;
+
+// ==========================================================================
+// INTERLUDE SECTION THEMES
+// ==========================================================================
+
+.invitation-interlude[data-variant='celestial-blue'] {
+	--interlude-overlay-opacity: 0.18;
+	--interlude-image-scale: 1;
+	--interlude-image-hover-scale: 1;
+
+	background: rgb(var(--color-deep-blue-graphite-rgb));
+
+	.invitation-interlude__image {
+		filter: saturate(1.04) contrast(1.04) brightness(0.94);
+	}
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.32'/%3E%3C/svg%3E");
+		opacity: 4.5%;
+		pointer-events: none;
+	}
+
+	&::after {
+		z-index: 2;
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-deep-blue-graphite-rgb) / 14%) 0%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 2%) 38%,
+				rgb(var(--color-deep-blue-graphite-rgb) / 22%) 100%
+			),
+			radial-gradient(
+				circle at var(--interlude-light-x, 50%) var(--interlude-light-y, 34%),
+				rgb(var(--color-ice-blue-rgb) / 16%) 0%,
+				transparent 44%
+			),
+			radial-gradient(
+				ellipse at center,
+				transparent 42%,
+				rgb(var(--color-deep-blue-graphite-rgb) / var(--interlude-overlay-opacity)) 100%
+			);
+	}
+
+	@media (aspect-ratio >= 16 / 9) {
+		--interlude-focal-y: 10%;
+	}
+
+	@media (aspect-ratio <= 4 / 5) {
+		--interlude-focal-y: 18%;
+	}
+}
