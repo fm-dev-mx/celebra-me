@@ -1,14 +1,14 @@
 import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-import type { IconProps } from '@/components/common/icons/types/IconProps';
-
-interface IconProps {
-	className?: string;
-	size?: number | string;
+interface MonogramSealProps extends IconProps {
 	initials?: string;
 }
 
-export const MonogramSealIcon: React.FC<IconProps> = ({ className, size = 24, initials }) => {
+export const MonogramSealIcon: React.FC<MonogramSealProps> = ({
+	className,
+	size = 24,
+	initials,
+}) => {
 	if (initials) {
 		return (
 			<svg
