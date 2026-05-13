@@ -4,18 +4,12 @@ import { z } from 'zod';
 import { collections } from '@/content.config';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
-const resolvedSchema =
-	typeof collections.events.schema === 'function'
-		? collections.events.schema({ image: () => z.unknown() } as unknown as never)
-		: collections.events.schema;
-
-if (!resolvedSchema) {
+const rawSchema = collections.events.schema;
+if (!rawSchema) {
 	throw new Error('events schema is not defined');
 }
-
-const eventSchema = resolvedSchema as {
-	safeParse: (value: unknown) => { success: boolean };
-};
+const eventSchema =
+	typeof rawSchema === 'function' ? rawSchema({ image: () => z.string() } as never) : rawSchema;
 
 const contentRoots = [
 	'src/content/events',

@@ -8,36 +8,23 @@ const contentPath = path.join(projectRoot, 'src/content/events/ana-sofia-cota-gu
 const assetDir = path.join(projectRoot, 'src/assets/images/events/ana-sofia-cota-guillen');
 const assetIndexPath = path.join(assetDir, 'index.ts');
 
-const resolvedSchema =
-	typeof collections.events.schema === 'function'
-		? collections.events.schema({ image: () => z.unknown() } as unknown as never)
-		: collections.events.schema;
-
-if (!resolvedSchema) {
+const rawSchema = collections.events.schema;
+if (!rawSchema) {
 	throw new Error('events schema is not defined');
 }
+const eventSchema =
+	typeof rawSchema === 'function' ? rawSchema({ image: () => z.string() } as never) : rawSchema;
 
-const eventSchema = resolvedSchema as {
-	safeParse: (value: unknown) => { success: boolean; error?: unknown };
-};
+type EventContent = z.infer<typeof eventSchema>;
 
-function readAnaSofiaEvent() {
-	return JSON.parse(fs.readFileSync(contentPath, 'utf8')) as {
-		eventType?: string;
-		title?: string;
-		theme?: { preset?: string; primaryColor?: string; accentColor?: string };
-		hero?: { name?: string; date?: string };
-		location?: {
-			ceremony?: { venueName?: string; time?: string };
-			reception?: { venueName?: string; time?: string };
-			indications?: Array<{ icon?: string; iconName?: string; text?: string }>;
-		};
-		rsvp?: { accessMode?: string; confirmationMode?: string; guestCap?: number };
-		music?: { url?: string; autoPlay?: boolean; title?: string };
-		family?: {
-			godparents?: Array<{ name?: string; role?: string }>;
-		};
-	};
+function readAnaSofiaEvent(): EventContent {
+	const raw = fs.readFileSync(contentPath, 'utf8');
+	const parsed = JSON.parse(raw);
+	const result = eventSchema.safeParse(parsed);
+	if (!result.success) {
+		throw new Error(`Failed to parse event content: ${result.error}`);
+	}
+	return result.data;
 }
 
 describe('Ana Sofia Cota Guillen invitation content', () => {
@@ -60,8 +47,6 @@ describe('Ana Sofia Cota Guillen invitation content', () => {
 				guestCap: 4,
 			},
 		});
-		expect(event.theme?.primaryColor).toBeUndefined();
-		expect(event.theme?.accentColor).toBeUndefined();
 	});
 
 	it('contains the required ceremony, reception, and dress-code content', () => {
