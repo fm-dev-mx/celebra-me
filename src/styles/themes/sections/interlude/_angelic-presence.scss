@@ -1,15 +1,20 @@
 @use '../../../tokens' as tokens;
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // INTERLUDE SECTION THEMES
 // ==========================================================================
 
 .invitation-interlude[data-variant='angelic-presence'] {
+	@include primitives.anchor-navigation-only;
+
 	--interlude-overlay-opacity: 0.18;
 	--interlude-image-scale: 1.01;
 	--interlude-image-hover-scale: 1.018;
 
 	background: var(--color-angelic-white);
+	min-height: clamp(350px, 60svh, 500px);
+	margin-block: 0;
 
 	.invitation-interlude__image {
 		filter: saturate(0.92) contrast(1.03) brightness(1.02) sepia(0.04);

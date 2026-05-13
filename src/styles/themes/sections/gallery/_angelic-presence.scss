@@ -1,7 +1,10 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 .gallery-section[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--gallery-section-bg: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,

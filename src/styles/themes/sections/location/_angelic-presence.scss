@@ -1,10 +1,13 @@
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // EDITORIAL LOCATION
 // ==========================================================================
 
 .event-location[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--event-location-image-focus-x: 50%;
 	--event-location-image-focus-y: 48%;
 	--event-location-image-hover-scale: 1.035;
@@ -21,7 +24,6 @@
 			var(--color-angelic-white) 48%,
 			var(--color-soft-sand) 100%
 		);
-	padding-block: clamp(4.25rem, 8vw, 7rem);
 	color: var(--color-eternal-ink);
 
 	.event-location__container {
@@ -295,8 +297,6 @@
 	}
 
 	@include mixins.respond-below(md) {
-		padding-inline: clamp(1rem, 4vw, 1.5rem);
-
 		.event-location__container {
 			max-width: 34rem;
 		}

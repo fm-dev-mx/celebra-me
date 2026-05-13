@@ -1,14 +1,14 @@
-// Theme-specific styles for Countdown Section
-// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
-
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // EDITORIAL COUNTDOWN
 // ==========================================================================
 
 .countdown-section[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
 	--countdown-segment-padding-mobile: clamp(1.8rem, 4vw, 2.4rem) clamp(0.75rem, 2vw, 1.25rem);
@@ -26,7 +26,6 @@
 			var(--color-pure-ivory) 48%,
 			var(--color-soft-sand) 100%
 		);
-	padding-block: clamp(5rem, 10vw, 8rem);
 	position: relative;
 	overflow: hidden;
 

@@ -1,7 +1,10 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 .personalized-access[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--pa-corner-color: var(--color-sacred-gold);
 	--pa-corner-opacity: 50%;
 	--pa-corner-glow: 8px;

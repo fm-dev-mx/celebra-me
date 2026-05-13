@@ -4,6 +4,7 @@
 @use '../../../tokens' as tokens;
 @use 'sass:meta';
 @use 'sass:string';
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // JEWELRY BOX VARIANT (Luxury/Refined Style)
@@ -12,6 +13,8 @@
 // ==========================================================================
 
 .quote-section[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	background:
 		radial-gradient(
 			circle at 50% 0%,
@@ -26,7 +29,6 @@
 		);
 	position: relative;
 	overflow: hidden;
-	padding: clamp(3.75rem, 7vw, 6rem) 1.5rem;
 
 	.quote-texture {
 		display: block;

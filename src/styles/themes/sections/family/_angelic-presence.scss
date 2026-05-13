@@ -1,6 +1,9 @@
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 .family[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--family-bg: radial-gradient(
 		circle at 50% 12%,
 		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,

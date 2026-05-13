@@ -1,0 +1,28 @@
+@use '../global/mixins' as mixins;
+
+$header-height: 70px;
+$anchor-scroll-margin: calc(#{$header-height} + 1.5rem);
+$section-padding-v-mobile: clamp(4rem, 8vw, 5.5rem);
+$section-padding-v-desktop: clamp(6rem, 10vw, 8.5rem);
+
+@mixin section-spacing($include-padding: true) {
+	scroll-margin-top: $anchor-scroll-margin;
+
+	@if $include-padding {
+		padding-top: $section-padding-v-mobile;
+		padding-bottom: $section-padding-v-mobile;
+
+		@include mixins.respond-to(md) {
+			padding-top: $section-padding-v-desktop;
+			padding-bottom: $section-padding-v-desktop;
+		}
+	}
+}
+
+@mixin normalized-section-spacing {
+	@include section-spacing($include-padding: true);
+}
+
+@mixin anchor-navigation-only {
+	@include section-spacing($include-padding: false);
+}

@@ -1,10 +1,13 @@
 @use '../../../tokens' as tokens;
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // EDITORIAL ITINERARY
 // ==========================================================================
 
 .itinerary[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	--itinerary-bg: radial-gradient(
 		circle at 50% 8%,
 		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
@@ -24,7 +27,6 @@
 	--itinerary-icon-shadow: 0 4px 12px rgb(var(--color-eternal-ink-rgb) / 8%);
 
 	background: var(--itinerary-bg);
-	padding-block: clamp(4rem, 8vw, 6.5rem);
 
 	.itinerary__header {
 		text-align: center;

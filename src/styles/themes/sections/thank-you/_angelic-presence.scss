@@ -1,18 +1,20 @@
 @use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
 // EDITORIAL THANK YOU
 // ==========================================================================
 
 .thank-you-section[data-variant='angelic-presence'] {
+	@include primitives.normalized-section-spacing;
+
 	background: radial-gradient(
 		circle at 50% 8%,
 		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 		var(--color-surface-primary) 60%,
 		rgb(var(--color-soft-sand-rgb) / 80%) 100%
 	);
-	padding-block: clamp(5rem, 12vw, 8rem);
 	position: relative;
 
 	&::before {
