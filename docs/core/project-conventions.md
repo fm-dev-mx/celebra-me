@@ -177,13 +177,15 @@ Not all situations fit the conventions. If a change requires deviating:
 When adding a new event to the platform, follow the AssetRegistry pattern to ensure type safety,
 centralized management, and consistency:
 
-1. **Scaffold the invitation content** with `pnpm ops new-invitation <slug> --eventType <type>` or
-   by creating the content file under the correct collection.
+1. **Create the invitation content** under `src/content/events/{event-slug}.json`.
 2. **Create event assets** in `src/assets/images/events/{event-slug}/` when the event uses local
    routed media.
 3. **Export event assets** from `src/assets/images/events/{event-slug}/index.ts` so discovery and
    registry helpers can consume them consistently.
-4. **Verify the content and theme contract** by running `pnpm ops validate-schema`,
+4. **When deriving from a demo**, copy the demo content shape into the real event file, replace all
+   event-specific copy and media references, and keep assets slug-scoped instead of depending on the
+   demo asset module.
+5. **Verify the content and theme contract** by running `pnpm ops validate-schema`,
    `pnpm type-check`, and `pnpm build`.
 
 For the active content contract, refer to `docs/domains/content/collections.md` and
