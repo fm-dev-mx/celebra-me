@@ -32,22 +32,21 @@
 		inset 0 -2px 6px hsl(28deg 30% 20% / 30%);
 	--reveal-card-bg: linear-gradient(
 		160deg,
-		hsl(45deg 40% 97%) 0%,
-		hsl(42deg 35% 93%) 60%,
-		hsl(40deg 30% 88%) 100%
+		rgb(45deg 40% 97% / 72%) 0%,
+		rgb(42deg 35% 93% / 68%) 60%,
+		rgb(40deg 30% 88% / 65%) 100%
 	);
-	--reveal-card-border: hsl(38deg 50% 72%);
+	--reveal-card-border: hsl(38deg 50% 72% / 30%);
 	--reveal-card-text-primary: var(--color-text-primary);
 	--reveal-card-text-secondary: hsl(30deg 35% 40%);
 	--reveal-card-font-display: var(--font-display-hacienda);
-	--reveal-card-shadow:
-		0 22px 48px hsl(25deg 40% 15% / 28%), 0 1px 0 hsl(40deg 50% 90% / 80%) inset;
+	--reveal-card-shadow: 0 12px 28px hsl(25deg 40% 15% / 18%);
 
 	.envelope-container {
 		&::after {
 			box-shadow:
-				0 32px 72px hsl(20deg 40% 10% / 50%),
-				0 8px 20px hsl(20deg 40% 10% / 25%);
+				0 32px 72px hsl(20deg 40% 10% / 40%),
+				0 8px 20px hsl(20deg 40% 10% / 20%);
 		}
 	}
 
@@ -157,12 +156,10 @@
 	}
 
 	.invitation-reveal-card {
-		background:
-			linear-gradient(145deg, hsl(45deg 35% 97% / 90%) 0%, hsl(42deg 30% 93% / 85%) 100%),
-			var(--reveal-card-bg);
+		background: var(--reveal-card-bg);
 		border: 1px solid var(--reveal-card-border);
 		box-shadow: var(--reveal-card-shadow);
-		backdrop-filter: blur(8px) saturate(140%);
+		backdrop-filter: blur(6px) saturate(120%);
 	}
 
 	.invitation-reveal-card__seal {

@@ -86,32 +86,32 @@
 	--family-deceased-symbol-offset-y: -0.1em;
 
 	// ---------------------------------------------------------------------
-	// Hero tokens
+	// Hero tokens (refined for softer editorial feel)
 	// ---------------------------------------------------------------------
 	--hero-card-bg: linear-gradient(
 		156deg,
-		rgb(30 21 15 / 88%) 0%,
-		rgb(55 40 27 / 82%) 48%,
-		rgb(25 18 13 / 90%) 100%
+		rgb(30 21 15 / 52%) 0%,
+		rgb(55 40 27 / 44%) 48%,
+		rgb(25 18 13 / 58%) 100%
 	);
 	--hero-card-bg-overlay: linear-gradient(
 		128deg,
-		rgb(245 218 164 / 10%) 0%,
+		rgb(245 218 164 / 6%) 0%,
 		transparent 38%,
-		rgb(74 86 55 / 10%) 100%
+		rgb(74 86 55 / 8%) 100%
 	);
-	--hero-card-border-hairline: rgb(238 210 154 / 30%);
+	--hero-card-border-hairline: rgb(238 210 154 / 12%);
 	--hero-card-border-old-gold-start: rgb(128 91 48 / 48%);
 	--hero-card-border-old-gold-mid: rgb(207 168 95 / 64%);
 	--hero-card-border-old-gold-end: rgb(104 76 47 / 52%);
-	--hero-card-shadow-ambient: 0 30px 76px rgb(16 10 6 / 58%);
-	--hero-card-shadow-contact: 0 10px 28px rgb(16 10 6 / 38%);
+	--hero-card-shadow-ambient: 0 20px 48px rgb(16 10 6 / 36%);
+	--hero-card-shadow-contact: 0 8px 18px rgb(16 10 6 / 24%);
 	--hero-card-inner-glow: inset 0 0 0 1px rgb(255 241 214 / 7%);
-	--hero-title-color-start: rgb(198 156 86 / 94%);
-	--hero-title-color-mid: rgb(249 235 203 / 96%);
-	--hero-title-color-end: rgb(173 124 60 / 90%);
-	--hero-title-shadow-near: 0 3px 8px rgb(0 0 0 / 58%);
-	--hero-title-shadow-far: 0 16px 28px rgb(0 0 0 / 42%);
+	--hero-title-color-start: rgb(185 150 85 / 88%);
+	--hero-title-color-mid: rgb(235 220 190 / 90%);
+	--hero-title-color-end: rgb(165 130 72 / 85%);
+	--hero-title-shadow-near: 0 2px 5px rgb(0 0 0 / 48%);
+	--hero-title-shadow-far: 0 10px 18px rgb(0 0 0 / 32%);
 	--hero-label-color: rgb(221 184 115 / 82%);
 	--hero-label-shadow: 0 2px 6px rgb(0 0 0 / 44%);
 	--hero-meta-color: rgb(238 220 181 / 84%);
@@ -160,10 +160,10 @@
 	--location-text-muted-premium: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.85)};
 
 	// ---------------------------------------------------------------------
-	// Image filter tokens
+	// Image filter tokens (reduced sepia for warmer integration)
 	// ---------------------------------------------------------------------
-	--theme-image-filter-hero: sepia(0.24) contrast(1.12) brightness(0.78) saturate(0.88);
-	--theme-image-filter-portrait: sepia(0.12) contrast(1.04) brightness(0.98) saturate(0.9);
-	--theme-image-filter-gallery: sepia(0.12) contrast(1.02) brightness(0.96) saturate(0.88);
-	--theme-image-filter-interlude: sepia(0.18) contrast(1.05) brightness(0.82) saturate(0.82);
+	--theme-image-filter-hero: sepia(0.12) contrast(1.08) brightness(0.88) saturate(0.92);
+	--theme-image-filter-portrait: sepia(0.08) contrast(1.04) brightness(0.98) saturate(0.94);
+	--theme-image-filter-gallery: sepia(0.1) contrast(1.02) brightness(0.96) saturate(0.9);
+	--theme-image-filter-interlude: sepia(0.12) contrast(1.05) brightness(0.86) saturate(0.88);
 }
