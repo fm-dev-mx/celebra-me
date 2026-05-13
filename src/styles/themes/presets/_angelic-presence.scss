@@ -14,6 +14,10 @@
 	// Reduced saturation: champagne/antique-gold range instead of yellow gold
 	--color-sacred-gold: rgb(191 167 106);
 	--color-sacred-gold-rgb: 191 167 106;
+
+	// Readable gold for functional text (WCAG AA on ivory/light backgrounds)
+	// ~5.8:1 contrast ratio on pure ivory, ~7:1 on soft sand
+	--color-sacred-gold-readable: hsl(40deg 65% 40%);
 	--color-eternal-ink: rgb(63 58 50);
 	--color-eternal-ink-rgb: 63 58 50;
 	--color-ethereal-gray: rgb(220 220 215);
