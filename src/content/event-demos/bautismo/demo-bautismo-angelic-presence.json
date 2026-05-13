@@ -89,16 +89,20 @@
                 "caption": "Pureza y ternura"
             },
             {
-                "image": "gallery02",
+                "image": "gallery04",
                 "caption": "La luz del sacramento"
             },
             {
-                "image": "gallery03",
+                "image": "gallery06",
                 "caption": "Bendición en familia"
             },
             {
-                "image": "gallery04",
-                "caption": "Detalles de fe"
+                "image": "gallery02",
+                "caption": "Descanso en la luz"
+            },
+            {
+                "image": "gallery05",
+                "caption": "Inocencia y pureza"
             }
         ]
     },
@@ -152,7 +156,7 @@
         "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
         "closingName": "María Santos",
         "image": "thankYouPortrait",
-        "focalPoint": "52% 36%"
+        "focalPoint": "50% 50%"
     },
     "interludes": [
         {
@@ -160,14 +164,14 @@
             "afterSection": "quote",
             "alt": "Detalle de manos y encaje del bautismo",
             "height": "tall",
-            "focalPoint": "48% 52%"
+            "focalPoint": "50% 58%"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
             "alt": "Detalle luminoso del bautismo",
             "height": "screen",
-            "focalPoint": "52% 46%"
+            "focalPoint": "53% 55%"
         }
     ],
     "envelope": {

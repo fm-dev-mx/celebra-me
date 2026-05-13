@@ -10,6 +10,8 @@ import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
+import gallery05 from './gallery-05.webp';
+import gallery06 from './gallery-06.webp';
 
 export const assets = {
 	hero,
@@ -20,5 +22,5 @@ export const assets = {
 	rsvp,
 	interlude01,
 	interlude02,
-	gallery: [gallery01, gallery02, gallery03, gallery04],
+	gallery: [gallery01, gallery02, gallery03, gallery04, gallery05, gallery06],
 };
