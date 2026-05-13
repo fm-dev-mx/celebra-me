@@ -1,0 +1,209 @@
+{
+    "eventType": "bautizo",
+    "isDemo": false,
+    "title": "Mi Bautizo y 1er Año de César Ramses",
+    "description": "Acompáñanos al bautizo y primer año de César Ramses en una tarde de fe, familia y bendición en Guadalajara.",
+    "theme": {
+        "preset": "angelic-presence"
+    },
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Nombre del invitado *",
+                "guestCount": "Número de asistentes",
+                "attendance": "¿Nos acompañarás?",
+                "confirmButton": "Confirmar asistencia"
+            }
+        }
+    },
+    "navigation": [
+        { "label": "Mensaje", "href": "#quote-section" },
+        { "label": "Familia", "href": "#family-section" },
+        { "label": "Galería", "href": "#gallery-section" },
+        { "label": "Ceremonia", "href": "#event-location" },
+        { "label": "Programa", "href": "#itinerary" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
+    "hero": {
+        "name": "César Ramses",
+        "label": "Mi Bautizo y 1er Año",
+        "date": "2026-06-20T22:00:00.000Z",
+        "backgroundImage": "hero"
+    },
+    "location": {
+        "venueName": "Levanto Jardín de Eventos",
+        "address": "24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.",
+        "city": "Guadalajara, Jalisco",
+        "ceremony": {
+            "venueEvent": "Ceremonia",
+            "venueName": "Parroquia de Nuestra Señora de Guadalupe",
+            "address": "Av. Patria 1520, Jardines Universidad, Guadalajara, Jal.",
+            "date": "20 de junio de 2026",
+            "time": "4:00 p.m.",
+            "image": "ceremony",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20Nuestra%20Senora%20de%20Guadalupe%20Guadalajara"
+        },
+        "reception": {
+            "venueEvent": "Celebración",
+            "venueName": "Levanto Jardín de Eventos",
+            "address": "24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.",
+            "date": "20 de junio de 2026",
+            "time": "4:00 p.m.",
+            "image": "reception",
+            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Levanto%20Jardin%20de%20Eventos%20La%20Tijera%20Guadalajara"
+        },
+        "indicationsHeading": "Indicaciones",
+        "indications": [
+            {
+                "icon": "calendar",
+                "iconName": "Calendar",
+                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+            },
+            {
+                "icon": "dressCode",
+                "iconName": "DressCode",
+                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "César Ramses Torres",
+            "mother": "Sandra Heredia"
+        },
+        "godparents": [
+            { "name": "Claudia Torres", "role": "Madrina" },
+            { "name": "Miguel Rodríguez", "role": "Padrino" }
+        ],
+        "featuredImage": "family",
+        "focalPoint": "50% 36%",
+        "labels": {
+            "sectionTitle": "Los que hacen este momento sagrado",
+            "sectionSubtitle": "Familia",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
+        }
+    },
+    "gallery": {
+        "title": "Instantes de luz",
+        "subtitle": "Una memoria serena de este día sagrado",
+        "items": [
+            {
+                "image": "gallery01",
+                "caption": "Pureza y ternura"
+            },
+            {
+                "image": "gallery02",
+                "caption": "La luz del sacramento"
+            },
+            {
+                "image": "gallery03",
+                "caption": "Bendición en familia"
+            },
+            {
+                "image": "gallery04",
+                "caption": "Descanso en la luz"
+            },
+            {
+                "image": "gallery05",
+                "caption": "Inocencia y pureza"
+            },
+            {
+                "image": "gallery06",
+                "caption": "Un año de bendiciones"
+            }
+        ]
+    },
+    "itinerary": {
+        "title": "Programa",
+        "subtitle": "Bautizo y 1er Año de César Ramses",
+        "items": [
+            {
+                "icon": "reception",
+                "label": "Llegada",
+                "time": "3:45 p.m.",
+                "description": "Recepción de familiares e invitados en la parroquia"
+            },
+            {
+                "icon": "church",
+                "label": "Sacramento",
+                "time": "4:00 p.m.",
+                "description": "Bautizo de César Ramses"
+            },
+            {
+                "icon": "reception",
+                "label": "Celebración",
+                "time": "5:00 p.m.",
+                "description": "Convivio familiar en Levanto Jardín de Eventos"
+            },
+            {
+                "icon": "cake",
+                "label": "Pastel",
+                "time": "6:30 p.m.",
+                "description": "Corte del pastel de primer año"
+            }
+        ]
+    },
+    "countdown": {
+        "title": "Nos acercamos con alegría",
+        "subtitlePrefix": "El",
+        "footerText": "Gracias por preparar el corazón para acompañarnos"
+    },
+    "quote": {
+        "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
+        "author": "Mateo 18:20"
+    },
+    "rsvp": {
+        "title": "Confirma tu asistencia",
+        "attendanceLabel": "¿Nos acompañarás?",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por acompañarnos en el bautizo y primer año de César Ramses.",
+        "confirmationMode": "api"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+        "closingName": "César Ramses",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 50%"
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "quote",
+            "alt": "Detalle de manos y encaje del bautizo",
+            "height": "tall",
+            "focalPoint": "50% 58%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "gallery",
+            "alt": "Detalle luminoso del bautizo",
+            "height": "screen",
+            "focalPoint": "53% 55%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealInitials": "C·R",
+        "microcopy": "Abre la invitación de César Ramses",
+        "documentLabel": "INVITACIÓN DE BAUTIZO",
+        "stampText": "CON FE",
+        "stampYear": "2026",
+        "tooltipText": "Abrir invitación",
+        "closedPalette": {
+            "background": "surfacePrimary",
+            "primary": "textPrimary",
+            "accent": "actionAccent"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te compartimos la invitación para el bautizo y primer año de César Ramses. Aquí puedes ver los detalles y confirmar tu asistencia: {inviteUrl}",
+        "ogImage": "hero"
+    }
+}
