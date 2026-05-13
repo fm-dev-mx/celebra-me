@@ -54,6 +54,29 @@
 		-webkit-text-fill-color: transparent;
 	}
 
+	.rsvp__eyebrow {
+		display: block;
+		font-family: var(--font-label);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: rgb(var(--color-sacred-gold-rgb) / 78%);
+		margin-bottom: 0.55rem;
+		text-align: center;
+	}
+
+	.rsvp__legend {
+		font-family: var(--font-body);
+		font-size: 0.88rem;
+		font-weight: 500;
+		color: rgb(var(--color-eternal-ink-rgb) / 64%);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		margin-bottom: 0.35rem;
+		padding: 0;
+	}
+
 	.rsvp__locked-card {
 		position: relative;
 		z-index: 1;
@@ -89,5 +112,56 @@
 	.rsvp__button {
 		font-weight: 600;
 		letter-spacing: 0.14em;
+	}
+
+	.rsvp__radio-card {
+		border-radius: 8px;
+		padding: 1.25rem 1.1rem;
+		border-color: rgb(var(--color-sacred-gold-rgb) / 22%);
+		transition:
+			background-color 280ms var(--ease-premium),
+			border-color 280ms var(--ease-premium),
+			box-shadow 280ms var(--ease-premium),
+			transform 200ms var(--ease-premium);
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			background: radial-gradient(
+				circle at 50% 0%,
+				rgb(var(--color-pure-ivory-rgb) / 40%) 0%,
+				transparent 70%
+			);
+			pointer-events: none;
+			transition: opacity 280ms var(--ease-premium);
+		}
+
+		&:hover:not(:has(input:disabled)) {
+			background: rgb(var(--color-pure-ivory-rgb) / 76%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 52%);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 16px rgb(var(--color-eternal-ink-rgb) / 8%);
+
+			&::after {
+				opacity: 60%;
+			}
+		}
+
+		&:has(input:checked) {
+			box-shadow:
+				0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 48%),
+				0 6px 20px rgb(var(--color-eternal-ink-rgb) / 10%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 58%);
+		}
+
+		&:focus-within {
+			box-shadow: 0 0 0 2px rgb(var(--color-sacred-gold-rgb) / 30%);
+		}
+
+		input:focus-visible + .rsvp__radio-indicator {
+			box-shadow: 0 0 0 3px rgb(var(--color-sacred-gold-rgb) / 28%);
+		}
 	}
 }

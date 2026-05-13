@@ -184,6 +184,7 @@ export function RsvpFormView(props: {
 
 	return (
 		<section id="rsvp" className="rsvp" data-variant={variant}>
+			<p className="rsvp__eyebrow">Confirmación</p>
 			<h2 className="rsvp__title">{title}</h2>
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
 				<div className="rsvp__grid">
