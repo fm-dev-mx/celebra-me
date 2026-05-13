@@ -107,6 +107,20 @@
 		text-shadow: 0 2px 4px rgb(0 0 0 / 25%);
 	}
 
+	.quote-line {
+		font-family: var(--font-calligraphy);
+		font-size: clamp(1.85rem, 4.6vw, 2.95rem);
+		line-height: 1.35;
+		color: rgb(var(--color-text-on-dark-rgb) / 80%);
+		letter-spacing: -0.01em;
+		text-shadow:
+			0 2px 8px rgb(0 0 0 / 35%),
+			0 0 12px var(--quote-bloom),
+			0 0 25px rgb(var(--color-ice-blue-rgb) / 5%);
+		max-width: 780px;
+		margin: 0 auto;
+	}
+
 	// Cinematic blend: absorbs the hero's dark tones into the quote background.
 	&::before {
 		content: '';
