@@ -15,7 +15,7 @@
 	padding: clamp(3.5rem, 8vh, 6rem) 1.5rem;
 	text-align: center;
 
-	// Visual properties moved to _quote-theme.scss to avoid aesthetic bleed-through
+	// Visual properties live in modular quote theme partials to avoid aesthetic bleed-through
 }
 
 .quote-texture {
