@@ -71,6 +71,7 @@
             { "name": "Sra. Beatriz Mendoza", "role": "Madrina" }
         ],
         "featuredImage": "family",
+        "focalPoint": "50% 36%",
         "labels": {
             "sectionTitle": "Los que hacen este momento sagrado",
             "sectionSubtitle": "Familia",
@@ -151,22 +152,28 @@
         "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
         "closingName": "María Santos",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 42%"
+        "focalPoint": "52% 36%"
     },
     "interludes": [
         {
             "image": "interlude01",
             "afterSection": "quote",
-            "alt": "Retrato editorial de María Santos",
+            "alt": "Detalle de manos y encaje del bautismo",
             "height": "tall",
-            "focalPoint": "50% 38%"
+            "focalPoint": "48% 52%"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
             "alt": "Detalle luminoso del bautismo",
             "height": "screen",
-            "focalPoint": "50% 44%"
+            "focalPoint": "52% 46%"
         }
-    ]
+    ],
+    "envelope": {
+        "disabled": true,
+        "sealStyle": "wax",
+        "sealInitials": "M·S",
+        "microcopy": "Bautismo de María"
+    }
 }
