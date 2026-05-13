@@ -219,6 +219,7 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
+        "sealInitials": "X·M",
         "microcopy": "Abre Tu Invitación",
         "closedPalette": {
             "accent": "surfaceDark"
