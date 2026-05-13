@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
 // ==========================================================================
@@ -92,7 +91,7 @@
 		font-size: clamp(0.6rem, 1.5vw, 0.82rem);
 		letter-spacing: 0.4em;
 		text-transform: uppercase;
-		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		color: var(--color-sacred-gold-readable);
 		font-weight: 500;
 		text-shadow:
 			0 1px 4px rgb(var(--color-eternal-ink-rgb) / 30%),
@@ -231,7 +230,7 @@
 		}
 
 		.invitation-hero__background img {
-			object-position: 50% 28%;
+			object-position: 50% 22%;
 		}
 
 		.invitation-hero__content {
@@ -241,9 +240,10 @@
 				'portrait';
 			grid-template-columns: 1fr;
 			gap: 0.75rem;
-			min-height: unset;
-			padding: clamp(5rem, 12svh, 7rem) clamp(1.1rem, 4vw, 1.75rem) clamp(3.5rem, 8svh, 5rem);
-			align-items: center;
+			align-content: end;
+			align-items: end;
+			min-height: 100svh;
+			padding: 45svh clamp(1.1rem, 4vw, 1.75rem) clamp(3.75rem, 8svh, 5.25rem);
 		}
 
 		.invitation-hero__label {
@@ -255,10 +255,11 @@
 
 		.invitation-hero__title-wrapper {
 			align-self: end;
+			max-width: 14rem;
 		}
 
 		.invitation-hero__title {
-			font-size: clamp(2.4rem, 12vw, 3.8rem);
+			font-size: clamp(2.2rem, 11vw, 3.5rem);
 			transform: none;
 		}
 
@@ -274,6 +275,7 @@
 			padding-right: 0;
 			text-align: left;
 			align-self: start;
+			max-width: 14.5rem;
 		}
 
 		.invitation-hero__date,
@@ -293,15 +295,15 @@
 	// -------------------------------------------------------------------------
 	@include mixins.respond-below(xs) {
 		.invitation-hero__background img {
-			object-position: 52% 26%;
+			object-position: 50% 20%;
 		}
 
 		.invitation-hero__content {
-			padding: clamp(4.5rem, 14svh, 6rem) clamp(1rem, 4vw, 1.4rem) clamp(3rem, 8svh, 4.5rem);
+			padding: 45svh clamp(1rem, 4vw, 1.4rem) clamp(3.5rem, 8svh, 4.75rem);
 		}
 
 		.invitation-hero__title {
-			font-size: clamp(2.2rem, 13vw, 3.4rem);
+			font-size: clamp(2rem, 12vw, 3.1rem);
 		}
 
 		.invitation-hero__portrait {
@@ -317,6 +319,10 @@
 		.invitation-hero__time,
 		.invitation-hero__venue {
 			font-size: clamp(0.58rem, 2.6vw, 0.72rem);
+		}
+
+		.invitation-hero__scroll-indicator {
+			display: none;
 		}
 	}
 

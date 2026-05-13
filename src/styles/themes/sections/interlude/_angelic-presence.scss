@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
@@ -73,5 +72,27 @@
 
 	@media (aspect-ratio <= 9 / 16) {
 		--interlude-focal-y: 30%;
+	}
+
+	&[data-interlude-index='1'] {
+		min-height: clamp(420px, 68svh, 560px);
+	}
+
+	&[data-interlude-index='2'] {
+		min-height: clamp(380px, 62svh, 520px);
+	}
+
+	@media (width <= 640px) {
+		--interlude-image-scale: 1;
+
+		min-height: clamp(360px, 58svh, 460px);
+
+		&[data-interlude-index='1'] {
+			min-height: clamp(380px, 62svh, 500px);
+		}
+
+		&[data-interlude-index='2'] {
+			min-height: clamp(340px, 54svh, 430px);
+		}
 	}
 }

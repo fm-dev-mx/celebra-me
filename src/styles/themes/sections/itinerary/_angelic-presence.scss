@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
@@ -17,7 +16,7 @@
 	--itinerary-line-color: rgb(var(--color-sacred-gold-rgb) / 35%);
 	--itinerary-line-shadow: 0 0 12px rgb(var(--color-sacred-gold-rgb) / 20%);
 	--itinerary-line-opacity: 0.5;
-	--itinerary-item-time-color: var(--color-sacred-gold);
+	--itinerary-item-time-color: var(--color-sacred-gold-readable);
 	--itinerary-item-label-color: var(--color-eternal-ink);
 	--itinerary-item-label-font: var(--font-display);
 	--itinerary-item-desc-color: rgb(var(--color-eternal-ink-rgb) / 72%);

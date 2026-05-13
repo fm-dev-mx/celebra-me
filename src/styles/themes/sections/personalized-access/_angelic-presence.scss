@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 @use '../../../invitation/section-primitives' as primitives;
 
@@ -53,7 +52,7 @@
 		}
 
 		.access-card__eyebrow {
-			color: var(--color-sacred-gold);
+			color: var(--color-sacred-gold-readable);
 			letter-spacing: 0.35em;
 		}
 

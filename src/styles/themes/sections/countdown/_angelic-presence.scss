@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 @use '../../../invitation/section-primitives' as primitives;
 
@@ -75,11 +74,11 @@
 
 		.event-date {
 			font-family: var(--font-body);
-			font-size: clamp(0.68rem, 2vw, 0.8rem);
+			font-size: clamp(0.68rem, 2vw, 0.82rem);
 			font-weight: 600;
 			letter-spacing: 0.2em;
 			text-transform: uppercase;
-			color: rgb(var(--color-eternal-ink-rgb) / 58%);
+			color: rgb(var(--color-eternal-ink-rgb) / 72%);
 			white-space: nowrap;
 		}
 	}
@@ -177,15 +176,14 @@
 
 	.countdown__label {
 		font-family: var(--font-body);
-		font-size: 0.62rem;
+		font-size: 0.7rem;
 		font-weight: 600;
 		letter-spacing: var(--countdown-label-letter-spacing, 0.28em);
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 55%);
-		opacity: 100%;
+		color: rgb(var(--color-eternal-ink-rgb) / 70%);
 
 		@media (width >= 640px) {
-			font-size: 0.68rem;
+			font-size: 0.72rem;
 		}
 	}
 
@@ -214,7 +212,7 @@
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 54%);
+		color: rgb(var(--color-eternal-ink-rgb) / 68%);
 		max-inline-size: 32ch;
 		margin-inline: auto;
 	}

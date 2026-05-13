@@ -1,9 +1,5 @@
-// Theme-specific styles for Quote Section
-// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
+// Angelic Presence Quote Section
 
-@use '../../../tokens' as tokens;
-@use 'sass:meta';
-@use 'sass:string';
 @use '../../../invitation/section-primitives' as primitives;
 
 // ==========================================================================
@@ -81,7 +77,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.22em;
-		color: var(--color-sacred-gold);
+		color: var(--color-sacred-gold-readable);
 		font-style: normal;
 	}
 

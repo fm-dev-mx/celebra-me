@@ -1,29 +1,7 @@
-@use '../../../global/mixins' as mixins;
 @use '../../../invitation/section-primitives' as primitives;
 
 .family[data-variant='angelic-presence'] {
 	@include primitives.normalized-section-spacing;
-
-	--family-bg: radial-gradient(
-		circle at 50% 12%,
-		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
-		var(--color-surface-primary) 64%,
-		rgb(var(--color-soft-sand-rgb) / 72%) 100%
-	);
-	--family-panel-bg: rgb(var(--color-angelic-white-rgb) / 88%);
-	--family-border: rgb(var(--color-sacred-gold-rgb) / 22%);
-	--family-text-primary: var(--color-eternal-ink);
-	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
-	--family-accent: var(--color-sacred-gold);
-	--family-divider: linear-gradient(
-		90deg,
-		transparent,
-		rgb(var(--color-sacred-gold-rgb) / 42%),
-		transparent
-	);
-	--family-shadow: var(--shadow-editorial);
-	--family-media-filter: sepia(0.08) contrast(1.02) brightness(1.01);
-	--family-content-max-width: 38rem;
 
 	.family__header {
 		text-align: center;
@@ -32,7 +10,7 @@
 	.family__eyebrow {
 		font-family: var(--font-label);
 		letter-spacing: 0.32em;
-		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		color: var(--color-sacred-gold-readable);
 		text-transform: uppercase;
 		font-weight: 500;
 		font-size: 0.72rem;
@@ -87,7 +65,7 @@
 		font-size: 0.7rem;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--color-sacred-gold-rgb) / 80%);
+		color: var(--color-sacred-gold-readable);
 	}
 
 	.family__name {
@@ -101,7 +79,7 @@
 		font-size: 0.68rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 60%);
+		color: rgb(var(--color-eternal-ink-rgb) / 75%);
 	}
 
 	.family__connector {
@@ -131,7 +109,8 @@
 		font-weight: 600;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--color-sacred-gold-rgb) / 50%);
+		color: var(--color-sacred-gold-readable);
+		opacity: 70%;
 	}
 
 	.family__item--godparent {
@@ -152,7 +131,32 @@
 		opacity: 60%;
 	}
 
+	.family__media-frame {
+		border-radius: 8px;
+	}
+
 	@media (width <= 640px) {
+		padding-block: clamp(4.5rem, 13vw, 6rem);
+
+		--family-panel-padding: 0.9rem;
+
+		.family__panel {
+			gap: 1.35rem;
+		}
+
+		.family__media {
+			width: min(100%, 19rem);
+			margin-inline: auto;
+		}
+
+		.family__media-frame {
+			aspect-ratio: 4 / 5;
+		}
+
+		.family__media-frame img {
+			object-position: var(--family-focal-point, 50% 36%);
+		}
+
 		.family__list--godparents {
 			grid-template-columns: 1fr;
 			gap: 2rem;

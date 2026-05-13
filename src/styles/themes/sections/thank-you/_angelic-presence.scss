@@ -1,4 +1,3 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 @use '../../../invitation/section-primitives' as primitives;
 
@@ -40,8 +39,8 @@
 	}
 
 	.photo-frame {
-		width: clamp(220px, 35vw, 300px);
-		height: clamp(220px, 35vw, 300px);
+		width: clamp(232px, 35vw, 310px);
+		height: clamp(232px, 35vw, 310px);
 		background: var(--color-glass-bg);
 		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
 		border-radius: 50%;
@@ -74,6 +73,7 @@
 		.photo-image {
 			border-radius: 50%;
 			object-fit: cover;
+			object-position: var(--thank-you-focal-point, 52% 36%);
 			filter: sepia(0.08) contrast(1.02) brightness(0.98);
 		}
 	}
@@ -126,6 +126,17 @@
 
 		p {
 			margin: 0;
+		}
+	}
+
+	@include mixins.respond-below(xs) {
+		.photo-frame {
+			width: min(74vw, 236px);
+			height: min(74vw, 236px);
+		}
+
+		.thank-you-content {
+			gap: 2.4rem;
 		}
 	}
 }
