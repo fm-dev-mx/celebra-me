@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Waltz icon for event timelines.
- * Source: WaltzIcon.astro
- */
-export const WaltzIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const WaltzIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -21,7 +12,6 @@ export const WaltzIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M9 18V5l12-2v13" />
@@ -29,5 +19,3 @@ export const WaltzIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		<circle cx="18" cy="16" r="3" />
 	</svg>
 );
-
-export default WaltzIcon;

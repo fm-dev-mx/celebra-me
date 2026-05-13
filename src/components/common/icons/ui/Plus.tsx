@@ -1,14 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Plus icon for adding new items.
- */
-export const PlusIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const PlusIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -20,12 +12,9 @@ export const PlusIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<line x1="12" y1="5" x2="12" y2="19" />
 		<line x1="5" y1="12" x2="19" y2="12" />
 	</svg>
 );
-
-export default PlusIcon;

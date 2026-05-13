@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Church icon for religious ceremonies.
- * Source: TimelineList.tsx
- */
-export const ChurchIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const ChurchIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -21,7 +12,6 @@ export const ChurchIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M12 22v-9" />
@@ -30,5 +20,3 @@ export const ChurchIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		<path d="M10 9h4" />
 	</svg>
 );
-
-export default ChurchIcon;

@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Elegant Heart icon for XV Años themes.
- * Source: SealIcons.tsx
- */
-export const HeartSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const HeartSealIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -17,11 +8,8 @@ export const HeartSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		fill="currentColor"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M12,21.35l-1.45-1.32C5.4,15.36,2,12.28,2,8.5A5.447,5.447,0,0,1,7.5,3,5.988,5.988,0,0,1,12,5.09,5.988,5.988,0,0,1,16.5,3,5.447,5.447,0,0,1,22,8.5c0,3.78-3.4,6.86-8.55,11.54Z" />
 	</svg>
 );
-
-export default HeartSealIcon;

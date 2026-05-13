@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Forbidden icon (e.g., no children, no cellphones).
- * Source: ForbiddenIcon.astro
- */
-export const ForbiddenIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const ForbiddenIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -21,12 +12,9 @@ export const ForbiddenIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<circle cx="12" cy="12" r="10" />
 		<path d="m4.93 4.93 14.14 14.14" />
 	</svg>
 );
-
-export default ForbiddenIcon;

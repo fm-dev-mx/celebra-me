@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Decorative Flower icon for romantic or nature-inspired themes.
- * Source: SealIcons.tsx
- */
-export const FlowerSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const FlowerSealIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -17,7 +8,6 @@ export const FlowerSealIcon: React.FC<IconProps> = ({ className, size = 24 }) =>
 		fill="currentColor"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<circle cx="12" cy="12" r="3" />
@@ -31,5 +21,3 @@ export const FlowerSealIcon: React.FC<IconProps> = ({ className, size = 24 }) =>
 		<ellipse cx="16.5" cy="16.5" rx="2" ry="2.5" transform="rotate(-45 16.5 16.5)" />
 	</svg>
 );
-
-export default FlowerSealIcon;

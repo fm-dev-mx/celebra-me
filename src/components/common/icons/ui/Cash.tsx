@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Cash / Envelope rain icon.
- * Source: Gifts.astro
- */
-export const CashIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const CashIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -21,7 +12,6 @@ export const CashIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M19 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z" />
@@ -29,5 +19,3 @@ export const CashIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		<path d="M3 7l9 6 9-6" />
 	</svg>
 );
-
-export default CashIcon;

@@ -1,9 +1,4 @@
-import React from 'react';
-
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
 /**
  * Premium heel icon for western-themed invitations.

@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Party / Celebration icon.
- * Source: TimelineList.tsx
- */
-export const PartyIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const PartyIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 24 24"
 		width={size}
@@ -21,7 +12,6 @@ export const PartyIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M2 13a2 2 0 1 0 0 4h20a2 2 0 1 0 0-4h-2a2 2 0 1 0 0-4H4a2 2 0 1 0 0 4H2Z" />
@@ -33,5 +23,3 @@ export const PartyIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		<path d="m19.07 4.93-1.41 1.41" />
 	</svg>
 );
-
-export default PartyIcon;

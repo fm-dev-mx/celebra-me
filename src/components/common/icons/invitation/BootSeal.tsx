@@ -1,18 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Premium Boot icon for western-themed invitations.
- * Used as a decorative seal in the "Luxury Hacienda" theme.
- *
- * @param props - Icon properties including className and size.
- * @returns A React component rendering the boot SVG.
- */
-export const BootSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const BootSealIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 296.726 296.726"
 		width={size}
@@ -20,7 +8,6 @@ export const BootSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		fill="currentColor"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<g>
@@ -60,5 +47,3 @@ export const BootSealIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		</g>
 	</svg>
 );
-
-export default BootSealIcon;

@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Taco icon for casual or food-related invitation moments.
- * Source: SVG Repo
- */
-export const TacoIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const TacoIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 -31.15 165.64 165.64"
 		width={size}
@@ -17,7 +8,6 @@ export const TacoIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		fill="currentColor"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path
@@ -26,5 +16,3 @@ export const TacoIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		/>
 	</svg>
 );
-
-export default TacoIcon;

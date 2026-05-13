@@ -1,4 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
+
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
 interface IconProps {
 	className?: string;

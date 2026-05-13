@@ -1,15 +1,6 @@
-import React from 'react';
+import type { IconProps } from '@/components/common/icons/types/IconProps';
 
-interface IconProps {
-	className?: string;
-	size?: number | string;
-}
-
-/**
- * Accordion icon for music-focused invitation moments.
- * Source: SVG Repo
- */
-export const AccordionIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
+export const AccordionIcon = ({ className, size = 24 }: IconProps) => (
 	<svg
 		viewBox="0 0 48 48"
 		width={size}
@@ -20,7 +11,6 @@ export const AccordionIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		strokeLinejoin="round"
 		className={className}
 		aria-hidden="true"
-		role="img"
 		xmlns="http://www.w3.org/2000/svg"
 	>
 		<path d="M11.838 35.701c-1.46.529-2.638-.437-3.188-2.181L4.894 21.592a2.969 2.969 0 0 1 1.229-3.484l2.607-1.176.933-.412c1.086-.479 1.803-.21 2.184 1.012l4.563 14.619c.382 1.225.274 1.795-.718 2.154Z" />
@@ -51,5 +41,3 @@ export const AccordionIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		<circle cx="40.167" cy="21.508" r=".75" fill="currentColor" stroke="none" />
 	</svg>
 );
-
-export default AccordionIcon;
