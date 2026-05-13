@@ -12,18 +12,18 @@ import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
 import '@styles/invitation/_event-header.scss';
 
 export interface Props {
-	eventName?: string;
 	links: {
 		label: string;
 		href: string;
 	}[];
 	variant?: string;
+	initials?: string;
 }
 
 const {
-	eventName = 'Mi Evento',
 	links,
 	variant = 'standard',
+	initials,
 } = Astro.props;
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
@@ -32,8 +32,8 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
 	<div slot="logo">
-		<a href="#" class="event-header__title">
-			{eventName}
+<a href="#" class="event-header__title">
+			<span class="event-header__title-initials">{initials}</span>
 		</a>
 	</div>
 
