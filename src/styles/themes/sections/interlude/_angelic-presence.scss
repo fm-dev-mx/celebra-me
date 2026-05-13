@@ -12,7 +12,7 @@
 	--interlude-image-hover-scale: 1.018;
 
 	background: var(--color-angelic-white);
-	min-height: clamp(350px, 60svh, 500px);
+	min-height: clamp(360px, 58svh, 520px);
 	margin-block: 0;
 
 	.invitation-interlude__image {
@@ -75,24 +75,24 @@
 	}
 
 	&[data-interlude-index='1'] {
-		min-height: clamp(420px, 68svh, 560px);
+		min-height: clamp(430px, 66svh, 590px);
 	}
 
 	&[data-interlude-index='2'] {
-		min-height: clamp(380px, 62svh, 520px);
+		min-height: clamp(440px, 70svh, 620px);
 	}
 
 	@media (width <= 640px) {
 		--interlude-image-scale: 1;
 
-		min-height: clamp(360px, 58svh, 460px);
+		min-height: clamp(390px, 60svh, 500px);
 
 		&[data-interlude-index='1'] {
-			min-height: clamp(380px, 62svh, 500px);
+			min-height: clamp(430px, 68svh, 540px);
 		}
 
 		&[data-interlude-index='2'] {
-			min-height: clamp(340px, 54svh, 430px);
+			min-height: clamp(410px, 64svh, 520px);
 		}
 	}
 }

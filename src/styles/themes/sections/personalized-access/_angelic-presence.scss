@@ -17,22 +17,22 @@
 				var(--color-soft-sand) 100%
 			),
 			var(--texture-silk, none);
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
-		border-radius: 1rem;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+		border-radius: 8px;
 		box-shadow:
-			0 16px 48px rgb(0 0 0 / 8%),
-			inset 0 0 30px rgb(var(--color-sacred-gold-rgb) / 8%);
+			0 24px 70px -44px rgb(var(--color-eternal-ink-rgb) / 28%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 
 		&::before {
-			inset: 0.625rem;
-			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 25%);
-			border-radius: 0.5rem;
+			inset: 0.5rem;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+			border-radius: 6px;
 		}
 
 		&::after {
 			background: radial-gradient(
 				circle at top center,
-				rgb(var(--color-sacred-gold-rgb) / 10%),
+				rgb(var(--color-sacred-gold-rgb) / 8%),
 				transparent 50%
 			);
 		}
@@ -79,7 +79,7 @@
 				var(--color-sacred-gold) 50%,
 				transparent 100%
 			);
-			opacity: 55%;
+			opacity: 45%;
 
 			&::after {
 				background: var(--color-pure-ivory);
@@ -89,14 +89,16 @@
 		}
 
 		.access-card__count-frame {
-			border-radius: 0.75rem;
-			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 35%);
+			border-radius: 8px;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
 			background: linear-gradient(
 				180deg,
 				var(--color-pure-ivory) 0%,
 				var(--color-angelic-white) 100%
 			);
-			box-shadow: 0 8px 24px rgb(0 0 0 / 6%);
+			box-shadow:
+				0 8px 24px rgb(var(--color-eternal-ink-rgb) / 6%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
 		}
 
 		.access-card__count {

@@ -60,7 +60,7 @@
 		}
 
 		img {
-			object-position: 58% 38%;
+			object-position: 49% 42%;
 			filter: var(--hero-image-filter);
 		}
 	}
@@ -230,7 +230,7 @@
 		}
 
 		.invitation-hero__background img {
-			object-position: 50% 22%;
+			object-position: 48% center;
 		}
 
 		.invitation-hero__content {
@@ -295,7 +295,7 @@
 	// -------------------------------------------------------------------------
 	@include mixins.respond-below(xs) {
 		.invitation-hero__background img {
-			object-position: 50% 20%;
+			object-position: 48% center;
 		}
 
 		.invitation-hero__content {
@@ -348,7 +348,7 @@
 	// -------------------------------------------------------------------------
 	@include mixins.respond-to(lg) {
 		.invitation-hero__background img {
-			object-position: 52% 40%;
+			object-position: 47% 43%;
 		}
 
 		.invitation-hero__content {

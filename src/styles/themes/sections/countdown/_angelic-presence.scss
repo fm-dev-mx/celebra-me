@@ -100,11 +100,11 @@
 
 	.countdown__segment {
 		background: rgb(var(--color-pure-ivory-rgb) / 72%);
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
-		border-radius: 6px;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+		border-radius: 8px;
 		box-shadow:
-			0 8px 24px rgb(var(--color-eternal-ink-rgb) / 6%),
-			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+			0 24px 70px -44px rgb(var(--color-eternal-ink-rgb) / 28%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 		padding: var(--countdown-segment-padding-mobile);
 		display: flex;
 		flex-direction: column;
@@ -132,13 +132,12 @@
 		&:hover {
 			border-color: rgb(var(--color-sacred-gold-rgb) / 50%);
 			box-shadow:
-				0 12px 28px rgb(var(--color-eternal-ink-rgb) / 8%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+				0 32px 82px -44px rgb(var(--color-eternal-ink-rgb) / 32%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 			transform: translateY(-3px);
 		}
 
 		@media (width >= 640px) {
-			border-radius: 8px;
 			padding: var(--countdown-segment-padding-desktop);
 			gap: 0.5rem;
 		}

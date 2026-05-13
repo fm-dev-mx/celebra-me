@@ -39,8 +39,8 @@
 	}
 
 	.photo-frame {
-		width: clamp(232px, 35vw, 310px);
-		height: clamp(232px, 35vw, 310px);
+		width: clamp(258px, 38vw, 340px);
+		height: clamp(258px, 38vw, 340px);
 		background: var(--color-glass-bg);
 		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
 		border-radius: 50%;
@@ -73,7 +73,7 @@
 		.photo-image {
 			border-radius: 50%;
 			object-fit: cover;
-			object-position: var(--thank-you-focal-point, 52% 36%);
+			object-position: var(--thank-you-focal-point, 50% 50%);
 			filter: sepia(0.08) contrast(1.02) brightness(0.98);
 		}
 	}
@@ -131,8 +131,8 @@
 
 	@include mixins.respond-below(xs) {
 		.photo-frame {
-			width: min(74vw, 236px);
-			height: min(74vw, 236px);
+			width: min(82vw, 274px);
+			height: min(82vw, 274px);
 		}
 
 		.thank-you-content {
