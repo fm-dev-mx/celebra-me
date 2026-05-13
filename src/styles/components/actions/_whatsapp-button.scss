@@ -15,7 +15,6 @@
 		opacity var(--duration-snappy) var(--ease-standard);
 	border: none;
 	cursor: pointer;
-	width: auto;
 	min-width: 180px;
 
 	svg {
@@ -25,8 +24,8 @@
 	&:hover {
 		background-color: var(
 			--color-whatsapp-hover,
-			#128c7e
-		); /* stylelint-disable-line color-no-hex */
+			#128c7e /* stylelint-disable-line color-no-hex */
+		);
 		transform: translateY(-1px);
 	}
 
