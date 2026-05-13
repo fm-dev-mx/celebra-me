@@ -1,0 +1,113 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.personalized-access[data-variant='jewelry-box-wedding'] {
+	--pa-corner-size: 1.5rem;
+	--pa-corner-dot-size: 0.3rem;
+	--pa-corner-opacity: 65%;
+	--pa-corner-glow: 10px;
+
+	.access-card {
+		background:
+			linear-gradient(
+				160deg,
+				var(--color-surface-primary) 0%,
+				var(--color-surface-secondary) 50%,
+				var(--color-surface-primary) 100%
+			),
+			var(--family-texture-image, none);
+		border: 1.5px solid rgb(var(--color-action-accent-rgb) / 35%);
+		border-radius: 1rem;
+		box-shadow:
+			0 18px 50px rgb(0 0 0 / 15%),
+			inset 0 0 50px rgb(var(--color-action-accent-rgb) / 8%);
+
+		&::before {
+			inset: 0.75rem;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+			border-radius: 0.5rem;
+		}
+
+		&::after {
+			background: radial-gradient(
+				circle at top center,
+				rgb(var(--color-action-accent-rgb) / 12%),
+				transparent 50%
+			);
+		}
+
+		.access-card__ornaments {
+			display: block;
+		}
+
+		.access-card__corner {
+			border-color: var(--color-action-accent);
+			opacity: 65%;
+
+			&::before {
+				background: var(--color-action-accent);
+				box-shadow: 0 0 10px var(--color-action-accent);
+			}
+		}
+
+		.access-card__eyebrow {
+			color: var(--color-action-accent);
+			letter-spacing: 0.35em;
+		}
+
+		.access-card__title {
+			font-family: var(--font-display-formal);
+			letter-spacing: 0.22em;
+			color: var(--color-text-emphasis);
+		}
+
+		.access-card__subtitle {
+			color: var(--color-text-secondary);
+		}
+
+		.access-card__guest {
+			font-family: var(--font-display);
+			font-weight: 500;
+			color: var(--color-text-primary);
+		}
+
+		.access-card__divider {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-action-accent) 50%,
+				transparent 100%
+			);
+			opacity: 70%;
+
+			&::after {
+				background: var(--color-surface-primary);
+				border-color: var(--color-action-accent);
+				box-shadow: 0 0 8px rgb(var(--color-action-accent-rgb) / 30%);
+			}
+		}
+
+		.access-card__count-frame {
+			border-radius: 0.75rem;
+			border: 1.5px solid rgb(var(--color-action-accent-rgb) / 40%);
+			background: linear-gradient(
+				180deg,
+				var(--color-surface-primary) 0%,
+				var(--color-surface-secondary) 100%
+			);
+			box-shadow: 0 10px 28px rgb(0 0 0 / 10%);
+		}
+
+		.access-card__count {
+			color: var(--color-text-emphasis);
+		}
+
+		.access-card__footer {
+			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+
+			p {
+				color: var(--color-text-secondary);
+			}
+		}
+	}
+}

@@ -1,0 +1,112 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.personalized-access[data-variant='angelic-presence'] {
+	--pa-corner-color: var(--color-sacred-gold);
+	--pa-corner-opacity: 50%;
+	--pa-corner-glow: 8px;
+
+	.access-card {
+		background:
+			linear-gradient(
+				170deg,
+				var(--color-pure-ivory) 0%,
+				var(--color-angelic-white) 50%,
+				var(--color-soft-sand) 100%
+			),
+			var(--texture-silk, none);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
+		border-radius: 1rem;
+		box-shadow:
+			0 16px 48px rgb(0 0 0 / 8%),
+			inset 0 0 30px rgb(var(--color-sacred-gold-rgb) / 8%);
+
+		&::before {
+			inset: 0.625rem;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 25%);
+			border-radius: 0.5rem;
+		}
+
+		&::after {
+			background: radial-gradient(
+				circle at top center,
+				rgb(var(--color-sacred-gold-rgb) / 10%),
+				transparent 50%
+			);
+		}
+
+		.access-card__ornaments {
+			display: block;
+		}
+
+		.access-card__corner {
+			border-color: var(--color-sacred-gold);
+			opacity: 50%;
+
+			&::before {
+				background: var(--color-sacred-gold);
+				box-shadow: 0 0 8px var(--color-sacred-gold);
+			}
+		}
+
+		.access-card__eyebrow {
+			color: var(--color-sacred-gold);
+			letter-spacing: 0.35em;
+		}
+
+		.access-card__title {
+			font-family: var(--font-display);
+			letter-spacing: 0.22em;
+			color: var(--color-text-primary);
+		}
+
+		.access-card__subtitle {
+			color: var(--color-text-secondary);
+		}
+
+		.access-card__guest {
+			font-family: var(--font-display);
+			font-weight: 500;
+			color: var(--color-text-primary);
+		}
+
+		.access-card__divider {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-sacred-gold) 50%,
+				transparent 100%
+			);
+			opacity: 55%;
+
+			&::after {
+				background: var(--color-pure-ivory);
+				border-color: var(--color-sacred-gold);
+				box-shadow: 0 0 8px rgb(var(--color-sacred-gold-rgb) / 30%);
+			}
+		}
+
+		.access-card__count-frame {
+			border-radius: 0.75rem;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 35%);
+			background: linear-gradient(
+				180deg,
+				var(--color-pure-ivory) 0%,
+				var(--color-angelic-white) 100%
+			);
+			box-shadow: 0 8px 24px rgb(0 0 0 / 6%);
+		}
+
+		.access-card__count {
+			color: var(--color-text-primary);
+		}
+
+		.access-card__footer {
+			border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+
+			p {
+				color: var(--color-text-secondary);
+			}
+		}
+	}
+}

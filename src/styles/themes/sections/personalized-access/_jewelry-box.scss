@@ -1,0 +1,117 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.personalized-access[data-variant='jewelry-box'] {
+	--pa-corner-size: 1.5rem;
+	--pa-corner-dot-size: 0.3rem;
+	--pa-corner-opacity: 60%;
+	--pa-corner-glow: 10px;
+
+	.access-card {
+		background: linear-gradient(
+			155deg,
+			var(--color-deep-blue-graphite) 0%,
+			var(--color-deep-blue-graphite) 50%,
+			var(--color-surface-dark) 100%
+		);
+		border: 1.5px solid rgb(var(--color-action-accent-rgb) / 40%);
+		border-radius: 0.75rem;
+		box-shadow:
+			0 20px 50px rgb(0 0 0 / 40%),
+			inset 0 0 60px rgb(var(--color-action-accent-rgb) / 10%);
+
+		&::before {
+			inset: 0.75rem;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+			border-radius: 0.375rem;
+		}
+
+		&::after {
+			background: radial-gradient(
+				circle at top center,
+				rgb(var(--color-action-accent-rgb) / 15%),
+				transparent 50%
+			);
+		}
+
+		.access-card__ornaments {
+			display: block;
+		}
+
+		.access-card__corner {
+			border-color: var(--color-action-accent);
+			opacity: 60%;
+
+			&::before {
+				background: var(--color-action-accent);
+				box-shadow: 0 0 10px var(--color-action-accent);
+			}
+		}
+
+		.access-card__eyebrow {
+			color: var(--color-action-accent);
+			letter-spacing: 0.35em;
+		}
+
+		.access-card__title {
+			font-family: var(--font-display-formal);
+			letter-spacing: 0.25em;
+			color: var(--color-action-accent);
+			text-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+		}
+
+		.access-card__subtitle {
+			color: var(--color-text-on-dark);
+			opacity: 85%;
+		}
+
+		.access-card__guest {
+			font-family: var(--font-display);
+			font-weight: 500;
+			color: var(--color-text-on-dark);
+		}
+
+		.access-card__divider {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-action-accent) 50%,
+				transparent 100%
+			);
+			opacity: 75%;
+
+			&::after {
+				background: var(--color-surface-dark);
+				border-color: var(--color-action-accent);
+				box-shadow: 0 0 12px rgb(var(--color-action-accent-rgb) / 40%);
+			}
+		}
+
+		.access-card__count-frame {
+			border-radius: 0.5rem;
+			border: 1.5px solid rgb(var(--color-action-accent-rgb) / 45%);
+			background: linear-gradient(
+				180deg,
+				rgb(var(--color-action-accent-rgb) / 20%),
+				rgb(var(--color-action-accent-rgb) / 8%)
+			);
+			box-shadow:
+				0 12px 30px rgb(0 0 0 / 30%),
+				inset 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
+		}
+
+		.access-card__count {
+			color: var(--color-action-accent);
+			text-shadow: 0 3px 10px rgb(0 0 0 / 25%);
+		}
+
+		.access-card__footer {
+			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+
+			p {
+				color: var(--color-text-on-dark);
+				opacity: 80%;
+			}
+		}
+	}
+}

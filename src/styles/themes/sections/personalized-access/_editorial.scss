@@ -1,0 +1,107 @@
+@use '../../../tokens' as tokens;
+@use '../../../global/mixins' as mixins;
+
+.personalized-access[data-variant='editorial'] {
+	--pa-corner-glow: 6px;
+
+	.access-card {
+		background:
+			linear-gradient(
+				165deg,
+				var(--color-surface-primary) 0%,
+				var(--color-surface-secondary) 100%
+			),
+			var(--family-texture-image, none);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 0.875rem;
+		box-shadow:
+			0 12px 40px rgb(0 0 0 / 12%),
+			var(--hero-card-shadow-ambient, var(--shadow-premium));
+
+		&::before {
+			inset: 0.5rem;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+			border-radius: 0.5rem;
+		}
+
+		&::after {
+			background: radial-gradient(
+				circle at top center,
+				rgb(var(--color-action-accent-rgb) / 8%),
+				transparent 50%
+			);
+		}
+
+		.access-card__ornaments {
+			display: block;
+		}
+
+		.access-card__corner {
+			border-color: var(--color-action-accent);
+			opacity: 50%;
+
+			&::before {
+				background: var(--color-action-accent);
+				box-shadow: 0 0 6px var(--color-action-accent);
+			}
+		}
+
+		.access-card__eyebrow {
+			color: var(--color-action-accent);
+		}
+
+		.access-card__title {
+			font-family: var(--font-display-formal);
+			letter-spacing: 0.2em;
+			color: var(--color-text-primary);
+		}
+
+		.access-card__subtitle {
+			color: var(--color-text-secondary);
+		}
+
+		.access-card__guest {
+			font-family: var(--font-display);
+			font-weight: 500;
+			color: var(--color-text-emphasis);
+		}
+
+		.access-card__divider {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				var(--color-action-accent) 50%,
+				transparent 100%
+			);
+			opacity: 60%;
+
+			&::after {
+				background: var(--color-surface-elevated);
+				border-color: var(--color-action-accent);
+			}
+		}
+
+		.access-card__count-frame {
+			border-radius: 0.75rem;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+			background: linear-gradient(
+				180deg,
+				var(--color-surface-primary) 0%,
+				var(--color-surface-secondary) 100%
+			);
+			box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+		}
+
+		.access-card__count {
+			color: var(--color-text-emphasis);
+		}
+
+		.access-card__footer {
+			border-top: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+
+			p {
+				color: var(--color-text-secondary);
+			}
+		}
+	}
+}
