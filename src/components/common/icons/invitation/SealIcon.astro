@@ -1,0 +1,20 @@
+---
+import Icon from '@/components/common/icons/Icon.astro';
+import { MonogramSealIcon } from './MonogramSeal';
+import { SEAL_ICON_MAP, type EnvelopeSealIcon } from '@/lib/invitation/reveal-card';
+
+interface Props {
+	sealIcon: EnvelopeSealIcon;
+	sealInitials?: string;
+	class?: string;
+}
+
+const { sealIcon, sealInitials, class: className } = Astro.props;
+const sealIconName = SEAL_ICON_MAP[sealIcon];
+---
+
+{sealIcon === 'monogram' && sealInitials ? (
+	<MonogramSealIcon size={32} initials={sealInitials} className={className} />
+) : (
+	<Icon name={sealIconName} class={className} />
+)}

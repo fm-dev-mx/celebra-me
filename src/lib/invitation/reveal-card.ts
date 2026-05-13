@@ -6,7 +6,7 @@ export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, string> = {
 	monogram: 'MonogramSeal',
 	flower: 'FlowerSeal',
 	'special-edition': 'Diamond',
-} as const;
+};
 
 export interface RevealCardData {
 	documentLabel: string;
@@ -14,6 +14,7 @@ export interface RevealCardData {
 	details: string;
 	guestName?: string;
 	sealIcon: EnvelopeSealIcon;
+	sealInitials?: string;
 }
 
 export function formatRevealDate(date: string): string {
@@ -32,6 +33,7 @@ export function buildRevealCard(input: {
 	guestName?: string;
 	name: string;
 	sealIcon?: EnvelopeSealIcon;
+	sealInitials?: string;
 }): RevealCardData {
 	return {
 		documentLabel: input.documentLabel || 'Invitación',
@@ -39,5 +41,6 @@ export function buildRevealCard(input: {
 		details: `${formatRevealDate(input.date)} • ${input.city}`,
 		guestName: input.guestName,
 		sealIcon: input.sealIcon || 'monogram',
+		sealInitials: input.sealInitials,
 	};
 }

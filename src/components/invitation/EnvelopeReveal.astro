@@ -1,8 +1,7 @@
 ---
-import Icon from '@/components/common/icons/Icon.astro';
 import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.astro';
+import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import {
-	SEAL_ICON_MAP,
 	type EnvelopeSealIcon,
 	type RevealCardData,
 } from '@/lib/invitation/reveal-card';
@@ -11,6 +10,7 @@ interface Props {
 	name: string;
 	sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 	sealIcon?: EnvelopeSealIcon;
+	sealInitials?: string;
 	microcopy: string;
 	documentLabel?: string;
 	stampText?: string;
@@ -27,6 +27,7 @@ const {
 	name,
 	sealStyle,
 	sealIcon = 'monogram',
+	sealInitials,
 	microcopy,
 	documentLabel,
 	stampText,
@@ -39,7 +40,6 @@ const {
 	card,
 } = Astro.props;
 
-const sealIconName = SEAL_ICON_MAP[sealIcon];
 const isDev = import.meta.env.DEV;
 ---
 
@@ -79,7 +79,11 @@ const isDev = import.meta.env.DEV;
 					aria-label="Abrir sobre de la invitación"
 				>
 					<div class="envelope-seal-button__visual">
-						<Icon name={sealIconName} class={`seal-icon seal-icon--${sealIcon}`} />
+						<SealIcon
+							sealIcon={sealIcon}
+							sealInitials={sealInitials}
+							class="seal-icon"
+						/>
 					</div>
 					<div class="envelope-seal-button__pulse"></div>
 					<span class="envelope-tooltip" data-envelope-tooltip hidden>

@@ -137,6 +137,7 @@ export interface EnvelopeViewModel {
 	data?: {
 		sealStyle: 'wax' | 'ribbon' | 'flower' | 'monogram';
 		sealIcon?: EnvelopeSealIcon;
+		sealInitials?: string;
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;

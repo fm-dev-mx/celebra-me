@@ -222,12 +222,13 @@
     ],
     "envelope": {
         "disabled": false,
-        "sealStyle": "wax",
+        "sealStyle": "monogram",
         "sealIcon": "monogram",
+        "sealInitials": "A·V",
         "documentLabel": "RESERVACIÓN DE GALA",
         "stampText": "EST. 1966",
         "stampYear": "2026",
-        "microcopy": "Descubrir la celebración",
+        "microcopy": "Toca el sello para abrir la invitación",
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
             "primary": "surfacePrimary",

@@ -153,6 +153,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 		data: {
 			sealStyle: data.envelope.sealStyle,
 			sealIcon: data.envelope.sealIcon,
+			sealInitials: data.envelope.sealInitials,
 			microcopy: data.envelope.microcopy,
 			documentLabel: data.envelope.documentLabel,
 			stampText: data.envelope.stampText,
@@ -165,6 +166,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 				city: data.location.city,
 				documentLabel: data.envelope.documentLabel,
 				sealIcon: data.envelope.sealIcon,
+				sealInitials: data.envelope.sealInitials,
 			}),
 			colors: {
 				background: data.envelope.closedPalette?.background

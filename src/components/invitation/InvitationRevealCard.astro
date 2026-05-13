@@ -1,22 +1,21 @@
 ---
-import Icon from '@/components/common/icons/Icon.astro';
-import { SEAL_ICON_MAP, type RevealCardData } from '@/lib/invitation/reveal-card';
+import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
+import type { RevealCardData } from '@/lib/invitation/reveal-card';
 
 interface Props {
 	card: RevealCardData;
 }
 
 const { card } = Astro.props;
-
-const sealIconName = SEAL_ICON_MAP[card.sealIcon];
 ---
 
 <article class="invitation-reveal-card" aria-label={card.documentLabel}>
 	<div class="invitation-reveal-card__inner">
 		<div class="invitation-reveal-card__seal" aria-hidden="true">
-			<Icon
-				name={sealIconName}
-				class={`seal-icon seal-icon--${card.sealIcon} invitation-reveal-card__seal-icon`}
+			<SealIcon
+				sealIcon={card.sealIcon}
+				sealInitials={card.sealInitials}
+				class="seal-icon invitation-reveal-card__seal-icon"
 			/>
 		</div>
 
