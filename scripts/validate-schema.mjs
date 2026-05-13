@@ -70,7 +70,6 @@ function extractContractVariants() {
 // Extract variants from CSS files
 function extractCSSVariants(contractVariants) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
-	const files = fs.readdirSync(themesDir);
 
 	const variants = {
 		quote: new Set(),
@@ -83,38 +82,47 @@ function extractCSSVariants(contractVariants) {
 		itinerary: new Set(),
 	};
 
-	// Map CSS files to sections
-	const fileToSection = {
-		'_quote-theme.scss': 'quote',
-		'_countdown-theme.scss': 'countdown',
-		'_location-theme.scss': 'location',
-		'_family-theme.scss': 'family',
-		'_gifts-theme.scss': 'gifts',
-		'_gallery-theme.scss': 'gallery',
-		'_thank-you-theme.scss': 'thankYou',
-		'_itinerary-theme.scss': 'itinerary',
+	const sectionDirectories = {
+		quote: 'quote',
+		countdown: 'countdown',
+		location: 'location',
+		family: 'family',
+		gifts: 'gifts',
+		gallery: 'gallery',
+		thankYou: 'thank-you',
+		itinerary: 'itinerary',
 	};
 
-	for (const file of files) {
-		const section = fileToSection[file];
-		if (!section) continue;
+	function collectScssFiles(dir) {
+		if (!fs.existsSync(dir)) return [];
 
-		const filePath = path.join(themesDir, file);
-		const content = fs.readFileSync(filePath, 'utf8');
+		return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+			const entryPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) return collectScssFiles(entryPath);
+			return entry.name.endsWith('.scss') ? [entryPath] : [];
+		});
+	}
 
-		// Find [data-variant='value'] patterns
-		const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
-		let match;
-		while ((match = variantRegex.exec(content)) !== null) {
-			variants[section].add(match[1]);
-		}
+	for (const [section, directory] of Object.entries(sectionDirectories)) {
+		const files = collectScssFiles(path.join(themesDir, directory));
 
-		const variantPrefixRegex = /\[data-variant\^=['"]([^'"]+)['"]\]/g;
-		while ((match = variantPrefixRegex.exec(content)) !== null) {
-			const prefix = match[1];
-			for (const variant of contractVariants[section]) {
-				if (variant.startsWith(prefix)) {
-					variants[section].add(variant);
+		for (const filePath of files) {
+			const content = fs.readFileSync(filePath, 'utf8');
+
+			// Find [data-variant='value'] patterns
+			const variantRegex = /\[data-variant=['"]([^'"]+)['"]\]/g;
+			let match;
+			while ((match = variantRegex.exec(content)) !== null) {
+				variants[section].add(match[1]);
+			}
+
+			const variantPrefixRegex = /\[data-variant\^=['"]([^'"]+)['"]\]/g;
+			while ((match = variantPrefixRegex.exec(content)) !== null) {
+				const prefix = match[1];
+				for (const variant of contractVariants[section]) {
+					if (variant.startsWith(prefix)) {
+						variants[section].add(variant);
+					}
 				}
 			}
 		}

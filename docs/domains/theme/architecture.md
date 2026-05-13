@@ -81,7 +81,20 @@ by the semantic layer and serve as landing-page composition primitives:
 ## Section Theme Strategy
 
 Section base styles live with components (e.g. `src/styles/invitation/_quote.scss`). Section variant
-styles live in `src/styles/themes/sections/` and are loaded through `src/styles/invitation.scss`.
+styles live in modular directories under `src/styles/themes/sections/` and are loaded through
+`src/styles/invitation.scss`.
+
+The canonical section-theme file layout mirrors Hero:
+
+```text
+src/styles/themes/sections/<section>/
+├── _base.scss
+├── _<variant>.scss
+└── _index.scss
+```
+
+`src/styles/themes/sections/_index.scss` forwards section directories directly. Do not add new flat
+`_<section>-theme.scss` shims for invitation sections.
 
 Some valid contract variants intentionally inherit base section styles when the preset-level
 variables already provide the needed aesthetic. Dedicated theme selectors are only required when a
@@ -100,8 +113,7 @@ section needs layout, motion, or composition changes beyond the base stylesheet.
 | `thankYou`  | `jewelry-box-wedding`                                   |
 | `itinerary` | `jewelry-box-wedding`                                   |
 
-Selectors such as `[data-variant^='premiere-']` count as coverage for matching contract variants
-like `premiere-floral`.
+Variant partials should target concrete selectors such as `[data-variant='premiere-floral']`.
 
 Selector contract:
 
