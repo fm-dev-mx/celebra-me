@@ -22,6 +22,7 @@ type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
 	isDemoPreview?: boolean;
+	variant?: ThemePreset;
 };
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
@@ -110,6 +111,7 @@ function renderPersonalizedAccess(
 	if (!isDemoPreview && !pageContext.guestContext) return null;
 
 	const guestContext = pageContext.guestContext;
+	const variant = pageContext.viewModel.theme.preset ?? THEME_PRESETS[0];
 
 	return {
 		component: 'personalized-access',
@@ -120,6 +122,7 @@ function renderPersonalizedAccess(
 				pageContext.viewModel.sections.rsvp?.guestCap ??
 				DEFAULT_DEMO_GUEST_CAP,
 			isDemoPreview,
+			variant,
 		},
 	};
 }
@@ -165,12 +168,23 @@ function renderGiftsSection(sections: Sections): InvitationSectionRenderDescript
 	};
 }
 
+function getMonogram(name: string): string {
+	return name
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((n) => n[0])
+		.join('')
+		.toUpperCase();
+}
+
 function renderSection(
 	pageContext: InvitationPageContext,
 	section: RenderableSectionKey,
 	nextSectionLink?: LocationProps['nextSectionLink'],
 ): InvitationSectionRenderDescriptor | null {
-	const { sections, theme } = pageContext.viewModel;
+	const { sections, theme, hero } = pageContext.viewModel;
 	const variant = theme?.preset ?? THEME_PRESETS[0];
 
 	switch (section) {
@@ -207,22 +221,14 @@ function renderSection(
 				: null;
 
 		case 'itinerary': {
-			const monogram = pageContext.viewModel.hero.name
-				.trim()
-				.split(/\s+/)
-				.filter(Boolean)
-				.slice(0, 2)
-				.map((n) => n[0])
-				.join('');
-			const subtitle = pageContext.viewModel.sections.itinerary?.subtitle;
 			return sections.itinerary
 				? {
 						component: 'itinerary',
 						props: {
 							...sections.itinerary,
 							variant,
-							monogram,
-							subtitle,
+							monogram: getMonogram(hero.name),
+							subtitle: sections.itinerary.subtitle,
 						},
 					}
 				: null;
@@ -267,28 +273,21 @@ function renderBlock(
 function prioritizePersonalizedAccess(
 	descriptors: InvitationSectionRenderDescriptor[],
 ): InvitationSectionRenderDescriptor[] {
-	const personalizedAccess = descriptors.find(
-		(descriptor) => descriptor.component === 'personalized-access',
-	);
+	const paIndex = descriptors.findIndex((d) => d.component === 'personalized-access');
+	if (paIndex === -1) return descriptors;
 
-	if (!personalizedAccess) return descriptors;
+	const [personalizedAccess] = descriptors.splice(paIndex, 1);
 
-	const rest: InvitationSectionRenderDescriptor[] = descriptors.filter(
-		(descriptor) => descriptor.component !== 'personalized-access',
-	);
+	// Find the best insertion point: after Quote if possible, otherwise after the first content block.
+	const quoteIndex = descriptors.findIndex((d) => d.component === 'quote');
+	const targetIndex =
+		quoteIndex !== -1
+			? quoteIndex + 1
+			: descriptors.findIndex((d) => d.component !== 'interlude');
 
-	const quoteIndex = rest.findIndex((descriptor) => descriptor.component === 'quote');
+	descriptors.splice(targetIndex === -1 ? 0 : targetIndex, 0, personalizedAccess);
 
-	if (quoteIndex !== -1) {
-		rest.splice(quoteIndex + 1, 0, personalizedAccess);
-		return rest;
-	}
-
-	const firstContentIndex = rest.findIndex((descriptor) => descriptor.component !== 'interlude');
-
-	rest.splice(firstContentIndex === -1 ? 0 : firstContentIndex, 0, personalizedAccess);
-
-	return rest;
+	return descriptors;
 }
 
 export function buildInvitationSectionRenderDescriptors(
