@@ -1,4 +1,4 @@
-// Baptism palette — luminous, sacred, calm
+// Angelic Presence palette — luminous, sacred, calm
 
 .theme-preset--angelic-presence {
 	// ---------------------------------------------------------------------
@@ -10,12 +10,12 @@
 	--color-pure-ivory-rgb: 255 255 255;
 	--color-soft-sand: rgb(244 241 234);
 	--color-soft-sand-rgb: 244 241 234;
-	--color-baptism-blue: rgb(182 218 229);
-	--color-baptism-blue-rgb: 182 218 229;
-	--color-baptism-blue-soft: rgb(210 231 237);
-	--color-baptism-blue-soft-rgb: 210 231 237;
-	--color-baptism-mist: rgb(232 243 246);
-	--color-baptism-mist-rgb: 232 243 246;
+	--color-angelic-blue: rgb(182 218 229);
+	--color-angelic-blue-rgb: 182 218 229;
+	--color-angelic-blue-soft: rgb(210 231 237);
+	--color-angelic-blue-soft-rgb: 210 231 237;
+	--color-angelic-mist: rgb(232 243 246);
+	--color-angelic-mist-rgb: 232 243 246;
 	--color-ivory-warm: rgb(253 248 238);
 	--color-ivory-warm-rgb: 253 248 238;
 
@@ -58,29 +58,29 @@
 	--color-text-on-light: var(--color-eternal-ink);
 	--color-border-subtle: rgb(var(--color-ethereal-gray-rgb) / 34%);
 	--color-border-premium: rgb(var(--color-sacred-gold-rgb) / 44%);
-	--color-baptism-border: rgb(var(--color-baptism-blue-rgb) / 42%);
-	--color-baptism-border-soft: rgb(var(--color-baptism-blue-soft-rgb) / 34%);
-	--baptism-blue-wash: radial-gradient(
+	--color-angelic-border: rgb(var(--color-angelic-blue-rgb) / 42%);
+	--color-angelic-border-soft: rgb(var(--color-angelic-blue-soft-rgb) / 34%);
+	--angelic-blue-wash: radial-gradient(
 		ellipse at 50% 50%,
-		rgb(var(--color-baptism-blue-rgb) / 26%) 0%,
-		rgb(var(--color-baptism-blue-soft-rgb) / 14%) 42%,
+		rgb(var(--color-angelic-blue-rgb) / 26%) 0%,
+		rgb(var(--color-angelic-blue-soft-rgb) / 14%) 42%,
 		transparent 72%
 	);
-	--baptism-ivory-wash: linear-gradient(
+	--angelic-ivory-wash: linear-gradient(
 		180deg,
 		rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
 		rgb(var(--color-ivory-warm-rgb) / 78%) 54%,
-		rgb(var(--color-baptism-mist-rgb) / 24%) 100%
+		rgb(var(--color-angelic-mist-rgb) / 24%) 100%
 	);
-	--baptism-divider: linear-gradient(
+	--angelic-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--color-baptism-blue-rgb) / 46%) 22%,
+		rgb(var(--color-angelic-blue-rgb) / 46%) 22%,
 		rgb(var(--color-sacred-gold-rgb) / 40%) 50%,
-		rgb(var(--color-baptism-blue-rgb) / 46%) 78%,
+		rgb(var(--color-angelic-blue-rgb) / 46%) 78%,
 		transparent 100%
 	);
-	--baptism-soft-shadow:
+	--angelic-soft-shadow:
 		0 22px 58px rgb(var(--color-eternal-ink-rgb) / 9%),
 		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
 
@@ -116,23 +116,48 @@
 	);
 
 	// ---------------------------------------------------------------------
-	// Hero section — baptism editorial split
+	// Shared angelic architecture
+	// ---------------------------------------------------------------------
+	--angelic-shadow-soft:
+		0 24px 70px -46px rgb(var(--color-eternal-ink-rgb) / 30%),
+		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 88%),
+		inset 0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 58%);
+	--angelic-glass-bg: radial-gradient(
+		ellipse at 12% 14%,
+		rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
+		transparent 42%
+	);
+	--angelic-surface-mist: linear-gradient(
+		145deg,
+		rgb(var(--color-pure-ivory-rgb) / 86%) 0%,
+		rgb(var(--color-ivory-warm-rgb) / 78%) 48%,
+		rgb(var(--color-angelic-mist-rgb) / 38%) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Hero section — angelic editorial split
 	// ---------------------------------------------------------------------
 	--hero-card-bg: transparent;
 	--hero-card-border-hairline: rgb(var(--color-sacred-gold-rgb) / 28%);
 	--hero-card-shadow-ambient: none;
 
 	// Less saturated gold in title: champagne/antique gold
-	--hero-title-color-start: rgb(var(--color-eternal-ink-rgb) / 92%);
-	--hero-title-color-mid: var(--color-sacred-gold);
-	--hero-title-color-end: rgb(var(--color-eternal-ink-rgb) / 85%);
+	--hero-title-gradient: linear-gradient(
+		115deg,
+		rgb(var(--color-eternal-ink-rgb) / 96%) 0%,
+		rgb(var(--color-sacred-gold-rgb) / 62%) 48%,
+		rgb(var(--color-eternal-ink-rgb) / 92%) 100%
+	);
+	--hero-title-shadow:
+		0 10px 28px rgb(var(--color-pure-ivory-rgb) / 46%),
+		0 18px 42px rgb(var(--color-eternal-ink-rgb) / 11%);
 	--hero-badge-bg: rgb(var(--color-pure-ivory-rgb) / 12%);
 	--hero-badge-border: rgb(var(--color-sacred-gold-rgb) / 42%);
 	--hero-badge-text: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
 
-	// Baptism image filter — warm but preserves skin tones
-	--hero-image-filter: brightness(0.98) contrast(0.98) saturate(0.92) sepia(0.04);
+	// Angelic image filter — warm but preserves skin tones
+	--hero-image-filter: brightness(1.02) contrast(0.96) saturate(0.9) sepia(0.04);
 
 	// ---------------------------------------------------------------------
 	// Family section
@@ -222,4 +247,13 @@
 	--itinerary-paper-white: var(--color-pure-ivory);
 	--itinerary-cream: var(--color-angelic-white);
 	--itinerary-ink-dark: var(--color-eternal-ink);
+
+	// -----------------------------------------------------------------
+	// Music player — more discreet on angelic-presence
+	// -----------------------------------------------------------------
+	.music-player__button--play {
+		opacity: 70%;
+		width: 2.4rem;
+		height: 2.4rem;
+	}
 }

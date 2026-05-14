@@ -178,17 +178,17 @@
 .event--cesar-ramses {
 	.rsvp {
 		--color-glass-bg: rgb(var(--color-pure-ivory-rgb) / 78%);
-		--color-glass-border: rgb(var(--color-baptism-blue-rgb) / 34%);
-		--shadow-premium: var(--baptism-soft-shadow);
+		--color-glass-border: rgb(var(--color-angelic-blue-rgb) / 34%);
+		--shadow-premium: var(--angelic-soft-shadow);
 		--rsvp-field-bg: rgb(var(--color-pure-ivory-rgb) / 66%);
 		--rsvp-field-bg-focus: rgb(var(--color-pure-ivory-rgb) / 94%);
-		--rsvp-field-border: rgb(var(--color-baptism-blue-rgb) / 34%);
+		--rsvp-field-border: rgb(var(--color-angelic-blue-rgb) / 34%);
 		--rsvp-radio-bg: rgb(var(--color-pure-ivory-rgb) / 58%);
-		--rsvp-radio-bg-hover: rgb(var(--color-baptism-mist-rgb) / 58%);
-		--rsvp-radio-border: rgb(var(--color-baptism-blue-rgb) / 34%);
-		--rsvp-radio-selected-bg: rgb(var(--color-baptism-blue-rgb) / 16%);
-		--rsvp-radio-selected-border: rgb(var(--color-baptism-blue-rgb) / 58%);
-		--rsvp-button-border: rgb(var(--color-baptism-blue-rgb) / 46%);
+		--rsvp-radio-bg-hover: rgb(var(--color-angelic-mist-rgb) / 58%);
+		--rsvp-radio-border: rgb(var(--color-angelic-blue-rgb) / 34%);
+		--rsvp-radio-selected-bg: rgb(var(--color-angelic-blue-rgb) / 16%);
+		--rsvp-radio-selected-border: rgb(var(--color-angelic-blue-rgb) / 58%);
+		--rsvp-button-border: rgb(var(--color-angelic-blue-rgb) / 46%);
 		--rsvp-button-bg: rgb(var(--color-pure-ivory-rgb) / 62%);
 		--rsvp-button-bg-hover: rgb(var(--color-eternal-ink-rgb) / 92%);
 		--rsvp-title-color: rgb(var(--color-eternal-ink-rgb) / 88%);
@@ -196,12 +196,12 @@
 		background:
 			radial-gradient(
 				ellipse at 12% 0%,
-				rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
 				transparent 42%
 			),
 			radial-gradient(
 				ellipse at 86% 100%,
-				rgb(var(--color-baptism-blue-soft-rgb) / 22%) 0%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 22%) 0%,
 				transparent 44%
 			),
 			linear-gradient(
@@ -209,12 +209,12 @@
 				rgb(var(--color-pure-ivory-rgb) / 82%) 0%,
 				rgb(var(--color-ivory-warm-rgb) / 76%) 100%
 			);
-		border-color: rgb(var(--color-baptism-blue-rgb) / 32%);
+		border-color: rgb(var(--color-angelic-blue-rgb) / 32%);
 		border-radius: 14px;
 
 		&::before {
 			inset: 0.55rem;
-			border-color: rgb(var(--color-baptism-blue-rgb) / 18%);
+			border-color: rgb(var(--color-angelic-blue-rgb) / 18%);
 		}
 
 		&::after {
@@ -242,7 +242,7 @@
 			background: linear-gradient(
 				135deg,
 				rgb(var(--color-eternal-ink-rgb) / 90%) 0%,
-				rgb(var(--color-baptism-blue-rgb) / 78%) 50%,
+				rgb(var(--color-angelic-blue-rgb) / 78%) 50%,
 				rgb(var(--color-eternal-ink-rgb) / 86%) 100%
 			);
 			background-clip: text;
@@ -259,17 +259,17 @@
 			width: min(10rem, 46vw);
 			height: 1px;
 			margin: -0.55rem auto 0.1rem;
-			background: var(--baptism-divider);
+			background: var(--angelic-divider);
 		}
 
 		.rsvp__radio-card {
-			border-color: rgb(var(--color-baptism-blue-rgb) / 34%);
+			border-color: rgb(var(--color-angelic-blue-rgb) / 34%);
 
 			&:has(input:checked) {
 				box-shadow:
-					0 0 0 1px rgb(var(--color-baptism-blue-rgb) / 42%),
+					0 0 0 1px rgb(var(--color-angelic-blue-rgb) / 42%),
 					0 8px 22px rgb(var(--color-eternal-ink-rgb) / 8%);
-				border-color: rgb(var(--color-baptism-blue-rgb) / 58%);
+				border-color: rgb(var(--color-angelic-blue-rgb) / 58%);
 			}
 		}
 

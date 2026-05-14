@@ -140,27 +140,27 @@
 		--gallery-section-bg:
 			radial-gradient(
 				ellipse at 12% 8%,
-				rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
 				transparent 34%
 			),
 			radial-gradient(
 				ellipse at 86% 88%,
-				rgb(var(--color-baptism-blue-soft-rgb) / 22%) 0%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 22%) 0%,
 				transparent 38%
 			),
-			var(--baptism-ivory-wash);
+			var(--angelic-ivory-wash);
 		--gallery-item-bg: rgb(var(--color-pure-ivory-rgb) / 78%);
-		--gallery-item-border: 1px solid rgb(var(--color-baptism-blue-rgb) / 32%);
-		--gallery-item-border-color: rgb(var(--color-baptism-blue-rgb) / 32%);
-		--gallery-item-shadow: var(--baptism-soft-shadow);
-		--gallery-item-emphasis-border-color: rgb(var(--color-baptism-blue-rgb) / 52%);
+		--gallery-item-border: 1px solid rgb(var(--color-angelic-blue-rgb) / 32%);
+		--gallery-item-border-color: rgb(var(--color-angelic-blue-rgb) / 32%);
+		--gallery-item-shadow: var(--angelic-soft-shadow);
+		--gallery-item-emphasis-border-color: rgb(var(--color-angelic-blue-rgb) / 52%);
 		--gallery-item-hover-border-color: rgb(var(--color-sacred-gold-rgb) / 48%);
 		--gallery-item-emphasis-shadow:
 			0 24px 54px rgb(var(--color-eternal-ink-rgb) / 11%),
 			0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 74%);
 		--gallery-item-hover-shadow:
 			0 28px 62px rgb(var(--color-eternal-ink-rgb) / 13%),
-			0 0 0 1px rgb(var(--color-baptism-blue-rgb) / 22%);
+			0 0 0 1px rgb(var(--color-angelic-blue-rgb) / 22%);
 		--gallery-caption-color: rgb(var(--color-eternal-ink-rgb) / 76%);
 
 		&::before {
@@ -176,7 +176,7 @@
 				linear-gradient(
 					180deg,
 					transparent 0%,
-					rgb(var(--color-baptism-mist-rgb) / 18%) 100%
+					rgb(var(--color-angelic-mist-rgb) / 18%) 100%
 				);
 			pointer-events: none;
 		}
@@ -185,16 +185,16 @@
 			background: linear-gradient(
 				135deg,
 				rgb(var(--color-eternal-ink-rgb) / 90%) 0%,
-				rgb(var(--color-baptism-blue-rgb) / 78%) 48%,
+				rgb(var(--color-angelic-blue-rgb) / 78%) 48%,
 				rgb(var(--color-eternal-ink-rgb) / 86%) 100%
 			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
-			text-shadow: 0 2px 14px rgb(var(--color-baptism-blue-rgb) / 18%);
+			text-shadow: 0 2px 14px rgb(var(--color-angelic-blue-rgb) / 18%);
 		}
 
 		.gallery-section__header::after {
-			background: var(--baptism-divider);
+			background: var(--angelic-divider);
 		}
 
 		.gallery-grid__item {
@@ -206,7 +206,7 @@
 				inset: -0.55rem;
 				z-index: -1;
 				border-radius: 14px;
-				background: var(--baptism-blue-wash);
+				background: var(--angelic-blue-wash);
 				opacity: 0%;
 				filter: blur(8px);
 				transition: opacity var(--gallery-item-transition-duration)
@@ -214,7 +214,7 @@
 			}
 
 			&::after {
-				border-color: rgb(var(--color-baptism-blue-rgb) / 18%);
+				border-color: rgb(var(--color-angelic-blue-rgb) / 18%);
 			}
 
 			&.is-in-view::before,

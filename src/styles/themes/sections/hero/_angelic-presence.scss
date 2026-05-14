@@ -2,7 +2,7 @@
 
 // ==========================================================================
 // ANGELIC PRESENCE HERO
-// Baptism / Divine Light — editorial split layout
+// Angelic / Divine Light — editorial split layout
 // Soft ivory left reading area, dominant image right
 // Ivory/champagne gradients instead of dark scrims
 // ==========================================================================
@@ -14,28 +14,52 @@
 	align-items: stretch;
 	justify-content: flex-end;
 
-	// Soft ivory veil on the left — reading area without a hard card edge
 	&::before {
 		content: '';
 		position: absolute;
 		inset: 0;
 		z-index: 2;
 		background:
-			// Left-side ivory veil — creates the editorial split on desktop
+			radial-gradient(
+				ellipse at 18% 22%,
+				rgb(var(--color-angelic-blue-rgb) / 30%) 0%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 17%) 32%,
+				transparent 62%
+			),
 			linear-gradient(
 				100deg,
-				rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
-				rgb(var(--color-pure-ivory-rgb) / 72%) 28%,
-				rgb(var(--color-angelic-white-rgb) / 40%) 52%,
-				transparent 72%
+				rgb(var(--color-pure-ivory-rgb) / 92%) 0%,
+				rgb(var(--color-ivory-warm-rgb) / 78%) 30%,
+				rgb(var(--color-angelic-mist-rgb) / 40%) 54%,
+				transparent 76%
 			),
-			// Bottom ivory anchor — keeps hero content readable on mobile
 			linear-gradient(
-					to top,
-					rgb(var(--color-soft-sand-rgb) / 70%) 0%,
-					rgb(var(--color-angelic-white-rgb) / 30%) 18%,
-					transparent 40%
-				);
+				to top,
+				rgb(var(--color-ivory-warm-rgb) / 82%) 0%,
+				rgb(var(--color-angelic-mist-rgb) / 32%) 24%,
+				transparent 48%
+			);
+		pointer-events: none;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: auto 0 0;
+		z-index: 3;
+		height: clamp(7rem, 18svh, 12rem);
+		background:
+			radial-gradient(
+				ellipse at 28% 48%,
+				rgb(var(--color-sacred-gold-rgb) / 10%) 0%,
+				transparent 58%
+			),
+			linear-gradient(
+				180deg,
+				transparent 0%,
+				rgb(var(--color-ivory-warm-rgb) / 62%) 78%,
+				rgb(var(--color-ivory-warm-rgb) / 88%) 100%
+			);
 		pointer-events: none;
 	}
 
@@ -43,19 +67,22 @@
 		z-index: 0;
 
 		&::after {
-			// Warm bottom gradient — no dark scrim, just soft ivory-to-transparent
 			background:
 				radial-gradient(
-					ellipse at 65% 70%,
-					rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
-					transparent 45%
+					ellipse at 22% 24%,
+					rgb(var(--color-angelic-blue-rgb) / 22%) 0%,
+					transparent 42%
+				),
+				radial-gradient(
+					ellipse at 70% 72%,
+					rgb(var(--color-sacred-gold-rgb) / 7%) 0%,
+					transparent 48%
 				),
 				linear-gradient(
 					180deg,
-					transparent 0%,
-					transparent 55%,
-					rgb(var(--color-soft-sand-rgb) / 18%) 80%,
-					rgb(var(--color-eternal-ink-rgb) / 6%) 100%
+					rgb(var(--color-pure-ivory-rgb) / 12%) 0%,
+					transparent 48%,
+					rgb(var(--color-ivory-warm-rgb) / 18%) 100%
 				);
 		}
 
@@ -76,8 +103,11 @@
 		grid-template-columns: 1fr 1fr;
 		grid-template-areas:
 			'label label'
-			'title portrait';
+			'title portrait'
+			'details portrait';
+		align-content: center;
 		gap: 1.5rem;
+		row-gap: clamp(1rem, 3vw, 1.8rem);
 		align-items: center;
 		min-height: 100svh;
 		padding: clamp(5rem, 10svh, 7rem) clamp(1.5rem, 4vw, 3.5rem) clamp(4rem, 8svh, 6rem);
@@ -87,22 +117,46 @@
 	.invitation-hero__label {
 		grid-area: label;
 		justify-self: start;
+		position: relative;
+		padding: 0.3rem 0.85rem;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+		border-radius: 999px;
+		background: rgb(var(--color-pure-ivory-rgb) / 42%);
+		box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 72%);
 		font-family: var(--font-label);
-		font-size: clamp(0.6rem, 1.5vw, 0.82rem);
-		letter-spacing: 0.4em;
+		font-size: clamp(0.5rem, 2vw, 0.68rem);
+		letter-spacing: 0.38em;
 		text-transform: uppercase;
-		color: var(--color-sacred-gold-readable);
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		text-shadow: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 74%);
 		font-weight: 500;
-		text-shadow:
-			0 1px 4px rgb(var(--color-eternal-ink-rgb) / 30%),
-			0 3px 10px rgb(var(--color-eternal-ink-rgb) / 12%);
 		margin-bottom: 0.5vh;
 	}
 
 	.invitation-hero__title-wrapper {
 		grid-area: title;
+		position: relative;
+		padding-block: clamp(0.8rem, 2vw, 1.25rem);
 		animation: motion-fade-in-up var(--duration-premium) var(--ease-out) 0.8s forwards;
 		align-self: center;
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			width: min(16rem, 64vw);
+			height: 1px;
+			background: var(--angelic-divider);
+		}
+
+		&::before {
+			top: 0;
+		}
+
+		&::after {
+			bottom: 0;
+		}
 	}
 
 	.invitation-hero__title {
@@ -112,15 +166,10 @@
 		line-height: 0.9;
 		letter-spacing: 0.01em;
 		color: var(--color-eternal-ink);
-		background: linear-gradient(
-			115deg,
-			rgb(var(--color-eternal-ink-rgb) / 90%) 0%,
-			var(--color-sacred-gold) 44%,
-			rgb(var(--color-eternal-ink-rgb) / 82%) 100%
-		);
+		background: var(--hero-title-gradient);
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(var(--hero-angelic-title-shadow));
+		filter: drop-shadow(var(--hero-title-shadow));
 		margin: 0;
 		transform: translateX(-2%);
 	}
@@ -164,17 +213,17 @@
 		display: none;
 	}
 
-	// Metadata anchored at bottom of the left column
+	// Metadata anchored below title in the left column
 	.invitation-hero__details {
-		position: absolute;
-		bottom: clamp(3rem, 8vh, 5rem);
-		left: clamp(1.5rem, 4vw, 3.5rem);
-		right: 0;
+		grid-area: details;
+		align-self: start;
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
 		text-align: left;
-		padding-right: clamp(1.5rem, 4vw, 3.5rem);
+		max-width: 20rem;
+		padding-top: clamp(0.75rem, 2vw, 1rem);
+		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
 	}
 
 	.invitation-hero__date,
@@ -221,12 +270,18 @@
 		justify-content: flex-end;
 
 		&::before {
-			background: linear-gradient(
-				to top,
-				rgb(var(--color-soft-sand-rgb) / 75%) 0%,
-				rgb(var(--color-angelic-white-rgb) / 38%) 22%,
-				transparent 48%
-			);
+			background:
+				radial-gradient(
+					ellipse at 18% 16%,
+					rgb(var(--color-angelic-blue-rgb) / 14%) 0%,
+					transparent 50%
+				),
+				linear-gradient(
+					to top,
+					rgb(var(--color-ivory-warm-rgb) / 74%) 0%,
+					rgb(var(--color-angelic-mist-rgb) / 32%) 24%,
+					transparent 52%
+				);
 		}
 
 		.invitation-hero__background img {
@@ -237,6 +292,7 @@
 			grid-template-areas:
 				'label'
 				'title'
+				'details'
 				'portrait';
 			grid-template-columns: 1fr;
 			gap: 0.75rem;
@@ -390,168 +446,83 @@
 }
 
 .event--cesar-ramses {
-	.invitation-hero {
-		--hero-angelic-title-shadow:
-			0 10px 28px rgb(var(--color-pure-ivory-rgb) / 46%),
-			0 18px 42px rgb(var(--color-eternal-ink-rgb) / 11%);
-
-		background: var(--color-ivory-warm);
-
+	.invitation-hero[data-variant='angelic-presence'] {
 		&::before {
 			background:
 				radial-gradient(
 					ellipse at 18% 22%,
-					rgb(var(--color-baptism-blue-rgb) / 30%) 0%,
-					rgb(var(--color-baptism-blue-soft-rgb) / 17%) 32%,
+					rgb(var(--color-angelic-blue-rgb) / 28%) 0%,
+					rgb(var(--color-angelic-blue-soft-rgb) / 14%) 32%,
 					transparent 62%
 				),
 				linear-gradient(
 					100deg,
 					rgb(var(--color-pure-ivory-rgb) / 92%) 0%,
 					rgb(var(--color-ivory-warm-rgb) / 78%) 30%,
-					rgb(var(--color-baptism-mist-rgb) / 40%) 54%,
+					rgb(var(--color-angelic-mist-rgb) / 44%) 54%,
 					transparent 76%
 				),
 				linear-gradient(
 					to top,
-					rgb(var(--color-ivory-warm-rgb) / 82%) 0%,
-					rgb(var(--color-baptism-mist-rgb) / 32%) 24%,
+					rgb(var(--color-ivory-warm-rgb) / 84%) 0%,
+					rgb(var(--color-angelic-mist-rgb) / 36%) 24%,
 					transparent 48%
 				);
-		}
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: auto 0 0;
-			z-index: 3;
-			height: clamp(7rem, 18svh, 12rem);
-			background:
-				radial-gradient(
-					ellipse at 28% 48%,
-					rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
-					transparent 58%
-				),
-				linear-gradient(
-					180deg,
-					transparent 0%,
-					rgb(var(--color-ivory-warm-rgb) / 78%) 82%,
-					var(--color-ivory-warm) 100%
-				);
-			pointer-events: none;
-		}
-
-		.invitation-hero__background::after {
-			background:
-				radial-gradient(
-					ellipse at 22% 24%,
-					rgb(var(--color-baptism-blue-rgb) / 22%) 0%,
-					transparent 42%
-				),
-				radial-gradient(
-					ellipse at 70% 72%,
-					rgb(var(--color-sacred-gold-rgb) / 7%) 0%,
-					transparent 48%
-				),
-				linear-gradient(
-					180deg,
-					rgb(var(--color-pure-ivory-rgb) / 12%) 0%,
-					transparent 48%,
-					rgb(var(--color-ivory-warm-rgb) / 18%) 100%
-				);
-		}
-
-		.invitation-hero__content {
-			z-index: 12;
-			grid-template-areas:
-				'label label'
-				'title portrait'
-				'details portrait';
-			align-content: center;
-			row-gap: clamp(1rem, 3vw, 1.8rem);
-		}
-
-		.invitation-hero__label {
-			position: relative;
-			padding: 0.5rem 0.9rem;
-			border: 1px solid rgb(var(--color-baptism-blue-rgb) / 36%);
-			border-radius: 999px;
-			background: rgb(var(--color-pure-ivory-rgb) / 52%);
-			box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
-			color: rgb(var(--color-eternal-ink-rgb) / 68%);
-			text-shadow: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 74%);
-		}
-
-		.invitation-hero__title-wrapper {
-			position: relative;
-			padding-block: clamp(0.8rem, 2vw, 1.25rem);
-
-			&::before,
-			&::after {
-				content: '';
-				position: absolute;
-				left: 0;
-				width: min(16rem, 64vw);
-				height: 1px;
-				background: var(--baptism-divider);
-			}
-
-			&::before {
-				top: 0;
-			}
-
-			&::after {
-				bottom: 0;
-			}
 		}
 
 		.invitation-hero__title {
 			background: linear-gradient(
 				115deg,
-				rgb(var(--color-eternal-ink-rgb) / 92%) 0%,
-				rgb(var(--color-baptism-blue-rgb) / 78%) 46%,
-				rgb(var(--color-eternal-ink-rgb) / 86%) 100%
+				rgb(var(--color-eternal-ink-rgb) / 94%) 0%,
+				rgb(var(--color-angelic-blue-rgb) / 72%) 48%,
+				rgb(var(--color-eternal-ink-rgb) / 88%) 100%
 			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
+			filter: drop-shadow(0 10px 24px rgb(var(--color-angelic-blue-rgb) / 16%));
+		}
+
+		.invitation-hero__label {
+			border-color: rgb(var(--color-angelic-blue-rgb) / 34%);
+			background: rgb(var(--color-pure-ivory-rgb) / 52%);
+			color: rgb(var(--color-eternal-ink-rgb) / 64%);
+		}
+
+		.invitation-hero__portrait {
+			border-color: rgb(var(--color-angelic-blue-rgb) / 46%);
+			box-shadow:
+				0 28px 56px rgb(var(--color-eternal-ink-rgb) / 18%),
+				0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 64%);
+
+			&::after {
+				box-shadow:
+					inset 0 0 60px rgb(var(--color-eternal-ink-rgb) / 10%),
+					inset 0 0 16px rgb(var(--color-angelic-blue-rgb) / 12%);
+			}
 		}
 
 		.invitation-hero__details {
-			position: static;
-			grid-area: details;
-			align-self: start;
-			max-width: 20rem;
-			padding-top: clamp(0.75rem, 2vw, 1rem);
-			border-top: 1px solid rgb(var(--color-baptism-blue-rgb) / 32%);
+			border-top-color: rgb(var(--color-angelic-blue-rgb) / 32%);
+		}
+
+		.invitation-hero__venue .calligraphy-accent {
+			color: rgb(var(--color-angelic-blue-rgb) / 82%);
 		}
 
 		@include mixins.respond-below(md) {
-			.invitation-hero__content {
-				grid-template-areas:
-					'label'
-					'title'
-					'details';
-				grid-template-columns: 1fr;
-			}
-
 			&::before {
 				background:
 					radial-gradient(
 						ellipse at 18% 16%,
-						rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+						rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
 						transparent 50%
 					),
 					linear-gradient(
 						to top,
-						rgb(var(--color-ivory-warm-rgb) / 86%) 0%,
-						rgb(var(--color-baptism-mist-rgb) / 46%) 26%,
-						transparent 56%
+						rgb(var(--color-ivory-warm-rgb) / 78%) 0%,
+						rgb(var(--color-angelic-mist-rgb) / 36%) 24%,
+						transparent 52%
 					);
-			}
-
-			.invitation-hero__title-wrapper::before,
-			.invitation-hero__title-wrapper::after {
-				width: min(13rem, 74vw);
 			}
 		}
 	}

@@ -146,20 +146,20 @@
 		background:
 			radial-gradient(
 				ellipse at 14% 12%,
-				rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
 				transparent 38%
 			),
 			radial-gradient(
 				ellipse at 86% 86%,
-				rgb(var(--color-baptism-blue-soft-rgb) / 22%) 0%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 22%) 0%,
 				transparent 42%
 			),
-			var(--baptism-ivory-wash);
+			var(--angelic-ivory-wash);
 
 		&::before {
 			width: min(28rem, 82vw);
 			height: min(28rem, 82vw);
-			background: var(--baptism-blue-wash);
+			background: var(--angelic-blue-wash);
 			opacity: 72%;
 		}
 
@@ -173,10 +173,10 @@
 				width: 1.65rem;
 				height: 1.65rem;
 				margin: 0 auto clamp(0.9rem, 2vw, 1.25rem);
-				border: 1px solid rgb(var(--color-baptism-blue-rgb) / 42%);
+				border: 1px solid rgb(var(--color-angelic-blue-rgb) / 42%);
 				border-radius: 50%;
 				background: rgb(var(--color-pure-ivory-rgb) / 68%);
-				box-shadow: var(--baptism-soft-shadow);
+				box-shadow: var(--angelic-soft-shadow);
 				font-family: var(--font-display);
 				font-size: 1.05rem;
 				line-height: 1;
@@ -188,21 +188,21 @@
 			background: linear-gradient(
 				145deg,
 				rgb(var(--color-pure-ivory-rgb) / 92%),
-				rgb(var(--color-baptism-mist-rgb) / 52%)
+				rgb(var(--color-angelic-mist-rgb) / 52%)
 			);
-			border-color: rgb(var(--color-baptism-blue-rgb) / 34%);
+			border-color: rgb(var(--color-angelic-blue-rgb) / 34%);
 			box-shadow:
 				0 22px 54px rgb(var(--color-eternal-ink-rgb) / 10%),
 				0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 74%);
 
 			&::before {
-				background: var(--baptism-blue-wash);
+				background: var(--angelic-blue-wash);
 				opacity: 88%;
 				filter: blur(8px);
 			}
 
 			&::after {
-				border-color: rgb(var(--color-baptism-blue-rgb) / 28%);
+				border-color: rgb(var(--color-angelic-blue-rgb) / 28%);
 			}
 		}
 
@@ -211,15 +211,15 @@
 		}
 
 		.thank-you-message .drop-cap {
-			color: rgb(var(--color-baptism-blue-rgb) / 92%);
-			text-shadow: 0 0 16px rgb(var(--color-baptism-blue-rgb) / 22%);
+			color: rgb(var(--color-angelic-blue-rgb) / 92%);
+			text-shadow: 0 0 16px rgb(var(--color-angelic-blue-rgb) / 22%);
 		}
 
 		.closing-name {
 			background: linear-gradient(
 				135deg,
 				rgb(var(--color-eternal-ink-rgb) / 88%) 0%,
-				rgb(var(--color-baptism-blue-rgb) / 78%) 50%,
+				rgb(var(--color-angelic-blue-rgb) / 78%) 50%,
 				rgb(var(--color-eternal-ink-rgb) / 84%) 100%
 			);
 			background-clip: text;
@@ -227,7 +227,7 @@
 		}
 
 		.thank-you-footer {
-			border-top-color: rgb(var(--color-baptism-blue-rgb) / 28%);
+			border-top-color: rgb(var(--color-angelic-blue-rgb) / 28%);
 			color: rgb(var(--color-eternal-ink-rgb) / 48%);
 
 			&::before {
@@ -236,7 +236,7 @@
 				width: min(9rem, 42vw);
 				height: 1px;
 				margin: calc(clamp(1rem, 3vw, 1.5rem) * -1) auto clamp(1rem, 3vw, 1.5rem);
-				background: var(--baptism-divider);
+				background: var(--angelic-divider);
 			}
 		}
 	}
