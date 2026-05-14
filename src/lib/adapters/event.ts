@@ -139,6 +139,10 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 			THEME_PRESETS,
 			normalizedPreset,
 		),
+		focalPoint: data.hero.focalPoint,
+		focalPointMobile: data.hero.focalPointMobile,
+		focalPointTablet: data.hero.focalPointTablet,
+		focalPointDesktop: data.hero.focalPointDesktop,
 	};
 }
 

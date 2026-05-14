@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssetSchema, focalPointPairSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 
 export const familySchema = z
 	.object({
@@ -41,6 +41,6 @@ export const familySchema = z
 			)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
-		focalPoint: focalPointPairSchema.optional(),
+		focalPoint: focalPointSchema.optional(),
 	})
 	.optional();

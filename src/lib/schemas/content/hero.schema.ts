@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssetSchema, focalPointPairSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 
 export const heroSchema = z.object({
 	name: z.string(),
@@ -8,5 +8,8 @@ export const heroSchema = z.object({
 	nickname: z.string().optional(),
 	date: z.iso.datetime(),
 	backgroundImage: AssetSchema,
-	focalPoint: focalPointPairSchema.optional(),
+	focalPoint: focalPointSchema.optional(),
+	focalPointMobile: focalPointSchema.optional(),
+	focalPointTablet: focalPointSchema.optional(),
+	focalPointDesktop: focalPointSchema.optional(),
 });

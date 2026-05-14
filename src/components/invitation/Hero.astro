@@ -19,6 +19,9 @@ interface Props {
 	variant?: ThemePreset;
 	guestName?: string;
 	focalPoint?: string;
+	focalPointMobile?: string;
+	focalPointTablet?: string;
+	focalPointDesktop?: string;
 }
 
 const {
@@ -33,6 +36,9 @@ const {
 	portrait,
 	variant,
 	focalPoint,
+	focalPointMobile,
+	focalPointTablet,
+	focalPointDesktop,
 } = Astro.props;
 
 // Universal image resolution helper
@@ -61,6 +67,9 @@ const surnames = names.slice(2);
 	class="invitation-hero"
 	data-variant={variant}
 	data-focal-point={focalPoint}
+	data-focal-point-mobile={focalPointMobile}
+	data-focal-point-tablet={focalPointTablet}
+	data-focal-point-desktop={focalPointDesktop}
 >
 	<div class="invitation-hero__background">
 		<Image

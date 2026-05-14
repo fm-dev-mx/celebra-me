@@ -29,6 +29,10 @@ export interface HeroViewModel {
 	backgroundImage: ImageAsset;
 	portrait?: ImageAsset;
 	variant: ThemePreset;
+	focalPoint?: string;
+	focalPointMobile?: string;
+	focalPointTablet?: string;
+	focalPointDesktop?: string;
 }
 
 export interface Coordinate {

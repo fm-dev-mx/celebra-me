@@ -32,7 +32,10 @@
         "label": "Mi primer sacramento y un año de vida",
         "date": "2026-06-20T22:00:00.000Z",
         "backgroundImage": "hero",
-        "focalPoint": "50% 38%"
+        "focalPoint": "50% 38%",
+        "focalPointMobile": "50% 44%",
+        "focalPointTablet": "50% 42%",
+        "focalPointDesktop": "50% 38%"
     },
     "location": {
         "venueName": "Levanto Jardín de Eventos",
