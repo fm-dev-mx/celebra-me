@@ -45,6 +45,7 @@
             "date": "20 de junio de 2026",
             "time": "4:00 p.m.",
             "image": "reception",
+            "focalPoint": "50% 42%",
             "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Levanto%20Jardin%20de%20Eventos%20La%20Tijera%20Guadalajara"
         },
         "indicationsHeading": "Indicaciones",
@@ -52,7 +53,7 @@
             {
                 "icon": "calendar",
                 "iconName": "Calendar",
-                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+                "text": "<strong>El menú</strong> será servido por tiempos. Les pedimos llegar puntualmente."
             },
             {
                 "icon": "dressCode",
@@ -86,27 +87,33 @@
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Pureza y ternura"
+                "caption": "Pureza y ternura",
+                "focalPoint": "50% 38%"
             },
             {
                 "image": "gallery02",
-                "caption": "La luz del sacramento"
+                "caption": "La luz del sacramento",
+                "focalPoint": "50% 56%"
             },
             {
                 "image": "gallery03",
-                "caption": "Bendición en familia"
+                "caption": "Bendición en familia",
+                "focalPoint": "52% 42%"
             },
             {
                 "image": "gallery04",
-                "caption": "Descanso en la luz"
+                "caption": "Descanso en la luz",
+                "focalPoint": "50% 41%"
             },
             {
                 "image": "gallery05",
-                "caption": "Inocencia y pureza"
+                "caption": "Inocencia y pureza",
+                "focalPoint": "49% 45%"
             },
             {
                 "image": "gallery06",
-                "caption": "Un año de bendiciones"
+                "caption": "Un año de bendiciones",
+                "focalPoint": "50% 44%"
             }
         ]
     },
@@ -134,7 +141,7 @@
             },
             {
                 "icon": "sparkles",
-                "label": "Cierre de celebración",
+                "label": "Cierre",
                 "time": "10:00 p.m.",
                 "description": "Gracias por ser parte de este recuerdo que guardaremos con mucho amor."
             }

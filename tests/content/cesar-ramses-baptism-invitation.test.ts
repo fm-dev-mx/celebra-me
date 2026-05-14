@@ -138,7 +138,7 @@ describe('Cesar Ramses baptism invitation content', () => {
 				},
 				{
 					icon: 'sparkles',
-					label: 'Cierre de celebración',
+					label: 'Cierre',
 					time: '10:00 p.m.',
 					description:
 						'Gracias por ser parte de este recuerdo que guardaremos con mucho amor.',

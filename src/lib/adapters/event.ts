@@ -293,7 +293,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.gallery) return undefined;
 	const items = data.gallery.items.map(
-		(item: { image: string | AssetSource; caption?: string }) => ({
+		(item: { image: string | AssetSource; caption?: string; focalPoint?: string }) => ({
 			...item,
 			image: requireAsset(eventSlug, item.image, data.title),
 		}),
