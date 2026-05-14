@@ -56,15 +56,10 @@ describe('Cesar Ramses baptism invitation content', () => {
 		});
 	});
 
-	it('contains the required ceremony, reception, and family content for a real baptism event', () => {
+	it('contains the required reception and family content for a real baptism event', () => {
 		const event = readCesarRamsesEvent();
 		const content = fs.readFileSync(contentPath, 'utf8');
 
-		expect(event.location?.ceremony).toMatchObject({
-			venueName: 'Parroquia de Nuestra Señora de Guadalupe',
-			time: '4:00 p.m.',
-			image: { type: 'internal', key: 'ceremony' },
-		});
 		expect(event.location?.reception).toMatchObject({
 			venueName: 'Levanto Jardín de Eventos',
 			time: '4:00 p.m.',
@@ -113,6 +108,45 @@ describe('Cesar Ramses baptism invitation content', () => {
 		]);
 	});
 
+	it('renders the requested baptism itinerary copy, times, and icons', () => {
+		const event = readCesarRamsesEvent();
+
+		expect(event.itinerary).toMatchObject({
+			title: 'Programa',
+			subtitle: 'Bautizo y 1er Año de César Ramses',
+			items: [
+				{
+					icon: 'church',
+					label: 'Santa Misa',
+					time: '12:00 p.m.',
+					description:
+						'Acompáñanos a dar gracias y recibir la bendición de este día tan especial.',
+				},
+				{
+					icon: 'map',
+					label: 'Recepción',
+					time: '4:00 p.m.',
+					description:
+						'Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramsés.',
+				},
+				{
+					icon: 'dinner',
+					label: 'Comida',
+					time: '5:30 p.m.',
+					description:
+						'Compartiremos la mesa en familia, con gratitud y alegría por este primer año.',
+				},
+				{
+					icon: 'sparkles',
+					label: 'Cierre de celebración',
+					time: '10:00 p.m.',
+					description:
+						'Gracias por ser parte de este recuerdo que guardaremos con mucho amor.',
+				},
+			],
+		});
+	});
+
 	it('exports all local optimized image files from the event asset module', () => {
 		const source = fs.readFileSync(assetIndexPath, 'utf8');
 		const imageFiles = fs
@@ -143,15 +177,12 @@ describe('Cesar Ramses baptism invitation content', () => {
 		}
 	});
 
-	it('has venue name and address present for both ceremony and reception', () => {
+	it('has venue name and address present for the reception', () => {
 		const event = readCesarRamsesEvent();
 
 		expect(event.location?.venueName).toBe('Levanto Jardín de Eventos');
 		expect(event.location?.address).toBe(
 			'24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.',
-		);
-		expect(event.location?.ceremony?.venueName).toBe(
-			'Parroquia de Nuestra Señora de Guadalupe',
 		);
 		expect(event.location?.reception?.venueName).toBe('Levanto Jardín de Eventos');
 	});

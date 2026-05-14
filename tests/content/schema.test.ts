@@ -2,7 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 import { collections } from '@/content.config';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
+import {
+	ITINERARY_ICON_DISPLAY_NAMES,
+	ITINERARY_ICON_KEYS,
+	THEME_PRESETS,
+} from '@/lib/theme/theme-contract';
 
 const rawSchema = collections.events.schema;
 if (!rawSchema) {
@@ -226,6 +230,39 @@ describe('Event content schema (real contract)', () => {
 		);
 
 		expect(result.success).toBe(true);
+	});
+
+	it('supports itinerary subtitles and refined venue/farewell icons', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				itinerary: {
+					title: 'Programa',
+					subtitle: 'Bautizo y 1er Año de César Ramses',
+					items: [
+						{
+							icon: 'map',
+							label: 'Recepción',
+							time: '4:00 p.m.',
+							description: 'Nos reuniremos para celebrar con cariño.',
+						},
+						{
+							icon: 'sparkles',
+							label: 'Cierre de celebración',
+							time: '10:00 p.m.',
+							description: 'Gracias por ser parte de este recuerdo.',
+						},
+					],
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.itinerary?.subtitle).toBe('Bautizo y 1er Año de César Ramses');
+		expect((ITINERARY_ICON_KEYS as readonly string[]).includes('map')).toBe(true);
+		expect((ITINERARY_ICON_KEYS as readonly string[]).includes('sparkles')).toBe(true);
+		expect(ITINERARY_ICON_DISPLAY_NAMES.map).toBe('MapLocation');
+		expect(ITINERARY_ICON_DISPLAY_NAMES.sparkles).toBe('Sparkles');
 	});
 
 	it('rejects invalid internal asset keys in event content', () => {
