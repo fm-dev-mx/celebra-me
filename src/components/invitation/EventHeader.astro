@@ -30,13 +30,19 @@ const {
 	eventSubtitle,
 } = Astro.props;
 const RSVP_HREF = '#rsvp';
+const DESKTOP_ORDINAL_PATTERN = /^\d{2}\s*·\s*/;
+/**
+ * Strips ordinal prefix from desktop nav labels.
+ * Format: "01 · Mensaje" → "Mensaje". Mobile nav (NavBarMobile) uses raw labels.
+ */
+const stripDesktopOrdinal = (label: string) => label.replace(DESKTOP_ORDINAL_PATTERN, '');
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
 const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 ---
 
 <HeaderBase transparentOnHero={true} headerId="event-header" variant={variant}>
 	<div slot="logo">
-<a href="#" class="event-header__title">
+		<a href="#" class="event-header__title">
 			<span class="event-header__title-initials">{initials}</span>
 		</a>
 	</div>
@@ -51,7 +57,7 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 						{ 'event-header__action-btn--cta': link.href === RSVP_HREF }
 					]}
 				>
-					{link.label}
+					{link.href === RSVP_HREF ? link.label : stripDesktopOrdinal(link.label)}
 				</a>
 			))
 		}
@@ -61,7 +67,7 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 		<NavBarMobile
 			links={mobileLinks}
 			headerId="event-header"
-			desktopBreakpoint="xl"
+			desktopBreakpoint="lg"
 			ctaLink={rsvpLink?.href}
 			ctaLabel={rsvpLink?.label ?? 'Confirmar asistencia'}
 			eventName={eventName}

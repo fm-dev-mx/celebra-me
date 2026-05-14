@@ -21,8 +21,22 @@ describe('Invitation header navigation contract', () => {
 		expect(source).toContain('<NavBarMobile');
 		expect(source).toMatch(/links=\{mobileLinks\}/);
 		expect(source).toMatch(/ctaLink=\{rsvpLink\?\.href\}/);
-		expect(source).toMatch(/ctaLabel=\{'Confirmar asistencia'\}/);
+		expect(source).toMatch(/ctaLabel=\{rsvpLink\?\.label \?\? ['"]Confirmar asistencia['"]\}/);
 		expect(source).toMatch(/links\.map/);
+	});
+
+	it('strips decorative ordinal prefixes from desktop labels only', () => {
+		const source = read('src/components/invitation/EventHeader.astro');
+		const event = JSON.parse(read('src/content/events/cesar-ramses.json')) as {
+			navigation: Array<{ label: string; href: string }>;
+		};
+
+		expect(event.navigation[0]?.label).toBe('01 · Mensaje');
+		expect(source).toMatch(/const\s+stripDesktopOrdinal/);
+		expect(source).toMatch(
+			/link\.href === RSVP_HREF \? link\.label : stripDesktopOrdinal\(link\.label\)/,
+		);
+		expect(source).toMatch(/desktopBreakpoint=["']lg["']/);
 	});
 
 	it('guards mobile drawer scroll-safety with overflow and overscroll CSS', () => {
@@ -54,7 +68,7 @@ describe('Invitation header navigation contract', () => {
 	});
 
 	it('maps celestial-blue header tokens onto HeaderBase consumed variables', () => {
-		const source = read('src/styles/themes/sections/_header-theme.scss');
+		const source = read('src/styles/themes/sections/header/_celestial-blue.scss');
 
 		expect(source).toMatch(/\.header-base\[data-variant=['"]celestial-blue['"]\]/);
 		expect(source).toMatch(/--header-bg:/);
