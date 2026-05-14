@@ -4,30 +4,30 @@
 	// ---------------------------------------------------------------------
 	// Base palette: "Divine Light" (White, Cream & Gold)
 	// ---------------------------------------------------------------------
-	--color-angelic-white: rgb(252 250 242);
-	--color-angelic-white-rgb: 252 250 242;
+	--color-angelic-white: rgb(253 250 244);
+	--color-angelic-white-rgb: 253 250 244;
 	--color-pure-ivory: rgb(255 255 255);
 	--color-pure-ivory-rgb: 255 255 255;
-	--color-soft-sand: rgb(244 241 234);
-	--color-soft-sand-rgb: 244 241 234;
-	--color-angelic-blue: rgb(182 218 229);
-	--color-angelic-blue-rgb: 182 218 229;
-	--color-angelic-blue-soft: rgb(210 231 237);
-	--color-angelic-blue-soft-rgb: 210 231 237;
+	--color-soft-sand: rgb(246 241 232);
+	--color-soft-sand-rgb: 246 241 232;
+	--color-angelic-blue: rgb(172 211 224);
+	--color-angelic-blue-rgb: 172 211 224;
+	--color-angelic-blue-soft: rgb(214 234 239);
+	--color-angelic-blue-soft-rgb: 214 234 239;
 	--color-angelic-mist: rgb(232 243 246);
 	--color-angelic-mist-rgb: 232 243 246;
 	--color-ivory-warm: rgb(253 248 238);
 	--color-ivory-warm-rgb: 253 248 238;
 
 	// Reduced saturation: champagne/antique-gold range instead of yellow gold
-	--color-sacred-gold: rgb(191 167 106);
-	--color-sacred-gold-rgb: 191 167 106;
+	--color-sacred-gold: rgb(176 148 82);
+	--color-sacred-gold-rgb: 176 148 82;
 
 	// Readable gold for functional text (WCAG AA on ivory/light backgrounds)
 	// ~5.8:1 contrast ratio on pure ivory, ~7:1 on soft sand
-	--color-sacred-gold-readable: hsl(40deg 65% 40%);
-	--color-eternal-ink: rgb(63 58 50);
-	--color-eternal-ink-rgb: 63 58 50;
+	--color-sacred-gold-readable: hsl(39deg 55% 34%);
+	--color-eternal-ink: rgb(55 51 45);
+	--color-eternal-ink-rgb: 55 51 45;
 	--color-ethereal-gray: rgb(220 220 215);
 	--color-ethereal-gray-rgb: 220 220 215;
 
@@ -62,8 +62,8 @@
 	--color-angelic-border-soft: rgb(var(--color-angelic-blue-soft-rgb) / 34%);
 	--angelic-blue-wash: radial-gradient(
 		ellipse at 50% 50%,
-		rgb(var(--color-angelic-blue-rgb) / 26%) 0%,
-		rgb(var(--color-angelic-blue-soft-rgb) / 14%) 42%,
+		rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
+		rgb(var(--color-angelic-blue-soft-rgb) / 10%) 42%,
 		transparent 72%
 	);
 	--angelic-ivory-wash: linear-gradient(
@@ -75,13 +75,13 @@
 	--angelic-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--color-angelic-blue-rgb) / 46%) 22%,
-		rgb(var(--color-sacred-gold-rgb) / 40%) 50%,
-		rgb(var(--color-angelic-blue-rgb) / 46%) 78%,
+		rgb(var(--color-sacred-gold-rgb) / 30%) 22%,
+		rgb(var(--color-angelic-blue-rgb) / 34%) 50%,
+		rgb(var(--color-sacred-gold-rgb) / 30%) 78%,
 		transparent 100%
 	);
 	--angelic-soft-shadow:
-		0 22px 58px rgb(var(--color-eternal-ink-rgb) / 9%),
+		0 20px 48px rgb(var(--color-eternal-ink-rgb) / 8%),
 		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
 
 	// ---------------------------------------------------------------------
@@ -102,9 +102,9 @@
 	--glass-blur: 12px;
 	--glass-saturate: 150%;
 	--shadow-premium:
-		0 24px 62px rgb(var(--color-eternal-ink-rgb) / 12%),
+		0 22px 54px rgb(var(--color-eternal-ink-rgb) / 10%),
 		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
-	--shadow-editorial: 0 18px 46px rgb(var(--color-eternal-ink-rgb) / 10%);
+	--shadow-editorial: 0 16px 40px rgb(var(--color-eternal-ink-rgb) / 9%);
 	--border-fine-gold: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
 	--border-fine-silver: 1px solid rgb(var(--color-ethereal-gray-rgb) / 58%);
 	--border-image: 1px solid rgb(var(--color-sacred-gold-rgb) / 42%);
