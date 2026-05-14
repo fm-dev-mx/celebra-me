@@ -9,7 +9,10 @@ export const interludeSchema = z.object({
 	alt: z.string().optional(),
 	height: z.enum(['screen', 'tall']).default('screen'),
 	variant: z.enum(THEME_PRESETS).optional(),
-	focalPoint: z.string().optional(),
+	focalPoint: z
+		.string()
+		.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
+		.optional(),
 	lightX: z.string().optional(),
 	lightY: z.string().optional(),
 	overlayOpacity: z.string().optional(),

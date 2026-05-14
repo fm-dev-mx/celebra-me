@@ -58,7 +58,10 @@ export const thankYouSchema = z
 		message: z.string(),
 		closingName: z.string(),
 		image: AssetSchema.optional(),
-		focalPoint: z.string().optional(),
+		focalPoint: z
+			.string()
+			.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
+			.optional(),
 	})
 	.optional();
 
