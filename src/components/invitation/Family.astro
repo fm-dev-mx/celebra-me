@@ -59,8 +59,6 @@ interface FamilyBlock {
 	id: string;
 	title: string;
 	entries: FamilyEntry[];
-	isChildren?: boolean;
-	isGodparents?: boolean;
 }
 
 const {
@@ -103,101 +101,82 @@ const initials = celebrantName
 	.join('')
 	.toUpperCase();
 
-const familyBlocks: FamilyBlock[] = [];
-
-const toEntryPairs = (entries: FamilyEntry[]) => {
-	const pairs: Array<[FamilyEntry, FamilyEntry?]> = [];
-
-	for (let index = 0; index < entries.length; index += 2) {
-		pairs.push([entries[index], entries[index + 1]]);
-	}
-
-	return pairs;
-};
-
-const pairOrdinals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-
-const getOrdinal = (index: number) => pairOrdinals[index] ?? String(index + 1);
-
-if (groups && groups.length > 0) {
-	groups.forEach((group, index) => {
-		familyBlocks.push({
-			id: `group-${index}`,
-			title: group.title,
-			entries: group.items.map((item) => ({
-				name: item.name,
-				role: item.role,
-				deceased: item.deceased,
-			})),
-		});
-	});
-} else {
-	if (spouse) {
-		familyBlocks.push({
-			id: 'spouse',
-			title: resolvedLabels.spouseTitle,
-			entries: [
-				{
-					name: spouse,
-					lead: true,
-				},
-			],
-		});
-	}
-
-	if (children && children.length > 0) {
-		familyBlocks.push({
-			id: 'children',
-			title: resolvedLabels.childrenTitle,
-			isChildren: true,
-			entries: children.map((child) => ({
-				name: child.name,
-				role: child.role,
-			})),
-		});
-	}
-
-	if (parents && (parents.father || parents.mother)) {
-		const parentEntries: FamilyEntry[] = [];
-
-		if (parents.mother) {
-			parentEntries.push({
-				name: parents.mother,
-				role: 'Madre',
-				deceased: Boolean(parents.motherDeceased),
-			});
-		}
-		if (parents.mother && parents.father) {
-			parentEntries.push({ connector: true });
-		}
-		if (parents.father) {
-			parentEntries.push({
-				name: parents.father,
-				role: 'Padre',
-				deceased: Boolean(parents.fatherDeceased),
-			});
-		}
-
-		familyBlocks.push({
-			id: 'parents',
-			title: resolvedLabels.parentsTitle,
-			entries: parentEntries,
-		});
-	}
-}
-
-// Godparents are always separate if provided
-if (godparents && godparents.length > 0) {
-	familyBlocks.push({
-		id: 'godparents',
-		title: resolvedLabels.godparentsTitle,
-		isGodparents: true,
-		entries: godparents.map((godparent) => ({
-			name: godparent.name,
-			role: godparent.role,
-		})),
-	});
-}
+const familyBlocks: FamilyBlock[] = (
+		groups && groups.length > 0
+			? groups.map((group, index) => ({
+					id: `group-${index}`,
+					title: group.title,
+					entries: group.items.map((item) => ({
+						name: item.name,
+						role: item.role,
+						deceased: item.deceased,
+					})),
+				}))
+			: [
+					...(spouse
+						? [
+								{
+									id: 'spouse',
+									title: resolvedLabels.spouseTitle,
+									entries: [{ name: spouse, lead: true }],
+								},
+							]
+						: []),
+					...(children && children.length > 0
+						? [
+								{
+									id: 'children',
+									title: resolvedLabels.childrenTitle,
+									entries: children.map((child) => ({
+										name: child.name,
+										role: child.role,
+									})),
+								},
+							]
+						: []),
+					...(parents && (parents.father || parents.mother)
+						? [
+								{
+									id: 'parents',
+									title: resolvedLabels.parentsTitle,
+									entries: [
+										...(parents.mother
+											? [
+													{
+														name: parents.mother,
+														role: 'Madre',
+														deceased: Boolean(parents.motherDeceased),
+													},
+												]
+											: []),
+										...(parents.father
+											? [
+													{
+														name: parents.father,
+														role: 'Padre',
+														deceased: Boolean(parents.fatherDeceased),
+													},
+												]
+											: []),
+									],
+								},
+							]
+						: []),
+				]
+	).concat(
+		godparents && godparents.length > 0
+			? [
+					{
+						id: 'godparents',
+						title: resolvedLabels.godparentsTitle,
+						entries: godparents.map((godparent) => ({
+							name: godparent.name,
+							role: godparent.role,
+						})),
+					},
+				]
+			: [],
+	);
 ---
 
 <section
@@ -249,61 +228,26 @@ if (godparents && godparents.length > 0) {
 							'family__reveal',
 						]}
 					>
-						{block.isGodparents ? (
-							<ul class="family__list family__list--godparents">
-								{toEntryPairs(block.entries).map((pair, pairIndex) => (
-									<li class="family__pair">
-										<span class="family__pair-ordinal" aria-hidden="true">
-											{getOrdinal(pairIndex)}
-										</span>
-										<div class="family__pair-members">
-											<div class:list={['family__item', 'family__item--godparent']}>
-												<p class="family__name">
-													<span>{pair[0].name}</span>
-												</p>
-												{pair[0].role && <span class="family__meta">{pair[0].role}</span>}
-											</div>
-											{pair[1] && (
-												<>
-													<span class="family__pair-connector" aria-hidden="true">y</span>
-													<div class:list={['family__item', 'family__item--godparent']}>
-														<p class="family__name">
-															<span>{pair[1].name}</span>
-														</p>
-														{pair[1].role && <span class="family__meta">{pair[1].role}</span>}
-													</div>
-												</>
-											)}
-										</div>
-									</li>
-								))}
-							</ul>
-						) : (
-							<ul
-								class:list={[
-									'family__list',
-									block.isChildren && 'family__list--children',
-								]}
-							>
-								{block.entries.map((entry) =>
-									entry.connector ? (
-										<li class="family__connector family__connector--parents" aria-hidden="true">
-											<span>y</span>
-										</li>
-									) : (
-										<li class:list={['family__item', entry.lead && 'family__item--lead']}>
-											<p class="family__name">
-												<span>{entry.name}</span>
-												{entry.deceased && (
-													<span class="family__deceased-indicator" aria-hidden="true">†</span>
-												)}
-											</p>
-											{entry.role && <span class="family__meta">{entry.role}</span>}
-										</li>
-									),
-								)}
-							</ul>
-						)}
+						<h3 class="family__group-title">{block.title}</h3>
+					<ul
+						class:list={[
+							'family__list',
+							block.id === 'children' && 'family__list--children',
+							block.id === 'godparents' && 'family__list--godparents',
+						]}
+					>
+							{block.entries.map((entry) => (
+								<li class:list={['family__item', entry.lead && 'family__item--lead', block.id === 'godparents' && 'family__item--godparent']}>
+									<p class="family__name">
+										<span>{entry.name}</span>
+										{entry.deceased && (
+											<span class="family__deceased-indicator" aria-hidden="true">†</span>
+										)}
+									</p>
+									{entry.role && <span class="family__meta">{entry.role}</span>}
+								</li>
+							))}
+						</ul>
 					</section>
 				))}
 			</div>
