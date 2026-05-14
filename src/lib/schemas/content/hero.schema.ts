@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const heroSchema = z.object({

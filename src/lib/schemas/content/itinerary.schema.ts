@@ -11,6 +11,7 @@ export const itineraryItemSchema = z.object({
 export const itinerarySchema = z
 	.object({
 		title: z.string().default('Itinerario'),
+		subtitle: z.string().optional(),
 		items: z.array(itineraryItemSchema),
 	})
 	.optional();

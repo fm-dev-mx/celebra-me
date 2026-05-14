@@ -11,7 +11,10 @@ export const interludeSchema = z.object({
 	variant: z.enum(THEME_PRESETS).optional(),
 	focalPoint: z
 		.string()
-		.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
+		.regex(
+			/^(?:\d+(?:\.\d+)?%|left|center|right)\s+(?:\d+(?:\.\d+)?%|top|center|bottom)$/,
+			'focalPoint must be a CSS position such as "50% 40%" or "center 15%"',
+		)
 		.optional(),
 	lightX: z.string().optional(),
 	lightY: z.string().optional(),
