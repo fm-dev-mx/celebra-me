@@ -7,29 +7,6 @@
 
 .event--cesar-ramses {
 	// ─────────────────────────────────────────────────────────────
-	// SHARED GRADIENTS — extracted for reuse
-	// ─────────────────────────────────────────────────────────────
-	--angelic-hero-overlay: linear-gradient(
-		180deg,
-		rgb(var(--color-pure-ivory-rgb) / 24%) 0%,
-		transparent 18%
-	),
-	radial-gradient(
-		ellipse at 50% 38%,
-		transparent 22%,
-		rgb(var(--color-eternal-ink-rgb) / 12%) 64%,
-		rgb(var(--color-eternal-ink-rgb) / 28%) 85%
-	),
-	linear-gradient(
-		to top,
-		rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
-		rgb(var(--color-ivory-warm-rgb) / 78%) 22%,
-		rgb(var(--color-eternal-ink-rgb) / 32%) 52%,
-		rgb(var(--color-eternal-ink-rgb) / 52%) 76%,
-		transparent 100%
-	);
-
-	// ─────────────────────────────────────────────────────────────
 	// HERO
 	// ─────────────────────────────────────────────────────────────
 	.invitation-hero[data-variant='angelic-presence'] {
@@ -38,18 +15,19 @@
 			0 14px 34px rgb(var(--color-eternal-ink-rgb) / 28%);
 
 		justify-content: flex-end;
-		align-items: center;
+		align-items: flex-start;
 		padding: clamp(1.2rem, 5vw, 3rem);
 		padding-bottom: clamp(1rem, 4vh, 3rem);
-		background:
-			linear-gradient(
-				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
-				rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
-				rgb(var(--color-angelic-mist-rgb) / 28%) 100%
-			);
+		background: linear-gradient(
+			180deg,
+			rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
+			rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
+			rgb(var(--color-angelic-mist-rgb) / 28%) 100%
+		);
 
-		&::before { display: none; }
+		&::before {
+			display: none;
+		}
 
 		// Full-bleed image — editorial cover, no card frame
 		.invitation-hero__background {
@@ -59,7 +37,7 @@
 			overflow: hidden;
 			box-shadow: none;
 
-			// Warm, controlled overlay — luminous baby face, minimal elsewhere
+			// Luminous overlay — brighter bottom third, champagne edge glow, no muddy beige/gray veil
 			&::after {
 				content: '';
 				position: absolute;
@@ -71,21 +49,20 @@
 						rgb(var(--color-pure-ivory-rgb) / 30%) 0%,
 						transparent 25%
 					),
-					// Minimal center overlay for depth
+					// Champagne radial glow — adds warmth without darkening
 					radial-gradient(
-						circle at 50% 38%,
-						transparent 25%,
-						rgb(var(--color-eternal-ink-rgb) / 8%) 65%,
-						rgb(var(--color-eternal-ink-rgb) / 22%) 100%
-					),
-					// Bottom gradient for event details, softly transitioning
+							ellipse at 50% 38%,
+							rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
+							transparent 55%
+						),
+					// Luminous bottom gradient — ivory/champagne, removes the dim veil
 					linear-gradient(
-						to top,
-						rgb(var(--color-pure-ivory-rgb) / 92%) 0%,
-						rgb(var(--color-pure-ivory-rgb) / 78%) 22%,
-						rgb(var(--color-pure-ivory-rgb) / 30%) 55%,
-						transparent 85%
-					);
+							to top,
+							rgb(var(--color-pure-ivory-rgb) / 98%) 0%,
+							rgb(var(--color-ivory-warm-rgb) / 88%) 22%,
+							rgb(var(--color-sacred-gold-rgb) / 18%) 52%,
+							transparent 85%
+						);
 				z-index: 1;
 				pointer-events: none;
 			}
@@ -95,7 +72,7 @@
 				height: 100%;
 				object-fit: cover;
 				object-position: var(--hero-focal-point);
-				filter: brightness(1.02) contrast(0.98) saturate(0.92) sepia(0.04);
+				filter: brightness(1.06) contrast(1.02) saturate(0.96) sepia(0.02);
 			}
 		}
 
@@ -104,9 +81,9 @@
 			position: relative;
 			z-index: 2;
 			margin: 0;
-			margin-bottom: clamp(1.5rem, 6vh, 4rem);
+			margin-bottom: clamp(4.5rem, 12vh, 8rem);
 			width: 100%;
-			max-width: min(800px, calc(100vw - clamp(3.5rem, 9vw, 6.5rem)));
+			max-width: min(540px, calc(100vw - clamp(3.5rem, 9vw, 6.5rem)));
 			display: flex;
 			flex-direction: column;
 			align-items: flex-start;
@@ -117,15 +94,14 @@
 		.invitation-hero__label {
 			border: none;
 			background: transparent;
-			color: rgb(var(--color-sacred-gold-rgb) / 80%);
+			color: rgb(var(--color-soft-sand-rgb) / 90%);
 			box-shadow: none;
-			letter-spacing: 0.32em;
+			letter-spacing: 0.05em;
 			padding: 0;
 			margin: 0;
 			text-transform: uppercase;
-			font-size: clamp(0.55rem, 1.6vw, 0.68rem);
-			font-weight: 500;
-			text-shadow: 0 1px 8px rgb(var(--color-eternal-ink-rgb) / 30%);
+			font-size: clamp(0.85rem, 2.2vw, 1.6rem);
+			text-shadow: 0 1px 6px rgb(var(--color-eternal-ink-rgb) / 60%);
 			order: -1;
 		}
 
@@ -150,24 +126,28 @@
 					transparent 100%
 				);
 			}
-			&::before { top: 0; }
-			&::after { bottom: 0; }
+			&::before {
+				top: 0;
+			}
+			&::after {
+				bottom: 0;
+			}
 		}
 
 		.invitation-hero__title {
 			background: linear-gradient(
 				115deg,
-				rgb(var(--color-eternal-ink-rgb) / 94%) 0%,
-				rgb(var(--color-sacred-gold-rgb) / 88%) 50%,
-				rgb(var(--color-eternal-ink-rgb) / 92%) 100%
+				rgb(var(--color-eternal-ink-rgb) / 96%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 92%) 45%,
+				rgb(var(--color-eternal-ink-rgb) / 94%) 100%
 			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
 			filter: drop-shadow(var(--hero-angelic-title-shadow));
 			margin: 0;
-			font-size: clamp(2.6rem, 8vw, 4.8rem);
+			font-size: clamp(2.7rem, 6.6vw, 4.7rem);
 			text-align: left;
-			line-height: 0.95;
+			line-height: 0.92;
 			letter-spacing: 0.02em;
 
 			.invitation-hero__title-line {
@@ -175,8 +155,10 @@
 			}
 		}
 
+		// Portrait visibility controlled by breakpoint overrides below.
+		// Base state: hidden at mobile, shown at tablet+ via respond-to(lg).
 		.invitation-hero__portrait {
-			display: none;
+			// Hidden by default; re-enabled at lg breakpoint
 		}
 
 		.invitation-hero__details {
@@ -198,15 +180,15 @@
 				width: 3rem;
 				height: 1px;
 				background: linear-gradient(to right, var(--color-sacred-gold), transparent);
-				opacity: 0.6;
+				opacity: 60%;
 			}
 		}
 
 		.invitation-hero__date {
 			font-family: var(--font-label);
 			font-weight: 600;
-			color: rgb(var(--color-eternal-ink-rgb) / 88%);
-			font-size: clamp(0.72rem, 2vw, 0.88rem);
+			color: rgb(var(--color-eternal-ink-rgb) / 92%);
+			font-size: clamp(0.78rem, 2.2vw, 0.98rem);
 			text-transform: uppercase;
 			letter-spacing: 0.22em;
 			margin-bottom: 0.25rem;
@@ -214,11 +196,11 @@
 
 		.invitation-hero__time,
 		.invitation-hero__venue {
-			color: rgb(var(--color-eternal-ink-rgb) / 75%);
+			color: rgb(var(--color-eternal-ink-rgb) / 82%);
 			font-family: var(--font-body);
-			font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+			font-size: clamp(0.78rem, 2.2vw, 0.98rem);
 			letter-spacing: 0.14em;
-			text-shadow: none;
+			text-shadow: 0 1px 6px rgb(var(--color-pure-ivory-rgb) / 50%);
 		}
 
 		.invitation-hero__venue .calligraphy-accent {
@@ -243,19 +225,127 @@
 			}
 		}
 
+		// Re-enable 2-column editorial portrait grid at lg+ (≥992px).
+		// César Ramses intentionally hid portrait via display:none base rule.
+		// Restoring the theme's intended composition: text left, portrait right.
+		@include mixins.respond-to(lg) {
+			align-items: stretch;
+
+			.invitation-hero__content {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				grid-template-areas:
+					'label label'
+					'title portrait'
+					'details portrait';
+				align-content: center;
+				align-items: center;
+				max-width: min(58rem, 88vw);
+				margin-left: clamp(1.5rem, 5vw, 4.5rem);
+				margin-bottom: clamp(4rem, 8vh, 6rem);
+				padding: clamp(5rem, 10svh, 7rem) clamp(1.5rem, 4vw, 3.5rem) clamp(4rem, 8svh, 6rem);
+				gap: 1.5rem;
+			}
+
+			.invitation-hero__portrait {
+				display: block;
+				width: min(88%, 320px);
+				align-self: center;
+			}
+
+			.invitation-hero__portrait img {
+				object-position: center 15%;
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(2.8rem, 5.5vw, 5.2rem);
+				line-height: 0.92;
+			}
+
+			.invitation-hero__label {
+				font-size: clamp(0.6rem, 1.8vw, 0.8rem);
+			}
+
+			.invitation-hero__date,
+			.invitation-hero__time,
+			.invitation-hero__venue {
+				font-size: clamp(0.72rem, 1.6vw, 0.92rem);
+			}
+
+			.invitation-hero__scroll-indicator {
+				display: block;
+				bottom: clamp(1.5rem, 4vh, 2.5rem);
+			}
+		}
+
+		// Tablet portrait range (769px–1023px) — editorial 2-col with contained portrait.
+		// Prevents fallback to mobile-like layout at iPad/similar sizes.
+		@media (width >= 769px) and (width < 992px) {
+			align-items: stretch;
+
+			.invitation-hero__content {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				grid-template-areas:
+					'label label'
+					'title portrait'
+					'details portrait';
+				align-content: center;
+				align-items: center;
+				max-width: min(50rem, 94vw);
+				margin-left: clamp(1rem, 3vw, 2.5rem);
+				margin-bottom: clamp(3rem, 6vh, 5rem);
+				padding: clamp(4rem, 8svh, 6rem) clamp(1.25rem, 3vw, 2.5rem) clamp(3rem, 6svh, 5rem);
+				gap: 1.25rem;
+			}
+
+			.invitation-hero__portrait {
+				display: block;
+				width: min(85%, 260px);
+				align-self: center;
+			}
+
+			.invitation-hero__portrait img {
+				object-position: center 15%;
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(2.4rem, 5.5vw, 4rem);
+			}
+
+			.invitation-hero__label {
+				font-size: clamp(0.58rem, 2vw, 0.75rem);
+			}
+
+			.invitation-hero__date,
+			.invitation-hero__time,
+			.invitation-hero__venue {
+				font-size: clamp(0.68rem, 2vw, 0.85rem);
+			}
+
+			.invitation-hero__scroll-indicator {
+				display: block;
+				bottom: clamp(1.2rem, 3.5vh, 2rem);
+			}
+		}
+
 		@include mixins.respond-below(md) {
+			align-items: center;
+			padding-top: var(--header-height, 100px);
+
 			.invitation-hero__background {
 				inset: 0;
 			}
 
 			.invitation-hero__content {
 				max-width: min(800px, calc(100vw - clamp(2rem, 6vw, 3.5rem)));
-				margin-bottom: clamp(0.5rem, 4vh, 2rem);
+				padding-top: max(42svh, calc(4rem + var(--header-height, 100px)));
+				margin-bottom: clamp(0.5rem, 4dvh, 2rem);
 				gap: 0.6rem;
 			}
 
 			.invitation-hero__scroll-indicator {
-				bottom: clamp(1.2rem, 4vh, 2.5rem);
+				bottom: clamp(1.2rem, 4dvh, 2.5rem);
 			}
 		}
 
@@ -263,57 +353,47 @@
 		// Mobile (375px and below) — iPhone SE
 		// -------------------------------------------------------------------------
 		@include mixins.respond-below(xs) {
-			.invitation-hero__background {
-				&::after {
-					background:
-						linear-gradient(
-							to bottom,
-							rgb(var(--color-ivory-warm-rgb) / 18%) 0%,
-							transparent 18%
-						),
-						radial-gradient(
-							ellipse at 50% 40%,
-							transparent 15%,
-							rgb(var(--color-eternal-ink-rgb) / 6%) 55%,
-							rgb(var(--color-eternal-ink-rgb) / 14%) 75%
-						),
-						linear-gradient(
-							to top,
-							rgb(var(--color-ivory-warm-rgb) / 96%) 0%,
-							rgb(var(--color-ivory-warm-rgb) / 65%) 16%,
-							rgb(var(--color-eternal-ink-rgb) / 32%) 44%,
-							rgb(var(--color-eternal-ink-rgb) / 44%) 68%,
-							transparent 100%
-						);
-				}
+			.invitation-hero__background::after {
+				background:
+					linear-gradient(
+						to bottom,
+						rgb(var(--color-pure-ivory-rgb) / 22%) 0%,
+						transparent 20%
+					),
+					radial-gradient(
+						ellipse at 50% 40%,
+						rgb(var(--color-sacred-gold-rgb) / 5%) 0%,
+						transparent 55%
+					),
+					linear-gradient(
+						to top,
+						rgb(var(--color-pure-ivory-rgb) / 98%) 0%,
+						rgb(var(--color-ivory-warm-rgb) / 88%) 16%,
+						rgb(var(--color-sacred-gold-rgb) / 12%) 44%,
+						transparent 82%
+					);
 			}
 
 			.invitation-hero__content {
-				padding: 48svh clamp(1rem, 4vw, 1.4rem) clamp(3.5rem, 8svh, 4.75rem);
+				padding: max(46svh, calc(4.5rem + var(--header-height, 100px)))
+					clamp(1rem, 4vw, 1.4rem) clamp(3.5rem, 8dvh, 4.75rem);
 				gap: 0.5rem;
 			}
 
 			.invitation-hero__title {
-				font-size: clamp(2.1rem, 13vw, 3.2rem);
-				line-height: 0.92;
+				font-size: clamp(2.3rem, 14vw, 3.4rem);
+				line-height: 0.9;
 			}
 
-			.invitation-hero__label {
-				font-size: clamp(0.48rem, 2.8vw, 0.6rem);
-				letter-spacing: 0.26em;
-			}
-
-			.invitation-hero__title-wrapper {
-				&::before,
-				&::after {
-					width: min(4.5rem, 32vw);
-				}
+			.invitation-hero__title-wrapper::before,
+			.invitation-hero__title-wrapper::after {
+				width: min(4.5rem, 32vw);
 			}
 
 			.invitation-hero__date,
 			.invitation-hero__time,
 			.invitation-hero__venue {
-				font-size: clamp(0.62rem, 3vw, 0.75rem);
+				font-size: clamp(0.68rem, 3.2vw, 0.82rem);
 				letter-spacing: 0.1em;
 			}
 
@@ -344,7 +424,8 @@
 			animation: none;
 
 			&.is-fading-in {
-				animation: musicPlayerFadeInSlide var(--duration-standard) forwards var(--ease-standard);
+				animation: musicPlayerFadeInSlide var(--duration-standard) forwards
+					var(--ease-standard);
 			}
 		}
 
@@ -352,7 +433,9 @@
 			width: 2.6rem;
 			height: 2.6rem;
 			opacity: 65%;
-			transition: opacity 0.3s ease, transform 0.2s ease;
+			transition:
+				opacity 0.3s ease,
+				transform 0.2s ease;
 
 			&:hover {
 				opacity: 90%;
@@ -390,15 +473,15 @@
 			&__button--play {
 				width: 2.3rem;
 				height: 2.3rem;
+			}
 
-				svg {
-					width: 14px;
-					height: 14px;
-				}
+			&__button--play svg {
+				width: 14px;
+				height: 14px;
 			}
 		}
 
-		@media (width <= 375px) {
+		@include mixins.respond-below(xs) {
 			bottom: 0.75rem;
 			left: 0.75rem;
 
@@ -410,7 +493,8 @@
 	}
 
 	@keyframes musicPlayerPulseSoft {
-		0%, 100% {
+		0%,
+		100% {
 			box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 8%);
 			transform: scale(1);
 		}
@@ -456,7 +540,7 @@
 			gap: 0;
 			max-width: 600px;
 			margin-inline: auto;
-			opacity: 1;
+			opacity: 100%;
 			transform: none;
 
 			// Subtle ornamental vertical rule
@@ -464,17 +548,40 @@
 				content: '';
 				width: 1px;
 				height: clamp(3rem, 6vh, 4.5rem);
-				background: linear-gradient(to bottom, transparent, var(--color-sacred-gold), transparent);
+				background: linear-gradient(
+					to bottom,
+					transparent,
+					var(--color-sacred-gold),
+					transparent
+				);
 				margin-bottom: 2rem;
-				opacity: 0.4;
+				opacity: 40%;
 			}
 		}
 
 		// Reordering logic via display: contents
-		.countdown-header { display: contents; }
-		.countdown-timer-wrapper { display: contents; }
-		.countdown__timer { display: contents; }
-		.countdown-footer { display: contents; }
+		.countdown-header {
+			display: contents;
+		}
+
+		.countdown-timer-wrapper {
+			display: contents;
+		}
+
+		.countdown__timer {
+			display: contents;
+		}
+
+		.countdown-footer {
+			display: contents;
+			padding: 0;
+			margin: 0;
+			border: none;
+		}
+
+		.countdown-footer::before {
+			display: none;
+		}
 
 		// 1. Title
 		.countdown-title {
@@ -486,6 +593,7 @@
 			text-transform: uppercase;
 			color: rgb(var(--color-eternal-ink-rgb) / 64%);
 			margin-bottom: 1.5rem;
+
 			--countdown-subtitle-text: attr(data-subtitle-text);
 
 			&::after {
@@ -496,13 +604,13 @@
 				font-weight: 600;
 				letter-spacing: 0.35em;
 				margin-top: 0.75rem;
-				opacity: 0.5;
+				opacity: 50%;
 				color: var(--color-sacred-gold-readable);
 			}
 		}
 
 		// 2. Days (Protagonist)
-		.countdown__segment[data-index="0"] {
+		.countdown__segment[data-index='0'] {
 			order: 2;
 			flex: 0 0 100%; // Force full width in the flex container
 			display: flex;
@@ -513,8 +621,8 @@
 			background: transparent;
 			border: none;
 			box-shadow: none;
-			transform: none !important;
-			opacity: 1 !important;
+			transform: none;
+			opacity: 100%;
 
 			.countdown__value-wrapper {
 				overflow: visible;
@@ -536,11 +644,14 @@
 				font-weight: 600;
 				letter-spacing: 0.45em;
 				margin-top: 0;
-				opacity: 0.75;
+				opacity: 75%;
 				color: var(--color-eternal-ink);
 			}
 
-			.rivet, \u0026::before { display: none; }
+			.rivet,
+			&::before {
+				display: none;
+			}
 		}
 
 		// 3. Description Text
@@ -557,15 +668,15 @@
 			text-transform: none;
 			letter-spacing: normal;
 			font-style: normal;
-			opacity: 0.85;
+			opacity: 85%;
 			border: none;
 			padding: 0;
 		}
 
 		// 4. Secondary Inline Time
-		.countdown__segment[data-index="1"],
-		.countdown__segment[data-index="2"],
-		.countdown__segment[data-index="3"] {
+		.countdown__segment[data-index='1'],
+		.countdown__segment[data-index='2'],
+		.countdown__segment[data-index='3'] {
 			order: 4;
 			display: inline-flex;
 			flex-direction: row;
@@ -576,8 +687,8 @@
 			box-shadow: none;
 			padding: 0;
 			margin-inline: 0.5rem;
-			transform: none !important;
-			opacity: 1 !important;
+			transform: none;
+			opacity: 100%;
 
 			.countdown__value-wrapper {
 				width: auto;
@@ -591,37 +702,47 @@
 				font-weight: 600;
 				color: rgb(var(--color-eternal-ink-rgb) / 74%);
 				padding: 0;
-
-				\u0026::after {
-					font-size: 0.64em;
-					font-family: var(--font-body);
-					text-transform: lowercase;
-					font-weight: 600;
-					margin-left: 3px;
-					opacity: 0.55;
-				}
 			}
 
-			.countdown__label { display: none; }
-			.rivet, \u0026::before { display: none; }
+			.countdown__value::after {
+				font-family: var(--font-body);
+				font-size: 0.64em;
+				font-weight: 600;
+				margin-left: 3px;
+				opacity: 55%;
+				text-transform: lowercase;
+			}
+
+			.countdown__label {
+				display: none;
+			}
+
+			.rivet,
+			&::before {
+				display: none;
+			}
 
 			// Visual dividers (dots)
-			\u0026[data-index="1"],
-			\u0026[data-index="2"] {
-				\u0026::after {
-					content: '·';
-					margin-left: 0.9rem;
-					opacity: 0.35;
-					font-weight: 300;
-					font-size: 1.3rem;
-					color: var(--color-sacred-gold);
-				}
+			&[data-index='1']::after,
+			&[data-index='2']::after {
+				content: '·';
+				margin-left: 0.9rem;
+				opacity: 35%;
+				font-weight: 300;
+				font-size: 1.3rem;
+				color: var(--color-sacred-gold);
 			}
 		}
 
-		.countdown__segment[data-index="1"] .countdown__value::after { content: 'h'; }
-		.countdown__segment[data-index="2"] .countdown__value::after { content: 'm'; }
-		.countdown__segment[data-index="3"] .countdown__value::after { content: 's'; }
+		.countdown__segment[data-index='1'] .countdown__value::after {
+			content: 'h';
+		}
+		.countdown__segment[data-index='2'] .countdown__value::after {
+			content: 'm';
+		}
+		.countdown__segment[data-index='3'] .countdown__value::after {
+			content: 's';
+		}
 
 		// 5. Date
 		.countdown-subtitle {
@@ -636,8 +757,13 @@
 				width: 50px;
 				height: 1px;
 				margin-inline: auto;
-				background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
-				opacity: 0.4;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					var(--color-sacred-gold),
+					transparent
+				);
+				opacity: 40%;
 			}
 
 			.event-date {
@@ -651,72 +777,6 @@
 				line-height: 1.8;
 				text-transform: uppercase;
 			}
-		}
-
-		.countdown-footer {
-			border: none;
-			padding: 0;
-			margin: 0;
-			\u0026::before { display: none; }
-		}
-	}
-
-	// ─────────────────────────────────────────────────────────────
-	// EVENT LOCATION
-	// ─────────────────────────────────────────────────────────────
-	.event-location[data-variant='angelic-presence'] {
-		.event-location__card {
-			box-shadow:
-				0 32px 84px -40px rgb(var(--color-eternal-ink-rgb) / 36%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 35%);
-			background: linear-gradient(
-				165deg,
-				rgb(var(--color-pure-ivory-rgb) / 95%) 0%,
-				rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
-				rgb(var(--color-angelic-mist-rgb) / 35%) 100%
-			);
-		}
-
-		.event-location__card-content {
-			padding: clamp(1.6rem, 4vw, 2.75rem);
-		}
-
-		.event-location__card-content-place {
-			font-size: clamp(2rem, 4vw, 2.75rem);
-			margin-bottom: 0.8rem;
-		}
-
-		.event-location__nav-button--primary {
-			background: linear-gradient(
-				to right,
-				rgb(var(--color-sacred-gold-rgb) / 95%),
-				rgb(var(--color-sacred-gold-rgb) / 85%)
-			);
-			color: var(--color-pure-ivory);
-			border: none;
-			font-family: var(--font-label);
-			font-size: 0.72rem;
-			font-weight: 600;
-			letter-spacing: 0.22em;
-			padding: 0.9rem 1.6rem;
-			box-shadow: 0 8px 24px -6px rgb(var(--color-sacred-gold-rgb) / 45%);
-
-			svg {
-				stroke-width: 2px;
-			}
-
-			&:hover {
-				background: var(--color-eternal-ink);
-				box-shadow: 0 12px 32px -8px rgb(var(--color-eternal-ink-rgb) / 40%);
-			}
-		}
-
-		.event-location__card-content-address {
-			padding-top: 1.25rem;
-			font-size: 0.95rem;
-			line-height: 1.5;
-			color: rgb(var(--color-eternal-ink-rgb) / 85%);
 		}
 	}
 
@@ -806,7 +866,7 @@
 			color: rgb(var(--color-sacred-gold-rgb) / 72%);
 		}
 
-        @include mixins.respond-below(md) {
+		@include mixins.respond-below(md) {
 			.family__title {
 				max-width: 12ch;
 				margin-inline: auto;
@@ -1169,21 +1229,9 @@
 	}
 
 	// ─────────────────────────────────────────────────────────────
-	// LOCATION
+	// LOCATION — Premium editorial venue card
 	// ─────────────────────────────────────────────────────────────
 	.event-location[data-variant='angelic-presence'] {
-		background:
-			radial-gradient(
-				ellipse at 16% 12%,
-				rgb(var(--color-angelic-blue-rgb) / 12%) 0%,
-				transparent 34%
-			),
-			linear-gradient(
-				180deg,
-				var(--color-pure-ivory) 0%,
-				var(--color-ivory-warm) 50%,
-				var(--color-soft-sand) 100%
-			);
 		padding-bottom: clamp(6rem, 12vh, 8rem);
 
 		.event-location__container {
@@ -1191,54 +1239,101 @@
 		}
 
 		.event-location__card-wrapper {
-			max-width: 26rem; // Slimmer for editorial look
+			max-width: 30rem;
 			margin-inline: auto;
-			padding-bottom: 2rem;
+			padding-bottom: 1rem;
 		}
 
+		// Eyebrow — small gold label
 		.event-location__card-title {
-			color: rgb(var(--color-eternal-ink-rgb) / 64%);
-			letter-spacing: 0.24em;
-			margin-bottom: 1.5rem;
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			font-weight: 600;
+			letter-spacing: 0.28em;
+			text-transform: uppercase;
+			color: var(--color-sacred-gold-readable);
+			margin-bottom: 0.5rem;
 		}
 
+		// Subtle ornamental divider
 		.event-location__card-flourish {
-			display: none; // Remove default flourish for cleaner layout
+			margin-bottom: 1.5rem;
+			opacity: 54%;
+
+			.flourish-line {
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgb(var(--color-sacred-gold-rgb) / 42%)
+				);
+			}
+
+			.flourish-line:last-child {
+				background: linear-gradient(
+					-90deg,
+					transparent,
+					rgb(var(--color-sacred-gold-rgb) / 42%)
+				);
+			}
+
+			.flourish-diamond {
+				width: 4px;
+				height: 4px;
+				background: var(--color-sacred-gold);
+				opacity: 52%;
+			}
 		}
 
+		// Card — refined ivory surface, gold hairline, soft shadow
 		.event-location__card {
-			background: transparent;
-			border: none;
-			border-radius: 0;
-			box-shadow: none;
-			gap: 1.5rem;
+			background: linear-gradient(
+				168deg,
+				rgb(var(--color-pure-ivory-rgb) / 94%) 0%,
+				rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
+				rgb(var(--color-angelic-mist-rgb) / 38%) 100%
+			);
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+			border-radius: 14px;
+			box-shadow:
+				0 18px 48px -30px rgb(var(--color-eternal-ink-rgb) / 28%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+			gap: 0;
+			overflow: hidden;
+			padding: 0;
 		}
 
 		.event-location__card:hover {
-			border: none;
-			transform: none;
-			box-shadow: none;
+			border-color: rgb(var(--color-sacred-gold-rgb) / 42%);
+			transform: translateY(-3px);
+			box-shadow:
+				0 24px 56px -32px rgb(var(--color-eternal-ink-rgb) / 32%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
 		}
 
-		// Editorial Arch Layer Image
+		// Clean rectangular image frame with gold hairline bottom
 		.event-location__card-image-outer-frame {
-			background: rgb(var(--color-sacred-gold-rgb) / 20%);
+			background: transparent;
 			padding: 0;
-			border-radius: 12rem 12rem 0.5rem 0.5rem;
-			box-shadow:
-				0 24px 54px -42px rgb(var(--color-eternal-ink-rgb) / 48%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+			border-radius: 14px 14px 0 0;
+			box-shadow: none;
 			overflow: hidden;
 			margin-bottom: 0;
 			position: relative;
-			isolation: isolate;
 
 			&::after {
 				content: '';
 				position: absolute;
-				inset: 0.6rem;
-				border: 1px solid rgb(var(--color-pure-ivory-rgb) / 60%);
-				border-radius: 11rem 11rem 0.35rem 0.35rem;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				height: 1px;
+				background: linear-gradient(
+					90deg,
+					transparent 0%,
+					rgb(var(--color-sacred-gold-rgb) / 26%) 18%,
+					rgb(var(--color-sacred-gold-rgb) / 16%) 82%,
+					transparent 100%
+				);
 				pointer-events: none;
 				z-index: 2;
 			}
@@ -1247,60 +1342,73 @@
 		.event-location__card-image-inner-frame {
 			background: transparent;
 			padding: 0;
-			border-radius: 12rem 12rem 0.5rem 0.5rem;
+			border-radius: 14px 14px 0 0;
 		}
 
 		.event-location__card-image-container {
-			aspect-ratio: 0.72; // Tall arch
-			border-radius: 12rem 12rem 0.5rem 0.5rem;
+			aspect-ratio: 1 / 0.82;
+			border-radius: 14px 14px 0 0;
 
 			img {
-				filter: saturate(0.96) contrast(1.02) brightness(1.02) sepia(0.04);
+				filter: saturate(0.94) contrast(1.02) brightness(1.03) sepia(0.04);
 			}
 		}
 
+		// Editorial content spacing & typographic hierarchy
 		.event-location__card-content {
-			padding: 0;
-			margin-top: 1.5rem;
+			padding: clamp(1.5rem, 3.5vw, 2.1rem) clamp(1.35rem, 3.5vw, 1.75rem);
+			margin-top: 0;
 		}
 
+		// Venue name — prominent display serif
 		.event-location__card-content-place {
-			font-size: clamp(2.35rem, 6vw, 3.1rem);
-			color: var(--color-eternal-ink);
-			line-height: 1.02;
-			margin-bottom: 0.85rem;
 			font-family: var(--font-display);
+			font-size: clamp(2rem, 4.5vw, 2.6rem);
+			color: var(--color-eternal-ink);
+			line-height: 1.06;
+			margin-bottom: 0.55rem;
+			letter-spacing: 0;
 		}
 
+		// Date — refined metadata, gold
 		.event-location__card-content-date {
+			font-family: var(--font-body);
+			font-size: 0.68rem;
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
 			color: var(--color-sacred-gold-readable);
-			font-size: clamp(1.1rem, 3vw, 1.3rem);
-			margin-bottom: 0.2rem;
-		}
-
-		.event-location__card-content-hour,
-		.event-location__card-content-address {
-			color: rgb(var(--color-eternal-ink-rgb) / 72%);
+			margin-bottom: 0.15rem;
 		}
 
 		.event-location__card-content-hour {
-			font-size: 0.82rem;
-			letter-spacing: 0.28em;
-			color: rgb(var(--color-eternal-ink-rgb) / 64%);
+			font-family: var(--font-body);
+			font-size: 0.76rem;
 			font-weight: 500;
+			letter-spacing: 0.18em;
 			text-transform: uppercase;
+			color: rgb(var(--color-eternal-ink-rgb) / 58%);
+			margin-bottom: 1.4rem;
+		}
+
+		.event-location__card-content-address {
+			padding-top: 1.1rem;
+			border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+			font-size: 0.86rem;
+			color: rgb(var(--color-eternal-ink-rgb) / 72%);
+			line-height: 1.5;
 		}
 
 		.event-location__card-content-copy-button {
-			color: var(--color-eternal-ink);
-			background: rgb(var(--color-pure-ivory-rgb) / 70%);
-			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
+			color: var(--color-sacred-gold);
+			background: transparent;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
 			border-radius: 50%;
-			width: 32px;
-			height: 32px;
+			width: 30px;
+			height: 30px;
 			display: inline-flex;
-			place-content: center;
-			place-items: center;
+			align-items: center;
+			justify-content: center;
 
 			&:hover,
 			&:focus-visible {
@@ -1310,10 +1418,10 @@
 			}
 		}
 
-		// Premium Map Action Button
+		// Map CTA — ivory pill with gold border
 		.event-location__card-navigation-buttons {
 			gap: 0;
-			margin-top: 2rem;
+			margin-top: 1.75rem;
 		}
 
 		.event-location__nav-button {
@@ -1322,16 +1430,17 @@
 				var(--color-pure-ivory) 0%,
 				var(--color-ivory-warm) 100%
 			);
-			border: 1.5px solid var(--color-sacred-gold);
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 36%);
 			color: var(--color-eternal-ink);
 			box-shadow:
-				0 16px 36px -16px rgb(var(--color-eternal-ink-rgb) / 28%),
+				0 10px 24px -12px rgb(var(--color-eternal-ink-rgb) / 20%),
 				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
-			border-radius: 14px;
-			padding: 1.25rem 2rem;
-			letter-spacing: 0.22em;
-			font-size: 0.75rem;
+			border-radius: 12px;
+			padding: 1rem 1.8rem;
+			letter-spacing: 0.2em;
+			font-size: 0.7rem;
 			font-weight: 600;
+			font-family: var(--font-label);
 
 			&::after {
 				display: none;
@@ -1341,19 +1450,40 @@
 				background: var(--color-eternal-ink);
 				border-color: var(--color-eternal-ink);
 				color: var(--color-pure-ivory);
-				box-shadow: 0 14px 28px rgb(var(--color-eternal-ink-rgb) / 40%);
+				box-shadow: 0 12px 26px rgb(var(--color-eternal-ink-rgb) / 34%);
 				transform: translateY(-2px);
 			}
 		}
 
-		// Integrated Indications
+		// Primary CTA variant — gold pill on single-venue events
+		.event-location__nav-button--primary {
+			background: linear-gradient(
+				to right,
+				rgb(var(--color-sacred-gold-rgb) / 94%),
+				rgb(var(--color-sacred-gold-rgb) / 82%)
+			);
+			color: var(--color-pure-ivory);
+			border: none;
+			box-shadow: 0 8px 22px -6px rgb(var(--color-sacred-gold-rgb) / 42%);
+
+			svg {
+				stroke-width: 2px;
+			}
+
+			&:hover {
+				background: var(--color-eternal-ink);
+				box-shadow: 0 12px 28px rgb(var(--color-eternal-ink-rgb) / 36%);
+			}
+		}
+
+		// Indications — refined minimal list
 		.event-location__indications-container {
-			margin-top: clamp(1rem, 3vh, 2rem);
+			margin-top: clamp(1.5rem, 3vh, 2.5rem);
 			max-width: 480px;
 		}
 
 		.event-location__divider {
-			display: none; // Removed because it breaks the flow visually
+			display: none;
 		}
 
 		.event-location__indications-heading {
@@ -1378,7 +1508,7 @@
 			border: none;
 			gap: 1rem;
 			padding: 1.25rem 0;
-			border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+			border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
 			align-items: center;
 
 			&:last-child {
@@ -1591,7 +1721,9 @@
 			background-image:
 				linear-gradient(rgb(var(--color-eternal-ink-rgb) / 4%) 1px, transparent 1px),
 				linear-gradient(90deg, rgb(var(--color-eternal-ink-rgb) / 3%) 1px, transparent 1px);
-			background-size: 44px 44px, 52px 52px;
+			background-size:
+				44px 44px,
+				52px 52px;
 			mix-blend-mode: multiply;
 			opacity: 22%;
 			pointer-events: none;
@@ -1657,13 +1789,12 @@
 			max-width: none;
 			padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3.5vw, 2.4rem);
 			border-left: 1px solid rgb(var(--color-sacred-gold-rgb) / 34%);
-			background:
-				linear-gradient(
-					135deg,
-					rgb(var(--color-pure-ivory-rgb) / 82%) 0%,
-					rgb(var(--color-ivory-warm-rgb) / 62%) 58%,
-					rgb(var(--color-pure-ivory-rgb) / 28%) 100%
-				);
+			background: linear-gradient(
+				135deg,
+				rgb(var(--color-pure-ivory-rgb) / 82%) 0%,
+				rgb(var(--color-ivory-warm-rgb) / 62%) 58%,
+				rgb(var(--color-pure-ivory-rgb) / 28%) 100%
+			);
 			box-shadow:
 				0 24px 70px -54px rgb(var(--color-eternal-ink-rgb) / 50%),
 				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 62%);
@@ -1720,7 +1851,7 @@
 			width: min(100%, 24rem);
 			margin-top: clamp(0.75rem, 2vw, 1.2rem);
 			padding-top: clamp(1rem, 2.5vw, 1.35rem);
-			border-top: 1px solid rgb(var(--color-angelic-blue-rgb) / 30%);
+			border-top: 0;
 			color: rgb(var(--color-eternal-ink-rgb) / 50%);
 			font-size: 0.68rem;
 			letter-spacing: 0.18em;
@@ -1737,8 +1868,7 @@
 
 		@include mixins.respond-below(md) {
 			align-items: end;
-			padding: clamp(6rem, 18vw, 8rem) clamp(1rem, 5vw, 1.5rem)
-				clamp(4.5rem, 12vw, 6rem);
+			padding: clamp(6rem, 18vw, 8rem) clamp(1rem, 5vw, 1.5rem) clamp(4.5rem, 12vw, 6rem);
 
 			&::before {
 				background:
@@ -1796,23 +1926,69 @@
 	// HEADER — refined, non-competing
 	// ─────────────────────────────────────────────────────────────
 	.header-base[data-variant='angelic-presence'] {
-		--header-nav-color: rgb(var(--color-eternal-ink-rgb) / 75%);
-		--header-nav-color-transparent: rgb(var(--color-eternal-ink-rgb) / 70%);
+		--header-bg-scrolled: rgb(var(--color-ivory-warm-rgb) / 86%);
+		--header-nav-color: rgb(var(--color-eternal-ink-rgb) / 68%);
+		--header-nav-color-transparent: rgb(var(--color-eternal-ink-rgb) / 72%);
 		--header-border-color: rgb(var(--color-sacred-gold-rgb) / 14%);
+		--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 38%);
 
 		.event-header__title {
-			font-size: clamp(0.72rem, 2.4vw, 0.95rem);
-			letter-spacing: 0.06em;
+			color: rgb(var(--color-sacred-gold-rgb) / 88%);
+			font-size: clamp(0.74rem, 2vw, 0.9rem);
+			font-weight: 500;
+			letter-spacing: 0.16em;
+		}
+
+		.event-header__actions {
+			gap: clamp(0.28rem, 0.68vw, 0.72rem);
+			padding: 0.38rem 0.42rem;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+			border-radius: 999px;
+			background: rgb(var(--color-pure-ivory-rgb) / 12%);
+			backdrop-filter: blur(10px) saturate(130%);
+			box-shadow:
+				0 18px 44px -40px rgb(var(--color-eternal-ink-rgb) / 48%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 38%);
 		}
 
 		.event-header__action-btn:not(.event-header__action-btn--cta) {
-			font-size: 0.68rem;
-			letter-spacing: 0.06em;
-			padding: 0.4rem clamp(0.5rem, 0.8vw, 0.8rem);
+			color: rgb(var(--color-eternal-ink-rgb) / 64%);
+			font-size: clamp(0.62rem, 0.62vw, 0.7rem);
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			padding: 0.64rem clamp(0.54rem, 0.8vw, 0.8rem);
+
+			&:hover {
+				color: rgb(var(--color-eternal-ink-rgb) / 90%);
+				background-color: rgb(var(--color-pure-ivory-rgb) / 20%);
+			}
+		}
+
+		.event-header__action-btn--cta {
+			background: rgb(var(--color-pure-ivory-rgb) / 20%);
+			color: rgb(var(--color-sacred-gold-rgb) / 92%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 34%);
+			font-size: clamp(0.64rem, 0.66vw, 0.72rem);
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			box-shadow:
+				0 16px 36px -30px rgb(var(--color-eternal-ink-rgb) / 55%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 48%);
+
+			&:hover {
+				background: rgb(var(--color-pure-ivory-rgb) / 34%);
+				border-color: rgb(var(--color-sacred-gold-rgb) / 52%);
+				color: rgb(var(--color-eternal-ink-rgb) / 86%);
+			}
 		}
 
 		&.header-base--scrolled {
 			border-bottom-color: rgb(var(--color-sacred-gold-rgb) / 16%);
+
+			.event-header__actions {
+				background: rgb(var(--color-pure-ivory-rgb) / 50%);
+				border-color: rgb(var(--color-sacred-gold-rgb) / 18%);
+			}
 		}
 
 		.header-base__mobile-toggle {
@@ -1847,7 +2023,16 @@
 
 			.hamburger__line {
 				height: 1.25px;
+				border-radius: 1px;
 				background-color: currentcolor;
+				transition:
+					transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+					opacity 0.25s ease,
+					background-color 0.3s ease;
+			}
+
+			@include mixins.respond-to(lg) {
+				display: none;
 			}
 		}
 	}
@@ -1860,6 +2045,7 @@
 	.header-base__mobile-menu {
 		background:
 			// Subtle paper texture — fine noise pattern
+
 			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
 			linear-gradient(
 				180deg,
@@ -1884,14 +2070,13 @@
 			left: 0;
 			right: 0;
 			height: 100%;
-			background:
-				linear-gradient(
-					118deg,
-					transparent 0%,
-					rgb(var(--color-pure-ivory-rgb) / 12%) 46%,
-					rgb(var(--color-sacred-gold-rgb) / 6%) 52%,
-					transparent 100%
-				);
+			background: linear-gradient(
+				118deg,
+				transparent 0%,
+				rgb(var(--color-pure-ivory-rgb) / 12%) 46%,
+				rgb(var(--color-sacred-gold-rgb) / 6%) 52%,
+				transparent 100%
+			);
 			pointer-events: none;
 			z-index: 1;
 		}
@@ -2062,33 +2247,17 @@
 		opacity: 60%;
 	}
 
-	// Hamburger — refined, elegant
-	.header-base__mobile-toggle {
-		.hamburger {
-			width: 18px;
-			height: 14px;
+	// Expanded toggle state
+	.header-base__mobile-toggle[aria-expanded='true'] {
+		background: var(--color-pure-ivory);
+		border-color: rgb(var(--color-sacred-gold-rgb) / 45%);
+
+		.hamburger__line:nth-child(1) {
+			transform: translateY(6px) rotate(45deg);
 		}
 
-		.hamburger__line {
-			height: 1.25px;
-			border-radius: 1px;
-			transition:
-				transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-				opacity 0.25s ease,
-				background-color 0.3s ease;
-		}
-
-		&[aria-expanded='true'] {
-			background: var(--color-pure-ivory);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 45%);
-
-			.hamburger__line:nth-child(1) {
-				transform: translateY(6px) rotate(45deg);
-			}
-
-			.hamburger__line:nth-child(3) {
-				transform: translateY(-6px) rotate(-45deg);
-			}
+		.hamburger__line:nth-child(3) {
+			transform: translateY(-6px) rotate(-45deg);
 		}
 	}
 
@@ -2096,13 +2265,6 @@
 	.header-base__mobile-overlay {
 		background-color: rgb(55 51 45 / 32%);
 		backdrop-filter: blur(6px);
-	}
-
-	// Stagger animation — smoother easing
-	@for $index from 0 through 20 {
-		.mobile-nav-stagger-#{$index} {
-			--stagger-index: #{$index};
-		}
 	}
 
 	.header-base--menu-open {
