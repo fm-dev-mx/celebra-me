@@ -388,3 +388,171 @@
 		}
 	}
 }
+
+.event--cesar-ramses {
+	.invitation-hero {
+		--hero-angelic-title-shadow:
+			0 10px 28px rgb(var(--color-pure-ivory-rgb) / 46%),
+			0 18px 42px rgb(var(--color-eternal-ink-rgb) / 11%);
+
+		background: var(--color-ivory-warm);
+
+		&::before {
+			background:
+				radial-gradient(
+					ellipse at 18% 22%,
+					rgb(var(--color-baptism-blue-rgb) / 30%) 0%,
+					rgb(var(--color-baptism-blue-soft-rgb) / 17%) 32%,
+					transparent 62%
+				),
+				linear-gradient(
+					100deg,
+					rgb(var(--color-pure-ivory-rgb) / 92%) 0%,
+					rgb(var(--color-ivory-warm-rgb) / 78%) 30%,
+					rgb(var(--color-baptism-mist-rgb) / 40%) 54%,
+					transparent 76%
+				),
+				linear-gradient(
+					to top,
+					rgb(var(--color-ivory-warm-rgb) / 82%) 0%,
+					rgb(var(--color-baptism-mist-rgb) / 32%) 24%,
+					transparent 48%
+				);
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: auto 0 0;
+			z-index: 3;
+			height: clamp(7rem, 18svh, 12rem);
+			background:
+				radial-gradient(
+					ellipse at 28% 48%,
+					rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+					transparent 58%
+				),
+				linear-gradient(
+					180deg,
+					transparent 0%,
+					rgb(var(--color-ivory-warm-rgb) / 78%) 82%,
+					var(--color-ivory-warm) 100%
+				);
+			pointer-events: none;
+		}
+
+		.invitation-hero__background::after {
+			background:
+				radial-gradient(
+					ellipse at 22% 24%,
+					rgb(var(--color-baptism-blue-rgb) / 22%) 0%,
+					transparent 42%
+				),
+				radial-gradient(
+					ellipse at 70% 72%,
+					rgb(var(--color-sacred-gold-rgb) / 7%) 0%,
+					transparent 48%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--color-pure-ivory-rgb) / 12%) 0%,
+					transparent 48%,
+					rgb(var(--color-ivory-warm-rgb) / 18%) 100%
+				);
+		}
+
+		.invitation-hero__content {
+			z-index: 12;
+			grid-template-areas:
+				'label label'
+				'title portrait'
+				'details portrait';
+			align-content: center;
+			row-gap: clamp(1rem, 3vw, 1.8rem);
+		}
+
+		.invitation-hero__label {
+			position: relative;
+			padding: 0.5rem 0.9rem;
+			border: 1px solid rgb(var(--color-baptism-blue-rgb) / 36%);
+			border-radius: 999px;
+			background: rgb(var(--color-pure-ivory-rgb) / 52%);
+			box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
+			color: rgb(var(--color-eternal-ink-rgb) / 68%);
+			text-shadow: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 74%);
+		}
+
+		.invitation-hero__title-wrapper {
+			position: relative;
+			padding-block: clamp(0.8rem, 2vw, 1.25rem);
+
+			&::before,
+			&::after {
+				content: '';
+				position: absolute;
+				left: 0;
+				width: min(16rem, 64vw);
+				height: 1px;
+				background: var(--baptism-divider);
+			}
+
+			&::before {
+				top: 0;
+			}
+
+			&::after {
+				bottom: 0;
+			}
+		}
+
+		.invitation-hero__title {
+			background: linear-gradient(
+				115deg,
+				rgb(var(--color-eternal-ink-rgb) / 92%) 0%,
+				rgb(var(--color-baptism-blue-rgb) / 78%) 46%,
+				rgb(var(--color-eternal-ink-rgb) / 86%) 100%
+			);
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		.invitation-hero__details {
+			position: static;
+			grid-area: details;
+			align-self: start;
+			max-width: 20rem;
+			padding-top: clamp(0.75rem, 2vw, 1rem);
+			border-top: 1px solid rgb(var(--color-baptism-blue-rgb) / 32%);
+		}
+
+		@include mixins.respond-below(md) {
+			.invitation-hero__content {
+				grid-template-areas:
+					'label'
+					'title'
+					'details';
+				grid-template-columns: 1fr;
+			}
+
+			&::before {
+				background:
+					radial-gradient(
+						ellipse at 18% 16%,
+						rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
+						transparent 50%
+					),
+					linear-gradient(
+						to top,
+						rgb(var(--color-ivory-warm-rgb) / 86%) 0%,
+						rgb(var(--color-baptism-mist-rgb) / 46%) 26%,
+						transparent 56%
+					);
+			}
+
+			.invitation-hero__title-wrapper::before,
+			.invitation-hero__title-wrapper::after {
+				width: min(13rem, 74vw);
+			}
+		}
+	}
+}
