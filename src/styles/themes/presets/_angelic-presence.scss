@@ -12,6 +12,12 @@
 	--color-soft-sand-rgb: 244 241 234;
 	--color-baptism-blue: rgb(182 218 229);
 	--color-baptism-blue-rgb: 182 218 229;
+	--color-baptism-blue-soft: rgb(210 231 237);
+	--color-baptism-blue-soft-rgb: 210 231 237;
+	--color-baptism-mist: rgb(232 243 246);
+	--color-baptism-mist-rgb: 232 243 246;
+	--color-ivory-warm: rgb(253 248 238);
+	--color-ivory-warm-rgb: 253 248 238;
 
 	// Reduced saturation: champagne/antique-gold range instead of yellow gold
 	--color-sacred-gold: rgb(191 167 106);
@@ -52,6 +58,31 @@
 	--color-text-on-light: var(--color-eternal-ink);
 	--color-border-subtle: rgb(var(--color-ethereal-gray-rgb) / 34%);
 	--color-border-premium: rgb(var(--color-sacred-gold-rgb) / 44%);
+	--color-baptism-border: rgb(var(--color-baptism-blue-rgb) / 42%);
+	--color-baptism-border-soft: rgb(var(--color-baptism-blue-soft-rgb) / 34%);
+	--baptism-blue-wash: radial-gradient(
+		ellipse at 50% 50%,
+		rgb(var(--color-baptism-blue-rgb) / 26%) 0%,
+		rgb(var(--color-baptism-blue-soft-rgb) / 14%) 42%,
+		transparent 72%
+	);
+	--baptism-ivory-wash: linear-gradient(
+		180deg,
+		rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
+		rgb(var(--color-ivory-warm-rgb) / 78%) 54%,
+		rgb(var(--color-baptism-mist-rgb) / 24%) 100%
+	);
+	--baptism-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-baptism-blue-rgb) / 46%) 22%,
+		rgb(var(--color-sacred-gold-rgb) / 40%) 50%,
+		rgb(var(--color-baptism-blue-rgb) / 46%) 78%,
+		transparent 100%
+	);
+	--baptism-soft-shadow:
+		0 22px 58px rgb(var(--color-eternal-ink-rgb) / 9%),
+		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
 
 	// ---------------------------------------------------------------------
 	// Typography (Sacred & Elegant)
