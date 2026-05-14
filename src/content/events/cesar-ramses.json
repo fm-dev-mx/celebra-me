@@ -91,7 +91,7 @@
             {
                 "image": "gallery01",
                 "caption": "Pureza y ternura",
-                "focalPoint": "50% 38%"
+                "focalPoint": "50% 45%"
             },
             {
                 "image": "gallery02",
@@ -105,7 +105,7 @@
             },
             {
                 "image": "gallery04",
-                "caption": "Descanso en la luz",
+                "caption": "Felicidad que nos llena",
                 "focalPoint": "50% 41%"
             },
             {
@@ -128,13 +128,13 @@
                 "icon": "church",
                 "label": "Santa Misa",
                 "time": "12:00 p.m.",
-                "description": "Acompáñanos a dar gracias y recibir la bendición de este día tan especial."
+                "description": "Nos reuniremos en familia para preparar el corazón antes de la celebración."
             },
             {
                 "icon": "map",
                 "label": "Recepción",
                 "time": "4:00 p.m.",
-                "description": "Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramsés."
+                "description": "Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramses."
             },
             {
                 "icon": "dinner",

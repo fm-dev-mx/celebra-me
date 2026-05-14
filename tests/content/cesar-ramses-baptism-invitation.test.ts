@@ -44,7 +44,7 @@ describe('Cesar Ramses baptism invitation content', () => {
 			theme: { preset: 'angelic-presence' },
 			hero: {
 				name: 'César Ramses',
-				label: 'Mi Bautizo y 1er Año',
+				label: 'Mi primer sacramento y un año de vida',
 				date: '2026-06-20T22:00:00.000Z',
 				backgroundImage: { type: 'internal', key: 'hero' },
 			},
@@ -120,14 +120,14 @@ describe('Cesar Ramses baptism invitation content', () => {
 					label: 'Santa Misa',
 					time: '12:00 p.m.',
 					description:
-						'Acompáñanos a dar gracias y recibir la bendición de este día tan especial.',
+						'Nos reuniremos en familia para preparar el corazón antes de la celebración.',
 				},
 				{
 					icon: 'map',
 					label: 'Recepción',
 					time: '4:00 p.m.',
 					description:
-						'Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramsés.',
+						'Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramses.',
 				},
 				{
 					icon: 'dinner',
