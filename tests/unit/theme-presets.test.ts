@@ -117,16 +117,16 @@ describe('Angelic presence theme isolation', () => {
 describe('Angelic presence section coverage', () => {
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_angelic-presence.scss',
-		'src/styles/themes/sections/_quote-theme.scss',
-		'src/styles/themes/sections/_family-theme.scss',
-		'src/styles/themes/sections/_gallery-theme.scss',
-		'src/styles/themes/sections/_countdown-theme.scss',
-		'src/styles/themes/sections/_location-theme.scss',
-		'src/styles/themes/sections/_itinerary-theme.scss',
-		'src/styles/themes/sections/_interlude-theme.scss',
-		'src/styles/themes/sections/_rsvp-theme.scss',
-		'src/styles/themes/sections/_thank-you-theme.scss',
-		'src/styles/themes/sections/_footer-theme.scss',
+		'src/styles/themes/sections/quote/_angelic-presence.scss',
+		'src/styles/themes/sections/family/_angelic-presence.scss',
+		'src/styles/themes/sections/gallery/_angelic-presence.scss',
+		'src/styles/themes/sections/countdown/_angelic-presence.scss',
+		'src/styles/themes/sections/location/_angelic-presence.scss',
+		'src/styles/themes/sections/itinerary/_angelic-presence.scss',
+		'src/styles/themes/sections/interlude/_angelic-presence.scss',
+		'src/styles/themes/sections/rsvp/_angelic-presence.scss',
+		'src/styles/themes/sections/thank-you/_angelic-presence.scss',
+		'src/styles/themes/sections/footer/_angelic-presence.scss',
 	];
 
 	it('styles every visible baptism demo section with angelic-presence selectors', () => {
