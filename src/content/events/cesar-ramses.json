@@ -15,7 +15,7 @@
                 "name": "Nombre del invitado *",
                 "guestCount": "Número de asistentes",
                 "attendance": "¿Nos acompañarás?",
-                "confirmButton": "Confirmar asistencia"
+                "confirmButton": "Enviar respuesta"
             }
         }
     },

@@ -215,6 +215,7 @@ export function AttendanceField(props: {
 						onChange={() => onAttendanceChange('confirmed')}
 						onBlur={() => onBlur('attendance')}
 						className="sr-only"
+						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
 					<span className="rsvp__radio-label">Sí, asistiré</span>
@@ -228,6 +229,7 @@ export function AttendanceField(props: {
 						onChange={() => onAttendanceChange('declined')}
 						onBlur={() => onBlur('attendance')}
 						className="sr-only"
+						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
 					<span className="rsvp__radio-label">No podré asistir</span>

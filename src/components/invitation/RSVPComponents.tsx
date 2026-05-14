@@ -33,7 +33,7 @@ export function LockedPreview({ title, variant }: { title: string; variant?: str
 		<section id="rsvp" className="rsvp rsvp--locked-preview" data-variant={variant}>
 			<h2 className="rsvp__title">{title}</h2>
 			<div className="rsvp__locked-card" role="status" aria-live="polite">
-				<p className="rsvp__locked-eyebrow">Confirmación exclusiva</p>
+				<p className="rsvp__locked-eyebrow">RSVP</p>
 				<p className="rsvp__locked-message">
 					Las reservas para este evento se gestionan de forma personalizada.
 				</p>
@@ -184,7 +184,7 @@ export function RsvpFormView(props: {
 
 	return (
 		<section id="rsvp" className="rsvp" data-variant={variant}>
-			<p className="rsvp__eyebrow">Confirmación</p>
+			<p className="rsvp__eyebrow">RSVP</p>
 			<h2 className="rsvp__title">{title}</h2>
 			<form onSubmit={props.onSubmit} className="rsvp__form" id="rsvp-form">
 				<div className="rsvp__grid">
