@@ -3,121 +3,421 @@
 // These overrides live here so theme section files remain event-agnostic.
 // Theme: angelic-presence | Event Slug: cesar-ramses | Event Type: bautizo
 
-@use '../themes/presets/angelic-presence' as preset;
+@use '../../styles/global/mixins' as mixins;
 
 .event--cesar-ramses {
+	// ─────────────────────────────────────────────────────────────
+	// SHARED GRADIENTS — extracted for reuse
+	// ─────────────────────────────────────────────────────────────
+	--angelic-hero-overlay: linear-gradient(
+		180deg,
+		rgb(var(--color-pure-ivory-rgb) / 24%) 0%,
+		transparent 18%
+	),
+	radial-gradient(
+		ellipse at 50% 38%,
+		transparent 22%,
+		rgb(var(--color-eternal-ink-rgb) / 12%) 64%,
+		rgb(var(--color-eternal-ink-rgb) / 28%) 85%
+	),
+	linear-gradient(
+		to top,
+		rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
+		rgb(var(--color-ivory-warm-rgb) / 78%) 22%,
+		rgb(var(--color-eternal-ink-rgb) / 32%) 52%,
+		rgb(var(--color-eternal-ink-rgb) / 52%) 76%,
+		transparent 100%
+	);
+
 	// ─────────────────────────────────────────────────────────────
 	// HERO
 	// ─────────────────────────────────────────────────────────────
 	.invitation-hero[data-variant='angelic-presence'] {
 		--hero-angelic-title-shadow:
-			0 10px 30px rgb(var(--color-pure-ivory-rgb) / 52%),
-			0 16px 34px rgb(var(--color-eternal-ink-rgb) / 12%);
+			0 4px 18px rgb(var(--color-eternal-ink-rgb) / 55%),
+			0 14px 34px rgb(var(--color-eternal-ink-rgb) / 28%);
 
-		&::before {
-			background:
-				radial-gradient(
-					ellipse at 18% 22%,
-					rgb(var(--color-angelic-blue-rgb) / 20%) 0%,
-					rgb(var(--color-angelic-blue-soft-rgb) / 10%) 32%,
-					transparent 62%
-				),
-				linear-gradient(
-					100deg,
-					rgb(var(--color-pure-ivory-rgb) / 94%) 0%,
-					rgb(var(--color-ivory-warm-rgb) / 84%) 31%,
-					rgb(var(--color-angelic-mist-rgb) / 34%) 54%,
-					transparent 76%
-				),
-				linear-gradient(
-					to top,
-					rgb(var(--color-ivory-warm-rgb) / 88%) 0%,
-					rgb(var(--color-angelic-mist-rgb) / 28%) 24%,
-					transparent 48%
-				);
+		justify-content: flex-end;
+		align-items: center;
+		padding: clamp(1.2rem, 5vw, 3rem);
+		padding-bottom: clamp(1rem, 4vh, 3rem);
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-pure-ivory-rgb) / 96%) 0%,
+				rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
+				rgb(var(--color-angelic-mist-rgb) / 28%) 100%
+			);
+
+		&::before { display: none; }
+
+		// Full-bleed image — editorial cover, no card frame
+		.invitation-hero__background {
+			position: absolute;
+			inset: 0;
+			border-radius: 0;
+			overflow: hidden;
+			box-shadow: none;
+
+			// Warm, controlled overlay — luminous baby face, minimal elsewhere
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background:
+					// Subtle top gradient for header area
+					linear-gradient(
+						to bottom,
+						rgb(var(--color-pure-ivory-rgb) / 30%) 0%,
+						transparent 25%
+					),
+					// Minimal center overlay for depth
+					radial-gradient(
+						circle at 50% 38%,
+						transparent 25%,
+						rgb(var(--color-eternal-ink-rgb) / 8%) 65%,
+						rgb(var(--color-eternal-ink-rgb) / 22%) 100%
+					),
+					// Bottom gradient for event details, softly transitioning
+					linear-gradient(
+						to top,
+						rgb(var(--color-pure-ivory-rgb) / 92%) 0%,
+						rgb(var(--color-pure-ivory-rgb) / 78%) 22%,
+						rgb(var(--color-pure-ivory-rgb) / 30%) 55%,
+						transparent 85%
+					);
+				z-index: 1;
+				pointer-events: none;
+			}
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				object-position: var(--hero-focal-point);
+				filter: brightness(1.02) contrast(0.98) saturate(0.92) sepia(0.04);
+			}
 		}
 
+		// Editorial text layout — left-aligned, name dominant
 		.invitation-hero__content {
-			max-width: min(1080px, calc(100vw - 2rem));
+			position: relative;
+			z-index: 2;
+			margin: 0;
+			margin-bottom: clamp(1.5rem, 6vh, 4rem);
+			width: 100%;
+			max-width: min(800px, calc(100vw - clamp(3.5rem, 9vw, 6.5rem)));
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			text-align: left;
+			gap: 0.75rem;
+		}
+
+		.invitation-hero__label {
+			border: none;
+			background: transparent;
+			color: rgb(var(--color-sacred-gold-rgb) / 80%);
+			box-shadow: none;
+			letter-spacing: 0.32em;
+			padding: 0;
+			margin: 0;
+			text-transform: uppercase;
+			font-size: clamp(0.55rem, 1.6vw, 0.68rem);
+			font-weight: 500;
+			text-shadow: 0 1px 8px rgb(var(--color-eternal-ink-rgb) / 30%);
+			order: -1;
 		}
 
 		.invitation-hero__title-wrapper {
-			padding-block: clamp(1rem, 2.4vw, 1.45rem);
+			padding-block: clamp(0.6rem, 1.4vw, 1rem);
+			margin: 0;
+			width: 100%;
+			position: relative;
 
+			// Subtle gold line accents
 			&::before,
 			&::after {
+				content: '';
+				display: block;
+				height: 1px;
+				width: min(6rem, 40vw);
+				position: absolute;
+				left: 0;
 				background: linear-gradient(
-					90deg,
-					rgb(var(--color-sacred-gold-rgb) / 48%) 0%,
-					rgb(var(--color-angelic-blue-rgb) / 26%) 54%,
+					to right,
+					rgb(var(--color-sacred-gold-rgb) / 60%) 0%,
 					transparent 100%
 				);
 			}
+			&::before { top: 0; }
+			&::after { bottom: 0; }
 		}
 
 		.invitation-hero__title {
 			background: linear-gradient(
 				115deg,
-				rgb(var(--color-eternal-ink-rgb) / 96%) 0%,
-				rgb(var(--color-sacred-gold-rgb) / 72%) 44%,
+				rgb(var(--color-eternal-ink-rgb) / 94%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 88%) 50%,
 				rgb(var(--color-eternal-ink-rgb) / 92%) 100%
 			);
 			background-clip: text;
 			-webkit-text-fill-color: transparent;
 			filter: drop-shadow(var(--hero-angelic-title-shadow));
-		}
+			margin: 0;
+			font-size: clamp(2.6rem, 8vw, 4.8rem);
+			text-align: left;
+			line-height: 0.95;
+			letter-spacing: 0.02em;
 
-		.invitation-hero__label {
-			border-color: rgb(var(--color-sacred-gold-rgb) / 34%);
-			background: rgb(var(--color-pure-ivory-rgb) / 62%);
-			color: rgb(var(--color-eternal-ink-rgb) / 72%);
-			box-shadow:
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%),
-				0 8px 20px rgb(var(--color-eternal-ink-rgb) / 5%);
+			.invitation-hero__title-line {
+				display: block;
+			}
 		}
 
 		.invitation-hero__portrait {
-			border-color: rgb(var(--color-sacred-gold-rgb) / 38%);
-			box-shadow:
-				0 24px 48px rgb(var(--color-eternal-ink-rgb) / 15%),
-				0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 64%);
-
-			&::after {
-				box-shadow:
-					inset 0 0 60px rgb(var(--color-eternal-ink-rgb) / 10%),
-					inset 0 0 18px rgb(var(--color-sacred-gold-rgb) / 10%);
-			}
+			display: none;
 		}
 
 		.invitation-hero__details {
-			border-top-color: rgb(var(--color-sacred-gold-rgb) / 30%);
+			border-top: none;
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+			align-items: center;
+			text-align: left;
+			margin-top: 1.5rem;
+			padding: 0;
+			position: relative;
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: -1rem;
+				left: 0;
+				width: 3rem;
+				height: 1px;
+				background: linear-gradient(to right, var(--color-sacred-gold), transparent);
+				opacity: 0.6;
+			}
 		}
 
-		.invitation-hero__date,
+		.invitation-hero__date {
+			font-family: var(--font-label);
+			font-weight: 600;
+			color: rgb(var(--color-eternal-ink-rgb) / 88%);
+			font-size: clamp(0.72rem, 2vw, 0.88rem);
+			text-transform: uppercase;
+			letter-spacing: 0.22em;
+			margin-bottom: 0.25rem;
+		}
+
 		.invitation-hero__time,
 		.invitation-hero__venue {
-			color: rgb(var(--color-eternal-ink-rgb) / 82%);
+			color: rgb(var(--color-eternal-ink-rgb) / 75%);
+			font-family: var(--font-body);
+			font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+			letter-spacing: 0.14em;
+			text-shadow: none;
 		}
 
 		.invitation-hero__venue .calligraphy-accent {
-			color: rgb(var(--color-sacred-gold-rgb) / 86%);
+			font-family: var(--font-display);
+			color: rgb(var(--color-sacred-gold-rgb) / 95%);
+			font-size: 1.25em;
+			margin-right: 0.2em;
 		}
 
-		@include preset.respond-below(md) {
-			&::before {
-				background:
-					radial-gradient(
-						ellipse at 18% 16%,
-						rgb(var(--color-angelic-blue-rgb) / 14%) 0%,
-						transparent 50%
-					),
-					linear-gradient(
-						to top,
-						rgb(var(--color-ivory-warm-rgb) / 86%) 0%,
-						rgb(var(--color-angelic-mist-rgb) / 26%) 24%,
-						transparent 52%
-					);
+		.invitation-hero__scroll-indicator {
+			position: absolute;
+			bottom: clamp(1.8rem, 5vh, 3.2rem);
+			left: 50%;
+			transform: translateX(-50%);
+			color: rgb(var(--color-sacred-gold-rgb) / 65%);
+			text-shadow: 0 2px 8px rgb(var(--color-eternal-ink-rgb) / 40%);
+			margin: 0;
+			align-items: center;
+
+			.invitation-hero__scroll-chevron {
+				margin-left: 0;
 			}
+		}
+
+		@include mixins.respond-below(md) {
+			.invitation-hero__background {
+				inset: 0;
+			}
+
+			.invitation-hero__content {
+				max-width: min(800px, calc(100vw - clamp(2rem, 6vw, 3.5rem)));
+				margin-bottom: clamp(0.5rem, 4vh, 2rem);
+				gap: 0.6rem;
+			}
+
+			.invitation-hero__scroll-indicator {
+				bottom: clamp(1.2rem, 4vh, 2.5rem);
+			}
+		}
+
+		// -------------------------------------------------------------------------
+		// Mobile (375px and below) — iPhone SE
+		// -------------------------------------------------------------------------
+		@include mixins.respond-below(xs) {
+			.invitation-hero__background {
+				&::after {
+					background:
+						linear-gradient(
+							to bottom,
+							rgb(var(--color-ivory-warm-rgb) / 18%) 0%,
+							transparent 18%
+						),
+						radial-gradient(
+							ellipse at 50% 40%,
+							transparent 15%,
+							rgb(var(--color-eternal-ink-rgb) / 6%) 55%,
+							rgb(var(--color-eternal-ink-rgb) / 14%) 75%
+						),
+						linear-gradient(
+							to top,
+							rgb(var(--color-ivory-warm-rgb) / 96%) 0%,
+							rgb(var(--color-ivory-warm-rgb) / 65%) 16%,
+							rgb(var(--color-eternal-ink-rgb) / 32%) 44%,
+							rgb(var(--color-eternal-ink-rgb) / 44%) 68%,
+							transparent 100%
+						);
+				}
+			}
+
+			.invitation-hero__content {
+				padding: 48svh clamp(1rem, 4vw, 1.4rem) clamp(3.5rem, 8svh, 4.75rem);
+				gap: 0.5rem;
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(2.1rem, 13vw, 3.2rem);
+				line-height: 0.92;
+			}
+
+			.invitation-hero__label {
+				font-size: clamp(0.48rem, 2.8vw, 0.6rem);
+				letter-spacing: 0.26em;
+			}
+
+			.invitation-hero__title-wrapper {
+				&::before,
+				&::after {
+					width: min(4.5rem, 32vw);
+				}
+			}
+
+			.invitation-hero__date,
+			.invitation-hero__time,
+			.invitation-hero__venue {
+				font-size: clamp(0.62rem, 3vw, 0.75rem);
+				letter-spacing: 0.1em;
+			}
+
+			.invitation-hero__scroll-indicator {
+				display: none;
+			}
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// MUSIC PLAYER — integrated, non-competing
+	// ─────────────────────────────────────────────────────────────
+	.music-player {
+		bottom: 1.25rem;
+		left: 1.25rem;
+		right: auto;
+		align-items: flex-start;
+		gap: 0.5rem;
+
+		&__prompt {
+			font-size: 0.7rem;
+			padding: 0.35rem 0.8rem;
+			background: rgb(var(--color-ivory-warm-rgb) / 75%);
+			backdrop-filter: blur(10px);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 30%);
+			color: rgb(var(--color-eternal-ink-rgb) / 80%);
+			opacity: 0%;
+			animation: none;
+
+			&.is-fading-in {
+				animation: musicPlayerFadeInSlide var(--duration-standard) forwards var(--ease-standard);
+			}
+		}
+
+		&__button--play {
+			width: 2.6rem;
+			height: 2.6rem;
+			opacity: 65%;
+			transition: opacity 0.3s ease, transform 0.2s ease;
+
+			&:hover {
+				opacity: 90%;
+				transform: scale(1.04);
+			}
+
+			&::after {
+				display: none;
+			}
+
+			svg {
+				width: 16px;
+				height: 16px;
+			}
+		}
+
+		&__button--pulsing {
+			animation: musicPlayerPulseSoft 3s ease-in-out infinite;
+
+			&::before {
+				inset: -6px;
+				border-color: rgb(var(--color-sacred-gold-rgb) / 18%);
+			}
+		}
+
+		@include mixins.respond-below(md) {
+			bottom: 0.9rem;
+			left: 0.9rem;
+
+			&__prompt {
+				font-size: 0.62rem;
+				max-width: min(65vw, 12rem);
+			}
+
+			&__button--play {
+				width: 2.3rem;
+				height: 2.3rem;
+
+				svg {
+					width: 14px;
+					height: 14px;
+				}
+			}
+		}
+
+		@media (width <= 375px) {
+			bottom: 0.75rem;
+			left: 0.75rem;
+
+			&__button--play {
+				width: 2.1rem;
+				height: 2.1rem;
+			}
+		}
+	}
+
+	@keyframes musicPlayerPulseSoft {
+		0%, 100% {
+			box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 8%);
+			transform: scale(1);
+		}
+
+		50% {
+			box-shadow: 0 6px 18px rgb(var(--color-action-accent-rgb) / 12%);
+			transform: scale(1.03);
 		}
 	}
 
@@ -125,68 +425,298 @@
 	// COUNTDOWN
 	// ─────────────────────────────────────────────────────────────
 	.countdown-section[data-variant='angelic-presence'] {
-		--countdown-value-size-mobile: clamp(2rem, 10vw, 2.85rem);
-		--countdown-value-size-desktop: clamp(2.55rem, 4vw, 3.4rem);
-		--countdown-label-letter-spacing: 0.2em;
-
+		padding: clamp(5rem, 12vh, 8rem) 1.5rem;
 		background:
 			radial-gradient(
-				ellipse at 18% 12%,
-				rgb(var(--color-angelic-blue-rgb) / 12%) 0%,
-				transparent 36%
+				ellipse at 15% 10%,
+				rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
+				transparent 40%
+			),
+			radial-gradient(
+				ellipse at 85% 90%,
+				rgb(var(--color-angelic-blue-rgb) / 8%) 0%,
+				transparent 40%
 			),
 			linear-gradient(
 				180deg,
-				var(--color-ivory-warm) 0%,
-				var(--color-pure-ivory) 52%,
+				var(--color-pure-ivory) 0%,
+				var(--color-ivory-warm) 50%,
 				var(--color-soft-sand) 100%
 			);
 
+		.countdown-texture {
+			opacity: 12%;
+			background: var(--texture-paper);
+		}
+
 		.countdown-container {
-			max-width: 660px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0;
+			max-width: 600px;
+			margin-inline: auto;
+			opacity: 1;
+			transform: none;
+
+			// Subtle ornamental vertical rule
+			&::before {
+				content: '';
+				width: 1px;
+				height: clamp(3rem, 6vh, 4.5rem);
+				background: linear-gradient(to bottom, transparent, var(--color-sacred-gold), transparent);
+				margin-bottom: 2rem;
+				opacity: 0.4;
+			}
 		}
 
-		.countdown-header {
-			margin-bottom: clamp(2rem, 4vw, 3rem);
-		}
+		// Reordering logic via display: contents
+		.countdown-header { display: contents; }
+		.countdown-timer-wrapper { display: contents; }
+		.countdown__timer { display: contents; }
+		.countdown-footer { display: contents; }
 
+		// 1. Title
 		.countdown-title {
-			font-size: clamp(1.55rem, 4.2vw, 2.45rem);
-			letter-spacing: 0.015em;
-			text-transform: none;
-		}
-
-		.countdown-subtitle .event-date {
-			color: rgb(var(--color-eternal-ink-rgb) / 68%);
-			font-size: clamp(0.66rem, 1.8vw, 0.78rem);
+			order: 1;
+			font-family: var(--font-display);
+			font-size: clamp(1.1rem, 3.8vw, 1.4rem);
+			font-weight: 500;
 			letter-spacing: 0.16em;
-		}
-
-		.countdown__timer {
-			max-width: 460px;
-		}
-
-		.countdown__segment {
-			padding: clamp(1.35rem, 3vw, 1.85rem) clamp(0.7rem, 2vw, 1rem);
-			background: rgb(var(--color-pure-ivory-rgb) / 68%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 22%);
-			box-shadow:
-				0 18px 44px -34px rgb(var(--color-eternal-ink-rgb) / 30%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
-		}
-
-		.countdown__value {
-			color: rgb(var(--color-eternal-ink-rgb) / 88%);
-		}
-
-		.countdown__label,
-		.countdown-invitation-text {
+			text-transform: uppercase;
 			color: rgb(var(--color-eternal-ink-rgb) / 64%);
+			margin-bottom: 1.5rem;
+			--countdown-subtitle-text: attr(data-subtitle-text);
+
+			&::after {
+				content: var(--countdown-subtitle-text, 'Mi Bautizo y 1er Año');
+				display: block;
+				font-family: var(--font-body);
+				font-size: 0.625rem;
+				font-weight: 600;
+				letter-spacing: 0.35em;
+				margin-top: 0.75rem;
+				opacity: 0.5;
+				color: var(--color-sacred-gold-readable);
+			}
+		}
+
+		// 2. Days (Protagonist)
+		.countdown__segment[data-index="0"] {
+			order: 2;
+			flex: 0 0 100%; // Force full width in the flex container
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-bottom: 1.5rem;
+			padding: 0;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			transform: none !important;
+			opacity: 1 !important;
+
+			.countdown__value-wrapper {
+				overflow: visible;
+				height: auto;
+				min-height: 1em;
+			}
+
+			.countdown__value {
+				font-size: clamp(5.2rem, 24vw, 8.5rem);
+				font-weight: 400;
+				color: var(--color-eternal-ink);
+				line-height: 1.1;
+				letter-spacing: -0.05em;
+			}
+
+			.countdown__label {
+				font-family: var(--font-body);
+				font-size: clamp(0.75rem, 2vw, 0.88rem);
+				font-weight: 600;
+				letter-spacing: 0.45em;
+				margin-top: 0;
+				opacity: 0.75;
+				color: var(--color-eternal-ink);
+			}
+
+			.rivet, \u0026::before { display: none; }
+		}
+
+		// 3. Description Text
+		.countdown-invitation-text {
+			order: 3;
+			font-family: var(--font-body);
+			font-size: clamp(0.98rem, 3vw, 1.25rem);
+			font-weight: 400;
+			line-height: 1.65;
+			color: var(--color-eternal-ink);
+			max-width: 26ch;
+			margin-inline: auto;
+			margin-bottom: 2.5rem;
+			text-transform: none;
+			letter-spacing: normal;
+			font-style: normal;
+			opacity: 0.85;
+			border: none;
+			padding: 0;
+		}
+
+		// 4. Secondary Inline Time
+		.countdown__segment[data-index="1"],
+		.countdown__segment[data-index="2"],
+		.countdown__segment[data-index="3"] {
+			order: 4;
+			display: inline-flex;
+			flex-direction: row;
+			align-items: baseline;
+			gap: 0.3rem;
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			padding: 0;
+			margin-inline: 0.5rem;
+			transform: none !important;
+			opacity: 1 !important;
+
+			.countdown__value-wrapper {
+				width: auto;
+				min-height: auto;
+				overflow: visible;
+			}
+
+			.countdown__value {
+				font-family: var(--font-display);
+				font-size: clamp(2rem, 3.5vw, 3rem);
+				font-weight: 600;
+				color: rgb(var(--color-eternal-ink-rgb) / 74%);
+				padding: 0;
+
+				\u0026::after {
+					font-size: 0.64em;
+					font-family: var(--font-body);
+					text-transform: lowercase;
+					font-weight: 600;
+					margin-left: 3px;
+					opacity: 0.55;
+				}
+			}
+
+			.countdown__label { display: none; }
+			.rivet, \u0026::before { display: none; }
+
+			// Visual dividers (dots)
+			\u0026[data-index="1"],
+			\u0026[data-index="2"] {
+				\u0026::after {
+					content: '·';
+					margin-left: 0.9rem;
+					opacity: 0.35;
+					font-weight: 300;
+					font-size: 1.3rem;
+					color: var(--color-sacred-gold);
+				}
+			}
+		}
+
+		.countdown__segment[data-index="1"] .countdown__value::after { content: 'h'; }
+		.countdown__segment[data-index="2"] .countdown__value::after { content: 'm'; }
+		.countdown__segment[data-index="3"] .countdown__value::after { content: 's'; }
+
+		// 5. Date
+		.countdown-subtitle {
+			order: 5;
+			margin-top: 3.5rem;
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+
+			.subtitle-line {
+				display: block; // Force lines to be visible
+				width: 50px;
+				height: 1px;
+				margin-inline: auto;
+				background: linear-gradient(90deg, transparent, var(--color-sacred-gold), transparent);
+				opacity: 0.4;
+			}
+
+			.event-date {
+				font-family: var(--font-body);
+				font-size: clamp(0.7rem, 2vw, 0.8rem);
+				font-weight: 600;
+				letter-spacing: 0.24em;
+				color: rgb(var(--color-eternal-ink-rgb) / 58%);
+				white-space: normal;
+				max-width: 22ch;
+				line-height: 1.8;
+				text-transform: uppercase;
+			}
 		}
 
 		.countdown-footer {
-			margin-top: clamp(2rem, 4vw, 3rem);
-			border-top-color: rgb(var(--color-sacred-gold-rgb) / 22%);
+			border: none;
+			padding: 0;
+			margin: 0;
+			\u0026::before { display: none; }
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// EVENT LOCATION
+	// ─────────────────────────────────────────────────────────────
+	.event-location[data-variant='angelic-presence'] {
+		.event-location__card {
+			box-shadow:
+				0 32px 84px -40px rgb(var(--color-eternal-ink-rgb) / 36%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 35%);
+			background: linear-gradient(
+				165deg,
+				rgb(var(--color-pure-ivory-rgb) / 95%) 0%,
+				rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
+				rgb(var(--color-angelic-mist-rgb) / 35%) 100%
+			);
+		}
+
+		.event-location__card-content {
+			padding: clamp(1.6rem, 4vw, 2.75rem);
+		}
+
+		.event-location__card-content-place {
+			font-size: clamp(2rem, 4vw, 2.75rem);
+			margin-bottom: 0.8rem;
+		}
+
+		.event-location__nav-button--primary {
+			background: linear-gradient(
+				to right,
+				rgb(var(--color-sacred-gold-rgb) / 95%),
+				rgb(var(--color-sacred-gold-rgb) / 85%)
+			);
+			color: var(--color-pure-ivory);
+			border: none;
+			font-family: var(--font-label);
+			font-size: 0.72rem;
+			font-weight: 600;
+			letter-spacing: 0.22em;
+			padding: 0.9rem 1.6rem;
+			box-shadow: 0 8px 24px -6px rgb(var(--color-sacred-gold-rgb) / 45%);
+
+			svg {
+				stroke-width: 2px;
+			}
+
+			&:hover {
+				background: var(--color-eternal-ink);
+				box-shadow: 0 12px 32px -8px rgb(var(--color-eternal-ink-rgb) / 40%);
+			}
+		}
+
+		.event-location__card-content-address {
+			padding-top: 1.25rem;
+			font-size: 0.95rem;
+			line-height: 1.5;
+			color: rgb(var(--color-eternal-ink-rgb) / 85%);
 		}
 	}
 
@@ -276,7 +806,7 @@
 			color: rgb(var(--color-sacred-gold-rgb) / 72%);
 		}
 
-		@include preset.respond-below(md) {
+        @include mixins.respond-below(md) {
 			.family__title {
 				max-width: 12ch;
 				margin-inline: auto;
@@ -387,7 +917,7 @@
 			}
 		}
 
-		@include preset.respond-below(md) {
+		@include mixins.respond-below(md) {
 			--gallery-grid-row-gap: 1.1rem;
 			--gallery-grid-column-gap: 1.1rem;
 			--gallery-item-padding: 8px;
@@ -460,7 +990,7 @@
 			--interlude-focal-y: 44%;
 		}
 
-		@include preset.respond-below(sm) {
+		@include mixins.respond-below(sm) {
 			&::after {
 				inset: 0.5rem;
 			}
@@ -654,102 +1184,236 @@
 				var(--color-ivory-warm) 50%,
 				var(--color-soft-sand) 100%
 			);
+		padding-bottom: clamp(6rem, 12vh, 8rem);
 
 		.event-location__container {
-			max-width: min(760px, calc(100vw - 2rem));
+			max-width: min(800px, calc(100vw - 2.5rem));
 		}
 
 		.event-location__card-wrapper {
-			max-width: 31rem;
+			max-width: 26rem; // Slimmer for editorial look
+			margin-inline: auto;
+			padding-bottom: 2rem;
 		}
 
 		.event-location__card-title {
 			color: rgb(var(--color-eternal-ink-rgb) / 64%);
 			letter-spacing: 0.24em;
+			margin-bottom: 1.5rem;
 		}
 
-		.event-location__card-flourish .flourish-diamond {
-			border-radius: 50%;
-			background: rgb(var(--color-angelic-blue-rgb) / 62%);
-			transform: none;
+		.event-location__card-flourish {
+			display: none; // Remove default flourish for cleaner layout
 		}
 
 		.event-location__card {
-			background: linear-gradient(
-				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
-				rgb(var(--color-ivory-warm-rgb) / 76%) 100%
-			);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 26%);
-			border-radius: 10px;
-			box-shadow:
-				0 22px 54px -36px rgb(var(--color-eternal-ink-rgb) / 32%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
+			background: transparent;
+			border: none;
+			border-radius: 0;
+			box-shadow: none;
+			gap: 1.5rem;
 		}
 
 		.event-location__card:hover {
-			border-color: rgb(var(--color-sacred-gold-rgb) / 38%);
-			transform: translateY(-3px);
+			border: none;
+			transform: none;
+			box-shadow: none;
+		}
+
+		// Editorial Arch Layer Image
+		.event-location__card-image-outer-frame {
+			background: rgb(var(--color-sacred-gold-rgb) / 20%);
+			padding: 0;
+			border-radius: 12rem 12rem 0.5rem 0.5rem;
 			box-shadow:
-				0 26px 60px -38px rgb(var(--color-eternal-ink-rgb) / 34%),
-				0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 68%);
+				0 24px 54px -42px rgb(var(--color-eternal-ink-rgb) / 48%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+			overflow: hidden;
+			margin-bottom: 0;
+			position: relative;
+			isolation: isolate;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0.6rem;
+				border: 1px solid rgb(var(--color-pure-ivory-rgb) / 60%);
+				border-radius: 11rem 11rem 0.35rem 0.35rem;
+				pointer-events: none;
+				z-index: 2;
+			}
+		}
+
+		.event-location__card-image-inner-frame {
+			background: transparent;
+			padding: 0;
+			border-radius: 12rem 12rem 0.5rem 0.5rem;
 		}
 
 		.event-location__card-image-container {
-			aspect-ratio: 5 / 3.7;
+			aspect-ratio: 0.72; // Tall arch
+			border-radius: 12rem 12rem 0.5rem 0.5rem;
+
+			img {
+				filter: saturate(0.96) contrast(1.02) brightness(1.02) sepia(0.04);
+			}
 		}
 
 		.event-location__card-content {
-			padding: clamp(1.45rem, 3vw, 2.25rem);
+			padding: 0;
+			margin-top: 1.5rem;
 		}
 
 		.event-location__card-content-place {
-			font-size: clamp(1.85rem, 3.8vw, 2.55rem);
-			color: rgb(var(--color-eternal-ink-rgb) / 94%);
+			font-size: clamp(2.35rem, 6vw, 3.1rem);
+			color: var(--color-eternal-ink);
+			line-height: 1.02;
+			margin-bottom: 0.85rem;
+			font-family: var(--font-display);
 		}
 
 		.event-location__card-content-date {
 			color: var(--color-sacred-gold-readable);
+			font-size: clamp(1.1rem, 3vw, 1.3rem);
+			margin-bottom: 0.2rem;
 		}
 
 		.event-location__card-content-hour,
 		.event-location__card-content-address {
-			color: rgb(var(--color-eternal-ink-rgb) / 70%);
+			color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		}
+
+		.event-location__card-content-hour {
+			font-size: 0.82rem;
+			letter-spacing: 0.28em;
+			color: rgb(var(--color-eternal-ink-rgb) / 64%);
+			font-weight: 500;
+			text-transform: uppercase;
 		}
 
 		.event-location__card-content-copy-button {
 			color: var(--color-eternal-ink);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 32%);
 			background: rgb(var(--color-pure-ivory-rgb) / 70%);
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
+			border-radius: 50%;
+			width: 32px;
+			height: 32px;
+			display: inline-flex;
+			place-content: center;
+			place-items: center;
+
+			&:hover,
+			&:focus-visible {
+				color: var(--color-pure-ivory);
+				background: var(--color-eternal-ink);
+				border-color: var(--color-eternal-ink);
+			}
 		}
 
-		.event-location__card-content-copy-button:hover,
-		.event-location__card-content-copy-button:focus-visible {
-			color: var(--color-pure-ivory);
-			background: var(--color-eternal-ink);
-			border-color: var(--color-eternal-ink);
+		// Premium Map Action Button
+		.event-location__card-navigation-buttons {
+			gap: 0;
+			margin-top: 2rem;
 		}
 
 		.event-location__nav-button {
-			background: var(--color-eternal-ink);
-			border-color: var(--color-eternal-ink);
-			color: var(--color-pure-ivory);
-			box-shadow: 0 12px 24px rgb(var(--color-eternal-ink-rgb) / 12%);
+			background: linear-gradient(
+				180deg,
+				var(--color-pure-ivory) 0%,
+				var(--color-ivory-warm) 100%
+			);
+			border: 1.5px solid var(--color-sacred-gold);
+			color: var(--color-eternal-ink);
+			box-shadow:
+				0 16px 36px -16px rgb(var(--color-eternal-ink-rgb) / 28%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+			border-radius: 14px;
+			padding: 1.25rem 2rem;
+			letter-spacing: 0.22em;
+			font-size: 0.75rem;
+			font-weight: 600;
+
+			&::after {
+				display: none;
+			}
+
+			&:hover {
+				background: var(--color-eternal-ink);
+				border-color: var(--color-eternal-ink);
+				color: var(--color-pure-ivory);
+				box-shadow: 0 14px 28px rgb(var(--color-eternal-ink-rgb) / 40%);
+				transform: translateY(-2px);
+			}
 		}
 
-		.event-location__nav-button:hover {
-			background: var(--color-sacred-gold-readable);
-			border-color: var(--color-sacred-gold-readable);
-			color: var(--color-pure-ivory);
+		// Integrated Indications
+		.event-location__indications-container {
+			margin-top: clamp(1rem, 3vh, 2rem);
+			max-width: 480px;
+		}
+
+		.event-location__divider {
+			display: none; // Removed because it breaks the flow visually
+		}
+
+		.event-location__indications-heading {
+			letter-spacing: 0.25em;
+			color: rgb(var(--color-sacred-gold-rgb) / 84%);
+		}
+
+		.event-location__indications {
+			background: transparent;
+			backdrop-filter: none;
+			border: none;
+			padding: 0;
+			gap: 1rem;
+
+			&::before {
+				display: none;
+			}
 		}
 
 		.event-location__indication-item {
-			background: rgb(var(--color-pure-ivory-rgb) / 62%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 20%);
+			background: transparent;
+			border: none;
+			gap: 1rem;
+			padding: 1.25rem 0;
+			border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+			align-items: center;
+
+			&:last-child {
+				border-bottom: none;
+			}
 		}
 
 		.event-location__indication-icon {
 			color: var(--color-sacred-gold-readable);
+			background: rgb(var(--color-pure-ivory-rgb) / 85%);
+			width: 40px;
+			height: 40px;
+			display: grid;
+			place-items: center;
+			border-radius: 50%;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+
+			svg {
+				width: 18px;
+				height: 18px;
+			}
+		}
+
+		.event-location__indication-text {
+			font-size: 0.9rem;
+			color: rgb(var(--color-eternal-ink-rgb) / 78%);
+
+			strong {
+				font-size: 0.75rem;
+				letter-spacing: 0.15em;
+				text-transform: uppercase;
+				color: rgb(var(--color-sacred-gold-rgb) / 94%);
+				display: block;
+				margin-bottom: 0.25rem;
+			}
 		}
 	}
 
@@ -889,100 +1553,567 @@
 	// THANK YOU
 	// ─────────────────────────────────────────────────────────────
 	.thank-you-section {
+		display: grid;
+		min-height: 100svh;
+		padding: clamp(5rem, 12vw, 8rem) clamp(1rem, 5vw, 4.5rem);
 		background:
-			radial-gradient(
-				ellipse at 14% 12%,
-				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
-				transparent 38%
-			),
-			radial-gradient(
-				ellipse at 86% 86%,
-				rgb(var(--color-angelic-blue-soft-rgb) / 22%) 0%,
-				transparent 42%
-			),
-			var(--angelic-ivory-wash);
+			linear-gradient(180deg, rgb(var(--color-eternal-ink-rgb) / 8%), transparent 34%),
+			var(--color-eternal-ink);
+		overflow: hidden;
 
 		&::before {
-			width: min(28rem, 82vw);
-			height: min(28rem, 82vw);
-			background: var(--angelic-blue-wash);
-			opacity: 72%;
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background:
+				linear-gradient(
+					90deg,
+					rgb(var(--color-pure-ivory-rgb) / 94%) 0%,
+					rgb(var(--color-pure-ivory-rgb) / 78%) 30%,
+					rgb(var(--color-pure-ivory-rgb) / 34%) 52%,
+					rgb(var(--color-eternal-ink-rgb) / 8%) 100%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--color-pure-ivory-rgb) / 36%) 0%,
+					transparent 28%,
+					rgb(var(--color-eternal-ink-rgb) / 34%) 100%
+				);
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background-image:
+				linear-gradient(rgb(var(--color-eternal-ink-rgb) / 4%) 1px, transparent 1px),
+				linear-gradient(90deg, rgb(var(--color-eternal-ink-rgb) / 3%) 1px, transparent 1px);
+			background-size: 44px 44px, 52px 52px;
+			mix-blend-mode: multiply;
+			opacity: 22%;
+			pointer-events: none;
 		}
 
 		.thank-you-content {
-			position: relative;
-
-			&::before {
-				content: '';
-				display: grid;
-				place-items: center;
-				width: 0.5rem;
-				height: 0.5rem;
-				margin: 0 auto clamp(0.9rem, 2vw, 1.25rem);
-				border: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
-				border-radius: 50%;
-				background: rgb(var(--color-sacred-gold-rgb) / 58%);
-				box-shadow: var(--angelic-soft-shadow);
-			}
+			position: static;
+			z-index: 2;
+			display: grid;
+			align-self: center;
+			width: min(100%, 1080px);
+			max-width: none;
+			margin-inline: auto;
+			padding: 0;
+			text-align: left;
 		}
 
 		.photo-frame {
-			background: linear-gradient(
-				145deg,
-				rgb(var(--color-pure-ivory-rgb) / 92%),
-				rgb(var(--color-angelic-mist-rgb) / 52%)
-			);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 30%);
-			box-shadow:
-				0 22px 54px rgb(var(--color-eternal-ink-rgb) / 10%),
-				0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 74%);
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+			background: var(--color-eternal-ink);
+			box-shadow: none;
 
-			&::before {
-				background: var(--angelic-blue-wash);
-				opacity: 88%;
-				filter: blur(8px);
+			&::before,
+			&::after {
+				content: none;
 			}
 
-			&::after {
-				border-color: rgb(var(--color-sacred-gold-rgb) / 24%);
+			.photo-image {
+				width: 100%;
+				height: 100%;
+				border-radius: 0;
+				object-fit: cover;
+				object-position: var(--thank-you-focal-point, 52% 42%);
+				filter: saturate(0.92) contrast(1.02) brightness(1.02) sepia(0.03);
+				transform: none;
+			}
+
+			&:hover .photo-image {
+				transform: none;
+			}
+		}
+
+		.message-container,
+		.signature-block,
+		.thank-you-footer {
+			position: relative;
+			z-index: 2;
+			justify-self: start;
+			margin-left: clamp(0rem, 4vw, 2rem);
+		}
+
+		.message-container {
+			position: relative;
+			width: min(100%, 35.5rem);
+			max-width: none;
+			padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3.5vw, 2.4rem);
+			border-left: 1px solid rgb(var(--color-sacred-gold-rgb) / 34%);
+			background:
+				linear-gradient(
+					135deg,
+					rgb(var(--color-pure-ivory-rgb) / 82%) 0%,
+					rgb(var(--color-ivory-warm-rgb) / 62%) 58%,
+					rgb(var(--color-pure-ivory-rgb) / 28%) 100%
+				);
+			box-shadow:
+				0 24px 70px -54px rgb(var(--color-eternal-ink-rgb) / 50%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 62%);
+			backdrop-filter: blur(7px) saturate(118%);
+			perspective: none;
+
+			&::before {
+				content: 'C·R';
+				display: grid;
+				place-items: center;
+				width: 2.15rem;
+				height: 2.15rem;
+				margin-bottom: clamp(1rem, 3vw, 1.35rem);
+				border: 1px solid rgb(var(--color-sacred-gold-rgb) / 34%);
+				border-radius: 50%;
+				color: rgb(var(--color-sacred-gold-rgb) / 88%);
+				font-family: var(--font-display);
+				font-size: 0.64rem;
+				letter-spacing: 0.18em;
 			}
 		}
 
 		.thank-you-message {
-			color: rgb(var(--color-eternal-ink-rgb) / 82%);
-			max-width: 34rem;
-			margin-inline: auto;
+			max-width: 33rem;
+			margin: 0;
+			color: rgb(var(--color-eternal-ink-rgb) / 84%);
+			font-family: var(--font-display);
+			font-size: clamp(1.18rem, 2.1vw, 1.52rem);
+			font-weight: 400;
+			letter-spacing: 0;
+			line-height: 1.68;
 		}
 
 		.thank-you-message .drop-cap {
-			color: var(--color-sacred-gold-readable);
-			text-shadow: 0 8px 18px rgb(var(--color-sacred-gold-rgb) / 14%);
+			float: none;
+			padding-right: 0;
+			color: rgb(var(--color-sacred-gold-rgb) / 80%);
+			font-family: inherit;
+			font-size: 1em;
+			line-height: inherit;
+			text-shadow: none;
+		}
+
+		.signature-block {
+			margin-top: clamp(1rem, 2.5vw, 1.6rem);
+			animation-delay: 0.25s;
 		}
 
 		.closing-name {
-			background: linear-gradient(
-				135deg,
-				rgb(var(--color-eternal-ink-rgb) / 88%) 0%,
-				rgb(var(--color-sacred-gold-rgb) / 78%) 50%,
-				rgb(var(--color-eternal-ink-rgb) / 84%) 100%
-			);
-			background-clip: text;
-			-webkit-text-fill-color: transparent;
-			text-shadow: 0 10px 24px rgb(var(--color-sacred-gold-rgb) / 12%);
+			display: none;
 		}
 
 		.thank-you-footer {
-			border-top-color: rgb(var(--color-angelic-blue-rgb) / 28%);
-			color: rgb(var(--color-eternal-ink-rgb) / 48%);
+			width: min(100%, 24rem);
+			margin-top: clamp(0.75rem, 2vw, 1.2rem);
+			padding-top: clamp(1rem, 2.5vw, 1.35rem);
+			border-top: 1px solid rgb(var(--color-angelic-blue-rgb) / 30%);
+			color: rgb(var(--color-eternal-ink-rgb) / 50%);
+			font-size: 0.68rem;
+			letter-spacing: 0.18em;
+			text-align: left;
 
 			&::before {
-				content: '';
-				display: block;
-				width: min(9rem, 42vw);
-				height: 1px;
-				margin: calc(clamp(1rem, 3vw, 1.5rem) * -1) auto clamp(1rem, 3vw, 1.5rem);
-				background: var(--angelic-divider);
+				content: none;
 			}
+
+			p {
+				margin: 0;
+			}
+		}
+
+		@include mixins.respond-below(md) {
+			align-items: end;
+			padding: clamp(6rem, 18vw, 8rem) clamp(1rem, 5vw, 1.5rem)
+				clamp(4.5rem, 12vw, 6rem);
+
+			&::before {
+				background:
+					linear-gradient(
+						180deg,
+						rgb(var(--color-pure-ivory-rgb) / 12%) 0%,
+						rgb(var(--color-pure-ivory-rgb) / 44%) 38%,
+						rgb(var(--color-pure-ivory-rgb) / 92%) 100%
+					),
+					linear-gradient(
+						90deg,
+						rgb(var(--color-eternal-ink-rgb) / 14%) 0%,
+						transparent 40%,
+						rgb(var(--color-eternal-ink-rgb) / 10%) 100%
+					);
+			}
+
+			.thank-you-content {
+				align-self: end;
+			}
+
+			.message-container {
+				width: min(100%, 31rem);
+				padding: clamp(1rem, 5vw, 1.45rem);
+				background: rgb(var(--color-pure-ivory-rgb) / 32%);
+			}
+
+			.message-container,
+			.signature-block,
+			.thank-you-footer {
+				margin-left: 0;
+			}
+		}
+
+		@include mixins.respond-below(xs) {
+			min-height: 100svh;
+			padding-inline: 1rem;
+
+			.thank-you-message {
+				font-size: clamp(1.05rem, 5vw, 1.18rem);
+				line-height: 1.62;
+			}
+
+			.closing-name {
+				font-size: clamp(1.95rem, 12vw, 2.45rem);
+			}
+
+			.thank-you-footer {
+				width: min(100%, 19rem);
+			}
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// HEADER — refined, non-competing
+	// ─────────────────────────────────────────────────────────────
+	.header-base[data-variant='angelic-presence'] {
+		--header-nav-color: rgb(var(--color-eternal-ink-rgb) / 75%);
+		--header-nav-color-transparent: rgb(var(--color-eternal-ink-rgb) / 70%);
+		--header-border-color: rgb(var(--color-sacred-gold-rgb) / 14%);
+
+		.event-header__title {
+			font-size: clamp(0.72rem, 2.4vw, 0.95rem);
+			letter-spacing: 0.06em;
+		}
+
+		.event-header__action-btn:not(.event-header__action-btn--cta) {
+			font-size: 0.68rem;
+			letter-spacing: 0.06em;
+			padding: 0.4rem clamp(0.5rem, 0.8vw, 0.8rem);
+		}
+
+		&.header-base--scrolled {
+			border-bottom-color: rgb(var(--color-sacred-gold-rgb) / 16%);
+		}
+
+		.header-base__mobile-toggle {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 2.8rem;
+			height: 2.8rem;
+			padding: 0;
+			border-radius: 50%;
+			background: rgb(var(--color-ivory-warm-rgb) / 45%);
+			color: rgb(var(--color-eternal-ink-rgb) / 85%);
+			backdrop-filter: blur(10px);
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+			box-shadow:
+				0 8px 24px -12px rgb(var(--color-eternal-ink-rgb) / 24%),
+				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 60%);
+			transition:
+				background 0.3s ease,
+				transform 0.2s ease,
+				border-color 0.3s ease;
+
+			&:hover {
+				background: rgb(var(--color-ivory-warm-rgb) / 85%);
+				transform: scale(1.05);
+			}
+
+			.hamburger {
+				width: 18px;
+				height: 14px;
+			}
+
+			.hamburger__line {
+				height: 1.25px;
+				background-color: currentcolor;
+			}
+		}
+	}
+
+	// ─────────────────────────────────────────────────────────────
+	// MOBILE NAVIGATION
+	// ─────────────────────────────────────────────────────────────
+
+	// Warm ivory/champagne panel with micro-texture
+	.header-base__mobile-menu {
+		background:
+			// Subtle paper texture — fine noise pattern
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+			linear-gradient(
+				180deg,
+				rgb(var(--color-ivory-warm-rgb) / 99%) 0%,
+				rgb(var(--color-soft-sand-rgb) / 78%) 55%,
+				rgb(var(--color-angelic-mist-rgb) / 36%) 100%
+			);
+		border-top: 2px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+		border-left: none;
+		box-shadow:
+			20px 0 60px rgb(var(--color-eternal-ink-rgb) / 7%),
+			inset 1px 0 0 rgb(var(--color-pure-ivory-rgb) / 50%);
+		transition:
+			transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+			opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+
+		// Light sweep effect — editorial paper sheen
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 100%;
+			background:
+				linear-gradient(
+					118deg,
+					transparent 0%,
+					rgb(var(--color-pure-ivory-rgb) / 12%) 46%,
+					rgb(var(--color-sacred-gold-rgb) / 6%) 52%,
+					transparent 100%
+				);
+			pointer-events: none;
+			z-index: 1;
+		}
+	}
+
+	// Event identity header — monogram + name + subtitle
+	.mobile-nav-header {
+		position: relative;
+		margin-bottom: 2.75rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+
+		// Monogram C·R — editorial accent
+		&::before {
+			content: 'C·R';
+			position: absolute;
+			top: -0.5rem;
+			right: 0;
+			font-family: var(--font-display);
+			font-size: 0.62rem;
+			font-weight: 400;
+			letter-spacing: 0.2em;
+			color: rgb(var(--color-sacred-gold-rgb) / 55%);
+		}
+
+		&__name {
+			font-family: var(--font-display);
+			font-size: 1.15rem;
+			font-weight: 400;
+			letter-spacing: 0.08em;
+			color: rgb(var(--color-eternal-ink-rgb) / 90%);
+		}
+
+		&__subtitle {
+			margin-top: 0.35rem;
+			font-family: var(--font-label);
+			font-size: 0.56rem;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			color: rgb(var(--color-eternal-ink-rgb) / 48%);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
+
+	// Menu links — gold numbers, refined typography
+	.mobile-nav-links {
+		gap: 1.85rem;
+		margin-bottom: 3rem;
+
+		&__link {
+			display: flex;
+			align-items: baseline;
+			gap: 0.5rem;
+			letter-spacing: 0.14em;
+			font-size: 1.08rem;
+			font-weight: 400;
+			color: rgb(var(--color-eternal-ink-rgb) / 82%);
+			transition:
+				color 0.25s ease,
+				transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+			// Gold number — editorial accent
+			&::before {
+				content: attr(data-label);
+				font-family: var(--font-display);
+				font-size: 0.78rem;
+				font-weight: 400;
+				letter-spacing: 0.05em;
+				color: rgb(var(--color-sacred-gold-rgb) / 70%);
+				min-width: 1.8rem;
+				flex-shrink: 0;
+			}
+
+			// Dot separator
+			&::after {
+				content: none;
+			}
+
+			&:hover {
+				color: rgb(var(--color-eternal-ink-rgb) / 95%);
+				transform: translateX(4px);
+			}
+
+			&:hover::before {
+				color: var(--color-sacred-gold);
+			}
+		}
+	}
+
+	// Divider — links to CTA
+	.mobile-nav-footer {
+		padding-top: 0.5rem;
+
+		&__divider {
+			height: 1px;
+			width: 100%;
+			margin-bottom: 2rem;
+			background: linear-gradient(
+				to right,
+				transparent,
+				rgb(var(--color-sacred-gold-rgb) / 28%),
+				transparent
+			);
+		}
+
+		&__copy {
+			color: rgb(var(--color-eternal-ink-rgb) / 26%);
+			font-size: 0.55rem;
+			letter-spacing: 0.3em;
+		}
+	}
+
+	// CTA — editorial link, not isolated button
+	.mobile-nav-actions {
+		margin-bottom: 0.75rem;
+		gap: 1rem;
+
+		&__cta {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 0.6rem;
+			width: 100%;
+			padding: 0.9rem 1.2rem;
+			background: transparent;
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
+			color: rgb(var(--color-eternal-ink-rgb) / 82%);
+			font-family: var(--font-label);
+			font-size: 0.68rem;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			border-radius: 4px;
+			transition:
+				background 0.3s ease,
+				border-color 0.3s ease,
+				color 0.3s ease;
+
+			&::after {
+				content: '→';
+				font-size: 0.75rem;
+				color: rgb(var(--color-sacred-gold-rgb) / 70%);
+				transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			&:hover {
+				background: rgb(var(--color-sacred-gold-rgb) / 8%);
+				border-color: rgb(var(--color-sacred-gold-rgb) / 55%);
+				color: rgb(var(--color-eternal-ink-rgb) / 95%);
+			}
+
+			&:hover::after {
+				transform: translateX(4px);
+				color: var(--color-sacred-gold);
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--color-sacred-gold);
+				outline-offset: 3px;
+			}
+		}
+	}
+
+	.mobile-nav-signature {
+		margin-top: 1.5rem;
+		opacity: 60%;
+	}
+
+	// Hamburger — refined, elegant
+	.header-base__mobile-toggle {
+		.hamburger {
+			width: 18px;
+			height: 14px;
+		}
+
+		.hamburger__line {
+			height: 1.25px;
+			border-radius: 1px;
+			transition:
+				transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+				opacity 0.25s ease,
+				background-color 0.3s ease;
+		}
+
+		&[aria-expanded='true'] {
+			background: var(--color-pure-ivory);
+			border-color: rgb(var(--color-sacred-gold-rgb) / 45%);
+
+			.hamburger__line:nth-child(1) {
+				transform: translateY(6px) rotate(45deg);
+			}
+
+			.hamburger__line:nth-child(3) {
+				transform: translateY(-6px) rotate(-45deg);
+			}
+		}
+	}
+
+	// Overlay — warm, inviting
+	.header-base__mobile-overlay {
+		background-color: rgb(55 51 45 / 32%);
+		backdrop-filter: blur(6px);
+	}
+
+	// Stagger animation — smoother easing
+	@for $index from 0 through 20 {
+		.mobile-nav-stagger-#{$index} {
+			--stagger-index: #{$index};
+		}
+	}
+
+	.header-base--menu-open {
+		.mobile-nav-links__link,
+		.mobile-nav-actions__login,
+		.mobile-nav-actions__cta {
+			transform: translateX(0);
+			opacity: 100%;
+			transition:
+				transform 480ms cubic-bezier(0.16, 1, 0.3, 1),
+				opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
 		}
 	}
 }
