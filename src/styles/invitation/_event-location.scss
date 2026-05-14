@@ -156,6 +156,12 @@
 		filter: sepia(0.1) contrast(1.05);
 	}
 
+	&__card-image-container[data-focal-point] {
+		img {
+			object-position: attr(data-focal-point);
+		}
+	}
+
 	/* Content */
 	&__card-content {
 		text-align: center;

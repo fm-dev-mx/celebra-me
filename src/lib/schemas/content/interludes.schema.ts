@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
-import { AssetSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
 export const interludeSchema = z.object({
@@ -9,13 +9,7 @@ export const interludeSchema = z.object({
 	alt: z.string().optional(),
 	height: z.enum(['screen', 'tall']).default('screen'),
 	variant: z.enum(THEME_PRESETS).optional(),
-	focalPoint: z
-		.string()
-		.regex(
-			/^(?:\d+(?:\.\d+)?%|left|center|right)\s+(?:\d+(?:\.\d+)?%|top|center|bottom)$/,
-			'focalPoint must be a CSS position such as "50% 40%" or "center 15%"',
-		)
-		.optional(),
+	focalPoint: focalPointSchema.optional(),
 	lightX: z.string().optional(),
 	lightY: z.string().optional(),
 	overlayOpacity: z.string().optional(),

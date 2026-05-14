@@ -29,3 +29,28 @@ RSVP copy overrides live under `sectionStyles.rsvp.labels`.
 - `labels.notesPlaceholder`
 
 Keep UI-facing values in Spanish when content overrides visible RSVP copy.
+
+## Image Layout Fields
+
+The following fields are used to control the presentation of images across various sections.
+
+### `focalPoint`
+
+Defines the `object-position` of the focal area of an image.
+
+- **Supported in**: `hero`, `interludes`, `family`, `thankYou`, `location` (venue images), and
+  `gallery` (per item).
+- **Valid values**: CSS `object-position` compatible strings.
+  - Percentages: `"50% 38%"`
+  - Keywords: `"center top"`, `"left 20%"`
+  - Single values: `"center"`, `"top"`
+- **Default**: `"center"`
+
+### `height` (Interludes only)
+
+Defines the minimum height of the interlude section.
+
+- **Valid values**:
+  - `"screen"`: 100svh (fills the viewport)
+  - `"tall"`: 80svh
+- **Default**: `"screen"`

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
-import { AssetSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
 export const contentBlocksSchema = z
@@ -13,10 +13,7 @@ export const contentBlocksSchema = z
 				alt: z.string().optional(),
 				height: z.enum(['screen', 'tall']).default('screen'),
 				variant: z.enum(THEME_PRESETS).optional(),
-				focalPoint: z
-					.string()
-					.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
-					.optional(),
+				focalPoint: focalPointSchema.optional(),
 			}),
 		]),
 	)

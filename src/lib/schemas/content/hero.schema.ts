@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssetSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointPairSchema } from '@/lib/schemas/content/shared.schema';
 
 export const heroSchema = z.object({
 	name: z.string(),
@@ -8,8 +8,5 @@ export const heroSchema = z.object({
 	nickname: z.string().optional(),
 	date: z.iso.datetime(),
 	backgroundImage: AssetSchema,
-	focalPoint: z
-		.string()
-		.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
-		.optional(),
+	focalPoint: focalPointPairSchema.optional(),
 });

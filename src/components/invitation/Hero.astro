@@ -18,6 +18,7 @@ interface Props {
 	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
 	guestName?: string;
+	focalPoint?: string;
 }
 
 const {
@@ -31,6 +32,7 @@ const {
 	backgroundImage,
 	portrait,
 	variant,
+	focalPoint,
 } = Astro.props;
 
 // Universal image resolution helper
@@ -58,6 +60,7 @@ const surnames = names.slice(2);
 	id="inicio"
 	class="invitation-hero"
 	data-variant={variant}
+	data-focal-point={focalPoint}
 >
 	<div class="invitation-hero__background">
 		<Image
@@ -133,3 +136,5 @@ const surnames = names.slice(2);
 		</div>
 	</div>
 </section>
+
+

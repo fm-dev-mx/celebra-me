@@ -5,7 +5,11 @@ import {
 	INDICATION_STYLE_VARIANTS,
 } from '@/lib/theme/theme-contract';
 import { itineraryItemSchema } from '@/lib/schemas/content/itinerary.schema';
-import { AssetSchema, countdownSchema } from '@/lib/schemas/content/shared.schema';
+import {
+	AssetSchema,
+	countdownSchema,
+	focalPointSchema,
+} from '@/lib/schemas/content/shared.schema';
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
 const richTextSchema = z.string();
@@ -21,6 +25,7 @@ const venueSchema = z.object({
 	googleMapsUrl: z.url().optional(),
 	wazeUrl: z.url().optional(),
 	image: AssetSchema.optional(),
+	focalPoint: focalPointSchema.optional(),
 	coordinates: locationCoordinatesSchema,
 });
 

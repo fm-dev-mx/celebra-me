@@ -6,6 +6,7 @@ import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
 interface GalleryItem {
 	image: ImageMetadata | ImageAsset;
 	caption?: string;
+	focalPoint?: string;
 }
 
 interface Props {
@@ -30,11 +31,16 @@ const getSrc = (image: ImageMetadata | ImageAsset): string => {
 				data-gallery-index={index}
 				data-gallery-src={getSrc(item.image)}
 				data-gallery-caption={item.caption ?? ''}
+				data-focal-point={item.focalPoint}
 				tabindex="0"
 				role="button"
 				aria-label={item.caption || `Ver imagen ${index + 1}`}
 			>
-				<img src={getSrc(item.image)} alt={item.caption || `Galería ${index + 1}`} loading="lazy" />
+				<img
+					src={getSrc(item.image)}
+					alt={item.caption || `Galería ${index + 1}`}
+					loading="lazy"
+				/>
 			</div>
 		))
 	}

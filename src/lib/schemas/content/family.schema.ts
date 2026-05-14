@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AssetSchema } from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointPairSchema } from '@/lib/schemas/content/shared.schema';
 
 export const familySchema = z
 	.object({
@@ -41,9 +41,6 @@ export const familySchema = z
 			)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
-		focalPoint: z
-			.string()
-			.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
-			.optional(),
+		focalPoint: focalPointPairSchema.optional(),
 	})
 	.optional();

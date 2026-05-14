@@ -21,6 +21,7 @@ interface VenueData {
 	googleMapsUrl?: string;
 	wazeUrl?: string;
 	image?: string | ImageMetadata | ImageAsset;
+	focalPoint?: string;
 	coordinates?: {
 		lat: number;
 		lng: number;
@@ -54,7 +55,7 @@ const {
 	<article class={`event-location__card event-location__card--${type}`}>
 		<div class="event-location__card-image-outer-frame">
 			<div class="event-location__card-image-inner-frame">
-				<div class="event-location__card-image-container">
+				<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
 					{venue.coordinates ? (
 						<GoogleMap
 							lat={venue.coordinates.lat}
@@ -145,3 +146,5 @@ const {
 		)}
 	</article>
 </div>
+
+

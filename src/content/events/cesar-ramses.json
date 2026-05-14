@@ -73,11 +73,11 @@
         "featuredImage": "family",
         "focalPoint": "50% 38%",
         "labels": {
-            "sectionTitle": "Los que hacen este momento sagrado",
+            "sectionTitle": "El amor que rodea este momento",
             "sectionSubtitle": "Familia",
             "parentsTitle": "Papás",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
+            "sectionMessage": "Celebramos este día con la dicha de tener cerca a quienes llenan la vida de César Ramsés de amor, cuidado y bendiciones."
         }
     },
     "gallery": {
@@ -146,8 +146,8 @@
         "footerText": "Gracias por preparar el corazón para acompañarnos"
     },
     "quote": {
-        "text": "Porque donde dos o tres se reúnen en mi nombre, allí estoy yo en medio de ellos.",
-        "author": "Mateo 18:20"
+        "text": "Instruye al niño en su camino, Y aun cuando fuere viejo no se apartará de él.",
+        "author": "Proverbios 22:6"
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
@@ -168,15 +168,13 @@
             "image": "interlude01",
             "afterSection": "quote",
             "alt": "Detalle de manos y encaje del bautizo",
-            "height": "tall",
-            "focalPoint": "50% 50%"
+            "height": "tall"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
             "alt": "Detalle luminoso del bautizo",
-            "height": "screen",
-            "focalPoint": "50% 50%"
+            "height": "screen"
         }
     ],
     "envelope": {

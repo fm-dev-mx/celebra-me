@@ -9,6 +9,31 @@ const secureUrlSchema = z
 
 const publicPathSchema = z.string().startsWith('/', 'Public asset paths must start with "/".');
 
+/**
+ * Standard schema for image focal points with BOTH x and y values required.
+ * Use for hero images where full positioning is needed.
+ */
+export const focalPointPairSchema = z
+	.string()
+	.regex(
+		/^(?:\d+(?:\.\d+)?%|left|center|right)\s+(?:\d+(?:\.\d+)?%|top|center|bottom)$/,
+		'focalPoint must be two values like "50% 40%" or "center top"',
+	);
+
+/**
+ * Standard schema for image focal points.
+ * Supports CSS object-position compatible strings:
+ * - Percentages: "50% 38%"
+ * - Keywords: "center top", "left 20%"
+ * - Single values: "center"
+ */
+export const focalPointSchema = z
+	.string()
+	.regex(
+		/^(?:\d+(?:\.\d+)?%|left|center|right)(?:\s+(?:\d+(?:\.\d+)?%|top|center|bottom))?$/,
+		'focalPoint must be a CSS position such as "50% 40%", "center top", or "left"',
+	);
+
 const internalAssetSchema = z.object({
 	type: z.literal('internal'),
 	key: z.enum(ALL_ASSET_KEYS),
@@ -58,10 +83,7 @@ export const thankYouSchema = z
 		message: z.string(),
 		closingName: z.string(),
 		image: AssetSchema.optional(),
-		focalPoint: z
-			.string()
-			.regex(/^\d+\s*%\s*\d+\s*%$/, 'focalPoint must be in format "X% Y%"')
-			.optional(),
+		focalPoint: focalPointPairSchema.optional(),
 	})
 	.optional();
 
