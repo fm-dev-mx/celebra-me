@@ -31,7 +31,8 @@
         "name": "César Ramses",
         "label": "Mi Bautizo y 1er Año",
         "date": "2026-06-20T22:00:00.000Z",
-        "backgroundImage": "hero"
+        "backgroundImage": "hero",
+        "focalPoint": "50% 38%"
     },
     "location": {
         "venueName": "Levanto Jardín de Eventos",
@@ -79,7 +80,7 @@
             { "name": "Miguel Rodríguez", "role": "Padrino" }
         ],
         "featuredImage": "family",
-        "focalPoint": "50% 36%",
+        "focalPoint": "50% 38%",
         "labels": {
             "sectionTitle": "Los que hacen este momento sagrado",
             "sectionSubtitle": "Familia",
@@ -169,7 +170,7 @@
         "message": "Gracias por compartir con nosotros este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
         "closingName": "César Ramses",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 50%"
+        "focalPoint": "52% 42%"
     },
     "interludes": [
         {
@@ -177,14 +178,14 @@
             "afterSection": "quote",
             "alt": "Detalle de manos y encaje del bautizo",
             "height": "tall",
-            "focalPoint": "50% 58%"
+            "focalPoint": "50% 50%"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
             "alt": "Detalle luminoso del bautizo",
             "height": "screen",
-            "focalPoint": "53% 55%"
+            "focalPoint": "50% 50%"
         }
     ],
     "envelope": {
