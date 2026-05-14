@@ -20,7 +20,8 @@ const {
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
 const isEditorialFooter = variant === 'editorial';
-const isCelestialBlue = variant === 'celestial-blue';
+const EMOTIONAL_FOOTER_VARIANTS = ['celestial-blue', 'angelic-presence'] as const;
+const supportsEmotionalFooter = EMOTIONAL_FOOTER_VARIANTS.includes(variant as typeof EMOTIONAL_FOOTER_VARIANTS[number]);
 const logoVariant = isEditorialFooter ? 'footer' : 'default';
 
 const contactNumber = '526681167477';
@@ -32,11 +33,11 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 	class="invitation-footer"
 	data-variant={variant}
 >
-	{closingPhrase && isCelestialBlue && (
+	{closingPhrase && supportsEmotionalFooter && (
 		<p class="footer__closing-phrase">{closingPhrase}</p>
 	)}
 
-	{isCelestialBlue && <div class="footer__divider" aria-hidden="true"></div>}
+	{supportsEmotionalFooter && <div class="footer__divider" aria-hidden="true"></div>}
 
 	<div class="footer__content">
 		<div class="footer__primary-row">

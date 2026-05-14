@@ -1,34 +1,31 @@
-@use '../../../global/mixins' as mixins;
-
 .invitation-footer[data-variant='angelic-presence'] {
-	padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
 	background:
-		linear-gradient(180deg, rgb(var(--color-soft-sand-rgb) / 64%), var(--color-angelic-white)),
+		linear-gradient(180deg, rgb(var(--color-soft-sand-rgb) / 48%), var(--color-angelic-white)),
 		var(--color-angelic-white);
 	border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
 	color: var(--color-eternal-ink);
 
-	.footer__content {
-		padding-block: 1rem;
-		gap: 1rem;
+	.footer__closing-phrase {
+		color: rgb(var(--color-eternal-ink-rgb) / 65%);
 	}
 
-	.footer__primary-row {
-		gap: 1.25rem;
+	.footer__divider {
+		background: rgb(var(--color-sacred-gold-rgb) / 45%);
+
+		&::before {
+			background: var(--color-sacred-gold);
+			box-shadow: 0 0 6px rgb(var(--color-sacred-gold-rgb) / 40%);
+		}
 	}
 
 	.powered-by {
 		color: rgb(var(--color-eternal-ink-rgb) / 46%);
-		letter-spacing: 0.16em;
 	}
 
 	.whatsapp-button {
-		border-radius: 999px;
 		border-color: rgb(var(--color-sacred-gold-rgb) / 28%);
 		background: rgb(var(--color-pure-ivory-rgb) / 56%);
 		color: rgb(var(--color-eternal-ink-rgb) / 72%);
-		letter-spacing: 0.12em;
-		opacity: 90%;
 
 		&:hover {
 			background: var(--color-eternal-ink);
@@ -40,7 +37,6 @@
 
 	.footer__replay-link {
 		color: rgb(var(--color-eternal-ink-rgb) / 48%);
-		letter-spacing: 0.12em;
 
 		&:hover {
 			color: var(--color-eternal-ink);
