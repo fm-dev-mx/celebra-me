@@ -91,6 +91,8 @@ const { viewModel } = page;
 			links={viewModel.navigation ?? []}
 			variant={viewModel.theme.preset}
 			initials={viewModel.envelope?.data?.sealInitials}
+			eventName={viewModel.hero?.name}
+			eventSubtitle={viewModel.hero?.label}
 		/>
 
 		<Hero {...viewModel.hero} time={page.heroTime} guestName={page.guestName} />

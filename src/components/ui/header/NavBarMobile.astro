@@ -12,6 +12,8 @@ interface Props {
 	loginLabel?: string;
 	ctaLabel?: string;
 	desktopBreakpoint?: 'lg' | 'xl';
+	eventName?: string;
+	eventSubtitle?: string;
 }
 
 
@@ -23,10 +25,12 @@ const {
 	loginLabel = 'Iniciar sesión',
 	ctaLabel = 'Crear Invitación',
 	desktopBreakpoint = 'lg',
+	eventName,
+	eventSubtitle,
 } = Astro.props;
 const menuId = `${headerId}-mobile-menu`;
-const desktopBreakpointPx = desktopBreakpoint === 'xl' ? 1200 : 992;
-const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
+	const desktopBreakpointPx = desktopBreakpoint === 'xl' ? 1200 : 992;
+	const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 ---
 
 <div
@@ -58,15 +62,22 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 		data-nav-mobile-menu
 		aria-label="Navegación móvil"
 	>
+		{eventName && (
+			<header class="mobile-nav-header">
+				<p class="mobile-nav-header__name">{eventName}</p>
+				{eventSubtitle && <p class="mobile-nav-header__subtitle">{eventSubtitle}</p>}
+			</header>
+		)}
 		<div class="mobile-nav-links">
 			{
 				links.map((link, index) => (
 					<a
 						href={link.href}
 						class:list={['mobile-nav-links__link', staggerClass(index)]}
+						data-label={link.label.split(' · ')[0]}
 						data-nav-mobile-link
 					>
-						{link.label}
+						{link.label.includes(' · ') ? link.label.split(' · ')[1] : link.label}
 					</a>
 				))
 			}
@@ -92,7 +103,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 								class:list={['mobile-nav-actions__cta', staggerClass(links.length + 1)]}
 								data-nav-mobile-link
 							>
-								<span aria-hidden="true">✦</span>
 								{ctaLabel}
 							</a>
 						)}
@@ -108,13 +118,9 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 </div>
 
 <script>
-	const navRoots = Array.from(document.querySelectorAll('[data-nav-mobile]'));
+	const navRoots = Array.from(document.querySelectorAll('[data-nav-mobile]')) as HTMLElement[];
 
 	navRoots.forEach((root) => {
-		if (!(root instanceof HTMLElement)) {
-			return;
-		}
-
 		const headerId = root.dataset.headerId;
 		const header = headerId ? document.getElementById(headerId) : null;
 		const toggle = root.querySelector('[data-nav-mobile-toggle]');
@@ -132,7 +138,6 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 
 		const closeMenu = () => {
 			toggle.setAttribute('aria-expanded', 'false');
-			toggle.setAttribute('aria-label', 'Abrir menú');
 			menu.hidden = true;
 			overlay.hidden = true;
 			if (header) {

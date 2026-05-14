@@ -18,12 +18,16 @@ export interface Props {
 	}[];
 	variant?: string;
 	initials?: string;
+	eventName?: string;
+	eventSubtitle?: string;
 }
 
 const {
 	links,
 	variant = 'standard',
 	initials,
+	eventName,
+	eventSubtitle,
 } = Astro.props;
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
@@ -59,7 +63,9 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 			headerId="event-header"
 			desktopBreakpoint="xl"
 			ctaLink={rsvpLink?.href}
-			ctaLabel={'Confirmar asistencia'}
+			ctaLabel={rsvpLink?.label ?? 'Confirmar asistencia'}
+			eventName={eventName}
+			eventSubtitle={eventSubtitle}
 		/>
 	</div>
 </HeaderBase>
