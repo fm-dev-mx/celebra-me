@@ -14,12 +14,12 @@
 	background:
 		radial-gradient(
 			ellipse at 10% 16%,
-			rgb(var(--color-angelic-blue-rgb) / 30%) 0%,
+			rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 			transparent 34%
 		),
 		radial-gradient(
 			ellipse at 88% 76%,
-			rgb(var(--color-angelic-blue-soft-rgb) / 34%) 0%,
+			rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 			transparent 38%
 		),
 		var(--angelic-ivory-wash);
@@ -42,7 +42,7 @@
 		background:
 			radial-gradient(
 				ellipse at 38% 42%,
-				rgb(var(--color-angelic-blue-rgb) / 34%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 12%) 0%,
 				transparent 66%
 			),
 			radial-gradient(
@@ -62,7 +62,7 @@
 		background:
 			radial-gradient(
 				ellipse at 48% 46%,
-				rgb(var(--color-angelic-blue-soft-rgb) / 30%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 				transparent 62%
 			),
 			radial-gradient(
@@ -101,7 +101,14 @@
 		width: min(13rem, 58vw);
 		height: 1px;
 		margin: clamp(1rem, 2.5vw, 1.5rem) auto;
-		background: var(--angelic-divider);
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgb(var(--color-sacred-gold-rgb) / 40%) 22%,
+			rgb(var(--color-sacred-gold-rgb) / 48%) 50%,
+			rgb(var(--color-sacred-gold-rgb) / 40%) 78%,
+			transparent 100%
+		);
 
 		&::after {
 			content: '';
@@ -110,10 +117,10 @@
 			height: 0.38rem;
 			margin: -0.18rem auto 0;
 			border-radius: 50%;
-			background: rgb(var(--color-sacred-gold-rgb) / 54%);
+			background: rgb(var(--color-sacred-gold-rgb) / 72%);
 			box-shadow:
-				-0.72rem 0 rgb(var(--color-angelic-blue-rgb) / 40%),
-				0.72rem 0 rgb(var(--color-angelic-blue-rgb) / 40%);
+				-0.72rem 0 rgb(var(--color-sacred-gold-rgb) / 36%),
+				0.72rem 0 rgb(var(--color-sacred-gold-rgb) / 36%);
 		}
 	}
 
@@ -126,16 +133,15 @@
 	}
 
 	.family__bg-texture {
-		opacity: 100%;
 		background-image:
 			radial-gradient(
 				ellipse at 20% 18%,
-				rgb(var(--color-angelic-blue-rgb) / 16%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 				transparent 38%
 			),
 			radial-gradient(
 				ellipse at 82% 72%,
-				rgb(var(--color-angelic-blue-soft-rgb) / 20%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 4%) 0%,
 				transparent 42%
 			),
 			linear-gradient(
@@ -150,16 +156,11 @@
 		position: relative;
 		overflow: visible;
 		border-radius: clamp(18px, 3vw, 26px);
-		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 28%);
-		background:
-			radial-gradient(
-				ellipse at 12% 14%,
-				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
-				transparent 42%
-			),
-			var(--angelic-surface-mist);
-		box-shadow: var(--angelic-shadow-soft);
-		backdrop-filter: blur(var(--glass-blur, 10px)) saturate(var(--glass-saturate, 140%));
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+		background: var(--angelic-surface-mist);
+		box-shadow:
+			0 22px 58px rgb(var(--color-eternal-ink-rgb) / 8%),
+			0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
 
 		&::before,
 		&::after {
@@ -176,7 +177,7 @@
 			height: min(18rem, 42vw);
 			background: radial-gradient(
 				ellipse,
-				rgb(var(--color-angelic-blue-rgb, 182 218 229) / 22%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 				transparent 68%
 			);
 			filter: blur(10px);
@@ -189,7 +190,7 @@
 			height: min(17rem, 38vw);
 			background: radial-gradient(
 				ellipse,
-				rgb(var(--color-sacred-gold-rgb) / 10%) 0%,
+				rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 				transparent 68%
 			);
 			filter: blur(14px);
@@ -204,12 +205,12 @@
 		aspect-ratio: 4 / 5;
 		padding: clamp(0.35rem, 1vw, 0.55rem);
 		border-radius: clamp(14px, 2.6vw, 20px);
-		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 28%);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
 		background:
 			linear-gradient(
 				145deg,
 				rgb(var(--color-pure-ivory-rgb) / 96%),
-				rgb(var(--color-angelic-mist-rgb) / 52%)
+				rgb(var(--color-ivory-warm-rgb) / 52%)
 			),
 			var(--color-pure-ivory);
 		box-shadow:
@@ -221,7 +222,7 @@
 			content: '';
 			position: absolute;
 			inset: clamp(0.7rem, 1.5vw, 0.95rem);
-			border: 1px solid rgb(var(--color-pure-ivory-rgb) / 54%);
+			border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
 			border-radius: clamp(8px, 1.8vw, 14px);
 			pointer-events: none;
 			z-index: 2;
@@ -236,95 +237,59 @@
 	.family__content {
 		position: relative;
 		z-index: 1;
-		gap: clamp(1.35rem, 2.8vw, 2.15rem);
+		gap: clamp(1.75rem, 3.5vw, 2.5rem);
 		align-self: center;
 	}
 
 	.family__group {
-		padding: clamp(1rem, 2.4vw, 1.65rem);
-		border-radius: clamp(14px, 2.5vw, 20px);
-		background: rgb(var(--color-pure-ivory-rgb) / 48%);
-		border: 1px solid rgb(var(--color-angelic-blue-rgb, 182 218 229) / 22%);
 		text-align: center;
-		box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 76%);
+		padding-block: clamp(0.5rem, 1.2vw, 0.9rem);
 	}
 
 	.family__group + .family__group::before {
-		content: none;
+		content: '';
+		display: block;
+		width: min(4rem, 20vw);
+		height: 1px;
+		margin: clamp(1.25rem, 2.5vw, 1.75rem) auto;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgb(var(--color-sacred-gold-rgb) / 48%) 50%,
+			transparent 100%
+		);
 	}
 
 	.family__group-title {
-		position: relative;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: min(100%, 11.5rem);
-		margin: 0 auto clamp(0.95rem, 2vw, 1.3rem);
-		padding: 0.48rem clamp(1.35rem, 3.5vw, 1.85rem);
-		border-radius: 999px;
-		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 42%);
-		background: linear-gradient(
-			180deg,
-			rgb(var(--color-pure-ivory-rgb) / 84%) 0%,
-			rgb(var(--color-angelic-blue-soft-rgb) / 50%) 100%
-		);
-		box-shadow:
-			0 8px 22px rgb(var(--color-eternal-ink-rgb) / 6%),
-			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 78%);
+		display: block;
+		margin: 0 auto clamp(0.65rem, 1.4vw, 0.85rem);
 		font-family: var(--font-label);
-		font-size: clamp(0.66rem, 1.4vw, 0.74rem);
-		font-weight: 650;
-		letter-spacing: 0.16em;
+		font-size: clamp(0.6rem, 1.2vw, 0.68rem);
+		font-weight: 500;
+		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 68%);
-	}
-
-	.family__group-title::before,
-	.family__group-title::after {
-		content: '';
-		position: absolute;
-		top: 50%;
-		width: clamp(0.32rem, 1vw, 0.46rem);
-		height: clamp(0.32rem, 1vw, 0.46rem);
-		border-radius: 50%;
-		background: rgb(var(--color-sacred-gold-rgb) / 45%);
-		transform: translateY(-50%);
-	}
-
-	.family__group-title::before {
-		left: clamp(0.42rem, 1.2vw, 0.7rem);
-	}
-
-	.family__group-title::after {
-		right: clamp(0.42rem, 1.2vw, 0.7rem);
+		color: rgb(var(--color-eternal-ink-rgb) / 52%);
 	}
 
 	.family__name {
 		font-family: var(--font-display);
 		justify-content: center;
-		font-size: clamp(1.45rem, 3vw, 2.05rem);
+		font-size: clamp(1.55rem, 3.2vw, 2.2rem);
 		font-weight: 400;
-		line-height: 1.05;
+		line-height: 1.1;
 		letter-spacing: 0.01em;
 		color: var(--color-eternal-ink);
 	}
 
 	.family__meta {
-		display: inline-flex;
-		align-self: center;
-		width: fit-content;
-		margin-top: 0.18rem;
-		padding: 0.22rem 0.65rem;
-		border-radius: 999px;
-		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 34%);
-		background: rgb(var(--color-angelic-mist-rgb) / 48%);
+		display: block;
+		margin-top: 0.35rem;
 		font-family: var(--font-label);
-		font-size: 0.6rem;
-		font-weight: 650;
-		line-height: 1;
+		font-size: clamp(0.56rem, 1.1vw, 0.64rem);
+		font-weight: 500;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 60%);
+		color: rgb(var(--color-eternal-ink-rgb) / 48%);
 	}
 
 	.family__connector {
@@ -334,7 +299,6 @@
 		font-family: var(--font-calligraphy);
 		font-size: clamp(1.6rem, 3vw, 2.1rem);
 		color: rgb(var(--color-sacred-gold-rgb) / 78%);
-		opacity: 100%;
 	}
 
 	.family__connector--parents span {
@@ -353,7 +317,7 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			rgb(var(--color-angelic-blue-rgb, 182 218 229) / 58%),
+			rgb(var(--color-sacred-gold-rgb) / 48%),
 			rgb(var(--color-sacred-gold-rgb) / 36%)
 		);
 	}
@@ -373,19 +337,13 @@
 	}
 
 	.family__group--godparents {
-		background:
-			linear-gradient(
-				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 50%),
-				rgb(var(--color-angelic-blue-rgb, 182 218 229) / 10%)
-			),
-			rgb(var(--color-pure-ivory-rgb) / 42%);
+		background: transparent;
 	}
 
 	.family__list--godparents {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-		gap: clamp(1.5rem, 3vw, 2.5rem);
+		gap: clamp(1.25rem, 2.5vw, 2rem);
 		max-width: 38rem;
 		margin-inline: auto;
 	}
@@ -400,7 +358,7 @@
 		font-family: var(--font-display);
 		max-width: 14ch;
 		margin-inline: auto;
-		font-size: clamp(1.45rem, 2.7vw, 2.08rem);
+		font-size: clamp(1.45rem, 2.8vw, 2.1rem);
 		color: var(--color-eternal-ink);
 	}
 
@@ -423,16 +381,8 @@
 			gap: 1rem;
 		}
 
-		.family__group {
-			padding: clamp(1rem, 5vw, 1.35rem) 0;
-
-			&::after {
-				width: 60%;
-			}
-		}
-
-		.family__group-title {
-			width: min(100%, 13rem);
+		.family__group + .family__group::before {
+			margin: clamp(1rem, 4vw, 1.5rem) auto;
 		}
 
 		.family__list--godparents {
@@ -446,49 +396,6 @@
 
 		.family__item--godparent .family__name {
 			font-size: clamp(1.3rem, 4vw, 1.75rem);
-		}
-	}
-}
-
-.event--cesar-ramses {
-	.family[data-variant='angelic-presence'] {
-		--family-bg:
-			radial-gradient(
-				ellipse at 12% 16%,
-				rgb(var(--color-angelic-blue-rgb) / 28%) 0%,
-				transparent 38%
-			),
-			radial-gradient(
-				ellipse at 88% 82%,
-				rgb(var(--color-angelic-blue-soft-rgb) / 32%) 0%,
-				transparent 42%
-			),
-			var(--angelic-ivory-wash);
-
-		.family__panel {
-			border-color: rgb(var(--color-angelic-blue-rgb) / 34%);
-			box-shadow: 0 24px 64px rgb(var(--color-eternal-ink-rgb) / 12%);
-		}
-
-		.family__media-frame {
-			border-color: rgb(var(--color-angelic-blue-rgb) / 38%);
-
-			&::after {
-				border-color: rgb(var(--color-angelic-blue-rgb) / 22%);
-			}
-		}
-
-		.family__group {
-			border-color: rgb(var(--color-angelic-blue-rgb) / 26%);
-		}
-
-		.family__group-title {
-			border-color: rgb(var(--color-angelic-blue-rgb) / 48%);
-			background: linear-gradient(
-				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
-				rgb(var(--color-angelic-blue-soft-rgb) / 58%) 100%
-			);
 		}
 	}
 }
