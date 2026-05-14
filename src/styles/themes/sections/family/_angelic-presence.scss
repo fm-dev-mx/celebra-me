@@ -13,20 +13,16 @@
 
 	background:
 		radial-gradient(
-			circle at 8% 20%,
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 24%) 0%,
-			transparent 30%
-		),
-		radial-gradient(
-			circle at 90% 68%,
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 18%) 0%,
+			ellipse at 10% 16%,
+			rgb(var(--color-angelic-blue-rgb) / 30%) 0%,
 			transparent 34%
 		),
-		linear-gradient(
-			180deg,
-			var(--color-angelic-white) 0%,
-			rgb(var(--color-soft-sand-rgb) / 56%) 100%
-		);
+		radial-gradient(
+			ellipse at 88% 76%,
+			rgb(var(--color-angelic-blue-soft-rgb) / 34%) 0%,
+			transparent 38%
+		),
+		var(--angelic-ivory-wash);
 
 	&::before,
 	&::after {
@@ -45,15 +41,16 @@
 		height: clamp(13rem, 26vw, 24rem);
 		background:
 			radial-gradient(
-				circle at 42% 40%,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 28%) 0%,
-				rgb(var(--color-pure-ivory-rgb) / 0%) 66%
+				ellipse at 38% 42%,
+				rgb(var(--color-angelic-blue-rgb) / 34%) 0%,
+				transparent 66%
 			),
 			radial-gradient(
-				circle at 66% 72%,
-				rgb(var(--color-sacred-gold-rgb) / 9%) 0%,
+				ellipse at 70% 72%,
+				rgb(var(--color-pure-ivory-rgb) / 42%) 0%,
 				transparent 58%
 			);
+		filter: blur(22px);
 		opacity: 80%;
 	}
 
@@ -64,14 +61,14 @@
 		height: clamp(10rem, 20vw, 18rem);
 		background:
 			radial-gradient(
-				circle at 50% 46%,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 22%) 0%,
-				transparent 64%
+				ellipse at 48% 46%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 30%) 0%,
+				transparent 62%
 			),
 			radial-gradient(
-				circle at 28% 78%,
-				rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
-				transparent 56%
+				ellipse at 30% 78%,
+				rgb(var(--color-sacred-gold-rgb) / 9%) 0%,
+				transparent 58%
 			);
 		opacity: 70%;
 	}
@@ -101,17 +98,23 @@
 	}
 
 	.family__header-divider {
-		width: clamp(4rem, 12vw, 8rem);
+		width: min(13rem, 58vw);
 		height: 1px;
 		margin: clamp(1rem, 2.5vw, 1.5rem) auto;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 58%),
-			rgb(var(--color-sacred-gold-rgb) / 50%),
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 58%),
-			transparent
-		);
+		background: var(--angelic-divider);
+
+		&::after {
+			content: '';
+			display: block;
+			width: 0.38rem;
+			height: 0.38rem;
+			margin: -0.18rem auto 0;
+			border-radius: 50%;
+			background: rgb(var(--color-sacred-gold-rgb) / 54%);
+			box-shadow:
+				-0.72rem 0 rgb(var(--color-angelic-blue-rgb) / 40%),
+				0.72rem 0 rgb(var(--color-angelic-blue-rgb) / 40%);
+		}
 	}
 
 	.family__message {
@@ -123,43 +126,39 @@
 	}
 
 	.family__bg-texture {
-		opacity: var(--family-texture-opacity, 18%);
+		opacity: 100%;
 		background-image:
 			radial-gradient(
-				ellipse at 22% 16%,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 34%) 0%,
-				transparent 42%
+				ellipse at 20% 18%,
+				rgb(var(--color-angelic-blue-rgb) / 16%) 0%,
+				transparent 38%
 			),
 			radial-gradient(
-				ellipse at 82% 78%,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 26%) 0%,
-				transparent 40%
+				ellipse at 82% 72%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 20%) 0%,
+				transparent 42%
 			),
 			linear-gradient(
-				110deg,
-				rgb(var(--color-pure-ivory-rgb) / 0%) 0%,
-				rgb(var(--color-pure-ivory-rgb) / 54%) 46%,
-				rgb(var(--color-sacred-gold-rgb) / 8%) 100%
+				90deg,
+				transparent 0%,
+				rgb(var(--color-pure-ivory-rgb) / 44%) 48%,
+				transparent 100%
 			);
 	}
 
 	.family__panel {
 		position: relative;
-		overflow: hidden;
-		border-radius: clamp(16px, 3vw, 24px);
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+		overflow: visible;
+		border-radius: clamp(18px, 3vw, 26px);
+		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 28%);
 		background:
-			linear-gradient(
-				135deg,
-				rgb(var(--color-pure-ivory-rgb) / 86%) 0%,
-				rgb(var(--color-angelic-white-rgb) / 78%) 52%,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 12%) 100%
+			radial-gradient(
+				ellipse at 12% 14%,
+				rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
+				transparent 42%
 			),
-			rgb(var(--color-pure-ivory-rgb) / 72%);
-		box-shadow:
-			0 24px 70px -46px rgb(var(--color-eternal-ink-rgb) / 30%),
-			0 1px 0 rgb(var(--color-pure-ivory-rgb) / 88%),
-			inset 0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 58%);
+			var(--angelic-surface-mist);
+		box-shadow: var(--angelic-shadow-soft);
 		backdrop-filter: blur(var(--glass-blur, 10px)) saturate(var(--glass-saturate, 140%));
 
 		&::before,
@@ -177,7 +176,7 @@
 			height: min(18rem, 42vw);
 			background: radial-gradient(
 				ellipse,
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 22%) 0%,
+				rgb(var(--color-angelic-blue-rgb, 182 218 229) / 22%) 0%,
 				transparent 68%
 			);
 			filter: blur(10px);
@@ -205,17 +204,18 @@
 		aspect-ratio: 4 / 5;
 		padding: clamp(0.35rem, 1vw, 0.55rem);
 		border-radius: clamp(14px, 2.6vw, 20px);
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 28%);
 		background:
 			linear-gradient(
 				145deg,
-				rgb(var(--color-pure-ivory-rgb) / 94%),
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 14%)
+				rgb(var(--color-pure-ivory-rgb) / 96%),
+				rgb(var(--color-angelic-mist-rgb) / 52%)
 			),
 			var(--color-pure-ivory);
 		box-shadow:
-			0 16px 42px rgb(var(--color-eternal-ink-rgb) / 11%),
-			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 88%);
+			0 16px 42px rgb(var(--color-eternal-ink-rgb) / 9%),
+			0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 8%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
 
 		&::after {
 			content: '';
@@ -244,7 +244,7 @@
 		padding: clamp(1rem, 2.4vw, 1.65rem);
 		border-radius: clamp(14px, 2.5vw, 20px);
 		background: rgb(var(--color-pure-ivory-rgb) / 48%);
-		border: 1px solid rgb(var(--color-baptism-blue-rgb, 182 218 229) / 22%);
+		border: 1px solid rgb(var(--color-angelic-blue-rgb, 182 218 229) / 22%);
 		text-align: center;
 		box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 76%);
 	}
@@ -258,15 +258,15 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-width: min(100%, 10rem);
-		margin: 0 auto clamp(1rem, 2.2vw, 1.35rem);
-		padding: 0.48rem clamp(1.1rem, 3vw, 1.7rem);
+		min-width: min(100%, 11.5rem);
+		margin: 0 auto clamp(0.95rem, 2vw, 1.3rem);
+		padding: 0.48rem clamp(1.35rem, 3.5vw, 1.85rem);
 		border-radius: 999px;
-		border: 1px solid rgb(var(--color-baptism-blue-rgb, 182 218 229) / 42%);
+		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 42%);
 		background: linear-gradient(
 			180deg,
-			rgb(var(--color-pure-ivory-rgb) / 72%) 0%,
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 32%) 100%
+			rgb(var(--color-pure-ivory-rgb) / 84%) 0%,
+			rgb(var(--color-angelic-blue-soft-rgb) / 50%) 100%
 		);
 		box-shadow:
 			0 8px 22px rgb(var(--color-eternal-ink-rgb) / 6%),
@@ -274,9 +274,9 @@
 		font-family: var(--font-label);
 		font-size: clamp(0.66rem, 1.4vw, 0.74rem);
 		font-weight: 650;
-		letter-spacing: 0.18em;
+		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 76%);
+		color: rgb(var(--color-eternal-ink-rgb) / 68%);
 	}
 
 	.family__group-title::before,
@@ -313,18 +313,18 @@
 		display: inline-flex;
 		align-self: center;
 		width: fit-content;
-		margin-top: 0.42rem;
-		padding: 0.28rem 0.72rem;
+		margin-top: 0.18rem;
+		padding: 0.22rem 0.65rem;
 		border-radius: 999px;
-		border: 1px solid rgb(var(--color-baptism-blue-rgb, 182 218 229) / 34%);
-		background: rgb(var(--color-baptism-blue-rgb, 182 218 229) / 18%);
+		border: 1px solid rgb(var(--color-angelic-blue-rgb) / 34%);
+		background: rgb(var(--color-angelic-mist-rgb) / 48%);
 		font-family: var(--font-label);
-		font-size: 0.62rem;
+		font-size: 0.6rem;
 		font-weight: 650;
 		line-height: 1;
-		letter-spacing: 0.14em;
+		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: rgb(var(--color-eternal-ink-rgb) / 66%);
+		color: rgb(var(--color-eternal-ink-rgb) / 60%);
 	}
 
 	.family__connector {
@@ -353,7 +353,7 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			rgb(var(--color-baptism-blue-rgb, 182 218 229) / 58%),
+			rgb(var(--color-angelic-blue-rgb, 182 218 229) / 58%),
 			rgb(var(--color-sacred-gold-rgb) / 36%)
 		);
 	}
@@ -377,7 +377,7 @@
 			linear-gradient(
 				180deg,
 				rgb(var(--color-pure-ivory-rgb) / 50%),
-				rgb(var(--color-baptism-blue-rgb, 182 218 229) / 10%)
+				rgb(var(--color-angelic-blue-rgb, 182 218 229) / 10%)
 			),
 			rgb(var(--color-pure-ivory-rgb) / 42%);
 	}
@@ -404,368 +404,91 @@
 		color: var(--color-eternal-ink);
 	}
 
-	@include mixins.respond-below(sm) {
+	@include mixins.respond-below(md) {
+		padding-block: clamp(4.25rem, 13vw, 5.75rem);
+
 		.family__title {
-			max-width: 11ch;
+			max-width: 12ch;
 		}
 
-		.family__media {
-			width: min(100%, 20.5rem);
-			margin-inline: auto;
+		.family__panel {
+			gap: 1.2rem;
+
+			&::after {
+				display: none;
+			}
 		}
 
-		.family__media-frame img {
-			object-position: var(--family-focal-point, 50% 36%);
+		.family__content {
+			gap: 1rem;
 		}
 
 		.family__group {
-			padding: clamp(1rem, 5vw, 1.35rem) clamp(0.8rem, 4vw, 1rem);
+			padding: clamp(1rem, 5vw, 1.35rem) 0;
+
+			&::after {
+				width: 60%;
+			}
 		}
 
-		.family__item--godparent .family__name,
+		.family__group-title {
+			width: min(100%, 13rem);
+		}
+
+		.family__list--godparents {
+			grid-template-columns: 1fr;
+			gap: 1.1rem;
+		}
+
 		.family__group--parents .family__name {
-			max-width: 14ch;
+			font-size: clamp(1.7rem, 5vw, 2.3rem);
 		}
 
-		.family__header-divider {
-			width: 60%;
+		.family__item--godparent .family__name {
+			font-size: clamp(1.3rem, 4vw, 1.75rem);
 		}
 	}
 }
 
 .event--cesar-ramses {
-	.family {
-		--family-media-column: 0.36fr;
-		--family-content-column: 0.64fr;
-		--family-panel-gap: clamp(1.35rem, 3.4vw, 2.8rem);
-		--family-panel-padding: clamp(1rem, 3.2vw, 1.8rem);
-		--family-panel-padding-md: clamp(1.25rem, 3.2vw, 2.35rem);
-		--family-content-max-width: 46rem;
-
-		background:
+	.family[data-variant='angelic-presence'] {
+		--family-bg:
 			radial-gradient(
-				ellipse at 10% 16%,
-				rgb(var(--color-baptism-blue-rgb) / 30%) 0%,
-				transparent 34%
-			),
-			radial-gradient(
-				ellipse at 88% 76%,
-				rgb(var(--color-baptism-blue-soft-rgb) / 34%) 0%,
+				ellipse at 12% 16%,
+				rgb(var(--color-angelic-blue-rgb) / 28%) 0%,
 				transparent 38%
 			),
-			var(--baptism-ivory-wash);
-
-		&::before {
-			background:
-				radial-gradient(
-					ellipse at 38% 42%,
-					rgb(var(--color-baptism-blue-rgb) / 34%) 0%,
-					transparent 66%
-				),
-				radial-gradient(
-					ellipse at 70% 72%,
-					rgb(var(--color-pure-ivory-rgb) / 42%) 0%,
-					transparent 58%
-				);
-			filter: blur(22px);
-		}
-
-		&::after {
-			background:
-				radial-gradient(
-					ellipse at 48% 46%,
-					rgb(var(--color-baptism-blue-soft-rgb) / 30%) 0%,
-					transparent 62%
-				),
-				radial-gradient(
-					ellipse at 30% 78%,
-					rgb(var(--color-sacred-gold-rgb) / 9%) 0%,
-					transparent 58%
-				);
-		}
-
-		.family__header {
-			margin-bottom: clamp(2.3rem, 5vw, 4.2rem);
-		}
-
-		.family__header-inner {
-			position: relative;
-			max-width: 42rem;
-
-			&::before {
-				content: '+';
-				display: inline-grid;
-				place-items: center;
-				width: 1.65rem;
-				height: 1.65rem;
-				margin-bottom: 0.85rem;
-				border: 1px solid rgb(var(--color-baptism-blue-rgb) / 42%);
-				border-radius: 50%;
-				background: rgb(var(--color-pure-ivory-rgb) / 62%);
-				box-shadow: var(--baptism-soft-shadow);
-				font-family: var(--font-display);
-				font-size: 1.1rem;
-				line-height: 1;
-				color: rgb(var(--color-sacred-gold-rgb) / 78%);
-			}
-		}
-
-		.family__eyebrow {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.6rem;
-			margin-bottom: 0.95rem;
-			padding: 0.42rem 0.95rem;
-			border: 1px solid var(--color-baptism-border-soft);
-			border-radius: 999px;
-			background: rgb(var(--color-pure-ivory-rgb) / 54%);
-			color: rgb(var(--color-eternal-ink-rgb) / 62%);
-			letter-spacing: 0.24em;
-			box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 82%);
-		}
-
-		.family__title {
-			max-width: 12ch;
-			margin-inline: auto;
-			font-size: clamp(2.2rem, 6vw, 4rem);
-			line-height: 0.98;
-			color: rgb(var(--color-eternal-ink-rgb) / 90%);
-		}
-
-		.family__header-divider {
-			width: min(13rem, 58vw);
-			background: var(--baptism-divider);
-
-			&::after {
-				content: '';
-				display: block;
-				width: 0.38rem;
-				height: 0.38rem;
-				margin: -0.18rem auto 0;
-				border-radius: 50%;
-				background: rgb(var(--color-sacred-gold-rgb) / 54%);
-				box-shadow:
-					-0.72rem 0 rgb(var(--color-baptism-blue-rgb) / 40%),
-					0.72rem 0 rgb(var(--color-baptism-blue-rgb) / 40%);
-			}
-		}
-
-		.family__message {
-			max-width: 34rem;
-			color: rgb(var(--color-eternal-ink-rgb) / 70%);
-		}
-
-		.family__bg-texture {
-			opacity: 100%;
-			background-image:
-				radial-gradient(
-					ellipse at 20% 18%,
-					rgb(var(--color-baptism-blue-rgb) / 16%) 0%,
-					transparent 38%
-				),
-				radial-gradient(
-					ellipse at 82% 72%,
-					rgb(var(--color-baptism-blue-soft-rgb) / 20%) 0%,
-					transparent 42%
-				),
-				linear-gradient(
-					90deg,
-					transparent 0%,
-					rgb(var(--color-pure-ivory-rgb) / 44%) 48%,
-					transparent 100%
-				);
-		}
+			radial-gradient(
+				ellipse at 88% 82%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 32%) 0%,
+				transparent 42%
+			),
+			var(--angelic-ivory-wash);
 
 		.family__panel {
-			border-color: rgb(var(--color-baptism-blue-rgb) / 28%);
-			border-radius: clamp(18px, 3vw, 26px);
-			background:
-				radial-gradient(
-					ellipse at 12% 14%,
-					rgb(var(--color-baptism-blue-rgb) / 18%) 0%,
-					transparent 42%
-				),
-				linear-gradient(
-					145deg,
-					rgb(var(--color-pure-ivory-rgb) / 86%) 0%,
-					rgb(var(--color-ivory-warm-rgb) / 78%) 48%,
-					rgb(var(--color-baptism-mist-rgb) / 38%) 100%
-				);
-			box-shadow: var(--baptism-soft-shadow);
-
-			&::before {
-				width: min(30rem, 70vw);
-				height: min(20rem, 48vw);
-				background: var(--baptism-blue-wash);
-			}
+			border-color: rgb(var(--color-angelic-blue-rgb) / 34%);
+			box-shadow: 0 24px 64px rgb(var(--color-eternal-ink-rgb) / 12%);
 		}
 
 		.family__media-frame {
-			border-color: rgb(var(--color-baptism-blue-rgb) / 36%);
-			background:
-				linear-gradient(
-					145deg,
-					rgb(var(--color-pure-ivory-rgb) / 96%),
-					rgb(var(--color-baptism-mist-rgb) / 52%)
-				),
-				var(--color-pure-ivory);
-			box-shadow:
-				0 20px 48px rgb(var(--color-eternal-ink-rgb) / 10%),
-				0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 10%),
-				inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
+			border-color: rgb(var(--color-angelic-blue-rgb) / 38%);
 
-			&::before {
-				content: '';
-				position: absolute;
-				inset: -0.75rem;
-				z-index: -1;
-				border-radius: inherit;
-				background: var(--baptism-blue-wash);
-				opacity: 80%;
-				filter: blur(8px);
+			&::after {
+				border-color: rgb(var(--color-angelic-blue-rgb) / 22%);
 			}
-		}
-
-		.family__content {
-			gap: clamp(1.05rem, 2.4vw, 1.65rem);
 		}
 
 		.family__group {
-			overflow: hidden;
-			padding: clamp(1.15rem, 2.8vw, 1.8rem);
-			border-color: rgb(var(--color-baptism-blue-rgb) / 26%);
-			background: linear-gradient(
-				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 68%) 0%,
-				rgb(var(--color-ivory-warm-rgb) / 50%) 100%
-			);
-
-			&::after {
-				content: '';
-				position: absolute;
-				inset: auto 1.1rem 0;
-				height: 1px;
-				background: var(--baptism-divider);
-				opacity: 54%;
-			}
+			border-color: rgb(var(--color-angelic-blue-rgb) / 26%);
 		}
 
 		.family__group-title {
-			min-width: min(100%, 11.5rem);
-			margin-bottom: clamp(1.1rem, 2.4vw, 1.55rem);
-			padding: 0.58rem clamp(1.35rem, 4vw, 2.1rem);
-			border-color: rgb(var(--color-baptism-blue-rgb) / 50%);
-			border-radius: 999px;
+			border-color: rgb(var(--color-angelic-blue-rgb) / 48%);
 			background: linear-gradient(
 				180deg,
-				rgb(var(--color-pure-ivory-rgb) / 84%) 0%,
-				rgb(var(--color-baptism-blue-soft-rgb) / 58%) 100%
+				rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
+				rgb(var(--color-angelic-blue-soft-rgb) / 58%) 100%
 			);
-			color: rgb(var(--color-eternal-ink-rgb) / 70%);
-			letter-spacing: 0.16em;
-
-			&::before,
-			&::after {
-				width: 0.34rem;
-				height: 0.34rem;
-				background: rgb(var(--color-sacred-gold-rgb) / 50%);
-			}
-		}
-
-		.family__name {
-			color: rgb(var(--color-eternal-ink-rgb) / 90%);
-		}
-
-		.family__meta {
-			border-color: rgb(var(--color-baptism-blue-rgb) / 38%);
-			background: rgb(var(--color-baptism-mist-rgb) / 62%);
-			color: rgb(var(--color-eternal-ink-rgb) / 58%);
-			letter-spacing: 0.12em;
-		}
-
-		.family__connector--parents span {
-			color: rgb(var(--color-sacred-gold-rgb) / 72%);
-
-			&::before,
-			&::after {
-				background: var(--baptism-divider);
-			}
-		}
-
-		.family__group--parents {
-			background:
-				radial-gradient(
-					ellipse at 50% 0%,
-					rgb(var(--color-baptism-blue-rgb) / 15%) 0%,
-					transparent 48%
-				),
-				rgb(var(--color-pure-ivory-rgb) / 58%);
-		}
-
-		.family__group--parents .family__list {
-			gap: clamp(0.42rem, 1.2vw, 0.72rem);
-		}
-
-		.family__group--parents .family__name {
-			font-size: clamp(1.9rem, 4vw, 2.7rem);
-		}
-
-		.family__group--godparents {
-			background:
-				radial-gradient(
-					ellipse at 50% 0%,
-					rgb(var(--color-baptism-blue-soft-rgb) / 22%) 0%,
-					transparent 52%
-				),
-				rgb(var(--color-pure-ivory-rgb) / 50%);
-		}
-
-		.family__list--godparents {
-			gap: clamp(1rem, 2.4vw, 1.9rem);
-		}
-
-		.family__item--godparent {
-			position: relative;
-			padding-inline: clamp(0.55rem, 2vw, 1rem);
-
-			&::before {
-				content: '+';
-				display: block;
-				margin-bottom: 0.45rem;
-				font-family: var(--font-display);
-				font-size: 0.92rem;
-				line-height: 1;
-				color: rgb(var(--color-sacred-gold-rgb) / 58%);
-			}
-		}
-
-		@include mixins.respond-below(sm) {
-			padding-block: clamp(4.25rem, 13vw, 5.75rem);
-
-			.family__title {
-				max-width: 11ch;
-			}
-
-			.family__panel {
-				gap: 1.2rem;
-			}
-
-			.family__content {
-				gap: 1rem;
-			}
-
-			.family__group {
-				padding: clamp(1.05rem, 5vw, 1.42rem) clamp(0.78rem, 4vw, 1rem);
-			}
-
-			.family__group-title {
-				width: min(100%, 13rem);
-			}
-
-			.family__list--godparents {
-				grid-template-columns: 1fr;
-				gap: 1.1rem;
-			}
 		}
 	}
 }
