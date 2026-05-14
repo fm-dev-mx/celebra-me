@@ -22,7 +22,7 @@
     "navigation": [
         { "label": "Mensaje", "href": "#quote-section" },
         { "label": "Familia", "href": "#family-section" },
-        { "label": "Galería", "href": "#gallery-section" },
+        { "label": "Galería", "href": "#galeria" },
         { "label": "Ceremonia", "href": "#event-location" },
         { "label": "Programa", "href": "#itinerary" },
         { "label": "Confirmar", "href": "#rsvp" }
@@ -38,15 +38,6 @@
         "venueName": "Levanto Jardín de Eventos",
         "address": "24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.",
         "city": "Guadalajara, Jalisco",
-        "ceremony": {
-            "venueEvent": "Ceremonia",
-            "venueName": "Parroquia de Nuestra Señora de Guadalupe",
-            "address": "Av. Patria 1520, Jardines Universidad, Guadalajara, Jal.",
-            "date": "20 de junio de 2026",
-            "time": "4:00 p.m.",
-            "image": "ceremony",
-            "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Parroquia%20de%20Nuestra%20Senora%20de%20Guadalupe%20Guadalajara"
-        },
         "reception": {
             "venueEvent": "Celebración",
             "venueName": "Levanto Jardín de Eventos",
@@ -84,7 +75,7 @@
         "labels": {
             "sectionTitle": "Los que hacen este momento sagrado",
             "sectionSubtitle": "Familia",
-            "parentsTitle": "Con la bendición de",
+            "parentsTitle": "Papás",
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
         }
@@ -124,28 +115,28 @@
         "subtitle": "Bautizo y 1er Año de César Ramses",
         "items": [
             {
-                "icon": "reception",
-                "label": "Llegada",
-                "time": "3:45 p.m.",
-                "description": "Recepción de familiares e invitados en la parroquia"
-            },
-            {
                 "icon": "church",
-                "label": "Sacramento",
+                "label": "Santa Misa",
+                "time": "12:00 p.m.",
+                "description": "Acompáñanos a dar gracias y recibir la bendición de este día tan especial."
+            },
+            {
+                "icon": "map",
+                "label": "Recepción",
                 "time": "4:00 p.m.",
-                "description": "Bautizo de César Ramses"
+                "description": "Nos reuniremos para celebrar con cariño la vida y el bautizo de César Ramsés."
             },
             {
-                "icon": "reception",
-                "label": "Celebración",
-                "time": "5:00 p.m.",
-                "description": "Convivio familiar en Levanto Jardín de Eventos"
+                "icon": "dinner",
+                "label": "Comida",
+                "time": "5:30 p.m.",
+                "description": "Compartiremos la mesa en familia, con gratitud y alegría por este primer año."
             },
             {
-                "icon": "cake",
-                "label": "Pastel",
-                "time": "6:30 p.m.",
-                "description": "Corte del pastel de primer año"
+                "icon": "sparkles",
+                "label": "Cierre de celebración",
+                "time": "10:00 p.m.",
+                "description": "Gracias por ser parte de este recuerdo que guardaremos con mucho amor."
             }
         ]
     },
