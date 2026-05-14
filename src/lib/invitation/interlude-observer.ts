@@ -30,9 +30,11 @@ export function initInterludeObserver(): void {
 	}
 
 	const isMobile = window.innerWidth <= 768;
-	const parallaxInterludes = interludes.filter((interlude): interlude is HTMLElement => {
-		return interlude instanceof HTMLElement;
-	});
+	const parallaxInterludes = isMobile
+		? []
+		: interludes.filter((interlude): interlude is HTMLElement => {
+				return interlude instanceof HTMLElement;
+			});
 
 	let ticking = false;
 
@@ -41,7 +43,7 @@ export function initInterludeObserver(): void {
 			const variant = interlude.dataset.variant || 'standard';
 			const rect = interlude.getBoundingClientRect();
 			const viewportCenter = window.innerHeight / 2;
-			const parallaxStrength = variant.startsWith('premiere-') ? -0.045 : -0.08;
+			const parallaxStrength = variant === 'premiere-standard' ? -0.045 : -0.08;
 			const offset = (rect.top + rect.height / 2 - viewportCenter) * parallaxStrength;
 
 			interlude.style.setProperty('--interlude-parallax-offset', `${offset.toFixed(2)}px`);
@@ -56,7 +58,7 @@ export function initInterludeObserver(): void {
 		window.requestAnimationFrame(updateParallax);
 	};
 
-	if (!isMobile && parallaxInterludes.length > 0) {
+	if (parallaxInterludes.length > 0) {
 		requestParallaxUpdate();
 		window.addEventListener('scroll', requestParallaxUpdate, { passive: true });
 		window.addEventListener('resize', requestParallaxUpdate);
@@ -67,8 +69,7 @@ export function initInterludeObserver(): void {
 			for (const entry of entries) {
 				if (entry.isIntersecting) {
 					entry.target.classList.add('is-visible');
-				} else {
-					entry.target.classList.remove('is-visible');
+					observer.unobserve(entry.target);
 				}
 			}
 		},
