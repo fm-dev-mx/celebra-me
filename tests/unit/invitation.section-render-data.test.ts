@@ -126,6 +126,49 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		}
 	});
 
+	it('passes thank-you overlay composition metadata to the render descriptor', () => {
+		const fixture = loadFixture(
+			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+		);
+		const eventEntry = {
+			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			data: {
+				...fixture,
+				thankYou: {
+					...fixture.thankYou,
+					overlayAnchor: 'left',
+					overlaySafeArea: {
+						x: 0.5,
+						y: 0.08,
+						width: 0.34,
+						height: 0.42,
+					},
+				},
+			},
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry,
+			slug: 'demo-bautismo-angelic-presence',
+		});
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		const thankYouDescriptor = descriptors.find((d) => d.component === 'thankYou');
+
+		expect(thankYouDescriptor).toMatchObject({
+			component: 'thankYou',
+			props: {
+				overlayAnchor: 'left',
+				overlaySafeArea: {
+					x: 0.5,
+					y: 0.08,
+					width: 0.34,
+					height: 0.42,
+				},
+			},
+		});
+	});
+
 	function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 		const eventEntry = {
 			id: `event-demos/xv/${fixtureSlug}`,

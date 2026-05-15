@@ -265,6 +265,56 @@ describe('Event content schema (real contract)', () => {
 		expect(ITINERARY_ICON_DISPLAY_NAMES.sparkles).toBe('Sparkles');
 	});
 
+	it('accepts thank-you overlay anchor and normalized safe area metadata', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				thankYou: {
+					message: 'Gracias por acompañarnos.',
+					closingName: 'Test Name',
+					image: 'https://example.com/thank-you.jpg',
+					focalPoint: '52% 42%',
+					overlayAnchor: 'left',
+					overlaySafeArea: {
+						x: 0.48,
+						y: 0.08,
+						width: 0.34,
+						height: 0.42,
+					},
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.thankYou?.overlayAnchor).toBe('left');
+		expect(result.data.thankYou?.overlaySafeArea).toEqual({
+			x: 0.48,
+			y: 0.08,
+			width: 0.34,
+			height: 0.42,
+		});
+	});
+
+	it('rejects invalid thank-you overlay anchors and safe area values outside the image', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				thankYou: {
+					message: 'Gracias por acompañarnos.',
+					closingName: 'Test Name',
+					overlayAnchor: 'center',
+					overlaySafeArea: {
+						x: 0.8,
+						y: 0.2,
+						width: 0.4,
+						height: 0.3,
+					},
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects invalid internal asset keys in event content', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

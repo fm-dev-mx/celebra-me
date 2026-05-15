@@ -85,6 +85,40 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
+	it('preserves thank-you overlay composition metadata', () => {
+		const fixture = loadFixture(
+			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+		);
+		const event = {
+			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			data: {
+				...fixture,
+				thankYou: {
+					...fixture.thankYou,
+					overlayAnchor: 'left',
+					overlaySafeArea: {
+						x: 0.5,
+						y: 0.08,
+						width: 0.34,
+						height: 0.42,
+					},
+				},
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.sections.thankYou).toMatchObject({
+			overlayAnchor: 'left',
+			overlaySafeArea: {
+				x: 0.5,
+				y: 0.08,
+				width: 0.34,
+				height: 0.42,
+			},
+		});
+	});
+
 	it('preserves explicit interlude variants for editorial content blocks', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-editorial',
