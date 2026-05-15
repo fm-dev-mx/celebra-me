@@ -8,13 +8,15 @@
 .thank-you-section[data-variant='angelic-presence'] {
 	@include primitives.normalized-section-spacing;
 
+	position: relative;
+
+	// Standard background
 	background: radial-gradient(
 		circle at 50% 8%,
 		rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
 		var(--color-surface-primary) 60%,
 		rgb(var(--color-soft-sand-rgb) / 80%) 100%
 	);
-	position: relative;
 
 	&::before {
 		content: '';
@@ -38,6 +40,7 @@
 		z-index: 2;
 	}
 
+	// Circular photo-frame
 	.photo-frame {
 		width: clamp(258px, 38vw, 340px);
 		height: clamp(258px, 38vw, 340px);

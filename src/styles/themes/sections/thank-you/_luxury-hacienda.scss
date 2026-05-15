@@ -1,9 +1,6 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-// ==========================================================================
-// EDITORIAL THANK YOU
-// ==========================================================================
+// LUXURY HACIENDA THANK YOU
 
 .thank-you-section[data-variant='luxury-hacienda'] {
 	background:
@@ -64,42 +61,6 @@
 			border-radius: 4px;
 			filter: sepia(0.08) contrast(1.04) brightness(0.95) saturate(0.92);
 			box-shadow: inset 0 0 10px rgb(0 0 0 / 80%);
-		}
-
-		// Rivets on Photo Frame
-		.rivet {
-			position: absolute;
-			width: 6px;
-			height: 6px;
-			background: radial-gradient(
-				circle at 30% 30%,
-				var(--color-surface-elevated) 0%,
-				var(--color-action-accent) 70%,
-				var(--color-surface-dark) 100%
-			);
-			border-radius: 50%;
-			box-shadow: 0 1px 2px rgb(0 0 0 / 80%);
-			z-index: 6;
-
-			&--tl {
-				top: 12px;
-				left: 12px;
-			}
-
-			&--tr {
-				top: 12px;
-				right: 12px;
-			}
-
-			&--bl {
-				bottom: 12px;
-				left: 12px;
-			}
-
-			&--br {
-				bottom: 12px;
-				right: 12px;
-			}
 		}
 	}
 
