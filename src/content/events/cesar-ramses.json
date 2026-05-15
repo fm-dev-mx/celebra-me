@@ -213,5 +213,10 @@
     "sharing": {
         "whatsappTemplate": "Hola {name}, te compartimos la invitación para el bautizo y primer año de César Ramses. Aquí puedes ver los detalles y confirmar tu asistencia: {inviteUrl}",
         "ogImage": "hero"
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1778884975/Birdland_Instrumental_myjxij.mp4",
+        "autoPlay": true,
+        "title": "Música de fondo"
     }
 }
