@@ -228,7 +228,7 @@ export default [
 						{
 							group: ['./*', '../*'],
 							message:
-								'Usa el alias @/* en componentes TSX; no se permiten imports relativos.',
+								'Use @/* alias in TSX components; relative imports are not allowed.',
 						},
 					],
 				},
