@@ -25,6 +25,26 @@ export const focalPointSchema = z
 		'focalPoint must be a CSS position such as "50% 40%", "center top", or "left"',
 	);
 
+const normalizedImageCoordinateSchema = z.number().min(0).max(1);
+
+export const overlayAnchorSchema = z.enum(['left', 'right', 'top', 'bottom']);
+
+export const overlaySafeAreaSchema = z
+	.object({
+		x: normalizedImageCoordinateSchema,
+		y: normalizedImageCoordinateSchema,
+		width: normalizedImageCoordinateSchema.min(0.01),
+		height: normalizedImageCoordinateSchema.min(0.01),
+	})
+	.refine((area) => area.x + area.width <= 1, {
+		message: 'overlaySafeArea x + width must stay within the image bounds.',
+		path: ['width'],
+	})
+	.refine((area) => area.y + area.height <= 1, {
+		message: 'overlaySafeArea y + height must stay within the image bounds.',
+		path: ['height'],
+	});
+
 const internalAssetSchema = z.object({
 	type: z.literal('internal'),
 	key: z.enum(ALL_ASSET_KEYS),
@@ -75,6 +95,8 @@ export const thankYouSchema = z
 		closingName: z.string(),
 		image: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
+		overlayAnchor: overlayAnchorSchema.optional(),
+		overlaySafeArea: overlaySafeAreaSchema.optional(),
 	})
 	.optional();
 

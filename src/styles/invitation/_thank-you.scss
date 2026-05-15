@@ -2,6 +2,9 @@
 @use '../tokens' as tokens;
 
 .thank-you-section {
+	--thank-you-overlay-gap: clamp(1rem, 5vw, 4rem);
+	--thank-you-overlay-width: 36rem;
+
 	position: relative;
 	padding: 8rem 1rem;
 	min-height: 80vh;
@@ -29,6 +32,108 @@
 			transparent 70%
 		);
 		pointer-events: none;
+	}
+}
+
+// ── Subject-aware overlay positioning ──────────────────────────────
+
+.thank-you-section[data-overlay-anchor] {
+	.thank-you-content {
+		width: min(100%, 1080px);
+	}
+
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		max-width: var(--thank-you-overlay-width);
+	}
+}
+
+.thank-you-section[data-overlay-anchor='left'] {
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		justify-self: start;
+		text-align: left;
+	}
+}
+
+.thank-you-section[data-overlay-anchor='right'] {
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		justify-self: end;
+		text-align: left;
+	}
+}
+
+.thank-you-section[data-overlay-anchor='top'] {
+	.thank-you-content {
+		align-self: start;
+	}
+}
+
+.thank-you-section[data-overlay-anchor='bottom'] {
+	.thank-you-content {
+		align-self: end;
+	}
+}
+
+// Safe-area max-width constraints — prevent copy from overlapping the subject
+.thank-you-section[data-overlay-anchor='left'][data-has-overlay-safe-area='true'] {
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		max-width: max(
+			16rem,
+			min(
+				var(--thank-you-overlay-width),
+				calc(var(--thank-you-safe-x) - var(--thank-you-overlay-gap))
+			)
+		);
+	}
+}
+
+.thank-you-section[data-overlay-anchor='right'][data-has-overlay-safe-area='true'] {
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		justify-self: end;
+		max-width: max(
+			16rem,
+			min(
+				var(--thank-you-overlay-width),
+				calc(
+					100% - var(--thank-you-safe-x) - var(--thank-you-safe-width) - var(
+							--thank-you-overlay-gap
+						)
+				)
+			)
+		);
+	}
+}
+
+.thank-you-section[data-overlay-anchor='top'][data-has-overlay-safe-area='true'] {
+	.thank-you-content {
+		align-self: start;
+	}
+
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		max-width: var(--thank-you-overlay-width);
+	}
+}
+
+.thank-you-section[data-overlay-anchor='bottom'][data-has-overlay-safe-area='true'] {
+	.thank-you-content {
+		align-self: end;
+	}
+
+	.message-container,
+	.signature-block,
+	.thank-you-footer {
+		max-width: var(--thank-you-overlay-width);
 	}
 }
 

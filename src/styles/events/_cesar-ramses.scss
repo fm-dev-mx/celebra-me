@@ -1683,7 +1683,11 @@
 	// THANK YOU
 	// ─────────────────────────────────────────────────────────────
 	.thank-you-section {
+		--thank-you-overlay-gap: clamp(2rem, 6vw, 5rem);
+		--thank-you-overlay-width: 35.5rem;
+
 		display: grid;
+		justify-content: stretch;
 		min-height: 100svh;
 		padding: clamp(5rem, 12vw, 8rem) clamp(1rem, 5vw, 4.5rem);
 		background:
@@ -1765,7 +1769,7 @@
 				border-radius: 0;
 				object-fit: cover;
 				object-position: var(--thank-you-focal-point, 52% 42%);
-				filter: saturate(0.92) contrast(1.02) brightness(1.02) sepia(0.03);
+				filter: none;
 				transform: none;
 			}
 
@@ -1867,8 +1871,11 @@
 		}
 
 		@include mixins.respond-below(md) {
-			align-items: end;
-			padding: clamp(6rem, 18vw, 8rem) clamp(1rem, 5vw, 1.5rem) clamp(4.5rem, 12vw, 6rem);
+			display: block;
+			align-items: stretch;
+			justify-content: stretch;
+			min-height: auto;
+			padding: 0 clamp(1rem, 5vw, 1.5rem) clamp(4.5rem, 12vw, 6rem);
 
 			&::before {
 				background:
@@ -1887,11 +1894,25 @@
 			}
 
 			.thank-you-content {
-				align-self: end;
+				display: flex;
+				flex-direction: column;
+				align-self: auto;
+				width: 100%;
+				padding-top: 0;
+			}
+
+			.photo-frame {
+				position: relative;
+				inset: auto;
+				width: calc(100% + clamp(2rem, 10vw, 3rem));
+				height: clamp(26rem, 70svh, 42rem);
+				margin-inline: calc(clamp(1rem, 5vw, 1.5rem) * -1);
+				margin-bottom: clamp(1.5rem, 6vw, 2.75rem);
 			}
 
 			.message-container {
 				width: min(100%, 31rem);
+				max-width: min(100%, 31rem);
 				padding: clamp(1rem, 5vw, 1.45rem);
 				background: rgb(var(--color-pure-ivory-rgb) / 32%);
 			}

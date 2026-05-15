@@ -255,6 +255,13 @@ export interface InvitationViewModel {
 			closingName: string;
 			image?: ImageAsset;
 			focalPoint?: string;
+			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
+			overlaySafeArea?: {
+				x: number;
+				y: number;
+				width: number;
+				height: number;
+			};
 			variant?: SharedSectionVariant;
 		};
 	};

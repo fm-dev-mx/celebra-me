@@ -10,18 +10,56 @@ interface Props {
 	image?: string | ImageAsset;
 	variant?: string;
 	focalPoint?: string;
+	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
+	overlaySafeArea?: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
 }
 
-const { message, closingName, image, variant = 'standard', focalPoint } = Astro.props;
+const {
+	message,
+	closingName,
+	image,
+	variant = 'standard',
+	focalPoint,
+	overlayAnchor,
+	overlaySafeArea,
+} = Astro.props;
 const isCelestialBlue = variant === 'celestial-blue';
+const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);
 const remainingMessage = message.slice(1);
 
-// Configuration for variant-specific image dimensions
-const imageConfig = isCelestialBlue
-	? { width: 700, height: 1050, class: 'photo-image thank-you-editorial__image' }
-	: { width: 400, height: 400, class: 'photo-image' };
+const IMAGE_CONFIGS = {
+	'subject-aware': {
+		width: 1600,
+		height: 2000,
+		widths: [640, 960, 1200, 1600],
+		sizes: '100vw',
+		format: 'webp' as const,
+		quality: 90,
+		class: 'photo-image thank-you-fullbleed__image',
+	},
+	'celestial-blue': {
+		width: 700,
+		height: 1050,
+		class: 'photo-image thank-you-editorial__image',
+	},
+	standard: {
+		width: 400,
+		height: 400,
+		class: 'photo-image',
+	},
+} as const;
+
+const imageConfig = hasSubjectAwareOverlay
+	? IMAGE_CONFIGS['subject-aware']
+	: IMAGE_CONFIGS[isCelestialBlue ? 'celestial-blue' : 'standard'];
+
 ---
 
 <section
@@ -29,6 +67,8 @@ const imageConfig = isCelestialBlue
 	class="thank-you-section"
 	data-variant={variant}
 	data-focal-point={focalPoint || 'center'}
+	data-overlay-anchor={overlayAnchor}
+	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >
 	{
 		isCelestialBlue ? (
@@ -103,6 +143,20 @@ const imageConfig = isCelestialBlue
 		)
 	}
 </section>
+
+<style define:vars={{
+	safeX: overlaySafeArea ? `${overlaySafeArea.x * 100}%` : '0%',
+	safeY: overlaySafeArea ? `${overlaySafeArea.y * 100}%` : '0%',
+	safeW: overlaySafeArea ? `${overlaySafeArea.width * 100}%` : '0%',
+	safeH: overlaySafeArea ? `${overlaySafeArea.height * 100}%` : '0%',
+}}>
+	.thank-you-section {
+		--thank-you-safe-x: var(--safeX);
+		--thank-you-safe-y: var(--safeY);
+		--thank-you-safe-width: var(--safeW);
+		--thank-you-safe-height: var(--safeH);
+	}
+</style>
 
 <script>
 document.querySelectorAll<HTMLElement>('.thank-you-section[data-focal-point]').forEach((section) => {
