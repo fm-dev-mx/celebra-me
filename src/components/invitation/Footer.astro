@@ -19,10 +19,7 @@ const {
 	closingPhrase,
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
-const isEditorialFooter = variant === 'editorial';
-const EMOTIONAL_FOOTER_VARIANTS = ['celestial-blue', 'angelic-presence'] as const;
-const supportsEmotionalFooter = EMOTIONAL_FOOTER_VARIANTS.includes(variant as typeof EMOTIONAL_FOOTER_VARIANTS[number]);
-const logoVariant = isEditorialFooter ? 'footer' : 'default';
+const logoVariant = variant === 'editorial' ? 'footer' : 'default';
 
 const contactNumber = '526681167477';
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
@@ -33,11 +30,11 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 	class="invitation-footer"
 	data-variant={variant}
 >
-	{closingPhrase && supportsEmotionalFooter && (
+	{closingPhrase && (
 		<p class="footer__closing-phrase">{closingPhrase}</p>
 	)}
 
-	{supportsEmotionalFooter && <div class="footer__divider" aria-hidden="true"></div>}
+	<div class="footer__divider" aria-hidden="true"></div>
 
 	<div class="footer__content">
 		<div class="footer__primary-row">
@@ -46,7 +43,7 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 				<Logo
 					variant={logoVariant}
 					altText="Celebra-me"
-					class:list={[{ 'footer-brand-logo': isEditorialFooter }]}
+					class:list={[{ 'footer-brand-logo': variant === 'editorial' }]}
 				/>
 			</div>
 
@@ -64,7 +61,7 @@ const whatsappLink = `https://api.whatsapp.com/send?phone=${contactNumber}&text=
 						height={16}
 						class:list={[
 							{
-								'footer-action__icon-media': isEditorialFooter,
+								'footer-action__icon-media': variant === 'editorial',
 							},
 						]}
 					/>
