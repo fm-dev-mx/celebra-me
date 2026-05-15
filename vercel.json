@@ -1,9 +1,10 @@
 {
     "version": 2,
+    "enablePnpmCorepack": true,
     "framework": "astro",
     "buildCommand": "pnpm build",
     "devCommand": "astro dev",
-    "installCommand": "corepack enable && corepack install && pnpm install --no-frozen-lockfile",
+    "installCommand": "pnpm install --frozen-lockfile",
     "redirects": [
         {
             "source": "/:eventType/:slug/invitado",
