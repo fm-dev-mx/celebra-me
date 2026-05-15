@@ -56,7 +56,7 @@ export default defineConfig({
 		maxDuration: 30, // Increase limit for serverless functions
 		imageService: true, // Enable Vercel's image optimization for local images
 		imagesConfig: {
-			sizes: [320, 640, 960, 1200, 1800],
+			sizes: [320, 640, 960, 1200, 1600, 1800],
 			domains: ['images.unsplash.com', 'res.cloudinary.com'], // Allow external images
 		},
 	}),

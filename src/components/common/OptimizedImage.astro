@@ -13,6 +13,10 @@ interface Props {
 	loading?: 'eager' | 'lazy';
 	decoding?: 'async' | 'auto' | 'sync';
 	fetchpriority?: 'high' | 'low' | 'auto';
+	sizes?: string;
+	widths?: number[] | readonly number[];
+	format?: 'avif' | 'jpeg' | 'jpg' | 'png' | 'svg' | 'webp';
+	quality?: number;
 }
 
 const {
@@ -25,6 +29,10 @@ const {
 	loading,
 	decoding,
 	fetchpriority,
+	sizes,
+	widths,
+	format,
+	quality,
 } = Astro.props;
 
 const resolveSrc = (input: ImageMetadata | string | ImageAsset | null | undefined) => {
@@ -40,20 +48,24 @@ const finalSrc = resolveSrc(imagePath);
 
 {
 	finalSrc ? (
-		typeof finalSrc === 'string' ? (
+		widths ? (
 			<Image
-				src={finalSrc}
+				src={finalSrc as any}
 				alt={alt}
+				widths={widths as number[]}
+				sizes={sizes}
 				width={width}
 				height={height}
 				class:list={[rounded, className]}
 				loading={loading}
 				decoding={decoding}
 				fetchpriority={fetchpriority}
+				format={format}
+				quality={quality}
 			/>
 		) : (
 			<Image
-				src={finalSrc}
+				src={finalSrc as any}
 				alt={alt}
 				width={width}
 				height={height}
@@ -61,6 +73,8 @@ const finalSrc = resolveSrc(imagePath);
 				loading={loading}
 				decoding={decoding}
 				fetchpriority={fetchpriority}
+				format={format}
+				quality={quality}
 			/>
 		)
 	) : (
