@@ -66,17 +66,13 @@ const surnames = names.slice(2);
 	id="inicio"
 	class="invitation-hero"
 	data-variant={variant}
-	data-focal-point={focalPoint}
-	data-focal-point-mobile={focalPointMobile}
-	data-focal-point-tablet={focalPointTablet}
-	data-focal-point-desktop={focalPointDesktop}
 >
 	<div class="invitation-hero__background">
 		<Image
 			src={bgSrc as ImageMetadata}
 			alt={name}
-			width={1920}
-			height={1080}
+			width={1080}
+			height={1920}
 			format="webp"
 			quality={80}
 			loading="eager"
@@ -145,5 +141,19 @@ const surnames = names.slice(2);
 		</div>
 	</div>
 </section>
+
+<style define:vars={{
+	fpDefault: focalPoint || '50% 40%',
+	fpMobile: focalPointMobile || focalPoint || '50% 40%',
+	fpTablet: focalPointTablet || focalPoint || '50% 40%',
+	fpDesktop: focalPointDesktop || focalPoint || '50% 40%',
+}}>
+	.invitation-hero {
+		--hero-focal-point-default: var(--fpDefault);
+		--hero-focal-point-mobile: var(--fpMobile);
+		--hero-focal-point-tablet: var(--fpTablet);
+		--hero-focal-point-desktop: var(--fpDesktop);
+	}
+</style>
 
 

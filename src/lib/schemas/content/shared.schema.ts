@@ -14,8 +14,9 @@ const publicPathSchema = z.string().startsWith('/', 'Public asset paths must sta
  * Supports: "50% 40%" | "center top" | "left" | etc.
  * Used by hero images to keep subjects (e.g., baby's face) visible across viewports.
  *
- * Responsive focal points are managed by hero-focal-point-observer.ts.
- * See hero.schema.ts for the full responsive breakpoint mapping.
+ * Responsive focal points are handled by inline CSS custom properties
+ * (--hero-focal-point-{default,mobile,tablet,desktop}) combined with
+ * media-query-driven resolution in _hero.scss.
  */
 export const focalPointSchema = z
 	.string()

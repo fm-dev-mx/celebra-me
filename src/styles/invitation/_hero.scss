@@ -15,16 +15,25 @@
 
 	// Responsive focal point — CSS custom property fallback chain.
 	// Theme SCSS sets --hero-focal-point-mobile/tablet/desktop via selectors.
-	@include mixins.respond-to(lg) {
-		--hero-focal-point: var(--hero-focal-point-desktop, var(--hero-focal-point, 50% 40%));
+	@include mixins.respond-below(md) {
+		--hero-focal-point: var(
+			--hero-focal-point-mobile,
+			var(--hero-focal-point-default, 50% 40%)
+		);
 	}
 
 	@include mixins.respond-to(md) {
-		--hero-focal-point: var(--hero-focal-point-tablet, var(--hero-focal-point, 50% 40%));
+		--hero-focal-point: var(
+			--hero-focal-point-tablet,
+			var(--hero-focal-point-default, 50% 40%)
+		);
 	}
 
-	@include mixins.respond-below(md) {
-		--hero-focal-point: var(--hero-focal-point-mobile, var(--hero-focal-point, 50% 40%));
+	@include mixins.respond-to(lg) {
+		--hero-focal-point: var(
+			--hero-focal-point-desktop,
+			var(--hero-focal-point-default, 50% 40%)
+		);
 	}
 
 	&__background {
@@ -37,7 +46,7 @@
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
-			object-position: var(--hero-focal-point, 50% 40%);
+			object-position: var(--hero-focal-point, var(--hero-focal-point-default, 50% 40%));
 		}
 	}
 
