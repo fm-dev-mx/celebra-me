@@ -79,6 +79,39 @@ function resolveAsset(
 	return { src: metadata, alt };
 }
 
+function resolveAssetSrc(eventSlug: string, source: AssetSource | string | undefined): string {
+	const normalizedSource = normalizeAssetSource(source);
+	if (!normalizedSource) {
+		throw new Error(
+			`[AssetRegistry] Required asset source is missing for event "${eventSlug}".`,
+		);
+	}
+
+	if (normalizedSource.type === 'external') {
+		return normalizedSource.src;
+	}
+
+	if (isCommonAssetKey(normalizedSource.key)) {
+		const asset = getCommonAsset(normalizedSource.key);
+		return typeof asset.src === 'string' ? asset.src : asset.src.src;
+	}
+
+	if (!isEventAssetKey(normalizedSource.key)) {
+		throw new Error(
+			`[AssetRegistry] Unknown asset key "${normalizedSource.key}" for event "${eventSlug}".`,
+		);
+	}
+
+	const metadata = getEventAsset(eventSlug, normalizedSource.key);
+	if (!metadata) {
+		throw new Error(
+			`[AssetRegistry] Event asset "${normalizedSource.key}" not found for event "${eventSlug}".`,
+		);
+	}
+
+	return metadata.src;
+}
+
 function requireAsset(
 	eventSlug: string,
 	source: AssetSource | string,
@@ -132,6 +165,9 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		date: data.hero.date,
 		venueName: data.location.venueName,
 		backgroundImage: requireAsset(eventSlug, data.hero.backgroundImage, data.title),
+		backgroundImageDesktop: data.hero.backgroundImageDesktop
+			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
+			: undefined,
 		portrait: resolveAsset(eventSlug, data.hero.portrait, data.title),
 		variant: pickVariant(
 			'hero.variant',

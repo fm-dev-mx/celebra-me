@@ -15,6 +15,7 @@ interface Props {
 	time?: string;
 	venueName: string;
 	backgroundImage: ImageMetadata | ImageAsset;
+	backgroundImageDesktop?: { src: string };
 	portrait?: ImageMetadata | ImageAsset;
 	variant?: ThemePreset;
 	guestName?: string;
@@ -33,6 +34,7 @@ const {
 	time,
 	venueName,
 	backgroundImage,
+	backgroundImageDesktop,
 	portrait,
 	variant,
 	focalPoint,
@@ -41,12 +43,11 @@ const {
 	focalPointDesktop,
 } = Astro.props;
 
-// Universal image resolution helper
-const resolveImage = (image: ImageMetadata | ImageAsset) => {
-	return 'src' in image ? image.src : image;
-};
+const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata =>
+	'src' in image ? (image.src as ImageMetadata) : image;
 
 const bgSrc = resolveImage(backgroundImage);
+const desktopBgSrc = backgroundImageDesktop?.src ?? null;
 const portraitSrc = portrait ? resolveImage(portrait) : null;
 
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
@@ -68,16 +69,21 @@ const surnames = names.slice(2);
 	data-variant={variant}
 >
 	<div class="invitation-hero__background">
-		<Image
-			src={bgSrc as ImageMetadata}
-			alt={name}
-			width={1080}
-			height={1920}
-			format="webp"
-			quality={80}
-			loading="eager"
-			fetchpriority="high"
-		/>
+		<picture>
+			{desktopBgSrc && (
+				<source media="(min-width: 992px)" srcset={desktopBgSrc} />
+			)}
+			<Image
+				src={bgSrc}
+				alt={name}
+				width={1080}
+				height={1920}
+				format="webp"
+				quality={80}
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</picture>
 	</div>
 
 	<div class="invitation-hero__content">
@@ -111,7 +117,7 @@ const surnames = names.slice(2);
 		{portraitSrc && (
 			<div class="invitation-hero__portrait">
 				<Image
-					src={portraitSrc as ImageMetadata}
+					src={portraitSrc}
 					alt={`Retrato de ${name}`}
 					width={600}
 					height={800}

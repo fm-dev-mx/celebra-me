@@ -32,6 +32,7 @@
         "label": "Mi primer sacramento y un año de vida",
         "date": "2026-06-20T22:00:00.000Z",
         "backgroundImage": "hero",
+        "backgroundImageDesktop": "https://res.cloudinary.com/dusxvauvj/image/upload/v1778884452/HHero_principal_Foto_20_big_ohtal8.webp",
         "focalPoint": "50% 48%",
         "focalPointMobile": "50% 46%",
         "focalPointTablet": "50% 46%",

@@ -8,6 +8,7 @@ export const heroSchema = z.object({
 	nickname: z.string().optional(),
 	date: z.iso.datetime(),
 	backgroundImage: AssetSchema,
+	backgroundImageDesktop: AssetSchema.optional(),
 	focalPoint: focalPointSchema.optional(),
 	focalPointMobile: focalPointSchema.optional(),
 	focalPointTablet: focalPointSchema.optional(),
