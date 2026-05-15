@@ -42,7 +42,7 @@ const IMAGE_CONFIGS = {
 		sizes: '100vw',
 		format: 'webp' as const,
 		quality: 90,
-		class: 'photo-image thank-you-fullbleed__image',
+		class: 'photo-image',
 	},
 	'celestial-blue': {
 		width: 700,
@@ -56,9 +56,8 @@ const IMAGE_CONFIGS = {
 	},
 } as const;
 
-const imageConfig = hasSubjectAwareOverlay
-	? IMAGE_CONFIGS['subject-aware']
-	: IMAGE_CONFIGS[isCelestialBlue ? 'celestial-blue' : 'standard'];
+const configKey: keyof typeof IMAGE_CONFIGS = hasSubjectAwareOverlay ? 'subject-aware' : (variant in IMAGE_CONFIGS ? (variant as keyof typeof IMAGE_CONFIGS) : 'standard');
+const imageConfig = IMAGE_CONFIGS[configKey];
 
 ---
 
@@ -113,17 +112,8 @@ const imageConfig = hasSubjectAwareOverlay
 							alt={closingName}
 							{...imageConfig}
 						/>
-						{variant === 'luxury-hacienda' && (
-							<>
-								<span class="rivet rivet--tl" />
-								<span class="rivet rivet--tr" />
-								<span class="rivet rivet--bl" />
-								<span class="rivet rivet--br" />
-							</>
-						)}
 					</div>
 				)}
-
 				<div class="message-container">
 					<p class="thank-you-message">
 						<span class="drop-cap">{firstLetter}</span>{remainingMessage}
@@ -160,7 +150,6 @@ const imageConfig = hasSubjectAwareOverlay
 
 <script>
 document.querySelectorAll<HTMLElement>('.thank-you-section[data-focal-point]').forEach((section) => {
-	const focalPoint = section.dataset.focalPoint || 'center';
-	section.style.setProperty('--thank-you-focal-point', focalPoint);
+	section.style.setProperty('--thank-you-focal-point', section.dataset.focalPoint || 'center');
 });
 </script>

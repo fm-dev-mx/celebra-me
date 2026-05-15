@@ -31,7 +31,7 @@ function readCesarRamsesEvent(): EventContent {
 	return result.data;
 }
 
-describe('Cesar Ramses baptism invitation content', () => {
+describe('César Ramses baptism invitation content', () => {
 	it('uses a real routable baptism content file derived from the reusable demo contract', () => {
 		const event = readCesarRamsesEvent();
 		const result = eventSchema.safeParse(event);
@@ -41,7 +41,7 @@ describe('Cesar Ramses baptism invitation content', () => {
 			eventType: 'bautizo',
 			isDemo: false,
 			title: 'Mi Bautizo y 1er Año de César Ramses',
-			theme: { preset: 'angelic-presence' },
+			theme: { preset: 'sacred-keepsake' },
 			hero: {
 				name: 'César Ramses',
 				label: 'Mi primer sacramento y un año de vida',
@@ -87,6 +87,16 @@ describe('Cesar Ramses baptism invitation content', () => {
 		expect(assetIndex).not.toContain('demo-bautismo-angelic-presence');
 		expect(content).not.toContain('María Santos');
 		expect(demoContent).toContain('María Santos');
+	});
+
+	it('uses the reusable sacred-keepsake theme identity instead of event or angelic identity', () => {
+		const content = fs.readFileSync(contentPath, 'utf8');
+		const eventStylesPath = path.join(projectRoot, 'src/styles/events/_cesar-ramses.scss');
+
+		expect(content).toContain('"preset": "sacred-keepsake"');
+		expect(content).not.toContain('"preset": "cesar-ramses"');
+		expect(content).not.toContain('"preset": "angelic-presence"');
+		expect(fs.existsSync(eventStylesPath)).toBe(false);
 	});
 
 	it('configures slug-scoped local images for every visible baptism media surface', () => {
