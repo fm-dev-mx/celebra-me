@@ -14,7 +14,7 @@
 	background: linear-gradient(
 		180deg,
 		var(--color-surface-primary) 0%,
-		rgb(var(--color-action-accent-rgb), 0.1) 100%
+		rgb(var(--color-action-accent-rgb) / 10%) 100%
 	);
 	overflow: hidden;
 
@@ -28,24 +28,10 @@
 		height: 100%;
 		background: radial-gradient(
 			ellipse at center,
-			rgb(var(--color-action-accent-rgb), 0.05) 0%,
+			rgb(var(--color-action-accent-rgb) / 5%) 0%,
 			transparent 70%
 		);
 		pointer-events: none;
-	}
-}
-
-// ── Subject-aware overlay positioning ──────────────────────────────
-
-.thank-you-section[data-overlay-anchor] {
-	.thank-you-content {
-		width: min(100%, 1080px);
-	}
-
-	.message-container,
-	.signature-block,
-	.thank-you-footer {
-		max-width: var(--thank-you-overlay-width);
 	}
 }
 
@@ -80,62 +66,50 @@
 }
 
 // Safe-area max-width constraints — prevent copy from overlapping the subject
-.thank-you-section[data-overlay-anchor='left'][data-has-overlay-safe-area='true'] {
+.thank-you-section[data-has-overlay-safe-area='true'] {
 	.message-container,
 	.signature-block,
 	.thank-you-footer {
-		max-width: max(
-			16rem,
-			min(
-				var(--thank-you-overlay-width),
-				calc(var(--thank-you-safe-x) - var(--thank-you-overlay-gap))
-			)
-		);
+		max-width: var(--thank-you-overlay-width);
 	}
 }
 
-.thank-you-section[data-overlay-anchor='right'][data-has-overlay-safe-area='true'] {
-	.message-container,
-	.signature-block,
-	.thank-you-footer {
-		justify-self: end;
-		max-width: max(
-			16rem,
-			min(
-				var(--thank-you-overlay-width),
-				calc(
-					100% - var(--thank-you-safe-x) - var(--thank-you-safe-width) - var(
-							--thank-you-overlay-gap
+@mixin thank-you-safe-area($anchor) {
+	.thank-you-section[data-overlay-anchor='#{$anchor}'][data-has-overlay-safe-area='true'] {
+		@if $anchor == 'left' {
+			.message-container,
+			.signature-block,
+			.thank-you-footer {
+				max-width: max(
+					16rem,
+					min(
+						var(--thank-you-overlay-width),
+						calc(var(--thank-you-safe-x) - var(--thank-you-overlay-gap))
+					)
+				);
+			}
+		} @else if $anchor == 'right' {
+			.message-container,
+			.signature-block,
+			.thank-you-footer {
+				max-width: max(
+					16rem,
+					min(
+						var(--thank-you-overlay-width),
+						calc(
+							100% - var(--thank-you-safe-x) - var(--thank-you-safe-width) - var(
+									--thank-you-overlay-gap
+								)
 						)
-				)
-			)
-		);
+					)
+				);
+			}
+		}
 	}
 }
 
-.thank-you-section[data-overlay-anchor='top'][data-has-overlay-safe-area='true'] {
-	.thank-you-content {
-		align-self: start;
-	}
-
-	.message-container,
-	.signature-block,
-	.thank-you-footer {
-		max-width: var(--thank-you-overlay-width);
-	}
-}
-
-.thank-you-section[data-overlay-anchor='bottom'][data-has-overlay-safe-area='true'] {
-	.thank-you-content {
-		align-self: end;
-	}
-
-	.message-container,
-	.signature-block,
-	.thank-you-footer {
-		max-width: var(--thank-you-overlay-width);
-	}
-}
+@include thank-you-safe-area('left');
+@include thank-you-safe-area('right');
 
 .thank-you-content {
 	position: relative;
@@ -206,7 +180,6 @@
 }
 
 .signature-block {
-	opacity: 100%;
 	transform: translateY(0);
 	animation: signatureReveal var(--duration-reveal, 1.5s) var(--ease-out) 0.5s both;
 }
