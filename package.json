@@ -5,6 +5,7 @@
     "engines": {
         "node": ">=22.12.0 <25"
     },
+    "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
     "scripts": {
         "dev": "astro dev",
         "build": "pnpm validate:event-parity && astro check && astro build",
@@ -96,6 +97,5 @@
         "*.astro": ["eslint --fix --cache", "prettier --write"],
         "*.{scss,css}": ["stylelint --fix", "prettier --write"],
         "*.{json,md,yml,yaml}": ["prettier --write"]
-    },
-    "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a"
+    }
 }
