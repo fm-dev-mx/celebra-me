@@ -51,17 +51,17 @@
 					),
 					// Champagne radial glow — adds warmth without darkening
 					radial-gradient(
-							ellipse at 50% 38%,
+							ellipse at 50% 48%,
 							rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
 							transparent 55%
 						),
 					// Luminous bottom gradient — ivory/champagne, removes the dim veil
 					linear-gradient(
 							to top,
-							rgb(var(--color-pure-ivory-rgb) / 98%) 0%,
-							rgb(var(--color-ivory-warm-rgb) / 88%) 22%,
-							rgb(var(--color-sacred-gold-rgb) / 18%) 52%,
-							transparent 85%
+							rgb(var(--color-pure-ivory-rgb) / 70%) 0%,
+							rgb(var(--color-ivory-warm-rgb) / 55%) 22%,
+							rgb(var(--color-sacred-gold-rgb) / 12%) 52%,
+							transparent 78%
 						);
 				z-index: 1;
 				pointer-events: none;
@@ -71,7 +71,6 @@
 				width: 100%;
 				height: 100%;
 				object-fit: cover;
-				object-position: var(--hero-focal-point);
 				filter: brightness(1.06) contrast(1.02) saturate(0.96) sepia(0.02);
 			}
 		}
@@ -126,9 +125,11 @@
 					transparent 100%
 				);
 			}
+
 			&::before {
 				top: 0;
 			}
+
 			&::after {
 				bottom: 0;
 			}
@@ -157,9 +158,6 @@
 
 		// Portrait visibility controlled by breakpoint overrides below.
 		// Base state: hidden at mobile, shown at tablet+ via respond-to(lg).
-		.invitation-hero__portrait {
-			// Hidden by default; re-enabled at lg breakpoint
-		}
 
 		.invitation-hero__details {
 			border-top: none;
@@ -361,16 +359,16 @@
 						transparent 20%
 					),
 					radial-gradient(
-						ellipse at 50% 40%,
+						ellipse at 50% 46%,
 						rgb(var(--color-sacred-gold-rgb) / 5%) 0%,
 						transparent 55%
 					),
 					linear-gradient(
 						to top,
-						rgb(var(--color-pure-ivory-rgb) / 98%) 0%,
-						rgb(var(--color-ivory-warm-rgb) / 88%) 16%,
+						rgb(var(--color-pure-ivory-rgb) / 70%) 0%,
+						rgb(var(--color-ivory-warm-rgb) / 55%) 16%,
 						rgb(var(--color-sacred-gold-rgb) / 12%) 44%,
-						transparent 82%
+						transparent 78%
 					);
 			}
 
@@ -737,9 +735,11 @@
 		.countdown__segment[data-index='1'] .countdown__value::after {
 			content: 'h';
 		}
+
 		.countdown__segment[data-index='2'] .countdown__value::after {
 			content: 'm';
 		}
+
 		.countdown__segment[data-index='3'] .countdown__value::after {
 			content: 's';
 		}
