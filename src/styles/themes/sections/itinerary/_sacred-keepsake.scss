@@ -1,0 +1,169 @@
+@use '../../../global/mixins' as mixins;
+
+.itinerary[data-variant='sacred-keepsake'] {
+	--itinerary-bg:
+		radial-gradient(
+			ellipse at 14% 14%,
+			rgb(var(--color-sacred-blue-rgb) / 18%) 0%,
+			transparent 36%
+		),
+		radial-gradient(
+			ellipse at 84% 86%,
+			rgb(var(--color-sacred-blue-soft-rgb) / 24%) 0%,
+			transparent 40%
+		),
+		var(--sacred-ivory-wash);
+	--itinerary-line-color: rgb(var(--color-sacred-blue-rgb) / 54%);
+	--itinerary-line-shadow: 0 0 10px rgb(var(--color-sacred-blue-rgb) / 14%);
+	--itinerary-line-opacity: 0.42;
+	--itinerary-icon-bg: rgb(var(--color-pure-ivory-rgb) / 82%);
+	--itinerary-icon-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 30%);
+	--itinerary-icon-color: rgb(var(--color-sacred-gold-rgb) / 82%);
+	--itinerary-icon-shadow:
+		0 10px 24px rgb(var(--color-eternal-ink-rgb) / 8%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+
+	position: relative;
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-pure-ivory-rgb) / 34%) 0%,
+				transparent 30%,
+				rgb(var(--color-sacred-mist-rgb) / 20%) 100%
+			),
+			radial-gradient(
+				ellipse at 50% 12%,
+				rgb(var(--color-sacred-blue-rgb) / 12%) 0%,
+				transparent 45%
+			);
+		pointer-events: none;
+	}
+
+	.itinerary__container {
+		z-index: 1;
+	}
+
+	.itinerary__header {
+		margin-bottom: clamp(2.25rem, 5vw, 3.75rem);
+	}
+
+	.itinerary__subtitle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: min(100%, 32rem);
+		padding: 0.45rem 0.9rem;
+		border: 1px solid rgb(var(--color-sacred-blue-rgb) / 32%);
+		border-radius: 999px;
+		background: rgb(var(--color-pure-ivory-rgb) / 48%);
+		letter-spacing: 0.18em;
+	}
+
+	.itinerary__header-flourish {
+		gap: 0.85rem;
+
+		.flourish-line {
+			background: var(--sacred-divider);
+		}
+
+		.flourish-diamond {
+			width: 0.42rem;
+			height: 0.42rem;
+			border-radius: 50%;
+			background: rgb(var(--color-sacred-blue-rgb) / 58%);
+			box-shadow:
+				-0.7rem 0 rgb(var(--color-sacred-gold-rgb) / 34%),
+				0.7rem 0 rgb(var(--color-sacred-gold-rgb) / 34%);
+			transform: none;
+		}
+	}
+
+	.itinerary__items {
+		gap: clamp(3.2rem, 7vw, 5.5rem);
+	}
+
+	.itinerary__item-content {
+		position: relative;
+	}
+
+	.itinerary__item-time {
+		display: inline-flex;
+		width: fit-content;
+		padding: 0.44rem 0.78rem;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+		border-radius: 999px;
+		background: rgb(var(--color-pure-ivory-rgb) / 70%);
+		box-shadow: inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 78%);
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		letter-spacing: 0.16em;
+	}
+
+	.itinerary__item-label {
+		margin-top: 0.65rem;
+		font-size: clamp(1.65rem, 3.2vw, 2.15rem);
+		color: rgb(var(--color-eternal-ink-rgb) / 92%);
+	}
+
+	.itinerary__item-description {
+		max-width: 22rem;
+		line-height: 1.58;
+		color: rgb(var(--color-eternal-ink-rgb) / 68%);
+	}
+
+	.itinerary__item-icon-wrapper {
+		width: 52px;
+		height: 52px;
+
+		&::before {
+			inset: -6px;
+			border-color: rgb(var(--color-sacred-gold-rgb) / 20%);
+			opacity: 100%;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			right: -0.08rem;
+			bottom: -0.08rem;
+			display: grid;
+			place-items: center;
+			width: 0.42rem;
+			height: 0.42rem;
+			border-radius: 50%;
+			background: rgb(var(--color-sacred-blue-rgb) / 74%);
+			border: 1px solid rgb(var(--color-pure-ivory-rgb) / 82%);
+		}
+	}
+
+	.itinerary__item-icon-inner svg {
+		stroke-width: 1.4px;
+	}
+
+	@media (width <= 768px) {
+		padding: clamp(4.75rem, 14vw, 6rem) clamp(1rem, 4vw, 1.35rem);
+
+		.itinerary__animated-line-container {
+			left: 1.75rem;
+		}
+
+		.itinerary__item {
+			padding-left: 3.15rem;
+
+			&--left,
+			&--right {
+				.itinerary__item-icon-wrapper {
+					left: -2.9rem;
+				}
+			}
+		}
+
+		.itinerary__item-time {
+			letter-spacing: 0.12em;
+		}
+	}
+}

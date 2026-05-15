@@ -1,0 +1,317 @@
+@use '../../../global/mixins' as mixins;
+
+.event-location[data-variant='sacred-keepsake'] {
+	padding-bottom: clamp(6rem, 12vh, 8rem);
+
+	.event-location__container {
+		max-width: min(800px, calc(100vw - 2.5rem));
+	}
+
+	.event-location__card-wrapper {
+		max-width: 30rem;
+		margin-inline: auto;
+		padding-bottom: 1rem;
+	}
+
+	// Eyebrow — small gold label
+	.event-location__card-title {
+		font-family: var(--font-label);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--color-sacred-gold-readable);
+		margin-bottom: 0.5rem;
+	}
+
+	// Subtle ornamental divider
+	.event-location__card-flourish {
+		margin-bottom: 1.5rem;
+		opacity: 54%;
+
+		.flourish-line {
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-sacred-gold-rgb) / 42%)
+			);
+		}
+
+		.flourish-line:last-child {
+			background: linear-gradient(
+				-90deg,
+				transparent,
+				rgb(var(--color-sacred-gold-rgb) / 42%)
+			);
+		}
+
+		.flourish-diamond {
+			width: 4px;
+			height: 4px;
+			background: var(--color-sacred-gold);
+			opacity: 52%;
+		}
+	}
+
+	// Card — refined ivory surface, gold hairline, soft shadow
+	.event-location__card {
+		background: linear-gradient(
+			168deg,
+			rgb(var(--color-pure-ivory-rgb) / 94%) 0%,
+			rgb(var(--color-ivory-warm-rgb) / 80%) 50%,
+			rgb(var(--color-sacred-mist-rgb) / 38%) 100%
+		);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+		border-radius: 14px;
+		box-shadow:
+			0 18px 48px -30px rgb(var(--color-eternal-ink-rgb) / 28%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+		gap: 0;
+		overflow: hidden;
+		padding: 0;
+	}
+
+	.event-location__card:hover {
+		border-color: rgb(var(--color-sacred-gold-rgb) / 42%);
+		transform: translateY(-3px);
+		box-shadow:
+			0 24px 56px -32px rgb(var(--color-eternal-ink-rgb) / 32%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+	}
+
+	// Clean rectangular image frame with gold hairline bottom
+	.event-location__card-image-outer-frame {
+		background: transparent;
+		padding: 0;
+		border-radius: 14px 14px 0 0;
+		box-shadow: none;
+		overflow: hidden;
+		margin-bottom: 0;
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 1px;
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				rgb(var(--color-sacred-gold-rgb) / 26%) 18%,
+				rgb(var(--color-sacred-gold-rgb) / 16%) 82%,
+				transparent 100%
+			);
+			pointer-events: none;
+			z-index: 2;
+		}
+	}
+
+	.event-location__card-image-inner-frame {
+		background: transparent;
+		padding: 0;
+		border-radius: 14px 14px 0 0;
+	}
+
+	.event-location__card-image-container {
+		aspect-ratio: 1 / 0.82;
+		border-radius: 14px 14px 0 0;
+
+		img {
+			filter: saturate(0.94) contrast(1.02) brightness(1.03) sepia(0.04);
+		}
+	}
+
+	// Editorial content spacing & typographic hierarchy
+	.event-location__card-content {
+		padding: clamp(1.5rem, 3.5vw, 2.1rem) clamp(1.35rem, 3.5vw, 1.75rem);
+		margin-top: 0;
+	}
+
+	// Venue name — prominent display serif
+	.event-location__card-content-place {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4.5vw, 2.6rem);
+		color: var(--color-eternal-ink);
+		line-height: 1.06;
+		margin-bottom: 0.55rem;
+		letter-spacing: 0;
+	}
+
+	// Date — refined metadata, gold
+	.event-location__card-content-date {
+		font-family: var(--font-body);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--color-sacred-gold-readable);
+		margin-bottom: 0.15rem;
+	}
+
+	.event-location__card-content-hour {
+		font-family: var(--font-body);
+		font-size: 0.76rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: rgb(var(--color-eternal-ink-rgb) / 58%);
+		margin-bottom: 1.4rem;
+	}
+
+	.event-location__card-content-address {
+		padding-top: 1.1rem;
+		border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+		font-size: 0.86rem;
+		color: rgb(var(--color-eternal-ink-rgb) / 72%);
+		line-height: 1.5;
+	}
+
+	.event-location__card-content-copy-button {
+		color: var(--color-sacred-gold);
+		background: transparent;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+		border-radius: 50%;
+		width: 30px;
+		height: 30px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover,
+		&:focus-visible {
+			color: var(--color-pure-ivory);
+			background: var(--color-eternal-ink);
+			border-color: var(--color-eternal-ink);
+		}
+	}
+
+	// Map CTA — ivory pill with gold border
+	.event-location__card-navigation-buttons {
+		gap: 0;
+		margin-top: 1.75rem;
+	}
+
+	.event-location__nav-button {
+		background: linear-gradient(
+			180deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-ivory-warm) 100%
+		);
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 36%);
+		color: var(--color-eternal-ink);
+		box-shadow:
+			0 10px 24px -12px rgb(var(--color-eternal-ink-rgb) / 20%),
+			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+		border-radius: 12px;
+		padding: 1rem 1.8rem;
+		letter-spacing: 0.2em;
+		font-size: 0.7rem;
+		font-weight: 600;
+		font-family: var(--font-label);
+
+		&::after {
+			display: none;
+		}
+
+		&:hover {
+			background: var(--color-eternal-ink);
+			border-color: var(--color-eternal-ink);
+			color: var(--color-pure-ivory);
+			box-shadow: 0 12px 26px rgb(var(--color-eternal-ink-rgb) / 34%);
+			transform: translateY(-2px);
+		}
+	}
+
+	// Primary CTA variant — gold pill on single-venue events
+	.event-location__nav-button--primary {
+		background: linear-gradient(
+			to right,
+			rgb(var(--color-sacred-gold-rgb) / 94%),
+			rgb(var(--color-sacred-gold-rgb) / 82%)
+		);
+		color: var(--color-pure-ivory);
+		border: none;
+		box-shadow: 0 8px 22px -6px rgb(var(--color-sacred-gold-rgb) / 42%);
+
+		svg {
+			stroke-width: 2px;
+		}
+
+		&:hover {
+			background: var(--color-eternal-ink);
+			box-shadow: 0 12px 28px rgb(var(--color-eternal-ink-rgb) / 36%);
+		}
+	}
+
+	// Indications — refined minimal list
+	.event-location__indications-container {
+		margin-top: clamp(1.5rem, 3vh, 2.5rem);
+		max-width: 480px;
+	}
+
+	.event-location__divider {
+		display: none;
+	}
+
+	.event-location__indications-heading {
+		letter-spacing: 0.25em;
+		color: rgb(var(--color-sacred-gold-rgb) / 84%);
+	}
+
+	.event-location__indications {
+		background: transparent;
+		backdrop-filter: none;
+		border: none;
+		padding: 0;
+		gap: 1rem;
+
+		&::before {
+			display: none;
+		}
+	}
+
+	.event-location__indication-item {
+		background: transparent;
+		border: none;
+		gap: 1rem;
+		padding: 1.25rem 0;
+		border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+		align-items: center;
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	.event-location__indication-icon {
+		color: var(--color-sacred-gold-readable);
+		background: rgb(var(--color-pure-ivory-rgb) / 85%);
+		width: 40px;
+		height: 40px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	.event-location__indication-text {
+		font-size: 0.9rem;
+		color: rgb(var(--color-eternal-ink-rgb) / 78%);
+
+		strong {
+			font-size: 0.75rem;
+			letter-spacing: 0.15em;
+			text-transform: uppercase;
+			color: rgb(var(--color-sacred-gold-rgb) / 94%);
+			display: block;
+			margin-bottom: 0.25rem;
+		}
+	}
+}

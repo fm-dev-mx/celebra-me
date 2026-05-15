@@ -1,0 +1,99 @@
+@use '../../../global/mixins' as mixins;
+
+.music-player[data-variant='sacred-keepsake'] {
+	bottom: 1.25rem;
+	left: 1.25rem;
+	right: auto;
+	align-items: flex-start;
+	gap: 0.5rem;
+
+	.music-player__prompt {
+		font-size: 0.7rem;
+		padding: 0.35rem 0.8rem;
+		background: rgb(var(--color-ivory-warm-rgb) / 75%);
+		backdrop-filter: blur(10px);
+		border-color: rgb(var(--color-sacred-gold-rgb) / 30%);
+		color: rgb(var(--color-eternal-ink-rgb) / 80%);
+		opacity: 0%;
+		animation: none;
+
+		&.is-fading-in {
+			animation: musicPlayerFadeInSlide var(--duration-standard) forwards var(--ease-standard);
+		}
+	}
+
+	.music-player__button--play {
+		width: 2.6rem;
+		height: 2.6rem;
+		opacity: 65%;
+		transition:
+			opacity 0.3s ease,
+			transform 0.2s ease;
+
+		&:hover {
+			opacity: 90%;
+			transform: scale(1.04);
+		}
+
+		&::after {
+			display: none;
+		}
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	.music-player__button--pulsing {
+		animation: musicPlayerPulseSoft 3s ease-in-out infinite;
+
+		&::before {
+			inset: -6px;
+			border-color: rgb(var(--color-sacred-gold-rgb) / 18%);
+		}
+	}
+
+	@include mixins.respond-below(md) {
+		bottom: 0.9rem;
+		left: 0.9rem;
+
+		.music-player__prompt {
+			font-size: 0.62rem;
+			max-width: min(65vw, 12rem);
+		}
+
+		.music-player__button--play {
+			width: 2.3rem;
+			height: 2.3rem;
+		}
+
+		.music-player__button--play svg {
+			width: 14px;
+			height: 14px;
+		}
+	}
+
+	@include mixins.respond-below(xs) {
+		bottom: 0.75rem;
+		left: 0.75rem;
+
+		.music-player__button--play {
+			width: 2.1rem;
+			height: 2.1rem;
+		}
+	}
+}
+
+@keyframes musicPlayerPulseSoft {
+	0%,
+	100% {
+		box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 8%);
+		transform: scale(1);
+	}
+
+	50% {
+		box-shadow: 0 6px 18px rgb(var(--color-action-accent-rgb) / 12%);
+		transform: scale(1.03);
+	}
+}

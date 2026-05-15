@@ -22,11 +22,11 @@ console.log('================================');
 const ERRORS = [];
 const WARNINGS = [];
 const EXPECTED_BASE_STYLE_FALLBACKS = {
-	quote: new Set(['jewelry-box-wedding']),
+	quote: new Set(['jewelry-box-wedding', 'sacred-keepsake']),
 	countdown: new Set(['jewelry-box-wedding']),
 	location: new Set(['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda']),
 	family: new Set(['jewelry-box-wedding']),
-	gifts: new Set(['jewelry-box-wedding', 'angelic-presence']),
+	gifts: new Set(['jewelry-box-wedding', 'angelic-presence', 'sacred-keepsake']),
 	gallery: new Set(['jewelry-box-wedding']),
 	thankYou: new Set(['jewelry-box-wedding']),
 	itinerary: new Set(['jewelry-box-wedding']),
