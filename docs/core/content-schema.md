@@ -57,6 +57,8 @@ clear.
 - `x + width` and `y + height` must stay within `1`.
 - Mark the protected subject area, usually the face/head region. The overlay should anchor outside
   that area.
+- For subject-aware full-bleed thank-you layouts, provide `overlayAnchor` and `overlaySafeArea`
+  together so shared styles can position copy without covering the subject.
 
 ### `height` (Interludes only)
 

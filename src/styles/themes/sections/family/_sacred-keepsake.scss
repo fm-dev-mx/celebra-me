@@ -158,9 +158,7 @@
 		border-radius: clamp(18px, 3vw, 26px);
 		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
 		background: var(--sacred-surface-mist);
-		box-shadow:
-			0 22px 58px rgb(var(--color-eternal-ink-rgb) / 8%),
-			0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+		box-shadow: var(--sacred-soft-shadow);
 
 		&::before,
 		&::after {
@@ -214,8 +212,7 @@
 			),
 			var(--color-pure-ivory);
 		box-shadow:
-			0 16px 42px rgb(var(--color-eternal-ink-rgb) / 9%),
-			0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 8%),
+			var(--shadow-editorial),
 			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
 
 		&::after {

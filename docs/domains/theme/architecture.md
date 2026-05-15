@@ -102,16 +102,16 @@ section needs layout, motion, or composition changes beyond the base stylesheet.
 
 `pnpm ops validate-schema` treats the following as documented base-style fallbacks instead of drift:
 
-| Section     | Variants using base section styles                      |
-| ----------- | ------------------------------------------------------- |
-| `quote`     | `jewelry-box-wedding`                                   |
-| `countdown` | `jewelry-box-wedding`                                   |
-| `location`  | `jewelry-box`, `jewelry-box-wedding`, `luxury-hacienda` |
-| `family`    | `jewelry-box-wedding`                                   |
-| `gifts`     | `jewelry-box-wedding`, `angelic-presence`               |
-| `gallery`   | `jewelry-box-wedding`                                   |
-| `thankYou`  | `jewelry-box-wedding`                                   |
-| `itinerary` | `jewelry-box-wedding`                                   |
+| Section     | Variants using base section styles                           |
+| ----------- | ------------------------------------------------------------ |
+| `quote`     | `jewelry-box-wedding`, `sacred-keepsake`                     |
+| `countdown` | `jewelry-box-wedding`                                        |
+| `location`  | `jewelry-box`, `jewelry-box-wedding`, `luxury-hacienda`      |
+| `family`    | `jewelry-box-wedding`                                        |
+| `gifts`     | `jewelry-box-wedding`, `angelic-presence`, `sacred-keepsake` |
+| `gallery`   | `jewelry-box-wedding`                                        |
+| `thankYou`  | `jewelry-box-wedding`                                        |
+| `itinerary` | `jewelry-box-wedding`                                        |
 
 Variant partials should target concrete selectors such as `[data-variant='premiere-floral']`.
 
@@ -122,6 +122,11 @@ Selector contract:
   /* variant styles */
 }
 ```
+
+The `celestial-blue` thank-you section currently uses an intentionally specialized structural branch
+in `ThankYou.astro` for its editorial closing frame. Treat this as a documented exception, not a
+pattern for new section variants; prefer stable component markup and variant-scoped SCSS for future
+themes.
 
 ## Preset Strategy
 
