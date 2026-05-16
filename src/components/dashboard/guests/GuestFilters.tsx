@@ -1,4 +1,5 @@
 import React from 'react';
+import { SearchIcon } from '@/components/common/icons/ui';
 
 interface GuestFiltersProps {
 	search: string;
@@ -25,14 +26,17 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 		<div className="dashboard-guests__filters">
 			<div className="filter-group">
 				<label htmlFor="guest-search">Buscar</label>
-				<input
-					id="guest-search"
-					ref={searchInputRef}
-					type="search"
-					value={search}
-					onChange={(event) => onSearchChange(event.target.value)}
-					placeholder="Nombre o teléfono"
-				/>
+				<div className="filter-search-wrap">
+					<SearchIcon className="filter-search-icon" size={16} />
+					<input
+						id="guest-search"
+						ref={searchInputRef}
+						type="search"
+						value={search}
+						onChange={(event) => onSearchChange(event.target.value)}
+						placeholder="Nombre o teléfono"
+					/>
+				</div>
 			</div>
 
 			<div className="filter-row">
