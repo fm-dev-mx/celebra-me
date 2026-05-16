@@ -8,29 +8,36 @@ interface GuestStatsCardsProps {
 const GuestStatsCards: React.FC<GuestStatsCardsProps> = ({ totals }) => {
 	const cards = [
 		{
-			label: 'Invitaciones',
+			label: 'Total',
 			value: totals.totalInvitations,
-			helper: `${totals.totalPeople} personas contempladas`,
 		},
 		{
-			label: 'Entregadas',
+			label: 'Enviadas',
 			value: totals.sharedInvitations,
 			helper: `${totals.generatedInvitations} por enviar`,
 		},
 		{
-			label: 'Confirmadas',
+			label: 'Asistentes',
 			value: totals.confirmedInvitations,
-			helper: `${totals.confirmedPeople} asistentes`,
+			helper: `${totals.confirmedPeople} confirmados`,
 		},
 		{
-			label: 'Pendientes',
+			label: 'En espera',
 			value: totals.pendingInvitations,
-			helper: `${totals.pendingPeople} cupos por resolver`,
+			helper: `${totals.pendingPeople} sin respuesta`,
 		},
 		{
-			label: 'Vistas',
+			label: 'Vistos',
 			value: totals.viewed,
-			helper: `de ${totals.sharedInvitations} entregadas`,
+			helper:
+				totals.sharedInvitations > 0
+					? `${Math.round((totals.viewed / totals.sharedInvitations) * 100)}% de entregas`
+					: null,
+		},
+		{
+			label: 'Denegadas',
+			value: totals.declinedInvitations,
+			helper: null,
 		},
 	];
 

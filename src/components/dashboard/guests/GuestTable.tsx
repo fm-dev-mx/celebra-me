@@ -50,7 +50,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	if (!items || items.length === 0) {
 		return (
 			<div className="dashboard-guests__empty">
-				<p>No hay invitados registrados.</p>
+				<p>Sin invitados</p>
 			</div>
 		);
 	}
@@ -219,7 +219,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 													}
 												</span>
 											) : (
-												<span>Sin apertura</span>
+												<span>No vista</span>
 											)}
 										</div>
 									</td>

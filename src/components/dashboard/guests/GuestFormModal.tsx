@@ -153,7 +153,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					onClick={(e) => e.stopPropagation()}
 				>
 					<div className="dashboard-modal__header">
-						<h3>{mode === 'create' ? 'Agregar Invitado' : 'Editar Invitado'}</h3>
+						<h3>{mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}</h3>
 						<button
 							type="button"
 							className="btn-close"

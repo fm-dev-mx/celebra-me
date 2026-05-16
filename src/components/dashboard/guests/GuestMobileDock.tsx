@@ -49,12 +49,18 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 				className="dock-item dock-item--main"
 				disabled={loading || !hasPendingGenerated}
 				onClick={onOpenNextAction}
-				aria-label="Resolver siguiente invitación"
+				aria-label={
+					hasPendingGenerated
+						? 'Resolver siguiente invitación'
+						: 'No hay invitaciones pendientes'
+				}
 			>
 				<span className="dock-icon" aria-hidden="true">
 					<ArrowRightIcon size={18} />
 				</span>
-				<span className="dock-label">Enviar pendientes</span>
+				<span className="dock-label">
+					{hasPendingGenerated ? 'Enviar pendientes' : 'Sin pendientes'}
+				</span>
 			</button>
 
 			<div className="dock-item dock-item--filter">
@@ -66,10 +72,10 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 					value={status}
 					onChange={(event) => onStatusChange(event.target.value as typeof status)}
 				>
-					<option value="all">Filtrar</option>
-					<option value="pending">Pendientes</option>
+					<option value="all">Todos</option>
+					<option value="pending">En espera</option>
 					<option value="confirmed">Confirmados</option>
-					<option value="declined">Declinados</option>
+					<option value="declined">No asistirán</option>
 					<option value="viewed">Vistos</option>
 				</select>
 				<span className="dock-label">Filtrar</span>
