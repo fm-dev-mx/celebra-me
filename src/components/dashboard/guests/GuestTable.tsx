@@ -125,7 +125,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 													{item.email}
 												</span>
 											)}
-											<span className="guest-tag">
+											<span className="guest-tag guest-tag--subtle">
 												{formatGuestEntrySource(item)}
 											</span>
 										</div>

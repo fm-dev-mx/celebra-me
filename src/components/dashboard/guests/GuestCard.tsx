@@ -58,7 +58,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__meta">
 					{item.phone && <span className="guest-card__contact">{item.phone}</span>}
 					{item.email && <span className="guest-card__contact">{item.email}</span>}
-					<span className="guest-tag">{formatGuestEntrySource(item)}</span>
 				</div>
 
 				<div className="guest-card__status-row">
@@ -76,7 +75,17 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</div>
 
 					<div className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}>
-						{isViewed ? formatGuestDate(item.firstViewedAt).split(',')[0] : 'Sin ver'}
+						{isViewed ? (
+							<span className="view-status__content">
+								<span className="view-status__pct">{item.viewPercentage}%</span>
+								<span className="view-status__sep">·</span>
+								<span className="view-status__date">
+									{formatGuestDate(item.firstViewedAt).split(',')[0]}
+								</span>
+							</span>
+						) : (
+							'Sin ver'
+						)}
 					</div>
 				</div>
 
@@ -108,15 +117,17 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 			{expanded && (
 				<div className="guest-card__expanded">
-					{hasTags && (
-						<div className="guest-card__tags">
-							{getGuestVisibleTags(item).map((tag) => (
+					<div className="guest-card__tags">
+						<span className="guest-tag guest-tag--subtle">
+							{formatGuestEntrySource(item)}
+						</span>
+						{hasTags &&
+							getGuestVisibleTags(item).map((tag) => (
 								<span key={tag} className="guest-tag">
 									{tag}
 								</span>
 							))}
-						</div>
-					)}
+					</div>
 
 					<div className="guest-card__detail-actions">
 						<button
