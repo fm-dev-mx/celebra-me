@@ -6,26 +6,27 @@ interface DashboardUserMenuProps {
 	roleLabel: 'ADMIN' | 'HOST';
 }
 
+const INTERNAL_DOMAIN = 'clientes.celebra.invalid';
+
 const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel }) => {
 	const [busy, setBusy] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
-	const visibleRoleLabel = roleLabel === 'ADMIN' ? 'Administrador' : 'Anfitrión';
+	const displayEmail = email?.replace(new RegExp(`@${INTERNAL_DOMAIN}$`), '') || 'sin-email';
 
 	return (
-		<div className="dashboard-user-menu">
-			<div className="dashboard-user-menu__meta">
-				<span className="dashboard-user-menu__role">{visibleRoleLabel}</span>
-				<span className="dashboard-user-menu__email" title={email}>
-					{email
-						? email.length > 15
-							? email.substring(0, 12) + '...'
-							: email
-						: 'sin-email'}
+		<div className="dashboard-sidebar__account">
+			<div className="dashboard-sidebar__account-card">
+				<span className="dashboard-sidebar__account-label">Panel actual</span>
+				<span className="dashboard-sidebar__account-role">
+					{roleLabel === 'ADMIN' ? 'Administrador' : 'Anfitrión'}
+				</span>
+				<span className="dashboard-sidebar__account-email" title={email}>
+					{displayEmail}
 				</span>
 			</div>
 			<button
 				type="button"
-				className="btn-pill-logout"
+				className="dashboard-sidebar__logout"
 				disabled={busy}
 				onClick={async () => {
 					setBusy(true);
@@ -45,11 +46,28 @@ const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel 
 						<span className="dot"></span>
 					</span>
 				) : (
-					<span className="btn-text">Cerrar sesión</span>
+					<>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							width="14"
+							height="14"
+							aria-hidden="true"
+						>
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+							<polyline points="16 17 21 12 16 7" />
+							<line x1="21" y1="12" x2="9" y2="12" />
+						</svg>
+						<span>Cerrar sesión</span>
+					</>
 				)}
 			</button>
 			{errorMessage ? (
-				<p className="dashboard-user-menu__error" role="alert" aria-live="polite">
+				<p className="dashboard-sidebar__account-error" role="alert" aria-live="polite">
 					{errorMessage}
 				</p>
 			) : null}

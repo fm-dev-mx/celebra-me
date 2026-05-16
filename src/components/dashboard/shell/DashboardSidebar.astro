@@ -1,6 +1,8 @@
 ---
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
+import { isNavItemActive } from '@/utils/dashboard';
 import DashboardUserMenu from './DashboardUserMenu';
+import Logo from '@/components/ui/Logo.astro';
 interface Props {
 	items: DashboardNavItem[];
 	currentPath: string;
@@ -13,6 +15,19 @@ interface Props {
 const { items, currentPath, isAdmin, userEmail, roleLabel, sidebarId = 'dashboard-sidebar' } =
 	Astro.props as Props;
 const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
+
+const navIcons: Record<string, string> = {
+	Invitados:
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+	Administración:
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+	'Códigos de acceso':
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.5 9.5"/><path d="M15 7l1 1"/><path d="M12 12l2 2"/></svg>',
+	Eventos:
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+	Usuarios:
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+};
 ---
 
 <aside
@@ -20,10 +35,16 @@ const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 	class="dashboard-sidebar"
 	aria-label="Navegación de dashboard"
 >
-	<div class="dashboard-sidebar__brand">
-		<a href="/dashboard/invitados">Celebra.me Panel</a>
+	<div class="dashboard-sidebar__header">
+		<a href="/dashboard/invitados"><Logo variant="white" altText="Celebra.me" /></a>
+		<button type="button" class="dashboard-sidebar__close" data-dashboard-close aria-label="Cerrar menú">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+				<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+			</svg>
+		</button>
 	</div>
-	<nav>
+	<div class="dashboard-sidebar__divider" role="separator"></div>
+	<nav class="dashboard-sidebar__nav">
 		<ul>
 			{
 				visibleItems.map((item) => (
@@ -31,18 +52,18 @@ const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 						<a
 							href={item.href}
 							class:list={{
-								active:
-									currentPath === item.href ||
-									(item.href !== '/dashboard/invitados' &&
-										currentPath.startsWith(`${item.href}/`)),
+								'dashboard-sidebar__nav-link': true,
+								active: isNavItemActive(item, currentPath),
 							}}
 						>
-							{item.label}
+							<span class="dashboard-sidebar__nav-icon" set:html={navIcons[item.label] || ''}></span>
+							<span>{item.label}</span>
 						</a>
 					</li>
 				))
 			}
 		</ul>
 	</nav>
+	<div class="dashboard-sidebar__spacer"></div>
 	<DashboardUserMenu client:load email={userEmail} roleLabel={roleLabel} />
 </aside>

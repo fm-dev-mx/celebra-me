@@ -4,6 +4,7 @@ import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astr
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
+import { isNavItemActive } from '@/utils/dashboard';
 import GoogleAnalytics from '@/components/common/GoogleAnalytics.astro';
 
 interface Props {
@@ -32,12 +33,7 @@ const navItems: DashboardNavItem[] = [
 	{ label: 'Eventos', href: '/dashboard/eventos', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
 ];
-const currentSectionLabel =
-	navItems.find(
-		(item) =>
-			item.href === Astro.url.pathname ||
-			(item.href !== '/dashboard/invitados' && Astro.url.pathname.startsWith(`${item.href}/`)),
-	)?.label ?? title;
+const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ?? title;
 
 const isProd = import.meta.env.PROD;
 const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
@@ -123,6 +119,9 @@ const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 
 		menuButton.addEventListener('click', toggleDashboardNav);
 		backdrop.addEventListener('click', closeDashboardNav);
+		sidebar.querySelectorAll('[data-dashboard-close]').forEach((btn) => {
+			btn.addEventListener('click', closeDashboardNav);
+		});
 		sidebar.querySelectorAll('a').forEach((link) => {
 			link.addEventListener('click', closeDashboardNav);
 		});

@@ -33,9 +33,9 @@
 	--dashboard-brand-accent-soft: rgb(var(--color-action-accent-rgb) / 10%);
 	--dashboard-surface-page: var(--color-surface-primary);
 	--dashboard-surface-canvas: var(--color-surface-canvas);
-	--dashboard-surface-card: rgb(255 255 255 / 86%);
-	--dashboard-surface-card-strong: rgb(255 255 255 / 92%);
-	--dashboard-surface-card-soft: rgb(255 255 255 / 78%);
+	--dashboard-surface-card: var(--color-surface-warm-ivory);
+	--dashboard-surface-card-strong: var(--color-surface-premium-card);
+	--dashboard-surface-card-soft: var(--color-surface-warm-ivory);
 	--dashboard-surface-panel: var(--color-glass-bg);
 	--dashboard-surface-elevated: var(--color-surface-elevated);
 	--dashboard-surface-inset: var(--color-surface-secondary);
@@ -78,11 +78,11 @@
 		),
 		var(--dashboard-surface-panel);
 	border: 1px solid var(--dashboard-border-premium);
-	border-radius: 20px;
+	border-radius: 16px;
 	padding: clamp(1.25rem, 2vw, 1.75rem);
-	box-shadow: var(--shadow-premium);
+	box-shadow: var(--shadow-warm);
 	color: var(--dashboard-text-primary);
-	backdrop-filter: blur(14px) saturate(140%);
+	backdrop-filter: blur(8px) saturate(140%);
 }
 
 .dashboard-status {
