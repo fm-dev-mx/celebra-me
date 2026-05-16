@@ -6,71 +6,57 @@ interface GuestSummaryProps {
 }
 
 const GuestSummary: React.FC<GuestSummaryProps> = ({ totals }) => {
-	const deliveryPercentage =
-		totals.totalInvitations > 0
-			? Math.round((totals.sharedInvitations / totals.totalInvitations) * 100)
-			: 0;
 	const isDeliveryComplete =
 		totals.totalInvitations > 0 && totals.sharedInvitations === totals.totalInvitations;
 
 	return (
 		<section className="guest-summary" aria-label="Resumen de invitados">
-			<div className="guest-summary__grid">
-				<div className="guest-summary__row">
-					<div className="guest-summary__metric">
-						<span className="guest-summary__label">Enviadas</span>
+			<div className="guest-summary__inner">
+				<div className="guest-summary__primary">
+					<div className="guest-summary__metric guest-summary__metric--large">
 						<span className="guest-summary__value">
-							{totals.sharedInvitations}/{totals.totalInvitations}
-							<span className="guest-summary__pct"> · {deliveryPercentage}%</span>
+							{totals.sharedInvitations}
+							<span className="guest-summary__value-separator">/</span>
+							{totals.totalInvitations}
 						</span>
+						<span className="guest-summary__label">Invitaciones</span>
 					</div>
 
 					<div className="guest-summary__divider" aria-hidden="true" />
 
 					<div className="guest-summary__metric">
-						<span className="guest-summary__label">Vistas</span>
-						<span className="guest-summary__value">
-							{totals.viewed}
-							{totals.sharedInvitations > 0 && (
-								<span className="guest-summary__pct">
-									{' '}
-									· {Math.round((totals.viewed / totals.sharedInvitations) * 100)}
-									%
-								</span>
-							)}
-						</span>
-					</div>
-
-					<div className="guest-summary__divider" aria-hidden="true" />
-
-					<div className="guest-summary__metric">
-						<span className="guest-summary__label">Confirmadas</span>
 						<span className="guest-summary__value">{totals.confirmedInvitations}</span>
+						<span className="guest-summary__label">Confirmadas</span>
 					</div>
 
 					<div className="guest-summary__divider" aria-hidden="true" />
 
 					<div className="guest-summary__metric">
-						<span className="guest-summary__label">Denegadas</span>
-						<span className="guest-summary__value">{totals.declinedInvitations}</span>
-					</div>
-
-					<div className="guest-summary__divider" aria-hidden="true" />
-
-					<div className="guest-summary__metric">
-						<span className="guest-summary__label">Asistentes</span>
 						<span className="guest-summary__value">
-							{totals.confirmedPeople}/{totals.totalPeople}
+							{totals.confirmedPeople}
+							<span className="guest-summary__value-small">/</span>
+							{totals.totalPeople}
 						</span>
+						<span className="guest-summary__label">Asistentes</span>
+					</div>
+				</div>
+
+				<div className="guest-summary__secondary">
+					<div className="guest-summary__metric guest-summary__metric--compact">
+						<span className="guest-summary__value">{totals.viewed}</span>
+						<span className="guest-summary__label">Vistas</span>
+					</div>
+
+					<div className="guest-summary__metric guest-summary__metric--compact">
+						<span className="guest-summary__value">{totals.declinedInvitations}</span>
+						<span className="guest-summary__label">Denegadas</span>
 					</div>
 
 					{isDeliveryComplete && (
-						<>
-							<div className="guest-summary__divider" aria-hidden="true" />
-							<div className="guest-summary__metric guest-summary__metric--badge">
-								<span className="guest-summary__badge">Entrega completa</span>
-							</div>
-						</>
+						<div className="guest-summary__badge">
+							<span className="guest-summary__badge-dot" aria-hidden="true" />
+							<span>Entrega completa</span>
+						</div>
 					)}
 				</div>
 			</div>
