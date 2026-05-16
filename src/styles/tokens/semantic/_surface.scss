@@ -14,6 +14,8 @@ $semantic-surface: (
 		subtle: sys.$sys-shadow-subtle,
 		emphasis: sys.$sys-shadow-emphasis,
 		premium: sys.$sys-shadow-premium,
+		warm: sys.$sys-shadow-warm,
+		warm-emphasis: sys.$sys-shadow-warm-emphasis,
 	),
 );
 
@@ -27,8 +29,6 @@ $semantic-surface: (
 	--shadow-subtle: #{sys.$sys-shadow-subtle};
 	--shadow-emphasis: #{sys.$sys-shadow-emphasis};
 	--shadow-premium: #{sys.$sys-shadow-premium};
-}
-
-@function surface($group, $token) {
-	@return tools.token($semantic-surface, $group, $token);
+	--shadow-warm: #{sys.$sys-shadow-warm};
+	--shadow-warm-emphasis: #{sys.$sys-shadow-warm-emphasis};
 }

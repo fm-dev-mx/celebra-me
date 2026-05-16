@@ -11,6 +11,8 @@ $semantic-color: (
 		elevated: sys.$sys-color-neutral-0,
 		canvas: sys.$sys-color-coffee-900,
 		dark: sys.$sys-color-coffee-900,
+		warm-ivory: #{color.mix(sys.$sys-color-parchment-100, sys.$sys-color-gold-100, 95%)},
+		premium-card: sys.$sys-color-neutral-0,
 	),
 	text: (
 		primary: sys.$sys-color-coffee-900,
@@ -83,6 +85,12 @@ $semantic-color: (
 	--color-surface-canvas: #{sys.$sys-color-coffee-900};
 	--color-surface-dark: #{sys.$sys-color-coffee-900};
 	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-surface-warm-ivory: #{color.mix(
+			sys.$sys-color-parchment-100,
+			sys.$sys-color-gold-100,
+			95%
+		)};
+	--color-surface-premium-card: #{sys.$sys-color-neutral-0};
 	--color-text-primary: #{sys.$sys-color-coffee-900};
 	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
 	--color-text-secondary: #{sys.$sys-color-coffee-700};
@@ -142,8 +150,4 @@ $semantic-color: (
 			6%
 		)};
 	--color-envelope-seal-gold: #{sys.$sys-color-gold-500};
-}
-
-@function color($group, $token) {
-	@return tools.token($semantic-color, $group, $token);
 }
