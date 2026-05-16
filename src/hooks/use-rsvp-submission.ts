@@ -46,12 +46,13 @@ export function useRsvpSubmission({
 	const [name, setName] = useState(initialName);
 	const [phone, setPhone] = useState('');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(null);
-	const [attendeeCount, setAttendeeCount] = useState<number | string>(1);
+	const contextGuestCap = Number(
+		isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap,
+	);
+	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
+	const [attendeeCount, setAttendeeCount] = useState<number | string>(effectiveGuestCap);
 	const [notes, setNotes] = useState('');
 	const [nameLocked] = useState(isDemoPreview || Boolean(initialData?.fullName));
-	const [contextGuestCap] = useState<number>(
-		Number(isDemoPreview ? guestCap : initialData?.maxAllowedAttendees || guestCap),
-	);
 	const [rsvpId, setRsvpId] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
@@ -75,7 +76,6 @@ export function useRsvpSubmission({
 	const attendanceRef = useRef<HTMLDivElement>(null);
 	const guestCountRef = useRef<HTMLInputElement>(null);
 
-	const effectiveGuestCap = Math.max(1, Number(contextGuestCap || guestCap));
 	const supportsPlusOnes = effectiveGuestCap > 1;
 	// Show phone field for public/hybrid access RSVPs
 	const isPersonalized = isDemoPreview || Boolean(initialData?.inviteId);
