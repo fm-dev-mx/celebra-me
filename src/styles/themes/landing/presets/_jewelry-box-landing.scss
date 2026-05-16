@@ -167,13 +167,8 @@
 	--pricing-premium-bg: #{color.change(sys.$sys-color-slate-600, $alpha: 0.02)};
 	--pricing-premium-border: var(--color-action-accent);
 	--pricing-premium-shadow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
-	--pricing-premium-scale: 1.05;
+	--pricing-premium-scale: 1.03;
 	--pricing-premium-badge-bg: var(--color-action-accent);
-	--pricing-elite-bg: #{color.change(sys.$sys-color-slate-900, $alpha: 0.9)};
-	--pricing-elite-border: var(--color-surface-secondary);
-	--pricing-elite-shadow: 0 20px 50px rgb(0 0 0 / 20%);
-	--pricing-elite-text-color: var(--color-text-on-dark-slate);
-	--pricing-elite-accent-color: var(--color-surface-secondary);
 	--pricing-tier-name-color: var(--color-surface-dark);
 	--pricing-tier-desc-color: var(--color-text-primary);
 	--pricing-tier-price-color: var(--color-surface-dark);

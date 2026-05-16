@@ -9,7 +9,7 @@ export const landingData: LandingPageData = {
 			desktopUrl:
 				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			mobileUrl:
-				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
+				'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800&h=1200',
 		},
 		primaryCtaLabel: 'Crea tu Invitación',
 		primaryCtaUrl: '#contacto',
@@ -99,32 +99,41 @@ export const landingData: LandingPageData = {
 		title: 'Planes a tu medida',
 		tiers: [
 			{
-				title: 'Básico',
-				description: 'Lo esencial para tu evento.',
+				title: 'Esencial',
+				description: 'Una experiencia digital elegante para compartir tu celebración.',
 				price: { amount: '499', currency: 'MXN', period: 'pago único' },
-				features: ['Invitación Digital', 'Confirmación RSVP', 'Ubicación Maps'],
-				cta: 'Elegir Básico',
+				features: [
+					'Invitación digital personalizada',
+					'Confirmación inteligente de invitados',
+					'Ubicación interactiva con navegación',
+				],
+				cta: 'Elegir Esencial',
 				href: '#contacto',
 			},
 			{
 				title: 'Premium',
-				description: 'La mejor experiencia para tus invitados.',
+				description: 'La opción más completa para una invitación memorable y cuidada.',
 				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				features: ['Todo lo del Básico', 'Galería de Fotos', 'Mesa de Regalos'],
+				features: [
+					'Todo lo de Esencial, y más',
+					'Galería editorial de fotos',
+					'Integración elegante de mesa de regalos',
+				],
 				cta: 'Elegir Premium',
 				href: '#contacto',
 			},
 			{
-				title: 'Personalizado',
-				description: 'Para eventos únicos que requieren atención a medida.',
+				title: 'A la Medida',
+				description:
+					'Para celebraciones únicas que requieren diseño, atención y detalle personalizado.',
 				price: { amount: 'Consultar', currency: '', period: '' },
 				features: [
-					'Todo lo del Premium',
-					'Diseño desde cero',
-					'Asistente personal 24/7',
-					'Hosting ilimitado',
+					'Todo lo de Premium, y más',
+					'Diseño visual creado a la medida',
+					'Acompañamiento personalizado',
+					'Disponibilidad permanente de la invitación',
 				],
-				cta: 'Contactar',
+				cta: 'Solicitar propuesta',
 				href: '#contacto',
 				isElite: true,
 			},

@@ -58,7 +58,7 @@
 .pricing-grid {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: var(--spacing-3xl);
+	gap: var(--spacing-xl);
 	align-items: stretch; // Ensure cards have same height
 
 	@media (width >= 992px) {
@@ -68,7 +68,7 @@
 
 .pricing-card {
 	position: relative;
-	padding: var(--spacing-lg);
+	padding: var(--spacing-md);
 	background: var(--pricing-card-bg);
 	backdrop-filter: blur(var(--pricing-card-backdrop-blur));
 	border: 1px solid var(--pricing-card-border);
@@ -89,7 +89,7 @@
 		opacity: 100%;
 		transform: translateY(0);
 
-		@for $i from 0 through 5 {
+		@for $i from 0 through 2 {
 			&[data-index='#{$i}'] {
 				transition-delay: #{$i * 0.2}s;
 			}
@@ -109,7 +109,6 @@
 		background: var(--pricing-premium-bg);
 		border: 1px solid var(--pricing-premium-border);
 		box-shadow: var(--pricing-premium-shadow);
-		transform: translateY(30px);
 		z-index: 3;
 
 		&.is-visible {
@@ -149,44 +148,32 @@
 	}
 
 	&.is-elite {
-		background: var(--pricing-elite-bg);
-		border: 1px solid var(--pricing-elite-border);
-		box-shadow: var(--pricing-elite-shadow);
-
-		.tier-name,
-		.tier-desc,
-		.tier-price .amount,
-		.feature-item {
-			color: var(--pricing-elite-text-color);
-		}
-
-		.tier-desc {
-			opacity: 80%;
-		}
-
-		.tier-price .currency-symbol,
-		.tier-price .currency-code {
-			color: var(--pricing-elite-accent-color);
-		}
-
-		.tier-price .period {
+		.card-content::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 40%;
+			height: 1px;
+			background: var(--color-action-accent);
 			opacity: 50%;
 		}
 
 		.cta-button {
 			background: transparent;
-			border-color: var(--pricing-elite-accent-color);
-			color: var(--pricing-elite-accent-color);
+			border-color: var(--color-action-accent);
+			color: var(--color-action-accent);
 
 			&:hover {
-				background: var(--pricing-elite-accent-color);
+				background: var(--color-action-accent);
 				color: var(--color-surface-dark);
 			}
 		}
 
 		.feature-item.is-highlighted {
-			background: var(--pricing-feature-highlight-bg, rgb(255 255 255 / 10%));
-			color: var(--pricing-elite-text-color);
+			background: var(--pricing-feature-highlight-bg);
+			color: var(--pricing-feature-highlight-color);
 		}
 	}
 
@@ -209,12 +196,11 @@
 		font-size: 0.95rem;
 		color: var(--pricing-tier-desc-color);
 		opacity: 70%;
-		margin-bottom: var(--spacing-lg);
-		min-height: 3em;
+		margin-bottom: var(--spacing-md);
 	}
 
 	.tier-price {
-		margin-bottom: var(--spacing-lg);
+		margin-bottom: var(--spacing-md);
 		display: flex;
 		align-items: baseline;
 		gap: 4px;
@@ -248,7 +234,7 @@
 	.feature-list {
 		list-style: none;
 		padding: 0;
-		margin: 0 0 var(--spacing-xl) 0;
+		margin: 0 0 var(--spacing-lg) 0;
 		flex-grow: 1;
 	}
 
@@ -334,17 +320,5 @@
 		opacity: 0%;
 		transition: opacity 0.3s ease;
 		z-index: 1;
-
-		// Light catching effect
-		&::after {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			height: 1px;
-			background: var(--pricing-card-border-glow-shine);
-			opacity: 50%;
-		}
 	}
 }
