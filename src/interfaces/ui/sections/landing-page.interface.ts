@@ -39,21 +39,36 @@ export interface ServicesData {
 	}>;
 }
 
-export interface PricingData {
+export interface PricingSection {
 	title: string;
-	tiers: Array<{
-		title: string;
-		description: string;
-		price: {
-			amount: string;
-			currency: string;
-			period: string;
-		};
-		features: string[];
-		cta: string;
-		href: string;
-		isElite?: boolean;
-	}>;
+	items: string[];
+}
+
+export interface PricingTier {
+	id?: string;
+	title: string;
+	description: string;
+	badge?: string;
+	sections: PricingSection[];
+	price: {
+		amount: string;
+		currency: string;
+		period: string;
+	};
+	regularPrice?: string;
+	cta: string;
+	href: string;
+	isPrimary?: boolean;
+	isExclusive?: boolean;
+	footnote?: string;
+}
+
+export interface PricingData {
+	eyebrow: string;
+	title: string;
+	intro: string;
+	note: string;
+	tiers: PricingTier[];
 }
 
 export interface TestimonialsData {

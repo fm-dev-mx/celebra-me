@@ -96,46 +96,97 @@ export const landingData: LandingPageData = {
 		],
 	},
 	pricing: {
-		title: 'Planes a tu medida',
+		eyebrow: 'Inversión para tu celebración',
+		title: 'Tres formas de crear tu invitación digital',
+		intro: 'Todas las opciones incluyen invitación digital completa, confirmación de asistencia, panel de invitados y enlace personalizado. Elige el nivel de diseño y personalización que mejor se ajuste a tu celebración.',
+		note: 'Promoción de lanzamiento en diseños seleccionados de colección: desde $499 MXN. Precio regular desde $899 MXN.',
 		tiers: [
 			{
-				title: 'Esencial',
-				description: 'Una experiencia digital elegante para compartir tu celebración.',
+				title: 'Colección',
+				description: 'Diseños seleccionados, elegantes y listos para personalizar.',
+				badge: 'Promoción de lanzamiento',
 				price: { amount: '499', currency: 'MXN', period: 'pago único' },
-				features: [
-					'Invitación digital personalizada',
-					'Confirmación inteligente de invitados',
-					'Ubicación interactiva con navegación',
+				regularPrice: 'Precio regular desde $899 MXN',
+				sections: [
+					{
+						title: 'Ideal para',
+						items: [
+							'Entregas ágiles en 24 horas hábiles*',
+							'Eventos que necesitan un resultado elegante',
+							'Quienes desean organizar y dar seguimiento a sus invitados',
+						],
+					},
+					{
+						title: 'Incluye',
+						items: [
+							'Diseño listo para adaptar a tu evento',
+							'Personalización de fotos, textos y fechas',
+							'Ajuste de colores y música',
+							'Galería, ubicación y confirmación de asistencia',
+							'Panel para gestionar invitados',
+							'Enlace personalizado para compartir',
+						],
+					},
 				],
-				cta: 'Elegir Esencial',
+				footnote: '*Tiempo estimado una vez recibido el contenido completo del evento.',
+				cta: 'Elegir diseño de colección',
 				href: '#contacto',
 			},
 			{
-				title: 'Premium',
-				description: 'La opción más completa para una invitación memorable y cuidada.',
-				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				features: [
-					'Todo lo de Esencial, y más',
-					'Galería editorial de fotos',
-					'Integración elegante de mesa de regalos',
+				title: 'Adaptación Editorial',
+				description: 'Diseño ajustado con mayor intención visual para tu evento.',
+				badge: 'Más recomendado',
+				isPrimary: true,
+				price: { amount: '1,499', currency: 'MXN', period: 'pago único' },
+				sections: [
+					{
+						title: 'Ideal para',
+						items: [
+							'Celebraciones con una estética más definida',
+							'Quienes buscan una invitación más exclusiva',
+						],
+					},
+					{
+						title: 'Diferencial',
+						items: [
+							'Propuesta visual única para tu evento',
+							'Diseño adaptado a la identidad visual de tu evento',
+							'Composición más cuidada de fotografías, color y tipografía',
+							'Resultado más exclusivo y personalizado',
+						],
+					},
 				],
-				cta: 'Elegir Premium',
+				cta: 'Solicitar adaptación editorial',
 				href: '#contacto',
 			},
 			{
-				title: 'A la Medida',
-				description:
-					'Para celebraciones únicas que requieren diseño, atención y detalle personalizado.',
-				price: { amount: 'Consultar', currency: '', period: '' },
-				features: [
-					'Todo lo de Premium, y más',
-					'Diseño visual creado a la medida',
-					'Acompañamiento personalizado',
-					'Disponibilidad permanente de la invitación',
+				title: 'Diseño a la Medida',
+				description: 'Experiencia visual única creada desde cero.',
+				isExclusive: true,
+				price: { amount: 'Cotización personalizada', currency: '', period: '' },
+				regularPrice: 'Proyectos desde $2,500 MXN',
+				sections: [
+					{
+						title: 'Ideal para',
+						items: [
+							'Eventos exclusivos o de autor',
+							'Conceptos visuales muy específicos',
+							'Celebraciones que requieren una experiencia única',
+						],
+					},
+					{
+						title: 'Diferencial',
+						items: [
+							'Concepto creativo desde cero',
+							'Ilustración, composición o animación personalizada',
+							'Secciones especiales según el evento',
+							'Experiencia visual e interactiva personalizada',
+							'Acompañamiento prioritario',
+						],
+					},
 				],
-				cta: 'Solicitar propuesta',
+				cta: 'Solicitar propuesta personalizada',
 				href: '#contacto',
-				isElite: true,
 			},
 		],
 	},
@@ -143,28 +194,32 @@ export const landingData: LandingPageData = {
 		title: 'Preguntas Frecuentes',
 		faqs: [
 			{
-				question: '¿Cómo recibo mi invitación?',
-				answer: 'Una vez finalizado el diseño, recibirás un enlace personalizado (`celebra-me.com/tu-evento`) que podrás compartir instantáneamente vía WhatsApp, redes sociales o correo electrónico.',
+				question: '¿Qué opción me conviene?',
+				answer: 'Elige Colección si buscas una invitación rápida, elegante y lista para personalizar. Elige Adaptación Editorial si quieres una propuesta visual más cuidada y alineada al estilo de tu evento. Elige Diseño a la Medida si necesitas una experiencia completamente personalizada desde cero.',
+			},
+			{
+				question: '¿Todas las invitaciones incluyen las mismas secciones?',
+				answer: 'Sí. Todas las invitaciones pueden incluir portada, cuenta regresiva, itinerario, galería, ubicación, confirmación de asistencia, mesa de regalos, música, pase de acceso y otras secciones esenciales.',
+			},
+			{
+				question: 'Entonces, ¿qué cambia entre cada opción?',
+				answer: 'Lo que cambia es el nivel de diseño, dirección visual y personalización. No pagas por desbloquear secciones, sino por el grado de adaptación estética, composición y detalle de tu invitación.',
+			},
+			{
+				question: '¿Incluye sistema para registrar y enviar invitaciones?',
+				answer: 'Sí. Incluye un panel para registrar invitados, organizarlos por grupos, definir acompañantes, enviar enlaces personalizados por WhatsApp y consultar si cada invitación ya fue vista, incluyendo un avance aproximado de visualización.',
+			},
+			{
+				question: '¿Cómo reciben la invitación mis invitados?',
+				answer: 'Cada invitado puede recibir un enlace personalizado por WhatsApp, redes sociales o correo. Si actualizas información después, los cambios se reflejan en el mismo enlace.',
 			},
 			{
 				question: '¿Puedo realizar cambios después de publicar?',
-				answer: 'Por supuesto. Nuestra plataforma permite ediciones ilimitadas en tiempo real. Si cambias de opinión sobre una foto o actualizas la mesa de regalos, el enlace reflejará los cambios al instante sin necesidad de reenviarlo.',
+				answer: 'Sí. Puedes solicitar ajustes en datos, imágenes o secciones. El alcance de los cambios depende del nivel contratado y del momento en que se soliciten.',
 			},
 			{
-				question: '¿Cómo funciona la confirmación de asistencia?',
-				answer: 'Tus invitados confirman su asistencia directamente en la invitación. Tú recibes una notificación y puedes consultar la lista actualizada de asistentes, alergias alimentarias y mensajes especiales en tu panel privado.',
-			},
-			{
-				question: '¿Es compatible con todos los dispositivos?',
-				answer: 'Sí, cada invitación está optimizada para ofrecer una experiencia fluida y elegante tanto en teléfonos inteligentes de última generación como en tabletas y computadoras de escritorio.',
-			},
-			{
-				question: '¿Tienen servicios de diseño personalizado?',
-				answer: 'Para el plan Élite, asignamos un diseñador experto que trabajará mano a mano contigo para crear una pieza digital única desde cero, alineada al concepto artístico de tu evento.',
-			},
-			{
-				question: '¿Mi invitación caduca después del evento?',
-				answer: 'No. Tu invitación permanece activa y accesible para que tú y tus invitados puedan revivir los momentos y ver la galería de fotos incluso después de la celebración.',
+				question: '¿La promoción de $499 aplica para cualquier diseño?',
+				answer: 'No. La promoción de $499 MXN aplica solo para diseños seleccionados de colección. Adaptaciones editoriales y diseños a la medida se cotizan por separado.',
 			},
 		],
 	},
