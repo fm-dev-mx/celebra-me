@@ -1,5 +1,4 @@
 ---
-// src/components/home/Pricing.astro
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
 
 interface Props {
@@ -14,62 +13,70 @@ const { data } = Astro.props;
 
 	<div class="container">
 		<header class="pricing-header">
-			<span class="pricing-pretitle">Inversión para tu gran día</span>
+			<span class="pricing-eyebrow">{data.eyebrow}</span>
 			<h2 class="pricing-title">{data.title}</h2>
-			<p class="pricing-subtitle">
-				Selecciona la experiencia que mejor se adapte a tu celebración.
-			</p>
+			<p class="pricing-intro">{data.intro}</p>
+			<p class="pricing-note">{data.note}</p>
 		</header>
 
 		<div class="pricing-grid">
 			{
-				data.tiers.map((tier, index) => {
-					const isPremium = tier.title === 'Premium';
-					const isElite = tier.isElite;
+				data.tiers.map((tier, index) => (
+					<article
+						class:list={[
+							'pricing-card',
+							{ 'is-primary': tier.isPrimary },
+							{ 'is-exclusive': tier.isExclusive },
+						]}
+						data-index={index}
+					>
+						{tier.badge && <div class="pricing-badge">{tier.badge}</div>}
 
-					return (
-						<article
-							class:list={[
-								'pricing-card',
-								{ 'is-premium': isPremium },
-								{ 'is-elite': isElite }
-							]}
-							data-index={index}
-						>
-							{isPremium && <div class="premium-badge">MÁS ELEGIDO</div>}
+						<div class="card-content">
+							<h3 class="tier-name">{tier.title}</h3>
+							<p class="tier-desc">{tier.description}</p>
 
-							<div class="card-content">
-								<h3 class="tier-name">{tier.title}</h3>
-								<p class="tier-desc">{tier.description}</p>
-
-								<div class="tier-price">
-									{tier.price.amount !== 'Consultar' && <span class="currency-symbol">$</span>}
-									<span class="amount">{tier.price.amount}</span>
-									{tier.price.currency && <span class="currency-code">{tier.price.currency}</span>}
-									{tier.price.period && <span class="period">/ {tier.price.period}</span>}
-								</div>
-
-								<ul class="feature-list">
-									{tier.features.map((feature) => (
-										<li class="feature-item" data-feature={feature.toLowerCase().replace(/\s+/g, '-')}>
-											<svg viewBox="0 0 20 20" fill="currentColor" class="check-icon" aria-hidden="true">
-												<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-											</svg>
-											<span>{feature}</span>
-										</li>
-									))}
-								</ul>
-
-								<a href={tier.href} class="cta-button" aria-label={`Elegir plan ${tier.title}`}>
-									<span>{tier.cta}</span>
-									<div class="glint" aria-hidden="true"></div>
-								</a>
+							<div class="tier-price">
+								{tier.price.currency ? (
+									<>
+										<span class="currency-symbol">$</span>
+										<span class="amount">{tier.price.amount}</span>
+										<span class="currency-code">{tier.price.currency}</span>
+										{tier.price.period && <span class="period">/ {tier.price.period}</span>}
+									</>
+								) : (
+									<span class="amount amount--text">{tier.price.amount}</span>
+								)}
 							</div>
 
-							<div class="card-border"></div>
-						</article>
-					);
-				})
+							{tier.regularPrice && <p class="regular-price">{tier.regularPrice}</p>}
+
+							<div class="pricing-sections">
+								{tier.sections.map((section) => (
+									<div class="pricing-section">
+										<h4 class="section-title">{section.title}</h4>
+										<ul class="section-items">
+											{section.items.map((item) => (
+												<li class="section-item">
+													<svg viewBox="0 0 20 20" fill="currentColor" class="check-icon" aria-hidden="true">
+														<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+													</svg>
+													<span>{item}</span>
+												</li>
+											))}
+										</ul>
+									</div>
+								))}
+							</div>
+
+							{tier.footnote && <p class="tier-footnote">{tier.footnote}</p>}
+
+							<a href={tier.href} class="cta-button" aria-label={`Elegir plan ${tier.title}`}>
+								{tier.cta}
+							</a>
+						</div>
+					</article>
+				))
 			}
 		</div>
 	</div>
@@ -87,35 +94,4 @@ const { data } = Astro.props;
 			rootMargin: '0px 0px -100px 0px',
 		}
 	);
-
-	document.querySelectorAll('.feature-item').forEach((item) => {
-		if (!(item instanceof HTMLElement)) {
-			return;
-		}
-
-		const highlight = () => {
-			const feature = item.dataset.feature;
-			if (!feature) {
-				return;
-			}
-
-			document
-				.querySelectorAll(`.feature-item[data-feature="${feature}"]`)
-				.forEach((element) => element.classList.add('is-highlighted'));
-		};
-
-		const unhighlight = () => {
-			const feature = item.dataset.feature;
-			if (!feature) {
-				return;
-			}
-
-			document
-				.querySelectorAll(`.feature-item[data-feature="${feature}"]`)
-				.forEach((element) => element.classList.remove('is-highlighted'));
-		};
-
-		item.addEventListener('mouseenter', highlight);
-		item.addEventListener('mouseleave', unhighlight);
-	});
 </script>
