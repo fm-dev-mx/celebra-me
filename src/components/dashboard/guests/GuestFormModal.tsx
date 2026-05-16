@@ -279,7 +279,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 															| 'declined',
 													)
 												}
-												className="dashboard-form-field__input"
 											>
 												<option value="pending">Pendiente</option>
 												<option value="confirmed">Confirmado</option>
@@ -297,7 +296,6 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 												onChange={(event) =>
 													setAttendeeCount(Number(event.target.value))
 												}
-												className="dashboard-form-field__input"
 											/>
 										</div>
 										<div className="dashboard-form-field dashboard-form-field--full">
@@ -310,9 +308,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 												onChange={(event) =>
 													setGuestComment(event.target.value)
 												}
-												rows={3}
+												rows={2}
 												placeholder="Mensaje o nota especial..."
-												className="dashboard-form-field__textarea"
 											/>
 										</div>
 									</div>

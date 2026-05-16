@@ -1,57 +1,33 @@
-@use '../tokens' as tokens;
-@use 'sass:color';
-
-@mixin tactile-button-shadow($button-color, $shadow-alpha) {
-	box-shadow:
-		0 3px 0 #{color.adjust($button-color, $lightness: -10%)},
-		0 6px 12px rgba($button-color, $shadow-alpha);
-}
-
-@mixin tactile-button-hover($button-color, $shadow-alpha) {
-	background: color.adjust($button-color, $lightness: -4%);
-	box-shadow:
-		0 4px 0 #{color.adjust($button-color, $lightness: -10%)},
-		0 8px 16px rgba($button-color, $shadow-alpha);
-}
-
-@mixin tactile-button-active($button-color, $shadow-alpha) {
-	transform: translateY(2px);
-	box-shadow:
-		0 1px 0 #{color.adjust($button-color, $lightness: -10%)},
-		0 3px 6px rgba($button-color, $shadow-alpha);
-}
-
 .btn-primary,
 .btn-secondary,
 .btn-accent {
-	font-family: inherit;
-	font-weight: var(--font-weight-bold);
-	padding: 0 2rem;
+	font-family: var(--font-ui);
+	font-weight: 500;
+	padding: 0 0.875rem;
 	border-radius: 8px;
 	cursor: pointer;
-	text-transform: uppercase;
-	letter-spacing: var(--letter-spacing-wide);
-	font-size: clamp(0.6rem, 1vw, 0.85rem);
+	font-size: 0.75rem;
 	border: 1px solid transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 48px;
+	min-height: 38px;
 	position: relative;
 	overflow: hidden;
 	transition:
-		background-color var(--duration-snappy) var(--ease-standard),
-		border-color var(--duration-snappy) var(--ease-standard),
-		transform var(--duration-snappy) var(--ease-standard),
-		box-shadow var(--duration-snappy) var(--ease-standard);
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.15s ease,
+		box-shadow 0.2s ease;
+	letter-spacing: 0.01em;
 
 	&::after {
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(rgb(255 255 255 / 10%), transparent);
+		background: linear-gradient(rgb(255 255 255 / 8%), transparent);
 		opacity: 0%;
-		transition: opacity var(--duration-fast) var(--ease-standard);
+		transition: opacity 0.15s ease;
 	}
 
 	&:hover::after {
@@ -62,92 +38,100 @@
 .btn-primary {
 	background: var(--dashboard-brand-primary);
 	color: var(--dashboard-text-inverse);
-
-	@include tactile-button-shadow(tokens.color(action, primary), 0.22);
+	box-shadow: var(--shadow-subtle);
 
 	&:hover {
-		@include tactile-button-hover(tokens.color(action, primary), 0.3);
+		filter: brightness(1.08);
+		box-shadow: var(--shadow-emphasis);
+		transform: translateY(-1px);
 	}
 
 	&:active {
-		@include tactile-button-active(tokens.color(action, primary), 0.22);
+		transform: translateY(0);
+		box-shadow: var(--shadow-subtle);
+		filter: brightness(1.02);
 	}
 
 	&--danger {
 		background: var(--dashboard-state-danger);
 
-		@include tactile-button-shadow(tokens.color(state, danger), 0.2);
-
 		&:hover {
-			@include tactile-button-hover(tokens.color(state, danger), 0.3);
-		}
-
-		&:active {
-			@include tactile-button-active(tokens.color(state, danger), 0.2);
+			filter: brightness(1.08);
 		}
 	}
 }
 
 .btn-secondary {
-	background: var(--dashboard-surface-elevated);
+	background: var(--color-surface-elevated);
 	border-color: var(--dashboard-border-subtle);
-	color: var(--dashboard-text-primary);
+	color: var(--color-text-primary);
+	box-shadow: none;
 
 	&:hover {
-		background: var(--dashboard-surface-card-strong);
-		border-color: var(--dashboard-border-strong);
+		background: var(--color-surface-warm-ivory);
+		border-color: var(--dashboard-border-premium);
+		box-shadow: var(--shadow-subtle);
+	}
+
+	&:active {
+		background: var(--color-surface-soft);
 	}
 }
 
 .btn-accent {
 	background: var(--dashboard-brand-accent-soft);
-	border-color: var(--dashboard-brand-border-strong);
+	border-color: var(--dashboard-brand-border);
 	color: var(--dashboard-text-brand);
 
 	&:hover {
-		background: color-mix(in srgb, var(--dashboard-brand-accent) 18%, white);
+		background: rgb(var(--color-action-accent-rgb) / 16%);
 		border-color: var(--dashboard-brand-border-strong);
 	}
 }
 
 .btn-icon {
-	background: var(--color-surface-secondary);
+	background: var(--color-surface-elevated);
 	border: 1px solid var(--color-border-subtle);
-	padding: 0.6rem;
+	padding: 0.5rem;
 	border-radius: 8px;
 	cursor: pointer;
-	font-size: 1.1rem;
+	font-size: 1rem;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	transition:
-		background-color var(--duration-snappy) var(--ease-standard),
-		border-color var(--duration-snappy) var(--ease-standard),
-		transform var(--duration-snappy) var(--ease-standard),
-		color var(--duration-snappy) var(--ease-standard);
-	color: var(--color-text-primary);
-	min-width: 44px;
-	min-height: 44px;
+		background-color 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.15s ease,
+		color 0.2s ease;
+	color: var(--color-text-secondary);
+	min-width: 38px;
+	min-height: 38px;
+	box-shadow: none;
 
 	&:hover {
-		background: var(--color-neutral-subtle);
-		border-color: var(--color-border-emphasis);
-		transform: translateY(-2px);
+		background: var(--color-surface-warm-ivory);
+		border-color: var(--color-action-accent);
+		transform: translateY(-1px);
 		color: var(--color-text-emphasis);
+	}
+
+	&:active {
+		transform: translateY(0);
 	}
 
 	&--danger {
 		color: var(--color-wax-seal);
 
 		&:hover {
-			background: rgb(var(--color-special-wax-seal-rgb), 0.1);
+			background: rgb(var(--color-special-wax-seal-rgb), 0.06);
 			border-color: var(--color-wax-seal);
 		}
 	}
 }
 
 .btn-secondary--modal {
-	min-width: 100px;
+	min-width: 90px;
 }
 
 .btn-secondary--postpone {
@@ -156,7 +140,13 @@
 }
 
 .btn--compact {
-	min-height: 38px;
-	padding: 0 0.85rem;
+	min-height: 34px;
+	padding: 0 0.75rem;
 	font-size: 0.72rem;
+}
+
+.btn--small {
+	min-height: 30px;
+	padding: 0 0.6rem;
+	font-size: 0.68rem;
 }
