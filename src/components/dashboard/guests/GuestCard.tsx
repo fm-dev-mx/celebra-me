@@ -1,5 +1,5 @@
-import React from 'react';
-import { CopyIcon, MessageIcon } from '@/components/common/icons/ui';
+import React, { useState } from 'react';
+import { CopyIcon, ChevronDownIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -31,78 +31,60 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onDelete,
 	onMarkShared,
 }) => {
+	const [expanded, setExpanded] = useState(false);
 	const isViewed = !!item.firstViewedAt;
 	const isShared = item.deliveryStatus === 'shared';
+	const hasTags = getGuestVisibleTags(item).length > 0;
 
 	return (
 		<article
 			className={`guest-card ${item.deliveryStatus === 'shared' ? 'guest-card--shared' : ''} ${isCelebrating || isHighlighted ? 'celebrate-success' : ''}`}
 			data-guest-id={item.guestId}
 		>
-			<div className="guest-card__header">
-				<div className="guest-card__name">
-					<span className="guest-card__number">
-						#{String(index + 1).padStart(2, '0')}
-					</span>
-					{item.fullName}
-				</div>
-				<div className={`status-pill status-pill--${item.attendanceStatus}`}>
-					<span className="status-pill__dot"></span>
-					{getGuestAttendanceLabel(item.attendanceStatus)}
-				</div>
-			</div>
-
-			<div className="guest-card__contact-row">
-				{item.phone && <span>Tel. {item.phone}</span>}
-				{item.email && <span>{item.email}</span>}
-				<span className="guest-tag">{formatGuestEntrySource(item)}</span>
-			</div>
-
-			{getGuestVisibleTags(item).length > 0 && (
-				<div className="guest-card__tags">
-					{getGuestVisibleTags(item).map((tag) => (
-						<span key={tag} className="guest-tag">
-							{tag}
+			<div className="guest-card__main">
+				<div className="guest-card__header">
+					<div className="guest-card__info">
+						<span className="guest-card__index">
+							#{String(index + 1).padStart(2, '0')}
 						</span>
-					))}
-				</div>
-			)}
-
-			{item.guestComment && (
-				<div className="guest-card__comment animate-pop-in">
-					<div className="guest-card__comment-label">
-						<MessageIcon size={14} />
-						<span>Nota</span>
+						<span className="guest-card__name">{item.fullName}</span>
 					</div>
-					<p className="guest-card__comment-text">{item.guestComment}</p>
-				</div>
-			)}
-
-			<div className="guest-card__stats">
-				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Asist.</span>
-					<span className="attendee-count">
-						<span className="attendee-count__current">{item.attendeeCount}</span>
-						<span className="attendee-count__separator">/</span>
-						<span className="attendee-count__max">{item.maxAllowedAttendees}</span>
+					<span className={`status-pill status-pill--${item.attendanceStatus}`}>
+						<span className="status-pill__dot" />
+						{getGuestAttendanceLabel(item.attendanceStatus)}
 					</span>
 				</div>
-				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Entrega</span>
+
+				<div className="guest-card__meta">
+					{item.phone && <span className="guest-card__contact">{item.phone}</span>}
+					{item.email && <span className="guest-card__contact">{item.email}</span>}
+					<span className="guest-tag">{formatGuestEntrySource(item)}</span>
+				</div>
+
+				<div className="guest-card__status-row">
+					<div className="guest-card__stat">
+						<span className="guest-card__stat-label">Asist.</span>
+						<span className="guest-card__stat-value">
+							{item.attendeeCount}
+							<span className="guest-card__stat-sep">/</span>
+							{item.maxAllowedAttendees}
+						</span>
+					</div>
+
 					<div className={`delivery-status delivery-status--${item.deliveryStatus}`}>
-						{isShared ? <span>Entregada</span> : <span>Por enviar</span>}
+						{isShared ? 'Entregada' : 'Por enviar'}
 					</div>
-				</div>
-				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Visto</span>
+
 					<div className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}>
-						{isViewed ? (
-							<span>{formatGuestDate(item.firstViewedAt).split(',')[0]}</span>
-						) : (
-							<span>—</span>
-						)}
+						{isViewed ? formatGuestDate(item.firstViewedAt).split(',')[0] : 'Sin ver'}
 					</div>
 				</div>
+
+				{item.guestComment && (
+					<div className="guest-card__comment" aria-label="Mensaje del invitado">
+						<p className="guest-card__comment-text">"{item.guestComment}"</p>
+					</div>
+				)}
 			</div>
 
 			<div className="guest-card__actions">
@@ -115,34 +97,63 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				/>
 				<button
 					type="button"
-					className="btn-icon"
-					title="Copiar enlace"
-					aria-label={`Copiar enlace de invitación de ${item.fullName}`}
-					onClick={async () => {
-						await navigator.clipboard.writeText(inviteUrl);
-					}}
+					className="guest-card__menu-btn"
+					title="Más opciones"
+					aria-label={`Opciones para ${item.fullName}`}
+					onClick={() => setExpanded(!expanded)}
 				>
-					<CopyIcon size={16} />
-				</button>
-				<button
-					type="button"
-					className="btn-icon"
-					title="Editar"
-					aria-label={`Editar invitado ${item.fullName}`}
-					onClick={() => onEdit(item)}
-				>
-					<EditGlyph size={16} />
-				</button>
-				<button
-					type="button"
-					className="btn-icon btn-icon--danger"
-					title="Eliminar"
-					aria-label={`Eliminar invitado ${item.fullName}`}
-					onClick={() => onDelete(item)}
-				>
-					<DeleteGlyph size={16} />
+					<ChevronDownIcon size={16} />
 				</button>
 			</div>
+
+			{expanded && (
+				<div className="guest-card__expanded">
+					{hasTags && (
+						<div className="guest-card__tags">
+							{getGuestVisibleTags(item).map((tag) => (
+								<span key={tag} className="guest-tag">
+									{tag}
+								</span>
+							))}
+						</div>
+					)}
+
+					<div className="guest-card__detail-actions">
+						<button
+							type="button"
+							className="guest-card__action-btn"
+							title="Copiar enlace"
+							aria-label={`Copiar enlace de ${item.fullName}`}
+							onClick={async () => {
+								await navigator.clipboard.writeText(inviteUrl);
+							}}
+						>
+							<CopyIcon size={14} />
+							<span>Copiar enlace</span>
+						</button>
+						<button
+							type="button"
+							className="guest-card__action-btn"
+							title="Editar"
+							aria-label={`Editar ${item.fullName}`}
+							onClick={() => onEdit(item)}
+						>
+							<EditGlyph size={14} />
+							<span>Editar</span>
+						</button>
+						<button
+							type="button"
+							className="guest-card__action-btn guest-card__action-btn--danger"
+							title="Eliminar"
+							aria-label={`Eliminar ${item.fullName}`}
+							onClick={() => onDelete(item)}
+						>
+							<DeleteGlyph size={14} />
+							<span>Eliminar</span>
+						</button>
+					</div>
+				</div>
+			)}
 		</article>
 	);
 };
