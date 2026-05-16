@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
@@ -69,7 +69,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		requestDelete,
 		setImportModalOpen,
 		setNotification,
-		shareSessionCount,
 	} = useGuestDashboardActions({
 		eventId,
 		items,
@@ -82,34 +81,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			'/': () => searchInputRef.current?.focus(),
 			n: openCreateModal,
 			e: editFirstGuestShortcut,
-			escape: closeModal,
-		},
-		!modalOpen,
-	);
-
-	useEffect(() => {
-		const isAnyModalOpen = modalOpen || deleteConfirmOpen || importModalOpen;
-
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === 'Escape' && isAnyModalOpen) {
+			escape: () => {
 				closeModal();
 				closeDeleteConfirm();
 				setImportModalOpen(false);
-			}
-		};
-
-		document.addEventListener('keydown', handleEscape);
-		return () => {
-			document.removeEventListener('keydown', handleEscape);
-		};
-	}, [
-		closeDeleteConfirm,
-		closeModal,
-		deleteConfirmOpen,
-		importModalOpen,
-		modalOpen,
-		setImportModalOpen,
-	]);
+			},
+		},
+		!modalOpen && !deleteConfirmOpen && !importModalOpen,
+	);
 
 	const sortedItems = useMemo(() => {
 		return [...items].sort((a, b) => {
@@ -125,12 +104,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestDashboardHeader
 					eventId={eventId}
 					hostEvents={hostEvents}
-					items={items}
-					loading={loading}
-					shareSessionCount={shareSessionCount}
 					totals={totals}
 					onEventChange={setEventId}
-					onOpenNextAction={openNextGeneratedGuest}
 				/>
 
 				<GuestFilters
