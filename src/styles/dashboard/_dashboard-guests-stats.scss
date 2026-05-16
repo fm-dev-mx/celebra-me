@@ -3,7 +3,7 @@
 .guest-summary {
 	margin-bottom: 1.5rem;
 	padding: 1.25rem 1.5rem;
-	background: var(--color-surface-warm-ivory);
+	background: var(--color-surface-elevated);
 	border: 1px solid var(--dashboard-border-premium);
 	border-radius: 12px;
 	box-shadow: var(--shadow-warm);
@@ -35,8 +35,8 @@
 	flex-wrap: wrap;
 
 	@media (width <= 480px) {
-		gap: 0.75rem;
-		padding-top: 0.75rem;
+		gap: 0.65rem;
+		padding-top: 0.65rem;
 		border-top: 1px solid var(--color-border-subtle);
 	}
 }
@@ -47,6 +47,7 @@
 	align-items: center;
 	text-align: center;
 	padding: 0 1.25rem;
+	position: relative;
 
 	&--large {
 		padding: 0 1.5rem 0 0;
@@ -69,10 +70,12 @@
 
 	.guest-summary__metric--large & {
 		font-size: 2.25rem;
+		color: var(--color-text-emphasis);
 	}
 
 	.guest-summary__metric--compact & {
 		font-size: 1.25rem;
+		color: var(--color-text-muted);
 	}
 }
 
@@ -90,10 +93,10 @@
 
 .guest-summary__label {
 	font-family: var(--font-ui);
-	font-size: 0.7rem;
+	font-size: 0.68rem;
 	font-weight: 500;
 	color: var(--color-text-muted);
-	margin-top: 0.25rem;
+	margin-top: 0.2rem;
 	font-variant: normal;
 	letter-spacing: 0.02em;
 	text-transform: none;
@@ -118,13 +121,13 @@
 .guest-summary__badge {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.4rem;
-	padding: 0.4rem 0.75rem;
+	gap: 0.35rem;
+	padding: 0.35rem 0.7rem;
 	background: rgb(var(--color-success-rgb) / 8%);
 	border: 1px solid rgb(var(--color-success-rgb) / 20%);
 	border-radius: 6px;
 	font-family: var(--font-ui);
-	font-size: 0.68rem;
+	font-size: 0.65rem;
 	font-weight: 600;
 	color: var(--color-success-text);
 	letter-spacing: 0.02em;
@@ -159,14 +162,14 @@
 		font-size: 1.5rem;
 
 		.guest-summary__metric--large & {
-			font-size: 1.75rem;
+			font-size: 1.85rem;
 		}
 	}
 }
 
 @media (width <= 480px) {
 	.guest-summary {
-		padding: 1rem;
+		padding: 0.9rem;
 	}
 
 	.guest-summary__metric {
@@ -174,18 +177,18 @@
 	}
 
 	.guest-summary__value {
-		font-size: 1.35rem;
+		font-size: 1.3rem;
 
 		.guest-summary__metric--large & {
-			font-size: 1.5rem;
+			font-size: 1.55rem;
 		}
 
 		.guest-summary__metric--compact & {
-			font-size: 1.1rem;
+			font-size: 0.95rem;
 		}
 	}
 
 	.guest-summary__label {
-		font-size: 0.62rem;
+		font-size: 0.6rem;
 	}
 }
