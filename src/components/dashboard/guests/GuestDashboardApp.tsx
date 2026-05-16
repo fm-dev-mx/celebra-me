@@ -94,7 +94,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		return [...items].sort((a, b) => {
 			if (a.deliveryStatus === 'generated' && b.deliveryStatus === 'shared') return -1;
 			if (a.deliveryStatus === 'shared' && b.deliveryStatus === 'generated') return 1;
-			return 0;
+			return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
 		});
 	}, [items]);
 
@@ -115,10 +115,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
 					onRefreshClick={loadGuests}
-					onCreateClick={openCreateModal}
 					onExportClick={handleExport}
 					onImportClick={openImportModal}
-					createDisabled={!eventId}
 				/>
 
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}

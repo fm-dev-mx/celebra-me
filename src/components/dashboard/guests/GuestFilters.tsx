@@ -5,12 +5,10 @@ interface GuestFiltersProps {
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	onSearchChange: (value: string) => void;
 	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
-	onCreateClick: () => void;
 	onImportClick: () => void;
 	onRefreshClick: () => void;
 	onExportClick: () => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
-	createDisabled?: boolean;
 }
 
 const GuestFilters: React.FC<GuestFiltersProps> = ({
@@ -18,12 +16,10 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	status,
 	onSearchChange,
 	onStatusChange,
-	onCreateClick,
 	onImportClick,
 	onRefreshClick,
 	onExportClick,
 	searchInputRef,
-	createDisabled,
 }) => {
 	return (
 		<div className="dashboard-guests__filters">
@@ -79,15 +75,6 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 						Actualizar
 					</button>
 				</div>
-
-				<button
-					type="button"
-					onClick={onCreateClick}
-					className="btn-primary btn--compact"
-					disabled={createDisabled}
-				>
-					Agregar invitado
-				</button>
 			</div>
 		</div>
 	);
