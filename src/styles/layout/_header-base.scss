@@ -23,7 +23,7 @@
 	--header-glass-blur: 20px;
 	--header-glass-saturate: 160%;
 	--header-scrolled-bg: rgb(0 0 0 / 92%);
-	--header-shadow: #{tokens.surface(shadow, emphasis)};
+	--header-shadow: var(--shadow-emphasis);
 	--header-border-color: rgb(255 255 255 / 10%);
 
 	// 4. Obsidian Noir Constants (Jewelry Box Architecture)
