@@ -23,7 +23,7 @@
 			transform var(--duration-snappy) var(--ease-standard);
 
 		&:hover {
-			background: rgb(var(--color-white-rgb) / 70%);
+			background: rgb(var(--color-white-rgb), 0.7);
 			transform: translateY(-1px);
 		}
 	}

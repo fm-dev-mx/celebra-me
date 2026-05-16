@@ -3,22 +3,22 @@
 
 @mixin tactile-button-shadow($button-color, $shadow-alpha) {
 	box-shadow:
-		0 4px 0 #{color.adjust($button-color, $lightness: -15%)},
-		0 8px 16px rgba($button-color, $shadow-alpha);
+		0 3px 0 #{color.adjust($button-color, $lightness: -10%)},
+		0 6px 12px rgba($button-color, $shadow-alpha);
 }
 
 @mixin tactile-button-hover($button-color, $shadow-alpha) {
-	background: color.adjust($button-color, $lightness: -5%);
+	background: color.adjust($button-color, $lightness: -4%);
 	box-shadow:
-		0 6px 0 #{color.adjust($button-color, $lightness: -15%)},
-		0 12px 24px rgba($button-color, $shadow-alpha);
+		0 4px 0 #{color.adjust($button-color, $lightness: -10%)},
+		0 8px 16px rgba($button-color, $shadow-alpha);
 }
 
 @mixin tactile-button-active($button-color, $shadow-alpha) {
 	transform: translateY(2px);
 	box-shadow:
-		0 2px 0 #{color.adjust($button-color, $lightness: -15%)},
-		0 4px 8px rgba($button-color, $shadow-alpha);
+		0 1px 0 #{color.adjust($button-color, $lightness: -10%)},
+		0 3px 6px rgba($button-color, $shadow-alpha);
 }
 
 .btn-primary,
@@ -153,4 +153,10 @@
 .btn-secondary--postpone {
 	border: 1px dashed var(--dashboard-border-strong);
 	color: var(--dashboard-text-secondary);
+}
+
+.btn--compact {
+	min-height: 38px;
+	padding: 0 0.85rem;
+	font-size: 0.72rem;
 }

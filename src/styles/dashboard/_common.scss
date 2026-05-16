@@ -1,24 +1,48 @@
 .dashboard-shell-body {
+	/* Slate & Gold — override core text/action/border tokens */
+	--color-text-primary: hsl(222deg 47% 11%);
+	--color-text-primary-rgb: 15 20 29;
+	--color-text-secondary: hsl(0deg 0% 18%);
+	--color-text-secondary-rgb: 46 46 46;
+	--color-text-muted: hsl(0deg 0% 32%);
+	--color-text-emphasis: hsl(222deg 40% 18%);
+	--color-text-emphasis-rgb: 28 36 66;
+	--color-text-on-dark: hsl(45deg 50% 95%);
+	--color-text-on-dark-rgb: 245 242 232;
+	--color-action-primary: hsl(222deg 47% 11%);
+	--color-action-primary-rgb: 15 20 29;
+	--color-action-secondary: hsl(222deg 40% 18%);
+	--color-action-secondary-rgb: 28 36 66;
+
+	/* --color-action-accent stays gold-500 from :root */
+
+	--color-border-subtle: hsl(0deg 0% 5% / 8%);
+	--color-border-premium: hsl(40deg 65% 55% / 25%);
+	--color-border-emphasis: hsl(40deg 65% 55%);
+	--color-surface-dark: hsl(222deg 47% 4%);
+	--color-surface-dark-rgb: 5 8 15;
+
+	/* Dashboard aliases — pick up the overrides above automatically */
 	--dashboard-brand-primary: var(--color-action-primary);
-	--dashboard-brand-primary-rgb: var(--color-action-primary-rgb, var(--color-text-primary-rgb));
+	--dashboard-brand-primary-rgb: var(--color-action-primary-rgb);
 	--dashboard-brand-accent: var(--color-action-accent);
 	--dashboard-brand-accent-rgb: var(--color-action-accent-rgb);
 	--dashboard-brand-emphasis: var(--color-text-emphasis);
 	--dashboard-brand-border: var(--color-border-premium);
 	--dashboard-brand-border-strong: var(--color-border-emphasis);
-	--dashboard-brand-accent-soft: rgb(var(--dashboard-brand-accent-rgb) / 12%);
+	--dashboard-brand-accent-soft: rgb(var(--color-action-accent-rgb) / 10%);
 	--dashboard-surface-page: var(--color-surface-primary);
 	--dashboard-surface-canvas: var(--color-surface-canvas);
-	--dashboard-surface-card: rgb(var(--color-white-rgb, 255 255 255) / 86%);
-	--dashboard-surface-card-strong: rgb(var(--color-white-rgb, 255 255 255) / 92%);
-	--dashboard-surface-card-soft: rgb(var(--color-white-rgb, 255 255 255) / 78%);
+	--dashboard-surface-card: rgb(255 255 255 / 86%);
+	--dashboard-surface-card-strong: rgb(255 255 255 / 92%);
+	--dashboard-surface-card-soft: rgb(255 255 255 / 78%);
 	--dashboard-surface-panel: var(--color-glass-bg);
 	--dashboard-surface-elevated: var(--color-surface-elevated);
 	--dashboard-surface-inset: var(--color-surface-secondary);
 	--dashboard-surface-sidebar: var(--color-surface-dark);
-	--dashboard-surface-sidebar-strong: rgb(var(--color-surface-dark-rgb) / 94%);
+	--dashboard-surface-sidebar-strong: rgb(var(--color-surface-dark-rgb) / 96%);
 	--dashboard-surface-sidebar-soft: rgb(var(--color-surface-dark-rgb) / 18%);
-	--dashboard-surface-overlay: rgb(var(--color-surface-dark-rgb) / 52%);
+	--dashboard-surface-overlay: rgb(var(--color-surface-dark-rgb) / 42%);
 	--dashboard-text-primary: var(--color-text-primary);
 	--dashboard-text-secondary: var(--color-text-secondary);
 	--dashboard-text-muted: var(--color-text-muted);
@@ -26,7 +50,7 @@
 	--dashboard-text-brand: var(--color-text-emphasis);
 	--dashboard-border-subtle: var(--color-border-subtle);
 	--dashboard-border-strong: var(--color-border-emphasis);
-	--dashboard-border-premium: var(--dashboard-brand-border);
+	--dashboard-border-premium: var(--color-border-premium);
 	--dashboard-state-success: var(--color-success);
 	--dashboard-state-success-bg: var(--color-success-bg);
 	--dashboard-state-success-border: var(--color-success-border);

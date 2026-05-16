@@ -43,7 +43,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				<div className="guest-card__name">
 					<span className="guest-card__number">
 						#{String(index + 1).padStart(2, '0')}
-					</span>{' '}
+					</span>
 					{item.fullName}
 				</div>
 				<div className={`status-pill status-pill--${item.attendanceStatus}`}>
@@ -52,9 +52,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				</div>
 			</div>
 
-			<div className="guest-card__contact">
-				{item.phone && <span className="guest-card__phone">Tel. {item.phone}</span>}
-				{item.email && <span className="guest-card__email">{item.email}</span>}
+			<div className="guest-card__contact-row">
+				{item.phone && <span>Tel. {item.phone}</span>}
+				{item.email && <span>{item.email}</span>}
 				<span className="guest-tag">{formatGuestEntrySource(item)}</span>
 			</div>
 
@@ -71,8 +71,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			{item.guestComment && (
 				<div className="guest-card__comment animate-pop-in">
 					<div className="guest-card__comment-label">
-						<MessageIcon size={16} />
-						<span>Nota del Invitado</span>
+						<MessageIcon size={14} />
+						<span>Nota</span>
 					</div>
 					<p className="guest-card__comment-text">{item.guestComment}</p>
 				</div>
@@ -80,7 +80,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 			<div className="guest-card__stats">
 				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Asistentes</span>
+					<span className="guest-card__stat-label">Asist.</span>
 					<span className="attendee-count">
 						<span className="attendee-count__current">{item.attendeeCount}</span>
 						<span className="attendee-count__separator">/</span>
@@ -88,7 +88,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</span>
 				</div>
 				<div className="guest-card__stat">
-					<span className="guest-card__stat-label">Estado</span>
+					<span className="guest-card__stat-label">Entrega</span>
 					<div className={`delivery-status delivery-status--${item.deliveryStatus}`}>
 						{isShared ? <span>Entregada</span> : <span>Por enviar</span>}
 					</div>
@@ -99,7 +99,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						{isViewed ? (
 							<span>{formatGuestDate(item.firstViewedAt).split(',')[0]}</span>
 						) : (
-							<span>Sin apertura</span>
+							<span>—</span>
 						)}
 					</div>
 				</div>

@@ -13,65 +13,30 @@
 }
 
 .dashboard-guests__stat {
-	@include core.glass-card-surface;
+	@include core.flat-card-surface;
 
-	border: 1px solid var(--color-glass-border);
-	border-radius: 18px;
-	padding: var(--spacing-lg);
+	border-radius: 12px;
+	padding: var(--spacing-md);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
 	transition:
-		transform var(--duration-snappy) var(--ease-standard),
 		border-color var(--duration-snappy) var(--ease-standard),
-		box-shadow var(--duration-snappy) var(--ease-standard),
-		background-color var(--duration-snappy) var(--ease-standard);
-	box-shadow: var(--shadow-subtle);
+		box-shadow var(--duration-snappy) var(--ease-standard);
 	position: relative;
-	overflow: hidden;
-
-	&::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		height: 4px;
-		background: var(--color-action-accent);
-		opacity: 0%;
-		transition: opacity 0.3s ease;
-	}
 
 	&:hover {
-		transform: translateY(-4px);
-		box-shadow: var(--shadow-emphasis);
-		border-color: rgb(var(--color-action-accent-rgb), 0.3);
-
-		&::after {
-			opacity: 100%;
-		}
+		border-color: var(--color-neutral-base);
+		box-shadow: var(--shadow-subtle);
 	}
 
 	strong {
 		font-family: var(--font-display-elegant);
-		font-size: 2.5rem;
-		color: var(--color-text-emphasis);
+		font-size: 2rem;
+		color: var(--color-text-primary);
 		line-height: 1.2;
-		margin-bottom: 0.25rem;
-	}
-
-	.stat-content {
-		display: flex;
-		align-items: baseline;
-		gap: 0.4rem;
-
-		small {
-			color: var(--color-text-secondary);
-			font-size: 1.1rem;
-			font-family: var(--font-ui);
-			white-space: nowrap;
-		}
+		margin-bottom: 0.2rem;
 	}
 
 	span {
@@ -85,7 +50,7 @@
 	small {
 		margin-top: 0.45rem;
 		font-size: 0.76rem;
-		color: rgb(var(--color-text-secondary-rgb), 0.9);
+		color: var(--color-neutral-muted);
 	}
 }
 
@@ -126,7 +91,11 @@
 
 	&__progress {
 		height: 100%;
-		background: linear-gradient(90deg, var(--color-action-primary), var(--color-action-accent));
+		background: linear-gradient(
+			90deg,
+			var(--color-text-primary),
+			var(--color-action-secondary)
+		);
 		border-radius: 3px;
 		transition: width 0.4s ease;
 		width: var(--eng-progress, 0%);

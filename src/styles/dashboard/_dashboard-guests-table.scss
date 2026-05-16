@@ -1,12 +1,10 @@
 @use 'dashboard-guests-core' as core;
 
 .dashboard-guests__table-wrap {
-	@include core.glass-card-surface(92%, 80%, var(--color-surface-soft));
+	@include core.flat-card-surface;
 
-	border: 1px solid var(--color-glass-border);
-	border-radius: 20px;
+	border-radius: 12px;
 	padding: 0;
-	box-shadow: var(--shadow-premium);
 	overflow: hidden;
 }
 
@@ -19,7 +17,7 @@
 	}
 
 	thead {
-		background: var(--color-neutral-subtle);
+		background: rgb(var(--color-action-secondary-rgb), 0.06);
 
 		@media (width <= 992px) {
 			display: none;
@@ -31,7 +29,7 @@
 		font-size: 0.7rem;
 		letter-spacing: var(--letter-spacing-wide);
 		color: var(--color-text-secondary);
-		border-bottom: 1px solid var(--color-border-subtle);
+		border-bottom: 1px solid rgb(var(--color-action-secondary-rgb), 0.12);
 		padding: 1.25rem 1.5rem;
 		text-align: left;
 		font-weight: var(--font-weight-bold);
@@ -39,19 +37,17 @@
 
 	tbody tr {
 		transition: background-color 0.2s ease;
-		border-bottom: 1px solid var(--color-border-subtle);
+		border-bottom: 1px solid rgb(var(--color-action-secondary-rgb), 0.08);
 
 		&:hover {
-			background-color: rgb(var(--color-action-accent-rgb), 0.03);
+			background-color: rgb(var(--color-action-secondary-rgb), 0.04);
 		}
 
 		&.row-shared {
-			opacity: 60%;
-			background-color: transparent;
+			opacity: 100%;
 
 			&:hover {
-				opacity: 100%;
-				background-color: rgb(var(--color-action-accent-rgb), 0.03);
+				background-color: rgb(var(--color-action-secondary-rgb), 0.04);
 			}
 
 			.guest-info__name {
@@ -93,7 +89,7 @@
 }
 
 .row-focus-highlight {
-	box-shadow: inset 0 0 0 1px rgb(var(--color-action-accent-rgb) / 30%);
+	box-shadow: inset 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.3);
 }
 
 .guest-field-error {

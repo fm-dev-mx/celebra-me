@@ -28,62 +28,65 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	return (
 		<div className="dashboard-guests__filters">
 			<div className="filter-group">
-				<label htmlFor="guest-search">Buscar por nombre o teléfono</label>
+				<label htmlFor="guest-search">Buscar</label>
 				<input
 					id="guest-search"
 					ref={searchInputRef}
 					type="search"
 					value={search}
 					onChange={(event) => onSearchChange(event.target.value)}
-					placeholder="Ej. Juan Pérez"
+					placeholder="Nombre o teléfono"
 				/>
 			</div>
 
-			<div className="filter-group">
-				<label htmlFor="status-filter">Filtrar por estado</label>
-				<select
-					id="status-filter"
-					value={status}
-					onChange={(event) => onStatusChange(event.target.value as typeof status)}
-				>
-					<option value="all">Todos los invitados</option>
-					<option value="pending">Pendientes</option>
-					<option value="confirmed">Confirmados</option>
-					<option value="declined">Declinados</option>
-					<option value="viewed">Vistos</option>
-				</select>
-			</div>
+			<div className="filter-row">
+				<div className="filter-group filter-group--compact">
+					<label htmlFor="status-filter">Filtro</label>
+					<select
+						id="status-filter"
+						value={status}
+						onChange={(event) => onStatusChange(event.target.value as typeof status)}
+					>
+						<option value="all">Todos</option>
+						<option value="pending">En espera</option>
+						<option value="confirmed">Confirmados</option>
+						<option value="declined">No asistirán</option>
+						<option value="viewed">Vistos</option>
+					</select>
+				</div>
 
-			<div className="header-actions">
-				<button
-					type="button"
-					onClick={onExportClick}
-					className="btn-secondary btn--utility"
-				>
-					Exportar CSV
-				</button>
-				<button
-					type="button"
-					onClick={onImportClick}
-					className="btn-secondary btn--utility"
-				>
-					Importar lista
-				</button>
-				<button
-					type="button"
-					onClick={onRefreshClick}
-					className="btn-secondary btn--utility"
-					title="Recargar lista"
-				>
-					Actualizar
-				</button>
+				<div className="filter-actions-group">
+					<button
+						type="button"
+						onClick={onExportClick}
+						className="btn-secondary btn--compact"
+					>
+						Exportar
+					</button>
+					<button
+						type="button"
+						onClick={onImportClick}
+						className="btn-secondary btn--compact"
+					>
+						Importar
+					</button>
+					<button
+						type="button"
+						onClick={onRefreshClick}
+						className="btn-secondary btn--compact"
+						title="Recargar lista"
+					>
+						Actualizar
+					</button>
+				</div>
+
 				<button
 					type="button"
 					onClick={onCreateClick}
-					className="btn-primary"
+					className="btn-primary btn--compact"
 					disabled={createDisabled}
 				>
-					Agregar Invitado
+					Agregar invitado
 				</button>
 			</div>
 		</div>

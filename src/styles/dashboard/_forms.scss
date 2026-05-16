@@ -21,7 +21,7 @@
 	&:focus {
 		outline: none;
 		border-color: var(--dashboard-brand-primary);
-		box-shadow: 0 0 0 3px rgb(var(--dashboard-brand-primary-rgb) / 12%);
+		box-shadow: 0 0 0 3px rgb(var(--dashboard-brand-primary-rgb), 0.12);
 	}
 }
 

@@ -5,10 +5,6 @@ import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
 const eventId = Astro.url.searchParams.get('eventId') ?? '';
 ---
 
-<DashboardLayout
-	title="Dashboard Invitados"
->
-	<div class="dashboard-card">
-		<GuestDashboardApp client:load initialEventId={eventId} />
-	</div>
+<DashboardLayout title="Dashboard Invitados">
+	<GuestDashboardApp client:load initialEventId={eventId} />
 </DashboardLayout>

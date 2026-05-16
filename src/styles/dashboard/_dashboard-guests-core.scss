@@ -1,5 +1,10 @@
 @use '../tokens' as tokens;
 
+@mixin flat-card-surface {
+	background: var(--color-surface-elevated);
+	border: 1px solid rgb(var(--color-action-secondary-rgb), 0.14);
+}
+
 @mixin glass-card-surface($top-alpha: 92%, $bottom-alpha: 78%, $base: var(--color-surface-soft)) {
 	background:
 		linear-gradient(
@@ -23,17 +28,17 @@
 .status-pill {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0.4rem 1rem;
-	border-radius: 30px;
-	font-size: 0.75rem;
+	gap: 0.4rem;
+	padding: 0.3rem 0.75rem;
+	border-radius: 6px;
+	font-size: 0.7rem;
 	font-weight: var(--font-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.04em;
 
 	&__dot {
-		width: 6px;
-		height: 6px;
+		width: 5px;
+		height: 5px;
 		border-radius: 50%;
 	}
 
@@ -68,10 +73,7 @@
 .dashboard-guests {
 	max-width: 1400px;
 	margin: 0 auto;
-	padding: var(--spacing-xl) clamp(var(--spacing-md), 5vw, var(--spacing-xl));
-
-	@include glass-card-surface(54%, 24%, var(--color-surface-primary));
-
+	padding: var(--spacing-lg) clamp(var(--spacing-md), 4vw, var(--spacing-xl));
 	min-height: calc(100vh - 64px);
 	color: var(--color-text-primary);
 	font-family: var(--font-ui);

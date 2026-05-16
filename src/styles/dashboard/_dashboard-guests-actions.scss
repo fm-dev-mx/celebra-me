@@ -30,11 +30,11 @@
 	min-width: 44px;
 	background: var(--dashboard-brand-primary);
 	color: var(--dashboard-text-inverse);
-	box-shadow: 0 2px 8px rgb(var(--dashboard-brand-primary-rgb) / 18%);
+	box-shadow: 0 2px 8px rgb(var(--dashboard-brand-primary-rgb), 0.18);
 
 	&:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgb(var(--dashboard-brand-primary-rgb) / 30%);
+		box-shadow: 0 4px 12px rgb(var(--dashboard-brand-primary-rgb), 0.3);
 	}
 
 	&:disabled {
