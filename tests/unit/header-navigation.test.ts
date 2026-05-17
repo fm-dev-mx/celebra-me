@@ -81,8 +81,8 @@ describe('Invitation header navigation contract', () => {
 		expect(source).toMatch(/--mobile-drawer-bg:/);
 	});
 
-	it('publishes the complete navigation token contract from the semantic token layer', () => {
-		const source = read('src/styles/tokens/semantic/_navigation.scss');
+	it('publishes the navigation token contract from _header-base.scss', () => {
+		const source = read('src/styles/layout/_header-base.scss');
 
 		[
 			'--mobile-drawer-link-color',
@@ -134,5 +134,34 @@ describe('Invitation header navigation contract', () => {
 
 	it('does not keep a TypeScript navigation config as a second source of truth', () => {
 		expect(fs.existsSync(path.join(projectRoot, 'src/config/navigation.ts'))).toBe(false);
+	});
+
+	it('includes a close button with data-nav-mobile-close attribute in NavBarMobile', () => {
+		const source = read('src/components/ui/header/NavBarMobile.astro');
+
+		expect(source).toContain('data-nav-mobile-close');
+		expect(source).toContain('header-base__mobile-close');
+		expect(source).toContain('aria-label="Cerrar menú"');
+	});
+
+	it('uses class-based overlay visibility instead of hidden attribute', () => {
+		const astroSource = read('src/components/ui/header/NavBarMobile.astro');
+		const scssSource = read('src/styles/layout/_header-base.scss');
+
+		expect(astroSource).toContain('header-base__mobile-overlay--visible');
+		expect(astroSource).not.toMatch(/overlay\.hidden\s*=/);
+		expect(scssSource).toContain('&--visible');
+		expect(scssSource).not.toContain('&[hidden]');
+	});
+
+	it('uses data-state attribute for menu transitions instead of hidden', () => {
+		const astroSource = read('src/components/ui/header/NavBarMobile.astro');
+		const scssSource = read('src/styles/layout/_header-base.scss');
+
+		expect(astroSource).toContain('data-state="closed"');
+		expect(astroSource).toMatch(/setAttribute\(['"]data-state['"]/);
+		expect(astroSource).not.toMatch(/menu\.hidden\s*=/);
+		expect(scssSource).toContain('[data-state="closed"]');
+		expect(scssSource).toContain('[data-state="open"]');
 	});
 });
