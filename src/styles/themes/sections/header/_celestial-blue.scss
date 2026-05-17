@@ -16,8 +16,6 @@
 	--header-nav-hover-color: var(--color-satin-blue);
 	--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-deep-blue-graphite-rgb) / 28%);
 	--header-nav-filter-transparent: none;
-	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 14%);
-	--header-border-scrolled: var(--header-border-bottom);
 	--header-nav-cta-bg: rgb(var(--color-diamond-white-rgb) / 10%);
 	--header-nav-cta-color: var(--color-diamond-white);
 	--header-nav-cta-border: rgb(var(--color-liquid-silver-rgb) / 50%);
@@ -52,7 +50,7 @@
 	}
 
 	&.header-base--scrolled {
-		border-bottom: var(--header-border-bottom);
+		border-bottom: var(--header-border-color);
 		backdrop-filter: blur(10px);
 	}
 }

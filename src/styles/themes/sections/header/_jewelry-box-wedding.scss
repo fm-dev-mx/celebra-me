@@ -1,3 +1,9 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
 .header-base[data-variant='jewelry-box-wedding'] {
 	--header-bg: transparent;
 	--header-bg-scrolled: var(--color-surface-primary);
@@ -17,7 +23,7 @@
 	--header-nav-cta-hover-color: var(--color-text-primary);
 	--header-nav-cta-hover-border: var(--color-action-accent);
 	--mobile-drawer-bg: var(--color-surface-primary);
-	--mobile-drawer-border: var(--color-action-accent);
+	--mobile-drawer-border: rgb(var(--color-action-accent-rgb) / 32%);
 	--mobile-drawer-link-color: var(--color-text-primary);
 	--mobile-drawer-link-hover: var(--color-text-emphasis);
 	--mobile-drawer-login-color: rgb(38 38 38 / 74%);

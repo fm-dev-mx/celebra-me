@@ -13,9 +13,9 @@
 	--header-nav-color-transparent: rgb(241 223 187 / 92%);
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 54%), 0 1px 16px rgb(0 0 0 / 34%);
 	--header-nav-filter-transparent: drop-shadow(0 4px 8px rgb(0 0 0 / 24%));
-	--header-border-bottom: 1px solid rgb(207 168 95 / 20%);
+	--header-border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
 	--mobile-drawer-bg: rgb(29 20 14 / 98%);
-	--mobile-drawer-border: rgb(var(--color-action-accent-rgb) / 22%);
+	--mobile-drawer-border: rgb(var(--color-action-accent-rgb) / 40%);
 	--mobile-drawer-link-hover: rgb(255 245 219 / 100%);
 	--mobile-drawer-login-color: rgb(var(--color-text-on-dark-rgb, 255 255 255) / 70%);
 	--mobile-drawer-login-hover-color: rgb(255 245 219 / 100%);

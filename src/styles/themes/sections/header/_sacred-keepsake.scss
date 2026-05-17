@@ -1,3 +1,9 @@
+/*
+ * Header Component Theme Hooks
+ * Defines standard CSS variables that the base Header component consumes
+ * but that are populated differently by each theme preset.
+ */
+
 .header-base[data-variant='sacred-keepsake'] {
 	--header-bg-scrolled: rgb(var(--color-ivory-warm-rgb) / 86%);
 	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
@@ -16,10 +22,8 @@
 	--header-nav-cta-hover-bg: rgb(var(--color-pure-ivory-rgb) / 42%);
 	--header-nav-cta-hover-color: rgb(var(--color-eternal-ink-rgb) / 92%);
 	--header-nav-cta-hover-border: rgb(var(--color-sacred-gold-rgb) / 58%);
-
-	// Mobile drawer tokens
 	--mobile-drawer-bg: rgb(var(--color-ivory-warm-rgb) / 99%);
-	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 16%);
+	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 26%);
 	--mobile-drawer-link-color: rgb(var(--color-eternal-ink-rgb) / 88%);
 	--mobile-drawer-link-hover: rgb(var(--color-eternal-ink-rgb) / 96%);
 	--mobile-drawer-login-color: rgb(var(--color-eternal-ink-rgb) / 72%);
