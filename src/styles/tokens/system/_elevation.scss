@@ -1,9 +1,12 @@
 // Shadows
+@use 'color' as sys-color;
+@use 'sass:color';
+
 $sys-shadow-subtle: 0 4px 12px rgb(0 0 0 / 8%);
 $sys-shadow-emphasis: 0 8px 24px rgb(0 0 0 / 12%);
 $sys-shadow-premium: 0 16px 40px rgb(0 0 0 / 10%);
-$sys-shadow-warm: 0 8px 24px rgb(212 175 55 / 8%);
-$sys-shadow-warm-emphasis: 0 12px 32px rgb(212 175 55 / 12%);
+$sys-shadow-warm: 0 8px 24px color.change(sys-color.$sys-color-gold-500, $alpha: 0.08);
+$sys-shadow-warm-emphasis: 0 12px 32px color.change(sys-color.$sys-color-gold-500, $alpha: 0.12);
 
 // Blurs
 $sys-blur-xs: blur(2px);
