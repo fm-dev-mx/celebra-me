@@ -19,8 +19,8 @@
 	--color-text-on-dark: #{sys.$sys-color-parchment-100};
 	--color-surface-primary: #{sys.$sys-color-parchment-100};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
-	--color-surface-dark: #{sys.$sys-color-coffee-900};
-	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-surface-dark: #{sys.$sys-color-onyx-950};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-950)};
 	--color-action-primary: #{sys.$sys-color-coffee-900};
 	--color-action-accent: #{sys.$sys-color-gold-500};
 	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
@@ -113,24 +113,30 @@
 	--landing-header-nav-cta-color-scrolled: var(--color-action-accent);
 	--landing-header-nav-cta-shadow: 0 4px 15px rgb(55 38 21 / 16%);
 	--landing-header-nav-cta-shadow-scrolled: var(--header-cta-glow);
-	--landing-header-menu-open-bg: rgb(55 38 21 / 96%);
-	--landing-header-menu-open-border: 1px solid rgb(197 160 89 / 34%);
-	--mobile-drawer-bg: rgb(55 38 21 / 90%);
-	--mobile-drawer-border: var(--color-glass-border);
-	--mobile-drawer-link-color: var(--color-text-on-dark);
-	--mobile-drawer-link-hover: var(--color-action-accent);
-	--mobile-drawer-login-color: rgb(249 245 236 / 82%);
-	--mobile-drawer-login-hover-color: var(--color-text-on-dark);
-	--mobile-drawer-cta-bg: var(--color-text-on-dark);
-	--mobile-drawer-cta-color: var(--color-surface-dark);
-	--mobile-drawer-cta-border: 1px solid var(--color-text-on-dark);
-	--mobile-drawer-cta-shadow: 0 10px 26px rgb(197 160 89 / 18%);
-	--mobile-drawer-cta-hover-bg: var(--color-action-accent);
-	--mobile-drawer-cta-hover-color: var(--color-surface-dark);
-	--mobile-drawer-cta-hover-border: 1px solid var(--color-action-accent);
-	--mobile-drawer-cta-hover-shadow: 0 14px 32px rgb(197 160 89 / 28%);
-	--mobile-drawer-footer-copy: rgb(249 245 236 / 70%);
-	--mobile-signature-color: rgb(249 245 236 / 82%);
+	--landing-header-menu-open-bg: rgb(var(--color-surface-dark-rgb) / 100%);
+	--landing-header-menu-open-border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+	--mobile-drawer-bg: rgb(7 8 9 / 98%);
+	--mobile-drawer-sheen: linear-gradient(
+		180deg,
+		rgb(255 255 255 / 3%),
+		transparent 36%,
+		rgb(210 170 88 / 4%) 100%
+	);
+	--mobile-drawer-border: rgb(210 170 88 / 24%);
+	--mobile-drawer-link-color: rgb(248 244 236);
+	--mobile-drawer-link-hover: rgb(205 164 84);
+	--mobile-drawer-login-color: rgb(248 244 236 / 68%);
+	--mobile-drawer-login-hover-color: rgb(205 164 84);
+	--mobile-drawer-cta-bg: linear-gradient(135deg, rgb(218 181 102), rgb(184 138 64));
+	--mobile-drawer-cta-color: rgb(18 15 10);
+	--mobile-drawer-cta-border: 1px solid rgb(205 164 84 / 40%);
+	--mobile-drawer-cta-shadow: 0 12px 28px rgb(184 138 64 / 18%);
+	--mobile-drawer-cta-hover-bg: rgb(18 15 10);
+	--mobile-drawer-cta-hover-color: rgb(218 181 102);
+	--mobile-drawer-cta-hover-border: 1px solid rgb(218 181 102 / 60%);
+	--mobile-drawer-cta-hover-shadow: 0 14px 32px rgb(0 0 0 / 40%);
+	--mobile-drawer-footer-copy: rgb(248 244 236 / 50%);
+	--mobile-signature-color: rgb(248 244 236 / 65%);
 
 	// About Us Section
 	--about-noise-opacity: 0.04;
