@@ -51,11 +51,11 @@
 	&__link {
 		font-family: var(--font-display);
 		font-size: 0.9rem;
-		font-weight: 300;
+		font-weight: var(--home-header-nav-weight, 300);
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--color-noir-text);
+		color: var(--home-header-nav-color);
 		position: relative;
 		width: fit-content;
 		padding: var(--spacing-xs) 0;
@@ -92,7 +92,7 @@
 	gap: var(--spacing-md);
 
 	&__login {
-		color: var(--color-noir-accent);
+		color: var(--home-header-login-color);
 		text-decoration: none;
 		font-size: 0.85rem;
 		text-transform: uppercase;
@@ -100,9 +100,10 @@
 		font-weight: 300;
 		transition: var(--transition-snappy);
 		padding: var(--spacing-sm);
+		text-shadow: var(--home-header-login-shadow, none);
 
 		&:hover {
-			color: var(--color-noir-text);
+			color: var(--home-header-btn-hover, var(--color-noir-text));
 		}
 	}
 
@@ -113,35 +114,41 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--color-noir-text);
+		color: var(--home-header-cta-color);
 		padding: var(--spacing-sm) var(--spacing-xl);
-		background: rgb(255 255 255 / 5%);
+		background: var(--home-header-cta-bg);
 		backdrop-filter: blur(10px);
-		border: 1px solid rgb(255 255 255 / 20%);
+		border: 1px solid var(--home-header-cta-border, rgb(255 255 255 / 20%));
 		border-radius: 999px;
-		box-shadow: 0 4px 15px rgb(0 0 0 / 10%);
+		box-shadow: var(--home-header-cta-shadow, 0 4px 15px rgb(0 0 0 / 10%));
+		transition: var(--transition-standard);
 
 		&:hover {
 			transform: translateY(-2px);
-			background: rgb(255 255 255 / 12%);
-			color: var(--color-noir-text);
-			border-color: rgb(255 255 255 / 40%);
+			background: var(--home-header-cta-hover-bg, var(--home-header-cta-bg));
+			color: var(--home-header-cta-color);
+			border-color: var(--home-header-cta-hover-border, var(--home-header-cta-border));
 			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
 }
 
-// --- Specific State Overrides (Refactored to use Semantic Tokens) ---
+// --- Specific State Overrides (Refactored to use the Formal Navigation Contract) ---
 
 :global(.header-base) {
-	--home-header-nav-color: var(--color-noir-text, var(--color-action-primary));
+	--nav-bg: rgb(0 0 0 / 85%);
+	--nav-blur: 20px;
+	--home-header-nav-color: rgb(255 255 255);
 	--home-header-nav-weight: 300;
 	--home-header-nav-shadow: none;
-	--home-header-nav-underline: currentcolor;
-	--home-header-login-color: var(--color-noir-text, var(--color-text-secondary));
+	--home-header-nav-underline: rgb(255 255 255);
+	--home-header-login-color: rgb(255 255 255 / 70%);
 	--home-header-login-shadow: none;
-	--home-header-cta-bg: var(--color-noir-text, var(--color-action-accent));
-	--home-header-cta-color: var(--color-noir-bg, var(--color-action-primary));
+	--home-header-btn-hover: rgb(255 255 255);
+	--home-header-cta-bg: rgb(255 255 255 / 5%);
+	--home-header-cta-border: rgb(255 255 255 / 20%);
+	--home-header-cta-color: rgb(255 255 255);
+	--home-header-cta-shadow: 0 4px 15px rgb(0 0 0 / 10%);
 
 	transition:
 		background-color var(--duration-standard) var(--ease-premium),
@@ -151,35 +158,47 @@
 }
 
 :global(.header-base--transparent) {
-	--home-header-nav-color: var(--color-noir-text);
+	--nav-bg: transparent;
+	--nav-blur: 0;
+	--home-header-nav-color: rgb(255 255 255);
 	--home-header-nav-weight: 300;
-	--home-header-nav-shadow: var(--header-nav-shadow-transparent);
-	--home-header-nav-underline: var(--color-noir-text);
+	--home-header-nav-shadow: 0 1px 12px rgb(0 0 0 / 30%);
+	--home-header-nav-underline: rgb(255 255 255);
+	--home-header-cta-bg: rgb(255 255 255 / 10%);
+	--home-header-cta-border: rgb(255 255 255 / 30%);
 }
 
 :global(.header-base--transparent .home-header__logo--white) {
-	opacity: 100%;
+	opacity: var(--nav-logo-opacity-light); // Controlled by base contract
 	visibility: visible;
 }
 
 :global(.header-base--transparent .home-header__logo--gold) {
-	opacity: 0%;
+	opacity: var(--nav-logo-opacity-dark); // Controlled by base contract
 	visibility: hidden;
 }
 
 :global(.header-base--scrolled) {
-	--home-header-nav-color: var(--color-noir-text);
-	--home-header-nav-weight: 300;
+	--nav-bg: var(--nav-scrolled-bg);
+	--nav-blur: 20px;
+	--nav-border: var(--color-border-subtle);
+	--home-header-nav-color: rgb(255 255 255);
+	--home-header-nav-weight: 500;
 	--home-header-nav-shadow: none;
-	--home-header-nav-underline: var(--color-noir-text);
+	--home-header-nav-underline: var(--color-action-accent, rgb(197 160 89));
+	--home-header-login-color: rgb(255 255 255);
+	--home-header-cta-bg: transparent;
+	--home-header-cta-color: var(--color-action-accent, rgb(197 160 89));
+	--home-header-cta-border: var(--color-action-accent, rgb(197 160 89));
+	--home-header-cta-shadow: 0 0 20px rgb(197 160 89 / 20%);
 }
 
 :global(.header-base--scrolled .home-header__logo--white) {
-	opacity: 0%;
+	opacity: var(--nav-logo-opacity-light);
 	visibility: hidden;
 }
 
 :global(.header-base--scrolled .home-header__logo--gold) {
-	opacity: 100%;
+	opacity: var(--nav-logo-opacity-dark);
 	visibility: visible;
 }
