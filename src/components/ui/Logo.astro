@@ -1,4 +1,9 @@
 ---
+/**
+ * Logo component with two visual modes:
+ * - Default (including 'gold', 'hero', 'xv'): renders the native gold-toned PNG
+ * - White ('white', 'footer'): applies CSS brightness(0) invert(1) for dark surfaces
+ */
 interface Props {
 	variant?: 'default' | 'xv' | 'footer' | 'hero' | 'white' | 'gold';
 	class?: string;
@@ -11,7 +16,6 @@ import type { ImageMetadata } from 'astro';
 
 const { class: className, variant, altText } = Astro.props;
 
-// Currently using the same logo for both variants, can be customized later
 const logoAsset = getCommonAsset('headerLogo');
 const logoSrc = logoAsset?.src;
 
@@ -19,7 +23,6 @@ if (!logoSrc) {
 	console.error('Logo asset not found in AssetRegistry');
 }
 
-// White variants require color inversion against dark surfaces.
 const isWhite = variant === 'white' || variant === 'footer';
 ---
 
