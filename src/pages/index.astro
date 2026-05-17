@@ -41,21 +41,12 @@ import '@/styles/landing.scss';
 	}, observerOptions);
 
 	const html = document.documentElement;
-	let lastScrollY = window.scrollY;
-	html.style.scrollPaddingTop = '100px';
 
-	const handleScroll = () => {
-		const currentScrollY = window.scrollY;
-		const isScrollingDown = currentScrollY > lastScrollY;
-
-		if (currentScrollY < 100) {
-			html.style.scrollPaddingTop = '100px';
-		} else {
-			html.style.scrollPaddingTop = isScrollingDown ? '0px' : '70px';
-		}
-
-		lastScrollY = currentScrollY;
+	const syncScrollPadding = () => {
+		const currentHeight = getComputedStyle(html).getPropertyValue('--nav-current-height').trim();
+		html.style.scrollPaddingTop = currentHeight || '100px';
 	};
 
-	window.addEventListener('scroll', handleScroll, { passive: true });
+	syncScrollPadding();
+	window.addEventListener('scroll', syncScrollPadding, { passive: true });
 </script>

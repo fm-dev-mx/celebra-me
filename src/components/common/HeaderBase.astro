@@ -29,6 +29,8 @@ const {
     class={`header-base ${transparentOnHero ? 'header-base--transparent' : ''}`}
     data-variant={variant}
     data-transparent={transparentOnHero.toString()}
+    data-threshold-shrink="50"
+    data-threshold-hide="100"
 >
     <div class="header-base__container">
         <!-- Slot: Logo (Adaptive logic lives in parent) -->
@@ -52,10 +54,13 @@ const {
 	 * - shrink on scroll
 	 * - hero transparency toggle
 	 * - auto-hide while scrolling down
+	 * - exposes --nav-current-height on :root for page-level consumers (e.g. scrollPaddingTop)
+	 *
+	 * Thresholds are read from data-threshold-shrink / data-threshold-hide
+	 * per header instance, allowing per-page customization.
 	 */
-	const SCROLL_THRESHOLD = 50;
-	const HIDE_THRESHOLD = 100;
 	const headers = Array.from(document.querySelectorAll('.header-base'));
+	const root = document.documentElement;
 
 	let lastScrollY = window.scrollY;
 
@@ -67,7 +72,9 @@ const {
 				return;
 			}
 
-			const hasScrolled = currentScrollY > SCROLL_THRESHOLD;
+			const shrinkAt = Number(header.dataset.thresholdShrink ?? 50);
+			const hideAt = Number(header.dataset.thresholdHide ?? 100);
+			const hasScrolled = currentScrollY > shrinkAt;
 
 			const isTransparentConfigured = header.dataset.transparent === 'true';
 			const isMenuOpen = header.classList.contains('header-base--menu-open');
@@ -86,8 +93,16 @@ const {
 				const isScrollingDown = currentScrollY > lastScrollY;
 				header.classList.toggle(
 					'header-base--hidden',
-					currentScrollY > HIDE_THRESHOLD && isScrollingDown,
+					currentScrollY > hideAt && isScrollingDown,
 				);
+			}
+
+			if (header.classList.contains('header-base--hidden')) {
+				root.style.setProperty('--nav-current-height', '0px');
+			} else if (header.classList.contains('header-base--scrolled')) {
+				root.style.setProperty('--nav-current-height', 'var(--nav-height-scrolled)');
+			} else {
+				root.style.setProperty('--nav-current-height', 'var(--nav-height)');
 			}
 		});
 
