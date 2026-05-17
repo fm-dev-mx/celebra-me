@@ -173,7 +173,7 @@
         { "label": "Gala", "href": "#event-location" },
         { "label": "Galería", "href": "#galeria" },
         { "label": "Regalos", "href": "#regalos" },
-        { "label": "RSVP", "href": "#rsvp" }
+        { "label": "Confirmar", "href": "#rsvp" }
     ],
     "interludes": [
         {

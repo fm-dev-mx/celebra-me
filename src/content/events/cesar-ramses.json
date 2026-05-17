@@ -20,11 +20,9 @@
         }
     },
     "navigation": [
-        { "label": "01 · Mensaje", "href": "#quote-section" },
-        { "label": "02 · Familia", "href": "#family-section" },
-        { "label": "03 · Galería", "href": "#galeria" },
-        { "label": "04 · Ceremonia", "href": "#event-location" },
-        { "label": "05 · Programa", "href": "#itinerary" },
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Galería", "href": "#galeria" },
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "hero": {
