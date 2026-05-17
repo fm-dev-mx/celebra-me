@@ -159,13 +159,20 @@
 	--pricing-section-bg: var(--color-surface-primary);
 	--pricing-noise-opacity: 0.03;
 	--pricing-card-bg: rgb(var(--color-overlay-light-rgb) / 70%);
+	--pricing-card-backdrop-blur: 12px;
 	--pricing-card-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
 	--pricing-card-border-radius: 4px;
 	--pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
 	--pricing-primary-border: var(--color-action-accent);
-	--pricing-primary-shadow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
-	--pricing-primary-scale: 1.03;
+	--pricing-primary-shadow: 0 0 30px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
+	--pricing-primary-glow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
+	--pricing-primary-scale: 1.04;
+	--pricing-exclusive-bg: var(--color-surface-dark-slate);
+	--pricing-exclusive-border: var(--color-action-accent);
+	--pricing-exclusive-text: var(--color-text-on-dark-slate);
+	--pricing-exclusive-desc: rgb(var(--color-overlay-light-rgb) / 60%);
 	--pricing-badge-bg: var(--color-action-accent);
+	--pricing-badge-shadow: 0 4px 12px rgb(0 0 0 / 10%);
 	--pricing-tier-name-color: var(--color-surface-dark);
 	--pricing-tier-desc-color: var(--color-text-primary);
 	--pricing-tier-price-color: var(--color-surface-dark);
@@ -173,6 +180,7 @@
 	--pricing-cta-border: var(--color-action-accent);
 	--pricing-cta-color: var(--color-action-accent);
 	--pricing-cta-hover-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.05)};
+	--pricing-cta-hover-color: var(--color-surface-dark);
 
 	// FAQ Section
 	--faq-section-bg: var(--color-faq-bg);
@@ -236,7 +244,7 @@
 	--contact-channel-shadow: var(--shadow-subtle);
 	--contact-channel-icon-bg: var(--color-surface-secondary);
 	--contact-channel-icon-color: var(--color-action-accent);
-	--contact-channel-label-color: rgb(var(--color-text-secondary-rgb) / 60%);
+	--contact-channel-label-color: var(--color-text-secondary);
 	--contact-channel-value-color: var(--color-text-primary);
 	--contact-channel-hover-border: var(--color-border-emphasis);
 	--contact-channel-hover-transform: translateY(-3px);

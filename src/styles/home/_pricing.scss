@@ -82,6 +82,12 @@
 	position: relative;
 	padding: var(--spacing-lg) var(--spacing-md);
 	background: var(--pricing-card-bg);
+	color: var(--color-text-primary);
+
+	@supports (backdrop-filter: blur(0)) {
+		backdrop-filter: blur(var(--pricing-card-backdrop-blur, 0));
+	}
+
 	border: 1px solid var(--pricing-card-border);
 	border-radius: var(--pricing-card-border-radius);
 	height: 100%;
@@ -90,7 +96,7 @@
 	transition:
 		transform 0.6s cubic-bezier(0.19, 1, 0.22, 1),
 		box-shadow 0.6s cubic-bezier(0.19, 1, 0.22, 1),
-		opacity 0.8s ease-out;
+		opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 	opacity: 0%;
 	transform: translateY(30px);
 
@@ -113,6 +119,16 @@
 		border-color: var(--pricing-primary-border);
 		box-shadow: var(--pricing-primary-shadow);
 		z-index: 3;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			box-shadow: var(--pricing-primary-glow);
+			opacity: 50%;
+			pointer-events: none;
+		}
 
 		&.is-visible {
 			@media (width >= 992px) {
@@ -137,26 +153,78 @@
 	}
 
 	&.is-exclusive {
-		.card-content::before {
+		background: linear-gradient(135deg, var(--pricing-exclusive-bg) 50%, rgb(10 12 16) 100%);
+		border-color: var(--color-action-accent);
+		box-shadow:
+			0 20px 50px -12px rgb(0 0 0 / 50%),
+			inset 0 0 40px rgb(0 0 0 / 20%);
+		overflow: hidden;
+
+		&::after {
 			content: '';
 			position: absolute;
-			top: 0;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 40%;
-			height: 1px;
-			background: var(--color-action-accent);
-			opacity: 50%;
+			inset: 0;
+			background: radial-gradient(
+				circle at 20% 20%,
+				rgb(var(--color-action-accent-rgb) / 5%) 0%,
+				transparent 50%
+			);
+			pointer-events: none;
+		}
+
+		.tier-name {
+			color: var(--color-action-accent);
+			text-shadow: 0 2px 10px rgb(0 0 0 / 40%);
+			letter-spacing: 0.02em;
+		}
+
+		.tier-desc {
+			color: var(--color-text-on-dark-slate);
+			opacity: 85%;
+			font-weight: 300;
+		}
+
+		.amount {
+			color: var(--color-action-accent);
+			filter: drop-shadow(0 2px 4px rgb(0 0 0 / 20%));
+		}
+
+		.section-title {
+			color: var(--color-action-accent);
+			opacity: 100%;
+			font-weight: 600;
+			text-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+		}
+
+		.section-item {
+			color: var(--color-text-on-dark-slate);
+			opacity: 95%;
+
+			.check-icon {
+				color: var(--color-action-accent);
+				filter: drop-shadow(0 0 4px rgb(var(--color-action-accent-rgb) / 40%));
+			}
+		}
+
+		.regular-price,
+		.tier-footnote {
+			color: var(--color-text-on-dark-slate);
+			opacity: 65%;
 		}
 
 		.cta-button {
-			background: transparent;
 			border-color: var(--color-action-accent);
 			color: var(--color-action-accent);
+			background: rgb(var(--color-action-accent-rgb) / 2%);
+			backdrop-filter: blur(4px);
 
 			&:hover {
 				background: var(--color-action-accent);
-				color: var(--color-surface-dark);
+				color: rgb(12 14 18);
+				box-shadow:
+					0 0 30px rgb(var(--color-action-accent-rgb) / 40%),
+					0 10px 20px rgb(0 0 0 / 30%);
+				transform: translateY(-2px);
 			}
 		}
 	}
@@ -176,13 +244,15 @@
 		transform: translate(-50%, -50%);
 		background: var(--pricing-badge-bg);
 		color: white;
-		padding: 4px 16px;
-		font-size: 0.7rem;
-		letter-spacing: 0.1em;
-		font-weight: 700;
-		border-radius: 20px;
+		padding: 6px 18px;
+		font-size: 0.65rem;
+		letter-spacing: 0.18em;
+		font-weight: 600;
+		text-transform: uppercase;
+		border-radius: 50px;
 		white-space: nowrap;
 		z-index: 3;
+		box-shadow: var(--pricing-badge-shadow, 0 4px 12px rgb(0 0 0 / 10%));
 	}
 
 	.tier-name {
@@ -221,6 +291,7 @@
 			line-height: 1.1;
 
 			&.amount--text {
+				color: var(--color-text-on-dark-slate);
 				font-size: 1.2rem;
 				font-weight: 600;
 				letter-spacing: 0.02em;
@@ -242,9 +313,10 @@
 
 	.regular-price {
 		font-size: 0.75rem;
-		color: var(--color-text-secondary);
 		margin-bottom: var(--spacing-sm);
 		font-style: italic;
+		color: inherit;
+		opacity: 70%;
 	}
 
 	.tier-sections {
@@ -282,8 +354,9 @@
 		gap: 8px;
 		margin-bottom: 4px;
 		font-size: 0.85rem;
-		color: var(--color-text-primary);
 		line-height: 1.5;
+		color: inherit;
+		opacity: 90%;
 
 		&:last-child {
 			margin-bottom: 0;
@@ -301,8 +374,8 @@
 	.tier-footnote {
 		font-family: var(--font-body);
 		font-size: 0.7rem;
-		color: var(--color-text-secondary);
-		opacity: 65%;
+		color: inherit;
+		opacity: 60%;
 		font-style: italic;
 		line-height: 1.4;
 		margin-top: var(--spacing-xs);
@@ -330,6 +403,7 @@
 
 		&:hover {
 			background: var(--pricing-cta-hover-bg);
+			color: var(--pricing-cta-hover-color);
 		}
 	}
 }
