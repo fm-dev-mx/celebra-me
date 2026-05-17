@@ -1,8 +1,8 @@
 {
     "eventType": "xv",
     "isDemo": true,
-    "title": "Noir Premiere XV",
-    "description": "Una invitacion editorial donde la elegancia noir y el brillo dorado presentan una noche de quince anos con presencia cinematografica.",
+    "title": "XV Aniversario",
+    "description": "Una invitación editorial donde la elegancia noir y el brillo dorado presentan una noche de quince años con presencia cinematográfica.",
     "theme": {
         "fontFamily": "serif",
         "preset": "editorial"
@@ -40,14 +40,14 @@
             "variant": "editorial",
             "labels": {
                 "name": "Tu nombre en la lista *",
-                "guestCount": "Numero de acompanantes",
+                "guestCount": "Número de acompañantes",
                 "confirmButton": "Reservar mi lugar"
             }
         }
     },
     "hero": {
         "name": "Valentina Noir",
-        "label": "Noir Premiere",
+        "label": "XV Aniversario",
         "date": "2026-09-19T20:00:00.000Z",
         "backgroundImage": "hero",
         "portrait": "portrait",
@@ -74,7 +74,7 @@
                 "icon": "crown",
                 "iconName": "Crown",
                 "styleVariant": "reserved",
-                "text": "Etiqueta: Gala Noir (Negro, champagne y acentos metalicos)"
+                "text": "Etiqueta: Gala Noir (Negro, champagne y acentos metálicos)"
             },
             {
                 "icon": "envelope",
@@ -90,9 +90,9 @@
             "mother": "Isabela Duval"
         },
         "labels": {
-            "sectionTitle": "El Circulo de Luz",
-            "sectionSubtitle": "Edicion de Familia",
-            "parentsTitle": "Con la bendicion de mis padres"
+            "sectionTitle": "El Círculo de Luz",
+            "sectionSubtitle": "Edición de Familia",
+            "parentsTitle": "Con la bendición de mis padres"
         },
         "godparents": [
             {
@@ -103,22 +103,22 @@
         "featuredImage": "family"
     },
     "gallery": {
-        "title": "Galeria Editorial",
+        "title": "Galería Editorial",
         "subtitle": "Una secuencia visual de siluetas, brillo y detalles de alta noche.",
         "items": [
             { "image": "gallery01", "caption": "Portada de la noche." },
             { "image": "gallery02", "caption": "El vals en primer plano." },
-            { "image": "gallery03", "caption": "Escena de salon y reflejos." },
+            { "image": "gallery03", "caption": "Escena de salón y reflejos." },
             { "image": "gallery04", "caption": "Rosas, luz y metal." },
             { "image": "gallery05", "caption": "Texturas en seda y brillo." },
-            { "image": "gallery07", "caption": "Silueta en composicion editorial." },
+            { "image": "gallery07", "caption": "Silueta en composición editorial." },
             { "image": "gallery09", "caption": "El sobre dorado." },
             { "image": "gallery10", "caption": "Destellos sobre la pista." }
         ]
     },
     "gifts": {
         "title": "Mesa de Regalos",
-        "subtitle": "Tu generosidad acompana esta noche de estreno.",
+        "subtitle": "Tu generosidad acompaña esta noche de estreno.",
         "items": [
             {
                 "type": "store",
@@ -127,7 +127,7 @@
             },
             {
                 "type": "bank",
-                "title": "Fondo de celebracion",
+                "title": "Fondo de celebración",
                 "bankName": "BBVA Mexico",
                 "accountHolder": "PENDIENTE",
                 "clabe": "0000 0000 0000 0000 00",
@@ -136,7 +136,7 @@
             {
                 "type": "cash",
                 "title": "Lluvia de Sobres",
-                "text": "Agradecemos tu detalle en la recepcion de la gala."
+                "text": "Agradecemos tu detalle en la recepción de la gala."
             }
         ]
     },
@@ -151,7 +151,7 @@
         "author": "Valentina Noir"
     },
     "thankYou": {
-        "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emocion.",
+        "message": "Gracias por ser parte de este capítulo. Su presencia convierte esta noche en un recuerdo de luz, estilo y emoción.",
         "closingName": "Valentina",
         "image": "thankYouPortrait"
     },
@@ -160,7 +160,7 @@
         "items": [
             {
                 "icon": "reception",
-                "label": "Recepcion editorial",
+                "label": "Recepción editorial",
                 "time": "7:00 PM",
                 "description": "Apertura de puertas y bienvenida."
             },
@@ -174,7 +174,7 @@
                 "icon": "dinner",
                 "label": "Cena",
                 "time": "9:00 PM",
-                "description": "Servicio de gala y conversacion."
+                "description": "Servicio de gala y conversación."
             },
             {
                 "icon": "toast",
@@ -186,13 +186,13 @@
                 "icon": "cake",
                 "label": "Pastel",
                 "time": "10:45 PM",
-                "description": "El instante mas dulce de la noche."
+                "description": "El instante más dulce de la noche."
             },
             {
                 "icon": "party",
                 "label": "Fiesta",
                 "time": "11:30 PM",
-                "description": "Musica, pista y una noche en grande."
+                "description": "Música, pista y una noche en grande."
             }
         ]
     },
@@ -248,14 +248,14 @@
         {
             "image": "gallery09",
             "afterSection": "gallery",
-            "alt": "Brillo dorado cinematografico",
+            "alt": "Brillo dorado cinematográfico",
             "height": "screen",
             "variant": "editorial"
         },
         {
             "image": "gallery10",
             "afterSection": "countdown",
-            "alt": "Explosion de destellos en la pista",
+            "alt": "Explosión de destellos en la pista",
             "height": "screen",
             "variant": "editorial"
         },
@@ -269,7 +269,7 @@
         {
             "image": "interlude04",
             "afterSection": "rsvp",
-            "alt": "Ultimo retrato editorial",
+            "alt": "Último retrato editorial",
             "height": "screen",
             "variant": "editorial"
         }
@@ -278,7 +278,8 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "flower",
-        "microcopy": "Abre Tu Invitacion",
+        "sealInitials": "V·N",
+        "microcopy": "Abre Tu Invitación",
         "closedPalette": {
             "primary": "actionAccent",
             "accent": "actionAccent",
@@ -286,6 +287,6 @@
         }
     },
     "sharing": {
-        "whatsappTemplate": "Hola {name}, te comparto tu invitacion para Noir Premiere XV: {inviteUrl}"
+        "whatsappTemplate": "Hola {name}, te comparto tu invitación para Noir Premiere XV: {inviteUrl}"
     }
 }
