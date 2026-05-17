@@ -53,48 +53,47 @@ const {
 	 * - hero transparency toggle
 	 * - auto-hide while scrolling down
 	 */
-	const headers = Array.from(document.querySelectorAll('.header-base'));
 	const SCROLL_THRESHOLD = 50;
 	const HIDE_THRESHOLD = 100;
+	const headers = Array.from(document.querySelectorAll('.header-base'));
 
-	if (headers.length > 0) {
-		let lastScrollY = window.scrollY;
+	let lastScrollY = window.scrollY;
 
-		const updateHeaderState = () => {
-			const currentScrollY = window.scrollY;
-			const isScrolledPastHero = currentScrollY > SCROLL_THRESHOLD;
+	const updateHeaderState = () => {
+		const currentScrollY = window.scrollY;
 
-			headers.forEach((header) => {
-				if (!(header instanceof HTMLElement)) {
-					return;
-				}
+		headers.forEach((header) => {
+			if (!(header instanceof HTMLElement)) {
+				return;
+			}
 
-				const isTransparentConfigured = header.dataset.transparent === 'true';
-				const isMenuOpen = header.classList.contains('header-base--menu-open');
+			const hasScrolled = currentScrollY > SCROLL_THRESHOLD;
 
-				header.classList.toggle('header-base--scrolled', isScrolledPastHero);
+			const isTransparentConfigured = header.dataset.transparent === 'true';
+			const isMenuOpen = header.classList.contains('header-base--menu-open');
 
-				if (isTransparentConfigured && !isMenuOpen) {
-					header.classList.toggle('header-base--transparent', !isScrolledPastHero);
-				} else {
-					header.classList.remove('header-base--transparent');
-				}
+			header.classList.toggle('header-base--scrolled', hasScrolled);
 
-				if (isMenuOpen) {
-					header.classList.remove('header-base--hidden');
-				} else {
-					const isScrollingDown = currentScrollY > lastScrollY;
-					header.classList.toggle(
-						'header-base--hidden',
-						currentScrollY > HIDE_THRESHOLD && isScrollingDown,
-					);
-				}
-			});
+			if (isTransparentConfigured && !isMenuOpen) {
+				header.classList.toggle('header-base--transparent', !hasScrolled);
+			} else {
+				header.classList.remove('header-base--transparent');
+			}
 
-			lastScrollY = currentScrollY;
-		};
+			if (isMenuOpen) {
+				header.classList.remove('header-base--hidden');
+			} else {
+				const isScrollingDown = currentScrollY > lastScrollY;
+				header.classList.toggle(
+					'header-base--hidden',
+					currentScrollY > HIDE_THRESHOLD && isScrollingDown,
+				);
+			}
+		});
 
-		updateHeaderState();
-		window.addEventListener('scroll', updateHeaderState, { passive: true });
-	}
+		lastScrollY = currentScrollY;
+	};
+
+	updateHeaderState();
+	window.addEventListener('scroll', updateHeaderState, { passive: true });
 </script>
