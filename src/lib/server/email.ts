@@ -9,6 +9,14 @@ export interface EmailPayload {
 	type?: 'contact' | 'rsvp';
 }
 
+const EMAIL_COLORS = {
+	accent: '#c5a059',
+	text: '#333333',
+	border: '#eeeeee',
+	background: '#fdfcfb',
+	muted: '#999999',
+} as const;
+
 /**
  * Send email using Gmail (Nodemailer)
  */
@@ -33,14 +41,6 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
 
-	const emailTheme = {
-		primary: '#c5a059',
-		text: '#333333',
-		border: '#eeeeee',
-		background: '#fdfcfb',
-		muted: '#999999',
-	};
-
 	const mailOptions = {
 		from: `"Celebra-me Concierge" <${user}>`,
 		to: recipient,
@@ -61,16 +61,16 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 			Enviado desde el sistema Concierge de Celebra-me
 		`,
 		html: `
-			<div style="font-family: sans-serif; color: ${emailTheme.text}; max-width: 600px; border: 1px solid ${emailTheme.border}; padding: 20px; border-radius: 8px;">
-				<h2 style="color: ${emailTheme.primary}; border-bottom: 2px solid ${emailTheme.background}; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
+			<div style="font-family: sans-serif; color: ${EMAIL_COLORS.text}; max-width: 600px; border: 1px solid ${EMAIL_COLORS.border}; padding: 20px; border-radius: 8px;">
+				<h2 style="color: ${EMAIL_COLORS.accent}; border-bottom: 2px solid ${EMAIL_COLORS.background}; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
 				<p><strong>De:</strong> ${data.name} (${data.email})</p>
 				<p><strong>Teléfono:</strong> ${data.phone || 'N/A'}</p>
 				<p><strong>Tipo de Evento:</strong> ${data.type || 'General'}</p>
-				<div style="background: ${emailTheme.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${emailTheme.primary}; margin: 20px 0;">
+				<div style="background: ${EMAIL_COLORS.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${EMAIL_COLORS.accent}; margin: 20px 0;">
 					<p style="margin: 0; font-style: italic;">"${data.message}"</p>
 				</div>
-				<hr style="border: 0; border-top: 1px solid ${emailTheme.border}; margin: 20px 0;" />
-				<p style="font-size: 12px; color: ${emailTheme.muted};">Esta es una notificación automática de Celebra-me.com</p>
+				<hr style="border: 0; border-top: 1px solid ${EMAIL_COLORS.border}; margin: 20px 0;" />
+				<p style="font-size: 12px; color: ${EMAIL_COLORS.muted};">Esta es una notificación automática de Celebra-me.com</p>
 			</div>
 		`,
 	};

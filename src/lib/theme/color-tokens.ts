@@ -1,11 +1,18 @@
+/**
+ * Content color role contract.
+ *
+ * These names let JSON/frontmatter point at approved semantic CSS color tokens
+ * without becoming a second product color system.
+ */
 export const COLOR_TOKENS = [
 	'surfacePrimary',
+	'surfaceSecondary',
+	'surfaceElevated',
+	'surfaceDark',
 	'actionPrimary',
 	'actionAccent',
-	'surfaceDark',
-	'surfaceElevated',
-	'surfaceSoft',
 	'textPrimary',
+	'textSecondary',
 ] as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[number];
