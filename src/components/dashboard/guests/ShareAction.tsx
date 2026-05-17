@@ -7,6 +7,7 @@ interface ShareActionProps {
 	waShareUrl: string;
 	inviteUrl: string;
 	shareText: string;
+	isShared?: boolean;
 	onShared: () => Promise<void> | void;
 }
 
@@ -18,6 +19,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	waShareUrl,
 	inviteUrl,
 	shareText,
+	isShared,
 	onShared,
 }) => {
 	const [status, setStatus] = useState<ShareStatus>('idle');
@@ -40,43 +42,30 @@ const ShareAction: React.FC<ShareActionProps> = ({
 		if (status !== 'idle') return;
 
 		setStatus('sending');
-		let didSucceed = false;
 
 		try {
 			if (primaryAction === 'whatsapp') {
 				window.open(waShareUrl, '_blank', 'noopener,noreferrer');
 				await onShared();
-				didSucceed = true;
 			} else if (primaryAction === 'web-share') {
-				// supportsWebShare already checked, but keep defensive guard.
-				if (!supportsWebShare) throw new Error('Web Share not supported');
 				await navigator.share({
 					title: 'Invitación Celebra-me',
 					text: shareText,
 					url: inviteUrl,
 				});
 				await onShared();
-				didSucceed = true;
 			} else {
-				// copy
 				if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
-					// Very old browsers: fallback to opening the link rather than failing silently.
 					window.open(inviteUrl, '_blank', 'noopener,noreferrer');
 				} else {
 					await navigator.clipboard.writeText(inviteUrl);
 				}
 				await onShared();
-				didSucceed = true;
 			}
 
-			if (didSucceed) {
-				setStatus('delivered');
-				window.setTimeout(() => setStatus('idle'), 3000);
-			} else {
-				setStatus('idle');
-			}
+			setStatus('delivered');
+			window.setTimeout(() => setStatus('idle'), 3000);
 		} catch (err) {
-			// Share can be aborted by user (Web Share) or blocked by browser; keep it quiet.
 			console.info('Share action aborted or failed:', err);
 			setStatus('idle');
 		}
@@ -85,7 +74,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	const getButtonLabel = () => {
 		if (status === 'sending') return 'Enviando';
 		if (status === 'delivered') return 'Registrado';
-		if (primaryAction === 'whatsapp') return 'Enviar';
+		if (primaryAction === 'whatsapp') return isShared ? 'Reenviar' : 'Enviar';
 		if (primaryAction === 'copy') return 'Copiar';
 		return 'Compartir';
 	};
@@ -120,7 +109,7 @@ const ShareAction: React.FC<ShareActionProps> = ({
 	return (
 		<button
 			type="button"
-			className={`dashboard-guests__share-button dashboard-guests__share-button--${status}`}
+			className={`dashboard-guests__share-button dashboard-guests__share-button--${status} ${isShared && status === 'idle' ? 'dashboard-guests__share-button--shared' : ''}`}
 			onClick={handleShare}
 			disabled={status !== 'idle'}
 			title={title}

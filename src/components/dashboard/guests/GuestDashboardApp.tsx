@@ -54,6 +54,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handleExport,
 		handleImport,
 		handleMarkShared,
+		handleToggleDelivery,
 		handlePostpone,
 		handleSubmit,
 		highlightedGuestId,
@@ -89,7 +90,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		},
 		!modalOpen && !deleteConfirmOpen && !importModalOpen,
 	);
-
 	const sortedItems = useMemo(() => {
 		return [...items].sort((a, b) => {
 			if (a.deliveryStatus === 'generated' && b.deliveryStatus === 'shared') return -1;
@@ -130,6 +130,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onEdit={openEditModal}
 					onDelete={requestDelete}
 					onMarkShared={handleMarkShared}
+					onToggleDelivery={handleToggleDelivery}
 				/>
 
 				{deleteConfirmOpen && (

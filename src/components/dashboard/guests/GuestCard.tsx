@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CopyIcon, ChevronDownIcon } from '@/components/common/icons/ui';
+import { CopyIcon, ChevronDownIcon, CheckIcon, RefreshIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -7,7 +7,8 @@ import {
 	formatGuestDate,
 	formatGuestEntrySource,
 	getGuestVisibleTags,
-	getGuestAttendanceLabel,
+	getGuestStatusLabel,
+	getGuestStatusClass,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestCardProps {
@@ -19,6 +20,7 @@ interface GuestCardProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onToggleDelivery: (item: DashboardGuestItem) => Promise<void>;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -30,6 +32,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onToggleDelivery,
 }) => {
 	const [expanded, setExpanded] = useState(false);
 	const isViewed = !!item.firstViewedAt;
@@ -49,9 +52,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						</span>
 						<span className="guest-card__name">{item.fullName}</span>
 					</div>
-					<span className={`status-pill status-pill--${item.attendanceStatus}`}>
+					<span className={`status-pill status-pill--${getGuestStatusClass(item)}`}>
 						<span className="status-pill__dot" />
-						{getGuestAttendanceLabel(item.attendanceStatus)}
+						{getGuestStatusLabel(item)}
 					</span>
 				</div>
 
@@ -68,10 +71,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							<span className="guest-card__stat-sep">/</span>
 							{item.maxAllowedAttendees}
 						</span>
-					</div>
-
-					<div className={`delivery-status delivery-status--${item.deliveryStatus}`}>
-						{isShared ? 'Entregada' : 'Por enviar'}
 					</div>
 
 					<div className={`view-status ${isViewed ? 'view-status--viewed' : ''}`}>
@@ -102,6 +101,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					waShareUrl={item.waShareUrl}
 					inviteUrl={inviteUrl}
 					shareText={item.shareText}
+					isShared={isShared}
 					onShared={async () => onMarkShared(item)}
 				/>
 				<button
@@ -130,6 +130,22 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</div>
 
 					<div className="guest-card__detail-actions">
+						<button
+							type="button"
+							className={
+								isShared
+									? 'guest-card__action-btn'
+									: 'guest-card__action-btn guest-card__action-btn--primary'
+							}
+							title={isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
+							aria-label={isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
+							onClick={() => onToggleDelivery(item)}
+						>
+							{isShared ? <RefreshIcon size={14} /> : <CheckIcon size={14} />}
+							<span>
+								{isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
+							</span>
+						</button>
 						<button
 							type="button"
 							className="guest-card__action-btn"

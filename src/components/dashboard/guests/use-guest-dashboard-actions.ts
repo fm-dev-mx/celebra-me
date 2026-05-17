@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -40,9 +40,31 @@ export const useGuestDashboardActions = ({
 	const [shareSessionCount, setShareSessionCount] = useState(0);
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
-	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
+	const [pendingAutoShareGuestId, setPendingAutoShareGuestId] = useState<string | null>(null);
+	const [pendingAutoShareFromSubmit, setPendingAutoShareFromSubmit] = useState<string | null>(
+		null,
+	);
+	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!pendingAutoShareGuestId && !pendingAutoShareFromSubmit) return;
+		const guestId = pendingAutoShareGuestId ?? pendingAutoShareFromSubmit;
+		if (!guestId) return;
+
+		const timer1 = setTimeout(() => {
+			setHighlightedGuestId(guestId);
+			const timer2 = setTimeout(() => {
+				setHighlightedGuestId(null);
+				setPendingAutoShareGuestId(null);
+				setPendingAutoShareFromSubmit(null);
+			}, 2000);
+			return () => clearTimeout(timer2);
+		}, 800);
+
+		return () => clearTimeout(timer1);
+	}, [pendingAutoShareGuestId, pendingAutoShareFromSubmit]);
 
 	const openCreateModal = useCallback(() => {
 		setModalMode('create');
@@ -124,17 +146,46 @@ export const useGuestDashboardActions = ({
 				await loadGuests();
 				const currentIndex = items.findIndex((entry) => entry.guestId === item.guestId);
 				if (currentIndex !== -1 && currentIndex < items.length - 1) {
-					const nextGuest = items[currentIndex + 1];
-					setTimeout(() => {
-						setHighlightedGuestId(nextGuest.guestId);
-						setTimeout(() => setHighlightedGuestId(null), 2000);
-					}, 800);
+					setPendingAutoShareGuestId(items[currentIndex + 1].guestId);
 				}
 			} catch (err) {
 				console.error('[GuestDashboard] Mark shared error:', err);
 				setItems(previousItems);
 				setNotification({
 					message: 'Error al actualizar estado.',
+					type: 'warning',
+				});
+			}
+		},
+		[items, loadGuests, setItems],
+	);
+
+	const handleToggleDelivery = useCallback(
+		async (item: DashboardGuestItem) => {
+			const newStatus = item.deliveryStatus === 'shared' ? 'generated' : 'shared';
+			const previousItems = [...items];
+
+			// Optimistic update
+			setItems((prev) =>
+				prev.map((entry) =>
+					entry.guestId === item.guestId
+						? { ...entry, deliveryStatus: newStatus }
+						: entry,
+				),
+			);
+
+			try {
+				await guestsApi.update(item.guestId, { deliveryStatus: newStatus });
+				setNotification({
+					message: `Estado de entrega actualizado a: ${newStatus === 'shared' ? 'Enviada' : 'Por enviar'}`,
+					type: 'success',
+				});
+				await loadGuests();
+			} catch (err) {
+				console.error('[GuestDashboard] Toggle delivery error:', err);
+				setItems(previousItems);
+				setNotification({
+					message: 'Error al actualizar estado de entrega.',
 					type: 'warning',
 				});
 			}
@@ -204,18 +255,8 @@ export const useGuestDashboardActions = ({
 				});
 
 				if (isNextActionActive && modalMode === 'edit' && savedItem) {
-					const guestId = savedItem.guestId;
-					setTimeout(() => {
-						const shareButton = document.querySelector(
-							`[data-guest-id="${guestId}"] .dashboard-guests__share-button`,
-						) as HTMLElement | null;
-						if (shareButton) {
-							shareButton.click();
-							const card = document.querySelector(`[data-guest-id="${guestId}"]`);
-							card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						}
-						setIsNextActionActive(false);
-					}, 400);
+					setPendingAutoShareFromSubmit(savedItem.guestId);
+					setIsNextActionActive(false);
 				}
 
 				if (!stayOpen) {
@@ -271,6 +312,7 @@ export const useGuestDashboardActions = ({
 		handleExport,
 		handleImport,
 		handleMarkShared,
+		handleToggleDelivery,
 		handlePostpone,
 		handleSubmit,
 		highlightedGuestId,
@@ -283,6 +325,7 @@ export const useGuestDashboardActions = ({
 		openEditModal,
 		openImportModal: () => setImportModalOpen(true),
 		openNextGeneratedGuest,
+		pendingAutoShareGuestId,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,

@@ -7,7 +7,8 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
-	getGuestAttendanceLabel,
+	getGuestStatusLabel,
+	getGuestStatusClass,
 	getGuestInviteUrl,
 	getGuestVisibleTags,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -21,6 +22,7 @@ interface GuestTableProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onToggleDelivery: (item: DashboardGuestItem) => Promise<void>;
 }
 
 const GuestTable: React.FC<GuestTableProps> = ({
@@ -31,6 +33,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onToggleDelivery,
 }) => {
 	const [copiedGuestId, setCopiedGuestId] = useState<string | null>(null);
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,6 +74,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						onEdit={onEdit}
 						onDelete={onDelete}
 						onMarkShared={onMarkShared}
+						onToggleDelivery={onToggleDelivery}
 					/>
 				))}
 			</div>
@@ -94,7 +98,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 					<tbody>
 						{items.map((item, index) => {
 							const inviteUrl = getInviteUrl(item);
-							const isViewed = !!item.firstViewedAt;
+							const isViewed = item.firstViewedAt != null;
 							const isShared = item.deliveryStatus === 'shared';
 							const visibleTags = getGuestVisibleTags(item);
 
@@ -133,9 +137,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 									<td data-label="Nota">
 										{item.guestComment ? (
 											<div className="guest-tooltip">
-												<div
-													className={`guest-note-indicator ${item.guestComment ? 'guest-note-indicator--active' : ''}`}
-												>
+												<div className="guest-note-indicator guest-note-indicator--active">
 													<MessageIcon size={20} />
 												</div>
 												<div className="guest-tooltip-content">
@@ -163,10 +165,10 @@ const GuestTable: React.FC<GuestTableProps> = ({
 									</td>
 									<td data-label="Estado">
 										<div
-											className={`status-pill status-pill--${item.attendanceStatus}`}
+											className={`status-pill status-pill--${getGuestStatusClass(item)}`}
 										>
 											<span className="status-pill__dot"></span>
-											{getGuestAttendanceLabel(item.attendanceStatus)}
+											{getGuestStatusLabel(item)}
 										</div>
 									</td>
 									<td data-label="Asistentes">
