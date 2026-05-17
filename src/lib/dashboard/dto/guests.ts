@@ -1,3 +1,4 @@
+import type { DeliveryStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
 
 export type GuestsListResponse = DashboardGuestListResponse;
@@ -29,4 +30,5 @@ export interface UpdateGuestDTO {
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;
+	deliveryStatus?: DeliveryStatus;
 }

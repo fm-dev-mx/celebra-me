@@ -36,6 +36,7 @@
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
 	line-height: 1.3;
+	text-wrap: nowrap;
 
 	&__dot {
 		width: 5px;
@@ -68,6 +69,15 @@
 			var(--dashboard-state-danger-text),
 			var(--dashboard-state-danger-border),
 			var(--dashboard-state-danger)
+		);
+	}
+
+	&--unshared {
+		@include status-pill-variant(
+			var(--dashboard-state-info-bg),
+			var(--dashboard-state-info-text),
+			var(--dashboard-state-info-border),
+			var(--dashboard-state-info)
 		);
 	}
 }

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
@@ -8,11 +9,6 @@ import {
 	updateDashboardGuest,
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
-
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
 
 function parseStatus(raw: string): AttendanceStatus | undefined {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;
@@ -66,6 +62,10 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			tags: Array.isArray(body.tags)
 				? body.tags.filter((tag): tag is string => typeof tag === 'string')
 				: undefined,
+			deliveryStatus:
+				body.deliveryStatus === 'generated' || body.deliveryStatus === 'shared'
+					? body.deliveryStatus
+					: undefined,
 		});
 
 		return jsonResponse(result);

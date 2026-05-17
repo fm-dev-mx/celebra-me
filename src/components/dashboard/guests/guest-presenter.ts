@@ -20,10 +20,31 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
 	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
 }
 
+export function getGuestStatusLabel(item: DashboardGuestItem) {
+	const { attendanceStatus, deliveryStatus } = item;
+
+	if (attendanceStatus === 'confirmed') return 'Aceptada';
+	if (attendanceStatus === 'declined') return 'Denegada';
+
+	// Case: Pending RSVP
+	if (deliveryStatus === 'generated') return 'Por enviar';
+	return 'Pendiente';
+}
+
+export function getGuestStatusClass(item: DashboardGuestItem) {
+	const { attendanceStatus, deliveryStatus } = item;
+
+	if (attendanceStatus === 'confirmed') return 'confirmed';
+	if (attendanceStatus === 'declined') return 'declined';
+
+	if (deliveryStatus === 'generated') return 'unshared';
+	return 'pending';
+}
+
 export function getGuestAttendanceLabel(status: DashboardGuestItem['attendanceStatus']) {
 	if (status === 'pending') return 'Pendiente';
-	if (status === 'confirmed') return 'Confirmado';
-	return 'Declinó';
+	if (status === 'confirmed') return 'Aceptada';
+	return 'Denegada';
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {

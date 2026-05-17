@@ -5,11 +5,11 @@ import {
 	softDeleteGuestById,
 	updateGuestById,
 } from '@/lib/rsvp/repositories/guest.repository';
-import { findEventById } from '@/lib/rsvp/repositories/event.repository';
-import { findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import type {
 	AttendanceStatus,
+	DeliveryStatus,
 	DashboardGuestMutationResponse,
 } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
@@ -199,6 +199,7 @@ export async function updateDashboardGuest(input: {
 	attendeeCount?: number;
 	guestComment?: string;
 	tags?: string[];
+	deliveryStatus?: DeliveryStatus;
 }): Promise<DashboardGuestMutationResponse> {
 	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
 
@@ -257,6 +258,7 @@ export async function updateDashboardGuest(input: {
 				lastResponseSource: 'admin',
 				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
 				tags: input.tags,
+				deliveryStatus: input.deliveryStatus,
 			},
 			input.hostAccessToken,
 		);
