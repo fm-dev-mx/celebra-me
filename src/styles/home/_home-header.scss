@@ -22,6 +22,7 @@
 			height: 100%;
 			width: auto;
 			transition: var(--transition-snappy);
+			filter: invert(50%) brightness(1.8);
 		}
 	}
 }
@@ -144,7 +145,6 @@
 
 #home-header.header-base--transparent {
 	--header-nav-color: var(--landing-header-nav-color-transparent);
-	--header-nav-weight: 300;
 	--header-nav-shadow-transparent: var(--landing-header-nav-shadow-transparent);
 	--header-nav-underline: var(--landing-header-nav-underline-transparent);
 	--header-nav-cta-bg: var(--landing-header-nav-cta-bg-transparent);
@@ -177,4 +177,9 @@
 
 #home-header.header-base--scrolled .home-header__logo--gold {
 	display: block;
+}
+
+// Hide HeaderBase logo when mobile menu is open — NavBarMobile supplies its own logo slot
+#home-header.header-base--menu-open .header-base__logo {
+	display: none;
 }

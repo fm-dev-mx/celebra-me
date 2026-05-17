@@ -93,6 +93,7 @@ const { viewModel } = page;
 			initials={viewModel.envelope?.data?.sealInitials}
 			eventName={viewModel.hero?.name}
 			eventSubtitle={viewModel.hero?.label}
+			isDemo={viewModel.isDemo}
 		/>
 
 		<Hero {...viewModel.hero} time={page.heroTime} guestName={page.guestName} />

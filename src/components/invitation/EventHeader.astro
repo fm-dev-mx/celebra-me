@@ -20,6 +20,7 @@ export interface Props {
 	initials?: string;
 	eventName?: string;
 	eventSubtitle?: string;
+	isDemo?: boolean;
 }
 
 const {
@@ -28,6 +29,7 @@ const {
 	initials,
 	eventName,
 	eventSubtitle,
+	isDemo = false,
 } = Astro.props;
 const RSVP_HREF = '#rsvp';
 const rsvpLink = links.find((link) => link.href === RSVP_HREF);
@@ -66,6 +68,8 @@ const mobileLinks = links.filter((link) => link.href !== RSVP_HREF);
 			ctaLabel={rsvpLink?.label ?? 'Confirmar'}
 			eventName={eventName}
 			eventSubtitle={eventSubtitle}
+			initials={initials}
+			isDemo={isDemo}
 		/>
 	</div>
 </HeaderBase>

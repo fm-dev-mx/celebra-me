@@ -13,7 +13,6 @@ import '@styles/home/_home-header.scss';
 
 const navLinks = [
     { label: 'Demos', href: '#servicios' },
-    { label: 'Servicios', href: '#servicios' },
     { label: 'Planes', href: '#pricing' },
     { label: 'Nosotros', href: '#nosotros' },
 ];
@@ -55,12 +54,13 @@ const ctaLink = '#contacto';
         <NavBarMobile
             links={navLinks}
             headerId="home-header"
-            eventName="CELEBRA-ME"
             loginLink={loginLink}
             ctaLink={ctaLink}
             loginLabel="Iniciar sesión"
             ctaLabel="Crear Invitación"
-        />
+        >
+            <Logo class="mobile-nav-logo" />
+        </NavBarMobile>
     </div>
 
 </HeaderBase>

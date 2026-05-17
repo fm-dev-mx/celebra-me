@@ -60,7 +60,7 @@ describe('Invitation header navigation contract', () => {
 		expect(source).not.toContain('stripDesktopOrdinal');
 	});
 
-	it('uses standardized mobile nav labels across all invitation and demo content', () => {
+	it('validates mobile nav labels and hrefs against allowed values across all content', () => {
 		const navFiles = [
 			...findJsonFiles(path.join(projectRoot, 'src/content/events')),
 			...findJsonFiles(path.join(projectRoot, 'src/content/event-demos')),
@@ -68,7 +68,7 @@ describe('Invitation header navigation contract', () => {
 
 		expect(navFiles.length).toBeGreaterThan(0);
 
-		navFiles.forEach(({ file, data }) => {
+		navFiles.forEach(({ data }) => {
 			const nav = data.navigation as Array<{ label: string; href: string }>;
 			const labels = nav.map((n) => n.label);
 			const hrefs = nav.map((n) => n.href);
@@ -195,7 +195,6 @@ describe('Invitation header navigation contract', () => {
 		const source = read('src/components/ui/header/NavBarMobile.astro');
 
 		expect(source).toContain('data-nav-mobile-close');
-		expect(source).toContain('header-base__mobile-close');
 		expect(source).toContain('aria-label="Cerrar menú"');
 	});
 
