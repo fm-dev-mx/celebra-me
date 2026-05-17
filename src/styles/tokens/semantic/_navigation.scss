@@ -1,0 +1,18 @@
+// 1. Navigation Token CSS Variable Bridge
+:root {
+	// Surface & Blur
+	--nav-glass-blur: 20px;
+	--nav-glass-saturate: 160%;
+	--nav-glass-bg: rgb(0 0 0 / 85%);
+	--nav-scrolled-bg: rgb(0 0 0 / 92%);
+
+	// Dimensions
+	--nav-height: 100px;
+	--nav-height-scrolled: 70px;
+
+	// Layers
+	--layer-nav: 1000;
+	--layer-nav-overlay: 1005;
+	--layer-nav-menu: 1008;
+	--layer-nav-toggle: 1010;
+}
