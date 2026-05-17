@@ -27,27 +27,55 @@ import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/u
 import { generateShortId } from '@/lib/server/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
-	const pendingItems = items.filter((item) => item.attendanceStatus === 'pending');
-	const confirmedItems = items.filter((item) => item.attendanceStatus === 'confirmed');
-	const declinedItems = items.filter((item) => item.attendanceStatus === 'declined');
-	const generatedItems = items.filter((item) => item.deliveryStatus === 'generated');
-	const sharedItems = items.filter((item) => item.deliveryStatus === 'shared');
+	let totalInvitations = 0;
+	let totalPeople = 0;
+	let pendingInvitations = 0;
+	let pendingPeople = 0;
+	let confirmedInvitations = 0;
+	let confirmedPeople = 0;
+	let declinedInvitations = 0;
+	let declinedPeople = 0;
+	let generatedInvitations = 0;
+	let sharedInvitations = 0;
+	let viewed = 0;
+
+	for (const item of items) {
+		totalInvitations++;
+		totalPeople += item.maxAllowedAttendees ?? 0;
+
+		switch (item.attendanceStatus) {
+			case 'pending':
+				pendingInvitations++;
+				pendingPeople += item.maxAllowedAttendees ?? 0;
+				break;
+			case 'confirmed':
+				confirmedInvitations++;
+				confirmedPeople += item.attendeeCount ?? 0;
+				break;
+			case 'declined':
+				declinedInvitations++;
+				declinedPeople += item.maxAllowedAttendees ?? 0;
+				break;
+		}
+
+		if (item.deliveryStatus === 'generated') generatedInvitations++;
+		else if (item.deliveryStatus === 'shared') sharedInvitations++;
+
+		if (item.firstViewedAt) viewed++;
+	}
 
 	return {
-		totalInvitations: items.length,
-		totalPeople: items.reduce((acc, item) => acc + (item.maxAllowedAttendees || 0), 0),
-		generatedInvitations: generatedItems.length,
-		sharedInvitations: sharedItems.length,
-		pendingInvitations: pendingItems.length,
-		pendingPeople: pendingItems.reduce((acc, item) => acc + (item.maxAllowedAttendees || 0), 0),
-		confirmedInvitations: confirmedItems.length,
-		confirmedPeople: confirmedItems.reduce((acc, item) => acc + (item.attendeeCount || 0), 0),
-		declinedInvitations: declinedItems.length,
-		declinedPeople: declinedItems.reduce(
-			(acc, item) => acc + (item.maxAllowedAttendees || 0),
-			0,
-		),
-		viewed: items.filter((item) => !!item.firstViewedAt).length,
+		totalInvitations,
+		totalPeople,
+		generatedInvitations,
+		sharedInvitations,
+		pendingInvitations,
+		pendingPeople,
+		confirmedInvitations,
+		confirmedPeople,
+		declinedInvitations,
+		declinedPeople,
+		viewed,
 	};
 }
 
@@ -59,53 +87,51 @@ export async function listDashboardGuests(input: {
 	origin: string;
 }): Promise<DashboardGuestListResponse> {
 	const event = await findEventById(input.eventId, input.hostAccessToken);
-	if (!event) {
-		const membership = await findMembershipByEventForHost(input.eventId, input.hostAccessToken);
-		if (membership) {
-			const guests = await findGuestsByEvent(
-				{
-					eventId: membership.eventId,
-					status: input.status ?? 'all',
-					search: sanitize(input.search, 120),
-				},
-				input.hostAccessToken,
-			);
-			const items = guests.map((guest) => toGuestDto(guest, input.origin));
-			return {
-				eventId: membership.eventId,
-				items,
-				totals: buildDashboardTotals(items),
-				updatedAt: new Date().toISOString(),
-			};
-		}
-
-		const serviceEvent = await findEventByIdService(input.eventId);
-		if (serviceEvent) {
-			throw new ApiError(403, 'forbidden', 'Access to the requested event is denied.');
-		}
-		throw new ApiError(404, 'not_found', 'Event not found.');
+	if (event) {
+		const guests = await findGuestsByEvent(
+			{
+				eventId: event.id,
+				status: input.status ?? 'all',
+				search: sanitize(input.search, 120),
+			},
+			input.hostAccessToken,
+		);
+		const template = await getSharingTemplateForSlug(event.slug, event.eventType);
+		const items = guests.map((guest) =>
+			toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
+		);
+		return {
+			eventId: event.id,
+			items,
+			totals: buildDashboardTotals(items),
+			updatedAt: new Date().toISOString(),
+		};
 	}
 
-	const guests = await findGuestsByEvent(
-		{
-			eventId: event.id,
-			status: input.status ?? 'all',
-			search: sanitize(input.search, 120),
-		},
-		input.hostAccessToken,
-	);
+	const membership = await findMembershipByEventForHost(input.eventId, input.hostAccessToken);
+	if (membership) {
+		const guests = await findGuestsByEvent(
+			{
+				eventId: membership.eventId,
+				status: input.status ?? 'all',
+				search: sanitize(input.search, 120),
+			},
+			input.hostAccessToken,
+		);
+		const items = guests.map((guest) => toGuestDto(guest, input.origin));
+		return {
+			eventId: membership.eventId,
+			items,
+			totals: buildDashboardTotals(items),
+			updatedAt: new Date().toISOString(),
+		};
+	}
 
-	const template = await getSharingTemplateForSlug(event.slug, event.eventType);
-	const items = guests.map((guest) =>
-		toGuestDto(guest, input.origin, event.title, event.eventType, event.slug, template),
-	);
-
-	return {
-		eventId: event.id,
-		items,
-		totals: buildDashboardTotals(items),
-		updatedAt: new Date().toISOString(),
-	};
+	const serviceEvent = await findEventByIdService(input.eventId);
+	if (serviceEvent) {
+		throw new ApiError(403, 'forbidden', 'Access to the requested event is denied.');
+	}
+	throw new ApiError(404, 'not_found', 'Event not found.');
 }
 
 export async function createDashboardGuest(input: {
