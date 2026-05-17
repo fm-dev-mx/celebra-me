@@ -18,18 +18,3 @@
 			var(--color-surface-dark) 100%
 		);
 }
-
-/* Skeleton for future auth variants */
-.auth-shell[data-variant='standard'] {
-	background-image:
-		radial-gradient(
-			circle at 16% 0%,
-			rgb(var(--color-action-accent-rgb), 0.1),
-			transparent 42%
-		),
-		linear-gradient(
-			165deg,
-			rgb(var(--color-surface-primary-rgb), 1) 0%,
-			rgb(var(--color-surface-secondary-rgb), 1) 100%
-		);
-}
