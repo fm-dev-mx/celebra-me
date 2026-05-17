@@ -196,6 +196,7 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "boot",
+        "sealInitials": "G·M",
         "documentLabel": "INVITACIÓN PRIVADA",
         "stampText": "EST. 1966",
         "stampYear": "2026",

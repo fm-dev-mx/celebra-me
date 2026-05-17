@@ -247,6 +247,7 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "heart",
+        "sealInitials": "L·G",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
             "primary": "actionAccent",
