@@ -35,6 +35,7 @@
 }
 
 .home-header__desktop {
+	color: var(--color-noir-accent);
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-lg);
@@ -125,9 +126,9 @@
 
 		&:hover {
 			transform: translateY(-2px);
-			background: var(--home-header-cta-hover-bg, var(--home-header-cta-bg));
+			background: var(--home-header-cta-bg);
 			color: var(--home-header-cta-color);
-			border-color: var(--home-header-cta-hover-border, var(--home-header-cta-border));
+			border-color: var(--home-header-cta-border);
 			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
@@ -136,8 +137,6 @@
 // --- Specific State Overrides (Refactored to use the Formal Navigation Contract) ---
 
 :global(.header-base) {
-	--nav-bg: rgb(0 0 0 / 85%);
-	--nav-blur: 20px;
 	--home-header-nav-color: rgb(255 255 255);
 	--home-header-nav-weight: 300;
 	--home-header-nav-shadow: none;
@@ -149,12 +148,6 @@
 	--home-header-cta-border: rgb(255 255 255 / 20%);
 	--home-header-cta-color: rgb(255 255 255);
 	--home-header-cta-shadow: 0 4px 15px rgb(0 0 0 / 10%);
-
-	transition:
-		background-color var(--duration-standard) var(--ease-premium),
-		box-shadow var(--duration-standard) var(--ease-premium),
-		backdrop-filter var(--duration-standard) var(--ease-premium),
-		border-color var(--duration-standard) var(--ease-premium);
 }
 
 :global(.header-base--transparent) {

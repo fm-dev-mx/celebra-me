@@ -142,16 +142,16 @@
  */
 
 .header-base--transparent {
+	--nav-bg: transparent;
+	--nav-blur: 0;
+	--nav-border: transparent;
+	--nav-shadow: none;
+
 	.event-header__title,
 	.event-header__action-btn:not(.event-header__action-btn--cta) {
-		/* stylelint-disable declaration-no-important */
-		color: var(--header-nav-color-transparent) !important;
-		text-shadow: var(--header-nav-shadow-transparent) !important;
-		filter: var(--header-nav-filter-transparent) !important;
-		background: none !important;
-		border: none !important;
-		box-shadow: none !important;
-		/* stylelint-enable declaration-no-important */
+		color: var(--header-nav-color-transparent);
+		text-shadow: var(--header-nav-shadow-transparent);
+		filter: var(--header-nav-filter-transparent);
 	}
 }
 
