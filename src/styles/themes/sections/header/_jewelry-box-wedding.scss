@@ -1,0 +1,40 @@
+.header-base[data-variant='jewelry-box-wedding'] {
+	--header-bg: transparent;
+	--header-bg-scrolled: var(--color-surface-primary);
+	--header-border-scrolled: 1px solid var(--color-action-accent);
+	--header-nav-title-color: var(--color-text-primary);
+	--header-nav-color: var(--color-text-primary);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-hover-color: var(--color-action-accent);
+	--header-nav-shadow-transparent: 0 1px 14px rgb(38 38 38 / 52%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 10px rgb(38 38 38 / 34%));
+	--header-nav-cta-bg: var(--color-surface-primary);
+	--header-nav-cta-color: var(--color-text-primary);
+	--header-nav-cta-border: var(--color-action-accent);
+	--header-nav-cta-shadow:
+		0 14px 34px -28px rgb(38 38 38 / 48%), inset 0 1px 0 rgb(255 255 255 / 46%);
+	--header-nav-cta-hover-bg: var(--color-action-accent);
+	--header-nav-cta-hover-color: var(--color-text-primary);
+	--header-nav-cta-hover-border: var(--color-action-accent);
+	--mobile-drawer-bg: var(--color-surface-primary);
+	--mobile-drawer-border: var(--color-action-accent);
+	--mobile-drawer-link-color: var(--color-text-primary);
+	--mobile-drawer-link-hover: var(--color-text-emphasis);
+	--mobile-drawer-login-color: rgb(38 38 38 / 74%);
+	--mobile-drawer-login-hover-color: var(--color-text-primary);
+	--mobile-drawer-cta-bg: var(--color-surface-dark);
+	--mobile-drawer-cta-color: var(--color-surface-primary);
+	--mobile-drawer-cta-border: 1px solid var(--color-surface-dark);
+	--mobile-drawer-cta-shadow: 0 14px 32px rgb(38 38 38 / 18%);
+	--mobile-drawer-cta-hover-bg: var(--color-action-accent);
+	--mobile-drawer-cta-hover-color: var(--color-surface-dark);
+	--mobile-drawer-cta-hover-border: 1px solid var(--color-action-accent);
+	--mobile-drawer-footer-copy: rgb(38 38 38 / 62%);
+	--mobile-signature-color: rgb(38 38 38 / 76%);
+	--hamburger-color: var(--color-text-on-dark);
+	--hamburger-color-menu-open: var(--color-text-primary);
+}
+
+.header-base[data-variant='jewelry-box-wedding'].header-base--transparent {
+	--header-nav-title-color: var(--color-text-on-dark);
+}
