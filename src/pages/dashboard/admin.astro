@@ -48,11 +48,11 @@ const pageData = await prepareDashboardAdminPageData();
 			background:
 				linear-gradient(
 					180deg,
-					var(--dashboard-surface-card-strong),
-					var(--dashboard-surface-card-soft)
+					var(--dashboard-card-bg),
+					var(--dashboard-card-bg-soft)
 				),
-				var(--dashboard-surface-panel);
-			border: 1px solid var(--dashboard-border-premium);
+				var(--dashboard-panel-bg);
+			border: 1px solid var(--dashboard-card-border);
 			border-radius: 1rem;
 			padding: 1.5rem;
 			transition: transform 0.2s ease;
@@ -65,23 +65,23 @@ const pageData = await prepareDashboardAdminPageData();
 		.dashboard-stat-card h3 {
 			margin: 0 0 0.5rem;
 			font-size: 1rem;
-			color: var(--dashboard-text-secondary);
+			color: var(--color-text-secondary);
 			font-weight: 500;
 		}
 		.dashboard-stat-number {
 			font-size: 2.5rem;
 			font-weight: 700;
 			margin: 0.5rem 0;
-			color: var(--dashboard-brand-primary);
+			color: var(--color-action-primary);
 		}
 		.dashboard-stat-subtext {
 			font-size: 0.875rem;
-			color: var(--dashboard-text-muted);
+			color: var(--color-text-muted);
 			margin: 0.25rem 0 1rem;
 		}
 		.dashboard-stat-link {
 			display: inline-block;
-			color: var(--dashboard-text-brand);
+			color: var(--color-text-emphasis);
 			text-decoration: none;
 			font-weight: 500;
 			font-size: 0.875rem;
