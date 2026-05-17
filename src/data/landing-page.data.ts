@@ -97,34 +97,33 @@ export const landingData: LandingPageData = {
 	},
 	pricing: {
 		eyebrow: 'Inversión para tu celebración',
-		title: 'Tres formas de crear tu invitación digital',
-		intro: 'Todas las opciones incluyen invitación digital completa, confirmación de asistencia, panel de invitados y enlace personalizado. Elige el nivel de diseño y personalización que mejor se ajuste a tu celebración.',
-		note: 'Promoción de lanzamiento en diseños seleccionados de colección: desde $499 MXN. Precio regular desde $899 MXN.',
+		title: 'Niveles de Exclusividad',
+		intro: 'Tres propuestas diseñadas para elevar tu celebración. Todas las opciones incluyen invitación digital completa, confirmación de asistencia, panel de invitados y enlace personalizado.',
+		note: 'Beneficio de lanzamiento en diseños seleccionados de colección: desde $499 MXN. Tarifa regular desde $899 MXN.',
 		tiers: [
 			{
 				title: 'Colección',
-				description: 'Diseños seleccionados, elegantes y listos para personalizar.',
-				badge: 'Promoción de lanzamiento',
+				description: 'Diseños de autor, elegantes y listos para personalizar con agilidad.',
+				badge: 'Beneficio de Lanzamiento',
 				price: { amount: '499', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular desde $899 MXN',
+				regularPrice: 'Tarifa regular desde $899 MXN',
 				sections: [
 					{
 						title: 'Ideal para',
 						items: [
 							'Entregas ágiles en 24 horas hábiles*',
-							'Eventos que necesitan un resultado elegante',
-							'Quienes desean organizar y dar seguimiento a sus invitados',
+							'Quienes buscan un diseño de alta gama listo para usar',
+							'Seguimiento impecable de invitados',
 						],
 					},
 					{
 						title: 'Incluye',
 						items: [
-							'Diseño listo para adaptar a tu evento',
-							'Personalización de fotos, textos y fechas',
-							'Ajuste de colores y música',
-							'Galería, ubicación y confirmación de asistencia',
-							'Panel para gestionar invitados',
-							'Enlace personalizado para compartir',
+							'Adaptación de fotos, textos y fechas',
+							'Configuración de paleta de colores y música',
+							'Logística completa: Galería, ubicación y RSVP',
+							'Panel avanzado para gestionar invitados',
+							'Enlace personalizado de alta disponibilidad',
 						],
 					},
 				],
@@ -133,26 +132,27 @@ export const landingData: LandingPageData = {
 				href: '#contacto',
 			},
 			{
-				title: 'Adaptación Editorial',
-				description: 'Diseño ajustado con mayor intención visual para tu evento.',
-				badge: 'Más recomendado',
+				title: 'Premium',
+				description:
+					'Dirección de arte aplicada para reflejar la identidad visual de tu evento.',
+				badge: 'El Favorito',
 				isPrimary: true,
 				price: { amount: '1,499', currency: 'MXN', period: 'pago único' },
 				sections: [
 					{
 						title: 'Ideal para',
 						items: [
-							'Celebraciones con una estética más definida',
-							'Quienes buscan una invitación más exclusiva',
+							'Celebraciones con un concepto visual definido',
+							'Eventos que buscan distinción y exclusividad editorial',
 						],
 					},
 					{
 						title: 'Diferencial',
 						items: [
-							'Propuesta visual única para tu evento',
-							'Diseño adaptado a la identidad visual de tu evento',
-							'Composición más cuidada de fotografías, color y tipografía',
-							'Resultado más exclusivo y personalizado',
+							'Propuesta de diseño adaptada a tu identidad visual',
+							'Composición cuidada de fotografía y tipografía',
+							'Curaduría estética para un resultado premium',
+							'Refinamiento de cada detalle interactivo',
 						],
 					},
 				],
@@ -160,32 +160,30 @@ export const landingData: LandingPageData = {
 				href: '#contacto',
 			},
 			{
-				title: 'Diseño a la Medida',
-				description: 'Experiencia visual única creada desde cero.',
+				title: 'Exclusivo',
+				description: 'Experiencia artística única, creada desde cero para tu visión.',
 				isExclusive: true,
 				price: { amount: 'Cotización personalizada', currency: '', period: '' },
-				regularPrice: 'Proyectos desde $2,500 MXN',
+				regularPrice: 'Proyectos exclusivos desde $2,500 MXN',
 				sections: [
 					{
 						title: 'Ideal para',
 						items: [
-							'Eventos exclusivos o de autor',
-							'Conceptos visuales muy específicos',
-							'Celebraciones que requieren una experiencia única',
+							'Eventos de autor o conceptos disruptivos',
+							'Visiones que requieren una pieza única e irrepetible',
 						],
 					},
 					{
 						title: 'Diferencial',
 						items: [
-							'Concepto creativo desde cero',
-							'Ilustración, composición o animación personalizada',
-							'Secciones especiales según el evento',
-							'Experiencia visual e interactiva personalizada',
-							'Acompañamiento prioritario',
+							'Concepto creativo original y exclusivo',
+							'Piezas audiovisuales o animaciones personalizadas',
+							'Estructura y secciones diseñadas bajo demanda',
+							'Acompañamiento y consultoría de diseño prioritaria',
 						],
 					},
 				],
-				cta: 'Solicitar propuesta personalizada',
+				cta: 'Solicitar propuesta de autor',
 				href: '#contacto',
 			},
 		],
@@ -195,7 +193,7 @@ export const landingData: LandingPageData = {
 		faqs: [
 			{
 				question: '¿Qué opción me conviene?',
-				answer: 'Elige Colección si buscas una invitación rápida, elegante y lista para personalizar. Elige Adaptación Editorial si quieres una propuesta visual más cuidada y alineada al estilo de tu evento. Elige Diseño a la Medida si necesitas una experiencia completamente personalizada desde cero.',
+				answer: 'Elige Colección si buscas una invitación rápida, elegante y lista para personalizar. Elige Premium si quieres una propuesta visual más cuidada y alineada al estilo de tu evento. Elige Exclusivo si necesitas una experiencia completamente personalizada desde cero.',
 			},
 			{
 				question: '¿Todas las invitaciones incluyen las mismas secciones?',
@@ -219,7 +217,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿La promoción de $499 aplica para cualquier diseño?',
-				answer: 'No. La promoción de $499 MXN aplica solo para diseños seleccionados de colección. Adaptaciones editoriales y diseños a la medida se cotizan por separado.',
+				answer: 'No. La promoción de $499 MXN aplica solo para diseños seleccionados de colección. Los niveles Premium y Exclusivo se cotizan por separado.',
 			},
 		],
 	},
