@@ -8,7 +8,40 @@
 
 .header-base[data-variant='editorial'] {
 	--header-bg: transparent;
-	--header-bg-scrolled: rgb(var(--color-surface-dark-rgb) / 85%);
+	--header-bg-scrolled: rgb(8 8 10 / 94%);
+	--header-border-scrolled: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
+	--header-nav-title-color: var(--color-action-accent);
+	--header-nav-color: var(--color-text-primary);
+	--header-nav-color-transparent: var(--color-text-primary);
+	--header-nav-hover-color: var(--color-action-accent);
+	--header-nav-shadow-transparent: 0 1px 14px rgb(0 0 0 / 70%);
+	--header-nav-filter-transparent: drop-shadow(0 6px 12px rgb(0 0 0 / 42%));
+	--header-nav-cta-bg: rgb(255 255 255 / 8%);
+	--header-nav-cta-color: var(--color-text-primary);
+	--header-nav-cta-border: rgb(var(--color-action-accent-rgb) / 48%);
+	--header-nav-cta-shadow:
+		0 16px 40px -30px rgb(0 0 0 / 80%), inset 0 1px 0 rgb(255 255 255 / 14%);
+	--header-nav-cta-hover-bg: rgb(var(--color-action-accent-rgb) / 16%);
+	--header-nav-cta-hover-color: var(--color-text-primary);
+	--header-nav-cta-hover-border: rgb(var(--color-action-accent-rgb) / 70%);
+	--mobile-overlay-bg: rgb(0 0 0 / 74%);
+	--mobile-drawer-bg: rgb(8 8 10 / 98%);
+	--mobile-drawer-border: rgb(var(--color-action-accent-rgb) / 28%);
+	--mobile-drawer-link-color: var(--color-text-primary);
+	--mobile-drawer-link-hover: var(--color-action-accent);
+	--mobile-drawer-login-color: rgb(255 255 255 / 78%);
+	--mobile-drawer-login-hover-color: var(--color-text-primary);
+	--mobile-drawer-cta-bg: var(--color-text-primary);
+	--mobile-drawer-cta-color: var(--color-surface-dark);
+	--mobile-drawer-cta-border: 1px solid var(--color-text-primary);
+	--mobile-drawer-cta-shadow: 0 14px 34px rgb(var(--color-action-accent-rgb) / 18%);
+	--mobile-drawer-cta-hover-bg: var(--color-action-accent);
+	--mobile-drawer-cta-hover-color: rgb(8 8 10);
+	--mobile-drawer-cta-hover-border: 1px solid var(--color-action-accent);
+	--mobile-drawer-footer-copy: rgb(255 255 255 / 62%);
+	--mobile-signature-color: rgb(255 255 255 / 80%);
+	--hamburger-color: var(--color-text-primary);
+	--hamburger-color-menu-open: var(--color-text-primary);
 
 	.event-header__title {
 		display: none;

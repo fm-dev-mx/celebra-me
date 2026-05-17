@@ -45,7 +45,6 @@
 	}
 
 	.event-header__action-btn:hover {
-		/* stylelint-disable-next-line declaration-no-important */
-		color: rgb(255 245 219 / 100%) !important;
+		--header-nav-hover-color: rgb(255 245 219 / 100%);
 	}
 }

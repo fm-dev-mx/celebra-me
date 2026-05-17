@@ -7,6 +7,10 @@ function read(relativePath: string): string {
 	return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 }
 
+function expectToken(source: string, token: string): void {
+	expect(source).toContain(`${token}:`);
+}
+
 describe('Invitation header navigation contract', () => {
 	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
 		const source = read('src/components/invitation/EventHeader.astro');
@@ -75,5 +79,60 @@ describe('Invitation header navigation contract', () => {
 		expect(source).toMatch(/--header-bg-scrolled:/);
 		expect(source).toMatch(/--header-border-color:/);
 		expect(source).toMatch(/--mobile-drawer-bg:/);
+	});
+
+	it('publishes the complete navigation token contract from the semantic token layer', () => {
+		const source = read('src/styles/tokens/semantic/_navigation.scss');
+
+		[
+			'--mobile-drawer-link-color',
+			'--mobile-drawer-login-color',
+			'--mobile-drawer-cta-bg',
+			'--mobile-drawer-cta-color',
+			'--mobile-drawer-cta-border',
+			'--mobile-signature-color',
+			'--header-nav-title-color',
+			'--header-nav-cta-bg',
+			'--header-nav-cta-color',
+			'--nav-transparent-scrim',
+			'--nav-menu-open-container-bg',
+		].forEach((token) => expectToken(source, token));
+	});
+
+	it('keeps mobile navigation colors behind the shared token contract', () => {
+		const source = read('src/styles/layout/_header-base.scss');
+
+		expect(source).toContain('color: var(--mobile-drawer-link-color)');
+		expect(source).toContain('color: var(--mobile-drawer-login-color)');
+		expect(source).toContain('background: var(--mobile-drawer-cta-bg)');
+		expect(source).toContain('color: var(--mobile-drawer-cta-color)');
+		expect(source).toContain('color: var(--mobile-signature-color)');
+		expect(source).not.toContain('color: rgb(255 255 255 / 60%)');
+	});
+
+	it('defines readable header and drawer tokens for affected presets', () => {
+		const themes = [
+			'src/styles/themes/sections/header/_premiere-floral.scss',
+			'src/styles/themes/sections/header/_jewelry-box-wedding.scss',
+			'src/styles/themes/sections/header/_editorial.scss',
+			'src/styles/themes/sections/header/_angelic-presence.scss',
+			'src/styles/themes/sections/header/_celestial-blue.scss',
+		];
+
+		themes.forEach((file) => {
+			const source = read(file);
+
+			expectToken(source, '--header-nav-color');
+			expectToken(source, '--header-nav-color-transparent');
+			expectToken(source, '--mobile-drawer-bg');
+			expectToken(source, '--mobile-drawer-link-color');
+			expectToken(source, '--mobile-drawer-cta-bg');
+			expectToken(source, '--mobile-drawer-cta-color');
+			expectToken(source, '--mobile-signature-color');
+		});
+	});
+
+	it('does not keep a TypeScript navigation config as a second source of truth', () => {
+		expect(fs.existsSync(path.join(projectRoot, 'src/config/navigation.ts'))).toBe(false);
 	});
 });

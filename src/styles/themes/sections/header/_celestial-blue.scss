@@ -8,17 +8,43 @@
 
 .header-base[data-variant='celestial-blue'] {
 	--header-bg: rgb(var(--color-deep-blue-graphite-rgb) / 0%);
-	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--header-bg-scrolled: rgb(var(--color-deep-blue-graphite-rgb) / 92%);
 	--header-border-color: rgb(var(--color-liquid-silver-rgb) / 14%);
+	--header-nav-title-color: var(--color-diamond-white);
 	--header-nav-color: var(--color-diamond-white);
 	--header-nav-color-transparent: var(--color-diamond-white);
+	--header-nav-hover-color: var(--color-satin-blue);
 	--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-deep-blue-graphite-rgb) / 28%);
 	--header-nav-filter-transparent: none;
 	--header-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 14%);
-	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 88%);
+	--header-border-scrolled: var(--header-border-bottom);
+	--header-nav-cta-bg: rgb(var(--color-diamond-white-rgb) / 10%);
+	--header-nav-cta-color: var(--color-diamond-white);
+	--header-nav-cta-border: rgb(var(--color-liquid-silver-rgb) / 50%);
+	--header-nav-cta-shadow:
+		0 14px 34px -28px rgb(var(--color-deep-blue-graphite-rgb) / 64%),
+		inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 20%);
+	--header-nav-cta-hover-bg: rgb(var(--color-satin-blue-rgb) / 16%);
+	--header-nav-cta-hover-color: var(--color-diamond-white);
+	--header-nav-cta-hover-border: rgb(var(--color-satin-blue-rgb) / 58%);
+	--mobile-drawer-bg: rgb(var(--color-deep-blue-graphite-rgb) / 96%);
 	--mobile-drawer-border: rgb(var(--color-liquid-silver-rgb) / 18%);
-	--mobile-drawer-link-hover: var(--color-diamond-white);
+	--mobile-drawer-link-color: var(--color-diamond-white);
+	--mobile-drawer-link-hover: var(--color-satin-blue);
+	--mobile-drawer-login-color: rgb(var(--color-diamond-white-rgb) / 76%);
+	--mobile-drawer-login-hover-color: var(--color-diamond-white);
+	--mobile-drawer-cta-bg: var(--color-diamond-white);
+	--mobile-drawer-cta-color: var(--color-deep-blue-graphite);
+	--mobile-drawer-cta-border: 1px solid var(--color-diamond-white);
+	--mobile-drawer-cta-shadow: 0 12px 30px rgb(var(--color-satin-blue-rgb) / 20%);
+	--mobile-drawer-cta-hover-bg: var(--color-satin-blue);
+	--mobile-drawer-cta-hover-color: var(--color-deep-blue-graphite);
+	--mobile-drawer-cta-hover-border: 1px solid var(--color-satin-blue);
+	--mobile-drawer-footer-copy: rgb(var(--color-diamond-white-rgb) / 62%);
 	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-deep-blue-graphite-rgb) / 65%);
+	--mobile-signature-color: rgb(var(--color-diamond-white-rgb) / 80%);
+	--hamburger-color: var(--color-diamond-white);
+	--hamburger-color-menu-open: var(--color-diamond-white);
 
 	.hamburger__line {
 		height: 1.5px;

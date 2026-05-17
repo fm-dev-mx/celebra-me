@@ -1,8 +1,14 @@
 @use '../tokens' as tokens;
 
 /*
- * Block: .home-header
- * Specific styles for the Landing Page Header
+ * Contract:
+ *   Reads  — --header-nav-color, --header-nav-color-transparent,
+ *            --header-nav-shadow-transparent, --nav-logo-opacity-light, --nav-logo-opacity-dark
+ *   Writes — landing-specific values for the above contract variables via #home-header scoping.
+ *
+ *   The base HeaderBase component publishes --nav-* variables.
+ *   Theme _base.scss defines default --header-nav-* values.
+ *   This file overrides those defaults specifically for the landing page.
  */
 
 .home-header {
@@ -18,20 +24,6 @@
 			transition: var(--transition-snappy);
 		}
 	}
-
-	&__logo {
-		&--white {
-			display: block;
-		}
-
-		&--gold {
-			display: none;
-		}
-	}
-}
-
-.home-header__logo--white {
-	filter: brightness(0) invert(1);
 }
 
 .home-header__desktop {
@@ -42,8 +34,6 @@
 	text-wrap: nowrap;
 }
 
-// Logo visibility is handled by generic header-base state selectors at the bottom of this file.
-
 .home-nav {
 	display: flex;
 	gap: var(--spacing-lg);
@@ -52,16 +42,16 @@
 	&__link {
 		font-family: var(--font-display);
 		font-size: 0.9rem;
-		font-weight: var(--home-header-nav-weight, 300);
+		font-weight: var(--header-nav-weight, 300);
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--home-header-nav-color);
+		color: var(--header-nav-color);
 		position: relative;
 		width: fit-content;
 		padding: var(--spacing-xs) 0;
 		transition: var(--transition-snappy);
-		text-shadow: var(--home-header-nav-shadow, none);
+		text-shadow: var(--header-nav-shadow-transparent, none);
 
 		&::after {
 			content: '';
@@ -70,7 +60,7 @@
 			left: 0;
 			width: 100%;
 			height: 1px;
-			background: var(--home-header-nav-underline, currentcolor);
+			background: var(--header-nav-underline, currentcolor);
 			transform: scaleX(0);
 			transform-origin: left;
 			transition: transform 0.4s tokens.$ease-premium;
@@ -93,7 +83,7 @@
 	gap: var(--spacing-md);
 
 	&__login {
-		color: var(--home-header-login-color);
+		color: var(--header-nav-login-color);
 		text-decoration: none;
 		font-size: 0.85rem;
 		text-transform: uppercase;
@@ -101,10 +91,10 @@
 		font-weight: 300;
 		transition: var(--transition-snappy);
 		padding: var(--spacing-sm);
-		text-shadow: var(--home-header-login-shadow, none);
+		text-shadow: var(--header-nav-login-shadow, none);
 
 		&:hover {
-			color: var(--home-header-btn-hover, var(--color-noir-text));
+			color: var(--header-nav-hover-color, var(--color-noir-text));
 		}
 	}
 
@@ -115,83 +105,76 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--home-header-cta-color);
+		color: var(--header-nav-cta-color);
 		padding: var(--spacing-sm) var(--spacing-xl);
-		background: var(--home-header-cta-bg);
+		background: var(--header-nav-cta-bg);
 		backdrop-filter: blur(10px);
-		border: 1px solid var(--home-header-cta-border, rgb(255 255 255 / 20%));
+		border: 1px solid var(--header-nav-cta-border);
 		border-radius: 999px;
-		box-shadow: var(--home-header-cta-shadow, 0 4px 15px rgb(0 0 0 / 10%));
+		box-shadow: var(--header-nav-cta-shadow);
 		transition: var(--transition-standard);
 
 		&:hover {
 			transform: translateY(-2px);
-			background: var(--home-header-cta-bg);
-			color: var(--home-header-cta-color);
-			border-color: var(--home-header-cta-border);
+			background: var(--header-nav-cta-bg);
+			color: var(--header-nav-cta-color);
+			border-color: var(--header-nav-cta-border);
 			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
 }
 
-// --- Specific State Overrides (Refactored to use the Formal Navigation Contract) ---
+// --- State Overrides (scoped to #home-header, unified contract) ---
 
-:global(.header-base) {
-	--home-header-nav-color: rgb(255 255 255);
-	--home-header-nav-weight: 300;
-	--home-header-nav-shadow: none;
-	--home-header-nav-underline: rgb(255 255 255);
-	--home-header-login-color: rgb(255 255 255 / 70%);
-	--home-header-login-shadow: none;
-	--home-header-btn-hover: rgb(255 255 255);
-	--home-header-cta-bg: rgb(255 255 255 / 5%);
-	--home-header-cta-border: rgb(255 255 255 / 20%);
-	--home-header-cta-color: rgb(255 255 255);
-	--home-header-cta-shadow: 0 4px 15px rgb(0 0 0 / 10%);
+#home-header {
+	--header-nav-color: var(--landing-header-nav-color);
+	--header-nav-weight: 300;
+	--header-nav-shadow-transparent: var(--landing-header-nav-shadow);
+	--header-nav-underline: var(--landing-header-nav-underline);
+	--header-nav-login-color: var(--landing-header-nav-login-color);
+	--header-nav-login-shadow: var(--landing-header-nav-login-shadow);
+	--header-nav-hover-color: var(--landing-header-nav-hover-color);
+	--header-nav-cta-bg: var(--landing-header-nav-cta-bg);
+	--header-nav-cta-border: var(--landing-header-nav-cta-border);
+	--header-nav-cta-color: var(--landing-header-nav-cta-color);
+	--header-nav-cta-shadow: var(--landing-header-nav-cta-shadow);
+	--nav-menu-open-container-bg: var(--landing-header-menu-open-bg);
+	--nav-menu-open-container-border: var(--landing-header-menu-open-border);
 }
 
-:global(.header-base--transparent) {
-	--nav-bg: transparent;
-	--nav-blur: 0;
-	--home-header-nav-color: rgb(255 255 255);
-	--home-header-nav-weight: 300;
-	--home-header-nav-shadow: 0 1px 12px rgb(0 0 0 / 30%);
-	--home-header-nav-underline: rgb(255 255 255);
-	--home-header-cta-bg: rgb(255 255 255 / 10%);
-	--home-header-cta-border: rgb(255 255 255 / 30%);
+#home-header.header-base--transparent {
+	--header-nav-color: var(--landing-header-nav-color-transparent);
+	--header-nav-weight: 300;
+	--header-nav-shadow-transparent: var(--landing-header-nav-shadow-transparent);
+	--header-nav-underline: var(--landing-header-nav-underline-transparent);
+	--header-nav-cta-bg: var(--landing-header-nav-cta-bg-transparent);
+	--header-nav-cta-border: var(--landing-header-nav-cta-border-transparent);
 }
 
-:global(.header-base--transparent .home-header__logo--white) {
-	opacity: var(--nav-logo-opacity-light); // Controlled by base contract
-	visibility: visible;
+#home-header.header-base--transparent .home-header__logo--white {
+	display: block;
 }
 
-:global(.header-base--transparent .home-header__logo--gold) {
-	opacity: var(--nav-logo-opacity-dark); // Controlled by base contract
-	visibility: hidden;
+#home-header.header-base--transparent .home-header__logo--gold {
+	display: none;
 }
 
-:global(.header-base--scrolled) {
-	--nav-bg: var(--nav-scrolled-bg);
-	--nav-blur: 20px;
-	--nav-border: var(--color-border-subtle);
-	--home-header-nav-color: rgb(255 255 255);
-	--home-header-nav-weight: 500;
-	--home-header-nav-shadow: none;
-	--home-header-nav-underline: var(--color-action-accent, rgb(197 160 89));
-	--home-header-login-color: rgb(255 255 255);
-	--home-header-cta-bg: transparent;
-	--home-header-cta-color: var(--color-action-accent, rgb(197 160 89));
-	--home-header-cta-border: var(--color-action-accent, rgb(197 160 89));
-	--home-header-cta-shadow: 0 0 20px rgb(197 160 89 / 20%);
+#home-header.header-base--scrolled {
+	--header-nav-color: var(--landing-header-nav-color-scrolled);
+	--header-nav-weight: 500;
+	--header-nav-shadow-transparent: none;
+	--header-nav-underline: var(--landing-header-nav-underline-scrolled);
+	--header-nav-login-color: var(--landing-header-nav-login-color-scrolled);
+	--header-nav-cta-bg: var(--landing-header-nav-cta-bg-scrolled);
+	--header-nav-cta-color: var(--landing-header-nav-cta-color-scrolled);
+	--header-nav-cta-border: var(--landing-header-nav-cta-border-scrolled);
+	--header-nav-cta-shadow: var(--landing-header-nav-cta-shadow-scrolled);
 }
 
-:global(.header-base--scrolled .home-header__logo--white) {
-	opacity: var(--nav-logo-opacity-light);
-	visibility: hidden;
+#home-header.header-base--scrolled .home-header__logo--white {
+	display: none;
 }
 
-:global(.header-base--scrolled .home-header__logo--gold) {
-	opacity: var(--nav-logo-opacity-dark);
-	visibility: visible;
+#home-header.header-base--scrolled .home-header__logo--gold {
+	display: block;
 }

@@ -1,9 +1,13 @@
 @use '../global/mixins' as mixins;
 
 /*
- * Block: .event-header
- * Specific styles for the Invitation Page Header
- * Supports dynamic theming via CSS variables
+ * Contract:
+ *   Reads  — --header-nav-color, --header-nav-color-transparent, --header-nav-shadow-transparent,
+ *            --header-nav-filter-transparent, --header-nav-hover-color
+ *   Writes — event-header__* selectors; does not override --nav-* variables
+ *
+ *   Theme header partials (sections/header/_*.scss) define values for the above CSS variables
+ *   per theme preset via [data-variant='...'] selectors. EventHeader components consume them.
  */
 
 .event-header {
@@ -21,7 +25,7 @@
 		white-space: nowrap;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--color-action-accent);
+		color: var(--header-nav-title-color);
 		text-shadow: var(--header-nav-shadow-transparent);
 		transition: var(--transition-snappy);
 
@@ -93,7 +97,7 @@
 		}
 
 		&:hover {
-			color: var(--color-action-accent);
+			color: var(--header-nav-hover-color, var(--color-action-accent));
 			opacity: 100%;
 			background-color: rgb(var(--color-surface-primary-rgb) / 6%);
 		}
@@ -111,22 +115,18 @@
 		&--cta {
 			margin-left: clamp(0.25rem, 0.9vw, 0.8rem);
 			padding-inline: clamp(0.95rem, 1.45vw, 1.35rem);
-			background: rgb(var(--color-surface-primary-rgb) / 10%);
-			color: var(--color-action-accent);
-			border-color: rgb(var(--color-action-accent-rgb) / 38%);
-			box-shadow:
-				0 14px 34px -28px rgb(var(--color-action-primary-rgb) / 45%),
-				inset 0 1px 0 rgb(255 255 255 / 22%);
+			background: var(--header-nav-cta-bg);
+			color: var(--header-nav-cta-color);
+			border-color: var(--header-nav-cta-border);
+			box-shadow: var(--header-nav-cta-shadow);
 			backdrop-filter: blur(10px) saturate(135%);
 
 			&:hover {
-				background: rgb(var(--color-action-accent-rgb) / 10%);
-				border-color: rgb(var(--color-action-accent-rgb) / 58%);
+				background: var(--header-nav-cta-hover-bg, var(--header-nav-cta-bg));
+				border-color: var(--header-nav-cta-hover-border, var(--header-nav-cta-border));
 				transform: translateY(-1px);
-				color: var(--color-action-accent);
-				box-shadow:
-					0 18px 42px -30px rgb(var(--color-action-primary-rgb) / 52%),
-					inset 0 1px 0 rgb(255 255 255 / 34%);
+				color: var(--header-nav-cta-hover-color, var(--header-nav-cta-color));
+				box-shadow: var(--header-nav-cta-hover-shadow, var(--header-nav-cta-shadow));
 			}
 
 			&::after {
@@ -142,11 +142,6 @@
  */
 
 .header-base--transparent {
-	--nav-bg: transparent;
-	--nav-blur: 0;
-	--nav-border: transparent;
-	--nav-shadow: none;
-
 	.event-header__title,
 	.event-header__action-btn:not(.event-header__action-btn--cta) {
 		color: var(--header-nav-color-transparent);
@@ -155,17 +150,13 @@
 	}
 }
 
-.event-header__action-btn:not(.event-header__action-btn--cta) {
-	color: var(--header-nav-color);
-}
-
 // --- WEDDING SPECIFIC STYLES ---
 .theme-preset--jewelry-box-wedding .event-header {
 	&__title {
 		font-family: var(--font-display);
 		font-weight: 300;
 		letter-spacing: 0.28em;
-		color: var(--header-wedding-title-color, rgb(var(--color-text-primary-rgb), 0.9));
+		color: var(--header-nav-title-color);
 		text-shadow: none;
 	}
 
@@ -173,7 +164,7 @@
 		font-family: var(--font-display);
 		font-weight: 300;
 		letter-spacing: 0.15em;
-		color: var(--header-wedding-nav-color, var(--color-text-primary));
+		color: var(--header-nav-color);
 		opacity: 80%;
 	}
 }

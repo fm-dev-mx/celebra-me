@@ -2,13 +2,38 @@
 
 .header-base[data-variant='sacred-keepsake'] {
 	--header-bg-scrolled: rgb(var(--color-ivory-warm-rgb) / 86%);
+	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+	--header-nav-title-color: rgb(var(--color-sacred-gold-rgb) / 90%);
 	--header-nav-color: rgb(var(--color-eternal-ink-rgb) / 68%);
 	--header-nav-color-transparent: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--header-nav-hover-color: rgb(var(--color-eternal-ink-rgb) / 90%);
 	--header-border-color: rgb(var(--color-sacred-gold-rgb) / 14%);
 	--header-nav-shadow-transparent: 0 1px 10px rgb(var(--color-pure-ivory-rgb) / 38%);
+	--header-nav-cta-bg: rgb(var(--color-pure-ivory-rgb) / 28%);
+	--header-nav-cta-color: rgb(var(--color-eternal-ink-rgb) / 86%);
+	--header-nav-cta-border: rgb(var(--color-sacred-gold-rgb) / 42%);
+	--header-nav-cta-shadow:
+		0 16px 36px -30px rgb(var(--color-eternal-ink-rgb) / 55%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 48%);
+	--header-nav-cta-hover-bg: rgb(var(--color-pure-ivory-rgb) / 42%);
+	--header-nav-cta-hover-color: rgb(var(--color-eternal-ink-rgb) / 92%);
+	--header-nav-cta-hover-border: rgb(var(--color-sacred-gold-rgb) / 58%);
+	--mobile-drawer-link-color: rgb(var(--color-eternal-ink-rgb) / 88%);
+	--mobile-drawer-link-hover: rgb(var(--color-eternal-ink-rgb) / 96%);
+	--mobile-drawer-login-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--mobile-drawer-login-hover-color: rgb(var(--color-eternal-ink-rgb) / 96%);
+	--mobile-drawer-cta-bg: var(--color-eternal-ink);
+	--mobile-drawer-cta-color: var(--color-pure-ivory);
+	--mobile-drawer-cta-border: 1px solid var(--color-eternal-ink);
+	--mobile-drawer-cta-shadow: 0 14px 34px rgb(var(--color-eternal-ink-rgb) / 16%);
+	--mobile-drawer-cta-hover-bg: var(--color-sacred-gold);
+	--mobile-drawer-cta-hover-color: var(--color-eternal-ink);
+	--mobile-drawer-cta-hover-border: 1px solid var(--color-sacred-gold);
+	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 58%);
+	--mobile-signature-color: rgb(var(--color-eternal-ink-rgb) / 72%);
 
 	.event-header__title {
-		color: rgb(var(--color-sacred-gold-rgb) / 88%);
+		color: var(--header-nav-title-color);
 		font-size: clamp(0.74rem, 2vw, 0.9rem);
 		font-weight: 500;
 		letter-spacing: 0.16em;
@@ -40,21 +65,9 @@
 	}
 
 	.event-header__action-btn--cta {
-		background: rgb(var(--color-pure-ivory-rgb) / 20%);
-		color: rgb(var(--color-sacred-gold-rgb) / 92%);
-		border-color: rgb(var(--color-sacred-gold-rgb) / 34%);
 		font-size: clamp(0.64rem, 0.66vw, 0.72rem);
 		font-weight: 600;
 		letter-spacing: 0.18em;
-		box-shadow:
-			0 16px 36px -30px rgb(var(--color-eternal-ink-rgb) / 55%),
-			inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 48%);
-
-		&:hover {
-			background: rgb(var(--color-pure-ivory-rgb) / 34%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 52%);
-			color: rgb(var(--color-eternal-ink-rgb) / 86%);
-		}
 	}
 
 	&.header-base--scrolled {
@@ -74,7 +87,7 @@
 		height: 2.8rem;
 		padding: 0;
 		border-radius: 50%;
-		background: rgb(var(--color-ivory-warm-rgb) / 45%);
+		background: transparent;
 		color: rgb(var(--color-eternal-ink-rgb) / 85%);
 		backdrop-filter: blur(10px);
 		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
@@ -117,7 +130,7 @@
 // ─────────────────────────────────────────────────────────────
 
 // Warm ivory/champagne panel with micro-texture
-.header-base__mobile-menu {
+.header-base[data-variant='sacred-keepsake'] .header-base__mobile-menu {
 	background:
 		// Subtle paper texture — fine noise pattern
 
@@ -158,7 +171,7 @@
 }
 
 // Event identity header — monogram + name + subtitle
-.mobile-nav-header {
+.header-base[data-variant='sacred-keepsake'] .mobile-nav-header {
 	position: relative;
 	margin-bottom: 2.75rem;
 	padding-bottom: 1.5rem;
@@ -198,7 +211,7 @@
 }
 
 // Menu links — gold numbers, refined typography
-.mobile-nav-links {
+.header-base[data-variant='sacred-keepsake'] .mobile-nav-links {
 	gap: 1.85rem;
 	margin-bottom: 3rem;
 
@@ -209,7 +222,7 @@
 		letter-spacing: 0.14em;
 		font-size: 1.08rem;
 		font-weight: 400;
-		color: rgb(var(--color-eternal-ink-rgb) / 82%);
+		color: var(--mobile-drawer-link-color);
 		transition:
 			color 0.25s ease,
 			transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -232,7 +245,7 @@
 		}
 
 		&:hover {
-			color: rgb(var(--color-eternal-ink-rgb) / 95%);
+			color: var(--mobile-drawer-link-hover);
 			transform: translateX(4px);
 		}
 
@@ -243,7 +256,7 @@
 }
 
 // Divider — links to CTA
-.mobile-nav-footer {
+.header-base[data-variant='sacred-keepsake'] .mobile-nav-footer {
 	padding-top: 0.5rem;
 
 	&__divider {
@@ -259,14 +272,14 @@
 	}
 
 	&__copy {
-		color: rgb(var(--color-eternal-ink-rgb) / 26%);
+		color: var(--mobile-drawer-footer-copy);
 		font-size: 0.55rem;
 		letter-spacing: 0.3em;
 	}
 }
 
 // CTA — editorial link, not isolated button
-.mobile-nav-actions {
+.header-base[data-variant='sacred-keepsake'] .mobile-nav-actions {
 	margin-bottom: 0.75rem;
 	gap: 1rem;
 
@@ -277,9 +290,9 @@
 		gap: 0.6rem;
 		width: 100%;
 		padding: 0.9rem 1.2rem;
-		background: transparent;
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
-		color: rgb(var(--color-eternal-ink-rgb) / 82%);
+		background: var(--mobile-drawer-cta-bg);
+		border: var(--mobile-drawer-cta-border);
+		color: var(--mobile-drawer-cta-color);
 		font-family: var(--font-label);
 		font-size: 0.68rem;
 		font-weight: 500;
@@ -299,9 +312,9 @@
 		}
 
 		&:hover {
-			background: rgb(var(--color-sacred-gold-rgb) / 8%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 55%);
-			color: rgb(var(--color-eternal-ink-rgb) / 95%);
+			background: var(--mobile-drawer-cta-hover-bg);
+			border: var(--mobile-drawer-cta-hover-border);
+			color: var(--mobile-drawer-cta-hover-color);
 		}
 
 		&:hover::after {
@@ -316,14 +329,14 @@
 	}
 }
 
-.mobile-nav-signature {
+.header-base[data-variant='sacred-keepsake'] .mobile-nav-signature {
 	margin-top: 1.5rem;
-	opacity: 60%;
+	opacity: 100%;
 }
 
 // Expanded toggle state
-.header-base__mobile-toggle[aria-expanded='true'] {
-	background: var(--color-pure-ivory);
+.header-base[data-variant='sacred-keepsake'] .header-base__mobile-toggle[aria-expanded='true'] {
+	background: transparent;
 	border-color: rgb(var(--color-sacred-gold-rgb) / 45%);
 
 	.hamburger__line:nth-child(1) {
@@ -336,12 +349,12 @@
 }
 
 // Overlay — warm, inviting
-.header-base__mobile-overlay {
+.header-base[data-variant='sacred-keepsake'] .header-base__mobile-overlay {
 	background-color: rgb(55 51 45 / 32%);
 	backdrop-filter: blur(6px);
 }
 
-.header-base--menu-open {
+.header-base[data-variant='sacred-keepsake'].header-base--menu-open {
 	.mobile-nav-links__link,
 	.mobile-nav-actions__login,
 	.mobile-nav-actions__cta {

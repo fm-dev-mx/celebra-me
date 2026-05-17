@@ -8,18 +8,43 @@
 
 .header-base[data-variant='angelic-presence'] {
 	--header-bg: transparent;
-	--header-bg-scrolled: rgb(var(--color-angelic-white-rgb) / 88%);
+	--header-bg-scrolled: rgb(var(--color-angelic-white-rgb) / 96%);
+	--header-border-scrolled: 1px solid rgb(var(--color-sacred-gold-rgb) / 24%);
+	--header-nav-title-color: var(--color-sacred-gold-readable);
 	--header-nav-color: var(--color-eternal-ink);
 	--header-nav-color-transparent: var(--color-eternal-ink);
+	--header-nav-hover-color: var(--color-sacred-gold-readable);
 	--header-nav-shadow-transparent: 0 1px 3px rgb(var(--color-eternal-ink-rgb) / 12%);
 	--header-nav-filter-transparent: none;
 	--header-border-color: rgb(var(--color-sacred-gold-rgb) / 22%);
-	--mobile-drawer-bg: rgb(var(--color-angelic-white-rgb) / 96%);
-	--mobile-drawer-blur: 24px;
-	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 18%);
-	--mobile-drawer-link-hover: var(--color-sacred-gold);
-	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 42%);
+	--header-nav-cta-bg: rgb(var(--color-angelic-white-rgb) / 74%);
+	--header-nav-cta-color: var(--color-eternal-ink);
+	--header-nav-cta-border: rgb(var(--color-sacred-gold-rgb) / 52%);
+	--header-nav-cta-shadow:
+		0 14px 34px -28px rgb(var(--color-eternal-ink-rgb) / 28%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 70%);
+	--header-nav-cta-hover-bg: rgb(var(--color-sacred-gold-rgb) / 12%);
+	--header-nav-cta-hover-color: var(--color-eternal-ink);
+	--header-nav-cta-hover-border: rgb(var(--color-sacred-gold-rgb) / 70%);
+	--mobile-drawer-bg: rgb(var(--color-angelic-white-rgb) / 98%);
+	--mobile-drawer-blur: 40px;
+	--mobile-drawer-border: rgb(var(--color-sacred-gold-rgb) / 28%);
+	--mobile-drawer-link-color: var(--color-eternal-ink);
+	--mobile-drawer-link-hover: var(--color-sacred-gold-readable);
+	--mobile-drawer-login-color: rgb(var(--color-eternal-ink-rgb) / 68%);
+	--mobile-drawer-login-hover-color: var(--color-eternal-ink);
+	--mobile-drawer-cta-bg: var(--color-eternal-ink);
+	--mobile-drawer-cta-color: var(--color-pure-ivory);
+	--mobile-drawer-cta-border: 1px solid var(--color-eternal-ink);
+	--mobile-drawer-cta-shadow: 0 12px 28px rgb(var(--color-eternal-ink-rgb) / 18%);
+	--mobile-drawer-cta-hover-bg: var(--color-sacred-gold-readable);
+	--mobile-drawer-cta-hover-color: var(--color-pure-ivory);
+	--mobile-drawer-cta-hover-border: 1px solid var(--color-sacred-gold-readable);
+	--mobile-drawer-footer-copy: rgb(var(--color-eternal-ink-rgb) / 58%);
 	--mobile-drawer-shadow: -20px 0 80px rgb(var(--color-eternal-ink-rgb) / 10%);
+	--mobile-signature-color: rgb(var(--color-eternal-ink-rgb) / 72%);
+	--hamburger-color: var(--color-eternal-ink);
+	--hamburger-color-menu-open: var(--color-eternal-ink);
 
 	&::before {
 		background: linear-gradient(
@@ -36,38 +61,7 @@
 		backdrop-filter: blur(16px) saturate(140%);
 	}
 
-	.mobile-nav-links__link {
-		color: var(--color-eternal-ink);
-
-		&:hover::after {
-			transform: scaleX(1);
-		}
-	}
-
-	.mobile-nav-actions__login {
-		color: rgb(var(--color-eternal-ink-rgb) / 50%);
-
-		&:hover {
-			color: var(--color-sacred-gold);
-		}
-	}
-
-	.mobile-nav-actions__cta {
-		background: transparent;
-		color: rgb(var(--color-sacred-gold-rgb) / 80%);
-		border: 1px solid rgb(var(--color-sacred-gold-rgb) / 55%);
-		backdrop-filter: blur(8px) saturate(140%);
-		box-shadow: 0 0 0 0 rgb(var(--color-sacred-gold-rgb) / 0%);
-
-		&:hover {
-			background: rgb(var(--color-sacred-gold-rgb) / 12%);
-			border-color: rgb(var(--color-sacred-gold-rgb) / 75%);
-			color: rgb(var(--color-sacred-gold-rgb) / 95%);
-			box-shadow: 0 0 12px rgb(var(--color-sacred-gold-rgb) / 18%);
-		}
-	}
-
-	.mobile-nav-footer__copy {
-		color: rgb(var(--color-eternal-ink-rgb) / 36%);
+	.mobile-nav-links__link:hover::after {
+		transform: scaleX(1);
 	}
 }

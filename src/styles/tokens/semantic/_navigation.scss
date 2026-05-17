@@ -1,18 +1,124 @@
+/*
+ * Navigation Token System — Single Source of Truth
+ *
+ * Variable Contract:
+ *   _navigation.scss (this file) defines :root-level defaults.
+ *   _header-base.scss consumes these and manages state via --nav-* variables.
+ *   Page SCSS (#home-header, [data-variant]) overrides --header-nav-* per state.
+ *
+ * Theme preset hooks (set by page/theme SCSS):
+ *   --header-nav-color            — nav link text color
+ *   --header-nav-color-transparent — nav link color in transparent state
+ *   --header-nav-shadow-transparent — text shadow in transparent state
+ *   --header-nav-filter-transparent — drop-shadow filter in transparent state
+ *   --header-nav-hover-color       — hover accent color
+ *   --header-nav-weight            — font-weight for nav links
+ *   --header-nav-underline         — underline color for nav links
+ *   --header-nav-login-color       — login link color
+ *   --header-nav-cta-bg            — CTA background
+ *   --header-nav-cta-color         — CTA text color
+ *   --header-nav-cta-border        — CTA border color
+ *   --header-nav-cta-shadow        — CTA box-shadow
+ *   --mobile-drawer-*              — mobile drawer color and surface contract
+ */
+
 // 1. Navigation Token CSS Variable Bridge
 :root {
-	// Surface & Blur
-	--nav-glass-blur: 20px;
-	--nav-glass-saturate: 160%;
-	--nav-glass-bg: rgb(0 0 0 / 85%);
-	--nav-scrolled-bg: rgb(0 0 0 / 92%);
+	// ── Blur Scale ──────────────────────────
+	--blur-sm: 8px;
+	--blur-lg: 20px;
+	--blur-xl: 40px;
 
-	// Dimensions
+	// ── Dimensions ──────────────────────────
 	--nav-height: 100px;
 	--nav-height-scrolled: 70px;
+	--nav-container-max-width: 1400px;
 
-	// Layers
+	// ── Layers (Z-Index Scale) ──────────────
 	--layer-nav: 1000;
 	--layer-nav-overlay: 1005;
 	--layer-nav-menu: 1008;
 	--layer-nav-toggle: 1010;
+
+	// ── Glass (default state) ───────────────
+	--nav-glass-blur: var(--blur-lg);
+	--nav-glass-saturate: 160%;
+	--nav-glass-bg: rgb(0 0 0 / 85%);
+
+	// ── Scrolled State ──────────────────────
+	--nav-scrolled-bg: rgb(0 0 0 / 92%);
+	--nav-scrolled-saturate: 180%;
+	--nav-transparent-scrim: linear-gradient(
+		to bottom,
+		rgb(0 0 0 / 55%) 0%,
+		rgb(0 0 0 / 42%) 19%,
+		rgb(0 0 0 / 28%) 34%,
+		rgb(0 0 0 / 16%) 47%,
+		rgb(0 0 0 / 7%) 62%,
+		transparent 85%
+	);
+	--nav-menu-open-container-bg: var(--nav-scrolled-bg);
+	--nav-menu-open-container-border: 1px solid var(--color-border-subtle);
+
+	// ── Mobile Drawer ───────────────────────
+	--mobile-drawer-width: 85%;
+	--mobile-drawer-max-width: 380px;
+	--mobile-drawer-bg: var(--nav-glass-bg);
+	--mobile-drawer-blur: var(--blur-xl);
+	--mobile-drawer-border: rgb(255 255 255 / 10%);
+	--mobile-drawer-link-color: var(--color-text-on-dark);
+	--mobile-drawer-link-hover: var(--color-action-accent);
+	--mobile-drawer-login-color: rgb(255 255 255 / 72%);
+	--mobile-drawer-login-hover-color: var(--color-text-on-dark);
+	--mobile-drawer-cta-bg: var(--color-text-on-dark);
+	--mobile-drawer-cta-color: rgb(0 0 0);
+	--mobile-drawer-cta-border: 1px solid transparent;
+	--mobile-drawer-cta-shadow: 0 4px 20px rgb(255 255 255 / 10%);
+	--mobile-drawer-cta-hover-bg: var(--color-text-on-dark);
+	--mobile-drawer-cta-hover-color: rgb(0 0 0);
+	--mobile-drawer-cta-hover-border: var(--mobile-drawer-cta-border);
+	--mobile-drawer-cta-hover-shadow: 0 8px 25px rgb(255 255 255 / 20%);
+	--mobile-drawer-footer-copy: rgb(255 255 255 / 40%);
+	--mobile-drawer-shadow: -20px 0 80px rgb(0 0 0 / 90%);
+	--mobile-drawer-sheen: linear-gradient(180deg, rgb(255 255 255 / 5%) 0%, transparent 20%);
+	--mobile-drawer-padding-top: 8rem;
+	--mobile-drawer-padding-top-short: 5.5rem;
+	--mobile-drawer-padding-x: clamp(1.5rem, 6vw, 2.5rem);
+	--mobile-drawer-padding-bottom: 3rem;
+
+	// ── Mobile Overlay ──────────────────────
+	--mobile-overlay-bg: rgb(0 0 0 / 60%);
+	--mobile-overlay-blur: var(--blur-sm);
+
+	// ── Hamburger ───────────────────────────
+	--hamburger-width: 24px;
+	--hamburger-height: 20px;
+	--hamburger-line-height: 2px;
+	--hamburger-line-radius: 4px;
+	--hamburger-animation-duration: 220ms;
+	--hamburger-color: var(--color-action-accent);
+	--hamburger-color-menu-open: var(--hamburger-color);
+
+	// ── Header Navigation Contract ───────────
+	--header-nav-title-color: var(--color-action-accent);
+	--header-nav-color: var(--color-text-primary);
+	--header-nav-color-transparent: var(--color-text-on-dark);
+	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%);
+	--header-nav-filter-transparent: drop-shadow(0 4px 6px rgb(0 0 0 / 20%));
+	--header-nav-hover-color: var(--color-action-accent);
+	--header-nav-weight: 500;
+	--header-nav-underline: currentcolor;
+	--header-nav-login-color: var(--color-text-primary);
+	--header-nav-login-shadow: none;
+	--header-nav-cta-bg: transparent;
+	--header-nav-cta-color: var(--color-action-accent);
+	--header-nav-cta-border: var(--color-action-accent);
+	--header-nav-cta-shadow: none;
+	--mobile-signature-color: var(--mobile-drawer-footer-copy);
+
+	// ── Transition Shortcuts ────────────────
+	--mobile-menu-transition-duration: 500ms;
+	--mobile-stagger-delay: 80ms;
+	--mobile-link-transform-duration: 320ms;
+	--mobile-link-opacity-duration: 260ms;
 }
