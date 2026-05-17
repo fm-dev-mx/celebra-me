@@ -1,11 +1,11 @@
-# Motion Layer Architecture
+# Motion Tokens
 
 **Last Updated:** 2026-03-25
 
 ## Overview
 
-The Celebra-me Motion Layer defines the **rhythm and feel** of digital invitations. It bridges the
-gap between static design tokens and interactive premium experiences.
+Celebra-me motion tokens define the rhythm and feel of digital invitations. Motion is part of the
+semantic token layer, not a separate token layer.
 
 ## Core Principles
 
@@ -32,9 +32,10 @@ Animations should always consume semantic tokens defined in
 - `--ease-premium`: Luxury cubic-bezier for floating effects.
 - `--ease-bouncy`: Traditional overshoot for youth-oriented themes.
 
-## Implementation Pattern (`data-variant`)
+## Implementation Pattern
 
-Variants should define their own keyframes or utilize global utility classes.
+Sections may define their own keyframes or use global utility classes. Theme-specific motion should
+flow through semantic or component tokens where it is reused.
 
 ```scss
 .my-section[data-variant='jewelry-box'] {

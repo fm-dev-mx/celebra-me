@@ -94,17 +94,20 @@ hooks or `PascalCase` types from inside the file.
 - Conventional Astro projects use `src/styles/` for global/feature styles.
 - You may group styles by feature under `styles/feature-name/` if helpful.
 
-### 4.3 Semantic Token Usage
+### 4.3 Token Usage
 
-- Astro and TSX components must consume semantic CSS variables such as `--color-*`, `--shadow-*`,
-  and preset-scoped section tokens instead of hardcoded hex values.
-- Add new runtime semantic tokens under `src/styles/tokens/semantic/**` and surface them through
-  `src/styles/global.scss` before adding new component-level color roles.
-- SCSS may keep using token files for authoring defaults, motion constants, and spacing, but runtime
-  theme-sensitive invitation styles must read fonts, palette, glass, and shadow roles from semantic
+- Use the three-level token model: foundation SCSS variables, semantic `:root` CSS variables, and
+  scoped component tokens.
+- Themes are presets, not a token layer. States belong inside component token contracts.
+- Astro and TSX components must consume semantic or component CSS variables instead of hardcoded hex
+  values.
+- Add reusable runtime intent under `src/styles/tokens/semantic/**` and surface it through
+  `src/styles/global.scss`. Add component-specific contracts in the owning component/layout/section
+  stylesheet.
+- Runtime theme-sensitive invitation styles must read fonts, palette, glass, and shadow roles from
   CSS variables such as `var(--font-*)`, `var(--color-*)`, and `var(--shadow-*)`.
 - Styling-only `define:vars` blocks are not allowed in Astro components. Pass styling values through
-  inline custom properties or preset/state classes instead.
+  inline custom properties or preset/component state classes instead.
 - Runtime `define:vars` is allowed only for script-level Astro data injection when markup or data
   attributes are not sufficient.
 

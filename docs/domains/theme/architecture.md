@@ -1,289 +1,84 @@
-# Theme System Architecture (3-Layer Color Architecture)
+# Theme And Token Architecture
 
-## Overview
+**Last Updated:** 2026-05-17
 
-The invitation theme system is contract-driven and section-based.
+Celebra-me uses a strict three-level styling architecture.
 
-- **Single contract facade**: `src/lib/theme/theme-contract.ts`
-- **Schema enforcement**: `src/content.config.ts` imports modular schemas from
-  `src/lib/schemas/content/`
-- **Runtime normalization**: `src/lib/adapters/event.ts` validates and normalizes variants
-- **Rendering**: invitation sections use `data-variant` selectors
-- **Preset application**: class-scoped presets (`.theme-preset--*`), not `:root` injection
-- **Editorial Aesthetic**: Support for full-bleed, high-fashion layout variants (`editorial`
-  invitation preset) and event-specific premium overrides.
-- **Landing Aesthetic**: Landing pages use `jewelry-box-landing` preset (coffee/gold/parchment
-  palette) decoupled from invitation themes.
+## Token Levels
 
-## Contract Ownership
+1. **Foundation tokens** live in `src/styles/tokens/system/**`. They are SCSS variables only and
+   contain raw values such as palette colors, spacing, radius, typography families, motion values,
+   and shadows. They do not express product intent.
 
-`theme-contract.ts` is the public import facade for theme and event contracts. It owns `EVENT_TYPES`
-and the canonical theme tuples and union types:
+2. **Semantic tokens** live in `src/styles/tokens/semantic/**` and are published through
+   `src/styles/global.scss`. They are `:root` CSS custom properties for reusable system intent, such
+   as `--color-text-primary`, `--color-surface-elevated`, `--color-action-accent`,
+   `--color-border-subtle`, `--color-state-danger`, `--font-display`, `--shadow-soft`,
+   `--duration-fast`, and `--ease-premium`.
 
-- `THEME_PRESETS` (invitation themes only)
+3. **Component tokens** live with the component, layout, section, or surface that owns them. They
+   are scoped CSS custom properties for public component contracts, such as
+   `--header-nav-color-scrolled`, `--mobile-drawer-bg-open`, `--hero-card-bg`,
+   `--dashboard-card-bg`, `--auth-panel-bg`, and `--rsvp-error-field`.
 
-Section variant schemas currently use `THEME_PRESETS` directly. All downstream consumers must import
-from this module instead of duplicating literals.
+Themes and states are not separate token layers. Themes override semantic tokens and public
+component tokens. States are represented inside component token contracts.
 
-## Style Entry Points
+## Theme Presets
 
-Styles are split by domain/layout:
+Invitation presets are the canonical source of visual identity for invitation themes:
 
-- `src/styles/global.scss`: base primitives/tokens/utilities
-- `src/styles/landing.scss`: landing-only styles + presets used by landing
-- `src/styles/invitation.scss`: invitation presets + section themes
-- `src/styles/dashboard.scss`: dashboard shell/components
-- `src/styles/auth.scss`: auth preset scope
+- `src/styles/themes/presets/_jewelry-box.scss`
+- `src/styles/themes/presets/_jewelry-box-wedding.scss`
+- `src/styles/themes/presets/_luxury-hacienda.scss`
+- `src/styles/themes/presets/_editorial.scss`
+- `src/styles/themes/presets/_premiere-floral.scss`
+- `src/styles/themes/presets/_celestial-blue.scss`
+- `src/styles/themes/presets/_sacred-keepsake.scss`
+- `src/styles/themes/presets/_angelic-presence.scss`
 
-This avoids loading invitation section themes in non-invitation routes.
+Non-invitation presets are separate: `auth-dark` for auth surfaces and `jewelry-box-landing` for
+landing pages.
 
-## Landing Presets
+Preset files may override semantic color, type, surface, shadow, and motion intent. They may also
+override public component tokens when a theme needs specific behavior. They must not introduce
+hidden theme-local token systems or own section layout.
 
-Landing pages (index, 404, under-construction) use a separate, landing-only preset system decoupled
-from invitation themes:
+## Section Partials
 
-- **Preset Location**: `src/styles/themes/landing/presets/`
-- **Active Preset**: `jewelry-box-landing` (replaces legacy `elegant` and conflicting `editorial`
-  names)
-- **Application**: Applied via `.theme-preset--jewelry-box-landing` class on the body element
-- **Decoupling**: Landing presets are not part of `THEME_PRESETS` and do not use `PRESET_COLOR_MAP`
-  (invitation-only)
+Section partials under `src/styles/themes/sections/**` are file organization, not a fourth token
+layer. They may define layout, responsive behavior, section presentation, and scoped component
+tokens. They should consume semantic tokens and component tokens by default.
 
-### Migration History
+Theme identity belongs in the preset. If a section requires theme-specific behavior, expose that
+behavior through a public component token and let the preset provide the value.
 
-- Legacy `elegant` identifier was replaced by `editorial`, which conflicted with the invitation
-  `editorial` preset
-- Current `jewelry-box-landing` aligns with the premium "Jewelry Box" aesthetic and avoids naming
-  collisions
+## Runtime Contract
 
-### Landing-Specific Token Groups
+`src/lib/theme/theme-contract.ts` owns active event types and active invitation preset names.
+Schemas consume that contract through `src/lib/schemas/content/**`.
 
-The `jewelry-box-landing` preset exposes several token groups that are **not** published at `:root`
-by the semantic layer and serve as landing-page composition primitives:
+`src/lib/theme/color-tokens.ts` is a content color role contract. It maps approved content roles to
+semantic CSS custom properties and must not grow into a parallel color system.
 
-| Token                            | Value                     | Purpose                                                      |
-| -------------------------------- | ------------------------- | ------------------------------------------------------------ |
-| `--color-surface-dark-slate`     | `$sys-color-slate-900`    | Shared dark surface for FAQ, Footer                          |
-| `--color-surface-dark-slate-rgb` | RGB channels of slate-900 | Alpha composition on dark surfaces                           |
-| `--color-text-on-dark-slate`     | `$sys-color-neutral-0`    | Text on slate-900 surfaces                                   |
-| `--color-text-on-dark-slate-rgb` | RGB channels of neutral-0 | Alpha composition for text on slate                          |
-| `--color-overlay-light`          | `$sys-color-neutral-0`    | Glassmorphism overlay primitive                              |
-| `--color-overlay-light-rgb`      | RGB channels of neutral-0 | Primary glass alpha composition                              |
-| `--color-faq-bg`                 | `$sys-color-slate-900`    | FAQ section background — matches Footer surface for cohesion |
+## Hardcoded Values
 
-> [!NOTE] `--color-text-on-dark-rgb` (parchment-100 channels) **is** published at `:root` in
-> `src/styles/tokens/semantic/_color.scss`. It does not need to be redeclared in the preset.
->
-> Section-specific tokens such as `--faq-section-bg`, `--footer-section-bg` etc. are the **only**
-> composition interface for component stylesheets — components must not reference the raw token
-> group above directly.
+Hardcoded colors should normally exist only in:
 
-## Section Theme Strategy
+- foundation token files,
+- explicit email constants where CSS variables are unreliable,
+- rare one-off decorative effects that are intentionally non-reusable.
 
-Section base styles live with components (e.g. `src/styles/invitation/_quote.scss`). Section variant
-styles live in modular directories under `src/styles/themes/sections/` and are loaded through
-`src/styles/invitation.scss`.
+Reusable UI colors must flow through semantic or component tokens.
 
-The canonical section-theme file layout mirrors Hero:
+## Validation
 
-```text
-src/styles/themes/sections/<section>/
-├── _base.scss
-├── _<variant>.scss
-└── _index.scss
+After token, preset, or section architecture changes, run the available relevant commands:
+
+```bash
+pnpm lint:styles
+pnpm type-check
+pnpm build
+pnpm validate:ui-governance
+pnpm validate:event-parity
 ```
-
-`src/styles/themes/sections/_index.scss` forwards section directories directly. Do not add new flat
-`_<section>-theme.scss` shims for invitation sections.
-
-Some valid contract variants intentionally inherit base section styles when the preset-level
-variables already provide the needed aesthetic. Dedicated theme selectors are only required when a
-section needs layout, motion, or composition changes beyond the base stylesheet.
-
-`pnpm ops validate-schema` treats the following as documented base-style fallbacks instead of drift:
-
-| Section     | Variants using base section styles                           |
-| ----------- | ------------------------------------------------------------ |
-| `quote`     | `jewelry-box-wedding`, `sacred-keepsake`                     |
-| `countdown` | `jewelry-box-wedding`                                        |
-| `location`  | `jewelry-box`, `jewelry-box-wedding`, `luxury-hacienda`      |
-| `family`    | `jewelry-box-wedding`                                        |
-| `gifts`     | `jewelry-box-wedding`, `angelic-presence`, `sacred-keepsake` |
-| `gallery`   | `jewelry-box-wedding`                                        |
-| `thankYou`  | `jewelry-box-wedding`                                        |
-| `itinerary` | `jewelry-box-wedding`                                        |
-
-Variant partials should target concrete selectors such as `[data-variant='premiere-floral']`.
-
-Selector contract:
-
-```scss
-.quote-section[data-variant='jewelry-box'] {
-  /* variant styles */
-}
-```
-
-The `celestial-blue` thank-you section currently uses an intentionally specialized structural branch
-in `ThankYou.astro` for its editorial closing frame. Treat this as a documented exception, not a
-pattern for new section variants; prefer stable component markup and variant-scoped SCSS for future
-themes.
-
-## Preset Strategy
-
-Presets are class-scoped and applied on page wrappers/body.
-
-```scss
-.theme-preset--jewelry-box {
-  --color-primary: #d4af37;
-}
-```
-
-Preset classes are consumed at runtime by invitation wrappers and dashboard/auth layouts.
-
-Presenter-owned route wrappers may inject per-event custom properties inline for event-specific
-values such as envelope colors, but those values still flow through semantic CSS variable names
-rather than component-local hex literals.
-
-Preset files must not own section layout architecture. As of 2026-03-16, the luxury-hacienda
-countdown, family, and gallery layout defaults live in their section theme files rather than in
-`src/styles/themes/presets/_luxury-hacienda.scss`. Presets may still provide high-level semantic
-palette, typography, and cross-section surface tokens.
-
-> [!NOTE] When defining presets, always use explicit index imports for tokens (e.g.,
-> `@use '../../tokens/index' as tokens;`) to prevent name resolution ambiguities in complex
-> dependency trees.
-
-## Invitation-Level Isolation
-
-Invitation pages now include event-level namespace classes:
-
-- `.event--<slug>`
-
-Optional per-event overrides can be placed in:
-
-- `src/styles/events/<slug>.scss`
-
-These files are lazy-loaded only for the matching event route.
-
-## Runtime Validation Rules
-
-`adaptEvent` applies strict preset behavior:
-
-- Missing preset => default preset
-- Invalid preset in production => explicit error (no silent fallback)
-- Invalid section variant => warning + fallback
-- **Adapter Modularization**: ViewModel builders are extracted to
-  `src/lib/adapters/event-view-models.ts` to improve maintainability and keep the core adapter
-  focused on context resolution.
-- **Strict Rendering Contracts**: `InvitationSections.astro` utilizes `ComponentProps` for each
-  rendered branch to guarantee that dynamic component instantiation remains type-safe and consistent
-  with domain definitions.
-
-### Component Logic Extraction
-
-As of 2026-03-22, complex invitation components such as RSVP have undergone logic extraction. Form
-fields are now isolated in `RSVPFormFields.tsx` and data adapters are modularized. This separation
-ensures that the main rendering paths remain lightweight and that business logic can be tested
-independently of the UI structure.
-
-- Update the public theme contract surface first (`theme-contract.ts`), then consume from it.
-- Run `pnpm ops validate-schema` after theme changes. New missing variant coverage should become
-  either a selector or a documented base-style fallback in `scripts/validate-schema.mjs`.
-- Treat `standard` shared-section variants as base-style behavior, not as missing themed selectors.
-- Per-event editorial overhauls (e.g., `.event--ximena-meza-trasvina`) should prioritize 3-Layer
-  Architecture even when using generic section variants.
-
-## Semantic Token Governance
-
-Canonical runtime token publication now lives in `src/styles/tokens/semantic/` and is surfaced
-globally through `src/styles/global.scss`.
-
-New runtime semantic tokens must be added under `src/styles/tokens/semantic/**` and surfaced through
-`src/styles/global.scss` when they need to be available as CSS custom properties.
-
-`src/styles/global.scss` defines the canonical runtime typography and glass-role variables consumed
-by preset-sensitive invitation surfaces, including:
-
-- `--font-display-hacienda`
-- `--font-body-hacienda`
-- `--color-glass-bg`
-- `--color-glass-border`
-- `--color-glass-shadow`
-- `--shadow-subtle`
-- `--shadow-emphasis`
-- `--shadow-premium`
-
-The semantic layer also exposes these component-level roles:
-
-- `--color-surface-elevated`
-- `--color-surface-canvas`
-- `--color-border-premium`
-- `--color-text-muted`
-
-Decorative exceptions:
-
-- **Art-Directed Patterns**: Preset and section theme files may retain hardcoded ornamental values
-  (gradients, complex SVG data-URIs) ONLY when those values are intentionally non-reusable and part
-  of a specific artistic direction (e.g., a leather texture for one specific variant).
-- **Mandatory Semantic Bridge**: Reusable aesthetic markers (Gold accents, Glassmorphism, Premium
-  Shadows) must use semantic tokens from `src/styles/tokens/semantic/`.
-- **Promotion Rule**: If an "ornamental" value is reused in more than two sections, it MUST be
-  promoted to a semantic token.
-
-Component rules:
-
-- Astro and TSX files must not introduce hardcoded hex colors for invitation-facing UI.
-- Runtime theme-sensitive SCSS should prefer semantic CSS variables such as `var(--font-*)`,
-  `var(--color-*)`, and `var(--shadow-*)` over direct `tokens.$...` access for palette, glass, and
-  typography values that presets may override at runtime.
-- Direct `tokens.$...` access remains acceptable for authoring-only concerns such as animation
-  timing, spacing defaults, and fallbacks where no runtime override exists.
-- Styling-only `define:vars` blocks should be replaced with inline custom properties or preset/state
-  classes.
-- Script-level `define:vars` remains acceptable when Astro needs runtime data injection for client
-  behavior.
-
-## Collection Integration
-
-The theme system integrates with Astro Content Collections. Content is now partitioned into:
-
-- `event-demos`: Curated previews and marketing examples.
-- `event-templates`: Master patterns for production invitations.
-- `events`: Production user data (legacy/active).
-
-Runtime resolution in `src/lib/content/events.ts` ensures that theme presets and section variants
-are correctly mapped regardless of the source collection.
-
-## Aesthetic Specifications
-
-### Jewelry Box Baseline
-
-The **Jewelry Box** aesthetic represents the elite tier of Celebra-me invitations.
-
-- **Primary Palette**: Uses Champagne/Gold semantic tokens (`--color-action-accent`).
-- **Surface Layer**: Mandatory Glassmorphism (`--color-glass-bg`, `--glass-blur: 12px`,
-  `--glass-saturate: 160%`).
-- **Typography**: Display Elegant (`Cinzel` or `Playfair Display`) paired with Calligraphy
-  (`Pinyon Script`).
-- **Accents**: Fine 1px gold borders (`--border-fine-gold`) and premium floating shadows
-  (`--shadow-premium`).
-
-## Schema Architecture
-
-Content schemas are modularized under `src/lib/schemas/content/`:
-
-- `base-event.schema.ts`: Event top-level schema assembly
-- `hero.schema.ts`: Hero/celebrant metadata
-- `location.schema.ts`: Venue, ceremony, reception, indications
-- `family.schema.ts`: Family relationships and groups
-- `rsvp.schema.ts`: RSVP configuration + section label overrides
-- `gifts.schema.ts`: Gift option variants
-- `section-styles.schema.ts`: Section styling configuration
-- `shared.schema.ts`: Asset, theme, and shared primitives
-
-RSVP label overrides are defined natively under `sectionStyles.rsvp.labels` as standard string
-options in `rsvp.schema.ts`.
-
----
-
-**Last Updated:** 2026-05-06 (Landing preset rename to jewelry-box-landing, documentation update)

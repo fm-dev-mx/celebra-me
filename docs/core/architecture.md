@@ -177,8 +177,10 @@ Astro content collections (`src/content/**`) are used for:
 
 - **SCSS only** for maintained style files.
 - **Theme contract driven** variants come from `src/lib/theme/theme-contract.ts`.
-- **Logic-based structure**:
-  - `src/styles/tokens/` for primitive and semantic tokens
+- **Strict token structure**:
+  - `src/styles/tokens/system/` for raw SCSS foundation tokens
+  - `src/styles/tokens/semantic/` for `:root` semantic CSS custom properties
+  - component/layout/section stylesheets for scoped component tokens
   - `src/styles/themes/` for presets and section themes
   - `src/styles/components/` for shared UI styles
   - `src/styles/invitation/` for invitation section/layout styles
@@ -191,6 +193,8 @@ Astro content collections (`src/content/**`) are used for:
 - Invitation routes consume preset classes generated from normalized event content.
 - Live preset and variant contracts are defined by `src/lib/theme/theme-contract.ts`, not by
   free-form documentation lists.
+- Presets are the canonical source of theme identity. Section partials are organization and
+  presentation, not independent theme identity.
 
 ---
 
