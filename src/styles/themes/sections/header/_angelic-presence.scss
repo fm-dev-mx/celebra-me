@@ -60,8 +60,4 @@
 		border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
 		backdrop-filter: blur(16px) saturate(140%);
 	}
-
-	.mobile-nav-links__link:hover::after {
-		transform: scaleX(1);
-	}
 }
