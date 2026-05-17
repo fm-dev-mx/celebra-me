@@ -12,11 +12,11 @@
         }
     },
     "navigation": [
-        { "label": "Mensaje", "href": "#quote-section" },
-        { "label": "Familia", "href": "#family-section" },
-        { "label": "Galería", "href": "#gallery-section" },
-        { "label": "Ceremonia", "href": "#event-location" },
-        { "label": "Programa", "href": "#itinerary" },
+        { "label": "01 · Mensaje", "href": "#quote-section" },
+        { "label": "02 · Familia", "href": "#family-section" },
+        { "label": "03 · Galería", "href": "#gallery-section" },
+        { "label": "04 · Ceremonia", "href": "#event-location" },
+        { "label": "05 · Programa", "href": "#itinerary" },
         { "label": "Confirmar", "href": "#rsvp" }
     ],
     "hero": {

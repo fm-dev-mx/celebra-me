@@ -12,15 +12,15 @@ function expectToken(source: string, token: string): void {
 }
 
 describe('Invitation header navigation contract', () => {
-	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
+	it('promotes RSVP (Confirmación) into the mobile CTA while preserving desktop links', () => {
 		const source = read('src/components/invitation/EventHeader.astro');
 		const event = JSON.parse(read('src/content/events/ana-sofia-cota-guillen.json')) as {
 			navigation: Array<{ label: string; href: string }>;
 		};
 		const rsvpLinks = event.navigation.filter((link) => link.href === '#rsvp');
 
-		expect(rsvpLinks).toEqual([{ label: 'RSVP', href: '#rsvp' }]);
-		expect(event.navigation.at(-1)).toEqual({ label: 'RSVP', href: '#rsvp' });
+		expect(rsvpLinks).toEqual([{ label: 'Confirmación', href: '#rsvp' }]);
+		expect(event.navigation.at(-1)).toEqual({ label: 'Confirmación', href: '#rsvp' });
 		expect(source).toContain('<HeaderBase');
 		expect(source).toContain('<NavBarMobile');
 		expect(source).toMatch(/links=\{mobileLinks\}/);
