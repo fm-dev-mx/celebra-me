@@ -71,6 +71,7 @@
 	--layer-nav-overlay: 1005;
 	--layer-nav-menu: 1008;
 	--layer-nav-toggle: 1010;
+	--layer-nav-open: 1011;
 	--nav-glass-blur: var(--blur-lg);
 	--nav-glass-saturate: 160%;
 	--mobile-drawer-width: 85%;
@@ -168,6 +169,7 @@
 
 		height: 100dvh;
 		transform: translateY(0);
+		z-index: var(--layer-nav-open);
 
 		.header-base__container {
 			height: var(--header-height);
@@ -184,13 +186,6 @@
 			opacity: 0%;
 			visibility: hidden;
 			pointer-events: none;
-		}
-
-		.mobile-nav-links__link,
-		.mobile-nav-actions__login,
-		.mobile-nav-actions__cta {
-			transform: translateX(0);
-			opacity: 100%;
 		}
 	}
 
@@ -376,6 +371,13 @@
 		&[data-state='open'] {
 			transform: translateX(0);
 			opacity: 100%;
+
+			.mobile-nav-links__link,
+			.mobile-nav-actions__login,
+			.mobile-nav-actions__cta {
+				transform: translateX(0);
+				opacity: 100%;
+			}
 		}
 
 		@include mixins.respond-to(lg) {
