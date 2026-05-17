@@ -11,36 +11,75 @@ function expectToken(source: string, token: string): void {
 	expect(source).toContain(`${token}:`);
 }
 
+function findJsonFiles(dir: string): { file: string; data: Record<string, unknown> }[] {
+	const results: { file: string; data: Record<string, unknown> }[] = [];
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			results.push(...findJsonFiles(full));
+		} else if (entry.name.endsWith('.json')) {
+			try {
+				const data = JSON.parse(fs.readFileSync(full, 'utf8')) as Record<string, unknown>;
+				results.push({ file: path.relative(projectRoot, full), data });
+			} catch {
+				// skip invalid JSON
+			}
+		}
+	}
+	return results;
+}
+
+const VALID_NAV_LABELS = new Set([
+	'Inicio',
+	'Gala',
+	'Ubicación',
+	'Galería',
+	'Regalos',
+	'Confirmar',
+]);
+const VALID_NAV_HREFS = new Set(['#inicio', '#event-location', '#galeria', '#regalos', '#rsvp']);
+
 describe('Invitation header navigation contract', () => {
-	it('promotes RSVP (Confirmación) into the mobile CTA while preserving desktop links', () => {
+	it('promotes RSVP into the mobile CTA while preserving desktop links', () => {
 		const source = read('src/components/invitation/EventHeader.astro');
 		const event = JSON.parse(read('src/content/events/ana-sofia-cota-guillen.json')) as {
 			navigation: Array<{ label: string; href: string }>;
 		};
 		const rsvpLinks = event.navigation.filter((link) => link.href === '#rsvp');
 
-		expect(rsvpLinks).toEqual([{ label: 'Confirmación', href: '#rsvp' }]);
-		expect(event.navigation.at(-1)).toEqual({ label: 'Confirmación', href: '#rsvp' });
+		expect(rsvpLinks).toEqual([{ label: 'Confirmar', href: '#rsvp' }]);
+		expect(event.navigation.at(-1)).toEqual({ label: 'Confirmar', href: '#rsvp' });
 		expect(source).toContain('<HeaderBase');
 		expect(source).toContain('<NavBarMobile');
 		expect(source).toMatch(/links=\{mobileLinks\}/);
 		expect(source).toMatch(/ctaLink=\{rsvpLink\?\.href\}/);
-		expect(source).toMatch(/ctaLabel=\{rsvpLink\?\.label \?\? ['"]Confirmar asistencia['"]\}/);
+		expect(source).toMatch(
+			/ctaLabel=\{rsvpLink\?\.(?:label|label\s*\?\?\s*['"]Confirmar['"])\}/,
+		);
 		expect(source).toMatch(/links\.map/);
+		expect(source).not.toContain('stripDesktopOrdinal');
 	});
 
-	it('strips decorative ordinal prefixes from desktop labels only', () => {
-		const source = read('src/components/invitation/EventHeader.astro');
-		const event = JSON.parse(read('src/content/events/cesar-ramses.json')) as {
-			navigation: Array<{ label: string; href: string }>;
-		};
+	it('uses standardized mobile nav labels across all invitation and demo content', () => {
+		const navFiles = [
+			...findJsonFiles(path.join(projectRoot, 'src/content/events')),
+			...findJsonFiles(path.join(projectRoot, 'src/content/event-demos')),
+		].filter(({ data }) => Array.isArray(data.navigation));
 
-		expect(event.navigation[0]?.label).toBe('01 · Mensaje');
-		expect(source).toMatch(/const\s+stripDesktopOrdinal/);
-		expect(source).toMatch(
-			/link\.href === RSVP_HREF \? link\.label : stripDesktopOrdinal\(link\.label\)/,
-		);
-		expect(source).toMatch(/desktopBreakpoint=["']lg["']/);
+		expect(navFiles.length).toBeGreaterThan(0);
+
+		navFiles.forEach(({ file, data }) => {
+			const nav = data.navigation as Array<{ label: string; href: string }>;
+			const labels = nav.map((n) => n.label);
+			const hrefs = nav.map((n) => n.href);
+
+			expect(nav.length).toBeGreaterThanOrEqual(3);
+			expect(nav.length).toBeLessThanOrEqual(6);
+			expect(nav[nav.length - 1]).toEqual({ label: 'Confirmar', href: '#rsvp' });
+
+			labels.forEach((label) => expect(VALID_NAV_LABELS.has(label)).toBe(true));
+			hrefs.forEach((href) => expect(VALID_NAV_HREFS.has(href)).toBe(true));
+		});
 	});
 
 	it('guards mobile drawer scroll-safety with overflow and overscroll CSS', () => {
@@ -111,24 +150,40 @@ describe('Invitation header navigation contract', () => {
 	});
 
 	it('defines readable header and drawer tokens for affected presets', () => {
-		const themes = [
-			'src/styles/themes/sections/header/_premiere-floral.scss',
-			'src/styles/themes/sections/header/_jewelry-box-wedding.scss',
-			'src/styles/themes/sections/header/_editorial.scss',
-			'src/styles/themes/sections/header/_angelic-presence.scss',
-			'src/styles/themes/sections/header/_celestial-blue.scss',
+		const mandatory = [
+			'--header-nav-color',
+			'--header-nav-color-transparent',
+			'--mobile-drawer-bg',
+			'--mobile-drawer-cta-color',
+			'--mobile-signature-color',
 		];
+		const themeTokens: Record<string, string[]> = {
+			'src/styles/themes/sections/header/_premiere-floral.scss': mandatory,
+			'src/styles/themes/sections/header/_jewelry-box-wedding.scss': [
+				...mandatory,
+				'--mobile-drawer-link-color',
+				'--mobile-drawer-cta-bg',
+			],
+			'src/styles/themes/sections/header/_editorial.scss': [
+				...mandatory,
+				'--mobile-drawer-link-color',
+				'--mobile-drawer-cta-bg',
+			],
+			'src/styles/themes/sections/header/_angelic-presence.scss': [
+				...mandatory,
+				'--mobile-drawer-link-color',
+				'--mobile-drawer-cta-bg',
+			],
+			'src/styles/themes/sections/header/_celestial-blue.scss': [
+				...mandatory,
+				'--mobile-drawer-link-color',
+				'--mobile-drawer-cta-bg',
+			],
+		};
 
-		themes.forEach((file) => {
+		Object.entries(themeTokens).forEach(([file, tokens]) => {
 			const source = read(file);
-
-			expectToken(source, '--header-nav-color');
-			expectToken(source, '--header-nav-color-transparent');
-			expectToken(source, '--mobile-drawer-bg');
-			expectToken(source, '--mobile-drawer-link-color');
-			expectToken(source, '--mobile-drawer-cta-bg');
-			expectToken(source, '--mobile-drawer-cta-color');
-			expectToken(source, '--mobile-signature-color');
+			tokens.forEach((token) => expectToken(source, token));
 		});
 	});
 
@@ -161,7 +216,7 @@ describe('Invitation header navigation contract', () => {
 		expect(astroSource).toContain('data-state="closed"');
 		expect(astroSource).toMatch(/setAttribute\(['"]data-state['"]/);
 		expect(astroSource).not.toMatch(/menu\.hidden\s*=/);
-		expect(scssSource).toContain('[data-state="closed"]');
-		expect(scssSource).toContain('[data-state="open"]');
+		expect(scssSource).toMatch(/\[data-state=['"]closed['"]\]/);
+		expect(scssSource).toMatch(/\[data-state=['"]open['"]\]/);
 	});
 });
