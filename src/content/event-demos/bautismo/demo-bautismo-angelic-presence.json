@@ -185,7 +185,7 @@
         }
     ],
     "envelope": {
-        "disabled": true,
+        "disabled": false,
         "sealStyle": "wax",
         "sealInitials": "M·S",
         "microcopy": "Bautismo de María"

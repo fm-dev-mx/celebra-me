@@ -184,9 +184,8 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 
 function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 	const { data, normalizedPreset } = context;
-	const showEnvelope = !!(data.envelope && !data.envelope.disabled);
 
-	if (!showEnvelope || !data.envelope) return { enabled: false };
+	if (!data.envelope || data.envelope.disabled) return { enabled: false };
 
 	return {
 		enabled: true,
