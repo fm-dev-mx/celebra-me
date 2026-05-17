@@ -105,6 +105,17 @@
             }
         ]
     },
+    "gifts": {
+        "title": "Detalles para Celebrar",
+        "subtitle": "Gracias por acompañarnos en este momento tan especial.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Agradecemos su generosidad en el área de recepción."
+            }
+        ]
+    },
     "itinerary": {
         "title": "Programa",
         "subtitle": "Bautismo de María",
