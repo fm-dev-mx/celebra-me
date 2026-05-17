@@ -4,7 +4,7 @@
 	margin-bottom: 1.5rem;
 	padding: 1.25rem 1.5rem;
 	background: var(--color-surface-elevated);
-	border: 1px solid var(--dashboard-border-premium);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 12px;
 	box-shadow: var(--shadow-warm);
 }
@@ -123,13 +123,13 @@
 	align-items: center;
 	gap: 0.35rem;
 	padding: 0.35rem 0.7rem;
-	background: rgb(var(--color-success-rgb) / 8%);
-	border: 1px solid rgb(var(--color-success-rgb) / 20%);
+	background: rgb(var(--color-state-success-rgb) / 8%);
+	border: 1px solid rgb(var(--color-state-success-rgb) / 20%);
 	border-radius: 6px;
 	font-family: var(--font-ui);
 	font-size: 0.65rem;
 	font-weight: 600;
-	color: var(--color-success-text);
+	color: var(--color-state-success-text);
 	letter-spacing: 0.02em;
 }
 
@@ -137,7 +137,7 @@
 	width: 6px;
 	height: 6px;
 	border-radius: 50%;
-	background: var(--color-success);
+	background: var(--color-state-success);
 }
 
 /* Responsive adjustments */

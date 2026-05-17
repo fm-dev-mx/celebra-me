@@ -8,20 +8,20 @@
 .dashboard-table td {
 	padding: 0.62rem;
 	text-align: left;
-	border-bottom: 1px solid var(--dashboard-border-subtle);
+	border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .dashboard-table th {
 	font-size: 0.75rem;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--dashboard-text-secondary);
+	color: var(--color-text-secondary);
 }
 
 .dashboard-badge {
-	--dashboard-badge-bg: var(--dashboard-state-info-bg);
-	--dashboard-badge-text: var(--dashboard-state-info-text);
-	--dashboard-badge-border: var(--dashboard-state-info-border);
+	--dashboard-badge-bg: var(--color-state-info-bg);
+	--dashboard-badge-text: var(--color-state-info-text);
+	--dashboard-badge-border: var(--color-state-info-border);
 
 	padding: 0.2rem 0.5rem;
 	border-radius: 999px;
@@ -33,57 +33,57 @@
 }
 
 .dashboard-badge--active {
-	--dashboard-badge-bg: var(--dashboard-state-success-bg);
-	--dashboard-badge-text: var(--dashboard-state-success-text);
-	--dashboard-badge-border: var(--dashboard-state-success-border);
+	--dashboard-badge-bg: var(--color-state-success-bg);
+	--dashboard-badge-text: var(--color-state-success-text);
+	--dashboard-badge-border: var(--color-state-success-border);
 }
 
 .dashboard-badge--disabled {
-	--dashboard-badge-bg: var(--dashboard-state-danger-bg);
-	--dashboard-badge-text: var(--dashboard-state-danger-text);
-	--dashboard-badge-border: var(--dashboard-state-danger-border);
+	--dashboard-badge-bg: var(--color-state-danger-bg);
+	--dashboard-badge-text: var(--color-state-danger-text);
+	--dashboard-badge-border: var(--color-state-danger-border);
 }
 
 .dashboard-badge--expired {
-	--dashboard-badge-bg: var(--dashboard-state-warning-bg);
-	--dashboard-badge-text: var(--dashboard-state-warning-text);
-	--dashboard-badge-border: var(--dashboard-state-warning-border);
+	--dashboard-badge-bg: var(--color-state-warning-bg);
+	--dashboard-badge-text: var(--color-state-warning-text);
+	--dashboard-badge-border: var(--color-state-warning-border);
 }
 
 .dashboard-badge--exhausted {
-	--dashboard-badge-bg: var(--dashboard-state-info-bg);
-	--dashboard-badge-text: var(--dashboard-state-info-text);
-	--dashboard-badge-border: var(--dashboard-state-info-border);
+	--dashboard-badge-bg: var(--color-state-info-bg);
+	--dashboard-badge-text: var(--color-state-info-text);
+	--dashboard-badge-border: var(--color-state-info-border);
 }
 
 .dashboard-badge--used-up {
-	--dashboard-badge-bg: var(--dashboard-state-info-bg);
-	--dashboard-badge-text: var(--dashboard-state-info-text);
-	--dashboard-badge-border: var(--dashboard-state-info-border);
+	--dashboard-badge-bg: var(--color-state-info-bg);
+	--dashboard-badge-text: var(--color-state-info-text);
+	--dashboard-badge-border: var(--color-state-info-border);
 }
 
 .dashboard-badge--draft {
-	--dashboard-badge-bg: var(--dashboard-state-info-bg);
-	--dashboard-badge-text: var(--dashboard-state-info-text);
-	--dashboard-badge-border: var(--dashboard-state-info-border);
+	--dashboard-badge-bg: var(--color-state-info-bg);
+	--dashboard-badge-text: var(--color-state-info-text);
+	--dashboard-badge-border: var(--color-state-info-border);
 }
 
 .dashboard-badge--published {
-	--dashboard-badge-bg: var(--dashboard-state-success-bg);
-	--dashboard-badge-text: var(--dashboard-state-success-text);
-	--dashboard-badge-border: var(--dashboard-state-success-border);
+	--dashboard-badge-bg: var(--color-state-success-bg);
+	--dashboard-badge-text: var(--color-state-success-text);
+	--dashboard-badge-border: var(--color-state-success-border);
 }
 
 .dashboard-badge--archived {
-	--dashboard-badge-bg: var(--dashboard-state-danger-bg);
-	--dashboard-badge-text: var(--dashboard-state-danger-text);
-	--dashboard-badge-border: var(--dashboard-state-danger-border);
+	--dashboard-badge-bg: var(--color-state-danger-bg);
+	--dashboard-badge-text: var(--color-state-danger-text);
+	--dashboard-badge-border: var(--color-state-danger-border);
 }
 
 .dashboard-badge--generated {
-	--dashboard-badge-bg: var(--dashboard-state-info-bg);
-	--dashboard-badge-text: var(--dashboard-state-info-text);
-	--dashboard-badge-border: var(--dashboard-state-info-border);
+	--dashboard-badge-bg: var(--color-state-info-bg);
+	--dashboard-badge-text: var(--color-state-info-text);
+	--dashboard-badge-border: var(--color-state-info-border);
 }
 
 .dashboard-card-header {
@@ -108,11 +108,11 @@
 	align-items: center;
 	gap: 0.35rem;
 	padding: 0.35rem 0.6rem;
-	border: 1px solid var(--dashboard-brand-border);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 999px;
 	font-size: 0.8rem;
-	background: var(--dashboard-brand-accent-soft);
-	color: var(--dashboard-text-primary);
+	background: var(--dashboard-accent-soft-bg);
+	color: var(--color-text-primary);
 }
 
 .dashboard-event-chip__remove {

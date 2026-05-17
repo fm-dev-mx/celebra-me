@@ -120,7 +120,7 @@
 	padding: var(--spacing-md);
 	border-radius: 8px;
 	margin-bottom: var(--spacing-lg);
-	background: rgb(var(--color-surface-primary-rgb), 0.3);
+	background: rgb(var(--color-surface-primary-rgb) / 30%);
 
 	&__item {
 		margin-bottom: 0.5rem;
@@ -147,7 +147,7 @@
 
 .clabe-number {
 	font-family: var(--font-mono, monospace);
-	background: rgb(var(--color-text-primary-rgb), 0.05);
+	background: rgb(var(--color-text-primary-rgb) / 5%);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 0.9rem;
@@ -176,10 +176,10 @@
 	}
 
 	&--success {
-		background: var(--color-success, hsl(134deg 61% 41%));
-		border-color: var(--color-success, hsl(134deg 61% 41%));
-		color: var(--color-success, green);
-		fill: var(--color-success, green);
+		background: var(--color-state-success, hsl(134deg 61% 41%));
+		border-color: var(--color-state-success, hsl(134deg 61% 41%));
+		color: var(--color-state-success, green);
+		fill: var(--color-state-success, green);
 	}
 }
 

@@ -1,125 +1,62 @@
 .dashboard-shell-body {
-	/* Slate & Gold — override core text/action/border tokens */
-	--color-text-primary: hsl(222deg 47% 11%);
-	--color-text-primary-rgb: 15 20 29;
-	--color-text-secondary: hsl(0deg 0% 18%);
-	--color-text-secondary-rgb: 46 46 46;
-	--color-text-muted: hsl(0deg 0% 32%);
-	--color-text-emphasis: hsl(222deg 40% 18%);
-	--color-text-emphasis-rgb: 28 36 66;
-	--color-text-on-dark: hsl(45deg 50% 95%);
-	--color-text-on-dark-rgb: 245 242 232;
-	--color-action-primary: hsl(222deg 47% 11%);
-	--color-action-primary-rgb: 15 20 29;
-	--color-action-secondary: hsl(222deg 40% 18%);
-	--color-action-secondary-rgb: 28 36 66;
-
-	/* --color-action-accent stays gold-500 from :root */
-
-	--color-border-subtle: hsl(0deg 0% 5% / 8%);
-	--color-border-premium: hsl(40deg 65% 55% / 25%);
-	--color-border-emphasis: hsl(40deg 65% 55%);
-	--color-surface-dark: hsl(222deg 47% 4%);
-	--color-surface-dark-rgb: 5 8 15;
-
-	/* Dashboard aliases — pick up the overrides above automatically */
-	--dashboard-brand-primary: var(--color-action-primary);
-	--dashboard-brand-primary-rgb: var(--color-action-primary-rgb);
-	--dashboard-brand-accent: var(--color-action-accent);
-	--dashboard-brand-accent-rgb: var(--color-action-accent-rgb);
-	--dashboard-brand-emphasis: var(--color-text-emphasis);
-	--dashboard-brand-border: var(--color-border-premium);
-	--dashboard-brand-border-strong: var(--color-border-emphasis);
-	--dashboard-brand-accent-soft: rgb(var(--color-action-accent-rgb) / 10%);
-	--dashboard-surface-page: var(--color-surface-primary);
-	--dashboard-surface-canvas: var(--color-surface-canvas);
-	--dashboard-surface-card: var(--color-surface-warm-ivory);
-	--dashboard-surface-card-strong: var(--color-surface-premium-card);
-	--dashboard-surface-card-soft: var(--color-surface-warm-ivory);
-	--dashboard-surface-panel: var(--color-glass-bg);
-	--dashboard-surface-elevated: var(--color-surface-elevated);
-	--dashboard-surface-inset: var(--color-surface-secondary);
-	--dashboard-surface-sidebar: var(--color-surface-dark);
-	--dashboard-surface-sidebar-strong: rgb(var(--color-surface-dark-rgb) / 96%);
-	--dashboard-surface-sidebar-soft: rgb(var(--color-surface-dark-rgb) / 18%);
-	--dashboard-surface-overlay: rgb(var(--color-surface-dark-rgb) / 42%);
-	--dashboard-text-primary: var(--color-text-primary);
-	--dashboard-text-secondary: var(--color-text-secondary);
-	--dashboard-text-muted: var(--color-text-muted);
-	--dashboard-text-inverse: var(--color-text-on-dark);
-	--dashboard-text-brand: var(--color-text-emphasis);
-	--dashboard-border-subtle: var(--color-border-subtle);
-	--dashboard-border-strong: var(--color-border-emphasis);
-	--dashboard-border-premium: var(--color-border-premium);
-	--dashboard-state-success: var(--color-success);
-	--dashboard-state-success-bg: var(--color-success-bg);
-	--dashboard-state-success-border: var(--color-success-border);
-	--dashboard-state-success-text: var(--color-success-text);
-	--dashboard-state-warning: var(--color-warning);
-	--dashboard-state-warning-bg: var(--color-warning-bg);
-	--dashboard-state-warning-border: var(--color-warning-border);
-	--dashboard-state-warning-text: var(--color-warning-text);
-	--dashboard-state-danger: var(--color-danger);
-	--dashboard-state-danger-bg: var(--color-danger-bg);
-	--dashboard-state-danger-border: var(--color-danger-border);
-	--dashboard-state-danger-text: var(--color-danger-text);
-	--dashboard-state-info: var(--color-info);
-	--dashboard-state-info-bg: var(--color-info-bg);
-	--dashboard-state-info-border: var(--color-info-border);
-	--dashboard-state-info-text: var(--color-info-text);
+	--dashboard-card-border: var(--color-border-premium);
+	--dashboard-accent-soft-bg: rgb(var(--color-action-accent-rgb) / 10%);
+	--dashboard-card-bg: var(--color-surface-premium-card);
+	--dashboard-card-bg-soft: var(--color-surface-warm-ivory);
+	--dashboard-panel-bg: var(--color-glass-bg);
+	--dashboard-sidebar-bg: var(--color-surface-dark);
+	--dashboard-sidebar-bg-strong: rgb(var(--color-surface-dark-rgb) / 96%);
+	--dashboard-sidebar-bg-soft: rgb(var(--color-surface-dark-rgb) / 18%);
+	--dashboard-overlay-bg: rgb(var(--color-surface-dark-rgb) / 42%);
 }
 
 .dashboard-card {
 	background:
-		linear-gradient(
-			180deg,
-			var(--dashboard-surface-card-strong),
-			var(--dashboard-surface-card-soft)
-		),
-		var(--dashboard-surface-panel);
-	border: 1px solid var(--dashboard-border-premium);
+		linear-gradient(180deg, var(--dashboard-card-bg), var(--dashboard-card-bg-soft)),
+		var(--dashboard-panel-bg);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 16px;
 	padding: clamp(1.25rem, 2vw, 1.75rem);
 	box-shadow: var(--shadow-warm);
-	color: var(--dashboard-text-primary);
+	color: var(--color-text-primary);
 	backdrop-filter: blur(8px) saturate(140%);
 }
 
 .dashboard-status {
 	font-size: 0.875rem;
-	color: var(--dashboard-text-secondary);
+	color: var(--color-text-secondary);
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.5rem 0;
 
 	&--loading {
-		color: var(--dashboard-state-info-text);
+		color: var(--color-state-info-text);
 	}
 
 	&--success {
-		color: var(--dashboard-state-success-text);
+		color: var(--color-state-success-text);
 	}
 
 	&--warning {
-		color: var(--dashboard-state-warning-text);
+		color: var(--color-state-warning-text);
 	}
 
 	&--danger {
-		color: var(--dashboard-state-danger-text);
+		color: var(--color-state-danger-text);
 	}
 
 	&--info {
-		color: var(--dashboard-state-info-text);
+		color: var(--color-state-info-text);
 	}
 }
 
 .dashboard-error {
-	color: var(--dashboard-state-danger-text);
+	color: var(--color-state-danger-text);
 	font-size: 0.875rem;
 	padding: 0.75rem;
-	background: var(--dashboard-state-danger-bg);
-	border: 1px solid var(--dashboard-state-danger-border);
+	background: var(--color-state-danger-bg);
+	border: 1px solid var(--color-state-danger-border);
 	border-radius: 8px;
 	margin: 0.5rem 0;
 }
@@ -130,15 +67,15 @@
 	justify-content: center;
 	gap: 0.5rem;
 	padding: 2rem;
-	color: var(--dashboard-text-secondary);
+	color: var(--color-text-secondary);
 	font-size: 0.875rem;
 }
 
 .dashboard-spinner {
 	width: 1.5rem;
 	height: 1.5rem;
-	border: 2px solid var(--dashboard-state-info-border);
-	border-top-color: var(--dashboard-state-info);
+	border: 2px solid var(--color-state-info-border);
+	border-top-color: var(--color-state-info);
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 }
@@ -174,14 +111,14 @@
 .dashboard-error-boundary__retry {
 	margin-top: var(--spacing-md, 1rem);
 	padding: 0.5rem 1rem;
-	border: 1px solid var(--dashboard-brand-primary);
+	border: 1px solid var(--color-action-primary);
 	border-radius: 999px;
-	background: var(--dashboard-brand-primary);
-	color: var(--dashboard-text-inverse);
+	background: var(--color-action-primary);
+	color: var(--color-text-on-dark);
 }
 
 .dashboard-confirm-message {
 	text-align: center;
 	margin-bottom: var(--spacing-xl, 2rem);
-	color: var(--dashboard-text-secondary);
+	color: var(--color-text-secondary);
 }

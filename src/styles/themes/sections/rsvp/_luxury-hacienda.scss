@@ -4,41 +4,41 @@
 .rsvp[data-variant='luxury-hacienda'] {
 	--rsvp-emoji-yes: '🌵';
 	--rsvp-emoji-no: '🙏';
-	--color-glass-bg: rgb(var(--color-surface-primary-rgb), 0.24);
-	--color-glass-border: rgb(var(--color-action-accent-rgb), 0.28);
-	--color-glass-shadow: rgb(var(--color-action-accent-rgb), 0.18);
+	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
+	--color-glass-border: rgb(var(--color-action-accent-rgb) / 28%);
+	--color-glass-shadow: rgb(var(--color-action-accent-rgb) / 18%);
 	--shadow-premium:
-		0 18px 40px rgb(var(--color-action-primary-rgb), 0.18), 0 8px 18px rgb(0 0 0 / 16%);
-	--rsvp-label-color: rgb(var(--color-text-primary-rgb), 0.82);
+		0 18px 40px rgb(var(--color-action-primary-rgb) / 18%), 0 8px 18px rgb(0 0 0 / 16%);
+	--rsvp-label-color: rgb(var(--color-text-primary-rgb) / 82%);
 	--rsvp-label-letter-spacing: 0.03em;
 	--rsvp-field-bg: linear-gradient(
 		145deg,
-		rgb(var(--color-surface-primary-rgb), 0.62) 0%,
-		rgb(var(--color-surface-primary-rgb), 0.5) 100%
+		rgb(var(--color-surface-primary-rgb) / 62%) 0%,
+		rgb(var(--color-surface-primary-rgb) / 50%) 100%
 	);
-	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb), 0.95);
-	--rsvp-field-border: rgb(var(--color-action-accent-rgb), 0.3);
-	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb), 0.42);
+	--rsvp-field-bg-focus: rgb(var(--color-surface-primary-rgb) / 95%);
+	--rsvp-field-border: rgb(var(--color-action-accent-rgb) / 30%);
+	--rsvp-placeholder-color: rgb(var(--color-text-primary-rgb) / 42%);
 	--rsvp-radio-bg: linear-gradient(
 		145deg,
-		rgb(var(--color-surface-primary-rgb), 0.58) 0%,
-		rgb(var(--color-surface-primary-rgb), 0.42) 100%
+		rgb(var(--color-surface-primary-rgb) / 58%) 0%,
+		rgb(var(--color-surface-primary-rgb) / 42%) 100%
 	);
-	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb), 0.74);
-	--rsvp-radio-border: rgb(var(--color-action-accent-rgb), 0.25);
-	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb), 0.18);
-	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb), 0.78);
-	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb), 0.3);
+	--rsvp-radio-bg-hover: rgb(var(--color-surface-primary-rgb) / 74%);
+	--rsvp-radio-border: rgb(var(--color-action-accent-rgb) / 25%);
+	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb) / 18%);
+	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb) / 78%);
+	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 30%);
 	--rsvp-button-shadow-rest:
-		0 10px 22px rgb(var(--color-action-primary-rgb), 0.34),
-		0 1px 0 rgb(var(--color-action-accent-rgb), 0.24);
+		0 10px 22px rgb(var(--color-action-primary-rgb) / 34%),
+		0 1px 0 rgb(var(--color-action-accent-rgb) / 24%);
 	--rsvp-button-shadow-hover:
-		0 14px 28px rgb(var(--color-action-primary-rgb), 0.42),
-		0 0 18px rgb(var(--color-action-accent-rgb), 0.2);
-	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb), 0.9);
+		0 14px 28px rgb(var(--color-action-primary-rgb) / 42%),
+		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);
+	--rsvp-button-bg-hover: rgb(var(--color-action-primary-rgb) / 90%);
 	--rsvp-button-filter-hover: saturate(1.08);
-	--color-error-field: rgb(166 46 46);
-	--color-error-text: rgb(138 32 32);
+	--rsvp-error-field: var(--color-state-danger, rgb(166 46 46));
+	--rsvp-error-text: var(--color-state-danger-text, rgb(138 32 32));
 
 	.rsvp__title {
 		font-family: var(--font-display);
@@ -74,17 +74,17 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgb(var(--color-action-accent-rgb), 0.2),
+				rgb(var(--color-action-accent-rgb) / 20%),
 				transparent
 			);
 			transition: left var(--duration-slower) var(--ease-out);
 		}
 
 		&:hover:not(:disabled) {
-			background: rgb(var(--color-action-primary-rgb), 0.85);
+			background: rgb(var(--color-action-primary-rgb) / 85%);
 			box-shadow:
-				0 0 25px rgb(var(--color-action-accent-rgb), 0.5),
-				inset 0 0 20px rgb(var(--color-action-accent-rgb), 0.1);
+				0 0 25px rgb(var(--color-action-accent-rgb) / 50%),
+				inset 0 0 20px rgb(var(--color-action-accent-rgb) / 10%);
 			transform: translateY(-1.5px);
 
 			&::before {
@@ -101,8 +101,8 @@
 			outline: 2px solid var(--color-action-accent);
 			outline-offset: 3px;
 			box-shadow:
-				0 0 0 2px rgb(var(--color-action-primary-rgb), 0.95),
-				0 0 0 6px rgb(var(--color-action-accent-rgb), 0.45);
+				0 0 0 2px rgb(var(--color-action-primary-rgb) / 95%),
+				0 0 0 6px rgb(var(--color-action-accent-rgb) / 45%);
 		}
 	}
 

@@ -58,10 +58,10 @@
 	--rsvp-button-shadow-hover:
 		0 14px 28px rgb(var(--color-action-primary-rgb) / 42%),
 		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);
-	--color-error-field: rgb(166 46 46);
-	--color-error-text: rgb(138 32 32);
-	--rsvp-error-bg: rgb(var(--color-error-rgb) / 10%);
-	--rsvp-error-border: rgb(var(--color-error-rgb) / 28%);
+	--rsvp-error-field: var(--color-state-danger, rgb(166 46 46));
+	--rsvp-error-text: var(--color-state-danger-text, rgb(138 32 32));
+	--rsvp-error-bg: rgb(var(--color-state-danger-rgb) / 10%);
+	--rsvp-error-border: rgb(var(--color-state-danger-rgb) / 28%);
 	--rsvp-emoji-yes: '✓';
 	--rsvp-emoji-no: '😔';
 }

@@ -1,7 +1,7 @@
 .dashboard-toast {
-	--dashboard-toast-accent: var(--dashboard-state-info);
-	--dashboard-toast-border: var(--dashboard-state-info-border);
-	--dashboard-toast-text: var(--dashboard-text-inverse);
+	--dashboard-toast-accent: var(--color-state-info);
+	--dashboard-toast-border: var(--color-state-info-border);
+	--dashboard-toast-text: var(--color-text-on-dark);
 
 	position: fixed;
 	bottom: 2rem;
@@ -27,18 +27,18 @@
 	box-shadow: 0 6px 20px color-mix(in srgb, var(--dashboard-toast-accent) 15%, rgb(0 0 0 / 20%));
 
 	&--success {
-		--dashboard-toast-accent: var(--dashboard-state-success);
-		--dashboard-toast-border: var(--dashboard-state-success-border);
+		--dashboard-toast-accent: var(--color-state-success);
+		--dashboard-toast-border: var(--color-state-success-border);
 	}
 
 	&--warning {
-		--dashboard-toast-accent: var(--dashboard-state-warning);
-		--dashboard-toast-border: var(--dashboard-state-warning-border);
+		--dashboard-toast-accent: var(--color-state-warning);
+		--dashboard-toast-border: var(--color-state-warning-border);
 	}
 
 	&--info {
-		--dashboard-toast-accent: var(--dashboard-state-info);
-		--dashboard-toast-border: var(--dashboard-state-info-border);
+		--dashboard-toast-accent: var(--color-state-info);
+		--dashboard-toast-border: var(--color-state-info-border);
 	}
 
 	&__body {

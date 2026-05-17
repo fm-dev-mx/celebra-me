@@ -70,7 +70,7 @@
 	height: 160%;
 	background: radial-gradient(
 		circle,
-		rgb(var(--color-action-accent-rgb), 0.2) 0%,
+		rgb(var(--color-action-accent-rgb) / 20%) 0%,
 		transparent 68%
 	);
 	pointer-events: none;
@@ -190,8 +190,9 @@
 
 .auth-field input[aria-invalid='true'],
 .auth-field select[aria-invalid='true'] {
-	border-color: var(--auth-error, var(--color-error));
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--auth-error, var(--color-error)) 13%, transparent);
+	border-color: var(--auth-error, var(--color-state-danger));
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--auth-error, var(--color-state-danger)) 13%, transparent);
 }
 
 .auth-hint {
@@ -207,7 +208,7 @@
 	margin: 0;
 	font-family: var(--font-ui);
 	font-size: 0.74rem;
-	color: var(--auth-error, var(--color-error));
+	color: var(--auth-error, var(--color-state-danger));
 	font-weight: 600;
 	line-height: 1.3;
 }
@@ -293,15 +294,15 @@
 }
 
 .auth-status[data-tone='success'] {
-	color: color-mix(in srgb, var(--color-success), black 40%);
-	background: color-mix(in srgb, var(--color-success) 8%, white);
-	border-color: color-mix(in srgb, var(--color-success) 15%, transparent);
+	color: color-mix(in srgb, var(--color-state-success), black 40%);
+	background: color-mix(in srgb, var(--color-state-success) 8%, white);
+	border-color: color-mix(in srgb, var(--color-state-success) 15%, transparent);
 }
 
 .auth-status[data-tone='error'] {
-	color: color-mix(in srgb, var(--color-error), black 30%);
-	background: color-mix(in srgb, var(--color-error) 8%, white);
-	border-color: color-mix(in srgb, var(--color-error) 15%, transparent);
+	color: color-mix(in srgb, var(--color-state-danger), black 30%);
+	background: color-mix(in srgb, var(--color-state-danger) 8%, white);
+	border-color: color-mix(in srgb, var(--color-state-danger) 15%, transparent);
 }
 
 .auth-back-link:focus-visible,

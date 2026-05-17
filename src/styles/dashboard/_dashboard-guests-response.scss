@@ -40,17 +40,17 @@
 		box-shadow: var(--shadow-subtle);
 
 		&:hover {
-			border-color: rgb(var(--color-action-accent-rgb), 0.5);
-			background: rgb(var(--color-action-accent-rgb), 0.02);
+			border-color: rgb(var(--color-action-accent-rgb) / 50%);
+			background: rgb(var(--color-action-accent-rgb) / 2%);
 			transform: translateY(-2px);
 		}
 	}
 
 	input:checked + &__content {
-		background: rgb(var(--color-action-accent-rgb), 0.08);
+		background: rgb(var(--color-action-accent-rgb) / 8%);
 		border-color: var(--color-action-accent);
 		color: var(--color-text-emphasis);
-		box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb), 0.1);
+		box-shadow: 0 4px 12px rgb(var(--color-action-accent-rgb) / 10%);
 		font-weight: var(--font-weight-bold);
 
 		&::after {

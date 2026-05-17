@@ -137,7 +137,7 @@
 
 	&__card-image-inner-frame {
 		border-radius: 2px;
-		background: var(--color-white);
+		background: var(--color-surface-elevated);
 		padding: 8px;
 		overflow: hidden;
 		position: relative;
@@ -248,8 +248,8 @@
 	&__card-content-itinerary {
 		margin: 0 0 2rem;
 		padding: 1.5rem 0;
-		border-top: 1px solid rgb(var(--color-action-accent-rgb), 0.15);
-		border-bottom: 1px solid rgb(var(--color-action-accent-rgb), 0.15);
+		border-top: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+		border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
 	}
 
 	&__card-content-itinerary-list {
@@ -328,7 +328,7 @@
 		overflow: hidden;
 		background: var(--color-action-accent); /* Standard gold */
 		backdrop-filter: blur(12px);
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.3);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
 		color: var(--color-text-primary);
 
 		/* Shimmer overlay */
@@ -359,7 +359,7 @@
 
 		&:hover {
 			filter: brightness(1.05);
-			box-shadow: 0 0 25px rgb(var(--color-action-accent-rgb), 0.15);
+			box-shadow: 0 0 25px rgb(var(--color-action-accent-rgb) / 15%);
 		}
 
 		&:hover::before {
@@ -374,17 +374,17 @@
 
 		&--maps,
 		&--waze {
-			background: rgb(var(--color-action-accent-rgb), 0.1);
+			background: rgb(var(--color-action-accent-rgb) / 10%);
 			color: var(--color-text-primary);
-			border-color: rgb(var(--color-action-accent-rgb), 0.5);
+			border-color: rgb(var(--color-action-accent-rgb) / 50%);
 			backdrop-filter: blur(12px);
 		}
 
 		&--maps:hover,
 		&--waze:hover {
-			background: rgb(var(--color-action-accent-rgb), 0.2);
+			background: rgb(var(--color-action-accent-rgb) / 20%);
 			border-color: var(--color-action-accent);
-			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb), 0.25);
+			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb) / 25%);
 		}
 
 		&--primary {
@@ -395,11 +395,11 @@
 
 		&--primary:hover {
 			filter: brightness(0.9);
-			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb), 0.3);
+			box-shadow: 0 8px 25px rgb(var(--color-action-accent-rgb) / 30%);
 		}
 
 		&--apple {
-			background: var(--color-white);
+			background: var(--color-surface-elevated);
 			color: var(--color-text-primary);
 			border-color: var(--color-border-subtle);
 		}
@@ -445,16 +445,16 @@
 		display: grid;
 		gap: 2.5rem;
 		padding: 3rem 2rem;
-		background: rgb(var(--color-surface-primary-rgb), 0.5);
+		background: rgb(var(--color-surface-primary-rgb) / 50%);
 		backdrop-filter: blur(10px);
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.2);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
 		position: relative;
 
 		&::before {
 			content: '';
 			position: absolute;
 			inset: 6px;
-			border: 1px solid rgb(var(--color-action-accent-rgb), 0.1);
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
 			pointer-events: none;
 		}
 	}

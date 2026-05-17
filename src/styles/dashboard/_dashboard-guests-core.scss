@@ -2,15 +2,15 @@
 
 @mixin flat-card-surface {
 	background: var(--color-surface-elevated);
-	border: 1px solid rgb(var(--color-action-secondary-rgb), 0.14);
+	border: 1px solid rgb(var(--color-action-secondary-rgb) / 14%);
 }
 
 @mixin glass-card-surface($top-alpha: 92%, $bottom-alpha: 78%, $base: var(--color-surface-soft)) {
 	background:
 		linear-gradient(
 			180deg,
-			rgb(var(--color-white-rgb) / $top-alpha),
-			rgb(var(--color-white-rgb) / $bottom-alpha)
+			rgb(var(--color-surface-elevated-rgb) / $top-alpha),
+			rgb(var(--color-surface-elevated-rgb) / $bottom-alpha)
 		),
 		$base;
 }
@@ -47,37 +47,37 @@
 
 	&--pending {
 		@include status-pill-variant(
-			var(--dashboard-state-warning-bg),
-			var(--dashboard-state-warning-text),
-			var(--dashboard-state-warning-border),
-			var(--dashboard-state-warning)
+			var(--color-state-warning-bg),
+			var(--color-state-warning-text),
+			var(--color-state-warning-border),
+			var(--color-state-warning)
 		);
 	}
 
 	&--confirmed {
 		@include status-pill-variant(
-			var(--dashboard-state-success-bg),
-			var(--dashboard-state-success-text),
-			var(--dashboard-state-success-border),
-			var(--dashboard-state-success)
+			var(--color-state-success-bg),
+			var(--color-state-success-text),
+			var(--color-state-success-border),
+			var(--color-state-success)
 		);
 	}
 
 	&--declined {
 		@include status-pill-variant(
-			var(--dashboard-state-danger-bg),
-			var(--dashboard-state-danger-text),
-			var(--dashboard-state-danger-border),
-			var(--dashboard-state-danger)
+			var(--color-state-danger-bg),
+			var(--color-state-danger-text),
+			var(--color-state-danger-border),
+			var(--color-state-danger)
 		);
 	}
 
 	&--unshared {
 		@include status-pill-variant(
-			var(--dashboard-state-info-bg),
-			var(--dashboard-state-info-text),
-			var(--dashboard-state-info-border),
-			var(--dashboard-state-info)
+			var(--color-state-info-bg),
+			var(--color-state-info-text),
+			var(--color-state-info-border),
+			var(--color-state-info)
 		);
 	}
 }

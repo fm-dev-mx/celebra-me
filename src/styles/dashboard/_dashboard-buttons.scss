@@ -36,8 +36,8 @@
 }
 
 .btn-primary {
-	background: var(--dashboard-brand-primary);
-	color: var(--dashboard-text-inverse);
+	background: var(--color-action-primary);
+	color: var(--color-text-on-dark);
 	box-shadow: var(--shadow-subtle);
 
 	&:hover {
@@ -53,7 +53,7 @@
 	}
 
 	&--danger {
-		background: var(--dashboard-state-danger);
+		background: var(--color-state-danger);
 
 		&:hover {
 			filter: brightness(1.08);
@@ -63,13 +63,13 @@
 
 .btn-secondary {
 	background: var(--color-surface-elevated);
-	border-color: var(--dashboard-border-subtle);
+	border-color: var(--color-border-subtle);
 	color: var(--color-text-primary);
 	box-shadow: none;
 
 	&:hover {
 		background: var(--color-surface-warm-ivory);
-		border-color: var(--dashboard-border-premium);
+		border-color: var(--dashboard-card-border);
 		box-shadow: var(--shadow-subtle);
 	}
 
@@ -79,13 +79,13 @@
 }
 
 .btn-accent {
-	background: var(--dashboard-brand-accent-soft);
-	border-color: var(--dashboard-brand-border);
-	color: var(--dashboard-text-brand);
+	background: var(--dashboard-accent-soft-bg);
+	border-color: var(--dashboard-card-border);
+	color: var(--color-text-emphasis);
 
 	&:hover {
 		background: rgb(var(--color-action-accent-rgb) / 16%);
-		border-color: var(--dashboard-brand-border-strong);
+		border-color: var(--color-border-emphasis);
 	}
 }
 
@@ -121,11 +121,11 @@
 	}
 
 	&--danger {
-		color: var(--color-wax-seal);
+		color: var(--color-state-danger);
 
 		&:hover {
-			background: rgb(var(--color-special-wax-seal-rgb), 0.06);
-			border-color: var(--color-wax-seal);
+			background: rgb(var(--color-state-danger-rgb) / 6%);
+			border-color: var(--color-state-danger);
 		}
 	}
 }
@@ -135,8 +135,8 @@
 }
 
 .btn-secondary--postpone {
-	border: 1px dashed var(--dashboard-border-strong);
-	color: var(--dashboard-text-secondary);
+	border: 1px dashed var(--color-border-emphasis);
+	color: var(--color-text-secondary);
 }
 
 .btn--compact {

@@ -7,14 +7,22 @@
 	--env-paper-bg: color-mix(in srgb, var(--color-surface-dark) 85%, var(--color-action-accent));
 	--env-paper-border: color-mix(in srgb, var(--color-action-accent) 45%, transparent);
 	--env-text-primary: var(--color-action-accent);
-	--env-text-secondary: color-mix(in srgb, var(--color-action-accent) 72%, var(--color-white));
+	--env-text-secondary: color-mix(
+		in srgb,
+		var(--color-action-accent) 72%,
+		var(--color-surface-elevated)
+	);
 	--env-accent: var(--color-action-accent);
 	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
-	--reveal-card-bg: color-mix(in srgb, var(--color-white) 92%, var(--color-action-accent));
+	--reveal-card-bg: color-mix(
+		in srgb,
+		var(--color-surface-elevated) 92%,
+		var(--color-action-accent)
+	);
 	--reveal-card-text-primary: var(--color-action-accent);
 	--reveal-card-text-secondary: color-mix(
 		in srgb,
 		var(--color-action-accent) 72%,
-		var(--color-white)
+		var(--color-surface-elevated)
 	);
 }

@@ -46,7 +46,7 @@
 	background:
 		linear-gradient(
 			135deg,
-			color-mix(in srgb, var(--color-white) 28%, transparent),
+			color-mix(in srgb, var(--color-surface-elevated) 28%, transparent),
 			color-mix(in srgb, var(--reveal-card-accent) 6%, transparent)
 		),
 		var(--reveal-card-bg);
@@ -76,7 +76,7 @@
 	width: clamp(44px, 12vw, 58px);
 	height: clamp(44px, 12vw, 58px);
 	background: var(--reveal-card-seal-bg);
-	border: 1px solid color-mix(in srgb, var(--color-white) 18%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-surface-elevated) 18%, transparent);
 	border-radius: 50%;
 	box-shadow: var(--env-shadow-seal);
 	opacity: 88%;

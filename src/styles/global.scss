@@ -2,20 +2,14 @@
 @use 'global/animations';
 @use 'components/icons';
 @use 'components/logo';
-@use 'tools/functions' as tools;
 @use 'tokens/semantic/color';
 @use 'tokens/semantic/motion';
 @use 'tokens/semantic/spacing';
 @use 'tokens/semantic/surface';
-@use 'tokens/semantic/navigation';
 @use 'tokens/semantic/type';
-@use 'tokens/system/color' as sys-color;
 @use 'ui/status-pages';
 
 :root {
-	--color-surface: var(--color-surface-primary);
-	--color-white: #{sys-color.$sys-color-neutral-0};
-	--color-white-rgb: #{tools.rgb-channels(sys-color.$sys-color-neutral-0)};
 	--spacing-xs: var(--spacing-2);
 	--spacing-sm: var(--spacing-4);
 	--spacing-md: var(--spacing-6);
@@ -37,11 +31,11 @@
 .gold-foil {
 	background: linear-gradient(
 		135deg,
-		rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 0%,
-		rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 25%,
+		rgb(var(--color-action-accent-rgb, 220 180 60) / 10%) 0%,
+		rgb(var(--color-action-accent-rgb, 220 180 60) / 30%) 25%,
 		rgb(255 223 0 / 40%) 50%,
-		rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.3) 75%,
-		rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.1) 100%
+		rgb(var(--color-action-accent-rgb, 220 180 60) / 30%) 75%,
+		rgb(var(--color-action-accent-rgb, 220 180 60) / 10%) 100%
 	);
 	background-size: 200% 200%;
 	animation: effect-shimmer 3s ease-in-out infinite;
@@ -166,7 +160,7 @@ body {
 
 /* Error/fallback states */
 .error-message {
-	color: var(--color-error);
+	color: var(--color-state-danger);
 	text-align: center;
 	padding: 5rem 0;
 }

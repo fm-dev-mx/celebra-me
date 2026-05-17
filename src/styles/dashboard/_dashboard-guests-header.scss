@@ -6,7 +6,7 @@
 	padding: 1.5rem;
 	background: rgb(white, 0.03);
 	backdrop-filter: blur(12px);
-	border: 1px solid rgb(var(--color-action-primary-rgb), 0.12);
+	border: 1px solid rgb(var(--color-action-primary-rgb) / 12%);
 	border-radius: 20px;
 	box-shadow: var(--shadow-premium);
 	position: relative;
@@ -57,7 +57,7 @@
 			font-size: 0.75rem;
 			text-transform: uppercase;
 			letter-spacing: var(--letter-spacing-extra-wide);
-			color: rgb(var(--color-text-secondary-rgb), 0.8);
+			color: rgb(var(--color-text-secondary-rgb) / 80%);
 			font-weight: var(--font-weight-bold);
 		}
 
@@ -85,8 +85,8 @@
 			&:focus {
 				border-color: var(--color-action-secondary);
 				outline: none;
-				background-color: rgb(var(--color-surface-elevated-rgb, 255 255 255), 0.12);
-				box-shadow: 0 0 0 4px rgb(var(--color-action-secondary-rgb), 0.12);
+				background-color: rgb(var(--color-surface-elevated-rgb, 255 255 255) / 12%);
+				box-shadow: 0 0 0 4px rgb(var(--color-action-secondary-rgb) / 12%);
 			}
 		}
 	}

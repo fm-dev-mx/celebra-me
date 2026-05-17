@@ -2,7 +2,7 @@
 
 .guest-card {
 	background: var(--color-surface-elevated);
-	border: 1px solid var(--dashboard-border-premium);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 14px;
 	padding: 1.1rem;
 	display: flex;
@@ -33,7 +33,7 @@
 	}
 
 	&:hover {
-		border-color: rgb(var(--color-action-accent-rgb), 0.35);
+		border-color: rgb(var(--color-action-accent-rgb) / 35%);
 		box-shadow: var(--shadow-warm);
 	}
 
@@ -44,7 +44,7 @@
 			background: linear-gradient(
 				90deg,
 				transparent,
-				rgb(var(--color-success-rgb) / 30%),
+				rgb(var(--color-state-success-rgb) / 30%),
 				transparent
 			);
 		}
@@ -253,16 +253,16 @@
 	}
 
 	&--danger {
-		color: var(--dashboard-state-danger-text);
+		color: var(--color-state-danger-text);
 
 		&:hover {
-			background: var(--dashboard-state-danger-bg);
-			border-color: var(--dashboard-state-danger-border);
+			background: var(--color-state-danger-bg);
+			border-color: var(--color-state-danger-border);
 		}
 	}
 
 	&--primary {
-		color: var(--dashboard-brand-primary);
+		color: var(--color-action-primary);
 		border-color: rgb(var(--color-action-accent-rgb) / 20%);
 
 		&:hover {
@@ -286,7 +286,7 @@
 	padding: 1.5rem;
 	border-radius: 10px;
 	background: var(--color-surface-warm-ivory);
-	border: 1px solid var(--dashboard-border-premium);
+	border: 1px solid var(--dashboard-card-border);
 	color: var(--color-text-secondary);
 
 	p {

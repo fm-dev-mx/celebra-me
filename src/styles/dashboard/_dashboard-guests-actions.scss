@@ -25,7 +25,7 @@
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 	min-height: 40px;
 	background: rgb(var(--color-action-primary-rgb) / 80%);
-	color: var(--dashboard-text-inverse);
+	color: var(--color-text-on-dark);
 	box-shadow: var(--shadow-subtle);
 
 	&:hover:not(:disabled) {
@@ -46,8 +46,8 @@
 		box-shadow: none;
 
 		&:hover:not(:disabled) {
-			background: rgb(var(--color-neutral-base-rgb) / 5%);
-			border-color: rgb(var(--color-neutral-base-rgb) / 20%);
+			background: rgb(var(--color-text-secondary-rgb) / 5%);
+			border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 			color: var(--color-text-emphasis);
 			transform: none;
 			box-shadow: none;
@@ -59,8 +59,8 @@
 	}
 
 	&--delivered {
-		background: var(--dashboard-state-success);
-		box-shadow: 0 0 12px rgb(var(--color-success-rgb), 0.25);
+		background: var(--color-state-success);
+		box-shadow: 0 0 12px rgb(var(--color-state-success-rgb) / 25%);
 	}
 
 	.share-icon {
@@ -84,6 +84,6 @@
 }
 
 .dashboard-guests__actions .btn-icon--danger:hover:not(:disabled) {
-	background: var(--dashboard-state-danger-bg);
-	border-color: var(--dashboard-state-danger-border);
+	background: var(--color-state-danger-bg);
+	border-color: var(--color-state-danger-border);
 }

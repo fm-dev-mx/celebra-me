@@ -51,10 +51,6 @@ $semantic-color: (
 		danger-bg: sys.$sys-color-crimson-50,
 		danger-border: sys.$sys-color-crimson-200,
 		danger-text: sys.$sys-color-crimson-900,
-		error: sys.$sys-color-crimson-700,
-		error-bg: sys.$sys-color-crimson-50,
-		error-border: sys.$sys-color-crimson-200,
-		error-text: sys.$sys-color-crimson-900,
 		info: sys.$sys-color-slate-600,
 		info-bg: color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-0, $weight: 10%),
 		info-border: color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-0, $weight: 22%),
@@ -62,9 +58,6 @@ $semantic-color: (
 	),
 	special: (
 		whatsapp: sys.$sys-color-whatsapp,
-		wax-seal: sys.$sys-color-wax-red,
-		reserved: sys.$sys-color-plum-700,
-		white: sys.$sys-color-neutral-0,
 	),
 	envelope: (
 		paper-ivory: #{color.mix(sys.$sys-color-gold-200, sys.$sys-color-neutral-0, 6%)},
@@ -82,6 +75,7 @@ $semantic-color: (
 	--color-surface-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-100)};
 	--color-surface-soft: #{sys.$sys-color-neutral-50};
 	--color-surface-elevated: #{sys.$sys-color-neutral-0};
+	--color-surface-elevated-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-0)};
 	--color-surface-canvas: #{sys.$sys-color-coffee-900};
 	--color-surface-dark: #{sys.$sys-color-coffee-900};
 	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
@@ -113,35 +107,34 @@ $semantic-color: (
 	--color-neutral-muted: #{sys.$sys-color-neutral-400};
 	--color-neutral-base: #{sys.$sys-color-neutral-700};
 	--color-neutral-emphasis: #{sys.$sys-color-neutral-900};
-	--color-success: #{sys.$sys-color-forest-700};
-	--color-success-rgb: #{tools.rgb-channels(sys.$sys-color-forest-700)};
-	--color-success-bg: #{sys.$sys-color-forest-50};
-	--color-success-border: #{sys.$sys-color-forest-200};
-	--color-success-text: #{sys.$sys-color-forest-800};
-	--color-warning: #{sys.$sys-color-amber-600};
-	--color-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-600)};
-	--color-warning-bg: #{sys.$sys-color-amber-50};
-	--color-warning-border: #{sys.$sys-color-amber-200};
-	--color-warning-text: #{sys.$sys-color-amber-800};
-	--color-danger: #{sys.$sys-color-crimson-700};
-	--color-danger-rgb: #{tools.rgb-channels(sys.$sys-color-crimson-700)};
-	--color-danger-bg: #{sys.$sys-color-crimson-50};
-	--color-danger-border: #{sys.$sys-color-crimson-200};
-	--color-danger-text: #{sys.$sys-color-crimson-900};
-	--color-error: #{sys.$sys-color-crimson-700};
-	--color-error-rgb: #{tools.rgb-channels(sys.$sys-color-crimson-700)};
-	--color-error-bg: var(--rsvp-error-bg, #{sys.$sys-color-crimson-50});
-	--color-error-border: var(--rsvp-error-border, #{sys.$sys-color-crimson-200});
-	--color-error-text: #{sys.$sys-color-crimson-900};
-	--color-info: #{sys.$sys-color-slate-600};
-	--color-info-rgb: #{tools.rgb-channels(sys.$sys-color-slate-600)};
-	--color-info-bg: #{color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-0, $weight: 10%)};
-	--color-info-border: #{color.mix(
+	--color-state-success: #{sys.$sys-color-forest-700};
+	--color-state-success-rgb: #{tools.rgb-channels(sys.$sys-color-forest-700)};
+	--color-state-success-bg: #{sys.$sys-color-forest-50};
+	--color-state-success-border: #{sys.$sys-color-forest-200};
+	--color-state-success-text: #{sys.$sys-color-forest-800};
+	--color-state-warning: #{sys.$sys-color-amber-600};
+	--color-state-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-600)};
+	--color-state-warning-bg: #{sys.$sys-color-amber-50};
+	--color-state-warning-border: #{sys.$sys-color-amber-200};
+	--color-state-warning-text: #{sys.$sys-color-amber-800};
+	--color-state-danger: #{sys.$sys-color-crimson-700};
+	--color-state-danger-rgb: #{tools.rgb-channels(sys.$sys-color-crimson-700)};
+	--color-state-danger-bg: #{sys.$sys-color-crimson-50};
+	--color-state-danger-border: #{sys.$sys-color-crimson-200};
+	--color-state-danger-text: #{sys.$sys-color-crimson-900};
+	--color-state-info: #{sys.$sys-color-slate-600};
+	--color-state-info-rgb: #{tools.rgb-channels(sys.$sys-color-slate-600)};
+	--color-state-info-bg: #{color.mix(
+			sys.$sys-color-slate-600,
+			sys.$sys-color-neutral-0,
+			$weight: 10%
+		)};
+	--color-state-info-border: #{color.mix(
 			sys.$sys-color-slate-600,
 			sys.$sys-color-neutral-0,
 			$weight: 22%
 		)};
-	--color-info-text: #{sys.$sys-color-slate-800};
+	--color-state-info-text: #{sys.$sys-color-slate-800};
 	--color-whatsapp: #{sys.$sys-color-whatsapp};
 	--color-whatsapp-rgb: #{tools.rgb-channels(sys.$sys-color-whatsapp)};
 	--color-envelope-paper-ivory: #{color.mix(
@@ -149,7 +142,6 @@ $semantic-color: (
 			sys.$sys-color-neutral-0,
 			6%
 		)};
-	--color-envelope-seal-gold: #{sys.$sys-color-gold-500};
 }
 
 @function color($keys...) {

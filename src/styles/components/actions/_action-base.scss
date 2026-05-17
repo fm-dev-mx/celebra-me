@@ -37,7 +37,7 @@
 	}
 
 	&--white {
-		--action-bg: var(--color-white, white);
+		--action-bg: var(--color-surface-elevated, white);
 		--action-fg: var(--color-text-primary);
 		--action-hover-bg: var(--color-neutral-subtle);
 		--action-hover-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
@@ -76,7 +76,7 @@
 			color: white;
 
 			&:hover {
-				background-color: var(--color-white, white);
+				background-color: var(--color-surface-elevated, white);
 				color: var(--color-text-primary);
 			}
 		}

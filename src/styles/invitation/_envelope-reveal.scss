@@ -13,13 +13,13 @@
 	--env-accent: var(--color-action-accent);
 	--env-seal-bg: radial-gradient(
 		circle at 32% 28%,
-		color-mix(in srgb, var(--env-accent) 32%, var(--color-white)) 0%,
+		color-mix(in srgb, var(--env-accent) 32%, var(--color-surface-elevated)) 0%,
 		var(--env-accent) 42%,
 		color-mix(in srgb, var(--env-accent) 72%, var(--color-surface-dark)) 100%
 	);
 	--env-seal-icon: color-mix(in srgb, var(--color-surface-dark) 70%, transparent);
 	--env-font-display: var(--font-display);
-	--env-tooltip-bg: color-mix(in srgb, var(--color-white) 94%, transparent);
+	--env-tooltip-bg: color-mix(in srgb, var(--color-surface-elevated) 94%, transparent);
 	--env-tooltip-border: color-mix(in srgb, var(--env-accent) 18%, transparent);
 	--env-tooltip-shadow: 0 8px 18px color-mix(in srgb, var(--color-surface-dark) 10%, transparent);
 	--env-shadow-container:
@@ -28,7 +28,7 @@
 	--env-shadow-seal:
 		0 10px 18px color-mix(in srgb, var(--color-surface-dark) 34%, transparent),
 		inset 0 -2px 7px color-mix(in srgb, var(--color-surface-dark) 28%, transparent),
-		inset 0 2px 8px color-mix(in srgb, var(--color-white) 42%, transparent);
+		inset 0 2px 8px color-mix(in srgb, var(--color-surface-elevated) 42%, transparent);
 	--env-container-width: clamp(320px, 45vw, 720px);
 	--env-container-ratio: 1.35;
 	--env-container-max-height: min(55vh, 400px);
@@ -87,7 +87,7 @@
 	background:
 		linear-gradient(
 			135deg,
-			color-mix(in srgb, var(--color-white) 16%, transparent),
+			color-mix(in srgb, var(--color-surface-elevated) 16%, transparent),
 			color-mix(in srgb, var(--color-surface-dark) 6%, transparent)
 		),
 		var(--env-paper-bg);
@@ -102,7 +102,7 @@
 		background:
 			radial-gradient(
 				circle at 50% 0%,
-				color-mix(in srgb, var(--color-white) 18%, transparent),
+				color-mix(in srgb, var(--color-surface-elevated) 18%, transparent),
 				transparent 42%
 			),
 			linear-gradient(
@@ -422,7 +422,7 @@
 	width: var(--env-seal-size);
 	height: var(--env-seal-size);
 	background: var(--env-seal-bg);
-	border: 1px solid color-mix(in srgb, var(--color-white) 18%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-surface-elevated) 18%, transparent);
 	border-radius: 50%;
 	box-shadow: var(--env-shadow-seal);
 
@@ -430,7 +430,9 @@
 		width: 32px;
 		height: 32px;
 		color: var(--env-seal-icon);
-		filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--color-white) 50%, transparent))
+		filter: drop-shadow(
+				0 1px 0 color-mix(in srgb, var(--color-surface-elevated) 50%, transparent)
+			)
 			drop-shadow(0 -1px 0 color-mix(in srgb, var(--color-surface-dark) 15%, transparent));
 	}
 }
@@ -547,7 +549,7 @@
 .envelope-seal-button--monogram .envelope-seal-button__visual {
 	box-shadow:
 		var(--env-shadow-seal),
-		inset 0 0 0 1px color-mix(in srgb, var(--color-white) 10%, transparent);
+		inset 0 0 0 1px color-mix(in srgb, var(--color-surface-elevated) 10%, transparent);
 }
 
 @include mixins.respond-below(md) {

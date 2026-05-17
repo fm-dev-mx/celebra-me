@@ -59,10 +59,10 @@
 		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);
 	--rsvp-button-shadow-loading: 0 4px 15px rgb(var(--color-action-primary-rgb) / 15%);
 	--rsvp-button-shadow-success: 0 0 30px rgb(var(--color-action-accent-rgb) / 40%);
-	--color-error-field: rgb(166 46 46);
-	--color-error-text: rgb(138 32 32);
-	--rsvp-error-bg: rgb(var(--color-error-rgb) / 10%);
-	--rsvp-error-border: rgb(var(--color-error-rgb) / 28%);
+	--rsvp-error-field: rgb(166 46 46);
+	--rsvp-error-text: rgb(138 32 32);
+	--rsvp-error-bg: rgb(var(--color-state-danger-rgb) / 10%);
+	--rsvp-error-border: rgb(var(--color-state-danger-rgb) / 28%);
 	--rsvp-title-font: var(--font-display);
 	--rsvp-title-color: var(--color-action-accent);
 	--rsvp-title-size: 2.2rem;

@@ -17,7 +17,7 @@
 	overflow: hidden;
 	overscroll-behavior: contain;
 	touch-action: none;
-	background: var(--dashboard-surface-overlay);
+	background: var(--dashboard-overlay-bg);
 	backdrop-filter: blur(12px) saturate(180%);
 	z-index: var(--dashboard-z-modal-backdrop) !important;
 }
@@ -31,15 +31,11 @@
 	min-width: 0;
 	max-height: min(calc(100dvh - 40px), 800px);
 	padding: clamp(1.25rem, 2.5vw, 2rem);
-	border: 1px solid var(--dashboard-border-premium);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 14px;
 	background:
-		linear-gradient(
-			180deg,
-			var(--dashboard-surface-card-strong),
-			var(--dashboard-surface-card-soft)
-		),
-		var(--dashboard-surface-page);
+		linear-gradient(180deg, var(--dashboard-card-bg), var(--dashboard-card-bg-soft)),
+		var(--color-surface-primary);
 	box-shadow: 0 20px 50px rgb(0 0 0 / 20%);
 	animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -47,14 +43,14 @@
 		content: '';
 		position: absolute;
 		inset: 0.4rem;
-		border: 1px solid var(--dashboard-brand-border);
+		border: 1px solid var(--dashboard-card-border);
 		border-radius: 10px;
 		pointer-events: none;
 	}
 
 	h3 {
 		margin: 0;
-		color: var(--dashboard-text-brand);
+		color: var(--color-text-emphasis);
 		text-align: center;
 		font-family: var(--font-display-elegant);
 		font-size: clamp(1.25rem, 2.5vw, 1.6rem);
@@ -64,18 +60,18 @@
 
 	&__description {
 		margin-bottom: 1.5rem;
-		color: var(--dashboard-text-secondary);
+		color: var(--color-text-secondary);
 		text-align: center;
 	}
 
 	&__confirm-text {
 		margin-bottom: 1rem;
-		color: var(--dashboard-text-secondary);
+		color: var(--color-text-secondary);
 		text-align: center;
 	}
 
 	&__confirm-warning {
-		color: var(--dashboard-state-danger-text);
+		color: var(--color-state-danger-text);
 		text-align: center;
 		font-size: 0.85rem;
 	}
@@ -151,23 +147,23 @@
 		}
 
 		.dashboard-modal__footer .btn-secondary {
-			background: var(--dashboard-surface-elevated);
-			border: 1px solid var(--dashboard-border-subtle);
-			color: var(--dashboard-text-primary);
+			background: var(--color-surface-elevated);
+			border: 1px solid var(--color-border-subtle);
+			color: var(--color-text-primary);
 		}
 
 		.dashboard-modal__footer .btn-secondary:hover {
-			background: var(--dashboard-surface-card-strong);
-			border-color: var(--dashboard-border-strong);
+			background: var(--dashboard-card-bg);
+			border-color: var(--color-border-emphasis);
 		}
 
 		.dashboard-modal__footer .btn-primary--danger {
-			background: var(--dashboard-state-danger);
-			color: var(--dashboard-text-inverse);
+			background: var(--color-state-danger);
+			color: var(--color-text-on-dark);
 		}
 
 		.dashboard-modal__footer .btn-primary--danger:hover {
-			background: color-mix(in srgb, var(--dashboard-state-danger) 88%, black);
+			background: color-mix(in srgb, var(--color-state-danger) 88%, black);
 		}
 	}
 }
@@ -179,13 +175,13 @@
 	justify-content: center;
 	border: none;
 	background: none;
-	color: var(--dashboard-text-secondary);
+	color: var(--color-text-secondary);
 	cursor: pointer;
 	line-height: 1;
 	transition: color 0.2s ease;
 
 	&:hover {
-		color: var(--dashboard-text-brand);
+		color: var(--color-text-emphasis);
 	}
 }
 
@@ -226,7 +222,7 @@
 	gap: var(--spacing-md);
 	margin-top: 1.25rem;
 	padding-top: 0.875rem;
-	border-top: 1px solid var(--dashboard-border-subtle);
+	border-top: 1px solid var(--color-border-subtle);
 
 	@media (width <= 480px) {
 		flex-direction: column-reverse;
@@ -258,7 +254,7 @@
 	margin-bottom: var(--spacing-sm);
 
 	label {
-		color: var(--dashboard-text-secondary);
+		color: var(--color-text-secondary);
 		font-size: 0.75rem;
 		font-weight: var(--font-weight-bold);
 		letter-spacing: var(--letter-spacing-wide);
@@ -269,10 +265,10 @@
 	select,
 	textarea {
 		padding: 0.5rem 0.65rem;
-		border: 1px solid var(--dashboard-border-subtle);
+		border: 1px solid var(--color-border-subtle);
 		border-radius: 6px;
-		background: var(--dashboard-surface-elevated);
-		color: var(--dashboard-text-primary);
+		background: var(--color-surface-elevated);
+		color: var(--color-text-primary);
 		font-size: 1rem;
 		transition:
 			border-color 0.2s ease,
@@ -281,12 +277,12 @@
 
 		&:focus {
 			outline: none;
-			border-color: var(--dashboard-brand-primary);
-			box-shadow: 0 0 0 3px rgb(var(--dashboard-brand-primary-rgb), 0.12);
+			border-color: var(--color-action-primary);
+			box-shadow: 0 0 0 3px rgb(var(--color-action-primary-rgb) / 12%);
 		}
 
 		&:disabled {
-			background: var(--dashboard-surface-inset);
+			background: var(--color-surface-secondary);
 			cursor: not-allowed;
 		}
 	}
@@ -304,7 +300,7 @@
 .dashboard-form-section {
 	margin-top: 0.5rem;
 	padding-top: 0.75rem;
-	border-top: 1px solid var(--dashboard-border-subtle);
+	border-top: 1px solid var(--color-border-subtle);
 }
 
 @keyframes slideUp {

@@ -2,10 +2,10 @@
 @use 'sass:color';
 
 .dashboard-shell-body {
-	--dashboard-shell-veil: var(--dashboard-surface-overlay);
-	--dashboard-shell-panel: var(--dashboard-surface-panel);
-	--dashboard-shell-elevated: var(--dashboard-surface-card);
-	--dashboard-shell-border-premium: var(--dashboard-border-premium);
+	--dashboard-shell-veil: var(--dashboard-overlay-bg);
+	--dashboard-shell-panel: var(--dashboard-panel-bg);
+	--dashboard-shell-elevated: var(--dashboard-card-bg-soft);
+	--dashboard-shell-border-premium: var(--dashboard-card-border);
 	--dashboard-shadow-premium: var(--shadow-warm);
 	--dashboard-shadow-emphasis: var(--shadow-warm-emphasis);
 
@@ -23,12 +23,12 @@
 	background:
 		radial-gradient(
 			circle at top right,
-			rgb(var(--color-action-secondary-rgb), 0.04),
+			rgb(var(--color-action-secondary-rgb) / 4%),
 			transparent 40%
 		),
 		radial-gradient(
 			circle at bottom left,
-			rgb(var(--color-surface-dark-rgb), 0.03),
+			rgb(var(--color-surface-dark-rgb) / 3%),
 			transparent 40%
 		),
 		var(--color-surface-primary);
@@ -41,7 +41,7 @@
 	min-height: 100vh;
 	position: relative;
 	isolation: isolate;
-	color: var(--dashboard-text-primary);
+	color: var(--color-text-primary);
 }
 
 .dashboard-shell__backdrop {
@@ -62,11 +62,11 @@
 	background:
 		linear-gradient(
 			180deg,
-			var(--dashboard-surface-sidebar-strong) 0%,
+			var(--dashboard-sidebar-bg-strong) 0%,
 			rgb(var(--color-surface-dark-rgb) / 98%) 100%
 		),
-		var(--dashboard-surface-sidebar);
-	color: var(--dashboard-text-inverse);
+		var(--dashboard-sidebar-bg);
+	color: var(--color-text-on-dark);
 	box-shadow: 2px 0 20px rgb(0 0 0 / 15%);
 	border-right: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
 	z-index: var(--dashboard-z-base);
@@ -203,8 +203,8 @@
 	padding: 1rem 2rem;
 	background: var(--color-surface-warm-ivory);
 	backdrop-filter: blur(8px) saturate(150%);
-	border-bottom: 1px solid var(--dashboard-border-premium);
-	box-shadow: 0 4px 20px rgb(var(--color-surface-dark-rgb), 0.04);
+	border-bottom: 1px solid var(--dashboard-card-border);
+	box-shadow: 0 4px 20px rgb(var(--color-surface-dark-rgb) / 4%);
 	transition:
 		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
 		background-color 0.3s ease,
@@ -228,7 +228,7 @@
 		width: 44px;
 		height: 44px;
 		padding: 0;
-		border: 1px solid var(--dashboard-border-subtle);
+		border: 1px solid var(--color-border-subtle);
 		border-radius: 10px;
 		background: var(--dashboard-shell-elevated);
 		color: var(--color-text-secondary);
@@ -262,7 +262,7 @@
 
 	h1 {
 		margin: 0;
-		color: var(--dashboard-text-primary);
+		color: var(--color-text-primary);
 		font-family: var(--font-display-elegant);
 		font-size: clamp(1.2rem, 1.8vw, 1.5rem);
 		font-weight: 500;
@@ -290,7 +290,7 @@
 
 		h1 {
 			margin: 0;
-			color: var(--dashboard-text-primary);
+			color: var(--color-text-primary);
 			font-family: var(--font-display-elegant);
 			font-size: 1.5rem;
 			font-weight: 500;
@@ -334,7 +334,7 @@
 		&:focus {
 			outline: none;
 			border-color: var(--color-action-accent);
-			box-shadow: 0 0 0 3px rgb(var(--color-action-accent-rgb), 0.1);
+			box-shadow: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 10%);
 		}
 	}
 }
@@ -346,7 +346,7 @@
 	margin: 0.25rem 0 0;
 	padding: 0;
 	list-style: none;
-	color: color-mix(in srgb, var(--dashboard-text-secondary) 60%, transparent);
+	color: color-mix(in srgb, var(--color-text-secondary) 60%, transparent);
 	font-size: 0.72rem;
 	font-family: var(--font-ui);
 	letter-spacing: 0.04em;
@@ -439,11 +439,11 @@
 }
 
 .dashboard-sidebar__account-error {
-	color: var(--dashboard-state-danger-text);
+	color: var(--color-state-danger-text);
 	font-size: 0.72rem;
 	padding: 0.5rem;
-	background: rgb(var(--color-danger-rgb) / 10%);
-	border: 1px solid rgb(var(--color-danger-rgb) / 15%);
+	background: rgb(var(--color-state-danger-rgb) / 10%);
+	border: 1px solid rgb(var(--color-state-danger-rgb) / 15%);
 	border-radius: 6px;
 	text-align: center;
 }
@@ -693,10 +693,10 @@
 	}
 
 	.dashboard-sidebar__account-error {
-		color: var(--dashboard-state-danger-text);
+		color: var(--color-state-danger-text);
 		font-size: 0.68rem;
-		background: rgb(var(--color-danger-rgb) / 8%);
-		border: 1px solid rgb(var(--color-danger-rgb) / 12%);
+		background: rgb(var(--color-state-danger-rgb) / 8%);
+		border: 1px solid rgb(var(--color-state-danger-rgb) / 12%);
 	}
 
 	/* --- Topbar --- */
@@ -730,7 +730,6 @@
 	/* --- Backdrop --- */
 	.dashboard-shell__backdrop {
 		display: block;
-		backdrop-filter: blur(3px);
 		backdrop-filter: blur(3px);
 	}
 }

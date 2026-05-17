@@ -3,7 +3,7 @@
 .dashboard-guests__progress-card {
 	padding: 1.25rem 1.5rem;
 	background: var(--color-surface-warm-ivory);
-	border: 1px solid var(--dashboard-border-premium);
+	border: 1px solid var(--dashboard-card-border);
 	border-radius: 14px;
 	margin-bottom: 2rem;
 	box-shadow: var(--shadow-warm);
@@ -61,21 +61,21 @@
 	height: 100%;
 	background: linear-gradient(
 		90deg,
-		var(--dashboard-brand-primary),
-		color-mix(in srgb, var(--dashboard-brand-accent) 36%, var(--dashboard-brand-primary)),
-		var(--dashboard-brand-primary)
+		var(--color-action-primary),
+		color-mix(in srgb, var(--color-action-accent) 36%, var(--color-action-primary)),
+		var(--color-action-primary)
 	);
 	background-size: 200% 100%;
 	animation: effect-shimmer 3s infinite linear;
 	border-radius: 100px;
-	box-shadow: 0 0 12px rgb(var(--dashboard-brand-primary-rgb) / 18%);
+	box-shadow: 0 0 12px rgb(var(--color-action-primary-rgb) / 18%);
 }
 
 .progress-footer {
 	display: flex;
 	flex-direction: column;
 	gap: 1.25rem;
-	color: rgb(var(--color-text-primary-rgb), 0.7);
+	color: rgb(var(--color-text-primary-rgb) / 70%);
 	font-size: 0.85rem;
 
 	p {
@@ -98,7 +98,7 @@
 }
 
 .progress-footer__secondary {
-	color: rgb(var(--color-text-secondary-rgb), 0.85);
+	color: rgb(var(--color-text-secondary-rgb) / 85%);
 }
 
 .session-progress {
@@ -136,12 +136,12 @@
 
 .completion-badge {
 	align-self: flex-start;
-	color: var(--dashboard-state-success-text);
+	color: var(--color-state-success-text);
 	font-weight: 600;
-	background: var(--dashboard-state-success-bg);
+	background: var(--color-state-success-bg);
 	padding: 5px 10px;
 	border-radius: 100px;
-	border: 1px solid var(--dashboard-state-success-border);
+	border: 1px solid var(--color-state-success-border);
 	font-size: 0.72rem;
 	display: flex;
 	align-items: center;

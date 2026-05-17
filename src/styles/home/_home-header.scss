@@ -27,7 +27,7 @@
 }
 
 .home-header__desktop {
-	color: var(--color-noir-accent);
+	color: var(--color-text-on-dark);
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-lg);
@@ -71,7 +71,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--color-noir-accent);
+			outline: 2px solid var(--color-action-accent);
 			outline-offset: 4px;
 		}
 	}
@@ -94,7 +94,7 @@
 		text-shadow: var(--header-nav-login-shadow, none);
 
 		&:hover {
-			color: var(--header-nav-hover-color, var(--color-noir-text));
+			color: var(--header-nav-hover-color, var(--color-text-on-dark));
 		}
 	}
 
