@@ -15,3 +15,5 @@ export * from './Message';
 export * from './Heart';
 export * from './Search';
 export * from './Plus';
+export * from './Check';
+export * from './Refresh';
