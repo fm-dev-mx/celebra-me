@@ -7,7 +7,7 @@
 .gifts-section[data-variant='celestial-blue'] {
 	background: radial-gradient(
 		circle at 50% 50%,
-		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
 	padding: 8rem 2rem;
@@ -41,7 +41,7 @@
 			content: '';
 			position: absolute;
 			inset: 8px;
-			border: 1px solid rgb(var(--color-action-accent-rgb), 0.05);
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 5%);
 			border-radius: 8px;
 			pointer-events: none;
 		}

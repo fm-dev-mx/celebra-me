@@ -7,7 +7,7 @@
 	--gallery-section-bg: linear-gradient(
 		to bottom,
 		transparent,
-		rgb(var(--color-surface-primary-rgb), 0.3)
+		rgb(var(--color-surface-primary-rgb) / 30%)
 	);
 	--gallery-container-max-width: 1200px;
 	--gallery-header-gap: clamp(2rem, 4vw, 4rem);
@@ -18,7 +18,7 @@
 	--gallery-title-letter-spacing: 0.18em;
 	--gallery-subtitle-font: var(--font-body);
 	--gallery-subtitle-size: clamp(1.05rem, 2.4vw, 1.4rem);
-	--gallery-subtitle-color: rgb(var(--color-text-primary-rgb), 0.75);
+	--gallery-subtitle-color: rgb(var(--color-text-primary-rgb) / 75%);
 	--gallery-subtitle-transform: none;
 	--gallery-subtitle-letter-spacing: 0.03em;
 	--gallery-subtitle-opacity: 1;
@@ -30,9 +30,9 @@
 	--gallery-item-aspect-ratio: 4 / 5;
 	--gallery-item-radius: 12px;
 	--gallery-item-padding: 0;
-	--gallery-item-bg: rgb(var(--color-surface-primary-rgb), 0.8);
-	--gallery-item-border: 1px solid rgb(var(--color-text-primary-rgb), 0.08);
-	--gallery-item-border-color: rgb(var(--color-text-primary-rgb), 0.08);
+	--gallery-item-bg: rgb(var(--color-surface-primary-rgb) / 80%);
+	--gallery-item-border: 1px solid rgb(var(--color-text-primary-rgb) / 8%);
+	--gallery-item-border-color: rgb(var(--color-text-primary-rgb) / 8%);
 	--gallery-item-shadow: 0 6px 18px rgb(0 0 0 / 7%);
 	--gallery-item-backdrop-filter: none;
 	--gallery-item-transform: none;
@@ -44,7 +44,7 @@
 	--gallery-item-hover-shadow: 0 14px 30px rgb(0 0 0 / 15%);
 	--gallery-item-transition-duration: 420ms;
 	--gallery-item-transition-ease: var(--ease-premium);
-	--gallery-item-focus-outline: 2px solid rgb(var(--color-action-accent-rgb), 0.65);
+	--gallery-item-focus-outline: 2px solid rgb(var(--color-action-accent-rgb) / 65%);
 	--gallery-item-focus-outline-offset: 3px;
 	--gallery-item-image-radius: calc(var(--gallery-item-radius) - 2px);
 	--gallery-item-image-fit: cover;
@@ -66,7 +66,7 @@
 	--gallery-item-aspect-ratio-standard: var(--gallery-item-aspect-ratio);
 	--gallery-lightbox-bg: rgb(0 0 0 / 90%);
 	--gallery-lightbox-close-color: var(--color-action-accent);
-	--gallery-lightbox-image-border: 2px solid rgb(var(--color-action-accent-rgb), 0.3);
+	--gallery-lightbox-image-border: 2px solid rgb(var(--color-action-accent-rgb) / 30%);
 	--gallery-lightbox-image-radius: 4px;
 	--gallery-lightbox-footer-font: var(--font-body);
 	--gallery-lightbox-footer-color: var(--color-text-on-dark);

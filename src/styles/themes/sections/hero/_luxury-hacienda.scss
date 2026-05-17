@@ -11,15 +11,15 @@
 			radial-gradient(
 				circle at 50% 40%,
 				transparent 0%,
-				rgb(var(--color-surface-dark-rgb), 0.2) 60%,
-				rgb(var(--color-surface-dark-rgb), 0.85) 100%
+				rgb(var(--color-surface-dark-rgb) / 20%) 60%,
+				rgb(var(--color-surface-dark-rgb) / 85%) 100%
 			),
 			linear-gradient(
 				to bottom,
 				transparent 0%,
 				transparent 40%,
-				rgb(var(--color-surface-dark-rgb), 0.75) 75%,
-				rgb(var(--color-surface-dark-rgb), 0.95) 100%
+				rgb(var(--color-surface-dark-rgb) / 75%) 75%,
+				rgb(var(--color-surface-dark-rgb) / 95%) 100%
 			);
 		opacity: 100%;
 	}
@@ -286,7 +286,7 @@
 		opacity: 55%;
 		background: transparent;
 		box-shadow: none;
-		border-color: rgb(var(--color-action-accent-rgb), 0.18);
+		border-color: rgb(var(--color-action-accent-rgb) / 18%);
 	}
 
 	&:hover,
@@ -296,8 +296,8 @@
 
 		@media (width <= 540px) {
 			transform: scale(0.8);
-			background: rgb(var(--color-surface-dark-rgb), 0.15);
-			border-color: rgb(var(--color-action-accent-rgb), 0.35);
+			background: rgb(var(--color-surface-dark-rgb) / 15%);
+			border-color: rgb(var(--color-action-accent-rgb) / 35%);
 		}
 	}
 }

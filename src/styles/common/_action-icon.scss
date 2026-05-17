@@ -39,8 +39,8 @@
 			inset: 0;
 			background: linear-gradient(
 				135deg,
-				rgb(var(--color-action-accent-rgb), 0.2),
-				rgb(var(--color-action-primary-rgb), 0.1)
+				rgb(var(--color-action-accent-rgb) / 20%),
+				rgb(var(--color-action-primary-rgb) / 10%)
 			);
 			opacity: 0%;
 			transition: opacity 0.4s var(--icon-transition);
@@ -48,7 +48,7 @@
 		}
 
 		&:hover {
-			border-color: rgb(var(--color-action-accent-rgb), 0.4);
+			border-color: rgb(var(--color-action-accent-rgb) / 40%);
 			transform: translateY(4px);
 			box-shadow: 0 10px 20px -5px rgb(0 0 0 / 10%);
 
@@ -100,13 +100,13 @@
 		right: 2rem;
 		background: var(--color-action-accent);
 		color: white;
-		box-shadow: 0 10px 30px -10px rgb(var(--color-action-accent-rgb), 0.5);
+		box-shadow: 0 10px 30px -10px rgb(var(--color-action-accent-rgb) / 50%);
 		z-index: 10;
 
 		&:hover {
 			transform: scale(1.1) translateY(-4px);
 			background: var(--color-action-primary);
-			box-shadow: 0 15px 40px -10px rgb(var(--color-action-accent-rgb), 0.6);
+			box-shadow: 0 15px 40px -10px rgb(var(--color-action-accent-rgb) / 60%);
 		}
 	}
 }

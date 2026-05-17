@@ -288,7 +288,7 @@
 	--contact-channel-hover-shadow: var(--shadow-emphasis);
 	--contact-channel-icon-hover-bg: var(--color-action-accent);
 	--contact-channel-icon-hover-color: var(--color-text-on-dark-slate);
-	--contact-form-bg: rgb(var(--color-surface-primary-rgb), 0.7);
+	--contact-form-bg: rgb(var(--color-surface-primary-rgb) / 70%);
 	--contact-form-backdrop-blur: 20px;
 	--contact-form-border: var(--color-border-subtle);
 	--contact-form-shadow: var(--shadow-emphasis);
@@ -344,7 +344,7 @@
 	--testimonials-text-font: var(--font-display, serif);
 	--testimonials-text-size: 1.15rem;
 	--testimonials-text-line-height: 1.8;
-	--testimonials-text-color: var(--color-text, #{sys.$sys-color-coffee-900});
+	--testimonials-text-color: var(--color-text-primary, #{sys.$sys-color-coffee-900});
 	--testimonials-text-style: italic;
 	--testimonials-author-name-weight: 700;
 	--testimonials-author-name-transform: uppercase;

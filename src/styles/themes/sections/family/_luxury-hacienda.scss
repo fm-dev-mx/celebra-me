@@ -21,7 +21,7 @@
 			radial-gradient(
 				circle at 50% 50%,
 				rgb(255 255 255 / 0%) 0%,
-				rgb(var(--color-action-accent-rgb), 0.06) 100%
+				rgb(var(--color-action-accent-rgb) / 6%) 100%
 			)
 		);
 	}
@@ -69,16 +69,16 @@
 
 	.family__media-frame {
 		border-radius: 0;
-		border: 1px solid rgb(var(--color-action-accent-rgb), 0.22);
+		border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
 		padding: clamp(0.55rem, 1.2vw, 0.8rem);
 		background: rgb(248 241 224 / 78%);
 		box-shadow:
-			0 22px 46px rgb(var(--color-text-primary-rgb), 0.1),
+			0 22px 46px rgb(var(--color-text-primary-rgb) / 10%),
 			inset 0 1px 0 rgb(255 255 255 / 62%);
 		transform: none;
 
 		img {
-			border: 1px solid rgb(var(--color-text-primary-rgb), 0.08);
+			border: 1px solid rgb(var(--color-text-primary-rgb) / 8%);
 			filter: var(--family-media-filter);
 		}
 	}
@@ -109,7 +109,7 @@
 		font-size: 0.7rem;
 		font-weight: 600;
 		letter-spacing: 0.24em;
-		color: rgb(var(--color-action-accent-rgb), 0.88);
+		color: rgb(var(--color-action-accent-rgb) / 88%);
 		margin-bottom: var(--family-group-title-margin-bottom, 1.7rem);
 	}
 

@@ -7,15 +7,15 @@
 		var(--color-surface-primary) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--family-panel-bg: rgb(var(--color-surface-primary-rgb), 0.82);
-	--family-border: rgb(var(--color-action-accent-rgb), 0.24);
+	--family-panel-bg: rgb(var(--color-surface-primary-rgb) / 82%);
+	--family-border: rgb(var(--color-action-accent-rgb) / 24%);
 	--family-text-primary: var(--color-surface-dark);
-	--family-text-muted: rgb(var(--color-surface-dark-rgb), 0.7);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 70%);
 	--family-accent: var(--color-action-accent);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent,
-		rgb(var(--color-action-accent-rgb), 0.35),
+		rgb(var(--color-action-accent-rgb) / 35%),
 		transparent
 	);
 	--family-shadow: 0 20px 46px rgb(var(--color-surface-dark-rgb) / 18%);
@@ -26,12 +26,12 @@
 		background-image:
 			radial-gradient(
 				circle at 20% 10%,
-				rgb(var(--color-action-accent-rgb), 0.16) 0%,
+				rgb(var(--color-action-accent-rgb) / 16%) 0%,
 				transparent 42%
 			),
 			radial-gradient(
 				circle at 85% 85%,
-				rgb(var(--color-action-accent-rgb), 0.1) 0%,
+				rgb(var(--color-action-accent-rgb) / 10%) 0%,
 				transparent 45%
 			);
 	}

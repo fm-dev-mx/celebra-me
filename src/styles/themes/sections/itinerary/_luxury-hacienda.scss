@@ -8,21 +8,21 @@
 	--itinerary-bg:
 		radial-gradient(
 			ellipse at 50% 0%,
-			rgb(var(--color-action-accent-rgb), 0.08),
+			rgb(var(--color-action-accent-rgb) / 8%),
 			transparent 48%
 		),
 		linear-gradient(180deg, rgb(248 242 228) 0%, var(--color-surface-primary) 100%);
-	--itinerary-line-color: rgb(var(--color-action-accent-rgb), 0.38);
+	--itinerary-line-color: rgb(var(--color-action-accent-rgb) / 38%);
 	--itinerary-line-shadow: none;
 	--itinerary-line-opacity: 0.55;
-	--itinerary-item-time-color: rgb(var(--color-text-primary-rgb), 0.72);
+	--itinerary-item-time-color: rgb(var(--color-text-primary-rgb) / 72%);
 	--itinerary-item-label-color: var(--color-text-emphasis);
 	--itinerary-item-label-font: var(--font-heading-formal);
 	--itinerary-item-desc-color: var(--color-text-secondary);
 	--itinerary-icon-bg: rgb(250 244 229 / 86%);
-	--itinerary-icon-border: 1px solid rgb(var(--color-action-accent-rgb), 0.22);
+	--itinerary-icon-border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
 	--itinerary-icon-color: var(--color-action-primary);
-	--itinerary-icon-shadow: 0 8px 22px rgb(var(--color-text-primary-rgb), 0.08);
+	--itinerary-icon-shadow: 0 8px 22px rgb(var(--color-text-primary-rgb) / 8%);
 
 	background: var(--itinerary-bg);
 	padding-block: clamp(5.5rem, 10vw, 8rem);
@@ -41,7 +41,7 @@
 	}
 
 	.itinerary__header-flourish {
-		color: rgb(var(--color-action-accent-rgb), 0.55);
+		color: rgb(var(--color-action-accent-rgb) / 55%);
 		margin-top: 1rem;
 	}
 
@@ -72,7 +72,7 @@
 	}
 
 	.itinerary__item-icon-inner {
-		color: rgb(var(--color-text-primary-rgb), 0.72);
+		color: rgb(var(--color-text-primary-rgb) / 72%);
 		filter: none;
 	}
 

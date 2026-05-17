@@ -47,7 +47,7 @@
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
-		rgb(var(--color-action-accent-rgb), 0.3) 50%,
+		rgb(var(--color-action-accent-rgb) / 30%) 50%,
 		transparent 100%
 	);
 	--family-name-font: var(--font-display);

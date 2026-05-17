@@ -2,9 +2,9 @@
 
 $hacienda-prompt-gradient: linear-gradient(
 	140deg,
-	rgb(var(--color-surface-primary-rgb), 0.82) 0%,
-	rgb(var(--color-surface-secondary-rgb), 0.72) 55%,
-	rgb(var(--color-action-accent-rgb), 0.08) 100%
+	rgb(var(--color-surface-primary-rgb) / 82%) 0%,
+	rgb(var(--color-surface-secondary-rgb) / 72%) 55%,
+	rgb(var(--color-action-accent-rgb) / 8%) 100%
 );
 
 .music-player[data-variant='luxury-hacienda'] {
@@ -12,8 +12,8 @@ $hacienda-prompt-gradient: linear-gradient(
 		font-family: var(--font-body-hacienda);
 		letter-spacing: 0.02em;
 		background: $hacienda-prompt-gradient;
-		border-color: rgb(var(--color-action-accent-rgb), 0.32);
-		color: rgb(var(--color-surface-dark-rgb), 0.82);
+		border-color: rgb(var(--color-action-accent-rgb) / 32%);
+		color: rgb(var(--color-surface-dark-rgb) / 82%);
 		border-radius: 0.4rem;
 		box-shadow: 0 8px 20px rgb(0 0 0 / 20%);
 	}
@@ -21,31 +21,31 @@ $hacienda-prompt-gradient: linear-gradient(
 	.music-player__button--play {
 		background: linear-gradient(
 			150deg,
-			rgb(var(--color-surface-primary-rgb), 0.55) 0%,
-			rgb(var(--color-surface-secondary-rgb), 0.45) 44%,
-			rgb(var(--color-action-accent-rgb), 0.1) 100%
+			rgb(var(--color-surface-primary-rgb) / 55%) 0%,
+			rgb(var(--color-surface-secondary-rgb) / 45%) 44%,
+			rgb(var(--color-action-accent-rgb) / 10%) 100%
 		);
-		border-color: rgb(var(--color-action-accent-rgb), 0.18);
+		border-color: rgb(var(--color-action-accent-rgb) / 18%);
 		color: var(--color-action-primary);
 		box-shadow:
 			0 6px 12px rgb(0 0 0 / 14%),
-			inset 0 0 0 1px rgb(var(--color-action-accent-rgb), 0.08);
+			inset 0 0 0 1px rgb(var(--color-action-accent-rgb) / 8%);
 		opacity: 75%;
 
 		&:hover {
 			transform: translateY(-1px) scale(1.02);
 			opacity: 90%;
-			border-color: rgb(var(--color-action-accent-rgb), 0.35);
+			border-color: rgb(var(--color-action-accent-rgb) / 35%);
 		}
 
 		&::after {
-			border-color: rgb(var(--color-action-accent-rgb), 0.25);
+			border-color: rgb(var(--color-action-accent-rgb) / 25%);
 			inset: -3px;
 		}
 	}
 
 	.music-player__button--pulsing::before {
-		border-color: rgb(var(--color-action-accent-rgb), 0.28);
+		border-color: rgb(var(--color-action-accent-rgb) / 28%);
 		animation-duration: 3.2s;
 	}
 }

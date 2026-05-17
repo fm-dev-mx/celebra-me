@@ -62,7 +62,7 @@
 	&:focus-visible {
 		outline: 2px solid var(--color-action-accent);
 		outline-offset: 4px;
-		box-shadow: 0 0 0 4px rgb(var(--color-surface-dark-rgb), 0.35);
+		box-shadow: 0 0 0 4px rgb(var(--color-surface-dark-rgb) / 35%);
 	}
 
 	/* Modifiers - Using -- instead of __ for variant/modifier */

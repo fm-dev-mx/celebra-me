@@ -113,11 +113,11 @@
 @keyframes effect-gold-pulse {
 	0%,
 	100% {
-		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb, 220, 180, 60), 0.4);
+		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb, 220 180 60) / 40%);
 	}
 
 	50% {
-		box-shadow: 0 0 0 10px rgb(var(--color-action-accent-rgb, 220, 180, 60), 0);
+		box-shadow: 0 0 0 10px rgb(var(--color-action-accent-rgb, 220 180 60) / 0%);
 	}
 }
 
@@ -267,17 +267,17 @@
 
 @keyframes effect-glow {
 	0% {
-		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb), 0.4);
-		background: rgb(var(--color-action-accent-rgb), 0.05);
+		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb) / 40%);
+		background: rgb(var(--color-action-accent-rgb) / 5%);
 	}
 
 	50% {
-		box-shadow: 0 0 20px 5px rgb(var(--color-action-accent-rgb), 0.2);
-		background: rgb(var(--color-action-accent-rgb), 0.1);
+		box-shadow: 0 0 20px 5px rgb(var(--color-action-accent-rgb) / 20%);
+		background: rgb(var(--color-action-accent-rgb) / 10%);
 	}
 
 	100% {
-		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb), 0);
+		box-shadow: 0 0 0 0 rgb(var(--color-action-accent-rgb) / 0%);
 		background: transparent;
 	}
 }

@@ -35,12 +35,12 @@
 	// Component Specifics
 	--shadow-premium: 0 15px 35px var(--color-glass-shadow), 0 5px 15px rgb(0 0 0 / 5%);
 	--border-fine-gold: 1px solid var(--color-glass-border);
-	--border-image: 2px solid rgb(var(--color-action-accent-rgb), 0.5);
+	--border-image: 2px solid rgb(var(--color-action-accent-rgb) / 50%);
 	--color-frame-bg: linear-gradient(
 		135deg,
-		rgb(var(--color-action-accent-rgb), 0.45) 0%,
-		rgb(var(--color-surface-primary-rgb), 1) 50%,
-		rgb(var(--color-action-accent-rgb), 0.8) 100%
+		rgb(var(--color-action-accent-rgb) / 45%) 0%,
+		rgb(var(--color-surface-primary-rgb) / 100%) 50%,
+		rgb(var(--color-action-accent-rgb) / 80%) 100%
 	);
 
 	// ---------------------------------------------------------------------
@@ -56,13 +56,13 @@
 	// ---------------------------------------------------------------------
 	--family-bg: radial-gradient(
 		circle at 50% 50%,
-		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
 	--family-texture-opacity: 0.3;
 	--family-border: var(--color-glass-border);
 	--family-text-primary: var(--color-surface-dark);
-	--family-text-muted: rgb(var(--color-surface-dark-rgb), 0.6);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 60%);
 	--family-accent: var(--color-action-accent);
 	--family-shadow: var(--shadow-premium);
 	--family-divider: linear-gradient(
@@ -82,7 +82,7 @@
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
-		rgb(var(--color-action-accent-rgb), 0.03) 100%
+		rgb(var(--color-action-accent-rgb) / 3%) 100%
 	);
 
 	// ---------------------------------------------------------------------
@@ -104,7 +104,7 @@
 	// ---------------------------------------------------------------------
 	--gallery-section-bg: radial-gradient(
 		circle at 50% 50%,
-		rgb(var(--color-action-accent-rgb), 0.05) 0%,
+		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
 	--gallery-card-bg: var(--color-glass-bg);
@@ -113,7 +113,7 @@
 	--gallery-image-radius: 4px;
 	--gallery-title-font: var(--font-display);
 	--gallery-title-color: var(--color-action-accent);
-	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb), 0.72);
+	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb) / 72%);
 	--gallery-caption-bg: rgb(255 255 255 / 90%);
 	--gallery-caption-color: var(--color-action-accent);
 	--gallery-caption-font: #{sys-type.$sys-font-display-hacienda};

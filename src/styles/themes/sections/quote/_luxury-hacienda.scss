@@ -15,7 +15,7 @@
 	background:
 		radial-gradient(
 			ellipse at 50% 0%,
-			rgb(var(--color-action-accent-rgb), 0.08),
+			rgb(var(--color-action-accent-rgb) / 8%),
 			transparent 58%
 		),
 		linear-gradient(180deg, rgb(246 240 226) 0%, var(--color-surface-primary) 100%);
@@ -32,7 +32,7 @@
 		background: linear-gradient(
 			90deg,
 			transparent,
-			rgb(var(--color-action-accent-rgb), 0.28),
+			rgb(var(--color-action-accent-rgb) / 28%),
 			transparent
 		);
 		pointer-events: none;
@@ -44,7 +44,7 @@
 		font-size: clamp(1.55rem, 4.2vw, 2.45rem);
 		font-style: italic;
 		line-height: 1.55;
-		color: rgb(var(--color-text-primary-rgb), 0.9);
+		color: rgb(var(--color-text-primary-rgb) / 90%);
 		max-width: 820px;
 		margin: 0 auto;
 		text-shadow: 0 1px 0 rgb(255 255 255 / 52%);
@@ -52,7 +52,7 @@
 
 	.quote-author {
 		font-family: var(--font-ui);
-		color: rgb(var(--color-action-accent-rgb), 0.9);
+		color: rgb(var(--color-action-accent-rgb) / 90%);
 		text-transform: uppercase;
 		letter-spacing: 0.18em;
 		font-weight: 600;
