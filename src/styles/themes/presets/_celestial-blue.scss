@@ -128,6 +128,25 @@
 	--quote-texture-opacity: 0.06;
 
 	// ---------------------------------------------------------------------
+	// Gifts section
+	// ---------------------------------------------------------------------
+	--gifts-bg: linear-gradient(
+		180deg,
+		var(--color-cool-ivory) 0%,
+		rgb(var(--color-pearl-gray-rgb) / 56%) 100%
+	);
+	--gifts-text-color: var(--color-text-primary);
+	--gifts-title-color: var(--color-deep-blue-graphite);
+	--gifts-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--gifts-card-bg: rgb(var(--color-diamond-white-rgb) / 54%);
+	--gifts-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
+	--gifts-card-radius: 8px;
+	--gifts-card-title-color: var(--color-deep-blue-graphite);
+	--gifts-icon-color: var(--color-satin-blue);
+	--gifts-account-bg: rgb(var(--color-text-primary-rgb) / 5%);
+	--gifts-account-color: var(--color-text-primary);
+
+	// ---------------------------------------------------------------------
 	// Countdown section
 	// ---------------------------------------------------------------------
 	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);

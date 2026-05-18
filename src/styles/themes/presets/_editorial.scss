@@ -120,6 +120,10 @@
 	);
 	--family-panel-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)};
 
+	// Gifts Section
+	--gifts-bg: var(--color-surface-dark);
+	--gifts-subtitle-color: rgb(var(--color-text-primary-rgb) / 72%);
+
 	// Gallery Section
 	--gallery-section-bg: #{sys.$sys-color-onyx-950};
 	--gallery-caption-bg: #{color.change(sys.$sys-color-onyx-950, $alpha: 0.88)};
@@ -143,6 +147,20 @@
 	// Countdown Section
 	--countdown-bg: var(--color-surface-dark);
 	--countdown-segment-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)};
+
+	// Music Player
+	--music-player-prompt-bg: #{color.change(sys.$sys-color-onyx-800, $alpha: 0.75)};
+	--music-player-prompt-color: var(--color-text-primary);
+	--music-player-prompt-border: 1px solid #{color.change(sys.$sys-color-gold-500, $alpha: 0.3)};
+	--music-player-prompt-accent: var(--color-action-accent);
+	--music-player-button-bg: radial-gradient(
+		circle at 30% 30%,
+		#{color.change(sys.$sys-color-onyx-800, $alpha: 0.9)} 0%,
+		#{color.change(sys.$sys-color-onyx-950, $alpha: 0.98)} 100%
+	);
+	--music-player-button-color: var(--color-text-primary);
+	--music-player-button-border: 1px solid #{color.change(sys.$sys-color-gold-500, $alpha: 0.4)};
+	--music-player-ring-color: #{color.change(sys.$sys-color-gold-500, $alpha: 0.48)};
 
 	// RSVP Section
 	--rsvp-emoji-yes: '👑';

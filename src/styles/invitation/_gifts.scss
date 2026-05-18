@@ -1,9 +1,40 @@
-@use '../tokens' as tokens;
+// Gifts Section Styles
 
 .gifts-section {
-	padding: var(--spacing-section-gap, 8rem) var(--spacing-md);
+	--gifts-bg: var(--color-surface-primary);
+	--gifts-text-color: var(--color-text-primary);
+	--gifts-title-color: var(--color-text-emphasis);
+	--gifts-subtitle-color: var(--color-text-primary);
+	--gifts-title-letter-spacing: 0.15em;
+	--gifts-padding-block: var(--spacing-section-gap, 8rem);
+	--gifts-padding-inline: var(--spacing-md);
+	--gifts-card-bg: var(--color-glass-bg);
+	--gifts-card-border: 1px solid var(--color-glass-border);
+	--gifts-card-radius: 12px;
+	--gifts-card-shadow: var(--shadow-subtle);
+	--gifts-card-title-color: var(--color-text-primary);
+	--gifts-icon-color: var(--color-action-accent);
+	--gifts-button-color: var(--color-action-accent);
+	--gifts-button-border: 1px solid var(--color-action-accent);
+	--gifts-button-border-radius: 4px;
+	--gifts-button-hover-bg: var(--color-action-accent);
+	--gifts-button-hover-color: var(--color-surface-primary);
+	--gifts-bank-bg: rgb(var(--color-surface-primary-rgb) / 30%);
+	--gifts-bank-text-color: var(--color-text-primary);
+	--gifts-bank-label-color: var(--color-text-secondary);
+	--gifts-account-bg: rgb(var(--color-text-primary-rgb) / 5%);
+	--gifts-account-color: var(--color-text-primary);
+	--gifts-copy-color: var(--color-action-accent);
+	--gifts-copy-border: 1px solid var(--color-action-accent);
+
+	// ---------------------------------------------------------------------
+	// Base Structural Styles
+	// ---------------------------------------------------------------------
+	padding: var(--gifts-padding-block) var(--gifts-padding-inline);
 	position: relative;
 	overflow: hidden;
+	background: var(--gifts-bg);
+	color: var(--gifts-text-color);
 
 	&__container {
 		max-width: 900px;
@@ -21,8 +52,8 @@
 		font-size: clamp(2rem, 5vw, 3rem);
 		margin-bottom: var(--spacing-md);
 		text-transform: uppercase;
-		letter-spacing: 0.15em;
-		color: var(--color-text-emphasis);
+		letter-spacing: var(--gifts-title-letter-spacing);
+		color: var(--gifts-title-color);
 	}
 
 	&__subtitle {
@@ -32,7 +63,7 @@
 		max-width: 600px;
 		margin: 0 auto;
 		opacity: 90%;
-		color: var(--color-text-primary);
+		color: var(--gifts-subtitle-color);
 	}
 }
 
@@ -40,11 +71,10 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: var(--spacing-lg);
-	perspective: 1000px;
 }
 
 .gift-card {
-	border-radius: 12px;
+	border-radius: var(--gifts-card-radius);
 	padding: var(--spacing-xl) var(--spacing-lg);
 	transition:
 		opacity var(--duration-snappy) var(--ease-standard),
@@ -53,10 +83,10 @@
 		box-shadow var(--duration-snappy) var(--ease-standard);
 	position: relative;
 	overflow: hidden;
-	background: var(--color-glass-bg);
+	background: var(--gifts-card-bg);
 	backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--color-glass-border);
-	box-shadow: var(--shadow-subtle);
+	border: var(--gifts-card-border);
+	box-shadow: var(--gifts-card-shadow);
 
 	&:hover {
 		transform: translateY(-10px);
@@ -64,11 +94,31 @@
 		border-color: var(--color-action-accent);
 	}
 
+	&__shimmer {
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 50%;
+		height: 100%;
+		background: linear-gradient(90deg, transparent, rgb(255 255 255 / 5%), transparent);
+		transform: skewX(-20deg);
+		pointer-events: none;
+		display: none;
+	}
+
+	&__inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.5rem;
+	}
+
 	&__icon {
 		width: 48px;
 		height: 48px;
 		margin: 0 auto var(--spacing-lg);
-		color: var(--color-action-accent);
+		color: var(--gifts-icon-color);
+		filter: drop-shadow(0 0 12px rgb(var(--color-action-accent-rgb) / 40%));
 
 		svg {
 			width: 100%;
@@ -80,7 +130,7 @@
 		font-family: var(--font-display);
 		font-size: 1.5rem;
 		margin-bottom: var(--spacing-lg);
-		color: var(--color-text-primary);
+		color: var(--gifts-card-title-color);
 	}
 
 	&__description {
@@ -96,12 +146,12 @@
 		display: inline-block;
 		padding: 0.75rem 1.5rem;
 		background: transparent;
-		border: 1px solid var(--color-action-accent);
-		color: var(--color-action-accent);
+		border: var(--gifts-button-border);
+		color: var(--gifts-button-color);
 		font-family: var(--font-body);
 		font-size: 1.1rem;
 		text-decoration: none;
-		border-radius: 4px;
+		border-radius: var(--gifts-button-border-radius);
 		transition:
 			background-color var(--duration-snappy) var(--ease-standard),
 			color var(--duration-snappy) var(--ease-standard),
@@ -109,8 +159,8 @@
 		cursor: pointer;
 
 		&:hover {
-			background: var(--color-action-accent);
-			color: var(--color-surface-primary);
+			background: var(--gifts-button-hover-bg);
+			color: var(--gifts-button-hover-color);
 		}
 	}
 }
@@ -120,18 +170,19 @@
 	padding: var(--spacing-md);
 	border-radius: 8px;
 	margin-bottom: var(--spacing-lg);
-	background: rgb(var(--color-surface-primary-rgb) / 30%);
+	background: var(--gifts-bank-bg);
+	border-left: none;
 
 	&__item {
 		margin-bottom: 0.5rem;
 		font-size: 1rem;
-		color: var(--color-text-primary);
+		color: var(--gifts-bank-text-color);
 
 		strong {
 			font-size: 0.8rem;
 			text-transform: uppercase;
 			margin-right: 0.5rem;
-			color: var(--color-text-secondary);
+			color: var(--gifts-bank-label-color);
 		}
 	}
 
@@ -147,18 +198,18 @@
 
 .clabe-number {
 	font-family: var(--font-mono, monospace);
-	background: rgb(var(--color-text-primary-rgb) / 5%);
+	background: var(--gifts-account-bg);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 0.9rem;
 	letter-spacing: 0.05em;
-	color: var(--color-text-primary);
+	color: var(--gifts-account-color);
 }
 
 .copy-button {
-	border: 1px solid var(--color-action-accent);
+	border: var(--gifts-copy-border);
 	background: transparent;
-	color: var(--color-action-accent);
+	color: var(--gifts-copy-color);
 	padding: 6px 16px;
 	border-radius: 4px;
 	font-size: 0.8rem;
@@ -171,8 +222,8 @@
 	flex-shrink: 0;
 
 	&:hover {
-		background: var(--color-action-accent);
-		color: var(--color-surface-primary);
+		background: var(--gifts-button-hover-bg);
+		color: var(--gifts-button-hover-color);
 	}
 
 	&--success {
@@ -183,6 +234,276 @@
 	}
 }
 
+// ---------------------------------------------------------------------
+// Variant Overrides
+// ---------------------------------------------------------------------
+// These blocks contain opinionated, non-variable styles that define
+// the visual identity of each theme. Hardcoded values here are intentional
+// design decisions, not oversights.
+
+// editorial + premiere-floral: shimmer card hover with glow and slide-fill button
+.gifts-section[data-variant='editorial'],
+.gifts-section[data-variant='premiere-floral'] {
+	.gift-card {
+		&__shimmer {
+			display: block;
+		}
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 1px;
+			background: linear-gradient(
+				90deg,
+				transparent,
+				rgb(var(--color-action-accent-rgb) / 60%),
+				transparent
+			);
+			opacity: 0%;
+			transition: opacity 0.6s ease;
+		}
+
+		&:hover {
+			transform: translateY(-8px);
+			border-color: rgb(var(--color-action-accent-rgb) / 40%);
+			background: rgb(255 255 255 / 8%);
+			box-shadow:
+				0 40px 80px rgb(0 0 0 / 55%),
+				0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
+
+			&::before {
+				opacity: 100%;
+			}
+
+			.gift-card__icon {
+				opacity: 100%;
+				transform: scale(1.1);
+				filter: drop-shadow(0 0 20px rgb(var(--color-action-accent-rgb) / 60%));
+			}
+		}
+	}
+
+	.gift-card__button,
+	.copy-button {
+		position: relative;
+		overflow: hidden;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: var(--color-action-accent);
+			transform: translateX(-101%);
+			transition: transform var(--duration-standard) var(--ease-premium);
+			z-index: -1;
+		}
+
+		&:hover {
+			color: var(--color-surface-dark);
+
+			&::before {
+				transform: translateX(0);
+			}
+		}
+	}
+
+	.copy-button {
+		padding: 0.5rem 1.2rem;
+		font-size: 0.65rem;
+		letter-spacing: 0.15em;
+	}
+
+	.bank-details {
+		&__item {
+			display: grid;
+			grid-template-columns: 95px 1fr;
+			align-items: center;
+			gap: 1.5rem;
+			margin: 0;
+			position: relative;
+
+			strong {
+				font-family: var(--font-label);
+				font-size: 0.55rem;
+				letter-spacing: 0.3em;
+				text-transform: uppercase;
+				color: var(--color-action-accent);
+				opacity: 60%;
+				text-align: right;
+				padding-right: 1.5rem;
+				border-right: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+			}
+
+			strong::after {
+				content: '';
+				position: absolute;
+				right: -2px;
+				width: 3px;
+				height: 3px;
+				background: var(--color-action-accent);
+				border-radius: 50%;
+				opacity: 50%;
+			}
+
+			span {
+				font-weight: 300;
+				letter-spacing: 0.05em;
+				color: rgb(255 255 255 / 90%);
+			}
+
+			span[data-status='pending'] {
+				font-style: italic;
+				opacity: 50%;
+				font-size: 0.85rem;
+				letter-spacing: 0.1em;
+			}
+		}
+	}
+
+	.clabe-number {
+		background: linear-gradient(135deg, rgb(255 255 255 / 4%) 0%, rgb(255 255 255 / 1%) 100%);
+		border-color: rgb(var(--color-action-accent-rgb) / 30%);
+		padding: 0.85rem 1.5rem;
+		border-radius: 4px;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: 0.25em;
+		color: var(--color-surface-elevated);
+		box-shadow:
+			inset 0 0 15px rgb(var(--color-action-accent-rgb) / 8%),
+			0 10px 30px rgb(0 0 0 / 25%);
+		text-shadow: 0 0 8px rgb(var(--color-action-accent-rgb) / 40%);
+		transition:
+			border-color,
+			background-color,
+			box-shadow,
+			transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+		&:hover {
+			border-color: var(--color-action-accent);
+			background: rgb(255 255 255 / 6%);
+			box-shadow:
+				inset 0 0 20px rgb(var(--color-action-accent-rgb) / 15%),
+				0 15px 40px rgb(0 0 0 / 35%);
+			transform: scale(1.01);
+		}
+	}
+}
+
+// jewelry-box + celestial-blue: inset border decoration
+.gifts-section[data-variant='jewelry-box'],
+.gifts-section[data-variant='celestial-blue'] {
+	.gift-card {
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 8px;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 5%);
+			border-radius: 8px;
+			pointer-events: none;
+		}
+
+		&:hover {
+			transform: translateY(-8px);
+			border-color: var(--color-action-accent);
+			box-shadow: 0 25px 50px var(--color-glass-shadow);
+		}
+	}
+
+	.gift-card__icon {
+		opacity: 80%;
+	}
+
+	.gift-card__button {
+		border-radius: 50px;
+	}
+
+	.bank-details {
+		background: rgb(255 255 255 / 40%);
+		border-left: 2px solid var(--color-action-accent);
+		backdrop-filter: blur(4px);
+		border-radius: 0 8px 8px 0;
+
+		strong {
+			color: var(--color-action-accent);
+		}
+	}
+
+	.clabe-number {
+		border-color: rgb(var(--color-liquid-silver-rgb) / 28%);
+	}
+
+	.copy-button {
+		background: var(--color-action-accent);
+		color: var(--color-surface-elevated);
+		border-radius: 50px;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+	}
+}
+
+// luxury-hacienda: warm masculine palette, pill buttons, hacienda font
+.gifts-section[data-variant='luxury-hacienda'] {
+	.gift-card {
+		&__icon {
+			filter: none;
+		}
+
+		&:hover {
+			transform: translateY(-3px);
+			border-color: rgb(var(--color-action-accent-rgb) / 40%);
+		}
+	}
+
+	.gift-card__button {
+		border-radius: 999px;
+		font-family: var(--font-body-hacienda, var(--font-body));
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		font-weight: 600;
+	}
+
+	.copy-button {
+		background: rgb(224 185 112 / 88%);
+		color: rgb(29 20 14);
+		font-family: var(--font-body-hacienda, var(--font-body));
+		letter-spacing: 0.08em;
+		border-radius: 999px;
+
+		&:hover {
+			background: rgb(241 219 177 / 94%);
+		}
+	}
+
+	.bank-details {
+		border-left: 1px solid rgb(var(--color-action-accent-rgb) / 38%);
+	}
+
+	.clabe-number {
+		border-color: rgb(var(--color-action-accent-rgb) / 24%);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gift-card {
+			transition: border-color 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------
+// Animations
+// ---------------------------------------------------------------------
+
 @keyframes invitation-fade-in-up-30 {
 	from {
 		opacity: 0%;
@@ -192,5 +513,15 @@
 	to {
 		opacity: 100%;
 		transform: translateY(0);
+	}
+}
+
+@keyframes gifts-shimmer-slide {
+	0% {
+		left: -100%;
+	}
+
+	100% {
+		left: 150%;
 	}
 }

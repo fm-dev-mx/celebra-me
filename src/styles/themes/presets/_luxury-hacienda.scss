@@ -15,16 +15,18 @@
 	--color-text-on-light: #{sys.$sys-color-parchment-500};
 	--color-surface-primary: #{sys.$sys-color-parchment-100};
 	--color-surface-primary-rgb: #{tools.rgb-channels(sys.$sys-color-parchment-100)};
+	--color-surface-secondary: #{sys.$sys-color-coffee-300};
 	--color-surface-dark: var(--color-text-primary);
 	--color-surface-dark-rgb: var(--color-text-primary-rgb);
 	--color-surface-elevated: #{sys.$sys-color-coffee-800};
-	--color-surface-elevated-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-800)};
+	--color-surface-elevated-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-700)};
 	--color-action-primary: var(--color-text-primary);
 	--color-action-primary-rgb: var(--color-text-primary-rgb);
 	--color-action-accent: rgb(184 139 68);
 	--color-action-accent-rgb: 184, 139, 68;
-	--color-border-subtle: rgb(var(--color-text-primary-rgb) / 10%);
+	--color-border-subtle: rgb(var(--color-text-primary-rgb) / 50%);
 	--color-border-emphasis: var(--color-action-accent);
+	--color-border-premium: rgb(var(--color-action-accent-rgb) / 18%);
 	--color-frame-bg: linear-gradient(
 		135deg,
 		rgb(var(--color-action-accent-rgb) / 75%) 0%,
@@ -55,6 +57,39 @@
 	--quote-divider-color: var(--color-action-accent);
 	--quote-divider-opacity: 0.28;
 	--quote-ornament-opacity: 0.45;
+
+	// ---------------------------------------------------------------------
+	// Gifts section
+	// ---------------------------------------------------------------------
+	--gifts-bg:
+		radial-gradient(
+			ellipse at 50% 0%,
+			rgb(var(--color-action-accent-rgb) / 10%),
+			transparent 46%
+		),
+		linear-gradient(145deg, rgb(46 32 23) 0%, rgb(25 18 13) 100%);
+	--gifts-text-color: rgb(248 235 205 / 92%);
+	--gifts-title-color: rgb(231 205 155 / 92%);
+	--gifts-subtitle-color: rgb(248 235 205 / 68%);
+	--gifts-title-letter-spacing: 0.13em;
+	--gifts-padding-block: clamp(6rem, 10vw, 8.5rem);
+	--gifts-card-bg: rgb(63 46 35 / 62%);
+	--gifts-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+	--gifts-card-radius: 7px;
+	--gifts-card-shadow: 0 18px 42px rgb(0 0 0 / 28%), inset 0 1px 0 rgb(255 241 214 / 8%);
+	--gifts-card-title-color: rgb(231 205 155 / 92%);
+	--gifts-icon-color: rgb(224 185 112 / 86%);
+	--gifts-button-color: rgb(241 219 177 / 92%);
+	--gifts-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
+	--gifts-button-hover-bg: rgb(224 185 112 / 88%);
+	--gifts-button-hover-color: rgb(29 20 14);
+	--gifts-bank-bg: rgb(23 17 13 / 34%);
+	--gifts-bank-text-color: rgb(248 235 205 / 78%);
+	--gifts-bank-label-color: rgb(224 185 112 / 86%);
+	--gifts-account-bg: rgb(19 14 10 / 32%);
+	--gifts-account-color: rgb(248 235 205 / 86%);
+	--gifts-copy-color: rgb(29 20 14);
+	--gifts-copy-border: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
 
 	// ---------------------------------------------------------------------
 	// Section specific tokens (still using variables, but cleaned up)
