@@ -121,7 +121,6 @@ describe('Angelic presence section coverage', () => {
 	//   - header, music
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_angelic-presence.scss',
-		'src/styles/themes/sections/quote/_angelic-presence.scss',
 		'src/styles/themes/sections/family/_angelic-presence.scss',
 		'src/styles/themes/sections/gallery/_angelic-presence.scss',
 		'src/styles/themes/sections/countdown/_angelic-presence.scss',

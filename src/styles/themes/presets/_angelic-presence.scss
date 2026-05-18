@@ -116,6 +116,46 @@
 	);
 
 	// ---------------------------------------------------------------------
+	// Quote section
+	// ---------------------------------------------------------------------
+	--quote-bg:
+		linear-gradient(180deg, var(--color-pure-ivory) 0%, transparent 100px),
+		linear-gradient(0deg, rgb(var(--color-angelic-mist-rgb) / 50%) 0%, transparent 90px),
+		radial-gradient(
+			ellipse 85% 55% at 50% 10%,
+			rgb(var(--color-ivory-warm-rgb) / 55%) 0%,
+			transparent 60%
+		),
+		radial-gradient(
+			ellipse 50% 35% at 50% 90%,
+			rgb(var(--color-angelic-blue-rgb) / 10%) 0%,
+			transparent 50%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-ivory-warm) 35%,
+			var(--color-angelic-white) 65%,
+			rgb(var(--color-angelic-mist-rgb) / 60%) 100%
+		);
+	--quote-text-color: var(--color-text-primary);
+	--quote-author-color: var(--color-sacred-gold-readable);
+	--quote-accent-color: var(--color-sacred-gold);
+	--quote-padding-block: clamp(4rem, 10vw, 8.5rem);
+	--quote-content-max-width: 35rem;
+	--quote-content-font: var(--font-display);
+	--quote-content-size: clamp(1.45rem, 4.5vw, 2.05rem);
+	--quote-content-line-height: 1.6;
+	--quote-content-style: italic;
+	--quote-content-letter-spacing: 0.01em;
+	--quote-divider-color: var(--color-sacred-gold);
+	--quote-divider-opacity: 0.5;
+	--quote-ornament-color: var(--color-sacred-gold);
+	--quote-ornament-opacity: 0.7;
+	--quote-texture-bg: var(--texture-silk);
+	--quote-texture-opacity: 0.05;
+
+	// ---------------------------------------------------------------------
 	// Shared angelic architecture
 	// ---------------------------------------------------------------------
 	--angelic-shadow-soft:

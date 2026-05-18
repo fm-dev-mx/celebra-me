@@ -44,6 +44,19 @@
 	);
 
 	// ---------------------------------------------------------------------
+	// Quote section tokens
+	// ---------------------------------------------------------------------
+	--quote-bg: linear-gradient(
+		180deg,
+		var(--color-surface-dark) 0%,
+		var(--color-surface-dark) 50%,
+		var(--color-surface-dark) 100%
+	);
+	--quote-text-color: var(--color-text-on-dark);
+	--quote-author-color: var(--color-action-accent);
+	--quote-accent-color: var(--color-action-accent);
+
+	// ---------------------------------------------------------------------
 	// Countdown section tokens
 	// ---------------------------------------------------------------------
 	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);

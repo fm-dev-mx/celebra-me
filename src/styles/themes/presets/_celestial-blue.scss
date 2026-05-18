@@ -81,6 +81,53 @@
 	);
 
 	// ---------------------------------------------------------------------
+	// Quote section
+	// ---------------------------------------------------------------------
+	--quote-bg:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 60%) 0%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 35%) 18%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 10%) 42%,
+			transparent 72%
+		),
+		linear-gradient(
+			0deg,
+			rgb(var(--color-surface-primary-rgb) / 22%) 0%,
+			rgb(var(--color-surface-primary-rgb) / 10%) 22%,
+			rgb(var(--color-cool-ivory-rgb) / 8%) 40%,
+			rgb(var(--color-ice-blue-rgb) / 6%) 56%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 5%) 74%,
+			transparent 100%
+		),
+		linear-gradient(180deg, rgb(var(--color-ice-blue-rgb) / 7%) 0%, transparent 50%),
+		radial-gradient(
+			ellipse 70% 55% at 50% 48%,
+			rgb(var(--color-ice-blue-rgb) / 11%) 0%,
+			transparent 78%
+		),
+		radial-gradient(
+			ellipse 80% 25% at 50% 92%,
+			rgb(var(--color-cool-ivory-rgb) / 5%) 0%,
+			transparent 72%
+		),
+		var(--color-deep-blue-graphite);
+	--quote-text-color: rgb(var(--color-text-on-dark-rgb) / 88%);
+	--quote-author-color: var(--color-liquid-silver);
+	--quote-accent-color: var(--color-liquid-silver);
+	--quote-padding-block: clamp(4rem, 12vh, 7.5rem);
+	--quote-content-max-width: 640px;
+	--quote-content-font: var(--font-calligraphy);
+	--quote-content-size: clamp(1.6rem, 4.6vw, 2.95rem);
+	--quote-content-line-height: 1.35;
+	--quote-content-letter-spacing: -0.01em;
+	--quote-divider-display: none;
+	--quote-ornament-color: var(--color-liquid-silver);
+	--quote-ornament-opacity: 0.35;
+	--quote-texture-bg: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	--quote-texture-opacity: 0.06;
+
+	// ---------------------------------------------------------------------
 	// Countdown section
 	// ---------------------------------------------------------------------
 	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);

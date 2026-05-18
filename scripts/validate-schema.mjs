@@ -22,7 +22,6 @@ console.log('================================');
 const ERRORS = [];
 const WARNINGS = [];
 const EXPECTED_BASE_STYLE_FALLBACKS = {
-	quote: new Set(['jewelry-box-wedding', 'sacred-keepsake']),
 	countdown: new Set(['jewelry-box-wedding']),
 	location: new Set(['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda']),
 	family: new Set(['jewelry-box-wedding']),
@@ -39,7 +38,6 @@ function extractContractVariants() {
 	const content = fs.readFileSync(contractPath, 'utf8');
 
 	const variants = {
-		quote: new Set(),
 		countdown: new Set(),
 		location: new Set(),
 		family: new Set(),
@@ -72,7 +70,6 @@ function extractCSSVariants(contractVariants) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 
 	const variants = {
-		quote: new Set(),
 		countdown: new Set(),
 		location: new Set(),
 		family: new Set(),
@@ -83,7 +80,6 @@ function extractCSSVariants(contractVariants) {
 	};
 
 	const sectionDirectories = {
-		quote: 'quote',
 		countdown: 'countdown',
 		location: 'location',
 		family: 'family',
@@ -182,7 +178,6 @@ function main() {
 
 	// Compare each section
 	const sections = [
-		'quote',
 		'countdown',
 		'location',
 		'family',

@@ -3,23 +3,57 @@
 // Elegant Quote Section Styles
 // ----------------------------------------------------
 
-@use '../tokens' as tokens;
-
 .quote-section {
+	// Background & texture
+	--quote-bg: var(--color-surface-primary);
+	--quote-texture-opacity: 0;
+
+	// Spacing
+	--quote-padding-block: clamp(3.5rem, 8vh, 6rem);
+	--quote-padding-inline: 1.5rem;
+
+	// Content typography
+	--quote-content-font: var(--font-calligraphy, 'Pinyon Script', cursive);
+	--quote-content-size: clamp(2rem, 5vw, 3rem);
+	--quote-content-line-height: 1.3;
+	--quote-content-style: normal;
+	--quote-content-letter-spacing: 0;
+	--quote-content-max-width: 850px;
+
+	// Colors
+	--quote-text-color: var(--color-text-secondary, var(--color-text-primary));
+	--quote-accent-color: var(--color-action-accent);
+	--quote-author-color: var(--color-action-accent);
+
+	// Divider
+	--quote-divider-display: block;
+	--quote-divider-color: var(--quote-accent-color);
+	--quote-divider-opacity: 0.3;
+
+	// Ornament
+	--quote-ornament-color: var(--quote-accent-color);
+	--quote-ornament-opacity: 0.3;
+
 	position: relative;
 	min-height: 40vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
-	padding: clamp(3.5rem, 8vh, 6rem) 1.5rem;
+	padding: var(--quote-padding-block) var(--quote-padding-inline);
 	text-align: center;
-
-	// Visual properties live in modular quote theme partials to avoid aesthetic bleed-through
+	color: var(--quote-text-color);
+	background: var(--quote-bg);
 }
 
 .quote-texture {
-	display: none; // Using background-image instead
+	position: absolute;
+	inset: 0;
+	display: block;
+	pointer-events: none;
+	background-size: 200% 100%;
+	opacity: var(--quote-texture-opacity);
+	mix-blend-mode: overlay;
 }
 
 .quote-container {
@@ -31,10 +65,11 @@
 
 .quote-divider-top,
 .quote-divider-bottom {
+	display: var(--quote-divider-display);
 	width: 180px;
 	margin: 0 auto;
-
-	// Aesthetic properties (color, shadow) moved to theme
+	color: var(--quote-divider-color);
+	opacity: var(--quote-divider-opacity);
 
 	svg {
 		width: 100%;
@@ -51,18 +86,17 @@
 }
 
 .quote-content {
-	margin: 0;
+	margin: 0 auto;
 	padding: 0;
-
-	// Baseline presentation (can be overridden by themes)
-	font-family: var(--font-calligraphy, 'Pinyon Script'), cursive;
+	font-family: var(--quote-content-font);
 	font-weight: 500;
-	font-size: clamp(2rem, 5vw, 3rem);
-	line-height: 1.3;
-	color: var(--color-text-secondary);
+	font-size: var(--quote-content-size);
+	font-style: var(--quote-content-style);
+	line-height: var(--quote-content-line-height);
+	color: var(--quote-text-color);
+	letter-spacing: var(--quote-content-letter-spacing);
 	text-shadow: 0 2px 10px var(--color-glass-shadow);
-	max-width: 850px;
-	perspective: 1000px;
+	max-width: var(--quote-content-max-width);
 }
 
 .quote-line {
@@ -89,14 +123,15 @@
 	justify-content: center;
 	gap: 1rem;
 	margin-top: 2rem;
+	color: var(--quote-author-color);
 	opacity: 80%;
 }
 
 .quote-ornament {
 	width: 40px;
 	height: 1px;
-	background: currentcolor;
-	opacity: 30%;
+	background: linear-gradient(90deg, transparent, var(--quote-ornament-color), transparent);
+	opacity: var(--quote-ornament-opacity);
 }
 
 .quote-author {
@@ -105,14 +140,51 @@
 	text-transform: uppercase;
 	letter-spacing: 0.2em;
 	font-style: normal;
+	color: var(--quote-author-color);
+}
+
+// Existing one-off decorative rule: luxury-hacienda uses a top hairline that is not
+// a useful section contract value for other themes.
+.quote-section[data-variant='luxury-hacienda']::after {
+	content: '';
+	position: absolute;
+	inset-inline: clamp(1.5rem, 8vw, 7rem);
+	top: clamp(2rem, 4vw, 3.5rem);
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--color-action-accent-rgb) / 28%),
+		transparent
+	);
+	pointer-events: none;
+}
+
+// Existing one-off motion detail: angelic-presence uses a softer visible-state fade.
+.quote-section[data-variant='angelic-presence'] {
+	.quote-line.is-visible {
+		animation: angelic-quote-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+}
+
+@keyframes angelic-quote-fade {
+	0% {
+		opacity: 0%;
+		transform: translateY(12px);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateY(0);
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.quote-line {
+	.quote-line,
+	.quote-line.is-visible {
 		opacity: 100%;
-		/* stylelint-disable-next-line declaration-no-important */
-		transform: none !important;
-		/* stylelint-disable-next-line declaration-no-important */
-		transition: none !important;
+		transform: none;
+		transition: none;
+		animation: none;
 	}
 }
