@@ -57,6 +57,30 @@
 	--quote-accent-color: var(--color-action-accent);
 
 	// ---------------------------------------------------------------------
+	// Music Player
+	// ---------------------------------------------------------------------
+	--music-player-prompt-bg: linear-gradient(
+		135deg,
+		rgb(255 255 255 / 92%) 0%,
+		rgb(var(--color-surface-primary-rgb) / 94%) 48%,
+		rgb(var(--color-action-accent-rgb) / 12%) 100%
+	);
+	--music-player-prompt-color: var(--color-text-emphasis);
+	--music-player-prompt-border: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+	--music-player-prompt-accent: var(--color-action-accent);
+	--music-player-button-bg:
+		radial-gradient(circle at 30% 22%, rgb(255 255 255 / 85%) 0%, transparent 52%),
+		linear-gradient(
+			145deg,
+			rgb(255 255 255 / 94%) 0%,
+			rgb(var(--color-surface-secondary-rgb) / 88%) 55%,
+			rgb(var(--color-action-accent-rgb) / 26%) 100%
+		);
+	--music-player-button-color: var(--color-action-primary);
+	--music-player-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 56%);
+	--music-player-ring-color: rgb(var(--color-action-accent-rgb) / 62%);
+
+	// ---------------------------------------------------------------------
 	// Countdown section tokens
 	// ---------------------------------------------------------------------
 	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);

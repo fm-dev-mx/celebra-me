@@ -4,6 +4,19 @@
 @use '../global/mixins' as mixins;
 
 .music-player {
+	--music-player-prompt-bg: rgb(var(--color-surface-elevated-rgb, 255 255 255) / 65%);
+	--music-player-prompt-color: var(--color-text-emphasis);
+	--music-player-prompt-border: 1px solid var(--color-border-premium);
+	--music-player-prompt-accent: var(--color-action-accent);
+	--music-player-button-bg: radial-gradient(
+		circle at 30% 30%,
+		var(--color-surface-elevated) 0%,
+		var(--color-surface-secondary) 100%
+	);
+	--music-player-button-color: var(--color-action-primary);
+	--music-player-button-border: 1px solid var(--color-border-premium);
+	--music-player-ring-color: var(--color-border-subtle);
+
 	position: fixed;
 	bottom: 1.5rem;
 	right: 1.5rem;
@@ -19,12 +32,12 @@
 		font-weight: 500;
 		letter-spacing: 0.02em;
 		text-transform: uppercase;
-		color: var(--color-text-emphasis);
-		background: rgb(var(--color-surface-elevated-rgb, 255 255 255) / 65%);
+		color: var(--music-player-prompt-color);
+		background: var(--music-player-prompt-bg);
 		backdrop-filter: blur(12px);
 		padding: 0.6rem 1.25rem;
 		border-radius: 2rem;
-		border: 1px solid var(--color-border-premium);
+		border: var(--music-player-prompt-border);
 		box-shadow:
 			0 4px 12px rgb(var(--color-action-primary-rgb, 31 37 41) / 8%),
 			inset 0 0 0 1px rgb(255 255 255 / 50%);
@@ -34,7 +47,7 @@
 		&::before {
 			content: '♪';
 			margin-right: 0.5rem;
-			color: var(--color-action-accent);
+			color: var(--music-player-prompt-accent);
 		}
 
 		&.is-fading-in {
@@ -65,7 +78,7 @@
 		outline: none;
 
 		&:focus-visible {
-			outline: 2px solid var(--color-action-accent);
+			outline: 2px solid var(--music-player-ring-color);
 			outline-offset: 3px;
 		}
 
@@ -81,13 +94,9 @@
 		&--play {
 			width: 3.5rem;
 			height: 3.5rem;
-			background: radial-gradient(
-				circle at 30% 30%,
-				var(--color-surface-elevated) 0%,
-				var(--color-surface-secondary) 100%
-			);
-			color: var(--color-action-primary);
-			border: 1px solid var(--color-border-premium);
+			background: var(--music-player-button-bg);
+			color: var(--music-player-button-color);
+			border: var(--music-player-button-border);
 			box-shadow:
 				0 8px 24px rgb(var(--color-action-primary-rgb) / 12%),
 				inset 0 1px 0 var(--color-surface-elevated);
@@ -101,7 +110,7 @@
 				position: absolute;
 				inset: -3px;
 				border-radius: 50%;
-				border: 1.5px solid var(--color-border-premium);
+				border: 1.5px solid var(--music-player-ring-color);
 				opacity: 40%;
 				transition: var(--transition-snappy);
 			}
@@ -120,7 +129,7 @@
 				position: absolute;
 				inset: -8px;
 				border-radius: 50%;
-				border: 1px solid var(--color-border-subtle);
+				border: 1px solid var(--music-player-ring-color);
 				animation: musicPlayerRingPulse 3s ease-in-out infinite;
 			}
 		}

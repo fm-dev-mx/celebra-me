@@ -219,6 +219,22 @@
 	--location-text-muted-premium: #{color.change(sys.$sys-color-parchment-100, $alpha: 0.85)};
 
 	// ---------------------------------------------------------------------
+	// Music Player
+	// ---------------------------------------------------------------------
+	--music-player-prompt-bg: linear-gradient(
+		140deg,
+		rgb(var(--color-surface-primary-rgb) / 82%) 0%,
+		rgb(var(--color-surface-secondary-rgb) / 72%) 55%,
+		rgb(184 139 68 / 8%) 100%
+	);
+	--music-player-prompt-color: rgb(var(--color-surface-dark-rgb) / 82%);
+	--music-player-prompt-border: 1px solid rgb(184 139 68 / 32%);
+	--music-player-prompt-accent: var(--color-action-accent);
+	--music-player-button-color: var(--color-action-primary);
+	--music-player-button-border: 1px solid rgb(184 139 68 / 18%);
+	--music-player-ring-color: rgb(184 139 68 / 48%);
+
+	// ---------------------------------------------------------------------
 	// Image filter tokens (reduced sepia for warmer integration)
 	// ---------------------------------------------------------------------
 	--theme-image-filter-hero: sepia(0.12) contrast(1.08) brightness(0.88) saturate(0.92);

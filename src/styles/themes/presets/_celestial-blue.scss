@@ -236,6 +236,30 @@
 	--thank-you-image-position: center;
 
 	// ---------------------------------------------------------------------
+	// Music Player
+	// ---------------------------------------------------------------------
+	--music-player-prompt-bg: rgb(var(--color-diamond-white-rgb) / 52%);
+	--music-player-prompt-color: rgb(var(--color-soft-graphite-rgb) / 62%);
+	--music-player-prompt-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
+	--music-player-prompt-accent: rgb(var(--color-satin-blue-rgb) / 72%);
+	--music-player-button-bg:
+		radial-gradient(
+			circle at 32% 26%,
+			rgb(var(--color-diamond-white-rgb) / 15%) 0%,
+			transparent 48%
+		),
+		rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--music-player-button-color: var(--color-diamond-white);
+	--music-player-button-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 22%);
+	--music-player-ring-color: rgb(var(--color-satin-blue-rgb) / 48%);
+
+	@media (width < 992px) {
+		.music-player[data-variant='celestial-blue'] .music-player__prompt {
+			display: none;
+		}
+	}
+
+	// ---------------------------------------------------------------------
 	// Texture and light effects
 	// ---------------------------------------------------------------------
 	--texture-silk: linear-gradient(

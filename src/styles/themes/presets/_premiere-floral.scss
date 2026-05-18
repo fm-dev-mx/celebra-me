@@ -128,6 +128,20 @@
 	--location-accent: var(--color-action-accent);
 	--location-nav-button-bg: #{color.change(sys.$sys-color-floral-500, $alpha: 0.1)};
 	--location-nav-button-color: var(--color-text-primary);
+
+	// Music Player
+	--music-player-prompt-bg: #{color.change(sys.$sys-color-floral-50, $alpha: 0.85)};
+	--music-player-prompt-color: var(--color-text-primary);
+	--music-player-prompt-border: 1px solid #{color.change(sys.$sys-color-floral-300, $alpha: 0.32)};
+	--music-player-prompt-accent: var(--color-action-accent);
+	--music-player-button-bg: radial-gradient(
+		circle at 30% 30%,
+		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.9)} 0%,
+		#{color.change(sys.$sys-color-floral-50, $alpha: 0.78)} 100%
+	);
+	--music-player-button-color: var(--color-text-primary);
+	--music-player-button-border: 1px solid #{color.change(sys.$sys-color-floral-300, $alpha: 0.42)};
+	--music-player-ring-color: #{color.change(sys.$sys-color-floral-300, $alpha: 0.48)};
 	--gold-metallic: linear-gradient(
 		135deg,
 		#{sys.$sys-color-floral-300} 0%,

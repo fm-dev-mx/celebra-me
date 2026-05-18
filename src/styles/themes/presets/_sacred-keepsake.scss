@@ -199,4 +199,40 @@
 	--itinerary-paper-white: var(--color-pure-ivory);
 	--itinerary-cream: var(--color-sacred-white);
 	--itinerary-ink-dark: var(--color-eternal-ink);
+
+	// Music Player
+	--music-player-prompt-bg: rgb(var(--color-ivory-warm-rgb) / 85%);
+	--music-player-prompt-color: rgb(var(--color-eternal-ink-rgb) / 90%);
+	--music-player-prompt-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 40%);
+	--music-player-prompt-accent: var(--color-sacred-gold);
+	--music-player-button-bg: radial-gradient(
+		circle at 30% 30%,
+		rgb(var(--color-pure-ivory-rgb)) 0%,
+		rgb(var(--color-soft-sand-rgb)) 100%
+	);
+	--music-player-button-color: var(--color-sacred-gold);
+	--music-player-button-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+	--music-player-ring-color: rgb(var(--color-sacred-gold-rgb) / 48%);
+
+	.music-player[data-variant='sacred-keepsake'] {
+		.music-player__button--play {
+			opacity: 85%;
+			width: 3.2rem;
+			height: 3.2rem;
+		}
+
+		@media (width <= 767px) {
+			.music-player__button--play {
+				width: 2.75rem;
+				height: 2.75rem;
+			}
+		}
+
+		@media (width <= 479px) {
+			.music-player__button--play {
+				width: 2.4rem;
+				height: 2.4rem;
+			}
+		}
+	}
 }
