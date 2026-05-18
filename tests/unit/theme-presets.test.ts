@@ -5,9 +5,25 @@ const projectRoot = process.cwd();
 const presetsDir = 'src/styles/themes/presets';
 const presetsPath = path.join(projectRoot, presetsDir);
 
+const interludeContractVariables = [
+	'--interlude-bg',
+	'--interlude-image-filter',
+	'--interlude-overlay-opacity',
+	'--interlude-overlay',
+] as const;
+
+function expectInterludeContract(content: string): void {
+	for (const variableName of interludeContractVariables) {
+		expect(content).toContain(variableName);
+	}
+	expect(content).not.toContain('--interlude-image-scale');
+	expect(content).not.toContain('--interlude-overlay-secondary');
+	expect(content).not.toContain('src/styles/themes/sections/interlude');
+}
+
 function parseInvitationImports(content: string): string[] {
 	const imports: string[] = [];
-	const regex = /^\s*@use\s+['"]([^'"]+)['"]\s*;/gm;
+	const regex = /^\s*@use\s+['"]([^'"]+)['"](?:\s+as\s+\S+)?\s*;/gm;
 	let match: RegExpExecArray | null;
 
 	while ((match = regex.exec(content)) !== null) {
@@ -32,7 +48,10 @@ function hasPresetReference(content: string, preset: string): boolean {
 }
 
 function getTopLevelSelectors(content: string): string[] {
-	const withoutImports = content.replace(/^\s*@use\s+['"][^'"]+['"]\s*;\s*/gm, '');
+	const withoutImports = content.replace(
+		/^\s*@use\s+['"][^'"]+['"](?:\s+as\s+\S+)?\s*;\s*/gm,
+		'',
+	);
 	const withoutComments = withoutImports.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
 
 	const selectors: string[] = [];
@@ -82,6 +101,40 @@ describe('Invitation barrel', () => {
 	});
 });
 
+describe('Interlude section contract', () => {
+	const interludeContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/invitation/_interlude.scss'),
+		'utf8',
+	);
+
+	it('keeps the simplified four-variable visual contract explicit', () => {
+		for (const variableName of [
+			'--interlude-bg',
+			'--interlude-image-filter',
+			'--interlude-overlay-opacity',
+			'--interlude-overlay',
+		]) {
+			expect(interludeContent).toContain(variableName);
+		}
+	});
+
+	it('does not reintroduce retired interlude visual variables', () => {
+		expect(interludeContent).not.toContain('--interlude-image-scale');
+		expect(interludeContent).not.toContain('--interlude-overlay-secondary');
+	});
+
+	it('supports data-height tall variant with a min-height variable', () => {
+		expect(interludeContent).toContain("&[data-height='tall']");
+		expect(interludeContent).toContain('--interlude-min-height-tall');
+	});
+
+	it('defaults scroll-margin-top to the header-offset value', () => {
+		expect(interludeContent).toContain(
+			'scroll-margin-top: var(--interlude-scroll-margin-top, calc(70px + 1.5rem))',
+		);
+	});
+});
+
 describe('Angelic presence theme isolation', () => {
 	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
 	const invitationImports = parseInvitationImports(invitationContent);
@@ -118,7 +171,8 @@ describe('Angelic presence theme isolation', () => {
 
 describe('Angelic presence section coverage', () => {
 	// Sections intentionally absent (use base section styles):
-	//   - header, music
+	//   - header, music (uses base music player contract and preset variables)
+	//   - interlude (uses base interlude contract and preset variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_angelic-presence.scss',
 		'src/styles/themes/sections/family/_angelic-presence.scss',
@@ -126,17 +180,90 @@ describe('Angelic presence section coverage', () => {
 		'src/styles/themes/sections/countdown/_angelic-presence.scss',
 		'src/styles/themes/sections/location/_angelic-presence.scss',
 		'src/styles/themes/sections/itinerary/_angelic-presence.scss',
-		'src/styles/themes/sections/interlude/_angelic-presence.scss',
 		'src/styles/themes/sections/rsvp/_angelic-presence.scss',
 		'src/styles/themes/sections/thank-you/_angelic-presence.scss',
 		'src/styles/themes/sections/footer/_angelic-presence.scss',
 	];
 
-	it('styles every visible baptism demo section with angelic-presence selectors', () => {
+	it('styles every visible demo section with angelic-presence selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
 			const filePath = path.join(projectRoot, relativePath);
 			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='angelic-presence'");
 		}
+	});
+
+	it('styles interludes through the base interlude contract', () => {
+		const angelicContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_angelic-presence.scss'),
+			'utf8',
+		);
+
+		expectInterludeContract(angelicContent);
+	});
+
+	it('does not duplicate the base scroll-margin default', () => {
+		const angelicContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_angelic-presence.scss'),
+			'utf8',
+		);
+
+		expect(angelicContent).not.toContain('--interlude-scroll-margin-top');
+	});
+});
+
+describe('Celestial blue theme isolation', () => {
+	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
+	const invitationImports = parseInvitationImports(invitationContent);
+	const otherPresets = invitationImports.filter((preset) => preset !== 'celestial-blue');
+	const celestialContent = fs.readFileSync(path.join(presetsDir, '_celestial-blue.scss'), 'utf8');
+
+	it('defines the expected theme root scope', () => {
+		expect(celestialContent).toContain('.theme-preset--celestial-blue');
+	});
+
+	it('does not define top-level selectors outside its theme scope', () => {
+		const topLevelSelectors = getTopLevelSelectors(celestialContent);
+
+		expect(topLevelSelectors).toEqual(['.theme-preset--celestial-blue']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(celestialContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important', () => {
+		expect(celestialContent).not.toContain('!important');
+	});
+});
+
+describe('Celestial blue section coverage', () => {
+	const sectionThemeFiles = [
+		'src/styles/themes/sections/hero/_celestial-blue.scss',
+		'src/styles/themes/sections/family/_celestial-blue.scss',
+		'src/styles/themes/sections/gallery/_celestial-blue.scss',
+		'src/styles/themes/sections/countdown/_celestial-blue.scss',
+		'src/styles/themes/sections/location/_celestial-blue.scss',
+		'src/styles/themes/sections/itinerary/_celestial-blue.scss',
+		'src/styles/themes/sections/rsvp/_celestial-blue.scss',
+		'src/styles/themes/sections/thank-you/_celestial-blue.scss',
+	];
+
+	it('styles every visible section with celestial-blue selectors', () => {
+		for (const relativePath of sectionThemeFiles) {
+			const filePath = path.join(projectRoot, relativePath);
+			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='celestial-blue'");
+		}
+	});
+
+	it('styles interludes through the base interlude contract', () => {
+		const celestialContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_celestial-blue.scss'),
+			'utf8',
+		);
+
+		expectInterludeContract(celestialContent);
 	});
 });
 
@@ -178,19 +305,23 @@ describe('Sacred keepsake section coverage', () => {
 	//   - quote (documented base-style fallback)
 	//   - gifts (documented base-style fallback)
 	//   - music (uses base music player contract and preset variables)
+	//   - interlude (uses base interlude contract and preset variables)
 	//   - footer (uses base footer styles)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_sacred-keepsake.scss',
 		'src/styles/themes/sections/countdown/_sacred-keepsake.scss',
 		'src/styles/themes/sections/family/_sacred-keepsake.scss',
 		'src/styles/themes/sections/gallery/_sacred-keepsake.scss',
-		'src/styles/themes/sections/interlude/_sacred-keepsake.scss',
 		'src/styles/themes/sections/itinerary/_sacred-keepsake.scss',
 		'src/styles/themes/sections/location/_sacred-keepsake.scss',
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
 		'src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
 		'src/styles/themes/sections/header/_sacred-keepsake.scss',
 	];
+	const sacredContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/themes/presets/_sacred-keepsake.scss'),
+		'utf8',
+	);
 
 	it('styles every migrated visible section with sacred-keepsake selectors', () => {
 		for (const relativePath of sectionThemeFiles) {
@@ -208,11 +339,6 @@ describe('Sacred keepsake section coverage', () => {
 	});
 
 	it('styles music through the base music player contract', () => {
-		const sacredContent = fs.readFileSync(
-			path.join(projectRoot, 'src/styles/themes/presets/_sacred-keepsake.scss'),
-			'utf8',
-		);
-
 		for (const variableName of [
 			'--music-player-prompt-bg',
 			'--music-player-prompt-color',
@@ -225,5 +351,24 @@ describe('Sacred keepsake section coverage', () => {
 			expect(sacredContent).toContain(variableName);
 		}
 		expect(sacredContent).not.toContain('src/styles/themes/sections/music');
+	});
+
+	it('styles interludes through the base interlude contract', () => {
+		expectInterludeContract(sacredContent);
+	});
+});
+
+describe('Luxury hacienda interlude contract', () => {
+	const luxuryContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/themes/presets/_luxury-hacienda.scss'),
+		'utf8',
+	);
+
+	it('uses the standard --interlude-image-filter contract variable', () => {
+		expect(luxuryContent).toContain('--interlude-image-filter');
+	});
+
+	it('does not use the disconnected legacy filter variable', () => {
+		expect(luxuryContent).not.toContain('--theme-image-filter-interlude');
 	});
 });
