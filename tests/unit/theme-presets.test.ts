@@ -177,6 +177,7 @@ describe('Sacred keepsake section coverage', () => {
 	// Sections intentionally absent (use base section styles per architecture docs):
 	//   - quote (documented base-style fallback)
 	//   - gifts (documented base-style fallback)
+	//   - music (uses base music player contract and preset variables)
 	//   - footer (uses base footer styles)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_sacred-keepsake.scss',
@@ -189,7 +190,6 @@ describe('Sacred keepsake section coverage', () => {
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
 		'src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
 		'src/styles/themes/sections/header/_sacred-keepsake.scss',
-		'src/styles/themes/sections/music/_sacred-keepsake.scss',
 	];
 
 	it('styles every migrated visible section with sacred-keepsake selectors', () => {
@@ -205,5 +205,25 @@ describe('Sacred keepsake section coverage', () => {
 			expect(content).not.toContain('color-angelic');
 			expect(content).not.toContain('angelic-');
 		}
+	});
+
+	it('styles music through the base music player contract', () => {
+		const sacredContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_sacred-keepsake.scss'),
+			'utf8',
+		);
+
+		for (const variableName of [
+			'--music-player-prompt-bg',
+			'--music-player-prompt-color',
+			'--music-player-prompt-border',
+			'--music-player-button-bg',
+			'--music-player-button-color',
+			'--music-player-button-border',
+			'--music-player-ring-color',
+		]) {
+			expect(sacredContent).toContain(variableName);
+		}
+		expect(sacredContent).not.toContain('src/styles/themes/sections/music');
 	});
 });

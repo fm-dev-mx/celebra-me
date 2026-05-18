@@ -122,4 +122,26 @@ describe('Style boundary governance', () => {
 			false,
 		);
 	});
+
+	it('music player theme skin lives in the base contract and presets', () => {
+		const sectionIndex = read('src/styles/themes/sections/_index.scss');
+		const musicBase = read('src/styles/invitation/_music-player.scss');
+
+		expect(sectionIndex).not.toContain("@forward 'music'");
+		expect(fs.existsSync(path.join(projectRoot, 'src/styles/themes/sections/music'))).toBe(
+			false,
+		);
+
+		for (const variableName of [
+			'--music-player-prompt-bg',
+			'--music-player-prompt-color',
+			'--music-player-prompt-border',
+			'--music-player-button-bg',
+			'--music-player-button-color',
+			'--music-player-button-border',
+			'--music-player-ring-color',
+		]) {
+			expect(musicBase).toContain(variableName);
+		}
+	});
 });
