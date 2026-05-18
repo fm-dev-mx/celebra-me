@@ -109,6 +109,7 @@
 		transparent 0%,
 		#{color.change(sys.$sys-color-floral-300, $alpha: 0.06)} 100%
 	);
+	--location-text-color: var(--color-text-primary);
 	--location-bg: linear-gradient(
 		180deg,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 0%,
@@ -120,14 +121,126 @@
 		#{sys.$sys-color-neutral-0} 0%,
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.98)} 100%
 	);
-	--location-indication-bg: linear-gradient(
-		165deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.95)} 0%,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.85)} 100%
+	--location-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 25%);
+	--location-card-radius: 4px;
+	--location-card-shadow:
+		0 50px 100px -20px rgb(0 0 0 / 80%), inset 0 0 40px rgb(var(--color-action-accent-rgb) / 5%);
+	--location-card-backdrop-filter: blur(30px);
+	--location-card-hover-transform: translateY(-12px);
+	--location-card-hover-rotate: 2deg;
+	--location-card-hover-shadow:
+		0 70px 140px -30px rgb(0 0 0 / 95%), 0 0 40px rgb(var(--color-action-accent-rgb) / 15%);
+	--location-card-hover-border-color: rgb(var(--color-action-accent-rgb) / 50%);
+	--location-card-before-bg: var(--light-sweep);
+	--location-card-before-bg-size: 300% 300%;
+	--location-card-before-bg-pos: -100% -100%;
+	--location-card-before-z-index: 2;
+	--location-card-before-transition: background-position var(--duration-slower)
+		var(--ease-premium);
+	--location-card-hover-before-bg-pos: 100% 100%;
+	--location-image-aspect-ratio: 16 / 9;
+	--location-image-filter: grayscale(0.2) contrast(1.1) brightness(0.9);
+	--location-image-hover-scale: 1.1;
+	--location-outer-frame-padding: 0;
+	--location-outer-frame-bg: transparent;
+	--location-outer-frame-border: none;
+	--location-outer-frame-shadow: none;
+	--location-outer-frame-margin-bottom: 0;
+	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+	--location-inner-frame-padding: 0;
+	--location-inner-frame-bg: transparent;
+	--location-inner-frame-border-radius: 0;
+	--location-container-overlay-after: linear-gradient(
+		to bottom,
+		transparent 60%,
+		rgb(var(--color-surface-primary-rgb) / 80%)
 	);
-	--location-accent: var(--color-action-accent);
-	--location-nav-button-bg: #{color.change(sys.$sys-color-floral-500, $alpha: 0.1)};
-	--location-nav-button-color: var(--color-text-primary);
+	--location-ceremony-image-focus-x: 50%;
+	--location-ceremony-image-focus-y: 30%;
+	--location-reception-image-focus-x: 50%;
+	--location-reception-image-focus-y: 30%;
+	--location-content-padding: 3rem 2.5rem;
+	--location-title-color: var(--color-action-accent);
+	--location-title-font-family: var(--section-subtitle-font);
+	--location-title-font-size: var(--section-subtitle-size);
+	--location-title-letter-spacing: 0.5em;
+	--location-title-margin-bottom: 1.5rem;
+	--location-place-font-family: var(--font-display);
+	--location-place-font-size: 2.4rem;
+	--location-place-color: var(--color-text-primary);
+	--location-place-margin: 0 0 0.75rem;
+	--location-place-letter-spacing: -0.01em;
+	--location-place-line-height: 1.1;
+	--location-date-font-family: var(--font-label);
+	--location-date-font-size: 0.8rem;
+	--location-date-letter-spacing: 0.3em;
+	--location-date-text-transform: uppercase;
+	--location-date-margin-bottom: 1.5rem;
+	--location-date-color: var(--color-action-accent);
+	--location-date-font-style: normal;
+	--location-hour-color: rgb(var(--color-text-primary-rgb) / 50%);
+	--location-hour-letter-spacing: 0.15em;
+	--location-hour-font-size: 0.9rem;
+	--location-hour-margin-bottom: 2.5rem;
+	--location-address-color: rgb(var(--color-text-primary-rgb) / 60%);
+	--location-address-font-family: var(--font-label);
+	--location-address-font-size: 0.85rem;
+	--location-address-letter-spacing: 0.12em;
+	--location-address-padding-top: 2rem;
+	--location-address-border-top: 1px solid rgb(var(--color-text-primary-rgb) / 5%);
+	--location-divider-display: none;
+	--location-indications-spacing: 10rem;
+	--location-indications-container-max-width: 900px;
+	--location-indications-panel-bg: transparent;
+	--location-indications-panel-border: none;
+	--location-indications-panel-padding: 0;
+	--location-indications-backdrop-filter: none;
+	--location-indications-before-display: none;
+	--location-indications-gap: 1rem;
+	--location-indications-grid-template: repeat(auto-fit, minmax(320px, 1fr));
+	--location-indications-margin-bottom: 2rem;
+	--location-indication-item-bg: rgb(var(--color-surface-primary-rgb) / 16%);
+	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
+	--location-indication-item-radius: 16px;
+	--location-indication-item-padding: 0 2.5rem;
+	--location-indication-item-gap: 0.1rem;
+	--location-indication-item-min-height: auto;
+	--location-indication-item-box-shadow:
+		0 10px 30px -10px rgb(var(--color-surface-dark-rgb) / 5%),
+		inset 0 0 40px rgb(var(--color-action-accent-rgb) / 3%);
+	--location-indication-item-hover-bg: rgb(var(--color-surface-primary-rgb) / 40%);
+	--location-indication-item-hover-border-color: rgb(var(--color-action-accent-rgb) / 30%);
+	--location-indication-item-hover-transform: translateY(-8px);
+	--location-indication-item-hover-box-shadow:
+		0 30px 60px -15px rgb(0 0 0 / 10%), 0 0 30px rgb(var(--color-action-accent-rgb) / 8%);
+	--location-indication-item-after-bg: var(--gold-metallic);
+	--location-indication-item-after-width: 40px;
+	--location-indication-item-after-height: 1px;
+	--location-indication-icon-font-size: 2.4rem;
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-color: transparent;
+	--location-indication-icon-shadow: none;
+	--location-indication-icon-size: auto;
+	--location-indication-icon-radius: 0;
+	--location-indication-text-font-family: var(--font-label);
+	--location-indication-text-font-size: 0.82rem;
+	--location-indication-text-letter-spacing: 0.12em;
+	--location-indication-text-color: rgb(var(--color-text-primary-rgb) / 72%);
+	--location-indication-text-line-height: 1.7;
+	--location-indication-strong-color: var(--color-text-primary);
+	--location-indication-strong-font-weight: 600;
+	--location-nav-bg: #{color.change(sys.$sys-color-floral-500, $alpha: 0.1)};
+	--location-nav-color: var(--color-text-primary);
+	--location-nav-border: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
+	--location-nav-radius: 2px;
+	--location-nav-padding: 0.85rem 2.2rem;
+	--location-nav-font-size: 0.75rem;
+	--location-nav-letter-spacing: 0.22em;
+	--location-nav-hover-border-color: var(--color-action-accent);
+	--location-nav-hover-transform: translateY(-2px);
+	--location-nav-hover-shadow: 0 10px 25px rgb(var(--color-action-accent-rgb) / 20%);
+	--location-nav-hover-filter: none;
+	--location-nav-after-display: none;
 
 	// Music Player
 	--music-player-prompt-bg: #{color.change(sys.$sys-color-floral-50, $alpha: 0.85)};

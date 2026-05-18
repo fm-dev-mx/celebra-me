@@ -325,4 +325,237 @@
 	--itinerary-slate: rgb(44 62 80);
 	--itinerary-slate-rgb: 44 62 80;
 	--itinerary-muted-gray: rgb(127 140 141);
+
+	// ---------------------------------------------------------------------
+	// Location Section
+	// ---------------------------------------------------------------------
+	--location-text-color: var(--color-text-primary);
+	--location-bg:
+		radial-gradient(
+			circle at 18% 8%,
+			rgb(var(--color-ice-blue-rgb) / 42%) 0%,
+			transparent 34rem
+		),
+		linear-gradient(
+			180deg,
+			var(--color-cool-ivory) 0%,
+			rgb(var(--color-pearl-gray-rgb) / 54%) 100%
+		);
+	--location-padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vh, 6rem);
+	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
+	--location-container-max-width: min(1120px, calc(100vw - 2rem));
+	--location-container-max-width-sm: 34rem;
+	--location-gap: clamp(2.25rem, 5vw, 4.5rem);
+	--location-container-gap-sm: clamp(2rem, 5vw, 2.7rem);
+	--location-card-wrapper-width: 100%;
+	--location-card-max-width: 29rem;
+	--location-second-card-offset: clamp(1.25rem, 3vw, 2.25rem);
+	--location-content-alignment: stretch;
+	--location-card-bg: linear-gradient(
+		180deg,
+		rgb(var(--color-diamond-white-rgb) / 62%) 0%,
+		rgb(var(--color-cool-ivory-rgb) / 28%) 100%
+	);
+	--location-card-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 44%);
+	--location-card-radius: 8px;
+	--location-card-radius-xs: 6px;
+	--location-card-shadow:
+		0 28px 72px -36px rgb(var(--color-deep-blue-graphite-rgb) / 36%),
+		0 1px 0 rgb(var(--color-diamond-white-rgb) / 78%);
+	--location-card-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+	--location-card-isolation: isolate;
+	--location-card-hover-transform: translateY(-5px);
+	--location-card-hover-shadow:
+		0 34px 86px -40px rgb(var(--color-deep-blue-graphite-rgb) / 46%),
+		0 0 36px rgb(var(--color-satin-blue-rgb) / 10%);
+	--location-card-hover-border-color: rgb(var(--color-satin-blue-rgb) / 55%);
+	--location-card-after-bg: linear-gradient(
+		135deg,
+		rgb(var(--color-diamond-white-rgb) / 32%) 0%,
+		transparent 42%,
+		rgb(var(--color-satin-blue-rgb) / 10%) 100%
+	);
+	--location-card-after-inset: 1px;
+	--location-card-after-z-index: 2;
+	--location-image-aspect-ratio: 4 / 3.35;
+	--location-image-aspect-ratio-sm: 4 / 2.55;
+	--location-image-aspect-ratio-xs: 16 / 9;
+	--location-image-filter: saturate(0.92) contrast(0.94) brightness(0.82);
+	--location-image-hover-scale: 1.045;
+	--location-outer-frame-padding: 0;
+	--location-outer-frame-bg: transparent;
+	--location-outer-frame-border: none;
+	--location-outer-frame-shadow: none;
+	--location-outer-frame-margin-bottom: 0;
+	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
+	--location-inner-frame-padding: 0;
+	--location-inner-frame-bg: transparent;
+	--location-inner-frame-border-radius: 0;
+	--location-container-overlay-before:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 8%) 0%,
+			transparent 36%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 28%) 100%
+		),
+		radial-gradient(
+			circle at 50% 34%,
+			rgb(var(--color-diamond-white-rgb) / 10%) 0%,
+			transparent 48%
+		);
+	--location-container-overlay-blend-mode: multiply;
+	--location-container-overlay-after: linear-gradient(
+		180deg,
+		transparent 64%,
+		rgb(var(--color-cool-ivory-rgb) / 84%) 100%
+	);
+	--location-ceremony-image-focus-x: 50%;
+	--location-ceremony-image-focus-y: 50%;
+	--location-reception-image-focus-x: 50%;
+	--location-reception-image-focus-y: 48%;
+	--location-content-padding: clamp(1.25rem, 2.8vw, 2rem) clamp(1.4rem, 3vw, 2rem)
+		clamp(1.35rem, 3vw, 2rem);
+	--location-content-padding-xs: 1rem 1.15rem 1.15rem;
+	--location-title-color: rgb(var(--color-soft-graphite-rgb) / 72%);
+	--location-title-font-family: var(--font-body);
+	--location-title-font-size: clamp(0.68rem, 1vw, 0.76rem);
+	--location-title-letter-spacing: 0.28em;
+	--location-title-margin-bottom: clamp(0.75rem, 1.6vw, 1rem);
+	--location-title-margin-bottom-xs: 0.55rem;
+	--location-place-color: var(--color-deep-blue-graphite);
+	--location-place-font-family: var(--font-display);
+	--location-place-font-size: clamp(1.9rem, 3.2vw, 2.55rem);
+	--location-place-font-weight: 400;
+	--location-place-margin: 0 0 0.7rem;
+	--location-place-margin-xs: 0 0 0.55rem;
+	--location-place-letter-spacing: 0;
+	--location-place-line-height: 0.98;
+	--location-place-font-size-sm: clamp(1.65rem, 8vw, 2.25rem);
+	--location-date-color: rgb(var(--color-satin-blue-rgb) / 95%);
+	--location-date-font-family: var(--font-body);
+	--location-date-font-size: clamp(0.68rem, 1.1vw, 0.76rem);
+	--location-date-font-weight: 600;
+	--location-date-font-style: normal;
+	--location-date-letter-spacing: 0.18em;
+	--location-date-text-transform: uppercase;
+	--location-date-margin-bottom: 0.35rem;
+	--location-hour-color: rgb(var(--color-soft-graphite-rgb) / 64%);
+	--location-hour-font-family: var(--font-body);
+	--location-hour-font-size: clamp(0.78rem, 1.2vw, 0.88rem);
+	--location-hour-letter-spacing: 0.12em;
+	--location-hour-margin-bottom: clamp(1.1rem, 2vw, 1.5rem);
+	--location-hour-margin-bottom-xs: 1rem;
+	--location-address-color: rgb(var(--color-soft-graphite-rgb) / 66%);
+	--location-address-font-family: var(--font-body);
+	--location-address-font-size: clamp(0.78rem, 1.1vw, 0.86rem);
+	--location-address-letter-spacing: 0.02em;
+	--location-address-line-height: 1.5;
+	--location-address-padding-top: clamp(1rem, 2vw, 1.25rem);
+	--location-address-border-top: 1px solid rgb(var(--color-liquid-silver-rgb) / 30%);
+	--location-address-gap-xs: 0.7rem;
+	--location-address-text-max-width-xs: 72%;
+	--location-content-list-margin-bottom: clamp(1.1rem, 2vw, 1.45rem);
+	--location-content-list-margin-bottom-xs: 0.95rem;
+	--location-flourish-color: var(--color-liquid-silver);
+	--location-flourish-margin-bottom: clamp(1.15rem, 2vw, 1.8rem);
+	--location-flourish-margin-bottom-xs: 0.95rem;
+	--location-flourish-opacity: 70%;
+	--location-flourish-diamond-size: 5px;
+	--location-divider-display: none;
+	--location-copy-button-color: var(--color-satin-blue);
+	--location-copy-button-border: 1px solid rgb(var(--color-satin-blue-rgb) / 42%);
+	--location-copy-button-radius: 999px;
+	--location-copy-button-padding: 0.45rem;
+	--location-copy-button-opacity: 100%;
+	--location-copy-button-hover-bg: rgb(var(--color-diamond-white-rgb) / 72%);
+	--location-nav-bg:
+		linear-gradient(
+			90deg,
+			rgb(var(--color-diamond-white-rgb) / 0%) 0%,
+			rgb(var(--color-diamond-white-rgb) / 54%) 50%,
+			rgb(var(--color-diamond-white-rgb) / 0%) 100%
+		),
+		rgb(var(--color-ice-blue-rgb) / 28%);
+	--location-nav-color: var(--color-deep-blue-graphite);
+	--location-nav-border: 1px solid rgb(var(--color-satin-blue-rgb) / 42%);
+	--location-nav-radius: 999px;
+	--location-nav-font-size: 0.66rem;
+	--location-nav-letter-spacing: 0.18em;
+	--location-nav-padding: 0.78rem 1.35rem;
+	--location-nav-hover-bg: var(--color-deep-blue-graphite);
+	--location-nav-hover-color: var(--color-diamond-white);
+	--location-nav-hover-border-color: var(--color-deep-blue-graphite);
+	--location-nav-hover-shadow: 0 12px 26px rgb(var(--color-deep-blue-graphite-rgb) / 14%);
+	--location-nav-primary-bg:
+		linear-gradient(
+			90deg,
+			rgb(var(--color-diamond-white-rgb) / 0%) 0%,
+			rgb(var(--color-diamond-white-rgb) / 54%) 50%,
+			rgb(var(--color-diamond-white-rgb) / 0%) 100%
+		),
+		rgb(var(--color-ice-blue-rgb) / 28%);
+	--location-nav-primary-color: var(--color-deep-blue-graphite);
+	--location-nav-primary-border-color: rgb(var(--color-satin-blue-rgb) / 55%);
+	--location-nav-after-display: block;
+	--location-nav-apple-bg: rgb(var(--color-diamond-white-rgb) / 70%);
+	--location-nav-apple-border: rgb(var(--color-liquid-silver-rgb) / 50%);
+	--location-nav-apple-hover-bg: var(--color-deep-blue-graphite);
+	--location-nav-apple-hover-border-color: var(--color-deep-blue-graphite);
+	--location-nav-maps-border: rgb(var(--color-satin-blue-rgb) / 50%);
+	--location-nav-maps-hover-bg: var(--color-deep-blue-graphite);
+	--location-nav-maps-hover-border-color: var(--color-deep-blue-graphite);
+	--location-nav-waze-border: rgb(var(--color-satin-blue-rgb) / 50%);
+	--location-nav-waze-hover-bg: var(--color-deep-blue-graphite);
+	--location-nav-waze-hover-border-color: var(--color-deep-blue-graphite);
+	--location-nav-svg-size: 12px;
+	--location-nav-svg-opacity: 76%;
+	--location-nav-buttons-gap: 0.75rem;
+	--location-nav-buttons-margin-top: 0;
+	--location-nav-min-height-xs: 2.75rem;
+	--location-nav-padding-inline-xs: 1rem;
+	--location-indications-spacing: clamp(2.8rem, 6vw, 5rem);
+	--location-indications-spacing-xs: 2.5rem;
+	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
+	--location-indications-gap: clamp(1rem, 2.6vw, 1.6rem);
+	--location-indications-panel-bg: transparent;
+	--location-indications-panel-border: none;
+	--location-indications-panel-padding: 0;
+	--location-indications-backdrop-filter: none;
+	--location-indications-border-radius: 0;
+	--location-indications-before-display: none;
+	--location-indications-container-max-width: 58rem;
+	--location-indications-container-margin-bottom: clamp(3.5rem, 7vw, 5rem);
+	--location-indications-heading-color: rgb(var(--color-soft-graphite-rgb) / 58%);
+	--location-indications-heading-letter-spacing: 0.34em;
+	--location-indications-heading-margin-bottom: clamp(1.2rem, 2.5vw, 1.8rem);
+	--location-indication-item-bg:
+		linear-gradient(135deg, rgb(var(--color-diamond-white-rgb) / 58%), transparent 72%),
+		rgb(var(--color-ice-blue-rgb) / 16%);
+	--location-indication-item-border: 1px solid rgb(var(--color-liquid-silver-rgb) / 34%);
+	--location-indication-item-radius: 8px;
+	--location-indication-item-padding: clamp(1.1rem, 2.4vw, 1.45rem) clamp(1rem, 2.4vw, 1.35rem);
+	--location-indication-item-gap: clamp(0.9rem, 2vw, 1.2rem);
+	--location-indication-item-min-height: 100%;
+	--location-indication-item-box-shadow: 0 18px 46px -34px
+		rgb(var(--color-deep-blue-graphite-rgb) / 34%);
+	--location-indication-item-hover-bg:
+		linear-gradient(135deg, rgb(var(--color-diamond-white-rgb) / 72%), transparent 72%),
+		rgb(var(--color-ice-blue-rgb) / 24%);
+	--location-indication-item-hover-border-color: rgb(var(--color-satin-blue-rgb) / 42%);
+	--location-indication-item-hover-transform: translateY(-2px);
+	--location-indication-item-reserved-border-color: rgb(var(--color-satin-blue-rgb) / 42%);
+	--location-indication-icon-bg: rgb(var(--color-diamond-white-rgb) / 62%);
+	--location-indication-icon-color: var(--color-satin-blue);
+	--location-indication-icon-opacity: 100%;
+	--location-indication-icon-size: 1.9rem;
+	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-satin-blue-rgb) / 28%);
+	--location-indication-icon-svg-size: 16px;
+	--location-indication-icon-svg-stroke: 0.8px;
+	--location-indication-text-color: rgb(var(--color-deep-blue-graphite-rgb) / 78%);
+	--location-indication-text-font-family: var(--font-body);
+	--location-indication-text-font-size: clamp(0.86rem, 1.15vw, 0.95rem);
+	--location-indication-text-line-height: 1.6;
+	--location-indication-text-letter-spacing: 0.01em;
+	--location-indication-strong-color: var(--color-deep-blue-graphite);
+	--location-indication-strong-font-weight: 600;
 }

@@ -58,4 +58,59 @@
 	--hero-badge-border: var(--color-action-accent);
 	--gallery-section-bg: var(--family-bg);
 	--gallery-title-color: var(--color-text-emphasis);
+
+	// ---------------------------------------------------------------------
+	// Location Section (framed card style)
+	// ---------------------------------------------------------------------
+	--location-outer-frame-padding: 4px;
+	--location-outer-frame-bg: var(--location-flourish-color);
+	--location-outer-frame-shadow: var(--shadow-standard);
+	--location-outer-frame-margin-bottom: 0.75rem;
+	--location-inner-frame-padding: 12px;
+	--location-inner-frame-bg: var(--color-surface-elevated);
+	--location-inner-frame-border-radius: 2px;
+	--location-card-radius: 12px;
+	--location-card-shadow: var(--shadow-premium);
+	--location-card-padding: 2rem 1.5rem;
+	--location-content-padding: 0;
+	--location-divider-display: block;
+	--location-indications-panel-bg: rgb(var(--color-surface-primary-rgb) / 50%);
+	--location-indications-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
+	--location-indications-panel-padding: 3rem 2rem;
+	--location-indications-backdrop-filter: blur(10px);
+	--location-indications-gap: 2.5rem;
+	--location-indications-before-display: block;
+	--location-indications-container-max-width: 700px;
+	--location-indication-item-padding: 0;
+	--location-indication-item-gap: 1.2rem;
+	--location-indication-icon-size: 2.2rem;
+	--location-indication-icon-svg-size: 22px;
+	--location-indication-icon-svg-stroke: 0.75px;
+	--location-indication-icon-radius: 50%;
+	--location-indication-icon-opacity: 90%;
+	--location-copy-button-padding: 4px;
+	--location-copy-button-radius: 4px;
+	--location-copy-button-opacity: 60%;
+	--location-nav-radius: 4px;
+	--location-nav-font-size: 0.75rem;
+	--location-nav-letter-spacing: 0.15em;
+	--location-nav-padding: 1rem 2.2rem;
+	--location-nav-svg-size: 14px;
+	--location-nav-svg-opacity: 85%;
+	--location-nav-buttons-gap: 0.8rem;
+	--location-nav-buttons-margin-top: auto;
+	--location-date-font-family: var(--font-calligraphy);
+	--location-date-margin-bottom: 0.4rem;
+	--location-date-white-space: nowrap;
+	--location-hour-letter-spacing: 0.35em;
+	--location-address-gap: 0.8rem;
+	--location-flourish-margin-bottom: 2rem;
+	--location-flourish-opacity: 80%;
+	--location-flourish-diamond-size: 6px;
+	--location-title-margin-bottom: 0.5rem;
+	--location-place-margin: 1rem 0;
+	--location-place-letter-spacing: -0.5px;
+	--location-place-line-height: 1.1;
+	--location-indications-heading-color: var(--color-action-accent);
+	--location-indications-heading-font-weight: 600;
 }

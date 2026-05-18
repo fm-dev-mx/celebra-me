@@ -173,12 +173,12 @@ describe('Angelic presence section coverage', () => {
 	// Sections intentionally absent (use base section styles):
 	//   - header, music (uses base music player contract and preset variables)
 	//   - interlude (uses base interlude contract and preset variables)
+	//   - location (uses base location contract and preset --location-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_angelic-presence.scss',
 		'src/styles/themes/sections/family/_angelic-presence.scss',
 		'src/styles/themes/sections/gallery/_angelic-presence.scss',
 		'src/styles/themes/sections/countdown/_angelic-presence.scss',
-		'src/styles/themes/sections/location/_angelic-presence.scss',
 		'src/styles/themes/sections/itinerary/_angelic-presence.scss',
 		'src/styles/themes/sections/rsvp/_angelic-presence.scss',
 		'src/styles/themes/sections/thank-you/_angelic-presence.scss',
@@ -190,6 +190,19 @@ describe('Angelic presence section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='angelic-presence'");
 		}
+	});
+
+	it('styles location through the base location contract', () => {
+		const angelicContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_angelic-presence.scss'),
+			'utf8',
+		);
+
+		expect(angelicContent).toContain('--location-bg');
+		expect(angelicContent).toContain('--location-card-bg');
+		expect(angelicContent).toContain('--location-image-aspect-ratio');
+		expect(angelicContent).toContain('--location-nav-bg');
+		expect(angelicContent).toContain('--location-indications-grid-template');
 	});
 
 	it('styles interludes through the base interlude contract', () => {
@@ -239,12 +252,13 @@ describe('Celestial blue theme isolation', () => {
 });
 
 describe('Celestial blue section coverage', () => {
+	// Sections intentionally absent (use base section styles):
+	//   - location (uses base location contract and preset --location-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_celestial-blue.scss',
 		'src/styles/themes/sections/family/_celestial-blue.scss',
 		'src/styles/themes/sections/gallery/_celestial-blue.scss',
 		'src/styles/themes/sections/countdown/_celestial-blue.scss',
-		'src/styles/themes/sections/location/_celestial-blue.scss',
 		'src/styles/themes/sections/itinerary/_celestial-blue.scss',
 		'src/styles/themes/sections/rsvp/_celestial-blue.scss',
 		'src/styles/themes/sections/thank-you/_celestial-blue.scss',
@@ -255,6 +269,19 @@ describe('Celestial blue section coverage', () => {
 			const filePath = path.join(projectRoot, relativePath);
 			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='celestial-blue'");
 		}
+	});
+
+	it('styles location through the base location contract', () => {
+		const celestialContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_celestial-blue.scss'),
+			'utf8',
+		);
+
+		expect(celestialContent).toContain('--location-bg');
+		expect(celestialContent).toContain('--location-card-bg');
+		expect(celestialContent).toContain('--location-image-aspect-ratio');
+		expect(celestialContent).toContain('--location-nav-bg');
+		expect(celestialContent).toContain('--location-indications-grid-template');
 	});
 
 	it('styles interludes through the base interlude contract', () => {
@@ -307,13 +334,13 @@ describe('Sacred keepsake section coverage', () => {
 	//   - music (uses base music player contract and preset variables)
 	//   - interlude (uses base interlude contract and preset variables)
 	//   - footer (uses base footer styles)
+	//   - location (uses base location contract and preset --location-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_sacred-keepsake.scss',
 		'src/styles/themes/sections/countdown/_sacred-keepsake.scss',
 		'src/styles/themes/sections/family/_sacred-keepsake.scss',
 		'src/styles/themes/sections/gallery/_sacred-keepsake.scss',
 		'src/styles/themes/sections/itinerary/_sacred-keepsake.scss',
-		'src/styles/themes/sections/location/_sacred-keepsake.scss',
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
 		'src/styles/themes/sections/thank-you/_sacred-keepsake.scss',
 		'src/styles/themes/sections/header/_sacred-keepsake.scss',
@@ -336,6 +363,13 @@ describe('Sacred keepsake section coverage', () => {
 			expect(content).not.toContain('color-angelic');
 			expect(content).not.toContain('angelic-');
 		}
+	});
+
+	it('styles location through the base location contract', () => {
+		expect(sacredContent).toContain('--location-card-bg');
+		expect(sacredContent).toContain('--location-image-aspect-ratio');
+		expect(sacredContent).toContain('--location-nav-bg');
+		expect(sacredContent).toContain('--location-indications-grid-template');
 	});
 
 	it('styles music through the base music player contract', () => {

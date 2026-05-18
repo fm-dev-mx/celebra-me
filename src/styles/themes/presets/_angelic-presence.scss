@@ -337,4 +337,157 @@
 		width: 2.4rem;
 		height: 2.4rem;
 	}
+
+	// ---------------------------------------------------------------------
+	// Location Section
+	// ---------------------------------------------------------------------
+	--location-text-color: var(--color-eternal-ink);
+	--location-bg:
+		radial-gradient(
+			circle at 50% 8%,
+			rgb(var(--color-sacred-gold-rgb) / 8%) 0%,
+			transparent 34rem
+		),
+		linear-gradient(
+			180deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-angelic-white) 48%,
+			var(--color-soft-sand) 100%
+		);
+	--location-container-max-width: min(1040px, calc(100vw - 2rem));
+	--location-container-max-width-sm: 34rem;
+	--location-gap: clamp(2rem, 4vw, 3.5rem);
+	--location-card-wrapper-width: 100%;
+	--location-card-max-width: 28rem;
+	--location-card-max-width-sm: 100%;
+	--location-content-alignment: stretch;
+	--location-card-bg: rgb(var(--color-pure-ivory-rgb) / 72%);
+	--location-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--location-card-radius: 8px;
+	--location-card-shadow:
+		0 24px 70px -42px rgb(var(--color-eternal-ink-rgb) / 34%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+	--location-card-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+	--location-card-isolation: isolate;
+	--location-card-hover-transform: translateY(-5px);
+	--location-card-hover-shadow:
+		0 32px 82px -44px rgb(var(--color-eternal-ink-rgb) / 38%),
+		0 0 28px rgb(var(--color-sacred-gold-rgb) / 10%);
+	--location-card-hover-border-color: rgb(var(--color-sacred-gold-rgb) / 46%);
+	--location-image-aspect-ratio: 4 / 3;
+	--location-image-aspect-ratio-sm: 5 / 4;
+	--location-image-filter: saturate(0.94) contrast(1.02) brightness(1.02) sepia(0.04);
+	--location-image-hover-scale: 1.035;
+	--location-outer-frame-padding: 0;
+	--location-outer-frame-bg: transparent;
+	--location-outer-frame-border: none;
+	--location-outer-frame-shadow: none;
+	--location-outer-frame-margin-bottom: 0;
+	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+	--location-inner-frame-padding: 0;
+	--location-inner-frame-bg: transparent;
+	--location-inner-frame-border-radius: 0;
+	--location-container-overlay-after:
+		linear-gradient(180deg, transparent 58%, rgb(var(--color-pure-ivory-rgb) / 76%) 100%),
+		radial-gradient(circle at 50% 24%, rgb(var(--color-pure-ivory-rgb) / 10%), transparent 48%);
+	--location-ceremony-image-focus-x: 47%;
+	--location-ceremony-image-focus-y: 52%;
+	--location-reception-image-focus-x: 48%;
+	--location-reception-image-focus-y: 42%;
+	--location-content-padding: clamp(1.35rem, 3vw, 2.1rem);
+	--location-title-color: var(--color-sacred-gold-readable);
+	--location-title-font-family: var(--font-label);
+	--location-title-font-size: 0.68rem;
+	--location-title-letter-spacing: 0.28em;
+	--location-title-margin-bottom: 0.75rem;
+	--location-place-color: var(--color-eternal-ink);
+	--location-place-font-family: var(--font-display);
+	--location-place-font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+	--location-place-font-weight: 400;
+	--location-place-margin: 0 0 0.7rem;
+	--location-place-letter-spacing: 0;
+	--location-place-line-height: 1;
+	--location-date-color: var(--color-sacred-gold-readable);
+	--location-date-font-family: var(--font-body);
+	--location-date-font-size: 0.72rem;
+	--location-date-font-weight: 600;
+	--location-date-font-style: normal;
+	--location-date-letter-spacing: 0.16em;
+	--location-date-text-transform: uppercase;
+	--location-hour-color: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--location-hour-font-family: var(--font-body);
+	--location-hour-font-size: 0.82rem;
+	--location-hour-letter-spacing: 0.14em;
+	--location-hour-margin-bottom: 1.25rem;
+	--location-address-color: rgb(var(--color-eternal-ink-rgb) / 68%);
+	--location-address-font-family: var(--font-body);
+	--location-address-font-size: 0.86rem;
+	--location-address-letter-spacing: 0.01em;
+	--location-address-line-height: 1.5;
+	--location-address-padding-top: 1.1rem;
+	--location-address-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+	--location-flourish-color: var(--color-sacred-gold);
+	--location-flourish-margin-bottom: clamp(1rem, 2vw, 1.5rem);
+	--location-flourish-opacity: 70%;
+	--location-flourish-diamond-size: 5px;
+	--location-divider-display: none;
+	--location-copy-button-color: var(--color-sacred-gold);
+	--location-copy-button-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+	--location-copy-button-radius: 999px;
+	--location-copy-button-padding: 0.4rem;
+	--location-copy-button-opacity: 100%;
+	--location-nav-bg: rgb(var(--color-pure-ivory-rgb) / 62%);
+	--location-nav-color: var(--color-eternal-ink);
+	--location-nav-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
+	--location-nav-radius: 999px;
+	--location-nav-font-size: 0.66rem;
+	--location-nav-letter-spacing: 0.16em;
+	--location-nav-padding: 0.78rem 1.2rem;
+	--location-nav-hover-bg: var(--color-eternal-ink);
+	--location-nav-hover-color: var(--color-pure-ivory);
+	--location-nav-hover-border-color: var(--color-eternal-ink);
+	--location-nav-hover-shadow: 0 14px 28px rgb(var(--color-eternal-ink-rgb) / 14%);
+	--location-nav-hover-transform: translateY(-2px);
+	--location-nav-hover-filter: none;
+	--location-nav-apple-hover-bg: var(--color-eternal-ink);
+	--location-nav-apple-hover-border-color: var(--color-eternal-ink);
+	--location-nav-maps-hover-bg: var(--color-eternal-ink);
+	--location-nav-maps-hover-border-color: var(--color-eternal-ink);
+	--location-nav-waze-hover-bg: var(--color-eternal-ink);
+	--location-nav-waze-hover-border-color: var(--color-eternal-ink);
+	--location-indications-spacing: clamp(3rem, 6vw, 4.5rem);
+	--location-indications-container-max-width: 54rem;
+	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
+	--location-indications-gap: clamp(1rem, 2.6vw, 1.5rem);
+	--location-indications-panel-bg: transparent;
+	--location-indications-panel-border: none;
+	--location-indications-panel-padding: 0;
+	--location-indications-backdrop-filter: none;
+	--location-indications-before-display: none;
+	--location-indications-heading-color: var(--color-sacred-gold-readable);
+	--location-indications-heading-letter-spacing: 0.3em;
+	--location-indications-heading-margin-bottom: 1.3rem;
+	--location-indications-heading-font-weight: 600;
+	--location-indication-item-bg: rgb(var(--color-pure-ivory-rgb) / 56%);
+	--location-indication-item-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+	--location-indication-item-radius: 8px;
+	--location-indication-item-padding: clamp(1rem, 2vw, 1.25rem);
+	--location-indication-item-gap: 1rem;
+	--location-indication-item-min-height: auto;
+	--location-indication-item-box-shadow: 0 18px 46px -36px rgb(var(--color-eternal-ink-rgb) / 28%);
+	--location-indication-icon-bg: rgb(var(--color-pure-ivory-rgb) / 76%);
+	--location-indication-icon-color: var(--color-sacred-gold);
+	--location-indication-icon-size: 2rem;
+	--location-indication-icon-shadow:
+		inset 0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 26%),
+		0 2px 8px rgb(var(--color-eternal-ink-rgb) / 8%);
+	--location-indication-icon-svg-size: 16px;
+	--location-indication-icon-svg-stroke: 1.2px;
+	--location-indication-text-color: rgb(var(--color-eternal-ink-rgb) / 74%);
+	--location-indication-text-font-family: var(--font-body);
+	--location-indication-text-font-size: clamp(0.86rem, 1.2vw, 0.95rem);
+	--location-indication-text-line-height: 1.58;
+	--location-indication-text-letter-spacing: 0.01em;
+	--location-indication-strong-color: var(--color-eternal-ink);
+	--location-indication-strong-font-weight: 600;
 }
