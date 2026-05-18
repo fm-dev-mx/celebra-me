@@ -760,6 +760,7 @@
 			left: 0;
 		}
 
+		// Both --maps and --waze use the --location-nav-maps-* variables.
 		&--maps,
 		&--waze {
 			background: var(--location-nav-maps-bg);

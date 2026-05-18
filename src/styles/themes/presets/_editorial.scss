@@ -215,7 +215,7 @@
 	--location-indications-gap: 1rem;
 	--location-indications-grid-template: repeat(auto-fit, minmax(320px, 1fr));
 	--location-indications-margin-bottom: 2rem;
-	--location-indication-item-bg: var(--location-indication-bg);
+	--location-indication-item-bg: transparent;
 	--location-indication-item-border: 1px solid rgb(var(--color-action-accent-rgb) / 12%);
 	--location-indication-item-radius: 16px;
 	--location-indication-item-padding: 0 2.5rem;
