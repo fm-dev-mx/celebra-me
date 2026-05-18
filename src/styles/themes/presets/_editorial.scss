@@ -148,6 +148,23 @@
 	--countdown-bg: var(--color-surface-dark);
 	--countdown-segment-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.04)};
 
+	// Interlude section
+	--interlude-bg: var(--color-surface-dark);
+	--interlude-image-filter: saturate(0.92) contrast(1.1) brightness(0.8);
+	--interlude-overlay-opacity: 0.28;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			#{color.change(sys.$sys-color-onyx-900, $alpha: 0.16)} 0%,
+			transparent 40%,
+			#{color.change(sys.$sys-color-onyx-900, $alpha: 0.32)} 100%
+		),
+		radial-gradient(
+			circle at 20% 20%,
+			#{color.change(sys.$sys-color-onyx-950, $alpha: 0.24)} 0%,
+			transparent 34%
+		);
+
 	// Music Player
 	--music-player-prompt-bg: #{color.change(sys.$sys-color-onyx-800, $alpha: 0.75)};
 	--music-player-prompt-color: var(--color-text-primary);

@@ -260,6 +260,30 @@
 	}
 
 	// ---------------------------------------------------------------------
+	// Interlude section
+	// ---------------------------------------------------------------------
+	--interlude-bg: rgb(var(--color-deep-blue-graphite-rgb));
+	--interlude-image-filter: saturate(1.04) contrast(1.04) brightness(0.94);
+	--interlude-overlay-opacity: 0.18;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-deep-blue-graphite-rgb) / 14%) 0%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 2%) 38%,
+			rgb(var(--color-deep-blue-graphite-rgb) / 22%) 100%
+		),
+		radial-gradient(
+			circle at var(--interlude-light-x, 50%) var(--interlude-light-y, 34%),
+			rgb(var(--color-ice-blue-rgb) / 16%) 0%,
+			transparent 44%
+		),
+		radial-gradient(
+			ellipse at center,
+			transparent 42%,
+			rgb(var(--color-deep-blue-graphite-rgb) / var(--interlude-overlay-opacity)) 100%
+		);
+
+	// ---------------------------------------------------------------------
 	// Texture and light effects
 	// ---------------------------------------------------------------------
 	--texture-silk: linear-gradient(

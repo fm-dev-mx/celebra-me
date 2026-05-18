@@ -200,6 +200,38 @@
 	--itinerary-cream: var(--color-sacred-white);
 	--itinerary-ink-dark: var(--color-eternal-ink);
 
+	// Interlude Section
+	--interlude-bg: linear-gradient(
+		180deg,
+		var(--color-ivory-warm) 0%,
+		var(--color-sacred-mist) 100%
+	);
+	--interlude-image-filter: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.04);
+	--interlude-overlay-opacity: 0.1;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-pure-ivory-rgb) / 10%) 0%,
+			transparent 44%,
+			rgb(var(--color-eternal-ink-rgb) / 9%) 100%
+		),
+		radial-gradient(
+			ellipse at center,
+			transparent 32%,
+			rgb(var(--color-eternal-ink-rgb) / var(--interlude-overlay-opacity)) 100%
+		);
+	--interlude-frame-inset: 0.75rem;
+	--interlude-frame-inset-sm: 0.5rem;
+	--interlude-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
+
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-focal-y: 42%;
+	}
+
+	.invitation-interlude[data-interlude-index='2'] {
+		--interlude-focal-y: 44%;
+	}
+
 	// Music Player
 	--music-player-prompt-bg: rgb(var(--color-ivory-warm-rgb) / 85%);
 	--music-player-prompt-color: rgb(var(--color-eternal-ink-rgb) / 90%);

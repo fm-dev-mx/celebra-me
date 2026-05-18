@@ -298,6 +298,31 @@
 	--music-player-ring-color: rgb(var(--color-sacred-gold-rgb) / 48%);
 
 	// ---------------------------------------------------------------------
+	// Interlude section
+	// ---------------------------------------------------------------------
+	--interlude-bg: var(--color-angelic-white);
+	--interlude-image-filter: saturate(0.92) contrast(1.03) brightness(1.02) sepia(0.04);
+	--interlude-overlay-opacity: 0.18;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-pure-ivory-rgb) / 16%) 0%,
+			transparent 44%,
+			rgb(var(--color-eternal-ink-rgb) / 18%) 100%
+		),
+		radial-gradient(
+			circle at center,
+			transparent 24%,
+			rgb(var(--color-eternal-ink-rgb) / var(--interlude-overlay-opacity)) 100%
+		);
+	--interlude-min-height: clamp(360px, 58svh, 520px);
+	--interlude-min-height-1: clamp(430px, 66svh, 590px);
+	--interlude-min-height-2: clamp(440px, 70svh, 620px);
+	--interlude-min-height-sm: clamp(390px, 60svh, 500px);
+	--interlude-min-height-1-sm: clamp(430px, 68svh, 540px);
+	--interlude-min-height-2-sm: clamp(410px, 64svh, 520px);
+
+	// ---------------------------------------------------------------------
 	// Itinerary section
 	// ---------------------------------------------------------------------
 	--itinerary-paper-white: var(--color-pure-ivory);

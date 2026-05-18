@@ -155,7 +155,23 @@
 	--theme-image-filter-hero: none;
 	--theme-image-filter-portrait: none;
 	--theme-image-filter-gallery: none;
-	--theme-image-filter-interlude: none;
+
+	// Interlude Section
+	--interlude-bg: var(--color-surface-dark);
+	--interlude-image-filter: saturate(0.92) contrast(1.1) brightness(0.8);
+	--interlude-overlay-opacity: 0.28;
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			#{color.change(sys.$sys-color-taupe-500, $alpha: 0.16)} 0%,
+			transparent 40%,
+			#{color.change(sys.$sys-color-taupe-500, $alpha: 0.32)} 100%
+		),
+		radial-gradient(
+			circle at 20% 20%,
+			#{color.change(sys.$sys-color-floral-50, $alpha: 0.24)} 0%,
+			transparent 34%
+		);
 
 	// 💎 TOP PREMIUM: RSVP Radio Button Overrides - usar dorado para mejor visibilidad
 	--rsvp-radio-selected-border: var(--color-gold-500);

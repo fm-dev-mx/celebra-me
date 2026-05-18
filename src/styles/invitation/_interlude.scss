@@ -1,18 +1,51 @@
-@use '../tokens' as tokens;
-@use '../global/mixins' as mixins;
+// ==========================================================================
+// INTERLUDE — Section-level CSS variable contract
+// Contract variables (set as inherited theme tokens; base fallbacks live in usage):
+//   --interlude-bg                   Section background
+//   --interlude-image-filter         Image CSS filter
+//   --interlude-overlay-opacity      ::after vignette darkness
+//   --interlude-overlay              ::after overlay background (multi-gradient)
+//   --interlude-scroll-margin-top    Anchor scroll margin for fixed header
+//   --interlude-min-height           Base section min-height
+//   --interlude-min-height-sm        Mobile base min-height (<=640px)
+//   --interlude-min-height-tall      Tall variant min-height
+//   --interlude-min-height-1         First interlude min-height
+//   --interlude-min-height-1-sm      First interlude mobile min-height
+//   --interlude-min-height-2         Second interlude min-height
+//   --interlude-min-height-2-sm      Second interlude mobile min-height
+//   --interlude-frame-inset          ::after inset (decorative border layouts)
+//   --interlude-frame-inset-sm       ::after mobile inset
+//   --interlude-frame-border         ::after border
+// Not in contract (internal / content-driven / behavior):
+//   --interlude-focal-point          Set by observer from data-focal-point
+//   --interlude-focal-x/y            Internal focal derivation
+//   --interlude-parallax-offset      Set by observer scroll math
+//   --interlude-light-x/y            Set by observer for celestial highlight
+// ==========================================================================
 
 .invitation-interlude {
-	position: relative;
-	min-height: 100svh;
-	overflow: hidden;
-	background: var(--color-surface-dark);
-
+	// ---- focal derivation ----
 	--interlude-focal-x: 50%;
 	--interlude-focal-y: 14%;
 	--interlude-focal-point: var(--interlude-focal-x) var(--interlude-focal-y);
-	--interlude-image-scale: 1;
-	--interlude-image-hover-scale: 1.03;
 
+	// ---- contract variable defaults ----
+	--interlude-min-height: 100svh;
+	--interlude-min-height-sm: var(--interlude-min-height);
+	--interlude-min-height-1: var(--interlude-min-height);
+	--interlude-min-height-1-sm: var(--interlude-min-height-sm);
+	--interlude-min-height-2: var(--interlude-min-height);
+	--interlude-min-height-2-sm: var(--interlude-min-height-sm);
+	--interlude-min-height-tall: 80svh;
+	--interlude-frame-inset: 0;
+	--interlude-frame-inset-sm: var(--interlude-frame-inset);
+	--interlude-frame-border: none;
+
+	scroll-margin-top: var(--interlude-scroll-margin-top, calc(70px + 1.5rem));
+	position: relative;
+	min-height: var(--interlude-min-height);
+	overflow: hidden;
+	background: var(--interlude-bg, var(--color-surface-dark));
 	opacity: 0%;
 	transform: translate3d(0, 24px, 0);
 	transition:
@@ -25,7 +58,15 @@
 	}
 
 	&[data-height='tall'] {
-		min-height: 80svh;
+		min-height: var(--interlude-min-height-tall);
+	}
+
+	&[data-interlude-index='1'] {
+		min-height: var(--interlude-min-height-1);
+	}
+
+	&[data-interlude-index='2'] {
+		min-height: var(--interlude-min-height-2);
 	}
 
 	&__media,
@@ -41,21 +82,15 @@
 		object-fit: cover;
 		object-position: var(--interlude-focal-point);
 		transform-origin: var(--interlude-focal-point);
-		filter: saturate(0.96) contrast(1.02);
-		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0)
-			scale(var(--interlude-image-scale));
-		will-change: transform;
+		filter: var(--interlude-image-filter, saturate(0.96) contrast(1.02));
+		transform: translate3d(0, var(--interlude-parallax-offset, 0), 0);
 		transition:
 			filter 260ms ease-out,
 			opacity 600ms var(--ease-premium),
 			transform 600ms var(--ease-premium);
-		backface-visibility: hidden;
 	}
 
-	&.is-visible &__image {
-		opacity: 100%;
-	}
-
+	// ---- responsive focal adjustments ----
 	@media (aspect-ratio >= 16 / 9) {
 		--interlude-focal-y: 10%;
 	}
@@ -76,11 +111,27 @@
 		--interlude-focal-y: 22%;
 	}
 
+	// ---- min-height responsive ----
+	@media (width <= 640px) {
+		min-height: var(--interlude-min-height-sm);
+
+		&[data-interlude-index='1'] {
+			min-height: var(--interlude-min-height-1-sm);
+		}
+
+		&[data-interlude-index='2'] {
+			min-height: var(--interlude-min-height-2-sm);
+		}
+	}
+
+	// ---- overlay layers ----
 	&::after {
 		content: '';
 		position: absolute;
-		inset: 0;
-		background:
+		inset: var(--interlude-frame-inset);
+		border: var(--interlude-frame-border);
+		background: var(
+			--interlude-overlay,
 			linear-gradient(
 				180deg,
 				rgb(var(--color-surface-dark-rgb) / 10%) 0%,
@@ -90,23 +141,19 @@
 				circle at center,
 				transparent 24%,
 				rgb(var(--color-surface-dark-rgb) / var(--interlude-overlay-opacity, 10%)) 100%
-			);
+			)
+		);
 		pointer-events: none;
+
+		@media (width <= 767px) {
+			inset: var(--interlude-frame-inset-sm);
+		}
 	}
 
+	// ---- reduced motion ----
 	@media (prefers-reduced-motion: reduce) {
 		opacity: 100%;
 		transform: none;
 		transition: none;
-
-		&.is-visible {
-			&__image {
-				opacity: 100%;
-			}
-		}
-
-		&__image {
-			transition: none;
-		}
 	}
 }
