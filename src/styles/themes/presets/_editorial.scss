@@ -121,7 +121,35 @@
 		#{sys.$sys-color-onyx-900},
 		#{sys.$sys-color-onyx-950}
 	);
+	--family-texture-opacity: 0;
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		rgb(var(--color-action-accent-rgb) / 10%) 0%,
+		transparent 68%
+	);
 	--family-panel-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.02)};
+	--family-panel-border: 1px solid rgb(var(--color-action-accent-rgb) / 24%);
+	--family-panel-shadow: 0 34px 90px rgb(0 0 0 / 42%);
+	--family-panel-radius: 24px;
+	--family-accent: var(--color-action-accent);
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-text-primary-rgb) / 72%);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb) / 72%) 50%,
+		transparent 100%
+	);
+	--family-title-font: var(--font-display);
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.35rem, 2.8vw, 1.85rem);
+	--family-lead-name-size: clamp(2rem, 4.2vw, 2.6rem);
+	--family-media-bg: var(--gold-metallic);
+	--family-media-radius: 400px 400px 24px 24px;
+	--family-media-border: 1px solid var(--section-card-border-alt);
+	--family-media-shadow: 0 40px 100px rgb(0 0 0 / 50%), 0 0 30px rgb(0 0 0 / 40%);
+	--family-media-inner-border: 1px solid rgb(255 255 255 / 15%);
+	--family-media-filter: contrast(1.1) saturate(1.1) brightness(0.9);
 
 	// Gifts Section
 	--gifts-bg: var(--color-surface-dark);

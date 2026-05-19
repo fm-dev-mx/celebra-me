@@ -44,15 +44,35 @@
 		#{color.change(sys.$sys-color-champagne-300, $alpha: 0.08)} 0%,
 		var(--color-surface-primary) 100%
 	);
+	--family-texture-opacity: 0.12;
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb) / 4%) 100%
+	);
+	--family-panel-bg: var(--color-glass-bg);
+	--family-panel-border: 1px solid var(--color-glass-border);
+	--family-panel-shadow: var(--shadow-premium);
+	--family-panel-radius: 18px;
+	--family-accent: var(--color-action-accent);
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 64%);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--color-action-accent-rgb) / 30%) 50%,
 		transparent 100%
 	);
+	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
-	--family-group-title-font: var(--font-display);
-	--family-accent: var(--color-action-accent);
+	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-lead-name-size: clamp(2.1rem, 4.4vw, 2.85rem);
+	--family-media-bg: var(--color-glass-bg);
+	--family-media-radius: 16px;
+	--family-media-border: 1px solid rgb(var(--color-action-accent-rgb) / 42%);
+	--family-media-shadow: var(--shadow-premium);
+	--family-media-inner-border: 1px solid rgb(255 255 255 / 54%);
+	--family-media-filter: sepia(0.08) contrast(1.02) brightness(1.01);
 	--hero-card-bg: var(--color-glass-bg);
 	--hero-label-color: var(--color-text-emphasis);
 	--hero-badge-border: var(--color-action-accent);

@@ -59,6 +59,56 @@ const PA_REQUIRED_VARS = [
 	'--pa-footer-text-color',
 ];
 
+// Family and Personalized Access share the same preset list
+const FAMILY_PRESET_NAMES = PA_PRESET_NAMES;
+
+const FAMILY_REQUIRED_VARS = [
+	'--family-bg',
+	'--family-texture-opacity',
+	'--family-vignette-bg',
+	'--family-panel-bg',
+	'--family-panel-border',
+	'--family-panel-shadow',
+	'--family-panel-radius',
+	'--family-panel-spacing',
+	'--family-content-gap',
+	'--family-accent',
+	'--family-text-primary',
+	'--family-text-muted',
+	'--family-divider',
+	'--family-title-font',
+	'--family-name-font',
+	'--family-name-size',
+	'--family-lead-name-size',
+	'--family-media-bg',
+	'--family-media-radius',
+	'--family-media-border',
+	'--family-media-shadow',
+	'--family-media-inner-border',
+	'--family-media-filter',
+	'--family-focal-point',
+	'--family-deceased-symbol-color',
+	'--family-deceased-symbol-size',
+	'--family-deceased-symbol-opacity',
+	'--family-deceased-symbol-offset-y',
+];
+
+const FAMILY_RETIRED_SELECTORS_AND_VARS = [
+	'family__connector',
+	'family__pair',
+	'family__pair-ordinal',
+	'family__item-name',
+	'family__item-relation',
+	'family__paper-surface',
+	'family__watermark',
+	'--family-ledger-display',
+	'--family-connector-size',
+	'--family-connector-margin',
+	'--family-parent-connector-width',
+	'--family-pair-connector-size',
+	'--family-pair-member-gap',
+];
+
 describe('Style boundary governance', () => {
 	it('invitation-facing components do not hardcode hex colors in Astro or TSX files', () => {
 		const invitationFiles = getFilesRecursively('src/components/invitation', [
@@ -117,7 +167,9 @@ describe('Style boundary governance', () => {
 
 	it('footer theme ownership stays out of the base invitation stylesheet', () => {
 		const footerBase = read('src/styles/invitation/_footer.scss');
-		const footerTheme = read('src/styles/themes/sections/_footer-theme.scss');
+		const footerTheme = getFilesRecursively('src/styles/themes/sections/footer', ['.scss'])
+			.map(read)
+			.join('\n');
 		const baseSectionFiles = [
 			'src/styles/invitation/_footer.scss',
 			'src/styles/invitation/_event-location.scss',
@@ -136,7 +188,9 @@ describe('Style boundary governance', () => {
 
 	it('rsvp theme ownership stays out of the base invitation stylesheet', () => {
 		const rsvpBase = read('src/styles/invitation/_rsvp.scss');
-		const rsvpTheme = read('src/styles/themes/sections/_rsvp-theme.scss');
+		const rsvpTheme = getFilesRecursively('src/styles/themes/sections/rsvp', ['.scss'])
+			.map(read)
+			.join('\n');
 
 		expect(rsvpBase).not.toContain("[data-variant='premiere-floral']");
 		expect(rsvpBase).not.toContain("[data-variant='editorial']");
@@ -238,6 +292,42 @@ describe('Style boundary governance', () => {
 		const titleColorMatch = luxuryFile.match(/--pa-title-color:\s*(rgb\([^)]+\)|[^;]+);/);
 		if (titleColorMatch) {
 			expect(titleColorMatch[1]).not.toMatch(/219,\s*209,\s*180/);
+		}
+	});
+
+	it('family section skin lives in the base contract and presets', () => {
+		const sectionIndex = read('src/styles/themes/sections/_index.scss');
+		const familyBase = read('src/styles/invitation/_family.scss');
+
+		expect(sectionIndex).not.toContain("@forward 'family'");
+		expect(fs.existsSync(path.join(projectRoot, 'src/styles/themes/sections/family'))).toBe(
+			false,
+		);
+
+		for (const variableName of FAMILY_REQUIRED_VARS) {
+			expect(familyBase).toContain(variableName);
+		}
+
+		expect(familyBase).not.toMatch(/\[data-variant='[a-z]/);
+		for (const retired of FAMILY_RETIRED_SELECTORS_AND_VARS) {
+			expect(familyBase).not.toContain(retired);
+		}
+	});
+
+	it('family panel contract variables are active base variables', () => {
+		const familyBase = read('src/styles/invitation/_family.scss');
+
+		expect(familyBase).toContain('border: var(--family-panel-border');
+		expect(familyBase).toContain('box-shadow: var(--family-panel-shadow');
+	});
+
+	it('no legacy family variant partials remain', () => {
+		for (const name of FAMILY_PRESET_NAMES) {
+			const filePath = path.join(
+				projectRoot,
+				`src/styles/themes/sections/family/_${name}.scss`,
+			);
+			expect(fs.existsSync(filePath)).toBe(false);
 		}
 	});
 });

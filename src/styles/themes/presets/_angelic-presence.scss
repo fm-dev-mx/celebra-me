@@ -209,27 +209,45 @@
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
 	--family-texture-opacity: 0.12;
-	--family-border: rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
+	);
+	--family-panel-bg: var(--angelic-surface-mist);
+	--family-panel-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-panel-shadow:
+		0 22px 58px rgb(var(--color-eternal-ink-rgb) / 8%),
+		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+	--family-panel-radius: 24px;
 	--family-text-primary: var(--color-text-primary);
 	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
 	--family-accent: var(--color-sacred-gold);
-	--family-shadow: var(--shadow-editorial);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		rgb(var(--color-sacred-gold-rgb) / 42%) 50%,
 		transparent 100%
 	);
+	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
-	--family-group-title-font: var(--font-display);
 	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
-	--family-content-max-width: 38rem;
-	--family-vignette-bg: radial-gradient(
-		circle at 50% 50%,
-		transparent 0%,
-		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
-	);
+	--family-media-bg:
+		linear-gradient(
+			145deg,
+			rgb(var(--color-pure-ivory-rgb) / 96%),
+			rgb(var(--color-ivory-warm-rgb) / 52%)
+		),
+		var(--color-pure-ivory);
+	--family-media-radius: 18px;
+	--family-media-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+	--family-media-shadow:
+		0 16px 42px rgb(var(--color-eternal-ink-rgb) / 9%),
+		0 0 0 1px rgb(var(--color-sacred-gold-rgb) / 8%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
+	--family-media-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
+	--family-media-filter: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
 
 	// ---------------------------------------------------------------------
 	// Gallery section
@@ -328,15 +346,6 @@
 	--itinerary-paper-white: var(--color-pure-ivory);
 	--itinerary-cream: var(--color-angelic-white);
 	--itinerary-ink-dark: var(--color-eternal-ink);
-
-	// -----------------------------------------------------------------
-	// Music player — more discreet on angelic-presence
-	// -----------------------------------------------------------------
-	.music-player__button--play {
-		opacity: 70%;
-		width: 2.4rem;
-		height: 2.4rem;
-	}
 
 	// ---------------------------------------------------------------------
 	// Location Section

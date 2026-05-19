@@ -12,6 +12,23 @@ const interludeContractVariables = [
 	'--interlude-overlay',
 ] as const;
 
+const familyContractVariables = [
+	'--family-bg',
+	'--family-panel-bg',
+	'--family-panel-border',
+	'--family-panel-shadow',
+	'--family-accent',
+	'--family-text-primary',
+	'--family-text-muted',
+	'--family-divider',
+	'--family-title-font',
+	'--family-name-font',
+	'--family-media-bg',
+	'--family-media-border',
+	'--family-media-shadow',
+	'--family-media-filter',
+] as const;
+
 function expectInterludeContract(content: string): void {
 	for (const variableName of interludeContractVariables) {
 		expect(content).toContain(variableName);
@@ -19,6 +36,19 @@ function expectInterludeContract(content: string): void {
 	expect(content).not.toContain('--interlude-image-scale');
 	expect(content).not.toContain('--interlude-overlay-secondary');
 	expect(content).not.toContain('src/styles/themes/sections/interlude');
+}
+
+function expectFamilyContract(content: string): void {
+	for (const variableName of familyContractVariables) {
+		expect(content).toContain(variableName);
+	}
+	expect(content).not.toContain('--family-ledger-display');
+	expect(content).not.toContain('--family-container-max-width');
+	expect(content).not.toContain('--family-panel-padding');
+	expect(content).not.toContain('--family-media-column');
+	expect(content).not.toContain('--family-content-column');
+	expect(content).not.toContain('--family-connector-size');
+	expect(content).not.toContain('src/styles/themes/sections/family');
 }
 
 function parseInvitationImports(content: string): string[] {
@@ -174,9 +204,9 @@ describe('Angelic presence section coverage', () => {
 	//   - header, music (uses base music player contract and preset variables)
 	//   - interlude (uses base interlude contract and preset variables)
 	//   - location (uses base location contract and preset --location-* variables)
+	//   - family (uses base family contract and preset --family-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_angelic-presence.scss',
-		'src/styles/themes/sections/family/_angelic-presence.scss',
 		'src/styles/themes/sections/gallery/_angelic-presence.scss',
 		'src/styles/themes/sections/countdown/_angelic-presence.scss',
 		'src/styles/themes/sections/itinerary/_angelic-presence.scss',
@@ -212,6 +242,15 @@ describe('Angelic presence section coverage', () => {
 		);
 
 		expectInterludeContract(angelicContent);
+	});
+
+	it('styles family through the base family contract', () => {
+		const angelicContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_angelic-presence.scss'),
+			'utf8',
+		);
+
+		expectFamilyContract(angelicContent);
 	});
 
 	it('does not duplicate the base scroll-margin default', () => {
@@ -254,9 +293,9 @@ describe('Celestial blue theme isolation', () => {
 describe('Celestial blue section coverage', () => {
 	// Sections intentionally absent (use base section styles):
 	//   - location (uses base location contract and preset --location-* variables)
+	//   - family (uses base family contract and preset --family-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_celestial-blue.scss',
-		'src/styles/themes/sections/family/_celestial-blue.scss',
 		'src/styles/themes/sections/gallery/_celestial-blue.scss',
 		'src/styles/themes/sections/countdown/_celestial-blue.scss',
 		'src/styles/themes/sections/itinerary/_celestial-blue.scss',
@@ -291,6 +330,15 @@ describe('Celestial blue section coverage', () => {
 		);
 
 		expectInterludeContract(celestialContent);
+	});
+
+	it('styles family through the base family contract', () => {
+		const celestialContent = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/presets/_celestial-blue.scss'),
+			'utf8',
+		);
+
+		expectFamilyContract(celestialContent);
 	});
 });
 
@@ -335,10 +383,10 @@ describe('Sacred keepsake section coverage', () => {
 	//   - interlude (uses base interlude contract and preset variables)
 	//   - footer (uses base footer styles)
 	//   - location (uses base location contract and preset --location-* variables)
+	//   - family (uses base family contract and preset --family-* variables)
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_sacred-keepsake.scss',
 		'src/styles/themes/sections/countdown/_sacred-keepsake.scss',
-		'src/styles/themes/sections/family/_sacred-keepsake.scss',
 		'src/styles/themes/sections/gallery/_sacred-keepsake.scss',
 		'src/styles/themes/sections/itinerary/_sacred-keepsake.scss',
 		'src/styles/themes/sections/rsvp/_sacred-keepsake.scss',
@@ -389,6 +437,22 @@ describe('Sacred keepsake section coverage', () => {
 
 	it('styles interludes through the base interlude contract', () => {
 		expectInterludeContract(sacredContent);
+	});
+
+	it('styles family through the base family contract', () => {
+		expectFamilyContract(sacredContent);
+	});
+});
+
+describe('Family section contract', () => {
+	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
+	const invitationImports = parseInvitationImports(invitationContent);
+
+	it('styles family through preset variables for all active presets', () => {
+		for (const preset of invitationImports) {
+			const presetContent = fs.readFileSync(path.join(presetsDir, `_${preset}.scss`), 'utf8');
+			expectFamilyContract(presetContent);
+		}
 	});
 });
 

@@ -3,9 +3,7 @@
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
-import FamilyDecorations from './FamilyDecorations.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { SharedSectionVariant } from '@/lib/theme/theme-contract';
 
 interface Props {
 	parents?: {
@@ -43,14 +41,12 @@ interface Props {
 		godparentsTitle?: string;
 		sectionMessage?: string;
 	};
-	variant?: SharedSectionVariant;
 	focalPoint?: string;
 }
 
 interface FamilyEntry {
 	name?: string;
 	role?: string;
-	connector?: boolean;
 	lead?: boolean;
 	deceased?: boolean;
 }
@@ -70,7 +66,6 @@ const {
 	featuredImage,
 	celebrantName,
 	labels,
-	variant = 'standard',
 	focalPoint,
 } = Astro.props;
 
@@ -87,19 +82,20 @@ const resolvedLabels = {
 		'Gracias por caminar conmigo en este momento tan especial. Su amor, guía y bendición forman parte de este día que guardaré para siempre.',
 };
 
-const isTypographicVariant = variant === 'celestial-blue';
-const shouldRenderMedia = Boolean(featuredImage) && !isTypographicVariant;
+const shouldRenderMedia = Boolean(featuredImage);
 const imagePath = featuredImage
 	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
 	: undefined;
+const resolvedFocalPoint = focalPoint || 'center';
 
-const initials = celebrantName
-	.split(' ')
-	.map((part) => part[0])
+const initials = (celebrantName ?? '')
+	.trim()
+	.split(/\s+/)
+	.map((part) => part.at(0))
 	.filter(Boolean)
 	.slice(0, 2)
 	.join('')
-	.toUpperCase();
+	.toLocaleUpperCase('es-MX');
 
 const familyBlocks: FamilyBlock[] = (
 		groups && groups.length > 0
@@ -182,11 +178,9 @@ const familyBlocks: FamilyBlock[] = (
 <section
 	id="family-section"
 	class="family"
-	data-variant={variant}
-	data-focal-point={focalPoint || 'center'}
+	data-family-focal-point={resolvedFocalPoint}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
-	<FamilyDecorations variant={variant} component="bg" />
 
 	<Container class="family__container">
 		<header class="family__header family__reveal">
@@ -198,13 +192,12 @@ const familyBlocks: FamilyBlock[] = (
 			</div>
 		</header>
 
-		<div class:list={['family__panel', !shouldRenderMedia && 'family__panel--no-media']}>
-			{isTypographicVariant && (
-				<>
-					<div class="family__paper-surface" aria-hidden="true"></div>
-					<div class="family__watermark" aria-hidden="true">{initials}</div>
-				</>
-			)}
+		<div
+			class:list={['family__panel', !shouldRenderMedia && 'family__panel--no-media']}
+			data-family-initials={initials}
+		>
+			<div class="family__content-overlay" aria-hidden="true"></div>
+
 			{shouldRenderMedia && (
 				<figure class="family__media family__reveal">
 					<div class="family__media-frame">
@@ -214,7 +207,6 @@ const familyBlocks: FamilyBlock[] = (
 							width={600}
 							height={800}
 						/>
-						<FamilyDecorations variant={variant} component="frame" />
 					</div>
 				</figure>
 			)}
@@ -254,13 +246,11 @@ const familyBlocks: FamilyBlock[] = (
 		</div>
 	</Container>
 </section>
-
-<script>
-document.querySelectorAll<HTMLElement>('.family[data-focal-point]').forEach((section) => {
-	const focalPoint = section.dataset.focalPoint || 'center';
-	section.style.setProperty('--family-focal-point', focalPoint);
-});
-</script>
+<style define:vars={{ familyFocalPoint: resolvedFocalPoint }}>
+	.family {
+		--family-focal-point: var(--familyFocalPoint);
+	}
+</style>
 <script>
 	import { createIntersectionObserver } from '@/utils/animations';
 

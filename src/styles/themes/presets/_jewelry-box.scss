@@ -97,30 +97,34 @@
 		var(--color-surface-primary) 100%
 	);
 	--family-texture-opacity: 0.3;
-	--family-border: var(--color-glass-border);
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		rgb(var(--color-action-accent-rgb) / 3%) 100%
+	);
+	--family-panel-bg: rgb(255 255 255 / 48%);
+	--family-panel-border: 1px solid var(--color-glass-border);
+	--family-panel-shadow: var(--shadow-premium);
+	--family-panel-radius: 16px;
 	--family-text-primary: var(--color-surface-dark);
 	--family-text-muted: rgb(var(--color-surface-dark-rgb) / 60%);
 	--family-accent: var(--color-action-accent);
-	--family-shadow: var(--shadow-premium);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		var(--color-action-accent) 50%,
 		transparent 100%
 	);
+	--family-title-font: var(--font-display);
 	--family-name-font: var(--font-display);
-	--family-group-title-font: var(--font-display);
 	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
 	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
-	--family-meta-size: 0.74rem;
-	--family-meta-letter-spacing: 0.22em;
-	--family-group-padding-block: clamp(1.15rem, 2.2vw, 1.55rem);
-	--family-content-max-width: 38rem;
-	--family-vignette-bg: radial-gradient(
-		circle at 50% 50%,
-		transparent 0%,
-		rgb(var(--color-action-accent-rgb) / 3%) 100%
-	);
+	--family-media-bg: var(--color-frame-bg);
+	--family-media-radius: 14px;
+	--family-media-border: var(--border-image);
+	--family-media-shadow: var(--shadow-premium);
+	--family-media-inner-border: 1px solid rgb(255 255 255 / 42%);
+	--family-media-filter: sepia(0.12) contrast(1.04) brightness(1.01);
 
 	// ---------------------------------------------------------------------
 	// Hero tokens

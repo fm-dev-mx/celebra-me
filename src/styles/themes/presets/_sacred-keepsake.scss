@@ -142,22 +142,37 @@
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
 	--family-texture-opacity: 0.12;
-	--family-border: rgb(var(--color-sacred-gold-rgb) / 22%);
-	--family-text-primary: var(--color-text-primary);
-	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
-	--family-accent: var(--color-sacred-gold);
-	--family-shadow: var(--shadow-editorial);
-	--family-divider: var(--sacred-divider);
-	--family-name-font: var(--font-display);
-	--family-group-title-font: var(--font-display);
-	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
-	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
-	--family-content-max-width: 38rem;
 	--family-vignette-bg: radial-gradient(
 		circle at 50% 50%,
 		transparent 0%,
 		rgb(var(--color-sacred-gold-rgb) / 4%) 100%
 	);
+	--family-panel-bg: var(--sacred-surface-mist);
+	--family-panel-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--family-panel-shadow: var(--sacred-soft-shadow);
+	--family-panel-radius: 24px;
+	--family-text-primary: var(--color-text-primary);
+	--family-text-muted: rgb(var(--color-eternal-ink-rgb) / 64%);
+	--family-accent: var(--color-sacred-gold);
+	--family-divider: var(--sacred-divider);
+	--family-title-font: var(--font-display);
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.45rem, 3vw, 2.05rem);
+	--family-lead-name-size: clamp(2.15rem, 4.5vw, 2.9rem);
+	--family-media-bg:
+		linear-gradient(
+			145deg,
+			rgb(var(--color-pure-ivory-rgb) / 96%),
+			rgb(var(--color-ivory-warm-rgb) / 52%)
+		),
+		var(--color-pure-ivory);
+	--family-media-radius: 18px;
+	--family-media-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
+	--family-media-shadow:
+		var(--shadow-editorial), inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 90%);
+	--family-media-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 32%);
+	--family-media-filter: saturate(0.92) contrast(1.02) brightness(1.03) sepia(0.03);
+	--family-meta-display: none;
 	--gallery-section-bg: radial-gradient(
 		circle at 50% 10%,
 		rgb(var(--color-sacred-gold-rgb) / 6%) 0%,
@@ -224,14 +239,6 @@
 	--interlude-frame-inset-sm: 0.5rem;
 	--interlude-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 18%);
 
-	.invitation-interlude[data-interlude-index='1'] {
-		--interlude-focal-y: 42%;
-	}
-
-	.invitation-interlude[data-interlude-index='2'] {
-		--interlude-focal-y: 44%;
-	}
-
 	// Music Player
 	--music-player-prompt-bg: rgb(var(--color-ivory-warm-rgb) / 85%);
 	--music-player-prompt-color: rgb(var(--color-eternal-ink-rgb) / 90%);
@@ -245,28 +252,6 @@
 	--music-player-button-color: var(--color-sacred-gold);
 	--music-player-button-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 28%);
 	--music-player-ring-color: rgb(var(--color-sacred-gold-rgb) / 48%);
-
-	.music-player[data-variant='sacred-keepsake'] {
-		.music-player__button--play {
-			opacity: 85%;
-			width: 3.2rem;
-			height: 3.2rem;
-		}
-
-		@media (width <= 767px) {
-			.music-player__button--play {
-				width: 2.75rem;
-				height: 2.75rem;
-			}
-		}
-
-		@media (width <= 479px) {
-			.music-player__button--play {
-				width: 2.4rem;
-				height: 2.4rem;
-			}
-		}
-	}
 
 	// ---------------------------------------------------------------------
 	// Location Section

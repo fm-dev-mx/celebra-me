@@ -93,22 +93,37 @@
 		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.65)} 0%,
 		#{color.change(sys.$sys-color-floral-50, $alpha: 0.82)} 100%
 	);
-	--family-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.18)};
+	--family-texture-opacity: 0;
+	--family-vignette-bg: radial-gradient(
+		circle at 50% 50%,
+		transparent 0%,
+		#{color.change(sys.$sys-color-floral-300, $alpha: 0.06)} 100%
+	);
+	--family-panel-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.72)};
+	--family-panel-border: 1px solid #{color.change(sys.$sys-color-floral-300, $alpha: 0.18)};
+	--family-panel-shadow: var(--shadow-premium);
+	--family-panel-radius: 22px;
 	--family-text-primary: #{sys.$sys-color-taupe-500};
 	--family-text-muted: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.68)};
 	--family-accent: #{sys.$sys-color-floral-300};
-	--family-shadow: var(--shadow-premium);
 	--family-divider: linear-gradient(
 		90deg,
 		transparent 0%,
 		#{color.change(sys.$sys-color-floral-300, $alpha: 0.92)} 50%,
 		transparent 100%
 	);
-	--family-vignette-bg: radial-gradient(
-		circle at 50% 50%,
-		transparent 0%,
-		#{color.change(sys.$sys-color-floral-300, $alpha: 0.06)} 100%
-	);
+	--family-title-font: var(--font-display);
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.35rem, 2.8vw, 1.9rem);
+	--family-lead-name-size: clamp(2.05rem, 4.2vw, 2.7rem);
+	--family-media-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.86)};
+	--family-media-radius: 28px;
+	--family-media-border: 1px solid #{color.change(sys.$sys-color-floral-300, $alpha: 0.28)};
+	--family-media-shadow:
+		0 28px 70px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.22)},
+		0 0 18px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
+	--family-media-inner-border: 1px solid #{color.change(sys.$sys-color-neutral-0, $alpha: 0.58)};
+	--family-media-filter: saturate(1.04) contrast(1.02) brightness(1.01);
 	--location-text-color: var(--color-text-primary);
 	--location-bg: linear-gradient(
 		180deg,
