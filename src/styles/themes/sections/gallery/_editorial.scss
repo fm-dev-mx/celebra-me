@@ -1,7 +1,7 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
 
-.gallery-section[data-variant='editorial'] {
+.gallery-section[data-variant='editorial'],
+.gallery-section[data-variant='premiere-floral'] {
 	background: var(--gallery-section-bg, var(--section-bg));
 	padding-block: var(--section-padding-block);
 
@@ -13,7 +13,7 @@
 		font-family: var(--section-title-font);
 		font-size: var(--section-title-size);
 		line-height: 0.9;
-		color: var(--color-text-text);
+		color: var(--color-text-primary);
 		opacity: 96%;
 	}
 
