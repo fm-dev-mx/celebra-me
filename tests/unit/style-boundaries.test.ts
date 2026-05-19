@@ -18,6 +18,47 @@ function getFilesRecursively(dir: string, extensions: string[]): string[] {
 		.map((file) => path.join(dir, file).replace(/\\/g, '/'));
 }
 
+const PA_PRESET_NAMES = [
+	'editorial',
+	'premiere-floral',
+	'jewelry-box',
+	'jewelry-box-wedding',
+	'celestial-blue',
+	'luxury-hacienda',
+	'angelic-presence',
+	'sacred-keepsake',
+];
+
+const PA_REQUIRED_VARS = [
+	'--pa-card-border',
+	'--pa-card-bg-image',
+	'--pa-card-shadow',
+	'--pa-card-glow',
+	'--pa-card-inner-border',
+	'--pa-card-inner-radius',
+	'--pa-corner-opacity',
+	'--pa-corner-glow-blur',
+	'--pa-eyebrow-color',
+	'--pa-eyebrow-tracking',
+	'--pa-title-font',
+	'--pa-title-tracking',
+	'--pa-title-color',
+	'--pa-guest-weight',
+	'--pa-guest-color',
+	'--pa-divider-gradient',
+	'--pa-divider-opacity',
+	'--pa-divider-diamond-bg',
+	'--pa-divider-diamond-border-color',
+	'--pa-divider-diamond-shadow',
+	'--pa-count-frame-radius',
+	'--pa-count-frame-border',
+	'--pa-count-frame-bg',
+	'--pa-count-frame-shadow',
+	'--pa-count-color',
+	'--pa-footer-border-top',
+	'--pa-footer-text-color',
+];
+
 describe('Style boundary governance', () => {
 	it('invitation-facing components do not hardcode hex colors in Astro or TSX files', () => {
 		const invitationFiles = getFilesRecursively('src/components/invitation', [
@@ -142,6 +183,61 @@ describe('Style boundary governance', () => {
 			'--music-player-ring-color',
 		]) {
 			expect(musicBase).toContain(variableName);
+		}
+	});
+
+	it('personalized-access index only forwards base', () => {
+		const index = read('src/styles/themes/sections/personalized-access/_index.scss');
+		expect(index).toContain("@forward 'base'");
+		expect(index).not.toMatch(/@forward\s+'[^b]/);
+	});
+
+	it('personalized-access base avoids theme-preset selectors', () => {
+		const base = read('src/styles/themes/sections/personalized-access/_base.scss');
+		expect(base).not.toMatch(/\.theme-preset--\w/);
+	});
+
+	it('access-card__title selector uses ancestor context to beat global hN rules', () => {
+		const base = read('src/styles/themes/sections/personalized-access/_base.scss');
+		const titleBlock = base.match(/\.access-card\s+&__title\s*\{[\s\S]*?\n\t\}/);
+		expect(titleBlock).not.toBeNull();
+	});
+
+	it('personalized-access base avoids per-variant attribute selectors', () => {
+		const base = read('src/styles/themes/sections/personalized-access/_base.scss');
+		expect(base).not.toMatch(/\[data-variant='[a-z]/);
+	});
+
+	it('personalized-access base avoids legacy @use imports', () => {
+		const base = read('src/styles/themes/sections/personalized-access/_base.scss');
+		expect(base).not.toMatch(/@use\s/);
+	});
+
+	it('no legacy personalized-access variant partials remain', () => {
+		for (const name of PA_PRESET_NAMES) {
+			const filePath = path.join(
+				projectRoot,
+				`src/styles/themes/sections/personalized-access/_${name}.scss`,
+			);
+			expect(fs.existsSync(filePath)).toBe(false);
+		}
+	});
+
+	it('preset files contain --pa-* overrides for all required variables', () => {
+		for (const preset of PA_PRESET_NAMES) {
+			const presetFile = read(`src/styles/themes/presets/_${preset}.scss`);
+			const paVarCount = (presetFile.match(/--pa-[\w-]+:/g) || []).length;
+			expect(paVarCount).toBeGreaterThanOrEqual(PA_REQUIRED_VARS.length);
+			for (const v of PA_REQUIRED_VARS) {
+				expect(presetFile).toContain(v);
+			}
+		}
+
+		// Prevent luxury-hacienda regression to low-contrast title color
+		const luxuryFile = read('src/styles/themes/presets/_luxury-hacienda.scss');
+		const titleColorMatch = luxuryFile.match(/--pa-title-color:\s*(rgb\([^)]+\)|[^;]+);/);
+		if (titleColorMatch) {
+			expect(titleColorMatch[1]).not.toMatch(/219,\s*209,\s*180/);
 		}
 	});
 });

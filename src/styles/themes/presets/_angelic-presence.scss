@@ -488,4 +488,65 @@
 	--location-indication-text-letter-spacing: 0.01em;
 	--location-indication-strong-color: var(--color-eternal-ink);
 	--location-indication-strong-font-weight: 600;
+
+	// ---------------------------------------------------------------------
+	// Personalized Access Section
+	// ---------------------------------------------------------------------
+	--pa-card-bg-image:
+		linear-gradient(
+			170deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-angelic-white) 50%,
+			var(--color-soft-sand) 100%
+		),
+		var(--texture-silk, none);
+	--pa-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--pa-card-border-radius: 8px;
+	--pa-card-shadow:
+		0 24px 70px -44px rgb(var(--color-eternal-ink-rgb) / 28%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+	--pa-card-inset: 0.5rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+	--pa-card-inner-radius: 6px;
+	--pa-card-glow: radial-gradient(
+		circle at top center,
+		rgb(var(--color-sacred-gold-rgb) / 8%),
+		transparent 50%
+	);
+	--pa-corner-color: var(--color-sacred-gold);
+	--pa-corner-opacity: 50%;
+	--pa-corner-glow-blur: 8px;
+	--pa-eyebrow-color: var(--color-sacred-gold-readable);
+	--pa-eyebrow-tracking: 0.35em;
+	--pa-title-font: var(--font-display);
+	--pa-title-tracking: 0.22em;
+	--pa-title-color: var(--color-text-primary);
+	--pa-guest-weight: 500;
+	--pa-guest-color: var(--color-text-primary);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--color-sacred-gold) 50%,
+		transparent 100%
+	);
+	--pa-divider-opacity: 45%;
+	--pa-divider-diamond-bg: var(--color-pure-ivory);
+	--pa-divider-diamond-border-color: var(--color-sacred-gold);
+	--pa-divider-diamond-shadow: 0 0 8px rgb(var(--color-sacred-gold-rgb) / 30%);
+	--pa-count-frame-radius: 8px;
+	--pa-count-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 26%);
+	--pa-count-frame-bg: linear-gradient(
+		180deg,
+		var(--color-pure-ivory) 0%,
+		var(--color-angelic-white) 100%
+	);
+	--pa-count-frame-shadow:
+		0 8px 24px rgb(var(--color-eternal-ink-rgb) / 6%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+	--pa-count-color: var(--color-text-primary);
+	--pa-footer-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 20%);
+	--pa-footer-text-color: var(--color-text-secondary);
+	--pa-label-color: var(--color-sacred-gold-readable);
+	--pa-label-opacity: 1;
+	--pa-label-tracking: 0.24em;
 }

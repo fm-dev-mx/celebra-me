@@ -198,7 +198,6 @@
 	// Typography tokens
 	// ---------------------------------------------------------------------
 	--font-display: #{sys-type.$sys-font-display-hacienda};
-	--font-body: #{sys-type.$sys-font-body-hacienda};
 
 	// ---------------------------------------------------------------------
 	// Header tokens
@@ -377,4 +376,83 @@
 	--theme-image-filter-portrait: sepia(0.08) contrast(1.04) brightness(0.98) saturate(0.94);
 	--theme-image-filter-gallery: sepia(0.1) contrast(1.02) brightness(0.96) saturate(0.9);
 	--interlude-image-filter: sepia(0.12) contrast(1.05) brightness(0.86) saturate(0.88);
+
+	// ---------------------------------------------------------------------
+	// Personalized Access Section
+	// ---------------------------------------------------------------------
+	--pa-card-bg-color: var(--color-surface-elevated);
+	--pa-card-bg-image:
+		linear-gradient(165deg, rgb(63 46 35 / 92%) 0%, rgb(25 18 13 / 96%) 100%),
+		repeating-linear-gradient(
+			45deg,
+			transparent,
+			transparent 3px,
+			rgb(90 70 45 / 4%) 3px,
+			rgb(90 70 45 / 4%) 6px
+		);
+	--pa-card-border: 1.5px solid rgb(148 123 78);
+	--pa-card-border-radius: 0.75rem;
+	--pa-card-shadow:
+		0 25px 60px rgb(0 0 0 / 45%), inset 0 0 30px rgb(var(--color-surface-dark-rgb) / 50%);
+	--pa-card-inset: 0.75rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+	--pa-card-inner-radius: 0.25rem;
+	--pa-card-glow: radial-gradient(
+		circle at top center,
+		rgb(var(--color-action-accent-rgb) / 12%),
+		transparent 45%
+	);
+	--pa-corner-size: 1.75rem;
+	--pa-corner-dot-size: 0.35rem;
+	--pa-corner-color: rgb(186 158 108);
+	--pa-corner-opacity: 75%;
+	--pa-corner-glow-blur: 12px;
+	--pa-eyebrow-color: rgb(186 158 108);
+	--pa-eyebrow-tracking: 0.45em;
+	--pa-title-font: var(--font-display, serif);
+	--pa-title-size: clamp(0.72rem, 2.4vw, 0.88rem);
+	--pa-title-tracking: 0.28em;
+	--pa-title-color: rgb(186 158 108 / 65%);
+	--pa-title-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+	--pa-subtitle-color: rgb(var(--color-text-on-dark-rgb) / 80%);
+	--pa-subtitle-font: var(--font-body, serif);
+	--pa-label-color: rgb(186 158 108 / 72%);
+	--pa-label-tracking: 0.22em;
+	--pa-guest-font: var(--font-display, serif);
+	--pa-guest-weight: 400;
+	--pa-guest-color: rgb(205 176 122);
+	--pa-guest-tracking: 0.04em;
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(148 123 78) 50%,
+		transparent 100%
+	);
+	--pa-divider-opacity: 100%;
+	--pa-divider-diamond-bg: var(--color-surface-dark);
+	--pa-divider-diamond-border-color: rgb(148 123 78);
+	--pa-divider-diamond-shadow: 0 0 10px rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-count-frame-radius: 0.25rem;
+	--pa-count-frame-border: 1.5px solid rgb(148 123 78);
+	--pa-count-frame-bg: linear-gradient(
+		to bottom,
+		rgb(var(--color-surface-dark-rgb) / 40%),
+		rgb(var(--color-surface-elevated-rgb) / 20%)
+	);
+	--pa-count-frame-shadow: 0 15px 35px rgb(0 0 0 / 25%), inset 0 0 20px rgb(0 0 0 / 20%);
+	--pa-count-frame-inner-display: block;
+	--pa-count-frame-inner-inset: 4px;
+	--pa-count-frame-inner-border: 0.5px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-count-color: rgb(204 195 164 / 78%);
+	--pa-count-shadow: 0 2px 6px rgb(0 0 0 / 22%);
+	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+	--pa-footer-bg: linear-gradient(
+		to bottom,
+		transparent,
+		rgb(var(--color-action-accent-rgb) / 3%)
+	);
+	--pa-footer-text-color: rgb(var(--color-surface-secondary-rgb) / 78%);
+	--pa-footer-text-font-style: normal;
+	--pa-footer-text-tracking: 0.02em;
+	--pa-demo-label-display: none;
 }

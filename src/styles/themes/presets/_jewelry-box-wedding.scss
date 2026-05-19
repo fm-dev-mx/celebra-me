@@ -113,4 +113,67 @@
 	--location-place-line-height: 1.1;
 	--location-indications-heading-color: var(--color-action-accent);
 	--location-indications-heading-font-weight: 600;
+
+	// ---------------------------------------------------------------------
+	// Personalized Access Section
+	// ---------------------------------------------------------------------
+	--pa-card-bg-color: var(--color-surface-dark);
+	--pa-card-bg-image:
+		linear-gradient(
+			160deg,
+			rgb(253 248 238 / 96%) 0%,
+			rgb(242 235 219 / 98%) 50%,
+			rgb(253 248 238 / 96%) 100%
+		),
+		repeating-linear-gradient(
+			135deg,
+			transparent,
+			transparent 2px,
+			rgb(212 175 55 / 2%) 2px,
+			rgb(212 175 55 / 2%) 4px
+		);
+	--pa-card-border: 1.5px solid rgb(var(--color-action-accent-rgb) / 35%);
+	--pa-card-border-radius: 1rem;
+	--pa-card-shadow:
+		0 18px 50px rgb(0 0 0 / 15%), inset 0 0 50px rgb(var(--color-action-accent-rgb) / 8%);
+	--pa-card-inset: 0.75rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+	--pa-card-inner-radius: 0.5rem;
+	--pa-card-glow: radial-gradient(
+		circle at top center,
+		rgb(var(--color-action-accent-rgb) / 12%),
+		transparent 50%
+	);
+	--pa-corner-size: 1.5rem;
+	--pa-corner-dot-size: 0.3rem;
+	--pa-corner-opacity: 65%;
+	--pa-corner-glow-blur: 10px;
+	--pa-eyebrow-color: var(--color-action-accent);
+	--pa-eyebrow-tracking: 0.35em;
+	--pa-title-font: var(--font-display-formal);
+	--pa-title-tracking: 0.22em;
+	--pa-title-color: var(--color-text-emphasis);
+	--pa-guest-weight: 500;
+	--pa-guest-color: var(--color-text-primary);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--color-action-accent) 50%,
+		transparent 100%
+	);
+	--pa-divider-opacity: 70%;
+	--pa-divider-diamond-bg: var(--color-surface-primary);
+	--pa-divider-diamond-border-color: var(--color-action-accent);
+	--pa-divider-diamond-shadow: 0 0 8px rgb(var(--color-action-accent-rgb) / 30%);
+	--pa-count-frame-radius: 0.75rem;
+	--pa-count-frame-border: 1.5px solid rgb(var(--color-action-accent-rgb) / 40%);
+	--pa-count-frame-bg: linear-gradient(
+		180deg,
+		var(--color-surface-primary) 0%,
+		var(--color-surface-secondary) 100%
+	);
+	--pa-count-frame-shadow: 0 10px 28px rgb(0 0 0 / 10%);
+	--pa-count-color: var(--color-text-emphasis);
+	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 18%);
+	--pa-footer-text-color: var(--color-text-secondary);
 }

@@ -421,4 +421,68 @@
 	.event-location__indication-item::after {
 		transform: translateX(-50%) scaleX(1);
 	}
+
+	// ---------------------------------------------------------------------
+	// Personalized Access Section
+	// ---------------------------------------------------------------------
+	--pa-card-bg-image:
+		linear-gradient(
+			170deg,
+			var(--color-pure-ivory) 0%,
+			var(--color-sacred-white) 50%,
+			var(--color-soft-sand) 100%
+		),
+		var(--texture-silk, none);
+	--pa-card-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--pa-card-border-radius: 0.875rem;
+	--pa-card-shadow:
+		0 20px 50px -34px rgb(var(--color-eternal-ink-rgb) / 26%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 86%);
+	--pa-card-inset: 0.5rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 12%);
+	--pa-card-inner-radius: 0.625rem;
+	--pa-card-glow:
+		radial-gradient(
+			circle at top center,
+			rgb(var(--color-sacred-blue-rgb) / 12%),
+			transparent 50%
+		),
+		linear-gradient(180deg, rgb(var(--color-pure-ivory-rgb) / 90%), transparent 40%);
+	--pa-corner-color: var(--color-sacred-gold);
+	--pa-corner-opacity: 48%;
+	--pa-corner-glow-blur: 6px;
+	--pa-eyebrow-color: var(--color-sacred-gold-readable);
+	--pa-eyebrow-tracking: 0.3em;
+	--pa-title-font: var(--font-display);
+	--pa-title-tracking: 0.2em;
+	--pa-title-color: var(--color-sacred-gold);
+	--pa-subtitle-color: var(--color-text-secondary);
+	--pa-guest-weight: 400;
+	--pa-guest-color: var(--color-text-primary);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--color-sacred-gold) 50%,
+		transparent 100%
+	);
+	--pa-divider-opacity: 50%;
+	--pa-divider-diamond-bg: var(--color-pure-ivory);
+	--pa-divider-diamond-border-color: var(--color-sacred-gold);
+	--pa-divider-diamond-shadow: 0 0 6px rgb(var(--color-sacred-gold-rgb) / 20%);
+	--pa-count-frame-radius: 0.75rem;
+	--pa-count-frame-border: 1px solid rgb(var(--color-sacred-gold-rgb) / 22%);
+	--pa-count-frame-bg: linear-gradient(
+		180deg,
+		var(--color-pure-ivory) 0%,
+		var(--color-sacred-white) 100%
+	);
+	--pa-count-frame-shadow:
+		0 8px 22px rgb(var(--color-eternal-ink-rgb) / 6%),
+		inset 0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
+	--pa-count-color: var(--color-sacred-gold);
+	--pa-footer-border-top: 1px solid rgb(var(--color-sacred-gold-rgb) / 16%);
+	--pa-footer-text-color: var(--color-text-secondary);
+	--pa-label-color: var(--color-sacred-gold-readable);
+	--pa-label-opacity: 1;
+	--pa-label-tracking: 0.24em;
 }
