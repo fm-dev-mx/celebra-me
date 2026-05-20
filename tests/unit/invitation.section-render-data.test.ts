@@ -30,6 +30,19 @@ function loadFixture(relativePath: string) {
 	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
+	const eventEntry = {
+		id: `event-demos/xv/${fixtureSlug}`,
+		data: loadFixture(`src/content/event-demos/xv/${fixtureSlug}.json`),
+	} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+	return prepareInvitationPageContext({
+		eventEntry,
+		slug: fixtureSlug,
+		guestContext: null,
+	});
+}
+
 describe('buildInvitationSectionRenderDescriptors', () => {
 	it('derives the next anchorable section for location navigation from the render plan', () => {
 		const eventEntry = {
@@ -213,19 +226,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			},
 		});
 	});
-
-	function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
-		const eventEntry = {
-			id: `event-demos/xv/${fixtureSlug}`,
-			data: loadFixture(`src/content/event-demos/xv/${fixtureSlug}.json`),
-		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
-
-		return prepareInvitationPageContext({
-			eventEntry,
-			slug: fixtureSlug,
-			guestContext: null,
-		});
-	}
 
 	it('renders RSVP and PersonalizedAccess for demo preview without inviteId', () => {
 		const pageContext = setupDemoPageContext();
