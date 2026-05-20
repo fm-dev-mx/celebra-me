@@ -68,7 +68,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				},
 				sectionStyles: {
 					quote: { variant: 'editorial' },
-					countdown: { variant: 'editorial', showParticles: true },
+					countdown: { variant: 'editorial' },
 					location: { variant: 'editorial', showFlourishes: false },
 					family: { variant: 'editorial' },
 					gallery: { variant: 'editorial' },

@@ -7,9 +7,6 @@
         "preset": "luxury-hacienda"
     },
     "sectionStyles": {
-        "countdown": {
-            "showParticles": false
-        },
         "location": {
             "showFlourishes": true
         },

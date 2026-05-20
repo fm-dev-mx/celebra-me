@@ -7,9 +7,6 @@
         "preset": "premiere-floral"
     },
     "sectionStyles": {
-        "countdown": {
-            "showParticles": true
-        },
         "location": {
             "showFlourishes": true
         },

@@ -7,9 +7,6 @@
         "preset": "jewelry-box-wedding"
     },
     "sectionStyles": {
-        "countdown": {
-            "showParticles": true
-        },
         "location": {
             "showFlourishes": true
         },

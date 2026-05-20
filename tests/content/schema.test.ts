@@ -146,7 +146,6 @@ describe('Event content schema (real contract)', () => {
 					},
 					countdown: {
 						numberStyle: 'thin',
-						showParticles: false,
 					},
 					location: {
 						mapStyle: 'dark',

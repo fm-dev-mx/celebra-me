@@ -8,9 +8,6 @@
         "preset": "jewelry-box"
     },
     "sectionStyles": {
-        "countdown": {
-            "showParticles": false
-        },
         "location": {
             "showFlourishes": true
         },
