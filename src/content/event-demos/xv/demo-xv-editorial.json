@@ -8,34 +8,10 @@
         "preset": "editorial"
     },
     "sectionStyles": {
-        "countdown": {
-            "variant": "editorial",
-            "showParticles": true
-        },
         "location": {
-            "variant": "editorial",
             "showFlourishes": true
         },
-        "family": {
-            "variant": "editorial"
-        },
-        "gallery": {
-            "variant": "editorial"
-        },
-        "gifts": {
-            "variant": "editorial"
-        },
-        "itinerary": {
-            "variant": "editorial"
-        },
-        "thankYou": {
-            "variant": "editorial"
-        },
-        "footer": {
-            "variant": "editorial"
-        },
         "rsvp": {
-            "variant": "editorial",
             "labels": {
                 "name": "Tu nombre en la lista *",
                 "guestCount": "Número de acompañantes",
