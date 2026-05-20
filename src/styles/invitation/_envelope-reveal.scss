@@ -35,8 +35,7 @@
 	--env-grid: 35% 25% 40%;
 	--env-zone-width: 85cqw;
 	--env-seal-size: 58px;
-	--env-title-size: clamp(1.4rem, 8cqw, 2.25rem);
-	--env-title-mobile-size: clamp(1.5rem, 7cqw, 1.85rem);
+	--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	--env-phase-exit-duration: var(--duration-long);
 
 	position: fixed;
@@ -560,7 +559,7 @@
 		--env-grid: 32% 28% 40%;
 		--env-zone-width: 100%;
 		--env-seal-size: 40px;
-		--env-title-size: var(--env-title-mobile-size);
+		--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	}
 
 	.envelope-tease {
