@@ -23,7 +23,16 @@ const ERRORS = [];
 const WARNINGS = [];
 const EXPECTED_BASE_STYLE_FALLBACKS = {
 	countdown: new Set(['jewelry-box-wedding']),
-	location: new Set(['jewelry-box', 'jewelry-box-wedding', 'luxury-hacienda']),
+	location: new Set([
+		'angelic-presence',
+		'celestial-blue',
+		'editorial',
+		'jewelry-box',
+		'jewelry-box-wedding',
+		'luxury-hacienda',
+		'premiere-floral',
+		'sacred-keepsake',
+	]),
 	family: new Set(['jewelry-box-wedding']),
 	gifts: new Set(['jewelry-box-wedding', 'angelic-presence', 'sacred-keepsake']),
 	gallery: new Set(['jewelry-box-wedding']),
