@@ -179,6 +179,13 @@ function getMonogram(name: string): string {
 		.toUpperCase();
 }
 
+function sectionVariant<T extends { variant?: ThemePreset }>(
+	sectionData: T,
+	fallback: ThemePreset,
+): ThemePreset {
+	return sectionData.variant ?? fallback;
+}
+
 function renderSection(
 	pageContext: InvitationPageContext,
 	section: RenderableSectionKey,
@@ -190,22 +197,46 @@ function renderSection(
 	switch (section) {
 		case 'quote':
 			return sections.quote
-				? { component: 'quote', props: { ...sections.quote, variant } }
+				? {
+						component: 'quote',
+						props: {
+							...sections.quote,
+							variant: sectionVariant(sections.quote, variant),
+						},
+					}
 				: null;
 
 		case 'family':
 			return sections.family
-				? { component: 'family', props: { ...sections.family, variant } }
+				? {
+						component: 'family',
+						props: {
+							...sections.family,
+							variant: sectionVariant(sections.family, variant),
+						},
+					}
 				: null;
 
 		case 'gallery':
 			return sections.gallery
-				? { component: 'gallery', props: { ...sections.gallery, variant } }
+				? {
+						component: 'gallery',
+						props: {
+							...sections.gallery,
+							variant: sectionVariant(sections.gallery, variant),
+						},
+					}
 				: null;
 
 		case 'countdown':
 			return sections.countdown
-				? { component: 'countdown', props: { ...sections.countdown, variant } }
+				? {
+						component: 'countdown',
+						props: {
+							...sections.countdown,
+							variant: sectionVariant(sections.countdown, variant),
+						},
+					}
 				: null;
 
 		case 'location':
@@ -215,7 +246,7 @@ function renderSection(
 						props: {
 							...sections.location,
 							nextSectionLink,
-							variant,
+							variant: sectionVariant(sections.location, variant),
 						},
 					}
 				: null;
@@ -226,7 +257,7 @@ function renderSection(
 						component: 'itinerary',
 						props: {
 							...sections.itinerary,
-							variant,
+							variant: sectionVariant(sections.itinerary, variant),
 							monogram: getMonogram(hero.name),
 							subtitle: sections.itinerary.subtitle,
 						},
@@ -242,7 +273,13 @@ function renderSection(
 
 		case 'thankYou':
 			return sections.thankYou
-				? { component: 'thankYou', props: { ...sections.thankYou, variant } }
+				? {
+						component: 'thankYou',
+						props: {
+							...sections.thankYou,
+							variant: sectionVariant(sections.thankYou, variant),
+						},
+					}
 				: null;
 	}
 }
