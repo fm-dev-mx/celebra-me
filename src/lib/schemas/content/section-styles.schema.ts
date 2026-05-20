@@ -16,13 +16,7 @@ export const sectionStylesSchema = z
 			})
 			.strict()
 			.optional(),
-		countdown: z
-			.object({
-				variant: z.enum(THEME_PRESETS).optional(),
-				showParticles: z.boolean().default(false),
-			})
-			.strict()
-			.optional(),
+		countdown: variantOnlySectionStyleSchema.optional(),
 		location: z
 			.object({
 				variant: z.enum(THEME_PRESETS).optional(),

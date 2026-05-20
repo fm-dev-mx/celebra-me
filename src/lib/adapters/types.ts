@@ -192,7 +192,6 @@ export interface InvitationViewModel {
 			subtitlePrefix: string;
 			footerText: string;
 			variant?: CountdownVariant;
-			showParticles?: boolean;
 		};
 		location?: {
 			ceremony?: Ceremony;

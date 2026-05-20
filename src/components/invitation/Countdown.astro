@@ -11,7 +11,6 @@ interface Props {
 	subtitlePrefix?: string;
 	footerText?: string;
 	variant?: CountdownVariant;
-	showParticles?: boolean;
 }
 
 const {
@@ -20,7 +19,6 @@ const {
 	subtitlePrefix = "El",
 	footerText = "Prepárate para una noche inolvidable",
 	variant = 'editorial',
-	showParticles = false
 } = Astro.props;
 
 // Function to format the date in Spanish for the subtitle
@@ -42,7 +40,7 @@ function getFormattedDate(dateString: string): string {
 const formattedEventDate = getFormattedDate(eventDate);
 ---
 
-<section class="countdown-section" id="countdown" data-variant={variant} data-show-particles={showParticles}>
+<section class="countdown-section" id="countdown" data-variant={variant}>
 	<div class="countdown-texture" aria-hidden="true"></div>
 	<div class="countdown-container">
 		<header class="countdown-header">
