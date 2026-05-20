@@ -46,12 +46,7 @@
 	// ---------------------------------------------------------------------
 	// Quote section tokens
 	// ---------------------------------------------------------------------
-	--quote-bg: linear-gradient(
-		180deg,
-		var(--color-surface-dark) 0%,
-		var(--color-surface-dark) 50%,
-		var(--color-surface-dark) 100%
-	);
+	--quote-bg: var(--color-surface-dark);
 	--quote-text-color: var(--color-text-on-dark);
 	--quote-author-color: var(--color-action-accent);
 	--quote-accent-color: var(--color-action-accent);
@@ -86,7 +81,6 @@
 	--countdown-value-size-mobile: clamp(2.8rem, 12vw, 4.5rem);
 	--countdown-value-size-desktop: clamp(4rem, 8vw, 6rem);
 	--countdown-label-letter-spacing: 0.25em;
-	--countdown-label-opacity: 0.8;
 
 	// ---------------------------------------------------------------------
 	// Family section tokens

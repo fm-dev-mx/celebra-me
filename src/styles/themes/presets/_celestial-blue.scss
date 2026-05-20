@@ -71,7 +71,6 @@
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%);
 	--shadow-editorial: 0 18px 46px rgb(var(--color-deep-blue-graphite-rgb) / 9%);
 	--border-fine-silver: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
-	--border-fine-gold: var(--border-fine-silver);
 	--border-image: 1px solid rgb(var(--color-satin-blue-rgb) / 62%);
 	--color-frame-bg: linear-gradient(
 		135deg,
@@ -152,7 +151,6 @@
 	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);
 	--countdown-value-size-desktop: clamp(2.8rem, 4.5vw, 4rem);
 	--countdown-label-letter-spacing: 0.22em;
-	--countdown-label-opacity: 1;
 
 	// ---------------------------------------------------------------------
 	// Family section
@@ -421,8 +419,6 @@
 		rgb(var(--color-satin-blue-rgb) / 18%) 56%,
 		rgb(var(--color-diamond-white-rgb) / 0%) 100%
 	);
-	--silver-metallic: var(--metallic-silver);
-	--gold-glow: 0 0 18px rgb(var(--color-satin-blue-rgb) / 22%);
 
 	// ---------------------------------------------------------------------
 	// Layout
@@ -579,7 +575,6 @@
 	--location-copy-button-border: 1px solid rgb(var(--color-satin-blue-rgb) / 42%);
 	--location-copy-button-radius: 999px;
 	--location-copy-button-padding: 0.45rem;
-	--location-copy-button-opacity: 100%;
 	--location-copy-button-hover-bg: rgb(var(--color-diamond-white-rgb) / 72%);
 	--location-nav-bg:
 		linear-gradient(
@@ -656,7 +651,6 @@
 	--location-indication-item-reserved-border-color: rgb(var(--color-satin-blue-rgb) / 42%);
 	--location-indication-icon-bg: rgb(var(--color-diamond-white-rgb) / 62%);
 	--location-indication-icon-color: var(--color-satin-blue);
-	--location-indication-icon-opacity: 100%;
 	--location-indication-icon-size: 1.9rem;
 	--location-indication-icon-shadow: inset 0 0 0 1px rgb(var(--color-satin-blue-rgb) / 28%);
 	--location-indication-icon-svg-size: 16px;
