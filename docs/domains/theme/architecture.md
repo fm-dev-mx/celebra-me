@@ -1,6 +1,6 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-05-17
+**Last Updated:** 2026-05-20
 
 Celebra-me uses a strict three-level styling architecture.
 
@@ -43,6 +43,71 @@ landing pages.
 Preset files may override semantic color, type, surface, shadow, and motion intent. They may also
 override public component tokens when a theme needs specific behavior. They must not introduce
 hidden theme-local token systems or own section layout.
+
+## Invitation Theme CSS Boundaries
+
+Invitation section styling has a strict responsibility boundary:
+
+- `src/styles/invitation/_<section>.scss` owns shared structural and base styles for the section.
+- `src/styles/themes/presets/_<preset>.scss` owns global theme tokens and theme-wide custom
+  properties only.
+- `src/styles/themes/sections/<section>/_base.scss` owns shared variant rules for that section only.
+- `src/styles/themes/sections/<section>/_<variant>.scss` owns variant-specific section rules only
+  when tokens are not enough.
+
+Decision rule:
+
+- If a change can be expressed as a value, token, or custom property, keep it in the preset or
+  consume it from the section base.
+- If a change needs a selector, layout rule, pseudo-element, internal section class, structural
+  override, or section DOM knowledge, place it under `src/styles/themes/sections/<section>/`.
+- If a rule applies to every variant of a section, keep it in
+  `src/styles/invitation/_<section>.scss`.
+- If a rule is shared by multiple variants of the same section, keep it in
+  `src/styles/themes/sections/<section>/_base.scss`.
+- If a rule is unique to one variant of one section, keep it in
+  `src/styles/themes/sections/<section>/_<variant>.scss`.
+
+Presets must not target concrete section DOM selectors, internal section classes, IDs, `[data-*]`
+selectors, or pseudo-elements. Section variant files are optional and should exist only when they
+add real section-specific behavior. Files should not exist only for symmetry.
+
+Correct preset usage:
+
+```scss
+.theme-preset--celestial-blue {
+  --color-action-accent: var(--color-satin-blue);
+  --family-panel-bg: rgb(var(--color-diamond-white-rgb) / 86%);
+}
+```
+
+Correct section variant usage:
+
+```scss
+/* src/styles/themes/sections/family/_celestial-blue.scss */
+.family[data-variant='celestial-blue'] .family__panel {
+  width: min(calc(100% - clamp(2rem, 8vw, 7rem)), var(--family-panel-max-width));
+}
+```
+
+Violation:
+
+```scss
+/* Do not place concrete section DOM selectors in a preset. */
+.theme-preset--celestial-blue {
+  .family__panel {
+    width: min(calc(100% - 2rem), 42rem);
+  }
+}
+```
+
+Controlled exceptions are allowed when a variant has real layout, pseudo-element, responsive, or
+decorative behavior. Those exceptions belong under `src/styles/themes/sections/<section>/`, not in
+presets. Countdown is a reference example for this boundary after its cleanup; it is not proof that
+every section needs a `_base.scss` file or one file per variant.
+
+Delete or avoid a section theme file when it is empty, only repeats base defaults, exists only for
+symmetry, or contains rules that can be represented as preset tokens without section DOM knowledge.
 
 ## Section Partials
 
