@@ -108,7 +108,7 @@ describe('Gallery microinteractions', () => {
 
 	it('does not use a separate reveal state or reveal-only transition layer', () => {
 		const component = read('src/components/invitation/PhotoGallery.astro');
-		const theme = read('src/styles/themes/sections/_gallery-theme.scss');
+		const theme = read('src/styles/themes/sections/gallery/_base.scss');
 
 		expect(component).not.toContain('galleryReveal');
 		expect(component).not.toContain('data-gallery-reveal');
