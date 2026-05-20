@@ -1,13 +1,3 @@
-// Theme-specific styles for Countdown Section
-// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
-
-@use '../../../tokens' as tokens;
-@use '../../../global/mixins' as mixins;
-
-// ==========================================================================
-// EDITORIAL COUNTDOWN
-// ==========================================================================
-
 .countdown-section[data-variant='celestial-blue'] {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
@@ -154,22 +144,6 @@
 			border-radius: 8px;
 			padding: var(--countdown-segment-padding-desktop);
 			gap: 0.5rem;
-		}
-	}
-
-	.countdown__value-wrapper {
-		height: var(--countdown-value-wrapper-height-mobile);
-		width: var(--countdown-value-wrapper-width-mobile);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		margin-bottom: 0;
-		min-height: 1.1em;
-
-		@media (width >= 640px) {
-			height: var(--countdown-value-wrapper-height-desktop);
-			width: var(--countdown-value-wrapper-width-desktop);
 		}
 	}
 

@@ -1,12 +1,4 @@
-// Theme-specific styles for Countdown Section
-// Supports: editorial, premiere-floral, jewelry-box, jewelry-box-wedding, luxury-hacienda
-
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
-
-// ==========================================================================
-// EDITORIAL COUNTDOWN
-// ==========================================================================
 
 .countdown-section[data-variant='luxury-hacienda'] {
 	--countdown-grid-columns-mobile: 2;
@@ -33,7 +25,7 @@
 		content: '';
 		position: absolute;
 		inset: clamp(1rem, 3vw, 2rem);
-		border: 1px solid rgb(var(--color-action-accent-rgb, 212, 175, 55) / 14%);
+		border: 1px solid rgb(var(--color-action-accent-rgb, 212 175 55) / 14%);
 		pointer-events: none;
 		border-radius: 4px;
 		opacity: 72%;
