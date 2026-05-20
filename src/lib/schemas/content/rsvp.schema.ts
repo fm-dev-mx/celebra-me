@@ -14,8 +14,10 @@ export const rsvpSectionStyleSchema = z
 				notesLabel: z.string().optional(),
 				notesPlaceholder: z.string().optional(),
 			})
+			.strict()
 			.optional(),
 	})
+	.strict()
 	.optional();
 
 export const rsvpSchema = z
@@ -34,6 +36,8 @@ export const rsvpSchema = z
 				declinedTemplate: z.string().optional(),
 				omitTitle: z.boolean().optional(),
 			})
+			.strict()
 			.optional(),
 	})
+	.strict()
 	.optional();
