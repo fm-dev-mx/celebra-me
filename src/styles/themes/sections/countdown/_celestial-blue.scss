@@ -20,7 +20,11 @@
 			var(--color-cool-ivory) 58%,
 			var(--color-pearl-gray) 100%
 		);
-	background-attachment: fixed;
+
+	@supports (background-attachment: fixed) {
+		background-attachment: fixed;
+	}
+
 	color: var(--color-text-primary);
 	padding-block: clamp(5rem, 9vw, 8rem);
 	position: relative;
@@ -161,10 +165,9 @@
 		font-family: var(--font-body);
 		font-size: 0.62rem;
 		font-weight: 600;
-		letter-spacing: 0.22em;
+		letter-spacing: var(--countdown-label-letter-spacing, 0.22em);
 		text-transform: uppercase;
 		color: rgb(var(--color-soft-graphite-rgb) / 58%);
-		opacity: 100%;
 
 		@media (width >= 640px) {
 			font-size: 0.68rem;
