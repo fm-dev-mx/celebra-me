@@ -1,41 +1,9 @@
-/* stylelint-disable no-duplicate-selectors -- Preserves legacy sequential variant overrides during modular split. */
 @use '../../../tokens' as tokens;
 
 // ==========================================================================
-// EDITORIAL ITINERARY
+// CELESTIAL BLUE ITINERARY
+// Uses the alternate ItineraryProgram DOM path from Itinerary.astro.
 // ==========================================================================
-
-.itinerary[data-variant='celestial-blue'] {
-	--itinerary-bg: radial-gradient(
-		circle at center,
-		rgb(var(--color-surface-primary-rgb) / 5%) 0%,
-		transparent 70%
-	);
-	--itinerary-line-color: var(--color-action-primary);
-	--itinerary-line-shadow: 0 0 15px var(--color-action-primary);
-	--itinerary-line-opacity: 0.4;
-	--itinerary-item-time-color: var(--color-action-primary);
-	--itinerary-item-label-color: var(--color-action-primary);
-	--itinerary-item-label-font: var(--font-display-elegant, var(--font-display));
-	--itinerary-item-desc-color: rgb(var(--color-text-primary-rgb) / 85%);
-	--itinerary-icon-bg: var(--color-surface-soft);
-	--itinerary-icon-border: 1.5px solid var(--color-glass-border);
-	--itinerary-icon-color: var(--color-action-primary);
-	--itinerary-icon-shadow: 0 4px 15px rgb(0 0 0 / 10%), 0 0 10px var(--color-glass-shadow);
-
-	background: var(--itinerary-bg);
-
-	.itinerary__item-label {
-		background: linear-gradient(
-			135deg,
-			var(--color-text-primary) 0%,
-			var(--color-action-accent) 100%
-		);
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		text-shadow: 0 2px 4px rgb(0 0 0 / 10%); // Safer text-shadow instead of filter
-	}
-}
 
 .itinerary[data-variant='celestial-blue'] {
 	padding: clamp(4rem, 8vw, 6rem) clamp(1.25rem, 4vw, 3rem);
