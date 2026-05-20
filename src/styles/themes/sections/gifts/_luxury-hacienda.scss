@@ -1,0 +1,53 @@
+// luxury-hacienda: warm masculine palette, pill buttons, hacienda font
+.gifts-section[data-variant='luxury-hacienda'] {
+	.gift-card {
+		&__icon {
+			filter: none;
+		}
+
+		&:hover {
+			transform: translateY(-3px);
+			border-color: rgb(var(--color-action-accent-rgb) / 40%);
+		}
+	}
+
+	.gift-card__button {
+		border-radius: 999px;
+		font-family: var(--font-body-hacienda, var(--font-body));
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		font-weight: 600;
+	}
+
+	.copy-button {
+		background: rgb(224 185 112 / 88%);
+		color: rgb(29 20 14);
+		font-family: var(--font-body-hacienda, var(--font-body));
+		letter-spacing: 0.08em;
+		border-radius: 999px;
+
+		&:hover {
+			background: rgb(241 219 177 / 94%);
+		}
+	}
+
+	.bank-details {
+		border-left: 1px solid rgb(var(--color-action-accent-rgb) / 38%);
+	}
+
+	.clabe-number {
+		border-color: rgb(var(--color-action-accent-rgb) / 24%);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.gift-card,
+		.gift-card__button,
+		.copy-button {
+			transition: border-color 0.2s ease;
+
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+}
