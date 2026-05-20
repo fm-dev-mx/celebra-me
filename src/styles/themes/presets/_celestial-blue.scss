@@ -311,42 +311,6 @@
 	--family-reveal-initial-translate-y: 8px;
 	--family-reveal-initial-opacity: 0%;
 
-	// Scoped layout overrides
-	.family__group--parents {
-		--family-parents-max-width: 43rem;
-		--family-parents-margin-inline: auto;
-		--family-parents-padding: clamp(0.7rem, 2vw, 1.2rem) clamp(0.2rem, 2vw, 1rem);
-		--family-parents-after-content: '';
-		--family-parents-after-width: clamp(2.6rem, 7vw, 4rem);
-		--family-parents-after-height: 1px;
-		--family-parents-after-margin: clamp(1.35rem, 3vw, 2rem) auto 0;
-		--family-parents-after-bg: rgb(var(--color-satin-blue-rgb) / 72%);
-		--family-list-gap: 0;
-		--family-list-align-items: center;
-		--family-name-max-width: 18ch;
-		--family-name-size: clamp(2rem, 3.3vw, 3.5rem);
-		--family-name-line-height: 0.98;
-		--family-name-letter-spacing: 0;
-		--family-meta-margin-top: clamp(0.45rem, 1vw, 0.65rem);
-		--family-meta-color: rgb(var(--color-soft-graphite-rgb) / 46%);
-	}
-
-	.family__list--godparents {
-		--family-godparents-list-gap: clamp(2.5rem, 6vw, 4rem);
-	}
-
-	.family__item--godparent {
-		--family-name-max-width: 14ch;
-		--family-name-size: clamp(1.8rem, 3vw, 2.2rem);
-		--family-name-line-height: 0.85;
-		--family-name-color: var(--color-deep-blue-graphite);
-		--family-name-margin: 0 0 0.2rem;
-		--family-meta-size: 0.6rem;
-		--family-meta-weight: 555;
-		--family-meta-letter-spacing: 0.2em;
-		--family-meta-color: rgb(var(--color-soft-graphite-rgb) / 45%);
-	}
-
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
