@@ -46,16 +46,43 @@ hidden theme-local token systems or own section layout.
 
 ## Invitation Theme CSS Boundaries
 
+### Core Principle
+
+**Presets expose tokens. Section files own section structure and section-specific visuals.**
+
+If a rule targets section DOM internals (selectors, pseudo-elements, layout overrides), it does
+**not** belong in a preset.
+
+### Layer Responsibilities
+
 Invitation section styling has a strict responsibility boundary:
 
-- `src/styles/invitation/_<section>.scss` owns shared structural and base styles for the section.
-- `src/styles/themes/presets/_<preset>.scss` owns global theme tokens and theme-wide custom
-  properties only.
-- `src/styles/themes/sections/<section>/_base.scss` owns shared variant rules for that section only.
-- `src/styles/themes/sections/<section>/_<variant>.scss` owns variant-specific section rules only
-  when tokens are not enough.
+1. **`src/styles/invitation/_<section>.scss`** — Shared structural and base styles for the section.
+   No preset-specific or invitation-specific visuals.
 
-Decision rule:
+2. **`src/styles/themes/presets/_<preset>.scss`** — Theme tokens and custom properties only. No
+   section DOM selectors such as `.family__panel`, `.location__card`, `.gallery__item`. No section
+   pseudo-elements or structural overrides.
+
+3. **`src/styles/themes/sections/<section>/_base.scss`** — Shared visual rules for one section. May
+   use section-scoped selectors. No global theme tokens or unrelated sections.
+
+4. **`src/styles/themes/sections/<section>/_<variant>.scss`** — Concrete visual rules for one
+   section variant. Use for section-specific selectors, pseudo-elements, and decorative rules that
+   tokens cannot express cleanly.
+
+### Decision Rules
+
+| Situation                                                                                           | Where it belongs                                              |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Whole-theme change (colors, surfaces, shadows, motion)                                              | Preset (`_<preset>.scss`)                                     |
+| Shared behavior across all variants of one section                                                  | Section base (`invitation/_<section>.scss`)                   |
+| Shared visual behavior across some variants of one section                                          | Section theme base (`themes/sections/<section>/_base.scss`)   |
+| One section variant with selectors, pseudo-elements, or decorative rules that tokens cannot express | Section variant (`themes/sections/<section>/_<variant>.scss`) |
+| One invitation or demo only                                                                         | Content/config first — avoid global CSS                       |
+| Tokens are sufficient for the variation                                                             | Do **not** create a new variant file                          |
+
+Detailed decision rule:
 
 - If a change can be expressed as a value, token, or custom property, keep it in the preset or
   consume it from the section base.
@@ -67,37 +94,44 @@ Decision rule:
   `src/styles/themes/sections/<section>/_base.scss`.
 - If a rule is unique to one variant of one section, keep it in
   `src/styles/themes/sections/<section>/_<variant>.scss`.
+- If a rule applies to only one specific invitation or demo, express it through content/config
+  rather than adding global CSS.
+- Create a new variant file only when tokens are insufficient to express the required behavior.
 
 Presets must not target concrete section DOM selectors, internal section classes, IDs, `[data-*]`
 selectors, or pseudo-elements. Section variant files are optional and should exist only when they
 add real section-specific behavior. Files should not exist only for symmetry.
 
-Correct preset usage:
+### Examples
+
+**Avoid in presets** — section DOM selectors do not belong here:
+
+```scss
+/* ❌ WRONG — preset targeting section DOM internals */
+.theme-preset--celestial-blue {
+  .family__panel {
+    width: min(calc(100% - 2rem), 42rem);
+  }
+}
+```
+
+**Prefer section variant** — section-specific behavior lives in its own file:
+
+```scss
+/* ✅ CORRECT — src/styles/themes/sections/family/_celestial-blue.scss */
+.family[data-variant='celestial-blue'] {
+  .family__panel {
+    width: min(calc(100% - clamp(2rem, 8vw, 7rem)), var(--family-panel-max-width));
+  }
+}
+```
+
+**Correct preset usage** — tokens and custom properties only:
 
 ```scss
 .theme-preset--celestial-blue {
   --color-action-accent: var(--color-satin-blue);
   --family-panel-bg: rgb(var(--color-diamond-white-rgb) / 86%);
-}
-```
-
-Correct section variant usage:
-
-```scss
-/* src/styles/themes/sections/family/_celestial-blue.scss */
-.family[data-variant='celestial-blue'] .family__panel {
-  width: min(calc(100% - clamp(2rem, 8vw, 7rem)), var(--family-panel-max-width));
-}
-```
-
-Violation:
-
-```scss
-/* Do not place concrete section DOM selectors in a preset. */
-.theme-preset--celestial-blue {
-  .family__panel {
-    width: min(calc(100% - 2rem), 42rem);
-  }
 }
 ```
 
