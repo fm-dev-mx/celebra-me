@@ -190,11 +190,10 @@ describe('César Ramses baptism invitation content', () => {
 	it('has venue name and address present for the reception', () => {
 		const event = readCesarRamsesEvent();
 
-		expect(event.location?.venueName).toBe('Levanto Jardín de Eventos');
-		expect(event.location?.address).toBe(
+		expect(event.location?.reception?.venueName).toBe('Levanto Jardín de Eventos');
+		expect(event.location?.reception?.address).toBe(
 			'24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.',
 		);
-		expect(event.location?.reception?.venueName).toBe('Levanto Jardín de Eventos');
 	});
 
 	it('has parents and godparents present with correct names', () => {

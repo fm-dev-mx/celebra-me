@@ -4,12 +4,7 @@ import {
 	INDICATION_ICON_NAMES,
 	INDICATION_STYLE_VARIANTS,
 } from '@/lib/theme/theme-contract';
-import { itineraryItemSchema } from '@/lib/schemas/content/itinerary.schema';
-import {
-	AssetSchema,
-	countdownSchema,
-	focalPointSchema,
-} from '@/lib/schemas/content/shared.schema';
+import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 
 const locationCoordinatesSchema = z.object({ lat: z.number(), lng: z.number() }).optional();
 const richTextSchema = z.string();
@@ -30,10 +25,6 @@ const venueSchema = z.object({
 });
 
 export const locationSchema = z.object({
-	venueName: z.string(),
-	address: z.string(),
-	city: z.string(),
-	mapUrl: z.url().optional(),
 	indicationsHeading: z.string().default(''),
 	ceremony: venueSchema
 		.extend({
@@ -43,14 +34,6 @@ export const locationSchema = z.object({
 	reception: venueSchema
 		.extend({
 			venueEvent: z.string().default('Recepción'),
-			itinerary: z
-				.array(
-					itineraryItemSchema.omit({
-						description: true,
-					}),
-				)
-				.optional(),
-			countdown: countdownSchema,
 		})
 		.optional(),
 	indications: z

@@ -37,12 +37,10 @@
         "focalPointDesktop": "50% 25%"
     },
     "location": {
-        "venueName": "Levanto Jardín de Eventos",
-        "address": "24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.",
-        "city": "Guadalajara, Jalisco",
         "reception": {
             "venueEvent": "Celebración",
             "venueName": "Levanto Jardín de Eventos",
+            "city": "Guadalajara, Jalisco",
             "address": "24 de Diciembre 45, La Tijera, 45645 Guadalajara, Jal.",
             "date": "20 de junio de 2026",
             "time": "4:00 p.m.",
