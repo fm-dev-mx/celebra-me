@@ -58,6 +58,51 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		});
 	});
 
+	it('preserves section variants already resolved by the adapter', () => {
+		const eventEntry = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+				theme: {
+					preset: 'jewelry-box',
+				},
+				sectionStyles: {
+					quote: { variant: 'editorial' },
+					countdown: { variant: 'editorial', showParticles: true },
+					location: { variant: 'editorial', showFlourishes: false },
+					family: { variant: 'editorial' },
+					gallery: { variant: 'editorial' },
+					itinerary: { variant: 'editorial' },
+					thankYou: { variant: 'editorial' },
+				},
+			},
+		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
+
+		const pageContext = prepareInvitationPageContext({
+			eventEntry,
+			slug: 'demo-xv-jewelry-box',
+		});
+
+		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
+		for (const component of [
+			'quote',
+			'countdown',
+			'location',
+			'family',
+			'gallery',
+			'itinerary',
+			'thankYou',
+		] as const) {
+			expect(
+				descriptors.find((descriptor) => descriptor.component === component),
+			).toMatchObject({
+				props: {
+					variant: 'editorial',
+				},
+			});
+		}
+	});
+
 	it('builds personalized RSVP descriptors next to quote', () => {
 		const eventEntry = {
 			id: 'events/ximena-meza-trasvina',

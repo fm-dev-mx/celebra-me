@@ -56,6 +56,7 @@ describe('prepareInvitationPageContext', () => {
 			details: '11 de abril de 2026 • Los Mochis',
 			guestName: 'Mariana Soto',
 			sealIcon: 'flower',
+			sealInitials: 'X·M',
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
@@ -111,6 +112,7 @@ describe('prepareInvitationPageContext', () => {
 			details: '25 de abril de 2026 • Monterrey',
 			guestName: undefined,
 			sealIcon: 'heart',
+			sealInitials: 'L·G',
 		});
 
 		expect(describeRenderPlan(context.renderPlan)).toEqual([

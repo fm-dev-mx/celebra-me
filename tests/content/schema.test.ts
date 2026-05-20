@@ -136,6 +136,74 @@ describe('Event content schema (real contract)', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('rejects unsupported sectionStyles fields instead of silently stripping them', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				sectionStyles: {
+					quote: {
+						fontStyle: 'script',
+						animation: 'fade',
+					},
+					countdown: {
+						numberStyle: 'thin',
+						showParticles: false,
+					},
+					location: {
+						mapStyle: 'dark',
+						showFlourishes: true,
+					},
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
+	it('supports hero portrait and variant as formal content fields', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				hero: {
+					name: 'Test Name',
+					date: '2026-01-01T00:00:00.000Z',
+					backgroundImage: 'https://example.com/hero.jpg',
+					portrait: 'https://example.com/portrait.jpg',
+					variant: 'editorial',
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.hero.portrait).toEqual({
+			type: 'external',
+			src: 'https://example.com/portrait.jpg',
+		});
+		expect(result.data.hero.variant).toBe('editorial');
+	});
+
+	it('rejects unsupported RSVP content fields instead of silently stripping them', () => {
+		const result = eventSchema.safeParse(
+			createMinimalEvent({
+				rsvp: {
+					title: 'Confirma tu asistencia',
+					guestCap: 4,
+					confirmationMessage: 'Gracias por confirmar',
+					confirmationMode: 'api',
+					attendanceLabel: '¿Nos acompañarás?',
+					guests: [
+						{
+							guestId: 'demo',
+							displayName: 'Demo Guest',
+							maxAllowedAttendees: 2,
+						},
+					],
+				},
+			}),
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects deprecated theme color fields', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({
@@ -203,7 +271,6 @@ describe('Event content schema (real contract)', () => {
 					guestCap: 3,
 					accessMode: 'hybrid',
 					confirmationMessage: 'Gracias por confirmar',
-					showDietaryField: false,
 					confirmationMode: 'api',
 				},
 			}),
