@@ -212,6 +212,7 @@ function renderSection(
 						component: 'family',
 						props: {
 							...sections.family,
+							celebrantName: hero.name,
 							variant: sectionVariant(sections.family, variant),
 						},
 					}
