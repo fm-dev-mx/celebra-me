@@ -211,6 +211,7 @@
         "tooltipText": "Acceder a la invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
+            "accent": "actionAccent",
             "background": "surfaceDark"
         }
     },

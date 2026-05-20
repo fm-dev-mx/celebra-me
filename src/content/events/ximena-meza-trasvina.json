@@ -218,7 +218,9 @@
         "sealInitials": "X·M",
         "microcopy": "Abre Tu Invitación",
         "closedPalette": {
-            "accent": "surfaceDark"
+            "background": "surfaceDark",
+            "primary": "surfacePrimary",
+            "accent": "actionAccent"
         }
     },
     "music": {

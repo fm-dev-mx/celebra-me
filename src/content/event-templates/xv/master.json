@@ -142,10 +142,12 @@
         "disabled": false,
         "sealStyle": "wax",
         "sealIcon": "heart",
+        "sealInitials": "N·N",
         "microcopy": "Toca para abrir mi invitación",
         "closedPalette": {
             "primary": "actionAccent",
-            "accent": "surfaceDark"
+            "accent": "surfaceDark",
+            "background": "actionAccent"
         }
     },
     "sharing": {
