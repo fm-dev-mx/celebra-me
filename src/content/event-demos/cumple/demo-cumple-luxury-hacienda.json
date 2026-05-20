@@ -7,23 +7,12 @@
         "preset": "luxury-hacienda"
     },
     "sectionStyles": {
-        "quote": {
-            "fontStyle": "serif",
-            "animation": "fade"
-        },
         "countdown": {
-            "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "mapStyle": "dark",
             "showFlourishes": true
         },
-        "gifts": {},
-        "itinerary": {},
-        "gallery": {},
-        "thankYou": {},
-        "family": {},
         "rsvp": {
             "labels": {
                 "name": "Nombre de los invitados *",
@@ -111,14 +100,7 @@
             "confirmedTemplate": "¡Hola Don Alberto! Soy {name}. Confirmo con gusto mi asistencia a sus 60 años. ¡Ahí estaremos! (Asistentes: {guestCount})",
             "declinedTemplate": "Estimado Don Alberto, soy {name}. Lamento no poder acompañarlo en esta ocasión, pero le envío un fuerte abrazo y mis mejores deseos.",
             "omitTitle": true
-        },
-        "guests": [
-            {
-                "guestId": "fam-valenzuela-001",
-                "displayName": "Alberto Valenzuela Jr.",
-                "maxAllowedAttendees": 4
-            }
-        ]
+        }
     },
     "quote": {
         "text": "La vida no se mide por los años, sino por los momentos que te dejan sin aliento y la familia que camina a tu lado.",

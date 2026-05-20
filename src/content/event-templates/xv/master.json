@@ -7,21 +7,12 @@
         "preset": "jewelry-box"
     },
     "sectionStyles": {
-        "quote": {
-            "fontStyle": "script",
-            "animation": "fade"
-        },
         "countdown": {
-            "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "mapStyle": "colorful",
             "showFlourishes": true
         },
-        "gallery": {},
-        "itinerary": {},
-        "gifts": {},
         "rsvp": {
             "labels": {
                 "name": "Nombre completo *",
@@ -29,8 +20,7 @@
                 "guestCount": "Número total de asistentes",
                 "confirmButton": "Confirmar asistencia"
             }
-        },
-        "thankYou": {}
+        }
     },
     "hero": {
         "name": "Nombre de la Festejada",

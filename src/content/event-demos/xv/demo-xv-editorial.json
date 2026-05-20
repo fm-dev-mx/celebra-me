@@ -10,12 +10,10 @@
     "sectionStyles": {
         "countdown": {
             "variant": "editorial",
-            "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
             "variant": "editorial",
-            "mapStyle": "dark",
             "showFlourishes": true
         },
         "family": {

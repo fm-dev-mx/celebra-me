@@ -8,23 +8,12 @@
         "preset": "jewelry-box"
     },
     "sectionStyles": {
-        "quote": {
-            "fontStyle": "script",
-            "animation": "bounce"
-        },
         "countdown": {
-            "numberStyle": "thin",
             "showParticles": false
         },
         "location": {
-            "mapStyle": "colorful",
             "showFlourishes": true
         },
-        "family": {},
-        "gallery": {},
-        "gifts": {},
-        "itinerary": {},
-        "thankYou": {},
         "rsvp": {
             "labels": {
                 "name": "Nombre completo *",

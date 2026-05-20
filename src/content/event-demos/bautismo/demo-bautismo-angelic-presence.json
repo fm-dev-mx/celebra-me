@@ -9,6 +9,11 @@
     "sectionStyles": {
         "location": {
             "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "attendance": "¿Nos acompañarás?"
+            }
         }
     },
     "navigation": [
@@ -157,7 +162,6 @@
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
-        "attendanceLabel": "¿Nos acompañarás?",
         "guestCap": 4,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api"

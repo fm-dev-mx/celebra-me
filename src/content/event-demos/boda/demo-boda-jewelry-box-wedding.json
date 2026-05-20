@@ -7,23 +7,12 @@
         "preset": "jewelry-box-wedding"
     },
     "sectionStyles": {
-        "quote": {
-            "fontStyle": "script",
-            "animation": "fade"
-        },
         "countdown": {
-            "numberStyle": "thin",
             "showParticles": true
         },
         "location": {
-            "mapStyle": "minimal",
             "showFlourishes": true
         },
-        "gifts": {},
-        "itinerary": {},
-        "gallery": {},
-        "thankYou": {},
-        "family": {},
         "rsvp": {
             "labels": {
                 "name": "Nombres de los invitados *",

@@ -160,7 +160,6 @@
     },
     "rsvp": {
         "title": "Confirma tu asistencia",
-        "attendanceLabel": "¿Nos acompañarás?",
         "guestCap": 4,
         "accessMode": "hybrid",
         "confirmationMessage": "Gracias por acompañarnos en el bautizo y primer año de César Ramses.",
