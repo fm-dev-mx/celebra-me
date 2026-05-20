@@ -10,6 +10,7 @@ export const familySchema = z
 				fatherDeceased: z.boolean().optional(),
 				motherDeceased: z.boolean().optional(),
 			})
+			.strict()
 			.optional(),
 		labels: z
 			.object({
@@ -22,23 +23,33 @@ export const familySchema = z
 				godparentsTitle: z.string().optional(),
 				sectionMessage: z.string().optional(),
 			})
+			.strict()
 			.optional(),
 		spouse: z.string().optional(),
-		children: z.array(z.object({ name: z.string(), role: z.string().optional() })).optional(),
-		godparents: z.array(z.object({ name: z.string(), role: z.string().optional() })).optional(),
+		children: z
+			.array(z.object({ name: z.string(), role: z.string().optional() }))
+			.min(1)
+			.optional(),
+		godparents: z
+			.array(z.object({ name: z.string(), role: z.string().optional() }))
+			.min(1)
+			.optional(),
 		groups: z
 			.array(
 				z.object({
 					title: z.string(),
-					items: z.array(
-						z.object({
-							name: z.string(),
-							role: z.string().optional(),
-							deceased: z.boolean().optional(),
-						}),
-					),
+					items: z
+						.array(
+							z.object({
+								name: z.string(),
+								role: z.string().optional(),
+								deceased: z.boolean().optional(),
+							}),
+						)
+						.min(1),
 				}),
 			)
+			.min(1)
 			.optional(),
 		featuredImage: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),

@@ -45,7 +45,7 @@ interface Props {
 }
 
 interface FamilyEntry {
-	name?: string;
+	name: string;
 	role?: string;
 	lead?: boolean;
 	deceased?: boolean;
@@ -114,7 +114,7 @@ const familyBlocks: FamilyBlock[] = (
 								{
 									id: 'spouse',
 									title: resolvedLabels.spouseTitle,
-									entries: [{ name: spouse, lead: true }],
+									entries: [{ name: spouse, role: resolvedLabels.spouseRole, lead: true }],
 								},
 							]
 						: []),
@@ -178,7 +178,6 @@ const familyBlocks: FamilyBlock[] = (
 <section
 	id="family-section"
 	class="family"
-	data-family-focal-point={resolvedFocalPoint}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
 
