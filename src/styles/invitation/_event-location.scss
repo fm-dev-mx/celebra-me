@@ -276,6 +276,8 @@
 	--location-indication-item-after-bg: none;
 	--location-indication-item-after-width: 0;
 	--location-indication-item-after-height: 0;
+	--location-indication-item-after-scale: 0;
+	--location-indication-item-after-hover-scale: 1;
 
 	// Indication item --reserved modifier
 	--location-indication-item-reserved-border-color: currentcolor;
@@ -877,7 +879,7 @@
 			width: var(--location-indication-item-after-width);
 			height: var(--location-indication-item-after-height);
 			background: var(--location-indication-item-after-bg);
-			transform: translateX(-50%) scaleX(0);
+			transform: translateX(-50%) scaleX(var(--location-indication-item-after-scale, 0));
 			transition: transform var(--duration-premium) var(--ease-premium);
 			pointer-events: none;
 		}
@@ -890,7 +892,7 @@
 		}
 
 		&:hover::after {
-			transform: translateX(-50%) scaleX(1);
+			transform: translateX(-50%) scaleX(var(--location-indication-item-after-hover-scale, 1));
 		}
 
 		&--reserved {

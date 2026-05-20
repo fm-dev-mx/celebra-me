@@ -402,10 +402,8 @@
 	--location-indication-item-after-bg: rgb(var(--color-sacred-gold-rgb) / 22%);
 	--location-indication-item-after-width: 70px;
 	--location-indication-item-after-height: 1px;
-
-	.event-location__indication-item::after {
-		transform: translateX(-50%) scaleX(1);
-	}
+	--location-indication-item-after-scale: 1;
+	--location-indication-item-after-hover-scale: 1;
 
 	// ---------------------------------------------------------------------
 	// Personalized Access Section
