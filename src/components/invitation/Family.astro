@@ -4,6 +4,7 @@ import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { ThemePreset } from '@/lib/theme/theme-contract';
 
 interface Props {
 	parents?: {
@@ -42,6 +43,7 @@ interface Props {
 		sectionMessage?: string;
 	};
 	focalPoint?: string;
+	variant?: ThemePreset;
 }
 
 interface FamilyEntry {
@@ -67,6 +69,7 @@ const {
 	celebrantName,
 	labels,
 	focalPoint,
+	variant,
 } = Astro.props;
 
 const resolvedLabels = {
@@ -178,6 +181,7 @@ const familyBlocks: FamilyBlock[] = (
 <section
 	id="family-section"
 	class="family"
+	data-variant={variant}
 >
 	<div class="family__bg-texture" aria-hidden="true"></div>
 
