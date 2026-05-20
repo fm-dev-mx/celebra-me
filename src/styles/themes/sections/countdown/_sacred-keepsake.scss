@@ -142,13 +142,12 @@
 		opacity: 100%;
 		transform: none;
 
-		.rivet,
 		&::before {
 			display: none;
 		}
 	}
 
-	.countdown__segment[data-index='0'] {
+	.countdown__segment[data-unit='days'] {
 		display: flex;
 		grid-row: 1;
 		grid-column: 1 / -1;
@@ -184,9 +183,7 @@
 		}
 	}
 
-	.countdown__segment[data-index='1'],
-	.countdown__segment[data-index='2'],
-	.countdown__segment[data-index='3'] {
+	.countdown__segment:where([data-unit='hours'], [data-unit='minutes'], [data-unit='seconds']) {
 		display: flex;
 		grid-row: 2;
 		align-items: baseline;
@@ -223,7 +220,7 @@
 		}
 	}
 
-	.countdown__segment[data-index='1'] {
+	.countdown__segment[data-unit='hours'] {
 		.countdown__value::after {
 			content: 'h';
 		}
@@ -238,7 +235,7 @@
 		}
 	}
 
-	.countdown__segment[data-index='2'] {
+	.countdown__segment[data-unit='minutes'] {
 		.countdown__value::after {
 			content: 'm';
 		}
@@ -253,7 +250,7 @@
 		}
 	}
 
-	.countdown__segment[data-index='3'] .countdown__value::after {
+	.countdown__segment[data-unit='seconds'] .countdown__value::after {
 		content: 's';
 	}
 

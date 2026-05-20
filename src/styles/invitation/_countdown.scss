@@ -1,9 +1,3 @@
-// src/styles/invitation/_countdown.scss
-// ----------------------------------------------------
-// Premium Countdown Styles - Jewelry Box Aesthetic
-// ----------------------------------------------------
-
-@use '../tokens' as tokens;
 @use '../global/mixins' as mixins;
 
 .countdown-section {
@@ -115,6 +109,22 @@
 		}
 	}
 
+	&[data-unit='days'] {
+		transition-delay: calc(0.15s + (0 * 0.08s));
+	}
+
+	&[data-unit='hours'] {
+		transition-delay: calc(0.15s + (1 * 0.08s));
+	}
+
+	&[data-unit='minutes'] {
+		transition-delay: calc(0.15s + (2 * 0.08s));
+	}
+
+	&[data-unit='seconds'] {
+		transition-delay: calc(0.15s + (3 * 0.08s));
+	}
+
 	.countdown-section.is-visible & {
 		opacity: 100%;
 		transform: translateY(0);
@@ -197,7 +207,5 @@
 
 	.countdown__value {
 		transition: none;
-		background: none;
-		border: none;
 	}
 }

@@ -28,12 +28,8 @@ const segments = [
 <div class="countdown__timer" data-countdown data-event-date={eventDate}>
 	{
 		segments.map((segment, index) => (
-			<div class="countdown__segment" data-index={index}>
+			<div class="countdown__segment" data-index={index} data-unit={segment.key}>
 				<div class="countdown__value-wrapper">
-					<span class="rivet rivet--tl"></span>
-					<span class="rivet rivet--tr"></span>
-					<span class="rivet rivet--bl"></span>
-					<span class="rivet rivet--br"></span>
 					<span
 						class="countdown__value"
 						data-countdown-value={segment.key}
