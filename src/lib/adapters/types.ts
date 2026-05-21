@@ -25,7 +25,7 @@ export interface HeroViewModel {
 	label: string;
 	nickname?: string;
 	date: string;
-	venueName: string;
+	venueName?: string;
 	backgroundImage: ImageAsset;
 	backgroundImageDesktop?: { src: string };
 	portrait?: ImageAsset;
@@ -45,6 +45,7 @@ export interface Ceremony {
 	venueEvent: string;
 	venueName: string;
 	address: string;
+	city?: string;
 	date: string;
 	time: string;
 	mapUrl?: string;
@@ -66,6 +67,7 @@ export interface Reception {
 	venueEvent: string;
 	venueName: string;
 	address: string;
+	city?: string;
 	date: string;
 	time: string;
 	mapUrl?: string;
@@ -200,8 +202,6 @@ export interface InvitationViewModel {
 			variant?: LocationVariant;
 			showFlourishes?: boolean;
 			indicationsHeading?: string;
-			city: string;
-			venueName: string;
 		};
 		family?: {
 			parents?: Parents;

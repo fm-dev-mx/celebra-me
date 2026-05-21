@@ -27,14 +27,11 @@
         "portrait": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80"
     },
     "location": {
-        "venueName": "Salón de Eventos",
-        "address": "Dirección pendiente de confirmar",
-        "city": "Ciudad de México",
-        "mapUrl": "https://maps.google.com",
         "ceremony": {
             "venueEvent": "Ceremonia",
             "venueName": "Templo",
             "address": "Dirección del templo",
+            "city": "Ciudad de México",
             "date": "21 de noviembre de 2026",
             "time": "7:00 PM",
             "googleMapsUrl": "https://maps.google.com"
@@ -43,6 +40,7 @@
             "venueEvent": "Recepción",
             "venueName": "Salón de Eventos",
             "address": "Dirección del salón",
+            "city": "Ciudad de México",
             "date": "21 de noviembre de 2026",
             "time": "9:00 PM",
             "googleMapsUrl": "https://maps.google.com"

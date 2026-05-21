@@ -13,7 +13,7 @@ interface Props {
 	nickname?: string;
 	date: string;
 	time?: string;
-	venueName: string;
+	venueName?: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	backgroundImageDesktop?: { src: string };
 	portrait?: ImageMetadata | ImageAsset;
@@ -132,9 +132,9 @@ const surnames = names.slice(2);
 		<div class="invitation-hero__details">
 			<p class="invitation-hero__date">{formattedDate}</p>
 			{time && <p class="invitation-hero__time">{time}</p>}
-			<p class="invitation-hero__venue">
+			{venueName && <p class="invitation-hero__venue">
 				<span class="calligraphy-accent">en</span> {venueName}
-			</p>
+			</p>}
 		</div>
 	</div>
 

@@ -13,6 +13,7 @@ const venueSchema = z.object({
 	venueEvent: z.string(),
 	venueName: z.string(),
 	address: z.string(),
+	city: z.string().optional(),
 	date: z.string(),
 	time: z.string(),
 	mapUrl: z.url().optional(),
@@ -39,7 +40,7 @@ export const locationSchema = z.object({
 	indications: z
 		.array(
 			z.object({
-				icon: z.enum(INDICATION_ICON_KEYS),
+				icon: z.enum(INDICATION_ICON_KEYS).optional(),
 				iconName: z.enum(INDICATION_ICON_NAMES).optional(),
 				styleVariant: z.enum(INDICATION_STYLE_VARIANTS).default('default'),
 				text: richTextSchema,

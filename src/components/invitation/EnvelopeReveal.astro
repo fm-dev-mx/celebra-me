@@ -96,7 +96,7 @@ const isDev = import.meta.env.DEV;
 				<h2 class="envelope-name">{name}</h2>
 				<div class="tease-details-group">
 					<div class="tease-divider"></div>
-					<p class="envelope-details">{card.details}</p>
+					<p class="envelope-details">{card.details}{card.venueName}</p>
 				</div>
 
 				{
@@ -173,8 +173,7 @@ const isDev = import.meta.env.DEV;
 					invitationRoot.dataset.revealState = 'revealed';
 				}
 
-				scrollToHero();
-				window.requestAnimationFrame(scrollToHero);
+				window.requestAnimationFrame(() => scrollToHero());
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 

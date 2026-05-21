@@ -30,13 +30,11 @@
         "backgroundImage": "hero"
     },
     "location": {
-        "venueName": "Parroquia de San José",
-        "address": "Calle Principal #10",
-        "city": "Ciudad de México",
         "ceremony": {
             "venueEvent": "Ceremonia",
             "venueName": "Parroquia de San José",
             "address": "Calle Principal #10, Centro",
+            "city": "Ciudad de México",
             "date": "15 de junio de 2026",
             "time": "10:00 AM",
             "image": "ceremony",
@@ -46,6 +44,7 @@
             "venueEvent": "Celebración",
             "venueName": "Casa Jardín Santa Clara",
             "address": "Av. de los Encinos #24, Ciudad de México",
+            "city": "Ciudad de México",
             "date": "15 de junio de 2026",
             "time": "12:00 PM",
             "image": "reception",

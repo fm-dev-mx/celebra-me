@@ -33,14 +33,11 @@
         "backgroundImage": "hero"
     },
     "location": {
-        "venueName": "Ex Hacienda de Mendocinas",
-        "address": "Km. 2.5 Carretera Federal Libre México-Puebla",
-        "city": "Puebla",
-        "mapUrl": "https://maps.app.goo.gl/example-wedding",
         "ceremony": {
             "venueEvent": "Ceremonia Religiosa",
             "venueName": "Capilla de la Inmaculada",
             "address": "Calle de los Artistas #45, Centro",
+            "city": "Puebla",
             "date": "12 de Diciembre de 2026",
             "time": "6:00 PM",
             "googleMapsUrl": "https://maps.app.goo.gl/example-church",
@@ -50,6 +47,7 @@
             "venueEvent": "Gran Recepción",
             "venueName": "Salón Real Mendocinas",
             "address": "Ex Hacienda de Mendocinas",
+            "city": "Puebla",
             "date": "12 de Diciembre de 2026",
             "time": "8:00 PM",
             "googleMapsUrl": "https://maps.app.goo.gl/example-reception",

@@ -151,6 +151,14 @@
 	line-height: 1.6;
 }
 
+.invitation-reveal-card__venue {
+	margin: 0.1rem 0 0;
+	font-size: clamp(0.72rem, 3vw, 0.85rem);
+	letter-spacing: 0.12em;
+	color: var(--reveal-card-text-secondary);
+	opacity: 78%;
+}
+
 .envelope-wrapper.is-opening {
 	.envelope-reveal-stage {
 		pointer-events: auto;

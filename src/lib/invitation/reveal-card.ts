@@ -15,6 +15,7 @@ export interface RevealCardData {
 	guestName?: string;
 	sealIcon: EnvelopeSealIcon;
 	sealInitials?: string;
+	venueName?: string;
 }
 
 export function formatRevealDate(date: string): string {
@@ -34,6 +35,7 @@ export function buildRevealCard(input: {
 	name: string;
 	sealIcon?: EnvelopeSealIcon;
 	sealInitials?: string;
+	venueName?: string;
 }): RevealCardData {
 	return {
 		documentLabel: input.documentLabel || 'Invitación',
@@ -42,5 +44,6 @@ export function buildRevealCard(input: {
 		guestName: input.guestName,
 		sealIcon: input.sealIcon || 'monogram',
 		sealInitials: input.sealInitials,
+		venueName: input.venueName,
 	};
 }

@@ -206,8 +206,21 @@
 	max-width: 90cqw;
 	margin: 0;
 	font-size: 0.72rem;
-	letter-spacing: 0.22em;
 	opacity: 62%;
+	text-align: center;
+	letter-spacing: 0.02em;
+
+	@include mixins.respond-to(md) {
+		letter-spacing: 0.22em;
+	}
+}
+
+.envelope-venue {
+	max-width: 90cqw;
+	margin: 0.15rem 0 0;
+	font-size: 0.78rem;
+	letter-spacing: 0.15em;
+	opacity: 78%;
 }
 
 .guest-personalized {
@@ -246,12 +259,6 @@
 	padding: 1.5rem;
 }
 
-.envelope-zone {
-	width: 100%;
-	max-width: var(--env-zone-width);
-	text-align: center;
-}
-
 .envelope-zone--stamp {
 	grid-area: stamp;
 	gap: 0.35rem;
@@ -283,12 +290,6 @@
 	font-size: var(--env-title-size);
 	font-weight: 600;
 	letter-spacing: 0;
-}
-
-.envelope-stamp-area {
-	display: flex;
-	justify-content: center;
-	width: 100%;
 }
 
 .envelope-stamp {

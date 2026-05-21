@@ -25,6 +25,13 @@ interface AdaptationContext {
 	normalizedPreset: ThemePreset;
 }
 
+function pickVenueValue(
+	location: EventContentEntry['data']['location'],
+	key: 'venueName' | 'city',
+): string | undefined {
+	return location.reception?.[key] ?? location.ceremony?.[key];
+}
+
 function normalizeAssetSource(source: AssetSource | string | undefined): AssetSource | undefined {
 	if (!source) return undefined;
 	if (typeof source !== 'string') return source;
@@ -163,7 +170,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
 		date: data.hero.date,
-		venueName: data.location.venueName,
+		venueName: pickVenueValue(data.location, 'venueName'),
 		backgroundImage: requireAsset(eventSlug, data.hero.backgroundImage, data.title),
 		backgroundImageDesktop: data.hero.backgroundImageDesktop
 			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
@@ -202,7 +209,8 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			card: buildRevealCard({
 				name: data.hero.name,
 				date: data.hero.date,
-				city: data.location.city,
+				city: pickVenueValue(data.location, 'city') ?? '',
+				venueName: pickVenueValue(data.location, 'venueName'),
 				documentLabel: data.envelope.documentLabel,
 				sealIcon: data.envelope.sealIcon,
 				sealInitials: data.envelope.sealInitials,
@@ -310,8 +318,6 @@ function buildLocationSectionData(context: AdaptationContext) {
 		),
 		showFlourishes: data.sectionStyles?.location?.showFlourishes,
 		indicationsHeading: data.location.indicationsHeading ?? '',
-		city: data.location.city,
-		venueName: data.location.venueName,
 	};
 }
 

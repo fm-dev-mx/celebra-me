@@ -28,14 +28,11 @@
         "portrait": "portrait"
     },
     "location": {
-        "venueName": "Hacienda Los Claustros",
-        "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
-        "city": "Cuernavaca",
-        "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
         "ceremony": {
             "venueEvent": "Misa de Acción de Gracias",
             "venueName": "Catedral de la Asunción",
             "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+            "city": "Cuernavaca",
             "date": "12 de septiembre de 2027",
             "time": "5:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
@@ -45,6 +42,7 @@
             "venueEvent": "Recepción",
             "venueName": "Hacienda Los Claustros",
             "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+            "city": "Cuernavaca",
             "date": "12 de septiembre de 2027",
             "time": "7:00 PM",
             "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",

@@ -33,5 +33,6 @@ const { card } = Astro.props;
 		}
 
 		<p class="invitation-reveal-card__details">{card.details}</p>
+		{card.venueName && <p class="invitation-reveal-card__venue"><span class="calligraphy-accent">en</span> {card.venueName}</p>}
 	</div>
 </article>
