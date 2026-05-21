@@ -26,6 +26,7 @@ export const THEME_PRESETS = [
 	'editorial',
 	'premiere-floral',
 	'celestial-blue',
+	'enchanted-rose',
 	'sacred-keepsake',
 	'angelic-presence',
 ] as const;
