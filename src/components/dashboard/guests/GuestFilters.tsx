@@ -6,6 +6,7 @@ interface GuestFiltersProps {
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	onSearchChange: (value: string) => void;
 	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
+	onCreateClick: () => void;
 	onImportClick: () => void;
 	onRefreshClick: () => void;
 	onExportClick: () => void;
@@ -17,6 +18,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	status,
 	onSearchChange,
 	onStatusChange,
+	onCreateClick,
 	onImportClick,
 	onRefreshClick,
 	onExportClick,
@@ -56,6 +58,13 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				</div>
 
 				<div className="filter-actions-group">
+					<button
+						type="button"
+						onClick={onCreateClick}
+						className="btn-primary btn--compact"
+					>
+						Agregar invitado
+					</button>
 					<button
 						type="button"
 						onClick={onExportClick}

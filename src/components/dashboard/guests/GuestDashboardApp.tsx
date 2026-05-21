@@ -114,6 +114,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					status={status}
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
+					onCreateClick={openCreateModal}
 					onRefreshClick={loadGuests}
 					onExportClick={handleExport}
 					onImportClick={openImportModal}
