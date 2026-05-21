@@ -1,5 +1,16 @@
 @use '../global/mixins' as mixins;
 
+@function corner-lines($color, $long, $short) {
+	@return linear-gradient($color, $color) top left / $long $short no-repeat,
+		linear-gradient($color, $color) top left / $short $long no-repeat,
+		linear-gradient($color, $color) top right / $long $short no-repeat,
+		linear-gradient($color, $color) top right / $short $long no-repeat,
+		linear-gradient($color, $color) bottom left / $long $short no-repeat,
+		linear-gradient($color, $color) bottom left / $short $long no-repeat,
+		linear-gradient($color, $color) bottom right / $long $short no-repeat,
+		linear-gradient($color, $color) bottom right / $short $long no-repeat;
+}
+
 .family {
 	position: relative;
 	isolation: isolate;
@@ -231,55 +242,11 @@
 		}
 
 		&::after {
-			background:
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					top left / var(--family-media-corner-size, 0)
-					var(--family-media-corner-width, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					top left / var(--family-media-corner-width, 0)
-					var(--family-media-corner-size, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					top right / var(--family-media-corner-size, 0)
-					var(--family-media-corner-width, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					top right / var(--family-media-corner-width, 0)
-					var(--family-media-corner-size, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					bottom left / var(--family-media-corner-size, 0)
-					var(--family-media-corner-width, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					bottom left / var(--family-media-corner-width, 0)
-					var(--family-media-corner-size, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					bottom right / var(--family-media-corner-size, 0)
-					var(--family-media-corner-width, 0) no-repeat,
-				linear-gradient(
-						var(--family-media-corner-color, transparent),
-						var(--family-media-corner-color, transparent)
-					)
-					bottom right / var(--family-media-corner-width, 0)
-					var(--family-media-corner-size, 0) no-repeat;
+			background: corner-lines(
+				var(--family-media-corner-color, transparent),
+				var(--family-media-corner-size, 0),
+				var(--family-media-corner-width, 0)
+			);
 			opacity: var(--family-media-corner-opacity, 100%);
 		}
 
