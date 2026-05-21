@@ -29,7 +29,7 @@ export interface ImageAsset {
 export const EVENT_KEYS = [
 	'hero',
 	'portrait',
-	'portraitAlt',
+
 	'family',
 	'ceremony',
 	'reception',

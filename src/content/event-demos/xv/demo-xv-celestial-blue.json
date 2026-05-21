@@ -1,0 +1,253 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "title": "XV Años — Camila Fernanda",
+    "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "celestial-blue"
+    },
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Tu nombre completo",
+                "guestCount": "Acompañantes",
+                "attendance": "Asistencia",
+                "confirmButton": "Confirmar presencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Camila Torres Rivas",
+        "label": "Mis XV Años",
+        "date": "2027-09-12T19:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait"
+    },
+    "location": {
+        "venueName": "Hacienda Los Claustros",
+        "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+        "city": "Cuernavaca",
+        "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
+        "ceremony": {
+            "venueEvent": "Misa de Acción de Gracias",
+            "venueName": "Catedral de la Asunción",
+            "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+            "date": "12 de septiembre de 2027",
+            "time": "5:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/example-catedral-asuncion",
+            "image": "ceremony"
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Hacienda Los Claustros",
+            "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+            "date": "12 de septiembre de 2027",
+            "time": "7:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/example-hacienda-claustros",
+            "image": "reception"
+        },
+        "indications": [
+            {
+                "icon": "dressCode",
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera."
+            },
+            {
+                "icon": "calendar",
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia <strong>antes del 29 de agosto</strong>."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Alejandro Torres Mendoza",
+            "mother": "Mariana Fernanda Rivas"
+        },
+        "labels": {
+            "sectionTitle": "Mi Familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche que siempre llevaré en el corazón."
+        },
+        "godparents": [
+            {
+                "name": "Ricardo Torres Mendoza",
+                "role": "Padrino"
+            },
+            {
+                "name": "Daniela Rivas Hernández",
+                "role": "Madrina"
+            },
+            {
+                "name": "Fernando Castillo López",
+                "role": "Padrino"
+            }
+        ]
+    },
+    "gallery": {
+        "title": "Galería",
+        "subtitle": "Luz, color y momentos que brillan con luz propia.",
+        "items": [
+            { "image": "gallery01", "caption": "Una noche de ensueño en tonos de cielo." },
+            { "image": "gallery02", "caption": "Cada instante, una obra de luz." },
+            { "image": "gallery03", "caption": "Elegancia que trasciende el momento." },
+            { "image": "gallery04", "caption": "Reflejos de una velada inolvidable." },
+            { "image": "gallery05", "caption": "Sonrisas que iluminan la noche." },
+            { "image": "gallery06", "caption": "Detalles que cuentan una historia." },
+            { "image": "gallery07", "caption": "Brillo y distinción en cada rincón." },
+            { "image": "gallery08", "caption": "La magia de los quince años." },
+            { "image": "gallery09", "caption": "Gratitud y felicidad compartida." },
+            { "image": "gallery10", "caption": "Un capítulo que comienza con luz propia." }
+        ]
+    },
+    "gifts": {
+        "title": "Lluvia de Sobres",
+        "subtitle": "Tu presencia es el mejor regalo. Si deseas tener un detalle adicional, aquí algunas opciones:",
+        "items": [
+            {
+                "type": "bank",
+                "title": "Transferencia",
+                "bankName": "BBVA México",
+                "accountHolder": "Alejandro Torres Mendoza",
+                "clabe": "0121 8001 2345 6789 01",
+                "accountNumber": "1234567890"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Contaremos con un buzón durante la recepción."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma tu presencia",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
+        "confirmationMode": "api"
+    },
+    "quote": {
+        "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
+        "author": "Camila Fernanda"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
+        "closingName": "Camila Torres Rivas",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 30%"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Misa",
+                "time": "5:00 PM",
+                "description": "Ceremonia de Acción de Gracias en la Catedral."
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "7:00 PM",
+                "description": "Bienvenida en Hacienda Los Claustros."
+            },
+            {
+                "icon": "waltz",
+                "label": "Vals",
+                "time": "8:30 PM",
+                "description": "Un momento de ensueño."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "9:30 PM",
+                "description": "Cena de gala en familia."
+            },
+            {
+                "icon": "party",
+                "label": "Cierre",
+                "time": "12:00 AM",
+                "description": "Gracias por celebrar con nosotros."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "La celebración comienza en",
+        "footerText": "12 de septiembre de 2027, Cuernavaca, Morelos"
+    },
+    "navigation": [
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Regalos", "href": "#regalos" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "location",
+            "alt": "Camila Fernanda con vestido azul cielo en Cuernavaca",
+            "height": "screen",
+            "focalPoint": "50% 35%",
+            "lightX": "44%",
+            "lightY": "44%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "family",
+            "alt": "Retrato elegante de Camila Fernanda",
+            "height": "screen",
+            "focalPoint": "50% 25%",
+            "lightX": "54%",
+            "lightY": "34%"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "itinerary",
+            "alt": "Detalle de la celebración en Hacienda Los Claustros",
+            "height": "screen",
+            "focalPoint": "54% 62%",
+            "lightX": "68%",
+            "lightY": "44%",
+            "overlayOpacity": "14%"
+        },
+        {
+            "image": "interlude04",
+            "afterSection": "rsvp",
+            "alt": "Retrato final de Camila Fernanda en tonos plata y azul",
+            "height": "screen",
+            "focalPoint": "50% 34%",
+            "lightX": "42%",
+            "lightY": "42%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "sealInitials": "C·F",
+        "microcopy": "Abre tu invitación",
+        "closedPalette": {
+            "primary": "surfacePrimary",
+            "accent": "actionAccent",
+            "background": "surfaceDark"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto la invitación para los XV años de Camila Fernanda: {inviteUrl}",
+        "ogImage": "portrait"
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+        "autoPlay": true,
+        "title": "Música de fondo"
+    }
+}
