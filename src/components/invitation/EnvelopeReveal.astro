@@ -39,6 +39,10 @@ const {
 } = Astro.props;
 
 const isDev = import.meta.env.DEV;
+
+const envelopeDisplay = card.venueName
+	? `${card.details.split(' • ')[0]} • ${card.venueName}`
+	: card.details;
 ---
 
 <ds-envelope-reveal
@@ -46,7 +50,7 @@ const isDev = import.meta.env.DEV;
 	data-event-slug={eventSlug}
 	data-variant={variant}
 	data-audio-url={audioUrl}
-	data-dev-skip={isDev ? 'true' : 'false'}
+	data-dev-skip={String(isDev)}
 >
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
@@ -94,7 +98,7 @@ const isDev = import.meta.env.DEV;
 				<h2 class="envelope-name">{name}</h2>
 				<div class="tease-details-group">
 					<div class="tease-divider"></div>
-					<p class="envelope-details">{card.details}{card.venueName}</p>
+					<p class="envelope-details">{envelopeDisplay}</p>
 				</div>
 
 				{
@@ -126,16 +130,20 @@ const isDev = import.meta.env.DEV;
 <script>
 	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
 
+	const EXIT_ANIMATION_MS = 2200;
+
 	class DsEnvelopeReveal extends HTMLElement {
 		connectedCallback() {
 			const { eventSlug, audioUrl } = this.dataset;
 			if (!eventSlug) return;
 
-			const invitationRoot =
-				this.parentElement?.closest('.event-theme-wrapper[data-event-slug]') ||
-				this.closest('.event-theme-wrapper[data-event-slug]');
+			const invitationRoot = this.closest('.event-theme-wrapper[data-event-slug]');
+			if (!invitationRoot) return;
 
-			const isDemoInvitation = invitationRoot instanceof HTMLElement ? invitationRoot.dataset.isDemo === 'true' : false;
+			const isDemoInvitation =
+				invitationRoot instanceof HTMLElement
+					? invitationRoot.dataset.isDemo === 'true'
+					: false;
 			const devSkipEnabled = this.dataset.devSkip === 'true';
 
 			const manager = new RevealManager({
@@ -150,36 +158,30 @@ const isDev = import.meta.env.DEV;
 			const revealCard = this.querySelector('[data-envelope-card]');
 			let hasRevealed = false;
 
-			const scrollToHero = () => {
-				const hero = document.getElementById('inicio');
-
-				if (hero instanceof HTMLElement) {
-					hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
-					return;
-				}
-
-				window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-			};
-
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
 
-				document.body.style.overflow = 'auto';
+				document.documentElement.classList.remove('envelope-open');
 
 				if (invitationRoot instanceof HTMLElement) {
 					invitationRoot.dataset.revealState = 'revealed';
 				}
 
-				window.requestAnimationFrame(() => scrollToHero());
+				window.requestAnimationFrame(() => {
+					const hero = document.getElementById('inicio');
+					if (hero instanceof HTMLElement) {
+						hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+					} else {
+						window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+					}
+				});
 
 				window.dispatchEvent(new CustomEvent('envelope:opened', { detail: { eventSlug } }));
 
-				// Hide completely once the exit transition (CSS) is likely finished.
-				// We keep a safety timeout for the very final DOM removal, but the state is already 'revealed'.
 				window.setTimeout(() => {
 					this.hidden = true;
-				}, 2200);
+				}, EXIT_ANIMATION_MS);
 			};
 
 			if (manager.shouldSkipEnvelope()) {
@@ -188,8 +190,7 @@ const isDev = import.meta.env.DEV;
 				return;
 			}
 
-			// Initial setup
-			document.body.style.overflow = 'hidden';
+			document.documentElement.classList.add('envelope-open');
 
 			const tooltipTimeout = window.setTimeout(() => {
 				if (tooltip instanceof HTMLElement) {
@@ -215,14 +216,10 @@ const isDev = import.meta.env.DEV;
 					return;
 				}
 
-				// Trigger opening animation
 				this.classList.add('is-opening');
 
-				// Use animationend to detect when the card has finished rising
 				if (revealCard instanceof HTMLElement) {
 					const onAnimationEnd = (e: AnimationEvent) => {
-						// Only proceed if it's the main reveal animation.
-						// We do not use `{ once: true }` here because other descendant animations might fire 'animationend' prematurely.
 						if (e.animationName.includes('envCardRise')) {
 							revealCard.removeEventListener('animationend', onAnimationEnd);
 							completeReveal();
@@ -230,7 +227,6 @@ const isDev = import.meta.env.DEV;
 					};
 					revealCard.addEventListener('animationend', onAnimationEnd);
 				} else {
-					// Minimal fallback if DOM is missing
 					window.setTimeout(completeReveal, 2000);
 				}
 			});
