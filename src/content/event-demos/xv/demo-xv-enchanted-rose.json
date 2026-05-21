@@ -228,7 +228,7 @@
         }
     ],
     "envelope": {
-        "disabled": false,
+        "disabled": true,
         "sealStyle": "wax",
         "sealIcon": "flower",
         "sealInitials": "I·R",
@@ -245,7 +245,7 @@
     },
     "music": {
         "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
-        "autoPlay": true,
+        "autoPlay": false,
         "title": "Música de fondo"
     }
 }
