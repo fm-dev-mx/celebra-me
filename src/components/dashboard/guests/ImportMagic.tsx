@@ -1,35 +1,20 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
-import { normalizeImportedPhone } from '@/lib/rsvp/core/utils';
-import { DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import { normalizeImportedPhone, normalizePhone, normalizeName } from '@/lib/rsvp/core/utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { pluralS, classifyGuests } from '@/components/dashboard/guests/ImportMagic.utils';
+import type {
+	ParsedGuest,
+	ColumnTarget,
+	ColumnAssignment,
+} from '@/components/dashboard/guests/ImportMagic.utils';
+import { ImportPreviewPanel } from '@/components/dashboard/guests/ImportMagicPreview';
 
 interface ImportMagicProps {
 	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<void>;
 	onClose: () => void;
 	eventId: string;
-}
-
-export interface ParsedGuest {
-	fullName: string;
-	phone: string;
-	phoneCountryCode: string;
-	email: string | null;
-	error?: string;
-	fieldErrors?: {
-		fullName?: string;
-		phone?: string;
-		phoneCountryCode?: string;
-		email?: string;
-	};
-}
-
-export type ColumnTarget = 'fullName' | 'phone' | 'phoneCountryCode' | 'email' | 'ignore';
-
-export interface ColumnAssignment {
-	sourceIndex: number;
-	sourceName: string;
-	target: ColumnTarget;
+	existingGuests: DashboardGuestItem[];
 }
 
 const SPLIT_DELIMITERS = ['\t', ',', ';'];
@@ -84,9 +69,10 @@ export function isHeaderRow(parts: string[]): boolean {
 	return false;
 }
 
-export function validateGuestRow(
-	guest: ParsedGuest,
-): { rowError?: string; fieldErrors?: NonNullable<ParsedGuest['fieldErrors']> } {
+export function validateGuestRow(guest: ParsedGuest): {
+	rowError?: string;
+	fieldErrors?: NonNullable<ParsedGuest['fieldErrors']>;
+} {
 	const fieldErrors: NonNullable<ParsedGuest['fieldErrors']> = {};
 
 	const name = guest.fullName.trim();
@@ -100,7 +86,8 @@ export function validateGuestRow(
 	if (!phone && !countryCode) {
 		// valid
 	} else if (phone && !phone.startsWith('+') && !countryCode) {
-		fieldErrors.phone = 'Agrega el código de país o escribe el número completo empezando con +.';
+		fieldErrors.phone =
+			'Agrega el código de país o escribe el número completo empezando con +.';
 		fieldErrors.phoneCountryCode =
 			'La clave país es obligatoria cuando el teléfono no empieza con +.';
 	} else if (phone && !phone.startsWith('+') && countryCode) {
@@ -122,17 +109,16 @@ export function validateGuestRow(
 	const hasErrors = Object.keys(fieldErrors).length > 0;
 	return {
 		rowError: hasErrors
-			? fieldErrors.phone || fieldErrors.phoneCountryCode || fieldErrors.fullName || 'Corrige los errores de esta fila.'
+			? fieldErrors.phone ||
+				fieldErrors.phoneCountryCode ||
+				fieldErrors.fullName ||
+				'Corrige los errores de esta fila.'
 			: undefined,
 		fieldErrors: hasErrors ? fieldErrors : undefined,
 	};
 }
 
-function applyFieldValue(
-	result: ParsedGuest,
-	key: keyof ParsedGuest,
-	value: string,
-): void {
+function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: string): void {
 	if (key === 'fullName') result.fullName = value;
 	else if (key === 'phone') result.phone = value;
 	else if (key === 'phoneCountryCode') result.phoneCountryCode = value;
@@ -208,9 +194,7 @@ function ImportColumnMapping({
 	mappingConfirmDisabled: boolean;
 }) {
 	const usedTargets = new Set(
-		columnAssignments
-			.filter((a) => a.target !== 'ignore')
-			.map((a) => a.target),
+		columnAssignments.filter((a) => a.target !== 'ignore').map((a) => a.target),
 	);
 	return (
 		<div className="import-magic__column-mapping">
@@ -226,11 +210,19 @@ function ImportColumnMapping({
 						<span className="import-magic__mapping-source">{col.sourceName}</span>
 						<select
 							value={col.target}
-							onChange={(e) => onMappingChange(col.sourceIndex, e.target.value as ColumnTarget)}
+							onChange={(e) =>
+								onMappingChange(col.sourceIndex, e.target.value as ColumnTarget)
+							}
 							className="import-magic__mapping-select"
 						>
 							{MAPPING_TARGETS.map((t) => (
-								<option key={t} value={t} disabled={t !== 'ignore' && usedTargets.has(t) && col.target !== t}>
+								<option
+									key={t}
+									value={t}
+									disabled={
+										t !== 'ignore' && usedTargets.has(t) && col.target !== t
+									}
+								>
 									{TARGET_LABELS[t]}
 								</option>
 							))}
@@ -257,124 +249,6 @@ function ImportColumnMapping({
 	);
 }
 
-function ImportPreviewTable({
-	preview,
-	onEdit,
-	onDelete,
-}: {
-	preview: ParsedGuest[];
-	onEdit: (index: number, field: 'fullName' | 'phone' | 'phoneCountryCode' | 'email', value: string) => void;
-	onDelete: (index: number) => void;
-}) {
-	return (
-		<div className="import-magic__table-wrap">
-			<table className="import-magic__table">
-				<thead>
-					<tr>
-						<th>Nombre</th>
-						<th>Teléfono</th>
-						<th>Clave país</th>
-						<th>Correo</th>
-						<th className="import-magic__th-actions"></th>
-					</tr>
-				</thead>
-				<tbody>
-					{preview.map((p, i) => (
-						<tr key={i} className={p.error ? 'import-magic__row--error' : ''}>
-							<td data-label="Nombre">
-								<input
-									type="text"
-									value={p.fullName}
-									onChange={(e) => onEdit(i, 'fullName', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.fullName ? 'import-magic__cell-input--error' : ''}`}
-								/>
-								{p.fieldErrors?.fullName && (
-									<span className="import-magic__cell-error">{p.fieldErrors.fullName}</span>
-								)}
-							</td>
-							<td data-label="Teléfono">
-								<input
-									type="text"
-									value={p.phone}
-									onChange={(e) => onEdit(i, 'phone', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.phone ? 'import-magic__cell-input--error' : ''}`}
-								/>
-								{p.fieldErrors?.phone && (
-									<span className="import-magic__cell-error">{p.fieldErrors.phone}</span>
-								)}
-							</td>
-							<td data-label="Clave país">
-								<input
-									type="text"
-									value={p.phoneCountryCode}
-									onChange={(e) => onEdit(i, 'phoneCountryCode', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.phoneCountryCode ? 'import-magic__cell-input--error' : ''}`}
-								/>
-								{p.fieldErrors?.phoneCountryCode && (
-									<span className="import-magic__cell-error">{p.fieldErrors.phoneCountryCode}</span>
-								)}
-							</td>
-							<td data-label="Correo">
-								<input
-									type="text"
-									value={p.email ?? ''}
-									onChange={(e) => onEdit(i, 'email', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.email ? 'import-magic__cell-input--error' : ''}`}
-								/>
-								{p.fieldErrors?.email && (
-									<span className="import-magic__cell-error">{p.fieldErrors.email}</span>
-								)}
-							</td>
-							<td data-label="">
-								<button
-									type="button"
-									className="import-magic__delete-btn btn-icon btn-icon--danger"
-									title="Eliminar invitado"
-									aria-label={`Eliminar invitado ${i + 1}`}
-									onClick={() => onDelete(i)}
-								>
-									<DeleteGlyph size={14} />
-								</button>
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
-	);
-}
-
-function ImportPreviewStatus({
-	isFatalError,
-	errorCount,
-	previewLength,
-}: {
-	isFatalError: boolean;
-	errorCount: number;
-	previewLength: number;
-}) {
-	if (isFatalError) {
-		return (
-			<p className="import-magic__fatal-error">{FATAL_ERROR_MESSAGE}</p>
-		);
-	}
-	if (errorCount > 0) {
-		return (
-			<p className="dashboard-form-help dashboard-form-help--error">
-				Corrige los errores antes de importar. Puedes editar los datos directamente en la tabla.
-			</p>
-		);
-	}
-	if (errorCount === 0 && previewLength > 0) {
-		return (
-			<p className="dashboard-form-help import-magic__all-valid">
-				Todos los invitados están listos para importarse.
-			</p>
-		);
-	}
-	return null;
-}
-
 const TARGET_LABELS: Record<ColumnTarget, string> = {
 	fullName: 'Nombre',
 	phone: 'Teléfono',
@@ -383,7 +257,13 @@ const TARGET_LABELS: Record<ColumnTarget, string> = {
 	ignore: 'Ignorar',
 };
 
-const MAPPING_TARGETS: ColumnTarget[] = ['fullName', 'phone', 'phoneCountryCode', 'email', 'ignore'];
+const MAPPING_TARGETS: ColumnTarget[] = [
+	'fullName',
+	'phone',
+	'phoneCountryCode',
+	'email',
+	'ignore',
+];
 
 const FATAL_ERROR_MESSAGE =
 	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tienes permiso.';
@@ -398,7 +278,13 @@ function parseImportContent(
 		setRawDataLines: (v: string[][]) => void;
 	},
 ): void {
-	const { setImportError, setPreview, setShowColumnMapping, setColumnAssignments, setRawDataLines } = setters;
+	const {
+		setImportError,
+		setPreview,
+		setShowColumnMapping,
+		setColumnAssignments,
+		setRawDataLines,
+	} = setters;
 	setImportError(null);
 
 	const lines = content.split(/\r?\n/).filter((line) => line.trim() !== '');
@@ -454,7 +340,12 @@ function parseImportContent(
 	setPreview([]);
 }
 
-const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose, eventId }) => {
+const ImportMagic: React.FC<ImportMagicProps> = ({
+	onImport,
+	onClose,
+	eventId,
+	existingGuests,
+}) => {
 	const [text, setText] = useState('');
 	const [parsing, setParsing] = useState(false);
 	const [preview, setPreview] = useState<ParsedGuest[]>([]);
@@ -466,29 +357,71 @@ const ImportMagic: React.FC<ImportMagicProps> = ({ onImport, onClose, eventId })
 	const [sourceCollapsed, setSourceCollapsed] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const existingPhones = useMemo(
+		() => new Set(existingGuests.filter((g) => g.phone).map((g) => normalizePhone(g.phone))),
+		[existingGuests],
+	);
+
+	const existingNames = useMemo(
+		() => new Set(existingGuests.map((g) => normalizeName(g.fullName)).filter(Boolean)),
+		[existingGuests],
+	);
+
+	const errorCount = preview.filter((g) => g.error).length;
+	const newValidCount = preview.filter((g) => g._status === 'new' && !g.error).length;
+	const existingPhoneCount = preview.filter((g) => g._status === 'existing-phone').length;
+	const duplicatePhoneCount = preview.filter((g) => g._status === 'duplicate-phone').length;
+	const nameDuplicateCount = preview.filter(
+		(g) => g._status === 'existing-name' || g._status === 'duplicate-name',
+	).length;
 	const isNombreMapped = columnAssignments.some((a) => a.target === 'fullName');
-	const importLabel = parsing ? 'Procesando...' : 'Importar ' + validCount + ' invitado' + (validCount !== 1 ? 's' : '');
-	const isFatalError = isFatalError;
+	const isFatalError = importError === FATAL_ERROR_MESSAGE;
+	const importLabel = parsing
+		? 'Procesando...'
+		: newValidCount > 0
+			? `Importar ${newValidCount} invitado${pluralS(newValidCount)} nuevo${pluralS(newValidCount)}`
+			: 'No hay invitados nuevos para importar';
 	const importDisabled =
-		validCount === 0 ||
-		errorCount > 0 ||
+		newValidCount === 0 ||
 		parsing ||
 		(showColumnMapping && !isNombreMapped) ||
 		isFatalError ||
 		!eventId;
 	const mappingConfirmDisabled = !isNombreMapped;
-	const validCount = preview.filter((g) => !g.error).length;
-	const errorCount = preview.filter((g) => g.error).length;
-	const isNombreMapped = columnAssignments.some((a) => a.target === 'fullName');
-	const isFatalError = importError === FATAL_ERROR_MESSAGE;
-	const importLabel = parsing ? 'Procesando...' : `Importar ${validCount} invitado${validCount !== 1 ? 's' : ''}`;
-	const importDisabled =
-		validCount === 0 || errorCount > 0 || parsing || (showColumnMapping && !isNombreMapped) || isFatalError || !eventId;
-	const mappingConfirmDisabled = !isNombreMapped;
-const parseContent = (content: string) => {
+
+	const visibleRows = useMemo(() => {
+		const rows: { guest: ParsedGuest; originalIndex: number }[] = [];
+		for (let i = 0; i < preview.length; i++) {
+			const g = preview[i];
+			if (g._status === 'new' && !g.error) {
+				rows.push({ guest: g, originalIndex: i });
+			}
+		}
+		return rows;
+	}, [preview]);
+
+	const omittedRecords = useMemo(
+		() =>
+			preview.filter(
+				(g) =>
+					g._status === 'existing-phone' ||
+					g._status === 'duplicate-phone' ||
+					g._status === 'existing-name' ||
+					g._status === 'duplicate-name',
+			),
+		[preview],
+	);
+	const handleNewPreview = useCallback(
+		(guests: ParsedGuest[]) => {
+			setPreview(classifyGuests(guests, existingPhones, existingNames));
+		},
+		[existingPhones, existingNames],
+	);
+
+	const parseContent = (content: string) => {
 		parseImportContent(content, {
 			setImportError,
-			setPreview,
+			setPreview: handleNewPreview,
 			setShowColumnMapping,
 			setColumnAssignments,
 			setRawDataLines,
@@ -531,7 +464,7 @@ const parseContent = (content: string) => {
 			.filter((g) => g.fullName);
 
 		setShowColumnMapping(false);
-		setPreview(results);
+		setPreview(classifyGuests(results, existingPhones, existingNames));
 	};
 
 	const handleMappingChange = (index: number, target: ColumnTarget) => {
@@ -553,7 +486,11 @@ const parseContent = (content: string) => {
 	};
 
 	const handleEdit = useCallback(
-		(index: number, field: 'fullName' | 'phone' | 'phoneCountryCode' | 'email', value: string) => {
+		(
+			index: number,
+			field: 'fullName' | 'phone' | 'phoneCountryCode' | 'email',
+			value: string,
+		) => {
 			setImportError(null);
 			setPreview((prev) => {
 				const updated = [...prev];
@@ -572,31 +509,41 @@ const parseContent = (content: string) => {
 				if (validation.rowError) guest.error = validation.rowError;
 				if (validation.fieldErrors) guest.fieldErrors = validation.fieldErrors;
 				updated[index] = guest;
-				return updated;
+				return classifyGuests(updated, existingPhones, existingNames);
 			});
 		},
-		[],
+		[existingPhones, existingNames],
 	);
 
-	const handleDelete = useCallback((index: number) => {
-		setImportError(null);
-		setPreview((prev) => prev.filter((_, i) => i !== index));
-	}, []);
+	const handleDelete = useCallback(
+		(index: number) => {
+			setImportError(null);
+			setPreview((prev) => {
+				const updated = prev.filter((_, i) => i !== index);
+				return classifyGuests(updated, existingPhones, existingNames);
+			});
+		},
+		[existingPhones, existingNames],
+	);
 
 	const handleImport = async () => {
 		setParsing(true);
 		setImportError(null);
 		try {
-			const valid = preview
-				.filter((g) => !g.error)
-				.map((g) => ({
-					fullName: g.fullName,
-					phone: g.phone || undefined,
-					phoneCountryCode: g.phoneCountryCode || undefined,
-					email: g.email,
-					maxAllowedAttendees: 2,
-					tags: [] as string[],
-				}));
+			const newGuests = preview.filter((g) => g._status === 'new' && !g.error);
+			if (newGuests.length === 0) {
+				setImportError('No hay invitados nuevos para importar.');
+				setParsing(false);
+				return;
+			}
+			const valid = newGuests.map((g) => ({
+				fullName: g.fullName,
+				phone: g.phone || undefined,
+				phoneCountryCode: g.phoneCountryCode || undefined,
+				email: g.email,
+				maxAllowedAttendees: 2,
+				tags: [] as string[],
+			}));
 			await onImport(valid);
 			onClose();
 		} catch (err) {
@@ -604,7 +551,9 @@ const parseContent = (content: string) => {
 			if (message === 'Event not found or access denied.') {
 				setImportError(FATAL_ERROR_MESSAGE);
 			} else {
-				setImportError('No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.');
+				setImportError(
+					'No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.',
+				);
 			}
 		} finally {
 			setParsing(false);
@@ -624,125 +573,90 @@ const parseContent = (content: string) => {
 					onClick={(e) => e.stopPropagation()}
 				>
 					<h3>Importación de invitados</h3>
-					<p className="dashboard-modal__description">
-						Pega aquí tus invitados desde Excel o Google Sheets, o selecciona un archivo
-						CSV.
-					</p>
-					<p className="dashboard-modal__description">
-						Columnas esperadas: <strong>nombre</strong>, <strong>teléfono</strong>,{' '}
-						<strong>clave_pais</strong> (ej. +52), <strong>correo</strong>.
-						<br />
-						Si el teléfono no empieza con +, la columna <strong>clave_pais</strong> es
-						obligatoria.
-					</p>
+					<div className="dashboard-modal__content">
+						<p className="dashboard-modal__description">
+							Pega aquí tus invitados desde Excel o Google Sheets, o selecciona un
+							archivo CSV.
+						</p>
+						<p className="dashboard-modal__description">
+							Columnas esperadas: <strong>nombre</strong>, <strong>teléfono</strong>,{' '}
+							<strong>clave_pais</strong> (ej. +52), <strong>correo</strong>.
+							<br />
+							Si el teléfono no empieza con +, la columna <strong>
+								clave_pais
+							</strong>{' '}
+							es obligatoria.
+						</p>
 
-					<div className="import-magic__section">
-						<textarea
-							value={text}
-							onPaste={handlePaste}
-							onChange={(e) => {
-								setText(e.target.value);
-								parseContent(e.target.value);
-							}}
-							placeholder="Ejemplo: Juan Pérez	+52	6691234567"
-							rows={sourceCollapsed ? 2 : 4}
-							className={`import-magic__textarea ${sourceCollapsed ? 'import-magic__textarea--collapsed' : ''}`}
-						/>
-						{sourceCollapsed && (
-							<button
-								type="button"
-								className="import-magic__source-toggle"
-								onClick={() => setSourceCollapsed(false)}
-							>
-								Editar datos pegados
-							</button>
-						)}
-					</div>
-
-					<div className="import-magic__section">
-						<div className="dashboard-modal__file-actions">
-							<input
-								type="file"
-								accept=".csv"
-								ref={fileInputRef}
-								className="hidden-input"
-								onChange={handleFileChange}
+						<div className="import-magic__section">
+							<textarea
+								value={text}
+								onPaste={handlePaste}
+								onChange={(e) => {
+									setText(e.target.value);
+									parseContent(e.target.value);
+								}}
+								placeholder="Ejemplo: Juan Pérez	+52	6691234567"
+								rows={sourceCollapsed ? 2 : 4}
+								className={`import-magic__textarea ${sourceCollapsed ? 'import-magic__textarea--collapsed' : ''}`}
 							/>
-							<button
-								type="button"
-								className="btn-secondary"
-								onClick={() => fileInputRef.current?.click()}
-							>
-								Seleccionar CSV
-							</button>
-						</div>
-					</div>
-
-					{showColumnMapping && (
-						<ImportColumnMapping
-							columnAssignments={columnAssignments}
-							isNombreMapped={isNombreMapped}
-							onMappingChange={handleMappingChange}
-							onConfirmMapping={handleConfirmMapping}
-							mappingConfirmDisabled={mappingConfirmDisabled}
-						/>
-					)}
-
-					{preview.length > 0 && (
-						<div className="import-magic__preview">
-							<div className="import-magic__summary">
-								<span className="import-magic__summary-total">
-									Total: {preview.length} invitados
-								</span>
-								<span className="import-magic__summary-valid">
-									Válidos: {validCount}
-								</span>
-								{errorCount > 0 && (
-									<span className="import-magic__summary-error">
-										Errores: {errorCount}
-									</span>
-								)}
-							</div>
-
-							<ImportPreviewStatus
-								isFatalError={isFatalError}
-								errorCount={errorCount}
-								previewLength={preview.length}
-							/>
-
-							<ImportPreviewTable
-								preview={preview}
-								onEdit={handleEdit}
-								onDelete={handleDelete}
-							/>
-
-							{errorCount > 0 && (
-								<div className="import-magic__error-summary">
-									{preview.map(
-										(p, i) =>
-											p.error && (
-												<div key={i} className="import-magic__error-item">
-													<strong>Fila {i + 1}</strong> ({p.fullName}):{' '}
-													{p.error}
-												</div>
-											),
-									)}
-								</div>
+							{sourceCollapsed && (
+								<button
+									type="button"
+									className="import-magic__source-toggle"
+									onClick={() => setSourceCollapsed(false)}
+								>
+									Editar datos pegados
+								</button>
 							)}
 						</div>
-					)}
 
-					{preview.length === 0 && !showColumnMapping && text && (
-						<div className="import-magic__empty">
-							<p>No hay invitados para importar.</p>
+						<div className="import-magic__section">
+							<div className="dashboard-modal__file-actions">
+								<input
+									type="file"
+									accept=".csv"
+									ref={fileInputRef}
+									className="hidden-input"
+									onChange={handleFileChange}
+								/>
+								<button
+									type="button"
+									className="btn-secondary"
+									onClick={() => fileInputRef.current?.click()}
+								>
+									Seleccionar CSV
+								</button>
+							</div>
 						</div>
-					)}
 
-					{importError && !isFatalError && (
-						<div className="import-magic__api-error">
-							{importError}
-						</div>
-					)}
+						{showColumnMapping && (
+							<ImportColumnMapping
+								columnAssignments={columnAssignments}
+								isNombreMapped={isNombreMapped}
+								onMappingChange={handleMappingChange}
+								onConfirmMapping={handleConfirmMapping}
+								mappingConfirmDisabled={mappingConfirmDisabled}
+							/>
+						)}
+
+						<ImportPreviewPanel
+							preview={preview}
+							newValidCount={newValidCount}
+							existingPhoneCount={existingPhoneCount}
+							nameDuplicateCount={nameDuplicateCount}
+							duplicatePhoneCount={duplicatePhoneCount}
+							errorCount={errorCount}
+							isFatalError={isFatalError}
+							visibleRows={visibleRows}
+							omittedRecords={omittedRecords}
+							showColumnMapping={showColumnMapping}
+							text={text}
+							importError={importError}
+							handleEdit={handleEdit}
+							handleDelete={handleDelete}
+						/>
+					</div>
 
 					<div className="dashboard-modal__actions">
 						<button type="button" className="btn-secondary" onClick={onClose}>

@@ -27,6 +27,7 @@
 	z-index: var(--dashboard-z-modal) !important;
 	display: flex;
 	flex-direction: column;
+	overflow: hidden;
 	width: min(600px, 95vw);
 	min-width: 0;
 	max-height: min(calc(100dvh - 40px), 800px);
@@ -80,7 +81,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 1rem;
-		margin-bottom: 2rem;
+		margin-bottom: 1.25rem;
 
 		.hidden-input {
 			display: none;
@@ -90,7 +91,7 @@
 	&__content {
 		flex: 1 1 auto;
 		min-height: 0;
-		overflow-y: visible;
+		overflow-y: auto;
 		overscroll-behavior: contain;
 		padding: 0;
 		margin: 0;
@@ -313,4 +314,8 @@
 		opacity: 100%;
 		transform: translateY(0) scale(1);
 	}
+}
+
+body.modal-open {
+	overflow: hidden;
 }

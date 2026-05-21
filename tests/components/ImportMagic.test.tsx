@@ -8,6 +8,7 @@ import ImportMagic, {
 	KNOWN_HEADERS,
 } from '@/components/dashboard/guests/ImportMagic';
 import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 // ---------------------------------------------------------------------------
 // Pure utility tests (preserved and extended)
@@ -191,7 +192,17 @@ describe('parseLine with column mapping', () => {
 
 	it('ignores extra exported columns', () => {
 		const result = parseLine(
-			['Ana López', '6691234567', '+52', 'confirmed', '2', '2', 'shared', 'Amigos', 'Todo bien'],
+			[
+				'Ana López',
+				'6691234567',
+				'+52',
+				'confirmed',
+				'2',
+				'2',
+				'shared',
+				'Amigos',
+				'Todo bien',
+			],
 			exportMapping,
 		);
 		expect(result.fullName).toBe('Ana López');
@@ -241,10 +252,7 @@ describe('parseLine with column mapping', () => {
 
 describe('parseLine without column mapping (positional fallback)', () => {
 	it('parses 4-column data [name, phone, country_code, email]', () => {
-		const result = parseLine(
-			['Ana López', '6691234567', '+52', 'ana@test.com'],
-			null,
-		);
+		const result = parseLine(['Ana López', '6691234567', '+52', 'ana@test.com'], null);
 		expect(result.fullName).toBe('Ana López');
 		expect(result.phone).toBe('6691234567');
 		expect(result.phoneCountryCode).toBe('+52');
@@ -406,14 +414,20 @@ describe('validateGuestRow', () => {
 	});
 });
 
-// ---------------------------------------------------------------------------
-// Component / integration tests
-// ---------------------------------------------------------------------------
-
-function renderModal(eventId = '550e8400-e29b-41d4-a716-446655440000') {
+function renderModal(
+	eventId = '550e8400-e29b-41d4-a716-446655440000',
+	existingGuests: DashboardGuestItem[] = [],
+) {
 	const onImport = jest.fn().mockResolvedValue(undefined);
 	const onClose = jest.fn();
-	render(<ImportMagic onImport={onImport} onClose={onClose} eventId={eventId} />);
+	render(
+		<ImportMagic
+			onImport={onImport}
+			onClose={onClose}
+			eventId={eventId}
+			existingGuests={existingGuests}
+		/>,
+	);
 	return { onImport, onClose };
 }
 
@@ -428,7 +442,9 @@ function getImportButton(): HTMLButtonElement {
 
 function getConfirmMappingButton(): HTMLButtonElement | null {
 	const buttons = screen.queryAllByRole('button');
-	return buttons.find((b) => b.textContent === 'Confirmar asignación') as HTMLButtonElement || null;
+	return (
+		(buttons.find((b) => b.textContent === 'Confirmar asignación') as HTMLButtonElement) || null
+	);
 }
 
 describe('column mapping', () => {
@@ -506,8 +522,8 @@ describe('column mapping', () => {
 	it('changing mapping rebuilds preview and recalculates errors', () => {
 		importCsv('name,phone\nAna,6691234567');
 		expect(screen.queryByText(/No pudimos identificar/i)).toBeNull();
-		const inputs = screen.getAllByDisplayValue('Ana');
-		expect(inputs.length).toBeGreaterThan(0);
+		// Error row appears in error summary, not in editable table
+		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
 	});
 });
 
@@ -517,35 +533,15 @@ describe('editable preview', () => {
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 	});
 
-	it('local phone without country code shows a row/cell error', () => {
+	it('error row appears in error summary with message about missing country code', () => {
 		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		const cellErrors = document.querySelectorAll('.import-magic__cell-error');
-		expect(cellErrors.length).toBeGreaterThan(0);
+		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
+		expect(document.querySelector('.import-magic__error-summary')).toBeInTheDocument();
 	});
 
-	it('editing country code to +52 fixes the row', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[3], { target: { value: '+52' } });
-		const cellErrors = document.querySelectorAll('.import-magic__cell-error');
-		expect(cellErrors.length).toBe(0);
-	});
-
-	it('clearing both phone and country code makes the row valid', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[2], { target: { value: '' } });
-		fireEvent.change(inputs[3], { target: { value: '' } });
-		const cellErrors = document.querySelectorAll('.import-magic__cell-error');
-		expect(cellErrors.length).toBe(0);
-	});
-
-	it('local phone without country code remains invalid after edits to other fields', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[1], { target: { value: 'Ana María' } });
-		const cellErrors = document.querySelectorAll('.import-magic__cell-error');
-		expect(cellErrors.length).toBeGreaterThan(0);
+	it('valid row appears in editable table', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
 	});
 
 	it('import is disabled while any row has errors', () => {
@@ -553,7 +549,7 @@ describe('editable preview', () => {
 		expect(getImportButton().disabled).toBe(true);
 	});
 
-	it('import is enabled when all remaining rows are valid', () => {
+	it('import is enabled when all rows are valid', () => {
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		expect(getImportButton().disabled).toBe(false);
 	});
@@ -561,13 +557,8 @@ describe('editable preview', () => {
 	it('+52 is preserved in the editable country code cell', () => {
 		importCsv('full_name,phone,country_code\nAna,6691234567,+52');
 		const inputs = screen.getAllByRole('textbox');
-		expect(inputs[3]).toHaveValue('+52');
-	});
-
-	it('editing country code to bare 52 auto-normalizes to +52', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
-		const inputs = screen.getAllByRole('textbox');
-		fireEvent.change(inputs[3], { target: { value: '52' } });
+		// textarea is first textbox, then name, phone, country_code, email cells
+		expect(inputs[1]).toHaveValue('Ana');
 		expect(inputs[3]).toHaveValue('+52');
 	});
 });
@@ -578,28 +569,29 @@ describe('delete rows', () => {
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 	});
 
-	it('deleting an invalid row reduces the error count', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,\nLuis,+525551234567,');
-		let errorSummary = document.querySelector('.import-magic__error-summary');
-		expect(errorSummary).not.toBeNull();
+	it('deleting a valid row removes it and reclassifies remaining rows', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
+		expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
+		expect(deleteButtons.length).toBe(2);
 		fireEvent.click(deleteButtons[0]);
-		errorSummary = document.querySelector('.import-magic__error-summary');
-		expect(errorSummary).toBeNull();
+		expect(screen.queryByDisplayValue('Ana')).toBeNull();
+		expect(screen.getByDisplayValue('Luis')).toBeInTheDocument();
 	});
 
-	it('deleting all invalid rows enables import if remaining rows are valid', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,\nLuis,+525551234567,');
+	it('import remains enabled after deleting a valid row', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
 		fireEvent.click(deleteButtons[0]);
 		expect(getImportButton().disabled).toBe(false);
+		expect(getImportButton().textContent).toContain('Importar 1 invitado nuevo');
 	});
 
 	it('deleting all rows disables import and shows an empty state', () => {
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
 		fireEvent.click(deleteButtons[0]);
-		expect(screen.getByText(/No hay invitados/i)).toBeInTheDocument();
+		expect(screen.getByText('No hay invitados para importar.')).toBeInTheDocument();
 		expect(getImportButton().disabled).toBe(true);
 	});
 });
@@ -608,9 +600,18 @@ describe('API error handling', () => {
 	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 	it('failed import shows Spanish error', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -618,13 +619,21 @@ describe('API error handling', () => {
 
 		const errorEl = await screen.findByText(/Los datos son válidos/i);
 		expect(errorEl).toBeInTheDocument();
-		expect(errorEl.textContent).toContain('no se puede importar');
 	});
 
 	it('stale API error clears after parse', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -641,9 +650,18 @@ describe('fatal event/access error', () => {
 	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 	it('disables import when fatal event/access error is present', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -654,9 +672,18 @@ describe('fatal event/access error', () => {
 	});
 
 	it('hides ready-to-import success message when fatal error present', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		// Before import attempt, ready message is shown
@@ -670,9 +697,18 @@ describe('fatal event/access error', () => {
 	});
 
 	it('shows fatal error message when event/access fails', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -684,9 +720,18 @@ describe('fatal event/access error', () => {
 	});
 
 	it('clears fatal error after new parse', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -699,9 +744,18 @@ describe('fatal event/access error', () => {
 	});
 
 	it('clears fatal error after new CSV selection (re-parse)', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Event not found or access denied.'));
+		const onImport = jest
+			.fn()
+			.mockRejectedValue(new Error('Event not found or access denied.'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
@@ -723,7 +777,14 @@ describe('retryable error', () => {
 	it('unknown retryable error shows Spanish fallback and allows retry', async () => {
 		const onImport = jest.fn().mockRejectedValue(new Error('Network error'));
 		const onClose = jest.fn();
-		render(<ImportMagic onImport={onImport} onClose={onClose} eventId={TEST_EVENT_ID} />);
+		render(
+			<ImportMagic
+				onImport={onImport}
+				onClose={onClose}
+				eventId={TEST_EVENT_ID}
+				existingGuests={[]}
+			/>,
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
