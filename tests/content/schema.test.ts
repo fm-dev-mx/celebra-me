@@ -118,6 +118,10 @@ describe('Event content schema (real contract)', () => {
 		expect((THEME_PRESETS as readonly string[]).includes('angelic-presence')).toBe(true);
 	});
 
+	it('includes enchanted-rose in THEME_PRESETS', () => {
+		expect((THEME_PRESETS as readonly string[]).includes('enchanted-rose')).toBe(true);
+	});
+
 	it('rejects invalid preset and section variants not present in ThemeContract', () => {
 		const result = eventSchema.safeParse(
 			createMinimalEvent({

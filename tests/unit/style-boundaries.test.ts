@@ -24,6 +24,7 @@ const PA_PRESET_NAMES = [
 	'jewelry-box',
 	'jewelry-box-wedding',
 	'celestial-blue',
+	'enchanted-rose',
 	'luxury-hacienda',
 	'angelic-presence',
 	'sacred-keepsake',

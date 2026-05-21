@@ -120,6 +120,7 @@ describe('Invitation barrel', () => {
 	it('imports all expected theme presets', () => {
 		expect(invitationImports).toContain('angelic-presence');
 		expect(invitationImports).toContain('sacred-keepsake');
+		expect(invitationImports).toContain('enchanted-rose');
 		expect(invitationImports).not.toContain('cesar-ramses');
 	});
 
@@ -339,6 +340,72 @@ describe('Celestial blue section coverage', () => {
 		);
 
 		expectFamilyContract(celestialContent);
+	});
+});
+
+describe('Enchanted rose theme isolation', () => {
+	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
+	const invitationImports = parseInvitationImports(invitationContent);
+	const otherPresets = invitationImports.filter((preset) => preset !== 'enchanted-rose');
+	const enchantedContent = fs.readFileSync(path.join(presetsDir, '_enchanted-rose.scss'), 'utf8');
+
+	it('defines the expected theme root scope', () => {
+		expect(enchantedContent).toContain('.theme-preset--enchanted-rose');
+	});
+
+	it('does not define top-level selectors outside its theme scope', () => {
+		const topLevelSelectors = getTopLevelSelectors(enchantedContent);
+
+		expect(topLevelSelectors).toEqual(['.theme-preset--enchanted-rose']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(enchantedContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important', () => {
+		expect(enchantedContent).not.toContain('!important');
+	});
+});
+
+describe('Enchanted rose section coverage', () => {
+	// Sections intentionally absent (use base section styles and preset variables):
+	//   - location, family, gifts, quote, interlude, music, personalized-access, footer
+	//   - header, countdown, itinerary until concrete selector work is needed
+	const sectionThemeFiles = [
+		'src/styles/themes/sections/hero/_enchanted-rose.scss',
+		'src/styles/themes/sections/gallery/_enchanted-rose.scss',
+		'src/styles/themes/sections/rsvp/_enchanted-rose.scss',
+		'src/styles/themes/sections/thank-you/_enchanted-rose.scss',
+	];
+	const enchantedContent = fs.readFileSync(
+		path.join(projectRoot, 'src/styles/themes/presets/_enchanted-rose.scss'),
+		'utf8',
+	);
+
+	it('styles every intentionally created section with enchanted-rose selectors', () => {
+		for (const relativePath of sectionThemeFiles) {
+			const filePath = path.join(projectRoot, relativePath);
+			expect(fs.readFileSync(filePath, 'utf8')).toContain("data-variant='enchanted-rose'");
+		}
+	});
+
+	it('styles location through the base location contract', () => {
+		expect(enchantedContent).toContain('--location-bg');
+		expect(enchantedContent).toContain('--location-card-bg');
+		expect(enchantedContent).toContain('--location-image-aspect-ratio');
+		expect(enchantedContent).toContain('--location-nav-bg');
+		expect(enchantedContent).toContain('--location-indications-grid-template');
+	});
+
+	it('styles interludes through the base interlude contract', () => {
+		expectInterludeContract(enchantedContent);
+	});
+
+	it('styles family through the base family contract', () => {
+		expectFamilyContract(enchantedContent);
 	});
 });
 
