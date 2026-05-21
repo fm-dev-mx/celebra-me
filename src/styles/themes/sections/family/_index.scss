@@ -1,1 +1,3 @@
-@forward 'celestial-blue';
+// Family section has no per-variant stylesheets.
+// All --family-* tokens are defined per-preset in src/styles/themes/presets/
+// and injected via .theme-preset--* classes.
