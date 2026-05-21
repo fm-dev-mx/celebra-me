@@ -1,0 +1,251 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "title": "XV Años — Isabella Rose",
+    "description": "Una invitación de palacio con rosas rojas, luz de velas y una atmósfera cálida de gala para celebrar XV años.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "enchanted-rose"
+    },
+    "sectionStyles": {
+        "location": {
+            "showFlourishes": true
+        },
+        "rsvp": {
+            "labels": {
+                "name": "Tu nombre completo",
+                "guestCount": "Acompañantes",
+                "attendance": "Asistencia",
+                "confirmButton": "Confirmar presencia"
+            }
+        }
+    },
+    "hero": {
+        "name": "Isabella Rose Valenzuela",
+        "label": "Mis XV Años",
+        "date": "2027-11-20T20:00:00.000Z",
+        "backgroundImage": "hero",
+        "portrait": "portrait"
+    },
+    "location": {
+        "ceremony": {
+            "venueEvent": "Misa de Acción de Gracias",
+            "venueName": "Parroquia del Sagrado Corazón",
+            "address": "Av. de las Rosas 240, Centro Histórico, 76000 Querétaro, Qro.",
+            "city": "Querétaro",
+            "date": "20 de noviembre de 2027",
+            "time": "6:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
+            "image": "ceremony"
+        },
+        "reception": {
+            "venueEvent": "Recepción",
+            "venueName": "Salón Imperial de las Rosas",
+            "address": "Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.",
+            "city": "Querétaro",
+            "date": "20 de noviembre de 2027",
+            "time": "8:00 PM",
+            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial-rosas",
+            "image": "reception"
+        },
+        "indications": [
+            {
+                "icon": "dressCode",
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "Código de vestimenta <strong>formal de gala</strong>. Los tonos <strong>rosa satín y blush</strong> están reservados para la quinceañera."
+            },
+            {
+                "icon": "calendar",
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirma tu asistencia <strong>antes del 6 de noviembre</strong>."
+            }
+        ]
+    },
+    "family": {
+        "parents": {
+            "father": "Fernando Valenzuela Robles",
+            "mother": "María Elena Duarte"
+        },
+        "labels": {
+            "sectionTitle": "Mi Familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "Esta noche nace del amor que me ha acompañado siempre. Gracias por caminar conmigo hacia un recuerdo lleno de luz, cariño y elegancia."
+        },
+        "godparents": [
+            {
+                "name": "Arturo Valenzuela Robles",
+                "role": "Padrino"
+            },
+            {
+                "name": "Lucía Duarte Salazar",
+                "role": "Madrina"
+            },
+            {
+                "name": "Gabriel Montero López",
+                "role": "Padrino"
+            }
+        ]
+    },
+    "gallery": {
+        "title": "Galería",
+        "subtitle": "Rosas, velas y memorias para una noche de palacio.",
+        "items": [
+            { "image": "gallery01", "caption": "Una entrada iluminada por candelabros." },
+            { "image": "gallery02", "caption": "Rosas rojas como detalle principal." },
+            { "image": "gallery03", "caption": "El brillo antiguo de una noche de gala." },
+            { "image": "gallery04", "caption": "Mármol, terciopelo y luz cálida." },
+            { "image": "gallery05", "caption": "Una celebración pensada con elegancia." },
+            { "image": "gallery06", "caption": "Detalles dorados para recordar." },
+            { "image": "gallery07", "caption": "Momentos que florecen con cariño." },
+            { "image": "gallery08", "caption": "La magia serena de mis XV años." },
+            { "image": "gallery09", "caption": "Familia, gratitud y luz de velas." },
+            { "image": "gallery10", "caption": "Un nuevo capítulo entre rosas." }
+        ]
+    },
+    "gifts": {
+        "title": "Lluvia de Sobres",
+        "subtitle": "Tu presencia es el regalo más valioso. Si deseas tener un detalle adicional, aquí algunas opciones:",
+        "items": [
+            {
+                "type": "bank",
+                "title": "Transferencia",
+                "bankName": "BBVA México",
+                "accountHolder": "Fernando Valenzuela Robles",
+                "clabe": "0121 8001 2345 6789 01",
+                "accountNumber": "1234567890"
+            },
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Contaremos con un buzón durante la recepción."
+            }
+        ]
+    },
+    "rsvp": {
+        "title": "Confirma tu presencia",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por confirmar. Te esperamos con alegría en esta noche tan especial.",
+        "confirmationMode": "api"
+    },
+    "quote": {
+        "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
+        "author": "Isabella Rose"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir esta noche conmigo. Su presencia hace que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
+        "closingName": "Isabella Rose Valenzuela",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 30%"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "icon": "church",
+                "label": "Misa",
+                "time": "6:00 PM",
+                "description": "Ceremonia de Acción de Gracias en la parroquia."
+            },
+            {
+                "icon": "reception",
+                "label": "Recepción",
+                "time": "8:00 PM",
+                "description": "Bienvenida en el Salón Imperial de las Rosas."
+            },
+            {
+                "icon": "waltz",
+                "label": "Vals",
+                "time": "9:00 PM",
+                "description": "Un momento de gala bajo luz de velas."
+            },
+            {
+                "icon": "dinner",
+                "label": "Cena",
+                "time": "10:00 PM",
+                "description": "Cena elegante en familia."
+            },
+            {
+                "icon": "party",
+                "label": "Cierre",
+                "time": "1:00 AM",
+                "description": "Gracias por celebrar conmigo."
+            }
+        ]
+    },
+    "countdown": {
+        "title": "La gala comienza en",
+        "footerText": "20 de noviembre de 2027, Querétaro"
+    },
+    "navigation": [
+        { "label": "Inicio", "href": "#inicio" },
+        { "label": "Ubicación", "href": "#event-location" },
+        { "label": "Galería", "href": "#galeria" },
+        { "label": "Regalos", "href": "#regalos" },
+        { "label": "Confirmar", "href": "#rsvp" }
+    ],
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "location",
+            "alt": "Rosa roja bajo una cúpula de cristal con luz de velas",
+            "height": "screen",
+            "focalPoint": "50% 35%",
+            "lightX": "44%",
+            "lightY": "44%"
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "family",
+            "alt": "Detalle de palacio con espejo antiguo y rosas rojas",
+            "height": "screen",
+            "focalPoint": "50% 25%",
+            "lightX": "54%",
+            "lightY": "34%"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "itinerary",
+            "alt": "Mesa de gala con velas, detalles dorados y rosas",
+            "height": "screen",
+            "focalPoint": "54% 62%",
+            "lightX": "68%",
+            "lightY": "44%",
+            "overlayOpacity": "18%"
+        },
+        {
+            "image": "interlude04",
+            "afterSection": "rsvp",
+            "alt": "Pétalos de rosa con sombras borgoña y luz cálida",
+            "height": "screen",
+            "focalPoint": "50% 34%",
+            "lightX": "42%",
+            "lightY": "42%"
+        }
+    ],
+    "envelope": {
+        "disabled": false,
+        "sealStyle": "wax",
+        "sealIcon": "flower",
+        "sealInitials": "I·R",
+        "microcopy": "Abre tu invitación",
+        "closedPalette": {
+            "primary": "surfacePrimary",
+            "accent": "actionAccent",
+            "background": "surfaceDark"
+        }
+    },
+    "sharing": {
+        "whatsappTemplate": "Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}",
+        "ogImage": "portrait"
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+        "autoPlay": true,
+        "title": "Música de fondo"
+    }
+}
