@@ -60,6 +60,7 @@ Current presets:
 - `jewelry-box`
 - `jewelry-box-wedding`
 - `celestial-blue`
+- `enchanted-rose`
 - `sacred-keepsake`
 - `luxury-hacienda`
 - `premiere-floral`

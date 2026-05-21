@@ -39,6 +39,7 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `jewelry-box-wedding`
 - `luxury-hacienda`
 - `celestial-blue`
+- `enchanted-rose`
 - `sacred-keepsake`
 - `premiere-floral`
 - `editorial`

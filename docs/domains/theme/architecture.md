@@ -34,6 +34,7 @@ Invitation presets are the canonical source of visual identity for invitation th
 - `src/styles/themes/presets/_editorial.scss`
 - `src/styles/themes/presets/_premiere-floral.scss`
 - `src/styles/themes/presets/_celestial-blue.scss`
+- `src/styles/themes/presets/_enchanted-rose.scss`
 - `src/styles/themes/presets/_sacred-keepsake.scss`
 - `src/styles/themes/presets/_angelic-presence.scss`
 
