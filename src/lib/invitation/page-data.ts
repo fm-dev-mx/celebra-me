@@ -111,7 +111,6 @@ function buildEnvelopeData(
 		...envelope.data,
 		name: envelope.data.card.name,
 		eventSlug,
-		guestName,
 		isDemo,
 		card: {
 			...envelope.data.card,

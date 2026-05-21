@@ -18,7 +18,6 @@ interface Props {
 	eventSlug: string;
 	tooltipText?: string;
 	variant?: string;
-	guestName?: string;
 	audioUrl?: string;
 	card: RevealCardData;
 }
@@ -35,7 +34,6 @@ const {
 	eventSlug,
 	tooltipText = 'ACCEDER A LA INVITACIÓN',
 	variant,
-	guestName,
 	audioUrl = '',
 	card,
 } = Astro.props;
@@ -100,10 +98,10 @@ const isDev = import.meta.env.DEV;
 				</div>
 
 				{
-					guestName && (
+					card.guestName && (
 						<div class="guest-personalized">
 							<p class="personalized-label">Entrega especial para:</p>
-							<strong class="personalized-name">{guestName}</strong>
+							<strong class="personalized-name">{card.guestName}</strong>
 						</div>
 					)
 				}
