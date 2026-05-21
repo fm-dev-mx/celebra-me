@@ -1,0 +1,180 @@
+@use '../../../global/mixins' as mixins;
+
+.invitation-hero[data-variant='enchanted-rose'] {
+	justify-content: flex-end;
+	min-height: 100svh;
+	background: var(--color-midnight-navy);
+	color: var(--color-text-on-dark);
+
+	.invitation-hero__background {
+		&::after {
+			background:
+				linear-gradient(
+					100deg,
+					rgb(var(--color-midnight-navy-rgb) / 64%) 0%,
+					rgb(var(--color-velvet-burgundy-rgb) / 20%) 42%,
+					rgb(var(--color-rose-shadow-rgb) / 54%) 100%
+				),
+				radial-gradient(
+					circle at 72% 24%,
+					rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+					transparent 38%
+				),
+				linear-gradient(
+					180deg,
+					transparent 42%,
+					rgb(var(--color-rose-shadow-rgb) / 66%) 100%
+				);
+		}
+
+		img {
+			filter: var(--hero-image-filter);
+			object-position: center 32%;
+		}
+	}
+
+	.invitation-hero__content {
+		display: grid;
+		grid-template-rows: auto 1fr auto auto;
+		align-content: end;
+		justify-items: start;
+		width: min(100%, var(--container-max-width-lg, 1280px));
+		max-width: none;
+		min-height: 100svh;
+		margin: 0 auto;
+		padding: clamp(4rem, 8svh, 6rem) clamp(1.5rem, 5vw, 4.5rem) clamp(4.5rem, 10svh, 7rem);
+		background: transparent;
+		backdrop-filter: none;
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.invitation-hero__content::before,
+	.invitation-hero__content::after {
+		content: none;
+	}
+
+	.invitation-hero__label {
+		margin-bottom: 1.5rem;
+		font-family: var(--font-ui);
+		font-size: clamp(0.58rem, 1.35vw, 0.85rem);
+		font-weight: 600;
+		line-height: 1.5;
+		letter-spacing: 0.34em;
+		color: var(--hero-label-color);
+		text-shadow: 0 1px 12px rgb(var(--color-rose-shadow-rgb) / 48%);
+		text-transform: uppercase;
+	}
+
+	.invitation-hero__title {
+		max-width: 12ch;
+		margin: clamp(0.5rem, 1.5vw, 1rem) 0 2rem;
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 9.5vw, 7rem);
+		font-weight: 400;
+		line-height: 0.86;
+		letter-spacing: 0.01em;
+		text-align: left;
+		text-transform: none;
+		background: linear-gradient(
+			115deg,
+			var(--hero-title-color-start) 0%,
+			var(--hero-title-color-mid) 48%,
+			var(--hero-title-color-end) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-shadow: 0 12px 32px rgb(var(--color-rose-shadow-rgb) / 62%);
+	}
+
+	.invitation-hero__portrait {
+		display: none;
+	}
+
+	.invitation-hero__divider {
+		width: clamp(5rem, 14vw, 10rem);
+		height: 1px;
+		margin: clamp(1rem, 2.2vw, 1.4rem) 0;
+		background: var(--rose-gold-divider);
+		opacity: 78%;
+	}
+
+	.invitation-hero__divider::after {
+		content: none;
+	}
+
+	.invitation-hero__details {
+		align-items: flex-start;
+		gap: 0.35rem;
+		margin-bottom: 5rem;
+		margin-left: 1.5rem;
+		color: var(--color-text-on-dark);
+	}
+
+	.invitation-hero__date,
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		margin: 0;
+		font-family: var(--font-ui);
+		font-size: clamp(0.72rem, 1.8vw, 1.3rem);
+		font-style: normal;
+		font-weight: 600;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: rgb(var(--color-warm-ivory-rgb) / 82%);
+		text-shadow: 0 2px 10px rgb(var(--color-rose-shadow-rgb) / 58%);
+	}
+
+	.calligraphy-accent {
+		font-family: var(--font-display);
+		font-size: 1em;
+		font-style: italic;
+		color: var(--color-candle-gold);
+	}
+
+	.invitation-hero__scroll-indicator {
+		color: rgb(var(--color-warm-ivory-rgb) / 56%);
+	}
+
+	@include mixins.respond-to(xl) {
+		.invitation-hero__content {
+			padding-left: clamp(4.5rem, 9vw, 8rem);
+		}
+	}
+
+	@include mixins.respond-below(sm) {
+		.invitation-hero__background::after {
+			background:
+				linear-gradient(
+					180deg,
+					rgb(var(--color-midnight-navy-rgb) / 20%) 0%,
+					transparent 22%,
+					rgb(var(--color-rose-shadow-rgb) / 70%) 100%
+				),
+				radial-gradient(
+					circle at 70% 18%,
+					rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+					transparent 40%
+				);
+		}
+
+		.invitation-hero__content {
+			grid-template-rows: auto auto auto auto;
+			padding: clamp(3.5rem, 10svh, 5rem) clamp(1.25rem, 4vw, 2rem) clamp(4rem, 10svh, 5.5rem);
+		}
+
+		.invitation-hero__title {
+			max-width: 16ch;
+			margin-top: clamp(0.4rem, 1vw, 0.8rem);
+			font-size: clamp(2.6rem, 13vw, 4.5rem);
+			line-height: 0.84;
+		}
+
+		.invitation-hero__details {
+			align-items: center;
+			text-align: center;
+		}
+	}
+}
