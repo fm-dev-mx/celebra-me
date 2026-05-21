@@ -32,5 +32,13 @@
     "files.exclude": {
         "**/bin": false
     },
-    "explorer.excludeGitIgnore": false
+    "explorer.excludeGitIgnore": false,
+    "cssVariables.lookupFiles": ["src/**/*.scss", "src/**/*.css", "src/**/*.astro"],
+    "cssVariables.blacklistFolders": [
+        "**/.git",
+        "**/node_modules",
+        "**/dist",
+        "**/.astro",
+        "**/.vercel"
+    ]
 }
