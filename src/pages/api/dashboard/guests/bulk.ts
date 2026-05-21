@@ -1,60 +1,95 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
-import { errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { normalizeImportedPhone } from '@/lib/rsvp/core/utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
+import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { z } from 'zod';
+
+const BulkGuestSchema = z.object({
+	full_name: z.string().min(1),
+	phone: z.string().optional().default(''),
+	country_code: z.string().optional(),
+	email: z.email().optional().nullable(),
+	tags: z.array(z.string()).optional(),
+	max_allowed_attendees: z.number().optional().default(2),
+});
 
 const BulkImportSchema = z.object({
 	eventId: z.uuid(),
-	guests: z.array(
-		z.object({
-			full_name: z.string(),
-			phone: z.string().optional(),
-			email: z.email().optional().nullable(),
-			tags: z.array(z.string()).optional(),
-			max_allowed_attendees: z.number().optional().default(2),
-		}),
-	),
+	guests: z.array(BulkGuestSchema),
 });
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		// 1. Validate the authenticated host session.
 		const session = await requireHostSession(request);
 
-		// 2. Validate the request body.
 		const body = await validateBodyOrRespond(request, BulkImportSchema);
 		if (body instanceof Response) return body;
 
-		// 3. Verify event ownership before importing guests.
-		const events = await supabaseRestRequest<Array<{ id: string }>>({
-			pathWithQuery: `events?id=eq.${body.eventId}&owner_user_id=eq.${session.userId}&select=id`,
-			method: 'GET',
-			authToken: session.accessToken,
-		});
-
-		if (events.length === 0) {
-			return forbidden('Event not found or access denied.');
+		const eventRecord = await findEventById(body.eventId, session.accessToken);
+		if (!eventRecord) {
+			const serviceEvent = await findEventByIdService(body.eventId);
+			if (serviceEvent) {
+				return forbidden('Event not found or access denied.');
+			}
+			return errorResponse(new ApiError(404, 'not_found', 'Event not found.'));
 		}
 
-		// 4. Call the bulk upsert RPC.
+		const rowErrors: string[] = [];
+		const normalizedGuests = body.guests.map((guest, i) => {
+			try {
+				const phone = guest.phone
+					? normalizeImportedPhone(guest.phone, guest.country_code)
+					: '';
+				return {
+					full_name: guest.full_name,
+					phone,
+					email: guest.email ?? null,
+					tags: guest.tags ?? [],
+					max_allowed_attendees: guest.max_allowed_attendees,
+				};
+			} catch (err) {
+				rowErrors.push(
+					`Fila ${i + 1}: ${err instanceof Error ? err.message : String(err)}`,
+				);
+				return null;
+			}
+		});
+
+		if (rowErrors.length > 0) {
+			return jsonResponse({ errors: rowErrors }, 400);
+		}
+
 		const data = await supabaseRestRequest({
 			pathWithQuery: `rpc/upsert_guests_v1`,
 			method: 'POST',
 			body: {
 				p_event_id: body.eventId,
-				p_guests: body.guests,
+				p_guests: normalizedGuests,
 			},
 			authToken: session.accessToken,
 		});
 
 		return jsonResponse({
 			data,
-			message: 'Import completed successfully.',
+			message: 'Importación completada correctamente.',
 		});
 	} catch (err) {
-		console.error('[BulkImport] Error:', err);
-		return errorResponse(err);
+		console.error('[rsvp] [BulkImport] Error:', err);
+		if (isApiError(err)) {
+			return errorResponse(err);
+		}
+		const message = err instanceof Error ? err.message : String(err);
+		const supabaseMatch = message.match(/^Supabase error \((\d+)\):/);
+		if (supabaseMatch) {
+			const supabaseStatus = parseInt(supabaseMatch[1], 10);
+			if (supabaseStatus >= 400 && supabaseStatus < 500) {
+				return badRequest(message);
+			}
+		}
+		return errorResponse(new ApiError(500, 'internal_error', message));
 	}
 };
