@@ -20,14 +20,14 @@
 	}
 
 	.copy-button {
-		background: rgb(224 185 112 / 88%);
-		color: rgb(29 20 14);
+		background: var(--gifts-copy-bg, var(--gifts-button-hover-bg));
+		color: var(--gifts-copy-color, var(--gifts-button-hover-color));
 		font-family: var(--font-body-hacienda, var(--font-body));
 		letter-spacing: 0.08em;
 		border-radius: 999px;
 
 		&:hover {
-			background: rgb(241 219 177 / 94%);
+			background: var(--gifts-copy-hover-bg, var(--gifts-button-color));
 		}
 	}
 
