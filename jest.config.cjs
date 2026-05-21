@@ -1,6 +1,5 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-const strictRsvpCoverage =
-	process.env.RSVP_STRICT_COVERAGE === 'true' || process.env.RSVP_V2_STRICT_COVERAGE === 'true';
+const strictRsvpCoverage = process.env.RSVP_STRICT_COVERAGE === 'true';
 
 module.exports = {
 	// ESM + TypeScript preset
@@ -18,7 +17,7 @@ module.exports = {
 			'ts-jest',
 			{
 				useESM: true,
-				tsconfig: '<rootDir>/tsconfig.json',
+				tsconfig: '<rootDir>/tsconfig.test.json',
 			},
 		],
 	},
