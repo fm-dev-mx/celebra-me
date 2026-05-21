@@ -40,12 +40,12 @@
         },
         "reception": {
             "venueEvent": "Recepción",
-            "venueName": "Salón Imperial de las Rosas",
+            "venueName": "Salón Imperial",
             "address": "Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.",
             "city": "Querétaro",
             "date": "20 de noviembre de 2027",
             "time": "8:00 PM",
-            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial-rosas",
+            "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
             "image": "reception"
         },
         "indications": [
@@ -155,7 +155,7 @@
                 "icon": "reception",
                 "label": "Recepción",
                 "time": "8:00 PM",
-                "description": "Bienvenida en el Salón Imperial de las Rosas."
+                "description": "Bienvenida en el Salón Imperial"
             },
             {
                 "icon": "waltz",
