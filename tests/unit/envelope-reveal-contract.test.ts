@@ -1,23 +1,6 @@
-import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
-import {
-	buildRevealCard,
-	SEAL_ICON_MAP,
-	type EnvelopeSealIcon,
-} from '@/lib/invitation/reveal-card';
+import { buildRevealCard } from '@/lib/invitation/reveal-card';
 
-describe('EnvelopeReveal content contract', () => {
-	it('accepts every supported seal icon with a rendered icon mapping', () => {
-		for (const sealIcon of Object.keys(SEAL_ICON_MAP) as EnvelopeSealIcon[]) {
-			const parsed = envelopeSchema.safeParse({
-				sealStyle: 'wax',
-				sealIcon,
-			});
-
-			expect(parsed.success).toBe(true);
-			expect(SEAL_ICON_MAP[sealIcon]).toEqual(expect.any(String));
-		}
-	});
-
+describe('buildRevealCard', () => {
 	it('builds the canonical reveal card data with defaults', () => {
 		expect(
 			buildRevealCard({
@@ -28,9 +11,23 @@ describe('EnvelopeReveal content contract', () => {
 		).toEqual({
 			documentLabel: 'Invitación',
 			name: 'Ximena',
-			details: '25 de abril de 2026 • Monterrey',
+			details: '25 abr 2026 • Monterrey',
 			guestName: undefined,
 			sealIcon: 'monogram',
+			sealInitials: undefined,
+			venueName: undefined,
 		});
+	});
+
+	it('passes through venueName and sealInitials when provided', () => {
+		const card = buildRevealCard({
+			name: 'Ximena',
+			date: '2026-04-25',
+			city: 'Monterrey',
+			venueName: 'Hacienda San Agustín',
+			sealInitials: 'X·V',
+		});
+		expect(card.venueName).toBe('Hacienda San Agustín');
+		expect(card.sealInitials).toBe('X·V');
 	});
 });

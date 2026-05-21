@@ -21,7 +21,7 @@ export interface RevealCardData {
 export function formatRevealDate(date: string): string {
 	return new Intl.DateTimeFormat('es-MX', {
 		day: 'numeric',
-		month: 'long',
+		month: 'short',
 		year: 'numeric',
 		timeZone: 'UTC',
 	}).format(new Date(date));
@@ -37,10 +37,12 @@ export function buildRevealCard(input: {
 	sealInitials?: string;
 	venueName?: string;
 }): RevealCardData {
+	const formattedDate = formatRevealDate(input.date);
+
 	return {
 		documentLabel: input.documentLabel || 'Invitación',
 		name: input.name,
-		details: `${formatRevealDate(input.date)} • ${input.city}`,
+		details: `${formattedDate} • ${input.city}`,
 		guestName: input.guestName,
 		sealIcon: input.sealIcon || 'monogram',
 		sealInitials: input.sealInitials,
