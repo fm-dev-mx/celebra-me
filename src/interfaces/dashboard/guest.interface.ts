@@ -10,6 +10,7 @@ export interface DashboardGuestItem {
 	inviteId: string;
 	fullName: string;
 	phone: string;
+	phoneCountryCode?: string;
 	email?: string | null;
 	tags: string[];
 	metadata?: Record<string, unknown>;

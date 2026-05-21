@@ -7,6 +7,7 @@ type ModalMode = 'create' | 'edit';
 export interface GuestFormPayload {
 	fullName: string;
 	phone?: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 	attendeeCount?: number;
@@ -276,7 +277,8 @@ export const useGuestDashboardActions = ({
 				eventId,
 				guests: guests.map((guest) => ({
 					full_name: guest.fullName || '',
-					phone_: guest.phone,
+					phone: guest.phone,
+					country_code: guest.phoneCountryCode,
 					email: guest.email,
 					tags: guest.tags,
 				})),

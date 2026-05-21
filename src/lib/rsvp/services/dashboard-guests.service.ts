@@ -23,7 +23,7 @@ import {
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { normalizeImportedPhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { generateShortId } from '@/lib/server/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
@@ -138,6 +138,7 @@ export async function createDashboardGuest(input: {
 	eventId: string;
 	fullName: string;
 	phone?: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
 	origin: string;
@@ -150,7 +151,7 @@ export async function createDashboardGuest(input: {
 	const fullName = sanitize(input.fullName, 140);
 	if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 
-	const phone = input.phone ? normalizePhone(input.phone) : undefined;
+	const phone = input.phone ? normalizeImportedPhone(input.phone, input.countryCode) : undefined;
 	if (phone) {
 		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
 		if (existing) {
@@ -220,6 +221,7 @@ export async function updateDashboardGuest(input: {
 	isSuperAdmin?: boolean;
 	fullName?: string;
 	phone?: string;
+	countryCode?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
@@ -253,7 +255,10 @@ export async function updateDashboardGuest(input: {
 
 	let updated;
 	try {
-		const nextPhone = input.phone !== undefined ? normalizePhone(input.phone) : undefined;
+		const nextPhone =
+			input.phone !== undefined
+				? normalizeImportedPhone(input.phone, input.countryCode)
+				: undefined;
 		if (nextPhone && nextPhone !== existing.phone) {
 			const duplicate = await findGuestByPhone(
 				existing.eventId,

@@ -162,7 +162,7 @@ describe('rsvp service branches', () => {
 		const result = await createDashboardGuest({
 			eventId: 'evt-1',
 			fullName: 'Guest',
-			phone: '6680000000',
+			phone: '+526680000000',
 			maxAllowedAttendees: 100,
 			hostAccessToken: 'token',
 			origin: 'http://localhost',

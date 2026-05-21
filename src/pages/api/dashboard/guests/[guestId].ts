@@ -45,6 +45,8 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;
 
+		const countryCode =
+			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
 		const result = await updateDashboardGuest({
 			guestId,
 			hostAccessToken: session.accessToken,
@@ -53,6 +55,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			isSuperAdmin: session.isSuperAdmin,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
 			phone: body.phone !== undefined ? sanitize(body.phone, 40) : undefined,
+			countryCode,
 			maxAllowedAttendees:
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,
 			attendanceStatus: parseStatus(sanitize(body.attendanceStatus, 20)),

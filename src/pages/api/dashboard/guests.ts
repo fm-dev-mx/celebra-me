@@ -75,6 +75,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 		const eventId = sanitize(body.eventId as string, 120);
 		const fullName = sanitize(body.fullName as string, 140);
 		const phone = sanitize(body.phone as string, 40);
+		const countryCode =
+			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
 		const maxAllowedAttendees =
 			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
@@ -86,6 +88,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			eventId,
 			fullName,
 			phone,
+			countryCode,
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,

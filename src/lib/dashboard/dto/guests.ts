@@ -5,7 +5,8 @@ export type GuestsListResponse = DashboardGuestListResponse;
 
 export interface BulkImportGuestDTO {
 	full_name: string;
-	phone_?: string | null;
+	phone?: string | null;
+	country_code?: string | null;
 	email?: string | null;
 	tags?: string[];
 }
@@ -19,6 +20,7 @@ export interface CreateGuestDTO {
 	eventId: string;
 	fullName: string;
 	phone?: string;
+	countryCode?: string;
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;
@@ -27,6 +29,7 @@ export interface CreateGuestDTO {
 export interface UpdateGuestDTO {
 	fullName?: string;
 	phone?: string;
+	countryCode?: string;
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;

@@ -13,6 +13,7 @@ interface GuestFormModalProps {
 		payload: {
 			fullName: string;
 			phone?: string;
+			countryCode?: string;
 			maxAllowedAttendees: number;
 			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 			attendeeCount?: number;
@@ -36,6 +37,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 }) => {
 	const [fullName, setFullName] = useState('');
 	const [phone, setPhone] = useState('');
+	const [countryCode, setCountryCode] = useState('+52');
 	const [maxAllowedAttendees, setMaxAllowedAttendees] = useState(1);
 	const [attendanceStatus, setAttendanceStatus] = useState<'pending' | 'confirmed' | 'declined'>(
 		'pending',
@@ -53,6 +55,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const resetForm = () => {
 		setFullName('');
 		setPhone('');
+		setCountryCode('+52');
 		setMaxAllowedAttendees(1);
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
@@ -72,6 +75,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		}
 		setFullName(initialGuest.fullName);
 		setPhone(initialGuest.phone || '');
+		setCountryCode(initialGuest.phoneCountryCode || '+52');
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
@@ -89,9 +93,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		}
 
 		if (phone.trim()) {
-			const PHONE_REGEX = /^\d{10}$/;
-			if (!PHONE_REGEX.test(phone.replace(/[\s-]/g, ''))) {
-				errors.phone = 'El teléfono debe ser de 10 dígitos.';
+			const digits = phone.replace(/[\s\-()]/g, '').replace(/[^\d+]/g, '');
+			if (!digits) {
+				errors.phone = 'El teléfono no es válido.';
 			}
 		}
 
@@ -112,6 +116,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				{
 					fullName: fullName.trim(),
 					phone: phone.trim() || undefined,
+					countryCode,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
@@ -196,6 +201,18 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								)}
 							</div>
 							<div className="dashboard-form-field">
+								<label htmlFor="countryCode">Código de país</label>
+								<select
+									id="countryCode"
+									value={countryCode}
+									onChange={(event) => setCountryCode(event.target.value)}
+								>
+									<option value="+52">México (+52)</option>
+									<option value="+1">Estados Unidos (+1)</option>
+									<option value="+34">España (+34)</option>
+								</select>
+							</div>
+							<div className="dashboard-form-field">
 								<label htmlFor="phone">Teléfono (WhatsApp)</label>
 								<input
 									id="phone"
@@ -210,7 +227,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											e.preventDefault();
 										}
 									}}
-									placeholder="Opcional (10 dígitos)"
+									placeholder="Opcional (ej. 6691234567)"
 								/>
 								{fieldErrors.phone && (
 									<span className="guest-field-error">{fieldErrors.phone}</span>
