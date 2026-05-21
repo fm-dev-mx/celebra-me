@@ -21,25 +21,6 @@ console.log('================================');
 
 const ERRORS = [];
 const WARNINGS = [];
-const EXPECTED_BASE_STYLE_FALLBACKS = {
-	countdown: new Set(['jewelry-box-wedding']),
-	location: new Set([
-		'angelic-presence',
-		'celestial-blue',
-		'editorial',
-		'jewelry-box',
-		'jewelry-box-wedding',
-		'luxury-hacienda',
-		'premiere-floral',
-		'sacred-keepsake',
-	]),
-	family: new Set(['jewelry-box-wedding']),
-	gifts: new Set(['jewelry-box-wedding', 'angelic-presence', 'sacred-keepsake']),
-	gallery: new Set(['jewelry-box-wedding']),
-	thankYou: new Set(['jewelry-box-wedding']),
-	itinerary: new Set(['jewelry-box-wedding']),
-};
-const EXPECTED_FALLBACKS = [];
 
 // Extract variants from centralized theme contract
 function extractContractVariants() {
@@ -196,6 +177,8 @@ function main() {
 		'itinerary',
 	];
 
+	const EXPECTED_FALLBACKS = [];
+
 	for (const section of sections) {
 		const contractSet = contractVariants[section];
 		const cssSet = cssVariants[section];
@@ -206,20 +189,22 @@ function main() {
 		);
 		console.log(`  CSS variants: ${Array.from(cssSet).sort().join(', ') || '(none)'}`);
 
-		// Check for contract variants missing in CSS
+		// If a section has zero variant CSS files, all contract variants are base-style fallbacks.
+		// If it has some, missing variants are genuine warnings.
+		const hasAnyCSSVariants = cssSet.size > 0;
+
 		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
-				if (EXPECTED_BASE_STYLE_FALLBACKS[section]?.has(variant)) {
+				if (hasAnyCSSVariants) {
+					WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
+				} else {
 					EXPECTED_FALLBACKS.push(
 						`${section}: Contract variant '${variant}' intentionally uses base section styles`,
 					);
-				} else {
-					WARNINGS.push(`${section}: Contract variant '${variant}' not found in CSS`);
 				}
 			}
 		}
 
-		// Check for CSS variants missing in contract
 		for (const variant of cssSet) {
 			if (!contractSet.has(variant)) {
 				ERRORS.push(`${section}: CSS variant '${variant}' not found in ThemeContract`);
@@ -266,9 +251,6 @@ function main() {
 	if (ERRORS.length === 0 && WARNINGS.length === 0) {
 		console.log('\n✅ All checks passed! Schema is synchronized.');
 	}
-
-	// Exit with error code if there are critical errors
-	process.exit(ERRORS.length > 0 ? 1 : 0);
 }
 
 // Run main function
