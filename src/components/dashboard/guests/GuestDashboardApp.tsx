@@ -167,6 +167,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					<ImportMagic
 						onClose={() => setImportModalOpen(false)}
 						onImport={handleImport}
+						eventId={eventId}
 					/>
 				)}
 
