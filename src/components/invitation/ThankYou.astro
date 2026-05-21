@@ -28,7 +28,10 @@ const {
 	overlayAnchor,
 	overlaySafeArea,
 } = Astro.props;
-const isCelestialBlue = variant === 'celestial-blue';
+const EDITORIAL_THANK_YOU_VARIANTS = ['celestial-blue', 'enchanted-rose'] as const;
+const usesEditorialLayout = EDITORIAL_THANK_YOU_VARIANTS.includes(
+	variant as (typeof EDITORIAL_THANK_YOU_VARIANTS)[number],
+);
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);
@@ -45,6 +48,11 @@ const IMAGE_CONFIGS = {
 		class: 'photo-image',
 	},
 	'celestial-blue': {
+		width: 700,
+		height: 1050,
+		class: 'photo-image thank-you-editorial__image',
+	},
+	'enchanted-rose': {
 		width: 700,
 		height: 1050,
 		class: 'photo-image thank-you-editorial__image',
@@ -70,7 +78,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >
 	{
-		isCelestialBlue ? (
+		usesEditorialLayout ? (
 			<div class="thank-you-editorial">
 				<div class="thank-you-editorial__ambient" aria-hidden="true" />
 				{image && (
