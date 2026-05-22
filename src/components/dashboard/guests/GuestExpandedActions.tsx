@@ -19,7 +19,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	guestName,
 	inviteUrl,
 	isShared,
-	attendanceStatus,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -74,8 +73,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 				? 'Revirtiendo…'
 				: 'Marcar como no enviada';
 
-	const isAccepted = attendanceStatus === 'confirmed';
-
 	return (
 		<div
 			className="guest-expanded-actions"
@@ -107,11 +104,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 						aria-label={`Marcar invitación de ${guestName} como no enviada`}
 					>
 						<span>{revertLabel}</span>
-						{isAccepted && confirmState !== 'confirm-revert' && (
-							<span className="guest-expanded-actions__correction-note">
-								Esto no cambiará la confirmación de asistencia.
-							</span>
-						)}
 					</button>
 				) : (
 					<button
@@ -124,11 +116,6 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 					>
 						<CheckIcon size={14} />
 						<span>{markSentLabel}</span>
-						{isAccepted && confirmState !== 'confirm-mark-sent' && (
-							<span className="guest-expanded-actions__correction-note">
-								Esto no cambiará la confirmación de asistencia.
-							</span>
-						)}
 					</button>
 				)}
 			</div>
