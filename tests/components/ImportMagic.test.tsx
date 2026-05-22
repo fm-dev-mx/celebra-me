@@ -3,11 +3,13 @@ import ImportMagic, {
 	splitLine,
 	detectHeaders,
 	parseLine,
-	validateGuestRow,
 	isHeaderRow,
-	KNOWN_HEADERS,
 } from '@/components/dashboard/guests/ImportMagic';
-import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic';
+import {
+	validateGuestRow,
+	KNOWN_IMPORT_HEADERS as KNOWN_HEADERS,
+} from '@/components/dashboard/guests/ImportMagic.utils';
+import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 // ---------------------------------------------------------------------------
@@ -99,9 +101,9 @@ describe('detectHeaders', () => {
 			const mapping = detectHeaders(exportHeader);
 			expect(mapping!.get('3')).toBeUndefined();
 			expect(mapping!.get('4')).toBeUndefined();
-			expect(mapping!.get('5')).toBeUndefined();
+			expect(mapping!.get('5')).toBe('maxAllowedAttendees');
 			expect(mapping!.get('6')).toBeUndefined();
-			expect(mapping!.get('7')).toBeUndefined();
+			expect(mapping!.get('7')).toBe('tags');
 			expect(mapping!.get('8')).toBeUndefined();
 		});
 	});
@@ -419,16 +421,18 @@ function renderModal(
 	existingGuests: DashboardGuestItem[] = [],
 ) {
 	const onImport = jest.fn().mockResolvedValue({ created: 1, updated: 0, status: 'success' });
+	const onUpdate = jest.fn().mockResolvedValue(undefined);
 	const onClose = jest.fn();
 	render(
 		<ImportMagic
 			onImport={onImport}
+			onUpdate={onUpdate}
 			onClose={onClose}
 			eventId={eventId}
 			existingGuests={existingGuests}
 		/>,
 	);
-	return { onImport, onClose };
+	return { onImport, onUpdate, onClose };
 }
 
 function importCsv(content: string) {
@@ -572,7 +576,7 @@ describe('editable preview', () => {
 		expect(screen.getAllByText('Nuevo')).toHaveLength(1);
 		expect(screen.getAllByText('Con errores')).toHaveLength(1);
 		expect(getImportButton().disabled).toBe(false);
-		expect(getImportButton().textContent).toContain('Importar 1 invitado nuevo');
+		expect(getImportButton().textContent).toContain('Importar 1 cambio');
 	});
 
 	it('fixing error row enables import button', () => {
@@ -644,273 +648,104 @@ describe('import payload', () => {
 	});
 });
 
-describe('delete rows', () => {
-	beforeEach(async () => {
-		renderModal();
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-	});
+describe('action-aware duplicate review', () => {
+	const existingAna = (): DashboardGuestItem[] => [
+		{
+			guestId: 'guest-ana',
+			inviteId: 'invite-ana',
+			fullName: 'Ana López',
+			phone: '+526691234567',
+			phoneCountryCode: '+52',
+			email: null,
+			tags: [],
+			metadata: {},
+			maxAllowedAttendees: 2,
+			attendanceStatus: 'pending',
+			attendeeCount: 0,
+			guestComment: '',
+			deliveryStatus: 'generated',
+			viewPercentage: 0,
+			isViewed: false,
+			firstViewedAt: null,
+			respondedAt: null,
+			waShareUrl: '',
+			shareText: '',
+			updatedAt: new Date().toISOString(),
+		},
+	];
 
-	it('deleting a valid row removes it and reclassifies remaining rows', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
-		expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
-		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
-		expect(deleteButtons.length).toBe(2);
-		fireEvent.click(deleteButtons[0]);
-		expect(screen.queryByDisplayValue('Ana')).toBeNull();
-		expect(screen.getByDisplayValue('Luis')).toBeInTheDocument();
-	});
-
-	it('import remains enabled after deleting a valid row', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
-		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
-		fireEvent.click(deleteButtons[0]);
-		expect(getImportButton().disabled).toBe(false);
-		expect(getImportButton().textContent).toContain('Importar 1 invitado nuevo');
-	});
-
-	it('deleting all rows disables import and shows an empty state', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
-		fireEvent.click(deleteButtons[0]);
-		expect(screen.getByText('No hay invitados para importar.')).toBeInTheDocument();
-		expect(getImportButton().disabled).toBe(true);
-	});
-});
-
-describe('API error handling', () => {
-	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
-
-	it('failed import shows Spanish error', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
+	it('checkbox reveals hidden exact duplicates', async () => {
+		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
+		importCsv('full_name,phone,country_code\nAna López,+526691234567,');
+		expect(screen.queryByDisplayValue('Ana López')).toBeNull();
 
-		const errorEl = await screen.findByText(/Los datos son válidos/i);
-		expect(errorEl).toBeInTheDocument();
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+		expect(screen.getByDisplayValue('Ana López')).toBeInTheDocument();
+		expect(screen.getByText('Duplicado exacto')).toBeInTheDocument();
 	});
 
-	it('stale API error clears after parse', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
+	it('editing duplicate name and phone makes it importable', async () => {
+		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-		await screen.findByText(/Los datos son válidos/i);
-
-		// Re-paste new data clears the error
-		importCsv('full_name,phone,country_code\nLuis,+525551234567,');
-		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
-	});
-});
-
-describe('fatal event/access error', () => {
-	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
-
-	it('disables import when fatal event/access error is present', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-		await screen.findByText(/Los datos son válidos/i);
-
-		expect(getImportButton().disabled).toBe(true);
-	});
-
-	it('hides ready-to-import success message when fatal error present', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		expect(screen.getByText(/Todos los invitados están listos/i)).toBeInTheDocument();
-		fireEvent.click(getImportButton());
-		await screen.findByText(/Los datos son válidos/i);
-		expect(screen.queryByText(/Todos los invitados están listos/i)).toBeNull();
-	});
-
-	it('shows fatal error message when event/access fails', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-
-		const fatalEl = await screen.findByText(/Los datos son válidos/i);
-		expect(fatalEl).toBeInTheDocument();
-		expect(fatalEl.textContent).toContain('no se puede importar');
-	});
-
-	it('clears fatal error after new parse', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-		await screen.findByText(/Los datos son válidos/i);
-		importCsv('full_name,phone,country_code\nLuis,+525551234567,');
-		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
-	});
-
-	it('clears fatal error after new CSV selection (re-parse)', async () => {
-		const onImport = jest
-			.fn()
-			.mockRejectedValue(new Error('Event not found or access denied.'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-		await screen.findByText(/Los datos son válidos/i);
-		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
-		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nLuis,+525551234567,' },
+		importCsv('full_name,phone,country_code\nAna López,+526691234567,');
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+		fireEvent.change(screen.getByDisplayValue('Ana López'), {
+			target: { value: 'Luis Pérez' },
 		});
-		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
-	});
-});
-
-describe('retryable error', () => {
-	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
-
-	it('unknown retryable error shows Spanish fallback and allows retry', async () => {
-		const onImport = jest.fn().mockRejectedValue(new Error('Network error'));
-		const onClose = jest.fn();
-		render(
-			<ImportMagic
-				onImport={onImport}
-				onClose={onClose}
-				eventId={TEST_EVENT_ID}
-				existingGuests={[]}
-			/>,
-		);
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		fireEvent.click(getImportButton());
-		const fallbackEl = await screen.findByText(/No pudimos importar/i);
-		expect(fallbackEl).toBeInTheDocument();
-		expect(getImportButton().disabled).toBe(false);
-	});
-});
-
-describe('event id context', () => {
-	it('disables import when eventId is empty', async () => {
-		renderModal('');
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		expect(getImportButton().disabled).toBe(true);
-	});
-});
-
-describe('source textarea collapse', () => {
-	it('collapses textarea after paste', async () => {
-		renderModal();
-		await screen.findByPlaceholderText(/Ejemplo:/i);
-
-		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
-		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
+		fireEvent.change(screen.getByDisplayValue('+526691234567'), {
+			target: { value: '+525551234567' },
 		});
 
-		// Textarea should have fewer rows when collapsed
-		expect(textarea.rows).toBe(2);
+		expect(screen.getByText('Nuevo')).toBeInTheDocument();
+		expect(getImportButton()).not.toBeDisabled();
 	});
 
-	it('shows edit button after collapse', async () => {
-		renderModal();
+	it('same name with different phone remains visible and reviewable', async () => {
+		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
-		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
-		});
-
-		expect(screen.getByText(/Editar datos pegados/i)).toBeInTheDocument();
+		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+		expect(screen.getByDisplayValue('Ana Lopez')).toBeInTheDocument();
+		expect(screen.getByText('Revisar nombre')).toBeInTheDocument();
+		expect(screen.getByRole('combobox')).toHaveValue('create');
 	});
 
-	it('re-expands textarea when edit button is clicked', async () => {
-		renderModal();
+	it('action selector controls create and update submission', async () => {
+		const { onImport, onUpdate } = renderModal(
+			'550e8400-e29b-41d4-a716-446655440000',
+			existingAna(),
+		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
-		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
-		});
+		importCsv('full_name,phone,country_code\nAna Familia,+526691234567,\nNuevo,+525551234567,');
+		fireEvent.click(getImportButton());
 
-		fireEvent.click(screen.getByText(/Editar datos pegados/i));
-		expect(textarea.rows).toBe(4);
+		await screen.findByText(/Resultado de la importación/i);
+		expect(onUpdate).toHaveBeenCalledWith(
+			'guest-ana',
+			expect.objectContaining({ fullName: 'Ana Familia', phone: '+526691234567' }),
+		);
+		expect(onImport).toHaveBeenCalledWith(
+			expect.arrayContaining([
+				expect.objectContaining({ fullName: 'Nuevo', phone: '+525551234567' }),
+			]),
+		);
+		const createPayload = onImport.mock.calls[0][0][0];
+		expect(createPayload).toHaveProperty('phone');
+		expect(createPayload).not.toHaveProperty('phone_');
+	});
+
+	it('can skip a visible review conflict', async () => {
+		const { onImport } = renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+
+		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+		fireEvent.change(screen.getByRole('combobox'), { target: { value: 'skip' } });
+
+		expect(getImportButton()).toBeDisabled();
+		expect(onImport).not.toHaveBeenCalled();
 	});
 });

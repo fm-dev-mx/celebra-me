@@ -1,43 +1,60 @@
-import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
+import type {
+	ImportRowAction,
+	ImportRowStatus,
+	ParsedGuest,
+} from '@/components/dashboard/guests/ImportMagic.utils';
 import { IMPORT_FATAL_ERROR, pluralS } from '@/components/dashboard/guests/ImportMagic.utils';
-import { ImportOmittedList } from '@/components/dashboard/guests/ImportMagicOmitted';
 import { DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 
+const STATUS_LABELS: Partial<Record<ImportRowStatus, string>> = {
+	invalid: 'Con errores',
+	exact_duplicate: 'Duplicado exacto',
+	probable_duplicate: 'Posible duplicado',
+	same_phone_update: 'Mismo teléfono',
+	same_name_different_phone: 'Revisar nombre',
+	same_name_missing_phone: 'Revisar teléfono',
+	ambiguous_name_match: 'Nombre ambiguo',
+	internal_duplicate: 'Duplicado en archivo',
+};
+
+function statusLabel(guest: ParsedGuest): string {
+	if (guest._status && STATUS_LABELS[guest._status]) return STATUS_LABELS[guest._status]!;
+	return 'Nuevo';
+}
+
+function badgeClass(guest: ParsedGuest): string {
+	if (guest.error || guest._status === 'invalid') return 'import-magic__badge--error';
+	if (guest.requiresReview) return 'import-magic__badge--warning';
+	if (guest.action === 'update') return 'import-magic__badge--info';
+	return 'import-magic__badge--new';
+}
+
+function canUpdate(guest: ParsedGuest): boolean {
+	return Boolean(guest.matchedGuestId) && guest._status !== 'ambiguous_name_match';
+}
+
 function ImportPreviewTable({
-	preview,
+	rows,
 	onEdit,
+	onActionChange,
 	onDelete,
 }: {
-	preview: ParsedGuest[];
+	rows: { guest: ParsedGuest; originalIndex: number }[];
 	onEdit: (
 		index: number,
 		field: 'fullName' | 'phone' | 'phoneCountryCode' | 'email',
 		value: string,
 	) => void;
+	onActionChange: (index: number, action: ImportRowAction) => void;
 	onDelete: (index: number) => void;
 }) {
-	const getStatusBadge = (guest: ParsedGuest) => {
-		if (guest._status === 'new' && guest.error) {
-			return (
-				<span className="import-magic__badge import-magic__badge--error">Con errores</span>
-			);
-		}
-		if (guest._status === 'duplicate-name' || guest._status === 'existing-name') {
-			return (
-				<span className="import-magic__badge import-magic__badge--warning">
-					Dup. nombre
-				</span>
-			);
-		}
-		return <span className="import-magic__badge import-magic__badge--new">Nuevo</span>;
-	};
-
 	return (
 		<div className="import-magic__table-wrap">
 			<table className="import-magic__table">
 				<thead>
 					<tr>
 						<th>Estado</th>
+						<th>Acción</th>
 						<th>Nombre</th>
 						<th>Teléfono</th>
 						<th>Clave país</th>
@@ -46,68 +63,105 @@ function ImportPreviewTable({
 					</tr>
 				</thead>
 				<tbody>
-					{preview.map((p, i) => (
-						<tr key={i} className={p.error ? 'import-magic__row--error' : ''}>
-							<td data-label="Estado">{getStatusBadge(p)}</td>
+					{rows.map(({ guest, originalIndex }, tableIndex) => (
+						<tr
+							key={`${originalIndex}-${tableIndex}`}
+							className={guest.error ? 'import-magic__row--error' : ''}
+						>
+							<td data-label="Estado">
+								<span className={`import-magic__badge ${badgeClass(guest)}`}>
+									{statusLabel(guest)}
+								</span>
+								{guest.matchedGuestName && (
+									<span className="import-magic__cell-note">
+										Coincide con {guest.matchedGuestName}
+									</span>
+								)}
+							</td>
+							<td data-label="Acción">
+								<select
+									value={guest.action ?? 'skip'}
+									onChange={(event) =>
+										onActionChange(
+											originalIndex,
+											event.target.value as ImportRowAction,
+										)
+									}
+									className="import-magic__action-select"
+								>
+									<option value="create">Crear nuevo</option>
+									<option value="update" disabled={!canUpdate(guest)}>
+										Actualizar existente
+									</option>
+									<option value="skip">Omitir</option>
+								</select>
+							</td>
 							<td data-label="Nombre">
 								<input
 									type="text"
-									value={p.fullName}
-									onChange={(e) => onEdit(i, 'fullName', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.fullName ? 'import-magic__cell-input--error' : ''}`}
+									value={guest.fullName}
+									onChange={(event) =>
+										onEdit(originalIndex, 'fullName', event.target.value)
+									}
+									className={`import-magic__cell-input ${guest.fieldErrors?.fullName ? 'import-magic__cell-input--error' : ''}`}
 								/>
-								{p.fieldErrors?.fullName && (
+								{guest.fieldErrors?.fullName && (
 									<span className="import-magic__cell-error">
-										{p.fieldErrors.fullName}
+										{guest.fieldErrors.fullName}
 									</span>
 								)}
 							</td>
 							<td data-label="Teléfono">
 								<input
 									type="text"
-									value={p.phone}
-									onChange={(e) => onEdit(i, 'phone', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.phone ? 'import-magic__cell-input--error' : ''}`}
+									value={guest.phone}
+									onChange={(event) =>
+										onEdit(originalIndex, 'phone', event.target.value)
+									}
+									className={`import-magic__cell-input ${guest.fieldErrors?.phone ? 'import-magic__cell-input--error' : ''}`}
 								/>
-								{p.fieldErrors?.phone && (
+								{guest.fieldErrors?.phone && (
 									<span className="import-magic__cell-error">
-										{p.fieldErrors.phone}
+										{guest.fieldErrors.phone}
 									</span>
 								)}
 							</td>
 							<td data-label="Clave país">
 								<input
 									type="text"
-									value={p.phoneCountryCode}
-									onChange={(e) => onEdit(i, 'phoneCountryCode', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.phoneCountryCode ? 'import-magic__cell-input--error' : ''}`}
+									value={guest.phoneCountryCode}
+									onChange={(event) =>
+										onEdit(
+											originalIndex,
+											'phoneCountryCode',
+											event.target.value,
+										)
+									}
+									className={`import-magic__cell-input ${guest.fieldErrors?.phoneCountryCode ? 'import-magic__cell-input--error' : ''}`}
 								/>
-								{p.fieldErrors?.phoneCountryCode && (
+								{guest.fieldErrors?.phoneCountryCode && (
 									<span className="import-magic__cell-error">
-										{p.fieldErrors.phoneCountryCode}
+										{guest.fieldErrors.phoneCountryCode}
 									</span>
 								)}
 							</td>
 							<td data-label="Correo">
 								<input
 									type="text"
-									value={p.email ?? ''}
-									onChange={(e) => onEdit(i, 'email', e.target.value)}
-									className={`import-magic__cell-input ${p.fieldErrors?.email ? 'import-magic__cell-input--error' : ''}`}
+									value={guest.email ?? ''}
+									onChange={(event) =>
+										onEdit(originalIndex, 'email', event.target.value)
+									}
+									className={`import-magic__cell-input ${guest.fieldErrors?.email ? 'import-magic__cell-input--error' : ''}`}
 								/>
-								{p.fieldErrors?.email && (
-									<span className="import-magic__cell-error">
-										{p.fieldErrors.email}
-									</span>
-								)}
 							</td>
 							<td data-label="">
 								<button
 									type="button"
 									className="import-magic__delete-btn btn-icon btn-icon--danger"
 									title="Eliminar invitado"
-									aria-label={`Eliminar invitado ${i + 1}`}
-									onClick={() => onDelete(i)}
+									aria-label={`Eliminar invitado ${originalIndex + 1}`}
+									onClick={() => onDelete(originalIndex)}
 								>
 									<DeleteGlyph size={14} />
 								</button>
@@ -122,85 +176,83 @@ function ImportPreviewTable({
 
 function ImportPreviewStatus({
 	isFatalError,
-	newValidCount,
+	actionableCount,
 	errorCount,
 	totalCount,
 }: {
 	isFatalError: boolean;
-	newValidCount: number;
+	actionableCount: number;
 	errorCount: number;
 	totalCount: number;
 }) {
-	if (isFatalError) {
-		return <p className="import-magic__fatal-error">{IMPORT_FATAL_ERROR}</p>;
-	}
-	if (newValidCount === 0 && errorCount > 0) {
+	if (isFatalError) return <p className="import-magic__fatal-error">{IMPORT_FATAL_ERROR}</p>;
+	if (actionableCount === 0 && errorCount > 0) {
 		return (
 			<p className="dashboard-form-help dashboard-form-help--error">
 				Hay {errorCount} fila{pluralS(errorCount)} con errores. Corrígelas para importar.
 			</p>
 		);
 	}
-	if (newValidCount === 0 && totalCount > 0) {
+	if (actionableCount === 0 && totalCount > 0) {
 		return (
 			<p className="dashboard-form-help dashboard-form-help--warning">
-				No hay invitados nuevos para importar.
+				No hay cambios listos para importar.
 			</p>
 		);
 	}
-	if (newValidCount > 0 && newValidCount === totalCount) {
-		return (
-			<p className="dashboard-form-help import-magic__all-valid">
-				Todos los invitados están listos para importarse.
-			</p>
-		);
-	}
-	if (newValidCount > 0) {
+	if (actionableCount > 0) {
 		return (
 			<p className="dashboard-form-help">
-				Se importarán {newValidCount} invitado{pluralS(newValidCount)} nuevo
-				{pluralS(newValidCount)} y válido{pluralS(newValidCount)}.
+				Se aplicarán {actionableCount} cambio{pluralS(actionableCount)}.
 			</p>
 		);
 	}
 	return null;
 }
 
-export function ImportPreviewPanel({
-	preview,
-	newValidCount,
-	existingPhoneCount,
-	nameDuplicateCount,
-	duplicatePhoneCount,
-	errorCount,
-	isFatalError,
-	visibleRows,
-	omittedRecords,
-	showColumnMapping,
-	text,
-	importError,
-	handleEdit,
-	handleDelete,
-}: {
+interface ImportPreviewPanelProps {
 	preview: ParsedGuest[];
-	newValidCount: number;
-	existingPhoneCount: number;
-	nameDuplicateCount: number;
-	duplicatePhoneCount: number;
+	createCount: number;
+	updateCount: number;
+	skippedCount: number;
+	reviewCount: number;
+	hiddenDuplicateCount: number;
 	errorCount: number;
 	isFatalError: boolean;
 	visibleRows: { guest: ParsedGuest; originalIndex: number }[];
-	omittedRecords: ParsedGuest[];
 	showColumnMapping: boolean;
 	text: string;
 	importError: string | null;
+	showPossibleDuplicates: boolean;
+	onShowPossibleDuplicatesChange: (value: boolean) => void;
 	handleEdit: (
 		index: number,
 		field: 'fullName' | 'phone' | 'phoneCountryCode' | 'email',
 		value: string,
 	) => void;
+	handleActionChange: (index: number, action: ImportRowAction) => void;
 	handleDelete: (index: number) => void;
-}) {
+}
+
+export function ImportPreviewPanel({
+	preview,
+	createCount,
+	updateCount,
+	skippedCount,
+	reviewCount,
+	hiddenDuplicateCount,
+	errorCount,
+	isFatalError,
+	visibleRows,
+	showColumnMapping,
+	text,
+	importError,
+	showPossibleDuplicates,
+	onShowPossibleDuplicatesChange,
+	handleEdit,
+	handleActionChange,
+	handleDelete,
+}: ImportPreviewPanelProps) {
 	if (preview.length === 0 && !showColumnMapping && text) {
 		return (
 			<div className="import-magic__empty">
@@ -209,6 +261,9 @@ export function ImportPreviewPanel({
 		);
 	}
 	if (preview.length === 0) return null;
+
+	const actionableCount = createCount + updateCount;
+
 	return (
 		<>
 			<div className="import-magic__preview">
@@ -216,50 +271,42 @@ export function ImportPreviewPanel({
 					<span className="import-magic__summary-total">
 						{preview.length} registros leídos
 					</span>
-					<span className="import-magic__summary-new">
-						{newValidCount} invitados nuevos
+					<span className="import-magic__summary-new">Nuevos: {createCount}</span>
+					<span className="import-magic__summary-existing">
+						Actualizaciones: {updateCount}
 					</span>
-					{existingPhoneCount > 0 && (
-						<span className="import-magic__summary-existing">
-							{existingPhoneCount} ya estaban agregados por teléfono
-						</span>
-					)}
-					{nameDuplicateCount > 0 && (
-						<span className="import-magic__summary-existing">
-							{nameDuplicateCount} posibles duplicados por nombre
-						</span>
-					)}
-					{duplicatePhoneCount > 0 && (
-						<span className="import-magic__summary-duplicate">
-							{duplicatePhoneCount} duplicados en el archivo
-						</span>
-					)}
-					{errorCount > 0 && (
-						<span className="import-magic__summary-error">
-							{errorCount} con errores
-						</span>
-					)}
+					<span className="import-magic__summary-duplicate">
+						Omitidos: {skippedCount}
+					</span>
+					<span className="import-magic__summary-error">
+						Requieren revisión: {reviewCount}
+					</span>
 				</div>
+				<label className="import-magic__duplicate-toggle">
+					<input
+						type="checkbox"
+						checked={showPossibleDuplicates}
+						onChange={(event) => onShowPossibleDuplicatesChange(event.target.checked)}
+					/>
+					Mostrar posibles duplicados
+					{hiddenDuplicateCount > 0 ? ` (${hiddenDuplicateCount})` : ''}
+				</label>
 				<p className="dashboard-form-help">
-					Solo se importarán los invitados nuevos y válidos. Los registros ya agregados,
-					duplicados o con errores serán omitidos.
+					Revisa las coincidencias antes de importar. Los registros omitidos no se
+					enviarán.
 				</p>
 				<ImportPreviewStatus
 					isFatalError={isFatalError}
-					newValidCount={newValidCount}
+					actionableCount={actionableCount}
 					errorCount={errorCount}
 					totalCount={preview.length}
 				/>
-				<ImportOmittedList records={omittedRecords} />
 				{visibleRows.length > 0 && (
 					<ImportPreviewTable
-						preview={visibleRows.map((vr) => vr.guest)}
-						onEdit={(tableIndex, field, value) =>
-							handleEdit(visibleRows[tableIndex].originalIndex, field, value)
-						}
-						onDelete={(tableIndex) =>
-							handleDelete(visibleRows[tableIndex].originalIndex)
-						}
+						rows={visibleRows}
+						onEdit={handleEdit}
+						onActionChange={handleActionChange}
+						onDelete={handleDelete}
 					/>
 				)}
 			</div>

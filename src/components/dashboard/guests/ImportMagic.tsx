@@ -1,10 +1,16 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
-import { normalizeImportedPhone, normalizePhone, normalizeName } from '@/lib/rsvp/core/utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
 	pluralS,
-	classifyGuests,
+	classifyImportedRows,
+	reclassifyEditedRow,
+	parseCsvLikeContent,
+	parseMappedRow,
+	validateGuestRow,
+	looksLikeDataValue,
+	KNOWN_IMPORT_HEADERS,
+	IGNORED_EXPORT_HEADERS,
 	IMPORT_FATAL_ERROR,
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import type {
@@ -14,10 +20,11 @@ import type {
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import { ImportPreviewPanel } from '@/components/dashboard/guests/ImportMagicPreview';
 import { ImportSummary } from '@/components/dashboard/guests/ImportMagicSummary';
-import type { BulkImportResult } from '@/lib/dashboard/dto/guests';
+import type { BulkImportResult, UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 
 interface ImportMagicProps {
-	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<BulkImportResult>;
+	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<BulkImportResult | void>;
+	onUpdate: (guestId: string, payload: UpdateGuestDTO) => Promise<DashboardGuestItem | void>;
 	onClose: () => void;
 	eventId: string;
 	existingGuests: DashboardGuestItem[];
@@ -33,151 +40,32 @@ export function splitLine(line: string): string[] {
 	return [line];
 }
 
-export const KNOWN_HEADERS: Record<string, keyof ParsedGuest> = {
-	nombre: 'fullName',
-	name: 'fullName',
-	full_name: 'fullName',
-	teléfono: 'phone',
-	telefono: 'phone',
-	phone: 'phone',
-	clave_pais: 'phoneCountryCode',
-	country_code: 'phoneCountryCode',
-	correo: 'email',
-	email: 'email',
-};
-
 export function detectHeaders(firstLine: string): Map<string, keyof ParsedGuest> | null {
 	const parts = splitLine(firstLine);
 	const headerColumns = parts.map((p) => p.trim().toLowerCase());
-	const knownHeaderCount = headerColumns.filter((col) => KNOWN_HEADERS[col]).length;
+	const knownHeaderCount = headerColumns.filter((col) => KNOWN_IMPORT_HEADERS[col]).length;
 	if (knownHeaderCount < 2) return null;
 	const mapping = new Map<string, keyof ParsedGuest>();
 	for (let i = 0; i < headerColumns.length; i++) {
-		const target = KNOWN_HEADERS[headerColumns[i]];
+		const target = KNOWN_IMPORT_HEADERS[headerColumns[i]];
 		if (target) mapping.set(String(i), target);
 	}
 	return mapping;
 }
 
-function looksLikeDataValue(value: string): boolean {
-	const trimmed = value.trim();
-	if (!trimmed) return false;
-	if (trimmed.startsWith('+')) return true;
-	if (/^\d{6,}$/.test(trimmed)) return true;
-	if (trimmed.includes('@')) return true;
-	return false;
-}
-
 export function isHeaderRow(parts: string[]): boolean {
 	const lowerParts = parts.map((p) => p.trim().toLowerCase());
-	if (lowerParts.some((p) => KNOWN_HEADERS[p])) return true;
+	if (lowerParts.some((p) => KNOWN_IMPORT_HEADERS[p] || IGNORED_EXPORT_HEADERS.has(p)))
+		return true;
 	if (parts.every((p) => !looksLikeDataValue(p))) return true;
 	return false;
-}
-
-export function validateGuestRow(guest: ParsedGuest): {
-	rowError?: string;
-	fieldErrors?: NonNullable<ParsedGuest['fieldErrors']>;
-} {
-	const fieldErrors: NonNullable<ParsedGuest['fieldErrors']> = {};
-
-	const name = guest.fullName.trim();
-	const phone = guest.phone.trim();
-	const countryCode = guest.phoneCountryCode.trim();
-
-	if (!name) {
-		fieldErrors.fullName = 'El nombre es obligatorio.';
-	}
-
-	if (!phone && !countryCode) {
-		// valid
-	} else if (phone && !phone.startsWith('+') && !countryCode) {
-		fieldErrors.phone =
-			'Agrega el código de país o escribe el número completo empezando con +.';
-		fieldErrors.phoneCountryCode =
-			'La clave país es obligatoria cuando el teléfono no empieza con +.';
-	} else if (phone && !phone.startsWith('+') && countryCode) {
-		try {
-			normalizeImportedPhone(phone, countryCode);
-		} catch {
-			fieldErrors.phoneCountryCode = 'Código de país no válido.';
-		}
-	} else if (phone.startsWith('+') && countryCode) {
-		try {
-			normalizeImportedPhone(phone, countryCode);
-		} catch {
-			fieldErrors.phone =
-				'El teléfono internacional no coincide con el código de país proporcionado.';
-			fieldErrors.phoneCountryCode = 'El código de país no coincide con el teléfono.';
-		}
-	}
-
-	const hasErrors = Object.keys(fieldErrors).length > 0;
-	return {
-		rowError: hasErrors
-			? fieldErrors.phone ||
-				fieldErrors.phoneCountryCode ||
-				fieldErrors.fullName ||
-				'Corrige los errores de esta fila.'
-			: undefined,
-		fieldErrors: hasErrors ? fieldErrors : undefined,
-	};
-}
-
-function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: string): void {
-	if (key === 'fullName') result.fullName = value;
-	else if (key === 'phone') result.phone = value;
-	else if (key === 'phoneCountryCode') result.phoneCountryCode = value;
-	else if (key === 'email') result.email = value || null;
-}
-
-function parsePositional(parts: string[], result: ParsedGuest): void {
-	result.fullName = parts[0]?.trim() ?? '';
-	result.phone = parts[1]?.trim() ?? '';
-
-	if (parts.length >= 4) {
-		result.phoneCountryCode = parts[2]?.trim() ?? '';
-		result.email = parts[3]?.trim() || null;
-		return;
-	}
-
-	if (parts.length !== 3) {
-		result.email = parts[2]?.trim() || null;
-		return;
-	}
-
-	const third = parts[2]?.trim() ?? '';
-	if (third.startsWith('+')) {
-		result.phoneCountryCode = third;
-		return;
-	}
-	result.email = third || null;
 }
 
 export function parseLine(
 	parts: string[],
 	columnMapping: Map<string, keyof ParsedGuest> | null,
 ): ParsedGuest {
-	const result: ParsedGuest = {
-		fullName: '',
-		phone: '',
-		phoneCountryCode: '',
-		email: null,
-	};
-
-	if (columnMapping) {
-		for (const [idxStr, field] of columnMapping.entries()) {
-			const idx = Number(idxStr);
-			const value = parts[idx]?.trim() ?? '';
-			applyFieldValue(result, field, value);
-		}
-	} else {
-		parsePositional(parts, result);
-	}
-
-	if (result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')) {
-		result.phoneCountryCode = '+' + result.phoneCountryCode;
-	}
+	const result = parseMappedRow(parts, columnMapping);
 
 	const validation = validateGuestRow(result);
 	result.fieldErrors = validation.fieldErrors;
@@ -260,6 +148,8 @@ const TARGET_LABELS: Record<ColumnTarget, string> = {
 	phone: 'Teléfono',
 	phoneCountryCode: 'Clave país',
 	email: 'Correo',
+	maxAllowedAttendees: 'Pases',
+	tags: 'Etiquetas',
 	ignore: 'Ignorar',
 };
 
@@ -290,61 +180,85 @@ function parseImportContent(
 	} = setters;
 	setImportError(null);
 
-	const lines = content.split(/\r?\n/).filter((line) => line.trim() !== '');
-	if (lines.length === 0) {
+	const parsed = parseCsvLikeContent(content);
+	if (parsed.rows.length === 0 && parsed.rawRows.length === 0) {
 		setPreview([]);
 		setShowColumnMapping(false);
 		setColumnAssignments([]);
 		return;
 	}
 
-	const firstParts = splitLine(lines[0]);
-	const mapping = detectHeaders(lines[0]);
+	const firstParts = parsed.headers ?? parsed.rawRows[0] ?? [];
+	const mapping = parsed.headerMapping;
 	const mappingHasFullName = mapping && Array.from(mapping.values()).includes('fullName');
 
 	if (mapping && mappingHasFullName) {
-		const dataLines = lines.slice(1);
-		const results = dataLines
-			.map((line) => parseLine(splitLine(line), mapping))
-			.filter((g) => g.fullName);
 		setShowColumnMapping(false);
-		setPreview(results);
+		setPreview(parsed.rows);
 		setColumnAssignments([]);
 		setRawDataLines([]);
 		return;
 	}
 
-	if (isHeaderRow(firstParts)) {
+	if (parsed.headers || isHeaderRow(firstParts)) {
 		const assignments: ColumnAssignment[] = firstParts.map((col, i) => {
 			const lower = col.trim().toLowerCase();
-			const known = KNOWN_HEADERS[lower];
+			const known = KNOWN_IMPORT_HEADERS[lower];
 			return {
 				sourceIndex: i,
 				sourceName: col,
 				target: (known as ColumnTarget) ?? 'ignore',
 			};
 		});
-		setRawDataLines(lines.slice(1).map((l) => splitLine(l)));
+		setRawDataLines(parsed.rawRows);
 		setColumnAssignments(assignments);
 		setShowColumnMapping(true);
 		setPreview([]);
 		return;
 	}
 
-	const splitLines = lines.map((l) => splitLine(l));
-	const assignments: ColumnAssignment[] = splitLines[0].map((_, i) => ({
+	const assignments: ColumnAssignment[] = parsed.rawRows[0].map((_, i) => ({
 		sourceIndex: i,
 		sourceName: `Columna ${i + 1}`,
 		target: 'ignore' as ColumnTarget,
 	}));
-	setRawDataLines(splitLines);
+	setRawDataLines(parsed.rawRows);
 	setColumnAssignments(assignments);
 	setShowColumnMapping(true);
 	setPreview([]);
 }
 
+function toGuestPayload(g: ParsedGuest) {
+	return {
+		fullName: g.fullName,
+		phone: g.normalizedPhone,
+		email: g.email,
+		maxAllowedAttendees: g.maxAllowedAttendees ?? 2,
+		tags: g.tags ?? [],
+	};
+}
+
+function handleImportError(err: unknown, setError: (msg: string | null) => void) {
+	const message = err instanceof Error ? err.message : '';
+	if (message === 'Event not found or access denied.') {
+		setError(IMPORT_FATAL_ERROR);
+		return;
+	}
+	const details =
+		err && typeof err === 'object' && 'details' in err
+			? (err as { details: { rows?: string[] } }).details
+			: undefined;
+	const rowErrors = details?.rows;
+	if (Array.isArray(rowErrors) && rowErrors.length > 0) {
+		setError('No se pudieron importar algunas filas:\n' + rowErrors.join('\n'));
+	} else {
+		setError('No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.');
+	}
+}
+
 const ImportMagic: React.FC<ImportMagicProps> = ({
 	onImport,
+	onUpdate,
 	onClose,
 	eventId,
 	existingGuests,
@@ -359,36 +273,30 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const [rawDataLines, setRawDataLines] = useState<string[][]>([]);
 	const [sourceCollapsed, setSourceCollapsed] = useState(false);
 	const [importResult, setImportResult] = useState<BulkImportResult | null>(null);
+	const [showPossibleDuplicates, setShowPossibleDuplicates] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const frozenExistingGuestsRef = useRef(existingGuests);
 
-	const existingPhones = useMemo(
-		() => new Set(existingGuests.filter((g) => g.phone).map((g) => normalizePhone(g.phone))),
-		[existingGuests],
-	);
-
-	const existingNames = useMemo(
-		() => new Set(existingGuests.map((g) => normalizeName(g.fullName)).filter(Boolean)),
-		[existingGuests],
-	);
-
-	const errorCount = preview.filter((g) => g.error).length;
-	const newValidCount = preview.filter((g) => g._status === 'new' && !g.error).length;
-	const existingPhoneCount = preview.filter((g) => g._status === 'existing-phone').length;
-	const duplicatePhoneCount = preview.filter((g) => g._status === 'duplicate-phone').length;
-	const nameDuplicateCount = preview.filter(
-		(g) => g._status === 'existing-name' || g._status === 'duplicate-name',
+	const errorCount = preview.filter((g) => g._status === 'invalid').length;
+	const createCount = preview.filter((g) => g.action === 'create' && !g.error).length;
+	const updateCount = preview.filter(
+		(g) => g.action === 'update' && Boolean(g.matchedGuestId) && !g.error,
 	).length;
+	const skippedCount = preview.filter((g) => g.action === 'skip' && !g.error).length;
+	const reviewCount = preview.filter((g) => g.requiresReview && !g.error).length;
+	const hiddenDuplicateCount = preview.filter((g) => g.hiddenByDefault).length;
 	const isNombreMapped = columnAssignments.some((a) => a.target === 'fullName');
 	const isFatalError = importError === IMPORT_FATAL_ERROR;
+	const actionableCount = createCount + updateCount;
 	const importLabel = parsing
 		? 'Procesando...'
-		: newValidCount > 0
-			? `Importar ${newValidCount} invitado${pluralS(newValidCount)} nuevo${pluralS(newValidCount)}`
+		: actionableCount > 0
+			? `Importar ${actionableCount} cambio${pluralS(actionableCount)}`
 			: errorCount > 0
 				? 'Corregir errores para importar'
-				: 'No hay invitados nuevos para importar';
+				: 'No hay cambios para importar';
 	const importDisabled =
-		newValidCount === 0 ||
+		actionableCount === 0 ||
 		parsing ||
 		(showColumnMapping && !isNombreMapped) ||
 		isFatalError ||
@@ -398,26 +306,12 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const visibleRows = useMemo(() => {
 		return preview
 			.map((guest, index) => ({ guest, originalIndex: index }))
-			.filter(({ guest }) => guest._status === 'new');
-	}, [preview]);
+			.filter(({ guest }) => showPossibleDuplicates || !guest.hiddenByDefault);
+	}, [preview, showPossibleDuplicates]);
 
-	const omittedRecords = useMemo(
-		() =>
-			preview.filter(
-				(g) =>
-					g._status === 'existing-phone' ||
-					g._status === 'duplicate-phone' ||
-					g._status === 'existing-name' ||
-					g._status === 'duplicate-name',
-			),
-		[preview],
-	);
-	const handleNewPreview = useCallback(
-		(guests: ParsedGuest[]) => {
-			setPreview(classifyGuests(guests, existingPhones, existingNames));
-		},
-		[existingPhones, existingNames],
-	);
+	const handleNewPreview = useCallback((guests: ParsedGuest[]) => {
+		setPreview(classifyImportedRows(guests, frozenExistingGuestsRef.current));
+	}, []);
 
 	const parseContent = (content: string) => {
 		parseImportContent(content, {
@@ -465,7 +359,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 			.filter((g) => g.fullName);
 
 		setShowColumnMapping(false);
-		setPreview(classifyGuests(results, existingPhones, existingNames));
+		setPreview(classifyImportedRows(results, frozenExistingGuestsRef.current));
 	};
 
 	const handleMappingChange = (index: number, target: ColumnTarget) => {
@@ -509,64 +403,64 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 				const validation = validateGuestRow(guest);
 				if (validation.rowError) guest.error = validation.rowError;
 				if (validation.fieldErrors) guest.fieldErrors = validation.fieldErrors;
-				updated[index] = guest;
-				return classifyGuests(updated, existingPhones, existingNames);
+				return reclassifyEditedRow(updated, index, guest, frozenExistingGuestsRef.current);
 			});
 		},
-		[existingPhones, existingNames],
+		[],
 	);
 
-	const handleDelete = useCallback(
-		(index: number) => {
+	const handleActionChange = useCallback(
+		(index: number, action: 'create' | 'update' | 'skip') => {
 			setImportError(null);
 			setPreview((prev) => {
-				const updated = prev.filter((_, i) => i !== index);
-				return classifyGuests(updated, existingPhones, existingNames);
+				const updated = [...prev];
+				updated[index] = { ...updated[index], action, actionTouched: true };
+				return classifyImportedRows(updated, frozenExistingGuestsRef.current);
 			});
 		},
-		[existingPhones, existingNames],
+		[],
 	);
+
+	const handleDelete = useCallback((index: number) => {
+		setImportError(null);
+		setPreview((prev) => {
+			const updated = prev.filter((_, i) => i !== index);
+			return classifyImportedRows(updated, frozenExistingGuestsRef.current);
+		});
+	}, []);
 
 	const handleImport = async () => {
 		setParsing(true);
 		setImportError(null);
 		setImportResult(null);
 		try {
-			const newGuests = preview.filter((g) => g._status === 'new' && !g.error);
-			if (newGuests.length === 0) {
-				setImportError('No hay invitados nuevos para importar.');
+			const createRows = preview.filter((g) => g.action === 'create' && !g.error);
+			const updateRows = preview.filter(
+				(g) => g.action === 'update' && Boolean(g.matchedGuestId) && !g.error,
+			);
+			if (createRows.length === 0 && updateRows.length === 0) {
+				setImportError('No hay cambios para importar.');
 				setParsing(false);
 				return;
 			}
-			const valid = newGuests.map((g) => ({
-				fullName: g.fullName,
-				phone: g.normalizedPhone,
-				email: g.email,
-				maxAllowedAttendees: 2,
-				tags: [] as string[],
-			}));
-			const result = await onImport(valid);
-			setImportResult(result);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : '';
-			if (message === 'Event not found or access denied.') {
-				setImportError(IMPORT_FATAL_ERROR);
-			} else {
-				const details =
-					err && typeof err === 'object' && 'details' in err
-						? (err as { details: { rows?: string[] } }).details
-						: undefined;
-				const rowErrors = details?.rows;
-				if (Array.isArray(rowErrors) && rowErrors.length > 0) {
-					setImportError(
-						'No se pudieron importar algunas filas:\n' + rowErrors.join('\n'),
-					);
-				} else {
-					setImportError(
-						'No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.',
-					);
-				}
+			const skippedRows = preview.filter((g) => g.action === 'skip' || g.error);
+			const valid = createRows.map(toGuestPayload);
+			const result = valid.length > 0 ? await onImport(valid) : undefined;
+			let updatedCount = 0;
+			for (const row of updateRows) {
+				await onUpdate(row.matchedGuestId!, toGuestPayload(row));
+				updatedCount++;
 			}
+			setImportResult({
+				created: result?.created ?? createRows.length,
+				updated: (result?.updated ?? 0) + updatedCount,
+				skipped: result?.skipped ?? skippedRows.length,
+				conflicts: result?.conflicts ?? 0,
+				status: result?.status ?? 'success',
+				errors: result?.errors,
+			});
+		} catch (err) {
+			handleImportError(err, setImportError);
 		} finally {
 			setParsing(false);
 		}
@@ -588,7 +482,9 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 						<ImportSummary
 							created={importResult.created}
 							updated={importResult.updated}
-							totalAttempted={newValidCount}
+							skipped={importResult.skipped}
+							conflicts={importResult.conflicts}
+							totalAttempted={preview.length}
 							errors={importResult.errors}
 							onClose={onClose}
 							onBack={() => setImportResult(null)}
@@ -681,18 +577,21 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 
 						<ImportPreviewPanel
 							preview={preview}
-							newValidCount={newValidCount}
-							existingPhoneCount={existingPhoneCount}
-							nameDuplicateCount={nameDuplicateCount}
-							duplicatePhoneCount={duplicatePhoneCount}
+							createCount={createCount}
+							updateCount={updateCount}
+							skippedCount={skippedCount}
+							reviewCount={reviewCount}
+							hiddenDuplicateCount={hiddenDuplicateCount}
 							errorCount={errorCount}
 							isFatalError={isFatalError}
 							visibleRows={visibleRows}
-							omittedRecords={omittedRecords}
 							showColumnMapping={showColumnMapping}
 							text={text}
 							importError={importError}
+							showPossibleDuplicates={showPossibleDuplicates}
+							onShowPossibleDuplicatesChange={setShowPossibleDuplicates}
 							handleEdit={handleEdit}
+							handleActionChange={handleActionChange}
 							handleDelete={handleDelete}
 						/>
 					</div>
