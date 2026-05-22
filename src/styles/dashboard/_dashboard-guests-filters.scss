@@ -112,28 +112,49 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		flex-wrap: wrap;
+		container-type: inline-size;
+		container-name: filter-actions;
 
 		@media (width >= 992px) {
 			flex-wrap: nowrap;
 		}
 
 		@media (width <= 480px) {
+			.btn-primary,
 			.btn-secondary {
-				min-height: 30px;
-				padding: 0 0.55rem;
-				font-size: 0.68rem;
-				background: transparent;
-				border-color: transparent;
-				color: var(--color-text-muted);
-
-				&:hover {
-					background: rgb(var(--color-action-accent-rgb) / 4%);
-					border-color: rgb(var(--color-action-accent-rgb) / 15%);
-					color: var(--color-text-secondary);
-					box-shadow: none;
-				}
+				min-height: 34px;
+				padding: 0 0.7rem;
+				font-size: 0.72rem;
 			}
+
+			.btn-secondary {
+				background: var(--color-surface-elevated);
+				border-color: var(--color-border-subtle);
+				color: var(--color-text-primary);
+			}
+		}
+	}
+
+	.filter-actions-group__inner {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-wrap: nowrap;
+	}
+
+	/* Toolbar actions menu trigger - hidden by default on wide layouts */
+	.toolbar-actions-menu__trigger {
+		display: none;
+	}
+
+	/* On narrow containers, hide secondary inline buttons and show the menu trigger */
+	@container filter-actions (width < 440px) {
+		.filter-actions-group__secondary {
+			display: none;
+		}
+
+		.toolbar-actions-menu__trigger {
+			display: inline-flex;
 		}
 	}
 }
