@@ -130,7 +130,7 @@ export function ImportSummary({
 				<div className="import-summary__errors">
 					<h4>Detalles por fila:</h4>
 					<ul>
-						{errors.map((err, i) => (
+						{errors?.map((err, i) => (
 							<li key={i}>{err}</li>
 						))}
 					</ul>

@@ -113,15 +113,6 @@ export function normalizePhoneForComparison(
 	}
 }
 
-function normalizePhoneForPayload(guest: ParsedGuest): string | undefined {
-	try {
-		const normalized = normalizeImportedPhone(guest.phone, guest.phoneCountryCode);
-		return normalized || undefined;
-	} catch {
-		return undefined;
-	}
-}
-
 function splitCsvRows(content: string): string[][] {
 	const rows: string[][] = [];
 	let current = '';
@@ -192,6 +183,10 @@ function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: str
 	}
 }
 
+function ensureCountryCodePrefix(code: string): string {
+	return code && !code.startsWith('+') ? '+' + code : code;
+}
+
 export function parsePositional(parts: string[]): ParsedGuest {
 	const result: ParsedGuest = {
 		fullName: parts[0]?.trim() ?? '',
@@ -211,9 +206,7 @@ export function parsePositional(parts: string[]): ParsedGuest {
 		result.email = parts[2]?.trim() || null;
 	}
 
-	if (result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')) {
-		result.phoneCountryCode = '+' + result.phoneCountryCode;
-	}
+	result.phoneCountryCode = ensureCountryCodePrefix(result.phoneCountryCode);
 	return result;
 }
 
@@ -234,9 +227,7 @@ export function parseMappedRow(
 		applyFieldValue(result, field, parts[Number(idxStr)]?.trim() ?? '');
 	}
 
-	if (result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')) {
-		result.phoneCountryCode = '+' + result.phoneCountryCode;
-	}
+	result.phoneCountryCode = ensureCountryCodePrefix(result.phoneCountryCode);
 	return result;
 }
 
@@ -253,9 +244,7 @@ export function validateGuestRow(guest: ParsedGuest): {
 		fieldErrors.fullName = 'El nombre es obligatorio.';
 	}
 
-	if (!phone && !countryCode) {
-		// valid
-	} else if (phone && !phone.startsWith('+') && !countryCode) {
+	if (phone && !phone.startsWith('+') && !countryCode) {
 		fieldErrors.phone =
 			'Agrega el código de país o escribe el número completo empezando con +.';
 		fieldErrors.phoneCountryCode =
@@ -289,13 +278,12 @@ export function validateGuestRow(guest: ParsedGuest): {
 }
 
 export function applyValidation(guest: ParsedGuest): ParsedGuest {
-	const result: ParsedGuest = { ...guest };
-	delete result.error;
-	delete result.fieldErrors;
-	const validation = validateGuestRow(result);
-	if (validation.rowError) result.error = validation.rowError;
-	if (validation.fieldErrors) result.fieldErrors = validation.fieldErrors;
-	return result;
+	const validation = validateGuestRow(guest);
+	return {
+		...guest,
+		error: validation.rowError,
+		fieldErrors: validation.fieldErrors,
+	};
 }
 
 export function detectHeaderMapping(parts: string[]): Map<string, keyof ParsedGuest> | null {
