@@ -3,9 +3,6 @@ import {
 	type CreateGuestInput,
 	type GuestFilters,
 	GUEST_COLUMNS,
-	GUEST_COLUMNS_WITHOUT_SHORT_ID,
-	GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE,
-	GUEST_COLUMNS_MINIMAL,
 	type UpdateGuestInput,
 	toGuestRecord,
 } from '@/lib/rsvp/repositories/shared/rows';
@@ -17,59 +14,30 @@ import {
 	deleteByQuery,
 } from '@/lib/rsvp/repositories/shared/operations';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { normalizeOptionalPhonePair } from '@/lib/rsvp/core/utils';
 
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
 
-// [DELETED] isGuestSchemaErrorMessage replaced by standardized schema
-
-async function supportsGenericRsvpSources(): Promise<boolean> {
-	return true;
-}
-
-function adaptGuestInsertInputForSchema(
-	input: CreateGuestInput,
-	options: { supportsGenericSources: boolean },
-): CreateGuestInput {
-	if (options.supportsGenericSources) return input;
-	return {
-		...input,
-		entrySource: 'dashboard',
-	};
-}
-
-function adaptGuestUpdateBodyForSchema(
-	body: Record<string, unknown>,
-	options: { supportsGenericSources: boolean },
-): Record<string, unknown> {
-	if (options.supportsGenericSources) return body;
-
-	const nextBody = { ...body };
-	if (nextBody.last_response_source === 'generic_link') {
-		nextBody.last_response_source = 'link';
-	}
-	delete nextBody.entry_source;
-	return nextBody;
-}
-
-function buildGuestInsertBody(
-	input: CreateGuestInput,
-	includeShortId: boolean,
-	includeEntrySource: boolean,
-) {
+function buildGuestInsertBody(input: CreateGuestInput) {
+	const { phone, countryCode } = normalizeOptionalPhonePair({
+		phone: input.phone,
+		countryCode: input.countryCode,
+	});
 	const body: Record<string, unknown> = {
 		event_id: input.eventId,
 		full_name: input.fullName,
-		phone: input.phone,
 		max_allowed_attendees: input.maxAllowedAttendees,
 		tags: input.tags,
 	};
-	if (includeShortId && input.shortId) {
+	if (phone) {
+		body.phone = phone;
+		body.country_code = countryCode;
+	}
+	if (input.shortId) {
 		body.short_id = input.shortId;
 	}
-	if (includeEntrySource) {
-		body.entry_source = input.entrySource ?? 'dashboard';
-	}
+	body.entry_source = input.entrySource ?? 'dashboard';
 	return body;
 }
 
@@ -77,51 +45,17 @@ function getGuestMutationOptions(hostAccessToken?: string) {
 	return hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true as const };
 }
 
-function getGuestReturnColumns(isMissingShortId: boolean, isMissingEntrySource: boolean) {
-	if (isMissingShortId && isMissingEntrySource) return GUEST_COLUMNS_MINIMAL;
-	if (isMissingShortId) return GUEST_COLUMNS_WITHOUT_SHORT_ID;
-	if (isMissingEntrySource) return GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
-	return GUEST_COLUMNS;
-}
-
 async function insertGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	const supportsGenericSources = await supportsGenericRsvpSources();
-	const normalizedInput = adaptGuestInsertInputForSchema(input, { supportsGenericSources });
-	const initialColumns = supportsGenericSources
-		? GUEST_COLUMNS
-		: GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
-
-	try {
-		return await insertSingle(
-			TABLE,
-			initialColumns,
-			buildGuestInsertBody(normalizedInput, true, supportsGenericSources),
-			toGuestRecord,
-			getGuestMutationOptions(hostAccessToken),
-		);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
-		const isMissingShortId = message.includes('short_id');
-		const isMissingEntrySource = message.includes('entry_source');
-
-		// Handle missing schema columns
-		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
-			console.warn(`[Repository] Retrying INSERT with safe columns: ${message}`);
-			return insertSingle(
-				TABLE,
-				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
-				buildGuestInsertBody(normalizedInput, !isMissingShortId, !isMissingEntrySource),
-				toGuestRecord,
-				getGuestMutationOptions(hostAccessToken),
-			);
-		}
-
-		throw error;
-	}
+	return insertSingle(
+		TABLE,
+		GUEST_COLUMNS,
+		buildGuestInsertBody(input),
+		toGuestRecord,
+		getGuestMutationOptions(hostAccessToken),
+	);
 }
 
 async function updateGuestRecord(
@@ -129,75 +63,50 @@ async function updateGuestRecord(
 	body: Record<string, unknown>,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	const supportsGenericSources = await supportsGenericRsvpSources();
-	const normalizedBody = adaptGuestUpdateBodyForSchema(body, { supportsGenericSources });
-	const initialColumns = supportsGenericSources
-		? GUEST_COLUMNS
-		: GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE;
-
-	try {
-		return await updateSingle(
-			TABLE,
-			initialColumns,
-			filter,
-			normalizedBody,
-			toGuestRecord,
-			getGuestMutationOptions(hostAccessToken),
-		);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
-		const isMissingShortId = message.includes('short_id');
-		const isMissingEntrySource = message.includes('entry_source');
-
-		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
-			console.warn(`[Repository] Retrying UPDATE with safe columns: ${message}`);
-			return updateSingle(
-				TABLE,
-				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
-				filter,
-				adaptGuestUpdateBodyForSchema(body, { supportsGenericSources: false }),
-				toGuestRecord,
-				getGuestMutationOptions(hostAccessToken),
-			);
-		}
-
-		throw error;
-	}
+	return updateSingle(
+		TABLE,
+		GUEST_COLUMNS,
+		filter,
+		body,
+		toGuestRecord,
+		getGuestMutationOptions(hostAccessToken),
+	);
 }
 
-function buildGuestUpdateBody(input: {
-	guestId?: string;
-	fullName?: string;
-	phone?: string;
-	maxAllowedAttendees?: number;
-	attendanceStatus?: UpdateGuestInput['attendanceStatus'];
-	attendeeCount?: number;
-	guestComment?: string;
-	deliveryStatus?: UpdateGuestInput['deliveryStatus'];
-	viewPercentage?: number;
-	isViewed?: boolean;
-	lastResponseSource?: UpdateGuestInput['lastResponseSource'];
-	respondedAt?: string | null;
-	tags?: string[];
-}) {
+const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
+	full_name: 'fullName',
+	max_allowed_attendees: 'maxAllowedAttendees',
+	attendance_status: 'attendanceStatus',
+	attendee_count: 'attendeeCount',
+	guest_comment: 'guestComment',
+	delivery_status: 'deliveryStatus',
+	view_percentage: 'viewPercentage',
+	is_viewed: 'isViewed',
+	last_response_source: 'lastResponseSource',
+	responded_at: 'respondedAt',
+	tags: 'tags',
+};
+
+function buildGuestUpdateBody(input: UpdateGuestInput) {
 	const updateBody: Record<string, unknown> = {};
-	if (input.fullName !== undefined) updateBody.full_name = input.fullName;
-	if (input.phone !== undefined) updateBody.phone = input.phone;
-	if (input.maxAllowedAttendees !== undefined) {
-		updateBody.max_allowed_attendees = input.maxAllowedAttendees;
+	for (const [column, key] of Object.entries(GUEST_COLUMN_MAP)) {
+		if (input[key as keyof UpdateGuestInput] !== undefined) {
+			updateBody[column] = input[key as keyof UpdateGuestInput];
+		}
 	}
-	if (input.attendanceStatus !== undefined) updateBody.attendance_status = input.attendanceStatus;
-	if (input.attendeeCount !== undefined) updateBody.attendee_count = input.attendeeCount;
-	if (input.guestComment !== undefined) updateBody.guest_comment = input.guestComment;
-	if (input.deliveryStatus !== undefined) updateBody.delivery_status = input.deliveryStatus;
-	if (input.viewPercentage !== undefined) updateBody.view_percentage = input.viewPercentage;
-	if (input.isViewed !== undefined) updateBody.is_viewed = input.isViewed;
-	if (input.lastResponseSource !== undefined) {
-		updateBody.last_response_source = input.lastResponseSource;
+	if (input.phone !== undefined) {
+		const { phone, countryCode } = normalizeOptionalPhonePair({
+			phone: input.phone,
+			countryCode: input.countryCode,
+		});
+		if (phone) {
+			updateBody.phone = phone;
+			updateBody.country_code = countryCode;
+		} else {
+			updateBody.phone = null;
+			updateBody.country_code = null;
+		}
 	}
-	if (input.respondedAt !== undefined) updateBody.responded_at = input.respondedAt;
-	if (input.tags !== undefined) updateBody.tags = input.tags;
 	return updateBody;
 }
 
@@ -305,30 +214,11 @@ export async function findGuestByEventAndNamePublic(
 	);
 }
 
-async function findGuestSingleSafe(
+function findGuestSingleSafe(
 	filter: string,
 	options: { authToken?: string; useServiceRole?: boolean },
 ): Promise<GuestInvitationRecord | null> {
-	try {
-		return await findSingle(TABLE, filter, GUEST_COLUMNS, toGuestRecord, options);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : '';
-		const isSchemaError = message.includes('PGRST204') || message.includes('42703');
-		const isMissingShortId = message.includes('short_id');
-		const isMissingEntrySource = message.includes('entry_source');
-
-		if (isSchemaError || isMissingShortId || isMissingEntrySource) {
-			console.warn(`[Repository] Retrying SELECT with safe columns: ${message}`);
-			return findSingle(
-				TABLE,
-				filter,
-				getGuestReturnColumns(isMissingShortId, isMissingEntrySource),
-				toGuestRecord,
-				options,
-			);
-		}
-		throw error;
-	}
+	return findSingle(TABLE, filter, GUEST_COLUMNS, toGuestRecord, options);
 }
 
 export async function findGuestByInviteIdPublic(
@@ -353,18 +243,36 @@ export async function findGuestByShortIdPublic(
 	);
 }
 
+export async function findGuestByPhonePublic(
+	eventId: string,
+	phone: string,
+): Promise<GuestInvitationRecord | null> {
+	return findGuestSingleSafe(
+		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
+		{ useServiceRole: true },
+	);
+}
+
+export async function findGuestByPhoneAuth(
+	eventId: string,
+	phone: string,
+	hostAccessToken: string,
+): Promise<GuestInvitationRecord | null> {
+	return findGuestSingleSafe(
+		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
+		{ authToken: hostAccessToken },
+	);
+}
+
+/** @deprecated Use findGuestByPhonePublic or findGuestByPhoneAuth */
 export async function findGuestByPhone(
 	eventId: string,
 	phone: string,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findGuestSingleSafe(
-		`event_id=eq.${encodeURIComponent(eventId)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
-		{
-			authToken: hostAccessToken,
-			useServiceRole: !hostAccessToken,
-		},
-	);
+	return hostAccessToken
+		? findGuestByPhoneAuth(eventId, phone, hostAccessToken)
+		: findGuestByPhonePublic(eventId, phone);
 }
 
 export async function updateGuestByInviteIdPublic(

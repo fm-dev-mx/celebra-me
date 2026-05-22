@@ -12,21 +12,21 @@ export interface SupabaseErrorResponse {
 	code?: string;
 }
 
-export interface ConstraintMapping {
-	constraintName: string;
-	errorCode: string;
-	userMessage: string;
-	httpStatus?: number;
-}
-
-const CONSTRAINT_MAPPINGS: ConstraintMapping[] = [
-	{
-		constraintName: 'guest_invitations_event_phone_unique',
+const CONSTRAINT_MAP: Record<
+	string,
+	{ errorCode: string; userMessage: string; httpStatus: number }
+> = {
+	guest_invitations_event_phone_unique: {
 		errorCode: 'conflict_duplicate_phone',
 		userMessage: 'A guest with that phone number already exists for this event.',
 		httpStatus: 409,
 	},
-];
+	guest_invitations_phone_country_code_pair_check: {
+		errorCode: 'bad_request',
+		userMessage: 'Si el teléfono está presente, el código de país también debe estarlo.',
+		httpStatus: 400,
+	},
+};
 
 function extractConstraintName(errorMessage: string): string | null {
 	const constraintMatch = errorMessage.match(/constraint "([^"]+)"/);
@@ -67,9 +67,9 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 
 	const constraintName = extractConstraintName(errorMessage);
 	if (constraintName) {
-		const mapping = CONSTRAINT_MAPPINGS.find((m) => m.constraintName === constraintName);
+		const mapping = CONSTRAINT_MAP[constraintName];
 		if (mapping) {
-			return new ApiError(mapping.httpStatus || 409, 'conflict', mapping.userMessage, {
+			return new ApiError(mapping.httpStatus, 'conflict', mapping.userMessage, {
 				constraint: constraintName,
 				errorCode: mapping.errorCode,
 			});
@@ -80,6 +80,17 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 		return new ApiError(409, 'conflict', 'A record with the same data already exists.', {
 			errorCode: 'conflict_unique_violation',
 		});
+	}
+
+	if (errorMessage.includes('23514')) {
+		return new ApiError(
+			400,
+			'bad_request',
+			'Los datos del invitado no cumplen con las reglas de validación.',
+			{
+				errorCode: 'check_constraint_violation',
+			},
+		);
 	}
 
 	if (errorMessage.includes('PGRST')) {
@@ -94,19 +105,4 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 		'Internal server error while processing the request.',
 		{ originalError: errorMessage },
 	);
-}
-
-export function isSupabaseConstraintError(error: unknown, constraintName?: string): boolean {
-	const supabaseError = parseSupabaseError(error);
-	const errorMessage =
-		supabaseError?.message || (error instanceof Error ? error.message : String(error));
-
-	const extractedConstraint = extractConstraintName(errorMessage);
-	if (!extractedConstraint) return false;
-
-	if (constraintName) {
-		return extractedConstraint === constraintName;
-	}
-
-	return CONSTRAINT_MAPPINGS.some((m) => m.constraintName === extractedConstraint);
 }
