@@ -2,14 +2,14 @@
 	position: relative;
 	display: inline-flex;
 	cursor: help;
-	color: var(--color-action-accent);
+	color: var(--color-text-muted);
 	transition:
 		transform var(--duration-snappy) var(--ease-standard),
 		color var(--duration-snappy) var(--ease-standard);
 
 	&:hover {
 		transform: scale(1.05);
-		filter: brightness(0.92);
+		color: var(--color-text-secondary);
 	}
 
 	&:hover .guest-tooltip-content {
@@ -65,22 +65,17 @@
 
 	&__name {
 		font-family: var(--font-display-elegant);
-		font-size: 1.1rem;
+		font-size: 1rem;
 		color: var(--color-text-primary);
 		font-weight: 500;
 		letter-spacing: -0.01em;
 		text-transform: none;
+		line-height: 1.3;
 	}
 
 	&__phone {
 		font-size: 0.82rem;
 		color: var(--color-text-secondary);
-	}
-
-	&__email {
-		font-size: 0.72rem;
-		color: var(--color-neutral-base);
-		font-style: italic;
 	}
 }
 
@@ -88,15 +83,14 @@
 	display: inline-flex;
 	align-items: center;
 	width: fit-content;
-	padding: 0.25rem 0.65rem;
+	padding: 0.2rem 0.6rem;
 	border-radius: 999px;
-	background: rgb(var(--color-surface-dark-rgb) / 5%);
-	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
-	color: var(--color-text-secondary);
+	background: rgb(var(--color-surface-dark-rgb) / 4%);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 7%);
+	color: var(--color-text-muted);
 	font-size: 0.62rem;
-	font-weight: 600;
+	font-weight: 500;
 	letter-spacing: 0.01em;
-	transition: all 0.2s ease;
 }
 
 .guest-tag--subtle {
@@ -106,7 +100,6 @@
 	font-weight: 500;
 }
 
-.delivery-status,
 .view-status {
 	display: inline-flex;
 	align-items: center;
@@ -117,23 +110,8 @@
 	font-weight: 600;
 	letter-spacing: 0.01em;
 	line-height: 1.4;
-}
-
-.delivery-status {
-	background: rgb(var(--color-action-secondary-rgb) / 6%);
-	border: 1px solid rgb(var(--color-action-secondary-rgb) / 12%);
-	color: var(--color-action-secondary);
-}
-
-.delivery-status--shared {
-	background: rgb(var(--color-state-success-rgb) / 6%);
-	border-color: rgb(var(--color-state-success-rgb) / 15%);
-	color: var(--color-state-success);
-}
-
-.view-status {
-	background: rgb(var(--color-text-secondary-rgb) / 5%);
-	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
+	background: rgb(var(--color-surface-dark-rgb) / 4%);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 7%);
 	color: var(--color-text-muted);
 }
 
@@ -169,13 +147,13 @@
 .guest-card__number {
 	font-family: var(--font-ui);
 	font-weight: 600;
-	color: var(--color-action-accent);
-	background: rgb(var(--color-action-accent-rgb) / 8%);
+	color: var(--color-text-secondary);
+	background: rgb(var(--color-surface-dark-rgb) / 5%);
 	padding: 2px 5px;
 	border-radius: 4px;
 	font-size: 0.68rem;
 	margin-right: 0.4rem;
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 15%);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
 }
 
 .guest-note-indicator {
@@ -190,14 +168,64 @@
 
 @keyframes guests-pulse-badge {
 	0% {
-		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb) / 0%));
+		filter: drop-shadow(0 0 0 rgb(var(--color-surface-dark-rgb) / 0%));
 	}
 
 	50% {
-		filter: drop-shadow(0 0 4px rgb(var(--color-action-accent-rgb) / 30%));
+		filter: drop-shadow(0 0 4px rgb(var(--color-surface-dark-rgb) / 20%));
 	}
 
 	100% {
-		filter: drop-shadow(0 0 0 rgb(var(--color-action-accent-rgb) / 0%));
+		filter: drop-shadow(0 0 0 rgb(var(--color-surface-dark-rgb) / 0%));
 	}
+}
+
+.attendee-count {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 1px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--color-text-primary);
+}
+
+.attendee-count__separator {
+	color: var(--color-text-muted);
+	font-size: 0.75em;
+	margin: 0 1px;
+}
+
+.attendee-count__max {
+	color: var(--color-text-secondary);
+	font-weight: 500;
+}
+
+.engagement-mini {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-width: 60px;
+}
+
+.engagement-mini__bar {
+	flex: 1;
+	height: 4px;
+	background: rgb(var(--color-surface-dark-rgb) / 10%);
+	border-radius: 999px;
+	overflow: hidden;
+	min-width: 30px;
+}
+
+.engagement-mini__progress {
+	height: 100%;
+	background: var(--color-action-secondary);
+	border-radius: 999px;
+	transition: width 0.4s ease;
+}
+
+.engagement-mini__label {
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--color-text-primary);
+	flex-shrink: 0;
 }

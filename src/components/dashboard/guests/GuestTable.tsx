@@ -14,6 +14,8 @@ interface GuestTableProps {
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 }
 
+export const GUEST_TABLE_COL_COUNT = 7;
+
 const GuestTable: React.FC<GuestTableProps> = ({
 	items,
 	inviteBaseUrl,
@@ -53,16 +55,15 @@ const GuestTable: React.FC<GuestTableProps> = ({
 				<table className="dashboard-guests__table">
 					<thead>
 						<tr>
-							<th>No.</th>
-							<th>Nombre / Contacto</th>
+							<th>Nombre / Teléfono</th>
 							<th>Nota</th>
-							<th>Categoría</th>
 							<th>Estado</th>
 							<th>Asistentes</th>
-							<th>Entrega</th>
-							<th>Progreso</th>
-							<th>Pase</th>
-							<th>Acciones</th>
+							<th>% Vista</th>
+							<th>Enviar</th>
+							<th>
+								<span className="sr-only">Ver más</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
