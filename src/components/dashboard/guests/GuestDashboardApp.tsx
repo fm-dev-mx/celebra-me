@@ -26,6 +26,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
 		'all',
 	);
+	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const {
 		error,
@@ -140,6 +141,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					inviteBaseUrl={inviteBaseUrl}
 					celebratingGuestId={celebratingGuestId}
 					highlightedGuestId={highlightedGuestId}
+					expandedGuestId={expandedGuestId}
+					onToggleExpanded={(id) =>
+						setExpandedGuestId((prev) => (prev === id ? null : id))
+					}
 					onEdit={openEditModal}
 					onDelete={requestDelete}
 					onMarkShared={handleMarkShared}

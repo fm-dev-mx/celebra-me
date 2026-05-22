@@ -9,6 +9,8 @@ interface GuestTableProps {
 	inviteBaseUrl: string;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
+	expandedGuestId?: string | null;
+	onToggleExpanded?: (guestId: string) => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -21,6 +23,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	inviteBaseUrl,
 	celebratingGuestId,
 	highlightedGuestId,
+	expandedGuestId,
+	onToggleExpanded,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -44,6 +48,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
 						isCelebrating={celebratingGuestId === item.guestId}
 						isHighlighted={highlightedGuestId === item.guestId}
+						isExpanded={expandedGuestId === item.guestId}
+						onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
 						onEdit={onEdit}
 						onDelete={onDelete}
 						onMarkShared={onMarkShared}
@@ -75,6 +81,8 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
 								celebratingGuestId={celebratingGuestId}
 								highlightedGuestId={highlightedGuestId}
+								isExpanded={expandedGuestId === item.guestId}
+								onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
 								onEdit={onEdit}
 								onDelete={onDelete}
 								onMarkShared={onMarkShared}

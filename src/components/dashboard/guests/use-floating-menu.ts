@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 interface UseFloatingMenuOptions {
 	menuWidth?: number;
@@ -13,8 +13,8 @@ export function useFloatingMenu(options: UseFloatingMenuOptions = {}) {
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	const uid = useRef(crypto.randomUUID());
-	const menuId = `menu-${uid.current}`;
+	const id = useId();
+	const menuId = `menu-${id}`;
 
 	const close = useCallback(() => {
 		setOpen(false);

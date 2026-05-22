@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { ChevronDownIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
@@ -19,6 +19,8 @@ interface GuestTableRowProps {
 	inviteUrl: string;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
+	isExpanded?: boolean;
+	onToggleExpanded?: () => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -30,11 +32,12 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	inviteUrl,
 	celebratingGuestId,
 	highlightedGuestId,
+	isExpanded,
+	onToggleExpanded,
 	onEdit,
 	onDelete,
 	onMarkShared,
 }) => {
-	const [detailsOpen, setDetailsOpen] = useState(false);
 	const progressRef = useRef<HTMLDivElement>(null);
 	const isViewed = item.firstViewedAt != null;
 
@@ -115,23 +118,23 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				<td data-label="">
 					<button
 						type="button"
-						className={`guest-row__menu-btn ${detailsOpen ? 'guest-row__menu-btn--open' : ''}`}
-						title={detailsOpen ? 'Ver menos detalles' : 'Ver más detalles'}
+						className={`guest-row__menu-btn ${isExpanded ? 'guest-row__menu-btn--open' : ''}`}
+						title={isExpanded ? 'Ver menos detalles' : 'Ver más detalles'}
 						aria-label={
-							detailsOpen
+							isExpanded
 								? `Ver menos detalles de ${item.fullName}`
 								: `Ver más detalles de ${item.fullName}`
 						}
-						aria-expanded={detailsOpen}
+						aria-expanded={isExpanded}
 						aria-controls={expandId}
-						onClick={() => setDetailsOpen(!detailsOpen)}
+						onClick={onToggleExpanded}
 					>
 						<ChevronDownIcon size={16} aria-hidden="true" />
 					</button>
 				</td>
 			</tr>
 
-			{detailsOpen && (
+			{isExpanded && (
 				<tr
 					className="guest-row__expanded-row"
 					id={expandId}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChevronDownIcon } from '@/components/common/icons/ui';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -17,6 +17,8 @@ interface GuestCardProps {
 	inviteUrl: string;
 	isCelebrating?: boolean;
 	isHighlighted?: boolean;
+	isExpanded?: boolean;
+	onToggleExpanded?: () => void;
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
@@ -28,11 +30,12 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	inviteUrl,
 	isCelebrating,
 	isHighlighted,
+	isExpanded,
+	onToggleExpanded,
 	onEdit,
 	onDelete,
 	onMarkShared,
 }) => {
-	const [detailsOpen, setDetailsOpen] = useState(false);
 	const isViewed = !!item.firstViewedAt;
 	const isShared = item.deliveryStatus === 'shared';
 	const visibleTags = getGuestVisibleTags(item);
@@ -100,16 +103,16 @@ const GuestCard: React.FC<GuestCardProps> = ({
 				/>
 				<button
 					type="button"
-					className={`guest-card__menu-btn ${detailsOpen ? 'guest-card__menu-btn--open' : ''}`}
-					title={detailsOpen ? 'Ver menos detalles' : 'Ver más detalles'}
+					className={`guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
+					title={isExpanded ? 'Ver menos detalles' : 'Ver más detalles'}
 					aria-label={
-						detailsOpen
+						isExpanded
 							? `Ver menos detalles de ${item.fullName}`
 							: `Ver más detalles de ${item.fullName}`
 					}
-					aria-expanded={detailsOpen}
+					aria-expanded={isExpanded}
 					aria-controls={expandId}
-					onClick={() => setDetailsOpen(!detailsOpen)}
+					onClick={onToggleExpanded}
 				>
 					<ChevronDownIcon size={16} aria-hidden="true" />
 				</button>
@@ -117,7 +120,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 
 			<div
 				id={expandId}
-				className={`guest-card__expanded ${detailsOpen ? 'guest-card__expanded--open' : ''}`}
+				className={`guest-card__expanded ${isExpanded ? 'guest-card__expanded--open' : ''}`}
 				role="region"
 				aria-label={`Detalles de ${item.fullName}`}
 			>
