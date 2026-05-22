@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface GuestFormModalProps {
@@ -15,7 +16,7 @@ interface GuestFormModalProps {
 			phone?: string;
 			countryCode?: string;
 			maxAllowedAttendees: number;
-			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
+			attendanceStatus?: AttendanceStatus;
 			attendeeCount?: number;
 			guestComment?: string;
 			tags?: string[];
@@ -39,9 +40,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [phone, setPhone] = useState('');
 	const [countryCode, setCountryCode] = useState('+52');
 	const [maxAllowedAttendees, setMaxAllowedAttendees] = useState(1);
-	const [attendanceStatus, setAttendanceStatus] = useState<'pending' | 'confirmed' | 'declined'>(
-		'pending',
-	);
+	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>('pending');
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [guestComment, setGuestComment] = useState('');
 	const [tags, setTags] = useState<string[]>([]);
@@ -126,10 +125,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				stayOpen,
 			);
 
-			if (stayOpen) {
-				resetForm();
-			} else {
-				onClose();
+			if (!isInvitationFactory) {
+				if (stayOpen) {
+					resetForm();
+				} else {
+					onClose();
+				}
 			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
@@ -288,33 +289,39 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 											<select
 												id="attendanceStatus"
 												value={attendanceStatus}
-												onChange={(event) =>
-													setAttendanceStatus(
-														event.target.value as
-															| 'pending'
-															| 'confirmed'
-															| 'declined',
-													)
-												}
+												onChange={(event) => {
+													const newStatus = event.target
+														.value as AttendanceStatus;
+													setAttendanceStatus(newStatus);
+													if (newStatus === 'confirmed') {
+														if (attendeeCount < 1) setAttendeeCount(1);
+													} else {
+														setAttendeeCount(0);
+													}
+												}}
 											>
 												<option value="pending">Pendiente</option>
 												<option value="confirmed">Confirmado</option>
 												<option value="declined">Declinado</option>
 											</select>
 										</div>
-										<div className="dashboard-form-field">
-											<label htmlFor="attendeeCount">Asistentes reales</label>
-											<input
-												id="attendeeCount"
-												type="number"
-												min={0}
-												max={maxAllowedAttendees}
-												value={attendeeCount}
-												onChange={(event) =>
-													setAttendeeCount(Number(event.target.value))
-												}
-											/>
-										</div>
+										{attendanceStatus === 'confirmed' && (
+											<div className="dashboard-form-field">
+												<label htmlFor="attendeeCount">
+													Asistentes reales
+												</label>
+												<input
+													id="attendeeCount"
+													type="number"
+													min={1}
+													max={maxAllowedAttendees}
+													value={attendeeCount}
+													onChange={(event) =>
+														setAttendeeCount(Number(event.target.value))
+													}
+												/>
+											</div>
+										)}
 										<div className="dashboard-form-field dashboard-form-field--full">
 											<label htmlFor="guestComment">
 												Comentario / Nota del invitado
