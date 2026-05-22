@@ -1,26 +1,20 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, getIp, jsonResponse } from '@/lib/rsvp/core/http';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { markGuestShared } from '@/lib/rsvp/services/dashboard-guests.service';
-
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
-function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
-}
 
 export const POST: APIRoute = async ({ params, request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'No tienes autorización para realizar esta acción.',
+			);
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',

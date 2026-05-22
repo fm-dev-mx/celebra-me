@@ -1,4 +1,5 @@
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
+import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
@@ -55,6 +56,12 @@ export function forbidden(message: string): Response {
 
 export function conflict(message: string): Response {
 	return errorResponse(new ApiError(409, 'conflict', message));
+}
+
+export function getIp(request: Request): string {
+	const raw =
+		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+	return sanitize(raw.split(',')[0], 100);
 }
 
 export function internalError(error: unknown): Response {

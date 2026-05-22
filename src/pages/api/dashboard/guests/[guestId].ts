@@ -1,8 +1,14 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import {
+	badRequest,
+	errorResponse,
+	getIp,
+	jsonResponse,
+	parseJsonBody,
+} from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	deleteDashboardGuest,
@@ -15,17 +21,15 @@ function parseStatus(raw: string): AttendanceStatus | undefined {
 	return undefined;
 }
 
-function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
-}
-
 export const PATCH: APIRoute = async ({ params, request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'No tienes autorización para realizar esta acción.',
+			);
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -81,7 +85,11 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'No tienes autorización para realizar esta acción.',
+			);
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',

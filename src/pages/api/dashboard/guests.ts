@@ -1,7 +1,14 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import {
+	badRequest,
+	errorResponse,
+	getIp,
+	jsonResponse,
+	parseJsonBody,
+} from '@/lib/rsvp/core/http';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	createDashboardGuest,
@@ -9,28 +16,21 @@ import {
 } from '@/lib/rsvp/services/dashboard-guests.service';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
-
 function parseStatus(raw: string): AttendanceStatus | 'all' | 'viewed' {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined' || raw === 'viewed')
 		return raw;
 	return 'all';
 }
 
-function getIp(request: Request): string {
-	const raw =
-		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-	return sanitize(raw.split(',')[0], 100);
-}
-
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'No tienes autorización para realizar esta acción.',
+			);
 		}
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const search = sanitize(url.searchParams.get('search'), 120);
@@ -55,7 +55,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
 		if (!session) {
-			throw new ApiError(401, 'unauthorized', 'Unauthorized.');
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'No tienes autorización para realizar esta acción.',
+			);
 		}
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
