@@ -2,7 +2,7 @@
 
 .guest-card {
 	background: var(--color-surface-elevated);
-	border: 1px solid var(--dashboard-card-border);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
 	border-radius: 14px;
 	padding: 1.1rem;
 	display: flex;
@@ -10,44 +10,16 @@
 	gap: 0.75rem;
 	transition:
 		border-color 0.25s ease,
-		box-shadow 0.25s ease,
-		transform 0.2s ease;
+		box-shadow 0.25s ease;
 	position: relative;
 	box-shadow: var(--shadow-subtle);
 
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 16px;
-		right: 16px;
-		height: 2px;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgb(var(--color-action-accent-rgb) / 40%),
-			transparent
-		);
-		border-radius: 2px 2px 0 0;
-		opacity: 50%;
-	}
-
 	&:hover {
-		border-color: rgb(var(--color-action-accent-rgb) / 35%);
-		box-shadow: var(--shadow-warm);
+		border-color: rgb(var(--color-surface-dark-rgb) / 16%);
 	}
 
 	&--shared {
 		opacity: 98%;
-
-		&::before {
-			background: linear-gradient(
-				90deg,
-				transparent,
-				rgb(var(--color-state-success-rgb) / 30%),
-				transparent
-			);
-		}
 	}
 
 	@media (width <= 480px) {
@@ -80,8 +52,8 @@
 	font-family: var(--font-ui);
 	font-size: 0.6rem;
 	font-weight: 700;
-	color: rgb(var(--color-action-accent-rgb) / 70%);
-	background: rgb(var(--color-action-accent-rgb) / 8%);
+	color: var(--color-text-secondary);
+	background: rgb(var(--color-surface-dark-rgb) / 5%);
 	padding: 2px 6px;
 	border-radius: 5px;
 	flex-shrink: 0;
@@ -90,14 +62,14 @@
 
 .guest-card__name {
 	font-family: var(--font-display-elegant);
-	font-size: 1.15rem;
+	font-size: 1.05rem;
 	font-weight: 600;
 	color: var(--color-text-primary);
 	letter-spacing: -0.015em;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	line-height: 1.25;
+	line-height: 1.3;
 }
 
 .guest-card__meta {
@@ -133,9 +105,9 @@
 
 .guest-card__comment {
 	padding: 0.6rem 0.75rem;
-	background: rgb(var(--color-action-accent-rgb) / 5%);
+	background: rgb(var(--color-surface-dark-rgb) / 3%);
 	border-radius: 10px;
-	border-left: 3px solid rgb(var(--color-action-accent-rgb) / 25%);
+	border-left: 3px solid rgb(var(--color-surface-dark-rgb) / 12%);
 }
 
 .guest-card__comment-text {
@@ -210,9 +182,9 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 4%);
-		border-color: rgb(var(--color-action-accent-rgb) / 30%);
-		color: var(--color-text-emphasis);
+		background: rgb(var(--color-surface-dark-rgb) / 3%);
+		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		color: var(--color-text-primary);
 	}
 
 	&--open svg {
@@ -278,7 +250,7 @@
 	padding: 3rem 1.5rem;
 	border-radius: 12px;
 	background: var(--color-surface-warm-ivory);
-	border: 1px solid var(--dashboard-card-border);
+	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
 	color: var(--color-text-secondary);
 	text-align: center;
 

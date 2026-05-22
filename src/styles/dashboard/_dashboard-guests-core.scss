@@ -1,20 +1,3 @@
-@use '../tokens' as tokens;
-
-@mixin flat-card-surface {
-	background: var(--color-surface-elevated);
-	border: 1px solid rgb(var(--color-action-secondary-rgb) / 14%);
-}
-
-@mixin glass-card-surface($top-alpha: 92%, $bottom-alpha: 78%, $base: var(--color-surface-soft)) {
-	background:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-surface-elevated-rgb) / $top-alpha),
-			rgb(var(--color-surface-elevated-rgb) / $bottom-alpha)
-		),
-		$base;
-}
-
 @mixin status-pill-variant($background, $text, $border, $dot) {
 	background: $background;
 	color: $text;
@@ -47,18 +30,18 @@
 
 	&--pending {
 		@include status-pill-variant(
-			var(--color-state-warning-bg),
-			var(--color-state-warning-text),
-			var(--color-state-warning-border),
-			var(--color-state-warning)
+			rgb(var(--color-surface-dark-rgb) / 4%),
+			var(--color-text-secondary),
+			rgb(var(--color-surface-dark-rgb) / 8%),
+			var(--color-text-muted)
 		);
 	}
 
 	&--confirmed {
 		@include status-pill-variant(
-			var(--color-state-success-bg),
+			rgb(var(--color-state-success-rgb) / 6%),
 			var(--color-state-success-text),
-			var(--color-state-success-border),
+			rgb(var(--color-state-success-rgb) / 15%),
 			var(--color-state-success)
 		);
 	}
@@ -74,10 +57,10 @@
 
 	&--unshared {
 		@include status-pill-variant(
-			var(--color-state-info-bg),
-			var(--color-state-info-text),
-			var(--color-state-info-border),
-			var(--color-state-info)
+			rgb(var(--color-surface-dark-rgb) / 3%),
+			var(--color-text-muted),
+			rgb(var(--color-surface-dark-rgb) / 7%),
+			var(--color-text-secondary)
 		);
 	}
 }

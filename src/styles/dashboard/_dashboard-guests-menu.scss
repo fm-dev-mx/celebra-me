@@ -52,8 +52,8 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 6%);
-		color: var(--color-text-emphasis);
+		background: rgb(var(--color-surface-dark-rgb) / 4%);
+		color: var(--color-text-primary);
 
 		svg {
 			color: var(--color-text-secondary);
@@ -89,9 +89,9 @@
 	flex-shrink: 0;
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 4%);
-		border-color: rgb(var(--color-action-accent-rgb) / 25%);
-		color: var(--color-text-emphasis);
+		background: rgb(var(--color-surface-dark-rgb) / 3%);
+		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		color: var(--color-text-primary);
 	}
 
 	&:focus-visible {
@@ -104,8 +104,8 @@
 	}
 
 	&--open {
-		border-color: rgb(var(--color-action-accent-rgb) / 30%);
-		color: var(--color-text-emphasis);
+		border-color: rgb(var(--color-surface-dark-rgb) / 20%);
+		color: var(--color-text-primary);
 
 		svg {
 			transform: rotate(180deg);
@@ -135,9 +135,9 @@
 	min-height: 34px;
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 4%);
-		border-color: rgb(var(--color-action-accent-rgb) / 25%);
-		color: var(--color-text-emphasis);
+		background: rgb(var(--color-surface-dark-rgb) / 3%);
+		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		color: var(--color-text-primary);
 	}
 
 	&:focus-visible {
@@ -150,8 +150,8 @@
 	}
 
 	&--open {
-		border-color: rgb(var(--color-action-accent-rgb) / 30%);
-		color: var(--color-text-emphasis);
+		border-color: rgb(var(--color-surface-dark-rgb) / 20%);
+		color: var(--color-text-primary);
 
 		svg {
 			transform: rotate(180deg);
