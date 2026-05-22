@@ -6,6 +6,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
+	getDeliveryStatusLabel,
 	getGuestVisibleTags,
 	getGuestStatusLabel,
 	getGuestStatusClass,
@@ -22,6 +23,7 @@ interface GuestCardProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -35,6 +37,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onRevertShared,
 }) => {
 	const isViewed = !!item.firstViewedAt;
 	const isShared = item.deliveryStatus === 'shared';
@@ -141,6 +144,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 									{tag}
 								</span>
 							))}
+						<span className="guest-tag">
+							{getDeliveryStatusLabel(item.deliveryStatus)}
+						</span>
 					</div>
 
 					<div className="guest-card__expanded-actions">
@@ -151,6 +157,9 @@ const GuestCard: React.FC<GuestCardProps> = ({
 							onEdit={() => onEdit(item)}
 							onDelete={() => onDelete(item)}
 							onMarkShared={async () => onMarkShared(item)}
+							onRevertShared={
+								onRevertShared ? async () => onRevertShared(item) : undefined
+							}
 						/>
 					</div>
 				</div>

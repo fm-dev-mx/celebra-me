@@ -7,6 +7,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
+	getDeliveryStatusLabel,
 	getGuestStatusLabel,
 	getGuestStatusClass,
 	getGuestVisibleTags,
@@ -24,6 +25,7 @@ interface GuestTableRowProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 }
 
 const GuestTableRow: React.FC<GuestTableRowProps> = ({
@@ -37,6 +39,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onRevertShared,
 }) => {
 	const progressRef = useRef<HTMLDivElement>(null);
 	const isViewed = item.firstViewedAt != null;
@@ -177,6 +180,13 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									</div>
 								</div>
 
+								<div className="guest-row__detail">
+									<span className="guest-row__detail-label">Estado de envío</span>
+									<span className="guest-row__detail-value">
+										{getDeliveryStatusLabel(item.deliveryStatus)}
+									</span>
+								</div>
+
 								{isViewed && (
 									<div className="guest-row__detail">
 										<span className="guest-row__detail-label">
@@ -200,6 +210,13 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									onEdit={() => onEdit(item)}
 									onDelete={() => onDelete(item)}
 									onMarkShared={async () => onMarkShared(item)}
+									onRevertShared={
+										onRevertShared
+											? () => {
+													onRevertShared(item);
+												}
+											: undefined
+									}
 								/>
 							</div>
 						</div>

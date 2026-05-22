@@ -14,6 +14,7 @@ interface GuestTableProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
+	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -28,6 +29,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onRevertShared,
 }) => {
 	if (!items || items.length === 0) {
 		return (
@@ -53,6 +55,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 						onEdit={onEdit}
 						onDelete={onDelete}
 						onMarkShared={onMarkShared}
+						onRevertShared={onRevertShared}
 					/>
 				))}
 			</div>
@@ -86,6 +89,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								onEdit={onEdit}
 								onDelete={onDelete}
 								onMarkShared={onMarkShared}
+								onRevertShared={onRevertShared}
 							/>
 						))}
 					</tbody>

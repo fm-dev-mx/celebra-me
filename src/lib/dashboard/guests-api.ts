@@ -97,6 +97,14 @@ export class GuestsApi {
 		return this.handleResponse(result, 'guests.markShared').item;
 	}
 
+	async revertShared(guestId: string): Promise<DashboardGuestItem> {
+		const result = await dashboardApi.patch<{ item: DashboardGuestItem }>(
+			`/api/dashboard/guests/${encodeURIComponent(guestId)}`,
+			{ deliveryStatus: 'generated' },
+		);
+		return this.handleResponse(result, 'guests.revertShared').item;
+	}
+
 	async bulkImport(payload: BulkImportDTO): Promise<BulkImportResult> {
 		const result = await dashboardApi.post<{ data: BulkImportResult; message: string }>(
 			'/api/dashboard/guests/bulk',

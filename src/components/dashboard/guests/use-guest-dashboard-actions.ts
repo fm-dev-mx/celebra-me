@@ -45,28 +45,22 @@ export const useGuestDashboardActions = ({
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
 	const [pendingAutoShareGuestId, setPendingAutoShareGuestId] = useState<string | null>(null);
-	const [pendingAutoShareFromSubmit, setPendingAutoShareFromSubmit] = useState<string | null>(
-		null,
-	);
 	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!pendingAutoShareGuestId && !pendingAutoShareFromSubmit) return;
-		const guestId = pendingAutoShareGuestId ?? pendingAutoShareFromSubmit;
-		if (!guestId) return;
+		if (!pendingAutoShareGuestId) return;
 
 		const timer1 = setTimeout(() => {
-			setHighlightedGuestId(guestId);
+			setHighlightedGuestId(pendingAutoShareGuestId);
 			const timer2 = setTimeout(() => {
 				setHighlightedGuestId(null);
 				setPendingAutoShareGuestId(null);
-				setPendingAutoShareFromSubmit(null);
 			}, 2000);
 			return () => clearTimeout(timer2);
 		}, 800);
 
 		return () => clearTimeout(timer1);
-	}, [pendingAutoShareGuestId, pendingAutoShareFromSubmit]);
+	}, [pendingAutoShareGuestId]);
 
 	const openCreateModal = useCallback(() => {
 		setModalMode('create');
@@ -128,38 +122,72 @@ export const useGuestDashboardActions = ({
 		}
 	}, [closeDeleteConfirm, guestToDelete, loadGuests]);
 
-	const handleMarkShared = useCallback(
-		async (item: DashboardGuestItem) => {
-			const previousItems = [...items];
-			setItems((prev) =>
-				prev.map((entry) =>
-					entry.guestId === item.guestId ? { ...entry, deliveryStatus: 'shared' } : entry,
-				),
-			);
+	const optimisticStatusUpdate = useCallback(
+		async (
+			item: DashboardGuestItem,
+			newStatus: DashboardGuestItem['deliveryStatus'],
+			apiCall: () => Promise<unknown>,
+			successNotification: NotificationPayload,
+			errorMessage: string,
+			onBeforeUpdate?: (currentItems: DashboardGuestItem[]) => void,
+		) => {
+			let previousItems: DashboardGuestItem[] = [];
+			setItems((prev) => {
+				previousItems = [...prev];
+				onBeforeUpdate?.(prev);
+				return prev.map((entry) =>
+					entry.guestId === item.guestId
+						? { ...entry, deliveryStatus: newStatus }
+						: entry,
+				);
+			});
 			try {
-				await guestsApi.markShared(item.guestId);
-				setShareSessionCount((prev) => prev + 1);
-				setNotification({
-					message: 'Entrega registrada correctamente.',
-					type: 'success',
-				});
-				setCelebratingGuestId(item.guestId);
-				setTimeout(() => setCelebratingGuestId(null), 1500);
+				await apiCall();
+				setNotification(successNotification);
 				await loadGuests();
-				const currentIndex = items.findIndex((entry) => entry.guestId === item.guestId);
-				if (currentIndex !== -1 && currentIndex < items.length - 1) {
-					setPendingAutoShareGuestId(items[currentIndex + 1].guestId);
-				}
-			} catch (err) {
-				console.error('[GuestDashboard] Mark shared error:', err);
-				setItems(previousItems);
-				setNotification({
-					message: 'Error al actualizar estado.',
-					type: 'warning',
-				});
+			} catch {
+				if (previousItems.length) setItems(previousItems);
+				setNotification({ message: errorMessage, type: 'warning' });
 			}
 		},
-		[items, loadGuests, setItems],
+		[loadGuests, setItems, setNotification],
+	);
+
+	const handleMarkShared = useCallback(
+		async (item: DashboardGuestItem) => {
+			let nextGuestId: string | null = null;
+			await optimisticStatusUpdate(
+				item,
+				'shared',
+				() => guestsApi.markShared(item.guestId),
+				{ message: 'Entrega registrada correctamente.', type: 'success' },
+				'Error al actualizar estado.',
+				(prev) => {
+					const currentIndex = prev.findIndex((entry) => entry.guestId === item.guestId);
+					if (currentIndex !== -1 && currentIndex < prev.length - 1) {
+						nextGuestId = prev[currentIndex + 1].guestId;
+					}
+				},
+			);
+			setShareSessionCount((prev) => prev + 1);
+			setCelebratingGuestId(item.guestId);
+			setTimeout(() => setCelebratingGuestId(null), 1500);
+			if (nextGuestId) setPendingAutoShareGuestId(nextGuestId);
+		},
+		[optimisticStatusUpdate],
+	);
+
+	const handleRevertShared = useCallback(
+		async (item: DashboardGuestItem) => {
+			await optimisticStatusUpdate(
+				item,
+				'generated',
+				() => guestsApi.revertShared(item.guestId),
+				{ message: 'Envío revertido correctamente.', type: 'info' },
+				'Error al revertir envío.',
+			);
+		},
+		[optimisticStatusUpdate],
 	);
 
 	const handlePostpone = useCallback(() => {
@@ -224,7 +252,7 @@ export const useGuestDashboardActions = ({
 				});
 
 				if (isNextActionActive && modalMode === 'edit' && savedItem) {
-					setPendingAutoShareFromSubmit(savedItem.guestId);
+					setPendingAutoShareGuestId(savedItem.guestId);
 					setIsNextActionActive(false);
 				}
 
@@ -307,6 +335,7 @@ export const useGuestDashboardActions = ({
 		handleImportUpdate,
 		handleMarkShared,
 		handlePostpone,
+		handleRevertShared,
 		handleSubmit,
 		highlightedGuestId,
 		importModalOpen,

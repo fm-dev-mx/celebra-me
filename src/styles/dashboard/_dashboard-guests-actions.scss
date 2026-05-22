@@ -148,18 +148,18 @@
 	}
 }
 
-/* Mark as sent — subtle accent */
+/* Mark as sent — subdued success */
 .guest-expanded-actions__btn--mark-sent {
-	border-color: rgb(var(--color-state-success-rgb) / 20%);
-	background: rgb(var(--color-state-success-rgb) / 4%);
-	color: var(--color-state-success-text);
+	border-color: var(--color-border-subtle);
+	background: var(--color-surface-elevated);
+	color: var(--color-text-secondary);
 
 	svg {
-		color: var(--color-state-success);
+		color: rgb(var(--color-state-success-rgb) / 50%);
 	}
 
 	&:hover {
-		background: rgb(var(--color-state-success-rgb) / 8%);
+		background: rgb(var(--color-state-success-rgb) / 10%);
 		border-color: rgb(var(--color-state-success-rgb) / 35%);
 		color: var(--color-state-success-text);
 
@@ -169,7 +169,37 @@
 	}
 }
 
-/* Edit — ghost */
+/* Revert — restrained amber/notice */
+.guest-expanded-actions__btn--revert {
+	border-color: rgb(var(--color-action-accent-rgb) / 20%);
+	background: rgb(var(--color-action-accent-rgb) / 4%);
+	color: var(--color-text-secondary);
+
+	&:hover {
+		background: rgb(var(--color-action-accent-rgb) / 10%);
+		border-color: rgb(var(--color-action-accent-rgb) / 35%);
+		color: var(--color-text-emphasis);
+	}
+}
+
+/* Confirming state — amber highlight for both mark and revert */
+.guest-expanded-actions__btn--confirm {
+	border-color: rgb(var(--color-action-accent-rgb) / 40%);
+	background: rgb(var(--color-action-accent-rgb) / 10%);
+	color: var(--color-text-emphasis);
+	font-weight: 600;
+
+	svg {
+		color: var(--color-action-accent);
+	}
+
+	&:hover {
+		background: rgb(var(--color-action-accent-rgb) / 18%);
+		border-color: rgb(var(--color-action-accent-rgb) / 55%);
+	}
+}
+
+/* Edit — ghost, minimal footprint */
 .guest-expanded-actions__btn--edit {
 	background: transparent;
 	border-color: transparent;
@@ -186,12 +216,12 @@
 	}
 }
 
-/* Delete — restrained destructive */
+/* Delete — restrained destructive, readable on dark card */
 .guest-expanded-actions__btn--delete {
 	color: var(--color-state-danger-text);
 
 	svg {
-		color: var(--color-state-danger);
+		color: rgb(var(--color-state-danger-rgb) / 60%);
 	}
 
 	&:hover {

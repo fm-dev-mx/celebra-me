@@ -12,6 +12,7 @@ jest.mock('@/lib/dashboard/guests-api', () => ({
 		update: jest.fn(),
 		delete: jest.fn(),
 		markShared: jest.fn(),
+		revertShared: jest.fn(),
 		bulkImport: jest.fn(),
 		exportCsv: jest.fn(),
 	},
@@ -290,5 +291,31 @@ describe('active guest dashboard hooks', () => {
 			message: 'Invitado Test Guest eliminado con éxito.',
 			type: 'success',
 		});
+	});
+
+	it('reverts shared status through useGuestDashboardActions', async () => {
+		mockedGuestsApi.revertShared.mockResolvedValue({
+			...sampleGuest,
+			deliveryStatus: 'generated',
+		});
+
+		const sentGuest = { ...sampleGuest, deliveryStatus: 'shared' as const };
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [sentGuest],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		await act(async () => {
+			await result.current.handleRevertShared(sentGuest);
+		});
+
+		expect(mockedGuestsApi.revertShared).toHaveBeenCalledWith(sentGuest.guestId);
+		expect(loadGuests).toHaveBeenCalled();
 	});
 });

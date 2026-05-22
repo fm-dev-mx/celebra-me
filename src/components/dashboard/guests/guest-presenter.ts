@@ -31,6 +31,10 @@ export function getGuestStatusLabel(item: DashboardGuestItem) {
 	return 'Pendiente';
 }
 
+export function getDeliveryStatusLabel(deliveryStatus: DashboardGuestItem['deliveryStatus']) {
+	return deliveryStatus === 'shared' ? 'Enviado' : 'No enviado';
+}
+
 export function getGuestStatusClass(item: DashboardGuestItem) {
 	const { attendanceStatus, deliveryStatus } = item;
 
@@ -39,12 +43,6 @@ export function getGuestStatusClass(item: DashboardGuestItem) {
 
 	if (deliveryStatus === 'generated') return 'unshared';
 	return 'pending';
-}
-
-export function getGuestAttendanceLabel(status: DashboardGuestItem['attendanceStatus']) {
-	if (status === 'pending') return 'Pendiente';
-	if (status === 'confirmed') return 'Aceptada';
-	return 'Denegada';
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {

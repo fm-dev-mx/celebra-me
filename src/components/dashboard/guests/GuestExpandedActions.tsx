@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 
+type ConfirmState = 'idle' | 'confirm-mark-sent' | 'confirm-revert';
+
 interface GuestExpandedActionsProps {
 	guestName: string;
 	inviteUrl: string;
@@ -9,6 +11,7 @@ interface GuestExpandedActionsProps {
 	onEdit: () => void;
 	onDelete: () => void;
 	onMarkShared: () => Promise<void>;
+	onRevertShared?: () => Promise<void>;
 }
 
 const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
@@ -18,25 +21,43 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
+	onRevertShared,
 }) => {
 	const [copied, setCopied] = useState(false);
-	const [marking, setMarking] = useState(false);
+	const [busy, setBusy] = useState(false);
+	const [confirmState, setConfirmState] = useState<ConfirmState>('idle');
+
+	const resetConfirm = () => setConfirmState('idle');
 
 	const handleCopyLink = async () => {
+		resetConfirm();
 		await navigator.clipboard.writeText(inviteUrl);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
 
-	const handleMarkShared = async () => {
-		if (marking) return;
-		setMarking(true);
-		try {
-			await onMarkShared();
-		} finally {
-			setMarking(false);
+	const handleConfirmAction = (targetState: ConfirmState, action: () => Promise<void>) => {
+		if (busy) return;
+		if (confirmState === targetState) {
+			resetConfirm();
+			setBusy(true);
+			action().finally(() => setBusy(false));
+		} else {
+			setConfirmState(targetState);
 		}
 	};
+
+	const markSentLabel = (() => {
+		if (confirmState === 'confirm-mark-sent') return 'Confirmar envío';
+		if (busy) return 'Enviando…';
+		return 'Marcar como enviado';
+	})();
+
+	const revertLabel = (() => {
+		if (confirmState === 'confirm-revert') return 'Confirmar cambio';
+		if (busy) return 'Revirtiendo…';
+		return 'Marcar como no enviado';
+	})();
 
 	return (
 		<div
@@ -55,24 +76,40 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 				<span>{copied ? 'Copiado' : 'Copiar enlace'}</span>
 			</button>
 
-			{!isShared && (
+			{isShared ? (
 				<button
 					type="button"
-					className="guest-expanded-actions__btn guest-expanded-actions__btn--mark-sent"
-					onClick={handleMarkShared}
-					disabled={marking}
+					className={`guest-expanded-actions__btn ${confirmState === 'confirm-revert' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--revert'}`}
+					onClick={() => {
+						if (onRevertShared) handleConfirmAction('confirm-revert', onRevertShared);
+					}}
+					disabled={busy || !onRevertShared}
+					title="Marcar como no enviado"
+					aria-label={`Marcar invitación de ${guestName} como no enviada`}
+				>
+					<span>{revertLabel}</span>
+				</button>
+			) : (
+				<button
+					type="button"
+					className={`guest-expanded-actions__btn ${confirmState === 'confirm-mark-sent' ? 'guest-expanded-actions__btn--confirm' : 'guest-expanded-actions__btn--mark-sent'}`}
+					onClick={() => handleConfirmAction('confirm-mark-sent', onMarkShared)}
+					disabled={busy}
 					title="Marcar como enviado"
 					aria-label={`Marcar invitación de ${guestName} como enviada`}
 				>
 					<CheckIcon size={14} />
-					<span>{marking ? 'Enviando…' : 'Marcar como enviado'}</span>
+					<span>{markSentLabel}</span>
 				</button>
 			)}
 
 			<button
 				type="button"
 				className="guest-expanded-actions__btn guest-expanded-actions__btn--edit"
-				onClick={onEdit}
+				onClick={() => {
+					resetConfirm();
+					onEdit();
+				}}
 				title="Editar invitado"
 				aria-label={`Editar ${guestName}`}
 			>
@@ -83,7 +120,10 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 			<button
 				type="button"
 				className="guest-expanded-actions__btn guest-expanded-actions__btn--delete"
-				onClick={onDelete}
+				onClick={() => {
+					resetConfirm();
+					onDelete();
+				}}
 				title="Eliminar invitado"
 				aria-label={`Eliminar ${guestName}`}
 			>
