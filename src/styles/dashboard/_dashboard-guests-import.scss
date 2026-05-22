@@ -287,6 +287,32 @@
 	}
 }
 
+// --- Status badge ---
+
+.import-magic__badge {
+	display: inline-block;
+	padding: 0.15rem 0.45rem;
+	border-radius: 4px;
+	font-size: 0.65rem;
+	font-weight: 600;
+	white-space: nowrap;
+
+	&--new {
+		background: rgb(var(--color-state-success-rgb) / 12%);
+		color: var(--color-state-success);
+	}
+
+	&--error {
+		background: rgb(var(--color-state-danger-rgb) / 12%);
+		color: var(--color-state-danger-text);
+	}
+
+	&--warning {
+		background: rgb(245 158 11 / 12%);
+		color: var(--color-state-warning-text, var(--color-text-secondary));
+	}
+}
+
 // --- Cell-level error ---
 
 .import-magic__cell-error {

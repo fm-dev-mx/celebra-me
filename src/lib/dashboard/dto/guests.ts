@@ -16,6 +16,13 @@ export interface BulkImportDTO {
 	guests: BulkImportGuestDTO[];
 }
 
+export interface BulkImportResult {
+	created: number;
+	updated: number;
+	status: string;
+	errors?: string[];
+}
+
 export interface CreateGuestDTO {
 	eventId: string;
 	fullName: string;

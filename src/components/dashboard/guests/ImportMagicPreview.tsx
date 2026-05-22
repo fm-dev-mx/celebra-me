@@ -1,11 +1,7 @@
-import React from 'react';
-import { pluralS } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
+import { IMPORT_FATAL_ERROR, pluralS } from '@/components/dashboard/guests/ImportMagic.utils';
 import { ImportOmittedList } from '@/components/dashboard/guests/ImportMagicOmitted';
 import { DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
-
-const FATAL_ERROR_MESSAGE =
-	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tienes permiso.';
 
 function ImportPreviewTable({
 	preview,
@@ -20,11 +16,28 @@ function ImportPreviewTable({
 	) => void;
 	onDelete: (index: number) => void;
 }) {
+	const getStatusBadge = (guest: ParsedGuest) => {
+		if (guest._status === 'new' && guest.error) {
+			return (
+				<span className="import-magic__badge import-magic__badge--error">Con errores</span>
+			);
+		}
+		if (guest._status === 'duplicate-name' || guest._status === 'existing-name') {
+			return (
+				<span className="import-magic__badge import-magic__badge--warning">
+					Dup. nombre
+				</span>
+			);
+		}
+		return <span className="import-magic__badge import-magic__badge--new">Nuevo</span>;
+	};
+
 	return (
 		<div className="import-magic__table-wrap">
 			<table className="import-magic__table">
 				<thead>
 					<tr>
+						<th>Estado</th>
 						<th>Nombre</th>
 						<th>Teléfono</th>
 						<th>Clave país</th>
@@ -35,6 +48,7 @@ function ImportPreviewTable({
 				<tbody>
 					{preview.map((p, i) => (
 						<tr key={i} className={p.error ? 'import-magic__row--error' : ''}>
+							<td data-label="Estado">{getStatusBadge(p)}</td>
 							<td data-label="Nombre">
 								<input
 									type="text"
@@ -109,14 +123,23 @@ function ImportPreviewTable({
 function ImportPreviewStatus({
 	isFatalError,
 	newValidCount,
+	errorCount,
 	totalCount,
 }: {
 	isFatalError: boolean;
 	newValidCount: number;
+	errorCount: number;
 	totalCount: number;
 }) {
 	if (isFatalError) {
-		return <p className="import-magic__fatal-error">{FATAL_ERROR_MESSAGE}</p>;
+		return <p className="import-magic__fatal-error">{IMPORT_FATAL_ERROR}</p>;
+	}
+	if (newValidCount === 0 && errorCount > 0) {
+		return (
+			<p className="dashboard-form-help dashboard-form-help--error">
+				Hay {errorCount} fila{pluralS(errorCount)} con errores. Corrígelas para importar.
+			</p>
+		);
 	}
 	if (newValidCount === 0 && totalCount > 0) {
 		return (
@@ -224,6 +247,7 @@ export function ImportPreviewPanel({
 				<ImportPreviewStatus
 					isFatalError={isFatalError}
 					newValidCount={newValidCount}
+					errorCount={errorCount}
 					totalCount={preview.length}
 				/>
 				<ImportOmittedList records={omittedRecords} />
@@ -237,18 +261,6 @@ export function ImportPreviewPanel({
 							handleDelete(visibleRows[tableIndex].originalIndex)
 						}
 					/>
-				)}
-				{errorCount > 0 && (
-					<div className="import-magic__error-summary">
-						{preview.map(
-							(p, i) =>
-								p.error && (
-									<div key={i} className="import-magic__error-item">
-										<strong>Fila {i + 1}</strong> ({p.fullName}): {p.error}
-									</div>
-								),
-						)}
-					</div>
 				)}
 			</div>
 			{importError && !isFatalError && (

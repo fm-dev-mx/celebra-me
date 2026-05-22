@@ -4,6 +4,7 @@ import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.in
 import type {
 	GuestsListResponse,
 	BulkImportDTO,
+	BulkImportResult,
 	CreateGuestDTO,
 	UpdateGuestDTO,
 } from '@/lib/dashboard/dto/guests';
@@ -96,9 +97,12 @@ export class GuestsApi {
 		return this.handleResponse(result, 'guests.markShared').item;
 	}
 
-	async bulkImport(payload: BulkImportDTO): Promise<void> {
-		const result = await dashboardApi.post<void>('/api/dashboard/guests/bulk', payload);
-		this.handleResponse(result, 'guests.bulkImport');
+	async bulkImport(payload: BulkImportDTO): Promise<BulkImportResult> {
+		const result = await dashboardApi.post<{ data: BulkImportResult; message: string }>(
+			'/api/dashboard/guests/bulk',
+			payload,
+		);
+		return this.handleResponse(result, 'guests.bulkImport').data;
 	}
 
 	async listEvents(): Promise<DashboardEventListResponse> {

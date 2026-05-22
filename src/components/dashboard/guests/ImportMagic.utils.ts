@@ -20,6 +20,7 @@ export interface ParsedGuest {
 		email?: string;
 	};
 	_status?: GuestImportStatus;
+	normalizedPhone?: string;
 }
 
 export type ColumnTarget = 'fullName' | 'phone' | 'phoneCountryCode' | 'email' | 'ignore';
@@ -29,6 +30,9 @@ export interface ColumnAssignment {
 	sourceName: string;
 	target: ColumnTarget;
 }
+
+export const IMPORT_FATAL_ERROR =
+	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tienes permiso.';
 
 function pluralS(count: number): string {
 	return count !== 1 ? 's' : '';
@@ -43,51 +47,55 @@ export function classifyGuests(
 	const seenNames = new Set<string>();
 
 	return guests.map((guest) => {
-		if (guest.error) {
-			guest._status = 'new';
-			return guest;
+		const result: ParsedGuest = { ...guest };
+
+		if (result.error) {
+			result._status = 'new';
+			result.normalizedPhone = undefined;
+			return result;
 		}
 
 		let normalizedPhone: string | undefined;
 		try {
-			const normalized = normalizeImportedPhone(guest.phone, guest.phoneCountryCode);
+			const normalized = normalizeImportedPhone(result.phone, result.phoneCountryCode);
 			normalizedPhone = normalized || undefined;
 		} catch {
 			normalizedPhone = undefined;
 		}
+		result.normalizedPhone = normalizedPhone;
 
 		const barePhone = normalizedPhone ? normalizePhone(normalizedPhone) : undefined;
 
 		if (barePhone && existingPhones.has(barePhone)) {
-			guest._status = 'existing-phone';
-			return guest;
+			result._status = 'existing-phone';
+			return result;
 		}
 
 		if (barePhone && seenPhones.has(normalizedPhone!)) {
-			guest._status = 'duplicate-phone';
-			return guest;
+			result._status = 'duplicate-phone';
+			return result;
 		}
 		if (barePhone) {
 			seenPhones.add(normalizedPhone!);
 		}
 
-		const normalizedName = normalizeName(guest.fullName);
+		const normalizedName = normalizeName(result.fullName);
 
 		if (normalizedName && existingNames.has(normalizedName)) {
-			guest._status = 'existing-name';
-			return guest;
+			result._status = 'existing-name';
+			return result;
 		}
 
 		if (normalizedName && seenNames.has(normalizedName)) {
-			guest._status = 'duplicate-name';
-			return guest;
+			result._status = 'duplicate-name';
+			return result;
 		}
 		if (normalizedName) {
 			seenNames.add(normalizedName);
 		}
 
-		guest._status = 'new';
-		return guest;
+		result._status = 'new';
+		return result;
 	});
 }
 

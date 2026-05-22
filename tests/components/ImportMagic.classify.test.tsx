@@ -35,7 +35,7 @@ function renderModal(
 	eventId = '550e8400-e29b-41d4-a716-446655440000',
 	existingGuests: DashboardGuestItem[] = [],
 ) {
-	const onImport = jest.fn().mockResolvedValue(undefined);
+	const onImport = jest.fn().mockResolvedValue({ created: 1, updated: 0, status: 'success' });
 	const onClose = jest.fn();
 	render(
 		<ImportMagic
@@ -206,6 +206,54 @@ describe('classifyGuests', () => {
 		const result = classifyGuests(guests, new Set(), existingNames);
 		expect(result[0]._status).toBe('new');
 	});
+
+	it('error row with duplicate name keeps _status=new (error takes priority over name duplicate)', () => {
+		const guests = [
+			mkGuest({ fullName: 'Ana', phone: '+526691234567' }),
+			mkGuest({
+				fullName: 'ana',
+				phone: '6691234567',
+				error: 'Agrega el código de país o escribe el número completo empezando con +.',
+			}),
+		];
+		const result = classifyGuests(guests, new Set(), new Set());
+		expect(result[0]._status).toBe('new');
+		expect(result[1]._status).toBe('new');
+		expect(result[1].error).toBeDefined();
+	});
+
+	it('phone-less guest is importable alongside valid guests', () => {
+		const guests = [
+			mkGuest({ fullName: 'Ana', phone: '+526691234567' }),
+			mkGuest({ fullName: 'Sin Teléfono' }),
+		];
+		const result = classifyGuests(guests, new Set(), new Set());
+		expect(result[0]._status).toBe('new');
+		expect(result[1]._status).toBe('new');
+		expect(result[0].error).toBeUndefined();
+		expect(result[1].error).toBeUndefined();
+	});
+
+	it('fixing error row clears error and may reclassify as duplicate-name', () => {
+		const guests = [
+			mkGuest({ fullName: 'Ana', phone: '+526691234567' }),
+			mkGuest({
+				fullName: 'ana',
+				phone: '6691234567',
+				error: 'Agrega el código de país',
+			}),
+		];
+		// Simulate fixing: phone now starts with + and country code added
+		const fixedGuest = {
+			...guests[1],
+			phone: '+526691234567',
+			phoneCountryCode: '+52',
+			error: undefined,
+			fieldErrors: undefined,
+		};
+		const reclassified = classifyGuests([guests[0], fixedGuest], new Set(), new Set());
+		expect(reclassified[1].error).toBeUndefined();
+	});
 });
 
 describe('existing guest classification', () => {
@@ -247,7 +295,7 @@ describe('existing guest classification', () => {
 		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
 		fireEvent.click(getImportButton());
 
-		await screen.findByText(/Importar 1 invitado nuevo/i);
+		await screen.findByText(/Resultado de la importación/i);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([expect.objectContaining({ fullName: 'Luis' })]),
 		);
@@ -286,9 +334,7 @@ describe('duplicate phone within CSV', () => {
 		expect(onImport).toHaveBeenCalledWith(
 			expect.not.arrayContaining([expect.objectContaining({ fullName: 'Luis' })]),
 		);
-		await waitFor(() => {
-			expect(screen.queryByText('Procesando...')).toBeNull();
-		});
+		await screen.findByText(/Resultado de la importación/i);
 	});
 });
 
@@ -349,9 +395,7 @@ describe('name duplicate classification', () => {
 		expect(onImport).toHaveBeenCalledWith(
 			expect.not.arrayContaining([expect.objectContaining({ fullName: 'ana lópez' })]),
 		);
-		await waitFor(() => {
-			expect(screen.queryByText('Procesando...')).toBeNull();
-		});
+		await screen.findByText(/Resultado de la importación/i);
 	});
 
 	it('button count matches importable guest count', async () => {

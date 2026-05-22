@@ -418,7 +418,7 @@ function renderModal(
 	eventId = '550e8400-e29b-41d4-a716-446655440000',
 	existingGuests: DashboardGuestItem[] = [],
 ) {
-	const onImport = jest.fn().mockResolvedValue(undefined);
+	const onImport = jest.fn().mockResolvedValue({ created: 1, updated: 0, status: 'success' });
 	const onClose = jest.fn();
 	render(
 		<ImportMagic
@@ -522,7 +522,7 @@ describe('column mapping', () => {
 	it('changing mapping rebuilds preview and recalculates errors', () => {
 		importCsv('name,phone\nAna,6691234567');
 		expect(screen.queryByText(/No pudimos identificar/i)).toBeNull();
-		// Error row appears in error summary, not in editable table
+		// Error row appears in editable table with cell-level error message
 		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
 	});
 });
@@ -533,18 +533,31 @@ describe('editable preview', () => {
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 	});
 
-	it('error row appears in error summary with message about missing country code', () => {
+	it('error row appears in editable table with status badge and cell-level error', () => {
 		importCsv('full_name,phone,country_code\nAna,6691234567,');
 		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
-		expect(document.querySelector('.import-magic__error-summary')).toBeInTheDocument();
+		expect(screen.getByText('Con errores')).toBeInTheDocument();
 	});
 
-	it('valid row appears in editable table', () => {
+	it('valid row appears in editable table with Nuevo badge', () => {
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
+		expect(screen.getByText('Nuevo')).toBeInTheDocument();
 	});
 
-	it('import is disabled while any row has errors', () => {
+	it('error row is editable and fixable inline', () => {
+		importCsv('full_name,phone,country_code\nAna,6691234567,');
+		// Country code input should be empty and show error
+		const inputs = screen.getAllByRole('textbox');
+		expect(inputs[1]).toHaveValue('Ana');
+		expect(inputs[3]).toHaveValue('');
+		// Fix by adding country code
+		fireEvent.change(inputs[3], { target: { value: '+52' } });
+		// Error should clear and button should become enabled
+		expect(getImportButton().disabled).toBe(false);
+	});
+
+	it('import is disabled when only error rows exist', () => {
 		importCsv('full_name,phone,country_code\nAna,6691234567,');
 		expect(getImportButton().disabled).toBe(true);
 	});
@@ -554,12 +567,80 @@ describe('editable preview', () => {
 		expect(getImportButton().disabled).toBe(false);
 	});
 
-	it('+52 is preserved in the editable country code cell', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,+52');
+	it('mixed valid and invalid rows: import enabled when valid rows exist', async () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,6691234567,');
+		expect(screen.getAllByText('Nuevo')).toHaveLength(1);
+		expect(screen.getAllByText('Con errores')).toHaveLength(1);
+		expect(getImportButton().disabled).toBe(false);
+		expect(getImportButton().textContent).toContain('Importar 1 invitado nuevo');
+	});
+
+	it('fixing error row enables import button', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,6691234567,');
 		const inputs = screen.getAllByRole('textbox');
-		// textarea is first textbox, then name, phone, country_code, email cells
-		expect(inputs[1]).toHaveValue('Ana');
-		expect(inputs[3]).toHaveValue('+52');
+		fireEvent.change(inputs[7], { target: { value: '+52' } });
+		expect(getImportButton().disabled).toBe(false);
+	});
+});
+
+describe('import payload', () => {
+	it('editing country code changes the normalized phone sent to onImport', async () => {
+		const { onImport } = renderModal();
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		importCsv('full_name,phone,country_code\nLuis,6691234567,');
+		const inputs = screen.getAllByRole('textbox');
+		fireEvent.change(inputs[3], { target: { value: '+52' } });
+		fireEvent.click(getImportButton());
+		await screen.findByText(/Resultado de la importación/i);
+		expect(onImport).toHaveBeenCalledWith(
+			expect.arrayContaining([
+				expect.objectContaining({ fullName: 'Luis', phone: '+526691234567' }),
+			]),
+		);
+	});
+
+	it('submits normalized phone for valid guest with phone+country_code', async () => {
+		const { onImport } = renderModal();
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		importCsv('full_name,phone,country_code\nAna,6563769461,+52');
+		fireEvent.click(getImportButton());
+		await screen.findByText(/Resultado de la importación/i);
+		expect(onImport).toHaveBeenCalledWith(
+			expect.arrayContaining([
+				expect.objectContaining({ fullName: 'Ana', phone: '+526563769461' }),
+			]),
+		);
+	});
+
+	it('submits undefined phone for guest without phone', async () => {
+		const { onImport } = renderModal();
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		importCsv('full_name,phone,country_code\nSin Teléfono,,');
+		fireEvent.click(getImportButton());
+		await screen.findByText(/Resultado de la importación/i);
+		const callArg = onImport.mock.calls[0][0];
+		const noPhoneGuest = callArg.find(
+			(g: { fullName: string }) => g.fullName === 'Sin Teléfono',
+		);
+		expect(noPhoneGuest.phone).toBeUndefined();
+	});
+
+	it('mixed import: guests with and without phone are both submitted', async () => {
+		const { onImport } = renderModal();
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		importCsv(
+			'full_name,phone,country_code\ntist,6563769461,+52\ntist1,,\ntist2,6681167477,+52',
+		);
+		fireEvent.click(getImportButton());
+		await screen.findByText(/Resultado de la importación/i);
+		expect(onImport).toHaveBeenCalledWith(
+			expect.arrayContaining([
+				expect.objectContaining({ fullName: 'tist', phone: '+526563769461' }),
+				expect.objectContaining({ fullName: 'tist1' }),
+				expect.objectContaining({ fullName: 'tist2', phone: '+526681167477' }),
+			]),
+		);
+		expect(onImport.mock.calls[0][0]).toHaveLength(3);
 	});
 });
 
@@ -685,12 +766,8 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-
-		// Before import attempt, ready message is shown
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		expect(screen.getByText(/Todos los invitados están listos/i)).toBeInTheDocument();
-
-		// After fatal error, ready message is gone
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
 		expect(screen.queryByText(/Todos los invitados están listos/i)).toBeNull();
@@ -733,12 +810,9 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
-
-		// New parse clears the fatal error
 		importCsv('full_name,phone,country_code\nLuis,+525551234567,');
 		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
 	});
@@ -757,12 +831,9 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
-
-		// Re-paste (simulates new file) clears the error
 		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
 		fireEvent.paste(textarea, {
 			clipboardData: { getData: () => 'full_name,phone,country_code\nLuis,+525551234567,' },
@@ -786,14 +857,10 @@ describe('retryable error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
 		fireEvent.click(getImportButton());
-
 		const fallbackEl = await screen.findByText(/No pudimos importar/i);
 		expect(fallbackEl).toBeInTheDocument();
-
-		// Retry should be possible - import is not permanently disabled
 		expect(getImportButton().disabled).toBe(false);
 	});
 });

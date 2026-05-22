@@ -269,6 +269,13 @@ describe('POST /api/dashboard/guests/bulk', () => {
 	});
 
 	describe('invalid rows', () => {
+		function getRowErrors(body: Record<string, unknown>): string[] {
+			const err = body.error as Record<string, unknown> | undefined;
+			const det = err?.details as Record<string, unknown> | undefined;
+			const rows = det?.rows as string[] | undefined;
+			return rows ?? [];
+		}
+
 		it('rejects local phone without country code', async () => {
 			mockEventAccess();
 
@@ -276,8 +283,9 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = await response.json();
 
 			expect(response.status).toBe(400);
-			expect(body.errors[0]).toContain('Fila 1');
-			expect(body.errors[0]).toContain('código de país');
+			const errors = getRowErrors(body);
+			expect(errors[0]).toContain('Fila 1');
+			expect(errors[0]).toContain('código de país');
 		});
 
 		it('rejects formatted local phone without country code', async () => {
@@ -289,7 +297,8 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = await response.json();
 
 			expect(response.status).toBe(400);
-			expect(body.errors[0]).toContain('Fila 1');
+			const errors = getRowErrors(body);
+			expect(errors[0]).toContain('Fila 1');
 		});
 
 		it('rejects international phone with conflicting country code', async () => {
@@ -301,7 +310,8 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = await response.json();
 
 			expect(response.status).toBe(400);
-			expect(body.errors[0]).toContain('no coincide');
+			const errors = getRowErrors(body);
+			expect(errors[0]).toContain('no coincide');
 		});
 
 		it('collects multiple row errors', async () => {
@@ -314,8 +324,9 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = await response.json();
 
 			expect(response.status).toBe(400);
-			expect(body.errors[0]).toContain('Fila 1');
-			expect(body.errors[1]).toContain('Fila 2');
+			const errors = getRowErrors(body);
+			expect(errors[0]).toContain('Fila 1');
+			expect(errors[1]).toContain('Fila 2');
 		});
 
 		it('rejects empty name', async () => {

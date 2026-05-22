@@ -2,16 +2,22 @@ import React, { useState, useRef, useCallback, useMemo } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 import { normalizeImportedPhone, normalizePhone, normalizeName } from '@/lib/rsvp/core/utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { pluralS, classifyGuests } from '@/components/dashboard/guests/ImportMagic.utils';
+import {
+	pluralS,
+	classifyGuests,
+	IMPORT_FATAL_ERROR,
+} from '@/components/dashboard/guests/ImportMagic.utils';
 import type {
 	ParsedGuest,
 	ColumnTarget,
 	ColumnAssignment,
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import { ImportPreviewPanel } from '@/components/dashboard/guests/ImportMagicPreview';
+import { ImportSummary } from '@/components/dashboard/guests/ImportMagicSummary';
+import type { BulkImportResult } from '@/lib/dashboard/dto/guests';
 
 interface ImportMagicProps {
-	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<void>;
+	onImport: (guests: Partial<DashboardGuestItem>[]) => Promise<BulkImportResult>;
 	onClose: () => void;
 	eventId: string;
 	existingGuests: DashboardGuestItem[];
@@ -265,9 +271,6 @@ const MAPPING_TARGETS: ColumnTarget[] = [
 	'ignore',
 ];
 
-const FATAL_ERROR_MESSAGE =
-	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tienes permiso.';
-
 function parseImportContent(
 	content: string,
 	setters: {
@@ -355,6 +358,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const [columnAssignments, setColumnAssignments] = useState<ColumnAssignment[]>([]);
 	const [rawDataLines, setRawDataLines] = useState<string[][]>([]);
 	const [sourceCollapsed, setSourceCollapsed] = useState(false);
+	const [importResult, setImportResult] = useState<BulkImportResult | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const existingPhones = useMemo(
@@ -375,12 +379,14 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 		(g) => g._status === 'existing-name' || g._status === 'duplicate-name',
 	).length;
 	const isNombreMapped = columnAssignments.some((a) => a.target === 'fullName');
-	const isFatalError = importError === FATAL_ERROR_MESSAGE;
+	const isFatalError = importError === IMPORT_FATAL_ERROR;
 	const importLabel = parsing
 		? 'Procesando...'
 		: newValidCount > 0
 			? `Importar ${newValidCount} invitado${pluralS(newValidCount)} nuevo${pluralS(newValidCount)}`
-			: 'No hay invitados nuevos para importar';
+			: errorCount > 0
+				? 'Corregir errores para importar'
+				: 'No hay invitados nuevos para importar';
 	const importDisabled =
 		newValidCount === 0 ||
 		parsing ||
@@ -390,14 +396,9 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const mappingConfirmDisabled = !isNombreMapped;
 
 	const visibleRows = useMemo(() => {
-		const rows: { guest: ParsedGuest; originalIndex: number }[] = [];
-		for (let i = 0; i < preview.length; i++) {
-			const g = preview[i];
-			if (g._status === 'new' && !g.error) {
-				rows.push({ guest: g, originalIndex: i });
-			}
-		}
-		return rows;
+		return preview
+			.map((guest, index) => ({ guest, originalIndex: index }))
+			.filter(({ guest }) => guest._status === 'new');
 	}, [preview]);
 
 	const omittedRecords = useMemo(
@@ -529,6 +530,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const handleImport = async () => {
 		setParsing(true);
 		setImportError(null);
+		setImportResult(null);
 		try {
 			const newGuests = preview.filter((g) => g._status === 'new' && !g.error);
 			if (newGuests.length === 0) {
@@ -538,27 +540,64 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 			}
 			const valid = newGuests.map((g) => ({
 				fullName: g.fullName,
-				phone: g.phone || undefined,
-				phoneCountryCode: g.phoneCountryCode || undefined,
+				phone: g.normalizedPhone,
 				email: g.email,
 				maxAllowedAttendees: 2,
 				tags: [] as string[],
 			}));
-			await onImport(valid);
-			onClose();
+			const result = await onImport(valid);
+			setImportResult(result);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : '';
 			if (message === 'Event not found or access denied.') {
-				setImportError(FATAL_ERROR_MESSAGE);
+				setImportError(IMPORT_FATAL_ERROR);
 			} else {
-				setImportError(
-					'No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.',
-				);
+				const details =
+					err && typeof err === 'object' && 'details' in err
+						? (err as { details: { rows?: string[] } }).details
+						: undefined;
+				const rowErrors = details?.rows;
+				if (Array.isArray(rowErrors) && rowErrors.length > 0) {
+					setImportError(
+						'No se pudieron importar algunas filas:\n' + rowErrors.join('\n'),
+					);
+				} else {
+					setImportError(
+						'No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.',
+					);
+				}
 			}
 		} finally {
 			setParsing(false);
 		}
 	};
+
+	if (importResult) {
+		return (
+			<DashboardModalPortal>
+				<div
+					className="dashboard-modal-backdrop"
+					role="dialog"
+					aria-modal="true"
+					onClick={onClose}
+				>
+					<div
+						className="dashboard-modal dashboard-modal--full"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<ImportSummary
+							created={importResult.created}
+							updated={importResult.updated}
+							totalAttempted={newValidCount}
+							errors={importResult.errors}
+							onClose={onClose}
+							onBack={() => setImportResult(null)}
+						/>
+					</div>
+				</div>
+			</DashboardModalPortal>
+		);
+	}
 
 	return (
 		<DashboardModalPortal>

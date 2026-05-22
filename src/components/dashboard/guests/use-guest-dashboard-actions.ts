@@ -273,22 +273,36 @@ export const useGuestDashboardActions = ({
 
 	const handleImport = useCallback(
 		async (guests: Partial<DashboardGuestItem>[]) => {
-			await guestsApi.bulkImport({
+			if (!eventId) {
+				setNotification({
+					message: 'Error: No se ha seleccionado un evento válido.',
+					type: 'warning',
+				});
+				return { created: 0, updated: 0, status: 'skipped' };
+			}
+			const result = await guestsApi.bulkImport({
 				eventId,
 				guests: guests.map((guest) => ({
 					full_name: guest.fullName || '',
 					phone: guest.phone,
-					country_code: guest.phoneCountryCode,
 					email: guest.email,
 					tags: guest.tags,
 				})),
 			});
 			await loadGuests();
+			return result;
 		},
-		[eventId, loadGuests],
+		[eventId, loadGuests, setNotification],
 	);
 
 	const handleExport = useCallback(async () => {
+		if (!eventId) {
+			setNotification({
+				message: 'Error: No se ha seleccionado un evento válido.',
+				type: 'warning',
+			});
+			return;
+		}
 		try {
 			await guestsApi.exportCsv(eventId);
 		} catch (err) {
@@ -298,7 +312,7 @@ export const useGuestDashboardActions = ({
 				type: 'warning',
 			});
 		}
-	}, [eventId]);
+	}, [eventId, setNotification]);
 
 	return {
 		celebratingGuestId,
