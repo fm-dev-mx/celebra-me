@@ -101,7 +101,7 @@ describe('users admin hook', () => {
 						assignedEvents: [
 							{
 								eventId: 'evt-1',
-								title: 'La Noche Premiere de Ximena',
+								title: 'XV años de Ximena',
 								slug: 'ximena-meza-trasvina',
 								membershipRole: 'manager',
 							},
@@ -116,7 +116,7 @@ describe('users admin hook', () => {
 			items: [
 				{
 					id: 'evt-1',
-					title: 'La Noche Premiere de Ximena',
+					title: 'XV años de Ximena',
 					slug: 'ximena-meza-trasvina',
 					eventType: 'xv',
 					status: 'published',
