@@ -17,6 +17,7 @@ import * as eventRepo from '@/lib/rsvp/repositories/event.repository';
 import * as guestRepo from '@/lib/rsvp/repositories/guest.repository';
 import * as membershipRepo from '@/lib/rsvp/repositories/role-membership.repository';
 import * as claimRepo from '@/lib/rsvp/repositories/claim-code.repository';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
@@ -61,6 +62,9 @@ describe('rsvp service branches', () => {
 		>;
 	const findGuestByPhoneMock = guestRepo.findGuestByPhone as jest.MockedFunction<
 		typeof guestRepo.findGuestByPhone
+	>;
+	const updateGuestByIdMock = guestRepo.updateGuestById as jest.MockedFunction<
+		typeof guestRepo.updateGuestById
 	>;
 	const updateGuestByIdServiceMock = guestRepo.updateGuestByIdService as jest.MockedFunction<
 		typeof guestRepo.updateGuestByIdService
@@ -191,6 +195,34 @@ describe('rsvp service branches', () => {
 				attendeeCount: 10,
 			}),
 		).rejects.toMatchObject({ status: 400 });
+	});
+
+	it('updateDashboardGuest preserves duplicate phone conflicts as 409', async () => {
+		findGuestByIdMock.mockResolvedValue(baseGuest);
+		findGuestByPhoneMock.mockResolvedValue({
+			...baseGuest,
+			id: 'guest-2',
+			phone: '+526680000001',
+		});
+		updateGuestByIdMock.mockRejectedValue(
+			new ApiError(500, 'internal_error', 'Should not reach update.'),
+		);
+
+		await expect(
+			updateDashboardGuest({
+				guestId: 'guest-1',
+				hostAccessToken: 'token',
+				origin: 'http://localhost',
+				fullName: 'Guest',
+				phone: '6680000001',
+				countryCode: '+52',
+				maxAllowedAttendees: 2,
+			}),
+		).rejects.toMatchObject({
+			status: 409,
+			code: 'conflict',
+		});
+		expect(updateGuestByIdMock).not.toHaveBeenCalled();
 	});
 
 	it('markGuestShared returns not_found when guest does not exist', async () => {

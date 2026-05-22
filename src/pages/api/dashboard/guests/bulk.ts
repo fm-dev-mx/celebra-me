@@ -61,9 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		if (rowErrors.length > 0) {
 			const message = `No se pudieron procesar ${rowErrors.length} fila${rowErrors.length !== 1 ? 's' : ''}.`;
-			return errorResponse(
-				new ApiError(400, 'validation_error', message, { rows: rowErrors }),
-			);
+			return errorResponse(new ApiError(400, 'bad_request', message, { rows: rowErrors }));
 		}
 
 		const data = await supabaseRestRequest({

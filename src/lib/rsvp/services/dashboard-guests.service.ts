@@ -13,7 +13,7 @@ import type {
 	DashboardGuestMutationResponse,
 } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import {
@@ -182,6 +182,7 @@ export async function createDashboardGuest(input: {
 			input.hostAccessToken,
 		);
 	} catch (error) {
+		if (isApiError(error)) throw error;
 		throw mapSupabaseErrorToApiError(error);
 	}
 
@@ -294,6 +295,7 @@ export async function updateDashboardGuest(input: {
 			input.hostAccessToken,
 		);
 	} catch (error) {
+		if (isApiError(error)) throw error;
 		throw mapSupabaseErrorToApiError(error);
 	}
 

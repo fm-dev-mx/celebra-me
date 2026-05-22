@@ -19,6 +19,8 @@ export interface BulkImportDTO {
 export interface BulkImportResult {
 	created: number;
 	updated: number;
+	skipped?: number;
+	conflicts?: number;
 	status: string;
 	errors?: string[];
 }

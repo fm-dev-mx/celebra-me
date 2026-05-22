@@ -3,6 +3,8 @@ import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { supabaseRestRequest, type SupabaseRequestOptions } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { createMockRequest } from '../helpers/api-mocks';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
 	requireHostSession: jest.fn(),
@@ -94,6 +96,8 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
+			expect(body.data.created).toBe(1);
+			expect(body.data.updated).toBe(0);
 			expect(body.message).toContain('correctamente');
 		});
 
@@ -136,6 +140,36 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const response = await buildRequest([{ full_name: 'Invitado Sin Teléfono' }]);
 
 			expect(response.status).toBe(200);
+			const body = await response.json();
+			expect(body.data.created).toBe(1);
+		});
+
+		it('surfaces normalized phone conflicts without reporting updates', async () => {
+			mockEventAccess();
+			supabaseRestRequestMock.mockResolvedValueOnce({
+				created: 0,
+				updated: 0,
+				skipped: 0,
+				conflicts: 1,
+				errors: ['Fila 1: el teléfono ya existe para este evento.'],
+				status: 'partial',
+			});
+
+			const response = await buildRequest([
+				{ full_name: 'Ana Duplicada', phone: '6691234567', country_code: '+52' },
+			]);
+			const body = await response.json();
+
+			expect(response.status).toBe(200);
+			expect(body.data).toEqual(
+				expect.objectContaining({
+					created: 0,
+					updated: 0,
+					conflicts: 1,
+					status: 'partial',
+				}),
+			);
+			expect(body.data.errors[0]).toContain('teléfono');
 		});
 
 		it('accepts guest with US phone', async () => {
@@ -498,6 +532,23 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 			const body = getRpcBody();
 			expect(body.p_guests[0].phone).toBe('');
+		});
+	});
+
+	describe('bulk RPC SQL contract', () => {
+		it('keeps the latest bulk RPC migration create-only', () => {
+			const migration = readFileSync(
+				join(
+					process.cwd(),
+					'supabase/migrations/20260522000001_make_bulk_guests_create_only.sql',
+				),
+				'utf8',
+			).toLowerCase();
+
+			expect(migration).toContain('create or replace function public.upsert_guests_v1');
+			expect(migration).toContain('on conflict (event_id, phone)');
+			expect(migration).toContain('do nothing');
+			expect(migration).not.toContain('do update set');
 		});
 	});
 
