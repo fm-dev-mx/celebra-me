@@ -216,6 +216,9 @@ export async function findGuestsByEvent(
 	if (filters.search) {
 		queryParts.push(`full_name=ilike.*${encodeURIComponent(filters.search)}*`);
 	}
+	if (filters.delivery && filters.delivery !== 'all') {
+		queryParts.push(`delivery_status=eq.${encodeURIComponent(filters.delivery)}`);
+	}
 	queryParts.push('order=updated_at.desc');
 
 	return findMany(TABLE, queryParts.join('&'), '*', toGuestRecord, {

@@ -1,6 +1,7 @@
 import type {
 	AttendanceStatus,
 	ClaimCodeRecord,
+	DeliveryFilter,
 	EntrySource,
 	EventRecord,
 	GuestInvitationAuditRecord,
@@ -17,6 +18,7 @@ export interface GuestFilters {
 	eventId: string;
 	status?: AttendanceStatus | 'all' | 'viewed';
 	search?: string;
+	delivery?: DeliveryFilter;
 }
 
 export interface CreateGuestInput {

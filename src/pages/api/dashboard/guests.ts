@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSessionContextFromRequest } from '@/lib/rsvp/auth/auth';
+import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	badRequest,
@@ -22,6 +23,11 @@ function parseStatus(raw: string): AttendanceStatus | 'all' | 'viewed' {
 	return 'all';
 }
 
+function parseDelivery(raw: string): DeliveryFilter {
+	if (raw === 'generated' || raw === 'shared') return raw;
+	return 'all';
+}
+
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		const session = await getSessionContextFromRequest(request);
@@ -35,6 +41,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 		const eventId = sanitize(url.searchParams.get('eventId'), 120);
 		const search = sanitize(url.searchParams.get('search'), 120);
 		const status = parseStatus(sanitize(url.searchParams.get('status'), 20));
+		const delivery = parseDelivery(sanitize(url.searchParams.get('delivery'), 20));
 
 		if (!eventId) return badRequest('eventId is required.');
 
@@ -42,6 +49,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 			eventId,
 			status,
 			search,
+			delivery,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
 		});

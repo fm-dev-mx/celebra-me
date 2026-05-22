@@ -1,5 +1,6 @@
 export type AttendanceStatus = 'pending' | 'confirmed' | 'declined';
 export type DeliveryStatus = 'generated' | 'shared';
+export type DeliveryFilter = DeliveryStatus | 'all';
 export type ResponseSource = 'link' | 'admin' | 'generic_link';
 export type EntrySource = 'dashboard' | 'generic_public';
 

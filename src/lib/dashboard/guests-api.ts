@@ -56,10 +56,12 @@ export class GuestsApi {
 		eventId: string;
 		search?: string;
 		status?: string;
+		delivery?: string;
 	}): Promise<GuestsListResponse> {
 		const query = new URLSearchParams({ eventId: params.eventId });
 		if (params.search) query.set('search', params.search);
 		if (params.status) query.set('status', params.status);
+		if (params.delivery) query.set('delivery', params.delivery);
 
 		const result = await dashboardApi.get<GuestsListResponse>(
 			`/api/dashboard/guests?${query.toString()}`,

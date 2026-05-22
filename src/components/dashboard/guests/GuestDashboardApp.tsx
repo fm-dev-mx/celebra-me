@@ -14,6 +14,7 @@ import {
 	type GuestFormPayload,
 } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
+import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import { useShortcuts } from '@/hooks/use-shortcuts';
 import '@/styles/dashboard/_guests.scss';
 
@@ -26,6 +27,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [status, setStatus] = useState<'all' | 'pending' | 'confirmed' | 'declined' | 'viewed'>(
 		'all',
 	);
+	const [delivery, setDelivery] = useState<DeliveryFilter>('all');
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const {
@@ -43,6 +45,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		initialEventId,
 		search,
 		status,
+		delivery,
 	});
 	const {
 		celebratingGuestId,
@@ -121,8 +124,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					searchInputRef={searchInputRef}
 					search={search}
 					status={status}
+					delivery={delivery}
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
+					onDeliveryChange={setDelivery}
 				/>
 
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}

@@ -9,6 +9,7 @@ import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/eve
 import { findMembershipByEventForHost } from '@/lib/rsvp/repositories/role-membership.repository';
 import type {
 	AttendanceStatus,
+	DeliveryFilter,
 	DeliveryStatus,
 	DashboardGuestMutationResponse,
 } from '@/interfaces/rsvp/domain.interface';
@@ -83,6 +84,7 @@ export async function listDashboardGuests(input: {
 	eventId: string;
 	status?: AttendanceStatus | 'all' | 'viewed';
 	search?: string;
+	delivery?: DeliveryFilter;
 	hostAccessToken: string;
 	origin: string;
 }): Promise<DashboardGuestListResponse> {
@@ -93,6 +95,7 @@ export async function listDashboardGuests(input: {
 				eventId: event.id,
 				status: input.status ?? 'all',
 				search: sanitize(input.search, 120),
+				delivery: input.delivery ?? 'all',
 			},
 			input.hostAccessToken,
 		);
@@ -115,6 +118,7 @@ export async function listDashboardGuests(input: {
 				eventId: membership.eventId,
 				status: input.status ?? 'all',
 				search: sanitize(input.search, 120),
+				delivery: input.delivery ?? 'all',
 			},
 			input.hostAccessToken,
 		);

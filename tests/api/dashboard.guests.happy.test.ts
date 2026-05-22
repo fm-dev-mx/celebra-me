@@ -199,6 +199,98 @@ describe('dashboard guests happy path', () => {
 		expect(deleteResp.status).toBe(200);
 	});
 
+	it('lists guests with delivery=generated filter', async () => {
+		listDashboardGuestsMock.mockResolvedValue({
+			eventId: 'evt-1',
+			items: [],
+			totals: {
+				totalInvitations: 0,
+				totalPeople: 0,
+				generatedInvitations: 0,
+				sharedInvitations: 0,
+				pendingInvitations: 0,
+				pendingPeople: 0,
+				confirmedInvitations: 0,
+				confirmedPeople: 0,
+				declinedInvitations: 0,
+				declinedPeople: 0,
+				viewed: 0,
+			},
+			updatedAt: new Date().toISOString(),
+		});
+
+		const response = await GET({
+			request: createMockRequest(),
+			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1&delivery=generated'),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
+			expect.objectContaining({ delivery: 'generated' }),
+		);
+	});
+
+	it('lists guests with delivery=shared filter', async () => {
+		listDashboardGuestsMock.mockResolvedValue({
+			eventId: 'evt-1',
+			items: [],
+			totals: {
+				totalInvitations: 0,
+				totalPeople: 0,
+				generatedInvitations: 0,
+				sharedInvitations: 0,
+				pendingInvitations: 0,
+				pendingPeople: 0,
+				confirmedInvitations: 0,
+				confirmedPeople: 0,
+				declinedInvitations: 0,
+				declinedPeople: 0,
+				viewed: 0,
+			},
+			updatedAt: new Date().toISOString(),
+		});
+
+		const response = await GET({
+			request: createMockRequest(),
+			url: new URL('http://localhost/api/dashboard/guests?eventId=evt-1&delivery=shared'),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
+			expect.objectContaining({ delivery: 'shared' }),
+		);
+	});
+
+	it('falls back to all when delivery param is invalid', async () => {
+		listDashboardGuestsMock.mockResolvedValue({
+			eventId: 'evt-1',
+			items: [],
+			totals: {
+				totalInvitations: 0,
+				totalPeople: 0,
+				generatedInvitations: 0,
+				sharedInvitations: 0,
+				pendingInvitations: 0,
+				pendingPeople: 0,
+				confirmedInvitations: 0,
+				confirmedPeople: 0,
+				declinedInvitations: 0,
+				declinedPeople: 0,
+				viewed: 0,
+			},
+			updatedAt: new Date().toISOString(),
+		});
+
+		const response = await GET({
+			request: createMockRequest(),
+			url: new URL(
+				'http://localhost/api/dashboard/guests?eventId=evt-1&delivery=invalid_value',
+			),
+		} as never);
+		expect(response.status).toBe(200);
+		expect(listDashboardGuestsMock).toHaveBeenCalledWith(
+			expect.objectContaining({ delivery: 'all' }),
+		);
+	});
+
 	it('returns 403 when host tries to access another owner event', async () => {
 		getSessionContextFromRequestMock.mockResolvedValue({
 			userId: 'host-a',

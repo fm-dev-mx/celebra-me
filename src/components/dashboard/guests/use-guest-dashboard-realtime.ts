@@ -5,7 +5,7 @@ import type {
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
-import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { DeliveryFilter, EventRecord } from '@/interfaces/rsvp/domain.interface';
 
 interface HostEventItem {
 	id: string;
@@ -34,6 +34,7 @@ interface UseGuestDashboardRealtimeOptions {
 	initialEventId: string;
 	search: 'all' | string;
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
+	delivery: DeliveryFilter;
 }
 
 const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
@@ -97,6 +98,7 @@ export const useGuestDashboardRealtime = ({
 	initialEventId,
 	search,
 	status,
+	delivery,
 }: UseGuestDashboardRealtimeOptions) => {
 	const [eventId, setEventId] = useState<string>(initialEventId || '');
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
@@ -149,7 +151,7 @@ export const useGuestDashboardRealtime = ({
 		setLoading(true);
 		setGuestsError('');
 		try {
-			const data = await guestsApi.list({ eventId, search, status });
+			const data = await guestsApi.list({ eventId, search, status, delivery });
 			setItems(data.items);
 			setTotals(data.totals);
 			setUpdatedAt(data.updatedAt);
@@ -159,6 +161,7 @@ export const useGuestDashboardRealtime = ({
 					eventId,
 					search,
 					status,
+					delivery,
 					error,
 					eventsDebug,
 				});
@@ -167,7 +170,7 @@ export const useGuestDashboardRealtime = ({
 		} finally {
 			setLoading(false);
 		}
-	}, [eventId, eventsDebug, search, status]);
+	}, [delivery, eventId, eventsDebug, search, status]);
 
 	const setupPolling = useCallback(() => {
 		if (!eventId) return () => {};

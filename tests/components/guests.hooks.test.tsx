@@ -90,6 +90,7 @@ describe('active guest dashboard hooks', () => {
 				initialEventId: 'event-123',
 				search: '',
 				status: 'all',
+				delivery: 'all',
 			}),
 		);
 
@@ -102,6 +103,7 @@ describe('active guest dashboard hooks', () => {
 			eventId: 'event-123',
 			search: '',
 			status: 'all',
+			delivery: 'all',
 		});
 		expect(result.current.hostEvents).toHaveLength(1);
 		expect(result.current.eventId).toBe('event-123');
@@ -176,6 +178,7 @@ describe('active guest dashboard hooks', () => {
 				initialEventId: '',
 				search: '',
 				status: 'all',
+				delivery: 'all',
 			}),
 		);
 
@@ -211,6 +214,7 @@ describe('active guest dashboard hooks', () => {
 				initialEventId: 'event-123',
 				search: '',
 				status: 'all',
+				delivery: 'all',
 			}),
 		);
 
@@ -255,6 +259,7 @@ describe('active guest dashboard hooks', () => {
 				initialEventId: '',
 				search: '',
 				status: 'all',
+				delivery: 'all',
 			}),
 		);
 
