@@ -7,10 +7,13 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import {
 	formatGuestDate,
 	formatGuestEntrySource,
-	getDeliveryStatusLabel,
-	getGuestStatusLabel,
-	getGuestStatusClass,
+	getPrimaryStatusLabel,
+	getPrimaryStatusClass,
 	getGuestVisibleTags,
+	getDeliveryStateLabel,
+	getRsvpStateLabel,
+	getViewStateLabel,
+	hasMessage,
 } from '@/components/dashboard/guests/guest-presenter';
 import { MessageIcon } from '@/components/common/icons/ui';
 
@@ -89,9 +92,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					)}
 				</td>
 				<td data-label="Estado">
-					<div className={`status-pill status-pill--${getGuestStatusClass(item)}`}>
+					<div className={`status-pill status-pill--${getPrimaryStatusClass(item)}`}>
 						<span className="status-pill__dot"></span>
-						{getGuestStatusLabel(item)}
+						{getPrimaryStatusLabel(item)}
 					</div>
 				</td>
 				<td data-label="Asistentes">
@@ -147,6 +150,27 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					<td colSpan={GUEST_TABLE_COL_COUNT}>
 						<div className="guest-row__expanded-inner">
 							<div className="guest-row__expanded-grid">
+								<div className="guest-row__detail">
+									<span className="guest-row__detail-label">Entrega</span>
+									<span className="guest-row__detail-value">
+										{getDeliveryStateLabel(item)}
+									</span>
+								</div>
+
+								<div className="guest-row__detail">
+									<span className="guest-row__detail-label">RSVP</span>
+									<span className="guest-row__detail-value">
+										{getRsvpStateLabel(item)}
+									</span>
+								</div>
+
+								<div className="guest-row__detail">
+									<span className="guest-row__detail-label">Visualización</span>
+									<span className="guest-row__detail-value">
+										{getViewStateLabel(item)}
+									</span>
+								</div>
+
 								{item.email && (
 									<div className="guest-row__detail">
 										<span className="guest-row__detail-label">Email</span>
@@ -163,29 +187,18 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									</span>
 								</div>
 
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Categoría</span>
-									<div className="guest-row__detail-tags">
-										{hasTags ? (
-											visibleTags.map((tag) => (
+								{hasTags && (
+									<div className="guest-row__detail">
+										<span className="guest-row__detail-label">Categoría</span>
+										<div className="guest-row__detail-tags">
+											{visibleTags.map((tag) => (
 												<span key={tag} className="guest-tag">
 													{tag}
 												</span>
-											))
-										) : (
-											<span className="guest-tag guest-tag--subtle">
-												Sin categoría
-											</span>
-										)}
+											))}
+										</div>
 									</div>
-								</div>
-
-								<div className="guest-row__detail">
-									<span className="guest-row__detail-label">Estado de envío</span>
-									<span className="guest-row__detail-value">
-										{getDeliveryStatusLabel(item.deliveryStatus)}
-									</span>
-								</div>
+								)}
 
 								{isViewed && (
 									<div className="guest-row__detail">
@@ -202,6 +215,17 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								)}
 							</div>
 
+							{hasMessage(item) && (
+								<div className="guest-row__expanded-message">
+									<div className="guest-row__detail-label">
+										Mensaje del invitado
+									</div>
+									<p className="guest-row__expanded-message-text">
+										"{item.guestComment}"
+									</p>
+								</div>
+							)}
+
 							<div className="guest-row__expanded-actions">
 								<GuestExpandedActions
 									guestName={item.fullName}
@@ -212,9 +236,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 									onMarkShared={async () => onMarkShared(item)}
 									onRevertShared={
 										onRevertShared
-											? () => {
-													onRevertShared(item);
-												}
+											? async () => onRevertShared(item)
 											: undefined
 									}
 								/>

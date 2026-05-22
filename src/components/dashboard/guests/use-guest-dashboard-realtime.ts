@@ -38,7 +38,10 @@ interface UseGuestDashboardRealtimeOptions {
 
 const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
 function getErrorMessage(error: unknown, fallback: string): string {
-	return error instanceof Error ? error.message : fallback;
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return fallback;
 }
 
 function getEventLoadFailureMessage(error: unknown, fallback: string): string {

@@ -36,7 +36,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 							<option value="">Selecciona un evento</option>
 							{hostEvents.map((event) => (
 								<option key={event.id} value={event.id}>
-									{event.title} ({event.slug})
+									{event.title}
 								</option>
 							))}
 						</select>

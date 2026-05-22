@@ -20,29 +20,61 @@ export function getGuestVisibleTags(item: DashboardGuestItem) {
 	return (item.tags ?? []).filter((tag) => !tag.startsWith('system:'));
 }
 
-export function getGuestStatusLabel(item: DashboardGuestItem) {
-	const { attendanceStatus, deliveryStatus } = item;
-
-	if (attendanceStatus === 'confirmed') return 'Aceptada';
-	if (attendanceStatus === 'declined') return 'Denegada';
-
-	// Case: Pending RSVP
-	if (deliveryStatus === 'generated') return 'Por enviar';
+/**
+ * 5-state primary status for the closed card.
+ *
+ * Priority order:
+ *   1. confirmed / declined  (terminal RSVP)
+ *   2. generated             (not yet sent)
+ *   3. shared + not viewed   (sent, awaiting open)
+ *   4. shared + viewed       (opened, awaiting RSVP)
+ */
+export function getPrimaryStatusLabel(item: DashboardGuestItem) {
+	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
+	if (item.attendanceStatus === 'declined') return 'Denegada';
+	if (item.deliveryStatus === 'generated') return 'Por enviar';
+	if (!item.isViewed) return 'Enviada';
 	return 'Pendiente';
 }
 
-export function getDeliveryStatusLabel(deliveryStatus: DashboardGuestItem['deliveryStatus']) {
-	return deliveryStatus === 'shared' ? 'Enviado' : 'No enviado';
+export function getPrimaryStatusClass(item: DashboardGuestItem) {
+	if (item.attendanceStatus === 'confirmed') return 'confirmed';
+	if (item.attendanceStatus === 'declined') return 'declined';
+	if (item.deliveryStatus === 'generated') return 'unshared';
+	if (!item.isViewed) return 'sent';
+	return 'pending';
 }
 
-export function getGuestStatusClass(item: DashboardGuestItem) {
-	const { attendanceStatus, deliveryStatus } = item;
+/** Displayable contact: phone > email > "Sin contacto" */
+export function getContactDisplay(item: DashboardGuestItem): string {
+	if (item.phone?.trim()) return item.phone.trim();
+	if (item.email?.trim()) return item.email.trim();
+	return 'Sin contacto';
+}
 
-	if (attendanceStatus === 'confirmed') return 'confirmed';
-	if (attendanceStatus === 'declined') return 'declined';
+export function hasContact(item: DashboardGuestItem): boolean {
+	return !!(item.phone || item.email);
+}
 
-	if (deliveryStatus === 'generated') return 'unshared';
-	return 'pending';
+/** True when the guest left an RSVP comment/message */
+export function hasMessage(item: DashboardGuestItem): boolean {
+	return item.guestComment.trim().length > 0;
+}
+
+/** Expanded-panel detail labels */
+export function getDeliveryStateLabel(item: DashboardGuestItem): string {
+	return item.deliveryStatus === 'shared' ? 'Enviado' : 'No enviado';
+}
+
+export function getRsvpStateLabel(item: DashboardGuestItem): string {
+	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
+	if (item.attendanceStatus === 'declined') return 'Denegada';
+	return 'Pendiente';
+}
+
+export function getViewStateLabel(item: DashboardGuestItem): string {
+	if (!item.isViewed) return 'Sin ver';
+	return `${item.viewPercentage}%`;
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
