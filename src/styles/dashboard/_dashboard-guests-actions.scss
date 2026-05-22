@@ -1,8 +1,8 @@
 .dashboard-guests__actions {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
+	gap: 0.35rem;
+	white-space: nowrap;
 
 	@media (width <= 992px) {
 		margin-top: 0.75rem;
@@ -81,9 +81,4 @@
 	.share-label {
 		white-space: nowrap;
 	}
-}
-
-.dashboard-guests__actions .btn-icon--danger:hover:not(:disabled) {
-	background: var(--color-state-danger-bg);
-	border-color: var(--color-state-danger-border);
 }

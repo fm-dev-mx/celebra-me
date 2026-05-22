@@ -54,7 +54,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handleExport,
 		handleImport,
 		handleMarkShared,
-		handleToggleDelivery,
 		handlePostpone,
 		handleSubmit,
 		highlightedGuestId,
@@ -131,7 +130,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onEdit={openEditModal}
 					onDelete={requestDelete}
 					onMarkShared={handleMarkShared}
-					onToggleDelivery={handleToggleDelivery}
 				/>
 
 				{deleteConfirmOpen && (

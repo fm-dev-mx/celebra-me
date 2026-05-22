@@ -161,39 +161,6 @@ export const useGuestDashboardActions = ({
 		[items, loadGuests, setItems],
 	);
 
-	const handleToggleDelivery = useCallback(
-		async (item: DashboardGuestItem) => {
-			const newStatus = item.deliveryStatus === 'shared' ? 'generated' : 'shared';
-			const previousItems = [...items];
-
-			// Optimistic update
-			setItems((prev) =>
-				prev.map((entry) =>
-					entry.guestId === item.guestId
-						? { ...entry, deliveryStatus: newStatus }
-						: entry,
-				),
-			);
-
-			try {
-				await guestsApi.update(item.guestId, { deliveryStatus: newStatus });
-				setNotification({
-					message: `Estado de entrega actualizado a: ${newStatus === 'shared' ? 'Enviada' : 'Por enviar'}`,
-					type: 'success',
-				});
-				await loadGuests();
-			} catch (err) {
-				console.error('[GuestDashboard] Toggle delivery error:', err);
-				setItems(previousItems);
-				setNotification({
-					message: 'Error al actualizar estado de entrega.',
-					type: 'warning',
-				});
-			}
-		},
-		[items, loadGuests, setItems],
-	);
-
 	const handlePostpone = useCallback(() => {
 		if (!editingGuest) return;
 
@@ -328,7 +295,6 @@ export const useGuestDashboardActions = ({
 		handleExport,
 		handleImport,
 		handleMarkShared,
-		handleToggleDelivery,
 		handlePostpone,
 		handleSubmit,
 		highlightedGuestId,

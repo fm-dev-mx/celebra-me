@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CopyIcon, ChevronDownIcon, CheckIcon, RefreshIcon } from '@/components/common/icons/ui';
-import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import { ChevronDownIcon } from '@/components/common/icons/ui';
+import GuestActionsMenu from '@/components/dashboard/guests/GuestActionsMenu';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
@@ -20,7 +20,6 @@ interface GuestCardProps {
 	onEdit: (item: DashboardGuestItem) => void;
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-	onToggleDelivery: (item: DashboardGuestItem) => Promise<void>;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -32,12 +31,13 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onEdit,
 	onDelete,
 	onMarkShared,
-	onToggleDelivery,
 }) => {
-	const [expanded, setExpanded] = useState(false);
+	const [detailsOpen, setDetailsOpen] = useState(false);
 	const isViewed = !!item.firstViewedAt;
 	const isShared = item.deliveryStatus === 'shared';
-	const hasTags = getGuestVisibleTags(item).length > 0;
+	const visibleTags = getGuestVisibleTags(item);
+	const hasTags = visibleTags.length > 0;
+	const expandId = `guest-details-${item.guestId}`;
 
 	return (
 		<article
@@ -87,12 +87,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 						)}
 					</div>
 				</div>
-
-				{item.guestComment && (
-					<div className="guest-card__comment" aria-label="Mensaje del invitado">
-						<p className="guest-card__comment-text">"{item.guestComment}"</p>
-					</div>
-				)}
 			</div>
 
 			<div className="guest-card__actions">
@@ -104,83 +98,56 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					isShared={isShared}
 					onShared={async () => onMarkShared(item)}
 				/>
+				<GuestActionsMenu
+					guestName={item.fullName}
+					inviteUrl={inviteUrl}
+					onEdit={() => onEdit(item)}
+					onDelete={() => onDelete(item)}
+					onMarkShared={async () => onMarkShared(item)}
+				/>
 				<button
 					type="button"
-					className="guest-card__menu-btn"
-					title="Más opciones"
-					aria-label={`Opciones para ${item.fullName}`}
-					onClick={() => setExpanded(!expanded)}
+					className={`guest-card__menu-btn ${detailsOpen ? 'guest-card__menu-btn--open' : ''}`}
+					title={detailsOpen ? 'Ver menos detalles' : 'Ver más detalles'}
+					aria-label={
+						detailsOpen
+							? `Ver menos detalles de ${item.fullName}`
+							: `Ver más detalles de ${item.fullName}`
+					}
+					aria-expanded={detailsOpen}
+					aria-controls={expandId}
+					onClick={() => setDetailsOpen(!detailsOpen)}
 				>
-					<ChevronDownIcon size={16} />
+					<ChevronDownIcon size={16} aria-hidden="true" />
 				</button>
 			</div>
 
-			{expanded && (
-				<div className="guest-card__expanded">
+			<div
+				id={expandId}
+				className={`guest-card__expanded ${detailsOpen ? 'guest-card__expanded--open' : ''}`}
+				role="region"
+				aria-label={`Detalles de ${item.fullName}`}
+			>
+				<div className="guest-card__expanded-inner">
+					{item.guestComment && (
+						<div className="guest-card__comment" aria-label="Mensaje del invitado">
+							<p className="guest-card__comment-text">"{item.guestComment}"</p>
+						</div>
+					)}
+
 					<div className="guest-card__tags">
 						<span className="guest-tag guest-tag--subtle">
 							{formatGuestEntrySource(item)}
 						</span>
 						{hasTags &&
-							getGuestVisibleTags(item).map((tag) => (
+							visibleTags.map((tag) => (
 								<span key={tag} className="guest-tag">
 									{tag}
 								</span>
 							))}
 					</div>
-
-					<div className="guest-card__detail-actions">
-						<button
-							type="button"
-							className={
-								isShared
-									? 'guest-card__action-btn'
-									: 'guest-card__action-btn guest-card__action-btn--primary'
-							}
-							title={isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
-							aria-label={isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
-							onClick={() => onToggleDelivery(item)}
-						>
-							{isShared ? <RefreshIcon size={14} /> : <CheckIcon size={14} />}
-							<span>
-								{isShared ? 'Marcar como por enviar' : 'Marcar como enviada'}
-							</span>
-						</button>
-						<button
-							type="button"
-							className="guest-card__action-btn"
-							title="Copiar enlace"
-							aria-label={`Copiar enlace de ${item.fullName}`}
-							onClick={async () => {
-								await navigator.clipboard.writeText(inviteUrl);
-							}}
-						>
-							<CopyIcon size={14} />
-							<span>Copiar enlace</span>
-						</button>
-						<button
-							type="button"
-							className="guest-card__action-btn"
-							title="Editar"
-							aria-label={`Editar ${item.fullName}`}
-							onClick={() => onEdit(item)}
-						>
-							<EditGlyph size={14} />
-							<span>Editar</span>
-						</button>
-						<button
-							type="button"
-							className="guest-card__action-btn guest-card__action-btn--danger"
-							title="Eliminar"
-							aria-label={`Eliminar ${item.fullName}`}
-							onClick={() => onDelete(item)}
-						>
-							<DeleteGlyph size={14} />
-							<span>Eliminar</span>
-						</button>
-					</div>
 				</div>
-			)}
+			</div>
 		</article>
 	);
 };
