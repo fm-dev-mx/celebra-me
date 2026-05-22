@@ -33,17 +33,101 @@ export function toSafeAttendeeCount(raw: unknown, max = 20): number {
 	return Math.max(0, Math.min(Math.trunc(raw as number), max));
 }
 
+// Supported country calling codes for import/export.
+// Longer prefixes must come before shorter ones so matching/splitting prefers the more specific prefix.
+// When adding a new code, insert it before any shorter prefix.
+export const SUPPORTED_COUNTRY_CODES = ['+52', '+34', '+1'] as const;
+const COUNTRY_CODE_NUMBERS: readonly string[] = SUPPORTED_COUNTRY_CODES.map((cc) => cc.slice(1));
+export type SupportedCountryCode = (typeof SUPPORTED_COUNTRY_CODES)[number];
+
+/**
+ * Normalizes an optional phone + countryCode pair.
+ * Ensures the DB invariant: either both are present or neither is.
+ * If phone is empty/missing, countryCode is also stripped.
+ */
+export function normalizeOptionalPhonePair(input: {
+	phone?: string | null;
+	countryCode?: string | null;
+}): { phone: string | undefined; countryCode: string | undefined } {
+	const phone =
+		typeof input.phone === 'string'
+			? input.phone.trim() || undefined
+			: input.phone || undefined;
+	const countryCode = phone ? input.countryCode || undefined : undefined;
+	return { phone, countryCode };
+}
+
+export function formatPhoneError(
+	reason: 'invalid_length' | 'invalid_characters' | 'country_code_in_phone',
+): string {
+	const messages: Record<typeof reason, string> = {
+		country_code_in_phone:
+			'No incluyas el código de país en el teléfono. Usa el selector de país.',
+		invalid_length: 'El teléfono debe tener exactamente 10 dígitos.',
+		invalid_characters:
+			'El teléfono solo puede contener números, espacios, guiones o paréntesis.',
+	};
+	return messages[reason];
+}
+
+export type OptionalNationalPhoneResult =
+	| { ok: true; phone: string | null }
+	| {
+			ok: false;
+			reason: 'invalid_length' | 'invalid_characters' | 'country_code_in_phone';
+	  };
+
+/**
+ * Normalizes an optional national phone number.
+ *
+ * - null / undefined / empty → { ok: true, phone: null }
+ * - Valid 10-digit (with optional formatting) → { ok: true, phone: '6561234567' }
+ * - Contains '+' → country_code_in_phone
+ * - More than 10 digits with leading country code digits → country_code_in_phone
+ * - Any other length mismatch → invalid_length
+ * - Non-formatting, non-digit characters → invalid_characters
+ *
+ * Does NOT trim, slice, or auto-correct. Rejects invalid input explicitly.
+ */
+export function normalizeOptionalNationalPhone(
+	input: string | null | undefined,
+): OptionalNationalPhoneResult {
+	if (input == null || input.trim() === '') {
+		return { ok: true, phone: null };
+	}
+
+	const trimmed = input.trim();
+
+	const noPlus = trimmed.replace(/^\+/, '');
+	if (noPlus.length !== trimmed.length) {
+		return { ok: false, reason: 'country_code_in_phone' };
+	}
+
+	const stripped = noPlus.replace(/[\s()\-.]+/g, '');
+
+	if (/[^\d]/.test(stripped)) {
+		return { ok: false, reason: 'invalid_characters' };
+	}
+
+	if (stripped.length !== 10) {
+		if (stripped.length > 10 && stripped.length <= 14) {
+			const extra = stripped.slice(0, stripped.length - 10);
+			if (COUNTRY_CODE_NUMBERS.some((cc) => extra.startsWith(cc))) {
+				return { ok: false, reason: 'country_code_in_phone' };
+			}
+		}
+		return { ok: false, reason: 'invalid_length' };
+	}
+
+	return { ok: true, phone: stripped };
+}
+
 /**
  * Normalizes a phone number by removing non-digit characters.
  */
 export function normalizePhone(phone: string): string {
 	return sanitize(phone, 40).replace(/[^\d]/g, '');
 }
-
-// Supported country calling codes for import/export.
-// Listed longer-first so matching and splitting prefer the more specific prefix.
-export const SUPPORTED_COUNTRY_CODES = ['+52', '+34', '+1'] as const;
-export type SupportedCountryCode = (typeof SUPPORTED_COUNTRY_CODES)[number];
 
 /**
  * Normalizes an imported phone number with an explicit country calling code.
