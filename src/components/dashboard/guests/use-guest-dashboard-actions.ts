@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 
 type ModalMode = 'create' | 'edit';
 
@@ -262,6 +263,15 @@ export const useGuestDashboardActions = ({
 		[eventId, loadGuests, setNotification],
 	);
 
+	const handleImportUpdate = useCallback(
+		async (guestId: string, payload: UpdateGuestDTO) => {
+			const result = await guestsApi.update(guestId, payload);
+			await loadGuests();
+			return result;
+		},
+		[loadGuests],
+	);
+
 	const handleExport = useCallback(async () => {
 		if (!eventId) {
 			setNotification({
@@ -294,6 +304,7 @@ export const useGuestDashboardActions = ({
 		handleDeleteConfirm,
 		handleExport,
 		handleImport,
+		handleImportUpdate,
 		handleMarkShared,
 		handlePostpone,
 		handleSubmit,

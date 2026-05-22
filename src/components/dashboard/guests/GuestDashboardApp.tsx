@@ -53,6 +53,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handleDeleteConfirm,
 		handleExport,
 		handleImport,
+		handleImportUpdate,
 		handleMarkShared,
 		handlePostpone,
 		handleSubmit,
@@ -166,6 +167,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					<ImportMagic
 						onClose={() => setImportModalOpen(false)}
 						onImport={handleImport}
+						onUpdate={handleImportUpdate}
 						eventId={eventId}
 						existingGuests={items}
 					/>
