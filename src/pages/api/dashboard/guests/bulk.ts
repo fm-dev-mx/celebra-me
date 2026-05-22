@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
-import { badRequest, errorResponse, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
+import { badRequest, errorResponse, getIp, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
-import { normalizeImportedPhone } from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone } from '@/lib/rsvp/core/utils';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
@@ -26,6 +27,17 @@ export const POST: APIRoute = async ({ request }) => {
 	try {
 		const session = await requireHostSession(request);
 
+		const allowed = await checkRateLimit({
+			namespace: 'dashboard',
+			entityId: `bulk_import:${session.userId}`,
+			ip: getIp(request),
+			maxHits: 10,
+			windowSec: 60,
+		});
+		if (!allowed) {
+			throw new ApiError(429, 'rate_limited', 'Too many requests.');
+		}
+
 		const body = await validateBodyOrRespond(request, BulkImportSchema);
 		if (body instanceof Response) return body;
 
@@ -40,23 +52,23 @@ export const POST: APIRoute = async ({ request }) => {
 
 		const rowErrors: string[] = [];
 		const normalizedGuests = body.guests.map((guest, i) => {
-			try {
-				const phone = guest.phone
-					? normalizeImportedPhone(guest.phone, guest.country_code)
-					: '';
-				return {
-					full_name: guest.full_name,
-					phone,
-					email: guest.email ?? null,
-					tags: guest.tags ?? [],
-					max_allowed_attendees: guest.max_allowed_attendees,
-				};
-			} catch (err) {
-				rowErrors.push(
-					`Fila ${i + 1}: ${err instanceof Error ? err.message : String(err)}`,
-				);
+			const phoneResult = normalizeOptionalNationalPhone(guest.phone || null);
+			if (!phoneResult.ok) {
+				const reason =
+					phoneResult.reason === 'country_code_in_phone'
+						? 'No incluyas el código de país en el teléfono. Usa la columna clave_pais.'
+						: formatPhoneError(phoneResult.reason);
+				rowErrors.push(`Fila ${i + 1}: ${reason}`);
 				return null;
 			}
+			return {
+				full_name: guest.full_name,
+				phone: phoneResult.phone,
+				country_code: guest.country_code || null,
+				email: guest.email ?? null,
+				tags: guest.tags ?? [],
+				max_allowed_attendees: guest.max_allowed_attendees,
+			};
 		});
 
 		if (rowErrors.length > 0) {

@@ -9,7 +9,7 @@ import {
 	jsonResponse,
 	parseJsonBody,
 } from '@/lib/rsvp/core/http';
-import { sanitize } from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	createDashboardGuest,
@@ -86,20 +86,26 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const eventId = sanitize(body.eventId as string, 120);
 		const fullName = sanitize(body.fullName as string, 140);
-		const phone = sanitize(body.phone as string, 40);
+		const rawPhone = sanitize(body.phone as string, 40);
 		const countryCode =
 			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
-		const maxAllowedAttendees =
-			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
 
 		if (!eventId || !fullName) {
 			return badRequest('eventId and fullName are required.');
 		}
 
+		const phoneResult = normalizeOptionalNationalPhone(rawPhone || null);
+		if (!phoneResult.ok) {
+			return badRequest(formatPhoneError(phoneResult.reason));
+		}
+
+		const maxAllowedAttendees =
+			typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : 1;
+
 		const result = await createDashboardGuest({
 			eventId,
 			fullName,
-			phone,
+			phone: phoneResult.phone,
 			countryCode,
 			maxAllowedAttendees,
 			hostAccessToken: session.accessToken,

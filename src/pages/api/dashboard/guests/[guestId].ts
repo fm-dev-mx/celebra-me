@@ -8,7 +8,7 @@ import {
 	jsonResponse,
 	parseJsonBody,
 } from '@/lib/rsvp/core/http';
-import { sanitize } from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import {
 	deleteDashboardGuest,
@@ -51,6 +51,16 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 
 		const countryCode =
 			typeof body.countryCode === 'string' ? body.countryCode.trim() : undefined;
+
+		let validatedPhone: string | undefined;
+		if (body.phone !== undefined) {
+			const phoneResult = normalizeOptionalNationalPhone(body.phone as string);
+			if (!phoneResult.ok) {
+				return badRequest(formatPhoneError(phoneResult.reason));
+			}
+			validatedPhone = phoneResult.phone ?? undefined;
+		}
+
 		const result = await updateDashboardGuest({
 			guestId,
 			hostAccessToken: session.accessToken,
@@ -58,7 +68,7 @@ export const PATCH: APIRoute = async ({ params, request, url }) => {
 			actorUserId: session.userId,
 			isSuperAdmin: session.isSuperAdmin,
 			fullName: body.fullName !== undefined ? sanitize(body.fullName, 140) : undefined,
-			phone: body.phone !== undefined ? sanitize(body.phone, 40) : undefined,
+			phone: validatedPhone,
 			countryCode,
 			maxAllowedAttendees:
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,

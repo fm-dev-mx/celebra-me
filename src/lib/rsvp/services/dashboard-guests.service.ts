@@ -1,7 +1,7 @@
 import {
 	createGuestInvitation,
 	findGuestsByEvent,
-	findGuestByPhone,
+	findGuestByPhoneAuth,
 	softDeleteGuestById,
 	updateGuestById,
 } from '@/lib/rsvp/repositories/guest.repository';
@@ -24,7 +24,7 @@ import {
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingTemplateForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { normalizeImportedPhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { generateShortId } from '@/lib/server/ids';
 
 function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
@@ -141,7 +141,7 @@ export async function listDashboardGuests(input: {
 export async function createDashboardGuest(input: {
 	eventId: string;
 	fullName: string;
-	phone?: string;
+	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
 	hostAccessToken: string;
@@ -155,9 +155,9 @@ export async function createDashboardGuest(input: {
 	const fullName = sanitize(input.fullName, 140);
 	if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 
-	const phone = input.phone ? normalizeImportedPhone(input.phone, input.countryCode) : undefined;
+	const phone = input.phone || undefined;
 	if (phone) {
-		const existing = await findGuestByPhone(event.id, phone, input.hostAccessToken);
+		const existing = await findGuestByPhoneAuth(event.id, phone, input.hostAccessToken);
 		if (existing) {
 			throw new ApiError(
 				409,
@@ -179,6 +179,7 @@ export async function createDashboardGuest(input: {
 				eventId: event.id,
 				fullName,
 				phone: phone || undefined,
+				countryCode: input.countryCode,
 				maxAllowedAttendees,
 				tags: input.tags,
 				shortId: generateShortId(8),
@@ -260,12 +261,10 @@ export async function updateDashboardGuest(input: {
 
 	let updated;
 	try {
-		const nextPhone =
-			input.phone !== undefined
-				? normalizeImportedPhone(input.phone, input.countryCode)
-				: undefined;
+		const nextPhone = input.phone || undefined;
+		const nextCountryCode = input.countryCode;
 		if (nextPhone && nextPhone !== existing.phone) {
-			const duplicate = await findGuestByPhone(
+			const duplicate = await findGuestByPhoneAuth(
 				existing.eventId,
 				nextPhone,
 				input.hostAccessToken,
@@ -284,6 +283,7 @@ export async function updateDashboardGuest(input: {
 				guestId: input.guestId,
 				fullName: input.fullName !== undefined ? sanitize(input.fullName, 140) : undefined,
 				phone: nextPhone,
+				countryCode: nextCountryCode,
 				maxAllowedAttendees: nextCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,

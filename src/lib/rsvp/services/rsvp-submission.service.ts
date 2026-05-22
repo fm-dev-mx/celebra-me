@@ -1,7 +1,7 @@
 import {
 	createGuestInvitationPublic,
 	findGuestByInviteIdPublic,
-	findGuestByPhone,
+	findGuestByPhonePublic,
 	updateGuestByIdService,
 	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
@@ -16,7 +16,12 @@ import type {
 	ResponseSource,
 } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { normalizePhone, sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
+import {
+	formatPhoneError,
+	normalizeOptionalNationalPhone,
+	sanitize,
+	toSafeAttendeeCount,
+} from '@/lib/rsvp/core/utils';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 
 type InviteRsvpIdentity = {
@@ -44,7 +49,7 @@ type ResolvedRsvpTarget =
 			createInput: {
 				eventId: string;
 				fullName: string;
-				phone: string;
+				phone?: string;
 				maxAllowedAttendees: number;
 				entrySource: EntrySource;
 				tags?: string[];
@@ -57,15 +62,6 @@ function isInviteIdentity(identity: RsvpIdentity): identity is InviteRsvpIdentit
 
 function clampGuestCap(raw: number) {
 	return Math.max(1, Math.min(20, Math.trunc(raw || 1)));
-}
-
-function validatePhone(phone: string) {
-	const normalizedPhone = normalizePhone(phone);
-	if (!normalizedPhone) return '';
-	if (!/^\d{10}$/.test(normalizedPhone)) {
-		throw new ApiError(400, 'bad_request', 'Phone must contain 10 digits.');
-	}
-	return normalizedPhone;
 }
 
 export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTarget> {
@@ -82,9 +78,13 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 		const fullName = sanitize(identity.fullName, 140);
 		if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 
-		const phone = validatePhone(identity.phone);
+		const phoneResult = normalizeOptionalNationalPhone(identity.phone);
+		if (!phoneResult.ok) {
+			throw new ApiError(400, 'bad_request', formatPhoneError(phoneResult.reason));
+		}
+		const phone = phoneResult.phone;
 		if (phone) {
-			const existingInvitation = await findGuestByPhone(identity.event.id, phone);
+			const existingInvitation = await findGuestByPhonePublic(identity.event.id, phone);
 			if (existingInvitation) {
 				return {
 					event: identity.event,
@@ -98,7 +98,7 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 			createInput: {
 				eventId: identity.event.id,
 				fullName,
-				phone: phone || (null as unknown as string),
+				phone: phone ?? undefined,
 				maxAllowedAttendees: clampGuestCap(identity.maxAllowedAttendees),
 				entrySource: 'generic_public',
 				tags: ['system:public'],
