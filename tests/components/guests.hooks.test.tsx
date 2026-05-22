@@ -428,7 +428,7 @@ describe('active guest dashboard hooks', () => {
 			fullName: 'New Name',
 			maxAllowedAttendees: 2,
 			phone: '6691234567',
-			phoneCountryCode: '+52',
+			countryCode: '+52',
 		});
 
 		const loadGuests = jest.fn().mockResolvedValue(undefined);
@@ -470,7 +470,7 @@ describe('active guest dashboard hooks', () => {
 			fullName: 'Test Guest',
 			maxAllowedAttendees: 4,
 			phone: '5551234567',
-			phoneCountryCode: '+52',
+			countryCode: '+52',
 			deliveryStatus: 'generated' as const,
 		};
 		const items = [guestA];

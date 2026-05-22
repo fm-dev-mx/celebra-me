@@ -8,7 +8,7 @@ function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestI
 		inviteId: 'invite-1',
 		fullName: 'Guest One',
 		phone: '6691234567',
-		phoneCountryCode: '+52',
+		countryCode: '+52',
 		email: null,
 		tags: [],
 		metadata: {},
@@ -135,9 +135,7 @@ describe('SendInvitationModal', () => {
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => {
-			expect(
-				screen.getByText('El teléfono debe tener al menos 8 dígitos.'),
-			).toBeInTheDocument();
+			expect(screen.getByText('El teléfono debe tener 10 dígitos.')).toBeInTheDocument();
 		});
 
 		expect(onSave).not.toHaveBeenCalled();

@@ -175,10 +175,11 @@ export const useGuestDashboardActions = ({
 				countryCode?: string;
 			},
 		): Promise<DashboardGuestItem> => {
+			const phone = payload.phone || undefined;
 			const updated = await guestsApi.update(guestId, {
 				...payload,
-				phone: payload.phone || '',
-				countryCode: payload.countryCode || '+52',
+				phone,
+				countryCode: phone ? payload.countryCode || undefined : undefined,
 			});
 			setItems((prev) =>
 				prev.map((entry) => (entry.guestId === guestId ? { ...entry, ...updated } : entry)),

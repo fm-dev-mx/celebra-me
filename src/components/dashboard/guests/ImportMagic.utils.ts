@@ -93,10 +93,6 @@ function pluralS(count: number): string {
 	return count !== 1 ? 's' : '';
 }
 
-export function normalizeGuestName(value: string | null | undefined): string {
-	return normalizeName(value ?? '');
-}
-
 export function normalizePhoneForComparison(
 	phone: string | null | undefined,
 	countryCode?: string | null,
@@ -169,21 +165,32 @@ function parseTags(value: string): string[] {
 		.filter(Boolean);
 }
 
-function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: string): void {
-	if (key === 'fullName') result.fullName = value;
-	else if (key === 'phone') result.phone = value;
-	else if (key === 'phoneCountryCode') result.phoneCountryCode = value;
-	else if (key === 'email') result.email = value || null;
-	else if (key === 'maxAllowedAttendees') {
-		const parsed = Number.parseInt(value, 10);
-		if (Number.isFinite(parsed)) result.maxAllowedAttendees = parsed;
-	} else if (key === 'tags') {
-		result.tags = parseTags(value);
-	}
-}
+const FIELD_SETTERS: Partial<
+	Record<keyof ParsedGuest, (result: ParsedGuest, value: string) => void>
+> = {
+	fullName: (r, v) => {
+		r.fullName = v;
+	},
+	phone: (r, v) => {
+		r.phone = v;
+	},
+	phoneCountryCode: (r, v) => {
+		r.phoneCountryCode = v;
+	},
+	email: (r, v) => {
+		r.email = v || null;
+	},
+	maxAllowedAttendees: (r, v) => {
+		const p = Number.parseInt(v, 10);
+		if (Number.isFinite(p)) r.maxAllowedAttendees = p;
+	},
+	tags: (r, v) => {
+		r.tags = parseTags(v);
+	},
+};
 
-function ensureCountryCodePrefix(code: string): string {
-	return code && !code.startsWith('+') ? '+' + code : code;
+function applyFieldValue(result: ParsedGuest, key: keyof ParsedGuest, value: string): void {
+	FIELD_SETTERS[key]?.(result, value);
 }
 
 export function parsePositional(parts: string[]): ParsedGuest {
@@ -205,7 +212,10 @@ export function parsePositional(parts: string[]): ParsedGuest {
 		result.email = parts[2]?.trim() || null;
 	}
 
-	result.phoneCountryCode = ensureCountryCodePrefix(result.phoneCountryCode);
+	result.phoneCountryCode =
+		result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')
+			? '+' + result.phoneCountryCode
+			: result.phoneCountryCode;
 	return result;
 }
 
@@ -226,7 +236,10 @@ export function parseMappedRow(
 		applyFieldValue(result, field, parts[Number(idxStr)]?.trim() ?? '');
 	}
 
-	result.phoneCountryCode = ensureCountryCodePrefix(result.phoneCountryCode);
+	result.phoneCountryCode =
+		result.phoneCountryCode && !result.phoneCountryCode.startsWith('+')
+			? '+' + result.phoneCountryCode
+			: result.phoneCountryCode;
 	return result;
 }
 
@@ -353,10 +366,10 @@ function buildExistingIndexes(existingGuests: DashboardGuestItem[]) {
 	const byName = new Map<string, DashboardGuestItem[]>();
 
 	for (const guest of existingGuests) {
-		const phone = normalizePhoneForComparison(guest.phone, guest.phoneCountryCode);
+		const phone = normalizePhoneForComparison(guest.phone, guest.countryCode);
 		if (phone) byPhone.set(phone, guest);
 
-		const name = normalizeGuestName(guest.fullName);
+		const name = normalizeName(guest.fullName ?? '');
 		if (name) {
 			const list = byName.get(name) ?? [];
 			list.push(guest);
@@ -434,7 +447,7 @@ function detectRowStatus(
 	if (matchedGuest) {
 		result.matchedGuestId = matchedGuest.guestId;
 		result.matchedGuestName = matchedGuest.fullName;
-		const matchedName = normalizeGuestName(matchedGuest.fullName);
+		const matchedName = normalizeName(matchedGuest.fullName ?? '');
 		const status: ImportRowStatus =
 			matchedName === normalizedName ? 'exact_duplicate' : 'phone_conflict';
 		result.hiddenByDefault = status === 'exact_duplicate';
@@ -451,10 +464,7 @@ function detectRowStatus(
 		const candidate = nameMatches[0];
 		result.matchedGuestId = candidate.guestId;
 		result.matchedGuestName = candidate.fullName;
-		const existingPhone = normalizePhoneForComparison(
-			candidate.phone,
-			candidate.phoneCountryCode,
-		);
+		const existingPhone = normalizePhoneForComparison(candidate.phone, candidate.countryCode);
 		if (!existingPhone && !comparePhone) {
 			result.hiddenByDefault = true;
 			return { status: 'probable_duplicate', matchedGuest: candidate };
@@ -477,7 +487,7 @@ export function classifyImportedRows(
 
 	return guests.map((guest) => {
 		const result: ParsedGuest = { ...guest };
-		const normalizedName = normalizeGuestName(result.fullName);
+		const normalizedName = normalizeName(result.fullName ?? '');
 		const comparePhone = normalizePhoneForComparison(result.phone, result.phoneCountryCode);
 		const normalizedPhone = normalizePhoneForRow(result.phone, result.phoneCountryCode);
 		const exactKey = `${normalizedName}|${comparePhone}`;
@@ -489,7 +499,7 @@ export function classifyImportedRows(
 		result.matchedGuestId = undefined;
 		result.matchedGuestName = undefined;
 
-		const { status, matchedGuest } = detectRowStatus(
+		const { status } = detectRowStatus(
 			result,
 			byPhone,
 			byName,

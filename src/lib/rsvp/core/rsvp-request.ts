@@ -1,7 +1,7 @@
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import type { EventRecord, GuestRSVPSubmitDTO } from '@/interfaces/rsvp/domain.interface';
 import { badRequest, parseJsonBody } from '@/lib/rsvp/core/http';
-import { normalizePhone, sanitize } from '@/lib/rsvp/core/utils';
+import { formatPhoneError, normalizeOptionalNationalPhone, sanitize } from '@/lib/rsvp/core/utils';
 
 export interface PublicGuestRsvpRequest {
 	fullName: string;
@@ -47,14 +47,18 @@ export async function parsePublicGuestRsvpRequest(
 	if (payload instanceof Response) return payload;
 
 	const fullName = sanitize(body.fullName as string, 140);
-	const phone = normalizePhone(sanitize(body.phone as string, 40));
 	if (!fullName) {
 		return badRequest('fullName is required.');
 	}
 
+	const phoneResult = normalizeOptionalNationalPhone(body.phone as string);
+	if (!phoneResult.ok) {
+		return badRequest(formatPhoneError(phoneResult.reason));
+	}
+
 	return {
 		fullName,
-		phone,
+		phone: phoneResult.phone ?? '',
 		payload,
 	};
 }

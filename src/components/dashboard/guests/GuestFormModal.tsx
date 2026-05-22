@@ -78,7 +78,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		}
 		setFullName(initialGuest.fullName);
 		setPhone(initialGuest.phone || '');
-		setCountryCode(initialGuest.phoneCountryCode || '+52');
+		setCountryCode(initialGuest.countryCode || '+52');
 		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
@@ -115,11 +115,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setFieldErrors({});
 		setLocalError('');
 		try {
+			const trimmedPhone = phone.trim() || undefined;
 			await onSubmit(
 				{
 					fullName: fullName.trim(),
-					phone: phone.trim() || undefined,
-					countryCode,
+					phone: trimmedPhone,
+					countryCode: trimmedPhone ? countryCode : undefined,
 					maxAllowedAttendees,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,

@@ -17,7 +17,7 @@ const BASE_EXISTING: DashboardGuestItem = {
 	inviteId: '',
 	fullName: '',
 	phone: '',
-	phoneCountryCode: '',
+	countryCode: undefined,
 	email: null,
 	tags: [],
 	metadata: {},
@@ -657,7 +657,7 @@ describe('action-aware duplicate review', () => {
 			inviteId: 'invite-ana',
 			fullName: 'Ana López',
 			phone: '+526691234567',
-			phoneCountryCode: '+52',
+			countryCode: '+52',
 		});
 
 	it('checkbox reveals hidden exact duplicates', async () => {
@@ -757,7 +757,7 @@ describe('action-aware duplicate review', () => {
 				inviteId: 'invite-tist',
 				fullName: 'tist',
 				phone: '+526563769461',
-				phoneCountryCode: '+52',
+				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
@@ -790,7 +790,7 @@ describe('action-aware duplicate review', () => {
 				inviteId: 'invite-tist',
 				fullName: 'tist',
 				phone: '+526563769461',
-				phoneCountryCode: '+52',
+				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
@@ -816,7 +816,7 @@ describe('action-aware duplicate review', () => {
 				inviteId: 'invite-tist',
 				fullName: 'tist',
 				phone: '+526563769461',
-				phoneCountryCode: '+52',
+				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
@@ -846,7 +846,7 @@ describe('action-aware duplicate review', () => {
 				inviteId: 'invite-rt',
 				fullName: 'Ana López',
 				phone: '+526691234567',
-				phoneCountryCode: '+52',
+				countryCode: '+52',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 2,
 				deliveryStatus: 'shared',

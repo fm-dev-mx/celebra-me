@@ -64,7 +64,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		setEditName(guest.fullName);
 		setEditMaxAttendees(guest.maxAllowedAttendees);
 		setEditPhone(guest.phone || '');
-		setEditCountryCode(guest.phoneCountryCode || '+52');
+		setEditCountryCode(guest.countryCode || '+52');
 		setPhoneError(null);
 		setPhase('form');
 		setShareStatus('idle');
@@ -82,7 +82,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			setEditName(next.fullName);
 			setEditMaxAttendees(next.maxAllowedAttendees);
 			setEditPhone(next.phone || '');
-			setEditCountryCode(next.phoneCountryCode || '+52');
+			setEditCountryCode(next.countryCode || '+52');
 			setPhoneError(null);
 			setPhase('form');
 			setShareStatus('idle');
@@ -119,27 +119,32 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			}
 		}
 
+		const sendPhone = editPhone.trim() || undefined;
 		try {
 			const updated = await onSave(guest.guestId, {
 				fullName: editName.trim() || guest.fullName,
 				maxAllowedAttendees: editMaxAttendees,
-				phone: editPhone.trim() || undefined,
-				countryCode: editCountryCode,
+				phone: sendPhone,
+				countryCode: sendPhone ? editCountryCode : undefined,
 			});
 
 			const inviteUrl = getGuestInviteUrl(updated, inviteBaseUrl);
 			setFallbackGuest(updated);
 
+			const markSharedOrFallback = async () => {
+				try {
+					await onMarkShared(updated);
+					advanceToNext();
+				} catch {
+					setMarkError('Error al registrar el envío.');
+					setShareStatus('fallback');
+				}
+			};
+
 			if (hasValidPhone && updated.waShareUrl) {
 				if (waWindow && !waWindow.closed) {
 					waWindow.location.href = updated.waShareUrl;
-					try {
-						await onMarkShared(updated);
-						advanceToNext();
-					} catch {
-						setMarkError('Error al registrar el envío.');
-						setShareStatus('fallback');
-					}
+					await markSharedOrFallback();
 				} else {
 					setShareStatus('fallback');
 				}
@@ -151,13 +156,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 							text: updated.shareText,
 							url: inviteUrl,
 						});
-						try {
-							await onMarkShared(updated);
-							advanceToNext();
-						} catch {
-							setMarkError('Error al registrar el envío.');
-							setShareStatus('fallback');
-						}
+						await markSharedOrFallback();
 					} else {
 						throw new Error('Web Share not supported');
 					}
@@ -232,7 +231,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			setEditName(next.fullName);
 			setEditMaxAttendees(next.maxAllowedAttendees);
 			setEditPhone(next.phone || '');
-			setEditCountryCode(next.phoneCountryCode || '+52');
+			setEditCountryCode(next.countryCode || '+52');
 			setPhoneError(null);
 			setPhase('form');
 			setShareStatus('idle');

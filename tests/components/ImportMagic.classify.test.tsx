@@ -12,7 +12,7 @@ const BASE_GUEST_ITEM: DashboardGuestItem = {
 	inviteId: '',
 	fullName: '',
 	phone: '',
-	phoneCountryCode: '',
+	countryCode: undefined,
 	email: null,
 	tags: [],
 	metadata: {},
