@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
+import {
+	ATTENDEE_OPTIONS,
+	COUNTRY_OPTIONS,
+} from '@/components/dashboard/guests/guest-form-constants';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -206,11 +210,13 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								<select
 									id="countryCode"
 									value={countryCode}
-									onChange={(event) => setCountryCode(event.target.value)}
+									onChange={(e) => setCountryCode(e.target.value)}
 								>
-									<option value="+52">México (+52)</option>
-									<option value="+1">Estados Unidos (+1)</option>
-									<option value="+34">España (+34)</option>
+									{COUNTRY_OPTIONS.map((opt) => (
+										<option key={opt.value} value={opt.value}>
+											{opt.label}
+										</option>
+									))}
 								</select>
 							</div>
 							<div className="dashboard-form-field">
@@ -240,7 +246,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									¿Cuántos acompañantes permite?
 								</label>
 								<div className="guest-response-cards guest-response-cards--compact">
-									{[1, 2, 3, 4, 5, 10].map((num) => (
+									{ATTENDEE_OPTIONS.map((num) => (
 										<label key={num} className="guest-response-card">
 											<input
 												type="radio"

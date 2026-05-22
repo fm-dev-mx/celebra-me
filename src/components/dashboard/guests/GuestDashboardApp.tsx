@@ -7,6 +7,7 @@ import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
+import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
 import {
@@ -62,6 +63,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handleMarkShared,
 		handlePostpone,
 		handleRevertShared,
+		handleSaveInvitation,
 		handleSubmit,
 		importModalOpen,
 		isNextActionActive,
@@ -72,6 +74,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		openEditModal,
 		openImportModal,
 		openNextGeneratedGuest,
+		pendingGuests,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,
@@ -155,7 +158,18 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					/>
 				)}
 
-				{modalOpen && (
+				{modalOpen && modalMode === 'send-pending' && (
+					<SendInvitationModal
+						guest={editingGuest}
+						pendingGuests={pendingGuests}
+						inviteBaseUrl={inviteBaseUrl}
+						onClose={closeModal}
+						onSave={handleSaveInvitation}
+						onMarkShared={handleMarkShared}
+					/>
+				)}
+
+				{modalOpen && modalMode !== 'send-pending' && (
 					<GuestFormModal
 						open={modalOpen}
 						mode={modalMode}

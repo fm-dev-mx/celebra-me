@@ -347,7 +347,6 @@ describe('active guest dashboard hooks', () => {
 
 		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith(sampleGuest.guestId);
 		expect(loadGuests).not.toHaveBeenCalled();
-		expect(result.current.shareSessionCount).toBe(1);
 		expect(result.current.notification).toEqual({
 			message: 'Entrega registrada correctamente.',
 			type: 'success',
@@ -378,23 +377,59 @@ describe('active guest dashboard hooks', () => {
 		});
 	});
 
-	it('calls markShared after update in confirm-and-send flow when next guest exists', async () => {
-		const guestA = {
-			...sampleGuest,
-			guestId: 'guest-a',
-			fullName: 'Guest A',
-			deliveryStatus: 'generated' as const,
-		};
-		const guestB = {
-			...sampleGuest,
-			guestId: 'guest-b',
-			fullName: 'Guest B',
-			deliveryStatus: 'generated' as const,
-		};
-		const items = [guestA, guestB];
+	it('opens send-pending mode when openNextGeneratedGuest is called', () => {
+		const items = [{ ...sampleGuest, deliveryStatus: 'generated' as const }];
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items,
+				loadGuests,
+				setItems,
+			}),
+		);
 
-		mockedGuestsApi.update.mockResolvedValue({ ...guestA, waShareUrl: 'https://wa.me/test' });
-		mockedGuestsApi.markShared.mockResolvedValue({ ...guestA, deliveryStatus: 'shared' });
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		expect(result.current.modalMode).toBe('send-pending');
+		expect(result.current.modalOpen).toBe(true);
+		expect(result.current.editingGuest).toBe(items[0]);
+	});
+
+	it('does not open modal when no pending guests exist', () => {
+		const items = [{ ...sampleGuest, deliveryStatus: 'shared' as const }];
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items,
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		expect(result.current.modalOpen).toBe(false);
+	});
+
+	it('handleSaveInvitation updates name, max attendees, phone, and countryCode when changed', async () => {
+		const guestA = { ...sampleGuest, guestId: 'guest-a', deliveryStatus: 'generated' as const };
+		const items = [guestA];
+
+		mockedGuestsApi.update.mockResolvedValue({
+			...guestA,
+			fullName: 'New Name',
+			maxAllowedAttendees: 2,
+			phone: '6691234567',
+			phoneCountryCode: '+52',
+		});
 
 		const loadGuests = jest.fn().mockResolvedValue(undefined);
 		const setItems = jest.fn();
@@ -407,117 +442,112 @@ describe('active guest dashboard hooks', () => {
 			}),
 		);
 
-		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
-
-		act(() => {
-			result.current.openNextGeneratedGuest();
-		});
-
-		await act(async () => {
-			await result.current.handleSubmit({
-				fullName: 'Guest A',
-				maxAllowedAttendees: 4,
+		const updated = await act(async () => {
+			return result.current.handleSaveInvitation('guest-a', {
+				fullName: 'New Name',
+				maxAllowedAttendees: 2,
+				phone: '6691234567',
+				countryCode: '+52',
 			});
 		});
 
-		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', expect.any(Object));
-		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
-		expect(loadGuests).not.toHaveBeenCalled();
-		expect(openSpy).toHaveBeenCalledWith('https://wa.me/test', '_blank', 'noopener,noreferrer');
-		expect(result.current.notification).toEqual({
-			message: 'Invitación enviada. Siguiente: Guest B',
-			type: 'success',
+		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', {
+			fullName: 'New Name',
+			maxAllowedAttendees: 2,
+			phone: '6691234567',
+			countryCode: '+52',
 		});
-
-		openSpy.mockRestore();
+		expect(mockedGuestsApi.markShared).not.toHaveBeenCalled();
+		expect(updated.phone).toBe('6691234567');
 	});
 
-	it('closes modal after confirm-and-send when no more pending guests', async () => {
+	it('handleSaveInvitation calls update even when no fields changed', async () => {
+		mockedGuestsApi.update.mockResolvedValue(sampleGuest);
+
 		const guestA = {
 			...sampleGuest,
 			guestId: 'guest-a',
-			fullName: 'Guest A',
+			fullName: 'Test Guest',
+			maxAllowedAttendees: 4,
+			phone: '5551234567',
+			phoneCountryCode: '+52',
 			deliveryStatus: 'generated' as const,
 		};
-
-		mockedGuestsApi.update.mockResolvedValue(guestA);
-		mockedGuestsApi.markShared.mockResolvedValue({ ...guestA, deliveryStatus: 'shared' });
+		const items = [guestA];
 
 		const loadGuests = jest.fn().mockResolvedValue(undefined);
 		const setItems = jest.fn();
 		const { result } = renderHook(() =>
 			useGuestDashboardActions({
 				eventId: 'event-123',
-				items: [guestA],
+				items,
 				loadGuests,
 				setItems,
 			}),
 		);
 
-		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
-
-		act(() => {
-			result.current.openNextGeneratedGuest();
-		});
-
 		await act(async () => {
-			await result.current.handleSubmit({
-				fullName: 'Guest A',
+			await result.current.handleSaveInvitation('guest-a', {
+				fullName: 'Test Guest',
 				maxAllowedAttendees: 4,
+				phone: '5551234567',
+				countryCode: '+52',
 			});
 		});
 
-		openSpy.mockRestore();
-
-		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
-		expect(result.current.notification).toEqual({
-			message: 'No hay más invitados pendientes.',
-			type: 'info',
+		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', {
+			fullName: 'Test Guest',
+			maxAllowedAttendees: 4,
+			phone: '5551234567',
+			countryCode: '+52',
 		});
 	});
 
-	it('shows error notification when markShared fails in confirm-and-send flow', async () => {
-		const guestA = {
-			...sampleGuest,
-			guestId: 'guest-a',
-			fullName: 'Guest A',
-			deliveryStatus: 'generated' as const,
-		};
-
-		mockedGuestsApi.update.mockResolvedValue(guestA);
-		mockedGuestsApi.markShared.mockRejectedValue(new Error('API error'));
-
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
+	it.each([
+		{ delivery: 'generated' as const, search: '', status: 'all' as const },
+		{ delivery: 'shared' as const, search: '', status: 'all' as const },
+		{ delivery: 'generated' as const, search: 'Test', status: 'all' as const },
+		{ delivery: 'generated' as const, search: '', status: 'confirmed' as const },
+	])(
+		'passes delivery=$delivery with search=$search status=$status',
+		async ({ delivery, search, status }) => {
+			mockedGuestsApi.listEvents.mockResolvedValue({
+				items: [
+					{
+						id: 'event-123',
+						title: 'XV Ximena',
+						slug: 'ximena',
+						eventType: 'xv',
+						status: 'published',
+					},
+				],
+			});
+			mockedGuestsApi.list.mockResolvedValue({
 				eventId: 'event-123',
-				items: [guestA],
-				loadGuests,
-				setItems,
-			}),
-		);
+				items: [sampleGuest],
+				totals: sampleTotals,
+				updatedAt: '2026-03-22T00:00:00.000Z',
+			});
 
-		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
-
-		act(() => {
-			result.current.openNextGeneratedGuest();
-		});
-
-		const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-		await act(async () => {
-			await expect(
-				result.current.handleSubmit({
-					fullName: 'Guest A',
-					maxAllowedAttendees: 4,
+			const { result } = renderHook(() =>
+				useGuestDashboardRealtime({
+					initialEventId: 'event-123',
+					search,
+					status,
+					delivery,
 				}),
-			).rejects.toThrow('API error');
-		});
+			);
 
-		openSpy.mockRestore();
-		consoleSpy.mockRestore();
+			await waitFor(() => {
+				expect(result.current.items).toEqual([sampleGuest]);
+			});
 
-		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
-	});
+			expect(mockedGuestsApi.list).toHaveBeenCalledWith({
+				eventId: 'event-123',
+				search,
+				status,
+				delivery,
+			});
+		},
+	);
 });

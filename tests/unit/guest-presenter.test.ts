@@ -12,6 +12,7 @@ import {
 	getRsvpStateLabel,
 	getViewStateLabel,
 	getGuestInviteUrl,
+	validatePhone,
 } from '@/components/dashboard/guests/guest-presenter';
 
 function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
@@ -258,6 +259,32 @@ describe('getGuestVisibleTags', () => {
 		expect(getGuestVisibleTags(makeGuest({ tags: undefined as unknown as string[] }))).toEqual(
 			[],
 		);
+	});
+});
+
+describe('validatePhone', () => {
+	it('returns false for empty phone', () => {
+		expect(validatePhone('')).toBe(false);
+	});
+
+	it('returns false for whitespace-only phone', () => {
+		expect(validatePhone('   ')).toBe(false);
+	});
+
+	it('returns false for too few digits', () => {
+		expect(validatePhone('12345')).toBe(false);
+	});
+
+	it('returns true for valid phone with 8 digits', () => {
+		expect(validatePhone('66912345')).toBe(true);
+	});
+
+	it('returns true for valid phone with formatting', () => {
+		expect(validatePhone('669 123 4567')).toBe(true);
+	});
+
+	it('returns true for valid phone with country prefix', () => {
+		expect(validatePhone('+526691234567')).toBe(true);
 	});
 });
 

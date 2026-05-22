@@ -4,7 +4,7 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 
-type ModalMode = 'create' | 'edit';
+type ModalMode = 'create' | 'edit' | 'send-pending';
 
 export interface GuestFormPayload {
 	fullName: string;
@@ -40,7 +40,6 @@ export const useGuestDashboardActions = ({
 	const [modalMode, setModalMode] = useState<ModalMode>('create');
 	const [editingGuest, setEditingGuest] = useState<DashboardGuestItem | null>(null);
 	const [notification, setNotification] = useState<NotificationPayload | null>(null);
-	const [shareSessionCount, setShareSessionCount] = useState(0);
 	const [isNextActionActive, setIsNextActionActive] = useState(false);
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -60,7 +59,7 @@ export const useGuestDashboardActions = ({
 	const openNextGeneratedGuest = useCallback(() => {
 		const next = items.find((item) => item.deliveryStatus === 'generated');
 		if (!next) return;
-		setModalMode('edit');
+		setModalMode('send-pending');
 		setEditingGuest(next);
 		setIsNextActionActive(true);
 		setModalOpen(true);
@@ -147,7 +146,6 @@ export const useGuestDashboardActions = ({
 				{ message: 'Entrega registrada correctamente.', type: 'success' },
 				'Error al actualizar estado.',
 			);
-			setShareSessionCount((prev) => prev + 1);
 			setCelebratingGuestId(item.guestId);
 			setTimeout(() => setCelebratingGuestId(null), 1500);
 		},
@@ -165,6 +163,29 @@ export const useGuestDashboardActions = ({
 			);
 		},
 		[optimisticStatusUpdate],
+	);
+
+	const handleSaveInvitation = useCallback(
+		async (
+			guestId: string,
+			payload: {
+				fullName: string;
+				maxAllowedAttendees: number;
+				phone?: string;
+				countryCode?: string;
+			},
+		): Promise<DashboardGuestItem> => {
+			const updated = await guestsApi.update(guestId, {
+				...payload,
+				phone: payload.phone || '',
+				countryCode: payload.countryCode || '+52',
+			});
+			setItems((prev) =>
+				prev.map((entry) => (entry.guestId === guestId ? { ...entry, ...updated } : entry)),
+			);
+			return updated;
+		},
+		[setItems],
 	);
 
 	const handlePostpone = useCallback(() => {
@@ -341,6 +362,8 @@ export const useGuestDashboardActions = ({
 		}
 	}, [eventId, setNotification]);
 
+	const pendingGuests = items.filter((item) => item.deliveryStatus === 'generated');
+
 	return {
 		celebratingGuestId,
 		closeDeleteConfirm,
@@ -358,6 +381,7 @@ export const useGuestDashboardActions = ({
 		handleMarkShared,
 		handlePostpone,
 		handleRevertShared,
+		handleSaveInvitation,
 		handleSubmit,
 		importModalOpen,
 		isNextActionActive,
@@ -368,9 +392,9 @@ export const useGuestDashboardActions = ({
 		openEditModal,
 		openImportModal: () => setImportModalOpen(true),
 		openNextGeneratedGuest,
+		pendingGuests,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,
-		shareSessionCount,
 	};
 };
