@@ -7,6 +7,7 @@ import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
+import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
 import {
 	useGuestDashboardActions,
@@ -108,16 +109,27 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onEventChange={setEventId}
 				/>
 
+				<div className="dashboard-guests__toolbar">
+					<button
+						type="button"
+						onClick={openCreateModal}
+						className="btn-primary btn--compact"
+					>
+						Agregar invitado
+					</button>
+					<ToolbarActionsMenu
+						onExport={handleExport}
+						onImport={openImportModal}
+						onRefresh={loadGuests}
+					/>
+				</div>
+
 				<GuestFilters
 					searchInputRef={searchInputRef}
 					search={search}
 					status={status}
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
-					onCreateClick={openCreateModal}
-					onRefreshClick={loadGuests}
-					onExportClick={handleExport}
-					onImportClick={openImportModal}
 				/>
 
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}
