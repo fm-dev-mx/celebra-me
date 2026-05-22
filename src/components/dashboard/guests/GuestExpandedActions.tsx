@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { CopyIcon, CheckIcon } from '@/components/common/icons/ui';
 import { EditGlyph, DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
-
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 type ConfirmState = 'idle' | 'confirm-mark-sent' | 'confirm-revert';
 
 interface GuestExpandedActionsProps {
 	guestName: string;
 	inviteUrl: string;
 	isShared: boolean;
+	attendanceStatus: AttendanceStatus;
 	onEdit: () => void;
 	onDelete: () => void;
 	onMarkShared: () => void | Promise<void>;
@@ -18,6 +19,7 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 	guestName,
 	inviteUrl,
 	isShared,
+	attendanceStatus,
 	onEdit,
 	onDelete,
 	onMarkShared,
@@ -60,17 +62,19 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 
 	const markSentLabel =
 		confirmState === 'confirm-mark-sent'
-			? 'Confirmar envío'
+			? 'Click para confirmar'
 			: busy
 				? 'Enviando…'
-				: 'Marcar como enviado';
+				: 'Marcar como enviada';
 
 	const revertLabel =
 		confirmState === 'confirm-revert'
-			? 'Confirmar cambio'
+			? 'Click para confirmar'
 			: busy
 				? 'Revirtiendo…'
-				: 'Marcar como no enviado';
+				: 'Marcar como no enviada';
+
+	const isAccepted = attendanceStatus === 'confirmed';
 
 	return (
 		<div
@@ -103,6 +107,11 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 						aria-label={`Marcar invitación de ${guestName} como no enviada`}
 					>
 						<span>{revertLabel}</span>
+						{isAccepted && confirmState !== 'confirm-revert' && (
+							<span className="guest-expanded-actions__correction-note">
+								Esto no cambiará la confirmación de asistencia.
+							</span>
+						)}
 					</button>
 				) : (
 					<button
@@ -115,6 +124,11 @@ const GuestExpandedActions: React.FC<GuestExpandedActionsProps> = ({
 					>
 						<CheckIcon size={14} />
 						<span>{markSentLabel}</span>
+						{isAccepted && confirmState !== 'confirm-mark-sent' && (
+							<span className="guest-expanded-actions__correction-note">
+								Esto no cambiará la confirmación de asistencia.
+							</span>
+						)}
 					</button>
 				)}
 			</div>
