@@ -12,6 +12,33 @@ import {
 import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
+const BASE_EXISTING: DashboardGuestItem = {
+	guestId: '',
+	inviteId: '',
+	fullName: '',
+	phone: '',
+	phoneCountryCode: '',
+	email: null,
+	tags: [],
+	metadata: {},
+	maxAllowedAttendees: 2,
+	attendanceStatus: 'pending',
+	attendeeCount: 0,
+	guestComment: '',
+	deliveryStatus: 'generated',
+	viewPercentage: 0,
+	isViewed: false,
+	firstViewedAt: null,
+	respondedAt: null,
+	waShareUrl: '',
+	shareText: '',
+	updatedAt: new Date().toISOString(),
+};
+
+function mkExisting(overrides: Partial<DashboardGuestItem>): DashboardGuestItem[] {
+	return [{ ...BASE_EXISTING, ...overrides }];
+}
+
 // ---------------------------------------------------------------------------
 // Pure utility tests (preserved and extended)
 // ---------------------------------------------------------------------------
@@ -43,44 +70,19 @@ describe('splitLine', () => {
 });
 
 describe('KNOWN_HEADERS', () => {
-	it('includes full_name', () => {
-		expect(KNOWN_HEADERS['full_name']).toBe('fullName');
-	});
-
-	it('includes nombre', () => {
-		expect(KNOWN_HEADERS['nombre']).toBe('fullName');
-	});
-
-	it('includes name', () => {
-		expect(KNOWN_HEADERS['name']).toBe('fullName');
-	});
-
-	it('includes phone', () => {
-		expect(KNOWN_HEADERS['phone']).toBe('phone');
-	});
-
-	it('includes telefono', () => {
-		expect(KNOWN_HEADERS['telefono']).toBe('phone');
-	});
-
-	it('includes teléfono', () => {
-		expect(KNOWN_HEADERS['teléfono']).toBe('phone');
-	});
-
-	it('includes country_code', () => {
-		expect(KNOWN_HEADERS['country_code']).toBe('phoneCountryCode');
-	});
-
-	it('includes clave_pais', () => {
-		expect(KNOWN_HEADERS['clave_pais']).toBe('phoneCountryCode');
-	});
-
-	it('includes email', () => {
-		expect(KNOWN_HEADERS['email']).toBe('email');
-	});
-
-	it('includes correo', () => {
-		expect(KNOWN_HEADERS['correo']).toBe('email');
+	it.each([
+		['full_name', 'fullName'],
+		['nombre', 'fullName'],
+		['name', 'fullName'],
+		['phone', 'phone'],
+		['telefono', 'phone'],
+		['teléfono', 'phone'],
+		['country_code', 'phoneCountryCode'],
+		['clave_pais', 'phoneCountryCode'],
+		['email', 'email'],
+		['correo', 'email'],
+	])('maps %s to %s', (header, target) => {
+		expect(KNOWN_HEADERS[header]).toBe(target);
 	});
 });
 
@@ -649,30 +651,14 @@ describe('import payload', () => {
 });
 
 describe('action-aware duplicate review', () => {
-	const existingAna = (): DashboardGuestItem[] => [
-		{
+	const existingAna = () =>
+		mkExisting({
 			guestId: 'guest-ana',
 			inviteId: 'invite-ana',
 			fullName: 'Ana López',
 			phone: '+526691234567',
 			phoneCountryCode: '+52',
-			email: null,
-			tags: [],
-			metadata: {},
-			maxAllowedAttendees: 2,
-			attendanceStatus: 'pending',
-			attendeeCount: 0,
-			guestComment: '',
-			deliveryStatus: 'generated',
-			viewPercentage: 0,
-			isViewed: false,
-			firstViewedAt: null,
-			respondedAt: null,
-			waShareUrl: '',
-			shareText: '',
-			updatedAt: new Date().toISOString(),
-		},
-	];
+		});
 
 	it('checkbox reveals hidden exact duplicates', async () => {
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
@@ -703,14 +689,21 @@ describe('action-aware duplicate review', () => {
 		expect(getImportButton()).not.toBeDisabled();
 	});
 
-	it('same name with different phone remains visible and reviewable', async () => {
+	it('same name with different phone is hidden by default and revealed via checkbox', async () => {
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+
+		// Row is hidden by default (possible_duplicate)
+		expect(screen.queryByDisplayValue('Ana Lopez')).toBeNull();
+		expect(screen.queryByText('Posible duplicado')).toBeNull();
+
+		// Reveal via checkbox
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
 		expect(screen.getByDisplayValue('Ana Lopez')).toBeInTheDocument();
-		expect(screen.getByText('Revisar nombre')).toBeInTheDocument();
-		expect(screen.getByRole('combobox')).toHaveValue('create');
+		expect(screen.getByText('Posible duplicado')).toBeInTheDocument();
+		expect(screen.getByRole('combobox')).toHaveValue('skip');
 	});
 
 	it('action selector controls create and update submission', async () => {
@@ -721,6 +714,10 @@ describe('action-aware duplicate review', () => {
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna Familia,+526691234567,\nNuevo,+525551234567,');
+		// Ana Familia matches existing Ana López by phone → phone_conflict (default skip)
+		// User must explicitly choose update
+		const selects = screen.getAllByRole('combobox');
+		fireEvent.change(selects[0], { target: { value: 'update' } });
 		fireEvent.click(getImportButton());
 
 		await screen.findByText(/Resultado de la importación/i);
@@ -738,14 +735,133 @@ describe('action-aware duplicate review', () => {
 		expect(createPayload).not.toHaveProperty('phone_');
 	});
 
-	it('can skip a visible review conflict', async () => {
+	it('can skip a revealed review conflict', async () => {
 		const { onImport } = renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+
+		// Reveal the hidden possible_duplicate row first
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
 		fireEvent.change(screen.getByRole('combobox'), { target: { value: 'skip' } });
 
 		expect(getImportButton()).toBeDisabled();
 		expect(onImport).not.toHaveBeenCalled();
+	});
+
+	it('error row with duplicate name is hidden by default (possible_duplicate + error)', async () => {
+		renderModal(
+			'550e8400-e29b-41d4-a716-446655440000',
+			mkExisting({
+				guestId: 'guest-tist',
+				inviteId: 'invite-tist',
+				fullName: 'tist',
+				phone: '+526563769461',
+				phoneCountryCode: '+52',
+			}),
+		);
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+
+		// CSV row: same name, local phone, no country code → error + name match
+		importCsv('full_name,phone,country_code\ntist,6563769461,');
+
+		// Row is hidden by default (possible_duplicate)
+		expect(screen.queryByDisplayValue('tist')).toBeNull();
+		expect(screen.queryByText('Posible duplicado')).toBeNull();
+
+		// Reveal via checkbox
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+		expect(screen.getByDisplayValue('tist')).toBeInTheDocument();
+		// The row shows the duplicate status, not "Con errores"
+		expect(screen.getByText('Posible duplicado')).toBeInTheDocument();
+		// Error message is still shown on the row
+		expect(screen.getByText(/código de país/i)).toBeInTheDocument();
+		// Action defaults to skip
+		expect(screen.getByRole('combobox')).toHaveValue('skip');
+		// Import button is disabled (row is skip, no actionable rows)
+		expect(getImportButton()).toBeDisabled();
+	});
+
+	it('duplicate row with error blocks import even if action is changed to create', async () => {
+		const { onImport } = renderModal(
+			'550e8400-e29b-41d4-a716-446655440000',
+			mkExisting({
+				guestId: 'guest-tist',
+				inviteId: 'invite-tist',
+				fullName: 'tist',
+				phone: '+526563769461',
+				phoneCountryCode: '+52',
+			}),
+		);
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+
+		importCsv('full_name,phone,country_code\ntist,6563769461,');
+
+		// Reveal row
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+
+		// User changes action to 'create'
+		fireEvent.change(screen.getByRole('combobox'), { target: { value: 'create' } });
+
+		// Import button should still be disabled because row has error
+		expect(getImportButton()).toBeDisabled();
+		expect(onImport).not.toHaveBeenCalled();
+	});
+
+	it('duplicate row with error can be imported after fixing the error and changing action', async () => {
+		renderModal(
+			'550e8400-e29b-41d4-a716-446655440000',
+			mkExisting({
+				guestId: 'guest-tist',
+				inviteId: 'invite-tist',
+				fullName: 'tist',
+				phone: '+526563769461',
+				phoneCountryCode: '+52',
+			}),
+		);
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+
+		importCsv('full_name,phone,country_code\ntist,6563769461,');
+
+		// Reveal row
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+
+		// Fix the error by adding country code
+		// Textbox order: 0=textarea, 1=name, 2=phone, 3=countryCode, 4=email
+		const inputs = screen.getAllByRole('textbox');
+		fireEvent.change(inputs[3], { target: { value: '+52' } });
+
+		// After fix, the row becomes exact_duplicate (full match), hidden again.
+		// Since showPossibleDuplicates is still true, the row remains visible.
+		expect(screen.getByText('Duplicado exacto')).toBeInTheDocument();
+		// Action is skip by default for duplicates
+		expect(screen.getByRole('combobox')).toHaveValue('skip');
+	});
+
+	it('re-importing exported CSV does not create duplicates', async () => {
+		renderModal(
+			'550e8400-e29b-41d4-a716-446655440000',
+			mkExisting({
+				guestId: 'guest-rt',
+				inviteId: 'invite-rt',
+				fullName: 'Ana López',
+				phone: '+526691234567',
+				phoneCountryCode: '+52',
+				attendanceStatus: 'confirmed',
+				attendeeCount: 2,
+				deliveryStatus: 'shared',
+			}),
+		);
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+
+		// CSV content mirroring the export format: full_name,phone,country_code
+		// Phone is split: local number + country code
+		importCsv('full_name,phone,country_code\nAna López,6691234567,+52');
+		// The row should be recognized as duplicate and hidden
+		expect(screen.queryByDisplayValue('Ana López')).toBeNull();
+		// Only "Mostrar posibles duplicados" checkbox reveals it
+		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
+		expect(screen.getByDisplayValue('Ana López')).toBeInTheDocument();
+		expect(screen.getByText('Duplicado exacto')).toBeInTheDocument();
 	});
 });

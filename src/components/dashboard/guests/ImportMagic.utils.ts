@@ -5,9 +5,8 @@ export type ImportRowStatus =
 	| 'new'
 	| 'exact_duplicate'
 	| 'probable_duplicate'
-	| 'same_phone_update'
-	| 'same_name_different_phone'
-	| 'same_name_missing_phone'
+	| 'possible_duplicate'
+	| 'phone_conflict'
 	| 'ambiguous_name_match'
 	| 'internal_duplicate'
 	| 'invalid';
@@ -369,8 +368,7 @@ function buildExistingIndexes(existingGuests: DashboardGuestItem[]) {
 }
 
 function defaultActionForStatus(status: ImportRowStatus): ImportRowAction {
-	if (status === 'new' || status === 'same_name_different_phone') return 'create';
-	if (status === 'same_phone_update') return 'update';
+	if (status === 'new') return 'create';
 	return 'skip';
 }
 
@@ -383,14 +381,13 @@ function isActionAllowed(
 	if (action === 'create') {
 		return (
 			status === 'new' ||
-			status === 'same_name_different_phone' ||
-			status === 'same_name_missing_phone' ||
+			status === 'possible_duplicate' ||
+			status === 'phone_conflict' ||
 			status === 'ambiguous_name_match'
 		);
 	}
 	return (
-		Boolean(matchedGuestId) &&
-		(status === 'same_phone_update' || status === 'same_name_missing_phone')
+		Boolean(matchedGuestId) && (status === 'phone_conflict' || status === 'possible_duplicate')
 	);
 }
 
@@ -405,6 +402,71 @@ function applyActionPreference(
 	return defaultActionForStatus(status);
 }
 
+function normalizePhoneForRow(phone: string, phoneCountryCode: string): string | undefined {
+	try {
+		return normalizeImportedPhone(phone, phoneCountryCode) || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function detectRowStatus(
+	result: ParsedGuest,
+	byPhone: Map<string, DashboardGuestItem>,
+	byName: Map<string, DashboardGuestItem[]>,
+	seenPhones: Set<string>,
+	seenExactKeys: Set<string>,
+	comparePhone: string | undefined,
+	normalizedName: string | undefined,
+	exactKey: string,
+): { status: ImportRowStatus; matchedGuest: DashboardGuestItem | undefined } {
+	if (
+		(comparePhone && seenPhones.has(comparePhone)) ||
+		(normalizedName && seenExactKeys.has(exactKey))
+	) {
+		result.requiresReview = true;
+		return { status: 'internal_duplicate', matchedGuest: undefined };
+	}
+
+	const matchedGuest = comparePhone ? byPhone.get(comparePhone) : undefined;
+	const nameMatches = normalizedName ? (byName.get(normalizedName) ?? []) : [];
+
+	if (matchedGuest) {
+		result.matchedGuestId = matchedGuest.guestId;
+		result.matchedGuestName = matchedGuest.fullName;
+		const matchedName = normalizeGuestName(matchedGuest.fullName);
+		const status: ImportRowStatus =
+			matchedName === normalizedName ? 'exact_duplicate' : 'phone_conflict';
+		result.hiddenByDefault = status === 'exact_duplicate';
+		result.requiresReview = status === 'phone_conflict';
+		return { status, matchedGuest };
+	}
+
+	if (nameMatches.length > 1) {
+		result.requiresReview = true;
+		return { status: 'ambiguous_name_match', matchedGuest: undefined };
+	}
+
+	if (nameMatches.length === 1) {
+		const candidate = nameMatches[0];
+		result.matchedGuestId = candidate.guestId;
+		result.matchedGuestName = candidate.fullName;
+		const existingPhone = normalizePhoneForComparison(
+			candidate.phone,
+			candidate.phoneCountryCode,
+		);
+		if (!existingPhone && !comparePhone) {
+			result.hiddenByDefault = true;
+			return { status: 'probable_duplicate', matchedGuest: candidate };
+		}
+		result.hiddenByDefault = true;
+		result.requiresReview = true;
+		return { status: 'possible_duplicate', matchedGuest: candidate };
+	}
+
+	return { status: 'new', matchedGuest: undefined };
+}
+
 export function classifyImportedRows(
 	guests: ParsedGuest[],
 	existingGuests: DashboardGuestItem[],
@@ -417,7 +479,7 @@ export function classifyImportedRows(
 		const result: ParsedGuest = { ...guest };
 		const normalizedName = normalizeGuestName(result.fullName);
 		const comparePhone = normalizePhoneForComparison(result.phone, result.phoneCountryCode);
-		const normalizedPhone = normalizePhoneForPayload(result);
+		const normalizedPhone = normalizePhoneForRow(result.phone, result.phoneCountryCode);
 		const exactKey = `${normalizedName}|${comparePhone}`;
 
 		result.normalizedName = normalizedName;
@@ -427,58 +489,25 @@ export function classifyImportedRows(
 		result.matchedGuestId = undefined;
 		result.matchedGuestName = undefined;
 
-		let status: ImportRowStatus = 'new';
-		let matchedGuest: DashboardGuestItem | undefined;
+		const { status, matchedGuest } = detectRowStatus(
+			result,
+			byPhone,
+			byName,
+			seenPhones,
+			seenExactKeys,
+			comparePhone,
+			normalizedName,
+			exactKey,
+		);
 
-		if (result.error) {
-			status = 'invalid';
-		} else if (
-			(comparePhone && seenPhones.has(comparePhone)) ||
-			(normalizedName && seenExactKeys.has(exactKey))
-		) {
-			status = 'internal_duplicate';
-			result.requiresReview = true;
-		} else {
-			matchedGuest = comparePhone ? byPhone.get(comparePhone) : undefined;
-			const nameMatches = normalizedName ? (byName.get(normalizedName) ?? []) : [];
-
-			if (matchedGuest) {
-				result.matchedGuestId = matchedGuest.guestId;
-				result.matchedGuestName = matchedGuest.fullName;
-				const matchedName = normalizeGuestName(matchedGuest.fullName);
-				status = matchedName === normalizedName ? 'exact_duplicate' : 'same_phone_update';
-				result.hiddenByDefault = status === 'exact_duplicate';
-				result.requiresReview = status === 'same_phone_update';
-			} else if (nameMatches.length > 1) {
-				status = 'ambiguous_name_match';
-				result.requiresReview = true;
-			} else if (nameMatches.length === 1) {
-				matchedGuest = nameMatches[0];
-				result.matchedGuestId = matchedGuest.guestId;
-				result.matchedGuestName = matchedGuest.fullName;
-				const existingPhone = normalizePhoneForComparison(
-					matchedGuest.phone,
-					matchedGuest.phoneCountryCode,
-				);
-				if (!existingPhone && !comparePhone) {
-					status = 'probable_duplicate';
-					result.hiddenByDefault = true;
-				} else if (!existingPhone || !comparePhone) {
-					status = 'same_name_missing_phone';
-					result.requiresReview = true;
-				} else {
-					status = 'same_name_different_phone';
-					result.requiresReview = true;
-				}
-			}
-		}
+		const finalStatus = result.error && status === 'new' ? 'invalid' : status;
 
 		if (comparePhone) seenPhones.add(comparePhone);
 		if (normalizedName) seenExactKeys.add(exactKey);
 
-		result._status = status;
-		result.action = applyActionPreference(result, status, result.matchedGuestId);
-		if (status === 'invalid') {
+		result._status = finalStatus;
+		result.action = applyActionPreference(result, finalStatus, result.matchedGuestId);
+		if (finalStatus === 'invalid') {
 			result.action = 'skip';
 			result.requiresReview = true;
 		}

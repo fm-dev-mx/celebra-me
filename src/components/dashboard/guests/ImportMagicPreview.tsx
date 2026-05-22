@@ -9,10 +9,9 @@ import { DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 const STATUS_LABELS: Partial<Record<ImportRowStatus, string>> = {
 	invalid: 'Con errores',
 	exact_duplicate: 'Duplicado exacto',
-	probable_duplicate: 'Posible duplicado',
-	same_phone_update: 'Mismo teléfono',
-	same_name_different_phone: 'Revisar nombre',
-	same_name_missing_phone: 'Revisar teléfono',
+	probable_duplicate: 'Duplicado probable',
+	possible_duplicate: 'Posible duplicado',
+	phone_conflict: 'Conflicto de teléfono',
 	ambiguous_name_match: 'Nombre ambiguo',
 	internal_duplicate: 'Duplicado en archivo',
 };
@@ -253,14 +252,16 @@ export function ImportPreviewPanel({
 	handleActionChange,
 	handleDelete,
 }: ImportPreviewPanelProps) {
-	if (preview.length === 0 && !showColumnMapping && text) {
-		return (
-			<div className="import-magic__empty">
-				<p>No hay invitados para importar.</p>
-			</div>
-		);
+	if (preview.length === 0) {
+		if (text && !showColumnMapping) {
+			return (
+				<div className="import-magic__empty">
+					<p>No hay invitados para importar.</p>
+				</div>
+			);
+		}
+		return null;
 	}
-	if (preview.length === 0) return null;
 
 	const actionableCount = createCount + updateCount;
 
