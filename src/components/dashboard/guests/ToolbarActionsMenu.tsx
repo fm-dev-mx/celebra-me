@@ -28,7 +28,7 @@ const ToolbarActionsMenu: React.FC<ToolbarActionsMenuProps> = ({
 				onClick={toggle}
 				aria-expanded={open}
 				aria-haspopup="menu"
-				aria-controls={menuId}
+				aria-controls={menuId || undefined}
 				aria-label="Más acciones"
 				title="Más acciones"
 			>
