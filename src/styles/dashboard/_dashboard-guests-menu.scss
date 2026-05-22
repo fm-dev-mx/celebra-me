@@ -52,7 +52,7 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 4%);
+		background: rgb(var(--color-text-secondary-rgb) / 8%);
 		color: var(--color-text-primary);
 
 		svg {
@@ -89,8 +89,8 @@
 	flex-shrink: 0;
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 3%);
-		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		background: rgb(var(--color-text-secondary-rgb) / 8%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
 		color: var(--color-text-primary);
 	}
 
@@ -104,7 +104,7 @@
 	}
 
 	&--open {
-		border-color: rgb(var(--color-surface-dark-rgb) / 20%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 		color: var(--color-text-primary);
 
 		svg {
@@ -135,8 +135,8 @@
 	min-height: 34px;
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 3%);
-		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		background: rgb(var(--color-text-secondary-rgb) / 8%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
 		color: var(--color-text-primary);
 	}
 
@@ -150,7 +150,7 @@
 	}
 
 	&--open {
-		border-color: rgb(var(--color-surface-dark-rgb) / 20%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 		color: var(--color-text-primary);
 
 		svg {

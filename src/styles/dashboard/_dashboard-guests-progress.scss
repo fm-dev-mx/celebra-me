@@ -50,7 +50,7 @@
 
 .progress-track {
 	height: 6px;
-	background: rgb(var(--color-surface-dark-rgb) / 10%);
+	background: rgb(var(--color-text-secondary-rgb) / 14%);
 	border-radius: 100px;
 	overflow: visible;
 	position: relative;
@@ -117,7 +117,7 @@
 
 	&__bar-container {
 		height: 4px;
-		background: rgb(var(--color-surface-dark-rgb) / 10%);
+		background: rgb(var(--color-text-secondary-rgb) / 14%);
 		border-radius: 100px;
 		overflow: hidden;
 	}

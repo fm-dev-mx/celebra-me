@@ -10,14 +10,16 @@
 	cursor: pointer;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 	min-height: 40px;
-	background: rgb(var(--color-action-primary-rgb) / 80%);
-	color: var(--color-text-on-dark);
+	background: rgb(var(--color-action-accent-rgb) / 18%);
+	color: var(--color-text-emphasis);
+	border-color: rgb(var(--color-action-accent-rgb) / 25%);
 	box-shadow: var(--shadow-subtle);
 
 	&:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: var(--shadow-emphasis);
-		filter: brightness(1.08);
+		box-shadow: var(--shadow-warm-emphasis);
+		background: rgb(var(--color-action-accent-rgb) / 26%);
+		border-color: rgb(var(--color-action-accent-rgb) / 40%);
 	}
 
 	&:disabled {
@@ -32,7 +34,7 @@
 		box-shadow: none;
 
 		&:hover:not(:disabled) {
-			background: rgb(var(--color-text-secondary-rgb) / 5%);
+			background: rgb(var(--color-text-secondary-rgb) / 8%);
 			border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 			color: var(--color-text-emphasis);
 			transform: none;
@@ -88,7 +90,7 @@
 	padding: 0.35rem 0.65rem;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 7px;
-	background: var(--color-surface-elevated);
+	background: rgb(var(--color-text-secondary-rgb) / 4%);
 	font-family: var(--font-ui);
 	font-size: 0.72rem;
 	font-weight: 500;
@@ -109,8 +111,8 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 3%);
-		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		background: rgb(var(--color-text-secondary-rgb) / 10%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 		color: var(--color-text-primary);
 
 		svg {
@@ -135,7 +137,7 @@
 	}
 }
 
-/* Copy link — neutral */
+/* Copy link — neutral secondary */
 .guest-expanded-actions__btn--copy {
 	color: var(--color-text-secondary);
 
@@ -148,19 +150,19 @@
 	}
 }
 
-/* Mark as sent — subdued success */
+/* Mark as sent — positive success emphasis */
 .guest-expanded-actions__btn--mark-sent {
-	border-color: var(--color-border-subtle);
-	background: var(--color-surface-elevated);
-	color: var(--color-text-secondary);
+	border-color: var(--color-state-success-border);
+	background: var(--color-state-success-bg);
+	color: var(--color-state-success-text);
 
 	svg {
-		color: rgb(var(--color-state-success-rgb) / 50%);
+		color: rgb(var(--color-state-success-rgb) / 60%);
 	}
 
 	&:hover {
-		background: rgb(var(--color-state-success-rgb) / 10%);
-		border-color: rgb(var(--color-state-success-rgb) / 35%);
+		background: rgb(var(--color-state-success-rgb) / 18%);
+		border-color: rgb(var(--color-state-success-rgb) / 40%);
 		color: var(--color-state-success-text);
 
 		svg {
@@ -172,11 +174,11 @@
 /* Revert — restrained amber/notice */
 .guest-expanded-actions__btn--revert {
 	border-color: rgb(var(--color-action-accent-rgb) / 20%);
-	background: rgb(var(--color-action-accent-rgb) / 4%);
+	background: rgb(var(--color-action-accent-rgb) / 6%);
 	color: var(--color-text-secondary);
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 10%);
+		background: rgb(var(--color-action-accent-rgb) / 14%);
 		border-color: rgb(var(--color-action-accent-rgb) / 35%);
 		color: var(--color-text-emphasis);
 	}
@@ -185,7 +187,7 @@
 /* Confirming state — amber highlight for both mark and revert */
 .guest-expanded-actions__btn--confirm {
 	border-color: rgb(var(--color-action-accent-rgb) / 40%);
-	background: rgb(var(--color-action-accent-rgb) / 10%);
+	background: rgb(var(--color-action-accent-rgb) / 14%);
 	color: var(--color-text-emphasis);
 	font-weight: 600;
 
@@ -194,7 +196,7 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 18%);
+		background: rgb(var(--color-action-accent-rgb) / 22%);
 		border-color: rgb(var(--color-action-accent-rgb) / 55%);
 	}
 }
@@ -206,8 +208,8 @@
 	color: var(--color-text-muted);
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 3%);
-		border-color: rgb(var(--color-surface-dark-rgb) / 10%);
+		background: rgb(var(--color-text-secondary-rgb) / 6%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 14%);
 		color: var(--color-text-primary);
 
 		svg {

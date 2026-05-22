@@ -1,8 +1,9 @@
 @use 'dashboard-guests-core' as core;
+@use '../global/mixins' as mixins;
 
 .guest-card {
 	background: var(--color-surface-elevated);
-	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
+	border: 1px solid var(--color-border-subtle);
 	border-radius: 14px;
 	padding: 1.1rem;
 	display: flex;
@@ -15,7 +16,7 @@
 	box-shadow: var(--shadow-subtle);
 
 	&:hover {
-		border-color: rgb(var(--color-surface-dark-rgb) / 16%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
 	}
 
 	&--shared {
@@ -53,7 +54,7 @@
 	font-size: 0.6rem;
 	font-weight: 700;
 	color: var(--color-text-secondary);
-	background: rgb(var(--color-surface-dark-rgb) / 5%);
+	background: rgb(var(--color-text-secondary-rgb) / 8%);
 	padding: 2px 6px;
 	border-radius: 5px;
 	flex-shrink: 0;
@@ -105,9 +106,9 @@
 
 .guest-card__comment {
 	padding: 0.6rem 0.75rem;
-	background: rgb(var(--color-surface-dark-rgb) / 3%);
+	background: rgb(var(--color-text-secondary-rgb) / 5%);
 	border-radius: 10px;
-	border-left: 3px solid rgb(var(--color-surface-dark-rgb) / 12%);
+	border-left: 3px solid rgb(var(--color-action-accent-rgb) / 20%);
 }
 
 .guest-card__comment-text {
@@ -128,8 +129,8 @@
 	align-items: baseline;
 	gap: 0.2rem;
 	padding: 0.22rem 0.65rem;
-	background: rgb(var(--color-surface-dark-rgb) / 4%);
-	border: 1px solid rgb(var(--color-surface-dark-rgb) / 6%);
+	background: rgb(var(--color-text-secondary-rgb) / 7%);
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
 	border-radius: 999px;
 }
 
@@ -171,7 +172,7 @@
 	padding: 0;
 	border: 1px solid var(--color-border-subtle);
 	border-radius: 8px;
-	background: var(--color-surface-elevated);
+	background: rgb(var(--color-text-secondary-rgb) / 4%);
 	color: var(--color-text-muted);
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -182,8 +183,8 @@
 	}
 
 	&:hover {
-		background: rgb(var(--color-surface-dark-rgb) / 3%);
-		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		background: rgb(var(--color-text-secondary-rgb) / 10%);
+		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
 		color: var(--color-text-primary);
 	}
 
@@ -208,11 +209,16 @@
 }
 
 .guest-card__expanded-inner {
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 0.55rem;
-	padding-top: 0.6rem;
-	border-top: 1px solid var(--color-border-subtle);
+	padding: 0.75rem;
+	margin: 0.4rem -0.1rem 0;
+	border-radius: 10px;
+	background: rgb(var(--color-text-secondary-rgb) / 3%);
+	border: 1px solid var(--color-border-subtle);
+	box-shadow: inset 0 1px 0 rgb(var(--color-text-secondary-rgb) / 4%);
 }
 
 .guest-card__tags {
@@ -226,22 +232,22 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.35rem;
-	padding-top: 0.4rem;
-	border-top: 1px solid var(--color-border-subtle);
+	padding-top: 0.5rem;
 	margin-top: 0.15rem;
+	border-top: 1px solid var(--color-border-subtle);
 }
 
 .dashboard-guests__cards {
 	display: none;
 
-	@media (width <= 992px) {
+	@include mixins.respond-below(xl) {
 		display: flex;
 		flex-direction: column;
 		gap: 0.6rem;
 	}
 
 	/* 2-column grid at tablet widths to prevent wide empty strips */
-	@media (width >= 600px) and (width <= 992px) {
+	@media (width >= 600px) and (width <= 1199px) {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: 0.6rem;
@@ -252,7 +258,7 @@
 	padding: 3rem 1.5rem;
 	border-radius: 12px;
 	background: var(--color-surface-warm-ivory);
-	border: 1px solid rgb(var(--color-surface-dark-rgb) / 8%);
+	border: 1px solid var(--color-border-subtle);
 	color: var(--color-text-secondary);
 	text-align: center;
 

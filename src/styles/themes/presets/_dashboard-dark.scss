@@ -1,0 +1,108 @@
+@use 'sass:color';
+@use '../../tools/functions' as tools;
+@use '../../tokens/system/color' as sys;
+@use '../../tokens/system/type' as sys-type;
+
+.theme-preset--dashboard-dark {
+	// ==========================================================================
+	// Warm Premium Dark — Dashboard Dark Theme
+	// Layered warm-neutral surfaces with controlled elevation contrast:
+	//   canvas/primary:  10%  (warm dark page bg)
+	//   soft:            12.5%
+	//   secondary:       15%  (coffee-900)
+	//   warm-ivory:      18%  (gold-warmed panel)
+	//   elevated/card:   18%  (warm coffee card surface)
+	//   dark/sidebar:     2%  (onyx-950, deepest)
+	// State colors are overridden for dark-mode readability.
+	// Shadows are boosted to be perceptible on dark surfaces.
+	// ==========================================================================
+
+	// --- Surfaces ---
+	--color-surface-primary: #{color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)};
+	--color-surface-primary-rgb: #{tools.rgb-channels(
+			color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)
+		)};
+	--color-surface-secondary: #{sys.$sys-color-coffee-900};
+	--color-surface-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
+	--color-surface-soft: #{color.mix(sys.$sys-color-onyx-800, sys.$sys-color-coffee-900, 50%)};
+	--color-surface-elevated: #{color.mix(
+			sys.$sys-color-coffee-900,
+			sys.$sys-color-coffee-700,
+			80%
+		)};
+	--color-surface-elevated-rgb: #{tools.rgb-channels(
+			color.mix(sys.$sys-color-coffee-900, sys.$sys-color-coffee-700, 80%)
+		)};
+	--color-surface-dark: #{sys.$sys-color-onyx-950};
+	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-950)};
+	--color-surface-canvas: #{color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)};
+	--color-surface-warm-ivory: #{color.mix(
+			sys.$sys-color-coffee-900,
+			sys.$sys-color-gold-700,
+			88%
+		)};
+	--color-surface-premium-card: #{color.mix(
+			sys.$sys-color-coffee-900,
+			sys.$sys-color-coffee-700,
+			80%
+		)};
+
+	// --- Text (raised opacities for readability on warmer, brighter surfaces) ---
+	--color-text-primary: #{sys.$sys-color-neutral-50};
+	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
+	--color-text-secondary: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.82)};
+	--color-text-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
+	--color-text-emphasis: #{sys.$sys-color-gold-400};
+	--color-text-on-dark: #{sys.$sys-color-neutral-50};
+	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
+	--color-text-on-light: #{sys.$sys-color-neutral-50};
+	--color-text-muted: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.62)};
+
+	// --- Actions ---
+	--color-action-primary: #{sys.$sys-color-neutral-50};
+	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
+	--color-action-secondary: #{sys.$sys-color-onyx-700};
+	--color-action-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-700)};
+	--color-action-accent: #{sys.$sys-color-gold-500};
+	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+
+	// --- Borders (stronger to maintain separation on dark surfaces) ---
+	--color-border-subtle: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.12)};
+	--color-border-premium: #{color.change(sys.$sys-color-gold-500, $alpha: 0.25)};
+	--color-border-emphasis: #{sys.$sys-color-gold-500};
+
+	// --- Dark-mode state overrides ---
+	--color-state-success: #{sys.$sys-color-forest-200};
+	--color-state-success-rgb: #{tools.rgb-channels(sys.$sys-color-forest-200)};
+	--color-state-success-bg: #{color.change(sys.$sys-color-forest-700, $alpha: 0.18)};
+	--color-state-success-border: #{color.change(sys.$sys-color-forest-700, $alpha: 0.35)};
+	--color-state-success-text: #{sys.$sys-color-forest-200};
+	--color-state-warning: #{sys.$sys-color-amber-200};
+	--color-state-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-200)};
+	--color-state-warning-bg: #{color.change(sys.$sys-color-amber-600, $alpha: 0.14)};
+	--color-state-warning-border: #{color.change(sys.$sys-color-amber-600, $alpha: 0.3)};
+	--color-state-warning-text: #{sys.$sys-color-amber-200};
+	--color-state-danger: #{sys.$sys-color-crimson-200};
+	--color-state-danger-rgb: #{tools.rgb-channels(sys.$sys-color-crimson-200)};
+	--color-state-danger-bg: #{color.change(sys.$sys-color-crimson-700, $alpha: 0.14)};
+	--color-state-danger-border: #{color.change(sys.$sys-color-crimson-700, $alpha: 0.3)};
+	--color-state-danger-text: #{sys.$sys-color-crimson-200};
+	--color-state-info: #{color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)};
+	--color-state-info-rgb: #{tools.rgb-channels(
+			color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)
+		)};
+	--color-state-info-bg: #{color.change(sys.$sys-color-slate-600, $alpha: 0.14)};
+	--color-state-info-border: #{color.change(sys.$sys-color-slate-600, $alpha: 0.3)};
+	--color-state-info-text: #{color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)};
+
+	// --- Shadows (boosted for dark-surface perception) ---
+	--shadow-subtle: 0 4px 12px rgb(0 0 0 / 18%);
+	--shadow-emphasis: 0 8px 24px rgb(0 0 0 / 28%);
+	--shadow-warm: 0 8px 24px #{color.change(sys.$sys-color-gold-500, $alpha: 0.1)};
+	--shadow-warm-emphasis: 0 12px 32px #{color.change(sys.$sys-color-gold-500, $alpha: 0.16)};
+
+	// --- Typography
+	--font-display-elegant: #{sys-type.$sys-font-display-elegant};
+	--font-label: #{sys-type.$sys-font-ui};
+	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
+}

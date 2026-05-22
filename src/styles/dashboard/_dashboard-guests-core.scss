@@ -30,18 +30,18 @@
 
 	&--pending {
 		@include status-pill-variant(
-			rgb(var(--color-surface-dark-rgb) / 4%),
+			rgb(var(--color-text-secondary-rgb) / 10%),
 			var(--color-text-secondary),
-			rgb(var(--color-surface-dark-rgb) / 8%),
-			var(--color-text-muted)
+			rgb(var(--color-text-secondary-rgb) / 18%),
+			rgb(var(--color-state-warning-rgb) / 70%)
 		);
 	}
 
 	&--confirmed {
 		@include status-pill-variant(
-			rgb(var(--color-state-success-rgb) / 6%),
+			var(--color-state-success-bg),
 			var(--color-state-success-text),
-			rgb(var(--color-state-success-rgb) / 15%),
+			var(--color-state-success-border),
 			var(--color-state-success)
 		);
 	}
@@ -57,10 +57,10 @@
 
 	&--unshared {
 		@include status-pill-variant(
-			rgb(var(--color-surface-dark-rgb) / 3%),
+			rgb(var(--color-text-secondary-rgb) / 6%),
 			var(--color-text-muted),
-			rgb(var(--color-surface-dark-rgb) / 7%),
-			var(--color-text-secondary)
+			rgb(var(--color-text-secondary-rgb) / 12%),
+			var(--color-text-muted)
 		);
 	}
 }
