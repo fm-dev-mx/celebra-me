@@ -22,6 +22,7 @@ export interface GuestInvitationRecord {
 	eventId: string;
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
@@ -65,6 +66,7 @@ export interface GuestInvitationDTO {
 	inviteId: string;
 	fullName: string;
 	phone: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;

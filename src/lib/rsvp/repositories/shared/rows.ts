@@ -25,6 +25,7 @@ export interface CreateGuestInput {
 	eventId: string;
 	fullName: string;
 	phone?: string;
+	countryCode?: string;
 	maxAllowedAttendees: number;
 	tags?: string[];
 	shortId?: string;
@@ -35,6 +36,7 @@ export interface UpdateGuestInput {
 	guestId: string;
 	fullName?: string;
 	phone?: string;
+	countryCode?: string;
 	maxAllowedAttendees?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
@@ -65,6 +67,7 @@ export type GuestRow = {
 	event_id: string;
 	full_name: string;
 	phone: string;
+	country_code: string | null;
 	max_allowed_attendees: number;
 	attendance_status: AttendanceStatus;
 	attendee_count: number;
@@ -120,18 +123,24 @@ export type ClaimCodeRow = {
 	updated_at: string;
 };
 
-export const EVENT_COLUMNS =
-	'id,owner_user_id,slug,event_type,title,status,published_at,created_at,updated_at';
-export const EVENT_MUTATION_COLUMNS =
-	'id,owner_user_id,slug,event_type,title,status,created_at,updated_at';
+const EVENT_COLUMN_LIST = [
+	'id',
+	'owner_user_id',
+	'slug',
+	'event_type',
+	'title',
+	'status',
+	'published_at',
+	'created_at',
+	'updated_at',
+] as const;
+
+export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
+export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
+	(column) => column !== 'published_at',
+).join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
-export const GUEST_COLUMNS_WITHOUT_SHORT_ID =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags';
-export const GUEST_COLUMNS_WITHOUT_ENTRY_SOURCE =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,created_at,updated_at,tags,short_id';
-export const GUEST_COLUMNS_MINIMAL =
-	'id,invite_id,event_id,full_name,phone,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,created_at,updated_at,tags';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -154,6 +163,7 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		eventId: row.event_id,
 		fullName: row.full_name,
 		phone: row.phone,
+		countryCode: row.country_code ?? undefined,
 		maxAllowedAttendees: row.max_allowed_attendees,
 		attendanceStatus: row.attendance_status,
 		attendeeCount: row.attendee_count,
