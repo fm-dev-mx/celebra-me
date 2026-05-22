@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
@@ -60,7 +60,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		handlePostpone,
 		handleRevertShared,
 		handleSubmit,
-		highlightedGuestId,
 		importModalOpen,
 		isNextActionActive,
 		modalMode,
@@ -93,14 +92,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		},
 		!modalOpen && !deleteConfirmOpen && !importModalOpen,
 	);
-	const sortedItems = useMemo(() => {
-		return [...items].sort((a, b) => {
-			if (a.deliveryStatus === 'generated' && b.deliveryStatus === 'shared') return -1;
-			if (a.deliveryStatus === 'shared' && b.deliveryStatus === 'generated') return 1;
-			return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-		});
-	}, [items]);
-
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
@@ -138,10 +129,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				{error && <p className="dashboard-error">{error}</p>}
 
 				<GuestTable
-					items={sortedItems}
+					items={items}
 					inviteBaseUrl={inviteBaseUrl}
 					celebratingGuestId={celebratingGuestId}
-					highlightedGuestId={highlightedGuestId}
 					expandedGuestId={expandedGuestId}
 					onToggleExpanded={(id) =>
 						setExpandedGuestId((prev) => (prev === id ? null : id))

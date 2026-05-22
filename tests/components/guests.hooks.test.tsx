@@ -316,6 +316,203 @@ describe('active guest dashboard hooks', () => {
 		});
 
 		expect(mockedGuestsApi.revertShared).toHaveBeenCalledWith(sentGuest.guestId);
-		expect(loadGuests).toHaveBeenCalled();
+		expect(loadGuests).not.toHaveBeenCalled();
+	});
+
+	it('marks guest as shared without calling loadGuests', async () => {
+		mockedGuestsApi.markShared.mockResolvedValue({
+			...sampleGuest,
+			deliveryStatus: 'shared',
+		});
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [sampleGuest],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		await act(async () => {
+			await result.current.handleMarkShared(sampleGuest);
+		});
+
+		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith(sampleGuest.guestId);
+		expect(loadGuests).not.toHaveBeenCalled();
+		expect(result.current.shareSessionCount).toBe(1);
+		expect(result.current.notification).toEqual({
+			message: 'Entrega registrada correctamente.',
+			type: 'success',
+		});
+	});
+
+	it('rolls back optimistic update on markShared API failure', async () => {
+		mockedGuestsApi.markShared.mockRejectedValue(new Error('Network error'));
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [sampleGuest],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		await act(async () => {
+			await result.current.handleMarkShared(sampleGuest);
+		});
+
+		expect(result.current.notification).toEqual({
+			message: 'Error al actualizar estado.',
+			type: 'warning',
+		});
+	});
+
+	it('calls markShared after update in confirm-and-send flow when next guest exists', async () => {
+		const guestA = {
+			...sampleGuest,
+			guestId: 'guest-a',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated' as const,
+		};
+		const guestB = {
+			...sampleGuest,
+			guestId: 'guest-b',
+			fullName: 'Guest B',
+			deliveryStatus: 'generated' as const,
+		};
+		const items = [guestA, guestB];
+
+		mockedGuestsApi.update.mockResolvedValue({ ...guestA, waShareUrl: 'https://wa.me/test' });
+		mockedGuestsApi.markShared.mockResolvedValue({ ...guestA, deliveryStatus: 'shared' });
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items,
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		await act(async () => {
+			await result.current.handleSubmit({
+				fullName: 'Guest A',
+				maxAllowedAttendees: 4,
+			});
+		});
+
+		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', expect.any(Object));
+		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
+		expect(loadGuests).not.toHaveBeenCalled();
+		expect(openSpy).toHaveBeenCalledWith('https://wa.me/test', '_blank', 'noopener,noreferrer');
+		expect(result.current.notification).toEqual({
+			message: 'Invitación enviada. Siguiente: Guest B',
+			type: 'success',
+		});
+
+		openSpy.mockRestore();
+	});
+
+	it('closes modal after confirm-and-send when no more pending guests', async () => {
+		const guestA = {
+			...sampleGuest,
+			guestId: 'guest-a',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated' as const,
+		};
+
+		mockedGuestsApi.update.mockResolvedValue(guestA);
+		mockedGuestsApi.markShared.mockResolvedValue({ ...guestA, deliveryStatus: 'shared' });
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [guestA],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		await act(async () => {
+			await result.current.handleSubmit({
+				fullName: 'Guest A',
+				maxAllowedAttendees: 4,
+			});
+		});
+
+		openSpy.mockRestore();
+
+		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
+		expect(result.current.notification).toEqual({
+			message: 'No hay más invitados pendientes.',
+			type: 'info',
+		});
+	});
+
+	it('shows error notification when markShared fails in confirm-and-send flow', async () => {
+		const guestA = {
+			...sampleGuest,
+			guestId: 'guest-a',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated' as const,
+		};
+
+		mockedGuestsApi.update.mockResolvedValue(guestA);
+		mockedGuestsApi.markShared.mockRejectedValue(new Error('API error'));
+
+		const loadGuests = jest.fn().mockResolvedValue(undefined);
+		const setItems = jest.fn();
+		const { result } = renderHook(() =>
+			useGuestDashboardActions({
+				eventId: 'event-123',
+				items: [guestA],
+				loadGuests,
+				setItems,
+			}),
+		);
+
+		const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+		await act(async () => {
+			await expect(
+				result.current.handleSubmit({
+					fullName: 'Guest A',
+					maxAllowedAttendees: 4,
+				}),
+			).rejects.toThrow('API error');
+		});
+
+		openSpy.mockRestore();
+		consoleSpy.mockRestore();
+
+		expect(mockedGuestsApi.markShared).toHaveBeenCalledWith('guest-a');
 	});
 });

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 
@@ -10,7 +11,7 @@ export interface GuestFormPayload {
 	phone?: string;
 	countryCode?: string;
 	maxAllowedAttendees: number;
-	attendanceStatus?: 'pending' | 'confirmed' | 'declined';
+	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
 	guestComment?: string;
 	tags?: string[];
@@ -44,24 +45,6 @@ export const useGuestDashboardActions = ({
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
-	const [pendingAutoShareGuestId, setPendingAutoShareGuestId] = useState<string | null>(null);
-	const [highlightedGuestId, setHighlightedGuestId] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!pendingAutoShareGuestId) return;
-
-		const timer1 = setTimeout(() => {
-			setHighlightedGuestId(pendingAutoShareGuestId);
-			const timer2 = setTimeout(() => {
-				setHighlightedGuestId(null);
-				setPendingAutoShareGuestId(null);
-			}, 2000);
-			return () => clearTimeout(timer2);
-		}, 800);
-
-		return () => clearTimeout(timer1);
-	}, [pendingAutoShareGuestId]);
-
 	const openCreateModal = useCallback(() => {
 		setModalMode('create');
 		setEditingGuest(null);
@@ -126,15 +109,13 @@ export const useGuestDashboardActions = ({
 		async (
 			item: DashboardGuestItem,
 			newStatus: DashboardGuestItem['deliveryStatus'],
-			apiCall: () => Promise<unknown>,
+			apiCall: () => Promise<DashboardGuestItem>,
 			successNotification: NotificationPayload,
 			errorMessage: string,
-			onBeforeUpdate?: (currentItems: DashboardGuestItem[]) => void,
 		) => {
 			let previousItems: DashboardGuestItem[] = [];
 			setItems((prev) => {
 				previousItems = [...prev];
-				onBeforeUpdate?.(prev);
 				return prev.map((entry) =>
 					entry.guestId === item.guestId
 						? { ...entry, deliveryStatus: newStatus }
@@ -142,37 +123,33 @@ export const useGuestDashboardActions = ({
 				);
 			});
 			try {
-				await apiCall();
+				const updatedItem = await apiCall();
+				setItems((prev) =>
+					prev.map((entry) =>
+						entry.guestId === item.guestId ? { ...entry, ...updatedItem } : entry,
+					),
+				);
 				setNotification(successNotification);
-				await loadGuests();
 			} catch {
 				if (previousItems.length) setItems(previousItems);
 				setNotification({ message: errorMessage, type: 'warning' });
 			}
 		},
-		[loadGuests, setItems, setNotification],
+		[setItems, setNotification],
 	);
 
 	const handleMarkShared = useCallback(
 		async (item: DashboardGuestItem) => {
-			let nextGuestId: string | null = null;
 			await optimisticStatusUpdate(
 				item,
 				'shared',
 				() => guestsApi.markShared(item.guestId),
 				{ message: 'Entrega registrada correctamente.', type: 'success' },
 				'Error al actualizar estado.',
-				(prev) => {
-					const currentIndex = prev.findIndex((entry) => entry.guestId === item.guestId);
-					if (currentIndex !== -1 && currentIndex < prev.length - 1) {
-						nextGuestId = prev[currentIndex + 1].guestId;
-					}
-				},
 			);
 			setShareSessionCount((prev) => prev + 1);
 			setCelebratingGuestId(item.guestId);
 			setTimeout(() => setCelebratingGuestId(null), 1500);
-			if (nextGuestId) setPendingAutoShareGuestId(nextGuestId);
 		},
 		[optimisticStatusUpdate],
 	);
@@ -245,15 +222,49 @@ export const useGuestDashboardActions = ({
 					savedItem = await guestsApi.update(editingGuest.guestId, payload);
 				}
 
-				await loadGuests();
-				setNotification({
-					message: `Invitado ${savedItem?.fullName || 'guardado'} correctamente.`,
-					type: 'success',
-				});
-
 				if (isNextActionActive && modalMode === 'edit' && savedItem) {
-					setPendingAutoShareGuestId(savedItem.guestId);
+					const currentIndex = items.findIndex((g) => g.guestId === savedItem!.guestId);
+					const nextGuest =
+						items
+							.slice(currentIndex + 1)
+							.find((g) => g.deliveryStatus === 'generated') ||
+						items.slice(0, currentIndex).find((g) => g.deliveryStatus === 'generated');
+
+					if (savedItem.waShareUrl) {
+						window.open(savedItem.waShareUrl, '_blank', 'noopener,noreferrer');
+					}
+					const sharedItem = await guestsApi.markShared(savedItem.guestId);
+
+					setItems((prev) =>
+						prev.map((entry) =>
+							entry.guestId === sharedItem.guestId
+								? { ...entry, ...sharedItem }
+								: entry,
+						),
+					);
+
+					if (nextGuest) {
+						setEditingGuest(nextGuest);
+						setNotification({
+							message: `Invitación enviada. Siguiente: ${nextGuest.fullName}`,
+							type: 'success',
+						});
+						return;
+					}
+
 					setIsNextActionActive(false);
+					closeModal();
+					setNotification({
+						message: 'No hay más invitados pendientes.',
+						type: 'info',
+					});
+					return;
+				} else {
+					await loadGuests();
+					setNotification({
+						message: `Invitado ${savedItem?.fullName || 'guardado'} correctamente.`,
+						type: 'success',
+					});
 				}
 
 				if (!stayOpen) {
@@ -264,7 +275,18 @@ export const useGuestDashboardActions = ({
 				throw err;
 			}
 		},
-		[closeModal, editingGuest, eventId, isNextActionActive, loadGuests, modalMode],
+		[
+			closeModal,
+			editingGuest,
+			eventId,
+			isNextActionActive,
+			items,
+			loadGuests,
+			modalMode,
+			setItems,
+			setEditingGuest,
+			setNotification,
+		],
 	);
 
 	const handleImport = useCallback(
@@ -337,7 +359,6 @@ export const useGuestDashboardActions = ({
 		handlePostpone,
 		handleRevertShared,
 		handleSubmit,
-		highlightedGuestId,
 		importModalOpen,
 		isNextActionActive,
 		modalMode,
@@ -347,7 +368,6 @@ export const useGuestDashboardActions = ({
 		openEditModal,
 		openImportModal: () => setImportModalOpen(true),
 		openNextGeneratedGuest,
-		pendingAutoShareGuestId,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,
