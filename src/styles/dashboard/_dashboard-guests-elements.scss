@@ -107,18 +107,18 @@
 	padding: 0.22rem 0.65rem;
 	border-radius: 999px;
 	font-size: 0.65rem;
-	font-weight: 600;
+	font-weight: 500;
 	letter-spacing: 0.01em;
 	line-height: 1.4;
-	background: rgb(var(--color-text-secondary-rgb) / 7%);
-	border: 1px solid rgb(var(--color-text-secondary-rgb) / 12%);
-	color: var(--color-text-secondary);
+	background: rgb(var(--color-text-secondary-rgb) / 5%);
+	border: 1px solid rgb(var(--color-text-secondary-rgb) / 10%);
+	color: var(--color-text-muted);
 }
 
 .view-status--viewed {
-	background: var(--color-state-success-bg);
-	border-color: var(--color-state-success-border);
-	color: var(--color-state-success-text);
+	background: rgb(var(--color-action-accent-rgb) / 8%);
+	border-color: rgb(var(--color-action-accent-rgb) / 18%);
+	color: var(--color-text-emphasis);
 }
 
 .view-status__content {
@@ -133,7 +133,7 @@
 }
 
 .view-status__sep {
-	color: rgb(var(--color-state-success-rgb) / 25%);
+	color: rgb(var(--color-action-accent-rgb) / 25%);
 	font-size: 0.8rem;
 }
 
@@ -218,7 +218,7 @@
 
 .engagement-mini__progress {
 	height: 100%;
-	background: var(--color-action-secondary);
+	background: var(--color-action-accent);
 	border-radius: 999px;
 	transition: width 0.4s ease;
 }

@@ -4,22 +4,22 @@
 	gap: 0.45rem;
 	padding: 0.5rem 1.25rem;
 	border-radius: 10px;
-	border: 1px solid transparent;
+	border: 1px solid var(--dashboard-button-secondary-border);
 	font-size: 0.82rem;
 	font-weight: 600;
 	cursor: pointer;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 	min-height: 40px;
-	background: rgb(var(--color-action-accent-rgb) / 18%);
-	color: var(--color-text-emphasis);
-	border-color: rgb(var(--color-action-accent-rgb) / 25%);
-	box-shadow: var(--shadow-subtle);
+	background: var(--dashboard-button-secondary-bg);
+	color: var(--dashboard-button-secondary-text);
+	box-shadow: none;
 
 	&:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: var(--shadow-warm-emphasis);
-		background: rgb(var(--color-action-accent-rgb) / 26%);
-		border-color: rgb(var(--color-action-accent-rgb) / 40%);
+		box-shadow: var(--shadow-subtle);
+		background: var(--dashboard-button-secondary-bg-hover);
+		border-color: var(--dashboard-button-secondary-border-hover);
+		color: var(--color-text-emphasis);
 	}
 
 	&:disabled {
@@ -47,8 +47,10 @@
 	}
 
 	&--delivered {
-		background: var(--color-state-success);
-		box-shadow: 0 0 12px rgb(var(--color-state-success-rgb) / 25%);
+		background: var(--color-state-success-bg);
+		border-color: var(--color-state-success-border);
+		color: var(--color-state-success-text);
+		box-shadow: 0 0 12px rgb(var(--color-state-success-rgb) / 18%);
 	}
 
 	.share-icon {
@@ -76,10 +78,33 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
+	gap: 0.5rem;
+
+	@media (width <= 480px) {
+		gap: 0.4rem;
+	}
+}
+
+.guest-expanded-actions__group {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
 	gap: 0.35rem;
 
 	@media (width <= 480px) {
 		gap: 0.3rem;
+	}
+}
+
+.guest-expanded-actions__divider {
+	width: 1px;
+	height: 24px;
+	background: var(--color-border-subtle);
+	flex-shrink: 0;
+
+	@media (width <= 480px) {
+		width: 100%;
+		height: 1px;
 	}
 }
 
@@ -150,23 +175,23 @@
 	}
 }
 
-/* Mark as sent — positive success emphasis */
+/* Mark as sent — muted success outline */
 .guest-expanded-actions__btn--mark-sent {
-	border-color: var(--color-state-success-border);
-	background: var(--color-state-success-bg);
-	color: var(--color-state-success-text);
+	background: var(--dashboard-button-success-bg);
+	border-color: var(--dashboard-button-success-border);
+	color: var(--dashboard-button-success-text);
 
 	svg {
-		color: rgb(var(--color-state-success-rgb) / 60%);
+		color: color-mix(in srgb, var(--dashboard-button-success-text) 60%, transparent);
 	}
 
 	&:hover {
-		background: rgb(var(--color-state-success-rgb) / 18%);
-		border-color: rgb(var(--color-state-success-rgb) / 40%);
-		color: var(--color-state-success-text);
+		background: var(--dashboard-button-success-bg-hover);
+		border-color: color-mix(in srgb, var(--dashboard-button-success-text) 40%, transparent);
+		color: var(--dashboard-button-success-text);
 
 		svg {
-			color: var(--color-state-success);
+			color: var(--dashboard-button-success-text);
 		}
 	}
 }
@@ -218,21 +243,23 @@
 	}
 }
 
-/* Delete — restrained destructive, readable on dark card */
+/* Delete — quiet danger */
 .guest-expanded-actions__btn--delete {
-	color: var(--color-state-danger-text);
+	background: var(--dashboard-button-danger-bg);
+	border-color: var(--dashboard-button-danger-border);
+	color: var(--dashboard-button-danger-text);
 
 	svg {
-		color: rgb(var(--color-state-danger-rgb) / 60%);
+		color: color-mix(in srgb, var(--dashboard-button-danger-text) 60%, transparent);
 	}
 
 	&:hover {
-		background: var(--color-state-danger-bg);
-		border-color: var(--color-state-danger-border);
-		color: var(--color-state-danger-text);
+		background: var(--dashboard-button-danger-bg-hover);
+		border-color: var(--dashboard-button-danger-border-hover);
+		color: var(--dashboard-button-danger-text);
 
 		svg {
-			color: var(--color-state-danger);
+			color: var(--dashboard-button-danger-text);
 		}
 	}
 }

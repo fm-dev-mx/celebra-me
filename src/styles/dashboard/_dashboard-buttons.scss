@@ -36,55 +36,60 @@
 }
 
 .btn-primary {
-	background: var(--color-action-primary);
-	color: var(--color-text-on-dark);
+	background: var(--dashboard-button-primary-bg);
+	color: var(--dashboard-button-primary-text);
+	border-color: var(--dashboard-button-primary-border);
 	box-shadow: var(--shadow-subtle);
 
 	&:hover {
-		filter: brightness(1.08);
+		background: var(--dashboard-button-primary-bg-hover);
 		box-shadow: var(--shadow-emphasis);
 		transform: translateY(-1px);
 	}
 
 	&:active {
+		background: var(--dashboard-button-primary-bg-active);
 		transform: translateY(0);
 		box-shadow: var(--shadow-subtle);
-		filter: brightness(1.02);
+		filter: brightness(0.95);
 	}
 
 	&--danger {
-		background: var(--color-state-danger);
+		background: var(--dashboard-button-danger-cta-bg);
+		color: var(--dashboard-button-danger-cta-text);
 
 		&:hover {
-			filter: brightness(1.08);
+			background: var(--dashboard-button-danger-cta-bg-hover);
 		}
 	}
 }
 
 .btn-secondary {
-	background: var(--color-surface-elevated);
-	border-color: var(--color-border-subtle);
-	color: var(--color-text-primary);
+	background: var(--dashboard-button-secondary-bg);
+	border-color: var(--dashboard-button-secondary-border);
+	color: var(--dashboard-button-secondary-text);
 	box-shadow: none;
 
 	&:hover {
-		background: var(--color-surface-warm-ivory);
-		border-color: var(--dashboard-card-border);
+		background: var(--dashboard-button-secondary-bg-hover);
+		border-color: var(--dashboard-button-secondary-border-hover);
 		box-shadow: var(--shadow-subtle);
+		color: var(--color-text-emphasis);
 	}
 
 	&:active {
 		background: var(--color-surface-soft);
+		filter: brightness(1.05);
 	}
 }
 
 .btn-accent {
 	background: var(--dashboard-accent-soft-bg);
-	border-color: var(--dashboard-card-border);
+	border-color: rgb(var(--color-action-accent-rgb) / 25%);
 	color: var(--color-text-emphasis);
 
 	&:hover {
-		background: rgb(var(--color-action-accent-rgb) / 16%);
+		background: rgb(var(--color-action-accent-rgb) / 20%);
 		border-color: var(--color-border-emphasis);
 	}
 }

@@ -1,13 +1,3 @@
-@mixin status-pill-variant($background, $text, $border, $dot) {
-	background: $background;
-	color: $text;
-	border: 1px solid $border;
-
-	.status-pill__dot {
-		background: $dot;
-	}
-}
-
 .status-pill {
 	display: inline-flex;
 	align-items: center;
@@ -16,7 +6,6 @@
 	border-radius: 6px;
 	font-size: 0.65rem;
 	font-weight: 600;
-	text-transform: uppercase;
 	letter-spacing: 0.03em;
 	line-height: 1.3;
 	text-wrap: nowrap;
@@ -29,39 +18,74 @@
 	}
 
 	&--pending {
-		@include status-pill-variant(
-			rgb(var(--color-text-secondary-rgb) / 10%),
-			var(--color-text-secondary),
-			rgb(var(--color-text-secondary-rgb) / 18%),
-			rgb(var(--color-state-warning-rgb) / 70%)
+		background: color-mix(
+			in srgb,
+			var(--color-action-accent) 6%,
+			var(--color-surface-secondary)
 		);
+		border-color: color-mix(in srgb, var(--color-action-accent) 18%, transparent);
+		color: color-mix(in srgb, var(--color-action-accent) 80%, var(--color-text-primary));
+
+		.status-pill__dot {
+			background: color-mix(in srgb, var(--color-action-accent) 80%, transparent);
+		}
 	}
 
 	&--confirmed {
-		@include status-pill-variant(
-			var(--color-state-success-bg),
-			var(--color-state-success-text),
-			var(--color-state-success-border),
-			var(--color-state-success)
+		background: color-mix(
+			in srgb,
+			var(--color-state-success-text) 6%,
+			var(--color-surface-secondary)
 		);
+		border-color: color-mix(in srgb, var(--color-state-success-text) 18%, transparent);
+		color: color-mix(in srgb, var(--color-state-success-text) 85%, var(--color-text-primary));
+
+		.status-pill__dot {
+			background: color-mix(in srgb, var(--color-state-success-text) 80%, transparent);
+		}
 	}
 
 	&--declined {
-		@include status-pill-variant(
-			var(--color-state-danger-bg),
-			var(--color-state-danger-text),
-			var(--color-state-danger-border),
-			var(--color-state-danger)
+		background: color-mix(
+			in srgb,
+			var(--color-state-danger-text) 6%,
+			var(--color-surface-secondary)
 		);
+		border-color: color-mix(in srgb, var(--color-state-danger-text) 18%, transparent);
+		color: color-mix(in srgb, var(--color-state-danger-text) 85%, var(--color-text-primary));
+
+		.status-pill__dot {
+			background: color-mix(in srgb, var(--color-state-danger-text) 80%, transparent);
+		}
 	}
 
 	&--unshared {
-		@include status-pill-variant(
-			rgb(var(--color-text-secondary-rgb) / 6%),
-			var(--color-text-muted),
-			rgb(var(--color-text-secondary-rgb) / 12%),
-			var(--color-text-muted)
+		background: color-mix(
+			in srgb,
+			var(--color-text-secondary) 5%,
+			var(--color-surface-secondary)
 		);
+		border-color: color-mix(in srgb, var(--color-text-secondary) 14%, transparent);
+		color: var(--color-text-secondary);
+
+		.status-pill__dot {
+			background: var(--color-text-muted);
+		}
+	}
+
+	/* Sent/shared but not yet viewed — muted info/blue */
+	&--sent {
+		background: color-mix(
+			in srgb,
+			var(--color-state-info-text) 6%,
+			var(--color-surface-secondary)
+		);
+		border-color: color-mix(in srgb, var(--color-state-info-text) 18%, transparent);
+		color: color-mix(in srgb, var(--color-state-info-text) 85%, var(--color-text-primary));
+
+		.status-pill__dot {
+			background: color-mix(in srgb, var(--color-state-info-text) 80%, transparent);
+		}
 	}
 }
 

@@ -159,12 +159,12 @@
 		}
 
 		.dashboard-modal__footer .btn-primary--danger {
-			background: var(--color-state-danger);
-			color: var(--color-text-on-dark);
+			background: var(--dashboard-button-danger-cta-bg);
+			color: var(--dashboard-button-danger-cta-text);
 		}
 
 		.dashboard-modal__footer .btn-primary--danger:hover {
-			background: color-mix(in srgb, var(--color-state-danger) 88%, black);
+			background: var(--dashboard-button-danger-cta-bg-hover);
 		}
 	}
 }

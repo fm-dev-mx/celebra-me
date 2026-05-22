@@ -1,3 +1,4 @@
+/* stylelint-disable color-no-hex */
 @use 'sass:color';
 @use '../../tools/functions' as tools;
 @use '../../tokens/system/color' as sys;
@@ -5,104 +6,113 @@
 
 .theme-preset--dashboard-dark {
 	// ==========================================================================
-	// Warm Premium Dark — Dashboard Dark Theme
-	// Layered warm-neutral surfaces with controlled elevation contrast:
-	//   canvas/primary:  10%  (warm dark page bg)
-	//   soft:            12.5%
-	//   secondary:       15%  (coffee-900)
-	//   warm-ivory:      18%  (gold-warmed panel)
-	//   elevated/card:   18%  (warm coffee card surface)
-	//   dark/sidebar:     2%  (onyx-950, deepest)
-	// State colors are overridden for dark-mode readability.
-	// Shadows are boosted to be perceptible on dark surfaces.
+	// Graphite Jade — Premium Dashboard Dark Theme
+	// Charcoal graphite base with muted jade and antique brass accents. More
+	// modern, restrained, and high-end than a gold-heavy dark interface.
 	// ==========================================================================
 
 	// --- Surfaces ---
-	--color-surface-primary: #{color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)};
-	--color-surface-primary-rgb: #{tools.rgb-channels(
-			color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)
-		)};
-	--color-surface-secondary: #{sys.$sys-color-coffee-900};
-	--color-surface-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-coffee-900)};
-	--color-surface-soft: #{color.mix(sys.$sys-color-onyx-800, sys.$sys-color-coffee-900, 50%)};
-	--color-surface-elevated: #{color.mix(
-			sys.$sys-color-coffee-900,
-			sys.$sys-color-coffee-700,
-			80%
-		)};
-	--color-surface-elevated-rgb: #{tools.rgb-channels(
-			color.mix(sys.$sys-color-coffee-900, sys.$sys-color-coffee-700, 80%)
-		)};
-	--color-surface-dark: #{sys.$sys-color-onyx-950};
-	--color-surface-dark-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-950)};
-	--color-surface-canvas: #{color.mix(sys.$sys-color-onyx-900, sys.$sys-color-coffee-900, 50%)};
-	--color-surface-warm-ivory: #{color.mix(
-			sys.$sys-color-coffee-900,
-			sys.$sys-color-gold-700,
-			88%
-		)};
-	--color-surface-premium-card: #{color.mix(
-			sys.$sys-color-coffee-900,
-			sys.$sys-color-coffee-700,
-			80%
-		)};
+	--color-surface-primary: #0c1010;
+	--color-surface-primary-rgb: #{tools.rgb-channels(#0c1010)};
+	--color-surface-secondary: #121918;
+	--color-surface-secondary-rgb: #{tools.rgb-channels(#121918)};
+	--color-surface-soft: #17211f;
+	--color-surface-elevated: #1e2a27;
+	--color-surface-elevated-rgb: #{tools.rgb-channels(#1e2a27)};
+	--color-surface-dark: #060808;
+	--color-surface-dark-rgb: #{tools.rgb-channels(#060808)};
+	--color-surface-canvas: var(--color-surface-primary);
+	--color-surface-warm-ivory: #293632;
+	--color-surface-premium-card: var(--color-surface-elevated);
 
-	// --- Text (raised opacities for readability on warmer, brighter surfaces) ---
-	--color-text-primary: #{sys.$sys-color-neutral-50};
-	--color-text-primary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
-	--color-text-secondary: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.82)};
-	--color-text-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
-	--color-text-emphasis: #{sys.$sys-color-gold-400};
-	--color-text-on-dark: #{sys.$sys-color-neutral-50};
-	--color-text-on-dark-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
-	--color-text-on-light: #{sys.$sys-color-neutral-50};
-	--color-text-muted: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.62)};
+	// --- Text ---
+	--color-text-primary: #f3efe4;
+	--color-text-primary-rgb: #{tools.rgb-channels(#f3efe4)};
+	--color-text-secondary: #c8c2ad;
+	--color-text-secondary-rgb: #{tools.rgb-channels(#c8c2ad)};
+	--color-text-emphasis: #c8a969;
+	--color-text-on-dark: #f3efe4;
+	--color-text-on-dark-rgb: #{tools.rgb-channels(#f3efe4)};
+	--color-text-on-light: #0e1513;
+	--color-text-muted: #8fa096;
+	--color-text-muted-rgb: #{tools.rgb-channels(#8fa096)};
 
-	// --- Actions ---
-	--color-action-primary: #{sys.$sys-color-neutral-50};
-	--color-action-primary-rgb: #{tools.rgb-channels(sys.$sys-color-neutral-50)};
-	--color-action-secondary: #{sys.$sys-color-onyx-700};
-	--color-action-secondary-rgb: #{tools.rgb-channels(sys.$sys-color-onyx-700)};
-	--color-action-accent: #{sys.$sys-color-gold-500};
-	--color-action-accent-rgb: #{tools.rgb-channels(sys.$sys-color-gold-500)};
+	// --- Actions (global) ---
+	--color-action-primary: #c8a969;
+	--color-action-primary-rgb: #{tools.rgb-channels(#c8a969)};
+	--color-action-secondary: #2d4039;
+	--color-action-secondary-rgb: #{tools.rgb-channels(#2d4039)};
+	--color-action-accent: #d8bd7a;
+	--color-action-accent-rgb: #{tools.rgb-channels(#d8bd7a)};
 
-	// --- Borders (stronger to maintain separation on dark surfaces) ---
-	--color-border-subtle: #{color.change(sys.$sys-color-neutral-50, $alpha: 0.12)};
-	--color-border-premium: #{color.change(sys.$sys-color-gold-500, $alpha: 0.25)};
-	--color-border-emphasis: #{sys.$sys-color-gold-500};
+	// --- Unified button hierarchy ---
+	// Primary
+	--dashboard-button-primary-bg: #7a5624;
+	--dashboard-button-primary-bg-hover: #8c6730;
+	--dashboard-button-primary-bg-active: #65471d;
+	--dashboard-button-primary-text: #f3efe4;
+	--dashboard-button-primary-border: rgb(216 189 122 / 32%);
 
-	// --- Dark-mode state overrides ---
-	--color-state-success: #{sys.$sys-color-forest-200};
-	--color-state-success-rgb: #{tools.rgb-channels(sys.$sys-color-forest-200)};
-	--color-state-success-bg: #{color.change(sys.$sys-color-forest-700, $alpha: 0.18)};
-	--color-state-success-border: #{color.change(sys.$sys-color-forest-700, $alpha: 0.35)};
-	--color-state-success-text: #{sys.$sys-color-forest-200};
-	--color-state-warning: #{sys.$sys-color-amber-200};
-	--color-state-warning-rgb: #{tools.rgb-channels(sys.$sys-color-amber-200)};
-	--color-state-warning-bg: #{color.change(sys.$sys-color-amber-600, $alpha: 0.14)};
-	--color-state-warning-border: #{color.change(sys.$sys-color-amber-600, $alpha: 0.3)};
-	--color-state-warning-text: #{sys.$sys-color-amber-200};
-	--color-state-danger: #{sys.$sys-color-crimson-200};
-	--color-state-danger-rgb: #{tools.rgb-channels(sys.$sys-color-crimson-200)};
-	--color-state-danger-bg: #{color.change(sys.$sys-color-crimson-700, $alpha: 0.14)};
-	--color-state-danger-border: #{color.change(sys.$sys-color-crimson-700, $alpha: 0.3)};
-	--color-state-danger-text: #{sys.$sys-color-crimson-200};
-	--color-state-info: #{color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)};
-	--color-state-info-rgb: #{tools.rgb-channels(
-			color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)
-		)};
-	--color-state-info-bg: #{color.change(sys.$sys-color-slate-600, $alpha: 0.14)};
-	--color-state-info-border: #{color.change(sys.$sys-color-slate-600, $alpha: 0.3)};
-	--color-state-info-text: #{color.mix(sys.$sys-color-slate-600, sys.$sys-color-neutral-50, 30%)};
+	// Secondary
+	--dashboard-button-secondary-bg: rgb(243 239 228 / 3%);
+	--dashboard-button-secondary-bg-hover: rgb(216 189 122 / 10%);
+	--dashboard-button-secondary-border: rgb(216 189 122 / 18%);
+	--dashboard-button-secondary-border-hover: rgb(216 189 122 / 32%);
+	--dashboard-button-secondary-text: #c8c2ad;
 
-	// --- Shadows (boosted for dark-surface perception) ---
-	--shadow-subtle: 0 4px 12px rgb(0 0 0 / 18%);
-	--shadow-emphasis: 0 8px 24px rgb(0 0 0 / 28%);
-	--shadow-warm: 0 8px 24px #{color.change(sys.$sys-color-gold-500, $alpha: 0.1)};
-	--shadow-warm-emphasis: 0 12px 32px #{color.change(sys.$sys-color-gold-500, $alpha: 0.16)};
+	// Success
+	--dashboard-button-success-bg: rgb(159 200 168 / 10%);
+	--dashboard-button-success-bg-hover: rgb(159 200 168 / 16%);
+	--dashboard-button-success-border: rgb(159 200 168 / 26%);
+	--dashboard-button-success-text: #b7d8bd;
 
-	// --- Typography
+	// Danger
+	--dashboard-button-danger-bg: transparent;
+	--dashboard-button-danger-bg-hover: rgb(211 139 129 / 10%);
+	--dashboard-button-danger-border: rgb(211 139 129 / 18%);
+	--dashboard-button-danger-border-hover: rgb(211 139 129 / 32%);
+	--dashboard-button-danger-text: #d38b81;
+	--dashboard-button-danger-cta-bg: #9b4a3f;
+	--dashboard-button-danger-cta-bg-hover: #{color.change(#9b4a3f, $blackness: 12%)};
+	--dashboard-button-danger-cta-text: #f3efe4;
+
+	// --- Borders ---
+	--color-border-subtle: #31443d;
+	--color-border-subtle-rgb: #{tools.rgb-channels(#31443d)};
+	--color-border-premium: #{color.change(#c8a969, $alpha: 0.28)};
+	--color-border-emphasis: #d8bd7a;
+
+	// --- Dark-mode state colors ---
+	--color-state-success: #9fc8a8;
+	--color-state-success-rgb: #{tools.rgb-channels(#9fc8a8)};
+	--color-state-success-bg: #1d3428;
+	--color-state-success-border: #{color.change(#9fc8a8, $alpha: 0.24)};
+	--color-state-success-text: #b7d8bd;
+	--color-state-warning: #e9c66f;
+	--color-state-warning-rgb: #{tools.rgb-channels(#e9c66f)};
+	--color-state-warning-bg: #413316;
+	--color-state-warning-border: #{color.change(#e9c66f, $alpha: 0.24)};
+	--color-state-warning-text: #e9c66f;
+	--color-state-danger: #9b4a3f;
+	--color-state-danger-rgb: #{tools.rgb-channels(#9b4a3f)};
+	--color-state-danger-bg: #3a1f1a;
+	--color-state-danger-border: #{color.change(#d38b81, $alpha: 0.24)};
+	--color-state-danger-text: #d38b81;
+	--color-state-info: #91c8dc;
+	--color-state-info-rgb: #{tools.rgb-channels(#91c8dc)};
+	--color-state-info-bg: #17313a;
+	--color-state-info-border: #{color.change(#91c8dc, $alpha: 0.24)};
+	--color-state-info-text: #91c8dc;
+
+	// --- Shadows ---
+	--shadow-subtle: 0 5px 16px rgb(0 0 0 / 35%);
+	--shadow-emphasis: 0 14px 36px rgb(0 0 0 / 52%);
+	--shadow-warm: 0 10px 30px #{color.change(#c8a969, $alpha: 0.06)};
+	--shadow-warm-emphasis: 0 16px 44px #{color.change(#c8a969, $alpha: 0.11)};
+
+	// --- Typography ---
 	--font-display-elegant: #{sys-type.$sys-font-display-elegant};
 	--font-label: #{sys-type.$sys-font-ui};
 	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
 }
+/* stylelint-enable color-no-hex */

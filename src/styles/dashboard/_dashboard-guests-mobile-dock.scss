@@ -24,7 +24,7 @@
 		background: none;
 		border: none;
 		padding: 0.45rem 0.65rem;
-		color: rgb(255 255 255 / 65%);
+		color: rgb(var(--color-text-on-dark-rgb) / 60%);
 		cursor: pointer;
 		transition:
 			background-color 0.2s ease,
@@ -35,12 +35,12 @@
 		min-width: 56px;
 
 		&:hover {
-			background: rgb(255 255 255 / 8%);
-			color: rgb(255 255 255 / 85%);
+			background: rgb(var(--color-action-accent-rgb) / 10%);
+			color: rgb(var(--color-text-on-dark-rgb) / 90%);
 		}
 
 		&:active {
-			background: rgb(255 255 255 / 12%);
+			background: rgb(var(--color-action-accent-rgb) / 16%);
 		}
 
 		&:disabled {
@@ -68,9 +68,9 @@
 			padding: 0.5rem 0.9rem;
 			min-height: 40px;
 			border-radius: 8px;
-			background: rgb(var(--color-action-accent-rgb) / 18%);
-			color: rgb(255 255 255 / 90%);
-			border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+			background: var(--dashboard-button-primary-bg);
+			color: var(--dashboard-button-primary-text);
+			border: 1px solid var(--dashboard-button-primary-border);
 
 			.dock-icon {
 				width: 1.1rem;
@@ -82,14 +82,18 @@
 			}
 
 			&:hover {
-				background: rgb(var(--color-action-accent-rgb) / 26%);
-				border-color: rgb(var(--color-action-accent-rgb) / 32%);
+				background: var(--dashboard-button-primary-bg-hover);
+				border-color: color-mix(
+					in srgb,
+					var(--dashboard-button-primary-text) 20%,
+					transparent
+				);
 			}
 
 			&:disabled {
 				opacity: 45%;
-				background: rgb(255 255 255 / 5%);
-				border-color: rgb(255 255 255 / 8%);
+				background: rgb(var(--color-surface-dark-rgb) / 40%);
+				border-color: rgb(var(--color-border-subtle-rgb) / 30%);
 			}
 		}
 
