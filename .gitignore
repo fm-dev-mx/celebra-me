@@ -82,6 +82,7 @@ _agent/
 _agents/
 .antigravity/
 .gemini/
+.opencode/
 *.agent.md
 agent.json
 opencode.json
