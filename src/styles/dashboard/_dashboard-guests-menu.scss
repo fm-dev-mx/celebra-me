@@ -64,29 +64,6 @@
 		outline: 2px solid var(--color-action-accent);
 		outline-offset: -2px;
 	}
-
-	&--danger {
-		color: var(--color-state-danger-text);
-
-		svg {
-			color: var(--color-state-danger);
-		}
-
-		&:hover {
-			background: var(--color-state-danger-bg);
-			color: var(--color-state-danger-text);
-
-			svg {
-				color: var(--color-state-danger);
-			}
-		}
-	}
-}
-
-.guest-actions-menu__divider {
-	height: 1px;
-	margin: 0.2rem 0.5rem;
-	background: var(--color-border-subtle);
 }
 
 /* Trigger button */

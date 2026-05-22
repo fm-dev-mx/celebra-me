@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '@/components/common/icons/ui';
-import GuestActionsMenu from '@/components/dashboard/guests/GuestActionsMenu';
+import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
@@ -98,13 +98,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					isShared={isShared}
 					onShared={async () => onMarkShared(item)}
 				/>
-				<GuestActionsMenu
-					guestName={item.fullName}
-					inviteUrl={inviteUrl}
-					onEdit={() => onEdit(item)}
-					onDelete={() => onDelete(item)}
-					onMarkShared={async () => onMarkShared(item)}
-				/>
 				<button
 					type="button"
 					className={`guest-card__menu-btn ${detailsOpen ? 'guest-card__menu-btn--open' : ''}`}
@@ -145,6 +138,17 @@ const GuestCard: React.FC<GuestCardProps> = ({
 									{tag}
 								</span>
 							))}
+					</div>
+
+					<div className="guest-card__expanded-actions">
+						<GuestExpandedActions
+							guestName={item.fullName}
+							inviteUrl={inviteUrl}
+							isShared={isShared}
+							onEdit={() => onEdit(item)}
+							onDelete={() => onDelete(item)}
+							onMarkShared={async () => onMarkShared(item)}
+						/>
 					</div>
 				</div>
 			</div>

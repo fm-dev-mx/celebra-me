@@ -249,6 +249,14 @@
 	gap: 0.3rem;
 }
 
+.guest-card__expanded-actions {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 0.4rem;
+	border-top: 1px solid var(--color-border-subtle);
+	margin-top: 0.15rem;
+}
+
 .dashboard-guests__cards {
 	display: none;
 

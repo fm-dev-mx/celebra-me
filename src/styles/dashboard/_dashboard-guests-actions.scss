@@ -1,17 +1,3 @@
-.dashboard-guests__actions {
-	display: flex;
-	align-items: center;
-	gap: 0.35rem;
-	white-space: nowrap;
-
-	@media (width <= 992px) {
-		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--color-border-subtle);
-		justify-content: flex-end;
-	}
-}
-
 .dashboard-guests__share-button {
 	display: inline-flex;
 	align-items: center;
@@ -80,5 +66,141 @@
 
 	.share-label {
 		white-space: nowrap;
+	}
+}
+
+/* Expanded actions strip — replaces nested dropdown inside expanded rows/cards */
+.guest-expanded-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+
+	@media (width <= 480px) {
+		gap: 0.3rem;
+	}
+}
+
+.guest-expanded-actions__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.35rem 0.65rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 7px;
+	background: var(--color-surface-elevated);
+	font-family: var(--font-ui);
+	font-size: 0.72rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition:
+		background-color 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease,
+		box-shadow 0.15s ease;
+	white-space: nowrap;
+	min-height: 30px;
+	color: var(--color-text-secondary);
+
+	svg {
+		flex-shrink: 0;
+		color: var(--color-text-muted);
+		transition: color 0.15s ease;
+	}
+
+	&:hover {
+		background: rgb(var(--color-surface-dark-rgb) / 3%);
+		border-color: rgb(var(--color-surface-dark-rgb) / 15%);
+		color: var(--color-text-primary);
+
+		svg {
+			color: var(--color-text-secondary);
+		}
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--color-action-accent);
+		outline-offset: 2px;
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
+
+	@media (width <= 480px) {
+		padding: 0.3rem 0.5rem;
+		font-size: 0.68rem;
+		min-height: 28px;
+	}
+}
+
+/* Copy link — neutral */
+.guest-expanded-actions__btn--copy {
+	color: var(--color-text-secondary);
+
+	&:hover {
+		color: var(--color-text-primary);
+	}
+
+	svg {
+		color: var(--color-text-muted);
+	}
+}
+
+/* Mark as sent — subtle accent */
+.guest-expanded-actions__btn--mark-sent {
+	border-color: rgb(var(--color-state-success-rgb) / 20%);
+	background: rgb(var(--color-state-success-rgb) / 4%);
+	color: var(--color-state-success-text);
+
+	svg {
+		color: var(--color-state-success);
+	}
+
+	&:hover {
+		background: rgb(var(--color-state-success-rgb) / 8%);
+		border-color: rgb(var(--color-state-success-rgb) / 35%);
+		color: var(--color-state-success-text);
+
+		svg {
+			color: var(--color-state-success);
+		}
+	}
+}
+
+/* Edit — ghost */
+.guest-expanded-actions__btn--edit {
+	background: transparent;
+	border-color: transparent;
+	color: var(--color-text-muted);
+
+	&:hover {
+		background: rgb(var(--color-surface-dark-rgb) / 3%);
+		border-color: rgb(var(--color-surface-dark-rgb) / 10%);
+		color: var(--color-text-primary);
+
+		svg {
+			color: var(--color-text-secondary);
+		}
+	}
+}
+
+/* Delete — restrained destructive */
+.guest-expanded-actions__btn--delete {
+	color: var(--color-state-danger-text);
+
+	svg {
+		color: var(--color-state-danger);
+	}
+
+	&:hover {
+		background: var(--color-state-danger-bg);
+		border-color: var(--color-state-danger-border);
+		color: var(--color-state-danger-text);
+
+		svg {
+			color: var(--color-state-danger);
+		}
 	}
 }
