@@ -16,6 +16,7 @@
             "@layouts/*": ["src/layouts/*"],
             "@lib/*": ["src/lib/*"],
             "@styles/*": ["src/styles/*"],
+            "@tests/*": ["tests/*"],
             "@utils/*": ["src/utils/*"]
         },
         "jsx": "react-jsx",

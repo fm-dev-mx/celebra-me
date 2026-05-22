@@ -3,6 +3,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import { makeGuest } from '@tests/helpers/guest-factory';
 
 jest.mock('@/lib/dashboard/guests-api', () => ({
 	guestsApi: {
@@ -20,27 +21,12 @@ jest.mock('@/lib/dashboard/guests-api', () => ({
 
 const mockedGuestsApi = guestsApi as jest.Mocked<typeof guestsApi>;
 
-const sampleGuest: DashboardGuestItem = {
+const sampleGuest: DashboardGuestItem = makeGuest({
 	guestId: 'guest-123',
-	inviteId: 'invite-123',
 	fullName: 'Test Guest',
 	phone: '5551234567',
-	email: null,
-	tags: [],
-	metadata: {},
-	maxAllowedAttendees: 4,
-	attendanceStatus: 'pending',
-	attendeeCount: 0,
-	guestComment: '',
-	deliveryStatus: 'generated',
-	viewPercentage: 0,
-	isViewed: false,
-	firstViewedAt: null,
-	respondedAt: null,
 	waShareUrl: 'https://wa.me/123',
-	shareText: 'Share text',
-	updatedAt: '2026-03-22T00:00:00.000Z',
-};
+});
 
 const sampleTotals = {
 	totalInvitations: 1,
@@ -55,6 +41,23 @@ const sampleTotals = {
 	declinedPeople: 0,
 	viewed: 0,
 };
+
+function setupActions(overrides?: {
+	eventId?: string;
+	items?: DashboardGuestItem[];
+	loadGuests?: jest.Mock;
+	setItems?: jest.Mock;
+}) {
+	const opts = {
+		eventId: 'event-123',
+		items: [sampleGuest],
+		loadGuests: jest.fn().mockResolvedValue(undefined),
+		setItems: jest.fn(),
+		...overrides,
+	};
+	const { result } = renderHook(() => useGuestDashboardActions({ ...opts }));
+	return { result, loadGuests: opts.loadGuests, setItems: opts.setItems };
+}
 
 describe('active guest dashboard hooks', () => {
 	beforeEach(() => {
@@ -117,16 +120,7 @@ describe('active guest dashboard hooks', () => {
 			fullName: 'Created Guest',
 		});
 
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items: [sampleGuest],
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result, loadGuests } = setupActions();
 
 		act(() => {
 			result.current.openCreateModal();
@@ -271,16 +265,7 @@ describe('active guest dashboard hooks', () => {
 	it('confirms guest deletion through useGuestDashboardActions', async () => {
 		mockedGuestsApi.delete.mockResolvedValue({ message: 'Deleted successfully' });
 
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items: [sampleGuest],
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result, loadGuests } = setupActions();
 
 		act(() => {
 			result.current.requestDelete(sampleGuest);
@@ -305,16 +290,7 @@ describe('active guest dashboard hooks', () => {
 		});
 
 		const sentGuest = { ...sampleGuest, deliveryStatus: 'shared' as const };
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items: [sentGuest],
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result, loadGuests } = setupActions({ items: [sentGuest] });
 
 		await act(async () => {
 			await result.current.handleRevertShared(sentGuest);
@@ -330,16 +306,7 @@ describe('active guest dashboard hooks', () => {
 			deliveryStatus: 'shared',
 		});
 
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items: [sampleGuest],
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result, loadGuests } = setupActions();
 
 		await act(async () => {
 			await result.current.handleMarkShared(sampleGuest);
@@ -356,16 +323,7 @@ describe('active guest dashboard hooks', () => {
 	it('rolls back optimistic update on markShared API failure', async () => {
 		mockedGuestsApi.markShared.mockRejectedValue(new Error('Network error'));
 
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items: [sampleGuest],
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result } = setupActions();
 
 		await act(async () => {
 			await result.current.handleMarkShared(sampleGuest);
@@ -378,17 +336,8 @@ describe('active guest dashboard hooks', () => {
 	});
 
 	it('opens send-pending mode when openNextGeneratedGuest is called', () => {
-		const items = [{ ...sampleGuest, deliveryStatus: 'generated' as const }];
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items,
-				loadGuests,
-				setItems,
-			}),
-		);
+		const items = [makeGuest({ deliveryStatus: 'generated' })];
+		const { result } = setupActions({ items });
 
 		act(() => {
 			result.current.openNextGeneratedGuest();
@@ -400,17 +349,8 @@ describe('active guest dashboard hooks', () => {
 	});
 
 	it('does not open modal when no pending guests exist', () => {
-		const items = [{ ...sampleGuest, deliveryStatus: 'shared' as const }];
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items,
-				loadGuests,
-				setItems,
-			}),
-		);
+		const items = [makeGuest({ deliveryStatus: 'shared' })];
+		const { result } = setupActions({ items });
 
 		act(() => {
 			result.current.openNextGeneratedGuest();
@@ -420,8 +360,7 @@ describe('active guest dashboard hooks', () => {
 	});
 
 	it('handleSaveInvitation updates name, max attendees, phone, and countryCode when changed', async () => {
-		const guestA = { ...sampleGuest, guestId: 'guest-a', deliveryStatus: 'generated' as const };
-		const items = [guestA];
+		const guestA = makeGuest({ guestId: 'guest-a', deliveryStatus: 'generated' });
 
 		mockedGuestsApi.update.mockResolvedValue({
 			...guestA,
@@ -431,16 +370,7 @@ describe('active guest dashboard hooks', () => {
 			countryCode: '+52',
 		});
 
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items,
-				loadGuests,
-				setItems,
-			}),
-		);
+		const { result } = setupActions({ items: [guestA] });
 
 		const updated = await act(async () => {
 			return result.current.handleSaveInvitation('guest-a', {
@@ -464,27 +394,14 @@ describe('active guest dashboard hooks', () => {
 	it('handleSaveInvitation calls update even when no fields changed', async () => {
 		mockedGuestsApi.update.mockResolvedValue(sampleGuest);
 
-		const guestA = {
-			...sampleGuest,
+		const guestA = makeGuest({
 			guestId: 'guest-a',
 			fullName: 'Test Guest',
-			maxAllowedAttendees: 4,
 			phone: '5551234567',
 			countryCode: '+52',
-			deliveryStatus: 'generated' as const,
-		};
-		const items = [guestA];
-
-		const loadGuests = jest.fn().mockResolvedValue(undefined);
-		const setItems = jest.fn();
-		const { result } = renderHook(() =>
-			useGuestDashboardActions({
-				eventId: 'event-123',
-				items,
-				loadGuests,
-				setItems,
-			}),
-		);
+			deliveryStatus: 'generated',
+		});
+		const { result } = setupActions({ items: [guestA] });
 
 		await act(async () => {
 			await result.current.handleSaveInvitation('guest-a', {
@@ -501,6 +418,119 @@ describe('active guest dashboard hooks', () => {
 			phone: '5551234567',
 			countryCode: '+52',
 		});
+	});
+
+	it('handleAdvanceFromGuest advances editingGuest to next pending guest', () => {
+		const guest1 = makeGuest({
+			guestId: 'g1',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated',
+		});
+		const guest2 = makeGuest({
+			guestId: 'g2',
+			fullName: 'Guest B',
+			deliveryStatus: 'generated',
+		});
+		const { result } = setupActions({ items: [guest1, guest2] });
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+		expect(result.current.editingGuest?.guestId).toBe('g1');
+
+		act(() => {
+			result.current.handleAdvanceFromGuest('g1');
+		});
+
+		expect(result.current.editingGuest?.guestId).toBe('g2');
+		expect(result.current.modalOpen).toBe(true);
+	});
+
+	it('handleAdvanceFromGuest closes modal when no more pending guests', () => {
+		const guest1 = makeGuest({
+			guestId: 'g1',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated',
+		});
+		const { result } = setupActions({ items: [guest1] });
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+		expect(result.current.editingGuest?.guestId).toBe('g1');
+
+		act(() => {
+			result.current.handleAdvanceFromGuest('g1');
+		});
+
+		expect(result.current.modalOpen).toBe(false);
+		expect(result.current.isNextActionActive).toBe(false);
+	});
+
+	it('handleAdvanceFromGuest does nothing when guestId does not match editingGuest', () => {
+		const guest1 = makeGuest({
+			guestId: 'g1',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated',
+		});
+		const { result } = setupActions({ items: [guest1] });
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		act(() => {
+			result.current.handleAdvanceFromGuest('wrong-id');
+		});
+
+		expect(result.current.editingGuest?.guestId).toBe('g1');
+		expect(result.current.modalOpen).toBe(true);
+	});
+
+	it('handlePostpone advances to next pending guest', async () => {
+		const guest1 = makeGuest({
+			guestId: 'g1',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated',
+		});
+		const guest2 = makeGuest({
+			guestId: 'g2',
+			fullName: 'Guest B',
+			deliveryStatus: 'generated',
+		});
+		const items = [guest1, guest2];
+		const { result } = setupActions({ items });
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+		expect(result.current.editingGuest?.guestId).toBe('g1');
+
+		act(() => {
+			result.current.handlePostpone('g1');
+		});
+
+		expect(result.current.editingGuest?.guestId).toBe('g2');
+	});
+
+	it('handlePostpone closes modal when no more pending guests', async () => {
+		const guest1 = makeGuest({
+			guestId: 'g1',
+			fullName: 'Guest A',
+			deliveryStatus: 'generated',
+		});
+		const items = [guest1];
+		const { result } = setupActions({ items });
+
+		act(() => {
+			result.current.openNextGeneratedGuest();
+		});
+
+		act(() => {
+			result.current.handlePostpone('g1');
+		});
+
+		expect(result.current.modalOpen).toBe(false);
 	});
 
 	it.each([

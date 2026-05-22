@@ -1,36 +1,13 @@
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
-import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-
-function makeGuest(overrides: Partial<DashboardGuestItem> = {}): DashboardGuestItem {
-	return {
-		guestId: 'guest-1',
-		inviteId: 'invite-1',
-		fullName: 'Guest One',
-		phone: '6691234567',
-		countryCode: '+52',
-		email: null,
-		tags: [],
-		metadata: {},
-		maxAllowedAttendees: 4,
-		attendanceStatus: 'pending',
-		attendeeCount: 0,
-		guestComment: '',
-		deliveryStatus: 'generated',
-		viewPercentage: 0,
-		isViewed: false,
-		firstViewedAt: null,
-		respondedAt: null,
-		waShareUrl: 'https://wa.me/526691234567',
-		shareText: 'Share text',
-		updatedAt: '2026-03-22T00:00:00.000Z',
-		...overrides,
-	};
-}
+import { makeGuest } from '@tests/helpers/guest-factory';
 
 const onClose = jest.fn();
 const onSave = jest.fn();
 const onMarkShared = jest.fn();
+const onAdvanceFromGuest = jest.fn();
+const onPostponeGuest = jest.fn();
 
 let mockWindow: { closed: boolean; location: { href: string }; close: jest.Mock };
 
@@ -59,9 +36,14 @@ const defaultProps = {
 	onClose,
 	onSave,
 	onMarkShared,
+	onAdvanceFromGuest,
+	onPostponeGuest,
 };
 
-function renderModal(guest: DashboardGuestItem | null, pendingGuests?: DashboardGuestItem[]) {
+function renderModal(
+	guest: ReturnType<typeof makeGuest> | null,
+	pendingGuests?: ReturnType<typeof makeGuest>[],
+) {
 	return render(
 		<SendInvitationModal
 			{...defaultProps}
@@ -189,7 +171,7 @@ describe('SendInvitationModal', () => {
 		expect(onSave).toHaveBeenCalledTimes(1);
 	});
 
-	it('valid phone saves, opens WhatsApp, marks shared, and advances to next', async () => {
+	it('valid phone saves, opens WhatsApp, marks shared, and calls onAdvanceFromGuest', async () => {
 		onSave.mockResolvedValue(makeGuest({ fullName: 'Guest One Updated' }));
 		onMarkShared.mockResolvedValue(undefined);
 
@@ -211,10 +193,10 @@ describe('SendInvitationModal', () => {
 				expect.objectContaining({ fullName: 'Guest One Updated' }),
 			),
 		);
-		await waitFor(() => expect(screen.getByDisplayValue('Guest Two')).toBeInTheDocument());
+		await waitFor(() => expect(onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
 	});
 
-	it('empty phone saves, calls navigator.share, marks shared, and advances to next', async () => {
+	it('empty phone saves, calls navigator.share, marks shared, and calls onAdvanceFromGuest', async () => {
 		onSave.mockResolvedValue(makeGuest({ phone: '', inviteId: 'invite-1', waShareUrl: '' }));
 		onMarkShared.mockResolvedValue(undefined);
 
@@ -237,7 +219,7 @@ describe('SendInvitationModal', () => {
 				expect.objectContaining({ guestId: 'guest-1' }),
 			),
 		);
-		await waitFor(() => expect(screen.getByDisplayValue('Guest Two')).toBeInTheDocument());
+		await waitFor(() => expect(onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
 	});
 
 	it.each([
@@ -260,22 +242,28 @@ describe('SendInvitationModal', () => {
 			},
 			phone: '',
 		},
-	])('$name shows fallback without marking sent', async ({ setup, phone }) => {
-		setup();
-		onSave.mockResolvedValue(makeGuest({ phone }));
+	])(
+		'$name shows fallback without marking sent and without advancing',
+		async ({ setup, phone }) => {
+			setup();
+			onSave.mockResolvedValue(makeGuest({ phone }));
 
-		renderModal(makeGuest({ guestId: 'guest-1', phone }));
+			renderModal(makeGuest({ guestId: 'guest-1', phone }));
 
-		fireEvent.click(
-			screen.getByRole('button', { name: phone ? /enviar por whatsapp/i : /compartir/i }),
-		);
+			fireEvent.click(
+				screen.getByRole('button', { name: phone ? /enviar por whatsapp/i : /compartir/i }),
+			);
 
-		await waitFor(() => expect(onSave).toHaveBeenCalled());
-		expect(onMarkShared).not.toHaveBeenCalled();
-		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
-	});
+			await waitFor(() => expect(onSave).toHaveBeenCalled());
+			expect(onMarkShared).not.toHaveBeenCalled();
+			expect(onAdvanceFromGuest).not.toHaveBeenCalled();
+			await waitFor(() =>
+				expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument(),
+			);
+		},
+	);
 
-	it('fallback "Copiar invitación" copies URL but does not mark sent', async () => {
+	it('fallback "Copiar invitación" copies URL but does not mark sent or advance', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		onSave.mockResolvedValue(makeGuest());
 
@@ -289,9 +277,10 @@ describe('SendInvitationModal', () => {
 
 		await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalled());
 		expect(onMarkShared).not.toHaveBeenCalled();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
-	it('fallback "Copiar y marcar como enviada" copies URL and marks sent', async () => {
+	it('fallback "Copiar y marcar como enviada" copies URL, marks sent, and calls onAdvanceFromGuest', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		onSave.mockResolvedValue(makeGuest());
 		onMarkShared.mockResolvedValue(undefined);
@@ -310,9 +299,10 @@ describe('SendInvitationModal', () => {
 				expect.objectContaining({ guestId: 'guest-1' }),
 			),
 		);
+		await waitFor(() => expect(onAdvanceFromGuest).toHaveBeenCalledWith('guest-1'));
 	});
 
-	it('fallback "Mantener pendiente" returns to form phase', async () => {
+	it('fallback "Mantener pendiente" returns to form phase without advancing', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		onSave.mockResolvedValue(makeGuest());
 
@@ -326,9 +316,10 @@ describe('SendInvitationModal', () => {
 
 		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /enviar por whatsapp/i })).toBeInTheDocument();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
-	it('save failure shows error and closes pre-opened window', async () => {
+	it('save failure shows error, closes pre-opened window, and does not advance', async () => {
 		onSave.mockRejectedValue(new Error('Save failed'));
 
 		renderModal(makeGuest({ guestId: 'guest-1' }));
@@ -342,6 +333,7 @@ describe('SendInvitationModal', () => {
 		});
 
 		expect(onMarkShared).not.toHaveBeenCalled();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
 	it('onMarkShared failure during WhatsApp flow shows error in fallback and does not advance', async () => {
@@ -364,7 +356,7 @@ describe('SendInvitationModal', () => {
 		});
 
 		expect(screen.getByText('Guest One')).toBeInTheDocument();
-		expect(screen.queryByDisplayValue('Guest Two')).not.toBeInTheDocument();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
 	it('server-returned item used for final WhatsApp URL via getGuestInviteUrl', async () => {
@@ -388,6 +380,109 @@ describe('SendInvitationModal', () => {
 
 		await waitFor(() => {
 			expect(mockWindow.location.href).toBe(returnedGuest.waShareUrl);
+		});
+	});
+
+	it('Posponer calls onPostponeGuest with current guest ID', async () => {
+		const guest2 = makeGuest({ guestId: 'guest-2', fullName: 'Guest Two' });
+		const guest = makeGuest({ guestId: 'guest-1', fullName: 'Guest One' });
+
+		renderModal(guest, [guest, guest2]);
+
+		const postponeBtn = screen.getByRole('button', { name: /posponer/i });
+		fireEvent.click(postponeBtn);
+
+		expect(onPostponeGuest).toHaveBeenCalledWith('guest-1');
+		expect(onMarkShared).not.toHaveBeenCalled();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it('Posponer button not shown when only one pending guest', () => {
+		renderModal(makeGuest({ guestId: 'guest-1' }));
+
+		expect(screen.queryByRole('button', { name: /posponer/i })).not.toBeInTheDocument();
+	});
+
+	it('Cancelar closes modal without marking shared or advancing', () => {
+		renderModal(makeGuest({ guestId: 'guest-1' }));
+
+		fireEvent.click(screen.getByRole('button', { name: /cancelar/i }));
+
+		expect(onClose).toHaveBeenCalled();
+		expect(onMarkShared).not.toHaveBeenCalled();
+		expect(onAdvanceFromGuest).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		{ desc: 'empty phone', guestPhone: '', sendPhone: undefined, sendCountryCode: undefined },
+		{
+			desc: 'valid phone',
+			guestPhone: '6691234567',
+			sendPhone: '6691234567',
+			sendCountryCode: '+52',
+		},
+		{
+			desc: 'cleared phone field',
+			guestPhone: '6691234567',
+			clearPhone: true,
+			sendPhone: undefined,
+			sendCountryCode: undefined,
+		},
+	])(
+		'saves with $desc payload: phone=$sendPhone, countryCode=$sendCountryCode',
+		async ({ guestPhone, clearPhone, sendPhone, sendCountryCode }) => {
+			onSave.mockResolvedValue(
+				makeGuest({
+					phone: guestPhone,
+					waShareUrl: guestPhone ? 'https://wa.me/526691234567' : '',
+				}),
+			);
+
+			renderModal(
+				makeGuest({
+					guestId: 'guest-1',
+					phone: guestPhone,
+					waShareUrl: guestPhone ? 'https://wa.me/526691234567' : '',
+				}),
+			);
+
+			if (clearPhone) {
+				const phoneInput = screen.getByPlaceholderText('N\u00famero de tel\u00e9fono');
+				fireEvent.change(phoneInput, { target: { value: '' } });
+			}
+
+			const buttonLabel =
+				sendPhone || (!clearPhone && guestPhone)
+					? /enviar por whatsapp/i
+					: /compartir invitaci\u00f3n/i;
+			fireEvent.click(screen.getByRole('button', { name: buttonLabel }));
+
+			await waitFor(() => {
+				expect(onSave).toHaveBeenCalledWith('guest-1', {
+					fullName: 'Guest One',
+					maxAllowedAttendees: 4,
+					phone: sendPhone,
+					countryCode: sendCountryCode,
+				});
+			});
+		},
+	);
+
+	it('fallback "Copiar y marcar como enviada" failure does not advance', async () => {
+		window.open = jest.fn().mockReturnValue(null);
+		onSave.mockResolvedValue(makeGuest());
+		onMarkShared.mockRejectedValue(new Error('Mark failed'));
+
+		renderModal(makeGuest({ guestId: 'guest-1' }));
+
+		fireEvent.click(screen.getByRole('button', { name: /enviar por whatsapp/i }));
+
+		await waitFor(() => expect(screen.getByText('Copiar invitaci\u00f3n')).toBeInTheDocument());
+
+		fireEvent.click(screen.getByText('Copiar y marcar como enviada'));
+
+		await waitFor(() => {
+			expect(onAdvanceFromGuest).not.toHaveBeenCalled();
 		});
 	});
 });

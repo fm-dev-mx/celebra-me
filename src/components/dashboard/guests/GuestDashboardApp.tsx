@@ -56,6 +56,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		editFirstGuestShortcut,
 		editingGuest,
 		guestToDelete,
+		handleAdvanceFromGuest,
 		handleDeleteConfirm,
 		handleExport,
 		handleImport,
@@ -160,12 +161,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 				{modalOpen && modalMode === 'send-pending' && (
 					<SendInvitationModal
+						key={editingGuest?.guestId ?? 'empty'}
 						guest={editingGuest}
 						pendingGuests={pendingGuests}
 						inviteBaseUrl={inviteBaseUrl}
 						onClose={closeModal}
 						onSave={handleSaveInvitation}
 						onMarkShared={handleMarkShared}
+						onAdvanceFromGuest={handleAdvanceFromGuest}
+						onPostponeGuest={handlePostpone}
 					/>
 				)}
 

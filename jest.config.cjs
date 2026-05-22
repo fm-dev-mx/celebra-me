@@ -34,6 +34,7 @@ module.exports = {
 
 		// Root aliases
 		'^@/(.*)$': '<rootDir>/src/$1',
+		'^@tests/(.*)$': '<rootDir>/tests/$1',
 		'^@core/(.*)$': '<rootDir>/src/$1',
 
 		// Components & Layouts

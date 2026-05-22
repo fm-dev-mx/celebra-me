@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import { isDebugMode } from '@/utils/debug';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
@@ -90,13 +91,11 @@ export const useGuestDashboardActions = ({
 				type: 'success',
 			});
 		} catch (error) {
-			const shouldShowDebugMessage =
-				typeof window !== 'undefined' &&
-				new URLSearchParams(window.location.search).get('debug') === '1' &&
-				error instanceof Error &&
-				error.message;
 			setNotification({
-				message: shouldShowDebugMessage ? error.message : 'Error al eliminar invitado.',
+				message:
+					isDebugMode() && error instanceof Error && error.message
+						? error.message
+						: 'Error al eliminar invitado.',
 				type: 'warning',
 			});
 		} finally {
@@ -152,6 +151,32 @@ export const useGuestDashboardActions = ({
 		[optimisticStatusUpdate],
 	);
 
+	const handleAdvanceFromGuest = useCallback(
+		(currentGuestId: string) => {
+			if (!editingGuest || editingGuest.guestId !== currentGuestId) return;
+
+			const next = items.find(
+				(item) => item.deliveryStatus === 'generated' && item.guestId !== currentGuestId,
+			);
+
+			if (next) {
+				setEditingGuest(next);
+				setNotification({
+					message: `Siguiente: ${next.fullName}`,
+					type: 'info',
+				});
+			} else {
+				setModalOpen(false);
+				setIsNextActionActive(false);
+				setNotification({
+					message: 'No hay más invitaciones pendientes.',
+					type: 'success',
+				});
+			}
+		},
+		[editingGuest, items, setNotification],
+	);
+
 	const handleRevertShared = useCallback(
 		async (item: DashboardGuestItem) => {
 			await optimisticStatusUpdate(
@@ -189,38 +214,41 @@ export const useGuestDashboardActions = ({
 		[setItems],
 	);
 
-	const handlePostpone = useCallback(() => {
-		if (!editingGuest) return;
+	const handlePostpone = useCallback(
+		(currentGuestId?: string) => {
+			const guestId = currentGuestId ?? editingGuest?.guestId;
+			if (!guestId) return;
 
-		setItems((prev) => {
-			const index = prev.findIndex((item) => item.guestId === editingGuest.guestId);
-			if (index === -1) return prev;
+			const remainingPending = items.filter(
+				(item) => item.deliveryStatus === 'generated' && item.guestId !== guestId,
+			);
 
-			const nextItems = [...prev];
-			const [postponedItem] = nextItems.splice(index, 1);
-			nextItems.push(postponedItem);
-			return nextItems;
-		});
-
-		const remainingPending = items.filter(
-			(item) => item.deliveryStatus === 'generated' && item.guestId !== editingGuest.guestId,
-		);
-
-		if (remainingPending.length > 0) {
-			setEditingGuest(remainingPending[0]);
-			setNotification({
-				message: `Invitado pospuesto. Siguiente: ${remainingPending[0].fullName}`,
-				type: 'info',
+			setItems((prev) => {
+				const index = prev.findIndex((item) => item.guestId === guestId);
+				if (index === -1) return prev;
+				const nextItems = [...prev];
+				const [postponedItem] = nextItems.splice(index, 1);
+				nextItems.push(postponedItem);
+				return nextItems;
 			});
-		} else {
-			setModalOpen(false);
-			setIsNextActionActive(false);
-			setNotification({
-				message: 'No hay más invitados pendientes en la cola.',
-				type: 'info',
-			});
-		}
-	}, [editingGuest, items, setItems]);
+
+			if (remainingPending.length > 0) {
+				setEditingGuest(remainingPending[0]);
+				setNotification({
+					message: `Invitado pospuesto. Siguiente: ${remainingPending[0].fullName}`,
+					type: 'info',
+				});
+			} else {
+				setModalOpen(false);
+				setIsNextActionActive(false);
+				setNotification({
+					message: 'No hay más invitados pendientes en la cola.',
+					type: 'info',
+				});
+			}
+		},
+		[editingGuest, items, setItems, setNotification],
+	);
 
 	const handleSubmit = useCallback(
 		async (payload: GuestFormPayload, stayOpen?: boolean) => {
@@ -376,6 +404,7 @@ export const useGuestDashboardActions = ({
 		editingGuest,
 		guestToDelete,
 		handleDeleteConfirm,
+		handleAdvanceFromGuest,
 		handleExport,
 		handleImport,
 		handleImportUpdate,
