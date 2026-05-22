@@ -33,8 +33,8 @@ export function getPrimaryStatusLabel(item: DashboardGuestItem) {
 	if (item.attendanceStatus === 'confirmed') return 'Aceptada';
 	if (item.attendanceStatus === 'declined') return 'Denegada';
 	if (item.deliveryStatus === 'generated') return 'Por enviar';
-	if (!item.isViewed) return 'Enviada';
-	return 'Pendiente';
+	if (!item.isViewed) return 'Recibida';
+	return 'Enviada';
 }
 
 export function getPrimaryStatusClass(item: DashboardGuestItem) {
