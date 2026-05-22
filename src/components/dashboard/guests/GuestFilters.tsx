@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchIcon } from '@/components/common/icons/ui';
+import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 
 interface GuestFiltersProps {
 	search: string;
@@ -58,35 +59,20 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				</div>
 
 				<div className="filter-actions-group">
-					<button
-						type="button"
-						onClick={onCreateClick}
-						className="btn-primary btn--compact"
-					>
-						Agregar invitado
-					</button>
-					<button
-						type="button"
-						onClick={onExportClick}
-						className="btn-secondary btn--compact"
-					>
-						Exportar
-					</button>
-					<button
-						type="button"
-						onClick={onImportClick}
-						className="btn-secondary btn--compact"
-					>
-						Importar
-					</button>
-					<button
-						type="button"
-						onClick={onRefreshClick}
-						className="btn-secondary btn--compact"
-						title="Recargar lista"
-					>
-						Actualizar
-					</button>
+					<div className="filter-actions-group__inner">
+						<button
+							type="button"
+							onClick={onCreateClick}
+							className="btn-primary btn--compact"
+						>
+							Agregar invitado
+						</button>
+						<ToolbarActionsMenu
+							onExport={onExportClick}
+							onImport={onImportClick}
+							onRefresh={onRefreshClick}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>
