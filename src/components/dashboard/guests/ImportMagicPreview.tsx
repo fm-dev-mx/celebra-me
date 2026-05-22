@@ -2,8 +2,9 @@ import type {
 	ImportRowAction,
 	ImportRowStatus,
 	ParsedGuest,
+	DisplayCategories,
 } from '@/components/dashboard/guests/ImportMagic.utils';
-import { IMPORT_FATAL_ERROR, pluralS } from '@/components/dashboard/guests/ImportMagic.utils';
+import { IMPORT_FATAL_ERROR } from '@/components/dashboard/guests/ImportMagic.utils';
 import { DeleteGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 
 const STATUS_LABELS: Partial<Record<ImportRowStatus, string>> = {
@@ -173,50 +174,9 @@ function ImportPreviewTable({
 	);
 }
 
-function ImportPreviewStatus({
-	isFatalError,
-	actionableCount,
-	errorCount,
-	totalCount,
-}: {
-	isFatalError: boolean;
-	actionableCount: number;
-	errorCount: number;
-	totalCount: number;
-}) {
-	if (isFatalError) return <p className="import-magic__fatal-error">{IMPORT_FATAL_ERROR}</p>;
-	if (actionableCount === 0 && errorCount > 0) {
-		return (
-			<p className="dashboard-form-help dashboard-form-help--error">
-				Hay {errorCount} fila{pluralS(errorCount)} con errores. Corrígelas para importar.
-			</p>
-		);
-	}
-	if (actionableCount === 0 && totalCount > 0) {
-		return (
-			<p className="dashboard-form-help dashboard-form-help--warning">
-				No hay cambios listos para importar.
-			</p>
-		);
-	}
-	if (actionableCount > 0) {
-		return (
-			<p className="dashboard-form-help">
-				Se aplicarán {actionableCount} cambio{pluralS(actionableCount)}.
-			</p>
-		);
-	}
-	return null;
-}
-
 interface ImportPreviewPanelProps {
 	preview: ParsedGuest[];
-	createCount: number;
-	updateCount: number;
-	skippedCount: number;
-	reviewCount: number;
-	hiddenDuplicateCount: number;
-	errorCount: number;
+	display: DisplayCategories;
 	isFatalError: boolean;
 	visibleRows: { guest: ParsedGuest; originalIndex: number }[];
 	showColumnMapping: boolean;
@@ -233,14 +193,26 @@ interface ImportPreviewPanelProps {
 	handleDelete: (index: number) => void;
 }
 
+function SummaryChip({
+	value,
+	label,
+	className,
+}: {
+	value: number;
+	label: string;
+	className: string;
+}) {
+	return (
+		<span className={`import-magic__summary-chip ${className}`}>
+			<span className="import-magic__chip-value">{value}</span>
+			<span className="import-magic__chip-label">{label}</span>
+		</span>
+	);
+}
+
 export function ImportPreviewPanel({
 	preview,
-	createCount,
-	updateCount,
-	skippedCount,
-	reviewCount,
-	hiddenDuplicateCount,
-	errorCount,
+	display,
 	isFatalError,
 	visibleRows,
 	showColumnMapping,
@@ -263,26 +235,56 @@ export function ImportPreviewPanel({
 		return null;
 	}
 
-	const actionableCount = createCount + updateCount;
-
 	return (
 		<>
 			<div className="import-magic__preview">
-				<div className="import-magic__summary">
-					<span className="import-magic__summary-total">
-						{preview.length} registros leídos
-					</span>
-					<span className="import-magic__summary-new">Nuevos: {createCount}</span>
-					<span className="import-magic__summary-existing">
-						Actualizaciones: {updateCount}
-					</span>
-					<span className="import-magic__summary-duplicate">
-						Omitidos: {skippedCount}
-					</span>
-					<span className="import-magic__summary-error">
-						Requieren revisión: {reviewCount}
-					</span>
+				<div className="import-magic__summary-chips">
+					{display.create > 0 && (
+						<SummaryChip
+							value={display.create}
+							label="Crear"
+							className="import-magic__summary-chip--create"
+						/>
+					)}
+					{display.update > 0 && (
+						<SummaryChip
+							value={display.update}
+							label="Actualizar"
+							className="import-magic__summary-chip--update"
+						/>
+					)}
+					{display.review > 0 && (
+						<SummaryChip
+							value={display.review}
+							label="Revisar"
+							className="import-magic__summary-chip--review"
+						/>
+					)}
+					{display.omitted > 0 && (
+						<SummaryChip
+							value={display.omitted}
+							label="Sin cambios"
+							className="import-magic__summary-chip--omitted"
+						/>
+					)}
+					{display.error > 0 && (
+						<SummaryChip
+							value={display.error}
+							label="Errores"
+							className="import-magic__summary-chip--error"
+						/>
+					)}
 				</div>
+
+				{display.hiddenReview > 0 && !showPossibleDuplicates && (
+					<p className="import-magic__hidden-hint">
+						{display.hiddenReview} posible{display.hiddenReview !== 1 ? 's' : ''}{' '}
+						duplicado
+						{display.hiddenReview !== 1 ? 's' : ''} oculto
+						{display.hiddenReview !== 1 ? 's' : ''}
+					</p>
+				)}
+
 				<label className="import-magic__duplicate-toggle">
 					<input
 						type="checkbox"
@@ -290,18 +292,10 @@ export function ImportPreviewPanel({
 						onChange={(event) => onShowPossibleDuplicatesChange(event.target.checked)}
 					/>
 					Mostrar posibles duplicados
-					{hiddenDuplicateCount > 0 ? ` (${hiddenDuplicateCount})` : ''}
 				</label>
-				<p className="dashboard-form-help">
-					Revisa las coincidencias antes de importar. Los registros omitidos no se
-					enviarán.
-				</p>
-				<ImportPreviewStatus
-					isFatalError={isFatalError}
-					actionableCount={actionableCount}
-					errorCount={errorCount}
-					totalCount={preview.length}
-				/>
+
+				{isFatalError && <p className="import-magic__fatal-error">{IMPORT_FATAL_ERROR}</p>}
+
 				{visibleRows.length > 0 && (
 					<ImportPreviewTable
 						rows={visibleRows}

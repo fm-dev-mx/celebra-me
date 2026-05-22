@@ -2,6 +2,7 @@ import {
 	classifyImportedRows,
 	reclassifyEditedRow,
 	parseCsvLikeContent,
+	computeDisplayCategories,
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -503,5 +504,115 @@ describe('parseCsvLikeContent', () => {
 		);
 		expect(result.rows[0].fullName).toBe('López, Ana');
 		expect(result.rows[0].email).toBe('ana@test.com');
+	});
+});
+
+describe('computeDisplayCategories', () => {
+	const mkGuest = (overrides: Partial<ParsedGuest> = {}): ParsedGuest => ({
+		fullName: 'Test',
+		phone: '',
+		phoneCountryCode: '',
+		email: null,
+		...overrides,
+	});
+
+	it('mixed dataset reconciles exactly total = create + update + review + omitted + error', () => {
+		const guests: ParsedGuest[] = [
+			mkGuest({ _status: 'new', action: 'create' }),
+			mkGuest({ _status: 'new', action: 'create' }),
+			mkGuest({
+				_status: 'phone_conflict',
+				action: 'update',
+				matchedGuestId: 'g1',
+			}),
+			mkGuest({
+				_status: 'possible_duplicate',
+				action: 'skip',
+				requiresReview: true,
+				hiddenByDefault: true,
+			}),
+			mkGuest({
+				_status: 'exact_duplicate',
+				action: 'skip',
+				hiddenByDefault: true,
+			}),
+			mkGuest({
+				_status: 'probable_duplicate',
+				action: 'skip',
+				hiddenByDefault: true,
+			}),
+			mkGuest({
+				_status: 'invalid',
+				error: 'Nombre obligatorio',
+				action: 'skip',
+				requiresReview: true,
+			}),
+		];
+
+		const d = computeDisplayCategories(guests);
+		expect(d.create).toBe(2);
+		expect(d.update).toBe(1);
+		expect(d.review).toBe(1);
+		expect(d.omitted).toBe(2);
+		expect(d.error).toBe(1);
+		expect(d.actionable).toBe(3);
+		expect(d.total).toBe(7);
+		expect(d.total).toBe(d.create + d.update + d.review + d.omitted + d.error);
+	});
+
+	it('possible_duplicate counts as review and hiddenReview', () => {
+		const guests: ParsedGuest[] = [
+			mkGuest({
+				_status: 'possible_duplicate',
+				action: 'skip',
+				requiresReview: true,
+				hiddenByDefault: true,
+			}),
+		];
+		const d = computeDisplayCategories(guests);
+		expect(d.review).toBe(1);
+		expect(d.hiddenReview).toBe(1);
+		expect(d.omitted).toBe(0);
+	});
+
+	it('exact_duplicate counts as omitted', () => {
+		const guests: ParsedGuest[] = [
+			mkGuest({
+				_status: 'exact_duplicate',
+				action: 'skip',
+				hiddenByDefault: true,
+			}),
+		];
+		const d = computeDisplayCategories(guests);
+		expect(d.omitted).toBe(1);
+		expect(d.review).toBe(0);
+	});
+
+	it('invalid row counts only as error', () => {
+		const guests: ParsedGuest[] = [
+			mkGuest({
+				_status: 'invalid',
+				error: 'Nombre obligatorio',
+				action: 'skip',
+				requiresReview: true,
+			}),
+		];
+		const d = computeDisplayCategories(guests);
+		expect(d.error).toBe(1);
+		expect(d.create).toBe(0);
+		expect(d.update).toBe(0);
+		expect(d.review).toBe(0);
+		expect(d.omitted).toBe(0);
+	});
+
+	it('action=update without matchedGuestId does not count as update', () => {
+		const guests: ParsedGuest[] = [
+			mkGuest({
+				_status: 'new',
+				action: 'update',
+			}),
+		];
+		const d = computeDisplayCategories(guests);
+		expect(d.update).toBe(0);
 	});
 });

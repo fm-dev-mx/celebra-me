@@ -525,4 +525,57 @@ export function reclassifyEditedRow(
 	return classifyImportedRows(nextRows, existingGuests);
 }
 
+type DisplayCategory = 'create' | 'update' | 'review' | 'omitted' | 'error';
+
+export interface DisplayCategories {
+	total: number;
+	create: number;
+	update: number;
+	review: number;
+	omitted: number;
+	error: number;
+	actionable: number;
+	hiddenReview: number;
+}
+
+function getDisplayCategory(row: ParsedGuest): DisplayCategory {
+	if (row.error || row._status === 'invalid') return 'error';
+	if (row.action === 'create') return 'create';
+	if (row.action === 'update' && row.matchedGuestId) return 'update';
+	if (row.requiresReview) return 'review';
+	return 'omitted';
+}
+
+export function computeDisplayCategories(guests: ParsedGuest[]): DisplayCategories {
+	let create = 0;
+	let update = 0;
+	let review = 0;
+	let omitted = 0;
+	let error = 0;
+	let hiddenReview = 0;
+
+	for (const row of guests) {
+		const cat = getDisplayCategory(row);
+		if (cat === 'create') create++;
+		else if (cat === 'update') update++;
+		else if (cat === 'review') {
+			review++;
+			if (row.hiddenByDefault) hiddenReview++;
+		} else if (cat === 'omitted') {
+			omitted++;
+		} else if (cat === 'error') error++;
+	}
+
+	return {
+		total: guests.length,
+		create,
+		update,
+		review,
+		omitted,
+		error,
+		actionable: create + update,
+		hiddenReview,
+	};
+}
+
 export { pluralS };

@@ -108,15 +108,13 @@ describe('import result summary', () => {
 	const TEST_EVENT_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 	it('does not imply guests were added when the backend reports only updates', async () => {
-		const onImport = jest
-			.fn()
-			.mockResolvedValue({
-				created: 0,
-				updated: 2,
-				skipped: 0,
-				conflicts: 0,
-				status: 'success',
-			});
+		const onImport = jest.fn().mockResolvedValue({
+			created: 0,
+			updated: 2,
+			skipped: 0,
+			conflicts: 0,
+			status: 'success',
+		});
 		render(
 			<ImportMagic
 				onImport={onImport}
@@ -194,7 +192,7 @@ describe('fatal event/access error', () => {
 		expect(getImportButton().disabled).toBe(true);
 	});
 
-	it('hides ready-to-import success message when fatal error present', async () => {
+	it('disables import button and shows fatal error when import fails with access error', async () => {
 		const onImport = jest
 			.fn()
 			.mockRejectedValue(new Error('Event not found or access denied.'));
@@ -210,10 +208,11 @@ describe('fatal event/access error', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 		importCsv('full_name,phone,country_code\nAna,+526691234567,');
-		expect(screen.getByText(/Se aplicarán 1 cambio/i)).toBeInTheDocument();
+		expect(screen.getByText('Crear')).toBeInTheDocument();
+		expect(getImportButton()).not.toBeDisabled();
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
-		expect(screen.queryByText(/Se aplicarán 1 cambio/i)).toBeNull();
+		expect(getImportButton().disabled).toBe(true);
 	});
 
 	it('shows fatal error message when event/access fails', async () => {
@@ -358,5 +357,102 @@ describe('source textarea collapse', () => {
 
 		fireEvent.click(screen.getByText(/Editar datos pegados/i));
 		expect(textarea.rows).toBe(4);
+	});
+});
+
+describe('summary chips and button states', () => {
+	beforeEach(async () => {
+		renderModal();
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+	});
+
+	it('renders Crear chip for valid new rows', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		expect(screen.getByText('Crear')).toBeInTheDocument();
+		expect(screen.getByText('1')).toBeInTheDocument();
+	});
+
+	it('shows enabled primary button with import count when actionable rows exist', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		const btn = getImportButton();
+		expect(btn.disabled).toBe(false);
+		expect(btn.textContent).toContain('Importar 1 cambio');
+	});
+
+	it('shows hidden hint when review rows are hidden', () => {
+		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		// No review rows → no hint
+		expect(screen.queryByText(/ocultos?/i)).toBeNull();
+	});
+
+	it('shows neutral disabled button with error message when only error rows exist', () => {
+		importCsv('full_name,phone,country_code\n,6691234567,');
+		const btn = getImportButton();
+		expect(btn.disabled).toBe(true);
+		expect(btn.textContent).toBe('No se puede importar');
+	});
+});
+
+describe('all duplicates', () => {
+	it('shows neutral disabled button when all rows are exact duplicates', () => {
+		const existing: DashboardGuestItem[] = [
+			{
+				guestId: 'dup-1',
+				inviteId: 'inv-1',
+				fullName: 'Ana',
+				phone: '+526691234567',
+				phoneCountryCode: '',
+				email: null,
+				tags: [],
+				metadata: {},
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+			},
+		];
+		renderModal('550e8400-e29b-41d4-a716-446655440000', existing);
+		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		const btn = getImportButton();
+		expect(btn.disabled).toBe(true);
+		expect(btn.textContent).toBe('No hay cambios para importar');
+	});
+
+	it('shows hidden review hint when rows are hidden possible duplicates', () => {
+		const existing: DashboardGuestItem[] = [
+			{
+				guestId: 'ex-1',
+				inviteId: 'inv-1',
+				fullName: 'Ana López',
+				phone: '+526691234567',
+				phoneCountryCode: '',
+				email: null,
+				tags: [],
+				metadata: {},
+				maxAllowedAttendees: 2,
+				attendanceStatus: 'pending',
+				attendeeCount: 0,
+				guestComment: '',
+				deliveryStatus: 'generated',
+				viewPercentage: 0,
+				isViewed: false,
+				firstViewedAt: null,
+				respondedAt: null,
+				waShareUrl: '',
+				shareText: '',
+				updatedAt: new Date().toISOString(),
+			},
+		];
+		renderModal('550e8400-e29b-41d4-a716-446655440000', existing);
+		importCsv('full_name,phone\nAna López,\nLuis,+525551234567,');
+		expect(screen.getByText(/duplicado oculto/i)).toBeInTheDocument();
 	});
 });

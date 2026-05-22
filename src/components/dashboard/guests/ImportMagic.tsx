@@ -12,6 +12,7 @@ import {
 	KNOWN_IMPORT_HEADERS,
 	IGNORED_EXPORT_HEADERS,
 	IMPORT_FATAL_ERROR,
+	computeDisplayCategories,
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import type {
 	ParsedGuest,
@@ -277,26 +278,18 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const frozenExistingGuestsRef = useRef(existingGuests);
 
-	const errorCount = preview.filter((g) => g._status === 'invalid').length;
-	const createCount = preview.filter((g) => g.action === 'create' && !g.error).length;
-	const updateCount = preview.filter(
-		(g) => g.action === 'update' && Boolean(g.matchedGuestId) && !g.error,
-	).length;
-	const skippedCount = preview.filter((g) => g.action === 'skip' && !g.error).length;
-	const reviewCount = preview.filter((g) => g.requiresReview && !g.error).length;
-	const hiddenDuplicateCount = preview.filter((g) => g.hiddenByDefault).length;
+	const display = computeDisplayCategories(preview);
 	const isNombreMapped = columnAssignments.some((a) => a.target === 'fullName');
 	const isFatalError = importError === IMPORT_FATAL_ERROR;
-	const actionableCount = createCount + updateCount;
 	const importLabel = parsing
 		? 'Procesando...'
-		: actionableCount > 0
-			? `Importar ${actionableCount} cambio${pluralS(actionableCount)}`
-			: errorCount > 0
-				? 'Corregir errores para importar'
+		: display.actionable > 0
+			? `Importar ${display.actionable} cambio${pluralS(display.actionable)}`
+			: display.error > 0
+				? 'No se puede importar'
 				: 'No hay cambios para importar';
 	const importDisabled =
-		actionableCount === 0 ||
+		display.actionable === 0 ||
 		parsing ||
 		(showColumnMapping && !isNombreMapped) ||
 		isFatalError ||
@@ -577,12 +570,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 
 						<ImportPreviewPanel
 							preview={preview}
-							createCount={createCount}
-							updateCount={updateCount}
-							skippedCount={skippedCount}
-							reviewCount={reviewCount}
-							hiddenDuplicateCount={hiddenDuplicateCount}
-							errorCount={errorCount}
+							display={display}
 							isFatalError={isFatalError}
 							visibleRows={visibleRows}
 							showColumnMapping={showColumnMapping}
@@ -602,13 +590,25 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 						</button>
 						<button
 							type="button"
-							className="btn-primary"
+							className={
+								!importDisabled ? 'btn-primary' : 'import-magic__submit--neutral'
+							}
 							disabled={importDisabled}
 							onClick={handleImport}
 						>
 							{importLabel}
 						</button>
 					</div>
+					{display.actionable === 0 &&
+						!parsing &&
+						!isFatalError &&
+						preview.length > 0 && (
+							<p className="import-magic__submit-note">
+								{display.error > 0
+									? 'Corrige los errores en la tabla para importar.'
+									: 'Todos los registros coinciden con invitados existentes o están duplicados.'}
+							</p>
+						)}
 				</div>
 			</div>
 		</DashboardModalPortal>
