@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { isDebugMode } from '@/utils/debug';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
@@ -45,6 +45,10 @@ export const useGuestDashboardActions = ({
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
+
+	const itemsRef = useRef(items);
+	itemsRef.current = items;
+
 	const openCreateModal = useCallback(() => {
 		setModalMode('create');
 		setEditingGuest(null);
@@ -58,13 +62,14 @@ export const useGuestDashboardActions = ({
 	}, []);
 
 	const openNextGeneratedGuest = useCallback(() => {
-		const next = items.find((item) => item.deliveryStatus === 'generated');
+		const currentItems = itemsRef.current;
+		const next = currentItems.find((item) => item.deliveryStatus === 'generated');
 		if (!next) return;
 		setModalMode('send-pending');
 		setEditingGuest(next);
 		setIsNextActionActive(true);
 		setModalOpen(true);
-	}, [items]);
+	}, []);
 
 	const closeModal = useCallback(() => {
 		setModalOpen(false);
@@ -155,7 +160,8 @@ export const useGuestDashboardActions = ({
 		(currentGuestId: string) => {
 			if (!editingGuest || editingGuest.guestId !== currentGuestId) return;
 
-			const next = items.find(
+			const currentItems = itemsRef.current;
+			const next = currentItems.find(
 				(item) => item.deliveryStatus === 'generated' && item.guestId !== currentGuestId,
 			);
 
@@ -174,7 +180,7 @@ export const useGuestDashboardActions = ({
 				});
 			}
 		},
-		[editingGuest, items, setNotification],
+		[editingGuest, setNotification],
 	);
 
 	const handleRevertShared = useCallback(
@@ -219,7 +225,8 @@ export const useGuestDashboardActions = ({
 			const guestId = currentGuestId ?? editingGuest?.guestId;
 			if (!guestId) return;
 
-			const remainingPending = items.filter(
+			const currentItems = itemsRef.current;
+			const remainingPending = currentItems.filter(
 				(item) => item.deliveryStatus === 'generated' && item.guestId !== guestId,
 			);
 
@@ -247,7 +254,7 @@ export const useGuestDashboardActions = ({
 				});
 			}
 		},
-		[editingGuest, items, setItems, setNotification],
+		[editingGuest, setItems, setNotification],
 	);
 
 	const handleSubmit = useCallback(
@@ -273,12 +280,17 @@ export const useGuestDashboardActions = ({
 				}
 
 				if (isNextActionActive && modalMode === 'edit' && savedItem) {
-					const currentIndex = items.findIndex((g) => g.guestId === savedItem!.guestId);
+					const currentItems = itemsRef.current;
+					const currentIndex = currentItems.findIndex(
+						(g) => g.guestId === savedItem!.guestId,
+					);
 					const nextGuest =
-						items
+						currentItems
 							.slice(currentIndex + 1)
 							.find((g) => g.deliveryStatus === 'generated') ||
-						items.slice(0, currentIndex).find((g) => g.deliveryStatus === 'generated');
+						currentItems
+							.slice(0, currentIndex)
+							.find((g) => g.deliveryStatus === 'generated');
 
 					if (savedItem.waShareUrl) {
 						window.open(savedItem.waShareUrl, '_blank', 'noopener,noreferrer');
@@ -330,7 +342,6 @@ export const useGuestDashboardActions = ({
 			editingGuest,
 			eventId,
 			isNextActionActive,
-			items,
 			loadGuests,
 			modalMode,
 			setItems,
